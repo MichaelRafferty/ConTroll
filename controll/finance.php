@@ -55,8 +55,8 @@ $paymentPlans = getPaymentPlans(false);
             </button>
         </li>
         <li class='nav-item' role='presentation'>
-            <button class='nav-link' id='paymentplans-tab' data-bs-toggle='pill' data-bs-target='#paymentplans-pane' type='button' role='tab'
-                    aria-controls='nav-configuration' aria-selected='false' onclick="finance.setFinanceTab('paymentplans-pane');">
+            <button class='nav-link' id='paymentPlans-tab' data-bs-toggle='pill' data-bs-target='#paymentPlans-pane' type='button' role='tab'
+                    aria-controls='nav-configuration' aria-selected='false' onclick="finance.setFinanceTab('paymentPlans-pane');">
                 Payment Plan Configuration
             </button>
         </li>
@@ -87,7 +87,15 @@ $paymentPlans = getPaymentPlans(false);
             </div>
         </div>
     </div>
-    <div class='tab-pane fade' id='paymentPlan-pane' role='tabpanel' aria-labelledby='paymentPlan-tab' tabindex='0'></div>
+    <div class='tab-pane fade' id='paymentPlans-pane' role='tabpanel' aria-labelledby='paymentPlans-tab' tabindex='0'>
+        <div class='container-fluid'>
+            <div class='row mt-2'>
+                <div class='col-sm-12' id='paymentPlanDiv'><H1 class='h3'><b>Payment Plans:</b></H1></div>
+            </div>
+        <div class="row mt-2"?
+            <div class="col-sm-12" id="paymentPlanTable"></div>
+        </div>
+    </div>
     <div id='result_message' class='mt-4 p-2'></div>
     <pre id='test'></pre>
 </div>

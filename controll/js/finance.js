@@ -25,6 +25,9 @@ class Finance {
         this.#message_div = document.getElementById('test');
         this.#result_message_div = document.getElementById('result_message');
 
+        this.#financeTabs['overview'] = document.getElementById('overview-content');
+        this.#financeTabs['paymentPlans'] = document.getElementById('paymentPlans-pane');
+        this.#currentPane = this.#financeTabs['overview'];
         if (this.#debug & 1) {
             console.log("Debug = " + debug);
             console.log("conid = " + conid);
@@ -48,7 +51,6 @@ class Finance {
         }
         this.#financeTabs[content].hidden = false;
         this.#currentPane = this.#financeTabs[content];
-        this.#currentPane = content;
         if (content != 'paymentPlans') {
             if (plans) {
                 plans.close();
@@ -56,15 +58,12 @@ class Finance {
             }
         }
 
-        if (this.#currentPane) {
-            this.#currentPane.hidden = true;
-            this.#currentPane = null;
-        }
+        this.#currentPane.hidden = false;
 
         if (content == 'overview')
             return;
 
-        if (content == 'paymentplans') {
+        if (content == 'paymentPlans') {
             if (plans == null)
                 plans = new plansSetup(config['conid'], config['debug']);
             plans.open();
