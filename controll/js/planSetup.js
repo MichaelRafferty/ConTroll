@@ -11,6 +11,7 @@ class PlansSetup {
     #planHeadingDiv = null;
     #planSaveBTN = null;
     #planSaveChangesBTN = null;
+    #planEditIndex = null;
 
     // edit item
     #editSelTable = null;
@@ -28,6 +29,9 @@ class PlansSetup {
     #includeListDiv = null;
     #excludeList = null;
     #excludeListDiv = null;
+    #portalList = null;
+    #portalListDiv = null;
+    #portals = [ { portal: 'portal' }, { portal: 'artist'}, { portal: 'vendor'}, { portal: 'exhibitor'}, { portal: 'fan'} ];
 
     constructor(conid, debug) {
         this.#debug = debug;
@@ -46,6 +50,8 @@ class PlansSetup {
             this.#includeListDiv = document.getElementById('includeListDiv');
             this.#excludeList = document.getElementById('excludeList');
             this.#excludeListDiv = document.getElementById('excludeListDiv');
+            this.#portalList = document.getElementById('portalList');
+            this.#portalListDiv = document.getElementById('portalListDiv');
             this.#editSelLabel = document.getElementById('editSelLabel');
             this.#editSelButtons = document.getElementById('editSelButtons');
             this.#editSelButtons.hidden = true;
@@ -61,7 +67,7 @@ class PlansSetup {
             columns: [
                 { rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false },
                 {title: "Edit", formatter: this.editbutton, hozAlign:"left", headerSort: false },
-                {title: "ID", field: "id", width: 65, visible: false, formatter: "textarea" },
+                {title: "ID", field: "id", width: 65, visible: false, },
                 {title: "Name", field: "name", headerFilter: true, headerSort: true, },
                 {title: "Description", field: "description", maxWidth: 250, headerFilter: true, headerSort: true, formatter: "textarea", },
                 {title: "Category List", field: "catList", headerWordWrap: true, headerSort: false, headerFilter: true, width: 120, formatter: splitlist, },
@@ -133,7 +139,7 @@ class PlansSetup {
         switch (type) {
             case 'category':
                 this.#editSelItem = 'catList';
-                this.#editSelValues = this.#categoryList.innerHTML.split(',');
+                this.#editSelValues = this.#categoryList.value.split(',');
                 this.#editSelLabel.innerHTML = "<b>Select which Categories apply to this payment plan:</b>"
                 this.#editSelField = this.#categoryListDiv;
                 this.#editSelHidden = this.#categoryList;
@@ -152,7 +158,7 @@ class PlansSetup {
 
             case 'include':
                 this.#editSelItem = 'includeList';
-                this.#editSelValues = this.#includeList.innerHTML.split(',');
+                this.#editSelValues = this.#includeList.value.split(',');
                 this.#editSelLabel.innerHTML = "<b>Select which Memberships apply to this payment plan:</b>"
                 this.#editSelField = this.#includeListDiv;
                 this.#editSelHidden = this.#includeList;
@@ -174,7 +180,7 @@ class PlansSetup {
 
             case 'exclude':
                 this.#editSelItem = 'excludeList';
-                this.#editSelValues = this.#excludeList.innerHTML.split(',');
+                this.#editSelValues = this.#excludeList.value.split(',');
                 this.#editSelLabel.innerHTML = "<b>Select which Memberships to exclude from this payment plan:</b>"
                 this.#editSelField = this.#excludeListDiv;
                 this.#editSelHidden = this.#excludeList;
@@ -190,6 +196,23 @@ class PlansSetup {
                         {title: "ID", field: "id", width: 90, headerSort: true },
                         {title: "ConId", field: "conid", width: 120, headerFilter: true, headerSort: true },
                         {title: "Label", field: "label", width: 600, headerFilter: true, headerSort: true },
+                    ],
+                });
+                break;
+
+            case 'portal':
+                this.#editSelItem = 'portalList';
+                this.#editSelValues = this.#portalList.value.split(',');
+                this.#editSelLabel.innerHTML = "<b>Select which Memberships portals will have access to this payment plan:</b>"
+                this.#editSelField = this.#portalListDiv;
+                this.#editSelHidden = this.#portalList;
+                data = memLabels;
+                this.#editSelTable = new Tabulator('#editSelTable', {
+                    data: this.#portals,
+                    layout: "fitDataTable",
+                    index: "portal",
+                    columns: [
+                        {title: "Portal", field: "portal", width: 200, headerSort: true },
                     ],
                 });
                 break;
@@ -247,7 +270,11 @@ class PlansSetup {
             filter = filter.substring(1);
         //console.log(filter);
         this.#editSelHidden.value = filter;
-        this.#editSelField.innerHTML = filter.replace(/,/g, '<br/>');
+        if (filter == '') {
+            this.#editSelField.innerHTML = '<i>None</i>';
+        } else {
+            this.#editSelField.innerHTML = filter.replace(/,/g, '<br/>');
+        }
         this.closeSelTable();
         this.#editSelRow[this.#editSelItem] = filter;
         this.#editSelRow[this.#editSelItem + 'Array'] = filter.split(',');
@@ -263,6 +290,53 @@ class PlansSetup {
         this.#editSelLabel.innerHTML = '';
         this.#editSelIndex = null;
     }
+
+    editPlan(index) {
+        this.#planEditIndex = index;
+        var row = this.#plansTable.getRow(index).getData();
+        // first copy all the fields to the fields in the form
+        document.getElementById('planName').value = row.name;
+        document.getElementById('planDescription').innerHTML = row.description;
+        this.#categoryList.value = row.catList;
+        if (row.catList == null || row.catList == '') {
+            this.#categoryListDiv.innerHTML = '<i>None</i>';
+        } else {
+            this.#categoryListDiv.innerHTML = row.catList.replace(/,/g, '<br/>');
+        }
+        this.#includeList.value = row.memList;
+        if (row.memList == null || row.memList == '') {
+            this.#includeListDiv.innerHTML = '<i>None</i>';
+        } else {
+            this.#includeListDiv.innerHTML = row.memList.replace(/,/g, '<br/>');
+        }
+        this.#excludeList.value = row.excludeList;
+        if (row.excludeList == null || row.excludeList == '') {
+            this.#excludeListDiv.innerHTML = '<i>None</i>';
+        } else {
+            this.#excludeListDiv.innerHTML = row.excludeList.replace(/,/g, '<br/>');
+        }
+        this.#portalList.value = row.portalList;
+        if (row.portalList == null || row.portalList == '') {
+            this.#portalListDiv.innerHTML = '<i>None</i>';
+        } else {
+            this.#portalListDiv.innerHTML = row.portalList.replace(/,/g, '<br/>');
+        }
+        document.getElementById('downPaymentPercent').value = row.downPercent;
+        document.getElementById('downPaymentAmount').value = row.downAmt;
+        document.getElementById('minPayment').value = row.minPayment;
+        document.getElementById('maxNumPayments').value = row.numPaymentMax;
+        document.getElementById('payByDate').value = row.payByDate;
+        document.getElementById('paymentType').value = row.payType;
+        document.getElementById('modifyPlan').value = row.modify;
+        document.getElementById('reminders').value = row.reminders;
+        document.getElementById('downPaymentIncludes').value = row.downIncludeNonPlan;
+        document.getElementById('lastPartial').value = row.lastPaymentPartial;
+        document.getElementById('active').value = row.active;
+
+        this.#planTitleDiv.innerHTML = 'Edit Payment Plan: ' + row.name;
+        this.#planHeadingDiv.innerHTML = 'Edit Payment Plan: '  + row.name;
+        this.#planAddEditModal.show();
+        this.#planSaveBTN.innerHTML = 'Save Changes';    }
 };
 
 function SetInitialSel() {

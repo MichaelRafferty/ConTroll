@@ -107,7 +107,7 @@ if ($mR !== false) {
                             </label>
                         </div>
                         <div class="col-sm-2">
-                            <input class="form-control-sm" type="text" name="planName" id="planName>" size="16" maxlength="16"
+                            <input class="form-control-sm" type="text" name="planName" id="planName" size="16" maxlength="16"
                                    tabindex=" <?php echo $tabindex; $tabindex += 10;?>"/>
                         </div>
                         <div class="col-sm-8">Short (up to 16 character) Name that this plan will be referred to in the site and emails.</div>
@@ -164,6 +164,13 @@ if ($mR !== false) {
                                     <div class='col-sm-6' id='excludeListDiv'><i>None</i></div>
                                     <input type='hidden' id='excludeList' name='excludeList'>
                                 </div>
+                                <div class='row mt-1'>
+                                    <div class='col-sm-6'>
+                                        <button class='btn btn-sm btn-primary' onclick="plans.editList('portal');">Edit Portal List</button>
+                                    </div>
+                                    <div class='col-sm-6' id='portalListDiv'><i>None</i></div>
+                                    <input type='hidden' id='portalList' name='portlList'>
+                                </div>
                                 <div class='row mt-3'>
                                     <div class='col-sm-12'>
                                         <h2 class='h4'>Payment Items</h2>
@@ -219,7 +226,7 @@ if ($mR !== false) {
                             </label>
                         </div>
                         <div class='col-sm-2'>
-                            <input type='number' name='downPaymentAmount id='downPaymentAmount' placeholder='n.nn' min='0' max='999999'
+                            <input type='number' name='downPaymentAmount' id='downPaymentAmount' placeholder='n.nn' min='0' max='999999'
                                    class='no-spinners form-control' tabindex=" <?php echo $tabindex; $tabindex += 10; ?>"/>
                         </div>
                     </div>
