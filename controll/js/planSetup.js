@@ -12,6 +12,16 @@ class PlansSetup {
     #planSaveBTN = null;
     #planSaveChangesBTN = null;
 
+    // edit item
+    #editSelTable = null;
+    #editSelButtons = null;
+    #editSelLabel = null;
+    #editSelIndex = null;
+    #editSelItem = null;
+    #editSelField = null;
+    #editSelValues = null;
+    #editSelRow = null;
+    #categoryList = null;
 
     constructor(conid, debug) {
         this.#debug = debug;
@@ -24,6 +34,10 @@ class PlansSetup {
             this.#planTitleDiv = document.getElementById('plan-title');
             this.#planHeadingDiv = document.getElementById('plan-heading');
             this.#planSaveBTN = document.getElementById('plan-saveRow-btn');
+            this.#categoryList = document.getElementById('categoryList');
+            this.#editSelLabel = document.getElementById('editSelLabel');
+            this.#editSelButtons = document.getElementById('editSelButtons');
+            this.#editSelButtons.hidden = true;
         }
         this.#planSaveChangesBTN = document.getElementById('planSaveBtn');
 
@@ -36,7 +50,7 @@ class PlansSetup {
             columns: [
                 { rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false },
                 {title: "Edit", formatter: this.editbutton, hozAlign:"left", headerSort: false },
-                {title: "ID", field: "id", visible: true, width: 65, visible: false, formatter: "textarea" },
+                {title: "ID", field: "id", width: 65, visible: false, formatter: "textarea" },
                 {title: "Name", field: "name", headerFilter: true, headerSort: true, },
                 {title: "Description", field: "description", maxWidth: 250, headerFilter: true, headerSort: true, formatter: "textarea", },
                 {title: "Category List", field: "catList", headerWordWrap: true, headerSort: false, headerFilter: true, width: 120, formatter: splitlist, },
@@ -71,6 +85,10 @@ class PlansSetup {
        ]});
     }
 
+    getselIndex() {
+        return this.#editSelIndex;
+    }
+
     open() {
         console.log("open stub called");
     }
@@ -88,5 +106,103 @@ class PlansSetup {
         this.#planAddEditModal.show();
         this.#planSaveBTN.innerHTML = 'Add Plan';
     }
+
+    // editCategories - select the category list for this plan
+    editCategoryList() {
+        if (this.#editSelTable) {
+            this.#editSelTable.destroy();
+            this.#editSelTable = null;
+        }
+
+        this.#editSelButtons.hidden = true;
+        this.#editSelLabel.innerHTML = '';
+        this.#editSelIndex = null;
+
+        var tableField = null;
+        this.#editSelItem = 'catList';
+        this.#editSelValues = this.#categoryList.innerHTML.split(',');
+        this.#editSelLabel.innerHTML = "<b>Select which Categories apply to this payment plan:</b>"
+        tableField = '#editSelTable';
+        this.#editSelField = this.#categoryList;
+        this.#editSelButtons.hidden = false;
+        this.#editSelTable = new Tabulator(tableField, {
+            data: memCategories,
+            layout: "fitDataTable",
+            index: "memCategory",
+            columns: [
+                {title: "Category", field: "memCategory", width: 200, },
+                {title: "Notes", field: "notes", width: 750, headerFilter: true, },
+            ],
+        });
+        this.#editSelTable.on("cellClick", plans.clickedSelection)
+        this.#editSelIndex = 'memCategory';
+        setTimeout(SetInitialSel, 100);
+    }
+
+    // table functions
+    // setInitialSel - set the initial selected items based on the current values
+    setInitialSel() {
+        var rows = this.#editSelTable.getRows();
+        for (var row of rows) {
+            var name = row.getCell(this.#editSelIndex).getValue().toString();
+            if (this.#editSelValues.includes(name)) {
+                row.getCell(this.#editSelIndex).getElement().style.backgroundColor = "#C0FFC0";
+            }
+        }
+        if (this.#editSelIndex == 'id')
+            this.#editSelTable.setPageSize(25);
+    }
+
+    // toggle the selection color of the clicked cell
+    clickedSelection(e, cell) {
+        var filtercell = cell.getRow().getCell(plans.getselIndex());
+        var value = filtercell.getValue();
+        if (filtercell.getElement().style.backgroundColor) {
+            filtercell.getElement().style.backgroundColor = "";
+        } else {
+            filtercell.getElement().style.backgroundColor = "#C0FFC0";
+        }
+    }
+
+    // set all/clear all sections in table based on direction
+    setEditSel(direction) {
+        var rows = this.#editSelTable.getRows();
+        for (var row of rows) {
+            row.getCell(plans.getselIndex()).getElement().style.backgroundColor = direction ? "#C0FFC0" : "";
+        }
+    }
+
+    // retrieve the selected rows and set the field values
+    applyEditSel() {
+        // store all the fields back into the table row
+          var filter = '';
+        var rows = null;
+        rows = this.#editSelTable.getRows();
+        for (var row of rows) {
+            if (row.getCell(plans.getselIndex()).getElement().style.backgroundColor != '') {
+                filter += ',' + row.getCell(plans.getselIndex()).getValue();
+            }
+        }
+        if (filter != '')
+            filter = filter.substring(1);
+        //console.log(filter);
+        this.#editSelField.innerHTML = filter;
+        this.closeSelTable();
+        this.#editSelRow[this.#editSelItem] = filter;
+        this.#editSelRow[this.#editSelItem + 'Array'] = filter.split(',');
+    }
+
+    closeSelTable() {
+        if (this.#editSelTable) {
+            this.#editSelTable.destroy();
+            this.#editSelTable = null;
+        }
+        this.#editSelButtons.hide = true;
+        this.#editSelLabel.innerHTML = '';
+        this.#editSelIndex = null;
+    }
 };
 
+function SetInitialSel() {
+    plans.setInitialSel();
+}

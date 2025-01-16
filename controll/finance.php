@@ -42,11 +42,39 @@ $config_vars['vemail'] = $conConf['regadminemail'];
 $config_vars['debug'] = $debug_finance;
 $config_vars['conid'] = $conid;
 $paymentPlans = getPlanConfig();
+// finance needs membership list (not counting free items) and category list
+$memCategories = [];
+$memLabels = [];
+$cQ = <<<EOS
+SELECT memCategory, notes
+FROM memCategories
+WHERE active='Y'
+ORDER BY sortorder;
+EOS;
+$cR = dbQuery($cQ);
+if ($cR !== false) {
+    while ($cL = $cR->fetch_assoc())
+        $memCategories[] = $cL;
+    $cR->free();
+}
+$mQ = <<<EOS
+SELECT id, conid, label
+FROM memLabel
+WHERE price > 0 AND ((memCategory != 'yearahead' AND conid = ?) OR (memCategory = 'yearahead' & conid = ?))
+ORDER BY conid, sort_order
+EOS;
+$mR = dbSafeQuery($mQ, 'ii', array($conid, $conid + 1));
+if ($mR !== false) {
+    while ($mL = $mR->fetch_assoc())
+        $memLabels[] = $mL;
+    $mR->free();
+}
+
 
 // modals
 //bs_tinymceModal();
 
-    $tabstart = 100;
+    $tabindex = 100;
     $star = "<span class='text-danger'>&bigstar;</span>";
 ?>
 // add/edit payment plan modal
@@ -97,56 +125,90 @@ $paymentPlans = getPlanConfig();
                             </textarea>
                         </div>
                     </div>
-                    <div class='row mt-3'>
-                        <div class='col-sm-12'>
-                            <h2 class='h4'>In Plan Membership Criteria</h2>
-                        </div>
-                    </div>
                     <div class="row">
-                        <div class="col-sm-12">
-                            For a membership to be "In Plan" it must:
-                            <ul>
-                                <li>Not match any of the ID's in the exclude list</li>
-                                <li>Be in one of the categories in the Category list</li>
-                                <li>or match one of the ID's in the Include List</li>
-                            </ul>
+                        <div class="col-sm-4">
+                            <div class="container-fluid">
+                                <div class='row mt-3'>
+                                    <div class='col-sm-12'>
+                                        <h2 class='h4'>In Plan Membership Criteria</h2>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-12">
+                                        For a membership to be "In Plan" it must:
+                                        <ul>
+                                            <li>Not match any of the ID's in the exclude list</li>
+                                            <li>Be in one of the categories in the Category list</li>
+                                            <li>or match one of the ID's in the Include List</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class='row'>
+                                    <div class="col-sm-6">
+                                        <button class="btn btn-sm btn-primary" onclick="plans.editCategoryList();">Edit Category List</button>
+                                    </div>
+                                    <div class='col-sm-6' id="categoryList"><i>None</i></div>
+                                </div>
+                                <div class='row mt-1'>
+                                    <div class='col-sm-6'>
+                                        <button class='btn btn-sm btn-primary' onclick='plans.editIncludeList();'>Edit Include List</button>
+                                    </div>
+                                    <div class='col-sm-6' id='includeList'><i>None</i></div>
+                                </div>
+                                <div class='row mt-1'>
+                                    <div class='col-sm-6'>
+                                        <button class='btn btn-sm btn-primary' onclick='plans.editExcludeList();'>Edit Exclude List</button>
+                                    </div>
+                                    <div class='col-sm-6' id='excludeList'><i>None</i></div>
+                                </div>
+                                <div class='row mt-3'>
+                                    <div class='col-sm-12'>
+                                        <h2 class='h4'>Payment Items</h2>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <div class='row'>
-                        <div class="col-sm-2">
-                            <button class="btn btn-sm btn-primary" onclick="plans.editCategoryList();">Edit Category List</button>
+                        <div class="col-sm-8" id="selectDiv">
+                            <div class="container-fluid">
+                                <div class='row mb-2'>
+                                    <div class='col-sm-12' id='editSelLabel'></div>
+                                </div>
+                                <div class='row'>
+                                    <div class='col-sm-12 m-0 p-0' id='editSelTable'></div>
+                                </div>
+                                <div class='row mt-1' id='editSelButtons' name='editSelButtons'>
+                                    <div class='col-sm-auto'>
+                                        <button class='btn btn-secondary btn-sm' type='button' onclick="plans.closeSelTable();">Cancel Changes</button>
+                                    </div>
+                                    <div class='col-sm-auto'>
+                                        <button class='btn btn-secondary btn-sm' type='button' onclick="plans.setEditSel(false);">
+                                            Clear All Items
+                                        </button>
+                                    </div>
+                                    <div class='col-sm-auto'>
+                                        <button class='btn btn-secondary btn-sm' type='button' onclick="plans.setEditSel(true);">
+                                            Select All Items
+                                        </button>
+                                    </div>
+                                    <div class='col-sm-auto'>
+                                        <button class='btn btn-primary btn-sm' type='button' onclick="plans.applyEditSel();">Apply Selections</button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class='col-sm-2' id="categoryList"></div>
                     </div>
                     <div class='row mt-1'>
                         <div class='col-sm-2'>
-                            <button class='btn btn-sm btn-primary' onclick='plans.editIncludeList();'>Edit Include List</button>
-                        </div>
-                        <div class='col-sm-2' id='includeList'></div>
-                    </div>
-                    <div class='row mt-1'>
-                        <div class='col-sm-2'>
-                            <button class='btn btn-sm btn-primary' onclick='plans.editExcludeList();'>Edit Exclude List</button>
-                        </div>
-                        <div class='col-sm-2' id='excludeList'></div>
-                    </div>
-                    <div class='row mt-3'>
-                        <div class='col-sm-12'>
-                            <h2 class='h4'>Payment Items</h2>
-                        </div>
-                    </div>
-                     <div class='row mt-1'>
-                        <div class='col-sm-2'>
-                            <label for='downPaymentPercent' class='form-label-sm'>
-                                <span class='text-dark'>Down Payment Percent</span>
-                            </label>
+                        <label for='downPaymentPercent' class='form-label-sm'>
+                            <span class='text-dark'>Down Payment Percent</span>
+                        </label>
                         </div>
                         <div class="col-sm-2">
-                            <input type='number' name='downPaymentPercent' id='downPaymentPercent' placeholder='% to 2 places' min='0' max='100'
-                                   class='no-spinners form-control' tabindex=" <?php echo $tabindex; $tabindex += 10; ?>"/>
+                        <input type='number' name='downPaymentPercent' id='downPaymentPercent' placeholder='% to 2 places' min='0' max='100'
+                               class='no-spinners form-control' tabindex=" <?php echo $tabindex; $tabindex += 10; ?>"/>
                         </div>
                         <div class="col-sm-8">The larger of the down payment in % or the down payment in amount will be the minumum down payment.</div>
-                    </div>
+                        </div>
                     <div class='row mt-1'>
                         <div class='col-sm-2'>
                             <label for='downPaymentAmount' class='form-label-sm'>
@@ -161,7 +223,7 @@ $paymentPlans = getPlanConfig();
                     <div class='row mt-1'>
                         <div class='col-sm-2'>
                             <label for='minPayment' class='form-label-sm'>
-                                <span class='text-dark'>Minimum Payment</span>
+                                <span class='text-dark'><?php echo $star; ?>Minimum Payment</span>
                             </label>
                         </div>
                         <div class='col-sm-2'>
@@ -173,7 +235,7 @@ $paymentPlans = getPlanConfig();
                     <div class='row mt-1'>
                         <div class='col-sm-2'>
                             <label for='maxNumPayments' class='form-label-sm'>
-                                <span class='text-dark'>Maximum Number of Payments</span>
+                                <span class='text-dark'><?php echo $star; ?>Maximum Number of Payments</span>
                             </label>
                         </div>
                         <div class='col-sm-2'>
@@ -188,7 +250,7 @@ $paymentPlans = getPlanConfig();
                     <div class='row mt-1'>
                         <div class='col-sm-2'>
                             <label for='payByDate' class='form-label-sm'>
-                                <span class='text-dark'>Pay By Date</span>
+                                <span class='text-dark'><?php echo $star; ?>Pay By Date</span>
                             </label>
                         </div>
                         <div class='col-sm-2'>
@@ -201,7 +263,7 @@ $paymentPlans = getPlanConfig();
                     <div class='row mt-1'>
                         <div class='col-sm-2'>
                             <label for='paymentType' class='form-label-sm'>
-                                <span class='text-dark'>Payment Type</span>
+                                <span class='text-dark'><?php echo $star; ?>Payment Type</span>
                             </label>
                         </div>
                         <div class='col-sm-2'>
@@ -223,7 +285,7 @@ $paymentPlans = getPlanConfig();
                     <div class='row mt-1'>
                         <div class='col-sm-2'>
                             <label for='modifyPlan' class='form-label-sm'>
-                                <span class='text-dark'>Modify Plan</span>
+                                <span class='text-dark'><?php echo $star; ?>Modify Plan</span>
                             </label>
                         </div>
                         <div class='col-sm-5'>
@@ -239,7 +301,7 @@ $paymentPlans = getPlanConfig();
                     <div class='row mt-1'>
                         <div class='col-sm-2'>
                             <label for='reminders' class='form-label-sm'>
-                                <span class='text-dark'>Send Reminders</span>
+                                <span class='text-dark'><?php echo $star; ?>Send Reminders</span>
                             </label>
                         </div>
                         <div class='col-sm-5'>
@@ -254,7 +316,7 @@ $paymentPlans = getPlanConfig();
                     <div class='row mt-1'>
                         <div class='col-sm-2'>
                             <label for='downPaymentIncludes' class='form-label-sm'>
-                                <span class='text-dark'>Include Non Plan in Down Payment</span>
+                                <span class='text-dark'><?php echo $star; ?>Include Non Plan in Down Payment</span>
                             </label>
                         </div>
                         <div class='col-sm-5'>
@@ -270,7 +332,7 @@ $paymentPlans = getPlanConfig();
                     <div class='row mt-1'>
                         <div class='col-sm-2'>
                             <label for='lastPartial' class='form-label-sm'>
-                                <span class='text-dark'>Last Payment can Partial</span>
+                                <span class='text-dark'><?php echo $star; ?>Last Payment can Partial</span>
                             </label>
                         </div>
                         <div class='col-sm-5'>
@@ -287,7 +349,7 @@ $paymentPlans = getPlanConfig();
                     <div class='row mt-1 mb-3'>
                         <div class='col-sm-2'>
                             <label for='active' class='form-label-sm'>
-                                <span class='text-dark'>Active</span>
+                                <span class='text-dark'><?php echo $star; ?>Active</span>
                             </label>
                         </div>
                         <div class='col-sm-5'>
@@ -329,6 +391,8 @@ $paymentPlans = getPlanConfig();
 <script type='text/javascript'>
     var config = <?php echo json_encode($config_vars); ?>;
     var paymentPlans = <?php echo json_encode($paymentPlans); ?>;
+    var memCategories = <?php echo json_encode($memCategories); ?>;
+    var memLabels = <?php echo json_encode($memLabels); ?>;
 </script>
     <div class='tab-content ms-2' id='overview-content'>
         <div class='container-fluid'>
