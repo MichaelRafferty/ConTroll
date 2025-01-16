@@ -65,12 +65,41 @@ class Finance {
 
         if (content == 'paymentPlans') {
             if (plans == null)
-                plans = new plansSetup(config['conid'], config['debug']);
+                plans = new PlansSetup(config['conid'], config['debug']);
             plans.open();
             return;
         }
     }
 };
+
+function deleteicon(cell, formattParams, onRendered) {
+    var value = cell.getValue();
+    if (value == 0)
+        return "&#x1F5D1;";
+    return value;
+}
+
+function splitlist(cell, formattParams, onRendered) {
+    var value = cell.getValue();
+    if (value) {
+        value = value.toString().replace(',', ',<br/>');
+        return value;
+    }
+    return '';
+}
+
+function cellChanged(cell) {
+    dirty = true;
+    cell.getElement().style.backgroundColor = "#fff3cd";
+}
+
+function deleterow(e, row) {
+    var count = row.getCell("uses").getValue();
+    if (count == 0) {
+        row.getCell("to_delete").setValue(1);
+        row.getCell("uses").setValue('<span style="color:red;"><b>Del</b></span>');
+    }
+}
 
 // create class on page render
 window.onload = function initpage() {
