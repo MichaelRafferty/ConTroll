@@ -58,9 +58,9 @@ if ($cR !== false) {
     $cR->free();
 }
 $mQ = <<<EOS
-SELECT id, conid, label
+SELECT id, conid, label, memType, memCategory, memAge
 FROM memLabel
-WHERE price > 0 AND ((memCategory != 'yearahead' AND conid = ?) OR (memCategory = 'yearahead' & conid = ?))
+WHERE price > 0 AND ((memCategory != 'yearahead' AND conid = ?) OR (memCategory = 'yearahead' AND conid = ?))
 ORDER BY conid, sort_order
 EOS;
 $mR = dbSafeQuery($mQ, 'ii', array($conid, $conid + 1));
@@ -145,21 +145,24 @@ if ($mR !== false) {
                                 </div>
                                 <div class='row'>
                                     <div class="col-sm-6">
-                                        <button class="btn btn-sm btn-primary" onclick="plans.editCategoryList();">Edit Category List</button>
+                                        <button class="btn btn-sm btn-primary" onclick="plans.editList('category');">Edit Category List</button>
                                     </div>
-                                    <div class='col-sm-6' id="categoryList"><i>None</i></div>
+                                    <div class='col-sm-6' id="categoryListDiv"><i>None</i></div>
+                                    <input type="hidden" id="categoryList" name="categoryList">
                                 </div>
                                 <div class='row mt-1'>
                                     <div class='col-sm-6'>
-                                        <button class='btn btn-sm btn-primary' onclick='plans.editIncludeList();'>Edit Include List</button>
+                                        <button class='btn btn-sm btn-primary' onclick="plans.editList('include');">Edit Include List</button>
                                     </div>
-                                    <div class='col-sm-6' id='includeList'><i>None</i></div>
+                                    <div class='col-sm-6' id='includeListDiv'><i>None</i></div>
+                                    <input type='hidden' id='includeList' name='includeList'>
                                 </div>
                                 <div class='row mt-1'>
                                     <div class='col-sm-6'>
-                                        <button class='btn btn-sm btn-primary' onclick='plans.editExcludeList();'>Edit Exclude List</button>
+                                        <button class='btn btn-sm btn-primary' onclick="plans.editList('exclude');">Edit Exclude List</button>
                                     </div>
-                                    <div class='col-sm-6' id='excludeList'><i>None</i></div>
+                                    <div class='col-sm-6' id='excludeListDiv'><i>None</i></div>
+                                    <input type='hidden' id='excludeList' name='excludeList'>
                                 </div>
                                 <div class='row mt-3'>
                                     <div class='col-sm-12'>

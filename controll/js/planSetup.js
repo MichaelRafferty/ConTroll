@@ -19,9 +19,15 @@ class PlansSetup {
     #editSelIndex = null;
     #editSelItem = null;
     #editSelField = null;
+    #editSelHidden = null;
     #editSelValues = null;
     #editSelRow = null;
     #categoryList = null;
+    #categoryListDiv = null;
+    #includeList = null;
+    #includeListDiv = null;
+    #excludeList = null;
+    #excludeListDiv = null;
 
     constructor(conid, debug) {
         this.#debug = debug;
@@ -35,6 +41,11 @@ class PlansSetup {
             this.#planHeadingDiv = document.getElementById('plan-heading');
             this.#planSaveBTN = document.getElementById('plan-saveRow-btn');
             this.#categoryList = document.getElementById('categoryList');
+            this.#categoryListDiv = document.getElementById('categoryListDiv');
+            this.#includeList = document.getElementById('includeList');
+            this.#includeListDiv = document.getElementById('includeListDiv');
+            this.#excludeList = document.getElementById('excludeList');
+            this.#excludeListDiv = document.getElementById('excludeListDiv');
             this.#editSelLabel = document.getElementById('editSelLabel');
             this.#editSelButtons = document.getElementById('editSelButtons');
             this.#editSelButtons.hidden = true;
@@ -107,8 +118,8 @@ class PlansSetup {
         this.#planSaveBTN.innerHTML = 'Add Plan';
     }
 
-    // editCategories - select the category list for this plan
-    editCategoryList() {
+    // editList - build the select list for the page
+    editList(type) {
         if (this.#editSelTable) {
             this.#editSelTable.destroy();
             this.#editSelTable = null;
@@ -116,26 +127,75 @@ class PlansSetup {
 
         this.#editSelButtons.hidden = true;
         this.#editSelLabel.innerHTML = '';
-        this.#editSelIndex = null;
+        var data = null;
+        this.#editSelIndex = 'id;'
 
-        var tableField = null;
-        this.#editSelItem = 'catList';
-        this.#editSelValues = this.#categoryList.innerHTML.split(',');
-        this.#editSelLabel.innerHTML = "<b>Select which Categories apply to this payment plan:</b>"
-        tableField = '#editSelTable';
-        this.#editSelField = this.#categoryList;
+        switch (type) {
+            case 'category':
+                this.#editSelItem = 'catList';
+                this.#editSelValues = this.#categoryList.innerHTML.split(',');
+                this.#editSelLabel.innerHTML = "<b>Select which Categories apply to this payment plan:</b>"
+                this.#editSelField = this.#categoryListDiv;
+                this.#editSelHidden = this.#categoryList;
+                data = memCategories;
+                this.#editSelIndex = 'memCategory';
+                this.#editSelTable = new Tabulator('#editSelTable', {
+                    data: data,
+                    layout: "fitDataTable",
+                    index: this.#editSelIndex,
+                    columns: [
+                        {title: "Category", field: "memCategory", width: 200, },
+                        {title: "Notes", field: "notes", width: 750, headerFilter: true, },
+                    ],
+                });
+                break;
+
+            case 'include':
+                this.#editSelItem = 'includeList';
+                this.#editSelValues = this.#includeList.innerHTML.split(',');
+                this.#editSelLabel.innerHTML = "<b>Select which Memberships apply to this payment plan:</b>"
+                this.#editSelField = this.#includeListDiv;
+                this.#editSelHidden = this.#includeList;
+                data = memLabels;
+                this.#editSelTable = new Tabulator('#editSelTable', {
+                    data: memLabels,
+                    layout: "fitDataTable",
+                    index: "id",
+                    pagination: true,
+                    paginationSize: 9999,
+                    paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
+                    columns: [
+                        {title: "ID", field: "id", width: 90, headerSort: true },
+                        {title: "ConId", field: "conid", width: 120, headerFilter: true, headerSort: true },
+                        {title: "Label", field: "label", width: 600, headerFilter: true, headerSort: true },
+                    ],
+                });
+                break;
+
+            case 'exclude':
+                this.#editSelItem = 'excludeList';
+                this.#editSelValues = this.#excludeList.innerHTML.split(',');
+                this.#editSelLabel.innerHTML = "<b>Select which Memberships to exclude from this payment plan:</b>"
+                this.#editSelField = this.#excludeListDiv;
+                this.#editSelHidden = this.#excludeList;
+                data = memLabels;
+                this.#editSelTable = new Tabulator('#editSelTable', {
+                    data: memLabels,
+                    layout: "fitDataTable",
+                    index: "id",
+                    pagination: true,
+                    paginationSize: 9999,
+                    paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
+                    columns: [
+                        {title: "ID", field: "id", width: 90, headerSort: true },
+                        {title: "ConId", field: "conid", width: 120, headerFilter: true, headerSort: true },
+                        {title: "Label", field: "label", width: 600, headerFilter: true, headerSort: true },
+                    ],
+                });
+                break;
+        }
         this.#editSelButtons.hidden = false;
-        this.#editSelTable = new Tabulator(tableField, {
-            data: memCategories,
-            layout: "fitDataTable",
-            index: "memCategory",
-            columns: [
-                {title: "Category", field: "memCategory", width: 200, },
-                {title: "Notes", field: "notes", width: 750, headerFilter: true, },
-            ],
-        });
         this.#editSelTable.on("cellClick", plans.clickedSelection)
-        this.#editSelIndex = 'memCategory';
         setTimeout(SetInitialSel, 100);
     }
 
@@ -186,10 +246,12 @@ class PlansSetup {
         if (filter != '')
             filter = filter.substring(1);
         //console.log(filter);
-        this.#editSelField.innerHTML = filter;
+        this.#editSelHidden.value = filter;
+        this.#editSelField.innerHTML = filter.replace(/,/g, '<br/>');
         this.closeSelTable();
         this.#editSelRow[this.#editSelItem] = filter;
         this.#editSelRow[this.#editSelItem + 'Array'] = filter.split(',');
+        this.#editSelButtons.hidden = true;
     }
 
     closeSelTable() {
