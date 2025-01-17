@@ -445,7 +445,8 @@ class exhibitssetup {
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
                 {rowHandle: true, formatter: "handle", frozen: true, width: 40, headerSort: false},
-                { title: "&bigstar;Region Type", field: "regionType", width: 200, headerSort: true, headerWordWrap: true, editor: "input", editorParams: {maxlength: "16"} },
+                { title: "&bigstar;Region Type", field: "regionType", width: 200, headerSort: true, headerWordWrap: true, validator: "required",
+                    editor: "input", editorParams: {maxlength: "16"} },
                 { title: "&bigstar;Portal Type", field: "portalType", width: 100, headerSort: true, headerWordWrap: true, editor: "list", editorParams: {
                     values: ['vendor', 'artist']}, validator: "required" },
                 { title: "&bigstar;Request Approval Required", field: "requestApprovalRequired", headerSort: true, width: 120, headerWordWrap: true, editor: "list", editorParams: {
@@ -458,9 +459,12 @@ class exhibitssetup {
                 { title: "&bigstar;Mail-in Allowed", field: "mailinAllowed", headerSort: true, width: 100, headerWordWrap: true, editor: "list", editorParams: {
                     values: ['Y', 'N'] }, validator: "required" },
                 { title: "Mail-in Max Units", field: "mailinMaxUnits", headerSort: true, width: 100, headerWordWrap: true, editor: "input" },
-                { title: "&bigstar;Need W9", field: "needW9", headerSort: false, width: 80, headerWordWrap: true, editor: "list", editorParams: { values: ['Y', 'N'] }, validator: "required" },
-                { title: "&bigstar;Uses Inventory", field: "usesInventory", headerSort: false, width: 80, headerWordWrap: true, editor: "list", editorParams: { values: ['Y', 'N'] }, validator: "required" },
-                { title: "&bigstar;Active", field: "active", headerSort: true, width: 120, editor: "list", editorParams: { values: ['Y', 'N'] }, validator: "required" },
+                { title: "&bigstar;Need W9", field: "needW9", headerSort: false, width: 80, headerWordWrap: true, validator: "required",
+                    editor: "list", editorParams: { values: ['Y', 'N'] }, },
+                { title: "&bigstar;Uses Inventory Mgmt", field: "usesInventory", headerSort: false, width: 90, headerWordWrap: true, validator: "required",
+                    editor: "list", editorParams: { values: ['Y', 'N'] }, },
+                { title: "&bigstar;Active", field: "active", headerSort: true, width: 120, validator: "required",
+                    editor: "list", editorParams: { values: ['Y', 'N'] }, },
                 { title: "Sort Order", field: "sortorder", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 80,},
                 { title: "Orig Key", field: "regionTypeKey", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
                 { title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false, cellClick: function (e, cell) {
@@ -526,10 +530,11 @@ class exhibitssetup {
                     editor: "input", editorParams: {elementAttributes: {maxlength: "32"}}, validator: "required"
                 },
                 {
-                    title: "Name", field: "name", width: 350, headerSort: true, headerFilter: true,
+                    title: "&bigstar;Name", field: "name", width: 350, headerSort: true, headerFilter: true,
                     editor: "input", editorParams: {elementAttributes: {maxlength: "128"}}, validator: "required"
                 },
-                {title: "Edit", formatter: this.editbutton, formatterParams: {table: 'Regions', fieldName: 'description', name: 'name' }, hozAlign:"left", headerSort: false },
+                {title: "Edit", formatter: this.editbutton, formatterParams: {table: 'Regions', fieldName: 'description', name: 'name' },
+                    hozAlign:"left", headerSort: false },
                 {title: "Description", field: "description", headerFilter: true, width: 500, headerSort: false,},
                 {title: "Sort Order", field: "sortorder", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 90,},
                 {title: "Orig Key", field: "regionKey", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
@@ -604,13 +609,14 @@ class exhibitssetup {
                     title: "&bigstar;Owner Email", field: "ownerEmail", width: 300, headerSort: true, headerFilter: true,
                     editor: "input", editorParams: {elementAttributes: {maxlength: "64"}}, validator: "required"
                 },
-                { title: '&bigstar;Included', field: "includedMemId", width: 230, headerSort: false,
-                    editor: "list", formatter:"lookup", formatterParams: this.#memListArr, editorParams: { values: this.#memListArr }
+                { title: '&bigstar;Included', field: "includedMemId", width: 230, headerSort: false, validator: "required",
+                    editor: "list", formatter:"lookup", formatterParams: this.#memListArr, editorParams: { values: this.#memListArr },
                 },
-                { title: '&bigstar;Additional', field: "additionalMemId", width: 230, headerSort: false,
+                { title: '&bigstar;Additional', field: "additionalMemId", width: 230, headerSort: false, validator: "required",
                     editor: "list", formatter:"lookup", formatterParams: this.#memListArr, editorParams: { values: this.#memListArr  }
                 },
-                {title: 'Total Units Avail', field: "totalUnitsAvailable", width: 70, hozAlign: "right", headerWordWrap: true, headerSort: false, editor: "input", editorParams: {maxlength: "10"}},
+                {title: 'Total Units Avail', field: "totalUnitsAvailable", width: 70, hozAlign: "right", headerWordWrap: true, headerSort: false,
+                    editor: "input", editorParams: {maxlength: "10"}},
                 {title: 'At-Con Id Base', field: "atconIdBase", width: 80, hozAlign: "right", headerWordWrap: true, headerSort: false, editor: "number",},
                 {
                     title: 'Mail-In Fee', field: "mailinFee", width: 90, hozAlign: "right", headerWordWrap: true, headerSort: false,
@@ -697,8 +703,9 @@ class exhibitssetup {
                     title: "&bigstar;Name", field: "name", width: 400, headerSort: true, headerFilter: true,
                     editor: "input", editorParams: {elementAttributes: {maxlength: "128"}}, validator: "required"
                 },
-                {title: "Edit", formatter: this.editbutton, formatterParams: {table: 'exhibitsSpaces', fieldName: 'description', name: 'name' }, hozAlign:"left", headerSort: false },
-                {title: "&bigstar;Description", field: "description", headerFilter: true, width: 550, headerSort: false,},
+                {title: "Edit", formatter: this.editbutton, formatterParams: {table: 'exhibitsSpaces', fieldName: 'description', name: 'name' },
+                    hozAlign:"left", headerSort: false },
+                {title: "&bigstar;Description", field: "description", headerFilter: true, width: 550, headerSort: false, validator: "required", },
                 {title: 'Units', field: "unitsAvailable", width: 100, hozAlign: "right", headerSort: false, editor: "number", editorParams: {min:0, max:9999999}},
                 {title: "Sort Order", field: "sortorder", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 80,},
                 {title: "Orig Key", field: "spaceKey", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
@@ -754,7 +761,7 @@ class exhibitssetup {
                 },
                 {
                     title: "&bigstar;Exhibits Space", field: "spaceId", width: 200, headerSort: true, headerWordWrap: true,
-                    headerFilter: true, headerFilterParams: {values: this.#spacesListArr},
+                    headerFilter: true, headerFilterParams: {values: this.#spacesListArr}, validator: "required",
                     editor: "list", formatter: "lookup", formatterParams: this.#spacesListArr, editorParams: {values: this.#spacesListArr}
                 },
                 {
@@ -763,26 +770,27 @@ class exhibitssetup {
                 },
                 {title: "&bigstar;Description", field: "description", editor: "input", editorParams: {elementAttributes: {maxlength: "64"}}, headerFilter: true, width: 450, headerSort: false,},
                 {
-                    title: '&bigstar;Units', field: "units", headerHozAlign:"right", width: 100, hozAlign: "right", headerSort: false, editor: "input", editorParams: {maxlength: "10"},
+                    title: '&bigstar;Units', field: "units", headerHozAlign:"right", width: 100, hozAlign: "right", headerSort: false, validator: "required",
+                    editor: "input", editorParams: {maxlength: "10"},
                     headerFilter: true, headerFilterFunc: numberHeaderFilter,
                 },
                 {
                     title: '&bigstar;Price', field: "price", headerHozAlign:"right", width: 120, hozAlign: "right", headerSort: false,
-                    editor: "input", editorParams: {maxlength: "10"},
+                    editor: "input", editorParams: {maxlength: "10"}, validator: "required",
                     formatter: "money", formatterParams: {decimal: '.', thousand: ',', symbol: '$', negativeSign: true},
                     headerFilter: true, headerFilterFunc: numberHeaderFilter,
                 },
                 {
                     title: "&bigstar;Incl Mem", headerWordWrap: true, field: "includedMemberships", width: 80, hozAlign: "right", headerSort: false,
-                    editor: "number", editorParams: {min: 0, max: 99, maxlength: 2},
+                    editor: "number", editorParams: {min: 0, max: 99, maxlength: 2}, validator: "required",
                 },
                 {
                     title: "&bigstar;Addl Mem", headerWordWrap: true, field: "additionalMemberships", width: 80, hozAlign: "right", headerSort: false,
-                    editor: "number", editorParams: {min: 0, max: 99, maxlength: 2},
+                    editor: "number", editorParams: {min: 0, max: 99, maxlength: 2}, validator: "required",
                 },
                 {
                     title: "&bigstar;Req", field: "requestable", width: 80, hozAlign: "right", headerSort: false,
-                    editor: "tickCross", formatter: "tickCross",
+                    editor: "tickCross", formatter: "tickCross", validator: "required",
                 },
                 {title: "Sort Order", field: "sortorder", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 80,},
                 {title: "Orig Key", field: "priceKey", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
