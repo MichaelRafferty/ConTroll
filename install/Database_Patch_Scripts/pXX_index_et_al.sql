@@ -38,4 +38,22 @@ DELETE FROM auth WHERE id = 8 AND name = 'artshow';
 
 INSERT INTO auth(id, name, page, display, sortOrder) VALUES (7, 'finance', 'Y', 'Finance', '55');
 
+/* simplify the descriptions */
+UPDATE controllAppItems
+SET txtItemDescription = REPLACE(txtItemDescription, 'Custom Text for a', 'A');
+UPDATE controllAppItems
+SET txtItemDescription = REPLACE(txtItemDescription, 'Custom Text a', 'A');
+UPDATE controllAppItems
+SET txtItemDescription = REPLACE(txtItemDescription, 'Custom Text for b', 'B');
+UPDATE controllAppItems
+SET txtItemDescription = REPLACE(txtItemDescription, 'Custom Text for t', 'T');
+UPDATE controllAppItems
+SET txtItemDescription = REPLACE(txtItemDescription, 'Custom Text for j', 'J');
+UPDATE controllAppItems
+SET txtItemDescription = REPLACE(txtItemDescription, 'Custom Text for ef', 'Bef');
+UPDATE controllAppItems
+SET txtItemDescription = REPLACE(txtItemDescription, 'Custom text for the b', 'B');
+UPDATE controllAppItems
+SET txtItemDescription = REPLACE(txtItemDescription, 'Custom text for the t', 'T');
+
 INSERT INTO patchLog(id, name) VALUES(xx, 'index at al');
