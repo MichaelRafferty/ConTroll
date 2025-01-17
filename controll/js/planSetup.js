@@ -117,16 +117,28 @@ class PlansSetup {
         this.#plansTable.on("cellEdited", cellChanged);
     }
 
+    close() {
+        if (this.#plansTable) {
+            this.#plansTable.off("dataChanged");
+            this.#plansTable.off("rowMoved");
+            this.#plansTable.off("cellEdited");
+            this.#plansTable.destroy();
+            this.#plansTable = null;
+            this.#planSaveChangesBTN.innerHTML = "Save Changes";
+            this.#planSaveChangesBTN.disabled = true;
+        }
+    }
+
     dataChanged() {
         //data - the updated table data
-        this.#planSaveBTN.innerHTML = "Save Changes*";
-        this.#planSaveBTN.disabled = false;
+        this.#planSaveChangesBTN.innerHTML = "Save Changes*";
+        this.#planSaveChangesBTN.disabled = false;
         this.#dirty = true;
     };
 
     rowMoved(row) {
-        this.#planSaveBTN.innerHTML = "Save Changes*";
-        this.#planSaveBTN.disabled = false;
+        this.#planSaveChangesBTN.innerHTML = "Save Changes*";
+        this.#planSaveChangesBTN.disabled = false;
         this.#dirty = true;
     }
 
@@ -413,7 +425,7 @@ class PlansSetup {
         } else {
             this.#plansTable.updateData([newRow]);
         }
-
+        plans.dataChanged();
         this.#planAddEditModal.hide();
     }
 };
