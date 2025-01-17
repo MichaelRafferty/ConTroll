@@ -33,5 +33,9 @@ CREATE DEFINER=CURRENT_USER  TRIGGER `perinfo_update` BEFORE UPDATE ON `perinfo`
 END;;
 DELIMITER ;
 
+DELETE FROM user_auth WHERE auth_id = 8;
+DELETE FROM auth WHERE id = 8 AND name = 'artshow';
+
+INSERT INTO auth(id, name, page, display, sortOrder) VALUES (7, 'finance', 'Y', 'Finance', '55');
 
 INSERT INTO patchLog(id, name) VALUES(xx, 'index at al');
