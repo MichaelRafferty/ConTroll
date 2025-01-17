@@ -77,8 +77,7 @@ if ($mR !== false) {
     $tabindex = 100;
     $star = "<span class='text-danger'>&bigstar;</span>";
 ?>
-// add/edit payment plan modal
-<!-- space detail modal -->
+<!-- add/edit payment plan modal -->
 <div id='addEditPlan' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Add/Edit Payment Plan' aria-hidden='true' style='--bs-modal-width: 96%;'>
     <div class='modal-dialog'>
         <div class='modal-content'>

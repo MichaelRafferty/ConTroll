@@ -12,6 +12,7 @@ class PlansSetup {
     #planSaveBTN = null;
     #planSaveChangesBTN = null;
     #planEditIndex = null;
+    #dirty = false;
 
     // edit item
     #editSelTable = null;
@@ -57,7 +58,14 @@ class PlansSetup {
             this.#editSelButtons.hidden = true;
         }
         this.#planSaveChangesBTN = document.getElementById('planSaveBtn');
+    }
 
+    getselIndex() {
+        return this.#editSelIndex;
+    }
+
+    open() {
+        var _this = this;
         // show initial plans table
         this.#plansTable = new Tabulator('#paymentPlanTable', {
             data: paymentPlans,
@@ -98,16 +106,28 @@ class PlansSetup {
                 },
                 { field: "required", visible: false, },
                 { field: "to_delete", visible: false, },
+            ]});
 
-       ]});
+        this.#plansTable.on("dataChanged", function (data) {
+            _this.dataChanged();
+        });
+        this.#plansTable.on("rowMoved", function (row) {
+            _this.rowMoved(row)
+        });
+        this.#plansTable.on("cellEdited", cellChanged);
     }
 
-    getselIndex() {
-        return this.#editSelIndex;
-    }
+    dataChanged() {
+        //data - the updated table data
+        this.#planSaveBTN.innerHTML = "Save Changes*";
+        this.#planSaveBTN.disabled = false;
+        this.#dirty = true;
+    };
 
-    open() {
-        console.log("open stub called");
+    rowMoved(row) {
+        this.#planSaveBTN.innerHTML = "Save Changes*";
+        this.#planSaveBTN.disabled = false;
+        this.#dirty = true;
     }
 
     editbutton(cell, formatterParams, onRendered) {
@@ -120,6 +140,31 @@ class PlansSetup {
     addNew() {
         this.#planTitleDiv.innerHTML = 'Add New Payment Plan';
         this.#planHeadingDiv.innerHTML = 'Add New Payment Plan';
+        this.#planEditIndex = null;
+        // clear the form
+        document.getElementById('planName').value = null;
+        document.getElementById('planDescription').innerHTML = null;
+        this.#categoryList = null;
+        this.#categoryListDiv.innerHTML = '<i>None</i>';
+        this.#includeList.value = null;
+        this.#includeListDiv.innerHTML = '<i>None</i>';
+        this.#excludeList.value = null;
+        this.#excludeListDiv.innerHTML = '<i>None</i>';
+        this.#portalList.value = null;
+        this.#portalListDiv.innerHTML = '<i>None</i>';
+        document.getElementById('downPaymentPercent').value = null;
+        document.getElementById('downPaymentAmount').value = null;
+        document.getElementById('minPayment').value = null;
+        document.getElementById('maxNumPayments').value = null;
+        document.getElementById('payByDate').value = null;
+        document.getElementById('paymentType').value = null;
+        document.getElementById('modifyPlan').value = null;
+        document.getElementById('reminders').value = null;
+        document.getElementById('downPaymentIncludes').value = null;
+        document.getElementById('lastPartial').value = null;
+        document.getElementById('active').value = 'Y';
+
+
         this.#planAddEditModal.show();
         this.#planSaveBTN.innerHTML = 'Add Plan';
     }
@@ -286,7 +331,7 @@ class PlansSetup {
             this.#editSelTable.destroy();
             this.#editSelTable = null;
         }
-        this.#editSelButtons.hide = true;
+        this.#editSelButtons.hidden = true;
         this.#editSelLabel.innerHTML = '';
         this.#editSelIndex = null;
     }
@@ -336,8 +381,43 @@ class PlansSetup {
         this.#planTitleDiv.innerHTML = 'Edit Payment Plan: ' + row.name;
         this.#planHeadingDiv.innerHTML = 'Edit Payment Plan: '  + row.name;
         this.#planAddEditModal.show();
-        this.#planSaveBTN.innerHTML = 'Save Changes';    }
+        this.#planSaveBTN.innerHTML = 'Save Changes Back to Prior Screen';
+    }
+
+    saveAddEdit() {
+        // get the data
+        var newRow = {
+            id: this.#planEditIndex,
+            name: document.getElementById('planName').value,
+            description: document.getElementById('planDescription').innerHTML,
+            categoryList: this.#categoryList.value,
+            includeList: this.#includeList.value,
+            excludeList: this.#excludeList.value,
+            cportalList: this.#portalList.value,
+            downPercent: document.getElementById('downPaymentPercent').value,
+            downAmt: document.getElementById('downPaymentAmount').value,
+            minPayment: document.getElementById('minPayment').value,
+            numPaymentMax: document.getElementById('maxNumPayments').value,
+            payByDate: document.getElementById('payByDate').value,
+            payType: document.getElementById('paymentType').value,
+            modify: document.getElementById('modifyPlan').value,
+            reminders: document.getElementById('reminders').value,
+            downIncludeNonPlan: document.getElementById('downPaymentIncludes').value,
+            lastPaymentPartial: document.getElementById('lastPartial').value,
+            active: document.getElementById('active').value
+        }
+        if (this.#planEditIndex == null) {
+            newRow['id'] =  -99;
+            newRow['torder'] = 99999;
+            this.#plansTable.addRow(newRow);
+        } else {
+            this.#plansTable.updateData([newRow]);
+        }
+
+        this.#planAddEditModal.hide();
+    }
 };
+
 
 function SetInitialSel() {
     plans.setInitialSel();
