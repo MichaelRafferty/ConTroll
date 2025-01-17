@@ -1168,7 +1168,7 @@ class Pos {
         var data = this.#result_perinfo[row];
         var mem = data.memberships;
         var prim = this.find_primary_membership(mem);
-        var label = "No Membership";
+        var label = "No Primary Membership";
         if (prim != null) {
             label = mem[prim].label;
         }
