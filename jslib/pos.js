@@ -947,7 +947,7 @@ class Pos {
                         }
                     }
                 } else {
-                    row.reg_label = 'No Membership';
+                    row.reg_label = 'No Primary Membership';
                     row.reg_tid = '';
                 }
             }
