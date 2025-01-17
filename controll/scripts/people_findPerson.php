@@ -132,7 +132,7 @@ SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p
 FROM perinfo p
 $excludeJoin
 LEFT OUTER JOIN perinfo mp ON (p.managedBy = mp.id)
-LEFT OUTER JOIN reg r ON (r.perid = p.id)
+LEFT OUTER JOIN reg r  ON (r.perid = p.id AND r.status IN ('paid', 'unpaid', 'plan'))
 LEFT OUTER JOIN memList m ON (r.memId = m.id AND m.conid in (?, ?))
 WHERE 1=1  $excludeFree $notMerge
 GROUP BY p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalname, p.pronouns, 
