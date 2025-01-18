@@ -32,6 +32,7 @@ class PosCart {
     #addEditBody = null;
     #addEditTitle = null;
     #addEditFullName = null;
+    #addEditPerid = null;
     #ageButtonsDiv = null;
     #membershipButtonsDiv = null;
     #memberAge = null;
@@ -442,6 +443,7 @@ class PosCart {
 // use the memRules engine to add/edit the memberships for this person
     addEditMemberships(index) {
         var cart_row = this.#cartPerinfo[index];
+        this.#addEditPerid = cart_row.perid;
         if (this.#addEditModal) {
             this.#addEditFullName.innerHTML = cart_row.fullName;
             this.#memberships = [];
@@ -510,7 +512,7 @@ class PosCart {
                     row + ')">Restore</button>';
             } else if (membershipRec.status == 'in-cart') {
                 col1 = '<button class="btn btn-sm btn-secondary pt-0 pb-0" onclick="cart.regItemRemove(' + row + ')">Remove</button>';
-            } else if (membershipRec.status != 'plan' && (membershipRec.paid == 0 || pos.getManager())) {
+            } else if (membershipRec.status != 'plan' && membershipRec.status != 'paid' && (membershipRec.paid == 0 || pos.getManager())) {
                 col1 = '<button class="btn btn-sm ' + btncolor + ' pt-0 pb-0" onclick="cart.regItemDelete(' + row + ')">Delete</button>';
             }
             html += `
@@ -726,6 +728,7 @@ class PosCart {
         newMembership.memCategory = memrow.memCategory;
         newMembership.memType = memrow.memType;
         newMembership.memAge = memrow.memAge;
+        newMembership.perid =  this.#addEditPerid;
         var memCat = memCategories[memrow.memCategory];
         if (memCat.variablePrice == 'Y') {
             var mem = memListIdx[newMembership.memId];
@@ -920,6 +923,7 @@ class PosCart {
                     col1 = "Pd";
                     break;
                 case 'unpaid':
+                case 'in-cart':
                     col1 = "Upd";
                     break;
                 case 'plan':
