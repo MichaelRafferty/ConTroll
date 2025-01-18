@@ -1459,22 +1459,8 @@ class PosCart {
         params.day = dayFromLabel(printrow.label);
         params.age = printrow.memAge;
         params.regId = printrow.regid;
+        params.printCount = printrow.printcount;
         return params;
-    }
-
-    // addToPrintCount: increment the print count for a badge
-    addToPrintCount(index) {
-        var row = this.#cartPerinfo[index];
-        var mrow = pos.find_primary_membership(row.memberships);
-        if (mrow == null) {
-            return array(null, 0);
-        }
-
-        this.#cartPerinfo[index].memberships[mrow].printcout++;
-        var retval = [];
-        retval[0] = mrow.regid;
-        retval[1] = mrow.printcount;
-        return (retval);
     }
 
     // getEmail: return the email address of an entry

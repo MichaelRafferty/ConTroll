@@ -45,6 +45,7 @@ if ($printer != null && $printer['name'] != 'None') {
         ajaxSuccess($response);
         exit();
     }
+    $response['badges'] = $params;
 
     foreach ($params as $param) {
         $badge = [];
@@ -56,7 +57,7 @@ if ($printer != null && $printer['name'] != 'None') {
         $badge['day'] = $param['day'];
         $badge['age'] = $param['age'];
         if (array_key_exists('regId', $param))
-            $badge['regId'] = $param['regId']
+            $badge['regId'] = $param['regId'];
 
         if ($badge['badge_name'] == '') {
             $badge['badge_name'] = $badge['full_name'];

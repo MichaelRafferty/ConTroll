@@ -1854,6 +1854,7 @@ addUnpaid(tid) {
             user_id: this.#user_id,
         };
         var _this = this;
+        clear_message();
         $.ajax({
             method: "POST",
             url: "scripts/pos_updateCartElements.php",
@@ -2088,6 +2089,7 @@ addUnpaid(tid) {
         };
         this.#pay_button_pay.disabled = true;
         var _this = this;
+        clear_message();
         $.ajax({
             method: "POST",
             url: "scripts/pos_processPayment.php",
@@ -2157,6 +2159,7 @@ addUnpaid(tid) {
         }
 
         var _this = this;
+        clear_message();
         $.ajax({
             method: "POST",
             url: "scripts/pos_emailReceipt.php",
@@ -2206,6 +2209,7 @@ addUnpaid(tid) {
         };
         $("button[name='print_btn']").attr("disabled", true);
         var _this = this;
+        clear_message();
         $.ajax({
             method: "POST",
             url: "scripts/pos_printBadge.php",
@@ -2235,10 +2239,11 @@ addUnpaid(tid) {
         var regs = [];
         var index;
         for (index in badges) {
-            if (this.#printedObj.get(index) == 0) {
-                var rparams = cart.addToPrintCount(index);
-                this.#printedObj.set(index, 1);
-                regs.push({ regid: rparams[0], printcount: rparams[1]});
+            var regId = badges[index]['regId'];
+            var printCount = badges[index]['printCount'];
+            if (this.#printedObj.get(regId) == 0) {
+                this.#printedObj.set(regId, 1);
+                regs.push({ regid: regId, printcount: printCount + 1});
             }
         }
         if (regs.length > 0) {
@@ -2248,6 +2253,7 @@ addUnpaid(tid) {
                 user_id: this.#user_id,
                 tid: this.#pay_tid,
             };
+            clear_message();
             $.ajax({
                 method: "POST",
                 url: "scripts/pos_updatePrintCount.php",
