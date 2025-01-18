@@ -69,6 +69,7 @@ class Pos {
     #user_id = 0;
     #manager = false;
     #upgradable_types = ['one-day', 'oneday', 'virtual'];
+    #multiOneDay = 0;
 
     // filter criteria
     #filt_excat = null; // array of exclude category
@@ -92,6 +93,7 @@ class Pos {
     #printDiv = null;
     #badgePrinterAvailable = false;
     #receiptPrinterAvailable = false;
+    #badgeList = null;
 
     // tab fields
     #find_tab = null;
@@ -147,6 +149,9 @@ class Pos {
 // initialization
     constructor(use) {
         this.#use = use;
+
+        if (config.hasOwnProperty('multiOneDay'))
+            this.#multiOneDay = config.multiOneDay;
 
         // set up the constants for objects on the screen
 
@@ -228,7 +233,7 @@ class Pos {
         // load the initial data and the proceed to set up the rest of the system
         var postData = {
             ajax_request_action: 'loadInitialData',
-            nopay: config['cashier'] == 0,
+            nopay: config.cashier == 0,
         };
         var _this = this;
         $.ajax({
@@ -273,6 +278,10 @@ class Pos {
 
     getManager() {
         return this.#manager == 1  && baseManagerEnabled;
+    }
+
+    isMultiOneDay() {
+        return this.#multiOneDay == 1;
     }
 
     getReviewEditableFields() {
@@ -363,10 +372,10 @@ class Pos {
         this.#discount_mode = data.discount;
         this.#badgePrinterAvailable = false;
         if (data.hasOwnProperty('badgePrinter'))
-            this.#badgePrinterAvailable = data['badgePrinter'] === true;
+            this.#badgePrinterAvailable = data.badgePrinter === true;
         this.#receiptPrinterAvailable = false;
         if (data.hasOwnProperty('receiptPrinter'))
-            this.#receiptPrinterAvailable = data['receiptPrinter'] === true;
+            this.#receiptPrinterAvailable = data.receiptPrinter === true;
 
         if (this.#manager == false)
             baseManagerEnabled = false;
@@ -1017,7 +1026,7 @@ class Pos {
         // look for missing fields
         var missing_fields = 0;
         if (override == 0) {
-            var required = config['required'];
+            var required = config.required;
 
             if (required != '') {
                 if (new_first == '') {
@@ -1304,7 +1313,7 @@ class Pos {
         } else if (cart.notinCart(data.perid)) {
             html = '<button type="button" class="btn btn-sm btn-success p-0" style="--bs-btn-font-size: 75%;" onclick="pos.addToCart(' +
                 data.index + ', \'' + formatterParams.t + '\')">Add</button>';
-            if (config['useportal'] == 1) {
+            if (config.useportal == 1) {
                 var mgr = data.cntManages;
                 if (mgr > 0) {
                     html += '&nbsp;<button type="button" class="btn btn-sm btn-success p-0" style="--bs-btn-font-size: 75%;" ' +
@@ -1872,8 +1881,8 @@ addUnpaid(tid) {
         this.#pay_tid = data.master_tid;
         // update cart elements
         var unpaidRows = cart.updateFromDB(data);
-        if (data['success'])
-            show_message(data['success'], 'success');
+        if (data.success)
+            show_message(data.success, 'success');
         else
             clear_message();
 
@@ -1883,7 +1892,7 @@ addUnpaid(tid) {
             return;
         }
 
-        if (config['cashier'] == 1) {
+        if (config.cashier == 1) {
             bootstrap.Tab.getOrCreateInstance(this.#pay_tab).show();
             cart.drawCart();
         } else {
@@ -2178,34 +2187,22 @@ addUnpaid(tid) {
         });
     }
 
-// addBadgeToPrint
-//      create the parameters for a single badge
-//
-    #addBadgeToPrint(index) {
-        return cart.getBadge(index);
-    }
-
 // Send one or all of the badges to the printer
-    printBadge(index) {
+    printBadge(cindex, mindex) {
         var rownum = 0;
         var cartlen = cart.getCartLength();
 
         var params = [];
-        var badges = [];
-        if (index >= 0) {
-            params.push(this.#addBadgeToPrint(index));
-            badges.push(index);
+        if (cindex >= 0) {
+            params.push(cart.getBadge(cindex, mindex));
         } else {
-            while (rownum < cartlen) {
-                params.push(this.#addBadgeToPrint(rownum));
-                badges.push(rownum);
-                rownum++;
+            for (rownum in this.#badgeList) {
+                params.push(cart.getBadge(this.#badgeList[rownum][0], this.#badgeList[rownum][1]));
             }
         }
         var postData = {
             ajax_request_action: 'printBadge',
             params: JSON.stringify(params),
-            badges: JSON.stringify(badges),
         };
         $("button[name='print_btn']").attr("disabled", true);
         var _this = this;
@@ -2219,8 +2216,8 @@ addUnpaid(tid) {
                     $("button[name='print_btn']").attr("disabled", false);
                     return;
                 }
-                if (data['error'] !== undefined) {
-                    show_message(data['error'], 'error');
+                if (data.error !== undefined) {
+                    show_message(data.error, 'error');
                     $("button[name='print_btn']").attr("disabled", false);
                     return;
                 }
@@ -2234,7 +2231,7 @@ addUnpaid(tid) {
     }
 
     printComplete(data) {
-        var badges = data['badges'];
+        var badges = data.badges;
         var regs = [];
         var index;
         for (index in badges) {
@@ -2256,8 +2253,8 @@ addUnpaid(tid) {
                 url: "scripts/pos_updatePrintCount.php",
                 data: postData,
                 success: function (data, textstatus, jqxhr) {
-                    if (data['error'] !== undefined) {
-                        show_message(data['error'], 'error');
+                    if (data.error !== undefined) {
+                        show_message(data.error, 'error');
                         return;
                     }
                 },
@@ -2266,7 +2263,7 @@ addUnpaid(tid) {
         }
         $("button[name='print_btn']").attr("disabled", false);
         this.printShown();
-        show_message(data['message'], 'success');
+        show_message(data.message, 'success');
     }
 // tab shown events - state mapping for which tab is shown
     findShown() {
@@ -2587,12 +2584,13 @@ addUnpaid(tid) {
             this.#printDiv.innerHTML = print_html;
             return;
         }
+        this.#badgeList = [];
         print_html += cart.printList(this.#newPrint, this.#printedObj);
         print_html += `
     <div class="row mt-4">
         <div class="col-sm-2 ms-0 me-2 p-0">&nbsp;</div>
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <button class="btn btn-primary btn-sm" type="button" id="pay-print-all" name="print_btn" onclick="pos.printBadge(-1);">Print All</button>
+            <button class="btn btn-primary btn-sm" type="button" id="pay-print-all" name="print_btn" onclick="pos.printBadge(-1, -1);">Print All</button>
         </div>
     </div>
     <div class="row mt-4">
@@ -2601,6 +2599,11 @@ addUnpaid(tid) {
 </div>`;
 
         this.#printDiv.innerHTML = print_html;
+    }
+
+// addToBadgeList - add to badge Print List array
+    addToBadgeList(cindex, mindex) {
+        this.#badgeList.push([cindex, mindex]);
     }
 
 // dayFromLabel(label)

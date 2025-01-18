@@ -1401,32 +1401,54 @@ class PosCart {
             if (mrow == null)
                 continue;   // skip anyone without a primary
             mrow = crow.memberships[mrow];
-            if (new_print) {
-                printed_obj.set(crow.index, 0);
-            }
-            print_html += `
+            // if one day, and multi, find all one days, else just select this one
+            if (pos.isMultiOneDay() && mrow.memType == 'oneday') {
+                // this row is a one day, find all the memberships that are type one day
+                for (var row in crow.memberships) {
+                    var mbrrow = crow.memberships[row];
+                    print_html += `
     <div class="row">
         <div class="col-sm-2 ms-0 me-2 p-0">
-            <button class="btn btn-primary btn-sm" type="button" id="pay-print-` + this.#cartPerinfo[rownum].index + `" name="print_btn" onclick="pos.printBadge(` + crow.index + `);">Print</button>
+            <button class="btn btn-primary btn-sm" type="button" id="pay-print-` + this.#cartPerinfo[rownum].index + `" name="print_btn" onclick="pos.printBadge(` +
+                        crow.index + ',' + mbrrow.index + `);">Print</button>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">            
-            <span class="text-bg-success"> Membership: ` + mrow.label + `</span> (Times Printed: ` +
-                mrow.printcount + `)<br/>
+            <span class="text-bg-success"> Membership: ` + mbrrow.label + `</span> (Times Printed: ` +
+                                mbrrow.printcount + `)<br/>
               ` + crow.badge_name + '/' + (crow.first_name + ' ' + crow.last_name).trim() + `
         </div>
      </div>`;
+                    if (new_print) {
+                        printed_obj.set(mbrrow.regid, 0);
+                    }
+                    pos.addToBadgeList(crow.index, mbrrow.index);
+                }
+            } else {
+                print_html += `
+    <div class="row">
+        <div class="col-sm-2 ms-0 me-2 p-0">
+            <button class="btn btn-primary btn-sm" type="button" id="pay-print-` + this.#cartPerinfo[rownum].index + `" name="print_btn" onclick="pos.printBadge(` +
+                    crow.index + ',' + mrow.index + `);">Print</button>
+        </div>
+        <div class="col-sm-auto ms-0 me-2 p-0">            
+            <span class="text-bg-success"> Membership: ` + mrow.label + `</span> (Times Printed: ` +
+                    mrow.printcount + `)<br/>
+              ` + crow.badge_name + '/' + (crow.first_name + ' ' + crow.last_name).trim() + `
+        </div>
+     </div>`;
+                if (new_print) {
+                    printed_obj.set(mrow.regid, 0);
+                }
+                pos.addToBadgeList(crow.index, mrow.index);
+            }
         }
         return print_html;
     }
 
 // getBadge = return the cart portions of the parameters for a badge print, that will be added to by the calling routine
-    getBadge(index) {
-        var row = this.#cartPerinfo[index];
-        var printrow = pos.find_primary_membership(row.memberships);
-        if (printrow == null)
-            return null;
-
-        printrow = row.memberships[printrow];
+    getBadge(cindex, mindex) {
+        var row = this.#cartPerinfo[cindex];
+        var printrow = row.memberships[mindex];
 
         var params = {};
         params.type = printrow.memType;
@@ -1436,6 +1458,7 @@ class PosCart {
         params.badge_id = row.perid;
         params.day = dayFromLabel(printrow.label);
         params.age = printrow.memAge;
+        params.regId = printrow.regid;
         return params;
     }
 
