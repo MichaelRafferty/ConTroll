@@ -1196,7 +1196,7 @@ class PosCart {
             }
             html += '<div class="row">';
             if (mrow == null) {
-                html += '<div class="col-sm-12 text-bg-info">No Membership</div>';
+                html += '<div class="col-sm-12 text-bg-info">No Primary Membership</div>';
             } else {
                 html += '<div class="col-sm-12 text-bg-success">Membership: ' + row.memberships[mrow].label + '</div>';
             }
