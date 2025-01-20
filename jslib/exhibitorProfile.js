@@ -79,11 +79,12 @@ class ExhibitorProfile {
     }
 
     copyBusToContactName() {
-        document.getElementById("contactName").focus().value = document.getElementById("exhibitorName").value;
+        document.getElementById("contactName").value = document.getElementById("exhibitorName").value;
         document.getElementById("contactEmail").value = document.getElementById("exhibitorEmail").value;
         document.getElementById("contactPhone").value = document.getElementById("exhibitorPhone").value;
         document.getElementById("cpw1").value = document.getElementById("pw1").value;
         document.getElementById("cpw2").value = document.getElementById("pw2").value;
+        document.getElementById("contactName").focus();
     }
 
     // move through pages in the profile
