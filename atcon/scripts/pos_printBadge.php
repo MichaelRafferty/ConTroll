@@ -45,19 +45,7 @@ if ($printer != null && $printer['name'] != 'None') {
         ajaxSuccess($response);
         exit();
     }
-
-    if (array_key_exists('badges', $_POST)) {
-        try {
-            $response['badges'] = json_decode($_POST['badges'], true, 512, JSON_THROW_ON_ERROR);
-        }
-        catch (Exception $e) {
-            $msg = 'Caught exception on json_decode: ' . $e->getMessage() . PHP_EOL . 'JSON error: ' . json_last_error_msg() . PHP_EOL;
-            $response['error'] = $msg;
-            error_log($msg);
-            ajaxSuccess($response);
-            exit();
-        }
-    }
+    $response['badges'] = $params;
 
     foreach ($params as $param) {
         $badge = [];
@@ -68,6 +56,8 @@ if ($printer != null && $printer['name'] != 'None') {
         $badge['id'] = $param['badge_id'];
         $badge['day'] = $param['day'];
         $badge['age'] = $param['age'];
+        if (array_key_exists('regId', $param))
+            $badge['regId'] = $param['regId'];
 
         if ($badge['badge_name'] == '') {
             $badge['badge_name'] = $badge['full_name'];

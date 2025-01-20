@@ -49,6 +49,11 @@ if (array_key_exists('taxidlabel', $vendor))
 else
     $taxLabel = '';
 
+if (array_key_exists('multioneday', $con))
+    $multiOneDay =$con['multioneday'];
+else
+    $multiOneDay = 0;
+
 $policies = getPolicies();
 $policyIndex = array();
 for ($index = 0; $index< count($policies); $index++) {
@@ -64,6 +69,7 @@ $config_vars['regadminemail'] = $con['regadminemail'];
 $config_vars['required'] = $ini['required'];
 $config_vars['useportal'] = $controll['useportal'];
 $config_vars['cashier'] = $method == 'cashier' ? 1 : 0;
+$config_vars['multiOneDay'] = $multiOneDay;
 
 $useUSPS = false;
 

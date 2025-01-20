@@ -40,6 +40,11 @@ $conname = $con['conname'];
 $ini = get_conf('reg');
 $useUSPS = false;
 
+if (array_key_exists('multioneday', $con))
+    $multiOneDay =$con['multioneday'];
+else
+    $multiOneDay = 0;
+
 $policies = getPolicies();
 $policyIndex = array();
 for ($index = 0; $index< count($policies); $index++) {
@@ -55,6 +60,7 @@ $config_vars['regadminemail'] = $con['regadminemail'];
 $config_vars['required'] = $ini['required'];
 $config_vars['useportal'] = $controll['useportal'];
 $config_vars['cashier'] = 1;
+$config_vars['multiOneDay'] = $multiOneDay;
 
 // form as laid out has no room for usps block, if we want it we need to reconsider how to do it here.
 //if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
