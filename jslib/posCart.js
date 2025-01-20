@@ -550,6 +550,8 @@ class PosCart {
 
 // age buttons
     buildAgeButtons() {
+        this.#currentAge = null;
+        this.#memberAge = null;
         // first check if there is a current age;
         for (var row in this.#memberships) {
             var mbr = this.#memberships[row];
