@@ -11,7 +11,8 @@ class Pos {
 
     // review items
     #review_div = null;
-    #review_missing_items = 0;
+    #reviewMissingItens = 0;
+    #reviewMissingPolicies = 0;
     #review_dirty = false;
     #review_editable_fields = [
         'first_name', 'middle_name', 'last_name', 'suffix',
@@ -265,7 +266,11 @@ class Pos {
     }
 
     setMissingItems(num) {
-        this.#review_missing_items = num;
+        this.#reviewMissingItens = num;
+    }
+
+    setMissingPolicies(num) {
+        this.#reviewMissingPolicies = num;
     }
 
     getConid() {
@@ -1814,8 +1819,11 @@ addUnpaid(tid) {
     reviewUpdate() {
         cart.updateReviewData();
         this.reviewShown();
-        if (this.#review_missing_items > 0) {
-            setTimeout(pos.reviewNoChanges, 100);
+        if (this.#reviewMissingPolicies > 0 && this.#print_tab)
+            this.#print_tab.disabled =true;
+
+        if (this.#reviewMissingItens > 0) {
+            setTimeout(reviewNoChanges, 100);
         } else {
             this.reviewNoChanges();
         }
@@ -1840,11 +1848,14 @@ addUnpaid(tid) {
 // if everything is put up next customer
     reviewNoChanges() {
         // first check to see if any required fields still exist
-        if (this.#review_missing_items > 0) {
-            if (!confirm("Proceed ignoring check for " + this.#review_missing_items.toString() + " missing data items (shown in yellow)?")) {
+        if (this.#reviewMissingItens > 0) {
+            if (!confirm("Proceed ignoring check for " + this.#reviewMissingItens.toString() + " missing data items (shown in yellow)?")) {
                 return false; // confirm answered no, return not safe to discard
             }
         }
+
+        if (this.#reviewMissingPolicies > 0 && this.#print_tab)
+            this.#print_tab.disabled = true;
 
         cart.hideNoChanges();
         // submit the current card data to update the database, retrieve all TID's/PERID's/REGID's of inserted data
@@ -1889,8 +1900,17 @@ addUnpaid(tid) {
 
         // set tab to review-tab
         if (unpaidRows == 0 && this.#print_tab) {
-            this.gotoPrint();
-            return;
+            if (this.#reviewMissingPolicies == 0) {
+                this.gotoPrint();
+                return;
+            } else {
+                this.#print_tab.disabled = true;
+                cart.showNext();
+                cart.hideStartOver();
+                cart.freeze();
+                show_message("Printing is disabled with missing required policies", "warn");
+                return;
+            }
         }
 
         if (config.cashier == 1) {
@@ -2400,8 +2420,19 @@ addUnpaid(tid) {
                 }
                 cart.hideVoid();
             } else {
-                if (this.#print_tab)
-                    this.gotoPrint();
+                if (this.#print_tab) {
+                    if (this.#reviewMissingPolicies == 0) {
+                        this.gotoPrint();
+                        return;
+                    } else {
+                        cart.showNext();
+                        cart.hideStartOver();
+                        cart.freeze();
+                        this.#print_tab.disabled = true;
+                        show_message("Printing is disabled with missing required policies", "warn");
+                        return;
+                    }
+                }
             }
         } else {
             if (this.#pay_button_pay != null) {
@@ -2698,4 +2729,8 @@ function posbuildRecordHover(e, cell, onRendered) {
 
 function checkboxCheck() {
     return pos.checkboxCheck();
+}
+
+function reviewNoChanges() {
+    return pos.reviewNoChanges();
 }

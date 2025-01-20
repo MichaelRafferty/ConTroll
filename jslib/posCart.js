@@ -1158,6 +1158,7 @@ class PosCart {
     // create the HTML of the cart into the review data block
     buildReviewData() {
         pos.setMissingItems(0);
+        pos.setMissingPolicies(0);
         var html = `
 <div id='reviewBody' class="container-fluid form-floating">
   <form id='reviewForm' action='javascript: return false; ' class="form-floating">
@@ -1319,6 +1320,7 @@ class PosCart {
 </div>
 `;
         pos.setMissingItems(reviewMissingItems + missingRequiredPolicies);
+        pos.setMissingPolicies(missingRequiredPolicies);
         return html;
     }
 
