@@ -1133,9 +1133,9 @@ class Pos {
         //  build the policy array
         var rowPolicies = {};
         for (var pol in this.#policies) {
+            var policyName = this.#policies[pol].policy;
             var policybox = document.getElementById('p_' + policyName);
             if (policybox) {
-                var policyName = this.#policies[pol].policy;
                 rowPolicies[policyName] = {};
                 rowPolicies[policyName].policy = policyName;
                 rowPolicies[policyName].perid = this.#new_perid;
