@@ -29,6 +29,12 @@ if (array_key_exists('suspended', $portal_conf) && $portal_conf['suspended'] == 
     exit();
 }
 
+$NomNomExists = array_key_exists('nomnomURL', $portal_conf);
+if ($NomNomExists)
+    $NonNomButton = "<button class='btn btn-primary p-1' type='button' onclick='portal.vote();'>Log into the Hugo System</button>";
+else
+    $NonNomButton = '';
+
 if (isSessionVar('id') && isSessionVar('idType')) {
     // check for being resolved/baned
     $resolveUpdates = isResolvedBanned();
@@ -65,6 +71,10 @@ $config_vars['initCouponSerial'] = $initCouponSerial;
 $config_vars['id'] = $loginId;
 $config_vars['idType'] = $loginType;
 $config_vars['conid'] = $conid;
+$config_vars['nomnomExists'] = $NomNomExists;
+if ($NomNomExists)
+    $config_vars['nomnomURL'] = $portal_conf['nomnomURL'];
+
 $cdn = getTabulatorIncludes();
 // default memberships to empty to handle the refresh case which never loads them.
 $memberships = [];
@@ -420,6 +430,7 @@ if ($info['managedByName'] != null) {
     <div class='row mt-4' id="managedByDiv">
         <div class='col-sm-auto'><b>This person record is managed by <?php echo $info['managedByName']; ?></b></div>
         <div class='col-sm-auto'><button class="btn btn-warning btn-sm p-1" onclick="portal.disassociate();">Dissociate from <?php echo $info['managedByName']; ?></button></div>
+        <div class='col-sm-auto'><?php echo $NonNomButton; ?></div>
     </div>
 <?php
 }
@@ -455,11 +466,11 @@ if ($totalDue > 0) {
     if ($info['managedByName'] == null) {
         echo "People managed by " . $info['first_name'] . ' (' . $info['email_addr'] . '):';
 ?>
-                <button class='btn btn-primary ms-2' type='button'
+                <button class='btn btn-primary ms-1 p-1' type='button'
                         onclick="window.location='<?php echo $portal_conf['portalsite']; ?>/addUpgrade.php';">
                     Add Another Person and Create a New Membership for Them
                 </button>
-<?php
+                <?php echo $NonNomButton;
     } else {
 ?>
             This account's information:

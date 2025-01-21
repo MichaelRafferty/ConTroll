@@ -1380,11 +1380,45 @@ class Portal {
 
     // setFocus - jump to specific areas on the page
     setFocus(area){
-        switch (area) {
+         switch (area) {
             case 'totalDue':
                 $(window).scrollTop($('span[name="totalDueAmountSpan"]').offset().top);
                 break;
         }
+    }
+
+    // voting - access to nom nom
+    vote() {
+        var data = {
+            loginId: config.id,
+            loginType: config.idType,
+            NomNom: 1,
+        }
+        clear_message();
+        var script = 'scripts/getNomNomJWT.php';
+        $.ajax({
+            method: 'POST',
+            url: script,
+            data: data,
+            success: function (data, textStatus, jqXhr) {
+                if (data.status == 'error') {
+                    show_message(data.message, 'error');
+                } else if (data.status == 'warn') {
+                    show_message(data.message, 'warn');
+                } else {
+                    // we have a response
+                    console.log(data.rights);
+                    console.log(data.payload);
+                    console.log(data.jwt);
+                    console.log(config.nomnomURL + '?r=' + data.jwt);
+                    return;
+                }
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showAjaxError(jqXHR, textStatus, errorThrown);
+                return false;
+            },
+        });
     }
 }
 
