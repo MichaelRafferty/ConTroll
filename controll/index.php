@@ -39,7 +39,6 @@ FROM user
 WHERE email = ?;
 EOS;
         $usergetR = dbSafeQuery($usergetQ, 's', array($user_email));
-        $userid = null;
         if ($usergetR !== false) {
             $userL = $usergetR->fetch_assoc();
             if ($userL) {
