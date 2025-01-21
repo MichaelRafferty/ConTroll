@@ -1,4 +1,5 @@
 <?php
+exit(); 	//disable for now
 // Registration Portal Oauth Test harness - tstart.php - redirect to portal
 require_once("lib/base.php");
 
