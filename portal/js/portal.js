@@ -1411,7 +1411,7 @@ class Portal {
                     console.log(data.payload);
                     console.log(data.jwt);
                     console.log(config.nomnomURL + '?r=' + data.jwt);
-                    return;
+                    window.open(config.nomnomURL + '?r=' + data.jwt);
                 }
             },
             error: function (jqXHR, textStatus, errorThrown) {
