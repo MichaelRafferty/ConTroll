@@ -13,23 +13,31 @@ use function password_verify;
 
 class ClientRepository implements ClientRepositoryInterface
 {
-  private const CLIENT_NAME = 'pyramid';
-  private const REDIRECT_URI = 'http://www.example.com/';
+  private const CLIENT_NAME = 'nomnom';
+
+  private const REDIRECT_URIS = [
+    'https://nomnom-staging.seattlein2025.org/complete/controll/',
+    'https://void.camel-tortoise.ts.net/complete/controll/',
+    'https://nomnom.seattlein2025.org/complete/controll/'
+  ];
 
   /**
    * {@inheritdoc}
    */
   public function getClientEntity($clientIdentifier): ?ClientEntityInterface
-  {
-    $client = new ClientEntity();
+    {
+        $client = new ClientEntity();
 
-    $client->setIdentifier($clientIdentifier);
-    $client->setName(self::CLIENT_NAME);
-    $client->setRedirectUri(self::REDIRECT_URI);
-    $client->setConfidential();
+        $client->setIdentifier($clientIdentifier);
+        $client->setName(self::CLIENT_NAME);
 
-    return $client;
-  }
+        // Optionally pick the first URI for `setRedirectUri` if needed (for compatibility).
+        $client->setRedirectUris(self::REDIRECT_URIS);
+
+        $client->setConfidential();
+
+        return $client;
+    }
 
   /**
    * {@inheritdoc}
@@ -37,10 +45,10 @@ class ClientRepository implements ClientRepositoryInterface
   public function validateClient($clientIdentifier, $clientSecret, $grantType): bool
   {
     $clients = [
-      'pyramid' => [
-        'secret' => password_hash('obelisk', PASSWORD_BCRYPT),
+      'nomnom' => [
+        'secret' => password_hash('nominateme', PASSWORD_BCRYPT),
         'name' => self::CLIENT_NAME,
-        'redirect_uri' => self::REDIRECT_URI,
+        'redirect_uris' => self::REDIRECT_URIS,
         'is_confidential' => true,
       ],
     ];
