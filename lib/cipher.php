@@ -5,6 +5,7 @@
 
 $cipherParams = null;
 $attachParams = null;
+$jwtSigningKey = null;
 function getLoginCipher() {
     global $cipherParams;
 
@@ -87,4 +88,49 @@ function encryptAttach($string, $doURLencode = false) {
         $string = urlencode($string);
     }
     return $string;
+}
+
+//  JWT related functions for cross system passing
+function setJWTKey($key) {
+    global $jwtSigningKey;
+
+    if ($key == null || $key == '') {
+        $con = get_conf('con');
+        $reg = get_conf('reg');
+        $jwtSigningKey = $con['label'] . '-' . $con['id'] . '-' . ($reg['test'] == 1 ? 'Test' : 'Prod');
+        return;
+    }
+
+    $jwtSigningKey = $key;
+}
+
+function genJWT($payload): string {
+    global $jwtSigningKey;
+
+    if ($jwtSigningKey == null) {
+        setJWTKey(null);
+    }
+
+    $header = [
+        'alg' => 'HS512',
+        'typ' => 'JWT'
+    ];
+    $header = base64_encode_url(json_encode($header));
+    $payload = base64_encode_url(json_encode($payload));
+    $signature = base64_encode_url(hash_hmac('sha512', "$header.$payload", $jwtSigningKey, true));
+    $jwt = "$header.$payload.$signature";
+    return $jwt;
+}
+
+function checkJWT($jwt) {
+    global $jwtSigningKey;
+
+    if ($jwtSigningKey == null) {
+        setJWTKey(null);
+    }
+
+    // split into the three parts and then decode them back to structures
+    [$header, $payload, $signature] = explode('.', $jwt);
+    $checkSignature = base64_encode_url(hash_hmac('sha512', "$header.$payload", $jwtSigningKey, true));
+    return $checkSignature == $signature;
 }
