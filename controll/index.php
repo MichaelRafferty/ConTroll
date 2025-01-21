@@ -30,6 +30,8 @@ if($need_login == false) {
         && array_key_exists('remote_addr', $_SESSION) && $_SESSION['remote_addr'] == $_SERVER['REMOTE_ADDR']
     )) {
         $_SESSION['user_email'] = $user_email;
+        $perid = 'not found';
+        $userid = 'not found';
         // get the user id for database tracking
         $usergetQ = <<<EOS
 SELECT id, perid
