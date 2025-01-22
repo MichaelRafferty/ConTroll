@@ -382,12 +382,17 @@ if ($numExpired > 0) {
     $disablePay = ' disabled';
 }
 
-if ($NomNomExists)
-    $NonNomButton = "<button class='btn btn-primary p-1' type='button' " .
-        ($hasWSFS ? 'onclick="portal.vote();"' : ' disabled  data-bs-toggle="tooltip" data-bs-placement="top" ' .
-            'data-bs-title="Add and pay for a WSFS membership to be able to nominate or vote."') . '>Log into the Hugo System</button>';
-else
-    $NonNomButton = '';
+$NonNomButton = '';
+if ($NomNomExists) {
+    if (!$hasWSFS)
+        $NonNomButton .= '<span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="top" ' .
+            'data-bs-title="Add and pay for a WSFS membership to be able to nominate or vote.">';
+    $NonNomButton .= "<button class='btn btn-primary p-1' type='button' " .
+        ($hasWSFS ? 'onclick="portal.vote();"' : ' disabled') . '>Log into the Hugo System</button>';
+    if (!$hasWSFS)
+        $NonNomButton .= '</span>';
+}
+
 
 portalPageInit('portal', $info,
     /* css */ array($cdn['tabcss'],
