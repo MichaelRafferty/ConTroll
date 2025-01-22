@@ -1,4 +1,5 @@
 <?php
+exit(); 	//disable for now
 // Registration Portal Oauth Test harness - tend.php - dump authentication return
 require_once("lib/base.php");
 

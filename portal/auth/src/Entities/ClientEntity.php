@@ -10,21 +10,48 @@ use League\OAuth2\Server\Entities\Traits\EntityTrait;
 
 class ClientEntity implements ClientEntityInterface
 {
-  use EntityTrait;
-  use ClientTrait;
+    private string $identifier;
+    private string $name;
+    private array $redirectUris = [];
+    private bool $isConfidential = true;
 
-  public function setName(string $name): void
-  {
-    $this->name = $name;
-  }
+    public function setIdentifier(string $identifier): void
+    {
+        $this->identifier = $identifier;
+    }
 
-  public function setRedirectUri(string $uri): void
-  {
-    $this->redirectUri = $uri;
-  }
+    public function getIdentifier(): string
+    {
+        return $this->identifier;
+    }
 
-  public function setConfidential(): void
-  {
-    $this->isConfidential = true;
-  }
+    public function setName(string $name): void
+    {
+        $this->name = $name;
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function setRedirectUris(array $redirectUris): void
+    {
+        $this->redirectUris = $redirectUris;
+    }
+
+    public function getRedirectUri(): array
+    {
+        return $this->redirectUris;
+    }
+
+    public function setConfidential(bool $isConfidential = true): void
+    {
+        $this->isConfidential = $isConfidential;
+    }
+
+    public function isConfidential(): bool
+    {
+        return $this->isConfidential;
+    }
 }

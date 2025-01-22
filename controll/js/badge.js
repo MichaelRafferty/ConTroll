@@ -109,7 +109,7 @@ function loadWatchList(data) {
                 {title: "Zip", field: "zip", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 120, width: 120},
                 {title: "Email Address", field: "email_addr", headerFilter: true, headerWordWrap: true, tooltip: true,},
                 {title: "Memberships", field: "memberships", headerFilter: true, headerWordWrap: true, tooltip: true,
-                    maxWidth: 300, width: 300, formatter: membershipFormatter,},
+                    maxWidth: 500, width: 300, formatter: membershipFormatter,},
                 {field: "index", visible: false,},
             ],
         });
@@ -194,8 +194,10 @@ function membershipFormatter(cell, formatterParams, onRendered) {
         return data.memberships;
     }
 
-    html += '&nbsp;<button type="button" class="btn btn-sm btn-primary pt-0 pb-0" style="--bs-btn-font-size: 75%;" onclick="updateBadge(' +
-            data.id + ')">Badge</button>&nbsp;' +
+    html +=  '<select name="m_' + data.id + '" id="m_' + data.id + '">' +
+        freeSelect + '</select><br/>' +
+        '&nbsp;<button type="button" class="btn btn-sm btn-primary pt-0 pb-0" style="--bs-btn-font-size: 75%;" onclick="updateBadge(' +
+            data.id + ')">Assign Badge</button>&nbsp;' +
             '<select name="m_' + data.id + '" id="m_' + data.id + '">' +
             freeSelect + '</select>';
     return html;

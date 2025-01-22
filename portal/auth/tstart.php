@@ -1,4 +1,5 @@
 <?php
+exit(); 	//disable for now
 // Registration Portal Oauth Test harness - tstart.php - redirect to portal
 require_once("lib/base.php");
 
@@ -9,7 +10,7 @@ $redirect = $portal_conf['portalsite'];
 index_page_init("Auth Test Harness - Request");
 
 $retdata = 'Nom';
-$returl = $portal_conf['portalsite'] . '/auth/tend.php';
+$returl = $portal_conf['portalsite'] . '/auth/authcomplete';
 $apikey = 'testAPIkey';
 $app = 'Test Harness';
 

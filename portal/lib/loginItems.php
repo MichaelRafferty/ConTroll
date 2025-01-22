@@ -354,7 +354,7 @@ EOS;
         case 'nom':
             for ($row = 0; $row < count($regs); $row++) {
                 $reg = $regs[$row];
-                if (($reg['memCategory'] == 'wsfs' || $reg['memCategory'] == 'wsfsnom' || $reg['memCategory'] == 'dealer')  && $reg['inTime'] == 1) {
+                if ((($reg['memCategory'] == 'wsfs' || $reg['memCategory'] == 'dealer') && $reg['inTime'] == 1) || ($reg['memCategory'] == 'wsfsnom')) {
                     $resp['rights'] = 'hugo_nominate';
                     break;
                 }
@@ -363,7 +363,7 @@ EOS;
         case 'vote':
             for ($row = 0; $row < count($regs); $row++) {
                 $reg = $regs[$row];
-                if ($reg['memCategory'] == 'wsfs' && str_contains(str_to_lower($reg['label']), ' only') == false) {
+                if (($reg['memCategory'] == 'wsfs' && str_contains(strtolower($reg['label']), ' only') == false) || ($reg['memCategory'] == 'dealer')) {
                     $resp['rights'] = 'hugo_vote';
                     break;
                 }

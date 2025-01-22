@@ -19,6 +19,8 @@ class AuthCodeRepository implements AuthCodeRepositoryInterface
     //
     // TODO: THIS IS EXAMPLE CODE!
 
+    /*
+
     $this->db->execute('INSERT INTO oauth_auth_codes (id, client_id, user_id, scopes, expires_at, revoked, redirect_uri) VALUES (?, ?, ?, ?, ?, ?, ?)', [
       $authCodeEntity->getIdentifier(),
       $authCodeEntity->getClient()->getIdentifier(),
@@ -27,7 +29,7 @@ class AuthCodeRepository implements AuthCodeRepositoryInterface
       $authCodeEntity->getExpiryDateTime()->format('Y-m-d H:i:s'),
       0,
       $authCodeEntity->getRedirectUri(),
-    ]);
+    ]); */
   }
 
   /**
@@ -50,8 +52,8 @@ class AuthCodeRepository implements AuthCodeRepositoryInterface
     // Query the database to check if the code is marked as revoked or doesn't exist.
 
     // TODO: EXAMPLE CODE. Craft this properly!
-
-    // $record = $this->db->query('SELECT * FROM oauth_auth_codes WHERE id = ?', [$codeId]);
+/*
+    $record = $this->db->query('SELECT * FROM oauth_auth_codes WHERE id = ?', [$codeId]);
 
     if (!$record) {
 
@@ -62,7 +64,7 @@ class AuthCodeRepository implements AuthCodeRepositoryInterface
 
     // If there's a 'revoked' column or 'used' column:
 
-    return (bool)$record['revoked'];
+    return (bool)$record['revoked']; */
   }
 
   /**
