@@ -126,7 +126,7 @@ class customTextSetup {
     editbutton(cell, formatterParams, onRendered) {
         var index = cell.getRow().getIndex()
         return '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
-                ' onclick="customText.editCustomText(' + index + ');">Edit Custom Text</button>';
+                ' onclick="customText.editCustomText(' + index + ');">Edit</button>';
     }
 
     toHTML(cell,  formatterParams, onRendered) {

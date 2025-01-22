@@ -1,5 +1,4 @@
 <?php
-
 // library AJAX Processor: admin_updateUsers.php
 // Balticon Registration System
 // Author: Syd Weinstein
@@ -45,7 +44,7 @@ $data = $_POST['data'];
 
 // first find all the  rows to delete (those not in the data array or this user)
 $savelist = [];
-$savelist[] = $_SESSION['user']; // not allowed to delete yourself
+$savelist[] = getSessionVar('user'); // not allowed to delete yourself
 foreach ($data as $row) {
     if (is_numeric($row['id'])) {
         $savelist[] = $row['id'];

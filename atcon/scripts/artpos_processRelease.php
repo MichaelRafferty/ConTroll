@@ -36,7 +36,7 @@ if (!check_atcon('artsales', $conid)) {
 //  pay_tid: current master transaction
 
 $user_id = $_POST['user_id'];
-if ($user_id != $_SESSION['user']) {
+if ($user_id != getSessionVar('user')) {
     ajaxError('Invalid credentials passed');
 }
 

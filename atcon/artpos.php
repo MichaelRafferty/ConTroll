@@ -2,7 +2,7 @@
 
 require_once "lib/base.php";
 
-if (!isset($_SESSION['user'])) {
+if (!isSessionVar('user')) {
     header("Location: /index.php");
     exit(0);
 }

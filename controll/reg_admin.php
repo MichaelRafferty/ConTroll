@@ -55,10 +55,16 @@ if (array_key_exists('controll_regadmin', $debug))
 else
     $debug_regadmin = 0;
 
+if (array_key_exists('multioneday', $con_conf))
+    $multiOneDay =$con_conf['multioneday'];
+else
+    $multiOneDay = 0;
+
 $config_vars = array();
 $config_vars['pageName'] = 'regAdmin';
 $config_vars['debug'] = $debug_regadmin;
 $config_vars['conid'] = $conid;
+$config_vars['multiOneDay'] = $multiOneDay;
 ?>
 <?php bs_tinymceModal(); ?>
 <div id='merge-lookup' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Look up Merge Person' aria-hidden='true' style='--bs-modal-width: 80%;'>

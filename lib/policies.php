@@ -317,9 +317,6 @@ EOS;
             // not in the source, if not in the remain, insert the default value
             if (!array_key_exists($policyName, $remainPolicies)) {
                 $response = $policy['defaultValue'];
-                if (array_key_exists($policyName,  $sourceValues))
-                    $response = $sourceValues[$policyName];
-                if ($sourceValues[$policyName] != $policy['policy']) {}
                 $newId = dbSafeInsert($iP, 'iissi', array($remainingPerId, $conid, $policyName, $response, $loginId));
                 if ($newId !== false) {
                     $numIns++;

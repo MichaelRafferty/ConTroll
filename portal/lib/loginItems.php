@@ -354,7 +354,7 @@ EOS;
         case 'nom':
             for ($row = 0; $row < count($regs); $row++) {
                 $reg = $regs[$row];
-                if (($reg['memCategory'] == 'wsfs' || $reg['memCategory'] == 'wsfsnom')  && $reg['inTime'] == 1) {
+                if (($reg['memCategory'] == 'wsfs' || $reg['memCategory'] == 'wsfsnom' || $reg['memCategory'] == 'dealer')  && $reg['inTime'] == 1) {
                     $resp['rights'] = 'hugo_nominate';
                     break;
                 }

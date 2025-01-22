@@ -226,10 +226,10 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
         </div>
     </div>
     <div class="row">
-        <div class="col-sm-auto">
+        <div class="col-sm-12">
             <label for="<?php echo $idPrefix . 'memId'; ?>" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span
                             class='text-danger'>&bigstar;</span>Membership Type</span></label><br/>
-            <select id='<?php echo $idPrefix . 'memId'; ?>' name='memId' style="width:500px;" tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
+            <select id='<?php echo $idPrefix . 'memId'; ?>' name='memId' style="max-width:90%;" tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
                 <?php foreach ($membershipTypes as $memType) { ?>
                     <option value='<?php echo $memType['id']; ?>'><?php echo $memType['label']; ?> ($<?php echo $memType['price']; ?>)</option>
                 <?php } ?>

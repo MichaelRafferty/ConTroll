@@ -32,6 +32,7 @@ class PosCart {
     #addEditBody = null;
     #addEditTitle = null;
     #addEditFullName = null;
+    #addEditPerid = null;
     #ageButtonsDiv = null;
     #membershipButtonsDiv = null;
     #memberAge = null;
@@ -268,7 +269,7 @@ class PosCart {
     allowAddCouponToCart() {
         this.#anyUnpaid = false;
         var numCoupons = pos.everyMembership(this.#cartPerinfo, function(_this, mem) {
-            if ((!pos.nonPrimaryCategoriesIncludes(mem.memCategory)) && mem.conid == pos.getConid() && mem.status != 'paid')
+            if (isPrimary(mem.conid, mem.memType, mem.memCategory, mem.price, 'coupon') && mem.status != 'paid')
                 cart.setAnyUnpaid();
             if (mem.coupon)
                 return 1;
@@ -442,6 +443,7 @@ class PosCart {
 // use the memRules engine to add/edit the memberships for this person
     addEditMemberships(index) {
         var cart_row = this.#cartPerinfo[index];
+        this.#addEditPerid = cart_row.perid;
         if (this.#addEditModal) {
             this.#addEditFullName.innerHTML = cart_row.fullName;
             this.#memberships = [];
@@ -510,7 +512,7 @@ class PosCart {
                     row + ')">Restore</button>';
             } else if (membershipRec.status == 'in-cart') {
                 col1 = '<button class="btn btn-sm btn-secondary pt-0 pb-0" onclick="cart.regItemRemove(' + row + ')">Remove</button>';
-            } else if (membershipRec.status != 'plan' && (membershipRec.paid == 0 || pos.getManager())) {
+            } else if (membershipRec.status != 'plan' && membershipRec.status != 'paid' && (membershipRec.paid == 0 || pos.getManager())) {
                 col1 = '<button class="btn btn-sm ' + btncolor + ' pt-0 pb-0" onclick="cart.regItemDelete(' + row + ')">Delete</button>';
             }
             html += `
@@ -548,6 +550,8 @@ class PosCart {
 
 // age buttons
     buildAgeButtons() {
+        this.#currentAge = null;
+        this.#memberAge = null;
         // first check if there is a current age;
         for (var row in this.#memberships) {
             var mbr = this.#memberships[row];
@@ -726,6 +730,7 @@ class PosCart {
         newMembership.memCategory = memrow.memCategory;
         newMembership.memType = memrow.memType;
         newMembership.memAge = memrow.memAge;
+        newMembership.perid =  this.#addEditPerid;
         var memCat = memCategories[memrow.memCategory];
         if (memCat.variablePrice == 'Y') {
             var mem = memListIdx[newMembership.memId];
@@ -920,6 +925,7 @@ class PosCart {
                     col1 = "Pd";
                     break;
                 case 'unpaid':
+                case 'in-cart':
                     col1 = "Upd";
                     break;
                 case 'plan':
@@ -1154,6 +1160,7 @@ class PosCart {
     // create the HTML of the cart into the review data block
     buildReviewData() {
         pos.setMissingItems(0);
+        pos.setMissingPolicies(0);
         var html = `
 <div id='reviewBody' class="container-fluid form-floating">
   <form id='reviewForm' action='javascript: return false; ' class="form-floating">
@@ -1165,7 +1172,8 @@ class PosCart {
         var mrow;
         var field;
         var tabindex = 0;
-        var review_missing_items = 0;
+        var reviewMissingItems = 0;
+        var missingRequiredPolicies = 0;
         for (rownum in this.#cartPerinfo) {
             tabindex += 100;
             row = this.#cartPerinfo[rownum];
@@ -1175,7 +1183,7 @@ class PosCart {
             for (fieldno in this.#review_required_fields) {
                 field = this.#review_required_fields[fieldno];
                 if (row[field] == null || row[field] == '') {
-                    review_missing_items++;
+                    reviewMissingItems++;
                     colors.set(field, 'var(--bs-warning)');
                 } else {
                     colors.set(field, '');
@@ -1189,10 +1197,9 @@ class PosCart {
                     colors.set(field, '');
                 }
             }
-            pos.setMissingItems(review_missing_items);
             html += '<div class="row">';
             if (mrow == null) {
-                html += '<div class="col-sm-12 text-bg-info">No Membership</div>';
+                html += '<div class="col-sm-12 text-bg-info">No Primary Membership</div>';
             } else {
                 html += '<div class="col-sm-12 text-bg-success">Membership: ' + row.memberships[mrow].label + '</div>';
             }
@@ -1286,7 +1293,12 @@ class PosCart {
             for (var polrow in policies) {
                 var policyName = policies[polrow].policy;
                 var policyResp = policies[polrow].response;
-                html += '<div class="col-sm-auto">' + policyName + ': ' +
+                var color = '';
+                if (config.mode != 'admin' && allPolicies[policyIndex[policyName]].required == 'Y' && policyResp == 'N') {
+                    missingRequiredPolicies++;
+                    color = "var(--bs-danger-bg-subtle)"
+                }
+                html += '<div class="col-sm-auto" style="background-color: ' + color + ';">' + policyName + ': ' +
                     '<input type="checkbox" name="c' + rownum + '-p_' + policyName + '" id="c' + rownum + '-p_' + policyName +
                     '" tabindex="' + String(tabindex + 26) +
                     '" value="Y"' + (policyResp == 'Y' ? ' checked' : ' ') + '/>\n</div>\n';
@@ -1294,13 +1306,13 @@ class PosCart {
 
         html += '\n</div>\n';
         }
-    var disableNoChanges =
+
     html += `<div class="row mt-2">
         <div class="col-sm-1 m-0 p-0">&nbsp;</div>
         <div class="col-sm-auto m-0 p-0">
             <button class="btn btn-primary btn-sm" type="button" id="review-btn-update" onclick="pos.reviewUpdate();">Update All</button>
             <button class="btn btn-primary btn-sm" type="button" id="review-btn-nochanges" onclick="pos.reviewNoChanges();" ` +
-                (pos.isReviewDirty() ? ' disabled ' : '') + `>No Changes</button>
+                (pos.isReviewDirty() || missingRequiredPolicies > 0 ? ' disabled ' : '') + `>No Changes</button>
         </div>
     </div>
     <div class="row">
@@ -1309,6 +1321,8 @@ class PosCart {
   </form>
 </div>
 `;
+        pos.setMissingItems(reviewMissingItems + missingRequiredPolicies);
+        pos.setMissingPolicies(missingRequiredPolicies);
         return html;
     }
 
@@ -1333,12 +1347,28 @@ class PosCart {
                     }
                 }
             }
+            // update all the policy values
+            var policies = this.#cartPerinfo[rownum].policies;
+            for (var polrow in policies) {
+                var policyName = policies[polrow].policy;
+                var policyResp = policies[polrow].response;
+                el = document.getElementById('c' + rownum + '-p_' + policyName);
+                if (el) {
+                    if (policyResp != (el.checked ? 'Y' : 'N')) {
+                        this.#cartPerinfo[rownum].policies[polrow].response = el.checked ? 'Y' : 'N';
+                        this.#cartPerinfo[rownum].dirty = false;
+                    }
+                }
+            }
         }
     }
 
 // update the card with fields provided by the update of the database.  And since the DB is now updated, clear the dirty flags.
     updateFromDB(data) {
         this.#cartPerinfo = data.updated_perinfo;
+        // redraw the cart with the new id's and maps, which will compute the unpaid rows.
+        cart.drawCart();
+        return this.#unpaidRows;
     }
 
     // update selected element in the country pulldown from the review data screen to the cart
@@ -1375,32 +1405,54 @@ class PosCart {
             if (mrow == null)
                 continue;   // skip anyone without a primary
             mrow = crow.memberships[mrow];
-            if (new_print) {
-                printed_obj.set(crow.index, 0);
-            }
-            print_html += `
+            // if one day, and multi, find all one days, else just select this one
+            if (pos.isMultiOneDay() && mrow.memType == 'oneday') {
+                // this row is a one day, find all the memberships that are type one day
+                for (var row in crow.memberships) {
+                    var mbrrow = crow.memberships[row];
+                    print_html += `
     <div class="row">
         <div class="col-sm-2 ms-0 me-2 p-0">
-            <button class="btn btn-primary btn-sm" type="button" id="pay-print-` + this.#cartPerinfo[rownum].index + `" name="print_btn" onclick="pos.printBadge(` + crow.index + `);">Print</button>
+            <button class="btn btn-primary btn-sm" type="button" id="pay-print-` + this.#cartPerinfo[rownum].index + `" name="print_btn" onclick="pos.printBadge(` +
+                        crow.index + ',' + mbrrow.index + `);">Print</button>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">            
-            <span class="text-bg-success"> Membership: ` + mrow.label + `</span> (Times Printed: ` +
-                mrow.printcount + `)<br/>
+            <span class="text-bg-success"> Membership: ` + mbrrow.label + `</span> (Times Printed: ` +
+                                mbrrow.printcount + `)<br/>
               ` + crow.badge_name + '/' + (crow.first_name + ' ' + crow.last_name).trim() + `
         </div>
      </div>`;
+                    if (new_print) {
+                        printed_obj.set(mbrrow.regid, 0);
+                    }
+                    pos.addToBadgeList(crow.index, mbrrow.index);
+                }
+            } else {
+                print_html += `
+    <div class="row">
+        <div class="col-sm-2 ms-0 me-2 p-0">
+            <button class="btn btn-primary btn-sm" type="button" id="pay-print-` + this.#cartPerinfo[rownum].index + `" name="print_btn" onclick="pos.printBadge(` +
+                    crow.index + ',' + mrow.index + `);">Print</button>
+        </div>
+        <div class="col-sm-auto ms-0 me-2 p-0">            
+            <span class="text-bg-success"> Membership: ` + mrow.label + `</span> (Times Printed: ` +
+                    mrow.printcount + `)<br/>
+              ` + crow.badge_name + '/' + (crow.first_name + ' ' + crow.last_name).trim() + `
+        </div>
+     </div>`;
+                if (new_print) {
+                    printed_obj.set(mrow.regid, 0);
+                }
+                pos.addToBadgeList(crow.index, mrow.index);
+            }
         }
         return print_html;
     }
 
 // getBadge = return the cart portions of the parameters for a badge print, that will be added to by the calling routine
-    getBadge(index) {
-        var row = this.#cartPerinfo[index];
-        var printrow = pos.find_primary_membership(row.memberships);
-        if (printrow == null)
-            return null;
-
-        printrow = row.memberships[printrow];
+    getBadge(cindex, mindex) {
+        var row = this.#cartPerinfo[cindex];
+        var printrow = row.memberships[mindex];
 
         var params = {};
         params.type = printrow.memType;
@@ -1410,22 +1462,9 @@ class PosCart {
         params.badge_id = row.perid;
         params.day = dayFromLabel(printrow.label);
         params.age = printrow.memAge;
+        params.regId = printrow.regid;
+        params.printCount = printrow.printcount;
         return params;
-    }
-
-    // addToPrintCount: increment the print count for a badge
-    addToPrintCount(index) {
-        var row = this.#cartPerinfo[index];
-        var mrow = pos.find_primary_membership(row.memberships);
-        if (mrow == null) {
-            return array(null, 0);
-        }
-
-        this.#cartPerinfo[index].memberships[mrow].printcout++;
-        var retval = [];
-        retval[0] = mrow.regid;
-        retval[1] = mrow.printcount;
-        return (retval);
     }
 
     // getEmail: return the email address of an entry

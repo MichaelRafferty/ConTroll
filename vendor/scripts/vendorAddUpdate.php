@@ -99,7 +99,7 @@ EOS;
         $vendorTest = dbSafeQuery($vendorTestQ, 'ss', array(trim($_POST['exhibitorEmail']), trim($_POST['exhibitorName'])));
         if ($vendorTest->num_rows != 0) {
             $response['status'] = 'error';
-            $response['message'] = "Another account already exists with that name or email, please login or contact $vemail for assistance";
+            $response['message'] = "Another account already exists with that name (" . trim($_POST['exhibitorName']). ") or email (" . trim($_POST['exhibitorEmail']) . "), please login or contact $vemail for assistance";
             ajaxSuccess($response);
             exit();
         }

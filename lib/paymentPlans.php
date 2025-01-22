@@ -84,6 +84,41 @@ EOS;
     return $data;
 }
 
+function getPlanConfig() {
+    // get payment plan templates
+    $plans = array();
+    $QQ = <<<EOS
+WITH planUsage AS (
+    SELECT planId, count(*) AS uses
+    FROM payorPlans
+    GROUP BY planId
+)
+SELECT p.*, IFNULL(pu.uses, 0) AS uses
+FROM paymentPlans p
+LEFT OUTER JOIN planUsage pu ON (pu.planId = p.id)
+WHERE active = 'Y'
+ORDER BY sortorder;
+EOS;
+    $QR = dbQuery($QQ);
+    while ($row = $QR->fetch_assoc()) {
+        if ($row['catList'] != null && $row['catList'] != '') {
+            $row['catListArray'] = explode(',', $row['catList']);
+        }
+        if ($row['memList'] != null && $row['memList'] != '') {
+            $row['memListArray'] = explode(',', $row['memList']);
+        }
+        if ($row['excludeList'] != null && $row['excludeList'] != '') {
+            $row['excludeListArray'] = explode(',', $row['excludeList']);
+        }
+        if ($row['portalList'] != null && $row['portalList'] != '') {
+            $row['portalListArray'] = explode(',', $row['portalList']);
+        }
+        $plans[] = $row;
+    }
+    $QR->free();
+    return $plans;
+}
+
 function whatMembershipsInPlan($memberships, $computedPlan) {
 
     if ($computedPlan == null) {

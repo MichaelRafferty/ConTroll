@@ -81,7 +81,7 @@ function updateMemberInterests($conid, $personId, $personType, $loginId, $loginT
     // when you update the interests, force a re-notify of the change
     $updInterest = <<<EOS
 UPDATE memberInterests
-SET interested = ?, updateBy = ?, notifyDate = null, csvDate = null
+SET interested = ?, updateBy = ?, notifyDate = null, csvDate = null, updateDate = NOW()
 WHERE id = ?;
 EOS;
     $insInterest = <<<EOS
@@ -158,7 +158,7 @@ WHERE perid = ? AND conid = ?;
 EOS;
         $chgU = <<<EOS
 UPDATE memberInterests
-SET interested = ?, updateBy = ?, notifyDate = null, csvDate = null
+SET interested = ?, updateBy = ?, notifyDate = null, csvDate = null, updateDate = NOW()
 WHERE id = ?;
 EOS;
         $idU = <<<EOS

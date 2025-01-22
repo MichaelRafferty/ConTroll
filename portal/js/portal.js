@@ -10,8 +10,8 @@ window.onload = function () {
     }
     portal = new Portal();
     coupon = new Coupon();
-    if (config['initCoupon'] && config['initCoupon'] != '') {
-        coupon.addCouponCode(config['initCoupon'], config['initCouponSerial']);
+    if (config.initCoupon && config.initCoupon != '') {
+        coupon.addCouponCode(config.initCoupon, config.initCouponSerial);
     }
 }
 
@@ -244,7 +244,7 @@ class Portal {
             modalCalled = true;
         });
 
-        if (config['needInterests'] == 1) {
+        if (config.needInterests == 1) {
             if (modalCalled)
                 return;
             _this.editInterests(config.id, config.idType);
@@ -255,8 +255,8 @@ class Portal {
     disassociate() {
         var data = {
             'managedBy': 'disassociate',
-            loginId: config['id'],
-            loginType: config['idType'],
+            loginId: config.id,
+            loginType: config.idType,
         }
         var script = 'scripts/processDisassociate.php';
         $.ajax({
@@ -265,12 +265,12 @@ class Portal {
             data: data,
             success: function (data, textStatus, jqXhr) {
                 checkResolveUpdates(data);
-                if (data['status'] == 'error') {
-                    show_message(data['message'], 'error');
-                } else if (data['status'] == 'warn') {
-                    show_message(data['message'], 'warn');
+                if (data.status == 'error') {
+                    show_message(data.message, 'error');
+                } else if (data.status == 'warn') {
+                    show_message(data.message, 'warn');
                 } else {
-                    if (config['debug'] & 1)
+                    if (config.debug & 1)
                         console.log(data);
                     var divElement = document.getElementById('managedByDiv');
                     if (divElement)
@@ -315,8 +315,8 @@ class Portal {
         this.#currentPerson = id;
         this.#currentPersonType = type;
         var data = {
-            loginId: config['id'],
-            loginType: config['idType'],
+            loginId: config.id,
+            loginType: config.idType,
             getId: id,
             getType: type,
             memberships: 'N'
@@ -328,12 +328,12 @@ class Portal {
             data: data,
             success: function (data, textStatus, jqXhr) {
                 checkResolveUpdates(data);
-                if (data['status'] == 'error') {
-                    show_message(data['message'], 'error');
-                } else if (data['status'] == 'warn') {
-                    show_message(data['message'], 'warn');
+                if (data.status == 'error') {
+                    show_message(data.message, 'error');
+                } else if (data.status == 'warn') {
+                    show_message(data.message, 'warn');
                 } else {
-                    if (config['debug'] & 1)
+                    if (config.debug & 1)
                         console.log(data);
                     portal.editPersonGetSuccess(data);
                 }
@@ -348,38 +348,38 @@ class Portal {
     // got the person, update the modal contents
     editPersonGetSuccess(data) {
         // ok, it's legal to edit this person, now populate the fields
-        var person = data['person'];
-        var post = data['post'];
-        if (data['policies'])
-            this.#oldPolicies = data['policies'];
+        var person = data.person;
+        var post = data.post;
+        if (data.policies)
+            this.#oldPolicies = data.policies;
 
-        this.#fullname = person['fullname'];
+        this.#fullname = person.fullname;
         this.#editPersonTitle.innerHTML = '<strong>Editing: ' + this.#fullname + '</strong>';
-        if (this.#uspsDiv && person['country'] == 'USA') {
+        if (this.#uspsDiv && person.country == 'USA') {
             this.#editPersonSubmitBtn.innerHTML = 'Validate Address and Update ' + this.#fullname;
         } else {
             this.#editPersonSubmitBtn.innerHTML = 'Update ' + this.#fullname;
         }
 
         // now fill in the fields
-        this.#epHeaderDiv.innerHTML = '<strong>Editing: ' + this.#fullname + ' (' + person['email_addr'] + ')</strong>';
-        this.#epPersonIdField.value = post['getId'];
-        this.#epPersonTypeField.value = post['getType'];
-        this.#fnameField.value = person['first_name'];
-        this.#mnameField.value = person['middle_name'];
-        this.#lnameField.value = person['last_name'];
-        this.#suffixField.value = person['suffix'];
-        this.#legalnameField.value = person['legalName'];
-        this.#pronounsField.value = person['pronouns'];
-        this.#addrField.value = person['address'];
-        this.#addr2Field.value = person['addr_2'];
-        this.#cityField.value = person['city'];
-        this.#stateField.value = person['state'];
-        this.#zipField.value = person['zip'];
-        this.#countryField.value = person['country'];
-        this.#email1Field.innerHTML = person['email_addr'];
-        this.#phoneField.value = person['phone'];
-        this.#badgenameField.value = person['badge_name'];
+        this.#epHeaderDiv.innerHTML = '<strong>Editing: ' + this.#fullname + ' (' + person.email_addr + ')</strong>';
+        this.#epPersonIdField.value = post.getId;
+        this.#epPersonTypeField.value = post.getType;
+        this.#fnameField.value = person.first_name;
+        this.#mnameField.value = person.middle_name;
+        this.#lnameField.value = person.last_name;
+        this.#suffixField.value = person.suffix;
+        this.#legalnameField.value = person.legalName;
+        this.#pronounsField.value = person.pronouns;
+        this.#addrField.value = person.address;
+        this.#addr2Field.value = person.addr_2;
+        this.#cityField.value = person.city;
+        this.#stateField.value = person.state;
+        this.#zipField.value = person.zip;
+        this.#countryField.value = person.country;
+        this.#email1Field.innerHTML = person.email_addr;
+        this.#phoneField.value = person.phone;
+        this.#badgenameField.value = person.badge_name;
 
         this.#personSerializeStart = $("#editPerson").serialize();
 
@@ -433,11 +433,11 @@ class Portal {
             return;
         }
 
-        this.#currentPerson = personData['id'];
-        this.#currentPersonType = personData['type'];
+        this.#currentPerson = personData.id;
+        this.#currentPersonType = personData.type;
 
         // change modal fields
-        this.#changeEmailH1.innerHTML = '<strong>Change Email Address for ' + personData['fullname'] + ' (' + personData['email_addr'] + ')</strong>';
+        this.#changeEmailH1.innerHTML = '<strong>Change Email Address for ' + personData.fullname + ' (' + personData.email_addr + ')</strong>';
 
         this.#changeEmailSubmitBtn.disabled = true;
         this.#changeEmailModal.show();
@@ -482,8 +482,8 @@ class Portal {
 
         // ok valid email address, check if it's a legal one for us to use
         var data = {
-            loginId: config['id'],
-            loginType: config['idType'],
+            loginId: config.id,
+            loginType: config.idType,
             email: email, // new email address
             currentPersonId:  this.#currentPerson,
             currentPersonType: this.#currentPersonType,
@@ -496,15 +496,15 @@ class Portal {
             method: 'POST',
             success: function (data, textStatus, jqXhr) {
                 checkResolveUpdates(data);
-                if (data['status'] == 'error') {
-                    show_message(data['message'], 'error', 'ceMessageDiv');
+                if (data.status == 'error') {
+                    show_message(data.message, 'error', 'ceMessageDiv');
                     return false;
                 }
-                if (data['status'] == 'warn') {
-                    show_message(data['message'], 'warn', 'ceMessageDiv');
+                if (data.status == 'warn') {
+                    show_message(data.message, 'warn', 'ceMessageDiv');
                     return false;
                 }
-                if (data['message']) {
+                if (data.message) {
                     portal.changeEmailSuccess(data);
                 }
                 return true;
@@ -518,8 +518,8 @@ class Portal {
 
     // change email success - clean up from changing the email address
     changeEmailSuccess(data) {
-        if (data['message'])
-            show_message(data['message'], 'success');
+        if (data.message)
+            show_message(data.message, 'success');
 
         this.#changeEmailModal.hide();
         clear_message('ceMessageDiv');
@@ -544,7 +544,7 @@ class Portal {
         //process(formRef) {
         clear_message('epMessageDiv');
         var valid = true;
-        var required = config['required'];
+        var required = config.required;
         var message = "Please correct the items highlighted in red and validate again.";
 
         // trim trailing blanks
@@ -553,14 +553,14 @@ class Portal {
             person[keys[i]] = person[keys[i]].trim();
         }
 
-        if (person['country'] == 'USA') {
+        if (person.country == 'USA') {
             message += "<br/>Note: If any of the address fields Address, City, State or Zip are used and the country is United States, " +
                 "then the Address, City, State, and Zip fields must all be entered and the state field must be a valid USPS two character state code.";
         }
         // validation
         if (required != '') {
             // first name is required
-            if (person['fname'] == '') {
+            if (person.fname == '') {
                 valid = false;
                 $('#fname').addClass('need');
             } else {
@@ -570,7 +570,7 @@ class Portal {
 
         if (required == 'all') {
             // last name is required
-            if (person['lname'] == '') {
+            if (person.lname == '') {
                 valid = false;
                 $('#lname').addClass('need');
             } else {
@@ -579,12 +579,12 @@ class Portal {
         }
 
         if (required == 'addr' || required == 'all' ||
-            (person['country'] == 'USA' && this.#uspsDiv != null &&
-                (person['addr'] != '' || person['city'] != '' || person['state'] != '' || person['zip'] != '')
+            (person.country == 'USA' && this.#uspsDiv != null &&
+                (person.addr != '' || person.city != '' || person.state != '' || person.zip != '')
             )
         ) {
             // address 1 is required, address 2 is optional
-            if (person['addr'] == '') {
+            if (person.addr == '') {
                 valid = false;
                 $('#addr').addClass('need');
             } else {
@@ -592,19 +592,19 @@ class Portal {
             }
 
             // city/state/zip required
-            if (person['city'] == '') {
+            if (person.city == '') {
                 valid = false;
                 $('#city').addClass('need');
             } else {
                 $('#city').removeClass('need');
             }
 
-            if (person['state'] == '') {
+            if (person.state == '') {
                 valid = false;
                 $('#state').addClass('need');
             } else {
-                if (person['country'] == 'USA') {
-                    if (person['state'].length != 2) {
+                if (person.country == 'USA') {
+                    if (person.state.length != 2) {
                         valid = false;
                         $('#state').addClass('need');
                     } else {
@@ -615,7 +615,7 @@ class Portal {
                 }
             }
 
-            if (person['zip'] == '') {
+            if (person.zip == '') {
                 valid = false;
                 $('#zip').addClass('need');
             } else {
@@ -651,7 +651,7 @@ class Portal {
         }
 
         // Check USPS for standardized address
-        if (this.#uspsDiv != null && person['country'] == 'USA' && person['city'] != '' && validateUSPS == 0 && person['country'] == 'USA') {
+        if (this.#uspsDiv != null && person.country == 'USA' && person.city != '' && validateUSPS == 0) {
             this.#personSave = person;
             this.#uspsAddress = null;
             var script = "scripts/uspsCheck.php";
@@ -661,8 +661,8 @@ class Portal {
                 method: 'POST',
                 success: function (data, textStatus, jqXhr) {
                     checkResolveUpdates(data);
-                    if (data['status'] == 'error') {
-                        show_message(data['message'], 'error', 'epMessageDiv');
+                    if (data.status == 'error') {
+                        show_message(data.message, 'error', 'epMessageDiv');
                         return false;
                     }
                     portal.showValidatedAddress(data);
@@ -683,39 +683,39 @@ class Portal {
     showValidatedAddress(data) {
         var html = '';
         clear_message('epMessageDiv');
-        if (data['error']) {
-            var errormsg = data['error'];
+        if (data.error) {
+            var errormsg = data.error;
             if (errormsg.substring(0, 5) == '400: ') {
                 errormsg = errormsg.substring(5);
             }
             html = "<h4>USPS Returned an error<br/>validating the address</h4>" +
                 "<div class='bg-dangrer text-white'><pre>" + errormsg + "</pre></div>\n";
         } else {
-            this.#uspsAddress = data['address'];
-            if (this.#uspsAddress['address2'] == undefined)
-                this.#uspsAddress['address2'] = '';
+            this.#uspsAddress = data.address;
+            if (this.#uspsAddress.address2 == undefined)
+                this.#uspsAddress.address2 = '';
 
             html = '';
-            if (this.#uspsAddress['valid'] != 'Valid') {
+            if (this.#uspsAddress.valid != 'Valid') {
                 html += "<div class='p-2 bg-danger text-white'>";
             }
-            html += "<h4>USPS Returned: " + this.#uspsAddress['valid'] + "</h4>";
+            html += "<h4>USPS Returned: " + this.#uspsAddress.valid + "</h4>";
 
             // ok, we got a valid uspsAddress, if it doesn't match, show the block
             var person = this.#personSave;
-            if (person['addr'] == this.#uspsAddress['address'] && person['addr2'] == this.#uspsAddress['address2'] &&
-                person['city'] == this.#uspsAddress['city'] && person['state'] == this.#uspsAddress['state'] &&
-                person['zip'] == this.#uspsAddress['zip']) {
+            if (person.addr == this.#uspsAddress.address && person.addr2 == this.#uspsAddress.address2 &&
+                person.city == this.#uspsAddress.city && person.state == this.#uspsAddress.state &&
+                person.zip == this.#uspsAddress.zip) {
                 portal.useMyAddress();
                 return;
             }
 
-            html += "<pre>" + this.#uspsAddress['address'] + "\n";
-            if (this.#uspsAddress['address2'])
-                html += this.#uspsAddress['address2'] + "\n";
-            html += this.#uspsAddress['city'] + ', ' + this.#uspsAddress['state'] + ' ' + this.#uspsAddress['zip'] + "</pre>\n";
+            html += "<pre>" + this.#uspsAddress.address + "\n";
+            if (this.#uspsAddress.address2)
+                html += this.#uspsAddress.address2 + "\n";
+            html += this.#uspsAddress.city + ', ' + this.#uspsAddress.state + ' ' + this.#uspsAddress.zip + "</pre>\n";
 
-            if (this.#uspsAddress['valid'] == 'Valid')
+            if (this.#uspsAddress.valid == 'Valid')
                 html += '<button class="btn btn-sm btn-primary m-1 mb-2" onclick="portal.useUSPS();">Update using the USPS validated address</button>'
             else
                 html += "<p>Please check/verify the address you entered on the left.</p></div>";
@@ -733,20 +733,20 @@ class Portal {
     // usps address post functions
     useUSPS() {
         var person = this.#personSave;
-        person['addr'] = this.#uspsAddress['address'];
-        if (this.#uspsAddress['address2'])
-            person['addr2'] = this.#uspsAddress['address2'];
+        person.addr = this.#uspsAddress.address;
+        if (this.#uspsAddress.address2)
+            person.addr2 = this.#uspsAddress.address2;
         else
-            person['addr2'] = '';
-        person['city'] = this.#uspsAddress['city'];
-        person['state'] = this.#uspsAddress['state'];
-        person['zip'] = this.#uspsAddress['zip'];
+            person.addr2 = '';
+        person.city = this.#uspsAddress.city;
+        person.state = this.#uspsAddress.state;
+        person.zip = this.#uspsAddress.zip;
 
-        this.#addrField.value = person['addr'];
-        this.#addr2Field.value = person['addr2'];
-        this.#cityField.value = person['city'];
-        this.#stateField.value = person['state'];
-        this.#zipField.value = person['zip'];
+        this.#addrField.value = person.addr;
+        this.#addr2Field.value = person.addr2;
+        this.#cityField.value = person.city;
+        this.#stateField.value = person.state;
+        this.#zipField.value = person.zip;
         if (this.#uspsDiv != null) {
             this.#uspsDiv.classList.remove('border', 'border-4', 'border-dark', 'rounded');
             this.#uspsDiv.innerHTML = '';
@@ -782,15 +782,15 @@ class Portal {
         }
         
         var data = {
-            loginId: config['id'],
-            loginType: config['idType'],
+            loginId: config.id,
+            loginType: config.idType,
             person: person,
             currentPerson: this.#currentPerson,
             currentPersonType: this.#currentPersonType,
             oldPolicies: JSON.stringify(this.#oldPolicies),
             newPolicies: JSON.stringify(URLparamsToArray($('#editPolicies').serialize())),
         }
-        if (config['debug'] & 1)
+        if (config.debug & 1)
             console.log(data);
 
         var script = 'scripts/updatePersonInfo.php';
@@ -810,15 +810,15 @@ class Portal {
     }
 
     updatePersonSuccess(data){
-        if (data['status'] == 'error') {
-            show_message(data['message'], 'error', 'epMessageDiv');
+        if (data.status == 'error') {
+            show_message(data.message, 'error', 'epMessageDiv');
         } else {
-            if (config['debug'] & 1)
+            if (config.debug & 1)
                 console.log(data);
-            show_message(data['message']);
+            show_message(data.message);
             this.#editPersonModal.hide();
-            if (data['rows_upd'] > 0) {
-                window.location = this.#portalPage + '?messageFwd=' + encodeURI(data['message']);
+            if (data.rows_upd > 0) {
+                window.location = this.#portalPage + '?messageFwd=' + encodeURI(data.message);
             }
         }
     }
@@ -846,8 +846,8 @@ class Portal {
         this.#currentPerson = id;
         this.#currentPersonType = type;
         var data = {
-            loginId: config['id'],
-            loginType: config['idType'],
+            loginId: config.id,
+            loginType: config.idType,
             getId: id,
             getType: type,
             memberships: 'N',
@@ -860,12 +860,12 @@ class Portal {
             data: data,
             success: function (data, textStatus, jqXhr) {
                 checkResolveUpdates(data);
-                if (data['status'] == 'error') {
-                    show_message(data['message'], 'error');
-                } else if (data['status'] == 'warn') {
-                    show_message(data['message'], 'warn');
+                if (data.status == 'error') {
+                    show_message(data.message, 'error');
+                } else if (data.status == 'warn') {
+                    show_message(data.message, 'warn');
                 } else {
-                    if (config['debug'] & 1)
+                    if (config.debug & 1)
                         console.log(data);
                     portal.editInterestsGetSuccess(data);
                 }
@@ -880,17 +880,17 @@ class Portal {
     // got the person, update the modal contents
     editInterestsGetSuccess(data) {
         // ok, it's legal to edit this person, now populate the fields
-        var person = data['person'];
-        var post = data['post'];
-        this.#interests = data['interests'];
+        var person = data.person;
+        var post = data.post;
+        this.#interests = data.interests;
 
-        this.#fullname = person['fullname'] ;
+        this.#fullname = person.fullname ;
         this.#editInterestsTitle.innerHTML = '<strong>Editing Interests for: ' + this.#fullname + '</strong>';
 
         // now fill in the fields
         this.#eiHeaderDiv.innerHTML = 'Editing Interests for: ' + this.#fullname;
-        this.#eiPersonIdField.value = post['getId'];
-        this.#eiPersonTypeField.value = post['getType'];
+        this.#eiPersonIdField.value = post.getId;
+        this.#eiPersonTypeField.value = post.getType;
 
         for (var row in this.#interests) {
             var interest = this.#interests[row];
@@ -916,14 +916,14 @@ class Portal {
     editInterestSubmit() {
         clear_message();
         var data = {
-            loginId: config['id'],
-            loginType: config['idType'],
+            loginId: config.id,
+            loginType: config.idType,
             existingInterests: JSON.stringify(this.#interests),
             newInterests: JSON.stringify(URLparamsToArray($('#editInterests').serialize())),
             currentPerson: this.#currentPerson,
             currentPersonType: this.#currentPersonType,
         }
-        if (config['debug'] & 1)
+        if (config.debug & 1)
             console.log(data);
 
         var script = 'scripts/updateInterests.php';
@@ -944,19 +944,21 @@ class Portal {
     }
 
     updateInterestsSuccess(data){
-        if (data['status'] == 'error') {
-            show_message(data['message'], 'error', 'eiMessageDiv');
+        if (data.status == 'error') {
+            show_message(data.message, 'error', 'eiMessageDiv');
         } else {
-            if (config['debug'] & 1)
+            if (config.debug & 1)
                 console.log(data);
-            show_message(data['message']);
+            show_message(data.message);
             this.#editInterestsModal.hide();
             // ok, if we got here because of needInterests, go to add/update for the cart
-            if (config['needInterests'] == 1) {
-                if (confirm("Add memberships to your account now?"))
-                    this.addMembership(config['id'], config['idType']);
-            } else if (data['rows_upd'] > 0) {
-                window.location = this.#portalPage + '?messageFwd=' + encodeURI(data['message']);
+            if (config.needInterests == 1) {
+                if (config.numPrimary == 0) {
+                    if (confirm("Add memberships to your account now?"))
+                        this.addMembership(config.id, config.idType);
+                }
+            } else if (data.rows_upd > 0) {
+                window.location = this.#portalPage + '?messageFwd=' + encodeURI(data.message);
             }
         }
     }
@@ -1070,13 +1072,13 @@ class Portal {
 
         var newplan = false;
         if (this.#paymentPlan != null)
-            if (this.#paymentPlan['new'])
+            if (this.#paymentPlan.new)
                 newplan = true;
 
         // transaction comes from session, person paying come from session, we will compute what was paid
         var data = {
-            loginId: config['id'],
-            loginType: config['idType'],
+            loginId: config.id,
+            loginType: config.idType,
             action: 'portalPayment',
             plan:   (this.#paymentPlan != null || this.#existingPlan != null) ? 1 : 0,
             existingPlan: this.#existingPlan,
@@ -1114,7 +1116,7 @@ class Portal {
 
     makePurchaseSuccess(data) {
         console.log(data);
-        if (data['status'] == 'error') {
+        if (data.status == 'error') {
             // our form
             var id = document.getElementById("purchase");
             if (id)
@@ -1123,23 +1125,23 @@ class Portal {
             id = document.getElementById("card-button");
             if (id)
                 id.disabled = false;
-            if (data['error']) {
-                show_message(data['error'], 'error', 'makePayMessageDiv');
+            if (data.error) {
+                show_message(data.error, 'error', 'makePayMessageDiv');
                 return;
             }
-            if (data['message']) {
-                show_message(data['message'], 'error', 'makePayMessageDiv');
+            if (data.message) {
+                show_message(data.message, 'error', 'makePayMessageDiv');
                 return;
             }
-            if (data['data']) {
-                show_message(data['data'], 'error', 'makePayMessageDiv');
+            if (data.data) {
+                show_message(data.data, 'error', 'makePayMessageDiv');
                 return;
             }
         }
-        if (data['message'])
-            window.location = this.#portalPage + '?messageFwd=' + encodeURI(data['message']);
+        if (data.message)
+            window.location = this.#portalPage + '?messageFwd=' + encodeURI(data.message);
         else {
-            var message = 'Payment succeeded, ' + data['rows_upd'] + ' memberships and other items updated';
+            var message = 'Payment succeeded, ' + data.rows_upd + ' memberships and other items updated';
             window.location = this.#portalPage + '?messageFwd=' + encodeURI(message);
         }
     }
@@ -1150,8 +1152,8 @@ class Portal {
         clear_message();
         var script = 'scripts/getReceipt.php';
         var data = {
-            loginId: config['id'],
-            loginType: config['idType'],
+            loginId: config.id,
+            loginType: config.idType,
             action: 'portalReceipt',
             transId: transId,
         }
@@ -1172,23 +1174,23 @@ class Portal {
     }
 
     showReceipt(data) {
-        if (data['message']) {
-            show_message(data['message'], 'error');
+        if (data.message) {
+            show_message(data.message, 'error');
             return;
         }
-        if (data['data']) {
-            show_message(data['data'], 'error');
+        if (data.data) {
+            show_message(data.data, 'error');
             return;
         }
 
         clear_message();
-        var receipt = data['receipt'];
-        this.#receiptDiv.innerHTML = receipt['receipt_html'];
-        this.#receiptTables.innerHTML = receipt['receipt_tables'];
-        this.#receiptText.innerHTML = receipt['receipt'];
-        this.#receiptEmailAddress = receipt['payor_email'];
-        this.#receiptEmailBtn.innerHTML = "Email Receipt to " + receipt['payor_name'] + ' at ' + this.#receiptEmailAddress;
-        this.#receiptTitle.innerHTML = "Registration Receipt for " + receipt['payor_name'];
+        var receipt = data.receipt;
+        this.#receiptDiv.innerHTML = receipt.receipt_html;
+        this.#receiptTables.innerHTML = receipt.receipt_tables;
+        this.#receiptText.innerHTML = receipt.receipt;
+        this.#receiptEmailAddress = receipt.payor_email;
+        this.#receiptEmailBtn.innerHTML = "Email Receipt to " + receipt.payor_name + ' at ' + this.#receiptEmailAddress;
+        this.#receiptTitle.innerHTML = "Registration Receipt for " + receipt.payor_name;
         this.#receiptModal.show();
     }
 
@@ -1201,8 +1203,8 @@ class Portal {
             success = this.#receiptEmailBtn.innerHTML.replace("Email Receipt to", "Receipt sent to");
 
         var data = {
-            loginId: config['id'],
-            loginType: config['idType'],
+            loginId: config.id,
+            loginType: config.idType,
             email: this.#receiptEmailAddress,
             okmsg: success,
             text: this.#receiptText.innerHTML,
@@ -1217,15 +1219,15 @@ class Portal {
             data: data,
             success: function (data, textstatus, jqxhr) {
                 checkResolveUpdates(data);
-                if (data['status'] == 'error') {
-                    show_message(data['message'], 'error');
+                if (data.status == 'error') {
+                    show_message(data.message, 'error');
                     return;
                 }
-                if (data['status'] == 'success') {
-                    show_message(data['message'], 'success');
+                if (data.status == 'success') {
+                    show_message(data.message, 'success');
                 }
-                if (data['status'] == 'warn') {
-                    show_message(data['message'], 'warn');
+                if (data.status == 'warn') {
+                    show_message(data.message, 'warn');
                 }
                 _this.#receiptModal.hide();
             },

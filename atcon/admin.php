@@ -2,7 +2,7 @@
 
 require_once "lib/base.php";
 
-if (!isset($_SESSION['user'])) {
+if (!isSessionVar('user')) {
     header("Location: /index.php");
     exit(0);
 }
@@ -22,9 +22,6 @@ page_init($page, 'admin',
     /* css */ array($cdn['tabcss'], $cdn['tabbs5'], 'css/registration.css'),
     /* js  */ array($cdn['tabjs'],'js/admin.js')
     );
-
-//var_dump($_SESSION);
-//echo $conid;
 
 ?>
 <ul class='nav nav-tabs mb-3' id='admin-tab' role='tablist'>

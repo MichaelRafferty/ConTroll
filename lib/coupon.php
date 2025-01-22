@@ -197,14 +197,13 @@ function apply_coupon_data($mtypes, $coupon) {
     $conid = $con_conf['id'];
 
     foreach ($mtypes as $id => $mbrtype) {
-        $primary = true; // if coupon is active, does this 'num' count toward min / max memberships
         $discount = 0;
 
         // first compute primary membership types
         if ($coupon['memId'] && $coupon['memId'] == $mbrtype['id']) {  // ok this is a forced primary
-            $primary = true; // need a statement here, as combining the if's gets difficult
+            $primary = true;
         } else {
-            $primary = isPrimary($mbrtype, $conid);
+            $primary = isPrimary($mbrtype, $conid, 'coupon');
         }
 
         if ($coupon['couponType'] == '$off' || $coupon['couponType'] == '%off') {
@@ -292,6 +291,8 @@ function apply_overall_discount($coupon, $total) {
         $discounts = array ();
         $primary = array ();
         $map = array ();
+        $con_conf = get_conf('con');
+        $conid = $con_conf['id'];
 
 // get the coupon data, if any
         $coupon = null;
@@ -316,9 +317,7 @@ function apply_overall_discount($coupon, $total) {
             $map[$id] = $id;
             $prices[$id] = $mbrtype['price'];
             $counts[$id] = 0;
-            $isprimary = (!($mbrtype['price'] == 0 ||
-                ($mbrtype['memCategory'] != 'standard' && $mbrtype['memCategory'] != 'supplement' && $mbrtype['memCategory'] != 'virtual')
-            ));
+            $isprimary = isPrimary($mbrtype, $conid, 'coupon');
             if ($coupon !== null) {
                 $discounts[$id] = $mbrtype['discount'];
                 if ($coupon['memId'] == $id) {  // ok this is a forced primary

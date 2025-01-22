@@ -11,6 +11,7 @@ require_once("../lib/coupon.php");
 $cc = get_conf('cc');
 $con = get_conf('con');
 $reg_conf = get_conf('reg');
+$debug_conf = get_conf('debug');
 $usps = get_conf('usps');
 load_cc_procs();
 
@@ -20,6 +21,11 @@ $urlSerialNum = '';
 $serialHidden = 'hidden';
 $class = '';
 
+if (array_key_exists('onlinereg', $debug_conf))
+    $debug = $debug_conf['onlinereg'];
+else
+    $debug = 0;
+
 $useUSPS = false;
 if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
     $useUSPS = true;
@@ -27,6 +33,8 @@ if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != 
 $config_vars = array();
 $config_vars['label'] = $con['label'];
 $config_vars['required'] = $reg_conf['required'];
+$config_vars['conid'] = $condata['id'];
+$config_vars['debug'] = $debug;
 
 $numCoupons = num_coupons();
 if ($numCoupons == 0)
@@ -51,7 +59,7 @@ $policies = getPolicies();
 $interests = getInterests();
 $membershiptypes = array();
 $priceQ = <<<EOS
-SELECT id, label, shortname, sort_order, price, memAge, memCategory
+SELECT id, label, shortname, sort_order, price, memAge, memCategory, memType
 FROM memLabel
 WHERE
     conid=?
@@ -64,11 +72,11 @@ $priceR = dbSafeQuery($priceQ, "i", array($condata['id']));
 while($priceL = $priceR->fetch_assoc()) {
     $membershiptypes[] = $priceL;
 }
-$js = "var mtypes = " . json_encode($membershiptypes) . PHP_EOL .
+$js = "var mtypes = " . json_encode($membershiptypes) . ';' . PHP_EOL .
     "var numCoupons = " . $numCoupons . ";" . PHP_EOL .
-    "var policies = " . json_encode($policies) . PHP_EOL .
-    "var interests = " . json_encode($interests) . PHP_EOL .
-    "var config = " . json_encode($config_vars) . PHP_EOL;
+    "var policies = " . json_encode($policies) . ';' .PHP_EOL .
+    "var interests = " . json_encode($interests) . ';' . PHP_EOL .
+    "var config = " . json_encode($config_vars) . ';' . PHP_EOL;
 $startdate = new DateTime($condata['startdate']);
 $enddate = new DateTime($condata['enddate']);
 $daterange = $startdate->format("F j-") . $enddate->format("j, Y");
@@ -306,7 +314,7 @@ $onsitesale = $startdate->format("l, F j");
                          <div class='row' id='noChargeCart' hidden>
                              <div class='col-sm-12'>
                                  No payment is required on your cart. Click "Purchase" to check out now or add more items to the cart using "Add Memberships".<br/>
-                                 <button id='ncpurchase' class='btn btn-sm btn-primary' onclick="makePurchase('no-charge', 'purchase')">Purchase</button>&nbsp;
+                                 <button id='ncpurchase' class='btn btn-sm btn-primary' onclick="makePurchase('no-charge', 'purchase');">Purchase</button>&nbsp;
                                  <button class='btn btn-sm btn-primary' onclick='newBadgeModalOpen();'>Add Memberships</button>
                              </div>
                          </div>
