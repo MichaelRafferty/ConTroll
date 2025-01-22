@@ -182,12 +182,11 @@ function buildDaily(dailyRegCounts, today) {
     today = -today;
     var str = " days pre-con"
     if(today > 0) { str = " days after con start"; }
-    else {today = - today;}
     shapes.push({
         type: 'line',
         x0: today, y0: 0, x1: today, y1: max,
         line: {color: 'grey', size: 1, dash: 'dash'},
-        label: {text: today + str}
+        label: {text: (-today) + str}
     });
 
     Plotly.newPlot('DailyTrend', daily, {'title':'Membership Growth by Day', autosize:true, shapes:shapes}, {responsive:true});
