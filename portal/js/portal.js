@@ -232,6 +232,10 @@ class Portal {
         var _this = this;
         var modalCalled = false;
 
+        // enable all tooltips
+        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+        const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+
         // do any people need to have their profiles edited to handle missing policies
         $('.need-policies').each(function(i, obj) {
             if (modalCalled)

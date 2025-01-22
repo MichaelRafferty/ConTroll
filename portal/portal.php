@@ -118,7 +118,7 @@ EOS;
     if ($holderRegR !== false && $holderRegR->num_rows > 0) {
         while ($m = $holderRegR->fetch_assoc()) {
             // check if they have a WSFS rights membership
-            if ($m['memCategory'] == 'wsfs' || $m['memCategory'] == 'wsfsnom' || $m['memCategory'] == 'dealer')
+            if (($m['memCategory'] == 'wsfs' || $m['memCategory'] == 'wsfsnom' || $m['memCategory'] == 'dealer') && $m['status'] == 'paid')
                 $hasWSFS = true;
 
             if ($m['memType'] == 'donation') {
@@ -383,8 +383,9 @@ if ($numExpired > 0) {
 }
 
 if ($NomNomExists)
-    $NonNomButton = "<button class='btn btn-primary p-1' type='button' onclick='portal.vote();'" .
-    $hasWSFS ? '' : ' disabled' . '>Log into the Hugo System</button>';
+    $NonNomButton = "<button class='btn btn-primary p-1' type='button' " .
+        ($hasWSFS ? 'onclick="portal.vote();"' : ' disabled  data-bs-toggle="tooltip" data-bs-placement="top" ' .
+            'data-bs-title="Add and pay for a WSFS membership to be able to nominate or vote."') . '>Log into the Hugo System</button>';
 else
     $NonNomButton = '';
 

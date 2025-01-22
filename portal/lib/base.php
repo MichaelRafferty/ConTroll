@@ -35,6 +35,7 @@ function index_page_init($title) {
     $tabjs=$cdn['tabjs'];
     $bs5js=$cdn['bs5js'];
     $bs5css=$cdn['bs5css'];
+    $popjs=$cdn['popjs'];
     $jqjs=$cdn['jqjs'];
     $jquijs=$cdn['jquijs'];
     $jquicss=$cdn['jquicss'];
@@ -60,6 +61,7 @@ function index_page_init($title) {
     <link href='$tabcss' rel='stylesheet'>
     <link href='$bs5css' rel='stylesheet'>
     
+    <script src='$popjs'></script>
     <script src='$bs5js'></script>
     <script type='text/javascript' src='$jqjs''></script>
     <script type='text/javascript' src='$jquijs'></script>
