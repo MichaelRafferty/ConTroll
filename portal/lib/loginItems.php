@@ -363,7 +363,7 @@ EOS;
         case 'vote':
             for ($row = 0; $row < count($regs); $row++) {
                 $reg = $regs[$row];
-                if ($reg['memCategory'] == 'wsfs' && str_contains(strtolower($reg['label']), ' only') == false) {
+                if (($reg['memCategory'] == 'wsfs' && str_contains(strtolower($reg['label']), ' only') == false) || ($reg['memCategory'] == 'dealer')) {
                     $resp['rights'] = 'hugo_vote';
                     break;
                 }
