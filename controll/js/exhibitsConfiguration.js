@@ -705,7 +705,7 @@ class exhibitssetup {
                 },
                 {title: "Edit", formatter: this.editbutton, formatterParams: {table: 'exhibitsSpaces', fieldName: 'description', name: 'name' },
                     hozAlign:"left", headerSort: false },
-                {title: "&bigstar;Description", field: "description", headerFilter: true, width: 550, headerSort: false, validator: "required", },
+                {title: "&bigstar;Description", field: "description", headerFilter: true, width: 550, headerSort: false, },
                 {title: 'Units', field: "unitsAvailable", width: 100, hozAlign: "right", headerSort: false, editor: "number", editorParams: {min:0, max:9999999}},
                 {title: "Sort Order", field: "sortorder", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 80,},
                 {title: "Orig Key", field: "spaceKey", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
