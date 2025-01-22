@@ -135,7 +135,7 @@ for ($row = 0; $row < count($regs); $row++) {
     }
 }
 
-$rights = $nom . ($nom != '' && vote != '') ? ',' : '') . $vote;
+$rights = $nom . (($nom != '' && $vote != '') ? ',' : '') . $vote;
 $payload['rights'] = $rights;
 $response['rights'] = $rights;
 
