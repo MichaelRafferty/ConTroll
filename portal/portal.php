@@ -31,7 +31,8 @@ if (array_key_exists('suspended', $portal_conf) && $portal_conf['suspended'] == 
 
 $NomNomExists = array_key_exists('nomnomURL', $portal_conf);
 if ($NomNomExists)
-    $NonNomButton = "<button class='btn btn-primary p-1' type='button' onclick='portal.vote();'>Log into the Hugo System</button>";
+    $NonNomButton = "<button class='btn btn-primary p-1' type='button' onclick='portal.vote();'" .
+        $hasWSFS ? '' : ' disabled' . ">Log into the Hugo System</button>";
 else
     $NonNomButton = '';
 
@@ -90,6 +91,7 @@ if ($info === false) {
 }
 $dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
 
+$hasWSFS = false;
 if (!$refresh) {
     $numPrimary = 0;
 // get the account holder's registrations
@@ -120,6 +122,10 @@ EOS;
     $holderMembership = [];
     if ($holderRegR !== false && $holderRegR->num_rows > 0) {
         while ($m = $holderRegR->fetch_assoc()) {
+            // check if they have a WSFS rights membership
+            if (($m['memCategory'] == 'wsfs' || $m['memCategory'] == 'wsfsnom' || $m['memCategory'] == 'dealer')
+                $hasWSFS = true;
+
             if ($m['memType'] == 'donation') {
                 $label = $dolfmt->formatCurrency((float)$m['actPrice'], $currency) . ' ' . $m['label'];
                 $shortname = $dolfmt->formatCurrency((float)$m['actPrice'], $currency) . ' ' . $m['shortname'];
