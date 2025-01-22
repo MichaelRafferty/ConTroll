@@ -30,11 +30,6 @@ if (array_key_exists('suspended', $portal_conf) && $portal_conf['suspended'] == 
 }
 
 $NomNomExists = array_key_exists('nomnomURL', $portal_conf);
-if ($NomNomExists)
-    $NonNomButton = "<button class='btn btn-primary p-1' type='button' onclick='portal.vote();'" .
-        $hasWSFS ? '' : ' disabled' . ">Log into the Hugo System</button>";
-else
-    $NonNomButton = '';
 
 if (isSessionVar('id') && isSessionVar('idType')) {
     // check for being resolved/baned
@@ -123,7 +118,7 @@ EOS;
     if ($holderRegR !== false && $holderRegR->num_rows > 0) {
         while ($m = $holderRegR->fetch_assoc()) {
             // check if they have a WSFS rights membership
-            if (($m['memCategory'] == 'wsfs' || $m['memCategory'] == 'wsfsnom' || $m['memCategory'] == 'dealer')
+            if ($m['memCategory'] == 'wsfs' || $m['memCategory'] == 'wsfsnom' || $m['memCategory'] == 'dealer')
                 $hasWSFS = true;
 
             if ($m['memType'] == 'donation') {
@@ -387,6 +382,11 @@ if ($numExpired > 0) {
     $disablePay = ' disabled';
 }
 
+if ($NomNomExists)
+    $NonNomButton = "<button class='btn btn-primary p-1' type='button' onclick='portal.vote();'" .
+    $hasWSFS ? '' : ' disabled' . '>Log into the Hugo System</button>';
+else
+    $NonNomButton = '';
 
 portalPageInit('portal', $info,
     /* css */ array($cdn['tabcss'],
