@@ -110,8 +110,8 @@ class exhibitorsAdm {
 
         // owners
         this.#ownerTabs['overview'] = document.getElementById('overview-content');
-        this.#ownerTabs['configuration'] = document.getElementById('configuration-tab');
-        this.#ownerTabs['customtext'] = document.getElementById('customtext-tab');
+        this.#ownerTabs['configuration'] = document.getElementById('configuration-pane');
+        this.#ownerTabs['customtext'] = document.getElementById('customtext-pane');
         this.#currentOwner = this.#ownerTabs['overview'];
         this.#currentPane = 'overview';
         var ownerKeys = Object.keys(regionOwners);
