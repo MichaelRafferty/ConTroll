@@ -208,7 +208,7 @@ class exhibitorsAdm {
         }
 
         if (this.#cacheDirty) {
-            window.location.href = ths.#scriptName + '?tab=' + content;
+            window.location.href = this.#scriptName + '?tab=' + content;
             return;
         }
 
