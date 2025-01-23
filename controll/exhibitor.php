@@ -25,6 +25,13 @@ if (array_key_exists('controll_exhibitors', $debug))
 else
     $debug_exhibitors = 0;
 
+$scriptName = $_SERVER['SCRIPT_NAME'];
+if (array_key_exists('tab', $_REQUEST)) {
+    $initialTab = $_REQUEST['tab'];
+} else {
+    $initialTab = 'overview';
+}
+
 $conf = get_conf('con');
 $regConf = get_conf('reg');
 
@@ -82,6 +89,8 @@ $config_vars['debug'] = $debug['controll_exhibitors'];
 $config_vars['conid'] = $conid;
 $config_vars['required'] = $reg_conf['required'];
 $config_vars['useUSPS'] = $useUSPS;
+$config_vars['initialTab'] = $initialTab;
+$config_vars['scriptName'] = $scriptName;
 
 bs_tinymceModal();
 draw_registrationModal('admin', 'Admin', $conf, $countryOptions);
