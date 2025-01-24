@@ -8,6 +8,14 @@ menuSaveBtn = null;
 menuRedoBtn = null;
 menuUndoBtn = null;
 menuDirty = false;
+// atcon user items
+atconTable = null;
+atconData = null;
+atconSaveBtn = null;
+atconRedoBtn = null;
+atconUndoBtn = null;
+atconDirty = false;
+
 
 // debug meaning
 //  1 = console.logs
@@ -246,7 +254,9 @@ function selectUser(perid) {
 
 function settab(tabname) {
     // close all of the other tabs
+    clear_message();
     clearMenuTable();
+    clearAtconTable();
     if (keysTable) {
         keysTable.destroy();
         keysTable = null;
@@ -259,6 +269,9 @@ function settab(tabname) {
             break;
         case 'keys-pane':
             console.log('keys pane');
+            break;
+        case 'atcon-pane':
+            console.log('atcon pane');
             break;
     }
 }
@@ -414,6 +427,18 @@ function clearMenuTable() {
         menuSaveBtn.disabled = true;
         menuUndoBtn.disabled = true;
         menuRedoBtn.disabled = true;
+    }
+}
+
+function clearAtconTable() {
+    if (atconTable) {
+        atconTable.destroy();
+        atconTable = null;
+        atconTable = false;
+        atconSaveBtn.innerHTML = 'Save Changes';
+        atconSaveBtn.disabled = true;
+        atconUndoBtn.disabled = true;
+        atconRedoBtn.disabled = true;
     }
 }
 
