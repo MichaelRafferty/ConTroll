@@ -27,6 +27,8 @@ class exhibitorsAdm {
     #debugVisible = false;
     #message_div = null;
     #result_message_div = null;
+    #cacheDirty = false;
+    #scriptName = config.scriptName;
 
     // Space items
     #spacesTable = null;
@@ -63,7 +65,7 @@ class exhibitorsAdm {
     // Spaces items
     #currentSpace = null;
     #currentSpaceTab = null;
-    #spacesTabs = {};
+    #spacesTabs = null;
 
     // mail order - exhibitor choice items
     #exhibitorChooseModal = null;
@@ -110,8 +112,8 @@ class exhibitorsAdm {
 
         // owners
         this.#ownerTabs['overview'] = document.getElementById('overview-content');
-        this.#ownerTabs['configuration'] = document.getElementById('configuration-tab');
-        this.#ownerTabs['customtext'] = document.getElementById('customtext-tab');
+        this.#ownerTabs['configuration'] = document.getElementById('configuration-pane');
+        this.#ownerTabs['customtext'] = document.getElementById('customtext-pane');
         this.#currentOwner = this.#ownerTabs['overview'];
         this.#currentPane = 'overview';
         var ownerKeys = Object.keys(regionOwners);
@@ -136,7 +138,30 @@ class exhibitorsAdm {
             console.log("regionTabs");
             console.log(this.#regionTabs);
         }
+        if (config.initialTab != 'overview') {
+            const triggerTabList = document.querySelectorAll('#exhibitor-tab button')
+            triggerTabList.forEach(triggerEl => {
+                const tabTrigger = new bootstrap.Tab(triggerEl)
+
+                triggerEl.addEventListener('click', event => {
+                    event.preventDefault()
+                    tabTrigger.show()
+                })
+            })
+
+            var selectors = '#exhibitor-tab button[data-bs-target="#' + config.initialTab + '-pane"]';
+            var triggerEl = document.querySelector(selectors);
+            if (triggerEl)
+                bootstrap.Tab.getInstance(triggerEl).show(); // Select tab by name
+
+            this.settabOwner(config.initialTab + '-pane');
+        }
     };
+
+    // set / get functions
+    setCacheDirty() {
+        this.#cacheDirty = true;
+    }
 
     // common code for changing tabs
     // top level - overview, owner
@@ -181,6 +206,12 @@ class exhibitorsAdm {
             customText.open();
             return;
         }
+
+        if (this.#cacheDirty) {
+            window.location.href = this.#scriptName + '?tab=' + content;
+            return;
+        }
+
         var ownerLookup = regionOwnersTabNames[tabname];
         var regionsInOwner = regionOwners[ownerLookup];
         var regionKey = Object.keys(regionsInOwner)[0];

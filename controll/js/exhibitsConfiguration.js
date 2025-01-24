@@ -895,6 +895,7 @@ class exhibitssetup {
         }
         this.#regionTypesavebtn.innerHTML = "Save Changes";
         this.#regionTypesavebtn.disabled = true;
+        exhibitors.setCacheDirty();
         this.draw(data);
     }
 
@@ -1020,6 +1021,7 @@ class exhibitssetup {
         }
         this.#regionsavebtn.innerHTML = "Save Changes";
         this.#regionsavebtn.disabled = true;
+        exhibitors?.setCacheDirty();
         this.draw(data);
     }
 
@@ -1146,6 +1148,7 @@ class exhibitssetup {
         }
         this.#regionYearsavebtn.innerHTML = "Save Changes";
         this.#regionYearsavebtn.disabled = true;
+        exhibitors?.setCacheDirty();
         this.draw(data);
     }
 
@@ -1272,6 +1275,7 @@ class exhibitssetup {
         }
         this.#spacesavebtn.innerHTML = "Save Changes";
         this.#spacesavebtn.disabled = true;
+        exhibitors?.setCacheDirty();
         this.draw(data);
     }
 
@@ -1398,6 +1402,7 @@ class exhibitssetup {
         }
         this.#spacePricesavebtn.innerHTML = "Save Changes";
         this.#spacePricesavebtn.disabled = true;
+        exhibitors?.setCacheDirty();
         this.draw(data);
     }
 
