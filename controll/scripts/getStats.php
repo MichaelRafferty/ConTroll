@@ -254,7 +254,8 @@ EOQ;
         $preconResponse = array();
         while($preconR = $preconA->fetch_assoc()) {
             $lastDebugValue = 0;
-            if (!array_key_exists($preconR['conid'], $preconResponse) || $preconResponse[$preconR['conid']] === null)) {$preconResponse[$preconR['conid']]=array();}
+            if ((!array_key_exists($preconR['conid'], $preconResponse)) || ($preconResponse[$preconR['conid']] === null))
+            {$preconResponse[$preconR['conid']]=array();}
             if($preconR['conid'] == $minCon && ($debug['controll_stats'] & 1)) {
                 for($i = 10 ; $i > 0; $i--) {
                     $rand = random_int(0,$preconR['cnt_all']*2);
