@@ -131,7 +131,7 @@ function buildAnnual(annualRegCounts) {
         freeReg.y.push(annualRegCounts[year]['cnt_all'] - annualRegCounts[year]['cnt_paid']);
     }
 
-    Plotly.newPlot('AnnualMemberships', [allReg, paidReg, freeReg], {'title':'Memberships By Year', autosize:true}, {responsive:true});
+    Plotly.newPlot('AnnualMemberships', [allReg, paidReg, freeReg], {'title':'Memberships By Year', autosize:true, xaxis: {dtick:1}}, {responsive:true});
 }
 
 function buildDaily(dailyRegCounts, today) {
