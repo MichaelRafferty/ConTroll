@@ -43,6 +43,7 @@ CREATE TABLE `perinfoHistory` (
   `managedByNew` int DEFAULT NULL,
   `lastVerified` datetime DEFAULT NULL,
   `managedReason` varchar(16) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `updatedBy` int DEFAULT NULL,
   PRIMARY KEY (`historyId`),
   KEY `perinfoHistory_id_fk` (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

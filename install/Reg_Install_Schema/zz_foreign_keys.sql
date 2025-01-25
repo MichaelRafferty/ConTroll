@@ -34,7 +34,7 @@ ALTER TABLE payments ADD CONSTRAINT `payments_cashier_fk` FOREIGN KEY (`cashier`
 ALTER TABLE payments ADD CONSTRAINT `payments_transid_fk` FOREIGN KEY (`transid`) REFERENCES `transaction` (`id`) ON UPDATE CASCADE;
 ALTER TABLE payments ADD CONSTRAINT `payments_userid_fk` FOREIGN KEY (`userid`) REFERENCES `user` (`id`) ON UPDATE CASCADE;
 ALTER TABLE paymentPlans ADD CONSTRAINT `paymentPlans_ibfk_1` FOREIGN KEY (`updateBy`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
-ALTER TABLE controllAppItems ADD CONSTRAINT `controllAppItems_ibfk_1` FOREIGN KEY (`appName`, `appPage`, `appsection`) REFERENCES `controllAppSections` (`appName`, `appPage`, `appSection`) ON UPDATE CASCADE;
+ALTER TABLE controllAppItems ADD CONSTRAINT `controllAppItems_ibfk_1` FOREIGN KEY (`appName`, `appPage`, `appSection`) REFERENCES `controllAppSections` (`appName`, `appPage`, `appSection`) ON UPDATE CASCADE;
 ALTER TABLE memRuleSteps ADD CONSTRAINT `mrs_mr_fk` FOREIGN KEY (`conid`, `name`) REFERENCES `memRules` (`conid`, `name`) ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE perinfo ADD CONSTRAINT `perinfo_ibfk_1` FOREIGN KEY (`managedBy`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 ALTER TABLE perinfo ADD CONSTRAINT `perinfo_ibfk_2` FOREIGN KEY (`updatedBy`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
@@ -67,7 +67,7 @@ ALTER TABLE coupon ADD CONSTRAINT `coupon_conid_fk` FOREIGN KEY (`conid`) REFERE
 ALTER TABLE coupon ADD CONSTRAINT `coupon_createby_fk` FOREIGN KEY (`createBy`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 ALTER TABLE coupon ADD CONSTRAINT `coupon_memid_fk` FOREIGN KEY (`memId`) REFERENCES `memList` (`id`) ON UPDATE CASCADE;
 ALTER TABLE coupon ADD CONSTRAINT `coupon_updateby_fk` FOREIGN KEY (`updateBy`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
-ALTER TABLE controllTxtItems ADD CONSTRAINT `controllTxtItems_ibfk_1` FOREIGN KEY (`appName`, `appPage`, `appSection`, `txtItem`) REFERENCES `controllAppItems` (`appName`, `appPage`, `appsection`, `txtItem`) ON UPDATE CASCADE;
+ALTER TABLE controllTxtItems ADD CONSTRAINT `controllTxtItems_ibfk_1` FOREIGN KEY (`appName`, `appPage`, `appSection`, `txtItem`) REFERENCES `controllAppItems` (`appName`, `appPage`, `appSection`, `txtItem`) ON UPDATE CASCADE;
 ALTER TABLE exhibitorYears ADD CONSTRAINT `ey_conlist_fk` FOREIGN KEY (`conid`) REFERENCES `conlist` (`id`) ON UPDATE CASCADE;
 ALTER TABLE exhibitorYears ADD CONSTRAINT `ey_exhibitors_fk` FOREIGN KEY (`exhibitorId`) REFERENCES `exhibitors` (`id`) ON UPDATE CASCADE;
 ALTER TABLE transaction ADD CONSTRAINT `transaction_conid_fk` FOREIGN KEY (`conid`) REFERENCES `conlist` (`id`) ON UPDATE CASCADE;
