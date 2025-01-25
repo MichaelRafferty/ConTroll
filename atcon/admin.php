@@ -19,7 +19,7 @@ if (!check_atcon($method, $conid)) {
 
 $cdn = getTabulatorIncludes();
 page_init($page, 'admin',
-    /* css */ array($cdn['tabcss'], $cdn['tabbs5'], 'css/registration.css'),
+    /* css */ array($cdn['tabcss'], $cdn['tabbs5']),
     /* js  */ array($cdn['tabjs'],'js/admin.js')
     );
 

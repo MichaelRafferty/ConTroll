@@ -20,7 +20,7 @@ CREATE TABLE `memberInterests` (
   `notifyDate` datetime DEFAULT NULL,
   `csvDate` datetime DEFAULT NULL,
   `createDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updateDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `updateDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updateBy` int DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `memberInterestsInterest_fk` (`interest`),

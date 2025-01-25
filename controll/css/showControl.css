@@ -1,9 +1,0 @@
-tbody.long tr:nth-child(2n) {
-    background-color: #ecf;
-}
-
-tbody.long tr:nth-child(2n+1) {
-    background-color: #fef;
-}
-
-

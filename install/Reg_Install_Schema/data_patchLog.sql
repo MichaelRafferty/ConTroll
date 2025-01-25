@@ -44,6 +44,9 @@ INSERT INTO `patchLog` VALUES
 (35,'auth order','2024-10-29 17:13:00'),
 (36,'oauth2_server','2024-12-27 16:17:41'),
 (37,'triggerdups','2024-12-27 16:20:46'),
-(38,'rules conid','2024-12-27 16:20:52');
+(38,'rules conid','2024-12-27 16:20:52'),
+(39,'add portal text item','2024-12-30 22:13:57'),
+(40,'exhibitor_tax_id'),
+(41,'index and exhibitor website custom text');
 ALTER TABLE `patchLog` ENABLE KEYS;
 UNLOCK TABLES;
