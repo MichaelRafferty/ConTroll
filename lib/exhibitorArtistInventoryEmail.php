@@ -4,14 +4,14 @@
 //          artistsite: URL to artist site
 //          custom text valies: : exhibitor/index/email/onsiteInvHTML, onsiteInvText, mailinInvHTML, mailinInvText
 //      macros to be replaced in those files:
-//        <<EXHIBITOR_NAME>>: name from the exhibitor record (artist full name)
-//        <<CONTACT_NAME>>: name from the exhibitor years record (contact full name)
-//        <<ARTIST_NUMBER>>: number assigned to this artist
-//        <<REGION_NAME>>: Name of the region (Art Show) where they bought space
-//        <<CON_NAME>>: Name of the con from the config file
-//        <<ARTIST_PORTAL>>: URL to artist portal from the config file
-//        <<OWNER_NAME>>: NAME OF THE REGION OWNERS
-//        <<OWNER_EMAIL>>: Email address for the owner of this region
+//        [[EXHIBITOR_NAME]]: name from the exhibitor record (artist full name)
+//        [[CONTACT_NAME]]: name from the exhibitor years record (contact full name)
+//        [[ARTIST_NUMBER]]: number assigned to this artist
+//        [[REGION_NAME]]: Name of the region (Art Show) where they bought space
+//        [[CON_NAME]]: Name of the con from the config file
+//        [[ARTIST_PORTAL]]: URL to artist portal from the config file
+//        [[OWNER_NAME]]: NAME OF THE REGION OWNERS
+//        [[OWNER_EMAIL]]: Email address for the owner of this region
 
 function emailArtistInventoryReq($regionYearId, $type): bool|array {
     $con = get_conf('con');
@@ -102,10 +102,10 @@ function artistEamilReplaceTokens($messageTxt, $messageHtml, $valArray): array {
 
     foreach ($tokens AS $key => $val) {
         if ($messageTxt != null) {
-            $messageTxt = strip_tags(str_replace("<<$key>>", $val, $messageTxt));
+            $messageTxt = strip_tags(str_replace("[[$key]]", $val, $messageTxt));
         }
         if ($messageHtml != null) {
-            $messageHtml = str_replace("<<$key>>", $val, $messageHtml);
+            $messageHtml = str_replace("[[$key]]", $val, $messageHtml);
         }
     }
     return array($messageTxt, $messageHtml);
