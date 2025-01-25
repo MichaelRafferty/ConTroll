@@ -42,6 +42,7 @@ id="2022"
 taxRate=6
 currency="USD"
 minComp="2021"
+compLen="365" ; day length for growth by day graph
 conLen="3"
 server="https://reg.conname.org/"
 rollover_eligible="'upgrade', 'rollover', 'freebie', 'standard', 'yearahead', 'discount'"
