@@ -16,6 +16,8 @@ class ExhibitorProfile {
     #profilePage2 = null;
     #profilePage3 = null;
     #profilePage4 = null;
+    #profileArtistNameField = null;
+    #profilePublicityField = null;
     #profileCurrentPage = 1;
     #passwordLine1 = null;
     #passwordLine2 = null;
@@ -28,12 +30,8 @@ class ExhibitorProfile {
     // globals
     #debugFlag = 0;
 
-    static #fieldList = ["artistName", "exhibitorName", "exhibitorEmail", "exhibitorPhone", "pw1", "pw2", "description", "publicity",
+    static #fieldList = ["artistName", "exhibitorName", "exhibitorEmail", "exhibitorPhone", "salesTaxId", "pw1", "pw2", "description", "publicity",
         "addr", "city", "state", "zip", "country", "mailin"];
-    /*static #fieldList = ["artistName", "exhibitorName", "exhibitorEmail", "exhibitorPhone", "description", "publicity",
-        "contactName", "contactEmail", "contactPhone", "cpw1", "cpw2",
-        "addr", "city", "state", "zip", "country", "shipCompany", "shipAddr", "shipCity", "shipState", "shipZip", "shipCountry", "mailin"];
-*/
     static #copyFromFieldList = ['exhibitorName', 'addr', 'addr2', 'city', 'state', 'zip', 'country'];
     static #copyToFieldList = ['shipCompany', 'shipAddr', 'shipAddr2', 'shipCity', 'shipState', 'shipZip', 'shipCountry'];
 
@@ -52,6 +50,8 @@ class ExhibitorProfile {
                 this.#profileSubmitBtn = document.getElementById('profileSubmitBtn');
                 this.#profileModalTitle = document.getElementById('modalTitle');
                 this.#creatingAccountMsgDiv = document.getElementById('creatingAccountMsg');
+                this.#profileArtistNameField = document.getElementById('artistName');
+                this.#profilePublicityField = document.getElementById('publicity');
                 if (portalType == 'admin') {
                     this.#exhibitorId = document.getElementById('exhibitorId');
                     this.#exhibitorYearId = document.getElementById('exhibitorYearId');
@@ -67,13 +67,14 @@ class ExhibitorProfile {
         for (var fieldNum in ExhibitorProfile.#copyFromFieldList) {
             document.getElementById(ExhibitorProfile.#copyToFieldList[fieldNum]).value = document.getElementById(ExhibitorProfile.#copyFromFieldList[fieldNum]).value;
         }
+        document.getElementById('shipCompany').focus();
     }
 
     // copy other sections
     copyArtistNametoBusinessName() {
         var artname = document.getElementById("artistName");
         if (artname) {
-            document.getElementById("exhibitorName").value = artname.value;
+            document.getElementById("exhibitorName").focus().value = artname.value;
         }
     }
 
@@ -83,9 +84,35 @@ class ExhibitorProfile {
         document.getElementById("contactPhone").value = document.getElementById("exhibitorPhone").value;
         document.getElementById("cpw1").value = document.getElementById("pw1").value;
         document.getElementById("cpw2").value = document.getElementById("pw2").value;
+        document.getElementById("contactName").focus();
     }
 
     // move through pages in the profile
+    #setProfileFocus(page) {
+        switch (page) {
+            case 1:
+                if (this.#profileArtistNameField) {
+                    this.#profileArtistNameField.focus({focusVisible: true});
+                } else {
+                    this.#profilePublicityField.focus({focusVisible: true});
+                }
+                break;
+            case 2:
+                var copyName = document.getElementById('copyArtistName');
+                if (copyName)
+                    copyName.focus({focusVisible: true});
+                else
+                    document.getElementById("exhibitorName").focus({focusVisible: true});
+                break;
+            case 3:
+                document.getElementById("copyToContact").focus({focusVisible: true});
+                break;
+            case 4:
+                document.getElementById("addr").focus({focusVisible: true});
+                break;
+        }
+    }
+
     prevPage() {
         if (this.#profileCurrentPage > 1) {
             this.#profileCurrentPage -= 1;
@@ -97,6 +124,7 @@ class ExhibitorProfile {
             this.#profileSubmitBtn.disabled = true;
             this.#profilePreviousPageBtn.disabled = this.#profileCurrentPage == 1;
             this.#profileNextPageBtn.disabled = false;
+            this.#setProfileFocus(this.#profileCurrentPage);
         }
     }
     nextPage() {
@@ -110,8 +138,10 @@ class ExhibitorProfile {
             this.#profileSubmitBtn.disabled = this.#profileCurrentPage != 4;
             this.#profilePreviousPageBtn.disabled = false;
             this.#profileNextPageBtn.disabled = this.#profileCurrentPage == 4;
+            this.#setProfileFocus(this.#profileCurrentPage);
         }
     }
+
     // submit the profile or both register and update, which type is in profileMode, set by the modal open
     submitProfile(dataType) {
         // replace validator with direct validation as it doesn't work well with bootstrap
@@ -383,6 +413,13 @@ class ExhibitorProfile {
             });
             exhibitorProfileMCEInit = true;
         }
+        var focusField = null;
+        if (this.#profileArtistNameField) {
+            focusField = this.#profileArtistNameField;
+        } else {
+            focusField = this.#profilePublicityField;
+        }
+        setTimeout(function() { console.log(focusField); focusField.focus({focusVisible: true}) }, 600);
     }
 
     // profileModalClose - close the modal edit profile dialog

@@ -835,8 +835,8 @@ function changeRegsData(data, rowdata) {
     </div>
       <div class="row">
         <div class="col-sm-12">
-            <button class="btn btn-small btn-light" onclick="changeSelectAll(1);">Select All</button>
-            <button class="btn btn-small btn-light" onclick="changeSelectAll(0);">Clear All</button>
+            <button class="btn btn-sm btn-light" onclick="changeSelectAll(1);">Select All</button>
+            <button class="btn btn-sm btn-light" onclick="changeSelectAll(0);">Clear All</button>
         </div>      
     </div>
     <div class="row">

@@ -114,9 +114,6 @@ function validateConfigFile($options) : int {
                 $warn = [ 'taxidlabel', 'taxidextra' ];
 
                 $email = [ 'vendors', 'artshow', 'dealer' ];
-                // need to do query to add vendorspaces parents to this email group
-
-                $file = [ 'req_disclaimer', 'pay_disclaimer', 'vendorSignupAddltext', 'artistSignupAddltext' ];
                 break;
 
             case 'client':

@@ -30,8 +30,8 @@
     },
     "autoload": {
         "psr-4": {
-            "ControllAuth\\": "../auth/src/",
-            "League\\OAuth2\\Server\\": "../Composer/vendor/league/oauth2-server/src/"
+            "ControllAuth\\": "../portal/auth/src/",
+            "League\\OAuth2\\Server\\": "../portal/Composer/vendor/league/oauth2-server/src/"
         }
     }
 }

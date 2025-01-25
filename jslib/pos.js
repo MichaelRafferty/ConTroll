@@ -11,7 +11,8 @@ class Pos {
 
     // review items
     #review_div = null;
-    #review_missing_items = 0;
+    #reviewMissingItens = 0;
+    #reviewMissingPolicies = 0;
     #review_dirty = false;
     #review_editable_fields = [
         'first_name', 'middle_name', 'last_name', 'suffix',
@@ -68,10 +69,8 @@ class Pos {
     #conlabel = null;
     #user_id = 0;
     #manager = false;
-    // initialize non primary categories to only those in addition to the memConfig table, including grandfathered spellings,
-    // it will be set in the initial data setup section
-    #non_primary_categories = ['add-on'];
     #upgradable_types = ['one-day', 'oneday', 'virtual'];
+    #multiOneDay = 0;
 
     // filter criteria
     #filt_excat = null; // array of exclude category
@@ -95,6 +94,7 @@ class Pos {
     #printDiv = null;
     #badgePrinterAvailable = false;
     #receiptPrinterAvailable = false;
+    #badgeList = null;
 
     // tab fields
     #find_tab = null;
@@ -150,6 +150,9 @@ class Pos {
 // initialization
     constructor(use) {
         this.#use = use;
+
+        if (config.hasOwnProperty('multiOneDay'))
+            this.#multiOneDay = config.multiOneDay;
 
         // set up the constants for objects on the screen
 
@@ -231,7 +234,7 @@ class Pos {
         // load the initial data and the proceed to set up the rest of the system
         var postData = {
             ajax_request_action: 'loadInitialData',
-            nopay: config['cashier'] == 0,
+            nopay: config.cashier == 0,
         };
         var _this = this;
         $.ajax({
@@ -263,7 +266,11 @@ class Pos {
     }
 
     setMissingItems(num) {
-        this.#review_tab.disabled = num;
+        this.#reviewMissingItens = num;
+    }
+
+    setMissingPolicies(num) {
+        this.#reviewMissingPolicies = num;
     }
 
     getConid() {
@@ -278,12 +285,12 @@ class Pos {
         return this.#manager == 1  && baseManagerEnabled;
     }
 
-    getReviewEditableFields() {
-        return this.#review_editable_fields;
+    isMultiOneDay() {
+        return this.#multiOneDay == 1;
     }
 
-    nonPrimaryCategoriesIncludes(category) {
-        return this.#non_primary_categories.includes(category);
+    getReviewEditableFields() {
+        return this.#review_editable_fields;
     }
 
     upgradableTypesIncludes(type) {
@@ -370,10 +377,10 @@ class Pos {
         this.#discount_mode = data.discount;
         this.#badgePrinterAvailable = false;
         if (data.hasOwnProperty('badgePrinter'))
-            this.#badgePrinterAvailable = data['badgePrinter'] === true;
+            this.#badgePrinterAvailable = data.badgePrinter === true;
         this.#receiptPrinterAvailable = false;
         if (data.hasOwnProperty('receiptPrinter'))
-            this.#receiptPrinterAvailable = data['receiptPrinter'] === true;
+            this.#receiptPrinterAvailable = data.receiptPrinter === true;
 
         if (this.#manager == false)
             baseManagerEnabled = false;
@@ -397,12 +404,6 @@ class Pos {
         while (index < this.#memList.length) {
             this.#memListMap.set(this.#memList[index].id, index);
             index++;
-        }
-
-        // build non primary categories from catList
-        for (row in this.#catList) {
-            if (this.#catList[row].badgeLabel.substring(0, 1) == 'X')
-                this.#non_primary_categories.push(this.#catList[row].memCategory);
         }
 
         // set up coupon items
@@ -431,7 +432,7 @@ class Pos {
     }
 
     // find the primary membership for a perid given it's array of memberships
-    // primary is ? first or last ? of the list of memberships (trying first to match old way)
+    // with memberships sorted by purchase date, it's last
     find_primary_membership(regitems) {
         var mem_index = null;
         for (var item in regitems) {
@@ -439,7 +440,7 @@ class Pos {
             if (mi_row.conid != this.#conid)
                 continue;
 
-            if (this.#non_primary_categories.includes(mi_row.memCategory))
+            if (!isPrimary(mi_row.conid, mi_row.memType, mi_row.memCategory, mi_row.price))
                 continue;
 
             mem_index = item;
@@ -960,7 +961,7 @@ class Pos {
                         }
                     }
                 } else {
-                    row.reg_label = 'No Membership';
+                    row.reg_label = 'No Primary Membership';
                     row.reg_tid = '';
                 }
             }
@@ -1030,7 +1031,7 @@ class Pos {
         // look for missing fields
         var missing_fields = 0;
         if (override == 0) {
-            var required = config['required'];
+            var required = config.required;
 
             if (required != '') {
                 if (new_first == '') {
@@ -1132,9 +1133,9 @@ class Pos {
         //  build the policy array
         var rowPolicies = {};
         for (var pol in this.#policies) {
+            var policyName = this.#policies[pol].policy;
             var policybox = document.getElementById('p_' + policyName);
             if (policybox) {
-                var policyName = this.#policies[pol].policy;
                 rowPolicies[policyName] = {};
                 rowPolicies[policyName].policy = policyName;
                 rowPolicies[policyName].perid = this.#new_perid;
@@ -1181,7 +1182,7 @@ class Pos {
         var data = this.#result_perinfo[row];
         var mem = data.memberships;
         var prim = this.find_primary_membership(mem);
-        var label = "No Membership";
+        var label = "No Primary Membership";
         if (prim != null) {
             label = mem[prim].label;
         }
@@ -1317,7 +1318,7 @@ class Pos {
         } else if (cart.notinCart(data.perid)) {
             html = '<button type="button" class="btn btn-sm btn-success p-0" style="--bs-btn-font-size: 75%;" onclick="pos.addToCart(' +
                 data.index + ', \'' + formatterParams.t + '\')">Add</button>';
-            if (config['useportal'] == 1) {
+            if (config.useportal == 1) {
                 var mgr = data.cntManages;
                 if (mgr > 0) {
                     html += '&nbsp;<button type="button" class="btn btn-sm btn-success p-0" style="--bs-btn-font-size: 75%;" ' +
@@ -1712,7 +1713,7 @@ addUnpaid(tid) {
                     }
                 }
             } else {
-                row.reg_label = 'No Membership';
+                row.reg_label = 'No Primary Membership';
                 row.reg_tid = '';
             }
         }
@@ -1818,8 +1819,11 @@ addUnpaid(tid) {
     reviewUpdate() {
         cart.updateReviewData();
         this.reviewShown();
-        if (this.#review_missing_items > 0) {
-            setTimeout(pos.reviewNoChanges, 100);
+        if (this.#reviewMissingPolicies > 0 && this.#print_tab)
+            this.#print_tab.disabled =true;
+
+        if (this.#reviewMissingItens > 0) {
+            setTimeout(reviewNoChanges, 100);
         } else {
             this.reviewNoChanges();
         }
@@ -1844,11 +1848,14 @@ addUnpaid(tid) {
 // if everything is put up next customer
     reviewNoChanges() {
         // first check to see if any required fields still exist
-        if (this.#review_missing_items > 0) {
-            if (!confirm("Proceed ignoring check for " + this.#review_missing_items.toString() + " missing data items (shown in yellow)?")) {
+        if (this.#reviewMissingItens > 0) {
+            if (!confirm("Proceed ignoring check for " + this.#reviewMissingItens.toString() + " missing data items (shown in yellow)?")) {
                 return false; // confirm answered no, return not safe to discard
             }
         }
+
+        if (this.#reviewMissingPolicies > 0 && this.#print_tab)
+            this.#print_tab.disabled = true;
 
         cart.hideNoChanges();
         // submit the current card data to update the database, retrieve all TID's/PERID's/REGID's of inserted data
@@ -1858,6 +1865,7 @@ addUnpaid(tid) {
             user_id: this.#user_id,
         };
         var _this = this;
+        clear_message();
         $.ajax({
             method: "POST",
             url: "scripts/pos_updateCartElements.php",
@@ -1884,13 +1892,28 @@ addUnpaid(tid) {
     reviewedUpdateCart(data) {
         this.#pay_tid = data.master_tid;
         // update cart elements
-        cart.updateFromDB(data);
-        if (data['success'])
-            show_message(data['success'], 'success');
+        var unpaidRows = cart.updateFromDB(data);
+        if (data.success)
+            show_message(data.success, 'success');
         else
             clear_message();
 
-        if (config['cashier'] == 1) {
+        // set tab to review-tab
+        if (unpaidRows == 0 && this.#print_tab) {
+            if (this.#reviewMissingPolicies == 0) {
+                this.gotoPrint();
+                return;
+            } else {
+                this.#print_tab.disabled = true;
+                cart.showNext();
+                cart.hideStartOver();
+                cart.freeze();
+                show_message("Printing is disabled with missing required policies", "warn");
+                return;
+            }
+        }
+
+        if (config.cashier == 1) {
             bootstrap.Tab.getOrCreateInstance(this.#pay_tab).show();
             cart.drawCart();
         } else {
@@ -1905,7 +1928,7 @@ addUnpaid(tid) {
                 el.hidden = true;
             el = document.getElementById('review_status');
             if (el)
-                el.innerHTML = "Completed: Send customer to cashier with id of " + this.#pay_tid;
+                el.innerHTML = "<strong>Completed: Send customer to cashier with id of " + this.#pay_tid + '</strong>';
         }
     }
 
@@ -2086,6 +2109,7 @@ addUnpaid(tid) {
         };
         this.#pay_button_pay.disabled = true;
         var _this = this;
+        clear_message();
         $.ajax({
             method: "POST",
             url: "scripts/pos_processPayment.php",
@@ -2138,6 +2162,7 @@ addUnpaid(tid) {
         var footer_text = '';
         // server side will print the receipt
         var postData = {
+            user_id: this.#user_id,
             ajax_request_action: 'printReceipt',
             header: header_text,
             prows: JSON.stringify(cart.getCartPerinfo()),
@@ -2154,6 +2179,7 @@ addUnpaid(tid) {
         }
 
         var _this = this;
+        clear_message();
         $.ajax({
             method: "POST",
             url: "scripts/pos_emailReceipt.php",
@@ -2169,13 +2195,13 @@ addUnpaid(tid) {
                 } else if (data.warn !== undefined) {
                     show_message(data.warn, 'success');
                 }
-                if (this.#lastReceiptType == 'email')
+                if (_this.#lastReceiptType == 'email')
                     _this.#pay_button_ercpt.disabled = false;
                 else
                     _this.#pay_button_rcpt.disabled = false;
             },
             error: function (jqXHR, textstatus, errorThrown) {
-                if (this.#lastReceiptType == 'email')
+                if (_this.#lastReceiptType == 'email')
                     _this.#pay_button_ercpt.disabled = false;
                 else
                     _this.#pay_button_rcpt.disabled = false;
@@ -2184,65 +2210,60 @@ addUnpaid(tid) {
         });
     }
 
-// addBadgeToPrint
-//      create the parameters for a single badge
-//
-    #addBadgeToPrint(index) {
-        return cart.getBadge(index);
-    }
-
 // Send one or all of the badges to the printer
-    printBadge(index) {
+    printBadge(cindex, mindex) {
         var rownum = 0;
         var cartlen = cart.getCartLength();
 
         var params = [];
-        var badges = [];
-        if (index >= 0) {
-            params.push(this.#addBadgeToPrint(index));
-            badges.push(index);
+        if (cindex >= 0) {
+            params.push(cart.getBadge(cindex, mindex));
         } else {
-            while (rownum < cartlen) {
-                params.push(this.#addBadgeToPrint(rownum));
-                badges.push(rownum);
-                rownum++;
+            for (rownum in this.#badgeList) {
+                params.push(cart.getBadge(this.#badgeList[rownum][0], this.#badgeList[rownum][1]));
             }
         }
         var postData = {
             ajax_request_action: 'printBadge',
             params: JSON.stringify(params),
-            badges: JSON.stringify(badges),
         };
         $("button[name='print_btn']").attr("disabled", true);
         var _this = this;
+        clear_message();
         $.ajax({
             method: "POST",
             url: "scripts/pos_printBadge.php",
             data: postData,
             success: function (data, textstatus, jqxhr) {
-                if (data['error'] !== undefined) {
-                    show_message(data['error'], 'error');
+                if (data.constructor.name !== 'Object' ) {
+                    show_message(data, 'error');
+                    $("button[name='print_btn']").attr("disabled", false);
+                    return;
+                }
+                if (data.error !== undefined) {
+                    show_message(data.error, 'error');
+                    $("button[name='print_btn']").attr("disabled", false);
                     return;
                 }
                 _this.printComplete(data);
             },
             error: function (jqXHR, textstatus, errorThrown) {
                 $("button[name='print_btn']").attr("disabled", false);
-                _this.pay_button_pay.disabled = false;
                 showAjaxError(jqXHR, textstatus, errorThrown);
             },
         });
     }
 
     printComplete(data) {
-        var badges = data['badges'];
+        var badges = data.badges;
         var regs = [];
         var index;
         for (index in badges) {
-            if (this.#printedObj.get(index) == 0) {
-                var rparams = cart.addToPrintCount(index);
-                this.#printedObj.set(index, 1);
-                regs.push({ regid: rparams[0], printcount: rparams[1]});
+            var regId = badges[index]['regId'];
+            var printCount = badges[index]['printCount'];
+            if (this.#printedObj.get(regId) == 0) {
+                this.#printedObj.set(regId, 1);
+                regs.push({ regid: regId, printcount: printCount + 1});
             }
         }
         if (regs.length > 0) {
@@ -2252,13 +2273,14 @@ addUnpaid(tid) {
                 user_id: this.#user_id,
                 tid: this.#pay_tid,
             };
+            clear_message();
             $.ajax({
                 method: "POST",
                 url: "scripts/pos_updatePrintCount.php",
                 data: postData,
                 success: function (data, textstatus, jqxhr) {
-                    if (data['error'] !== undefined) {
-                        show_message(data['error'], 'error');
+                    if (data.error !== undefined) {
+                        show_message(data.error, 'error');
                         return;
                     }
                 },
@@ -2267,7 +2289,7 @@ addUnpaid(tid) {
         }
         $("button[name='print_btn']").attr("disabled", false);
         this.printShown();
-        show_message(data['message'], 'success');
+        show_message(data.message, 'success');
     }
 // tab shown events - state mapping for which tab is shown
     findShown() {
@@ -2398,8 +2420,19 @@ addUnpaid(tid) {
                 }
                 cart.hideVoid();
             } else {
-                if (this.#print_tab)
-                    this.gotoPrint();
+                if (this.#print_tab) {
+                    if (this.#reviewMissingPolicies == 0) {
+                        this.gotoPrint();
+                        return;
+                    } else {
+                        cart.showNext();
+                        cart.hideStartOver();
+                        cart.freeze();
+                        this.#print_tab.disabled = true;
+                        show_message("Printing is disabled with missing required policies", "warn");
+                        return;
+                    }
+                }
             }
         } else {
             if (this.#pay_button_pay != null) {
@@ -2588,12 +2621,13 @@ addUnpaid(tid) {
             this.#printDiv.innerHTML = print_html;
             return;
         }
+        this.#badgeList = [];
         print_html += cart.printList(this.#newPrint, this.#printedObj);
         print_html += `
     <div class="row mt-4">
         <div class="col-sm-2 ms-0 me-2 p-0">&nbsp;</div>
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <button class="btn btn-primary btn-sm" type="button" id="pay-print-all" name="print_btn" onclick="pos.printBadge(-1);">Print All</button>
+            <button class="btn btn-primary btn-sm" type="button" id="pay-print-all" name="print_btn" onclick="pos.printBadge(-1, -1);">Print All</button>
         </div>
     </div>
     <div class="row mt-4">
@@ -2602,6 +2636,11 @@ addUnpaid(tid) {
 </div>`;
 
         this.#printDiv.innerHTML = print_html;
+    }
+
+// addToBadgeList - add to badge Print List array
+    addToBadgeList(cindex, mindex) {
+        this.#badgeList.push([cindex, mindex]);
     }
 
 // dayFromLabel(label)
@@ -2690,4 +2729,8 @@ function posbuildRecordHover(e, cell, onRendered) {
 
 function checkboxCheck() {
     return pos.checkboxCheck();
+}
+
+function reviewNoChanges() {
+    return pos.reviewNoChanges();
 }

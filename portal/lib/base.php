@@ -107,6 +107,7 @@ function portalPageInit($page, $info, $css, $js, $refresh = false) {
                 <?php
             }}
             ?>
+            <script src='<?php echo $includes['popjs'];?>'></script>
             <script src='<?php echo $includes['bs5js'];?>'></script>
             <script type='text/javascript' src='<?php echo $includes['jqjs']; ?>'></script>
             <script type='text/javascript' src='<?php echo $includes['jquijs']; ?>'></script>

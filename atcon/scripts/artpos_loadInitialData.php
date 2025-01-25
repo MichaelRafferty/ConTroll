@@ -35,9 +35,9 @@ if (!check_atcon('artsales', $conid)) {
 $response['label'] = $con['label'];
 $response['conid'] = $conid;
 $response['discount'] = $atcon['discount'];
-$response['badgePrinter'] = $_SESSION['badgePrinter']['name'] != 'None';
-$response['receiptPrinter'] = $_SESSION['receiptPrinter']['name'] != 'None';
-$response['user_id'] = $_SESSION['user'];
+$response['badgePrinter'] = getSessionVar('badgePrinter')['name'] != 'None';
+$response['receiptPrinter'] = getSessionVar('receiptPrinter')['name'] != 'None';
+$response['user_id'] = getSessionVar('user');
 $response['hasManager'] = check_atcon('manager', $conid);
 
 ajaxSuccess($response);

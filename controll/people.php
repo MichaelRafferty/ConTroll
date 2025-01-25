@@ -117,7 +117,7 @@ $config_vars['inrerests'] = $interests;
                             <input type='text' size='80' id='matchAdditionalQuery' name='matchAdditionalQuery' , placeholder='Name/PID/email'/>
                         </div>
                         <div class='col-sm-auto text-bg-secondary'>
-                            <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0'
+                            <button class='btn btn-sm btn-light pt-0 pb-0 mt-0 mb-0'
                                     type='button' onclick="unmatchedPeople.additionalQuery()">Search</button>
                         </div>
                     </div>
@@ -146,7 +146,7 @@ $config_vars['inrerests'] = $interests;
                                 <div class='row justify-content-between'>
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0' id='matchID'></div>
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
-                                        <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
+                                        <button class='btn btn-sm btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
                                                 type='button' onclick="unmatchedPeople.copy('matchAll')">
                                             ALL&gt;&gt;
                                         </button>
@@ -159,7 +159,7 @@ $config_vars['inrerests'] = $interests;
                             <div class='container-fluid'>
                                 <div class='row'>
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
-                                        <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 me-2 justify-content-end'
+                                        <button class='btn btn-sm btn-light pt-0 pb-0 mt-0 mb-0 me-2 justify-content-end'
                                                 type='button' onclick="unmatchedPeople.copy('newAll')">
                                             &lt;&lt;ALL
                                         </button>
@@ -176,7 +176,7 @@ $config_vars['inrerests'] = $interests;
                                 <div class="row justify-content-between">
                                     <div class="col-sm-auto ms-0 me-0 ps-0 pe-0" id="matchName"></div>
                                     <div class="col-sm-auto ms-0 me-0 ps-0 pe-0">
-                                        <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
+                                        <button class='btn btn-sm btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
                                                 type='button' onclick="unmatchedPeople.copy('matchName')">
                                             &gt;&gt;
                                         </button>
@@ -194,7 +194,7 @@ $config_vars['inrerests'] = $interests;
                             <div class='container-fluid'>
                                 <div class='row'>
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
-                                        <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 me-2 justify-content-end'
+                                        <button class='btn btn-sm btn-light pt-0 pb-0 mt-0 mb-0 me-2 justify-content-end'
                                                 type='button' onclick="unmatchedPeople.copy('newName')">
                                             &lt;&lt;
                                         </button>
@@ -211,7 +211,7 @@ $config_vars['inrerests'] = $interests;
                                 <div class='row justify-content-between'>
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0' id='matchLegal'></div>
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
-                                        <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
+                                        <button class='btn btn-sm btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
                                                 type='button' onclick="unmatchedPeople.copy('matchLegal')">
                                             &gt;&gt;
                                         </button>
@@ -226,7 +226,7 @@ $config_vars['inrerests'] = $interests;
                             <div class='container-fluid'>
                                 <div class='row'>
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
-                                        <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 me-2 justify-content-end'
+                                        <button class='btn btn-sm btn-light pt-0 pb-0 mt-0 mb-0 me-2 justify-content-end'
                                                 type='button' onclick="unmatchedPeople.copy('newLegal')">
                                             &lt;&lt;
                                         </button>
@@ -243,7 +243,7 @@ $config_vars['inrerests'] = $interests;
                                 <div class='row justify-content-between'>
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0' id='matchPronouns'></div>
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
-                                        <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
+                                        <button class='btn btn-sm btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
                                                 type='button' onclick="unmatchedPeople.copy('matchPronouns')">
                                             &gt;&gt;
                                         </button>
@@ -258,7 +258,7 @@ $config_vars['inrerests'] = $interests;
                             <div class='container-fluid'>
                                 <div class='row'>
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
-                                        <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 me-2 justify-content-end'
+                                        <button class='btn btn-sm btn-light pt-0 pb-0 mt-0 mb-0 me-2 justify-content-end'
                                                 type='button' onclick="unmatchedPeople.copy('newPronouns')">
                                             &lt;&lt;
                                         </button>
@@ -275,7 +275,7 @@ $config_vars['inrerests'] = $interests;
                                 <div class='row justify-content-between'>
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0' id='matchBadge'></div>
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
-                                        <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
+                                        <button class='btn btn-sm btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
                                                 type='button' onclick="unmatchedPeople.copy('matchBadge')">
                                             &gt;&gt;
                                         </button>
@@ -290,7 +290,7 @@ $config_vars['inrerests'] = $interests;
                             <div class='container-fluid'>
                                 <div class='row'>
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
-                                        <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 me-2 justify-content-end'
+                                        <button class='btn btn-sm btn-light pt-0 pb-0 mt-0 mb-0 me-2 justify-content-end'
                                                 type='button' onclick="unmatchedPeople.copy('newBadge')">
                                             &lt;&lt;
                                         </button>
@@ -307,7 +307,7 @@ $config_vars['inrerests'] = $interests;
                                 <div class='row justify-content-between'>
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0' id='matchAddress'></div>
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
-                                        <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
+                                        <button class='btn btn-sm btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
                                                 type='button' onclick="unmatchedPeople.copy('matchAddress')">
                                             &gt;&gt;
                                         </button>
@@ -339,7 +339,7 @@ $config_vars['inrerests'] = $interests;
                             <div class='container-fluid'>
                                 <div class='row'>
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
-                                        <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 me-2 justify-content-end'
+                                        <button class='btn btn-sm btn-light pt-0 pb-0 mt-0 mb-0 me-2 justify-content-end'
                                                 type='button' onclick="unmatchedPeople.copy('newAddress')">
                                             &lt;&lt;
                                         </button>
@@ -356,7 +356,7 @@ $config_vars['inrerests'] = $interests;
                                 <div class='row justify-content-between'>
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0' id='matchEmail'></div>
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
-                                        <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
+                                        <button class='btn btn-sm btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
                                                 type='button' onclick="unmatchedPeople.copy('matchEmail')">
                                             &gt;&gt;
                                         </button>
@@ -371,7 +371,7 @@ $config_vars['inrerests'] = $interests;
                             <div class='container-fluid'>
                                 <div class='row'>
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
-                                        <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 me-2 justify-content-end'
+                                        <button class='btn btn-sm btn-light pt-0 pb-0 mt-0 mb-0 me-2 justify-content-end'
                                                 type='button' onclick="unmatchedPeople.copy('newEmail')">
                                             &lt;&lt;
                                         </button>
@@ -388,7 +388,7 @@ $config_vars['inrerests'] = $interests;
                                 <div class='row justify-content-between'>
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0' id='matchPhone'></div>
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
-                                        <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
+                                        <button class='btn btn-sm btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
                                                 type='button' onclick="unmatchedPeople.copy('matchPhone')">
                                             &gt;&gt;
                                         </button>
@@ -403,7 +403,7 @@ $config_vars['inrerests'] = $interests;
                             <div class='container-fluid'>
                                 <div class='row'>
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
-                                        <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 me-2 justify-content-end'
+                                        <button class='btn btn-sm btn-light pt-0 pb-0 mt-0 mb-0 me-2 justify-content-end'
                                                 type='button' onclick="unmatchedPeople.copy('newPhone')">
                                             &lt;&lt;
                                         </button>
@@ -420,7 +420,7 @@ $config_vars['inrerests'] = $interests;
                                 <div class='row justify-content-between'>
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0' id='matchPolicies'></div>
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
-                                        <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
+                                        <button class='btn btn-sm btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
                                                 type='button' onclick="unmatchedPeople.copy('matchPolicies')">
                                             &gt;&gt;
                                         </button>
@@ -437,7 +437,7 @@ $config_vars['inrerests'] = $interests;
                             <div class='container-fluid'>
                                 <div class='row'>
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
-                                        <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 me-2 justify-content-end'
+                                        <button class='btn btn-sm btn-light pt-0 pb-0 mt-0 mb-0 me-2 justify-content-end'
                                                 type='button' onclick="unmatchedPeople.copy('newPolicies')">
                                             &lt;&lt;
                                         </button>
@@ -454,7 +454,7 @@ $config_vars['inrerests'] = $interests;
                                 <div class='row justify-content-between'>
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0' id='matchFlags'></div>
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
-                                        <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
+                                        <button class='btn btn-sm btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
                                                 type='button' onclick="unmatchedPeople.copy('matchFlags')">
                                             &gt;&gt;
                                         </button>
@@ -478,7 +478,7 @@ $config_vars['inrerests'] = $interests;
                             <div class='container-fluid'>
                                 <div class='row'>
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
-                                        <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 me-2 justify-content-end'
+                                        <button class='btn btn-sm btn-light pt-0 pb-0 mt-0 mb-0 me-2 justify-content-end'
                                                 type='button' onclick="unmatchedPeople.copy('newFlags')">
                                             &lt;&lt;
                                         </button>
@@ -495,7 +495,7 @@ $config_vars['inrerests'] = $interests;
                                 <div class='row justify-content-between'>
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0' id='matchManager'></div>
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
-                                        <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
+                                        <button class='btn btn-sm btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
                                                 type='button' onclick="unmatchedPeople.copy('matchManager')">
                                             &gt;&gt;
                                         </button>
@@ -508,7 +508,7 @@ $config_vars['inrerests'] = $interests;
                             <div class='container-fluid'>
                                 <div class='row'>
                                     <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
-                                        <button class='btn btn-small btn-light pt-0 pb-0 mt-0 mb-0 me-2 justify-content-end'
+                                        <button class='btn btn-sm btn-light pt-0 pb-0 mt-0 mb-0 me-2 justify-content-end'
                                                 type='button' onclick="unmatchedPeople.copy('newManager')">
                                             &lt;&lt;
                                         </button>
@@ -648,6 +648,24 @@ drawInterestList($interests, true);
         </div>
     </div>
 </div>
+<div id='person-history' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Person History' aria-hidden='true' style='--bs-modal-width: 96%;'>
+    <div class='modal-dialog'>
+        <div class='modal-content'>
+            <div class='modal-header bg-primary text-bg-primary'>
+                <div class='modal-title'>
+                    <strong id='historyTitle'>Person History</strong>
+                </div>
+                <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+            </div>
+            <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                <div class='container-fluid' id='personHistory-div'></div>
+            </div>
+            <div class='modal-footer'>
+                <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 <ul class='nav nav-tabs mb-3' id='people-tab' role='tablist'>
     <li class='nav-item' role='presentation'>
         <button class='nav-link active' id='unmatched-tab' data-bs-toggle='pill' data-bs-target='#unmatched-pane' type='button'
@@ -694,7 +712,7 @@ drawInterestList($interests, true);
             <div class='row mt-2'>
                 <div class='col-sm-1'></div>
                 <div class="col-sm-11">
-                    <button class='btn btn-sm btn-primary' type='button' onclick='findPerson.find();'>Find Person to Edit</button>
+                    <button class='btn btn-sm btn-primary' type='button'  id='findPersonBTN' onclick='findPerson.find();'>Find Person to Edit</button>
                     <button class='btn btn-sm btn-secondary' type='button' id='findAddPersonBTN' onclick='findPerson.addPerson();' disabled>Not found, Add New
                         Person</button>
                 </div>

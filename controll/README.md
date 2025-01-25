@@ -5,15 +5,15 @@ One top level file per menu item in the Controll Administration Site (listed in 
 
 **Home**: index.php - shows your login status and the current version information for the system and database
 
-**Membership**: overview.php - chart of current memberships and graph of this year versus prior years
+**Admin**: admin.php - permissions, menu sort order and Oauth2 Client Keys
 
-**Admin**: admin.php - permissions and menu sort order
+**Membership**: overview.php - chart of current memberships and graph of this year versus prior years
 
 **Registration Admin**: reg_admin.php - registration configuration and management
 
 **People**: people.php - match/add/search/edit perinfo records (People persist from year to year)
 
-**registraion**: registraion.php - mail in registration (similar to atcon, but no date limitations)
+**Registraion**: registraion.php - mail in registration (similar to atcon, but no date limitations)
 
 **Free Badges**: badge.php - add/manage and track those people a user is interested in assigning a comp membership and then assign them one if needed
 

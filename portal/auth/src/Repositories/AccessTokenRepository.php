@@ -16,9 +16,25 @@ class AccessTokenRepository implements AccessTokenRepositoryInterface
    */
   public function persistNewAccessToken(AccessTokenEntityInterface $accessTokenEntity): void
   {
-    // Some logic here to save the access token to a database
-    //
-    // Insert into DB: token_id, expiration, user_id, client_id, scopes
+    // Save the access token to a database
+
+        $data = [
+            'user_id' => $accessTokenEntity->getUserIdentifier(), // User ID
+            'client_id' => $accessTokenEntity->getClient()->getIdentifier(), // Client ID
+            'scopes' => json_encode($accessTokenEntity->getScopes()), // Scopes as JSON
+            'expiry' => $accessTokenEntity->getExpiryDateTime()->format('Y-m-d H:i:s'), // Expiry DateTime
+            'token_id' => $accessTokenEntity->getIdentifier(), // Unique token identifier
+        ];
+
+        //file_put_contents(
+        //    __DIR__ . '/tokendebug.log',
+        //    "Persisting Access Token: " . print_r($accessTokenEntity, true) . "\n" .
+        //    "Persisting Data: " . print_r($data, true) . "\n",
+        //    FILE_APPEND
+        //);
+
+    // Save to database
+    //saveAccessTokenToDatabase($data);
   }
 
   /**
@@ -55,6 +71,12 @@ class AccessTokenRepository implements AccessTokenRepositoryInterface
     if ($userIdentifier !== null) {
       $accessToken->setUserIdentifier((string)$userIdentifier);
     }
+
+    //    file_put_contents(
+    //        __DIR__ . '/newtokendebug.log',
+    //        "Data: " . print_r($userIdentifier, true) . "\n",
+    //        FILE_APPEND
+    //    );
 
     return $accessToken;
   }

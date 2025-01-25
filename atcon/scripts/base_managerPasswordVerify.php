@@ -31,7 +31,7 @@ if ($ajax_request_action != 'managerPasswordVerify') {
     exit();
 }
 $response = [];
-$user = $_SESSION['user'];
+$user = getSessionVar('user');
 $passwd = null;
 if (array_key_exists('user', $_POST))
     $user = $_POST['user'];

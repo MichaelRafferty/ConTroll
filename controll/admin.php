@@ -125,10 +125,17 @@ if (array_key_exists('msg', $_REQUEST)) {
             </button>
         </li>
         <li class='nav-item' role='presentation'>
+            <button class='nav-link' id='atcon-tab' data-bs-toggle='pill' data-bs-target='#atcon-pane' type='button' role='tab' aria-controls='nav-menu'
+                    aria-selected='false' onclick="settab('atcon-pane');">Atcon Users
+            </button>
+        </li>
+        <!-- future - oauth2 client key configuration for the server
+        <li class='nav-item' role='presentation'>
             <button class='nav-link' id='keys-tab' data-bs-toggle='pill' data-bs-target='#keys-pane' type='button' role='tab' aria-controls='nav-menu'
                     aria-selected='false' onclick="settab('keys-pane');">Oauth2 Client Keys
             </button>
         </li>
+        -->
     </ul>
     <div class="tab-content ms-2" id="admin-content">
         <div class="tab-pane fade show active" id="users-pane" role="tabpanel" aria-labelledby="users-tab" tabindex="0">
@@ -251,13 +258,22 @@ if (array_key_exists('msg', $_REQUEST)) {
                         <button id='menu-save' type='button' class='btn btn-primary btn-sm' onclick='saveMenu(); return false;' disabled>Save Changes</button>
                     </div>
                 </div>
+            </div>
         </div>
+        <div class='tab-pane fade' id='keys-pane' role='tabpanel' aria-labelledby='atcon-tab' tabindex='0'>
+            <h1 class='h4'>Atcon User Configuration</h1>
+            <div class='row'>
+                <div class='col-sm-12' id='atconTableDiv'></div>
+            </div>
+        </div>
+        <!---  future for oauth2 server client configuration
         <div class='tab-pane fade' id='keys-pane' role='tabpanel' aria-labelledby='keys-tab' tabindex='0'>
             <h1 class='h4'>ConTroll Oauth2 Clients Configuration</h1>
             <div class='row'>
                 <div class='col-sm-12' id='clientsTableDiv'></div>
             </div>
-        </div>
+        </div>`
+        -->
     </div>
 </div>
 <script>

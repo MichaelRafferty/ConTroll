@@ -23,14 +23,12 @@ class UserRepository implements UserRepositoryInterface
   {
     // Check user database for username and validate against password
 
-    if ($username === 'thoth' && $password === 'knowledge') {
-      $userEntity = new UserEntity();
+    // TODO: return null if username/password is bad
 
-      $userEntity->setIdentifier(1 /* $user['id'] */);
+    $userEntity = new UserEntity();
 
-      return $userEntity;
-    }
+    $userEntity->setIdentifier($username);
 
-    return null;
+    return $userEntity;
   }
 }

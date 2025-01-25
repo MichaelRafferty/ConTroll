@@ -24,6 +24,7 @@ class customTextSetup {
 
     // called on open of the custom text window
     open() {
+        var script;
         var html = `<h4><strong>Edit Custom Text:</strong></h4>
 <div class="container-fluid">
     <div class="row">
@@ -42,11 +43,22 @@ class customTextSetup {
         this.#customTextPane.innerHTML = html;
         this.#customText = null;
         var _this = this;
-        var script = "scripts/regadmin_getConfigTables.php";
+        switch (config['pageName']) {
+            case 'exhibitor':
+                script = "scripts/exhibitsGetCustomText.php";
+                break;
+            case 'regAdmin':
+                script = "scripts/regadmin_getConfigTables.php";
+                break;
+            default:
+                show_message("Invalid page call", 'error');
+                return;
+        }
         var postdata = {
             ajax_request_action: 'customText',
             tablename: "customText",
-            indexcol: "none"
+            indexcol: "none",
+            page: config['page'],
         };
         clear_message();
         this.#dirty = false;
@@ -114,7 +126,7 @@ class customTextSetup {
     editbutton(cell, formatterParams, onRendered) {
         var index = cell.getRow().getIndex()
         return '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
-                ' onclick="customText.editCustomText(' + index + ');">Edit Custom Text</button>';
+                ' onclick="customText.editCustomText(' + index + ');">Edit</button>';
     }
 
     toHTML(cell,  formatterParams, onRendered) {
@@ -181,13 +193,24 @@ class customTextSetup {
 
     // save - save the customText entries back to the database
     save() {
+        var script;
         var _this = this;
 
         if (this.#customTextTable != null) {
             this.#customTextSaveBtn.innerHTML = "Saving...";
             this.#customTextSaveBtn.disabled = true;
 
-            var script = "scripts/regadmin_updateConfigTables.php";
+            switch (config['pageName']) {
+                case 'exhibitor':
+                    script = "scripts/exhibitsUpdateCustomText.php";
+                    break;
+                case 'regAdmin':
+                    script = "scripts/regadmin_updateConfigTables.php";
+                    break;
+                default:
+                    show_message("Invalid page call", 'error');
+                    return;
+            }
 
             // the btoa of encodeURI is to get past passing html code up to the servrer with commodo security checking in the way
             // it's stupid but it works, may have to resort to this for interests and policies in the future too.
@@ -211,8 +234,8 @@ class customTextSetup {
                         _this.dataChanged();
                         return false;
                     }
-                    customText.close();
-                    customText.open();
+                    /* update routines do a reload, saving a round trip */
+                    _this.#customTextTable.replaceData(data['customText']);
                     show_message(data['success'], 'success');
                 },
                 error: function (jqXHR, textStatus, errorThrown) {

@@ -7,6 +7,7 @@ db_name=""
 sql_mode='STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION'
 db_timezone='US/Eastern'
 php_timezone='AMERICA/NEW_YORK'
+
 [con]
 label="ConTroll 2022"
 conname="ConTroll"
@@ -41,7 +42,6 @@ id="2022"
 taxRate=6
 currency="USD"
 minComp="2021"
-compLen="150"
 conLen="3"
 server="https://reg.conname.org/"
 rollover_eligible="'upgrade', 'rollover', 'freebie', 'standard', 'yearahead', 'discount'"
@@ -52,18 +52,21 @@ showConPolicy=1
 ;      set to 0 if volunteers is in your interest section, 1 otherwise
 showVolunteerPolicy=1
 oneoff=0 ; 1 if this is a one year (one-off convention), 0=if this convention re-occurs every "year".
+
 [debug]
 google=0 ; to enable google debug statements (1=enable, 0=disable)
 controll_admin=0 ; to enable controll admin tab debug statement (currently bitmask from 1-31) (1=enable, 0=disable)
 controll_regadmin=0 ; to enable controll reg_admin tab debug statement (currently bitmask from 1-31) (1=enable, 0=disable)
 controll_registration=0 ; to enable controll registration tab debug statement (currently bitmask from 1-31) (1=enable, 0=disable)
 controll_exhibitors=0 ; to enable controll exhibitors tab debug statement (currently bitmask from 1-31) (1=enable, 0=disable)
+controll_stats=0 ; to enable controll statistics screens, currently =1 means invent prior year stats
 vendors=0 ; to enable vendor and artist admin tab debug statement (currently bitmask from 1-31) (1=enable, 0=disable)
 usps=0 ; to enable usps address validation debug (currently bitmast from 1-31)
 api:0 ; to enable api inteface debug statements (currently bitmask from 1-31) (1=enable, 0=disable)
 portal=0 ; to enable regportal debug statements (currently bitmask from 1-31) (1=enable, 0=disable)
 atcon=0 ; to enable atcon debug statements (currently bitmask from 1-31) (1=enable, 0=disable)
 oauth=0 ; to enable oauth2 server debug (currently 0 = off, 1 = on)
+
 [reg]
 https=1
 test=0
@@ -93,6 +96,7 @@ onsiteopen="3:00 PM"
 ;   first = require only first name: first, country, email
 ;   addr = first, addr, city, st, zip, country, email
 required="all"
+
 [atcon]
 ; valid types are
 ; 	manager - requires manager logged in
@@ -109,6 +113,7 @@ badgeps="/home/homedir/config/conname.ps"
 ; production = suppress the 'default' placeholder messages (an alias for this is nodefault)
 ; none = supporess all custom text
 customtext='production'
+
 [vendor]
 test=0
 open=1
@@ -144,13 +149,6 @@ artistBidSheetBidSep=1
 ; bar codes: 0 = no barcode, 1 = show barcode, bar code is code128 and contains art item id,count (count = 1 for bid sheets and the "n" of qty for print shop)
 artistBidSheetBarcode = 1;
 artistPriceTagBarcode = 1;
-;artistOnSiteInventoryReqHTML, artistOnSiteInventoryReqText, artistMailInInventoryReqHTML, artistMailInInventoryReqText are the file names for the contents for the artist inventory request emails
-;artistOnSiteInventoryReqHTML=
-;artistOnSiteInventoryReqText=
-;artistMailInInventoryReqHTML=
-;artistMailInInventoryReqText=
-; pathto file in config any additional text you wish to add to explain the signup form for artist portal
-artistSignupAddltext=""
 ; artist bid sheets, artistBidSheetNumbers = number of bid lines, of which artistBidSheetNumbers are numbered if lines <=4, it will use up 2x3 Landscape, if >4 and less that X it will use 2x2 Portrait format, if > X it will use 2x1 portrait format
 artistBidSheetLines=4
 artistBidSheetNumbers=3
@@ -159,20 +157,19 @@ artistBidSheet="Demo 2024 Art Show Bid Sheet"
 ; name for artist print shop price tag header (independent of art area)
 artistPriceTag=""
 taxidlabel="NJ Sales Tax ID"
-taxidextra=
-;; disclaimers are path to file in config directory contain the request and payment disclaimers
-req_disclaimer=""
-pay_disclaimer=""
 artsheets=false ; true/false show sheet print buttons
 artcontrol=false ; true/false show control sheet print button
+
 [client]
 path = "/home/homedir/reg.conname.org/controll"
+
 [google]
 app_name="ConTroll Registration Controller"
 redirect_base="https://controll.conname.org"
 json="/home/homedir/config/conname.json"
 client_id=""
 client_secret=""
+
 [cc]
 ; valid types are 'square', 'test' or 'bypass' (Note: bypass and test are for testing only and requires localhost or test=1)
 ; appid, token, location come from your square api setup
@@ -184,6 +181,7 @@ env="production"
 location=""
 apiversion=""
 webpaysdk="https://web.squarecdn.com/v1/square.js"
+
 [log]
   web = "/home/homedir/reglogs/web"
   reg = "/home/homedir/reglogs/onLineReg"
@@ -191,6 +189,7 @@ webpaysdk="https://web.squarecdn.com/v1/square.js"
   vendors='/home/psfs/reglogs/vendors'
   cancel = "/home/homedir/reglogs/cancel"
   db = "/home/homedir/reglogs/db"
+
 [email]
 ; valid types are 'aws', 'mta', 'symfony', 'file'
 ;; for aws:
@@ -216,6 +215,7 @@ webpaysdk="https://web.squarecdn.com/v1/square.js"
   batchsize=10
 ; delay = sleep in seconds between batches, 0 = no delay and unlimited batchsize
   delay=1
+
 [portal]
 ;; membership portal items
 test=0
@@ -257,25 +257,35 @@ showConPolicy=1
 ; showVolunteerPolicy - shows the "#Conname# is entirely run by volunteers" line in the policy block,
 ;      set to 0 if volunteers is in your interest section, 1 otherwise
 showVolunteerPolicy=1
+;; Items for Worldcon's
 ; nomdate = cutoff for WSFS nominations memberships, older than this can nominate
 ; nomdate="YYYY/MM/DD"
+; nomnomURL = redirect URL with page for this worldcon's instance of No Nom
+; nomnomURL=https://<FQDN>/controll-redirect/
+; nomnomKey = Shared Secret Key for Nom Nom JWT signing
+;; End of Items for Worldcon
+
 [api]
 path = "" ; full path to the api directory
 oauthEncryptionKey= "" ; set your oauth2Server encryption key
+
 [usps]
 ;	you can obtail clientId and secrets from the usps developers forum.  These are for the v3 API
 ;	if these are blank or missing, the usps validation is not enabled.
 clientId=
 secret=
+
 [controll]
 clubname='Club Name'
 ; badgelistfilter - where to put the filter elements on the badgelist page ("top", "bottom")
 badgelistfilter="top"
 ; useportal - does this installation use the portal, 1 = yes, 0 = no
 useportal=1
+
 [oauth]
 ;;; serverKey - a 32 character random alphanumeric string, generate using any pasword generator
 ;serverKey=
+
 [local]
 ;;; local parameters for the sendinterests.php send script
 ;   cvsto = what email address to receive the overall VS file

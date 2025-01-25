@@ -18,6 +18,7 @@ class MembershipRules {
     #numFull = null;
     #numFullYearAhead = null;
     #numOneDay = null;
+    #multiOneDay = 0;
     #conid = null;
     #age = null;
     #memberships = null;
@@ -39,6 +40,8 @@ class MembershipRules {
         this.#numCats = [];
         this.#numFull = 0;
         this.#numFullYearAhead = 0;
+        if (config.hasOwnProperty('multiOneDay'))
+            this.#multiOneDay = config.multiOneDay;
         this.#numOneDay = 0;
         this.#age = age;
         this.#conid = conid;
@@ -105,6 +108,8 @@ class MembershipRules {
     // test the memList entry against implicit and explicit rules
     // if check implicit is false, it will not run the implicit rules and will ignore any NotAny against itself as well.
     testMembership(mem, skipImplicit = false) {
+        var item;
+
         // first check if its in the right age, if age is null, all are accepted
         if (this.#debug & 8) {
             console.log("testMembership:: skipImplicit: " + skipImplicit.toString());
@@ -163,12 +168,26 @@ class MembershipRules {
             var memCat = memCategories[mem.memCategory];
             if (memCat != null) {
                 if (memCat.onlyOne == 'Y') {
-                    var item = this.findCatInCart(mem.memCategory, this.#memberships);
-                    if (item != null && item != mem) { // for delete/remove, are we searching for ourselves, if so, it's allowed
-                        if (this.#debug & 8) {
-                            console.log("testMembership Implicit: return false-only one allowed and one of this memId is in the list already");
+                    // for onlyOne there are three cases
+                    //      memType != OneDay - do check
+                    //      memType == Oneday AND multiOneDay = 0 (no multiple one days), do check
+                    //      memType == Oneday AND multiOneDay = 1 (qllow multiple  different one days), check if this one already exists exactly
+                    if (mem.memType != 'oneday' || this.#multiOneDay == 0) {  // this is the first two cases
+                        item = this.findCatInCart(mem.memCategory, this.#memberships);
+                        if (item != null && item != mem) { // for delete/remove, are we searching for ourselves, if so, it's allowed
+                            if (this.#debug & 8) {
+                                console.log("testMembership Implicit: return false-only one allowed and one of this memCategory is in the list already");
+                            }
+                            return false; // only one allowed and one of this memCategory is in the list already
                         }
-                        return false; // only one allowed and one of this memId is in the list already
+                    } else {
+                        item = this.findInCart(mem.memId, this.#memberships);
+                        if (item != null && item != mem) { // for delete/remove, are we searching for ourselves, if so, it's allowed
+                            if (this.#debug & 8) {
+                                console.log("testMembership Implicit: return false-only one allowed one of this memId is in the list already");
+                            }
+                            return false; // only one allowed and one of this memId is in the list already
+                        }
                     }
                 }
             }

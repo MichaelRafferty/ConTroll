@@ -12,8 +12,17 @@ $con = get_conf('con');
 $local = get_conf('local');
 $conid = $con['id'];
 $regadminemail = $con['regadminemail'];
-$csvTo = $local['csvto'];
-$csvCc = $local['csvcc'];
+
+if (array_key_exists('csvto', $local))
+    $csvTo = $local['csvto'];
+else
+    $csvTo = null;
+
+if (array_key_exists('csvcc', $local))
+    $csvCc = $local['csvcc'];
+else
+    $csvCC = null;
+
 if (array_key_exists('csvsavedir', $local))
     $csvSaveDir = $local['csvsavedir'];
 else
@@ -24,11 +33,13 @@ else
 // -n - no send,update, do not mark the records as updated, just echo what you would be doing
 // -q just show errors, be quiet about everything else
 // -t emailAddress - force all emails to go to this 'test' address
+// -u - no update (send emails but do not update the database)
 // -v verbose level (0 or missing, none, 1: progress messages, 2: progress + dumps
+// -y - only send 'Y' responses
 // -h show help instructions
 
 // get command line options
-$options = getopt('c:nqt:v:h');
+$options = getopt('c:nqt:uv:yh');
 
 if ($options === false)
     calling_seq("options did not parse correctly");
@@ -45,6 +56,8 @@ if (array_key_exists('v', $options)) {
 }
 
 $noSendUpdate = array_key_exists('n', $options);
+$noUpdadeDB = array_key_exists('u', $options);
+$yesOnly = array_key_exists('y', $options);
 $quiet = array_key_exists('q', $options);
 $testEmailAddress = null;
 if (array_key_exists('t', $options)) {
@@ -54,7 +67,8 @@ if (array_key_exists('t', $options)) {
     else if (!filter_var($testEmailAddress, FILTER_VALIDATE_EMAIL)) {
         calling_seq("-t $testEmailAddress is not a valid email address");
     }
-    $csvTo = $testEmailAddress;
+    if ($csvTo != null)
+        $csvTo = $testEmailAddress;
     $csvCc = null;
 }
 $ccEmailAddress = null;
@@ -107,6 +121,11 @@ if ($lastNotifyDate == null)
 
 if ($verbose) echo "Getting People to check\n";
 $people = [];
+if ($yesOnly) {
+    $whereResp = "m.interested = 'Y'";
+} else {
+    $whereResp = "(DATEDIFF(m.updateDate, m.createDate) > 0 || m.interested = 'Y')";
+}
 
 $getP = <<<EOS
 SELECT m.id, m.perid, m.conid, m.newperid, m.interested,
@@ -123,6 +142,14 @@ SELECT m.id, m.perid, m.conid, m.newperid, m.interested,
         ELSE n.last_name
     END AS last_name,
     CASE 
+        WHEN m.perid IS NOT NULL THEN p.badge_name
+        ELSE n.badge_name
+    END AS badge_name,
+    CASE 
+        WHEN m.perid IS NOT NULL THEN p.phone
+        ELSE n.phone
+    END AS phone,
+    CASE 
         WHEN m.perid IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', 
             IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' '))
         ELSE TRIM(REGEXP_REPLACE(CONCAT(IFNULL(n.first_name, ''),' ', IFNULL(n.middle_name, ''), ' ',
@@ -131,14 +158,14 @@ SELECT m.id, m.perid, m.conid, m.newperid, m.interested,
 FROM memberInterests m
 LEFT OUTER JOIN perinfo p ON (p.id = m.perid)
 LEFT OUTER JOIN newperson n ON (n.id = m.newperid)
-WHERE m.conid = ? and m.interest = ? AND m.notifyDate IS NULL
+WHERE m.conid = ? and m.interest = ? AND m.notifyDate IS NULL AND $whereResp
 ORDER BY last_name, first_name, perid, newperid;
 EOS;
 
 $updP = <<<EOS
-UPDATE memberInterests m
+UPDATE memberInterests
 SET notifyDate = NOW()
-WHERE m.conid = ? and m.interest = ? AND m.notifyDate IS NULL
+WHERE conid = ? and interest = ? AND notifyDate IS NULL
 EOS;
 
 
@@ -159,9 +186,9 @@ foreach ($interests as $interestRow) {
     }
 
     if ($testEmailAddress != null) {
-        $notifyArr = explode('l', $testEmailAddress);
+        $notifyArr = explode(',', $testEmailAddress);
     } else {
-        $notifyArr = explode('l', $notifyAddrs);
+        $notifyArr = explode(',', $notifyAddrs);
     }
     for ($index = 0; $index < count($notifyArr); $index++) {
         $notifyArr[$index] = trim($notifyArr[$index]);
@@ -198,9 +225,9 @@ You have been configured by $regadminemail to receive notifications of changea t
 This is the list of updates as of $runDate
 
 EOS;
-    $csv = "lastName, firstName, fullName, emailAddr, interested\n";
+    $csv = "lastName, firstName, fullName, badgeName, emailAddr, phone, interested\n";
     foreach ($notifyList as $row) {
-        $csvRow = array($row['last_name'], $row['first_name'], $row['fullName'], $row['email_addr'], $row['interested']);
+        $csvRow = array($row['last_name'], $row['first_name'], $row['fullName'], $row['badge_name'], $row['email_addr'], $row['phone'], $row['interested']);
         $csv .= '"' . join('","', $csvRow) . '"' . PHP_EOL;
     }
 
@@ -214,7 +241,7 @@ EOS;
     }
 
     if (!$noSendUpdate) {
-        $return_arr = send_email($regadminemail, $notifyAddrs, $ccEmailAddress, "Interest $interest Change Notifications since $lastNotifyDate",
+        $return_arr = send_email($regadminemail, $notifyArr, $ccEmailAddress, "Interest $interest Change Notifications since $lastNotifyDate",
                                  $emailText, null, array(array("$csvSaveDir/$fname", $fname, 'application/csv')));
 
         if (array_key_exists('error_code', $return_arr)) {
@@ -229,9 +256,11 @@ EOS;
             if ($verbose) echo "Notification email sent to $notifyAddrs\n";
             $emailsSent++;
 
-            $numRows = dbSafeCmd($updP, 'is', array($conid, $interest));
-            if ($verbose) {
-                echo "$numRows updated to current date for $interest";
+            if (!$noUpdadeDB) {
+                $numRows = dbSafeCmd($updP, 'is', array ($conid, $interest));
+                if ($verbose) {
+                    echo "$numRows updated to current date for $interest";
+                }
             }
         }
     }
@@ -239,24 +268,29 @@ EOS;
 
 if ($verbose) echo "sendinterests individual notifies completed\n";
 
+if ($csvTo != null) {
 // send the combinded CSV file
-$interestFields = '';
-$joins = '';
-foreach ($interests as $interestRow)  {
-    $interest = $interestRow['interest'];
-    $interestFields .= ",$interest.interested AS $interest";
-    $joins .= <<<EOS
-LEFT OUTER JOIN memberInterests $interest ON ($interest.conid = m.conid AND $interest.interest = '$interest'
+    $interestFields = '';
+    $joins = '';
+    foreach ($interests as $interestRow)  {
+        $interest = $interestRow['interest'];
+        $interestFields .= ",$interest.interested AS $interest";
+        $joins .= <<<EOS
+LEFT OUTER JOIN nonCSV $interest ON ($interest.conid = m.conid AND $interest.interest = '$interest'
     AND IFNULL(m.perid, -1) = IFNULL($interest.perid, -1)
     AND IFNULL(m.newperid, -1) = IFNULL($interest.newperid, -1))
 
 EOS;
-}
-$csvGetQ = <<<EOS
-WITH perids AS (
-	SELECT DISTINCT perid, conid, newperid
+    }
+
+    $csvGetQ = <<<EOS
+WITH nonCSV AS (
+SELECT DISTINCT *
     FROM memberInterests
     WHERE conid = ? AND csvDate IS NULL
+), perids AS (
+	SELECT DISTINCT perid, conid, newperid
+    FROM nonCSV
 )
 SELECT m.perid, m.newperid,
     CASE 
@@ -272,6 +306,14 @@ SELECT m.perid, m.newperid,
         ELSE n.last_name
     END AS last_name,
     CASE 
+        WHEN m.perid IS NOT NULL THEN p.badge_name
+        ELSE n.badge_name
+    END AS badge_name,
+    CASE 
+        WHEN m.perid IS NOT NULL THEN p.phone
+        ELSE n.phone
+    END AS phone,
+    CASE 
         WHEN m.perid IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', 
             IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' '))
         ELSE TRIM(REGEXP_REPLACE(CONCAT(IFNULL(n.first_name, ''),' ', IFNULL(n.middle_name, ''), ' ',
@@ -283,75 +325,76 @@ LEFT OUTER JOIN newperson n ON (n.id = m.newperid)
 $joins;
 EOS;
 
-$updCSVP = <<<EOS
+    $updCSVP = <<<EOS
 UPDATE memberInterests
 SET csvDate = NOW()
 WHERE csvDate IS NULL AND conid = ?;
 EOS;
 
+    $csvGetR = dbSafeQuery($csvGetQ, 'i', array ($conid));
+    if ($csvGetR === false) {
+        echo "Error in csv query for $conid\n";
+        exit();
+    }
 
-$csvGetR = dbSafeQuery($csvGetQ, 'i', array($conid));
-if ($csvGetR === false) {
-    echo "Error in csv query for $conid\n";
-    exit();
-}
-
-if ($csvGetR->num_rows == 0) {
-    if (!$quiet)
-        echo "No new csv rows to report on since $lastCSVDate\n";
-    $msgTxt=<<<EOM
+    if ($csvGetR->num_rows == 0) {
+        if (!$quiet)
+            echo "No new csv rows to report on since $lastCSVDate\n";
+        $msgTxt = <<<EOM
 There is nothing new to send since $lastCSVDate.
 
 EOM;
-} else {
-    $first = true;
-    $csv = '';
-    while ($row = $csvGetR->fetch_assoc()) {
-        if ($first) {
-            $csv = implode(',', array_keys($row)) . PHP_EOL;
-            $first = false;
+    }
+    else {
+        $first = true;
+        $csv = '';
+        while ($row = $csvGetR->fetch_assoc()) {
+            if ($first) {
+                $csv = implode(',', array_keys($row)) . PHP_EOL;
+                $first = false;
+            }
+            $csv .= '"' . implode('","', $row) . '"' . PHP_EOL;
         }
-        $csv .= '"' . implode('","', $row) . '"' . PHP_EOL;
-    }
-    if ($verbose > 1) {
-        echo "csv:" . PHP_EOL . $csv . PHP_EOL;
-    }
+        if ($verbose > 1) {
+            echo "csv:" . PHP_EOL . $csv . PHP_EOL;
+        }
 
-    if (!$noSendUpdate) {
-        if ($csvTo != '') {
-            $fname = date_format(date_create(), 'Y-m-d-H-i-s') . "-allInterests.csv";
-            $csvF = fopen("$csvSaveDir/$fname", 'w');
-            fwrite($csvF, $csv);
-            fclose($csvF);
-            $emailText = <<<EOM
+        if (!$noSendUpdate) {
+            if ($csvTo != null) {
+                $fname = date_format(date_create(), 'Y-m-d-H-i-s') . "-allInterests.csv";
+                $csvF = fopen("$csvSaveDir/$fname", 'w');
+                fwrite($csvF, $csv);
+                fclose($csvF);
+                $emailText = <<<EOM
 Interested records since $lastCSVDate.
 
 EOM;
 
-            $return_arr = send_email($regadminemail, $csvTo, $csvCc, "Periodic Interests CSV Send",
-                                     $emailText, null, array(array("$csvSaveDir/$fname", $fname, 'application/csv')));
+                $return_arr = send_email($regadminemail, $csvTo, $csvCc, "Periodic Interests CSV Send",
+                                         $emailText, null, array (array ("$csvSaveDir/$fname", $fname, 'application/csv')));
 
-            if (array_key_exists('error_code', $return_arr)) {
-                $error_code = $return_arr['error_code'];
-            }
-            else {
-                $error_code = null;
-            }
-            if (array_key_exists('email_error', $return_arr))
-                echo "Unable to send csv change email to $csvTo, error: " . $return_arr['email_error'] . ", Code: $error_code\n";
-            else {
-                if ($verbose) echo "CSV Change email sent to $csvTo\n";
-                $emailsSent++;
-
-                $numRows = dbSafeCmd($updCSVP, 'i', array ($conid));
-                if ($verbose) {
-                    echo "$numRows updated to current date for $interest";
+                if (array_key_exists('error_code', $return_arr)) {
+                    $error_code = $return_arr['error_code'];
+                }
+                else {
+                    $error_code = null;
+                }
+                if (array_key_exists('email_error', $return_arr))
+                    echo "Unable to send csv change email to $csvTo, error: " . $return_arr['email_error'] . ", Code: $error_code\n";
+                else {
+                    if ($verbose) echo "CSV Change email sent to $csvTo\n";
+                    $emailsSent++;
+                    if (!$noUpdadeDB) {
+                        $numRows = dbSafeCmd($updCSVP, 'i', array ($conid));
+                        if ($verbose)
+                            echo "$numRows updated to current date for $interest";
+                    }
                 }
             }
         }
     }
+    $csvGetR->free();
 }
-$csvGetR->free();
 
 if ($verbose) echo "sendinterests task completed\n";
 
@@ -368,7 +411,9 @@ sendinterests options:
     -n - no send,update, do not mark the records as updated, just echo what you would be doing
     -q just show errors, be quiet about everything else
     -t emailAddress - force all emails to go to this 'test' address
+    -u - no update (send emails but do not update the database)
     -v verbose level (0 or missing, none, 1: progress messages, 2: progress + dumps
+    -y - only send 'Y' responses
     -h show help instructions
    
 Example:

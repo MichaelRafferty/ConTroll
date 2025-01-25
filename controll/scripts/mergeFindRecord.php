@@ -93,7 +93,7 @@ SELECT DISTINCT p.id AS perid, IFNULL(p.first_name, '') as first_name, IFNULL(p.
     r.regcnt, r.regs
 FROM regcnt r
 JOIN perinfo p ON (p.id = r.id)
-WHERE p.first_name != 'Merged' AND p.middle_name != 'into'
+WHERE IFNULL(p.first_name,'') != 'Merged' AND IFNULL(p.middle_name, '') != 'into'
 ORDER BY last_name, first_name LIMIT $limit;
 EOS;
     $rp = dbSafeQuery($searchSQLP, 'isssss', array($conid, $name_search, $name_search, $name_search, $name_search, $name_search));

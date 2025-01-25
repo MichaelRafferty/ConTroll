@@ -1,5 +1,5 @@
 <?php
-// vendor - base.php - base functions for vendor reg
+// exhibitor - base.php - base functions for exhibitor reg
 global $db_ini;
 if (!$db_ini) {
     $db_ini = parse_ini_file(__DIR__ . '/../../config/reg_conf.ini', true);
@@ -22,7 +22,7 @@ require_once(__DIR__ . '/../../lib/jsVersions.php');
 db_connect();
 session_start();
 
-function vendor_page_init($title) {
+function exhibitor_page_init($title) {
 $cdn = getTabulatorIncludes();
 $tabbs5=$cdn['tabbs5'];
 $tabcss=$cdn['tabcss'];
@@ -32,6 +32,15 @@ $bs5css=$cdn['bs5css'];
 $jqjs=$cdn['jqjs'];
 $jquijs=$cdn['jquijs'];
 $jquicss=$cdn['jquicss'];
+
+$vendor_conf = get_conf('vendor');
+if (array_key_exists('customtext', $vendor_conf)) {
+    $filter = $vendor_conf['customtext'];
+} else {
+    $filter = 'production';
+}
+loadCustomText('exhibitor', basename($_SERVER['PHP_SELF'], '.php'), $filter);
+
 echo <<<EOF
 <!DOCTYPE html>
 <html lang="en">

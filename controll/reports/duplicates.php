@@ -19,7 +19,7 @@ header('Content-Disposition: attachment; filename="duplicates.csv"');
 # , concat(NP1.first_name, ' ', NP1.last_name) as name1
 # , concat(NP2.first_name, ' ', NP2.last_name) as name2
 $query = <<<EOS
-SELECT concat(P.first_name, ' ', P.last_name) as name, R1.id, M1.label, R1.paid, R1.price, R2.id, M2.label, R2.paid, R2.price
+SELECT concat(P.first_name, ' ', P.last_name) as name, R1.id, M1.label, R1.price, R1.paid, R2.id, M2.label, R2.paid, R2.price
 FROM reg R1
 JOIN perinfo P ON (P.id=R1.perid)
 JOIN memLabel M1 ON (M1.id=R1.memId)

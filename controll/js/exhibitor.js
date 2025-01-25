@@ -13,6 +13,7 @@ tabname = null;
 fulltabname = null;
 regionid = null;
 exhibitorsData = null;
+customText = null;
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // globals for exhibits configuration
@@ -26,6 +27,8 @@ class exhibitorsAdm {
     #debugVisible = false;
     #message_div = null;
     #result_message_div = null;
+    #cacheDirty = false;
+    #scriptName = config.scriptName;
 
     // Space items
     #spacesTable = null;
@@ -62,7 +65,7 @@ class exhibitorsAdm {
     // Spaces items
     #currentSpace = null;
     #currentSpaceTab = null;
-    #spacesTabs = {};
+    #spacesTabs = null;
 
     // mail order - exhibitor choice items
     #exhibitorChooseModal = null;
@@ -109,7 +112,8 @@ class exhibitorsAdm {
 
         // owners
         this.#ownerTabs['overview'] = document.getElementById('overview-content');
-        this.#ownerTabs['configuration'] = document.getElementById('configuration-content');
+        this.#ownerTabs['configuration'] = document.getElementById('configuration-pane');
+        this.#ownerTabs['customtext'] = document.getElementById('customtext-pane');
         this.#currentOwner = this.#ownerTabs['overview'];
         this.#currentPane = 'overview';
         var ownerKeys = Object.keys(regionOwners);
@@ -134,7 +138,30 @@ class exhibitorsAdm {
             console.log("regionTabs");
             console.log(this.#regionTabs);
         }
+        if (config.initialTab != 'overview') {
+            const triggerTabList = document.querySelectorAll('#exhibitor-tab button')
+            triggerTabList.forEach(triggerEl => {
+                const tabTrigger = new bootstrap.Tab(triggerEl)
+
+                triggerEl.addEventListener('click', event => {
+                    event.preventDefault()
+                    tabTrigger.show()
+                })
+            })
+
+            var selectors = '#exhibitor-tab button[data-bs-target="#' + config.initialTab + '-pane"]';
+            var triggerEl = document.querySelector(selectors);
+            if (triggerEl)
+                bootstrap.Tab.getInstance(triggerEl).show(); // Select tab by name
+
+            this.settabOwner(config.initialTab + '-pane');
+        }
     };
+
+    // set / get functions
+    setCacheDirty() {
+        this.#cacheDirty = true;
+    }
 
     // common code for changing tabs
     // top level - overview, owner
@@ -156,6 +183,9 @@ class exhibitorsAdm {
                 exhibits = null;
             }
         }
+        if (customText != null)
+            customText.close();
+
         if (this.#currentRegion) {
             this.#currentRegion.hidden = true;
             this.#currentRegion = null;
@@ -168,13 +198,25 @@ class exhibitorsAdm {
             if (exhibits == null)
                 exhibits = new exhibitssetup(config['conid'], config['debug']);
             exhibits.open();
-        } else {
-            var ownerLookup = regionOwnersTabNames[tabname];
-            var regionsInOwner = regionOwners[ownerLookup];
-            var regionKey = Object.keys(regionsInOwner)[0];
-            var region = regionsInOwner[regionKey];
-            this.settabRegion(region['name'].replaceAll(' ', '-') + '-pane');
+            return;
         }
+        if (content == 'customtext') {
+            if (customText == null)
+                customText = new customTextSetup();
+            customText.open();
+            return;
+        }
+
+        if (this.#cacheDirty) {
+            window.location.href = this.#scriptName + '?tab=' + content;
+            return;
+        }
+
+        var ownerLookup = regionOwnersTabNames[tabname];
+        var regionsInOwner = regionOwners[ownerLookup];
+        var regionKey = Object.keys(regionsInOwner)[0];
+        var region = regionsInOwner[regionKey];
+        this.settabRegion(region['name'].replaceAll(' ', '-') + '-pane');
     }
 
     // second level - region
@@ -617,20 +659,25 @@ class exhibitorsAdm {
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
                 {title: "Vendors:", columns: [
-                        {title: "Exhibitor Id", field: "exhibitorId", visible: true,},
-                        {title: "Name", field: "exhibitorName", width: 200, headerSort: true, headerFilter: true, tooltip: this.buildRecordHover,},
-                        {title: "Email", field: "exhibitorEmail", headerSort: true, headerFilter: true,},
+                        {title: "", formatter: this.exhButtons, hozAlign: "center", headerSort: false,},
+                        {title: "Exh Id", field: "exhibitorId", visible: true, headerWordWrap: true, width: 75, },
+                        {title: "Name", field: "exhibitorName", width: 250, headerSort: true, headerFilter: true, tooltip: this.buildRecordHover,
+                            formatter: "textarea", },
+                        {title: "Email", field: "exhibitorEmail", headerSort: true, headerFilter: true, width: 250, },
                         {title: "Phone", field: "exhibitorPhone", width: 140, headerSort: true, headerFilter: true,},
-                        {title: "Website", field: "website", headerSort: true, headerFilter: true,},
+                        {title: "Website", field: "website", headerSort: true, headerFilter: true, width: 250, },
                         {title: "Contact Id", field: "contactId", visible: false, },
-                        {title: "Contact Name", field: "contactName", headerSort: true, headerFilter: true, },
-                        {title: "Contact Email", field: "contactEmail", headerSort: true, headerFilter: true,},
-                        {title: "Con Phone", field: "contactPhone", width: 140, headerSort: true, headerFilter: true,},
-                        {title: "City", field: "city", width: 140, headerSort: true, headerFilter: true,},
-                        {title: "State", field: "state", headerSort: true, headerFilter: true,},
-                        {title: "", formatter: this.editbutton, hozAlign: "center", cellClick: this.edit, headerSort: false,},
-                        {title: "", formatter: this.resetpwbutton, formatterParams: {name: 'Exh'}, hozAlign: "center", cellClick: this.resetpw, headerSort: false,},
-                        {title: "", formatter: this.resetpwbutton, formatterParams: {name: 'Con'}, hozAlign: "center", cellClick: this.resetCpw, headerSort: false,},
+                        {title: "Contact", field: "contact", headerSort: true, headerFilter: true,
+                            width: 250, formatter: this.toHTML, },
+                        {title: "Contact Name", field: "contactName", headerSort: true, headerFilter: true, formatter: "textarea", visible: false, },
+                        {title: "Contact Email", field: "contactEmail", headerSort: true, headerFilter: true, width: 250, visible: false, },
+                        {title: "Con Phone", field: "contactPhone", width: 140, headerSort: true, headerFilter: true, visible: false, },
+                        {title: "Full Address", field: "fullAddress", width: 200, headerWordWrap: true, headerSort: true,
+                            headerFilter: true, formatter: this.toHTML, },
+                        {title: "Mail In", field: "mailin", visible: true, headerWordWrap: true, width: 75, },
+                        {title: "Salex Tax ID", field: "salesTaxId", visible: true, headerWordWrap: true, width: 150, },
+                        {title: "City", field: "city", width: 140, headerSort: true, headerFilter: true, visible: false, },
+                        {title: "State", field: "state", headerSort: true, headerFilter: true, visible: false,},
                     ]
                 }
             ]
@@ -645,14 +692,12 @@ class exhibitorsAdm {
             data['exhibitorName'] + '<br/>' +
             'Artist Name: ' + data['artistName'] + '<br/>' +
             'Website: ' + data['website'] + '<br/>' +
-            data['addr'] + '<br/>';
-        if (data['addr2'] != '') {
-            hover_text += data['addr2'] + '<br/>';
-        }
-        hover_text += data['city'] + ', ' + data['state'] + ' ' + data['zip'] + '<br/>' +
-            data['country'] + '<br/>' +
+            data['fullAddr'] + '<br/>' +
             'Needs New Password: ' + (data['needs_new'] ? 'Yes' : 'No') +  '<br/>' +
-            'Publicize: ' + (data['publicity'] ? 'Yes' : 'No') +  '<br/>';
+            'Publicize: ' + (data['publicity'] ? 'Yes' : 'No') +  '<br/>' +
+            'Mail In: ' + data['mailin'] + '<br/>' +
+            'Sales Tax ID: ' + data['salesTaxId'] + '<br/>';
+
         hover_text += 'Description:<br/>&nbsp;&nbsp;&nbsp;&nbsp;' + data['description'].replaceAll('\n', '<br/>&nbsp;&nbsp;&nbsp;&nbsp;');
         return hover_text;
     }
@@ -750,8 +795,8 @@ class exhibitorsAdm {
     }
 
 // button callout functions
-    edit(e, cell) {
-        var exhibitorRow = cell.getRow()
+    edit(exhId) {
+        var exhibitorRow = this.#exhibitorsTable.getRow(exhId)
         var exhibitorData = exhibitorRow.getData();
         exhibitors.editExhibitor(exhibitorData, exhibitorRow);
     }
@@ -912,14 +957,26 @@ class exhibitorsAdm {
 
     // button formatters
 
-    // edit exhibitor Record
-    editbutton(cell, formatterParams, onRendered) {
-        return '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;">Edit</button>';
+    // exhButtons - three buttons for the exhibitor Record
+    exhButtons(cell, formatterParams, onRendered) {
+        var row = cell.getData();
+        var id = row['exhibitorId'];
+        // edit button
+        var buttons = '<button class="btn btn-secondary" style="--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; ' +
+            '--bs-btn-font-size: .75rem;" onclick="exhibitors.edit(' + id + ');">Edit</button>';
+
+        buttons += '<br/>' + '<button class="btn btn-secondary m-1" style="--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; ' +
+            '--bs-btn-font-size: .75rem;" onclick="exhibitors.resetpw(' + id + ');">Reset Exh PW</button>';
+
+        buttons += '<br/>' + '<button class="btn btn-secondary" style="--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; ' +
+            '--bs-btn-font-size: .75rem;" onclick="exhibitors.resetCpw(' + id + ');">Reset Con PW</button>';
+
+        return buttons;
     }
-    // change exhibitor password buttons
-    resetpwbutton(cell, formatterParams, onRendered) {
-        return '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;">Reset' + formatterParams['name'] +
-        'PW</button>';
+
+    toHTML(cell,  formatterParams, onRendered) {
+        var item = cell.getValue();
+        return item;
     }
 
     submitLocations() {
@@ -1081,8 +1138,7 @@ class exhibitorsAdm {
     }
 
     // reset an exhibitor's password
-    resetpw(e, cell) {
-        var exhibitorId = cell.getRow().getCell("exhibitorId").getValue();
+    resetpw(exhibitorId) {
         $.ajax({
             url: 'scripts/exhibitorsSetPassword.php',
             method: "POST",
@@ -1098,8 +1154,8 @@ class exhibitorsAdm {
     }
 
     // reset a contact's password
-    resetCpw(e, cell) {
-        var contactId = cell.getRow().getCell("contactId").getValue();
+    resetCpw(exhibitorId) {
+        var contactId = this.#exhibitorListTable.getRow(exhibitorId).getCell("contactId").getValue();
         $.ajax({
             url: 'scripts/exhibitorsSetPassword.php',
             method: "POST",

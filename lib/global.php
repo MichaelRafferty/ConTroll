@@ -23,7 +23,7 @@ function drawBug($cols): void {
     echo <<<EOS
         <div class="col-sm-$textCols">
             <p>
-            Powered by ConTroll™. Copyright 2015-2024, Michael Rafferty.</br>
+            Powered by ConTroll™. Copyright 2015-2025, Michael Rafferty.</br>
             <img src="/lib/apglv3-bug.png" alt="GNU Affero General Public License logo"> ConTroll™ is freely available for use under the GNU Affero General 
             Public License, Version 3.
             See the <a href="https://github.com/MichaelRafferty/ConTroll/blob/master/README.md" target="_blank">ConTroll™ ReadMe file</a>.
@@ -78,30 +78,62 @@ function clearSession($prefix = '') {
     }
 }
 
-// is a memList item a primary membership type
-function isPrimary($mtype, $conid) {
-    if ($mtype['price'] == 0 || $conid != $mtype['conid'] ||
-        ($mtype['memCategory'] != 'standard' && $mtype['memCategory'] != 'supplement' && $mtype['memCategory'] != 'virtual')
-    ) {
-        return false;
+// get all with the prefix, for response and vardump sort of uses
+function getAllSessionVars($prefix = '') {
+    global $appSessionPrefix;
+    $checkPrefix = ($appSessionPrefix != null ? $appSessionPrefix : '') . $prefix;
+    $len = strlen($checkPrefix);
+    $vars = [];
+    foreach ($_SESSION as $key => $value) {
+        if (mb_substr($key, 0, $len) == $checkPrefix)
+            $vars[$key] = $_SESSION[$key];
     }
+    return $vars;
+}
+
+// is a memList item a primary membership type
+function isPrimary($mtype, $conid, $use = 'all') {
+    if ($conid != $mtype['conid']) // must be a current year membership to be primary, no year aheads for next year
+        return false;
+
+    $memType = $mtype['memType'];
+    if (!($memType == 'full' || $memType == 'oneday' || $memType == 'virtual'))
+        return false;   // must be one of these main types to even be considered a primary
+
+    if ($use == 'all')
+        return true;    // the basic case, it's a primary if it's one of these types
+
+    if ($use == 'coupon') {
+        if ($mtype['price'] == 0 || $memType != 'full')
+            return false; // free memberships and oneday/virtual are not eligible for coupons
+    }
+
+    if ($use == 'print') {
+        if ($mtype['memCategory'] == 'virtual')
+            return false; // virtual cannot be printed
+    }
+
+    // we got this far, all the 'falses; are called out, so it must be true
     return true;
 }
 
 //// functions for custom text usage
-global $customTexT, $keyPrefix, $customTextFilter;
+global $customTexT, $keyPrefix, $customTextFilter, $loadedPrefixes;
+$loadedPrefixes = [];
 
 // loadCustomText - load all the relevant custom text for this page
-    function loadCustomText($app, $page, $filter) {
-        global $customTexT, $keyPrefix, $customTextFilter;
+    function loadCustomText($app, $page, $filter, $addmode = false) {
+        global $customTexT, $keyPrefix, $customTextFilter, $loadedPrefixes;
 
-        if ($customTexT != null)
-            return; // already loaded
+        $usePrefix = $app . '/' . $page . '/';
+        if (array_key_exists($usePrefix, $loadedPrefixes))
+            return; // already loaded;
 
-        $keyPrefix = $app . '/' . $page . '/';
-        $customTextFilter = $filter;
-        $keyApp = $app;
-        $customTexT = [];
+        if (!$addmode) {
+            $keyPrefix = $usePrefix;
+            $customTexT = [];
+            $customTextFilter = $filter;
+        }
         $txtQ = <<<EOS
 SELECT *
 FROM controllTxtItems
@@ -114,11 +146,12 @@ EOS;
             $key = $txtL['appName'] . '/' . $txtL['appPage'] . '/' . $txtL['appSection'] . '/' . $txtL['txtItem'];
             $customTexT[$key] = $txtL['contents'];
         }
+        $loadedPrefixes[$usePrefix] = $txtR->num_rows;
         $txtR->free();
     }
 
 // output CustomText - output in a <div container-fluid> a custom text field if it exists and is non empty
-    function outputCustomText($key) {
+    function outputCustomText($key, $overridePrefix = null) {
         global $customTexT, $keyPrefix, $customTextFilter;
 
         if ($customTextFilter == 'none')
@@ -128,9 +161,14 @@ EOS;
             return; // custom text not loaded.
         }
 
+        if ($overridePrefix) {
+            $usePrefix = $overridePrefix;
+        } else {
+            $usePrefix = $keyPrefix;
+        }
 
-        if (array_key_exists($keyPrefix . $key, $customTexT)) {
-            $contents = $customTexT[$keyPrefix . $key];
+        if (array_key_exists($usePrefix . $key, $customTexT)) {
+            $contents = $customTexT[$usePrefix . $key];
             if ($contents != null && $contents != '') {
                 if ($customTextFilter == 'nodefault' || $customTextFilter == 'production') {
                     $prefixStr = 'Controll-Default: ';
@@ -146,6 +184,39 @@ EOS;
                     '</div>' . PHP_EOL;
             }
         }
+    }
+    function returnCustomText($key, $overridePrefix = null) {
+        global $customTexT, $keyPrefix, $customTextFilter;
+
+        if ($customTextFilter == 'none')
+            return '';
+
+        if ($customTexT == null) {
+            return ''; // custom text not loaded.
+        }
+
+        if ($overridePrefix) {
+            $usePrefix = $overridePrefix;
+        } else {
+            $usePrefix = $keyPrefix;
+        }
+
+        if (array_key_exists($usePrefix . $key, $customTexT)) {
+            $contents = $customTexT[$usePrefix . $key];
+            if ($contents != null && $contents != '') {
+                if ($customTextFilter == 'nodefault' || $customTextFilter == 'production') {
+                    $prefixStr = 'Controll-Default: ';
+                    if (substr($contents, 0, strlen($prefixStr)) == $prefixStr)
+                        return '';
+                    $prefixStr = '<p>Controll-Default: ';
+                    if (substr($contents, 0, strlen($prefixStr)) == $prefixStr)
+                        return '';
+                }
+
+                return $contents;
+            }
+        }
+        return '';
     }
 
 // replace in strings, items from the config file you can replace in strings

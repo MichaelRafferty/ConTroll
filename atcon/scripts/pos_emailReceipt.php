@@ -22,7 +22,7 @@ if (!(check_atcon('cashier', $conid) || check_atcon('data_entry', $conid))) {
 }
 
 $user_id = $_POST['user_id'];
-if ($user_id != $_SESSION['user']) {
+if ($user_id != getSessionVar('user')) {
     ajaxError('Invalid credentials passed');
 }
 $user_perid = $user_id;
@@ -120,8 +120,8 @@ if (array_key_exists('endtext', $con))
 $receipt .= "         ----------\n" . sprintf("total%15s Total Amount Tendered", $dolfmt->formatCurrency($total_pmt, $currency)) . "\n$footer\n" . "\n" . $endtext . "\n\n\n";
 
 if ($receipt_type == 'print') {
-    if (isset($_SESSION['receiptPrinter'])) {
-        $printer = $_SESSION['receiptPrinter'];
+    $printer = getSessionVar('receiptPrinter');
+    if ($printer != null && $printer['name'] != 'None') {
         $result_code = print_receipt($printer, $receipt);
     } else {
         web_error_log($receipt);

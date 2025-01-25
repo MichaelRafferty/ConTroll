@@ -154,8 +154,8 @@ EOS;
             $agentNewperson = $priors[$appL['exhibitsRegion']]['agentNewperson'];
             if (array_key_exists('updateBy', $priors[$appL['exhibitsRegion']]))
                 $updateBy = $priors[$appL['exhibitsRegion']]['updateBy'];
-            if (array_key_exists('updatedDate', $priors[$appL['exhibitsRegion']]))
-                $updatedDate = $priors[$appL['exhibitsRegion']]['updatedDate'];
+            if (array_key_exists('updateDate', $priors[$appL['exhibitsRegion']]))
+                $updatedDate = $priors[$appL['exhibitsRegion']]['updateDate'];
             if ($updateBy == null) {
                 $updateBy = 2;
                 $updatedDate = $now;
@@ -252,7 +252,7 @@ EOS;
         if (array_key_exists($appL['exhibitsRegion'], $priors)) {
             $agentPerid = $priors[$appL['exhibitsRegion']]['agentPerid'];
             $updateBy = $priors[$appL['exhibitsRegion']]['updateBy'];
-            $updatedDate = $priors[$appL['exhibitsRegion']]['updatedDate'];
+            $updatedDate = $priors[$appL['exhibitsRegion']]['updateDate'];
             if ($updateBy == null) {
                 $updateBy = 2;
                 $updatedDate = $now;

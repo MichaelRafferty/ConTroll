@@ -39,7 +39,8 @@ EOS;
 
 // get the specific information allowed
         $regionYearQ = <<<EOS
-SELECT er.id, name, description, ownerName, ownerEmail, includedMemId, additionalMemId, mi.price AS includedPrice, ma.price AS additionalPrice, ery.mailinFee
+SELECT er.id, name, description, ownerName, ownerEmail, includedMemId, additionalMemId, mi.price AS includedPrice, 
+       ma.price AS additionalPrice, ery.mailinFee, er.regionType
 FROM exhibitsRegionYears ery
 JOIN exhibitsRegions er ON er.id = ery.exhibitsRegion
 LEFT OUTER JOIN memList mi ON ery.includedMemId = mi.id
@@ -78,7 +79,8 @@ EOS;
         // now fetch the region info
         if ($regionYearId != null) {
             $regionYearQ = <<<EOS
-SELECT er.id, name, description, ownerName, ownerEmail, includedMemId, additionalMemId, mi.price AS includedPrice, ma.price AS additionalPrice, ery.mailinFee
+SELECT er.id, name, description, ownerName, ownerEmail, includedMemId, additionalMemId, mi.price AS includedPrice, 
+       ma.price AS additionalPrice, ery.mailinFee, er.regionType
 FROM exhibitsRegionYears ery
 JOIN exhibitsRegions er ON er.id = ery.exhibitsRegion
 LEFT OUTER JOIN memList mi ON ery.includedMemId = mi.id
@@ -671,32 +673,35 @@ EOS;
 
     // exhibitor disclaimer
     if (array_key_exists('exhibitor', $data)) {
-        $vc = get_conf('vendor');
-        if (array_key_exists('pay_disclaimer', $vc)) {
-            $vdisc = $vc['pay_disclaimer'];
-            if ($vdisc != '') {
-                $path = "../config/$vdisc";
-                if (!file_exists($path))
-                    $path = "../" . $path;
-                if (!file_exists($path))
-                    $path = '../' . $path;
-                if (file_exists($path)) {
-                    $vdisc = file_get_contents($path);
-                    if ($vdisc) {
-                        $receipt .= "\n\n$vdisc\n";
-                        $receipt_html .= <<<EOS
-<div class='row mt-4'>
+        loadCustomText('exhibitor', 'index', null, true);
+        $portalName = ucfirst($region['regionType']);
+        $disclaimer1 = returnCustomText('invoice/payDisclaimer', 'exhibitor/index/');
+        $disclaimer2 = returnCustomText('invoice/payDisclaimer' . $portalName,'exhibitor/index/');
+        if ($disclaimer1 != '' || $disclaimer2 != '') {
+            $textDisclaimer = $disclaimer1;
+            $htmlDisclaimer = $disclaimer1;
+            if ($disclaimer1 != '' && $disclaimer2 != '') {
+                $textDisclaimer .= PHP_EOL;
+                $htmlDisclaimer .= "<br/>\n";
+            }
+            $textDisclaimer .= $disclaimer2;
+            $htmlDisclaimer .= $disclaimer2;
+        }
+
+        if ($textDisclaimer != '') {
+            $receipt .= "\n\n$textDisclaimer\n";
+        }
+        if ($htmlDisclaimer != '') {
+            $receipt_html .= <<<EOS
+    <div class='row mt-4'>
         <div class='col-sm-12'>
-            <p>$vdisc</p>
+           $htmlDisclaimer
         </div>
     </div>
 EOS;
                         $receipt_tables .= <<<EOS
-<tr><td colspan="3"><p>$vdisc</p></td></tr>
+<tr><td colspan="3"><p>$textDisclaimer</p></td></tr>
 EOS;
-                    }
-                }
-            }
         }
     }
 

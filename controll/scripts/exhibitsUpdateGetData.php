@@ -88,6 +88,29 @@ switch ($tablename) {
     case 'none';
         break;
     case 'regionTypes':
+        // check for required fields
+        $error = '';
+        foreach ($data as $row) {
+            if ((!array_key_exists('requestApprovalRequired', $row)) || $row['requestApprovalRequired'] == null || trim($row['requestApprovalRequired']) == '') {
+                $error .= 'The region type with Region Type ' . $row['regionType'] . ' is missing the Request Approval Required field, that field is required<br/>';
+            }
+            if ((!array_key_exists('purchaseAreaTotals', $row)) || $row['purchaseAreaTotals'] == null || trim($row['purchaseAreaTotals']) == '') {
+                $error .= 'The region type with Region Type ' . $row['regionType'] . ' is missing the Purchase Area Totals field, that field is required<br/>';
+            }
+            if ((!array_key_exists('needW9', $row)) || $row['needW9'] == null || trim($row['needW9']) == '') {
+                $error .= 'The region type with Region Type ' . $row['regionType'] . ' is missing the Need W9 field, that field is required<br/>';
+            }
+            if ((!array_key_exists('usesInventory', $row)) || $row['usesInventory'] == null || trim($row['usesInventory']) == '') {
+                $error .= 'The region type with Region Type ' . $row['regionType'] . ' is missing the Uses Inventory Mgmt field, that field is required<br/>';
+            }
+        }
+        if ($error != '') {
+            $error .= 'Correct the missing data and save again.';
+            $response['error'] = $error;
+            ajaxSuccess($response);
+            exit();
+        }
+
         if ($delete_keys != '') {
             $delsql = "DELETE FROM exhibitsRegionTypes WHERE regionType in ( $delete_keys );";
             web_error_log("Delete sql = /$delsql/");
@@ -369,6 +392,20 @@ EOS;
         break;
 
     case 'exhibitsSpacePrices':
+        // check for exhibits space being empty/null
+        $error = '';
+        foreach ($data as $row ) {
+            if ((!array_key_exists('spaceId', $row)) || $row['spaceId'] == null || trim($row['spaceId']) == '') {
+                $error .= "The row with code " . $row['code'] . " is missing the Exhibits Space, that field is required<br/>";
+            }
+        }
+        if ($error != '') {
+            $error .= "Correct the missing data and save again.";
+            $response['error'] = $error;
+            ajaxSuccess($response);
+            exit();
+        }
+
         if ($delete_keys != '') {
             $delsql = "DELETE FROM exhibitsSpacePrices WHERE id IN ( $delete_keys );";
             web_error_log("Delete sql = /$delsql/");

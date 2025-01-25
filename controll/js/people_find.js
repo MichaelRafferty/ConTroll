@@ -8,12 +8,17 @@ class Find {
     #findPattern = null;
     #addPersonBtn = null;
     #directEdit = null;
+    #historyTitle = null;
+    #historyMap = null;
+    #historyData = null;
 
     #debug = 0;
     #debugVisible = false;
 
     // find fields
     #editModal = null;
+    #historyModal = null;
+    #findPersonBTN = null;
 
     // edit person fields
     #firstName = null;
@@ -34,7 +39,6 @@ class Find {
     #phone = null;
     #managerName = null;
     #managerId = null;
-    #policiesDiv = null;
     #active = null;
     #banned = null;
     #openNotes = null;
@@ -60,6 +64,7 @@ class Find {
 
     #matched = null;
     #editRow = null;
+    #historyTable = null;
 
     // globals before open
     constructor(debug) {
@@ -73,6 +78,8 @@ class Find {
         this.#messageDiv = document.getElementById('find_edit_message');
 
         this.#addPersonBtn = document.getElementById('findAddPersonBTN');
+        this.#findPersonBTN = document.getElementById('findPersonBTN');
+
         var id  = document.getElementById('edit-person');
         if (id) {
             this.#editModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
@@ -113,6 +120,20 @@ class Find {
             this.#managesId = document.getElementById('f_managesId');
             this.#managesName = document.getElementById('managesName');
         }
+        var id  = document.getElementById('person-history');
+        if (id) {
+            this.#historyModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
+            this.#historyTitle = document.getElementById('historyTitle');
+        }
+    }
+
+    // get functions
+    getHistoryMap(id) {
+        return this.#historyMap[id];
+    }
+
+    getHistoryRow(pos) {
+        return this.#historyData[pos];
     }
 
     // called on open of the add window
@@ -144,7 +165,7 @@ class Find {
             var rows = [];
             rows.push(row);
             var data = {};
-            data['matches'] = rows;
+            data.matches = rows;
             this.#directEdit = id;
             this.findSuccess(data);
             setTimeout(add_editPerson, 100);
@@ -176,16 +197,19 @@ class Find {
         this.#managerLookupFind.hidden = true;
         this.#managesLookupFind.hidden = true;
         this.#addManages.hidden = true;
+        this.#findPersonBTN.disabled = true;
         $.ajax({
             url: script,
             method: 'POST',
             data: postdata,
             success: function (data, textStatus, jhXHR) {
+                _this.#findPersonBTN.disabled = false;
                 _this.findSuccess(data);
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 showError("ERROR in " + script + ": " + textStatus, jqXHR);
                 show_message("ERROR in " + script + ": " + jqXHR.responseText, 'error');
+                _this.#findPersonBTN.disabled = false;
                 return false;
             }
         });
@@ -193,20 +217,20 @@ class Find {
 
     // see if there are any matches, if so draw the table, else just enable add new person, if country is USA, add validate USPS to this step
     findSuccess(data) {
-        if (data['error']) {
-            show_message(data['error'], 'error');
+        if (data.error) {
+            show_message(data.error, 'error');
             return;
         }
-        if (data['warn']) {
-            show_message(data['warn'], 'warn');
+        if (data.warn) {
+            show_message(data.warn, 'warn');
             return;
         }
 
-        if (data['success']) {
-            show_message(data['success'], 'success');
+        if (data.success) {
+            show_message(data.success, 'success');
         }
 
-        this.#matched = data['matches'];
+        this.#matched = data.matches;
         this.#findTable = new Tabulator('#findTable', {
             data: this.#matched,
             layout: "fitDataTable",
@@ -216,7 +240,7 @@ class Find {
             paginationSize: 10,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
-                {title: "Edit", formatter: this.editButton, headerSort: false },
+                {title: "Actions", formatter: findPerson.actionButtons, headerSort: false },
                 {title: "ID", field: "id", width: 80, headerHozAlign:"right", hozAlign: "right", headerSort: true},
                 {title: "Mgr Id", field: "managerId", headerHozAlign:"right", hozAlign: "right", headerWordWrap: true, width: 80,headerSort: false },
                 {title: "Managed By", field: "manager", headerWordWrap: true, width: 150, headerSort: true, headerFilter: true, },
@@ -255,14 +279,22 @@ class Find {
         peopleAddPerson();
     }
 
-    // select edit: edit this person
-    editButton(cell, formatterParams, onRendered) {
+    // format action buttons
+    actionButtons(cell, formatterParams, onRendered) {
         var row = cell.getRow();
         var index = row.getIndex()
 
-        return '<button class="btn btn-primary" type="button" ' +
+        var html = '<button class="btn btn-primary me-1" type="button" ' +
             'style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
             ' onclick="findPerson.editPerson(' + index + ');">Edit</button>';
+
+        var historyCount = row.getData().historyCount;
+        if (historyCount > 0) {
+            html += '<button class="btn btn-secondary" type="button" ' +
+            'style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
+            ' onclick="findPerson.personHistory(' + index + ');">Hist</button>';
+        }
+        return html;
     }
 
     // select manager: select this row as manager
@@ -330,12 +362,12 @@ class Find {
 
     findDetailsSuccess(data) {
         var i;  // index
-        if (data['error']) {
-            show_message(data['error'], 'error');
+        if (data.error) {
+            show_message(data.error, 'error');
             return;
         }
-        if (data['warn']) {
-            show_message(data['warn'], 'warn');
+        if (data.warn) {
+            show_message(data.warn, 'warn');
             return;
         }
 
@@ -417,8 +449,8 @@ class Find {
             this.#managerName.innerHTML = this.#editRow.manager;
         }
 
-        if (data['success']) {
-            show_message(data['success'], 'success', 'find_edit_message');
+        if (data.success) {
+            show_message(data.success, 'success', 'find_edit_message');
         }
         this.#editModal.show();
     }
@@ -455,12 +487,12 @@ class Find {
 
     // unmanageSuccess - after delete of managed person fix up screen
     unmanageSuccess(data) {
-        if (data['error']) {
-            show_message(data['error'], 'error', 'find_edit_message');
+        if (data.error) {
+            show_message(data.error, 'error', 'find_edit_message');
             return;
         }
-        if (data['warn']) {
-            show_message(data['warn'], 'warn', 'find_edit_message');
+        if (data.warn) {
+            show_message(data.warn, 'warn', 'find_edit_message');
             return;
         }
 
@@ -472,8 +504,8 @@ class Find {
             button.classList.remove("btn-warning");
         }
 
-        if (data['success']) {
-            show_message(data['success'], 'success', 'find_edit_message');
+        if (data.success) {
+            show_message(data.success, 'success', 'find_edit_message');
             return;
         }
     }
@@ -518,16 +550,16 @@ class Find {
 
     // lookup manager Success - draw the table
     lookupManagerSuccess(data) {
-        if (data['error']) {
-            show_message(data['error'], 'error', 'find_edit_message');
+        if (data.error) {
+            show_message(data.error, 'error', 'find_edit_message');
             return;
         }
-        if (data['warn']) {
-            show_message(data['warn'], 'warn', 'find_edit_message');
+        if (data.warn) {
+            show_message(data.warn, 'warn', 'find_edit_message');
             return;
         }
 
-        this.#managerLookupRows = data['matches'];
+        this.#managerLookupRows = data.matches;
         this.#managerLookupTable = new Tabulator('#managerTableDiv', {
             data: this.#managerLookupRows,
             layout: "fitDataTable",
@@ -537,7 +569,7 @@ class Find {
             paginationSize: 10,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
-                {title: "Select", formatter: this.selectButton, headerSort: false },
+                {title: "Select", formatter: findPerson.selectButton, headerSort: false },
                 {title: "ID", field: "id", width: 80, headerHozAlign:"right", hozAlign: "right", headerSort: true},
                 {title: "Mgr Id", field: "managerId", headerHozAlign:"right", hozAlign: "right", headerWordWrap: true, width: 80,headerSort: false },
                 {title: "Managed By", field: "manager", headerWordWrap: true, width: 150, headerSort: true, headerFilter: true, },
@@ -566,8 +598,8 @@ class Find {
                 {field: 'open_notes', visible: false,},
             ],
         });
-        if (data['success']) {
-            show_message(data['success'], 'success', 'find_edit_message');
+        if (data.success) {
+            show_message(data.success, 'success', 'find_edit_message');
         }
     }
     // change the manager
@@ -623,16 +655,16 @@ class Find {
 
     // lookup manages Success - draw the table
     lookupManagesSuccess(data) {
-        if (data['error']) {
-            show_message(data['error'], 'error', 'find_edit_message');
+        if (data.error) {
+            show_message(data.error, 'error', 'find_edit_message');
             return;
         }
-        if (data['warn']) {
-            show_message(data['warn'], 'warn', 'find_edit_message');
+        if (data.warn) {
+            show_message(data.warn, 'warn', 'find_edit_message');
             return;
         }
 
-        this.#managesLookupRows = data['matches'];
+        this.#managesLookupRows = data.matches;
         this.#managesLookupTable = new Tabulator('#managesTableDiv', {
             data: this.#managesLookupRows,
             layout: "fitDataTable",
@@ -671,8 +703,8 @@ class Find {
                 {field: 'open_notes', visible: false,},
             ],
         });
-        if (data['success']) {
-            show_message(data['success'], 'success', 'find_edit_message');
+        if (data.success) {
+            show_message(data.success, 'success', 'find_edit_message');
         }
     }
     // add the managee
@@ -726,18 +758,137 @@ class Find {
 
     // unmanageSuccess - after delete of managed person fix up screen
     addManageeSuccess(data) {
-        if (data['error']) {
-            show_message(data['error'], 'error', 'find_edit_message');
+        if (data.error) {
+            show_message(data.error, 'error', 'find_edit_message');
             return;
         }
-        if (data['warn']) {
-            show_message(data['warn'], 'warn', 'find_edit_message');
+        if (data.warn) {
+            show_message(data.warn, 'warn', 'find_edit_message');
             return;
         }
 
         // reload the page with the new person on the list, it's too hard to add it in JS right now
         this.close(false);
         this.editPerson(this.#editRow.id);
+    }
+
+    // personHistory - call up display of the history for this person
+    personHistory(index) {
+        var postdata = {
+            type: 'history',
+            perid: index,
+        };
+        var script = 'scripts/people_getHistory.php';
+        var _this = this;
+        clear_message('find_edit_message');
+        clear_message();
+        clearError();
+        $.ajax({
+            url: script,
+            method: 'POST',
+            data: postdata,
+            success: function (data, textStatus, jhXHR) {
+                _this.personHistorySuccess(data);
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showError("ERROR in " + script + ": " + textStatus, jqXHR);
+                show_message("ERROR in " + script + ": " + jqXHR.responseText, 'error');
+                return false;
+            }
+        });
+    }
+
+    personHistorySuccess(data) {
+        var i;  // index
+        if (data.error) {
+            show_message(data.error, 'error');
+            return;
+        }
+        if (data.warn) {
+            show_message(data.warn, 'warn');
+            return;
+        }
+
+        var  title = "Person Change History for " + data.perid;
+        historyTitle.innerHTML = title
+        // build the history map
+        this.#historyMap = {};
+        this.#historyData = data.history;
+        for (var index = 0; index < data.history.length; index++) {
+            this.#historyMap[data.history[index].historyId] = index;
+        }
+        // build the history display
+        var html = '<div class="row"><div class="col-sm-12"><h1 class="h3">' + title + '</h1></div></div>';
+
+        // format the heading line
+        if (this.#historyTable) {
+            this.#historyTable.destroy();
+            this.#historyTable = null;
+        }
+
+        this.#historyTable = new Tabulator('#personHistory-div', {
+            data: data.history,
+            layout: "fitDataTable",
+            index: "historyId",
+            pagination: true,
+            paginationAddRow: "table",
+            paginationSize: 50,
+            paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
+            columns: [
+                { title: "History Id", field: "historyId", headerSort: true, visible: false, },
+                { title: "Change Date", field: "update_date", headerSort: true, },
+                { title: "Upd By", field: "updatedBy", headerSort: true, formatter: findPerson.colorSet, },
+                { title: "Last Name", field: 'last_name', headerWordWrap: true, formatter: findPerson.colorSet, },
+                { title: "First Name", field: 'first_name', headerWordWrap: true, formatter: findPerson.colorSet, },
+                { title: "Middle Name", field: 'middle_name', headerWordWrap: true, formatter: findPerson.colorSet, },
+                { title: "Suffix Name", field: 'suffix', headerWordWrap: true, formatter: findPerson.colorSet, },
+                { title: "Legal Name", field: 'legalName', headerWordWrap: true, formatter: findPerson.colorSet, },
+                { title: "Badge Name", field: 'badge_name', headerWordWrap: true, formatter: findPerson.colorSet, },
+                { title: "Pronouns", field: 'pronouns', formatter: findPerson.colorSet, },
+                { title: "Phone", field: 'phone', formatter: findPerson.colorSet, },
+                { title: "Email Address", field: 'email_addr', headerWordWrap: true, formatter: findPerson.colorSet, },
+                { title: "Address", field: 'addr', formatter: findPerson.colorSet, },
+                { title: "Addr 2", field: 'addr_2', formatter: findPerson.colorSet, },
+                { title: "City", field: 'city', formatter: findPerson.colorSet, },
+                { title: "State", field: 'state', formatter: findPerson.colorSet, },
+                { title: "Post Code", field: 'zip', headerWordWrap: true, },
+                { title: "Ctry", field: 'country', formatter: findPerson.colorSet, },
+                { title: "Act", field: 'active', formatter: findPerson.colorSet, },
+                { title: "B", field: 'banned', formatter: findPerson.colorSet, },
+                { title: "Open Notes", field: "open_notes", formatter: findPerson.colorSet, },
+                { title: "Admin Notes", field: "admin_notes", formatter: findPerson.colorSet, },
+                { title: "Mgr P", field: 'managedBy', headerWordWrap: true, formatter: findPerson.colorSet, },
+                { title: "Mgr N", field: 'managedByNew', headerWordWrap: true, formatter: findPerson.colorSet, },
+                { title: "Mgr Reason", field: 'managedReason', headerWordWrap: true, formatter: findPerson.colorSet, },
+                { title: "Last Verified", field: "lastVerified", headerSort: true, formatter: findPerson.colorSet, },
+            ],
+        });
+        this.#historyModal.show();
+    }
+
+    colorSet(cell, formatterParams, onRendered) {
+        var histId = cell.getRow().getIndex();
+        var index = findPerson.getHistoryMap(histId);
+        var priorIndex = index - 1;
+        if (priorIndex < 0) {
+            return cell.getValue();
+        }
+
+        var field = cell.getField();
+        var color = ''
+        var priorRow = findPerson.getHistoryRow(priorIndex);
+        var prior = priorRow[field];
+        var current = cell.getValue();
+        if (prior == current)
+            return current;
+
+        return '<div style="background-color: var(--bs-danger-bg-subtle)">' + current + '</div>';
+    }
+
+    // clear the manager
+    disassociate() {
+        this.#managerId.value = null;
+        this.#managerName.innerHTML = '';
     }
 
     // saveEdit - save the edited data back to the database
@@ -838,12 +989,12 @@ class Find {
     }
 
     saveEditSuccess(data) {
-        if (data['error']) {
-            show_message(data['error'], 'error', 'find_edit_message');
+        if (data.error) {
+            show_message(data.error, 'error', 'find_edit_message');
             return;
         }
-        if (data['warn']) {
-            show_message(data['warn'], 'warn', 'find_edit_message');
+        if (data.warn) {
+            show_message(data.warn, 'warn', 'find_edit_message');
             return;
         }
 
@@ -881,8 +1032,8 @@ class Find {
 
         this.clearForm();
         this.#editModal.hide();
-        if (data['success']) {
-            show_message(data['success'], 'success');
+        if (data.success) {
+            show_message(data.success, 'success');
         }
     }
 

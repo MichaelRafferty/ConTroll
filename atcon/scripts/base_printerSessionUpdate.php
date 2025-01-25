@@ -53,7 +53,7 @@ foreach ($printers as $prt) {
             );
         }
     }
-    $_SESSION[$prt . 'Printer'] = $printer;
+    setSessionVar($prt . 'Printer', $printer);
     $response[$prt] = $printer['name'];
 }
 

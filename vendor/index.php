@@ -1,5 +1,5 @@
 <?php
-// Vendor - index.php - Main page for vendor registration
+// Exhibitor (vendor directory) - index.php - Main page for exhibitor registration (artist, vendor, exhibitor, fan)
 require_once("lib/base.php");
 require_once("../lib/exhibitorInvoice.php");
 require_once("lib/changePassword.php");
@@ -34,6 +34,9 @@ if (str_starts_with($_SERVER['HTTP_HOST'], 'artist')){
 } else if (str_starts_with($_SERVER['HTTP_HOST'], 'exhibit')){
     $portalName = 'Exhibitor';
     $portalType = 'exhibitor';
+} else if (str_starts_with($_SERVER['HTTP_HOST'], 'fan')){
+    $portalName = 'Fan';
+    $portalType = 'fan';
 } else {
     $portalName = 'Vendor';
     $portalType = 'vendor';
@@ -42,6 +45,25 @@ if (str_starts_with($_SERVER['HTTP_HOST'], 'artist')){
 $useUSPS = false;
 if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
     $useUSPS = true;
+
+if (array_key_exists('required', $reg_conf)) {
+    $required = $reg_conf['required'];
+} else {
+    $required = 'addr';
+}
+$firstStar = '';
+$addrStar = '';
+$allStar = '';
+switch ($required) {
+    // cascading list of required fields, each case adds more so the breaks fall into the next section
+
+    case 'all':
+        $allStar = '<span class="text-danger">&bigstar;</span>';
+    case 'addr':
+        $addrStar = '<span class="text-danger">&bigstar;</span>';
+    case 'first':
+        $firstStar = '<span class="text-danger">&bigstar;</span>';
+}
 
 $config_vars = array();
 $config_vars['label'] = $con['label'];
@@ -53,8 +75,11 @@ $config_vars['vendorsite'] = $vendor_conf['vendorsite'];
 $config_vars['debug'] = $debug['vendors'];
 $config_vars['required'] = $reg_conf['required'];
 $config_vars['useUSPS'] = $useUSPS;
+$config_vars['allStar'] = $allStar;
+$config_vars['addrStar'] = $addrStar;
+$config_vars['firstStar'] = $firstStar;
 
-vendor_page_init($condata['label'] . " $portalName Registration");
+exhibitor_page_init($condata['label'] . " $portalName Registration");
 
 // load country select
 $countryOptions = '';
@@ -128,7 +153,7 @@ if (isset($_SESSION['id']) && !isset($_GET['vid'])) {
         header('location:' . $_SERVER['PHP_SELF']);
         exit();
     } else {
-        // nope, just set the vendor id
+        // nope, just set the exhibitor id
         $exhibitor = $_SESSION['id'];
         $in_session = true;
     }
@@ -152,7 +177,7 @@ if (isset($_SESSION['id']) && !isset($_GET['vid'])) {
         // they were marked archived, and they logged in again, unarchive them.
         $numupd = dbSafeCmd("UPDATE exhibitors SET archived = 'N' WHERE id = ?", 'i', array($exhibitor));
         if ($numupd != 1)
-            error_log("Unable to unarchive vendor $exhibitor");
+            error_log("Unable to unarchive exhibitor $exhibitor");
     }
 
     // Build exhbititorYear on first login if it doesn't exist at the time of this login
@@ -244,7 +269,7 @@ EOS;
         // they were marked archived, and they logged in again, unarchive them.
         $numupd = dbSafeCmd("UPDATE exhibitors SET archived = 'N' WHERE id = ?", 'i', array($exhibitor));
         if ($numupd != 1)
-            error_log("Unable to unarchive vendor $exhibitor");
+            error_log("Unable to unarchive exhibitor $exhibitor");
     }
 
     // Build exhbititorYear on first login if it doesn't exist at the time of this login
@@ -334,8 +359,8 @@ EOS;
 }
 
 // get this exhibitor
-$vendorQ = <<<EOS
-SELECT artistName, exhibitorName, exhibitorEmail, exhibitorPhone, website, description, e.need_new AS eNeedNew, e.confirm AS eConfirm, 
+$exhibitorQ = <<<EOS
+SELECT artistName, exhibitorName, exhibitorEmail, exhibitorPhone, salesTaxId, website, description, e.need_new AS eNeedNew, e.confirm AS eConfirm, 
        ey.contactName, ey.contactEmail, ey.contactPhone, ey.need_new AS cNeedNew, ey.confirm AS cConfirm, ey.needReview, ey.mailin,
        e.addr, e.addr2, e.city, e.state, e.zip, e.country, e.shipCompany, e.shipAddr, e.shipAddr2, e.shipCity, e.shipState, e.shipZip, e.shipCountry, e.publicity,
        p.id AS perid, p.first_name AS p_first_name, p.last_name AS p_last_name, n.id AS newperid, n.first_name AS n_first_name, n.last_name AS n_last_name
@@ -346,7 +371,7 @@ LEFT OUTER JOIN newperson n ON n.id = e.newperid
 WHERE e.id=? AND ey.conid = ?;
 EOS;
 
-$infoR = dbSafeQuery($vendorQ, 'ii', array($exhibitor, $conid));
+$infoR = dbSafeQuery($exhibitorQ, 'ii', array($exhibitor, $conid));
 $info = $infoR->fetch_assoc();
 if ($info['eNeedNew']) {
     drawChangePassword('You need to change your exhibitor password.', 3, true, $info, 'e');
@@ -370,7 +395,7 @@ fclose($fh);
 
 $config_vars['loginType'] = $_SESSION['login_type'];
 
-$vendorPQ = <<<EOS
+$exhibitorPQ = <<<EOS
 SELECT exRY.*, ey.exhibitorId,
     p.id AS perid, p.first_name AS p_first_name, p.last_name AS p_last_name, n.id AS newperid, n.first_name AS n_first_name, n.last_name AS n_last_name
 FROM exhibitorRegionYears exRY
@@ -383,12 +408,12 @@ LEFT OUTER JOIN newperson n ON n.id = exRY.agentNewperson
 WHERE ey.exhibitorId = ? AND ert.portalType = ?;
 EOS;
 
-$vendorPR = dbSafeQuery($vendorPQ, 'is', array($exhibitor, $portalType));
-$vendor_permlist = array();
-while ($perm = $vendorPR->fetch_assoc()) {
-    $vendor_permlist[$perm['exhibitsRegionYearId']] = $perm;
+$exhibitorPR = dbSafeQuery($exhibitorPQ, 'is', array($exhibitor, $portalType));
+$exhibitor_permlist = array();
+while ($perm = $exhibitorPR->fetch_assoc()) {
+    $exhibitor_permlist[$perm['exhibitsRegionYearId']] = $perm;
 }
-$vendorPR->free();
+$exhibitorPR->free();
 
 $exhibitorSQ = <<<EOS
 SELECT *
@@ -409,7 +434,7 @@ $exhibitorSR->free();
     var exhibits_spaces = <?php echo json_encode($space_list); ?>;
     var exhibitor_info = <?php echo json_encode($info); ?>;
     var exhibitor_spacelist = <?php echo json_encode($exhibitorSpaceList); ?>;
-    var exhibitor_regionyears = <?php echo json_encode($vendor_permlist); ?>;
+    var exhibitor_regionyears = <?php echo json_encode($exhibitor_permlist); ?>;
     var regions = <?php echo json_encode($regions); ?>;
     var spaces = <?php echo json_encode($spaces); ?>;
     var country_options = <?php echo json_encode($countryOptions); ?>;
@@ -429,6 +454,7 @@ draw_itemRegistrationModal($portalType, $vendor_conf['artsheets'], $vendor_conf[
                 <h3>Welcome to the <?php echo $portalName; ?> Portal Page for <?php echo $info['exhibitorName']; ?></h3>
             </div>
         </div>
+         <?php outputCustomText('main/top' . $portalName); ?>
         <div class="row p-1">
             <div class="col-sm-auto p-0">
                 <button class="btn btn-secondary m-1" onclick="exhibitorProfile.profileModalOpen('update');">View/Change your profile</button>
@@ -437,6 +463,7 @@ draw_itemRegistrationModal($portalType, $vendor_conf['artsheets'], $vendor_conf[
                 <button class="btn btn-secondary m-1" onclick="window.location='?logout';">Logout</button>
             </div>
         </div>
+         <?php outputCustomText('main/beforeSpaces'); outputCustomText('main/spaces' . $portalName); ?>
         <div class="row p-1 pt-4">
             <div class="col-sm-12 p-0">
                 <h3><?php echo $portalName; ?> Spaces</h3>
@@ -456,8 +483,8 @@ draw_itemRegistrationModal($portalType, $vendor_conf['artsheets'], $vendor_conf[
         if ($region['mailInAllowed'] == 'N' && $info['mailin'] == 'Y')
             $permission='noMailIn';
         else if ($region['requestApprovalRequired'] != 'none') {
-            if (array_key_exists($region['id'], $vendor_permlist)) {
-                $permission = $vendor_permlist[$region['id']]['approval'];
+            if (array_key_exists($region['id'], $exhibitor_permlist)) {
+                $permission = $exhibitor_permlist[$region['id']]['approval'];
             } else {
                 $permission = 'approved';
             }
@@ -492,7 +519,7 @@ draw_itemRegistrationModal($portalType, $vendor_conf['artsheets'], $vendor_conf[
                         break;
 
                     case 'requested':
-                        $date = $vendor_permlist[$region['id']]['updateDate'];
+                        $date = $exhibitor_permlist[$region['id']]['updateDate'];
                         $date = date_create($date);
                         $date = date_format($date, "F j, Y") . ' at ' . date_format($date, "g:i A");
                         echo "<p>You requested permission for this space on $date and " . $region['ownerName'] . " has not yet processed that request.</p>" . PHP_EOL .
@@ -514,7 +541,7 @@ draw_itemRegistrationModal($portalType, $vendor_conf['artsheets'], $vendor_conf[
                         $approved = 0;
                         $timeRequested = null;
                         $regionSpaces = [];
-                        $vendorSpaces = [];
+                        $exhibitorSpaces = [];
                         $regionYearId = $region['id'];
                         $regionName = $region['name'];
                         $foundSpace = false;
@@ -526,18 +553,18 @@ draw_itemRegistrationModal($portalType, $vendor_conf['artsheets'], $vendor_conf[
                                 $regionSpaces[$space['id']] = $space;
                                 $foundSpace = true;
                                 if (array_key_exists($space['id'], $exhibitorSpaceList)) {
-                                    $vendorSpace = $exhibitorSpaceList[$space['id']];
+                                    $exhibitorSpace = $exhibitorSpaceList[$space['id']];
 
 
-                                    if ($vendorSpace !== null) {
-                                        $vendorSpaces[$space['id']] = $vendorSpace;
-                                        if ($vendorSpace['item_requested'] != null) {
+                                    if ($exhibitorSpace !== null) {
+                                        $exhibitorSpaces[$space['id']] = $exhibitorSpace;
+                                        if ($exhibitorSpace['item_requested'] != null) {
                                             $requested++;
-                                            $timeRequested = $vendorSpace['time_requested'];
+                                            $timeRequested = $exhibitorSpace['time_requested'];
                                         }
-                                        if ($vendorSpace['item_approved'] != null)
+                                        if ($exhibitorSpace['item_approved'] != null)
                                             $approved++;
-                                        if ($vendorSpace['item_purchased'] != null)
+                                        if ($exhibitorSpace['item_purchased'] != null)
                                             $paid++;
                                     }
 
@@ -566,6 +593,7 @@ draw_itemRegistrationModal($portalType, $vendor_conf['artsheets'], $vendor_conf[
             </div>
         </div>
         <?php } ?>
+         <?php outputCustomText('main/bottom'); outputCustomText('main/bottom' . $portalName); ?>
     </div>
      <div class='container-fluid'>
         <div class='row'>

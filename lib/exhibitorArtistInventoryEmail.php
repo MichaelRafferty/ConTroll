@@ -2,8 +2,7 @@
 // emailArtistInventoryReq - send customized email for the artist for their information about the art show now that they have paid
 //      uses:
 //          artistsite: URL to artist site
-//          config variables: artistOnSiteInventoryReqHTML, artistOnSiteInventoryReqText, artistMailInInventoryReqHTML, artistMailInInventoryReqText
-//              those are the file names of the respective email bodies
+//          custom text valies: : exhibitor/index/email/onsiteInvHTML, onsiteInvText, mailinInvHTML, mailinInvText
 //      macros to be replaced in those files:
 //        <<EXHIBITOR_NAME>>: name from the exhibitor record (artist full name)
 //        <<CONTACT_NAME>>: name from the exhibitor years record (contact full name)
@@ -18,27 +17,15 @@ function emailArtistInventoryReq($regionYearId, $type): bool|array {
     $con = get_conf('con');
     $vendor = get_conf("vendor");
 
-    if (array_key_exists('artistOnSiteInventoryReqText', $vendor) && $vendor['artistOnSiteInventoryReqText'] != null && $vendor['artistOnSiteInventoryReqText'] != '')
-        $artistOnSiteInventoryText = $vendor['artistOnSiteInventoryReqText'];
-    else
-        $artistOnSiteInventoryText = null;
+    // load the custom text fields
+    loadCustomText('exitibitor', 'index',null, true);
 
-    if (array_key_exists('artistOnSiteInventoryReqHTML', $vendor) && $vendor['artistOnSiteInventoryReqHTML'] != null && $vendor['artistOnSiteInventoryReqHTML'] != '')
-        $artistOnSiteInventoryHTML = $vendor['artistOnSiteInventoryReqHTML'];
-    else
-        $artistOnSiteInventoryHTML = null;
+    $artistOnSiteInventoryText = returnCustomText('email/onsiteInvText');
+    $artistOnSiteInventoryHTML = returnCustomText('email/onsiteInvHTML');
+    $artistMailInInventoryText = returnCustomText('email/mailinInvText');
+    $artistMailInInventoryHTML = returnCustomText('email/mailinInvHTML');
 
-    if (array_key_exists('artistMailInInventoryReqText', $vendor) && $vendor['artistMailInInventoryReqText'] != null && $vendor['artistMailInInventoryReqText'] != '')
-        $artistMailInInventoryText = $vendor['artistMailInInventoryReqText'];
-    else
-        $artistMailInInventoryText = null;
-
-    if (array_key_exists('artistMailInInventoryReqHTML', $vendor) && $vendor['artistOnSiteInventoryReqHTML'] != null && $vendor['artistOnSiteInventoryReqHTML'] != '')
-        $artistMailInInventoryHTML = $vendor['artistOnSiteInventoryReqHTML'];
-    else
-        $artistMailInInventoryHTML = null;
-
-    if ($artistOnSiteInventoryText == NULL && $artistOnSiteInventoryHTML == NULL && $artistMailInInventoryText == NULL && $artistMailInInventoryHTML == NULL) {
+    if ($artistOnSiteInventoryText == '' && $artistOnSiteInventoryHTML == '' && $artistMailInInventoryText == '' && $artistMailInInventoryHTML == '') {
         return false; // no email templates available to send
     }
 
@@ -69,22 +56,12 @@ EOS;
     // load the files
     $txtmsg = NULL;
     $htmlmsg = NULL;
-    //error_log(getcwd());
-    if ($type == 'Reminder') {
-        $prefix = '../../../config/';
-    } else {
-        $prefix = '../../config/';
-    }
     if ($artL['mailin'] == 'Y') {
-        if ($artistMailInInventoryText != null)
-            $txtmsg = file_get_contents($prefix . $artistMailInInventoryText);
-        if ($artistMailInInventoryHTML != NULL)
-            $htmlmsg = file_get_contents($prefix . $artistMailInInventoryHTML);
+        $txtmsg = $artistMailInInventoryText == '' ? null : $artistMailInInventoryText;
+        $htmlmsg = $artistMailInInventoryHTML == '' ? null : $artistMailInInventoryHTML;
     } else {
-        if ($artistOnSiteInventoryText != null)
-            $txtmsg = file_get_contents($prefix . $artistOnSiteInventoryText);
-        if ($artistOnSiteInventoryHTML != null)
-            $htmlmsg = file_get_contents($prefix . $artistOnSiteInventoryHTML);
+        $txtmsg = $artistOnSiteInventoryText == '' ? null : $artistOnSiteInventoryText;
+        $htmlmsg = $artistOnSiteInventoryHTML == '' ? null : $artistOnSiteInventoryHTML;
     }
 
     $emails = artistEamilReplaceTokens($txtmsg, $htmlmsg, $artL);
@@ -125,7 +102,7 @@ function artistEamilReplaceTokens($messageTxt, $messageHtml, $valArray): array {
 
     foreach ($tokens AS $key => $val) {
         if ($messageTxt != null) {
-            $messageTxt = str_replace("<<$key>>", $val, $messageTxt);
+            $messageTxt = strip_tags(str_replace("<<$key>>", $val, $messageTxt));
         }
         if ($messageHtml != null) {
             $messageHtml = str_replace("<<$key>>", $val, $messageHtml);

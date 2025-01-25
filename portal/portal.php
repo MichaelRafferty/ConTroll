@@ -29,6 +29,8 @@ if (array_key_exists('suspended', $portal_conf) && $portal_conf['suspended'] == 
     exit();
 }
 
+$NomNomExists = array_key_exists('nomnomURL', $portal_conf);
+
 if (isSessionVar('id') && isSessionVar('idType')) {
     // check for being resolved/baned
     $resolveUpdates = isResolvedBanned();
@@ -64,6 +66,11 @@ $config_vars['initCoupon'] = $initCoupon;
 $config_vars['initCouponSerial'] = $initCouponSerial;
 $config_vars['id'] = $loginId;
 $config_vars['idType'] = $loginType;
+$config_vars['conid'] = $conid;
+$config_vars['nomnomExists'] = $NomNomExists;
+if ($NomNomExists)
+    $config_vars['nomnomURL'] = $portal_conf['nomnomURL'];
+
 $cdn = getTabulatorIncludes();
 // default memberships to empty to handle the refresh case which never loads them.
 $memberships = [];
@@ -79,7 +86,9 @@ if ($info === false) {
 }
 $dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
 
+$hasWSFS = false;
 if (!$refresh) {
+    $numPrimary = 0;
 // get the account holder's registrations
     $holderRegSQL = <<<EOS
 SELECT r.status, r.memId, m.*, a.shortname AS ageShort, a.label AS ageLabel, r.price AS actPrice, r.conid, r.create_date,
@@ -108,6 +117,10 @@ EOS;
     $holderMembership = [];
     if ($holderRegR !== false && $holderRegR->num_rows > 0) {
         while ($m = $holderRegR->fetch_assoc()) {
+            // check if they have a WSFS rights membership
+            if (($m['memCategory'] == 'wsfs' || $m['memCategory'] == 'wsfsnom' || $m['memCategory'] == 'dealer') && $m['status'] == 'paid')
+                $hasWSFS = true;
+
             if ($m['memType'] == 'donation') {
                 $label = $dolfmt->formatCurrency((float)$m['actPrice'], $currency) . ' ' . $m['label'];
                 $shortname = $dolfmt->formatCurrency((float)$m['actPrice'], $currency) . ' ' . $m['shortname'];
@@ -123,9 +136,12 @@ EOS;
                                          'createPerid' => $m['createPerid'], 'completePerid' => $m['completePerid'], 'purchaserName' => $m['purchaserName'],
                                          'startdate' => $m['startdate'], 'enddate' => $m['enddate'], 'online' => $m['online'],
             );
+            if (isPrimary($m, $conid))
+                $numPrimary++;
         }
         $holderRegR->free();
     }
+    $config_vars['numPrimary'] = $numPrimary;
 // get people managed by this account holder and their registrations
     if ($loginType == 'p') {
         $managedSQL = <<<EOS
@@ -366,6 +382,17 @@ if ($numExpired > 0) {
     $disablePay = ' disabled';
 }
 
+$NonNomButton = '';
+if ($NomNomExists) {
+    if (!$hasWSFS)
+        $NonNomButton .= '<span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="top" ' .
+            'data-bs-title="Add and pay for a WSFS membership to be able to nominate or vote.">';
+    $NonNomButton .= "<button class='btn btn-primary p-1' type='button' " .
+        ($hasWSFS ? 'onclick="portal.vote();"' : ' disabled') . '>Log into the Hugo System</button>';
+    if (!$hasWSFS)
+        $NonNomButton .= '</span>';
+}
+
 
 portalPageInit('portal', $info,
     /* css */ array($cdn['tabcss'],
@@ -415,6 +442,7 @@ if ($info['managedByName'] != null) {
     <div class='row mt-4' id="managedByDiv">
         <div class='col-sm-auto'><b>This person record is managed by <?php echo $info['managedByName']; ?></b></div>
         <div class='col-sm-auto'><button class="btn btn-warning btn-sm p-1" onclick="portal.disassociate();">Dissociate from <?php echo $info['managedByName']; ?></button></div>
+        <div class='col-sm-auto'><?php echo $NonNomButton; ?></div>
     </div>
 <?php
 }
@@ -450,11 +478,11 @@ if ($totalDue > 0) {
     if ($info['managedByName'] == null) {
         echo "People managed by " . $info['first_name'] . ' (' . $info['email_addr'] . '):';
 ?>
-                <button class='btn btn-primary ms-2' type='button'
+                <button class='btn btn-primary ms-1 p-1' type='button'
                         onclick="window.location='<?php echo $portal_conf['portalsite']; ?>/addUpgrade.php';">
                     Add Another Person and Create a New Membership for Them
                 </button>
-<?php
+                <?php echo $NonNomButton;
     } else {
 ?>
             This account's information:

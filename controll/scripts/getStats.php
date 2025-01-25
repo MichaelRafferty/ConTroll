@@ -1,52 +1,6 @@
 <?php
 require_once "../lib/base.php";
 
-function calc_stats($inArray) {
-    sort($inArray);
-    //print_r($inArray);
-
-    $count = count($inArray);
-    if($count == 0) {
-        $min = 0;
-        $max = 0;
-        $first = 0;
-        $third = 0;
-        $median = 0;
-        $lower = 0;
-        $upper = 0;
-    }
-    if($count == 1) {
-        $val = $inArray[0];
-        $min = $val;
-        $max = $val;
-        $first = $val;
-        $third = $val;
-        $median = $val;
-        $lower = $val;
-        $upper = $val;
-    }
-    if($count >= 2) {
-        $min = min($inArray);
-        $max = max($inArray);
-        $first = $inArray[round(.25 * ($count + 1) ) -1];
-        $third = $inArray[round(.75 * ($count + 1) ) -1];
-        $median = ($count % 2 == 0) ?
-            ($inArray[($count/2)-1] + $inArray[($count/2)])/2 :
-            $inArray[(($count+1)/2)];
-
-        $lower = max($min, round($first - 1.5 * ($third - $first)));
-        $upper = min($max, round($third + 1.5 * ($third - $first)));
-    }
-
-    return array('count'=>$count,
-        'min'=>$min, 'lower'=>$lower,
-        'Q1'=>$first, 'med'=>$median, 'Q3'=>$third,
-        'upper'=>$upper, 'max'=>$max
-    );
-}
-
-
-
 $check_auth = google_init("ajax");
 $perm = "overview";
 
@@ -70,6 +24,8 @@ $minCon = $conConf['minComp'];
 $maxLen = $conConf['compLen'];
 $conLen = $conConf['conLen'];
 
+$debug = get_conf('debug');
+if(!array_key_exists('controll_stats', $debug)) { $debug['controll_stats']=0;}
 if(isset($_GET['conid'])) {
     $conid=$_GET['conid'];
     $con = dbSafeQuery('SELECT * FROM conlist WHERE id=?;', 'i', array($conid))->fetch_assoc();
@@ -78,26 +34,48 @@ if(isset($_GET['conid'])) {
     $conid= $con['id'];
 }
 
-
-$historyQuery = <<<EOS
-CREATE TEMPORARY TABLE history (id INT auto_increment PRIMARY KEY)
-    SELECT conid, year, diff, cnt_all, cnt_paid
-    FROM (
-        SELECT R.conid, year(C.enddate) as year
-            , datediff(C.enddate, R.create_date) as diff
-            , count(R.id) as cnt_all
-            , count(CASE WHEN paid>0 THEN R.id ELSE NULL END) as cnt_paid
-        FROM reg R
-        JOIN conlist C ON (R.conid=C.id)
-        WHERE C.id>=?
-        GROUP BY R.conid, year(C.enddate), datediff(C.enddate, R.create_date)
-        WITH ROLLUP) r
-        ORDER BY conid, year, diff;
-EOS;
-
 $addlwhere = '';
 #$addlwhere = "AND (B.action = 'create' OR B.action = 'upgrade' OR B.action = 'pickup')";
+
+$dayRegQ = <<<EOF
+SELECT datediff(startdate, current_timestamp())
+FROM conlist
+WHERE id=?;
+EOF;
+
+$dayRegA = dbSafeQuery($dayRegQ, 'i', array($conid));
+$dayReg = $dayRegA->fetch_array();
+if ($dayReg > 0) $response['today'] = $dayReg[0];
+
 switch($_GET['method']) {
+    case 'overview': //updated 2025-01-09
+        $membershipsQ = <<<EOF
+SELECT R.status, M.memCategory, M.label, M.sort_order, COUNT(R.id) as cnt
+FROM reg R    
+	JOIN memList M ON (M.id=R.memId)    
+WHERE R.conid=?
+GROUP BY status, memCategory, sort_order, label
+ORDER BY CASE `status`
+	WHEN 'paid' THEN 1
+    WHEN 'plan' THEN 2
+    WHEN 'unpaid' THEN 3
+    WHEN 'cancel' THEN 4
+    ELSE 5
+    END, 
+	sort_order, memCategory, label;
+EOF;
+        $membershipR = dbSafeQuery($membershipsQ,'i',array($conid));
+        while($resA = $membershipR->fetch_assoc()) {
+            $status = $resA['status']; // membership category (standard, premium)
+            $cat = $resA['memCategory']; // membership type (full, one-day)
+            $label = $resA['label']; // membership label
+            $count = $resA['cnt']; // # of matching memberships
+
+            $response['overview'][$status][$cat][$label]= $count;
+        }
+
+
+        break;
     case 'attendance':
       #  $con = get_con();
         $badgeQ = <<<EOF
@@ -237,156 +215,59 @@ EOF;
         $response['staffing']=$staffing;
         $response['con']=$con;
         break;
-    case "overview":
-        $query = <<<EOF
-SELECT memCategory AS cat, memType AS type, memAge AS age, label, SUM(cnt) AS cnt, SUM(paid) AS paid
-FROM (
-    SELECT COUNT(R.id) AS cnt, M.sort_order, M.memCategory, M.memType, M.memAge, M.shortname AS label, SUM(R.paid) AS paid
-    FROM reg R
-    JOIN memLabel M ON (M.id=R.memId)
-    WHERE R.conid=?
-    GROUP BY M.sort_order, M.memCategory, M.memType, M.memAge, M.shortname
-    ) m
-WHERE memCategory is NOT NULL
-GROUP BY cat, memType, memAge, label
-ORDER BY paid DESC, memCategory DESC, memType ASC, memAge ASC;
-EOF;
-        $response['query'] = $query;
-        $res = dbSafeQuery($query, 'i', array($conid));
-        while($resA = $res->fetch_assoc()) {
-            $cat = $resA['cat']; // membership category (standard, premium)
-            $type = $resA['type']; // membership type (full, one-day)
-            $age = $resA['age']; // memberhsip age (adult, child, any)
-            $label = $resA['label']; // membership label
-            $count = $resA['cnt']; // # of matching memberships
-
-            $response['overview'][$cat][$type][$age][$label]= $count;
-        }
-        $dayRegQ = <<<EOF
-SELECT datediff(enddate, current_timestamp())
-FROM conlist
-WHERE id=?;
-EOF;
-
-        $dayRegA = dbSafeQuery($dayRegQ, 'i', array($conid));
-        $dayReg = $dayRegA->fetch_array();
-        if ($dayReg > 0) $response['today'] = $dayReg[0] - $conLen;
-
-        break;
-    case "totalMembership":
-        dbSafeCmd($historyQuery, 'i', array($minCon));
+    case "totalMembership": //updated 2025-01-09
         $maxRegQ = <<<EOQ
-SELECT conid, true AS complete, year, MIN(cnt_all) AS cnt_all, min(cnt_paid) AS cnt_paid
-FROM history WHERE conid<=? AND diff IS NULL AND year IS NOT NULL
-GROUP BY conid, year;
+SELECT R.conid, COUNT(R.id) cnt_all, COUNT(CASE WHEN paid>0 THEN R.id ELSE null END) as cnt_paid
+FROM reg R
+	JOIN conlist C on R.conid=C.id
+WHERE R.conid>=? and status in ('paid', 'plan')
+GROUP BY R.conid
+ORDER BY R.conid;
 EOQ;
-        $maxRegA = dbSafeQuery($maxRegQ, 'i', array($conid));
-
+        $maxRegR = dbSafeQuery($maxRegQ, 'i', array($minCon));
         $response['maxReg'] = array();
-        while($row = $maxRegA->fetch_assoc()) {
+        if ($debug['controll_stats'] & 1) {  // make up 10 years of history data so there's something there.
+            for ($i = 10; $i > 0; $i--) {
+                $rand = random_int(5,50);
+                $rand2 = random_int(1,$rand-1);
+                array_push($response['maxReg'], ['conid' => $minCon - $i, 'cnt_all'=>$rand, 'cnt_paid' => $rand2]);
+                }
+        }
+        while($row = $maxRegR->fetch_assoc()) {
             array_push($response['maxReg'], $row);
         }
         break;
     case "preConTrend":
-        dbSafeCmd($historyQuery, 'i', array($minCon));
-        $dayRegQ = <<<EOF
-SELECT datediff(enddate, current_timestamp())
-FROM conlist
-WHERE id=?;
-EOF;
-
-        $dayRegA = dbSafeQuery($dayRegQ, 'i', array($conid));
-        $dayReg = $dayRegA->fetch_array();
-        $response['today'] = $dayReg[0];
-        $statArray = array();
-        for ($i=$maxLen; $i >=$conLen; $i--) {
-            $localStat = array();
-            $pivot_col = "SELECT $i, ";
-            $inner = "SELECT conid, sum(cnt_all) as sum_all"
-                . ", sum(cnt_paid) as sum_paid, ";
-            for($j = $minCon; $j<$conid; $j++) {
-                $pivot_col .= "sum(B$j"."_all), sum(B$j"."_paid), ";
-                $inner .=  "sum(case when conid=$j then cnt_all else null end) as B$j"."_all"
-                    . ", sum(case when conid=$j then cnt_paid else null end) as B$j"."_paid, ";
+        $preconQ = <<<EOQ
+SELECT R.conid, datediff(C.startdate, R.create_date) as diff, COUNT(R.id) cnt_all, 
+       COUNT(CASE 
+           WHEN status='paid' and paid>0 THEN R.id 
+           WHEN status='plan' and paid>0 THEN R.id 
+           ELSE null END) as cnt_paid
+FROM reg R
+	JOIN conlist C on R.conid=C.id
+WHERE R.conid>=?
+GROUP BY conid, diff
+ORDER BY conid, diff;
+EOQ;
+        $preconA = dbSafeQuery($preconQ,'i', array($minCon));
+        $preconResponse = array();
+        while($preconR = $preconA->fetch_assoc()) {
+            $lastDebugValue = 0;
+            if ((!array_key_exists($preconR['conid'], $preconResponse)) || ($preconResponse[$preconR['conid']] === null))
+            {$preconResponse[$preconR['conid']]=array();}
+            if($preconR['conid'] == $minCon && ($debug['controll_stats'] & 1)) {
+                for($i = 10 ; $i > 0; $i--) {
+                    $rand = random_int(0,$preconR['cnt_all']*2);
+                    if ($preconResponse[$minCon - $i*5] === null) {$preconResponse[$minCon - $i*5]=array();}
+                    array_push($preconResponse[$minCon - $i*5], array('x' => $preconR['diff'], 'y' => $rand));
+                }
             }
-
-            $pivot_col .= "sum(B$conid"."_all), sum(B$conid"."_paid) ";
-            $inner .= "sum(case when conid=$conid then cnt_all else null end) as B$conid"."_all"
-                . ", sum(case when conid=$conid then cnt_paid else null end) as B$conid"."_paid ";
-
-            $inner .= "FROM history WHERE diff > $i group by conid";
-            $pivot_col .= "FROM ($inner) i";
-            $pivotR = dbQuery($pivot_col);
-            $res = $pivotR->fetch_array();
-$response['statQuery'] = $pivot_col;
-
-            $diff = (int)$res[0];
-            $res = array_slice($res, 1);
-            $all_vals = array();
-            $paid_vals = array();
-            if($response['today'] <= $diff) {
-                $localStat['c_paid'] = array_pop($res);;
-                $localStat['c_all'] = array_pop($res);;
-            } else {
-                $localStat['c_paid'] = array_pop($res);;
-                $localStat['c_all'] = array_pop($res);;
-                //array_pop($res);
-                //array_pop($res);
-            }
-            $localStat['day'] = - (int)$diff + $conLen;
-
-            for ($j = 0; $j < count($res); $j++) {
-                if($j%2==0 && array_key_exists($j, $res)) { array_push($all_vals, $res[$j]); }
-                else if(array_key_exists($j, $res)) { array_push($paid_vals, $res[$j]); }
-            }
-
-            $localStat['all'] = calc_stats($all_vals);
-            $localStat['paid'] = calc_stats($paid_vals);
-            array_push($statArray, $localStat);
+            array_push($preconResponse[$preconR['conid']], array('x' => $preconR['diff'], 'y' => $preconR['cnt_all']));
         }
-
-        $response['statArray'] = $statArray;
+        $response['dailyHistory'] = $preconResponse;
         break;
-    case "modelInput":
-        dbSafeCmd($historyQuery, 'i', array($minCon));
-        $currentQ = "SELECT min(diff) as diff"
-            . ", sum(cnt_all) as total, sum(cnt_paid) as paid"
-            . " FROM history WHERE conid = ? and diff is not null;";
-        $currentR = dbQuery($currentQ, 'i', array($conid));
-        $currentA = $currentR->fetch_assoc();
-        $diff = $currentA['diff'];
-        $inputQ = "SELECT conid, sum(cnt_all) as total, sum(cnt_paid) as paid"
-            . " FROM history WHERE conid < $conid AND diff >= $diff"
-            . " GROUP BY conid;";
-        $preconQ = "SELECT conid, sum(cnt_all) as total, sum(cnt_paid) as paid"
-            . " FROM history WHERE conid < $conid AND diff >= $conLen"
-            . " GROUP BY conid;";
-        $finalQ = "SELECT conid, sum(cnt_all) as total, sum(cnt_paid) as paid"
-            . " FROM history WHERE conid < $conid and diff is not null"
-            . " GROUP BY conid;";
-
-        $inputR = dbQuery($inputQ);
-        $preconR = dbQuery($preconQ);
-        $finalR = dbQuery($finalQ);
-
-        $inputA = array();
-        $preconA = array();
-        $finalA = array();
-        while($iRow = $inputR->fetch_assoc()) {
-            array_push($inputA, $iRow);
-        }
-        while($pRow = $preconR->fetch_assoc()) {
-            array_push($preconA, $pRow);
-        }
-        while($fRow = $finalR->fetch_assoc()) {
-            array_push($finalA, $fRow);
-        }
-        $response['current'] = $currentA;
-        $response['input'] = $inputA;
-        $response['precon'] = $preconA;
-        $response['final'] = $finalA;
-        break;
-    default:
+     default:
         $response['error']="Invalid Request";
 }
 
