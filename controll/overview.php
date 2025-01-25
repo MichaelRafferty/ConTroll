@@ -22,6 +22,8 @@ page_init($page,
 $con = get_conf("con");
 $conid=$con['id'];
 $debug = get_conf('debug');
+if(!array_key_exists('controll_stats', $debug)) { $debug['controll_stats']=0;}
+
 $config_vars['debug'] = $debug['controll_stats'];
 $config_vars['conid'] = $conid;
 $config_vars['minComp'] = $con['minComp'];

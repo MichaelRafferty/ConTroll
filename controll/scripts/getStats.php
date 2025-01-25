@@ -25,7 +25,7 @@ $maxLen = $conConf['compLen'];
 $conLen = $conConf['conLen'];
 
 $debug = get_conf('debug');
-
+if(!array_key_exists('controll_stats', $debug)) { $debug['controll_stats']=0;}
 if(isset($_GET['conid'])) {
     $conid=$_GET['conid'];
     $con = dbSafeQuery('SELECT * FROM conlist WHERE id=?;', 'i', array($conid))->fetch_assoc();
@@ -254,7 +254,7 @@ EOQ;
         $preconResponse = array();
         while($preconR = $preconA->fetch_assoc()) {
             $lastDebugValue = 0;
-            if ($preconResponse[$preconR['conid']] === null) {$preconResponse[$preconR['conid']]=array();}
+            if (!array_key_exists($preconR['conid'], $preconResponse) || $preconResponse[$preconR['conid']] === null)) {$preconResponse[$preconR['conid']]=array();}
             if($preconR['conid'] == $minCon && ($debug['controll_stats'] & 1)) {
                 for($i = 10 ; $i > 0; $i--) {
                     $rand = random_int(0,$preconR['cnt_all']*2);
