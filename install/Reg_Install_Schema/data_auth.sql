@@ -16,7 +16,7 @@ INSERT INTO `auth` VALUES
 (3,'people','Y','People',40),
 (5,'registration','Y','Registration',50),
 (6,'reg_admin','Y','Registration Admin',30),
-(8,'artshow','N','Artshow',800),
+(7,'finance','Y','Finance',55),
 (9,'badge','Y','Free Badges',60),
 (10,'atcon','N','N',1000),
 (11,'art_control','Y','Art Control',90),

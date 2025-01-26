@@ -11,6 +11,15 @@
 LOCK TABLES `controllAppSections` WRITE;
 ALTER TABLE `controllAppSections` DISABLE KEYS;
 INSERT INTO `controllAppSections` VALUES
+('exhibitor','index','email','exhibitor emails'),
+('exhibitor','index','invoice','space invoice modal popup of the exhibitor portal'),
+('exhibitor','index','items','art inventory modal popup of the exhibitor portal'),
+('exhibitor','index','login','main body of the exhibitor portal'),
+('exhibitor','index','main','main body of the exhibitor portal'),
+('exhibitor','index','profile','profile modal popup of the exhibitor portal'),
+('exhibitor','index','receipt','space payment receipt modal popup of the exhibitor portal'),
+('exhibitor','index','request','space request modal popup of the exhibitor portal'),
+('exhibitor','index','signup','signup modal popup of the exhibitor portal'),
 ('portal','accountSettings','main','main body of the account settings page'),
 ('portal','addUpgrade','interests','data entry forms related to interests'),
 ('portal','addUpgrade','main','main body of the addUpgrade page'),

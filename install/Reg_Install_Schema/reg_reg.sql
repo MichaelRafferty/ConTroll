@@ -43,7 +43,8 @@ CREATE TABLE `reg` (
   KEY `reg_coupon_fk` (`coupon`),
   KEY `reg_complete_fk` (`complete_trans`),
   KEY `reg_planid_fk` (`planId`),
-  KEY `reg_priorRegId_fk` (`priorRegId`)
+  KEY `reg_priorRegId_fk` (`priorRegId`),
+  KEY `regStatus_idx` (`status`,`conid`,`perid`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 DELIMITER ;;
 CREATE DEFINER=CURRENT_USER  TRIGGER `reg_update` BEFORE UPDATE ON `reg` FOR EACH ROW BEGIN

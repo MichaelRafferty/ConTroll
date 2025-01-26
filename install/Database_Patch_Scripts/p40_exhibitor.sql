@@ -140,4 +140,15 @@ INSERT INTO controllAppItems(appName, appPage, appSection, txtItem, txtItemDescr
 ('exhibitor','index','email','mailinInvHTML','Mail In Artist Inventory HTML Email'),
 ('exhibitor','index','email','mailinInvText','Mail In Artist Inventory Text Email');
 
+INSERT INTO `controllTxtItems` VALUES
+('exhibitor','index','invoice','afterPrice','<p>Please fill out this section with information on the <<portalType>> or store.</p>');
+
+DELETE FROM controllTxtItems WHERE contents LIKE '%Controll-Default: %';
+INSERT INTO controllTxtItems(appName, appPage, appSection, txtItem, contents)
+SELECT a.appName, a.appPage, a.appSection, a.txtItem, CONCAT('Controll-Default: This is ', a.appName, '-', a.appPage, '-', a.appSection, '-', a.txtItem,
+'<br/>Custom HTML that can replaced with a custom value in the Controll Admin App under Edit Custom Text.<br/>',
+' Default text can be suppressed in the configuration file.')
+FROM controllAppItems a
+LEFT OUTER JOIN controllTxtItems t on (a.appName = t.appName AND a.appPage = t.appPage AND a.appSection = t.appSection and a.txtItem = t.txtItem)
+WHERE t.contents is NULL;
 INSERT INTO patchLog(id, name) VALUES(40, 'exhibitor_tax_id');
