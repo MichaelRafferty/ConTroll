@@ -443,7 +443,11 @@ EOT;
 
 
 function surveyEmail_HTML($test) {
+
     $con = get_conf('con');
+
+    if (!array_key_exist('survey_url', $con))
+        return null; // no survey defined
 
     $conlabel = $con['label'];
     $conname = $con['conname'];
@@ -472,6 +476,9 @@ EOT;
 
 function surveyEmail_TEXT($test) {
     $con = get_conf('con');
+
+    if (!array_key_exist('survey_url', $con))
+        return null; // no survey defined
 
     $conlabel = $con['label'];
     $conname = $con['conname'];

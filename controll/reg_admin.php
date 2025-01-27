@@ -803,7 +803,7 @@ $config_vars['multiOneDay'] = $multiOneDay;
             <div class="col-sm-auto p-2">
                 <button class="btn btn-primary btn-sm" onclick="sendEmail('reminder')" disabled>Send Attendance Reminder Email</button>
             </div>
-            <?php if ($db_ini['con']['survey_url']) { ?>
+            <?php if (array_key_exists('survey_url', $db_ini['con'])) { ?>
             <div class="col-sm-auto p-2">
                 <button class="btn btn-primary btn-sm" onclick="sendEmail('survey')" disabled>Send Survey Email</button>
             </div>
