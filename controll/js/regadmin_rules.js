@@ -1169,11 +1169,13 @@ class rulesSetup {
             this.#buildMemUsed('#editStepUsedDiv', level, this.#editStepRow);
         }
 
-        if (this.#debug > 0) console.log('exit applyRuleSel(' + level + ')');
-        // store all the fields back into the table row
-        var row = this.#ruleStepsTable.getRow(this.#editRuleStepItem);
-        var rowdata = row.getData();
-        if (this.#debug > 0) console.log(row.getData());
+        if (level == 's' && this.#debug > 0) {
+            console.log('exit applyRuleSel(' + level + ')');
+            // final values in the step
+            row = this.#ruleStepsTable.getRow(this.#editRuleStepItem);
+            rowdata = row.getData();
+            console.log(row.getData());
+        }
     }
 
     // add row to  table and scroll to that new row
