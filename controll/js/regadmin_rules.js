@@ -1444,6 +1444,7 @@ class rulesSetup {
 
         this.checkUndoRedo();
         this.updateDate(false);
+        this.#editRuleModal.hide();
     }
 
     // save the rules and rule items back to the database
