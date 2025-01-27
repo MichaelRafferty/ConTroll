@@ -387,8 +387,13 @@ if ($NomNomExists) {
     if (!$hasWSFS)
         $NonNomButton .= '<span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="top" ' .
             'data-bs-title="Add and pay for a WSFS membership to be able to nominate or vote.">';
+    if (array_key_exists('nomnomBtn', $portal_conf))
+        $nomnomBtnText = $portal_conf['nomnomBtn'];
+    else
+        $nomnomBtnText = 'Log into the Hugo System';
+
     $NonNomButton .= "<button class='btn btn-primary p-1' type='button' " .
-        ($hasWSFS ? 'onclick="portal.vote();"' : ' disabled') . '>Log into the Hugo System</button>';
+        ($hasWSFS ? 'onclick="portal.vote();"' : ' disabled') . ">$nomnomBtnText</button>";
     if (!$hasWSFS)
         $NonNomButton .= '</span>';
 }
