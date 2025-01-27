@@ -56,7 +56,7 @@ foreach ($rules as $name => $rule) {
         $numdel += dbSafeCmd($dRI, 's', array($rule['origName']));
         $numdel += dbSafeCmd($dR, 's', array($rule['origName']));
     } else {
-        if (array_key_exist('ruleet', $rule))
+        if (array_key_exists('ruleet', $rule))
             $ruleItems = $rule['ruleset'];
         foreach ($ruleItems as $ruleItem) {
             if (array_key_exists('to_delete', $ruleItem) && $ruleItem['to_delete'] == 1) {
@@ -111,7 +111,7 @@ foreach ($rules as $name => $rule) {
     
     $numupd += dbSafeCmd($uR, 'ssssssss', array($rule['name'], $optionName, $description, $typeList, $catList, $ageList, $memList, $rule['origName']));
     $ruleItems = [];
-    if (array_key_exist('ruleet', $rule))
+    if (array_key_exists('ruleet', $rule))
         $ruleItems = $rule['ruleset'];
     $ruleName = $rule['name'];
     foreach ($ruleItems as $ruleItem) {
@@ -187,7 +187,7 @@ foreach ($rules as $name => $rule) {
         }
 
     $ruleItems = [];
-    if (array_key_exist('ruleet', $rule))
+    if (array_key_exists('ruleet', $rule))
         $ruleItems = $rule['ruleset'];
     $ruleName = $rule['name'];
     foreach ($ruleItems as $ruleItem) {
