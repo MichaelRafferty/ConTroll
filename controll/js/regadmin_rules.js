@@ -830,11 +830,11 @@ class rulesSetup {
     editRuleStepSave(dosave) {
         // save the results back to the underlying table
         if (dosave) {
-            console.log('editRuleStepSave:' + this.#editRuleStepItem);
+            if (this.#debug > 0) console.log('editRuleStepSave:' + this.#editRuleStepItem);
             // store all the fields back into the table row
             var row = this.#ruleStepsTable.getRow(this.#editRuleStepItem);
             var rowdata = row.getData();
-            console.log(row.getData());
+            if (this.#debug > 0) console.log(row.getData());
 
             var newValue = this.#sName.value;
             if (rowdata.name != newValue) {
@@ -1137,11 +1137,13 @@ class rulesSetup {
 
     // retrieve the selected rows and set the field values
     applyRuleSel(level) {
-        console.log('enter applyRuleSel(' + level + ')');
+        if (this.#debug > 0) console.log('enter applyRuleSel(' + level + ')');
         // store all the fields back into the table row
-        var row = this.#ruleStepsTable.getRow(this.#editRuleStepItem);
-        var rowdata = row.getData();
-        console.log(row.getData());
+        if (level == 's' && this.#editRuleStepItem) {
+            var row = this.#ruleStepsTable.getRow(this.#editRuleStepItem);
+            var rowdata = row.getData();
+            if (this.#debug > 0) console.log(row.getData());
+        }
 
         var filter = '';
         var rows = null;
@@ -1153,7 +1155,7 @@ class rulesSetup {
         }
         if (filter != '')
             filter = filter.substring(1);
-        //console.log(filter);
+        if (this.#debug > 0) console.log(filter);
         this.#selField.innerHTML = filter;
         this.closeSelTable(level);
         if (level == 'r') {
@@ -1167,11 +1169,11 @@ class rulesSetup {
             this.#buildMemUsed('#editStepUsedDiv', level, this.#editStepRow);
         }
 
-        console.log('exit applyRuleSel(' + level + ')');
+        if (this.#debug > 0) console.log('exit applyRuleSel(' + level + ')');
         // store all the fields back into the table row
         var row = this.#ruleStepsTable.getRow(this.#editRuleStepItem);
         var rowdata = row.getData();
-        console.log(row.getData());
+        if (this.#debug > 0) console.log(row.getData());
     }
 
     // add row to  table and scroll to that new row
