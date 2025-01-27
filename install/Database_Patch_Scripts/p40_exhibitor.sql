@@ -141,7 +141,7 @@ INSERT INTO controllAppItems(appName, appPage, appSection, txtItem, txtItemDescr
 ('exhibitor','index','email','mailinInvText','Mail In Artist Inventory Text Email');
 
 INSERT INTO `controllTxtItems` VALUES
-('exhibitor','index','invoice','afterPrice','<p>Please fill out this section with information on the <<portalType>> or store.</p>');
+('exhibitor','index','invoice','afterPrice','<p>Please fill out this section with information on the #portalType# or store.</p>');
 
 DELETE FROM controllTxtItems WHERE contents LIKE '%Controll-Default: %';
 INSERT INTO controllTxtItems(appName, appPage, appSection, txtItem, contents)
