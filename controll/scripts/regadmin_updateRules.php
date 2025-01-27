@@ -33,18 +33,21 @@ try {
     exit();
 }
 
+$con = get_conf('con');
+$conid=$con['id'];
+
 // loop over the rules, updating the data and deleting the rule steps as needed
 $dR = <<<EOS
 DELETE FROM memRules
-WHERE name = ?;
+WHERE name = ? AND conid = ?;
 EOS;
 $dRI = <<<EOS
 DELETE FROM memRuleSteps
-WHERE name = ?;
+WHERE name = ? AND conid = ?;
 EOS;
 $dRIsingle = <<<EOS
 DELETE FROM memRuleSteps
-WHERE name = ? and step = ?;
+WHERE name = ? and step = ? AND conid = ?;
 EOS;
 
 $numdel = 0;
@@ -53,14 +56,14 @@ $numins = 0;
 $ruleItems = [];
 foreach ($rules as $name => $rule) {
     if (array_key_exists('to_delete', $rule) && $rule['to_delete'] == 1) {
-        $numdel += dbSafeCmd($dRI, 's', array($rule['origName']));
-        $numdel += dbSafeCmd($dR, 's', array($rule['origName']));
+        $numdel += dbSafeCmd($dRI, 'si', array($rule['origName'], $conid));
+        $numdel += dbSafeCmd($dR, 'si', array($rule['origName'], $conid));
     } else {
         if (array_key_exists('ruleet', $rule))
             $ruleItems = $rule['ruleset'];
         foreach ($ruleItems as $ruleItem) {
             if (array_key_exists('to_delete', $ruleItem) && $ruleItem['to_delete'] == 1) {
-                $numdel += dbSafeCmd($dRIsingle, 'si', array($ruleItem['origName'], $ruleItem['origStep']));
+                $numdel += dbSafeCmd($dRIsingle, 'si', array($ruleItem['origName'], $ruleItem['origStep'], $conid));
             }
         }
     }
@@ -69,12 +72,12 @@ foreach ($rules as $name => $rule) {
 $uR = <<<EOS
 UPDATE memRules
 SET name = ?, optionName = ?, description = ?, typeList = ?, catList = ?, ageList = ?, memList = ?
-WHERE name = ?;
+WHERE name = ? and conid = ?;
 EOS;
 $uRI = <<<EOS
 UPDATE memRuleSteps 
 SET name = ?, step = ?, ruleType = ?, applyTo = ?, typeList = ?, catList = ?, ageList = ?, memList = ?
-WHERE name = ? AND step = ?;
+WHERE name = ? AND step = ? and conid = ?;
 EOS;
 
 // ok, all the deletes are now done, do the updates next
@@ -109,7 +112,7 @@ foreach ($rules as $name => $rule) {
     if (array_key_exists('memList', $rule) && $rule['memList'] != '')
         $memList = $rule['memList'];
     
-    $numupd += dbSafeCmd($uR, 'ssssssss', array($rule['name'], $optionName, $description, $typeList, $catList, $ageList, $memList, $rule['origName']));
+    $numupd += dbSafeCmd($uR, 'ssssssssi', array($rule['name'], $optionName, $description, $typeList, $catList, $ageList, $memList, $rule['origName'], $conid));
     $ruleItems = [];
     if (array_key_exists('ruleet', $rule))
         $ruleItems = $rule['ruleset'];
@@ -136,19 +139,19 @@ foreach ($rules as $name => $rule) {
         if (array_key_exists('memList', $ruleItem) && $ruleItem['memList'] != '')
             $memList = $ruleItem['memList'];
         
-        $numupd += dbSafeCmd($uRI, 'sisssssssi', array($ruleName, $ruleItem['step'], $ruleItem['ruleType'], $ruleItem['applyTo'],
-            $typeList, $catList, $ageList, $memList, $rule['name'], $ruleItem['origStep']));
+        $numupd += dbSafeCmd($uRI, 'sisssssssii', array($ruleName, $ruleItem['step'], $ruleItem['ruleType'], $ruleItem['applyTo'],
+            $typeList, $catList, $ageList, $memList, $rule['name'], $ruleItem['origStep'], $conid));
     }
 }
 
 // last all the inserts
 $iR = <<<EOS
-INSERT into memRules(name, optionName, description, typeList, catList, ageList, memList) 
-VALUES (?, ? ,?, ?, ?, ?, ?);
+INSERT into memRules(conid, name ,optionName, description, typeList, catList, ageList, memList) 
+VALUES (?, ?, ? ,?, ?, ?, ?, ?);
 EOS;
 $iRI = <<<EOS
-INSERT into memRuleSteps(name, step, ruleType, applyTo, typeList, catList, ageList, memList)   
-VALUES (?, ? ,?, ?, ?, ?, ?, ?);
+INSERT into memRuleSteps(conid, name, step, ruleType, applyTo, typeList, catList, ageList, memList)   
+VALUES (?, ?, ? ,?, ?, ?, ?, ?, ?);
 EOS;
 
 foreach ($rules as $name => $rule) {
@@ -180,7 +183,7 @@ foreach ($rules as $name => $rule) {
         if (array_key_exists('memList', $rule) && $rule['memList'] != '')
             $memList = $rule['memList'];
 
-        $inskey = dbSafeInsert($iR, 'sssssss', array($rule['name'], $optionName, $description,
+        $inskey = dbSafeInsert($iR, 'isssssss', array($conid, $rule['name'], $optionName, $description,
             $typeList, $catList,  $ageList, $memList));
         if ($inskey)
             $numins++;
