@@ -561,15 +561,34 @@ class rulesSetup {
 
     #checkItem(row, item) {
         var match = true;
-        if (match && item.ageList != null && item.ageList != '' && !item.ageListArray.includes(row.memAge))
-            match = false;
-        if (match && item.catList != null && item.catList != '' && !item.catListArray.includes(row.memCategory))
-            match = false;
-        if (match && item.typeList != null && item.typeList != '' && !item.typeListArray.includes(row.memType))
-            match = false;
-        if (match && item.memList != null && item.memList != '' && !item.memListArray.includes(row.memId.toString()))
-            match = false;
-
+        if (match && item.ageList != null && item.ageList != '') {
+            if (!item.hasOwnProperty('ageListArray')) {
+                item.ageListArray = item.ageList.split(',');
+            }
+            if (!item.ageListArray.includes(row.memAge))
+                match = false;
+        }
+        if (match && item.catList != null && item.catList != '') {
+            if (!item.hasOwnProperty('catListArray')) {
+                item.catListArray = item.catList.split(',');
+            }
+            if (!item.catListArray.includes(row.memCategory))
+                match = false;
+        }
+        if (match && item.typeList != null && item.typeList != '') {
+            if (!item.hasOwnProperty('typeListArray')) {
+                item.typeListArray = item.typeList.split(',');
+            }
+            if (!item.typeListArray.includes(row.memType))
+                match = false;
+        }
+        if (match && item.memList != null && item.memList != '') {
+            if (!item.hasOwnProperty('memListArray')) {
+                item.memListArray = item.memList.split(',');
+            }
+            if (!item.memListArray.includes(row.memId.toString()))
+                match = false;
+        }
         return match;
     }
 
