@@ -169,17 +169,28 @@ function payment($results) {
 
     // plain text version
     $body = "Dear " . trim($buyer['fname'] . ' ' . $buyer['lname']) . ":\n\n" .
-        "Here is your receipt for payment of " . $dolfmt->formatCurrency($results['approved_amt'], $currency) . ' for ' . $conf['label'] . ' ' . $region['name'] . "\n\n" .
+        "Here is your receipt for payment of " . $dolfmt->formatCurrency($results['approved_amt'], $currency) . ' for ' . $conf['label'] .
+            ' ' . $region['name'] . "\n\n" .
         "RECEIPT FOR PAYMENT TO: " . $conf['label'] . ' on ' . date('m/d/Y h:i:s A', time()) . "\n\n" .
         "$portalName: $exhibitorName\n" .
         $vendor['addr'] . "\n";
         if ($vendor['addr2'] && $vendor['addr2'] != '')
             $body .= $vendor['addr2'] . "\n";
         $body .= $vendor['city'] . ', ' . $vendor['state'] . ' ' . $vendor['zip'] . "\n\n" .
-            "Space: " . $region['name'] . ' (' . $region['description'] . ') with up to ' . $region['includedMemberships'] . ' included memberships and up to ' . $region['additionalMemberships'] . " additional memberships\n" .
+            "Space: " . $region['name'] . ' (' . $region['description'] . ') with up to ' . $region['includedMemberships'] .
+                ' included memberships and up to ' .
+            $region['additionalMemberships'] . " additional memberships\n" .
             $vendor_conf['taxidlabel'] . ': ' . $results['salesTaxId'] . "\n\n" .
             "Price for Space: " . $dolfmt->formatCurrency($region['price'], $currency) . "\n\n" .
             "Special Requests:\n" . $results['specialrequests'] . "\n\n";
+
+        if (array_key_exists('spaces', $results)) {
+            $body .= "Spaces purchased:\n";
+            foreach ($results['spaces'] as $space) {
+                $body .= $space['description'] . " of type " . $space['name'] . ' for ' .
+                    $dolfmt->formatCurrency($space['approved_price'], $currency) . "\n";
+            }
+        }
 
         $body .= "Memberships purchased at this time:\n\n";
         if (array_key_exists('formbadges', $results) && is_array($results['formbadges'])) {
@@ -187,7 +198,8 @@ function payment($results) {
                 if ($badge['type'] == 'i')
                     $body .= "Included membership " . $badge['index'] . ":\n     ";
                 else
-                    $body .= "Additional membership " . $badge['index'] . ": for " . $dolfmt->formatCurrency($badge['price'], $currency) . "\n     ";
+                    $body .= "Additional membership " . $badge['index'] . ": for " . $dolfmt->formatCurrency($badge['price'], $currency) .
+                        "\n     ";
                 $body .= $badge['fname'] . ' ' . ltrim($badge['mname'] . ' ') . $badge['lname'] . ' ' . $badge['suffix'] . "\n     " .
                     $badge['addr'] . "\n     ";
                 if ($badge['addr2'] && $badge['addr2'] != '')
@@ -202,7 +214,8 @@ function payment($results) {
 
         // html version
     $bodyHtml = '<p>Dear ' . trim($buyer['fname'] . ' ' . $buyer['lname']) . ":</p>\n" .
-        '<p>Here is your receipt for payment of ' . $dolfmt->formatCurrency($results['approved_amt'], $currency) . ' for ' . $conf['label'] . ' ' . $region['name'] . "</p>\n" .
+        '<p>Here is your receipt for payment of ' . $dolfmt->formatCurrency($results['approved_amt'], $currency) . ' for ' . $conf['label'] .
+            ' ' . $region['name'] . "</p>\n" .
         '<p>RECEIPT FOR PAYMENT TO: ' . $conf['label'] . ' on ' . date('m/d/Y h:i:s A', time()) . "</p>\n" .
         "<p>$portalName: <br/>\n" .
         "$exhibitorName<br/>\n" .
@@ -210,10 +223,19 @@ function payment($results) {
     if ($vendor['addr2'] && $vendor['addr2'] != '')
         $bodyHtml .= $vendor['addr2'] . "<br/>\n";
     $bodyHtml .= $vendor['city'] . ', ' . $vendor['state'] . ' ' . $vendor['zip'] . "</p>\n" .
-        '<p>Space: ' . $region['name'] . ' (' . $region['description'] . ') with up to ' . $region['includedMemberships'] . ' included memberships and up to ' . $region['additionalMemberships'] . " additional memberships</p>\n" .
+        '<p>Space: ' . $region['name'] . ' (' . $region['description'] . ') with up to ' . $region['includedMemberships'] .
+            ' included memberships and up to ' . $region['additionalMemberships'] . " additional memberships</p>\n" .
         '<p>' . $vendor_conf['taxidlabel'] . ': ' . $results['salesTaxId'] . "</p>\n" .
         '<p>Price for Space: ' . $dolfmt->formatCurrency($region['price'], $currency) . "</p>\n" .
         "<p>Special Requests:<br/>\n" . $results['specialrequests'] . "</p>\n";
+
+    if (array_key_exists('spaces', $results)) {
+        $bodyHtml .= "<p>Spaces purchased:</p>\n";
+        foreach ($results['spaces'] as $space) {
+            $bodyHtml .= "<p>" . $space['description'] . ' of type ' . $space['name'] . ' for ' .
+                $dolfmt->formatCurrency($space['approved_price'], $currency) . "</p>\n";
+        }
+    }
 
     if (array_key_exists('formbadges', $results) && is_array($results['formbadges'])) {
         $bodyHtml .= "<p>Memberships purchased at this time:</p>\n";
