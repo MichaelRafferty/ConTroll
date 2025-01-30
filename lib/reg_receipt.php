@@ -43,7 +43,7 @@ SELECT er.id, name, description, ownerName, ownerEmail, includedMemId, additiona
        ma.price AS additionalPrice, ery.mailinFee, er.regionType, et.portalType
 FROM exhibitsRegionYears ery
 JOIN exhibitsRegions er ON er.id = ery.exhibitsRegion
-JOIN exhibitsRegionTypes et ON et.id = er.regionType
+JOIN exhibitsRegionTypes et ON et.regionType = er.regionType
 LEFT OUTER JOIN memList mi ON ery.includedMemId = mi.id
 LEFT OUTER JOIN memList ma ON ery.additionalMemId = ma.id
 WHERE ery.id = ?;
