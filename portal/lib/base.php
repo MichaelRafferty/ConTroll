@@ -413,7 +413,8 @@ EOS;
         if ($_SERVER['SERVER_ADDR'] == '127.0.0.1' || $_SERVER['SERVER_ADDR'] == '::1')
             return true;    // allow localhost all the time if direct is set
 
-        if (substr($_SERVER['SERVER_ADDR'], 11) == '192.168.88.' || substr($_SERVER['SERVER_ADDR'], 11) == '192.168.89.') {
+        $subnet = substr($_SERVER['SERVER_ADDR'], 0, 11);
+        if ($subnet == '192.168.88.' || $subnet == '192.168.89.') {
             // look for .htaccess file and deny if it's not found
             $file = __DIR__;
             if (file_exists($file . "/../../../.htaccess"))
