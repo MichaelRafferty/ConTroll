@@ -686,12 +686,7 @@ EOS;
             }
             $textDisclaimer .= $disclaimer2;
             $htmlDisclaimer .= $disclaimer2;
-        }
-
-        if ($textDisclaimer != '') {
             $receipt .= "\n\n$textDisclaimer\n";
-        }
-        if ($htmlDisclaimer != '') {
             $receipt_html .= <<<EOS
     <div class='row mt-4'>
         <div class='col-sm-12'>
@@ -699,7 +694,7 @@ EOS;
         </div>
     </div>
 EOS;
-                        $receipt_tables .= <<<EOS
+            $receipt_tables .= <<<EOS
 <tr><td colspan="3"><p>$textDisclaimer</p></td></tr>
 EOS;
         }
