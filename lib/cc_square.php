@@ -238,13 +238,17 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
             foreach ($results['spaces'] as $spaceId => $space) {
                 $item = new OrderLineItem ('1');
                 $item->setUid('space-' . $spaceId);
-                $itemName = $space['description'] . ' in ' . $space['name'] . ' for ' . $space['regionName'];
-                $itemPrice = $space['approved_price'];
-                $note = 'id: ' . $space['id'] . ',item: ' . $space['item_purchased'] . ',exhId: ' . $space['exhibitorId'] .
-                    ',exhNum:' . $space['exhibitorNumber'] . ',exhibitorName:' . $space['exhibitorName'];
-                if ($results['exhibits'] == 'artist') {
-                    $note .= ',artistName:' . $space['artistName'];
+                $itemName = $space['description'] . ' of ' . $space['name'] . ' in ' . $space['regionName'] .
+                    ' for ';
+                if ($results['exhibits'] == 'artist' && $space['artistName'] != '') {
+                    $itemName .= $space['artistName'];
+                } else {
+                    $itemName .= $space['exhibitorName'];
                 }
+
+                $itemPrice = $space['approved_price'];
+                $note = $space['id'] . ',' . $space['item_purchased'] . ',' . $space['exhibitorId'] . ',' . $space['exhibitorNumber'] .
+                    ': id, item, exhId, exhNum';
                 $item->setName(mb_substr($itemName, 0, 128));
                 $item->setNote($note);
                 $item->setBasePriceMoney(new Money);
