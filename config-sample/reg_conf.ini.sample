@@ -134,7 +134,6 @@ vendorsite="http://vendor"
 vendorSignupAddltext=""
 artistsite="http://artist"
 artist="artists@???"
-# pathto file in config any additional text you wish to add to explain the signup form for artist portal
 ;; artist Item Registration Headers, if omitted, the defaults are used
 ;artistItemAuctionTitle="Art Auction Items"
 ;artistItemSalesTitle="Art Sales / Print Shop Items"
