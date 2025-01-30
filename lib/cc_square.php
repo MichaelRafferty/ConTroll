@@ -213,7 +213,10 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
                 if (array_key_exists('perid', $badge) && $badge['perid'] != null) {
                     $id = 'p' . $badge['perid'];
                 } else {
-                    $id = 'n' . $badge['newperid'];
+                    if (array_key_exists('newperid', $badge))
+                        $id = 'n' . $badge['newperid'];
+                    else
+                        $id = 'TBA';
                 }
                 $item = new OrderLineItem ('1');
                 $item->setUid('badge' . ($lineid + 1));
