@@ -161,6 +161,28 @@ function payment($results) {
             break;
     }
 
+    loadCustomText('exhibitor', 'index', null, true);
+    $disclaimer1 = returnCustomText('invoice/payDisclaimer', 'exhibitor/index/');
+    $disclaimer2 = returnCustomText('invoice/payDisclaimer' . $portalName,'exhibitor/index/');
+    if ($disclaimer1 != '' || $disclaimer2 != '') {
+        $textDisclaimer = $disclaimer1;
+        $htmlDisclaimer = $disclaimer1;
+        if ($disclaimer1 != '' && $disclaimer2 != '') {
+            $textDisclaimer .= PHP_EOL;
+            $htmlDisclaimer .= "<br/>\n";
+        }
+        $textDisclaimer .= $disclaimer2;
+        $htmlDisclaimer .= $disclaimer2;
+        $receipt .= "\n\n$textDisclaimer\n";
+        $receipt_html .= <<<EOS
+    <div class='row mt-4'>
+        <div class='col-sm-12'>
+           $htmlDisclaimer
+        </div>
+    </div>
+EOS;
+
+
 
     $conf = get_conf('con');
     $vendor_conf = get_conf('vendor');
@@ -209,7 +231,7 @@ function payment($results) {
             }
         }
 
-        $body .= "Total amount: " . $dolfmt->formatCurrency($results['total'], $currency) . "\n\n" .
+        $body .= "Total amount: " . $dolfmt->formatCurrency($results['total'], $currency) . "\n\n" . $textDisclaimer .
             "If you have any questions please contact the " . $region['name'] . ' staff at ' . $region['ownerEmail']  . ".\n\nThank you\n";
 
         // html version
@@ -253,7 +275,7 @@ function payment($results) {
         }
     }
 
-    $bodyHtml .= '<p>Total amount: ' . $dolfmt->formatCurrency($results['total'], $currency) . "</p>\n" .
+    $bodyHtml .= '<p>Total amount: ' . $dolfmt->formatCurrency($results['total'], $currency) . "</p>\n" . $htmlDisclaimer .
         '<p>If you have any questions please contact the ' . $region['name'] . ' staff at ' . $region['ownerEmail'] . ".</p>\n<p>Thank you</p>\n";
 
     return array($body, $bodyHtml);
