@@ -40,9 +40,10 @@ EOS;
 // get the specific information allowed
         $regionYearQ = <<<EOS
 SELECT er.id, name, description, ownerName, ownerEmail, includedMemId, additionalMemId, mi.price AS includedPrice, 
-       ma.price AS additionalPrice, ery.mailinFee, er.regionType
+       ma.price AS additionalPrice, ery.mailinFee, er.regionType, et.portalType
 FROM exhibitsRegionYears ery
 JOIN exhibitsRegions er ON er.id = ery.exhibitsRegion
+JOIN exhibitsRegionTypes et ON et.id = er.regionType
 LEFT OUTER JOIN memList mi ON ery.includedMemId = mi.id
 LEFT OUTER JOIN memList ma ON ery.additionalMemId = ma.id
 WHERE ery.id = ?;
@@ -674,7 +675,7 @@ EOS;
     // exhibitor disclaimer
     if (array_key_exists('exhibitor', $data)) {
         loadCustomText('exhibitor', 'index', null, true);
-        $portalName = ucfirst($region['regionType']);
+        $portalName = ucfirst($region['portalType']);
         $disclaimer1 = returnCustomText('invoice/payDisclaimer', 'exhibitor/index/');
         $disclaimer2 = returnCustomText('invoice/payDisclaimer' . $portalName,'exhibitor/index/');
         if ($disclaimer1 != '' || $disclaimer2 != '') {
