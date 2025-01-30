@@ -162,6 +162,8 @@ function payment($results) {
     }
 
     loadCustomText('exhibitor', 'index', null, true);
+    $textDisclaimer = '';
+    $htmlDisclaimer = '';
     $disclaimer1 = returnCustomText('invoice/payDisclaimer', 'exhibitor/index/');
     $disclaimer2 = returnCustomText('invoice/payDisclaimer' . $portalName,'exhibitor/index/');
     if ($disclaimer1 != '' || $disclaimer2 != '') {
@@ -173,14 +175,15 @@ function payment($results) {
         }
         $textDisclaimer .= $disclaimer2;
         $htmlDisclaimer .= $disclaimer2;
-        $receipt .= "\n\n$textDisclaimer\n";
-        $receipt_html .= <<<EOS
+        $textDisclaimer = "\n\n$textDisclaimer\n";
+        $htmlDisclaimer = <<<EOS
     <div class='row mt-4'>
         <div class='col-sm-12'>
            $htmlDisclaimer
         </div>
     </div>
 EOS;
+    }
 
 
 
