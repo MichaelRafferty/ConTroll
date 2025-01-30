@@ -402,7 +402,10 @@ EOS;
 // isDirectAllowed - check direct flag and server address to allow direct login
     function isDirectAllowed() {
         $portal_conf = get_conf('portal');
-        $direct = $portal_conf['direct'];
+        if (array_key_exists('direct',$portal_conf))
+            $direct = $portal_conf['direct'];
+        else
+            $direct = 0;
         $test = $portal_conf['test'];
         if ($test != 1 || $direct != 1)
             return false; // no test, no direct login
