@@ -49,7 +49,26 @@ function draw_exhibitorRequestModal($portalType = '')
                             </div>
                             <?php
                             if ($portalType != 'admin') {
-                                outputCustomText('request/disclaimer'); outputCustomText('request/disclaimer' . $portalName);
+                                $disc = returnCustomText('request/disclaimer');
+                                if ($disc && $disc != '') {
+                                    echo <<<EOS
+                            <div class="row mb-2 bg-warning">
+                                <div class="col-sm-12">
+                                    $disc
+                                </div>
+                            </div>
+EOS;
+                                }
+                                $disc = returnCustomText('request/disclaimer' . $portalName);
+                                if ($disc && $disc != '') {
+                                    echo <<<EOS
+                            <div class="row mb-2 bg-warning">
+                                <div class="col-sm-12">
+                                    $disc
+                                </div>
+                            </div>
+EOS;
+                                }
                             }
                             ?>
                             <div class='row p-0 bg-warning'>
