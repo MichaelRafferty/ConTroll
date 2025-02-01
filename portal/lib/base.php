@@ -281,7 +281,7 @@ function tabBar($page, $portal_conf, $info, $refresh = false) {
             }
 
             if (array_key_exists('target', $pageInfo)) {
-                $onclick = "window.open('$url', '" . $pageInfo['target'] . "').focus();";
+                $onclick = "openWindowWithFallback('$url', '" . $pageInfo['target'] . "');";
             } else {
                 $onclick = "window.location.href='$url';";
             }
@@ -397,4 +397,29 @@ EOS;
             ajaxSuccess(array('status'=>'error', 'message'=>'Login information out of date, please refresh the page.'));
             exit();
         }
+    }
+
+// isDirectAllowed - check direct flag and server address to allow direct login
+    function isDirectAllowed() {
+        $portal_conf = get_conf('portal');
+        if (array_key_exists('direct',$portal_conf))
+            $direct = $portal_conf['direct'];
+        else
+            $direct = 0;
+        $test = $portal_conf['test'];
+        if ($test != 1 || $direct != 1)
+            return false; // no test, no direct login
+
+        if ($_SERVER['SERVER_ADDR'] == '127.0.0.1' || $_SERVER['SERVER_ADDR'] == '::1')
+            return true;    // allow localhost all the time if direct is set
+
+        $subnet = substr($_SERVER['SERVER_ADDR'], 0, 11);
+        if ($subnet == '192.168.88.' || $subnet == '192.168.89.') {
+            // look for .htaccess file and deny if it's not found
+            $file = __DIR__;
+            if (file_exists($file . "/../../../.htaccess"))
+                return true;  // we are protected by an htaccess
+        }
+
+        return false;   // not correct subnet
     }

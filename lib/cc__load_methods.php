@@ -19,7 +19,7 @@ function load_cc_procs() {
             require_once("cc_test.php");
             break;
         case 'bypass':
-            if (str_contains($con['server'], '//127.0.0.1') || str_contains($con['server'], '//192.168.149.128') || $reg['test'] == 1) {
+            if (isDirectAllowed()) {
                 require_once("cc_bypass.php");
                 break;
             } else {

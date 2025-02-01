@@ -111,3 +111,18 @@ function isPrimary(memConid, memType, memCategory, memPrice, usage = 'all') {
     return true;
 
 }
+
+// try to open new window/tab with fallback to using same window
+function openWindowWithFallback(uri, target = '_blank') {
+    var status = window.open(uri, target);
+    if (status)
+        status.focus();
+
+    setTimeout(function() {
+        if (status)
+            status.focus();
+        else
+            window.location.href = uri;
+
+    }, 1000); // Adjust timeout as needed
+}

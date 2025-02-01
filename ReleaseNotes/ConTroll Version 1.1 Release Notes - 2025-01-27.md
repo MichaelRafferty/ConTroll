@@ -29,6 +29,8 @@
     * reg\_disclaimer  
     * pay\_disclaimer  
   * Added new entries  
+    * required: first, addr, all (which fields are required in the profile)
+    * oneoff: 0/1 (is this a one off convention or annual)
     * multioneday: Allows selling more than one different one-day memberships.  
     * controll\_stats: debug for the statistics routines, production instances should have this \= 0  
     * WorldCon related entries added:  

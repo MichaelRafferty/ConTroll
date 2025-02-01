@@ -126,7 +126,6 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
             default:
                 ajaxSuccess(array ('status' => 'error', 'data' => 'Error: Currency not yet supported in cc_square, seek assistance.'));
                 exit();
-                exit();
         }
     } else
         $currency = Currency::USD;
@@ -149,6 +148,18 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
     // 3. parse return results to return the proper information
     // failure fall throughx
 
+    $source = 'onlinereg';
+    if (array_key_exists('custid', $results)) {
+        $custid = $results['custid'];
+    } else if (array_key_exists('badges', $results) && is_array($results['badges']) && count($results['badges']) > 0) {
+        $custid = 'r-' . $results['badges'][0]['badge'];
+    } else if (array_key_exists('exhibits', $results) && array_key_exists('vendorId', $results)) {
+        $custid = 'e-' . $results['vendorId'];
+        $source = $results['exhibits'];
+    } else {
+        $custid = 't-' . $results['transid'];
+    }
+
     // base order
     $body = new CreateOrderRequest;
     $body->setIdempotencyKey(guidv4());
@@ -157,17 +168,7 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
     $order->setLocationId( $cc['location']);
     $order->setReferenceId($con['id'] . '-' . $results['transid']);
     $order->setSource(new OrderSource);
-    $order->getSource()->setName($con['conname'] . 'OnLineReg');
-
-    if (array_key_exists('custid', $results)) {
-        $custid = $results['custid'];
-    } else if (array_key_exists('badges', $results) && is_array($results['badges']) && count($results['badges']) > 0) {
-        $custid = 'r-' . $results['badges'][0]['badge'];
-    } else if (array_key_exists('spaceName', $results) && array_key_exists('vendorId', $results)) {
-        $custid = 'e-' . $results['vendorId'];
-    } else {
-        $custid = 't-' . $results['transid'];
-    }
+    $order->getSource()->setName($con['conname'] . '-' . $source);
     $order->setCustomerId($con['id'] . '-' . $custid);
     $order_lineitems = [];
     $lineid = 0;
@@ -212,7 +213,10 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
                 if (array_key_exists('perid', $badge) && $badge['perid'] != null) {
                     $id = 'p' . $badge['perid'];
                 } else {
-                    $id = 'n' . $badge['newperid'];
+                    if (array_key_exists('newperid', $badge))
+                        $id = 'n' . $badge['newperid'];
+                    else
+                        $id = 'TBA';
                 }
                 $item = new OrderLineItem ('1');
                 $item->setUid('badge' . ($lineid + 1));
@@ -230,16 +234,30 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
                 $lineid++;
             }
         }
-        if (array_key_exists('spaceName', $results)) {
-            $item = new OrderLineItem ('1');
-            $item->setUid('exhibits-space');
-            $item->setName($results['spaceName'] . ':' . mb_substr($results['spaceDescription'], 0, 128));
-            $item->setBasePriceMoney(new Money);
-            $item->getBasePriceMoney()->setAmount($results['spacePrice'] * 100);
-            $item->getBasePriceMoney()->setCurrency($currency);
-            $order_lineitems[$lineid] = $item;
-            $order_value += $results['spacePrice'];
-            $lineid++;
+        if (array_key_exists('spaces', $results)) {
+            foreach ($results['spaces'] as $spaceId => $space) {
+                $item = new OrderLineItem ('1');
+                $item->setUid('space-' . $spaceId);
+                $itemName = $space['description'] . ' of ' . $space['name'] . ' in ' . $space['regionName'] .
+                    ' for ';
+                if ($results['exhibits'] == 'artist' && $space['artistName'] != '') {
+                    $itemName .= $space['artistName'];
+                } else {
+                    $itemName .= $space['exhibitorName'];
+                }
+
+                $itemPrice = $space['approved_price'];
+                $note = $space['id'] . ',' . $space['item_purchased'] . ',' . $space['exhibitorId'] . ',' . $space['exhibitorNumber'] .
+                    ': id, item, exhId, exhNum';
+                $item->setName(mb_substr($itemName, 0, 128));
+                $item->setNote($note);
+                $item->setBasePriceMoney(new Money);
+                $item->getBasePriceMoney()->setAmount($itemPrice * 100);
+                $item->getBasePriceMoney()->setCurrency($currency);
+                $order_lineitems[$lineid] = $item;
+                $order_value += $itemPrice;
+                $lineid++;
+            }
         }
 
         $order->setLineItems($order_lineitems);
@@ -480,10 +498,7 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
 
     // set category based on if exhibits is a portal type
     if (array_key_exists('exhibits', $results)) {
-        if ($results['exhibits'] == 'vendor')
-            $category = 'vendor';
-        else
-            $category = 'artshow';
+       $category =  $results['exhibits'];
     } else {
         $category = 'reg';
     }
@@ -498,6 +513,7 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
         $txtime,$last4,$results['nonce'],$id,$auth,$receipt_url,$status,$receipt_number, $loginPerid);
     $rtn['url'] = $receipt_url;
     $rtn['rid'] = $receipt_number;
+    $rtn['body'] = $body;
     return $rtn;
 };
 ?>

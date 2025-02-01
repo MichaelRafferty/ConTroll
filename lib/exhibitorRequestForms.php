@@ -41,20 +41,46 @@ function draw_exhibitorRequestModal($portalType = '')
                             </div>
                             <?php } outputCustomText('request/top'); outputCustomText('request/top' . $portalName); ?>
                             <div class="container-fluid p-0 m-0" id="spaceHtml"></div>
+                            <?php
+                            if ($portalType != 'admin') {
+                                echo <<<EOS
                             <div class='row p-1 pt-4 pb-3'>
                                 <div class='col-sm-12'>
                                     You will be able to identify people for the included memberships (if any) and purchase up to the allowed number of
                                     discounted memberships later, if your request is approved.
                                 </div>
                             </div>
-                            <?php
-                            if ($portalType != 'admin') {
-                                outputCustomText('request/disclaimer'); outputCustomText('request/disclaimer' . $portalName);
-                            }
-                            ?>
+EOS;
+
+                                $disc = returnCustomText('request/disclaimer');
+                                if ($disc && $disc != '') {
+                                    echo <<<EOS
+                            <div class="row mb-2 bg-warning">
+                                <div class="col-sm-12">
+                                    $disc
+                                </div>
+                            </div>
+EOS;
+                                }
+                                $disc = returnCustomText('request/disclaimer' . $portalName);
+                                if ($disc && $disc != '') {
+                                    echo <<<EOS
+                            <div class="row mb-2 bg-warning">
+                                <div class="col-sm-12">
+                                    $disc
+                                </div>
+                            </div>
+EOS;
+                                }
+                                echo <<<EOS
                             <div class='row p-0 bg-warning'>
                                 <div class='col-sm-auto p-2'>Completing this application does not guarantee space.</div>
                             </div>
+EOS;
+
+                            }
+                            ?>
+
                         </form>
                         <?php outputCustomText('request/bottom'); outputCustomText('request/bottom' . $portalName); ?>
                         <div class="row">

@@ -165,7 +165,7 @@ EOS;
 
 $response['additionalPolicies'] = $matchPolicies;
 
-if (count($matches) < 50)
+if (count($matches) < $limit)
     $response['success'] = count($matches) . ' potential additional matches found';
 else
     $response['success'] = "Too many records were matched, only the first $limit additional matches returned";

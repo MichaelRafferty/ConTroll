@@ -55,12 +55,21 @@ else
     $portalType = 'exhibits';
 
 $regionYearId = $_POST['regionYearId'];
-$specialRequests = trim($_POST['requests']);
-if ($specialRequests == '')
+if (array_key_exists('salesTaxId', $_POST)) {
+    $specialRequests = trim($_POST['requests']);
+    if ($specialRequests == '')
+        $specialRequests = null;
+}
+else
     $specialRequests = null;
-$salesTaxId = trim($_POST['salesTaxId']);
-if ($salesTaxId == '')
+
+if (array_key_exists('salesTaxId', $_POST)) {
+    $salesTaxId = trim($_POST['salesTaxId']);
+    if ($salesTaxId == '')
+        $salesTaxId = null;
+} else
     $salesTaxId = null;
+
 $portalName = $_POST['portalName'];
 if (array_key_exists('includedMemberships', $_POST))
     $includedMembershipsMax = $_POST['includedMemberships'];
@@ -132,13 +141,18 @@ $response['exhibitorRegionYear'] = $eryID;
 
 // now the space information for this regionYearId
 $spaceQ = <<<EOS
-SELECT e.*, esp.price as approved_price, esp.includedMemberships, esp.additionalMemberships, s.name
-FROM exhibitorSpaces e
+SELECT e.*, esp.price as approved_price, esp.includedMemberships, esp.additionalMemberships, s.name, esp.description, ry.exhibitorNumber,
+       y.exhibitorId, ex.exhibitorName, ex.artistName, er.name AS regionName
+FROM exhibitorRegionYears ry
+JOIN exhibitorSpaces e ON (e.exhibitorRegionYear = ry.id)
+JOIN exhibitorYears y ON (y.id = ry.exhibitorYearId)
+JOIN exhibitors ex ON (ex.id = y.exhibitorId)
 JOIN exhibitsSpaces s ON (s.id = e.spaceId)
 JOIN exhibitsSpacePrices esp ON (s.id = esp.spaceId AND e.item_approved = esp.id)
 JOIN exhibitsRegionYears ery ON (ery.id = s.exhibitsRegionYear)
 JOIN exhibitsRegions er ON (ery.exhibitsRegion = er.id)
-WHERE e.exhibitorRegionYear = ?;
+WHERE e.exhibitorRegionYear = ?
+ORDER BY id ASC;
 EOS;
 $spaceR = dbSafeQuery($spaceQ, 'i', array($eryID));
 if ($spaceR === false || $spaceR->num_rows == 0) {
@@ -417,9 +431,7 @@ while ($row = $all_badgeR->fetch_assoc()) {
 $results = array(
     'transid' => $transid,
     'counts' => null,
-    'spaceName' => $region['name'],
-    'spaceDescription' => $region['description'],
-    'spacePrice' => $spacePrice,
+    'spaces' => $spaces,
     'price' => $totprice,
     'badges' => $badgeResults,
     'formbadges' => $badges,
@@ -437,13 +449,18 @@ $results = array(
 );
 
 //log requested badges
-logWrite(array('con' => $conid, $portalName => $exhibitor, 'region' => $region, 'spaces' => $spaces, 'trans' => $transid, 'results' => $results, 'request' => $badges));
+logWrite(array('Title' => 'Pre cc_charge_purchase', 'con' => $conid, $portalName => $exhibitor, 'region' => $region, 'spaces' => $spaces, 'trans' => $transid,
+               'results' =>
+    $results, 'request'
+    => $badges));
 
 $rtn = cc_charge_purchase($results, $ccauth, true);
 if ($rtn === null) {
     ajaxSuccess(array('status' => 'error', 'data' => 'Credit card not approved'));
     exit();
 }
+
+logwrite(array('Title' => 'Post cc_charge_purchase', 'rtn' => $rtn));
 
 //$tnx_record = $rtn['tnx'];
 var_error_log($rtn);

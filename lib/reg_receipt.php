@@ -40,9 +40,10 @@ EOS;
 // get the specific information allowed
         $regionYearQ = <<<EOS
 SELECT er.id, name, description, ownerName, ownerEmail, includedMemId, additionalMemId, mi.price AS includedPrice, 
-       ma.price AS additionalPrice, ery.mailinFee, er.regionType
+       ma.price AS additionalPrice, ery.mailinFee, er.regionType, et.portalType
 FROM exhibitsRegionYears ery
 JOIN exhibitsRegions er ON er.id = ery.exhibitsRegion
+JOIN exhibitsRegionTypes et ON et.regionType = er.regionType
 LEFT OUTER JOIN memList mi ON ery.includedMemId = mi.id
 LEFT OUTER JOIN memList ma ON ery.additionalMemId = ma.id
 WHERE ery.id = ?;
@@ -674,7 +675,7 @@ EOS;
     // exhibitor disclaimer
     if (array_key_exists('exhibitor', $data)) {
         loadCustomText('exhibitor', 'index', null, true);
-        $portalName = ucfirst($region['regionType']);
+        $portalName = ucfirst($region['portalType']);
         $disclaimer1 = returnCustomText('invoice/payDisclaimer', 'exhibitor/index/');
         $disclaimer2 = returnCustomText('invoice/payDisclaimer' . $portalName,'exhibitor/index/');
         if ($disclaimer1 != '' || $disclaimer2 != '') {
@@ -686,12 +687,7 @@ EOS;
             }
             $textDisclaimer .= $disclaimer2;
             $htmlDisclaimer .= $disclaimer2;
-        }
-
-        if ($textDisclaimer != '') {
             $receipt .= "\n\n$textDisclaimer\n";
-        }
-        if ($htmlDisclaimer != '') {
             $receipt_html .= <<<EOS
     <div class='row mt-4'>
         <div class='col-sm-12'>
@@ -699,7 +695,7 @@ EOS;
         </div>
     </div>
 EOS;
-                        $receipt_tables .= <<<EOS
+            $receipt_tables .= <<<EOS
 <tr><td colspan="3"><p>$textDisclaimer</p></td></tr>
 EOS;
         }

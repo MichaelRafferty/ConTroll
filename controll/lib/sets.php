@@ -8,6 +8,7 @@ function get_admin_sets(): array
         'admin' => array('admin'),
         'comp_entry' => array('badge', 'search'),
         'registration' => array('people', 'registration', 'search', 'badge'),
+        'lookup' => array('lookup'),
         'reg_admin' => array('reg_admin', 'reports', 'coupon'),
         'artshow_admin' => array('people', 'art_control', 'search', 'reports', 'exhibitor'),
         'finance' => array('finance', 'search'),
