@@ -318,4 +318,4 @@ BEGIN
 END ;;
 DELIMITER ;
 
-INSERT INTO patchLog(id, name) VALUES(xx, 'Post 1.1 Release Cleanup');
+INSERT INTO patchLog(id, name) VALUES(42, 'Post 1.1 Release Cleanup');
