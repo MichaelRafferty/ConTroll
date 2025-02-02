@@ -31,7 +31,7 @@ if (!check_atcon($method, $conid)) {
 
 // updatePrinters - update the servers and printers tables to match the data passed
 
-if (!isset($_POST['printers'])) {
+if ((!isset($_POST['printers'])) && (!isset($_POST['servers']))) {
     ajaxError('No Data');
 }
 if (array_key_exists('printers', $_POST))
