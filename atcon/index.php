@@ -11,7 +11,6 @@ $perms = array();
 if(!isSessionVar('userhash')) {
     if(isset($_POST['user']) && isset($_POST['passwd'])) {
         $access = login($_POST['user'], $_POST['passwd'], $conid);
-var_dump($access);
         if ($access['success'] == 1) {
             $perms = $access['auth'];
             setSessionVar('user', $_POST['user']);
@@ -132,7 +131,6 @@ if(!isSessionVar('user')) {
 }
 function login($user, $passwd, $conid): array {
     //error_log("login.php");
-echo "login.php: $user, $passwd, $conid";
 
     if (isset($user) && isset($passwd)) {
         $passwd = trim($passwd);
@@ -144,13 +142,11 @@ JOIN perinfo p ON (u.perid = p.id)
 WHERE u.perid=? AND u.conid=?;
 EOS;
         $r = dbSafeQuery($q, 'si', array($user, $conid));
-echo "<br/>" . $r->num_rows . "<br/>";
         $upasswd = null;
         if ($r->num_rows > 0) {
             $response['success'] = 1;
             $auths = array();
             while ($l = $r->fetch_assoc()) {
-var_dump($l);
                 $auths[] = $l['auth'];
                 $response['userhash'] = $l['userhash'];
                 $response['first_name'] = $l['first_name'];
