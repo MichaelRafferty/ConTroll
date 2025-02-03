@@ -55,6 +55,7 @@ foreach ($printers as $prt) {
     }
     setSessionVar($prt . 'Printer', $printer);
     $response[$prt] = $printer['name'];
+    $response[$prt."Printer"] = true;
 }
 
 ajaxSuccess($response);

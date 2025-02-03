@@ -261,6 +261,7 @@ function base_changePrintersSubmit() {
                 show_message(data['error'], 'error');
                 return;
             }
+            pos.updatePrinters(data);
             base_changePrinterDisplay(data);
             clear_message();
         },

@@ -55,6 +55,7 @@ else
     $multiOneDay = 0;
 
 $policies = getPolicies();
+if($policies == null) { $policies = array(); }
 $policyIndex = array();
 for ($index = 0; $index< count($policies); $index++) {
     $policyIndex[$policies[$index]['policy']] = $index;
