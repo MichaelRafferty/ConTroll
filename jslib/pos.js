@@ -256,6 +256,15 @@ class Pos {
     }
 
     // set/get private field functions
+    updatePrinters(data) {
+        this.#badgePrinterAvailable = false;
+        if (data.hasOwnProperty('badgePrinter'))
+            this.#badgePrinterAvailable = data.badgePrinter === true;
+        this.#receiptPrinterAvailable = false;
+        if (data.hasOwnProperty('receiptPrinter'))
+            this.#receiptPrinterAvailable = data.receiptPrinter === true;
+    }
+
     setReviewTabDisable(state) {
         this.#review_tab.disabled = state;
     }

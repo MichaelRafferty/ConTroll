@@ -614,6 +614,10 @@ class PosCart {
             // skip auto create mem items
             if (mem.hasOwnProperty('notes') && mem.notes && mem.notes == 'Auto created by rollover')
                 continue;
+//skip memeberships that aren't defined in memCategory
+//TODO this needs to be better handled
+            if (memCategories[mem.memCategory]==undefined)
+                continue;
             // apply implitict rules and membershipRules against memList entry
             if (!rules.testMembership(mem))
                 continue;
