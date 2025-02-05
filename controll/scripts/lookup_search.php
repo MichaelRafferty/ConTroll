@@ -43,12 +43,15 @@ SELECT p.id AS perid, p.email_addr, p.badge_name,
         WHEN r.complete_trans = t2.id THEN t2.create_date
         WHEN r.complete_trans = t1.id THEN t1.create_date
         ELSE ''
-    END AS paidDate, r.price, r.paid, r.status, r.create_date, r.change_date, m.label
+    END AS paidDate, r.price, r.paid, r.status, r.create_date, r.change_date, m.label, pm.id AS managerId,
+    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(pm.first_name, ''),' ', IFNULL(pm.middle_name, ''), ' ', IFNULL(pm.last_name, ''), ' ',  
+        IFNULL(pm.suffix, '')), '  *', ' ')) AS managerName
 FROM perinfo p
 JOIN reg r ON (r.perid = p.id AND r.status IN ('paid', 'unpaid', 'plan'))
 JOIN memList m ON (r.memId = m.id AND m.conid in (?, ?))
 LEFT OUTER JOIN transaction t1 ON (r.create_trans = t1.id)
 LEFT OUTER JOIN transaction t2 ON (r.complete_trans = t2.id)
+LEFT OUTER JOIN perinfo pm ON (p.managedBy = pm.id)
 WHERE p.id = ?
 UNION 
 SELECT p.id AS perid, p.email_addr, p.badge_name,
@@ -60,12 +63,15 @@ SELECT p.id AS perid, p.email_addr, p.badge_name,
         WHEN r.complete_trans = t2.id THEN t2.create_date
         WHEN r.complete_trans = t1.id THEN t1.create_date
         ELSE ''
-    END AS paidDate, r.price, r.paid, r.status, r.create_date, r.change_date, m.label
+    END AS paidDate, r.price, r.paid, r.status, r.create_date, r.change_date, m.label, pm.id AS managerId,
+    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(pm.first_name, ''),' ', IFNULL(pm.middle_name, ''), ' ', IFNULL(pm.last_name, ''), ' ',  
+        IFNULL(pm.suffix, '')), '  *', ' ')) AS managerName
 FROM reg r
 JOIN perinfo p ON (r.perid = p.id)
 JOIN memList m ON (r.memId = m.id AND m.conid in (?, ?))
 LEFT OUTER JOIN transaction t1 ON (r.create_trans = t1.id)
 LEFT OUTER JOIN transaction t2 ON (r.complete_trans = t2.id)
+LEFT OUTER JOIN perinfo pm ON (p.managedBy = pm.id)
 WHERE r.create_trans = ? or r.complete_trans = ?;
 EOS;
     $typestr = 'iiiiiii';
@@ -106,13 +112,16 @@ SELECT p.id AS perid, p.email_addr, p.badge_name, p.legalname,
         WHEN r.complete_trans = t2.id THEN t2.create_date
         WHEN r.complete_trans = t1.id THEN t1.create_date
         ELSE ''
-    END AS paidDate, r.price, r.paid, r.status, r.create_date, r.change_date, m.label
+    END AS paidDate, r.price, r.paid, r.status, r.create_date, r.change_date, m.label, pm.id AS managerId,
+    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(pm.first_name, ''),' ', IFNULL(pm.middle_name, ''), ' ', IFNULL(pm.last_name, ''), ' ',  
+        IFNULL(pm.suffix, '')), '  *', ' ')) AS managerName
 FROM perids i
 JOIN perinfo p ON (p.id = i.id)
 JOIN reg r ON (r.perid = p.id AND r.status IN ('paid', 'unpaid', 'plan'))
 JOIN memList m ON (r.memId = m.id AND m.conid in (?, ?))
 LEFT OUTER JOIN transaction t1 ON (r.create_trans = t1.id)
 LEFT OUTER JOIN transaction t2 ON (r.complete_trans = t2.id)
+LEFT OUTER JOIN perinfo pm ON (p.managedBy = pm.id)
 ORDER BY p.last_name, p.first_name, p.id
 LIMIT $limit;
 EOS;

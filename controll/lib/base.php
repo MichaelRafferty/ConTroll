@@ -261,20 +261,29 @@ EOS;
 }
 
 function con_info($auth) {
+    $unlockCount = 0;
+    $badgeCount = 0;
     if(is_array($auth) && checkAuth(array_key_exists('sub', $auth) ? $auth['sub'] : null, 'overview')) {
         $con = get_con();
-        $count_res = dbSafeQuery("select count(*) from reg where conid=?;", 'i', array($con['id']));
-        $badgeCount = $count_res->fetch_row();
-        $count_res = dbSafeQuery("select count(*) from reg where conid=? AND price <= (ifnull(paid,0) + ifnull(couponDiscount, 0));",'i', array($con['id']));
-        $unlockCount = $count_res->fetch_row();
-  
+        $cQ = <<<EOS
+SELECT status, count(*) AS num
+FROM reg
+WHERE conid = ? AND status IN ('paid', 'plan', 'unpaid')
+GROUP BY status;
+EOS;
+        $count_res = dbSafeQuery($cQ, 'i', array($con['id']));
+        while ($countRow = $count_res->fetch_row()) {
+            $badgeCount += $countRow[1];
+            if ($countRow[0] == 'paid')
+                $unlockCount += $countRow[1];
+        }
 ?>
 
         <div class="row" id='regInfo'>
             <div class="col-sm-auto">
                 <span id='regInfoCon' class='left'>Con: 
                     <span class='blocktitle'> <?php echo $con['label']; ?> </span>
-                    <small><?php echo $badgeCount[0] . " Badges (" . $unlockCount[0] . " Ready)"; ?></small>
+                    <small><?php echo $badgeCount . " Badges (" . $unlockCount . " Ready)"; ?></small>
                 </span>
             </div>       
         </div>

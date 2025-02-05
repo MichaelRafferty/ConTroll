@@ -48,10 +48,17 @@ while ($checkL = $checkR->fetch_row()) {
 
 
 $response['values'] = $values;
+$error = '';
 if (!array_key_exists('remain', $values))
-    $response['error'] = 'Remain Perinfo record not found';
-if (!array_key_exists('merge', $values))
-    $response['error'] = 'Merge Perinfo record not found';
+    $error .= 'Remain Perinfo record not found';
+if (!array_key_exists('merge', $values)) {
+    if ($error != '')
+        $error .= '<br/>';
+    $error .= 'Merge Perinfo record not found';
+}
+
+if ($error != '')
+    $response['error'] = $error;
 
 ajaxSuccess($response);
 ?>

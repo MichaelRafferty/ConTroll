@@ -261,6 +261,9 @@ function base_changePrintersSubmit() {
                 show_message(data['error'], 'error');
                 return;
             }
+            if (typeof pos !== 'undefined' && pos !== null) {
+                pos.setPrinterData(data);
+            }
             base_changePrinterDisplay(data);
             clear_message();
         },

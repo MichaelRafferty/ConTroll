@@ -1148,6 +1148,7 @@ function changeTransferFound(data) {
                 {column: "fullname", dir: "asc"},
             ],
             columns: [
+                {title: "Transfer", width: 90, headerFilter: false, headerSort: false, formatter: addTransferIcon, formatterParams: {t: "result"},},
                 {title: "ID", field: "perid", width: 120, hozAlign: "right", headerHozAlign: "right" },
                 {field: "index", visible: false,},
                 {field: "regcnt", visible: false,},
@@ -1160,7 +1161,6 @@ function changeTransferFound(data) {
                 {title: "Zip", field: "postal_code", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 100, width: 100},
                 {title: "Email Address", field: "email_addr", width: 200, headerFilter: true, headerWordWrap: true, tooltip: true,},
                 {title: "Current Registrations", field: "regs", headerFilter: true, headerWordWrap: true, tooltip: true,},
-                {title: "Transfer", width: 90, headerFilter: false, headerSort: false, formatter: addTransferIcon, formatterParams: {t: "result"},},
                 {field: "index", visible: false,},
             ],
         });

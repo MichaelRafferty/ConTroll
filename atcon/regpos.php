@@ -56,8 +56,10 @@ else
 
 $policies = getPolicies();
 $policyIndex = array();
-for ($index = 0; $index< count($policies); $index++) {
-    $policyIndex[$policies[$index]['policy']] = $index;
+if ($policies != null) {
+    for ($index = 0; $index < count($policies); $index++) {
+        $policyIndex[$policies[$index]['policy']] = $index;
+    }
 }
 $useUSPS = false;
 $config_vars = array();

@@ -6,6 +6,7 @@
 
 require_once '../lib/base.php';
 require_once('../../lib/log.php');
+require_once('../lib/badgePrintFunctions.php');
 require_once('../../lib/email__load_methods.php');
 
 $con = get_conf('con');
