@@ -225,7 +225,7 @@ class memsetup {
                     editor: "input", editorParams: { elementAttributes: { maxlength: "1024" } },
                 },
                 {
-                    title: "Active", field: "active", headerSort: true,  editable: reqEditable,
+                    title: "Active", field: "active", headerSort: true,  editable: true,
                     editor: "list", editorParams: { values: ["Y", "N"], }, validator: "required"
                 },
                 { title: "Sort Order", field: "sortorder", headerSort: true, visible: false },
@@ -295,7 +295,7 @@ class memsetup {
                     editor: "input", editorParams: { elementAttributes: { maxlength: "16" } }, validator: "required"
                 },
                 {
-                    title: "Active", field: "active", headerSort: true, editable: reqEditable,
+                    title: "Active", field: "active", headerSort: true, editable: true,
                     editor: "list", editorParams: { values: ["Y", "N"], }, validator: "required"
                 },
                 { title: "Sort Order", field: "sortorder", headerSort: true, visible: false },
