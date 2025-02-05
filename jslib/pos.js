@@ -2586,6 +2586,7 @@ addUnpaid(tid) {
             this.#pay_button_pay = document.getElementById('pay-btn-pay');
             this.#pay_button_ercpt = document.getElementById('pay-btn-ercpt');
             this.#pay_button_rcpt = document.getElementById('pay-btn-rcpt');
+            this.#pay_button_rcpt.disabled = !this.#receiptPrinterAvailable;
             this.#receeiptEmailAddresses_div = document.getElementById('receeiptEmailAddresses');
             if (this.#receeiptEmailAddresses_div)
                 this.#receeiptEmailAddresses_div.innerHTML = '';
