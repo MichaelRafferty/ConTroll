@@ -10,6 +10,7 @@ function getLoginCipher() {
     global $cipherParams;
 
     $con = get_conf('con');
+    $db = get_conf('db');
     $conid = $con['id'];
     $label = $con['label'];
     $email = $con['regadminemail'];
@@ -17,8 +18,8 @@ function getLoginCipher() {
     $ciphers = openssl_get_cipher_methods();
     $cipher = 'aes-128-cbc';
     $ivlen = openssl_cipher_iv_length($cipher);
-    $ivdate = date_create('now');
-    $iv = substr(date_format($ivdate, 'YmdzwLLwzdmY'), 0, $ivlen);
+    $configKey = $con['conname'] . '-' .  $conid . $db['db_name'] . '/' . $db['db_user'];
+    $iv = substr($configKey . $configKey, 0, $ivlen);
     $key = $conid . $label . $email;
     $cipherParams = array('key' => $key, 'iv' => $iv, 'cipher' => $cipher);
     return $cipherParams;
