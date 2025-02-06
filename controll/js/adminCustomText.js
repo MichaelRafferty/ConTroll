@@ -25,9 +25,16 @@ class customTextSetup {
     // called on open of the custom text window
     open() {
         var script;
-        var html = `<h4><strong>Edit Custom Text:</strong></h4>
+        var html = `
 <div class="container-fluid">
     <div class="row">
+       <div class="col-sm-6">
+            <h4><strong>Edit Custom Text:</strong></h4>
+       </div>
+       <div class="col-sm-6 text-end">
+            <strong><a href="md/CustomText.md" target="_new">Display Custom Text Documentation (requires Markdown Reader Extension)</a></strong>
+        </div>
+    </div>
     <div class="row">
         <div class="col-sm-12 p-0 m-0" id="customTextTableDiv"></div>
     </div>
