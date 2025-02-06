@@ -47,7 +47,7 @@ function getSessionVar($name) {
 }
 
 // set value in session
-function setSessionVar($name, $value) {
+function setSessionVar($name, $value) : void {
     global $appSessionPrefix;
 
     $sesName = ($appSessionPrefix != null ? $appSessionPrefix : '') . $name;
@@ -55,20 +55,20 @@ function setSessionVar($name, $value) {
 }
 
 // does session variable exist
-function isSessionVar($name) {
+function isSessionVar($name) : bool {
     global $appSessionPrefix;
 
     $sesName = ($appSessionPrefix != null ? $appSessionPrefix : '') . $name;
     return isset($_SESSION[$sesName]);
 }
 // unset session variable
-function unsetSessionVar($name) {
+function unsetSessionVar($name) : void {
     global $appSessionPrefix;
     $sesName = ($appSessionPrefix != null ? $appSessionPrefix : '') . $name;
     unset($_SESSION[$sesName]);
 }
 // clear the session for re-use on logout
-function clearSession($prefix = '') {
+function clearSession($prefix = '') : void {
     global $appSessionPrefix;
     $checkPrefix = ($appSessionPrefix != null ? $appSessionPrefix : '') . $prefix;
     $len = strlen($checkPrefix);
@@ -79,20 +79,20 @@ function clearSession($prefix = '') {
 }
 
 // get all with the prefix, for response and vardump sort of uses
-function getAllSessionVars($prefix = '') {
+function getAllSessionVars($prefix = '') : array {
     global $appSessionPrefix;
     $checkPrefix = ($appSessionPrefix != null ? $appSessionPrefix : '') . $prefix;
     $len = strlen($checkPrefix);
     $vars = [];
     foreach ($_SESSION as $key => $value) {
         if (mb_substr($key, 0, $len) == $checkPrefix)
-            $vars[$key] = $_SESSION[$key];
+            $vars[$key] = $value;
     }
     return $vars;
 }
 
 // is a memList item a primary membership type
-function isPrimary($mtype, $conid, $use = 'all') {
+function isPrimary($mtype, $conid, $use = 'all') : bool {
     if ($conid != $mtype['conid']) // must be a current year membership to be primary, no year aheads for next year
         return false;
 
@@ -122,7 +122,7 @@ global $customTexT, $keyPrefix, $customTextFilter, $loadedPrefixes;
 $loadedPrefixes = [];
 
 // loadCustomText - load all the relevant custom text for this page
-    function loadCustomText($app, $page, $filter, $addmode = false) {
+    function loadCustomText($app, $page, $filter, $addmode = false) : void {
         global $customTexT, $keyPrefix, $customTextFilter, $loadedPrefixes;
 
         $usePrefix = $app . '/' . $page . '/';
@@ -151,7 +151,7 @@ EOS;
     }
 
 // output CustomText - output in a <div container-fluid> a custom text field if it exists and is non empty
-    function outputCustomText($key, $overridePrefix = null) {
+    function outputCustomText($key, $overridePrefix = null) : void {
         global $customTexT, $keyPrefix, $customTextFilter;
 
         if ($customTextFilter == 'none')
@@ -172,20 +172,20 @@ EOS;
             if ($contents != null && $contents != '') {
                 if ($customTextFilter == 'nodefault' || $customTextFilter == 'production') {
                     $prefixStr = 'Controll-Default: ';
-                    if (substr($contents, 0, strlen($prefixStr)) == $prefixStr)
+                    if (str_starts_with($contents, $prefixStr))
                         return;
                     $prefixStr = '<p>Controll-Default: ';
-                    if (substr($contents, 0, strlen($prefixStr)) == $prefixStr)
+                    if (str_starts_with($contents, $prefixStr))
                         return;
                 }
 
                 echo '<div class="container-fluid">' . PHP_EOL .
-                    $contents . PHP_EOL .
+                    replaceConfigTokens($contents) . PHP_EOL .
                     '</div>' . PHP_EOL;
             }
         }
     }
-    function returnCustomText($key, $overridePrefix = null) {
+    function returnCustomText($key, $overridePrefix = null) : string {
         global $customTexT, $keyPrefix, $customTextFilter;
 
         if ($customTextFilter == 'none')
@@ -206,14 +206,14 @@ EOS;
             if ($contents != null && $contents != '') {
                 if ($customTextFilter == 'nodefault' || $customTextFilter == 'production') {
                     $prefixStr = 'Controll-Default: ';
-                    if (substr($contents, 0, strlen($prefixStr)) == $prefixStr)
+                    if (str_starts_with($contents, $prefixStr))
                         return '';
                     $prefixStr = '<p>Controll-Default: ';
-                    if (substr($contents, 0, strlen($prefixStr)) == $prefixStr)
+                    if (str_starts_with($contents, $prefixStr))
                         return '';
                 }
 
-                return $contents;
+                return replaceConfigTokens($contents);
             }
         }
         return '';
@@ -221,12 +221,50 @@ EOS;
 
 // replace in strings, items from the config file you can replace in strings
 // used by interests and policies, available for emails as well
-    function replaceVariables($string) {
+    function replaceVariables($string) : string {
         $con = get_conf('con');
         $replaceSource = ['#CONID#', '#CONNAME#', '#CONLABEL#', '#POLICYLINK#', '#POLICYTEXT#'];
         $replaceValue = [ $con['id'], $con['conname'], $con['label'], $con['policy'], $con['policytext'] ];
 
         return str_replace($replaceSource, $replaceValue, $string);
+    }
+
+// replaceConfigTokens - replace configuration tokens of the form #section.element# in a text string with values from the parsed configuration file
+// NOTE: the sections cc, client, debug, email, google, local, log, mysql are skipped for security reasons as they hold keys and other protected data
+const replaceConfigTokensSkip = ['cc', 'client', 'debug', 'email', 'google', 'local', 'log', 'mysql'];
+    function replaceConfigTokens($string) : string {
+        global $db_ini;
+
+        $pattern = '/#[^#]+#/';     // config tokens are #item.section#, but if the dot is missing, 'reg' will be assumed
+        // get the matches if any
+        $count = preg_match_all($pattern, $string, $matches);
+        if ($count == 0 || count($matches) == 0)
+            return $string;     // nothing was returned by the pattern check, just deal with the string as is
+        $matches = $matches[0]; // it returns an array of pattern parts and then matches
+        if (count($matches) == 0)
+            return $string;     // not strings found
+
+        foreach ($matches as $match) {                          // loop over all variables found and replace them
+            $token = mb_substr($match, 1, strlen($match) - 2);  // string the #'s off each end
+            if (str_contains($token, '.')) {
+                [$section, $element] = explode('.', $token);        // split into parts
+            } else {
+                $element = $token;  // default to reg. if the section is missing
+                $section = 'con';
+            }
+
+            if (in_array($section, replaceConfigTokensSkip)) // skip over restricted tokens
+                continue;
+
+            if (!array_key_exists($section, $db_ini))
+                continue;       // section missing, leave token in the string and move on
+            if (!array_key_exists($element, $db_ini[$section]))
+                continue;       // element missing, leave token in the string and move on
+
+            $string = str_replace($match, $db_ini[$section][$element], $string);
+        }
+
+        return $string;
     }
 
 // rempve L-R override from strings like cut/pasted phone numbers from contact forms
