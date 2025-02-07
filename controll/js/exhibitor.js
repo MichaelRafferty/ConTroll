@@ -1155,7 +1155,7 @@ class exhibitorsAdm {
 
     // reset a contact's password
     resetCpw(exhibitorId) {
-        var contactId = this.#exhibitorListTable.getRow(exhibitorId).getCell("contactId").getValue();
+        var contactId = this.#exhibitorsTable.getRow(exhibitorId).getCell("contactId").getValue();
         $.ajax({
             url: 'scripts/exhibitorsSetPassword.php',
             method: "POST",
