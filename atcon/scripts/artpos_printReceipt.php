@@ -114,7 +114,7 @@ $receipt .= "         ----------\n" . sprintf("Total%15s Total Amount Tendered",
 
 if ($receipt_type == 'print') {
     $printer = getSessionVar('receiptPrinter');
-    if ($printer && $printer['name'] !!= 'None') {
+    if ($printer && $printer['name'] != 'None') {
         $result_code = print_receipt($printer, $receipt);
     } else {
         web_error_log($receipt);
