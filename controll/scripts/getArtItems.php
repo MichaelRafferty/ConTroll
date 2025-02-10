@@ -38,7 +38,8 @@ FROM artItems I
     JOIN exhibitsRegionYears exRY ON exRY.id=ery.exhibitsRegionYearId
     JOIN exhibitsRegions exR on exR.id=exRY.exhibitsRegion
     LEFT JOIN perinfo p ON p.id=I.bidder
-WHERE ey.conid=? and exRY.exhibitsRegion=?;
+WHERE ey.conid=? and exRY.exhibitsRegion=?
+ORDER BY ery.exhibitorNumber, I.item_key;
 EOS;
 
 $artR = dbSafeQuery($artQ, 'ii', array($conid, $region));
@@ -55,9 +56,10 @@ FROM exhibitorYears ey
     JOIN exhibitorRegionYears ery ON ery.exhibitorYearId = ey.id
     JOIN exhibitors e ON ey.exhibitorId=e.id
     JOIN exhibitsRegionYears exRY ON exRY.id=ery.exhibitsRegionYearId
-    JOIN exhibitorSpaces S on S.exhibitorRegionYear=ery.id 
-WHERE ey.conid=? and exRY.exhibitsRegion=? and S.item_purchased is not null
-    and ery.exhibitorNumber is not null;
+    JOIN exhibitorSpaces S ON S.exhibitorRegionYear=ery.id 
+WHERE ey.conid=? AND exRY.exhibitsRegion=? AND S.item_purchased IS NOT NULL
+    AND ery.exhibitorNumber IS NOT NULL
+ORDER BY e.exhibitorName;
 EOS; 
 
 $response['art'] = $items;
