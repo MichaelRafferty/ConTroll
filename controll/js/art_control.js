@@ -128,7 +128,8 @@ function draw(data, textStatus, jqXHR) {
             {title: 'Location', field: 'location', headerSort: true, headerFilter: true, },
             {title: 'BidderNum', field: 'bidder', visible: false, },
             {title: 'Bidder', field: 'bidderText', headerSort: true, headerFilter:true, },
-            {title: 'Final Price', field: 'final_price', headerSort: true, headerFilter: true, headerWordWrap: true, width: 100, formatter: "money", hozAlign: "right", }
+            {title: 'Final Price', field: 'final_price', headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter,
+                headerWordWrap: true, width: 100, formatter: "money", hozAlign: "right", }
         ]
     });
 
