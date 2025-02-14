@@ -407,6 +407,31 @@ function numberHeaderFilter(headerValue, rowValue, rowData, filterParams) {
     }
 }
 
+// fullNameHeaderFilter: Custom header filter for substring and first/last substring for FullName with first_name and last_name fields in the table
+function fullNameHeaderFilter(headerValue, rowValue, rowData, filterParams) {
+    var header = headerValue.toLowerCase();
+    var value = rowValue.toLowerCase();
+    if (value.includes(header))
+        return true;
+
+    var parts = header.split(' ');
+    if (parts.length < 2)
+        return false;
+
+    var first = rowData.first_name.toLowerCase();
+    var last = rowData.last_name.toLowerCase();
+    if (parts.length == 3) {
+        var middle = rowData.middle_name.toLowerCase();
+        return first.includes(parts[0]) && middle.includes(parts[1]) && last.includes(parts[2]);
+    }
+
+    if (parts.length == 2) {
+        return first.includes(parts[0]) && last.includes(parts[1]);
+    }
+
+    return false;
+}
+
 // saveEdit - a common return from the base.php mce editor modal
 var editTableDiv = null;
 var editFieldDiv = null;
