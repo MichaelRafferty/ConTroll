@@ -36,6 +36,7 @@ class customTextSetup {
             <button id="customText-undo" type="button" class="btn btn-secondary btn-sm" onclick="customText.undo(); return false;" disabled>Undo</button>
             <button id="customText-redo" type="button" class="btn btn-secondary btn-sm" onclick="customText.redo(); return false;" disabled>Redo</button>
             <button id="customText-save" type="button" class="btn btn-primary btn-sm"  onclick="customText.save(); return false;" disabled>Save Changes</button>
+            <button id="customText-csv" type="button" class="btn btn-info btn-sm"  onclick="customText.csv(); return false;">Download CSV</button>
         </div>
     </div>
 </div>
@@ -190,7 +191,6 @@ class customTextSetup {
         return undosize;
     }
 
-
     // save - save the customText entries back to the database
     save() {
         var script;
@@ -244,6 +244,16 @@ class customTextSetup {
                 }
             });
         }
+    }
+
+    // save off the csv file
+    csv() {
+        if (this.#customTextTable == null)
+            return;
+
+        var filename = 'customText';
+        var tabledata = JSON.stringify(this.#customTextTable.getData("active"));
+        downloadCSVPost(filename, tabledata);
     }
 
     // on close of the pane, clean up the items

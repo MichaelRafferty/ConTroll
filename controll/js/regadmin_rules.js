@@ -418,6 +418,10 @@ class rulesSetup {
             // apply age filter from age select
             if (mem.memAge == 'all' || mem.memAge == this.#currentAge) {
                 var memLabel = mem.label;
+                if (!memCategories.hasOwnProperty(mem.memCategory)) {  // skip inactive categories
+                    continue;
+                }
+
                 if (memCategories[mem.memCategory].variablePrice != 'Y') {
                     memLabel += ' (' + mem.price + ')';
                 }
