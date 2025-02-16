@@ -112,11 +112,7 @@ WITH lNew AS (
         middle_name, SOUNDEX(middle_name) AS sMiddleName, fullName,
         badge_name, SOUNDEX(middle_name) AS sBadgeName,
         email_addr, SOUNDEX(email_addr) AS sEmailAddr,
-        address, SOUNDEX(address) AS sAddress,
-        addr_2, SOUNDEX(addr_2) AS sAddr_2,
-        phone,
-        city, SOUNDEX(city) AS sCity,
-        state, SOUNDEX(state) AS sState, country
+        address, addr_2, phone, city, state, country
     FROM lNew
 ), pOld AS (
     SELECT
@@ -144,33 +140,79 @@ WITH lNew AS (
         middle_name, SOUNDEX(middle_name) AS sMiddleName, fullName,
         badge_name, SOUNDEX(middle_name) AS sBadgeName,
         email_addr, SOUNDEX(email_addr) AS sEmailAddr,
-        address, SOUNDEX(address) AS sAddress,
-        addr_2, SOUNDEX(addr_2) AS sAddr_2,
-        phone,
-        city, SOUNDEX(city) AS sCity,
-        state, SOUNDEX(state) AS sState, country
+        address, addr_2, phone, city, state, country
     FROM pOld
 ), pids AS (
-	SELECT p.id
+	SELECT p.id, CASE
+	    WHEN p.fullName = n.fullName 
+	        AND n.address != '' AND p.address =  n.address
+	        AND n.email_addr != '' AND p.email_addr = n.email_addr 
+	        AND n.phone != '' AND p.phone = n.phone THEN 900
+	    WHEN p.fullName = n.fullName
+	        AND n.email_addr != '' AND p.email_addr = n.email_addr 
+	        AND n.phone != '' AND p.phone = n.phone THEN 850
+	    WHEN p.fullName = n.fullName
+	        AND n.email_addr != '' AND p.email_addr = n.email_addr THEN 800
+	    WHEN p.fullName = n.fullName 
+	        AND n.phone != '' AND p.phone = n.phone THEN 750
+	    WHEN p.last_name = n.last_name AND p.first_name like CONCAT(SUBSTRING(n.first_name, 1, 2), '%') 
+	        AND n.address != '' AND p.address =  n.address 
+	        AND n.email_addr != '' AND p.email_addr = n.email_addr
+	        AND n.phone != '' AND p.phone = n.phone THEN 890
+        WHEN p.last_name = n.last_name AND p.first_name like CONCAT(SUBSTRING(n.first_name, 1, 2), '%')
+            AND n.email_addr != '' AND p.email_addr = n.email_addr 
+            AND n.phone != '' AND p.phone = n.phone THEN 840
+        WHEN p.last_name = n.last_name AND p.first_name like CONCAT(SUBSTRING(n.first_name, 1, 2), '%')
+            AND n.email_addr != '' AND p.email_addr = n.email_addr THEN 790
+        WHEN p.last_name = n.last_name AND p.first_name like CONCAT(SUBSTRING(n.first_name, 1, 2), '%') THEN 740
+        WHEN p.first_name = n.first_name AND p.last_name like CONCAT(SUBSTRING(n.last_name, 1, 2), '%') 
+	        AND n.address != '' AND p.address =  n.address 
+	        AND n.email_addr != '' AND p.email_addr = n.email_addr
+	        AND n.phone != '' AND p.phone = n.phone THEN 885
+        WHEN p.first_name = n.first_name AND p.last_name like CONCAT(SUBSTRING(n.last_name, 1, 2), '%') 
+            AND n.email_addr != '' AND p.email_addr = n.email_addr 
+            AND n.phone != '' AND p.phone = n.phone THEN 835
+        WHEN p.first_name = n.first_name AND p.last_name like CONCAT(SUBSTRING(n.last_name, 1, 2), '%') 
+            AND n.email_addr != '' AND p.email_addr = n.email_addr THEN 785
+        WHEN p.first_name = n.first_name AND p.last_name like CONCAT(SUBSTRING(n.last_name, 1, 2), '%')  THEN 735
+        ELSE 700
+    END AS priority
 	FROM lsNew n
-    JOIN psOld p ON ((p.last_name = n.last_name OR p.sLastName = n.sLastName) AND 
-        (p.first_name like CONCAT(SUBSTRING(n.first_name, 1, 2), '%') OR p.sFirstName = n.sFirstName) OR
-        p.fullName = n.fullName)
-	UNION DISTINCT SELECT p.id
+    JOIN psOld p ON (
+           (p.last_name = n.last_name OR p.sLastName = n.sLastName) AND 
+            (p.first_name like CONCAT(SUBSTRING(n.first_name, 1, 2), '%') OR p.sFirstName = n.sFirstName) 
+        OR (p.first_name = n.first_name OR p.sFirstName = n.sFirstName) AND 
+            (p.last_name like CONCAT(SUBSTRING(n.last_name, 1, 2), '%') OR p.sLastName = n.sLastName) 
+        OR p.fullName = n.fullName
+        )
+	UNION DISTINCT SELECT p.id, CASE
+	    WHEN n.email_addr != '' AND p.email_addr = n.email_addr
+	        AND n.phone != '' AND p.phone = n.phone THEN 650
+        WHEN n.email_addr != '' AND p.email_addr = n.email_addr THEN 640
+        WHEN n.phone != '' AND p.phone = n.phone THEN 630
+        ELSE 600
+    END AS priority 
 	FROM lsNew n
 	JOIN psOld p ON (p.email_addr = n.email_addr AND n.email_addr != '') OR (p.phone = n.phone && n.phone != '')
-	UNION DISTINCT SELECT p.id
+	UNION DISTINCT SELECT p.id, CASE
+	    WHEN n.address != '' AND p.address = n.address THEN 640
+	    WHEN n.addr_2 != '' AND p.addr_2 = n.addr_2 THEN 590
+	    ELSE 550
+	END AS priority
 	FROM lsNew n
-	JOIN psOld p ON (n.address != '' AND (p.address = n.address OR p.sAddress = n.sAddress)) OR 
-					(n.addr_2 != '' AND (p.addr_2 = n.addr_2 OR p.sAddr_2 = n.sAddr_2)) 
-), regs AS (
+	JOIN psOld p ON (n.address != '' AND p.address = n.address ) OR (n.addr_2 != '' AND p.addr_2 = n.addr_2) 
+), spids AS (
+    SELECT id, MAX(priority) AS priority
+    FROM pids
+    GROUP BY id
+),regs AS (
 	SELECT p.id, GROUP_CONCAT(DISTINCT m.label ORDER BY m.id SEPARATOR ',') AS regs
-	FROM pids p
+	FROM spids p
 	LEFT OUTER JOIN reg r on (r.perid = p.id AND r.conid = ?)
 	LEFT OUTER JOIN memList m ON (r.memId = m.id)
     GROUP BY p.id
 )
-SELECT DISTINCT p.*, r.regs,
+SELECT DISTINCT spids.priority, p.*, r.regs,
     TRIM(REGEXP_REPLACE(
         CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ',  IFNULL(p.suffix, '')),
         '  *', ' ')) AS fullName,
@@ -182,9 +224,10 @@ SELECT DISTINCT p.*, r.regs,
         CONCAT(IFNULL(m.first_name, ''),' ', IFNULL(m.middle_name, ''), ' ', IFNULL(m.last_name, ''), ' ',  IFNULL(m.suffix, '')),
         '  *', ' ')) AS manager, m.id AS managerId
 FROM perinfo p
-JOIN pids ON p.id = pids.id
+JOIN spids ON p.id = spids.id
 LEFT OUTER JOIN regs r ON r.id = p.id
-LEFT OUTER JOIN perinfo m ON p.managedBy = m.id;
+LEFT OUTER JOIN perinfo m ON p.managedBy = m.id
+ORDER BY spids.priority DESC, p.last_name, p.first_name;
 EOS;
 
 $mR = dbSafeQuery($mQ, 'ii', array($newperid, $conid));

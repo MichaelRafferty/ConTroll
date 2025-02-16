@@ -75,7 +75,7 @@ function drawResults(data) {
         columns: [
             { title: "TID", field: "tid", hozAlign: "right",  headerSort: true, headerFilter: true },
             { title: "PID", field: "perid", width: 110, hozAlign: "right", headerSort: true, headerFilter: true, },
-            { title: "Person", field: "fullName", headerSort: true, headerFilter: true },
+            { title: "Person", field: "fullName", headerSort: true, headerFilter: true, headerFilterFunc: fullNameHeaderFilter, },
             { title: "Badge Name", field: "badge_name", headerSort: true, headerFilter: true },
             { title: "Email", field: "email_addr", headerSort: true, headerFilter: true },
             { title: "Mgr PID", field: "managerId", width: 110, hozAlign: "right", headerSort: true, headerFilter: true },
@@ -87,6 +87,9 @@ function drawResults(data) {
             { title: "Date Created", field: "create_date", headerSort: true, headerFilter: true },
             { title: "Date Changed", field: "change_date", headerSort: true, headerFilter: true, visible: false},
             { title: "Paid Date", field: "paidDate", headerSort: true, headerFilter: true },
+            {field: 'first_name', visible: false,},
+            {field: 'middle_name', visible: false,},
+            {field: 'last_name', visible: false,},
         ],
         initialSort: [
             {column: "tid", dir: "desc" },

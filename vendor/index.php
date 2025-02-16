@@ -78,6 +78,7 @@ $config_vars['useUSPS'] = $useUSPS;
 $config_vars['allStar'] = $allStar;
 $config_vars['addrStar'] = $addrStar;
 $config_vars['firstStar'] = $firstStar;
+$config_vars['regserver'] = $con['server'];
 
 exhibitor_page_init($condata['label'] . " $portalName Registration");
 

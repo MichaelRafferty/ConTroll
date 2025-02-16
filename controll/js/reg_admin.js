@@ -1582,7 +1582,7 @@ function draw_registrations(data) {
             { title: "Action", formatter: actionbuttons, hozAlign:"left", headerSort: false },
             { title: "TID", field: "display_trans", hozAlign: "right",  headerSort: true, headerFilter: true },
             { title: "PID", field: "perid", width: 110, hozAlign: "right", headerSort: true, headerFilter: true, },
-            { title: "Person", field: "p_name", headerSort: true, headerFilter: true },
+            { title: "Person", field: "p_name", headerSort: true, headerFilter: true, headerFilterFunc: fullNameHeaderFilter, },
             { title: "Badge Name", field: "p_badge", headerSort: true, headerFilter: true },
             { title: "Email", field: "p_email", headerSort: true, headerFilter: true },
             { title: "Membership Type", field: "label", width: 300, headerSort: true, headerFilter: true, },
@@ -1603,6 +1603,9 @@ function draw_registrations(data) {
             { field: "complete_trans", visible: false },
             { field: "ncount", visible: false,},
             { field: "hcount", visible: false,},
+            {field: 'first_name', visible: false,},
+            {field: 'middle_name', visible: false,},
+            {field: 'last_name', visible: false,},
         ],
         initialSort: [
             {column: "display_trans", dir: "desc" },

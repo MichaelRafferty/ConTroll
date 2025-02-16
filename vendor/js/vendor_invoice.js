@@ -55,6 +55,7 @@ function openInvoice(id) {
     }
 
     regionName = regionList.name;
+    var spacePriceName = '';
 
     // refresh the items spaces purchased area
     html = "You are approved for:<br/>\n";
@@ -71,8 +72,14 @@ function openInvoice(id) {
                     if (prices[priceIdx].id == space.item_approved)
                         break;
                 }
-                includedMemberships = Math.max(includedMemberships, prices[priceIdx].includedMemberships);
-                additionalMemberships = Math.max(additionalMemberships, prices[priceIdx].additionalMemberships);
+                if (includedMemberships < prices[priceIdx].includedMemberships) {
+                    spacePriceName = prices[priceIdx].description;
+                    includedMemberships = prices[priceIdx].includedMemberships;
+                }
+                if (additionalMemberships < prices[priceIdx].additionalMemberships) {
+                    spacePriceName = prices[priceIdx].description;
+                    additionalMemberships = prices[priceIdx].additionalMemberships;
+                }
             }
         }
     }
@@ -88,13 +95,35 @@ function openInvoice(id) {
     document.getElementById("vendor_invoice_title").innerHTML = "<strong>Pay " + regionName + ' Invoice</strong>';
 
     var spaces = includedMemberships + additionalMemberships;
-    html = "<p>This space comes with " +
-        (includedMemberships > 0 ? includedMemberships : "no") +
-        " memberships included and " +
-        (additionalMemberships > 0 ? "the " : "no ") + "right to purchase " +
-        (additionalMemberships > 0 ? "up to " +  additionalMemberships  : "no") +
-        " additional memberships at a reduced rate of $" + Number(regionList.additionalMemPrice).toFixed(2) + ".</p>";
-    if((includedMemberships == 0) && (additionalMemberships ==0)) {
+    // make the strings for the number of included additional memberships available to purchase
+    html = '<p>';
+    if (spaces == 0) { // no additional or included memberships
+        html += regionName + ' ' +  spacePriceName + ' spaces do not come with any memberships as part of the space purchase. ' +
+            ' Please purchase your attending memberships to the convention separately at ' +
+            '<a href="' + config['regserver'] + '">' + config['regserver'] + '</a>.';
+    } else if (includedMemberships == 0) {
+        html += regionName + ' ' +  spacePriceName + ' spaces come with the option to purchase up to ' + additionalMemberships +
+            ' membership' + (additionalMemberships > 1 ? 's' : '') + ' at  the discounted price of $' +
+            Number(regionList.additionalMemPrice).toFixed(2) + '. ' +
+            'Purchase those memberships here. ' +
+            'Any additional memberships beyond those you purchase here need to be purchased separately at ' +
+            '<a href="' + config['regserver'] + '">' + config['regserver'] + '</a>.';
+    } else if (additionalMemberships == 0) {
+        html += regionName + ' ' +  spacePriceName + ' spaces come with ' + includedMemberships + ' membership' + (includedMemberships > 1 ? 's' : '') +
+            ' as part of the space purchase. Please enter those memberships here. ' +
+            'Any additional memberships to the convention need to be purchased separately at ' +
+            '<a href="' + config['regserver'] + '">' + config['regserver'] + '</a>.';
+    } else {
+        html += regionName + ' ' +  spacePriceName + ' spaces come with ' + includedMemberships + ' membership' + (includedMemberships > 1 ? 's' : '') +
+            ' as part of the space purchase. In addition it comes with the right to purchase up to ' + additionalMemberships +
+            ' membership' + (additionalMemberships > 1 ? 's' : '') + ' at  the discounted price of $' +
+            Number(regionList.additionalMemPrice).toFixed(2) + '. ' +
+            'Use the included memberships first, and then add the additional memberships if desired. If you need more memberships beyond that they need to' +
+            ' be purchased separately at ' +
+            '<a href="' + config['regserver'] + '">' + config['regserver'] + '</a>.';
+    }
+    html += "</p>\n";
+    if (spaces == 0) {
         html += "<input type='hidden' name='agreeNone' value='on'></input>"
     }
     if (spaces > 0) {
