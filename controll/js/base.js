@@ -547,3 +547,28 @@ function blankIfNull(value) {
         return '';
     return value;
 }
+
+// pass object to a window.open via a post with json data
+function downloadCSVPost(fileName, tableData) {
+    // create the form
+    var form = document.createElement('form');
+    form.method = 'POST';
+    form.action = 'scripts/downloadCSV.php';
+    // append it to the body
+    document.body.appendChild(form);
+    // create the file name to suggest to save it to....
+    var fileNameInput = document.createElement('input');
+    fileNameInput.type = 'text';
+    fileNameInput.name = 'filename';
+    fileNameInput.value = fileName;
+    form.appendChild(fileNameInput);
+    // create the data table element
+    var tablejson = document.createElement('input');
+    tablejson.type = 'text';
+    tablejson.name = 'table'
+    tablejson.value = tableData;
+    form.appendChild(tablejson);
+    // now open the window
+    form.submit();
+    document.body.removeChild(form);
+}
