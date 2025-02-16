@@ -41,6 +41,7 @@ var recepitEmailAddress = null;
 var find_result_table = null;
 var testdiv = null;
 var conid = 0;
+var reglistDiv = null;
 
 // changes items
 var changeMemberships = [];
@@ -133,6 +134,7 @@ window.onload = function initpage() {
     }
 
     testdiv = document.getElementById('test');
+    reglistDiv = document.getElementById('reglist-csv-div');
 
     $('#registration-table').html('<button class="btn btn-primary mb-4 ms-4" onclick="getData();">Load Registration List</button>');
 }
@@ -1612,6 +1614,17 @@ function draw_registrations(data) {
             {column: "change_date", dir: "desc" },
         ],
     });
+    reglistDiv.hidden = false;
+}
+
+// save off the csv file
+function reglistCSV() {
+    if (registrationtable == null)
+        return;
+
+    var filename = 'registrations';
+    var tabledata = JSON.stringify(registrationtable.getData("active"));
+    downloadCSVPost(filename, tabledata);
 }
 
 // called from data load - draws the filter stats block and the registrations block
@@ -1711,6 +1724,11 @@ function settab(tabname) {
         interests.close();
     if (rules != null)
         rules.close();
+    if (tabname != 'registrationlist-pane') {
+        reglistDiv.hidden = true;
+        registrationtable.destroy();
+        registrationtable = null;
+    }
 
     // now open the relevant one, and create the class if needed
     switch (tabname) {
