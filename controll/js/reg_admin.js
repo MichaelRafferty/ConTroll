@@ -1727,8 +1727,10 @@ function settab(tabname) {
         rules.close();
     if (tabname != 'registrationlist-pane') {
         reglistDiv.hidden = true;
-        registrationtable.destroy();
-        registrationtable = null;
+        if (registrationtable) {
+            registrationtable.destroy();
+            registrationtable = null;
+        }
     }
 
     // now open the relevant one, and create the class if needed
