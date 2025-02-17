@@ -549,7 +549,7 @@ function blankIfNull(value) {
 }
 
 // pass object to a window.open via a post with json data
-function downloadCSVPost(fileName, tableData) {
+function downloadCSVPost(fileName, tableData, excludeList = null, fieldList = null) {
     // create the form
     var form = document.createElement('form');
     form.method = 'POST';
@@ -557,11 +557,25 @@ function downloadCSVPost(fileName, tableData) {
     // append it to the body
     document.body.appendChild(form);
     // create the file name to suggest to save it to....
-    var fileNameInput = document.createElement('input');
-    fileNameInput.type = 'text';
-    fileNameInput.name = 'filename';
-    fileNameInput.value = fileName;
-    form.appendChild(fileNameInput);
+    var field = document.createElement('input');
+    field.type = 'text';
+    field.name = 'filename';
+    field.value = fileName;
+    form.appendChild(field);
+    if (excludeList != null) {
+        field = document.createElement('input');
+        field.type = 'text';
+        field.name = 'excludeList';
+        field.value = JSON.stringify(excludeList);
+        form.appendChild(field);
+    };
+    if (fieldList != null) {
+        field = document.createElement('input');
+        field.type = 'text';
+        field.name = 'fieldList';''
+        field.value = JSON.stringify(fieldList);
+        form.appendChild(field);
+    };
     // create the data table element
     var tablejson = document.createElement('input');
     tablejson.type = 'text';
