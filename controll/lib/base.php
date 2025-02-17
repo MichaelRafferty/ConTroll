@@ -46,12 +46,12 @@ function google_init($mode) {
   // bypass for testing on Development PC
   if (stripos(__DIR__, "/Users/syd/") !== false && $_SERVER['SERVER_ADDR'] == "127.0.0.1") {
       $token_data = array();
-      $token_data['email'] = 'syd.weinstein@philcon.org'; // 'todd.dashoff@philcon.org'; // 
-      $token_data['sub'] = '114007818392249665998'; //  '123'; //
-      //$token_data['email'] = 'syd@philcon.org'; // 'todd.dashoff@philcon.org'; // 
-      //$token_data['sub'] = '1'; //  '123'; //
+      $token_data['email'] = 'syd.weinstein@philcon.org';
+      $token_data['sub'] = '114007818392249665998';
       $token_data['iat'] = time();
       $token_data['exp'] = time() + 3600;
+      $_SESSION['user_id'] = 88;
+      $_SESSION['user_perid'] = 21389;
       return($token_data);
   }
 
