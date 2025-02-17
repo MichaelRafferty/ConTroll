@@ -90,11 +90,10 @@ if ($fieldList != null) {
   $labels = [];
   foreach ($fieldList as $field) {
     if (is_array($field)) {
-      if (array_is_list($field)) {
+      if (!array_is_list($field)) {
         $keys[] = $field['key'];
         $labels[] = $field['label'];
-      }
-      else {
+      } else {
         $keys = $field[0];
         $labels[] = $field[count($field) - 1];
       }
@@ -113,7 +112,7 @@ if ($fieldList != null) {
   }
   $keys = $labels;
 }
-fputcsv($csv, $keys, ",", "\"", "\"", PHP_EOL);
+fputcsv($csv, $labels, ",", "\"", "\"", PHP_EOL);
 
 // now loop over the rows applying the field order or the exclude list or just output it....
 foreach ($tableData as $row) {

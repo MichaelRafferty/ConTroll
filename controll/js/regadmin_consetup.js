@@ -541,6 +541,22 @@ class consetup {
 
         var filename = this.#conid + '_memlist';
         var tabledata = JSON.stringify(this.#memtable.getData("active"));
-        downloadCSVPost(filename, tabledata);
+        var fieldList = [
+            'id',
+            'conid',
+            { key: 'memCategory', label: 'Category' },
+            { key: 'memType', label: 'Type' },
+            { key: 'memAge', label: 'Age' },
+            'shortname',
+            'label',
+            'price',
+            'startdate',
+            'enddate',
+            'atcon',
+            'online',
+            'notes',
+            'sort_order'
+        ];
+        downloadCSVPost(filename, tabledata, null, fieldList);
     }
 };
