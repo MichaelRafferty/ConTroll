@@ -430,7 +430,17 @@ class interestsSetup {
 
         var filename = 'interests';
         var tabledata = JSON.stringify(this.#interestsTable.getData("active"));
-        downloadCSVPost(filename, tabledata);
+        var fieldList = [
+            'interest',
+            'description',
+            'notifyList',
+            'csv',
+            'active',
+            'createDate',
+            'updateDate',
+            'sortOrder'
+        ];
+        downloadCSVPost(filename, tabledata, null, fieldList);
     }
 }
 

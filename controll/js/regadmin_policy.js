@@ -454,7 +454,18 @@ class policySetup {
 
         var filename = 'policies';
         var tabledata = JSON.stringify(this.#policyTable.getData("active"));
-        downloadCSVPost(filename, tabledata);
+        var fieldList = [
+            'policy',
+            'prompt',
+            'description',
+            'required',
+            'defaultValue',
+            'active',
+            'createDate',
+            'updateDate',
+            'sortOrder'
+        ];
+        downloadCSVPost(filename, tabledata, null, fieldList);
     }
 
     // on close of the pane, clean up the items

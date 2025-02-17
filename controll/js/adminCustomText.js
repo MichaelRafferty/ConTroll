@@ -253,7 +253,15 @@ class customTextSetup {
 
         var filename = 'customText';
         var tabledata = JSON.stringify(this.#customTextTable.getData("active"));
-        downloadCSVPost(filename, tabledata);
+        var fieldList = [
+            { key: 'appName', label: 'App' },
+            { key: 'appPage', label: 'Page' },
+            { key: 'appSection', label: 'Section' },
+            { key: 'txtItem', label: 'Item' },
+            { key: 'txtItemDescription', label: 'Description' },
+            { key: 'contents', label: 'Custom_Text' },
+        ];
+        downloadCSVPost(filename, tabledata, null, fieldList);
     }
 
     // on close of the pane, clean up the items
