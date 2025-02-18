@@ -17,18 +17,42 @@ page_init($page,
 
 
 $con = get_conf("con");
-$control = get_conf("control");
+$controll = get_conf("controll");
 $conid=$con['id'];
 
+$debug = get_conf('debug');
+
+if (array_key_exists('controll_reports', $debug))
+    $debug_reports=$debug['controll_reports'];
+else
+    $debug_reports = 0;
+
+$config_vars = array();
+$config_vars['pageName'] = 'reports';
+$config_vars['debug'] = $debug_reports;
+$config_vars['conid'] = $conid;
 ?>
-<div id='main'>
+<script type='text/javascript'>
+    var config = <?php echo json_encode($config_vars); ?>;
+</script>
+    <ul class='nav nav-tabs mb-3' id='reports-tab' role='tablist'>
+        <li class='nav-item' role='presentation'>
+            <button class='nav-link active' id='oldreports-tab' data-bs-toggle='pill' data-bs-target='#oldreports-pane' type='button'
+                    role='tab' aria-controls='nav-oldreports' aria-selected='true' onclick="settab('oldreports-pane');">Old Reports
+            </button>
+        </li>
+    </ul>
+</ul>
+<div class='tab-content ms-2' id='reports-content'>
+    <div class='tab-pane fade show active' id='oldreports-pane' role='tabpanel' aria-labelledby='oldreports-tab' tabindex='0'>
+        <div class='container-fluid'>
   <a href='reports/artSales.php'>Artshow amounts sold</a><br/>
   <a href='reports/artists.php'>Artists since <?PHP echo $con['minComp']; ?></a><br/>
   <a href="reports/artInventory.php">Art Inventory</a><br/>
   <a href='reports/newMembers.php'>New Members</a><br/>
   <a href='reports/duplicates.php'>Duplicate Memberships</a><br/>
   <a href='reports/badgeTypes.php'>Badge Types</a><br/>
-  <a href='reports/clubHistory.php'><?PHP echo $control['clubname']; ?> History</a><br/>
+  <a href='reports/clubHistory.php'><?PHP echo $controll['clubname']; ?> History</a><br/>
   <form action='reports/badgeHistory.php' method='GET'>
     Badge Hisory For:
     <input type='number' name='perid'/>
@@ -72,4 +96,6 @@ EOS;
         <input type='number' name='perid' size=6/>
         <input type='submit' value='Get Badge History'/>
     </form>
+        </div>
+    </div>
 </div>

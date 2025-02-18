@@ -1,0 +1,101 @@
+[report]
+	name: Duplicate[report] (global items)
+	auth: registration
+	index: 
+[F001]
+	name: fullName
+	sql: TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' '))
+	title: "Full Name"
+	filter: fullname
+	sort: true
+	minWidth: 300
+[F002]
+	name: regid
+	sql r1.id
+	title: "Reg Id"
+[F003]
+	name: label1
+	sql m1.label
+	title: "Label"
+	sort: true
+	filter: true
+	minWidth: 300
+[F005]
+	name: status
+	sql r1.status
+	title: "Status"
+	filter: list
+[F006]
+	name: price
+	sql r1.price
+	title: "Price"
+	filter: number
+[F007]
+	name: paid
+	sql r1.paid
+	title: "Paid"
+	filter: number
+[F012]
+	name: dupregid
+	sql r2.id
+	title: "Dup Reg Id"
+[F013]
+	name: duplabel
+	sql m2.label
+	title: "Dup Label"
+	sort: true
+	filter: true
+	minWidth: 300
+[F015]
+	name: dupstatus
+	sql r2.status
+	title: "Dup Status"
+	filter: list
+[F016]
+	name: dupprice
+	sql r2.price
+	title: "Dup Price"
+	filter: number
+[F017]
+	name: dupaid
+	sql r2.paid
+	title: "Dup Paid"
+	filter: number
+[T001]
+	name: reg
+	alias: r1
+[T002]
+	name: perinfo
+	alias p
+	join: "p.id = r1.id"
+[T005]
+	name: memLabel
+	alias m1
+	join: "m1.id = r1.memId"
+[T006]
+	name: memCategories
+	alias c1
+	join: "m1.memCategory = c1.memCategory AND c1.onlyOne='Y'"
+[T011]
+	name: reg
+	alias: r2
+	join: r1.conid = r2.conid AND r2.perid = r1.perid AND r2.id > r1.id 
+[T015]
+	name: memLabel
+	alias m2
+	join: "m2.id = r2.memId"
+[T016]
+	name: memCategories
+	alias c2
+	join: "m2.memCategory = c2.memCategory AND c2.onlyOne='Y'"
+[P001]
+	type: config
+	section: con
+	item: id
+	datatype: i
+[where]
+	r1.conid = ?
+[sort]
+	001: p.last_name
+	002: p.first_name
+	003: p.id
