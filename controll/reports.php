@@ -11,7 +11,7 @@ if(!$need_login or !checkAuth($need_login['sub'], $page)) {
 page_init($page,
     /* css */ array('css/base.css'
                    ),
-    /* js  */ array('js/d3.js',
+    /* js  */ array('js/reports.js',
                    ),
               $need_login);
 
@@ -31,20 +31,124 @@ $config_vars = array();
 $config_vars['pageName'] = 'reports';
 $config_vars['debug'] = $debug_reports;
 $config_vars['conid'] = $conid;
+
+// loop ver the groups directory and local groups directory finding groups to make into tabs
+$reports = [];
+if ($groupDir = opendir(__DIR__ . '/reports/groups')) {
+    while (false !== ($file = readdir($groupDir))) {
+        if (str_ends_with($file, '.grp')) {
+            $report = parse_ini_file(__DIR__ . "/reports/groups/$file" , true);
+            if (checkAuth($need_login['sub'], $report['group']['auth'])) {
+                $report['group']['file'] = "groups/$file";
+                $report['group']['prefix'] = "reports";
+                $reports["groups/$file"] = $report;
+            }
+        }
+    }
+    closedir($groupDir);
+}
+if ($groupDir = opendir(__DIR__ . '/reports/local_groups')) {
+    while (false !== ($file = readdir($groupDir))) {
+        if (str_ends_with($file, '.grp')) {
+            $report = parse_ini_file(__DIR__ . "/reports/local_groups/$file", true);
+            if (checkAuth($need_login['sub'], $report['group']['auth'])) {
+                $report['group']['file'] = "local_groups/$file";
+                $report['group']['prefix'] = 'local_reports';
+                $reports["local_groups/$file"] = $report;
+            }
+        }
+    }
+    closedir($groupDir);
+}
+
 ?>
 <script type='text/javascript'>
     var config = <?php echo json_encode($config_vars); ?>;
+    //var reports = <?php echo json_encode($reports); ?>;
 </script>
-    <ul class='nav nav-tabs mb-3' id='reports-tab' role='tablist'>
-        <li class='nav-item' role='presentation'>
-            <button class='nav-link active' id='oldreports-tab' data-bs-toggle='pill' data-bs-target='#oldreports-pane' type='button'
-                    role='tab' aria-controls='nav-oldreports' aria-selected='true' onclick="settab('oldreports-pane');">Old Reports
-            </button>
-        </li>
-    </ul>
+<ul class='nav nav-tabs mb-3' id='reports-tab' role='tablist'>
+<?php
+// now make the tabs
+$active = ' active';
+if (count($reports) > 0) {
+    foreach ($reports as $key => $report) {
+        $hdr = $report['group'];
+        $name = $hdr['name'];
+        $desc = $hdr['description'];
+        echo <<<EOS
+    <li class='nav-item' role='presentation'>
+        <button class='nav-link$active' id='$name-tab' data-bs-toggle='pill' data-bs-target='#$name-pane' type='button'
+                role='tab' aria-controls='nav-$name' aria-selected='true' onclick="settab('$name-pane');">$desc
+        </button>
+    </li>   
+EOS;
+           $active = '';
+    }
+}
+?>
+    <li class='nav-item' role='presentation'>
+        <button class='nav-link' id='oldreports-tab' data-bs-toggle='pill' data-bs-target='#oldreports-pane' type='button'
+                role='tab' aria-controls='nav-oldreports' aria-selected='true' onclick="settab('oldreports-pane');">Old Reports
+        </button>
+    </li>
 </ul>
+
 <div class='tab-content ms-2' id='reports-content'>
-    <div class='tab-pane fade show active' id='oldreports-pane' role='tabpanel' aria-labelledby='oldreports-tab' tabindex='0'>
+<?php
+$active = ' active';
+if (count($reports) > 0) {
+    foreach ($reports AS $rptkey => $report) {
+        $grpname = $report['group']['name'];
+        echo <<<EOS
+    <div class='tab-content $active' id='$grpname-content' tabindex='0'>
+        
+EOS;
+        $groupRpts = array_keys($report);
+        sort($groupRpts);
+        echo <<<EOS
+        <ul class="nav nav-pills nav-fill mb-3" id="$name-content-tab" role="tablist">
+EOS;
+        $active2 = ' active';
+        foreach ($groupRpts as $key) {
+            if ($key == 'group')
+                continue;   // skip the header
+
+            $rpt = $report[$key];
+            //	template=member_duplicates.rpt
+            //name='Duplicate Memberships'
+            //	description="Duplicate Memberships of those that only allow for 1"
+            //	auth=registration
+            //	type=rpt
+            $name = $rpt['name'];
+            $fileName = $report['group']['file'];
+            $prefix = $report['group']['prefix'];
+            $tab = str_replace(' ', '-', $name);
+            echo <<<EOS
+            <li class="nav-item" role="presentation $active">
+                <button class="nav-link" id="$tab-tab" data-bs-toggle="pill" data-bs-target="#gen-report-content" type="button"
+                    role="tab" aria-controls="$grpname-tab" aria-selected="false" onclick="getRpt('$key', '$prefix', '$fileName');" tabindex="-1">
+                    $name
+                </button>
+            </li>
+EOS;
+        }
+        $active2 = '';
+        echo <<<EOS
+        </ul>
+        <div class="tab-content ms-2" id="gen-report-content">
+            <div class="container-fluid" id="report-content-div">
+                <div class="row">
+                    <div class="col-sm-auto">This is the content area to change for the report</div>
+                </div>
+            </div>
+        </div>
+    </div>
+EOS;
+        $active = '';
+    }
+}
+?>
+    <div class='tab-pane fade show <?php echo $active; ?>' id='oldreports-pane' role='tabpanel' aria-labelledby='oldreports-tab' tabindex='0'>
         <div class='container-fluid'>
   <a href='reports/artSales.php'>Artshow amounts sold</a><br/>
   <a href='reports/artists.php'>Artists since <?PHP echo $con['minComp']; ?></a><br/>
@@ -98,4 +202,6 @@ EOS;
     </form>
         </div>
     </div>
+    <div id='result_message' class='mt-4 p-2'></div>
+    <pre id='test'></pre>
 </div>

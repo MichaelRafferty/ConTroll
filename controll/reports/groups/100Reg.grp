@@ -1,0 +1,16 @@
+[group]
+	name=Registration
+	description="Registration Reports"
+	auth=registration
+[100Duplicates]
+	name="Duplicate Memberships"
+	description="Duplicate Memberships of those that only allow for 1"
+	template=member_duplicates.rpt
+	auth=registration
+	type=rpt
+[101Duplicates2]
+	name="Duplicate Memberships2"
+	description="Duplicate Memberships of those that only allow for 1-2"
+	template=member_duplicates.rpt
+	auth=registration
+	type=rpt
