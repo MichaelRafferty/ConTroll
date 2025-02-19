@@ -8,9 +8,9 @@
 	template=member_duplicates.rpt
 	auth=registration
 	type=rpt
-[101Duplicates2]
-	name="Duplicate Memberships2"
-	description="Duplicate Memberships of those that only allow for 1-2"
-	template=member_duplicates.rpt
+[110RegsByCategory]
+	name="Registrations by Category"
+	description="Number of paid registrations by Category"
+	template=regByCategory.rpt
 	auth=registration
 	type=rpt

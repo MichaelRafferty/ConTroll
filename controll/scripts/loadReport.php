@@ -44,6 +44,8 @@ $response['description'] = $report['description'];
 $reportParams = parse_ini_file(__DIR__ . "/../reports/$prefix/$template", true);
 $reportHdr = $reportParams['report'];
 $reportAuth = $reportHdr['auth'];
+if (array_key_exists('index', $reportHdr))
+    $response['index'] = $reportHdr['index'];
 if ($reportAuth != $hdrAuth) {
     if (!checkAuth($check_auth['sub'], $reportAuth)) {
         $response['error'] = 'You do not have permission to access this specific report';
@@ -53,6 +55,7 @@ if ($reportAuth != $hdrAuth) {
 }
 
 $response["reportTitle"] = $reportHdr['name'];
+
 
 $fieldArr = [];
 $sections = array_keys($reportParams);
@@ -66,7 +69,7 @@ foreach ($sections AS $key => $section) {
 
     // F start is a sql/field setting
     $fields = $reportParams[$section];
-    $sql .= $first . $fields['sql'] . PHP_EOL;
+    $sql .= $first . $fields['sql'] . ' AS ' . $fields['name'] . PHP_EOL;
     unset($fields['sql']);
     $fieldArr[$key] = $fields;
     $first = ', ';
@@ -97,6 +100,24 @@ if (array_key_exists('where', $reportParams)) {
         $sql .= $clause[$value] . PHP_EOL;
     }
 }
+// now the group by clause
+if (array_key_exists('group', $reportParams)) {
+    $sql .= 'GROUP BY ' . PHP_EOL;
+    $clause = $reportParams['group'];
+    $skeys = array_keys($clause);
+    sort($wkeys);
+    $first = '';
+    foreach ($wkeys as $value) {
+        if ($first == '') {
+            $first = ', ';
+        }
+        else {
+            $sql .= $first;
+        }
+        $sql .= $clause[$value] . PHP_EOL;
+    }
+}
+
 // now the order by clause
 if (array_key_exists('sort', $reportParams)) {
     $sql .= 'ORDER BY ' . PHP_EOL;

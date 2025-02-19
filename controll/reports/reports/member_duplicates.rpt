@@ -1,6 +1,7 @@
 [report]
 	name="Duplicate Memberships"
 	auth=registration
+	index=memCategory
 [F001]
 	name=fullName
 	sql="TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' '))"

@@ -8,10 +8,13 @@ if(!$need_login or !checkAuth($need_login['sub'], $page)) {
     bounce_page("index.php");
 }
 
+$cdn = getTabulatorIncludes();
 page_init($page,
-    /* css */ array('css/base.css'
+    /* css */ array('css/base.css',
+                    $cdn['tabbs5'],
                    ),
-    /* js  */ array('js/reports.js',
+    /* js  */ array($cdn['tabjs'],
+                    'js/reports.js',
                    ),
               $need_login);
 
@@ -136,10 +139,7 @@ EOS;
         echo <<<EOS
         </ul>
         <div class="tab-content ms-2" id="gen-report-content">
-            <div class="container-fluid" id="report-content-div">
-                <div class="row">
-                    <div class="col-sm-auto">This is the content area to change for the report</div>
-                </div>
+            <div class="container-fluid" id="report-content-div">  
             </div>
         </div>
     </div>
