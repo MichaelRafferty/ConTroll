@@ -138,14 +138,16 @@ EOS;
         $active2 = '';
         echo <<<EOS
         </ul>
-        <div class="tab-content ms-2" id="gen-report-content">
-            <div class="container-fluid" id="report-content-div">  
-            </div>
-        </div>
     </div>
 EOS;
         $active = '';
     }
+    ?>
+    <div class='tab-content ms-2' id='gen-report-content'>
+        <div class='container-fluid' id='report-content-div'>
+        </div>
+    </div>
+    <?php
 }
 ?>
     <div class='tab-pane fade show <?php echo $active; ?>' id='oldreports-pane' role='tabpanel' aria-labelledby='oldreports-tab' tabindex='0'>
