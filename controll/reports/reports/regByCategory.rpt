@@ -1,7 +1,7 @@
 [report]
 	name="Memberships by Category"
 	auth=registration
-	csvfile="MembershipByCategory.csv"
+	csvfile="MembershipByCategory"
     index=memCategory
 [F001]
 	name=Category

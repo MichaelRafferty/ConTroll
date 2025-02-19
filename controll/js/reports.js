@@ -8,6 +8,7 @@ debug = 0;
 
 var reportContentDiv = null;
 var reportTable = null;
+var csvfile = null;
 
 // initialization at DOM complete
 window.onload = function initpage() {
@@ -91,6 +92,16 @@ function drawReport(data) {
        </div>
     </div>
     `;
+
+    if (data.hasOwnProperty('csvfile')) {
+        html += `
+    <div class="row">
+        <div class="col-sm-auto">
+            <button type="button" class="btn btn-info btn-sm" onclick="downloadCSVReport(); return false;">Download CSV</button>
+        </div>
+    </div>
+`;
+    }
     reportContentDiv.innerHTML = html;
 
     // build tabulator specs
@@ -156,7 +167,14 @@ function drawReport(data) {
     // open table
     reportTable =  new Tabulator('#reportTable', params);
 
-    if (data.success) {
+    if (data.success)
         show_message(data.success, 'success');
-    }
+
+    if (data.csvfile)
+        csvfile = data.csvfile;
+}
+
+function downloadCSVReport() {
+    var tabledata = JSON.stringify(reportTable.getData("active"));
+    downloadCSVPost(csvfile, tabledata);
 }

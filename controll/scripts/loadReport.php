@@ -46,6 +46,8 @@ $reportHdr = $reportParams['report'];
 $reportAuth = $reportHdr['auth'];
 if (array_key_exists('index', $reportHdr))
     $response['index'] = $reportHdr['index'];
+if (array_key_exists('csvfile', $reportHdr))
+    $response['csvfile'] = $reportHdr['csvfile'];
 if ($reportAuth != $hdrAuth) {
     if (!checkAuth($check_auth['sub'], $reportAuth)) {
         $response['error'] = 'You do not have permission to access this specific report';
