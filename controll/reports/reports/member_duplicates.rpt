@@ -2,24 +2,37 @@
 	name="Duplicate Memberships"
 	auth=registration
 	svfile="DuplicateMemberships"
+	totals=bottom
 [F001]
+    name=perid
+    sql="p.id"
+    title="Perid"
+    filter=true
+    sort=true
+    width=120
+    calc=unique
+    align=right
+[F002]
 	name=fullName
 	sql="TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' '))"
 	title="Full Name"
 	filter=fullname
 	sort=true
 	minWidth=300
-[F002]
+[F003]
 	name=regid
 	sql=r1.id
 	title="Reg Id"
-[F003]
+	align=right
+	width=120
+[F004]
 	name=label1
 	sql=m1.label
 	title="Label"
 	sort=true
 	filter=true
-	minWidth=300
+	width=225
+	format=textarea
 [F005]
 	name=status
 	sql=r1.status
@@ -30,22 +43,27 @@
 	sql=r1.price
 	title="Price"
 	filter=number
+	align=right
 [F007]
 	name=paid
 	sql=r1.paid
 	title="Paid"
 	filter=number
-[F012]
+	align=right
+[F013]
 	name=dupregid
 	sql=r2.id
 	title="Dup Reg Id"
-[F013]
+	align=right
+	width=120
+[F014]
 	name=duplabel
 	sql=m2.label
 	title="Dup Label"
 	sort=true
 	filter=true
-	minWidth=300
+    format=textarea
+	width=225
 [F015]
 	name=dupstatus
 	sql=r2.status
@@ -56,18 +74,20 @@
 	sql=r2.price
 	title="Dup Price"
 	filter=number
+	align=right
 [F017]
 	name=dupaid
 	sql=r2.paid
 	title="Dup Paid"
 	filter=number
+	align=right
 [T001]
 	name=reg
 	alias=r1
 [T002]
 	name=perinfo
 	alias=p
-	join="p.id = r1.id"
+	join="p.id = r1.perid"
 [T005]
 	name=memLabel
 	alias=m1
@@ -94,7 +114,8 @@
 	item=id
 	datatype=i
 [where]
-	001="r1.conid = ?"
+	001="r1.conid = ? AND r1.status IN ('unpaid', 'plan', 'paid') AND r2.status IN ('unpaid', 'plan', 'paid')"
+	002="AND NOT (m1.memCategory != 'upgrade' AND m2.memCategory = 'upgrade')"
 [sort]
 	001=p.last_name
 	002=p.first_name

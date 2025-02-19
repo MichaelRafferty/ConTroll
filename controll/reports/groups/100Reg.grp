@@ -9,8 +9,8 @@
 	auth=registration
 	type=rpt
 [110RegsByCategory]
-	name="Registrations by Category"
-	description="Number of paid registrations by Category"
+	name="Memberships by Category"
+	description="Number of paid memberships by Category"
 	template=regByCategory.rpt
 	auth=registration
 	type=rpt

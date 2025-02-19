@@ -29,7 +29,13 @@ function reportCSV() {
 
 function settab(tabname) {
     // now open the relevant one, and create the class if needed
-    console.log(tabname);
+    if (reportTable) {
+        reportTable.destroy();
+        reportTable = null;
+    }
+    reportContentDiv.innerHTML = '';
+    clear_message();
+    clearError();
 }
 
 function getRpt(reportName, prefix, fileName) {
@@ -113,6 +119,10 @@ function drawReport(data) {
         paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
     };
 
+    // set the calc position
+    var calcPosition = 'bottom';
+    if (data.hasOwnProperty('calcPosition'))
+        calcPosition = data['calcPosition'];
     // build the column list
     var fields = data.fields;
     var columns = []
@@ -128,15 +138,25 @@ function drawReport(data) {
         if (field.hasOwnProperty('sort'))
             column.headerSort = true;
         if (field.hasOwnProperty('width'))
-            column.width = true;
+            column.width = field.width;
         if (field.hasOwnProperty('minWidth'))
-            column.minWidth = true;
+            column.minWidth = field.minWidth;
         if (field.hasOwnProperty('align')) {
             column.hozAlign = field.align;
             column.headerHozAlign = field.align;
         }
-        if (field.hasOwnProperty('visible'))
-            column.visible = field.visible;
+        if (field.hasOwnProperty('calc')) {
+            column[calcPosition + 'Calc'] = field.calc;
+        }
+        if (field.hasOwnProperty('format')) {
+            column.formatter = field.format;
+        }
+        if (field.hasOwnProperty('visible')) {
+            if (field.visible == 'true' || field.visible === true)
+                column.visible = true;
+            else
+                column.visible = false;
+        }
         if (field.hasOwnProperty('filter')) {
             switch (field.filter) {
                 case 'textarea':

@@ -3,17 +3,21 @@
 	auth=registration
 	csvfile="MembershipByCategory"
     index=memCategory
+    totals=bottom
 [F001]
 	name=Category
 	sql=memCategory
 	title="Category"
 	filter=true
 	sort=true
+	calc=count
 [F002]
 	name=Num
 	sql="COUNT(*)"
     align=right
-	title="Num Memberships"
+	title="Num Mbrs"
+	width=80
+	calc=sum
 [T001]
 	name=reg
 	alias=r
