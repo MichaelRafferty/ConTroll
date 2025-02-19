@@ -156,7 +156,6 @@ EOS;
   <a href='reports/artists.php'>Artists since <?PHP echo $con['minComp']; ?></a><br/>
   <a href="reports/artInventory.php">Art Inventory</a><br/>
   <a href='reports/newMembers.php'>New Members</a><br/>
-  <a href='reports/duplicates.php'>Duplicate Memberships</a><br/>
   <a href='reports/badgeTypes.php'>Badge Types</a><br/>
   <a href='reports/clubHistory.php'><?PHP echo $controll['clubname']; ?> History</a><br/>
   <form action='reports/badgeHistory.php' method='GET'>
