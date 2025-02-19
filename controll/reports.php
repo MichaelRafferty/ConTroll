@@ -159,7 +159,7 @@ EOS;
   <a href='reports/badgeTypes.php'>Badge Types</a><br/>
   <a href='reports/clubHistory.php'><?PHP echo $controll['clubname']; ?> History</a><br/>
   <form action='reports/badgeHistory.php' method='GET'>
-    Badge Hisory For:
+    Badge History For:
     <input type='number' name='perid'/>
     <input type='submit' value='Get'/>
   </form>
