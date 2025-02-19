@@ -13,4 +13,4 @@
 	description="Number of paid memberships by Category"
 	template=regByCategory.rpt
 	auth=registration
-	type=rpt
+	tpe=rpt
