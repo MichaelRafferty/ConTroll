@@ -67,7 +67,7 @@ if ($groupDir = opendir(__DIR__ . '/reports/local_groups')) {
 ?>
 <script type='text/javascript'>
     var config = <?php echo json_encode($config_vars); ?>;
-    //var reports = <?php echo json_encode($reports); ?>;
+    var reports = <?php echo json_encode($reports); ?>;
 </script>
 <ul class='nav nav-tabs mb-3' id='reports-tab' role='tablist'>
 <?php
@@ -103,7 +103,7 @@ if (count($reports) > 0) {
     foreach ($reports AS $rptkey => $report) {
         $grpname = $report['group']['name'];
         echo <<<EOS
-    <div class='tab-content $active' id='$grpname-content' tabindex='0'>
+    <div class='tab-content $active' id='$grpname-content' tabindex='0' hidden>
         
 EOS;
         $groupRpts = array_keys($report);

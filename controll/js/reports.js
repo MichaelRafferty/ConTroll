@@ -6,13 +6,23 @@
 //  4 = show hidden div
 debug = 0;
 
+var reportContentTabs = null;
 var reportContentDiv = null;
 var reportTable = null;
 var csvfile = null;
+var reportTabs = [];
+var reportContents = {};
 
 // initialization at DOM complete
 window.onload = function initpage() {
+    reportContentTabs = document.getElementsByClassName('report-content');
     reportContentDiv = document.getElementById('report-content-div');
+    var keys = Object.keys(reports);
+    for (var i = 0; i < keys.length; i++) {
+        var report = reports[keys[i]];
+        reportTabs.push(report.group.name);
+        reportContents[report.group.name] = document.getElementById(report.group.name + '-content');
+    }
 }
 
 
@@ -33,6 +43,13 @@ function settab(tabname) {
         reportTable.destroy();
         reportTable = null;
     }
+
+    for (var i = 0; i < reportTabs.length; i++) {
+        var tab = reportTabs[i];
+        var tabCompare = tab + '-pane';
+        reportContents[tab].hidden = (tabCompare != tabname);
+    }
+
     reportContentDiv.innerHTML = '';
     clear_message();
     clearError();
