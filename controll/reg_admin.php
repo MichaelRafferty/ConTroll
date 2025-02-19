@@ -783,6 +783,11 @@ $config_vars['multiOneDay'] = $multiOneDay;
                 <div id="registration-table"></div>
             </div>
         </div>
+        <div class='row mt-2'  id="reglist-csv-div" hidden>
+            <div class='col-sm-auto' id='admin-buttons'>
+                <button id='reglist-csv' type='button' class='btn btn-info btn-sm' onclick='reglistCSV(); return false;'>Download CSV</button>
+            </div>
+        </div>
 <?php
     if ($badgeListFilter == 'bottom')
         drawFilters();

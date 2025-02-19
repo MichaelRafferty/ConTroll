@@ -171,7 +171,8 @@ EOS;
             }
             if (array_key_exists('interestKey', $row)) { // if key is there, it's an update
                 // interest = ?, description = ?, notifyList = ?, csv = ?, updateBy = ?, active = ?, sortorder = ?
-                $numrows = dbSafeCmd($updsql, 'ssssisis', array ($row['interest'], $row['description'], $row['notifyList'],
+                $numrows = dbSafeCmd($updsql, 'ssssisis', array ($row['interest'], $row['description'],
+                      str_replace(PHP_EOL, '', $row['notifyList']),
                       $row['csv'], $user_perid, $row['active'], $row['sortorder'], $row['interestKey']));
                 $updated += $numrows;
             }
@@ -185,7 +186,8 @@ EOS;
             }
             if (!array_key_exists('interestKey', $row)) { // if key is not there, its an insert
                 // interest, description, notifyList, sortOrder, createDate, updateDate, updateBy, active, csv)
-                $numrows = dbSafeInsert($inssql, 'sssiiss', array ($row['interest'], $row['description'], $row['notifyList'],
+                $numrows = dbSafeInsert($inssql, 'sssiiss', array ($row['interest'], $row['description'],
+                    str_replace(PHP_EOL, "", $row['notifyList']),
                     $row['sortOrder'], $user_perid, $row['active'], $row['csv']));
                 if ($numrows !== false)
                     $inserted++;

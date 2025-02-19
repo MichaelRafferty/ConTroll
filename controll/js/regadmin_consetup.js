@@ -100,6 +100,7 @@ class consetup {
     <button id="` + this.#setup_type + `memlist-redo" type="button" class="btn btn-secondary btn-sm" onclick="` + this.#setup_type + `.redoMemList(); return false;" disabled>Redo</button>
     <button id="` + this.#setup_type + `memlist-addrow" type="button" class="btn btn-secondary btn-sm" onclick="` + this.#setup_type + `.addrowMemList(); return false;">Add New</button>
     <button id="` + this.#setup_type + `memlist-save" type="button" class="btn btn-primary btn-sm"  onclick="` + this.#setup_type + `.saveMemList(); return false;" disabled>Save Changes</button>
+    <button id="` + this.#setup_type + `memlist-csv" type="button" class="btn btn-info btn-sm"  onclick="` + this.#setup_type + `.downloadMemList(); return false;">Download CSV</button>
 </div>
 <div>&nbsp;</div>
 </div>
@@ -533,4 +534,29 @@ class consetup {
             });
         }
     };
+
+    downloadMemList() {
+        if (this.#memtable == null)
+            return;
+
+        var filename = this.#conid + '_memlist';
+        var tabledata = JSON.stringify(this.#memtable.getData("active"));
+        var fieldList = [
+            'id',
+            'conid',
+            { key: 'memCategory', label: 'Category' },
+            { key: 'memType', label: 'Type' },
+            { key: 'memAge', label: 'Age' },
+            'shortname',
+            'label',
+            'price',
+            'startdate',
+            'enddate',
+            'atcon',
+            'online',
+            'notes',
+            'sort_order'
+        ];
+        downloadCSVPost(filename, tabledata, null, fieldList);
+    }
 };
