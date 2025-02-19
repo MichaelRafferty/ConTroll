@@ -57,7 +57,8 @@ if ($reportAuth != $hdrAuth) {
 }
 
 $response["reportTitle"] = $reportHdr['name'];
-
+if (array_key_exists('totals', $reportHdr))
+    $response['calcPosition'] = $reportHdr['totals'];
 
 $fieldArr = [];
 $sections = array_keys($reportParams);
