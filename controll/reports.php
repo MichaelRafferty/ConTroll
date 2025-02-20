@@ -74,7 +74,12 @@ if ($groupDir = opendir(__DIR__ . '/reports/local_groups')) {
 // now make the tabs
 $active = ' active';
 if (count($reports) > 0) {
-    foreach ($reports as $key => $report) {
+    $keys = array_keys($reports);
+    sort($keys);
+    for ($i = 0; $i < count($keys); $i++) {
+        $key = $keys[$i];
+        $report = $reports[$key];
+
         $hdr = $report['group'];
         $name = $hdr['name'];
         $desc = $hdr['description'];
@@ -99,6 +104,7 @@ EOS;
 <div class='tab-content ms-2' id='reports-content'>
 <?php
 $active = ' active';
+$reportPrompts = [];
 if (count($reports) > 0) {
     foreach ($reports AS $rptkey => $report) {
         $grpname = $report['group']['name'];
@@ -123,13 +129,29 @@ EOS;
             //	auth=registration
             //	type=rpt
             $name = $rpt['name'];
-            $fileName = $report['group']['file'];
-            $prefix = $report['group']['prefix'];
+            $group = $report['group'];
+            $fileName = $group['file'];
+            $prefix = $group['prefix'];
+            $keys = array_keys($rpt);
+            $prompts = [];
+            sort($keys);
+            for ($i = 0; $i < count($keys); $i++) {
+                if (!str_starts_with($keys[$i], 'P'))
+                    continue;
+
+                $prompts[] = explode('/~/', $rpt[$keys[$i]]);
+            }
             $tab = str_replace(' ', '-', $name);
+            if (count($prompts) > 0) {
+                $reportPrompts[$key] = $prompts;
+                $onclick = "showPrompts('$key', '$prefix', '$fileName');";
+            } else {
+                $onclick = "noPrompts('$key', '$prefix', '$fileName');";
+            }
             echo <<<EOS
             <li class="nav-item" role="presentation $active">
                 <button class="nav-link" id="$tab-tab" data-bs-toggle="pill" data-bs-target="#gen-report-content" type="button"
-                    role="tab" aria-controls="$grpname-tab" aria-selected="false" onclick="getRpt('$key', '$prefix', '$fileName');" tabindex="-1">
+                    role="tab" aria-controls="$grpname-tab" aria-selected="false" onclick="$onclick" tabindex="-1">
                     $name
                 </button>
             </li>
@@ -142,10 +164,17 @@ EOS;
 EOS;
         $active = '';
     }
+    if (count($reportPrompts) > 0) {
+?>
+    <script type='text/javascript'>
+        var reportPrompts = <?php echo json_encode($reportPrompts); ?>;
+    </script>
+<?php
+    }
     ?>
     <div class='tab-content ms-2' id='gen-report-content'>
-        <div class='container-fluid' id='report-content-div'>
-        </div>
+        <div class='container-fluid' id='report-prompt-div'></div>
+        <div class='container-fluid' id='report-content-div'></div>
     </div>
     <?php
 }
@@ -156,13 +185,7 @@ EOS;
   <a href='reports/artists.php'>Artists since <?PHP echo $con['minComp']; ?></a><br/>
   <a href="reports/artInventory.php">Art Inventory</a><br/>
   <a href='reports/newMembers.php'>New Members</a><br/>
-  <a href='reports/badgeTypes.php'>Badge Types</a><br/>
   <a href='reports/clubHistory.php'><?PHP echo $controll['clubname']; ?> History</a><br/>
-  <form action='reports/badgeHistory.php' method='GET'>
-    Badge History For:
-    <input type='number' name='perid'/>
-    <input type='submit' value='Get'/>
-  </form>
   <form action='reports/hotel_reg.php' method='GET'>
     Registration Report For <?PHP echo $con['conname']; ?>
     <input type='number' name='conid'/>
@@ -197,10 +220,6 @@ EOS;
     <input type='submit' value='Artshow Checkout'/>
   </form>
     <?php } ?>
-    <form action='reports/badgeHistory.php' method='GET'>
-        <input type='number' name='perid' size=6/>
-        <input type='submit' value='Get Badge History'/>
-    </form>
         </div>
     </div>
     <div id='result_message' class='mt-4 p-2'></div>
