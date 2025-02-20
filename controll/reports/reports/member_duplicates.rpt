@@ -81,6 +81,18 @@
 	title="Dup Paid"
 	filter=number
 	align=right
+[F100]
+    name=first_name
+    sql=p.first_name
+    visible=false
+[F101]
+    name=last_name
+    sql=p.last_name
+    visible=false
+[F102]
+    name=middle_name
+    sql=p.middle_name
+    visible=false
 [T001]
 	name=reg
 	alias=r1
