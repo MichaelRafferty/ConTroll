@@ -1,5 +1,5 @@
 [report]
-	name="Memberships by Category"
+	name="MembershipsByCategory"
 	auth=registration
 	csvfile="MembershipByCategory"
     index=memCategory
