@@ -138,14 +138,16 @@ EOS;
         $active2 = '';
         echo <<<EOS
         </ul>
-        <div class="tab-content ms-2" id="gen-report-content">
-            <div class="container-fluid" id="report-content-div">  
-            </div>
-        </div>
     </div>
 EOS;
         $active = '';
     }
+    ?>
+    <div class='tab-content ms-2' id='gen-report-content'>
+        <div class='container-fluid' id='report-content-div'>
+        </div>
+    </div>
+    <?php
 }
 ?>
     <div class='tab-pane fade show <?php echo $active; ?>' id='oldreports-pane' role='tabpanel' aria-labelledby='oldreports-tab' tabindex='0'>
@@ -154,11 +156,10 @@ EOS;
   <a href='reports/artists.php'>Artists since <?PHP echo $con['minComp']; ?></a><br/>
   <a href="reports/artInventory.php">Art Inventory</a><br/>
   <a href='reports/newMembers.php'>New Members</a><br/>
-  <a href='reports/duplicates.php'>Duplicate Memberships</a><br/>
   <a href='reports/badgeTypes.php'>Badge Types</a><br/>
   <a href='reports/clubHistory.php'><?PHP echo $controll['clubname']; ?> History</a><br/>
   <form action='reports/badgeHistory.php' method='GET'>
-    Badge Hisory For:
+    Badge History For:
     <input type='number' name='perid'/>
     <input type='submit' value='Get'/>
   </form>
