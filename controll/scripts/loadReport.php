@@ -59,12 +59,34 @@ if ($reportAuth != $hdrAuth) {
 $response["reportTitle"] = $reportHdr['name'];
 if (array_key_exists('totals', $reportHdr))
     $response['calcPosition'] = $reportHdr['totals'];
+if (array_key_exists('subtotals', $reportHdr))
+    $response['groupby'] = $reportHdr['subtotals'];
 
 $fieldArr = [];
 $sections = array_keys($reportParams);
+$sql = '';
 sort($sections);
 // ok, we now have the report itself, build the SQL
-$sql = "SELECT" . PHP_EOL;
+// first the CTE's if any
+$first = true;
+foreach ($sections AS $key => $section) {
+    if (!str_starts_with($section, 'C'))
+        continue;
+
+    // build the cte..
+    $cte = $reportParams[$section];
+    if ($first) {
+        $sql .= "WITH ";
+        $first = false;
+    } else {
+        $sql .= "), ";
+    }
+    $sql .= $cte['name'] .  ' AS (' . PHP_EOL . $cte['select'] . PHP_EOL . $cte['tables'] . PHP_EOL . $cte['where'] . PHP_EOL;
+}
+if ($first == false)
+    $sql .= ")\n";
+// now the main body of the select
+$sql .= "SELECT" . PHP_EOL;
 $first = '';
 foreach ($sections AS $key => $section) {
     if (!str_starts_with($section, 'F'))
@@ -74,7 +96,7 @@ foreach ($sections AS $key => $section) {
     $fields = $reportParams[$section];
     $sql .= $first . $fields['sql'] . ' AS ' . $fields['name'] . PHP_EOL;
     unset($fields['sql']);
-    $fieldArr[$key] = $fields;
+    $fieldArr[] = $fields;
     $first = ', ';
 }
 
