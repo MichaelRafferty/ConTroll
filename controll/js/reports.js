@@ -135,6 +135,9 @@ function drawReport(data) {
         paginationSize: 25,
         paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
     };
+    if (data.hasOwnProperty('groupby')) {
+        params.groupBy = data['groupby'];
+    }
 
     // set the calc position
     var calcPosition = 'bottom';
@@ -164,6 +167,9 @@ function drawReport(data) {
         }
         if (field.hasOwnProperty('calc')) {
             column[calcPosition + 'Calc'] = field.calc;
+            if (field.hasOwnProperty('precision')) {
+                column[calcPosition + 'CalcParams'] = { precision: field.precision };
+            }
         }
         if (field.hasOwnProperty('format')) {
             column.formatter = field.format;
@@ -192,7 +198,7 @@ function drawReport(data) {
                     column.headerFilter = true;
             }
         }
-        console.log(column);
+        //console.log(column);
         columns.push(column);
     }
     params.columns = columns;
