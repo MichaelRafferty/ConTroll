@@ -1,7 +1,7 @@
 [report]
-	name="Duplicate Memberships"
+	name="DuplicateMemberships"
 	auth=registration
-	svfile="DuplicateMemberships"
+	csvfile="DuplicateMemberships"
 	totals=bottom
 [F001]
     name=perid
