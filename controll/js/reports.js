@@ -12,11 +12,14 @@ var reportTable = null;
 var csvfile = null;
 var reportTabs = [];
 var reportContents = {};
+var reportPromptDiv = null;
+var reportFields = null;
 
 // initialization at DOM complete
 window.onload = function initpage() {
     reportContentTabs = document.getElementsByClassName('report-content');
     reportContentDiv = document.getElementById('report-content-div');
+    reportPromptDiv = document.getElementById('report-prompt-div');
     var keys = Object.keys(reports);
     for (var i = 0; i < keys.length; i++) {
         var report = reports[keys[i]];
@@ -51,8 +54,53 @@ function settab(tabname) {
     }
 
     reportContentDiv.innerHTML = '';
+    reportPromptDiv.innerHTML = '';
     clear_message();
     clearError();
+}
+
+function showPrompts(reportName, prefix, fileName) {
+    if (!reportPrompts.hasOwnProperty(reportName)) {
+        show_message("Report not configured properly, no prompts found, seek assistance", "error");
+        return;
+    }
+
+    var prompts = reportPrompts[reportName];
+    reportFields = [];
+    console.log(reportName);
+    console.log(prompts);
+    // build the input area with the prompts...
+    var html = ''
+    for (var i = 0; i < prompts.length; i++) {
+        var prompt = prompts[i];
+        if (prompt[0] == 'prompt') {
+            html += '<div class="row">\n<div class="col-sm-auto"><label for="P-' + prompt[1] + '">' + prompt[2] + '</label></div>\n';
+            html += '<div class="col-sm-auto"><input type="text" id="P-' + prompt[1] + '" name="P-' + prompt[1] + '"';
+            if (prompt.length > 3) {
+                html += ' placeholder="' + prompt[3] + '" ';
+            }
+            if (prompt.length > 4) {
+                html += ' value="' + prompt[4] + '" ';
+            }
+            html += '></div>\n</div>\n';
+            reportFields.push("P-" + prompt[1]);
+        }
+    }
+
+    if (html == '') {
+        return getRpt(reportName, prefix, fileName);
+    }
+
+    html += '<div class="row mt-2">\n<div class="col-sm-auto">\n' +
+        '<button class="btn btn-sm btn-primary" type="button" onclick="getRpt(\'' + reportName + '\', \'' + prefix + '\', \'' + fileName + '\');">\n' +
+        'Run Report\n</button>\n</div>\n</div>\n';
+    reportPromptDiv.innerHTML = html;
+}
+
+function noPrompts(reportName, prefix, fileName) {
+    reportFields = null;
+    reportPromptDiv.innerHTML = '';
+    getRpt(reportName, prefix, fileName);
 }
 
 function getRpt(reportName, prefix, fileName) {
@@ -67,6 +115,16 @@ function getRpt(reportName, prefix, fileName) {
     };
     clear_message();
     clearError();
+
+    if (reportFields && reportFields.length > 0) {
+        var postVars = {};
+        for (var i = 0; i < reportFields.length; i++) {
+            var fieldName = reportFields[i].substr(2);
+            postVars[fieldName] = document.getElementById(reportFields[i]).value;
+        }
+        postdata.postVars = postVars;
+    }
+
     reportContentDiv.innerHTML = '';
     $.ajax({
         url: script,

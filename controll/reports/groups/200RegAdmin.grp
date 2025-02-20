@@ -1,0 +1,11 @@
+[group]
+	name="RegAdmin"
+	description="Registration Admin Reports"
+	auth=reg_admin
+[100RegHistory]
+	name="Registration History"
+	description="Registration History for a Person"
+	template=reg_history.rpt
+	auth=reg_admin
+	type=rpt
+	P001="prompt/~/perid/~/History for: /~/Enter Person's Perid"

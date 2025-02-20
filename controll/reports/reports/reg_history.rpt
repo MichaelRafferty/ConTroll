@@ -1,0 +1,96 @@
+[report]
+	name="RegHistory"
+	auth=reg_admin
+	csvfile="RegHistory"
+    index=regid
+[F001]
+    name=Perid
+	sql=p.id
+	title="Perid"
+	align=right
+	minWidth=80
+[F002]
+    name=fullName
+    sql="TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' '))"
+    title="Full Name"
+    minWidth=300
+[F003]
+    name=Conid
+    sql=r.conid
+    title=Conid
+    sort=true
+    aligh=right
+    minWidth=80
+    filter=number
+[F004]
+    name=Type
+    sql=m.memType
+    title=Type
+    filter=true
+[F005]
+    name=Category
+    sql=m.memCategory
+    title=Category
+    filter=true
+[F006]
+    name=Label
+    sql=m.label
+    title=Label
+    filter=true
+[F007]
+    name=price
+    sql=r.price
+    title=Price
+    filter=number
+    align=right
+[F008]
+    name=createdBy
+    sql=r.create_user
+    title="Created by"
+    align=right
+    minWidth=80
+[F009]
+    name=createDate
+    sql=r.create_date
+    title="Create Date"
+[F010]
+    name=pickup
+    sql=ra.logdate
+    title="First Pickup"
+[F011]
+    name=source
+    sql=t.type
+    title=Source
+[T001]
+	name=reg
+	alias=r
+[T002]
+	name=memList
+	alias=m
+	join="m.id = r.memId"
+[T003]
+    name=transaction
+    alias=t
+    join="r.complete_trans = t.id"
+[T004]
+    name=perinfo
+    alias=p
+    join="r.perid = p.id"
+[T014]
+    name=pickup
+    alias=ra
+    join="ra.regid = r.id"
+    left=true
+[C001]
+    name=pickup
+    select="SELECT regid, MIN(logdate) AS logdate, action"
+    tables="FROM regActions"
+    where="WHERE action='print' GROUP BY regid, action"
+[P001]
+	type=prompt
+	item=perid
+	datatype=i
+[where]
+	001="r.perid = ?"
+[sort]
+	001=conid, createDate

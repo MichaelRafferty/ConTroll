@@ -42,6 +42,11 @@ if (!checkAuth($check_auth['sub'], $hdrAuth)) {
 $template = $report['template'];
 $response['description'] = $report['description'];
 $reportParams = parse_ini_file(__DIR__ . "/../reports/$prefix/$template", true);
+if ($reportParams === false) {
+    $response['error'] = 'Report template not found or had errors in it.  Seek assistance.';
+    ajaxSuccess($response);
+    exit();
+}
 $reportHdr = $reportParams['report'];
 $reportAuth = $reportHdr['auth'];
 if (array_key_exists('index', $reportHdr))
@@ -63,6 +68,11 @@ if (array_key_exists('subtotals', $reportHdr))
     $response['groupby'] = $reportHdr['subtotals'];
 
 $fieldArr = [];
+$postVars = [];
+if (array_key_exists('postVars', $_POST)) {
+    $postVars = $_POST['postVars'];
+}
+
 $sections = array_keys($reportParams);
 $sql = '';
 sort($sections);
@@ -106,6 +116,8 @@ foreach ($sections AS $key => $section) {
     if (!str_starts_with($section, 'T'))
         continue;
     $table = $reportParams[$section];
+    if (array_key_exists('left', $table))
+        $sql .= "LEFT OUTER ";
     $sql .= $first . $table['name'];
     if (array_key_exists('alias', $table) && $table['alias'] != "")
         $sql .= " " . $table['alias'];
@@ -187,8 +199,8 @@ foreach ($sections as $key => $section) {
             $value = $param['value'];
             break;
         case 'prompt':
-            if (array_key_exists($key, $_POST))
-                $value = $_POST[$key];
+            if (array_key_exists($param['item'], $postVars))
+                $value = $postVars[$param['item']];
     }
     $paramArray[] = $value;
 }
