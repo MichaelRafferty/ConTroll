@@ -797,7 +797,7 @@ $config_vars['multiOneDay'] = $multiOneDay;
                 <button class="btn btn-primary btn-sm" onclick="window.location.href = 'reports/allEmails.php';" disabled>Download Email List</button>
             </div>
             <div class="col-sm-auto p-2">
-                <button class="btn btn-primary btn-sm" onclick="window.location.href = 'reports/regReport.php';" disabled>Download Reg Report</button>
+                <button class="btn btn-primary btn-sm" onclick="window.location.href = 'reports/regReport.php';">Download Reg Report</button>
             </div>
             <div class="col-sm-auto p-2">
                 <button class="btn btn-primary btn-sm" onclick="sendEmail('marketing')" disabled>Send Marketing Email</button>
