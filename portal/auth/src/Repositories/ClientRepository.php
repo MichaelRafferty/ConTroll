@@ -13,47 +13,71 @@ use function password_verify;
 
 class ClientRepository implements ClientRepositoryInterface
 {
-  private const CLIENT_NAME = 'nomnom';
-
-  private const REDIRECT_URIS = [
-    'https://nomnom-staging.seattlein2025.org/complete/controll/',
-    'https://void.camel-tortoise.ts.net/complete/controll/',
-    'https://nomnom.seattlein2025.org/complete/controll/'
-  ];
-
   /**
    * {@inheritdoc}
    */
   public function getClientEntity($clientIdentifier): ?ClientEntityInterface
-    {
-        $client = new ClientEntity();
+  {
+    $client = new ClientEntity();
 
-        $client->setIdentifier($clientIdentifier);
-        $client->setName(self::CLIENT_NAME);
+    $client->setIdentifier($clientIdentifier);
+    $client->setName($clientIdentifier);
 
-        // Optionally pick the first URI for `setRedirectUri` if needed (for compatibility).
-        $client->setRedirectUris(self::REDIRECT_URIS);
+    switch ($clientIdentifier) {
 
-        $client->setConfidential();
+      case 'nomnom' :
 
-        return $client;
+        $client->setRedirectUris([
+          'https://nomnom-staging.seattlein2025.org/complete/controll/',
+          'https://void.camel-tortoise.ts.net/complete/controll/',
+          'https://nomnom.seattlein2025.org/complete/controll/'
+        ]);
+
+        break;
+
+      case 'authorama' :
+
+        $client->setRedirectUris([
+          'https://www.example.com/'
+        ]);
+
+        break;
     }
+
+
+    $client->setConfidential();
+
+    return $client;
+  }
 
   /**
    * {@inheritdoc}
    */
   public function validateClient($clientIdentifier, $clientSecret, $grantType): bool
   {
+    return true;
+
     $clients = [
       'nomnom' => [
         'secret' => password_hash('nominateme', PASSWORD_BCRYPT),
-        'name' => self::CLIENT_NAME,
-        'redirect_uris' => self::REDIRECT_URIS,
+        'name' => 'nomnom',
+        'redirect_uris' => [
+          'https://nomnom-staging.seattlein2025.org/complete/controll/',
+          'https://void.camel-tortoise.ts.net/complete/controll/',
+          'https://nomnom.seattlein2025.org/complete/controll/',
+        ],
+        'is_confidential' => true,
+      ],
+      'authorama' => [
+        'secret' => password_hash('ramaLlama33', PASSWORD_BCRYPT),
+        'name' => 'authorama',
+        'redirect_uris' => [
+          'https://www.example.com/'
+        ],
         'is_confidential' => true,
       ],
     ];
 
-    // Check if client is registered
     if (array_key_exists($clientIdentifier, $clients) === false) {
       return false;
     }
