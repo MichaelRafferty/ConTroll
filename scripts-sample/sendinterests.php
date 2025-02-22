@@ -6,7 +6,9 @@ if (!$db_ini) {
 }
 require_once(__DIR__ . '/../lib/db_functions.php');
 require_once(__DIR__ . '/../lib/global.php');
+require_once(__DIR__ . '/../lib/cleanMemberDups.php');
 require_once(__DIR__ . '/../lib/email__load_methods.php');
+
 db_connect();
 $con = get_conf('con');
 $local = get_conf('local');
@@ -90,6 +92,21 @@ Starting data fetch:
     rundate: $runDate
 
 EOS;
+}
+
+// clean the dups first
+$intDups = checkDups('interests');
+if (count($intDups) > 0) {
+    $cleanup = dedupTable('interests', $intDups);
+    if (count($cleanup) > 1)
+        error_log("sendInterests: dedup of interests upodated " . $cleanup[0] . " rows, and deleted " . $cleanup[1] . " rows");
+}
+
+$polDups = checkDups('policies');
+if (count($polDups) > 0) {
+    $cleanup = dedupTable('policies', $polDups);
+    if (count($cleanup) > 1)
+        error_log('sendInterests: dedup of policies upodated ' . $cleanup[0] . ' rows, and deleted ' . $cleanup[1] . ' rows');
 }
 
 load_email_procs();
@@ -429,7 +446,7 @@ EOS;
 SELECT *
 FROM interests
 WHERE active = 'Y'
-ORDER BY sortOrder ASC;
+ORDER BY sortOrder;
 EOS;
         $iR = dbQuery($iQ);
         if ($iQ !== false) {

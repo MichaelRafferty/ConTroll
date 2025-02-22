@@ -41,6 +41,7 @@ var recepitEmailAddress = null;
 var find_result_table = null;
 var testdiv = null;
 var conid = 0;
+var reglistDiv = null;
 
 // changes items
 var changeMemberships = [];
@@ -133,6 +134,7 @@ window.onload = function initpage() {
     }
 
     testdiv = document.getElementById('test');
+    reglistDiv = document.getElementById('reglist-csv-div');
 
     $('#registration-table').html('<button class="btn btn-primary mb-4 ms-4" onclick="getData();">Load Registration List</button>');
 }
@@ -641,7 +643,7 @@ function history(index) {
 function displayHistory(data) {
     var  title = "Registration Change History for " + historyRow.create_trans + ':' + historyRow.badgeId;
     historyTitle.innerHTML = title
-    title += "<br/>Person:  " + historyRow.p_name + ' (' + historyRow.perid + "), Email: " + historyRow.p_email +
+    title += "<br/>Person:  " + historyRow.fullName + ' (' + historyRow.perid + "), Email: " + historyRow.email_addr +
         "<br/>Membership: " + historyRow.label;
     // build the history display
     var html = '<div class="row"><div class="col-sm-12"><h1 class="h3">' + title + '</h1></div></div>';
@@ -745,7 +747,7 @@ function displayNotes(data) {
 
     var index = data['post']['index'];
     var row = registrationtable.getRow(index);
-    var fullname = row.getCell('p_name').getValue();
+    var fullname = row.getCell('fullName').getValue();
     var label = row.getCell('label').getValue();
     var badgeId = row.getCell('badgeId').getValue();
     document.getElementById('notesTitle').innerHTML = "Registration Notes for " + fullname + '<br/>Membership: ' + badgeId + ': ' + label;
@@ -831,7 +833,7 @@ function changeRegsData(data, rowdata) {
 
     html += `
     <div class="row mt-4 mb-2">
-        <div class="col-sm-12"><b>Registrations for ` + rowdata.p_name + ' (' + rowdata.p_email + '), id: ' + rowdata.perid + `</b></div>
+        <div class="col-sm-12"><b>Registrations for ` + rowdata.fullName + ' (' + rowdata.email_addr + '), id: ' + rowdata.perid + `</b></div>
     </div>
       <div class="row">
         <div class="col-sm-12">
@@ -1030,7 +1032,7 @@ function changeTransfer() {
         return;
     }
 
-    transferFromNameDiv.innerHTML = changeRowdata['perid'] + ': ' + changeRowdata['p_name'];
+    transferFromNameDiv.innerHTML = changeRowdata.perid + ': ' + changeRowdata.fullname;
     transferFromRegistrationDiv.innerHTML =  registrationList;
     transferNameSearchField.value = '';
 
@@ -1582,9 +1584,9 @@ function draw_registrations(data) {
             { title: "Action", formatter: actionbuttons, hozAlign:"left", headerSort: false },
             { title: "TID", field: "display_trans", hozAlign: "right",  headerSort: true, headerFilter: true },
             { title: "PID", field: "perid", width: 110, hozAlign: "right", headerSort: true, headerFilter: true, },
-            { title: "Person", field: "p_name", headerSort: true, headerFilter: true },
-            { title: "Badge Name", field: "p_badge", headerSort: true, headerFilter: true },
-            { title: "Email", field: "p_email", headerSort: true, headerFilter: true },
+            { title: "Full Name", field: "fullName", headerSort: true, headerFilter: true, headerFilterFunc: fullNameHeaderFilter, },
+            { title: "Badge Name", field: "badge_name", headerSort: true, headerFilter: true },
+            { title: "Email", field: "email_addr", headerSort: true, headerFilter: true },
             { title: "Membership Type", field: "label", width: 300, headerSort: true, headerFilter: true, },
             { title: "memId", field: "memId", hozAlign: "right", headerSort: true, headerFilter: true, },
             { title: "Price", field: "price", hozAlign: "right", headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter, },
@@ -1603,12 +1605,27 @@ function draw_registrations(data) {
             { field: "complete_trans", visible: false },
             { field: "ncount", visible: false,},
             { field: "hcount", visible: false,},
+            {field: 'first_name', visible: false,},
+            {field: 'middle_name', visible: false,},
+            {field: 'last_name', visible: false,},
         ],
         initialSort: [
             {column: "display_trans", dir: "desc" },
             {column: "change_date", dir: "desc" },
         ],
     });
+    reglistDiv.hidden = false;
+}
+
+// save off the csv file
+function reglistCSV() {
+    if (registrationtable == null)
+        return;
+
+    var filename = 'registrations';
+    var tabledata = JSON.stringify(registrationtable.getData("active"));
+    var excludeList = ['hcount','ncount'];
+    downloadCSVPost(filename, tabledata, excludeList);
 }
 
 // called from data load - draws the filter stats block and the registrations block
@@ -1708,6 +1725,13 @@ function settab(tabname) {
         interests.close();
     if (rules != null)
         rules.close();
+    if (tabname != 'registrationlist-pane') {
+        reglistDiv.hidden = true;
+        if (registrationtable) {
+            registrationtable.destroy();
+            registrationtable = null;
+        }
+    }
 
     // now open the relevant one, and create the class if needed
     switch (tabname) {

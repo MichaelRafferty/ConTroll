@@ -101,6 +101,8 @@ class interestsSetup {
                 <button id="interests-redo" type="button" class="btn btn-secondary btn-sm" onclick="interests.redo(); return false;" disabled>Redo</button>
                 <button id="interests-addrow" type="button" class="btn btn-secondary btn-sm" onclick="interests.addrow(); return false;">Add New</button>
                 <button id="interests-save" type="button" class="btn btn-primary btn-sm"  onclick="interests.save(); return false;" disabled>Save Changes</button>
+                <button id="interests-csv" type="button" class="btn btn-info btn-sm"  onclick="interests.csv(); return false;">Download CSV</button>
+
             </div>
         </div>
         <div class="row mt-4">
@@ -418,6 +420,27 @@ class interestsSetup {
                 }
             });
         }
+    }
+
+
+    // save off the csv file
+    csv() {
+        if (this.#interestsTable == null)
+            return;
+
+        var filename = 'interests';
+        var tabledata = JSON.stringify(this.#interestsTable.getData("active"));
+        var fieldList = [
+            'interest',
+            'description',
+            'notifyList',
+            'csv',
+            'active',
+            'createDate',
+            'updateDate',
+            'sortOrder'
+        ];
+        downloadCSVPost(filename, tabledata, null, fieldList);
     }
 }
 

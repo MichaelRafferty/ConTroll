@@ -34,7 +34,7 @@ $limit = 100;
 if (is_numeric($findPattern)) {
     // this is a perid/transaction match
     $mQ = <<<EOS
-SELECT p.id AS perid, p.email_addr, p.badge_name,
+SELECT p.id AS perid, p.email_addr, p.badge_name, p.first_name, p.middle_name, p.last_name,
     TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ',  
         IFNULL(p.suffix, '')), '  *', ' ')) AS fullName,
     IFNULL(r.complete_trans, r.create_trans) AS tid, 
@@ -54,7 +54,7 @@ LEFT OUTER JOIN transaction t2 ON (r.complete_trans = t2.id)
 LEFT OUTER JOIN perinfo pm ON (p.managedBy = pm.id)
 WHERE p.id = ?
 UNION 
-SELECT p.id AS perid, p.email_addr, p.badge_name,
+SELECT p.id AS perid, p.email_addr, p.badge_name, p.first_name, p.middle_name, p.last_name,
     TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ',  
         IFNULL(p.suffix, '')), '  *', ' ')) AS fullName,
     IFNULL(r.complete_trans, r.create_trans) AS tid, 
@@ -103,7 +103,7 @@ WITH per AS (
         OR LOWER(CONCAT(p.first_name, ' ', p.middle_name, ' ', p.last_name, ' ', p.suffix)) LIKE ?
         OR LOWER(p.fullName) LIKE ?)
 )
-SELECT p.id AS perid, p.email_addr, p.badge_name, p.legalname, 
+SELECT p.id AS perid, p.email_addr, p.badge_name, p.legalname, p.first_name, p.middle_name, p.last_name,
     TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ',  
         IFNULL(p.suffix, '')), '  *', ' ')) AS fullName,
     IFNULL(r.complete_trans, r.create_trans) AS tid, 

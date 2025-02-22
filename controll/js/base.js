@@ -407,6 +407,31 @@ function numberHeaderFilter(headerValue, rowValue, rowData, filterParams) {
     }
 }
 
+// fullNameHeaderFilter: Custom header filter for substring and first/last substring for FullName with first_name and last_name fields in the table
+function fullNameHeaderFilter(headerValue, rowValue, rowData, filterParams) {
+    var header = headerValue.toLowerCase();
+    var value = rowValue.toLowerCase();
+    if (value.includes(header))
+        return true;
+
+    var parts = header.split(' ');
+    if (parts.length < 2)
+        return false;
+
+    var first = rowData.first_name.toLowerCase();
+    var last = rowData.last_name.toLowerCase();
+    if (parts.length == 3) {
+        var middle = rowData.middle_name.toLowerCase();
+        return first.includes(parts[0]) && middle.includes(parts[1]) && last.includes(parts[2]);
+    }
+
+    if (parts.length == 2) {
+        return first.includes(parts[0]) && last.includes(parts[1]);
+    }
+
+    return false;
+}
+
 // saveEdit - a common return from the base.php mce editor modal
 var editTableDiv = null;
 var editFieldDiv = null;
@@ -521,4 +546,43 @@ function blankIfNull(value) {
     if (value == null)
         return '';
     return value;
+}
+
+// pass object to a window.open via a post with json data
+function downloadCSVPost(fileName, tableData, excludeList = null, fieldList = null) {
+    // create the form
+    var form = document.createElement('form');
+    form.method = 'POST';
+    form.action = 'scripts/downloadCSV.php';
+    // append it to the body
+    document.body.appendChild(form);
+    // create the file name to suggest to save it to....
+    var field = document.createElement('input');
+    field.type = 'text';
+    field.name = 'filename';
+    field.value = fileName;
+    form.appendChild(field);
+    if (excludeList != null) {
+        field = document.createElement('input');
+        field.type = 'text';
+        field.name = 'excludeList';
+        field.value = JSON.stringify(excludeList);
+        form.appendChild(field);
+    };
+    if (fieldList != null) {
+        field = document.createElement('input');
+        field.type = 'text';
+        field.name = 'fieldList';''
+        field.value = JSON.stringify(fieldList);
+        form.appendChild(field);
+    };
+    // create the data table element
+    var tablejson = document.createElement('input');
+    tablejson.type = 'text';
+    tablejson.name = 'table'
+    tablejson.value = tableData;
+    form.appendChild(tablejson);
+    // now open the window
+    form.submit();
+    document.body.removeChild(form);
 }

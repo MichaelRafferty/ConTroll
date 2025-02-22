@@ -55,6 +55,7 @@ class ExhibitorInvoice {
 // openInvoice: display the vendor invoice (and registration items)
     openInvoice(exhibitorInfo, regionYearId) {
         var regionName = '';
+        var spacePriceName = '';
         var html = '';
         var priceIdx = 0;
 
@@ -114,8 +115,14 @@ class ExhibitorInvoice {
                         if (prices[priceIdx].id == space.item_approved)
                             break;
                     }
-                    this.#includedMemberships = Math.max(this.#includedMemberships, prices[priceIdx].includedMemberships);
-                    this.#additionalMemberships = Math.max(this.#additionalMemberships, prices[priceIdx].additionalMemberships);
+                    if (this.#includedMemberships < prices[priceIdx].includedMemberships) {
+                        spacePriceName = prices[priceIdx].description;
+                        this.#includedMemberships = prices[priceIdx].includedMemberships;
+                    }
+                    if (this.#additionalMemberships < prices[priceIdx].additionalMemberships) {
+                        spacePriceName = prices[priceIdx].description;
+                        this.#additionalMemberships = prices[priceIdx].additionalMemberships;
+                    }
                 }
             }
         }
@@ -131,14 +138,36 @@ class ExhibitorInvoice {
         document.getElementById("vendor_invoice_title").innerHTML = "<strong>Pay " + regionName + ' Invoice for ' + exhibitorName + '</strong>';
 
         var spaces = this.#includedMemberships + this.#additionalMemberships;
-        html = "<p>This space comes with " +
-            (this.#includedMemberships > 0 ? this.#includedMemberships : "no") +
-            " memberships included and " +
-            (this.#additionalMemberships > 0 ? "the " : "no ") + "right to purchase " +
-            (this.#additionalMemberships > 0 ? "up to " + this.#additionalMemberships : "no") +
-            " additional memberships at a reduced rate of $" + Number(regionList.additionalMemPrice).toFixed(2) + ".</p>";
-        if ((this.#includedMemberships == 0) && (this.#additionalMemberships == 0)) {
-            html += "<input type='hidden' name='agreeNone' value='on'></input>\n"
+        // make the strings for the number of included additional memberships available to purchase
+        html = '<p>';
+        if (spaces == 0) { // no additional or included memberships
+            html += regionName + ' ' +  spacePriceName + ' spaces do not come with any memberships as part of the space purchase. ' +
+                ' Please purchase your attending memberships to the convention separately at ' +
+                '<a href="' + config['regserver'] + '">' + config['regserver'] + '</a>.';
+        } else if (this.#includedMemberships == 0) {
+            html += regionName + ' ' +  spacePriceName + ' spaces come with the option to purchase up to ' + this.#additionalMemberships +
+                ' membership' + (this.#additionalMemberships > 1 ? 's' : '') + ' at  the discounted price of $' +
+                Number(regionList.additionalMemPrice).toFixed(2) + '. ' +
+                'Purchase those memberships here. ' +
+                'Any additional memberships beyond those you purchase here need to be purchased separately at ' +
+                '<a href="' + config['regserver'] + '">' + config['regserver'] + '</a>.';
+        } else if (this.#additionalMemberships == 0) {
+            html += regionName + ' ' +  spacePriceName + ' spaces come with ' + this.#includedMemberships + ' membership' + (this.#includedMemberships > 1 ? 's' : '') +
+                ' as part of the space purchase. Please enter those memberships here. ' +
+                'Any additional memberships to the convention need to be purchased separately at ' +
+                '<a href="' + config['regserver'] + '">' + config['regserver'] + '</a>.';
+        } else {
+            html += regionName + ' ' +  spacePriceName + ' spaces come with ' + this.#includedMemberships + ' membership' + (this.#includedMemberships > 1 ? 's' : '') +
+                ' as part of the space purchase. In addition it comes with the right to purchase up to ' + this.#additionalMemberships +
+                ' membership' + (this.#additionalMemberships > 1 ? 's' : '') + ' at  the discounted price of $' +
+                Number(regionList.additionalMemPrice).toFixed(2) + '. ' +
+                'Use the included memberships first, and then add the additional memberships if desired. If you need more memberships beyond that they need to' +
+                ' be purchased separately at ' +
+                '<a href="' + config['regserver'] + '">' + config['regserver'] + '</a>.';
+        }
+        html += "</p>\n";
+        if (spaces == 0) {
+            html += "<input type='hidden' name='agreeNone' value='on'></input>"
         }
         html += "<input type='hidden' name='exhibitorId' value='" + this.#exhibitorId + "'></input>\n" +
             "<input type='hidden' name='exhibitorYearId' value='"+ this.#exhibitorYearId + "'></input>\n";

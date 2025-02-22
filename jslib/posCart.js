@@ -907,7 +907,7 @@ class PosCart {
         var btncolor = null;
         // now loop over the memberships in the order retrieved
         var pindex = this.#cartPerinfoMap.get(perid);
-        var mrows = this.#cartPerinfo[[pindex]].memberships;
+        var mrows = this.#cartPerinfo[pindex].memberships;
         for (var mrownum in mrows) {
             mrow = mrows[mrownum];
             if (mrow.toDelete !== undefined)

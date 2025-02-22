@@ -23,7 +23,12 @@ function getRulesData($conid, $regadmin = false, $atcon = false) {
     $QR->free();
     $data['memTypes'] = $memTypes;
 
-    $QR = dbQuery("SELECT * FROM memCategories WHERE active = 'Y' ORDER BY sortorder;");
+    if ($regadmin) {
+        $QR = "SELECT * FROM memCategories ORDER BY sortorder;";
+    } else {
+        $QR = "SELECT * FROM memCategories WHERE active = 'Y' ORDER BY sortorder;";
+    }
+    $QR = dbQuery($QR);
     $memCategories = array();
     while ($row = $QR->fetch_assoc()) {
         $memCategories[$row['memCategory']] = $row;

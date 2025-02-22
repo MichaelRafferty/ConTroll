@@ -783,6 +783,11 @@ $config_vars['multiOneDay'] = $multiOneDay;
                 <div id="registration-table"></div>
             </div>
         </div>
+        <div class='row mt-2'  id="reglist-csv-div" hidden>
+            <div class='col-sm-auto' id='admin-buttons'>
+                <button id='reglist-csv' type='button' class='btn btn-info btn-sm' onclick='reglistCSV(); return false;'>Download CSV</button>
+            </div>
+        </div>
 <?php
     if ($badgeListFilter == 'bottom')
         drawFilters();
@@ -792,7 +797,7 @@ $config_vars['multiOneDay'] = $multiOneDay;
                 <button class="btn btn-primary btn-sm" onclick="window.location.href = 'reports/allEmails.php';" disabled>Download Email List</button>
             </div>
             <div class="col-sm-auto p-2">
-                <button class="btn btn-primary btn-sm" onclick="window.location.href = 'reports/regReport.php';" disabled>Download Reg Report</button>
+                <button class="btn btn-primary btn-sm" onclick="window.location.href = 'reports/regReport.php';">Download Reg Report</button>
             </div>
             <div class="col-sm-auto p-2">
                 <button class="btn btn-primary btn-sm" onclick="sendEmail('marketing')" disabled>Send Marketing Email</button>

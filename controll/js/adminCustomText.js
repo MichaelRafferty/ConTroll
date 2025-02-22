@@ -25,9 +25,16 @@ class customTextSetup {
     // called on open of the custom text window
     open() {
         var script;
-        var html = `<h4><strong>Edit Custom Text:</strong></h4>
+        var html = `
 <div class="container-fluid">
     <div class="row">
+       <div class="col-sm-6">
+            <h4><strong>Edit Custom Text:</strong></h4>
+       </div>
+       <div class="col-sm-6 text-end">
+            <strong><a href="md/CustomText.md" target="_new">Display Custom Text Documentation (requires Markdown Reader Extension)</a></strong>
+        </div>
+    </div>
     <div class="row">
         <div class="col-sm-12 p-0 m-0" id="customTextTableDiv"></div>
     </div>
@@ -36,6 +43,7 @@ class customTextSetup {
             <button id="customText-undo" type="button" class="btn btn-secondary btn-sm" onclick="customText.undo(); return false;" disabled>Undo</button>
             <button id="customText-redo" type="button" class="btn btn-secondary btn-sm" onclick="customText.redo(); return false;" disabled>Redo</button>
             <button id="customText-save" type="button" class="btn btn-primary btn-sm"  onclick="customText.save(); return false;" disabled>Save Changes</button>
+            <button id="customText-csv" type="button" class="btn btn-info btn-sm"  onclick="customText.csv(); return false;">Download CSV</button>
         </div>
     </div>
 </div>
@@ -190,7 +198,6 @@ class customTextSetup {
         return undosize;
     }
 
-
     // save - save the customText entries back to the database
     save() {
         var script;
@@ -244,6 +251,24 @@ class customTextSetup {
                 }
             });
         }
+    }
+
+    // save off the csv file
+    csv() {
+        if (this.#customTextTable == null)
+            return;
+
+        var filename = 'customText';
+        var tabledata = JSON.stringify(this.#customTextTable.getData("active"));
+        var fieldList = [
+            { key: 'appName', label: 'App' },
+            { key: 'appPage', label: 'Page' },
+            { key: 'appSection', label: 'Section' },
+            { key: 'txtItem', label: 'Item' },
+            { key: 'txtItemDescription', label: 'Description' },
+            { key: 'contents', label: 'Custom_Text' },
+        ];
+        downloadCSVPost(filename, tabledata, null, fieldList);
     }
 
     // on close of the pane, clean up the items

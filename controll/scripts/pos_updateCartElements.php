@@ -133,10 +133,10 @@ JOIN memLabel m ON (r1.memId = m.id)
 LEFT OUTER JOIN notes n ON (r1.id = n.regid)
 LEFT OUTER JOIN printcount pc ON (r1.id = pc.regid)
 LEFT OUTER JOIN attachcount ac ON (r1.id = ac.regid)
-WHERE r1.perid = ? AND r1.conid = ? AND r1.status IN ('unpaid', 'paid', 'plan')
+WHERE r1.perid = ? AND r1.conid IN (?, ?) AND r1.status IN ('unpaid', 'paid', 'plan')
 ORDER BY r1.perid, r1.create_date;
 EOS;
-$selRdt = 'iii';
+$selRdt = 'iiii';
 
 // create the controlling transaction, in case the master perinfo needed insertion
 $master_perid = $cart_perinfo[0]['perid'];
@@ -297,7 +297,7 @@ for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
     }
 
     // since we can add/delete memberships, re-select the memberships for this perid to get the current list
-    $selR = dbSafeQuery($selReg, $selRdt, array($conid, $cartrow['perid'], $conid));
+    $selR = dbSafeQuery($selReg, $selRdt, array($conid, $cartrow['perid'], $conid, $conid + 1));
     if ($selR === false) {
         $error_message .= "Select of memberships for person at $row (" . $cartrow['perid'] . ") failed<BR/>";
         continue;

@@ -12,6 +12,8 @@
 /scripts/
 /UserDoc/
 /apiDocs/
+/reports/local_groups/
+/reports/local_reports/
 
 # images directories not used by ConTroll
 /atcon/images/
