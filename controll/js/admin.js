@@ -65,7 +65,7 @@ function clearPermissions(userid) {
     var formdata = $("#" + userid).serialize();
     $('#test').append(formdata);
     $.ajax({
-        url: 'scripts/permUpdate.php',
+        url: 'scripts/admin_permUpdate.php',
         method: 'POST',
         data: formdata+"&action=clear",
         success: function (data, textStatus, jhXHR) {
@@ -81,7 +81,7 @@ function updatePermissions(userid) {
     var formdata = $("#" + userid).serialize();
     $('#test').append(formdata);
     $.ajax({
-        url: 'scripts/permUpdate.php',
+        url: 'scripts/admin_permUpdate.php',
         method: 'POST',
         data: formdata+"&action=update",
         success: function (data, textStatus, jhXHR) {
