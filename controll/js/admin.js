@@ -1,3 +1,14 @@
+//import { TabulatorFull as Tabulator } from 'Tabulator';
+//import Jquery from 'Jquery';
+//import JqueryUI from 'Jquery UI';
+
+// main screen
+var message_div = null;
+// classes
+var users = null;
+var printers = null;
+var userid = null;
+
 conid = null;
 // keys items
 keysTable = null;
@@ -15,7 +26,6 @@ atconSaveBtn = null;
 atconRedoBtn = null;
 atconUndoBtn = null;
 atconDirty = false;
-
 
 // debug meaning
 //  1 = console.logs
@@ -57,6 +67,21 @@ window.onload = function initpage() {
         console.log("Requested to build " + (Number(conid) + 1) + " setup");
         buildNewYear();
     }
+}
+
+window.onbeforeunload = function() {
+    var $message = ''
+
+    if (users !== null && users.dirty)  {
+        $message += 'You have unsaved changes in the Users tab. ';
+    }
+    if (printers !== null && printers.dirty) {
+        $message += 'You have unsaved changes in the Printers tab. ';
+    }
+    if ($message !== '') {
+        return $message + "If you leave this page, you will lose them.";
+    }
+    return null;
 }
 
 function clearPermissions(userid) {
@@ -261,6 +286,14 @@ function settab(tabname) {
         keysTable.destroy();
         keysTable = null;
     }
+    if (users) {
+        users.close();
+        users = null;
+    }
+    if (users) {
+        users.close();
+        users = null;
+    }
 
     // now open the relevant one, and create the class if needed
     switch (tabname) {
@@ -268,11 +301,14 @@ function settab(tabname) {
             getMenu();
             break;
         case 'keys-pane':
-            console.log('keys pane');
+            console.log(tabname);
+        case 'atconUsers-pane':
+            loadAtconUsers();
             break;
-        case 'atcon-pane':
-            console.log('atcon pane');
+        case 'atconPrinters-pane':
+            loadAtconPrinters();
             break;
+
     }
 }
 function cellChanged(cell) {
