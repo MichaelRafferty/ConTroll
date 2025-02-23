@@ -35,7 +35,7 @@ function ol_page_init($title, $js = '') {
     <script type='text/javascript' src='<?php echo $includes['jqjs']; ?>'></script>
     <script type='text/javascript' src='<?php echo $includes['jquijs']; ?>'></script>
     <script type='text/javascript' src='javascript/coupon.js'></script>
-    <script type='text/javascript' src='javascript/store.js'></script>
+    <script type='text/javascript' src='javascript/store.js?v=1.1'></script>
 <?php
     if ($js != '') {
         echo <<<EOF
