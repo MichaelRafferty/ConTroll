@@ -290,9 +290,9 @@ function settab(tabname) {
         users.close();
         users = null;
     }
-    if (users) {
-        users.close();
-        users = null;
+    if (printers) {
+        printers.close();
+        printers = null;
     }
 
     // now open the relevant one, and create the class if needed
@@ -346,6 +346,41 @@ function openUsers(data) {
         show_message(data.success, 'success');
     }
     users = new Users(data.users)
+}
+
+function loadAtconPrinters() {
+    script = 'scripts/admin_atconLoadData.php';
+    postData = {
+        load_type: 'printers'
+    }
+    clearError();
+    clear_message();
+    $.ajax({
+        url: script,
+        method: 'POST',
+        data: postData,
+        success: function (data, textStatus, jhXHR) {
+            if (data.error) {
+                show_message(data.error, 'error');
+                return;
+            }
+            if (data.warn) {
+                show_message(data.error, 'warn');
+                return;
+            }
+            openPrinters(data);
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            showError("ERROR in getMenu: " + textStatus, jqXHR);
+        },
+    });
+}
+
+function openPrinters(data) {
+    if (data.success) {
+        show_message(data.success, 'success');
+    }
+    printers = new Printers(data.servers, data.printers)
 }
 
 function cellChanged(cell) {
@@ -532,6 +567,49 @@ function buildNewYear() {
             showError("ERROR in " + script + ": " + textStatus, jqXHR);
             return false;
         }
+    });
+}
+
+//  load/refresh the data from the server.  Which items are refreshed depends on the loadtype field
+//  Possible loadtypes:
+//      all
+//      users
+//      printers
+function loadInitialData(loadtype) {
+    'use strict';
+
+    var postData = {
+        ajax_request_action: 'loadData',
+        load_type: loadtype
+    };
+    $.ajax({
+        method: "POST",
+        url: "scripts/admin_atconloadData.php",
+        data: postData,
+        success: function(data, textstatus, jqxhr) {
+            if (data['message'] !== undefined) {
+                show_message(data['message'], 'success');
+            }
+            if (data['userid'] !== undefined) {
+                userid = data['userid'];
+                if (users == null) {
+                    users = new Users(data['users']);
+                } else {
+                    users.loadUsers(data['users']);
+                    users.dirty = false;
+                }
+            }
+            if (data['servers'] !== undefined) {
+                if (printers == null) {
+                    printers = new Printers(data['servers'], data['printers']);
+                } else {
+                    printers.loadPrinters(data['servers'], data['printers']);
+                    printers.dirty = false;
+                    printers.serverNameToDelete = null;
+                }
+            }
+        },
+        error: showAjaxError,
     });
 }
 // atcon tabs common functions

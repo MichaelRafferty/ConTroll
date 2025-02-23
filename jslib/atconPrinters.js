@@ -265,6 +265,24 @@ class Printers {
             error: showAjaxError,
         });
     }
+
+    close() {
+        if (this.printerlist !== null) {
+            this.printerlist.destroy();
+            this.printerlist = null;
+
+        }
+        if (this.serverlist !== null) {
+            this.serverlist.destroy();
+            this.serverlist = null;
+
+        }
+        this.serverlist.savebtn.disabled = false;
+        this.serverlist.savebtn.innerHTML = "Save";
+        this.printers_savebtn.disabled = false;
+        this.printers_savebtn.innerHTML = "Save";
+    }
+
 }
 
 // external call to Users functions: when tabulator calls the function, the 'this' pointer is wrong

@@ -326,6 +326,17 @@ class Users {
         });
     }
 
+    close() {
+        if (this.userlist !== null) {
+            this.userlist.destroy();
+            this.userlist = null;
+            this.searchdiv.hidden = true;
+            this.addbtn.disabled = false;
+        }
+        this.savebtn.disabled = true;
+        this.savebtn.innerHTML = 'Save';
+    }
+
 // tabulator formatter to blank out the field if the row is the current user in atcon
     blankIfMe(cell, formatterParams, onRendered) {
         "use strict";
