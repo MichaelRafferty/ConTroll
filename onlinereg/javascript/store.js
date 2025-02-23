@@ -626,7 +626,7 @@ window.onload = function () {
             prices[memId] = Number(mbrtype['price']);
             badges['memTypeCount'][memId] = 0;
             shortnames[memId] = mbrtype['shortname'].replace(',','<br/>');
-            mbrtype['primary'] = (mbrtype['memCategory'] == 'standard') || (mbrtype['memCategory'] == 'virtual');
+            mbrtype['primary'] = (mbrtype['memCategory'] == 'standard') || (mbrtype['memCategory'] == 'virtual') || (mbrtype['memCategory'] == 'yearahead');
             mbrtype['discount'] = 0;
             mbrtype['discountable'] = false;
         }
