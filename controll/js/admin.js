@@ -311,6 +311,43 @@ function settab(tabname) {
 
     }
 }
+
+// atcon call up functions
+function loadAtconUsers() {
+    script = 'scripts/admin_atconLoadData.php';
+    postData = {
+        load_type: 'users'
+    }
+    clearError();
+    clear_message();
+    $.ajax({
+        url: script,
+        method: 'POST',
+        data: postData,
+        success: function (data, textStatus, jhXHR) {
+            if (data.error) {
+                show_message(data.error, 'error');
+                return;
+            }
+            if (data.warn) {
+                show_message(data.error, 'warn');
+                return;
+            }
+            openUsers(data);
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            showError("ERROR in getMenu: " + textStatus, jqXHR);
+        },
+    });
+}
+
+function openUsers(data) {
+    if (data.success) {
+        show_message(data.success, 'success');
+    }
+    users = new Users(data.users)
+}
+
 function cellChanged(cell) {
     dirty = true;
     cell.getElement().style.backgroundColor = "#fff3cd";
@@ -496,4 +533,48 @@ function buildNewYear() {
             return false;
         }
     });
+}
+// atcon tabs common functions
+// Useful tabulator functions (formatters, invert toggle)
+
+// shows password when editing it, shows ***** for a changed password or a string about the password for existing or needs for new rows
+function tabPasswordFormatter(cell, formatterParams, onRendered) {
+    "use strict";
+
+    //cell - the cell component
+    //formatterParams - parameters set for the column
+    //onRendered - function to call when the formatter has been rendered
+
+    var curval = cell.getValue();
+    if (curval === undefined || curval === null || curval === '') {
+        return 'Keep Existing Password';
+    }
+    if (curval === '-') {
+        return 'Needs Initial Password';
+    }
+    return '******';
+}
+
+function localServersList() {
+    var servers = printers.serverlist.getData();
+    var distinctServers = new Array();
+    for (var i = 0; i < servers.length; i++) {
+        if (servers[i]['local'] === true || Number(servers[i]['local']) === 1)
+            distinctServers[servers[i]['serverName']] = 1;
+    }
+    return Object.keys(distinctServers);
+}
+function invertTickCross(e,cell) {
+    'use strict';
+
+    var value = cell.getValue();
+    if (value === undefined) {
+        value = false;
+    }
+    if (value === 0 || Number(value) === 0)
+        value = false;
+    else if (value === "1" || Number(value) > 0)
+        value = true;
+
+    cell.setValue(!value, true);
 }

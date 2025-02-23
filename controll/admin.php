@@ -258,7 +258,7 @@ if (array_key_exists('msg', $_REQUEST)) {
                 <div class="row">
                     <div class="col-sm-auto" id="menuTableDiv"></div>
                 </div>
-                <div class='row mt-2 mb-3'>
+                <div class='row mt-2 mb-3 '>
                     <div class='col-sm-auto'>
                         <button id='menu-undo' type='button' class='btn btn-secondary btn-sm' onclick='undoMenu(); return false;' disabled>Undo</button>
                         <button id='menu-redo' type='button' class='btn btn-secondary btn-sm' onclick='redoMenu(); return false;' disabled>Redo</button>
@@ -295,8 +295,11 @@ if (array_key_exists('msg', $_REQUEST)) {
                     </div>
                 </div>
                 <div class='row mb-2'>
-                    <div class='col-sm-4'>
+                    <div class='col-sm-auto'>
                         <button type='button' class='btn btn-primary btn-sm' id='users_search_btn' onclick='users.search();'>Search Users</button>
+                    </div>
+                    <div class='col-sm-auto'>
+                        <button type='button' class='btn btn-secondary btn-sm' id='users_search_btn' onclick='users.cancelSearch();'>Cancel Search</button>
                     </div>
                 </div>
                 <div class='row mt-2'>

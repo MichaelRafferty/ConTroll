@@ -62,8 +62,11 @@ page_init($page, 'admin',
                 </div>
             </div>
             <div class='row mb-2'>
-                <div class='col-sm-4'>
+                <div class='col-sm-auto'>
                     <button type='button' class='btn btn-primary btn-sm' id='users_search_btn' onclick='users.search();'>Search Users</button>
+                </div>
+                <div class='col-sm-auto'>
+                    <button type='button' class='btn btn-secondary btn-sm' id='users_search_btn' onclick='users.cancelSearch();'>Cancel Search</button>
                 </div>
             </div>
             <div class='row mt-2'>

@@ -194,18 +194,25 @@ class Users {
         this.searchbtn.disabled = this.search_field.value.trim().length <= 0;
     }
 
-    // either close the search block, or perform the search
+    // close the search block
+    cancelSearch() {
+        if (this.addlist !== null) {
+            this.addlist.destroy();
+            this.addlist = null;
+        }
+        this.searchbtn.innerHTML = 'Search Users';
+        this.searchdiv.hidden = true;
+        this.searchbtn.disabled = true;
+        this.addbtn.disabled = false;
+        this.search_field.value = '';
+        clear_message();
+    }
+    // perform the search
     search() {
         // if tabulator table exists, button is to close search, destroy the table and hide the block
         if (this.addlist !== null) {
             this.addlist.destroy();
             this.addlist = null;
-            this.searchbtn.innerHTML = 'Search Users';
-            this.searchdiv.hidden = false;
-            this.searchbtn.disabled = true;
-            this.search_field.value = '';
-            show_message('', '');
-            return;
         }
 
         // ok, new search
@@ -231,7 +238,7 @@ class Users {
         users.searchdiv.hidden = false;
         users.searchbtn.disabled = true;
         users.search_field.value = '';
-        show_message('', '');
+        clear_message();
     }
 
     // show the search results returned from the server
@@ -247,13 +254,12 @@ class Users {
             return;
         }
         show_message(data['message'], 'success');
-        this.searchbtn.innerHTML = 'Close Search';
 
         this.addlist = new Tabulator('#searchTab', {
             data: data['data'],
             index: "id",
             layout: "fitData",
-            maxHeight: "300px",
+            maxHeight: "800px",
             movableRows: false,
             history: false,
             columns: [
@@ -320,7 +326,7 @@ class Users {
         });
     }
 
-// tabulator formatter to blank out the field if the row is not a local server
+// tabulator formatter to blank out the field if the row is the current user in atcon
     blankIfMe(cell, formatterParams, onRendered) {
         "use strict";
 
