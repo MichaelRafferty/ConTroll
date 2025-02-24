@@ -211,6 +211,18 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
     </div>
 <?php
         if ($membershipTypes != null) {
+            $yearahead = false;
+            foreach ($membershipTypes as $type) {
+                if $type['memCategory'] == 'yearahead') {
+                    $yearahead = true;
+                    $nyConData = get_con($condata['id']  + 1);
+                    $startdateYA = new DateTime($nyConData['startdate']);
+                    $agebydateYA = $startdateYA->format('F j, Y');
+                    }
+                    break;
+                }
+            }
+
 ?>
     <div class='row'>
         <div class='col-sm-12'>
@@ -220,9 +232,14 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
     <div class='row'>
         <div class='col-sm-12'>
             <p class='text-body'>
-                Select membership type from the drop-down menu below.
+                Select membership type from the drop-down menu below.<br/>
                 Eligibility for Child and Young Adult rates are based on age on <?php echo $ageByDate; ?>
-                (the first day of the convention).</p>
+                (the first day of the convention).<br/>
+        <?PHP if ($yearahead) { ?>
+                For Year Ahead membrerships, the rates are based on age or <?php echo $agebydateYA; ?>
+               (the first day of the convention for next year).<br/>
+        <?PHP } ?>
+            </p>
         </div>
     </div>
     <div class="row">

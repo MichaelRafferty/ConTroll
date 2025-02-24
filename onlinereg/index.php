@@ -62,13 +62,13 @@ $priceQ = <<<EOS
 SELECT id, label, shortname, sort_order, price, memAge, memCategory, memType
 FROM memLabel
 WHERE
-    conid=?
+    (conid=? OR (conid = ? AND memCategory = 'yearahead')) 
     AND online = 'Y'
     AND startdate <= current_timestamp()
     AND enddate > current_timestamp()
 ORDER BY sort_order, price DESC;
 EOS;
-$priceR = dbSafeQuery($priceQ, "i", array($condata['id']));
+$priceR = dbSafeQuery($priceQ, "ii", array($condata['id'], $condata['id']  + 1));
 while($priceL = $priceR->fetch_assoc()) {
     $membershiptypes[] = $priceL;
 }
