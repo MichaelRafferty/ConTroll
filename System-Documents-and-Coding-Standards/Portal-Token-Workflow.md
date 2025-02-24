@@ -1,7 +1,7 @@
 # Portal Token Workflow
 This document will trace the flow of various portal tokens from creation and field contents to use and logging.
 
-The followinfg types of tkens are used by the ConTroll Portal
+The followinfg types of tokens are used by the ConTroll Portal
 * Email Login Tokens
 * Oauth2 Login Tokens
 * Account Selection from Login Token

@@ -1,7 +1,7 @@
 # controll
-## ContRoll Registration Admin, Configuration and Control Website
+## ContRoll™ Registration Admin, Configuration and Control Website
 
-One top level file per menu item in the Controll Administration Site (listed in the default display (sort) order)
+One top level file per menu item in the ConTroll™ Administration Site (listed in the default display (sort) order)
 
 **Home**: index.php - shows your login status and the current version information for the system and database
 
