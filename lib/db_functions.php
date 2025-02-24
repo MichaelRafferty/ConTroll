@@ -686,10 +686,13 @@ function get_conf($name)
     return null;
 }
 
-function get_con()
+function get_con($id = null)
 {
     global $db_ini;
-    $r = dbSafeQuery("SELECT * FROM conlist WHERE id=?;", 'i', [$db_ini['con']['id']]);
+    if ($id === null) {
+        $id = $db_ini['con']['id'];
+    }
+    $r = dbSafeQuery("SELECT * FROM conlist WHERE id=?;", 'i', [$id]);
     return $r->fetch_assoc();
 }
 

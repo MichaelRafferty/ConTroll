@@ -50,9 +50,13 @@ WHERE
     AND enddate > current_timestamp()
 ORDER BY sort_order, price DESC;
 EOS;
+$yearAhead = false;
 $priceR = dbSafeQuery($priceQ, "ii", array($condata['id'], $condata['id']  + 1));
 while($priceL = $priceR->fetch_assoc()) {
     $membershiptypes[] = $priceL;
+    if ($priceL['memCategory'] == 'yearahead') {
+        $yearAhead = true;
+    }
 }
 $js = "var mtypes = " . json_encode($membershiptypes);
 $startdate = new DateTime($condata['startdate']);
@@ -61,6 +65,12 @@ $daterange = $startdate->format("F j-") . $enddate->format("j, Y");
 $agebydate = $startdate->format("F j, Y");
 $altstring = $con['org'] . '. ' . $condata['label'] . ' . ' . $daterange;
 $onsitesale = $startdate->format("l, F j");
+
+if ($yearAhead) {
+    $nyConData = get_con($condata['id']  + 1);
+    $startdateYA = new DateTime($nyConData['startdate']);
+    $agebydateYA = $startdateYA->format('F j, Y');
+}
 
 // overall header HTML and main body
   ol_page_init($condata['label'] . ' Online Registration', $js);
@@ -269,7 +279,12 @@ $onsitesale = $startdate->format("l, F j");
                                     <p class="text-body">
                                 Select membership type from the drop-down menu below.
                                 Eligibility for Child and Young Adult rates are based on age on <?php echo $agebydate; ?>
-                                (the first day of the convention).</p>
+                                (the first day of the convention for memberships for this convention).
+                                        <?PHP if ($yearAhead) { ?>
+                                        <br/>For Year Ahead membrerships, the rates are based on age or <?php echo $agebydateYA; ?>
+                                        (the first day of the convention for next year).
+                                        <?PHP } ?>
+                                    </p>
                                 </div>
                              </div>
                             <div class="row">

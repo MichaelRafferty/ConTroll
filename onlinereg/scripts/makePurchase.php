@@ -72,14 +72,14 @@ $priceQ = <<<EOQ
 SELECT m.id, m.memGroup, m.label, m.shortname, m.price, m.memCategory
 FROM memLabel m
 WHERE
-    m.conid=?
+    (conid=? OR (conid = ? AND memCategory = 'yearahead'))
     AND m.online = 'Y'
     AND startdate <= current_timestamp()
     AND enddate > current_timestamp()
 ;
 EOQ;
 $mtypes = array();
-$priceR = dbSafeQuery($priceQ, 'i', array($condata['id']));
+$priceR = dbSafeQuery($priceQ, 'ii', array($condata['id'], $condata['id'] + 1));
 while($priceL = $priceR->fetch_assoc()) {
     $mtypes[$priceL['id']] = $priceL;
 }
