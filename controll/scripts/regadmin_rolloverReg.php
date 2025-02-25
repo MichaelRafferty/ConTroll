@@ -166,13 +166,19 @@ SET reg.status = 'rolled-over', updatedBy = ?
 WHERE reg.id = ? AND reg.conid = ?;
 EOS;
 $insSql = <<<EOS
-INSERT INTO reg(conid, perid, create_date, price, couponDiscount, paid, status, memId, create_trans, priorRegId, create_user)
-VALUES(?, ?, CURRENT_TIMESTAMP, 0, 0, 0, 'paid', ?, ?, ?, ?);
+INSERT INTO reg(conid, perid, create_date, price, couponDiscount, paid, status, memId, create_trans, complete_trans, priorRegId, create_user)
+VALUES(?, ?, CURRENT_TIMESTAMP, 0, 0, 0, 'paid', ?, ?, ?, ?, ?);
 EOS;
+$insNoteSQL = <<<EOS
+insert into regActions(logdate, userid, tid, regid, action,notes)
+values(now(), ?,?,?,'notes', ?);
+EOS;
+
 foreach ($rolloverList as $basdgeId => $rollover) {
     // mark prior membership as rolled-over
     $newMemId = $rollover['newid'];
 
+    // update old reg as rolled over
     $numrows = dbSafeCmd($upgsql, 'iii', array ($user_perid, $badgeId, $conid));
     if ($numrows != 1) {
         $response['error'] = "Failed altering rollover $badgeId ($perid: $first_name $last_name) to rolled-over status";
@@ -180,12 +186,17 @@ foreach ($rolloverList as $basdgeId => $rollover) {
         return false;
     }
 
-    $newid = dbSafeInsert($insSql, 'iiiiii', array ($nextcon, $perid, $newMemId, $newtid, $badgeId, $user_perid));
+    // insert new reg
+    $newid = dbSafeInsert($insSql, 'iiiiiii', array ($nextcon, $perid, $newMemId, $newtid, $newtid, $badgeId, $user_perid));
     if ($newid === false) {
         $response['error'] = "Failed inserting rolled over badge for $badgeId ($perid: $first_name $last_name) of $newMemId";
         ajaxSuccess($response);
         return false;
     }
+
+    // add reg note
+    $logNote = "Rolled over from $conid-$badgeId to $nextcon by $user_perid";
+    $noteid = dbSafeInsert($insNoteSQL, 'iiis', array($user_perid, $newtid, $newid, $logNote));
 }
 
 $response['message'] = count($rolloverList) . " regs rolled over for $perid: $first_name $last_name";
