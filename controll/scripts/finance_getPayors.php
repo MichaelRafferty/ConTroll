@@ -49,7 +49,8 @@ WITH pmts AS (
     JOIN payorPlanPayments lp ON lp.payorPlanId = pmts.payorPlanId AND lp.paymentNbr = pmts.paymentNbr
 )
 SELECT  pp.id, pp.planId, pp.conid, pp.perid, pp.newperid, pp.initialAmt, pp.nonPlanAmt, pp.downPayment, pp.minPayment, pp.finalPayment,
-        pp.openingBalance, pp.numPayments, pp.daysBetween, pp.payByDate, pp.payType, pp.reminders, pp.status, pp.createTransaction,
+        pp.openingBalance, pp.numPayments, pp.daysBetween, pp.payByDate, UPPER(SUBSTRING(pp.payType, 1, 1)) AS payType, pp.reminders, pp.status, pp
+        .createTransaction,
         pp.balanceDue, pp.createDate, pp.updateDate, pp.updateBy,
         p.name, l.paymentsMade, l.lastPaymentDate, l.lastPaymentAmt,
         CASE 
@@ -63,7 +64,8 @@ JOIN paymentPlans p ON pp.planId = p.id
 LEFT OUTER JOIN perinfo pi ON pp.perid = pi.id
 LEFT OUTER JOIN newperson ni ON pp.newperid = ni.id
 LEFT OUTER JOIN lastpmt l ON pp.id = l.payorPlanId
-WHERE pp.conid = ?;
+WHERE pp.conid = ?
+ORDER BY pp.createDate;
 EOS;
 
 $payorR = dbSafeQuery($payorQ, 'i', array($conid));

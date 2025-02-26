@@ -434,15 +434,16 @@ if ($mR !== false) {
             <div class='row mt-2'>
                 <div class='col-sm-12' id='paymentPlanDiv'><H1 class='h3'><b>Payment Plans:</b></H1></div>
             </div>
-        <div class="row mt-2">
-            <div class="col-sm-12" id="paymentPlanTable"></div>
-        </div>
-        <div class='row mt-2'>
-             <div class="col-sm-auto">
-                 <button class="btn btn-sm btn-secondary" onclick="plans.addNew();">Add New</button>
-             </div>
-            <div class='col-sm-auto'>
-                <button class='btn btn-sm btn-primary' id="planSaveBtn" onclick='plans.save();' disabled>Save Changes</button>
+            <div class="row mt-2">
+                <div class="col-sm-12" id="paymentPlanTable"></div>
+            </div>
+            <div class='row mt-2'>
+                 <div class="col-sm-auto">
+                     <button class="btn btn-sm btn-secondary" onclick="plans.addNew();">Add New</button>
+                 </div>
+                <div class='col-sm-auto'>
+                    <button class='btn btn-sm btn-primary' id="planSaveBtn" onclick='plans.save();' disabled>Save Changes</button>
+                </div>
             </div>
         </div>
     </div>
