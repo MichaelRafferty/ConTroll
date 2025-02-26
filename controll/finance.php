@@ -30,7 +30,8 @@ page_init($page,
                     $cdn['tabjs'],
                     'js/tinymce/tinymce.min.js',
                     'js/finance.js',
-                    'js/planSetup.js'
+                    'js/planSetup.js',
+                    'js/payors.js',
                    ),
               $need_login);
 
@@ -393,6 +394,12 @@ if ($mR !== false) {
                 Payment Plan Configuration
             </button>
         </li>
+        <li class='nav-item' role='presentation'>
+            <button class='nav-link' id='payorPlans-tab' data-bs-toggle='pill' data-bs-target='#payorPlans-pane' type='button' role='tab'
+                    aria-controls='nav-configuration' aria-selected='false' onclick="finance.setFinanceTab('payorPlans-pane');">
+                Payor Plans
+            </button>
+        </li>
 <?php
 // additional computed tabs go here
 ?>
@@ -436,6 +443,16 @@ if ($mR !== false) {
              </div>
             <div class='col-sm-auto'>
                 <button class='btn btn-sm btn-primary' id="planSaveBtn" onclick='plans.save();' disabled>Save Changes</button>
+            </div>
+        </div>
+    </div>
+    <div class='tab-pane fade' id='payorPlans-pane' role='tabpanel' aria-labelledby='payorPlans-tab' tabindex='0'>
+        <div class='container-fluid'>
+            <div class='row mt-2'>
+                <div class='col-sm-12' id='payorPlanDiv'><H1 class='h3'><b>Payment Plans:</b></H1></div>
+            </div>
+            <div class='row mt-2'>
+                <div class='col-sm-12' id='payorPlansTable'></div>
             </div>
         </div>
     </div>
