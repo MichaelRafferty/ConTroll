@@ -429,10 +429,10 @@ if ($mR !== false) {
             </div>
         </div>
     </div>
-    <div class='tab-pane fade' id='paymentPlans-pane' role='tabpanel' aria-labelledby='paymentPlans-tab' tabindex='0'>
+    <div class='tab-pane fade' id='paymentPlans-pane' role='tabpanel' aria-labelledby='paymentPlans-tab' tabindex='0' hidden>
         <div class='container-fluid'>
             <div class='row mt-2'>
-                <div class='col-sm-12' id='paymentPlanDiv'><H1 class='h3'><b>Payment Plans:</b></H1></div>
+                <div class='col-sm-12' id='paymentPlanDiv'><H1 class='h3'><b>Payment Plan Configuration:</b></H1></div>
             </div>
             <div class="row mt-2">
                 <div class="col-sm-12" id="paymentPlanTable"></div>
@@ -447,7 +447,7 @@ if ($mR !== false) {
             </div>
         </div>
     </div>
-    <div class='tab-pane fade' id='payorPlans-pane' role='tabpanel' aria-labelledby='payorPlans-tab' tabindex='0'>
+    <div class='tab-pane fade' id='payorPlans-pane' role='tabpanel' aria-labelledby='payorPlans-tab' tabindex='0' hidden>
         <div class='container-fluid'>
             <div class='row mt-2'>
                 <div class='col-sm-12' id='payorPlanDiv'><H1 class='h3'><b>Payment Plans:</b></H1></div>
