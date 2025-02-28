@@ -74,17 +74,17 @@ class PaymentPlans {
                         continue;
 
                     var eligible = false;
-                    if (plan.catList != null) {
+                    if (plan.catList != null && plan.catList.length > 0) {
                         if (plan.catListArray.indexOf(mem.memCategory.toString()) != -1)
                             eligible = true;
                     }
 
-                    if (plan.memList != null) {
+                    if (plan.memList != null && plan.memList.length > 0) {
                         if (plan.memListArray.indexOf(mem.id.toString()) == -1)
                             eligible = true;
                     }
 
-                    if (plan.excludeList != null) {
+                    if (plan.excludeList != null && plan.excludeList.length > 0) {
                         if (plan.excludeListArray.indexOf(mem.id.toString()) != -1)
                             eligible = false;
                     }
