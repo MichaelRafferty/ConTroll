@@ -358,16 +358,12 @@ foreach ($memberships as $key => $membership) {
     if ($membership['status'] == 'unpaid') {
         $totalUnpaid++;
         $totalDue += round($membership['price'] - ($membership['paid'] + $membership['couponDiscount']), 2);
+        $due = round($membership['price'] - ($membership['paid'] + $membership['couponDiscount']), 2);
+        $status = 'Balance due: ' . $dolfmt->formatCurrency((float) $due, $currency);
 
-        if ($membership['status'] == 'unpaid') {
-            $due = round($membership['price'] - ($membership['paid'] + $membership['couponDiscount']), 2);
-            $status = 'Balance due: ' . $dolfmt->formatCurrency((float) $due, $currency);
-
-            if ($membership['status'] == 'unpaid' &&
-                ($membership['startdate'] > $now || $membership['enddate'] < $now || $membership['startdate'] > $now || $membership['online'] == 'N')) {
-                $label = "<span class='text-danger'><b>Expired: </b>$label</span>";
-                $numExpired++;
-            }
+        if ($membership['startdate'] > $now || $membership['enddate'] < $now || $membership['online'] == 'N') {
+            $label = "<span class='text-danger'><b>Expired: </b>$label</span>";
+            $numExpired++;
         }
     }
     if ($membership['status'] == 'plan') {
@@ -451,6 +447,7 @@ if ($info['managedByName'] != null) {
     </div>
 <?php
 }
+$totalDueFormatted = '';
 if ($totalDue > 0) {
     $totalDueFormatted = 'Total due: ' . $dolfmt->formatCurrency((float) $totalDue, $currency);
     if (count($paymentPlans) > 0) {
@@ -508,7 +505,7 @@ if ($totalDue > 0) {
 </div>
 <?php
 $totalMemberships = count($holderMembership);
-drawPersonRow($loginId, $loginType, $info, $holderMembership, $interests != null && count($interests) > 0, false, $now);
+$paidByOthers = drawPersonRow($loginId, $loginType, $info, $holderMembership, $interests != null && count($interests) > 0, false, $now);
 
 $managedMembershipList = '';
 $currentId = -1;
@@ -559,8 +556,9 @@ if ($totalDue > 0 || count($payorPlan) > 0) {
 }
 
 $payHtml = '';
+$totalDueFormatted = '';
 if ($totalDue > 0) {
-    $totalDueFormatted = '&nbsp;&nbsp;Total due: <span name="totalDueAmountSpan">' . $dolfmt->formatCurrency((float) $totalDue, $currency) . '</span>';
+    $totalDueFormatted = '&nbsp;&nbsp;Total due: <span id="totalDueAmountSpan">' . $dolfmt->formatCurrency((float) $totalDue, $currency) . '</span>';
     $payHtml = " $totalDueFormatted   " .
         '<button class="btn btn-sm btn-primary pt-1 pb-1 ms-1 me-2" onclick="portal.payBalance(' . $totalDue . ', true);"' .
         $disablePay . '>Pay Total Amount Due</button>';
@@ -701,7 +699,7 @@ if (count($memberships) > 0) {
                 $color = !$color
 ?>
         </div>
-        <div class="container-fluid<?php echo $bgcolor; ?> p-0 m-0" name="t-<?php echo $trans['t-' . $membership['sortTrans']];?>">
+        <div class="container-fluid<?php echo $bgcolor; ?> p-0 m-0" id="t-<?php echo $trans['t-' . $membership['sortTrans']];?>">
         <div class='row'>
             <div class='col-sm-12 p-0 m-0 align-center'>
                 <hr style='height:4px;width:98%;margin:auto;margin-top:0px;margin-bottom:0px;color:#333333;background-color:#333333;'/>
