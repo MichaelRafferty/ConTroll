@@ -482,7 +482,7 @@ class Membership {
             if (age.ageType == 'all')
                 continue;
             html += '<div class="col-sm-auto"><button id="ageBtn-' + age.ageType + '" class="btn btn-sm ' +
-                ((this.#currentAge == age.ageType || this.#memberAge == age.ageType) ? 'btn-primary' : color) + '" onclick="membership.ageSelect(' + "'" + age.ageType + "'" + ')">' +
+                ((this.#currentAge == age.ageType || this.#memberAge == age.ageType) ? 'btn-primary' : color) + ' mt-1 mb-1" onclick="membership.ageSelect(' + "'" + age.ageType + "'" + ')">' +
                 age.label + ' (' + age.shortname + ')' +
                 '</button></div>' + "\n";
         }
