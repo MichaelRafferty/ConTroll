@@ -460,7 +460,8 @@ function drawPersonRow($personId, $personType, $person, $memberships, $showInter
            }
            if ($compareId != $personId || $compareType != $personType) {
                $row3 = '<br/>Purchased by ' . $membership['purchaserName'];
-               $paidByOthers++;
+               if ($membership['status'] == 'unpaid' || $membership['status'] == 'plan')
+                   $paidByOthers++;
            } else {
                $row3 = '';
            }
