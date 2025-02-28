@@ -397,7 +397,7 @@ class rulesSetup {
             var age = ageList[row];
             if (age.ageType == 'all')
                 continue;
-            html += '<div class="col-sm-auto"><button id="ageBtn-' + age.ageType + '" class="btn btn-sm btn-secondary" ' +
+            html += '<div class="col-sm-auto"><button id="ageBtn-' + age.ageType + '" class="btn btn-sm btn-secondary mt-1 mb-1" ' +
               'onclick="rules.ageSelect(' + "'" + age.ageType + "'" + ')">' + age.label + ' (' + age.shortname + ')' +
                 '</button></div>\n';
         }
