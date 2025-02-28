@@ -62,11 +62,11 @@ function process(formRef) {
     clear_message('addMessageDiv');
     // validation
     // emails must not be blank and must match
-    if (formData['email1'] == '' || formData['email2'] == '' || formData['email1'] != formData['email2']) {
+    if (formData.email1 == '' || formData.email2 == '' || formData.email1 != formData.email2) {
         $('#email1').addClass('need');
         $('#email2').addClass('need');
         valid = false;
-    } else if (!validateAddress(formData['email1'])) {
+    } else if (!validateAddress(formData.email1)) {
         $('#email1').addClass('need');
         $('#email2').addClass('need');
         valid = false;
@@ -75,14 +75,14 @@ function process(formRef) {
         $('#email2').removeClass('need');
     }
 
-    if (formData['country'] == 'USA') {
+    if (formData.country == 'USA') {
         message += "<br/>Note: If any of the address fields Address, City, State or Zip are used and the country is United States, " +
             "then the Address, City, State, and Zip fields must all be entered and the state field must be a valid USPS two character state code.";
     }
     // validation
     if (required != '') {
         // first name is required
-        if (formData['fname'] == '') {
+        if (formData.fname == '') {
             valid = false;
             $('#fname').addClass('need');
         } else {
@@ -92,7 +92,7 @@ function process(formRef) {
 
     if (required == 'all') {
         // last name is required
-        if (formData['lname'] == '') {
+        if (formData.lname == '') {
             valid = false;
             $('#lname').addClass('need');
         } else {
@@ -101,9 +101,9 @@ function process(formRef) {
         }
     }
 
-    if (required == 'addr' || required == 'all' || formData['addr'] != '' || formData['city'] != '' || formData['state'] != '' || formData['zip'] != '') {
+    if (required == 'addr' || required == 'all' || formData.addr != '' || formData.city != '' || formData.state != '' || formData.zip != '') {
         // address 1 is required, address 2 is optional
-        if (formData['addr'] == '') {
+        if (formData.addr == '') {
             valid = false;
             $('#addr').addClass('need');
         } else {
@@ -111,19 +111,19 @@ function process(formRef) {
         }
 
         // city/state/zip required
-        if (formData['city'] == '') {
+        if (formData.city == '') {
             valid = false;
             $('#city').addClass('need');
         } else {
             $('#city').removeClass('need');
         }
 
-        if (formData['state'] == '') {
+        if (formData.state == '') {
             valid = false;
             $('#state').addClass('need');
         } else {
-            if (formData['country'] == 'USA') {
-                if (formData['state'].length != 2) {
+            if (formData.country == 'USA') {
+                if (formData.state.length != 2) {
                     valid = false;
                     $('#state').addClass('need');
                 } else {
@@ -134,7 +134,7 @@ function process(formRef) {
             }
         }
 
-        if (formData['zip'] == '') {
+        if (formData.zip == '') {
             valid = false;
             $('#zip').addClass('need');
         } else {
@@ -143,21 +143,21 @@ function process(formRef) {
     }
 
     // a membership type is required
-    if (formData['memId'] == '') {
+    if (formData.memId == '') {
         valid = false;
         $('#memId').addClass('need');
     } else {
         $('#memId').removeClass('need');
     }
 
-    if (badges['memTypeCount'][formData['memId']] == null)
-        badges['memTypeCount'][formData['memId']] = 0;
+    if (badges.memTypeCount[formData.memId] == null)
+        badges.memTypeCount[formData.memId] = 0;
 
     // check if there are too many limited memberships in the cart
-    if (coupon.getMemGroup() == formData['memId']) {
-        var cur = badges['memTypeCount'][formData['memId']];
+    if (coupon.getMemGroup() == formData.memId) {
+        var cur = badges.memTypeCount[formData.memId];
         var lim = coupon.getLimitMemberships();
-        if (badges['memTypeCount'][formData['memId']] >= coupon.getLimitMemberships()) {
+        if (badges.memTypeCount[formData.memId] >= coupon.getLimitMemberships()) {
             $message += "<br/>You already have the maximum number of memberships of this membership type in your cart based on the coupon applied. " +
                 "You must choose a different membership type.";
             valid = false;
@@ -169,7 +169,7 @@ function process(formRef) {
         if (policy.required == 'Y') {
             var field = '#l_' + policy.policy;
             if (typeof policyData['p_' + policy.policy] === 'undefined') {
-                if (config['debug'] > 0)
+                if (config.debug > 0)
                     console.log("required policy " + policy.policy + ' is not checked');
                 message += '<br/>You cannot continue until you agree to the ' + policy.policy + ' policy.';
                 $(field).addClass('need');
@@ -187,7 +187,7 @@ function process(formRef) {
     }
 
     // Check USPS for standardized address
-    if (uspsDiv != null && formData['country'] == 'USA' && formData['city'] != '') {
+    if (uspsDiv != null && formData.country == 'USA' && formData.city != '' && formData.state != '/r') {
         formDataSave = formData;
         uspsAddress = null;
         $.ajax({
@@ -220,8 +220,8 @@ function addressError(JqXHR, textStatus, errorThrown) {
 }
 
 function addressSuccess(data, textStatus, jqXHR) {
-    if (data['status'] == 'error') {
-        show_message(data['message'], 'error', 'addMessageDiv');
+    if (data.status == 'error') {
+        show_message(data.message, 'error', 'addMessageDiv');
         return false;
     }
     showValidatedAddress(data);
@@ -230,26 +230,26 @@ function addressSuccess(data, textStatus, jqXHR) {
 function showValidatedAddress(data) {
     var html = '';
     clear_message('addMessageDiv');
-    if (data['error']) {
-        var errormsg = data['error'];
+    if (data.error) {
+        var errormsg = data.error;
         if (errormsg.substring(0, 5) == '400: ') {
             errormsg = errormsg.substring(5);
         }
         html = "<h4>USPS Returned an error<br/>validating the address</h4>" +
             "<pre>" + errormsg + "</pre>\n";
     } else {
-        uspsAddress = data['address'];
-        html = "<h4>USPS Returned: " + uspsAddress['valid'] + "</h4>";
-        if (data['status'] == 'error') {
-            html += "<p>USPS uspsAddress Validation Failed: " + data['error'] + "</p>";
+        uspsAddress = data.address;
+        html = "<h4>USPS Returned: " + uspsAddress.valid + "</h4>";
+        if (data.status == 'error') {
+            html += "<p>USPS uspsAddress Validation Failed: " + data.error + "</p>";
         } else {
             // ok, we got a valid uspsAddress, show the block
-            html += "<pre>" + uspsAddress['address'] + "\n";
-            if (uspsAddress['address2'])
-                html += uspsAddress['address2'] + "\n";
-            html += uspsAddress['city'] + ', ' + uspsAddress['state'] + ' ' + uspsAddress['zip'] + "</pre>\n";
+            html += "<pre>" + uspsAddress.address + "\n";
+            if (uspsAddress.address2)
+                html += uspsAddress.address2 + "\n";
+            html += uspsAddress.city + ', ' + uspsAddress.state + ' ' + uspsAddress.zip + "</pre>\n";
         }
-        if (uspsAddress['valid'] == 'Valid')
+        if (uspsAddress.valid == 'Valid')
             html += '<button class="btn btn-sm btn-primary m-1 mb-2" onclick="useUSPS();">Add to cart using USPS Validated Address</button>'
     }
     html += '<button class="btn btn-sm btn-secondary m-1 mb-2 " onclick="useMyAddress();">Add to cart using Address as Entered</button><br/>' +
@@ -261,20 +261,20 @@ function showValidatedAddress(data) {
 
 function useUSPS() {
     var formData = formDataSave;
-    formData['addr'] = uspsAddress['address'];
-    if (uspsAddress['address2'])
-        formData['addr2'] = uspsAddress['address2'];
+    formData.addr = uspsAddress.address;
+    if (uspsAddress.address2)
+        formData.addr2 = uspsAddress.address2;
     else
-        formData['addr2'] = '';
-    formData['city'] = uspsAddress['city'];
-    formData['state'] = uspsAddress['state'];
-    formData['zip'] = uspsAddress['zip'];
+        formData.addr2 = '';
+    formData.city = uspsAddress.city;
+    formData.state = uspsAddress.state;
+    formData.zip = uspsAddress.zip;
 
-    document.getElementById('addr').value = formData['addr'];
-    document.getElementById('addr2').value = formData['addr2'];
-    document.getElementById('city').value = formData['city'];
-    document.getElementById('state').value = formData['state'];
-    document.getElementById('zip').value = formData['zip'];
+    document.getElementById('addr').value = formData.addr;
+    document.getElementById('addr2').value = formData.addr2;
+    document.getElementById('city').value = formData.city;
+    document.getElementById('state').value = formData.state;
+    document.getElementById('zip').value = formData.zip;
     uspsDiv.innerHTML = '';
     addMembership(formData);
 }
@@ -300,21 +300,21 @@ function addMembership(formData) {
     $('#badgename').val('');
 
     // build name and legal name
-    var name = formData['fname'] + " " + formData['mname'] + " " + formData['lname'] + " " + formData['suffix'];
+    var name = formData.fname + " " + formData.mname + " " + formData.lname + " " + formData.suffix;
     name = name.trim();
-    if (formData['legalname']=='') {
-        formData['legalname'] = name;
+    if (formData.legalname=='') {
+        formData.legalname = name;
     }
 
-    badges['count'] +=  1;
-    badges['memTypeCount'][formData['memId']] += 1;
-    badges['badges'].push(formData);
+    badges.count +=  1;
+    badges.memTypeCount[formData.memId] += 1;
+    badges.badges.push(formData);
 
     repriceCart();
   
-    var badgename = formData['badgename'];
-    if (formData['badgename']=='') {
-        badgename = (formData['fname']+" "+formData['lname']).trim();
+    var badgename = formData.badgename;
+    if (formData.badgename=='') {
+        badgename = (formData.fname+" "+formData.lname).trim();
     }
 
     // add this person to the "who is paying" "person" list
@@ -330,13 +330,13 @@ function addMembership(formData) {
     }
 
     // build badge block in Badges list
-    var memId = formData['memId'];
+    var memId = formData.memId;
     // find matching mtype in array
     var found = false;
     var mtype = null;
     for (var row in mtypes) {
         var mbrType = mtypes[row];
-        if (mbrType['id'] == memId) {
+        if (mbrType.id == memId) {
             mtype = mbrType;
             found = true;
             break;
@@ -348,9 +348,9 @@ function addMembership(formData) {
     var addon = '';
 
     if (found) {
-        age_text = mtype['memAge'];
-        labeldivtext = shortnames[mtype['id']];
-        if (mtype['memCategory'] == 'addon' || mtype['memCategory'] == 'add-on')
+        age_text = mtype.memAge;
+        labeldivtext = shortnames[mtype.id];
+        if (mtype.memCategory == 'addon' || mtype.memCategory == 'add-on')
             addon += "<br/>&nbsp;Add On to<br/>&nbsp;Membership";
     }
 
@@ -360,8 +360,8 @@ function addMembership(formData) {
     var re = /\-+/g;
     labeldivtext = labeldivtext.replace(re, '-<br/>');
 
-    var bdivid="badge" + badges['count'];
-    var html = "<div id='" + bdivid + "' data-index='" + (badges['count'] - 1) + "' class='container-fluid border border-2 border-dark'>\n" +
+    var bdivid="badge" + badges.count;
+    var html = "<div id='" + bdivid + "' data-index='" + (badges.count - 1) + "' class='container-fluid border border-2 border-dark'>\n" +
         "  <div class='row'>\n" +
         "    <div class='col-sm-3 p-0 m-0 text-wrap " + age_text + "'>\n" +
         "      <h4><span class='badge " + age_color + ' ' + age_text + " text-wrap'>" + labeldivtext + "</span></h4>" + addon + "\n" +
@@ -390,20 +390,20 @@ function addMembership(formData) {
 function removeBadge(bdivid) {
     var toRemove = document.getElementById(bdivid);
     var i = toRemove.getAttribute('data-index');
-    var badge_age = badges['badges'][i]['age'];
+    var badge_age = badges.badges[i].age;
 
-    badges['memTypeCount'][badge_age] -= 1;
-    badges['count'] -= 1;
+    badges.memTypeCount[badge_age] -= 1;
+    badges.count -= 1;
     repriceCart();
 
-    badges['badges'][i]={};
+    badges.badges[i]={};
     toRemove.remove();
 }
 
 function updateAddr() {
     var selOpt = $("#personList option:selected");
     var optData = selOpt.data('info');
-    $('#cc_email').val(optData['email1']);
+    $('#cc_email').val(optData.email1);
 }
 
 function mp_ajax_error(JqXHR, textStatus, errorThrown) {
@@ -412,17 +412,17 @@ function mp_ajax_error(JqXHR, textStatus, errorThrown) {
 }
 
 function mp_ajax_success(data, textStatus, jqXHR) {
-    if (data['status'] == 'error') {
-        if (data['error'])
-            alert("Purchase Failed: " + data['error']);
-        if (data['data'])
-            alert("Purchase Failed: " + data['data']);
+    if (data.status == 'error') {
+        if (data.error)
+            alert("Purchase Failed: " + data.error);
+        if (data.data)
+            alert("Purchase Failed: " + data.data);
         $('#' + $purchase_label).removeAttr("disabled");
-    } else if (data['status'] == 'echo') {
+    } else if (data.status == 'echo') {
         console.log(data);
         $('#' + $purchase_label).removeAttr("disabled");
     } else {
-        window.location.href = "receipt.php?trans=" + data['trans'];
+        window.location.href = "receipt.php?trans=" + data.trans;
         $('#' + $purchase_label).removeAttr("disabled");
     }
 }
@@ -445,7 +445,7 @@ function makePurchase(token, label) {
     $('#cc_email').removeClass('need');
 
     $('#' + $purchase_label).attr("disabled", "disabled");
-    var postdata = badges['badges'];
+    var postdata = badges.badges;
     if (postdata.length == 0) {
         alert("You don't have any memberships to buy, please add some memberships");
         if (newBadge != null) {
@@ -464,7 +464,7 @@ function makePurchase(token, label) {
         couponDiscount: couponDiscount,
         total: totalDue,
     }
-    if (config['debug'] > 0) {
+    if (config.debug > 0) {
         console.log("MP Data");
         console.log(data);
     }
@@ -502,11 +502,11 @@ function anotherBadgeModalClose() {
 }
 
 function couponModalOpen() {
-    coupon.ModalOpen(badges['count']);
+    coupon.ModalOpen(badges.count);
 }
 
 function couponModalClose() {
-    coupon.ModalClose(badges['count'] == 0);
+    coupon.ModalClose(badges.count == 0);
 }
 
 function addCouponCode() {
@@ -518,12 +518,12 @@ function removeCouponCode() {
 }
 
 function repriceCart() {
-    if (config['debug'] > 0) {
+    if (config.debug > 0) {
         console.log(mtypes);
         console.log(badges);
     }
     var html = '';
-    var nbrs = badges['memTypeCount'];
+    var nbrs = badges.memTypeCount;
     var total = 0;
     var mbrtotal = 0;
     var cartDiscountable = false;
@@ -534,21 +534,21 @@ function repriceCart() {
     if (typeof mtypes != 'undefined' && mtypes != null) {
         for (var row in mtypes) {
             var mbrType = mtypes[row];
-            var num = num = nbrs[mbrType['id']];
+            var num = num = nbrs[mbrType.id];
             if (num > 0) {
 
                 if (isPrimary(config.conid, mbrType.memType, mbrType.memCategory, mbrType.price, 'coupon')) {
                     couponPrimaryMemberships += num;
-                    mbrtotal += num * Number(mbrType['price']).toFixed(2);
+                    mbrtotal += num * Number(mbrType.price).toFixed(2);
                 }
                 if (coupon.isCouponActive()) {
-                    if ((coupon.memId != null && coupon.memId == mbrType['memId']) || coupon.memId == null)
+                    if ((coupon.memId != null && coupon.memId == mbrType.memId) || coupon.memId == null)
                         couponmemberships += num;
                 }
                 if (isPrimary(config.conid, mbrType.memType, mbrType.memCategory, mbrType.price)) {
                     primaryMemberships += num;
                 }
-                total += num * Number(mbrType['price']).toFixed(2);
+                total += num * Number(mbrType.price).toFixed(2);
             }
         }
     }
@@ -570,35 +570,35 @@ function repriceCart() {
     var itemtype = '';
     for (row in mtypes) {
         mbrType = mtypes[row];
-        if (nbrs[mbrType['id']] > 0) {
-            num = nbrs[mbrType['id']];
+        if (nbrs[mbrType.id] > 0) {
+            num = nbrs[mbrType.id];
         } else {
             continue;
         }
         // need to set num here
-        if (mbrType['memCategory'] == 'add-on' || mbrType['memCategory'] == 'addon')
+        if (mbrType.memCategory == 'add-on' || mbrType.memCategory == 'addon')
             itemtype = ' Add-ons: ';
         else
             itemtype = ' Memberships: ';
 
-        if (mbrType['discountable'] && cartDiscountable) {
+        if (mbrType.discountable && cartDiscountable) {
             if (maxMbrDiscounts >= num) {
-                thisDiscount = num * Number(mbrType['discount']).toFixed(2);
+                thisDiscount = num * Number(mbrType.discount).toFixed(2);
                 couponDiscounts += thisDiscount;
                 maxMbrDiscounts -= num;
             } else {
-                thisDiscount = maxMbrDiscounts * Number(mbrType['discount']).toFixed(2);
+                thisDiscount = maxMbrDiscounts * Number(mbrType.discount).toFixed(2);
                 couponDiscounts += thisDiscount;
                 maxMbrDiscounts = 0;
             }
-            total += num * Number(mbrType['price']).toFixed(2) - thisDiscount;
+            total += num * Number(mbrType.price).toFixed(2) - thisDiscount;
         } else {
-            total += num * Number(mbrType['price']).toFixed(2)
+            total += num * Number(mbrType.price).toFixed(2)
         }
-        html += mbrType['shortname'] + itemtype + num + ' x ' + mbrType['price'] + '<br/>';
+        html += mbrType.shortname + itemtype + num + ' x ' + mbrType.price + '<br/>';
     }
     memSummaryDiv.innerHTML = html;
-    badges['total'] = total;
+    badges.total = total;
 
     html = '';
     if (cartDiscountable)  {
@@ -612,8 +612,8 @@ function repriceCart() {
 
     // now set the proper div for the payment
     emptyCart.hidden =  primaryMemberships > 0;
-    noChargeCart.hidden = primaryMemberships == 0 || badges['total'] > 0;
-    chargeCart.hidden = primaryMemberships == 0 || badges['total'] == 0;
+    noChargeCart.hidden = primaryMemberships == 0 || badges.total > 0;
+    chargeCart.hidden = primaryMemberships == 0 || badges.total == 0;
     totalDue = total;
 }
 
@@ -665,13 +665,13 @@ window.onload = function () {
     if (typeof mtypes != 'undefined' && mtypes != null) { //v we got here from index (purchase a badge, not some other page)
         for (var row in mtypes) {
             var mbrType = mtypes[row];
-            var memId = mbrType['id'];
-            prices[memId] = Number(mbrType['price']);
-            badges['memTypeCount'][memId] = 0;
-            shortnames[memId] = mbrType['shortname'].replace(',','<br/>');
-            mbrType['primary'] = !(mbrType['price'] == 0 || (mbrType['memCategory'] != 'standard' && mbrType['memCategory'] != 'virtual'));
-            mbrType['discount'] = 0;
-            mbrType['discountable'] = false;
+            var memId = mbrType.id;
+            prices[memId] = Number(mbrType.price);
+            badges.memTypeCount[memId] = 0;
+            shortnames[memId] = mbrType.shortname.replace(',','<br/>');
+            mbrType.primary = !(mbrType.price == 0 || (mbrType.memCategory != 'standard' && mbrType.memCategory != 'virtual'));
+            mbrType.discount = 0;
+            mbrType.discountable = false;
         }
 
         repriceCart();

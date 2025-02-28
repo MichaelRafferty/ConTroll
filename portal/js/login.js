@@ -121,24 +121,24 @@ class Login {
             url: script,
             data: data,
             success: function (data, textStatus, jqXhr) {
-                if (data['status'] == 'error') {
-                    show_message(data['message'], 'error');
+                if (data.status == 'error') {
+                    show_message(data.message, 'error');
                     return;
                 } else {
-                    if (config['debug'] & 1)
+                    if (config.debug & 1)
                         console.log(data);
-                    if (data['count'] == 1) {
+                    if (data.count == 1) {
                         location.href = config.uri;
                         return;
                     }
-                    show_message("returned " + data['count'] + " matching records.");
+                    show_message("returned " + data.count + " matching records.");
                     if (_this.#matchTable != null) {
                         _this.#matchTable.destroy();
                         _this.#matchTable = null;
                     }
                     _this.#matchTable = new Tabulator('#matchList', {
                         maxHeight: "600px",
-                        data: data['matches'],
+                        data: data.matches,
                         layout: "fitColumns",
                         responsiveLayout: true,
                         pagination: true,
@@ -234,10 +234,10 @@ class Login {
             url: script,
             data: data,
             success: function (data, textStatus, jqXhr) {
-                if (data['status'] == 'error') {
-                    show_message(data['message'], 'error');
+                if (data.status == 'error') {
+                    show_message(data.message, 'error');
                 } else {
-                    if (config['debug'] & 1)
+                    if (config.debug & 1)
                         console.log(data);
                     show_message("Link sent to " + token_email + ", check your email and click on the link to login.");
                     login.clearTokenEmail();
@@ -296,7 +296,7 @@ class Login {
         clear_message();
         clear_message('epMessageDiv');
         var valid = true;
-        var required = config['required'];
+        var required = config.required;
         var message = "Please correct the items highlighted in red and validate again.";
 
 
@@ -306,14 +306,14 @@ class Login {
             person[keys[i]] = person[keys[i]].trim();
         }
         // validation
-        if (person['country'] == 'USA') {
+        if (person.country == 'USA') {
             message += "<br/>Note: If any of the address fields Address, City, State or Zip are used and the country is United States, " +
                 "then the Address, City, State, and Zip fields must all be entered and the state field must be a valid USPS two character state code.";
         }
 
         if (required != '') {
             // first name is required
-            if (person['fname'] == '') {
+            if (person.fname == '') {
                 valid = false;
                 $('#fname').addClass('need');
             } else {
@@ -323,7 +323,7 @@ class Login {
 
         if (required == 'all') {
             // last name is required
-            if (person['lname'] == '') {
+            if (person.lname == '') {
                 valid = false;
                 $('#lname').addClass('need');
             } else {
@@ -332,12 +332,12 @@ class Login {
         }
 
         if (required == 'addr' || required == 'all' ||
-            (person['country'] == 'USA' && this.#uspsDiv != null &&
-                (person['addr'] != '' || person['city'] != '' || person['state'] != '' || person['zip'] != '')
+            (person.country == 'USA' && this.#uspsDiv != null &&
+                (person.addr != '' || person.city != '' || person.state != '' || person.zip != '')
             )
         ) {
             // address 1 is required, address 2 is optional
-            if (person['addr'] == '') {
+            if (person.addr == '') {
                 valid = false;
                 $('#addr').addClass('need');
             } else {
@@ -345,19 +345,19 @@ class Login {
             }
 
             // city/state/zip required
-            if (person['city'] == '') {
+            if (person.city == '') {
                 valid = false;
                 $('#city').addClass('need');
             } else {
                 $('#city').removeClass('need');
             }
 
-            if (person['state'] == '') {
+            if (person.state == '') {
                 valid = false;
                 $('#state').addClass('need');
             } else {
-                if (person['country'] == 'USA') {
-                    if (person['state'].length != 2) {
+                if (person.country == 'USA') {
+                    if (person.state.length != 2) {
                         valid = false;
                         $('#state').addClass('need');
                     } else {
@@ -368,7 +368,7 @@ class Login {
                 }
             }
 
-            if (person['zip'] == '') {
+            if (person.zip == '') {
                 valid = false;
                 $('#zip').addClass('need');
             } else {
@@ -404,19 +404,19 @@ class Login {
         }
 
         // Check USPS for standardized address
-        if (this.#uspsDiv != null && person['city'] != '' && validateUSPS == 0 && person['country'] == 'USA') {
+        if (this.#uspsDiv != null && person.city != '' && validateUSPS == 0 && person.country == 'USA' && person.state != '/r') {
             this.#personSave = person;
             this.#uspsAddress = null;
             var script = "scripts/uspsCheck.php";
             var data = person;
-            data['source'] = 'login';
+            data.source = 'login';
             $.ajax({
                 url: script,
                 data: data,
                 method: 'POST',
                 success: function (data, textStatus, jqXhr) {
-                    if (data['status'] == 'error') {
-                        show_message(data['message'], 'error', 'epMessageDiv');
+                    if (data.status == 'error') {
+                        show_message(data.message, 'error', 'epMessageDiv');
                         return false;
                     }
                     login.showValidatedAddress(data);
@@ -435,38 +435,38 @@ class Login {
     showValidatedAddress(data) {
         clear_message();
         var html = '';
-        if (data['error']) {
-            var errormsg = data['error'];
+        if (data.error) {
+            var errormsg = data.error;
             if (errormsg.substring(0, 5) == '400: ') {
                 errormsg = errormsg.substring(5);
             }
             html = "<h4>USPS Returned an error<br/>validating the address</h4>" +
                 "<div class='bg-danger text-white'><pre>" + errormsg + "</pre></div>\n";
         } else {
-            this.#uspsAddress = data['address'];
-            if (this.#uspsAddress['address2'] == undefined)
-                this.#uspsAddress['address2'] = '';
+            this.#uspsAddress = data.address;
+            if (this.#uspsAddress.address2 == undefined)
+                this.#uspsAddress.address2 = '';
 
             html = '';
-            if (this.#uspsAddress['valid'] != 'Valid') {
+            if (this.#uspsAddress.valid != 'Valid') {
                 html += "<div class='p-2 bg-danger text-white'>";
             }
-            html += "<h4>USPS Returned: " + this.#uspsAddress['valid'] + "</h4>";
+            html += "<h4>USPS Returned: " + this.#uspsAddress.valid + "</h4>";
                 // ok, we got a valid uspsAddress, if it doesn't match, show the block
             var person = this.#personSave;
-            if (person['addr'] == this.#uspsAddress['address'] && person['addr2'] == this.#uspsAddress['address2'] &&
-                person['city'] == this.#uspsAddress['city'] && person['state'] == this.#uspsAddress['state'] &&
-                person['zip'] == this.#uspsAddress['zip']) {
+            if (person.addr == this.#uspsAddress.address && person.addr2 == this.#uspsAddress.address2 &&
+                person.city == this.#uspsAddress.city && person.state == this.#uspsAddress.state &&
+                person.zip == this.#uspsAddress.zip) {
                 login.useMyAddress();
                 return;
             }
 
-            html += "<pre>" + this.#uspsAddress['address'] + "\n";
-            if (this.#uspsAddress['address2'])
-                html += this.#uspsAddress['address2'] + "\n";
-            html += this.#uspsAddress['city'] + ', ' + this.#uspsAddress['state'] + ' ' + this.#uspsAddress['zip'] + "</pre>\n";
+            html += "<pre>" + this.#uspsAddress.address + "\n";
+            if (this.#uspsAddress.address2)
+                html += this.#uspsAddress.address2 + "\n";
+            html += this.#uspsAddress.city + ', ' + this.#uspsAddress.state + ' ' + this.#uspsAddress.zip + "</pre>\n";
 
-            if (this.#uspsAddress['valid'] == 'Valid')
+            if (this.#uspsAddress.valid == 'Valid')
                 html += '<button class="btn btn-sm btn-primary m-1 mb-2" onclick="login.useUSPS();">Update using the USPS validated address</button>'
             else
                 html += "<p>Please check/verify the address you entered on the left.</p></div>";
@@ -484,20 +484,20 @@ class Login {
     // usps address post functions
     useUSPS() {
         var person = this.#personSave;
-        person['addr'] = this.#uspsAddress['address'];
-        if (this.#uspsAddress['address2'])
-            person['addr2'] = this.#uspsAddress['address2'];
+        person.addr = this.#uspsAddress.address;
+        if (this.#uspsAddress.address2)
+            person.addr2 = this.#uspsAddress.address2;
         else
-            person['addr2'] = '';
-        person['city'] = this.#uspsAddress['city'];
-        person['state'] = this.#uspsAddress['state'];
-        person['zip'] = this.#uspsAddress['zip'];
+            person.addr2 = '';
+        person.city = this.#uspsAddress.city;
+        person.state = this.#uspsAddress.state;
+        person.zip = this.#uspsAddress.zip;
 
-        this.#addrField.value = person['addr'];
-        this.#addr2Field.value = person['addr2'];
-        this.#cityField.value = person['city'];
-        this.#stateField.value = person['state'];
-        this.#zipField.value = person['zip'];
+        this.#addrField.value = person.addr;
+        this.#addr2Field.value = person.addr2;
+        this.#cityField.value = person.city;
+        this.#stateField.value = person.state;
+        this.#zipField.value = person.zip;
         if (this.#uspsDiv != null) {
             this.#uspsDiv.innerHTML = '';
             this.#uspsDiv.classList.remove('border', 'border-4', 'border-dark', 'rounded');
@@ -539,7 +539,7 @@ class Login {
             validation: this.#validationType,
             valEmail: this.#email,
         }
-        if (config['debug'] & 1)
+        if (config.debug & 1)
             console.log(data);
 
         var script = 'scripts/createNewperson.php';
@@ -559,14 +559,14 @@ class Login {
     }
 
    createNewpersonSuccess(data){
-        if (data['status'] == 'error') {
-            show_message(data['message'], 'error', 'epMessageDiv');
+        if (data.status == 'error') {
+            show_message(data.message, 'error', 'epMessageDiv');
         } else {
-            if (config['debug'] & 1)
+            if (config.debug & 1)
                 console.log(data);
-            show_message(data['message']);
+            show_message(data.message);
             this.#editPersonModal.hide();
-            if (data['newPersonId'] > 0) {
+            if (data.newPersonId > 0) {
                 window.location.reload();
             }
         }
