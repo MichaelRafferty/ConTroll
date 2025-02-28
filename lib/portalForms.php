@@ -3,7 +3,7 @@
 
 //// Step 1 - Age Bracket
 // drawGetAgeBracket - age bracket selection for filtering memberships
-function drawGetAgeBracket($updateName, $condata) {
+function drawGetAgeBracket($updateName, $condata) : void {
     $readableStartDate = date_format(date_create($condata['startdate']), 'l M j, Y');
     ?>
     <div class="row mt-2">
@@ -20,7 +20,7 @@ function drawGetAgeBracket($updateName, $condata) {
 
 //// Step 2 - Person
 // drawVerifyPersonInfo - non modal version of validate person information
-function drawVerifyPersonInfo($policies) {
+function drawVerifyPersonInfo($policies) : void {
     $usps = get_conf('usps');
     $useUSPS = false;
     if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
@@ -42,22 +42,17 @@ function drawVerifyPersonInfo($policies) {
 }
 
 // draw_editPerson - draw the verify/update form for the Person
-function draw_editPersonModal($source, $policies) {
+function draw_editPersonModal($source, $policies) : void {
     $usps = get_conf('usps');
     $useUSPS = false;
     if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
         $useUSPS = true;
     $con = get_conf('con');
-    switch ($source) {
-        case 'login':
-            $closeClick = 'login.newpersonClose()';
-            break;
-        case 'portal':
-            $closeClick = 'portal.checkEditPersonClose()';
-            break;
-        default:
-            $closeClick = 'badClose()';
-    }
+    $closeClick = match ($source) {
+        'login' => 'login.newpersonClose()',
+        'portal' => 'portal.checkEditPersonClose()',
+        default => 'badClose()',
+    };
 ?>
     <div id='editPersonModal' class='modal modal-x1 fade' tabindex='-1' aria-labelledby='Edit Person' aria-hidden='true' style='--bs-modal-width: 96%;'>
         <div class='modal-dialog'>
@@ -94,7 +89,7 @@ function draw_editPersonModal($source, $policies) {
 
 //// step 3 - Interests
 // drawVerifyInterestsBLock - non modal version of validate interests
-function drawVerifyInterestsBlock($interests) {
+function drawVerifyInterestsBlock($interests) : void {
     ?>
     <form id='editInterests' class='form-floating' action='javascript:void(0);'>
         <?php
@@ -114,7 +109,7 @@ function drawVerifyInterestsBlock($interests) {
 
 //// step 4 memberships
 // drawGetNewMemberships - membership selection
-function drawGetNewMemberships() {
+function drawGetNewMemberships() : void {
     ?>
     <div class='row mt-1' id='membershipButtons'></div>
     <div class="row mt-2">
@@ -126,7 +121,7 @@ function drawGetNewMemberships() {
 }
 
 // draw variable price membership set modal
-function drawVariablePriceModal($class) {
+function drawVariablePriceModal($class) : void {
 ?>
     <div id='variablePriceModal' class='modal modal-lg fade' tabindex='-1' aria-labelledby='Variable Price' aria-hidden='true'>
         <div class='modal-dialog'>
@@ -155,7 +150,7 @@ function drawVariablePriceModal($class) {
 }
 
 // draw change email address modal
-function drawChangeEmailModal() {
+function drawChangeEmailModal() : void {
 ?>
     <div id='changeEmailModal' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Change Email' aria-hidden='true' style='--bs-modal-width: 90%;'>
         <div class='modal-dialog'>
@@ -174,8 +169,8 @@ function drawChangeEmailModal() {
                             </div>
                         </div>
                         <div class='row'>
-                            <div class='col-sm-auto'>Enter the new email address:</div>
-                            <div class='col-sm-auto'><input type='text' size='64', maxlength='254' id='changeEmailNewEmailAddr', name='newEmailAddr'></div>
+                            <div class='col-sm-auto'><label for="changeEmailNewEmailAddr">Enter the new email address:</label></div>
+                            <div class='col-sm-auto'><input type='text' size='64' maxlength='254' id='changeEmailNewEmailAddr' name='newEmailAddr'></div>
                         </div>
                         <div class='row mt-2' id='changeEmailVerifyMe' hidden>
                             <div class='col-sm-auto'>This is an email address you manage, do you wish to change to this same email address?</div>
@@ -226,7 +221,7 @@ if (array_key_exists('memberbadgecolors', $portal_conf)) {
         $membershipButtonColors['black']['style'] = 'border-color: ' . $memberColor . '!important';
 }
 
-function drawPortalLegend() {
+function drawPortalLegend() : void {
     global $membershipButtonColors;
     $conf = get_conf('con');
     $conid = $conf['id'];
@@ -264,19 +259,19 @@ EOS;
                     $yearahead = $mlL['occurs'] > 0;
                     break;
                 case 'minor':
-                    $minor = $mlL['occurs'] > 0;;
+                    $minor = $mlL['occurs'] > 0;
                     break;
                 case 'oneday':
-                    $oneday = $mlL['occurs'] > 0;;
+                    $oneday = $mlL['occurs'] > 0;
                     break;
                 case 'virtual':
-                    $virtual = $mlL['occurs'] > 0;;
+                    $virtual = $mlL['occurs'] > 0;
                     break;
                 case 'addon':
-                    $addon = $mlL['occurs'] > 0;;
+                    $addon = $mlL['occurs'] > 0;
                     break;
                 case 'wsfs':
-                    $wsfs = $mlL['occurs'] > 0;;
+                    $wsfs = $mlL['occurs'] > 0;
                     break;
             }
         }
@@ -353,8 +348,9 @@ EOS;
 <?php
 }
 // drawManagedRow: draw the memberships and buttons for a managed person or yourself
-function drawPersonRow($personId, $personType, $person, $memberships, $showInterests, $showHR, $now) {
+function drawPersonRow($personId, $personType, $person, $memberships, $showInterests, $showHR, $now) : int {
     global $membershipButtonColors;
+    $paidByOthers = 0;
 
     $portal_conf = get_conf('portal');
 
@@ -395,12 +391,12 @@ function drawPersonRow($personId, $personType, $person, $memberships, $showInter
         <div class="col-sm-2"><?php echo $badge_name; ?></div>
         <div class='col-sm-6 p-1'>
                 <button class='btn btn-sm btn-primary p-1' style='--bs-btn-font-size: 80%;'
-                data-id="<?php echo $person['id']?>", data-type="<?php echo $person['personType']; ?>"
+                data-id="<?php echo $person['id']?>" data-type="<?php echo $person['personType']; ?>"
                 onclick="portal.changeEmail('<?php echo $personArgs; ?>');">
                 Change <?php echo $fn; ?>Email
             </button>
             <button class='btn btn-sm <?php echo $profileClass; ?> p-1' style='--bs-btn-font-size: 80%;'
-                data-id="<?php echo $person['id']?>", data-type="<?php echo $person['personType']; ?>"
+                data-id="<?php echo $person['id']?>" data-type="<?php echo $person['personType']; ?>"
                 onclick="portal.editPerson(<?php echo $person['id'] . ",'" . $person['personType'] . "'"; ?>);">
                 Edit <?php echo $fn; ?>Profile
             </button>
@@ -464,6 +460,7 @@ function drawPersonRow($personId, $personType, $person, $memberships, $showInter
            }
            if ($compareId != $personId || $compareType != $personType) {
                $row3 = '<br/>Purchased by ' . $membership['purchaserName'];
+               $paidByOthers++;
            } else {
                $row3 = '';
            }
@@ -473,7 +470,7 @@ function drawPersonRow($personId, $personType, $person, $memberships, $showInter
                $ageRow = '<br/><b>' . $membership['ageShort'] . '</b> (' . $membership['ageLabel'] . ')';
            }
            $expired = $membership['status'] == 'unpaid' &&
-                ($membership['startdate'] > $now || $membership['enddate'] < $now || $membership['startdate'] > $now || $membership['online'] == 'N');
+                ($membership['startdate'] > $now || $membership['enddate'] < $now || $membership['online'] == 'N');
            ?>
         <div class="col-sm-3 ps-1 pe-1 m-0"><button class="btn btn-light border border-5 mt-1 <?php echo $borderColor; ?>"
             style="width: 100%; pointer-events:none; <?php echo $borderStyle; ?>" <?php echo $disabled; ?> tabindex="-1"><b><?php
@@ -487,10 +484,11 @@ function drawPersonRow($personId, $personType, $person, $memberships, $showInter
         }
         echo "</div>\n";
     }
+    return $paidByOthers;
 }
 
 // draw_editInterests on portal screen - draw the update interests form for the person
-function draw_editInterestsModal($interests) {
+function draw_editInterestsModal($interests) : void {
     if ($interests != null) {
     ?>
     <div id='editInterestModal' class='modal modal-x1 fade' tabindex='-1' aria-labelledby='Edit Interests' aria-hidden='true' style='--bs-modal-width: 96%;'>
@@ -534,7 +532,7 @@ function draw_editInterestsModal($interests) {
 
 //// payment items
 // drawPaymentModal- main payment modal popup
-function draw_PaymentDueModal() {
+function draw_PaymentDueModal() : void {
     ?>
     <div id='paymentDueModal' class='modal modal-xl fade' tabindex='-1' aria-labelledby='paymentsDue' aria-hidden='true' style='--bs-modal-width: 96%;'>
         <div class='modal-dialog'>
@@ -563,7 +561,7 @@ function draw_PaymentDueModal() {
 }
 
 // draw_makePaymentModal - the modap popup to take a payment via credit card
-function draw_makePaymentModal() {
+function draw_makePaymentModal() : void {
     $ini = get_conf('reg');
     $cc = get_conf('cc');
     $con = get_conf('con');
@@ -629,7 +627,7 @@ function draw_makePaymentModal() {
 
 //// payment plan items
 // drawPaymentPlans - show the status of the payment plans for this account
-function drawPaymentPlans($person, $paymentPlans) {
+function drawPaymentPlans($person, $paymentPlans) : void {
     $con = get_conf('con');
     if (array_key_exists('currency', $con)) {
         $currency = $con['currency'];
@@ -706,7 +704,7 @@ function drawPaymentPlans($person, $paymentPlans) {
 }
 
 // draw_receiptModal - modal to display a receipt
-function draw_recieptModal() {
+function draw_recieptModal() : void {
 ?>
     <div id='portalReceipt' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Registration Portal Receipt' aria-hidden='true' style='--bs-modal-width:
     80%;'>
@@ -720,8 +718,8 @@ function draw_recieptModal() {
             </div>
             <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
                 <div id='portalReceipt-div'></div>
-                <div id="portalReceipt-text" hidden="true"></div>
-                <div id="portalReceipt-tables" hidden="true"></div>
+                <div id="portalReceipt-text" hidden></div>
+                <div id="portalReceipt-tables" hidden></div>
             </div>
             <div class='modal-footer'>
                 <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Close</button>
