@@ -332,10 +332,18 @@ EOS;
 
 // get the payment plans
 $paymentPlansData = getPaymentPlans(true);
+$activePaymentPlans = false;
 if (array_key_exists('payorPlans', $paymentPlansData)) {
     $payorPlan = $paymentPlansData['payorPlans'];
-} else
+    foreach ($payorPlan as $p) {
+        if ($p['status'] == 'active') {
+            $activePaymentPlans = true;
+            break;
+        }
+    }
+} else {
     $payorPlan = [];
+}
 if (array_key_exists('plans', $paymentPlansData)) {
     $paymentPlans = $paymentPlansData['plans'];
 } else
@@ -448,8 +456,12 @@ if ($info['managedByName'] != null) {
 <?php
 }
 $totalDueFormatted = '';
-if ($totalDue > 0) {
-    $totalDueFormatted = 'Total due: ' . $dolfmt->formatCurrency((float) $totalDue, $currency);
+if ($totalDue > 0 || $activePaymentPlans) {
+    if ($totalDue > 0) {
+        $totalDueFormatted = 'Total due: ' . $dolfmt->formatCurrency((float)$totalDue, $currency);
+    } else {
+        $totalDueFormatted = "You have an active payment plan, check to see if it needs paying: ";
+    }
     if (count($paymentPlans) > 0) {
         $payHtml = " $totalDueFormatted   " .
             '<button class="btn btn-sm btn-primary pt-1 pb-1 ms-1 me-2" onclick="portal.setFocus(\'totalDue\');"' .
@@ -549,7 +561,7 @@ if ($totalMemberships > 0)
     drawPortalLegend();
 
 // create a div and bg color it to separate it logically from the other parts
-if ($totalDue > 0 || count($payorPlan) > 0) {
+if ($totalDue > 0 || count($payorPlan) > 0 || $paidByOthers > 0) {
 ?>
     <div class='container-fluid p-0 m-0' style="background-color: #F0F0FF;">
 <?php
@@ -577,7 +589,13 @@ if ($totalDue > 0) {
     outputCustomText('main/plan');
     drawPaymentPlans($info, $paymentPlansData);
 }
-if ($totalDue > 0 || count($payorPlan) > 0) {
+if ($paidByOthers > 0) {
+    // compute a list of mem id's, and the total amount due
+    ?>
+    <h5>this is the paid by others placeholder</h5>
+    <?php
+}
+if ($totalDue > 0 || count($payorPlan) > 0 || $paidByOthers > 0 ) {
 ?>
     </div>
 <?php
