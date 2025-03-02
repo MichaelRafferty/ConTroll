@@ -198,9 +198,7 @@ function membershipFormatter(cell, formatterParams, onRendered) {
     html +=  '<select name="m_' + data.id + '" id="m_' + data.id + '">' +
         freeSelect + '</select><br/>' +
         '&nbsp;<button type="button" class="btn btn-sm btn-primary pt-0 pb-0" style="--bs-btn-font-size: 75%;" onclick="updateBadge(' +
-            data.id + ')">Assign Badge</button>&nbsp;' +
-            '<select name="m_' + data.id + '" id="m_' + data.id + '">' +
-            freeSelect + '</select>';
+            data.id + ')">Assign Badge</button>';
     return html;
 }
 
