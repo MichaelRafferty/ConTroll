@@ -1018,6 +1018,25 @@ class Portal {
         this.#paymentDueModal.hide();
     }
 
+    // payOther - show registrations and check boxes of ones that can be paid
+    payOther(totalDue) {
+        clear_message();
+        clear_message('payDueMessageDiv');
+        clear_message('makePayMessageDiv');
+        var html = '';
+
+        html = `
+    <div class="row mt-3">
+        <div class="col-sm-auto"><button class="btn btn-sm btn-primary pt-0 pb-0" onClick='portal.makePayment(null);'>Pay All Others</button></div>
+        <div class="col-sm-auto">
+            <b>The total amout due for all memberships purchased by others is ` + Number(totalDue).toFixed(2) + `</b>
+        </div>
+    </div>
+`;
+        this.#paymentDueBody.innerHTML = html;
+        this.#paymentDueModal.show();
+    }
+
     // make payment
     makePayment(plan) {
         if (plan == null) {

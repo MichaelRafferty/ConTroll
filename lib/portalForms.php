@@ -348,7 +348,7 @@ EOS;
 <?php
 }
 // drawManagedRow: draw the memberships and buttons for a managed person or yourself
-function drawPersonRow($personId, $personType, $person, $memberships, $showInterests, $showHR, $now) : int {
+function drawPersonRow($personId, $personType, $person, $memberships, $showInterests, $showHR, $now) : float {
     global $membershipButtonColors;
     $paidByOthers = 0;
 
@@ -461,7 +461,7 @@ function drawPersonRow($personId, $personType, $person, $memberships, $showInter
            if ($compareId != $personId || $compareType != $personType) {
                $row3 = '<br/>Purchased by ' . $membership['purchaserName'];
                if ($membership['status'] == 'unpaid' || $membership['status'] == 'plan')
-                   $paidByOthers++;
+                   $paidByOthers += $membership['actPrice'] - ($membership['actPaid'] + $membership['actCouponDiscount']);
            } else {
                $row3 = '';
            }

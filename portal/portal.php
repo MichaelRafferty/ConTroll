@@ -91,7 +91,8 @@ if (!$refresh) {
     $numPrimary = 0;
 // get the account holder's registrations
     $holderRegSQL = <<<EOS
-SELECT r.status, r.memId, m.*, a.shortname AS ageShort, a.label AS ageLabel, r.price AS actPrice, r.conid, r.create_date,
+SELECT r.status, r.memId, m.*, a.shortname AS ageShort, a.label AS ageLabel, r.price AS actPrice, r.paid AS actPaid, 
+       r.couponDiscount AS actCouponDiscount, r.conid, r.create_date,
     nc.id AS createNewperid, np.id AS completeNewperid, pc.id AS createPerid, pp.id AS completePerid,
     CASE
         WHEN pp.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pp.first_name, pp.last_name))
@@ -115,6 +116,7 @@ ORDER BY create_date;
 EOS;
     $holderRegR = dbSafeQuery($holderRegSQL, 'iii', array ($conid, $loginType == 'p' ? $loginId : -1, $loginType == 'n' ? $loginId : -1));
     $holderMembership = [];
+    $paidOtherMembership = [];
     if ($holderRegR !== false && $holderRegR->num_rows > 0) {
         while ($m = $holderRegR->fetch_assoc()) {
             // check if they have a WSFS rights membership
@@ -129,13 +131,34 @@ EOS;
                 $label = $m['label'];
                 $shortname = $m['shortname'];
             }
-            $holderMembership[] = array ('label' => ($m['conid'] != $conid ? $m['conid'] . ' ' : '') . $label, 'status' => $m['status'],
+            $item = array ('label' => ($m['conid'] != $conid ? $m['conid'] . ' ' : '') . $label, 'status' => $m['status'],
                                          'memAge' => $m['memAge'], 'type' => $m['memType'], 'category' => $m['memCategory'],
                                          'shortname' => ($m['conid'] != $conid ? $m['conid'] . ' ' : '') . $shortname, 'ageShort' => $m['ageShort'], 'ageLabel' => $m['ageLabel'],
                                          'createNewperid' => $m['createNewperid'], 'completeNewperid' => $m['completeNewperid'],
                                          'createPerid' => $m['createPerid'], 'completePerid' => $m['completePerid'], 'purchaserName' => $m['purchaserName'],
                                          'startdate' => $m['startdate'], 'enddate' => $m['enddate'], 'online' => $m['online'],
+                                         'actPrice' => $m['actPrice'], 'actPaid' => $m['actPaid'], 'actCouponDiscount' => $m['actCouponDiscount'],
             );
+            $holderMembership[] = $item;
+            if ($item['completePerid'] != NULL) {
+                $compareId = $item['completePerid'];
+                $compareType = 'p';
+            } else if ($item['completeNewperid'] != NULL) {
+                $compareId = $item['completeNewperid'];
+                $compareType = 'n';
+            } else if ($item['createPerid'] != NULL) {
+                $compareId = $item['createPerid'];
+                $compareType = 'p';
+            } else if ($item['createNewperid'] != NULL) {
+                $compareId = $item['createNewperid'];
+                $compareType = 'n';
+            } else {
+                $compareId = '';
+                $compareType = '';
+            }
+            if ($compareId != $loginId || $compareType != $loginType) {
+                $paidOtherMembership[] = $item;
+            }
             if (isPrimary($m, $conid))
                 $numPrimary++;
         }
@@ -427,6 +450,7 @@ if ($refresh) {
     var paymentPlanList = <?php echo json_encode($paymentPlans); ?>;
     var payorPlans = <?php echo json_encode($payorPlan); ?>;
     var membershipsPurchased = <?php echo json_encode($memberships); ?>;
+    var paidOtherMembership = <?php echo json_encode($paidOtherMembership); ?>;
     var numCoupons = <?php echo $numCoupons; ?>;
     var policies = <?php echo json_encode($policies); ?>;
 </script>
@@ -591,9 +615,16 @@ if ($totalDue > 0) {
 }
 if ($paidByOthers > 0) {
     // compute a list of mem id's, and the total amount due
-    ?>
-    <h5>this is the paid by others placeholder</h5>
-    <?php
+    OutputCustomText('main/purchOthers');
+    $otherDueFormatted = '<span id="otherDueAmountSpan">' . $dolfmt->formatCurrency((float) $paidByOthers, $currency) . '</span>' .
+        '&nbsp;&nbsp;<button class="btn btn-sm btn-primary pt-1 pb-1 ms-1 me-2" onclick="portal.payOther(' . $paidByOthers . ');"' .
+        $disablePay . '>Optionally Pay All or Part</button>';
+?>
+    <div class='row mt-5'>
+        <div class='col-sm-12'><h1 class='size-h3'>Memberships Purchased by Others for You Total: <?php echo $otherDueFormatted; ?></h1></div>
+    </div>
+
+<?php
 }
 if ($totalDue > 0 || count($payorPlan) > 0 || $paidByOthers > 0 ) {
 ?>
