@@ -149,6 +149,9 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
     // failure fall throughx
 
     $source = 'onlinereg';
+    if (array_key_exists('source', $results)) {
+        $source = $results['source'];
+    }
     if (array_key_exists('custid', $results)) {
         $custid = $results['custid'];
     } else if (array_key_exists('badges', $results) && is_array($results['badges']) && count($results['badges']) > 0) {
@@ -227,7 +230,11 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
                 }
                 $item->setNote($note);
                 $item->setBasePriceMoney(new Money);
-                $item->getBasePriceMoney()->setAmount($badge['price'] * 100);
+                if (array_key_exists('balDue', $badge)) {
+                    $item->getBasePriceMoney()->setAmount($badge['balDue'] * 100);
+                } else {
+                    $item->getBasePriceMoney()->setAmount($badge['price'] * 100);
+                }
                 $item->getBasePriceMoney()->setCurrency($currency);
                 $order_lineitems[$lineid] = $item;
                 $order_value += $badge['price'];
