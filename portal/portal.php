@@ -92,14 +92,44 @@ if (!$refresh) {
 // get the account holder's registrations
     $holderRegSQL = <<<EOS
 SELECT r.status, r.memId, m.*, a.shortname AS ageShort, a.label AS ageLabel, r.price AS actPrice, r.paid AS actPaid, 
-       r.couponDiscount AS actCouponDiscount, r.conid, r.create_date,
+       r.couponDiscount AS actCouponDiscount, r.conid, r.create_date, r.id AS regId, r.create_trans, r.complete_trans,
+       r.perid AS regPerid, r.newperid AS regNewperid, r.planId,
+       IFNULL(r.complete_trans, r.create_trans) AS sortTrans,
+       IFNULL(tp.complete_date, t.create_date) AS transDate,
     nc.id AS createNewperid, np.id AS completeNewperid, pc.id AS createPerid, pp.id AS completePerid,
     CASE
         WHEN pp.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pp.first_name, pp.last_name))
         WHEN np.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', np.first_name, np.last_name))
         WHEN pc.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pc.first_name, pc.last_name))
         ELSE TRIM(CONCAT_WS(' ', nc.first_name, nc.last_name))
-    END AS purchaserName
+    END AS purchaserName,
+    CASE 
+        WHEN rp.id IS NOT NULL THEN rp.managedBy
+        WHEN rn.id IS NOT NULL THEN rn.managedBy
+        ELSE NULL
+    END AS managedBy,
+    CASE 
+        WHEN rp.id IS NOT NULL THEN rp.managedByNew
+        WHEN rn.id IS NOT NULL THEN rn.managedByNew
+        ELSE NULL
+    END AS managedByNew,
+    CASE 
+        WHEN rp.id IS NOT NULL THEN rp.badge_name
+        WHEN rn.id IS NOT NULL THEN rn.badge_name
+        ELSE NULL
+    END AS badge_name,
+    CASE 
+        WHEN rp.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT(IFNULL(rp.first_name, ''),' ', IFNULL(rp.middle_name, ''), ' ', 
+            IFNULL(rp.last_name, ''), ' ', IFNULL(rp.suffix, '')), '  *', ' '))
+        WHEN rn.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT(IFNULL(rn.first_name, ''),' ', IFNULL(rn.middle_name, ''), ' ', 
+            IFNULL(rn.last_name, ''), ' ', IFNULL(rn.suffix, '')), '  *', ' '))
+        ELSE NULL
+    END AS fullname,
+    CASE 
+        WHEN rp.id IS NOT NULL THEN rp.id
+        WHEN rn.id IS NOT NULL THEN rn.id
+        ELSE NULL
+    END AS memberId
 FROM reg r
 JOIN memLabel m ON m.id = r.memId
 JOIN ageList a ON m.memAge = a.ageType AND r.conid = a.conid
@@ -109,6 +139,8 @@ LEFT OUTER JOIN perinfo pc ON t.perid = pc.id
 LEFT OUTER JOIN newperson nc ON t.newperid = nc.id
 LEFT OUTER JOIN perinfo pp ON tp.perid = pp.id
 LEFT OUTER JOIN newperson np ON tp.newperid = np.id
+LEFT OUTER JOIN perinfo rp ON r.perid = rp.id
+LEFT OUTER JOIN newperson rn ON r.newperid = rn.id
 WHERE
     status IN  ('unpaid', 'paid', 'plan', 'upgraded') AND
     r.conid >= ? AND (r.perid = ? OR r.newperid = ?)
@@ -157,6 +189,24 @@ EOS;
                 $compareType = '';
             }
             if ($compareId != $loginId || $compareType != $loginType) {
+                $item['create_date'] = $m['create_date'];
+                $item['create_trans'] = $m['create_trans'];
+                $item['complete_trans'] = $m['complete_trans'];
+                $item['regId'] = $m['regId'];
+                $item['memId'] = $m['memId'];
+                $item['conid'] = $m['conid'];
+                $item['regPerid'] = $m['regPerid'];
+                $item['regNewperid'] = $m['regNewperid'];
+                $item['sortTrans'] = $m['sortTrans'];
+                $item['transDate'] = $m['transDate'];
+                $item['age'] = $m['memAge'];
+                $item['online'] = $m['online'];
+                $item['managedBy'] = $m['managedBy'];
+                $item['managedByNew'] = $m['managedByNew'];
+                $item['badge_name'] = $m['badge_name'];
+                $item['fullname'] = $m['fullname'];
+                $item['memberId'] = $m['memberId'];
+                $item['planId'] = $m['planId'];
                 $paidOtherMembership[] = $item;
             }
             if (isPrimary($m, $conid))
@@ -173,9 +223,10 @@ WITH ppl AS (
         p.address, p.addr_2, p.city, p.state, p.zip, p.country,
         p.banned, p.creation_date, p.update_date, p.change_notes, p.active,
         p.managedBy, NULL AS managedByNew,
-        TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
-        r.conid, r.status, r.memId, r.price AS actPrice, r.create_date, m.memCategory, m.memType, m.memAge, m.shortname, m.label,
-        m.startdate, m.enddate, m.online,
+        TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', 
+            IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
+        r.conid, r.status, r.memId, r.price AS actPrice, r.create_date,
+        m.memCategory, m.memType, m.memAge, m.shortname, m.label, m.startdate, m.enddate, m.online,
         a.shortname AS ageShort, a.label AS ageLabel, 'p' AS personType,
         nc.id AS createNewperid, np.id AS completeNewperid, pc.id AS createPerid, pp.id AS completePerid,
         CASE
@@ -200,7 +251,8 @@ WITH ppl AS (
         p.address, p.addr_2, p.city, p.state, p.zip, p.country,
         'N' AS banned, NULL AS creation_date, NULL AS update_date, '' AS change_notes, 'Y' AS active,
         p.managedBy, p.managedByNew,
-        TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
+        TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ',
+            IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
         r.conid, r.status, r.memId, r.price AS actPrice, r.create_date, m.memCategory, m.memType, m.memAge, m.shortname, m.label,
         m.startdate, m.enddate, m.online,
         a.shortname AS ageShort, a.label AS ageLabel, 'n' AS personType,
@@ -247,7 +299,8 @@ WITH ppl AS (
         p.address, p.addr_2, p.city, p.state, p.zip, p.country,
         p.banned, p.creation_date, p.update_date, p.change_notes, p.active,
         p.managedBy, NULL AS managedByNew,
-        TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
+        TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ',
+            IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
         r.conid, r.status, r.memId, r.price AS actPrice, r.create_date, m.memCategory, m.memType, m.memAge, m.shortname, m.label,
         m.startdate, m.enddate, m.online,
         a.shortname AS ageShort, a.label AS ageLabel, 'p' AS personType,
@@ -274,7 +327,8 @@ WITH ppl AS (
         p.address, p.addr_2, p.city, p.state, p.zip, p.country,
         'N' AS banned, NULL AS creation_date, NULL AS update_date, '' AS change_notes, 'Y' AS active,
         p.managedBy, p.managedByNew,
-        TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
+        TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ',
+            IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
         r.conid, r.status, r.memId, r.price AS actPrice, r.create_date, m.memCategory, m.memType, m.memAge, m.shortname, m.label,
         m.startdate, m.enddate, m.online,
         a.shortname AS ageShort, a.label AS ageLabel, 'n' AS personType,

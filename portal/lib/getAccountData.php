@@ -34,8 +34,8 @@ WITH pn AS (
     WHERE perid IS NULL
 ), mems AS (
     SELECT t.id, r.create_date, r.id as regId, r.memId, r.conid, r.status, r.price, r.paid, r.complete_trans, r.couponDiscount, r.perid, r.newperid,
-        CASE WHEN r.complete_trans IS NULL THEN r.create_trans ELSE r.complete_trans END AS sortTrans,
-        CASE WHEN tp.complete_date IS NULL THEN t.create_date ELSE tp.complete_date END AS transDate,
+        IFNULL(r.complete_trans, r.create_trans) AS sortTrans,
+        IFNULL(tp.complete_date, t.create_date) AS transDate,
         m.label, m.memAge, m.memAge AS age, m.memType, m.memCategory, m.startdate, m.enddate, m.online,
         CASE 
             WHEN pn.memberId IS NOT NULL THEN pn.managedBy
