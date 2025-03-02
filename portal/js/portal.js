@@ -85,7 +85,9 @@ class Portal {
     #couponDiscount = 0;
     #paymentAmount = null;
     #planPayment = 0;
-    #partialPay = 0;
+    #partialPayAmt = 0;
+    #otherPayAmt = 0;
+    #otherPay = 0;
 
     // receipt fields
     #receiptModal = null;
@@ -1034,7 +1036,8 @@ class Portal {
         </div>`;
 
         // build a list of memberships to pay with check boxes
-        this.#partialPay = 0;
+        this.#partialPayAmt = 0;
+        this.#otherPayAmt = Number(totalDue);
         for (var i = 0; i < paidOtherMembership.length; i++) {
             var mem = paidOtherMembership[i];
             var price =  Number(mem.actPrice).toFixed(2);
@@ -1059,12 +1062,12 @@ class Portal {
         </button></div>
         <div class="col-sm-auto">
             <b>The total amout due for selected memberships purchased by others totaling
-                <span id="partialPayDue">` + Number(this.#partialPay).toFixed(2) + `</span></b>
+                <span id="partialPayDue">` + Number(this.#partialPayAmt).toFixed(2) + `</span></b>
         </div>
     </div>
     <div class="row mt-1 mb-3">
         <div class="col-sm-2" style="text-align: right"><button class="btn btn-sm btn-primary pt-0 pb-0"
-            onClick='portal.makeOtherPayment('full');'>Pay All</button></div>
+            onClick="portal.makeOtherPayment('full');">Pay All</button></div>
         <div class="col-sm-auto">
             <b>The total amout due for all memberships purchased by others is ` + Number(totalDue).toFixed(2) + `</b>
         </div>
@@ -1077,12 +1080,12 @@ class Portal {
     payOtherToggle(id, bal) {
         var element = document.getElementById('other-' + id);
         if (element.checked) {
-            this.#partialPay += Number(bal);
+            this.#partialPayAmt += Number(bal);
         } else {
-            this.#partialPay -= Number(bal);
+            this.#partialPayAmt -= Number(bal);
         }
-        document.getElementById('partialPayDue').innerHTML = Number(this.#partialPay).toFixed(2);
-        document.getElementById('partialPayBTN').disabled = this.#partialPay == 0;
+        document.getElementById('partialPayDue').innerHTML = Number(this.#partialPayAmt).toFixed(2);
+        document.getElementById('partialPayBTN').disabled = this.#partialPayAmt == 0;
     }
 
     // make payment
@@ -1126,6 +1129,30 @@ class Portal {
         this.#makePaymentModal.show();
     }
 
+    // makeOtherPayment - pay some or all of the 'paid by other items due'
+    makeOtherPayment(type) {
+        // mark which ones to pay
+        for (var i = 0; i < paidOtherMembership.length; i++) {
+            if (type == 'full') {
+                paidOtherMembership[i]['payThis'] = 1;
+            } else {
+                var checked = document.getElementById('other-' + paidOtherMembership[i]['id']).checked;
+                paidOtherMembership[i]['payThis'] = checked ? 1 : 0;
+            }
+        }
+
+        this.#paymentAmount = type == 'full' ? this.#otherPayAmt : this.#partialPayAmt;
+        this.#makePaymentBody.innerHTML = `
+        <div class="row mt-4 mb-4">
+            <div class="col-sm-auto"><b>You are making a payment against memberships purchased for you by others of ` +
+                Number(this.#paymentAmount).toFixed(2) + `</b></div>
+         </div>        
+`;
+
+        this.#otherPay = 1;
+        this.#makePaymentModal.show();
+    }
+
     // makePurchase - make the membership/plan purchase.
     makePurchase(token, label = '') {
         if (token == 'test_ccnum') {  // this is the test form
@@ -1156,6 +1183,8 @@ class Portal {
             planRec: this.#paymentPlan,
             newplan: newplan ? 1 : 0,
             planPayment: this.#planPayment,
+            otherPay: this.#otherPay,
+            otherMemberships: JSON.stringify(paidOtherMembership),
             nonce: token,
             amount: this.#paymentAmount,
             totalAmountDue: this.#totalAmountDue,
