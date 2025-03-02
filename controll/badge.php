@@ -146,7 +146,7 @@ $config_vars['useUSPS'] = $useUSPS;
 <div class='container-fluid'>
     <div class='row mt-2'>
         <div class="col-sm-auto">
-            <button class="btn btn-primary btn-sm" type="button" onClick="findExisting();">Find Person to Add</button>
+            <button class="btn btn-primary btn-sm" type="button" onClick="findExisting();">Find Prior Member</button>
             <input type="text" id="findName" name="findName" size="80" placeholder="Name/Perid/Email/Address"/>
         </div>
         <div class='col-sm-auto'>
