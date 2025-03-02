@@ -85,6 +85,7 @@ class Portal {
     #couponDiscount = 0;
     #paymentAmount = null;
     #planPayment = 0;
+    #partialPay = 0;
 
     // receipt fields
     #receiptModal = null;
@@ -1023,11 +1024,47 @@ class Portal {
         clear_message();
         clear_message('payDueMessageDiv');
         clear_message('makePayMessageDiv');
-        var html = '';
+        var html = `
+        <div class="row mt-3">
+            <div class="col-sm-1" style="text-align: right">Pay</div>
+            <div class="col-sm-5">Membership</div>
+            <div class="col-sm-1" style="text-align: right">Price</div>
+            <div class="col-sm-1" style="text-align: right">Already Paid</div>
+            <div class="col-sm-1" style="text-align: right">Balance Due</div>        
+        </div>`;
 
-        html = `
+        // build a list of memberships to pay with check boxes
+        this.#partialPay = 0;
+        for (var i = 0; i < paidOtherMembership.length; i++) {
+            var mem = paidOtherMembership[i];
+            var price =  Number(mem.actPrice).toFixed(2);
+            var paid =  Number(Number(mem.actPaid) + Number(mem.actCouponDiscount)).toFixed(2);
+            var bal = Number(Number(mem.actPrice) - (Number(mem.actPaid) + Number(mem.actCouponDiscount))).toFixed(2);
+            html += `
+        <div class="row">
+            <div class="col-sm-1" style="text-align: right"><input type="checkbox" id="other-` +
+                mem.id + '" name="other-' + mem.id + '" onChange="portal.payOtherToggle(' + mem.id + ',' + bal + `);"></div>
+            <div class="col-sm-5"><label for="other-` + mem.id + `">` + mem.label + `</label></div>
+            <div class="col-sm-1" style="text-align: right">` + price + `</div>
+            <div class="col-sm-1" style="text-align: right">` + paid + `</div>
+            <div class="col-sm-1" style="text-align: right">` + bal + `</div>
+        </div>
+`;
+        }
+        html += `
     <div class="row mt-3">
-        <div class="col-sm-auto"><button class="btn btn-sm btn-primary pt-0 pb-0" onClick='portal.makePayment(null);'>Pay All Others</button></div>
+        <div class="col-sm-2" style="text-align: right"><button class="btn btn-sm btn-primary pt-0 pb-0" id="partialPayBTN"
+            onClick="portal.makeOtherPayment('part');" disabled>
+            Pay Selected
+        </button></div>
+        <div class="col-sm-auto">
+            <b>The total amout due for selected memberships purchased by others totaling
+                <span id="partialPayDue">` + Number(this.#partialPay).toFixed(2) + `</span></b>
+        </div>
+    </div>
+    <div class="row mt-1 mb-3">
+        <div class="col-sm-2" style="text-align: right"><button class="btn btn-sm btn-primary pt-0 pb-0"
+            onClick='portal.makeOtherPayment('full');'>Pay All</button></div>
         <div class="col-sm-auto">
             <b>The total amout due for all memberships purchased by others is ` + Number(totalDue).toFixed(2) + `</b>
         </div>
@@ -1035,6 +1072,17 @@ class Portal {
 `;
         this.#paymentDueBody.innerHTML = html;
         this.#paymentDueModal.show();
+    }
+
+    payOtherToggle(id, bal) {
+        var element = document.getElementById('other-' + id);
+        if (element.checked) {
+            this.#partialPay += Number(bal);
+        } else {
+            this.#partialPay -= Number(bal);
+        }
+        document.getElementById('partialPayDue').innerHTML = Number(this.#partialPay).toFixed(2);
+        document.getElementById('partialPayBTN').disabled = this.#partialPay == 0;
     }
 
     // make payment
