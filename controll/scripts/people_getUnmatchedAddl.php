@@ -106,7 +106,18 @@ GROUP BY p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr,
     p.creation_date, p.update_date, p.active, p.open_notes,
     p.managedBy, p.managedByNew, p.lastverified, p.managedreason, phoneCheck, fullName, manager, managerId
 )
-SELECT *
+SELECT *, CASE
+    WHEN LOWER(p.legalname) LIKE ? THEN 850
+    WHEN LOWER(p.badge_name) LIKE ? THEN 840
+    WHEN LOWER(p.address) LIKE ? THEN 600
+    WHEN LOWER(p.addr_2) LIKE ? THEN 550
+    WHEN LOWER(p.email_addr) LIKE ? THEN 700
+    WHEN LOWER(CONCAT(p.first_name, ' ', p.last_name)) LIKE ? THEN 830
+    WHEN LOWER(CONCAT(p.last_name, ' ', p.first_name)) LIKE ? THEN 820
+    WHEN LOWER(CONCAT(p.first_name, ' ', p.middle_name, ' ', p.last_name, ' ', p.suffix)) LIKE ? THEN 860
+    WHEN LOWER(p.fullName) LIKE ? THEN 900
+    ELSE 0
+END AS priority
 FROM per p
 WHERE
     (LOWER(p.legalname) LIKE ?
@@ -118,11 +129,12 @@ WHERE
     OR LOWER(CONCAT(p.last_name, ' ', p.first_name)) LIKE ?
     OR LOWER(CONCAT(p.first_name, ' ', p.middle_name, ' ', p.last_name, ' ', p.suffix)) LIKE ?
     OR LOWER(p.fullName) LIKE ?)
-ORDER BY p.last_name, p.first_name, p.id
+ORDER BY priority DESC, p.last_name, p.first_name, p.id
 LIMIT $limit;
 EOS;
-    $mR = dbSafeQuery($mQ, 'iiiiisssssssss',
+    $mR = dbSafeQuery($mQ, 'iiiiissssssssssssssssss',
         array ($conid, $conid, $user_perid, $conid, $conid + 1,
+           $findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern,
            $findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern));
 }
 if ($mR === false) {
@@ -165,7 +177,7 @@ EOS;
 
 $response['additionalPolicies'] = $matchPolicies;
 
-if (count($matches) < 50)
+if (count($matches) < $limit)
     $response['success'] = count($matches) . ' potential additional matches found';
 else
     $response['success'] = "Too many records were matched, only the first $limit additional matches returned";

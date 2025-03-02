@@ -9,7 +9,7 @@ $returnAjaxErrors = true;
 $return500errors = true;
 
 $check_auth = google_init('ajax');
-$perm = 'admin';
+$perm = 'reg_admin';
 
 $response = array('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
 

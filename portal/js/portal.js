@@ -1411,11 +1411,14 @@ class Portal {
                     show_message(data.message, 'warn');
                 } else {
                     // we have a response
-                    console.log(data.rights);
-                    console.log(data.payload);
-                    console.log(data.jwt);
-                    console.log(config.nomnomURL + '?r=' + data.jwt);
-                    window.open(config.nomnomURL + '?r=' + data.jwt);
+                    if (config.debug > 0) {
+                        console.log(data.rights);
+                        console.log(data.payload);
+                        console.log(data.jwt);
+                        console.log(config.nomnomURL + '?r=' + data.jwt);
+                    }
+                    openWindowWithFallback(config.nomnomURL + '?r=' + data.jwt);
+                    //window.open(config.nomnomURL + '?r=' + data.jwt);
                 }
             },
             error: function (jqXHR, textStatus, errorThrown) {

@@ -1,0 +1,38 @@
+[report]
+	name="MembershipsByCategory"
+	auth=registration
+	csvfile="MembershipByCategory"
+    index=memCategory
+    totals=bottom
+[F001]
+	name=Category
+	sql=memCategory
+	title="Category"
+	filter=true
+	sort=true
+	calc=count
+[F002]
+	name=Num
+	sql="COUNT(*)"
+    align=right
+	title="Num Mbrs"
+	width=80
+	calc=sum
+[T001]
+	name=reg
+	alias=r
+[T002]
+	name=memList
+	alias=m
+	join="m.id = r.memId"
+[P001]
+	type=config
+	section=con
+	item=id
+	datatype=i
+[where]
+	001="r.conid = ?"
+[group]
+    001=memCategory
+[sort]
+	001=memCategory

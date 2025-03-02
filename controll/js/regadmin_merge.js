@@ -48,12 +48,12 @@ class mergesetup {
     <div class="row">
         <div class="col-sm-2 p-2"><label for="remainPid">Perid to remain:</label></div>
         <div class="col-sm-2 p-2"><input  class='form-control-sm' type="number" id="remainPid" name="remainPid" placeholder='perid to remain' onchange="merge.btnctl()"></div>
-        <div class="col-sm-4 p-2"><button id="remain_find_merge" type="button" class="btn btn-primary btn-sm" onclick="merge.findPerson('remain'); return false;">Find to Remain Person</button></div>
+        <div class="col-sm-4 p-2"><button id="remain_find_merge" type="button" class="btn btn-primary btn-sm" onclick="merge.findPerson('remain'); return false;">Find 'To Remain' Person</button></div>
     </div>
     <div class="row">
         <div class="col-sm-2 p-2"><label for="mergePid">Perid to merge in remain:</label></div>
         <div class="col-sm-2 p-2"><input  class='form-control-sm' type="number" id="mergePid" name="mergePid" placeholder='perid to merge' onchange="merge.btnctl()"></div>
-        <div class="col-sm-4 p-2"><button id="merge_find_merge" type="button" class="btn btn-primary btn-sm" onclick="merge.findPerson('merge'); return false;">Find to Merge Person</button></div>
+        <div class="col-sm-4 p-2"><button id="merge_find_merge" type="button" class="btn btn-primary btn-sm" onclick="merge.findPerson('merge'); return false;">Find 'To Merge' Person</button></div>
     </div>
     <div class="row mt-2">
         <div class="col-sm-auto p-2">
@@ -259,7 +259,7 @@ class mergesetup {
         console.log(data);
 
         if (data['error']) {
-            showError(data['error'], textStatus, jhXHR);
+            show_message(data['error'], 'error');
             return;
         }
 
@@ -269,9 +269,9 @@ class mergesetup {
 
         var html = `
 <strong>Verify your merge request:</strong><br/>&nbsp;<br/>
-<i>Remaining Person</i><br/>
+<i>Remaining Person (will inherit items from merge person)</i><br/>
 "` + remainArr.join('","') + `"<br/>
-<i>Merged Person (will go away)</i><br/>
+<i>Merge Person (will go away)</i><br/>
 "` + mergeArr.join('","') + `"<br/>&nbsp;<br/>
 <button id="perform-merge" type="button" class="btn btn-primary btn-sm" onclick="merge.performMerge(` + remainArr[0] + `, ` + mergeArr[0] + `); return false;">Perform Merge</button>
 `;

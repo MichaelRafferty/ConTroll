@@ -95,6 +95,7 @@ class Pos {
     #badgePrinterAvailable = false;
     #receiptPrinterAvailable = false;
     #badgeList = null;
+    #printActive = false;
 
     // tab fields
     #find_tab = null;
@@ -275,6 +276,18 @@ class Pos {
 
     getConid() {
         return this.#conid;
+    }
+
+    setPrinterData(data) {
+        this.#badgePrinterAvailable = false;
+        if (data.hasOwnProperty('badgePrinter'))
+            this.#badgePrinterAvailable = data.badgePrinter === true;
+        this.#receiptPrinterAvailable = false;
+        if (data.hasOwnProperty('receiptPrinter')) {
+            this.#receiptPrinterAvailable = data.receiptPrinter === true;
+            if (this.#printActive)
+                this.printShown();
+        }
     }
 
     getConlabel() {
@@ -977,7 +990,8 @@ class Pos {
                 ],
                 columns: [
                     {field: "perid", visible: false,},
-                    {title: "Name", field: "fullName", headerFilter: true, headerWordWrap: true, tooltip: posbuildRecordHover, formatter: "textarea", },
+                    {title: "Name", field: "fullName", headerFilter: true, headerFilterFunc: fullNameHeaderFilter, headerWordWrap: true,
+                        tooltip: posbuildRecordHover, formatter: "textarea", },
                     {field: "last_name", visible: false,},
                     {field: "first_name", visible: false,},
                     {field: "middle_name", visible: false,},
@@ -1733,7 +1747,8 @@ addUnpaid(tid) {
                     {title: "Cart", width: 100, headerFilter: false, headerSort: false, formatter: _this.addCartIcon, formatterParams: {t: "result"},},
                     {title: "Per ID", field: "perid", headerWordWrap: true, width: 80, visible: false, hozAlign: 'right',},
                     {field: "index", visible: false,},
-                    {title: "Full Name", field: "fullName", headerFilter: true, headerWordWrap: true, tooltip: posbuildRecordHover, formatter: "textarea", },
+                    {title: "Full Name", field: "fullName", headerFilter: true, headerFilterFunc: fullNameHeaderFilter, headerWordWrap: true,
+                        tooltip: posbuildRecordHover, formatter: "textarea", },
                     {field: "last_name", visible: false,},
                     {field: "first_name", visible: false,},
                     {field: "middle_name", visible: false,},
@@ -2293,6 +2308,7 @@ addUnpaid(tid) {
     }
 // tab shown events - state mapping for which tab is shown
     findShown() {
+        this.#printActive = false;
         cart.clearInReview();
         cart.unfreeze();
         this.#current_tab = this.#find_tab;
@@ -2300,6 +2316,7 @@ addUnpaid(tid) {
     }
 
     addShown() {
+        this.#printActive = false;
         cart.clearInReview();
         cart.unfreeze();
         this.#current_tab = this.#add_tab;
@@ -2308,6 +2325,8 @@ addUnpaid(tid) {
     }
 
     reviewShown() {
+        this.#printActive = false;
+
         // draw review section
         this.#current_tab = this.#review_tab;
         this.#review_div.innerHTML = cart.buildReviewData();
@@ -2569,6 +2588,7 @@ addUnpaid(tid) {
             this.#pay_button_pay = document.getElementById('pay-btn-pay');
             this.#pay_button_ercpt = document.getElementById('pay-btn-ercpt');
             this.#pay_button_rcpt = document.getElementById('pay-btn-rcpt');
+            this.#pay_button_rcpt.disabled = !this.#receiptPrinterAvailable;
             this.#receeiptEmailAddresses_div = document.getElementById('receeiptEmailAddresses');
             if (this.#receeiptEmailAddresses_div)
                 this.#receeiptEmailAddresses_div.innerHTML = '';
@@ -2607,6 +2627,8 @@ addUnpaid(tid) {
         cart.freeze();
         this.#current_tab = this.#print_tab;
         this.newPrint = false;
+        this.#printActive = true;
+
         if (this.#printedObj == null) {
             this.#newPrint = true;
             this.#printedObj = new map();

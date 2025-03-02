@@ -471,7 +471,7 @@ function update_bid(row, to_auction=false, close=false) {
         actionlist.push(create_action('Set Bid', item, price));
 
         if (cart[row]['final_price'] != null) {
-            if (cart[row]['final_price'] > price) {
+            if (Number(cart[row]['final_price']) > price) {
                 if (!confirm("Price is less than last bid, are you sure?")) {
                     document.getElementById('bid_' + item).value = cart[row]['final_price'];
                     return;
@@ -480,7 +480,7 @@ function update_bid(row, to_auction=false, close=false) {
         }
 
         if (cart[row]['min_price'] != null) {
-            if (cart[row]['min_price'] > price) {
+            if (Number(cart[row]['min_price']) > price) {
                 if (!confirm("Price is less than minimum price of " + cart[row]['min_price'] + ", are you sure?")) {
                     document.getElementById('bid_' + item).value = cart[row]['final_price'];
                     document.getElementById('bidder_' + item).value = cart[row]['bidder'];

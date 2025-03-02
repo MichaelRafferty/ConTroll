@@ -225,7 +225,7 @@ class memsetup {
                     editor: "input", editorParams: { elementAttributes: { maxlength: "1024" } },
                 },
                 {
-                    title: "Active", field: "active", headerSort: true,  editable: reqEditable,
+                    title: "Active", field: "active", headerSort: true,  editable: true,
                     editor: "list", editorParams: { values: ["Y", "N"], }, validator: "required"
                 },
                 { title: "Sort Order", field: "sortorder", headerSort: true, visible: false },
@@ -287,15 +287,15 @@ class memsetup {
                     title: "Stand Alone", field: "standAlone", headerWordWrap: true, headerSort: true, editable: reqEditable,
                     editor: "list", editorParams: { values: ["Y", "N"], }, width: 75, validator: "required" },
                 {
-                    title: "Variable Price", field: "variablePrice", headerWordWrap: true, headerSort: true, editable: reqEditable,
-                    editor: "list", editorParams: { values: ["Y", "N"], }, width: 85, validator: "required"
+                    title: "Var. Price", field: "variablePrice", headerWordWrap: true, headerSort: true, editable: reqEditable,
+                    editor: "list", editorParams: { values: ["Y", "N"], }, width: 70, validator: "required"
                 },
                 {
-                    title: "Badge Label", field: "badgeLabel", width: 150, headerSort: true, editable: reqEditable,
-                    editor: "input", editorParams: { elementAttributes: { maxlength: "16" } }, validator: [ "required" ]
+                    title: "Badge Label", field: "badgeLabel", width: 150, headerSort: true, editable: true,
+                    editor: "input", editorParams: { elementAttributes: { maxlength: "16" } }, validator: "required"
                 },
                 {
-                    title: "Active", field: "active", headerSort: true, editable: reqEditable,
+                    title: "Active", field: "active", headerSort: true, editable: actEditable,
                     editor: "list", editorParams: { values: ["Y", "N"], }, validator: "required"
                 },
                 { title: "Sort Order", field: "sortorder", headerSort: true, visible: false },
@@ -305,6 +305,8 @@ class memsetup {
                         deleterow(e, cell.getRow());
                     }
                 },
+                { title: "Reg Uses", field: 'regUses', visible: config['debug'] > 0, },
+                { title: "Uses", field: 'uses', visible: config['debug'] > 0, },
                 { field: "required", visible: false, },
                 { field: "to_delete", visible: false, },
             ],
@@ -604,7 +606,8 @@ class memsetup {
     addrowCat() {
         var _this = this;
 
-        this.#categorytable.addRow({memCategory: 'new-row', onlyOne: 'Y', standAlone: 'N', variablePrice: 'N', badgeLabel: 'X', active: 'Y', sortorder: 99, uses: 0, notes:'', required: 'N'},
+        this.#categorytable.addRow({memCategory: 'new-row', onlyOne: 'Y', standAlone: 'N', variablePrice: 'N', badgeLabel: 'X', active: 'Y', sortorder: 99,
+                uses: 0, regUses: 0, notes:'', required: 'N'},
             false).then(function (row) {
             row.getTable().scrollToRow(row);
             _this.checkCatUndoRedo();
@@ -901,5 +904,17 @@ function reqEditable(cell) {
         return true;
 
     cell.getElement().style.backgroundColor ="#E8FFE8";
+    return false;
+}
+
+function actEditable(cell) {
+    var cellData = cell.getData();
+    if (cellData.regUses == 0) // not used in any existing reg for current or next year
+        return true;
+
+    if (cellData.active == 'N')  // allow setting any inactive item active
+        return true;
+
+    cell.getElement().style.backgroundColor ="#E8E8FF";
     return false;
 }

@@ -544,12 +544,12 @@ class exhibitorsAdm {
                 // now the summary lines
                 if (space['purchased_units'] > 0) {
                     spaceStage = 'Purchased';
-                    spaceSUM += space['purchased_code'] + ' ' + space['shortname'] + "\n";
+                    spaceSUM += space['requested_description'] + ' of ' + space['spaceName'] + "\n";
                 } else if (space['approved_units'] > 0) {
-                    spaceSUM += space['approved_code'] + ' ' + space['shortname'] + "\n";
+                    spaceSUM += space['approved_description'] + ' of ' + space['spaceName'] + "\n";
                     spaceStage = 'Approved';
                 } else if (space['requested_units'] > 0) {
-                    spaceSUM += space['requested_code'] + ' ' + space['shortname'] + "\n";
+                    spaceSUM += space['purchased_description'] + ' of ' + space['spaceName'] + "\n";
                     spaceStage = 'Requested';
                 }
             }
@@ -609,7 +609,7 @@ class exhibitorsAdm {
                     {title: "Website", field: "website", width: 200, headerSort: true, headerFilter: true,},
                     {title: "Email", field: "exhibitorEmail", width: 200, headerSort: true, headerFilter: true,},
                     {title: "Stage", field: "stage", headerSort: true, headerFilter: 'list', headerFilterParams: { values: ['Requested', 'Purchased', 'Approved'], },},
-                    {title: "Summary", field: "summary", width: 200, headerSort: false, headerFilter: true, formatter: "textarea", },
+                    {title: "Summary", field: "summary", minWdth: 200, headerSort: false, headerFilter: true, formatter: "textarea", },
                     {field: "space", visible: false},
                     { title: "Actions", field: "s1", formatter: this.spaceButtons, maxWidth: 900, headerSort: false },
                 ]});
@@ -1155,7 +1155,7 @@ class exhibitorsAdm {
 
     // reset a contact's password
     resetCpw(exhibitorId) {
-        var contactId = this.#exhibitorListTable.getRow(exhibitorId).getCell("contactId").getValue();
+        var contactId = this.#exhibitorsTable.getRow(exhibitorId).getCell("contactId").getValue();
         $.ajax({
             url: 'scripts/exhibitorsSetPassword.php',
             method: "POST",

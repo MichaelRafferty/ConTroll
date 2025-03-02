@@ -190,7 +190,7 @@ while ($match = $mR->fetch_assoc()) {
 $mR->free();
 
 $response['matches'] = $matches;
-if (count($matches) < 50)
+if (count($matches) < $limit)
     $response['success'] = count($matches) . ' potential matches found';
 else
     $response['success'] = "Too many records were matched, only the first $limit potential matches returned";

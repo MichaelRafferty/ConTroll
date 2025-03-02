@@ -483,7 +483,7 @@ function foundArt(data) {
         if (valid) {
             switch (item['type']) {
                 case 'art':
-                    if (item['sale_price'] == 0 || item['sale_price'] < item['min_price']) {
+                    if (item['sale_price'] == 0 || Number(item['sale_price']) < Number(item['min_price'])) {
                         html += '<div class="row"><div class="col-sm-4 bg-danger text-white">Quick Sale:</div><div class="col-sm-8 bg-danger text-white">Item is not available for quick sale.</div></div>';
                         valid = false;
                         break;
@@ -594,10 +594,10 @@ function addToCart(index) {
 
     var finalPriceField = document.getElementById('art-final-price');
     if (finalPriceField) {
-        var enteredPrice = finalPriceField.value;
+        var enteredPrice = Number(finalPriceField.value);
         if (enteredPrice == null)
             enteredPrice = 0;
-        var finalPrice = item['final_price'];
+        var finalPrice = Number(item['final_price']);
         if (finalPrice == null || finalPrice < 0) {
             if (item['sale_price'] == null || item['sale_price'] == 0)
                 finalPrice = item['min_price'];

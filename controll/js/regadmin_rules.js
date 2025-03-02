@@ -418,6 +418,10 @@ class rulesSetup {
             // apply age filter from age select
             if (mem.memAge == 'all' || mem.memAge == this.#currentAge) {
                 var memLabel = mem.label;
+                if (!memCategories.hasOwnProperty(mem.memCategory)) {  // skip inactive categories
+                    continue;
+                }
+
                 if (memCategories[mem.memCategory].variablePrice != 'Y') {
                     memLabel += ' (' + mem.price + ')';
                 }
@@ -561,15 +565,34 @@ class rulesSetup {
 
     #checkItem(row, item) {
         var match = true;
-        if (match && item.ageList != null && item.ageList != '' && !item.ageListArray.includes(row.memAge))
-            match = false;
-        if (match && item.catList != null && item.catList != '' && !item.catListArray.includes(row.memCategory))
-            match = false;
-        if (match && item.typeList != null && item.typeList != '' && !item.typeListArray.includes(row.memType))
-            match = false;
-        if (match && item.memList != null && item.memList != '' && !item.memListArray.includes(row.memId.toString()))
-            match = false;
-
+        if (match && item.ageList != null && item.ageList != '') {
+            if (!item.hasOwnProperty('ageListArray')) {
+                item.ageListArray = item.ageList.split(',');
+            }
+            if (!item.ageListArray.includes(row.memAge))
+                match = false;
+        }
+        if (match && item.catList != null && item.catList != '') {
+            if (!item.hasOwnProperty('catListArray')) {
+                item.catListArray = item.catList.split(',');
+            }
+            if (!item.catListArray.includes(row.memCategory))
+                match = false;
+        }
+        if (match && item.typeList != null && item.typeList != '') {
+            if (!item.hasOwnProperty('typeListArray')) {
+                item.typeListArray = item.typeList.split(',');
+            }
+            if (!item.typeListArray.includes(row.memType))
+                match = false;
+        }
+        if (match && item.memList != null && item.memList != '') {
+            if (!item.hasOwnProperty('memListArray')) {
+                item.memListArray = item.memList.split(',');
+            }
+            if (!item.memListArray.includes(row.memId.toString()))
+                match = false;
+        }
         return match;
     }
 
@@ -830,11 +853,11 @@ class rulesSetup {
     editRuleStepSave(dosave) {
         // save the results back to the underlying table
         if (dosave) {
-            console.log('editRuleStepSave:' + this.#editRuleStepItem);
+            if (this.#debug > 0) console.log('editRuleStepSave:' + this.#editRuleStepItem);
             // store all the fields back into the table row
             var row = this.#ruleStepsTable.getRow(this.#editRuleStepItem);
             var rowdata = row.getData();
-            console.log(row.getData());
+            if (this.#debug > 0) console.log(row.getData());
 
             var newValue = this.#sName.value;
             if (rowdata.name != newValue) {
@@ -1137,11 +1160,13 @@ class rulesSetup {
 
     // retrieve the selected rows and set the field values
     applyRuleSel(level) {
-        console.log('enter applyRuleSel(' + level + ')');
+        if (this.#debug > 0) console.log('enter applyRuleSel(' + level + ')');
         // store all the fields back into the table row
-        var row = this.#ruleStepsTable.getRow(this.#editRuleStepItem);
-        var rowdata = row.getData();
-        console.log(row.getData());
+        if (level == 's' && this.#editRuleStepItem) {
+            var row = this.#ruleStepsTable.getRow(this.#editRuleStepItem);
+            var rowdata = row.getData();
+            if (this.#debug > 0) console.log(row.getData());
+        }
 
         var filter = '';
         var rows = null;
@@ -1153,7 +1178,7 @@ class rulesSetup {
         }
         if (filter != '')
             filter = filter.substring(1);
-        //console.log(filter);
+        if (this.#debug > 0) console.log(filter);
         this.#selField.innerHTML = filter;
         this.closeSelTable(level);
         if (level == 'r') {
@@ -1167,11 +1192,13 @@ class rulesSetup {
             this.#buildMemUsed('#editStepUsedDiv', level, this.#editStepRow);
         }
 
-        console.log('exit applyRuleSel(' + level + ')');
-        // store all the fields back into the table row
-        var row = this.#ruleStepsTable.getRow(this.#editRuleStepItem);
-        var rowdata = row.getData();
-        console.log(row.getData());
+        if (level == 's' && this.#debug > 0) {
+            console.log('exit applyRuleSel(' + level + ')');
+            // final values in the step
+            row = this.#ruleStepsTable.getRow(this.#editRuleStepItem);
+            rowdata = row.getData();
+            console.log(row.getData());
+        }
     }
 
     // add row to  table and scroll to that new row
@@ -1440,6 +1467,7 @@ class rulesSetup {
 
         this.checkUndoRedo();
         this.updateDate(false);
+        this.#editRuleModal.hide();
     }
 
     // save the rules and rule items back to the database

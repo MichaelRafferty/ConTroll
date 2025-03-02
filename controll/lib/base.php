@@ -46,12 +46,12 @@ function google_init($mode) {
   // bypass for testing on Development PC
   if (stripos(__DIR__, "/Users/syd/") !== false && $_SERVER['SERVER_ADDR'] == "127.0.0.1") {
       $token_data = array();
-      $token_data['email'] = 'syd.weinstein@philcon.org'; // 'todd.dashoff@philcon.org'; // 
-      $token_data['sub'] = '114007818392249665998'; //  '123'; //
-      //$token_data['email'] = 'syd@philcon.org'; // 'todd.dashoff@philcon.org'; // 
-      //$token_data['sub'] = '1'; //  '123'; //
+      $token_data['email'] = 'syd.weinstein@philcon.org';
+      $token_data['sub'] = '114007818392249665998';
       $token_data['iat'] = time();
       $token_data['exp'] = time() + 3600;
+      $_SESSION['user_id'] = 88;
+      $_SESSION['user_perid'] = 21389;
       return($token_data);
   }
 
@@ -261,20 +261,29 @@ EOS;
 }
 
 function con_info($auth) {
+    $unlockCount = 0;
+    $badgeCount = 0;
     if(is_array($auth) && checkAuth(array_key_exists('sub', $auth) ? $auth['sub'] : null, 'overview')) {
         $con = get_con();
-        $count_res = dbSafeQuery("select count(*) from reg where conid=?;", 'i', array($con['id']));
-        $badgeCount = $count_res->fetch_row();
-        $count_res = dbSafeQuery("select count(*) from reg where conid=? AND price <= (ifnull(paid,0) + ifnull(couponDiscount, 0));",'i', array($con['id']));
-        $unlockCount = $count_res->fetch_row();
-  
+        $cQ = <<<EOS
+SELECT status, count(*) AS num
+FROM reg
+WHERE conid = ? AND status IN ('paid', 'plan', 'unpaid')
+GROUP BY status;
+EOS;
+        $count_res = dbSafeQuery($cQ, 'i', array($con['id']));
+        while ($countRow = $count_res->fetch_row()) {
+            $badgeCount += $countRow[1];
+            if ($countRow[0] == 'paid')
+                $unlockCount += $countRow[1];
+        }
 ?>
 
         <div class="row" id='regInfo'>
             <div class="col-sm-auto">
                 <span id='regInfoCon' class='left'>Con: 
                     <span class='blocktitle'> <?php echo $con['label']; ?> </span>
-                    <small><?php echo $badgeCount[0] . " Badges (" . $unlockCount[0] . " Ready)"; ?></small>
+                    <small><?php echo $badgeCount . " Badges (" . $unlockCount . " Ready)"; ?></small>
                 </span>
             </div>       
         </div>

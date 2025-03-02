@@ -15,7 +15,7 @@ function draw_login($config_vars, $result_message = '', $result_color = '', $why
             <div class="row mb-2">
                 <div class='col-sm-auto'>
                     <button class="btn btn-sm btn-primary" onclick="login.loginWithToken();">
-                        Create Account or Login with Email with Authentication
+                        Create Account or Login with Email Authentication
                     </button>
                 </div>
             </div>
@@ -44,8 +44,7 @@ function draw_login($config_vars, $result_message = '', $result_color = '', $why
             <?php
             // bypass for testing on Development PC
                 // TODO: back out seattle regtest from here.
-    if ((stripos(__DIR__, '/Users/syd/') !== false && $_SERVER['SERVER_ADDR'] == '127.0.0.1')  ||
-        (stripos(__DIR__, '/home/seattle/regtest.seattlein2025.org/ConTroll') !== false && $_SERVER['SERVER_ADDR'] == '192.168.88.4')) {
+    if (isDirectAllowed()) {
                 ?>
             <div class="row mt-3><div class="col-sm-12"><hr></div></div>
             <div class='row mt-2'>
