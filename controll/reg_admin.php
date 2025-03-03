@@ -2,6 +2,7 @@
 global $db_ini;
 
 require_once "lib/base.php";
+require_once "../lib/notes.php";
 //initialize google session
 $need_login = google_init("page");
 
@@ -29,6 +30,7 @@ page_init($page,
                     'js/regadmin_rules.js',
                     'jslib/emailBulkSend.js',
                     'jslib/membershipRules.js',
+                    'jslib/notes.js',
               ),
                     $need_login);
 
@@ -65,6 +67,7 @@ $config_vars['pageName'] = 'regAdmin';
 $config_vars['debug'] = $debug_regadmin;
 $config_vars['conid'] = $conid;
 $config_vars['multiOneDay'] = $multiOneDay;
+$config_vars['userid'] = $_SESSION['user_perid'];
 ?>
 <?php bs_tinymceModal(); ?>
 <div id='merge-lookup' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Look up Merge Person' aria-hidden='true' style='--bs-modal-width: 80%;'>
@@ -701,24 +704,7 @@ $config_vars['multiOneDay'] = $multiOneDay;
         </div>
     </div>
 </div>
-<div id='notes' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Registration Notes' aria-hidden='true' style='--bs-modal-width: 80%;'>
-    <div class='modal-dialog'>
-        <div class='modal-content'>
-            <div class='modal-header bg-primary text-bg-primary'>
-                <div class='modal-title'>
-                    <strong id='notesTitle'>Registration Notes</strong>
-                </div>
-                <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
-            </div>
-            <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
-                <div class="container-fluid" id="notesText"></div>
-            </div>
-            <div class='modal-footer'>
-                <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Close</button>
-            </div>
-        </div>
-    </div>
-</div>
+<?php drawNotesModal('96%'); ?>
 <script type='text/javascript'>
     var config = <?php echo json_encode($config_vars); ?>;
 </script>

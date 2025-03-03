@@ -18,7 +18,7 @@ if (array_key_exists('rid', $_POST)) {
     $nQ = <<<EOS
 SELECT logdate, userid, tid, notes
 FROM regActions
-WHERE regid = ?;
+WHERE regid = ? AND action = 'notes';
 EOS;
     $nR = dbSafeQuery($nQ, 'i', array($regid));
     if ($nR === false) {
@@ -32,6 +32,30 @@ EOS;
     }
     $nR->free();
     $response['notes'] = $notes;
+    $pQ = <<<EOS
+SELECT m.label, CASE 
+    WHEN p.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ',  
+        IFNULL(p.suffix, '')), '  *', ' '))
+    WHEN n.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT(IFNULL(n.first_name, ''),' ', IFNULL(n.middle_name, ''), ' ', IFNULL(n.last_name, ''), ' ',  
+        IFNULL(n.suffix, '')), '  *', ' '))
+    ELSE 'Unknown'
+END AS fullName
+FROM reg r
+JOIN memLabel m ON m.id = r.memid
+LEFT OUTER JOIN perinfo p ON p.id = r.perid
+LEFT OUTER JOIN newperson n ON n.id = r.newperid
+WHERE r.id = ?;
+EOS;
+    $pR = dbSafeQuery($pQ, 'i', array($regid));
+    if ($pR === false || $pR->num_rows != 1) {
+        $response['error'] = 'Error retrieving person records';
+        ajaxSuccess($response);
+        exit();
+    }
+    $person = $pR->fetch_row();
+    $pR->free();
+    $response['label'] = $person[0];
+    $response['fullName'] = $person[1];
 } else {
     $response['error'] = 'Improper calling sequence';
 }

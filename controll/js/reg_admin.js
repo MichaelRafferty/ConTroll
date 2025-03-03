@@ -36,7 +36,6 @@ var couponfilter = null;
 var statusfilter = null;
 var changeModal = null;
 var receiptModal = null;
-var notesModal = null;
 var recepitEmailAddress = null;
 var find_result_table = null;
 var testdiv = null;
@@ -83,6 +82,8 @@ var historyTitle = null;
 var historyDiv = null;
 var historyRow = null;
 
+// notes class
+var notes = null;
 
 // initialization at DOM complete
 window.onload = function initpage() {
@@ -122,10 +123,8 @@ window.onload = function initpage() {
         });
     }
 
-    id = document.getElementById('notes');
-    if (id != null) {
-        notesModal = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
-    }
+    notes = new Notes('', config.userid);
+
     id = document.getElementById('history');
     if (id != null) {
         historyModal = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
@@ -518,7 +517,7 @@ function actionbuttons(cell, formatterParams, onRendered) {
     // notes button
     if (ncount != null && ncount > 0)
         btns += '<button class="btn btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
-            ' onclick="notes(' + index + ')">Notes</button>';
+            ' onclick="showRegNotes(' + index + ', true)">Notes</button>';
 
 return btns;
 }
@@ -707,73 +706,12 @@ function displayHistory(data) {
 
 //// notes start
 // notes - display the notes for this registration - ajax call to fetch the notes
-function notes(index) {
-    var row = registrationtable.getRow(index);
-    var rid = row.getCell("badgeId").getValue();
+function showRegNotes(rid, readOnly) {
     if (rid == null || rid == '') {
         show_message("No registration id for this row, seek assistance", "error");
         return;
     }
-    $.ajax({
-        method: "POST",
-        url: "scripts/getNotes.php",
-        data: {
-            rid: rid,
-            index: index,
-        },
-        success: function (data, textstatus, jqxhr) {
-            if (data['error'] !== undefined) {
-                show_message(data['error'], 'error');
-                return;
-            }
-            if (data['success'] !== undefined) {
-                show_message(data['success'], 'success');
-            }
-            if (data['warn'] !== undefined) {
-                show_message(data['warn'], 'warn');
-            }
-            displayNotes(data);
-            if (data['success'] !== undefined)
-                show_message(data.success, 'success');
-        },
-        error: function (jqXHR, textStatus, errorThrown) {
-            showError("ERROR in getReceipt: " + textStatus, jqXHR);
-        }
-    });
-}
-
-// displayNotes - display all registration notes for this reg record - return from the AJAX call fetching the notes
-function displayNotes(data) {
-
-    var index = data['post']['index'];
-    var row = registrationtable.getRow(index);
-    var fullname = row.getCell('fullName').getValue();
-    var label = row.getCell('label').getValue();
-    var badgeId = row.getCell('badgeId').getValue();
-    document.getElementById('notesTitle').innerHTML = "Registration Notes for " + fullname + '<br/>Membership: ' + badgeId + ': ' + label;
-
-    var notes = data['notes'];
-    var html = `
-        <div class="row mt-4">
-            <div class="col-sm-1"><b>TID</b></div>
-            <div class="col-sm-2"><b>Log Date</b></div>
-            <div class="col-sm-1"><b>UserId</b></div>
-            <div class="col-sm-8"><b>Note</b></div>
-        </div>
-`;
-    for (var i = 0; i < notes.length; i++) {
-        var note = notes[i];
-        html += `
-        <div class="row mt-2">
-            <div class="col-sm-1">` + note.tid + `</div>
-            <div class="col-sm-2">` + note.logdate + `</div>
-            <div class="col-sm-1">` + note.userid + `</div>
-            <div class="col-sm-8">` + note.notes + `</div>
-        </div>
-`;
-    }
-    document.getElementById('notesText').innerHTML = html;
-    notesModal.show();
+    notes.getDisplayRegNotes(rid, readOnly);
 }
 
 // change - display all reg records for a perid based on this row and offer changes, also used to refresh the modal popup after changes
@@ -860,12 +798,15 @@ function changeRegsData(data, rowdata) {
             <label for="m-` + rowdata.badgeId + '">' + rowdata.badgeId + `</label></div>
         <div class="col-sm-1 text-primary" style="text-align: right;">` + rowdata.create_trans + `</div>
         <div class="col-sm-1 text-primary" style="text-align: right;">` + rowdata.memId + `</div>
-        <div class="col-sm-3 text-primary">` + rowdata.label + `</div>
+        <div class="col-sm-2 text-primary">` + rowdata.label + `</div>
         <div class="col-sm-1 text-primary" style="text-align: right;">` + rowdata.price + `</div>
         <div class="col-sm-1 text-primary" style="text-align: right;">` + rowdata.paid + `</div>
         <div class="col-sm-1 text-primary" style="text-align: right;">` + rowdata.couponDiscount + `.</div>
         <div class="col-sm-1 text-primary">` + rowdata.status + `</div>
-        <div class="col-sm-1"><button class="btn btn-sm btn-secondary" onclick="changeEdit(` + rowdata.badgeId + `)";>Edit</button></div>
+        <div class="col-sm-2">
+            <button class="btn btn-sm btn-secondary" onclick="changeEdit(` + rowdata.badgeId + `)";>Edit</button>
+            <button class="btn btn-sm btn-secondary" onclick="showRegNotes(` + rowdata.badgeId + `, false)";>Add Note</button>
+        </div>
     </div>
 `;
 
@@ -888,7 +829,10 @@ function changeRegsData(data, rowdata) {
         <div class="col-sm-1" style="text-align: right;">` + membership.paid + `</div>
         <div class="col-sm-1" style="text-align: right;">` + membership.couponDiscount + `.</div>
         <div class="col-sm-1">` + membership.status + `</div>
-        <div class="col-sm-1"><button class="btn btn-sm btn-secondary" onclick="changeEdit(` + membership.id + `)";>Edit</button></div>
+        <div class="col-sm-1">
+            <button class="btn btn-sm btn-secondary" onclick="changeEdit(` + membership.id + `)";>Edit</button>
+            <button class="btn btn-sm btn-secondary" onclick="addNote(` + membership.id + `)";>Add Note</button>
+        </div>
     </div>
 `;
     }
@@ -1584,6 +1528,7 @@ function draw_registrations(data) {
             { title: "Action", formatter: actionbuttons, hozAlign:"left", headerSort: false },
             { title: "TID", field: "display_trans", hozAlign: "right",  headerSort: true, headerFilter: true },
             { title: "PID", field: "perid", width: 110, hozAlign: "right", headerSort: true, headerFilter: true, },
+            { title: "Manager", field: "manager", width: 110, hozAlign: "right", headerSort: true, headerFilter: true, },
             { title: "Full Name", field: "fullName", headerSort: true, headerFilter: true, headerFilterFunc: fullNameHeaderFilter, },
             { title: "Badge Name", field: "badge_name", headerSort: true, headerFilter: true },
             { title: "Email", field: "email_addr", headerSort: true, headerFilter: true },
