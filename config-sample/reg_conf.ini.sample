@@ -180,7 +180,7 @@ appid=""
 token=""
 env="production"
 location=""
-apiversion=""
+apiversion="20250220"
 webpaysdk="https://web.squarecdn.com/v1/square.js"
 
 [log]
