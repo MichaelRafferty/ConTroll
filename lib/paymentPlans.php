@@ -349,6 +349,12 @@ JOIN transaction t ON t.id = pp.transactionId
 WHERE pp.payorPlanId = ?
 ORDER BY payDate;
 EOS;
+    $regQ = <<<EOS
+SELECT IFNULL(SUM(reg.price - (paid +couponDiscount)), 0)
+FROM reg
+WHERE status = 'plan' AND planId = ?;
+EOS;
+
     $payorR = dbSafeQuery($planQ, 'i', array ($payorPlanId));
     if ($payorR === false || $payorR->num_rows != 1) {
         return ['error' => 'No payor plan found.'];
@@ -359,6 +365,18 @@ EOS;
     if ($payorPlan['status'] == 'paid') {
         return ['error' => 'Payor plan already paid.'];
     }
+
+    $daysBetween = $payorPlan['daysBetween'];
+    $minPayment = $payorPlan['minPayment'];
+    $finalPayment = $payorPlan['finalPayment'];
+
+    // get the outstanding unpaid
+    $regR = dbSafeQuery($regQ, 'i', array($payorPlanId));
+    if ($regR === false) {
+        return ['error' => 'Error running reg query for outstanding regs still under plan'];
+    }
+    $outstandingBalance = $regR->fetch_row()[0];
+    $regR->free();
 
     $payR = dbSafeQuery($payQ, 'i', array ($payorPlanId));
     if ($payR === false) {
@@ -401,7 +419,13 @@ EOS;
         $warning .= "Warning: Calculated balance due ($calcBalanceDue) does not match balance due ($balanceDue), recasting plan.<br/>";
     }
 
-    if ($balanceDue <= 0) {
+    if ($calcBalanceDue != $outstandingBalance) {
+        // need to re-do it as the current outstanding balance doesn't match what is really out there
+        //TODO: this only counts regs right now, and not spaces
+        $calcBalanceDue = $outstandingBalance;
+    }
+
+    if ($calcBalanceDue <= 0) {
         $warning .= "Warning: Plan is paid or over paid and not marked paid, seek assistance<br/>";
         return ['warn' => $warning];
     }
@@ -425,11 +449,10 @@ EOS;
         // recast of plan needed, as someone else made a payment, or the balance due is incorrect
 
         // start with is there enough time to left to handle the number of remaining payments before payoff date
-        $daysBetween = $payorPlan['daysBetween'];
         $daysneeded = $remainingPayments * $daysBetween;
-        $payoffDate = date_create($payorPlan['payoffDate']);
-        $curDate = date_create();
-        $daysLeft = (int) date_diff($curDate, $payoffDate)->format("%a");
+        $payoffDate = strtotime($payorPlan['payByDate']);
+        $curDate = strtotime("now");
+        $daysLeft = round(($payoffDate - $curDate) / 86400);
         $maxPaymentsLeft = $daysLeft / 7;
         if ($maxPaymentsLeft < 2) {
             $remainingPayments = 1;
@@ -449,10 +472,10 @@ EOS;
         $numPayments = $numPayorPaymentsMade + $remainingPayments;
         $updQ = <<<EOS
 UPDATE payorPlans
-SET numPayments = ?, balanceDue = ?, finalPayment = ?, minPayment = ?
+SET numPayments = ?, balanceDue = ?, finalPayment = ?, minPayment = ?, daysBetween = ?
 WHERE id = ?;
 EOS;
-        $numUpd = dbSafeCmd($updQ, 'idddi', array($numPayments, $calcBalanceDue, $finalPayment, $minPayment, $payorPlanId));
+        $numUpd = dbSafeCmd($updQ, 'idddii', array($numPayments, $calcBalanceDue, $finalPayment, $minPayment, $daysBetween, $payorPlanId));
         $response['success'] = "Plan recast to for $numPayments with a minimum payment of $minPayment,  $numUpd rows updated.";
     }
     if ($warning != '')

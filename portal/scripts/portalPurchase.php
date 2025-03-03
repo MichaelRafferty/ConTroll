@@ -64,7 +64,7 @@ $planPayment = $_POST['planPayment'];
 $otherPay = $_POST['otherPay'];
 
 // load the amount values
-if (array_key_exists('totalAmountDue', $_POST)) {
+if (array_key_exists('totalAmountDue', $_POST) && $otherPay != 1) {
     $totalAmountDue = $_POST['totalAmountDue'];
 } else {
     $totalAmountDue = $amount;
@@ -108,6 +108,12 @@ if (array_key_exists('couponSerial', $_POST)) {
     $couponSerial = null;
 }
 
+if (array_key_exists('planRecast', $_POST)) {
+    $planRecast = $_POST['planRecast'];
+} else {
+    $planRecast = 0;
+}
+
 // all the records are in the database, so lets charge the credit card...
 
 $transId = getSessionVar('transId');
@@ -121,6 +127,8 @@ $info = getPersonInfo($conid);
 // compute the results array here
 $coupon = null;
 $counts = null;
+$rows_upd = 0;
+$newPlanId = null;
 
 if ($otherPay == 0) { // this is a plan payment or badge purchase payment
     $badges = getAccountRegistrations($loginId, $loginType, $conid, ($newplan || $planPayment == 0) ? 'unpaid' : 'plan');
@@ -128,10 +136,8 @@ if ($otherPay == 0) { // this is a plan payment or badge purchase payment
     if ($planPayment == 1 || $newplan == 1) {
         $badges = whatMembershipsInPlan($badges, $planRec);
     }
-    else {
-        foreach ($badges as $key => $badge) {
-            $badges[$key]['inPlan'] = false;
-        }
+    else foreach ($badges as $key => $badge) {
+        $badges[$key]['inPlan'] = false;
     }
 
     // ok, the Portal data is now loaded, now deal with re-pricing things, based on the real tables
@@ -145,9 +151,6 @@ if ($otherPay == 0) { // this is a plan payment or badge purchase payment
     $coupon = $data['coupon'];
     $memCategories = $data['memCategories'];
     $mtypes = $data['mtypes'];
-
-    $rows_upd = 0;
-    $newPlanId = null;
 
     //// $rules = $data['rules'];
     //// TODO: load and apply rules checks here to $badges
@@ -213,8 +216,13 @@ if ($otherPay == 0) { // this is a plan payment or badge purchase payment
                               'managedByNew' => $mem['managedByNew'],
                               'badge_name' => $mem['badge_name'],
                               'fullname' => $mem['fullname'],
-                              'memberId' => $mem['memberId']
+                              'memberId' => $mem['memberId'],
+                              'planId' => $mem['planId'],
+                              'inPlan' => false
             );
+            if ($mem['planId'] != 0) {
+                $planRecast = 1;
+            }
         }
 }
 
@@ -364,7 +372,7 @@ EOS;
         $bR->free();
 
         if ($balance > 0) {
-            $rows_upd += allocateBalance($allocateAmt, $regs, $conid, $existingPlan['id'], $transId, true );
+            $rows_upd += allocateBalance($allocateAmt, $regs, $conid, $existingPlan['id'], $transId, true);
         }
     }
 }
@@ -385,7 +393,7 @@ $upgradedCnt = 0;
 if ($amount > 0 && $planPayment != 1) {
     $balance = $approved_amt + $totalDiscount;
     // first all the out of plan ones
-    $rows_upd += allocateBalance($balance, $badges, $conid, $newPlanId, $transId, false );
+    $rows_upd += allocateBalance($balance, $badges, $conid, $newPlanId, $transId, false);
 
     // now all the in plan ones
     // figure out the percentage to apply to each
@@ -395,6 +403,24 @@ if ($totalAmountDue > 0) {
     $body = getEmailBody($transId, $info, $badges, $coupon, $planPayment == 1 ? $existingPlan : $planRec, $rtn['rid'], $rtn['url'], $amount, $planPayment);
 } else {
     $body = getNoChargeEmailBody($results, $info, $badges);
+}
+
+if ($planRecast == 1) {
+    // need to reset all plans, loop over badges and recast plans in badges and also the plan payment id for plan payments
+    if ($planPayment == 1) {
+        recomputePaymentPlan($existingPlan['id']) ;
+    } else {
+        $recomputedPlans = [];
+        for ($i = 0; $i < count($badges); $i++) {
+            $badge = $badges[$i];
+            if (array_key_exists('planId', $badge) && $badge['planId'] > 0) {
+                if ((!array_key_exists('b-' . $badge['planId'], $recomputedPlans)) || $recomputedPlans['b-' . $badge['planId']] != 1) {
+                    $recomputedPlans['b-' . $badge['planId']] = 1;
+                    recomputePaymentPlan($badge['planId']);
+                }
+            }
+        }
+    }
 }
 
 $regconfirmcc = null;

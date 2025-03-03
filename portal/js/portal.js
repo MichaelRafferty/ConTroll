@@ -80,6 +80,7 @@ class Portal {
     #makePaymentBody = null;
     #paymentPlan = null;
     #existingPlan = null;
+    #planRecast = false;
     #totalAmountDue = 0;
     #preCoupomAmountDue = 0;
     #couponDiscount = 0;
@@ -1117,9 +1118,10 @@ class Portal {
     }
 
     // makePlanPayment - make a payment on a plan
-    makePlanPayment(payorPlan, planName, paymentAmt) {
+    makePlanPayment(payorPlan, planName, paymentAmt, recast) {
         this.#existingPlan = payorPlan;
         this.#paymentAmount = paymentAmt;
+        this.#planRecast = recast;
         this.#planPayment = 1;
         this.#makePaymentBody.innerHTML = `
         <div class="row mt-4 mb-4">
@@ -1187,11 +1189,12 @@ class Portal {
             otherMemberships: JSON.stringify(paidOtherMembership),
             nonce: token,
             amount: this.#paymentAmount,
-            totalAmountDue: this.#totalAmountDue,
+            totalAmountDue: this.#otherPay == 1 ? this.#paymentAmount : this.#totalAmountDue,
             couponDiscount: this.#couponDiscount,
             preCoupomAmountDue: this.#preCoupomAmountDue,
             couponCode: coupon.getCouponCode(),
             couponSerial: coupon.getCouponSerial(),
+            planRecast: this.#planRecast ? 1 : 0,
         };
         $.ajax({
             url: "scripts/portalPurchase.php",

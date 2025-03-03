@@ -618,7 +618,10 @@ class PaymentPlans {
             paymentAmt = balanceDue
 
         this.#planPaymentAmount = paymentAmt;
-        this.#planPaymentMinPayment = Number(payorPlan.minPayment) > balanceDue ? balanceDue : Number(payorPlan.minPayment);
+        if (nextDue < 0)
+            this.#planPaymentMinPayment = paymentAmt;
+        else
+            this.#planPaymentMinPayment = Number(payorPlan.minPayment) > balanceDue ? balanceDue : Number(payorPlan.minPayment);
         this.#planPaymentBalanceDue = balanceDue;
         this.#planPaymentPayorPlanId = payorPlanId;
         this.#planPaymentPayorPlanName = plan.name;
@@ -680,7 +683,8 @@ class PaymentPlans {
         switch (from) {
             case 'portal':
                 var existingPlan = make_copy(payorPlans[this.#planPaymentPayorPlanId]);
-                portal.makePlanPayment(existingPlan, this.#planPaymentPayorPlanName, this.#planPaymentAmount);
+                portal.makePlanPayment(existingPlan, this.#planPaymentPayorPlanName, this.#planPaymentAmount,
+                    this.#planPaymentAmount > this.#planPaymentMinPayment);
                 break;
             default:
                 console.log('make plan payment: invalid from of ' + from);
