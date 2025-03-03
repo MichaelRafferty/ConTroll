@@ -9,3 +9,10 @@
 	auth=reg_admin
 	type=rpt
 	P001="prompt/~/perid/~/History for: /~/Enter Person's Perid"
+[110RegHistory]
+    name="No Shows"
+    description="No Shows for a convention year"
+    template=reg_noshows.rpt
+    auth=reg_admin
+    type=rpt
+    P001="prompt/~/conid/~/No shows for: /~/Enter Conid"

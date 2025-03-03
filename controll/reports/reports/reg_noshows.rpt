@@ -1,0 +1,89 @@
+[report]
+	name="RegNoShows"
+	auth=reg_admin
+	csvfile="RegNoShows"
+    index=regid
+[F001]
+    name=Perid
+	sql=p.id
+	title="Perid"
+	align=right
+	minWidth=80
+[F002]
+    name=fullName
+    sql="TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' '))"
+    title="Full Name"
+    minWidth=300
+[F003]
+    name=Conid
+    sql=r.conid
+    title=Conid
+    sort=true
+    aligh=right
+    minWidth=80
+    filter=number
+[F006]
+    name=Label
+    sql=m.label
+    title=Label
+    filter=true
+[F007]
+    name=price
+    sql=r.price
+    title=Price
+    filter=number
+    align=right
+[F008]
+    name=createdBy
+    sql=r.create_user
+    title="Created by"
+    align=right
+    minWidth=80
+[F009]
+    name=createDate
+    sql=r.create_date
+    title="Create Date"
+[F011]
+    name=source
+    sql=t.type
+    title=Source
+[F100]
+    name=first_name
+    sql=p.first_name
+    visible=false
+[F101]
+    name=last_name
+    sql=p.last_name
+    visible=false
+[F102]
+    name=middle_name
+    sql=p.middle_name
+    visible=false
+[T001]
+	name=reg
+	alias=r
+[T002]
+	name=memLabel
+	alias=m
+	join="m.id = r.memId"
+[T003]
+    name=transaction
+    alias=t
+    join="r.complete_trans = t.id"
+[T004]
+    name=perinfo
+    alias=p
+    join="r.perid = p.id"
+[T014]
+    name=regActions
+    alias=ra
+    join="ra.regid = r.id"
+    left=true
+[P001]
+    type=prompt
+    item=conid
+    datatype=i
+[where]
+	001="r.conid = ? AND r.status = 'paid' AND ra.id is null"
+[sort]
+	001="last_name, first_name, middle_name"
