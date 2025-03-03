@@ -124,16 +124,17 @@ EOS;
         }
 
         $addSQL = <<<EOS
-INSERT INTO memList(conid,sort_order,memCategory,memType,memAge,label,notes,price,startdate,enddate,atcon,online)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO memList(conid,sort_order,memCategory,memType,memAge,label,notes,price,startdate,enddate,atcon,online,glNum,glLabel)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?);
 EOS;
-        $addtypes = 'iissssssssss';
+        $addtypes = 'iissssssssssss';
         $updSQL = <<<EOS
 UPDATE memList
-SET sort_order = ?,memCategory = ?,memType = ?,memAge = ?,label = ?,notes = ?,price = ?,startdate = ?,enddate = ?,atcon = ?,online = ?
+SET sort_order = ?,memCategory = ?,memType = ?,memAge = ?,label = ?,notes = ?,price = ?,startdate = ?,enddate = ?,atcon = ?,online = ?,
+    glNum = ?, glLabel = ?
 WHERE id = ?
 EOS;
-        $updtypes = 'issssssssssi';
+        $updtypes = 'issssssssssssi';
 
         foreach ($data as $row) {
             if (!array_key_exists('notes', $row))
@@ -141,7 +142,7 @@ EOS;
             if ($row['id'] < 0) {
                 $paramarray= array($row['conid'],$row['sort_order'],$row['memCategory'],
                     $row['memType'],$row['memAge'],$row['shortname'],$row['notes'],$row['price'],$row['startdate'],
-                    $row['enddate'],$row['atcon'],$row['online']);
+                    $row['enddate'],$row['atcon'],$row['online'],$row['glNum'],$row['glLabel']);
                 //web_error_log("add row: /$addSQL/, types '$addtypes', values:");
                 //var_error_log($paramarray);
                 $newid = dbSafeInsert($addSQL, $addtypes, $paramarray);
@@ -150,7 +151,7 @@ EOS;
             } else {
                 $paramarray = array($row['sort_order'],$row['memCategory'],
                     $row['memType'],$row['memAge'],$row['shortname'],$row['notes'],$row['price'],$row['startdate'],
-                    $row['enddate'],$row['atcon'],$row['online'], $row['id']);
+                    $row['enddate'],$row['atcon'],$row['online'],$row['glNum'],$row['glLabel'],$row['id']);
                 //web_error_log("update row: /$updSQL/, types = '$updtypes', values:");
                 //var_error_log($paramarray);
                 $updated += dbSafeCmd($updSQL, $updtypes, $paramarray);
@@ -158,107 +159,6 @@ EOS;
         }
         $response['success'] = "memList updated: $inserted added, $updated changed, $deleted removed.";
         //error_log($response['success']);
-        break;
-    case 'breaklist':
-        if ($action == 'current')
-            $year = $conid;
-        else
-            $year = $nextconid;
-
-        // create next + 1 year conlist entry if it doesn't exist
-        $sql = 'SELECT id FROM conlist WHERE id = ?';
-        $r = dbSafeQuery($sql, 'i', array($year + 1));
-        if ($r->num_rows == 0) {
-            $sql = <<<EOS
-INSERT INTO conlist(id, name, label, startdate, enddate, create_date)
-SELECT
-	id + 1 as id,
-    CASE
-		WHEN id > 900 THEN REPLACE(name, MOD(id, 100), MOD(id + 1, 100))
-        ELSE REPLACE(name, id, id + 1)
-	END AS name,
-    REPLACE(label, id, id + 1) as label,
-    CASE
-		WHEN WEEK(startdate) = WEEK(date_add(startdate, INTERVAL 52 WEEK)) then DATE_ADD(startdate, INTERVAL 52 WEEK)
-        ELSE DATE_ADD(startdate, INTERVAL 53 WEEK)
-	END AS startdate,
-    CASE
-		WHEN WEEK(enddate) = WEEK(DATE_ADD(enddate, INTERVAL 52 WEEK)) THEN DATE_ADD(enddate, INTERVAL 52 WEEK)
-        ELSE DATE_ADD(enddate, INTERVAL 53 WEEK)
-	END AS enddate,
-    NOW() AS create_date
-FROM conlist
-WHERE id = ?;
-EOS;
-            $newid = dbSafeInsert($sql, 'i', array($year));
-        }
-
-        // now create any missing agelist entries
-        $inssql = <<<EOS
-INSERT INTO ageList(conid, ageType, label, shortname, sortorder)
-SELECT ?, a1.ageType, a1.label, a1.shortname, a1.sortorder
-FROM ageList a1
-LEFT OUTER JOIN ageList a2 ON (a2.conid = ? AND a2.ageType = a1.ageType)
-WHERE a1.conid = ? and a2.conid IS NULL;
-EOS;
-        $paramarray = array($year + 1, $year + 1, $year);
-        web_error_log("$inssql, types='ii',params:");
-        var_error_log($paramarray);
-        $numages = 0;
-        $numages = dbSafeCmd($inssql, 'iii', $paramarray);
-        if ($numages === false) {
-            $response['error'] = 'Error creating new age table entries, see logs';
-            ajaxSuccess($response);
-            exit();
-        }
-        // create table of existing rows for
-        $tmpsql = <<<EOS
-CREATE TEMPORARY TABLE existing_memList
-SELECT conid, memCategory,memType,memAge,label,startdate, enddate,atcon,`online`
-FROM memList
-WHERE conid >= ?;
-EOS;
-        $paramarray = array($year);
-        web_error_log("$tmpsql, types='i',params:");
-        var_error_log($paramarray);
-        $numrows = dbSafeCmd($tmpsql, 'i', $paramarray);
-        if ($numrows === false) {
-            $response['error'] = 'Error creating temporary table, see logs';
-            ajaxSuccess($response);
-            exit();
-        }
-        $inssql = <<<EOS
-INSERT INTO memList(conid,sort_order,memCategory,memType,memAge,label,price,startdate,enddate,atcon,online)
-SELECT ? AS conid,m.sort_order,m.memCategory,m.memType,m.memAge,replace(m.label, ?, ?) AS label,m.price,? AS startdate,? AS enddate,m.atcon,m.online
-FROM memList m
-LEFT OUTER JOIN existing_memList e ON (
-    e.memCategory = m.memCategory AND e.memType = m.memType AND e.memAge = m.memAge AND REPLACE(m.label, ?, ?) = e.label
-    AND e.startdate = ? AND e.enddate = ? AND e.atcon = m.atcon AND e.online = m.online)
-WHERE m.conid = ? AND e.conid IS NULL AND m.startdate = ? AND m.enddate = ?;
-EOS;
-        $typelist = 'issssssssiss';
-        $data = $tabledata;
-        $numrows = 0;
-        foreach ($data as $row ) {
-            $paramarray = array(
-                $row['newconid'], // conid
-                $row['oldconid'], // label prior str
-                $row['newconid'], // label new str
-                $row['newstart'], // startdate
-                $row['newend'],  // enddate
-                $row['oldconid'], // m.label prior string
-                $row['newconid'], // m.label current string
-                $row['newstart'], // e.startdate
-                $row['newend'], // e.enddate
-                $row['oldconid'], // m.conid
-                $row['oldstart'], // m.startdate
-                $row['oldend'] // m.enddate
-            );
-            web_error_log("$inssql, $typelist, params:");
-            var_error_log($paramarray);
-            $numrows += dbSafeCmd($inssql, $typelist, $paramarray);
-        }
-        $response['success'] = "ageList updated: $numages added, memList updated: $numrows added";
         break;
 
     default:

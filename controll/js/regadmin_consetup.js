@@ -199,15 +199,21 @@ class consetup {
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
                 { rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false },
-                { title: "ID", field: "id", width: 80, headerSort: true, headerHozAlign:"right", hozAlign: "right", },
+                {
+                    title: "Del", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
+                    cellClick: function (e, cell) {
+                        deleterow(e, cell.getRow());
+                    }
+                },
+                { title: "ID", field: "id", width: 70, headerSort: true, headerHozAlign:"right", hozAlign: "right", },
                 { field: "memlistkey", visible: false, },
-                { title: "Con ID", field: "conid", width: 80, headerFilter: true, headerHozAlign:"right", hozAlign: "right", },
+                { title: "Con ID", field: "conid", width: 70, headerWordWrap: true, headerFilter: true, headerHozAlign:"right", hozAlign: "right", },
                 { title: "Sort", field: "sort_order", headerSort: false, visible: false },
                 { title: "Category", field: "memCategory", editor: "list", editorParams: { values: data['memCats'], }, headerFilter: true, headerFilterParams: { values: data['memCats'] } },
                 { title: "Type", field: "memType", editor: "list", editorParams: { values: data['memTypes'], }, headerFilter: true, headerFilterParams: { values: data['memTypes'], } },
                 { title: "Age", field: "memAge", editor: "list", editorParams: { values: data['ageTypes'], }, headerFilter: true, headerFilterParams: { values: data['ageTypes'], }, },
                 {
-                    title: "Label", field: "shortname", minWidth: 400,
+                    title: "Label", field: "shortname", minWidth: 300,
                     tooltip: function (e, cell, onRendered) { return cell.getRow().getCell("label").getValue(); },
                     editor: "input", editorParams: { elementAttributes: { maxlength: "64" } },
                     headerFilter: true
@@ -220,23 +226,27 @@ class consetup {
                 { title: "Start Date", field: "startdate", width: 170, editor: "datetime", validator: "required", headerFilter: "input" },
                 { title: "End Date", field: "enddate", width: 170, editor: "datetime", validator: "required", headerFilter: "input" },
                 {
-                    title: "Atcon", field: "atcon", editor: "list", editorParams: { values: ["Y", "N"], },
+                    title: "At", field: "atcon", editor: "list", editorParams: { values: ["Y", "N"], },
                     headerFilter: true, headerFilterParams: { values: ["Y", "N"], }
                 },
                 {
-                    title: "Online", field: "online", editor: "list", editorParams: { values: ["Y", "N"], },
+                    title: "On", field: "online", editor: "list", editorParams: { values: ["Y", "N"], },
                     headerFilter: true, headerFilterParams: { values: ["Y", "N"], }
                 },
                 {
-                    title: "Notes", field: "notes", minWidth: 400,
-                    editor: "input", editorParams: { elementAttributes: { maxlength: "1024" } },
+                    title: "Notes", field: "notes", minWidth: 300,
+                    editor: "textarea", editorParams: { elementAttributes: { maxlength: "1024" } },
                     headerFilter: true, formatter: "textarea",
                 },
                 {
-                    title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
-                    cellClick: function (e, cell) {
-                        deleterow(e, cell.getRow());
-                    }
+                    title: "GL Num", field: "glNum", minWidth: 120, headerWordWrap: true,
+                    editor: "input", editorParams: { elementAttributes: { maxlength: "16" } },
+                    headerFilter: true
+                },
+                {
+                    title: "GL Label", field: "glLabel", minWidth: 200, headerWordWrap: true,
+                    editor: "input", editorParams: { elementAttributes: { maxlength: "64" } },
+                    headerFilter: true
                 },
                 { field: "to_delete", visible: false, },
             ],
