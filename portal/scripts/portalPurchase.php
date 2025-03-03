@@ -30,7 +30,8 @@ logInit($log['reg']);
 
 $response['conid'] = $conid;
 
-if (!(array_key_exists('action', $_POST) && array_key_exists('plan', $_POST) && array_key_exists('nonce', $_POST) && array_key_exists('amount', $_POST)  )) {
+if (!(array_key_exists('action', $_POST) && array_key_exists('plan', $_POST) &&
+        array_key_exists('nonce', $_POST) && array_key_exists('amount', $_POST)  )) {
     ajaxSuccess(array('status'=>'error', 'message'=>'Parameter error - get assistance'));
     exit();
 }
@@ -60,9 +61,10 @@ $amount = $_POST['amount'];
 $planRec = $_POST['planRec'];
 $existingPlan = $_POST['existingPlan'];
 $planPayment = $_POST['planPayment'];
+$otherPay = $_POST['otherPay'];
 
-// load the amount valies
-if (array_key_exists('totalAmountDue', $_POST)) {
+// load the amount values
+if (array_key_exists('totalAmountDue', $_POST) && $otherPay != 1) {
     $totalAmountDue = $_POST['totalAmountDue'];
 } else {
     $totalAmountDue = $amount;
@@ -78,6 +80,21 @@ if (array_key_exists('preCouponAmountDue', $_POST)) {
     $preCouponAmountDue = $amount;
 }
 
+if (array_key_exists('otherMemberships', $_POST)) {
+    try {
+        $otherMemberships = json_decode($_POST['otherMemberships'], true, 512, JSON_THROW_ON_ERROR);
+    }
+    catch (Exception $e) {
+        $msg = 'Caught exception on json_decode: ' . $e->getMessage() . PHP_EOL . 'JSON error: ' . json_last_error_msg() . PHP_EOL;
+        $response['error'] = $msg;
+        error_log($msg);
+        ajaxSuccess($response);
+        exit();
+    }
+} else {
+    $otherMemberships = [];
+}
+
 // and the coupon values
 if (array_key_exists('couponCode', $_POST)) {
     $couponCode = $_POST['couponCode'];
@@ -89,6 +106,12 @@ if (array_key_exists('couponSerial', $_POST)) {
     $couponSerial = $_POST['couponSerial'];
 } else {
     $couponSerial = null;
+}
+
+if (array_key_exists('planRecast', $_POST)) {
+    $planRecast = $_POST['planRecast'];
+} else {
+    $planRecast = 0;
 }
 
 // all the records are in the database, so lets charge the credit card...
@@ -104,64 +127,110 @@ $info = getPersonInfo($conid);
 // compute the results array here
 $coupon = null;
 $counts = null;
-
-$badges = getAccountRegistrations($loginId, $loginType, $conid, ($newplan || $planPayment == 0) ? 'unpaid' : 'plan');
-
-if ($planPayment == 1 || $newplan == 1) {
-    $badges = whatMembershipsInPlan($badges, $planRec);
-} else {
-    foreach ($badges as $key => $badge) {
-        $badges[$key]['inPlan'] = false;
-    }
-}
-
-// ok, the Portal data is now loaded, now deal with re-pricing things, based on the real tables
-$data = loadPurchaseData($conid, $couponCode, $couponSerial, $planPayment);
-$prices = $data['prices'];
-$memId = $data['memId'];
-$counts = $data['counts'];
-$discounts = $data['discounts'];
-$primary = $data['primary'];
-$map = $data['map'];
-$coupon = $data['coupon'];
-$memCategories = $data['memCategories'];
-$mtypes = $data['mtypes'];
-
 $rows_upd = 0;
 $newPlanId = null;
 
-//// $rules = $data['rules'];
-//// TODO: load and apply rules checks here to $badges
-$data = computePurchaseTotals($coupon, $badges, $primary, $counts, $prices, $map, $discounts, $mtypes, $memCategories);
+if ($otherPay == 0) { // this is a plan payment or badge purchase payment
+    $badges = getAccountRegistrations($loginId, $loginType, $conid, ($newplan || $planPayment == 0) ? 'unpaid' : 'plan');
 
-$maxMbrDiscounts = $data['origMaxMbrDiscounts'];
-$apply_discount = $data['applyDiscount'];
-$preDiscount = $data['preDiscount'];
-$total = $data['total'];
-$totalDiscount = $data['totalDiscount'];
-
-if ($planPayment == 0) {
-    if ($totalAmountDue != $total) {
-        error_log('bad total: post=' . $totalAmountDue . ', calc=' . $total);
-        ajaxSuccess(array ('status' => 'error', 'error' => 'Unable to process, bad total sent to Server'));
-        exit();
+    if ($planPayment == 1 || $newplan == 1) {
+        $badges = whatMembershipsInPlan($badges, $planRec);
+    }
+    else foreach ($badges as $key => $badge) {
+        $badges[$key]['inPlan'] = false;
     }
 
-    if ($coupon != null) {
-        if ($webCouponDiscount != $totalDiscount) {
-            error_log('bad coupon discount: post=' . $webCouponDiscount . ', calc=' . $totalDiscount);
-            ajaxSuccess(array ('status' => 'error', 'error' => 'Unable to process, bad coupon data sent to Server'));
+    // ok, the Portal data is now loaded, now deal with re-pricing things, based on the real tables
+    $data = loadPurchaseData($conid, $couponCode, $couponSerial, $planPayment);
+    $prices = $data['prices'];
+    $memId = $data['memId'];
+    $counts = $data['counts'];
+    $discounts = $data['discounts'];
+    $primary = $data['primary'];
+    $map = $data['map'];
+    $coupon = $data['coupon'];
+    $memCategories = $data['memCategories'];
+    $mtypes = $data['mtypes'];
+
+    //// $rules = $data['rules'];
+    //// TODO: load and apply rules checks here to $badges
+    $data = computePurchaseTotals($coupon, $badges, $primary, $counts, $prices, $map, $discounts, $mtypes, $memCategories);
+
+    $maxMbrDiscounts = $data['origMaxMbrDiscounts'];
+    $apply_discount = $data['applyDiscount'];
+    $preDiscount = $data['preDiscount'];
+    $total = $data['total'];
+    $totalDiscount = $data['totalDiscount'];
+
+    if ($planPayment == 0) {
+        if ($totalAmountDue != $total) {
+            error_log('bad total: post=' . $totalAmountDue . ', calc=' . $total);
+            ajaxSuccess(array ('status' => 'error', 'error' => 'Unable to process, bad total sent to Server'));
             exit();
         }
+
+        if ($coupon != null) {
+            if ($webCouponDiscount != $totalDiscount) {
+                error_log('bad coupon discount: post=' . $webCouponDiscount . ', calc=' . $totalDiscount);
+                ajaxSuccess(array ('status' => 'error', 'error' => 'Unable to process, bad coupon data sent to Server'));
+                exit();
+            }
+        }
     }
-} else {
-    $totalAmountDue = $total;
+    else {
+        $totalAmountDue = $total;
+    }
+} else { // otherPay = 1, this is a pay against 'other'
+    // load the badge array to mark what is being paid for
+        $totalDiscount = 0;
+        $badges = [];
+        foreach ($otherMemberships AS $key => $mem) {
+            if (!array_key_exists('payThis', $mem))
+                continue;
+            if ($mem['payThis'] != 1)
+                continue;
+            $badges[] = array('id' => $mem['create_trans'],
+                              'create_date' => $mem['create_date'],
+                              'regId' => $mem['regId'],
+                              'memId' => $mem['memId'],
+                              'conid' => $mem['conid'],
+                              'status' => $mem['status'],
+                              'price' => $mem['actPrice'],
+                              'paid' => $mem['actPaid'],
+                              'complete_trans' => $mem['complete_trans'],
+                              'couponDiscount' => $mem['actCouponDiscount'],
+                              'balDue' => $mem['actPrice'] - ($mem['actPaid'] + $mem['actCouponDiscount']),
+                              'perid' => $mem['regPerid'],
+                              'newperid' => $mem['regNewperid'],
+                              'sortTrans' => $mem['sortTrans'],
+                              'transDate' => $mem['transDate'],
+                              'label' => $mem['shortname'],
+                              'memAge' => $mem['memAge'],
+                              'age' => $mem['memAge'],
+                              'memType' => $mem['type'],
+                              'memCategory' => $mem['category'],
+                              'startdate' => $mem['startdate'],
+                              'enddate' => $mem['enddate'],
+                              'online' => $mem['online'],
+                              'managedBy' => $mem['managedBy'],
+                              'managedByNew' => $mem['managedByNew'],
+                              'badge_name' => $mem['badge_name'],
+                              'fullname' => $mem['fullname'],
+                              'memberId' => $mem['memberId'],
+                              'planId' => $mem['planId'],
+                              'inPlan' => false
+            );
+            if ($mem['planId'] != 0) {
+                $planRecast = 1;
+            }
+        }
 }
 
 // now recompute the records in the badgeResults array
 
 $results = array(
     'custid' => "$loginType-$loginId",
+    'source' => 'portal',
     'transid' => $transId,
     'counts' => $counts,
     'price' => $totalAmountDue,
@@ -303,7 +372,7 @@ EOS;
         $bR->free();
 
         if ($balance > 0) {
-            $rows_upd += allocateBalance($allocateAmt, $regs, $conid, $existingPlan['id'], $transId, true );
+            $rows_upd += allocateBalance($allocateAmt, $regs, $conid, $existingPlan['id'], $transId, true);
         }
     }
 }
@@ -324,7 +393,7 @@ $upgradedCnt = 0;
 if ($amount > 0 && $planPayment != 1) {
     $balance = $approved_amt + $totalDiscount;
     // first all the out of plan ones
-    $rows_upd += allocateBalance($balance, $badges, $conid, $newPlanId, $transId, false );
+    $rows_upd += allocateBalance($balance, $badges, $conid, $newPlanId, $transId, false);
 
     // now all the in plan ones
     // figure out the percentage to apply to each
@@ -334,6 +403,24 @@ if ($totalAmountDue > 0) {
     $body = getEmailBody($transId, $info, $badges, $coupon, $planPayment == 1 ? $existingPlan : $planRec, $rtn['rid'], $rtn['url'], $amount, $planPayment);
 } else {
     $body = getNoChargeEmailBody($results, $info, $badges);
+}
+
+if ($planRecast == 1) {
+    // need to reset all plans, loop over badges and recast plans in badges and also the plan payment id for plan payments
+    if ($planPayment == 1) {
+        recomputePaymentPlan($existingPlan['id']) ;
+    } else {
+        $recomputedPlans = [];
+        for ($i = 0; $i < count($badges); $i++) {
+            $badge = $badges[$i];
+            if (array_key_exists('planId', $badge) && $badge['planId'] > 0) {
+                if ((!array_key_exists('b-' . $badge['planId'], $recomputedPlans)) || $recomputedPlans['b-' . $badge['planId']] != 1) {
+                    $recomputedPlans['b-' . $badge['planId']] = 1;
+                    recomputePaymentPlan($badge['planId']);
+                }
+            }
+        }
+    }
 }
 
 $regconfirmcc = null;

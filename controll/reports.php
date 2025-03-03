@@ -225,3 +225,5 @@ EOS;
     <div id='result_message' class='mt-4 p-2'></div>
     <pre id='test'></pre>
 </div>
+<?php
+page_foot($page);

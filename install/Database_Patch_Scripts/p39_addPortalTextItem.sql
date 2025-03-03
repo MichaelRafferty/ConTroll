@@ -20,7 +20,7 @@ INSERT INTO `controllAppSections` VALUES
     ('portal','membershipHistory','main','main body of the membership history page'),
     ('portal','portal','interests','data entry forms related to interests'),
     ('portal','portal','main','main body of the portal home page'),
-    ('portal','portal','paymentPlamns','data entry forms related to payment plans'),
+    ('portal','portal','paymentPlans','data entry forms related to payment plans'),
     ('portal','portal','portalForm','data entry forms used by the portal page');
 
 INSERT INTO `controllAppItems` VALUES

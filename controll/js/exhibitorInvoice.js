@@ -60,11 +60,11 @@ class ExhibitorInvoice {
         var priceIdx = 0;
 
         this.#regionYearId = regionYearId;
-        this.#exhibitorId = exhibitorInfo['exhibitorId'];
-        this.#exhibitorYearId = exhibitorInfo['exhibitorYearId'];
+        this.#exhibitorId = exhibitorInfo.exhibitorId;
+        this.#exhibitorYearId = exhibitorInfo.exhibitorYearId;
         this.#totalSpacePrice = 0;
 
-        if (config['debug'] & 1) {
+        if (config.debug & 1) {
             console.log("regionYearId: " + regionYearId);
         }
         var region = exhibits_spaces[regionYearId];
@@ -73,15 +73,15 @@ class ExhibitorInvoice {
         var attendeeName = 'Exhibitor';
         var attendeeNameLC = 'Exhibitors';
         var portalType = regionList.portalType
-        var exhibitorName = exhibitor_info['exhibitorName'];
+        var exhibitorName = exhibitor_info.exhibitorName;
         switch (portalType) {
             case 'artist':
                 portalName = 'Artist';
                 attendeeName = 'Artist';
                 attendeeNameLC = 'artist';
-                exhibitorName = exhibitor_info['artistName'];
+                exhibitorName = exhibitor_info.artistName;
                 if (exhibitorName == null || exhibitorName == '') {
-                    exhibitorName = exhibitor_info['exhibitorName'];
+                    exhibitorName = exhibitor_info.exhibitorName;
                 }
                 break;
             case 'vendor':
@@ -90,8 +90,8 @@ class ExhibitorInvoice {
                 attendeeNameLC = 'vendor';
                 break;
         }
-        this.#mailin = exhibitor_info['mailin'];
-        if (config['debug'] & 1) {
+        this.#mailin = exhibitor_info.mailin;
+        if (config.debug & 1) {
             console.log("regionList");
             console.log(regionList);
             console.log("Region Spaces");
@@ -126,9 +126,9 @@ class ExhibitorInvoice {
                 }
             }
         }
-        if (regionList['mailinFee'] > 0 && this.#mailin == 'Y') {
-            html += "Mail in fee of $" + Number(regionList['mailinFee']).toFixed(2) + "<br/>\n";
-            this.#totalSpacePrice += Number(regionList['mailinFee']);
+        if (regionList.mailinFee > 0 && this.#mailin == 'Y') {
+            html += "Mail in fee of $" + Number(regionList.mailinFee).toFixed(2) + "<br/>\n";
+            this.#totalSpacePrice += Number(regionList.mailinFee);
         }
         html += "____________________________<br/>\nTotal price for spaces $" + Number(this.#totalSpacePrice).toFixed(2) + "<br/>\n";
 
@@ -143,19 +143,19 @@ class ExhibitorInvoice {
         if (spaces == 0) { // no additional or included memberships
             html += regionName + ' ' +  spacePriceName + ' spaces do not come with any memberships as part of the space purchase. ' +
                 ' Please purchase your attending memberships to the convention separately at ' +
-                '<a href="' + config['regserver'] + '">' + config['regserver'] + '</a>.';
+                '<a href="' + config.regserver + '">' + config.regserver + '</a>.';
         } else if (this.#includedMemberships == 0) {
             html += regionName + ' ' +  spacePriceName + ' spaces come with the option to purchase up to ' + this.#additionalMemberships +
                 ' membership' + (this.#additionalMemberships > 1 ? 's' : '') + ' at  the discounted price of $' +
                 Number(regionList.additionalMemPrice).toFixed(2) + '. ' +
                 'Purchase those memberships here. ' +
                 'Any additional memberships beyond those you purchase here need to be purchased separately at ' +
-                '<a href="' + config['regserver'] + '">' + config['regserver'] + '</a>.';
+                '<a href="' + config.regserver + '">' + config.regserver + '</a>.';
         } else if (this.#additionalMemberships == 0) {
             html += regionName + ' ' +  spacePriceName + ' spaces come with ' + this.#includedMemberships + ' membership' + (this.#includedMemberships > 1 ? 's' : '') +
                 ' as part of the space purchase. Please enter those memberships here. ' +
                 'Any additional memberships to the convention need to be purchased separately at ' +
-                '<a href="' + config['regserver'] + '">' + config['regserver'] + '</a>.';
+                '<a href="' + config.regserver + '">' + config.regserver + '</a>.';
         } else {
             html += regionName + ' ' +  spacePriceName + ' spaces come with ' + this.#includedMemberships + ' membership' + (this.#includedMemberships > 1 ? 's' : '') +
                 ' as part of the space purchase. In addition it comes with the right to purchase up to ' + this.#additionalMemberships +
@@ -163,7 +163,7 @@ class ExhibitorInvoice {
                 Number(regionList.additionalMemPrice).toFixed(2) + '. ' +
                 'Use the included memberships first, and then add the additional memberships if desired. If you need more memberships beyond that they need to' +
                 ' be purchased separately at ' +
-                '<a href="' + config['regserver'] + '">' + config['regserver'] + '</a>.';
+                '<a href="' + config.regserver + '">' + config.regserver + '</a>.';
         }
         html += "</p>\n";
         if (spaces == 0) {
@@ -179,13 +179,13 @@ class ExhibitorInvoice {
                     "<p><input type='radio' name='agent' id='agent_self' value='self' style='transform: scale(1.5);'>&nbsp;&nbsp;&nbsp;I will be my own agent and my membership is not one of the ones below.<br/>" +
                     "<input type='radio' name='agent' id='agent_first' value='first' style='transform: scale(1.5);'>&nbsp;&nbsp;&nbsp;The first membership below will be my agent.<br/>";
 
-                if (exhibitor_info['perid']) {
-                    html += "<input type='radio' name='agent' id='agent_perid' value='p" + exhibitor_info['perid'] + "' style='transform: scale(1.5);'>&nbsp;&nbsp;&nbsp;Assign " +
-                        exhibitor_info['p_first_name'] + ' ' + exhibitor_info['p_last_name'] + ' as my agent.<br/>';
-                } else if (exhibitor_info['newperid']) {
-                    html += "<input type='radio' name='agent' id='agent_newid' value='n" + exhibitor_info['newperid'] + "' style='transform:" +
+                if (exhibitor_info.perid) {
+                    html += "<input type='radio' name='agent' id='agent_perid' value='p" + exhibitor_info.perid + "' style='transform: scale(1.5);'>&nbsp;&nbsp;&nbsp;Assign " +
+                        exhibitor_info.p_first_name + ' ' + exhibitor_info.p_last_name + ' as my agent.<br/>';
+                } else if (exhibitor_info.newperid) {
+                    html += "<input type='radio' name='agent' id='agent_newid' value='n" + exhibitor_info.newperid + "' style='transform:" +
                         " scale(1.5);'>&nbsp;&nbsp;&nbsp;Assign " +
-                        exhibitor_info['n_first_name'] + ' ' + exhibitor_info['n_last_name'] + ' as my agent.<br/>';
+                        exhibitor_info.n_first_name + ' ' + exhibitor_info.n_last_name + ' as my agent.<br/>';
                 }
                 html += "<input type='radio' name='agent' id='agent_request' value='request' style='transform: scale(1.5);'>&nbsp;&nbsp;&nbsp;Please assign my agent as per my request below.<br/>" +
                     "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type='text' name='agent_request' placeholder='Enter your agent request here if needed' size='120'></p>"
@@ -217,7 +217,7 @@ class ExhibitorInvoice {
             </div>
 `;
             // cascading list of required fields, each case adds more so the breaks fall into the next section
-            switch (config['required']) {
+            switch (config.required) {
                 case 'all':
                     this.#allStar = '<span class="text-danger">&bigstar;</span>';
                 case 'addr':
@@ -252,24 +252,24 @@ class ExhibitorInvoice {
         document.getElementById("vendor_inv_included_mbr").innerHTML = html;
         // fill in default information for the values of the addresses
         for (mnum = 0; mnum < this.#includedMemberships; mnum++) {
-            document.getElementById('addr_i_' + mnum).value = exhibitor_info['addr'];
-            document.getElementById('addr2_i_' + mnum).value = exhibitor_info['addr2'];
-            document.getElementById('city_i_' + mnum).value = exhibitor_info['city'];
-            document.getElementById('state_i_' + mnum).value = exhibitor_info['state'];
-            document.getElementById('zip_i_' + mnum).value = exhibitor_info['zip'];
-            document.getElementById('country_i_' + mnum).value = exhibitor_info['country'];
-            document.getElementById('email_i_' + mnum).value = exhibitor_info['exhibitorEmail'];
-            document.getElementById('phone_i_' + mnum).value = exhibitor_info['exhibitorPhone'];
+            document.getElementById('addr_i_' + mnum).value = exhibitor_info.addr;
+            document.getElementById('addr2_i_' + mnum).value = exhibitor_info.addr2;
+            document.getElementById('city_i_' + mnum).value = exhibitor_info.city;
+            document.getElementById('state_i_' + mnum).value = exhibitor_info.state;
+            document.getElementById('zip_i_' + mnum).value = exhibitor_info.zip;
+            document.getElementById('country_i_' + mnum).value = exhibitor_info.country;
+            document.getElementById('email_i_' + mnum).value = exhibitor_info.exhibitorEmail;
+            document.getElementById('phone_i_' + mnum).value = exhibitor_info.exhibitorPhone;
         }
         for (mnum = 0; mnum < this.#additionalMemberships; mnum++) {
-            document.getElementById('addr_a_' + mnum).value = exhibitor_info['addr'];
-            document.getElementById('addr2_a_' + mnum).value = exhibitor_info['addr2'];
-            document.getElementById('city_a_' + mnum).value = exhibitor_info['city'];
-            document.getElementById('state_a_' + mnum).value = exhibitor_info['state'];
-            document.getElementById('zip_a_' + mnum).value = exhibitor_info['zip'];
-            document.getElementById('country_a_' + mnum).value = exhibitor_info['country'];
-            document.getElementById('email_a_' + mnum).value = exhibitor_info['exhibitorEmail'];
-            document.getElementById('phone_a_' + mnum).value = exhibitor_info['exhibitorPhone'];
+            document.getElementById('addr_a_' + mnum).value = exhibitor_info.addr;
+            document.getElementById('addr2_a_' + mnum).value = exhibitor_info.addr2;
+            document.getElementById('city_a_' + mnum).value = exhibitor_info.city;
+            document.getElementById('state_a_' + mnum).value = exhibitor_info.state;
+            document.getElementById('zip_a_' + mnum).value = exhibitor_info.zip;
+            document.getElementById('country_a_' + mnum).value = exhibitor_info.country;
+            document.getElementById('email_a_' + mnum).value = exhibitor_info.exhibitorEmail;
+            document.getElementById('phone_a_' + mnum).value = exhibitor_info.exhibitorPhone;
         }
         this.#exhibitorInvoiceModal.show();
     }
@@ -381,11 +381,11 @@ class ExhibitorInvoice {
         for (var num in this.#additional_cost) {
             this.#totalAmountDue += this.#additional_cost[num];
         }
-        if (config['debug'] & 1)
+        if (config.debug & 1)
             console.log('Pre this.#totalSpacePrice: ' + String(this.#totalAmountDue));
         this.#totalMembershipCost.innerHTML = Number(this.#totalAmountDue).toFixed(2);
         this.#totalAmountDue += Number(this.#totalSpacePrice);
-        if (config['debug'] & 1)
+        if (config.debug & 1)
             console.log('After adding this.#totalSpacePrice: ' + String(this.#totalAmountDue));
         this.#totalInvCost.innerHTML = Number(this.#totalAmountDue).toFixed(2);
     }
@@ -498,7 +498,7 @@ class ExhibitorInvoice {
             }
 
             // fields are now validated, apply USPS validation to each item?
-            if (config['useUSPS']) {
+            if (config.useUSPS) {
                 // now validate the membership fields
                 for (mnum = 0; mnum < this.#includedMemberships; mnum++) {
                     this.#currentSuffix = '_i_' + mnum;
@@ -551,23 +551,23 @@ class ExhibitorInvoice {
 
     // pay succeedd - deal with it
         paySuccess(data) {
-            if (config['debug'] & 1)
+            if (config.debug & 1)
                 console.log(data);
-            if (data['error']) {
-                show_message(data['error'], 'error', 'inv_result_message');
+            if (data.error) {
+                show_message(data.error, 'error', 'inv_result_message');
                 this.#payButton.disabled = false;
-            } else if (data['status'] == 'error') {
-                show_message(data['data'], 'error', 'inv_result_message');
+            } else if (data.status == 'error') {
+                show_message(data.data, 'error', 'inv_result_message');
                 this.#payButton.disabled = false;
-            } else if (data['status'] == 'success') {
+            } else if (data.status == 'success') {
                 this.#exhibitorInvoiceModal.hide();
-                show_message(data['message'] + "Payment for space recorded.");
-                if (data['exhibitor_spacelist']) {
-                    exhibitor_spacelist = data['exhibitor_spacelist'];
+                show_message(data.message + "Payment for space recorded.");
+                if (data.exhibitor_spacelist) {
+                    exhibitor_spacelist = data.exhibitor_spacelist;
                 }
                 exhibitors.open(fulltabname);
             } else {
-                show_message('There was an unexpected error, please email ' + config['vemail'] + ' to let us know.  Thank you.', 'error', 'inv_result_message');
+                show_message('There was an unexpected error, please email ' + config.vemail + ' to let us know.  Thank you.', 'error', 'inv_result_message');
                 this.#payButton.disabled = false;
             }
         }
@@ -590,17 +590,17 @@ class ExhibitorInvoice {
 
         // if first name or last name is set, do the check, else it's not in use, skip it
 
-        if (config['required'] != '') {
+        if (config.required != '') {
             if (!this.#checkNonBlank(document.getElementById('fname' + suffix)))
                 valid = false;
         }
 
-        if (config['required'] == 'all') {
+        if (config.required == 'all') {
             if (!this.#checkNonBlank(document.getElementById('lname' + suffix)))
                 valid = false;
         }
 
-        if (config['required'] == 'all' || config['required'] == 'addr') {
+        if (config.required == 'all' || config.required == 'addr') {
             if (!this.#checkNonBlank(document.getElementById('addr' + suffix)))
                valid = false;
 
@@ -651,7 +651,8 @@ class ExhibitorInvoice {
             return false;
 
         var country = document.getElementById('country' + suffix);
-        if (country.value != 'USA') {
+        var state = document.getElementById('state' + suffix).value;
+        if (country.value != 'USA' && state.value != '/r') {
             this.#uspsChecked[suffix] = true;
             return false;
         }
@@ -660,7 +661,6 @@ class ExhibitorInvoice {
         var addr = document.getElementById('addr' + suffix).value;
         var addr2 = document.getElementById('addr2' + suffix).value;
         var city = document.getElementById('city' + suffix).value;
-        var state = document.getElementById('state' + suffix).value;
         var zip = document.getElementById('zip' + suffix).value;
 
         var script = "scripts/uspsCheck.php";
@@ -676,8 +676,8 @@ class ExhibitorInvoice {
             data: data,
             method: 'POST',
             success: function (data, textStatus, jqXhr) {
-                if (data['status'] == 'error') {
-                    show_message(data['message'], 'error', 'inv_result_message');
+                if (data.status == 'error') {
+                    show_message(data.message, 'error', 'inv_result_message');
                     return false;
                 }
                 exhibitorInvoice.showValidatedAddress(data);
@@ -695,34 +695,34 @@ class ExhibitorInvoice {
     showValidatedAddress(data) {
         var html = '';
         clear_message('inv_result_message');
-        if (data['error']) {
-            var errormsg = data['error'];
+        if (data.error) {
+            var errormsg = data.error;
             if (errormsg.substring(0, 5) == '400: ') {
                 errormsg = errormsg.substring(5);
             }
             html = "<h4>USPS Returned an error<br/>validating the address</h4>" +
                 "<pre>" + errormsg + "</pre>\n";
         } else {
-            this.#uspsAddress = data['address'];
-            if (this.#uspsAddress['address2'] == undefined)
-                this.#uspsAddress['address2'] = '';
+            this.#uspsAddress = data.address;
+            if (this.#uspsAddress.address2 == undefined)
+                this.#uspsAddress.address2 = '';
 
-            html = "<h4>USPS Returned: " + this.#uspsAddress['valid'] + "</h4>";
+            html = "<h4>USPS Returned: " + this.#uspsAddress.valid + "</h4>";
             // ok, we got a valid uspsAddress, if it doesn't match, show the block
-            var orig = data['post'];
-            if (orig['addr'] == this.#uspsAddress['address'] && orig['addr2'] == this.#uspsAddress['address2'] &&
-                orig['city'] == this.#uspsAddress['city'] && orig['state'] == this.#uspsAddress['state'] &&
-                orig['zip'] == this.#uspsAddress['zip']) {
+            var orig = data.post;
+            if (orig.addr == this.#uspsAddress.address && orig.addr2 == this.#uspsAddress.address2 &&
+                orig.city == this.#uspsAddress.city && orig.state == this.#uspsAddress.state &&
+                orig.zip == this.#uspsAddress.zip) {
                 this.useMyAddress();
                 return;
             }
 
-            html += "<pre>" + this.#uspsAddress['address'] + "\n";
-            if (this.#uspsAddress['address2'])
-                html += this.#uspsAddress['address2'] + "\n";
-            html += this.#uspsAddress['city'] + ', ' + this.#uspsAddress['state'] + ' ' + this.#uspsAddress['zip'] + "</pre>\n";
+            html += "<pre>" + this.#uspsAddress.address + "\n";
+            if (this.#uspsAddress.address2)
+                html += this.#uspsAddress.address2 + "\n";
+            html += this.#uspsAddress.city + ', ' + this.#uspsAddress.state + ' ' + this.#uspsAddress.zip + "</pre>\n";
 
-            if (this.#uspsAddress['valid'] == 'Valid')
+            if (this.#uspsAddress.valid == 'Valid')
                 html += '<button class="btn btn-sm btn-primary m-1 mb-2" onclick="exhibitorInvoice.useUSPS();">' +
                     'Update using the USPS validated address' +
                     '</button>'
@@ -742,15 +742,15 @@ class ExhibitorInvoice {
 // address update functions
     // usps address post functions
     useUSPS() {
-        document.getElementById('addr' + this.#currentSuffix).value = this.#uspsAddress['address'];
+        document.getElementById('addr' + this.#currentSuffix).value = this.#uspsAddress.address;
         var a2 = document.getElementById('addr2' + this.#currentSuffix);
-        if (this.#uspsAddress['address2'])
-            a2.value = this.#uspsAddress['address2'];
+        if (this.#uspsAddress.address2)
+            a2.value = this.#uspsAddress.address2;
         else
             a2.value = '';
-        document.getElementById('city' + this.#currentSuffix).value = this.#uspsAddress['city'];
-        document.getElementById('state' + this.#currentSuffix).value = this.#uspsAddress['state'];
-        document.getElementById('zip' + this.#currentSuffix).value = this.#uspsAddress['zip'];
+        document.getElementById('city' + this.#currentSuffix).value = this.#uspsAddress.city;
+        document.getElementById('state' + this.#currentSuffix).value = this.#uspsAddress.state;
+        document.getElementById('zip' + this.#currentSuffix).value = this.#uspsAddress.zip;
         this.#uspsDiv.innerHTML = '';
         this.pay();
     }
@@ -792,12 +792,12 @@ class ExhibitorInvoice {
                 clear_message();
                 if (typeof data == "string") {
                     show_message(data,  'error');
-                } else if (data['error'] !== undefined) {
-                    show_message(data['error'], 'error');
-                } else if (data['message'] !== undefined) {
-                    show_message(data['message'], 'success');
-                } else if (data['warn'] !== undefined) {
-                    show_message(data['warn'], 'success');
+                } else if (data.error !== undefined) {
+                    show_message(data.error, 'error');
+                } else if (data.message !== undefined) {
+                    show_message(data.message, 'success');
+                } else if (data.warn !== undefined) {
+                    show_message(data.warn, 'success');
                 }
                 pay_button_ercpt.disabled = false;
             },
