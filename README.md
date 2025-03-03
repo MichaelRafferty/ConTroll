@@ -2,6 +2,8 @@
 ![Control Troll Logo](onlinereg/lib/ConTroll.png)\
 ConTroll™ and the ConTroll Troll Logo are Copyright 2015-2025, Michael Rafferty
 
+This README file is current as of Release 1.1.3 of the ConTroll Regitration System.
+
 ConTroll™ is designed as an all in one system to support registration for conventions.  It supports on-line, mail-in, and on-site registration.
 
 ConTroll™ is freely available for use under the GNU Affero General Public License, Version 3 (https://www.gnu.org/licenses/agpl-3.0.en.html). Local changes are allowed, but all changes to ConTroll™ must be freely offered to the ConTroll™ developers for potential integration into the system.
