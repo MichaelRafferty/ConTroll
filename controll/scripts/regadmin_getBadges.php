@@ -49,6 +49,7 @@ SELECT R.id AS badgeId, IFNULL(R.complete_trans, R.create_trans) AS display_tran
     CASE WHEN R.perid IS NULL THEN IFNULL(NP.email_addr, '') ELSE IFNULL(P.email_addr, '') END AS email_addr,
     CASE WHEN R.perid IS NULL THEN IFNULL(NP.legalname, '') ELSE IFNULL(P.legalname, '') END AS legalname,
     CASE WHEN R.perid IS NULL THEN IFNULL(NP.pronouns, '') ELSE IFNULL(P.pronouns, '') END AS pronouns,
+    CASE WHEN R.perid IS NULL THEN IFNULL(NP.managedBy, NP.managedByNew) ELSE IFNULL(P.managedBy, P.managedByNew) END AS manager,
     M.label, R.memId, R.price, R.couponDiscount, R.paid, R.coupon, R.status, R.create_date, R.change_date,
     M.memCategory AS category, M.memType AS type, M.memAge AS age, 
     ifnull(C.name, ' None ') as name, N.ncount, H.hcount
