@@ -976,6 +976,7 @@ class Portal {
         clear_message();
         clear_message('payDueMessageDiv');
         clear_message('makePayMessageDiv');
+        this.#otherPay = 0;
         var html = '';
         var plans = paymentPlans.isMatchingPlans();
 
@@ -1075,6 +1076,7 @@ class Portal {
     </div>
 `;
         this.#paymentDueBody.innerHTML = html;
+        this.#otherPay = 1;
         this.#paymentDueModal.show();
     }
 
@@ -1093,6 +1095,10 @@ class Portal {
     makePayment(plan) {
         if (plan == null) {
             this.#paymentPlan = null;
+            if (this.#otherPay == 1) {
+                this.makeOtherPayment('full');
+                return;
+            }
             this.#makePaymentBody.innerHTML = `
         <div class="row mt-4">
             <div class="col-sm-auto"><b>The Total Amount Due is ` + Number(this.#totalAmountDue).toFixed(2) + `</b></div>
@@ -1123,6 +1129,7 @@ class Portal {
         this.#paymentAmount = paymentAmt;
         this.#planRecast = recast;
         this.#planPayment = 1;
+        this.#otherPay = 0;
         this.#makePaymentBody.innerHTML = `
         <div class="row mt-4 mb-4">
             <div class="col-sm-auto"><b>You are making a payment on ` + planName + ' payment plan of ' + Number(paymentAmt).toFixed(2) + `</b></div>
