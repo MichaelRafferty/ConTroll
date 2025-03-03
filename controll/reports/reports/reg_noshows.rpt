@@ -84,6 +84,6 @@
     item=conid
     datatype=i
 [where]
-	001="r.conid = ? AND r.status = 'paid' AND ra.id is null"
+	001="r.conid = ? AND r.status = 'paid' AND ra.id is null AND m.memType in ('full','oneday')"
 [sort]
 	001="last_name, first_name, middle_name"
