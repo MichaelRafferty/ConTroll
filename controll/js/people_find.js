@@ -401,21 +401,25 @@ class Find {
         this.#adminNotes.innerHTML = this.#editRow.admin_notes;
 
         // loop over the policies
-        var keys = Object.keys(this.#memberPolicies);
-        for (i = 0; i < keys.length; i++) {
-            var policy = this.#memberPolicies[keys[i]];
-            var response = policy.response;
-            if (response === null || response === undefined) {
-                response = policy.defaultValue;
+        if (this.#memberPolicies && this.#memberPolicies.length > 0) {
+            var keys = Object.keys(this.#memberPolicies);
+            for (i = 0; i < keys.length; i++) {
+                var policy = this.#memberPolicies[keys[i]];
+                var response = policy.response;
+                if (response === null || response === undefined) {
+                    response = policy.defaultValue;
+                }
+                document.getElementById('p_f_' + policy.policy).checked = response == 'Y';
             }
-            document.getElementById('p_f_' + policy.policy).checked = response == 'Y';
         }
 
         // now the interests
-        keys = Object.keys(this.#memberInterests);
-        for (i = 0; i < keys.length; i++) {
-            var interest = this.#memberInterests[keys[i]];
-            document.getElementById('i_' + interest.interest).checked = interest.interested == 'Y';
+        if (this.#memberInterests && this.#memberInterests.length > 0) {
+            keys = Object.keys(this.#memberInterests);
+            for (i = 0; i < keys.length; i++) {
+                var interest = this.#memberInterests[keys[i]];
+                document.getElementById('i_' + interest.interest).checked = interest.interested == 'Y';
+            }
         }
 
         if (this.#managed.length > 0) {
@@ -948,24 +952,28 @@ class Find {
             existingInterests: JSON.stringify(this.#memberInterests),
         };
         // now the policies
-        var keys = Object.keys(this.#memberPolicies);
-        var i;
-        var newPolicies = {};
-        for (i = 0; i < keys.length; i++) {
-            var policy = this.#memberPolicies[keys[i]];
-            if (document.getElementById('p_f_' + policy.policy).checked) {
-                newPolicies['p_' + policy.policy] = 'Y';
+        if (this.#memberPolicies && this.#memberPolicies.length > 0) {
+            var keys = Object.keys(this.#memberPolicies);
+            var i;
+            var newPolicies = {};
+            for (i = 0; i < keys.length; i++) {
+                var policy = this.#memberPolicies[keys[i]];
+                if (document.getElementById('p_f_' + policy.policy).checked) {
+                    newPolicies['p_' + policy.policy] = 'Y';
+                }
             }
         }
         postdata['newPolicies'] = JSON.stringify(newPolicies);
 
         // now the interests
         var newInterests = {};
-        var keys = Object.keys(this.#memberInterests);
-        for (var i = 0; i < keys.length; i++) {
-            var interest = this.#memberInterests[keys[i]];
-            if (document.getElementById('i_' + interest.interest).checked) {
-                newInterests[interest.interest] = 'Y';
+        if (this.#memberInterests && this.#memberInterests.length > 0) {
+            var keys = Object.keys(this.#memberInterests);
+            for (var i = 0; i < keys.length; i++) {
+                var interest = this.#memberInterests[keys[i]];
+                if (document.getElementById('i_' + interest.interest).checked) {
+                    newInterests[interest.interest] = 'Y';
+                }
             }
         }
         postdata['newInterests'] = JSON.stringify(newInterests);

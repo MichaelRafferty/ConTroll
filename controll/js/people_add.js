@@ -296,11 +296,13 @@ class Add {
     // reset the policies to defaults
     #resetPolicies() {
         var index = 0;
-        var keys = Object.keys(policies);
-        for (index = 0; index < keys.length; index++) {
-            var policy = policies[keys[index]];
-            var policyField = 'p_a_' + policy.policy;
-            document.getElementById(policyField).checked = policy.defaultValue == 'Y';
+        if (policies && policies.length > 0) {
+            var keys = Object.keys(policies);
+            for (index = 0; index < keys.length; index++) {
+                var policy = policies[keys[index]];
+                var policyField = 'p_a_' + policy.policy;
+                document.getElementById(policyField).checked = policy.defaultValue == 'Y';
+            }
         }
     }
 
