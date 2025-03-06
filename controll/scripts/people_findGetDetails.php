@@ -90,7 +90,7 @@ SELECT 'n' AS type, id, email_addr, badge_name, legalname, phone,
        TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ',  
         IFNULL(p.suffix, '')), '  *', ' ')) AS fullName
 FROM newperson p
-WHERE managedBy = ?
+WHERE managedBy = ? AND p.perid IS NULL
 EOS;
 
 $mR = dbSafeQuery($mQ, 'ii', array($perid, $perid));
