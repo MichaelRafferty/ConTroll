@@ -103,9 +103,21 @@ EOQ;
     function computePurchaseTotals(&$coupon, $badges, $primary, $counts, $prices, $map, $discounts, $mtypes, $memCategories) {
         $num_primary = 0;
         $total = 0;
+        $badgeCheckQ = <<<EOS
+SELECT r.price, r.perid, r.updatedBy, u.perid
+FROM reg r
+LEFT OUTER JOIN user u ON r.updatedBy = u.perid
+WHERE r.id = ? AND r.price = ? AND u.perid IS NOT NULL
+UNION 
+SELECT r.price, r.perid, r.updatedBy, u.perid
+FROM regHistory r
+LEFT OUTER JOIN user u ON r.updatedBy = u.perid
+WHERE r.id = ? AND r.price = ? AND u.perid IS NOT NULL;
+EOS;
+
 
 // compute the pre-discount total to see if the javascript passed prediscount total is correct
-        foreach ($badges as $badge) {
+        foreach ($badges as $key => $badge) {
             if (!isset($badge) || !isset($badge['memId'])) {
                 continue;
             }
@@ -119,6 +131,32 @@ EOQ;
             $mtype = $mtypes[$memId];
             $memCategory = $memCategories[$mtype['memCategory']];
             $price = $prices[$memId];
+            $badgePrice = $badge['price'];
+            if ($badgePrice != $price) {
+                // we have a conflict, is this a legitimate price change by an admin or is this a cheat price from javascript hacking?
+                $badgeCheckR = dbSafeQuery($badgeCheckQ, 'idid', array($badge['regId'], $badgePrice, $badge['regId'], $badgePrice));
+                if ($badgeCheckR !== false) {
+                    if ($badgeCheckR->num_rows > 0) {
+                        logWrite(array('message' => 'Override of badge price accepted due to admin action causing it',
+                                       'perid' => $badge['perid'], 'badgeid' => $badge['regId'], 'memId' => $memId,
+                                       'memPrice' => $price, 'badgePrice' => $badgePrice));
+                        $price = $badgePrice;
+                        $badges[$key]['overidePrice'] = $badgePrice;
+                        $badgeCheckR->free();
+                    } else {
+                        logWrite(array('message' => 'Override of badge price failed due to no admin action detected to cause it',
+                                       'perid' => $badge['perid'], 'badgeid' => $badge['regId'], 'memId' => $memId,
+                                       'memPrice' => $price, 'badgePrice' => $badgePrice));
+                       $badge[$key]['overidePrice'] = $price;
+                    }
+                } else {
+                    logWrite(array('message' => 'Override of badge price failed due query error',
+                                   'perid' => $badge['perid'], 'badgeid' => $badge['regId'], 'memId' => $memId,
+                                   'memPrice' => $price, 'badgePrice' => $badgePrice));
+                    $badge[$key]['overidePrice'] = $price;
+                }
+            }
+
             if ($memCategory['variablePrice'] == 'Y') {
                 if ($price < $badge['price'])
                     $price = $badge['price'];
@@ -152,6 +190,11 @@ EOQ;
             $mtype = $mtypes[$memId];
             $memCategory = $memCategories[$mtype['memCategory']];
             $price = $prices[$memId];
+            $badgePrice = $badge['price'];
+            if ($badgePrice != $price) {
+                if (array_key_exists('overidePrice', $badge))
+                    $price = $badge['overidePrice'];
+            }
             if ($memCategory['variablePrice'] == 'Y') {
                 if ($price < $badge['price'])
                     $price = $badge['price'];
