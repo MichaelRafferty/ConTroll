@@ -94,13 +94,12 @@ EOQ;
             'map' => $map,
             'coupon' => $coupon,
             'memCategories' => $memCategories,
-            'mtypes' => $mtypes,
         ];
         return $data;
     }
 
     // compute Purchase Totals
-    function computePurchaseTotals(&$coupon, $badges, $primary, $counts, $prices, $map, $discounts, $mtypes, $memCategories) {
+    function computePurchaseTotals(&$coupon, $badges, $primary, $counts, $prices, $map, $discounts, $mtypes, $memCategories) : array {
         $num_primary = 0;
         $total = 0;
         $badgeCheckQ = <<<EOS
