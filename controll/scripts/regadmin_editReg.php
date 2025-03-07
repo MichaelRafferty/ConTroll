@@ -2,6 +2,7 @@
 global $db_ini;
 
 require_once "../lib/base.php";
+require_once "../../lib/paymentPlans.php";
 
 $check_auth = google_init("ajax");
 $perm = "reg_admin";
