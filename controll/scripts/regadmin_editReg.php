@@ -50,6 +50,7 @@ if (!$changes) {
 
 }
 
+$recast = false;
 $upQ = "UPDATE reg SET ";
 $typeStr = '';
 $valuearr = [];
@@ -57,24 +58,28 @@ if ($changedMemId) {
     $upQ .= 'memId = ?, ';
     $typeStr .= 'i';
     $valuearr[] = (int) $new['memId'];
+    $recast = true;
 }
 
 if ($changedPrice) {
     $upQ .= 'price = ?, ';
     $typeStr .= 'd';
     $valuearr[] = (float) $new['price'];
+    $recast = true;
 }
 
 if ($changedPaid) {
     $upQ .= 'paid = ?, ';
     $typeStr .= 'd';
     $valuearr[] = (float) $new['paid'];
+    $recast = true;
 }
 
 if ($changedDiscount) {
     $upQ .= 'couponDiscount = ?, ';
     $typeStr .= 'd';
     $valuearr[] = (float) $new['couponDiscount'];
+    $recast = true;
 }
 
 if ($changedCoupon) {
@@ -106,6 +111,23 @@ $valuearr[] = $user_perid;
 $valuearr[] = $old['badgeId'];
 
 $num_upd = dbSafeCmd($upQ, $typeStr, $valuearr);
+
+if ($recast && $old['status'] == 'plan') {
+    $getPlanQ = <<<EOS
+SELECT planId
+FROM reg
+WHERE id = ?;
+EOS;
+    $getPlanR = dbSafeQuery($getPlanQ, 'i', array($old['badgeId']));
+    if ($getPlanR !== false) {
+        if ($getPlanR->num_rows == 1) {
+            $planId = $getPlanR->fetch_row()[0];
+            recomputePaymentPlan($planId);
+        }
+        $getPlanR->free();
+    }
+}
+
 if ($num_upd < 0) {
     $response['error'] = 'Error updating reg';
 } else {
