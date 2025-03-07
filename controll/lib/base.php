@@ -26,6 +26,7 @@ require_once(__DIR__ . "/../../lib/cipher.php");
 require_once(__DIR__ . '/../../lib/jsVersions.php');
 require_once(__DIR__ . "/../../lib/ajax_functions.php");
 db_connect();
+session_start();
 
 
 function bounce_page($new_page) {
@@ -41,7 +42,6 @@ function bounce_page($new_page) {
  */
 function google_init($mode) {
   global $db_ini;
-  session_start();
 
   // bypass for testing on Development PC
   if (stripos(__DIR__, "/Users/syd/") !== false && $_SERVER['SERVER_ADDR'] == "127.0.0.1") {
