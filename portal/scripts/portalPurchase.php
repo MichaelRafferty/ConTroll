@@ -408,7 +408,7 @@ if ($totalAmountDue > 0) {
 if ($planRecast == 1) {
     // need to reset all plans, loop over badges and recast plans in badges and also the plan payment id for plan payments
     if ($planPayment == 1) {
-        recomputePaymentPlan($existingPlan['id']) ;
+        recomputePaymentPlan($existingPlan['id']);
     } else {
         $recomputedPlans = [];
         for ($i = 0; $i < count($badges); $i++) {
