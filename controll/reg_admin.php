@@ -67,6 +67,7 @@ $config_vars['pageName'] = 'regAdmin';
 $config_vars['debug'] = $debug_regadmin;
 $config_vars['conid'] = $conid;
 $config_vars['multiOneDay'] = $multiOneDay;
+$config_vars['oneoff'] = $oneoff;
 $config_vars['userid'] = $_SESSION['user_perid'];
 ?>
 <?php bs_tinymceModal(); ?>

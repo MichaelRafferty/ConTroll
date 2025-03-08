@@ -842,7 +842,11 @@ function changeRegsData(data, rowdata) {
             <button class="btn btn-sm btn-primary" onclick="changeRevoke(0);">Revoke Selected</button>
             <button class="btn btn-sm btn-warning me-4" onclick="changeRevoke(1);">Restore Selected</button>
             <button class="btn btn-sm btn-primary me-4" onclick="changeTransfer();">Transfer Selected</button>
-            <button class="btn btn-sm btn-primary me-4" onclick="changeRollover();">Rollover Selected</button>
+`;
+    if (config['oneoff'] == 0) {
+        html += '<button class="btn btn-sm btn-primary me-4" onclick="changeRollover();">Rollover Selected</button>\n';
+    }
+    html += `
             <button class="btn btn-sm btn-primary" onclick="changeRefund();">Refund Selected</button>
         </div>
     </div>
