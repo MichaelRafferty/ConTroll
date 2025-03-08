@@ -784,7 +784,7 @@ function changeRegsData(data, rowdata) {
         <div class="col-sm-1" style="text-align: right;">Reg ID</div>
         <div class="col-sm-1" style="text-align: right;">Trans ID</div>
         <div class="col-sm-1" style="text-align: right;">Mem ID</div>
-        <div class="col-sm-3">Label</div>
+        <div class="col-sm-2">Label</div>
         <div class="col-sm-1" style="text-align: right;">Price</div>
         <div class="col-sm-1" style="text-align: right;">Paid</div>
         <div class="col-sm-1" style="text-align: right;">Disc.</div>
@@ -846,8 +846,10 @@ function changeRegsData(data, rowdata) {
     if (config['oneoff'] == 0) {
         html += '<button class="btn btn-sm btn-primary me-4" onclick="changeRollover();">Rollover Selected</button>\n';
     }
+    if (config['finance'] == 1) {
+        html += '<button class="btn btn-sm btn-primary" onclick="changeRefund();">Refund Selected</button>\n';
+    }
     html += `
-            <button class="btn btn-sm btn-primary" onclick="changeRefund();">Refund Selected</button>
         </div>
     </div>
 `;
@@ -1375,14 +1377,18 @@ function changeEdit(badgeId) {
     editNewPrice.value = currentRow.price == null ? '' : currentRow.price;
     editOrigPrice.innerHTML = currentRow.price == null ? '' : currentRow.price;
     editNewRegPrice.innerHTML = '';
-    editNewPaid.value = currentRow.paid == null ? '' : currentRow.paid;
-    editOrigPaid.innerHTML = currentRow.paid == null ? '' : currentRow.paid;
+    if (editNewPaid)
+        editNewPaid.value = currentRow.paid == null ? '' : currentRow.paid;
+    if (editOrigPaid)
+        editOrigPaid.innerHTML = currentRow.paid == null ? '' : currentRow.paid;
     editNewCoupon.value = currentRow.coupon == null ? '' : currentRow.coupon;
     editOrigCoupon.innerHTML = currentRow.coupon == null ? '' : currentRow.coupon;
     editNewCouponDiscount.value = currentRow.couponDiscount == null ? '' : currentRow.couponDiscount;
     editOrigCouponDiscount.innerHTML = currentRow.couponDiscount == null ? '' : currentRow.couponDiscount;
-    editStatusSelect.innerHTML = statusSelect;
-    editOrigStatus.innerHTML = currentRow.status;
+    if (editStatusSelect)
+        editStatusSelect.innerHTML = statusSelect;
+    if (editOrigStatus)
+        editOrigStatus.innerHTML = currentRow.status;
 }
 
 // changeEditRegChange - populate change fields on reg item change
@@ -1398,12 +1404,18 @@ function changeEditRegChange() {
 function changeEditSave(override) {
     var newMemId = document.getElementById("newMemId").value;
     var newPrice = editNewPrice.value;
-    var newPaid = editNewPaid.value;
+    var newPaid = null;
     var newCoupon = editNewCoupon.value;
     var newDiscount = editNewCouponDiscount.value;
     if (newDiscount == '')
         newDiscount = 0.00;
-    var newStatus = document.getElementById('newStatus').value;
+    var newStatusSelect = document.getElementById("newStatus");
+    var newStatus = null;
+    if (newStatusSelect)
+        newStatus = document.getElementById('newStatus').value;
+
+    if (editNewPaid)
+        newPaid = editNewPaid.value;
 
     if (newMemId == '')
         newMemId = currentRow.memId;
@@ -1415,11 +1427,13 @@ function changeEditSave(override) {
         // now some simple validations
         var warnings = '';
         var numWarnings = 0;
-        var balanceDue = Number(newPrice) - (Number(newPaid) + Number(newDiscount));
-        if (newPrice != (Number(newPaid) + Number(newDiscount))) {
-            warnings += 'Price of ' + newPrice + ' does not equal the sum of Paid + Coupon Discount of ' +
-                (Number(newPaid) + Number(newDiscount)) + '<br/>';
-            numWarnings++;
+        if (config['finance'] == 1) {
+            var balanceDue = Number(newPrice) - (Number(newPaid) + Number(newDiscount));
+            if (newPrice != (Number(newPaid) + Number(newDiscount))) {
+                warnings += 'Price of ' + newPrice + ' does not equal the sum of Paid + Coupon Discount of ' +
+                    (Number(newPaid) + Number(newDiscount)) + '<br/>';
+                numWarnings++;
+            }
         }
 
         if (newPrice != Number(memLabelsIdx[newMemId].price)) {
@@ -1432,15 +1446,17 @@ function changeEditSave(override) {
             numWarnings++;
         }
 
-        if (balanceDue > 0 && (newStatus == 'paid' || newStatus == 'upgraded')) {
-            warnings += 'There is a balance Due of ' + balanceDue + " and the record is paid/uograded, it needs to be 'unpaid'." +
-                " If you continue it will be set to unpaid.<br/>";
-            numWarnings++;
-        }
+        if (config['finance'] == 1) {
+            if (balanceDue > 0 && (newStatus == 'paid' || newStatus == 'upgraded')) {
+                warnings += 'There is a balance Due of ' + balanceDue + " and the record is paid/uograded, it needs to be 'unpaid'." +
+                    " If you continue it will be set to unpaid.<br/>";
+                numWarnings++;
+            }
 
-        if (balanceDue < 0) {
-            warnings += 'There is a refund of ' + Number(-balanceDue) + ' due to your changes<br/>';
-            numWarnings++;
+            if (balanceDue < 0) {
+                warnings += 'There is a refund of ' + Number(-balanceDue) + ' due to your changes<br/>';
+                numWarnings++;
+            }
         }
 
         if (numWarnings > 0) {
@@ -1500,14 +1516,18 @@ function changeEditClose() {
     editNewPrice.value = '';
     editOrigPrice.innerHTML = '';
     editNewRegPrice.innerHTML = '';
-    editNewPaid.value = '';
-    editOrigPaid.innerHTML = '';
+    if (editNewPaid)
+        editNewPaid.value = '';
+    if (editOrigPaid)
+        editOrigPaid.innerHTML = '';
     editNewCoupon.value = '';
     editOrigCoupon.innerHTML = '';
     editNewCouponDiscount.value = '';
     editOrigCouponDiscount.innerHTML = '';
-    editStatusSelect.innerHTML = '';
-    editOrigStatus.innerHTML = '';
+    if (editStatusSelect)
+        editStatusSelect.innerHTML = '';
+    if (editOrigStatus)
+        editOrigStatus.innerHTML = '';
     currentRow = null;
     currentItem = null;
 

@@ -29,6 +29,8 @@ if (!isset($_POST) || !isset($_POST['old']) || !isset($_POST['id'])|| !isset($_P
     exit();
 }
 
+$finance = checkAuth($check_auth['sub'], 'finance');
+
 $con = get_conf('con');
 $conid = $con['id'];
 
@@ -38,10 +40,17 @@ $badgeId = $_POST['id'];
 
 $changedMemId = $old['memId'] != $new['memId'];
 $changedPrice = ((float) $old['price']) != ((float) $new['price']);
-$changedPaid = ((float) $old['paid']) != ((float) $new['paid']);
 $changedDiscount =  ((float) $old['couponDiscount']) != ((float) $new['couponDiscount']);
 $changedCoupon = ((int) $old['coupon']) != ((int) $new['coupon']);
-$changedStatus = $old['status'] != $new['status'];
+if ($finance) {
+    $changedStatus = $old['status'] != $new['status'];
+    $changedPaid = ((float)$old['paid']) != ((float)$new['paid']);
+} else {
+    $new['paid'] = $old['paid'];
+    $new['status'] = $old['status'];
+    $changedPaid = false;
+    $changedStatus = false;
+}
 
 $changes = $changedMemId || $changedPrice || $changedPaid || $changedDiscount || $changedCoupon || $changedStatus;
 if (!$changes) {
@@ -92,17 +101,15 @@ if ($changedCoupon) {
 $newSt = $new['status'];
 if ($newSt != 'plan' && $new['price'] > ($new['paid'] + $new['couponDiscount'])) {
     $newStatus = 'unpaid';
+} else if ($newSt == 'paid' || $newSt == 'plan' || $newSt == 'unpaid') {
+    if ($new['price'] <= ($new['paid'] + $new['couponDiscount']))
+        $newStatus = 'paid';
+    else if ($newSt != 'plan')
+        $newStatus = 'unpaid';
+    else
+        $newStatus = 'plan';
 } else if ($changedStatus) {
     $newStatus = $new['status'];
-} else {
-    if ($newSt == 'paid' || $newSt == 'plan' || $newSt == 'unpaid') {
-        if ($new['price'] == ($new['paid'] + $new['couponDiscount']))
-            $newStatus = 'paid';
-        else if ($newSt != 'plan')
-            $newStatus = 'unpaid';
-        else
-            $newStatus = 'plan';
-    }
 }
 
 $upQ .= "status = ?, updatedBy = ? WHERE id = ?;";

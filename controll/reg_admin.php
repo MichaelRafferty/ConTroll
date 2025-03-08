@@ -11,6 +11,8 @@ if(!$need_login or !checkAuth($need_login['sub'], $page)) {
     bounce_page("index.php");
 }
 
+$finance = checkAuth($need_login['sub'], 'finance');
+
 $cdn = getTabulatorIncludes();
 page_init($page,
     /* css */ array($cdn['tabcss'],
@@ -69,6 +71,7 @@ $config_vars['conid'] = $conid;
 $config_vars['multiOneDay'] = $multiOneDay;
 $config_vars['oneoff'] = $oneoff;
 $config_vars['userid'] = $_SESSION['user_perid'];
+$config_vars['finance'] = $finance ? 1 : 0;
 ?>
 <?php bs_tinymceModal(); ?>
 <div id='merge-lookup' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Look up Merge Person' aria-hidden='true' style='--bs-modal-width: 80%;'>
@@ -607,6 +610,7 @@ $config_vars['userid'] = $_SESSION['user_perid'];
                     <div class='col-sm-auto'>New Reg:</div>
                     <div class='col-sm-auto' id='edit_newRegPrice'></div>
                 </div>
+                <?php if ($config_vars['finance']) { ?>
                 <div class='row mt-1'>
                     <div class='col-sm-1'>Paid:</div>
                     <div class='col-sm-auto'>New:</div>
@@ -616,6 +620,7 @@ $config_vars['userid'] = $_SESSION['user_perid'];
                     <div class='col-sm-auto'>Original:</div>
                     <div class='col-sm-auto' id='edit_origPaid'></div>
                 </div>
+                    <?php } ?>
                 <div class='row mt-1'>
                     <div class='col-sm-1'>Coupon:</div>
                     <div class='col-sm-auto'>New:</div>
@@ -634,6 +639,7 @@ $config_vars['userid'] = $_SESSION['user_perid'];
                     <div class='col-sm-auto'>Original:</div>
                     <div class='col-sm-auto' id='edit_origCouponDiscount'></div>
                 </div>
+            <?php if ($config_vars['finance']) { ?>
                 <div class='row mt-1'>
                     <div class='col-sm-1'>Status:</div>
                     <div class='col-sm-auto'>New:</div>
@@ -641,6 +647,7 @@ $config_vars['userid'] = $_SESSION['user_perid'];
                     <div class='col-sm-auto'>Original:</div>
                     <div class='col-sm-auto' id='edit_origStatus'></div>
                 </div>
+            <?php } ?>
                 <div class='row mt-3 mb-2'>
                     <div class='col-sm-1 p-0'></div>
                     <div class='col-sm-10 p-0'>
