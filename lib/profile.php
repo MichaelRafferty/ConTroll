@@ -28,6 +28,7 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
             $firstStar = '<span class="text-danger">&bigstar;</span>';
     }
     $tabindex = $tabIndexStart;
+    $yearahead = false;
     if ($editEmail == false) {
     ?>
     <h<?php echo $modal ? '1 class="size-h3"' : '3 class="text-primary"'?> id='epHeader'>
@@ -221,7 +222,6 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
                     break;
                     }
                 }
-            }
 ?>
     <div class='row'>
         <div class='col-sm-12'>
@@ -235,7 +235,7 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
                 Eligibility for Child and Young Adult rates are based on age on <?php echo $ageByDate; ?>
                 (the first day of the convention).<br/>
         <?php if ($yearahead) { ?>
-                For Year Ahead membrerships, the rates are based on age or <?php echo $agebydateYA; ?>
+                For Year Ahead memberships, the rates are based on age or <?php echo $agebydateYA; ?>
                (the first day of the convention for next year).<br/>
         <?php } ?>
             </p>
@@ -253,6 +253,7 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
         </div>
     </div>
         <?php
+        }
     } else {
 ?>
     <div class="row">
