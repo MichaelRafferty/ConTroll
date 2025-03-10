@@ -313,9 +313,9 @@ EOS;
 
 $all_badgeR = dbSafeQuery($all_badgeQ, "i", array($transid));
 
-$badgeResults = array();
+$badgeResults = [];
 while ($row = $all_badgeR->fetch_assoc()) {
-  $badgeResults[count($badgeResults)] = $row;
+  $badgeResults[] = $row;
 }
 
 $results = array(
@@ -334,7 +334,13 @@ $results = array(
 //log requested badges
 logWrite(array('con'=>$condata['name'], 'trans'=>$transid, 'results'=>$results, 'request'=>$badges));
 if ($total > 0) {
-    $rtn = cc_charge_purchase($results, $ccauth, true);
+    $email = $badgeResults[0]['email_addr'];
+    $phone = $badgeResults[0]['phone'];
+    if ($email == '/r')
+        $email = '';
+    if ($phone == '/r')
+        $phone = '';
+    $rtn = cc_charge_purchase($results, $email, $phone, true);
     if ($rtn === null) {
         // note there is no reason cc_charge_purchase will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
         logWrite(array('con'=>$condata['name'], 'trans'=>$transid, 'error' => 'Credit card transaction not approved'));

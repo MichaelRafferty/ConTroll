@@ -119,6 +119,16 @@ SELECT r.status, r.memId, m.*, a.shortname AS ageShort, a.label AS ageLabel, r.p
         ELSE NULL
     END AS badge_name,
     CASE 
+        WHEN rp.id IS NOT NULL THEN rp.email_addr
+        WHEN rn.id IS NOT NULL THEN rn.email_addr
+        ELSE NULL
+    END AS email_addr,
+    CASE 
+        WHEN rp.id IS NOT NULL THEN rp.phone
+        WHEN rn.id IS NOT NULL THEN rn.phone
+        ELSE NULL
+    END AS phone,
+    CASE 
         WHEN rp.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT(IFNULL(rp.first_name, ''),' ', IFNULL(rp.middle_name, ''), ' ', 
             IFNULL(rp.last_name, ''), ' ', IFNULL(rp.suffix, '')), '  *', ' '))
         WHEN rn.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT(IFNULL(rn.first_name, ''),' ', IFNULL(rn.middle_name, ''), ' ', 
@@ -170,6 +180,7 @@ EOS;
                                          'createPerid' => $m['createPerid'], 'completePerid' => $m['completePerid'], 'purchaserName' => $m['purchaserName'],
                                          'startdate' => $m['startdate'], 'enddate' => $m['enddate'], 'online' => $m['online'],
                                          'actPrice' => $m['actPrice'], 'actPaid' => $m['actPaid'], 'actCouponDiscount' => $m['actCouponDiscount'],
+                                         'email_addr' => $m['email_addr'], 'phone' => $m['phone'],
             );
             $holderMembership[] = $item;
             if ($item['completePerid'] != NULL) {

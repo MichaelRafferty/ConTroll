@@ -16,7 +16,7 @@ function getAccountRegistrations($personId, $personType, $conid, $getTypes = 'al
     if ($personType == 'p') {
         $membershipsQ = <<<EOS
 WITH pn AS (
-    SELECT id AS memberId, managedBy, NULL AS managedByNew,
+    SELECT id AS memberId, managedBy, NULL AS managedByNew, email_addr, phone,
         CASE 
             WHEN badge_name IS NULL OR badge_name = '' THEN TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(last_name, '')) , '  *', ' ')) 
             ELSE badge_name 
@@ -24,7 +24,7 @@ WITH pn AS (
         TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(last_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) AS fullname
     FROM perinfo
 ), nn AS (
-    SELECT id AS memberId, managedBy, managedByNew,
+    SELECT id AS memberId, managedBy, managedByNew, email_addr, phone,
         CASE 
             WHEN badge_name IS NULL OR badge_name = '' THEN TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(last_name, '')) , '  *', ' ')) 
             ELSE badge_name 
@@ -61,7 +61,17 @@ WITH pn AS (
             WHEN pn.memberId IS NOT NULL THEN pn.memberId
             WHEN nn.memberId IS NOT NULL THEN nn.memberId
             ELSE NULL
-        END AS memberId
+        END AS memberId,
+        CASE 
+            WHEN pn.memberId IS NOT NULL THEN pn.email_addr
+            WHEN nn.memberId IS NOT NULL THEN nn.email_addr
+            ELSE NULL
+        END AS email_addr,
+        CASE 
+            WHEN pn.memberId IS NOT NULL THEN pn.phone
+            WHEN nn.memberId IS NOT NULL THEN nn.phone
+            ELSE NULL
+        END AS phone
     FROM transaction t
     JOIN reg r ON t.id = r.create_trans
     LEFT OUTER JOIN transaction tp ON tp.id = r.complete_trans
@@ -74,7 +84,7 @@ WITH pn AS (
         CASE WHEN r.complete_trans IS NULL THEN r.create_trans ELSE r.complete_trans END AS sortTrans,
         CASE WHEN tp.complete_date IS NULL THEN t.create_date ELSE tp.complete_date END AS transDate,
         m.label, m.memAge, m.memAge AS age, m.memType, m.memCategory,  m.startdate, m.enddate, m.online,
-        nn.managedBy, nn.managedByNew, nn.badge_name, nn.fullname, nn.memberId
+        nn.managedBy, nn.managedByNew, nn.badge_name, nn.fullname, nn.memberId, nn.email_addr, nn.phone
     FROM transaction t
     JOIN reg r ON t.id = r.create_trans
     LEFT OUTER JOIN transaction tp ON tp.id = r.complete_trans
@@ -98,7 +108,7 @@ WITH mems AS (
         CASE 
             WHEN p.badge_name IS NULL OR p.badge_name = '' THEN TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.last_name, '')) , '  *', ' ')) 
             ELSE p.badge_name
-        END AS badge_name, p.id AS memberId,
+        END AS badge_name, p.id AS memberId, p.email_addr, p.phone,
         TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname
     FROM transaction t
     JOIN reg r ON t.id = r.create_trans

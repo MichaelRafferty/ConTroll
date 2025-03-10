@@ -129,6 +129,8 @@ $coupon = null;
 $counts = null;
 $rows_upd = 0;
 $newPlanId = null;
+$email = $info['email_addr'];
+$phone = $info['phone'];
 
 if ($otherPay == 0) { // this is a plan payment or badge purchase payment
     $badges = getAccountRegistrations($loginId, $loginType, $conid, ($newplan || $planPayment == 0) ? 'unpaid' : 'plan');
@@ -218,6 +220,8 @@ if ($otherPay == 0) { // this is a plan payment or badge purchase payment
                               'fullname' => $mem['fullname'],
                               'memberId' => $mem['memberId'],
                               'planId' => $mem['planId'],
+                              'email_addr' => $mem['email_addr'],
+                              'phone' => $mem['phone'],
                               'inPlan' => false
             );
             if ($mem['planId'] != 0) {
@@ -258,7 +262,7 @@ $rows_upd += dbSafeCmd($upT, 'ddddi', array($totalAmountDue, $totalAmountDue, $t
 
 // end compute
 if ($amount > 0) {
-    $rtn = cc_charge_purchase($results, $ccauth, true);
+    $rtn = cc_charge_purchase($results, $email, $phone, true);
     if ($rtn == null) {
         // note there is no reason cc_charge_purchase will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
         logWrite(array('con' => $condata['name'], 'trans' => $transId, 'error' => 'Credit card transaction not approved'));
@@ -364,7 +368,7 @@ EOS;
     } else {
         $regs = [];
         $balance = 0;
-        while ($row = $bR->fetch_assoc()) {;
+        while ($row = $bR->fetch_assoc()) {
             $row['inPlan'] = true;
             $balance += $row['price'] - ($row['paid'] + $row['couponDiscount']);
             $regs[] = $row;

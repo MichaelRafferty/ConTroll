@@ -454,7 +454,7 @@ logWrite(array('Title' => 'Pre cc_charge_purchase', 'con' => $conid, $portalName
     $results, 'request'
     => $badges));
 
-$rtn = cc_charge_purchase($results, $ccauth, true);
+$rtn = cc_charge_purchase($results, $buyer['email'], '', true);
 if ($rtn === null) {
     ajaxSuccess(array('status' => 'error', 'data' => 'Credit card not approved'));
     exit();
