@@ -710,7 +710,7 @@ EOS;
             $badge['perid'],
             $transid,
             $badge['price'],
-            $badge['price'] > 0 ? 'unpaid' : 'paid';
+            $badge['price'] > 0 ? 'unpaid' : 'paid',
             $badge['memId'])
         );
 
