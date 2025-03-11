@@ -304,7 +304,7 @@ SELECT R.id AS badge,
     NP.first_name AS fname, NP.middle_name AS mname, NP.last_name AS lname, NP.suffix AS suffix, NP.legalName AS legalName,
     NP.email_addr AS email,
     NP.address AS street, NP.city AS city, NP.state AS state, NP.zip AS zip, NP.country AS country,
-    NP.id as id, R.price AS price, R.couponDiscount as discount, M.memAge AS age, NP.badge_name AS badgename, R.memId
+    NP.id as id, R.price AS price, R.couponDiscount as discount, M.memAge AS age, NP.badge_name AS badgename, R.memId, M.glNum
 FROM newperson NP
 JOIN reg R ON (R.newperid=NP.id)
 JOIN memList M ON (M.id = R.memID)
@@ -334,12 +334,10 @@ $results = array(
 //log requested badges
 logWrite(array('con'=>$condata['name'], 'trans'=>$transid, 'results'=>$results, 'request'=>$badges));
 if ($total > 0) {
-    $email = $badgeResults[0]['email_addr'];
-    $phone = $badgeResults[0]['phone'];
+    $email = $purchaseform['cc_email'];
+    $phone = '';
     if ($email == '/r')
         $email = '';
-    if ($phone == '/r')
-        $phone = '';
     $rtn = cc_charge_purchase($results, $email, $phone, true);
     if ($rtn === null) {
         // note there is no reason cc_charge_purchase will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case

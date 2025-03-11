@@ -99,7 +99,7 @@ EOQ;
     }
 
     // compute Purchase Totals
-    function computePurchaseTotals(&$coupon, $badges, $primary, $counts, $prices, $map, $discounts, $mtypes, $memCategories) : array {
+    function computePurchaseTotals(&$coupon, &$badges, $primary, $counts, $prices, $map, $discounts, $mtypes, $memCategories) : array {
         $num_primary = 0;
         $total = 0;
         $badgeCheckQ = <<<EOS
@@ -132,7 +132,13 @@ EOS;
             $badges[$key]['glNum'] = $mtype['glNum'];
             $memCategory = $memCategories[$mtype['memCategory']];
             $price = $prices[$memId];
-            $badgePrice = $badge['price'];
+            if (array_key_exists('price', $badge))
+                $badgePrice = $badge['price'];
+            else {
+                $badgePrice = $price;
+                $badges[$key]['price'] = $price;
+            }
+
             if ($badgePrice != $price) {
                 // we have a conflict, is this a legitimate price change by an admin or is this a cheat price from javascript hacking?
                 $badgeCheckR = dbSafeQuery($badgeCheckQ, 'idid', array($badge['regId'], $badgePrice, $badge['regId'], $badgePrice));
