@@ -128,6 +128,8 @@ EOS;
                 $num_primary++;
             }
             $mtype = $mtypes[$memId];
+            // add gl code to badge list
+            $badges[$key]['glNum'] = $mtype['glNum'];
             $memCategory = $memCategories[$mtype['memCategory']];
             $price = $prices[$memId];
             $badgePrice = $badge['price'];
@@ -146,13 +148,13 @@ EOS;
                         logWrite(array('message' => 'Override of badge price failed due to no admin action detected to cause it',
                                        'perid' => $badge['perid'], 'badgeid' => $badge['regId'], 'memId' => $memId,
                                        'memPrice' => $price, 'badgePrice' => $badgePrice));
-                       $badge[$key]['overRidePrice'] = $price;
+                       $badges[$key]['overRidePrice'] = $price;
                     }
                 } else {
                     logWrite(array('message' => 'Override of badge price failed due query error',
                                    'perid' => $badge['perid'], 'badgeid' => $badge['regId'], 'memId' => $memId,
                                    'memPrice' => $price, 'badgePrice' => $badgePrice));
-                    $badge[$key]['overRidePrice'] = $price;
+                    $badges[$key]['overRidePrice'] = $price;
                 }
             }
 
