@@ -1959,7 +1959,6 @@ addUnpaid(tid) {
         var elcheckno = document.getElementById('pay-check-div');
         var elccauth = document.getElementById('pay-ccauth-div');
         var elonline = document.getElementById('pay-online-div');
-        var econfirm = document.getElementById('');
 
         elcheckno.hidden = ptype != 'check';
         elccauth.hidden = ptype != 'credit';
