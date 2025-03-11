@@ -139,7 +139,7 @@ EOS;
                 $badges[$key]['price'] = $price;
             }
 
-            if ($badgePrice != $price) {
+            if ($badgePrice != $price && $memCategory['variablePrice'] == 'N') {
                 // we have a conflict, is this a legitimate price change by an admin or is this a cheat price from javascript hacking?
                 $badgeCheckR = dbSafeQuery($badgeCheckQ, 'idid', array($badge['regId'], $badgePrice, $badge['regId'], $badgePrice));
                 if ($badgeCheckR !== false) {
