@@ -728,6 +728,7 @@ class PosCart {
         newMembership.couponDiscount = 0;
         newMembership.label = memrow.label;
         newMembership.memCategory = memrow.memCategory;
+        newMembership.glNum = memrow.glNum;
         newMembership.memType = memrow.memType;
         newMembership.memAge = memrow.memAge;
         newMembership.perid =  this.#addEditPerid;

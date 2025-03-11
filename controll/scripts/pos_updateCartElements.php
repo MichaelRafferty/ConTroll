@@ -127,7 +127,7 @@ SELECT DISTINCT r1.perid, r1.id as regid, r1.conid, r1.price, r1.paid, r1.paid A
     r1.create_date, IFNULL(r1.create_trans, -1) as tid, IFNULL(r1.complete_trans, -1) as tid2,r1.memId, r1.planId, r1.status, 
     IFNULL(pc.printcount, 0) AS printcount,
     IFNULL(ac.attachcount, 0) AS attachcount, n.reg_notes, n.reg_notes_count, m.memCategory, m.memType, m.memAge, m.shortname, null as rstid,
-    CASE WHEN m.conid = ? THEN m.label ELSE concat(m.conid, ' ', m.label) END AS label
+    CASE WHEN m.conid = ? THEN m.label ELSE concat(m.conid, ' ', m.label) END AS label, m.glNum
 FROM reg r1
 JOIN memLabel m ON (r1.memId = m.id)
 LEFT OUTER JOIN notes n ON (r1.id = n.regid)

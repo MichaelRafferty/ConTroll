@@ -93,7 +93,7 @@ SELECT id, conid, memCategory, memType, memAge,
         WHEN (startdate > ?) THEN 0
         WHEN (enddate <= ?) THEN 0
         ELSE 1 
-    END AS canSell
+    END AS canSell, glNum
 FROM memLabel
 WHERE
     conid IN (?, ?)

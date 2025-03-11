@@ -2458,8 +2458,6 @@ addUnpaid(tid) {
                 this.#pay_button_pay.hidden = false;
                 this.#pay_button_ercpt.hidden = true;
                 this.#pay_button_ercpt.disabled = true;
-                pay_button_print.hidden = true;
-                pay_button_print.disabled = true;
             }
 
             // draw the pay screen
