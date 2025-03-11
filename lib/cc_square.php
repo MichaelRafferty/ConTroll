@@ -234,6 +234,9 @@ function cc_charge_purchase($results, $email, $phone, $useLogWrite=false) {
                 if ($planName != '') {
                     $note .= ($badge['inPlan'] ? (', Plan: ' . $planName) : ', NotInPlan');
                 }
+                if (array_key_exists('glNum', $badge)) {
+                    $note .= ', ' . $badge['glNum'];
+                }
 
                 if (array_key_exists('balDue', $badge)) {
                     $amount = $badge['balDue'] * 100;
@@ -267,6 +270,9 @@ function cc_charge_purchase($results, $email, $phone, $useLogWrite=false) {
                 }
                 $note = $space['id'] . ',' . $space['item_purchased'] . ',' . $space['exhibitorId'] . ',' . $space['exhibitorNumber'] .
                     ': id, item, exhId, exhNum';
+                if (array_key_exists('glNum', $space)) {
+                    $note .= ', ' . $space['glNum'];
+                }
 
                 $item = new OrderLineItem([
                     'uid' => 'space-' . $spaceId,
