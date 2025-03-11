@@ -15,13 +15,13 @@
         // membership information
         if ($planPayment > 0) {
             $priceQ = <<<EOQ
-SELECT m.id, m.label, m.shortname, m.price, m.memCategory, m.memType, m.memAge, m.conid
+SELECT m.id, m.label, m.shortname, m.price, m.memCategory, m.memType, m.memAge, m.conid, m.glNum
 FROM memLabel m
 WHERE m.conid=? OR m.conid=?;
 EOQ;
         } else {
             $priceQ = <<<EOQ
-SELECT m.id, m.label, m.shortname, m.price, m.memCategory, m.memType, m.memAge, m.conid
+SELECT m.id, m.label, m.shortname, m.price, m.memCategory, m.memType, m.memAge, m.conid, m.glNum
 FROM memLabel m
 WHERE
     (m.conid=? OR m.conid=?)
@@ -140,19 +140,19 @@ EOS;
                                        'perid' => $badge['perid'], 'badgeid' => $badge['regId'], 'memId' => $memId,
                                        'memPrice' => $price, 'badgePrice' => $badgePrice));
                         $price = $badgePrice;
-                        $badges[$key]['overidePrice'] = $badgePrice;
+                        $badges[$key]['overRidePrice'] = $badgePrice;
                         $badgeCheckR->free();
                     } else {
                         logWrite(array('message' => 'Override of badge price failed due to no admin action detected to cause it',
                                        'perid' => $badge['perid'], 'badgeid' => $badge['regId'], 'memId' => $memId,
                                        'memPrice' => $price, 'badgePrice' => $badgePrice));
-                       $badge[$key]['overidePrice'] = $price;
+                       $badge[$key]['overRidePrice'] = $price;
                     }
                 } else {
                     logWrite(array('message' => 'Override of badge price failed due query error',
                                    'perid' => $badge['perid'], 'badgeid' => $badge['regId'], 'memId' => $memId,
                                    'memPrice' => $price, 'badgePrice' => $badgePrice));
-                    $badge[$key]['overidePrice'] = $price;
+                    $badge[$key]['overRidePrice'] = $price;
                 }
             }
 
@@ -191,8 +191,8 @@ EOS;
             $price = $prices[$memId];
             $badgePrice = $badge['price'];
             if ($badgePrice != $price) {
-                if (array_key_exists('overidePrice', $badge))
-                    $price = $badge['overidePrice'];
+                if (array_key_exists('overRidePrice', $badge))
+                    $price = $badge['overRidePrice'];
             }
             if ($memCategory['variablePrice'] == 'Y') {
                 if ($price < $badge['price'])
