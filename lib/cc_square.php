@@ -98,6 +98,7 @@ use Square\Payments\Requests\CreatePaymentRequest;
 use Square\Types\CashPaymentDetails;
 use Square\Orders;
 use Square\Orders\OrdersClient;
+use Square\Types;
 use Square\Types\Currency;
 use Square\Types\Money;
 use Square\Types\CreateOrderRequest;
@@ -106,6 +107,7 @@ use Square\Types\OrderSource;
 use Square\Types\OrderLineItem;
 use Square\Types\OrderLineItemDiscount;
 use Square\Types\OrderLineItemDiscountScope;
+use Square\Types\OrderLineItemDiscountType;
 
 // charge the purchase making a customer, order, and payment
 //TODO Need to add the tax section to SQUARE, need to lookup how to do this in the API, right now it expects tax to be 0 passed in.
