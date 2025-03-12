@@ -29,7 +29,7 @@ EOS;
     $body .= "Thank you for registering for " . $condata['label'] . "!\n\n";
 
     if ($ini['test'] == 1) {
-        $body .= "This email was send as part of testing.\n\n";
+        $body .= "This email was sent as part of testing.\n\n";
     }
 
     $body .= "Your Transaction number is $transid and Receipt number is " . $owner['payid'] . "\n";
@@ -116,7 +116,7 @@ EOS;
     $body .= 'Thank you for registering for ' . $condata['label'] . "!\n\n";
 
     if ($ini['test'] == 1) {
-        $body .= "This email was send as part of testing.\n\n";
+        $body .= "This email was sent as part of testing.\n\n";
     }
 
     $body .= "Your Transaction number is $transid\n";

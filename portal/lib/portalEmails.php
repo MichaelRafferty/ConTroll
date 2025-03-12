@@ -15,7 +15,7 @@
     $body .= 'Thank you for paying via the registration portal for ' . $condata['label'] . "!\n\n";
 
     if ($ini['test'] == 1) {
-        $body .= "This email was send as part of testing.\n\n";
+        $body .= "This email was sent as part of testing.\n\n";
     }
 
     $body .= "Your Transaction number is $transid and Receipt number is $rid.\n";
@@ -97,7 +97,7 @@ function getNoChargeEmailBody($transid, $owner, $memberships): string {
     $body .= 'Thank you for registering for ' . $condata['label'] . "!\n\n";
 
     if ($ini['test'] == 1) {
-        $body .= "This email was send as part of testing.\n\n";
+        $body .= "This email was sent as part of testing.\n\n";
     }
 
     $body .= "Your Transaction number is $transid\n";
