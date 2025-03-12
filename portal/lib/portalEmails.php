@@ -11,6 +11,18 @@
     }
 
     $dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
+
+    if (array_key_exists('oneoff', $con)) {
+        $oneoff = $con['oneoff'];
+    } else {
+        $oneoff = 0;
+    }
+
+    if ($oneoff != 1)
+        $rollovers = 'and rollovers to future conventions';
+    else
+        $rollovers = '';
+
     $body = 'Dear ' . trim($owner['first_name'] . ' ' . $owner['last_name']) . ",\n\n";
     $body .= 'Thank you for paying via the registration portal for ' . $condata['label'] . "!\n\n";
 
@@ -83,7 +95,7 @@
         'Click ' . $con['policy'] . ' for the ' . $con['policytext'] . ".\n" .
         'For more information about ' . $con['conname'] . ' please email ' . $con['infoemail'] . ".\n" .
         'For questions about ' . $con['conname'] . ' Registration, email ' . $con['regemail'] . ".\n" .
-        $con['conname'] . " memberships are not refundable. For details and questions about transfers and rollovers to future conventions, please see The Registration Policies Page.\n";
+        $con['conname'] . " memberships are not refundable. For details and questions about transfers $rollovers, please see The Registration Policies Page.\n";
 
     return $body;
 }
@@ -92,6 +104,17 @@ function getNoChargeEmailBody($transid, $owner, $memberships): string {
     $condata = get_con();
     $ini = get_conf('reg');
     $con = get_conf('con');
+
+    if (array_key_exists('oneoff', $con)) {
+        $oneoff = $con['oneoff'];
+    } else {
+        $oneoff = 0;
+    }
+
+    if ($oneoff != 1)
+        $rollovers = 'and rollovers to future conventions';
+    else
+        $rollovers = '';
 
     $body = 'Dear ' . trim($owner['first_name'] . ' ' . $owner['last_name']) . ",\n\n";
     $body .= 'Thank you for registering for ' . $condata['label'] . "!\n\n";
@@ -130,7 +153,7 @@ function getNoChargeEmailBody($transid, $owner, $memberships): string {
         'Click ' . $con['policy'] . ' for the ' . $con['policytext'] . ".\n" .
         'For more information about ' . $con['conname'] . ' please email ' . $con['infoemail'] . ".\n" .
         'For questions about ' . $con['conname'] . ' Registration, email ' . $con['regemail'] . ".\n" .
-        $con['conname'] . " memberships are not refundable, except in case of emergency. For details and questions about transfers and rollovers to future conventions, please see The Registration Policies Page.\n";
+        $con['conname'] . " memberships are not refundable, except in case of emergency. For details and questions about transfers $rollovers, please see The Registration Policies Page.\n";
 
     return $body;
 }
