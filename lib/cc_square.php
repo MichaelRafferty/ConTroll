@@ -212,8 +212,14 @@ function cc_charge_purchase($results, $email, $phone, $useLogWrite=false) {
     }
     if ($planPayment == 1) {
         if (array_key_exists('existingPlan', $results) && array_key_exists('name', $results['existingPlan'])) {
-            $planName = $results['existingPlan']['name'];
-            $planId = $results['existingPlan']['id'];
+            $ep = $results['existingPlan'];
+            $planName = $ep['name'];
+            $planId = $ep['id'];
+            if ($ep['perid']) {
+                $id = 'p' . $ep['perid'];
+            } else if ($ep['newperid']) {
+                $id = 'n' . $ep['newperid'];
+            }
         }
     }
 
