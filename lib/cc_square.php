@@ -119,6 +119,7 @@ function cc_charge_purchase($results, $email, $phone, $useLogWrite=false) {
         $squareDebug = $debug['square'];
     else
         $squareDebug = 0;
+    $id = null;
 
     $client = new SquareClient(
         token: $cc['token'],
