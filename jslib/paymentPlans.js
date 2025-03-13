@@ -547,6 +547,8 @@ class PaymentPlans {
         this.#computedPlan.downPayment = Number(down).toFixed(2);
         this.#computedPlan.numPayments = numPayments;
         this.#computedPlan.daysBetween = days;
+        this.#computedPlan.paymentAmt = paymentAmt;
+        this.#computedPlan.finalPaymentAmt = finalPaymentAmt;
 
         // update the screen
         downPaymentField.value = Number(down).toFixed(2);
