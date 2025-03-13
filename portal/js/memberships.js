@@ -893,7 +893,7 @@ class Membership {
             var expired = false;
             if ((membershipRec.status == 'unpaid' || membershipRec.status == 'in-cart') && !membershipRec.toDelete)
                 this.#totalDue += amount_due;
-            if (membershipRec.status == 'unpaid') {
+            if (membershipRec.status == 'unpaid' && membershipRec.paid == 0) {
                 var sd = new Date(membershipRec.startdate);
                 var ed = new Date(membershipRec.enddate);
                 if (membershipRec.online == 'N' || sd.getTime() > now.getTime() || ed.getTime() < now.getTime()) {
