@@ -51,5 +51,7 @@ CREATE
     FROM `memList` `m`
     JOIN `ageList` `a` ON `m`.`memAge` = `a`.`ageType` AND `m`.`conid` = `a`.`conid`;
 
+ALTER TABLE payments MODIFY COLUMN category enum('reg','artshow','artist','fan','vendor','exhibits','other') COLLATE utf8mb4_general_ci DEFAULT NULL;
+
 
 INSERT INTO patchLog(id, name) VALUES(43, 'General Reports');
