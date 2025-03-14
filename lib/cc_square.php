@@ -531,8 +531,8 @@ function cc_charge_purchase($results, $email, $phone, $useLogWrite=false) {
     }
     catch (SquareApiException $e) {
         web_error_log('Order Square API Exception: ' . $e->getMessage());
-        $body = json_decode($e->getBody(),true);
-        $errors = $body['errors'];
+        $ebody = json_decode($e->getBody(),true);
+        $errors = $ebody['errors'];
         if ($errors) {
             if ($useLogWrite) {
                 logWrite('Payment returned non-success');
@@ -614,6 +614,7 @@ function cc_charge_purchase($results, $email, $phone, $useLogWrite=false) {
     $rtn['url'] = $receipt_url;
     $rtn['rid'] = $receipt_number;
     $rtn['body'] = $body;
+    $rtn['pbody'] = $pbody;
     return $rtn;
 };
 ?>
