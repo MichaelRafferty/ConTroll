@@ -1308,7 +1308,7 @@ class exhibitssetup {
             show_message(data.warn, 'warn');
         }
         this.#spacesavebtn.innerHTML = "Save Changes";
-        this.#spacesavebtn.disabled = true;
+        this.#spacesavebtn.disabled = false;
         exhibitors?.setCacheDirty();
         this.draw(data);
     }
