@@ -1400,7 +1400,7 @@ class exhibitssetup {
     // add row to Spaces table and scroll to that new row
     addrowSpacePrices() {
         var _this = this;
-        this.#spacePricesTable.addRow({code: 'new-row', sortorder: 99, uses: 0}, false).then(function (row) {
+        this.#spacePricesTable.addRow({code: 'new-row', sortorder: 99, requestable: 0, uses: 0, }, false).then(function (row) {
             _this.#spacePricesTable.setPage("last"); // adding new to last page always
             row.getTable().scrollToRow(row);
             row.getCell("code").getElement().style.backgroundColor = "#fff3cd";
