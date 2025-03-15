@@ -1436,7 +1436,7 @@ class exhibitssetup {
             show_message(data.warn, 'warn');
         }
         this.#spacePricesavebtn.innerHTML = "Save Changes";
-        this.#spacePricesavebtn.disabled = true;
+        this.#spacePricesavebtn.disabled = false;
         exhibitors?.setCacheDirty();
         this.draw(data);
     }
@@ -1470,7 +1470,7 @@ class exhibitssetup {
                 method: 'POST',
                 data: postdata,
                 success: function (data, textStatus, jhXHR) {
-                    _this.saveSpacesComplete(data, textStatus, jhXHR);
+                    _this.saveSpacePricessComplete(data, textStatus, jhXHR);
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
                     showError("ERROR in " + script + ": " + textStatus, jqXHR);
