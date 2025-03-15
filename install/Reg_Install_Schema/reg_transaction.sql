@@ -2,7 +2,7 @@
 --
 -- Host: localhost    Database: reg
 -- ------------------------------------------------------
--- Server version	8.0.32
+-- Server version	8.0.40
 
 
 --
@@ -19,13 +19,13 @@ CREATE TABLE `transaction` (
   `create_date` datetime DEFAULT CURRENT_TIMESTAMP,
   `complete_date` datetime DEFAULT NULL,
   `price` decimal(8,2) DEFAULT NULL,
-  `couponDiscount` decimal(8,2) DEFAULT '0.00',
+  `couponDiscountCart` decimal(8,2) DEFAULT '0.00',
+  `couponDiscountReg` decimal(8,2) DEFAULT '0.00',
   `paid` decimal(8,2) DEFAULT NULL,
   `withtax` decimal(8,2) DEFAULT NULL,
   `tax` decimal(8,2) DEFAULT NULL,
   `type` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `notes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-  `ticket_num` int DEFAULT NULL,
   `change_due` decimal(8,2) DEFAULT NULL,
   `coupon` int DEFAULT NULL,
   PRIMARY KEY (`id`),

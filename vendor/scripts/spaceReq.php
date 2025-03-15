@@ -17,6 +17,12 @@ $con = get_con();
 $conid=$con['id'];
 $conf = get_conf('con');
 $vendor_conf = get_conf('vendor');
+$con = get_conf('con');
+if (array_key_exists('currency', $con)) {
+    $currency = $con['currency'];
+} else {
+    $currency = 'USD';
+}
 $curLocale = locale_get_default();
 $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
 
@@ -50,7 +56,7 @@ JOIN exhibitorRegionYears exRY ON ey.id = exRY.exhibitorYearId AND exRY.exhibits
 WHERE ey.conid = ? AND e.id = ? AND eRY.id = ?
 EOS;
 $exhibitorR = dbSafeQuery($exhibitorQ, 'iii', array($conid, $vendor, $regionYearId));
-if ($exhibitorR == false || $exhibitorR->num_rows != 1) {
+if ($exhibitorR === false || $exhibitorR->num_rows != 1) {
     ajaxError('Invalid Session');
     return;
 }
@@ -67,7 +73,7 @@ JOIN exhibitsRegions er ON ery.exhibitsRegion = er.id
 WHERE ery.id = ?;
 EOS;
 $regionR = dbSafeQuery($regionQ, 'i', array($regionYearId));
-if ($regionR == false || $regionR->num_rows != 1) {
+if ($regionR === false || $regionR->num_rows != 1) {
     error_log("regionQ: $regionQ with $regionYearId failed");
     ajaxError('Invalid arguments');
     return;
@@ -79,7 +85,7 @@ $response['div'] = $regionInfo['shortname'] . '_div';
 $spaces = '';
 
 foreach ($requests as $key => $priceId) {
-     $spaceid = str_replace('exhbibitor_req_price_id_', '', $key); //TODO fix spelling here and wherever else it's wrong...
+     $spaceId = str_replace('exhbibitor_req_price_id_', '', $key); //TODO fix spelling here and wherever else it's wrong...
 
     if ($priceId > 0) {
         // get the details of the item requested
@@ -89,14 +95,14 @@ FROM exhibitsSpacePrices esp
 JOIN exhibitsSpaces es ON esp.spaceId = es.id
 WHERE esp.spaceId = ? and esp.id = ?;
 EOS;
-        $priceR = dbSafeQuery($priceQ, 'ii', array($spaceid, $priceId));
+        $priceR = dbSafeQuery($priceQ, 'ii', array($spaceId, $priceId));
     } else {
         $priceQ = <<<EOS
 SELECT shortname, name, description
 FROM exhibitsSpaces
 WHERE id = ?;
 EOS;
-        $priceR = dbSafeQuery($priceQ, 'i', array($spaceid));
+        $priceR = dbSafeQuery($priceQ, 'i', array($spaceId));
     }
 
     $price = $priceR->fetch_assoc();
@@ -107,7 +113,7 @@ EOS;
     }
 
     if (array_key_exists('price', $price)) {
-        $spaces .= $price['description'] . ' in the ' . $regionInfo['name'] . ' for ' . $dolfmt->formatCurrency($price['price'], 'USD') . PHP_EOL;
+        $spaces .= $price['description'] . ' in the ' . $regionInfo['name'] . ' for ' . $dolfmt->formatCurrency($price['price'], $currency) . PHP_EOL;
     }
     // see if there already is an entry for this space for this vendor
     $vendorQ = <<<EOS
@@ -117,8 +123,8 @@ JOIN exhibitorRegionYears exRY ON ey.id = exRY.exhibitorYearId
 JOIN exhibitorSpaces es ON exRY.id = es.exhibitorRegionYear
 WHERE spaceId = ? and exRY.exhibitorYearId = ?;
 EOS;
-    $vendorR = dbSafeQuery($vendorQ, 'ii', array($spaceid, $eyId));
-    if ($vendorR == false || $vendorR->num_rows == 1)
+    $vendorR = dbSafeQuery($vendorQ, 'ii', array($spaceId, $eyId));
+    if ($vendorR === false || $vendorR->num_rows == 1)
         $exhibitorSpace = $vendorR->fetch_assoc();
     else {
         $exhibitorSpace = array();
@@ -131,7 +137,7 @@ EOS;
         if ($priceId > 0) {
             // insert a new record because its a new request
             $insertQ = 'INSERT INTO exhibitorSpaces(exhibitorRegionYear, spaceId, item_requested, time_requested) VALUES(?, ?, ?, now());';
-            $rowid = dbSafeInsert($insertQ, 'iii', array($exRYId, $spaceid, $priceId));
+            $rowid = dbSafeInsert($insertQ, 'iii', array($exRYId, $spaceId, $priceId));
         }
     } else if ($priceId > 0) {
         // update for new/changed item
@@ -159,7 +165,7 @@ if (array_key_exists('error_code', $return_arr)) {
     $error_code = null;
 }
 if (array_key_exists('email_error', $return_arr)) {
-    $response['error'] = 'Unable to send receipt email, error: ' . $return_arr['email_error'] . ', Code: $error-code';
+    $response['error'] = 'Unable to send receipt email, error: ' . $return_arr['email_error'] . ', Code: $error_code';
 } else {
     $response['success'] = "Request sent";
 }

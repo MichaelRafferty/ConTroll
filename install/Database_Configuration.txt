@@ -3,25 +3,10 @@ Reg System Database Tables
 Configuration Tables:
     User/Admin Configuration:
         auth: roles to be assigned to reg_control users
-            TODO: Need default contents of this table, showing only currently active lines (below is my best guess stripping out the 'N', 'N' items as obsolete)
-            # id, name, page, display
-            '1', 'overview', 'Y', 'Membership'
-            '2', 'admin', 'Y', 'Admin'
-            '3', 'people', 'Y', 'People'
-            '5', 'registration', 'Y', 'Registration'
-            '6', 'reg_admin', 'Y', 'Badge List'
-            '7', 'artist', 'Y', 'Artist'
-            '8', 'artshow', 'Y', 'Artshow'
-            '9', 'badge', 'Y', 'Free Badges'
-            '11', 'art_control', 'Y', 'Art Control'
-            '13', 'club', 'Y', 'Club'
-            '14', 'monitor', 'Y', 'Attendance'
-            '15', 'reports', 'Y', 'Reports'
-            '19', 'coupon', 'Y', 'Coupon'
-            '32', 'vendor', 'Y', 'Vendor'
+            The schema create will load the required value for this table.  The admin can edit the sort order of the menu in controll created by this table.
 
-        user: reg_control users
-        user_auth: roles actually assigned to reg_control users
+        user: controll back end users
+        user_auth: roles actually assigned to controll back end users
 
         atcon_user: users by perid authoried to use the Atcon Module
         atcon_auth: what roles those users are currently assigned in the system
@@ -39,22 +24,27 @@ Configuration Tables:
     Membership Configuration Tables
         memTypes: types of memberships (effect attendance rights)
             Has an active flag to disable use of obsolete types
-            Standard Types: (use of more than these will require testing the code for side effects)
-                oneday: single day attendance
-                full: full convention membership
+            Standard Types: (These are created automatically at schema install time and cannot be changed.  Additional types will require testing the code for side effects)
+                oneday: single day attendance (badgable)
+                full: full convention membership (badgable)
                 virtual: virtual attendence only membership
+                donation: donations, both variable price and fixed price
         memCategories: Sub groupings of memberships for reporting
             Has an active flag to disable use of obsolete categories
-            Standard Categories:
+            Standard Categories: (These are created automatically at schema install time and cannot be changed.  Additional categories will require testing the code for side effects)
+                addon: Add-on's to memberships
+                artist: Artist Memberships
+                dealer: Dealer/Vendor Memberships
+                donation: Variable Price Donations
+                freebie: Comp memberships (staff, goh, etc.)
+                standard: Paid badgable memberships
+                upgrade: Upgrades to standard
+                virtual: Paid virtual memberships
+                yearahead: Next Con Year Memberships
+
+            Normal additional categories:
                 addon:  add ons to memberships such as books, donations, lanyards. These do not count as a primary membership for admission to the convention
                 club:   free/discounted memberships to members of the supporting club
-                cancel: memberships cancelled rolled over to the next year (these are created internally by reg_control when a membership is rolled over)
-                freebie: no charge memberships (comp, staff, etc.)
-                rollover: badges not paid for in this year, but from a prior year, either cancelled and rolled over, or earned rollovers (program participant/volunteer hours)
-                standard: normal memberships
-                upgrade: upgrade of restricted access membership types to full access types
-                virtual: virtual access memberships
-                yearahead: memberships purchased this year for next years convention
 
             Any addition membership categories can be added to this list for subtotalling reports
         ageList: list of age limitations on badges by attendence age
@@ -64,8 +54,8 @@ Configuration Tables:
 
         memList: list of valid memberships for each convention
             Broken down by:
-                date range available for sale (Price Points)
-                Method of sale (Online or Atcon)
+                date range available for sale (Price Points): Note all date/times are >= and <.
+                Method of sale (Online and/or Atcon)
 
         memLabel: view that combines memList and ageList to provide a long form label for the information about the membership
 
@@ -87,9 +77,8 @@ Configuration Tables:
                 What character set/print method is this printer
                     PS: postscript
                     HPCL
-                    Dymo3xxPS: Dymo 300 series Postscript capable label printers
+                    Dymo3xxPS: Dymo 300 series Postscript capable label printers, NOTE: There have been compatibility issues with some of the 300 series pritners.
                     Dymo4xxPS: Dymo 400 series Postscript capable lable printers
-                    DymoSEL: Dymo lable printers supporting SEL instead of PS
                     Windows-1252
                     ASCII
                     7but
@@ -97,8 +86,6 @@ Configuration Tables:
                     UTF-8: the internal native character set of the Reg system
                     UTF-16: 16 bit unicode
                 There is a test print function in printer setup to help you determine the printer code page to use
-
-
 
 Member Tables;
     perinfo:    master list of all people
@@ -109,18 +96,18 @@ Member Tables;
             Banned: is this person allowed to buy a membership
             open_notes: notes the registration operators can access
             admin_notes: notes only the reg administration can access
-            contact_ok: permission granted by this person to send them reminders, postcards, and surveys
-            share_reg_ok: permission granted by this person to have their registration be accessable via checkReg in the online module
+            contact_ok: (Depreciated, replaced by policies)
+            share_reg_ok: (Depreciated, replaced by policies))
 
     newperson:  list of people who have bought a registration on-line
-        Used to update the perinfo table via the regcontrol module
+        Used to update the perinfo table via the controll module people tab
         Used as a placeholder for online registration demographics before a match to an existing person or a decision is made to create them as a new person
 
 Membership Tables: (registrations) (everything sold by a convention in this system is a type of membership, even 'add-on's to memberships)
     reg:    master list of all registrations
     transactions: combination of actions under a transaction id.  A reg may be involved in many transactions
     payments: payments received, a single transaction may involve zero to many payments
-    reg_history: memberships effected by reg actions (including atcon) (all of these actions can occur many times on a single membership)
+    regActions: memberships effected by reg actions (including atcon) (all of these actions can occur many times on a single membership)
         attach: attach a membership to a transaction
         print: indicated a membership was printed on a badge
         notes: short note about a membership item.

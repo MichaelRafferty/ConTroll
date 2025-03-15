@@ -1,8 +1,7 @@
 <?php
 
 require_once "lib/base.php";
-
-if (!isset($_SESSION['user'])) {
+if (!isSessionVar('user')) {
     header("Location: /index.php");
     exit(0);
 }
@@ -20,7 +19,7 @@ if (!check_atcon($method, $conid)) {
 
 $cdn = getTabulatorIncludes();
 page_init($page, $tab,
-    /* css */ array($cdn['tabcss'], $cdn['tabbs5'], 'css/registration.css'),
+    /* css */ array($cdn['tabcss'], $cdn['tabbs5']),
     /* js  */ array( //$cdn['luxon'],
                     $cdn['tabjs'],'js/volRollover.js')
     );

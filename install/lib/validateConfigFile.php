@@ -72,7 +72,6 @@ function validateConfigFile($options) : int {
                 ];
                 $warn = [
                     'suspendreason',
-                    'suspendmessage',
                     'onsiteopen'
                 ];
                 break;
@@ -83,6 +82,22 @@ function validateConfigFile($options) : int {
                 ];
                 $filepath = [
                     'badgeps',
+                ];
+                break;
+
+            case 'portal':
+                $required = [
+                    'https' => 'should always be 1 to redirect to the secure server. and only should be zero when testing servers prior to the SSL certificate being applied',
+                    'test' => '0 for the production server and 1 for any test servers',
+                    'open' => "0 when registration is not open and 1 when it's open",
+                    'close' => '0 when registration is allowed to be open, and 1 when registration is closed for being too close to the convention or the convention is over',
+                    'suspended' => '0 when registration is available and 1 when registration is temporarily closed, and the suspendreason is then shown to inform users',
+                    'portalsite' => 'URL to login page (the default index.php location is all you need)',
+                    'logoimage' => 'name of the logo file to display on the top of the page, it should be in onlinereg/images',
+                ];
+                $warn = [
+                    'suspendreason',
+                    'cancelled' => '0 in normal cases, 1 when the convention has had to be cancelled',
                 ];
                 break;
 
@@ -99,9 +114,6 @@ function validateConfigFile($options) : int {
                 $warn = [ 'taxidlabel', 'taxidextra' ];
 
                 $email = [ 'vendors', 'artshow', 'dealer' ];
-                // need to do query to add vendorspaces parents to this email group
-
-                $file = [ 'req_disclaimer', 'pay_disclaimer', 'vendorSignupAddltext', 'artistSignupAddltext' ];
                 break;
 
             case 'client':

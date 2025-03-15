@@ -1,5 +1,6 @@
 // Exhibitor Profile related functions
 //  instance of the class must be a javascript variable named exhibitorProfile
+exhibitorProfileMCEInit = false;
 class ExhibitorProfile {
 
     // Profile DOM related privates
@@ -15,6 +16,8 @@ class ExhibitorProfile {
     #profilePage2 = null;
     #profilePage3 = null;
     #profilePage4 = null;
+    #profileArtistNameField = null;
+    #profilePublicityField = null;
     #profileCurrentPage = 1;
     #passwordLine1 = null;
     #passwordLine2 = null;
@@ -27,12 +30,8 @@ class ExhibitorProfile {
     // globals
     #debugFlag = 0;
 
-    static #fieldList = ["artistName", "exhibitorName", "exhibitorEmail", "exhibitorPhone", "pw1", "pw2", "description", "publicity",
+    static #fieldList = ["artistName", "exhibitorName", "exhibitorEmail", "exhibitorPhone", "salesTaxId", "pw1", "pw2", "description", "publicity",
         "addr", "city", "state", "zip", "country", "mailin"];
-    /*static #fieldList = ["artistName", "exhibitorName", "exhibitorEmail", "exhibitorPhone", "description", "publicity",
-        "contactName", "contactEmail", "contactPhone", "cpw1", "cpw2",
-        "addr", "city", "state", "zip", "country", "shipCompany", "shipAddr", "shipCity", "shipState", "shipZip", "shipCountry", "mailin"];
-*/
     static #copyFromFieldList = ['exhibitorName', 'addr', 'addr2', 'city', 'state', 'zip', 'country'];
     static #copyToFieldList = ['shipCompany', 'shipAddr', 'shipAddr2', 'shipCity', 'shipState', 'shipZip', 'shipCountry'];
 
@@ -51,6 +50,8 @@ class ExhibitorProfile {
                 this.#profileSubmitBtn = document.getElementById('profileSubmitBtn');
                 this.#profileModalTitle = document.getElementById('modalTitle');
                 this.#creatingAccountMsgDiv = document.getElementById('creatingAccountMsg');
+                this.#profileArtistNameField = document.getElementById('artistName');
+                this.#profilePublicityField = document.getElementById('publicity');
                 if (portalType == 'admin') {
                     this.#exhibitorId = document.getElementById('exhibitorId');
                     this.#exhibitorYearId = document.getElementById('exhibitorYearId');
@@ -66,13 +67,14 @@ class ExhibitorProfile {
         for (var fieldNum in ExhibitorProfile.#copyFromFieldList) {
             document.getElementById(ExhibitorProfile.#copyToFieldList[fieldNum]).value = document.getElementById(ExhibitorProfile.#copyFromFieldList[fieldNum]).value;
         }
+        document.getElementById('shipCompany').focus();
     }
 
     // copy other sections
     copyArtistNametoBusinessName() {
         var artname = document.getElementById("artistName");
         if (artname) {
-            document.getElementById("exhibitorName").value = artname.value;
+            document.getElementById("exhibitorName").focus().value = artname.value;
         }
     }
 
@@ -82,9 +84,35 @@ class ExhibitorProfile {
         document.getElementById("contactPhone").value = document.getElementById("exhibitorPhone").value;
         document.getElementById("cpw1").value = document.getElementById("pw1").value;
         document.getElementById("cpw2").value = document.getElementById("pw2").value;
+        document.getElementById("contactName").focus();
     }
 
     // move through pages in the profile
+    #setProfileFocus(page) {
+        switch (page) {
+            case 1:
+                if (this.#profileArtistNameField) {
+                    this.#profileArtistNameField.focus({focusVisible: true});
+                } else {
+                    this.#profilePublicityField.focus({focusVisible: true});
+                }
+                break;
+            case 2:
+                var copyName = document.getElementById('copyArtistName');
+                if (copyName)
+                    copyName.focus({focusVisible: true});
+                else
+                    document.getElementById("exhibitorName").focus({focusVisible: true});
+                break;
+            case 3:
+                document.getElementById("copyToContact").focus({focusVisible: true});
+                break;
+            case 4:
+                document.getElementById("addr").focus({focusVisible: true});
+                break;
+        }
+    }
+
     prevPage() {
         if (this.#profileCurrentPage > 1) {
             this.#profileCurrentPage -= 1;
@@ -96,6 +124,7 @@ class ExhibitorProfile {
             this.#profileSubmitBtn.disabled = true;
             this.#profilePreviousPageBtn.disabled = this.#profileCurrentPage == 1;
             this.#profileNextPageBtn.disabled = false;
+            this.#setProfileFocus(this.#profileCurrentPage);
         }
     }
     nextPage() {
@@ -109,8 +138,10 @@ class ExhibitorProfile {
             this.#profileSubmitBtn.disabled = this.#profileCurrentPage != 4;
             this.#profilePreviousPageBtn.disabled = false;
             this.#profileNextPageBtn.disabled = this.#profileCurrentPage == 4;
+            this.#setProfileFocus(this.#profileCurrentPage);
         }
     }
+
     // submit the profile or both register and update, which type is in profileMode, set by the modal open
     submitProfile(dataType) {
         // replace validator with direct validation as it doesn't work well with bootstrap
@@ -161,12 +192,16 @@ class ExhibitorProfile {
                     break;
                 case 'description':
                     var value = tinyMCE.activeEditor.getContent();
+                    var lcvalue = value.toLowerCase();
                     if (value == null) {
                         value = false;
                         m2 += " and the description field which also is required;";
                     } else if (value.trim() == '') {
                         value = false;
                         m2 += " and the description field which also is required;";
+                    } else if (lcvalue.includes("<script")) {
+                        value = false
+                        m2 += " and the description field cannot contain a <script tag;";
                     }
                     break;
 
@@ -204,7 +239,6 @@ class ExhibitorProfile {
         clear_message('au_result_message');
         tinyMCE.triggerSave();
 
-        //
         $.ajax({
             url: 'scripts/vendorAddUpdate.php',
             data: $('#exhibitorProfileForm').serialize(),
@@ -348,24 +382,44 @@ class ExhibitorProfile {
         this.#cpasswordLine1.hidden = hide;
         this.#cpasswordLine2.hidden = hide;
         this.#profileModal.show();
-        tinyMCE.init({
-            selector: 'textarea#description',
-            height: 400,
-            min_height: 400,
-            menubar: false,
-            license_key: 'gpl',
-            plugins: 'advlist lists image link charmap fullscreen help nonbreaking preview searchreplace',
-            toolbar: [
-                'help undo redo searchreplace copy cut paste pastetext | fontsizeinput styles h1 h2 h3 h4 h5 h6 | ' +
-                'bold italic underline strikethrough removeformat | ' +
-                'visualchars nonbreaking charmap hr | ' +
-                'preview fullscreen ',
-                'alignleft aligncenter alignright alignnone | outdent indent | numlist bullist checklist | forecolor backcolor | link image'
-            ],
-            content_style: 'body {font - family:Helvetica,Arial,sans-serif; font-size:14px }',
-            placeholder: 'Edit the description here...',
-            auto_focus: 'reg-description'
-        });
+        if (exhibitorProfileMCEInit) {
+            // update the text block
+            tinyMCE.get("description").focus();
+            tinyMCE.get("description").load();
+        } else {
+            tinyMCE.init({
+                selector: 'textarea#description',
+                height: 400,
+                min_height: 400,
+                menubar: false,
+                license_key: 'gpl',
+                plugins: 'advlist lists image link charmap fullscreen help nonbreaking preview searchreplace',
+                toolbar: [
+                    'help undo redo searchreplace copy cut paste pastetext | fontsizeinput styles h1 h2 h3 h4 h5 h6 | ' +
+                    'bold italic underline strikethrough removeformat | ' +
+                    'visualchars nonbreaking charmap hr | ' +
+                    'preview fullscreen ',
+                    'alignleft aligncenter alignright alignnone | outdent indent | numlist bullist checklist | forecolor backcolor | link image'
+                ],
+                content_style: 'body {font - family:Helvetica,Arial,sans-serif; font-size:14px }',
+                placeholder: 'Edit the description here...',
+                auto_focus: 'reg-description'
+            });
+            // Prevent Bootstrap dialog from blocking focusin
+            document.addEventListener('focusin', (e) => {
+                if (e.target.closest(".tox-tinymce, .tox-tinymce-aux, .moxman-window, .tam-assetmanager-root") !== null) {
+                    e.stopImmediatePropagation();
+                }
+            });
+            exhibitorProfileMCEInit = true;
+        }
+        var focusField = null;
+        if (this.#profileArtistNameField) {
+            focusField = this.#profileArtistNameField;
+        } else {
+            focusField = this.#profilePublicityField;
+        }
+        setTimeout(function() { console.log(focusField); focusField.focus({focusVisible: true}) }, 600);
     }
 
     // profileModalClose - close the modal edit profile dialog

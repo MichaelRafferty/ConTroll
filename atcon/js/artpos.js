@@ -153,7 +153,7 @@ function start_over(reset_all) {
     if (reset_all > 0)
         clear_message();
 
-    if (base_manager_enabled) {
+    if (baseManagerEnabled) {
         base_toggleManager();
     }
 
@@ -483,7 +483,7 @@ function foundArt(data) {
         if (valid) {
             switch (item['type']) {
                 case 'art':
-                    if (item['sale_price'] == 0 || item['sale_price'] < item['min_price']) {
+                    if (item['sale_price'] == 0 || Number(item['sale_price']) < Number(item['min_price'])) {
                         html += '<div class="row"><div class="col-sm-4 bg-danger text-white">Quick Sale:</div><div class="col-sm-8 bg-danger text-white">Item is not available for quick sale.</div></div>';
                         valid = false;
                         break;
@@ -594,10 +594,10 @@ function addToCart(index) {
 
     var finalPriceField = document.getElementById('art-final-price');
     if (finalPriceField) {
-        var enteredPrice = finalPriceField.value;
+        var enteredPrice = Number(finalPriceField.value);
         if (enteredPrice == null)
             enteredPrice = 0;
-        var finalPrice = item['final_price'];
+        var finalPrice = Number(item['final_price']);
         if (finalPrice == null || finalPrice < 0) {
             if (item['sale_price'] == null || item['sale_price'] == 0)
                 finalPrice = item['min_price'];
@@ -1131,7 +1131,7 @@ function pay_shown() {
             <label for="pt-cash">Cash</label>
 `;
         if (discount_mode != "none") {
-            if (discount_mode == 'any' || (discount_mode == 'manager' && hasManager) || (discount_mode == 'active' && hasManager && base_manager_enabled)) {
+            if (discount_mode == 'any' || (discount_mode == 'manager' && hasManager) || (discount_mode == 'active' && hasManager && baseManagerEnabled)) {
                 payHtml += `
             <input type="radio" id="pt-discount" name="payment_type" value="discount" onclick='setPayType("discount");'/>
             <label for="pt-discount">Discount</label>

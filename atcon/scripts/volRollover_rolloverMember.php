@@ -37,7 +37,7 @@ if (!check_atcon($method, $conid)) {
 //  Outputs:
 //      updated member record
 $user_id = $_POST['user_id'];
-if ($user_id != $_SESSION['user']) {
+if ($user_id != getSessionVar('user')) {
     ajaxError("Invalid credentials passed");
 }
 $member = $_POST['member'];
@@ -69,8 +69,8 @@ if ($master_transid === false) {
 // now insert the rollover membership
 
 $insRegSQL = <<<EOS
-INSERT INTO reg(conid,perid,price,paid,create_user,create_trans,memId,create_date)
-VALUES (?,?,0,0,?,?,?,now());
+INSERT INTO reg(conid,perid,price,paid,status,create_user,create_trans,memId,create_date)
+VALUES (?,?,0,0,'paid',?,?,?,now());
 EOS;
 $paramarray = array($conid + 1, $member['perid'], $user_id, $master_transid, $memId);
 $typestr = 'iiiii';

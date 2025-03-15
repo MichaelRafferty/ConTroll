@@ -20,6 +20,7 @@ function openInvoice(id) {
     var additionalMemberships = 0;
     var html = '';
     var priceIdx = 0;
+    var tabindex = 200;
 
     regionYearId = id;
     totalSpacePrice = 0;
@@ -54,6 +55,7 @@ function openInvoice(id) {
     }
 
     regionName = regionList.name;
+    var spacePriceName = '';
 
     // refresh the items spaces purchased area
     html = "You are approved for:<br/>\n";
@@ -70,8 +72,14 @@ function openInvoice(id) {
                     if (prices[priceIdx].id == space.item_approved)
                         break;
                 }
-                includedMemberships = Math.max(includedMemberships, prices[priceIdx].includedMemberships);
-                additionalMemberships = Math.max(additionalMemberships, prices[priceIdx].additionalMemberships);
+                if (includedMemberships < prices[priceIdx].includedMemberships) {
+                    spacePriceName = prices[priceIdx].description;
+                    includedMemberships = prices[priceIdx].includedMemberships;
+                }
+                if (additionalMemberships < prices[priceIdx].additionalMemberships) {
+                    spacePriceName = prices[priceIdx].description;
+                    additionalMemberships = prices[priceIdx].additionalMemberships;
+                }
             }
         }
     }
@@ -87,13 +95,35 @@ function openInvoice(id) {
     document.getElementById("vendor_invoice_title").innerHTML = "<strong>Pay " + regionName + ' Invoice</strong>';
 
     var spaces = includedMemberships + additionalMemberships;
-    html = "<p>This space comes with " +
-        (includedMemberships > 0 ? includedMemberships : "no") +
-        " memberships included and " +
-        (additionalMemberships > 0 ? "the " : "no ") + "right to purchase " +
-        (additionalMemberships > 0 ? "up to " +  additionalMemberships  : "no") +
-        " additional memberships at a reduced rate of $" + Number(regionList.additionalMemPrice).toFixed(2) + ".</p>";
-    if((includedMemberships == 0) && (additionalMemberships ==0)) {
+    // make the strings for the number of included additional memberships available to purchase
+    html = '<p>';
+    if (spaces == 0) { // no additional or included memberships
+        html += regionName + ' ' +  spacePriceName + ' spaces do not come with any memberships as part of the space purchase. ' +
+            ' Please purchase your attending memberships to the convention separately at ' +
+            '<a href="' + config['regserver'] + '">' + config['regserver'] + '</a>.';
+    } else if (includedMemberships == 0) {
+        html += regionName + ' ' +  spacePriceName + ' spaces come with the option to purchase up to ' + additionalMemberships +
+            ' membership' + (additionalMemberships > 1 ? 's' : '') + ' at  the discounted price of $' +
+            Number(regionList.additionalMemPrice).toFixed(2) + '. ' +
+            'Purchase those memberships here. ' +
+            'Any additional memberships beyond those you purchase here need to be purchased separately at ' +
+            '<a href="' + config['regserver'] + '">' + config['regserver'] + '</a>.';
+    } else if (additionalMemberships == 0) {
+        html += regionName + ' ' +  spacePriceName + ' spaces come with ' + includedMemberships + ' membership' + (includedMemberships > 1 ? 's' : '') +
+            ' as part of the space purchase. Please enter those memberships here. ' +
+            'Any additional memberships to the convention need to be purchased separately at ' +
+            '<a href="' + config['regserver'] + '">' + config['regserver'] + '</a>.';
+    } else {
+        html += regionName + ' ' +  spacePriceName + ' spaces come with ' + includedMemberships + ' membership' + (includedMemberships > 1 ? 's' : '') +
+            ' as part of the space purchase. In addition it comes with the right to purchase up to ' + additionalMemberships +
+            ' membership' + (additionalMemberships > 1 ? 's' : '') + ' at  the discounted price of $' +
+            Number(regionList.additionalMemPrice).toFixed(2) + '. ' +
+            'Use the included memberships first, and then add the additional memberships if desired. If you need more memberships beyond that they need to' +
+            ' be purchased separately at ' +
+            '<a href="' + config['regserver'] + '">' + config['regserver'] + '</a>.';
+    }
+    html += "</p>\n";
+    if (spaces == 0) {
         html += "<input type='hidden' name='agreeNone' value='on'></input>"
     }
     if (spaces > 0) {
@@ -111,38 +141,47 @@ function openInvoice(id) {
             default:
                 html += "<p>All exhibitors must have a membership. Included and additional discounted memberships can only be purchased while paying for your space.";
         }
-
         html += " If you do not purchase them now while paying your space invoice, you will have to purchase them at the current membership rates.</p>" +
             "<p>If you are unsure who will be using the registrations please use the first name of ‘Provided’ and a last name of ‘At Con’. " +
             "The on-site registration desk will update the membership to the name on their ID.</p>" +
             "<p>Program participants do not need to buy memberships; however, we will confirm that they meet the requirements to waive the membership cost. " +
             "If they do not, they will need to purchase a membership on-site at the on-site rates.</p>" +
-            "<p><input type='checkbox' style='transform: scale(2);' name='agreeNone' id='agreeNone'> &nbsp;&nbsp;" +
+            "<p><input type='checkbox' style='transform: scale(2);' name='agreeNone' id='agreeNone' tabindex=" + tabindex + "> &nbsp;&nbsp;" +
             "If you do not wish to purchase any memberships at this time, check this box to acknowledge the requirement for memberships above.</p>";
+        tabindex += 2;
 
         if (portalType == 'artist' && mailin == 'N') {
             html += "<p>In addition, all non-mail-in artists need to declare an on-site agent. " +
                 "This is the person that will be contacted if there are any issues with setup, operation, or teardown of your exhibit. " +
                 "The agent needs a membership, and you can be the agent.</p>" +
-                "<p><input type='radio' name='agent' id='agent_self' value='self' style='transform: scale(1.5);'>&nbsp;&nbsp;&nbsp;I will be my own agent and my membership is not one of the ones below.<br/>" +
-                "<input type='radio' name='agent' id='agent_first' value='first' style='transform: scale(1.5);'>&nbsp;&nbsp;&nbsp;The first membership below will be my agent.<br/>";
-
+                "<p><input type='radio' name='agent' id='agent_self' value='self' style='transform: scale(1.5);' tabindex=" + tabindex + ">" +
+                "&nbsp;&nbsp;&nbsp;I will be my" +
+                " own agent and my membership is not one of the ones below.<br/>" +
+                "<input type='radio' name='agent' id='agent_first' value='first' style='transform: scale(1.5);' tabindex=" + (tabindex + 2) + ">" +
+                "&nbsp;&nbsp;&nbsp;The first membership below will be my agent.<br/>";
+            tabindex += 4;
+            
             var ry = exhibitor_regionyears[regionYearId];
             if (ry['perid']) {
-                html += "<input type='radio' name='agent' id='agent_perid' value='p" + ry['perid'] + "' style='transform: scale(1.5);'>&nbsp;&nbsp;&nbsp;Assign " +
-                    ry['p_first_name'] + ' ' + ry['p_last_name'] + ' as my agent.<br/>';
-            } else if (ry['newid']) {
-                html += "<input type='radio' name='agent' id='agent_newid' value='n" + ry['newid'] + "' style='transform: scale(1.5);'>&nbsp;&nbsp;&nbsp;Assign " +
-                    ry['n_first_name'] + ' ' + ry['n_last_name'] + ' as my agent.<br/>';
+                html += "<input type='radio' name='agent' id='agent_perid' value='p" + ry['perid'] + "' style='transform: scale(1.5);'" +
+                    "tabindex=" + tabindex + ">&nbsp;&nbsp;&nbsp;Assign " + ry['p_first_name'] + ' ' + ry['p_last_name'] + ' as my agent.<br/>';
+            } else if (ry['newperid']) {
+                html += "<input type='radio' name='agent' id='agent_newid' value='n" + ry['newperid'] + "' style='transform: scale(1.5);'" +
+                    "tabindex=" + tabindex + ">&nbsp;&nbsp;&nbsp;Assign " + ry['n_first_name'] + ' ' + ry['n_last_name'] + ' as my agent.<br/>';
             } else if (exhibitor_info['perid']) {
                 html += "<input type='radio' name='agent' id='agent_perid' value='p" + exhibitor_info['perid'] + "' style='transform: scale(1.5);'>&nbsp;&nbsp;&nbsp;Assign " +
                     exhibitor_info['p_first_name'] + ' ' + exhibitor_info['p_last_name'] + ' as my agent.<br/>';
-            } else if (exhibitor_info['newid']) {
-                html += "<input type='radio' name='agent' id='agent_newid' value='n" + exhibitor_info['newid'] + "' style='transform: scale(1.5);'>&nbsp;&nbsp;&nbsp;Assign " +
-                    exhibitor_info['n_first_name'] + ' ' + exhibitor_info['n_last_name'] + ' as my agent.<br/>';
+            } else if (exhibitor_info['newperid']) {
+                html += "<input type='radio' name='agent' id='agent_newid' value='n" + exhibitor_info['newperid'] + "' style='transform: scale(1.5);'" +
+                    "tabindex=" + tabindex + ">&nbsp;&nbsp;&nbsp;Assign " + exhibitor_info['n_first_name'] + ' ' + exhibitor_info['n_last_name'] +
+                    ' as my agent.<br/>';
             }
-            html += "<input type='radio' name='agent' id='agent_request' value='request' style='transform: scale(1.5);'>&nbsp;&nbsp;&nbsp;Please assign my agent as per my request below.<br/>" +
-                "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type='text' name='agent_request' placeholder='Enter your agent request here if needed' size='120'></p>"
+            tabindex += 2;
+            html += "<input type='radio' name='agent' id='agent_request' value='request' style='transform: scale(1.5);'" +
+                "tabindex=" + tabindex + ">&nbsp;&nbsp;&nbsp;Please assign my agent as per my request below.<br/>" +
+                "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" +
+                "<input type='text' name='agent_request' placeholder='Enter your agent request here if needed' size='120' tabindex=" + (tabindex + 2) +"></p>"
+            tabindex += 4;
         }
     }
     document.getElementById('vendor_inv_included').innerHTML = html;
@@ -153,6 +192,10 @@ function openInvoice(id) {
     membershipCostdiv.hidden =  (includedMemberships == 0 && additionalMemberships == 0) ;
 
     var html = '';
+    var firstStar = config['firstStar'];
+    var addrStar = config['addrStar'];
+    var allStar = config['allStar'];
+    tabindex = 300;
     // now build the included memberships
     if (includedMemberships > 0) {
         html = "<input type='hidden' name='incl_mem_count' value='" + includedMemberships + "'>\n" +
@@ -166,78 +209,107 @@ function openInvoice(id) {
 </div>
 <div class="row">
     <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="fname_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>First Name</span></label><br/>
-        <input class="form-control-sm" type="text" name="fname_i_` + mnum + `" id="fname_i_` + mnum + `" size="22" maxlength="32"/>
-    </div>
+        <label for="fname_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + firstStar + `First Name</span></label><br/>
+        <input class="form-control-sm" type="text" name="fname_i_` + mnum + `" id="fname_i_` + mnum + `" size="22" maxlength="32" tabindex=` + tabindex + `/>
+    </div>`;
+            tabindex += 2;
+            html += `
     <div class="col-sm-auto ms-0 me-2 p-0">
         <label for="mname_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Middle Name</span></label><br/>
-        <input class="form-control-sm" type="text" name="mname_i_` + mnum + `" id="mname_i_` + mnum + `" size="8" maxlength="32" />
-    </div>
+        <input class="form-control-sm" type="text" name="mname_i_` + mnum + `" id="mname_i_` + mnum + `" size="8" maxlength="32" tabindex=` + tabindex + `/>
+    </div>`;
+            tabindex += 2;
+            html += `
     <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="lname_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Last Name</span></label><br/>
-        <input class="form-control-sm" type="text" name="lname_i_` + mnum + `" id="lname_i_` + mnum + `" size="22" maxlength="32" />
-    </div>
+        <label for="lname_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + allStar + `Last Name</span></label><br/>
+        <input class="form-control-sm" type="text" name="lname_i_` + mnum + `" id="lname_i_` + mnum + `" size="22" maxlength="32" tabindex=` + tabindex + `/>
+    </div>`;
+            tabindex += 2;
+            html += `
     <div class="col-sm-auto ms-0 me-0 p-0">
         <label for="suffix_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Suffix</span></label><br/>
-        <input class="form-control-sm" type="text" name="suffix_i_` + mnum + `" id='suffix_i_` + mnum + `' size="4" maxlength="4" />
+        <input class="form-control-sm" type="text" name="suffix_i_` + mnum + `" id='suffix_i_` + mnum + `' size="4" maxlength="4" tabindex=` + tabindex + `/>
     </div>
-</div>
+</div>`;
+            tabindex += 2;
+            html += `
 <div class='row'>
     <div class='col-sm-12 ms-0 me-0 p-0'>
         <label for="legalname_i_` + mnum + `" class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>Legal Name: for checking against your ID. It will only be visible to Registration Staff.</label><br/>
-        <input class='form-control-sm' type='text' name="legalname_i_` + mnum + `" id=legalname_i_` + mnum + `" size=64 maxlength='64' placeholder='Defaults to First Name Middle Name Last Name, Suffix'/>
+        <input class='form-control-sm' type='text' name="legalname_i_` + mnum + `" id=legalname_i_` + mnum + `" size=64 maxlength='64'
+            placeholder='Defaults to First Name Middle Name Last Name, Suffix' tabindex=` + tabindex + `/>
     </div>
 </div>
 `;
+            tabindex += 2;
             // address fields
             html += `
 <div class="row">
     <div class="col-sm-12 ms-0 me-0 p-0">
-        <label for="addr_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Address</span></label><br/>
-        <input class="form-control-sm" type="text" name='addr_i_` + mnum + `' id='addr_i_` + mnum + `' size=64 maxlength="64" />
+        <label for="addr_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + addrStar + `Address</span></label><br/>
+        <input class="form-control-sm" type="text" name='addr_i_` + mnum + `' id='addr_i_` + mnum + `' size=64 maxlength="64" tabindex=` + tabindex + `/>
     </div>
-</div>
+</div>`;
+            tabindex += 2;
+            html += `
 <div class="row">
     <div class="col-sm-12 ms-0 me-0 p-0">
         <label for="addr2_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Company/2nd Address line</span></label><br/>
-        <input class="form-control-sm" type="text" name='addr2_i_` + mnum + `' id='addr2_i_` + mnum + `' size=64 maxlength="64" '/>
+        <input class="form-control-sm" type="text" name='addr2_i_` + mnum + `' id='addr2_i_` + mnum + `' size=64 maxlength="64" tabindex=` + tabindex + `/>
     </div>
-</div>
+</div>`;
+            tabindex += 2;
+            html += `
 <div class="row">
     <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="city_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>City</span></label><br/>
-        <input class="form-control-sm" type="text" name="city_i_` + mnum + `" id='city_i_` + mnum + `' size="22" maxlength="32" />
-    </div>
+        <label for="city_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + addrStar + `City</span></label><br/>
+        <input class="form-control-sm" type="text" name="city_i_` + mnum + `" id='city_i_` + mnum + `' size="22" maxlength="32" tabindex=` + tabindex + `/>
+    </div>`;
+            tabindex += 2;
+            html += `
     <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="state_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>State</span></label><br/>
-        <input class="form-control-sm" type="text" name="state_i_` + mnum + `" id='state_i_` + mnum + `' size="10" maxlength=16" />
-    </div>
+        <label for="state_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + addrStar + `State</span></label><br/>
+        <input class="form-control-sm" type="text" name="state_i_` + mnum + `" id='state_i_` + mnum + `' size="10" maxlength=16" tabindex=` + tabindex + `/>
+    </div>`;
+            tabindex += 2;
+            html += `
     <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="zip_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Zip</span></label><br/>
-        <input class="form-control-sm" type="text" name="zip_i_` + mnum + `" id='zip_i_` + mnum + `' size="5" maxlength="10" />
-    </div>
+        <label for="zip_i_` + mnum + `" class="form-label-sm"><class="text-dark" style="font-size: 10pt;">` + addrStar + `Zip</span></label><br/>
+        <input class="form-control-sm" type="text" name="zip_i_` + mnum + `" id='zip_i_` + mnum + `' size="5" maxlength="10" tabindex=` + tabindex + `/>
+    </div>`;
+            tabindex += 2;
+            html += `
     <div class="col-sm-auto ms-0 me-0 p-0">
         <label for="country_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Country</span></label><br/>
-        <select class="form-control-sm" name="country_i_` + mnum + `" id='country_i_` + mnum + `' >
+        <select class="form-control-sm" name="country_i_` + mnum + `" id='country_i_` + mnum + `' tabindex=` + tabindex + `>
 ` + country_options + `
         </select>
     </div>
-</div>
+</div>`;
+            tabindex += 2;
+            html += `
 <div class="row">
     <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="email_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Email</span></label><br/>
-        <input class="form-control-sm" type="email" name="email_i_` + mnum + `" id='email_i_` + mnum + `' size="35" maxlength="254" />
-    </div>
+        <label for="email_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">
+            <span class="text-danger">&bigstar;</span>Email</span></label><br/>
+        <input class="form-control-sm" type="email" name="email_i_` + mnum + `" id='email_i_` + mnum + `' size="35" maxlength="254" tabindex=` + tabindex + `/>
+    </div>`;
+            tabindex += 2;
+            html += `
     <div class="col-sm-auto ms-0 me-2 p-0">
         <label for="phone_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Phone</span></label><br/>
-        <input class="form-control-sm" type="text" name="phone_i_` + mnum + `" id='phone_i_` + mnum + `' size="18" maxlength="15" />
-    </div>
+        <input class="form-control-sm" type="text" name="phone_i_` + mnum + `" id='phone_i_` + mnum + `' size="18" maxlength="15" tabindex=` + tabindex + `/>
+    </div>`;
+            tabindex += 2;
+            html += `
     <div class="col-sm-auto ms-0 p-0">
         <label for="badgename_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Badge Name (optional)</span></label><br/>
-        <input class="form-control-sm" type="text" name="badgename_i_` + mnum + `" id='badgename_i_` + mnum + `' size="35" maxlength="32"  placeholder='defaults to first and last name'/>
+        <input class="form-control-sm" type="text" name="badgename_i_` + mnum + `" id='badgename_i_` + mnum + `' size="35" maxlength="32"
+            placeholder='defaults to first and last name' tabindex=` + tabindex + `/>
     </div>
 </div>
 `;
+            tabindex += 2;
         }
         html += "<hr/>";
     }
@@ -255,83 +327,114 @@ function openInvoice(id) {
 </div>
 <div class="row">
     <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="fname_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>First Name</span></label><br/>
-        <input class="form-control-sm" type="text" name="fname_a_` + mnum + `" id="fname_a_` + mnum + `" size="22" maxlength="32" onchange="updateCost(` + regionYearId + "," + mnum + `)"/>
-    </div>
+        <label for="fname_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + firstStar + `First Name</span><</label><br/>
+        <input class="form-control-sm" type="text" name="fname_a_` + mnum + `" id="fname_a_` + mnum + `" size="22" maxlength="32" 
+            onchange="updateCost(` + regionYearId + "," + mnum + `)" tabindex=` + tabindex + `/>
+    </div>`;
+            tabindex += 2;
+            html += `
     <div class="col-sm-auto ms-0 me-2 p-0">
         <label for="mname_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Middle Name</span></label><br/>
-        <input class="form-control-sm" type="text" name="mname_a_` + mnum + `" id="mname_a_` + mnum + `" size="8" maxlength="32" />
-    </div>
+        <input class="form-control-sm" type="text" name="mname_a_` + mnum + `" id="mname_a_` + mnum + `" size="8" maxlength="32" tabindex=` + tabindex + `/>
+    </div>`;
+            tabindex += 2;
+            html += `
     <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="lname_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Last Name</span></label><br/>
-        <input class="form-control-sm" type="text" name="lname_a_` + mnum + `" id="lname_a_` + mnum + `" size="22" maxlength="32" />
-    </div>
+        <label for="lname_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + allStar + `Last Name</span></label><br/>
+        <input class="form-control-sm" type="text" name="lname_a_` + mnum + `" id="lname_a_` + mnum + `" size="22" maxlength="32" tabindex=` + tabindex + `/>
+    </div>`;
+            tabindex += 2;
+            html += `
     <div class="col-sm-auto ms-0 me-0 p-0">
         <label for="suffix_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Suffix</span></label><br/>
-        <input class="form-control-sm" type="text" name="suffix_a_` + mnum + `" id='suffix_a_` + mnum + `' size="4" maxlength="4" />
+        <input class="form-control-sm" type="text" name="suffix_a_` + mnum + `" id='suffix_a_` + mnum + `' size="4" maxlength="4" tabindex=` + tabindex + `/>
     </div>
-</div>
+</div>`;
+            tabindex += 2;
+            html += `
 <div class='row'>
     <div class='col-sm-12 ms-0 me-0 p-0'>
         <label for="legalname_a_` + mnum + `" class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>Legal Name: for checking against your ID. It will only be visible to Registration Staff.</label><br/>
-        <input class='form-control-sm' type='text' name="legalname_a_` + mnum + `" id=legalname_a_` + mnum + `" size=64 maxlength='64' placeholder='Defaults to First Name Middle Name Last Name, Suffix'/>
+        <input class='form-control-sm' type='text' name="legalname_a_` + mnum + `" id=legalname_a_` + mnum + `" size=64 maxlength='64'
+                placeholder='Defaults to First Name Middle Name Last Name, Suffix' tabindex=` + tabindex + `/>
     </div>
 </div>
 `;
+            tabindex += 2;
             // address fields
             html += `
 <div class="row">
     <div class="col-sm-12 ms-0 me-0 p-0">
-        <label for="addr_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Address</span></label><br/>
-        <input class="form-control-sm" type="text" name='addr_a_` + mnum + `' id='addr_a_` + mnum + `' size=64 maxlength="64" />
+        <label for="addr_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + addrStar + `Address</span></label><br/>
+        <input class="form-control-sm" type="text" name='addr_a_` + mnum + `' id='addr_a_` + mnum + `' size=64 maxlength="64" tabindex=` + tabindex + `/>
     </div>
-</div>
+</div>`;
+            tabindex += 2;
+            html += `
 <div class="row">
     <div class="col-sm-12 ms-0 me-0 p-0">
         <label for="addr2_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Company/2nd Address line</span></label><br/>
-        <input class="form-control-sm" type="text" name='addr2_a_` + mnum + `' id='addr2_a_` + mnum + `' size=64 maxlength="64" '/>
+        <input class="form-control-sm" type="text" name='addr2_a_` + mnum + `' id='addr2_a_` + mnum + `' size=64 maxlength="64" tabindex=` + tabindex + `/>
     </div>
-</div>
+</div>`;
+            tabindex += 2;
+            html += `
 <div class="row">
     <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="city_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>City</span></label><br/>
-        <input class="form-control-sm" type="text" name="city_a_` + mnum + `" id='city_a_` + mnum + `' size="22" maxlength="32" />
-    </div>   
+        <label for="city_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + addrStar + `City</span></label><br/>
+        <input class="form-control-sm" type="text" name="city_a_` + mnum + `" id='city_a_` + mnum + `' size="22" maxlength="32" tabindex=` + tabindex + `/>
+    </div>   `;
+            tabindex += 2;
+            html += `
     <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="state_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>State</span></label><br/>
-        <input class="form-control-sm" type="text" name="state_a_` + mnum + `" id='state_a_` + mnum + `' size="10" maxlength="16" />
-    </div>
+        <label for="state_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + addrStar + `State</span></label><br/>
+        <input class="form-control-sm" type="text" name="state_a_` + mnum + `" id='state_a_` + mnum + `' size="10" maxlength="16" tabindex=` + tabindex + `/>
+    </div>`;
+            tabindex += 2;
+            html += `
     <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="zip_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Zip</span></label><br/>
-        <input class="form-control-sm" type="text" name="zip_a_` + mnum + `" id='zip_a_` + mnum + `' size="5" maxlength="10" />
-    </div>
+        <label for="zip_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + addrStar + `Zip</span></label><br/>
+        <input class="form-control-sm" type="text" name="zip_a_` + mnum + `" id='zip_a_` + mnum + `' size="5" maxlength="10" tabindex=` + tabindex + `/>
+    </div>`;
+            tabindex += 2;
+            html += `
     <div class="col-sm-auto ms-0 me-0 p-0">
         <label for="country_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Country</span></label><br/>
-        <select class="form-control-sm" name="country_a_` + mnum + `" id='country_a_` + mnum + `' >
+        <select class="form-control-sm" name="country_a_` + mnum + `" id='country_a_` + mnum + `' tabindex=` + tabindex + `>
 ` + country_options + `
         </select>
     </div>
-</div>
+</div>`;
+            tabindex += 2;
+            html += `
 <div class="row">
     <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="email_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span class='text-info'>*</span>Email</span></label><br/>
-        <input class="form-control-sm" type="email" name="email_a_` + mnum + `" id='email_a_` + mnum + `' size="35" maxlength="254" />
-    </div>
+        <label for="email_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">
+            <span class="text-danger">&bigstar;</span>Email</span></label><br/>
+        <input class="form-control-sm" type="email" name="email_a_` + mnum + `" id='email_a_` + mnum + `' size="35" maxlength="254" tabindex=` + tabindex + `/>
+    </div>`;
+            tabindex += 2;
+            html += `
     <div class="col-sm-auto ms-0 me-2 p-0">
         <label for="phone_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Phone</span></label><br/>
-        <input class="form-control-sm" type="text" name="phone_a_` + mnum + `" id='phone_a_` + mnum + `' size="18" maxlength="15" />
-    </div>
+        <input class="form-control-sm" type="text" name="phone_a_` + mnum + `" id='phone_a_` + mnum + `' size="18" maxlength="15" tabindex=` + tabindex + `/>
+    </div>`;
+            tabindex += 2;
+            html += `
     <div class="col-sm-auto ms-0 p-0">
         <label for="badgename_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Badge Name (optional)</span></label><br/>
-        <input class="form-control-sm" type="text" name="badgename_a_` + mnum + `" id='badgename_a_` + mnum + `' size="35" maxlength="32"  placeholder='defaults to first and last name'/>
+        <input class="form-control-sm" type="text" name="badgename_a_` + mnum + `" id='badgename_a_` + mnum + `' size="35" maxlength="32"
+            placeholder='defaults to first and last name' tabindex=` + tabindex + `/>
     </div>
 </div>
 `;
+            tabindex += 2;
         }
         html += "<hr/>";
     }
     document.getElementById("vendor_inv_included_mbr").innerHTML = html;
     vendor_invoice.show();
+    setTimeout(() => { document.getElementById('agreeNone').focus({focusVisible: true}); }, 600);
 }
 
 // update invoice for the Cost of Memberships and total Cost when an additional member is started

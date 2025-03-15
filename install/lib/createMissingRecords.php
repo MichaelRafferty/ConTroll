@@ -17,8 +17,8 @@ WHERE id = ?;
 EOS;
 
     $insertPQ = <<<EOS
-INSERT INTO perinfo(id, first_name, last_name, email_addr, banned, active, open_notes, contact_ok, share_reg_ok)
-VALUES (?,?,?,?,?,?,?,?,?);
+INSERT INTO perinfo(id, first_name, last_name, email_addr, banned, active, open_notes, contact_ok, share_reg_ok,updatedBy)
+VALUES (?,?,?,?,?,?,?,?,?,?);
 EOS;
 
     $insertUQ = <<<EOS
@@ -45,7 +45,7 @@ EOS;
         logEcho("Person 2/User 2 exist", true);
     } else {
         // insert user 2, person record first
-        $newid = dbSafeInsert($insertPQ, 'issssssss', array(2, 'Atcon', 'Internal', NULL, 'N', 'N', 'INTERNAL NOT FOR REGISTRATION USE', 'N', 'N'));
+        $newid = dbSafeInsert($insertPQ, 'issssssssi', array(2, 'Atcon', 'Internal', NULL, 'N', 'N', 'INTERNAL NOT FOR REGISTRATION USE', 'N', 'N', 2));
         if ($newid === false) {
             logEcho("Unable to insert Person Info 2 for ATCON");
             $errors++;
@@ -72,7 +72,7 @@ EOS;
         logEcho('Person 3 exists', true);
     } else {
         // insert person 3
-        $newid = dbSafeInsert($insertPQ, 'issssssss', array(3, 'Exhibitor', 'Internal', NULL, 'N', 'N', 'INTERNAL NOT FOR REGISTRATION USE', 'N', 'N'));
+        $newid = dbSafeInsert($insertPQ, 'issssssssi', array(3, 'Exhibitor', 'Internal', NULL, 'N', 'N', 'INTERNAL NOT FOR REGISTRATION USE', 'N', 'N', 3));
         if ($newid === false) {
             logEcho('Unable to insert Person Info 3 for Exhibitor');
             $errors++;
@@ -87,7 +87,7 @@ FROM conlist
 WHERE id = ?;
 EOS;
     $conidR = dbSafeQuery($checkCQ, 'i', array($conid));
-    if ($conidR == false) {
+    if ($conidR === false) {
         logEcho('check if $conid exists in conlist, cannot continue');
         return(1);
     }
@@ -107,7 +107,7 @@ EOS;
             '2099-12-31'
         );
         $newid = dbSafeInsert($insertConlistQ, 'isssss', $params);
-        if ($newid == false) {
+        if ($newid === false) {
             logecho("Error inserting initial conlist entry for $conid, cannot continue");
             return(1);
         }
@@ -196,7 +196,7 @@ EOS;
             }
 
             // insert user 1 into perinfo
-            $newid = dbSafeInsert($insertPQ, 'issssssss', array(1, $first_name, $last_name, $email_addr, 'N', 'Y', 'Initial Administrator', 'Y', 'Y'));
+            $newid = dbSafeInsert($insertPQ, 'issssssssi', array(1, $first_name, $last_name, $email_addr, 'N', 'Y', 'Initial Administrator', 'Y', 'Y', 1));
             if ($newid === false) {
                 logEcho('Unable to insert Person Info 1 for administrator');
                 $errors++;

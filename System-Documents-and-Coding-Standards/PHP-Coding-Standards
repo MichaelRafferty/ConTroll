@@ -1,0 +1,76 @@
+ConTroll is developed using PHP 8.1 or later
+(This file is a work in progress, it's just a start for now)
+
+Variable Naming Rules
+    While ConTroll has lots of legacy code, going forward $variables should be in $lowerCamelCase.
+
+Database Calling Sequences
+    All database statement should use prepare format and not use variable encoding.
+    The following arguments are common to each function:
+        $query is the text string of the query.  Variable substitution is performed with the prepare and ? notation of mysql/mariadb.
+        $typestr is the string concatenating the data type of each argument in the $valueArray
+            i = integer
+            d = fixed ppint decimal and floating point
+            s = string
+            b = blob
+        $valueArray = array of values of each parameter to be substituted
+
+    There are database functions for each type of statement:
+        dbSafeQuery($query, $typestr, $valueArray)
+            prepares, binds and executes the query
+            returns the query response object or false for errors
+        dbSafeInsert($query, $typestr, $valueArray)
+            prepares, binds and executes the query
+            returns the key (insert_id) of the inserted row or false for errors
+        dbSafeCmd($query, $typestr, $valueArray)
+        prepares, binds and executes the query
+          returns the number of rows effected by the command or false for errors
+
+      Non Prepare versions for use when no parameters are required
+        dbQuery($query)
+        dbInsert($query)
+        dbCmd($sql)
+
+    Multi-statement versions for transactions
+        dbMultiQuery($query) - uses ";" to separate queries
+            returns first result object or false for errors
+        dbNextResult()
+            returns next result object or false if no more results
+
+
+  Note: sql_safe($string) and fetch_safe_assoc($res) should no longer be used, use the Safe versions of the database calls instead.
+
+HTML:
+    All HTML output is in Bootstrap 5.  the sm column classes should be used.
+    Global Bootstrap 5 Styles:
+        Color Usage:
+            -primary for primary actions (blue)
+            -secondary for seconday (alternate) actions (gray)
+            -success for status messages of type success and buttons for success type actions
+            -warning for warning messages and buttons you should be warned before executing
+            -danger for error messages
+            -info for items that display additional info or buttons to provide additional info
+
+        <div class="container-fluid"> should wrap all output, multipl container-fluids are allowed on a single page
+        <div class="modal" id="ID" tabindex="index" aria-labelledby="label" aria-hidden="true"> style should be used for all modal popups
+            All modals should include a header, body and footer.
+                Header: contains title
+                Body: data of the modal
+                Footer: buttons
+
+        forms should use <label> for label for fields, and all fields should have both id and name
+
+        Message output blocks
+           The last div in the modal body, or the page container-fluid of the page is:
+           <div id='result_message' class='mt-4 p-2'></div>
+
+           This is the default name for the div, and the one used on the main page.
+           Each modal should have this as the last div of the body. In this case the name should be xxx_result_div where
+           xxx is the name of the modal (or some short represention of same.
+
+           This div is populated by the show and clear message functions in the javascript coding standards.
+           This div is not preserved on complete page refreshes, but is preserved on show/hide of the modal.
+       If disired the 'test' PRE block goes after the final closing </div> (after the Bootstrap 5 output portion)
+       <pre id='test'>
+       </pre>
+       This is for debug code only.

@@ -70,6 +70,60 @@ function URLparamsToArray(urlargs) {
     return result;
 }
 
+// tabulator custom header filter function for numeric comparisions
+//
+function numberHeaderFilter(headerValue, rowValue, rowData, filterParams) {
+    var option = headerValue.substring(0,1);
+    var value = headerValue;
+    if (option == '<' || option == '>' || option == '=') {
+        var suboption = headerValue.substring(1, 1);
+        if (suboption == '=') {
+            option += suboption;
+            value = value.substring(2);
+        } else {
+            value = value.substring(1);
+        }
+    }
+
+    switch (option) {
+        case '<':
+            return Number(rowValue) < Number(value);
+        case '<=':
+            return Number(rowValue) <= Number(value);
+        case '>':
+            return Number(rowValue) > Number(value);
+        case '>=':
+            return Number(rowValue) >= Number(value);
+        default:
+            return Number(rowValue) == Number(value);
+    }
+}
+
+// fullNameHeaderFilter: Custom header filter for substring and first/last substring for FullName with first_name and last_name fields in the table
+function fullNameHeaderFilter(headerValue, rowValue, rowData, filterParams) {
+    var header = headerValue.toLowerCase();
+    var value = rowValue.toLowerCase();
+    if (value.includes(header))
+        return true;
+
+    var parts = header.split(' ');
+    if (parts.length < 2)
+        return false;
+
+    var first = rowData.first_name.toLowerCase();
+    var last = rowData.last_name.toLowerCase();
+    if (parts.length == 3) {
+        var middle = rowData.middle_name.toLowerCase();
+        return first.includes(parts[0]) && middle.includes(parts[1]) && last.includes(parts[2]);
+    }
+
+    if (parts.length == 2) {
+        return first.includes(parts[0]) && last.includes(parts[1]);
+    }
+
+    return false;
+}
+
 function showError(str) {
     $('#test').empty().append(str);
 }
@@ -261,6 +315,9 @@ function base_changePrintersSubmit() {
                 show_message(data['error'], 'error');
                 return;
             }
+            if (typeof pos !== 'undefined' && pos !== null) {
+                pos.setPrinterData(data);
+            }
             base_changePrinterDisplay(data);
             clear_message();
         },
@@ -287,7 +344,7 @@ function base_changePrinterDisplay(data) {
 
 // base_toggleManager:
 //  toggle the manager enabled setting
-var base_manager_enabled = false;
+var baseManagerEnabled = false;
 var page_banner = null;
 var base_navitem = null;
 var base_toggle = null;
@@ -296,6 +353,7 @@ var base_user_div = null;
 var base_managerOverrideModal = null;
 var base_managerPassword = null;
 var base_password_modal_error_div = null;
+var inConTroll = false;
 function base_toggleManager() {
     if (base_navitem === null) {
         page_banner = document.getElementById("page_banner");
@@ -308,14 +366,14 @@ function base_toggleManager() {
         base_managerOverrideModal = new bootstrap.Modal(document.getElementById('base_managerOverride'), {focus: true, backldrop: 'static'});
     }
 
-    if (base_manager_enabled === false) {
+    if (baseManagerEnabled === false) {
         // use modal popup to ask for password
         base_managerOverrideModal.show();
         base_managerPassword = document.getElementById("base_managerPassword");
         base_managerPassword.style.backgroundColor = '';
         return;
     }
-    base_manager_enabled = false;
+    baseManagerEnabled = false;
     // restore normal primary navbar)
     page_banner.classList.remove("bg-warning");
     base_user_div.classList.remove("bg-warning");
@@ -375,7 +433,7 @@ function base_managerOverrideSubmit() {
 
 function base_managerOverrideComplete(data) {
     if (data['manager'] === true) {
-        base_manager_enabled = true;
+        baseManagerEnabled = true;
         // make navbar background warning (yellow)
         page_banner.classList.remove("bg-primary")
         page_banner.classList.remove("text-white")

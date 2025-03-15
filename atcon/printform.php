@@ -2,7 +2,7 @@
 
 require_once "lib/base.php";
 
-if (!isset($_SESSION['user'])) {
+if (!isSessionVar('user')) {
     header('Location: /index.php');
     exit(0);
 }
@@ -22,7 +22,7 @@ page_init($page, 'printform',
     /* js  */ array('js/printform.js')
 );
 
-//var_dump($_SESSION);
+//var_dump(getAllSessionVars);
 //echo $conid;
 
 // get list of ages for pulldown

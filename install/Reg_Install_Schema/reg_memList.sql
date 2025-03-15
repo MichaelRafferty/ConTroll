@@ -2,7 +2,7 @@
 --
 -- Host: localhost    Database: reg
 -- ------------------------------------------------------
--- Server version	8.0.32
+-- Server version	8.0.40
 
 
 --
@@ -18,13 +18,13 @@ CREATE TABLE `memList` (
   `memType` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `memAge` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `label` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `notes` varchar(1024) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `price` decimal(8,2) NOT NULL,
   `startdate` datetime DEFAULT NULL,
   `enddate` datetime DEFAULT NULL,
   `atcon` enum('Y','N') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `online` enum('Y','N') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `memList_dups` (`conid`,`label`,`startdate`,`enddate`),
   KEY `FK_memList_ageType` (`conid`,`memAge`),
   KEY `memList_memCategory_fk` (`memCategory`),
   KEY `memList_memType_fk` (`memType`)

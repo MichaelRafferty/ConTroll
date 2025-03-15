@@ -34,14 +34,14 @@ if (!check_atcon($method, $conid)) {
 
 $response['label'] = $con['label'];
 $response['conid'] = $conid;
-$response['user_id'] = $_SESSION['user'];
+$response['user_id'] = getSessionVar('user');
 
 // get the memId and label for conid + 1, volunteer rollover
 $priceQ = <<<EOS
 SELECT id, label, shortname
 FROM memLabel
 WHERE
-    conid = ? AND shortname in ('Volunteer', 'Rollover-Volunteer');
+    conid = ? AND shortname in ('Volunteer');
 EOS;
 
 $memarray = array();

@@ -2,7 +2,7 @@
 --
 -- Host: localhost    Database: reg
 -- ------------------------------------------------------
--- Server version	8.0.32
+-- Server version	8.0.40
 
 
 --
@@ -15,6 +15,7 @@ CREATE TABLE `auth` (
   `name` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `page` enum('N','Y') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `display` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `sortOrder` int DEFAULT '0',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 

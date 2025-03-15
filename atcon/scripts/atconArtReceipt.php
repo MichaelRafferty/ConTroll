@@ -69,7 +69,7 @@ function closeReceipt($info) {
 }
 
 
-$response = array('post'=>$_POST, 'get'=>$_GET, 'session'=>$_SESSION);
+$response = array('post'=>$_POST, 'get'=>$_GET, 'session'=> getAllSessionVars());
 $transid=$_POST['transid'];
 $response['transid']=$transid;
 
@@ -143,11 +143,11 @@ fclose($temp);
 
 $result_code=-5;
 $command = '';
-if (isset($_SESSION['receiptPrinter'])) {
-    $printer = $_SESSION['receiptPrinter'];
-    $server = $printer[1];
-    $queue = $printer[2];
-    $codepage = $printer[4];
+$printer = getSessionVar('receiptPrinter');
+if ($printer && $printer['name'] != 'None') {
+    $server = $printer['host'];
+    $queue = $printer['queue'];
+    $codepage = $printer['code'];
     $serverArg = '';
     if ($server != '')
         $serverArg = "H$server";

@@ -509,12 +509,12 @@ function getPages($sub)#: array|bool
 {
     $res = [];
     $sql = <<<EOS
-SELECT DISTINCT A.id, A.name, A.display
+SELECT DISTINCT A.id, A.name, A.display, A.sortOrder
 FROM user U
 JOIN user_auth UA ON (U.id = UA.user_id)
 JOIN auth A ON (A.id = UA.auth_id)
 WHERE U.google_sub = ? AND A.page='Y'
-ORDER BY A.id;
+ORDER BY A.sortOrder;
 EOS;
     $auths = dbSafeQuery($sql, 's', [$sub]);
     if (!$auths) {

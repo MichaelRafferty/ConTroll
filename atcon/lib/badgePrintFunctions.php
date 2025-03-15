@@ -23,7 +23,7 @@ $badgeFlags[$badgeFlag['ageType']] = $badgeFlag['badgeFlag'];
 function init_file($printer)//:string {
 {
     global $badgeTypes;
-    if ($printer[0] == 'None' && $printer[2] == '') {
+    if ($printer['name'] == 'None' && $printer['queue'] == '') {
         $response['error'] = "You have no printer defined, you cannot print a badge.";
         ajaxSuccess($response);
         exit();
@@ -38,7 +38,7 @@ function init_file($printer)//:string {
         exit();
     }
 
-    $codepage = $printer[3];
+    $codepage = $printer['code'];
     switch($codepage) {
         default:
             $atcon = get_conf('atcon');
@@ -59,7 +59,7 @@ function init_file($printer)//:string {
 }
 
 function write_badge($badge, $tempfile, $printer):void {
-    $codepage = $printer[3];
+    $codepage = $printer['code'];
     switch ($codepage) {
         default:
             write_ps($badge, $tempfile);
@@ -162,11 +162,11 @@ function write_ps($badge, $tempfile)//: void {
 // print_badge: printer contains array(4) of display name, server, queue name (printer), printer type
 function print_badge($printer, $tempfile)//: string|false
 {
-error_log($printer[0] . ' ' . $printer[1] . ' ' . $printer[2] . ' ' . $printer[3]);
+error_log($printer['name'] . ' ' . $printer['host'] . ' ' . $printer['queue'] . ' ' . $printer['type'] . ' ' . $printer['code']);
 
-    $queue = $printer[2];
-    $codepage = $printer[3];
-    $name = $printer[0];
+    $queue = $printer['queue'];
+    $codepage = $printer['code'];
+    $name = $printer['name'];
     $result_code = 0;
 
     if (mb_substr($queue, 0, 1) == '0' || $name == 'None') { // return link to badge
@@ -186,7 +186,7 @@ error_log($printer[0] . ' ' . $printer[1] . ' ' . $printer[2] . ' ' . $printer[3
         }
     }  else { // print to a printer
         web_error_log("trying to print to printer");
-        $server = $printer[1];
+        $server = $printer['host'];
         $options = '';
         switch ($codepage) {
             // turbo 330. et al, -o PageSize=w82h248  -o orientation-requested=5
@@ -206,6 +206,7 @@ error_log($printer[0] . ' ' . $printer[1] . ' ' . $printer[2] . ' ' . $printer[3
             $serverArg = "-H$server";
         $command = "lpr $serverArg -P$queue $options < $tempfile";
         $output = [];
+        web_error_log("About to execute '$command'", '');
         $result = exec($command,$output,$result_code);
         web_error_log("executing command '$command' returned '$result', code: $result_code",'badgePrn');
     }
@@ -219,10 +220,10 @@ error_log($printer[0] . ' ' . $printer[1] . ' ' . $printer[2] . ' ' . $printer[3
 // printer: printer control array (name, server, queue, codepage (encoding)
 function print_receipt($printer, $receipt)//:string | false {
 {
-    $queue = $printer[2];
-    $server = $printer[1];
-    $name = $printer[0];
-    $codepage = $printer[3];
+    $queue = $printer['queue'];
+    $server = $printer['host'];
+    $name = $printer['name'];
+    $codepage = $printer['code'];
 
     switch ($codepage) {
         case 'UTF-8':

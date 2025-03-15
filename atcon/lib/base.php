@@ -1,6 +1,8 @@
 <?php
 ## Pull INI for variables
 global $db_ini;
+global $appSessionPrefix;
+
 if (!$db_ini) {
     $db_ini = parse_ini_file(__DIR__ . '/../../config/reg_conf.ini', true);
 }
@@ -16,7 +18,11 @@ if ($db_ini['reg']['https'] <> 0) {
 require_once(__DIR__ . '/../../lib/db_functions.php');
 require_once(__DIR__ . '/../../lib/ajax_functions.php');
 require_once(__DIR__ . '/../../lib/global.php');
+require_once(__DIR__ . '/../../lib/cipher.php');
+require_once(__DIR__ . '/../../lib/jsVersions.php');
+
 db_connect();
+$appSessionPrefix = 'Ctrl/Atcon/';
 session_start();
 
 function isWebRequest()
@@ -24,8 +30,10 @@ function isWebRequest()
     return isset($_SERVER) && isset($_SERVER['HTTP_USER_AGENT']);
 }
 
-function page_init($title, $tab, $css, $js)
+function page_init($title, $tab, $css, $js, $configVars = null)
 {
+    global $portalJSVersion, $libJSversion, $controllJSversion, $globalJSversion, $atJSversion, $exhibitorJSversion;
+
     $con = get_conf('con');
     $vendor = get_conf('vendor');
     $label = $con['label'];
@@ -45,10 +53,12 @@ function page_init($title, $tab, $css, $js)
     else
         $taxLabel = '';
 
-    $config_vars = array();
-    $config_vars['debug'] = $atconDebug;
-    $config_vars['taxRate'] = $taxRate;
-    $config_vars['taxLabel'] = $taxLabel;
+    if ($configVars == null) {
+        $configVars = array ();
+    }
+    $configVars['debug'] = $atconDebug;
+    $configVars['taxRate'] = $taxRate;
+    $configVars['taxLabel'] = $taxLabel;
 
     global $perms;
     if (isWebRequest()) {
@@ -73,17 +83,25 @@ function page_init($title, $tab, $css, $js)
     <script src='<?php echo $includes['bs5js'];?>'></script>
     <script type='text/javascript' src='<?php echo $includes['jqjs']; ?>'></script>
     <script type='text/javascript' src='<?php echo $includes['jquijs']; ?>'></script>
-    <script type='text/javascript' src='/js/base.js'></script>
+    <script type='text/javascript' src='jslib/global.js?v=$globalJSversion'></script>
+    <script type='text/javascript' src='js/base.js?v=$controllJSversion'></script>
         <?php
-        if (isset($js) && $js != null) {
+        if(isset($js) && $js != null) {
             foreach ($js as $script) {
-                ?><script src='<?php echo $script; ?>'
-        type='text/javascript'></script><?php
+                if (str_starts_with($script, 'jslib/'))
+                    $callout = "$script?v=$libJSversion";
+                else if (str_starts_with($script, 'js/'))
+                    $callout = "$script?v=$controllJSversion";
+                else
+                    $callout = $script;
+                ?>
+                <script src='<?php echo $callout;?>' type='text/javascript'></script>
+                <?php
             }
         }
-        ?>
+?>
     <script type='text/javascript'>
-        var config = <?php echo json_encode($config_vars); ?>;
+        var config = <?php echo json_encode($configVars); ?>;
     </script>
 </head>
 <body>
@@ -99,7 +117,7 @@ function page_init($title, $tab, $css, $js)
                         </div>
                     </div>
             <?php
-        if (isset($_SESSION['userhash'])) {
+        if (isSessionVar('userhash')) {
             ?>
                     <div class="row">
                         <div class="col-sm-12 text-bg-primary" id="base_nav_div">
@@ -162,15 +180,16 @@ function page_init($title, $tab, $css, $js)
                 </div>
             </div>
             <div class="col-sm-3 text-bg-primary align-self-end" id="base_user_div">
-                User: <?php echo $_SESSION['first_name'] . ' (' . $_SESSION['user'] . ')';
+                User: <?php echo getSessionVar('first_name') . ' (' . getSessionVar('user') . ')';
                 if (in_array('manager', $perms)) {
                     echo '&nbsp; <button type="button" class="btn btn-sm btn-warning p-0" id="base_toggleMgr" onclick="base_toggleManager();">Enable Mgr</button>';
                 }
                 ?><br/>
                 <div id="page_head_printers">
-                    Badge: <?php echo $_SESSION['badgePrinter'][0]; ?>&nbsp; <button type="button" class="btn btn-sm btn-secondary pt-0 pb-0" onclick="base_changePrintersShow();">Chg</button><br/>
-                    Receipt: <?php echo $_SESSION['receiptPrinter'][0]; ?><br/>
-                    General: <?php echo $_SESSION['genericPrinter'][0]; ?>
+                    Badge: <?php echo getSessionVar('badgePrinter')['name']; ?>&nbsp; <button type="button" class="btn btn-sm btn-secondary pt-0 pb-0"
+                                                                                       onclick="base_changePrintersShow();">Chg</button><br/>
+                    Receipt: <?php echo getSessionVar('receiptPrinter')['name']; ?><br/>
+                    General: <?php echo getSessionVar('genericPrinter')['name']; ?>
                 </div>
             </div>
         </div>
@@ -240,11 +259,16 @@ function page_init($title, $tab, $css, $js)
     }
 }
 
-function page_foot()
-{
+function page_foot($title = '') {
     ?>
-</body>
-</html>
+    </div>
+    <div class="container-fluid">
+        <div class='row mt-2'>
+            <?php drawBug(12); ?>
+        </div>
+    </div>
+    </body>
+    </html>
     <?php
 }
 
@@ -515,6 +539,10 @@ $perms = [];
 function check_atcon($method, $conid)
 {
     global $perms;
+
+    // check if logged in
+    if (!isSessionVar('user'))
+        return false;
     if (count($perms) == 0) {
         $q = <<<EOS
 SELECT a.auth
@@ -522,7 +550,7 @@ FROM atcon_user u
 JOIN atcon_auth a ON (a.authuser = u.id)
 WHERE u.perid=? AND u.userhash=? AND u.conid=?;
 EOS;
-        $r = dbSafeQuery($q, 'ssi', [$_SESSION['user'], $_SESSION['userhash'], $conid]);
+        $r = dbSafeQuery($q, 'ssi', array(getSessionVar('user'), getSessionVar('userhash'), $conid));
         if ($r->num_rows > 0) {
             while ($l = $r->fetch_assoc()) {
                 $perms[] = $l['auth'];

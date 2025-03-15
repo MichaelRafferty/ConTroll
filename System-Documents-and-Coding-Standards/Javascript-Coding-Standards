@@ -1,0 +1,62 @@
+ConTroll Javascript Coding Standards
+(This file is a work in progress, it's just a start for now)
+
+ConTroll uses Bootstrap 5 and Tabulator 6 for Javascript Display
+
+Variable Naming Rules
+    While ConTroll has lots of legacy code, going forward variables should be in lowerCamelCase.
+
+Associated array coding rules (objects)
+    Associative arrays are declared as {}
+    Referencing elements of such an array uses .notation for fixed names: reg.memId
+    Do not use /convert old usage of 'name' notation to . notation: reg['memId'] ==> reg.memId
+    referencing elements of such an array uses array notation for variable elements: perinfoIdx[perid]
+
+When appropriate classes should be used to isolate javascript sections.
+    Look at reg_control/registration.js, reg_control/registration_cart.js and reg_control/registration_coupon.js for examples.
+
+Javascript should use modals and forms for data entry and tabulator tables for large data displays.
+
+The jquery Ajax method is used for calling functions in the scripts/ directory.
+A sample ajax calling sequence:
+    $.ajax({
+        method: "POST",
+        url: "scripts/singlePurposePHPScript.php",
+        data: { tag: value or array, }, // associative passing of data items to PHP. Note large arrays need to be json encoded strings to not exceed the 1000 variable limit in PHP
+        success: function (data, textstatus, jqxhr) {
+            $("button[name='transferSearch']").attr("disabled", false); // clean up any disable buttons
+            // data return items:
+            //  'error' = error message, if any
+            //  'warn' = warning message if any
+            //  'message' = success message if any
+            if (data['error'] !== undefined) {
+                show_message(data['error'], 'error');
+                return;
+            }
+            if (data['message'] !== undefined) {
+                show_message(data['message'], 'success');
+            }
+            if (data['warn'] !== undefined) {
+                show_message(data['warn'], 'warn');
+            }
+            transfer_found(data);   // call out to function that handles rest of processing, do not do it inline in the success function if it's lenghty.
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            $("button[name='transferSearch']").attr("disabled", false); // don't forget the buttons on the error return for AJAX errors
+            showError("ERROR in transferFindRecord: " + textStatus, jqXHR); // standard form of ajax error display
+        }
+    });
+
+using the result_message divs:
+    To display the message the show_message function in base.js is used
+        show_message(string, style, divname='result_message')
+        clear_message(divname='result_message')
+
+        the message can be any HTML including bootstrap 5 contents.
+        error: danger (red)
+        warn: warning (yellow)
+        success: success (green)
+
+In using tabulator formatters:
+    Only use textarea or specific encodings on user data
+    Only use toHTML on admin or internal data

@@ -21,7 +21,7 @@ JOIN exhibitsRegions er ON (ery.exhibitsRegion = er.id)
 WHERE ery.id = ? and e.exhibitorId = ?;
 EOS;
         $spaceR = dbSafeQuery($spaceQ, 'ii', array($regionYearId, $exhId));
-        if ($spaceR == false || $spaceR->num_rows == 0) {
+        if ($spaceR === false || $spaceR->num_rows == 0) {
             $response['error'] = 'Unable to find any space for the receipt';
             ajaxSuccess($response);
             return;
@@ -39,15 +39,17 @@ EOS;
 
 // get the specific information allowed
         $regionYearQ = <<<EOS
-SELECT er.id, name, description, ownerName, ownerEmail, includedMemId, additionalMemId, mi.price AS includedPrice, ma.price AS additionalPrice, ery.mailinFee
+SELECT er.id, name, description, ownerName, ownerEmail, includedMemId, additionalMemId, mi.price AS includedPrice, 
+       ma.price AS additionalPrice, ery.mailinFee, er.regionType, et.portalType
 FROM exhibitsRegionYears ery
 JOIN exhibitsRegions er ON er.id = ery.exhibitsRegion
+JOIN exhibitsRegionTypes et ON et.regionType = er.regionType
 LEFT OUTER JOIN memList mi ON ery.includedMemId = mi.id
 LEFT OUTER JOIN memList ma ON ery.additionalMemId = ma.id
 WHERE ery.id = ?;
 EOS;
         $regionYearR = dbSafeQuery($regionYearQ, 'i', array($regionYearId));
-        if ($regionYearR == false || $regionYearR->num_rows != 1) {
+        if ($regionYearR === false || $regionYearR->num_rows != 1) {
             $response['error'] = 'Unable to find region record, get help';
             ajaxSuccess($response);
             return;
@@ -78,7 +80,8 @@ EOS;
         // now fetch the region info
         if ($regionYearId != null) {
             $regionYearQ = <<<EOS
-SELECT er.id, name, description, ownerName, ownerEmail, includedMemId, additionalMemId, mi.price AS includedPrice, ma.price AS additionalPrice, ery.mailinFee
+SELECT er.id, name, description, ownerName, ownerEmail, includedMemId, additionalMemId, mi.price AS includedPrice, 
+       ma.price AS additionalPrice, ery.mailinFee, er.regionType
 FROM exhibitsRegionYears ery
 JOIN exhibitsRegions er ON er.id = ery.exhibitsRegion
 LEFT OUTER JOIN memList mi ON ery.includedMemId = mi.id
@@ -86,7 +89,7 @@ LEFT OUTER JOIN memList ma ON ery.additionalMemId = ma.id
 WHERE ery.id = ?;
 EOS;
             $regionYearR = dbSafeQuery($regionYearQ, 'i', array($regionYearId));
-            if ($regionYearR == false || $regionYearR->num_rows != 1) {
+            if ($regionYearR === false || $regionYearR->num_rows != 1) {
                 $response['error'] = 'Unable to find region record, get help';
                 ajaxSuccess($response);
                 return;
@@ -110,7 +113,7 @@ JOIN exhibitsRegionYears ery ON exRY.exhibitsRegionYearId = ery.id
 WHERE e.id=? AND ery.id = ?;
 EOS;
         $exhibitorR = dbSafeQuery($exhibitorQ, 'ii', array($exhId, $regionYearId));
-        if ($exhibitorR == false || $exhibitorR->num_rows != 1) {
+        if ($exhibitorR === false || $exhibitorR->num_rows != 1) {
             $response['error'] = 'Unable to find your exhibitor record';
             ajaxSuccess($response);
             return;
@@ -131,7 +134,7 @@ EOS;
     $transQ = <<<EOS
 SELECT id, conid, perid, newperid, userid, create_date, DATE_FORMAT(create_date, '%W %M %e, %Y %h:%i:%s %p') as create_date_str,
        complete_date, DATE_FORMAT(complete_date, '%W %M %e, %Y %h:%i:%s %p') as complete_date_str,
-       price, couponDiscount, paid, withtax, tax, type, notes, change_due, coupon, notes
+       price, couponDiscountCart, couponDiscountReg, paid, withtax, tax, type, notes, change_due, coupon, notes
 FROM transaction
 WHERE id = ?;
 EOS;
@@ -182,52 +185,16 @@ EOS;
     }
 
     $response['payor'] = $payorL;
-
-    //// get memberships referenced by this transaction
-    ///     can be directly via create_trans or complete_trans (memPeople)
-    ///     or indirectly via people referenced in this transaction and their reg transactions
-
-    $withTrans = <<<EOS
-WITH directReg AS (
-    SELECT DISTINCT perid, newperid
-    FROM reg
-    WHERE conid = ? AND (create_trans = ? OR complete_trans = ?)
-), indirectReg AS (
-    SELECT DISTINCT r.id
-    FROM reg r
-    JOIN directReg dr ON (dr.perid = r.perid OR dr.newperid = r.newperid)
-    WHERE r.conid = ?
-), transReg AS (
-    SELECT DISTINCT id
-    FROM indirectReg
-), allTrans AS (
-    SELECT DISTINCT create_trans AS transid
-    FROM reg r
-    JOIN transReg tr ON (tr.id = r.id)
-    WHERE r.conid = ?
-    UNION SELECT DISTINCT complete_trans AS transid
-    FROM reg r
-    JOIN transReg tr ON (tr.id = r.id)
-    WHERE r.conid = ?
-)
-EOS;
-
     $memSQL = <<<EOS
-$withTrans, allReg AS (
-    SELECT DISTINCT r.id
-    FROM reg r
-    JOIN allTrans t ON (r.create_trans = t.transid OR r.complete_trans = t.transid)
-    WHERE r.conid = ?
-)
 SELECT CASE WHEN r.perid IS NOT NULL THEN CONCAT('p-', r.perid) ELSE CONCAT('n-', r.newperid) END AS pid, r.*,
     m.label, m.shortname, m.memCategory, m.memType, m.memAge, m.price AS fullprice
 FROM reg r
-JOIN allReg al ON (r.id = al.id)
 JOIN memLabel m ON (r.memId = m.id)
-ORDER BY 1,2
+WHERE r.create_trans = ? OR r.complete_trans = ?
+ORDER BY 1,2;
 EOS;
 
-    $memR = dbSafeQuery($memSQL, 'iiiiiii', array($conid, $transid, $transid, $conid, $conid, $conid, $conid));
+    $memR = dbSafeQuery($memSQL, 'ii', array($transid, $transid));
     $memberships = [];
     while ($memL = $memR->fetch_assoc()) {
         $memberships[$memL['pid']][] = $memL;
@@ -236,15 +203,7 @@ EOS;
 
     //// now all the people mentioned in those memberships
     $peopleSQL = <<<EOS
-$withTrans, allReg AS (
-    SELECT DISTINCT r.id, r.perid, r.newperid
-    FROM reg r
-    JOIN memLabel m ON (r.memId = m.id)
-    JOIN allTrans t ON (r.create_trans = t.transid OR r.complete_trans = t.transid)
-    WHERE r.conid = ?
-)
-SELECT DISTINCT
-    CASE WHEN r.perid IS NOT NULL THEN CONCAT('p-', p.id) ELSE CONCAT('n-', n.id) END AS pid,
+SELECT DISTINCT CASE WHEN r.perid IS NOT NULL THEN CONCAT('p-', p.id) ELSE CONCAT('n-', n.id) END AS pid,
     r.perid, r.newperid,
     CASE WHEN r.perid IS NOT NULL THEN p.first_name ELSE n.first_name END AS first_name,
     CASE WHEN r.perid IS NOT NULL THEN p.last_name ELSE n.last_name END AS last_name,
@@ -252,13 +211,15 @@ SELECT DISTINCT
     CASE WHEN r.perid IS NOT NULL THEN p.suffix ELSE n.suffix END AS suffix,
     CASE WHEN r.perid IS NOT NULL THEN p.badge_name ELSE n.badge_name END AS badge_name,
     CASE WHEN r.perid IS NOT NULL THEN p.email_addr ELSE n.email_addr END AS email_addr
-FROM allReg r
+FROM reg r
 LEFT OUTER JOIN perinfo p ON (r.perid = p.id)
 LEFT OUTER JOIN newperson n ON (r.newperid = n.id)
+WHERE r.create_trans = ? OR r.complete_trans = ?
 ORDER BY 1
 EOS;
-    $peopleR = dbSafeQuery($peopleSQL, 'iiiiiii', array($conid, $transid, $transid, $conid, $conid, $conid, $conid));
+    $peopleR = dbSafeQuery($peopleSQL, 'ii', array($transid, $transid));
     $people = [];
+    $people[$payorL['pid']] = $payorL;
     while ($peopleL = $peopleR->fetch_assoc()) {
         $people[$peopleL['pid']] = $peopleL;
         if (!in_array($peopleL['email_addr'], $emails))
@@ -277,13 +238,13 @@ EOS;
         $payR = dbSafeQuery($paySQL, 'i', array($transid));
     } else {
         $paySQL = <<<EOS
-$withTrans
-SELECT p.*
-FROM payments p
-JOIN allTrans t ON (p.transid = t.transid)
+SELECT DISTINCT p.*
+FROM reg r
+JOIN payments p ON (r.create_trans = p.transid OR r.complete_trans = p.transid)
+WHERE r.create_trans = ? OR r.complete_trans = ?
 ORDER BY id;
 EOS;
-        $payR = dbSafeQuery($paySQL, 'iiiiii', array($conid, $transid, $transid, $conid, $conid, $conid));
+        $payR = dbSafeQuery($paySQL, 'ii', array($transid, $transid));
     }
     $payments = [];
     while ($payL = $payR->fetch_assoc()) {
@@ -293,16 +254,15 @@ EOS;
 
     // next, get all coupons used
     $couponSQL = <<<EOS
-    $withTrans
     SELECT DISTINCT c.*
-    FROM allTrans at
-    JOIN transaction t ON (t.id = at.transid)
+    FROM reg r
+    JOIN transaction t ON (t.id = r.id)
     JOIN coupon c ON (t.coupon = c.id)
-    WHERE t.coupon IS NOT NULL
+    WHERE r.create_trans = ? OR r.complete_trans = ? AND t.coupon IS NOT NULL 
     ORDER BY id;
 EOS;
 
-    $couponR = dbSafeQuery($couponSQL, 'iiiiii', array($conid, $transid, $transid, $conid, $conid, $conid));
+    $couponR = dbSafeQuery($couponSQL, 'ii', array($transid, $transid, ));
     $coupons = [];
     while ($couponL = $couponR->fetch_assoc()) {
         $coupons[] = $couponL;
@@ -325,6 +285,12 @@ EOS;
 
 // reg_format_receipt - format a receipt in HTML and Text formats
 function reg_format_receipt($data) {
+    $con = get_conf('con');
+    if (array_key_exists('currency', $con)) {
+        $currency = $con['currency'];
+    } else {
+        $currency = 'USD';
+    }
     $curLocale = locale_get_default();
     $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
     // ok, now there is all the data for the receipt
@@ -402,6 +368,20 @@ EOS;
 EOS;
 
             break;
+        case 'regportal':
+            $receipt .= "By: $title_payor_name, Via: Registration Portal, Transaction: $master_tid\n";
+            $receipt_html .= <<<EOS
+    <div class="row">
+        <div class="col-sm-12">
+            By: $payor_name, Via: Registration Portal, Transaction: $master_tid
+        </div>
+    </div>
+EOS;
+            $receipt_tables .= <<<EOS
+<tr><td colspan="3">By: $payor_name, Via: Registration Portal, Transaction: $master_tid</td></tr>
+EOS;
+
+            break;
         case 'vendor':
         case 'artist':
         case 'exhibitor':
@@ -462,15 +442,19 @@ EOS;
     $total = 0;
     $payor_pid = $payor['pid'];
     if (substr($payor_pid, 0, 1) != 'e') {
-        $list = $data['memberships'][$payor_pid];
-        $subtotal = reg_format_mbr($data, $data['people'][$payor_pid], $list, $receipt, $receipt_html, $receipt_tables);
-        $total += $subtotal;
+        foreach ($data['memberships'] as $pid => $list) {
+            if ($payor_pid == $pid) {
+                $list = $data['memberships'][$payor_pid];
+                $subtotal = reg_format_mbr($data, $data['people'][$payor_pid], $list, $receipt, $receipt_html, $receipt_tables);
+                $total += $subtotal;
+            }
+        }
     }
 
     // now all but the payor
     foreach ($data['memberships'] as $pid => $list) {
         if ($payor_pid == $pid)
-            continue;
+        continue;
 
         $subtotal = reg_format_mbr($data, $data['people'][$pid], $list, $receipt, $receipt_html, $receipt_tables);
         $total += $subtotal;
@@ -511,12 +495,12 @@ EOS;
             $spaceDesc = $space['purchased_description'];
             $spaceName = $space['name'];
             $total += $space['purchased_price'];
-            $spacePrice = $dolfmt->formatCurrency((float) $space['purchased_price'], 'USD');
+            $spacePrice = $dolfmt->formatCurrency((float) $space['purchased_price'], $currency);
             $receipt_html .= <<<EOS
     <div class="row">
         <div class="col-sm-1"></div>
         <div class="col-sm-6">$spaceDesc in $spaceName</div>
-        <div class="col-sm-2">$spacePrice</div>
+        <div class="col-sm-2" style="text-align: right;">$spacePrice</div>
     </div>
 EOS;
             $receipt_tables .= "<tr><td></td><td>$spaceDesc in $spaceName</td><td>$spacePrice</td></tr>\n";
@@ -525,12 +509,12 @@ EOS;
 
         if ($region['mailinFee'] > 0 && $exhibitor['mailin'] == 'Y') {
             $total += $region['mailinFee'];
-            $fee = $dolfmt->formatCurrency((float) $region['mailinFee'], 'USD');
+            $fee = $dolfmt->formatCurrency((float) $region['mailinFee'], $currency);
             $receipt_html .= <<<EOS
     <div class="row">
         <div class="col-sm-1"></div>
         <div class="col-sm-6">Mail In Fee</div>
-        <div class="col-sm-2">$fee</div>
+        <div class="col-sm-2" style="text-align: right;">$fee</div>
     </div>
 EOS;
             $receipt_tables .= "<tr><td></td><td>Mail In Fee</td><td>$fee</td></tr>\n";
@@ -539,12 +523,12 @@ EOS;
     }
 
     // now the total due
-    $price = $dolfmt->formatCurrency((float) $total, 'USD');
+    $price = $dolfmt->formatCurrency((float) $total, $currency);
     $receipt .= "\nTotal Due:: $price\n";
     $receipt_html .= <<<EOS
     <div class="row mt-2">
         <div class="col-sm-7">Total Due:</div>
-        <div class="col-sm-2">$price</div>
+        <div class="col-sm-2" style="text-align: right;">$price</div>
     </div>
 EOS;
     $receipt_tables .= <<<EOS
@@ -565,7 +549,7 @@ EOS;
     <div class='row mt-1'>
         <div class='col-sm-1'>Type</div>
         <div class="col-sm-6">Description/Code</div>
-        <div class="col-sm-2">Amount</div>
+        <div class="col-sm-2" style="text-align: right;">Amount</div>
     </div>
 EOS;
     }
@@ -601,13 +585,13 @@ EOS;
             $id = $coupon['id'];
             $discount =  sum_coupon_discount($id, $data['memberships']);
             $payment_total += $discount;
-            $discount = $dolfmt->formatCurrency((float) $discount, 'USD');
+            $discount = $dolfmt->formatCurrency((float) $discount, $currency);
             $receipt .= "Coupon: $name ($code): $discount\n";
             $receipt_html .= <<<EOS
     <div class='row'>
         <div class='col-sm-1'>Coupon</div>
         <div class="col-sm-6">$name ($code)</div>
-        <div class="col-sm-2">$discount</div>
+        <div class="col-sm-2" style="text-align: right;">$discount</div>
     </div>
 EOS;
             $receipt_tables .= <<<EOS
@@ -634,7 +618,7 @@ EOS;
         $url = $pmt['receipt_url'];
 
         $payment_total += $amt;
-        $amt = $dolfmt->formatCurrency((float)$amt, 'USD');
+        $amt = $dolfmt->formatCurrency((float)$amt, $currency);
 
         if ($aprvl != '' && $cc != '')
             $aprvl = " (last 4: $cc, auth: $aprvl)";
@@ -649,7 +633,7 @@ EOS;
     <div class='row'>
         <div class='col-sm-1'>$type</div>
         <div class="col-sm-6">$desc$aprvl</div>
-        <div class="col-sm-2">$amt</div>
+        <div class="col-sm-2" style="text-align: right;">$amt</div>
     </div>
 EOS;
         $receipt_tables .= <<<EOS
@@ -671,12 +655,12 @@ EOS;
     }
 
     if ($payment_total > 0) {
-        $payment_total = $dolfmt->formatCurrency((float) $payment_total, 'USD');
+        $payment_total = $dolfmt->formatCurrency((float) $payment_total, $currency);
         $receipt .= "\nTotal Payments: $payment_total\n";
         $receipt_html .= <<<EOS
     <div class='row'>
         <div class='col-sm-7'>Total Payments</div>
-        <div class="col-sm-2">$payment_total</div>
+        <div class="col-sm-2" style="text-align: right;">$payment_total</div>
     </div>
 EOS;
         $receipt_tables .= <<<EOS
@@ -690,32 +674,30 @@ EOS;
 
     // exhibitor disclaimer
     if (array_key_exists('exhibitor', $data)) {
-        $vc = get_conf('vendor');
-        if (array_key_exists('pay_disclaimer', $vc)) {
-            $vdisc = $vc['pay_disclaimer'];
-            if ($vdisc != '') {
-                $path = "../config/$vdisc";
-                if (!file_exists($path))
-                    $path = "../" . $path;
-                if (!file_exists($path))
-                    $path = '../' . $path;
-                if (file_exists($path)) {
-                    $vdisc = file_get_contents($path);
-                    if ($vdisc) {
-                        $receipt .= "\n\n$vdisc\n";
-                        $receipt_html .= <<<EOS
-<div class='row mt-4'>
+        loadCustomText('exhibitor', 'index', null, true);
+        $portalName = ucfirst($region['portalType']);
+        $disclaimer1 = returnCustomText('invoice/payDisclaimer', 'exhibitor/index/');
+        $disclaimer2 = returnCustomText('invoice/payDisclaimer' . $portalName,'exhibitor/index/');
+        if ($disclaimer1 != '' || $disclaimer2 != '') {
+            $textDisclaimer = $disclaimer1;
+            $htmlDisclaimer = $disclaimer1;
+            if ($disclaimer1 != '' && $disclaimer2 != '') {
+                $textDisclaimer .= PHP_EOL;
+                $htmlDisclaimer .= "<br/>\n";
+            }
+            $textDisclaimer .= $disclaimer2;
+            $htmlDisclaimer .= $disclaimer2;
+            $receipt .= "\n\n$textDisclaimer\n";
+            $receipt_html .= <<<EOS
+    <div class='row mt-4'>
         <div class='col-sm-12'>
-            <p>$vdisc</p>
+           $htmlDisclaimer
         </div>
     </div>
 EOS;
-                        $receipt_tables .= <<<EOS
-<tr><td colspan="3"><p>$vdisc</p></td></tr>
+            $receipt_tables .= <<<EOS
+<tr><td colspan="3"><p>$textDisclaimer</p></td></tr>
 EOS;
-                    }
-                }
-            }
         }
     }
 
@@ -756,6 +738,12 @@ function sum_coupon_discount($id, $memberships) {
 
 // format a member block for the receipt
 function reg_format_mbr($data, $person, $list, &$receipt, &$receipt_html, &$receipt_tables) {
+    $con = get_conf('con');
+    if (array_key_exists('currency', $con)) {
+        $currency = $con['currency'];
+    } else {
+        $currency = 'USD';
+    }
     $curLocale = locale_get_default();
     $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
     // first the name:
@@ -785,7 +773,7 @@ EOS;
     $subtotal = 0;
     // loop over their memberships
     foreach ($list AS $row) {
-        $price = $dolfmt->formatCurrency((float) $row['price'], 'USD');
+        $price = $dolfmt->formatCurrency((float) $row['price'], $currency);
         $label = $row['label'];
         $id = $row['id'];
         $receipt .= "$id, $label: $price\n";
@@ -793,7 +781,7 @@ EOS;
     <div class="row">
         <div class="col-sm-1">$id</div>
         <div class="col-sm-6">$label</div>
-        <div class="col-sm-2">$price</div>
+        <div class="col-sm-2" style="text-align: right;">$price</div>
     </div>
 EOS;
         $receipt_tables .= <<<EOS
@@ -802,13 +790,13 @@ EOS;
 
         $subtotal += $row['price'];
     }
-    $price = $dolfmt->formatCurrency((float) $subtotal, 'USD');
+    $price = $dolfmt->formatCurrency((float) $subtotal, $currency);
     $receipt .= "     Subtotal: $price\n";
     $receipt_html .= <<<EOS
     <div class="row">
         <div class="col-sm-1"></div>
         <div class="col-sm-6">Subtotal</div>
-        <div class="col-sm-2">$price</div>
+        <div class="col-sm-2" style="text-align: right;">$price</div>
     </div>
 EOS;
     $receipt_tables .= <<<EOS

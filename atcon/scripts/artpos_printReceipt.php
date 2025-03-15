@@ -32,6 +32,11 @@ if (!check_atcon('artsales', $conid)) {
     exit();
 }
 
+if (array_key_exists('currency', $con)) {
+    $currency = $con['currency'];
+} else {
+    $currency = 'USD';
+}
 // printReceipt: print the text receipt "text", if printer name starts with 0, then just log the receipt
 $header = $_POST['header'];
 $person = $_POST['person'];
@@ -79,22 +84,22 @@ foreach ($arows as $arow) {
     // Material
     $receipt .= '     Material: ' . $arow['material'] . PHP_EOL;
     if ($arow['type'] == 'print') {
-        $receipt .= '     Quantity: ' . $arow['purQuantity'] . ' at ' . $dolfmt->formatCurrency((float) $arow['sale_price'], 'USD') . ' each' . PHP_EOL;
+        $receipt .= '     Quantity: ' . $arow['purQuantity'] . ' at ' . $dolfmt->formatCurrency((float) $arow['sale_price'], $currency) . ' each' . PHP_EOL;
         $arow['final_price'] = $arow['sale_price'] * $arow['purQuantity'];
     }
     // price
-    $receipt .= $arow['priceType'] . ' Price: ' . $dolfmt->formatCurrency((float) $arow['final_price'], 'USD') . PHP_EOL . PHP_EOL;
+    $receipt .= $arow['priceType'] . ' Price: ' . $dolfmt->formatCurrency((float) $arow['final_price'], $currency) . PHP_EOL . PHP_EOL;
 
     $total_due += $arow['final_price'];
 }
-$receipt .= "Total Due:   " . $dolfmt->formatCurrency((float) $total_due, 'USD') . "\n\nPayment   Amount Description/Code\n";
+$receipt .= "Total Due:   " . $dolfmt->formatCurrency((float) $total_due, $currency) . "\n\nPayment   Amount Description/Code\n";
 $total_pmt = 0;
 
 foreach ($pmtrows as $pmtrow) {
     $type = $pmtrow['type'];
     $amtlen = 20 - mb_strlen($type);
 
-    $line = sprintf("%s%" . $amtlen . "s %s", $type, $dolfmt->formatCurrency($pmtrow['amt'], 'USD'), $pmtrow['desc']);
+    $line = sprintf("%s%" . $amtlen . "s %s", $type, $dolfmt->formatCurrency($pmtrow['amt'], $currency), $pmtrow['desc']);
     if ($type == 'check') {
         $line .= ' /' . $pmtrow['checkno'];
     }
@@ -105,11 +110,11 @@ foreach ($pmtrows as $pmtrow) {
     $total_pmt += $pmtrow['amt'];
 }
 $endtext = "\nThank you for your purchase. All sales are final. There are no refunds or exchanges.\n";
-$receipt .= "         ----------\n" . sprintf("Total%15s Total Amount Tendered", $dolfmt->formatCurrency($total_pmt, 'USD')) . "\n$footer\n" . "\n" . $endtext . "\n\n\n";
+$receipt .= "         ----------\n" . sprintf("Total%15s Total Amount Tendered", $dolfmt->formatCurrency($total_pmt, $currency)) . "\n$footer\n" . "\n" . $endtext . "\n\n\n";
 
 if ($receipt_type == 'print') {
-    if (isset($_SESSION['receiptPrinter'])) {
-        $printer = $_SESSION['receiptPrinter'];
+    $printer = getSessionVar('receiptPrinter');
+    if ($printer && $printer['name'] != 'None') {
         $result_code = print_receipt($printer, $receipt);
     } else {
         web_error_log($receipt);
@@ -142,7 +147,7 @@ if ($receipt_type == 'email') {
                     $error_code = null;
                 }
                 if (array_key_exists('email_error', $return_arr)) {
-                    $response['error'] = 'Unable to send receipt email, error: ' . $return_arr['email_error'] . ', Code: $error-code';
+                    $response['error'] = 'Unable to send receipt email, error: ' . $return_arr['email_error'] . ', Code: $error_code';
                 } else {
                     if (array_key_exists('message', $response))
                         $response['message'] .= "<br/>Receipt sent to $email_addr";

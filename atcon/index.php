@@ -8,43 +8,42 @@ $conid=$con['id'];
 global $perms;
 $perms = array();
 
-if(!isset($_SESSION['userhash'])) {
+if(!isSessionVar('userhash')) {
     if(isset($_POST['user']) && isset($_POST['passwd'])) {
         $access = login($_POST['user'], $_POST['passwd'], $conid);
         if ($access['success'] == 1) {
             $perms = $access['auth'];
-            $_SESSION['user']=$_POST['user'];
-            $_SESSION['first_name'] = $access['first_name'];
+            setSessionVar('user', $_POST['user']);
+            setSessionVar('first_name', $access['first_name']);
             // printers passed as display_name:::server:-:printer:-:printer type
             $printers = ['badge', 'receipt', 'generic'];
             foreach ($printers as $prt) {
-                if (array_key_exists($prt . '_printer', $_POST)) {
+                $printer = array(
+                    'name' => 'None',
+                    'host' => '',
+                    'queue' => '',
+                    'type' => '',
+                    'code' => 'UTF-8',
+                );
+                if (array_key_exists($prt . '_printer', $_POST) && $_POST[$prt . '_printer'] != '') {
                     $pr = $_POST[$prt . '_printer'];
-                    if ($pr != '') {
-                        $printer = explode(':::', $pr);
-                        $server = explode(':-:', $printer[1]);
-                        $printer = array($printer[0], $server[0], $server[1], $server[2], $server[3]);
-                        $_SESSION[$prt . 'Printer'] = $printer;
-                    } else {
-                        $printer = array('None', '', '', '', 'UTF-8');
-                        $_SESSION[$prt . 'Printer'] = $printer;
-                    }
-                    $response[$prt] = $printer[0];
-                } else {
-                    $_SESSION[$prt . 'Printer'] = array('None', '', '', '', 'UTF-8');
-                    $response[$prt] = 'None';
+                    $printerTop = explode(':::', $pr);
+                    $server = explode(':-:', $printerTop[1]);
+                    $printer = array (
+                        'name' => $printerTop[0],
+                        'host' => $server[0],
+                        'queue' => $server[1],
+                        'type' => $server[2],
+                        'code' => $server[3],
+                    );
                 }
+                setSessionVar($prt . 'Printer', $printer);
+                $response[$prt] = $printer['name'];
             }
-
-            $_SESSION['userhash'] = $access['userhash'];
+            setSessionVar('userhash', $access['userhash']);
         }
     } else {
-        unset($_SESSION['user']);
-        unset($_SESSION['userhash']);
-        unset($_SESSION['badgePrinter']);
-        unset($_SESSION['reeiptPrinter']);
-        unset($_SESSION['genericPrinter']);
-        unset($_SESSION['perms']);
+        clearSession();
     }
 } else {
     check_atcon('login', $conid);
@@ -58,16 +57,11 @@ page_init($page, 'index',
     );
 
 if(isset($_GET['action']) && $_GET['action']=='logout') {
-    unset($_SESSION['user']);
-    unset($_SESSION['userhash']);
-    unset($_SESSION['badgePrinter']);
-    unset($_SESSION['reeiptPrinter']);
-    unset($_SESSION['genericPrinter']);
-    unset($_SESSION['perms']);
+    clearSession();
     echo "<script>window.location.href=window.location.pathname</script>";
 }
 
-if(!isset($_SESSION['user'])) {
+if(!isSessionVar('user')) {
     // get printer list for this location
 ?>
 <div class="container-fluid mt-4">
@@ -99,7 +93,7 @@ if(!isset($_SESSION['user'])) {
 <?php
 
 } else if(isset($_GET['action']) && $_GET['action']=='change_passwd') {?>
-    <input type="hidden" name='idval' id='idval' value="<?php echo $_SESSION['userhash']; ?>"
+    <input type="hidden" name='idval' id='idval' value="<?php echo getSessionVar('userhash'); ?>"
     <div class='container-fluid mt-4'>
         <div class='row mt-4'>
             <div class='col-sm-6'>

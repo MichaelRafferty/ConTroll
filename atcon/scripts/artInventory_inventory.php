@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . "/../lib/base.php";
 
-$response = array("post" => $_POST, "get" => $_GET, "session" => $_SESSION);
+$response = array("post" => $_POST, "get" => $_GET, "session" => getAllSessionVars());
 
 $con = get_con();
 $conid=$con['id'];
@@ -17,7 +17,7 @@ if($check_auth == false) {
 if(!isset($_POST['actions'])) {
     ajaxSuccess(array('error' => "No Actions"));
 }
-$actions = json_decode($_POST['actions']);
+$actions = json_decode($_POST['actions'], true);
 $response = array();
 $response['actions'] = $actions;
 $response['log'] = array();

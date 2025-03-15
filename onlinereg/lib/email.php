@@ -1,14 +1,21 @@
 <?php
 require_once(__DIR__ . "/../../lib/db_functions.php");
 
-function getEmailBody($transid) : string
+function getEmailBody($transid, $totalDiscount) : string
 {
     $condata = get_con();
     $ini = get_conf('reg');
     $con = get_conf('con');
 
+    if (array_key_exists('currency', $con)) {
+        $currency = $con['currency'];
+    } else {
+        $currency = 'USD';
+    }
+    $dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
+
     $ownerQ = <<<EOS
-SELECT NP.first_name, NP.last_name, P.receipt_id as payid, T.complete_date, T.couponDiscount, T.paid, P.receipt_url AS url, C.code, C.name
+SELECT NP.first_name, NP.last_name, P.receipt_id as payid, T.complete_date, T.couponDiscountCart, T.paid, P.receipt_url AS url, C.code, C.name
 FROM transaction T
 JOIN newperson NP ON (NP.id=T.newperid)
 JOIN payments P ON (P.transid=T.id)
@@ -29,12 +36,12 @@ EOS;
 
     if ($owner['code'] != null) {
         $body .= "A coupon of type " . $owner['code'] . " (" . $owner['name'] . ") was applied to this transaction";
-        if ($owner['couponDiscount'] > 0)
-            $body .= " for a savings of " . $owner['couponDiscount'];
+        if ($totalDiscount > 0)
+            $body .= " for a savings of " . $dolfmt->formatCurrency((float) $totalDiscount, $currency);
         $body .= "\n";
     }
 
-    $body .= "Your card was charged " . $owner['paid'] . " for this transaction" .
+    $body .= "Your card was charged " . $dolfmt->formatCurrency((float) $owner['paid'], $currency) . " for this transaction" .
         "\n\nMemberships have been created for:\n\n";
 
     $badgeQ = <<<EOS
@@ -71,11 +78,18 @@ EOS;
     return $body;
 }
 
-function getNoChargeEmailBody($results) : string
+function getNoChargeEmailBody($results, $totalDiscount) : string
 {
     $condata = get_con();
     $ini = get_conf('reg');
     $con = get_conf('con');
+
+    if (array_key_exists('currency', $con)) {
+        $currency = $con['currency'];
+    } else {
+        $currency = 'USD';
+    }
+    $dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
 
     //  contents of results
     //  'transid' => $transid,
@@ -89,7 +103,7 @@ function getNoChargeEmailBody($results) : string
 
     $transid = $results['transid'];
     $ownerQ = <<<EOS
-SELECT NP.first_name, NP.last_name, T.complete_date, T.couponDiscount, C.code, C.name
+SELECT NP.first_name, NP.last_name, T.complete_date, T.couponDiscountCart, C.code, C.name
 FROM transaction T
 JOIN newperson NP ON (NP.id=T.newperid)
 LEFT OUTER JOIN coupon C ON (T.coupon = C.id)
@@ -108,8 +122,8 @@ EOS;
     $body .= "Your Transaction number is $transid\n";
     if ($owner['code'] != null) {
         $body .= "A coupon of type " . $owner['code'] . " (" . $owner['name'] . ") was applied to this transaction";
-        if ($owner['couponDiscount'] > 0)
-            $body .= " for a savings of " . $owner['couponDiscount'];
+        if ($totalDiscount > 0)
+            $body .= " for a savings of " . $dolfmt->formatCurrency((float) $totalDiscount, $currency);
         $body .= "\n";
     }
 

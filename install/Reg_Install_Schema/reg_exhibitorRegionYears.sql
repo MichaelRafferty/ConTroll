@@ -2,7 +2,7 @@
 --
 -- Host: localhost    Database: reg
 -- ------------------------------------------------------
--- Server version	8.0.32
+-- Server version	8.0.40
 
 
 --
@@ -20,6 +20,7 @@ CREATE TABLE `exhibitorRegionYears` (
   `agentNewperson` int DEFAULT NULL,
   `agentRequest` varchar(256) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `approval` enum('none','requested','approved','denied','hide') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'none',
+  `specialRequests` text COLLATE utf8mb4_general_ci,
   `updateDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updateBy` int NOT NULL,
   `sortorder` int NOT NULL DEFAULT '0',

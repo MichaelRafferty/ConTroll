@@ -4,6 +4,12 @@ require_once (__DIR__ . '/../Composer/vendor/autoload.php');
 require_once ("pdfFunctions.php");
 
 function pdfPrintShopPriceSheets($regionYearId, $region, $response) {
+    $con = get_conf('con');
+    if (array_key_exists('currency', $con)) {
+        $currency = $con['currency'];
+    } else {
+        $currency = 'USD';
+    }
 // local constants for the sheets
     $margin = 0.25;
     $numcols = 3;
@@ -27,7 +33,7 @@ ORDER BY aI.item_key;
 EOS;
 
     $itemR = dbSafeQuery($itemSQL, 'ii', array($regionYearId, $region));
-    if ($itemR == false) {
+    if ($itemR === false) {
         $response['error'] = "Error retrieving art items for print show, please seek assistance";
         echo "Error retrieving art items for print show, please seek assistance\n";
         return $response;
@@ -162,7 +168,7 @@ EOS;
 
             printXY($h + 0.1 + (0.5 * $isize), $v + $dataOffset, $copy);
             printXY($h + 0.1 + (0.6 * $isize), $v + $dataOffset, $print['original_qty']);
-            $priceFmt = $dolfmt->formatCurrency((float)$print['sale_price'], 'USD');
+            $priceFmt = $dolfmt->formatCurrency((float)$print['sale_price'], $currency);
             $pricewidth = $pdf->getStringWidth($priceFmt);
             printXY($h + (0.97 * $isize) - $pricewidth, $v + $dataOffset, $priceFmt);
 
@@ -186,6 +192,12 @@ EOS;
 }
 
 function pdfPrintBidSheets($regionYearId, $region, $response) {
+    $con = get_conf('con');
+    if (array_key_exists('currency', $con)) {
+        $currency = $con['currency'];
+    } else {
+        $currency = 'USD';
+    }
     // get parameters for sizing
     $con = get_con();
     $conname = $con['label'];
@@ -274,7 +286,7 @@ ORDER BY aI.item_key;
 EOS;
 
     $itemR = dbSafeQuery($itemSQL, 'ii', array($regionYearId, $region));
-    if ($itemR == false) {
+    if ($itemR === false) {
         $response['error'] = 'Error retrieving art items for bid sheets, please seek assistance';
         echo "Error retrieving art items for bid sheets, please seek assistance\n";
         return $response;
@@ -388,7 +400,7 @@ EOS;
         if ($art['type'] == 'nfs') {
             $priceFmt = 'N/A';
         } else {
-            $priceFmt = $dolfmt->formatCurrency((float)$art['min_price'], 'USD');
+            $priceFmt = $dolfmt->formatCurrency((float)$art['min_price'], $currency);
         }
         $pricewidth = $pdf->getStringWidth($priceFmt);
         printXY($h + (0.97 * $isize) - $pricewidth, $v + $priceoffset, $priceFmt);
@@ -403,7 +415,7 @@ EOS;
 
         $price = $art['sale_price'];
         if ($price > 0 && $art['type'] != 'nfs') {
-            $priceFmt = $dolfmt->formatCurrency((float)$art['sale_price'], 'USD');
+            $priceFmt = $dolfmt->formatCurrency((float)$art['sale_price'], $currency);
         } else {
             $priceFmt = "N/A";
         }
@@ -485,6 +497,12 @@ EOS;
 // pdfArtistControlSheet.php - creates the control sheet as a web page for printing
 
 function pdfArtistControlSheet($regionYearId, $region, $response, $printContactInfo = false) {
+    $con = get_conf('con');
+    if (array_key_exists('currency', $con)) {
+        $currency = $con['currency'];
+    } else {
+        $currency = 'USD';
+    }
     // local constants for the control sheet
     $margin = 0.25;
     $indent = 0.1;
@@ -506,7 +524,7 @@ WHERE exRY.exhibitorYearId=? AND exRY.exhibitsRegionYearId = ?;
 EOS;
 
     $artistR = dbSafeQuery($artistQ, 'ii', array($regionYearId, $region));
-    if ($artistR == false || $artistR->num_rows == 0) {
+    if ($artistR === false || $artistR->num_rows == 0) {
         $response['error'] = 'Error retrieving Artist information for control sheet, please seek assistance';
         echo "Error retrieving Artist information for control sheet, please seek assistance\n";
         return $response;
@@ -760,7 +778,7 @@ ORDER BY aI.item_key
 EOS;
 
     $itemR = dbSafeQuery($itemSQL, 'ii', array($regionYearId, $region));
-    if ($itemR == false) {
+    if ($itemR === false) {
         $response['error'] = 'Error retrieving art items for control sheet, please seek assistance';
         echo "Error retrieving art items for control sheet, please seek assistance\n";
         return $response;
@@ -892,9 +910,9 @@ EOS;
             $y = mprintXY($cM, $v, $wM, $artItem['material']);
             if ($y > $maxY) $maxY = $y;
             if ($artItem['min_price'] && $artItem['type'] != 'print')
-                rightPrintXY($cMin, $v, $wMin, $dolfmt->formatCurrency((float)$artItem['min_price'], 'USD'));
+                rightPrintXY($cMin, $v, $wMin, $dolfmt->formatCurrency((float)$artItem['min_price'], $currency));
             if ($artItem['sale_price'] && $artItem['type'] != 'nfs')
-                rightPrintXY($cSale, $v, $wSale, $dolfmt->formatCurrency((float)$artItem['sale_price'], 'USD'));
+                rightPrintXY($cSale, $v, $wSale, $dolfmt->formatCurrency((float)$artItem['sale_price'], $currency));
             if ($artItem['original_qty'] > 0)
                 rightPrintXY($cOrig, $v, $wOrig, $artItem['original_qty']);
             if ($artItem['quantity'] > 0)
@@ -904,7 +922,7 @@ EOS;
             if ($y > $maxY) $maxY = $y;
             popFont();
             if ($artItem['final_price'])
-                rightPrintXY($cFinal, $v, $wFinal, $dolfmt->formatCurrency((float)$artItem['final_price'], 'USD'));
+                rightPrintXY($cFinal, $v, $wFinal, $dolfmt->formatCurrency((float)$artItem['final_price'], $currency));
             $y = mprintXY($cWin, $v, $wWin, $winnerName);
             if ($y > $maxY) $maxY = $y;
             if ($printContactInfo === true) {

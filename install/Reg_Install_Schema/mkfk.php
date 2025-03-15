@@ -22,7 +22,9 @@ foreach ($dir as $entry) {
     if ($localname == 'reg_routines') {
         strip_creator($localname, $lines);
     } else if (str_starts_with($fname, 'data_')) {
-        clean_data($localname, $lines);
+        if ($fname != 'data_zzTxt.sal') {
+            clean_data($localname, $lines);
+        }
     } else {
         strip_fk($localname, $lines);
     }
@@ -138,11 +140,12 @@ function strip_creator($fname, $lines) {
             $line = preg_replace('/^\/\*!\d+ (.*) *\*\/;$/', '$1;', $line);
         } else if (str_contains($line, 'DROP PROCEDURE IF EXISTS')) { // take off comment from drop view
             $line = preg_replace('/^\/\*!\d+ (.*) *\*\/;$/', '$1;', $line);
-        } else  if (preg_match("/CREATE DEFINER=/i", $line)) { // create function or proc
+        } else if (preg_match('/CREATE.* DEFINER=.* TRIGGER/i', $line)) { // create trigger
+            $line = preg_replace('/DEFINER=[^ \*\/]*/i', 'DEFINER=CURRENT_USER ', $line);
+        } else if (preg_match("/CREATE DEFINER=/i", $line)) { // create proc or func
             $line = preg_replace("/DEFINER=[\"'`][^\"'`]*[\"'`]@[\"'`][^\"'`]*[\"'`] */i", "", $line);
+            $line = preg_replace('/"/', '', $line);
             $line .= "\nSQL SECURITY INVOKER";
-        } else if (preg_match("/CREATE.* DEFINER=.* TRIGGER/i", $line)) { // create trigger
-            $line = preg_replace("/DEFINER=[^ \*\/]*/i", "DEFINER=CURRENT_USER ", $line);
         } else if (str_contains($line, ' VIEW')) {
             $line = preg_replace('/^\/\*!\d+ (.*) *\*\/;$/', '$1;', $line);
         } else if (str_starts_with($line, '/*!')) // strip comments

@@ -30,6 +30,12 @@ if (!check_atcon($method, $conid)) {
     exit();
 }
 
+if (array_key_exists('currency', $con)) {
+    $currency = $con['currency'];
+} else {
+    $currency = 'USD';
+}
+
 // printTest: print a test page/badge to check printer format/issues
 // server: print server name
 // printer: printer queue name
@@ -57,10 +63,10 @@ if (array_key_exists('codepage', $_POST)) {
     ajaxError('No codepage specified');
 }
 
-$p = ["Test", $server, $printer, $codepage];
+$p = ['name' => "Test", 'host' => $server, 'queue' =>  $printer, 'type' => $type, 'code' => $codepage];
 $curLocale = locale_get_default();
 $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
-$dolamt = $dolfmt->formatCurrency(123456.78, 'USD');
+$dolamt = $dolfmt->formatCurrency(123456.78, $currency);
 
 switch($type) {
     case 'receipt':

@@ -2,7 +2,7 @@
 --
 -- Host: localhost    Database: reg
 -- ------------------------------------------------------
--- Server version	8.0.32
+-- Server version	8.0.40
 
 
 --
@@ -21,6 +21,7 @@ CREATE TABLE `newperson` (
   `phone` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `badge_name` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `legalName` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `pronouns` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `address` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `addr_2` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `city` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -31,9 +32,16 @@ CREATE TABLE `newperson` (
   `transid` int DEFAULT NULL,
   `share_reg_ok` enum('N','Y') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `contact_ok` enum('N','Y') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `managedBy` int DEFAULT NULL,
+  `managedByNew` int DEFAULT NULL,
+  `updatedBy` int DEFAULT NULL,
+  `lastVerified` datetime DEFAULT NULL,
+  `managedReason` varchar(16) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `newperson_transid_fk` (`transid`),
-  KEY `newperson_perid_fk` (`perid`)
+  KEY `newperson_perid_fk` (`perid`),
+  KEY `np_managedBy_fk` (`managedBy`),
+  KEY `np_managedByNew_fk` (`managedByNew`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 

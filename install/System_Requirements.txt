@@ -10,6 +10,7 @@ System Requirements for Reg
         intl
         json
         mbstring
+        mcrypt
         mysqli (8.x or higher)
         Phar
         session
@@ -22,8 +23,8 @@ System Requirements for Reg
     Apache: cgi-fpm
     Caddy
 
-4.  For Reg_Control
-    Google Client APIs for verifying identity (login)
+4.  For controll (back end)
+    Google Client APIs for verifying identity (login) [Note: soon to be replaced with League Oauth Client used by portal
 
 5.  For Credit Card providers
     The top level lib directory has a PHP file cc__load_methods.php that calls the appropriate provider for credit cards based on the confiuration file.
@@ -40,8 +41,8 @@ System Requirements for Reg
     The tob level lib directory has a PHP file email__load_methods.php that calls the appropriate provider based on the configuration file.
     The following email interfaces are provided:
         email_mta.php: Local host MTA via the PHP built-in function mail(). NOTE: this only support text email, to support text and html configure symphony for mta access)
-        email_awsses.php: Uses the Amazon Simple Email Service API to send emails via Amazon SES
-        email_symphony.php: Uses the Sympony add-on to PHP to talk to multiple typs of transports including the local mta.
+        email_awsses.php: Uses the Amazon Simple Email Service API to send emails via Amazon SES (This is recommended if your local MTA is rate limited)
+        email_symphony.php: Uses the Sympony add-on to PHP to talk to multiple typs of transports including the local mta. (This is the recommended method)
         email_file.php: test harness that writes to a file in a path specified in the configuration file.  No actual email is sent.
 
 7. Composer:

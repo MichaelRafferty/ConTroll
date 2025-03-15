@@ -1,8 +1,7 @@
 <?php
 
 require("lib/base.php");
-
-if (!isset($_SESSION['user'])) {
+if (!isSessionVar('user')) {
     header("Location: /index.php");
     exit(0);
 }
@@ -20,8 +19,7 @@ if (!check_atcon('artinventory', $conid)) {
 
 $cdn = getTabulatorIncludes();
 page_init($page, $tab,
-    /* css */ array($cdn['tabcss'], $cdn['tabbs5'],
-		    'css/atcon.css','css/registration.css'),
+    /* css */ array($cdn['tabcss'], $cdn['tabbs5']),
     /* js  */ array( //$cdn['luxon'],
                     $cdn['tabjs'],'js/artInventory.js')
     );
@@ -70,12 +68,12 @@ $setRegion = false;
 if(($regionR->num_rows==1) && ($region=='')) { $setRegion = true; }
 
 /** /
-var_dump($_SESSION);
+var_dump(getAllSessionVars());
 echo $conid;
 /**/
 
 ?>
-<div id="whoami" hidden><?php echo $_SESSION['user'];?></div>
+<div id="whoami" hidden><?php getSessionVar('user');?></div>
 <div id="main">
     <ul class='nav nav-tabs mb-3' id='region-tabs' role='tablist'>
         <?php

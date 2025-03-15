@@ -18,7 +18,9 @@ function draw_exhibitorReceiptModal($portalType = '')
                 </div>
                 <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
                     <div class='container-fluid'>
+                        <?php outputCustomText('receipt/top'); ?>
                         <div id="receiptHtml"></div>
+                        <?php outputCustomText('receipt/bottom'); ?>
                         <div class='row' id='receipt_message_div'></div>
                     </div>
                 </div>
