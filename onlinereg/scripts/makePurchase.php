@@ -334,11 +334,11 @@ $results = array(
 //log requested badges
 logWrite(array('con'=>$condata['name'], 'trans'=>$transid, 'results'=>$results, 'request'=>$badges));
 if ($total > 0) {
-    $email = $purchaseform['cc_email'];
-    $phone = '';
-    if ($email == '/r')
-        $email = '';
-    $rtn = cc_charge_purchase($results, $email, $phone, true);
+    $buyer['email'] = $purchaseform['cc_email'];
+    $buyer['phone'] = '';
+    $buyer['country'] = '';
+
+    $rtn = cc_charge_purchase($results, $buyer, true);
     if ($rtn === null) {
         // note there is no reason cc_charge_purchase will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
         logWrite(array('con'=>$condata['name'], 'trans'=>$transid, 'error' => 'Credit card transaction not approved'));

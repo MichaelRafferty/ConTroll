@@ -129,7 +129,9 @@ $coupon = null;
 $counts = null;
 $rows_upd = 0;
 $newPlanId = null;
-$email = $info['email_addr'];
+$buyer['email'] = $info['email_addr'];
+$buyer['phone'] = $info['phone'];
+$buyer['country'] = $info['country'];
 $phone = $info['phone'];
 
 if ($otherPay == 0) { // this is a plan payment or badge purchase payment
@@ -262,7 +264,7 @@ $rows_upd += dbSafeCmd($upT, 'ddddi', array($totalAmountDue, $totalAmountDue, $t
 
 // end compute
 if ($amount > 0) {
-    $rtn = cc_charge_purchase($results, $email, $phone, true);
+    $rtn = cc_charge_purchase($results, $buyer, true);
     if ($rtn == null) {
         // note there is no reason cc_charge_purchase will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
         logWrite(array('con' => $condata['name'], 'trans' => $transId, 'error' => 'Credit card transaction not approved'));

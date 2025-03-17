@@ -111,7 +111,7 @@ use Square\Types\OrderLineItemDiscountType;
 
 // charge the purchase making a customer, order, and payment
 //TODO Need to add the tax section to SQUARE, need to lookup how to do this in the API, right now it expects tax to be 0 passed in.
-function cc_charge_purchase($results, $email, $phone, $useLogWrite=false) {
+function cc_charge_purchase($results, $buyer, $useLogWrite=false) {
     $cc = get_conf('cc');
     $con = get_conf('con');
     $debug = get_conf('debug');
@@ -444,23 +444,32 @@ function cc_charge_purchase($results, $email, $phone, $useLogWrite=false) {
             web_error_log("CALLED WITH " . $results['total']);
         }
     }
-    $pbody = new CreatePaymentRequest([
+    // sanitize the email address to avoid empty and refused
+    if ($buyer['email'] == '/r' || $buyer['email'] == '')
+        $buyer['email'] = null;
+    if ($buyer['phone'] == '/r' || $buyer['phone'] == '')
+        $buyer['phone'] = null;
+
+    $pbodyArgs = array(
         'idempotencyKey' => guidv4(),
         'sourceId' => $results['nonce'],
         'amountMoney' => new Money([
-            'amount' => $results['total'] * 100,
-            'currency' => $currency,
-            'orderId' => $order->getId(),
-        ]),
+                                       'amount' => $results['total'] * 100,
+                                       'currency' => $currency,
+                                       'orderId' => $order->getId(),
+                                   ]),
         'autocomplete' => true,
         'customerId' => $order->getCustomerId(),
         'locationId' => $order->getLocationId(),
         'referenceId' => $order->getReferenceId(),
-        'note' => 'Online payment from ' . $source,
-        'buyerEmailAddress' => $email,
-        'buyerPhoneNumber' => $phone,
-    ]);
+        'note' => 'Online payment from ' . $source
+    );
+    if ($buyer['email'] != '')
+        $pbodyArg['buyerEmailAddress'] = $buyer['email'];
+    if ($buyer['phone'] != '')
+        $pbodyArgs['buyerPhoneNumber'] = phoneNumberNormalize($buyer);
 
+    $pbody = new CreatePaymentRequest($pbodyArgs);
     if ($squareDebug) {
         if ($useLogWrite) {
             logWrite(array ('payment' => $pbody));

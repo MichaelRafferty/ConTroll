@@ -198,6 +198,7 @@ $buyer['state'] = $_POST['cc_state'];
 $buyer['zip'] = $_POST['cc_zip'];
 $buyer['country'] = $_POST['cc_country'];
 $buyer['email'] = $_POST['cc_email'];
+$buyer['phone'] = $_POST['cc_phone'];
 
 $membership_fields = array('fname' => 1, 'mname' => 0, 'lname' => 1, 'suffix' => 0, 'legalname' => 0, 'addr' => 1, 'addr2' => 0, 'city' => 1, 'state' => 1, 'zip' => 1,
     'country' => 1, 'email' => 1, 'phone' => 0, 'badgename' => 0);
@@ -454,7 +455,7 @@ logWrite(array('Title' => 'Pre cc_charge_purchase', 'con' => $conid, $portalName
     $results, 'request'
     => $badges));
 
-$rtn = cc_charge_purchase($results, $buyer['email'], '', true);
+$rtn = cc_charge_purchase($results, $buyer, true);
 if ($rtn === null) {
     ajaxSuccess(array('status' => 'error', 'data' => 'Credit card not approved'));
     exit();

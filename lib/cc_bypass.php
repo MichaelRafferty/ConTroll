@@ -21,7 +21,7 @@ EOS;
     return $html;
 };
 
-function cc_charge_purchase($results, $email, $phone, $useLogWrite=false) {
+function cc_charge_purchase($results, $buyer, $useLogWrite=false) {
     $loginPerid = getSessionVar('user_perid');
     if ($loginPerid == null) {
         $userType = getSessionVar('idType');
