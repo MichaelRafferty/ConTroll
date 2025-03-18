@@ -205,6 +205,14 @@ class PosCart {
         return this.#cartPerinfo[index].fullName;
     }
 
+    getEmail(index) {
+        return this.#cartPerinfo[index].email_addr;
+    }
+
+    getPhone(index) {
+        return this.#cartPerinfo[index].phone;
+    }
+
     getRegFullName(perid) {
         var index = this.#cartPerinfoMap.get(perid);
         return this.#cartPerinfo[index].fullName;
@@ -1480,10 +1488,5 @@ class PosCart {
         params.regId = printrow.regid;
         params.printCount = printrow.printcount;
         return params;
-    }
-
-    // getEmail: return the email address of an entry
-    getEmail(index) {
-        return this.#cartPerinfo[index].email_addr;
     }
 }
