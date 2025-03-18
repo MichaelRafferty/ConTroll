@@ -316,8 +316,19 @@ class PosCart {
         var pindex = this.#cartPerinfo.length;
         if (first)
             this.#cartPerinfo.unshift(make_copy(p));
-        else
-            this.#cartPerinfo.push(make_copy(p));
+        else {
+            // see if this person is the manager of anyone in the cart
+            var added = false;
+            for (var i = 0; i < this.#cartPerinfo.length; i++) {
+                if (this.#cartPerinfo[i].managedBy == p.perid) {
+                    this.#cartPerinfo.unshift(make_copy(p));
+                    added = true;
+                    break;
+                }
+            }
+            if (!added)
+                this.#cartPerinfo.push(make_copy(p));
+        }
         this.#cartPerinfo[pindex].index = pindex;
         this.#cartPerinfoMap.set(this.#cartPerinfo[pindex].perid, pindex);
         var mrows = p.memberships;
