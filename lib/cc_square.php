@@ -466,8 +466,11 @@ function cc_charge_purchase($results, $buyer, $useLogWrite=false) {
     );
     if ($buyer['email'] != '')
         $pbodyArg['buyerEmailAddress'] = $buyer['email'];
-    if ($buyer['phone'] != '')
-        $pbodyArgs['buyerPhoneNumber'] = phoneNumberNormalize($buyer);
+    if ($buyer['phone'] != '') {
+        $phone = phoneNumberNormalize($buyer);
+        if ($phone != '')
+            $pbodyArgs['buyerPhoneNumber'] = $phone;
+    }
 
     $pbody = new CreatePaymentRequest($pbodyArgs);
     if ($squareDebug) {

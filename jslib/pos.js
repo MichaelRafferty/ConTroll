@@ -636,7 +636,7 @@ class Pos {
                     }
                     perid = _this.#result_perinfo[prow].perid;
                     if (cart.notinCart(perid)) {
-                        cart.add(_this.#result_perinfo[prow]);
+                        cart.add(_this.#result_perinfo[prow], index == _this.#result_perinfo[prow].perid);
                     }
                 }
             });
