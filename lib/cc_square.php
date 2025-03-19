@@ -449,10 +449,10 @@ function cc_charge_purchase($results, $buyer, $useLogWrite=false) {
         }
     }
     // sanitize the email address to avoid empty and refused
-    if ($buyer['email'] == '/r' || $buyer['email'] == '')
-        $buyer['email'] = null;
-    if ($buyer['phone'] == '/r' || $buyer['phone'] == '')
-        $buyer['phone'] = null;
+    if ($buyer['email'] == '/r' || $buyer['email'] == null)
+        $buyer['email'] = '';
+    if ($buyer['phone'] == '/r' || $buyer['phone'] == null)
+        $buyer['phone'] = '';
 
     $pbodyArgs = array(
         'idempotencyKey' => guidv4(),
