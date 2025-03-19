@@ -164,10 +164,11 @@ if ($otherPay == 0) { // this is a plan payment or badge purchase payment
     $apply_discount = $data['applyDiscount'];
     $preDiscount = $data['preDiscount'];
     $total = $data['total'];
+    $paid = $data['paid'];
     $totalDiscount = $data['totalDiscount'];
 
     if ($planPayment == 0) {
-        if ($totalAmountDue != $total) {
+        if ($totalAmountDue != ($total - $paid)) {
             error_log('bad total: post=' . $totalAmountDue . ', calc=' . $total);
             ajaxSuccess(array ('status' => 'error', 'error' => 'Unable to process, bad total sent to Server'));
             exit();
@@ -182,7 +183,7 @@ if ($otherPay == 0) { // this is a plan payment or badge purchase payment
         }
     }
     else {
-        $totalAmountDue = $total;
+        $totalAmountDue = $total - $paid;
     }
 } else { // otherPay = 1, this is a pay against 'other'
     // load the badge array to mark what is being paid for

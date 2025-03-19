@@ -96,7 +96,9 @@ SELECT r.status, r.memId, m.*, a.shortname AS ageShort, a.label AS ageLabel, r.p
        r.perid AS regPerid, r.newperid AS regNewperid, r.planId,
        IFNULL(r.complete_trans, r.create_trans) AS sortTrans,
        IFNULL(tp.complete_date, t.create_date) AS transDate,
-    nc.id AS createNewperid, np.id AS completeNewperid, pc.id AS createPerid, pp.id AS completePerid,
+       IFNULL(tp.perid, t.perid) AS transPerid,
+       IFNULL(tp.newperid, t.newperid) AS transNewPerid,
+       nc.id AS createNewperid, np.id AS completeNewperid, pc.id AS createPerid, pp.id AS completePerid,
     CASE
         WHEN pp.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pp.first_name, pp.last_name))
         WHEN np.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', np.first_name, np.last_name))
@@ -181,6 +183,7 @@ EOS;
                                          'startdate' => $m['startdate'], 'enddate' => $m['enddate'], 'online' => $m['online'],
                                          'actPrice' => $m['actPrice'], 'actPaid' => $m['actPaid'], 'actCouponDiscount' => $m['actCouponDiscount'],
                                          'email_addr' => $m['email_addr'], 'phone' => $m['phone'],
+                                         'transPerid' => $m['transPerid'], 'transNewPerid' => $m['transNewPerid']
             );
             $holderMembership[] = $item;
             if ($item['completePerid'] != NULL) {
@@ -245,7 +248,9 @@ WITH ppl AS (
             WHEN np.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', np.first_name, np.last_name))
             WHEN pc.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pc.first_name, pc.last_name))
             ELSE TRIM(CONCAT_WS(' ', nc.first_name, nc.last_name))
-        END AS purchaserName
+        END AS purchaserName,
+        IFNULL(tp.perid, t.perid) AS transPerid,
+        IFNULL(tp.newperid, t.newperid) AS transNewPerid
     FROM perinfo p
     LEFT OUTER JOIN reg r ON p.id = r.perid AND r.conid >= ? AND status IN  ('unpaid', 'paid', 'plan', 'upgraded')
     LEFT OUTER JOIN memLabel m ON m.id = r.memId
@@ -273,8 +278,10 @@ WITH ppl AS (
             WHEN np.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', np.first_name, np.last_name))
             WHEN pc.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pc.first_name, pc.last_name))
             ELSE TRIM(CONCAT_WS(' ', nc.first_name, nc.last_name))
-        END AS purchaserName
-    FROM newperson p    
+        END AS purchaserName,
+        IFNULL(tp.perid, t.perid) AS transPerid,
+        IFNULL(tp.newperid, t.newperid) AS transNewPerid
+    FROM newperson p
     LEFT OUTER JOIN reg r ON p.id = r.newperid AND r.conid >= ? AND status IN  ('unpaid', 'paid', 'plan', 'upgraded')
     LEFT OUTER JOIN memLabel m ON m.id = r.memId
     LEFT OUTER JOIN ageList a ON m.memAge = a.ageType AND r.conid = a.conid
@@ -321,7 +328,9 @@ WITH ppl AS (
             WHEN np.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', np.first_name, np.last_name))
             WHEN pc.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pc.first_name, pc.last_name))
             ELSE TRIM(CONCAT_WS(' ', nc.first_name, nc.last_name))
-        END AS purchaserName
+        END AS purchaserName,
+        IFNULL(tp.perid, t.perid) AS transPerid,
+        IFNULL(tp.newperid, t.newperid) AS transNewPerid
     FROM perinfo p
     LEFT OUTER JOIN reg r ON p.id = r.perid AND r.conid >= ? AND status IN  ('unpaid', 'paid', 'plan', 'upgraded')
     LEFT OUTER JOIN memLabel m ON m.id = r.memId
@@ -349,7 +358,9 @@ WITH ppl AS (
             WHEN np.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', np.first_name, np.last_name))
             WHEN pc.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pc.first_name, pc.last_name))
             ELSE TRIM(CONCAT_WS(' ', nc.first_name, nc.last_name))
-        END AS purchaserName
+        END AS purchaserName,
+        IFNULL(tp.perid, t.perid) AS transPerid,
+        IFNULL(tp.newperid, t.newperid) AS transNewPerid
     FROM newperson p    
     LEFT OUTER JOIN reg r ON p.id = r.newperid AND r.conid >= ? AND status IN  ('unpaid', 'paid', 'plan', 'upgraded')
     LEFT OUTER JOIN memLabel m ON m.id = r.memId
@@ -807,6 +818,11 @@ if (count($memberships) > 0) {
     $color = true;
     echo '<div class="container-fluid p-0 m-0" name="t-' . $trans['t-' . $memberships[0]['sortTrans']] .'">' .  PHP_EOL;
     foreach ($memberships as $membership)  {
+        if (($membership['transPerid'] != $loginId && $loginType == 'p'))
+            continue;
+        if (($membership['transNewPerid'] != $loginId && $loginType == 'n'))
+            continue;
+
         if ($currentId != $membership['sortTrans']) {
             if ($currentId > -10000) {
                 $bgcolor = $color ? ' bg-light' : '';
