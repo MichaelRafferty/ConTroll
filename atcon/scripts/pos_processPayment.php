@@ -115,7 +115,7 @@ if (array_key_exists('pay_tid_amt', $_POST)) {
 $buyer['email'] = $payor_email;
 $buyer['phone'] = $payor_phone;
 $buyer['country'] = $cart_perinfo[0]['country'];
-$payor_perid = 5;
+$payor_perid = 2; // atcon perid
 
 if ($payor >= 0) {
     if ($payor_email == '' || $payor_email == $cart_perinfo[$payor]['email_addr']) {
