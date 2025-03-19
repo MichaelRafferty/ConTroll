@@ -107,7 +107,7 @@ use Square\Models\CreatePaymentResponse;
 
 // charge the purchase making a customer, order, and payment
 //TODO Need to add the tax section to SQUARE, need to lookup how to do this in the API, right now it expects tax to be 0 passed in.
-function cc_charge_purchase($results, $buyer, $useLogWrite=false) {
+function cc_charge_purchase($results, $email, $phone, $useLogWrite=false) {
     $cc = get_conf('cc');
     $con = get_conf('con');
     $client = new SquareClient([
