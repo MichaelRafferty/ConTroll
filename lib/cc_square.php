@@ -105,6 +105,7 @@ use Square\Types\CreateOrderRequest;
 use Square\Types\Order;
 use Square\Types\OrderSource;
 use Square\Types\OrderLineItem;
+use Square\Types\OrderLineItemItemType;
 use Square\Types\OrderLineItemDiscount;
 use Square\Types\OrderLineItemDiscountScope;
 use Square\Types\OrderLineItemDiscountType;
@@ -254,6 +255,7 @@ function cc_charge_purchase($results, $buyer, $useLogWrite=false) {
                 }
 
                 $item = new OrderLineItem ([
+                    'type' => OrderLineItemItemType::Item,
                     'uid' => 'badge' . ($lineid + 1),
                     'name' => $badge['age'] . ' Membership for ' . $fullname,
                     'quantity' => 1,
@@ -284,6 +286,7 @@ function cc_charge_purchase($results, $buyer, $useLogWrite=false) {
                 }
 
                 $item = new OrderLineItem([
+                    'type' => OrderLineItemItemType::Item,
                     'uid' => 'space-' . $spaceId,
                     'name' => mb_substr($itemName, 0, 128),
                     'quantity' => 1,
@@ -346,6 +349,7 @@ function cc_charge_purchase($results, $buyer, $useLogWrite=false) {
         // this is a plan payment make the order just the plan payment
         $note = "Plan Id: $planId, Name: $planName, Perid: $loginPerid";
         $item = new OrderLineItem ([
+            'type' => OrderLineItemItemType::Item,
             'uid' => 'planPayment',
             'name' => mb_substr('Plan Payment: ' . $note, 0, 128),
             'quantity' => 1,
