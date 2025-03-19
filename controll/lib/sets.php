@@ -6,8 +6,8 @@ function get_admin_sets(): array
     $sets = array(
         'gen_reports' => array('reports', 'gen_rpts'),
         'admin' => array('admin', 'search'),
-        'reg_admin' => array('reg_admin', 'reg_coord', 'search', 'reports', 'gen_rpts'),
-        'reg_coord' => array('reg_coord', 'search', 'reports', 'gen_rpts'),
+        'reg_admin' => array('reg_admin', 'reg_ad_menu', 'reg_coord', 'search', 'reports', 'gen_rpts'),
+        'reg_coord' => array('reg_coord', 'reg_ad_menu', 'search', 'reports', 'gen_rpts'),
         'registration' => array('people', 'registration', 'badge', 'search', 'reports', 'gen_rpts'),
         'lookup' => array('lookup', 'search'),
         'comp_entry' => array('badge', 'search'),
