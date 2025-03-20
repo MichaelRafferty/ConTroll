@@ -157,13 +157,17 @@ class AuctionItemRegistration {
             }
         }
     };
+
     addrowArt() {
         var _this = this;
         this.#artItemTable.addRow({item_key: 'new'}, false).then(function (row) {
-            row.getTable().scrollToRow(row);
-            _this.checkArtUndoRedo();
+            row.pageTo().then(function() {
+                row.getCell("item_key").getElement().style.backgroundColor = "#fff3cd";
+                _this.checkArtUndoRedo();
+            });
         });
     };
+
     saveArt() {
         var type = 'art';
         if(this.#artItemTable != null) {
@@ -263,8 +267,10 @@ class AuctionItemRegistration {
     addrowPrint() {
         var _this = this;
         this.#printItemTable.addRow({item_key: 'new'}, false).then(function (row) {
-            row.getTable().scrollToRow(row);
-            _this.checkPrintUndoRedo();
+            row.pageTo().then(function() {
+                row.getCell("item_key").getElement().style.backgroundColor = "#fff3cd";
+                _this.checkPrintUndoRedo();
+            });
         });
     };
     savePrint() {
@@ -372,8 +378,10 @@ class AuctionItemRegistration {
     addrowNfs() {
         var _this = this;
         this.#nfsItemTable.addRow({item_key: 'new'}, false).then(function (row) {
-            row.getTable().scrollToRow(row);
-            _this.checkNfsUndoRedo();
+            row.pageTo().then(function() {
+                row.getCell("item_key").getElement().style.backgroundColor = "#fff3cd";
+                _this.checkNfsUndoRedo();
+            });
         });
     };
     saveNfs() {

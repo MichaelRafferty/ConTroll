@@ -354,8 +354,15 @@ class consetup {
         var _this = this;
 
         this.#memtable.addRow({ id: -99999, conid: this.#conid, shortname: 'new-row', price:0, atcon: 'N', online:'N', sortorder: 199, uses: 0 }, false).then(function(row) {
-            row.getTable().scrollToRow(row);
-            _this.checkMemlistUndoRedo();
+            row.getTable().setPage('last').then(function() {
+                row.getCell("id").getElement().style.backgroundColor = "#fff3cd";
+                row.getCell("conid").getElement().style.backgroundColor = "#fff3cd";
+                row.getCell("shortname").getElement().style.backgroundColor = "#fff3cd";
+                row.getCell("price").getElement().style.backgroundColor = "#fff3cd";
+                row.getCell("atcon").getElement().style.backgroundColor = "#fff3cd";
+                row.getCell("online").getElement().style.backgroundColor = "#fff3cd";
+                _this.checkMemlistUndoRedo();
+            });
         });
     };
 

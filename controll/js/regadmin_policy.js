@@ -252,9 +252,15 @@ class policySetup {
         var _this = this;
         this.#policyTable.addRow({policy: 'new-row', prompt: '', description: '', required: 'N', active: 'Y',
             defaultValue: 'Y', sortOrder: 99, uses: 0}, false).then(function (row) {
-            _this.#policyTable.setPage("last"); // adding new to last page always
-            row.getTable().scrollToRow(row);
-            _this.checkUndoRedo();
+            row.getTable().setPage('last').then(function() {
+                row.getCell("policy").getElement().style.backgroundColor = "#fff3cd";
+                row.getCell("prompt").getElement().style.backgroundColor = "#fff3cd";
+                row.getCell("description").getElement().style.backgroundColor = "#fff3cd";
+                row.getCell("required").getElement().style.backgroundColor = "#fff3cd";
+                row.getCell("active").getElement().style.backgroundColor = "#fff3cd";
+                row.getCell("defaultValue").getElement().style.backgroundColor = "#fff3cd";
+                _this.checkUndoRedo();
+            });
         });
     }
 

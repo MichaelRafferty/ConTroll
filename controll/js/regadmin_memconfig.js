@@ -503,8 +503,11 @@ class memsetup {
     addrowTypes() {
         var _this = this;
         this.#memtypetable.addRow({memType: 'new-row', active: 'Y', sortorder: 99, uses: 0, notes: '', required: 'N'}, false).then(function (row) {
-            row.getTable().scrollToRow(row);
-            _this.checkTypeUndoRedo();
+            row.getTable().setPage('last').then(function () {
+                row.getCell("memType").getElement().style.backgroundColor = "#fff3cd";
+                row.getCell("active").getElement().style.backgroundColor = "#fff3cd";
+                _this.checkTypeUndoRedo();
+            });
         });
     }
 
@@ -609,8 +612,15 @@ class memsetup {
         this.#categorytable.addRow({memCategory: 'new-row', onlyOne: 'Y', standAlone: 'N', variablePrice: 'N', badgeLabel: 'X', active: 'Y', sortorder: 99,
                 uses: 0, regUses: 0, notes:'', required: 'N'},
             false).then(function (row) {
-            row.getTable().scrollToRow(row);
-            _this.checkCatUndoRedo();
+            row.getTable().setPage('last').then(function () {
+                row.getCell("memCategory").getElement().style.backgroundColor = "#fff3cd";
+                row.getCell("onlyOne").getElement().style.backgroundColor = "#fff3cd";
+                row.getCell("standAlone").getElement().style.backgroundColor = "#fff3cd";
+                row.getCell("variablePrice").getElement().style.backgroundColor = "#fff3cd";
+                row.getCell("badgeLabel").getElement().style.backgroundColor = "#fff3cd";
+                row.getCell("active").getElement().style.backgroundColor = "#fff3cd";
+                _this.checkCatUndoRedo();
+            });
         });
     }
     
@@ -714,8 +724,12 @@ class memsetup {
         var _this = this;
 
         this.#curagetable.addRow({conid: this.#current_conid, ageType: 'new-row', label: 'new-label', shortname: 'new-shortname', sortorder: 99, uses: 0}, false).then(function (row) {
-            row.getTable().scrollToRow(row);
-            _this.checkCurageUndoRedo();
+            row.getTable().setPage('last').then(function () {
+                row.getCell("ageType").getElement().style.backgroundColor = "#fff3cd";
+                row.getCell("label").getElement().style.backgroundColor = "#fff3cd";
+                row.getCell("shortname").getElement().style.backgroundColor = "#fff3cd";
+                _this.checkCurageUndoRedo();
+            });
         });
     }
 
@@ -820,8 +834,12 @@ class memsetup {
         var _this = this;
 
         this.#nextagetable.addRow({conid: this.#next_conid, ageType: 'new-row', label: 'new-label', shortname: 'new-shortname', sortorder: 99, uses: 0}, false).then(function (row) {
-            row.getTable().scrollToRow(row);
-            _this.checkNextageUndoRedo();
+            row.getTable().setPage('last').then(function () {
+                row.getCell("ageType").getElement().style.backgroundColor = "#fff3cd";
+                row.getCell("label").getElement().style.backgroundColor = "#fff3cd";
+                row.getCell("shortname").getElement().style.backgroundColor = "#fff3cd";
+                _this.checkNextageUndoRedo();
+            });
         });
     }
 
