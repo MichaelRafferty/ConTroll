@@ -281,7 +281,7 @@ function cc_charge_purchase($results, $buyer, $useLogWrite=false) {
                 }
                 $note = $space['id'] . ',' . $space['item_purchased'] . ',' . $space['exhibitorId'] . ',' . $space['exhibitorNumber'] .
                     ': id, item, exhId, exhNum';
-                if (array_key_exists('glNum', $space) && $space['glNum'] != ') {
+                if (array_key_exists('glNum', $space) && $space['glNum'] != '') {
                     $note .= ', ' . $space['glNum'];
                 }
 
