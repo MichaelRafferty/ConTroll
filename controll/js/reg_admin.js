@@ -1768,3 +1768,8 @@ function deleterow(e, row) {
         row.getCell("uses").setValue('<span style="color:red;"><b>Del</b></span>');
     }
 }
+
+// reg note items
+function addNote(regId) {
+    showRegNotes(regId, false);
+}
