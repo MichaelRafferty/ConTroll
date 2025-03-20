@@ -62,7 +62,7 @@ foreach ($rules as $name => $rule) {
             $ruleItems = $rule['ruleset'];
             foreach ($ruleItems as $ruleItem) {
                 if (array_key_exists('to_delete', $ruleItem) && $ruleItem['to_delete'] == 1) {
-                    $numdel += dbSafeCmd($dRIsingle, 'si', array ($ruleItem['origName'], $ruleItem['origStep'], $conid));
+                    $numdel += dbSafeCmd($dRIsingle, 'sii', array ($ruleItem['origName'], $ruleItem['origStep'], $conid));
                 }
             }
         }
