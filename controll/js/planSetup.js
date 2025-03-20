@@ -104,7 +104,6 @@ class PlansSetup {
                         deleterow(e, cell.getRow());
                     }
                 },
-                { field: "required", visible: false, },
                 { field: "to_delete", visible: false, },
             ]});
 
@@ -353,7 +352,7 @@ class PlansSetup {
         var row = this.#plansTable.getRow(index).getData();
         // first copy all the fields to the fields in the form
         document.getElementById('planName').value = row.name;
-        document.getElementById('planDescription').innerHTML = row.description;
+        document.getElementById('planDescription').value = row.description;
         this.#categoryList.value = row.catList;
         if (row.catList == null || row.catList == '') {
             this.#categoryListDiv.innerHTML = '<i>None</i>';
@@ -401,7 +400,7 @@ class PlansSetup {
         var newRow = {
             id: this.#planEditIndex,
             name: document.getElementById('planName').value,
-            description: document.getElementById('planDescription').innerHTML,
+            description: document.getElementById('planDescription').value,
             categoryList: this.#categoryList.value,
             includeList: this.#includeList.value,
             excludeList: this.#excludeList.value,
@@ -428,8 +427,55 @@ class PlansSetup {
         plans.dataChanged();
         this.#planAddEditModal.hide();
     }
-};
 
+    // save the table back to the database
+    save() {
+        var _this = this;
+
+        if (this.#plansTable != null) {
+            this.#planSaveChangesBTN.innerHTML = "Saving...";
+            this.#planSaveChangesBTN.disabled = true;
+
+            var script = "scripts/finance_updatePlans.php";
+
+            var postdata = {
+                ajax_request_action: 'plans',
+                tabledata: JSON.stringify(this.#plansTable.getData()),
+                tablename: "paymentPlans",
+                indexcol: "id"
+            };
+            clear_message();
+            this.#dirty = false;
+            //console.log(postdata);
+            $.ajax({
+                url: script,
+                method: 'POST',
+                data: postdata,
+                success: function (data, textStatus, jhXHR) {
+                    if (data['error']) {
+                        show_message(data['error'], 'error');
+                        // reset save button
+                        _this.dataChanged();
+                        _this.#planSaveChangesBTN.disabled = false;
+                        _this.#planSaveChangesBTN.innerHTML = "Save Changes*";
+                        return false;
+                    }
+                    plans.close();
+                    paymentPlans = data['paymentPlans'];
+                    plans.open();
+                    show_message(data['success'], 'success');
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    showError("ERROR in " + script + ": " + textStatus, jqXHR);
+                    _this.dataChanged();
+                    _this.#planSaveChangesBTN.disabled = false;
+                    _this.#planSaveChangesBTN.innerHTML = "Save Changes*";
+                    return false;
+                }
+            });
+        }
+    }
+};
 
 function SetInitialSel() {
     plans.setInitialSel();

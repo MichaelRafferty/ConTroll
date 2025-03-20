@@ -198,9 +198,7 @@ function membershipFormatter(cell, formatterParams, onRendered) {
     html +=  '<select name="m_' + data.id + '" id="m_' + data.id + '">' +
         freeSelect + '</select><br/>' +
         '&nbsp;<button type="button" class="btn btn-sm btn-primary pt-0 pb-0" style="--bs-btn-font-size: 75%;" onclick="updateBadge(' +
-            data.id + ')">Assign Badge</button>&nbsp;' +
-            '<select name="m_' + data.id + '" id="m_' + data.id + '">' +
-            freeSelect + '</select>';
+            data.id + ')">Assign Badge</button>';
     return html;
 }
 
@@ -570,10 +568,12 @@ function addClearForm() {
     document.getElementById('a_badgename').value = '';
 
     // loop over the policies
-    var keys = Object.keys(policies);
-    for (i = 0; i < keys.length; i++) {
-        var policy = policies[keys[i]];
-        document.getElementById('p_a_' + policy.policy).checked = policy.defaultValue == 'Y';
+    if (policies && policies.length > 0) {
+        var keys = Object.keys(policies);
+        for (i = 0; i < keys.length; i++) {
+            var policy = policies[keys[i]];
+            document.getElementById('p_a_' + policy.policy).checked = policy.defaultValue == 'Y';
+        }
     }
     addPersonBtn.disabled = true;
     if (addMatchTable != null) {
@@ -728,10 +728,12 @@ function saveAdd() {
 
     var newPolicies = {};
     // loop over the policies
-    var keys = Object.keys(policies);
-    for (i = 0; i < keys.length; i++) {
-        var policy = policies[keys[i]];
-        newPolicies['p_' + policy.policy] = document.getElementById('p_a_' + policy.policy).checked ? 'Y' : 'N';
+    if (policies && policies.length > 0) {
+        var keys = Object.keys(policies);
+        for (i = 0; i < keys.length; i++) {
+            var policy = policies[keys[i]];
+            newPolicies['p_' + policy.policy] = document.getElementById('p_a_' + policy.policy).checked ? 'Y' : 'N';
+        }
     }
     var postdata = {
         type: 'add',

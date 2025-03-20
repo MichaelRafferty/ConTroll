@@ -27,7 +27,7 @@ EOS;
     return $html;
 };
 
-function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
+function cc_charge_purchase($results, $email, $phone, $useLogWrite=false) {
     $cc = get_conf('cc');
     //$con = get_conf('con');
     $reg = get_conf('reg');

@@ -1959,7 +1959,6 @@ addUnpaid(tid) {
         var elcheckno = document.getElementById('pay-check-div');
         var elccauth = document.getElementById('pay-ccauth-div');
         var elonline = document.getElementById('pay-online-div');
-        var econfirm = document.getElementById('');
 
         elcheckno.hidden = ptype != 'check';
         elccauth.hidden = ptype != 'credit';
@@ -2458,8 +2457,6 @@ addUnpaid(tid) {
                 this.#pay_button_pay.hidden = false;
                 this.#pay_button_ercpt.hidden = true;
                 this.#pay_button_ercpt.disabled = true;
-                pay_button_print.hidden = true;
-                pay_button_print.disabled = true;
             }
 
             // draw the pay screen

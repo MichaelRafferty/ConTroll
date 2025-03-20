@@ -93,7 +93,7 @@ $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale
 // get the specific information allowed
 $regionYearQ = <<<EOS
 SELECT er.id, name, description, ownerName, ownerEmail, includedMemId, additionalMemId, mi.price AS includedPrice, ma.price AS additionalPrice,
-       ery.mailinFee, ery.atconIdBase, ery.mailinIdBase
+       mi.glNum AS includedGLnum, ma.glNum AS additionalGLNum, ery.mailinFee, ery.atconIdBase, ery.mailinIdBase
 FROM exhibitsRegionYears ery
 JOIN exhibitsRegions er ON er.id = ery.exhibitsRegion
 LEFT OUTER JOIN memList mi ON ery.includedMemId = mi.id
@@ -377,7 +377,7 @@ $badges = array();
 $transid = null;
 for ($i = 0; $i < count($includedMembershipStatus); $i++) {
     if ($includedMembershipStatus[$i]) {
-        $badge = build_badge($membership_fields, 'i', $i, $region, $conid, $transid, $portalName);
+        $badge = buildBadge($membership_fields, 'i', $i, $region, $conid, $transid, $portalName);
         $transid = $badge['transid'];
         $status_msg .= $badge['status'];
         $error_msg .= $badge['error'];
@@ -386,7 +386,7 @@ for ($i = 0; $i < count($includedMembershipStatus); $i++) {
 }
 for ($i = 0; $i < count($additionalMembershipStatus); $i++) {
     if ($additionalMembershipStatus[$i]) {
-        $badge = build_badge($membership_fields, 'a', $i, $region, $conid, $transid, $portalName);
+        $badge = buildBadge($membership_fields, 'a', $i, $region, $conid, $transid, $portalName);
         $transid = $badge['transid'];
         $badges[] = $badge;
         $status_msg .= $badge['status'];
@@ -454,7 +454,7 @@ logWrite(array('Title' => 'Pre cc_charge_purchase', 'con' => $conid, $portalName
     $results, 'request'
     => $badges));
 
-$rtn = cc_charge_purchase($results, $ccauth, true);
+$rtn = cc_charge_purchase($results, $buyer['email'], '', true);
 if ($rtn === null) {
     ajaxSuccess(array('status' => 'error', 'data' => 'Credit card not approved'));
     exit();
@@ -700,15 +700,17 @@ ajaxSuccess(array(
 return;
 
 // build the badge structure and insert the person into newperson, trans, reg after checking for exact match
-function build_badge($fields, $type, $index, $region, $conid, $transid, $portalName) {
+function buildBadge($fields, $type, $index, $region, $conid, $transid, $portalName) {
     $badge = array();
     $suffix = '_' . $type . '_' . $index;
     if ($type == 'i') {
         $memid = $region['includedMemId'];
         $memprice = $region['includedPrice'];
+        $glNum = $region['includedGLNum'];
     } else {
         $memid = $region['additionalMemId'];
         $memprice = $region['additionalPrice'];
+        $glNum = $region['additionalGLNum'];
     }
 
     foreach ($fields as $field => $required) {
@@ -720,6 +722,7 @@ function build_badge($fields, $type, $index, $region, $conid, $transid, $portalN
     $badge['contact'] = 'Y';
     $badge['share'] = 'Y';
     $badge['type'] = $type;
+    $badge['glNum'] = $glNum;
     $badge['index'] = $index + 1;
 
 // now resolve exact matches in perinfo

@@ -23,6 +23,7 @@ class exhibitssetup {
     // exhibits region years
     #regionYears = null;
     #regionYearsListArr = {};
+    #regionYearsIdx = {};
     #regionYearsTable = null;
     #regionYeardirty = false;
     #regionYearsavebtn = null;
@@ -32,6 +33,7 @@ class exhibitssetup {
     // exhibits spaces (sections of a region)
     #spaces = null;
     #spacesListArr = {};
+    #spacesIdx = {};
     #spacesTable = null;
     #spacedirty = false;
     #spacesavebtn = null;
@@ -73,7 +75,16 @@ class exhibitssetup {
         if (this.#debug & 2) {
             this.#debugVisible = true;
         }
-    };
+    }
+
+    // selector functions
+    getRegionYears(id) {
+        return this.#regionYears[this.#regionYearsIdx[id]];
+    }
+
+    getSpace(id) {
+        return this.#spaces[this.#spacesIdx[id]];
+    }
 
     // called on open of the exhibits window
     open() {
@@ -574,6 +585,9 @@ class exhibitssetup {
             this.#regionYears.forEach(s => {
                 this.#regionYearsListArr[s.id] = s.shortname;
             });
+            for (var i = 0; i < this.#regionYears.length; i++) {
+                this.#regionYearsIdx[this.#regionYears[i]['id']] = i;
+            }
 
             if (this.#debug & 1) {
                 console.log("regionYearsListArr:");
@@ -595,7 +609,7 @@ class exhibitssetup {
             columns: [
                 {rowHandle: true, formatter: "handle", frozen: true, width: 40, headerSort: false},
                 {title: "ID", field: "id", width: 50, hozAlign: "right", headerSort: false,},
-                {title: "&bigstar;Conid", field: "conid", width: 80, hozAlign: "right", headerSort: false,},
+                {title: "&bigstar;Conid", field: "conid", width: 80, hozAlign: "right", headerSort: false, visible: false },
                 {
                     title: "&bigstar;Exhibits Region", field: "exhibitsRegion", headerSort: true, width: 150, headerWordWrap: true, headerFilter: true, headerFilterParams: {values: this.#regionListArr},
                     editor: "list", editorParams: {values: this.#regionListArr}, validator: "required",
@@ -623,6 +637,10 @@ class exhibitssetup {
                     formatter: "money", formatterParams: {decimal: '.', thousand: ',', symbol: '$', negativeSign: true},
                     editor: "input", validator: ["required", this.#priceregexp],},
                 {title: 'Mail-In Id Base', field: "mailinIdBase", width: 80, hozAlign: "right", headerWordWrap: true, headerSort: false, editor: "number",},
+                {title: "Default GL Num", field: "glNum", headerWordWrap: true, headerSort: true, headerFilter: true,
+                        editor: "input", editorParams: {maxlength: "16"}, width: 120, },
+                {title: "Default GL Label", field: "glLabel", headerWordWrap: true, headerSort: true, headerFilter: "textarea", formatter: "textarea",
+                    editor: "input", editorParams: {maxlength: "64"}, width: 200, },
                 {title: "Sort Order", field: "sortorder", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, hozAlign: "right", width: 90,},
                 {title: "Orig Key", field: "regionYearKey", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
                 {
@@ -661,6 +679,10 @@ class exhibitssetup {
             this.#spaces.forEach(s => {
                 this.#spacesListArr[s.id] = s.shortname;
             });
+
+            for (var i = 0; i < this.#spaces.length; i++) {
+                this.#spacesIdx[this.#spaces[i]['id']] = i;
+            }
 
             if (this.#debug & 1) {
                 console.log("spacesListArr:");
@@ -707,6 +729,10 @@ class exhibitssetup {
                     hozAlign:"left", headerSort: false },
                 {title: "&bigstar;Description", field: "description", headerFilter: true, width: 550, headerSort: false, },
                 {title: 'Units', field: "unitsAvailable", width: 100, hozAlign: "right", headerSort: false, editor: "number", editorParams: {min:0, max:9999999}},
+                {title: "Default GL Num", field: "glNum", headerWordWrap: true, headerSort: true, headerFilter: true,
+                    editor: "input", editorParams: {maxlength: "16"}, width: 120, },
+                {title: "Default GL Label", field: "glLabel", headerWordWrap: true, headerSort: true, headerFilter: "textarea", formatter: "textarea",
+                    editor: "input", editorParams: {maxlength: "64"}, width: 200, },
                 {title: "Sort Order", field: "sortorder", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 80,},
                 {title: "Orig Key", field: "spaceKey", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
                 {
@@ -754,7 +780,7 @@ class exhibitssetup {
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
                 {rowHandle: true, formatter: "handle", frozen: true, width: 40, headerSort: false},
-                {title: "ID", field: "id", width: 50, hozAlign: "right", headerSort: false},
+                {title: "ID", field: "id", width: 60, hozAlign: "right", headerSort: false},
                 {
                     title: "Region", field: "regionId", width: 200, headerSort: true, headerFilter: 'list', headerFilterParams: {values: this.#regionListArr},
                     formatter: "lookup", formatterParams: this.#regionListArr,
@@ -765,10 +791,11 @@ class exhibitssetup {
                     editor: "list", formatter: "lookup", formatterParams: this.#spacesListArr, editorParams: {values: this.#spacesListArr}
                 },
                 {
-                    title: "&bigstar;Code", field: "code", headerSort: true, headerFilter: true, width: 150,
+                    title: "&bigstar;Code", field: "code", headerSort: true, headerFilter: true, width: 140,
                     editor: "input", editorParams: {elementAttributes: {maxlength: "32"}}, validator: "required"
                 },
-                {title: "&bigstar;Description", field: "description", editor: "input", editorParams: {elementAttributes: {maxlength: "64"}}, headerFilter: true, width: 450, headerSort: false,},
+                {title: "&bigstar;Description", field: "description", editor: "input", editorParams: {elementAttributes: {maxlength: "64"}},
+                    headerFilter: "textarea", formatter: "textarea", width: 320, headerSort: false,},
                 {
                     title: '&bigstar;Units', field: "units", headerHozAlign:"right", width: 100, hozAlign: "right", headerSort: false, validator: "required",
                     editor: "input", editorParams: {maxlength: "10"},
@@ -792,6 +819,10 @@ class exhibitssetup {
                     title: "&bigstar;Req", field: "requestable", width: 80, hozAlign: "right", headerSort: false,
                     editor: "tickCross", formatter: "tickCross", validator: "required",
                 },
+                {title: "Default GL Num", field: "glNum", headerWordWrap: true, headerSort: true, headerFilter: true,
+                    editor: "input", editorParams: {maxlength: "16"}, width: 120, },
+                {title: "Default GL Label", field: "glLabel", headerWordWrap: true, headerSort: true, headerFilter: "textarea", formatter: "textarea",
+                    editor: "input", editorParams: {maxlength: "64"}, width: 200, },
                 {title: "Sort Order", field: "sortorder", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 80,},
                 {title: "Orig Key", field: "priceKey", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
                 {
@@ -860,9 +891,10 @@ class exhibitssetup {
         var _this = this;
         this.#regionTypeTable.addRow({regionType: 'new-row', portalType: 'vendor', purchaseApprovalRequired: 'Y',  inPersonMaxUnits: 0, mailinAllowed: 'N', mailinMaxUnits: 0,
             active: 'Y', sortorder: 99, uses: 0}, false).then(function (row) {
-            _this.#regionTypeTable.setPage("last"); // adding new to last page always
-            row.getTable().scrollToRow(row);
-            _this.checkTypesUndoRedo();
+                _this.#regionTypeTable.setPage("last"); // adding new to last page always
+                row.getTable().scrollToRow(row);
+                row.getCell("regionType").getElement().style.backgroundColor = "#fff3cd";
+                _this.checkTypesUndoRedo();
         });
     }
 
@@ -1112,9 +1144,10 @@ class exhibitssetup {
     // add row to Years table and scroll to that new row
     addrowYears() {
         var _this = this;
-        this.#regionYearsTable.addRow({ownerName: 'new-row', sortorder: 99, uses: 0}, false).then(function (row) {
+        this.#regionYearsTable.addRow({conid: this.#conid, ownerName: 'new-row', sortorder: 99, uses: 0}, false).then(function (row) {
             _this.#regionYearsTable.setPage("last"); // adding new to last page always
             row.getTable().scrollToRow(row);
+            row.getCell("ownerName").getElement().style.backgroundColor = "#fff3cd";
             _this.checkYearsUndoRedo();
         });
     }
@@ -1242,6 +1275,7 @@ class exhibitssetup {
         this.#spacesTable.addRow({shortname: 'new-row', sortorder: 99, uses: 0}, false).then(function (row) {
             _this.#spacesTable.setPage("last"); // adding new to last page always
             row.getTable().scrollToRow(row);
+            row.getCell("shortname").getElement().style.backgroundColor = "#fff3cd";
             _this.checkSpacesUndoRedo();
         });
     }
@@ -1274,7 +1308,7 @@ class exhibitssetup {
             show_message(data.warn, 'warn');
         }
         this.#spacesavebtn.innerHTML = "Save Changes";
-        this.#spacesavebtn.disabled = true;
+        this.#spacesavebtn.disabled = false;
         exhibitors?.setCacheDirty();
         this.draw(data);
     }
@@ -1366,9 +1400,10 @@ class exhibitssetup {
     // add row to Spaces table and scroll to that new row
     addrowSpacePrices() {
         var _this = this;
-        this.#spacePricesTable.addRow({code: 'new-row', sortorder: 99, uses: 0}, false).then(function (row) {
+        this.#spacePricesTable.addRow({code: 'new-row', sortorder: 99, requestable: 0, uses: 0, }, false).then(function (row) {
             _this.#spacePricesTable.setPage("last"); // adding new to last page always
             row.getTable().scrollToRow(row);
+            row.getCell("code").getElement().style.backgroundColor = "#fff3cd";
             _this.checkSpacePricesUndoRedo();
         });
     }
@@ -1401,7 +1436,7 @@ class exhibitssetup {
             show_message(data.warn, 'warn');
         }
         this.#spacePricesavebtn.innerHTML = "Save Changes";
-        this.#spacePricesavebtn.disabled = true;
+        this.#spacePricesavebtn.disabled = false;
         exhibitors?.setCacheDirty();
         this.draw(data);
     }
@@ -1435,7 +1470,7 @@ class exhibitssetup {
                 method: 'POST',
                 data: postdata,
                 success: function (data, textStatus, jhXHR) {
-                    _this.saveSpacesComplete(data, textStatus, jhXHR);
+                    _this.saveSpacePricessComplete(data, textStatus, jhXHR);
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
                     showError("ERROR in " + script + ": " + textStatus, jqXHR);
@@ -1449,6 +1484,48 @@ class exhibitssetup {
 var dirty = false;
 function cellChanged(cell) {
     dirty = true;
+    var row = null;
+    var rowData = null;
+    var value = null;
+
+    switch (cell.getField()) {
+        case 'exhibitsRegionYear':
+            // change to exhibits region year in spaces in region table, if GL code is non blank, set it to the region GL fields
+            rowData = cell.getData();
+            if (rowData.glNum && row.glNum != '')
+                break;  // already has a value don't overwrite it
+
+            // glNum is empty, fetch from region year
+            value = rowData.exhibitsRegionYear;
+            var eryData = exhibits.getRegionYears(value);
+            var row = cell.getRow();
+            row.update({"glNum": eryData.glNum, "glLabel": eryData.glLabel});
+            cell.getElement().style.backgroundColor = "#fff3cd";
+            row.getCell("glNum").getElement().style.backgroundColor = "#fff3cd";
+            row.getCell("glLabel").getElement().style.backgroundColor = "#fff3cd";
+            return;
+
+        case 'spaceId':
+            // change to spaceId in space prices table, if GL code is non blank, set it to the region GL fields
+            rowData = cell.getData();
+            if (rowData.glNum && row.glNum != '')
+                break;  // already has a value don't overwrite it
+
+            // glNum is empty, fetch from region year
+            value = rowData.spaceId;
+            var space = exhibits.getSpace(value);
+            var row = cell.getRow();
+            var eryData = exhibits.getRegionYears(space.exhibitsRegionYear);
+            row.update({"glNum": space.glNum, "glLabel": space.glLabel, "regionId": eryData.exhibitsRegion }).then(
+                function () {
+                    row.reformat();
+                    row.getCell("regionId").getElement().style.backgroundColor = "#fff3cd";
+                    row.getCell("spaceId").getElement().style.backgroundColor = "#fff3cd";
+                    row.getCell("glNum").getElement().style.backgroundColor = "#fff3cd";
+                    row.getCell("glLabel").getElement().style.backgroundColor = "#fff3cd";
+                });
+            return;
+    }
     cell.getElement().style.backgroundColor = "#fff3cd";
 }
 
