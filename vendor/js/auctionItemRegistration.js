@@ -444,6 +444,7 @@ class AuctionItemRegistration {
             data: data['art'],
             layout: 'fitDataTable',
             pagination: true,
+            paginationAddRow:"table",
             paginationSize: 10,
             paginationSizeSelector: [5, 10, 25, 50, true], //enable page size select element with these options
             columns: [
@@ -480,6 +481,7 @@ class AuctionItemRegistration {
             data: data['print'],
             layout: 'fitDataTable',
             pagination: true,
+            paginationAddRow:"table",
             paginationSize: 10,
             paginationSizeSelector: [5, 10, 25, 50, true], //enable page size select element with these options
             columns: [
@@ -514,6 +516,7 @@ class AuctionItemRegistration {
             data: data['nfs'],
             layout: 'fitDataTable',
             pagination: true,
+            paginationAddRow:"table",
             paginationSize: 10,
             paginationSizeSelector: [5, 10, 25, 50, true], //enable page size select element with these options
             columns: [

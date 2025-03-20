@@ -225,6 +225,7 @@ class PlansSetup {
                     index: "id",
                     pagination: true,
                     paginationSize: 9999,
+                    paginationAddRow:"table",
                     paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
                     columns: [
                         {title: "ID", field: "id", width: 90, headerSort: true },
@@ -246,6 +247,7 @@ class PlansSetup {
                     layout: "fitDataTable",
                     index: "id",
                     pagination: true,
+                    paginationAddRow:"table",
                     paginationSize: 9999,
                     paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
                     columns: [
