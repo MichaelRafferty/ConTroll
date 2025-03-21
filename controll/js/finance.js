@@ -29,6 +29,7 @@ class Finance {
         this.#financeTabs['overview'] = document.getElementById('overview-content');
         this.#financeTabs['paymentPlans'] = document.getElementById('paymentPlans-pane');
         this.#financeTabs['payorPlans'] = document.getElementById('payorPlans-pane');
+        this.#financeTabs['coupon'] = document.getElementById('coupon-pane');
         this.#currentPane = this.#financeTabs['overview'];
         if (this.#debug & 1) {
             console.log("Debug = " + debug);
@@ -62,6 +63,10 @@ class Finance {
                 payors.close();
                 payors = null;
             }
+            if (coupons) {
+                coupons.close();
+                coupons = null;
+            }
         }
 
         this.#currentPane.hidden = false;
@@ -79,6 +84,13 @@ class Finance {
             if (payors == null)
                 payors = new Payors(config['conid'], config['debug']);
             payors.open();
+            return;
+        }
+
+        if (content == 'coupon') {
+            if (coupons == null)
+                coupons = new Coupon();
+            coupons.open();
             return;
         }
     }
