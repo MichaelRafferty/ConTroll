@@ -4,7 +4,7 @@ require_once '../../lib/outputCSV.php';
 
 
 $need_login = google_init("page");
-$page = "reg_admin";
+$page = "reg_staff";
 
 if(!$need_login or !checkAuth($need_login['sub'], $page)) {
     bounce_page("index.php");

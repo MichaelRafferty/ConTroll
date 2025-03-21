@@ -6,7 +6,7 @@ require_once "../lib/notes.php";
 //initialize google session
 $need_login = google_init("page");
 
-$page = "reg_coord";
+$page = "reg_staff";
 if(!$need_login or !checkAuth($need_login['sub'], $page)) {
     bounce_page("index.php");
 }
@@ -798,6 +798,7 @@ $config_vars['finance'] = $finance ? 1 : 0;
             <div class="col-sm-auto p-2">
                 <button class="btn btn-primary btn-sm" onclick="window.location.href = 'reports/regReport.php';">Download Reg Report</button>
             </div>
+            <?php if ($reg_admin) { ?>
             <div class="col-sm-auto p-2">
                 <button class="btn btn-primary btn-sm" onclick="sendEmail('marketing')" disabled>Send Marketing Email</button>
             </div>
@@ -822,6 +823,7 @@ $config_vars['finance'] = $finance ? 1 : 0;
             <div class="col-sm-auto p-2">
                 <button class="btn btn-primary btn-sm" onclick="window.location.href = 'reports/processRefunds.php';">Download Process Refunds Report</button>
             </div>
+            <?php } ?>
             <?php } ?>
         </div>
     </div>

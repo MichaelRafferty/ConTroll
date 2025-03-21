@@ -14,7 +14,7 @@ INSERT INTO auth(id, name, page, display, sortOrder) VALUES
 (21,'reg_admin', 'N', 'N', 140),
 (22,'reg_ad_menu', 'N', 'N', 145);
 
-UPDATE auth SET name = 'reg_coord' WHERE id = 6;
+UPDATE auth SET name = 'reg_staff' WHERE id = 6;
 UPDATE auth SET name = 'reg_admin' WHERE id = 21;
 
 INSERT INTO patchLog(id, name) VALUES(44, 'Payment Cleanup');
