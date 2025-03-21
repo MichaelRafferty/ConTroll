@@ -462,8 +462,8 @@ function cc_charge_purchase($results, $buyer, $useLogWrite=false) {
         'amountMoney' => new Money([
                                        'amount' => $results['total'] * 100,
                                        'currency' => $currency,
-                                       'orderId' => $order->getId(),
                                    ]),
+        'orderId' => $order->getId(),
         'autocomplete' => true,
         'customerId' => $order->getCustomerId(),
         'locationId' => $order->getLocationId(),
