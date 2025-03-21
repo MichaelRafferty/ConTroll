@@ -90,45 +90,63 @@ EOS;
     return $html;
 };
 
+use Square\Environments;
 use Square\SquareClient;
-use Square\Exceptions\ApiException;
-use Square\Http\ApiResponse;
-use Square\Models\CreateOrderRequest;
-use Square\Models\CreateOrderResponse;
-use Square\Models\Order;
-use Square\Models\OrderSource;
-use Square\Models\OrderLineItem;
-use Square\Models\OrderLineItemDiscount;
-use Square\Models\OrderLineItemDiscountType;
-use Square\Models\Currency;
-use Square\Models\Money;
-use Square\Models\CreatePaymentRequest;
-use Square\Models\CreatePaymentResponse;
+use Square\Exceptions\SquareApiException;
+use Square\Exceptions\SquareException;
+use Square\Payments\Requests\CreatePaymentRequest;
+use Square\Types\CashPaymentDetails;
+use Square\Orders;
+use Square\Orders\OrdersClient;
+use Square\Types;
+use Square\Types\Currency;
+use Square\Types\Money;
+use Square\Types\CreateOrderRequest;
+use Square\Types\Order;
+use Square\Types\OrderSource;
+use Square\Types\OrderLineItem;
+use Square\Types\OrderLineItemItemType;
+use Square\Types\OrderLineItemDiscount;
+use Square\Types\OrderLineItemDiscountScope;
+use Square\Types\OrderLineItemDiscountType;
 
 // charge the purchase making a customer, order, and payment
 //TODO Need to add the tax section to SQUARE, need to lookup how to do this in the API, right now it expects tax to be 0 passed in.
 function cc_charge_purchase($results, $buyer, $useLogWrite=false) {
     $cc = get_conf('cc');
     $con = get_conf('con');
-    $client = new SquareClient([
-        'accessToken' => $cc['token'],
-        'squareVersion' => $cc['apiversion'],
-        'environment' => $cc['env'],
+    $debug = get_conf('debug');
+    if (array_key_exists('square', $debug))
+        $squareDebug = $debug['square'];
+    else
+        $squareDebug = 0;
+    $id = null;
+
+    $client = new SquareClient(
+        token: $cc['token'],
+        options: [
+            'baseUrl' => $cc['env'] == 'production' ? Environments::Production->value : Environments::Sandbox->value,
     ]);
     if (array_key_exists('currency', $con)) {
         switch (strtolower($con['currency'])) {
             case 'usd':
-                $currency = Currency::USD;
+                $currency = Currency::Usd->value;
                 break;
             case 'cad':
-                $currency = Currency::CAD;
+                $currency = Currency::Cad->value;
                 break;
             default:
-                ajaxSuccess(array ('status' => 'error', 'data' => 'Error: Currency not yet supported in cc_square, seek assistance.'));
+                $cur = Currency::tryFrom($con['currency']);
+                if ($cur) {
+                    $currency = $cur->value;
+                    break;
+                }
+                ajaxSuccess(array ('status' => 'error', 'data' => 'Error: Currency ' . $con['currency'] .
+                    ' not yet supported in cc_square, seek assistance.'));
                 exit();
         }
     } else
-        $currency = Currency::USD;
+        $currency = Currency::Usd->value;
 
     $loginPerid = getSessionVar('user_perid');
     if ($loginPerid == null) {
@@ -146,9 +164,12 @@ function cc_charge_purchase($results, $buyer, $useLogWrite=false) {
     //  a. create payment object with order id and payment amount plus credit card nonce
     //  b. pass payment to payment processor
     // 3. parse return results to return the proper information
-    // failure fall throughx
+    // failure fall through
 
     $source = 'onlinereg';
+    if (array_key_exists('source', $results)) {
+        $source = $results['source'];
+    }
     if (array_key_exists('custid', $results)) {
         $custid = $results['custid'];
     } else if (array_key_exists('badges', $results) && is_array($results['badges']) && count($results['badges']) > 0) {
@@ -160,22 +181,39 @@ function cc_charge_purchase($results, $buyer, $useLogWrite=false) {
         $custid = 't-' . $results['transid'];
     }
 
-    // base order
-    $body = new CreateOrderRequest;
-    $body->setIdempotencyKey(guidv4());
-    $body->setOrder(new Order($cc['location']));
-    $order = $body->getOrder();
-    $order->setLocationId( $cc['location']);
-    $order->setReferenceId($con['id'] . '-' . $results['transid']);
-    $order->setSource(new OrderSource);
-    $order->getSource()->setName($con['conname'] . '-' . $source);
-    $order->setCustomerId($con['id'] . '-' . $custid);
+    // SDK 41, builds the parts then passes them into the body
+    // line items first
+    // then order
+    // then body
+
+    // order lines (possible values from constructor)
+    //	$this->uid = $values['uid'] ?? null;
+    //	$this->name = $values['name'] ?? null;
+    //	$this->quantity = $values['quantity'];
+    //	$this->quantityUnit = $values['quantityUnit'] ?? null;  (leave out for 'each')
+    //	$this->note = $values['note'] ?? null;
+    //	$this->catalogObjectId = $values['catalogObjectId'] ?? null;
+    //	$this->catalogVersion = $values['catalogVersion'] ?? null;
+    //	$this->variationName = $values['variationName'] ?? null;
+    //	$this->itemType = $values['itemType'] ?? null;
+    //	$this->metadata = $values['metadata'] ?? null;
+    //	$this->modifiers = $values['modifiers'] ?? null;
+    //	$this->appliedTaxes = $values['appliedTaxes'] ?? null;
+    //	$this->appliedDiscounts = $values['appliedDiscounts'] ?? null;
+    //	$this->appliedServiceCharges = $values['appliedServiceCharges'] ?? null;
+    //	$this->basePriceMoney = $values['basePriceMoney'] ?? null;
+    //	$this->variationTotalPriceMoney = $values['variationTotalPriceMoney'] ?? null;
+    //	$this->grossSalesMoney = $values['grossSalesMoney'] ?? null;
+    //	$this->totalTaxMoney = $values['totalTaxMoney'] ?? null;
+    //	$this->totalDiscountMoney = $values['totalDiscountMoney'] ?? null;
+    //	$this->totalMoney = $values['totalMoney'] ?? null;
+    //	$this->pricingBlocklists = $values['pricingBlocklists'] ?? null;
+    //	$this->totalServiceChargeMoney = $values['totalServiceChargeMoney'] ?? null;
+
     $order_lineitems = [];
+    $orderDiscounts = [];
     $lineid = 0;
-
-    // add order lines
-
-    $order_value = 0;
+        $order_value = 0;
     if (array_key_exists('planPayment', $results))
         $planPayment = $results['planPayment'];
     else
@@ -185,7 +223,7 @@ function cc_charge_purchase($results, $buyer, $useLogWrite=false) {
     $planId = '';
     $downPmt = '';
     $nonPlanAmt = '';
-    $balaanceDue = '';
+    $balanceDue = '';
     if (array_key_exists('newplan', $results) && $results['newplan'] == 1) {
         if (array_key_exists('planRec', $results) && array_key_exists('plan', $results['planRec']) &&
             array_key_exists('name', $results['planRec']['plan'])) {
@@ -193,13 +231,19 @@ function cc_charge_purchase($results, $buyer, $useLogWrite=false) {
             $planId = 'TBA';
             $downPmt = $results['planRec']['downPayment'];
             $nonPlanAmt = $results['planRec']['nonPlanAmt'];
-            $balaanceDue = $results['planRec']['balanceDue'];
+            $balanceDue = $results['planRec']['balanceDue'];
         }
     }
     if ($planPayment == 1) {
         if (array_key_exists('existingPlan', $results) && array_key_exists('name', $results['existingPlan'])) {
-            $planName = $results['existingPlan']['name'];
-            $planId = $results['existingPlan']['id'];
+            $ep = $results['existingPlan'];
+            $planName = $ep['name'];
+            $planId = $ep['id'];
+            if ($ep['perid']) {
+                $id = 'p' . $ep['perid'];
+            } else if ($ep['newperid']) {
+                $id = 'n' . $ep['newperid'];
+            }
         }
     }
 
@@ -218,9 +262,7 @@ function cc_charge_purchase($results, $buyer, $useLogWrite=false) {
                     else
                         $id = 'TBA';
                 }
-                $item = new OrderLineItem ('1');
-                $item->setUid('badge' . ($lineid + 1));
-                $item->setName($badge['age'] . ' Membership for ' . $fullname);
+
                 $note = $badge['memId'] . ',' . $id . ': memId, p/n id';
                 if ($planName != '') {
                     $note .= ($badge['inPlan'] ? (', Plan: ' . $planName) : ', NotInPlan');
@@ -228,10 +270,24 @@ function cc_charge_purchase($results, $buyer, $useLogWrite=false) {
                 if (array_key_exists('glNum', $badge) && $badge['glNum'] != '') {
                     $note .= ', ' . $badge['glNum'];
                 }
-                $item->setNote($note);
-                $item->setBasePriceMoney(new Money);
-                $item->getBasePriceMoney()->setAmount($badge['price'] * 100);
-                $item->getBasePriceMoney()->setCurrency($currency);
+
+                if (array_key_exists('balDue', $badge)) {
+                    $amount = $badge['balDue'] * 100;
+                } else {
+                    $amount = $badge['price'] * 100;
+                }
+
+                $item = new OrderLineItem ([
+                    'itemType' => OrderLineItemItemType::Item->value,
+                    'uid' => 'badge' . ($lineid + 1),
+                    'name' => $badge['age'] . ' Membership for ' . $fullname,
+                    'quantity' => 1,
+                    'note' => $note,
+                    'basePriceMoney' => new Money([
+                        'amount' => $amount,
+                        'currency' => $currency,
+                    ]),
+                ]);
                 $order_lineitems[$lineid] = $item;
                 $order_value += $badge['price'];
                 $lineid++;
@@ -239,8 +295,6 @@ function cc_charge_purchase($results, $buyer, $useLogWrite=false) {
         }
         if (array_key_exists('spaces', $results)) {
             foreach ($results['spaces'] as $spaceId => $space) {
-                $item = new OrderLineItem ('1');
-                $item->setUid('space-' . $spaceId);
                 $itemName = $space['description'] . ' of ' . $space['name'] . ' in ' . $space['regionName'] .
                     ' for ';
                 if ($results['exhibits'] == 'artist' && $space['artistName'] != '') {
@@ -248,31 +302,31 @@ function cc_charge_purchase($results, $buyer, $useLogWrite=false) {
                 } else {
                     $itemName .= $space['exhibitorName'];
                 }
-
-                $itemPrice = $space['approved_price'];
                 $note = $space['id'] . ',' . $space['item_purchased'] . ',' . $space['exhibitorId'] . ',' . $space['exhibitorNumber'] .
                     ': id, item, exhId, exhNum';
                 if (array_key_exists('glNum', $space) && $space['glNum'] != '') {
                     $note .= ', ' . $space['glNum'];
                 }
-                $item->setName(mb_substr($itemName, 0, 128));
-                $item->setNote($note);
-                $item->setBasePriceMoney(new Money);
-                $item->getBasePriceMoney()->setAmount($itemPrice * 100);
-                $item->getBasePriceMoney()->setCurrency($currency);
+
+                $item = new OrderLineItem([
+                    'itemType' => OrderLineItemItemType::Item->value,
+                    'uid' => 'space-' . $spaceId,
+                    'name' => mb_substr($itemName, 0, 128),
+                    'quantity' => 1,
+                    'note' => $note,
+                    'basePriceMoney' => new Money([
+                        'amount' => $space['approved_price'] * 100,
+                        'currency' => $currency,
+                    ]),
+                ]);
                 $order_lineitems[$lineid] = $item;
-                $order_value += $itemPrice;
+                $order_value += $space['approved_price'];
                 $lineid++;
             }
         }
 
-        $order->setLineItems($order_lineitems);
-
-        $orderDiscounts = [];
         // now apply the coupon
         if (array_key_exists('discount', $results) && $results['discount'] > 0) {
-            $item = new OrderLineItemDiscount ();
-            $item->setUid('couponDiscount');
             if (array_key_exists('coupon', $results) && $results['coupon'] != null) {
                 $coupon = $results['coupon'];
                 $couponName = 'Coupon: ' . $coupon['code'] . ' (' . $coupon['name'] . '), Coupon Discount: ' .
@@ -281,13 +335,17 @@ function cc_charge_purchase($results, $buyer, $useLogWrite=false) {
             else {
                 $couponName = 'Coupon Applied';
             }
-            $item->setName($couponName);
-            $item->setType(OrderLineItemDiscountType::FIXED_AMOUNT);
-            $money = new Money;
-            $money->setAmount($results['discount'] * 100);
-            $money->setCurrency($currency);
-            $item->setAmountMoney($money);
-            $item->setScope(\Square\Models\OrderLineItemDiscountScope::ORDER);
+
+            $item = new OrderLineItemDiscount ([
+                'uid' => 'couponDiscount',
+                'name' => mb_substr($couponName, 0, 128),
+                'type' => OrderLineItemDiscountType::FixedAmount->value,
+                'amountMoney' => new Money([
+                    'amount' => $results['discount'] * 100,
+                    'currency' => $currency,
+                ]),
+                'scope' => OrderLineItemDiscountScope::Order->value,
+            ]);
             $orderDiscounts[] = $item;
             $order_value -= $results['discount'];
         }
@@ -296,159 +354,221 @@ function cc_charge_purchase($results, $buyer, $useLogWrite=false) {
         if (array_key_exists('newplan', $results) && $results['newplan'] == 1) {
             // deferment is total of the items - total of the payment
             $deferment = $order_value - $results['total'];
-            $note = "Name: $planName, ID: TBA, Non Plan Amt: $nonPlanAmt, Down Payment: $downPmt, Balance Due: $balaanceDue, Perid: $loginPerid";
+            $note = "Name: $planName, ID: TBA, Non Plan Amt: $nonPlanAmt, Down Payment: $downPmt, Balance Due: $balanceDue, Perid: $loginPerid";
             // this is the down payment on a payment plan
-            $item = new OrderLineItemDiscount ();
-            $item->setUid('planDeferment');
-            $item->setName("Payment Deferral Amount: " . $note);
-            $item->setType(OrderLineItemDiscountType::FIXED_AMOUNT);
-            $money = new Money;
-            $money->setAmount($deferment * 100);
-            $money->setCurrency($currency);
-            $item->setAmountMoney($money);
-            $item->setScope(\Square\Models\OrderLineItemDiscountScope::ORDER);
+            $item = new OrderLineItemDiscount ([
+                'uid' => 'planDeferment',
+                'name' => mb_substr("Payment Deferral Amount: " . $note, 0, 128),
+                'type' => OrderLineItemDiscountType::FixedAmount->value,
+                'amountMoney' => new Money([
+                    'amount' => $deferment * 100,
+                    'currency' => $currency,
+                ]),
+                'scope' => OrderLineItemDiscountScope::Order->value,
+            ]);
             $orderDiscounts[] = $item;
-        }
-        if (count($orderDiscounts) > 0) {
-            $order->setDiscounts($orderDiscounts);
         }
     } else {
         // this is a plan payment make the order just the plan payment
-        $item = new OrderLineItem ('1');
-        $item->setUid('planPayment');
         $note = "Plan Id: $planId, Name: $planName, Perid: $loginPerid";
-        $item->setName('Plan Payment: ' . $note);
-        $item->setBasePriceMoney(new Money);
-        $item->getBasePriceMoney()->setAmount($results['total'] * 100);
-        $item->getBasePriceMoney()->setCurrency($currency);
+        $item = new OrderLineItem ([
+            'itemType' => OrderLineItemItemType::Item->value,
+            'uid' => 'planPayment',
+            'name' => mb_substr('Plan Payment: ' . $note, 0, 128),
+            'quantity' => 1,
+            'note' => $note,
+            'basePriceMoney' => new Money([
+                'amount' =>$results['total'] * 100,
+                'currency' => $currency,
+            ]),
+        ]);
         $order_lineitems[$lineid] = $item;
-
-        $order->setLineItems($order_lineitems);
     }
+
+    // order item from it's line items (constructor array variables)
+    //	$this->id = $values['id'] ?? null;
+    //	$this->locationId = $values['locationId'];
+    //	$this->referenceId = $values['referenceId'] ?? null;
+    //	$this->source = $values['source'] ?? null;
+    //	$this->customerId = $values['customerId'] ?? null;
+    //	$this->lineItems = $values['lineItems'] ?? null;
+    //	$this->taxes = $values['taxes'] ?? null;
+    //	$this->discounts = $values['discounts'] ?? null;
+    //	$this->serviceCharges = $values['serviceCharges'] ?? null;
+    //	$this->fulfillments = $values['fulfillments'] ?? null;
+    //	$this->returns = $values['returns'] ?? null;
+    //	$this->returnAmounts = $values['returnAmounts'] ?? null;
+    //	$this->netAmounts = $values['netAmounts'] ?? null;
+    //	$this->roundingAdjustment = $values['roundingAdjustment'] ?? null;
+    //	$this->tenders = $values['tenders'] ?? null;
+    //	$this->refunds = $values['refunds'] ?? null;
+    //	$this->metadata = $values['metadata'] ?? null;
+    //	$this->createdAt = $values['createdAt'] ?? null;
+    //	$this->updatedAt = $values['updatedAt'] ?? null;
+    //	$this->closedAt = $values['closedAt'] ?? null;
+    //	$this->state = $values['state'] ?? null;
+    //	$this->version = $values['version'] ?? null;
+    //	$this->totalMoney = $values['totalMoney'] ?? null;
+    //	$this->totalTaxMoney = $values['totalTaxMoney'] ?? null;
+    //	$this->totalDiscountMoney = $values['totalDiscountMoney'] ?? null;
+    //	$this->totalTipMoney = $values['totalTipMoney'] ?? null;
+    //	$this->totalServiceChargeMoney = $values['totalServiceChargeMoney'] ?? null;
+    //	$this->ticketName = $values['ticketName'] ?? null;
+    //	$this->pricingOptions = $values['pricingOptions'] ?? null;
+    //	$this->rewards = $values['rewards'] ?? null;
+    //	$this->netAmountDueMoney = $values['netAmountDueMoney'] ?? null;
+
+
+    $order = new Order([
+        'locationId' => $cc['location'],
+        'referenceId' => $con['id'] . '-' . $results['transid'],
+        'source' => new OrderSource([
+            'name' => $con['conname'] . '-' . $source
+        ]),
+        'customerId' => $con['id'] . '-' . $custid,
+        'lineItems' => $order_lineitems,
+        'discounts' => $orderDiscounts,
+    ]);
+
+    // build the order request from it's parts
+    $body = new CreateOrderRequest([
+        'idempotencyKey' => guidv4(),
+        'order' => $order,
+    ]);
 
     // pass order to square and get order id
 
     try {
-        $ordersApi = $client->getOrdersApi();
-//        if ($useLogWrite) {
-//            logWrite(array('ordersApi'=>$ordersApi, 'body'=>$body));
-//        } else {
-//            web_error_log("ordersApi"); var_error_log($ordersApi);
-//            web_error_log("body"); var_error_log($body);
-//        }
-        
-        $apiResponse = $ordersApi->createOrder($body);
+        if ($squareDebug) {
+            if ($useLogWrite) {
+                logWrite(array('message' => 'Orders API order create', 'order'=>$body));
+            } else {
+                web_error_log("orders api order create"); var_error_log($body);
+            }
+        }
+        $apiResponse = $client->orders->create($body);
 
-//        if ($useLogWrite) {
-//            logWrite(array('apiResponse'=>$apiResponse));
-//        } else {
-//            web_error_log("apiResponse");
-//            var_error_log($apiResponse);
-//        }
-        
-        if ($apiResponse->isSuccess()) {
-            $crerateorderresponse = $apiResponse->getResult();
+        if ($squareDebug) {
+            if ($useLogWrite) {
+                logWrite(array ('order apiResponse' => $apiResponse));
+            }
+            else {
+                web_error_log("order apiResponse");
+                var_error_log($apiResponse);
+            }
+        }
 
-//            if ($useLogWrite) {
-//                logWrite(array('order: success' => $crerateorderresponse));
-//            } else {
-//                web_error_log("order: success");
-//                var_error_log($crerateorderresponse);
-//            }
-        } else {
-            $errors = $apiResponse->getErrors();
-//            if ($useLogWrite) {
-//                logWrite(array('ordersApi' => 'Order returned non-success'));
-//            } else {
-                web_error_log('Order returned non-success');
-//            }
-            
+       if ($errors = $apiResponse->getErrors()) {
+            if ($useLogWrite) {
+                logWrite(array ('ordersApi' => 'Order returned non-success'));
+            }
+            web_error_log('Order returned non-success');
+
             $errorreturn = null;
             foreach ($errors as $error) {
-//                if ($useLogWrite) {
-//                    logWrite(array('Category' => $error->getCategory(), 'Code' => $error->getCode(), 'Detail' => $error->getDetail(), 'Field' => $error->getField()));
-//                } else {
-                    var_error_log("Cat: " . $error->getCategory() . ": Code " . $error->getCode() . ". Detail: " . $error->getDetail() . ", [" . $error->getField() . "]");
-//                }
+                if ($useLogWrite) {
+                    logWrite(array ('Category' => $error->getCategory(), 'Code' => $error->getCode(), 'Detail' => $error->getDetail(), 'Field' => $error->getField()));
+                }
+                var_error_log("Cat: " . $error->getCategory() . ": Code " . $error->getCode() . ". Detail: " . $error->getDetail() . ", [" . $error->getField() . "]");
+
                 if ($errorreturn == null)
-                    $errorreturn = array('status'=>'error','data'=>"Order Error: " . $error->getCategory() . "/" . $error->getCode() . ": " . $error->getDetail() . "[" . $error->getField() . "]");
+                    $errorreturn = array ('status' => 'error', 'data' => "Order Error: " . $error->getCategory() . "/" . $error->getCode() . ": " . $error->getDetail() . "[" . $error->getField() . "]");
             }
             if ($errorreturn == null)
-                $errorreturn = array('status' => 'error', 'data' => 'UnknownOrder Error');
+                $errorreturn = array ('status' => 'error', 'data' => 'UnknownOrder Error');
             ajaxSuccess($errorreturn);
             exit();
         }
-    } catch (ApiException $e) {
-//        if ($useLogWrite) {
-//            logWrite('Order received error while calling Square: ' . $e->getMessage());
-//        } else {
-            web_error_log("Order received error while calling Square: " . $e->getMessage());
-//        }
+    }
+    catch (SquareApiException $e) {
+        web_error_log('Order Square API Exception: ' . $e->getMessage());
+        ajaxSuccess(array ('status' => 'error', 'data' => 'Error: Error connecting to Square'));
+        exit();
+    }
+    catch (ApiException $e) {
+        if ($useLogWrite) {
+            logWrite('Order received error while calling Square: ' . $e->getMessage());
+        }
+        web_error_log("Order received error while calling Square: " . $e->getMessage());
+
         ajaxSuccess(array('status'=>'error','data'=>"Error: Error connecting to Square"));
         exit();
     }
 
-    $corder = $crerateorderresponse->getOrder();
+    $order = $apiResponse->getOrder();
 
-    $payuuid = guidv4();
-    $pay_money = new Money;
-    $pay_money->setAmount($results['total'] * 100);
-    $pay_money->setCurrency($currency);
+    if ($squareDebug) {
+        if ($useLogWrite) {
+            logWrite(array ('CALLED WITH' => $results['total']));
+        } else {
+            web_error_log("CALLED WITH " . $results['total']);
+        }
+    }
+    // sanitize the email address to avoid empty and refused
+    if ($buyer['email'] == '/r' || $buyer['email'] == null)
+        $buyer['email'] = '';
+    if ($buyer['phone'] == '/r' || $buyer['phone'] == null)
+        $buyer['phone'] = '';
 
-//    if ($useLogWrite) {
-//        logWrite(array('CALLED WITH' => $results['total'], 'pay_money' => $pay_money));
-//    } else {
-//        web_error_log("CALLED WITH " . $results['total']);
-//        var_error_log($pay_money);
-//    }
-        
-    $pbody = new CreatePaymentRequest($results['nonce'], $payuuid);
-    $pbody->setAmountMoney($pay_money);
-    $pbody->setAutocomplete(true);
-    $pbody->setOrderID($corder->getId());
-    $pbody->setCustomerId($con['id'] . '-' . $custid);
-    $pbody->setLocationId($cc['location']);
-    $pbody->setReferenceId($con['id'] . '-' . $results['transid']);
-    $pbody->setNote('On-Line Registration');
+    $pbodyArgs = array(
+        'idempotencyKey' => guidv4(),
+        'sourceId' => $results['nonce'],
+        'amountMoney' => new Money([
+                                       'amount' => $results['total'] * 100,
+                                       'currency' => $currency,
+                                       'orderId' => $order->getId(),
+                                   ]),
+        'autocomplete' => true,
+        'customerId' => $order->getCustomerId(),
+        'locationId' => $order->getLocationId(),
+        'referenceId' => $order->getReferenceId(),
+        'note' => 'Online payment from ' . $source
+    );
+    if ($buyer['email'] != '')
+        $pbodyArg['buyerEmailAddress'] = $buyer['email'];
+    if ($buyer['phone'] != '') {
+        $phone = phoneNumberNormalize($buyer);
+        if ($phone != '')
+            $pbodyArgs['buyerPhoneNumber'] = $phone;
+    }
 
-//var_error_log($pbody);
-//    if ($useLogWrite) {
-//        logWrite(array('payment' => $pbody));
-//    }
-//    else {
-//        web_error_log('payment:');
-//        var_error_log($pbody);
-//    }
+    $pbody = new CreatePaymentRequest($pbodyArgs);
+    if ($squareDebug) {
+        if ($useLogWrite) {
+            logWrite(array ('payment' => $pbody));
+        }
+        else {
+            web_error_log('payment:');
+            var_error_log($pbody);
+        }
+    }
 
     try {
-        $paymentsApi = $client->getPaymentsApi();
-        $apiResponse = $paymentsApi->createPayment($pbody);
-
-        if ($apiResponse->isSuccess()) {
-            $createPaymentResponse = $apiResponse->getResult();
-//            if ($useLogWrite) {
-//                logWrite(array('payment: success' => $createPaymentResponse));
-//            } else {
-//                web_error_log("payment: success");
-//                var_error_log($createPaymentResponse);
-//            }
-        } else {
-            $errors = $apiResponse->getErrors();
-//            if ($useLogWrite) {
-//                logWrite('Payment returned non-success');
-//            } else {
-                web_error_log("Payment returned non-success");
-//            }
+        $apiResponse = $client->payments->create($pbody);
+        if ($squareDebug) {
+            if ($useLogWrite) {
+                logWrite(array ('payment: apiresponse' => $apiResponse));
+            }
+            else {
+                web_error_log("payment: api respomnse");
+                var_error_log($apiResponse);
+            }
+        }
+        if ($errors = $apiResponse->getErrors()) {
+            if ($useLogWrite) {
+                logWrite('Payment returned non-success');
+            }
+            web_error_log("Payment returned non-success");
             foreach ($errors as $error) {
                 $cat = $error->getCategory();
                 $code = $error->getCode();
                 $detail = $error->getDetail();
                 $field = $error->getField();
-//                if ($useLogWrite) {
-//                    logWrite('Transid: ' . $results['transid'] . " Cat: $cat: Code $code, Detail: $detail [$field]");
-//                } else {
-                    web_error_log("Transid: " . $results['transid'] . " Cat: $cat: Code $code, Detail: $detail [$field]");
-//                }
+                if ($useLogWrite) {
+                    logWrite('Transid: ' . $results['transid'] . " Cat: $cat: Code $code, Detail: $detail [$field]");
+                }
+                web_error_log("Transid: " . $results['transid'] . " Cat: $cat: Code $code, Detail: $detail [$field]");
+
                 switch ($code) {
                     case "GENERIC_DECLINE":
                         $msg = "Card Declined";
@@ -465,34 +585,80 @@ function cc_charge_purchase($results, $buyer, $useLogWrite=false) {
                     default:
                         $msg = $code;
                 }
-//                if ($useLogWrite) {
-//                    logWrite("Square card payment error for " . $results['transid'] . " of $msg");
-//                } else {
-                    web_error_log("Square card payment error for " . $results['transid'] . " of $msg");
-//                }
+                if ($useLogWrite) {
+                    logWrite("Square card payment error for " . $results['transid'] . " of $msg");
+                }
+                web_error_log("Square card payment error for " . $results['transid'] . " of $msg");
+
                 ajaxSuccess(array('status'=>'error','data'=>"Payment Error: $msg"));
                 exit();
             }
-//            if ($useLogWrite) {
-//                logWrite('Square card payment error for ' . $results['transid'] . " of 'unknown'");
-//            } else {
-//                web_error_log("Square card payment error for " . $results['transid'] . " of 'unknown'");
-//            }
+            if ($useLogWrite) {
+                logWrite('Square card payment error for ' . $results['transid'] . " of 'unknown'");
+            }
+            web_error_log("Square card payment error for " . $results['transid'] . " of 'unknown'");
             ajaxSuccess(array('status'=>'error','data'=>"Unknown Payment Error"));
             exit();
         }
-    } catch (ApiException $e) {
-//        if ($useLogWrite) {
-//            logWrite('Payment received error while calling Square: ' . $e->getMessage());
-//        } else {
+    }
+    catch (SquareApiException $e) {
+        web_error_log('Order Square API Exception: ' . $e->getMessage());
+        $ebody = json_decode($e->getBody(),true);
+        $errors = $ebody['errors'];
+        if ($errors) {
+            if ($useLogWrite) {
+                logWrite('Payment returned non-success');
+            }
+            web_error_log('Payment returned non-success');
+            foreach ($errors as $error) {
+                $cat = $error['category'];
+                $code = $error['code'];
+                $detail = $error['detail'];
+                if ($useLogWrite) {
+                    logWrite('Transid: ' . $results['transid'] . " Cat: $cat: Code $code, Detail: $detail");
+                }
+                web_error_log('Transid: ' . $results['transid'] . " Cat: $cat: Code $code, Detail: $detail");
+
+                switch ($code) {
+                    case 'GENERIC_DECLINE':
+                        $msg = 'Card Declined';
+                        break;
+                    case 'CVV_FAILURE':
+                        $msg = 'Authorization error: Invalid CVV';
+                        break;
+                    case 'ADDRESS_VERIFICATION_FAILURE':
+                        $msg = 'Address Verification Failure: Zip Code';
+                        break;
+                    case 'INVALID_EXPIRATION':
+                        $msg = 'Authorization error: Invalid Expiration Date';
+                        break;
+                    default:
+                        $msg = $code;
+                }
+                if ($useLogWrite) {
+                    logWrite('Square card payment error for ' . $results['transid'] . " of $msg");
+                }
+                web_error_log('Square card payment error for ' . $results['transid'] . " of $msg");
+
+                ajaxSuccess(array ('status' => 'error', 'data' => "Payment Error: $msg"));
+                exit();
+            }
+        }
+
+        ajaxSuccess(array ('status' => 'error', 'data' => 'Error: Error connecting to Square'));
+        exit();
+    }
+    catch (ApiException $e) {
+        if ($useLogWrite) {
+            logWrite('Payment received error while calling Square: ' . $e->getMessage());
+        } else {
             web_error_log('Payment received error while calling Square: ' . $e->getMessage());
-//        }
+        }
         ajaxSuccess(array('status'=>'error','data'=>"Error: Error connecting to Square"));
         exit();
     }
 
-    $payment = $createPaymentResponse->getPayment();
-    $id = $payment->getId();
+    $payment = $apiResponse->getPayment();
     $approved_amt = ($payment->getApprovedMoney()->getAmount()) / 100;
     $status = $payment->getStatus();
     $last4 = $payment->getCardDetails()->getCard()->getLast4();
@@ -520,6 +686,7 @@ function cc_charge_purchase($results, $buyer, $useLogWrite=false) {
     $rtn['url'] = $receipt_url;
     $rtn['rid'] = $receipt_number;
     $rtn['body'] = $body;
+    $rtn['pbody'] = $pbody;
     return $rtn;
 };
 ?>

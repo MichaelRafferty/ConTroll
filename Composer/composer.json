@@ -1,6 +1,6 @@
 {
     "require": {
-        "square/square": "40.*",
+        "square/square": "*",
         "symfony/mailer": "^7.2",
         "symfony/amazon-mailer": "^7.2",
         "google/apiclient": "^2.18",

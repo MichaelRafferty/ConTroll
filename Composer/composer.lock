@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6a87db1a7ea6338c5bd4b449273c05f6",
+    "content-hash": "a3ae70a447a2d0f020763590fe00ebc2",
     "packages": [
         {
             "name": "apimatic/core",
@@ -3693,16 +3693,16 @@
         },
         {
             "name": "square/square",
-            "version": "40.0.0.20250123",
+            "version": "42.0.0.20250319",
             "source": {
                 "type": "git",
                 "url": "https://github.com/square/square-php-sdk.git",
-                "reference": "4c8c88afbafb476a3e3f5751c987674874361ca9"
+                "reference": "99193d6249cb3bf43876c9235e177ae6520fae0d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/square/square-php-sdk/zipball/4c8c88afbafb476a3e3f5751c987674874361ca9",
-                "reference": "4c8c88afbafb476a3e3f5751c987674874361ca9",
+                "url": "https://api.github.com/repos/square/square-php-sdk/zipball/99193d6249cb3bf43876c9235e177ae6520fae0d",
+                "reference": "99193d6249cb3bf43876c9235e177ae6520fae0d",
                 "shasum": ""
             },
             "require": {
@@ -3710,12 +3710,13 @@
                 "apimatic/core-interfaces": "~0.1.5",
                 "apimatic/unirest-php": "^4.0.0",
                 "ext-json": "*",
-                "php": "^7.2 || ^8.0"
+                "guzzlehttp/guzzle": "^7.4",
+                "php": "^8.1"
             },
             "require-dev": {
-                "phan/phan": "5.4.5",
-                "phpunit/phpunit": "^7.5 || ^8.5 || ^9.5",
-                "squizlabs/php_codesniffer": "^3.5"
+                "friendsofphp/php-cs-fixer": "3.5.0",
+                "phpstan/phpstan": "^1.12",
+                "phpunit/phpunit": "^9.0"
             },
             "type": "library",
             "autoload": {
@@ -3727,13 +3728,6 @@
             "license": [
                 "MIT"
             ],
-            "authors": [
-                {
-                    "name": "Square Developer Platform",
-                    "email": "developers@squareup.com",
-                    "homepage": "https://squareup.com/developers"
-                }
-            ],
             "description": "Use Square APIs to manage and run business including payment, customer, product, inventory, and employee management.",
             "homepage": "https://squareup.com/developers",
             "keywords": [
@@ -3743,9 +3737,9 @@
             ],
             "support": {
                 "issues": "https://github.com/square/square-php-sdk/issues",
-                "source": "https://github.com/square/square-php-sdk/tree/40.0.0.20250123"
+                "source": "https://github.com/square/square-php-sdk/tree/42.0.0.20250319"
             },
-            "time": "2025-01-23T16:01:43+00:00"
+            "time": "2025-03-19T15:16:33+00:00"
         },
         {
             "name": "symfony/amazon-mailer",

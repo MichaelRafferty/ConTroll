@@ -374,6 +374,8 @@ function cc_charge_purchase($results, $buyer, $useLogWrite=false) {
         'discounts' => $orderDiscounts,
     ]);
 
+    $testLineItems = $order->getLineItems();
+
     // build the order request from it's parts
     $body = new CreateOrderRequest([
         'idempotencyKey' => guidv4(),
