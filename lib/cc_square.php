@@ -385,7 +385,7 @@ function cc_charge_purchase($results, $buyer, $useLogWrite=false) {
         $order_lineitems[$lineid] = $item;
     }
 
-    // order item from it's line items (constructor array variables)
+    // order (constructor array variables)
     //	$this->id = $values['id'] ?? null;
     //	$this->locationId = $values['locationId'];
     //	$this->referenceId = $values['referenceId'] ?? null;
@@ -516,8 +516,8 @@ function cc_charge_purchase($results, $buyer, $useLogWrite=false) {
         'amountMoney' => new Money([
                                        'amount' => $results['total'] * 100,
                                        'currency' => $currency,
-                                       'orderId' => $order->getId(),
                                    ]),
+        'orderId' => $order->getId(),
         'autocomplete' => true,
         'customerId' => $order->getCustomerId(),
         'locationId' => $order->getLocationId(),
