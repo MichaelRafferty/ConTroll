@@ -2,7 +2,7 @@
 //  bypass.php - library of modules to short circuit payment for testing of code
 // uses config variables:
 // [cc]
-// type=bypass - selects that reg iis not to deal with payment
+// type=bypass - selects that reg is not to deal with payment
 
 
 
