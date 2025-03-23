@@ -485,7 +485,7 @@ function cc_charge_purchase($results, $buyer, $useLogWrite=false) {
         ajaxSuccess(array ('status' => 'error', 'data' => 'Error: Error connecting to Square'));
         exit();
     }
-    catch (ApiException $e) {
+    catch (Exception $e) {
         if ($useLogWrite) {
             logWrite('Order received error while calling Square: ' . $e->getMessage());
         }
@@ -586,17 +586,17 @@ function cc_charge_purchase($results, $buyer, $useLogWrite=false) {
                         $msg = $code;
                 }
                 if ($useLogWrite) {
-                    logWrite("Square card payment error for " . $results['transid'] . " of $msg");
+                    logWrite("Non Exception: Square card payment error for " . $results['transid'] . " of $msg");
                 }
-                web_error_log("Square card payment error for " . $results['transid'] . " of $msg");
+                web_error_log("Non Exception: Square card payment error for " . $results['transid'] . " of $msg");
 
                 ajaxSuccess(array('status'=>'error','data'=>"Payment Error: $msg"));
                 exit();
             }
             if ($useLogWrite) {
-                logWrite('Square card payment error for ' . $results['transid'] . " of 'unknown'");
+                logWrite('Non Exception: Square card payment error for ' . $results['transid'] . " of 'unknown'");
             }
-            web_error_log("Square card payment error for " . $results['transid'] . " of 'unknown'");
+            web_error_log("Non Exception: Square card payment error for " . $results['transid'] . " of 'unknown'");
             ajaxSuccess(array('status'=>'error','data'=>"Unknown Payment Error"));
             exit();
         }
