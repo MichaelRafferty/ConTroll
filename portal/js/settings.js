@@ -64,7 +64,7 @@ class Settings {
             return;
         }
 
-        if (acctId == config['personId']) {
+        if (acctId == config['id']) {
             show_message("You cannot request to manage yourself", "error");
             return;
         }
