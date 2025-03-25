@@ -269,8 +269,9 @@ function cc_charge_purchase($results, $buyer, $useLogWrite=false) {
                 if (array_key_exists('balDue', $badge)) {
                     $amount = $badge['balDue'] * 100;
                 } else {
-                    $amount = $badge['price'] * 100;
+                    $amount = ($badge['price']-$badge['paid']) * 100;
                 }
+                $lineItemAmount = ()
 
                 $item = new OrderLineItem ([
                     'itemType' => OrderLineItemItemType::Item->value,
