@@ -230,7 +230,7 @@ function cc_charge_purchase($results, $email, $phone, $useLogWrite=false) {
                 }
                 $item->setNote($note);
                 $item->setBasePriceMoney(new Money);
-                $item->getBasePriceMoney()->setAmount($badge['price'] * 100);
+                $item->getBasePriceMoney()->setAmount(($badge['price']-$badge['paid']) * 100);
                 $item->getBasePriceMoney()->setCurrency($currency);
                 $order_lineitems[$lineid] = $item;
                 $order_value += $badge['price'];
