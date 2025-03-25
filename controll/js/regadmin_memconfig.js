@@ -281,13 +281,17 @@ class memsetup {
                     editor: "input", editorParams: { elementAttributes: { maxlength: "1024" } },
                 },
                 {
-                    title: "Only One", field: "onlyOne", headerWordWrap: true, headerSort: true, editable: reqEditable,
+                    title: "Only One", field: "onlyOne", headerWordWrap: true, headerSort: true, editable: adminEditable,
                     editor: "list", editorParams: { values: ["Y", "N"], }, width: 70, validator: "required" },
                 {
-                    title: "Stand Alone", field: "standAlone", headerWordWrap: true, headerSort: true, editable: reqEditable,
+                    title: "Stand Alone", field: "standAlone", headerWordWrap: true, headerSort: true, editable: adminEditable,
                     editor: "list", editorParams: { values: ["Y", "N"], }, width: 75, validator: "required" },
                 {
-                    title: "Var. Price", field: "variablePrice", headerWordWrap: true, headerSort: true, editable: reqEditable,
+                    title: "Var. Price", field: "variablePrice", headerWordWrap: true, headerSort: true, editable: adminEditable,
+                    editor: "list", editorParams: { values: ["Y", "N"], }, width: 70, validator: "required"
+                },
+                {
+                    title: "Tax", field: "taxable", headerWordWrap: true, headerSort: true, editable: adminEditable,
                     editor: "list", editorParams: { values: ["Y", "N"], }, width: 70, validator: "required"
                 },
                 {
@@ -609,14 +613,15 @@ class memsetup {
     addrowCat() {
         var _this = this;
 
-        this.#categorytable.addRow({memCategory: 'new-row', onlyOne: 'Y', standAlone: 'N', variablePrice: 'N', badgeLabel: 'X', active: 'Y', sortorder: 99,
-                uses: 0, regUses: 0, notes:'', required: 'N'},
+        this.#categorytable.addRow({memCategory: 'new-row', onlyOne: 'Y', standAlone: 'N', variablePrice: 'N', taxable: 'N',
+                badgeLabel: 'X', active: 'Y', sortorder: 99, uses: 0, regUses: 0, notes:'', required: 'N'},
             false).then(function (row) {
             row.getTable().setPage('last').then(function () {
                 row.getCell("memCategory").getElement().style.backgroundColor = "#fff3cd";
                 row.getCell("onlyOne").getElement().style.backgroundColor = "#fff3cd";
                 row.getCell("standAlone").getElement().style.backgroundColor = "#fff3cd";
                 row.getCell("variablePrice").getElement().style.backgroundColor = "#fff3cd";
+                row.getCell("taxable").getElement().style.backgroundColor = "#fff3cd";
                 row.getCell("badgeLabel").getElement().style.backgroundColor = "#fff3cd";
                 row.getCell("active").getElement().style.backgroundColor = "#fff3cd";
                 _this.checkCatUndoRedo();
@@ -918,6 +923,17 @@ class memsetup {
 };
 
 function reqEditable(cell) {
+    if (cell.getData().required == 'N')
+        return true;
+
+    cell.getElement().style.backgroundColor ="#E8FFE8";
+    return false;
+}
+
+function adminEditable(cell) {
+    if (config['ae'])
+        return true;
+    
     if (cell.getData().required == 'N')
         return true;
 

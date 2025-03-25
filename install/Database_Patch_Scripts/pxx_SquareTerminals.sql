@@ -17,9 +17,17 @@ CREATE TABLE terminals (
     createDate datetime NOT NULL,
     status varchar(32) NOT NULL,
     statusChanged datetime NOT NULL,
+    currentOrder varchar(64) NULL,
+    currentPayment varchar(64) NULL,
+    currentOperator int NULL,
+    controllStatus varchar(32) NULL,
+    controllStatusChanged datetime NULL,
     PRIMARY KEY (name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+ALTER TABLE memCategories ADD COLUMN taxable enum('Y','N') NOT NULL DEFAULT 'N' AFTER variablePrice;
 
+INSERT INTO memCategories(memCategory, notes, onlyOne, standAlone, variablePrice, taxable, badgeLabel, active, sortorder)
+VALUES ('addonTaxable', 'Req: Taxable add-on'' to memberships', 'N', 'Y', 'N', 'Y', 'X', 'Y', 75 );
 
 INSERT INTO patchLog(id, name) VALUES(xx, 'Square Terminals');

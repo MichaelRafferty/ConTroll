@@ -13,6 +13,7 @@ if(!$need_login or !checkAuth($need_login['sub'], $page)) {
 
 $finance = checkAuth($need_login['sub'], 'finance');
 $reg_admin = checkAuth($need_login['sub'], 'reg_admin');
+$admin = checkAuth($need_login['sub'], 'admin');
 
 $cdn = getTabulatorIncludes();
 page_init($page,
@@ -73,6 +74,7 @@ $config_vars['multiOneDay'] = $multiOneDay;
 $config_vars['oneoff'] = $oneoff;
 $config_vars['userid'] = $_SESSION['user_perid'];
 $config_vars['finance'] = $finance ? 1 : 0;
+$config_vars['ae'] = $admin ? 1 : 0;
 ?>
 <?php bs_tinymceModal(); ?>
 <div id='merge-lookup' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Look up Merge Person' aria-hidden='true' style='--bs-modal-width: 80%;'>
