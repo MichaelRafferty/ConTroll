@@ -180,6 +180,7 @@ EOS;
         $totalElibibleForDiscount = 0;
         $maxMbrDiscounts = 0;
         $discount = 0;
+        $paid = 0;
         if ($coupon != null) {
             if (array_key_exists('maxMemberships', $coupon)) {
                 $maxMbrDiscounts = $coupon['maxMemberships'] != null ? $coupon['maxMemberships'] : 999999;
@@ -216,6 +217,7 @@ EOS;
                 }
             }
             $total += $price;
+            $paid += $badge['paid'];
         }
         if ($apply_discount) {
             $discount = apply_overall_discount($coupon, $totalElibibleForDiscount);
@@ -232,6 +234,7 @@ EOS;
             'preDiscount' => $preDiscount,
             'maxMbrDiscounts' => $maxMbrDiscounts,
             'applyDiscount' => $apply_discount,
+            'paid' => $paid,
             );
 
         return $data;
