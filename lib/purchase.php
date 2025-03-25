@@ -39,7 +39,7 @@ EOQ;
         $priceR->free();
 
         $memCatQ = <<<EOQ
-SELECT memCategory, onlyOne, standAlone, variablePrice
+SELECT memCategory, onlyOne, standAlone, variablePrice, taxable
 FROM memCategories
 WHERE active = 'Y';
 EOQ;

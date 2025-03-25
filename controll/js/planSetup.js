@@ -32,6 +32,7 @@ class PlansSetup {
     #excludeListDiv = null;
     #portalList = null;
     #portalListDiv = null;
+    #allowedCatList = [];
     #portals = [ { portal: 'portal' }, { portal: 'artist'}, { portal: 'vendor'}, { portal: 'exhibitor'}, { portal: 'fan'} ];
 
     constructor(conid, debug) {
@@ -58,6 +59,10 @@ class PlansSetup {
             this.#editSelButtons.hidden = true;
         }
         this.#planSaveChangesBTN = document.getElementById('planSaveBtn');
+        for (var i = 0; i < memCategories.length; i++) {
+            if (memCategories[i].taxable =='N')
+                this.#allowedCatList.push(memCategories[i]);
+        }
     }
 
     getselIndex() {
@@ -199,7 +204,7 @@ class PlansSetup {
                 this.#editSelLabel.innerHTML = "<b>Select which Categories apply to this payment plan:</b>"
                 this.#editSelField = this.#categoryListDiv;
                 this.#editSelHidden = this.#categoryList;
-                data = memCategories;
+                data = this.#allowedCatList;
                 this.#editSelIndex = 'memCategory';
                 this.#editSelTable = new Tabulator('#editSelTable', {
                     data: data,

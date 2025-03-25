@@ -39,7 +39,7 @@ while ($l = $ageQ->fetch_assoc()) {
 }
 mysqli_free_result($ageQ);
 
-// categorys is memTypes
+// category is memCategories
 $categorySQL = <<<EOS
 SELECT memCategory
 FROM memCategories

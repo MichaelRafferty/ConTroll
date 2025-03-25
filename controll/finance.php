@@ -48,7 +48,7 @@ $paymentPlans = getPlanConfig();
 $memCategories = [];
 $memLabels = [];
 $cQ = <<<EOS
-SELECT memCategory, notes
+SELECT memCategory, notes, taxable
 FROM memCategories
 WHERE active='Y'
 ORDER BY sortorder;
