@@ -1,4 +1,6 @@
 <?php
+// updateFromCart: Portal: update the reg and transaction records for any cart changes
+
 require_once('../lib/base.php');
 require_once('../../lib/log.php');
 require_once('../../lib/policies.php');
@@ -50,6 +52,11 @@ $loginId = getSessionVar('id');
 $loginType = getSessionVar('idType');
 $transId = getSessionVar('transid');
 $voidTransId = false; // void the transaction if a free membership was marked paid in this item
+// if any changes were made to the transaction (cart add/substract/change, etc.)
+// mark this to invalidate the order if it exists
+$orderId = null;
+$orderDate = null;
+$orderIdFetched = false;
 
 $action = $_POST['action'];
 $newEmail = $_POST['newEmail'];
@@ -128,6 +135,8 @@ if ($personId < 0) {
     if (array_key_exists('fname', $person)) {
         if ($transId == null) {
             $transId = getNewTransaction($conid, $loginType == 'p' ? $loginId : null, $loginType == 'n' ? $loginId : null);
+            // new transaction, force everything to null, but show we have the orderId and date.
+            $orderIdFetched = true;
         }
 
         // the exact match check for this new person will prevent adding newperson for existing people
@@ -320,6 +329,27 @@ EOS;
     }
 }
 
+
+// now fetch the order information from the transaction if necessary
+if ($transId != null && !$orderIdFetched) {
+    // get the current orderId if it exists
+    $transOrderQ = <<<EOS
+SELECT orderId, orderDate
+FROM transaction
+WHERE id = ?;
+EOS;
+    $transOrderR = dbSafeQuery($transOrderQ, 'i', array($transId));
+    if ($transOrderR === false || $transOrderR->num_rows != 1) {
+        $transId = getNewTransaction($conid, $loginType == 'p' ? $loginId : null, $loginType == 'n' ? $loginId : null);
+        $orderIdFetched = true;
+    } else {
+        $transRow = $transOrderR->fetch_assoc();
+        $orderId = $transRow['orderId'];
+        $orderDate = $transRow['orderDate'];
+        $orderIdFetched = true;
+    }
+}
+
 $num_del = 0;
 $num_ins = 0;
 // now for the cart
@@ -358,7 +388,7 @@ EOS;
         }
         if ($cartRow['status'] == 'in-cart') {
             if ($transId == null) {
-                $tranId = $transId = getNewTransaction($conid, $loginType == 'p' ? $loginId : null, $loginType == 'n' ? $loginId : null);
+                $tranId = getNewTransaction($conid, $loginType == 'p' ? $loginId : null, $loginType == 'n' ? $loginId : null);
             }
             // insert the new reg record into the cart
             $iQ = <<<EOS
@@ -389,7 +419,12 @@ EOS;
         }
     }
     if ($updateTransPrice) {
-        // we changed a reg for this transaction, recompute the price portion of the record
+        // we changed a reg for this transaction, cancel any pending order and recompute the price portion of the record
+        if ($orderId != null) {
+            cc_cancelOrder($orderId);
+            $orderId = null;
+            $orderDate = null;
+        }
         $uQ = <<<EOS
 UPDATE transaction t
 JOIN (
@@ -397,7 +432,7 @@ JOIN (
     FROM reg
     WHERE create_trans = ? AND status IN ('unpaid', 'paid', 'plan', 'upgraded')
     ) s
-SET price = s.total
+SET price = s.total, orderId = NULL, orderDate = null
 WHERE id = ?;
 EOS;
         dbSafeCmd($uQ, 'ii', array($transId, $transId));
