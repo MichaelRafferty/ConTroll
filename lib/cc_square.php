@@ -107,11 +107,11 @@ use Square\Types\OrderLineItemDiscountType;
 
 function cc_getCurrency($con) : string {
     if (array_key_exists('currency', $con)) {
-        $cur = strtolower($con['currency']);
+        $cur = strtoupper($con['currency']);
         $cur = strtoupper(substr($cur, 0, 1)) . substr($cur, 1);
-        $cur = Currency::tryFrom($cur);
-        if ($cur) {
-            $currency = $cur->value;
+        $curT = Currency::from($cur);
+        if ($curT) {
+            $currency = Currency::$cur->value;
         } else {
             ajaxSuccess(array ('status' => 'error', 'data' => 'Error: Currency ' . $con['currency'] .
                 ' not yet supported in Square, seek assistance.'));

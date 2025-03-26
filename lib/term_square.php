@@ -17,7 +17,6 @@ use Square\Devices;
 use Square\Exceptions\SquareApiException;
 use Square\Devices\Codes\Requests;
 use Square\Types\DeviceCode;
-use Square\Types\Currency;
 use Square\Types\Money;
 use Square\Types\CreateTerminalCheckoutResponse;
 
@@ -155,26 +154,7 @@ function term_payOrder($name, $orderId, $amount, $useLogWrite = false) : array |
     else
         $squareDebug = 0;
 
-    if (array_key_exists('currency', $con)) {
-        switch (strtolower($con['currency'])) {
-            case 'usd':
-                $currency = Currency::Usd->value;
-                break;
-            case 'cad':
-                $currency = Currency::Cad->value;
-                break;
-            default:
-                $cur = Currency::tryFrom($con['currency']);
-                if ($cur) {
-                    $currency = $cur->value;
-                    break;
-                }
-                ajaxSuccess(array ('status' => 'error', 'data' => 'Error: Currency ' . $con['currency'] .
-                    ' not yet supported in cc_square, seek assistance.'));
-                exit();
-        }
-    } else
-        $currency = Currency::Usd->value;
+    $currency = cc_getCurrency($con);
 
     // get the device name
     $terminal = getTerminal($name);
