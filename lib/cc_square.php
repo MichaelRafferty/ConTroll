@@ -111,7 +111,7 @@ function cc_getCurrency($con) : string {
         $cur = strtoupper(substr($cur, 0, 1)) . substr($cur, 1);
         $curT = Currency::from($cur);
         if ($curT) {
-            $currency = Currency::$cur->value;
+            $currency = $curT->value;
         } else {
             ajaxSuccess(array ('status' => 'error', 'data' => 'Error: Currency ' . $con['currency'] .
                 ' not yet supported in Square, seek assistance.'));
