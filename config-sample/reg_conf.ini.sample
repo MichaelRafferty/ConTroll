@@ -39,7 +39,9 @@ hotelname="Hotel Name"
 hoteladdr="Hotel Address"
 survey_url="https://link-to-post-convention-survey"
 id="2022"
+; sales tax rate and Invoice Label
 taxRate=6
+taxLabel="NJ Sales Tax"
 currency="USD"
 minComp="2021"
 compLen="365" ; day length for growth by day graph
