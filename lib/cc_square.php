@@ -107,7 +107,9 @@ use Square\Types\OrderLineItemDiscountType;
 
 function cc_getCurrency($con) : string {
     if (array_key_exists('currency', $con)) {
-        $cur = Currency::tryFrom(strtolower($con['currency']));
+        $cur = strtolower($con['currency']);
+        $cur = strtoupper(substr($cur, 0, 1)) . substr($cur, 1);
+        $cur = Currency::tryFrom($cur);
         if ($cur) {
             $currency = $cur->value;
         } else {
