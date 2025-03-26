@@ -533,6 +533,49 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
     return ($rtn);
 }
 
+// an order is no longer valid, cancel it, via an update to Cancelled status
+function cc_cancelOrder($source, $orderId, $useLogWrite = false) : void {
+    $con = get_conf('con');
+    $cc = get_conf('cc');
+    $debug = get_conf('debug');
+    if (array_key_exists('square', $debug))
+        $squareDebug = $debug['square'];
+    else
+        $squareDebug = 0;
+
+    $order = new Order([
+        'locationId' => $cc['location'],
+        'state' => 'CANCELLED',
+    ]);
+
+    $body = new CreateOrderRequest([
+        'idempotencyKey' => guidv4(),
+        'orderId' => $orderId,
+        'order' => $order,
+    ]);
+
+    $client = new SquareClient(
+        token: $cc['token'],
+        options: [
+            'baseUrl' => $cc['env'] == 'production' ? Environments::Production->value : Environments::Sandbox->value,
+            ]);
+
+    // pass update to cancel state to square
+    try {
+          if ($squareDebug) sqcc_logObject(array ('Orders API order create', $body), $useLogWrite);
+          $apiResponse = $client->orders->create($body);
+          $order = $apiResponse->getOrder();
+          if ($squareDebug) sqcc_logObject(array ('Orders API order response', $order), $useLogWrite);
+      }
+      catch (SquareApiException $e) {
+          sqcc_logException($source, $e, 'Order API create order Exception', 'Order create failed', $useLogWrite);
+      }
+      catch (Exception $e) {
+          sqcc_logException($source, $e, 'Order API error while calling Square', 'Error connecting to Square', $useLogWrite);
+      }
+}
+
+// enter a payment against an exist order: build the payment, submit it to square and process the resulting payment
 function cc_payOrder($results, $buyer, $useLogWrite = false) {
     $con = get_conf('con');
     $cc = get_conf('cc');

@@ -421,7 +421,7 @@ EOS;
     if ($updateTransPrice) {
         // we changed a reg for this transaction, cancel any pending order and recompute the price portion of the record
         if ($orderId != null) {
-            cc_cancelOrder($orderId);
+            cc_cancelOrder('portal', $orderId);
             $orderId = null;
             $orderDate = null;
         }
