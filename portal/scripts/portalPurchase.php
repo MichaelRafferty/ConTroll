@@ -272,6 +272,7 @@ if ($amount > 0) {
         ajaxSuccess(array('status' => 'error', 'error' => 'Credit card order not built'));
         exit();
     }
+    $rtn['$nonce'] = $_POST['nonce'];
     $rtn = cc_payOrder($rtn, $buyer, true);
     if ($rtn == null) {
         // note there is no reason cc_payOrder will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
