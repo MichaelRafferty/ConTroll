@@ -265,10 +265,17 @@ $rows_upd += dbSafeCmd($upT, 'ddddi', array($totalAmountDue, $totalAmountDue, $t
 
 // end compute
 if ($amount > 0) {
-    $rtn = cc_charge_purchase($results, $buyer, true);
+    $rtn = cc_buildOrder($results, true);
     if ($rtn == null) {
-        // note there is no reason cc_charge_purchase will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
-        logWrite(array('con' => $condata['name'], 'trans' => $transId, 'error' => 'Credit card transaction not approved'));
+        // note there is no reason cc_buildOrder will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
+        logWrite(array('con' => $condata['name'], 'trans' => $transId, 'error' => 'Credit card order unable to be created'));
+        ajaxSuccess(array('status' => 'error', 'error' => 'Credit card order not built'));
+        exit();
+    }
+    $rtn = cc_payOrder($rtn, $buyer, true);
+    if ($rtn == null) {
+        // note there is no reason cc_payOrder will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
+        logWrite(array('con' => $condata['name'], 'trans' => $transId, 'error' => 'Credit card order unable to be paid'));
         ajaxSuccess(array('status' => 'error', 'error' => 'Credit card not approved'));
         exit();
     }

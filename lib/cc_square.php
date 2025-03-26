@@ -122,7 +122,7 @@ function cc_getCurrency($con) : string {
 }
 
 // build the order, pass it to square and get the order id
-function cc_build_order($results, $useLogWrite = false) : array {
+function cc_buildOrder($results, $useLogWrite = false) : array {
     $cc = get_conf('cc');
     $con = get_conf('con');
     $debug = get_conf('debug');
@@ -512,19 +512,26 @@ function cc_build_order($results, $useLogWrite = false) : array {
     $rtn['results'] = $results;
      // need to pass back order id, total_amount, tax_amount,
     $rtn['order'] = $order;
-    $rtn['orderId'] = $order->getId();
     $rtn['preTaxAmt'] = $orderValue;
     $rtn['discountAmt'] = $order->getTotalDiscountMoney()->getAmount() / 100;
     $rtn['taxAmt'] = $order->getTotalTaxMoney()->getAmount() / 100;
     $rtn['totalAmt'] = $order->getTotalMoney()->getAmount() / 100;
+    // load into the main rtn the items pay order needs directly
+    $rtn['orderId'] = $order->getId();
+    $rtn['source'] = $source;
     $rtn['customerId'] = $order->getCustomerId();
     $rtn['locationId'] = $order->getLocationId();
     $rtn['referenceId'] = $order->getReferenceId();
-    $rtn['source'] = $source;
+    $rtn['transid'] = $results['transid'];
+    if (array_key_exists('exhibits', $results))
+        $rtn['exhibits'] = $results['exhibits'];
+    if (array_key_exists('nonce', $results))
+        $rtn['exhibits'] = $results['nonce'];
+
     return ($rtn);
 }
 
-function cc_pay_order($results, $buyer, $useLogWrite = false) {
+function cc_payOrder($results, $buyer, $useLogWrite = false) {
     $con = get_conf('con');
     $cc = get_conf('cc');
     $currency = cc_getCurrency($con);
@@ -663,7 +670,7 @@ function cc_pay_order($results, $buyer, $useLogWrite = false) {
         'txn_time', 'cc','nonce','cc_txn_id','cc_approval_code','receipt_url','status','receipt_id', 'cashier');
     $rtn['tnxtypes'] = array('i', 's', 's', 's', 's', 'd', 'd', 'd',
             's', 's', 's', 's', 's', 's', 's', 's', 'i');
-    $rtn['tnxdata'] = array($results['transid'],'credit',$category,$desc,$source,$results['pretax'], $results['tax'], $approved_amt,
+    $rtn['tnxdata'] = array($results['transid'],'credit',$category,$desc,$source,$results['preTaxAmt'], $results['taxAmt'], $approved_amt,
         $txtime,$last4,$results['nonce'],$id,$auth,$receipt_url,$status,$receipt_number, $loginPerid);
     $rtn['url'] = $receipt_url;
     $rtn['rid'] = $receipt_number;
