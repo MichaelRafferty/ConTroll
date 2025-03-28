@@ -254,7 +254,7 @@ function computeNextPaymentDue($payorPlan, $plans, $dolfmt, $currency) : array {
 
     $planid = $payorPlan['planId'];
     $plan = $plans[$planid];
-    if (array_key_exists('payments', $payorPlan) && $payorPlan['numPayorPayments'] > 0) {
+    if (array_key_exists('payments', $payorPlan) && array_key_exists('numPayorPayments', RpayorPlan) && $payorPlan['numPayorPayments'] > 0) {
         $payments = $payorPlan['payments'];
         $numPmts = $payorPlan['numPayorPayments'];
         $lastPayment = $payments[$numPmts];
