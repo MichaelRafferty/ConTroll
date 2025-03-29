@@ -388,7 +388,7 @@ EOS;
         }
         if ($cartRow['status'] == 'in-cart') {
             if ($transId == null) {
-                $tranId = getNewTransaction($conid, $loginType == 'p' ? $loginId : null, $loginType == 'n' ? $loginId : null);
+                $transId = getNewTransaction($conid, $loginType == 'p' ? $loginId : null, $loginType == 'n' ? $loginId : null);
             }
             // insert the new reg record into the cart
             $iQ = <<<EOS
