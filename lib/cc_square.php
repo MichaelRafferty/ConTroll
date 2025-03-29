@@ -219,7 +219,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
     $balanceDue = '';
     $itemsBuilt = false;
     $taxRate = 0;
-    $taxLabel = 'Unconfigured Salex Tax';
+    $taxLabel = 'Unconfigured Sales Tax';
     if (array_key_exists('taxRate', $con)) {
         $taxRate = $con['taxRate'];
     }
@@ -530,7 +530,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
     if (array_key_exists('nonce', $results))
         $rtn['exhibits'] = $results['nonce'];
 
-    return ($rtn);
+    return $rtn;
 }
 
 // an order is no longer valid, cancel it, via an update to Cancelled status
