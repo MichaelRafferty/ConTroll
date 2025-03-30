@@ -464,6 +464,8 @@ else
     $payorPlan = null;
 
 $response = array(
+    'post' => $_POST,
+    'get' => $_GET,
     'status' => $return_arr['status'],
     'url' => $rtn['url'],
     'data' => $error_msg,

@@ -36,7 +36,7 @@ WITH pn AS (
     SELECT t.id, r.create_date, r.id as regId, r.memId, r.conid, r.status, r.price, r.paid, r.complete_trans, r.couponDiscount, r.perid, r.newperid,
         IFNULL(r.complete_trans, r.create_trans) AS sortTrans,
         IFNULL(tp.complete_date, t.create_date) AS transDate,
-        m.label, m.memAge, m.memAge AS age, m.memType, m.memCategory, m.startdate, m.enddate, m.online,
+        m.label, m.memAge, m.memAge AS age, m.memType, m.memCategory, m.startdate, m.enddate, m.online, mC.taxable,
         CASE 
             WHEN pn.memberId IS NOT NULL THEN pn.managedBy
             WHEN nn.memberId IS NOT NULL THEN nn.managedBy
@@ -78,6 +78,7 @@ WITH pn AS (
     JOIN reg r ON t.id = r.create_trans
     LEFT OUTER JOIN transaction tp ON tp.id = r.complete_trans
     JOIN memLabel m ON m.id = r.memId
+    JOIN memCategories mC ON m.memCategory = mC.memCategory
     LEFT OUTER JOIN pn ON pn.memberId = r.perid AND (pn.managedBy = ? OR pn.memberId = ?)
     LEFT OUTER JOIN nn ON nn.memberId = r.newperid
     WHERE (status $statusCheck OR (r.status = 'paid' AND r.complete_trans IS NULL)) AND (t.perid = ? OR tp.perid = ?) AND t.conid = ?
@@ -85,7 +86,7 @@ WITH pn AS (
     SELECT t.id, r.create_date, r.id AS regId, r.memId, r.conid, r.status, r.price, r.paid, r.complete_trans, r.couponDiscount, r.perid, r.newperid,
         CASE WHEN r.complete_trans IS NULL THEN r.create_trans ELSE r.complete_trans END AS sortTrans,
         CASE WHEN tp.complete_date IS NULL THEN t.create_date ELSE tp.complete_date END AS transDate,
-        m.label, m.memAge, m.memAge AS age, m.memType, m.memCategory,  m.startdate, m.enddate, m.online,
+        m.label, m.memAge, m.memAge AS age, m.memType, m.memCategory,  m.startdate, m.enddate, m.online, mC.taxable,
         nn.managedBy, nn.managedByNew, nn.badge_name, nn.fullname, nn.memberId, nn.email_addr, nn.phone,
         IFNULL(tp.perid, t.perid) AS transPerid,
         IFNULL(tp.newperid, t.newperid) AS transNewPerid
@@ -93,6 +94,7 @@ WITH pn AS (
     JOIN reg r ON t.id = r.create_trans
     LEFT OUTER JOIN transaction tp ON tp.id = r.complete_trans
     JOIN memLabel m ON m.id = r.memId
+    JOIN memCategories mC ON m.memCategory = mC.memCategory
     JOIN nn ON nn.memberId = r.newperid
     WHERE (status $statusCheck OR (r.status = 'paid' AND r.complete_trans IS NULL)) AND (t.perid = ? OR tp.perid = ?) AND t.conid = ?
 )
@@ -105,7 +107,7 @@ EOS;
         $membershipsQ = <<<EOS
 WITH mems AS (
     SELECT t.id, r.create_date, r.id AS regId, r.memId, r.conid, r.status, r.price, r.paid, r.complete_trans, r.couponDiscount, r.perid, r.newperid,
-    m.label, m.memAge, m.memAge AS age, m.memType, m.memCategory,  m.startdate, m.enddate, m.online,
+    m.label, m.memAge, m.memAge AS age, m.memType, m.memCategory,  m.startdate, m.enddate, m.online, mC.taxable,
         p.managedBy, p.managedByNew,
         CASE WHEN r.complete_trans IS NULL THEN r.create_trans ELSE r.complete_trans END AS sortTrans,
         CASE WHEN tp.complete_date IS NULL THEN t.create_date ELSE tp.complete_date END AS transDate,
@@ -120,6 +122,7 @@ WITH mems AS (
     JOIN reg r ON t.id = r.create_trans
     LEFT OUTER JOIN transaction tp ON tp.id = r.complete_trans
     JOIN memLabel m ON m.id = r.memId
+    JOIN memCategories mC ON m.memCategory = mC.memCategory
     JOIN newperson p ON p.id = r.newperid
     WHERE (status $statusCheck OR (r.status = 'paid' AND r.complete_trans IS NULL)) AND (t.newperid = ? OR tp.newperid = ?) AND t.conid = ?
     )

@@ -1,7 +1,7 @@
 <?php
 
 // load the appropriate methods for processing credit cards based on the config file
-function load_cc_procs() {
+function load_cc_procs() : void {
     $reg = get_conf('reg');
     $cc = get_conf('cc');
     $con = get_conf('con');

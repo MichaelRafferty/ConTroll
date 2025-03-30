@@ -70,7 +70,7 @@ class Portal {
     #interestsSerializeStart = null;
 
 
-    // payment fields
+    // order/payment fields
     #payBalanceBTN = null;
     #paymentDueModal = null;
     #paymentDueTitle = null;
@@ -89,6 +89,8 @@ class Portal {
     #partialPayAmt = 0;
     #otherPayAmt = 0;
     #otherPay = 0;
+    #orderData = null;
+    #disableButtonNames = null;
 
     // receipt fields
     #receiptModal = null;
@@ -257,6 +259,11 @@ class Portal {
                 return;
             _this.editInterests(config.id, config.idType);
         }
+    }
+
+    // set  / get functions
+    setOrderData(data) {
+        this.#orderData = data;
     }
 
     // disassociate: remove the managed by link for this logged in person
@@ -972,6 +979,31 @@ class Portal {
     }
 
     // payment functions
+    // Payment flow:
+    //  1. determine what to pay
+    //      a. payBalance
+    //          directly make full order
+    //      b. Pay using payment Plan
+    //          allow them to choose and build payment plan
+    //          build order with that payment plan
+    //      c. Payment on Plan
+    //          directly make plan payment order
+    //      d. Pay Other
+    //          allow them to choose what to pay
+    //          build order
+    //
+    //  2. get order information back including
+    //      a. orded id
+    //      b. pretax total
+    //      c. tax
+    //      d. total with tax
+    //
+    //  3. show credit card payment screen
+    //      get nonce
+    //
+    //  4. pay card
+    //      use pre-built order
+
     payBalance(totalDue, skipPlan=false) {
         clear_message();
         clear_message('payDueMessageDiv');
@@ -990,14 +1022,16 @@ class Portal {
         this.#paymentAmount = this.#totalAmountDue;
         this.#planPayment = 0;
 
+        this.#disableButtonNames = 'payBalanceBTNs';
+
         if (skipPlan || !plans) {
-            this.makePayment(null);
+            this.makeOrder(null, 0);
             return;
         }
 
         html = `
     <div class="row mt-3">
-        <div class="col-sm-auto"><button class="btn btn-sm btn-primary pt-0 pb-0" onClick='portal.makePayment(null);'>Pay Total Amount Due</button></div>
+        <div class="col-sm-auto"><button class="btn btn-sm btn-primary pt-0 pb-0" onClick='portal.makeOrder(null, 0);'>Pay Total Amount Due</button></div>
         <div class="col-sm-auto">
             <b>Your total amout due is ` + Number(this.#totalAmountDue).toFixed(2) + `</b>
         </div>
@@ -1059,7 +1093,7 @@ class Portal {
         html += `
     <div class="row mt-3">
         <div class="col-sm-2" style="text-align: right"><button class="btn btn-sm btn-primary pt-0 pb-0" id="partialPayBTN"
-            onClick="portal.makeOtherPayment('part');" disabled>
+            onClick="portal.makeOrder('part', 1);" disabled>
             Pay Selected
         </button></div>
         <div class="col-sm-auto">
@@ -1069,7 +1103,7 @@ class Portal {
     </div>
     <div class="row mt-1 mb-3">
         <div class="col-sm-2" style="text-align: right"><button class="btn btn-sm btn-primary pt-0 pb-0"
-            onClick="portal.makeOtherPayment('full');">Pay All</button></div>
+            onClick="portal.makeOrder('full', 1);">Pay All</button></div>
         <div class="col-sm-auto">
             <b>The total amout due for all memberships purchased by others is ` + Number(totalDue).toFixed(2) + `</b>
         </div>
@@ -1091,12 +1125,86 @@ class Portal {
         document.getElementById('partialPayBTN').disabled = this.#partialPayAmt == 0;
     }
 
+    // makeOrder - make call to create an order in the system and return the order Id, the amount due, the tax due and the total amount due
+    makeOrder(plan, other = 0) {
+        if (plan == null) {
+            this.#paymentPlan = null;
+            if (other == 1) {
+                this.makeOtherOrder('full');
+                this.#otherPay = 1;
+            }
+        } else {
+            this.#paymentPlan = plan;
+            this.#paymentAmount = plan.currentPayment;
+        }
+        var newplan = false;
+        if (this.#paymentPlan != null)
+            if (this.#paymentPlan.new)
+                newplan = true;
+
+        // disable the button that called us
+        var enableButtonNames = null;
+        if (this.#disableButtonNames) {
+            enableButtonNames = this.#disableButtonNames;
+        }
+        $('[name="' + this.#disableButtonNames + '"]').prop('disabled', true);
+        // transaction comes from session, person paying come from session, we will compute what was paid
+        var data = {
+            loginId: config.id,
+            loginType: config.idType,
+            action: 'portalOrder',
+            plan:   (this.#paymentPlan != null || this.#existingPlan != null) ? 1 : 0,
+            existingPlan: this.#existingPlan,
+            planRec: this.#paymentPlan,
+            newplan: newplan ? 1 : 0,
+            planPayment: this.#planPayment,
+            otherPay: this.#otherPay,
+            otherMemberships: JSON.stringify(paidOtherMembership),
+            amount: this.#paymentAmount,
+            totalAmountDue: this.#otherPay == 1 ? this.#paymentAmount : this.#totalAmountDue,
+            couponDiscount: this.#couponDiscount,
+            preCoupomAmountDue: this.#preCoupomAmountDue,
+            couponCode: coupon.getCouponCode(),
+            couponSerial: coupon.getCouponSerial(),
+            planRecast: this.#planRecast ? 1 : 0,
+        };
+        $.ajax({
+            url: "scripts/portalOrder.php",
+            data: data,
+            method: 'POST',
+            success: function (data, textStatus, jqXhr) {
+                checkResolveUpdates(data);
+                portal.setOrderData(data);
+                portal.makePayment(plan);
+                if (enableButtonNames)
+                    $('[name="' + enableButtonNames + '"]').prop('disabled', false);
+                return true;
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                if (enableButtonNames)
+                    $('[name="' + enableButtonNames + '"]').prop('disabled', false);
+                showAjaxError(jqXHR, textStatus, errorThrown, 'eiMessageDiv');
+                return false;
+            },
+        });
+    }
+
     // make payment
     makePayment(plan) {
         if (plan == null) {
             this.#paymentPlan = null;
             if (this.#otherPay == 1) {
-                this.makeOtherPayment('full');
+                // mark which ones to pay
+                for (var i = 0; i < paidOtherMembership.length; i++) {
+                    if (type == 'full') {
+                        paidOtherMembership[i]['payThis'] = 1;
+                    } else {
+                        var checked = document.getElementById('other-' + paidOtherMembership[i]['id']).checked;
+                        paidOtherMembership[i]['payThis'] = checked ? 1 : 0;
+                    }
+                }
+
+                this.#paymentAmount = type == 'full' ? this.#otherPayAmt : this.#partialPayAmt;
                 return;
             }
             this.#makePaymentBody.innerHTML = `
@@ -1138,8 +1246,8 @@ class Portal {
         this.#makePaymentModal.show();
     }
 
-    // makeOtherPayment - pay some or all of the 'paid by other items due'
-    makeOtherPayment(type) {
+    // makeOtherOrder - pay some or all of the 'paid by other items due'
+    makeOtherOrder(type) {
         // mark which ones to pay
         for (var i = 0; i < paidOtherMembership.length; i++) {
             if (type == 'full') {
