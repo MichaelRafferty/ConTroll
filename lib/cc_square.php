@@ -517,6 +517,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
     $rtn['preTaxAmt'] = $orderValue;
     $rtn['discountAmt'] = $order->getTotalDiscountMoney()->getAmount() / 100;
     $rtn['taxAmt'] = $order->getTotalTaxMoney()->getAmount() / 100;
+    $rtn['taxLabel'] = $taxLabel;
     $rtn['totalAmt'] = $order->getTotalMoney()->getAmount() / 100;
     // load into the main rtn the items pay order needs directly
     $rtn['orderId'] = $order->getId();

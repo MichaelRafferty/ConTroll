@@ -176,6 +176,7 @@ if ($otherPay == 0) { // this is a plan payment or badge purchase payment
             ajaxSuccess(array ('status' => 'error', 'error' => 'Unable to process, bad total sent to Server'));
             exit();
         }
+        $amount = $totalAmountDue;
 
         if ($coupon != null) {
             if ($webCouponDiscount != $totalDiscount) {
