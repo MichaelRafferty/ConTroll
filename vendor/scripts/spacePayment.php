@@ -93,7 +93,7 @@ $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale
 // get the specific information allowed
 $regionYearQ = <<<EOS
 SELECT er.id, name, description, ownerName, ownerEmail, includedMemId, additionalMemId, mi.price AS includedPrice, ma.price AS additionalPrice,
-       mi.glNum AS includedGLnum, ma.glNum AS additionalGLNum, ery.mailinFee, ery.atconIdBase, ery.mailinIdBase
+       mi.glNum AS includedGLNum, ma.glNum AS additionalGLNum, ery.mailinFee, ery.atconIdBase, ery.mailinIdBase
 FROM exhibitsRegionYears ery
 JOIN exhibitsRegions er ON er.id = ery.exhibitsRegion
 LEFT OUTER JOIN memList mi ON ery.includedMemId = mi.id
@@ -164,6 +164,7 @@ $spacePriceComputed = 0;
 $includedMembershipsComputed = 0;
 $additionalMembershipsComputed = 0;
 $spaces = [];
+$mailInFee = [];
 while ($space =  $spaceR->fetch_assoc()) {
     var_error_log($space);
     $spaces[$space['spaceId']] = $space;
@@ -175,6 +176,7 @@ $spaceR->free();
 // add in mail in fee if this exhibitor is using mail in this year and the fee exist
 if ($region['mailinFee'] > 0 && $exhibitor['mailin'] == 'Y') {
     $spacePriceComputed += $region['mailinFee'];
+    $mailInFee[] = array('name' => $region['name'], 'amount' => $region['mailinFee']);
 }
 
 if ($spacePrice != $spacePriceComputed || $includedMembershipsComputed != $includedMembershipsMax || $additionalMembershipsComputed != $additionalMembershipsMax) {
@@ -433,6 +435,7 @@ $results = array(
     'transid' => $transid,
     'counts' => null,
     'spaces' => $spaces,
+    'mailInFee' => $mailInFee,
     'price' => $totprice,
     'badges' => $badgeResults,
     'formbadges' => $badges,

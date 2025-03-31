@@ -232,6 +232,24 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
             }
         }
 
+        if (array_key_exists('mailInFee', $results)) {
+            foreach ($results['mailInFee'] as $fee) {
+                $itemName = 'Mail in Fee for ' . $fee['name'];
+                $itemPrice = $fee['amount'];
+                $note = 'Mail in fee';
+                $item = [
+                    'uid' => 'region-' . $fee['name'];
+                'name' => mb_substr($itemName, 0, 128),
+                        'quantity' => 1,
+                        'note' => $note,
+                        'basePriceMoney' => round($itemPrice * 100),
+                    ];
+                    $order_lineitems[$lineid] = $item;
+                    $orderValue += $itemPrice;
+                    $lineid++;
+                }
+        }
+
         $discountAmt = 0;
         // TODO: set the lines the coupon applies to specifically using appliedDiscount and line type for the coupon to split it correctly
         // now apply the coupon
