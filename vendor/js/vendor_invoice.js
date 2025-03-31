@@ -327,7 +327,7 @@ function openInvoice(id) {
 </div>
 <div class="row">
     <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="fname_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + firstStar + `First Name</span><</label><br/>
+        <label for="fname_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + firstStar + `First Name</span></label><br/>
         <input class="form-control-sm" type="text" name="fname_a_` + mnum + `" id="fname_a_` + mnum + `" size="22" maxlength="32" 
             onchange="updateCost(` + regionYearId + "," + mnum + `)" tabindex=` + tabindex + `/>
     </div>`;
