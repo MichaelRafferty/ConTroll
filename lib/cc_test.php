@@ -238,16 +238,16 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                 $itemPrice = $fee['amount'];
                 $note = 'Mail in fee';
                 $item = [
-                    'uid' => 'region-' . $fee['name'];
-                'name' => mb_substr($itemName, 0, 128),
-                        'quantity' => 1,
-                        'note' => $note,
-                        'basePriceMoney' => round($itemPrice * 100),
-                    ];
-                    $order_lineitems[$lineid] = $item;
-                    $orderValue += $itemPrice;
-                    $lineid++;
-                }
+                    'uid' => 'region-' . $fee['name'],
+                    'name' => mb_substr($itemName, 0, 128),
+                    'quantity' => 1,
+                    'note' => $note,
+                    'basePriceMoney' => round($itemPrice * 100),
+                ];
+                $order_lineitems[$lineid] = $item;
+                $orderValue += $itemPrice;
+                $lineid++;
+            }
         }
 
         $discountAmt = 0;
