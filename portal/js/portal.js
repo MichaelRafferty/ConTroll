@@ -265,6 +265,7 @@ class Portal {
     setOrderData(data) {
         this.#orderData = data;
         this.#otherPay = 2;
+        this.#totalAmountDue = data.rtn.totalAmt;
     }
 
     // disassociate: remove the managed by link for this logged in person
@@ -1139,7 +1140,7 @@ class Portal {
                 this.#otherPay = 1;
             } else {
                 this.#otherPay = 0;
-                this.#paymentAmount = 99999999;
+                this.#paymentAmount = this.#totalAmountDue;
             }
         } else {
             this.#paymentPlan = plan;
@@ -1216,9 +1217,9 @@ class Portal {
             }
         } else {
             this.#paymentPlan = plan;
-            this.#paymentAmount = plan.currentPayment;
         }
 
+        this.#paymentAmount = Number(this.#orderData.rtn.totalAmt);
         if (this.#orderData.rtn.taxAmt > 0) {
             html += `
             <div className="row mt-4">
@@ -1331,14 +1332,17 @@ class Portal {
             nonce: token,
             amount: this.#paymentAmount,
             totalAmountDue: this.#otherPay == 1 ? this.#paymentAmount : this.#totalAmountDue,
+            taxAmount: this.#orderData.rtn.taxAmt,
             couponDiscount: this.#couponDiscount,
             preCoupomAmountDue: this.#preCoupomAmountDue,
             couponCode: coupon.getCouponCode(),
             couponSerial: coupon.getCouponSerial(),
             planRecast: this.#planRecast ? 1 : 0,
+            orderId: this.#orderData.rtn.orderId,
+            badges: JSON.stringify(this.#orderData.badges),
         };
         $.ajax({
-            url: "scripts/portalPurchase.php",
+            url: "scripts/portalPayment.php",
             data: data,
             method: 'POST',
             success: function (data, textStatus, jqXhr) {

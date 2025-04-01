@@ -31,7 +31,8 @@ logInit($log['reg']);
 $response['conid'] = $conid;
 
 if (!(array_key_exists('action', $_POST) && array_key_exists('plan', $_POST) &&
-        array_key_exists('nonce', $_POST) && array_key_exists('amount', $_POST)  )) {
+        array_key_exists('nonce', $_POST) && array_key_exists('amount', $_POST) &&
+        array_key_exists('orderId', $_POST))) {
     ajaxSuccess(array('status'=>'error', 'message'=>'Parameter error - get assistance'));
     exit();
 }
@@ -62,6 +63,7 @@ $planRec = $_POST['planRec'];
 $existingPlan = $_POST['existingPlan'];
 $planPayment = $_POST['planPayment'];
 $otherPay = $_POST['otherPay'];
+$orderId = $_POST['orderId'];
 
 // load the amount values
 if (array_key_exists('totalAmountDue', $_POST) && $otherPay != 1) {
@@ -80,9 +82,15 @@ if (array_key_exists('preCouponAmountDue', $_POST)) {
     $preCouponAmountDue = $amount;
 }
 
-if (array_key_exists('otherMemberships', $_POST)) {
+if (array_key_exists('taxAmount', $_POST)) {
+    $taxAmount = $_POST['taxAmount'];
+} else {
+    $taxAmount = 0;
+}
+
+if (array_key_exists('badges', $_POST)) {
     try {
-        $otherMemberships = json_decode($_POST['otherMemberships'], true, 512, JSON_THROW_ON_ERROR);
+        $badges = json_decode($_POST['badges'], true, 512, JSON_THROW_ON_ERROR);
     }
     catch (Exception $e) {
         $msg = 'Caught exception on json_decode: ' . $e->getMessage() . PHP_EOL . 'JSON error: ' . json_last_error_msg() . PHP_EOL;
@@ -92,7 +100,7 @@ if (array_key_exists('otherMemberships', $_POST)) {
         exit();
     }
 } else {
-    $otherMemberships = [];
+    $badges = [];
 }
 
 // and the coupon values
@@ -133,39 +141,6 @@ $buyer['email'] = $info['email_addr'];
 $buyer['phone'] = $info['phone'];
 $buyer['country'] = $info['country'];
 $phone = $info['phone'];
-
-if ($otherPay == 0) { // this is a plan payment or badge purchase payment
-    $badges = getAccountRegistrations($loginId, $loginType, $conid, ($newplan || $planPayment == 0) ? 'unpaid' : 'plan');
-
-    if ($planPayment == 1 || $newplan == 1) {
-        $badges = whatMembershipsInPlan($badges, $planRec);
-    }
-    else foreach ($badges as $key => $badge) {
-        $badges[$key]['inPlan'] = false;
-    }
-
-    // ok, the Portal data is now loaded, now deal with re-pricing things, based on the real tables
-    $data = loadPurchaseData($conid, $couponCode, $couponSerial, $planPayment);
-    $prices = $data['prices'];
-    $memId = $data['memId'];
-    $counts = $data['counts'];
-    $discounts = $data['discounts'];
-    $primary = $data['primary'];
-    $map = $data['map'];
-    $coupon = $data['coupon'];
-    $memCategories = $data['memCategories'];
-    $mtypes = $data['mtypes'];
-
-    //// $rules = $data['rules'];
-    //// TODO: load and apply rules checks here to $badges
-    $data = computePurchaseTotals($coupon, $badges, $primary, $counts, $prices, $map, $discounts, $mtypes, $memCategories);
-
-    $maxMbrDiscounts = $data['origMaxMbrDiscounts'];
-    $apply_discount = $data['applyDiscount'];
-    $preDiscount = $data['preDiscount'];
-    $total = $data['total'];
-    $paid = $data['paid'];
-    $totalDiscount = $data['totalDiscount'];
 
     if ($planPayment == 0) {
         if ($totalAmountDue != ($total - $paid)) {
