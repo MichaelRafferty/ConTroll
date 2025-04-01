@@ -658,7 +658,7 @@ class exhibitorsAdm {
             paginationSize: 25,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
-                {title: "Vendors:", columns: [
+                {title: "Exhibitors:", columns: [
                         {title: "", formatter: this.exhButtons, hozAlign: "center", headerSort: false,},
                         {title: "Exh Id", field: "exhibitorId", visible: true, headerWordWrap: true, width: 75, },
                         {title: "Name", field: "exhibitorName", width: 250, headerSort: true, headerFilter: true, tooltip: this.buildRecordHover,
@@ -666,7 +666,7 @@ class exhibitorsAdm {
                         {title: "Email", field: "exhibitorEmail", headerSort: true, headerFilter: true, width: 250, },
                         {title: "Phone", field: "exhibitorPhone", width: 140, headerSort: true, headerFilter: true,},
                         {title: "Website", field: "website", headerSort: true, headerFilter: true, width: 250, },
-                        {title: "Contact Id", field: "contactId", visible: false, },
+                        {title: "Contact Id", field: "exhibitorYearId", visible: false, },
                         {title: "Contact", field: "contact", headerSort: true, headerFilter: true,
                             width: 250, formatter: this.toHTML, },
                         {title: "Contact Name", field: "contactName", headerSort: true, headerFilter: true, formatter: "textarea", visible: false, },
@@ -1134,7 +1134,7 @@ class exhibitorsAdm {
         if (this.#debug & 4)
             console.log(exhibitor);
     exhibitor_info = exhibitor;
-    exhibitorProfile.profileModalOpen('update', exhibitor['exhibitorId'], exhibitor['contactId'], exhibitorRow);
+    exhibitorProfile.profileModalOpen('update', exhibitor['exhibitorId'], exhibitor['exhibitorYearId'], exhibitorRow);
     }
 
     // reset an exhibitor's password
@@ -1155,11 +1155,11 @@ class exhibitorsAdm {
 
     // reset a contact's password
     resetCpw(exhibitorId) {
-        var contactId = this.#exhibitorsTable.getRow(exhibitorId).getCell("contactId").getValue();
+        var exhibitorYearId = this.#exhibitorsTable.getRow(exhibitorId).getCell("exhibitorYearId").getValue();
         $.ajax({
             url: 'scripts/exhibitorsSetPassword.php',
             method: "POST",
-            data: { 'contactId': contactId, type: 'contact' },
+            data: { 'exhibitorYearId': exhibitorYearId, type: 'contact' },
             success: function (data, textStatus, jqXhr) {
                 if(data['error'] != undefined) { console.log(data['error']); }
                 alert(data['password']);
