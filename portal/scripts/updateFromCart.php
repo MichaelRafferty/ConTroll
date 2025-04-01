@@ -554,13 +554,3 @@ logInit($log['reg']);
 logWrite($response);
 
 ajaxSuccess($response);
-
-function getNewTransaction($conid, $perid, $newperid) {
-    $iQ = <<<EOS
-INSERT INTO transaction (conid, perid, newperid, userid, price, couponDiscountCart, couponDiscountReg, paid, type)
-VALUES (?, ?, ?, ?, 0, 0, 0, 0, 'regportal');
-EOS;
-    $transId = dbSafeInsert($iQ, 'iiii', array($conid, $perid, $newperid, $perid));
-    setSessionVar('transId', $transId);
-    return $transId;
-}

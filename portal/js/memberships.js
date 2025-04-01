@@ -889,7 +889,7 @@ class Membership {
             this.#countMemberships++;
             var amount_due = Number(membershipRec.price) - (Number(membershipRec.paid) + Number(membershipRec.couponDiscount));
             var label = (membershipRec.conid != config.conid ? membershipRec.conid + ' ' : '') + membershipRec.label +
-                (membershipRec.memAge != 'all' ? ' . + ageListIdx[membershipRec.memAge].label + ' : '');
+                (membershipRec.memAge != 'all' ? (' ' + ageListIdx[membershipRec.memAge].label) : '');
             var expired = false;
             if ((membershipRec.status == 'unpaid' || membershipRec.status == 'in-cart') && !membershipRec.toDelete)
                 this.#totalDue += amount_due;
