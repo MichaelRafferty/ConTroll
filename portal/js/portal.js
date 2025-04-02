@@ -90,6 +90,7 @@ class Portal {
     #otherPayAmt = 0;
     #otherPay = 0;
     #orderData = null;
+    #orderBadges = null;
     #disableButtonNames = null;
 
     // receipt fields
@@ -325,7 +326,6 @@ class Portal {
         $('#lname').removeClass('need');
         $('#addr').removeClass('need');
         $('#city').removeClass('need');
-        $('#state').removeClass('need');
         $('#state').removeClass('need');
         $('#zip').removeClass('need');
 
@@ -1344,7 +1344,7 @@ class Portal {
             couponSerial: coupon.getCouponSerial(),
             planRecast: this.#planRecast ? 1 : 0,
             orderId: this.#orderData.rtn.orderId,
-            badges: JSON.stringify(this.#orderData.badges),
+            badges: JSON.stringify(this.#orderData.rtn.results.badges),
         };
         $.ajax({
             url: "scripts/portalPayment.php",

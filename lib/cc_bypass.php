@@ -397,6 +397,7 @@ function cc_payOrder($results, $buyer, $useLogWrite = false) {
 
     switch($_POST['nonce'][0]) {
         case '1': // success
+            $rtn['results'] = $results;
             $rtn['amount'] = $results['totalAmt'];
             $rtn['txnfields'] =  array('transid','type','category','description', 'source','pretax', 'tax', 'amount', 'txn_time', 'nonce','cc_txn_id',
                 'cc_approval_code','receipt_id', 'cashier');
