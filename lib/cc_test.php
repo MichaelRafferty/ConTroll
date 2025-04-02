@@ -362,21 +362,10 @@ function cc_fetchOrder($source, $orderId, $useLogWrite = false) :  null {
 function cc_cancelOrder($source, $orderId, $useLogWrite = false) : void {
 }
 
-function cc_charge_purchase($results, $buyer, $useLogWrite=false) {
+// enter a payment against an exist order: build the payment, submit it to square and process the resulting payment
+function cc_payOrder($results, $buyer, $useLogWrite = false) {
     $cc = get_conf('cc');
-    //$con = get_conf('con');
     $reg = get_conf('reg');
-	$loginPerid = getSessionVar('user_perid');
-	if ($loginPerid == null) {
-		$userType = getSessionVar('idType');
-		if ($userType == 'p')
-			$loginPerid = getSessionVar('id');
-	}
-
-    if(!isset($_POST['nonce'])) {
-		ajaxSuccess(array('status'=>'error','data'=>'missing CC information'));
-		exit();
-	}
 
     if ((!array_key_exists('demo', $cc)) || $cc['demo'] != 1) { // allow demo override on test for cc
         if (($cc['env'] != 'sandbox') || $reg['test'] != 1) {
@@ -384,6 +373,24 @@ function cc_charge_purchase($results, $buyer, $useLogWrite=false) {
             exit();
         }
     }
+
+    $loginPerid = getSessionVar('user_perid');
+    if ($loginPerid == null) {
+        $userType = getSessionVar('idType');
+        if ($userType == 'p')
+            $loginPerid = getSessionVar('id');
+    }
+    // sanitize the email address to avoid empty and refused
+    if ($buyer['email'] == '/r' || $buyer['email'] == null)
+        $buyer['email'] = '';
+    if ($buyer['phone'] == '/r' || $buyer['phone'] == null)
+        $buyer['phone'] = '';
+
+    $source = 'onlinereg';
+    if (array_key_exists('source', $results)) {
+        $source = $results['source'];
+    }
+
 	// set category based on if exhibits is a portal type
     if (array_key_exists('exhibits', $results)) {
         if ($results['exhibits'] == 'vendor')
@@ -396,11 +403,12 @@ function cc_charge_purchase($results, $buyer, $useLogWrite=false) {
 
 	switch($_POST['nonce'][0]) {
 		case '1': // success
-			$rtn['amount'] = $results['total'];
+			$rtn['amount'] = $results['totalAmt'];
 			$rtn['txnfields'] =  array('transid','type','category','description', 'source','pretax', 'tax', 'amount', 'txn_time', 'nonce','cc_txn_id',
 			'cc_approval_code','receipt_id', 'cashier');
 			$rtn['tnxtypes'] = array('i', 's', 's', 's', 's', 'd', 'd', 'd', 's', 's', 's', 's', 's', 'i');
-			$rtn['tnxdata'] = array($results['transid'],'credit',$category, 'test registration', 'online', $results['pretax'], $results['tax'], $results['total'],	'00-00-00 00:00:00',
+			$rtn['tnxdata'] = array($results['transid'],'credit',$category, 'test registration', 'online', $results['preTaxAmt'], $results['taxAmt'],
+                $results['totalAmt'],	'00-00-00 00:00:00',
 			$_POST['nonce'],'txn id','000000','txn_id', $loginPerid);
             $rtn['url'] = 'no test receipt';
             $rtn['rid'] = 'test';
