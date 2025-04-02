@@ -353,6 +353,11 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
     return $rtn;
 }
 
+// fetch an order to get its details (stub, bypass and test don't keep orders)
+function cc_fetchOrder($source, $orderId, $useLogWrite = false) :  null {
+    return null;
+}
+
 function cc_charge_purchase($results, $buyer, $useLogWrite=false) {
     $cc = get_conf('cc');
     //$con = get_conf('con');

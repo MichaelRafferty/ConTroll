@@ -52,6 +52,8 @@ if ($resolveUpdates != null && array_key_exists('logout', $resolveUpdates) && $r
     return;
 }
 
+$cc = get_conf('cc');
+
 $loginId = getSessionVar('id');
 $loginType = getSessionVar('idType');
 
@@ -64,6 +66,7 @@ $existingPlan = $_POST['existingPlan'];
 $planPayment = $_POST['planPayment'];
 $otherPay = $_POST['otherPay'];
 $orderId = $_POST['orderId'];
+$source = 'portal';
 
 // load the amount values
 if (array_key_exists('totalAmountDue', $_POST) && $otherPay != 1) {
@@ -142,92 +145,39 @@ $buyer['phone'] = $info['phone'];
 $buyer['country'] = $info['country'];
 $phone = $info['phone'];
 
-    if ($planPayment == 0) {
-        if ($totalAmountDue != ($total - $paid)) {
-            error_log('bad total: post=' . $totalAmountDue . ', calc=' . $total);
-            ajaxSuccess(array ('status' => 'error', 'error' => 'Unable to process, bad total sent to Server'));
-            exit();
-        }
+$referenceId = $transId . '-' . 'pay-' . time();
 
-        if ($coupon != null) {
-            if ($webCouponDiscount != $totalDiscount) {
-                error_log('bad coupon discount: post=' . $webCouponDiscount . ', calc=' . $totalDiscount);
-                ajaxSuccess(array ('status' => 'error', 'error' => 'Unable to process, bad coupon data sent to Server'));
-                exit();
-            }
-        }
+$order = cc_fetchOrder($source, $orderId, true);
+if ($order != null) {
+    if ($totalAmountDue != $order['totalAmountDue']) {
+        error_log('bad total: post=' . $totalAmountDue . ', order=' . $order['totalAmountDue']);
+        ajaxSuccess(array ('status' => 'error', 'error' => 'Unable to process, bad total sent to Server'));
+        exit();
     }
-    else {
-        $totalAmountDue = $total - $paid;
+
+    if ($taxAmount != $order['taxAmount']) {
+        error_log('bad tax: post=' . $taxAmount . ', order=' . $order['taxAmount']);
+        ajaxSuccess(array ('status' => 'error', 'error' => 'Unable to process, bad tax sent to Server'));
+        exit();
     }
-} else { // otherPay = 1, this is a pay against 'other'
-    // load the badge array to mark what is being paid for
-        $totalDiscount = 0;
-        $badges = [];
-        foreach ($otherMemberships AS $key => $mem) {
-            if (!array_key_exists('payThis', $mem))
-                continue;
-            if ($mem['payThis'] != 1)
-                continue;
-            $badges[] = array('id' => $mem['create_trans'],
-                              'create_date' => $mem['create_date'],
-                              'regId' => $mem['regId'],
-                              'memId' => $mem['memId'],
-                              'conid' => $mem['conid'],
-                              'status' => $mem['status'],
-                              'price' => $mem['actPrice'],
-                              'paid' => $mem['actPaid'],
-                              'complete_trans' => $mem['complete_trans'],
-                              'couponDiscount' => $mem['actCouponDiscount'],
-                              'balDue' => $mem['actPrice'] - ($mem['actPaid'] + $mem['actCouponDiscount']),
-                              'perid' => $mem['regPerid'],
-                              'newperid' => $mem['regNewperid'],
-                              'sortTrans' => $mem['sortTrans'],
-                              'transDate' => $mem['transDate'],
-                              'label' => $mem['shortname'],
-                              'memAge' => $mem['memAge'],
-                              'age' => $mem['memAge'],
-                              'memType' => $mem['type'],
-                              'memCategory' => $mem['category'],
-                              'startdate' => $mem['startdate'],
-                              'enddate' => $mem['enddate'],
-                              'online' => $mem['online'],
-                              'managedBy' => $mem['managedBy'],
-                              'managedByNew' => $mem['managedByNew'],
-                              'badge_name' => $mem['badge_name'],
-                              'fullname' => $mem['fullname'],
-                              'memberId' => $mem['memberId'],
-                              'planId' => $mem['planId'],
-                              'email_addr' => $mem['email_addr'],
-                              'phone' => $mem['phone'],
-                              'inPlan' => false
-            );
-            if ($mem['planId'] != 0) {
-                $planRecast = 1;
-            }
-        }
 }
 
-// now recompute the records in the badgeResults array
-
 $results = array(
-    'custid' => "$loginType-$loginId",
-    'source' => 'portal',
-    'transid' => $transId,
-    'counts' => $counts,
-    'price' => $totalAmountDue,
-    'tax' => 0,
-    'pretax' => $totalAmountDue,
-    'badges' => $badges,
-    'total' => $amount,
+    'source' => $source,
     'nonce' => $nonce,
-    'coupon' => $coupon,
-    'discount' => $totalDiscount,
-    'newplan' => $newplan,
-    'planRec' => $planRec,
-    'planPayment' => $planPayment,
-    'existingPlan' => $existingPlan,
+    'totalAmt' => $amount,
+    'orderId' => $orderId,
+    'custid' => "$loginType-$loginId",
+    'locationId' => $cc['location'],
+    'referenceId' => $referenceId,
+    'transid' => $transId,
+    'preTaxAmt' => $totalAmountDue,
+    'taxAmt' => $taxAmount,
 );
+
+// call the credit card processor to make the payment
+
+    $rtn = cc_payOrder($results, $buyer, true);
 
 //log requested badges
 logWrite(array('con'=>$condata['name'], 'trans'=>$transId, 'results'=>$results, 'request'=>$badges));
@@ -236,7 +186,7 @@ UPDATE transaction
 SET price = ?, withTax = ?, couponDiscountCart = ?, tax = ?
 WHERE id = ?;
 EOS;
-$rows_upd += dbSafeCmd($upT, 'ddddi', array($totalAmountDue, $totalAmountDue, $totalDiscount, 0, $transId));
+$rows_upd += dbSafeCmd($upT, 'ddddi', array($totalAmountDue, $totalAmountDue, $webCouponDiscount, 0, $transId));
 
 // end compute
 if ($amount > 0) {
@@ -271,15 +221,15 @@ if ($amount > 0) {
     $approved_amt = 0;
     $rtn = array('url' => '', 'rid' => '');
 }
-if ($totalDiscount > 0) {
+if ($webCouponDiscount > 0) {
     // Insert the payment record for the coupon
     $ipQ = <<<EOS
 INSERT INTO payments(transid, type, category, description, source, pretax, tax, amount, time, status) 
 VALUES (?, 'coupon', 'reg', ?, 'online', ?, 0, ?, now(), 'APPLIED');
 EOS;
     $couponDesc = $coupon['id'] . ':' . $coupon['code'] . ' - ' . $coupon['name'];
-        $cpmtID = dbSafeInsert($ipQ, 'isdd', array($transId, $couponDesc, $totalDiscount, $totalDiscount));
-    $coupon['totalDiscount'] = $totalDiscount;
+        $cpmtID = dbSafeInsert($ipQ, 'isdd', array($transId, $couponDesc, $webCouponDiscount, $webCouponDiscount));
+    $coupon['totalDiscount'] = $webCouponDiscount;
 }
 
 if ($loginType == 'p') {
@@ -373,15 +323,15 @@ if ($approved_amt == $totalAmountDue) {
 }
 
 $txnUpdate .= 'paid=?, couponDiscountCart = ?, coupon = ? WHERE id=?;';
-if ($totalDiscount > 0)
+if ($webCouponDiscount > 0)
     $couponId = $coupon['id'];
 else
     $couponId = null;
-$txnU = dbSafeCmd($txnUpdate, 'ddii', array($approved_amt, $totalDiscount, $couponId, $transId));
+$txnU = dbSafeCmd($txnUpdate, 'ddii', array($approved_amt, $webCouponDiscount, $couponId, $transId));
 
 $upgradedCnt = 0;
 if ($amount > 0 && $planPayment != 1) {
-    $balance = $approved_amt + $totalDiscount;
+    $balance = $approved_amt + $webCouponDiscount;
     // first all the out of plan ones
     $rows_upd += allocateBalance($balance, $badges, $conid, $newPlanId, $transId, false);
 

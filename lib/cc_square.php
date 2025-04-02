@@ -554,7 +554,6 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
 
 // an order is no longer valid, cancel it, via an update to Cancelled status
 function cc_cancelOrder($source, $orderId, $useLogWrite = false) : void {
-    $con = get_conf('con');
     $cc = get_conf('cc');
     $debug = get_conf('debug');
     if (array_key_exists('square', $debug))
@@ -592,6 +591,47 @@ function cc_cancelOrder($source, $orderId, $useLogWrite = false) : void {
       catch (Exception $e) {
           sqcc_logException($source, $e, 'Order API error while calling Square', 'Error connecting to Square', $useLogWrite);
       }
+}
+// fetch an order to get its details
+function cc_fetchOrder($source, $orderId, $useLogWrite = false) : array {
+    $cc = get_conf('cc');
+    $debug = get_conf('debug');
+    if (array_key_exists('square', $debug))
+        $squareDebug = $debug['square'];
+    else
+        $squareDebug = 0;
+
+    $body = new Square\Orders\Requests\GetOrdersRequest([
+        'orderId' => $orderId,
+    ]);
+
+    $client = new SquareClient(
+        token: $cc['token'],
+        options: [
+            'baseUrl' => $cc['env'] == 'production' ? Environments::Production->value : Environments::Sandbox->value,
+        ]);
+
+    // pass update to cancel state to square
+    try {
+        if ($squareDebug) sqcc_logObject(array ('Orders API order create', $body), $useLogWrite);
+        $apiResponse = $client->orders->get($body);
+        $order = $apiResponse->getOrder();
+        if ($squareDebug) sqcc_logObject(array ('Orders API order response', $order), $useLogWrite);
+    }
+    catch (SquareApiException $e) {
+        sqcc_logException($source, $e, 'Order API create order Exception', 'Order create failed', $useLogWrite);
+    }
+    catch (Exception $e) {
+        sqcc_logException($source, $e, 'Order API error while calling Square', 'Error connecting to Square', $useLogWrite);
+    }
+    $rtn = array();
+    $rtn['totalAmountDue'] = $order->getTotalMoney()->getAmount() / 100;
+    $rtn['taxAmount'] = $order->getTotalTaxMoney()->getAmount() / 100;
+    $rtn['totalDiscountAmount'] = $order->getTotalDiscountMoney()->getAmount() / 100;
+    $rtn['netAmountDue'] = $order->getNetAmountDueMoney()->getAmount() / 100;
+    $rtn['netAmount'] = $order->getNetAmounts()->getAmount() / 100;
+
+    return $rtn;
 }
 
 // enter a payment against an exist order: build the payment, submit it to square and process the resulting payment

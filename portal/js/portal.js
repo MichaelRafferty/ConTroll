@@ -82,7 +82,7 @@ class Portal {
     #existingPlan = null;
     #planRecast = false;
     #totalAmountDue = null;
-    #preCoupomAmountDue = 0;
+    #preCouponAmountDue = 0;
     #couponDiscount = 0;
     #paymentAmount = null;
     #planPayment = 0;
@@ -1172,7 +1172,7 @@ class Portal {
             amount: this.#paymentAmount,
             totalAmountDue: this.#otherPay == 1 ? this.#paymentAmount : this.#totalAmountDue,
             couponDiscount: this.#couponDiscount,
-            preCoupomAmountDue: this.#preCoupomAmountDue,
+            preCouponAmountDue: this.#preCouponAmountDue,
             couponCode: coupon.getCouponCode(),
             couponSerial: coupon.getCouponSerial(),
             planRecast: this.#planRecast ? 1 : 0,
@@ -1334,7 +1334,7 @@ class Portal {
             totalAmountDue: this.#otherPay == 1 ? this.#paymentAmount : this.#totalAmountDue,
             taxAmount: this.#orderData.rtn.taxAmt,
             couponDiscount: this.#couponDiscount,
-            preCoupomAmountDue: this.#preCoupomAmountDue,
+            preCouponAmountDue: this.#preCouponAmountDue,
             couponCode: coupon.getCouponCode(),
             couponSerial: coupon.getCouponSerial(),
             planRecast: this.#planRecast ? 1 : 0,
@@ -1610,7 +1610,7 @@ class Portal {
 
     // coupon related items
     couponDiscountUpdate(couponAmounts) {
-        this.#preCoupomAmountDue = Number(couponAmounts.totalDue);
+        this.#preCouponAmountDue = Number(couponAmounts.totalDue);
         this.#subTotalColDiv.innerHTML = '$' + Number(couponAmounts.totalDue).toFixed(2);
         this.#couponDiscount = Number(couponAmounts.discount);
         this.#couponDiscountDiv.innerHTML = '$' + Number(couponAmounts.discount).toFixed(2);
