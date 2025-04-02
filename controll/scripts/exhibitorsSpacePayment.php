@@ -66,7 +66,7 @@ $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale
 // get the specific information allowed
 $regionYearQ = <<<EOS
 SELECT er.id, name, description, ownerName, ownerEmail, includedMemId, additionalMemId, mi.price AS includedPrice, ma.price AS additionalPrice,
-       mi.glNum AS includedGLnum, ma.glNum AS additionalGLNum, ery.mailinFee, ery.atconIdBase, ery.mailinIdBase
+       mi.glNum AS includedGLNum, ma.glNum AS additionalGLNum, ery.mailinFee, ery.atconIdBase, ery.mailinIdBase
 FROM exhibitsRegionYears ery
 JOIN exhibitsRegions er ON er.id = ery.exhibitsRegion
 LEFT OUTER JOIN memList mi ON ery.includedMemId = mi.id
