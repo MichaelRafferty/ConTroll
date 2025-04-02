@@ -1146,6 +1146,10 @@ class Portal {
             this.#paymentPlan = plan;
             this.#paymentAmount = plan.currentPayment;
         }
+        var cancelOrderId = null;
+        if (this.#orderData)
+            cancelOrderId = this.#orderData.rtn.orderId;
+
         var newplan = false;
         if (this.#paymentPlan != null)
             if (this.#paymentPlan.new)
@@ -1176,6 +1180,7 @@ class Portal {
             couponCode: coupon.getCouponCode(),
             couponSerial: coupon.getCouponSerial(),
             planRecast: this.#planRecast ? 1 : 0,
+            cancelOrderId: cancelOrderId,
         };
         $.ajax({
             url: "scripts/portalOrder.php",
@@ -1386,6 +1391,12 @@ class Portal {
                 return;
             }
         }
+
+        // clear any order in progress
+        this.#orderData = null;
+        this.#otherPayAmt = 0;
+        this.#otherPay = 0;
+
         if (data.message)
             window.location = this.#portalPage + '?messageFwd=' + encodeURI(data.message);
         else {

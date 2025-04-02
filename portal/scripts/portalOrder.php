@@ -83,6 +83,12 @@ if (array_key_exists('preCouponAmountDue', $_POST)) {
     $preCouponAmountDue = $amount;
 }
 
+if (array_key_exists('cancelOrder', $_POST)) {
+    $cancelOrderId = $_POST['cancelOrder'];
+} else {
+    $cancelOrderId = null;
+}
+
 if (array_key_exists('otherMemberships', $_POST)) {
     try {
         $otherMemberships = json_decode($_POST['otherMemberships'], true, 512, JSON_THROW_ON_ERROR);
@@ -268,6 +274,9 @@ $rows_upd += dbSafeCmd($upT, 'ddddi', array($totalAmountDue, $totalAmountDue, $t
 
 // end compute, create the order if there is something to pay
 if ($amount > 0) {
+    if ($cancelOrderId) // cancel the old order if it exists
+        cc_cancelOrder($results['source'], $cancelOrderId, true);
+
     $rtn = cc_buildOrder($results, true);
     if ($rtn == null) {
         // note there is no reason cc_buildOrder will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case

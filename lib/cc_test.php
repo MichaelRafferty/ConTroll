@@ -358,6 +358,10 @@ function cc_fetchOrder($source, $orderId, $useLogWrite = false) :  null {
     return null;
 }
 
+// stub for cancel order
+function cc_cancelOrder($source, $orderId, $useLogWrite = false) : void {
+}
+
 function cc_charge_purchase($results, $buyer, $useLogWrite=false) {
     $cc = get_conf('cc');
     //$con = get_conf('con');
