@@ -41,13 +41,10 @@ if($_POST['action'] == 'create') {
 if (($_POST['action'] == 'update') or ($_POST['action'] == 'create')) {
     $insertQ = "INSERT IGNORE INTO user_auth(user_id, auth_id) VALUES(?, ?);";
     $deleteQ = "DELETE FROM user_auth WHERE user_id = ? AND auth_id = ?;";
-    $auth = dbSafeInsert($insertQ, "ii", array($user, $auth_set['overview']));
     $auths = 0;
 
     // Compute which auths to set for this user
     $user_auths = array();
-    $user_auths[$auth_set['overview']] = 1;
-
     foreach ($sets as $n => $perms) {
         if (array_key_exists($n, $_POST) && $_POST[$n] == "on") {
             foreach($perms as $v) {

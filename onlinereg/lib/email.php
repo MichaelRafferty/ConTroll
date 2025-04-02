@@ -14,6 +14,17 @@ function getEmailBody($transid, $totalDiscount) : string
     }
     $dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
 
+    if (array_key_exists('oneoff', $con)) {
+        $oneoff = $con['oneoff'];
+    } else {
+        $oneoff = 0;
+    }
+
+    if ($oneoff != 1)
+        $rollovers = "and rollovers to future conventions";
+    else
+        $rollovers = "";
+
     $ownerQ = <<<EOS
 SELECT NP.first_name, NP.last_name, P.receipt_id as payid, T.complete_date, T.couponDiscountCart, T.paid, P.receipt_url AS url, C.code, C.name
 FROM transaction T
@@ -29,7 +40,7 @@ EOS;
     $body .= "Thank you for registering for " . $condata['label'] . "!\n\n";
 
     if ($ini['test'] == 1) {
-        $body .= "This email was send as part of testing.\n\n";
+        $body .= "This email was sent as part of testing.\n\n";
     }
 
     $body .= "Your Transaction number is $transid and Receipt number is " . $owner['payid'] . "\n";
@@ -73,7 +84,7 @@ EOS;
         "Click " . $con['policy'] . " for the " . $con['policytext'] . ".\n" .
         "For more information about " . $con['conname'] . " please email " . $con['infoemail'] . ".\n" .
         "For questions about " . $con['conname'] . " Registration, email " . $con['regemail'] . ".\n" .
-        $con['conname'] . " memberships are not refundable, except in case of emergency. For details and questions about transfers and rollovers to future conventions, please see The Registration Policies Page.\n";
+        $con['conname'] . " memberships are not refundable, except in case of emergency. For details and questions about transfers $rollovers, please see The Registration Policies Page.\n";
 
     return $body;
 }
@@ -90,6 +101,17 @@ function getNoChargeEmailBody($results, $totalDiscount) : string
         $currency = 'USD';
     }
     $dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
+
+    if (array_key_exists('oneoff', $con)) {
+        $oneoff = $con['oneoff'];
+    } else {
+        $oneoff = 0;
+    }
+
+    if ($oneoff != 1)
+        $rollovers = 'and rollovers to future conventions';
+    else
+        $rollovers = '';
 
     //  contents of results
     //  'transid' => $transid,
@@ -116,7 +138,7 @@ EOS;
     $body .= 'Thank you for registering for ' . $condata['label'] . "!\n\n";
 
     if ($ini['test'] == 1) {
-        $body .= "This email was send as part of testing.\n\n";
+        $body .= "This email was sent as part of testing.\n\n";
     }
 
     $body .= "Your Transaction number is $transid\n";
@@ -152,7 +174,7 @@ EOS;
         'Click ' . $con['policy'] . ' for the ' . $con['policytext'] . ".\n" .
         'For more information about ' . $con['conname'] . ' please email ' . $con['infoemail'] . ".\n" .
         'For questions about ' . $con['conname'] . ' Registration, email ' . $con['regemail'] . ".\n" .
-        $con['conname'] . " memberships are not refundable, except in case of emergency. For details and questions about transfers and rollovers to future conventions, please see The Registration Policies Page.\n";
+        $con['conname'] . " memberships are not refundable, except in case of emergency. For details and questions about transfers $rollovers, please see The Registration Policies Page.\n";
 
     return $body;
 }

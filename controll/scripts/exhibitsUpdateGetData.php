@@ -243,12 +243,14 @@ EOS;
             $deleted += dbCmd($delsql);
         }
         $inssql = <<<EOS
-INSERT INTO exhibitsRegionYears(conid, exhibitsRegion, ownerName, ownerEmail, includedMemId, additionalMemId, totalUnitsAvailable, atconIdBase, mailinFee, mailinIdBase, sortorder)
-VALUES(?,?,?,?,?,?,?,?,?,?,?);
+INSERT INTO exhibitsRegionYears(conid, exhibitsRegion, ownerName, ownerEmail, glNum, glLabel, includedMemId, additionalMemId,
+    totalUnitsAvailable, atconIdBase, mailinFee, mailinIdBase, sortorder)
+VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?);
 EOS;
         $updsql = <<<EOS
 UPDATE exhibitsRegionYears
-SET exhibitsRegion = ?, ownerName = ?, ownerEmail = ?, includedMemId = ?, additionalMemId = ?, totalUnitsAvailable = ?, atconIdBase = ?, mailinFee = ?, mailinIdBase = ?, sortorder = ?
+SET exhibitsRegion = ?, ownerName = ?, ownerEmail = ?, glNum = ?, glLabel = ?, includedMemId = ?, additionalMemId = ?, 
+    totalUnitsAvailable = ?, atconIdBase = ?, mailinFee = ?, mailinIdBase = ?, sortorder = ?
 WHERE id = ?;
 EOS;
 
@@ -274,9 +276,9 @@ EOS;
                 } else {
                     $totalUnitsAvailable = 0;
                 }
-                $numrows = dbSafeCmd($updsql, 'sssiiiidiii', array($row['exhibitsRegion'], $row['ownerName'], $row['ownerEmail'],
-                    $row['includedMemId'], $row['additionalMemId'], $totalUnitsAvailable, $row['atconIdBase'], $row['mailinFee'], $row['mailinIdBase'],
-                    $row['sortorder'], $row[$keyfield]));
+                $numrows = dbSafeCmd($updsql, 'sssssiiiidiii', array($row['exhibitsRegion'], $row['ownerName'], $row['ownerEmail'],
+                    $row['glNum'], $row['glLabel'], $row['includedMemId'], $row['additionalMemId'],
+                    $totalUnitsAvailable, $row['atconIdBase'], $row['mailinFee'], $row['mailinIdBase'], $row['sortorder'], $row[$keyfield]));
                 $updated += $numrows;
             }
         }
@@ -303,8 +305,9 @@ EOS;
                 } else {
                     $totalUnitsAvailable = 0;
                 }
-                $numrows = dbSafeInsert($inssql, 'iissiiiidii', array($conid, $row['exhibitsRegion'], $row['ownerName'], $row['ownerEmail'],
-                    $includedMemId, $additionalMemId, $totalUnitsAvailable, $row['atconIdBase'], $row['mailinFee'], $row['mailinIdBase'], $row['sortorder']));
+                $numrows = dbSafeInsert($inssql, 'iissssiiiidii', array($conid, $row['exhibitsRegion'], $row['ownerName'], $row['ownerEmail'],
+                    $row['glNum'], $row['glLabel'], $includedMemId, $additionalMemId, $totalUnitsAvailable, $row['atconIdBase'],
+                    $row['mailinFee'], $row['mailinIdBase'], $row['sortorder']));
                 if ($numrows !== false)
                     $inserted++;
             }
@@ -319,12 +322,12 @@ EOS;
             $deleted += dbCmd($delsql);
         }
         $inssql = <<<EOS
-INSERT INTO exhibitsSpaces(exhibitsRegionYear, shortname, name, description, unitsAvailable, unitsAvailableMailin, sortorder)
-VALUES(?,?,?,?,?,?,?);
+INSERT INTO exhibitsSpaces(exhibitsRegionYear, shortname, name, description, glNum, glLabel, unitsAvailable, unitsAvailableMailin, sortorder)
+VALUES(?,?,?,?,?,?,?,?,?);
 EOS;
         $updsql = <<<EOS
 UPDATE exhibitsSpaces
-SET exhibitsRegionYear = ?, shortname = ?, name = ?, description = ?, unitsAvailable = ?, unitsAvailableMailin = ?, sortorder = ?
+SET exhibitsRegionYear = ?, shortname = ?, name = ?, description = ?, glNum = ?, glLabel = ?, unitsAvailable = ?, unitsAvailableMailin = ?, sortorder = ?
 WHERE id = ?;
 EOS;
 
@@ -352,8 +355,8 @@ EOS;
                 } else {
                     $description = null;
                 }
-                $numrows = dbSafeCmd($updsql, 'isssiiii', array($row['exhibitsRegionYear'], $row['shortname'], $row['name'], $description,
-                    $unitsAvailable, $unitsAvailableMailin, $row['sortorder'], $row[$keyfield]));
+                $numrows = dbSafeCmd($updsql, 'isssssiiii', array($row['exhibitsRegionYear'], $row['shortname'], $row['name'], $description,
+                    $row['glNum'], $row['glLabel'], $unitsAvailable, $unitsAvailableMailin, $row['sortorder'], $row[$keyfield]));
                 $updated += $numrows;
             }
         }
@@ -382,8 +385,8 @@ EOS;
                 } else {
                     $description = null;
                 }
-                $numrows = dbSafeInsert($inssql, 'isssiii', array($row['exhibitsRegionYear'], $row['shortname'], $row['name'], $description,
-                    $unitsAvailable, $unitsAvailableMailin, $row['sortorder']));
+                $numrows = dbSafeInsert($inssql, 'isssssiii', array($row['exhibitsRegionYear'], $row['shortname'], $row['name'], $description,
+                    $row['glNum'], $row['glLabel'], $unitsAvailable, $unitsAvailableMailin, $row['sortorder']));
                 if ($numrows !== false)
                     $inserted++;
             }
@@ -412,12 +415,13 @@ EOS;
             $deleted += dbCmd($delsql);
         }
         $inssql = <<<EOS
-INSERT INTO exhibitsSpacePrices(spaceId, code, description, units, price, includedMemberships, additionalMemberships,  requestable, sortorder)
-VALUES(?,?,?,?,?,?,?,?,?);
+INSERT INTO exhibitsSpacePrices(spaceId, code, description, glNum, glLabel, units, price, includedMemberships, additionalMemberships, requestable, sortorder)
+VALUES(?,?,?,?,?,?,?,?,?,?,?);
 EOS;
         $updsql = <<<EOS
 UPDATE exhibitsSpacePrices
-SET spaceId = ?, code = ?, description = ?, units = ?, price = ?, includedMemberships = ?, additionalMemberships = ?, requestable = ?, sortorder = ?
+SET spaceId = ?, code = ?, description = ?, glNum = ?, glLabel = ?, units = ?, price = ?, includedMemberships = ?, additionalMemberships = ?, 
+    requestable = ?, sortorder = ?
 WHERE id = ?;
 EOS;
 
@@ -462,7 +466,8 @@ EOS;
                 } else {
                     $requestable = 0;
                 }
-                $numrows = dbSafeCmd($updsql, 'issddiiiii', array($row['spaceId'], $row['code'], $row['description'], $units, $price, $includedMemberships, $additionalMemberships,
+                $numrows = dbSafeCmd($updsql, 'issssddiiiii', array($row['spaceId'], $row['code'], $row['description'],
+                    $row['glNum'], $row['glLabel'], $units, $price, $includedMemberships, $additionalMemberships,
                     $requestable, $row['sortorder'], $row[$keyfield]));
                 $updated += $numrows;
             }
@@ -501,8 +506,8 @@ EOS;
                 } else {
                     $requestable = 0;
                 }
-                $numrows = dbSafeInsert($inssql, 'issddiiii', array($row['spaceId'], $row['code'], $row['description'], $units, $price, $includedMemberships, $additionalMemberships,
-                    $requestable, $row['sortorder']));
+                $numrows = dbSafeInsert($inssql, 'issssddiiii', array($row['spaceId'], $row['code'], $row['description'], $units, $price,
+                    $row['glNum'], $row['glLabel'], $includedMemberships, $additionalMemberships, $requestable, $row['sortorder']));
                 if ($numrows !== false)
                     $inserted++;
             }
@@ -539,8 +544,10 @@ if ($yearcnt == 0) {
 
     // it's a new year, copy from last year
     $insRY = <<<EOS
-INSERT INTO exhibitsRegionYears(conid, exhibitsRegion, ownerName, ownerEmail, includedMemId, additionalMemId, totalUnitsAvailable, atconIdBase, mailinFee, mailinIdBase, sortorder) 
-SELECT $conid, ery.exhibitsRegion, ery.ownerName, ery.ownerEmail, minx.id, manx.id, totalUnitsAvailable, ery.atconIdBase, ery.mailinFee, ery.mailinIdBase, ery.sortorder
+INSERT INTO exhibitsRegionYears(conid, exhibitsRegion, ownerName, ownerEmail, glNum, glLabel, includedMemId, additionalMemId, totalUnitsAvailable, 
+    atconIdBase, mailinFee, mailinIdBase, sortorder) 
+SELECT $conid, ery.exhibitsRegion, ery.ownerName, ery.ownerEmail, ery.glNum, ery.glLabel,
+    minx.id, manx.id, totalUnitsAvailable, ery.atconIdBase, ery.mailinFee, ery.mailinIdBase, ery.sortorder
 FROM exhibitsRegionYears ery
 JOIN exhibitsRegions eR ON ery.exhibitsRegion = eR.id
 JOIN exhibitsRegionTypes eRT ON eR.regionType = eRT.regionType
@@ -553,8 +560,8 @@ EOS;
     $numRows=dbSafeCmd($insRY, 'iii', array($lastConid, $conid, $conid));
 
     $insS = <<<EOS
-INSERT INTO exhibitsSpaces(exhibitsRegionYear, shortname, name, description, unitsAvailable, unitsAvailableMailin, sortorder)
-SELECT eyn.id, es.shortname, es.name, es.description, es.unitsAvailable, es.unitsAvailableMailin, es.sortorder
+INSERT INTO exhibitsSpaces(exhibitsRegionYear, shortname, name, description, glNum, glLabel, unitsAvailable, unitsAvailableMailin, sortorder)
+SELECT eyn.id, es.shortname, es.name, es.description, es.glNum, es.glLabel, es.unitsAvailable, es.unitsAvailableMailin, es.sortorder
 FROM exhibitsSpaces es
 JOIN exhibitsRegionYears ey on es.exhibitsRegionYear = ey.id
 JOIN exhibitsRegionYears eyn ON (eyn.exhibitsRegion = ey.exhibitsRegion AND eyn.conid = ?)
@@ -563,8 +570,9 @@ EOS;
     $numRows=dbSafeCmd($insS, 'ii', array($conid, $lastConid));
 
     $insSP = <<<EOS
-INSERT INTO exhibitsSpacePrices(spaceId, code, description, units, price, includedMemberships, additionalMemberships, requestable, sortorder) 
-SELECT esn.id, esp.code, esp.description, esp.units, esp.price, esp.includedMemberships, esp.additionalMemberships, esp.requestable, esp.sortorder
+INSERT INTO exhibitsSpacePrices(spaceId, code, description, glNum, glLabel, units, price, includedMemberships, additionalMemberships, requestable, sortorder) 
+SELECT esn.id, esp.code, esp.description, esp.glNum, esp.glLabel, esp.units, esp.price, esp.includedMemberships, esp.additionalMemberships,
+       esp.requestable, esp.sortorder
 FROM exhibitsSpacePrices esp
 JOIN exhibitsSpaces es ON esp.spaceId = es.id
 JOIN exhibitsRegionYears ery ON es.exhibitsRegionYear = ery.id

@@ -145,16 +145,8 @@ $config_vars['useUSPS'] = $useUSPS;
 </div>
 <div class='container-fluid'>
     <div class='row mt-2'>
-        <div class="col-sm-12">
-            <h1 class="h3">Your current free membership watch list:</h1>
-        </div>
-        <div class='row mt-2'>
-            <div class='col-sm-12' id="watch-list"></div>
-        </div>
-    </div>
-    <div class='row mt-2'>
         <div class="col-sm-auto">
-            <button class="btn btn-primary btn-sm" type="button" onClick="findExisting();">Find Person</button>
+            <button class="btn btn-primary btn-sm" type="button" onClick="findExisting();">Find Prior Member</button>
             <input type="text" id="findName" name="findName" size="80" placeholder="Name/Perid/Email/Address"/>
         </div>
         <div class='col-sm-auto'>
@@ -163,6 +155,14 @@ $config_vars['useUSPS'] = $useUSPS;
     </div>
     <div class="row mt-4">
         <div class='col-sm-12' id='select-list'></div>
+    </div>
+    <div class='row mt-2'>
+        <div class="col-sm-12">
+            <h1 class="h3">Your current free membership watch list:</h1>
+        </div>
+        <div class='row mt-2'>
+            <div class='col-sm-12' id="watch-list"></div>
+        </div>
     </div>
 </div>
 <div class='container-fluid'>

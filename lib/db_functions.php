@@ -191,7 +191,7 @@ function dbSafeQuery($query, $typestr, $value_arr)
             log_mysqli_error($query, $e->getMessage());
             return false;
         } catch (Exception $e) {
-            log_mysqli_error("", $e->getMessage());
+            log_mysqli_error($query, $e->getMessage());
             return false;
         }
         return $res;
@@ -274,10 +274,10 @@ function dbSafeInsert($sql, $typestr, $value_arr)
             // get the inserted id
             $id = $dbObject->insert_id;
         } catch (\mysqli_sql_exception $e) {
-            log_mysqli_error("", $e->getMessage());
+            log_mysqli_error($sql, $e->getMessage());
             return false;
         } catch (Exception $e) {
-            log_mysqli_error("", $e->getMessage());
+            log_mysqli_error($sql, $e->getMessage());
             return false;
         }
         return $id;
@@ -325,10 +325,10 @@ function dbSafeCmd($sql, $typestr, $value_arr)
             // get the number of rows affected
             $numrows = $dbObject->affected_rows;
         } catch (\mysqli_sql_exception $e) {
-            log_mysqli_error("", $e->getMessage());
+            log_mysqli_error($sql, $e->getMessage());
             return false;
         } catch (Exception $e) {
-            log_mysqli_error("", $e->getMessage());
+            log_mysqli_error($sql, $e->getMessage());
             return false;
         }
         return $numrows;
@@ -357,10 +357,10 @@ function dbCmd($sql)
             // get the number of rows affected
             $numrows = $dbObject->affected_rows;
         } catch (\mysqli_sql_exception $e) {
-            log_mysqli_error("", $e->getMessage());
+            log_mysqli_error($sql, $e->getMessage());
             return false;
         } catch (Exception $e) {
-            log_mysqli_error("", $e->getMessage());
+            log_mysqli_error($sql, $e->getMessage());
             return false;
         }
         return $numrows;
@@ -686,10 +686,12 @@ function get_conf($name)
     return null;
 }
 
-function get_con()
-{
+function get_con($id = null) {
     global $db_ini;
-    $r = dbSafeQuery("SELECT * FROM conlist WHERE id=?;", 'i', [$db_ini['con']['id']]);
+    if ($id === null) {
+        $id = $db_ini['con']['id'];
+    }
+    $r = dbSafeQuery('SELECT * FROM conlist WHERE id=?;', 'i', array($id));
     return $r->fetch_assoc();
 }
 

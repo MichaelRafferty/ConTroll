@@ -15,13 +15,13 @@
         // membership information
         if ($planPayment > 0) {
             $priceQ = <<<EOQ
-SELECT m.id, m.label, m.shortname, m.price, m.memCategory, m.memType, m.memAge, m.conid
+SELECT m.id, m.label, m.shortname, m.price, m.memCategory, m.memType, m.memAge, m.conid, m.glNum
 FROM memLabel m
 WHERE m.conid=? OR m.conid=?;
 EOQ;
         } else {
             $priceQ = <<<EOQ
-SELECT m.id, m.label, m.shortname, m.price, m.memCategory, m.memType, m.memAge, m.conid
+SELECT m.id, m.label, m.shortname, m.price, m.memCategory, m.memType, m.memAge, m.conid, m.glNum
 FROM memLabel m
 WHERE
     (m.conid=? OR m.conid=?)
@@ -94,18 +94,29 @@ EOQ;
             'map' => $map,
             'coupon' => $coupon,
             'memCategories' => $memCategories,
-            'mtypes' => $mtypes,
         ];
         return $data;
     }
 
     // compute Purchase Totals
-    function computePurchaseTotals(&$coupon, $badges, $primary, $counts, $prices, $map, $discounts, $mtypes, $memCategories) {
+    function computePurchaseTotals(&$coupon, &$badges, $primary, $counts, $prices, $map, $discounts, $mtypes, $memCategories) : array {
         $num_primary = 0;
         $total = 0;
+        $badgeCheckQ = <<<EOS
+SELECT r.price, r.perid, r.updatedBy, u.perid
+FROM reg r
+LEFT OUTER JOIN user u ON r.updatedBy = u.perid
+WHERE r.id = ? AND r.price = ? AND u.perid IS NOT NULL
+UNION 
+SELECT r.price, r.perid, r.updatedBy, u.perid
+FROM regHistory r
+LEFT OUTER JOIN user u ON r.updatedBy = u.perid
+WHERE r.id = ? AND r.price = ? AND u.perid IS NOT NULL;
+EOS;
+
 
 // compute the pre-discount total to see if the javascript passed prediscount total is correct
-        foreach ($badges as $badge) {
+        foreach ($badges as $key => $badge) {
             if (!isset($badge) || !isset($badge['memId'])) {
                 continue;
             }
@@ -117,8 +128,42 @@ EOQ;
                 $num_primary++;
             }
             $mtype = $mtypes[$memId];
+            // add gl code to badge list
+            $badges[$key]['glNum'] = $mtype['glNum'];
             $memCategory = $memCategories[$mtype['memCategory']];
             $price = $prices[$memId];
+            if (array_key_exists('price', $badge))
+                $badgePrice = $badge['price'];
+            else {
+                $badgePrice = $price;
+                $badges[$key]['price'] = $price;
+            }
+
+            if ($badgePrice != $price && $memCategory['variablePrice'] == 'N') {
+                // we have a conflict, is this a legitimate price change by an admin or is this a cheat price from javascript hacking?
+                $badgeCheckR = dbSafeQuery($badgeCheckQ, 'idid', array($badge['regId'], $badgePrice, $badge['regId'], $badgePrice));
+                if ($badgeCheckR !== false) {
+                    if ($badgeCheckR->num_rows > 0) {
+                        logWrite(array('message' => 'Override of badge price accepted due to admin action causing it',
+                                       'perid' => $badge['perid'], 'badgeid' => $badge['regId'], 'memId' => $memId,
+                                       'memPrice' => $price, 'badgePrice' => $badgePrice));
+                        $price = $badgePrice;
+                        $badges[$key]['overRidePrice'] = $badgePrice;
+                        $badgeCheckR->free();
+                    } else {
+                        logWrite(array('message' => 'Override of badge price failed due to no admin action detected to cause it',
+                                       'perid' => $badge['perid'], 'badgeid' => $badge['regId'], 'memId' => $memId,
+                                       'memPrice' => $price, 'badgePrice' => $badgePrice));
+                       $badges[$key]['overRidePrice'] = $price;
+                    }
+                } else {
+                    logWrite(array('message' => 'Override of badge price failed due query error',
+                                   'perid' => $badge['perid'], 'badgeid' => $badge['regId'], 'memId' => $memId,
+                                   'memPrice' => $price, 'badgePrice' => $badgePrice));
+                    $badges[$key]['overRidePrice'] = $price;
+                }
+            }
+
             if ($memCategory['variablePrice'] == 'Y') {
                 if ($price < $badge['price'])
                     $price = $badge['price'];
@@ -135,6 +180,7 @@ EOQ;
         $totalElibibleForDiscount = 0;
         $maxMbrDiscounts = 0;
         $discount = 0;
+        $paid = 0;
         if ($coupon != null) {
             if (array_key_exists('maxMemberships', $coupon)) {
                 $maxMbrDiscounts = $coupon['maxMemberships'] != null ? $coupon['maxMemberships'] : 999999;
@@ -152,6 +198,11 @@ EOQ;
             $mtype = $mtypes[$memId];
             $memCategory = $memCategories[$mtype['memCategory']];
             $price = $prices[$memId];
+            $badgePrice = $badge['price'];
+            if ($badgePrice != $price) {
+                if (array_key_exists('overRidePrice', $badge))
+                    $price = $badge['overRidePrice'];
+            }
             if ($memCategory['variablePrice'] == 'Y') {
                 if ($price < $badge['price'])
                     $price = $badge['price'];
@@ -166,6 +217,7 @@ EOQ;
                 }
             }
             $total += $price;
+            $paid += $badge['paid'];
         }
         if ($apply_discount) {
             $discount = apply_overall_discount($coupon, $totalElibibleForDiscount);
@@ -182,6 +234,7 @@ EOQ;
             'preDiscount' => $preDiscount,
             'maxMbrDiscounts' => $maxMbrDiscounts,
             'applyDiscount' => $apply_discount,
+            'paid' => $paid,
             );
 
         return $data;

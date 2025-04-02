@@ -15,7 +15,7 @@ page_init($page,
     /* css */ array('css/base.css',
         $cdn['tabcss'],
     ),
-    /* js  */ array('js/d3.js',
+    /* js  */ array(
         $cdn['tabjs'],
         'js/art_control.js',
         'jslib/artItem.js'

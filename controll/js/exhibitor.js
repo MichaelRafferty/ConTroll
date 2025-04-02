@@ -544,12 +544,12 @@ class exhibitorsAdm {
                 // now the summary lines
                 if (space['purchased_units'] > 0) {
                     spaceStage = 'Purchased';
-                    spaceSUM += space['requested_description'] + ' of ' + space['spaceName'] + "\n";
+                    spaceSUM += space['purchased_description'] + ' of ' + space['spaceName'] + "\n";
                 } else if (space['approved_units'] > 0) {
                     spaceSUM += space['approved_description'] + ' of ' + space['spaceName'] + "\n";
                     spaceStage = 'Approved';
                 } else if (space['requested_units'] > 0) {
-                    spaceSUM += space['purchased_description'] + ' of ' + space['spaceName'] + "\n";
+                    spaceSUM += space['requested_description'] + ' of ' + space['spaceName'] + "\n";
                     spaceStage = 'Requested';
                 }
             }

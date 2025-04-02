@@ -1,4 +1,4 @@
-<?php
+ <?php
 // cipher.php - cipher key file
 
 //
@@ -10,7 +10,7 @@ function getLoginCipher() {
     global $cipherParams;
 
     $con = get_conf('con');
-    $db = get_conf('db');
+    $db = get_conf('mysql');
     $conid = $con['id'];
     $label = $con['label'];
     $email = $con['regadminemail'];

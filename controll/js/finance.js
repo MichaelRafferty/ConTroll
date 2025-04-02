@@ -5,6 +5,7 @@ const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // globals for finance page
 finance = null;
 plans = null;
+payors = null;
 
 // finance class - functions for finance page including payment plans and money related transactions
 class Finance {
@@ -27,6 +28,7 @@ class Finance {
 
         this.#financeTabs['overview'] = document.getElementById('overview-content');
         this.#financeTabs['paymentPlans'] = document.getElementById('paymentPlans-pane');
+        this.#financeTabs['payorPlans'] = document.getElementById('payorPlans-pane');
         this.#currentPane = this.#financeTabs['overview'];
         if (this.#debug & 1) {
             console.log("Debug = " + debug);
@@ -56,6 +58,10 @@ class Finance {
                 plans.close();
                 plans = null;
             }
+            if (payors) {
+                payors.close();
+                payors = null;
+            }
         }
 
         this.#currentPane.hidden = false;
@@ -67,6 +73,12 @@ class Finance {
             if (plans == null)
                 plans = new PlansSetup(config['conid'], config['debug']);
             plans.open();
+            return;
+        }
+        if (content == 'payorPlans') {
+            if (payors == null)
+                payors = new Payors(config['conid'], config['debug']);
+            payors.open();
             return;
         }
     }

@@ -222,7 +222,7 @@ class rulesSetup {
                 <h4><strong>Edit Membership Rules:</strong></h4>              
             </div>
             <div class="col-sm-6 text-end">
-                <strong><a href="md/Membership-Rules.md" target="_new">Display Rules Documentation (requires Markdown Reader Extension)</a></strong>
+                <strong><a href="markdown.php?mdf=md/Membership-Rules.md" target="_new">Display Rules Documentation</a></strong>
             </div>
         </div>
         <div class="row">
@@ -397,7 +397,7 @@ class rulesSetup {
             var age = ageList[row];
             if (age.ageType == 'all')
                 continue;
-            html += '<div class="col-sm-auto"><button id="ageBtn-' + age.ageType + '" class="btn btn-sm btn-secondary" ' +
+            html += '<div class="col-sm-auto"><button id="ageBtn-' + age.ageType + '" class="btn btn-sm btn-secondary mt-1 mb-1" ' +
               'onclick="rules.ageSelect(' + "'" + age.ageType + "'" + ')">' + age.label + ' (' + age.shortname + ')' +
                 '</button></div>\n';
         }

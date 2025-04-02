@@ -174,13 +174,11 @@ client_secret=""
 [cc]
 ; valid types are 'square', 'test' or 'bypass' (Note: bypass and test are for testing only and requires localhost or test=1)
 ; appid, token, location come from your square api setup
-; apiversion comes from the square api site and sdk
 type=square
 appid=""
 token=""
 env="production"
 location=""
-apiversion=""
 webpaysdk="https://web.squarecdn.com/v1/square.js"
 
 [log]

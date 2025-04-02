@@ -30,6 +30,17 @@ $useUSPS = false;
 if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
     $useUSPS = true;
 
+if (array_key_exists('oneoff', $con)) {
+    $oneoff = $con['oneoff'];
+} else {
+    $oneoff = 0;
+}
+
+if ($oneoff != 1)
+    $rollovers = 'and rollovers to future conventions';
+else
+    $rollovers = '';
+
 $config_vars = array();
 $config_vars['label'] = $con['label'];
 $config_vars['required'] = $reg_conf['required'];
@@ -62,13 +73,13 @@ $priceQ = <<<EOS
 SELECT id, label, shortname, sort_order, price, memAge, memCategory, memType
 FROM memLabel
 WHERE
-    conid=?
+    (conid=? OR (conid = ? AND memCategory = 'yearahead')) 
     AND online = 'Y'
     AND startdate <= current_timestamp()
     AND enddate > current_timestamp()
 ORDER BY sort_order, price DESC;
 EOS;
-$priceR = dbSafeQuery($priceQ, "i", array($condata['id']));
+$priceR = dbSafeQuery($priceQ, "ii", array($condata['id'], $condata['id']  + 1));
 while($priceL = $priceR->fetch_assoc()) {
     $membershiptypes[] = $priceL;
 }
@@ -353,7 +364,7 @@ $onsitesale = $startdate->format("l, F j");
                      <div class="row mt-1">
                          <div class="col-sm-12">
                              <?php echo $con['conname']; ?> memberships are not refundable, except in case of emergency.
-                                 For details and questions about transfers and rollovers to future conventions, please see
+                                 For details and questions about transfers <?php echo $rollovers; ?>, please see
                                  <a href="<?php echo escape_quotes($con['regpolicy']); ?>">The Registration Policies Page.</a>
                          </div>
                      </div>

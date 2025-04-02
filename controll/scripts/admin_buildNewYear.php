@@ -109,26 +109,26 @@ EOS;
 
 // year + 1 volunteer rollover
 $checkMLQ1 = <<<EOS
-SELECT conid, sort_order, memCategory, memType, memAge, label, notes, price, startdate, enddate, atcon, online
+SELECT conid, sort_order, memCategory, memType, memAge, label, notes, price, startdate, enddate, atcon, online, glNum, glLabel
 FROM memList
 WHERE label = ? AND conid = ?;
 EOS;
 // year + 1 yearahead
 $checkMLQ2 = <<<EOS
-SELECT conid, sort_order, memCategory, memType, memAge, label, notes, price, startdate, enddate, atcon, online
+SELECT conid, sort_order, memCategory, memType, memAge, label, notes, price, startdate, enddate, atcon, online, glNum, glLabel
 FROM memList
 WHERE memCategory = ? AND conid = ?;
 EOS;
 // this year others (note startdate == enddate is for the pushed rollover types we don;t want to auto carry forward,
 // as they might conflict with ones pushed by rollovers automatically.
 $checkMLQ3 = <<<EOS
-SELECT conid, sort_order, memCategory, memType, memAge, label, notes, price, startdate, enddate, atcon, online
+SELECT conid, sort_order, memCategory, memType, memAge, label, notes, price, startdate, enddate, atcon, online, glNum, glLabel
 FROM memList
 WHERE conid = ? AND startdate != enddate AND NOT (memCategory = 'yearahead' OR label = 'Rollover-volunteer');
 EOS;
 $insML = <<<EOS
-INSERT INTO memList(conid, sort_order, memCategory, memType, memAge, label, notes, price, startdate, enddate, atcon, online)
-VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO memList(conid, sort_order, memCategory, memType, memAge, label, notes, price, startdate, enddate, atcon, online, glNum, glLabel)
+VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 EOS;
 
 // next year rollover volunteer
@@ -150,9 +150,9 @@ if ($numFound == 0) {
         $valueArr = array(
             $nextConid, $row['sort_order'], $row['memCategory'], $row['memType'], $row['memAge'], $row['label'], $row['notes'], $row['price'],
             startEndDateTimeToNextYear($row['startdate']), startEndDateTimeToNextYear($row['enddate']),
-            $row['atcon'], $row['online']
+            $row['atcon'], $row['online'], $row['glNum'], $row['glLabel']
         );
-        $numRows += dbSafeCmd($insML, 'iisssssdssss', $valueArr);
+        $numRows += dbSafeCmd($insML, 'iisssssdssssss', $valueArr);
     }
     $message .= "$numRows Rollover-volunteer memList entries added for $nextConid<br/>\n";
 }
@@ -176,9 +176,9 @@ if ($numFound == 0) {
         $valueArr = array(
             $nextConid, $row['sort_order'], $row['memCategory'], $row['memType'], $row['memAge'], $row['label'], $row['notes'], $row['price'],
             startEndDateTimeToNextYear($row['startdate']), startEndDateTimeToNextYear($row['enddate']),
-            $row['atcon'], $row['online']
+            $row['atcon'], $row['online'], $row['glNum'], $row['glLabel']
         );
-        $numRows += dbSafeCmd($insML, 'iisssssdssss', $valueArr);
+        $numRows += dbSafeCmd($insML, 'iisssssdssssss', $valueArr);
     }
     $message .= "$numRows yearahead memList entries added for $nextConid<br/>\n";
 }
@@ -202,9 +202,9 @@ if ($numFound == 0) {
         $valueArr = array(
             $conid, $row['sort_order'], $row['memCategory'], $row['memType'], $row['memAge'], $row['label'], $row['notes'], $row['price'],
             startEndDateTimeToNextYear($row['startdate']), startEndDateTimeToNextYear($row['enddate']),
-            $row['atcon'], $row['online']
+            $row['atcon'], $row['online'], $row['glNum'], $row['glLabel']
         );
-        $numRows += dbSafeCmd($insML, 'iisssssdssss', $valueArr);
+        $numRows += dbSafeCmd($insML, 'iisssssdssssss', $valueArr);
     }
     $message .= "$numRows normal memList entries added for $conid<br/>\n";
 }

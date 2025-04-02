@@ -1,6 +1,6 @@
 # ConTroll Version 1.1 Release Notes
 
-## Version 1.1: Back End Buildout Release Release Date: 2025-01-27
+## Version 1.1: Back End Buildout Release, Release Date: 2025-01-27
 
 # Major Configuration Changes in 1.1:
 

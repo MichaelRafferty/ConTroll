@@ -80,11 +80,15 @@ class Portal {
     #makePaymentBody = null;
     #paymentPlan = null;
     #existingPlan = null;
+    #planRecast = false;
     #totalAmountDue = 0;
     #preCoupomAmountDue = 0;
     #couponDiscount = 0;
     #paymentAmount = null;
     #planPayment = 0;
+    #partialPayAmt = 0;
+    #otherPayAmt = 0;
+    #otherPay = 0;
 
     // receipt fields
     #receiptModal = null;
@@ -655,7 +659,7 @@ class Portal {
         }
 
         // Check USPS for standardized address
-        if (this.#uspsDiv != null && person.country == 'USA' && person.city != '' && validateUSPS == 0) {
+        if (this.#uspsDiv != null && person.country == 'USA' && person.city != '' && person.state != '\r' && validateUSPS == 0) {
             this.#personSave = person;
             this.#uspsAddress = null;
             var script = "scripts/uspsCheck.php";
@@ -972,6 +976,7 @@ class Portal {
         clear_message();
         clear_message('payDueMessageDiv');
         clear_message('makePayMessageDiv');
+        this.#otherPay = 0;
         var html = '';
         var plans = paymentPlans.isMatchingPlans();
 
@@ -1018,10 +1023,82 @@ class Portal {
         this.#paymentDueModal.hide();
     }
 
+    // payOther - show registrations and check boxes of ones that can be paid
+    payOther(totalDue) {
+        clear_message();
+        clear_message('payDueMessageDiv');
+        clear_message('makePayMessageDiv');
+        var html = `
+        <div class="row mt-3">
+            <div class="col-sm-1" style="text-align: right">Pay</div>
+            <div class="col-sm-5">Membership</div>
+            <div class="col-sm-1" style="text-align: right">Price</div>
+            <div class="col-sm-1" style="text-align: right">Already Paid</div>
+            <div class="col-sm-1" style="text-align: right">Balance Due</div>        
+        </div>`;
+
+        // build a list of memberships to pay with check boxes
+        this.#partialPayAmt = 0;
+        this.#otherPayAmt = Number(totalDue);
+        for (var i = 0; i < paidOtherMembership.length; i++) {
+            var mem = paidOtherMembership[i];
+            var price =  Number(mem.actPrice).toFixed(2);
+            var paid =  Number(Number(mem.actPaid) + Number(mem.actCouponDiscount)).toFixed(2);
+            var bal = Number(Number(mem.actPrice) - (Number(mem.actPaid) + Number(mem.actCouponDiscount))).toFixed(2);
+            html += `
+        <div class="row">
+            <div class="col-sm-1" style="text-align: right"><input type="checkbox" id="other-` +
+                mem.id + '" name="other-' + mem.id + '" onChange="portal.payOtherToggle(' + mem.id + ',' + bal + `);"></div>
+            <div class="col-sm-5"><label for="other-` + mem.id + `">` + mem.label + `</label></div>
+            <div class="col-sm-1" style="text-align: right">` + price + `</div>
+            <div class="col-sm-1" style="text-align: right">` + paid + `</div>
+            <div class="col-sm-1" style="text-align: right">` + bal + `</div>
+        </div>
+`;
+        }
+        html += `
+    <div class="row mt-3">
+        <div class="col-sm-2" style="text-align: right"><button class="btn btn-sm btn-primary pt-0 pb-0" id="partialPayBTN"
+            onClick="portal.makeOtherPayment('part');" disabled>
+            Pay Selected
+        </button></div>
+        <div class="col-sm-auto">
+            <b>The total amout due for selected memberships purchased by others totaling
+                <span id="partialPayDue">` + Number(this.#partialPayAmt).toFixed(2) + `</span></b>
+        </div>
+    </div>
+    <div class="row mt-1 mb-3">
+        <div class="col-sm-2" style="text-align: right"><button class="btn btn-sm btn-primary pt-0 pb-0"
+            onClick="portal.makeOtherPayment('full');">Pay All</button></div>
+        <div class="col-sm-auto">
+            <b>The total amout due for all memberships purchased by others is ` + Number(totalDue).toFixed(2) + `</b>
+        </div>
+    </div>
+`;
+        this.#paymentDueBody.innerHTML = html;
+        this.#otherPay = 1;
+        this.#paymentDueModal.show();
+    }
+
+    payOtherToggle(id, bal) {
+        var element = document.getElementById('other-' + id);
+        if (element.checked) {
+            this.#partialPayAmt += Number(bal);
+        } else {
+            this.#partialPayAmt -= Number(bal);
+        }
+        document.getElementById('partialPayDue').innerHTML = Number(this.#partialPayAmt).toFixed(2);
+        document.getElementById('partialPayBTN').disabled = this.#partialPayAmt == 0;
+    }
+
     // make payment
     makePayment(plan) {
         if (plan == null) {
             this.#paymentPlan = null;
+            if (this.#otherPay == 1) {
+                this.makeOtherPayment('full');
+                return;
+            }
             this.#makePaymentBody.innerHTML = `
         <div class="row mt-4">
             <div class="col-sm-auto"><b>The Total Amount Due is ` + Number(this.#totalAmountDue).toFixed(2) + `</b></div>
@@ -1047,15 +1124,41 @@ class Portal {
     }
 
     // makePlanPayment - make a payment on a plan
-    makePlanPayment(payorPlan, planName, paymentAmt) {
+    makePlanPayment(payorPlan, planName, paymentAmt, recast) {
         this.#existingPlan = payorPlan;
         this.#paymentAmount = paymentAmt;
+        this.#planRecast = recast;
         this.#planPayment = 1;
+        this.#otherPay = 0;
         this.#makePaymentBody.innerHTML = `
         <div class="row mt-4 mb-4">
             <div class="col-sm-auto"><b>You are making a payment on ` + planName + ' payment plan of ' + Number(paymentAmt).toFixed(2) + `</b></div>
          </div>        
 `;
+        this.#makePaymentModal.show();
+    }
+
+    // makeOtherPayment - pay some or all of the 'paid by other items due'
+    makeOtherPayment(type) {
+        // mark which ones to pay
+        for (var i = 0; i < paidOtherMembership.length; i++) {
+            if (type == 'full') {
+                paidOtherMembership[i]['payThis'] = 1;
+            } else {
+                var checked = document.getElementById('other-' + paidOtherMembership[i]['id']).checked;
+                paidOtherMembership[i]['payThis'] = checked ? 1 : 0;
+            }
+        }
+
+        this.#paymentAmount = type == 'full' ? this.#otherPayAmt : this.#partialPayAmt;
+        this.#makePaymentBody.innerHTML = `
+        <div class="row mt-4 mb-4">
+            <div class="col-sm-auto"><b>You are making a payment against memberships purchased for you by others of ` +
+                Number(this.#paymentAmount).toFixed(2) + `</b></div>
+         </div>        
+`;
+
+        this.#otherPay = 1;
         this.#makePaymentModal.show();
     }
 
@@ -1089,13 +1192,16 @@ class Portal {
             planRec: this.#paymentPlan,
             newplan: newplan ? 1 : 0,
             planPayment: this.#planPayment,
+            otherPay: this.#otherPay,
+            otherMemberships: JSON.stringify(paidOtherMembership),
             nonce: token,
             amount: this.#paymentAmount,
-            totalAmountDue: this.#totalAmountDue,
+            totalAmountDue: this.#otherPay == 1 ? this.#paymentAmount : this.#totalAmountDue,
             couponDiscount: this.#couponDiscount,
             preCoupomAmountDue: this.#preCoupomAmountDue,
             couponCode: coupon.getCouponCode(),
             couponSerial: coupon.getCouponSerial(),
+            planRecast: this.#planRecast ? 1 : 0,
         };
         $.ajax({
             url: "scripts/portalPurchase.php",

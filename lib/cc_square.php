@@ -107,7 +107,7 @@ use Square\Models\CreatePaymentResponse;
 
 // charge the purchase making a customer, order, and payment
 //TODO Need to add the tax section to SQUARE, need to lookup how to do this in the API, right now it expects tax to be 0 passed in.
-function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
+function cc_charge_purchase($results, $email, $phone, $useLogWrite=false) {
     $cc = get_conf('cc');
     $con = get_conf('con');
     $client = new SquareClient([
@@ -225,9 +225,12 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
                 if ($planName != '') {
                     $note .= ($badge['inPlan'] ? (', Plan: ' . $planName) : ', NotInPlan');
                 }
+                if (array_key_exists('glNum', $badge) && $badge['glNum'] != '') {
+                    $note .= ', ' . $badge['glNum'];
+                }
                 $item->setNote($note);
                 $item->setBasePriceMoney(new Money);
-                $item->getBasePriceMoney()->setAmount($badge['price'] * 100);
+                $item->getBasePriceMoney()->setAmount(($badge['price']-$badge['paid']) * 100);
                 $item->getBasePriceMoney()->setCurrency($currency);
                 $order_lineitems[$lineid] = $item;
                 $order_value += $badge['price'];
@@ -249,6 +252,27 @@ function cc_charge_purchase($results, $ccauth, $useLogWrite=false) {
                 $itemPrice = $space['approved_price'];
                 $note = $space['id'] . ',' . $space['item_purchased'] . ',' . $space['exhibitorId'] . ',' . $space['exhibitorNumber'] .
                     ': id, item, exhId, exhNum';
+                if (array_key_exists('glNum', $space) && $space['glNum'] != '') {
+                    $note .= ', ' . $space['glNum'];
+                }
+                $item->setName(mb_substr($itemName, 0, 128));
+                $item->setNote($note);
+                $item->setBasePriceMoney(new Money);
+                $item->getBasePriceMoney()->setAmount($itemPrice * 100);
+                $item->getBasePriceMoney()->setCurrency($currency);
+                $order_lineitems[$lineid] = $item;
+                $order_value += $itemPrice;
+                $lineid++;
+            }
+        }
+
+        if (array_key_exists('mailInFee', $results)) {
+            foreach ($results['mailInFee'] as $fee) {
+                $item = new OrderLineItem ('1');
+                $item->setUid('region-' . $fee['name']);
+                $itemName = 'Mail in Fee for ' . $fee['name'];
+                $itemPrice = $fee['amount'];
+                $note = 'Mail in fee';
                 $item->setName(mb_substr($itemName, 0, 128));
                 $item->setNote($note);
                 $item->setBasePriceMoney(new Money);
