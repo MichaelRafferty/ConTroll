@@ -427,7 +427,7 @@ EOS;
         if ($newPlanId != null) {
             $planId = $newPlanId;
         } else if (count($badges) > 0 && array_key_exists('planId', $badges[0])) {
-            $planId = $badge[0]['planId'];
+            $planId = $badges[0]['planId'];
         }
     }
     for ($idx = 0; $idx < count($badges); $idx++) {
