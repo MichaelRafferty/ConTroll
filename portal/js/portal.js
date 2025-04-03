@@ -1322,6 +1322,20 @@ class Portal {
             if (this.#paymentPlan.new)
                 newplan = true;
 
+        var taxAmount = 0;
+        if (this.#existingPlan == null && this.#orderData && this.#orderData.rtn) {
+            taxAmount = this.#orderData.rtn.taxAmt;
+        }
+
+        var orderId = '';
+        if (this.#orderData && this.#orderData.rtn && this.#orderData.rtn.orderId) {
+            orderId = this.#orderData.rtn.orderId;
+        }
+
+        var badges = [];
+        if (this.#orderData && this.#orderData.rtn && this.#orderData.rtn.results && this.#orderData.rtn.results.badges)
+            badges = this.#orderData.rtn.results.badges;
+
         // transaction comes from session, person paying come from session, we will compute what was paid
         var data = {
             loginId: config.id,
@@ -1337,14 +1351,14 @@ class Portal {
             nonce: token,
             amount: this.#paymentAmount,
             totalAmountDue: this.#otherPay == 1 ? this.#paymentAmount : this.#totalAmountDue,
-            taxAmount: this.#orderData.rtn.taxAmt,
+            taxAmount: taxAmount,
             couponDiscount: this.#couponDiscount,
             preCouponAmountDue: this.#preCouponAmountDue,
             couponCode: coupon.getCouponCode(),
             couponSerial: coupon.getCouponSerial(),
             planRecast: this.#planRecast ? 1 : 0,
-            orderId: this.#orderData.rtn.orderId,
-            badges: JSON.stringify(this.#orderData.rtn.results.badges),
+            orderId: orderId,
+            badges: JSON.stringify(badges),
         };
         $.ajax({
             url: "scripts/portalPayment.php",
