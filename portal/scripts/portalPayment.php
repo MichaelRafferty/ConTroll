@@ -69,6 +69,9 @@ $orderId = $_POST['orderId'];
 $source = 'portal';
 
 // load the amount values
+if ($newplan) {
+    $amount = $planRec['currentPayment'];
+}
 if (array_key_exists('totalAmountDue', $_POST) && $otherPay != 1) {
     $totalAmountDue = $_POST['totalAmountDue'];
 } else {
