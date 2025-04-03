@@ -177,50 +177,20 @@ $results = array(
 
 // call the credit card processor to make the payment
 
-    $rtn = cc_payOrder($results, $buyer, true);
+$rtn = cc_payOrder($results, $buyer, true);
 
-//log requested badges
-logWrite(array('con'=>$condata['name'], 'trans'=>$transId, 'results'=>$results, 'request'=>$badges));
-$upT = <<<EOS
-UPDATE transaction
-SET price = ?, withTax = ?, couponDiscountCart = ?, tax = ?
-WHERE id = ?;
-EOS;
-$rows_upd += dbSafeCmd($upT, 'ddddi', array($totalAmountDue, $totalAmountDue, $webCouponDiscount, 0, $transId));
-
-// end compute
-if ($amount > 0) {
-    $rtn = cc_buildOrder($results, true);
-    if ($rtn == null) {
-        // note there is no reason cc_buildOrder will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
-        logWrite(array('con' => $condata['name'], 'trans' => $transId, 'error' => 'Credit card order unable to be created'));
-        ajaxSuccess(array('status' => 'error', 'error' => 'Credit card order not built'));
-        exit();
-    }
-    $rtn['nonce'] = $_POST['nonce'];
-    $rtn = cc_payOrder($rtn, $buyer, true);
-    if ($rtn == null) {
-        // note there is no reason cc_payOrder will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
-        logWrite(array('con' => $condata['name'], 'trans' => $transId, 'error' => 'Credit card order unable to be paid'));
-        ajaxSuccess(array('status' => 'error', 'error' => 'Credit card not approved'));
-        exit();
-    }
-
-//$tnx_record = $rtn['tnx'];
-    logWrite(array('con' => $condata['name'], 'trans' => $transId, 'ccrtn' => $rtn));
-    $num_fields = sizeof($rtn['txnfields']);
-    $val = array();
-    for ($i = 0; $i < $num_fields; $i++) {
-        $val[$i] = '?';
-    }
-    $txnQ = 'INSERT INTO payments(time,' . implode(',', $rtn['txnfields']) . ') VALUES(current_time(),' . implode(',', $val) . ');';
-    $txnT = implode('', $rtn['tnxtypes']);
-    $txnid = dbSafeInsert($txnQ, $txnT, $rtn['tnxdata']);
-    $approved_amt = $rtn['amount'];
-} else {
-    $approved_amt = 0;
-    $rtn = array('url' => '', 'rid' => '');
+//log payment
+logWrite(array('con' => $condata['name'], 'trans' => $transId, 'ccrtn' => $rtn));
+$num_fields = sizeof($rtn['txnfields']);
+$val = array();
+for ($i = 0; $i < $num_fields; $i++) {
+    $val[$i] = '?';
 }
+$txnQ = 'INSERT INTO payments(time,' . implode(',', $rtn['txnfields']) . ') VALUES(current_time(),' . implode(',', $val) . ');';
+$txnT = implode('', $rtn['tnxtypes']);
+$txnid = dbSafeInsert($txnQ, $txnT, $rtn['tnxdata']);
+$approved_amt = $rtn['amount'];
+
 if ($webCouponDiscount > 0) {
     // Insert the payment record for the coupon
     $ipQ = <<<EOS
