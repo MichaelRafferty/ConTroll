@@ -61,10 +61,10 @@ Some examples from the con section:
 * orgabv="NPN" ; e.g. Short name for non profit (abbreviation) PSFS
 * volunteers="volunteers-email-address"
 * policy="Website Policy URL"
-* regpolicy="Website Registraiton Policy URL"
+* regpolicy="Website Registration Policy URL"
 * privacypolicy="Website Privacy Policy URL"
 * privacytext="See our privacy policy for how we use and share information" ; prompt text about the privacy policy
-* policytext="Philcon Policies" ; pormpt text about hte convention policies"
+* policytext="Philcon Policies" ; prompt text about the convention policies
 * regemail="registration support email"
 * regadminemail="registration admin/chair email"
 * infoemail="Convention information email"
@@ -77,8 +77,8 @@ Some examples from the con section:
 * hotelname="Hotel name"
 * hoteladdr="Hotel address"
 
-*The sections *cc, client, debug, email, google, local, log, mysql*
-are skipped for security reasons as they hold keys and other protected data) 
+The sections *cc, client, debug, email, google, local, log, mysql 
+are skipped for security reasons as they hold keys and other protected data
 
 ### Application Specific Variables
 
