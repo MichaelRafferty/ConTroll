@@ -85,7 +85,7 @@ are skipped for security reasons as they hold keys and other protected data)
 Several sections of the code use specific variables for substitution in their custom text
 in addtiion to the configuration file variables.
 
-#### Exhinitor Emails:
+#### Exhibitor Emails:
 Items of section 'email' use the following specific variables:
 
 ``[[EXHIBITOR_NAME]]``: name from the exhibitor record (artist full name)<br/>
