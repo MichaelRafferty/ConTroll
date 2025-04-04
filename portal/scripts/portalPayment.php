@@ -243,6 +243,9 @@ EOS;
     $typestr = 'diii';
     $valArray = array($amount, $loginId, $existingPlan['id'], $loginId);
     $planUpd = dbSafeCmd($uQ, $typestr, $valArray);
+    if ($planUpd > 0) {
+        $existingPlan['balanceDue'] = $existingPlan['balanceDue'] - $amount;
+    }
     dbSafeCmd("UPDATE payorPlans SET status = 'paid' WHERE $pfield = ? AND balanceDue = 0 AND status = 'active';", 'i', array($loginId));
 
     // insert payment record

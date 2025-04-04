@@ -128,7 +128,6 @@ EOS;
 }
 
 function whatMembershipsInPlan($memberships, $computedPlan) : array {
-
     if ($computedPlan == null) {
         $planData = null;
     } else {

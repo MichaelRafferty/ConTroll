@@ -1145,9 +1145,10 @@ class Portal {
         } else {
             this.#paymentPlan = plan;
             this.#paymentAmount = plan.currentPayment;
+            this.#totalAmountDue = plan.currentPayment;
         }
         var cancelOrderId = null;
-        if (this.#orderData)
+        if (this.#orderData && this.#orderData.rtn && this.#orderData.rtn.orderId)
             cancelOrderId = this.#orderData.rtn.orderId;
 
         var newplan = false;
@@ -1206,6 +1207,7 @@ class Portal {
     // make payment
     makePayment(plan) {
         var html = '';
+        var done = false;
         if (plan == null) {
             this.#paymentPlan = null;
             if (this.#otherPay == 1) {
@@ -1220,6 +1222,14 @@ class Portal {
         </div>
 `;
             }
+        } else if (this.#orderData && this.#orderData.post && this.#orderData.post.planPayment && this.#orderData.post.planPayment == 1) {
+            html = `
+        <div class="row mt-4 mb-4">
+            <div class="col-sm-auto"><b>You are making a payment on ` + this.#orderData.post.existingPlan.name +
+                ' payment plan of ' + Number(this.#orderData.amount).toFixed(2) + `</b></div>
+         </div>        
+`;
+            done = true;
         } else {
             this.#paymentPlan = plan;
         }
@@ -1243,7 +1253,7 @@ class Portal {
             <div class="col-sm-auto">You are paying the total amount, so the payment amount is ` + Number(this.#paymentAmount).toFixed(2) + `</div>
          </div>
 `;
-        } else {
+        } else if (!done) {
             html = `
         <div class="row mt-2 mb-4">
             <div class="col-sm-auto"><b>The Current Amount Due to create the payment plan ` + plan.plan.name + ' is ' + Number(plan.currentPayment).toFixed(2) + `</b></div>
@@ -1260,15 +1270,11 @@ class Portal {
     makePlanPayment(payorPlan, planName, paymentAmt, recast) {
         this.#existingPlan = payorPlan;
         this.#paymentAmount = paymentAmt;
+        payorPlan.currentPayment = paymentAmt;
         this.#planRecast = recast;
         this.#planPayment = 1;
         this.#otherPay = 0;
-        this.#makePaymentBody.innerHTML = `
-        <div class="row mt-4 mb-4">
-            <div class="col-sm-auto"><b>You are making a payment on ` + planName + ' payment plan of ' + Number(paymentAmt).toFixed(2) + `</b></div>
-         </div>        
-`;
-        this.#makePaymentModal.show();
+        this.makeOrder(payorPlan, 0);
     }
 
     // makeOtherOrder - pay some or all of the 'paid by other items due', mark the records and return to makeOrder

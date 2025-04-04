@@ -59,7 +59,7 @@ $loginId = getSessionVar('id');
 $loginType = getSessionVar('idType');
 
 $plan = $_POST['plan'];
-$newplan = $_POST['newplan'];
+$newPlan = $_POST['newplan'];
 $amount = $_POST['amount'];
 $planRec = $_POST['planRec'];
 $existingPlan = $_POST['existingPlan'];
@@ -144,39 +144,47 @@ $buyer['country'] = $info['country'];
 $phone = $info['phone'];
 
 if ($otherPay == 0) { // this is a plan payment or badge purchase payment
-    $badges = getAccountRegistrations($loginId, $loginType, $conid, ($newplan || $planPayment == 0) ? 'unpaid' : 'plan');
+    if ($planPayment == 1 && $newPlan == 0) {
+        if ($existingPlan['currentPayment'] > $existingPlan['balanceDue']) {
+            $totalAmountDue = $existingPlan['balanceDue'];
+        } else {
+            $totalAmountDue = $existingPlan['currentPayment'];
+        }
+        $amount = $totalAmountDue;
+        $totalDiscount = 0;
+        $badges = [];
+    } else {
+        $badges = getAccountRegistrations($loginId, $loginType, $conid, ($newPlan || $planPayment == 0) ? 'unpaid' : 'plan');
 
-    if ($planPayment == 1 || $newplan == 1) {
-        $badges = whatMembershipsInPlan($badges, $planRec);
-    }
-    else foreach ($badges as $key => $badge) {
-        $badges[$key]['inPlan'] = false;
-    }
+        if ($planPayment == 1 || $newPlan == 1) {
+            $badges = whatMembershipsInPlan($badges, $planRec);
+        } else foreach ($badges as $key => $badge) {
+            $badges[$key]['inPlan'] = false;
+        }
 
-    // ok, the Portal data is now loaded, now deal with re-pricing things, based on the real tables
-    $data = loadPurchaseData($conid, $couponCode, $couponSerial, $planPayment);
-    $prices = $data['prices'];
-    $memId = $data['memId'];
-    $counts = $data['counts'];
-    $discounts = $data['discounts'];
-    $primary = $data['primary'];
-    $map = $data['map'];
-    $coupon = $data['coupon'];
-    $memCategories = $data['memCategories'];
-    $mtypes = $data['mtypes'];
+        // ok, the Portal data is now loaded, now deal with re-pricing things, based on the real tables
+        $data = loadPurchaseData($conid, $couponCode, $couponSerial, $planPayment);
+        $prices = $data['prices'];
+        $memId = $data['memId'];
+        $counts = $data['counts'];
+        $discounts = $data['discounts'];
+        $primary = $data['primary'];
+        $map = $data['map'];
+        $coupon = $data['coupon'];
+        $memCategories = $data['memCategories'];
+        $mtypes = $data['mtypes'];
 
-    //// $rules = $data['rules'];
-    //// TODO: load and apply rules checks here to $badges
-    $data = computePurchaseTotals($coupon, $badges, $primary, $counts, $prices, $map, $discounts, $mtypes, $memCategories);
+        //// $rules = $data['rules'];
+        //// TODO: load and apply rules checks here to $badges
+        $data = computePurchaseTotals($coupon, $badges, $primary, $counts, $prices, $map, $discounts, $mtypes, $memCategories);
 
-    $maxMbrDiscounts = $data['origMaxMbrDiscounts'];
-    $apply_discount = $data['applyDiscount'];
-    $preDiscount = $data['preDiscount'];
-    $total = $data['total'];
-    $paid = $data['paid'];
-    $totalDiscount = $data['totalDiscount'];
+        $maxMbrDiscounts = $data['origMaxMbrDiscounts'];
+        $apply_discount = $data['applyDiscount'];
+        $preDiscount = $data['preDiscount'];
+        $total = $data['total'];
+        $paid = $data['paid'];
+        $totalDiscount = $data['totalDiscount'];
 
-    if ($planPayment == 0) {
         if ($totalAmountDue != ($total - $paid)) {
             error_log('bad total: post=' . $totalAmountDue . ', calc=' . $total);
             ajaxSuccess(array ('status' => 'error', 'error' => 'Unable to process, bad total sent to Server'));
@@ -191,9 +199,6 @@ if ($otherPay == 0) { // this is a plan payment or badge purchase payment
                 exit();
             }
         }
-    }
-    else {
-        $totalAmountDue = $total - $paid;
     }
 } else { // otherPay = 1, this is a pay against 'other'
     // load the badge array to mark what is being paid for
@@ -251,17 +256,16 @@ $results = array(
     'transid' => $transId,
     'counts' => $counts,
     'price' => $totalAmountDue,
-    'tax' => 0,
-    'pretax' => $totalAmountDue,
     'badges' => $badges,
     'total' => $amount,
     'coupon' => $coupon,
     'discount' => $totalDiscount,
-    'newplan' => $newplan,
+    'newplan' => $newPlan,
     'planRec' => $planRec,
     'planPayment' => $planPayment,
     'existingPlan' => $existingPlan,
 );
+$response['amount'] = $amount;
 
 //log requested badges
 logWrite(array('con'=>$condata['name'], 'trans'=>$transId, 'results'=>$results, 'request'=>$badges));

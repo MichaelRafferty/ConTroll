@@ -107,6 +107,8 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
     else
         $artSales = 0;
 
+    $discountAmt = 0;
+
     // new plan is indicated by 'newplan' == 1 in the passed array
     if (array_key_exists('newplan', $results) && $results['newplan'] == 1) {
         if (array_key_exists('planRec', $results) && array_key_exists('plan', $results['planRec']) &&
@@ -250,7 +252,6 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
             }
         }
 
-        $discountAmt = 0;
         // TODO: set the lines the coupon applies to specifically using appliedDiscount and line type for the coupon to split it correctly
         // now apply the coupon
         if (array_key_exists('discount', $results) && $results['discount'] > 0) {
