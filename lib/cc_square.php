@@ -353,6 +353,13 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                         'taxUid' => $taxLabel,
                     ])));
                 }
+                if (array_key_exists('newplan', $results) && $results['newplan'] == 1) {
+                    if ($badge['inPlan'])
+                        $item->setAppliedDiscounts(array(new Square\Types\OrderLineItemAppliedDiscount([
+                            'uid' => 'planDeferment-' . $lineid,
+                            'discountUid' => 'planDeferment',
+                        ])));
+                }
                 $orderLineitems[$lineid] = $item;
                 $orderValue += $badge['price'];
                 $lineid++;
@@ -449,7 +456,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                     'amount' => $deferment * 100,
                     'currency' => $currency,
                 ]),
-                'scope' => OrderLineItemDiscountScope::Order->value,
+                'scope' => OrderLineItemDiscountScope::LineItem->value,
             ]);
             $orderDiscounts[] = $item;
         }
