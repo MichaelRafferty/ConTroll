@@ -334,10 +334,12 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                     $amount = ($badge['price']-$badge['paid']) * 100;
                 }
 
+                $itemName =  $badge['label'] . (($badge['memType'] == 'full' || $badge['memType'] == 'oneday') ? ' Membership' : '') .
+                    ' for ' . $fullname;
                 $item = new OrderLineItem ([
                     'itemType' => OrderLineItemItemType::Item->value,
                     'uid' => 'badge' . ($lineid + 1),
-                    'name' => $badge['age'] . ' Membership for ' . $fullname,
+                    'name' => mb_substr($itemName, 0, 128),
                     'quantity' => 1,
                     'note' => $note,
                     'basePriceMoney' => new Money([
