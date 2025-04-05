@@ -94,7 +94,8 @@ $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale
 // get the specific information allowed
 $regionYearQ = <<<EOS
 SELECT er.id, name, description, ownerName, ownerEmail, includedMemId, additionalMemId, mi.price AS includedPrice, ma.price AS additionalPrice,
-       mi.glNum AS includedGLNum, ma.glNum AS additionalGLNum, ery.mailinFee, ery.atconIdBase, ery.mailinIdBase
+       mi.glNum AS includedGLNum, ma.glNum AS additionalGLNum, mi.label AS includedLabel, ma.label AS additionalLabel,
+       ery.mailinFee, ery.atconIdBase, ery.mailinIdBase
 FROM exhibitsRegionYears ery
 JOIN exhibitsRegions er ON er.id = ery.exhibitsRegion
 LEFT OUTER JOIN memList mi ON ery.includedMemId = mi.id
@@ -764,10 +765,12 @@ function buildBadge($fields, $type, $index, $region, $conid, $transId, $portalNa
         $memid = $region['includedMemId'];
         $memprice = $region['includedPrice'];
         $glNum = $region['includedGLNum'];
+        $label = $region['includedLabel'];
     } else {
         $memid = $region['additionalMemId'];
         $memprice = $region['additionalPrice'];
         $glNum = $region['additionalGLNum'];
+        $label = $region['additionalLabel'];
     }
 
     foreach ($fields as $field => $required) {
@@ -776,6 +779,7 @@ function buildBadge($fields, $type, $index, $region, $conid, $transId, $portalNa
     $badge['age'] = 'all';
     $badge['price'] = $memprice;
     $badge['memId'] = $memid;
+    $badge['label'] = $label;
     $badge['contact'] = 'Y';
     $badge['share'] = 'Y';
     $badge['type'] = $type;
