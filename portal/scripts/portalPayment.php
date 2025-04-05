@@ -163,14 +163,17 @@ if ($order != null) {
         ajaxSuccess(array ('status' => 'error', 'error' => 'Unable to process, bad tax sent to Server'));
         exit();
     }
-}
+
+    $customerId = $order['customerId'];
+} else
+    $customerId = $con['id'] . "-$loginType-$loginId";
 
 $results = array(
     'source' => $source,
     'nonce' => $nonce,
     'totalAmt' => $amount,
     'orderId' => $orderId,
-    'custid' => "$loginType-$loginId",
+    'customerId' => $customerId,
     'locationId' => $cc['location'],
     'referenceId' => $referenceId,
     'transid' => $transId,

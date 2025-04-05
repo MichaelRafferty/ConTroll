@@ -633,6 +633,7 @@ function cc_fetchOrder($source, $orderId, $useLogWrite = false) : array {
     $rtn['totalDiscountAmount'] = $order->getTotalDiscountMoney()->getAmount() / 100;
     $rtn['netAmountDue'] = $order->getNetAmountDueMoney()->getAmount() / 100;
     $rtn['netAmount'] = $order->getNetAmounts()->getTotalMoney()->getAmount() / 100;
+    $rtn['customerId'] = $order->getCustomerId();
 
     return $rtn;
 }
