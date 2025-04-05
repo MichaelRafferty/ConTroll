@@ -258,7 +258,7 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
 ?>
     <div class="row">
         <div class="col-sm-auto">
-            Email Address: <span id='email1'></span>
+            <span style="font-weight: bold; font-size: 125%;">Email Address: <span id='email1'></span></span>
         </div>
         <div class="col-sm-auto">
             <p><strong>Note:</strong> Email Address is entered at the start of creating the account or edited using the Change Email Address button on the home
