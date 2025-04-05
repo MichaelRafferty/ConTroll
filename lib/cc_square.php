@@ -304,6 +304,9 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
     if (!$itemsBuilt) {
         if (array_key_exists('badges', $results) && is_array($results['badges']) && count($results['badges']) > 0) {
             foreach ($results['badges'] as $badge) {
+                if (!array_key_exists('paid', $badge)) {
+                    $badge['paid'] = 0;
+                }
                 if (array_key_exists('fullname', $badge))
                     $fullname = $badge['fullname'];
                 else

@@ -217,7 +217,8 @@ EOS;
                 }
             }
             $total += $price;
-            $paid += $badge['paid'];
+            if (array_key_exists('paid', $badge))
+                $paid += $badge['paid'];
         }
         if ($apply_discount) {
             $discount = apply_overall_discount($coupon, $totalElibibleForDiscount);
