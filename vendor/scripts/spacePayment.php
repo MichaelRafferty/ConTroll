@@ -13,10 +13,11 @@ $return500errors = true;
 
 $response = array('post' => $_POST, 'get' => $_GET);
 
-global $con;
-$con = get_con();
-$conid=$con['id'];
+global $condata;
+$condata = get_con();
+$conid=$condata['id'];
 $conf = get_conf('con');
+$cc = get_conf('cc');
 $vendor_conf = get_conf('vendor');
 
 $response['conid'] = $conid;
@@ -377,11 +378,11 @@ EOS;
 //
 $error_msg = '';
 $badges = array();
-$transid = null;
+$transId = null;
 for ($i = 0; $i < count($includedMembershipStatus); $i++) {
     if ($includedMembershipStatus[$i]) {
-        $badge = buildBadge($membership_fields, 'i', $i, $region, $conid, $transid, $portalName);
-        $transid = $badge['transid'];
+        $badge = buildBadge($membership_fields, 'i', $i, $region, $conid, $transId, $portalName);
+        $transId = $badge['transid'];
         $status_msg .= $badge['status'];
         $error_msg .= $badge['error'];
         $badges[] = $badge;
@@ -389,14 +390,14 @@ for ($i = 0; $i < count($includedMembershipStatus); $i++) {
 }
 for ($i = 0; $i < count($additionalMembershipStatus); $i++) {
     if ($additionalMembershipStatus[$i]) {
-        $badge = buildBadge($membership_fields, 'a', $i, $region, $conid, $transid, $portalName);
-        $transid = $badge['transid'];
+        $badge = buildBadge($membership_fields, 'a', $i, $region, $conid, $transId, $portalName);
+        $transId = $badge['transid'];
         $badges[] = $badge;
         $status_msg .= $badge['status'];
         $error_msg .= $badge['error'];
     }
 }
-if ($transid === null) {
+if ($transId === null) {
     // no tranasction yet, because no badges
     $transQ = <<<EOS
 INSERT INTO transaction(price, type, conid, notes)
@@ -404,8 +405,8 @@ INSERT INTO transaction(price, type, conid, notes)
 EOS;
 
     $notes = "exhibitorId: $exhId, exhibitorYearId: $eyID, exhibitsRegionYearId: $regionYearId, portal: $portalName, exhibitorName: " . $exhibitor['exhibitorName'];
-    $transid = dbSafeInsert($transQ, 'dsis', array($totprice, $portalName, $conid, $notes));
-    if ($transid === false) {
+    $transId = dbSafeInsert($transQ, 'dsis', array($totprice, $portalName, $conid, $notes));
+    if ($transId === false) {
         $status_msg .= "Add of transaction for $portalName " . $_POST['name'] . " failed.<br/>\n";
     }
 }
@@ -423,26 +424,26 @@ JOIN memList M ON (M.id = R.memID)
 WHERE NP.transid=?;
 EOS;
 
-$all_badgeR = dbSafeQuery($all_badgeQ, 'i', array($transid));
+$all_badgeR = dbSafeQuery($all_badgeQ, 'i', array($transId));
 
 $badgeResults = array();
 while ($row = $all_badgeR->fetch_assoc()) {
     $badgeResults[] = $row;
 }
-
+$custId = "spacePayment-$transId";
 // prepare the credit card request
 $results = array(
-    'transid' => $transid,
+    'custid' => $custId,
+    'source' => $portalType,
+    'transid' => $transId,
     'counts' => null,
     'spaces' => $spaces,
     'mailInFee' => $mailInFee,
     'price' => $totprice,
     'badges' => $badgeResults,
     'formbadges' => $badges,
-    'tax' => 0,
     'pretax' => $totprice,
     'total' => $totprice,
-    'nonce' => $_POST['nonce'],
     'vendorId' => $exhId,
     'salesTaxId' => $salesTaxId,
     'specialrequests' => $specialRequests,
@@ -453,39 +454,91 @@ $results = array(
 );
 
 //log requested badges
-logWrite(array('Title' => 'Pre cc_charge_purchase', 'con' => $conid, $portalName => $exhibitor, 'region' => $region, 'spaces' => $spaces, 'trans' => $transid,
-               'results' =>
-    $results, 'request'
-    => $badges));
+logWrite(array('Title' => 'Pre cc_makeOrder', 'con' => $conid, $portalName => $exhibitor, 'region' => $region, 'spaces' => $spaces,
+    'trans' => $transId, 'results' => $results, 'request' => $badges));
 
-$rtn = cc_charge_purchase($results, $buyer, true);
-if ($rtn === null) {
-    ajaxSuccess(array('status' => 'error', 'data' => 'Credit card not approved'));
-    exit();
+// end compute, create the order if there is something to pay
+if ($totprice > 0) {
+    $rtn = cc_buildOrder($results, true);
+    if ($rtn == null) {
+        // note there is no reason cc_buildOrder will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
+        logWrite(array ('con' => $condata['name'], 'trans' => $transId, 'error' => 'Credit card order unable to be created'));
+        ajaxSuccess(array ('status' => 'error', 'error' => 'Credit card order not built, seek assistance'));
+        exit();
+    }
+    $response['orderRtn'] = $rtn;
+    logWrite(array('status'=> 'order create', 'con' => $condata['name'], 'trans' => $transId, 'ccrtn' => $rtn));
+    $referenceId = $transId . '-' . 'pay-' . time();
+    $results = array(
+        'source' => $portalType,
+        'nonce' => $_POST['nonce'],
+        'totalAmt' => $rtn['totalAmt'],
+        'orderId' => $rtn['orderId'],
+        'custid' => $custId,
+        'locationId' => $cc['location'],
+        'referenceId' => $referenceId,
+        'transid' => $transId,
+        'preTaxAmt' => $totprice,
+        'taxAmt' => 0,
+        'vendorId' => $exhId,
+        'salesTaxId' => $salesTaxId,
+        'specialrequests' => $specialRequests,
+        'region' => $region,
+        'vendor' => $exhibitor,
+        'exhibits' => $portalType,
+        'buyer' => $buyer,
+        'counts' => null,
+        'spaces' => $spaces,
+        'mailInFee' => $mailInFee,
+        'price' => $totprice,
+        'badges' => $badgeResults,
+        'formbadges' => $badges,
+        'total' => $totprice,
+    );
+
+// call the credit card processor to make the payment
+    $ccrtn = cc_payOrder($results, $buyer, true);
+    if ($ccrtn === null) {
+        // note there is no reason cc_charge_purchase will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
+        logWrite(array('con'=>$condata['name'], 'trans'=>$transId, 'error' => 'Credit card transaction not approved'));
+        ajaxSuccess(array('status' => 'error', 'error' => 'Credit card not approved'));
+        exit();
+    }
+
+    logWrite(array('con'=>$condata['name'], 'trans'=>$transId, 'ccrtn'=>$rtn));
+    $num_fields = sizeof($ccrtn['txnfields']);
+    $val = array();
+    for ($i = 0; $i < $num_fields; $i++) {
+        $val[$i] = '?';
+    }
+    $txnQ = 'INSERT INTO payments(time,' . implode(',', $ccrtn['txnfields']) . ') VALUES(current_time(),' . implode(',', $val) . ');';
+    $txnT = implode('', $ccrtn['tnxtypes']);
+    $txnid = dbSafeInsert($txnQ, $txnT, $ccrtn['tnxdata']);
+    $approved_amt = $ccrtn['amount'];
+} else {
+    $approved_amt = 0;
+    $ccrtn = array('url' => '');
 }
 
-logwrite(array('Title' => 'Post cc_charge_purchase', 'rtn' => $rtn));
-
-//$tnx_record = $rtn['tnx'];
-var_error_log($rtn);
+logwrite(array('Title' => 'Post cc_pay_order', 'rtn' => $ccrtn));
 
 // create the payment record
-$num_fields = sizeof($rtn['txnfields']);
+$num_fields = sizeof($ccrtn['txnfields']);
 $val = array();
 for ($i = 0; $i < $num_fields; $i++) {
     $val[$i] = '?';
 }
-$txnQ = 'INSERT INTO payments(time,' . implode(',', $rtn['txnfields']) . ') VALUES(current_time(),' . implode(',', $val) . ');';
-$txnT = implode('', $rtn['tnxtypes']);
-//error_log("Payment Insert: $txnQ : " .implode(',', $rtn['tnxdata']) . "\n");
+$txnQ = 'INSERT INTO payments(time,' . implode(',', $ccrtn['txnfields']) . ') VALUES(current_time(),' . implode(',', $val) . ');';
+$txnT = implode('', $ccrtn['tnxtypes']);
+//error_log("Payment Insert: $txnQ : " .implode(',', $ccrtn['tnxdata']) . "\n");
 
-$txnid = dbSafeInsert($txnQ, $txnT, $rtn['tnxdata']);
+$txnid = dbSafeInsert($txnQ, $txnT, $ccrtn['tnxdata']);
 if ($txnid == false) {
     $error_msg .= "Insert of payment failed\n";
 } else {
-    $status_msg .= "Payment for " . $dolfmt->formatCurrency($rtn['amount'], $currency) . " processed<br/>\n";
+    $status_msg .= "Payment for " . $dolfmt->formatCurrency($ccrtn['amount'], $currency) . " processed<br/>\n";
 }
-$approved_amt = $rtn['amount'];
+$approved_amt = $ccrtn['amount'];
 $results['approved_amt'] = $approved_amt;
 
 // update the other records with the payment information
@@ -496,10 +549,10 @@ if ($approved_amt == $totprice) {
 }
 
 $txnUpdate .= 'paid=? WHERE id=?;';
-$txnU = dbSafeCmd($txnUpdate, 'di', array($approved_amt, $transid));
+$txnU = dbSafeCmd($txnUpdate, 'di', array($approved_amt, $transId));
 // reg (badge)
 $regQ = "UPDATE reg SET paid=price, complete_trans=?, status='paid' WHERE create_trans=?;";
-$numrows = dbSafeCmd($regQ, 'ii', array($transid, $transid));
+$numrows = dbSafeCmd($regQ, 'ii', array($transId, $transId));
 if ($numrows != 1) {
     $error_msg .= "Unable to mark transaction completed\n";
 }
@@ -511,7 +564,7 @@ SET item_purchased = ?, price=?, paid=?, transid = ?, membershipCredits = 0, tim
 WHERE id = ?
 EOS;
 foreach ($spaces as $id => $space) {
-    $num_rows = dbSafeCmd($vendorUQ, 'iddii', array($space['item_approved'], $space['approved_price'], $space['approved_price'], $transid, $space['id']));
+    $num_rows = dbSafeCmd($vendorUQ, 'iddii', array($space['item_approved'], $space['approved_price'], $space['approved_price'], $transId, $space['id']));
     if ($num_rows == 0) {
         $error_msg .= "Unable to mark " . $space['name']  . " space purchased\n";
     } else {
@@ -693,10 +746,10 @@ emailArtistInventoryReq($eryID, 'Payment');
 
 ajaxSuccess(array(
     'status' => $return_arr['status'],
-    'url' => $rtn['url'],
+    'url' => $ccrtn['url'],
     'error' => $error_msg,
     'email' => $return_arr,
-    'trans' => $transid,
+    'trans' => $transId,
     'email_error' => $error_code,
     'message' => $status_msg,
     'exhibitor_spacelist' => $exhibitorSpaceList
@@ -704,7 +757,7 @@ ajaxSuccess(array(
 return;
 
 // build the badge structure and insert the person into newperson, trans, reg after checking for exact match
-function buildBadge($fields, $type, $index, $region, $conid, $transid, $portalName) {
+function buildBadge($fields, $type, $index, $region, $conid, $transId, $portalName) {
     $badge = array();
     $suffix = '_' . $type . '_' . $index;
     if ($type == 'i') {
@@ -797,18 +850,18 @@ EOS;
 
     $badge['newperid'] = $newid;
     // if no tranasction yet, insert one
-    if ($transid == null) {
+    if ($transId == null) {
         $transQ = <<<EOS
 INSERT INTO transaction(newperid, perid, price, type, conid)
     VALUES(?, ?, ?, ?, ?);
 EOS;
 
-        $transid = dbSafeInsert($transQ, 'iidsi', array($newid, $id, $region['price'], $portalName, $conid));
-        if ($transid === false) {
+        $transId = dbSafeInsert($transQ, 'iidsi', array($newid, $id, $region['price'], $portalName, $conid));
+        if ($transId === false) {
             $badge['error'] .= 'Add of transaction for ' . $badge['fname'] . ' ' . $badge['lname'] . " failed.\n";
         }
     }
-    $badge['transid'] = $transid;
+    $badge['transid'] = $transId;
     dbSafeCmd("UPDATE newperson SET transid=? WHERE id = ?;", 'ii', array($badge['transid'], $badge['newperid']));
 
     $badgeQ = <<<EOS
@@ -819,7 +872,7 @@ EOS;
             $conid,
             $badge['newperid'],
             $badge['perid'],
-            $transid,
+            $transId,
             $badge['price'],
             $badge['price'] > 0 ? 'unpaid' : 'paid',
             $badge['memId'])

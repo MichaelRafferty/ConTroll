@@ -367,7 +367,7 @@ if ($total > 0) {
 // call the credit card processor to make the payment
     $ccrtn = cc_payOrder($results, $buyer, true);
     if ($ccrtn === null) {
-        // note there is no reason cc_charge_purchase will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
+        // note there is no reason cc_payOrder will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
         logWrite(array('con'=>$condata['name'], 'trans'=>$transId, 'error' => 'Credit card transaction not approved'));
         ajaxSuccess(array('status' => 'error', 'error' => 'Credit card not approved'));
         exit();
