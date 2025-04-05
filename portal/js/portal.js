@@ -1661,7 +1661,7 @@ class Portal {
     setFocus(area){
          switch (area) {
             case 'totalDue':
-                $(window).scrollTop($('span[name="totalDueAmountSpan"]').offset().top);
+                $(window).scrollTop($('span[id="totalDueAmountSpan"]').offset().top);
                 break;
         }
     }
