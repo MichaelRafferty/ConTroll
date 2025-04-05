@@ -476,7 +476,7 @@ if ($totprice > 0) {
         'nonce' => $_POST['nonce'],
         'totalAmt' => $rtn['totalAmt'],
         'orderId' => $rtn['orderId'],
-        'custid' => $custId,
+        'customerid' => $custId,
         'locationId' => $cc['location'],
         'referenceId' => $referenceId,
         'transid' => $transId,
