@@ -153,7 +153,7 @@ EOS;
 if ($membershipReq == 'Y' || $membershipReq == 'B') {
     $memberships = [];
     $mQ = <<<EOS
-SELECT r.id, r.create_date, r.memId, r.conid, r.status, r.price, r.paid, r.couponDiscount, r.perid, r.newperid,
+SELECT r.id, r.create_date, r.memId, r.conid, r.status, r.price, IFNULL(r.paid, 0.00) AS paid, r.couponDiscount, r.perid, r.newperid,
        m.label, m.memType, m.memCategory, m.memAge, m.startdate, m.enddate, m.online
 FROM reg r
 JOIN memList m ON m.id = r.memId
@@ -174,14 +174,16 @@ if ($membershipReq == 'A' || $membershipReq == 'B') {
     $allMemberships = [];
     if ($loginType == 'p') {
         $mQ = <<<EOS
-SELECT r.id, r.perid, r.newperid, r.create_date, r.memId, r.conid, r.status, r.price, r.paid, r.couponDiscount, m.label, m.memType, m.memCategory, m.memAge
+SELECT r.id, r.perid, r.newperid, r.create_date, r.memId, r.conid, r.status, r.price, IFNULL(r.paid, 0.00) AS paid, r.couponDiscount,
+       m.label, m.memType, m.memCategory, m.memAge
 FROM reg r
 JOIN memList m ON m.id = r.memId
 JOIN perinfo p ON p.id = r.perid
 LEFT OUTER JOIN perinfo pm ON p.managedBy = pm.id
 WHERE r.conid IN (?, ?) AND (pm.id = ? OR p.id = ?)
 UNION
-SELECT r.id, r.perid, r.newperid, r.create_date, r.memId, r.conid, r.status, r.price, r.paid, r.couponDiscount, m.label, m.memType, m.memCategory, m.memAge
+SELECT r.id, r.perid, r.newperid, r.create_date, r.memId, r.conid, r.status, r.price, IFNULL(r.paid, 0.00) AS paid, r.couponDiscount,
+       m.label, m.memType, m.memCategory, m.memAge
 FROM reg r
 JOIN memList m ON m.id = r.memId
 JOIN newperson n ON n.id = r.newperid
@@ -192,7 +194,7 @@ EOS;
         $mR = dbSafeQuery($mQ, 'iiiiiii', array ($conid, $conid + 1, $loginId, $loginId, $conid, $conid + 1, $loginId));
     } else {
         $mQ = <<<EOS
-SELECT r.id, r.create_date, r.memId, r.conid, r.status, r.price, r.paid, r.couponDiscount, r.perid, r.newperid,
+SELECT r.id, r.create_date, r.memId, r.conid, r.status, r.price, IFNULL(r.paid, 0.00) AS paid, r.couponDiscount, r.perid, r.newperid,
        m.label, m.memType, m.memCategory, m.memAge
 FROM reg r
 JOIN memList m ON m.id = r.memId
