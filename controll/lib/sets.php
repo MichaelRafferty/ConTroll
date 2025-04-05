@@ -16,7 +16,6 @@ function get_admin_sets(): array
         'finance' => array('finance', 'search',  'reports', 'gen_rpts', 'coupon'),
         'exhibits' => array('people', 'search', 'reports', 'gen_rpts', 'exhibitor'),
         'club' => array('club', 'search', 'reports', 'gen_rpts', 'people'),
-        'virtual' => array('virtual')
     );
 
     return $sets;
