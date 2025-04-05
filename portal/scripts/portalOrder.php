@@ -143,6 +143,7 @@ $buyer['phone'] = $info['phone'];
 $buyer['country'] = $info['country'];
 $phone = $info['phone'];
 
+$deferredAmount = 0;
 if ($otherPay == 0) { // this is a plan payment or badge purchase payment
     if ($planPayment == 1 && $newPlan == 0) {
         if ($existingPlan['currentPayment'] > $existingPlan['balanceDue']) {
@@ -158,6 +159,7 @@ if ($otherPay == 0) { // this is a plan payment or badge purchase payment
 
         if ($planPayment == 1 || $newPlan == 1) {
             $badges = whatMembershipsInPlan($badges, $planRec);
+            $deferredAmount = $planRec['balanceDue'];
         } else foreach ($badges as $key => $badge) {
             $badges[$key]['inPlan'] = false;
         }
@@ -185,7 +187,7 @@ if ($otherPay == 0) { // this is a plan payment or badge purchase payment
         $paid = $data['paid'];
         $totalDiscount = $data['totalDiscount'];
 
-        if ($totalAmountDue != ($total - $paid)) {
+        if ($totalAmountDue != ($total - ($paid + $deferredAmount))) {
             error_log('bad total: post=' . $totalAmountDue . ', calc=' . $total);
             ajaxSuccess(array ('status' => 'error', 'error' => 'Unable to process, bad total sent to Server'));
             exit();
