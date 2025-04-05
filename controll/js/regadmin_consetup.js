@@ -205,7 +205,9 @@ class consetup {
                         deleterow(e, cell.getRow());
                     }
                 },
-                { title: "ID", field: "id", width: 70, headerSort: true, headerHozAlign:"right", hozAlign: "right", },
+                { title: "ID", field: "id", width: 70, headerSort: true, headerHozAlign:"right", hozAlign: "right",
+                    headerFilter: "input", headerFilterFunc:numberHeaderFilter,
+                },
                 { field: "memlistkey", visible: false, },
                 { title: "Con ID", field: "conid", width: 70, headerWordWrap: true, headerFilter: true, headerHozAlign:"right", hozAlign: "right", },
                 { title: "Sort", field: "sort_order", headerSort: false, visible: false },

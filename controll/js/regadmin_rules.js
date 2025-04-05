@@ -1106,7 +1106,9 @@ class rulesSetup {
             paginationSize: 9999,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
-                {title: "ID", field: "id", width: 80, headerHozAlign:"right", hozAlign: "right", headerFilter: true, },
+                {title: "ID", field: "id", width: 80, headerHozAlign:"right", hozAlign: "right",
+                    headerFilter: "input", headerFilterFunc:numberHeaderFilter,
+                },
                 {title: "ConId", field: "conid", width: 80, headerWordWrap: true, headerHozAlign:"right", hozAlign: "right",  headerFilter: true, },
                 {title: "Cat", field: "memCategory", width: 90, headerFilter: 'list', headerFilterParams: { values: this.#filterCats }, },
                 {title: "Type", field: "memType", width: 90, headerFilter: 'list', headerFilterParams: { values: this.#filterTypes },  },
