@@ -266,8 +266,8 @@ class Find {
                 {field: 'country', visible: false,},
                 {field: 'active', visible: false,},
                 {field: 'banned', visible: false,},
-                {field: 'admin_notes', visible: false,},
-                {field: 'open_notes', visible: false,},
+                {title: "Admin Notes", headerWordWrap: true, field: 'admin_notes', visible: false, },
+                {title: "Open Notes", headerWordWrap: true,field: 'open_notes', visible: false, },
             ],
         });
 
@@ -394,11 +394,11 @@ class Find {
         this.#emailAddr2.value = this.#editRow.email_addr;
         this.#phone.value = this.#editRow.phone;
         this.#managerId.value = this.#editRow.managerId;
-        this.#managerName.innerHTML = this.#editRow.manager;
+        this.#managerName.innerHTML = this.#editRow.manager ? this.#editRow.manager : '';
         this.#active.value = this.#editRow.active;
         this.#banned.value = this.#editRow.banned;
-        this.#openNotes.innerHTML = this.#editRow.open_notes;
-        this.#adminNotes.innerHTML = this.#editRow.admin_notes;
+        this.#openNotes.innerText = this.#editRow.open_notes ? this.#editRow.open_notes : '';
+        this.#adminNotes.innerText = this.#editRow.admin_notes ? this.#editRow.admin_notes : '';
 
         // loop over the policies
         if (this.#memberPolicies && this.#memberPolicies.length > 0) {
@@ -706,8 +706,8 @@ class Find {
                 {field: 'country', visible: false,},
                 {field: 'active', visible: false,},
                 {field: 'banned', visible: false,},
-                {field: 'admin_notes', visible: false,},
-                {field: 'open_notes', visible: false,},
+                {title: "Admin Notes", headerWordWrap: true, field: 'admin_notes', visible: false,},
+                {title: "Open Notes", headerWordWrap:true, field: 'open_notes', visible: false,},
             ],
         });
         if (data.success) {
@@ -1066,7 +1066,9 @@ class Find {
         this.#emailAddr.value = '';
         this.#emailAddr2.value = '';
         this.#phone.value = '';
-        this.#managesName.innerHTML = '';
+        this.#managesName.innerText = '';
+        this.#openNotes.innerText = '';
+        this.#adminNotes.innerText = '';
         this.#managesId.value = '';
         this.#addPersonBtn.disabled = true;
         clear_message('find_edit_message');
