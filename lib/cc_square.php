@@ -269,7 +269,7 @@ function cc_charge_purchase($results, $email, $phone, $useLogWrite=false) {
         if (array_key_exists('mailInFee', $results)) {
             foreach ($results['mailInFee'] as $fee) {
                 $item = new OrderLineItem ('1');
-                $item->setUid('region-' . $fee['name']);
+                $item->setUid('region-' . $fee['yearId']);
                 $itemName = 'Mail in Fee for ' . $fee['name'];
                 $itemPrice = $fee['amount'];
                 $note = 'Mail in fee';
