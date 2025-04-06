@@ -95,7 +95,7 @@ $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale
 $regionYearQ = <<<EOS
 SELECT er.id, name, description, ownerName, ownerEmail, includedMemId, additionalMemId, mi.price AS includedPrice, ma.price AS additionalPrice,
        mi.glNum AS includedGLNum, ma.glNum AS additionalGLNum, mi.label AS includedLabel, ma.label AS additionalLabel,
-       ery.mailinFee, ery.atconIdBase, ery.mailinIdBase
+       ery.mailinFee, ery.atconIdBase, ery.mailinIdBase, ery.id as yearId
 FROM exhibitsRegionYears ery
 JOIN exhibitsRegions er ON er.id = ery.exhibitsRegion
 LEFT OUTER JOIN memList mi ON ery.includedMemId = mi.id
@@ -178,7 +178,7 @@ $spaceR->free();
 // add in mail in fee if this exhibitor is using mail in this year and the fee exist
 if ($region['mailinFee'] > 0 && $exhibitor['mailin'] == 'Y') {
     $spacePriceComputed += $region['mailinFee'];
-    $mailInFee[] = array('name' => $region['name'], 'amount' => $region['mailinFee']);
+    $mailInFee[] = array('name' => $region['name'], 'yearId' => $region['yearId'], 'amount' => $region['mailinFee']);
 }
 
 if ($spacePrice != $spacePriceComputed || $includedMembershipsComputed != $includedMembershipsMax || $additionalMembershipsComputed != $additionalMembershipsMax) {
