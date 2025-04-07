@@ -22,7 +22,7 @@ class Pos {
         'email_addr',
         'address_1',
         'address_2',
-        'city', 'state', 'postal_code',
+        'city', 'state', 'postal_code', 'phone'
     ];
 
     // pay items
@@ -31,6 +31,7 @@ class Pos {
     #pay_button_ercpt = null;
     #pay_button_rcpt = null;
     #pay_tid = null;
+    #pay_tid_amt = 0;
     #discount_mode = 'none';
     #num_coupons = 0;
     #couponList = null;
@@ -590,6 +591,7 @@ class Pos {
         this.#pay_button_rcpt = null;
         this.#receeiptEmailAddresses_div = null;
         this.#pay_tid = null;
+        this.#pay_tid_amt = 0;
         this.#pay_prior_discount = null;
         // clear the pay tab
         this.#pay_div.innerHTML = "No Payment Required, Proceed to Next Customer";
@@ -636,7 +638,7 @@ class Pos {
                     }
                     perid = _this.#result_perinfo[prow].perid;
                     if (cart.notinCart(perid)) {
-                        cart.add(_this.#result_perinfo[prow]);
+                        cart.add(_this.#result_perinfo[prow], index == _this.#result_perinfo[prow].perid);
                     }
                 }
             });
@@ -1906,6 +1908,7 @@ addUnpaid(tid) {
 //  all the data from the cart has been updated in the database, now apply the id's and proceed to the next step
     reviewedUpdateCart(data) {
         this.#pay_tid = data.master_tid;
+        this.#pay_tid_amt = 0;
         // update cart elements
         var unpaidRows = cart.updateFromDB(data);
         if (data.success)
@@ -2107,6 +2110,8 @@ addUnpaid(tid) {
                 }
                 prow = {
                     index: cart.getPmtLength(), amt: pay_amt, ccauth: ccauth, checkno: checkno, desc: eldesc.value, type: ptype, nonce: nonce,
+                    payor: Number(document.getElementById('pay-emailsel').value),
+                    email: document.getElementById('pay-email').value, phone: document.getElementById('pay-phone').value
                 };
             }
         }
@@ -2120,6 +2125,7 @@ addUnpaid(tid) {
             nonce: nonce,
             user_id: this.#user_id,
             pay_tid: this.#pay_tid,
+            pay_tid_amt: this.#pay_tid_amt,
         };
         this.#pay_button_pay.disabled = true;
         var _this = this;
@@ -2164,6 +2170,7 @@ addUnpaid(tid) {
 //  payment entered into the database correctly, update the payment cart and the memberships with the updated paid amounts
     updatedPayment(data) {
         cart.updatePmt(data);
+        this.#pay_tid_amt += Number(data.pay_amt);
         this.payShown();
     }
 
@@ -2388,6 +2395,17 @@ addUnpaid(tid) {
         return;
     }
 
+    selectPayor() {
+        var rownum = document.getElementById("pay-emailsel").value;
+        if (rownum < 0) {
+            document.getElementById("pay-email").value = '';
+            document.getElementById("pay-phone").value = '';
+        } else {
+            document.getElementById("pay-email").value = cart.getEmail(rownum);
+            document.getElementById("pay-phone").value = cart.getPhone(rownum);
+        }
+    }
+
     payShown() {
         cart.clearInReview();
         cart.freeze();
@@ -2554,9 +2572,38 @@ addUnpaid(tid) {
     <div class="row mb-2" id="pay-online-div" hidden>
         <div class="col-sm-12 ms-0 me-0 p-0">` + this.#cc_html + `</div>  
     </div>    
-    <div class="row">
+    <div class="row mb-2">
         <div class="col-sm-2 ms-0 me-2 p-0">Description:</div>
         <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0"><input type="text" size="60" maxlength="64" name="pay-desc" id="pay-desc"/></div>
+    </div>
+     <div class="row mb-2">
+        <div class="col-sm-2 ms-0 me-2 p-0">Select Payor:</div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0">
+            <select name="pay-emailsel" id="pay-emailsel" onchange="pos.selectPayor();">
+                <option value=-1>Other: Enter payor below</option>
+`;
+            cartlen = cart.getCartLength();
+            rownum = 0;
+            while (rownum < cartlen) {
+                var email_addr = cart.getEmail(rownum);
+                if (validateAddress(email_addr)) {
+                    pay_html += "<option value='" + rownum.toString() + "'" + (rownum == 0 ? ' selected' : '') + '>' + cart.getFullName(rownum) + "</option>\n";
+                }
+                rownum++;
+            }
+            pay_html += `
+            </select>         
+        </div>
+    </div>
+    <div class="row mb-2">
+        <div class="col-sm-2 ms-0 me-2 p-0">Payor Email:</div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0"><input type="text" size="60" maxlength="254" name="pay-email" id="pay-email" value="` +
+            cart.getEmail(0) + `" placeholder="Enter payor's email address" /></div>
+    </div>
+    <div class="row">
+        <div class="col-sm-2 ms-0 me-2 p-0">Payor Phone:</div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0"><input type="text" size="30" maxlength="24" name="pay-phone" id="pay-phone" value="` +
+                cart.getPhone(0) + `" placeholder="Enter payor's phone number"/></div>
     </div>
     <div class="row mt-3">
         <div class="col-sm-2 ms-0 me-2 p-0">&nbsp;</div>

@@ -39,7 +39,9 @@ hotelname="Hotel Name"
 hoteladdr="Hotel Address"
 survey_url="https://link-to-post-convention-survey"
 id="2022"
+; sales tax rate and Invoice Label
 taxRate=6
+taxLabel="NJ Sales Tax"
 currency="USD"
 minComp="2021"
 compLen="365" ; day length for growth by day graph
@@ -174,11 +176,15 @@ client_secret=""
 [cc]
 ; valid types are 'square', 'test' or 'bypass' (Note: bypass and test are for testing only and requires localhost or test=1)
 ; appid, token, location come from your square api setup
+;   location = mail in reg location
+;   locationXXX = locations for terminals, where XXX = name of the terminal with spaces converted to _'s and first letter capitalized
 type=square
 appid=""
 token=""
 env="production"
 location=""
+;locationRegistration=""
+;locationArtshow=""
 webpaysdk="https://web.squarecdn.com/v1/square.js"
 
 [log]

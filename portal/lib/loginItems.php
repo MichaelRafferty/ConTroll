@@ -1,6 +1,6 @@
 <?php
 // draw_login - draw the login options form
-function draw_login($config_vars, $result_message = '', $result_color = '', $why = 'continue to the portal') {
+function draw_login($config_vars, $result_message = '', $result_color = '', $why = 'continue to the portal') : void {
     $con = get_conf('con');
     $policies = getPolicies();
     ?>
@@ -46,7 +46,7 @@ function draw_login($config_vars, $result_message = '', $result_color = '', $why
                 // TODO: back out seattle regtest from here.
     if (isDirectAllowed()) {
                 ?>
-            <div class="row mt-3><div class="col-sm-12"><hr></div></div>
+            <div class="row mt-3"><div class="col-sm-12"><hr></div></div>
             <div class='row mt-2'>
                 <div class='col-sm-auto'>
                     <label for='dev_email'>*Direct to Email/Perid/Newperid: </label>
@@ -108,7 +108,6 @@ function draw_login($config_vars, $result_message = '', $result_color = '', $why
 function chooseAccountFromEmail($email, $id, $linkid, $passedMatch, $validationType) {
     global $config_vars;
 
-    $portal_conf = get_conf('portal');
     $con_conf = get_conf('con');
     $origEmail = strtolower($email);
 
@@ -227,8 +226,6 @@ function chooseAccountFromEmail($email, $id, $linkid, $passedMatch, $validationT
     }
 
     if (count($matches) > 1) {
-        $condata = get_con();
-        $ini = get_conf('reg');
 ?>
         <h4>This email address has access to multiple membership accounts</h4>
 <?php
@@ -270,7 +267,7 @@ function chooseAccountFromEmail($email, $id, $linkid, $passedMatch, $validationT
 //  possible responses:
 //      direct login: redirect to portal
 //      oauth authentication request: redirect back to oauth with the appropriate values
-function validationComplete($id, $idType, $email, $validationType, $multiple) {
+function validationComplete($id, $idType, $email, $validationType, $multiple) : void {
     // if not oauth session variable to go portal
     $portal_conf = get_conf('portal');
     if (!isSessionVar('oauth')) {
@@ -291,7 +288,6 @@ function validationComplete($id, $idType, $email, $validationType, $multiple) {
 
     // oauth session variable found, delete that variable and go to the server to respond back to the app
     // get the information for this response
-    $reg_conf = get_conf('reg');
     $con_conf = get_conf('con');
     $conid = $con_conf['id'];
     $nomDate = $portal_conf['nomdate'];
@@ -353,7 +349,8 @@ EOS;
         case 'nom':
             for ($row = 0; $row < count($regs); $row++) {
                 $reg = $regs[$row];
-                if ((($reg['memCategory'] == 'wsfs' || $reg['memCategory'] == 'dealer') && $reg['inTime'] == 1) || ($reg['memCategory'] == 'wsfsnom')) {
+                if ((($reg['memCategory'] == 'wsfs' || $reg['memCategory'] == 'dealer' || $reg['memType'] == 'wsfsfree') && $reg['inTime'] == 1) ||
+                    ($reg['memCategory'] == 'wsfsnom')) {
                     $resp['rights'] = 'hugo_nominate';
                     break;
                 }
@@ -362,7 +359,8 @@ EOS;
         case 'vote':
             for ($row = 0; $row < count($regs); $row++) {
                 $reg = $regs[$row];
-                if (($reg['memCategory'] == 'wsfs' && str_contains(strtolower($reg['label']), ' only') == false) || ($reg['memCategory'] == 'dealer')) {
+                if (($reg['memCategory'] == 'wsfs' && str_contains(strtolower($reg['label']), ' only') == false) ||
+                    $reg['memCategory'] == 'dealer' || $reg['memType'] == 'wsfsfree') {
                     $resp['rights'] = 'hugo_vote';
                     break;
                 }

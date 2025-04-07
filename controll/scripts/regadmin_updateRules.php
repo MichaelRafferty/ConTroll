@@ -10,7 +10,6 @@ $response = array("post" => $_POST, "get" => $_GET, "perm"=>$perm);
 
 if ($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
     $response['error'] = 'Authentication Failed';
-    $response['error'] = 'Authentication Failed';
     ajaxSuccess($response);
     exit();
 }
@@ -59,11 +58,12 @@ foreach ($rules as $name => $rule) {
         $numdel += dbSafeCmd($dRI, 'si', array($rule['origName'], $conid));
         $numdel += dbSafeCmd($dR, 'si', array($rule['origName'], $conid));
     } else {
-        if (array_key_exists('ruleset', $rule))
+        if (array_key_exists('ruleset', $rule)) {
             $ruleItems = $rule['ruleset'];
-        foreach ($ruleItems as $ruleItem) {
-            if (array_key_exists('to_delete', $ruleItem) && $ruleItem['to_delete'] == 1) {
-                $numdel += dbSafeCmd($dRIsingle, 'si', array($ruleItem['origName'], $ruleItem['origStep'], $conid));
+            foreach ($ruleItems as $ruleItem) {
+                if (array_key_exists('to_delete', $ruleItem) && $ruleItem['to_delete'] == 1) {
+                    $numdel += dbSafeCmd($dRIsingle, 'sii', array ($ruleItem['origName'], $ruleItem['origStep'], $conid));
+                }
             }
         }
     }

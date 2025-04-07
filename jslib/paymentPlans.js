@@ -298,7 +298,7 @@ class PaymentPlans {
         match.balanceDue = match.balanceDue.toFixed(2) + ``;
         match.downPayment = match.downPayment.toFixed(2) + ``;
         match.new = true;
-        portal.makePayment(match);
+        portal.makeOrder(match);
     }
 
     // customize plans items - fill in the modal and display it
@@ -575,7 +575,7 @@ class PaymentPlans {
         this.#customizePlanModal.hide();
         var plan = make_copy(this.#computedPlan);
         plan.new = true;
-        portal.makePayment(plan);
+        portal.makeOrder(plan);
     }
 
     // payPlan - make a payment against a plan

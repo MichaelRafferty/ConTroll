@@ -459,6 +459,9 @@ function dbPrepare($query)
 // For use at location of actual data use
 //
 function escape_quotes($param) {
+    if ($param === null)
+        return null;
+
     return str_replace('"', '\"', $param);
 }
 

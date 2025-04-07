@@ -91,12 +91,15 @@ if (!$refresh) {
     $numPrimary = 0;
 // get the account holder's registrations
     $holderRegSQL = <<<EOS
-SELECT r.status, r.memId, m.*, a.shortname AS ageShort, a.label AS ageLabel, r.price AS actPrice, r.paid AS actPaid, 
-       r.couponDiscount AS actCouponDiscount, r.conid, r.create_date, r.id AS regId, r.create_trans, r.complete_trans,
+SELECT r.status, r.memId, m.*, a.shortname AS ageShort, a.label AS ageLabel, mC.taxable,
+       r.price AS actPrice, IFNULL(r.paid,0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,
+       r.conid, r.create_date, r.id AS regId, r.create_trans, r.complete_trans,
        r.perid AS regPerid, r.newperid AS regNewperid, r.planId,
        IFNULL(r.complete_trans, r.create_trans) AS sortTrans,
        IFNULL(tp.complete_date, t.create_date) AS transDate,
-    nc.id AS createNewperid, np.id AS completeNewperid, pc.id AS createPerid, pp.id AS completePerid,
+       IFNULL(tp.perid, t.perid) AS transPerid,
+       IFNULL(tp.newperid, t.newperid) AS transNewPerid,
+       nc.id AS createNewperid, np.id AS completeNewperid, pc.id AS createPerid, pp.id AS completePerid,
     CASE
         WHEN pp.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pp.first_name, pp.last_name))
         WHEN np.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', np.first_name, np.last_name))
@@ -143,6 +146,7 @@ SELECT r.status, r.memId, m.*, a.shortname AS ageShort, a.label AS ageLabel, r.p
 FROM reg r
 JOIN memLabel m ON m.id = r.memId
 JOIN ageList a ON m.memAge = a.ageType AND r.conid = a.conid
+JOIN memCategories mC ON m.memCategory = mC.memCategory
 LEFT OUTER JOIN transaction t ON r.create_trans = t.id
 LEFT OUTER JOIN transaction tp ON r.complete_trans = tp.id
 LEFT OUTER JOIN perinfo pc ON t.perid = pc.id
@@ -174,13 +178,14 @@ EOS;
                 $shortname = $m['shortname'];
             }
             $item = array ('label' => ($m['conid'] != $conid ? $m['conid'] . ' ' : '') . $label, 'status' => $m['status'],
-                                         'memAge' => $m['memAge'], 'type' => $m['memType'], 'category' => $m['memCategory'],
-                                         'shortname' => ($m['conid'] != $conid ? $m['conid'] . ' ' : '') . $shortname, 'ageShort' => $m['ageShort'], 'ageLabel' => $m['ageLabel'],
-                                         'createNewperid' => $m['createNewperid'], 'completeNewperid' => $m['completeNewperid'],
-                                         'createPerid' => $m['createPerid'], 'completePerid' => $m['completePerid'], 'purchaserName' => $m['purchaserName'],
-                                         'startdate' => $m['startdate'], 'enddate' => $m['enddate'], 'online' => $m['online'],
-                                         'actPrice' => $m['actPrice'], 'actPaid' => $m['actPaid'], 'actCouponDiscount' => $m['actCouponDiscount'],
-                                         'email_addr' => $m['email_addr'], 'phone' => $m['phone'],
+                'memAge' => $m['memAge'], 'type' => $m['memType'], 'category' => $m['memCategory'],
+                'shortname' => ($m['conid'] != $conid ? $m['conid'] . ' ' : '') . $shortname, 'ageShort' => $m['ageShort'], 'ageLabel' => $m['ageLabel'],
+                'createNewperid' => $m['createNewperid'], 'completeNewperid' => $m['completeNewperid'],
+                'createPerid' => $m['createPerid'], 'completePerid' => $m['completePerid'], 'purchaserName' => $m['purchaserName'],
+                'startdate' => $m['startdate'], 'enddate' => $m['enddate'], 'online' => $m['online'],
+                'actPrice' => $m['actPrice'], 'actPaid' => $m['actPaid'], 'actCouponDiscount' => $m['actCouponDiscount'],
+                'email_addr' => $m['email_addr'], 'phone' => $m['phone'],
+                'transPerid' => $m['transPerid'], 'transNewPerid' => $m['transNewPerid'], 'taxable' => $m['taxable'],
             );
             $holderMembership[] = $item;
             if ($item['completePerid'] != NULL) {
@@ -236,20 +241,24 @@ WITH ppl AS (
         p.managedBy, NULL AS managedByNew,
         TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', 
             IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
-        r.conid, r.status, r.memId, r.price AS actPrice, r.create_date,
+        r.conid, r.status, r.memId, r.create_date,
+        r.price AS actPrice, IFNULL(r.paid, 0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,        
         m.memCategory, m.memType, m.memAge, m.shortname, m.label, m.startdate, m.enddate, m.online,
-        a.shortname AS ageShort, a.label AS ageLabel, 'p' AS personType,
+        a.shortname AS ageShort, a.label AS ageLabel, 'p' AS personType, mC.taxable,
         nc.id AS createNewperid, np.id AS completeNewperid, pc.id AS createPerid, pp.id AS completePerid,
         CASE
             WHEN pp.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pp.first_name, pp.last_name))
             WHEN np.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', np.first_name, np.last_name))
             WHEN pc.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pc.first_name, pc.last_name))
             ELSE TRIM(CONCAT_WS(' ', nc.first_name, nc.last_name))
-        END AS purchaserName
+        END AS purchaserName,
+        IFNULL(tp.perid, t.perid) AS transPerid,
+        IFNULL(tp.newperid, t.newperid) AS transNewPerid
     FROM perinfo p
     LEFT OUTER JOIN reg r ON p.id = r.perid AND r.conid >= ? AND status IN  ('unpaid', 'paid', 'plan', 'upgraded')
     LEFT OUTER JOIN memLabel m ON m.id = r.memId
     LEFT OUTER JOIN ageList a ON m.memAge = a.ageType AND r.conid = a.conid
+    LEFT OUTER JOIN memCategories mC ON m.memCategory = mC.memCategory
     LEFT OUTER JOIN transaction t ON r.create_trans = t.id
     LEFT OUTER JOIN transaction tp ON r.complete_trans = tp.id
     LEFT OUTER JOIN perinfo pc ON t.perid = pc.id
@@ -264,20 +273,24 @@ WITH ppl AS (
         p.managedBy, p.managedByNew,
         TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ',
             IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
-        r.conid, r.status, r.memId, r.price AS actPrice, r.create_date, m.memCategory, m.memType, m.memAge, m.shortname, m.label,
+        r.conid, r.status, r.memId, r.create_date, m.memCategory, m.memType, m.memAge, m.shortname, m.label,
+        r.price AS actPrice, IFNULL(r.paid, 0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,
         m.startdate, m.enddate, m.online,
-        a.shortname AS ageShort, a.label AS ageLabel, 'n' AS personType,
+        a.shortname AS ageShort, a.label AS ageLabel, 'n' AS personType, mC.taxable,
         nc.id AS createNewperid, np.id AS completeNewperid, pc.id AS createPerid, pp.id AS completePerid,
         CASE
             WHEN pp.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pp.first_name, pp.last_name))
             WHEN np.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', np.first_name, np.last_name))
             WHEN pc.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pc.first_name, pc.last_name))
             ELSE TRIM(CONCAT_WS(' ', nc.first_name, nc.last_name))
-        END AS purchaserName
-    FROM newperson p    
+        END AS purchaserName,
+        IFNULL(tp.perid, t.perid) AS transPerid,
+        IFNULL(tp.newperid, t.newperid) AS transNewPerid
+    FROM newperson p
     LEFT OUTER JOIN reg r ON p.id = r.newperid AND r.conid >= ? AND status IN  ('unpaid', 'paid', 'plan', 'upgraded')
     LEFT OUTER JOIN memLabel m ON m.id = r.memId
     LEFT OUTER JOIN ageList a ON m.memAge = a.ageType AND r.conid = a.conid
+    LEFT OUTER JOIN memCategories mC ON m.memCategory = mC.memCategory
     LEFT OUTER JOIN transaction t ON r.create_trans = t.id
     LEFT OUTER JOIN transaction tp ON r.complete_trans = tp.id
     LEFT OUTER JOIN perinfo pc ON t.perid = pc.id
@@ -312,20 +325,24 @@ WITH ppl AS (
         p.managedBy, NULL AS managedByNew,
         TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ',
             IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
-        r.conid, r.status, r.memId, r.price AS actPrice, r.create_date, m.memCategory, m.memType, m.memAge, m.shortname, m.label,
+        r.conid, r.status, r.memId, r.create_date, m.memCategory, m.memType, m.memAge, m.shortname, m.label,
+        r.price AS actPrice, IFNULL(r.paid, 0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,
         m.startdate, m.enddate, m.online,
-        a.shortname AS ageShort, a.label AS ageLabel, 'p' AS personType,
+        a.shortname AS ageShort, a.label AS ageLabel, 'p' AS personType, mC.taxable,
         nc.id AS createNewperid, np.id AS completeNewperid, pc.id AS createPerid, pp.id AS completePerid,
         CASE
             WHEN pp.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pp.first_name, pp.last_name))
             WHEN np.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', np.first_name, np.last_name))
             WHEN pc.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pc.first_name, pc.last_name))
             ELSE TRIM(CONCAT_WS(' ', nc.first_name, nc.last_name))
-        END AS purchaserName
+        END AS purchaserName,
+        IFNULL(tp.perid, t.perid) AS transPerid,
+        IFNULL(tp.newperid, t.newperid) AS transNewPerid
     FROM perinfo p
     LEFT OUTER JOIN reg r ON p.id = r.perid AND r.conid >= ? AND status IN  ('unpaid', 'paid', 'plan', 'upgraded')
     LEFT OUTER JOIN memLabel m ON m.id = r.memId
     LEFT OUTER JOIN ageList a ON m.memAge = a.ageType AND r.conid = a.conid
+    LEFT OUTER JOIN memCategories mC ON m.memCategory = mC.memCategory
     LEFT OUTER JOIN transaction t ON r.create_trans = t.id
     LEFT OUTER JOIN transaction tp ON r.complete_trans = tp.id
     LEFT OUTER JOIN perinfo pc ON t.perid = pc.id
@@ -340,20 +357,24 @@ WITH ppl AS (
         p.managedBy, p.managedByNew,
         TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ',
             IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
-        r.conid, r.status, r.memId, r.price AS actPrice, r.create_date, m.memCategory, m.memType, m.memAge, m.shortname, m.label,
+        r.conid, r.status, r.memId, r.create_date, m.memCategory, m.memType, m.memAge, m.shortname, m.label,
+        r.price AS actPrice, IFNULL(r.paid, 0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,
         m.startdate, m.enddate, m.online,
-        a.shortname AS ageShort, a.label AS ageLabel, 'n' AS personType,
+        a.shortname AS ageShort, a.label AS ageLabel, 'n' AS personType, mc.Taxable,
         nc.id AS createNewperid, np.id AS completeNewperid, pc.id AS createPerid, pp.id AS completePerid,
         CASE
             WHEN pp.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pp.first_name, pp.last_name))
             WHEN np.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', np.first_name, np.last_name))
             WHEN pc.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pc.first_name, pc.last_name))
             ELSE TRIM(CONCAT_WS(' ', nc.first_name, nc.last_name))
-        END AS purchaserName
+        END AS purchaserName,
+        IFNULL(tp.perid, t.perid) AS transPerid,
+        IFNULL(tp.newperid, t.newperid) AS transNewPerid
     FROM newperson p    
     LEFT OUTER JOIN reg r ON p.id = r.newperid AND r.conid >= ? AND status IN  ('unpaid', 'paid', 'plan', 'upgraded')
     LEFT OUTER JOIN memLabel m ON m.id = r.memId
     LEFT OUTER JOIN ageList a ON m.memAge = a.ageType AND r.conid = a.conid
+    LEFT OUTER JOIN memCategories mC ON m.memCategory = mC.memCategory
     LEFT OUTER JOIN transaction t ON r.create_trans = t.id
     LEFT OUTER JOIN transaction tp ON r.complete_trans = tp.id
     LEFT OUTER JOIN perinfo pc ON t.perid = pc.id
@@ -557,7 +578,7 @@ if ($totalDue > 0 || $activePaymentPlans) {
             $disablePay . '>Go to Payment Section</button>';
     } else {
         $payHtml = " $totalDueFormatted   " .
-            '<button class="btn btn-sm btn-primary pt-1 pb-1 ms-1 me-2" onclick="portal.payBalance(' . $totalDue . ', true);"' .
+            '<button class="btn btn-sm btn-primary pt-1 pb-1 ms-1 me-2" name="payBalanceBTNs" onclick="portal.payBalance(' . $totalDue . ', true);"' .
             $disablePay . '>Pay Total Amount Due</button>';
     }
 ?>
@@ -638,6 +659,7 @@ foreach ($managed as $m) {
             'createNewperid' => $m['createNewperid'], 'completeNewperid' => $m['completeNewperid'],
             'createPerid' => $m['createPerid'], 'completePerid' => $m['completePerid'], 'purchaserName' => $m['purchaserName'],
             'startdate' => $m['startdate'], 'enddate' => $m['enddate'], 'online' => $m['online'],
+            'actPrice' => $m['actPrice'], 'actPaid' => $m['actPaid'], 'actCouponDiscount' => $m['actCouponDiscount'],
         );
     }
 }
@@ -661,7 +683,7 @@ $totalDueFormatted = '';
 if ($totalDue > 0) {
     $totalDueFormatted = '&nbsp;&nbsp;Total due: <span id="totalDueAmountSpan">' . $dolfmt->formatCurrency((float) $totalDue, $currency) . '</span>';
     $payHtml = " $totalDueFormatted   " .
-        '<button class="btn btn-sm btn-primary pt-1 pb-1 ms-1 me-2" onclick="portal.payBalance(' . $totalDue . ', true);"' .
+        '<button class="btn btn-sm btn-primary pt-1 pb-1 ms-1 me-2" name="payBalanceBTNs" onclick="portal.payBalance(' . $totalDue . ', true);"' .
         $disablePay . '>Pay Total Amount Due</button>';
     setSessionVar('totalDue', $totalDue); // used for validation in payment side
     if ($numCoupons > 0) {
@@ -807,6 +829,11 @@ if (count($memberships) > 0) {
     $color = true;
     echo '<div class="container-fluid p-0 m-0" name="t-' . $trans['t-' . $memberships[0]['sortTrans']] .'">' .  PHP_EOL;
     foreach ($memberships as $membership)  {
+        if (($membership['transPerid'] != $loginId && $loginType == 'p'))
+            continue;
+        if (($membership['transNewPerid'] != $loginId && $loginType == 'n'))
+            continue;
+
         if ($currentId != $membership['sortTrans']) {
             if ($currentId > -10000) {
                 $bgcolor = $color ? ' bg-light' : '';
@@ -870,7 +897,7 @@ if (count($memberships) > 0) {
     <div class="col-sm-1"></div>
     <div class="col-sm-2"><b><?php echo $totalDueFormatted; ?></b></div>
     <div class="col-sm-4">
-        <button class="btn btn-sm btn-primary pt-1 pb-1" id="payBalanceBTN" onclick="portal.payBalance(<?php echo $totalDue;?>);"<?php echo $disablePay;?>>
+        <button class="btn btn-sm btn-primary pt-1 pb-1" id="payBalanceBTN" name='payBalanceBTNs' onclick="portal.payBalance(<?php echo $totalDue;?>);"<?php echo $disablePay;?>>
             Pay Balance
         </button>
     </div>

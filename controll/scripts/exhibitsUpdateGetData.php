@@ -506,9 +506,9 @@ EOS;
                 } else {
                     $requestable = 0;
                 }
-                // INSERT INTO exhibitsSpacePrices(spaceId, code, description, glNum, glLabel, units, price, includedMemberships, additionalMemberships, requestable, sortorder)
                 $numrows = dbSafeInsert($inssql, 'issssddiiii', array($row['spaceId'], $row['code'], $row['description'],
-                    $row['glNum'], $row['glLabel'], $units, $price, $includedMemberships, $additionalMemberships, $requestable, $row['sortorder']));
+                    $row['glNum'], $row['glLabel'], $units, $price, $includedMemberships, $additionalMemberships, $requestable,
+                    $row['sortorder']));
                 if ($numrows !== false)
                     $inserted++;
             }

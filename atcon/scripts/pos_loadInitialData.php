@@ -126,7 +126,7 @@ $response['memTypes'] = $typearray;
 
 // memCategories
 $memCategorySQL = <<<EOS
-SELECT memCategory, onlyOne, standAlone, variablePrice, badgeLabel
+SELECT memCategory, onlyOne, standAlone, variablePrice, taxable, badgeLabel
 FROM memCategories
 WHERE active = 'Y'
 ORDER BY sortorder;

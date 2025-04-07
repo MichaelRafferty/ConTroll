@@ -83,7 +83,7 @@ SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p
 FROM badgeList b
 JOIN perinfo p ON (p.id = b.perid)
 LEFT OUTER JOIN perinfo mp ON (p.managedBy = mp.id)
-LEFT OUTER JOIN reg r ON (r.perid = p.id AND r.conid = ?)
+LEFT OUTER JOIN reg r ON (r.perid = p.id AND r.conid = ? AND r.status IN ('paid', 'unpaid', 'plan'))
 LEFT OUTER JOIN memList m ON (r.memId = m.id AND m.conid = ? AND m.memType in ('full', 'oneday', 'virtual'))
 WHERE b.conid = ? AND b.user_perid = ?
 GROUP BY p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalname, p.pronouns, 

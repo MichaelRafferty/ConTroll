@@ -167,12 +167,12 @@ EOS;
             $deleted += dbCmd($delsql);
         }
         $inssql = <<<EOS
-INSERT INTO memCategories(memCategory, onlyOne, standAlone, variablePrice, badgeLabel, notes, active, sortorder)
-VALUES(?,?,?,?,?,?,?,?);
+INSERT INTO memCategories(memCategory, onlyOne, standAlone, variablePrice, taxable, badgeLabel, notes, active, sortorder)
+VALUES(?,?,?,?,?,?,?,?,?);
 EOS;
         $updsql = <<<EOS
 UPDATE memCategories
-SET memCategory=?, onlyOne = ?, standAlone = ?, variablePrice = ?, badgeLabel = ?, notes=?, active=?, sortorder=?
+SET memCategory=?, onlyOne = ?, standAlone = ?, variablePrice = ?, taxable=?, badgeLabel = ?, notes=?, active=?, sortorder=?
 WHERE memCategory=?;
 EOS;
         // now the updates, do the updates first in case we need to insert a new row with the same older key
@@ -183,8 +183,8 @@ EOS;
             }
 
             if (array_key_exists('memcatkey', $row)) { // if key is there, it's an update
-                $numrows = dbSafeCmd($updsql, 'sssssssis', array($row['memCategory'], $row['onlyOne'], $row['standAlone'], $row['variablePrice'],
-                    $row['badgeLabel'],  $row['notes'], $row['active'], $row['sortorder'], $row['memcatkey']));
+                $numrows = dbSafeCmd($updsql, 'ssssssssis', array($row['memCategory'], $row['onlyOne'], $row['standAlone'], $row['variablePrice'],
+                    $row['taxable'], $row['badgeLabel'],  $row['notes'], $row['active'], $row['sortorder'], $row['memcatkey']));
                 $updated += $numrows;
             }
         }
@@ -197,8 +197,8 @@ EOS;
             }
 
             if (!array_key_exists('memcatkey', $row)) { // if key is not there, its an insert
-                $numrows = dbSafeInsert($inssql, 'sssssssi', array($row['memCategory'], $row['onlyOne'], $row['standAlone'], $row['variablePrice'],
-                    $row['badgeLabel'],  $row['notes'], $row['active'], $row['sortorder']));
+                $numrows = dbSafeInsert($inssql, 'ssssssssi', array($row['memCategory'], $row['onlyOne'], $row['standAlone'], $row['variablePrice'],
+                   $row['taxable'], $row['badgeLabel'],  $row['notes'], $row['active'], $row['sortorder']));
                 if ($numrows !== false)
                     $inserted++;
             }

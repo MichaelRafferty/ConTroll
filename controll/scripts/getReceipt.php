@@ -5,7 +5,7 @@ require_once "../lib/base.php";
 require_once "../../lib/reg_receipt.php";
 
 $check_auth = google_init("ajax");
-$perm = "reg_admin";
+$perm = "reg_staff";
 
 $response = array("post" => $_POST, "get" => $_GET, "perm"=>$perm);
 

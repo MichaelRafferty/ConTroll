@@ -36,7 +36,7 @@ WITH pn AS (
     SELECT t.id, r.create_date, r.id as regId, r.memId, r.conid, r.status, r.price, r.paid, r.complete_trans, r.couponDiscount, r.perid, r.newperid,
         IFNULL(r.complete_trans, r.create_trans) AS sortTrans,
         IFNULL(tp.complete_date, t.create_date) AS transDate,
-        m.label, m.memAge, m.memAge AS age, m.memType, m.memCategory, m.startdate, m.enddate, m.online,
+        m.label, m.memAge, m.memAge AS age, m.memType, m.memCategory, m.startdate, m.enddate, m.online, mC.taxable,
         CASE 
             WHEN pn.memberId IS NOT NULL THEN pn.managedBy
             WHEN nn.memberId IS NOT NULL THEN nn.managedBy
@@ -71,37 +71,43 @@ WITH pn AS (
             WHEN pn.memberId IS NOT NULL THEN pn.phone
             WHEN nn.memberId IS NOT NULL THEN nn.phone
             ELSE NULL
-        END AS phone
+        END AS phone, 
+        IFNULL(tp.perid, t.perid) AS transPerid,
+        IFNULL(tp.newperid, t.newperid) AS transNewPerid
     FROM transaction t
     JOIN reg r ON t.id = r.create_trans
     LEFT OUTER JOIN transaction tp ON tp.id = r.complete_trans
     JOIN memLabel m ON m.id = r.memId
+    JOIN memCategories mC ON m.memCategory = mC.memCategory
     LEFT OUTER JOIN pn ON pn.memberId = r.perid AND (pn.managedBy = ? OR pn.memberId = ?)
     LEFT OUTER JOIN nn ON nn.memberId = r.newperid
-    WHERE (status $statusCheck OR (r.status = 'paid' AND r.complete_trans IS NULL)) AND t.perid = ? AND t.conid = ?
+    WHERE (status $statusCheck OR (r.status = 'paid' AND r.complete_trans IS NULL)) AND (t.perid = ? OR tp.perid = ?) AND t.conid = ?
     UNION
     SELECT t.id, r.create_date, r.id AS regId, r.memId, r.conid, r.status, r.price, r.paid, r.complete_trans, r.couponDiscount, r.perid, r.newperid,
         CASE WHEN r.complete_trans IS NULL THEN r.create_trans ELSE r.complete_trans END AS sortTrans,
         CASE WHEN tp.complete_date IS NULL THEN t.create_date ELSE tp.complete_date END AS transDate,
-        m.label, m.memAge, m.memAge AS age, m.memType, m.memCategory,  m.startdate, m.enddate, m.online,
-        nn.managedBy, nn.managedByNew, nn.badge_name, nn.fullname, nn.memberId, nn.email_addr, nn.phone
+        m.label, m.memAge, m.memAge AS age, m.memType, m.memCategory,  m.startdate, m.enddate, m.online, mC.taxable,
+        nn.managedBy, nn.managedByNew, nn.badge_name, nn.fullname, nn.memberId, nn.email_addr, nn.phone,
+        IFNULL(tp.perid, t.perid) AS transPerid,
+        IFNULL(tp.newperid, t.newperid) AS transNewPerid
     FROM transaction t
     JOIN reg r ON t.id = r.create_trans
     LEFT OUTER JOIN transaction tp ON tp.id = r.complete_trans
     JOIN memLabel m ON m.id = r.memId
+    JOIN memCategories mC ON m.memCategory = mC.memCategory
     JOIN nn ON nn.memberId = r.newperid
-    WHERE (status $statusCheck OR (r.status = 'paid' AND r.complete_trans IS NULL)) AND t.perid = ? AND t.conid = ?
+    WHERE (status $statusCheck OR (r.status = 'paid' AND r.complete_trans IS NULL)) AND (t.perid = ? OR tp.perid = ?) AND t.conid = ?
 )
 SELECT DISTINCT *
 FROM mems
 ORDER BY sortTrans, create_date, memberId
 EOS;
-        $membershipsR = dbSafeQuery($membershipsQ, 'iiiiii', array($personId, $personId, $personId, $conid,$personId, $conid));
+        $membershipsR = dbSafeQuery($membershipsQ, 'iiiiiiii', array($personId, $personId, $personId, $personId, $conid, $personId, $personId, $conid));
     } else {
         $membershipsQ = <<<EOS
 WITH mems AS (
     SELECT t.id, r.create_date, r.id AS regId, r.memId, r.conid, r.status, r.price, r.paid, r.complete_trans, r.couponDiscount, r.perid, r.newperid,
-    m.label, m.memAge, m.memAge AS age, m.memType, m.memCategory,  m.startdate, m.enddate, m.online,
+    m.label, m.memAge, m.memAge AS age, m.memType, m.memCategory,  m.startdate, m.enddate, m.online, mC.taxable,
         p.managedBy, p.managedByNew,
         CASE WHEN r.complete_trans IS NULL THEN r.create_trans ELSE r.complete_trans END AS sortTrans,
         CASE WHEN tp.complete_date IS NULL THEN t.create_date ELSE tp.complete_date END AS transDate,
@@ -109,19 +115,22 @@ WITH mems AS (
             WHEN p.badge_name IS NULL OR p.badge_name = '' THEN TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.last_name, '')) , '  *', ' ')) 
             ELSE p.badge_name
         END AS badge_name, p.id AS memberId, p.email_addr, p.phone,
-        TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname
+        TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ',
+            IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
+        IFNULL(tp.perid, t.perid) AS transPerid
     FROM transaction t
     JOIN reg r ON t.id = r.create_trans
     LEFT OUTER JOIN transaction tp ON tp.id = r.complete_trans
     JOIN memLabel m ON m.id = r.memId
+    JOIN memCategories mC ON m.memCategory = mC.memCategory
     JOIN newperson p ON p.id = r.newperid
-    WHERE (status $statusCheck OR (r.status = 'paid' AND r.complete_trans IS NULL)) AND t.newperid = ? AND t.conid = ?
+    WHERE (status $statusCheck OR (r.status = 'paid' AND r.complete_trans IS NULL)) AND (t.newperid = ? OR tp.newperid = ?) AND t.conid = ?
     )
 SELECT DISTINCT *
 FROM mems
 ORDER BY sortTrans, create_date, memberId
 EOS;
-        $membershipsR = dbSafeQuery($membershipsQ, 'ii', array($personId, $conid));
+        $membershipsR = dbSafeQuery($membershipsQ, 'iii', array($personId, $personId, $conid));
     }
 
     $memberships = [];

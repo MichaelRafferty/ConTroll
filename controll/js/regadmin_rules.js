@@ -843,9 +843,11 @@ class rulesSetup {
         this.#ruleStepsTable.addRow({
             name: this.#rName.value, uses: 0, origStep: this.#ruleStepAddStepNum, step: this.#ruleStepMaxStep, origName: this.#editRuleName
             }, false).then(function (row) {
-            _this.#rulesTable.setPage("last"); // adding new to last page always
-            row.getTable().scrollToRow(row);
-            _this.checkStepsUndoRedo();
+            row.getTable().setPage('last').then(function () {
+                row.getCell("name").getElement().style.backgroundColor = "#fff3cd";
+                row.getCell("step").getElement().style.backgroundColor = "#fff3cd";
+                _this.checkStepsUndoRedo();
+            });
         });
         this.#ruleStepMaxStep++;
     }
@@ -992,7 +994,7 @@ class rulesSetup {
             layout: "fitDataTable",
             index: "memType",
             columns: [
-                {title: "Type", field: "memType", width: 200, },
+                {title: "Type", field: "memType", width: 200, headerFilter: true, },
                 {title: "Notes", field: "notes", width: 750, headerFilter: true, },
             ],
         });
@@ -1028,7 +1030,7 @@ class rulesSetup {
             layout: "fitDataTable",
             index: "memCategory",
             columns: [
-                {title: "Category", field: "memCategory", width: 200, },
+                {title: "Category", field: "memCategory", width: 200, headerFilter: true, },
                 {title: "Notes", field: "notes", width: 750, headerFilter: true, },
             ],
         });
@@ -1065,7 +1067,7 @@ class rulesSetup {
             index: "ageType",
             columns: [
                 {title: "Age", field: "ageType", width: 200, },
-                {title: "Short Name", field: "shortname", width: 200, },
+                {title: "Short Name", field: "shortname", width: 200, headerFilter: true, },
                 {title: "Label", field: "label", width: 450, headerFilter: true, },
             ],
         });
@@ -1104,7 +1106,9 @@ class rulesSetup {
             paginationSize: 9999,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
-                {title: "ID", field: "id", width: 80, headerHozAlign:"right", hozAlign: "right", },
+                {title: "ID", field: "id", width: 80, headerHozAlign:"right", hozAlign: "right",
+                    headerFilter: "input", headerFilterFunc:numberHeaderFilter,
+                },
                 {title: "ConId", field: "conid", width: 80, headerWordWrap: true, headerHozAlign:"right", hozAlign: "right",  headerFilter: true, },
                 {title: "Cat", field: "memCategory", width: 90, headerFilter: 'list', headerFilterParams: { values: this.#filterCats }, },
                 {title: "Type", field: "memType", width: 90, headerFilter: 'list', headerFilterParams: { values: this.#filterTypes },  },
@@ -1112,8 +1116,8 @@ class rulesSetup {
                 {title: "Label", field: "label", width: 250, headerFilter: true, },
                 {title: "Price", field: "price", width: 80, headerFilter: true, headerHozAlign:"right", hozAlign: "right", },
                 {title: "Notes", field: "notes", width: 200, headerFilter: true,  formatter: "textarea", },
-                {title: "Start Date", field: "startDate", width: 200, visible: this.#debugVisible, },
-                {title: "End Date", field: "endDate", width: 200, visible: this.#debugVisible, },
+                {title: "Start Date", field: "startDate", width: 200, visible: this.#debugVisible, headerFilter: true,  },
+                {title: "End Date", field: "endDate", width: 200, visible: this.#debugVisible, headerFilter: true, },
             ],
         });
         this.#editRuleSelTable.on("cellClick", rules.clickedSelection)
@@ -1206,9 +1210,10 @@ class rulesSetup {
         var _this = this;
         this.#ruleAddRowNum--;
         this.#rulesTable.addRow({name: 'new-row', uses: 0, origName: this.#ruleAddRowNum}, false).then(function (row) {
-            _this.#rulesTable.setPage("last"); // adding new to last page always
-            row.getTable().scrollToRow(row);
-            _this.checkUndoRedo();
+            row.getTable().setPage('last').then(function () {
+                row.getCell("name").getElement().style.backgroundColor = "#fff3cd";
+                _this.checkUndoRedo();
+            });
         });
     }
 

@@ -95,12 +95,42 @@ if (array_key_exists('change', $_POST)) {
 $amt = (float) $new_payment['amt'];
 // validate that the payment amount is not too large
 $total_due = 0;
-$email = $cart_perinfo[0]['email_addr'];
-$phone = $cart_perinfo[0]['phone'];
-if ($email == '/r')
-    $email = '';
-if ($phone == '/r')
-    $phone = '';
+$payor = null;
+$payor_email = '';
+$payor_phone = '';
+if (array_key_exists('payor', $new_payment)) {
+    $payor = $new_payment['payor'];
+}
+if (array_key_exists('email', $new_payment)) {
+    $payor_email = $new_payment['email'];
+}
+if (array_key_exists('phone', $new_payment)) {
+    $payor_phone = $new_payment['phone'];
+}
+$pay_tid_amt = -1;
+if (array_key_exists('pay_tid_amt', $_POST)) {
+    $pay_tid_amt = $_POST['pay_tid_amt'];
+}
+
+$buyer['email'] = $payor_email;
+$buyer['phone'] = $payor_phone;
+$buyer['country'] = $cart_perinfo[0]['country'];
+$payor_perid = 2; // atcon perid
+
+if ($payor >= 0) {
+    if ($payor_email == '' || $payor_email == $cart_perinfo[$payor]['email_addr']) {
+        $buyer['email'] = $cart_perinfo[$payor]['email_addr'];
+        $payor_perid = $cart_perinfo[$payor]['perid'];
+    } else {
+        $payor = -1;
+    }
+
+    if ($payor_phone == '' || $payor_phone == $cart_perinfo[$payor]['phone'])
+        $buyer['phone'] = $cart_perinfo[$payor]['phone'];
+
+    $buyer['country'] = $cart_perinfo[$payor]['country'];
+}
+
 foreach ($cart_perinfo as $perinfo) {
     foreach ($perinfo['memberships'] as $cart_row) {
         if ($cart_row['price'] == '')
@@ -124,6 +154,18 @@ if (round($amt,2) > round($total_due,2)) {
     return;
 }
 
+
+// see if we need to change the master transaction perid, only do this if the amount paid is = 0
+if ($pay_tid_amt == 0) {
+    // ok, not current payor_perid and no payment yet
+    $chgTP = <<<EOS
+UPDATE transaction
+SET perid = ?
+WHERE id = ?;
+EOS;
+    $chgTPC = dbSafeCmd($chgTP, 'ii', array($payor_perid, $master_tid));
+}
+
 // if we need to process a credit card, do it now before applying the payment record
 if ($new_payment['type'] == 'online') {
     $cc_params = array(
@@ -143,7 +185,7 @@ if ($new_payment['type'] == 'online') {
     if ($amt > 0) {
         $ccauth = get_conf('cc');
         load_cc_procs();
-        $rtn = cc_charge_purchase($cc_params, $email, $phone, true);
+        $rtn = cc_charge_purchase($cc_params, $buyer, true);
         if ($rtn === null) {
             ajaxSuccess(array('status' => 'error', 'data' => 'Credit card not approved'));
             exit();
@@ -270,6 +312,7 @@ EOS;
     $completed = dbSafeCmd($updCompleteSQL, 'i', array($master_tid));
 }
 
+$response['pay_amt'] = $new_payment['amt'];
 $response['message'] .= ", $upd_rows memberships updated" . $completed == 1 ? ", transaction completed." : ".";
 $response['updated_perinfo'] = $cart_perinfo;
 ajaxSuccess($response);

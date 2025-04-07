@@ -12,6 +12,7 @@ class Notes {
     #notesTitleDiv = null;
     #notesBodyDiv = null;
     #closeNotesBTN = null;
+    #cancelNotesBTN = null;
     #notesReadOnly = false;
 
     // global items
@@ -35,6 +36,7 @@ class Notes {
             this.#notesTitleDiv = document.getElementById('NotesTitle');
             this.#notesBodyDiv = document.getElementById('NotesBody');
             this.#closeNotesBTN = document.getElementById('close_note_button');
+            this.#cancelNotesBTN = document.getElementById('cancel_note_button');
         }
     }
 
@@ -158,6 +160,7 @@ class Notes {
         this.#notesType = 'CT';
         this.#notesIndex = rid;
         this.#notesPerid = data.perid;
+        this.#cancelNotesBTN.hidden = readOnly;
         this.drawRegNote(data.label, '', data.fullName, data.notes, readOnly);
     }
 

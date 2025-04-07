@@ -5,7 +5,7 @@ require_once "lib/base.php";
 //initialize google session
 $need_login = google_init("page");
 
-$page = "reg_admin";
+$page = "finance";
 if(!$need_login or !checkAuth($need_login['sub'], $page)) {
     bounce_page("index.php");
 }

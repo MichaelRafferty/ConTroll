@@ -3,7 +3,7 @@ global $db_ini;
 
 require_once "../lib/base.php";
 $check_auth = google_init("ajax");
-$perm = "reg_admin";
+$perm = "reg_staff";
 
 $response = array("post" => $_POST, "get" => $_GET, "perm"=>$perm);
 
@@ -59,8 +59,8 @@ EOS;
 
 if ($type == 'memCat' || $type == 'all') {
     $catSQL = <<<EOS
-SELECT m.memCategory, m.badgeLabel, m.onlyOne, m.standAlone, m.variablePrice, m.notes, m.active, m.sortorder, count(l.id) uses,
-       m.memCategory AS memcatkey, count(r.memId) AS  regUses
+SELECT m.memCategory, m.badgeLabel, m.onlyOne, m.standAlone, m.variablePrice, m.taxable, m.notes, m.active, m.sortorder, 
+       count(l.id) uses, m.memCategory AS memcatkey, count(r.memId) AS  regUses
 FROM memCategories m
 LEFT OUTER JOIN memList l ON (l.memCategory = m.memCategory)
 LEFT OUTER JOIN reg r ON (r.memId = l.id AND r.conid IN (?, ?))

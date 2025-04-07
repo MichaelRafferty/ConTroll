@@ -72,13 +72,13 @@ Both the files in the system wide groups directory and the files in the local gr
 ```
 [group]
     name="RegAdmin"
-    description="Registration Admin Reports"
-    auth=reg_admin
+    description="Registration Staff Reports"
+    auth=reg_staff
 [100RegHistory]
     name="Registration History"
     description="Registration History for a Person"
     template=reg_history.rpt
-    auth=reg_admin
+    auth=reg_staff
     type=rpt
     P001="prompt/~/perid/~/History for: /~/Enter Person's Perid"
 ```
@@ -151,7 +151,7 @@ This configuration file must be parsable by the parse_ini_file function with sec
 ```
 [report]
 	name="RegHistory"
-	auth=reg_admin
+	auth=reg_staff
 	csvfile="RegHistory"
     index=regid
 [F001]

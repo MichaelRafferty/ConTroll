@@ -274,3 +274,76 @@ const replaceConfigTokensSkip = ['cc', 'client', 'debug', 'email', 'google', 'lo
 
     return preg_replace('/'. mb_chr(0x202d). '/', '', $string);
 }
+
+// as per: https://en.wikipedia.org/wiki/North_American_Numbering_Plan
+$callingCodes = null;
+// phoneNumberNormalize: take a struct with email, phone, country and return the normalized phone number or empty string if unable.
+function phoneNumberNormalize($buyer) : string {
+    global $NANPcountries, $callingCodes;
+    if (!array_key_exists('phone', $buyer))
+        return '';
+    $phone = $buyer['phone'];
+    if ($phone == '')
+        return '';
+
+    if (!array_key_exists('country', $buyer))
+        return '';
+
+    $country = $buyer['country'];
+    if ($country == '')
+        return '';
+
+    // ok we have a country and a phone number
+    //  buyer_phone_number: string
+    //
+    //  The buyer's phone number. Must follow the following format:
+    //
+    //  A leading + symbol (followed by a country code)
+    //  The phone number can contain spaces and the special characters ( , ) , - , and .. Alphabetical characters aren't allowed.
+    //  The phone number must contain between 9 and 16 digits.
+
+    if ($callingCodes == null) {
+        $fh = fopen(__DIR__ . '/../lib/callingCodes.csv', 'r');
+        if ($fh === false)
+            return '';
+
+        $callingCodes = [];
+        while (($data = fgetcsv($fh, 1000, ',', '"')) != false) {
+            $callingCodes[$data[0]] = $data[1];
+        }
+        fclose($fh);
+    }
+    if (!array_key_exists($country, $callingCodes))
+        return '';
+
+    $code = $callingCodes[$country];
+
+    $phone = preg_replace('/[^0-9]/', '', $phone);
+    $len = strlen($phone);
+    if ($len > 16) // too long, will be adding a + later.
+        return '';
+
+    // for NANP
+    if ($code == 1) {
+        // 10 +1 followed by 10 digits
+        // if it starts with 1, strip the leading one, no area code starts with 1.
+        if ($len == 11 && substr($phone, 0, 1) == '1')
+            return '+' . $phone;
+
+        if ($len != 10) // not a NANP xxx-xxx-xxxx number (minus the - cleaned above in preg_replace)
+            return '';
+
+        return '+1' . $phone;
+    }
+
+    if (!str_starts_with($phone, $code)) {
+        $phone = $code . $phone;
+    }
+    $phone = '+' . $phone;
+    $len = strlen($phone);
+    if ($len < 10 || $len > 17) // the + doesn't count, only the digits
+        return ''; // illegal length
+
+    // rest of the world, presume the number has the country code on it already
+    return $phone;
+}

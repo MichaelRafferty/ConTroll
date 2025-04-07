@@ -6,12 +6,14 @@ require_once "../lib/notes.php";
 //initialize google session
 $need_login = google_init("page");
 
-$page = "reg_admin";
+$page = "reg_staff";
 if(!$need_login or !checkAuth($need_login['sub'], $page)) {
     bounce_page("index.php");
 }
 
 $finance = checkAuth($need_login['sub'], 'finance');
+$reg_admin = checkAuth($need_login['sub'], 'reg_admin');
+$admin = checkAuth($need_login['sub'], 'admin');
 
 $cdn = getTabulatorIncludes();
 page_init($page,
@@ -72,6 +74,7 @@ $config_vars['multiOneDay'] = $multiOneDay;
 $config_vars['oneoff'] = $oneoff;
 $config_vars['userid'] = $_SESSION['user_perid'];
 $config_vars['finance'] = $finance ? 1 : 0;
+$config_vars['ae'] = $admin ? 1 : 0;
 ?>
 <?php bs_tinymceModal(); ?>
 <div id='merge-lookup' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Look up Merge Person' aria-hidden='true' style='--bs-modal-width: 80%;'>
@@ -722,6 +725,7 @@ $config_vars['finance'] = $finance ? 1 : 0;
                 role='tab' aria-controls='nav-registrationlist' aria-selected='true' onclick="settab('registrationlist-pane');">Registration List
         </button>
     </li>
+    <?php if ($reg_admin) { ?>
     <li class='nav-item' role='presentation'>
         <button class='nav-link' id='consetup-tab' data-bs-toggle='pill' data-bs-target='#consetup-pane' type='button' role='tab'
                 aria-controls='nav-consetup' aria-selected='false' onclick="settab('consetup-pane');">Current Convention Setup
@@ -739,6 +743,7 @@ $config_vars['finance'] = $finance ? 1 : 0;
                 aria-controls='nav-memconfigsetup' aria-selected='false' onclick="settab('memconfig-pane');">Membership Configuration
         </button>
     </li>
+    <?php } ?>
     <li class='nav-item' role='presentation'>
         <button class='nav-link' id='customtext-tab' data-bs-toggle='pill' data-bs-target='#customtext-pane' type='button' role='tab'
                 aria-controls='nav-customtext' aria-selected='false' onclick="settab('customtext-pane');">Custom Text
@@ -754,11 +759,13 @@ $config_vars['finance'] = $finance ? 1 : 0;
                 aria-controls='nav-interests' aria-selected='false' onclick="settab('interests-pane');">Interests
         </button>
     </li>
+    <?php if ($reg_admin) { ?>
     <li class='nav-item' role='presentation'>
         <button class='nav-link' id='rules-tab' data-bs-toggle='pill' data-bs-target='#rules-pane' type='button' role='tab'
                 aria-controls='nav-rules' aria-selected='false' onclick="settab('rules-pane');">Membership Rules
         </button>
     </li>
+    <?php } ?>
     <li class='nav-item' role='presentation'>
         <button class='nav-link' id='merge-tab' data-bs-toggle='pill' data-bs-target='#merge-pane' type='button' role='tab'
                 aria-controls='nav-merge' aria-selected='false' onclick="settab('merge-pane');">Merge People
@@ -793,6 +800,7 @@ $config_vars['finance'] = $finance ? 1 : 0;
             <div class="col-sm-auto p-2">
                 <button class="btn btn-primary btn-sm" onclick="window.location.href = 'reports/regReport.php';">Download Reg Report</button>
             </div>
+            <?php if ($reg_admin) { ?>
             <div class="col-sm-auto p-2">
                 <button class="btn btn-primary btn-sm" onclick="sendEmail('marketing')" disabled>Send Marketing Email</button>
             </div>
@@ -817,6 +825,7 @@ $config_vars['finance'] = $finance ? 1 : 0;
             <div class="col-sm-auto p-2">
                 <button class="btn btn-primary btn-sm" onclick="window.location.href = 'reports/processRefunds.php';">Download Process Refunds Report</button>
             </div>
+            <?php } ?>
             <?php } ?>
         </div>
     </div>

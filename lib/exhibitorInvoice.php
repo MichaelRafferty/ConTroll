@@ -248,6 +248,13 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $c
                                   <input type='email' id='cc_email' name='cc_email' size="35" maxlength="254" value="<?php echo $contactEmail; ?>"
                                          tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
                              </div>
+                             <div class='col-sm-auto ps-0 pe-0'>
+                                 <label for='cc_phone'>Phone:</label>
+                             </div>
+                             <div class='col-sm-auto'>
+                                 <input type='text' id='cc_phone' size='16' maxlength='24' name='cc_phone'
+                                        tabindex="<?php echo $tabindex; $tabindex += 2; ?>"/>
+                             </div>
                          </div>
                          <div class='row'>
                             <div class='col-sm-12'>

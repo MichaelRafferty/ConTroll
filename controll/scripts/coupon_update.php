@@ -4,7 +4,7 @@ require_once '../lib/getCouponData.php';
 
 $check_auth = google_init("ajax");
 $user_email = $check_auth['email'];
-$perm = "reg_admin";
+$perm = "finance";
 
 $response = array("post" => $_POST, "get" => $_GET, "perm"=>$perm);
 
