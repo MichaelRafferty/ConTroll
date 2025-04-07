@@ -235,15 +235,7 @@ class customTextSetup {
                 method: 'POST',
                 data: postdata,
                 success: function (data, textStatus, jhXHR) {
-                    if (data['error']) {
-                        show_message(data['error'], 'error');
-                        // reset save button
-                        _this.dataChanged();
-                        return false;
-                    }
-                    /* update routines do a reload, saving a round trip */
-                    _this.#customTextTable.replaceData(data['customText']);
-                    show_message(data['success'], 'success');
+                    _this.saveSuccess(data);
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
                     showError("ERROR in " + script + ": " + textStatus, jqXHR);
@@ -251,6 +243,22 @@ class customTextSetup {
                 }
             });
         }
+    }
+
+    // success save - process the changes
+    saveSuccess(data) {
+        if (data['error']) {
+            show_message(data['error'], 'error');
+            // reset save button
+            this.dataChanged();
+            return false;
+        }
+        /* update routines do a reload, saving a round trip */
+        this.#customTextTable.replaceData(data['customText']);
+        this.#dirty = false;
+        this.#customTextSaveBtn.innerHTML = "Save Changes";
+        this.#customTextRedoBtn.disabled = true;
+        show_message(data['success'], 'success');
     }
 
     // save off the csv file
