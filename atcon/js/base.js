@@ -297,6 +297,7 @@ function base_changePrintersSubmit() {
     var badge_prntr = document.getElementById("badge_printer").value;
     var receipt_prntr = document.getElementById("receipt_printer").value;
     var generic_prntr = document.getElementById("generic_printer").value;
+    var square_term = document.getElementById("square_terminal").value;
     base_changePrintersModal.hide();
 
     // load the printer select list
@@ -305,6 +306,7 @@ function base_changePrintersSubmit() {
         badge: badge_prntr,
         receipt: receipt_prntr,
         generic: generic_prntr,
+        terminal: square_term,
     };
     $.ajax({
         method: "POST",

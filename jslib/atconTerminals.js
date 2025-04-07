@@ -39,13 +39,7 @@ class Terminals {
                 { title: "Status", field: "status", minWidth: 100, headerSort: true, headerFilter:true, headerWordWrap: true, },
                 { title: "Status Changed", field: "statusChanged", minWidth: 150, headerSort: true, headerFilter:true, headerWordWrap: true, },
                 { title: "Product Type", field: "productType", minWidth: 150, headerSort: true, headerFilter:true, headerWordWrap: true, },
-                { title: "Location ID", field: "locationId", headerSort: true, headerFilter:true,  headerWordWrap: true,
-                    editor: "list", editorParams: {
-                        values: this.validLocations,
-                        defaultValue: this.validLocations[0],
-                        emptyValue: this.validLocations[0],
-                    }
-                },
+                { title: "Location ID", field: "locationId", headerSort: true, headerFilter:true,  headerWordWrap: true, },
                 { title: "Square ID", field: "squareId", headerSort: true, headerFilter:true, headerWordWrap: true, },
                 { title: "Device ID", field: "deviceId", headerSort: true, headerFilter:true, headerWordWrap: true, },
                 { title: "Square Code", field: "squareCode", headerSort: true, headerFilter:true, headerWordWrap: true, },
@@ -110,6 +104,14 @@ class Terminals {
 
     addTerminal() {
         this.terminalList.addData([{name: "New Server", delete: '🗑'}], true);
+
+        /*
+         editor: "list", editorParams: {
+                        values: this.validLocations,
+                        defaultValue: this.validLocations[0],
+                        emptyValue: this.validLocations[0],
+                    }
+         */
     }
 
     // save the servers and terminals table and refresh it

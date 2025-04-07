@@ -184,12 +184,18 @@ function page_init($title, $tab, $css, $js, $configVars = null)
                 if (in_array('manager', $perms)) {
                     echo '&nbsp; <button type="button" class="btn btn-sm btn-warning p-0" id="base_toggleMgr" onclick="base_toggleManager();">Enable Mgr</button>';
                 }
+                $terminal = getSessionVar('terminal');
+                if ($terminal) {
+                    $termName = $terminal['name'];
+                } else
+                    $termName = 'None';
                 ?><br/>
                 <div id="page_head_printers">
                     Badge: <?php echo getSessionVar('badgePrinter')['name']; ?>&nbsp; <button type="button" class="btn btn-sm btn-secondary pt-0 pb-0"
                                                                                        onclick="base_changePrintersShow();">Chg</button><br/>
                     Receipt: <?php echo getSessionVar('receiptPrinter')['name']; ?><br/>
-                    General: <?php echo getSessionVar('genericPrinter')['name']; ?>
+                    General: <?php echo getSessionVar('genericPrinter')['name']; ?><br/>
+                    Terminal: <?php echo $termName; ?>
                 </div>
             </div>
         </div>
@@ -580,6 +586,9 @@ function Render500ErrorAjax($message_error)
     echo "$message_error";
 }
 function Draw_Printer_Select($col1width):string {
+    $printers = [];
+    $terminals = [];
+
     // get printer list for this location
     $printerQ = <<<EOS
 SELECT p.serverName, p.printerName, p.printerType, p.codePage, s.location, s.address
@@ -587,16 +596,28 @@ FROM printers p
 JOIN servers s ON (s.serverName = p.serverName)
 WHERE p.active = 1 and s.active = 1;
 EOS;
-    $printers = [];
+
     $genericFound = false;
     $receiptFound = false;
-    $printerR = dbQuery($printerQ);
-    while ($printer = $printerR->fetch_assoc()) {
+    $deviceR = dbQuery($printerQ);
+    while ($printer = $deviceR->fetch_assoc()) {
         $printers[$printer['serverName'] . ':' . $printer['printerName']] = $printer;
         if (mb_substr($printer['printerType'], 0, 7) == 'generic') $genericFound = true;
         if (mb_substr($printer['printerType'], 0, 7) == 'receipt') $receiptFound = true;
     }
-    $printerR->free();
+    $deviceR->free();
+
+    // get terminals list
+    $terminalQ = <<<EOS
+SELECT name, squareId, deviceId, squareCode
+FROM terminals
+ORDER BY name;
+EOS;
+    $deviceR = dbQuery($terminalQ);
+    while ($terminal = $deviceR->fetch_assoc()) {
+        $terminals['name'] = $terminal;
+    }
+    $deviceR->free();
 
     $html = <<<EOS
     <div class='row'>
@@ -669,6 +690,30 @@ EOS;
  EOS;
     } else
         $html .= '<input type="hidden" name="generic_printer" id="generic_printer" value=""/>';
+
+    if (count($terminals) > 0) {
+        $html .= <<<EOS
+        <div class='row mt-2'>
+            <div class='col-sm-$col1width'>
+                <label for='generic_printer'>Square Printer:</label>
+            </div>
+            <div class='col-sm-auto'>
+                <select name='square_terminal' id='square_terminal'>
+                    <option value=''>None</option>
+EOS;
+        foreach ($terminals as $key => $terminal) {
+            $html .= '<option value="' . escape_quotes($key) . ':::' . escape_quotes($terminal['name']) .
+                ':-:' . escape_quotes($printer['squareId']) . ':-:' . escape_quotes($printer['deviceId']) .
+                ':-:' . escape_quotes($printer['squareCode']) . '">' . $key . "</option>\n";
+        }
+        $html .= <<<EOS
+                </select>
+            </div>
+        </div>
+EOS;
+    } else {
+        $html .= '<input type="hidden" name="square_terminal" id="square_terminal" value=""/>';
+    }
 
     return  $html;
 }
