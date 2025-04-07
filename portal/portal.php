@@ -574,7 +574,7 @@ if ($totalDue > 0 || $activePaymentPlans) {
     }
     if (count($paymentPlans) > 0) {
         $payHtml = " $totalDueFormatted   " .
-            '<button class="btn btn-sm btn-primary pt-1 pb-1 ms-1 me-2" onclick="portal.setFocus(\'totalDue\');"' .
+            '<button class="btn btn-sm btn-primary pt-1 pb-1 ms-1 me-2" onclick="portal.setFocus(\'paymentDiv\');"' .
             $disablePay . '>Go to Payment Section</button>';
     } else {
         $payHtml = " $totalDueFormatted   " .
@@ -674,14 +674,14 @@ if ($totalMemberships > 0)
 // create a div and bg color it to separate it logically from the other parts
 if ($totalDue > 0 || count($payorPlan) > 0 || $paidByOthers > 0) {
 ?>
-    <div class='container-fluid p-0 m-0' style="background-color: #F0F0FF;">
+    <div class='container-fluid p-0 m-0' id="paymentSectionDiv" style="background-color: #F0F0FF;">
 <?php
 }
 
 $payHtml = '';
 $totalDueFormatted = '';
 if ($totalDue > 0) {
-    $totalDueFormatted = '&nbsp;&nbsp;Total due: <span id="totalDueAmountSpan">' . $dolfmt->formatCurrency((float) $totalDue, $currency) . '</span>';
+    $totalDueFormatted = '&nbsp;&nbsp;Total due:' . $dolfmt->formatCurrency((float) $totalDue, $currency);
     $payHtml = " $totalDueFormatted   " .
         '<button class="btn btn-sm btn-primary pt-1 pb-1 ms-1 me-2" name="payBalanceBTNs" onclick="portal.payBalance(' . $totalDue . ', true);"' .
         $disablePay . '>Pay Total Amount Due</button>';
