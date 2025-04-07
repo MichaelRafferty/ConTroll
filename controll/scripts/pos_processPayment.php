@@ -25,6 +25,7 @@ $return500errors = true;
 
 $log = get_conf('log');
 $con = get_conf('con');
+$condata = get_con();
 logInit($log['reg']);
 $conid = $con['id'];
 $ajax_request_action = '';
@@ -158,31 +159,65 @@ EOS;
     $chgTPC = dbSafeCmd($chgTP, 'ii', array($payor_perid, $master_tid));
 }
 
+$custId = "controll-$master_tid";
+$source = "controll-mailinreg";
+
 // if we need to process a credit card, do it now before applying the payment record
 if ($new_payment['type'] == 'online') {
     $cc_params = array(
+        'custid' => $custId,
+        'source' => $source,
         'transid' => $master_tid,
         'counts' => 0,
         'price' => null,
         'badges' => null,
-        'tax' => 0,
         'pretax' => $amt,
         'total' => $amt,
-        'nonce' => $new_payment['nonce'],
         'coupon' => $coupon,
     );
 
 //log requested badges
-    logWrite(array('type' => 'online', 'con' => $con['conname'], 'trans' => $master_tid, 'results' => $cc_params));
+    logWrite(array('type' => 'mailinreg-online', 'con' => $con['conname'], 'trans' => $master_tid, 'results' => $cc_params));
     if ($amt > 0) {
         $ccauth = get_conf('cc');
         load_cc_procs();
-        $rtn = cc_charge_purchase($cc_params, $buyer, true);
+
+        $rtn = cc_buildOrder($cc_params, true);
+        if ($rtn == null) {
+            // note there is no reason cc_buildOrder will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
+            logWrite(array ('con' => $condata['name'], 'trans' => $master_tid, 'error' => 'Credit card order unable to be created'));
+            ajaxSuccess(array ('status' => 'error', 'error' => 'Credit card order not built, seek assistance'));
+            exit();
+        }
+
+        $response['orderRtn'] = $rtn;
+        logWrite(array('status'=> 'order create', 'con' => $condata['name'], 'trans' => $master_tid, 'ccrtn' => $rtn));
+
+        $buyer['email'] = $payor_email;
+        $buyer['phone'] = $payor_phone;
+        $buyer['country'] = '';
+        $referenceId = $master_tid . '-' . 'pay-' . time();
+
+        $cc_params = array(
+            'custid' => $custId,
+            'source' => $source,
+            'nonce' => $new_payment['nonce'],
+            'transid' => $master_tid,
+            'totalAmt' => $rtn['totalAmt'],
+            'orderId' => $rtn['orderId'],
+            'locationId' => $ccauth['location'],
+            'referenceId' => $referenceId,
+            'preTaxAmt' => $amt,
+            'taxAmt' => 0,
+        );
+
+        $rtn = cc_payOrder($cc_params, $buyer, true);
         if ($rtn === null) {
             ajaxSuccess(array('status' => 'error', 'data' => 'Credit card not approved'));
             exit();
         }
 
+        logWrite(array('con'=>$condata['name'], 'trans'=>$master_tid, 'pay rtn'=>$rtn));
 //$tnx_record = $rtn['tnx'];
 
         $num_fields = sizeof($rtn['txnfields']);
