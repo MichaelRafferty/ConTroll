@@ -76,9 +76,9 @@ function loadInitialData(loadtype) {
             }
             if (data['terminals'] !== undefined) {
                 if (terminals == null) {
-                    terminals = new Terminals(data['terminals']);
+                    terminals = new Terminals(data['terminals'], data['locations']);
                 } else {
-                    terminals.loadTerminals(data['terminals']);
+                    terminals.loadTerminals(data['terminals'], data['locations']);
                     terminals.dirty = false;
                 }
             }

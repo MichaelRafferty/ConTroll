@@ -2,9 +2,10 @@
 // all functions to configure the Square Terminals for atcon
 
 class Terminals {
-    constructor(terminals) {
+    constructor(terminals, locations) {
         // Search tabulator elements
         this.terminalList = null;
+        this.validLocations = locations;
 
         // Users HTML elements
         this.addbtn = document.getElementById('terminals_add_btn');
@@ -14,7 +15,7 @@ class Terminals {
         this.terminals_addbtn = document.getElementById('terminals_add_btn');
         
         // load initial data
-        this.loadTerminals(terminals);
+        this.loadTerminals(terminals, locations);
         this.dirty = false;
     }
 

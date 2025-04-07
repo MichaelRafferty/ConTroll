@@ -111,6 +111,7 @@ EOS;
 
 if ($loadtypes == 'all' || $loadtypes == 'terminals') {
     $terminals = [];
+    $locations = [];
 
     $terminalSQL = <<<EOS
 SELECT t.*, '🗑' as `delete`
@@ -122,6 +123,18 @@ EOS;
         $terminals[] = $terminal;
     }
     $response['terminals'] = $terminals;
-mysqli_free_result($terminalQ);
+    mysqli_free_result($terminalQ);
+
+    // now locations from credit card area of config file
+    $cc = get_conf('cc');
+    foreach ($cc AS $name => $value) {
+        if (str_starts_with($name, 'location')) {
+            $shortname = substr($name, length('location'));
+            if ($shortname == '')
+                $shortname = 'default';
+            $locations[$shortname] = $value;
+        }
+    }
+    $response['locations'] = $locations;
 }
 ajaxSuccess($response);
