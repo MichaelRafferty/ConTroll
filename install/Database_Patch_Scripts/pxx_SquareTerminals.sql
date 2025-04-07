@@ -40,4 +40,8 @@ ALTER TABLE exhibitorYears ADD COLUMN mailinFeePaidAmount decimal(8, 2) DEFAULT 
 ALTER TABLE exhibitorYears ADD COLUMN mailinFeeTransaction int DEFAULT NULL AFTER mailinFeePaidAmount;
 ALTER TABLE exhibitorYears ADD FOREIGN KEY ey_mailintrans(mailinFeeTransaction) REFERENCES transaction(id) ON UPDATE CASCADE;
 
+UPDATE controllTxtItems SET contents = REPLACE(contents, "Not to buy", "Note to buy")
+WHERE appName = 'portal' AND appPage = 'addUpgrade' AND appSection = 'main' AND txtItem = 'step4';
+
+
 INSERT INTO patchLog(id, name) VALUES(xx, 'Square Terminals');
