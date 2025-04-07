@@ -129,7 +129,7 @@ EOS;
     $cc = get_conf('cc');
     foreach ($cc AS $name => $value) {
         if (str_starts_with($name, 'location')) {
-            $shortname = substr($name, length('location'));
+            $shortname = substr($name, strlen('location'));
             if ($shortname == '')
                 $shortname = 'default';
             $locations[$shortname] = $value;
