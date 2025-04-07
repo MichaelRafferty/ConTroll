@@ -801,7 +801,7 @@ function changeRegsData(data, rowdata) {
         <div class="col-sm-2 text-primary">` + rowdata.label + `</div>
         <div class="col-sm-1 text-primary" style="text-align: right;">` + rowdata.price + `</div>
         <div class="col-sm-1 text-primary" style="text-align: right;">` + rowdata.paid + `</div>
-        <div class="col-sm-1 text-primary" style="text-align: right;">` + rowdata.couponDiscount + `.</div>
+        <div class="col-sm-1 text-primary" style="text-align: right;">` + rowdata.couponDiscount + `</div>
         <div class="col-sm-1 text-primary">` + rowdata.status + `</div>
         <div class="col-sm-2">
             <button class="btn btn-sm btn-secondary" onclick="changeEdit(` + rowdata.badgeId + `)";>Edit</button>
@@ -824,12 +824,12 @@ function changeRegsData(data, rowdata) {
             <label for="m-` + membership.id + '">' + membership.id + `</label></div>
         <div class="col-sm-1" style="text-align: right;">` + membership.create_trans + `</div>
         <div class="col-sm-1" style="text-align: right;">` + membership.memId + `</div>
-        <div class="col-sm-3">` + membership.label + `</div>
+        <div class="col-sm-2">` + membership.label + `</div>
         <div class="col-sm-1" style="text-align: right;">` + membership.price + `</div>
         <div class="col-sm-1" style="text-align: right;">` + membership.paid + `</div>
-        <div class="col-sm-1" style="text-align: right;">` + membership.couponDiscount + `.</div>
+        <div class="col-sm-1" style="text-align: right;">` + membership.couponDiscount + `</div>
         <div class="col-sm-1">` + membership.status + `</div>
-        <div class="col-sm-1">
+        <div class="col-sm-2">
             <button class="btn btn-sm btn-secondary" onclick="changeEdit(` + membership.id + `)";>Edit</button>
             <button class="btn btn-sm btn-secondary" onclick="addNote(` + membership.id + `)";>Add Note</button>
         </div>
