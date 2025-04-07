@@ -703,8 +703,8 @@ EOS;
 EOS;
         foreach ($terminals as $key => $terminal) {
             $html .= '<option value="' . escape_quotes($key) . ':::' . escape_quotes($terminal['name']) .
-                ':-:' . escape_quotes($printer['squareId']) . ':-:' . escape_quotes($printer['deviceId']) .
-                ':-:' . escape_quotes($printer['squareCode']) . '">' . $key . "</option>\n";
+                ':-:' . escape_quotes($terminal['squareId']) . ':-:' . escape_quotes($terminal['deviceId']) .
+                ':-:' . escape_quotes($terminal['squareCode']) . '">' . $key . "</option>\n";
         }
         $html .= <<<EOS
                 </select>
