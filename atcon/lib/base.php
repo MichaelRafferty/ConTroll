@@ -83,15 +83,15 @@ function page_init($title, $tab, $css, $js, $configVars = null)
     <script src='<?php echo $includes['bs5js'];?>'></script>
     <script type='text/javascript' src='<?php echo $includes['jqjs']; ?>'></script>
     <script type='text/javascript' src='<?php echo $includes['jquijs']; ?>'></script>
-    <script type='text/javascript' src='jslib/global.js?v=$globalJSversion'></script>
-    <script type='text/javascript' src='js/base.js?v=$controllJSversion'></script>
+    <script type='text/javascript' src="jslib/global.js?v=<?php echo $globalJSversion;?>"></script>
+    <script type='text/javascript' src="js/base.js?v=<?php echo $atJSversion;?>"></script>
         <?php
         if(isset($js) && $js != null) {
             foreach ($js as $script) {
                 if (str_starts_with($script, 'jslib/'))
                     $callout = "$script?v=$libJSversion";
                 else if (str_starts_with($script, 'js/'))
-                    $callout = "$script?v=$controllJSversion";
+                    $callout = "$script?v=$atJSversion";
                 else
                     $callout = $script;
                 ?>
@@ -615,7 +615,7 @@ ORDER BY name;
 EOS;
     $deviceR = dbQuery($terminalQ);
     while ($terminal = $deviceR->fetch_assoc()) {
-        $terminals['name'] = $terminal;
+        $terminals[$terminal['name']] = $terminal;
     }
     $deviceR->free();
 
@@ -695,7 +695,7 @@ EOS;
         $html .= <<<EOS
         <div class='row mt-2'>
             <div class='col-sm-$col1width'>
-                <label for='generic_printer'>Square Printer:</label>
+                <label for='square_terminal'>Square Terminal:</label>
             </div>
             <div class='col-sm-auto'>
                 <select name='square_terminal' id='square_terminal'>
@@ -703,8 +703,8 @@ EOS;
 EOS;
         foreach ($terminals as $key => $terminal) {
             $html .= '<option value="' . escape_quotes($key) . ':::' . escape_quotes($terminal['name']) .
-                ':-:' . escape_quotes($terminal['squareId']) . ':-:' . escape_quotes($terminal['deviceId']) .
-                ':-:' . escape_quotes($terminal['squareCode']) . '">' . $key . "</option>\n";
+                ':::' . escape_quotes($terminal['squareId']) . ':::' . escape_quotes($terminal['deviceId']) .
+                ':::' . escape_quotes($terminal['squareCode']) . '">' . $key . "</option>\n";
         }
         $html .= <<<EOS
                 </select>

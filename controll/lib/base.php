@@ -194,8 +194,8 @@ echo <<<EOF
     <script src='$bs5js'></script>
     <script type='text/javascript' src='$jqjs'></script>
     <script type='text/javascript' src='$jquijs'></script>
-    <script type='text/javascript' src='jslib/global.js?v=$globalJSversion'></script>
-    <script type='text/javascript' src='js/base.js?v=$controllJSversion'></script>
+    <script type='text/javascript' src="jslib/global.js?v=$globalJSversion"></script>
+    <script type='text/javascript' src="js/base.js?v=$controllJSversion"></script>
 EOF;
     if(isset($js) && $js != null) {
         foreach ($js as $script) {

@@ -332,7 +332,8 @@ function base_changePrintersSubmit() {
 function base_changePrinterDisplay(data) {
     var html = 'Badge: ' + data['badge'] + '&nbsp; <button type="button" class="btn btn-sm btn-secondary pt-0 pb-0" onclick="base_changePrintersShow();">Chg</button><br/>' +
     'Receipt: ' + data['receipt'] + '<br/>' +
-    'General: ' + data['generic'];
+    'General: ' + data['generic'] + '<br/>' +
+    'Terminal: ' + data['terminal'];
 
     document.getElementById("page_head_printers").innerHTML = html;
     if (typeof current_tab !== 'undefined') {
