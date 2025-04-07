@@ -108,4 +108,20 @@ EOS;
     $response['printers'] = $printers;
     mysqli_free_result($printerQ);
 }
+
+if ($loadtypes == 'all' || $loadtypes == 'terminals') {
+    $terminals = [];
+
+    $terminalSQL = <<<EOS
+SELECT t.*, '🗑' as `delete`
+FROM terminals t
+ORDER BY name
+EOS;
+    $terminalQ = dbQuery($terminalSQL);
+    while ($terminal = $terminalQ->fetch_assoc()) {
+        $terminals[] = $terminal;
+    }
+    $response['terminals'] = $terminals;
+mysqli_free_result($terminalQ);
+}
 ajaxSuccess($response);

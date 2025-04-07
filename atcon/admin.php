@@ -20,7 +20,7 @@ if (!check_atcon($method, $conid)) {
 $cdn = getTabulatorIncludes();
 page_init($page, 'admin',
     /* css */ array($cdn['tabcss'], $cdn['tabbs5']),
-    /* js  */ array($cdn['tabjs'],'js/admin.js','jslib/atconPrinters.js','jslib/atconUsers.js')
+    /* js  */ array($cdn['tabjs'],'js/admin.js','jslib/atconPrinters.js','jslib/atconUsers.js','jslib/atconTerminals.js')
     );
 
 ?>
@@ -33,6 +33,11 @@ page_init($page, 'admin',
     <li class='nav-item' role='presentation'>
         <button class='nav-link' id='printers-tab' data-bs-toggle='pill' data-bs-target='#printers-pane' type='button'
                 role='tab' aria-controls='nav-printers' aria-selected='false' onclick="settab('printers-pane');">Printers
+        </button>
+    </li>
+    <li class='nav-item' role='presentation'>
+        <button class='nav-link' id='terminals-tab' data-bs-toggle='pill' data-bs-target='#terminals-pane' type='button'
+                role='tab' aria-controls='nav-terminals' aria-selected='false' onclick="settab('terminals-pane');">Square Terminals
         </button>
     </li>
 </ul>
@@ -101,6 +106,24 @@ page_init($page, 'admin',
                     <button type='button' class='btn btn-secondary btn-sm' id='printers_undo_btn' onclick='printers.undo_printer();' disabled>Undo</button>
                     <button type='button' class='btn btn-secondary btn-sm' id='printers_redo_btn' onclick='printers.redo_printer();' disabled>Redo</button>
                     <button type='button' class='btn btn-primary btn-sm' id='printers_save_btn' onclick='printers.save();' disabled>Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class='tab-pane fade' id='terminals-pane' role='tabpanel' aria-labelledby='terminals-tab' tabindex='0'>
+        <div class='container-fluid'>
+            <div class='row'>
+                <div class='col-sm-auto'><h2>Square Terminals</h2></div>
+            </div>
+            <div class='row'>
+                <div class='col-sm-auto table-bordered table-sm' id='terminalsTable'></div>
+            </div>
+            <div class='row mt-2'>
+                <div class='col-sm-4'>
+                    <button type='button' class='btn btn-secondary btn-sm' id='terminals_add_btn' onclick='terminals.addTermianl();'>Add Terminal</button>
+                    <button type='button' class='btn btn-secondary btn-sm' id='terminals_undo_btn' onclick='terminals.undo_terminal();' disabled>Undo</button>
+                    <button type='button' class='btn btn-secondary btn-sm' id='terminals_redo_btn' onclick='terminals.redo_terminal();' disabled>Redo</button>
+                    <button type='button' class='btn btn-primary btn-sm' id='terminals_save_btn' onclick='terminals.save();' disabled>Save</button>
                 </div>
             </div>
         </div>
