@@ -1341,23 +1341,22 @@ function changeEdit(badgeId) {
 
 
     // build the select list, first the ones for this mem Age and All
-    var memOptionList = '<select id="newMemId" onchange="changeEditRegChange();">' + "\n" +
-        "    <option value=''>Do Not Modify The Registration Type</option>\n";
+    var memOptionList = '<select id="newMemId" onchange="changeEditRegChange();">' + "\n";
     for (var i = 0; i < memLabels.length; i++) {
         var memItem = memLabels[i];
         if (ageList[memItem.memAge]) {
-            memOptionList += '   <option value="' + memItem.id + '">' + memItem.id + ':' + memItem.memAge + '-' +
-                memItem.memType + '-' + memItem.memCategory + ' $' + memItem.price + ' ' +
-                memItem.shortname + "</option>\n";
+            memOptionList += '   <option value="' + memItem.id + '"' + (currentRow.memId == memItem.id ? ' selected' : '') + '>' +
+            memItem.id + ':' + memItem.memAge + '-' + memItem.memType + '-' + memItem.memCategory + ' $' + memItem.price + ' ' +
+            memItem.shortname + "</option>\n";
         }
     }
     // now the rest of them
     for (var i = 0; i < memLabels.length; i++) {
         var memItem = memLabels[i];
         if (!ageList[memItem.memAge]) {
-            memOptionList += '   <option value="' + memItem.id + '">' + memItem.id + ':' + memItem.memAge + '-' +
-                memItem.memType + '-' + memItem.memCategory + ' $' + memItem.price + ' ' +
-                memItem.shortname + "</option>\n";
+            memOptionList += '   <option value="' + memItem.id + '"' + (currentRow.memId == memItem.id ? ' selected' : '') +'>' +
+            memItem.id + ':' + memItem.memAge + '-' + memItem.memType + '-' + memItem.memCategory + ' $' + memItem.price + ' ' +
+            memItem.shortname + "</option>\n";
         }
     }
     memOptionList += "</select>\n";
