@@ -1661,7 +1661,7 @@ class Portal {
     setFocus(area){
          switch (area) {
             case 'paymentDiv':
-                $(window).scrollTop($('paymentSectionDiv').offset().top);
+                $(window).scrollTop($('#paymentSectionDiv').offset().top);
                 break;
         }
     }
