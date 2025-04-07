@@ -120,10 +120,7 @@ page_init($page, 'admin',
             </div>
             <div class='row mt-2'>
                 <div class='col-sm-4'>
-                    <button type='button' class='btn btn-secondary btn-sm' id='terminals_add_btn' onclick='terminals.addTermianl();'>Add Terminal</button>
-                    <button type='button' class='btn btn-secondary btn-sm' id='terminals_undo_btn' onclick='terminals.undo_terminal();' disabled>Undo</button>
-                    <button type='button' class='btn btn-secondary btn-sm' id='terminals_redo_btn' onclick='terminals.redo_terminal();' disabled>Redo</button>
-                    <button type='button' class='btn btn-primary btn-sm' id='terminals_save_btn' onclick='terminals.save();' disabled>Save</button>
+                    <button type='button' class='btn btn-secondary btn-sm' id='terminals_add_btn' onclick='terminals.addTerminal();'>Add Terminal</button>
                 </div>
             </div>
         </div>
