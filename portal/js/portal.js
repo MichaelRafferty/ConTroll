@@ -1660,7 +1660,7 @@ class Portal {
     // setFocus - jump to specific areas on the page
     setFocus(area){
          switch (area) {
-            case 'portalDiv':
+            case 'paymentDiv':
                 $(window).scrollTop($('paymentSectionDiv').offset().top);
                 break;
         }
