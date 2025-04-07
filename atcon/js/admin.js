@@ -74,7 +74,7 @@ function loadInitialData(loadtype) {
                     printers.serverNameToDelete = null;
                 }
             }
-            if (data['terminals'] !== undefined {
+            if (data['terminals'] !== undefined) {
                 if (terminals == null) {
                     terminals = new Terminals(data['terminals']);
                 } else {
