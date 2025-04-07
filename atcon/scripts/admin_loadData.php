@@ -114,8 +114,8 @@ if ($loadtypes == 'all' || $loadtypes == 'terminals') {
     $locations = [];
 
     $terminalSQL = <<<EOS
-SELECT t.*, '🗑' as `delete`
-FROM terminals t
+SELECT *
+FROM terminals
 ORDER BY name
 EOS;
     $terminalQ = dbQuery($terminalSQL);
