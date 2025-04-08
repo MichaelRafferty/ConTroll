@@ -201,7 +201,7 @@ class Terminals {
         if (data['ok'] == 0)
             return;
 
-        this.#terminalList.addRow({name: $name});
+        this.#terminalList.replaceData(data['terminals']);
         this.#addName = null;
         this.#addId = null;
         this.refreshStatus($name, true);
