@@ -261,6 +261,7 @@ class Terminals {
             url: "scripts/admin_getTerminalStatus.php",
             data: postData,
             success: function (data, textstatus, jqxhr) {
+                refreshStatusSuccess(terminal, silent, data)
             },
             error: showAjaxError,
         });
