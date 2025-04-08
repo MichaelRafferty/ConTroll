@@ -155,7 +155,7 @@ class Terminals {
         if (data['message'] !== undefined) {
             show_message(data['message'], 'success', 'add_result_message');
         }
-        var terminal = data.terminal.device_code;
+        var terminal = data.terminal;
         this.#addName = terminal.name;
         this.#addId = terminal.id;
         document.getElementById('createName').innerHTML = terminal.name;
@@ -167,6 +167,7 @@ class Terminals {
         document.getElementById('createStatus').innerHTML = terminal.status;
         document.getElementById('createStatusChanged').innerHTML = terminal.status_changed_at;
         this.#pairBlock.hidden = false;
+        document.getElementById('AddTerminalCreate').disabled = true;
     }
 
     // in theory it's now paired, get the device id by calling get device code

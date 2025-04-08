@@ -41,9 +41,8 @@ $name = $_POST['terminal'];
 $id = $_POST['id'];
 // now call API to create the terminal
 load_term_procs();
-$terminal = term_getDevice($name, true);
+$data = term_getDevice($name, true);
 
-$data = $terminal['device_code'];
 $id = $data['id'];
 $name = $data['name'];
 $code = $data['code'];
@@ -51,12 +50,16 @@ $product_type = $data['product_type'];
 $locationId = $data['location_id'];
 $created_at = $data['created_at'];
 if (array_key_exists('pair_by', $data)) {
-    $pair_by = $data['pair_by'];
+    $dateTime = new DateTime($data['pair_by']);
+    $dateTime->setTimezone(new DateTimeZone('UTC'));
+    $pair_by = $dateTime->format('Y-m-d H:i:s');
 } else {
     $pair_by = null;
 }
 if (array_key_exists('paired_at', $data)) {
-    $paired_at = $data['paired_at'];
+    $dateTime = new DateTime($data['paired_at']);
+    $dateTime->setTimezone(new DateTimeZone('UTC'));
+    $paired_at = $dateTime->format('Y-m-d H:i:s');
 } else {
     $paired_at = null;
 }
@@ -66,7 +69,10 @@ if (array_key_exists('device_id', $data)) {
     $device_id = null;
 }
 $status = $data['status'];
-$status_changed_at = $data['status_changed_at'];
+
+$dateTime = new DateTime($data['status_changed_at']);
+$dateTime->setTimezone(new DateTimeZone('UTC'));
+$status_changed_at = $dateTime->format('Y-m-d H:i:s');
 
 $updQ = <<<EOS
 UPDATE terminals

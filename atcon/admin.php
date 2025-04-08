@@ -347,7 +347,7 @@ page_init($page, 'admin',
                         <div class='col-sm-2'>Status Date:</div>
                         <div class='col-sm-10' id='createStatusChanged'></div>
                     </div>
-                    <div class='row'>
+                    <div class='row mt-4'>
                         <div class='col-sm-12'>
                             <p>
                                 Now login in your terminal using the login by device code option.

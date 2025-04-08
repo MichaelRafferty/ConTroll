@@ -39,20 +39,34 @@ if (!(array_key_exists('terminal', $_POST) && array_key_exists('location', $_POS
 
 $newName = $_POST['terminal'];
 $location = $_POST['location'];
+
+// check if its in the database
+if (getTerminal($newName)) {
+    ajaxSuccess(array('error'=>"Error Terminal $newName already exists."));
+    exit();
+}
 // now call API to create the terminal
 load_term_procs();
-$terminal = term_createDeviceCode($newName, $location, true);
+$data = term_createDeviceCode($newName, $location, true);
 
-$data = $terminal['device_code'];
 $id = $data['id'];
 $name = $data['name'];
 $code = $data['code'];
 $product_type = $data['product_type'];
 $locationId = $data['location_id'];
-$created_at = $data['created_at'];
-$pair_by = $data['pair_by'];
+
+$dateTime = new DateTime($data['created_at']);
+$dateTime->setTimezone(new DateTimeZone('UTC'));
+$created_at = $dateTime->format('Y-m-d H:i:s');
+
+$dateTime = new DateTime($data['pair_by']);
+$dateTime->setTimezone(new DateTimeZone('UTC'));
+$pair_by = $dateTime->format('Y-m-d H:i:s');
 $status = $data['status'];
-$status_changed_at = $data['status_changed_at'];
+
+$dateTime = new DateTime($data['status_changed_at']);
+$dateTime->setTimezone(new DateTimeZone('UTC'));
+$status_changed_at = $dateTime->format('Y-m-d H:i:s');
 
 $insQ = <<<EOS
 INSERT INTO terminals(name, productType, locationId, squareId, squareCode, createDate, pairBy, status, statusChanged)
