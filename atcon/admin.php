@@ -19,7 +19,7 @@ if (!check_atcon($method, $conid)) {
 
 $cdn = getTabulatorIncludes();
 page_init($page, 'admin',
-    /* css */ array($cdn['tabcss'], $cdn['tabbs5']),
+    /* css */ array($cdn['tabcss'], $cdn['tabbs5'], 'css/style.css'),
     /* js  */ array($cdn['tabjs'],'js/admin.js','jslib/atconPrinters.js','jslib/atconUsers.js','jslib/atconTerminals.js')
     );
 
@@ -122,6 +122,135 @@ page_init($page, 'admin',
                 <div class='col-sm-4'>
                     <button type='button' class='btn btn-secondary btn-sm' id='terminals_add_btn' onclick='terminals.addTerminal();'>Add Terminal</button>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--- pay cash change modal popup -->
+<div class='modal modal-xl' id='statusDetails' tabindex='-4' aria-labelledby='statusDetails' data-bs-backdrop='static' style='--bs-modal-width: 90%;'
+     aria-hidden='true'>
+    <div class='modal-dialog'>
+        <div class='modal-content'>
+            <div class='modal-header bg-primary text-bg-primary'>
+                <div class='modal-title' id='statusDetailsTitle'>
+                    Terminal Details
+                </div>
+                <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+            </div>
+            <div class='modal-body' id='statusDetailsBody'>
+                <h1 class="size-h3">Square Terminal Settings</h1>
+                <div class="row">
+                    <div class='col-sm-2'>Terminal Name:</div>
+                    <div class='col-sm-10' id="detailsName"></div>
+                </div>
+                <div class='row'>
+                    <div class='col-sm-2'>Product Type:</div>
+                    <div class='col-sm-10' id='detailsProductType'></div>
+                </div>
+                <div class='row'>
+                    <div class='col-sm-2'>Square ID:</div>
+                    <div class='col-sm-10' id='detailsSquareId'></div>
+                </div>
+                <div class='row'>
+                    <div class='col-sm-2'>Location ID:</div>
+                    <div class='col-sm-10' id='detailsLocationId'></div>
+                </div>
+                <div class='row'>
+                    <div class='col-sm-2'>Device ID:</div>
+                    <div class='col-sm-10' id='detailsDeviceId'></div>
+                </div>
+                <div class='row'>
+                    <div class='col-sm-2'>Square Code:</div>
+                    <div class='col-sm-10' id='detailsSquareCode'></div>
+                </div>
+                <div class='row'>
+                    <div class='col-sm-2'>Pair By Date:</div>
+                    <div class='col-sm-10' id='detailsPairBy'></div>
+                </div>
+                <div class='row'>
+                    <div class='col-sm-2'>Paired At Date:</div>
+                    <div class='col-sm-10' id='detailsPairedAt'></div>
+                </div>
+                <div class='row'>
+                    <div class='col-sm-2'>Create Date:</div>
+                    <div class='col-sm-10' id='detailsCreateDate'></div>
+                </div>
+                <div class='row'>
+                    <div class='col-sm-2'>Status:</div>
+                    <div class='col-sm-10' id='detailsStatus'></div>
+                </div>
+                <div class='row'>
+                    <div class='col-sm-2'>Status Date:</div>
+                    <div class='col-sm-10' id='detailsStatusChanged'></div>
+                </div>
+                <h1 class='size-h3 mt-4'>Square Terminal Condition</h1>
+                <h2 class='size-h4'>Battery Power</h2>
+                <div class='row'>
+                    <div class='col-sm-2'>Battery Level:</div>
+                    <div class='col-sm-10' id='detailsBatteryLevel'></div>
+                </div>
+                <div class='row'>
+                    <div class='col-sm-2'>External Power:</div>
+                    <div class='col-sm-10' id='detailsExternalPower'></div>
+                </div>
+                <h2 class='size-h4 mt-3'>WIFI</h2>
+                <div class='row'>
+                    <div class='col-sm-2'>Active:</div>
+                    <div class='col-sm-10' id='detailsWifiActive'></div>
+                </div>
+                <div class='row'>
+                    <div class='col-sm-2'>SSID:</div>
+                    <div class='col-sm-10' id='detailsWifiSSID'></div>
+                </div>
+                <div class='row'>
+                    <div class='col-sm-2'>V4 Address:</div>
+                    <div class='col-sm-10' id='detailsWifiIPAddressV4'></div>
+                </div>
+                <div class='row'>
+                    <div class='col-sm-2'>V6 Address:</div>
+                    <div class='col-sm-10' id='detailsWifiIPAddressV6'></div>
+                </div>
+                <div class='row'>
+                    <div class='col-sm-2'>Signal Strength:</div>
+                    <div class='col-sm-10' id='detailsSignalStrength'></div>
+                </div>
+                <h2 class='size-h4 mt-3'>Ethernet</h2>
+                <div class='row'>
+                    <div class='col-sm-2'>Active:</div>
+                    <div class='col-sm-10' id='detailsEthernetActive'></div>
+                </div>
+                <div class='row'>
+                    <div class='col-sm-2'>V4 Address:</div>
+                    <div class='col-sm-10' id='detailsEthernetIPAddressV4'></div>
+                </div>
+                <div class='row'>
+                    <div class='col-sm-2'>V6 Address:</div>
+                    <div class='col-sm-10' id='detailsEthernetIPAddressV6'></div>
+                </div>
+                <h1 class='size-h3 mt-4'>ConTroll Terminal Status</h1>
+                <div class='row'>
+                    <div class='col-sm-2'>Current Order:</div>
+                    <div class='col-sm-10' id='detailsCurrentOrder'></div>
+                </div>
+                <div class='row'>
+                    <div class='col-sm-2'>Current Payment:</div>
+                    <div class='col-sm-10' id='detailsCurrentPayment'></div>
+                </div>
+                <div class='row'>
+                    <div class='col-sm-2'>Current Operator:</div>
+                    <div class='col-sm-10' id='detailsCurrentOperator'></div>
+                </div>
+                <div class='row'>
+                    <div class='col-sm-2'>Status:</div>
+                    <div class='col-sm-10' id='detailsControllStatus'></div>
+                </div>
+                <div class='row'>
+                    <div class='col-sm-2'>Status Date:</div>
+                    <div class='col-sm-10' id='detailsControllStatusChanged'></div>
+                </div>
+            </div>
+            <div class='modal-footer'>
+                <button type='button' id='statusClose' class='btn btn-primary' onclick='statusDetailsModal.hide();'>Close Details</button>
             </div>
         </div>
     </div>
