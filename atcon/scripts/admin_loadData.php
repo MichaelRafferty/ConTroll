@@ -60,7 +60,7 @@ EOS;
             $users[$perid][$user['auth']] = true;
         }
     }
-    mysqli_free_result($userQ);
+    $userQ->free();
     $data = [];
     foreach ($users as $user) {
         $data[] = $user;
@@ -92,7 +92,7 @@ EOS;
         $servers[] = $server;
     }
     $response['servers'] = $servers;
-    mysqli_free_result($serverQ);
+    $serverQ->free();
 
     $printersSQl = <<<EOS
 SELECT p.serverName, p.printerName, p.printerType, p.codePage, p.active, IF(s.local = 1, '🗑', '') as `delete`
@@ -106,7 +106,7 @@ EOS;
         $printers[] = $printer;
     }
     $response['printers'] = $printers;
-    mysqli_free_result($printerQ);
+    $printerQ->free();
 }
 
 if ($loadtypes == 'all' || $loadtypes == 'terminals') {
@@ -123,7 +123,7 @@ EOS;
         $terminals[] = $terminal;
     }
     $response['terminals'] = $terminals;
-    mysqli_free_result($terminalQ);
+    $terminalQ->free();
 
     // now locations from credit card area of config file
     $cc = get_conf('cc');

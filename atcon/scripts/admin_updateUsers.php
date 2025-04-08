@@ -70,7 +70,7 @@ $res = dbSafeQuery($existingSQL, 'i', [$conid]);
 while ($user = $res->fetch_assoc()) {
     $idmap[strval($user['perid'])] = $user['id'];
 }
-mysqli_free_result($res);
+$res->free();
 
 var_error_log($idmap);
 
@@ -138,7 +138,7 @@ while ($auth = $res->fetch_assoc()) {
 if ($id != 0) {
     $users[strval($id)] = $auths;
 }
-mysqli_free_result($res);
+$res->free();
 
 //web_error_log("Current Auth Dump");
 //var_error_log($users);

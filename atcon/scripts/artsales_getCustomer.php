@@ -96,6 +96,6 @@ if ($num_rows >= $limit) {
 } else {
     $response['message'] = "$num_rows people found";
 }
-mysqli_free_result($findPersonR);
+$findPersonR->free();
 
 ajaxSuccess($response);

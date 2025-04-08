@@ -50,7 +50,7 @@ while ($terminal = $terminalQ->fetch_assoc()) {
     $terminals[] = $terminal;
 }
 $response['terminals'] = $terminals;
-mysqli_free_result($terminalQ);
+$terminalQ->free();
 
 $response['message'] = "$del_rows terminal(s) deleted";
 ajaxSuccess($response);

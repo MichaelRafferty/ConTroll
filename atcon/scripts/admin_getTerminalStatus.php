@@ -166,7 +166,7 @@ if ($terminalQ === false || $terminalQ->num_rows != 1) {
 }
 $updatedRow = $terminalQ->fetch_assoc();
 $response['updatedRow'] = $updatedRow;
-mysqli_free_result($terminalQ);
+$terminalQ->free();
 
 $response['message'] = "$terminal status updated, $updCnt row updated";
 ajaxSuccess($response);

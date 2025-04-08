@@ -74,7 +74,7 @@ $results = [];
 while ($row = $res->fetch_assoc()) {
     $results[] = $row;
 }
-mysqli_free_result($res);
+$res->free();
 
 $response['data'] = $results;
 $response['rows'] = sizeof($results);

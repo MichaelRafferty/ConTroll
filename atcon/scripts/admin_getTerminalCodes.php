@@ -86,6 +86,18 @@ if ($numRows === false) {
     exit();
 }
 
+$terminalSQL = <<<EOS
+SELECT *
+FROM terminals
+ORDER BY name
+EOS;
+$terminalQ = dbQuery($terminalSQL);
+while ($terminal = $terminalQ->fetch_assoc()) {
+    $terminals[] = $terminal;
+}
+$response['terminals'] = $terminals;
+$terminalQ->free();
+
 $response['name'] = $name;
 $response['terminal'] = $data;
 if ($paired_at !== null && $paired_at != '') {

@@ -83,7 +83,7 @@ if ($r->num_rows == 1) {
     RenderErrorAjax('Current convention ($conid) not in the database.');
     exit();
 }
-mysqli_free_result($r);
+$r->free();
 // get all types registration can set
 
 
@@ -116,7 +116,7 @@ $r = dbSafeQuery($priceQ, 'iii', array($conid, $conid + 1, $conid));
 while ($l = $r->fetch_assoc()) {
     $memarray[] = $l;
 }
-mysqli_free_result($r);
+$r->free();
 $response['memLabels'] = $memarray;
 
 // memTypes
@@ -132,7 +132,7 @@ $r = dbQuery($memTypeSQL);
 while ($l = $r->fetch_assoc()) {
     $typearray[] = $l['memType'];
 }
-mysqli_free_result($r);
+$r->free();
 $response['memTypes'] = $typearray;
 
 // memCategories
@@ -148,7 +148,7 @@ $r = dbQuery($memCategorySQL);
 while ($l = $r->fetch_assoc()) {
     $catarray[] = $l;
 }
-mysqli_free_result($r);
+$r->free();
 $response['memCategories'] = $catarray;
 
 // ageList
@@ -164,7 +164,7 @@ $r = dbSafeQuery($ageListSQL, 'i', array($conid));
 while ($l = $r->fetch_assoc()) {
     $agearray[] = $l;
 }
-mysqli_free_result($r);
+$r->free();
 $response['ageList'] = $agearray;
 
 // coupons

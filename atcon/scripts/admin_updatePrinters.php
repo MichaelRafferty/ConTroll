@@ -127,7 +127,7 @@ $existingQ = dbQuery($existingPrintersSQL);
 while ($printer = $existingQ->fetch_assoc()) {
     $existing[$printer['serverName'] . ':::' . $printer['printerName']] = $printer['local'];
 }
-mysqli_free_result($existingQ);
+$existingQ->free();
 $updateLocalPrinterSQL = <<<EOS
 UPDATE printers
 SET printerName = ?, printerType=?, codePage=?, active=?
