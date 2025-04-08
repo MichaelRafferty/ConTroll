@@ -128,7 +128,7 @@ EOS;
         $wifiIPAddressV6 = null;
     }
     if ($ethernet) {
-        $ethernet = $ethernet['ethernet_details']['active'] ? true : false;
+        $ethernetActive = $ethernet['ethernet_details']['active'] ? true : false;
         if (array_key_exists('ip_address_v4', $ethernet['ethernet_details']))
             $ethernetIPAddressV4 = $ethernet['ethernet_details']['ip_address_v4'];
         else
@@ -147,9 +147,9 @@ EOS;
 
     $arrVals = array($productType, $squareName, $squareModel, $version, $terminalAPIVersion, $batteryLevel, $externalPower,
         $wifiActive, $wifiSSID, $wifiIPAddressV4, $wifiIPAddressV6, $signalStrength,
-        $ethernetActive, $ethernetIPAddressV4, $ethernetIPAddressV6, $statusCat);
+        $ethernetActive, $ethernetIPAddressV4, $ethernetIPAddressV6, $statusCat, $terminal);
 
-    $datatypes = 'sssssisisssiisss';
+    $datatypes = 'sssssisisssiissss';
     $updCnt = dbSafeCmd($upSQL, $datatypes, $arrVals);
 
 

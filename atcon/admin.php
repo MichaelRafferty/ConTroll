@@ -164,6 +164,22 @@ page_init($page, 'admin',
                     <div class='col-sm-10' id='detailsSquareCode'></div>
                 </div>
                 <div class='row'>
+                    <div class='col-sm-2'>Square Name:</div>
+                    <div class='col-sm-10' id='detailsSquareName'></div>
+                </div>
+                <div class='row'>
+                    <div class='col-sm-2'>Square Model:</div>
+                    <div class='col-sm-10' id='detailsSquareModel'></div>
+                </div>
+                <div class='row'>
+                    <div class='col-sm-2'>Version:</div>
+                    <div class='col-sm-10' id='detailsVersion'></div>
+                </div>
+                <div class='row'>
+                    <div class='col-sm-2'>Terminal API Version:</div>
+                    <div class='col-sm-10' id='detailsTerminalAPIVersion'></div>
+                </div>
+                <div class='row'>
                     <div class='col-sm-2'>Pair By Date:</div>
                     <div class='col-sm-10' id='detailsPairBy'></div>
                 </div>
