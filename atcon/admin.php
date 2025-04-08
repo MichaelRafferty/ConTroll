@@ -126,7 +126,7 @@ page_init($page, 'admin',
         </div>
     </div>
 </div>
-<!--- pay cash change modal popup -->
+<!--- status details modal popup -->
 <div class='modal modal-xl' id='statusDetails' tabindex='-4' aria-labelledby='statusDetails' data-bs-backdrop='static' style='--bs-modal-width: 90%;'
      aria-hidden='true'>
     <div class='modal-dialog'>
@@ -267,6 +267,57 @@ page_init($page, 'admin',
             </div>
             <div class='modal-footer'>
                 <button type='button' id='statusClose' class='btn btn-primary' onclick='statusDetailsModal.hide();'>Close Details</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--- status details modal popup -->
+<div class='modal modal-xl' id='addTerminal' tabindex='-4' aria-labelledby='addTerminal' data-bs-backdrop='static' style='--bs-modal-width: 80%;'
+     aria-hidden='true'>
+    <div class='modal-dialog'>
+        <div class='modal-content'>
+            <div class='modal-header bg-primary text-bg-primary'>
+                <div class='modal-title' id='addTerminalTitle'>
+                    Add New Square Terminal
+                </div>
+                <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+            </div>
+            <div class='modal-body' id='addTerminalBody'>
+                <h1 class='size-h3'>Add New Square Terminal</h1>
+                <div class="row">
+                    <div class="col-sm-2">
+                        <label for="newTerminalName">New Terminal Name:</label>
+                    </div>
+                    <div class="col-sm-auto">
+                        <input type="text" class="form-control" id="newTerminalName" placeholder="Enter new terminal name"
+                               size="30" maxlength="32" autofocus="true">
+                    </div>
+                </div>
+                <div class="row mt-2">
+                    <div class="col-sm-2">
+                        <label for="newTerminalLocation">Location:</label>
+                    </div>
+                    <div class="col-sm-auto">
+                        <select id="newTerminalLocation">
+                            <option value="" selected="selected">Select Location</option>
+<?php
+    $cc = get_conf('cc');
+    foreach ($cc AS $name => $value) {
+        if (str_starts_with($name, 'location')) {
+            $shortname = substr($name, strlen('location'));
+            if ($shortname == '')
+                $shortname = 'default';
+            echo "<option value='$value'>$shortname ($value)</option>\n";
+        }
+    }
+?>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class='modal-footer'>
+                <button type='button' id='AddTerminalCreate' class='btn btn-secondary' onclick='terminals.createTerminal();'>Create Terminal</button>
+                <button type='button' id='addTerminalClose' class='btn btn-secondary' onclick='addTerminalModal.hide();'>Close Details</button>
             </div>
         </div>
     </div>

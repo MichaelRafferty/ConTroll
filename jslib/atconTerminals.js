@@ -2,6 +2,7 @@
 // all functions to configure the Square Terminals for atcon
 
 statusDetailsModal = null;
+addTerminalModal = null;
 
 class Terminals {
     #addbtn = null;
@@ -9,6 +10,8 @@ class Terminals {
     #validLocations = null;
     #statusDetailsTitle = null;
     #statusDetailsBody = null;
+    #newTerminalName = null;
+    #newTerminalLocation = null;
     
     constructor(terminals, locations) {
         // Search tabulator elements
@@ -21,6 +24,12 @@ class Terminals {
             statusDetailsModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
             this.#statusDetailsTitle = document.getElementById('statusDetailsTitle');
             this.#statusDetailsBody = document.getElementById('statusDetailsBody');
+        }
+        var id = document.getElementById('addTerminal');
+        if (id) {
+            addTerminalModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
+            this.#newTerminalName = document.getElementById('newTerminalName');
+            this.#newTerminalLocation = document.getElementById('newTerminalLocation');
         }
         
         // load initial data
@@ -83,8 +92,11 @@ class Terminals {
     }
 
     addTerminal() {
-        this.#terminalList.addData([{name: "New"}], true);
+        // clear the fields
+        this.#newTerminalName.value = '';
+        this.#newTerminalLocation.value = '';
 
+        addTerminalModal.show();
         /*
          editor: "list", editorParams: {
                         values: this.validLocations,
