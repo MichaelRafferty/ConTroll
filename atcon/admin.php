@@ -261,7 +261,7 @@ page_init($page, 'admin',
                     <div class='col-sm-10' id='detailsControllStatus'></div>
                 </div>
                 <div class='row'>
-                    <div class='col-sm-2'>Status Date:</div>
+                    <div class='col-sm-2'>Status Updated:</div>
                     <div class='col-sm-10' id='detailsControllStatusChanged'></div>
                 </div>
             </div>

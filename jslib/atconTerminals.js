@@ -47,7 +47,7 @@ class Terminals {
                 { title: "Actions",  formatter: this.termActions, },
                 { title: "Name", field: "name", minWidth: 150, headerSort: true, headerFilter: true },
                 { title: "Status", field: "status", minWidth: 100, headerSort: true, headerFilter:true, headerWordWrap: true, },
-                { title: "Status Changed", field: "statusChanged", minWidth: 150, headerSort: true, headerFilter:true, headerWordWrap: true, },
+                { title: "Status Updated", field: "statusChanged", minWidth: 150, headerSort: true, headerFilter:true, headerWordWrap: true, },
                 { title: "Square Code", field: "squareCode", width: 100, headerSort: true, headerFilter:true, headerWordWrap: true, },
                 { title: "Battery Level", field: "batteryLevel", width: 100, headerSort: true, headerFilter:true, headerWordWrap: true,
                     formatter: "progress", formatterParams: { min: 0, max: 100, color: ["red", "yellow", "green"], legend: true, },
