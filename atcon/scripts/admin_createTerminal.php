@@ -5,6 +5,7 @@
 // call API create terminal and show the details and add it to the database
 
 require_once('../lib/base.php');
+require_once('../../lib/term__load_methods.php');
 
 // use common global Ajax return functions
 global $returnAjaxErrors, $return500errors;
@@ -36,6 +37,7 @@ if (!(array_key_exists('terminal', $_POST) && array_key_exists('location', $_POS
 $newName = $_POST['terminal'];
 $location = $_POST['location'];
 // now call API to create the terminal
+load_term_procs();
 $terminal = term_createDeviceCode($newName, $location);
 
 $data = $terminal['device_code'];

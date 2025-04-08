@@ -4,6 +4,7 @@
 // Author: Syd Weinsteinretrieve the details on a terminal after it's been paired
 
 require_once('../lib/base.php');
+require_once('../../lib/term__load_methods.php');
 
 // use common global Ajax return functions
 global $returnAjaxErrors, $return500errors;
@@ -35,6 +36,7 @@ if (!(array_key_exists('terminal', $_POST) && array_key_exists('id', $_POST))) {
 $name = $_POST['terminal'];
 $id = $_POST['id'];
 // now call API to create the terminal
+load_term_procs();
 $terminal = term_getDevice($name);
 
 $data = $terminal['device_code'];
