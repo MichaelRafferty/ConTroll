@@ -1,5 +1,5 @@
 <?php
-// library AJAX Processor: admin_deleteTerminsl.php
+// library AJAX Processor: admin_deleteTerminal.php
 // Balticon Registration System
 // Author: Syd Weinstein
 // delete and re-get the list of terminals

@@ -314,6 +314,56 @@ page_init($page, 'admin',
                         </select>
                     </div>
                 </div>
+                <div id="pairBlock" hidden>
+                    <div class="row mt-4">
+                        <div class='col-sm-2'>Terminal Name:</div>
+                        <div class='col-sm-10' id='createName'></div>
+                    </div>
+                    <div class='row'>
+                        <div class='col-sm-2'>Square Code:</div>
+                        <div class='col-sm-10' id='createSquareCode'></div>
+                    </div>
+                    <div class='row'>
+                        <div class='col-sm-2'>Product Type:</div>
+                        <div class='col-sm-10' id='createProductType'></div>
+                    </div>
+                    <div class='row'>
+                        <div class='col-sm-2'>Square ID:</div>
+                        <div class='col-sm-10' id='createSquareId'></div>
+                    </div>
+                    <div class='row'>
+                        <div class='col-sm-2'>Location ID:</div>
+                        <div class='col-sm-10' id='createLocationId'></div>
+                    </div>
+                    <div class='row'>
+                        <div class='col-sm-2'>Pair By Date:</div>
+                        <div class='col-sm-10' id='createPairBy'></div>
+                    </div>
+                    <div class='row'>
+                        <div class='col-sm-2'>Status:</div>
+                        <div class='col-sm-10' id='createStatus'></div>
+                    </div>
+                    <div class='row'>
+                        <div class='col-sm-2'>Status Date:</div>
+                        <div class='col-sm-10' id='createStatusChanged'></div>
+                    </div>
+                    <div class='row'>
+                        <div class='col-sm-12'>
+                            <p>
+                                Now login in your terminal using the login by device code option.
+                                The code to enter is the six character Square Code above.
+                                You have to do this by the pair by date/time shown above.
+                                Once the terminal has successfully logged in, as shown by the square box or your conventions logo on the screen,
+                                the click the proceed button below to load the rest of the terminals configuration into the database.
+                            </p>
+                        </div>
+                    </div>
+                    <div class='row mt-4'>
+                        <div class='col-sm-auto'>
+                            <button type='button' class='btn btn-primary' id='createProceed' onclick="terminals.createProceed();">Proceed</button>
+                        </div>
+                    </div>
+                </div>
                 <div class="row mt-2">
                     <div class="col-sm-12" id="add_result_message"></div>
                 </div>

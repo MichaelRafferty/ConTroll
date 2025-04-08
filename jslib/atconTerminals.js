@@ -12,6 +12,9 @@ class Terminals {
     #statusDetailsBody = null;
     #newTerminalName = null;
     #newTerminalLocation = null;
+    #pairBlock = null;
+    #addName = null;
+    #addId = null;
     
     constructor(terminals, locations) {
         // Search tabulator elements
@@ -25,11 +28,12 @@ class Terminals {
             this.#statusDetailsTitle = document.getElementById('statusDetailsTitle');
             this.#statusDetailsBody = document.getElementById('statusDetailsBody');
         }
-        var id = document.getElementById('addTerminal');
+        id = document.getElementById('addTerminal');
         if (id) {
             addTerminalModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
             this.#newTerminalName = document.getElementById('newTerminalName');
             this.#newTerminalLocation = document.getElementById('newTerminalLocation');
+            this.#pairBlock = document.getElementById('pairBlock');
         }
         
         // load initial data
@@ -75,16 +79,15 @@ class Terminals {
 // tabulator formatter for the actions column, displays the update badge, remove, and edit person buttons
 // filters for ones already in the cart, and statuses that should not be allowed to be added to the cart
     termActions(cell, formatterParams, onRendered) { //plain text value
-        var html = '';
         var data = cell.getData();
         var btns = "";
-        btns += '<button class="btn btn-primary me-1" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
+        btns += '<button class="btn btn-primary me-1" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
             ' onclick="terminals.details(\'' + data.name + '\')">Details</button>';
-        btns += '<button class="btn btn-secondary me-1" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
+        btns += '<button class="btn btn-secondary me-1" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
             ' onclick="terminals.refreshStatus(\'' + data.name + '\')">Refresh</button>';
 
         if (!data.currentOrder) {
-            btns += '<button class="btn btn-warning me-1" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
+            btns += '<button class="btn btn-warning me-1" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
                 ' onclick="terminals.deleteTerminal(\'' + data.name + '\')">Delete</button>';
         }
 
@@ -96,7 +99,15 @@ class Terminals {
         // clear the fields
         this.#newTerminalName.value = '';
         this.#newTerminalLocation.value = '';
-
+        this.#pairBlock.hidden = true;
+        document.getElementById('createName').innerHTML = '';
+        document.getElementById('createSquareCode').innerHTML = '';
+        document.getElementById('createProductType').innerHTML = '';
+        document.getElementById('createSquareId').innerHTML = '';
+        document.getElementById('createLocationId').innerHTML = '';
+        document.getElementById('createPairBy').innerHTML = '';
+        document.getElementById('createStatus').innerHTML = '';
+        document.getElementById('createStatusChanged').innerHTML = '';
         addTerminalModal.show();
     }
 
@@ -119,7 +130,80 @@ class Terminals {
             show_message('You must select a location', 'error', 'add_result_message');
             return;
         }
-        console.log('Creating Terminal');
+        show_message("Creating the new terminal: " + name + " at location " + location, 'add_result_message');
+        var postData = {
+            ajax_request_action: 'create',
+            terminal: name,
+            location: location,
+        };
+        $.ajax({
+            method: "POST",
+            url: "scripts/admin_createTerminal.php",
+            data: postData,
+            success: function (data, textstatus, jqxhr) {
+                terminals.createTerminalSuccess(data);
+            },
+            error: showAjaxError,
+        });
+    }
+
+    createTerminalSuccess(data) {
+        if (data['error'] !== undefined) {
+            show_message(data['error'], 'error', 'add_result_message');
+            return;
+        }
+        if (data['message'] !== undefined) {
+            show_message(data['message'], 'success', 'add_result_message');
+        }
+        var terminal = data.terminal.device_code;
+        this.#addName = terminal.name;
+        this.#addId = terminal.id;
+        document.getElementById('createName').innerHTML = terminal.name;
+        document.getElementById('createSquareCode').innerHTML = terminal.code;
+        document.getElementById('createProductType').innerHTML = terminal.product_type;
+        document.getElementById('createSquareId').innerHTML = terminal.id;
+        document.getElementById('createLocationId').innerHTML = terminal.location_id;
+        document.getElementById('createPairBy').innerHTML = terminal.pair_by;
+        document.getElementById('createStatus').innerHTML = terminal.status;
+        document.getElementById('createStatusChanged').innerHTML = terminal.status_changed_at;
+        this.#pairBlock.hidden = false;
+    }
+
+    // in theory it's now paired, get the device id by calling get device code
+    createProceed() {
+        show_message("Getting the new terminals details: " + this.#addName, 'add_result_message');
+        var postData = {
+            ajax_request_action: 'codeStatus',
+            terminal: this.#addName,
+            id: this.#addId,
+        };
+        $.ajax({
+            method: "POST",
+            url: "scripts/admin_getTerminalCodes.php",
+            data: postData,
+            success: function (data, textstatus, jqxhr) {
+                terminals.createProceedSuccess(data);
+            },
+            error: showAjaxError,
+        });
+    }
+
+    createProceedSuccess(data) {
+        if (data['error'] !== undefined) {
+            show_message(data['error'], 'error', 'add_result_message');
+            return;
+        }
+        if (data['message'] !== undefined) {
+            show_message(data['message'], 'success', 'add_result_message');
+        }
+
+        if (data['ok'] == 0)
+            return;
+
+        this.#terminalList.addRow({name: $name});
+        this.#addName = null;
+        this.#addId = null;
+        this.refreshStatus($name, true);
     }
 
     deleteTerminal(name) {
@@ -188,28 +272,6 @@ class Terminals {
         }
 
         this.#terminalList.updateRow(terminal,  data['updatedRow']);
-    }
-
-    terminalPair(terminal) {
-        var postData = {
-            ajax_request_action: 'pairt',
-            terminal: terminal,
-        };
-        $.ajax({
-            method: "POST",
-            url: "scripts/admin_pairTerminal.php",
-            data: postData,
-            success: function (data, textstatus, jqxhr) {
-                if (data['error'] !== undefined) {
-                    show_message(data['error'], 'error');
-                    return;
-                }
-                if (data['message'] !== undefined) {
-                    show_message(data['message'], 'success');
-                }
-            },
-            error: showAjaxError,
-        });
     }
 
     close() {
