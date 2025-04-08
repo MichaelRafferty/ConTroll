@@ -25,6 +25,10 @@ class Terminals {
         
         // load initial data
         this.loadTerminals(terminals);
+        // refresh the table
+        for (var i = 0; i < terminals.length; i++) {
+            this.refreshStatus(terminals[i].name,true);
+        }
         this.dirty = false;
     }
 
@@ -131,7 +135,7 @@ class Terminals {
     }
 
     // refresh the status, use the status call to fetch the non controll status, and then fetch the database item
-    refreshStatus(terminal) {
+    refreshStatus(terminal, silent = false) {
         var postData = {
             ajax_request_action: 'refreshStatus',
             terminal: terminal,
@@ -141,18 +145,18 @@ class Terminals {
             url: "scripts/admin_getTerminalStatus.php",
             data: postData,
             success: function (data, textstatus, jqxhr) {
-                terminals.refreshStatusSuccess(terminal, data);
+                terminals.refreshStatusSuccess(terminal, silent, data);
             },
             error: showAjaxError,
         });
     }
 
-    refreshStatusSuccess(terminal, data) {
+    refreshStatusSuccess(terminal, silent, data) {
         if (data['error'] !== undefined) {
             show_message(data['error'], 'error');
             return;
         }
-        if (data['message'] !== undefined) {
+        if (data['message'] !== undefined && !silent) {
             show_message(data['message'], 'success');
         }
 
