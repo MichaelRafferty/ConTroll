@@ -15,6 +15,8 @@ $return500errors = true;
 $method = 'manager';
 $con = get_conf('con');
 $conid = $con['id'];
+$log = get_conf('log');
+logInit($log['term']);
 $ajax_request_action = '';
 if ($_POST && $_POST['ajax_request_action']) {
     $ajax_request_action = $_POST['ajax_request_action'];
@@ -38,7 +40,7 @@ $newName = $_POST['terminal'];
 $location = $_POST['location'];
 // now call API to create the terminal
 load_term_procs();
-$terminal = term_createDeviceCode($newName, $location);
+$terminal = term_createDeviceCode($newName, $location, true);
 
 $data = $terminal['device_code'];
 $id = $data['id'];
