@@ -100,6 +100,7 @@ class Terminals {
         this.#newTerminalName.value = '';
         this.#newTerminalLocation.value = '';
         this.#pairBlock.hidden = true;
+        document.getElementById('AddTerminalCreate').disabled = false;
         document.getElementById('createName').innerHTML = '';
         document.getElementById('createSquareCode').innerHTML = '';
         document.getElementById('createProductType').innerHTML = '';
@@ -205,6 +206,7 @@ class Terminals {
         this.#addName = null;
         this.#addId = null;
         this.refreshStatus($name, true);
+        addTerminalModal.hide();
     }
 
     deleteTerminal(name) {
