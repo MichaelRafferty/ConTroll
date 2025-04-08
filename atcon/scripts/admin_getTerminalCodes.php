@@ -80,7 +80,7 @@ SET deviceId = ?, pairBy = ?, pairedAt = ?, status = ?, statusChanged = ?
 WHERE name = ?;
 EOS;
 $dt = 'ssssss';
-$numRows = dbSafeUpdate($updQ, $dt, array($device_id, $pair_by, $paired_at,  $status, $status_changed_at, $name));
+$numRows = dbSafeCmd($updQ, $dt, array($device_id, $pair_by, $paired_at,  $status, $status_changed_at, $name));
 if ($numRows === false) {
     ajaxSuccess(array('error'=>'Error updatingterminal in database, seek assistance'));
     exit();
