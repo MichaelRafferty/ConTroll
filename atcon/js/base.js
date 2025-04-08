@@ -39,12 +39,6 @@ class map {
     }
 }
 
-// make_copy(associative array)
-// javascript passes by reference, can't slice an associative array, so you need to do a horrible JSON kludge
-function make_copy(arr) {
-    return JSON.parse(JSON.stringify(arr));  // horrible way to make an independent copy of an associative array
-}
-
 function test(method, formData, resultDiv) {
     $.ajax({
         url: "scripts/authEcho.php",
@@ -58,16 +52,6 @@ function test(method, formData, resultDiv) {
             }
         }
     });
-}
-
-// convert url parameters to associative array
-function URLparamsToArray(urlargs) {
-    const params = new URLSearchParams(urlargs);
-    const result = {};
-    for (const [key, value] of params) {
-        result[key] = value;
-    }
-    return result;
 }
 
 // tabulator custom header filter function for numeric comparisions
@@ -131,74 +115,6 @@ function showError(str) {
 function showAlert(str) {
     $('#alertInner').empty().html(str);
     $('#alert').show();
-}
-
-var message_div = null;
-// show_message:
-// apply colors to the message div and place the text in the div, first clearing any existing class colors
-// type:
-//  error: (white on red) bg-danger
-//  warn: (black on yellow-orange) bg-warning
-//  success: (white on green) bg-success
-function show_message(message, type) {
-    "use strict";
-    if (message_div === null ) {
-        message_div = document.getElementById('result_message');
-    }
-    if (message_div.classList.contains('bg-danger')) {
-        message_div.classList.remove('bg-danger');
-    }
-    if (message_div.classList.contains('bg-success')) {
-        message_div.classList.remove('bg-success');
-    }
-    if (message_div.classList.contains('bg-warning')) {
-        message_div.classList.remove('bg-warning');
-    }
-    if (message_div.classList.contains('text-white')) {
-        message_div.classList.remove('text-white');
-    }
-    if (message === undefined || message === '') {
-        message_div.innerHTML = '';
-        return;
-    }
-    if (type === 'error') {
-        message_div.classList.add('bg-danger');
-        message_div.classList.add('text-white');
-    }
-    if (type === 'success') {
-        message_div.classList.add('bg-success');
-        message_div.classList.add('text-white');
-    }
-    if (type === 'warn') {
-        message_div.classList.add('bg-warning');
-    }
-    message_div.innerHTML = message;
-    message_div.scrollIntoView(false);
-}
-function clear_message() {
-    show_message('', '');
-}
-
-function showAjaxError(jqXHR, textStatus, errorThrown) {
-    'use strict';
-    var message = '';
-    if (jqXHR && jqXHR.responseText) {
-        message = jqXHR.responseText;
-    } else {
-        message = 'An error occurred on the server.';
-    }
-    if (textStatus != '' && textStatus != 'error')
-        message += '<BR/>' + textStatus;
-    message += '<BR/>Error Thrown: ' + errorThrown;
-    show_message(message, 'error');
-}
-
-// validate RFC-5311/2 addresses regexp pattern from https://regex101.com/r/3uvtNl/1, found by searching validate RFC-5311/2  addresses
-function validateAddress(addr) {
-    if (addr == '/n' || addr == '/r')
-        return; // allow none or refused values in atcon
-    const regPattern = /^((?:[A-Za-z0-9!#$%&'*+\-\/=?^_`{|}~]|(?<=^|\.)"|"(?=$|\.|@)|(?<=".*)[ .](?=.*")|(?<!\.)\.){1,64})(@)((?:[A-Za-z0-9.\-])*(?:[A-Za-z0-9])\.(?:[A-Za-z0-9]){2,})$/gm;
-    return regPattern.test(String(addr).toLowerCase());
 }
 
 // dayFromLabel(label)
