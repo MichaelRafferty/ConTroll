@@ -91,19 +91,35 @@ class Terminals {
         return btns;
     }
 
+    // add and create a new terminal using the Square Device API
     addTerminal() {
         // clear the fields
         this.#newTerminalName.value = '';
         this.#newTerminalLocation.value = '';
 
         addTerminalModal.show();
-        /*
-         editor: "list", editorParams: {
-                        values: this.validLocations,
-                        defaultValue: this.validLocations[0],
-                        emptyValue: this.validLocations[0],
-                    }
-         */
+    }
+
+    createTerminal() {
+        clear_message('add_result_message');
+        var name = document.getElementById('newTerminalName').value;
+        var location = document.getElementById('newTerminalLocation').value;
+
+        if (name == undefined || name == null || name == '') {
+            show_message('New terminal name required', 'error', 'add_result_message');
+            return;
+        }
+
+        if (this.#terminalList.getRow(name)) {
+            show_message('The terminal "' + name + '" already exists', 'error', 'add_result_message');
+            return;
+        }
+
+        if (location == undefined || location == null || location == '') {
+            show_message('You must select a location', 'error', 'add_result_message');
+            return;
+        }
+        console.log('Creating Terminal');
     }
 
     deleteTerminal(name) {
@@ -157,7 +173,6 @@ class Terminals {
             url: "scripts/admin_getTerminalStatus.php",
             data: postData,
             success: function (data, textstatus, jqxhr) {
-                terminals.refreshStatusSuccess(terminal, silent, data);
             },
             error: showAjaxError,
         });

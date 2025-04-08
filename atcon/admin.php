@@ -314,9 +314,12 @@ page_init($page, 'admin',
                         </select>
                     </div>
                 </div>
+                <div class="row mt-2">
+                    <div class="col-sm-12" id="add_result_message"></div>
+                </div>
             </div>
             <div class='modal-footer'>
-                <button type='button' id='AddTerminalCreate' class='btn btn-secondary' onclick='terminals.createTerminal();'>Create Terminal</button>
+                <button type='button' id='AddTerminalCreate' class='btn btn-primary' onclick='terminals.createTerminal();'>Create Terminal</button>
                 <button type='button' id='addTerminalClose' class='btn btn-secondary' onclick='addTerminalModal.hide();'>Close Details</button>
             </div>
         </div>
