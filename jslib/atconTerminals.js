@@ -203,9 +203,9 @@ class Terminals {
             return;
 
         this.#terminalList.replaceData(data['terminals']);
+        this.refreshStatus(this.#addName, true);
         this.#addName = null;
         this.#addId = null;
-        this.refreshStatus($name, true);
         addTerminalModal.hide();
     }
 
