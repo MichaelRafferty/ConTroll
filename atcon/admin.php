@@ -370,7 +370,7 @@ page_init($page, 'admin',
             </div>
             <div class='modal-footer'>
                 <button type='button' id='AddTerminalCreate' class='btn btn-primary' onclick='terminals.createTerminal();'>Create Terminal</button>
-                <button type='button' id='addTerminalClose' class='btn btn-secondary' onclick='addTerminalModal.hide();'>Close Details</button>
+                <button type='button' id='addTerminalClose' class='btn btn-secondary' onclick='addTerminalModal.hide();'>Close Create</button>
             </div>
         </div>
     </div>
