@@ -17,6 +17,7 @@ global $condata;
 $condata = get_con();
 $conid=$condata['id'];
 $conf = get_conf('con');
+$regconf = get_conf('reg');
 $cc = get_conf('cc');
 $vendor_conf = get_conf('vendor');
 
@@ -209,6 +210,17 @@ $membership_fields = array('fname' => 1, 'mname' => 0, 'lname' => 1, 'suffix' =>
 $membership_names = array('fname' => 'First Name', 'mname' => 'Middle Name', 'lname' => 'Last Name', 'legalname' => 'Legal Name', 'suffix' => 'Suffix',
     'addr' => 'Address Line 1', 'addr2' => 'Company/Address Line 2', 'city' => 'City', 'state' => 'State', 'zip' => 'Zip Code/Postal Code',
     'country' => 'Country', 'email' => 'Email Address', 'phone' => 'Phone Number', 'badgename' => 'Badge Name');
+
+if ($regconf['required'] == 'addr') {
+    $membership_fields['lname'] = 0;
+}
+if ($regconf['required'] == 'first') {
+    $membership_fields['lname'] = 0;
+    $membership_fields['addr'] = 0;
+    $membership_fields['city'] = 0;
+    $membership_fields['state'] = 0;
+    $membership_fields['zip'] = 0;
+}
 
 $missing_msg = '';
 $valid = true;
