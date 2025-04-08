@@ -125,10 +125,38 @@ class Terminals {
         for (var i = 0; i < keys.length; i++) {
             var key = keys[i];
             var field = 'details' + String(key[0]).toUpperCase() + String(key).slice(1);
-            console.log(key + '=>' + field);
             document.getElementById(field).innerHTML = data[key];
         }
         statusDetailsModal.show();
+    }
+
+    // refresh the status, use the status call to fetch the non controll status, and then fetch the database item
+    refreshStatus(terminal) {
+        var postData = {
+            ajax_request_action: 'refreshStatus',
+            terminal: terminal,
+        };
+        $.ajax({
+            method: "POST",
+            url: "scripts/admin_getTerminalStatus.php",
+            data: postData,
+            success: function (data, textstatus, jqxhr) {
+                terminals.refreshStatusSuccess(terminal, data);
+            },
+            error: showAjaxError,
+        });
+    }
+
+    refreshStatusSuccess(terminal, data) {
+        if (data['error'] !== undefined) {
+            show_message(data['error'], 'error');
+            return;
+        }
+        if (data['message'] !== undefined) {
+            show_message(data['message'], 'success');
+        }
+
+        this.#terminalList.updateRow(terminal,  data['updatedRow']);
     }
 
     terminalPair(terminal) {

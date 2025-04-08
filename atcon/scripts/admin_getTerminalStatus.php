@@ -5,6 +5,7 @@
 // delete and re-get the list of terminals
 
 require_once('../lib/base.php');
+require_once('../../lib/term__load_methods.php');
 
 // use common global Ajax return functions
 global $returnAjaxErrors, $return500errors;
@@ -18,7 +19,7 @@ $ajax_request_action = '';
 if ($_POST && $_POST['ajax_request_action']) {
     $ajax_request_action = $_POST['ajax_request_action'];
 }
-if ($ajax_request_action != 'delete') {
+if ($ajax_request_action != 'refreshStatus') {
     RenderErrorAjax('Invalid calling sequence.');
     exit();
 }
@@ -33,24 +34,27 @@ if (!array_key_exists('terminal', $_POST)) {
     exit();
 }
 
+$terminal = $_POST['terminal'];
+load_term_procs();
+$status = term_getStatus($terminal);
 
-// delete the terminal and fetch the remainer for refreshing the screen
-$delQ = "DELETE FROM terminals WHERE name = ?;";
-$del_rows = dbSafeCmd($delQ, 's', array($_POST['terminal']));
 
-$terminals = [];
+// get the status from the terminal
 
+// fetch the updated terminal record
 $terminalSQL = <<<EOS
 SELECT *
 FROM terminals
-ORDER BY name
+WHERE name = ?;
 EOS;
-$terminalQ = dbQuery($terminalSQL);
-while ($terminal = $terminalQ->fetch_assoc()) {
-    $terminals[] = $terminal;
+$terminalQ = dbSafeQuery($terminalSQL, 's', array($terminal));
+if ($terminalQ === false || $terminalQ->num_rows != 1) {
+    RenderErrorAjax("Cannot fetch terminal $terminal status.");
+    exit();
 }
-$response['terminals'] = $terminals;
+$updatedRow = $terminalQ->fetch_assoc();
+$response['updatedRow'] = $updatedRow;
 mysqli_free_result($terminalQ);
 
-$response['message'] = "$del_rows terminal(s) deleted";
+$response['message'] = "$terminal status updated";
 ajaxSuccess($response);
