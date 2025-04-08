@@ -208,7 +208,8 @@ class Terminals {
 
     deleteTerminal(name) {
         if (!confirm("Have you already deleted the device at the Square dashboard in 'Settings' -> 'Device Mangement' -> 'Devices' using " +
-            "the three dots to the right and the 'forget' action?"))
+            "the three dots to the right and the 'forget' action and deleted it from Device Codes in 'Settings' -> 'Device Mangement' -> 'Device codes' " +
+            "using the three dots to the right and the 'delete' action?"))
             return;
 
         var postData = {
