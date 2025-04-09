@@ -472,6 +472,7 @@ function makePurchase(token, label) {
     submitId.disabled = true;
     var formData = $('#vendor_invoice_form').serialize()
     formData += "&nonce=" + token;
+    clear_message('inv_result_message');
     $.ajax({
         url: 'scripts/spacePayment.php',
         method: 'POST',

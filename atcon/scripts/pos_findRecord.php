@@ -216,7 +216,7 @@ EOS;
     // first can we tell if it's a perid or a tid?
     // if [controll].useportal is 1, then its a perid
     // if [controll].useprotal is 0, then it could be a perid or a tid
-    if ($usePortal == 1) {
+    if ($usePortal == 1 && getSessionVar("POSMode") == 'checkin') {
         $overlapQ = <<<EOS
 SELECT 'p' AS which, id
 FROM perinfo p
@@ -308,7 +308,7 @@ JOIN memLabel m ON (r1.memId = m.id)
 LEFT OUTER JOIN printcount pc ON (r1.id = pc.regid)
 LEFT OUTER JOIN attachcount ac ON (r1.id = ac.regid)
 LEFT OUTER JOIN notes n ON (r1.id = n.regid)
-WHERE (r1.conid = ? OR (r1.conid = ? AND m.memCategory in ('yearahead', 'rollover'))) AND r1.status IN ('unpaid', 'paid', 'plan') AND
+WHERE (r1.conid = ? OR (r1.conid = ? AND m.memCategory in ('yearahead', 'rollover'))) AND r1.status IN ('unpaid', 'paid', 'plan')
 AND r1.status IN ('unpaid', 'paid', 'plan')
 ORDER BY r1.perid, r1.create_date;
 EOS;
@@ -319,6 +319,7 @@ $fieldListL
 FROM regids r
 JOIN reg r1 ON (r1.id = r.regid)
 JOIN perinfo p ON (p.id = r1.perid)
+JOIN memList m ON (r1.memId = m.id)
 JOIN memberPolicies mp ON (p.id = mp.perid AND r1.conid = mp.conid)
 WHERE (r1.conid = ? OR (r1.conid = ? AND m.memCategory in ('yearahead', 'rollover'))) AND r1.status IN ('unpaid', 'paid', 'plan')
 ORDER BY perid, policy;
@@ -330,7 +331,7 @@ EOS;
             ajaxSuccess(array('error' => "Error in string person query $name_search"));
             return;
         }
-        $rm = dbSafeQuery($searchSQLM, 'iiiiiiiii', array($name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1, $conid, $conid + 1, $conid));
+        $rm = dbSafeQuery($searchSQLM, 'iiiiiiiii', array($name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1, $conid, $conid, $conid + 1));
         if ($rm === false) {
             ajaxSuccess(array('error' => "Error in numeric membership query for $name_search"));
             return;

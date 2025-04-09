@@ -126,5 +126,5 @@ if ($num_rows >= $limit) {
 } else {
     $response['message'] = "$num_rows memberships found";
 }
-mysqli_free_result($r);
+$r->free();
 ajaxSuccess($response);

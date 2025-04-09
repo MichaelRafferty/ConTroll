@@ -58,6 +58,6 @@ EOS;
             $response['manager'] = true;
         }
     }
-    mysqli_free_result($r);
+    $r->free();
 }
 ajaxSuccess($response);

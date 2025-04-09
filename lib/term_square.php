@@ -36,7 +36,8 @@ function term_createDeviceCode($name, $locationId, $useLogWrite = false) : array
                ]);
 
     // pass create to square
-    $body = new Requests\GetCodesRequest([
+    $body = new Requests\CreateDeviceCodeRequest([
+        'idempotencyKey' => guidv4(),
         'deviceCode' => new DeviceCode([
             'name' => $name,
             'locationId' => $locationId,
@@ -46,7 +47,7 @@ function term_createDeviceCode($name, $locationId, $useLogWrite = false) : array
 
     try {
         if ($squareDebug) sqterm_logObject(array ('Terminal API create device', $body), $useLogWrite);
-        $apiResponse = $client->devices->codes->get($body);
+        $apiResponse = $client->devices->codes->create($body);
         if ($squareDebug) sqterm_logObject(array ('Terminal API create device: apiResponse', $apiResponse), $useLogWrite);
 
         // convert the object into an associative array

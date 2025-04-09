@@ -58,4 +58,26 @@ foreach ($printers as $prt) {
     $response[$prt . 'Printer'] = $printer['name'] != 'None';
 }
 
+if (array_key_exists('terminal', $_POST)) {
+    $term = $_POST['terminal'];
+    if ($term != '') {
+        $termTop = explode(':::', $term);
+        $terminal = array (
+            'name' => $termTop[0],
+            'squareId' => $termTop[1],
+            'deviceId' => $termTop[2],
+            'squareCode' => $termTop[3],
+        );
+        setSessionVar('terminal', $terminal);
+        $response['terminal'] = $terminal['name'];
+    } else {
+        unsetSessionVar('terminal');
+        $response['terminal'] = 'None';
+    }
+} else {
+    unsetSessionVar('terminal');
+    $response['terminal'] = 'None';
+}
+
+
 ajaxSuccess($response);
