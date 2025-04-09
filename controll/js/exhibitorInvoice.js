@@ -529,6 +529,7 @@ class ExhibitorInvoice {
         this.#payButton.disabled = true;
         var formData = $('#vendor_invoice_form').serialize()
         formData += "&nonce=" + 'admin';
+        clear_message('inv_result_message');
         $.ajax({
             url: 'scripts/exhibitorsSpacePayment.php',
             method: 'POST',
