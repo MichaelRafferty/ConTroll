@@ -858,7 +858,7 @@ class exhibitorsAdm {
             weburl = 'https://' + weburl;
         var exhibitorInfo = `
             <div class="row">
-                <div class="col-sm-2">Name:</div>
+                <div class="col-sm-2">Business Name:</div>
                 <div class="col-sm-10 p-0 ms-0 me-0">` + exhibitorData['exhibitorName'] + `</div>
             </div>
             <div class="row">
