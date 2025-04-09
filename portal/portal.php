@@ -829,9 +829,9 @@ if (count($memberships) > 0) {
     $color = true;
     echo '<div class="container-fluid p-0 m-0" name="t-' . $trans['t-' . $memberships[0]['sortTrans']] .'">' .  PHP_EOL;
     foreach ($memberships as $membership)  {
-        if (($membership['transPerid'] != $loginId && $loginType == 'p'))
+        if ($loginType == 'p' && array_key_exists('transPerid', $membership) && $membership['transPerid'] != $loginId)
             continue;
-        if (($membership['transNewPerid'] != $loginId && $loginType == 'n'))
+        if ($loginType == 'n' && array_key_exists('transNewPerid', $membership) && $membership['transNewPerid'] != $loginId)
             continue;
 
         if ($currentId != $membership['sortTrans']) {
