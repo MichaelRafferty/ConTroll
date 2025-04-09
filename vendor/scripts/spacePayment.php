@@ -528,6 +528,11 @@ if ($totprice > 0) {
     $txnQ = 'INSERT INTO payments(time,' . implode(',', $ccrtn['txnfields']) . ') VALUES(current_time(),' . implode(',', $val) . ');';
     $txnT = implode('', $ccrtn['tnxtypes']);
     $txnid = dbSafeInsert($txnQ, $txnT, $ccrtn['tnxdata']);
+    if ($txnid == false) {
+        $error_msg .= "Insert of payment failed\n";
+    } else {
+        $status_msg .= 'Payment for ' . $dolfmt->formatCurrency($ccrtn['amount'], $currency) . " processed<br/>\n";
+    }
     $approved_amt = $ccrtn['amount'];
 } else {
     $approved_amt = 0;
@@ -535,24 +540,6 @@ if ($totprice > 0) {
 }
 
 logwrite(array('Title' => 'Post cc_pay_order', 'rtn' => $ccrtn));
-
-// create the payment record
-$num_fields = sizeof($ccrtn['txnfields']);
-$val = array();
-for ($i = 0; $i < $num_fields; $i++) {
-    $val[$i] = '?';
-}
-$txnQ = 'INSERT INTO payments(time,' . implode(',', $ccrtn['txnfields']) . ') VALUES(current_time(),' . implode(',', $val) . ');';
-$txnT = implode('', $ccrtn['tnxtypes']);
-//error_log("Payment Insert: $txnQ : " .implode(',', $ccrtn['tnxdata']) . "\n");
-
-$txnid = dbSafeInsert($txnQ, $txnT, $ccrtn['tnxdata']);
-if ($txnid == false) {
-    $error_msg .= "Insert of payment failed\n";
-} else {
-    $status_msg .= "Payment for " . $dolfmt->formatCurrency($ccrtn['amount'], $currency) . " processed<br/>\n";
-}
-$approved_amt = $ccrtn['amount'];
 $results['approved_amt'] = $approved_amt;
 
 // update the other records with the payment information
