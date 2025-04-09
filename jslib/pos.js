@@ -443,6 +443,14 @@ class Pos {
 
         // set starting stages of left and right windows
         this.clearAdd(1);
+
+        if (config.hasOwnProperty('autoloadTID')) {
+            // this is a passed in autoload of a pid, do a find and pass it to the cart
+            if (config.autoloadTID) {
+                this.#pattern_field.value = config.autoloadTID;
+                this.findRecord('search');
+            }
+        }
     }
 
     // find the primary membership for a perid given it's array of memberships
@@ -1781,6 +1789,10 @@ addUnpaid(tid) {
             }
             this.#number_search = Number(this.#name_search);
             this.drawAsRecords();
+            if (config.autoloadTID) {
+                this.addToCart(-this.#name_search, 'result');
+                config.autoloadTID = undefined;
+            }
             return;
         }
         // no rows show the diagnostic

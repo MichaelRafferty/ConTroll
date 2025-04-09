@@ -331,7 +331,7 @@ EOS;
             ajaxSuccess(array('error' => "Error in string person query $name_search"));
             return;
         }
-        $rm = dbSafeQuery($searchSQLM, 'iiiiiiiii', array($name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1, $conid, $conid + 1, $conid));
+        $rm = dbSafeQuery($searchSQLM, 'iiiiiiiii', array($name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1, $conid, $conid, $conid + 1));
         if ($rm === false) {
             ajaxSuccess(array('error' => "Error in numeric membership query for $name_search"));
             return;
