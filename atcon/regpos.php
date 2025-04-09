@@ -44,6 +44,8 @@ if (array_key_exists('taxRate', $con))
 else
     $taxRate = 0;
 
+setSessionVar('POSMode', $mode);
+
 if (array_key_exists('taxidlabel', $vendor))
     $taxLabel = $vendor['taxidlabel'];
 else
@@ -71,7 +73,11 @@ $config_vars['regadminemail'] = $con['regadminemail'];
 $config_vars['required'] = $ini['required'];
 $config_vars['useportal'] = $controll['useportal'];
 $config_vars['cashier'] = $method == 'cashier' ? 1 : 0;
+$config_vars['cashierAllowed'] = check_atcon('cashier', $conid) ? 1 : 0;
 $config_vars['multiOneDay'] = $multiOneDay;
+if (isset($_GET['tid'])) {
+    $config_vars['autoloadTID'] = $_GET['tid'];
+}
 
 $useUSPS = false;
 
