@@ -1318,6 +1318,7 @@ class Pos {
        <div class="col-sm-3">Membership Type:</div>
        <div class="col-sm-9">` + label + `</div>
     </div>
+</div>
 `;
         return html;
     }
@@ -1957,8 +1958,15 @@ addUnpaid(tid) {
             if (el)
                 el.hidden = true;
             el = document.getElementById('review_status');
-            if (el)
-                el.innerHTML = "<strong>Completed: Send customer to cashier with id of " + this.#pay_tid + '</strong>';
+            if (el) {
+                var html = "<strong>Completed: Send customer to cashier with id of " + this.#pay_tid + '</strong>';
+                if (config.hasOwnProperty('cashierAllowed') && config.cashierAllowed == 1)
+                    html += "<br/>or click here to call up this transaction as a cashier: " +
+                        '<btn class="btn btn-secondary btn-sm" type="button" id="switch-casher-btn" ' +
+                        'onclick="window.location=' + "'?mode=cashier&tid=" + this.#pay_tid + "'" + '">' +
+                        'Take Payment Here</button>';
+                el.innerHTML = html;
+            }
         }
     }
 
