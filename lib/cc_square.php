@@ -412,7 +412,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                         'currency' => $currency,
                         ]),
                 ]);
-                $order_lineitems[$lineid] = $item;
+                $orderLineitems[$lineid] = $item;
                 $orderValue += $fee['amount'];
                 $lineid++;
             }
