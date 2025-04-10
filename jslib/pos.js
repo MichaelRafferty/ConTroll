@@ -1947,11 +1947,8 @@ addUnpaid(tid) {
         }
 
         if (config.cashier == 1) {
-            this.#gotoPay();
+            this.gotoPay();
             return;
-            //TODO move these lines
-            bootstrap.Tab.getOrCreateInstance(this.#pay_tab).show();
-            cart.drawCart();
         } else {
             cart.showNext();
             cart.hideStartOver();
@@ -1975,7 +1972,54 @@ addUnpaid(tid) {
         }
     }
 
-// gotoPay()
+// transition to payment processing
+    gotoPay() {
+        if (this.#pay_currentOrderId) {
+            bootstrap.Tab.getOrCreateInstance(this.#pay_tab).show();
+            cart.drawCart();
+            return;
+        }
+        // build the order
+        var postData = {
+            ajax_request_action: 'buildOrder',
+            cart_perinfo: JSON.stringify(cart.getCartPerinfo()),
+            pay_tid: this.#pay_tid,
+        };
+        var _this = this;
+        clear_message();
+        $.ajax({
+            method: "POST",
+            url: "scripts/pos_buildOrder.php",
+            data: postData,
+            success: function (data, textstatus, jqxhr) {
+                var stop = true;
+                if (typeof data == 'string') {
+                    show_message(data, 'error');
+                } else if (data.error !== undefined) {
+                    show_message(data.error, 'error');
+                } else if (data.message !== undefined) {
+                    show_message(data.message, 'success');
+                    stop = false;
+                } else if (data.warn !== undefined) {
+                    show_message(data.warn, 'success');
+                    stop = false;
+                } else if (data.status == 'error') {
+                    show_message(data.data, 'error');
+                }
+                if (!stop)
+                    _this.buildOrderSuccess(data);
+            },
+            error: function (jqXHR, textstatus, errorThrown) {
+                showAjaxError(jqXHR, textstatus, errorThrown);
+            },
+        });
+    }
+
+    buildOrderSuccess(data) {
+        this.#pay_currentOrderId = data.orderId;
+        bootstrap.Tab.getOrCreateInstance(this.#pay_tab).show();
+        cart.drawCart();
+    }
 
 // gotoPrint switch to the print tab
     gotoPrint() {
@@ -2017,6 +2061,12 @@ addUnpaid(tid) {
         var pt_online = document.getElementById('pt-online').checked;
         var pt_credit = document.getElementById('pt-credit').checked;
         var pt_discount = document.getElementById('pt-discount');
+
+        if (this.#pay_currentOrderId == null) {
+            show_message("No order in progress, you have reached an error condition, start over or seek assistance", "error");
+            return;
+        }
+
         if (pt_discount)
             pt_discount = pt_discount.checked;
         else
@@ -2146,7 +2196,7 @@ addUnpaid(tid) {
         // process payment
         var postData = {
             ajax_request_action: 'processPayment',
-            cart_perinfo: JSON.stringify(cart.getCartPerinfo()),
+            orderId: this.#pay_currentOrderId,
             new_payment: prow,
             coupon: prow.coupon,
             change: crow,
@@ -2164,7 +2214,6 @@ addUnpaid(tid) {
             data: postData,
             success: function (data, textstatus, jqxhr) {
                 var stop = true;
-                clear_message();
                 if (typeof data == 'string') {
                     show_message(data, 'error');
                 } else if (data.error !== undefined) {
@@ -2234,7 +2283,6 @@ addUnpaid(tid) {
             url: "scripts/pos_emailReceipt.php",
             data: postData,
             success: function (data, textstatus, jqxhr) {
-                clear_message();
                 if (typeof data == "string") {
                     show_message(data, 'error');
                 } else if (data.error !== undefined) {

@@ -2,7 +2,7 @@
 // library AJAX Processor: pos_processPayment.php
 // ConTroll Registration System
 // Author: Syd Weinstein
-// create payment record
+// create payment record and send same to credit card provider
 
 require_once '../lib/base.php';
 require_once('../../lib/log.php');
