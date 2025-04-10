@@ -102,7 +102,7 @@ foreach ($cart_perinfo as $row) {
             'label' => $membership['label'],
             'memType' => $membership['memType'],
             'taxable' => $membership['taxable'],
-            'price' => $price,
+            'price' => $price - $paid,
         ];
 
         $badges[] = $badge;

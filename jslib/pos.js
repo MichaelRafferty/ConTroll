@@ -43,6 +43,9 @@ class Pos {
     #cc_html = '';
     #purchase_label = 'purchase';
     #pay_currentOrderId = null;
+    #preTaxAmt = null;
+    #taxAmt = null;
+    #taxLabel = '';
 
     // Data Items
     #unpaid_table = [];
@@ -2025,6 +2028,9 @@ addUnpaid(tid) {
 
     buildOrderSuccess(data) {
         this.#pay_currentOrderId = data.rtn.orderId;
+        this.#preTaxAmt = data.rtn.preTaxAmt;
+        this.#taxAmt = data.rtn.taxAmt;
+        this.#taxLabel = data.rtn.taxLabel;
         show_message("Order #" + this.#pay_currentOrderId + " created.");
         bootstrap.Tab.getOrCreateInstance(this.#pay_tab).show();
         cart.drawCart();
@@ -2065,7 +2071,7 @@ addUnpaid(tid) {
         var checkno = null;
         var desc = null;
         var ptype = null;
-        var total_amount_due = cart.getTotalPrice() - (cart.getTotalPaid() + Number(this.#coupon_discount));
+        var total_amount_due = this.#preTaxAmt + this.#taxAmt - cart.getTotalPaid();
         var pt_cash = document.getElementById('pt-cash').checked;
         var pt_check = document.getElementById('pt-check').checked;
         var pt_online = document.getElementById('pt-online');
@@ -2638,6 +2644,14 @@ addUnpaid(tid) {
 `;
             }
             pay_html += `
+    <div class="row mt-1">
+        <div class="col-sm-2 ms-0 me-2 p-0">Order Total:</div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-amt-due">$` + Number(this.#preTaxAmt).toFixed(2) + `</div>
+    </div>
+    <div class="row mt-1">
+        <div class="col-sm-2 ms-0 me-2 p-0">` + this.#taxLabel + `:</div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-amt-due">$` + Number(this.#taxAmt).toFixed(2) + `</div>
+    </div>
     <div class="row mt-1">
         <div class="col-sm-2 ms-0 me-2 p-0">Amount Due:</div>
         <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-amt-due">$` + Number(total_amount_due).toFixed(2) + `</div>
