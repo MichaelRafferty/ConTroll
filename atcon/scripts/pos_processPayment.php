@@ -7,6 +7,7 @@
 require_once '../lib/base.php';
 require_once('../../lib/log.php');
 require_once('../../lib/cc__load_methods.php');
+require_once('../../lib/term__load_methods.php');
 
 // use common global Ajax return functions
 global $returnAjaxErrors, $return500errors;
@@ -39,7 +40,13 @@ $user_perid = $user_id;
 
 $log = get_conf('log');
 $con = get_conf('con');
-logInit($log['reg']);
+$debug = get_conf('debug');
+$ini = get_conf('reg');
+$log = get_conf('log');
+$ccauth = get_conf('cc');
+load_cc_procs();
+logInit($log['term']);
+
 $conid = $con['id'];
 $ajax_request_action = '';
 if ($_POST && $_POST['ajax_request_action']) {
@@ -51,28 +58,23 @@ if ($ajax_request_action != 'processPayment') {
 }
 
 // processPayment
-//  cart_perinfo: perinfo records with memberships embedded
-//  new_payment: payment being added
-//  pay_tid: current master transaction
+//  orderId: this.#pay_currentOrderId,
+//  new_payment: prow,
+//  coupon: prow.coupon,
+//  change: crow,
+//  nonce: nonce,
+//  user_id: this.#user_id,
+//  pay_tid: this.#pay_tid,
+//  pay_tid_amt: this.#pay_tid_amt,
 
 $master_tid = $_POST['pay_tid'];
 if ($master_tid <= 0) {
     ajaxError('No current transaction in process');
 }
 
-try {
-    $cart_perinfo = json_decode($_POST['cart_perinfo'], true, 512, JSON_THROW_ON_ERROR);
-}
-catch (Exception $e) {
-    $msg = 'Caught exception on json_decode: ' . $e->getMessage() . PHP_EOL . 'JSON error: ' . json_last_error_msg() . PHP_EOL;
-    $response['error'] = $msg;
-    error_log($msg);
-    ajaxSuccess($response);
-    exit();
-}
-if (sizeof($cart_perinfo) <= 0) {
-    ajaxError('The cart is empty');
-    return;
+$orderId = $_POST['orderId'];
+if ($orderId == null || $orderId == '') {
+    ajaxError('No current order in process');
 }
 
 $new_payment = $_POST['new_payment'];
@@ -114,7 +116,7 @@ if (array_key_exists('pay_tid_amt', $_POST)) {
 
 $buyer['email'] = $payor_email;
 $buyer['phone'] = $payor_phone;
-$buyer['country'] = $cart_perinfo[0]['country'];
+$buyer['country'] = '';
 $payor_perid = 2; // atcon perid
 
 if ($payor >= 0) {
@@ -129,29 +131,6 @@ if ($payor >= 0) {
         $buyer['phone'] = $cart_perinfo[$payor]['phone'];
 
     $buyer['country'] = $cart_perinfo[$payor]['country'];
-}
-
-foreach ($cart_perinfo as $perinfo) {
-    foreach ($perinfo['memberships'] as $cart_row) {
-        if ($cart_row['price'] == '')
-            $cart_row['price'] = 0;
-
-        if (array_key_exists('couponDiscount', $cart_row)) {
-            if ($cart_row['couponDiscount'] == '')
-                $cart_row['couponDiscount'] = 0;
-        }
-        else
-            $cart_row['couponDiscount'] = 0;
-
-        if ($cart_row['paid'] == '')
-            $cart_row['paid'] = 0;
-        $total_due += $cart_row['price'] - ($cart_row['couponDiscount'] + $cart_row['paid']);
-    }
-}
-
-if (round($amt,2) > round($total_due,2)) {
-    ajaxError('invalid payment amount passed');
-    return;
 }
 
 
@@ -176,6 +155,7 @@ if ($new_payment['type'] == 'online') {
         'tax' => 0,
         'pretax' => $amt,
         'total' => $amt,
+        'orderId' => $orderId,
         'nonce' => $new_payment['nonce'],
         'coupon' => $coupon,
     );
@@ -185,7 +165,7 @@ if ($new_payment['type'] == 'online') {
     if ($amt > 0) {
         $ccauth = get_conf('cc');
         load_cc_procs();
-        $rtn = cc_charge_purchase($cc_params, $buyer, true);
+        $rtn = cc_payOrder($cc_params, $buyer, true);
         if ($rtn === null) {
             ajaxSuccess(array('status' => 'error', 'data' => 'Credit card not approved'));
             exit();
@@ -208,6 +188,10 @@ if ($new_payment['type'] == 'online') {
     }
 }
 
+if ($new_payment['type'] == 'terminal') {
+    ajaxSuccess(array('status' => 'error', 'data' => 'Terminal not written yet'));
+    exit();
+}
 
 $complete = round($amt,2) == round($total_due,2);
 // now add the payment and process to which rows it applies
