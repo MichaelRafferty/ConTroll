@@ -82,7 +82,7 @@ WITH trans AS (
         IFNULL(tp.newperid, t.newperid) AS transNewPerid
     FROM trans t
     JOIN reg r ON t.id = r.create_trans
-    LEFT OUTER JOIN transaction tp ON tp.id = r.complete_trans
+    LEFT OUTER JOIN trans tp ON tp.id = r.complete_trans
     JOIN memLabel m ON m.id = r.memId
     JOIN memCategories mC ON m.memCategory = mC.memCategory
     LEFT OUTER JOIN pn ON pn.memberId = r.perid AND (pn.managedBy = ? OR pn.memberId = ?)
@@ -98,7 +98,7 @@ WITH trans AS (
         IFNULL(tp.newperid, t.newperid) AS transNewPerid
     FROM trans t
     JOIN reg r ON t.id = r.create_trans
-    LEFT OUTER JOIN transaction tp ON tp.id = r.complete_trans
+    LEFT OUTER JOIN trans tp ON tp.id = r.complete_trans
     JOIN memLabel m ON m.id = r.memId
     JOIN memCategories mC ON m.memCategory = mC.memCategory
     JOIN nn ON nn.memberId = r.newperid
