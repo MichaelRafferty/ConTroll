@@ -79,5 +79,4 @@ if (array_key_exists('terminal', $_POST)) {
     $response['terminal'] = 'None';
 }
 
-
 ajaxSuccess($response);

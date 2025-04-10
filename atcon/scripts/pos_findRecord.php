@@ -90,7 +90,7 @@ SELECT DISTINCT r1.perid, r1.id as regid, m.conid, r1.price, r1.paid, r1.paid AS
     r1.create_date, IFNULL(r1.create_trans, -1) as tid,IFNULL(r1.complete_trans, -1) as tid2,r1.memId, r1.planId, r1.status, IFNULL(pc.printcount, 0) AS 
     printcount,
     IFNULL(ac.attachcount, 0) AS attachcount, n.reg_notes, n.reg_notes_count, m.memCategory, m.memType, m.memAge, m.shortname, rs.tid as rstid,
-    CASE WHEN m.conid = ? THEN m.label ELSE concat(m.conid, ' ', m.label) END AS label, m.glNum
+    CASE WHEN m.conid = ? THEN m.label ELSE concat(m.conid, ' ', m.label) END AS label, m.glNum, m.taxable
 EOS;
 $fieldListL = <<<EOS
 SELECT DISTINCT p.id AS perid, mp.policy, mp.response, mp.id AS policyId
@@ -353,7 +353,7 @@ JOIN manages cnt ON (cnt.id = p.id)
 LEFT OUTER JOIN perinfo mgr ON (mgr.id = p.managedBy)
 ORDER BY last_name, first_name;
 EOS;
-        // noe the registration entries for these perids
+        // now the registration entries for these perids
         $searchSQLM = <<<EOS
 $managerWith, regids AS (
     SELECT r.id AS regid, create_trans as tid
