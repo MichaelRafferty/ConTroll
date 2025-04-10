@@ -166,7 +166,7 @@ if ($order != null) {
 
     $customerId = $order['customerId'];
 } else
-    $customerId = $con['id'] . "-$loginType-$loginId";
+    $customerId = $conf['id'] . "-$loginType-$loginId";
 
 $results = array(
     'source' => $source,
