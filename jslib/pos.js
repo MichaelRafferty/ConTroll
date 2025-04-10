@@ -1984,17 +1984,17 @@ addUnpaid(tid) {
 
 // transition to payment processing
     gotoPay() {
-        if (this.#pay_currentOrderId) {
-            bootstrap.Tab.getOrCreateInstance(this.#pay_tab).show();
-            cart.drawCart();
-            return;
-        }
         // build the order
         var postData = {
             ajax_request_action: 'buildOrder',
             cart_perinfo: JSON.stringify(cart.getCartPerinfo()),
             pay_tid: this.#pay_tid,
         };
+        if (this.#pay_currentOrderId) {
+            postData.cancelOrder = this.#pay_currentOrderId;
+            this.#pay_currentOrderId = null;
+        }
+
         var _this = this;
         clear_message();
         $.ajax({
