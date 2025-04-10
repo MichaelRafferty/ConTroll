@@ -43,5 +43,15 @@ ALTER TABLE exhibitorYears ADD FOREIGN KEY ey_mailintrans(mailinFeeTransaction) 
 UPDATE controllTxtItems SET contents = REPLACE(contents, "Not to buy", "Note to buy")
 WHERE appName = 'portal' AND appPage = 'addUpgrade' AND appSection = 'main' AND txtItem = 'step4';
 
+/* finally drop memGroup */
+DROP VIEW IF EXISTS memLabel;
+CREATE ALGORITHM=UNDEFINED SQL SECURITY INVOKER VIEW memLabel AS
+SELECT m.id AS id,m.conid AS conid,m.sort_order AS sort_order,m.memCategory AS memCategory,m.memType AS memType,
+       m.memAge AS memAge,m.label AS shortname,concat(m.label,' [',a.label,']') AS label,m.notes AS notes,
+       m.price AS price,m.startdate AS startdate,m.enddate AS enddate,
+       m.atcon AS atcon,m.online AS `online`,m.glNum AS glNum, m.glLabel AS glLabel
+FROM memList m
+JOIN ageList a ON (m.memAge = a.ageType and m.conid = a.conid);
+
 
 INSERT INTO patchLog(id, name) VALUES(xx, 'Square Terminals');
