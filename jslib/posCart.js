@@ -751,6 +751,7 @@ class PosCart {
         newMembership.label = memrow.label;
         newMembership.memCategory = memrow.memCategory;
         newMembership.glNum = memrow.glNum;
+        newMembership.taxable = memrow.taxable;
         newMembership.memType = memrow.memType;
         newMembership.memAge = memrow.memAge;
         newMembership.perid =  this.#addEditPerid;
