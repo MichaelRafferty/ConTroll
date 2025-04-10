@@ -28,13 +28,13 @@ $response['conid'] = $conid;
 
 if (!(array_key_exists('ajax_request_action', $_POST) && array_key_exists('pay_tid', $_POST) &&
     array_key_exists('cart_perinfo', $_POST))) {
-    ajaxSuccess(array('status'=>'error', 'message'=>'Parameter error - get assistance'));
+    ajaxSuccess(array('status'=>'error', 'error'=>'Parameter error - get assistance'));
     exit();
 }
 
 $action = $_POST['ajax_request_action'];
-if ($action != 'portalOrder') {
-    ajaxSuccess(array('status'=>'error', 'message'=>'Parameter error - get assistance'));
+if ($action != 'buildOrder') {
+    ajaxSuccess(array('status'=>'error', 'error'=>'Parameter error - get assistance'));
     exit();
 }
 
@@ -88,10 +88,10 @@ foreach ($cart_perinfo as $row) {
         if ($unpaid == 0)
             continue;
 
-        if (array_key_exists('fullname', $row))
-            $fullname = $row['fullname'];
+        if (array_key_exists('fullName', $row))
+            $fullname = $row['fullName'];
         else
-            $fullname = trim(trim($row['fname'] . ' ' . $row['mname']) . ' ' . $row['lname']);
+            $fullname = trim(trim($row['first_name'] . ' ' . $row['middle_name']) . ' ' . $row['last_name']);
         $badge = [
             'paid' => $paid,
             'fullname' => $fullname,
@@ -102,7 +102,7 @@ foreach ($cart_perinfo as $row) {
             'label' => $membership['label'],
             'memType' => $membership['memType'],
             'taxable' => $membership['taxable'],
-            'amount' => $price,
+            'price' => $price,
         ];
 
         $badges[] = $badge;
@@ -133,7 +133,7 @@ $response['amount'] = $amount;
 
 //log requested badges
 
-logWrite(array('con'=>$con['name'], 'trans'=>$transId, 'results'=>$results, 'request'=>$badges));
+logWrite(array('con'=>$con['label'], 'trans'=>$transId, 'results'=>$results, 'request'=>$badges));
 $upT = <<<EOS
 UPDATE transaction
 SET price = ?, withTax = ?, couponDiscountCart = ?, tax = ?
@@ -148,13 +148,13 @@ if ($cancelOrderId) // cancel the old order if it exists
 $rtn = cc_buildOrder($results, true);
 if ($rtn == null) {
     // note there is no reason cc_buildOrder will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
-    logWrite(array ('con' => $con['name'], 'trans' => $transId, 'error' => 'Credit card order unable to be created'));
+    logWrite(array ('con' => $con['label'], 'trans' => $transId, 'error' => 'Credit card order unable to be created'));
     ajaxSuccess(array ('status' => 'error', 'error' => 'Credit card order not built'));
     exit();
 }
 $response['rtn'] = $rtn;
 
 //$tnx_record = $rtn['tnx'];
-logWrite(array('con' => $con['name'], 'trans' => $transId, 'ccrtn' => $rtn));
+logWrite(array('con' => $con['label'], 'trans' => $transId, 'ccrtn' => $rtn));
 ajaxSuccess($response);
 return;

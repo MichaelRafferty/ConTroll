@@ -96,6 +96,7 @@ class Pos {
     #printDiv = null;
     #badgePrinterAvailable = false;
     #receiptPrinterAvailable = false;
+    #ccTerminalAvailable = false;
     #badgeList = null;
     #printActive = false;
 
@@ -290,6 +291,8 @@ class Pos {
             if (this.#printActive)
                 this.printShown();
         }
+        if (data.hasOwnProperty('terminal'))
+            this.#ccTerminalAvailable = data.terminal === true;
     }
 
     getConlabel() {
@@ -396,6 +399,10 @@ class Pos {
         this.#receiptPrinterAvailable = false;
         if (data.hasOwnProperty('receiptPrinter'))
             this.#receiptPrinterAvailable = data.receiptPrinter === true;
+        this.#ccTerminalAvailable = false;
+        if (data.hasOwnProperty('terminal'))
+            this.#ccTerminalAvailable = data.terminal === true;
+
 
         if (this.#manager == false)
             baseManagerEnabled = false;
@@ -1911,7 +1918,7 @@ addUnpaid(tid) {
                     show_message(data.message, 'success');
                 }
                 if (data.warn !== undefined) {
-                    show_message(data.warn, 'success');
+                    show_message(data.warn, 'warn');
                 }
                 _this.reviewedUpdateCart(data);
             },
@@ -2001,11 +2008,12 @@ addUnpaid(tid) {
                     show_message(data.message, 'success');
                     stop = false;
                 } else if (data.warn !== undefined) {
-                    show_message(data.warn, 'success');
+                    show_message(data.warn, 'warn');
                     stop = false;
                 } else if (data.status == 'error') {
                     show_message(data.data, 'error');
-                }
+                } else
+                    stop = false;
                 if (!stop)
                     _this.buildOrderSuccess(data);
             },
@@ -2016,7 +2024,8 @@ addUnpaid(tid) {
     }
 
     buildOrderSuccess(data) {
-        this.#pay_currentOrderId = data.orderId;
+        this.#pay_currentOrderId = data.rtn.orderId;
+        show_message("Order #" + this.#pay_currentOrderId + " created.");
         bootstrap.Tab.getOrCreateInstance(this.#pay_tab).show();
         cart.drawCart();
     }
@@ -2038,6 +2047,7 @@ addUnpaid(tid) {
         elcheckno.hidden = ptype != 'check';
         elccauth.hidden = ptype != 'credit';
         elonline.hidden = ptype != 'online';
+        this.#pay_button_pay.innerHTML = 'Confirm Pay';
         this.#pay_button_pay.disabled = ptype == 'online';
 
         if (ptype != 'check') {
@@ -2058,14 +2068,30 @@ addUnpaid(tid) {
         var total_amount_due = cart.getTotalPrice() - (cart.getTotalPaid() + Number(this.#coupon_discount));
         var pt_cash = document.getElementById('pt-cash').checked;
         var pt_check = document.getElementById('pt-check').checked;
-        var pt_online = document.getElementById('pt-online').checked;
-        var pt_credit = document.getElementById('pt-credit').checked;
+        var pt_online = document.getElementById('pt-online');
+        var pt_credit = document.getElementById('pt-credit');
+        var pt_terminal = document.getElementById('pt-terminal');
         var pt_discount = document.getElementById('pt-discount');
 
         if (this.#pay_currentOrderId == null) {
             show_message("No order in progress, you have reached an error condition, start over or seek assistance", "error");
             return;
         }
+
+        if (pt_online)
+            pt_online = pt_online.checked;
+        else
+            pt_online = false;
+
+        if (pt_credit)
+            pt_credit = pt_credit.checked;
+        else
+            pt_credit = false;
+
+        if (pt_terminal)
+            pt_terminal = pt_terminal.checked;
+        else
+            pt_terminal = false;
 
         if (pt_discount)
             pt_discount = pt_discount.checked;
@@ -2102,6 +2128,7 @@ addUnpaid(tid) {
                     return;
                 }
             }
+
             if (pay_amt <= 0) {
                 elamt.style.backgroundColor = 'var(--bs-warning)';
                 if (pt_online)
@@ -2129,6 +2156,11 @@ addUnpaid(tid) {
                 eldesc.style.backgroundColor = '';
             }
 
+            if (pt_terminal) {
+                ptype = 'terminal';
+                checked = true;
+            }
+
             if (pt_check) {
                 ptype = 'check';
                 var elcheckno = document.getElementById('pay-checkno');
@@ -2154,6 +2186,7 @@ addUnpaid(tid) {
                 }
                 checked = true;
             }
+
             if (pt_online) {
                 ptype = 'online';
                 if (nonce == null) {
@@ -2222,7 +2255,7 @@ addUnpaid(tid) {
                     show_message(data.message, 'success');
                     stop = false;
                 } else if (data.warn !== undefined) {
-                    show_message(data.warn, 'success');
+                    show_message(data.warn, 'warn');
                     stop = false;
                 } else if (data.status == 'error') {
                     show_message(data.data, 'error');
@@ -2290,7 +2323,7 @@ addUnpaid(tid) {
                 } else if (data.message !== undefined) {
                     show_message(data.message, 'success');
                 } else if (data.warn !== undefined) {
-                    show_message(data.warn, 'success');
+                    show_message(data.warn, 'warn');
                 }
                 if (_this.#lastReceiptType == 'email')
                     _this.#pay_button_ercpt.disabled = false;
@@ -2616,12 +2649,28 @@ addUnpaid(tid) {
     <div class="row">
         <div class="col-sm-2 m-0 mt-2 me-2 mb-2 p-0">Payment Type:</div>
         <div class="col-sm-auto m-0 mt-2 p-0 ms-0 me-2 mb-2 p-0" id="pt-div">
-            <input type="radio" id="pt-credit" name="payment_type" value="credit" onchange='pos.setPayType("credit");'/>
-            <label for="pt-credit">Offline Credit Card</label>
+`;
+            if (this.#ccTerminalAvailable) {
+                pay_html += `
+            <input type="radio" id="pt-terminal" name="payment_type" value="terminal" onchange='pos.setPayType("terminal");'/>
+            <label for="pt-terminal">Credit Card Terminal&nbsp;&nbsp;&nbsp;</label>
+`;
+            } else if (!config.hasOwnProperty('creditonline') || config.creditonline == 1) {
+                pay_html += `
             <input type="radio" id="pt-online" name="payment_type" value="credit" onchange='pos.setPayType("online");'/>
-            <label for="pt-online">Online Credit Card</label>
+            <label for="pt-online">Online Credit Card&nbsp;&nbsp;&nbsp;</label>
+`;
+            }
+            if (!config.hasOwnProperty('creditoffline') || config.creditoffline == 1) {
+                pay_html += `
+            <input type="radio" id="pt-credit" name="payment_type" value="credit" onchange='pos.setPayType("credit");'/>
+            <label for="pt-credit">Offline Credit Card&nbsp;&nbsp;&nbsp;</label>
+`;
+            }
+
+            pay_html += `
             <input type="radio" id="pt-check" name="payment_type" value="check" onchange='pos.setPayType("check");'/>
-            <label for="pt-check">Check</label>
+            <label for="pt-check">Check&nbsp;&nbsp;&nbsp;</label>
             <input type="radio" id="pt-cash" name="payment_type" value="cash" onchange='pos.setPayType("cash");'/>
             <label for="pt-cash">Cash</label>
 `;

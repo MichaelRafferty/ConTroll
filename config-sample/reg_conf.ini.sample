@@ -117,6 +117,10 @@ badgeps="/home/homedir/config/conname.ps"
 ; production = suppress the 'default' placeholder messages (an alias for this is nodefault)
 ; none = supporess all custom text
 customtext='production'
+;; payment methods allowed
+; 1 = allowed, 0 = disabled
+creditoffline = 0
+creditonline = 1
 
 [vendor]
 test=0

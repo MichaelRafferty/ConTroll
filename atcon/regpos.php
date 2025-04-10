@@ -17,6 +17,7 @@ $usps = get_conf('usps');
 $vendor = get_conf('vendor');
 $ini = get_conf('reg');
 $controll = get_conf('controll');
+$atcon = get_conf('atcon');
 $condata = get_con();
 $conid = $con['id'];
 $conname = $con['conname'];
@@ -75,6 +76,12 @@ $config_vars['useportal'] = $controll['useportal'];
 $config_vars['cashier'] = $method == 'cashier' ? 1 : 0;
 $config_vars['cashierAllowed'] = check_atcon('cashier', $conid) ? 1 : 0;
 $config_vars['multiOneDay'] = $multiOneDay;
+if (array_key_exists('creditoffline', $atcon)) {
+    $config_vars['creditoffline'] = $atcon['creditoffline'];
+}
+if (array_key_exists('creditonline', $atcon)) {
+    $config_vars['creditonline'] = $atcon['creditonline'];
+}
 if (isset($_GET['tid'])) {
     $config_vars['autoloadTID'] = $_GET['tid'];
 }
