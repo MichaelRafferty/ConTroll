@@ -42,6 +42,7 @@ class Pos {
     #pay_prior_discount = null;
     #cc_html = '';
     #purchase_label = 'purchase';
+    #pay_currentOrderId = null;
 
     // Data Items
     #unpaid_table = [];
@@ -601,6 +602,7 @@ class Pos {
         this.#pay_tid = null;
         this.#pay_tid_amt = 0;
         this.#pay_prior_discount = null;
+        this.#pay_currentOrderId = null;
         // clear the pay tab
         this.#pay_div.innerHTML = "No Payment Required, Proceed to Next Customer";
 
@@ -1945,6 +1947,9 @@ addUnpaid(tid) {
         }
 
         if (config.cashier == 1) {
+            this.#gotoPay();
+            return;
+            //TODO move these lines
             bootstrap.Tab.getOrCreateInstance(this.#pay_tab).show();
             cart.drawCart();
         } else {
@@ -1970,9 +1975,12 @@ addUnpaid(tid) {
         }
     }
 
+// gotoPay()
+
 // gotoPrint switch to the print tab
     gotoPrint() {
         this.#printedObj = null;
+        this.#pay_currentOrderId = null; // clear order id if we leave payment tab
         bootstrap.Tab.getOrCreateInstance(this.#print_tab).show();
     }
 
@@ -2335,6 +2343,7 @@ addUnpaid(tid) {
 // tab shown events - state mapping for which tab is shown
     findShown() {
         this.#printActive = false;
+        this.#pay_currentOrderId = null; // leaving pay clears order id
         cart.clearInReview();
         cart.unfreeze();
         this.#current_tab = this.#find_tab;
@@ -2343,10 +2352,9 @@ addUnpaid(tid) {
 
     addShown() {
         this.#printActive = false;
+        this.#pay_currentOrderId = null; // leaving pay clears order id
         cart.clearInReview();
-        cart.unfreeze();
-        this.#current_tab = this.#add_tab;
-        clear_message();
+        cart.unfreeze();ƒvoi
         cart.drawCart();
     }
 
