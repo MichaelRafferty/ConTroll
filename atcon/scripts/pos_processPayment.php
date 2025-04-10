@@ -82,6 +82,21 @@ if (!array_key_exists('amt', $new_payment) || $new_payment['amt'] <= 0) {
     ajaxError('invalid payment amount passed');
     return;
 }
+    try {
+        $cart_perinfo = json_decode($_POST['cart_perinfo'], true, 512, JSON_THROW_ON_ERROR);
+    }
+    catch (Exception $e) {
+        $msg = 'Caught exception on json_decode: ' . $e->getMessage() . PHP_EOL . 'JSON error: ' . json_last_error_msg() . PHP_EOL;
+        $response['error'] = $msg;
+        error_log($msg);
+        ajaxSuccess($response);
+        exit();
+    }
+    if (sizeof($cart_perinfo) <= 0) {
+        ajaxError('The cart is empty');
+        return;
+    }
+
 
 if (array_key_exists('coupon', $_POST)) {
     $coupon = $_POST['coupon'];
@@ -97,18 +112,12 @@ if (array_key_exists('change', $_POST)) {
 $amt = (float) $new_payment['amt'];
 // validate that the payment amount is not too large
 $total_due = 0;
-$payor = null;
-$payor_email = '';
-$payor_phone = '';
-if (array_key_exists('payor', $new_payment)) {
-    $payor = $new_payment['payor'];
-}
-if (array_key_exists('email', $new_payment)) {
-    $payor_email = $new_payment['email'];
-}
-if (array_key_exists('phone', $new_payment)) {
-    $payor_phone = $new_payment['phone'];
-}
+
+$payor_email = $new_payment['payor']['email'];
+$payor_phone = $new_payment['payor']['phone'];
+$payor_perid = $new_payment['payor']['perid'];
+$payor_country = $new_payment['payor']['country'];
+
 $pay_tid_amt = -1;
 if (array_key_exists('pay_tid_amt', $_POST)) {
     $pay_tid_amt = $_POST['pay_tid_amt'];
@@ -116,23 +125,7 @@ if (array_key_exists('pay_tid_amt', $_POST)) {
 
 $buyer['email'] = $payor_email;
 $buyer['phone'] = $payor_phone;
-$buyer['country'] = '';
-$payor_perid = 2; // atcon perid
-
-if ($payor >= 0) {
-    if ($payor_email == '' || $payor_email == $cart_perinfo[$payor]['email_addr']) {
-        $buyer['email'] = $cart_perinfo[$payor]['email_addr'];
-        $payor_perid = $cart_perinfo[$payor]['perid'];
-    } else {
-        $payor = -1;
-    }
-
-    if ($payor_phone == '' || $payor_phone == $cart_perinfo[$payor]['phone'])
-        $buyer['phone'] = $cart_perinfo[$payor]['phone'];
-
-    $buyer['country'] = $cart_perinfo[$payor]['country'];
-}
-
+$buyer['country'] = $payor_country;
 
 // see if we need to change the master transaction perid, only do this if the amount paid is = 0
 if ($pay_tid_amt == 0) {
@@ -226,7 +219,6 @@ SET paid = ?, complete_trans = ?, status = ?
 WHERE id = ?;
 EOS;
 $ptypestr = 'disi';
-
 $updCouponSQL = <<<EOS
 UPDATE reg
 SET couponDiscount = ?, coupon = ?

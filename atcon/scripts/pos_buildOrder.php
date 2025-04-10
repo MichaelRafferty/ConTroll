@@ -76,6 +76,7 @@ if (array_key_exists('cancelOrder', $_POST)) {
 // build the badge list for the order, do not include the already paid items
 $amount = 0;
 $totalAmountDue = 0;
+$totalPaid = 0;
 $badges = [];
 foreach ($cart_perinfo as $row) {
     if (!array_key_exists('memberships', $row))
@@ -108,6 +109,7 @@ foreach ($cart_perinfo as $row) {
         $badges[] = $badge;
         $amount += $unpaid;
         $totalAmountDue += $price;
+        $totalPaid += $paid;
     }
 }
 
@@ -127,6 +129,7 @@ $results = array(
     'price' => $totalAmountDue,
     'badges' => $badges,
     'total' => $amount,
+    'totalPaid' => $totalPaid,
     'discount' => 0,
 );
 $response['amount'] = $amount;
@@ -152,6 +155,7 @@ if ($rtn == null) {
     ajaxSuccess(array ('status' => 'error', 'error' => 'Credit card order not built'));
     exit();
 }
+$rtn['totalPaid'] = $totalPaid;
 $response['rtn'] = $rtn;
 
 //$tnx_record = $rtn['tnx'];

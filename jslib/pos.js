@@ -46,6 +46,7 @@ class Pos {
     #preTaxAmt = null;
     #taxAmt = null;
     #taxLabel = '';
+    #totalPaid = null;
 
     // Data Items
     #unpaid_table = [];
@@ -2031,6 +2032,7 @@ addUnpaid(tid) {
         this.#preTaxAmt = data.rtn.preTaxAmt;
         this.#taxAmt = data.rtn.taxAmt;
         this.#taxLabel = data.rtn.taxLabel;
+        this.#totalPaid = data.rtn.totalPaid;
         show_message("Order #" + this.#pay_currentOrderId + " created.");
         bootstrap.Tab.getOrCreateInstance(this.#pay_tab).show();
         cart.drawCart();
@@ -2071,7 +2073,7 @@ addUnpaid(tid) {
         var checkno = null;
         var desc = null;
         var ptype = null;
-        var total_amount_due = this.#preTaxAmt + this.#taxAmt - cart.getTotalPaid();
+        var total_amount_due = this.#preTaxAmt + this.#taxAmt - this.#totalPaid;
         var pt_cash = document.getElementById('pt-cash').checked;
         var pt_check = document.getElementById('pt-check').checked;
         var pt_online = document.getElementById('pt-online');
@@ -2225,10 +2227,27 @@ addUnpaid(tid) {
                         index: cart.getPmtLength() + 1, amt: change, ccauth: ccauth, checkno: checkno, desc: eldesc.value, type: 'change',
                     }
                 }
+
+                var payorPerid = 2; // atcon perid
+                var email = document.getElementById("pay-email").value;
+                var phone = document.getElementById("pay-phone").value;
+                var payor = Number(document.getElementById('pay-emailsel').value);
+                var country = '';
+
+                if (payor > 0 && email == cart.getEmail(rownum)) {
+                    payorPerid = cart.getPerid(rownum);
+                    country = cart.getCountry(rownum);
+                }
+
+
                 prow = {
                     index: cart.getPmtLength(), amt: pay_amt, ccauth: ccauth, checkno: checkno, desc: eldesc.value, type: ptype, nonce: nonce,
-                    payor: Number(document.getElementById('pay-emailsel').value),
-                    email: document.getElementById('pay-email').value, phone: document.getElementById('pay-phone').value
+                    payor: {
+                        email: email,
+                        phone: phone,
+                        perid: payorPerid,
+                        country: country,
+                    },
                 };
             }
         }
@@ -2236,6 +2255,7 @@ addUnpaid(tid) {
         var postData = {
             ajax_request_action: 'processPayment',
             orderId: this.#pay_currentOrderId,
+            cart_perinfo: JSON.stringify(cart.getCartPerinfo()),
             new_payment: prow,
             coupon: prow.coupon,
             change: crow,

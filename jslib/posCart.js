@@ -201,6 +201,10 @@ class PosCart {
 
     // notes fields in the cart, get current values and set new values, marking dirty for saving records
 
+    getPerid(index) {
+        return this.#cartPerinfo[index].perid;
+    }
+
     getFullName(index) {
         return this.#cartPerinfo[index].fullName;
     }

@@ -308,7 +308,7 @@ page_init($page, $tab,
                 <div class='modal-body' id='CashChangeBody'>
                 </div>
                 <div class='modal-footer'>
-                    <button type='button' id='discard_cash_button' class='btn btn-secondary' onclick='pos.cashChangeModal.hide();'>Cancel Cash Payment</button>
+                    <button type='button' id='discard_cash_button' class='btn btn-secondary' onclick='pos.hideCashChangeModal();'>Cancel Cash Payment</button>
                     <button type='button' id='close_cash_button' class='btn btn-primary' onclick='pos.pay("nomodal");'>Change given to Customer</button>
                 </div>
             </div>
