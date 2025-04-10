@@ -15,23 +15,29 @@ function getAccountRegistrations($personId, $personType, $conid, $getTypes = 'al
 
     if ($personType == 'p') {
         $membershipsQ = <<<EOS
-WITH pn AS (
-    SELECT id AS memberId, managedBy, NULL AS managedByNew, email_addr, phone,
+WITH trans AS (
+	SELECT id, create_date, complete_date, perid, newperid, conid
+	FROM transaction
+	WHERE perid = ?
+), pn AS (
+    SELECT p.id AS memberId, managedBy, NULL AS managedByNew, email_addr, phone,
         CASE 
             WHEN badge_name IS NULL OR badge_name = '' THEN TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(last_name, '')) , '  *', ' ')) 
             ELSE badge_name 
         END AS badge_name,
         TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(last_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) AS fullname
-    FROM perinfo
+    FROM trans t
+    JOIN perinfo p ON p.id = t.perid
 ), nn AS (
-    SELECT id AS memberId, managedBy, managedByNew, email_addr, phone,
-        CASE 
+    SELECT n.id AS memberId, managedBy, managedByNew, email_addr, phone,
+        CASE
             WHEN badge_name IS NULL OR badge_name = '' THEN TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(last_name, '')) , '  *', ' ')) 
             ELSE badge_name 
         END AS badge_name,
     TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(last_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) AS fullname
-    FROM newperson
-    WHERE perid IS NULL
+    FROM trans t
+    JOIN newperson n ON n.id = t.newperid
+    WHERE n.perid IS NULL
 ), mems AS (
     SELECT t.id, r.create_date, r.id as regId, r.memId, r.conid, r.status, r.price, r.paid, r.complete_trans, r.couponDiscount, r.perid, r.newperid,
         IFNULL(r.complete_trans, r.create_trans) AS sortTrans,
@@ -74,7 +80,7 @@ WITH pn AS (
         END AS phone, 
         IFNULL(tp.perid, t.perid) AS transPerid,
         IFNULL(tp.newperid, t.newperid) AS transNewPerid
-    FROM transaction t
+    FROM trans t
     JOIN reg r ON t.id = r.create_trans
     LEFT OUTER JOIN transaction tp ON tp.id = r.complete_trans
     JOIN memLabel m ON m.id = r.memId
@@ -90,7 +96,7 @@ WITH pn AS (
         nn.managedBy, nn.managedByNew, nn.badge_name, nn.fullname, nn.memberId, nn.email_addr, nn.phone,
         IFNULL(tp.perid, t.perid) AS transPerid,
         IFNULL(tp.newperid, t.newperid) AS transNewPerid
-    FROM transaction t
+    FROM trans t
     JOIN reg r ON t.id = r.create_trans
     LEFT OUTER JOIN transaction tp ON tp.id = r.complete_trans
     JOIN memLabel m ON m.id = r.memId
@@ -102,7 +108,8 @@ SELECT DISTINCT *
 FROM mems
 ORDER BY sortTrans, create_date, memberId
 EOS;
-        $membershipsR = dbSafeQuery($membershipsQ, 'iiiiiiii', array($personId, $personId, $personId, $personId, $conid, $personId, $personId, $conid));
+        $membershipsR = dbSafeQuery($membershipsQ, 'iiiiiiiii', array($personId, $personId, $personId, $personId, $personId, $conid, $personId, $personId,
+        $conid));
     } else {
         $membershipsQ = <<<EOS
 WITH mems AS (
