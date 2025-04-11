@@ -196,6 +196,12 @@ $buyer['email'] = $payor_email;
 $buyer['phone'] = $payor_phone;
 $buyer['country'] = $payor_country;
 
+// init some of the vars for later override
+$nonce = null;
+$payStatus = null;
+$receipt_url = null;
+$receipt_number = null;
+
 // see if we need to change the master transaction perid, only do this if the amount paid is = 0
 if ($pay_tid_amt == 0) {
     // ok, not current payor_perid and no payment yet
@@ -270,19 +276,22 @@ if ($amt > 0) {
                     web_error_log("pos_processPayment: terminal: returned more than one paymentId");
                     web_error_log($paymentIds);
                 }
-                $payment = cc_getPayment('atcon', $paymentIds[0], true);
+                $paymentId = $paymentIds[0];
+                $payment = cc_getPayment('atcon', $paymentId, true);
 
                 $approved_amt = $payment['approved_money']['amount'] / 100;
                 $category = 'atcon';
                 $desc = 'Square: ' . $payment['application_details']['square_product'];
                 $source = 'atcon';
-                $txtime = $payment['created_at'];
+                $txn_time = $payment['created_at'];
                 $receipt_number = $payment['receipt_number'];
                 $receipt_url = $payment['receipt_url'];
                 $last4 = $payment['card_details']['card']['last_4'];
                 $id = $payment['id'];
+                $location_id = $payment['location_id'];
                 $auth = $payment['card_details']['auth_result_code'];
                 $nonce = $payment['card_details']['card']['fingerprint'];
+                $payStatus = $payment['status'];
                 switch ($payment['source_type']) {
                     case 'CARD':
                         $paymentType = 'credit';
@@ -313,7 +322,7 @@ if ($amt > 0) {
                 $rtn['tnxtypes'] = array('i', 's', 's', 's', 's', 'd', 'd', 'd',
                     's', 's', 's', 's', 's', 's', 's', 's', 'i');
                 $rtn['tnxdata'] = array($master_tid, 'credit', $category, $desc, $source, $preTaxAmt, $taxAmt, $approved_amt,
-                    $txtime,$last4,$nonce,$id,$auth,$receipt_url,$status,$receipt_number, $user_perid);
+                    $txn_time,$last4,$nonce,$id,$auth,$receipt_url,$status,$receipt_number, $user_perid);
                 $rtn['url'] = $receipt_url;
                 $rtn['rid'] = $receipt_number;
                 $rtn['paymentType'] = $paymentType;
@@ -352,12 +361,14 @@ $complete = round($amt,2) == round($total_due,2);
 // now add the payment and process to which rows it applies
 $upd_rows = 0;
 $cupd_rows = 0;
+
 if ($new_payment['type'] != 'online') { // online already added the payment record
     $insPmtSQL = <<<EOS
-INSERT INTO payments(transid, type,category, description, source, pretax, tax, amount, time, cc_approval_code, cashier)
-VALUES (?,?,'reg',?,'cashier',?,?,?,now(),?, ?);
+INSERT INTO payments(transid, type,category, description, source, pretax, tax, amount, time, cc_approval_code, cashier, 
+                     cc, nonce, cc_txn_id, txn_time, receipt_url, receipt_id, userPerid, status)
+VALUES (?,?,'reg',?,'cashier',?,?,?,now(),?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 EOS;
-    $typestr = 'issdddsi';
+    $typestr = 'issdddsissssssis';
     if ($new_payment['type'] == 'check')
         $desc = 'Check No: ' . $new_payment['checkno'] . '; ';
     else
@@ -369,7 +380,8 @@ EOS;
        $approved_amt = $new_payment['amt'];
        $auth = $new_payment['ccauth'];
     }
-    $paramarray = array($master_tid, $paymentType, $desc, $preTaxAmt, $taxAmt, $approved_amt, $auth, $user_perid);
+    $paramarray = array($master_tid, $paymentType, $desc, $preTaxAmt, $taxAmt, $approved_amt, $auth, $user_perid,
+        $last4, $nonce, $paymentId, $txn_time, $receipt_url, $receipt_number, $user_perid, $payStatus);
     $new_pid = dbSafeInsert($insPmtSQL, $typestr, $paramarray);
 }
 

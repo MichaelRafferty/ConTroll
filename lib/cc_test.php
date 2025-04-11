@@ -434,7 +434,7 @@ function cc_getPayment($source, $paymentid, $useLogWrite = false) : array {
 
     $payment = [
         'id' => 'testSystem',
-        'created_at' => '2099-01-01 00:00"00',
+        'created_at' => '2099-01-01 00:00:00',
         'amount_money' => [
             'amount' =>  $_SESSION['term_testAmt'],
             'currency' => 'USD',
