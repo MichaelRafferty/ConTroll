@@ -243,7 +243,7 @@ EOS;
 
         $arrVals = array($productType, $squareName, $squareModel, $version, $terminalAPIVersion, $batteryLevel, $externalPower,
             $wifiActive, $wifiSSID, $wifiIPAddressV4, $wifiIPAddressV6, $signalStrength,
-            $ethernetActive, $ethernetIPAddressV4, $ethernetIPAddressV6, $statusCat, $terminal);
+            $ethernetActive, $ethernetIPAddressV4, $ethernetIPAddressV6, $statusCat, $name);
 
         $datatypes = 'sssssisisssiissss';
         $response = [];
@@ -256,9 +256,9 @@ SELECT *
 FROM terminals
 WHERE name = ?;
 EOS;
-        $terminalQ = dbSafeQuery($terminalSQL, 's', array($terminal));
+        $terminalQ = dbSafeQuery($terminalSQL, 's', array($name));
         if ($terminalQ === false || $terminalQ->num_rows != 1) {
-            RenderErrorAjax("Cannot fetch terminal $terminal status.");
+            RenderErrorAjax("Cannot fetch terminal $name status.");
             exit();
         }
         $updatedRow = $terminalQ->fetch_assoc();
