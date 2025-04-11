@@ -138,53 +138,57 @@ EOS;
     $chgTPC = dbSafeCmd($chgTP, 'ii', array($payor_perid, $master_tid));
 }
 
-// if we need to process a credit card, do it now before applying the payment record
-if ($new_payment['type'] == 'online') {
-    $cc_params = array(
-        'transid' => $master_tid,
-        'counts' => 0,
-        'price' => null,
-        'badges' => null,
-        'tax' => 0,
-        'pretax' => $amt,
-        'total' => $amt,
-        'orderId' => $orderId,
-        'nonce' => $new_payment['nonce'],
-        'coupon' => $coupon,
-    );
+if ($amt > 0) {
+    switch ($new_payment['type']) {
+        case 'online':
+            // if we need to process a credit card, do it now before applying the payment record
+            $cc_params = array (
+                'transid' => $master_tid,
+                'counts' => 0,
+                'price' => null,
+                'badges' => null,
+                'tax' => 0,
+                'pretax' => $amt,
+                'total' => $amt,
+                'orderId' => $orderId,
+                'nonce' => $new_payment['nonce'],
+                'coupon' => $coupon,
+            );
 
-//log requested badges
-    logWrite(array('type' => 'online', 'con' => $con['conname'], 'trans' => $master_tid, 'results' => $cc_params));
-    if ($amt > 0) {
-        $ccauth = get_conf('cc');
-        load_cc_procs();
-        $rtn = cc_payOrder($cc_params, $buyer, true);
-        if ($rtn === null) {
-            ajaxSuccess(array('status' => 'error', 'data' => 'Credit card not approved'));
+            //log requested badges
+            logWrite(array ('type' => 'online', 'con' => $con['conname'], 'trans' => $master_tid, 'results' => $cc_params));
+            $ccauth = get_conf('cc');
+            load_cc_procs();
+            $rtn = cc_payOrder($cc_params, $buyer, true);
+            if ($rtn === null) {
+                ajaxSuccess(array ('status' => 'error', 'data' => 'Credit card not approved'));
+                exit();
+            }
+
+            //$tnx_record = $rtn['tnx'];
+
+            $num_fields = sizeof($rtn['txnfields']);
+            $val = array ();
+            for ($i = 0; $i < $num_fields; $i++) {
+                $val[$i] = '?';
+            }
+            $txnQ = 'INSERT INTO payments(time,' . implode(',', $rtn['txnfields']) . ') VALUES(current_time(),' . implode(',', $val) . ');';
+            $txnT = implode('', $rtn['tnxtypes']);
+            $new_pid = dbSafeInsert($txnQ, $txnT, $rtn['tnxdata']);
+            $approved_amt = $rtn['amount'];
+            break;
+
+        case 'terminal':
+            // this is the send the request to the terminal, then we need a separate poll section to get it back and continue to record the payment.
+            ajaxSuccess(array('status' => 'error', 'data' => 'Terminal not written yet'));
             exit();
-        }
 
-//$tnx_record = $rtn['tnx'];
-
-        $num_fields = sizeof($rtn['txnfields']);
-        $val = array();
-        for ($i = 0; $i < $num_fields; $i++) {
-            $val[$i] = '?';
-        }
-        $txnQ = 'INSERT INTO payments(time,' . implode(',', $rtn['txnfields']) . ') VALUES(current_time(),' . implode(',', $val) . ');';
-        $txnT = implode('', $rtn['tnxtypes']);
-        $new_pid = dbSafeInsert($txnQ, $txnT, $rtn['tnxdata']);
-        $approved_amt = $rtn['amount'];
-    } else {
-        $approved_amt = 0;
-        $rtn = array('url' => '');
+        default:
+            $approved_amt = 0;
+            $rtn = array ('url' => '');
     }
 }
 
-if ($new_payment['type'] == 'terminal') {
-    ajaxSuccess(array('status' => 'error', 'data' => 'Terminal not written yet'));
-    exit();
-}
 
 $complete = round($amt,2) == round($total_due,2);
 // now add the payment and process to which rows it applies
