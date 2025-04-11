@@ -796,6 +796,42 @@ function cc_payOrder($results, $buyer, $useLogWrite = false) {
     return $rtn;
 }
 
+// fetch an order to get its details
+function cc_getPayment($source, $paymentid, $useLogWrite = false) : array {
+    $cc = get_conf('cc');
+    $debug = get_conf('debug');
+    if (array_key_exists('square', $debug))
+        $squareDebug = $debug['square'];
+    else
+        $squareDebug = 0;
+
+    $body = new Square\Payments\Requests\GetPaymentsRequest([
+        'paymentId' => $paymentid,
+    ]);
+
+    $client = new SquareClient(
+        token: $cc['token'],
+        options: [
+            'baseUrl' => $cc['env'] == 'production' ? Environments::Production->value : Environments::Sandbox->value,
+        ]);
+
+    // pass update to cancel state to square
+    try {
+        if ($squareDebug) sqcc_logObject(array ('Payments API get payment', $body), $useLogWrite);
+        $apiResponse = $client->payments->get($body);
+        $payment = $apiResponse->getPayment();
+        if ($squareDebug) sqcc_logObject(array ('Payments API get payment', $payment), $useLogWrite);
+    }
+    catch (SquareApiException $e) {
+        sqcc_logException($source, $e, 'Payments API get payment Exception', 'get payment failed', $useLogWrite);
+    }
+    catch (Exception $e) {
+        sqcc_logException($source, $e, 'Payments API error while calling Square', 'Error connecting to Square', $useLogWrite);
+    }
+
+    return $payment;
+}
+
 function sqcc_logObject($objArray, $useLogWrite = false) : void {
     if ($useLogWrite) {
         logWrite($objArray);

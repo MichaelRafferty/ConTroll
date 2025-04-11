@@ -356,6 +356,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
     if (array_key_exists('nonce', $results))
         $rtn['exhibits'] = $results['nonce'];
 
+    $_SESSION['ccTestResults'] = $rtn;
     return $rtn;
 }
 
@@ -424,4 +425,58 @@ function cc_payOrder($results, $buyer, $useLogWrite = false) {
 			exit();
 	}
 };
+
+// fetch an order to get its details
+function cc_getPayment($source, $paymentid, $useLogWrite = false) : array {
+    $ccTestResults = $_SESSION['ccTestResults'];
+
+    $cc = get_conf('cc');
+
+    $payment = [
+        'id' => 'testSystem',
+        'created_at' => '2099-01-01 00:00"00',
+        'amount_money' => [
+            'amount' => $ccTestResults['totalAmt'] * 100,
+            'currency' => 'USD',
+            ],
+        'source_type' => 'CARD',
+        'status' => 'COMPLETED',
+        'card_details' => [
+            'status' => 'CAPTURED',
+            'card' => [
+                'card_brand' => 'test',
+                'last_4' => '1111',
+                'exp_month' => '12',
+                'exp_year' => '2099',
+                'card_type' => 'TEST',
+                'prepaid_type' => 'NOT_PREPAID',
+                'bin' => '411111',
+                'fingerprint' => 'line nonce',
+                ],
+            'entry_method' => 'TEST',
+            'cvv_status' => 'CVV_ACCCEPTED',
+            'avs_status' => 'AVS_ACCEPTED',
+            'auth_result_code' => 'test12',
+            'statement_description' => 'test statement',
+            ],
+        'location_id' => $ccTestResults['locationId'],
+        'order_id' => $ccTestResults['orderId'],
+        'total_money' => [
+            'amount' => $ccTestResults['totalAmt'] * 100,
+            'currency' => 'USD',
+        ],
+        'approved_money' => [
+            'amount' => $ccTestResults['totalAmt'] * 100,
+            'currency' => 'USD',
+        ],
+        'application_details' => [
+            'square_product' => 'Controll Test Harness',
+            'application_id' => 'cc_test',
+        ],
+        'receipt_number' => 'test',
+        'receipt_url' => 'https://test.test/receipt/test',
+    ];
+
+    return $payment;
+}
 ?>

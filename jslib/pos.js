@@ -47,7 +47,7 @@ class Pos {
     #taxAmt = null;
     #taxLabel = '';
     #totalPaid = null;
-    #payOverride = false;
+    #payOverride = 0;
     #payPoll = 0;
 
     // Data Items
@@ -2070,7 +2070,7 @@ addUnpaid(tid) {
 
 // overridePay - pay returned the terminal was unavailable, operator said to override it
     overridePay() {
-        this.#payOverride = true;
+        this.#payOverride = 1;
         this.pay('');
     }
 
@@ -2284,10 +2284,13 @@ addUnpaid(tid) {
             user_id: this.#user_id,
             pay_tid: this.#pay_tid,
             pay_tid_amt: this.#pay_tid_amt,
+            preTaxAmt: this.#preTaxAmt,
+            taxAmt: this.#taxAmt,
+            totalAmtDue: total_amount_due,
             override: this.#payOverride,
             poll: this.#payPoll,
         };
-        this.#payOverride = false;
+        this.#payOverride = 0;
         this.#pay_button_pay.disabled = true;
         var _this = this;
         clear_message();
@@ -2310,15 +2313,10 @@ addUnpaid(tid) {
         // reset the disabled items
         $('#' + this.#purchase_label).removeAttr("disabled");
         this.#pay_button_pay.disabled = false;
-        this.#payPoll = 0;
 
         // things that stop us cold....
         if (typeof data == 'string') {
             show_message(data, 'error');
-            return;
-        }
-        if (data.status == 'error') {
-            show_message(data.data, 'error');
             return;
         }
 
@@ -2336,13 +2334,16 @@ addUnpaid(tid) {
             }
         }
 
+        this.#payPoll = 0;
         // and things that continue
         if (data.message !== undefined) {
             show_message(data.message, 'success');
         }
         if (data.hasOwnProperty('poll')) {
-            if ($poll == 1)
+            if (data.poll == 1) {
                 document.getElementById('pollRow').hidden = false;
+                _this.#pay_button_pay.disabled = true;
+            }
         }
     }
 

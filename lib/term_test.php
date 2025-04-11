@@ -45,8 +45,9 @@ EOS;
 
 function term_payOrder($name, $orderId, $amount, $useLogWrite = false) : array {
     // fake it by returning a pending status for any amount not ending in $0.01 and failure for ending in $.01
-    $amount = $amount * 100;
-    $status = ($amount % 100) == 1 ? 'FAILED' : 'PENDING';
+    $term_testAmt = $amount * 100;
+    $_SESSION['term_testAmt'] = $term_testAmt;
+    $status = ($term_testAmt % 100) == 1 ? 'FAILED' : 'PENDING';
     $checkout = array(
         'id' => 'C' . time(),
         'amount_money' => array(
@@ -62,16 +63,33 @@ function term_payOrder($name, $orderId, $amount, $useLogWrite = false) : array {
 function term_cancelPayment($name, $payRef, $useLogWrite = false) : array {
     $checkout = array(
         'id' => 'C' . time(),
-        'status' => 'CANCELLED'
+        'status' => 'CANCELLED',
+        'cancel_reason' => 'Requested by atcon'
     );
 
     return $checkout;
 }
 
 function term_getPayStatus($name, $payRef, $useLogWrite = false) : array {
+    $term_testAmt = $_SESSION['term_testAmt'];
+    switch ($term_testAmt % 100) {
+        case 2:
+            $status = 'PENDING';
+            break;
+        case 2:
+            $status = 'IN_PROGRESS';
+            break;
+        case 4:
+            $status = 'CANCEL_REQUESTED';
+            break;
+        default:
+            $status = 'COMPLETED';
+    }
     $checkout = array(
         'id' => 'C' . time(),
-        'status' => 'COMPLETED'
+        'status' => $status,
+        'cancel_reason' => 'Requested by customer',
+        'payment_ids'=> [ 'sample' ]
     );
 
     return $checkout;

@@ -37,6 +37,7 @@ if ($user_id != getSessionVar('user')) {
 }
 
 $user_perid = $user_id;
+$paymentType = 'credit'; // default type
 
 $log = get_conf('log');
 $con = get_conf('con');
@@ -121,17 +122,17 @@ if ($new_payment['type'] == 'terminal') {
         }
         $updQ = <<<EOS
 UPDATE terminals
-SET currentOperator = '', currentOrder = '', currentPayment = '', controllStatus = '', controllStatusChanged = now()
+SET currentOperator = 0, currentOrder = '', currentPayment = '', controllStatus = '', controllStatusChanged = now()
 WHERE name = ?;
 EOS;
-        dbSafeCmd($updQ, 'i', array($name));
+        dbSafeCmd($updQ, 's', array($name));
     } else {
         $status = $termStatus['status'];
         $inUseBy = $termStatus['currentOperator'];
         $controllStatus = $termStatus['controllStatus'];
         $currentOrder = $termStatus['currentOrder'];
         $currentPayment = $termStatus['currentPayment'];
-        if ($status != 'AVAILABLE' || $inUseBy != $user_id) {
+        if ($status != 'AVAILABLE' || ($inUseBy > 0 && $inUseBy != $user_id)) {
             $msg = "Terminal $name is not available, it's status is $status";
             if ($inUseBy != null && $inUseBy != '') {
                 if ($inUseBy != $user_id) {
@@ -229,7 +230,7 @@ if ($amt > 0) {
             load_cc_procs();
             $rtn = cc_payOrder($cc_params, $buyer, true);
             if ($rtn === null) {
-                ajaxSuccess(array ('status' => 'error', 'data' => 'Credit card not approved'));
+                ajaxSuccess(array ('error' => 'Credit card not approved'));
                 exit();
             }
 
@@ -248,8 +249,75 @@ if ($amt > 0) {
 
         case 'terminal':
             if ($poll == 1) {
-                ajaxSuccess(array ('status' => 'error', 'data' => 'poll not written yet'));
-                exit();
+                $checkout = term_getPayStatus($name, $termStatus['currentPayment'], true);
+                if ($checkout == null) {
+                    ajaxSuccess(array ('error' => "Unable to get payment status from terminal $name"));
+                    exit();
+                }
+                $status = $checkout['status'];
+                if ($status != 'COMPLETED') {
+                    if ($status == 'CANCELLED') {
+                        $cancelReason = " (" . $checkout['cancel_reason'] . ")";
+                    } else {
+                        $cancelReason = '';
+                    }
+                    ajaxSuccess(array ('error' => "Terminal returned payment $status $cancelReason"));
+                    exit();
+                }
+                // get the payment id to get the payment details
+                $paymentIds = $checkout['payment_ids'];
+                if (count($paymentIds) > 1) {
+                    web_error_log("pos_processPayment: terminal: returned more than one paymentId");
+                    web_error_log($paymentIds);
+                }
+                $payment = cc_getPayment('atcon', $paymentIds[0], true);
+
+                $approved_amt = $payment['approved_money']['amount'] / 100;
+                $category = 'atcon';
+                $desc = 'Square: ' . $payment['application_details']['square_product'];
+                $source = 'atcon';
+                $txtime = $payment['created_at'];
+                $receipt_number = $payment['receipt_number'];
+                $receipt_url = $payment['receipt_url'];
+                $last4 = $payment['card_details']['card']['last_4'];
+                $id = $payment['id'];
+                $auth = $payment['card_details']['auth_result_code'];
+                $nonce = $payment['card_details']['card']['fingerprint'];
+                switch ($payment['source_type']) {
+                    case 'CARD':
+                        $paymentType = 'credit';
+                        break;
+                    case 'BANK_ACCOUNT':
+                        $paymentType = 'check';
+                        break;
+                    case 'CASH':
+                        $paymentType = 'cash';
+                        break;
+                    default:
+                        $paymentType = 'other';
+                }
+                if (array_key_exists('preTaxAmt', $_POST))
+                    $preTaxAmt = $_POST['preTaxAmt'];
+                else
+                    $preTaxAmt = $_POST['totalAmtDue'];
+
+                if (array_key_exists('taxAmt', $_POST))
+                    $taxAmt = $_POST['taxAmt'];
+                else
+                    $taxAmt = 0;
+
+                $rtn = array();
+                $rtn['amount'] = $approved_amt;
+                $rtn['txnfields'] = array('transid','type','category','description','source','pretax', 'tax', 'amount',
+                    'txn_time', 'cc','nonce','cc_txn_id','cc_approval_code','receipt_url','status','receipt_id', 'cashier');
+                $rtn['tnxtypes'] = array('i', 's', 's', 's', 's', 'd', 'd', 'd',
+                    's', 's', 's', 's', 's', 's', 's', 's', 'i');
+                $rtn['tnxdata'] = array($master_tid, 'credit', $category, $desc, $source, $preTaxAmt, $taxAmt, $approved_amt,
+                    $txtime,$last4,$nonce,$id,$auth,$receipt_url,$status,$receipt_number, $user_perid);
+                $rtn['url'] = $receipt_url;
+                $rtn['rid'] = $receipt_number;
+                $rtn['paymentType'] = $paymentType;
+                $rtn['payment'] = $payment;
             } else {
                 // this is the send the request to the terminal, then we need a separate poll section to get it back and continue to record the payment.
                 $checkout = term_payOrder($name, $orderId, $amt, true);
@@ -260,16 +328,16 @@ UPDATE terminals
 SET currentOperator = ?, currentOrder = ?, currentPayment = ?, controllStatus = ?, controllStatusChanged = NOW()
 WHERE name = ?;
 EOS;
-                    $upd = dbSafeCmd($updQ, 'isssi', array ($user_id, $orderId, $checkout['id'], $status, $name));
+                    $upd = dbSafeCmd($updQ, 'issss', array ($user_id, $orderId, $checkout['id'], $status, $name));
                     if ($upd === false) {
-                        ajaxSuccess(array ('status' => 'error', 'data' => "Unable to update terminal ($name) status"));
+                        ajaxSuccess(array ('error' => "Unable to update terminal ($name) status"));
                         exit();
                     }
                     ajaxSuccess(array ('status' => 'success', 'poll' => 1, 'message' => "Payment request sent to terminal $name,<br/>" .
                         'click "Payment Complete when payment has been made or "Cancel Payment" to cancel the request.'));
                     exit();
                 }
-                ajaxSuccess(array ('status' => 'error', 'data' => 'Unable to send payment request to terminal $name'));
+                ajaxSuccess(array ('error' => "Unable to send payment request to terminal $name"));
                 exit();
             }
         default:
@@ -294,7 +362,7 @@ EOS;
     else
         $desc = '';
     $desc .= $new_payment['desc'];
-    $paramarray = array($master_tid, $new_payment['type'], $desc, $new_payment['amt'], 0, $new_payment['amt'], $new_payment['ccauth'], $user_perid);
+    $paramarray = array($master_tid, $paymentType, $desc, $new_payment['amt'], 0, $new_payment['amt'], $new_payment['ccauth'], $user_perid);
     $new_pid = dbSafeInsert($insPmtSQL, $typestr, $paramarray);
 }
 
