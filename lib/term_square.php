@@ -332,7 +332,7 @@ function term_payOrder($name, $orderId, $amount, $useLogWrite = false) : array |
     return null;
 }
 
-function term_getPayStatus($name, $payRef, $useLogWrite = false) : array | null {
+function term_cancelPayment($name, $payRef, $useLogWrite = false) : array | null {
     $cc = get_conf('cc');
     $debug = get_conf('debug');
     if (array_key_exists('square', $debug))
@@ -349,8 +349,48 @@ function term_getPayStatus($name, $payRef, $useLogWrite = false) : array | null 
                    'baseUrl' => $cc['env'] == 'production' ? Environments::Production->value : Environments::Sandbox->value,
                ]);
 
-    $statusRequest = new Square\Terminal\Checkouts\Requests\GetCheckoutsRequest([
+    $cancelRequest = new Square\Terminal\Checkouts\Requests\CancelCheckoutsRequest([
     'checkoutId' => $payRef,
+    ]);
+
+    try {
+        if ($squareDebug) sqterm_logObject(array ('Terminal API cancel checkout request', $cancelRequest), $useLogWrite);
+        $apiResponse = $client->terminal->checkouts->cancel($cancelRequest);
+        if ($squareDebug) sqterm_logObject(array ('Terminal API cancel checkout request: apiResponse', $apiResponse), $useLogWrite);
+
+        // convert the object into an associative array
+        $checkout = json_decode(json_encode($apiResponse->getCheckout()), true);
+        return $checkout;
+    }
+    catch (SquareApiException $e) {
+        sqterm_logException($name, $e, 'Terminal Square API cancel checkout request Exception', 'Terminal API cancel checkout request failed', $useLogWrite);
+    }
+    catch (Exception $e) {
+        sqterm_logException($name, $e, 'Terminal received error while calling Square', 'Error connecting to Square', $useLogWrite);
+    }
+
+    return null;
+}
+
+function term_getPayStatus($name, $payRef, $useLogWrite = false) : array | null {
+    $cc = get_conf('cc');
+    $debug = get_conf('debug');
+    if (array_key_exists('square', $debug))
+        $squareDebug = $debug['square'];
+    else
+        $squareDebug = 0;
+
+    // get the device name
+    $terminal = getTerminal($name);
+    // get a client
+    $client = new SquareClient(
+        token: $cc['token'],
+        options: [
+            'baseUrl' => $cc['env'] == 'production' ? Environments::Production->value : Environments::Sandbox->value,
+        ]);
+
+    $statusRequest = new Square\Terminal\Checkouts\Requests\GetCheckoutsRequest([
+        'checkoutId' => $payRef,
     ]);
 
     try {

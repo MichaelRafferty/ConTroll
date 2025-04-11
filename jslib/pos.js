@@ -47,6 +47,8 @@ class Pos {
     #taxAmt = null;
     #taxLabel = '';
     #totalPaid = null;
+    #payOverride = false;
+    #payPoll = 0;
 
     // Data Items
     #unpaid_table = [];
@@ -2066,6 +2068,24 @@ addUnpaid(tid) {
         }
     }
 
+// overridePay - pay returned the terminal was unavailable, operator said to override it
+    overridePay() {
+        this.#payOverride = true;
+        this.pay('');
+    }
+
+// payPoll - poll to see if the payment is complete
+    payPoll(action) {
+        document.getElementById('pollRow').hidden = true;
+        if (action == 1) { // asked to poll for is it complete
+            this.#payPoll = 1;
+            this.pay('');
+            return;
+        }
+        // need cancel
+        show_message("Cancel not written yet", 'error');
+    }
+
 // Process a payment against the transaction
     pay(nomodal, prow = null, nonce = null) {
         var checked = false;
@@ -2073,13 +2093,15 @@ addUnpaid(tid) {
         var checkno = null;
         var desc = null;
         var ptype = null;
-        var total_amount_due = this.#preTaxAmt + this.#taxAmt - this.#totalPaid;
+        var total_amount_due = Number(this.#preTaxAmt) + Number(this.#taxAmt);
         var pt_cash = document.getElementById('pt-cash').checked;
         var pt_check = document.getElementById('pt-check').checked;
         var pt_online = document.getElementById('pt-online');
         var pt_credit = document.getElementById('pt-credit');
         var pt_terminal = document.getElementById('pt-terminal');
         var pt_discount = document.getElementById('pt-discount');
+
+        document.getElementById('overrideRow').hidden = true;
 
         if (this.#pay_currentOrderId == null) {
             show_message("No order in progress, you have reached an error condition, start over or seek assistance", "error");
@@ -2239,7 +2261,6 @@ addUnpaid(tid) {
                     country = cart.getCountry(rownum);
                 }
 
-
                 prow = {
                     index: cart.getPmtLength(), amt: pay_amt, ccauth: ccauth, checkno: checkno, desc: eldesc.value, type: ptype, nonce: nonce,
                     payor: {
@@ -2263,7 +2284,10 @@ addUnpaid(tid) {
             user_id: this.#user_id,
             pay_tid: this.#pay_tid,
             pay_tid_amt: this.#pay_tid_amt,
+            override: this.#payOverride,
+            poll: this.#payPoll,
         };
+        this.#payOverride = false;
         this.#pay_button_pay.disabled = true;
         var _this = this;
         clear_message();
@@ -2272,35 +2296,55 @@ addUnpaid(tid) {
             url: "scripts/pos_processPayment.php",
             data: postData,
             success: function (data, textstatus, jqxhr) {
-                var stop = true;
-                if (typeof data == 'string') {
-                    show_message(data, 'error');
-                } else if (data.error !== undefined) {
-                    show_message(data.error, 'error');
-                } else if (data.message !== undefined) {
-                    show_message(data.message, 'success');
-                    stop = false;
-                } else if (data.warn !== undefined) {
-                    show_message(data.warn, 'warn');
-                    stop = false;
-                } else if (data.status == 'error') {
-                    show_message(data.data, 'error');
-                }
-                if (!stop)
-                    _this.updatedPayment(data);
-                _this.#pay_button_pay.disabled = false;
-                if (pt_online)
-                    $('#' + this.#purchase_label).removeAttr("disabled");
+                _this.paySuccess(data);
             },
             error: function (jqXHR, textstatus, errorThrown) {
                 _this.#pay_button_pay.disabled = false;
-                if (pt_online)
-                    $('#' + this.#purchase_label).removeAttr("disabled");
+                $('#' + _this.#purchase_label).removeAttr("disabled");
                 showAjaxError(jqXHR, textstatus, errorThrown);
             },
         });
     }
 
+    paySuccess(data) {
+        // reset the disabled items
+        $('#' + this.#purchase_label).removeAttr("disabled");
+        this.#pay_button_pay.disabled = false;
+        this.#payPoll = 0;
+
+        // things that stop us cold....
+        if (typeof data == 'string') {
+            show_message(data, 'error');
+            return;
+        }
+        if (data.status == 'error') {
+            show_message(data.data, 'error');
+            return;
+        }
+
+        if (data.error !== undefined) {
+            show_message(data.error, 'error');
+            return;
+        }
+
+        if (data.warn !== undefined) {
+            show_message(data.warn, 'warn');
+            // warn means we could not get the terminal, ask if we want to override it
+            if (data.status != 'OFFLINE') {
+                document.getElementById('overrideRow').hidden = false;
+                return;
+            }
+        }
+
+        // and things that continue
+        if (data.message !== undefined) {
+            show_message(data.message, 'success');
+        }
+        if (data.hasOwnProperty('poll')) {
+            if ($poll == 1)
+                document.getElementById('pollRow').hidden = false;
+        }
+    }
 
 // updatedPayment:
 //  payment entered into the database correctly, update the payment cart and the memberships with the updated paid amounts
@@ -2768,6 +2812,23 @@ addUnpaid(tid) {
         <div class="col-sm-2 ms-0 me-2 p-0">&nbsp;</div>
         <div class="col-sm-auto ms-0 me-2 p-0">
             <button class="btn btn-primary btn-sm" type="button" id="pay-btn-pay" onclick="pos.pay('');">Confirm Pay</button>
+        </div>
+    </div>
+    <div class="row mt-3" id="overrideRow" hidden>
+        <div class="col-sm-auto ms-0 me-2 p-0">
+            <button class="btn btn-warning btn-sm" type="button" id="pay-btn-override" onclick="pos.overridePay();">Override</button>
+        </div>
+        <div class="col-sm-10 ms-0 me-2 p-0" id="override_msg">
+            <p>The terminal is marked as not available, override the status to take control and use it anyway?</p>
+            <p>This will cancel any payment in process on the terminal.</p>
+        </div>
+    </div>
+     <div class="row mt-3" id="pollRow" hidden>
+        <div class="col-sm-auto ms-0 me-2 p-0">
+            <button class="btn btn-primary btn-sm" type="button" id="pay-poll-complete" onclick="pos.payPoll(1);">Payment Complete</button>
+        </div>
+        <div class="col-sm-auto ms-0 me-2 p-0">
+            <button class="btn btn-primary btn-sm" type="button" id="pay-poll-cancel" onclick="pos.payPoll(0);">Cancel Payment</button>
         </div>
     </div>
   </form>

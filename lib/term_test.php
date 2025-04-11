@@ -15,3 +15,64 @@ function createDeviceCode($name, $locationId, $useLogWrite = false) : array {
         'status' => 'UNPAIRED', 'status_changed_at' => date_create('now')->format('Y-m-d H:i:s'));
     return $term;
 }
+
+function term_getStatus($name, $useLogWrite = false) : array | null {
+    $cc = get_conf('cc');
+    $debug = get_conf('debug');
+    if (array_key_exists('square', $debug))
+        $squareDebug = $debug['square'];
+    else
+        $squareDebug = 0;
+
+    // get the device name
+    $terminal = getTerminal($name);
+    // just fetch the updated terminal record
+    $terminalSQL = <<<EOS
+SELECT *
+FROM terminals
+WHERE name = ?;
+EOS;
+    $terminalQ = dbSafeQuery($terminalSQL, 's', array($name));
+    if ($terminalQ === false || $terminalQ->num_rows != 1) {
+        RenderErrorAjax("Cannot fetch terminal $name status.");
+        exit();
+    }
+    $updatedRow = $terminalQ->fetch_assoc();
+    $response['updatedRow'] = $updatedRow;
+    $terminalQ->free();
+    return $response;
+}
+
+function term_payOrder($name, $orderId, $amount, $useLogWrite = false) : array {
+    // fake it by returning a pending status for any amount not ending in $0.01 and failure for ending in $.01
+    $amount = $amount * 100;
+    $status = ($amount % 100) == 1 ? 'FAILED' : 'PENDING';
+    $checkout = array(
+        'id' => 'C' . time(),
+        'amount_money' => array(
+            'amount' => $amount,
+            'currency' => 'USD'
+        ),
+        'status' => $status
+    );
+
+    return $checkout;
+}
+
+function term_cancelPayment($name, $payRef, $useLogWrite = false) : array {
+    $checkout = array(
+        'id' => 'C' . time(),
+        'status' => 'CANCELLED'
+    );
+
+    return $checkout;
+}
+
+function term_getPayStatus($name, $payRef, $useLogWrite = false) : array {
+    $checkout = array(
+        'id' => 'C' . time(),
+        'status' => 'COMPLETED'
+    );
+
+    return $checkout;
+}

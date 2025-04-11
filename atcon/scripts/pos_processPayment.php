@@ -97,6 +97,74 @@ if (!array_key_exists('amt', $new_payment) || $new_payment['amt'] <= 0) {
         return;
     }
 
+$override = $_POST['override'];
+if (array_key_exists('poll', $_POST)) {
+    $poll = $_POST['poll'];
+} else {
+    $poll = 0;
+}
+
+// we need an available terminal, so get the latest status
+if ($new_payment['type'] == 'terminal') {
+    load_term_procs();
+    $terminal = getSessionVar('terminal');
+    $name = $terminal['name'];
+    $statusResponse = term_getStatus($name);
+    $termStatus = $statusResponse['updatedRow'];
+
+    if ($override == 1) {  // force the operation to continue, try to cancel anything in progress
+        if ($termStatus['currentPayment'] != null && $termStatus['currentPayment'] != '') {
+            term_cancelPayment($name, $termStatus['currentPayment'], true);
+        }
+        if ($termStatus['currentOrder'] != null && $termStatus['currentOrder'] != '$orderId') {
+            cc_cancelOrder('atcon', $orderId, true);
+        }
+        $updQ = <<<EOS
+UPDATE terminals
+SET currentOperator = '', currentOrder = '', currentPayment = '', controllStatus = '', controllStatusChanged = now()
+WHERE name = ?;
+EOS;
+        dbSafeCmd($updQ, 'i', array($name));
+    } else {
+        $status = $termStatus['status'];
+        $inUseBy = $termStatus['currentOperator'];
+        $controllStatus = $termStatus['controllStatus'];
+        $currentOrder = $termStatus['currentOrder'];
+        $currentPayment = $termStatus['currentPayment'];
+        if ($status != 'AVAILABLE' || $inUseBy != $user_id) {
+            $msg = "Terminal $name is not available, it's status is $status";
+            if ($inUseBy != null && $inUseBy != '') {
+                if ($inUseBy != $user_id) {
+                    $operatorNameSQL = <<<EOS
+SELECT TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', 
+    IFNULL(last_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) AS fullname
+FROM perinfo
+WHERE id = ?;
+EOS;
+                    $inUseName = '';
+                    $operatorR = dbSafeQuery($operatorNameSQL, 'i', array ($inUseBy));
+                    if ($operatorR !== false) {
+                        if ($operatorR->num_rows == 1) {
+                            $inUseName = $operatorR->fetch_row()[0];
+                        }
+                        $operatorR->free();
+                    }
+
+                    $msg .= " and is in use by $inUseName ($inUseBy)";
+                }
+            }
+            if ($controllStatus != null && $controllStatus != '') {
+                $msg .= "<br/>And the system says its in use for $controllStatus<br/>For order $currentOrder and payment operation $currentPayment";
+            }
+            $response['termStatus'] = $termStatus;
+            $response['inUseBy'] = $inUseBy;
+            $response['status'] = $status;
+            $response['warn'] = $msg;
+            ajaxSuccess($response);
+            exit();
+        }
+    }
+}
 
 if (array_key_exists('coupon', $_POST)) {
     $coupon = $_POST['coupon'];
@@ -179,10 +247,31 @@ if ($amt > 0) {
             break;
 
         case 'terminal':
-            // this is the send the request to the terminal, then we need a separate poll section to get it back and continue to record the payment.
-            ajaxSuccess(array('status' => 'error', 'data' => 'Terminal not written yet'));
-            exit();
-
+            if ($poll == 1) {
+                ajaxSuccess(array ('status' => 'error', 'data' => 'poll not written yet'));
+                exit();
+            } else {
+                // this is the send the request to the terminal, then we need a separate poll section to get it back and continue to record the payment.
+                $checkout = term_payOrder($name, $orderId, $amt, true);
+                $status = $checkout['status'];
+                if ($status == 'PENDING') {
+                    $updQ = <<<EOS
+UPDATE terminals
+SET currentOperator = ?, currentOrder = ?, currentPayment = ?, controllStatus = ?, controllStatusChanged = NOW()
+WHERE name = ?;
+EOS;
+                    $upd = dbSafeCmd($updQ, 'isssi', array ($user_id, $orderId, $checkout['id'], $status, $name));
+                    if ($upd === false) {
+                        ajaxSuccess(array ('status' => 'error', 'data' => "Unable to update terminal ($name) status"));
+                        exit();
+                    }
+                    ajaxSuccess(array ('status' => 'success', 'poll' => 1, 'message' => "Payment request sent to terminal $name,<br/>" .
+                        'click "Payment Complete when payment has been made or "Cancel Payment" to cancel the request.'));
+                    exit();
+                }
+                ajaxSuccess(array ('status' => 'error', 'data' => 'Unable to send payment request to terminal $name'));
+                exit();
+            }
         default:
             $approved_amt = 0;
             $rtn = array ('url' => '');
