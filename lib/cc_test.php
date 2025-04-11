@@ -436,7 +436,7 @@ function cc_getPayment($source, $paymentid, $useLogWrite = false) : array {
         'id' => 'testSystem',
         'created_at' => '2099-01-01 00:00"00',
         'amount_money' => [
-            'amount' => $ccTestResults['totalAmt'] * 100,
+            'amount' =>  $_SESSION['term_testAmt'],
             'currency' => 'USD',
             ],
         'source_type' => 'CARD',
@@ -466,7 +466,7 @@ function cc_getPayment($source, $paymentid, $useLogWrite = false) : array {
             'currency' => 'USD',
         ],
         'approved_money' => [
-            'amount' => $ccTestResults['totalAmt'] * 100,
+            'amount' => $_SESSION['term_testAmt'],
             'currency' => 'USD',
         ],
         'application_details' => [

@@ -340,6 +340,7 @@ EOS;
                 ajaxSuccess(array ('error' => "Unable to send payment request to terminal $name"));
                 exit();
             }
+            break;
         default:
             $approved_amt = 0;
             $rtn = array ('url' => '');
@@ -362,7 +363,13 @@ EOS;
     else
         $desc = '';
     $desc .= $new_payment['desc'];
-    $paramarray = array($master_tid, $paymentType, $desc, $new_payment['amt'], 0, $new_payment['amt'], $new_payment['ccauth'], $user_perid);
+    if ($new_payment['type'] != 'terminal') {
+       $preTaxAmt = $new_payment['amt'];
+       $taxAmt = 0;
+       $approved_amt = $new_payment['amt'];
+       $auth = $new_payment['ccauth'];
+    }
+    $paramarray = array($master_tid, $paymentType, $desc, $preTaxAmt, $taxAmt, $approved_amt, $auth, $user_perid);
     $new_pid = dbSafeInsert($insPmtSQL, $typestr, $paramarray);
 }
 
