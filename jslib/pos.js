@@ -2342,14 +2342,10 @@ addUnpaid(tid) {
         if (data.hasOwnProperty('poll')) {
             if (data.poll == 1) {
                 document.getElementById('pollRow').hidden = false;
-                _this.#pay_button_pay.disabled = true;
+                this.#pay_button_pay.disabled = true;
+                return;
             }
         }
-    }
-
-// updatedPayment:
-//  payment entered into the database correctly, update the payment cart and the memberships with the updated paid amounts
-    updatedPayment(data) {
         cart.updatePmt(data);
         this.#pay_tid_amt += Number(data.pay_amt);
         this.payShown();
