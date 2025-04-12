@@ -220,11 +220,15 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
     $itemsBuilt = false;
     $taxRate = 0;
     $taxLabel = 'Unconfigured Sales Tax';
+    $taxuid = 'salestax';
     if (array_key_exists('taxRate', $con)) {
         $taxRate = $con['taxRate'];
     }
     if (array_key_exists('taxLabel', $con)) {
         $taxLabel = $con['taxLabel'];
+    }
+    if (array_key_exists('taxuid', $con)) {
+        $taxuid = $con['taxuid'];
     }
     $needTaxes = false;
 
@@ -352,7 +356,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                     $needTaxes = true;
                     $item->setAppliedTaxes(array(new Square\Types\OrderLineItemAppliedTax([
                         'uid' => 'badge-tax-' . ($lineid + 1),
-                        'taxUid' => $taxLabel,
+                        'taxUid' => $taxuid,
                     ])));
                 }
                 if (array_key_exists('newplan', $results) && $results['newplan'] == 1) {
@@ -512,7 +516,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
 
     if ($needTaxes) {
         $order->setTaxes(array(new Square\Types\OrderLineItemTax([
-            'uid' => $taxLabel,
+            'uid' => $taxuid,
             'name' => $taxLabel,
             'type' => Square\Types\OrderLineItemTaxType::Additive->value,
             'percentage' => $taxRate,

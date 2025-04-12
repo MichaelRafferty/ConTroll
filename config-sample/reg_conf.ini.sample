@@ -42,6 +42,7 @@ id="2022"
 ; sales tax rate and Invoice Label
 taxRate=6
 taxLabel="NJ Sales Tax"
+taxuid="NJ-Sales-Tax"  ; uid's are letters, numbers and '-' only, no blanks or other characters
 currency="USD"
 minComp="2021"
 compLen="365" ; day length for growth by day graph
