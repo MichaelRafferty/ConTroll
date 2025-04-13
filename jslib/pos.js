@@ -2767,7 +2767,7 @@ addUnpaid(tid) {
         <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0"><input type="text" size="8" maxlength="10" name="pay-checkno" id="pay-checkno"/></div>
     </div>
     <div class="row mb-2" id="pay-cash-div" hidden>
-        <div className="col-sm-2 ms-0 me-2 p-0">Amount Tendered:</div>
+        <div className="col-sm-2 ms-0 me-2 p-0">Amt Tendered:</div>
         <div className="col-sm-auto m-0 p-0 ms-0 me-2 p-0"><input type="number" className="no-spinners" id="pay-tendered" name="paid-tendered" size="6"/></div>
     </div>
     <div class="row mb-2" id="pay-ccauth-div" hidden>

@@ -264,7 +264,6 @@ if ($amt > 0) {
             'desc' => $desc,
             'source' => $source,
             'change' => $change,
-            'customerId' => $_POST['customerId'],
             'locationId' => $cc['location'],
         );
 
