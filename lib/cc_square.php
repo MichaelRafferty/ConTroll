@@ -653,7 +653,7 @@ function cc_fetchOrder($source, $orderId, $useLogWrite = false) : array {
 }
 
 // enter a payment against an exist order: build the payment, submit it to square and process the resulting payment
-function cc_payOrder($results, $buyer, $useLogWrite = false) {
+function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     $con = get_conf('con');
     $cc = get_conf('cc');
     $currency = cc_getCurrency($con);
@@ -664,8 +664,8 @@ function cc_payOrder($results, $buyer, $useLogWrite = false) {
         $squareDebug = 0;
 
     $source = 'onlinereg';
-    if (array_key_exists('source', $results)) {
-        $source = $results['source'];
+    if (array_key_exists('source', $ccParams)) {
+        $source = $ccParams['source'];
     }
 
     // 1. create payment for order
@@ -686,23 +686,23 @@ function cc_payOrder($results, $buyer, $useLogWrite = false) {
     if ($buyer['phone'] == '/r' || $buyer['phone'] == null)
         $buyer['phone'] = '';
 
-    $sourceId = $results['nonce'];
-    $buyerSuppliedMoney = $results['amount'] + $results['change'];
+    $sourceId = $ccParams['nonce'];
+    $buyerSuppliedMoney = $ccParams['total'] + $ccParams['change'];
 
     // nonce = card id if card, CASH or EXTERNAL (check, other credit card clearer)
     $pbodyArgs = array(
         'idempotencyKey' => guidv4(),
         'sourceId' => $sourceId,
         'amountMoney' => new Money([
-            'amount' => $results['totalAmt'] * 100,
+            'amount' => $ccParams['total'] * 100,
             'currency' => $currency,
             ]),
-        'orderId' => $results['orderId'],
+        'orderId' => $ccParams['orderId'],
         'autocomplete' => true,
-        'customerId' => $results['customerId'],
-        'locationId' => $results['locationId'],
-        'referenceId' => $results['referenceId'],
-        'note' => "$source payment from " . $results['source'],
+        'customerId' => $ccParams['customerId'],
+        'locationId' => $ccParams['locationId'],
+        'referenceId' => $con['id'] . '-' . $ccParams['pay_tid'] . '-' . time(),
+        'note' => "$source payment from " . $ccParams['source'],
     );
     if ($buyer['email'] != '')
         $pbodyArgs['buyerEmailAddress'] = $buyer['email'];
@@ -720,7 +720,7 @@ function cc_payOrder($results, $buyer, $useLogWrite = false) {
                 'currency' => $currency,
                 ]),
             'changeBackMoney' => new Money([
-                'amount' => $results['change'] * 100,
+                'amount' => $ccParams['change'] * 100,
                 'currency' => $currency,
             ]),
         ]);
@@ -728,8 +728,8 @@ function cc_payOrder($results, $buyer, $useLogWrite = false) {
 
     if ($source == 'EXTERNAL') {
         $pbodyArgs['externalDetails'] = new Square\Types\ExternalPaymentDetails([
-            'type' => $results['externalType'],
-            'source' => $results['desc'],
+            'type' => $ccParams['externalType'],
+            'source' => $ccParams['desc'],
         ]);
     }
 
@@ -758,9 +758,9 @@ function cc_payOrder($results, $buyer, $useLogWrite = false) {
                 $code = $error['code'];
                 $detail = $error['detail'];
                 if ($useLogWrite) {
-                    logWrite('Transid: ' . $results['transid'] . " Cat: $cat: Code $code, Detail: $detail");
+                    logWrite('Transid: ' . $ccParams['transid'] . " Cat: $cat: Code $code, Detail: $detail");
                 }
-                web_error_log('Transid: ' . $results['transid'] . " Cat: $cat: Code $code, Detail: $detail");
+                web_error_log('Transid: ' . $ccParams['transid'] . " Cat: $cat: Code $code, Detail: $detail");
 
                 switch ($code) {
                     case 'GENERIC_DECLINE':
@@ -779,9 +779,9 @@ function cc_payOrder($results, $buyer, $useLogWrite = false) {
                         $msg = $code;
                 }
                 if ($useLogWrite) {
-                    logWrite('Square card payment error for ' . $results['transid'] . " of $msg");
+                    logWrite('Square card payment error for ' . $ccParams['transid'] . " of $msg");
                 }
-                web_error_log('Square card payment error for ' . $results['transid'] . " of $msg");
+                web_error_log('Square card payment error for ' . $ccParams['transid'] . " of $msg");
 
                 ajaxSuccess(array ('status' => 'error', 'data' => "Payment Error: $msg"));
                 exit();
@@ -805,8 +805,8 @@ function cc_payOrder($results, $buyer, $useLogWrite = false) {
     $receipt_number = $payment->getReceiptNumber();
 
     // set category based on if exhibits is a portal type
-    if (array_key_exists('exhibits', $results)) {
-       $category =  $results['exhibits'];
+    if (array_key_exists('exhibits', $ccParams)) {
+       $category =  $ccParams['exhibits'];
     } else {
         $category = 'reg';
     }
@@ -817,8 +817,8 @@ function cc_payOrder($results, $buyer, $useLogWrite = false) {
         'txn_time', 'cc','nonce','cc_txn_id','cc_approval_code','receipt_url','status','receipt_id', 'cashier');
     $rtn['tnxtypes'] = array('i', 's', 's', 's', 's', 'd', 'd', 'd',
             's', 's', 's', 's', 's', 's', 's', 's', 'i');
-    $rtn['tnxdata'] = array($results['transid'],'credit',$category,$desc,$source,$results['preTaxAmt'], $results['taxAmt'], $approved_amt,
-        $txtime,$last4,$results['nonce'],$id,$auth,$receipt_url,$status,$receipt_number, $loginPerid);
+    $rtn['tnxdata'] = array($ccParams['transid'],'credit',$category,$desc,$source,$ccParams['preTaxAmt'], $ccParams['taxAmt'], $approved_amt,
+        $txtime,$last4,$ccParams['nonce'],$id,$auth,$receipt_url,$status,$receipt_number, $loginPerid);
     $rtn['url'] = $receipt_url;
     $rtn['rid'] = $receipt_number;
     $rtn['payment'] = $payment;

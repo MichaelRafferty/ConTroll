@@ -45,7 +45,7 @@ $con = get_conf('con');
 $debug = get_conf('debug');
 $ini = get_conf('reg');
 $log = get_conf('log');
-$ccauth = get_conf('cc');
+$cc = get_conf('cc');
 load_cc_procs();
 logInit($log['term']);
 
@@ -264,11 +264,12 @@ if ($amt > 0) {
             'desc' => $desc,
             'source' => $source,
             'change' => $change,
+            'customerId' => $_POST['customerId'],
+            'locationId' => $cc['location'],
         );
 
         //log requested badges
         logWrite(array ('type' => 'online', 'con' => $con['conname'], 'trans' => $master_tid, 'results' => $cc_params));
-        $ccauth = get_conf('cc');
         load_cc_procs();
         $rtn = cc_payOrder($cc_params, $buyer, true);
         if ($rtn === null) {
