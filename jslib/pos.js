@@ -49,7 +49,6 @@ class Pos {
     #totalPaid = null;
     #payOverride = 0;
     #payPoll = 0;
-    #customerId = null;
 
     // Data Items
     #unpaid_table = [];
@@ -2036,7 +2035,6 @@ addUnpaid(tid) {
         this.#taxAmt = data.rtn.taxAmt;
         this.#taxLabel = data.rtn.taxLabel;
         this.#totalPaid = data.rtn.totalPaid;
-        this.#customerId = data.rtn.customerId;
         show_message("Order #" + this.#pay_currentOrderId + " created.");
         bootstrap.Tab.getOrCreateInstance(this.#pay_tab).show();
         cart.drawCart();
@@ -2291,7 +2289,6 @@ addUnpaid(tid) {
             totalAmtDue: total_amount_due,
             override: this.#payOverride,
             poll: this.#payPoll,
-            customerId: this.#customerId,
         };
         this.#payOverride = 0;
         this.#pay_button_pay.disabled = true;
@@ -2325,6 +2322,11 @@ addUnpaid(tid) {
 
         if (data.error !== undefined) {
             show_message(data.error, 'error');
+            return;
+        }
+
+        if (data.status == 'error') {
+            show_message(data.data, 'error');
             return;
         }
 

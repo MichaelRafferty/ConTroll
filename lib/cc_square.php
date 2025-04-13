@@ -699,7 +699,6 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
             ]),
         'orderId' => $ccParams['orderId'],
         'autocomplete' => true,
-        'customerId' => $ccParams['customerId'],
         'locationId' => $ccParams['locationId'],
         'referenceId' => $con['id'] . '-' . $ccParams['transid'] . '-' . time(),
         'note' => "$source payment from " . $ccParams['source'],
@@ -726,7 +725,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
         ]);
     }
 
-    if ($source == 'EXTERNAL') {
+    if ($sourceId == 'EXTERNAL') {
         $pbodyArgs['externalDetails'] = new Square\Types\ExternalPaymentDetails([
             'type' => $ccParams['externalType'],
             'source' => $ccParams['desc'],
