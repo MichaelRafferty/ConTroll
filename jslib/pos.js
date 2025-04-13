@@ -2053,10 +2053,12 @@ addUnpaid(tid) {
         var elcheckno = document.getElementById('pay-check-div');
         var elccauth = document.getElementById('pay-ccauth-div');
         var elonline = document.getElementById('pay-online-div');
+        var elcash = document.getElementById('pay-cash-div');
 
         elcheckno.hidden = ptype != 'check';
         elccauth.hidden = ptype != 'credit';
         elonline.hidden = ptype != 'online';
+        elcash.hidden = ptype != 'cash';
         this.#pay_button_pay.innerHTML = 'Confirm Pay';
         this.#pay_button_pay.disabled = ptype == 'online';
 
@@ -2066,10 +2068,13 @@ addUnpaid(tid) {
         if (ptype != 'credit') {
             document.getElementById('pay-ccauth').value = null;
         }
+        if (ptype != 'cash') {
+            document.getElementById('pay-tendered').value = null;
+        }
     }
 
 // overridePay - pay returned the terminal was unavailable, operator said to override it
-    overridePay() {
+    overridePay(){
         this.#payOverride = 1;
         this.pay('');
     }
@@ -2132,41 +2137,36 @@ addUnpaid(tid) {
             this.#cashChangeModal.hide();
         }
 
+        tendered_amt = 0;
+
         if (prow == null) {
             // validate the payment entry: It must be >0 and <= amount due
             //      a payment type must be specified
             //      for check: the check number is required
             //      for credit card: the auth code is required
             //      for discount: description is required, it's optional otherwise
-            var elamt = document.getElementById('pay-amt');
-            var pay_amt = Number(elamt.value);
-            if (pay_amt > 0 && pay_amt > total_amount_due) {
-                if (pt_cash) {
+
+            if (pt_cash) {
+                var eltenderedamt = document.getElementById('pay-tendered');
+                var tendered_amt = Number(eltenderedamt.value);
+                if (tendered_amt < total_amount_due) {
+                    eltenderedamt.style.backgroundColor = 'var(--bs-warning)';
+                    return;
+                }
+                if (tendered_amt > total_amount_due) {
                     if (nomodal == '') {
                         this.#cashChangeModal.show();
                         document.getElementById("CashChangeBody").innerHTML = "<div class='row mt-2'>\n<div class='col-sm-12'>" +
-                            "Customer owes $" + total_amount_due.toFixed(2) + ", and tendered $" + pay_amt.toFixed(2) +
+                            "Customer owes $" + total_amount_due.toFixed(2) + ", and tendered $" + tendered_amt.toFixed(2) +
                             "</div>\n</div>\n<div class='row mt-2 mb-2'>\n<div class='col-sm-12'>" +
-                            "Confirm change give to customer of $" + (pay_amt - total_amount_due).toFixed(2) +
+                            "Confirm change give to customer of $" + (tendered_amt - total_amount_due).toFixed(2) +
                             "</div>\n</div>\n";
                         return;
                     }
                 } else {
-                    elamt.style.backgroundColor = 'var(--bs-warning)';
-                    if (pt_online)
-                        $('#' + this.#purchase_label).removeAttr("disabled");
-                    return;
+                    eltenderedamt.style.backgroundColor = '';
                 }
             }
-
-            if (pay_amt <= 0) {
-                elamt.style.backgroundColor = 'var(--bs-warning)';
-                if (pt_online)
-                    $('#' + this.#purchase_label).removeAttr("disabled");
-                return;
-            }
-
-            elamt.style.backgroundColor = '';
 
             var elptdiv = document.getElementById('pt-div');
             elptdiv.style.backgroundColor = '';
@@ -2239,15 +2239,14 @@ addUnpaid(tid) {
                 return;
             }
 
-            if (pay_amt > 0) {
+            if (tendered_amt > 0) {
                 var crow = null;
                 var change = 0;
-                if (pay_amt > total_amount_due) {
-                    change = pay_amt - total_amount_due;
-                    pay_amt = total_amount_due;
+                if (tendered_amt > total_amount_due) {
+                    change = tendered_amt - total_amount_due;
                     crow = {
                         index: cart.getPmtLength() + 1, amt: change, ccauth: ccauth, checkno: checkno, desc: eldesc.value, type: 'change',
-                    }
+                    };
                 }
 
                 var payorPerid = 2; // atcon perid
@@ -2262,7 +2261,8 @@ addUnpaid(tid) {
                 }
 
                 prow = {
-                    index: cart.getPmtLength(), amt: pay_amt, ccauth: ccauth, checkno: checkno, desc: eldesc.value, type: ptype, nonce: nonce,
+                    index: cart.getPmtLength(), amt: total_amount_due, ccauth: ccauth, checkno: checkno, desc: eldesc.value,
+                    type: ptype, nonce: nonce,
                     payor: {
                         email: email,
                         phone: phone,
@@ -2722,10 +2722,6 @@ addUnpaid(tid) {
         <div class="col-sm-2 ms-0 me-2 p-0">Amount Due:</div>
         <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-amt-due">$` + Number(total_amount_due).toFixed(2) + `</div>
     </div>
-    <div class="row mt-2">
-        <div class="col-sm-2 ms-0 me-2 p-0">Amount Paid:</div>
-        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0"><input type="number" class="no-spinners" id="pay-amt" name="paid-amt" size="6"/></div>
-    </div>
     <div class="row">
         <div class="col-sm-2 m-0 mt-2 me-2 mb-2 p-0">Payment Type:</div>
         <div class="col-sm-auto m-0 mt-2 p-0 ms-0 me-2 mb-2 p-0" id="pt-div">
@@ -2769,6 +2765,10 @@ addUnpaid(tid) {
     <div class="row mb-2" id="pay-check-div" hidden>
         <div class="col-sm-2 ms-0 me-2 p-0">Check Number:</div>
         <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0"><input type="text" size="8" maxlength="10" name="pay-checkno" id="pay-checkno"/></div>
+    </div>
+    <div class="row mb-2" id="pay-cash-div" hidden>
+        <div className="col-sm-2 ms-0 me-2 p-0">Amount Tendered:</div>
+        <div className="col-sm-auto m-0 p-0 ms-0 me-2 p-0"><input type="number" className="no-spinners" id="pay-tendered" name="paid-tendered" size="6"/></div>
     </div>
     <div class="row mb-2" id="pay-ccauth-div" hidden>
         <div class="col-sm-2 ms-0 me-2 p-0">CC Auth Code:</div>
