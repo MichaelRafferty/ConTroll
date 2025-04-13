@@ -571,6 +571,9 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
 
 // an order is no longer valid, cancel it, via an update to Cancelled status
 function cc_cancelOrder($source, $orderId, $useLogWrite = false) : void {
+    // At present the API does not let you cancle orders, and this code does not work
+    //TODO: if Square writes a cancel, this code needs rewriting
+    /*
     $cc = get_conf('cc');
     $debug = get_conf('debug');
     if (array_key_exists('square', $debug))
@@ -608,6 +611,7 @@ function cc_cancelOrder($source, $orderId, $useLogWrite = false) : void {
       catch (Exception $e) {
           sqcc_logException($source, $e, 'Order API error while calling Square', 'Error connecting to Square', $useLogWrite);
       }
+    */
 }
 // fetch an order to get its details
 function cc_fetchOrder($source, $orderId, $useLogWrite = false) : array {
