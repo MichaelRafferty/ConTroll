@@ -701,7 +701,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
         'autocomplete' => true,
         'customerId' => $ccParams['customerId'],
         'locationId' => $ccParams['locationId'],
-        'referenceId' => $con['id'] . '-' . $ccParams['pay_tid'] . '-' . time(),
+        'referenceId' => $con['id'] . '-' . $ccParams['transid'] . '-' . time(),
         'note' => "$source payment from " . $ccParams['source'],
     );
     if ($buyer['email'] != '')

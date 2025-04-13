@@ -51,7 +51,10 @@ $response['conid'] = $conid;
 $response['discount'] = $atcon['discount'];
 $response['badgePrinter'] = getSessionVar('badgePrinter')['name'] != 'None';
 $response['receiptPrinter'] = getSessionVar('receiptPrinter')['name'] != 'None';
-$response['terminal'] = getSessionVar('terminal')['name'] != 'None';
+if (isSessionVar('terminal'))
+    $response['terminal'] = getSessionVar('terminal')['name'] != 'None';
+else
+    $response['terminal'] = false;
 $response['user_id'] = getSessionVar('user');
 $response['Manager'] = check_atcon('manager', $conid);
 
