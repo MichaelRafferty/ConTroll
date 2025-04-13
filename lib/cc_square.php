@@ -686,9 +686,13 @@ function cc_payOrder($results, $buyer, $useLogWrite = false) {
     if ($buyer['phone'] == '/r' || $buyer['phone'] == null)
         $buyer['phone'] = '';
 
+    $sourceId = $results['nonce'];
+    $buyerSuppliedMoney = $results['amount'] + $results['change'];
+
+    // nonce = card id if card, CASH or EXTERNAL (check, other credit card clearer)
     $pbodyArgs = array(
         'idempotencyKey' => guidv4(),
-        'sourceId' => $results['nonce'],
+        'sourceId' => $sourceId,
         'amountMoney' => new Money([
             'amount' => $results['totalAmt'] * 100,
             'currency' => $currency,
@@ -698,7 +702,7 @@ function cc_payOrder($results, $buyer, $useLogWrite = false) {
         'customerId' => $results['customerId'],
         'locationId' => $results['locationId'],
         'referenceId' => $results['referenceId'],
-        'note' => 'Online payment from ' . $results['source'],
+        'note' => "$source payment from " . $results['source'],
     );
     if ($buyer['email'] != '')
         $pbodyArgs['buyerEmailAddress'] = $buyer['email'];
@@ -706,6 +710,27 @@ function cc_payOrder($results, $buyer, $useLogWrite = false) {
         $phone = phoneNumberNormalize($buyer);
         if ($phone != '')
             $pbodyArgs['buyerPhoneNumber'] = $phone;
+    }
+
+    if ($sourceId == 'CASH') {
+        // add cash fields
+        $pbodyArgs['cashDetails'] = new Square\Types\CashPaymentDetails([
+            'buyerSuppliedMoney' => new Money([
+                'amount' => $buyerSuppliedMoney * 100,
+                'currency' => $currency,
+                ]),
+            'changeBackMoney' => new Money([
+                'amount' => $results['change'] * 100,
+                'currency' => $currency,
+            ]),
+        ]);
+    }
+
+    if ($source == 'EXTERNAL') {
+        $pbodyArgs['externalDetails'] = new Square\Types\ExternalPaymentDetails([
+            'type' => $results['externalType'],
+            'source' => $results['desc'],
+        ]);
     }
 
     $pbody = new CreatePaymentRequest($pbodyArgs);
