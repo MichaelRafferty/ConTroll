@@ -40,6 +40,12 @@ if(!isSessionVar('userhash')) {
                 setSessionVar($prt . 'Printer', $printer);
                 $response[$prt] = $printer['name'];
             }
+            // terminals are passed as the 5 touple
+            if (array_key_exists('square_terminal', $_POST) && $_POST['square_terminal'] != '') {
+                $term = explode(':::', $_POST['square_terminal']);
+                setSessionVar('terminal', $term);
+            }
+
             setSessionVar('userhash', $access['userhash']);
         }
     } else {
