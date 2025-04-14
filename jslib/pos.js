@@ -2092,6 +2092,7 @@ addUnpaid(tid) {
         var postData = {
             ajax_request_action: 'cancelPayRequest',
             requestId: this.#payCurrentRequest,
+            user_id: this.#user_id,
         };
         var _this = this;
         clear_message();
