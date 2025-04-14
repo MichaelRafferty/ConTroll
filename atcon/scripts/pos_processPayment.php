@@ -226,6 +226,7 @@ EOS;
     $chgTPC = dbSafeCmd($chgTP, 'ii', array($payor_perid, $master_tid));
 }
 
+$change = 0;
 if ($amt > 0) {
     if ($new_payment['type'] != 'terminal') {
         // cash, online credit card (square), cash, external: (offline credit card, check, discount, coupon)
@@ -233,7 +234,6 @@ if ($amt > 0) {
         $nonce = 'EXTERNAL';
         $externalType = 'OTHER';
         $desc = '';
-        $change = 0;
         switch ($new_payment['type']) {
             case 'cash':
                 $nonce = 'CASH';
@@ -529,11 +529,10 @@ if ($complete) {
     // payment is in full, mark transaction complete
     $updCompleteSQL = <<<EOS
 UPDATE transaction
-SET complete_date = NOW()
+SET complete_date = NOW(), change_due = ?, orderId = ?, orderDate = ?
 WHERE id = ?;
 EOS;
-    $completed = dbSafeCmd($updCompleteSQL, 'i', array($master_tid));
-    $completed = dbSafeCmd($updCompleteSQL, 'i', array($master_tid));
+    $completed = dbSafeCmd($updCompleteSQL, 'idss', array($change, $master_tid, $orderId));
 }
 
 $response['pay_amt'] = $new_payment['amt'];

@@ -847,6 +847,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     $rtn['source'] = $source;
     $rtn['amount'] = $approved_amt;
     $rtn['nonce'] = $ccParams['nonce'];
+    $rtn['change'] = $ccParams['change'];
     return $rtn;
 }
 
