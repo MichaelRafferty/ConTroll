@@ -61,7 +61,7 @@ $status = $checkout['status'];
 $response['message'] = 'Payment $requestId cancelled.';
 if ($status == 'CANCEL_REQUESTED') {
     resetTerminalStatus($name);
-    $response['message'] = 'Payment $requestId cancelled.';
+    $response['message'] = "Payment $requestId cancelled.";
 }
 else {
     $response['message'] = "Payment $requestId cancelled with status $status.  Terminal usage not reset.";
