@@ -259,7 +259,7 @@ if ($amt > 0) {
                 break;
         }
 
-        $cc_params = array (
+        $ccParam = array (
             'transid' => $master_tid,
             'counts' => 0,
             'price' => null,
@@ -278,9 +278,9 @@ if ($amt > 0) {
         );
 
         //log requested badges
-        logWrite(array ('type' => 'online', 'con' => $con['conname'], 'trans' => $master_tid, 'results' => $cc_params));
+        logWrite(array ('type' => 'online', 'con' => $con['conname'], 'trans' => $master_tid, 'results' => $ccParam));
         load_cc_procs();
-        $rtn = cc_payOrder($cc_params, $buyer, true);
+        $rtn = cc_payOrder($ccParam, $buyer, true);
         if ($rtn === null) {
             ajaxSuccess(array ('error' => 'Credit card not approved'));
             exit();
@@ -430,6 +430,10 @@ EOS;
     $description = $rtn['description'];
     $source = $rtn['source'];
     $nonce = $rtn['nonce'];
+    if ($nonce == 'EXTERNAL')
+        $nonceCode = $ccParam['externalType']
+    else
+        $nonceCode = $nonce;
     $complete = round($approved_amt,2) == round($amt,2);
 
     // now add the payment and process to which rows it applies
@@ -445,7 +449,7 @@ EOS;
         $desc = '';
     $desc .= $new_payment['desc'];
     $paramarray = array ($master_tid, $paymentType, $desc, $preTaxAmt, $taxAmt, $approved_amt, $auth, $user_perid,
-        $last4, $nonce, $paymentId, $txTime, $receiptUrl, $receiptNumber, $user_perid, $status, $paymentId);
+        $last4, $nonceCode, $paymentId, $txTime, $receiptUrl, $receiptNumber, $user_perid, $status, $paymentId);
     $new_pid = dbSafeInsert($insPmtSQL, $typestr, $paramarray);
 
     if ($new_pid === false) {
