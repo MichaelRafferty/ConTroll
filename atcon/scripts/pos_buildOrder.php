@@ -143,7 +143,6 @@ if ($cancelOrderId) // cancel the old order if it exists
 
 $locationId = getSessionVar('terminal');
 if ($locationId) {
-    $locationId = explode(':::', $locationId);
     $locationId = $locationId[4];
 }
 
