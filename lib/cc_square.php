@@ -124,7 +124,7 @@ function cc_getCurrency($con) : string {
 }
 
 // build the order, pass it to square and get the order id
-function cc_buildOrder($results, $useLogWrite = false, locationId = null) : array {
+function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : array {
     $cc = get_conf('cc');
     $con = get_conf('con');
     $debug = get_conf('debug');
