@@ -124,7 +124,7 @@ function cc_getCurrency($con) : string {
 }
 
 // build the order, pass it to square and get the order id
-function cc_buildOrder($results, $useLogWrite = false) : array {
+function cc_buildOrder($results, $useLogWrite = false, locationId = null) : array {
     $cc = get_conf('cc');
     $con = get_conf('con');
     $debug = get_conf('debug');
@@ -159,8 +159,6 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
     //  c. create order
     //  add order id to return items
 
-
-
     $source = 'onlinereg';
     if (array_key_exists('source', $results)) {
         $source = $results['source'];
@@ -174,6 +172,10 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
         $source = $results['exhibits'];
     } else {
         $custid = 't-' . $results['transid'];
+    }
+
+    if ($locationId == null) {
+        $locationId = $cc['location'];
     }
 
     // SDK 41, builds the parts then passes them into the body
@@ -504,7 +506,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
 
 
     $order = new Order([
-        'locationId' => $cc['location'],
+        'locationId' => $locationId,
         'referenceId' => $con['id'] . '-' . $results['transid'],
         'source' => new OrderSource([
             'name' => $con['conname'] . '-' . $source
@@ -570,11 +572,13 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
 }
 
 // an order is no longer valid, cancel it, via an update to Cancelled status
-function cc_cancelOrder($source, $orderId, $useLogWrite = false) : void {
+function cc_cancelOrder($source, $orderId, $useLogWrite = false, $locationId = null) : void {
     // At present the API does not let you cancle orders, and this code does not work
     //TODO: if Square writes a cancel, this code needs rewriting
     /*
     $cc = get_conf('cc');
+    if ($locationId == null)
+        $locationId = $cc['location'];
     $debug = get_conf('debug');
     if (array_key_exists('square', $debug))
         $squareDebug = $debug['square'];
@@ -582,7 +586,7 @@ function cc_cancelOrder($source, $orderId, $useLogWrite = false) : void {
         $squareDebug = 0;
 
     $order = new Order([
-        'locationId' => $cc['location'],
+        'locationId' => $locationId,
         'state' => 'CANCELLED',
     ]);
 
