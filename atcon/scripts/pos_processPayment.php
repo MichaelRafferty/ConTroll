@@ -50,15 +50,6 @@ load_cc_procs();
 logInit($log['term']);
 
 $conid = $con['id'];
-$ajax_request_action = '';
-if ($_POST && $_POST['ajax_request_action']) {
-    $ajax_request_action = $_POST['ajax_request_action'];
-}
-if ($ajax_request_action != 'processPayment') {
-    RenderErrorAjax('Invalid calling sequence.');
-    exit();
-}
-
 $upd_rows = 0;
 $cupd_rows = 0;
 

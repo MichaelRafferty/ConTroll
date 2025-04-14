@@ -2091,7 +2091,7 @@ addUnpaid(tid) {
         // cancel terminal request
         var postData = {
             ajax_request_action: 'cancelPayRequest',
-            requestid: this.#payCurrentRequest,
+            requestId: this.#payCurrentRequest,
         };
         var _this = this;
         clear_message();
