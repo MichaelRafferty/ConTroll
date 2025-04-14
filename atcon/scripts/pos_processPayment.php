@@ -499,7 +499,7 @@ foreach ($cart_perinfo as $perinfo) {
                 $cart_perinfo[$perinfo['index']]['memberships'][$cart_row['index']] = $cart_row;
                 $preTaxAmt -= $amt_paid;
 
-                $upd_rows += dbSafeCmd($updRegSQL, $ptypestr, $args);
+                $upd_rows += dbSafeCmd($updRegSql, $ptypestr, $args);
             }
             else {
                 $cupd_rows += dbSafeCmd($updCouponSQL, $ctypestr, array ($cart_row['couponDiscount'], $coupon, $cart_row['regid']));
