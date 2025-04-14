@@ -2377,7 +2377,7 @@ addUnpaid(tid) {
     paySuccess(data) {
         // reset the disabled items
         $('#' + this.#purchase_label).removeAttr("disabled");
-        this.#pay_button_pay.disabled = false;
+
 
         // things that stop us cold....
         if (typeof data == 'string') {
@@ -2385,6 +2385,7 @@ addUnpaid(tid) {
             if (data.includes("cancelled")) {
                 this.#payPoll = 0;
                 this.#payCurrentRequest = null;
+                this.#pay_button_pay.disabled = false;
             } else if (this.#payPoll == 1)
                 document.getElementById('pollRow').hidden = false;
             return;
@@ -2395,6 +2396,7 @@ addUnpaid(tid) {
             if (data.error.includes("cancelled")) {
                 this.#payPoll = 0;
                 this.#payCurrentRequest = null;
+                this.#pay_button_pay.disabled = false;
             }  else if (this.#payPoll == 1)
                 document.getElementById('pollRow').hidden = false;
             return;
@@ -2405,6 +2407,7 @@ addUnpaid(tid) {
             if (data.error.includes("cancelled")) {
                 this.#payPoll = 0;
                 this.#payCurrentRequest = null;
+                this.#pay_button_pay.disabled = false;
             } else if (this.#payPoll == 1)
                 document.getElementById('pollRow').hidden = false;
             return;
@@ -2420,6 +2423,7 @@ addUnpaid(tid) {
         }
 
         this.#payPoll = 0;
+        this.#pay_button_pay.disabled = false;
         // and things that continue
         if (data.message !== undefined) {
             show_message(data.message, 'success');
