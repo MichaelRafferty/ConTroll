@@ -431,7 +431,7 @@ EOS;
     $source = $rtn['source'];
     $nonce = $rtn['nonce'];
     if ($nonce == 'EXTERNAL')
-        $nonceCode = $ccParam['externalType']
+        $nonceCode = $ccParam['externalType'];
     else
         $nonceCode = $nonce;
     $complete = round($approved_amt,2) == round($amt,2);
