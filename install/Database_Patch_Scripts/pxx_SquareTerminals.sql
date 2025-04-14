@@ -54,5 +54,8 @@ FROM memList m
 JOIN ageList a ON (m.memAge = a.ageType and m.conid = a.conid)
 JOIN memCategories c ON (m.memCategory = c.memCategory);
 
+/* add payment Id to payments */
+ALTER TABLE payments ADD COLUMN paymentId varchar(64) DEFAULT NULL;
+
 
 INSERT INTO patchLog(id, name) VALUES(xx, 'Square Terminals');

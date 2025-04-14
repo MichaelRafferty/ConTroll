@@ -202,8 +202,8 @@ $buyer['country'] = $payor_country;
 // init some of the vars for later override
 $nonce = null;
 $payStatus = null;
-$receipt_url = null;
-$receipt_number = null;
+$receiptUrl = null;
+$receiptNumber = null;
 
 // see if we need to change the master transaction perid, only do this if the amount paid is = 0
 if ($pay_tid_amt == 0) {
@@ -320,9 +320,9 @@ if ($amt > 0) {
             $approved_amt = $payment['approved_money']['amount'] / 100;
             $category = 'atcon';
             $desc = 'Square: ' . $payment['application_details']['square_product'];
-            $txn_time = $payment['created_at'];
-            $receipt_number = $payment['receipt_number'];
-            $receipt_url = $payment['receipt_url'];
+            $txtime = $payment['created_at'];
+            $receiptNumber = $payment['receipt_number'];
+            $receiptUrl = $payment['receipt_url'];
             $last4 = $payment['card_details']['card']['last_4'];
             $id = $payment['id'];
             $location_id = $payment['location_id'];
@@ -359,11 +359,25 @@ if ($amt > 0) {
             $rtn['tnxtypes'] = array('i', 's', 's', 's', 's', 'd', 'd', 'd',
                 's', 's', 's', 's', 's', 's', 's', 's', 'i');
             $rtn['tnxdata'] = array($master_tid, 'credit', $category, $desc, $source, $preTaxAmt, $taxAmt, $approved_amt,
-                $txn_time,$last4,$nonce,$id,$auth,$receipt_url,$status,$receipt_number, $user_perid);
-            $rtn['url'] = $receipt_url;
-            $rtn['rid'] = $receipt_number;
+                $txtime,$last4,$nonce,$id,$auth,$receiptUrl,$status,$receiptNumber, $user_perid);
+            $rtn['url'] = $receiptUrl;
+            $rtn['rid'] = $receiptNumber;
             $rtn['paymentType'] = $paymentType;
             $rtn['payment'] = $payment;
+            $rtn['preTaxAmt'] = $preTaxAmt;
+            $rtn['taxAmt'] = $taxAmt;
+            $rtn['paymentId'] = $paymentId;
+            $rtn['auth'] = $auth;
+            $rtn['last4'] = $last4;
+            $rtn['txTime'] = $txtime;
+            $rtn['status'] = $status;
+            $rtn['transId'] = $master_tid;
+            $rtn['category'] = $category;
+            $rtn['description'] = $desc;
+            $rtn['source'] = $source;
+            $rtn['amount'] = $approved_amt;
+            $rtn['nonce'] = $nonce;
+
         } else {
             // this is the send the request to the terminal, then we need a separate poll section to get it back and continue to record the payment.
             $checkout = term_payOrder($name, $orderId, $amt, true);
@@ -389,32 +403,44 @@ EOS;
     }
 }
 
-$complete = round($amt,2) == round($total_due,2);
+$approved_amt = $rtn['amount'];
+$type = $rtn['paymentType'];
+$preTaxAmt = $rtn['preTaxAmt'];
+$taxAmt = $rtn['taxAmt'];
+$paymentId = $rtn['paymentId'];
+$receiptUrl = $rtn['url'];
+$receiptNumber = $rtn['rid'];
+$paymentType = $rtn['paymentType'];
+$auth = $rtn['auth'];
+$payment = $rtn['payment'];
+$last4 = $rtn['last4'];
+$txTime = $rtn['txTime'];
+$status = $rtn['status'];
+$transId = $rtn['transId'];
+$category = $rtn['category'];
+$description = $rtn['description'];
+$source = $rtn['source'];
+$nonce = $rtn['nonce'];
+
+$complete = round($approved_amt,2) == round($total_due,2);
 // now add the payment and process to which rows it applies
 $upd_rows = 0;
 $cupd_rows = 0;
 
 $insPmtSQL = <<<EOS
 INSERT INTO payments(transid, type,category, description, source, pretax, tax, amount, time, cc_approval_code, cashier, 
-    cc, nonce, cc_txn_id, txn_time, receipt_url, receipt_id, userPerid, status)
-VALUES (?,?,'reg',?,'cashier',?,?,?,now(),?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+    cc, nonce, cc_txn_id, txn_time, receipt_url, receipt_id, userPerid, status, paymentId)
+VALUES (?,?,'reg',?,'cashier',?,?,?,now(),?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 EOS;
-$typestr = 'issdddsissssssis';
+$typestr = 'issdddsissssssiss';
 if ($new_payment['type'] == 'check')
     $desc = 'Check No: ' . $new_payment['checkno'] . '; ';
 else
     $desc = '';
 $desc .= $new_payment['desc'];
-if ($new_payment['type'] != 'terminal') {
-   $preTaxAmt = $new_payment['amt'];
-   $taxAmt = 0;
-   $approved_amt = $new_payment['amt'];
-   $auth = $new_payment['ccauth'];
-}
 $paramarray = array($master_tid, $paymentType, $desc, $preTaxAmt, $taxAmt, $approved_amt, $auth, $user_perid,
-    $last4, $nonce, $paymentId, $txn_time, $receipt_url, $receipt_number, $user_perid, $payStatus);
+    $last4, $nonce, $paymentId, $txTime, $receiptUrl, $receiptNumber, $user_perid, $payStatus, $paymentId);
 $new_pid = dbSafeInsert($insPmtSQL, $typestr, $paramarray);
-
 
 if ($new_pid === false) {
     ajaxError("Error adding payment to database");

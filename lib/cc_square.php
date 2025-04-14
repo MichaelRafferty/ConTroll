@@ -692,6 +692,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
 
     $sourceId = $ccParams['nonce'];
     $buyerSuppliedMoney = $ccParams['total'] + $ccParams['change'];
+    $paymentType = 'credit';
 
     // nonce = card id if card, CASH or EXTERNAL (check, other credit card clearer)
     $pbodyArgs = array(
@@ -727,6 +728,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
                 'currency' => $currency,
             ]),
         ]);
+        $paymentType = 'cash';
     }
 
     if ($sourceId == 'EXTERNAL') {
@@ -734,6 +736,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
             'type' => $ccParams['externalType'],
             'source' => $ccParams['desc'],
         ]);
+        $paymentType = $ccParams['externalType'];
     }
 
     $pbody = new CreatePaymentRequest($pbodyArgs);
@@ -798,11 +801,17 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
         sqcc_logException($source, $e, 'Payment API error while calling Square', 'Error connecting to Square', $useLogWrite);
     }
     $id = $payment->getId();
-    $approved_amt = ($payment->getApprovedMoney()->getAmount()) / 100;
     $status = $payment->getStatus();
-    $last4 = $payment->getCardDetails()->getCard()->getLast4();
+    if ($sourceId == 'CARD') {
+        $approved_amt = ($payment->getApprovedMoney()->getAmount()) / 100;
+        $last4 = $payment->getCardDetails()->getCard()->getLast4();
+        $auth = $payment->getCardDetails()->getAuthResultCode();
+    } else {
+        $last4 = '';
+        $auth = '';
+        $approved_amt = $ccParams['total'];
+    }
     $receipt_url = $payment->getReceiptUrl();
-    $auth = $payment->getCardDetails()->getAuthResultCode();
     $desc = 'Square: ' . $payment->getApplicationDetails()->getSquareProduct();
     $txtime = $payment->getCreatedAt();
     $receipt_number = $payment->getReceiptNumber();
@@ -815,20 +824,33 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     }
 
     $rtn = array();
-    $rtn['amount'] = $approved_amt;
     $rtn['txnfields'] = array('transid','type','category','description','source','pretax', 'tax', 'amount',
         'txn_time', 'cc','nonce','cc_txn_id','cc_approval_code','receipt_url','status','receipt_id', 'cashier');
     $rtn['tnxtypes'] = array('i', 's', 's', 's', 's', 'd', 'd', 'd',
             's', 's', 's', 's', 's', 's', 's', 's', 'i');
-    $rtn['tnxdata'] = array($ccParams['transid'],'credit',$category,$desc,$source,$ccParams['preTaxAmt'], $ccParams['taxAmt'], $approved_amt,
+    $rtn['tnxdata'] = array($ccParams['transid'],$paymentType,$category,$desc,$source,$ccParams['preTaxAmt'], $ccParams['taxAmt'], $approved_amt,
         $txtime,$last4,$ccParams['nonce'],$id,$auth,$receipt_url,$status,$receipt_number, $loginPerid);
     $rtn['url'] = $receipt_url;
     $rtn['rid'] = $receipt_number;
     $rtn['payment'] = $payment;
+    $rtn['paymentType'] = $paymentType;
+    $rtn['preTaxAmt'] = $ccParams['preTaxAmt'];
+    $rtn['taxAmt'] = $ccParams['taxAmt'];
+    $rtn['auth'] = $auth;
+    $rtn['paymentId'] = $id;
+    $rtn['last4'] = $last4;
+    $rtn['txTime'] = $txtime;
+    $rtn['status'] = $status;
+    $rtn['transId'] = $ccParams['transid'];
+    $rtn['category'] = $category;
+    $rtn['description'] = $desc;
+    $rtn['source'] = $source;
+    $rtn['amount'] = $approved_amt;
+    $rtn['nonce'] = $ccParams['nonce'];
     return $rtn;
 }
 
-// fetch an order to get its details
+// fetch an payment to get its details
 function cc_getPayment($source, $paymentid, $useLogWrite = false) : array {
     $cc = get_conf('cc');
     $debug = get_conf('debug');
