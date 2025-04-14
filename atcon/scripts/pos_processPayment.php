@@ -301,7 +301,7 @@ if ($amt > 0) {
                         'please click pay again to start a new payment session with the terminal'));
                     exit();
 
-                case 'IN PROGRESS':
+                case 'IN_PROGRESS':
                 case 'PENDING':
                     ajaxSuccess(array ('error' => 'The terminal is still busy processing the payment.' .
                         '<br/>Please wait until the customer has finished paying and try again.'));
