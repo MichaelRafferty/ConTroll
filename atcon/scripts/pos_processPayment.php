@@ -141,12 +141,7 @@ if ($new_payment['type'] == 'terminal') {
         if ($termStatus['currentOrder'] != null && $termStatus['currentOrder'] != '$orderId') {
             cc_cancelOrder('atcon', $orderId, true);
         }
-        $updQ = <<<EOS
-UPDATE terminals
-SET currentOperator = 0, currentOrder = '', currentPayment = '', controllStatus = '', controllStatusChanged = now()
-WHERE name = ?;
-EOS;
-        dbSafeCmd($updQ, 's', array($name));
+        resetTerminalStatus($name);
     } else {
         $status = $termStatus['status'];
         $inUseBy = $termStatus['currentOperator'];
@@ -296,6 +291,7 @@ if ($amt > 0) {
             $status = $checkout['status'];
             switch ($status) {
                 case 'CANCELED':
+                    resetTerminalStatus($name);
                     ajaxSuccess(array ('error' => "The terminal cancelled the payment due to " . $checkout['cancel_reason'] .
                         '<br/>If the customer still wishes to pay for the transaction, ' .
                         'please click pay again to start a new payment session with the terminal'));
@@ -308,6 +304,7 @@ if ($amt > 0) {
                     exit();
 
                 case 'CANCEL_REQUESTED':
+                    resetTerminalStatus($name);
                     ajaxSuccess(array ('error' => 'The terminal is working on cancelling the payment.' .
                         '<br/>Please wait until the terminal resets to the splash screen and then' .
                         '<br/>If the customer still wishes to pay for the transaction, ' .
@@ -387,6 +384,8 @@ if ($amt > 0) {
             $rtn['source'] = $source;
             $rtn['amount'] = $approved_amt;
             $rtn['nonce'] = $nonce;
+
+            resetTerminalStatus($name);
         } else {
             // this is the send the request to the terminal, then we need a separate poll section to get it back and continue to record the payment.
             $checkout = term_payOrder($name, $orderId, $amt, true);
@@ -546,3 +545,12 @@ $response['pay_amt'] = $new_payment['amt'];
 $response['message'] .= ", $upd_rows memberships updated" . $completed == 1 ? ", transaction completed." : ".";
 $response['updated_perinfo'] = $cart_perinfo;
 ajaxSuccess($response);
+
+function resetTerminalStatus($name) {
+    $updQ = <<<EOS
+UPDATE terminals
+SET currentOperator = 0, currentOrder = '', currentPayment = '', controllStatus = '', controllStatusChanged = now()
+WHERE name = ?;
+EOS;
+    dbSafeCmd($updQ, 's', array($name));
+}
