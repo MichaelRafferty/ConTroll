@@ -49,6 +49,7 @@ class Pos {
     #totalPaid = null;
     #payOverride = 0;
     #payPoll = 0;
+    #payCurrentRequest = null;
 
     // Data Items
     #unpaid_table = [];
@@ -2087,8 +2088,69 @@ addUnpaid(tid) {
             this.pay('');
             return;
         }
-        // need cancel
-        show_message("Cancel not written yet", 'error');
+        // cancel terminal request
+        var postData = {
+            ajax_request_action: 'cancelPayRequest',
+            requestid: this.#payCurrentRequest,
+        };
+        var _this = this;
+        clear_message();
+        $.ajax({
+            method: "POST",
+            url: "scripts/pos_cancelPayment.php",
+            data: postData,
+            success: function (data, textstatus, jqxhr) {
+                _this.cancelSuccess(data);
+            },
+            error: function (jqXHR, textstatus, errorThrown) {
+                document.getElementById('pollRow').hidden = false;
+                _this.#pay_button_pay.disabled = true;
+                showAjaxError(jqXHR, textstatus, errorThrown);
+            },
+        });
+    }
+
+    cancelSuccess(data) {
+        this.#pay_button_pay.disabled = false;
+
+        // things that stop us cold....
+        if (typeof data == 'string') {
+            show_message(data, 'error');
+            document.getElementById('pollRow').hidden = false;
+            return;
+        }
+
+        if (data.error !== undefined) {
+            show_message(data.error, 'error');
+            document.getElementById('pollRow').hidden = false;
+            return;
+        }
+
+        if (data.status == 'error') {
+            show_message(data.data, 'error');
+            document.getElementById('pollRow').hidden = false;
+            return;
+        }
+
+        if (data.warn !== undefined) {
+            show_message(data.warn, 'warn');
+            // warn means we could not get the terminal, ask if we want to override it
+            if (data.status != 'OFFLINE') {
+                document.getElementById('overrideRow').hidden = false;
+                return;
+            }
+        }
+
+        this.#payPoll = 0;
+        this.#payCurrentRequest = null;
+        // and things that continue
+        if (data.message !== undefined) {
+            show_message(data.message, 'success');
+        }
+
+        document.getElementById('pollRow').hidden = true;
+        this.#pay_button_pay.disabled = false;
+        this.payShown();
     }
 
 // Process a payment against the transaction
@@ -2320,27 +2382,30 @@ addUnpaid(tid) {
         // things that stop us cold....
         if (typeof data == 'string') {
             show_message(data, 'error');
-            if (data.includes("cancelled"))
+            if (data.includes("cancelled")) {
                 this.#payPoll = 0;
-            else if (this.#payPoll == 1)
+                this.#payCurrentRequest = null;
+            } else if (this.#payPoll == 1)
                 document.getElementById('pollRow').hidden = false;
             return;
         }
 
         if (data.error !== undefined) {
             show_message(data.error, 'error');
-            if (data.error.includes("cancelled"))
+            if (data.error.includes("cancelled")) {
                 this.#payPoll = 0;
-            else if (this.#payPoll == 1)
+                this.#payCurrentRequest = null;
+            }  else if (this.#payPoll == 1)
                 document.getElementById('pollRow').hidden = false;
             return;
         }
 
         if (data.status == 'error') {
             show_message(data.data, 'error');
-            if (data.error.includes("cancelled"))
+            if (data.error.includes("cancelled")) {
                 this.#payPoll = 0;
-            else if (this.#payPoll == 1)
+                this.#payCurrentRequest = null;
+            } else if (this.#payPoll == 1)
                 document.getElementById('pollRow').hidden = false;
             return;
         }
@@ -2361,12 +2426,17 @@ addUnpaid(tid) {
         }
         if (data.hasOwnProperty('poll')) {
             if (data.poll == 1) {
+                if (data.id) {
+                    this.#payCurrentRequest = data.id;
+                }
                 document.getElementById('pollRow').hidden = false;
                 this.#pay_button_pay.disabled = true;
+                this.#payPoll = 1;
                 return;
             }
         }
         cart.updatePmt(data);
+        this.#payCurrentRequest = null;
         this.#pay_tid_amt += Number(data.pay_amt);
         this.payShown();
     }

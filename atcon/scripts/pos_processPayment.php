@@ -1,4 +1,4 @@
-<?php
+ <?php
 // library AJAX Processor: pos_processPayment.php
 // ConTroll Registration System
 // Author: Syd Weinstein
@@ -387,7 +387,6 @@ if ($amt > 0) {
             $rtn['source'] = $source;
             $rtn['amount'] = $approved_amt;
             $rtn['nonce'] = $nonce;
-
         } else {
             // this is the send the request to the terminal, then we need a separate poll section to get it back and continue to record the payment.
             $checkout = term_payOrder($name, $orderId, $amt, true);
@@ -403,8 +402,11 @@ EOS;
                     ajaxSuccess(array ('error' => "Unable to update terminal ($name) status"));
                     exit();
                 }
-                ajaxSuccess(array ('status' => 'success', 'poll' => 1, 'message' => "Payment request sent to terminal $name,<br/>" .
-                    'click "Payment Complete when payment has been made or "Cancel Payment" to cancel the request.'));
+                $response['status'] = 'success';
+                $response['poll'] = 1;
+                $response['id'] = $checkout['id'];
+                $response['message'] = "Payment request sent to terminal $name,<br/>" .
+                    'click "Payment Complete when payment has been made or "Cancel Payment" to cancel the request.';
                 exit();
             }
             ajaxSuccess(array ('error' => "Unable to send payment request to terminal $name"));
