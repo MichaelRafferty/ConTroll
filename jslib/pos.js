@@ -2248,32 +2248,32 @@ addUnpaid(tid) {
                         index: cart.getPmtLength() + 1, amt: change, ccauth: ccauth, checkno: checkno, desc: eldesc.value, type: 'change',
                     };
                 }
-
-                var payorPerid = 2; // atcon perid
-                var email = document.getElementById("pay-email").value;
-                var phone = document.getElementById("pay-phone").value;
-                var payor = Number(document.getElementById('pay-emailsel').value);
-                var country = '';
-                var couponCode = null;
-                if (this.#coupon)
-                    couponCode = coupon.getCouponCode();
-
-                if (payor >= 0 && email == cart.getEmail(payor)) {
-                    payorPerid = cart.getPerid(payor);
-                    country = cart.getCountry(payor);
-                }
-
-                prow = {
-                    index: cart.getPmtLength(), amt: total_amount_due, ccauth: ccauth, checkno: checkno, desc: eldesc.value,
-                    type: ptype, nonce: nonce, coupon: couponCode,
-                    payor: {
-                        email: email,
-                        phone: phone,
-                        perid: payorPerid,
-                        country: country,
-                    },
-                };
             }
+
+            var payorPerid = 2; // atcon perid
+            var email = document.getElementById("pay-email").value;
+            var phone = document.getElementById("pay-phone").value;
+            var payor = Number(document.getElementById('pay-emailsel').value);
+            var country = '';
+            var couponCode = null;
+            if (this.#coupon)
+                couponCode = coupon.getCouponCode();
+
+            if (payor >= 0 && email == cart.getEmail(payor)) {
+                payorPerid = cart.getPerid(payor);
+                country = cart.getCountry(payor);
+            }
+
+            prow = {
+                index: cart.getPmtLength(), amt: total_amount_due, ccauth: ccauth, checkno: checkno, desc: eldesc.value,
+                type: ptype, nonce: nonce, coupon: couponCode,
+                payor: {
+                    email: email,
+                    phone: phone,
+                    perid: payorPerid,
+                    country: country,
+                },
+            };
         }
         // process payment
         var postData = {
