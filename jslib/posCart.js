@@ -217,6 +217,10 @@ class PosCart {
         return this.#cartPerinfo[index].phone;
     }
 
+    getCountry(index) {
+        return this.#cartPerinfo[index].country;
+    }
+
     getRegFullName(perid) {
         var index = this.#cartPerinfoMap.get(perid);
         return this.#cartPerinfo[index].fullName;
