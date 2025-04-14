@@ -288,7 +288,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
             'quantity' => 1,
             'note' => $note,
             'basePriceMoney' => new Money([
-                'amount' =>$results['total'] * 100,
+                'amount' => round($results['total'] * 100),
                 'currency' => $currency,
             ]),
         ]);
@@ -333,9 +333,9 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                 }
 
                 if (array_key_exists('balDue', $badge)) {
-                    $amount = $badge['balDue'] * 100;
+                    $amount = round($badge['balDue'] * 100);
                 } else {
-                    $amount = ($badge['price']-$badge['paid']) * 100;
+                    $amount = round(($badge['price']-$badge['paid']) * 100);
                 }
 
                 $itemName =  $badge['label'] . (($badge['memType'] == 'full' || $badge['memType'] == 'oneday') ? ' Membership' : '') .
@@ -393,7 +393,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                     'quantity' => 1,
                     'note' => $note,
                     'basePriceMoney' => new Money([
-                        'amount' => $space['approved_price'] * 100,
+                        'amount' => round($space['approved_price'] * 100),
                         'currency' => $currency,
                     ]),
                 ]);
@@ -412,7 +412,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                     'quantity' => 1,
                     'note' => 'Mail in fee',
                     'basePriceMoney' => new Money([
-                        'amount' => $fee['amount'] * 100,
+                        'amount' => round($fee['amount'] * 100),
                         'currency' => $currency,
                         ]),
                 ]);
@@ -439,7 +439,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                 'name' => mb_substr($couponName, 0, 128),
                 'type' => OrderLineItemDiscountType::FixedAmount->value,
                 'amountMoney' => new Money([
-                    'amount' => $results['discount'] * 100,
+                    'amount' => round($results['discount'] * 100),
                     'currency' => $currency,
                 ]),
                 'scope' => OrderLineItemDiscountScope::Order->value,
@@ -460,7 +460,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                 'name' => mb_substr("Payment Deferral Amount: " . $note, 0, 128),
                 'type' => OrderLineItemDiscountType::FixedAmount->value,
                 'amountMoney' => new Money([
-                    'amount' => $deferment * 100,
+                    'amount' => round($deferment * 100),
                     'currency' => $currency,
                 ]),
                 'scope' => OrderLineItemDiscountScope::LineItem->value,
@@ -699,7 +699,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
         'idempotencyKey' => guidv4(),
         'sourceId' => $sourceId,
         'amountMoney' => new Money([
-            'amount' => $ccParams['total'] * 100,
+            'amount' => round($ccParams['total'] * 100),
             'currency' => $currency,
             ]),
         'orderId' => $ccParams['orderId'],
@@ -720,11 +720,11 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
         // add cash fields
         $pbodyArgs['cashDetails'] = new Square\Types\CashPaymentDetails([
             'buyerSuppliedMoney' => new Money([
-                'amount' => $buyerSuppliedMoney * 100,
+                'amount' => round($buyerSuppliedMoney * 100),
                 'currency' => $currency,
                 ]),
             'changeBackMoney' => new Money([
-                'amount' => $ccParams['change'] * 100,
+                'amount' => round($ccParams['change'] * 100),
                 'currency' => $currency,
             ]),
         ]);

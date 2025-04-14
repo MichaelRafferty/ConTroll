@@ -526,7 +526,7 @@ UPDATE transaction
 SET paid = IFNULL(paid,'0.00') + ?
 WHERE id = ?;
 EOS;
-    $completed = dbSafeCmd($updCompleteSQL, 'si', array($new_payment['amt'], $master_tid));
+    $completed = dbSafeCmd($updCompleteSQL, 'di', array($approved_amt, $master_tid));
 }
 $completed = 0;
 if ($complete) {

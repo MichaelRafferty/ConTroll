@@ -2600,7 +2600,7 @@ addUnpaid(tid) {
             this.#pay_prior_discount = cart.getPriorDiscount();
         }
 
-        var total_amount_due = cart.getTotalPrice() - (cart.getTotalPaid() + this.#pay_prior_discount + Number(this.#coupon_discount));
+        var total_amount_due = this.#taxAmt + cart.getTotalPrice() - (cart.getTotalPaid() + this.#pay_prior_discount + Number(this.#coupon_discount));
         if (total_amount_due < 0.01) { // allow for rounding error, no need to round here
             // nothing more to pay
             if (this.#print_tab)

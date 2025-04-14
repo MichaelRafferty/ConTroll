@@ -160,12 +160,12 @@ if ($master_perid < 0) {
 }
 $tran_type = 'regctl-reg/' . $user_perid;
 $insTransactionSQL = <<<EOS
-INSERT INTO transaction(conid,perid,userid,price,paid,type,create_date)
-VALUES (?,?,?,?,?,?,now());
+INSERT INTO transaction(conid,perid,userid,price,paid,withtax,tax,type,create_date)
+VALUES (?,?,?,0,0,0,0,?,now());
 EOS;
 // now insert the master transaction
-$paramarray = array($conid, $master_perid, $user_perid, 0, 0, $tran_type);
-$typestr = 'iiidds';
+$paramarray = array($conid, $master_perid, $user_perid, $tran_type);
+$typestr = 'iiis';
 $master_transid = dbSafeInsert($insTransactionSQL, $typestr, $paramarray);
 if ($master_transid === false) {
     ajaxError('Unable to create master transaction');

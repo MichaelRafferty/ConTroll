@@ -137,13 +137,6 @@ $response['amount'] = $amount;
 //log requested badges
 
 logWrite(array('con'=>$con['label'], 'trans'=>$transId, 'results'=>$results, 'request'=>$badges));
-$upT = <<<EOS
-UPDATE transaction
-SET price = ?, withTax = ?, couponDiscountCart = ?, tax = ?
-WHERE id = ?;
-EOS;
-$rows_upd = dbSafeCmd($upT, 'ddddi', array($totalAmountDue, $totalAmountDue, 0, 0, $transId));
-
 
 if ($cancelOrderId) // cancel the old order if it exists
     cc_cancelOrder($results['source'], $cancelOrderId, true);
@@ -157,6 +150,17 @@ if ($rtn == null) {
 }
 $rtn['totalPaid'] = $totalPaid;
 $response['rtn'] = $rtn;
+
+$upT = <<<EOS
+UPDATE transaction
+SET price = ?, tax = ?, withTax = ?, couponDiscountCart = ?
+WHERE id = ?;
+EOS;
+
+$preTax = $rtn['preTaxAmt'];
+$taxAmt = $rtn['taxAmt'];
+$withTax = $rtn['totalAmt'];
+$rows_upd = dbSafeCmd($upT, 'ddddi', array($preTax, $taxAmt, $withTax, 0, $transId));
 
 //$tnx_record = $rtn['tnx'];
 logWrite(array('con' => $con['label'], 'trans' => $transId, 'ccrtn' => $rtn));
