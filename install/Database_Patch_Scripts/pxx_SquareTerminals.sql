@@ -56,6 +56,8 @@ JOIN memCategories c ON (m.memCategory = c.memCategory);
 
 /* add payment Id to payments */
 ALTER TABLE payments ADD COLUMN paymentId varchar(64) DEFAULT NULL;
+ALTER TABLE payments MODIFY COLUMN  type enum('credit','terminal','card','cash','check','discount','refund','other','coupon') DEFAULT NULL;
+
 
 
 INSERT INTO patchLog(id, name) VALUES(xx, 'Square Terminals');
