@@ -459,7 +459,7 @@ EOS;
 
 $response['prow'] = $new_payment;
 $response['message'] = "1 payment added";
-$updPaymentSQL = <<<EOS
+$updRegSql = <<<EOS
 UPDATE reg
 SET paid = ?, complete_trans = ?, status = ?
 WHERE id = ?;
@@ -499,7 +499,7 @@ foreach ($cart_perinfo as $perinfo) {
                 $cart_perinfo[$perinfo['index']]['memberships'][$cart_row['index']] = $cart_row;
                 $preTaxAmt -= $amt_paid;
 
-                $upd_rows += dbSafeCmd($updPaymentSQL, $ptypestr, $args);
+                $upd_rows += dbSafeCmd($updRegSQL, $ptypestr, $args);
             }
             else {
                 $cupd_rows += dbSafeCmd($updCouponSQL, $ctypestr, array ($cart_row['couponDiscount'], $coupon, $cart_row['regid']));
