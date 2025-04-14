@@ -153,7 +153,7 @@ EOS;
         $controllStatus = $termStatus['controllStatus'];
         $currentOrder = $termStatus['currentOrder'];
         $currentPayment = $termStatus['currentPayment'];
-        if ($status != 'AVAILABLE' || ($inUseBy > 0 && $inUseBy != $user_id)) {
+        if ($status != 'AVAILABLE' || ($inUseBy > 0 && ($inUseBy != $user_id || $poll == 0))) {
             $msg = "Terminal $name is not available, it's status is $status";
             if ($inUseBy != null && $inUseBy != '') {
                 if ($inUseBy != $user_id) {
@@ -176,7 +176,7 @@ EOS;
                 }
             }
             if ($controllStatus != null && $controllStatus != '') {
-                $msg .= "<br/>And the system says its in use for $controllStatus<br/>For order $currentOrder and payment operation $currentPayment";
+                $msg .= "<br/>And the system says it is in use for $controllStatus<br/>For order $currentOrder and payment operation $currentPayment";
             }
             $response['termStatus'] = $termStatus;
             $response['inUseBy'] = $inUseBy;
