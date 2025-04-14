@@ -917,7 +917,6 @@ function sqcc_logException($name, $e, $message, $ajaxMessage, $useLogWrite = fal
                 logWrite("Name: $name, Cat: $cat: Code $code, Detail: $detail");
             }
             web_error_log("Name: $name, Cat: $cat: Code $code, Detail: $detail");
-            exit();
         }
     }
     ajaxSuccess(array ('status' => 'error', 'data' => "Error: $ajaxMessage, see logs."));

@@ -300,7 +300,7 @@ function term_payOrder($name, $orderId, $amount, $useLogWrite = false) : array |
         'idempotencyKey' => guidv4(),
         'checkout' => new Square\Types\TerminalCheckout([
             'amountMoney' => new Money([
-                'amount' => $amount,
+                'amount' => rount($amount * 100),
                 'currency' => $currency,
             ]),
             'note' => 'Payment Note for ' . time(),
@@ -439,7 +439,6 @@ function sqterm_logException($name, $e, $message, $ajaxMessage, $useLogWrite = f
                 logWrite("Name: $name, Cat: $cat: Code $code, Detail: $detail");
             }
             web_error_log("Name: $name, Cat: $cat: Code $code, Detail: $detail");
-            exit();
         }
     }
     ajaxSuccess(array ('status' => 'error', 'data' => "Error: $ajaxMessage, see logs."));
