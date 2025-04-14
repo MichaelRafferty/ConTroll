@@ -57,7 +57,15 @@ $name = $terminal['name'];
 $checkout = term_cancelPayment($name, $requestId, true);
 $response = [];
 $response['status'] = 'success';
-$response['message'] = 'Payment $requestId cancelled, status = ' . $checkout['status'];
+$status = $checkout['status'];
+$response['message'] = 'Payment $requestId cancelled.';
+if ($status == 'CANCEL_REQUESTED') {
+    resetTerminalStatus($name);
+    $response['message'] = 'Payment $requestId cancelled.';
+}
+else {
+    $response['message'] = "Payment $requestId cancelled with status $status.  Terminal usage not reset.";
+}
 ajaxSuccess($response);
 exit();
 
