@@ -201,9 +201,6 @@ if (array_key_exists('change', $_POST)) {
     $response['crow'] = $crow;
 }
 
-// validate that the payment amount is not too large
-$total_due = 0;
-
 $payor_email = $new_payment['payor']['email'];
 $payor_phone = $new_payment['payor']['phone'];
 $payor_perid = $new_payment['payor']['perid'];
@@ -267,8 +264,8 @@ if ($amt > 0) {
             'counts' => 0,
             'price' => null,
             'badges' => null,
-            'tax' => $taxAmt,
-            'pretax' => $preTaxAmt,
+            'taxAmt' => $taxAmt,
+            'preTaxAmt' => $preTaxAmt,
             'total' => $amt,
             'orderId' => $orderId,
             'nonce' => $nonce,
@@ -433,7 +430,7 @@ EOS;
     $description = $rtn['description'];
     $source = $rtn['source'];
     $nonce = $rtn['nonce'];
-    $complete = round($approved_amt,2) == round($total_due,2);
+    $complete = round($approved_amt,2) == round($amt,2);
 
     // now add the payment and process to which rows it applies
     $insPmtSQL = <<<EOS
