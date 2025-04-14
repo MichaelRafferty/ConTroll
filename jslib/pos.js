@@ -2320,11 +2320,15 @@ addUnpaid(tid) {
         // things that stop us cold....
         if (typeof data == 'string') {
             show_message(data, 'error');
+            if (data.includes("cancelled"))
+                this.#payPoll = 0;
             return;
         }
 
         if (data.error !== undefined) {
             show_message(data.error, 'error');
+            if (data.error.includes("cancelled"))
+                this.#payPoll = 0;
             return;
         }
 
