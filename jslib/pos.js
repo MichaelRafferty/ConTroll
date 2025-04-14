@@ -2322,6 +2322,8 @@ addUnpaid(tid) {
             show_message(data, 'error');
             if (data.includes("cancelled"))
                 this.#payPoll = 0;
+            else if (this.#payPoll == 1)
+                document.getElementById('pollRow').hidden = true;
             return;
         }
 
@@ -2329,11 +2331,17 @@ addUnpaid(tid) {
             show_message(data.error, 'error');
             if (data.error.includes("cancelled"))
                 this.#payPoll = 0;
+            else if (this.#payPoll == 1)
+                document.getElementById('pollRow').hidden = true;
             return;
         }
 
         if (data.status == 'error') {
             show_message(data.data, 'error');
+            if (data.error.includes("cancelled"))
+                this.#payPoll = 0;
+            else if (this.#payPoll == 1)
+                document.getElementById('pollRow').hidden = true;
             return;
         }
 
