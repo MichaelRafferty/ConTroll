@@ -300,7 +300,7 @@ function term_payOrder($name, $orderId, $amount, $useLogWrite = false) : array |
         'idempotencyKey' => guidv4(),
         'checkout' => new Square\Types\TerminalCheckout([
             'amountMoney' => new Money([
-                'amount' => rount($amount * 100),
+                'amount' => round($amount * 100),
                 'currency' => $currency,
             ]),
             'note' => 'Payment Note for ' . time(),
