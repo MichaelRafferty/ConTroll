@@ -38,10 +38,6 @@ if ($user_id != getSessionVar('user')) {
 $user_perid = $user_id;
 
 $log = get_conf('log');
-$con = get_conf('con');
-$debug = get_conf('debug');
-$ini = get_conf('reg');
-$log = get_conf('log');
 logInit($log['term']);
 
 if (!array_key_exists('requestId', $_POST) || empty($_POST['requestId'])) {
