@@ -529,7 +529,7 @@ if ($complete) {
     // payment is in full, mark transaction complete
     $updCompleteSQL = <<<EOS
 UPDATE transaction
-SET complete_date = NOW(), change_due = ?, orderId = ?, orderDate = ?
+SET complete_date = NOW(), change_due = ?, orderId = ?
 WHERE id = ?;
 EOS;
     $completed = dbSafeCmd($updCompleteSQL, 'idss', array($change, $master_tid, $orderId));
