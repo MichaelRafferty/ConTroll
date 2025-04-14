@@ -2254,6 +2254,9 @@ addUnpaid(tid) {
                 var phone = document.getElementById("pay-phone").value;
                 var payor = Number(document.getElementById('pay-emailsel').value);
                 var country = '';
+                var couponCode = null;
+                if (this.#coupon)
+                    couponCode = coupon.getCouponCode();
 
                 if (payor >= 0 && email == cart.getEmail(payor)) {
                     payorPerid = cart.getPerid(payor);
@@ -2262,7 +2265,7 @@ addUnpaid(tid) {
 
                 prow = {
                     index: cart.getPmtLength(), amt: total_amount_due, ccauth: ccauth, checkno: checkno, desc: eldesc.value,
-                    type: ptype, nonce: nonce,
+                    type: ptype, nonce: nonce, coupon: couponCode,
                     payor: {
                         email: email,
                         phone: phone,
