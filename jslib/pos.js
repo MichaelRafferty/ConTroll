@@ -2255,9 +2255,9 @@ addUnpaid(tid) {
                 var payor = Number(document.getElementById('pay-emailsel').value);
                 var country = '';
 
-                if (payor >= 0 && email == cart.getEmail(rownum)) {
-                    payorPerid = cart.getPerid(rownum);
-                    country = cart.getCountry(rownum);
+                if (payor >= 0 && email == cart.getEmail(payor)) {
+                    payorPerid = cart.getPerid(payor);
+                    country = cart.getCountry(payor);
                 }
 
                 prow = {
