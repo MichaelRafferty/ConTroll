@@ -59,6 +59,9 @@ if ($ajax_request_action != 'processPayment') {
     exit();
 }
 
+$upd_rows = 0;
+$cupd_rows = 0;
+
 // processPayment
 //  orderId: this.#pay_currentOrderId,
 //  new_payment: prow,
@@ -81,23 +84,40 @@ if ($orderId == null || $orderId == '') {
 
 $new_payment = $_POST['new_payment'];
 if (!array_key_exists('amt', $new_payment) || $new_payment['amt'] <= 0) {
-    ajaxError('invalid payment amount passed');
+    ajaxError('invalid payment amount passed: due != payment amount');
     return;
 }
-    try {
-        $cart_perinfo = json_decode($_POST['cart_perinfo'], true, 512, JSON_THROW_ON_ERROR);
-    }
-    catch (Exception $e) {
-        $msg = 'Caught exception on json_decode: ' . $e->getMessage() . PHP_EOL . 'JSON error: ' . json_last_error_msg() . PHP_EOL;
-        $response['error'] = $msg;
-        error_log($msg);
-        ajaxSuccess($response);
-        exit();
-    }
-    if (sizeof($cart_perinfo) <= 0) {
-        ajaxError('The cart is empty');
-        return;
-    }
+$amt = (float) $new_payment['amt'];
+
+if (array_key_exists('preTaxAmt', $_POST))
+    $preTaxAmt = $_POST['preTaxAmt'];
+else
+    $preTaxAmt = $_POST['totalAmtDue'];
+
+if (array_key_exists('taxAmt', $_POST))
+    $taxAmt = $_POST['taxAmt'];
+else
+    $taxAmt = 0;
+
+if ($amt != $preTaxAmt + $taxAmt) {
+    ajaxError('Invalid payment amount passed: preTax + Tax != Amount');
+    return;
+}
+
+try {
+    $cart_perinfo = json_decode($_POST['cart_perinfo'], true, 512, JSON_THROW_ON_ERROR);
+}
+catch (Exception $e) {
+    $msg = 'Caught exception on json_decode: ' . $e->getMessage() . PHP_EOL . 'JSON error: ' . json_last_error_msg() . PHP_EOL;
+    $response['error'] = $msg;
+    error_log($msg);
+    ajaxSuccess($response);
+    exit();
+}
+if (sizeof($cart_perinfo) <= 0) {
+    ajaxError('The cart is empty');
+    return;
+}
 
 $override = $_POST['override'];
 if (array_key_exists('poll', $_POST)) {
@@ -181,7 +201,6 @@ if (array_key_exists('change', $_POST)) {
     $response['crow'] = $crow;
 }
 
-$amt = (float) $new_payment['amt'];
 // validate that the payment amount is not too large
 $total_due = 0;
 
@@ -198,12 +217,6 @@ if (array_key_exists('pay_tid_amt', $_POST)) {
 $buyer['email'] = $payor_email;
 $buyer['phone'] = $payor_phone;
 $buyer['country'] = $payor_country;
-
-// init some of the vars for later override
-$nonce = null;
-$payStatus = null;
-$receiptUrl = null;
-$receiptNumber = null;
 
 // see if we need to change the master transaction perid, only do this if the amount paid is = 0
 if ($pay_tid_amt == 0) {
@@ -254,8 +267,8 @@ if ($amt > 0) {
             'counts' => 0,
             'price' => null,
             'badges' => null,
-            'tax' => 0,
-            'pretax' => $amt,
+            'tax' => $taxAmt,
+            'pretax' => $preTaxAmt,
             'total' => $amt,
             'orderId' => $orderId,
             'nonce' => $nonce,
@@ -328,7 +341,7 @@ if ($amt > 0) {
             $location_id = $payment['location_id'];
             $auth = $payment['card_details']['auth_result_code'];
             $nonce = $payment['card_details']['card']['fingerprint'];
-            $payStatus = $payment['status'];
+            $status = $payment['status'];
             switch ($payment['source_type']) {
                 case 'CARD':
                     $paymentType = 'credit';
@@ -352,14 +365,14 @@ if ($amt > 0) {
             else
                 $taxAmt = 0;
 
-            $rtn = array();
+            $rtn = array ();
             $rtn['amount'] = $approved_amt;
-            $rtn['txnfields'] = array('transid','type','category','description','source','pretax', 'tax', 'amount',
-                'txn_time', 'cc','nonce','cc_txn_id','cc_approval_code','receipt_url','status','receipt_id', 'cashier');
-            $rtn['tnxtypes'] = array('i', 's', 's', 's', 's', 'd', 'd', 'd',
+            $rtn['txnfields'] = array ('transid', 'type', 'category', 'description', 'source', 'pretax', 'tax', 'amount',
+                'txn_time', 'cc', 'nonce', 'cc_txn_id', 'cc_approval_code', 'receipt_url', 'status', 'receipt_id', 'cashier');
+            $rtn['tnxtypes'] = array ('i', 's', 's', 's', 's', 'd', 'd', 'd',
                 's', 's', 's', 's', 's', 's', 's', 's', 'i');
-            $rtn['tnxdata'] = array($master_tid, 'credit', $category, $desc, $source, $preTaxAmt, $taxAmt, $approved_amt,
-                $txtime,$last4,$nonce,$id,$auth,$receiptUrl,$status,$receiptNumber, $user_perid);
+            $rtn['tnxdata'] = array ($master_tid, 'credit', $category, $desc, $source, $preTaxAmt, $taxAmt, $approved_amt,
+                $txtime, $last4, $nonce, $id, $auth, $receiptUrl, $status, $receiptNumber, $user_perid);
             $rtn['url'] = $receiptUrl;
             $rtn['rid'] = $receiptNumber;
             $rtn['paymentType'] = $paymentType;
@@ -401,53 +414,52 @@ EOS;
             exit();
         }
     }
-}
 
-$approved_amt = $rtn['amount'];
-$type = $rtn['paymentType'];
-$preTaxAmt = $rtn['preTaxAmt'];
-$taxAmt = $rtn['taxAmt'];
-$paymentId = $rtn['paymentId'];
-$receiptUrl = $rtn['url'];
-$receiptNumber = $rtn['rid'];
-$paymentType = $rtn['paymentType'];
-$auth = $rtn['auth'];
-$payment = $rtn['payment'];
-$last4 = $rtn['last4'];
-$txTime = $rtn['txTime'];
-$status = $rtn['status'];
-$transId = $rtn['transId'];
-$category = $rtn['category'];
-$description = $rtn['description'];
-$source = $rtn['source'];
-$nonce = $rtn['nonce'];
+    $approved_amt = $rtn['amount'];
+    $type = $rtn['paymentType'];
+    $preTaxAmt = $rtn['preTaxAmt'];
+    $taxAmt = $rtn['taxAmt'];
+    $paymentId = $rtn['paymentId'];
+    $receiptUrl = $rtn['url'];
+    $receiptNumber = $rtn['rid'];
+    $paymentType = $rtn['paymentType'];
+    $auth = $rtn['auth'];
+    $payment = $rtn['payment'];
+    $last4 = $rtn['last4'];
+    $txTime = $rtn['txTime'];
+    $status = $rtn['status'];
+    $transId = $rtn['transId'];
+    $category = $rtn['category'];
+    $description = $rtn['description'];
+    $source = $rtn['source'];
+    $nonce = $rtn['nonce'];
+    $complete = round($approved_amt,2) == round($total_due,2);
 
-$complete = round($approved_amt,2) == round($total_due,2);
-// now add the payment and process to which rows it applies
-$upd_rows = 0;
-$cupd_rows = 0;
-
-$insPmtSQL = <<<EOS
+    // now add the payment and process to which rows it applies
+    $insPmtSQL = <<<EOS
 INSERT INTO payments(transid, type,category, description, source, pretax, tax, amount, time, cc_approval_code, cashier, 
     cc, nonce, cc_txn_id, txn_time, receipt_url, receipt_id, userPerid, status, paymentId)
 VALUES (?,?,'reg',?,'cashier',?,?,?,now(),?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 EOS;
-$typestr = 'issdddsissssssiss';
-if ($new_payment['type'] == 'check')
-    $desc = 'Check No: ' . $new_payment['checkno'] . '; ';
-else
-    $desc = '';
-$desc .= $new_payment['desc'];
-$paramarray = array($master_tid, $paymentType, $desc, $preTaxAmt, $taxAmt, $approved_amt, $auth, $user_perid,
-    $last4, $nonce, $paymentId, $txTime, $receiptUrl, $receiptNumber, $user_perid, $payStatus, $paymentId);
-$new_pid = dbSafeInsert($insPmtSQL, $typestr, $paramarray);
+    $typestr = 'issdddsissssssiss';
+    if ($new_payment['type'] == 'check')
+        $desc = 'Check No: ' . $new_payment['checkno'] . '; ';
+    else
+        $desc = '';
+    $desc .= $new_payment['desc'];
+    $paramarray = array ($master_tid, $paymentType, $desc, $preTaxAmt, $taxAmt, $approved_amt, $auth, $user_perid,
+        $last4, $nonce, $paymentId, $txTime, $receiptUrl, $receiptNumber, $user_perid, $status, $paymentId);
+    $new_pid = dbSafeInsert($insPmtSQL, $typestr, $paramarray);
 
-if ($new_pid === false) {
-    ajaxError("Error adding payment to database");
-    return;
+    if ($new_pid === false) {
+        ajaxError('Error adding payment to database');
+        return;
+    }
+    $new_payment['id'] = $new_pid;
+} else {
+    $complete = true;
 }
 
-$new_payment['id'] = $new_pid;
 $response['prow'] = $new_payment;
 $response['message'] = "1 payment added";
 $updPaymentSQL = <<<EOS
@@ -463,6 +475,7 @@ WHERE id = ? AND coupon IS NULL;
 EOS;
 $ctypestr = 'dii';
 $index = 0;
+// allocate pre-tax amount to regs
 foreach ($cart_perinfo as $perinfo) {
     $cart_perinfo[$index]['rowpos'] = $index;
     unset($cart_perinfo[$index]['dirty']);
@@ -477,7 +490,7 @@ foreach ($cart_perinfo as $perinfo) {
         $unpaid = $cart_row['price'] - ($cart_row['couponDiscount'] + $cart_row['paid']);
         if ($unpaid > 0) {
             if ($coupon == null) {
-                $amt_paid = min($amt, $unpaid);
+                $amt_paid = min($preTax, $unpaid);
                 $cart_row['paid'] += $amt_paid;
                 if ($amt_paid == $unpaid) {
                     // row is now completely paid
@@ -487,7 +500,7 @@ foreach ($cart_perinfo as $perinfo) {
                     $args = array($cart_row['paid'], null, $cart_row['status'], $cart_row['regid'] );
                 }
                 $cart_perinfo[$perinfo['index']]['memberships'][$cart_row['index']] = $cart_row;
-                $amt -= $amt_paid;
+                $preTax -= $amt_paid;
 
                 $upd_rows += dbSafeCmd($updPaymentSQL, $ptypestr, $args);
             }
