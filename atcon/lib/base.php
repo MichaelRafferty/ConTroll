@@ -649,16 +649,16 @@ EOS;
  EOS;
     foreach ($printers as $key => $printer) {
         if (mb_substr($printer['printerType'], 0, 7) == 'receipt') {
-            $html .= '<option value="' . escape_quotes($printer['address']) .
+            $html .= '<option value="' . escape_quotes($key) . ':::' . escape_quotes($printer['address']) .
             ':-:' . escape_quotes($printer['printerName']) . ':-:' . escape_quotes($printer['printerType']) .
             ':-:' . escape_quotes($printer['codePage']) . '">' . $key . "</option>\n";
         }
     }
     foreach ($printers as $key => $printer) {
         if (mb_substr($printer['printerType'], 0, 7) == 'generic') {
-            $html .= '<option value="' . escape_quotes($printer['name']) . ':::' . escape_quotes($printer['address']) .
+            $html .= '<option value="' . escape_quotes($key) . ':::' . escape_quotes($printer['address']) .
             ':-:' . escape_quotes($printer['printerName']) . ':-:' . escape_quotes($printer['printerType']) .
-            ':-:' . escape_quotes($printer['codePage']) . '">' . $printer['name'] . "</option>\n";
+            ':-:' . escape_quotes($printer['codePage']) . '">' . $key . "</option>\n";
         }
     }
     $html .= <<<EOS
@@ -702,9 +702,9 @@ EOS;
                     <option value=''>None</option>
 EOS;
         foreach ($terminals as $key => $terminal) {
-            $html .= '<option value="' . escape_quotes($key) . ':::' . escape_quotes($terminal['name']) .
+            $html .= '<option value="' . escape_quotes($terminal['name']) .
                 ':::' . escape_quotes($terminal['squareId']) . ':::' . escape_quotes($terminal['deviceId']) .
-                ':::' . escape_quotes($terminal['squareCode']) . ':::' . escape_quotes($terminal['locationId']) . '">' . $key . "</option>\n";
+                ':::' . escape_quotes($terminal['squareCode'], ':::', . escape_quotes($terminal['locationId']) . '">' . $key . "</option>\n";
         }
         $html .= <<<EOS
                 </select>
