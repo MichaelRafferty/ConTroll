@@ -407,6 +407,7 @@ EOS;
                 $response['id'] = $checkout['id'];
                 $response['message'] = "Payment request sent to terminal $name,<br/>" .
                     'click "Payment Complete when payment has been made or "Cancel Payment" to cancel the request.';
+                ajaxSuccess($response);
                 exit();
             }
             ajaxSuccess(array ('error' => "Unable to send payment request to terminal $name"));
