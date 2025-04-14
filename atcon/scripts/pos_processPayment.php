@@ -487,7 +487,7 @@ foreach ($cart_perinfo as $perinfo) {
         $unpaid = $cart_row['price'] - ($cart_row['couponDiscount'] + $cart_row['paid']);
         if ($unpaid > 0) {
             if ($coupon == null) {
-                $amt_paid = min($preTax, $unpaid);
+                $amt_paid = min($preTaxAmt, $unpaid);
                 $cart_row['paid'] += $amt_paid;
                 if ($amt_paid == $unpaid) {
                     // row is now completely paid
@@ -497,7 +497,7 @@ foreach ($cart_perinfo as $perinfo) {
                     $args = array($cart_row['paid'], null, $cart_row['status'], $cart_row['regid'] );
                 }
                 $cart_perinfo[$perinfo['index']]['memberships'][$cart_row['index']] = $cart_row;
-                $preTax -= $amt_paid;
+                $preTaxAmt -= $amt_paid;
 
                 $upd_rows += dbSafeCmd($updPaymentSQL, $ptypestr, $args);
             }
