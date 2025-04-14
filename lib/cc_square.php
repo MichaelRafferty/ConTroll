@@ -878,7 +878,7 @@ function cc_getPayment($source, $paymentid, $useLogWrite = false) : array {
     try {
         if ($squareDebug) sqcc_logObject(array ('Payments API get payment', $body), $useLogWrite);
         $apiResponse = $client->payments->get($body);
-        $payment = $apiResponse->getPayment();
+        $payment = json_decode(json_encode($apiResponse->getPayment()), true);
         if ($squareDebug) sqcc_logObject(array ('Payments API get payment', $payment), $useLogWrite);
     }
     catch (SquareApiException $e) {
