@@ -46,6 +46,8 @@ if (!array_key_exists('requestId', $_POST) || empty($_POST['requestId'])) {
 
 $requestId = $_POST['requestId'];
 
+load_term_procs();
+
 $terminal = getSessionVar('terminal');
 if ($terminal == NULL) {
     ajaxSuccess(array ('error' => 'No current terminal assigned to this station.'));
