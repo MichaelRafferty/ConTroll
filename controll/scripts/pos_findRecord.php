@@ -91,7 +91,7 @@ SELECT DISTINCT r1.perid, r1.id as regid, m.conid, r1.price, r1.paid, r1.paid AS
     r1.create_date, IFNULL(r1.create_trans, -1) as tid,IFNULL(r1.complete_trans, -1) as tid2,r1.memId, r1.planId, r1.status, IFNULL(pc.printcount, 0) AS 
     printcount,
     IFNULL(ac.attachcount, 0) AS attachcount, n.reg_notes, n.reg_notes_count, m.memCategory, m.memType, m.memAge, m.shortname, rs.tid as rstid,
-    CASE WHEN m.conid = ? THEN m.label ELSE concat(m.conid, ' ', m.label) END AS label, m.glNum
+    CASE WHEN m.conid = ? THEN m.label ELSE concat(m.conid, ' ', m.label) END AS label, m.glNum, m.taxable
 EOS;
 $fieldListL = <<<EOS
 SELECT DISTINCT p.id AS perid, mp.policy, mp.response, mp.id AS policyId
@@ -309,7 +309,7 @@ JOIN memLabel m ON (r1.memId = m.id)
 LEFT OUTER JOIN printcount pc ON (r1.id = pc.regid)
 LEFT OUTER JOIN attachcount ac ON (r1.id = ac.regid)
 LEFT OUTER JOIN notes n ON (r1.id = n.regid)
-WHERE (r1.conid = ? OR (r1.conid = ? AND m.memCategory in ('yearahead', 'rollover'))) AND r1.status IN ('unpaid', 'paid', 'plan') AND
+WHERE (r1.conid = ? OR (r1.conid = ? AND m.memCategory in ('yearahead', 'rollover'))) AND r1.status IN ('unpaid', 'paid', 'plan')
 AND r1.status IN ('unpaid', 'paid', 'plan')
 ORDER BY r1.perid, r1.create_date;
 EOS;
@@ -320,6 +320,7 @@ $fieldListL
 FROM regids r
 JOIN reg r1 ON (r1.id = r.regid)
 JOIN perinfo p ON (p.id = r1.perid)
+JOIN memList m ON (r1.memId = m.id)
 JOIN memberPolicies mp ON (p.id = mp.perid AND r1.conid = mp.conid)
 WHERE (r1.conid = ? OR (r1.conid = ? AND m.memCategory in ('yearahead', 'rollover'))) AND r1.status IN ('unpaid', 'paid', 'plan')
 ORDER BY perid, policy;
@@ -331,7 +332,7 @@ EOS;
             ajaxSuccess(array('error' => "Error in string person query $name_search"));
             return;
         }
-        $rm = dbSafeQuery($searchSQLM, 'iiiiiiiii', array($name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1, $conid, $conid + 1, $conid));
+        $rm = dbSafeQuery($searchSQLM, 'iiiiiiiii', array($name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1, $conid, $conid, $conid + 1));
         if ($rm === false) {
             ajaxSuccess(array('error' => "Error in numeric membership query for $name_search"));
             return;
@@ -353,7 +354,7 @@ JOIN manages cnt ON (cnt.id = p.id)
 LEFT OUTER JOIN perinfo mgr ON (mgr.id = p.managedBy)
 ORDER BY last_name, first_name;
 EOS;
-        // noe the registration entries for these perids
+        // now the registration entries for these perids
         $searchSQLM = <<<EOS
 $managerWith, regids AS (
     SELECT r.id AS regid, create_trans as tid
