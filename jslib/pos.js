@@ -2869,7 +2869,7 @@ addUnpaid(tid) {
     </div>    
     <div class="row mb-2">
         <div class="col-sm-2 ms-0 me-2 p-0">Description:</div>
-        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0"><input type="text" size="60" maxlength="64" name="pay-desc" id="pay-desc"/></div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0"><input type="text" size="60" maxlength="48" name="pay-desc" id="pay-desc"/></div>
     </div>
      <div class="row mb-2">
         <div class="col-sm-2 ms-0 me-2 p-0">Select Payor:</div>

@@ -229,20 +229,21 @@ if ($amt > 0) {
                 $nonce = $new_payment['nonce'];
                 break;
             case 'discount':
-                $desc = $new_payment['desc'];
+                $desc = 'disc: ';
                 break;
             case 'coupon':
                 $desc = $coupon;
                 break;
             case 'credit':
                 $externalType = 'CARD';
-                $desc = 'offline credit card';
+                $desc = 'offline cc';
                 break;
             case 'check':
                 $externalType = 'CHECK';
-                $desc = 'Check No: ' . $new_payment['checkno'];
+                $desc = 'Chk No: ' . $new_payment['checkno'];
                 break;
         }
+        $desc = mb_substr($desc, 0, 64);
 
         $ccParam = array (
             'transid' => $master_tid,
@@ -316,7 +317,7 @@ if ($amt > 0) {
 
             $approved_amt = $payment['approved_money']['amount'] / 100;
             $category = 'atcon';
-            $desc = 'Square: ' . $payment['application_details']['square_product'];
+            $desc = $payment['application_details']['square_product'];
             $txtime = $payment['created_at'];
             $receiptNumber = $payment['receipt_number'];
             $receiptUrl = $payment['receipt_url'];
@@ -349,6 +350,7 @@ if ($amt > 0) {
             else
                 $taxAmt = 0;
 
+            $desc = mb_substr($desc . $new_payment['desc'], 0, 64);
             $rtn = array ();
             $rtn['amount'] = $approved_amt;
             $rtn['txnfields'] = array ('transid', 'type', 'category', 'description', 'source', 'pretax', 'tax', 'amount',
@@ -435,11 +437,6 @@ INSERT INTO payments(transid, type,category, description, source, pretax, tax, a
 VALUES (?,?,'reg',?,'cashier',?,?,?,now(),?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 EOS;
     $typestr = 'issdddsissssssiss';
-    if ($new_payment['type'] == 'check')
-        $desc = 'Check No: ' . $new_payment['checkno'] . '; ';
-    else
-        $desc = '';
-    $desc .= $new_payment['desc'];
     $paramarray = array ($master_tid, $paymentType, $desc, $preTaxAmt, $taxAmt, $approved_amt, $auth, $user_perid,
         $last4, $nonceCode, $paymentId, $txTime, $receiptUrl, $receiptNumber, $user_perid, $status, $paymentId);
     $new_pid = dbSafeInsert($insPmtSQL, $typestr, $paramarray);
