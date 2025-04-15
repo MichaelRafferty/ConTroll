@@ -2308,7 +2308,7 @@ addUnpaid(tid) {
                 if (tendered_amt > total_amount_due) {
                     change = tendered_amt - total_amount_due;
                     crow = {
-                        index: cart.getPmtLength() + 1, amt: change, ccauth: ccauth, checkno: checkno, desc: eldesc.value, type: 'change',
+                        index: cart.getPmtLength() + 1, amt: -change, ccauth: ccauth, checkno: checkno, desc: eldesc.value, type: 'change',
                     };
                 }
             }
