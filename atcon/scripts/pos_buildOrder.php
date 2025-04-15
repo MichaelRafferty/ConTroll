@@ -20,7 +20,7 @@ $conid = $con['id'];
 $debug = get_conf('debug');
 $ini = get_conf('reg');
 $log = get_conf('log');
-$ccauth = get_conf('cc');
+$cc = get_conf('cc');
 load_cc_procs();
 logInit($log['term']);
 
@@ -144,6 +144,8 @@ if ($cancelOrderId) // cancel the old order if it exists
 $locationId = getSessionVar('terminal');
 if ($locationId) {
     $locationId = $locationId['locationId'];
+} else {
+    $locationId = $cc['location'];
 }
 
 $rtn = cc_buildOrder($results, true, $locationId);
