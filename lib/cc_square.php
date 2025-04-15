@@ -695,7 +695,12 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
         $buyer['phone'] = '';
 
     $sourceId = $ccParams['nonce'];
-    $buyerSuppliedMoney = $ccParams['total'] + $ccParams['change'];
+    if (array_key_exists('change', $ccParams)) {
+        $change = $ccParams['change'];
+    } else {
+        $change = 0;
+    }
+    $buyerSuppliedMoney = $ccParams['total'] + $change;
     $paymentType = 'credit';
 
     // nonce = card id if card, CASH or EXTERNAL (check, other credit card clearer)
@@ -728,7 +733,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
                 'currency' => $currency,
                 ]),
             'changeBackMoney' => new Money([
-                'amount' => round($ccParams['change'] * 100),
+                'amount' => round($change * 100),
                 'currency' => $currency,
             ]),
         ]);
@@ -851,7 +856,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     $rtn['source'] = $source;
     $rtn['amount'] = $approved_amt;
     $rtn['nonce'] = $ccParams['nonce'];
-    $rtn['change'] = $ccParams['change'];
+    $rtn['change'] = $change;
     return $rtn;
 }
 
