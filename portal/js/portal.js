@@ -265,7 +265,8 @@ class Portal {
     // set  / get functions
     setOrderData(data) {
         this.#orderData = data;
-        this.#otherPay = 2;
+        if (this.#otherPay > 0)
+            this.#otherPay = 2;
         this.#totalAmountDue = data.rtn.totalAmt;
     }
 
