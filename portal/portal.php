@@ -273,10 +273,10 @@ WITH ppl AS (
         p.managedBy, p.managedByNew,
         TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ',
             IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
-        r.conid, r.status, r.memId, r.create_date, m.memCategory, m.memType, m.memAge, m.shortname, m.label,
+        r.conid, r.status, r.memId, r.create_date, 
         r.price AS actPrice, IFNULL(r.paid, 0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,
-        m.startdate, m.enddate, m.online,
-        a.shortname AS ageShort, a.label AS ageLabel, 'n' AS personType, mC.taxable,
+        m.memCategory, m.memType, m.memAge, m.shortname, m.label, m.startdate, m.enddate, m.online,
+        a.shortname AS ageShort, a.label AS ageLabel, 'n' AS personType, m.taxable,
         nc.id AS createNewperid, np.id AS completeNewperid, pc.id AS createPerid, pp.id AS completePerid,
         CASE
             WHEN pp.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pp.first_name, pp.last_name))
