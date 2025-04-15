@@ -363,6 +363,7 @@ if ($total > 0) {
         'transid' => $transId,
         'preTaxAmt' => $totalDue,
         'taxAmt' => 0,
+        'total' => $totalDue,
         );
 
 // call the credit card processor to make the payment
