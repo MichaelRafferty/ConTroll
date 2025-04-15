@@ -1250,7 +1250,7 @@ class Portal {
         if (plan == null) {
             html += `
         <div class="row mt-2 mb-4">
-            <div class="col-sm-auto">You are paying the total amount, so the payment amount is ` + Number(this.#paymentAmount).toFixed(2) + `</div>
+            <div class="col-sm-auto"><strong>You are paying the total amount, so the payment amount is ` + Number(this.#paymentAmount).toFixed(2) + `</strong></div>
          </div>
 `;
         } else if (!done) {
