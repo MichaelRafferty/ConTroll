@@ -69,14 +69,18 @@ $orderId = $_POST['orderId'];
 $source = 'portal';
 
 // load the amount values
-if ($newplan) {
-    $amount = $planRec['currentPayment'];
-}
 if (array_key_exists('totalAmountDue', $_POST) && $otherPay != 1) {
     $totalAmountDue = $_POST['totalAmountDue'];
-} else {
-    $totalAmountDue = $amount;
+    $amountDue = $totalAmountDue;
+} else
+    $totalAmountDue = 0;
 }
+if ($newplan) {
+    $amount = $planRec['currentPayment'];
+    if ($totalAmountDue == 0)
+        $totalAmountDue = $amount;
+}
+
 if (array_key_exists('couponDiscount', $_POST)) {
     $webCouponDiscount = $_POST['couponDiscount'];
 } else {
@@ -92,6 +96,12 @@ if (array_key_exists('taxAmount', $_POST)) {
     $taxAmount = $_POST['taxAmount'];
 } else {
     $taxAmount = 0;
+}
+
+if (array_key_exists('preTaxAmount', $_POST)) {
+    $preTaxAmount = $_POST['preTaxAmount'];
+} else {
+    $preTaxAmount = $totalAmountDue;
 }
 
 if (array_key_exists('badges', $_POST)) {
@@ -177,8 +187,9 @@ $results = array(
     'locationId' => $cc['location'],
     'referenceId' => $referenceId,
     'transid' => $transId,
-    'preTaxAmt' => $totalAmountDue,
+    'preTaxAmt' => $preTaxAmount,
     'taxAmt' => $taxAmount,
+    'total' => $amount,
 );
 
 // call the credit card processor to make the payment
