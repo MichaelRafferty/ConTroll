@@ -72,7 +72,7 @@ $source = 'portal';
 if (array_key_exists('totalAmountDue', $_POST) && $otherPay != 1) {
     $totalAmountDue = $_POST['totalAmountDue'];
     $amountDue = $totalAmountDue;
-} else
+} else {
     $totalAmountDue = 0;
 }
 if ($newplan) {
