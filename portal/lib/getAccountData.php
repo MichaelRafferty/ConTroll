@@ -19,63 +19,48 @@ WITH trans AS (
 	SELECT id, create_date, complete_date, perid, newperid, conid
 	FROM transaction
 	WHERE perid = ?
-), pn AS (
-    SELECT p.id AS memberId, managedBy, NULL AS managedByNew, email_addr, phone,
-        CASE 
-            WHEN badge_name IS NULL OR badge_name = '' THEN TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(last_name, '')) , '  *', ' ')) 
-            ELSE badge_name 
-        END AS badge_name,
-        TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(last_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) AS fullname
-    FROM trans t
-    JOIN perinfo p ON p.id = t.perid
-), nn AS (
-    SELECT n.id AS memberId, managedBy, managedByNew, email_addr, phone,
-        CASE
-            WHEN badge_name IS NULL OR badge_name = '' THEN TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(last_name, '')) , '  *', ' ')) 
-            ELSE badge_name 
-        END AS badge_name,
-    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(last_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) AS fullname
-    FROM trans t
-    JOIN newperson n ON n.id = t.newperid
-    WHERE n.perid IS NULL
 ), mems AS (
     SELECT t.id, r.create_date, r.id as regId, r.memId, r.conid, r.status, r.price, r.paid, r.complete_trans, r.couponDiscount, r.perid, r.newperid,
         IFNULL(r.complete_trans, r.create_trans) AS sortTrans,
         IFNULL(tp.complete_date, t.create_date) AS transDate,
-        m.label, m.memAge, m.memAge AS age, m.memType, m.memCategory, m.startdate, m.enddate, m.online, mC.taxable,
+        m.label, m.memAge, m.memAge AS age, m.memType, m.memCategory, m.startdate, m.enddate, m.online, m.taxable,
         CASE 
-            WHEN pn.memberId IS NOT NULL THEN pn.managedBy
-            WHEN nn.memberId IS NOT NULL THEN nn.managedBy
+            WHEN pn.id IS NOT NULL THEN pn.managedBy
+            WHEN nn.id IS NOT NULL THEN nn.managedBy
             ELSE NULL
         END AS managedBy,
         CASE 
-            WHEN pn.memberId IS NOT NULL THEN pn.managedByNew
-            WHEN nn.memberId IS NOT NULL THEN nn.managedByNew
+            WHEN pn.id IS NOT NULL THEN pn.managedByNew
+            WHEN nn.id IS NOT NULL THEN nn.managedByNew
             ELSE NULL
         END AS managedByNew,
         CASE 
-            WHEN pn.memberId IS NOT NULL THEN pn.badge_name
-            WHEN nn.memberid IS NOT NULL THEN nn.badge_name
+            WHEN pn.id IS NOT NULL THEN pn.badge_name
+            WHEN nn.id IS NOT NULL THEN nn.badge_name
             ELSE NULL
         END AS badge_name,
         CASE 
-            WHEN pn.memberid IS NOT NULL THEN pn.fullname
-            WHEN nn.memberId IS NOT NULL THEN nn.fullname
+            WHEN pn.id IS NOT NULL THEN
+				TRIM(REGEXP_REPLACE(CONCAT(IFNULL(pn.first_name, ''),' ', IFNULL(pn.middle_name, ''), ' ', 
+				IFNULL(pn.last_name, ''), ' ', IFNULL(pn.suffix, '')), '  *', ' '))
+            WHEN nn.id IS NOT NULL THEN
+				TRIM(REGEXP_REPLACE(CONCAT(IFNULL(nn.first_name, ''),' ', IFNULL(nn.middle_name, ''), ' ', 
+                IFNULL(nn.last_name, ''), ' ', IFNULL(nn.suffix, '')), '  *', ' '))
             ELSE NULL
         END AS fullname,
         CASE 
-            WHEN pn.memberId IS NOT NULL THEN pn.memberId
-            WHEN nn.memberId IS NOT NULL THEN nn.memberId
+            WHEN pn.id IS NOT NULL THEN pn.id
+            WHEN nn.id IS NOT NULL THEN nn.id
             ELSE NULL
         END AS memberId,
         CASE 
-            WHEN pn.memberId IS NOT NULL THEN pn.email_addr
-            WHEN nn.memberId IS NOT NULL THEN nn.email_addr
+            WHEN pn.id IS NOT NULL THEN pn.email_addr
+            WHEN nn.id IS NOT NULL THEN nn.email_addr
             ELSE NULL
         END AS email_addr,
         CASE 
-            WHEN pn.memberId IS NOT NULL THEN pn.phone
-            WHEN nn.memberId IS NOT NULL THEN nn.phone
+            WHEN pn.id IS NOT NULL THEN pn.phone
+            WHEN nn.id IS NOT NULL THEN nn.phone
             ELSE NULL
         END AS phone, 
         IFNULL(tp.perid, t.perid) AS transPerid,
@@ -84,24 +69,25 @@ WITH trans AS (
     JOIN reg r ON t.id = r.create_trans
     LEFT OUTER JOIN trans tp ON tp.id = r.complete_trans
     JOIN memLabel m ON m.id = r.memId
-    JOIN memCategories mC ON m.memCategory = mC.memCategory
-    LEFT OUTER JOIN pn ON pn.memberId = r.perid AND (pn.managedBy = ? OR pn.memberId = ?)
-    LEFT OUTER JOIN nn ON nn.memberId = r.newperid
+    LEFT OUTER JOIN perinfo pn ON pn.id = r.perid AND (pn.managedBy = ? OR pn.id = ?)
+    LEFT OUTER JOIN newperson nn ON nn.id = r.newperid
     WHERE (status $statusCheck OR (r.status = 'paid' AND r.complete_trans IS NULL)) AND (t.perid = ? OR tp.perid = ?) AND t.conid = ?
     UNION
     SELECT t.id, r.create_date, r.id AS regId, r.memId, r.conid, r.status, r.price, r.paid, r.complete_trans, r.couponDiscount, r.perid, r.newperid,
         CASE WHEN r.complete_trans IS NULL THEN r.create_trans ELSE r.complete_trans END AS sortTrans,
         CASE WHEN tp.complete_date IS NULL THEN t.create_date ELSE tp.complete_date END AS transDate,
-        m.label, m.memAge, m.memAge AS age, m.memType, m.memCategory,  m.startdate, m.enddate, m.online, mC.taxable,
-        nn.managedBy, nn.managedByNew, nn.badge_name, nn.fullname, nn.memberId, nn.email_addr, nn.phone,
+        m.label, m.memAge, m.memAge AS age, m.memType, m.memCategory,  m.startdate, m.enddate, m.online, m.taxable,
+        nn.managedBy, nn.managedByNew, nn.badge_name, 
+        TRIM(REGEXP_REPLACE(CONCAT(IFNULL(nn.first_name, ''),' ', IFNULL(nn.middle_name, ''), ' ', 
+                IFNULL(nn.last_name, ''), ' ', IFNULL(nn.suffix, '')), '  *', ' ')) AS fullname, 
+        nn.id as memberId, nn.email_addr, nn.phone,
         IFNULL(tp.perid, t.perid) AS transPerid,
         IFNULL(tp.newperid, t.newperid) AS transNewPerid
     FROM trans t
     JOIN reg r ON t.id = r.create_trans
     LEFT OUTER JOIN trans tp ON tp.id = r.complete_trans
     JOIN memLabel m ON m.id = r.memId
-    JOIN memCategories mC ON m.memCategory = mC.memCategory
-    JOIN nn ON nn.memberId = r.newperid
+    JOIN newperson nn ON nn.id = r.newperid
     WHERE (status $statusCheck OR (r.status = 'paid' AND r.complete_trans IS NULL)) AND (t.perid = ? OR tp.perid = ?) AND t.conid = ?
 )
 SELECT DISTINCT *
