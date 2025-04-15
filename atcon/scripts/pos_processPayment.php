@@ -243,7 +243,11 @@ if ($amt > 0) {
                 $desc = 'Chk No: ' . $new_payment['checkno'];
                 break;
         }
-        $desc = mb_substr($desc, 0, 64);
+
+        if ($desc == '')
+            $desc = $new_payment['desc'];
+        else
+            $desc = mb_substr($desc . '/' . $new_payment['desc'], 0, 64);
 
         $ccParam = array (
             'transid' => $master_tid,
@@ -350,7 +354,11 @@ if ($amt > 0) {
             else
                 $taxAmt = 0;
 
-            $desc = mb_substr($desc . $new_payment['desc'], 0, 64);
+            if ($desc == '')
+                $desc = $new_payment['desc'];
+            else
+                $desc = mb_substr($desc . '/' . $new_payment['desc'], 0, 64);
+
             $rtn = array ();
             $rtn['amount'] = $approved_amt;
             $rtn['txnfields'] = array ('transid', 'type', 'category', 'description', 'source', 'pretax', 'tax', 'amount',
