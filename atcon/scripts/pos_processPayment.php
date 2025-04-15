@@ -74,7 +74,7 @@ if ($orderId == null || $orderId == '') {
 
 $new_payment = $_POST['new_payment'];
 if (!array_key_exists('amt', $new_payment) || $new_payment['amt'] <= 0) {
-    ajaxError('invalid payment amount passed: due != payment amount');
+    ajaxError('invalid payment amount passed: payment <= 0');
     return;
 }
 $amt = (float) $new_payment['amt'];
