@@ -155,7 +155,7 @@ if ($amt > 0) {
         case 'cash':
             $nonce = 'CASH';
             if ($crow)
-                $change = $crow['amt'];
+                $change = -$crow['amt'];
             break;
         case 'online':
             $nonce = $new_payment['nonce'];
