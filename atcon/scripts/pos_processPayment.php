@@ -125,13 +125,13 @@ if ($new_payment['type'] == 'terminal') {
     $termStatus = $statusResponse['updatedRow'];
 
     if ($override == 1) {  // force the operation to continue, try to cancel anything in progress
+        resetTerminalStatus($name);
         if ($termStatus['currentPayment'] != null && $termStatus['currentPayment'] != '') {
             term_cancelPayment($name, $termStatus['currentPayment'], true);
         }
         if ($termStatus['currentOrder'] != null && $termStatus['currentOrder'] != '$orderId') {
             cc_cancelOrder('atcon', $orderId, true);
         }
-        resetTerminalStatus($name);
     } else {
         $status = $termStatus['status'];
         $inUseBy = $termStatus['currentOperator'];
