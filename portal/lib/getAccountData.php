@@ -80,7 +80,7 @@ WITH trans AS (
         nn.managedBy, nn.managedByNew, nn.badge_name, 
         TRIM(REGEXP_REPLACE(CONCAT(IFNULL(nn.first_name, ''),' ', IFNULL(nn.middle_name, ''), ' ', 
                 IFNULL(nn.last_name, ''), ' ', IFNULL(nn.suffix, '')), '  *', ' ')) AS fullname, 
-        nn.id as memberId, nn.email_addr, nn.phone,
+        IFNULL(nn.perid, nn.id) as memberId, nn.email_addr, nn.phone,
         IFNULL(tp.perid, t.perid) AS transPerid,
         IFNULL(tp.newperid, t.newperid) AS transNewPerid
     FROM trans t
