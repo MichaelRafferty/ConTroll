@@ -156,6 +156,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     //  b. add line items
     //      i. assign which tax line items to ignore
     //      ii. assign which discount line items to ignore
+    //      iii. skip over already complete items and not add them to the square order
     //  c. create order
     //  add order id to return items
 
@@ -339,6 +340,9 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 } else {
                     $amount = round(($badge['price']-$badge['paid']) * 100);
                 }
+
+                if (array_key_exists('complete_trans', $badge) && $badge['complete_trans'] > 0 && $amount == 0)
+                    continue; // skip paid complete items in order for sending to square
 
                 $itemName =  $badge['label'] . (($badge['memType'] == 'full' || $badge['memType'] == 'oneday') ? ' Membership' : '') .
                     ' for ' . $fullname;
