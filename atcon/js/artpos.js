@@ -11,7 +11,7 @@ var current_tab = null;
 // find person fields
 var id_div = null;
 var badgeid_field = null;
-var current_person = null;
+var currentPerson = null;
 var stats_div = null;
 var showStats_div = null;
 var statsTable = null;
@@ -158,6 +158,7 @@ function start_over(reset_all) {
     }
 
     hideStats();
+    currentPerson = null;
     // empty cart
     cart.startOver();
     cart.hideRelease();
@@ -222,53 +223,53 @@ function draw_person() {
     <div class="container-fluid">
         <div class="row">
             <div class="col-sm-3">Person ID:</div>
-            <div class="col-sm-9">` + current_person['id'] + `</div>
+            <div class="col-sm-9">` + currentPerson.id + `</div>
         </div>
         <div class="row">
             <div class="col-sm-3">` + 'Badge Name:' + `</div>
-            <div class="col-sm-9">` + badge_name_default(current_person['badge_name'], current_person['first_name'], current_person['last_name']) + `</div>
+            <div class="col-sm-9">` + badge_name_default(currentPerson.badge_name, currentPerson.first_name, currentPerson.last_name) + `</div>
         </div>
         <div class="row">
             <div class="col-sm-3">Name:</div>
             <div class="col-sm-9">` +
-            current_person['first_name'] + ' ' + current_person['middle_name'] + ' ' + current_person['last_name'] + `
+            currentPerson.first_name + ' ' + currentPerson.middle_name + ' ' + currentPerson.last_name + `
             </div>
         </div>  
         <div class="row">
             <div class="col-sm-3">Address:</div>
-            <div class="col-sm-9">` + current_person['address'] + `</div>
+            <div class="col-sm-9">` + currentPerson.address + `</div>
         </div>
 `;
-    if (current_person['address_2'] != '') {
+    if (currentPerson.address_2 != '') {
         html += `
     <div class="row">
         <div class="col-sm-3"></div>
-        <div class="col-sm-9">` + current_person['addr_2'] + `</div>
+        <div class="col-sm-9">` + currentPerson.addr_2 + `</div>
     </div>
 `;
     }
     html += `
     <div class="row">
        <div class="col-sm-3"></div>
-       <div class="col-sm-9">` + current_person['city'] + ', ' + current_person['state'] + ' ' + current_person['postal_code'] + `</div>
+       <div class="col-sm-9">` + currentPerson.city + ', ' + currentPerson.state + ' ' + currentPerson.postal_code + `</div>
     </div>
 `;
-    if (current_person['country'] != '' && current_person['country'] != 'USA') {
+    if (currentPerson.country != '' && currentPerson.country != 'USA') {
         html += `
     <div class="row">
        <div class="col-sm-3"></div>
-       <div class="col-sm-9">` + current_person['country'] + `</div>
+       <div class="col-sm-9">` + currentPerson.country + `</div>
     </div>
 `;
     }
     html += `
     <div class="row">
        <div class="col-sm-3">Email Address:</div>
-       <div class="col-sm-9">` + current_person['email_addr'] + `</div>
+       <div class="col-sm-9">` + currentPerson.email_addr + `</div>
     </div>
     <div class="row">
        <div class="col-sm-3">Phone:</div>
-       <div class="col-sm-9">` + current_person['phone'] + `</div>
+       <div class="col-sm-9">` + currentPerson.phone + `</div>
     </div>
 </div>
 `;
@@ -336,7 +337,7 @@ function findPerson(find_type) {
 //      multiple rows: display table of records with add/trans buttons
 function foundPerson(data) {
     if (data['num_rows'] == 1) { // one person found
-        current_person = data['person'];
+        currentPerson = data['person'];
         // put the person details in the cart, populate the cart with the art they have to purchase
         draw_person();
         data['art'].forEach((artItem) => {
@@ -386,6 +387,8 @@ function findArt(findType) {
             var fields = itemCode.split(',');
             itemId = fields[0];
             unitNumber = fields[1];
+            itemCode_field.value = '';
+            itemCode_field.focus();
             break;
 
         case 'unit':
@@ -421,6 +424,7 @@ function findArt(findType) {
         unitNumber: unitNumber,
         itemId: itemId,
         findType: findType,
+        region: config['region'],
     };
 
     $("button[name='findArtBtn']").attr("disabled", true);
@@ -466,7 +470,7 @@ function foundArt(data) {
         html += '<div class="row"><div class="col-sm-4">Artist Name:</div><div class="col-sm-8">' + item['exhibitorName'] + '</div></div>';
         html += '<div class="row"><div class="col-sm-4">Title:</div><div class="col-sm-8">' + item['title'] + '</div></div>';
         html += '<div class="row"><div class="col-sm-4">Material:</div><div class="col-sm-8">' + item['material'] + '</div></div>';
-        if (item['bidder'] != null && item['bidder'] != '' && item['bidder'] != current_person['id']) {
+        if (item['bidder'] != null && item['bidder'] != '' && item['bidder'] != currentPerson.id) {
             valid = false;
             html += '<div class="row"><div class="col-sm-4 bg-warning">Already Sold:</div><div class="col-sm-8 bg-warning">Item has already been sold to someone else.</div></div>';
         }
@@ -626,7 +630,7 @@ function initArtSales() {
         cart_art: JSON.stringify(cart.getCartArt()),
         cart_art_map: JSON.stringify(cart.getCartMap()),
         pay_tid: pay_tid,
-        perid: current_person['id'],
+        perid: currentPerson.id,
         user_id: user_id,
     };
     $.ajax({
@@ -800,7 +804,7 @@ function pay(nomodal, prow = null) {
         new_payment: prow,
         change: crow,
         user_id: user_id,
-        perid: current_person['id'],
+        perid: currentPerson.id,
         pay_tid: pay_tid,
     };
     pay_button_pay.disabled = true;
@@ -846,7 +850,7 @@ var last_receipt_type = '';
 function print_receipt(receipt_type) {
     last_receipt_type = receipt_type;
     var d = new Date();
-    var payee = (current_person['first_name'] + ' ' + current_person['last_name']).trim();
+    var payee = (currentPerson.first_name + ' ' + currentPerson.last_name).trim();
 
     // header text
     var header_text =  "\nReceipt for payment to " + conlabel + "\nat " + d.toLocaleString() + "\nBy: " + payee + ", Cashier: " + user_id + ", Transaction: " + pay_tid + "\n";
@@ -856,7 +860,7 @@ function print_receipt(receipt_type) {
     var postData = {
         ajax_request_action: 'printReceipt',
         header: header_text,
-        person: current_person,
+        person: currentPerson,
         arows: JSON.stringify(cart.getCartArt()),
         pmtrows: JSON.stringify(cart.getCartPmt()),
         footer: footer_text,
@@ -1014,6 +1018,7 @@ function add_shown() {
     pieceNumber_field.value = null;
     unitNumber_field.value = null;
     itemCode_field.value = null;
+    itemCode_field.focus();
 }
 
 var emailAddreesRecipients = [];
@@ -1046,7 +1051,7 @@ function pay_shown() {
             pay_button_pay.hidden = true;
             pay_button_rcpt.hidden = false;
             var email_html = '';
-            var email_addr = current_person['email_addr'];
+            var email_addr = currentPerson.email_addr;
             if (emailRegex.test(email_addr)) {
                 email_html += '<div class="row"><div class="col-sm-1 pe-2"></div><div class="col-sm-8">' + email_addr + '</div></div>';
             }
@@ -1055,7 +1060,7 @@ function pay_shown() {
                 pay_button_ercpt.disabled = false;
                 pay_button_ercpt.disabled = false;
                 receeiptEmailAddresses_div.innerHTML = '<div class="row mt-2"><div class="col-sm-9 p-0">Email receipt to:</div></div>' + email_html;
-                emailAddreesRecipients.push(current_person['email_addr']);
+                emailAddreesRecipients.push(currentPerson.email_addr);
             }
             document.getElementById('pay-amt').value='';
             document.getElementById('pay-desc').value='';
@@ -1237,7 +1242,7 @@ function release_shown() {
     // search for matching names
     var postData = {
         ajax_request_action: 'findRelease',
-        perid: current_person['id'],
+        perid: currentPerson.id,
     };
     $.ajax({
         method: "POST",
@@ -1264,7 +1269,7 @@ function release_shown() {
 }
 
 function foundRelease(data) {
-    releaseTitleDiv.innerHTML = 'Check Artwork Purchased by ' + (current_person['first_name'] + ' ' + current_person['last_name']).trim();
+    releaseTitleDiv.innerHTML = 'Check Artwork Purchased by ' + (currentPerson.first_name + ' ' + currentPerson.last_name).trim();
 
     if (releaseTable != null) {
         releaseTable.destroy();
@@ -1335,7 +1340,7 @@ function processRelease() {
     $.ajax({
         url: 'scripts/artpos_processRelease.php',
         method: "POST",
-        data: { art: JSON.stringify(data), perid: current_person['id'], user_id: user_id, },
+        data: { art: JSON.stringify(data), perid: currentPerson.id, user_id: user_id, },
         success: function (data, textstatus, jqxhr) {
             if (data['error'] !== undefined) {
                 show_message(data['error'], 'error');

@@ -14,6 +14,11 @@ $tab = 'artsales';
 $mode = 'artsales';
 $method='artsales';
 
+$region = '';
+if(array_key_exists('region', $_GET)) {
+    $region = $_GET['region'];
+}
+
 $page = "Atcon POS ($tab)";
 
 if (!check_atcon($method, $conid)) {
@@ -21,13 +26,94 @@ if (!check_atcon($method, $conid)) {
     exit(0);
 }
 
+$con = get_conf('con');
+$debug = get_conf('debug');
+$usps = get_conf('usps');
+$vendor = get_conf('vendor');
+$ini = get_conf('reg');
+$controll = get_conf('controll');
+$atcon = get_conf('atcon');
+$condata = get_con();
+$conid = $con['id'];
+$conname = $con['conname'];
+
+if (array_key_exists('taxRate', $con))
+    $taxRate = $con['taxRate'];
+else
+    $taxRate = 0;
+
+if (array_key_exists('taxidlabel', $vendor))
+    $taxLabel = $vendor['taxidlabel'];
+else
+    $taxLabel = '';
+
+$regionQ = <<<EOS
+SELECT xR.shortname AS regionName
+FROM exhibitsRegionTypes xRT
+    JOIN exhibitsRegions xR ON xR.regionType=xRT.regionType
+    JOIN exhibitsRegionYears xRY ON xRY.exhibitsRegion = xR.id
+WHERE xRT.active='Y' AND xRT.usesInventory='Y' AND xRY.conid=?;
+EOS;
+$regionR = dbSafeQuery($regionQ, 'i', array($conid));
+$setRegion = false;
+if ($regionR->num_rows == 1 && $region == '') {
+    $setRegion = true;
+}
+$regionList = [];
+while ($regionInfo = $regionR->fetch_assoc()) {
+    $regionList[] = $regionInfo['regionName'];
+    if ($setRegion) {
+        $region = $regionInfo['regionName'];
+    }
+}
+$regionR->free();
+setSessionVar('ARTPOSRegion', $region);
+
+$config_vars = array ();
+$config_vars['label'] = $con['label'];
+$config_vars['region'] = $region;
+$config_vars['conid'] = $conid;
+$config_vars['regadminemail'] = $con['regadminemail'];
+$config_vars['required'] = $ini['required'];
+$config_vars['taxRate'] = $taxRate;
+$config_vars['taxLabel'] = $taxLabel;
+if (array_key_exists('creditoffline', $atcon)) {
+    $config_vars['creditoffline'] = $atcon['creditoffline'];
+}
+if (array_key_exists('creditonline', $atcon)) {
+    $config_vars['creditonline'] = $atcon['creditonline'];
+}
+
+
 $cdn = getTabulatorIncludes();
 page_init($page, $tab,
     /* css */ array($cdn['tabcss'], $cdn['tabbs5']),
     /* js  */ array( ///$cdn['luxon'],
-                    $cdn['tabjs'], 'js/artpos_cart.js', 'js/artpos.js')
+                    $cdn['tabjs'], 'js/artpos_cart.js', 'js/artpos.js'),
+    $config_vars
     );
 ?>
+<div id='tabs'>
+    <ul class='nav nav-tabs mb-3' id='region-tabs' role='tablist'>
+        <?php
+            foreach ($regionList as $regionName) {
+                $isRegion = $region == $regionName;
+                $actual_link = $_SERVER['PHP_SELF'];
+                ?>
+                <li class='nav-item' role='presentation'>
+                    <button class='nav-link <?php if ($isRegion) {
+                        echo 'active';
+                    } ?>' id='<?php echo $regionName; ?>-tab' data-bs-toggle='pill' type='button' role='tab' aria-controls='nav-<?php echo $regionName; ?>'
+                            aria-selected='<?php echo $isRegion ? 'true' : 'false'; ?>'
+                            onclick='window.location = "<?php echo $actual_link . '?region=' . $regionName; ?>"'>
+                        <?php echo $regionName; ?>
+                    </button>
+                </li>
+                <?php
+            }
+        ?>
+    </ul>
+</div>
 <div id="pos" class="container-fluid">
     <div class="row mt-2">
         <div class="col-sm-6">
