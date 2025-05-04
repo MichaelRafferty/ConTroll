@@ -191,9 +191,11 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                     $amount = $badge['price'] - $badge['paid'];
                 }
 
+                $itemName =  $badge['label'] . (($badge['memType'] == 'full' || $badge['memType'] == 'oneday') ? ' Membership' : '') .
+                    ' for ' . $fullname;
                 $item = [
                     'uid' => 'badge' . ($lineid + 1),
-                    'name' => $badge['age'] . ' Membership for ' . $fullname,
+                    'name' => mb_substr($itemName, 0, 128),
                     'quantity' => 1,
                     'note' => $note,
                     'basePriceMoney' => round($amount * 100),
@@ -354,6 +356,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
     if (array_key_exists('nonce', $results))
         $rtn['exhibits'] = $results['nonce'];
 
+    $_SESSION['ccTestResults'] = $rtn;
     return $rtn;
 }
 
@@ -367,7 +370,7 @@ function cc_cancelOrder($source, $orderId, $useLogWrite = false) : void {
 }
 
 // enter a payment against an exist order: build the payment, submit it to square and process the resulting payment
-function cc_payOrder($results, $buyer, $useLogWrite = false) {
+function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     $cc = get_conf('cc');
     $reg = get_conf('reg');
 
@@ -391,13 +394,13 @@ function cc_payOrder($results, $buyer, $useLogWrite = false) {
         $buyer['phone'] = '';
 
     $source = 'onlinereg';
-    if (array_key_exists('source', $results)) {
-        $source = $results['source'];
+    if (array_key_exists('source', $ccParams)) {
+        $source = $ccParams['source'];
     }
 
 	// set category based on if exhibits is a portal type
-    if (array_key_exists('exhibits', $results)) {
-        if ($results['exhibits'] == 'vendor')
+    if (array_key_exists('exhibits', $ccParams)) {
+        if ($ccParams['exhibits'] == 'vendor')
             $category = 'vendor';
         else
             $category = 'artshow';
@@ -405,21 +408,123 @@ function cc_payOrder($results, $buyer, $useLogWrite = false) {
         $category = 'reg';
     }
 
-	switch($_POST['nonce'][0]) {
-		case '1': // success
-            $rtn['results'] = $results;
-			$rtn['amount'] = $results['totalAmt'];
-			$rtn['txnfields'] =  array('transid','type','category','description', 'source','pretax', 'tax', 'amount', 'txn_time', 'nonce','cc_txn_id',
-			'cc_approval_code','receipt_id', 'cashier');
-			$rtn['tnxtypes'] = array('i', 's', 's', 's', 's', 'd', 'd', 'd', 's', 's', 's', 's', 's', 'i');
-			$rtn['tnxdata'] = array($results['transid'],'credit',$category, 'test registration', 'online', $results['preTaxAmt'], $results['taxAmt'],
-                $results['totalAmt'], '00-00-00 00:00:00', $_POST['nonce'],'txn id','000000','txn_id', $loginPerid);
-            $rtn['url'] = 'no test receipt';
-            $rtn['rid'] = 'test';
-			return $rtn;
-		default: 
-			ajaxSuccess(array('status'=>'error','data'=>'bad CC number'));
-			exit();
+    if (array_key_exists('nonce', $_POST)) {
+        $pNonce = $_POST['nonce'];
+        if (is_array($pNonce)) {
+            if ($pNonce[0] != '1') {
+                ajaxSuccess(array ('status' => 'error', 'data' => 'bad CC number'));
+                exit();
+            }
+        }
+    } else {
+        $pNonce = 'cc_test';
+    }
+
+    $desc = 'cc_test: test reg';
+    $paymentType = 'credit';
+    $sourceId = $ccParams['nonce'];
+    if ($sourceId == 'CASH') {
+        $paymentType = 'cash';
+    }
+
+    if ($sourceId == 'EXTERNAL') {
+        $paymentType = $ccParams['externalType'];
+    }
+
+    if (array_key_exists('change', $ccParams)) {
+        $change = $ccParams['change'];
+    } else {
+        $change = 0;
+    }
+    $txtime = '00-00-00 00:00:00';
+    $receipt_url = 'cc_test: No Receipt';
+    $auth = 'cctest';
+    $status = 'COMPLETED';
+    $receipt_number = 'test';
+    $last4 = '0000';
+    $id='test';
+    $total = $ccParams['total'] + $change;
+
+    $rtn = array();
+    $rtn['txnfields'] = array('transid','type','category','description','source','pretax', 'tax', 'amount',
+        'txn_time', 'cc','nonce','cc_txn_id','cc_approval_code','receipt_url','status','receipt_id', 'cashier');
+    $rtn['tnxtypes'] = array('i', 's', 's', 's', 's', 'd', 'd', 'd',
+        's', 's', 's', 's', 's', 's', 's', 's', 'i');
+    $rtn['tnxdata'] = array($ccParams['transid'],$paymentType,$category,$desc,$source,$ccParams['preTaxAmt'], $ccParams['taxAmt'], $total,
+        $txtime,$last4,$ccParams['nonce'],$id,$auth,$receipt_url,$status,$receipt_number, $loginPerid);
+    $rtn['results'] = $ccParams;
+    $rtn['url'] = 'no test receipt';
+    $rtn['rid'] = 'test';
+    $rtn['payment'] = null;
+    $rtn['paymentType'] = $paymentType;
+    $rtn['preTaxAmt'] = $ccParams['preTaxAmt'];
+    $rtn['taxAmt'] = $ccParams['taxAmt'];
+    $rtn['auth'] = $auth;
+    $rtn['paymentId'] = $id;
+    $rtn['last4'] = $last4;
+    $rtn['txTime'] = $txtime;
+    $rtn['status'] = $status;
+    $rtn['transId'] = $ccParams['transid'];
+    $rtn['category'] = $category;
+    $rtn['description'] = $desc;
+    $rtn['source'] = $source;
+    $rtn['amount'] = $total;
+    $rtn['nonce'] = $ccParams['nonce'];
+    $rtn['change'] = $change;
+    return $rtn;
 	}
-};
+
+// fetch an order to get its details
+function cc_getPayment($source, $paymentid, $useLogWrite = false) : array {
+    $ccTestResults = $_SESSION['ccTestResults'];
+
+    $cc = get_conf('cc');
+
+    $payment = [
+        'id' => 'testSystem',
+        'created_at' => '2099-01-01 00:00:00',
+        'amount_money' => [
+            'amount' =>  $_SESSION['term_testAmt'],
+            'currency' => 'USD',
+            ],
+        'source_type' => 'CARD',
+        'status' => 'COMPLETED',
+        'card_details' => [
+            'status' => 'CAPTURED',
+            'card' => [
+                'card_brand' => 'test',
+                'last_4' => '1111',
+                'exp_month' => '12',
+                'exp_year' => '2099',
+                'card_type' => 'TEST',
+                'prepaid_type' => 'NOT_PREPAID',
+                'bin' => '411111',
+                'fingerprint' => 'line nonce',
+                ],
+            'entry_method' => 'TEST',
+            'cvv_status' => 'CVV_ACCCEPTED',
+            'avs_status' => 'AVS_ACCEPTED',
+            'auth_result_code' => 'test12',
+            'statement_description' => 'test statement',
+            ],
+        'location_id' => $ccTestResults['locationId'],
+        'order_id' => $ccTestResults['orderId'],
+        'total_money' => [
+            'amount' => $ccTestResults['totalAmt'] * 100,
+            'currency' => 'USD',
+        ],
+        'approved_money' => [
+            'amount' => $_SESSION['term_testAmt'],
+            'currency' => 'USD',
+        ],
+        'application_details' => [
+            'square_product' => 'Controll Test Harness',
+            'application_id' => 'cc_test',
+        ],
+        'receipt_number' => 'test',
+        'receipt_url' => 'https://test.test/receipt/test',
+    ];
+
+    return $payment;
+}
 ?>

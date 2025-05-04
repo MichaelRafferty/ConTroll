@@ -179,6 +179,10 @@ class PosCart {
         return this.#cartPmt.length;
     }
 
+    getPmt() {
+        return make_copy(this.#cartPmt);
+    }
+
     // get total price
     getTotalPrice() {
         return Number(this.#totalPrice);
@@ -201,6 +205,10 @@ class PosCart {
 
     // notes fields in the cart, get current values and set new values, marking dirty for saving records
 
+    getPerid(index) {
+        return this.#cartPerinfo[index].perid;
+    }
+
     getFullName(index) {
         return this.#cartPerinfo[index].fullName;
     }
@@ -211,6 +219,10 @@ class PosCart {
 
     getPhone(index) {
         return this.#cartPerinfo[index].phone;
+    }
+
+    getCountry(index) {
+        return this.#cartPerinfo[index].country;
     }
 
     getRegFullName(perid) {
@@ -751,6 +763,7 @@ class PosCart {
         newMembership.label = memrow.label;
         newMembership.memCategory = memrow.memCategory;
         newMembership.glNum = memrow.glNum;
+        newMembership.taxable = memrow.taxable;
         newMembership.memType = memrow.memType;
         newMembership.memAge = memrow.memAge;
         newMembership.perid =  this.#addEditPerid;
@@ -1119,7 +1132,7 @@ class PosCart {
             };
             this.#cartPmt.push(prow);
         }
-        // loop over the cartPmt row and if its less than the total paid, increment the prior paid by the difference because the new row
+        // loop over the cartPmt row and if it is less than the total paid, increment the prior paid by the difference because the new row
         // added to the cart has a prior payment.
         var totalPayments = 0;
         var priorIndex = 0;
@@ -1130,7 +1143,7 @@ class PosCart {
         }
         if (this.#totalPaid != totalPayments) {
             // adjust the prior prow
-            this.#cartPmt[priorIndex].amt += this.#totalPaid - totalPayments;
+            this.#cartPmt[priorIndex].amt = Number(this.#cartPmt[priorIndex].amt) + Number(this.#totalPaid) - Number(totalPayments);
         }
         if (this.#cartPmt.length > 0) {
             html += `

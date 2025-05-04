@@ -42,6 +42,14 @@ class Pos {
     #pay_prior_discount = null;
     #cc_html = '';
     #purchase_label = 'purchase';
+    #pay_currentOrderId = null;
+    #preTaxAmt = null;
+    #taxAmt = null;
+    #taxLabel = '';
+    #totalPaid = null;
+    #payOverride = 0;
+    #payPoll = 0;
+    #payCurrentRequest = null;
 
     // Data Items
     #unpaid_table = [];
@@ -95,6 +103,7 @@ class Pos {
     #printDiv = null;
     #badgePrinterAvailable = false;
     #receiptPrinterAvailable = false;
+    #ccTerminalAvailable = false;
     #badgeList = null;
     #printActive = false;
 
@@ -289,6 +298,8 @@ class Pos {
             if (this.#printActive)
                 this.printShown();
         }
+        if (data.hasOwnProperty('terminal'))
+            this.#ccTerminalAvailable = data.terminal === true;
     }
 
     getConlabel() {
@@ -395,6 +406,10 @@ class Pos {
         this.#receiptPrinterAvailable = false;
         if (data.hasOwnProperty('receiptPrinter'))
             this.#receiptPrinterAvailable = data.receiptPrinter === true;
+        this.#ccTerminalAvailable = false;
+        if (data.hasOwnProperty('terminal'))
+            this.#ccTerminalAvailable = data.terminal === true;
+
 
         if (this.#manager == false)
             baseManagerEnabled = false;
@@ -601,6 +616,7 @@ class Pos {
         this.#pay_tid = null;
         this.#pay_tid_amt = 0;
         this.#pay_prior_discount = null;
+        this.#pay_currentOrderId = null;
         // clear the pay tab
         this.#pay_div.innerHTML = "No Payment Required, Proceed to Next Customer";
 
@@ -1318,6 +1334,7 @@ class Pos {
        <div class="col-sm-3">Membership Type:</div>
        <div class="col-sm-9">` + label + `</div>
     </div>
+</div>
 `;
         return html;
     }
@@ -1908,7 +1925,7 @@ addUnpaid(tid) {
                     show_message(data.message, 'success');
                 }
                 if (data.warn !== undefined) {
-                    show_message(data.warn, 'success');
+                    show_message(data.warn, 'warn');
                 }
                 _this.reviewedUpdateCart(data);
             },
@@ -1944,8 +1961,8 @@ addUnpaid(tid) {
         }
 
         if (config.cashier == 1) {
-            bootstrap.Tab.getOrCreateInstance(this.#pay_tab).show();
-            cart.drawCart();
+            this.gotoPay();
+            return;
         } else {
             cart.showNext();
             cart.hideStartOver();
@@ -1957,14 +1974,77 @@ addUnpaid(tid) {
             if (el)
                 el.hidden = true;
             el = document.getElementById('review_status');
-            if (el)
-                el.innerHTML = "<strong>Completed: Send customer to cashier with id of " + this.#pay_tid + '</strong>';
+            if (el) {
+                var html = "<strong>Completed: Send customer to cashier with id of " + this.#pay_tid + '</strong>';
+                if (config.hasOwnProperty('cashierAllowed') && config.cashierAllowed == 1)
+                    html += "<br/>or click here to call up this transaction as a cashier: " +
+                        '<btn class="btn btn-secondary btn-sm" type="button" id="switch-casher-btn" ' +
+                        'onclick="window.location=' + "'?mode=cashier&tid=" + this.#pay_tid + "'" + '">' +
+                        'Take Payment Here</button>';
+                el.innerHTML = html;
+            }
         }
+    }
+
+// transition to payment processing
+    gotoPay() {
+        // build the order
+        var postData = {
+            ajax_request_action: 'buildOrder',
+            cart_perinfo: JSON.stringify(cart.getCartPerinfo()),
+            pay_tid: this.#pay_tid,
+        };
+        if (this.#pay_currentOrderId) {
+            postData.cancelOrder = this.#pay_currentOrderId;
+            this.#pay_currentOrderId = null;
+        }
+
+        var _this = this;
+        clear_message();
+        $.ajax({
+            method: "POST",
+            url: "scripts/pos_buildOrder.php",
+            data: postData,
+            success: function (data, textstatus, jqxhr) {
+                var stop = true;
+                if (typeof data == 'string') {
+                    show_message(data, 'error');
+                } else if (data.error !== undefined) {
+                    show_message(data.error, 'error');
+                } else if (data.message !== undefined) {
+                    show_message(data.message, 'success');
+                    stop = false;
+                } else if (data.warn !== undefined) {
+                    show_message(data.warn, 'warn');
+                    stop = false;
+                } else if (data.status == 'error') {
+                    show_message(data.data, 'error');
+                } else
+                    stop = false;
+                if (!stop)
+                    _this.buildOrderSuccess(data);
+            },
+            error: function (jqXHR, textstatus, errorThrown) {
+                showAjaxError(jqXHR, textstatus, errorThrown);
+            },
+        });
+    }
+
+    buildOrderSuccess(data) {
+        this.#pay_currentOrderId = data.rtn.orderId;
+        this.#preTaxAmt = data.rtn.preTaxAmt;
+        this.#taxAmt = data.rtn.taxAmt;
+        this.#taxLabel = data.rtn.taxLabel;
+        this.#totalPaid = data.rtn.totalPaid;
+        show_message("Order #" + this.#pay_currentOrderId + " created.");
+        bootstrap.Tab.getOrCreateInstance(this.#pay_tab).show();
+        cart.drawCart();
     }
 
 // gotoPrint switch to the print tab
     gotoPrint() {
         this.#printedObj = null;
+        this.#pay_currentOrderId = null; // clear order id if we leave payment tab
         bootstrap.Tab.getOrCreateInstance(this.#print_tab).show();
     }
 
@@ -1974,10 +2054,13 @@ addUnpaid(tid) {
         var elcheckno = document.getElementById('pay-check-div');
         var elccauth = document.getElementById('pay-ccauth-div');
         var elonline = document.getElementById('pay-online-div');
+        var elcash = document.getElementById('pay-cash-div');
 
         elcheckno.hidden = ptype != 'check';
         elccauth.hidden = ptype != 'credit';
         elonline.hidden = ptype != 'online';
+        elcash.hidden = ptype != 'cash';
+        this.#pay_button_pay.innerHTML = 'Confirm Pay';
         this.#pay_button_pay.disabled = ptype == 'online';
 
         if (ptype != 'check') {
@@ -1986,6 +2069,89 @@ addUnpaid(tid) {
         if (ptype != 'credit') {
             document.getElementById('pay-ccauth').value = null;
         }
+        if (ptype != 'cash') {
+            document.getElementById('pay-tendered').value = null;
+        }
+    }
+
+// overridePay - pay returned the terminal was unavailable, operator said to override it
+    overridePay(){
+        this.#payOverride = 1;
+        this.pay('');
+    }
+
+// payPoll - poll to see if the payment is complete
+    payPoll(action) {
+        document.getElementById('pollRow').hidden = true;
+        if (action == 1) { // asked to poll for is it complete
+            this.#payPoll = 1;
+            this.pay('');
+            return;
+        }
+        // cancel terminal request
+        var postData = {
+            ajax_request_action: 'cancelPayRequest',
+            requestId: this.#payCurrentRequest,
+            user_id: this.#user_id,
+        };
+        var _this = this;
+        clear_message();
+        $.ajax({
+            method: "POST",
+            url: "scripts/pos_cancelPayment.php",
+            data: postData,
+            success: function (data, textstatus, jqxhr) {
+                _this.cancelSuccess(data);
+            },
+            error: function (jqXHR, textstatus, errorThrown) {
+                document.getElementById('pollRow').hidden = false;
+                _this.#pay_button_pay.disabled = true;
+                showAjaxError(jqXHR, textstatus, errorThrown);
+            },
+        });
+    }
+
+    cancelSuccess(data) {
+        this.#pay_button_pay.disabled = false;
+
+        // things that stop us cold....
+        if (typeof data == 'string') {
+            show_message(data, 'error');
+            document.getElementById('pollRow').hidden = false;
+            return;
+        }
+
+        if (data.error !== undefined) {
+            show_message(data.error, 'error');
+            document.getElementById('pollRow').hidden = false;
+            return;
+        }
+
+        if (data.status == 'error') {
+            show_message(data.data, 'error');
+            document.getElementById('pollRow').hidden = false;
+            return;
+        }
+
+        if (data.warn !== undefined) {
+            show_message(data.warn, 'warn');
+            // warn means we could not get the terminal, ask if we want to override it
+            if (data.status != 'OFFLINE') {
+                document.getElementById('overrideRow').hidden = false;
+                return;
+            }
+        }
+
+        this.#payPoll = 0;
+        this.#payCurrentRequest = null;
+        // and things that continue
+        if (data.message !== undefined) {
+            show_message(data.message, 'success');
+        }
+
+        document.getElementById('pollRow').hidden = true;
+        this.#pay_button_pay.disabled = false;
+        this.payShown();
     }
 
 // Process a payment against the transaction
@@ -1995,12 +2161,36 @@ addUnpaid(tid) {
         var checkno = null;
         var desc = null;
         var ptype = null;
-        var total_amount_due = cart.getTotalPrice() - (cart.getTotalPaid() + Number(this.#coupon_discount));
+        var total_amount_due = Number(this.#preTaxAmt) + Number(this.#taxAmt);
         var pt_cash = document.getElementById('pt-cash').checked;
         var pt_check = document.getElementById('pt-check').checked;
-        var pt_online = document.getElementById('pt-online').checked;
-        var pt_credit = document.getElementById('pt-credit').checked;
+        var pt_online = document.getElementById('pt-online');
+        var pt_credit = document.getElementById('pt-credit');
+        var pt_terminal = document.getElementById('pt-terminal');
         var pt_discount = document.getElementById('pt-discount');
+
+        document.getElementById('overrideRow').hidden = true;
+
+        if (this.#pay_currentOrderId == null) {
+            show_message("No order in progress, you have reached an error condition, start over or seek assistance", "error");
+            return;
+        }
+
+        if (pt_online)
+            pt_online = pt_online.checked;
+        else
+            pt_online = false;
+
+        if (pt_credit)
+            pt_credit = pt_credit.checked;
+        else
+            pt_credit = false;
+
+        if (pt_terminal)
+            pt_terminal = pt_terminal.checked;
+        else
+            pt_terminal = false;
+
         if (pt_discount)
             pt_discount = pt_discount.checked;
         else
@@ -2010,40 +2200,36 @@ addUnpaid(tid) {
             this.#cashChangeModal.hide();
         }
 
+        tendered_amt = 0;
+
         if (prow == null) {
             // validate the payment entry: It must be >0 and <= amount due
             //      a payment type must be specified
             //      for check: the check number is required
             //      for credit card: the auth code is required
             //      for discount: description is required, it's optional otherwise
-            var elamt = document.getElementById('pay-amt');
-            var pay_amt = Number(elamt.value);
-            if (pay_amt > 0 && pay_amt > total_amount_due) {
-                if (pt_cash) {
+
+            if (pt_cash) {
+                var eltenderedamt = document.getElementById('pay-tendered');
+                var tendered_amt = Number(eltenderedamt.value);
+                if (tendered_amt < total_amount_due) {
+                    eltenderedamt.style.backgroundColor = 'var(--bs-warning)';
+                    return;
+                }
+                if (tendered_amt > total_amount_due) {
                     if (nomodal == '') {
                         this.#cashChangeModal.show();
                         document.getElementById("CashChangeBody").innerHTML = "<div class='row mt-2'>\n<div class='col-sm-12'>" +
-                            "Customer owes $" + total_amount_due.toFixed(2) + ", and tendered $" + pay_amt.toFixed(2) +
+                            "Customer owes $" + total_amount_due.toFixed(2) + ", and tendered $" + tendered_amt.toFixed(2) +
                             "</div>\n</div>\n<div class='row mt-2 mb-2'>\n<div class='col-sm-12'>" +
-                            "Confirm change give to customer of $" + (pay_amt - total_amount_due).toFixed(2) +
+                            "Confirm change give to customer of $" + (tendered_amt - total_amount_due).toFixed(2) +
                             "</div>\n</div>\n";
                         return;
                     }
                 } else {
-                    elamt.style.backgroundColor = 'var(--bs-warning)';
-                    if (pt_online)
-                        $('#' + this.#purchase_label).removeAttr("disabled");
-                    return;
+                    eltenderedamt.style.backgroundColor = '';
                 }
             }
-            if (pay_amt <= 0) {
-                elamt.style.backgroundColor = 'var(--bs-warning)';
-                if (pt_online)
-                    $('#' + this.#purchase_label).removeAttr("disabled");
-                return;
-            }
-
-            elamt.style.backgroundColor = '';
 
             var elptdiv = document.getElementById('pt-div');
             elptdiv.style.backgroundColor = '';
@@ -2061,6 +2247,11 @@ addUnpaid(tid) {
                 checked = true;
             } else {
                 eldesc.style.backgroundColor = '';
+            }
+
+            if (pt_terminal) {
+                ptype = 'terminal';
+                checked = true;
             }
 
             if (pt_check) {
@@ -2088,6 +2279,7 @@ addUnpaid(tid) {
                 }
                 checked = true;
             }
+
             if (pt_online) {
                 ptype = 'online';
                 if (nonce == null) {
@@ -2110,26 +2302,46 @@ addUnpaid(tid) {
                 return;
             }
 
-            if (pay_amt > 0) {
+            if (tendered_amt > 0) {
                 var crow = null;
                 var change = 0;
-                if (pay_amt > total_amount_due) {
-                    change = pay_amt - total_amount_due;
-                    pay_amt = total_amount_due;
+                if (tendered_amt > total_amount_due) {
+                    change = tendered_amt - total_amount_due;
                     crow = {
-                        index: cart.getPmtLength() + 1, amt: change, ccauth: ccauth, checkno: checkno, desc: eldesc.value, type: 'change',
-                    }
+                        index: cart.getPmtLength() + 1, amt: -change, ccauth: ccauth, checkno: checkno, desc: eldesc.value, type: 'change',
+                    };
                 }
-                prow = {
-                    index: cart.getPmtLength(), amt: pay_amt, ccauth: ccauth, checkno: checkno, desc: eldesc.value, type: ptype, nonce: nonce,
-                    payor: Number(document.getElementById('pay-emailsel').value),
-                    email: document.getElementById('pay-email').value, phone: document.getElementById('pay-phone').value
-                };
             }
+
+            var payorPerid = 2; // atcon perid
+            var email = document.getElementById("pay-email").value;
+            var phone = document.getElementById("pay-phone").value;
+            var payor = Number(document.getElementById('pay-emailsel').value);
+            var country = '';
+            var couponCode = null;
+            if (this.#coupon)
+                couponCode = coupon.getCouponCode();
+
+            if (payor >= 0 && email == cart.getEmail(payor)) {
+                payorPerid = cart.getPerid(payor);
+                country = cart.getCountry(payor);
+            }
+
+            prow = {
+                index: cart.getPmtLength(), amt: total_amount_due, ccauth: ccauth, checkno: checkno, desc: eldesc.value,
+                type: ptype, nonce: nonce, coupon: couponCode,
+                payor: {
+                    email: email,
+                    phone: phone,
+                    perid: payorPerid,
+                    country: country,
+                },
+            };
         }
         // process payment
         var postData = {
             ajax_request_action: 'processPayment',
+            orderId: this.#pay_currentOrderId,
             cart_perinfo: JSON.stringify(cart.getCartPerinfo()),
             new_payment: prow,
             coupon: prow.coupon,
@@ -2138,7 +2350,13 @@ addUnpaid(tid) {
             user_id: this.#user_id,
             pay_tid: this.#pay_tid,
             pay_tid_amt: this.#pay_tid_amt,
+            preTaxAmt: this.#preTaxAmt,
+            taxAmt: this.#taxAmt,
+            totalAmtDue: total_amount_due,
+            override: this.#payOverride,
+            poll: this.#payPoll,
         };
+        this.#payOverride = 0;
         this.#pay_button_pay.disabled = true;
         var _this = this;
         clear_message();
@@ -2147,41 +2365,83 @@ addUnpaid(tid) {
             url: "scripts/pos_processPayment.php",
             data: postData,
             success: function (data, textstatus, jqxhr) {
-                var stop = true;
-                clear_message();
-                if (typeof data == 'string') {
-                    show_message(data, 'error');
-                } else if (data.error !== undefined) {
-                    show_message(data.error, 'error');
-                } else if (data.message !== undefined) {
-                    show_message(data.message, 'success');
-                    stop = false;
-                } else if (data.warn !== undefined) {
-                    show_message(data.warn, 'success');
-                    stop = false;
-                } else if (data.status == 'error') {
-                    show_message(data.data, 'error');
-                }
-                if (!stop)
-                    _this.updatedPayment(data);
-                _this.#pay_button_pay.disabled = false;
-                if (pt_online)
-                    $('#' + this.#purchase_label).removeAttr("disabled");
+                _this.paySuccess(data);
             },
             error: function (jqXHR, textstatus, errorThrown) {
                 _this.#pay_button_pay.disabled = false;
-                if (pt_online)
-                    $('#' + this.#purchase_label).removeAttr("disabled");
+                $('#' + _this.#purchase_label).removeAttr("disabled");
                 showAjaxError(jqXHR, textstatus, errorThrown);
             },
         });
     }
 
+    paySuccess(data) {
+        // reset the disabled items
+        $('#' + this.#purchase_label).removeAttr("disabled");
 
-// updatedPayment:
-//  payment entered into the database correctly, update the payment cart and the memberships with the updated paid amounts
-    updatedPayment(data) {
+
+        // things that stop us cold....
+        if (typeof data == 'string') {
+            show_message(data, 'error');
+            if (data.includes("cancelled")) {
+                this.#payPoll = 0;
+                this.#payCurrentRequest = null;
+                this.#pay_button_pay.disabled = false;
+            } else if (this.#payPoll == 1)
+                document.getElementById('pollRow').hidden = false;
+            return;
+        }
+
+        if (data.error !== undefined) {
+            show_message(data.error, 'error');
+            if (data.error.includes("cancelled")) {
+                this.#payPoll = 0;
+                this.#payCurrentRequest = null;
+                this.#pay_button_pay.disabled = false;
+            }  else if (this.#payPoll == 1)
+                document.getElementById('pollRow').hidden = false;
+            return;
+        }
+
+        if (data.status == 'error') {
+            show_message(data.data, 'error');
+            if (data.error.includes("cancelled")) {
+                this.#payPoll = 0;
+                this.#payCurrentRequest = null;
+                this.#pay_button_pay.disabled = false;
+            } else if (this.#payPoll == 1)
+                document.getElementById('pollRow').hidden = false;
+            return;
+        }
+
+        if (data.warn !== undefined) {
+            show_message(data.warn, 'warn');
+            // warn means we could not get the terminal, ask if we want to override it
+            if (data.status != 'OFFLINE') {
+                document.getElementById('overrideRow').hidden = false;
+                return;
+            }
+        }
+
+        this.#payPoll = 0;
+        this.#pay_button_pay.disabled = false;
+        // and things that continue
+        if (data.message !== undefined) {
+            show_message(data.message, 'success');
+        }
+        if (data.hasOwnProperty('poll')) {
+            if (data.poll == 1) {
+                if (data.id) {
+                    this.#payCurrentRequest = data.id;
+                }
+                document.getElementById('pollRow').hidden = false;
+                this.#pay_button_pay.disabled = true;
+                this.#payPoll = 1;
+                return;
+            }
+        }
         cart.updatePmt(data);
+        this.#payCurrentRequest = null;
         this.#pay_tid_amt += Number(data.pay_amt);
         this.payShown();
     }
@@ -2218,7 +2478,6 @@ addUnpaid(tid) {
             url: "scripts/pos_emailReceipt.php",
             data: postData,
             success: function (data, textstatus, jqxhr) {
-                clear_message();
                 if (typeof data == "string") {
                     show_message(data, 'error');
                 } else if (data.error !== undefined) {
@@ -2226,7 +2485,7 @@ addUnpaid(tid) {
                 } else if (data.message !== undefined) {
                     show_message(data.message, 'success');
                 } else if (data.warn !== undefined) {
-                    show_message(data.warn, 'success');
+                    show_message(data.warn, 'warn');
                 }
                 if (_this.#lastReceiptType == 'email')
                     _this.#pay_button_ercpt.disabled = false;
@@ -2327,6 +2586,7 @@ addUnpaid(tid) {
 // tab shown events - state mapping for which tab is shown
     findShown() {
         this.#printActive = false;
+        this.#pay_currentOrderId = null; // leaving pay clears order id
         cart.clearInReview();
         cart.unfreeze();
         this.#current_tab = this.#find_tab;
@@ -2335,10 +2595,9 @@ addUnpaid(tid) {
 
     addShown() {
         this.#printActive = false;
+        this.#pay_currentOrderId = null; // leaving pay clears order id
         cart.clearInReview();
-        cart.unfreeze();
-        this.#current_tab = this.#add_tab;
-        clear_message();
+        cart.unfreeze();ƒvoi
         cart.drawCart();
     }
 
@@ -2428,7 +2687,7 @@ addUnpaid(tid) {
             this.#pay_prior_discount = cart.getPriorDiscount();
         }
 
-        var total_amount_due = cart.getTotalPrice() - (cart.getTotalPaid() + this.#pay_prior_discount + Number(this.#coupon_discount));
+        var total_amount_due = this.#taxAmt + cart.getTotalPrice() - (cart.getTotalPaid() + this.#pay_prior_discount + Number(this.#coupon_discount));
         if (total_amount_due < 0.01) { // allow for rounding error, no need to round here
             // nothing more to pay
             if (this.#print_tab)
@@ -2542,22 +2801,42 @@ addUnpaid(tid) {
             }
             pay_html += `
     <div class="row mt-1">
+        <div class="col-sm-2 ms-0 me-2 p-0">Order Total:</div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-amt-due">$` + Number(this.#preTaxAmt).toFixed(2) + `</div>
+    </div>
+    <div class="row mt-1">
+        <div class="col-sm-2 ms-0 me-2 p-0">` + this.#taxLabel + `:</div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-amt-due">$` + Number(this.#taxAmt).toFixed(2) + `</div>
+    </div>
+    <div class="row mt-1">
         <div class="col-sm-2 ms-0 me-2 p-0">Amount Due:</div>
         <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-amt-due">$` + Number(total_amount_due).toFixed(2) + `</div>
-    </div>
-    <div class="row mt-2">
-        <div class="col-sm-2 ms-0 me-2 p-0">Amount Paid:</div>
-        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0"><input type="number" class="no-spinners" id="pay-amt" name="paid-amt" size="6"/></div>
     </div>
     <div class="row">
         <div class="col-sm-2 m-0 mt-2 me-2 mb-2 p-0">Payment Type:</div>
         <div class="col-sm-auto m-0 mt-2 p-0 ms-0 me-2 mb-2 p-0" id="pt-div">
-            <input type="radio" id="pt-credit" name="payment_type" value="credit" onchange='pos.setPayType("credit");'/>
-            <label for="pt-credit">Offline Credit Card</label>
+`;
+            if (this.#ccTerminalAvailable) {
+                pay_html += `
+            <input type="radio" id="pt-terminal" name="payment_type" value="terminal" onchange='pos.setPayType("terminal");'/>
+            <label for="pt-terminal">Credit Card Terminal&nbsp;&nbsp;&nbsp;</label>
+`;
+            } else if (!config.hasOwnProperty('creditonline') || config.creditonline == 1) {
+                pay_html += `
             <input type="radio" id="pt-online" name="payment_type" value="credit" onchange='pos.setPayType("online");'/>
-            <label for="pt-online">Online Credit Card</label>
+            <label for="pt-online">Online Credit Card&nbsp;&nbsp;&nbsp;</label>
+`;
+            }
+            if (!config.hasOwnProperty('creditoffline') || config.creditoffline == 1) {
+                pay_html += `
+            <input type="radio" id="pt-credit" name="payment_type" value="credit" onchange='pos.setPayType("credit");'/>
+            <label for="pt-credit">Offline Credit Card&nbsp;&nbsp;&nbsp;</label>
+`;
+            }
+
+            pay_html += `
             <input type="radio" id="pt-check" name="payment_type" value="check" onchange='pos.setPayType("check");'/>
-            <label for="pt-check">Check</label>
+            <label for="pt-check">Check&nbsp;&nbsp;&nbsp;</label>
             <input type="radio" id="pt-cash" name="payment_type" value="cash" onchange='pos.setPayType("cash");'/>
             <label for="pt-cash">Cash</label>
 `;
@@ -2577,6 +2856,10 @@ addUnpaid(tid) {
         <div class="col-sm-2 ms-0 me-2 p-0">Check Number:</div>
         <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0"><input type="text" size="8" maxlength="10" name="pay-checkno" id="pay-checkno"/></div>
     </div>
+    <div class="row mb-2" id="pay-cash-div" hidden>
+        <div class="col-sm-2 ms-0 me-2 p-0">Amt Tendered:</div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0"><input type="number" class="no-spinners" id="pay-tendered" name="paid-tendered" size="6"/></div>
+    </div>
     <div class="row mb-2" id="pay-ccauth-div" hidden>
         <div class="col-sm-2 ms-0 me-2 p-0">CC Auth Code:</div>
         <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0"><input type="text" size="15" maxlength="16" name="pay-ccauth" id="pay-ccauth"/></div>
@@ -2586,7 +2869,7 @@ addUnpaid(tid) {
     </div>    
     <div class="row mb-2">
         <div class="col-sm-2 ms-0 me-2 p-0">Description:</div>
-        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0"><input type="text" size="60" maxlength="64" name="pay-desc" id="pay-desc"/></div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0"><input type="text" size="60" maxlength="48" name="pay-desc" id="pay-desc"/></div>
     </div>
      <div class="row mb-2">
         <div class="col-sm-2 ms-0 me-2 p-0">Select Payor:</div>
@@ -2621,6 +2904,23 @@ addUnpaid(tid) {
         <div class="col-sm-2 ms-0 me-2 p-0">&nbsp;</div>
         <div class="col-sm-auto ms-0 me-2 p-0">
             <button class="btn btn-primary btn-sm" type="button" id="pay-btn-pay" onclick="pos.pay('');">Confirm Pay</button>
+        </div>
+    </div>
+    <div class="row mt-3" id="overrideRow" hidden>
+        <div class="col-sm-auto ms-0 me-2 p-0">
+            <button class="btn btn-warning btn-sm" type="button" id="pay-btn-override" onclick="pos.overridePay();">Override</button>
+        </div>
+        <div class="col-sm-10 ms-0 me-2 p-0" id="override_msg">
+            <p>The terminal is marked as not available, override the status to take control and use it anyway?</p>
+            <p>This will cancel any payment in process on the terminal.</p>
+        </div>
+    </div>
+     <div class="row mt-3" id="pollRow" hidden>
+        <div class="col-sm-auto ms-0 me-2 p-0">
+            <button class="btn btn-primary btn-sm" type="button" id="pay-poll-complete" onclick="pos.payPoll(1);">Payment Complete</button>
+        </div>
+        <div class="col-sm-auto ms-0 me-2 p-0">
+            <button class="btn btn-primary btn-sm" type="button" id="pay-poll-cancel" onclick="pos.payPoll(0);">Cancel Payment</button>
         </div>
     </div>
   </form>

@@ -40,6 +40,19 @@ if(!isSessionVar('userhash')) {
                 setSessionVar($prt . 'Printer', $printer);
                 $response[$prt] = $printer['name'];
             }
+            // terminals are passed as the 5 touple
+            if (array_key_exists('square_terminal', $_POST) && $_POST['square_terminal'] != '') {
+                $termTop = explode(':::', $_POST['square_terminal']);
+                $terminal = array (
+                    'name' => $termTop[0],
+                    'squareId' => $termTop[1],
+                    'deviceId' => $termTop[2],
+                    'squareCode' => $termTop[3],
+                    'locationId' => $termTop[4],
+                );
+                setSessionVar('terminal', $terminal);
+            }
+
             setSessionVar('userhash', $access['userhash']);
         }
     } else {

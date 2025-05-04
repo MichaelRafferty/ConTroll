@@ -417,7 +417,7 @@ EOS;
         if ($subnet == '192.168.88.' || $subnet == '192.168.89.') {
             // look for .htaccess file and deny if it's not found
             $file = __DIR__;
-            if (file_exists($file . "/../../../.htaccess"))
+            if (file_exists($file . "/../.htaccess"))
                 return true;  // we are protected by an htaccess
         }
 

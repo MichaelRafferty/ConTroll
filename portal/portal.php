@@ -91,7 +91,7 @@ if (!$refresh) {
     $numPrimary = 0;
 // get the account holder's registrations
     $holderRegSQL = <<<EOS
-SELECT r.status, r.memId, m.*, a.shortname AS ageShort, a.label AS ageLabel, mC.taxable,
+SELECT r.status, r.memId, m.*, a.shortname AS ageShort, a.label AS ageLabel, m.taxable,
        r.price AS actPrice, IFNULL(r.paid,0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,
        r.conid, r.create_date, r.id AS regId, r.create_trans, r.complete_trans,
        r.perid AS regPerid, r.newperid AS regNewperid, r.planId,
@@ -146,7 +146,6 @@ SELECT r.status, r.memId, m.*, a.shortname AS ageShort, a.label AS ageLabel, mC.
 FROM reg r
 JOIN memLabel m ON m.id = r.memId
 JOIN ageList a ON m.memAge = a.ageType AND r.conid = a.conid
-JOIN memCategories mC ON m.memCategory = mC.memCategory
 LEFT OUTER JOIN transaction t ON r.create_trans = t.id
 LEFT OUTER JOIN transaction tp ON r.complete_trans = tp.id
 LEFT OUTER JOIN perinfo pc ON t.perid = pc.id
@@ -244,7 +243,7 @@ WITH ppl AS (
         r.conid, r.status, r.memId, r.create_date,
         r.price AS actPrice, IFNULL(r.paid, 0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,        
         m.memCategory, m.memType, m.memAge, m.shortname, m.label, m.startdate, m.enddate, m.online,
-        a.shortname AS ageShort, a.label AS ageLabel, 'p' AS personType, mC.taxable,
+        a.shortname AS ageShort, a.label AS ageLabel, 'p' AS personType, m.taxable,
         nc.id AS createNewperid, np.id AS completeNewperid, pc.id AS createPerid, pp.id AS completePerid,
         CASE
             WHEN pp.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pp.first_name, pp.last_name))
@@ -258,7 +257,6 @@ WITH ppl AS (
     LEFT OUTER JOIN reg r ON p.id = r.perid AND r.conid >= ? AND status IN  ('unpaid', 'paid', 'plan', 'upgraded')
     LEFT OUTER JOIN memLabel m ON m.id = r.memId
     LEFT OUTER JOIN ageList a ON m.memAge = a.ageType AND r.conid = a.conid
-    LEFT OUTER JOIN memCategories mC ON m.memCategory = mC.memCategory
     LEFT OUTER JOIN transaction t ON r.create_trans = t.id
     LEFT OUTER JOIN transaction tp ON r.complete_trans = tp.id
     LEFT OUTER JOIN perinfo pc ON t.perid = pc.id
@@ -290,7 +288,6 @@ WITH ppl AS (
     LEFT OUTER JOIN reg r ON p.id = r.newperid AND r.conid >= ? AND status IN  ('unpaid', 'paid', 'plan', 'upgraded')
     LEFT OUTER JOIN memLabel m ON m.id = r.memId
     LEFT OUTER JOIN ageList a ON m.memAge = a.ageType AND r.conid = a.conid
-    LEFT OUTER JOIN memCategories mC ON m.memCategory = mC.memCategory
     LEFT OUTER JOIN transaction t ON r.create_trans = t.id
     LEFT OUTER JOIN transaction tp ON r.complete_trans = tp.id
     LEFT OUTER JOIN perinfo pc ON t.perid = pc.id
@@ -328,7 +325,7 @@ WITH ppl AS (
         r.conid, r.status, r.memId, r.create_date, m.memCategory, m.memType, m.memAge, m.shortname, m.label,
         r.price AS actPrice, IFNULL(r.paid, 0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,
         m.startdate, m.enddate, m.online,
-        a.shortname AS ageShort, a.label AS ageLabel, 'p' AS personType, mC.taxable,
+        a.shortname AS ageShort, a.label AS ageLabel, 'p' AS personType, m.taxable,
         nc.id AS createNewperid, np.id AS completeNewperid, pc.id AS createPerid, pp.id AS completePerid,
         CASE
             WHEN pp.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pp.first_name, pp.last_name))
@@ -342,7 +339,6 @@ WITH ppl AS (
     LEFT OUTER JOIN reg r ON p.id = r.perid AND r.conid >= ? AND status IN  ('unpaid', 'paid', 'plan', 'upgraded')
     LEFT OUTER JOIN memLabel m ON m.id = r.memId
     LEFT OUTER JOIN ageList a ON m.memAge = a.ageType AND r.conid = a.conid
-    LEFT OUTER JOIN memCategories mC ON m.memCategory = mC.memCategory
     LEFT OUTER JOIN transaction t ON r.create_trans = t.id
     LEFT OUTER JOIN transaction tp ON r.complete_trans = tp.id
     LEFT OUTER JOIN perinfo pc ON t.perid = pc.id
@@ -360,7 +356,7 @@ WITH ppl AS (
         r.conid, r.status, r.memId, r.create_date, m.memCategory, m.memType, m.memAge, m.shortname, m.label,
         r.price AS actPrice, IFNULL(r.paid, 0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,
         m.startdate, m.enddate, m.online,
-        a.shortname AS ageShort, a.label AS ageLabel, 'n' AS personType, mC.taxable,
+        a.shortname AS ageShort, a.label AS ageLabel, 'n' AS personType, m.taxable,
         nc.id AS createNewperid, np.id AS completeNewperid, pc.id AS createPerid, pp.id AS completePerid,
         CASE
             WHEN pp.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pp.first_name, pp.last_name))
@@ -374,7 +370,6 @@ WITH ppl AS (
     LEFT OUTER JOIN reg r ON p.id = r.newperid AND r.conid >= ? AND status IN  ('unpaid', 'paid', 'plan', 'upgraded')
     LEFT OUTER JOIN memLabel m ON m.id = r.memId
     LEFT OUTER JOIN ageList a ON m.memAge = a.ageType AND r.conid = a.conid
-    LEFT OUTER JOIN memCategories mC ON m.memCategory = mC.memCategory
     LEFT OUTER JOIN transaction t ON r.create_trans = t.id
     LEFT OUTER JOIN transaction tp ON r.complete_trans = tp.id
     LEFT OUTER JOIN perinfo pc ON t.perid = pc.id

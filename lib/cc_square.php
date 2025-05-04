@@ -124,7 +124,7 @@ function cc_getCurrency($con) : string {
 }
 
 // build the order, pass it to square and get the order id
-function cc_buildOrder($results, $useLogWrite = false) : array {
+function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : array {
     $cc = get_conf('cc');
     $con = get_conf('con');
     $debug = get_conf('debug');
@@ -156,10 +156,9 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
     //  b. add line items
     //      i. assign which tax line items to ignore
     //      ii. assign which discount line items to ignore
+    //      iii. skip over already complete items and not add them to the square order
     //  c. create order
     //  add order id to return items
-
-
 
     $source = 'onlinereg';
     if (array_key_exists('source', $results)) {
@@ -174,6 +173,10 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
         $source = $results['exhibits'];
     } else {
         $custid = 't-' . $results['transid'];
+    }
+
+    if ($locationId == null) {
+        $locationId = $cc['location'];
     }
 
     // SDK 41, builds the parts then passes them into the body
@@ -220,11 +223,15 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
     $itemsBuilt = false;
     $taxRate = 0;
     $taxLabel = 'Unconfigured Sales Tax';
+    $taxuid = 'salestax';
     if (array_key_exists('taxRate', $con)) {
         $taxRate = $con['taxRate'];
     }
     if (array_key_exists('taxLabel', $con)) {
         $taxLabel = $con['taxLabel'];
+    }
+    if (array_key_exists('taxuid', $con)) {
+        $taxuid = $con['taxuid'];
     }
     $needTaxes = false;
 
@@ -284,7 +291,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
             'quantity' => 1,
             'note' => $note,
             'basePriceMoney' => new Money([
-                'amount' =>$results['total'] * 100,
+                'amount' => round($results['total'] * 100),
                 'currency' => $currency,
             ]),
         ]);
@@ -329,10 +336,13 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                 }
 
                 if (array_key_exists('balDue', $badge)) {
-                    $amount = $badge['balDue'] * 100;
+                    $amount = round($badge['balDue'] * 100);
                 } else {
-                    $amount = ($badge['price']-$badge['paid']) * 100;
+                    $amount = round(($badge['price']-$badge['paid']) * 100);
                 }
+
+                if (array_key_exists('complete_trans', $badge) && $badge['complete_trans'] > 0 && $amount == 0)
+                    continue; // skip paid complete items in order for sending to square
 
                 $itemName =  $badge['label'] . (($badge['memType'] == 'full' || $badge['memType'] == 'oneday') ? ' Membership' : '') .
                     ' for ' . $fullname;
@@ -352,7 +362,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                     $needTaxes = true;
                     $item->setAppliedTaxes(array(new Square\Types\OrderLineItemAppliedTax([
                         'uid' => 'badge-tax-' . ($lineid + 1),
-                        'taxUid' => $taxLabel,
+                        'taxUid' => $taxuid,
                     ])));
                 }
                 if (array_key_exists('newplan', $results) && $results['newplan'] == 1) {
@@ -389,7 +399,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                     'quantity' => 1,
                     'note' => $note,
                     'basePriceMoney' => new Money([
-                        'amount' => $space['approved_price'] * 100,
+                        'amount' => round($space['approved_price'] * 100),
                         'currency' => $currency,
                     ]),
                 ]);
@@ -408,7 +418,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                     'quantity' => 1,
                     'note' => 'Mail in fee',
                     'basePriceMoney' => new Money([
-                        'amount' => $fee['amount'] * 100,
+                        'amount' => round($fee['amount'] * 100),
                         'currency' => $currency,
                         ]),
                 ]);
@@ -435,7 +445,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                 'name' => mb_substr($couponName, 0, 128),
                 'type' => OrderLineItemDiscountType::FixedAmount->value,
                 'amountMoney' => new Money([
-                    'amount' => $results['discount'] * 100,
+                    'amount' => round($results['discount'] * 100),
                     'currency' => $currency,
                 ]),
                 'scope' => OrderLineItemDiscountScope::Order->value,
@@ -456,7 +466,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                 'name' => mb_substr("Payment Deferral Amount: " . $note, 0, 128),
                 'type' => OrderLineItemDiscountType::FixedAmount->value,
                 'amountMoney' => new Money([
-                    'amount' => $deferment * 100,
+                    'amount' => round($deferment * 100),
                     'currency' => $currency,
                 ]),
                 'scope' => OrderLineItemDiscountScope::LineItem->value,
@@ -500,7 +510,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
 
 
     $order = new Order([
-        'locationId' => $cc['location'],
+        'locationId' => $locationId,
         'referenceId' => $con['id'] . '-' . $results['transid'],
         'source' => new OrderSource([
             'name' => $con['conname'] . '-' . $source
@@ -512,7 +522,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
 
     if ($needTaxes) {
         $order->setTaxes(array(new Square\Types\OrderLineItemTax([
-            'uid' => $taxLabel,
+            'uid' => $taxuid,
             'name' => $taxLabel,
             'type' => Square\Types\OrderLineItemTaxType::Additive->value,
             'percentage' => $taxRate,
@@ -566,8 +576,13 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
 }
 
 // an order is no longer valid, cancel it, via an update to Cancelled status
-function cc_cancelOrder($source, $orderId, $useLogWrite = false) : void {
+function cc_cancelOrder($source, $orderId, $useLogWrite = false, $locationId = null) : void {
+    // At present the API does not let you cancle orders, and this code does not work
+    //TODO: if Square writes a cancel, this code needs rewriting
+    /*
     $cc = get_conf('cc');
+    if ($locationId == null)
+        $locationId = $cc['location'];
     $debug = get_conf('debug');
     if (array_key_exists('square', $debug))
         $squareDebug = $debug['square'];
@@ -575,7 +590,7 @@ function cc_cancelOrder($source, $orderId, $useLogWrite = false) : void {
         $squareDebug = 0;
 
     $order = new Order([
-        'locationId' => $cc['location'],
+        'locationId' => $locationId,
         'state' => 'CANCELLED',
     ]);
 
@@ -604,6 +619,7 @@ function cc_cancelOrder($source, $orderId, $useLogWrite = false) : void {
       catch (Exception $e) {
           sqcc_logException($source, $e, 'Order API error while calling Square', 'Error connecting to Square', $useLogWrite);
       }
+    */
 }
 // fetch an order to get its details
 function cc_fetchOrder($source, $orderId, $useLogWrite = false) : array {
@@ -649,7 +665,7 @@ function cc_fetchOrder($source, $orderId, $useLogWrite = false) : array {
 }
 
 // enter a payment against an exist order: build the payment, submit it to square and process the resulting payment
-function cc_payOrder($results, $buyer, $useLogWrite = false) {
+function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     $con = get_conf('con');
     $cc = get_conf('cc');
     $currency = cc_getCurrency($con);
@@ -660,8 +676,8 @@ function cc_payOrder($results, $buyer, $useLogWrite = false) {
         $squareDebug = 0;
 
     $source = 'onlinereg';
-    if (array_key_exists('source', $results)) {
-        $source = $results['source'];
+    if (array_key_exists('source', $ccParams)) {
+        $source = $ccParams['source'];
     }
 
     // 1. create payment for order
@@ -682,19 +698,28 @@ function cc_payOrder($results, $buyer, $useLogWrite = false) {
     if ($buyer['phone'] == '/r' || $buyer['phone'] == null)
         $buyer['phone'] = '';
 
+    $sourceId = $ccParams['nonce'];
+    if (array_key_exists('change', $ccParams)) {
+        $change = $ccParams['change'];
+    } else {
+        $change = 0;
+    }
+    $buyerSuppliedMoney = $ccParams['total'] + $change;
+    $paymentType = 'credit';
+
+    // nonce = card id if card, CASH or EXTERNAL (check, other credit card clearer)
     $pbodyArgs = array(
         'idempotencyKey' => guidv4(),
-        'sourceId' => $results['nonce'],
+        'sourceId' => $sourceId,
         'amountMoney' => new Money([
-            'amount' => $results['totalAmt'] * 100,
+            'amount' => round($ccParams['total'] * 100),
             'currency' => $currency,
             ]),
-        'orderId' => $results['orderId'],
+        'orderId' => $ccParams['orderId'],
         'autocomplete' => true,
-        'customerId' => $results['customerId'],
-        'locationId' => $results['locationId'],
-        'referenceId' => $results['referenceId'],
-        'note' => 'Online payment from ' . $results['source'],
+        'locationId' => $ccParams['locationId'],
+        'referenceId' => $con['id'] . '-' . $ccParams['transid'] . '-' . time(),
+        'note' => "$source payment from " . $ccParams['source'],
     );
     if ($buyer['email'] != '')
         $pbodyArgs['buyerEmailAddress'] = $buyer['email'];
@@ -702,6 +727,29 @@ function cc_payOrder($results, $buyer, $useLogWrite = false) {
         $phone = phoneNumberNormalize($buyer);
         if ($phone != '')
             $pbodyArgs['buyerPhoneNumber'] = $phone;
+    }
+
+    if ($sourceId == 'CASH') {
+        // add cash fields
+        $pbodyArgs['cashDetails'] = new Square\Types\CashPaymentDetails([
+            'buyerSuppliedMoney' => new Money([
+                'amount' => round($buyerSuppliedMoney * 100),
+                'currency' => $currency,
+                ]),
+            'changeBackMoney' => new Money([
+                'amount' => round($change * 100),
+                'currency' => $currency,
+            ]),
+        ]);
+        $paymentType = 'cash';
+    }
+
+    if ($sourceId == 'EXTERNAL') {
+        $pbodyArgs['externalDetails'] = new Square\Types\ExternalPaymentDetails([
+            'type' => $ccParams['externalType'],
+            'source' => $ccParams['desc'],
+        ]);
+        $paymentType = $ccParams['externalType'];
     }
 
     $pbody = new CreatePaymentRequest($pbodyArgs);
@@ -729,9 +777,9 @@ function cc_payOrder($results, $buyer, $useLogWrite = false) {
                 $code = $error['code'];
                 $detail = $error['detail'];
                 if ($useLogWrite) {
-                    logWrite('Transid: ' . $results['transid'] . " Cat: $cat: Code $code, Detail: $detail");
+                    logWrite('Transid: ' . $ccParams['transid'] . " Cat: $cat: Code $code, Detail: $detail");
                 }
-                web_error_log('Transid: ' . $results['transid'] . " Cat: $cat: Code $code, Detail: $detail");
+                web_error_log('Transid: ' . $ccParams['transid'] . " Cat: $cat: Code $code, Detail: $detail");
 
                 switch ($code) {
                     case 'GENERIC_DECLINE':
@@ -750,9 +798,9 @@ function cc_payOrder($results, $buyer, $useLogWrite = false) {
                         $msg = $code;
                 }
                 if ($useLogWrite) {
-                    logWrite('Square card payment error for ' . $results['transid'] . " of $msg");
+                    logWrite('Square card payment error for ' . $ccParams['transid'] . " of $msg");
                 }
-                web_error_log('Square card payment error for ' . $results['transid'] . " of $msg");
+                web_error_log('Square card payment error for ' . $ccParams['transid'] . " of $msg");
 
                 ajaxSuccess(array ('status' => 'error', 'data' => "Payment Error: $msg"));
                 exit();
@@ -766,34 +814,90 @@ function cc_payOrder($results, $buyer, $useLogWrite = false) {
         sqcc_logException($source, $e, 'Payment API error while calling Square', 'Error connecting to Square', $useLogWrite);
     }
     $id = $payment->getId();
-    $approved_amt = ($payment->getApprovedMoney()->getAmount()) / 100;
     $status = $payment->getStatus();
-    $last4 = $payment->getCardDetails()->getCard()->getLast4();
+    if ($sourceId == 'CARD') {
+        $approved_amt = ($payment->getApprovedMoney()->getAmount()) / 100;
+        $last4 = $payment->getCardDetails()->getCard()->getLast4();
+        $auth = $payment->getCardDetails()->getAuthResultCode();
+    } else {
+        $last4 = '';
+        $auth = '';
+        $approved_amt = $ccParams['total'];
+    }
     $receipt_url = $payment->getReceiptUrl();
-    $auth = $payment->getCardDetails()->getAuthResultCode();
     $desc = 'Square: ' . $payment->getApplicationDetails()->getSquareProduct();
     $txtime = $payment->getCreatedAt();
     $receipt_number = $payment->getReceiptNumber();
 
     // set category based on if exhibits is a portal type
-    if (array_key_exists('exhibits', $results)) {
-       $category =  $results['exhibits'];
+    if (array_key_exists('exhibits', $ccParams)) {
+       $category =  $ccParams['exhibits'];
     } else {
         $category = 'reg';
     }
 
     $rtn = array();
-    $rtn['amount'] = $approved_amt;
     $rtn['txnfields'] = array('transid','type','category','description','source','pretax', 'tax', 'amount',
         'txn_time', 'cc','nonce','cc_txn_id','cc_approval_code','receipt_url','status','receipt_id', 'cashier');
     $rtn['tnxtypes'] = array('i', 's', 's', 's', 's', 'd', 'd', 'd',
             's', 's', 's', 's', 's', 's', 's', 's', 'i');
-    $rtn['tnxdata'] = array($results['transid'],'credit',$category,$desc,$source,$results['preTaxAmt'], $results['taxAmt'], $approved_amt,
-        $txtime,$last4,$results['nonce'],$id,$auth,$receipt_url,$status,$receipt_number, $loginPerid);
+    $rtn['tnxdata'] = array($ccParams['transid'],$paymentType,$category,$desc,$source,$ccParams['preTaxAmt'], $ccParams['taxAmt'], $approved_amt,
+        $txtime,$last4,$ccParams['nonce'],$id,$auth,$receipt_url,$status,$receipt_number, $loginPerid);
     $rtn['url'] = $receipt_url;
     $rtn['rid'] = $receipt_number;
     $rtn['payment'] = $payment;
+    $rtn['paymentType'] = $paymentType;
+    $rtn['preTaxAmt'] = $ccParams['preTaxAmt'];
+    $rtn['taxAmt'] = $ccParams['taxAmt'];
+    $rtn['auth'] = $auth;
+    $rtn['paymentId'] = $id;
+    $rtn['last4'] = $last4;
+    $rtn['txTime'] = $txtime;
+    $rtn['status'] = $status;
+    $rtn['transId'] = $ccParams['transid'];
+    $rtn['category'] = $category;
+    $rtn['description'] = $desc;
+    $rtn['source'] = $source;
+    $rtn['amount'] = $approved_amt;
+    $rtn['nonce'] = $ccParams['nonce'];
+    $rtn['change'] = $change;
     return $rtn;
+}
+
+// fetch an payment to get its details
+function cc_getPayment($source, $paymentid, $useLogWrite = false) : array {
+    $cc = get_conf('cc');
+    $debug = get_conf('debug');
+    if (array_key_exists('square', $debug))
+        $squareDebug = $debug['square'];
+    else
+        $squareDebug = 0;
+
+    $body = new Square\Payments\Requests\GetPaymentsRequest([
+        'paymentId' => $paymentid,
+    ]);
+
+    $client = new SquareClient(
+        token: $cc['token'],
+        options: [
+            'baseUrl' => $cc['env'] == 'production' ? Environments::Production->value : Environments::Sandbox->value,
+        ]);
+
+    // pass update to cancel state to square
+    try {
+        if ($squareDebug) sqcc_logObject(array ('Payments API get payment', $body), $useLogWrite);
+        $apiResponse = $client->payments->get($body);
+        $payment = json_decode(json_encode($apiResponse->getPayment()), true);
+        if ($squareDebug) sqcc_logObject(array ('Payments API get payment', $payment), $useLogWrite);
+    }
+    catch (SquareApiException $e) {
+        sqcc_logException($source, $e, 'Payments API get payment Exception', 'get payment failed', $useLogWrite);
+    }
+    catch (Exception $e) {
+        sqcc_logException($source, $e, 'Payments API error while calling Square', 'Error connecting to Square', $useLogWrite);
+    }
+
+    return $payment;
 }
 
 function sqcc_logObject($objArray, $useLogWrite = false) : void {
@@ -822,7 +926,6 @@ function sqcc_logException($name, $e, $message, $ajaxMessage, $useLogWrite = fal
                 logWrite("Name: $name, Cat: $cat: Code $code, Detail: $detail");
             }
             web_error_log("Name: $name, Cat: $cat: Code $code, Detail: $detail");
-            exit();
         }
     }
     ajaxSuccess(array ('status' => 'error', 'data' => "Error: $ajaxMessage, see logs."));

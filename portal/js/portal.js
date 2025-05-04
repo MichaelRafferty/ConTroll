@@ -265,7 +265,8 @@ class Portal {
     // set  / get functions
     setOrderData(data) {
         this.#orderData = data;
-        this.#otherPay = 2;
+        if (this.#otherPay > 0)
+            this.#otherPay = 2;
         this.#totalAmountDue = data.rtn.totalAmt;
     }
 
@@ -1250,7 +1251,7 @@ class Portal {
         if (plan == null) {
             html += `
         <div class="row mt-2 mb-4">
-            <div class="col-sm-auto">You are paying the total amount, so the payment amount is ` + Number(this.#paymentAmount).toFixed(2) + `</div>
+            <div class="col-sm-auto"><strong>You are paying the total amount, so the payment amount is ` + Number(this.#paymentAmount).toFixed(2) + `</strong></div>
          </div>
 `;
         } else if (!done) {
@@ -1328,8 +1329,11 @@ class Portal {
             if (this.#paymentPlan.new)
                 newplan = true;
 
+        var totalAmountDue = this.#otherPay == 1 ? this.#paymentAmount : this.#totalAmountDue;
         var taxAmount = 0;
+        var preTaxAmount = totalAmountDue;
         if (this.#existingPlan == null && this.#orderData && this.#orderData.rtn) {
+            preTaxAmount = this.#orderData.rtn.preTaxAmt;
             taxAmount = this.#orderData.rtn.taxAmt;
         }
 
@@ -1357,6 +1361,7 @@ class Portal {
             nonce: token,
             amount: this.#paymentAmount,
             totalAmountDue: this.#otherPay == 1 ? this.#paymentAmount : this.#totalAmountDue,
+            preTaxAmountDue: preTaxAmount,
             taxAmount: taxAmount,
             couponDiscount: this.#couponDiscount,
             preCouponAmountDue: this.#preCouponAmountDue,

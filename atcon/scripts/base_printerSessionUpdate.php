@@ -67,6 +67,7 @@ if (array_key_exists('terminal', $_POST)) {
             'squareId' => $termTop[1],
             'deviceId' => $termTop[2],
             'squareCode' => $termTop[3],
+            'locationId' => $termTop[4],
         );
         setSessionVar('terminal', $terminal);
         $response['terminal'] = $terminal['name'];
@@ -78,6 +79,5 @@ if (array_key_exists('terminal', $_POST)) {
     unsetSessionVar('terminal');
     $response['terminal'] = 'None';
 }
-
 
 ajaxSuccess($response);

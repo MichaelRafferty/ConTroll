@@ -584,7 +584,7 @@ function loadInitialData(loadtype) {
     };
     $.ajax({
         method: "POST",
-        url: "scripts/admin_atconloadData.php",
+        url: "scripts/admin_atconLoadData.php",
         data: postData,
         success: function(data, textstatus, jqxhr) {
             if (data['message'] !== undefined) {

@@ -133,8 +133,138 @@ function term_getStatus($name, $useLogWrite = false) : array | null {
         if ($squareDebug) sqterm_logObject(array ('Terminal API get device by id: apiResponse', $apiResponse), $useLogWrite);
 
         // convert the object into an associative array
-        $terminal = json_decode(json_encode($apiResponse->getDevice()), true);
-        return $terminal;
+        $apiResult = json_decode(json_encode($apiResponse->getDevice()), true);
+
+        // update the database
+        $upSQL = <<<EOS
+UPDATE terminals
+SET
+    productType = ?,
+    squareName = ?,
+    squareModel = ?,
+    version = ?,
+    terminalAPIVersion = ?,
+    batteryLevel = ?,
+    externalPower = ?,
+    wifiActive = ?,
+    wifiSSID = ?,
+    wifiIPAddressV4 = ?,
+    wifiIPAddressV6 = ?,
+    signalStrength = ?,
+    ethernetActive = ?,
+    ethernetIPAddressV4 = ?,
+    ethernetIPAddressV6 = ?,
+    status = ?,
+    statusChanged = now()
+WHERE name = ?;
+EOS;
+        $attributes = $apiResult['attributes'];
+        $components = $apiResult['components'];
+        $application = null;
+        $battery = null;
+        $wifi = null;
+        $ethernet = null;
+        foreach ($components as $component) {
+            switch ($component['type']) {
+                case 'APPLICATION':
+                    $application = $component;
+                    break;
+                case 'BATTERY':
+                    $battery = $component;
+                    break;
+                case 'WIFI':
+                    $wifi = $component;
+                    break;
+                case 'ETHERNET':
+                    $ethernet = $component;
+                    break;
+            }
+        }
+        $status = $apiResult['status'];
+
+        // now the fields
+
+        $version = $attributes['version'];
+        if ($application) {
+            $productType = $application['application_details']['application_type'];
+            $terminalAPIVersion = $application['application_details']['version'];
+        } else {
+            $productType = null;
+            $terminalAPIVersion = null;
+        }
+
+        $squareName = $attributes['name'];
+        $squareModel = $attributes['model'];
+
+        if ($battery) {
+            $batteryLevel = $battery['battery_details']['visible_percent'];
+            $externalPower = $battery['battery_details']['external_power'];
+        } else {
+            $batteryLevel = null;
+            $externalPower = null;
+        }
+
+        if ($wifi) {
+            $wifiActive = $wifi['wifi_details']['active'] ? true : false;
+            $wifiSSID = $wifi['wifi_details']['ssid'];
+            $signalStrength = $wifi['wifi_details']['signal_strength']['value'];
+            if (array_key_exists('ip_address_v4', $wifi['wifi_details']))
+                $wifiIPAddressV4 = $wifi['wifi_details']['ip_address_v4'];
+            else
+                $wifiIPAddressV4 = null;
+            if (array_key_exists('ip_address_v6', $wifi['wifi_details']))
+                $wifiIPAddressV6 = $wifi['wifi_details']['ip_address_v6'];
+            else
+                $wifiIPAddressV6 = null;
+        } else {
+            $wifiActive = null;
+            $wifiSSID = null;
+            $signalStrength = null;
+            $wifiIPAddressV4 = null;
+            $wifiIPAddressV6 = null;
+        }
+        if ($ethernet) {
+            $ethernetActive = $ethernet['ethernet_details']['active'] ? true : false;
+            if (array_key_exists('ip_address_v4', $ethernet['ethernet_details']))
+                $ethernetIPAddressV4 = $ethernet['ethernet_details']['ip_address_v4'];
+            else
+                $ethernetIPAddressV4 = null;
+            if (array_key_exists('ip_address_v6', $ethernet['ethernet_details']))
+                $ethernetIPAddressV6 = $ethernet['ethernet_details']['ip_address_v6'];
+            else
+                $ethernetIPAddressV6 = null;
+        } else {
+            $ethernetActive = null;
+            $ethernetIPAddressV4 = null;
+            $ethernetIPAddressV6 = null;
+        }
+
+        $statusCat = $status['category'];
+
+        $arrVals = array($productType, $squareName, $squareModel, $version, $terminalAPIVersion, $batteryLevel, $externalPower,
+            $wifiActive, $wifiSSID, $wifiIPAddressV4, $wifiIPAddressV6, $signalStrength,
+            $ethernetActive, $ethernetIPAddressV4, $ethernetIPAddressV6, $statusCat, $name);
+
+        $datatypes = 'sssssisisssiissss';
+        $response = [];
+        $response['updCnt'] = dbSafeCmd($upSQL, $datatypes, $arrVals);
+
+
+// fetch the updated terminal record
+        $terminalSQL = <<<EOS
+SELECT *
+FROM terminals
+WHERE name = ?;
+EOS;
+        $terminalQ = dbSafeQuery($terminalSQL, 's', array($name));
+        if ($terminalQ === false || $terminalQ->num_rows != 1) {
+            RenderErrorAjax("Cannot fetch terminal $name status.");
+            exit();
+        }
+        $updatedRow = $terminalQ->fetch_assoc();
+        $response['updatedRow'] = $updatedRow;
+        $terminalQ->free();
+        return $response;
     }
     catch (SquareApiException $e) {
         sqterm_logException($name, $e, 'Terminal Square API get device by id Exception', 'Terminal API get device by id failed', $useLogWrite);
@@ -170,7 +300,7 @@ function term_payOrder($name, $orderId, $amount, $useLogWrite = false) : array |
         'idempotencyKey' => guidv4(),
         'checkout' => new Square\Types\TerminalCheckout([
             'amountMoney' => new Money([
-                'amount' => $amount,
+                'amount' => round($amount * 100),
                 'currency' => $currency,
             ]),
             'note' => 'Payment Note for ' . time(),
@@ -202,7 +332,7 @@ function term_payOrder($name, $orderId, $amount, $useLogWrite = false) : array |
     return null;
 }
 
-function term_getPayStatus($name, $payRef, $useLogWrite = false) : array | null {
+function term_cancelPayment($name, $payRef, $useLogWrite = false) : array | null {
     $cc = get_conf('cc');
     $debug = get_conf('debug');
     if (array_key_exists('square', $debug))
@@ -219,8 +349,48 @@ function term_getPayStatus($name, $payRef, $useLogWrite = false) : array | null 
                    'baseUrl' => $cc['env'] == 'production' ? Environments::Production->value : Environments::Sandbox->value,
                ]);
 
-    $statusRequest = new Square\Terminal\Checkouts\Requests\GetCheckoutsRequest([
+    $cancelRequest = new Square\Terminal\Checkouts\Requests\CancelCheckoutsRequest([
     'checkoutId' => $payRef,
+    ]);
+
+    try {
+        if ($squareDebug) sqterm_logObject(array ('Terminal API cancel checkout request', $cancelRequest), $useLogWrite);
+        $apiResponse = $client->terminal->checkouts->cancel($cancelRequest);
+        if ($squareDebug) sqterm_logObject(array ('Terminal API cancel checkout request: apiResponse', $apiResponse), $useLogWrite);
+
+        // convert the object into an associative array
+        $checkout = json_decode(json_encode($apiResponse->getCheckout()), true);
+        return $checkout;
+    }
+    catch (SquareApiException $e) {
+        sqterm_logException($name, $e, 'Terminal Square API cancel checkout request Exception', 'Terminal API cancel checkout request failed', $useLogWrite);
+    }
+    catch (Exception $e) {
+        sqterm_logException($name, $e, 'Terminal received error while calling Square', 'Error connecting to Square', $useLogWrite);
+    }
+
+    return null;
+}
+
+function term_getPayStatus($name, $payRef, $useLogWrite = false) : array | null {
+    $cc = get_conf('cc');
+    $debug = get_conf('debug');
+    if (array_key_exists('square', $debug))
+        $squareDebug = $debug['square'];
+    else
+        $squareDebug = 0;
+
+    // get the device name
+    $terminal = getTerminal($name);
+    // get a client
+    $client = new SquareClient(
+        token: $cc['token'],
+        options: [
+            'baseUrl' => $cc['env'] == 'production' ? Environments::Production->value : Environments::Sandbox->value,
+        ]);
+
+    $statusRequest = new Square\Terminal\Checkouts\Requests\GetCheckoutsRequest([
+        'checkoutId' => $payRef,
     ]);
 
     try {
@@ -269,7 +439,6 @@ function sqterm_logException($name, $e, $message, $ajaxMessage, $useLogWrite = f
                 logWrite("Name: $name, Cat: $cat: Code $code, Detail: $detail");
             }
             web_error_log("Name: $name, Cat: $cat: Code $code, Detail: $detail");
-            exit();
         }
     }
     ajaxSuccess(array ('status' => 'error', 'data' => "Error: $ajaxMessage, see logs."));

@@ -609,7 +609,7 @@ EOS;
 
     // get terminals list
     $terminalQ = <<<EOS
-SELECT name, squareId, deviceId, squareCode
+SELECT name, squareId, deviceId, squareCode, locationId
 FROM terminals
 ORDER BY name;
 EOS;
@@ -702,9 +702,9 @@ EOS;
                     <option value=''>None</option>
 EOS;
         foreach ($terminals as $key => $terminal) {
-            $html .= '<option value="' . escape_quotes($key) . ':::' . escape_quotes($terminal['name']) .
+            $html .= '<option value="' . escape_quotes($terminal['name']) .
                 ':::' . escape_quotes($terminal['squareId']) . ':::' . escape_quotes($terminal['deviceId']) .
-                ':::' . escape_quotes($terminal['squareCode']) . '">' . $key . "</option>\n";
+                ':::' . escape_quotes($terminal['squareCode']) . ':::' . escape_quotes($terminal['locationId']) . '">' . $key . "</option>\n";
         }
         $html .= <<<EOS
                 </select>

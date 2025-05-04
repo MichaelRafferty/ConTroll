@@ -53,14 +53,25 @@ if ($policies != null) {
     }
 }
 
+if (array_key_exists('controll_registration', $debug)) {
+    $debug_registration = $debug['controll_registration'];
+} else
+    $debug_registration = 0;
+
+if (array_key_exists('useportal', $controll)) {
+    $usePortal = $controll['useportal'];
+} else {
+    $usePortal = 0;
+}
+
 $config_vars = array();
 $config_vars['label'] = $con['label'];
-$config_vars['debug'] = $debug['controll_registration'];
+$config_vars['debug'] = $debug_registration;
 $config_vars['conid'] = $conid;
 $config_vars['mode'] = 'admin';
 $config_vars['regadminemail'] = $con['regadminemail'];
 $config_vars['required'] = $ini['required'];
-$config_vars['useportal'] = $controll['useportal'];
+$config_vars['useportal'] = $usePortal;
 $config_vars['cashier'] = 1;
 $config_vars['multiOneDay'] = $multiOneDay;
 

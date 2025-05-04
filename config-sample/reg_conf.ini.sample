@@ -42,6 +42,7 @@ id="2022"
 ; sales tax rate and Invoice Label
 taxRate=6
 taxLabel="NJ Sales Tax"
+taxuid="NJ-Sales-Tax"  ; uid's are letters, numbers and '-' only, no blanks or other characters
 currency="USD"
 minComp="2021"
 compLen="365" ; day length for growth by day graph
@@ -117,6 +118,10 @@ badgeps="/home/homedir/config/conname.ps"
 ; production = suppress the 'default' placeholder messages (an alias for this is nodefault)
 ; none = supporess all custom text
 customtext='production'
+;; payment methods allowed
+; 1 = allowed, 0 = disabled
+creditoffline = 0
+creditonline = 1
 
 [vendor]
 test=0

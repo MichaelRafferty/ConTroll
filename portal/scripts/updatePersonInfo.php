@@ -80,7 +80,7 @@ foreach ($fields as $field) {
         $person[$field] = '';
 }
 
-// temporary diagnotic, why are the other fields found and country is not found sometimes. (Rarely)
+// temporary diagnostic, why are the other fields found and country is not found sometimes. (Rarely)
 if ($person['country'] == NULL || $person['country'] == '') {
     error_log("Country missing on this post:");
     var_error_log($_POST);

@@ -80,7 +80,7 @@ WITH trans AS (
         nn.managedBy, nn.managedByNew, nn.badge_name, 
         TRIM(REGEXP_REPLACE(CONCAT(IFNULL(nn.first_name, ''),' ', IFNULL(nn.middle_name, ''), ' ', 
                 IFNULL(nn.last_name, ''), ' ', IFNULL(nn.suffix, '')), '  *', ' ')) AS fullname, 
-        IFNULL(nn.perid, nn.id) as memberId, nn.email_addr, nn.phone,
+        nn.id as memberId, nn.email_addr, nn.phone,
         IFNULL(tp.perid, t.perid) AS transPerid,
         IFNULL(tp.newperid, t.newperid) AS transNewPerid
     FROM trans t
@@ -88,19 +88,19 @@ WITH trans AS (
     LEFT OUTER JOIN trans tp ON tp.id = r.complete_trans
     JOIN memLabel m ON m.id = r.memId
     JOIN newperson nn ON nn.id = r.newperid
-    WHERE (status $statusCheck OR (r.status = 'paid' AND r.complete_trans IS NULL)) AND (t.perid = ? OR tp.perid = ?) AND t.conid = ?
+    WHERE (status $statusCheck OR (r.status = 'paid' AND r.complete_trans IS NULL)) AND (t.perid = ? OR tp.perid = ?) AND t.conid = ? and nn.perid is null
 )
 SELECT DISTINCT *
 FROM mems
 ORDER BY sortTrans, create_date, memberId
 EOS;
-        $membershipsR = dbSafeQuery($membershipsQ, 'iiiiiiiii', array($personId, $personId, $personId, $personId, $personId, $conid, $personId, $personId,
-        $conid));
+        $membershipsR = dbSafeQuery($membershipsQ, 'iiiiiiiii',
+            array($personId, $personId, $personId, $personId, $personId, $conid, $personId, $personId, $conid));
     } else {
         $membershipsQ = <<<EOS
 WITH mems AS (
     SELECT t.id, r.create_date, r.id AS regId, r.memId, r.conid, r.status, r.price, r.paid, r.complete_trans, r.couponDiscount, r.perid, r.newperid,
-    m.label, m.memAge, m.memAge AS age, m.memType, m.memCategory,  m.startdate, m.enddate, m.online, mC.taxable,
+    m.label, m.memAge, m.memAge AS age, m.memType, m.memCategory,  m.startdate, m.enddate, m.online, m.taxable,
         p.managedBy, p.managedByNew,
         CASE WHEN r.complete_trans IS NULL THEN r.create_trans ELSE r.complete_trans END AS sortTrans,
         CASE WHEN tp.complete_date IS NULL THEN t.create_date ELSE tp.complete_date END AS transDate,
@@ -115,7 +115,6 @@ WITH mems AS (
     JOIN reg r ON t.id = r.create_trans
     LEFT OUTER JOIN transaction tp ON tp.id = r.complete_trans
     JOIN memLabel m ON m.id = r.memId
-    JOIN memCategories mC ON m.memCategory = mC.memCategory
     JOIN newperson p ON p.id = r.newperid
     WHERE (status $statusCheck OR (r.status = 'paid' AND r.complete_trans IS NULL)) AND (t.newperid = ? OR tp.newperid = ?) AND t.conid = ?
     )
