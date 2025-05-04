@@ -84,7 +84,6 @@ if (array_key_exists('creditonline', $atcon)) {
     $config_vars['creditonline'] = $atcon['creditonline'];
 }
 
-
 $cdn = getTabulatorIncludes();
 page_init($page, $tab,
     /* css */ array($cdn['tabcss'], $cdn['tabbs5']),
@@ -92,6 +91,7 @@ page_init($page, $tab,
                     $cdn['tabjs'], 'js/artpos_cart.js', 'js/artpos.js'),
     $config_vars
     );
+if (count($regionList) > 1) {
 ?>
 <div id='tabs'>
     <ul class='nav nav-tabs mb-3' id='region-tabs' role='tablist'>
@@ -114,6 +114,7 @@ page_init($page, $tab,
         ?>
     </ul>
 </div>
+<?php } ?>
 <div id="pos" class="container-fluid">
     <div class="row mt-2">
         <div class="col-sm-6">
