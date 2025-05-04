@@ -80,7 +80,7 @@ WITH trans AS (
         nn.managedBy, nn.managedByNew, nn.badge_name, 
         TRIM(REGEXP_REPLACE(CONCAT(IFNULL(nn.first_name, ''),' ', IFNULL(nn.middle_name, ''), ' ', 
                 IFNULL(nn.last_name, ''), ' ', IFNULL(nn.suffix, '')), '  *', ' ')) AS fullname, 
-        IFNULL(nn.perid, nn.id) as memberId, nn.email_addr, nn.phone,
+        nn.id as memberId, nn.email_addr, nn.phone,
         IFNULL(tp.perid, t.perid) AS transPerid,
         IFNULL(tp.newperid, t.newperid) AS transNewPerid
     FROM trans t
@@ -88,7 +88,7 @@ WITH trans AS (
     LEFT OUTER JOIN trans tp ON tp.id = r.complete_trans
     JOIN memLabel m ON m.id = r.memId
     JOIN newperson nn ON nn.id = r.newperid
-    WHERE (status $statusCheck OR (r.status = 'paid' AND r.complete_trans IS NULL)) AND (t.perid = ? OR tp.perid = ?) AND t.conid = ?
+    WHERE (status $statusCheck OR (r.status = 'paid' AND r.complete_trans IS NULL)) AND (t.perid = ? OR tp.perid = ?) AND t.conid = ? and nn.perid is null
 )
 SELECT DISTINCT *
 FROM mems
