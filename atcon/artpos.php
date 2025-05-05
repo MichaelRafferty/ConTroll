@@ -222,11 +222,11 @@ if (count($regionList) > 1) {
             <div id="cart"></div>
             <div class="row">
                 <div class="col-sm-12 mt-3">
-                    <button type="button" class="btn btn-primary btn-sm" id="add_btn" onclick="goto_add();" hidden>Add Art to Cart</button>
-                    <button type="button" class="btn btn-primary btn-sm" id="pay_btn" onclick="goto_pay();" hidden>Pay Cart</button>
-                    <button type='button' class='btn btn-primary btn-sm' id='release_btn' onclick='goto_release();' hidden>Release Artwork</button>
-                    <button type="button" class="btn btn-warning btn-sm" id="startover_btn" onclick="start_over(1);" hidden>Start Over</button>
-                    <button type="button" class="btn btn-primary btn-sm" id="next_btn" onclick="start_over(1);" hidden>Next Customer</button>
+                    <button type="button" class="btn btn-primary btn-sm" id="add_btn" onclick="gotoAdd();" hidden>Add Art to Cart</button>
+                    <button type="button" class="btn btn-primary btn-sm" id="pay_btn" onclick="gotoPay();" hidden>Pay Cart</button>
+                    <button type='button' class='btn btn-primary btn-sm' id='release_btn' onclick='gotoRelease();' hidden>Release Artwork</button>
+                    <button type="button" class="btn btn-warning btn-sm" id="startover_btn" onclick="startOver(1);" hidden>Start Over</button>
+                    <button type="button" class="btn btn-primary btn-sm" id="next_btn" onclick="startOver(1);" hidden>Next Customer</button>
                 </div>
             </div>
         </div>       

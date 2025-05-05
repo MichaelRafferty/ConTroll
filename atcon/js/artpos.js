@@ -33,14 +33,14 @@ var pay_button_pay = null;
 var pay_button_rcpt = null;
 var pay_button_ercpt = null;
 var pay_tid = null;
+var pay_currentOrderId = null;
 var pay_InitialCart = true;
 var discount_mode = 'none';
 var total_art_due = 0;
 var total_tax_due = 0;
 var total_amount_due = 0;
-var thisPay_art = 0;
-var thisPay_tax = 0;
-var thisPay_total = 0;
+var tax_label = 'Sales Tax';
+var orderMsg = '';
 
 // release items
 var releaseModal = null;
@@ -99,10 +99,10 @@ window.onload = function initpage() {
     pay_div = document.getElementById('pay-div');
 
     // add events
-    find_tab.addEventListener('shown.bs.tab', find_shown)
-    add_tab.addEventListener('shown.bs.tab', add_shown)
-    pay_tab.addEventListener('shown.bs.tab', pay_shown)
-    release_tab.addEventListener('shown.bs.tab', release_shown)
+    find_tab.addEventListener('shown.bs.tab', findShown)
+    add_tab.addEventListener('shown.bs.tab', addShown)
+    pay_tab.addEventListener('shown.bs.tab', payShown)
+    release_tab.addEventListener('shown.bs.tab', releaseShown)
 
     // cash payment requires change
     cashChangeModal = new bootstrap.Modal(document.getElementById('CashChange'), { focus: true, backldrop: 'static' });
@@ -145,11 +145,11 @@ function loadInitialData(data) {
     user_id = data['user_id']
     hasManager = data['hasManager'];
     receiptPrinterAvailable = data['receiptPrinter'] === true;
-    find_shown();
+    findShown();
 }
 
 // if no artSales or payments have been added to the database, this will reset for the next customer
-function start_over(reset_all) {
+function startOver(reset_all) {
     if (reset_all > 0)
         clear_message();
 
@@ -183,37 +183,91 @@ function start_over(reset_all) {
     pay_button_ercpt = null;
     receeiptEmailAddresses_div = null;
     pay_tid = null;
+    pay_currentOrderId = null;
     pay_InitialCart = true;
 
     // set tab to find-tab
     if (current_tab != find_tab) {
         bootstrap.Tab.getOrCreateInstance(find_tab).show();
     } else {
-        find_shown();
+        findShown();
     }
     badgeid_field.focus();
 }
 
 // switch to the add tab
-function goto_find() {
+function gotoFind() {
     bootstrap.Tab.getOrCreateInstance(find_tab).show();
 }
 
 // switch to the add tab
-function goto_add() {
+function gotoAdd() {
     bootstrap.Tab.getOrCreateInstance(add_tab).show();
 }
 
 // switch to the pay tab
-function goto_pay() {
+function gotoPay() {
     bootstrap.Tab.getOrCreateInstance(pay_tab).show();
 }
 
-function goto_release() {
+// build the order
+function buildOrder() {
+    var postData = {
+        ajax_request_action: 'buildOrder',
+        cart_art: JSON.stringify(cart.getCartArt()),
+        perid: currentPerson.id,
+        pay_tid: pay_tid,
+    };
+    if (pay_currentOrderId) {
+        postData.cancelOrder = pay_currentOrderId;
+        pay_currentOrderId = null;
+    }
+
+    clear_message();
+    $.ajax({
+        method: "POST",
+        url: "scripts/artpos_buildOrder.php",
+        data: postData,
+        success: function (data, textstatus, jqxhr) {
+            var stop = true;
+            if (typeof data == 'string') {
+                show_message(data, 'error');
+            } else if (data.error !== undefined) {
+                show_message(data.error, 'error');
+            } else if (data.message !== undefined) {
+                show_message(data.message, 'success');
+                stop = false;
+            } else if (data.warn !== undefined) {
+                show_message(data.warn, 'warn');
+                stop = false;
+            } else if (data.status == 'error') {
+                show_message(data.data, 'error');
+            } else
+                stop = false;
+            if (!stop)
+                buildOrderSuccess(data);
+        },
+        error: function (jqXHR, textstatus, errorThrown) {
+            showAjaxError(jqXHR, textstatus, errorThrown);
+        },
+    });
+}
+
+function buildOrderSuccess(data) {
+    pay_currentOrderId = data.rtn.orderId;
+    total_art_due = data.rtn.preTaxAmt;
+    total_tax_due = data.rtn.taxAmt;
+    total_amount_due = data.rtn.totalAmt;
+    taxLabel = data.rtn.taxLabel;
+    show_message("Order #" + pay_currentOrderId + " created.<br/>" + orderMsg);
+    payShown();
+}
+
+function gotoRelease() {
     if (current_tab != release_tab) {
         bootstrap.Tab.getOrCreateInstance(release_tab).show();
     } else {
-        release_shown();
+        releaseShown();
     }
 }
 
@@ -654,13 +708,20 @@ function initArtSales() {
     });
 }
 
-// initArtSalesComplete - now update the cart with the new data and call pay_shown again to draw it.
+// initArtSalesComplete - now update the cart with the new data and call payShown again to draw it.
 //  all the data from the cart has been updated in the database, now apply the id's and proceed to the next step
 function initArtSalesComplete(data) {
     pay_tid = data['pay_tid'];
+    if (data['message'] !== undefined) {
+        orderMsg = data['message'];
+    }
+    if (data['warn'] !== undefined) {
+        orderMsg = data['warn'];
+    }
+
     // update cart elements
     var unpaid_rows = cart.updateFromDB(data);
-    pay_shown();
+    payShown();
 }
 
 // setPayType: shows/hides the appropriate fields for that payment type
@@ -842,7 +903,7 @@ function pay(nomodal, prow = null) {
 //  payment entered into the database correctly, update the payment cart and the art with the updated paid amounts
 function updatedPayment(data) {
     cart.updatePmt(data);
-    pay_shown();
+    payShown();
 }
 
 var last_receipt_type = '';
@@ -907,7 +968,7 @@ function print_receipt(receipt_type) {
 }
 
 // tab shown events - state mapping for which tab is shown
-function find_shown() {
+function findShown() {
     cart.unfreeze();
     current_tab = find_tab;
     cart.drawCart();
@@ -1004,7 +1065,7 @@ function showStats(which) {
     });
 }
 
-function add_shown() {
+function addShown() {
     cart.unfreeze();
     current_tab = add_tab;
     clear_message();
@@ -1024,17 +1085,19 @@ function add_shown() {
 var emailAddreesRecipients = [];
 
 // show the pay tab, and its current dataset, if first call, update artSales in the database.
-function pay_shown() {
+function payShown() {
     if (pay_InitialCart) {
         pay_InitialCart = false;
         initArtSales();
+        return;
+    }
+    if (pay_currentOrderId == null) {
+        buildOrder();
+        return;
     }
     cart.freeze();
     current_tab = pay_tab;
     cart.drawCart();
-    total_art_due = cart.getTotalPrice() - cart.getTotalPaid();
-    total_tax_due = Math.round(total_art_due * config['taxRate']) / 100;
-    total_amount_due = total_art_due + total_tax_due;
     thisPay_art = 0;
     thisPay_tax = 0;
     thisPay_total = 0;
@@ -1230,8 +1293,8 @@ function setPayAmt(type) {
     document.getElementById('thisPay-tax').innerHTML = '$' + Number(thisPay_tax).toFixed(2);
     document.getElementById('thisPay-total').innerHTML = '$' + Number(thisPay_total).toFixed(2);
 }
-// release_shown - show the release tab
-function release_shown() {
+// releaseShown - show the release tab
+function releaseShown() {
     current_tab = release_tab;
     pay_tab.disabled = true;
     cart.hideAdd();
@@ -1354,10 +1417,10 @@ function processRelease() {
             }
             if (data['num_remain'] > 0) {
                 if (confirm(data['num_remain'] + ' items are still not released, return to release?'))
-                    release_shown();
+                    releaseShown();
             } else {
                 cart.hideRelease();
-                start_over();
+                startOver(0);
             }
         },
         error: showAjaxError

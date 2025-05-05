@@ -90,7 +90,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
     // item rules:
     //  if a plan payment
     //      just one order item, the plan payment itself
-    //  if art work //TODO-add online credit card via terminal to artpos
+    //  if art work
     //      add each art item in the checkout as a single line item
     //  else (memberships + spaces):
     //      each membership is a line item
@@ -153,8 +153,44 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
     // Art Sales placeholder
     if ($artSales == 1) {
         $needTaxes = true;
-        ajaxSuccess(array ('status' => 'error', 'data' => 'Error: Art Sales not implemented yet, get assistance.'));
-        exit();
+        if (array_key_exists('art', $results) && is_array($results['art']) && count($results['art']) > 0) {
+            foreach ($results['art'] as $art) {
+                if (!array_key_exists('paid', $art)) {
+                    $art['paid'] = 0;
+                }
+                $artId = $art['id'];
+                $artistName = $art['artistName'];
+                $artistNumber = $art['exhibitorNumber'];
+                $itemKey = $art['item_key'];
+                $title = $art['title'];
+                $type = $art['type'];
+                $priceType = $art['priceType'];
+                $quantity = $art['artSalesQuantity'];
+                $amount = $art['amount'];
+
+                $item = [
+                    'uid' => 'art' . ($lineid + 1),
+                    'name' => mb_substr($artistName, 0, 50) . ' / ' . mb_substr($title, 0, 70),
+                    'quantity' => $quantity,
+                    'note' => $artId . ':' . $artistNumber . ',' . $itemKey . '; ' . $type . ',' . $priceType,
+                    'basePriceMoney' => round($amount * 100),
+                ];
+                if ($taxRate > 0) {
+                    // create the Line Item tax record, if there is a tax rate, and the membership is taxable
+                    $needTaxes = true;
+                    $item['taxable'] = 'Y';
+                    $item['taxUid'] = $taxLabel;
+                }
+                $orderLineitems[$lineid] = $item;
+                $orderValue += $art['amount'];
+                $lineid++;
+            }
+        } else {
+            ajaxSuccess(array ('status' => 'error', 'data' => 'Error: Art Sales not implemented yet, get assistance.'));
+            exit();
+        }
+
+        $itemsBuilt = true;
     }
 
     // if not built, it's spaces + memberships
@@ -350,7 +386,8 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
     $rtn['customerId'] = $order['customerId'];
     $rtn['locationId'] = $order['locationId'];
     $rtn['referenceId'] = $order['referenceId'];
-    $rtn['transid'] = $results['transid'];
+    if ($artSales != 1)
+        $rtn['transid'] = $results['transid'];
     if (array_key_exists('exhibits', $results))
         $rtn['exhibits'] = $results['exhibits'];
     if (array_key_exists('nonce', $results))
