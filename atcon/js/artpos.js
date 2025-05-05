@@ -728,9 +728,11 @@ function initArtSalesComplete(data) {
 function setPayType(ptype) {
     var elcheckno = document.getElementById('pay-check-div');
     var elccauth = document.getElementById('pay-ccauth-div');
+    var elcashtendered = document.getElementById('pay-cash-div');
 
     elcheckno.hidden = ptype != 'check';
     elccauth.hidden = ptype != 'credit';
+    elcashtendered.hidden = ptype != 'cash';
 
     if (ptype != 'check') {
         document.getElementById('pay-checkno').value = null;
@@ -738,10 +740,8 @@ function setPayType(ptype) {
     if (ptype != 'credit') {
         document.getElementById('pay-ccauth').value = null;
     }
-
-    // if they never selected an amount to pay, set it to full pay
-    if (thisPay_art == 0) {
-        setPayAmt('full');
+    if (ptype != 'cash') {
+        document.getElementById('pay-tendered').value = null;
     }
 }
 
@@ -752,7 +752,6 @@ function pay(nomodal, prow = null) {
     var checkno = null;
     var desc = null;
     var ptype = null;
-    var total_amount_due = cart.getTotalPrice() - cart.getTotalPaid();
 
     if (nomodal != '') {
         cashChangeModal.hide();
@@ -764,27 +763,19 @@ function pay(nomodal, prow = null) {
         //      for check: the check number is required
         //      for credit card: the auth code is required
         //      for discount: description is required, it's optional otherwise
-        var elamt = document.getElementById('pay-amt');
-        var pay_amt = Number(elamt.value);
-        if (pay_amt > 0 && pay_amt > thisPay_total) {
-            if (document.getElementById('pt-cash').checked) {
-                if (nomodal == '') {
-                    cashChangeModal.show();
-                    document.getElementById("CashChangeBody").innerHTML = "Customer owes $" + thisPay_total.toFixed(2) + ", and tendered $" + pay_amt.toFixed(2) +
-                        "<br/>Confirm change give to customer of $" + (pay_amt - thisPay_total).toFixed(2);
-                    return;
-                }
-            } else {
-                elamt.style.backgroundColor = 'var(--bs-warning)';
+
+        if (document.getElementById('pt-cash').checked) {
+            if (nomodal == '') {
+                cashChangeModal.show();
+                var tendered = Number(document.getElementById('pay-tendered').value);
+                document.getElementById("CashChangeBody").innerHTML = "Customer owes $" + total_amount_due.toFixed(2) + ", and tendered $" + tendered.toFixed(2) +
+                    "<br/>Confirm change given to customer of $" + (tendered - total_amount_due).toFixed(2);
                 return;
             }
-        }
-        if (pay_amt <= 0) {
+        } else {
             elamt.style.backgroundColor = 'var(--bs-warning)';
             return;
         }
-
-        elamt.style.backgroundColor = '';
 
         var elptdiv = document.getElementById('pt-div');
         elptdiv.style.backgroundColor = '';
@@ -842,17 +833,20 @@ function pay(nomodal, prow = null) {
             return;
         }
 
-        if (pay_amt > 0) {
+        if (total_amount_due > 0) {
             var crow = null;
             var change = 0;
-            if (pay_amt > thisPay_total) {
-                change = pay_amt - thisPay_total;
-                crow = {
-                    index: cart.getPmtLength() + 1, amt: change, ccauth: ccauth, checkno: checkno, desc: eldesc.value, type: 'change',
+            if (ptype == 'cash') {
+                amtTendered = Number(document.getElementById('pay-tendered').value) > total_amount_due;
+                if (amtTendered > total_amount_due) {
+                    change = -thisPay_total;
+                    crow = {
+                        index: cart.getPmtLength() + 1, amt: change, ccauth: ccauth, checkno: checkno, desc: eldesc.value, type: 'change',
+                    }
                 }
             }
             prow = {
-                index: cart.getPmtLength(), amt: thisPay_total, tax: thisPay_tax, pretax: thisPay_art, ccauth: ccauth, checkno: checkno, desc: eldesc.value, type: ptype,
+                index: cart.getPmtLength(), amt: total_amount_due, tax: total_tax_due, pretax: total_art_due, ccauth: ccauth, checkno: checkno, desc: eldesc.value, type: ptype,
             };
         }
     }
@@ -1163,45 +1157,49 @@ function payShown() {
         // column headings
         payHtml += `
     <div class="row mt-1">
-        <div class="col-sm-4 ms-0 me-0 p-0"></div>
-        <div class="col-sm-3 ms-0 me-0 p-0 text-end"><b>Remaining<br/>Balance</b></div>
-        <div class="col-sm-3 ms-0 me-0 p-0 text-end"><b>This<br/>Payment</b></div>
+        <div class="col-sm-6 ms-0 me-0 p-0"></div>
+        <div class="col-sm-3 ms-0 me-0 p-0 text-end"><b>Balance Due</b></div>
     </div>        
 `;
         // if tax rate exists show tax items
         if (config['taxRate'] > 0) {
             payHtml += `
     <div class="row mt-1">
-        <div class="col-sm-4 m-0 p-0">Art Total:</div>
+        <div class="col-sm-6 m-0 p-0">Art Total:</div>
         <div class="col-sm-3 m-0 p-0 text-end" id="total-art-due">$` + Number(total_art_due).toFixed(2) + `</div>
-        <div class="col-sm-3 m-0 p-0 text-end" id="thisPay-art">$` + Number(thisPay_art).toFixed(2) + `</div>
     </div>
     <div class="row mt-2">
-        <div class="col-sm-4 m-0 p-0">` + config['taxLabel'] + ' ' + config['taxRate'] + ` % sales tax (if paid in full):</div>
+        <div class="col-sm-6 m-0 p-0">` + config.taxLabel + ' ' + config.taxRate + ` % sales tax:</div>
         <div class="col-sm-3 m-0 p-0 text-end" id="total-tax-due">$` + Number(total_tax_due).toFixed(2) + `</div>
-        <div class="col-sm-3 m-0 p-0 text-end" id="thisPay-tax">$` + Number(thisPay_tax).toFixed(2) + `</div>
     </div>
 `;
     }
-    // add prior discounts to screen if any
+
     payHtml += `
     <div class="row mt-1">
-        <div class="col-sm-4 m-0 p-0">Amount Due:</div>
+        <div class="col-sm-6 m-0 p-0">Amount Due:</div>
         <div class="col-sm-3 m-0 p-0 text-end" id="total-amt-due">$` + Number(total_amount_due).toFixed(2) + `</div>
-        <div class="col-sm-3 m-0 p-0 text-end" id="thisPay-total">$` + Number(thisPay_total).toFixed(2) + `</div>
-    </div>
-    <div class="row mt-2">
-        <div class="col-sm-4 m-0 p-0">Amount to pay:</div>
-        <div class="col-sm-3 m-0 p-0 text-end"><button class="btn btn-sm btn-primary" type="button" onclick="setPayAmt('full');">Pay In Full</button></div>
-        <div class="col-sm-3 m-0 p-0 text-end"><input type="number" inputmode="numeric" class="no-spinners" id="pay-amt" name="paid-amt" onchange="setPayAmt('');" style="width: 7em;"/></div>
     </div>
     <div class="row">
-        <div class="col-sm-4 m-0 mt-2 me-2 mb-2 p-0">Payment Type:</div>
-        <div class="col-sm-auto m-0 mt-2 p-0 ms-0 me-2 mb-2 p-0" id="pt-div">
+        <div class="col-sm-2 m-0 mt-2 me-2 mb-2 p-0">Payment Type:</div>
+        <div class="col-sm-auto m-0 mt-2 p-0 mb-2 p-0" id="pt-div">
+`;
+        if (config.terminal == 1) {
+            payHtml += `
+            <input type="radio" id="pt-terminal" name="payment_type" value="terminal" onclick='setPayType("terminal");'/>
+            <label for="pt-terminal">Credit Card Terminal&nbsp;&nbsp;&nbsp;</label>
+`;
+        }
+        if (config.creditoffline == 1) {
+            payHtml += `
             <input type="radio" id="pt-credit" name="payment_type" value="credit" onclick='setPayType("credit");'/>
-            <label for="pt-credit">Credit Card</label>
+            <label for="pt-credit">Offline Credit Card&nbsp;&nbsp;&nbsp;</label>
+`;
+        }
+
+        payHtml += `            
             <input type="radio" id="pt-check" name="payment_type" value="check" onclick='setPayType("check");'/>
-            <label for="pt-check">Check</label>
+            <label for="pt-check">Check&nbsp;&nbsp;&nbsp;</label>
             <input type="radio" id="pt-cash" name="payment_type" value="cash" onclick='setPayType("cash");'/>
             <label for="pt-cash">Cash</label>
 `;
@@ -1216,8 +1214,12 @@ function payShown() {
         payHtml += `
         </div>
     </div>
+    <div class="row mb-2" id="pay-cash-div" hidden>
+        <div class="col-sm-2 ms-0 me-2 p-0">Amt Tendered:</div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0"><input type="number" class="no-spinners" id="pay-tendered" name="paid-tendered" size="6"/></div>
+    </div>
     <div class="row mb-2" id="pay-check-div" hidden>
-        <div class="col-sm-2 ms-0 me-2 p-0">Check Number:</div>
+        <div class="col-sm-2 ms-0 me-2 p-0">Check #:</div>
         <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0"><input type="text" size="8" maxlength="10" name="pay-checkno" id="pay-checkno"/></div>
     </div>
     <div class="row mb-2" id="pay-ccauth-div" hidden>
@@ -1264,42 +1266,6 @@ function payShown() {
     }
 }
 
-
-// setPayAmt - update the payment amount
-function setPayAmt(type) {
-    if (type == 'full') {
-        thisPay_art = total_art_due;
-        thisPay_tax = total_tax_due;
-        thisPay_total = total_amount_due;
-        document.getElementById('pay-amt').value = Number(thisPay_total);
-    } else {
-        // back into the tax and art amounts, deal with rounding error
-        thisPay_total = document.getElementById('pay-amt').value;
-        if (thisPay_total < 0 || thisPay_total > total_amount_due)
-            thisPay_total = total_amount_due;
-        if (Number(config['taxRate']) > 0) {
-            var art = Math.round((10000 * thisPay_total) / (100 + Number(config['taxRate']))) / 100;
-            //console.log("computing art of " + config['taxRate'] + "% on " + thisPay_total + " at " + art)
-            var tax = Math.round(100 * (thisPay_total - art)) / 100;
-            //console.log("tax = " + tax);
-            var tax2 = Math.round(Number(art) * Number(config['taxRate'])) / 100;
-            if (tax2 != tax) {
-                tax = tax2;
-                art = thisPay_total - tax;
-                //console.log("rounded art to " + art + ", tax to " + tax);
-            }
-            thisPay_art = art;
-            thisPay_tax = tax;
-        } else {
-            thisPay_tax = 0;
-            thisPay_art = thisPay_total;
-        }
-    }
-
-    document.getElementById('thisPay-art').innerHTML = '$' + Number(thisPay_art).toFixed(2);
-    document.getElementById('thisPay-tax').innerHTML = '$' + Number(thisPay_tax).toFixed(2);
-    document.getElementById('thisPay-total').innerHTML = '$' + Number(thisPay_total).toFixed(2);
-}
 // releaseShown - show the release tab
 function releaseShown() {
     current_tab = release_tab;

@@ -79,10 +79,18 @@ $config_vars['taxRate'] = $taxRate;
 $config_vars['taxLabel'] = $taxLabel;
 if (array_key_exists('creditoffline', $atcon)) {
     $config_vars['creditoffline'] = $atcon['creditoffline'];
+} else {
+    $config_vars['creditoffline'] = 1;
 }
 if (array_key_exists('creditonline', $atcon)) {
     $config_vars['creditonline'] = $atcon['creditonline'];
+} else {
+    $config_vars['creditonline'] = 0;
 }
+if (isSessionVar('terminal'))
+    $config_vars['terminal'] = getSessionVar('terminal')['name'] != 'None' ? 1 : 0;
+else
+    $config_vars['terminal'] = 0;
 
 $cdn = getTabulatorIncludes();
 page_init($page, $tab,
