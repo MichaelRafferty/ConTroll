@@ -1063,6 +1063,13 @@ function showStats(which) {
             {title: "# Items", field: "items", maxWidth: 100, width: 100, hozAlign: 'right', headerHozAlign: 'right', headerSort: false, },
         ],
     });
+
+    statsTable.on("cellClick", personClicked);
+}
+
+function personClicked(e, cell) {
+    badgeid_field.value = cell.getData().perid;
+    findPerson('search');
 }
 
 function addShown() {
