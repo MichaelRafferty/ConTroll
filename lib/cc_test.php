@@ -59,7 +59,14 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
     if (array_key_exists('custid', $results)) {
         $custid = $results['custid'];
     } else if (array_key_exists('badges', $results) && is_array($results['badges']) && count($results['badges']) > 0) {
-        $custid = 'r-' . $results['badges'][0]['badge'];
+        $badge = $results['badges'][0];
+        if (array_key_exists('perid', $badge)) {
+            $custid = 'p-' . $badge['perid'];
+        } else if (array_key_exists('newperid', $badge)) {
+            $custid = 'n-' . $badge['newperid'];
+        } else {
+            $custid = 'r-' . $results['badges'][0]['badge'];
+        }
     } else if (array_key_exists('exhibits', $results) && array_key_exists('vendorId', $results)) {
         $custid = 'e-' . $results['vendorId'];
         $source = $results['exhibits'];
@@ -150,7 +157,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
         $itemsBuilt = true;
     }
 
-    // Art Sales placeholder
+    // Art Sales
     if ($artSales == 1) {
         $needTaxes = true;
         if (array_key_exists('art', $results) && is_array($results['art']) && count($results['art']) > 0) {
@@ -186,7 +193,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                 $lineid++;
             }
         } else {
-            ajaxSuccess(array ('status' => 'error', 'data' => 'Error: Art Sales not implemented yet, get assistance.'));
+            ajaxSuccess(array ('status' => 'error', 'data' => 'Error: Art Data not passed, get assistance.'));
             exit();
         }
 

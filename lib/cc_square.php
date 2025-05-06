@@ -167,7 +167,14 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     if (array_key_exists('custid', $results)) {
         $custid = $results['custid'];
     } else if (array_key_exists('badges', $results) && is_array($results['badges']) && count($results['badges']) > 0) {
-        $custid = 'r-' . $results['badges'][0]['badge'];
+        $badge = $results['badges'][0];
+        if (array_key_exists('perid', $badge)) {
+            $custid = 'p-' . $badge['perid'];
+        } else if (array_key_exists('newperid', $badge)) {
+            $custid = 'n-' . $badge['newperid'];
+        } else {
+            $custid = 'r-' . $results['badges'][0]['badge'];
+        }
     } else if (array_key_exists('exhibits', $results) && array_key_exists('vendorId', $results)) {
         $custid = 'e-' . $results['vendorId'];
         $source = $results['exhibits'];
@@ -300,11 +307,47 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
         $itemsBuilt = true;
     }
 
-    // Art Sales placeholder
+    // Art Sales
     if ($artSales == 1) {
         $needTaxes = true;
-        ajaxSuccess(array ('status' => 'error', 'data' => 'Error: Art Sales not implemented yet, get assistance.'));
-        exit();
+        if (array_key_exists('art', $results) && is_array($results['art']) && count($results['art']) > 0) {
+            foreach ($results['art'] as $art) {
+                if (!array_key_exists('paid', $art)) {
+                    $art['paid'] = 0;
+                }
+                $artId = $art['id'];
+                $artistName = $art['artistName'];
+                $artistNumber = $art['exhibitorNumber'];
+                $itemKey = $art['item_key'];
+                $title = $art['title'];
+                $type = $art['type'];
+                $priceType = $art['priceType'];
+                $quantity = $art['artSalesQuantity'];
+                $amount = $art['amount'];
+
+                $item = [
+                    'uid' => 'art' . ($lineid + 1),
+                    'name' => mb_substr($artistName, 0, 50) . ' / ' . mb_substr($title, 0, 70),
+                    'quantity' => $quantity,
+                    'note' => $artId . ':' . $artistNumber . ',' . $itemKey . '; ' . $type . ',' . $priceType,
+                    'basePriceMoney' => round($amount * 100),
+                ];
+                if ($taxRate > 0) {
+                    // create the Line Item tax record, if there is a tax rate, and the membership is taxable
+                    $needTaxes = true;
+                    $item['taxable'] = 'Y';
+                    $item['taxUid'] = $taxLabel;
+                }
+                $orderLineitems[$lineid] = $item;
+                $orderValue += $art['amount'];
+                $lineid++;
+            }
+        } else {
+            ajaxSuccess(array ('status' => 'error', 'data' => 'Error: Art Data not passed, get assistance.'));
+            exit();
+        }
+
+        $itemsBuilt = true;
     }
 
     // if not built, it's spaces + memberships
