@@ -859,8 +859,9 @@ function pay(nomodal, prow = null) {
         new_payment: prow,
         change: crow,
         user_id: user_id,
-        perid: currentPerson.id,
+        payor: currentPerson,
         pay_tid: pay_tid,
+        order_id: pay_currentOrderId,
     };
     pay_button_pay.disabled = true;
     $.ajax({
