@@ -83,6 +83,37 @@ $amount = 0;
 $totalAmountDue = 0;
 $totalPaid = 0;
 $art = [];
+
+// weird validation login to confirm from old processPayment
+// $art = (float) $new_payment['pretax'];
+//// validate that the payment amount is not too large
+//$total_due = 0;
+//foreach ($cart_art as $cart_row) {
+//    if ($cart_row['display_price'] == '')
+//        $cart_row['display_price'] = 0;
+//
+//    if ($cart_row['purQuantity'] != $cart_row['artSalesQuantity'] && $cart_row['type'] == 'print') {
+//        $cart_row['artSalesQuantity'] = $cart_row['purQuantity'];
+//        $cart_row['amount'] = $cart_row['display_price'];
+//        $cart_row['updSales'] = true;
+//        }
+//    else {
+//        $cart_row['updSales'] = false;
+//    }
+//
+//    if ($cart_row['amount'] == null || $cart_row['amount'] == '')
+//        $cart_row['amount'] = $cart_row['display_price'];
+//
+//    if ($cart_row['paid'] == null ||$cart_row['paid'] == '')
+//        $cart_row['paid'] = 0;
+//    $total_due += $cart_row['amount'] - $cart_row['paid'];
+//}
+//
+//if (round($art,2) > round($total_due,2)) {
+//    ajaxError('invalid payment amount passed exceeds total' . " art: $art total: $total_due");
+//    return;
+//}
+
 foreach ($cart_art as $row) {
     $price = $row['amount'];
     $paid = $row['paid'];
