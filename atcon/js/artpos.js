@@ -1347,7 +1347,7 @@ function payShown() {
         }
     }
 }
-z
+
 // releaseShown - show the release tab
 function releaseShown() {
     current_tab = release_tab;
