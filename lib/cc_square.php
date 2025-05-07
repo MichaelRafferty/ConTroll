@@ -332,7 +332,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     'quantity' => $quantity,
                     'note' => $artId . ':' . $artistNumber . ',' . $itemKey . '; ' . $type . ',' . $priceType,
                     'basePriceMoney' => new Money([
-                        'amount' => round($amount * 100),
+                        'amount' => round($amount * 100 / $quantity),
                         'currency' => $currency,
                     ]),
                 ]);
