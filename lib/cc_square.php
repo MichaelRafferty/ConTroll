@@ -326,17 +326,23 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 $amount = $art['amount'];
 
                 $item = [
-                    'uid' => 'art' . ($lineid + 1),
+                    'itemType' => OrderLineItemItemType::Item->value,
+                    'uid' => 'art-' . ($lineid + 1),
                     'name' => mb_substr($artistName, 0, 50) . ' / ' . mb_substr($title, 0, 70),
                     'quantity' => $quantity,
                     'note' => $artId . ':' . $artistNumber . ',' . $itemKey . '; ' . $type . ',' . $priceType,
-                    'basePriceMoney' => round($amount * 100),
+                    'basePriceMoney' => new Money([
+                        'amount' => round($amount * 100),
+                        'currency' => $currency,
+                    ]),
                 ];
                 if ($taxRate > 0) {
                     // create the Line Item tax record, if there is a tax rate, and the membership is taxable
                     $needTaxes = true;
-                    $item['taxable'] = 'Y';
-                    $item['taxUid'] = $taxuid;
+                    $item->setAppliedTaxes(array(new Square\Types\OrderLineItemAppliedTax([
+                        'uid' => 'art-tax-' . ($lineid + 1),
+                        'taxUid' => $taxuid,
+                    ])));
                 }
                 $orderLineitems[$lineid] = $item;
                 $orderValue += $art['amount'];

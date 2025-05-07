@@ -42,9 +42,9 @@ if (array_key_exists('taxRate', $con))
 else
     $taxRate = 0;
 
-if (array_key_exists('taxidlabel', $vendor)) {
-    $taxLabel = $vendor['taxidlabel'];
-    $taxUid = $vendor['taxuid'];
+if (array_key_exists('taxLabel', $con)) {
+    $taxLabel = $con['taxLabel'];
+    $taxUid = $con['taxuid'];
 } else {
     $taxLabel = '';
     $taxUid = '';

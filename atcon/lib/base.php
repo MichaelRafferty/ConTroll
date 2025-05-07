@@ -48,8 +48,8 @@ function page_init($title, $tab, $css, $js, $configVars = null)
     else
         $taxRate = 0;
 
-    if (array_key_exists('taxidlabel', $vendor))
-        $taxLabel = $vendor['taxidlabel'];
+    if (array_key_exists('taxLabel', $con))
+        $taxLabel = $con['taxLabel'];
     else
         $taxLabel = '';
 

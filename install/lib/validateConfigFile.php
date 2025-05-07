@@ -111,7 +111,7 @@ function validateConfigFile($options) : int {
                     'logoimage' => 'name of the logo file to display on the top of the page, it should be in onlinereg/images',
                     ];
 
-                $warn = [ 'taxidlabel', 'taxidextra' ];
+                $warn = [ 'taxidextra' ];
 
                 $email = [ 'vendors', 'artshow', 'dealer' ];
                 break;

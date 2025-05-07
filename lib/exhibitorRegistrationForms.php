@@ -74,7 +74,7 @@ function draw_login($config_vars, $result_message = '') {
 
 // draw_RegistratioModal - the modal for reg_control create and edit profile
 function draw_registrationModal($portalType, $portalName, $con, $countryOptions, $tabStart=10 ) {
-    $vendor_conf = get_conf('vendor');
+    $con = get_conf('con');
     $tabIndex = $tabStart;
     ?>
     <!-- Registgration/Edit Registration Modal Popup -->
@@ -161,11 +161,10 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                                     />
                                 </div>
                             </div>
-                            <?php if ($portalType == 'vendor' && array_key_exists('taxidlabel', $vendor_conf) &&
-                                    $vendor_conf['taxidlabel'] != '') { ?>
+                            <?php if ($portalType == 'vendor' && array_key_exists('taxLabel', $con) && $con['taxLabel'] != '') { ?>
                             <div class='row mt-1'>
                                 <div class='col-sm-2'>
-                                    <label for='exhibitorTaxid'><?php echo $vendor_conf['taxidlabel']; ?>:</label>
+                                    <label for='exhibitorTaxid'><?php echo $con['taxLabel']; ?>:</label>
                                 </div>
                                 <div class="col-sm-10 p-0">
                                     <input class='form-control-sm' type='text' id="salesTaxId" name='salesTaxId'
@@ -466,7 +465,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
 
 // draw_RegistratioModal - the modal for exhibitor signup
 function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabStart = 10) {
-    $vendor_conf = get_conf('vendor');
+    $con = get_conf('con');
     $tabIndex = $tabStart;
     ?>
     <!-- Registgration/Edit Registration Modal Popup -->
@@ -613,11 +612,10 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                         />
                                     </div>
                                 </div>
-                                <?php if ($portalType == 'vendor' && array_key_exists('taxidlabel', $vendor_conf) &&
-                                    $vendor_conf['taxidlabel'] != '') { ?>
+                                <?php if ($portalType == 'vendor' && array_key_exists('taxLabel', $con) && $con['taxLabel'] != '') { ?>
                                     <div class='row mt-1'>
                                         <div class='col-sm-2'>
-                                            <label for='exhibitorTaxid'><?php echo $vendor_conf['taxidlabel']; ?>:</label>
+                                            <label for='exhibitorTaxid'><?php echo $con['taxLabel']; ?>:</label>
                                         </div>
                                         <div class="col-sm-10 p-0">
                                             <input class='form-control-sm' type='text' id="salesTaxId" name='salesTaxId'
