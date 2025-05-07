@@ -846,7 +846,7 @@ function pay(nomodal, prow = null) {
         //      for discount: description is required, it's optional otherwise
 
         if (document.getElementById('pt-cash').checked) {
-            if (nomodal == '') {
+            if (nomodal == '' && tendered != total_amount_due) {
                 cashChangeModal.show();
                 var tendered = Number(document.getElementById('pay-tendered').value);
                 document.getElementById("CashChangeBody").innerHTML = "Customer owes $" + total_amount_due.toFixed(2) + ", and tendered $" + tendered.toFixed(2) +
