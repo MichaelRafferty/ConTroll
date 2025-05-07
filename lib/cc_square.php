@@ -325,7 +325,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 $quantity = $art['artSalesQuantity'];
                 $amount = $art['amount'];
 
-                $item = [
+                $item = new OrderLineItem([
                     'itemType' => OrderLineItemItemType::Item->value,
                     'uid' => 'art-' . ($lineid + 1),
                     'name' => mb_substr($artistName, 0, 50) . ' / ' . mb_substr($title, 0, 70),
@@ -335,7 +335,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                         'amount' => round($amount * 100),
                         'currency' => $currency,
                     ]),
-                ];
+                ]);
                 if ($taxRate > 0) {
                     // create the Line Item tax record, if there is a tax rate, and the membership is taxable
                     $needTaxes = true;
