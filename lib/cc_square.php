@@ -336,7 +336,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     // create the Line Item tax record, if there is a tax rate, and the membership is taxable
                     $needTaxes = true;
                     $item['taxable'] = 'Y';
-                    $item['taxUid'] = $taxLabel;
+                    $item['taxUid'] = $taxuid;
                 }
                 $orderLineitems[$lineid] = $item;
                 $orderValue += $art['amount'];

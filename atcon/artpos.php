@@ -42,10 +42,13 @@ if (array_key_exists('taxRate', $con))
 else
     $taxRate = 0;
 
-if (array_key_exists('taxidlabel', $vendor))
+if (array_key_exists('taxidlabel', $vendor)) {
     $taxLabel = $vendor['taxidlabel'];
-else
+    $taxUid = $vendor['taxuid'];
+} else {
     $taxLabel = '';
+    $taxUid = '';
+}
 
 $regionQ = <<<EOS
 SELECT xR.shortname AS regionName
@@ -77,6 +80,7 @@ $config_vars['regadminemail'] = $con['regadminemail'];
 $config_vars['required'] = $ini['required'];
 $config_vars['taxRate'] = $taxRate;
 $config_vars['taxLabel'] = $taxLabel;
+$config_vars['taxUid'] = $taxUid;
 if (array_key_exists('creditoffline', $atcon)) {
     $config_vars['creditoffline'] = $atcon['creditoffline'];
 } else {
