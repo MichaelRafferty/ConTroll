@@ -38,6 +38,10 @@ if ($action != 'buildOrder') {
     exit();
 }
 
+if (!array_key_exists('pay_tid', $_POST)) {
+    ajaxError('No transaction passed');
+}
+
 $transId = $_POST['pay_tid'];
 if ($transId <= 0) {
     ajaxError('No current transaction in process');

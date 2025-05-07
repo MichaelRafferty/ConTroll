@@ -53,7 +53,7 @@ $upd_rows = 0;
 $cupd_rows = 0;
 
 // processPayment - Art Sales
-//  orderId: pay_currentOrderId,
+//  order_id: pay_currentOrderId,
 //  new_payment: prow,
 //  change: crow,
 //  nonce: nonce,
@@ -81,7 +81,7 @@ if ($payor['id'] <= 0) {
 }
 $perid = $payor['id'];
 
-$orderId = $_POST['orderId'];
+$orderId = $_POST['order_id'];
 if ($orderId == null || $orderId == '') {
     ajaxError('No current order in process');
 }
@@ -98,8 +98,8 @@ if (array_key_exists('pretax', $new_payment))
 else
     $preTaxAmt = $amt;
 
-if (array_key_exists('taxAmt', $_POST))
-    $taxAmt = $_POST['taxAmt'];
+if (array_key_exists('tax', $new_payment))
+    $taxAmt = $new_payment['tax'];
 else
     $taxAmt = 0;
 
@@ -197,6 +197,9 @@ $payor_email = $payor['email_addr'];
 $payor_phone = $payor['phone'];
 $payor_perid = $payor['id'];
 $payor_country = $payor['country'];
+$buyer['email'] = $payor_email;
+$buyer['phone'] = $payor_phone;
+$buyer['country'] = $payor_country;
 
 $pay_tid_amt = -1;
 if (array_key_exists('pay_tid_amt', $_POST)) {
@@ -270,7 +273,7 @@ if ($amt > 0) {
         //log requested badges
         logWrite(array ('type' => 'online', 'con' => $con['conname'], 'trans' => $master_tid, 'results' => $ccParam));
         load_cc_procs();
-        $rtn = cc_payOrder($ccParam, $payor, true);
+        $rtn = cc_payOrder($ccParam, $buyer, true);
         if ($rtn === null) {
             ajaxSuccess(array ('error' => 'Credit card not approved'));
             exit();
@@ -442,7 +445,7 @@ EOS;
     $insPmtSQL = <<<EOS
 INSERT INTO payments(transid, type,category, description, source, pretax, tax, amount, time, cc_approval_code, cashier, 
     cc, nonce, cc_txn_id, txn_time, receipt_url, receipt_id, userPerid, status, paymentId)
-VALUES (?,?,'reg',?,'cashier',?,?,?,now(),?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+VALUES (?,?,'artshow',?,'cashier',?,?,?,now(),?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 EOS;
     $typestr = 'issdddsissssssiss';
     $paramarray = array ($master_tid, $paymentType, $desc, $preTaxAmt, $taxAmt, $approved_amt, $auth, $user_perid,
@@ -496,7 +499,7 @@ SET status = ?
 WHERE id = ?;
 EOS;
 $usrstr = 'si';
-
+$upd_cart = 0;
 foreach ($cart_art as $cart_row) {
     if ($cart_row['display_price'] == '')
         $cart_row['display_price'] = 0;
@@ -510,10 +513,10 @@ foreach ($cart_art as $cart_row) {
     $unpaid = $cart_row['amount'] - $cart_row['paid'];
     $quantity = $cart_row['purQuantity'];
     if ($unpaid > 0) {
-        $amt_paid = min($art, $unpaid);
+        $amt_paid = min($amt, $unpaid);
         $cart_row['paid'] += $amt_paid;
         $cart_art[$cart_row['index']] = $cart_row;
-        $art -= $amt_paid;
+        $amt -= $amt_paid;
         $upd_rows += dbSafeCmd($updArtSalesSQL, $atypestr, array($cart_row['paid'], $master_tid, $quantity, $cart_row['amount'], $cart_row['artSalesId']));
 
         // change status of items sold by quick sale to quicksale sold, decrease quantity of print items
@@ -555,7 +558,11 @@ EOS;
 
 $response['pay_amt'] = $new_payment['amt'];
 $response['message'] .= ", $upd_rows memberships updated" . $completed == 1 ? ", transaction completed." : ".";
-$response['update_art'] = $cart_art;
+$response['approved_amt'] = $rtn['amount'];
+$response['type'] = $rtn['paymentType'];
+$response['preTaxAmt'] = $rtn['preTaxAmt'];
+$response['taxAmt'] = $rtn['taxAmt'];
+$response['cart_art'] = $cart_art;
 ajaxSuccess($response);
 
 function resetTerminalStatus($name) {
