@@ -907,6 +907,11 @@ function pay(nomodal, prow = null) {
             checked = true;
         }
 
+        if (document.getElementById('pt-terminal').checked) {
+            ptype = 'terminal';
+            checked = true;
+        }
+
         if (!checked) {
             elptdiv.style.backgroundColor = 'var(--bs-warning)';
             return;
