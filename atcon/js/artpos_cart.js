@@ -200,9 +200,47 @@ class artpos_cart {
         this.drawCart();
     }
 
-// remove person and all of their memberships from the cart
+// remove an art item from the cart
     remove(artId) {
         var index = this.#cart_art_map.get(artId);
+
+        var art = this.#cart_art[index];
+        var artSalesId = null;
+        if (art.hasOwnProperty('artSalesId'))
+            artSalesId = art.artSalesId;
+        if (artSalesId != null) {
+            // remove the element from the system, as it was removed from the cart, if the amount paid is 0
+            var paid = Number(art.paid);
+            if (paid == 0) {
+                $.ajax({
+                    method: "POST",
+                    url: "scripts/artpos_removeArtSalesRecord.php",
+                    data: {
+                        artSalesId: artSalesId,
+                        perid: currentPerson.id,
+                        action: 'deleteUnpaid',
+                    },
+                    success: function (data, textstatus, jqxhr) {
+                        if (data.error !== undefined) {
+                            show_message(data.error, 'error');
+                            return;
+                        }
+                        if (data.message !== undefined) {
+                            show_message(data.message, 'success');
+                            return;
+                        }
+                        if (data.warn !== undefined) {
+                            show_message(data.warn, 'warn');
+                            return;
+                        }
+                    },
+                    error: function (jqXHR, textstatus, errorThrown) {
+                        $("button[name='findArtBtn']").attr("disabled", false);
+                        showAjaxError(jqXHR, textstatus, errorThrown);
+                    }
+                });
+            }
+        }
 
         this.#cart_art.splice(index, 1);
         // splices loses me the index number for the cross-reference, so the cart needs renumbering
