@@ -11,22 +11,24 @@
 LOCK TABLES `auth` WRITE;
 ALTER TABLE `auth` DISABLE KEYS;
 INSERT INTO `auth` VALUES
-(1,'overview','Y','Membership',20),
-(2,'admin','Y','Admin',10),
+(1,'overview','Y','Membership',10),
+(2,'admin','Y','Admin',20),
 (3,'people','Y','People',40),
 (5,'registration','Y','Registration',50),
-(6,'reg_admin','Y','Registration Admin',30),
-(7,'finance','Y','Finance',55),
+(6,'reg_staff','Y','Registration Admin',30),
+(7,'finance','Y','Finance',70),
+(8,'lookup','Y','Reg Lookup',65),
 (9,'badge','Y','Free Badges',60),
 (10,'atcon','N','N',1000),
-(11,'art_control','Y','Art Control',90),
-(13,'club','Y','Club',100),
-(14,'monitor','Y','Attendance',110),
-(15,'reports','Y','Reports',120),
+(11,'art_control','Y','Art Control',100),
+(13,'club','Y','Club',110),
+(14,'monitor','Y','Attendance',120),
+(15,'reports','Y','Reports',130),
 (16,'search','N','N',1600),
-(17,'atcon_checkin','N','N',1700),
-(18,'atcon_register','N','N',1800),
-(19,'coupon','Y','Coupon',70),
-(32,'exhibitor','Y','Exhibitors',80);
+(19,'coupon','N','N',80),
+(20,'gen_rpts','N','N',135),
+(21,'reg_admin','N','N',140),
+(22,'reg_ad_menu','N','N',145),
+(32,'exhibitor','Y','Exhibitors',90);
 ALTER TABLE `auth` ENABLE KEYS;
 UNLOCK TABLES;

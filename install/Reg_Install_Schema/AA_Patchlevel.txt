@@ -1,2 +1,2 @@
-Current=41
-Text=This schema is current as of Patch 38 (p38_rulebyconid.sql)
+Current=45
+Text=This schema is current as of Patch 45 (p45_SquareTerminals.sql)
