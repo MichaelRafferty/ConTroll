@@ -52,11 +52,16 @@ if (array_key_exists('itemId', $_POST)) {
 }
 $itemQ = null;
 
+$region = getSessionVar('ARTPOSRegion');
+if ($region == '' || $region == null)
+    $region = '%';
+
 $response['artistNumber'] = $artistNumber;
 $response['pieceNumber'] = $pieceNumber;
 $response['unitNumber'] = $unitNumber;
 $response['itemId'] = $itemId;
 $response['findType'] = $findType;
+$response['region'] = $region;
 
 if ($itemId != null && $itemId != '') {
     $itemQ = <<<EOS
@@ -66,12 +71,14 @@ FROM artItems A
 JOIN exhibitorRegionYears exRY ON exRY.id = A.exhibitorRegionYearId
 JOIN exhibitorYears exY ON exY.id = exRY.exhibitorYearId
 JOIN exhibitors ex ON ex.id = exY.exhibitorId
+JOIN exhibitsRegionYears eRY ON eRY.id = exRY.exhibitsRegionYearId
+JOIN exhibitsRegions eR ON eR.id = eRY.exhibitsRegion
 LEFT OUTER JOIN artSales s ON A.id = s.artid AND IFNULL(s.paid, 0) != IFNULL(s.amount, 0)
 LEFT OUTER JOIN transaction t on s.transid = t.id AND t.price != t.paid
-WHERE A.id = ? AND A.status not in ('Entered','Not In Show');
+WHERE A.id = ? AND A.status not in ('Entered','Not In Show') AND eR.shortname LIKE ?;
 EOS;
-    $paramTypes = 'i';
-    $paramArray = array($itemId);
+    $paramTypes = 'is';
+    $paramArray = array($itemId, $region);
     $response['queryType'] = 'code';
 } else if ($artistNumber != null && $artistNumber != '') {
     if ($pieceNumber != null && $pieceNumber != '') {
@@ -82,12 +89,14 @@ FROM artItems A
 JOIN exhibitorRegionYears exRY ON exRY.id = A.exhibitorRegionYearId
 JOIN exhibitorYears exY ON exY.id = exRY.exhibitorYearId
 JOIN exhibitors ex ON ex.id = exY.exhibitorId
+JOIN exhibitsRegionYears eRY ON eRY.id = exRY.exhibitsRegionYearId
+JOIN exhibitsRegions eR ON eR.id = eRY.exhibitsRegion
 LEFT OUTER JOIN artSales s ON A.id = s.artid AND IFNULL(s.paid, 0) != IFNULL(s.amount, 0)
 LEFT OUTER JOIN transaction t on s.transid = t.id AND t.price != t.paid
-WHERE exRY.exhibitorNumber = ? AND A.item_key = ? AND exY.conid = ? AND A.status not in ('Entered','Not In Show');
+WHERE exRY.exhibitorNumber = ? AND A.item_key = ? AND exY.conid = ? AND A.status not in ('Entered','Not In Show') AND eR.shortname LIKE ?;
 EOS;
-    $paramTypes = 'iii';
-    $paramArray = array($artistNumber, $pieceNumber, $conid);
+    $paramTypes = 'iiis';
+    $paramArray = array($artistNumber, $pieceNumber, $conid, $region);
     $response['queryType'] = 'piece';
     } else {
         $itemQ = <<<EOS
@@ -98,12 +107,14 @@ FROM artItems A
 JOIN exhibitorRegionYears exRY ON exRY.id = A.exhibitorRegionYearId
 JOIN exhibitorYears exY ON exY.id = exRY.exhibitorYearId
 JOIN exhibitors ex ON ex.id = exY.exhibitorId
+JOIN exhibitsRegionYears eRY ON eRY.id = exRY.exhibitsRegionYearId
+JOIN exhibitsRegions eR ON eR.id = eRY.exhibitsRegion
 LEFT OUTER JOIN artSales s ON A.id = s.artid AND IFNULL(s.paid, 0) != IFNULL(s.amount, 0)
 LEFT OUTER JOIN transaction t on s.transid = t.id AND t.price != t.paid
-WHERE exRY.exhibitorNumber = ? AND exY.conid = ? AND A.status not in ('Entered','Not In Show');
+WHERE exRY.exhibitorNumber = ? AND exY.conid = ? AND A.status not in ('Entered','Not In Show') AND eR.shortname LIKE ?;
 EOS;
-        $paramTypes = 'ii';
-        $paramArray = array($artistNumber, $conid);
+        $paramTypes = 'iis';
+        $paramArray = array($artistNumber, $conid, $region);
         $response['queryType'] = 'artist';
     }
 }

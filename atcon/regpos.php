@@ -47,8 +47,8 @@ else
 
 setSessionVar('POSMode', $mode);
 
-if (array_key_exists('taxidlabel', $vendor))
-    $taxLabel = $vendor['taxidlabel'];
+if (array_key_exists('taxLabel', $con))
+    $taxLabel = $con['taxLabel'];
 else
     $taxLabel = '';
 

@@ -372,8 +372,8 @@ class artpos_cart {
         this.#total_paid = 0;
         var name = '';
         var num_rows = 0;
-        if (current_person) {
-            name = ' For ' + (current_person['first_name'] + ' ' + current_person['last_name']).trim();
+        if (currentPerson) {
+            name = ' For ' + (currentPerson.first_name + ' ' + currentPerson.last_name).trim();
         }
         var html = `
 <div class="container-fluid">

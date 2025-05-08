@@ -76,6 +76,12 @@ $receipt = $header . "\n";
 // cart rows, only added to printout:
 $total_due = 0;
 
+// compute tax
+$taxAmt = 0;
+foreach ($pmtrows as $pmtrow) {
+    $taxAmt += $pmtrow['tax'];
+}
+
 foreach ($arows as $arow) {
     $receipt .= "Art Item: " . $arow['exhibitorNumber'] . '-' . $arow['item_key'] . ' (' . $arow['type'] . ')' . PHP_EOL;
     // Artist
@@ -92,7 +98,14 @@ foreach ($arows as $arow) {
 
     $total_due += $arow['final_price'];
 }
-$receipt .= "Total Due:   " . $dolfmt->formatCurrency((float) $total_due, $currency) . "\n\nPayment   Amount Description/Code\n";
+if ($taxAmt > 0) {
+    $receipt .= 'Pre Tax Due: ' . $dolfmt->formatCurrency((float)$total_due, $currency) . PHP_EOL .
+        'Sales Tax:   ' . $dolfmt->formatCurrency((float)$taxAmt, $currency) . PHP_EOL;
+    $total_due += $taxAmt;
+}
+$receipt .= 'Total Due:   ' . $dolfmt->formatCurrency((float)$total_due, $currency);
+
+$receipt .= "\n\nPayment   Amount Description/Code\n";
 $total_pmt = 0;
 
 foreach ($pmtrows as $pmtrow) {

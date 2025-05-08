@@ -14,6 +14,11 @@ $tab = 'artsales';
 $mode = 'artsales';
 $method='artsales';
 
+$region = '';
+if(array_key_exists('region', $_GET)) {
+    $region = $_GET['region'];
+}
+
 $page = "Atcon POS ($tab)";
 
 if (!check_atcon($method, $conid)) {
@@ -21,13 +26,107 @@ if (!check_atcon($method, $conid)) {
     exit(0);
 }
 
+$con = get_conf('con');
+$debug = get_conf('debug');
+$usps = get_conf('usps');
+$vendor = get_conf('vendor');
+$ini = get_conf('reg');
+$controll = get_conf('controll');
+$atcon = get_conf('atcon');
+$condata = get_con();
+$conid = $con['id'];
+$conname = $con['conname'];
+
+if (array_key_exists('taxRate', $con))
+    $taxRate = $con['taxRate'];
+else
+    $taxRate = 0;
+
+if (array_key_exists('taxLabel', $con)) {
+    $taxLabel = $con['taxLabel'];
+    $taxUid = $con['taxuid'];
+} else {
+    $taxLabel = '';
+    $taxUid = '';
+}
+
+$regionQ = <<<EOS
+SELECT xR.shortname AS regionName
+FROM exhibitsRegionTypes xRT
+    JOIN exhibitsRegions xR ON xR.regionType=xRT.regionType
+    JOIN exhibitsRegionYears xRY ON xRY.exhibitsRegion = xR.id
+WHERE xRT.active='Y' AND xRT.usesInventory='Y' AND xRY.conid=?;
+EOS;
+$regionR = dbSafeQuery($regionQ, 'i', array($conid));
+$setRegion = false;
+if ($regionR->num_rows == 1 && $region == '') {
+    $setRegion = true;
+}
+$regionList = [];
+while ($regionInfo = $regionR->fetch_assoc()) {
+    $regionList[] = $regionInfo['regionName'];
+    if ($setRegion) {
+        $region = $regionInfo['regionName'];
+    }
+}
+$regionR->free();
+setSessionVar('ARTPOSRegion', $region);
+
+$config_vars = array ();
+$config_vars['label'] = $con['label'];
+$config_vars['region'] = $region;
+$config_vars['conid'] = $conid;
+$config_vars['regadminemail'] = $con['regadminemail'];
+$config_vars['required'] = $ini['required'];
+$config_vars['taxRate'] = $taxRate;
+$config_vars['taxLabel'] = $taxLabel;
+$config_vars['taxUid'] = $taxUid;
+if (array_key_exists('creditoffline', $atcon)) {
+    $config_vars['creditoffline'] = $atcon['creditoffline'];
+} else {
+    $config_vars['creditoffline'] = 1;
+}
+if (array_key_exists('creditonline', $atcon)) {
+    $config_vars['creditonline'] = $atcon['creditonline'];
+} else {
+    $config_vars['creditonline'] = 0;
+}
+if (isSessionVar('terminal'))
+    $config_vars['terminal'] = getSessionVar('terminal')['name'] != 'None' ? 1 : 0;
+else
+    $config_vars['terminal'] = 0;
+
 $cdn = getTabulatorIncludes();
 page_init($page, $tab,
     /* css */ array($cdn['tabcss'], $cdn['tabbs5']),
     /* js  */ array( ///$cdn['luxon'],
-                    $cdn['tabjs'], 'js/artpos_cart.js', 'js/artpos.js')
+                    $cdn['tabjs'], 'js/artpos_cart.js', 'js/artpos.js'),
+    $config_vars
     );
+if (count($regionList) > 1) {
 ?>
+<div id='tabs'>
+    <ul class='nav nav-tabs mb-3' id='region-tabs' role='tablist'>
+        <?php
+            foreach ($regionList as $regionName) {
+                $isRegion = $region == $regionName;
+                $actual_link = $_SERVER['PHP_SELF'];
+                ?>
+                <li class='nav-item' role='presentation'>
+                    <button class='nav-link <?php if ($isRegion) {
+                        echo 'active';
+                    } ?>' id='<?php echo $regionName; ?>-tab' data-bs-toggle='pill' type='button' role='tab' aria-controls='nav-<?php echo $regionName; ?>'
+                            aria-selected='<?php echo $isRegion ? 'true' : 'false'; ?>'
+                            onclick='window.location = "<?php echo $actual_link . '?region=' . $regionName; ?>"'>
+                        <?php echo $regionName; ?>
+                    </button>
+                </li>
+                <?php
+            }
+        ?>
+    </ul>
+</div>
+<?php } ?>
 <div id="pos" class="container-fluid">
     <div class="row mt-2">
         <div class="col-sm-6">
@@ -135,11 +234,11 @@ page_init($page, $tab,
             <div id="cart"></div>
             <div class="row">
                 <div class="col-sm-12 mt-3">
-                    <button type="button" class="btn btn-primary btn-sm" id="add_btn" onclick="goto_add();" hidden>Add Art to Cart</button>
-                    <button type="button" class="btn btn-primary btn-sm" id="pay_btn" onclick="goto_pay();" hidden>Pay Cart</button>
-                    <button type='button' class='btn btn-primary btn-sm' id='release_btn' onclick='goto_release();' hidden>Release Artwork</button>
-                    <button type="button" class="btn btn-warning btn-sm" id="startover_btn" onclick="start_over(1);" hidden>Start Over</button>
-                    <button type="button" class="btn btn-primary btn-sm" id="next_btn" onclick="start_over(1);" hidden>Next Customer</button>
+                    <button type="button" class="btn btn-primary btn-sm" id="add_btn" onclick="gotoAdd();" hidden>Add Art to Cart</button>
+                    <button type="button" class="btn btn-primary btn-sm" id="pay_btn" onclick="gotoPay();" hidden>Pay Cart</button>
+                    <button type='button' class='btn btn-primary btn-sm' id='release_btn' onclick='gotoRelease();' hidden>Release Artwork</button>
+                    <button type="button" class="btn btn-warning btn-sm" id="startover_btn" onclick="startOver(1);" hidden>Start Over</button>
+                    <button type="button" class="btn btn-primary btn-sm" id="next_btn" onclick="startOver(1);" hidden>Next Customer</button>
                 </div>
             </div>
         </div>       

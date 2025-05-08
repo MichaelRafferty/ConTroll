@@ -60,4 +60,4 @@ ALTER TABLE payments MODIFY COLUMN  type enum('credit','terminal','card','cash',
 
 
 
-INSERT INTO patchLog(id, name) VALUES(xx, 'Square Terminals');
+INSERT INTO patchLog(id, name) VALUES(45, 'Square Terminals');

@@ -121,10 +121,10 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $c
                                        size='11' maxlength='11' required tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
                             </div>
                         </div>
-                         <?php if ($portalType == 'vendor' && array_key_exists('taxidlabel', $vendor_conf) && $vendor_conf['taxidlabel'] != '') { ?>
+                         <?php if ($portalType == 'vendor' && array_key_exists('taxLabel', $con) && $con['taxLabel'] != '') { ?>
                         <div class="row">
                             <div class="col-sm-2">
-                                <label for="salesTaxId"><?php echo $vendor_conf['taxidlabel']; ?>:</label>
+                                <label for="salesTaxId"><?php echo $con['taxLabel']; ?>:</label>
                             </div>
                             <div class="col-sm-10 p-0">
                                 <input class='form-control-sm' type='text' name='salesTaxId' size=32 maxlength="32"
