@@ -754,7 +754,7 @@ function overridePay(){
 }
 
 // payPoll - poll to see if the payment is complete
-function payPoll(action) {
+function payPollfcn(action) {
     document.getElementById('pollRow').hidden = true;
     if (action == 1) { // asked to poll for is it complete
         payPoll = 1;
@@ -773,7 +773,7 @@ function payPoll(action) {
         url: "scripts/artpos_cancelPayment.php",
         data: postData,
         success: function (data, textstatus, jqxhr) {
-            _this.cancelSuccess(data);
+            cancelSuccess(data);
         },
         error: function (jqXHR, textstatus, errorThrown) {
             document.getElementById('pollRow').hidden = false;
@@ -950,27 +950,14 @@ function pay(nomodal, prow = null) {
         poll: payPoll,
     };
     pay_button_pay.disabled = true;
+    clear_message();
     $.ajax({
         method: "POST",
         url: "scripts/artpos_processPayment.php",
         data: postData,
         success: function (data, textstatus, jqxhr) {
-            var stop = true;
-            clear_message();
-            if (typeof data == 'string') {
-                show_message(data, 'error');
-            } else if (data.error !== undefined) {
-                show_message(data.error, 'error');
-            } else if (data.message !== undefined) {
-                show_message(data.message, 'success');
-                stop = false;
-            } else if (data.warn !== undefined) {
-                show_message(data.warn, 'success');
-                stop = false;
-            }
-            if (!stop)
-                updatedPayment(data);
-            pay_button_pay.disabled = false;
+            paySuccess(data);
+            paySuccess(data);
         },
         error: function (jqXHR, textstatus, errorThrown) {
             pay_button_pay.disabled = false;
@@ -979,9 +966,70 @@ function pay(nomodal, prow = null) {
     });
 }
 
-// updatedPayment:
-//  payment entered into the database correctly, update the payment cart and the art with the updated paid amounts
-function updatedPayment(data) {
+// process payment return success
+function paySuccess(data) {
+    // things that stop us cold....
+    if (typeof data == 'string') {
+        show_message(data, 'error');
+        if (data.includes("cancelled")) {
+            payPoll = 0;
+            payCurrentRequest = null;
+            pay_button_pay.disabled = false;
+        } else if (payPoll == 1)
+            document.getElementById('pollRow').hidden = false;
+        return;
+    }
+
+    if (data.error !== undefined) {
+        show_message(data.error, 'error');
+        if (data.error.includes("cancelled")) {
+            payPoll = 0;
+            payCurrentRequest = null;
+            pay_button_pay.disabled = false;
+        }  else if (payPoll == 1)
+            document.getElementById('pollRow').hidden = false;
+        return;
+    }
+
+    if (data.status == 'error') {
+        show_message(data.data, 'error');
+        if (data.error.includes("cancelled")) {
+            payPoll = 0;
+            payCurrentRequest = null;
+            pay_button_pay.disabled = false;
+        } else if (payPoll == 1)
+            document.getElementById('pollRow').hidden = false;
+        return;
+    }
+
+    if (data.warn !== undefined) {
+        show_message(data.warn, 'warn');
+        // warn means we could not get the terminal, ask if we want to override it
+        if (data.status != 'OFFLINE') {
+            document.getElementById('overrideRow').hidden = false;
+            return;
+        }
+    }
+
+    payPoll = 0;
+    pay_button_pay.disabled = false;
+    // and things that continue
+    if (data.message !== undefined) {
+        show_message(data.message, 'success');
+    }
+    if (data.hasOwnProperty('poll')) {
+        if (data.poll == 1) {
+            if (data.id) {
+                payCurrentRequest = data.id;
+            }
+            document.getElementById('pollRow').hidden = false;
+            pay_button_pay.disabled = true;
+            payPoll = 1;
+            return;
+        }
+    }
+
+    payCurrentRequest = null;
     cart.updatePmt(data);
     total_art_due -= data.preTaxAmt;
     total_tax_due -= data.taxAmt;
@@ -1329,6 +1377,23 @@ function payShown() {
             <button class="btn btn-primary btn-sm" type="button" id="pay-btn-rcpt" onclick="print_receipt('print');" hidden>Print Receipt</button>
         </div>
     </div>
+    <div class="row mt-3" id="overrideRow" hidden>
+        <div class="col-sm-auto ms-0 me-2 p-0">
+            <button class="btn btn-warning btn-sm" type="button" id="pay-btn-override" onclick="overridePay();">Override</button>
+        </div>
+        <div class="col-sm-10 ms-0 me-2 p-0" id="override_msg">
+            <p>The terminal is marked as not available, override the status to take control and use it anyway?</p>
+            <p>This will cancel any payment in process on the terminal.</p>
+        </div>
+    </div>
+     <div class="row mt-3" id="pollRow" hidden>
+        <div class="col-sm-auto ms-0 me-2 p-0">
+            <button class="btn btn-primary btn-sm" type="button" id="pay-poll-complete" onclick="payPollfcn(1);">Payment Complete</button>
+        </div>
+        <div class="col-sm-auto ms-0 me-2 p-0">
+            <button class="btn btn-primary btn-sm" type="button" id="pay-poll-cancel" onclick="payPollfcn(0);">Cancel Payment</button>
+        </div>
+    </div>    
     <div id="receeiptEmailAddresses" class="container-fluid"></div>
   </form>
     <div class="row mt-4">

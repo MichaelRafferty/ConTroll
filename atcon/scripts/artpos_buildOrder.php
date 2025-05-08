@@ -38,6 +38,12 @@ if ($action != 'buildOrder') {
     exit();
 }
 
+if (!(check_atcon('artsales', $conid))) {
+    $message_error = 'No permission.';
+    RenderErrorAjax($message_error);
+    exit();
+}
+
 if (!array_key_exists('pay_tid', $_POST)) {
     ajaxError('No transaction passed');
 }
