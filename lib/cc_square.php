@@ -322,7 +322,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 $title = $art['title'];
                 $type = $art['type'];
                 $priceType = $art['priceType'];
-                $quantity = $art['artSalesQuantity'];
+                $quantity = $art['purQuantity'];
                 $amount = $art['amount'];
 
                 $item = new OrderLineItem([
