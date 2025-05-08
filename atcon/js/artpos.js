@@ -838,6 +838,11 @@ function pay(nomodal, prow = null) {
         cashChangeModal.hide();
     }
 
+    if (pay_currentOrderId == null) {
+        show_message("No order in progress, you have reached an error condition, start over or seek assistance", "error");
+        return;
+    }
+
     if (prow == null) {
         // validate the payment entry: It must be >0 and <= amount due
         //      a payment type must be specified
