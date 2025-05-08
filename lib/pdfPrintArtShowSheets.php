@@ -602,7 +602,7 @@ EOS;
     $maxY = $minRowHeight * $pt;
     $y = fitprintXY($h + 0.5, $v + $dataOffset, $col1w - 0.5, $artist['exhibitorName']);
     if ($y > $maxY) $maxY = $y;
-    $rowHeight = $leading + $maxY - $v;
+    $rowHeight = $leading + $maxY + 0.05 - $v;
 
     //  email
     printXY($col2, $v + $dataOffset, 'Email: ' . $artist['email_addr']);
