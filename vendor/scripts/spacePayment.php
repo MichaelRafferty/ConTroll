@@ -16,10 +16,8 @@ $response = array('post' => $_POST, 'get' => $_GET);
 global $condata;
 $condata = get_con();
 $conid=$condata['id'];
-$conf = get_conf('con');
 $regconf = get_conf('reg');
 $cc = get_conf('cc');
-$vendor_conf = get_conf('vendor');
 
 $response['conid'] = $conid;
 $con = get_conf('con');

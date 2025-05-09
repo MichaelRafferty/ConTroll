@@ -15,7 +15,6 @@ global $con;
 $con = get_con();
 $conid=$con['id'];
 $conf = get_conf('con');
-$vendor_conf = get_conf('vendor');
 
 $response['conid'] = $conid;
 load_email_procs();

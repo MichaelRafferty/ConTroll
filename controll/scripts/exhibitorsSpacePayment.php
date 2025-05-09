@@ -22,9 +22,7 @@ $return500errors = true;
 
 $con = get_con();
 $conid=$con['id'];
-$conf = get_conf('con');
 $reg_conf = get_conf('reg');
-$vendor_conf = get_conf('vendor');
 
 $required = $reg_conf['required'];
 $response['conid'] = $conid;

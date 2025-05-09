@@ -1,7 +1,7 @@
 <?php
 // draw the invoice screen for buying space in the vendor/artist portal
 function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $cc, $portalName, $portalType) {
-    $vendor_conf = get_conf('vendor');
+    $con = get_conf('con');
     if ($info == null) {
         $exhibitorName = '';
         $exhibitorEmail = '';
