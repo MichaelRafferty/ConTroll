@@ -16,10 +16,8 @@ global $con;
 $con = get_con();
 $conid=$con['id'];
 $conf = get_conf('con');
-$vendor_conf = get_conf('vendor');
-$con = get_conf('con');
 if (array_key_exists('currency', $con)) {
-    $currency = $con['currency'];
+    $currency = $conf['currency'];
 } else {
     $currency = 'USD';
 }

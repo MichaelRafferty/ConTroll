@@ -7,6 +7,7 @@ function exhibitorBuildYears($exhibitor, $contactName = NULL, $contactEmail = NU
     $conid = $con['id'];
     $need_new = 0;
     $confirm = 0;
+    $newyrid = 'Error: No path to set exhibitor year identifier';
 
     // first get the last (if any) contact info for this exhibitor, only check if not directly passed
     if ($contactName == NULL) {
@@ -73,6 +74,19 @@ FROM exhibitorYears
 WHERE conid = ? AND exhibitorId = ?;
 EOS;
         $newyrid = dbSafeInsert($eyinsQ, 'iii', array($conid, $last_year, $exhibitor));
+    } else {
+        // with the new partial exhibits region fill out, we need to return the eyID in all cases
+        $eyselQ = <<<EOS
+SELECT id
+FROM exhibitorYears
+WHERE conid = ? AND exhibitorId = ?;
+EOS;
+        $eyselR = dbSafeQuery($eyselQ, 'ii', array ($conid, $exhibitor));
+        if ($eyselR === false || $eyselR->num_rows != 1) {
+            return 'Exhibitor year not found';
+        }
+        $newyrid = $eyselR->fetch_row()[0];
+        $eyselR->free();
     }
 
     // build a exhibitorRegionYears from exhibitsRegionYears and any past data
