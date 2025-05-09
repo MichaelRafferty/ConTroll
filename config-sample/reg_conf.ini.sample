@@ -164,10 +164,10 @@ artistBidSheetNumbers=3
 artistBidSheet="Demo 2024 Art Show Bid Sheet"
 ; name for artist print shop price tag header (independent of art area)
 artistPriceTag=""
-# taxidlabel is now taxLabel in the [con] section, this line is obsolete
 artsheets=false ; true/false show sheet print buttons
 artcontrol=false ; true/false show control sheet print button
-
+# taxidlabel is the label used to prompt for their tax id number
+taxidlabel="NJ Sales Tax ID#"
 [client]
 path = "/home/homedir/reg.conname.org/controll"
 

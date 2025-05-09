@@ -2,6 +2,7 @@
 // draw the invoice screen for buying space in the vendor/artist portal
 function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $cc, $portalName, $portalType) {
     $con = get_conf('con');
+    $vendor_conf = get_conf('vendor');
     if ($info == null) {
         $exhibitorName = '';
         $exhibitorEmail = '';
@@ -124,7 +125,7 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $c
                          <?php if ($portalType == 'vendor' && array_key_exists('taxLabel', $con) && $con['taxLabel'] != '') { ?>
                         <div class="row">
                             <div class="col-sm-2">
-                                <label for="salesTaxId"><?php echo $con['taxLabel']; ?>:</label>
+                                <label for="salesTaxId"><?php echo $vendor_conf['taxidlabel']; ?>:</label>
                             </div>
                             <div class="col-sm-10 p-0">
                                 <input class='form-control-sm' type='text' name='salesTaxId' size=32 maxlength="32"
