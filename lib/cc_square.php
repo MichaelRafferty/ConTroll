@@ -626,7 +626,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
 
 // an order is no longer valid, cancel it, via an update to Cancelled status
 function cc_cancelOrder($source, $orderId, $useLogWrite = false, $locationId = null) : void {
-    // At present the API does not let you cancle orders, and this code does not work
+    // At present the API does not let you cancel orders, and this code does not work
     //TODO: if Square writes a cancel, this code needs rewriting
     /*
     $cc = get_conf('cc');
