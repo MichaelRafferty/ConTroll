@@ -128,11 +128,12 @@ EOS;
     // now for the creation of exhibitorRegionYears taking into account the region approvals above
 
     $appQ = <<<EOS
-SELECT ery.id as exhibitsRegionYearId, et.requestApprovalRequired, ey.id AS exhibitorYearId, ery.exhibitsRegion
+SELECT ery.id as exhibitsRegionYearId, et.requestApprovalRequired, ey.id AS exhibitorYearId, ery.exhibitsRegion, exRY.id AS exRYid
 FROM exhibitsRegionYears ery
 JOIN exhibitsRegions er ON ery.exhibitsRegion = er.id
 JOIN exhibitsRegionTypes et ON (et.regionType = er.regionType)
 JOIN exhibitorYears ey on ery.conid = ey.conid
+LEFT OUTER JOIN exhibitorRegionYears exRY ON ey.id = exRY.exhibitorYearId AND ery.id = exRY.exhibitsRegionYearId
 WHERE ery.conid = ? AND et.active = 'Y' AND ey.exhibitorId = ?
 EOS;
     $insQ = <<<EOS
@@ -145,6 +146,11 @@ EOS;
     $now = date('Y-m-d H-i-s');
     $appR = dbSafeQuery($appQ, 'ii', array($conid, $exhibitor));
     while ($appL = $appR->fetch_assoc()) {
+        if ($appL['exRYid'] != null) {
+            // it already exists, don't add another
+            $sortorder += 10;
+            continue;
+        }
         switch ($appL['requestApprovalRequired']) {
             case 'None':
                 $approval = 'approved';
