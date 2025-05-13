@@ -237,8 +237,8 @@ class consetup {
                 },
                 {
                     title: "Notes", field: "notes", minWidth: 300,
-                    editor: "textarea", editorParams: { elementAttributes: { maxlength: "1024" } },
-                    headerFilter: true, formatter: "textarea",
+                    editor: "input", editorParams: { elementAttributes: { maxlength: "1024" } },
+                    headerFilter: true,
                 },
                 {
                     title: "GL Num", field: "glNum", minWidth: 120, headerWordWrap: true,
