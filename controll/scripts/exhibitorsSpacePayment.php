@@ -56,6 +56,26 @@ if (array_key_exists('spacePrice', $_POST))
 else
     $spacePrice = 0;
 
+if (array_key_exists('amtDue', $_POST))
+    $amtDue = $_POST['amtDue'];
+else
+    $amtDue = null;
+
+if (array_key_exists('payment_type', $_POST))
+    $paymentType = $_POST['payment_type'];
+else
+    $paymentType = 'other';
+
+if (array_key_exists('pay-desc', $_POST))
+    $payDesc = $_POST['pay-desc'];
+else
+    $payDesc = 'Administrator Payment';
+
+if (array_key_exists('pay-ccauth', $_POST))
+    $ccAuth = $_POST['pay-ccauth'];
+else
+    $ccAuth = null;
+
 $exhId = $_POST['exhibitorId'];
 $eyID = $_POST['exhibitorYearId'];
 
@@ -394,13 +414,12 @@ INSERT INTO payments (transid, type, category, description, source, pretax, tax,
 VALUES (?,?,?,?,?,?,?,?,NOW(),?,?,NOW(),?);
 EOS;
 $typestr = 'issssdddssi';
-if ($_POST['payment_type'] == 'check') {
-    $desc = 'Check No: ' . $_POST['pay-checkno']  . ', ' . $_POST['pay-desc'];
+if ($paymentType == 'check') {
+    $desc = 'Check No: ' . $_POST['pay-checkno']  . ', ' . $payDesc;
 } else {
-    $desc = $_POST['pay-desc'];
+    $desc = $payDesc;
 }
-$values = array($transid, $_POST['payment_type'], 'vendor', $desc, 'controll', $totprice, 0, $totprice, 'admin', $_POST['pay-ccauth'],
-         $_SESSION['user_perid']);
+$values = array($transid, $paymentType, 'vendor', $desc, 'controll', $totprice, 0, $totprice, 'admin', $ccAuth, $_SESSION['user_perid']);
 
 $txnid = dbSafeInsert($txnQ, $typestr, $values);
 if ($txnid == false) {

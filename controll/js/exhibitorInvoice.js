@@ -437,7 +437,7 @@ class ExhibitorInvoice {
 
         clear_message('inv_result_message');
 
-        if (prow == null) {
+        if (prow == null && this.#totalAmountDue > 0) {
             // validate the payment entry: It must be >0 and <= amount due
             //      a payment type must be specified
             //      for check: the check number is required
@@ -546,7 +546,7 @@ class ExhibitorInvoice {
 
         this.#payButton.disabled = true;
         var formData = $('#vendor_invoice_form').serialize()
-        formData += "&nonce=" + 'admin';
+        formData += "&nonce=" + 'admin&amtDue=' + this.#totalAmountDue;
         clear_message('inv_result_message');
         $.ajax({
             url: 'scripts/exhibitorsSpacePayment.php',
