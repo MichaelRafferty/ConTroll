@@ -88,6 +88,15 @@ JOIN exhibitsSpaces es ON es.id = eS.spaceId
 JOIN exhibitsRegionYears ery ON es.exhibitsRegionYear = ery.id AND eY.conid = ery.conid
 WHERE eS.spaceId = ? and ery.id = ? and eY.exhibitorId = ?;
 EOS;
+        $upCanQ = <<<EOS
+UPDATE exhibitorSpaces eS
+JOIN exhibitorRegionYears exRY ON eS.exhibitorRegionYear = exRY.id
+JOIN exhibitorYears eY ON exRY.exhibitorYearId = eY.id
+JOIN exhibitsSpaces es ON es.id = eS.spaceId
+JOIN exhibitsRegionYears ery ON es.exhibitsRegionYear = ery.id AND eY.conid = ery.conid
+SET item_approved = null, time_approved = NOW()
+WHERE eS.spaceId = ? and ery.id = ? and eY.exhibitorId = ?;
+EOS;
 
         // requests = each space price id in the format
         $requests = $_POST['requests'];
