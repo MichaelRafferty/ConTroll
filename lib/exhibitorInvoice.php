@@ -173,172 +173,172 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $c
                                 Total: $<span id='vendor_inv_cost'></span>
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col-sm-12">
-                                Payment Information:
+                        <div class='container-fluid' id='paymentDiv'>
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    Payment Information:
+                                </div>
                             </div>
-                        </div>
 <?php
                             $tabindex = 900;
                             if ($cc != null) { outputCustomText('beforeCharge');
 ?>
-                         <div class='row'>
-                             <div class='col-sm-2'>
-                                 <label for='cc_fname'>
-                                     <span class='text-danger'>&bigstar;</span>Name:
-                                 </label>
+                             <div class='row'>
+                                 <div class='col-sm-2'>
+                                     <label for='cc_fname'>
+                                         <span class='text-danger'>&bigstar;</span>Name:
+                                     </label>
+                                 </div>
+                                 <div class='col-sm-auto pe-0'>
+                                     <input type='text' name='cc_fname' id='cc_fname' required='required' placeholder='First Name' size="32" maxlength="32"
+                                            tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
+                                 </div>
+                                 <div class='col-sm-auto'>
+                                     <input type='text' name='cc_lname' id='cc_lname' required='required'  placeholder='Last Name' size='32' maxlength='32'
+                                            tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
+                                 </div>
                              </div>
-                             <div class='col-sm-auto pe-0'>
-                                 <input type='text' name='cc_fname' id='cc_fname' required='required' placeholder='First Name' size="32" maxlength="32"
-                                        tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
+                             <div class='row'>
+                                 <div class='col-sm-2'>
+                                     <label for='cc_street'>
+                                         Street:
+                                     </label>
+                                 </div>
+                                 <div class='col-sm-auto'>
+                                     <input type='text' id='cc_street' required='required' name='cc_addr' size='64' maxlength='64' value="<?php echo $addr; ?>"
+                                            tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
+                                 </div>
                              </div>
-                             <div class='col-sm-auto'>
-                                 <input type='text' name='cc_lname' id='cc_lname' required='required'  placeholder='Last Name' size='32' maxlength='32'
-                                        tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
+                             <div class='row'>
+                                 <div class='col-sm-2'>
+                                     <label for='cc_city'>City:</label>
+                                 </div>
+                                 <div class='col-sm-auto'>
+                                     <input type='text' id='cc_city' required='required' size='35' name='cc_city' maxlength='64' value="<?php echo $city; ?>"
+                                            tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
+                                 </div>
+                                 <div class='col-sm-auto ps-0 pe-0'>
+                                     <label for='cc_state'>State:</label>
+                                 </div>
+                                 <div class='col-sm-auto'>
+                                     <input type='text' id='cc_state' size=10 maxlength="16" required='required' name='cc_state' value="<?php echo $state; ?>"
+                                            tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
+                                 </div>
+                                 <div class='col-sm-auto ps-0 pe-0'>
+                                     <label for='cc_zip'>Zip:</label>
+                                 </div>
+                                 <div class='col-sm-auto'>
+                                     <input type='text' id='cc_zip' required='required' size=10 maxlength="10" name='cc_zip' value="<?php echo $zip; ?>"
+                                            tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
+                                 </div>
                              </div>
-                         </div>
-                         <div class='row'>
-                             <div class='col-sm-2'>
-                                 <label for='cc_street'>
-                                     Street:
-                                 </label>
+                             <div class='row'>
+                                 <div class='col-sm-2'>
+                                     <label for='cc_country'>Country:</label>
+                                 </div>
+                                 <div class='col-sm-auto'>
+                                      <select id='cc_country' required='required' name='cc_country' size=1 tabindex="<?php echo $tabindex; $tabindex += 2;?>">
+                                          <?php echo $countryOptions; ?>
+                                      </select>
+                                 </div>
                              </div>
-                             <div class='col-sm-auto'>
-                                 <input type='text' id='cc_street' required='required' name='cc_addr' size='64' maxlength='64' value="<?php echo $addr; ?>"
-                                        tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
+                             <div class="row">
+                                 <div class="col-sm-2">
+                                     <label for="cc_email">Email:</label>
+                                 </div>
+                                 <div class="col-sm-auto">
+                                      <input type='email' id='cc_email' name='cc_email' size="35" maxlength="254" value="<?php echo $contactEmail; ?>"
+                                             tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
+                                 </div>
+                                 <div class='col-sm-auto ps-0 pe-0'>
+                                     <label for='cc_phone'>Phone:</label>
+                                 </div>
+                                 <div class='col-sm-auto'>
+                                     <input type='text' id='cc_phone' size='16' maxlength='24' name='cc_phone'
+                                            tabindex="<?php echo $tabindex; $tabindex += 2; ?>"/>
+                                 </div>
                              </div>
-                         </div>
-                         <div class='row'>
-                             <div class='col-sm-2'>
-                                 <label for='cc_city'>City:</label>
-                             </div>
-                             <div class='col-sm-auto'>
-                                 <input type='text' id='cc_city' required='required' size='35' name='cc_city' maxlength='64' value="<?php echo $city; ?>"
-                                        tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
-                             </div>
-                             <div class='col-sm-auto ps-0 pe-0'>
-                                 <label for='cc_state'>State:</label>
-                             </div>
-                             <div class='col-sm-auto'>
-                                 <input type='text' id='cc_state' size=10 maxlength="16" required='required' name='cc_state' value="<?php echo $state; ?>"
-                                        tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
-                             </div>
-                             <div class='col-sm-auto ps-0 pe-0'>
-                                 <label for='cc_zip'>Zip:</label>
-                             </div>
-                             <div class='col-sm-auto'>
-                                 <input type='text' id='cc_zip' required='required' size=10 maxlength="10" name='cc_zip' value="<?php echo $zip; ?>"
-                                        tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
-                             </div>
-                         </div>
-                         <div class='row'>
-                             <div class='col-sm-2'>
-                                 <label for='cc_country'>Country:</label>
-                             </div>
-                             <div class='col-sm-auto'>
-                                  <select id='cc_country' required='required' name='cc_country' size=1 tabindex="<?php echo $tabindex; $tabindex += 2;?>">
-                                      <?php echo $countryOptions; ?>
-                                  </select>
-                             </div>
-                         </div>
-                         <div class="row">
-                             <div class="col-sm-2">
-                                 <label for="cc_email">Email:</label>
-                             </div>
-                             <div class="col-sm-auto">
-                                  <input type='email' id='cc_email' name='cc_email' size="35" maxlength="254" value="<?php echo $contactEmail; ?>"
-                                         tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
-                             </div>
-                             <div class='col-sm-auto ps-0 pe-0'>
-                                 <label for='cc_phone'>Phone:</label>
-                             </div>
-                             <div class='col-sm-auto'>
-                                 <input type='text' id='cc_phone' size='16' maxlength='24' name='cc_phone'
-                                        tabindex="<?php echo $tabindex; $tabindex += 2; ?>"/>
-                             </div>
-                         </div>
-                         <div class='row'>
-                            <div class='col-sm-12'>
-                                <?php if ($ini['test'] == 1) {
+                             <div class='row'>
+                                <div class='col-sm-12'>
+                                    <?php if ($ini['test'] == 1) {
+                                        ?>
+                                        <h2 class='warn'>This won't charge your credit card, or do anything else.</h2>
+                                        <?php
+                                    }
                                     ?>
-                                    <h2 class='warn'>This won't charge your credit card, or do anything else.</h2>
-                                    <?php
-                                }
-                                ?>
-                                <br/>
-                                We Accept<br/>
-                                <img src='cards_accepted_64.png' alt="Visa, Mastercard, American Express, and Discover"/>
+                                    <br/>
+                                    We Accept<br/>
+                                    <img src='cards_accepted_64.png' alt="Visa, Mastercard, American Express, and Discover"/>
+                                </div>
                             </div>
-                        </div>
-                        <hr/>
-                        <?php outputCustomText('invoice/payDisclaimer'); outputCustomText('invoice/payDisclaimer' . $portalName); ?>
-                        <div class="row">
-                            <div class="col-sm-auto">
-                                Please wait for the email, and don't click the "Purchase" button more than once.
+                            <hr/>
+                            <?php outputCustomText('invoice/payDisclaimer'); outputCustomText('invoice/payDisclaimer' . $portalName); ?>
+                            <div class="row">
+                                <div class="col-sm-auto">
+                                    Please wait for the email, and don't click the "Purchase" button more than once.
+                                </div>
                             </div>
-                        </div>
-                        <div class='row'>
-                            <div class='col-sm-12'>
-                                <?php echo draw_cc_html($cc, '--', 2); ?>
-                                <input type='reset'/>
+                            <div class='row'>
+                                <div class='col-sm-12'>
+                                    <?php echo draw_cc_html($cc, '--', 2); ?>
+                                    <input type='reset'/>
+                                </div>
                             </div>
-                        </div>
 <?php
                                 outputCustomText('invoice/bottom'); outputCustomText('invoice/bottom' . $portalName);
                             } else { // exhibitors module in ConTroll - cash/check/offline cc
 ?>
-                            <div class="container-fluid">
-                                <div class='row mt-2'>
-                                    <div class='col-sm-2 ms-0 me-2 p-0'>Amount Paid:</div>
-                                    <div class='col-sm-auto m-0 p-0 ms-0 me-2 p-0'>
-                                        <input type='number' class='no-spinners' id='pay-amt' name='paid-amt' size='6' tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
-                                    </div>
-                                </div>
-                                <div class='row'>
-                                    <div class='col-sm-2 m-0 mt-2 me-2 mb-2 p-0'>Payment Type:</div>
-                                    <div class='col-sm-auto m-0 mt-2 p-0 ms-0 me-2 mb-2 p-0' id='pt-div'>
-                                        <input type='radio' id='pt-credit' name='payment_type' value='credit'
-                                               onchange='exhibitorInvoice.setPayType("credit");'  tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
-                                        <label for='pt-credit'>Credit Card</label>
-                                        <input type='radio' id='pt-check' name='payment_type' value='check' onchange='exhibitorInvoice.setPayType("check");'
-                                               tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
-                                        <label for='pt-check'>Check</label>
-                                        <input type='radio' id='pt-cash' name='payment_type' value='cash' onchange='exhibitorInvoice.setPayType("cash");'
-                                               tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
-                                        <label for='pt-cash'>Cash</label>
-                                    </div>
-                                </div>
-                                <div class='row mb-2' id='pay-check-div' hidden>
-                                    <div class='col-sm-2 ms-0 me-2 p-0'>Check Number:</div>
-                                    <div class='col-sm-auto m-0 p-0 ms-0 me-2 p-0'>
-                                        <input type='text' size='8' maxlength='10' name='pay-checkno' id='pay-checkno' tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
-                                    </div>
-                                </div>
-                                <div class='row mb-2' id='pay-ccauth-div' hidden>
-                                    <div class='col-sm-2 ms-0 me-2 p-0'>CC Auth Code:</div>
-                                    <div class='col-sm-auto m-0 p-0 ms-0 me-2 p-0'>
-                                        <input type='text' size='15' maxlength='16' name='pay-ccauth' id='pay-ccauth' tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
-                                    </div>
-                                </div>
-                                <div class='row'>
-                                    <div class='col-sm-2 ms-0 me-2 p-0'>Description:</div>
-                                    <div class='col-sm-auto m-0 p-0 ms-0 me-2 p-0'>
-                                        <input type='text' size='60' maxlength='64' name='pay-desc' id='pay-desc' tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
-                                    </div>
-                                </div>
-                                <div class='row mt-3'>
-                                    <div class='col-sm-2 ms-0 me-2 p-0'>&nbsp;</div>
-                                    <div class='col-sm-auto ms-0 me-2 p-0'>
-                                        <button class='btn btn-primary btn-sm' type='button' id='pay-btn-pay' disabled
-                                                onclick="exhibitorInvoice.pay();" tabindex="<?php echo $tabindex; $tabindex += 2;?>">Confirm Pay</button>
-                                    </div>
-                                    <div class='col-sm-auto ms-0 me-2 p-0'>
-                                        <button class='btn btn-primary btn-sm' type='button' id='pay-btn-ercpt'
-                                                onclick="exhibitorInvoice.email_receipt('email');" tabindex="<?php echo $tabindex; $tabindex += 2;?>"
-                                                hidden disabled>Email Receipt</button>
-                                    </div>
+                            <div class='row mt-2'>
+                                <div class='col-sm-2 ms-0 me-2 p-0'>Amount Paid:</div>
+                                <div class='col-sm-auto m-0 p-0 ms-0 me-2 p-0'>
+                                    <input type='number' class='no-spinners' id='pay-amt' name='paid-amt' size='6' tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
                                 </div>
                             </div>
+                            <div class='row'>
+                                <div class='col-sm-2 m-0 mt-2 me-2 mb-2 p-0'>Payment Type:</div>
+                                <div class='col-sm-auto m-0 mt-2 p-0 ms-0 me-2 mb-2 p-0' id='pt-div'>
+                                    <input type='radio' id='pt-credit' name='payment_type' value='credit'
+                                           onchange='exhibitorInvoice.setPayType("credit");'  tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
+                                    <label for='pt-credit'>Credit Card</label>
+                                    <input type='radio' id='pt-check' name='payment_type' value='check' onchange='exhibitorInvoice.setPayType("check");'
+                                           tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
+                                    <label for='pt-check'>Check</label>
+                                    <input type='radio' id='pt-cash' name='payment_type' value='cash' onchange='exhibitorInvoice.setPayType("cash");'
+                                           tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
+                                    <label for='pt-cash'>Cash</label>
+                                </div>
+                            </div>
+                            <div class='row mb-2' id='pay-check-div' hidden>
+                                <div class='col-sm-2 ms-0 me-2 p-0'>Check Number:</div>
+                                <div class='col-sm-auto m-0 p-0 ms-0 me-2 p-0'>
+                                    <input type='text' size='8' maxlength='10' name='pay-checkno' id='pay-checkno' tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
+                                </div>
+                            </div>
+                            <div class='row mb-2' id='pay-ccauth-div' hidden>
+                                <div class='col-sm-2 ms-0 me-2 p-0'>CC Auth Code:</div>
+                                <div class='col-sm-auto m-0 p-0 ms-0 me-2 p-0'>
+                                    <input type='text' size='15' maxlength='16' name='pay-ccauth' id='pay-ccauth' tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
+                                </div>
+                            </div>
+                            <div class='row'>
+                                <div class='col-sm-2 ms-0 me-2 p-0'>Description:</div>
+                                <div class='col-sm-auto m-0 p-0 ms-0 me-2 p-0'>
+                                    <input type='text' size='60' maxlength='64' name='pay-desc' id='pay-desc' tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class='row mt-3'>
+                            <div class='col-sm-2 ms-0 me-2 p-0'>&nbsp;</div>
+                            <div class='col-sm-auto ms-0 me-2 p-0'>
+                                <button class='btn btn-primary btn-sm' type='button' id='pay-btn-pay' disabled
+                                        onclick="exhibitorInvoice.pay();" tabindex="<?php echo $tabindex; $tabindex += 2;?>">Confirm Pay</button>
+                            </div>
+                            <div class='col-sm-auto ms-0 me-2 p-0'>
+                                <button class='btn btn-primary btn-sm' type='button' id='pay-btn-ercpt'
+                                        onclick="exhibitorInvoice.email_receipt('email');" tabindex="<?php echo $tabindex; $tabindex += 2;?>"
+                                        hidden disabled>Email Receipt</button>
+                            </div>
+                        </div>
 <?php
                             }
 ?>
