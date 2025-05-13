@@ -132,7 +132,7 @@ $response['exhibitorRegionYear'] = $eryID;
 
 // now the space information for this regionYearId
 $spaceQ = <<<EOS
-SELECT e.*, esp.price as approved_price, esp.includedMemberships, esp.additionalMemberships, s.name
+SELECT e.*, esp.price as approved_price, esp.includedMemberships, esp.additionalMemberships, s.name, esp.glNum, esp.glLabel
 FROM exhibitorSpaces e
 JOIN exhibitsSpaces s ON (s.id = e.spaceId)
 JOIN exhibitsSpacePrices esp ON (s.id = esp.spaceId AND e.item_approved = esp.id)
