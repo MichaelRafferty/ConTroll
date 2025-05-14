@@ -654,7 +654,7 @@ class PosCart {
         var html = '';
         var rules = new MembershipRules(pos.getConid(), this.#memberAge != null ? this.#memberAge : this.#currentAge, this.#memberships, this.#allMemberships);
 
-        var noAgeFilter = config.allAgeFirst == 1 || this.#currentAge == null;
+        var noAgeFilter = config.allAgeFirst == 1 && this.#currentAge == null;
         for (var row in memList) {
             var mem = memList[row];
             // skip auto create mem items
