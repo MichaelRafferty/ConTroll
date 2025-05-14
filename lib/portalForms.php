@@ -13,7 +13,7 @@ function drawGetAgeBracket($updateName, $condata) : void {
     </div>
     <div class="row mt-1" id="ageButtons"></div>
     <div class="row mt-2">
-        <div class="col-sm-12">Please click on the proper age bracket above to continue to the next step.</div>
+        <div id="ageBracketMsg" class="col-sm-12">Please click on the proper age bracket above to continue to the next step.</div>
     </div>
     <?php
 }

@@ -37,6 +37,7 @@ class PosCart {
     #membershipButtonsDiv = null;
     #memberAge = null;
     #memberAgeLabel = null;
+    #ageBracketMsg = null;
     #currentAge = null;
     #currentPerid = null;
     #currentPerIdx = null;
@@ -44,6 +45,7 @@ class PosCart {
     #allMemberships = [];
     #cartContentsDiv = null;
     #cartChanges = 0;
+    #rebuildAgeButtons = false;
     #newIDKey = -1;
     #newMembershipSave = null;
     #amountField = null;
@@ -84,6 +86,7 @@ class PosCart {
             this.#addEditTitle = document.getElementById('addEditTitle');
             this.#addEditFullName = document.getElementById('addEditFullName');
             this.#ageButtonsDiv = document.getElementById('ageButtons');
+            this.#ageBracketMsg = document.getElementById('ageBracketMsg');
             this.#membershipButtonsDiv = document.getElementById('membershipButtons');
             this.#cartContentsDiv = document.getElementById('cartContentsDiv');
         }
@@ -491,6 +494,14 @@ class PosCart {
                 cart.pushAllMembership(mem);
             });
             this.buildAgeButtons();
+            this.#rebuildAgeButtons = false;
+            if (this.#currentAge != null) {
+                this.#ageBracketMsg.innerHTML = "To change the age, you need to remove any membership that is specific to that age from the cart."
+            } else if (config.allAgeFirst == 1) {
+                this.#ageBracketMsg.innerHTML = "Select a membership below, or an age above to set the age and filter the memberships available."
+            } else {
+                this.#ageBracketMsg.innerHTML = "Select an age above to set the age and filter the memberships available."
+            }
             this.buildRegItemButtons();
             this.redrawRegItems(index);
             this.#currentPerid = cart_row.perid;
@@ -643,6 +654,7 @@ class PosCart {
         var html = '';
         var rules = new MembershipRules(pos.getConid(), this.#memberAge != null ? this.#memberAge : this.#currentAge, this.#memberships, this.#allMemberships);
 
+        var noAgeFilter = config.allAgeFirst == 1 || this.#currentAge == null;
         for (var row in memList) {
             var mem = memList[row];
             // skip auto create mem items
@@ -653,7 +665,7 @@ class PosCart {
                 continue;
 
             // apply age filter from age select
-            if (mem.memAge == 'all' || mem.memAge == this.#currentAge) {
+            if (noAgeFilter || mem.memAge == 'all' || mem.memAge == this.#currentAge) {
                 var memLabel = mem.label;
                 if (memCategories[mem.memCategory].variablePrice != 'Y') {
                     memLabel += ' (' + mem.price + ')';
@@ -749,6 +761,12 @@ class PosCart {
         if (memrow == null)
             return;
 
+        // set age if age is null
+        if (this.#currentAge == null) {
+            this.#ageBracketMsg.innerHTML = "To change the age, you need to remove any membership that is specific to that age from the cart."
+            this.#rebuildAgeButtons = true;
+        }
+
         var now = new Date();
         var newMembership = {};
         newMembership.id = this.#newIDKey;
@@ -825,6 +843,10 @@ class PosCart {
         this.#memberships.push(make_copy(newMembership));
         this.newIDKey--;
         this.#cartChanges++;
+        if (this.#rebuildAgeButtons) {
+            this.buildAgeButtons();
+            this.#rebuildAgeButtons = false;
+        }
         this.redrawRegItems();
         this.buildRegItemButtons();
     }
@@ -862,6 +884,7 @@ class PosCart {
 
         this.#memberships.splice(row, 1);
         this.#cartChanges--;
+        this.buildAgeButtons();
         this.redrawRegItems();
         this.buildRegItemButtons();
     }
