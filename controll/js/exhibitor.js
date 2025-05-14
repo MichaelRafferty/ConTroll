@@ -45,7 +45,7 @@ class exhibitorsAdm {
     #approvalsTable = null;
     #approvalValues = ['none', 'requested', 'approved', 'denied', 'hide'];
     #approvalRow = null;
-
+    #approvalPay = 0;
     // exhibitor items
     #exhibitorsTable = null;
     #pricelists = null;
@@ -159,6 +159,11 @@ class exhibitorsAdm {
     };
 
     // set / get functions
+
+    getApprovalPay() {
+        return this.#approvalPay;
+    }
+
     setCacheDirty() {
         this.#cacheDirty = true;
     }
@@ -1040,9 +1045,12 @@ class exhibitorsAdm {
             if (app != req)
                 buttons += '<button class="btn btn-sm btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
                     'onclick="exhibitors.spaceApprovalReq(' + id + ')" >Approve Req</button>&nbsp;';
-            if (app > 0)
+            if (app > 0) {
                 buttons += '<button class="btn btn-sm btn-warning" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
-                    'onclick="exhibitors.spaceApprovalOther(' + id + ')" >Change</button>&nbsp;';
+                    'onclick="exhibitors.spaceApprovalOther(' + id + ')" >Change</button>&nbsp;' +
+                    '<button class="btn btn-sm btn-warning" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
+                    'onclick="exhibitors.spaceApprovalOther(' + id + ', 1)" >Change&Pay</button>&nbsp;';
+            }
             if (app == 0)
                 buttons += '<button class="btn btn-sm btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
                     'onclick="exhibitors.spaceApprovalOther(' + id + ')" >Approve Other</button>&nbsp;';
@@ -1249,8 +1257,9 @@ class exhibitorsAdm {
     }
 
     // process approve other than requested
-    spaceApprovalOther(id) {
+    spaceApprovalOther(id, pay = 0) {
         this.#spaceRow = this.#spacesTable.getRow(id);
+        this.#approvalPay = pay;
         var exhibitorData = this.#spaceRow.getData();
         var req = exhibitorData['req'] || 0;
         var app = exhibitorData['app'] || 0;

@@ -24,6 +24,12 @@ $conname = $con['conname'];
 $tab = 'checkin';
 $mode = 'checkin';
 $method='data_entry';
+if (array_key_exists('allage', $atcon)) {
+    $allAgeFirst = $atcon['allage'];
+} else {
+    $allAgeFirst = 0;
+}
+
 if (isset($_GET['mode'])) {
     if ($_GET['mode'] == 'cashier') {
         $mode = 'cashier';
@@ -76,6 +82,7 @@ $config_vars['useportal'] = $controll['useportal'];
 $config_vars['cashier'] = $method == 'cashier' ? 1 : 0;
 $config_vars['cashierAllowed'] = check_atcon('cashier', $conid) ? 1 : 0;
 $config_vars['multiOneDay'] = $multiOneDay;
+$config_vars['allAgeFirst'] = $allAgeFirst;
 if (array_key_exists('creditoffline', $atcon)) {
     $config_vars['creditoffline'] = $atcon['creditoffline'];
 }
@@ -255,7 +262,7 @@ page_init($page, $tab,
         </div>
     </div>
     <!--- add/Edit membership modal popup -->
-    <div class='modal modal-x1 fade' id='addEdit' tabindex='-3' aria-labelledby='addEdit' data-bs-backdrop='static'
+    <div class='modal modal-xl fade' id='addEdit' tabindex='-3' aria-labelledby='addEdit' data-bs-backdrop='static'
          data-bs-keyboard='false' aria-hidden='true' style='--bs-modal-width: 96%;'>
         <div class='modal-dialog'>
             <div class='modal-content'>
