@@ -54,7 +54,7 @@ function draw_editPersonModal($source, $policies) : void {
         default => 'badClose()',
     };
 ?>
-    <div id='editPersonModal' class='modal modal-x1 fade' tabindex='-1' aria-labelledby='Edit Person' aria-hidden='true' style='--bs-modal-width: 96%;'>
+    <div id='editPersonModal' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Edit Person' aria-hidden='true' style='--bs-modal-width: 96%;'>
         <div class='modal-dialog'>
             <div class='modal-content'>
                 <div class='modal-header bg-primary text-bg-primary'>
@@ -492,7 +492,7 @@ function drawPersonRow($personId, $personType, $person, $memberships, $showInter
 function draw_editInterestsModal($interests) : void {
     if ($interests != null) {
     ?>
-    <div id='editInterestModal' class='modal modal-x1 fade' tabindex='-1' aria-labelledby='Edit Interests' aria-hidden='true' style='--bs-modal-width: 96%;'>
+    <div id='editInterestModal' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Edit Interests' aria-hidden='true' style='--bs-modal-width: 96%;'>
         <div class='modal-dialog'>
             <div class='modal-content'>
                 <div class='modal-header bg-primary text-bg-primary'>

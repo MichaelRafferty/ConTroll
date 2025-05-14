@@ -262,7 +262,7 @@ page_init($page, $tab,
         </div>
     </div>
     <!--- add/Edit membership modal popup -->
-    <div class='modal modal-x1 fade' id='addEdit' tabindex='-3' aria-labelledby='addEdit' data-bs-backdrop='static'
+    <div class='modal modal-xl fade' id='addEdit' tabindex='-3' aria-labelledby='addEdit' data-bs-backdrop='static'
          data-bs-keyboard='false' aria-hidden='true' style='--bs-modal-width: 96%;'>
         <div class='modal-dialog'>
             <div class='modal-content'>
