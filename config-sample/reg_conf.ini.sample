@@ -126,7 +126,7 @@ creditonline = 1
 ; values:
 ; allage=0 : act like portal, require age to show age related badges
 ; allage=1 : if no badge of an age, show badges of all ages, once an age badge is selected, auto set age
-allage-0
+allage=0
 
 [vendor]
 test=0
