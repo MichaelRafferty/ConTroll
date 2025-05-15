@@ -91,6 +91,7 @@ function isPrimary(memConid, memType, memCategory, memPrice, usage = 'all') {
     if (config.conid != memConid) // must be a current year membership to be primary, no year aheads for next year
         return false;
 
+    memType = memType.toLowerCase();
     if (!(memType == 'full' || memType == 'oneday' || memType == 'virtual'))
         return false;   // must be one of these main types to even be considered a primary
 
