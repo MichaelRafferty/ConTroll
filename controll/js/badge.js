@@ -77,7 +77,7 @@ function loadWatchList(data) {
     watchMembers = data['watchMembers'];
     if (watchTable == null) {
         watchTable = new Tabulator('#watch-list', {
-            maxHeight: "600px",
+            //maxHeight: "600px",
             data: watchMembers,
             layout: "fitColumns",
             index: 'id',
@@ -256,14 +256,14 @@ function loadSelectList(data) {
     }
 
     selectTable = new Tabulator('#select-list', {
-        maxHeight: "600px",
+        //maxHeight: "600px",
         data: matches,
         layout: "fitColumns",
         index: 'id',
-        pagination: true,
-        paginationAddRow: "table",
-        paginationSize: 10,
-        paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
+        //pagination: true,
+        //paginationAddRow: "table",
+        //paginationSize: 10,
+        //paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
         initialSort: [
             {column: "last_name", dir: "asc"},
             {column: "first_name", dir: "asc"},
