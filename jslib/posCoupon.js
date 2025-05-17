@@ -370,9 +370,10 @@ class Coupon {
             // %off is of type cart discount
             // compute the total of the primary memberships in the cart
             var totalPrimaryMemberships = pos.everyMembership(perinfo, function(_this, mem) {
-                if ((!pos.nonPrimaryCategoriesIncludes(mem.memCategory)) && mem.conid == pos.getConid() && mem.status == 'unpaid')
+                if (isPrimary(mem.conid, mem.memType, mem.memCategory, mem.price)) {
                     return mem.price;
-                return 0;
+                }
+                return 0.00;
             });
             var amountDiscountable = totalPrimaryMemberships > this.getMaxCart() ? this.getMaxCart() : totalPrimaryMemberships;
             discount = Number(Number(this.#curCoupon.discount) * amountDiscountable / 100).toFixed(2);
