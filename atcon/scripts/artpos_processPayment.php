@@ -292,7 +292,7 @@ if ($amt > 0) {
                     resetTerminalStatus($name);
                     ajaxSuccess(array ('error' => "The terminal cancelled the payment due to " . $checkout['cancel_reason'] .
                         '<br/>If the customer still wishes to pay for the transaction, ' .
-                        'please click pay again to start a new payment session with the terminal'));
+                        'please click "Confirm Pay" again to start a new payment session with the terminal'));
                     exit();
 
                 case 'IN_PROGRESS':
@@ -306,7 +306,7 @@ if ($amt > 0) {
                     ajaxSuccess(array ('error' => 'The terminal is working on cancelling the payment.' .
                         '<br/>Please wait until the terminal resets to the splash screen and then' .
                         '<br/>If the customer still wishes to pay for the transaction, ' .
-                        'please click pay again to start a new payment session with the terminal'));
+                        'please click "Confirm Pay" again to start a new payment session with the terminal'));
                     exit();
             }
             if ($status != 'COMPLETED') {

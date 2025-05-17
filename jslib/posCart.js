@@ -653,10 +653,19 @@ class PosCart {
         // loop over memList and build each button
         var html = '';
         var rules = new MembershipRules(pos.getConid(), this.#memberAge != null ? this.#memberAge : this.#currentAge, this.#memberships, this.#allMemberships);
+        var atcon = false;
+        if (config.hasOwnProperty('posType')) {
+            atcon = config.posType == 'a';
+        }
 
         var noAgeFilter = config.allAgeFirst == 1 && this.#currentAge == null;
         for (var row in memList) {
             var mem = memList[row];
+
+            // if atcon, skip items without atcon = 'Y'
+            if (atcon && mem.atcon != 'Y')
+                continue;
+
             // skip auto create mem items
             if (mem.hasOwnProperty('notes') && mem.notes && mem.notes == 'Auto created by rollover')
                 continue;
