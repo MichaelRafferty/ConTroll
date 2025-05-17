@@ -83,6 +83,7 @@ $config_vars['cashier'] = $method == 'cashier' ? 1 : 0;
 $config_vars['cashierAllowed'] = check_atcon('cashier', $conid) ? 1 : 0;
 $config_vars['multiOneDay'] = $multiOneDay;
 $config_vars['allAgeFirst'] = $allAgeFirst;
+$config_vars['posType'] = 'a';
 if (array_key_exists('creditoffline', $atcon)) {
     $config_vars['creditoffline'] = $atcon['creditoffline'];
 }
