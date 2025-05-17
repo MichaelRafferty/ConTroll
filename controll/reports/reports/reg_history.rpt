@@ -72,6 +72,7 @@
     name=transaction
     alias=t
     join="r.complete_trans = t.id"
+    left=true
 [T004]
     name=perinfo
     alias=p
