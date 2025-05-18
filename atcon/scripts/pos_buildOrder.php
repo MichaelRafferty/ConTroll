@@ -138,15 +138,15 @@ $response['amount'] = $amount;
 
 logWrite(array('con'=>$con['label'], 'trans'=>$transId, 'results'=>$results, 'request'=>$badges));
 
-if ($cancelOrderId) // cancel the old order if it exists
-    cc_cancelOrder($results['source'], $cancelOrderId, true);
-
 $locationId = getSessionVar('terminal');
 if ($locationId) {
     $locationId = $locationId['locationId'];
 } else {
     $locationId = $cc['location'];
 }
+
+if ($cancelOrderId) // cancel the old order if it exists
+    cc_cancelOrder($results['source'], $cancelOrderId, true, $locationId);
 
 $rtn = cc_buildOrder($results, true, $locationId);
 if ($rtn == null) {
@@ -157,6 +157,9 @@ if ($rtn == null) {
 }
 $rtn['totalPaid'] = $totalPaid;
 $response['rtn'] = $rtn;
+
+$cancel = cc_cancelOrder($results['source'], $rtn['orderId'], true, $locationId);
+$response['cancel'] = $cancel;
 
 $upT = <<<EOS
 UPDATE transaction

@@ -410,7 +410,11 @@ function cc_fetchOrder($source, $orderId, $useLogWrite = false) :  null {
 }
 
 // stub for cancel order
-function cc_cancelOrder($source, $orderId, $useLogWrite = false) : void {
+function cc_cancelOrder($source, $orderId, $useLogWrite = false) : array {
+    $rtn['order'] = $orderId;
+    $rtn['state'] = 'CANCELED';
+    $rtn['version'] = 2;
+    return $rtn;
 }
 
 // enter a payment against an exist order: build the payment, submit it to square and process the resulting payment

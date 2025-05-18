@@ -611,6 +611,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     $rtn['totalAmt'] = $order->getTotalMoney()->getAmount() / 100;
     // load into the main rtn the items pay order needs directly
     $rtn['orderId'] = $order->getId();
+    $rtn['version'] = $order->getVersion();
     $rtn['source'] = $source;
     $rtn['customerId'] = $order->getCustomerId();
     $rtn['locationId'] = $order->getLocationId();
@@ -625,10 +626,8 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
 }
 
 // an order is no longer valid, cancel it, via an update to Cancelled status
-function cc_cancelOrder($source, $orderId, $useLogWrite = false, $locationId = null) : void {
-    // At present the API does not let you cancel orders, and this code does not work
-    //TODO: if Square writes a cancel, this code needs rewriting
-    /*
+function cc_cancelOrder($source, $orderId, $useLogWrite = false, $locationId = null) : array {
+    // Try updating the state of the order to CANCELED
     $cc = get_conf('cc');
     if ($locationId == null)
         $locationId = $cc['location'];
@@ -640,10 +639,11 @@ function cc_cancelOrder($source, $orderId, $useLogWrite = false, $locationId = n
 
     $order = new Order([
         'locationId' => $locationId,
-        'state' => 'CANCELLED',
+        'state' => 'CANCELED',
+        'version' => 1,
     ]);
 
-    $body = new CreateOrderRequest([
+    $body = new Square\Orders\Requests\UpdateOrderRequest([
         'idempotencyKey' => guidv4(),
         'orderId' => $orderId,
         'order' => $order,
@@ -657,18 +657,23 @@ function cc_cancelOrder($source, $orderId, $useLogWrite = false, $locationId = n
 
     // pass update to cancel state to square
     try {
-          if ($squareDebug) sqcc_logObject(array ('Orders API order create', $body), $useLogWrite);
-          $apiResponse = $client->orders->create($body);
+          if ($squareDebug) sqcc_logObject(array ('Orders API order update', $body), $useLogWrite);
+          $apiResponse = $client->orders->update($body);
           $order = $apiResponse->getOrder();
-          if ($squareDebug) sqcc_logObject(array ('Orders API order response', $order), $useLogWrite);
+          if ($squareDebug) sqcc_logObject(array ('Orders API order update response', $order), $useLogWrite);
       }
       catch (SquareApiException $e) {
-          sqcc_logException($source, $e, 'Order API create order Exception', 'Order create failed', $useLogWrite);
+          sqcc_logException($source, $e, 'Order API update order Exception', 'Order create failed', $useLogWrite);
       }
       catch (Exception $e) {
           sqcc_logException($source, $e, 'Order API error while calling Square', 'Error connecting to Square', $useLogWrite);
       }
-    */
+
+    $rtn = array();
+    $rtn['order'] = $order;
+    $rtn['state'] = $order->getState();
+    $rtn['version'] = $order->getVersion();
+    return $rtn;
 }
 // fetch an order to get its details
 function cc_fetchOrder($source, $orderId, $useLogWrite = false) : array {
