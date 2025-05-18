@@ -158,9 +158,6 @@ if ($rtn == null) {
 $rtn['totalPaid'] = $totalPaid;
 $response['rtn'] = $rtn;
 
-$cancel = cc_cancelOrder($results['source'], $rtn['orderId'], true, $locationId);
-$response['cancel'] = $cancel;
-
 $upT = <<<EOS
 UPDATE transaction
 SET price = ?, tax = ?, withTax = ?, couponDiscountCart = ?
