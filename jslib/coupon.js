@@ -112,7 +112,7 @@ class Coupon {
         if (this.#curCoupon == null)
             return 999999999;
 
-        if (this.#curCoupon.maxMembersiphs == null)
+        if (this.#curCoupon.maxMemberships == null)
             return 999999999;
 
         return Number(this.#curCoupon.maxMemberships);
