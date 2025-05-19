@@ -944,7 +944,7 @@ class PosCart {
         // clear the discount from the membership rows
         for (var rownum in this.#membershipRows ) {
             var mrow = this.#membershipRows[rownum];
-            if (mrow.coupon == couponId) {
+            if (mrow.coupon == couponId && (mrow.status == 'unpaid' || mrow.status == 'plan')) {
                 mrow.coupon = null;
                 mrow.couponDiscount = 0;
             }
