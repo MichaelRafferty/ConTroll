@@ -36,7 +36,6 @@ class Pos {
     #num_coupons = 0;
     #couponList = null;
     #couponSelect = null;
-    #coupon = null;
     #coupon_discount = Number(0).toFixed(2);
     #cart_total = Number(0).toFixed(2);
     #pay_prior_discount = null;
@@ -1998,6 +1997,9 @@ addUnpaid(tid) {
             postData.cancelOrder = this.#pay_currentOrderId;
             this.#pay_currentOrderId = null;
         }
+        if (coupon.isCouponLoaded) {
+            postData.couponId = coupon.getCouponId();
+        }
 
         var _this = this;
         clear_message();
@@ -2318,9 +2320,7 @@ addUnpaid(tid) {
             var phone = document.getElementById("pay-phone").value;
             var payor = Number(document.getElementById('pay-emailsel').value);
             var country = '';
-            var couponCode = null;
-            if (this.#coupon)
-                couponCode = coupon.getCouponCode();
+            var couponCode = coupon.getCouponCode();
 
             if (payor >= 0 && email == cart.getEmail(payor)) {
                 payorPerid = cart.getPerid(payor);
@@ -2647,21 +2647,22 @@ addUnpaid(tid) {
         if (cmd == 'r') {
             var curCoupon = coupon.getCouponId();
             cart.clearCoupon(curCoupon);
-            this.#coupon = null;
-            this.#coupon = new Coupon();
+            coupon = null;
+            coupon = new Coupon();
             this.#coupon_discount = Number(0).toFixed(2);
             this.payShown();
             return;
         }
         if (cmd == 'a') {
             var couponId = document.getElementById("pay_couponSelect").value;
-            this.#coupon = null;
-            this.#coupon = new Coupon();
+            coupon = null;
+            coupon = new Coupon();
             if (couponId == '') {
                 show_message("Coupon cleared, no coupon applied", 'success');
                 return;
             }
             coupon.loadCoupon(couponId);
+            this.payShown();
         }
         return;
     }

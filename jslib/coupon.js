@@ -98,6 +98,11 @@ class Coupon {
     isCouponActive() {
         return this.#couponActive;
     }
+
+    isCouponLoaded() {
+        return this.#curCoupon != null;
+    }
+
     getMinMemberships() {
         if (this.#curCoupon == null)
             return 0;
