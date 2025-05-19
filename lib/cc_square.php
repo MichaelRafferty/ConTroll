@@ -358,6 +358,34 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
 
     // if not built, it's spaces + memberships
     if (!$itemsBuilt) {
+        $couponDiscount = false;
+        $managerDiscount = false;
+        // create the coupon or discount amount, if it exists
+        if (array_key_exists('discount', $results) && $results['discount'] > 0) {
+            if (array_key_exists('coupon', $results) && $results['coupon'] != null) {
+                $coupon = $results['coupon'];
+                $couponName = 'Coupon: ' . $coupon['code'] . ' (' . $coupon['name'] . '), Coupon Discount: ' . $coupon['discount'];
+                $couponDiscount = true;
+            } else {
+                $coupon = null;
+                $couponName = 'Discount Applied';
+                $managerDiscount = true;
+            }
+
+            $item = new OrderLineItemDiscount ([
+                'uid' => 'discount',
+                'name' => mb_substr($couponName, 0, 128),
+                'type' => OrderLineItemDiscountType::FixedAmount->value,
+                'amountMoney' => new Money([
+                    'amount' => round($results['discount'] * 100),
+                    'currency' => $currency,
+                ]),
+                'scope' => OrderLineItemDiscountScope::Order->value,
+            ]);
+            $orderDiscounts[] = $item;
+            //$orderValue -= $results['discount'];
+        }
+
         if (array_key_exists('badges', $results) && is_array($results['badges']) && count($results['badges']) > 0) {
             foreach ($results['badges'] as $badge) {
                 if (!array_key_exists('paid', $badge)) {
@@ -421,6 +449,22 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                             'discountUid' => 'planDeferment',
                         ])));
                 }
+
+                if ($couponDiscount) {
+                    $cat = $badge['memCategory'];
+                    if (in_array($cat, array('standard','supplement','upgrade','add-on', 'virtual'))) {
+                        $item->setAppliedDiscounts(array(new Square\Types\OrderLineItemAppliedDiscount([
+                            'uid' => 'couponDiscount-' . $lineid,
+                            'discountUid' => 'discount' ,
+                        ])));
+                    }
+                }
+                if ($managerDiscount) {
+                    $item->setAppliedDiscounts(array(new Square\Types\OrderLineItemAppliedDiscount([
+                        'uid' => 'managerDiscount-' . $lineid,
+                        'discountUid' => 'discount' ,
+                    ])));
+                }
                 $orderLineitems[$lineid] = $item;
                 $orderValue += $badge['price'];
                 $lineid++;
@@ -475,32 +519,6 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 $orderValue += $fee['amount'];
                 $lineid++;
             }
-        }
-
-        // TODO: set the lines the coupon applies to specifically using appliedDiscount and line type for the coupon to split it correctly
-        // now apply the coupon
-        if (array_key_exists('discount', $results) && $results['discount'] > 0) {
-            if (array_key_exists('coupon', $results) && $results['coupon'] != null) {
-                $coupon = $results['coupon'];
-                $couponName = 'Coupon: ' . $coupon['code'] . ' (' . $coupon['name'] . '), Coupon Discount: ' .
-                    $coupon['discount'];
-            }
-            else {
-                $couponName = 'Coupon Applied';
-            }
-
-            $item = new OrderLineItemDiscount ([
-                'uid' => 'couponDiscount',
-                'name' => mb_substr($couponName, 0, 128),
-                'type' => OrderLineItemDiscountType::FixedAmount->value,
-                'amountMoney' => new Money([
-                    'amount' => round($results['discount'] * 100),
-                    'currency' => $currency,
-                ]),
-                'scope' => OrderLineItemDiscountScope::Order->value,
-            ]);
-            $orderDiscounts[] = $item;
-            //$orderValue -= $results['discount'];
         }
 
         // TODO: if an item is in plan, set the plan discount to apply only to those line items
