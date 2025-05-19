@@ -207,6 +207,7 @@ class Coupon {
         var couponDiscount = Number(coupon.CartDiscount());
         var total_amount_due = Number(Number(cart_total) - couponDiscount).toFixed(2);
 
+        pos.setCouponDiscount(couponDiscount);
         if (couponDiscount > 0) {
             // add coupon discount as payment row
             var prow = {

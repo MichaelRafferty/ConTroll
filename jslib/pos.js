@@ -284,6 +284,10 @@ class Pos {
         this.#reviewMissingPolicies = num;
     }
 
+    setCouponDiscount(num) {
+        this.#couponDiscount = num;
+    }
+
     getConid() {
         return this.#conid;
     }
@@ -2063,13 +2067,20 @@ addUnpaid(tid) {
         var elccauth = document.getElementById('pay-ccauth-div');
         var elonline = document.getElementById('pay-online-div');
         var elcash = document.getElementById('pay-cash-div');
+        var eldiscount = document.getElementById('pt-discount');
+        var couponRow = document.getElementById('couponRow');
 
         elcheckno.hidden = ptype != 'check';
         elccauth.hidden = ptype != 'credit';
         elonline.hidden = ptype != 'online';
         elcash.hidden = ptype != 'cash';
+
+        if (couponRow && eldiscount)
+            couponRow.hidden = document.getElementById('pt-discount').checked;
+
         this.#pay_button_pay.innerHTML = 'Confirm Pay';
         this.#pay_button_pay.disabled = ptype == 'online';
+
 
         if (ptype != 'check') {
             document.getElementById('pay-checkno').value = null;
@@ -2655,7 +2666,6 @@ addUnpaid(tid) {
             cart.clearCoupon(curCoupon);
             coupon = null;
             coupon = new Coupon();
-            this.#couponDiscount = Number(0).toFixed(2);
             this.#payForcePayShown = true;
             this.gotoPay();
             return;
@@ -2771,7 +2781,7 @@ addUnpaid(tid) {
                     // cannot apply a coupon if one was already in the cart (and of course, there need to be valid coupons right now)
                     if (!coupon.isCouponActive()) { // no coupon applied yet
                         pay_html += `
-    <div class="row mt-3">
+    <div class="row mt-3" id="couponRow">
         <div class="col-sm-2 ms-0 me-2 p-0">Coupon:</div>
         <div class="col-sm-auto ms-0 me-2 p-0">
 ` + this.#couponSelect + `
@@ -2847,9 +2857,9 @@ addUnpaid(tid) {
             <input type="radio" id="pt-check" name="payment_type" value="check" onchange='pos.setPayType("check");'/>
             <label for="pt-check">Check&nbsp;&nbsp;&nbsp;</label>
             <input type="radio" id="pt-cash" name="payment_type" value="cash" onchange='pos.setPayType("cash");'/>
-            <label for="pt-cash">Cash</label>
+            <label for="pt-cash">Cash&nbsp;&nbsp;&nbsp;</label>
 `;
-            if (this.#discount_mode != "none") {
+            if (this.#discount_mode != "none" && !coupon.isCouponActive()) {
                 if (this.#discount_mode == 'any' || ((this.#discount_mode == 'manager' || this.#discount_mode == 'active') &&
                     this.#manager && baseManagerEnabled)) {
                     pay_html += `

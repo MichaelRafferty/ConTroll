@@ -114,6 +114,7 @@ foreach ($cart_perinfo as $row) {
             'memType' => $membership['memType'],
             'taxable' => $membership['taxable'],
             'price' => $price - $paid,
+            'status' => $membership['status'],
         ];
 
         $badges[] = $badge;
