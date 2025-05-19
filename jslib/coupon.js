@@ -148,6 +148,12 @@ class Coupon {
         return Number(this.#curCoupon.maxTransaction);
     }
 
+    getCouponId() {
+        if (this.#curCoupon == null)
+            return null;
+        return this.#curCoupon.id;
+    }
+
     getCouponCode() {
         if (this.#curCoupon == null)
             return null;
