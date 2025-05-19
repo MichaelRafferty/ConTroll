@@ -33,12 +33,19 @@ class Coupon {
         return this.#couponActive;
     }
 
+    isCouponLoaded() {
+        return this.#curCoupon != null;
+    }
+
     getCouponId() {
         if (this.#curCoupon == null)
             return null;
 
         return Number(this.#curCoupon.id);
     }
+
+
+
     getMinMemberships() {
         if (this.#curCoupon == null)
             return 0;
@@ -53,7 +60,7 @@ class Coupon {
         if (this.#curCoupon == null)
             return 999999999;
 
-        if (this.#curCoupon.maxMembersiphs == null)
+        if (this.#curCoupon.maxMemberships == null)
             return 999999999;
 
         return Number(this.#curCoupon.maxMemberships);
@@ -143,6 +150,7 @@ class Coupon {
 
     loadCoupon(couponId) {
         "use strict";
+        var _this = this;
 
         clear_message();
         // get the coupon data
@@ -154,17 +162,14 @@ class Coupon {
             url: "scripts/pos_getCouponDetails.php",
             data: postData,
             method: 'POST',
-            success: this.VC_ajax_success,
-            error: this.VC_ajax_error
+            success: function (data, textstatus, jqxhr) {
+                _this.vc_success(data);
+            },
+            error: function (jqXHR, textstatus, errorThrown) {
+                showAjaxError(jqXHR, textstatus, errorThrown);
+                show_message(textStatus, 'error');
+            },
         });
-    }
-
-    VC_ajax_error(JqXHR, textStatus, errorThrown) {
-        show_message(textStatus, 'error');
-    }
-
-    VC_ajax_success(data, textStatus, jqXHR) {
-        coupon.vc_success(data)
     }
 
     vc_success(data) {
@@ -199,17 +204,18 @@ class Coupon {
         this.#couponError = false;
         clear_message();
         var cart_total = (cart.getTotalPrice() - cart.getTotalPaid()).toFixed(2);
-        var coupon_discount = coupon.CartDiscount();
-        var total_amount_due = (cart_total - coupon_discount).toFixed(2);
+        var couponDiscount = Number(coupon.CartDiscount());
+        var total_amount_due = Number(Number(cart_total) - couponDiscount).toFixed(2);
 
-        if (coupon_discount > 0) {
+        if (couponDiscount > 0) {
             // add coupon discount as payment row
             var prow = {
-                index: cart.getPmtLength(), amt: coupon_discount, cartDiscount: this.#cartDiscount, memDiscount: this.#memDiscount,
+                index: cart.getPmtLength(), amt: couponDiscount, cartDiscount: Number(this.#cartDiscount), memDiscount: Number(this.#memDiscount),
                         ccauth: null, checkno: null, desc: coupon.getCouponName(), type: 'coupon',
                 coupon: coupon.getCouponId(),
             };
-            pos.pay('', prow);
+            cart.addPmt(prow, true);
+            pos.gotoPay();
         } else {
             show_message("Coupon did not produce a discount", 'warn');
         }

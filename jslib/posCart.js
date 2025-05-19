@@ -26,6 +26,7 @@ class PosCart {
     #cartPerinfo = [];
     #cartPerinfoMap = new map();
     #cartPmt = [];
+    #cartIgnorePmtRound = false;
 
 // Add Edit Memberships
     #addEditModal = null;
@@ -291,12 +292,14 @@ class PosCart {
 
     allowAddCouponToCart() {
         this.#anyUnpaid = false;
+        if (coupon.isCouponActive())
+            return true;
         var numCoupons = pos.everyMembership(this.#cartPerinfo, function(_this, mem) {
             if (isPrimary(mem.conid, mem.memType, mem.memCategory, mem.price, 'coupon') && mem.status != 'paid')
                 cart.setAnyUnpaid();
             if (mem.coupon)
-                return 1;
-            return 0;
+                return true;
+            return false;
         });
 
         if (this.#anyUnpaid == false || numCoupons > 0)
@@ -910,9 +913,14 @@ class PosCart {
         this.#currentPerid = null;
         this.#addEditModal.hide();
     }
-
+// add non database payment to the cart
+    addPmt(pmtrow, setIgnore=false) {
+        this.#cartPmt.push(pmtrow);
+        this.#cartIgnorePmtRound = setIgnore;
+    }
 // update payment data in  cart
     updatePmt(data) {
+        this.#cartIgnorePmtRound = false;
         if (data.prow) {
             this.#cartPmt.push(data.prow);
         }
@@ -1173,7 +1181,7 @@ class PosCart {
             if (this.#cartPmt[i].type == 'prior')
                 priorIndex = i;
         }
-        if (this.#totalPaid != totalPayments) {
+        if (this.#totalPaid != totalPayments && !this.#cartIgnorePmtRound) {
             // adjust the prior prow
             this.#cartPmt[priorIndex].amt = Number(this.#cartPmt[priorIndex].amt) + Number(this.#totalPaid) - Number(totalPayments);
         }

@@ -5,6 +5,7 @@
 // create order from cart for payment processing
 
 require_once '../lib/base.php';
+require_once('../../lib/coupon.php');
 require_once('../../lib/log.php');
 require_once('../../lib/cc__load_methods.php');
 
@@ -68,10 +69,19 @@ if (array_key_exists('cancelOrder', $_POST)) {
     $cancelOrderId = null;
 }
 
-// all the records are in the database, so lets build the order
-
-// get this person
-//$info = getPersonInfo($conid);
+$discount = 0;
+if (array_key_exists('couponCode', $_POST) && $_POST['couponCode'] != '') {
+    $result = load_coupon_data($_POST['couponCode']);
+    if ($result['status'] == 'success') {
+        $coupon = $result['coupon'];
+        $discount = $_POST['couponDiscount'];
+    } else {
+        ajaxError($result['error']);
+        return;
+    }
+} else {
+    $coupon = null;
+}
 
 // build the badge list for the order, do not include the already paid items
 $amount = 0;
@@ -130,7 +140,7 @@ $results = array(
     'badges' => $badges,
     'total' => $amount,
     'totalPaid' => $totalPaid,
-    'discount' => 0,
+    'discount' => $discount,
 );
 $response['amount'] = $amount;
 

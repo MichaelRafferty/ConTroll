@@ -36,7 +36,7 @@ class Pos {
     #num_coupons = 0;
     #couponList = null;
     #couponSelect = null;
-    #coupon_discount = Number(0).toFixed(2);
+    #couponDiscount = Number(0).toFixed(2);
     #cart_total = Number(0).toFixed(2);
     #pay_prior_discount = null;
     #cc_html = '';
@@ -49,6 +49,7 @@ class Pos {
     #payOverride = 0;
     #payPoll = 0;
     #payCurrentRequest = null;
+    #payForcePayShown = false;
 
     // Data Items
     #unpaid_table = [];
@@ -1997,8 +1998,9 @@ addUnpaid(tid) {
             postData.cancelOrder = this.#pay_currentOrderId;
             this.#pay_currentOrderId = null;
         }
-        if (coupon.isCouponLoaded) {
-            postData.couponId = coupon.getCouponId();
+        if (coupon.isCouponActive()) {
+            postData.couponCode = coupon.getCouponCode();
+            postData.couponDiscount = this.#couponDiscount;
         }
 
         var _this = this;
@@ -2040,6 +2042,10 @@ addUnpaid(tid) {
         this.#totalPaid = data.rtn.totalPaid;
         show_message("Order #" + this.#pay_currentOrderId + " created.");
         bootstrap.Tab.getOrCreateInstance(this.#pay_tab).show();
+        if (this.#payForcePayShown) {
+            this.#payForcePayShown = false;
+            this.payShown();
+        }
         cart.drawCart();
     }
 
@@ -2649,8 +2655,9 @@ addUnpaid(tid) {
             cart.clearCoupon(curCoupon);
             coupon = null;
             coupon = new Coupon();
-            this.#coupon_discount = Number(0).toFixed(2);
-            this.payShown();
+            this.#couponDiscount = Number(0).toFixed(2);
+            this.#payForcePayShown = true;
+            this.gotoPay();
             return;
         }
         if (cmd == 'a') {
@@ -2661,8 +2668,9 @@ addUnpaid(tid) {
                 show_message("Coupon cleared, no coupon applied", 'success');
                 return;
             }
+            this.#couponDiscount = Number(coupon.CartDiscount()).toFixed(2);
+            this.#payForcePayShown = true;
             coupon.loadCoupon(couponId);
-            this.payShown();
         }
         return;
     }
@@ -2688,7 +2696,7 @@ addUnpaid(tid) {
             this.#pay_prior_discount = cart.getPriorDiscount();
         }
 
-        var total_amount_due = this.#taxAmt + cart.getTotalPrice() - (cart.getTotalPaid() + this.#pay_prior_discount + Number(this.#coupon_discount));
+        var total_amount_due = this.#taxAmt + cart.getTotalPrice() - (cart.getTotalPaid() + this.#pay_prior_discount + Number(this.#couponDiscount));
         if (total_amount_due < 0.01) { // allow for rounding error, no need to round here
             // nothing more to pay
             if (this.#print_tab)

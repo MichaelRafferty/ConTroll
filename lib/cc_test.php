@@ -202,6 +202,30 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
 
     // if not built, it's spaces + memberships
     if (!$itemsBuilt) {
+        $couponDiscount = false;
+        $managerDiscount = false;
+        // create the coupon or discount amount, if it exists
+        if (array_key_exists('discount', $results) && $results['discount'] > 0) {
+            if (array_key_exists('coupon', $results) && $results['coupon'] != null) {
+                $coupon = $results['coupon'];
+                $couponName = 'Coupon: ' . $coupon['code'] . ' (' . $coupon['name'] . '), Coupon Discount: ' . $coupon['discount'];
+                $couponDiscount = true;
+            } else {
+                $coupon = null;
+                $couponName = 'Discount Applied';
+                $managerDiscount = true;
+            }
+
+            $item = [
+                'uid' => 'discount',
+                'name' => mb_substr($couponName, 0, 128),
+                'type' => 'FixedAmount',
+                'amountMoney' => round($results['discount'] * 100),
+            ];
+            $discountAmt += $item['amountMoney'];
+            $orderDiscounts[] = $item;
+        }
+
         if (array_key_exists('badges', $results) && is_array($results['badges']) && count($results['badges']) > 0) {
             foreach ($results['badges'] as $badge) {
                 if (!array_key_exists('paid', $badge)) {
@@ -248,6 +272,21 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                     $needTaxes = true;
                     $item['taxable'] = 'Y';
                     $item['taxUid'] = $taxLabel;
+                }
+
+                if (array_key_exists('newplan', $results) && $results['newplan'] == 1) {
+                    if ($badge['inPlan'])
+                        $item['AppliedDiscounts'][] = 'planDeferment';
+                }
+
+                if ($couponDiscount && ($badge['status'] == 'unpaid' || $badge['status'] == 'plan')) {
+                    $cat = $badge['memCategory'];
+                    if (in_array($cat, array('standard','supplement','upgrade','add-on', 'virtual'))) {
+                        $item['AppliedDiscounts'][] = 'couponDiscount';
+                    }
+                }
+                if ($managerDiscount && ($badge['status'] == 'unpaid' || $badge['status'] == 'plan')) {
+                    $item['AppliedDiscounts'][] = 'managerDiscount';
                 }
                 $orderLineitems[$lineid] = $item;
                 $orderValue += $badge['price'];
@@ -300,29 +339,6 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
             }
         }
 
-        // TODO: set the lines the coupon applies to specifically using appliedDiscount and line type for the coupon to split it correctly
-        // now apply the coupon
-        if (array_key_exists('discount', $results) && $results['discount'] > 0) {
-            if (array_key_exists('coupon', $results) && $results['coupon'] != null) {
-                $coupon = $results['coupon'];
-                $couponName = 'Coupon: ' . $coupon['code'] . ' (' . $coupon['name'] . '), Coupon Discount: ' .
-                    $coupon['discount'];
-            } else {
-                $couponName = 'Coupon Applied';
-            }
-
-            $item = [
-                'uid' => 'couponDiscount',
-                'name' => mb_substr($couponName, 0, 128),
-                'type' => 'FixedAmount',
-                'amountMoney' => round($results['discount'] * 100),
-            ];
-            $discountAmt += $item['amountMoney'];
-            $orderDiscounts[] = $item;
-            //$orderValue -= $results['discount'];
-        }
-
-        // TODO: if an item is in plan, set the plan discount to apply only to those line items
         // if a plan, set a discount called deferred payment for plan to the amount not in this payment
         if (array_key_exists('newplan', $results) && $results['newplan'] == 1) {
             // deferment is total of the items - total of the payment
