@@ -178,8 +178,11 @@ if ($coupon != null) {
         if (array_key_exists('applied_discounts', $item)) {
             for ($discountNo = 0; $discountNo < count($item['applied_discounts']); $discountNo++) {
                 $discount = $item['applied_discounts'][$discountNo];
-                if ($discount['uid'] == 'couponDiscount') {
-                    $thisItemDiscount = $discount['applied_amount'];
+                if (str_starts_with($discount['uid'], 'couponDiscount')) {
+                    if (array_key_exists('applied_amount', $discount))
+                        $thisItemDiscount = $discount['applied_amount'];
+                    else
+                        $thisItemDiscount = $discount['applied_money']['amount'];
                     // now find the reg entry to match this item
                     $rowno = $item['metadata']['rowno'];
                     $badges[$rowno]['couponDiscount'] = $thisItemDiscount / 100;
