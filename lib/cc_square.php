@@ -404,7 +404,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                         $id = 'TBA';
                 }
 
-                $note = $badge['memId'] . ',' . $id . ': memId, p/n id';
+                $note = $badge['memId'] . ',' . $id . ',' . $badge['regid'] . ': memId, p/n id, regid';
                 if ($planName != '') {
                     $note .= ($badge['inPlan'] ? (', Plan: ' . $planName) : ', NotInPlan');
                 }

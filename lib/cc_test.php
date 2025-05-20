@@ -226,6 +226,8 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
             $orderDiscounts[] = $item;
         }
 
+        $totalCouponDiscountable = 0;
+        $totalManagerDiscountable = 0;
         if (array_key_exists('badges', $results) && is_array($results['badges']) && count($results['badges']) > 0) {
             foreach ($results['badges'] as $badge) {
                 if (!array_key_exists('paid', $badge)) {
@@ -244,7 +246,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                         $id = 'TBA';
                 }
 
-                $note = $badge['memId'] . ',' . $id . ': memId, p/n id';
+                $note = $badge['memId'] . ',' . $id . ',' . $badge['regid'] . ': memId, p/n id, regid';
                 if ($planName != '') {
                     $note .= ($badge['inPlan'] ? (', Plan: ' . $planName) : ', NotInPlan');
                 }
@@ -282,17 +284,49 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                 if ($couponDiscount && ($badge['status'] == 'unpaid' || $badge['status'] == 'plan')) {
                     $cat = $badge['memCategory'];
                     if (in_array($cat, array('standard','supplement','upgrade','add-on', 'virtual'))) {
-                        $item['AppliedDiscounts'][] = 'couponDiscount';
+                        $item['AppliedDiscounts'][] = array('uid' => 'couponDiscount', 'appliedAmount' => 0);
+                        $totalCouponDiscountable += $item['basePriceMoney'];
                     }
                 }
                 if ($managerDiscount && ($badge['status'] == 'unpaid' || $badge['status'] == 'plan')) {
-                    $item['AppliedDiscounts'][] = 'managerDiscount';
+                    $item['AppliedDiscounts'][] = array('uid' => 'managerDiscount',  'appliedAmount' => 0);
+                    $totalManagerDiscountable += $item['basePriceMoney'];
                 }
                 $orderLineitems[$lineid] = $item;
                 $orderValue += $badge['price'];
                 $lineid++;
             }
+
+            if ($couponDiscount && $results['discount'] > 0) {
+                // apply the coupon discount amounts proportionally, square would do this for us normally
+                $totalDiscount = $results['discount'] * 100;
+                $discountRemaining = $totalDiscount;
+                $lastItemNo = -1;
+                $maxAmt = -1;
+                for ($itemNo = 0; $itemNo < count($orderLineitems); $itemNo++) {
+                    $item = $orderLineitems[$itemNo];
+                    if (array_key_exists('AppliedDiscounts', $item)) {
+                        for ($discountNo = 0; $discountNo < count($item['AppliedDiscounts']); $discountNo++) {
+                            $discount = $item['AppliedDiscounts'][$discountNo];
+                            if ($discount['uid'] == 'couponDiscount' || $discount['uid'] == 'managerDiscount') {
+                                $thisItemDiscount = round(($item['basePriceMoney'] * $totalDiscount) / $totalCouponDiscountable);
+                                if ($thisItemDiscount > $discountRemaining)
+                                    $thisItemDiscount = $discountRemaining;
+                                $discountRemaining -= $thisItemDiscount;
+                                if ($item['basePriceMoney'] > $maxAmt)
+                                    $lastItemNo = $itemNo;
+                                $orderLineitems[$itemNo]['AppliedDiscounts'][$discountNo]['appliedAmount'] = $thisItemDiscount;
+                            }
+                        }
+                    }
+                }
+                // deal with rounding error by fudging largest item
+                if ($discountRemaining > 0 && $lastItemNo >= 0) {
+                    $orderLineitems[$itemNo]['AppliedDiscounts'][$discountNo]['appliedAmount'] += $discountRemaining;
+                }
+            }
         }
+
         if (array_key_exists('spaces', $results)) {
             foreach ($results['spaces'] as $spaceId => $space) {
                 $itemName = $space['description'] . ' of ' . $space['name'] . ' in ' . $space['regionName'] .
