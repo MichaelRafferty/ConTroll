@@ -18,6 +18,8 @@ var statsTable = null;
 var active_customers = null;
 var awaiting_payment = null;
 var awaiting_release = null;
+var searchResultsModal = null;
+var searchData = null;
 
 // art items
 var add_found_div = null;
@@ -86,6 +88,10 @@ window.onload = function initpage() {
     id_div = document.getElementById("find_results");
     stats_div = document.getElementById("stats-div");
     showStats_div = document.getElementById("showStats-div");
+    var id = document.getElementById("SearchResultsModal");
+    if (id) {
+        searchResultsModal = new bootstrap.Modal(id, { focus: true, backldrop: 'static' });
+    }
 
     artistNumber_field = document.getElementById("artistNumber");
     itemCode_field = document.getElementById("itemCode");
@@ -179,7 +185,6 @@ function startOver(reset_all) {
     pay_tab.disabled = true;
     release_tab.disabled = true;
     cart.hideNext();
-    cart.hideAdd();
     pay_button_pay = null;
     pay_button_rcpt = null;
     pay_button_ercpt = null;
@@ -344,6 +349,7 @@ function badge_name_default(badge_name, first_name, last_name) {
 // find the person by badge id, in prep for loading any art already won by bid
 function findPerson(find_type) {
     id_div.innerHTML = "";
+    searchResultsModal.hide();
     clear_message();
     cart.startOver();
     var name_search = badgeid_field.value.toLowerCase().trim();
@@ -369,12 +375,6 @@ function findPerson(find_type) {
                 $("button[name='find_btn']").attr("disabled", false);
                 return;
             }
-            if (data.message !== undefined) {
-                show_message(data.message, 'success');
-            }
-            if (data.warn !== undefined) {
-                show_message(data.warn, 'warn');
-            }
             foundPerson(data);
             $("button[name='find_btn']").attr("disabled", false);
         },
@@ -393,38 +393,70 @@ function findPerson(find_type) {
 //      multiple rows: display table of records with add/trans buttons
 function foundPerson(data) {
     if (data.num_rows == 1) { // one person found
+        searchData = data;
         currentPerson = data.person;
-        // put the person details in the cart, populate the cart with the art they have to purchase
+        // draw the person in the modal
         draw_person();
-        data.art.forEach((artItem) => {
+        searchResultsModal.show();
+        if (data.message !== undefined) {
+            show_message(data.message, 'success', 'searchResultMessage');``
+        }
+        if (data.warn !== undefined) {
+            show_message(data.warn, 'warn', 'searchResultMessage');
+        }
+    } else { // I'm not sure how we'd get here
+        show_message(data.num_rows + " found.  Multiple people not yet supported.");
+        return;
+    }
+}
+
+// clear result and try again
+function searchResultsClose() {
+    id_div.innerHTML = "";
+    searchResultsModal.hide();
+    clear_message();
+    searchData = null;
+    badgeid_field.focus();
+}
+// select this person and actually start processing them
+function startCheckout() {
+        if (currentPerson == null || currentPerson.id == null) {
+            show_message("No person selected", "warn");
+            return;
+        }
+
+        id_div.innerHTML = "";
+        searchResultsModal.hide();
+
+        searchData.art.forEach((artItem) => {
             if (pay_tid == null) {
                 pay_tid = artItem.transid;
             }
             cart.add(artItem);
         });
-        if (data.payment) {
-            data.payment.forEach((paymentItem) => {
+        if (searchData.payment) {
+            searchData.payment.forEach((paymentItem) => {
                 cart.addPmt(paymentItem);
             });
         }
         find_tab.disabled = true;
         add_tab.disabled = false;
-        cart.showAdd();
         if (cart.getCartLength() > 0) {
             pay_tab.disabled = false;
             cart.showPay();
         }
         cart.drawCart();
         cart.showStartOver();
-        if (data.release > 0 && cart.getCartLength() == 0) {
+        if (searchData.release > 0 && cart.getCartLength() == 0) {
             release_tab.disabled = false;
             cart.showRelease();
+            gotoRelease();
+            searchData = null;
+            return;
         }
+        gotoAdd();
+        searchData = null;
         return;
-    } else { // I'm not sure how we'd get here
-        show_message(data.num_rows + " found.  Multiple people not yet supported.");
-        return;
-    }
 }
 
 // findArt: find art matching the criteria with the right parameters
@@ -1250,7 +1282,6 @@ function payShown() {
         cart.showNext();
         cart.showRelease();
         cart.hideStartOver();
-        cart.hideAdd();
         add_tab.disabled = true;
         if (pay_button_pay != null) {
             var rownum;
@@ -1271,7 +1302,6 @@ function payShown() {
             document.getElementById('pay-desc').value='';
             document.getElementById('pay-check-div').hidden = true;
             document.getElementById('pay-ccauth-div').hidden = true;
-            cart.hideAdd();
         } else {
             cart.showNext();
             cart.showRelease();
@@ -1417,7 +1447,6 @@ function payShown() {
         if (cart.getPmtLength() > 0) {
             cart.hideStartOver();
         } else {
-            cart.showAdd();
             cart.showStartOver();
         }
     }
