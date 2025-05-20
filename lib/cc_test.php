@@ -246,7 +246,22 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                         $id = 'TBA';
                 }
 
-                $note = $badge['memId'] . ',' . $id . ',' . $badge['regid'] . ': memId, p/n id, regid';
+                // deal with mixed case usages and perid/newperid
+                if (array_key_exists('regid', $badge)) {
+                    $regid = $badge['regid'];
+                } else if (array_key_exists('regId', $badge)) {
+                    $regid = $badge['regId'];
+                } else {
+                    $regid = 'tbd';
+                }
+
+                if (array_key_exists('perid', $badge)) {
+                    $perid = $badge['perid'];
+                } else {
+                    $perid = $badge['newperid'];
+                }
+
+                $note = $badge['memId'] . ',' . $id . ',' . $regid . ': memId, p/n id, regid';
                 if ($planName != '') {
                     $note .= ($badge['inPlan'] ? (', Plan: ' . $planName) : ', NotInPlan');
                 }
@@ -260,7 +275,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                     $amount = $badge['price'] - $badge['paid'];
                 }
 
-                $metadata = array('regid' => $badge['regid'], 'perid' => $badge['perid'], 'memid' => $badge['memId'], 'rowno' => $rowno);
+                $metadata = array('regid' => $regid, 'perid' => $perid, 'memid' => $badge['memId'], 'rowno' => $rowno);
 
                 $itemName =  $badge['label'] . (($badge['memType'] == 'full' || $badge['memType'] == 'oneday') ? ' Membership' : '') .
                     ' for ' . $fullname;

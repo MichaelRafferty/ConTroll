@@ -405,7 +405,22 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                         $id = 'TBA';
                 }
 
-                $note = $badge['memId'] . ',' . $id . ',' . $badge['regid'] . ': memId, p/n id, regid';
+                // deal with mixed case usages and perid/newperid
+                if (array_key_exists('regid', $badge)) {
+                    $regid = $badge['regid'];
+                } else if (array_key_exists('regId', $badge)) {
+                    $regid = $badge['regId'];
+                } else {
+                    $regid = 'tbd';
+                }
+
+                if (array_key_exists('perid', $badge)) {
+                    $perid = $badge['perid'];
+                } else {
+                    $perid = $badge['newperid'];
+                }
+
+                $note = $badge['memId'] . ',' . $id . ',' . $regid . ': memId, p/n id, regid';
                 if ($planName != '') {
                     $note .= ($badge['inPlan'] ? (', Plan: ' . $planName) : ', NotInPlan');
                 }
@@ -420,8 +435,8 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 }
 
                 $metadata = array(
-                    'regid' => strval($badge['regid']),
-                    'perid' => strval($badge['perid']),
+                    'regid' => strval($regid),
+                    'perid' => strval($perid),
                     'memid' => strval($badge['memId']),
                     'rowno' => strval($rowno)
                 );
