@@ -56,5 +56,5 @@ load_cc_procs();
      $locationId = $cc['location'];
  }
 
- cc_cancelOrder('atcon', $orderId, false, $locationId);
+ cc_cancelOrder('atcon', $orderId, true, $locationId);
  ajaxSuccess(array ('status' => 'success', 'message' => "Order $orderId cancelled."));
