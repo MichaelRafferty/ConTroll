@@ -183,6 +183,7 @@ if ($coupon != null) {
                     // now find the reg entry to match this item
                     $rowno = $item['metadata']['rowno'];
                     $badges[$rowno]['couponDiscount'] = $thisItemDiscount / 100;
+                    $badges[$rowno]['coupon'] = $coupon['id'];
                 }
             }
         }

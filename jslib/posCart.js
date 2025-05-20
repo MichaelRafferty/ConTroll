@@ -262,12 +262,13 @@ class PosCart {
         this.drawCart();
     }
 
-    setCouponDisount(perid, regid, discount) {
+    setCouponDisount(perid, regid, couponId, discount) {
         var pindex = this.#cartPerinfoMap.get(perid);
         var mem =  this.#cartPerinfo[pindex].memberships;
         for (var i = 0; i < mem.length; i++) {
             if (mem[i].regid == regid) {
                 this.#cartPerinfo[pindex].memberships[i].couponDiscount = discount;
+                this.#cartPerinfo[pindex].memberships[i].coupon = couponId;
                 break;
             }
         }
@@ -960,12 +961,14 @@ class PosCart {
 
     // Clear the coupon matching couponId from all rows in the cart
     clearCoupon(couponId) {
-        // clear the discount from the membership rows
-        for (var rownum in this.#membershipRows ) {
-            var mrow = this.#membershipRows[rownum];
-            if (mrow.coupon == couponId && (mrow.status == 'unpaid' || mrow.status == 'plan')) {
-                mrow.coupon = null;
-                mrow.couponDiscount = 0;
+        // clear the discount from the membership rows from the cart element
+        for (var cartRow in this.#cartPerinfo) {
+            for (var rownum in this.#cartPerinfo[cartRow].memberships ) {
+                var mrow = this.#cartPerinfo[cartRow].memberships[rownum];
+                if (mrow.coupon == couponId && (mrow.status == 'unpaid' || mrow.status == 'plan')) {
+                    this.#cartPerinfo[cartRow].memberships[rownum].coupon = null;
+                    this.#cartPerinfo[cartRow].memberships[rownum].couponDiscount = 0;
+                }
             }
         }
         // remove the discount coupon from the payment
