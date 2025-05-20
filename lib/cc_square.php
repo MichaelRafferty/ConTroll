@@ -632,6 +632,8 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     $rtn['results'] = $results;
      // need to pass back order id, total_amount, tax_amount,
     $rtn['order'] = $order;
+    $phpOrder = json_decode(json_encode($order), true);
+    $rtn['items'] = $phpOrder['line_items'];
     $rtn['preTaxAmt'] = $orderValue;
     $rtn['discountAmt'] = $order->getTotalDiscountMoney()->getAmount() / 100;
     $rtn['taxAmt'] = $order->getTotalTaxMoney()->getAmount() / 100;

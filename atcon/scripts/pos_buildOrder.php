@@ -175,11 +175,11 @@ $response['rtn'] = $rtn;
 // if coupon discount, update the badges with the coupon discount to update the in memory cart
 if ($coupon != null) {
     foreach ($rtn['items'] as $item) {
-        if (array_key_exists('AppliedDiscounts', $item)) {
-            for ($discountNo = 0; $discountNo < count($item['AppliedDiscounts']); $discountNo++) {
-                $discount = $item['AppliedDiscounts'][$discountNo];
+        if (array_key_exists('applied_discounts', $item)) {
+            for ($discountNo = 0; $discountNo < count($item['applied_discounts']); $discountNo++) {
+                $discount = $item['applied_discounts'][$discountNo];
                 if ($discount['uid'] == 'couponDiscount') {
-                    $thisItemDiscount = $discount['appliedAmount'];
+                    $thisItemDiscount = $discount['applied_amount'];
                     // now find the reg entry to match this item
                     $rowno = $item['metadata']['rowno'];
                     $badges[$rowno]['couponDiscount'] = $thisItemDiscount / 100;

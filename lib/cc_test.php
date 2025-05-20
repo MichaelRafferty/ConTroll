@@ -282,18 +282,18 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
 
                 if (array_key_exists('newplan', $results) && $results['newplan'] == 1) {
                     if ($badge['inPlan'])
-                        $item['AppliedDiscounts'][] = 'planDeferment';
+                        $item['applied_discounts'][] = 'planDeferment';
                 }
 
                 if ($couponDiscount && ($badge['status'] == 'unpaid' || $badge['status'] == 'plan')) {
                     $cat = $badge['memCategory'];
                     if (in_array($cat, array('standard','supplement','upgrade','add-on', 'virtual'))) {
-                        $item['AppliedDiscounts'][] = array('uid' => 'couponDiscount', 'appliedAmount' => 0);
+                        $item['applied_discounts'][] = array('uid' => 'couponDiscount', 'applied_amount' => 0);
                         $totalCouponDiscountable += $item['basePriceMoney'];
                     }
                 }
                 if ($managerDiscount && ($badge['status'] == 'unpaid' || $badge['status'] == 'plan')) {
-                    $item['AppliedDiscounts'][] = array('uid' => 'managerDiscount',  'appliedAmount' => 0);
+                    $item['applied_discounts'][] = array('uid' => 'managerDiscount',  'applied_amount' => 0);
                     $totalManagerDiscountable += $item['basePriceMoney'];
                 }
                 $orderLineItems[$lineid] = $item;
@@ -310,9 +310,9 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                 $maxAmt = -1;
                 for ($itemNo = 0; $itemNo < count($orderLineItems); $itemNo++) {
                     $item = $orderLineItems[$itemNo];
-                    if (array_key_exists('AppliedDiscounts', $item)) {
-                        for ($discountNo = 0; $discountNo < count($item['AppliedDiscounts']); $discountNo++) {
-                            $discount = $item['AppliedDiscounts'][$discountNo];
+                    if (array_key_exists('applied_discounts', $item)) {
+                        for ($discountNo = 0; $discountNo < count($item['applied_discounts']); $discountNo++) {
+                            $discount = $item['applied_discounts'][$discountNo];
                             if ($discount['uid'] == 'couponDiscount' || $discount['uid'] == 'managerDiscount') {
                                 $thisItemDiscount = round(($item['basePriceMoney'] * $totalDiscount) / $totalCouponDiscountable);
                                 if ($thisItemDiscount > $discountRemaining)
@@ -320,14 +320,14 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                                 $discountRemaining -= $thisItemDiscount;
                                 if ($item['basePriceMoney'] > $maxAmt)
                                     $lastItemNo = $itemNo;
-                                $orderLineItems[$itemNo]['AppliedDiscounts'][$discountNo]['appliedAmount'] = $thisItemDiscount;
+                                $orderLineItems[$itemNo]['applied_discounts'][$discountNo]['applied_amount'] = $thisItemDiscount;
                             }
                         }
                     }
                 }
                 // deal with rounding error by fudging largest item
                 if ($discountRemaining > 0 && $lastItemNo >= 0) {
-                    $orderLineItems[$itemNo]['AppliedDiscounts'][$discountNo]['appliedAmount'] += $discountRemaining;
+                    $orderLineItems[$itemNo]['applied_discounts'][$discountNo]['applied_amount'] += $discountRemaining;
                 }
             }
         }
