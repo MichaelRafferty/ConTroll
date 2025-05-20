@@ -112,6 +112,7 @@ foreach ($cart_perinfo as $row) {
             'balDue' => $unpaid,
             'label' => $membership['label'],
             'memType' => $membership['memType'],
+            'memCategory' => $membership['memCategory'],
             'taxable' => $membership['taxable'],
             'price' => $price - $paid,
             'status' => $membership['status'],
@@ -143,6 +144,7 @@ $results = array(
     'total' => $amount,
     'totalPaid' => $totalPaid,
     'discount' => $discount,
+    'coupon' => $coupon,
 );
 $response['amount'] = $amount;
 
@@ -169,6 +171,24 @@ if ($rtn == null) {
 }
 $rtn['totalPaid'] = $totalPaid;
 $response['rtn'] = $rtn;
+
+// if coupon discount, update the badges with the coupon discount to update the in memory cart
+if ($coupon != null) {
+    foreach ($rtn['items'] as $item) {
+        if (array_key_exists('AppliedDiscounts', $item)) {
+            for ($discountNo = 0; $discountNo < count($item['AppliedDiscounts']); $discountNo++) {
+                $discount = $item['AppliedDiscounts'][$discountNo];
+                if ($discount['uid'] == 'couponDiscount') {
+                    $thisItemDiscount = $discount['appliedAmount'];
+                    // now find the reg entry to match this item
+                    $rowno = $item['metadata']['rowno'];
+                    $badges[$rowno]['couponDiscount'] = $thisItemDiscount / 100;
+                }
+            }
+        }
+    }
+    $response['badges'] = $badges;
+}
 
 $upT = <<<EOS
 UPDATE transaction

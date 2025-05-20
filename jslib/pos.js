@@ -2050,6 +2050,13 @@ addUnpaid(tid) {
             this.#payForcePayShown = false;
             this.payShown();
         }
+        if (data.hasOwnProperty('badges')) {
+            // badges in return, update cart rows
+            for (var i = 0; i < data.badges.length; i++) {
+                var badge = data.badges[i];
+                cart.setCouponDisount(badge.perid, badge.regid, badge.couponDiscount)
+            }
+        }
         cart.drawCart();
     }
 

@@ -201,7 +201,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     //	$this->catalogVersion = $values['catalogVersion'] ?? null;  (NOT USED by ConTroll)
     //	$this->variationName = $values['variationName'] ?? null;  (NOT USED by ConTroll)
     //	$this->itemType = $values['itemType'] ?? null;
-    //	$this->metadata = $values['metadata'] ?? null;  (NOT USED by ConTroll)
+    //	$this->metadata = $values['metadata'] ?? null;
     //	$this->modifiers = $values['modifiers'] ?? null;  (NOT USED by ConTroll)
     //	$this->basePriceMoney = $values['basePriceMoney'] ?? null;
     //	$this->variationTotalPriceMoney = $values['variationTotalPriceMoney'] ?? null;  (NOT USED by ConTroll)
@@ -418,6 +418,8 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     $amount = round(($badge['price']-$badge['paid']) * 100);
                 }
 
+                $metadata = array('regid' => $badge['regid'], 'perid' => $badge['perid'], 'memid' => $badge['memId'], 'rowno' => $rowno);
+
                 if (array_key_exists('complete_trans', $badge) && $badge['complete_trans'] > 0 && $amount == 0)
                     continue; // skip paid complete items in order for sending to square
 
@@ -429,6 +431,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     'name' => mb_substr($itemName, 0, 128),
                     'quantity' => 1,
                     'note' => $note,
+                    'metadata' => $metadata,
                     'basePriceMoney' => new Money([
                         'amount' => $amount,
                         'currency' => $currency,

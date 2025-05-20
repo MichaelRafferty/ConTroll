@@ -262,6 +262,17 @@ class PosCart {
         this.drawCart();
     }
 
+    setCouponDisount(perid, regid, discount) {
+        var pindex = this.#cartPerinfoMap.get(perid);
+        var mem =  this.#cartPerinfo[pindex].memberships;
+        for (var i = 0; i < mem.length; i++) {
+            if (mem[i].regid == regid) {
+                this.#cartPerinfo[pindex].memberships[i].couponDiscount = discount;
+                break;
+            }
+        }
+    }
+
     getPerinfoNote(index) {
         return this.#cartPerinfo[index].open_notes;
     }

@@ -74,7 +74,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
         $custid = 't-' . $results['transid'];
     }
 
-    $orderLineitems = [];
+    $orderLineItems = [];
     $orderDiscounts = [];
     $lineid = 0;
     $orderValue = 0;
@@ -152,7 +152,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
             'note' => $note,
             'basePriceMoney' => round($results['total'] * 100),
         ];
-        $orderLineitems[$lineid] = $item;
+        $orderLineItems[$lineid] = $item;
         $orderValue = $results['total'];
         $itemsBuilt = true;
     }
@@ -188,7 +188,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                     $item['taxable'] = 'Y';
                     $item['taxUid'] = $taxLabel;
                 }
-                $orderLineitems[$lineid] = $item;
+                $orderLineItems[$lineid] = $item;
                 $orderValue += $art['amount'];
                 $lineid++;
             }
@@ -229,6 +229,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
         $totalCouponDiscountable = 0;
         $totalManagerDiscountable = 0;
         if (array_key_exists('badges', $results) && is_array($results['badges']) && count($results['badges']) > 0) {
+            $rowno = 0;
             foreach ($results['badges'] as $badge) {
                 if (!array_key_exists('paid', $badge)) {
                     $badge['paid'] = 0;
@@ -260,6 +261,8 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                     $amount = $badge['price'] - $badge['paid'];
                 }
 
+                $metadata = array('regid' => $badge['regid'], 'perid' => $badge['perid'], 'memid' => $badge['memId'], 'rowno' => $rowno);
+
                 $itemName =  $badge['label'] . (($badge['memType'] == 'full' || $badge['memType'] == 'oneday') ? ' Membership' : '') .
                     ' for ' . $fullname;
                 $item = [
@@ -268,6 +271,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                     'quantity' => 1,
                     'note' => $note,
                     'basePriceMoney' => round($amount * 100),
+                    'metadata' => $metadata,
                 ];
                 if ($taxRate > 0 && array_key_exists('taxable', $badge) && $badge['taxable'] == 'Y') {
                     // create the Line Item tax record, if there is a tax rate, and the membership is taxable
@@ -292,9 +296,10 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                     $item['AppliedDiscounts'][] = array('uid' => 'managerDiscount',  'appliedAmount' => 0);
                     $totalManagerDiscountable += $item['basePriceMoney'];
                 }
-                $orderLineitems[$lineid] = $item;
+                $orderLineItems[$lineid] = $item;
                 $orderValue += $badge['price'];
                 $lineid++;
+                $rowno++;
             }
 
             if ($couponDiscount && $results['discount'] > 0) {
@@ -303,8 +308,8 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                 $discountRemaining = $totalDiscount;
                 $lastItemNo = -1;
                 $maxAmt = -1;
-                for ($itemNo = 0; $itemNo < count($orderLineitems); $itemNo++) {
-                    $item = $orderLineitems[$itemNo];
+                for ($itemNo = 0; $itemNo < count($orderLineItems); $itemNo++) {
+                    $item = $orderLineItems[$itemNo];
                     if (array_key_exists('AppliedDiscounts', $item)) {
                         for ($discountNo = 0; $discountNo < count($item['AppliedDiscounts']); $discountNo++) {
                             $discount = $item['AppliedDiscounts'][$discountNo];
@@ -315,14 +320,14 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                                 $discountRemaining -= $thisItemDiscount;
                                 if ($item['basePriceMoney'] > $maxAmt)
                                     $lastItemNo = $itemNo;
-                                $orderLineitems[$itemNo]['AppliedDiscounts'][$discountNo]['appliedAmount'] = $thisItemDiscount;
+                                $orderLineItems[$itemNo]['AppliedDiscounts'][$discountNo]['appliedAmount'] = $thisItemDiscount;
                             }
                         }
                     }
                 }
                 // deal with rounding error by fudging largest item
                 if ($discountRemaining > 0 && $lastItemNo >= 0) {
-                    $orderLineitems[$itemNo]['AppliedDiscounts'][$discountNo]['appliedAmount'] += $discountRemaining;
+                    $orderLineItems[$itemNo]['AppliedDiscounts'][$discountNo]['appliedAmount'] += $discountRemaining;
                 }
             }
         }
@@ -349,7 +354,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                     'note' => $note,
                     'basePriceMoney' => round($space['approved_price'] * 100),
                 ];
-                $orderLineitems[$lineid] = $item;
+                $orderLineItems[$lineid] = $item;
                 $orderValue += $space['approved_price'];
                 $lineid++;
             }
@@ -400,7 +405,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
         'referenceId' => $con['id'] . '-' . $results['transid'],
         'source' => $con['conname'] . '-' . $source,
         'customerId' => $con['id'] . '-' . $custid,
-        'lineItems' => $orderLineitems,
+        'lineItems' => $orderLineItems,
         'discounts' => $orderDiscounts,
     ];
 
@@ -415,7 +420,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
     $taxAbleBase = 0;
     $itemTaxTotal = 0;
     if ($needTaxes) {
-        foreach ($orderLineitems as $item) {
+        foreach ($orderLineItems as $item) {
             if (array_key_exists('taxable', $item)) {
                 $item['taxAmount'] = round($item['basePriceMoney'] * $order['percentage'] / 100);
                 $itemTaxTotal += $item['taxAmount'];
@@ -432,6 +437,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
     $rtn['results'] = $results;
     // need to pass back order id, total_amount, tax_amount,
     $rtn['order'] = $order;
+    $rtn['items'] = $orderLineItems;
     $rtn['preTaxAmt'] = $orderValue;
     $rtn['discountAmt'] = $discountAmt / 100;
     $rtn['taxAmt'] = $taxAmount / 100;
