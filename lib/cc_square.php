@@ -387,6 +387,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
         }
 
         if (array_key_exists('badges', $results) && is_array($results['badges']) && count($results['badges']) > 0) {
+            $rowno = 0;
             foreach ($results['badges'] as $badge) {
                 if (!array_key_exists('paid', $badge)) {
                     $badge['paid'] = 0;
@@ -418,7 +419,12 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     $amount = round(($badge['price']-$badge['paid']) * 100);
                 }
 
-                $metadata = array('regid' => $badge['regid'], 'perid' => $badge['perid'], 'memid' => $badge['memId'], 'rowno' => $rowno);
+                $metadata = array(
+                    'regid' => strval($badge['regid']),
+                    'perid' => strval($badge['perid']),
+                    'memid' => strval($badge['memId']),
+                    'rowno' => strval($rowno)
+                );
 
                 if (array_key_exists('complete_trans', $badge) && $badge['complete_trans'] > 0 && $amount == 0)
                     continue; // skip paid complete items in order for sending to square
@@ -471,6 +477,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 $orderLineitems[$lineid] = $item;
                 $orderValue += $badge['price'];
                 $lineid++;
+                $rowno++;
             }
         }
         if (array_key_exists('spaces', $results)) {
