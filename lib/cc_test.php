@@ -226,8 +226,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
             $orderDiscounts[] = $item;
         }
 
-        $totalCouponDiscountable = 0;
-        $totalManagerDiscountable = 0;
+        $totalDiscountable = 0;
         if (array_key_exists('badges', $results) && is_array($results['badges']) && count($results['badges']) > 0) {
             $rowno = 0;
             foreach ($results['badges'] as $badge) {
@@ -289,12 +288,12 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                     $cat = $badge['memCategory'];
                     if (in_array($cat, array('standard','supplement','upgrade','add-on', 'virtual'))) {
                         $item['applied_discounts'][] = array('uid' => 'couponDiscount', 'applied_amount' => 0);
-                        $totalCouponDiscountable += $item['basePriceMoney'];
+                        $totalDiscountable += $item['basePriceMoney'];
                     }
                 }
                 if ($managerDiscount && ($badge['status'] == 'unpaid' || $badge['status'] == 'plan')) {
                     $item['applied_discounts'][] = array('uid' => 'managerDiscount',  'applied_amount' => 0);
-                    $totalManagerDiscountable += $item['basePriceMoney'];
+                    $totalDiscountable += $item['basePriceMoney'];
                 }
                 $orderLineItems[$lineid] = $item;
                 $orderValue += $badge['price'];
@@ -302,7 +301,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                 $rowno++;
             }
 
-            if ($couponDiscount && $results['discount'] > 0) {
+            if ($results['discount'] > 0) {
                 // apply the coupon discount amounts proportionally, square would do this for us normally
                 $totalDiscount = $results['discount'] * 100;
                 $discountRemaining = $totalDiscount;
@@ -314,7 +313,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                         for ($discountNo = 0; $discountNo < count($item['applied_discounts']); $discountNo++) {
                             $discount = $item['applied_discounts'][$discountNo];
                             if ($discount['uid'] == 'couponDiscount' || $discount['uid'] == 'managerDiscount') {
-                                $thisItemDiscount = round(($item['basePriceMoney'] * $totalDiscount) / $totalCouponDiscountable);
+                                $thisItemDiscount = round(($item['basePriceMoney'] * $totalDiscount) / $totalDiscountable);
                                 if ($thisItemDiscount > $discountRemaining)
                                     $thisItemDiscount = $discountRemaining;
                                 $discountRemaining -= $thisItemDiscount;

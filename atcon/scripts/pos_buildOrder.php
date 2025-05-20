@@ -83,6 +83,12 @@ if (array_key_exists('couponCode', $_POST) && $_POST['couponCode'] != '') {
     $coupon = null;
 }
 
+$drow = null;
+if (array_key_exists('drow', $_POST) && $_POST['drow'] != null) {
+    $drow = $_POST['drow'];
+    $discount = $_POST['discountAmt'];
+}
+
 // build the badge list for the order, do not include the already paid items
 $amount = 0;
 $totalAmountDue = 0;
@@ -191,7 +197,26 @@ if ($coupon != null) {
             }
         }
     }
+}
+if ($drow != null) {
+    foreach ($rtn['items'] as $item) {
+        if (array_key_exists('applied_discounts', $item)) {
+            for ($discountNo = 0; $discountNo < count($item['applied_discounts']); $discountNo++) {
+                $discount = $item['applied_discounts'][$discountNo];
+                if (str_starts_with($discount['uid'], 'managerDiscount')) {
+                    if (array_key_exists('applied_amount', $discount))
+                        $thisItemDiscount = $discount['applied_amount'];
+                    else
+                        $thisItemDiscount = $discount['applied_money']['amount'];
+                    // now find the reg entry to match this item
+                    $rowno = $item['metadata']['rowno'];
+                    $badges[$rowno]['paid'] += $thisItemDiscount / 100;
+                }
+            }
+        }
+    }
     $response['badges'] = $badges;
+    $response['drow'] = $drow;
 }
 
 $upT = <<<EOS

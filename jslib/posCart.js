@@ -261,11 +261,12 @@ class PosCart {
         this.drawCart();
     }
 
-    setCouponDisount(perid, regid, couponId, discount) {
+    setCouponDisount(perid, regid, paid, couponId, discount) {
         var pindex = this.#cartPerinfoMap.get(perid);
         var mem =  this.#cartPerinfo[pindex].memberships;
         for (var i = 0; i < mem.length; i++) {
             if (mem[i].regid == regid) {
+                this.#cartPerinfo[pindex].memberships[i].paid = paid;
                 this.#cartPerinfo[pindex].memberships[i].couponDiscount = discount;
                 this.#cartPerinfo[pindex].memberships[i].coupon = couponId;
                 break;
@@ -317,12 +318,6 @@ class PosCart {
             return false;
 
         return true;
-    }
-
-    getPriorDiscount() {
-        console.log("getPriorDiscount: TODO: Get transactional discount");
-        // TODO get transactional discounts
-        return 0;
     }
 
     pushMembership(mem) {

@@ -94,7 +94,12 @@ if (array_key_exists('couponDiscount', $_POST))
 else
     $couponDiscount = 0;
 
-    $preTaxAmt -= $couponDiscount;
+if (array_key_exists('discountAmt', $_POST))
+    $discountAmt = $_POST['discountAmt'];
+else
+    $discountAmt = 0;
+
+$preTaxAmt -= $couponDiscount + $discountAmt;
 
 if ($amt != $preTaxAmt + $taxAmt) {
     ajaxError('Invalid payment amount passed: preTax + Tax != Amount');
@@ -115,6 +120,11 @@ if (sizeof($cart_perinfo) <= 0) {
     ajaxError('The cart is empty');
     return;
 }
+
+if (array_key_exists('drow', $_POST))
+    $drow = $_POST['drow'];
+else
+    $drow = null;
 
 $override = $_POST['override'];
 if (array_key_exists('poll', $_POST)) {
@@ -471,6 +481,17 @@ EOS;
         }
     }
 
+    if ($drow != null) {
+        $paramarray = array ($master_tid, 'discount', $drow['desc'], $drow['amt'], 0, $drow['amt'], null, $user_perid,
+            null, null, null, null, null, null, $user_perid, 'APPLIED', null);
+        $new_pid = dbSafeInsert($insPmtSQL, $typestr, $paramarray);
+
+        if ($new_pid === false) {
+            ajaxError('Error adding manager discount payment to database');
+            return;
+        }
+    }
+
     // now the main payment
     $paramarray = array ($master_tid, $paymentType, $desc, $preTaxAmt, $taxAmt, $approved_amt, $auth, $user_perid,
         $last4, $nonceCode, $paymentId, $txTime, $receiptUrl, $receiptNumber, $user_perid, $status, $paymentId);
@@ -502,11 +523,11 @@ foreach ($cart_perinfo as $perinfo) {
     foreach ($perinfo['memberships'] as $cart_row) {
         if ($cart_row['price'] == '')
             $cart_row['price'] = 0;
-        if ($cart_row['couponDiscount'] == '')
+        if ((!array_key_exists('couponDiscount', $cart_row)) || $cart_row['couponDiscount'] == '')
             $cart_row['couponDiscount'] = 0;
         if ($cart_row['paid'] == '')
             $cart_row['paid'] = 0;
-        if ($cart_row['coupon'] == '')
+        if ((!array_key_exists('coupon', $cart_row)) || $cart_row['coupon'] == '')
             $cart_row['coupon'] = null;
         $unpaid = $cart_row['price'] - ($cart_row['couponDiscount'] + $cart_row['paid']);
         if ($unpaid > 0) {
