@@ -213,7 +213,7 @@ if ($otherPay == 0) { // this is a plan payment or badge purchase payment
                 continue;
             $badges[] = array('id' => $mem['create_trans'],
                               'create_date' => $mem['create_date'],
-                              'regId' => $mem['regId'],
+                              'regId' => $mem['regid'],
                               'memId' => $mem['memId'],
                               'conid' => $mem['conid'],
                               'status' => $mem['status'],
