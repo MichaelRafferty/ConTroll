@@ -93,7 +93,7 @@ if (!$refresh) {
     $holderRegSQL = <<<EOS
 SELECT r.status, r.memId, m.*, a.shortname AS ageShort, a.label AS ageLabel, m.taxable,
        r.price AS actPrice, IFNULL(r.paid,0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,
-       r.conid, r.create_date, r.id AS regId, r.create_trans, r.complete_trans,
+       r.conid, r.create_date, r.id AS regid, r.create_trans, r.complete_trans,
        r.perid AS regPerid, r.newperid AS regNewperid, r.planId,
        IFNULL(r.complete_trans, r.create_trans) AS sortTrans,
        IFNULL(tp.complete_date, t.create_date) AS transDate,
@@ -207,7 +207,7 @@ EOS;
                 $item['create_date'] = $m['create_date'];
                 $item['create_trans'] = $m['create_trans'];
                 $item['complete_trans'] = $m['complete_trans'];
-                $item['regId'] = $m['regId'];
+                $item['regid'] = $m['regid'];
                 $item['memId'] = $m['memId'];
                 $item['conid'] = $m['conid'];
                 $item['regPerid'] = $m['regPerid'];
