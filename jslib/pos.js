@@ -586,6 +586,9 @@ class Pos {
         if (!inConTroll && baseManagerEnabled) {
             base_toggleManager();
         }
+        // clear the coupon
+        coupon = null;
+        coupon = new Coupon();
         // empty cart
         cart.startOver();
         if (this.#find_unpaid_button)
