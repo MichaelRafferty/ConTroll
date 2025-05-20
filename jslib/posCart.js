@@ -187,6 +187,15 @@ class PosCart {
         return make_copy(this.#cartPmt);
     }
 
+    getCouponPmt() {
+        for (var rownum in this.#cartPmt) {
+            var prow = this.#cartPmt[rownum];
+            if (prow.type == 'coupon')
+                return make_copy(prow);
+        }
+        return null;
+    }
+
     // get total price
     getTotalPrice() {
         return Number(this.#totalPrice);

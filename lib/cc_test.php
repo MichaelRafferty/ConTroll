@@ -547,7 +547,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     $receipt_number = 'test';
     $last4 = '0000';
     $id='test';
-    $total = $ccParams['total'] + $change;
+    $total = $ccParams['total'];
 
     $rtn = array();
     $rtn['txnfields'] = array('transid','type','category','description','source','pretax', 'tax', 'amount',

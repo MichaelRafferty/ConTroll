@@ -2187,7 +2187,7 @@ addUnpaid(tid) {
         var checkno = null;
         var desc = null;
         var ptype = null;
-        var total_amount_due = Number(this.#preTaxAmt) + Number(this.#taxAmt);
+        var total_amount_due = Number(this.#preTaxAmt) + Number(this.#taxAmt) - Number(this.#couponDiscount);
         var pt_cash = document.getElementById('pt-cash').checked;
         var pt_check = document.getElementById('pt-check').checked;
         var pt_online = document.getElementById('pt-online');
@@ -2345,6 +2345,7 @@ addUnpaid(tid) {
             var payor = Number(document.getElementById('pay-emailsel').value);
             var country = '';
             var couponCode = coupon.getCouponCode();
+            var cprow = cart.getCouponPmt();
 
             if (payor >= 0 && email == cart.getEmail(payor)) {
                 payorPerid = cart.getPerid(payor);
@@ -2368,7 +2369,8 @@ addUnpaid(tid) {
             orderId: this.#pay_currentOrderId,
             cart_perinfo: JSON.stringify(cart.getCartPerinfo()),
             new_payment: prow,
-            coupon: prow.coupon,
+            coupon: coupon.getCouponId(),
+            couponPayment: cprow,
             change: crow,
             nonce: nonce,
             user_id: this.#user_id,
@@ -2377,6 +2379,7 @@ addUnpaid(tid) {
             preTaxAmt: this.#preTaxAmt,
             taxAmt: this.#taxAmt,
             totalAmtDue: total_amount_due,
+            couponDiscount: this.#couponDiscount,
             override: this.#payOverride,
             poll: this.#payPoll,
         };
@@ -2821,18 +2824,33 @@ addUnpaid(tid) {
                 pay_html += `
     <div class="row mt-2">
         <div class="col-sm-2 ms-0 me-2 p-0">Prior Discount:</div>
-        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-amt-due">$` + Number(this.#pay_prior_discount).toFixed(2) + `</div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-prior-disc">$` + Number(this.#pay_prior_discount).toFixed(2) + `</div>
     </div>
 `;
             }
             pay_html += `
     <div class="row mt-1">
         <div class="col-sm-2 ms-0 me-2 p-0">Order Total:</div>
-        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-amt-due">$` + Number(this.#preTaxAmt).toFixed(2) + `</div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-pre-tax-amt">$` + Number(this.#preTaxAmt).toFixed(2) + `</div>
     </div>
+`;
+            if (this.#couponDiscount > 0) {
+                var pretax = Number(this.#preTaxAmt) - Number(this.#couponDiscount);
+                pay_html += `
+    <div class="row mt-1">
+        <div class="col-sm-2 ms-0 me-2 p-0">Coupon:</div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-coupon-disc">$` + (-Number(this.#couponDiscount)).toFixed(2) + `</div>
+    </div>
+       <div class="row mt-1">
+        <div class="col-sm-2 ms-0 me-2 p-0">Pre Tax:</div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-post-coupon">$` + Number(pretax).toFixed(2) + `</div>
+    </div>
+`;
+            }
+            pay_html += `
     <div class="row mt-1">
         <div class="col-sm-2 ms-0 me-2 p-0">` + this.#taxLabel + `:</div>
-        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-amt-due">$` + Number(this.#taxAmt).toFixed(2) + `</div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-tax-amt">$` + Number(this.#taxAmt).toFixed(2) + `</div>
     </div>
     <div class="row mt-1">
         <div class="col-sm-2 ms-0 me-2 p-0">Amount Due:</div>
