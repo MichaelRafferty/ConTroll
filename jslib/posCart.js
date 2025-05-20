@@ -4,7 +4,6 @@
 // Author: Syd Weinstein
 class PosCart {
 // cart dom items
-    #voidButton = null;
     #startoverButton = null;
     #reviewButton = null;
     #nextButton = null;
@@ -73,7 +72,6 @@ class PosCart {
 // lookup all DOM elements
 // ask to load mapping tables
         this.#cartDiv = document.getElementById("cart");
-        this.#voidButton = document.getElementById("void_btn");
         this.#startoverButton = document.getElementById("startover_btn");
         this.#reviewButton = document.getElementById("review_btn");
         this.#nextButton = document.getElementById("next_btn");
@@ -146,14 +144,6 @@ class PosCart {
 
     showNoChanges() {
         this.#nochangesButton.hidden = false;
-    }
-
-    hideVoid() {
-        this.#voidButton.hidden = true;
-    }
-
-    showVoid() {
-        this.#voidButton.hidden = false;
     }
 
     hideNext() {
@@ -353,7 +343,6 @@ class PosCart {
         this.#priorPayments = null;
 
         this.hideNext();
-        this.hideVoid();
         this.#inReview = false;
         this.drawCart();
     }
@@ -1251,7 +1240,6 @@ class PosCart {
         if (this.#freezeCart) {
             pos.setReviewTabDisable(true);
             this.#reviewButton.hidden = true;
-            this.hideStartOver();
         }
         pos.setFindUnpaidHidden(num_rows > 0);
     }

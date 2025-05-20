@@ -537,40 +537,6 @@ class Pos {
         return hover_text;
     }
 
-    // void transaction - TODO: needs to be written to actually void out a transaction in progress
-    voidTrans() {
-        var postData = {
-            ajax_request_action: 'pos_voidPayment',
-            user_id: this.#user_id,
-            pay_tid: this.#pay_tid,
-            cart_perinfo: JSON.stringify(cart.getCartPerinfo()),
-        };
-        $("button[name='void_btn']").attr("disabled", true);
-        $.ajax({
-            method: "POST",
-            url: "scripts/pos_voidPayment.php",
-            data: postData,
-            success: function (data, textstatus, jqxhr) {
-                if (data.error !== undefined) {
-                    show_message(data.error, 'error');
-                    $("button[name='find_btn']").attr("disabled", false);
-                    return;
-                }
-                if (data.message !== undefined) {
-                    show_message(data.message, 'success');
-                }
-                if (data.warn !== undefined) {
-                    show_message(data.warn, 'warn');
-                }
-                startOver(0);
-            },
-            error: function (jqXHR, textstatus, errorThrown) {
-                $("button[name='void_btn']").attr("disabled", false);
-                showAjaxError(jqXHR, textstatus, errorThrown);
-            }
-        });
-    }
-
     // if no memberships or payments have been added to the database, this will reset for the next customer
     startOver(reset_all) {
         if (!this.confirmDiscardAddEdit(false))
@@ -591,6 +557,35 @@ class Pos {
         coupon = new Coupon();
         // empty cart
         cart.startOver();
+        if (this.#pay_currentOrderId && this.#pay_currentOrderId != '') {
+            var postData = {
+                ajax_request_action: 'cancelOrder',
+                orderId: this.#pay_currentOrderId,
+                user_id: this.#user_id,
+            };
+            $.ajax({
+                method: "POST",
+                url: "scripts/pos_cancelOrder.php",
+                data: postData,
+                success: function (data, textstatus, jqxhr) {
+                    if (data.error !== undefined) {
+                        show_message(data.error, 'error');
+                        return;
+                    }
+                    if (data.message !== undefined) {
+                        show_message(data.message, 'success');
+                    }
+                    if (data.warn !== undefined) {
+                        show_message(data.warn, 'warn');
+                    }
+                },
+                error: function (jqXHR, textstatus, errorThrown) {
+                    $("button[name='find_btn']").attr("disabled", false);
+                    showAjaxError(jqXHR, textstatus, errorThrown);
+                }
+            });
+        }
+        console.log('startOver: ' + this.#pay_currentOrderId);
         if (this.#find_unpaid_button)
             this.#find_unpaid_button.hidden = false;
         // empty search strings and results
@@ -615,7 +610,6 @@ class Pos {
         if (this.#print_tab)
             this.#print_tab.disabled = true;
         cart.hideNext();
-        cart.hideVoid();
         this.#pay_button_pay = null;
         this.#pay_button_ercpt = null;
         this.#pay_button_rcpt = null;
@@ -919,7 +913,7 @@ class Pos {
             this.#add_postal_code_field.style.backgroundColor = '';
             this.#add_email1_field.style.backgroundColor = '';
             this.#add_email2_field.style.backgroundColor = '';
-            if (this.void_table != null) {
+            if (this.#add_results_table != null) {
                 this.#add_results_table.destroy();
                 this.#add_results_table = null;
                 this.#add_results_div.innerHTML = "";
@@ -2721,6 +2715,7 @@ addUnpaid(tid) {
 
         var total_amount_due = this.#taxAmt + cart.getTotalPrice() - (cart.getTotalPaid() + this.#pay_prior_discount + Number(this.#couponDiscount));
         if (total_amount_due < 0.01) { // allow for rounding error, no need to round here
+            this.#pay_currentOrderId = null;
             // nothing more to pay
             if (this.#print_tab)
                 this.#print_tab.disabled = false;
@@ -2757,7 +2752,6 @@ addUnpaid(tid) {
                         setTimeout(checkboxCheck, 100);
                     }
                 }
-                cart.hideVoid();
             } else {
                 if (this.#print_tab) {
                     if (this.#reviewMissingPolicies == 0) {
@@ -2995,14 +2989,8 @@ addUnpaid(tid) {
             this.#receeiptEmailAddresses_div = document.getElementById('receeiptEmailAddresses');
             if (this.#receeiptEmailAddresses_div)
                 this.#receeiptEmailAddresses_div.innerHTML = '';
-            if (cart.getPmtLength() > 0) {
-                cart.showVoid();
-                cart.hideStartOver();
-            } else {
-                cart.hideVoid();
-                cart.showStartOver();
-            }
         }
+        cart.showStartOver();
     }
 
 // process online credit card payment
@@ -3026,7 +3014,6 @@ addUnpaid(tid) {
         this.#review_tab.disabled = true;
         cart.hideStartOver();
         cart.showNext();
-        cart.hideVoid();
         cart.freeze();
         this.#current_tab = this.#print_tab;
         this.newPrint = false;

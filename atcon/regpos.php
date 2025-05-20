@@ -234,7 +234,6 @@ page_init($page, $tab,
                     <button type="button" class="btn btn-primary btn-sm" id="cart_no_changes_btn" onclick="pos.reviewNoChanges();" hidden>No Changes</button>
                     <button type="button" class="btn btn-primary btn-sm" id="review_btn" onclick="pos.startReview();" hidden>Review Data</button>
                     <button type="button" class="btn btn-warning btn-sm" id="startover_btn" onclick="pos.startOver(1);" hidden>Start Over</button>
-                    <button type="button" class="btn btn-warning btn-sm" id="void_btn" onclick="pos.voidTrans();" hidden>Void</button>
                     <button type="button" class="btn btn-primary btn-sm" id="next_btn" onclick="pos.startOver(1);" hidden>Next Customer</button>
                 </div>
             </div>
