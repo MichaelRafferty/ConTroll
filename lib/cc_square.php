@@ -416,8 +416,10 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
 
                 if (array_key_exists('perid', $badge)) {
                     $perid = $badge['perid'];
-                } else {
+                } else if (array_key_exists('newperid', $badge)) {
                     $perid = $badge['newperid'];
+                } else {
+                    $perid = 'tbd';
                 }
 
                 $note = $badge['memId'] . ',' . $id . ',' . $regid . ': memId, p/n id, regid';
