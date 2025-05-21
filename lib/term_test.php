@@ -38,6 +38,8 @@ EOS;
         exit();
     }
     $updatedRow = $terminalQ->fetch_assoc();
+    $response = [];
+    $response['updCnt'] = 0;
     $response['updatedRow'] = $updatedRow;
     $terminalQ->free();
     return $response;

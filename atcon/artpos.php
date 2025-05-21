@@ -172,15 +172,6 @@ if (count($regionList) > 1) {
                                     <button type="button" class="btn btn-sm btn-primary" id="find_search_btn" name="find_btn" onclick="findPerson('search');">Find Person</button>
                                 </div>
                             </div>
-                            <div class="row mt-3">
-                                <div class="col-sm-12 text-bg-secondary">
-                                    Search Results
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-sm-12" id="find_results">
-                                </div>
-                            </div>
                         </div>
                     </div>
                     <div class="tab-pane fade" id="add-pane" role="tabpanel" aria-labelledby="add-tab" tabindex="1">
@@ -234,7 +225,6 @@ if (count($regionList) > 1) {
             <div id="cart"></div>
             <div class="row">
                 <div class="col-sm-12 mt-3">
-                    <button type="button" class="btn btn-primary btn-sm" id="add_btn" onclick="gotoAdd();" hidden>Add Art to Cart</button>
                     <button type="button" class="btn btn-primary btn-sm" id="pay_btn" onclick="gotoPay();" hidden>Pay Cart</button>
                     <button type='button' class='btn btn-primary btn-sm' id='release_btn' onclick='gotoRelease();' hidden>Release Artwork</button>
                     <button type="button" class="btn btn-warning btn-sm" id="startover_btn" onclick="startOver(1);" hidden>Start Over</button>
@@ -242,6 +232,39 @@ if (count($regionList) > 1) {
                 </div>
             </div>
         </div>       
+    </div>
+    <!--- search results modal -->
+    <div class='modal modal-lg' id='SearchResultsModal' tabindex='-5' aria-labelledby='SearchResults' data-bs-backdrop='static'
+         data-bs-keyboard='false' aria-hidden='true'>
+        <div class='modal-dialog'>
+            <div class='modal-content'>
+                <div class='modal-header bg-primary text-bg-primary'>
+                    <div class='modal-title' id='SearchResultsTitle'>
+                        Find Person Search Results
+                    </div>
+                </div>
+                <div class='modal-body' id='SearchResultsBody'>
+                    <div class='row mt-3'>
+                        <div class='col-sm-12 text-bg-secondary'>
+                            Search Results
+                        </div>
+                    </div>
+                    <div class='row'>
+                        <div class='col-sm-12' id='find_results'>
+                        </div>
+                    </div>
+                    <div id='searchResultMessage' class='mt-4 p-2'></div>
+                </div>
+                <div class='modal-footer'>
+                    <button type='button' id='canceSearchResultsBtn' class='btn btn-secondary' onclick='searchResultsClose();'>
+                        Retry or Cancel Search
+                    </button>
+                    <button type='button' id='startCheckoutBtn' class='btn btn-primary' onclick='startCheckout();'>
+                        Start Checkout
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
     <!--- pay cash change modal popup -->
     <div class='modal modal-lg' id='CashChange' tabindex='-4' aria-labelledby='CashChange' data-bs-backdrop='static' data-bs-keyboard='false' aria-hidden='true'>

@@ -29,6 +29,11 @@ if (array_key_exists('allage', $atcon)) {
 } else {
     $allAgeFirst = 0;
 }
+    if (array_key_exists('onedaycoupons', $con)) {
+        $onedaycoupons = $con['onedaycoupons'];
+    } else {
+        $onedaycoupons = 0;
+    }
 
 if (isset($_GET['mode'])) {
     if ($_GET['mode'] == 'cashier') {
@@ -93,6 +98,8 @@ if (array_key_exists('creditonline', $atcon)) {
 if (isset($_GET['tid'])) {
     $config_vars['autoloadTID'] = $_GET['tid'];
 }
+$config_vars['onedaycoupons'] = $onedaycoupons;
+
 
 $useUSPS = false;
 
@@ -234,7 +241,6 @@ page_init($page, $tab,
                     <button type="button" class="btn btn-primary btn-sm" id="cart_no_changes_btn" onclick="pos.reviewNoChanges();" hidden>No Changes</button>
                     <button type="button" class="btn btn-primary btn-sm" id="review_btn" onclick="pos.startReview();" hidden>Review Data</button>
                     <button type="button" class="btn btn-warning btn-sm" id="startover_btn" onclick="pos.startOver(1);" hidden>Start Over</button>
-                    <button type="button" class="btn btn-warning btn-sm" id="void_btn" onclick="pos.voidTrans();" hidden>Void</button>
                     <button type="button" class="btn btn-primary btn-sm" id="next_btn" onclick="pos.startOver(1);" hidden>Next Customer</button>
                 </div>
             </div>

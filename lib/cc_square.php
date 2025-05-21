@@ -201,7 +201,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     //	$this->catalogVersion = $values['catalogVersion'] ?? null;  (NOT USED by ConTroll)
     //	$this->variationName = $values['variationName'] ?? null;  (NOT USED by ConTroll)
     //	$this->itemType = $values['itemType'] ?? null;
-    //	$this->metadata = $values['metadata'] ?? null;  (NOT USED by ConTroll)
+    //	$this->metadata = $values['metadata'] ?? null;
     //	$this->modifiers = $values['modifiers'] ?? null;  (NOT USED by ConTroll)
     //	$this->basePriceMoney = $values['basePriceMoney'] ?? null;
     //	$this->variationTotalPriceMoney = $values['variationTotalPriceMoney'] ?? null;  (NOT USED by ConTroll)
@@ -358,7 +358,36 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
 
     // if not built, it's spaces + memberships
     if (!$itemsBuilt) {
+        $couponDiscount = false;
+        $managerDiscount = false;
+        // create the coupon or discount amount, if it exists
+        if (array_key_exists('discount', $results) && $results['discount'] > 0) {
+            if (array_key_exists('coupon', $results) && $results['coupon'] != null) {
+                $coupon = $results['coupon'];
+                $couponName = 'Coupon: ' . $coupon['code'] . ' (' . $coupon['name'] . '), Coupon Discount: ' . $coupon['discount'];
+                $couponDiscount = true;
+            } else {
+                $coupon = null;
+                $couponName = 'Discount Applied';
+                $managerDiscount = true;
+            }
+
+            $item = new OrderLineItemDiscount ([
+                'uid' => 'discount',
+                'name' => mb_substr($couponName, 0, 128),
+                'type' => OrderLineItemDiscountType::FixedAmount->value,
+                'amountMoney' => new Money([
+                    'amount' => round($results['discount'] * 100),
+                    'currency' => $currency,
+                ]),
+                'scope' => OrderLineItemDiscountScope::Order->value,
+            ]);
+            $orderDiscounts[] = $item;
+            //$orderValue -= $results['discount'];
+        }
+
         if (array_key_exists('badges', $results) && is_array($results['badges']) && count($results['badges']) > 0) {
+            $rowno = 0;
             foreach ($results['badges'] as $badge) {
                 if (!array_key_exists('paid', $badge)) {
                     $badge['paid'] = 0;
@@ -376,7 +405,24 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                         $id = 'TBA';
                 }
 
-                $note = $badge['memId'] . ',' . $id . ': memId, p/n id';
+                // deal with mixed case usages and perid/newperid
+                if (array_key_exists('regid', $badge)) {
+                    $regid = $badge['regid'];
+                } else if (array_key_exists('regId', $badge)) {
+                    $regid = $badge['regId'];
+                } else {
+                    $regid = 'tbd';
+                }
+
+                if (array_key_exists('perid', $badge)) {
+                    $perid = $badge['perid'];
+                } else if (array_key_exists('newperid', $badge)) {
+                    $perid = $badge['newperid'];
+                } else {
+                    $perid = 'tbd';
+                }
+
+                $note = $badge['memId'] . ',' . $id . ',' . $regid . ': memId, p/n id, regid';
                 if ($planName != '') {
                     $note .= ($badge['inPlan'] ? (', Plan: ' . $planName) : ', NotInPlan');
                 }
@@ -390,6 +436,13 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     $amount = round(($badge['price']-$badge['paid']) * 100);
                 }
 
+                $metadata = array(
+                    'regid' => strval($regid),
+                    'perid' => strval($perid),
+                    'memid' => strval($badge['memId']),
+                    'rowno' => strval($rowno)
+                );
+
                 if (array_key_exists('complete_trans', $badge) && $badge['complete_trans'] > 0 && $amount == 0)
                     continue; // skip paid complete items in order for sending to square
 
@@ -401,6 +454,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     'name' => mb_substr($itemName, 0, 128),
                     'quantity' => 1,
                     'note' => $note,
+                    'metadata' => $metadata,
                     'basePriceMoney' => new Money([
                         'amount' => $amount,
                         'currency' => $currency,
@@ -421,9 +475,28 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                             'discountUid' => 'planDeferment',
                         ])));
                 }
+
+                if ($couponDiscount &&
+                    (!array_key_exists('status', $badge) || $badge['status'] == 'unpaid' || $badge['status'] == 'plan')) {
+                    $cat = $badge['memCategory'];
+                    if (in_array($cat, array('standard','supplement','upgrade','add-on', 'virtual'))) {
+                        $item->setAppliedDiscounts(array(new Square\Types\OrderLineItemAppliedDiscount([
+                            'uid' => 'couponDiscount-' . $lineid,
+                            'discountUid' => 'discount' ,
+                        ])));
+                    }
+                }
+                if ($managerDiscount &&
+                    (!array_key_exists('status', $badge) || $badge['status'] == 'unpaid' || $badge['status'] == 'plan')) {
+                    $item->setAppliedDiscounts(array(new Square\Types\OrderLineItemAppliedDiscount([
+                        'uid' => 'managerDiscount-' . $lineid,
+                        'discountUid' => 'discount' ,
+                    ])));
+                }
                 $orderLineitems[$lineid] = $item;
                 $orderValue += $badge['price'];
                 $lineid++;
+                $rowno++;
             }
         }
         if (array_key_exists('spaces', $results)) {
@@ -475,32 +548,6 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 $orderValue += $fee['amount'];
                 $lineid++;
             }
-        }
-
-        // TODO: set the lines the coupon applies to specifically using appliedDiscount and line type for the coupon to split it correctly
-        // now apply the coupon
-        if (array_key_exists('discount', $results) && $results['discount'] > 0) {
-            if (array_key_exists('coupon', $results) && $results['coupon'] != null) {
-                $coupon = $results['coupon'];
-                $couponName = 'Coupon: ' . $coupon['code'] . ' (' . $coupon['name'] . '), Coupon Discount: ' .
-                    $coupon['discount'];
-            }
-            else {
-                $couponName = 'Coupon Applied';
-            }
-
-            $item = new OrderLineItemDiscount ([
-                'uid' => 'couponDiscount',
-                'name' => mb_substr($couponName, 0, 128),
-                'type' => OrderLineItemDiscountType::FixedAmount->value,
-                'amountMoney' => new Money([
-                    'amount' => round($results['discount'] * 100),
-                    'currency' => $currency,
-                ]),
-                'scope' => OrderLineItemDiscountScope::Order->value,
-            ]);
-            $orderDiscounts[] = $item;
-            //$orderValue -= $results['discount'];
         }
 
         // TODO: if an item is in plan, set the plan discount to apply only to those line items
@@ -604,6 +651,8 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     $rtn['results'] = $results;
      // need to pass back order id, total_amount, tax_amount,
     $rtn['order'] = $order;
+    $phpOrder = json_decode(json_encode($order), true);
+    $rtn['items'] = $phpOrder['line_items'];
     $rtn['preTaxAmt'] = $orderValue;
     $rtn['discountAmt'] = $order->getTotalDiscountMoney()->getAmount() / 100;
     $rtn['taxAmt'] = $order->getTotalTaxMoney()->getAmount() / 100;
@@ -611,6 +660,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     $rtn['totalAmt'] = $order->getTotalMoney()->getAmount() / 100;
     // load into the main rtn the items pay order needs directly
     $rtn['orderId'] = $order->getId();
+    $rtn['version'] = $order->getVersion();
     $rtn['source'] = $source;
     $rtn['customerId'] = $order->getCustomerId();
     $rtn['locationId'] = $order->getLocationId();
@@ -625,10 +675,8 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
 }
 
 // an order is no longer valid, cancel it, via an update to Cancelled status
-function cc_cancelOrder($source, $orderId, $useLogWrite = false, $locationId = null) : void {
-    // At present the API does not let you cancel orders, and this code does not work
-    //TODO: if Square writes a cancel, this code needs rewriting
-    /*
+function cc_cancelOrder($source, $orderId, $useLogWrite = false, $locationId = null) : array {
+    // Try updating the state of the order to CANCELED
     $cc = get_conf('cc');
     if ($locationId == null)
         $locationId = $cc['location'];
@@ -640,10 +688,11 @@ function cc_cancelOrder($source, $orderId, $useLogWrite = false, $locationId = n
 
     $order = new Order([
         'locationId' => $locationId,
-        'state' => 'CANCELLED',
+        'state' => 'CANCELED',
+        'version' => 1,
     ]);
 
-    $body = new CreateOrderRequest([
+    $body = new Square\Orders\Requests\UpdateOrderRequest([
         'idempotencyKey' => guidv4(),
         'orderId' => $orderId,
         'order' => $order,
@@ -657,18 +706,23 @@ function cc_cancelOrder($source, $orderId, $useLogWrite = false, $locationId = n
 
     // pass update to cancel state to square
     try {
-          if ($squareDebug) sqcc_logObject(array ('Orders API order create', $body), $useLogWrite);
-          $apiResponse = $client->orders->create($body);
+          if ($squareDebug) sqcc_logObject(array ('Orders API order update', $body), $useLogWrite);
+          $apiResponse = $client->orders->update($body);
           $order = $apiResponse->getOrder();
-          if ($squareDebug) sqcc_logObject(array ('Orders API order response', $order), $useLogWrite);
+          if ($squareDebug) sqcc_logObject(array ('Orders API order update response', $order), $useLogWrite);
       }
       catch (SquareApiException $e) {
-          sqcc_logException($source, $e, 'Order API create order Exception', 'Order create failed', $useLogWrite);
+          sqcc_logException($source, $e, 'Order API update order Exception', 'Order create failed', $useLogWrite);
       }
       catch (Exception $e) {
           sqcc_logException($source, $e, 'Order API error while calling Square', 'Error connecting to Square', $useLogWrite);
       }
-    */
+
+    $rtn = array();
+    $rtn['order'] = $order;
+    $rtn['state'] = $order->getState();
+    $rtn['version'] = $order->getVersion();
+    return $rtn;
 }
 // fetch an order to get its details
 function cc_fetchOrder($source, $orderId, $useLogWrite = false) : array {

@@ -99,8 +99,14 @@ function isPrimary(memConid, memType, memCategory, memPrice, usage = 'all') {
         return true;    // the basic case, it's a primary if it's one of these types
 
     if (usage == 'coupon') {
+        var allowOneDay = 0;
+        if (config.hasOwnProperty('onedaycoupons'))
+            allowOneDay = config.onedaycoupons;
+
+        if (allowOneDay == 1 && memType == 'oneday')
+            return true;    // force allow of one day beyond full for coupon if set in config
         if (memPrice == 0 || memType != 'full')
-            return false; // free memberships and oneday/virtual are not eligible for coupons
+            return false;   // free memberships and oneday/virtual are not eligible for coupons
     }
 
     if (usage == 'print') {

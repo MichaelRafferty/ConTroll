@@ -283,7 +283,7 @@ EOS;
     // now allocate the payment to the items in the plan
     // $amount needs to be allocated across each item based on it's unpaid balances
     $bQ = <<<EOS
-SELECT r.*, r.id as regId, m.conid AS mConid, m.memCategory, m.memType, m.memAge, m.label, m.price AS mPrice, m.startdate, m.enddate
+SELECT r.*, r.id as regid, m.conid AS mConid, m.memCategory, m.memType, m.memAge, m.label, m.price AS mPrice, m.startdate, m.enddate
 FROM reg r
 JOIN memList m ON (m.id = r.memId)
 WHERE planId = ? AND status = 'plan';
@@ -503,7 +503,7 @@ EOS;
                 ($left < 0.01) ? $transId : null,
                 $regStatus,
                 $planId,
-                $badge['regId']
+                $badge['regid']
             ));
             $badges[$idx]['paid'] += $paid_amt;
             $badges[$idx]['status'] = $regStatus;

@@ -20,7 +20,8 @@ WITH trans AS (
 	FROM transaction
 	WHERE perid = ?
 ), mems AS (
-    SELECT t.id, r.create_date, r.id as regId, r.memId, r.conid, r.status, r.price, r.paid, r.complete_trans, r.couponDiscount, r.perid, r.newperid,
+    SELECT t.id, r.create_date, r.id as regid, r.memId, r.conid, r.status, r.price, r.paid, r.complete_trans,
+     r.couponDiscount, r.perid, r.newperid,
         IFNULL(r.complete_trans, r.create_trans) AS sortTrans,
         IFNULL(tp.complete_date, t.create_date) AS transDate,
         m.label, m.memAge, m.memAge AS age, m.memType, m.memCategory, m.startdate, m.enddate, m.online, m.taxable,
@@ -73,7 +74,8 @@ WITH trans AS (
     LEFT OUTER JOIN newperson nn ON nn.id = r.newperid
     WHERE (status $statusCheck OR (r.status = 'paid' AND r.complete_trans IS NULL)) AND (t.perid = ? OR tp.perid = ?) AND t.conid = ?
     UNION
-    SELECT t.id, r.create_date, r.id AS regId, r.memId, r.conid, r.status, r.price, r.paid, r.complete_trans, r.couponDiscount, r.perid, r.newperid,
+    SELECT t.id, r.create_date, r.id AS regid, r.memId, r.conid, r.status, r.price, r.paid, r.complete_trans, 
+        r.couponDiscount, r.perid, r.newperid,
         CASE WHEN r.complete_trans IS NULL THEN r.create_trans ELSE r.complete_trans END AS sortTrans,
         CASE WHEN tp.complete_date IS NULL THEN t.create_date ELSE tp.complete_date END AS transDate,
         m.label, m.memAge, m.memAge AS age, m.memType, m.memCategory,  m.startdate, m.enddate, m.online, m.taxable,
@@ -99,8 +101,9 @@ EOS;
     } else {
         $membershipsQ = <<<EOS
 WITH mems AS (
-    SELECT t.id, r.create_date, r.id AS regId, r.memId, r.conid, r.status, r.price, r.paid, r.complete_trans, r.couponDiscount, r.perid, r.newperid,
-    m.label, m.memAge, m.memAge AS age, m.memType, m.memCategory,  m.startdate, m.enddate, m.online, m.taxable,
+    SELECT t.id, r.create_date, r.id AS regid, r.memId, r.conid, r.status, r.price, r.paid, r.complete_trans,
+        r.couponDiscount, r.perid, r.newperid,
+        m.label, m.memAge, m.memAge AS age, m.memType, m.memCategory,  m.startdate, m.enddate, m.online, m.taxable,
         p.managedBy, p.managedByNew,
         CASE WHEN r.complete_trans IS NULL THEN r.create_trans ELSE r.complete_trans END AS sortTrans,
         CASE WHEN tp.complete_date IS NULL THEN t.create_date ELSE tp.complete_date END AS transDate,

@@ -36,10 +36,9 @@ class Pos {
     #num_coupons = 0;
     #couponList = null;
     #couponSelect = null;
-    #coupon = null;
-    #coupon_discount = Number(0).toFixed(2);
-    #cart_total = Number(0).toFixed(2);
-    #pay_prior_discount = null;
+    #couponDiscount = 0;
+    #managerDiscount = 0;
+    #drow = null;
     #cc_html = '';
     #purchase_label = 'purchase';
     #pay_currentOrderId = null;
@@ -50,6 +49,7 @@ class Pos {
     #payOverride = 0;
     #payPoll = 0;
     #payCurrentRequest = null;
+    #payForcePayShown = false;
 
     // Data Items
     #unpaid_table = [];
@@ -282,6 +282,10 @@ class Pos {
 
     setMissingPolicies(num) {
         this.#reviewMissingPolicies = num;
+    }
+
+    setCouponDiscount(num) {
+        this.#couponDiscount = num;
     }
 
     getConid() {
@@ -533,40 +537,6 @@ class Pos {
         return hover_text;
     }
 
-    // void transaction - TODO: needs to be written to actually void out a transaction in progress
-    voidTrans() {
-        var postData = {
-            ajax_request_action: 'pos_voidPayment',
-            user_id: this.#user_id,
-            pay_tid: this.#pay_tid,
-            cart_perinfo: JSON.stringify(cart.getCartPerinfo()),
-        };
-        $("button[name='void_btn']").attr("disabled", true);
-        $.ajax({
-            method: "POST",
-            url: "scripts/pos_voidPayment.php",
-            data: postData,
-            success: function (data, textstatus, jqxhr) {
-                if (data.error !== undefined) {
-                    show_message(data.error, 'error');
-                    $("button[name='find_btn']").attr("disabled", false);
-                    return;
-                }
-                if (data.message !== undefined) {
-                    show_message(data.message, 'success');
-                }
-                if (data.warn !== undefined) {
-                    show_message(data.warn, 'warn');
-                }
-                startOver(0);
-            },
-            error: function (jqXHR, textstatus, errorThrown) {
-                $("button[name='void_btn']").attr("disabled", false);
-                showAjaxError(jqXHR, textstatus, errorThrown);
-            }
-        });
-    }
-
     // if no memberships or payments have been added to the database, this will reset for the next customer
     startOver(reset_all) {
         if (!this.confirmDiscardAddEdit(false))
@@ -582,8 +552,42 @@ class Pos {
         if (!inConTroll && baseManagerEnabled) {
             base_toggleManager();
         }
+        // clear the coupon
+        coupon = null;
+        coupon = new Coupon();
+        this.#managerDiscount = 0;
+        this.#couponDiscount = 0;
+        this.#drow = null;
         // empty cart
         cart.startOver();
+        if (this.#pay_currentOrderId && this.#pay_currentOrderId != '') {
+            var postData = {
+                ajax_request_action: 'cancelOrder',
+                orderId: this.#pay_currentOrderId,
+                user_id: this.#user_id,
+            };
+            $.ajax({
+                method: "POST",
+                url: "scripts/pos_cancelOrder.php",
+                data: postData,
+                success: function (data, textstatus, jqxhr) {
+                    if (data.error !== undefined) {
+                        show_message(data.error, 'error');
+                        return;
+                    }
+                    if (data.message !== undefined) {
+                        show_message(data.message, 'success');
+                    }
+                    if (data.warn !== undefined) {
+                        show_message(data.warn, 'warn');
+                    }
+                },
+                error: function (jqXHR, textstatus, errorThrown) {
+                    $("button[name='find_btn']").attr("disabled", false);
+                    showAjaxError(jqXHR, textstatus, errorThrown);
+                }
+            });
+        }
         if (this.#find_unpaid_button)
             this.#find_unpaid_button.hidden = false;
         // empty search strings and results
@@ -608,14 +612,12 @@ class Pos {
         if (this.#print_tab)
             this.#print_tab.disabled = true;
         cart.hideNext();
-        cart.hideVoid();
         this.#pay_button_pay = null;
         this.#pay_button_ercpt = null;
         this.#pay_button_rcpt = null;
         this.#receeiptEmailAddresses_div = null;
         this.#pay_tid = null;
         this.#pay_tid_amt = 0;
-        this.#pay_prior_discount = null;
         this.#pay_currentOrderId = null;
         // clear the pay tab
         this.#pay_div.innerHTML = "No Payment Required, Proceed to Next Customer";
@@ -912,7 +914,7 @@ class Pos {
             this.#add_postal_code_field.style.backgroundColor = '';
             this.#add_email1_field.style.backgroundColor = '';
             this.#add_email2_field.style.backgroundColor = '';
-            if (this.void_table != null) {
+            if (this.#add_results_table != null) {
                 this.#add_results_table.destroy();
                 this.#add_results_table = null;
                 this.#add_results_div.innerHTML = "";
@@ -1998,6 +2000,14 @@ addUnpaid(tid) {
             postData.cancelOrder = this.#pay_currentOrderId;
             this.#pay_currentOrderId = null;
         }
+        if (coupon.isCouponActive()) {
+            postData.couponCode = coupon.getCouponCode();
+            postData.couponDiscount = this.#couponDiscount;
+        }
+        if (this.#managerDiscount > 0) {
+            postData.discountAmt = this.#managerDiscount;
+            postData.drow = this.#drow;
+        }
 
         var _this = this;
         clear_message();
@@ -2038,6 +2048,17 @@ addUnpaid(tid) {
         this.#totalPaid = data.rtn.totalPaid;
         show_message("Order #" + this.#pay_currentOrderId + " created.");
         bootstrap.Tab.getOrCreateInstance(this.#pay_tab).show();
+        if (this.#payForcePayShown) {
+            this.#payForcePayShown = false;
+            this.payShown();
+        }
+        if (data.hasOwnProperty('badges')) {
+            // badges in return, update cart rows
+            for (var i = 0; i < data.badges.length; i++) {
+                var badge = data.badges[i];
+                cart.setCouponDisount(badge.perid, badge.regid, badge.paid, badge.coupon, badge.couponDiscount)
+            }
+        }
         cart.drawCart();
     }
 
@@ -2055,13 +2076,22 @@ addUnpaid(tid) {
         var elccauth = document.getElementById('pay-ccauth-div');
         var elonline = document.getElementById('pay-online-div');
         var elcash = document.getElementById('pay-cash-div');
+        var eldisc = document.getElementById('pay-disc-div');
+        var eldiscount = document.getElementById('pt-discount');
+        var couponRow = document.getElementById('couponRow');
 
         elcheckno.hidden = ptype != 'check';
         elccauth.hidden = ptype != 'credit';
         elonline.hidden = ptype != 'online';
         elcash.hidden = ptype != 'cash';
+        eldisc.hidden = ptype != 'discount';
+
+        if (couponRow && eldiscount)
+            couponRow.hidden = document.getElementById('pt-discount').checked;
+
         this.#pay_button_pay.innerHTML = 'Confirm Pay';
         this.#pay_button_pay.disabled = ptype == 'online';
+
 
         if (ptype != 'check') {
             document.getElementById('pay-checkno').value = null;
@@ -2071,6 +2101,9 @@ addUnpaid(tid) {
         }
         if (ptype != 'cash') {
             document.getElementById('pay-tendered').value = null;
+        }
+        if (ptype != 'discount') {
+            document.getElementById('pay-discount').value = null;
         }
     }
 
@@ -2161,7 +2194,7 @@ addUnpaid(tid) {
         var checkno = null;
         var desc = null;
         var ptype = null;
-        var total_amount_due = Number(this.#preTaxAmt) + Number(this.#taxAmt);
+        var total_amount_due = Number(this.#preTaxAmt) + Number(this.#taxAmt) - (Number(this.#couponDiscount) + Number(this.#managerDiscount));
         var pt_cash = document.getElementById('pt-cash').checked;
         var pt_check = document.getElementById('pt-check').checked;
         var pt_online = document.getElementById('pt-online');
@@ -2201,6 +2234,7 @@ addUnpaid(tid) {
         }
 
         tendered_amt = 0;
+        discount_amt = 0;
 
         if (prow == null) {
             // validate the payment entry: It must be >0 and <= amount due
@@ -2302,6 +2336,27 @@ addUnpaid(tid) {
                 return;
             }
 
+            if (pt_discount) {
+                var eltenderedamt = document.getElementById('pay-discount');
+                var discount_amt = Number(eltenderedamt.value);
+                if (discount_amt <=  0 || discount_amt > total_amount_due) {
+                    eltenderedamt.style.backgroundColor = 'var(--bs-warning)';
+                    return;
+                }
+                this.#drow = {
+                    index: cart.getPmtLength() + 1, amt: discount_amt, ccauth: ccauth, checkno: checkno, desc: eldesc.value, type: 'discount',
+                };
+                cart.addPmt(this.#drow, true);
+                this.#managerDiscount = discount_amt;
+                document.getElementById('pt-discount').checked = false;
+                document.getElementById('pay-discount').value = '';
+                eldesc.value = '';
+                this.setPayType('none');
+                this.#payForcePayShown = true;
+                pos.gotoPay();
+                return;
+            }
+
             if (tendered_amt > 0) {
                 var crow = null;
                 var change = 0;
@@ -2318,9 +2373,8 @@ addUnpaid(tid) {
             var phone = document.getElementById("pay-phone").value;
             var payor = Number(document.getElementById('pay-emailsel').value);
             var country = '';
-            var couponCode = null;
-            if (this.#coupon)
-                couponCode = coupon.getCouponCode();
+            var couponCode = coupon.getCouponCode();
+            var cprow = cart.getCouponPmt();
 
             if (payor >= 0 && email == cart.getEmail(payor)) {
                 payorPerid = cart.getPerid(payor);
@@ -2344,7 +2398,8 @@ addUnpaid(tid) {
             orderId: this.#pay_currentOrderId,
             cart_perinfo: JSON.stringify(cart.getCartPerinfo()),
             new_payment: prow,
-            coupon: prow.coupon,
+            coupon: coupon.getCouponId(),
+            couponPayment: cprow,
             change: crow,
             nonce: nonce,
             user_id: this.#user_id,
@@ -2353,8 +2408,11 @@ addUnpaid(tid) {
             preTaxAmt: this.#preTaxAmt,
             taxAmt: this.#taxAmt,
             totalAmtDue: total_amount_due,
+            couponDiscount: this.#couponDiscount,
             override: this.#payOverride,
             poll: this.#payPoll,
+            drow: this.#drow,
+            discountAmt: this.#managerDiscount,
         };
         this.#payOverride = 0;
         this.#pay_button_pay.disabled = true;
@@ -2647,20 +2705,22 @@ addUnpaid(tid) {
         if (cmd == 'r') {
             var curCoupon = coupon.getCouponId();
             cart.clearCoupon(curCoupon);
-            this.#coupon = null;
-            this.#coupon = new Coupon();
-            this.#coupon_discount = Number(0).toFixed(2);
-            this.payShown();
+            coupon = null;
+            coupon = new Coupon();
+            this.#payForcePayShown = true;
+            this.gotoPay();
             return;
         }
         if (cmd == 'a') {
             var couponId = document.getElementById("pay_couponSelect").value;
-            this.#coupon = null;
-            this.#coupon = new Coupon();
+            coupon = null;
+            coupon = new Coupon();
             if (couponId == '') {
                 show_message("Coupon cleared, no coupon applied", 'success');
                 return;
             }
+            this.#couponDiscount = Number(coupon.CartDiscount()).toFixed(2);
+            this.#payForcePayShown = true;
             coupon.loadCoupon(couponId);
         }
         return;
@@ -2683,12 +2743,9 @@ addUnpaid(tid) {
         this.#current_tab = this.#pay_tab;
         cart.drawCart();
 
-        if (this.#pay_prior_discount === null) {
-            this.#pay_prior_discount = cart.getPriorDiscount();
-        }
-
-        var total_amount_due = this.#taxAmt + cart.getTotalPrice() - (cart.getTotalPaid() + this.#pay_prior_discount + Number(this.#coupon_discount));
+        var total_amount_due = this.#taxAmt + cart.getTotalPrice() - (cart.getTotalPaid() + Number(this.#couponDiscount) + Number(this.#managerDiscount));
         if (total_amount_due < 0.01) { // allow for rounding error, no need to round here
+            this.#pay_currentOrderId = null;
             // nothing more to pay
             if (this.#print_tab)
                 this.#print_tab.disabled = false;
@@ -2725,7 +2782,6 @@ addUnpaid(tid) {
                         setTimeout(checkboxCheck, 100);
                     }
                 }
-                cart.hideVoid();
             } else {
                 if (this.#print_tab) {
                     if (this.#reviewMissingPolicies == 0) {
@@ -2757,12 +2813,12 @@ addUnpaid(tid) {
         <div class="col-sm-auto ms-0 me-2 p-0">New Payment Transaction ID: ` + this.#pay_tid + `</div>
     </div>
     `;
-            if (this.#num_coupons > 0) {
+            if (this.#num_coupons > 0 && this.#drow == null) {
                 if (cart.allowAddCouponToCart()) {
                     // cannot apply a coupon if one was already in the cart (and of course, there need to be valid coupons right now)
-                    if (!coupon.isCouponActive()) { // no coupon applied yet
+                    if (!coupon.isCouponActive()) { // no coupon applied yet or a discount is applied
                         pay_html += `
-    <div class="row mt-3">
+    <div class="row mt-3" id="couponRow">
         <div class="col-sm-2 ms-0 me-2 p-0">Coupon:</div>
         <div class="col-sm-auto ms-0 me-2 p-0">
 ` + this.#couponSelect + `
@@ -2791,22 +2847,38 @@ addUnpaid(tid) {
                 }
             }
             // add prior discounts to screen if any
-            if (this.#pay_prior_discount > 0) {
+
+            pay_html += `
+    <div class="row mt-1">
+        <div class="col-sm-2 ms-0 me-2 p-0">Order Total:</div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-pre-tax-amt">$` + Number(this.#preTaxAmt).toFixed(2) + `</div>
+    </div>
+`;
+            if (this.#managerDiscount > 0) {
                 pay_html += `
     <div class="row mt-2">
-        <div class="col-sm-2 ms-0 me-2 p-0">Prior Discount:</div>
-        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-amt-due">$` + Number(this.#pay_prior_discount).toFixed(2) + `</div>
+        <div class="col-sm-2 ms-0 me-2 p-0">Discount:</div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-prior-disc">$` + Number(this.#managerDiscount).toFixed(2) + `</div>
+    </div>
+`;
+            }
+            if (this.#couponDiscount > 0) {
+                var pretax = Number(this.#preTaxAmt) - Number(this.#couponDiscount);
+                pay_html += `
+    <div class="row mt-1">
+        <div class="col-sm-2 ms-0 me-2 p-0">Coupon:</div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-coupon-disc">$` + (-Number(this.#couponDiscount)).toFixed(2) + `</div>
+    </div>
+       <div class="row mt-1">
+        <div class="col-sm-2 ms-0 me-2 p-0">Pre Tax:</div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-post-coupon">$` + Number(pretax).toFixed(2) + `</div>
     </div>
 `;
             }
             pay_html += `
     <div class="row mt-1">
-        <div class="col-sm-2 ms-0 me-2 p-0">Order Total:</div>
-        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-amt-due">$` + Number(this.#preTaxAmt).toFixed(2) + `</div>
-    </div>
-    <div class="row mt-1">
         <div class="col-sm-2 ms-0 me-2 p-0">` + this.#taxLabel + `:</div>
-        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-amt-due">$` + Number(this.#taxAmt).toFixed(2) + `</div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-tax-amt">$` + Number(this.#taxAmt).toFixed(2) + `</div>
     </div>
     <div class="row mt-1">
         <div class="col-sm-2 ms-0 me-2 p-0">Amount Due:</div>
@@ -2838,9 +2910,9 @@ addUnpaid(tid) {
             <input type="radio" id="pt-check" name="payment_type" value="check" onchange='pos.setPayType("check");'/>
             <label for="pt-check">Check&nbsp;&nbsp;&nbsp;</label>
             <input type="radio" id="pt-cash" name="payment_type" value="cash" onchange='pos.setPayType("cash");'/>
-            <label for="pt-cash">Cash</label>
+            <label for="pt-cash">Cash&nbsp;&nbsp;&nbsp;</label>
 `;
-            if (this.#discount_mode != "none") {
+            if (this.#discount_mode != "none" && !coupon.isCouponActive() && this.#drow == null) {
                 if (this.#discount_mode == 'any' || ((this.#discount_mode == 'manager' || this.#discount_mode == 'active') &&
                     this.#manager && baseManagerEnabled)) {
                     pay_html += `
@@ -2859,6 +2931,10 @@ addUnpaid(tid) {
     <div class="row mb-2" id="pay-cash-div" hidden>
         <div class="col-sm-2 ms-0 me-2 p-0">Amt Tendered:</div>
         <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0"><input type="number" class="no-spinners" id="pay-tendered" name="paid-tendered" size="6"/></div>
+    </div>
+       <div class="row mb-2" id="pay-disc-div" hidden>
+        <div class="col-sm-2 ms-0 me-2 p-0">Disc Amount</div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0"><input type="number" class="no-spinners" id="pay-discount" name="paid-discount" size="6"/></div>
     </div>
     <div class="row mb-2" id="pay-ccauth-div" hidden>
         <div class="col-sm-2 ms-0 me-2 p-0">CC Auth Code:</div>
@@ -2948,14 +3024,8 @@ addUnpaid(tid) {
             this.#receeiptEmailAddresses_div = document.getElementById('receeiptEmailAddresses');
             if (this.#receeiptEmailAddresses_div)
                 this.#receeiptEmailAddresses_div.innerHTML = '';
-            if (cart.getPmtLength() > 0) {
-                cart.showVoid();
-                cart.hideStartOver();
-            } else {
-                cart.hideVoid();
-                cart.showStartOver();
-            }
         }
+        cart.showStartOver();
     }
 
 // process online credit card payment
@@ -2979,7 +3049,6 @@ addUnpaid(tid) {
         this.#review_tab.disabled = true;
         cart.hideStartOver();
         cart.showNext();
-        cart.hideVoid();
         cart.freeze();
         this.#current_tab = this.#print_tab;
         this.newPrint = false;

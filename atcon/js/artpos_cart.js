@@ -58,14 +58,6 @@ class artpos_cart {
         return this.#freeze_cart == true;
     }
 
-    hideAdd() {
-        this.#add_button.hidden = true;
-    }
-
-    showAdd() {
-        this.#add_button.hidden = false;
-    }
-
     hidePay() {
         this.#pay_button.hidden = true;
     }

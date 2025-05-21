@@ -4,7 +4,6 @@
 // Author: Syd Weinstein
 class PosCart {
 // cart dom items
-    #voidButton = null;
     #startoverButton = null;
     #reviewButton = null;
     #nextButton = null;
@@ -26,6 +25,7 @@ class PosCart {
     #cartPerinfo = [];
     #cartPerinfoMap = new map();
     #cartPmt = [];
+    #cartIgnorePmtRound = false;
 
 // Add Edit Memberships
     #addEditModal = null;
@@ -72,7 +72,6 @@ class PosCart {
 // lookup all DOM elements
 // ask to load mapping tables
         this.#cartDiv = document.getElementById("cart");
-        this.#voidButton = document.getElementById("void_btn");
         this.#startoverButton = document.getElementById("startover_btn");
         this.#reviewButton = document.getElementById("review_btn");
         this.#nextButton = document.getElementById("next_btn");
@@ -147,14 +146,6 @@ class PosCart {
         this.#nochangesButton.hidden = false;
     }
 
-    hideVoid() {
-        this.#voidButton.hidden = true;
-    }
-
-    showVoid() {
-        this.#voidButton.hidden = false;
-    }
-
     hideNext() {
         this.#nextButton.hidden = true;
     }
@@ -184,6 +175,15 @@ class PosCart {
 
     getPmt() {
         return make_copy(this.#cartPmt);
+    }
+
+    getCouponPmt() {
+        for (var rownum in this.#cartPmt) {
+            var prow = this.#cartPmt[rownum];
+            if (prow.type == 'coupon')
+                return make_copy(prow);
+        }
+        return null;
     }
 
     // get total price
@@ -261,6 +261,19 @@ class PosCart {
         this.drawCart();
     }
 
+    setCouponDisount(perid, regid, paid, couponId, discount) {
+        var pindex = this.#cartPerinfoMap.get(perid);
+        var mem =  this.#cartPerinfo[pindex].memberships;
+        for (var i = 0; i < mem.length; i++) {
+            if (mem[i].regid == regid) {
+                this.#cartPerinfo[pindex].memberships[i].paid = paid;
+                this.#cartPerinfo[pindex].memberships[i].couponDiscount = discount;
+                this.#cartPerinfo[pindex].memberships[i].coupon = couponId;
+                break;
+            }
+        }
+    }
+
     getPerinfoNote(index) {
         return this.#cartPerinfo[index].open_notes;
     }
@@ -291,24 +304,20 @@ class PosCart {
 
     allowAddCouponToCart() {
         this.#anyUnpaid = false;
+        if (coupon.isCouponActive())
+            return true;
         var numCoupons = pos.everyMembership(this.#cartPerinfo, function(_this, mem) {
             if (isPrimary(mem.conid, mem.memType, mem.memCategory, mem.price, 'coupon') && mem.status != 'paid')
                 cart.setAnyUnpaid();
             if (mem.coupon)
-                return 1;
-            return 0;
+                return true;
+            return false;
         });
 
         if (this.#anyUnpaid == false || numCoupons > 0)
             return false;
 
         return true;
-    }
-
-    getPriorDiscount() {
-        console.log("getPriorDiscount: TODO: Get transactional discount");
-        // TODO get transactional discounts
-        return 0;
     }
 
     pushMembership(mem) {
@@ -329,7 +338,6 @@ class PosCart {
         this.#priorPayments = null;
 
         this.hideNext();
-        this.hideVoid();
         this.#inReview = false;
         this.drawCart();
     }
@@ -910,9 +918,14 @@ class PosCart {
         this.#currentPerid = null;
         this.#addEditModal.hide();
     }
-
+// add non database payment to the cart
+    addPmt(pmtrow, setIgnore=false) {
+        this.#cartPmt.push(pmtrow);
+        this.#cartIgnorePmtRound = setIgnore;
+    }
 // update payment data in  cart
     updatePmt(data) {
+        this.#cartIgnorePmtRound = false;
         if (data.prow) {
             this.#cartPmt.push(data.prow);
         }
@@ -941,12 +954,14 @@ class PosCart {
 
     // Clear the coupon matching couponId from all rows in the cart
     clearCoupon(couponId) {
-        // clear the discount from the membership rows
-        for (var rownum in this.#membershipRows ) {
-            var mrow = this.#membershipRows[rownum];
-            if (mrow.coupon == couponId) {
-                mrow.coupon = null;
-                mrow.couponDiscount = 0;
+        // clear the discount from the membership rows from the cart element
+        for (var cartRow in this.#cartPerinfo) {
+            for (var rownum in this.#cartPerinfo[cartRow].memberships ) {
+                var mrow = this.#cartPerinfo[cartRow].memberships[rownum];
+                if (mrow.coupon == couponId && (mrow.status == 'unpaid' || mrow.status == 'plan')) {
+                    this.#cartPerinfo[cartRow].memberships[rownum].coupon = null;
+                    this.#cartPerinfo[cartRow].memberships[rownum].couponDiscount = 0;
+                }
             }
         }
         // remove the discount coupon from the payment
@@ -1173,7 +1188,7 @@ class PosCart {
             if (this.#cartPmt[i].type == 'prior')
                 priorIndex = i;
         }
-        if (this.#totalPaid != totalPayments) {
+        if (this.#totalPaid != totalPayments && !this.#cartIgnorePmtRound) {
             // adjust the prior prow
             this.#cartPmt[priorIndex].amt = Number(this.#cartPmt[priorIndex].amt) + Number(this.#totalPaid) - Number(totalPayments);
         }
@@ -1220,7 +1235,6 @@ class PosCart {
         if (this.#freezeCart) {
             pos.setReviewTabDisable(true);
             this.#reviewButton.hidden = true;
-            this.hideStartOver();
         }
         pos.setFindUnpaidHidden(num_rows > 0);
     }

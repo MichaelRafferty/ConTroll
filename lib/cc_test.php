@@ -74,7 +74,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
         $custid = 't-' . $results['transid'];
     }
 
-    $orderLineitems = [];
+    $orderLineItems = [];
     $orderDiscounts = [];
     $lineid = 0;
     $orderValue = 0;
@@ -152,7 +152,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
             'note' => $note,
             'basePriceMoney' => round($results['total'] * 100),
         ];
-        $orderLineitems[$lineid] = $item;
+        $orderLineItems[$lineid] = $item;
         $orderValue = $results['total'];
         $itemsBuilt = true;
     }
@@ -188,7 +188,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                     $item['taxable'] = 'Y';
                     $item['taxUid'] = $taxLabel;
                 }
-                $orderLineitems[$lineid] = $item;
+                $orderLineItems[$lineid] = $item;
                 $orderValue += $art['amount'];
                 $lineid++;
             }
@@ -202,7 +202,33 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
 
     // if not built, it's spaces + memberships
     if (!$itemsBuilt) {
+        $couponDiscount = false;
+        $managerDiscount = false;
+        // create the coupon or discount amount, if it exists
+        if (array_key_exists('discount', $results) && $results['discount'] > 0) {
+            if (array_key_exists('coupon', $results) && $results['coupon'] != null) {
+                $coupon = $results['coupon'];
+                $couponName = 'Coupon: ' . $coupon['code'] . ' (' . $coupon['name'] . '), Coupon Discount: ' . $coupon['discount'];
+                $couponDiscount = true;
+            } else {
+                $coupon = null;
+                $couponName = 'Discount Applied';
+                $managerDiscount = true;
+            }
+
+            $item = [
+                'uid' => 'discount',
+                'name' => mb_substr($couponName, 0, 128),
+                'type' => 'FixedAmount',
+                'amountMoney' => round($results['discount'] * 100),
+            ];
+            $discountAmt += $item['amountMoney'];
+            $orderDiscounts[] = $item;
+        }
+
+        $totalDiscountable = 0;
         if (array_key_exists('badges', $results) && is_array($results['badges']) && count($results['badges']) > 0) {
+            $rowno = 0;
             foreach ($results['badges'] as $badge) {
                 if (!array_key_exists('paid', $badge)) {
                     $badge['paid'] = 0;
@@ -220,7 +246,23 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                         $id = 'TBA';
                 }
 
-                $note = $badge['memId'] . ',' . $id . ': memId, p/n id';
+                // deal with mixed case usages and perid/newperid
+                if (array_key_exists('regid', $badge)) {
+                    $regid = $badge['regid'];
+                } else if (array_key_exists('regId', $badge)) {
+                    $regid = $badge['regId'];
+                } else {
+                    $regid = 'tbd';
+                }
+
+                if (array_key_exists('perid', $badge)) {
+                    $perid = $badge['perid'];
+                } else if (array_key_exists('newperid', $badge)) {
+                    $perid = $badge['newperid'];
+                } else {
+                    $perid = 'tbd';
+
+                $note = $badge['memId'] . ',' . $id . ',' . $regid . ': memId, p/n id, regid';
                 if ($planName != '') {
                     $note .= ($badge['inPlan'] ? (', Plan: ' . $planName) : ', NotInPlan');
                 }
@@ -234,6 +276,8 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                     $amount = $badge['price'] - $badge['paid'];
                 }
 
+                $metadata = array('regid' => $regid, 'perid' => $perid, 'memid' => $badge['memId'], 'rowno' => $rowno);
+
                 $itemName =  $badge['label'] . (($badge['memType'] == 'full' || $badge['memType'] == 'oneday') ? ' Membership' : '') .
                     ' for ' . $fullname;
                 $item = [
@@ -242,6 +286,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                     'quantity' => 1,
                     'note' => $note,
                     'basePriceMoney' => round($amount * 100),
+                    'metadata' => $metadata,
                 ];
                 if ($taxRate > 0 && array_key_exists('taxable', $badge) && $badge['taxable'] == 'Y') {
                     // create the Line Item tax record, if there is a tax rate, and the membership is taxable
@@ -249,11 +294,61 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                     $item['taxable'] = 'Y';
                     $item['taxUid'] = $taxLabel;
                 }
-                $orderLineitems[$lineid] = $item;
+
+                if (array_key_exists('newplan', $results) && $results['newplan'] == 1) {
+                    if ($badge['inPlan'])
+                        $item['applied_discounts'][] = 'planDeferment';
+                }
+
+                if ($couponDiscount &&
+                    (!array_key_exists('status', $badge) || $badge['status'] == 'unpaid' || $badge['status'] == 'plan')) {
+                    $cat = $badge['memCategory'];
+                    if (in_array($cat, array('standard','supplement','upgrade','add-on', 'virtual'))) {
+                        $item['applied_discounts'][] = array('uid' => 'couponDiscount', 'applied_amount' => 0);
+                        $totalDiscountable += $item['basePriceMoney'];
+                    }
+                }
+                if ($managerDiscount &&
+                    (!array_key_exists('status', $badge) || $badge['status'] == 'unpaid' || $badge['status'] == 'plan')) {
+                    $item['applied_discounts'][] = array('uid' => 'managerDiscount',  'applied_amount' => 0);
+                    $totalDiscountable += $item['basePriceMoney'];
+                }
+                $orderLineItems[$lineid] = $item;
                 $orderValue += $badge['price'];
                 $lineid++;
+                $rowno++;
+            }
+
+            if ($results['discount'] > 0) {
+                // apply the coupon discount amounts proportionally, square would do this for us normally
+                $totalDiscount = $results['discount'] * 100;
+                $discountRemaining = $totalDiscount;
+                $lastItemNo = -1;
+                $maxAmt = -1;
+                for ($itemNo = 0; $itemNo < count($orderLineItems); $itemNo++) {
+                    $item = $orderLineItems[$itemNo];
+                    if (array_key_exists('applied_discounts', $item)) {
+                        for ($discountNo = 0; $discountNo < count($item['applied_discounts']); $discountNo++) {
+                            $discount = $item['applied_discounts'][$discountNo];
+                            if ($discount['uid'] == 'couponDiscount' || $discount['uid'] == 'managerDiscount') {
+                                $thisItemDiscount = round(($item['basePriceMoney'] * $totalDiscount) / $totalDiscountable);
+                                if ($thisItemDiscount > $discountRemaining)
+                                    $thisItemDiscount = $discountRemaining;
+                                $discountRemaining -= $thisItemDiscount;
+                                if ($item['basePriceMoney'] > $maxAmt)
+                                    $lastItemNo = $itemNo;
+                                $orderLineItems[$itemNo]['applied_discounts'][$discountNo]['applied_amount'] = $thisItemDiscount;
+                            }
+                        }
+                    }
+                }
+                // deal with rounding error by fudging largest item
+                if ($discountRemaining > 0 && $lastItemNo >= 0) {
+                    $orderLineItems[$itemNo]['applied_discounts'][$discountNo]['applied_amount'] += $discountRemaining;
+                }
             }
         }
+
         if (array_key_exists('spaces', $results)) {
             foreach ($results['spaces'] as $spaceId => $space) {
                 $itemName = $space['description'] . ' of ' . $space['name'] . ' in ' . $space['regionName'] .
@@ -276,7 +371,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                     'note' => $note,
                     'basePriceMoney' => round($space['approved_price'] * 100),
                 ];
-                $orderLineitems[$lineid] = $item;
+                $orderLineItems[$lineid] = $item;
                 $orderValue += $space['approved_price'];
                 $lineid++;
             }
@@ -300,29 +395,6 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
             }
         }
 
-        // TODO: set the lines the coupon applies to specifically using appliedDiscount and line type for the coupon to split it correctly
-        // now apply the coupon
-        if (array_key_exists('discount', $results) && $results['discount'] > 0) {
-            if (array_key_exists('coupon', $results) && $results['coupon'] != null) {
-                $coupon = $results['coupon'];
-                $couponName = 'Coupon: ' . $coupon['code'] . ' (' . $coupon['name'] . '), Coupon Discount: ' .
-                    $coupon['discount'];
-            } else {
-                $couponName = 'Coupon Applied';
-            }
-
-            $item = [
-                'uid' => 'couponDiscount',
-                'name' => mb_substr($couponName, 0, 128),
-                'type' => 'FixedAmount',
-                'amountMoney' => round($results['discount'] * 100),
-            ];
-            $discountAmt += $item['amountMoney'];
-            $orderDiscounts[] = $item;
-            //$orderValue -= $results['discount'];
-        }
-
-        // TODO: if an item is in plan, set the plan discount to apply only to those line items
         // if a plan, set a discount called deferred payment for plan to the amount not in this payment
         if (array_key_exists('newplan', $results) && $results['newplan'] == 1) {
             // deferment is total of the items - total of the payment
@@ -350,7 +422,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
         'referenceId' => $con['id'] . '-' . $results['transid'],
         'source' => $con['conname'] . '-' . $source,
         'customerId' => $con['id'] . '-' . $custid,
-        'lineItems' => $orderLineitems,
+        'lineItems' => $orderLineItems,
         'discounts' => $orderDiscounts,
     ];
 
@@ -365,7 +437,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
     $taxAbleBase = 0;
     $itemTaxTotal = 0;
     if ($needTaxes) {
-        foreach ($orderLineitems as $item) {
+        foreach ($orderLineItems as $item) {
             if (array_key_exists('taxable', $item)) {
                 $item['taxAmount'] = round($item['basePriceMoney'] * $order['percentage'] / 100);
                 $itemTaxTotal += $item['taxAmount'];
@@ -382,6 +454,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
     $rtn['results'] = $results;
     // need to pass back order id, total_amount, tax_amount,
     $rtn['order'] = $order;
+    $rtn['items'] = $orderLineItems;
     $rtn['preTaxAmt'] = $orderValue;
     $rtn['discountAmt'] = $discountAmt / 100;
     $rtn['taxAmt'] = $taxAmount / 100;
@@ -410,7 +483,11 @@ function cc_fetchOrder($source, $orderId, $useLogWrite = false) :  null {
 }
 
 // stub for cancel order
-function cc_cancelOrder($source, $orderId, $useLogWrite = false) : void {
+function cc_cancelOrder($source, $orderId, $useLogWrite = false) : array {
+    $rtn['order'] = $orderId;
+    $rtn['state'] = 'CANCELED';
+    $rtn['version'] = 2;
+    return $rtn;
 }
 
 // enter a payment against an exist order: build the payment, submit it to square and process the resulting payment
@@ -487,7 +564,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     $receipt_number = 'test';
     $last4 = '0000';
     $id='test';
-    $total = $ccParams['total'] + $change;
+    $total = $ccParams['total'];
 
     $rtn = array();
     $rtn['txnfields'] = array('transid','type','category','description','source','pretax', 'tax', 'amount',

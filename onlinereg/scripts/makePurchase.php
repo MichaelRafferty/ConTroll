@@ -32,7 +32,11 @@ else {
 }
 $nonce = $_POST['nonce'];
 $purchaseform = $_POST['purchaseform'];
-$policyInterestForm = $_POST['policyInterestForm'];
+if (array_key_exists('policyInterestForm', $_POST))
+    $policyInterestForm = $_POST['policyInterestForm'];
+else
+    $policyInterestForm = [];
+
 $badges = $badgestruct['badges'];
 $webtotal = $badgestruct['total'];
 $couponDiscount = null;
@@ -302,7 +306,7 @@ foreach($people as $person) {
 }
 
 $all_badgeQ = <<<EOS
-SELECT R.id AS badge,
+SELECT R.id AS badge, R.id AS regid,
     NP.first_name AS fname, NP.middle_name AS mname, NP.last_name AS lname, NP.suffix AS suffix, NP.legalName AS legalName,
     NP.email_addr AS email,
     NP.address AS street, NP.city AS city, NP.state AS state, NP.zip AS zip, NP.country AS country,

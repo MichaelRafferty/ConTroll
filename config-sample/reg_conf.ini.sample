@@ -57,6 +57,7 @@ showConPolicy=1
 showVolunteerPolicy=1
 oneoff=0 ; 1 if this is a one year (one-off convention), 0=if this convention re-occurs every "year".
 multioneday=1 ; =0 for only a single one day can be purchased, =1 if multiple different one day can be purchased
+onedaycoupons=0 ; allow onedays for coupon usage
 
 [debug]
 google=0 ; to enable google debug statements (1=enable, 0=disable)

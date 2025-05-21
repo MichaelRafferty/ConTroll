@@ -45,6 +45,12 @@ if (array_key_exists('multioneday', $con))
 else
     $multiOneDay = 0;
 
+if (array_key_exists('onedaycoupons', $con)) {
+    $onedaycoupons = $con['onedaycoupons'];
+} else {
+    $onedaycoupons = 0;
+}
+
 $policies = getPolicies();
 $policyIndex = array();
 if ($policies != null) {
@@ -74,6 +80,7 @@ $config_vars['required'] = $ini['required'];
 $config_vars['useportal'] = $usePortal;
 $config_vars['cashier'] = 1;
 $config_vars['multiOneDay'] = $multiOneDay;
+$config_vars['onedaycoupons'] = $onedaycoupons;
 
 // form as laid out has no room for usps block, if we want it we need to reconsider how to do it here.
 //if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
