@@ -32,7 +32,11 @@ else {
 }
 $nonce = $_POST['nonce'];
 $purchaseform = $_POST['purchaseform'];
-$policyInterestForm = $_POST['policyInterestForm'];
+if (array_key_exists('policyInterestForm', $_POST))
+    $policyInterestForm = $_POST['policyInterestForm'];
+else
+    $policyInterestForm = [];
+
 $badges = $badgestruct['badges'];
 $webtotal = $badgestruct['total'];
 $couponDiscount = null;
