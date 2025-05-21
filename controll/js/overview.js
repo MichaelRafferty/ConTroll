@@ -148,12 +148,20 @@ function buildDaily(dailyRegCounts, today) {
             color = 'rgba(128,0,128,1)';
             weight = 3;
             legend = true;
+        } else if(year == config['conid']-1) {
+            color = 'rgba(128,64,128,1)';
+            weight = 1;
+            legend = true;
+        } else if(year == config['conid']-2) {
+            color = 'rgba(128,96,128,1)';
+            weight = 1;
+            legend = true;
         } else if(year == 'mean') {
             color = 'black';
             weight = 1;
             legend = true;
         } else {
-            color = 'rgba(173,216,230,' + (0.76 - (config['conid']-year)*0.01) + ')';
+            color = 'rgba(173,216,230,' + (0.76 - (config['conid']-year)*0.02) + ')';
             weight = 1;
         }
         var byYear = dailyRegCounts[year]; byYear.reverse();
