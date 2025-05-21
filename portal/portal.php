@@ -70,6 +70,12 @@ $config_vars['conid'] = $conid;
 $config_vars['nomnomExists'] = $NomNomExists;
 if ($NomNomExists)
     $config_vars['nomnomURL'] = $portal_conf['nomnomURL'];
+if (array_key_exists('onedaycoupons', $con)) {
+    $onedaycoupons = $con['onedaycoupons'];
+} else {
+    $onedaycoupons = 0;
+}
+$config_vars['onedaycoupons'] = $onedaycoupons;
 
 $cdn = getTabulatorIncludes();
 // default memberships to empty to handle the refresh case which never loads them.

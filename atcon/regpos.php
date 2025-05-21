@@ -29,6 +29,11 @@ if (array_key_exists('allage', $atcon)) {
 } else {
     $allAgeFirst = 0;
 }
+    if (array_key_exists('onedaycoupons', $con)) {
+        $onedaycoupons = $con['onedaycoupons'];
+    } else {
+        $onedaycoupons = 0;
+    }
 
 if (isset($_GET['mode'])) {
     if ($_GET['mode'] == 'cashier') {
@@ -93,6 +98,8 @@ if (array_key_exists('creditonline', $atcon)) {
 if (isset($_GET['tid'])) {
     $config_vars['autoloadTID'] = $_GET['tid'];
 }
+$config_vars['onedaycoupons'] = $onedaycoupons;
+
 
 $useUSPS = false;
 
