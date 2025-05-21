@@ -28,11 +28,10 @@ $debug = get_conf('debug');
 if(!array_key_exists('controll_stats', $debug)) { $debug['controll_stats']=0;}
 if(isset($_GET['conid'])) {
     $conid=$_GET['conid'];
-    $con = dbSafeQuery('SELECT id, name, label, startdate, DATE_ADD(enddate, INTERVAL 1 DAY) as enddate FROM conlist WHERE id=?;', 'i', array($conid))->fetch_assoc();
+    $con = dbSafeQuery('SELECT * FROM conlist WHERE id=?;', 'i', array($conid))->fetch_assoc();
 } else {
     $con = get_con();
     $conid= $con['id'];
-    $con = dbSafeQuery('SELECT id, name, label, startdate, DATE_ADD(enddate, INTERVAL 1 DAY) as enddate FROM conlist WHERE id=?;', 'i', array($conid))->fetch_assoc();
 }
 
 $addlwhere = '';
@@ -78,125 +77,143 @@ EOF;
 
         break;
     case 'attendance':
-        $badgeList = array(
-            'oneday'=>array(),
-            'full'=>array(),
-            'unprinted'=>array(),
-            'next year'=>array()
-        );
-	$total = 0;
-
-	$yearaheadQ = <<<EOF
-SELECT R.conid, M.id, M.memCategory, M.shortname as label
-    , count(DISTINCT R.perid) as c 
-FROM reg R
-JOIN memLabel M on M.id=R.memId
-WHERE R.conid=? and M.memCategory in ('yearahead', 'rollover')
-GROUP BY R.conid, M.id
-order by M.id;
-EOF;
-        $yearaheadR = dbSafeQuery($yearaheadQ, 'i', array($conid+1));
-        while($badgeType = $yearaheadR->fetch_assoc()) {
-            $badgeList['next year'][$badgeType['label']]=$badgeType['c'];
-        }
-
-$currQ = "SELECT count(DISTINCT R.perid) as c FROM reg R WHERE R.conid=? and R.status='paid';";
-$currR = dbSafeQuery($currQ, 'i', array($conid))->fetch_assoc();
-$con['paid_members'] = $currR['c'];
-
-        $preregQ = <<<EOF
-SELECT R.conid, M.memCategory, M.shortname as label, count(DISTINCT R.perid) as c
-FROM reg R
-JOIN memLabel M on M.id=R.memId
-LEFT OUTER JOIN regActions H ON H.regid=R.id and H.action='print'
-WHERE R.conid=? and H.action is null
-GROUP BY R.conid, M.label
-order by M.label;
-EOF;
-        $preregR = dbSafeQuery($preregQ, 'i', array($conid));
-        while($badgeType = $preregR->fetch_assoc()) {
-            $badgeList['unprinted'][$badgeType['label']]=$badgeType['c'];
-        }
-
-        $atconQ = <<<EOF
-SELECT R.conid, M.memCategory, M.memType, M.shortname as label, count(DISTINCT R.perid) as c
-FROM reg R
-JOIN memLabel M on M.id=R.memId
-JOIN regActions H ON H.regid=R.id and H.action='print'
-WHERE R.conid=? 
-GROUP BY R.conid, M.label
-order by M.label;
-EOF;
-
-        $atconR = dbSafeQuery($atconQ, 'i', array($conid));
-        while($badgeType = $atconR->fetch_assoc()) {
-            $badgeList[$badgeType['memType']][$badgeType['label']]=$badgeType['c'];
-        }
-
-        $acc = array('full'=>0, 'oneday'=>0);
-        $track = array();
-        $graphQ = <<<EOF
-SELECT COUNT(DISTINCT regid) as badge, COUNT(DISTINCT tid) as trans
-    , conid, LOWER(memType) as type, time
-FROM (SELECT DISTINCT H.regid, H.tid, R.conid, M.memType
-, FROM_UNIXTIME(FLOOR(UNIX_TIMESTAMP(min(T.complete_date))/900)*900) AS time
+      #  $con = get_con();
+        $badgeQ = <<<EOF
+SELECT Distinct R.perid, M.shortname as label, R.conid, M.memType
+    , FROM_UNIXTIME(FLOOR(UNIX_TIMESTAMP(min(T.complete_date))/900)*900) AS time
+    , DATEDIFF(CURRENT_TIMESTAMP(), MIN(T.complete_date)) as diff
 FROM regActions H
 JOIN reg R ON (R.id=H.regid)
 JOIN transaction T ON (T.id=H.tid)
 JOIN memLabel M ON (M.id=R.memId)
-WHERE R.conid=? AND H.action = 'print'
-GROUP BY R.perid, R.conid, M.memType
-ORDER By time, M.memType) s
-GROUP BY time, conid, memType
-ORDER BY time, memType;
+WHERE R.conid>=? AND H.action = 'print'
+    $addlwhere
+GROUP BY R.perid, M.shortname, R.conid, M.memType ORDER BY time, M.memType;
 EOF;
 
-        $graphR = dbSafeQuery($graphQ, 'i', array($conid));
-        
-        while($graphLine = $graphR->fetch_assoc()) {
-            $acc[$graphLine['type']] += $graphLine['badge'];
-            $track[$graphLine['time']][$graphLine['type']] = $acc[$graphLine['type']]; 
-            $track[$graphLine['time']]['badge'] = $graphLine['badge'];
-            $track[$graphLine['time']]['trans'] = $graphLine['trans'];
-	    $total += $graphLine['badge'];
+        $badgeR = dbSafeQuery($badgeQ, 'i', array($conid));
+        $badgeList = array(
+            'expired'=>array(),
+            'onsite'=>array(),
+            'prereg'=>array(),
+            'yearahead'=>array()
+        );
+        while($badge = $badgeR->fetch_assoc()) {
+            if($badge['conid'] > $conid) {
+                if(isset($badgeList['yearahead'][$badge['label']])) {
+                    $badgeList['yearahead'][$badge['label']] += 1;
+                } else {
+                    $badgeList['yearahead'][$badge['label']] = 1;
+                }
+            } else if($badge['memType']=='oneday' && $badge['diff'] > 0) {
+                if(isset($badgeList['expired'][$badge['label']])) {
+                    $badgeList['expired'][$badge['label']] += 1;
+                } else {
+                    $badgeList['expired'][$badge['label']] = 1;
+                }
+            } else {
+                if(isset($badgeList['onsite'][$badge['label']])) {
+                    $badgeList['onsite'][$badge['label']] += 1;
+                } else {
+                    $badgeList['onsite'][$badge['label']] = 1;
+                }
+            }
+        }
+        $preregQ = <<<EOS
+SELECT M.id, M.shortname as label, COUNT(distinct R.perid) AS c
+FROM reg R
+JOIN memLabel M ON (M.id=R.memId)
+JOIN conlist C ON (C.id=R.conid)
+LEFT OUTER JOIN regActions H ON (H.regid = R.id AND H.action!='attach')
+WHERE R.create_date < C.startdate and R.conid=? AND H.action is NULL
+GROUP BY M.shortname, M.id
+ORDER BY M.id;
+EOS;
+        $preregR = dbSafeQuery($preregQ, 'i', array($conid));
+        while ($prereg = $preregR->fetch_assoc()) {
+            if(isset($badgeList['prereg'][$prereg['label']])) {
+                $badgeList['prereg'][$prereg['label']] += $prereg['c'];
+            } else {
+                $badgeList['prereg'][$prereg['label']] = $prereg['c'];
+            }
         }
 
 
-      #  $con = get_con();
+# OLD WHERE CLAUSE: AND (B.action='attach')
+        $histoQ = <<<EOS
+SELECT COUNT(distinct T.id) AS trans, COUNT(distinct R.id) AS badge
+    , IF(T.complete_date is not null
+    ,FROM_UNIXTIME(FLOOR(UNIX_TIMESTAMP(T.complete_date)/900)*900)
+    ,FROM_UNIXTIME(FLOOR(UNIX_TIMESTAMP(T.create_date)/900)*900)) AS time
+    , DATEDIFF(CURRENT_TIMESTAMP(), T.complete_date) AS diff
+    , M.memType
+FROM conlist C
+JOIN transaction T ON (T.conid=C.id)
+JOIN regActions H ON (H.tid=T.id)
+JOIN reg R ON (R.id=H.regid)
+JOIN memList M ON (M.id=R.memId)
+WHERE C.id=?
+    AND H.action='print'
+    AND T.create_date >= C.startdate - INTERVAL 1 Day
+GROUP BY time, diff, memType ORDER BY time;
+EOS;
 
-	$max_staff = 0;
+        $histoR = dbSafeQuery($histoQ, 'i', array($conid));
+        $histogram = array(); //sub arrays 'expired', 'oneday', 'full', 'trans'
+        $acc = array('expired'=>0, 'oneday'=>0, 'full'=>0);
+        $lastdiff = 0;
+        while($histo = $histoR->fetch_assoc()) {
+            if(!isset($histogram[$histo['time']])) {
+                $histogram[$histo['time']] = array(
+                    'expired'=>$acc['expired'],
+                    'oneday'=>$acc['oneday'],
+                    'full'=>$acc['full'],
+                    'trans'=>$histo['trans'],
+                    'badge'=>$histo['badge']
+                );
+            } else {
+                $histogram[$histo['time']]['trans']+=$histo['trans'];
+                $histogram[$histo['time']]['badge']+=$histo['badge'];
+            }
+
+            if($histo['memType'] == 'full') {
+                $histogram[$histo['time']]['full'] += $histo['badge'];
+                $acc['full'] += $histo['badge'];
+            } else if($histo['diff'] == 0) {
+                $histogram[$histo['time']]['oneday'] += $histo['badge'];
+                $acc['oneday'] += $histo['badge'];
+            } else {
+                $histogram[$histo['time']]['expired'] += $histo['badge'];
+                $acc['expired'] += $histo['badge'];
+            }
+        }
+
         $staffQ = <<<EOF
-SELECT COUNT(distinct P.cashier) AS cashier
-    , COUNT(distinct T.userid) AS checkin
-    , FROM_UNIXTIME(FLOOR(UNIX_TIMESTAMP(P.time)/900)*900) AS time
+SELECT COUNT(distinct P.cashier) AS reg
+    , COUNT(distinct T.userid) AS de
+    , FROM_UNIXTIME(FLOOR(UNIX_TIMESTAMP(P.time)/900)*900) AS t
 FROM transaction T
 LEFT OUTER JOIN payments P ON (P.transid=T.id and P.cashier IS NOT NULL)
 JOIN regActions H ON (H.tid=T.id)
 WHERE T.conid=?
-GROUP BY time;
+GROUP BY t;
 EOF;
         $staffR = dbSafeQuery($staffQ, 'i', array($conid));
         $staffing = array();
         while($staff = $staffR->fetch_assoc()) {
             array_push($staffing, $staff);
-	    if($staff['cashier'] + $staff['checkin'] > $max_staff) {
-	        $max_staff = $staff['cashier'] + $staff['checkin'];
-	    }
         }
-	$con['max_staff'] = $max_staff;
 
         $histo = array();
-        foreach($track as $key => $value) {
+        foreach($histogram as $key => $value) {
             $value['time']=$key;
             array_push($histo, $value);
         }
 
         $response['badgeList']=$badgeList;
         $response['histogram']=$histo;
-        $response['tracking']=$track;
         $response['staffing']=$staffing;
         $response['con']=$con;
-	$response['total']=$total;
         break;
     case "totalMembership": //updated 2025-01-09
         $maxRegQ = <<<EOQ
