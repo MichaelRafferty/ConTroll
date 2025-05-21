@@ -300,14 +300,16 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                         $item['applied_discounts'][] = 'planDeferment';
                 }
 
-                if ($couponDiscount && ($badge['status'] == 'unpaid' || $badge['status'] == 'plan')) {
+                if ($couponDiscount &&
+                    (!array_key_exists('status', $badge) || $badge['status'] == 'unpaid' || $badge['status'] == 'plan')) {
                     $cat = $badge['memCategory'];
                     if (in_array($cat, array('standard','supplement','upgrade','add-on', 'virtual'))) {
                         $item['applied_discounts'][] = array('uid' => 'couponDiscount', 'applied_amount' => 0);
                         $totalDiscountable += $item['basePriceMoney'];
                     }
                 }
-                if ($managerDiscount && ($badge['status'] == 'unpaid' || $badge['status'] == 'plan')) {
+                if ($managerDiscount &&
+                    (!array_key_exists('status', $badge) || $badge['status'] == 'unpaid' || $badge['status'] == 'plan')) {
                     $item['applied_discounts'][] = array('uid' => 'managerDiscount',  'applied_amount' => 0);
                     $totalDiscountable += $item['basePriceMoney'];
                 }

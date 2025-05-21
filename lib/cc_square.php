@@ -476,7 +476,8 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                         ])));
                 }
 
-                if ($couponDiscount && ($badge['status'] == 'unpaid' || $badge['status'] == 'plan')) {
+                if ($couponDiscount &&
+                    (!array_key_exists('status', $badge) || $badge['status'] == 'unpaid' || $badge['status'] == 'plan')) {
                     $cat = $badge['memCategory'];
                     if (in_array($cat, array('standard','supplement','upgrade','add-on', 'virtual'))) {
                         $item->setAppliedDiscounts(array(new Square\Types\OrderLineItemAppliedDiscount([
@@ -485,7 +486,8 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                         ])));
                     }
                 }
-                if ($managerDiscount && ($badge['status'] == 'unpaid' || $badge['status'] == 'plan')) {
+                if ($managerDiscount &&
+                    (!array_key_exists('status', $badge) || $badge['status'] == 'unpaid' || $badge['status'] == 'plan')) {
                     $item->setAppliedDiscounts(array(new Square\Types\OrderLineItemAppliedDiscount([
                         'uid' => 'managerDiscount-' . $lineid,
                         'discountUid' => 'discount' ,
