@@ -269,7 +269,7 @@ class ExhibitorRequest {
                     show_message(data['error'], 'error', 'sr_message_div');
                     return;
                 }
-                if (data['exhibitor_spacelist']) {
+                if (data['exhibitor_spacelist'] && cancel > 2) {
                     exhibitor_spacelist = data['exhibitor_spacelist'];
                     _this.updateRequestStatusBlock(regionYearId);
                     exhibitors.open(fulltabname);
