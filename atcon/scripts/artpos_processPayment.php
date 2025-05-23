@@ -252,6 +252,12 @@ if ($amt > 0) {
         else
             $desc = mb_substr($desc . '/' . $new_payment['desc'], 0, 64);
 
+        $locationId = getSessionVar('terminal');
+        if ($locationId) {
+            $locationId = $locationId['locationId'];
+        } else {
+            $locationId = $cc['location'];
+        }
         $ccParam = array (
             'transid' => $master_tid,
             'counts' => 0,
@@ -267,7 +273,7 @@ if ($amt > 0) {
             'desc' => $desc,
             'source' => $source,
             'change' => $change,
-            'locationId' => $cc['location'],
+            'locationId' => $locationId,
         );
 
         //log requested badges
