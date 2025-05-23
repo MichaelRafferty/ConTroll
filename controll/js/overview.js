@@ -197,7 +197,7 @@ function buildDaily(dailyRegCounts, today) {
         label: {text: (-today) + str}
     });
 
-    Plotly.newPlot('DailyTrend', daily, {'title':'Membership Growth by Day', autosize:true, shapes:shapes, xaxis: {range:[-config['compLen'],null]}}, {responsive:true});
+    Plotly.newPlot('DailyTrend', daily, {'title':'Paid Membership Growth by Day', autosize:true, shapes:shapes, xaxis: {range:[-config['compLen'],null]}}, {responsive:true});
 }
 
 
