@@ -91,7 +91,7 @@ SELECT R.conid, M.id, M.memCategory, M.shortname as label
     , count(DISTINCT R.perid) as c 
 FROM reg R
 JOIN memLabel M on M.id=R.memId
-WHERE R.conid=? and M.memCategory in ('yearahead', 'rollover')
+WHERE R.conid=? 
 GROUP BY R.conid, M.id
 order by M.id;
 EOF;
@@ -246,7 +246,7 @@ EOQ;
                     array_push($preconResponse[$minCon - $i*5], array('x' => $preconR['diff'], 'y' => $rand));
                 }
             }
-            array_push($preconResponse[$preconR['conid']], array('x' => $preconR['diff'], 'y' => $preconR['cnt_all']));
+            array_push($preconResponse[$preconR['conid']], array('x' => $preconR['diff'], 'y' => $preconR['cnt_paid']));
         }
         $response['dailyHistory'] = $preconResponse;
         break;
