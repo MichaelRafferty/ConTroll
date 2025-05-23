@@ -246,7 +246,6 @@ class ExhibitorRequest {
             requests: $('#exhibitor_req_form').serialize(),
             'type': config['portalType'],
             'name': config['portalName'],
-            'pay': exhibitors.getApprovalPay(),
         };
         var url = 'scripts/spaceReq.php';
         if (cancel >= 2) {
@@ -255,6 +254,7 @@ class ExhibitorRequest {
             dataobj['exhibitorId'] = exhibitor_info['exhibitorId'];
             dataobj['exhibitorYearId'] = exhibitor_info['exhibitorYearId'];
             dataobj['cancel'] = cancel;
+            dataobj['pay'] = exhibitors.getApprovalPay();
         }
         var _this = this;
         $.ajax({
