@@ -66,8 +66,8 @@ function buildOnSite(data, con, total) {
         onedayOnSite.y.push(dataline.oneday);
     }
 
-    traces.push(onedayOnSite);
     traces.push(fullOnSite);
+    traces.push(onedayOnSite);
 
     var shapes = Array(); 
     shapes.push({
