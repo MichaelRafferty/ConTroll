@@ -119,7 +119,7 @@ EOF;
         }
 
         $atconQ = <<<EOF
-SELECT R.conid, M.memCategory, M.memType, M.shortname as label, count(DISTINCT R.perid) as c
+SELECT R.conid, M.memCategory, LOWER(M.memType) as memType, M.shortname as label, count(DISTINCT R.perid) as c
 FROM reg R
 JOIN memLabel M on M.id=R.memId
 JOIN regActions H ON H.regid=R.id and H.action='print'
