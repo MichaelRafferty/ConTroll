@@ -985,6 +985,9 @@ function pay(nomodal, prow = null) {
         order_id: pay_currentOrderId,
         override: payOverride,
         poll: payPoll,
+        preTaxAmt: total_art_due,
+        taxAmt: total_tax_due,
+        totalAmtDue: total_amount_due,
     };
     pay_button_pay.disabled = true;
     clear_message();
