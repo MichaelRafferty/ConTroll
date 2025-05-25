@@ -997,7 +997,6 @@ function pay(nomodal, prow = null) {
         data: postData,
         success: function (data, textstatus, jqxhr) {
             paySuccess(data);
-            paySuccess(data);
         },
         error: function (jqXHR, textstatus, errorThrown) {
             pay_button_pay.disabled = false;
