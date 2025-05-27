@@ -70,13 +70,16 @@ $total_paid = 0;
 $insPerinfoSQL = <<<EOS
 INSERT INTO perinfo(last_name,first_name,middle_name,suffix,legalName,pronouns,email_addr,phone,badge_name,address,addr_2,city,state,zip,country,
                     open_notes,banned,active,contact_ok,creation_date,updatedBy)
-VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'N','Y','Y',now(),?);
+VALUES (IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),
+        IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),?,'N','Y','Y',now(),?);
 EOS;
 $insPDt = 'ssssssssssssssssi';
 
 $updPerinfoSQL = <<<EOS
 UPDATE perinfo SET
-    last_name=?,first_name=?,middle_name=?,suffix=?,legalName=?,pronouns=?,email_addr=?,phone=?,badge_name=?,address=?,addr_2=?,city=?,state=?,zip=?,country=?,
+    last_name=IFNULL(?,''),first_name=IFNULL(?,''),middle_name=IFNULL(?,''),suffix=IFNULL(?,''),legalName=IFNULL(?,''),
+    pronouns=IFNULL(?,''),email_addr=IFNULL(?,''),phone=IFNULL(?,''),badge_name=IFNULL(?,''),address=IFNULL(?,''),addr_2=IFNULL(?,''),
+    city=IFNULL(?,''),state=IFNULL(?,''),zip=IFNULL(?,''),country=IFNULL(?,''),
     open_notes=?,banned='N',update_date=NOW(),active='Y',updatedBy=?
 WHERE id = ?;
 EOS;

@@ -17,7 +17,7 @@ WHERE id = ?;
 EOS;
 
     $insertPQ = <<<EOS
-INSERT INTO perinfo(id, first_name, last_name, email_addr, banned, active, open_notes, contact_ok, share_reg_ok,updatedBy)
+INSERT INTO perinfo(id, first_name, last_name, email_addr, banned, active, open_notes, contact_ok, share_reg_ok)
 VALUES (?,?,?,?,?,?,?,?,?,?);
 EOS;
 
@@ -45,7 +45,7 @@ EOS;
         logEcho("Person 2/User 2 exist", true);
     } else {
         // insert user 2, person record first
-        $newid = dbSafeInsert($insertPQ, 'issssssssi', array(2, 'Atcon', 'Internal', NULL, 'N', 'N', 'INTERNAL NOT FOR REGISTRATION USE', 'N', 'N', 2));
+        $newid = dbSafeInsert($insertPQ, 'issssssssi', array(2, 'Atcon', 'Internal', NULL, 'N', 'N', 'INTERNAL NOT FOR REGISTRATION USE', 'N', 'N'));
         if ($newid === false) {
             logEcho("Unable to insert Person Info 2 for ATCON");
             $errors++;
@@ -72,12 +72,52 @@ EOS;
         logEcho('Person 3 exists', true);
     } else {
         // insert person 3
-        $newid = dbSafeInsert($insertPQ, 'issssssssi', array(3, 'Exhibitor', 'Internal', NULL, 'N', 'N', 'INTERNAL NOT FOR REGISTRATION USE', 'N', 'N', 3));
+        $newid = dbSafeInsert($insertPQ, 'issssssssi', array(3, 'Exhibitor', 'Internal', NULL, 'N', 'N', 'INTERNAL NOT FOR REGISTRATION USE', 'N', 'N'));
         if ($newid === false) {
             logEcho('Unable to insert Person Info 3 for Exhibitor');
             $errors++;
         }
         logEcho('Created person 3 for Exhibitors');
+    }
+
+    // check if person 4 exists in the system (Portal)
+    $checkR = dbSafeQuery($checkSQL, 'i', array(4));
+    if ($checkR === false || $checkR->num_rows == 0) {
+        logEcho('Error retrieving number of people in the database, cannot continue');
+        return (1);
+    }
+    $num_rows = $checkR->fetch_row()[0];
+    $checkR->free();
+    if ($num_rows == 1) {
+        logEcho('Person 4 exists', true);
+    } else {
+        // insert person 3
+        $newid = dbSafeInsert($insertPQ, 'issssssssi', array(4, 'Portal', 'Internal', NULL, 'N', 'N', 'INTERNAL NOT FOR REGISTRATION USE', 'N', 'N'));
+        if ($newid === false) {
+            logEcho('Unable to insert Person Info 4 for Portal');
+            $errors++;
+        }
+        logEcho('Created person 4 for Portal');
+    }
+
+    // check if person 5 exists in the system (Mail In Reg)
+    $checkR = dbSafeQuery($checkSQL, 'i', array(5));
+    if ($checkR === false || $checkR->num_rows == 0) {
+        logEcho('Error retrieving number of people in the database, cannot continue');
+        return (1);
+    }
+    $num_rows = $checkR->fetch_row()[0];
+    $checkR->free();
+    if ($num_rows == 1) {
+        logEcho('Person 5 exists', true);
+    } else {
+        // insert person 3
+        $newid = dbSafeInsert($insertPQ, 'issssssssi', array(5, 'Mail In', 'Registration', NULL, 'N', 'N', 'INTERNAL NOT FOR REGISTRATION USE', 'N', 'N'));
+        if ($newid === false) {
+            logEcho('Unable to insert Person Info 5 for Mail In');
+            $errors++;
+        }
+        logEcho('Created person 5 for Mail In');
     }
 
     // check if the initial conid exists in the system
