@@ -1133,6 +1133,7 @@ function transferReg(to, banned) {
         from: changeRowdata.perid,
         to: to,
         transferList: changeList,
+        source: config['source'],
     }
     $.ajax({
         url: script,
@@ -1285,6 +1286,7 @@ function changeRolloverExecute() {
     var data = {
         rolloverList: newIds,
         action: 'rollover',
+        source: config['source'],
     }
     var script= 'scripts/regadmin_rolloverReg.php';
 

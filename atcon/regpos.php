@@ -99,6 +99,7 @@ if (isset($_GET['tid'])) {
     $config_vars['autoloadTID'] = $_GET['tid'];
 }
 $config_vars['onedaycoupons'] = $onedaycoupons;
+$config_vars['source'] = 'regpos';
 
 
 $useUSPS = false;

@@ -294,6 +294,7 @@ class Notes {
                             regid: this.#notesIndex,
                             note: newNote,
                             user_id: this.#user_id,
+                            source: config['source'],
                         };
                         this.#closeNotesBTN.disabled = true;
                         $.ajax({

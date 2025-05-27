@@ -81,6 +81,7 @@ $config_vars['useportal'] = $usePortal;
 $config_vars['cashier'] = 1;
 $config_vars['multiOneDay'] = $multiOneDay;
 $config_vars['onedaycoupons'] = $onedaycoupons;
+$config_vars['source'] = 'registration';
 
 // form as laid out has no room for usps block, if we want it we need to reconsider how to do it here.
 //if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))

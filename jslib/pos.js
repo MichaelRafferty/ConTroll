@@ -1911,6 +1911,7 @@ addUnpaid(tid) {
             ajax_request_action: 'updateCartElements',
             cart_perinfo: JSON.stringify(cart.getCartPerinfo()),
             user_id: this.#user_id,
+            source: config['source'],
         };
         var _this = this;
         clear_message();
@@ -2622,6 +2623,7 @@ addUnpaid(tid) {
                 regs: regs,
                 user_id: this.#user_id,
                 tid: this.#pay_tid,
+                source: config['source'],
             };
             clear_message();
             $.ajax({

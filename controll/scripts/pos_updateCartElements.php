@@ -40,6 +40,14 @@ if ($user_id != $_SESSION['user_id']) {
     return;
 }
 $user_perid = $_SESSION['user_perid'];
+
+if (!array_key_exists('source', $_POST)) {
+    $message_error = 'Source Missing';
+    RenderErrorAjax($message_error);
+    exit();
+}
+$source = $_POST['source'];
+
 try {
     $cart_perinfo = json_decode($_POST['cart_perinfo'], true, 512, JSON_THROW_ON_ERROR);
 }
@@ -104,10 +112,10 @@ EOS;
 $delRDt = 'i';
 
 $insHistory = <<<EOS
-INSERT INTO regActions(userid, tid, regid, action, notes)
-VALUES (?, ?, ?, ?, ?);
+INSERT INTO regActions(userid, source, tid, regid, action, notes)
+VALUES (?, ?, ?, ?, ?, ?);
 EOS;
-$insHDt = 'iiiss';
+$insHDt = 'isiiss';
 
 $selReg = <<<EOS
 WITH notes AS (
@@ -282,11 +290,17 @@ for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
         if (!array_key_exists('toDelete', $mbr)) {
             // now if there is a new note for this row, add it now
             if (array_key_exists('new_reg_note', $mbr)) {
-                $paramarray = array ($user_perid, $master_transid, $mbr['regid'], 'notes', $mbr['new_reg_note']);
+                $paramarray = array ($user_perid, $source, $master_transid, $mbr['regid'], 'notes', $mbr['new_reg_note']);
                 $new_history = dbSafeInsert($insHistory, $insHDt, $paramarray);
                 if ($new_history === false) {
                     $error_message .= 'Unable to add note to membership ' . $mbr['regid'] . '<BR/>';
                 }
+            }
+            // and create an attach record for this membership
+            $paramarray = array ($user_perid, $source, $master_transid, $mbr['regid'], 'attach', null);
+            $new_history = dbSafeInsert($insHistory, $insHDt, $paramarray);
+            if ($new_history === false) {
+                $error_message .= 'Unable to add attach to membership ' . $mbr['regid'] . '<BR/>';
             }
         }
     }
