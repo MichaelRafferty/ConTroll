@@ -44,18 +44,13 @@ $perinfo = [];
 
 $limit = 99999999;
 $fieldListP = <<<EOS
-SELECT DISTINCT p.id AS perid, TRIM(IFNULL(p.first_name, '')) AS first_name, TRIM(IFNULL(p.middle_name, '')) AS middle_name, 
-    TRIM(IFNULL(p.last_name, '')) AS last_name, TRIM(IFNULL(p.suffix, '')) AS suffix, 
-    TRIM(IFNULL(p.legalName, '')) AS legalName, TRIM(IFNULL(p.pronouns, '')) AS pronouns,
-    p.badge_name, TRIM(IFNULL(p.address, '')) AS address_1, TRIM(IFNULL(p.addr_2, '')) AS address_2, 
-    TRIM(IFNULL(p.city, '')) AS city, TRIM(IFNULL(p.state, '')) AS state, TRIM(IFNULL(p.zip, '')) AS postal_code, 
-    IFNULL(p.country, '') as country, TRIM(IFNULL(p.email_addr, '')) AS email_addr,
-    TRIM(IFNULL(p.phone, '')) as phone, p.active, p.banned,
-    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ',  
-        IFNULL(p.suffix, '')), '  *', ' ')) AS fullName,
+SELECT DISTINCT p.id AS perid, TRIM(p.first_name) AS first_name, TRIM(p.middle_name) AS middle_name, TRIM(p.last_name) AS last_name,
+    TRIM(p.suffix) AS suffix, TRIM(p.legalName) AS legalName, TRIM(p.pronouns) AS pronouns, TRIM(p.badge_name), 
+    TRIM(p.address) AS address_1, TRIM(p.addr_) AS address_2, TRIM(p.city) AS city, TRIM(p.state) AS state, TRIM(p.zip) AS postal_code, 
+    TRIM(p.country) as country, TRIM(p.email_addr) AS email_addr, TRIM(p.phone) as phone, p.active, p.banned,
+    TRIM(REGEXP_REPLACE(CONCAT(p.first_name, ' ', p.middle_name, ' ', p.last_name, ' ', p.suffix), '  *', ' ')) AS fullName,
     p.open_notes, p.managedBy, cnt.cntManages,
-    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(mgr.first_name, ''),' ', IFNULL(mgr.middle_name, ''), ' ', IFNULL(mgr.last_name, ''), ' ',  
-        IFNULL(mgr.suffix, '')), '  *', ' ')) AS mgrFullName
+    TRIM(REGEXP_REPLACE(CONCAT(mgr.first_name, ' ', mgr.middle_name, ' ', mgr.last_name, ' ', mgr.suffix), '  *', ' ')) AS mgrFullName
 EOS;
 $withClauseMgr = <<<EOS
 , manages AS (

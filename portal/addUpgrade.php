@@ -55,12 +55,12 @@ if ($loginType == 'n') {
 }
 // we need the list of people we are managing so we can check for matching email addresses and allow them
 $emQ = <<<EOS
-SELECT LOWER(email_addr) AS email_addr,
-TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(last_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) AS fullname
+SELECT LOWER(email_addr) AS email_addr, 
+    TRIM(REGEXP_REPLACE(CONCAT(first_name, ' ', middle_name, ' ', last_name, ' ', suffix), '  *', ' ')) AS fullName,
 FROM newperson
 WHERE $mfield = ?
 UNION SELECT LOWER(email_addr) AS email_addr,
-TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(last_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) AS fullname
+    TRIM(REGEXP_REPLACE(CONCAT(first_name, ' ', middle_name, ' ', last_name, ' ', suffix), '  *', ' ')) AS fullName,     
 FROM perinfo
 WHERE $mfield = ?;
 EOS;
