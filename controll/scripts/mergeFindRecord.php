@@ -46,10 +46,8 @@ WITH regcnt AS (
     WHERE p.id = ?
     GROUP BY p.id
 )
-SELECT p.id AS perid, IFNULL(p.first_name, '') as first_name, IFNULL(p.middle_name, '') as middle_name, IFNULL(p.last_name, '') as last_name,
-    IFNULL(p.suffix, '') as suffix, p.badge_name, IFNULL(p.address, '') as address_1, IFNULL(p.addr_2, '') as address_2, IFNULL(p.city, '') AS city,
-    IFNULL(p.state, '') AS state, IFNULL(p.zip, '') as postal_code, IFNULL(p.country, '') as country, IFNULL(p.email_addr, '') as email_addr,
-    IFNULL(p.phone, '') as phone, p.share_reg_ok, p.contact_ok, p.active, p.banned,
+SELECT p.id AS perid, p.first_name, p.middle_name, p.last_name, p.suffix, p.badge_name, p.address as address_1, p.addr_2 as address_2,
+    p.city, p.state, p.zip as postal_code, p.country, p.email_addr, p.phone, p.share_reg_ok, p.contact_ok, p.active, p.banned,
     CASE 
         WHEN p.last_name, != '' THEN
             TRIM(REGEXP_REPLACE(CONCAT(p.last_name, ', ', CONCAT_WS(' ', p.first_name, p.middle_name, p.suffix, '')), '  *', ' ')) 
@@ -80,10 +78,8 @@ WITH regcnt AS (
     LOWER(legalName) LIKE ? OR LOWER(badge_name) LIKE ? OR LOWER(email_addr) LIKE ? OR LOWER(address) LIKE ? OR LOWER(addr_2) LIKE ?)
     GROUP BY p.id
 )
-SELECT DISTINCT p.id AS perid, IFNULL(p.first_name, '') as first_name, IFNULL(p.middle_name, '') as middle_name, IFNULL(p.last_name, '') as last_name,
-    IFNULL(p.suffix, '') as suffix, p.badge_name, IFNULL(p.address, '') as address_1, IFNULL(p.addr_2, '') as address_2, IFNULL(p.city, '') AS city,
-    IFNULL(p.state, '') AS state, IFNULL(p.zip, '') as postal_code, IFNULL(p.country, '') as country, IFNULL(p.email_addr, '') as email_addr, IFNULL(p.phone, '') as phone,
-    p.share_reg_ok, p.contact_ok, p.active, p.banned,
+SELECT DISTINCT p.id AS perid, p.first_name, p.middle_name, p.last_name,  p.suffix, p.badge_name, p.address as address_1, p.addr_2 as address_2,
+    p.city, p.state, p.zip, as postal_code, p.country, p.email_addr, p.phone, p.share_reg_ok, p.contact_ok, p.active, p.banned,
     CASE  
         WHEN last_name != '' THEN TRIM(REGEXP_REPLACE(CONCAT(p.last_name, ', ', CONCAT_WS(' ', p.first_name, p.middle_name, p.suffix)), '  *', ' ')) 
         ELSE TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.suffix), '  *', ' '))  
@@ -91,7 +87,7 @@ SELECT DISTINCT p.id AS perid, IFNULL(p.first_name, '') as first_name, IFNULL(p.
     r.regcnt, r.regs
 FROM regcnt r
 JOIN perinfo p ON (p.id = r.id)
-WHERE IFNULL(p.first_name,'') != 'Merged' AND IFNULL(p.middle_name, '') != 'into'
+WHERE p.first_name != 'Merged' AND p.middle_name != 'into'
 ORDER BY last_name, first_name LIMIT $limit;
 EOS;
     $rp = dbSafeQuery($searchSQLP, 'isssss', array($conid, $name_search, $name_search, $name_search, $name_search, $name_search));
