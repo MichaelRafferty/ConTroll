@@ -111,9 +111,7 @@ if ($action == 'upgrade') {
         $field = 'managedBy';
     }
         $checkQ = <<<EOS
-SELECT IFNULL($field, -1) AS mid, id,
-    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(last_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) AS fullname
-FROM $table
+SELECT IFNULL($field, -1) AS mid, id, TRIM(REGEXP_REPLACE(CONCAT(first_name, ' ', middle_name, ' ', last_name, ' ', suffix), '  *', ' ')) AS fullName,
 WHERE id = ?;
 EOS;
     $checkR = dbSafeQuery($checkQ, 'i', array($upgradeId));

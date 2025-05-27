@@ -42,12 +42,10 @@ WITH trans AS (
         END AS badge_name,
         CASE 
             WHEN pn.id IS NOT NULL THEN
-				TRIM(REGEXP_REPLACE(CONCAT(IFNULL(pn.first_name, ''),' ', IFNULL(pn.middle_name, ''), ' ', 
-				IFNULL(pn.last_name, ''), ' ', IFNULL(pn.suffix, '')), '  *', ' '))
+                TRIM(REGEXP_REPLACE(CONCAT(pn.first_name, ' ', pn.middle_name, ' ', pn.last_name, ' ', pn.suffix), '  *', ' '))
             WHEN nn.id IS NOT NULL THEN
-				TRIM(REGEXP_REPLACE(CONCAT(IFNULL(nn.first_name, ''),' ', IFNULL(nn.middle_name, ''), ' ', 
-                IFNULL(nn.last_name, ''), ' ', IFNULL(nn.suffix, '')), '  *', ' '))
-            ELSE NULL
+            CASE TRIM(REGEXP_REPLACE(CONCAT(nn.first_name, ' ', nn.middle_name, ' ', nn.last_name, ' ', nn.suffix), '  *', ' '))
+            ELSE ''
         END AS fullname,
         CASE 
             WHEN pn.id IS NOT NULL THEN pn.id
@@ -80,8 +78,7 @@ WITH trans AS (
         CASE WHEN tp.complete_date IS NULL THEN t.create_date ELSE tp.complete_date END AS transDate,
         m.label, m.memAge, m.memAge AS age, m.memType, m.memCategory,  m.startdate, m.enddate, m.online, m.taxable,
         nn.managedBy, nn.managedByNew, nn.badge_name, 
-        TRIM(REGEXP_REPLACE(CONCAT(IFNULL(nn.first_name, ''),' ', IFNULL(nn.middle_name, ''), ' ', 
-                IFNULL(nn.last_name, ''), ' ', IFNULL(nn.suffix, '')), '  *', ' ')) AS fullname, 
+        TRIM(REGEXP_REPLACE(CONCAT(nn.first_name, ' ', nn.middle_name, ' ', nn.last_name, ' ', nn.suffix), '  *', ' ')) AS fullname, 
         nn.id as memberId, nn.email_addr, nn.phone,
         IFNULL(tp.perid, t.perid) AS transPerid,
         IFNULL(tp.newperid, t.newperid) AS transNewPerid
@@ -111,8 +108,7 @@ WITH mems AS (
             WHEN p.badge_name IS NULL OR p.badge_name = '' THEN TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.last_name, '')) , '  *', ' ')) 
             ELSE p.badge_name
         END AS badge_name, p.id AS memberId, p.email_addr, p.phone,
-        TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ',
-            IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
+        TRIM(REGEXP_REPLACE(CONCAT(p.first_name, ' ', p.middle_name, ' ', p.last_name, ' ', p.suffix), '  *', ' ')) AS fullname,
         IFNULL(tp.perid, t.perid) AS transPerid
     FROM transaction t
     JOIN reg r ON t.id = r.create_trans

@@ -162,7 +162,7 @@ This configuration file must be parsable by the parse_ini_file function with sec
 	minWidth=80
 [F002]
     name=fullName
-    sql="TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' '))"
+    sql="TRIM(REGEXP_REPLACE(CONCAT(p.first_name, ' ', p.middle_name, ' ', p.last_name, ' ', p.suffix), '  *', ' '))"
     title="Full Name"
     minWidth=300
 [F003]

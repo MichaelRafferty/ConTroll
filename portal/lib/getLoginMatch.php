@@ -11,13 +11,13 @@ SELECT id, last_name, first_name, middle_name, suffix, email_addr, phone, badge_
        address, addr_2, city, state, zip, country, creation_date, update_date, active, banned,
     CASE 
         WHEN IFNULL(last_name, '') != '' THEN
-            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(last_name, ''), ', ', IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) 
+            TRIM(REGEXP_REPLACE(CONCAT(last_name, ', ', first_name, ' ', middle_name, ' ', suffix), '  *', ' ')) 
         ELSE
-            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) 
+            TRIM(REGEXP_REPLACE(CONCAT(first_name, ' ', middle_name, ' ', suffix), '  *', ' ')) 
         END AS fullname,
     'p' AS tablename
 FROM perinfo
-WHERE id = ? AND IFNULL(first_name,'') != 'Merged' AND IFNULL(middle_name,'') != 'into';
+WHERE id = ? AND first_name != 'Merged' AND middle_name != 'into';
 EOS;
         $regcountR = dbSafeQuery($regcountQ, 'i', array($email));
     } else if ($id != NULL) {
@@ -26,10 +26,10 @@ EOS;
 SELECT id, last_name, first_name, middle_name, suffix, email_addr, phone, badge_name, legalName, pronouns,
        address, addr_2, city, state, zip, country, creation_date, update_date, active, banned,
     CASE 
-        WHEN IFNULL(last_name, '') != '' THEN
-            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(last_name, ''), ', ', IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) 
+        WHEN last_name != '' THEN
+            TRIM(REGEXP_REPLACE(CONCAT(last_name, ', ', first_name, ' ', middle_name, ' ', suffix), '  *', ' ')) 
         ELSE
-            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) 
+            TRIM(REGEXP_REPLACE(CONCAT(first_name, ' ', middle_name, ' ', suffix), '  *', ' '))  
         END AS fullname,
     'p' AS tablename
 FROM perinfo
@@ -41,14 +41,14 @@ EOS;
 SELECT id, last_name, first_name, middle_name, suffix, email_addr, phone, badge_name, legalName, pronouns,
        address, addr_2, city, state, zip, country, creation_date, update_date, active, banned,
     CASE 
-        WHEN IFNULL(last_name, '') != '' THEN
-            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(last_name, ''), ', ', IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) 
+        WHEN last_name != '' THEN
+            TRIM(REGEXP_REPLACE(CONCAT(last_name, ', ', first_name, ' ', middle_name, ' ', suffix), '  *', ' ')) 
         ELSE
-            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) 
+            TRIM(REGEXP_REPLACE(CONCAT(first_name, ' ', middle_name, ' ', suffix), '  *', ' '))  
         END AS fullname,
     'p' AS tablename
 FROM perinfo
-WHERE email_addr = ? AND IFNULL(first_name,'') != 'Merged' AND IFNULL(middle_name,'') != 'into'
+WHERE email_addr = ? AND first_name != 'Merged' AND middle_name != 'into'
 ORDER BY fullname;
 EOS;
         $regcountR = dbSafeQuery($regcountQ, 's', array($email));
@@ -133,17 +133,17 @@ EOS;
 SELECT id, last_name, first_name, middle_name, suffix, p.email_addr, phone, badge_name, legalName, pronouns,
        address, addr_2, city, state, zip, country, creation_date, update_date, active, banned,
     CASE 
-        WHEN IFNULL(last_name, '') != '' THEN
-            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(last_name, ''), ', ', IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) 
+        WHEN last_name != '' THEN
+            TRIM(REGEXP_REPLACE(CONCAT(last_name, ', ', first_name, ' ', middle_name, ' ', suffix), '  *', ' ')) 
         ELSE
-            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) 
+            TRIM(REGEXP_REPLACE(CONCAT(first_name, ' ', middle_name, ' ', suffix), '  *', ' '))  
         END AS fullname,
     'p' AS tablename
 FROM perinfoIdentities pi
 JOIN perinfo p ON (p.id = pi.perid)
 WHERE pi.email_addr = ? AND pi.provider = ? AND (pi.subscriberID = ? OR pi.subscriberID IS NULL) 
   AND pi.email_addr != p.email_addr
-  AND IFNULL(first_name,'') != 'Merged' AND IFNULL(middle_name,'') != 'into';
+  AND first_name != 'Merged' AND middle_name != 'into';
 EOS;
         $regcountR = dbSafeQuery($regcountQ, 'sss', array($email, getSessionVar('oauth2'), getSessionVar('subscriberId')));
         if ($regcountR == false) {
@@ -163,16 +163,16 @@ EOS;
 SELECT id, last_name, first_name, middle_name, suffix, p.email_addr, phone, badge_name, legalName, pronouns,
        address, addr_2, city, state, zip, country, creation_date, update_date, active, banned,
     CASE 
-        WHEN IFNULL(last_name, '') != '' THEN
-            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(last_name, ''), ', ', IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) 
+        WHEN last_name != '' THEN
+            TRIM(REGEXP_REPLACE(CONCAT(last_name, ', ', first_name, ' ', middle_name, ' ', suffix), '  *', ' ')) 
         ELSE
-            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) 
+            TRIM(REGEXP_REPLACE(CONCAT(first_name, ' ', middle_name, ' ', suffix), '  *', ' '))  
         END AS fullname,
     'p' AS tablename
 FROM perinfoIdentities pi
 JOIN perinfo p ON (p.id = pi.perid)
 WHERE pi.email_addr = ? AND pi.provider IN ('token', 'email', 'allow') AND pi.email_addr != p.email_addr
-  AND IFNULL(first_name,'') != 'Merged' AND IFNULL(middle_name,'') != 'into';
+  AND first_name != 'Merged' AND middle_name != 'into';
 EOS;
         $regcountR = dbSafeQuery($regcountQ, 's', array($email));
         if ($regcountR === false) {

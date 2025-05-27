@@ -64,8 +64,7 @@ SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p
     REPLACE(REPLACE(REPLACE(REPLACE(LOWER(TRIM(IFNULL(p.phone, ''))), ')', ''), '(', ''), '-', ''), ' ', '') AS phoneCheck,
     TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ',  
         IFNULL(p.suffix, '')), '  *', ' ')) AS fullName,
-    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.address, ''),' ', IFNULL(p.addr_2, ''), ' ', IFNULL(p.city, ''), ' ',
-        IFNULL(p.state, ''), ' ', IFNULL(p.zip, ''), ' ', IFNULL(p.country, '')), '  *', ' ')) AS fullAddr,
+    TRIM(REGEXP_REPLACE(CONCAT(P.address, ' ', P.addr_2, ' ', P.city, ' ', P.state, ' ', P.zip, ' ', P.country), '  *', ' ')) AS fullAddr,
     GROUP_CONCAT(DISTINCT m.label ORDER BY m.id SEPARATOR ', ') AS memberships
 FROM badgeList b
 JOIN perinfo p ON (p.id = b.perid)

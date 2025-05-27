@@ -15,10 +15,8 @@ $conid=$con['id'];
 
 $query = <<<EOS
 SELECT R.id,
-    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(P.first_name, ''),' ', IFNULL(P.middle_name, ''), ' ', IFNULL(P.last_name, ''), ' ',  
-        IFNULL(P.suffix, '')), '  *', ' ')) AS fullName,
-    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(P.address, ''),' ', IFNULL(P.addr_2, ''), ' ', IFNULL(P.city, ''), ' ',
-        IFNULL(P.state, ''), ' ', IFNULL(P.zip, ''), ' ', IFNULL(P.country, '')), '  *', ' ')) AS fullAddr,
+    TRIM(REGEXP_REPLACE(CONCAT(P.first_name, ' ', P.middle_name, ' ', P.last_name, ' ', P.suffix), '  *', ' ')) AS fullName,
+    TRIM(REGEXP_REPLACE(CONCAT(P.address, ' ', P.addr_2, ' ', P.city, ' ', P.state, ' ', P.zip, ' ', P.country), '  *', ' ')) AS fullAddr,
     P.zip as locale, P.country, P.email_addr, M.label, R.price, R.paid, R.status, R.create_date, MIN(H.logdate) AS date
 FROM reg R
 JOIN perinfo P ON (P.id=R.perid)
