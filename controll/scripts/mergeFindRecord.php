@@ -77,7 +77,8 @@ WITH regcnt AS (
     FROM perinfo p
     LEFT OUTER JOIN reg r ON (r.perid = p.id AND r.conid = ?)
     LEFT OUTER JOIN memList m ON (r.memId = m.id)
-    WHERE (LOWER(concat_ws(' ', first_name, middle_name, last_name)) LIKE ? OR LOWER(badge_name) LIKE ? OR LOWER(email_addr) LIKE ? OR LOWER(address) LIKE ? OR LOWER(addr_2) LIKE ?)
+    WHERE (LOWER(TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name), '  *', ' '))) LIKE ? OR
+    LOWER(legalName) LIKE ? OR LOWER(badge_name) LIKE ? OR LOWER(email_addr) LIKE ? OR LOWER(address) LIKE ? OR LOWER(addr_2) LIKE ?)
     GROUP BY p.id
 )
 SELECT DISTINCT p.id AS perid, IFNULL(p.first_name, '') as first_name, IFNULL(p.middle_name, '') as middle_name, IFNULL(p.last_name, '') as last_name,

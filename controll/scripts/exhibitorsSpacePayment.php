@@ -175,12 +175,12 @@ if ($spacePrice != $spacePriceComputed || $includedMembershipsComputed != $inclu
 $region['includedMemberships'] = $includedMembershipsComputed;
 $region['additionalMemberships'] = $additionalMembershipsComputed;
 
-$membership_fields = array('fname' => $required != '', 'mname' => false, 'lname' => $required == 'all', 'suffix' => false, 'legalname' => false,
+$membership_fields = array('fname' => $required != '', 'mname' => false, 'lname' => $required == 'all', 'suffix' => false, 'legalName' => false,
                            'addr' => $required == 'addr' || $required == 'all', 'addr2' => false,
                            'city' => $required == 'addr' || $required == 'all', 'state' => $required == 'addr' || $required == 'all',
                            'zip' => $required == 'addr' || $required == 'all', 'country' => $required == 'addr' || $required == 'all',
                            'email' => true, 'phone' => false, 'badgename' => false);
-$membership_names = array('fname' => 'First Name', 'mname' => 'Middle Name', 'lname' => 'Last Name', 'suffix' => 'Suffix', 'legalname' => 'Legal Name',
+$membership_names = array('fname' => 'First Name', 'mname' => 'Middle Name', 'lname' => 'Last Name', 'suffix' => 'Suffix', 'legalName' => 'Legal Name',
                           'addr' => 'Address Line 1', 'addr2' => 'Company/Address Line 2', 'city' => 'City', 'state' => 'State',
                           'zip' => 'Zip Code/Postal Code', 'country' => 'Country',
                           'email' => 'Email Address', 'phone' => 'Phone Number', 'badgename' => 'Badge Name');
@@ -371,7 +371,7 @@ SELECT R.id AS badge,
     NP.first_name AS fname, NP.middle_name AS mname, NP.last_name AS lname, NP.suffix AS suffix,
     NP.email_addr AS email,
     NP.address AS street, NP.city AS city, NP.state AS state, NP.zip AS zip, NP.country AS country,
-    NP.id as id, R.price AS price, M.memAge AS age, NP.badge_name AS badgename, NP.legalName AS legalname, R.memId
+    NP.id as id, R.price AS price, M.memAge AS age, NP.badge_name AS badgename, NP.legalName, R.memId
 FROM newperson NP
 JOIN reg R ON (R.newperid=NP.id)
 JOIN memList M ON (M.id = R.memID)
@@ -674,7 +674,7 @@ EOF;
         $id = null;
     }
     $badge['perid'] = $id;
-    $legalName = $badge['legalname'];
+    $legalName = $badge['legalName'];
     if ($legalName == null || $legalName == '') {
         $legalName = trim($badge['fname']  . ($badge['mname'] == '' ? ' ' : ' ' . $badge['mname'] . ' ' ) . $badge['lname'] . ' ' . $badge['suffix']);
     }

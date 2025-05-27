@@ -88,7 +88,7 @@ class Find {
             this.#middleName = document.getElementById('f_mname');
             this.#lastName = document.getElementById('f_lname');
             this.#suffix = document.getElementById('f_suffix');
-            this.#legalName = document.getElementById('f_legalname');
+            this.#legalName = document.getElementById('f_legalName');
             this.#pronouns = document.getElementById('f_pronouns');
             this.#badgeName = document.getElementById('f_badgename');
             this.#address = document.getElementById('f_addr');
@@ -381,7 +381,7 @@ class Find {
         this.#middleName.value = this.#editRow.middle_name;
         this.#lastName.value = this.#editRow.last_name;
         this.#suffix.value = this.#editRow.suffix;
-        this.#legalName.value = this.#editRow.legalname;
+        this.#legalName.value = this.#editRow.legalName;
         this.#pronouns.value = this.#editRow.pronouns;
         this.#badgeName.value = this.#editRow.badge_name;
         this.#address.value = this.#editRow.address;

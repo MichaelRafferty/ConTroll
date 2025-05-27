@@ -97,7 +97,7 @@ LEFT OUTER JOIN reg rn ON (rn.perid = p.id AND rn.conid = ?)
 JOIN memLabel m ON (r.memId = m.id)
 LEFT OUTER JOIN memLabel mn ON (rn.memId = mn.id)
 WHERE r.conid = ? AND (
-    LOWER(TRIM(REGEXP_REPLACE(CONCAT(p.first_name,' ', p.middle_name, ' ', p.last_name), '  *', ' '))) LIKE ? OR
+    LOWER(TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name), '  *', ' '))) LIKE ? OR
     LOWER(TRIM(p.badge_name) LIKE ? OR LOWER(TRIM(p.email_addr)) LIKE ?)
 ORDER BY last_name, first_name
 LIMIT $limit;

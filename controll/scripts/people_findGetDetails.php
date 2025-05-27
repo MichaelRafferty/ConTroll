@@ -80,13 +80,13 @@ $response['policies'] = $policies;
 
 // get the people managed
 $mQ = <<<EOS
-SELECT '' AS type, id, email_addr, badge_name, legalname, phone,
+SELECT '' AS type, id, email_addr, badge_name, legalName, phone,
        TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ',  
         IFNULL(p.suffix, '')), '  *', ' ')) AS fullName
 FROM perinfo p
 WHERE managedBy = ?
 UNION
-SELECT 'n' AS type, id, email_addr, badge_name, legalname, phone,
+SELECT 'n' AS type, id, email_addr, badge_name, legalName, phone,
        TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ',  
         IFNULL(p.suffix, '')), '  *', ' ')) AS fullName
 FROM newperson p

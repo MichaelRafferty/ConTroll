@@ -52,7 +52,7 @@ if ($firstName . $middleName .  $lastName .  $suffix .  $legalName .  $pronouns 
 
 // does anyone match this person?
 $mQ = <<<EOS
-SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalname, p.pronouns, 
+SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.pronouns, 
     p.address, p.addr_2, p.city, p.state, p.zip, p.country, p.banned, 
     p.creation_date, p.update_date, p.active, p.open_notes,
     p.managedBy, p.managedByNew, p.lastverified, p.managedreason,

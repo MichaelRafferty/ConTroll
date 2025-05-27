@@ -184,7 +184,7 @@ EOF;
             trim($newEmail),
             trim($person['phone']),
             trim($person['badgename']),
-            trim($person['legalname']),
+            trim($person['legalName']),
             trim($person['pronouns']),
             trim($person['addr']),
             trim($person['addr2']),
@@ -231,7 +231,7 @@ EOS;
                 trim($newEmail),
                 trim($person['phone']),
                 trim($person['badgename']),
-                trim($person['legalname']),
+                trim($person['legalName']),
                 trim($person['pronouns']),
                 trim($person['addr']),
                 trim($person['addr2']),
@@ -285,7 +285,7 @@ EOS;
     // for from the form which means a correction was passed.  If fname exists, it's from the form, handle that.
     // if first_name, its from the database, so do not update the database.
     if (array_key_exists('fname', $person)) {
-        $fields = ['lname', 'mname', 'fname', 'suffix', 'phone', 'badgename', 'legalname', 'pronouns', 'addr', 'addr2', 'city',
+        $fields = ['lname', 'mname', 'fname', 'suffix', 'phone', 'badgename', 'legalName', 'pronouns', 'addr', 'addr2', 'city',
                    'state', 'zip', 'country'];
         foreach ($fields as $field) {
             if ((!array_key_exists($field, $person)) || $person[$field] == null) {
@@ -304,7 +304,7 @@ EOS;
             trim($person['suffix']),
             trim($person['phone']),
             trim($person['badgename']),
-            trim($person['legalname']),
+            trim($person['legalName']),
             trim($person['pronouns']),
             trim($person['addr']),
             trim($person['addr2']),

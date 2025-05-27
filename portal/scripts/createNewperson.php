@@ -66,7 +66,7 @@ $valArray = array(
     trim($validationEmail),
     trim($person['phone']),
     trim($person['badgename']),
-    trim($person['legalname']),
+    trim($person['legalName']),
     trim($person['pronouns']),
     trim($person['addr']),
     trim($person['addr2']),

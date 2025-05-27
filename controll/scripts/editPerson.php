@@ -84,7 +84,7 @@ if(isset($_POST['suffix'])) {
     $changeLog .= 'legalName, ';
     $query .= 'legalName=?';
     $types .= 's';
-    $values[] = $_POST['legalname'];
+    $values[] = $_POST['legalName'];
   }
   if (isset($_POST['pronouns'])) {
     if ($change) {

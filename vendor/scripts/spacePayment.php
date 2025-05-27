@@ -203,9 +203,9 @@ $buyer['country'] = $_POST['cc_country'];
 $buyer['email'] = $_POST['cc_email'];
 $buyer['phone'] = $_POST['cc_phone'];
 
-$membership_fields = array('fname' => 1, 'mname' => 0, 'lname' => 1, 'suffix' => 0, 'legalname' => 0, 'addr' => 1, 'addr2' => 0, 'city' => 1, 'state' => 1, 'zip' => 1,
+$membership_fields = array('fname' => 1, 'mname' => 0, 'lname' => 1, 'suffix' => 0, 'legalName' => 0, 'addr' => 1, 'addr2' => 0, 'city' => 1, 'state' => 1, 'zip' => 1,
     'country' => 1, 'email' => 1, 'phone' => 0, 'badgename' => 0);
-$membership_names = array('fname' => 'First Name', 'mname' => 'Middle Name', 'lname' => 'Last Name', 'legalname' => 'Legal Name', 'suffix' => 'Suffix',
+$membership_names = array('fname' => 'First Name', 'mname' => 'Middle Name', 'lname' => 'Last Name', 'legalName' => 'Legal Name', 'suffix' => 'Suffix',
     'addr' => 'Address Line 1', 'addr2' => 'Company/Address Line 2', 'city' => 'City', 'state' => 'State', 'zip' => 'Zip Code/Postal Code',
     'country' => 'Country', 'email' => 'Email Address', 'phone' => 'Phone Number', 'badgename' => 'Badge Name');
 
@@ -428,7 +428,7 @@ SELECT R.id AS badge,
     NP.first_name AS fname, NP.middle_name AS mname, NP.last_name AS lname, NP.suffix AS suffix,
     NP.email_addr AS email,
     NP.address AS street, NP.city AS city, NP.state AS state, NP.zip AS zip, NP.country AS country,
-    NP.id as id, R.price AS price, M.memAge AS age, NP.badge_name AS badgename, NP.legalName AS legalname, R.memId,
+    NP.id as id, R.price AS price, M.memAge AS age, NP.badge_name AS badgename, NP.legalName, R.memId,
     M.label, M.memCategory, M.memType
 FROM newperson NP
 JOIN reg R ON (R.newperid=NP.id)
@@ -830,7 +830,7 @@ EOF;
         $id = null;
     }
     $badge['perid'] = $id;
-    $legalName = $badge['legalname'];
+    $legalName = $badge['legalName'];
     if ($legalName == null || $legalName == '') {
         $legalName = trim($badge['fname']  . ($badge['mname'] == '' ? ' ' : ' ' . $badge['mname'] . ' ' ) . $badge['lname'] . ' ' . $badge['suffix']);
     }

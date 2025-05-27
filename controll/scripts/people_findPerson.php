@@ -51,7 +51,7 @@ if (is_numeric($findPattern)) {
     // this is a perid match
     $mQ = <<<EOS
 WITH perids AS (
-    SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalname, p.pronouns, 
+    SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.pronouns, 
         p.address, p.addr_2, p.city, p.state, p.zip, p.country,  
         p.creation_date, p.update_date, p.active, p.banned, p.open_notes, p.admin_notes,
         p.managedBy, p.managedByNew, p.lastverified, p.managedreason,
@@ -76,7 +76,7 @@ WITH perids AS (
     LEFT OUTER JOIN reg r ON (r.perid = p.id AND r.status IN ('paid', 'unpaid', 'plan'))
     LEFT OUTER JOIN memList m ON (r.memId = m.id AND m.conid in (?, ?))
     WHERE p.id = ? $excludeFree
-    GROUP BY p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalname, p.pronouns, 
+    GROUP BY p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.pronouns, 
         p.address, p.addr_2, p.city, p.state, p.zip, p.country, 
         p.creation_date, p.update_date, p.active, p.banned, p.open_notes, p.admin_notes,
         p.managedBy, p.managedByNew, p.lastverified, p.managedreason, phoneCheck, fullName, manager, managerId
@@ -108,7 +108,7 @@ EOS;
     // does anyone match this pattern?
     $mQ = <<<EOS
 WITH per AS (
-SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalname, p.pronouns, 
+SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.pronouns, 
     p.address, p.addr_2, p.city, p.state, p.zip, p.country,
     p.creation_date, p.update_date,  p.active, p.banned, p.open_notes, p.admin_notes,
     p.managedBy, p.managedByNew, p.lastverified, p.managedreason,
@@ -133,7 +133,7 @@ LEFT OUTER JOIN perinfo mp ON (p.managedBy = mp.id)
 LEFT OUTER JOIN reg r  ON (r.perid = p.id AND r.status IN ('paid', 'unpaid', 'plan'))
 LEFT OUTER JOIN memList m ON (r.memId = m.id AND m.conid in (?, ?))
 WHERE 1=1  $excludeFree $notMerge
-GROUP BY p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalname, p.pronouns, 
+GROUP BY p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.pronouns, 
     p.address, p.addr_2, p.city, p.state, p.zip, p.country, p.banned, 
     p.creation_date, p.update_date, p.active, p.open_notes,
     p.managedBy, p.managedByNew, p.lastverified, p.managedreason, phoneCheck, fullName, manager, managerId
@@ -141,14 +141,13 @@ GROUP BY p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr,
     SELECT *
     FROM per p
     WHERE
-        (LOWER(p.legalname) LIKE ?
+        (LOWER(p.legalName) LIKE ?
         OR LOWER(p.badge_name) LIKE ?
         OR LOWER(p.address) LIKE ?
         OR LOWER(p.addr_2) LIKE ?
         OR LOWER(p.email_addr) LIKE ?
         OR LOWER(CONCAT(p.first_name, ' ', p.last_name)) LIKE ?
         OR LOWER(CONCAT(p.last_name, ' ', p.first_name)) LIKE ?
-        OR LOWER(CONCAT(p.first_name, ' ', p.middle_name, ' ', p.last_name, ' ', p.suffix)) LIKE ?
         OR LOWER(p.fullName) LIKE ?)
     ORDER BY p.last_name, p.first_name, p.id
 ), his AS (

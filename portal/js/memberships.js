@@ -15,7 +15,7 @@ class Membership {
     #mnameField = null;
     #lnameField = null;
     #suffixField = null;
-    #legalnameField = null;
+    #legalNameField = null;
     #pronounsField = null;
     #addrField = null;
     #addr2Field = null;
@@ -122,7 +122,7 @@ class Membership {
         this.#mnameField = document.getElementById("mname");
         this.#lnameField = document.getElementById("lname");
         this.#suffixField = document.getElementById("suffix");
-        this.#legalnameField = document.getElementById("legalname");
+        this.#legalNameField = document.getElementById("legalName");
         this.#pronounsField = document.getElementById("pronouns");
         this.#addrField = document.getElementById("addr");
         this.#addr2Field = document.getElementById("addr2");
@@ -374,7 +374,7 @@ class Membership {
             this.#fnameField.value = '';
             this.#mnameField.value = '';
             this.#suffixField.value = '';
-            this.#legalnameField.value = '';
+            this.#legalNameField.value = '';
             this.#pronounsField.value = '';
             this.#email1Field.innerHTML = '';
             this.#phoneField.value = '';
@@ -390,7 +390,7 @@ class Membership {
             this.#fnameField.value = this.#personInfo.first_name;
             this.#mnameField.value = this.#personInfo.middle_name;
             this.#suffixField.value = this.#personInfo.suffix;
-            this.#legalnameField.value = this.#personInfo.legalName;
+            this.#legalNameField.value = this.#personInfo.legalName;
             this.#pronounsField.value = this.#personInfo.pronouns;
             this.#email1Field.innerHTML = email_addr;
             this.#phoneField.value = this.#personInfo.phone;

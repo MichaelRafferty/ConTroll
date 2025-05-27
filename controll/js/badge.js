@@ -98,7 +98,7 @@ function loadWatchList(data) {
                 {field: "first_name", visible: false,},
                 {field: "middle_name", visible: false,},
                 {field: "suffix", visible: false,},
-                {field: "legalname", visible: false,},
+                {field: "legalName", visible: false,},
                 {field: "pronouns", visible: false,},
                 {field: "address", visible: false,},
                 {field: "addr_2", visible: false,},
@@ -127,7 +127,7 @@ function watchBuildRecordHover(e, cell, onRendered) {
     var hover_text = 'Person id: ' + data.id + '<br/>' +
         'Full Name: ' + data.fullName + '<br/>' +
         'Pronouns: ' + data.pronouns + '<br/>' +
-        'Legal Name: ' + data.legalname + '<br/>' +
+        'Legal Name: ' + data.legalName + '<br/>' +
         data.address + '<br/>';
     if (data.addr_2 != '') {
         hover_text += data.addr_2 + '<br/>';
@@ -277,7 +277,7 @@ function loadSelectList(data) {
             {field: "first_name", visible: false,},
             {field: "middle_name", visible: false,},
             {field: "suffix", visible: false,},
-            {field: "legalname", visible: false,},
+            {field: "legalName", visible: false,},
             {field: "pronouns", visible: false,},
             {field: "address", visible: false,},
             {field: "addr_2", visible: false,},
@@ -413,7 +413,7 @@ function findDetailsSuccess(dataFound) {
     document.getElementById('f_mname').value = data.middle_name;
     document.getElementById('f_lname').value = data.last_name;
     document.getElementById('f_suffix').value = data.suffix;
-    document.getElementById('f_legalname').value = data.legalname;
+    document.getElementById('f_legalName').value = data.legalName;
     document.getElementById('f_pronouns').value = data.pronouns;
     document.getElementById('f_addr').value = data.address;
     document.getElementById('f_addr2').value = data.addr_2;
@@ -461,7 +461,7 @@ function saveEdit() {
         middleName: document.getElementById('f_mname').value,
         lastName: document.getElementById('f_lname').value,
         suffix: document.getElementById('f_suffix').value,
-        legalName: document.getElementById('f_legalname').value,
+        legalName: document.getElementById('f_legalName').value,
         pronouns: document.getElementById('f_pronouns').value,
         address: document.getElementById('f_addr').value,
         addr2: document.getElementById('f_addr2').value,
@@ -554,7 +554,7 @@ function addClearForm() {
     document.getElementById('a_mname').value = '';
     document.getElementById('a_lname').value = '';
     document.getElementById('a_suffix').value = '';
-    document.getElementById('a_legalname').value = '';
+    document.getElementById('a_legalName').value = '';
     document.getElementById('a_pronouns').value = '';
     document.getElementById('a_addr').value = '';
     document.getElementById('a_addr2').value = '';
@@ -604,7 +604,7 @@ function addCheckExists() {
         middleName: document.getElementById('a_mname').value,
         lastName: document.getElementById('a_lname').value,
         suffix: document.getElementById('a_suffix').value,
-        legalName: document.getElementById('a_legalname').value,
+        legalName: document.getElementById('a_legalName').value,
         pronouns: document.getElementById('a_pronouns').value,
         badgeName: document.getElementById('a_badgename').value,
         address: document.getElementById('a_addr').value,
@@ -741,7 +741,7 @@ function saveAdd() {
         middleName: document.getElementById('a_mname').value,
         lastName: document.getElementById('a_lname').value,
         suffix: document.getElementById('a_suffix').value,
-        legalName: document.getElementById('a_legalname').value,
+        legalName: document.getElementById('a_legalName').value,
         pronouns: document.getElementById('a_pronouns').value,
         badgeName: document.getElementById('a_badgename').value,
         address: document.getElementById('a_addr').value,

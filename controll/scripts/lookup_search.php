@@ -93,17 +93,16 @@ WITH per AS (
     SELECT id
     FROM per p
     WHERE
-        (LOWER(p.legalname) LIKE ?
+        (LOWER(p.legalName) LIKE ?
         OR LOWER(p.badge_name) LIKE ?
         OR LOWER(p.address) LIKE ?
         OR LOWER(p.addr_2) LIKE ?
         OR LOWER(p.email_addr) LIKE ?
         OR LOWER(CONCAT(p.first_name, ' ', p.last_name)) LIKE ?
         OR LOWER(CONCAT(p.last_name, ' ', p.first_name)) LIKE ?
-        OR LOWER(CONCAT(p.first_name, ' ', p.middle_name, ' ', p.last_name, ' ', p.suffix)) LIKE ?
         OR LOWER(p.fullName) LIKE ?)
 )
-SELECT p.id AS perid, p.email_addr, p.badge_name, p.legalname, p.first_name, p.middle_name, p.last_name,
+SELECT p.id AS perid, p.email_addr, p.badge_name, p.legalName, p.first_name, p.middle_name, p.last_name,
     TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ',  
         IFNULL(p.suffix, '')), '  *', ' ')) AS fullName,
     IFNULL(r.complete_trans, r.create_trans) AS tid, 

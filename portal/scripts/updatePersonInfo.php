@@ -74,7 +74,7 @@ WHERE id = ?;
 EOS;
 }
 
-$fields = ['lname', 'mname', 'fname', 'suffix', 'phone', 'badgename', 'legalname', 'pronouns', 'addr', 'addr2', 'city', 'state', 'zip'];
+$fields = ['lname', 'mname', 'fname', 'suffix', 'phone', 'badgename', 'legalName', 'pronouns', 'addr', 'addr2', 'city', 'state', 'zip'];
 foreach ($fields as $field) {
     if ($person[$field] == null)
         $person[$field] = '';
@@ -94,7 +94,7 @@ $value_arr = array(
     $person['suffix'] == null ? '' : trim($person['suffix']),
     $person['phone'] == null ? '' : trim($person['phone']),
     $person['badgename'] == null ? '' : trim($person['badgename']),
-    $person['legalname'] == null ? '' : trim($person['legalname']),
+    $person['legalName'] == null ? '' : trim($person['legalName']),
     $person['pronouns'] == null ? '' : trim($person['pronouns']),
     $person['addr'] == null ? '' : trim($person['addr']),
     $person['addr2'] == null ? '' : trim($person['addr2']),

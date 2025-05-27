@@ -45,9 +45,9 @@ if (is_numeric($name_search)) {
     $findPersonQ = <<<EOS
 SELECT DISTINCT id as perid, first_name, middle_name, last_name, suffix, badge_name, email_addr, phone, 
     CASE WHEN last_name != '' THEN
-        TRIM(REGEXP_REPLACE(CONCAT(last_name, ', ', first_name, ' ', middle_name, ' ', suffix), '  *', ' '))
+        TRIM(REGEXP_REPLACE(CONCAT(last_name, ', ', CONCAT_WS(' ', first_name, middle_name, suffix)), '  *', ' '))
     ELSE
-        TRIM(REGEXP_REPLACE(CONCAT(first_name, ' ', middle_name, ' ', suffix), '  *', ' '))
+        TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, suffix), '  *', ' '))
     END AS fullname
     FROM perinfo
     WHERE id=?
@@ -66,13 +66,13 @@ EOS;
 SELECT DISTINCT p.id as perid, p.first_name, p.middle_name, p.last_name, p.suffix, p.badge_name, p.email_addr, p.phone,
     CASE 
         WHEN IFNULL(p.last_name, '') != '' THEN
-            TRIM(REGEXP_REPLACE(CONCAT(p.last_name, ', ', p.first_name, ' ', p.middle_name, ' ', p.suffix), '  *', ' '))
+            TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.last_name, p.first_name, p.middle_name, p.suffix), '  *', ' '))
         ELSE
-            TRIM(REGEXP_REPLACE(CONCAT(p.first_name,' ', p.middle_name, ' ', p.suffix), '  *', ' '))
+            TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.suffix), '  *', ' '))
         END AS fullname
 FROM perinfo p
 WHERE 
-     LOWER(TRIM(REGEXP_REPLACE(CONCAT(p.first_name,' ', p.middle_name, ' ', p.last_name), '  *', ' '))) LIKE ? OR
+     LOWER(TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name), '  *', ' '))) LIKE ? OR
      LOWER(TRIM(p.badge_name) LIKE ? OR LOWER(TRIM(p.email_addr)) LIKE ?)
 ORDER BY last_name, first_name LIMIT $limit;
 EOS;

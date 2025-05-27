@@ -191,7 +191,7 @@ class Pos {
         this.#add_first_field = document.getElementById("fname");
         this.#add_middle_field = document.getElementById("mname");
         this.#add_last_field = document.getElementById("lname");
-        this.#add_legalName_field = document.getElementById("legalname");
+        this.#add_legalName_field = document.getElementById("legalName");
         this.#add_pronouns_field = document.getElementById("pronouns");
         this.#add_suffix_field = document.getElementById("suffix");
         this.#add_addr1_field = document.getElementById("addr");

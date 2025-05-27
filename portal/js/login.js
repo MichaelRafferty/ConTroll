@@ -22,7 +22,7 @@ class Login {
     #mnameField = null;
     #lnameField = null;
     #suffixField = null;
-    #legalnameField = null;
+    #legalNameField = null;
     #pronounsField = null;
     #addrField = null;
     #addr2Field = null;
@@ -62,7 +62,7 @@ class Login {
             this.#mnameField = document.getElementById("mname");
             this.#lnameField = document.getElementById("lname");
             this.#suffixField = document.getElementById("suffix");
-            this.#legalnameField = document.getElementById("legalname");
+            this.#legalNameField = document.getElementById("legalName");
             this.#pronounsField = document.getElementById("pronouns");
             this.#addrField = document.getElementById("addr");
             this.#addr2Field = document.getElementById("addr2");

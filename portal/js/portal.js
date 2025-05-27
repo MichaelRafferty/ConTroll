@@ -30,7 +30,7 @@ class Portal {
     #mnameField = null;
     #lnameField = null;
     #suffixField = null;
-    #legalnameField = null;
+    #legalNameField = null;
     #pronounsField = null;
     #addrField = null;
     #addr2Field = null;
@@ -130,7 +130,7 @@ class Portal {
             this.#mnameField = document.getElementById("mname");
             this.#lnameField = document.getElementById("lname");
             this.#suffixField = document.getElementById("suffix");
-            this.#legalnameField = document.getElementById("legalname");
+            this.#legalNameField = document.getElementById("legalName");
             this.#pronounsField = document.getElementById("pronouns");
             this.#addrField = document.getElementById("addr");
             this.#addr2Field = document.getElementById("addr2");
@@ -387,7 +387,7 @@ class Portal {
         this.#mnameField.value = person.middle_name;
         this.#lnameField.value = person.last_name;
         this.#suffixField.value = person.suffix;
-        this.#legalnameField.value = person.legalName;
+        this.#legalNameField.value = person.legalName;
         this.#pronounsField.value = person.pronouns;
         this.#addrField.value = person.address;
         this.#addr2Field.value = person.addr_2;

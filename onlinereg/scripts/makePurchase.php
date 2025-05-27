@@ -231,7 +231,7 @@ EOF;
             trim($badge['mname']),
             trim($badge['fname']),
             trim($badge['suffix']),
-            trim($badge['legalname']),
+            trim($badge['legalName']),
             trim($badge['pronouns']),
             trim($badge['email1']),
             trim($badge['phone']),
@@ -307,7 +307,7 @@ foreach($people as $person) {
 
 $all_badgeQ = <<<EOS
 SELECT R.id AS badge, R.id AS regid,
-    NP.first_name AS fname, NP.middle_name AS mname, NP.last_name AS lname, NP.suffix AS suffix, NP.legalName AS legalName,
+    NP.first_name AS fname, NP.middle_name AS mname, NP.last_name AS lname, NP.suffix AS suffix, NP.legalName,
     NP.email_addr AS email,
     NP.address AS street, NP.city AS city, NP.state AS state, NP.zip AS zip, NP.country AS country,
     NP.id as id, R.price AS price, R.couponDiscount as discount, M.memAge AS age, NP.badge_name AS badgename, R.memId, M.glNum,

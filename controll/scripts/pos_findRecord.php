@@ -413,7 +413,7 @@ WITh p1 AS (
     FROM perinfo p
     WHERE
         (
-            LOWER(p.legalname) LIKE ?
+            LOWER(p.legalName) LIKE ?
             OR LOWER(p.badge_name) LIKE ?
             OR LOWER(p.address) LIKE ?
             OR LOWER(p.addr_2) LIKE ?
