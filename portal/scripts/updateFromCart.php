@@ -217,9 +217,9 @@ EOS;
             // insert into newPerson
             $iQ = <<<EOS
 INSERT INTO newperson (transid, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, legalName, pronouns, 
-                       address, addr_2, city, state, zip,
-                       country, managedBy, managedByNew, managedReason, updatedBy, lastVerified)
-VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'creation',?,NOW());
+                       address, addr_2, city, state, zip, country, managedBy, managedByNew, managedReason, updatedBy, lastVerified)
+VALUES (?, IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''),
+    IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), ?, ?, 'creation', ?, NOW());
 EOS;
             $typeStr = 'isssssssssssssssiii';
             $valArray = array (
