@@ -313,13 +313,13 @@ function getPersonInfo($conid) {
         $pfield = 'perid';
         $personSQL = <<<EOS
 SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.pronouns,
-       p.address, p.addr_2, p.city, p.state, p.zip, p.country,
-       p.banned, p.creation_date, p.update_date, p.change_notes, p.active, p.managedBy, p.lastVerified, 'p' AS personType,
-       TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
-       TRIM(REGEXP_REPLACE(CONCAT(IFNULL(pm.first_name, ''),' ', IFNULL(pm.middle_name, ''), ' ', IFNULL(pm.last_name, ''), ' ', IFNULL(pm.suffix, '')), '  *', ' ')) AS managedByName
-    FROM perinfo p
-    LEFT OUTER JOIN perinfo pm ON p.managedBy = pm.id
-    WHERE p.id = ?;
+    p.address, p.addr_2, p.city, p.state, p.zip, p.country,
+    p.banned, p.creation_date, p.update_date, p.change_notes, p.active, p.managedBy, p.lastVerified, 'p' AS personType,
+    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), '  *', ' ')) AS fullName,
+    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', pm.first_name, pm.middle_name, pm.last_name, pm.suffix), '  *', ' ')) AS managedByName
+FROM perinfo p
+LEFT OUTER JOIN perinfo pm ON p.managedBy = pm.id
+WHERE p.id = ?;
 EOS;
     } else {
         $pfield = 'newperid';
@@ -327,14 +327,12 @@ EOS;
 SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.pronouns,
     p.address, p.addr_2, p.city, p.state, p.zip, p.country,
     'N' AS banned, p.createtime AS creation_date, 'Y' AS active, p.managedByNew, p.managedBy, p.lastVerified, 'n' AS personType,
-    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' ')) AS fullname,
+    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), '  *', ' ')) AS fullName,
     CASE
         WHEN pmp.id IS NOT NULL THEN
-            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(pmp.first_name, ''),' ', IFNULL(pmp.middle_name, ''), ' ', 
-            IFNULL(pmp.last_name, ''), ' ', IFNULL(pmp.suffix, '')), '  *', ' ')) 
+            TRIM(REGEXP_REPLACE(CONCAT_WS(' ', pmp.first_name, pmp.middle_name, pmp.last_name, pmp.suffix), '  *', ' '))
         WHEN pmp.id IS NOT NULL THEN
-            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(pmn.first_name, ''),' ', IFNULL(pmn.middle_name, ''), ' ',
-            IFNULL(pmn.last_name, ''), ' ', IFNULL(pmn.suffix, '')), '  *', ' ')) 
+            TRIM(REGEXP_REPLACE(CONCAT_WS(' ', pmn.first_name, pmn.middle_name, pmn.last_name, pmn.suffix), '  *', ' ')) 
         ELSE NULL
        END AS managedByName
     FROM newperson p

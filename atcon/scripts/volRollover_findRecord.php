@@ -48,8 +48,8 @@ SELECT DISTINCT p.id AS perid, p.first_name, p.middle_name, p.last_name, p.suffi
     p.address as address_1, p.addr_2 as address_2, p.city, p.state, p.zip as postal_code, p.country, p.email_addr, p.phone,
     p.share_reg_ok, p.contact_ok, p.active, p.banned, 
     CASE 
-        WHEN p.last_name != '' THEN TRIM(REGEXP_REPLACE(CONCAT(p.last_name, ', ', p.first_name, ' ', p.middle_name, ' ', p.suffix), '  *', ' '))
-        ELSE TRIM(REGEXP_REPLACE(CONCAT(p.first_name, ' ', p.middle_name, ' ', p.suffix), '  *', ' '))
+        WHEN p.last_name != '' THEN TRIM(REGEXP_REPLACE(CONCAT(p.last_name, ', ', CONCAT_WS(' ', p.first_name, p.middle_name, p.suffix)), '  *', ' '))
+        ELSE TRIM(REGEXP_REPLACE(CONCAT_WS(p.first_name, p.middle_name, p.suffix), '  *', ' '))
     END AS fullname,
     p.open_notes, r.id AS regid, m.label, rn.id AS roll_regid, mn.shortname,
     CASE 

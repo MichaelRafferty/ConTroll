@@ -52,11 +52,9 @@ SELECT DISTINCT p.id AS perid, TRIM(IFNULL(p.first_name, '')) AS first_name, TRI
     TRIM(IFNULL(p.city, '')) AS city, TRIM(IFNULL(p.state, '')) AS state, TRIM(IFNULL(p.zip, '')) AS postal_code, 
     IFNULL(p.country, '') as country, TRIM(IFNULL(p.email_addr, '')) AS email_addr,
     TRIM(IFNULL(p.phone, '')) as phone, p.active, p.banned,
-    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ',  
-        IFNULL(p.suffix, '')), '  *', ' ')) AS fullName,
+    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), '  *', ' ')) AS fullName,
     p.open_notes, p.managedBy, cnt.cntManages,
-    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(mgr.first_name, ''),' ', IFNULL(mgr.middle_name, ''), ' ', IFNULL(mgr.last_name, ''), ' ',  
-        IFNULL(mgr.suffix, '')), '  *', ' ')) AS mgrFullName
+    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', mgr.first_name, mgr.middle_name, mgr.last_name, mgr.suffix), '  *', ' ')) AS mgrFullName
 EOS;
 $withClauseMgr = <<<EOS
 , manages AS (

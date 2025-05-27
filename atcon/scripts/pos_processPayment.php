@@ -160,8 +160,7 @@ if ($new_payment['type'] == 'terminal') {
             if ($inUseBy != null && $inUseBy != '') {
                 if ($inUseBy != $user_id) {
                     $operatorNameSQL = <<<EOS
-SELECT TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', 
-    IFNULL(last_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) AS fullname
+SELECT TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), '  *', ' ')) AS fullname
 FROM perinfo
 WHERE id = ?;
 EOS;

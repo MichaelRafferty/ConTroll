@@ -39,7 +39,7 @@ if ($loadtypes == 'all' || $loadtypes == 'users') {
     // load authorized users of ATCON along with their allowed roles
     $users = [];
     $query = <<<EOS
-SELECT perid, concat(P.first_name, ' ', P.last_name) as name, A.auth
+SELECT perid, TRIM(CONCAT_WS(' ', P.first_name, P.last_name)) as name, A.auth
 FROM atcon_user U
 LEFT OUTER JOIN atcon_auth A ON (A.authuser = U.id)
 JOIN perinfo P ON (P.id=U.perid)

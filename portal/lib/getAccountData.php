@@ -97,7 +97,7 @@ EOS;
             array($personId, $personId, $personId, $personId, $personId, $conid, $personId, $personId, $conid));
     } else {
         $membershipsQ = <<<EOS
-WITH mems AS (
+WITH mems AS (          
     SELECT t.id, r.create_date, r.id AS regid, r.memId, r.conid, r.status, r.price, r.paid, r.complete_trans,
         r.couponDiscount, r.perid, r.newperid,
         m.label, m.memAge, m.memAge AS age, m.memType, m.memCategory,  m.startdate, m.enddate, m.online, m.taxable,
@@ -105,10 +105,11 @@ WITH mems AS (
         CASE WHEN r.complete_trans IS NULL THEN r.create_trans ELSE r.complete_trans END AS sortTrans,
         CASE WHEN tp.complete_date IS NULL THEN t.create_date ELSE tp.complete_date END AS transDate,
         CASE 
-            WHEN p.badge_name IS NULL OR p.badge_name = '' THEN TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.last_name, '')) , '  *', ' ')) 
+            WHEN p.badge_name IS NULL OR p.badge_name = '' THEN 
+                TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.last_name) , '  *', ' ')) 
             ELSE p.badge_name
         END AS badge_name, p.id AS memberId, p.email_addr, p.phone,
-        TRIM(REGEXP_REPLACE(CONCAT(p.first_name, ' ', p.middle_name, ' ', p.last_name, ' ', p.suffix), '  *', ' ')) AS fullname,
+        TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), '  *', ' ')) AS fullName,
         IFNULL(tp.perid, t.perid) AS transPerid
     FROM transaction t
     JOIN reg r ON t.id = r.create_trans

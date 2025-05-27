@@ -48,9 +48,9 @@ SELECT DISTINCT p.id AS perid, TRIM(p.first_name) AS first_name, TRIM(p.middle_n
     TRIM(p.suffix) AS suffix, TRIM(p.legalName) AS legalName, TRIM(p.pronouns) AS pronouns, TRIM(p.badge_name), 
     TRIM(p.address) AS address_1, TRIM(p.addr_) AS address_2, TRIM(p.city) AS city, TRIM(p.state) AS state, TRIM(p.zip) AS postal_code, 
     TRIM(p.country) as country, TRIM(p.email_addr) AS email_addr, TRIM(p.phone) as phone, p.active, p.banned,
-    TRIM(REGEXP_REPLACE(CONCAT(p.first_name, ' ', p.middle_name, ' ', p.last_name, ' ', p.suffix), '  *', ' ')) AS fullName,
+    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), '  *', ' ')) AS fullName,
     p.open_notes, p.managedBy, cnt.cntManages,
-    TRIM(REGEXP_REPLACE(CONCAT(mgr.first_name, ' ', mgr.middle_name, ' ', mgr.last_name, ' ', mgr.suffix), '  *', ' ')) AS mgrFullName
+    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', mgr.first_name, mgr.middle_name, mgr.last_name, mgr.suffix), '  *', ' ')) AS mgrFullName
 EOS;
 $withClauseMgr = <<<EOS
 , manages AS (
@@ -412,8 +412,8 @@ WITh p1 AS (
             OR LOWER(p.address) LIKE ?
             OR LOWER(p.addr_2) LIKE ?
             OR LOWER(p.email_addr) LIKE ?
-            OR LOWER(CONCAT(p.first_name, ' ', p.last_name)) LIKE ?
-            OR LOWER(CONCAT(p.last_name, ' ', p.first_name)) LIKE ?
+            OR LOWER(CONCAT_WS(' ', p.first_name, p.last_name)) LIKE ?
+            OR LOWER(CONCAT_WS(' ', p.last_name, p.first_name)) LIKE ?
             OR LOWER(TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), '  *', ' '))) LIKE ?
         )
         AND (NOT (p.first_name = 'Merged' AND p.middle_name = 'into'))

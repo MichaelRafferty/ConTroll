@@ -196,10 +196,7 @@ if ($msg != '') {
      $email = $_POST['email_addr']; // the perinfo entry, to whom we send the associate email
      // get the email address and the full name of the manager
      $mQ = <<<EOS
-SELECT email_addr, 
-    TRIM(REGEXP_REPLACE(
-        CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(last_name, ''), ' ',  IFNULL(suffix, '')),
-        '  *', ' ')) AS fullName
+SELECT email_addr, TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), '  *', ' ')) AS fullName
 FROM perinfo
 WHERE id = ?;
 EOS;

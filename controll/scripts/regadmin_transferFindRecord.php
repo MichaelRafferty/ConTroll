@@ -49,8 +49,8 @@ WITH regcnt AS (
 SELECT p.id AS perid, IFNULL(p.first_name, '') as first_name, IFNULL(p.middle_name, '') as middle_name, IFNULL(p.last_name, '') as last_name,
     IFNULL(p.suffix, '') as suffix, p.badge_name, IFNULL(p.address, '') as address_1, IFNULL(p.addr_2, '') as address_2, IFNULL(p.city, '') AS city,
     IFNULL(p.state, '') AS state, IFNULL(p.zip, '') as postal_code, IFNULL(p.country, '') as country, IFNULL(p.email_addr, '') as email_addr,
-    IFNULL(p.phone, '') as phone, p.share_reg_ok, p.contact_ok, p.active, p.banned, 
-    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(last_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) AS fullname,
+    IFNULL(p.phone, '') as phone, p.share_reg_ok, p.contact_ok, p.active, p.banned,
+    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), '  *', ' ')) AS fullName,
     r.regcnt, r.regs
 FROM regcnt r
 JOIN perinfo p ON (p.id = r.id)
@@ -80,7 +80,7 @@ SELECT DISTINCT p.id AS perid, IFNULL(p.first_name, '') as first_name, IFNULL(p.
     IFNULL(p.suffix, '') as suffix, p.badge_name, IFNULL(p.address, '') as address_1, IFNULL(p.addr_2, '') as address_2, IFNULL(p.city, '') AS city,
     IFNULL(p.state, '') AS state, IFNULL(p.zip, '') as postal_code, IFNULL(p.country, '') as country, IFNULL(p.email_addr, '') as email_addr, IFNULL(p.phone, '') as phone,
     p.share_reg_ok, p.contact_ok, p.active, p.banned,
-    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(last_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) AS fullname,
+    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), '  *', ' ')) AS fullName,
     r.regcnt, r.regs
 FROM regcnt r
 JOIN perinfo p ON (p.id = r.id)
