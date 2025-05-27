@@ -38,9 +38,7 @@ SELECT n.*, 'Y' as active, 'N' AS banned, r.regs,
         CONCAT(IFNULL(n.first_name, ''),' ', IFNULL(n.middle_name, ''), ' ', IFNULL(n.last_name, ''), ' ',  IFNULL(n.suffix, '')),
         '  *', ' ')) AS fullName,
     TRIM(REGEXP_REPLACE(
-    CONCAT(IFNULL(n.address, ''),' ', IFNULL(n.addr_2, ''), ' ', IFNULL(n.city, ''), ' ',  IFNULL(n.state, ''), ' ', IFNULL(n.zip, ''),
-            ' ', IFNULL(n.country, '')),
-        '  *', ' ')) AS fullAddr,
+    CONCAT_WS(' ', n.address, n.addr_2, n.city, n.state, n.zip, n.country), '  *', ' ')) AS fullAddr,
     TRIM(REGEXP_REPLACE(
         CONCAT(IFNULL(m.first_name, ''),' ', IFNULL(m.middle_name, ''), ' ', IFNULL(m.last_name, ''), ' ',  IFNULL(m.suffix, '')),
         '  *', ' ')) AS manager, IFNULL(n.managedBy, n.managedByNew) AS managerId
@@ -216,10 +214,7 @@ SELECT DISTINCT spids.priority, p.*, r.regs,
     TRIM(REGEXP_REPLACE(
         CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ',  IFNULL(p.suffix, '')),
         '  *', ' ')) AS fullName,
-    TRIM(REGEXP_REPLACE(
-    CONCAT(IFNULL(p.address, ''),' ', IFNULL(p.addr_2, ''), ' ', IFNULL(p.city, ''), ' ',  IFNULL(p.state, ''), ' ', IFNULL(p.zip, ''),
-            ' ', IFNULL(p.country, '')),
-        '  *', ' ')) AS fullAddr,
+    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.address, p.addr_2, p.city, p.state, p.zip, p.country), '  *', ' ')) AS fullAddr,
     TRIM(REGEXP_REPLACE(
         CONCAT(IFNULL(m.first_name, ''),' ', IFNULL(m.middle_name, ''), ' ', IFNULL(m.last_name, ''), ' ',  IFNULL(m.suffix, '')),
         '  *', ' ')) AS manager, m.id AS managerId

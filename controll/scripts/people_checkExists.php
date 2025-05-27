@@ -59,7 +59,7 @@ SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p
     REPLACE(REPLACE(REPLACE(REPLACE(LOWER(TRIM(IFNULL(p.phone, ''))), ')', ''), '(', ''), '-', ''), ' ', '') AS phoneCheck,
     TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ',  
         IFNULL(p.suffix, '')), '  *', ' ')) AS fullName,
-    TRIM(REGEXP_REPLACE(CONCAT(P.address, ' ', P.addr_2, ' ', P.city, ' ', P.state, ' ', P.zip, ' ', P.country), '  *', ' ')) AS fullAddr,
+    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.address, p.addr_2, p.city, p.state, p.zip, p.country), '  *', ' ')) AS fullAddr,
     CASE
         WHEN mp.id IS NOT NULL THEN 
             TRIM(REGEXP_REPLACE(CONCAT(IFNULL(mp.first_name, ''),' ', IFNULL(mp.middle_name, ''), ' ',
