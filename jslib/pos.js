@@ -1949,18 +1949,30 @@ addUnpaid(tid) {
             clear_message();
 
         // set tab to review-tab
-        if (unpaidRows == 0 && this.#print_tab) {
-            if (this.#reviewMissingPolicies == 0) {
-                this.gotoPrint();
-                return;
-            } else {
-                this.#print_tab.disabled = true;
-                cart.showNext();
-                cart.hideStartOver();
-                cart.freeze();
-                show_message("Printing is disabled with missing required policies", "warn");
-                return;
+        if (unpaidRows == 0) {
+            if (this.#print_tab) {
+                if (this.#reviewMissingPolicies == 0) {
+                    this.gotoPrint();
+                    return;
+                } else {
+                    this.#print_tab.disabled = true;
+                    cart.showNext();
+                    cart.hideStartOver();
+                    cart.freeze();
+                    show_message("Printing is disabled with missing required policies", "warn");
+                    return;
+                }
             }
+            cart.showNext();
+            cart.hideStartOver();
+            cart.freeze();
+            var el = document.getElementById('review-btn-update');
+            if (el)
+                el.hidden = true;
+            el = document.getElementById('review-btn-nochanges');
+            if (el)
+                el.hidden = true;
+            return;
         }
 
         if (config.cashier == 1) {
