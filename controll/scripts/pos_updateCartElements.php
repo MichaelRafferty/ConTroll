@@ -94,16 +94,16 @@ EOS;
 $updPDt = 'ssssssssssssssssii';
 
 $insRegSQL = <<<EOS
-INSERT INTO reg(conid,perid,price,couponDiscount,paid,create_user,create_trans,memId,coupon,create_date,status)
-VALUES (?,?,?,?,?,?,?,?,?,now(),?);
+INSERT INTO reg(conid,perid,price,couponDiscount,paid,create_user,create_trans,memId,coupon,create_date,status, complete_trans)
+VALUES (?,?,?,?,?,?,?,?,?,now(),?,?);
 EOS;
-$insRDt = 'iidddiiiis';
+$insRDt = 'iidddiiiisi';
 
-$updRegSQL = <<<EOS
-UPDATE reg SET price=?,couponDiscount=?,paid=?, memId=?,coupon=?,updatedBy=?,change_date=now()
+    $updRegSQL = <<<EOS
+UPDATE reg SET price=?,couponDiscount=?,paid=?, memId=?,coupon=?,updatedBy=?,change_date=now(),status=?,complete_trans=?
 WHERE id = ?;
 EOS;
-$updRDt = 'dddiiii';
+$updRDt = 'dddiiisii';
 
 $delRegSQL = <<<EOS
 DELETE FROM reg
@@ -265,7 +265,8 @@ for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
             }
             $paramarray = array ($mbr['conid'], $mbr['perid'], $mbr['price'], $mbr['couponDiscount'],
                                  $mbr['paid'], $user_perid, $master_transid, $mbr['memId'], $mbr['coupon'],
-                                 $mbr['price'] > $mbr['paid'] ? 'unpaid' : 'paid');
+                                 $mbr['price'] > $mbr['paid'] ? 'unpaid' : 'paid',
+                                 $mbr['price'] > $mbr['paid'] ? null : $master_transid);
             $new_regid = dbSafeInsert($insRegSQL, $insRDt, $paramarray);
             if ($new_regid === false) {
                 $error_message .= "Insert of membership $row failed<BR/>";
@@ -283,7 +284,8 @@ for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
             else {
                 // update membership
                 $paramarray = array ($mbr['price'], $mbr['couponDiscount'], $mbr['paid'], $mbr['memId'], $mbr['coupon'],
-                                     $user_perid, $mbr['regid']);
+                                     $user_perid, $mbr['price'] > $mbr['paid'] ? 'unpaid' : 'paid',
+                                     $mbr['price'] > $mbr['paid'] ? null : $master_transid, $mbr['regid']);
                 $reg_upd += dbSafeCmd($updRegSQL, $updRDt, $paramarray);
             }
         }
