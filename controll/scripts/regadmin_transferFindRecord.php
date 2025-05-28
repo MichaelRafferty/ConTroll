@@ -75,7 +75,7 @@ WITH regcnt AS (
     GROUP BY p.id
 )
 SELECT DISTINCT p.id AS perid, p.first_name, p.middle_name, p.last_name, p.suffix, p.badge_name, p.address as address_1, p.addr_2 as address_2,
-    p.city, p.state, p.zip as postal_code, p.country, p.mail_addr, p.phone, p.share_reg_ok, p.contact_ok, p.active, p.banned,
+    p.city, p.state, p.zip as postal_code, p.country, p.email_addr, p.phone, p.share_reg_ok, p.contact_ok, p.active, p.banned,
     TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), '  *', ' ')) AS fullName,
     r.regcnt, r.regs
 FROM regcnt r
@@ -87,7 +87,8 @@ EOS;
 
 $perinfo = [];
 $num_rows = $rp->num_rows;
-while ($l = fetch_safe_assoc($rp)) {
+while ($l = $rp->fetch_assoc()) {
+    $perinfo[] = $l;
     $perinfo[] = $l;
 }
 $response['perinfo'] = $perinfo;

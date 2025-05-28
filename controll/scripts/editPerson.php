@@ -27,7 +27,7 @@ WHERE perinfo.id=?
 ORDER BY conlist.id;
 EOS;
     $res = dbSafeQuery($idquery, 'i', array($_GET['id']));
-    $perinfo = fetch_safe_assoc($res);
+    $perinfo = $res->fetch_assoc();
     if (isset($_GET['prefix'])) {
         $perinfo["prefix"] = htmlspecialchars($_GET['prefix']);
     }
