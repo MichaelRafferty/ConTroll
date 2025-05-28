@@ -882,17 +882,24 @@ function pay(nomodal, prow = null) {
         //      for credit card: the auth code is required
         //      for discount: description is required, it's optional otherwise
 
-        if (document.getElementById('pt-cash').checked) {
-            if (nomodal == '' && tendered != total_amount_due) {
+       if (document.getElementById('pt-cash').checked) {
+           amtTendered = Number(document.getElementById('pay-tendered').value)
+            if (nomodal == '' && amtTendered > total_amount_due) {
                 cashChangeModal.show();
                 var tendered = Number(document.getElementById('pay-tendered').value);
-                document.getElementById("CashChangeBody").innerHTML = "Customer owes $" + total_amount_due.toFixed(2) + ", and tendered $" + tendered.toFixed(2) +
-                    "<br/>Confirm change given to customer of $" + (tendered - total_amount_due).toFixed(2);
+                document.getElementById("CashChangeBody").innerHTML = "Customer owes $" + total_amount_due.toFixed(2) + ", and tendered $" + amtTendered.toFixed(2) +
+                    "<br/>Confirm change given to customer of $" + (amtTendered - total_amount_due).toFixed(2);
+                return;
+            }
+
+            if (amtTendered < total_amount_due) {
+                show_message("Cannot pay less than total amount due of " + total_amount_due.toFixed(2), "error");
                 return;
             }
         }
 
         var elptdiv = document.getElementById('pt-div');
+        var elterminal = document.getElementById('pt-terminal');
         elptdiv.style.backgroundColor = '';
 
         var eldesc = document.getElementById('pay-desc');
@@ -944,7 +951,7 @@ function pay(nomodal, prow = null) {
             checked = true;
         }
 
-        if (document.getElementById('pt-terminal').checked) {
+        if (elterminal && elterminal.checked) {
             ptype = 'terminal';
             checked = true;
         }
