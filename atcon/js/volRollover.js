@@ -413,12 +413,12 @@ function found_record(data) {
             data: result_perinfo,
             layout: "fitColumns",
             initialSort: [
-                {column: "fullname", dir: "asc"},
+                {column: "fullName", dir: "asc"},
             ],
             columns: [
                 {title: "Perid", field: "perid", maxWidth: 60, headerSort: false, },
                 {field: "index", visible: false, },
-                {title: "Name", field: "fullname", headerFilter: true, headerWordWrap: true, tooltip: build_record_hover,},
+                {title: "Name", field: "fullName", headerFilter: true, headerWordWrap: true, tooltip: build_record_hover,},
                 {field: "last_name", visible: false,},
                 {field: "first_name", visible: false,},
                 {field: "middle_name", visible: false,},

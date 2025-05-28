@@ -90,7 +90,7 @@ function portalPageInit($page, $info, $css, $js, $refresh = false) {
         $includes = getTabulatorIncludes();
         $loginId = getSessionVar('id');
         $loginType = getSessionVar('idType');
-        $title = $info['fullname'];
+        $title = $info['fullName'];
         ?>
         <!DOCTYPE html>
         <html lang="en">

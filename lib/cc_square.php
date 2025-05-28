@@ -392,8 +392,8 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 if (!array_key_exists('paid', $badge)) {
                     $badge['paid'] = 0;
                 }
-                if (array_key_exists('fullname', $badge))
-                    $fullname = $badge['fullname'];
+                if (array_key_exists('fullName', $badge))
+                    $fullname = $badge['fullName'];
                 else
                     $fullname = trim(trim($badge['fname'] . ' ' . $badge['mname']) . ' ' . $badge['lname']);
                 if (array_key_exists('perid', $badge) && $badge['perid'] != null) {

@@ -48,7 +48,7 @@ SELECT DISTINCT id as perid, first_name, middle_name, last_name, suffix, badge_n
         TRIM(REGEXP_REPLACE(CONCAT(last_name, ', ', CONCAT_WS(' ', first_name, middle_name, suffix)), '  *', ' '))
     ELSE
         TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, suffix), '  *', ' '))
-    END AS fullname
+    END AS fullName
     FROM perinfo
     WHERE id=?
 EOS;
@@ -69,7 +69,7 @@ SELECT DISTINCT p.id as perid, p.first_name, p.middle_name, p.last_name, p.suffi
             TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.last_name, p.first_name, p.middle_name, p.suffix), '  *', ' '))
         ELSE
             TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.suffix), '  *', ' '))
-        END AS fullname
+        END AS fullName
 FROM perinfo p
 WHERE 
      LOWER(TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name), '  *', ' '))) LIKE ? OR

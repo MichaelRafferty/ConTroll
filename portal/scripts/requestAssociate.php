@@ -190,9 +190,9 @@ $string = encryptAttach($string, true);
 $token = $portal_conf['portalsite'] . "/respond.php?action=attach&vid=$string";     // convert to link for emailing
 
 load_email_procs();
-$loginFullname = $loginInfo['fullname'];
+$loginFullname = $loginInfo['fullName'];
 $loginEmail = $loginInfo['email_addr'];
-$personFullname = $personInfo['fullname'];
+$personFullname = $personInfo['fullName'];
 $personEmail = $personInfo['email_addr'];
 $label = $conf['label'];
 $regadminemail = $conf['regadminemail'];

@@ -12,7 +12,7 @@ SELECT id, last_name, first_name, middle_name, suffix, email_addr, phone, badge_
     CASE 
         WHEN last_name != '' THEN TRIM(REGEXP_REPLACE(CONCAT(last_name, ', ', CONCAT_WS(' ', first_name, middle_name, suffix)), '  *', ' ')) 
         ELSE TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, suffix), '  *', ' ')) 
-    END AS fullname,
+    END AS fullName,
     'p' AS tablename
 FROM perinfo
 WHERE id = ? AND first_name != 'Merged' AND middle_name != 'into';
@@ -26,7 +26,7 @@ SELECT id, last_name, first_name, middle_name, suffix, email_addr, phone, badge_
     CASE 
         WHEN last_name != '' THEN TRIM(REGEXP_REPLACE(CONCAT(last_name, ', ', CONCAT_WS(' ', first_name, middle_name, suffix)), '  *', ' ')) 
         ELSE TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, suffix), '  *', ' '))  
-    END AS fullname,
+    END AS fullName,
     'p' AS tablename
 FROM perinfo
 WHERE email_addr = ? AND id = ?;
@@ -39,11 +39,11 @@ SELECT id, last_name, first_name, middle_name, suffix, email_addr, phone, badge_
     CASE 
         WHEN last_name != '' THEN TRIM(REGEXP_REPLACE(CONCAT(last_name, ', ', CONCAT_WS(' ', first_name, middle_name, suffix)), '  *', ' ')) 
         ELSE TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, suffix), '  *', ' '))  
-    END AS fullname,
+    END AS fullName,
     'p' AS tablename
 FROM perinfo
 WHERE email_addr = ? AND first_name != 'Merged' AND middle_name != 'into'
-ORDER BY fullname;
+ORDER BY fullName;
 EOS;
         $regcountR = dbSafeQuery($regcountQ, 's', array($email));
     }
@@ -65,11 +65,11 @@ SELECT n.id, n.last_name, n.first_name, n.middle_name, n.suffix, n.email_addr, n
     CASE 
         WHEN n.last_name != '' THEN TRIM(REGEXP_REPLACE(CONCAT(n.last_name, ', ', CONCAT_WS(' ', n.first_name, n.middle_name, n.suffix)), '  *', ' ')) 
         ELSE TRIM(REGEXP_REPLACE(CONCAT_WS(' ', n.first_name, n.middle_name, n.suffix), '  *', ' ')) 
-    END AS fullname,
+    END AS fullName,
     'n' AS tablename
 FROM newperson n
 WHERE n.id = ? AND n.perid IS NULL
-ORDER BY fullname;
+ORDER BY fullName;
 EOS;
         $regcountR = dbSafeQuery($regcountQ, 'i', array($email));
     } else if ($id != NULL) {
@@ -79,11 +79,11 @@ SELECT n.id, n.last_name, n.first_name, n.middle_name, n.suffix, n.email_addr, n
     CASE 
         WHEN n.last_name != '' THEN TRIM(REGEXP_REPLACE(CONCAT(n.last_name, ', ', CONCAT_WS(' ', n.first_name, n.middle_name, n.suffix)), '  *', ' ')) 
         ELSE TRIM(REGEXP_REPLACE(CONCAT_WS(' ', n.first_name, n.middle_name, n.suffix), '  *', ' ')) 
-    END AS fullname,
+    END AS fullName,
     'n' AS tablename
 FROM newperson n
 WHERE n.email_addr = ? AND n.id = ? AND n.perid IS NULL
-ORDER BY fullname;
+ORDER BY fullName;
 EOS;
         $regcountR = dbSafeQuery($regcountQ, 'si', array($email, $id));
     } else {
@@ -93,11 +93,11 @@ SELECT n.id, n.last_name, n.first_name, n.middle_name, n.suffix, n.email_addr, n
     CASE 
         WHEN n.last_name != '' THEN TRIM(REGEXP_REPLACE(CONCAT(n.last_name, ', ', CONCAT_WS(' ', n.first_name, n.middle_name, n.suffix)), '  *', ' ')) 
         ELSE TRIM(REGEXP_REPLACE(CONCAT_WS(' ', n.first_name, n.middle_name, n.suffix), '  *', ' ')) 
-    END AS fullname,
+    END AS fullName,
     'n' AS tablename
 FROM newperson n
 WHERE n.email_addr = ? AND n.perid IS NULL
-ORDER BY fullname;
+ORDER BY fullName;
 EOS;
         $regcountR = dbSafeQuery($regcountQ, 's', array($email));
     }
@@ -122,7 +122,7 @@ SELECT id, last_name, first_name, middle_name, suffix, p.email_addr, phone, badg
     CASE 
         WHEN last_name != '' THEN TRIM(REGEXP_REPLACE(CONCAT(last_name, ', ', CONCAT_WS(' ', first_name, middle_name, suffix)), '  *', ' ')) 
         ELSE TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, suffix), '  *', ' '))  
-    END AS fullname,
+    END AS fullName,
     'p' AS tablename
 FROM perinfoIdentities pi
 JOIN perinfo p ON (p.id = pi.perid)
@@ -150,7 +150,7 @@ SELECT id, last_name, first_name, middle_name, suffix, p.email_addr, phone, badg
     CASE 
         WHEN last_name != '' THEN TRIM(REGEXP_REPLACE(CONCAT(last_name, ', ', CONCAT_WS(' ', first_name, middle_name, suffix)), '  *', ' ')) 
         ELSE TRIM(REGEXP_REPLACE(CONCAT(' ', first_name, middle_name, suffix), '  *', ' '))  
-    END AS fullname,
+    END AS fullName,
     'p' AS tablename
 FROM perinfoIdentities pi
 JOIN perinfo p ON (p.id = pi.perid)

@@ -68,7 +68,7 @@ $emails = [];
 $emR = dbSafeQuery($emQ, 'ii', array($loginId, $loginId));
 if ($emR !== false) {
     while ($emL = $emR->fetch_assoc()) {
-        $emails[$emL['email_addr']] = $emL['fullname'];
+        $emails[$emL['email_addr']] = $emL['fullName'];
     }
     $emR->free();
 }
@@ -124,7 +124,7 @@ EOS;
         header('location:' . $portal_conf['portalsite'] . '?messageFwd=' . urlencode('You no longer manage this person') . '&type=e');
         exit();
     }
-    $updateName = $checkL['fullname'];
+    $updateName = $checkL['fullName'];
 }
 // get the information for the policies and interest blocks
 $interests = getInterests();

@@ -191,7 +191,7 @@ while ($reg = $membershipR->fetch_assoc()) {
         <hr/>
         <div class="row mt-1">
             <div class="col-sm-1"><?php echo $id; ?></div>
-            <div class="col-sm-auto"><?php echo $person['fullname'] ;?></div>
+            <div class="col-sm-auto"><?php echo $person['fullName'] ;?></div>
         </div>
 <?php
         $conLabel = $reg['conid'];

@@ -167,7 +167,7 @@ if ($info['managedByName'] == null) {
                 <button class="btn btn-warning btn-sm pt-0 pb-0" onclick="settings.disassociate('<?php echo $person['personType'] . $person['id']; ?>');">Remove</button>
             </div>
             <div class='col-sm-1'><?php echo $id; ?></div>
-            <div class='col-sm-3'><?php echo $person['fullname']; ?></div>
+            <div class='col-sm-3'><?php echo $person['fullName']; ?></div>
             <div class='col-sm-3'><?php echo $person['email_addr']; ?></div>
             <div class='col-sm-2'><?php echo $person['managedReason']; ?></div>
         </div>

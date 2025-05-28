@@ -237,7 +237,7 @@ if ($otherPay == 0) { // this is a plan payment or badge purchase payment
                               'managedBy' => $mem['managedBy'],
                               'managedByNew' => $mem['managedByNew'],
                               'badge_name' => $mem['badge_name'],
-                              'fullname' => $mem['fullname'],
+                              'fullName' => $mem['fullName'],
                               'memberId' => $mem['memberId'],
                               'planId' => $mem['planId'],
                               'email_addr' => $mem['email_addr'],

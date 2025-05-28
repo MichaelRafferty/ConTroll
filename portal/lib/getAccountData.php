@@ -46,7 +46,7 @@ WITH trans AS (
             WHEN nn.id IS NOT NULL THEN
             CASE TRIM(REGEXP_REPLACE(CONCAT(nn.first_name, ' ', nn.middle_name, ' ', nn.last_name, ' ', nn.suffix), '  *', ' '))
             ELSE ''
-        END AS fullname,
+        END AS fullName,
         CASE 
             WHEN pn.id IS NOT NULL THEN pn.id
             WHEN nn.id IS NOT NULL THEN nn.id
@@ -78,7 +78,7 @@ WITH trans AS (
         CASE WHEN tp.complete_date IS NULL THEN t.create_date ELSE tp.complete_date END AS transDate,
         m.label, m.memAge, m.memAge AS age, m.memType, m.memCategory,  m.startdate, m.enddate, m.online, m.taxable,
         nn.managedBy, nn.managedByNew, nn.badge_name, 
-        TRIM(REGEXP_REPLACE(CONCAT(nn.first_name, ' ', nn.middle_name, ' ', nn.last_name, ' ', nn.suffix), '  *', ' ')) AS fullname, 
+        TRIM(REGEXP_REPLACE(CONCAT(nn.first_name, ' ', nn.middle_name, ' ', nn.last_name, ' ', nn.suffix), '  *', ' ')) AS fullName, 
         nn.id as memberId, nn.email_addr, nn.phone,
         IFNULL(tp.perid, t.perid) AS transPerid,
         IFNULL(tp.newperid, t.newperid) AS transNewPerid
@@ -128,8 +128,8 @@ EOS;
     $memberships = [];
     if ($membershipsR !== false) {
         while ($membership = $membershipsR->fetch_assoc()) {
-            if ($membership['fullname'] == null) {
-                $membership['fullname'] = 'Name Redacted';
+            if ($membership['fullName'] == null) {
+                $membership['fullName'] = 'Name Redacted';
                 $membership['badge_name'] = 'Name Redacted';
             }
             $memberships[] = $membership;

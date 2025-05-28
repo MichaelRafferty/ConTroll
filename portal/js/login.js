@@ -150,7 +150,7 @@ class Login {
                             // banned,
                             {title: 'T', field: 'tablename', headerWordWrap: true, headerFilter: true, width: 50,},
                             {title: 'ID', field: 'id', hozAlign: "right", width: 65, headerWordWrap: true, headerFilter: false,},
-                            {title: 'Name', field: 'fullname', headerWordWrap: true, headerFilter: true, tooltip: true},
+                            {title: 'Name', field: 'fullName', headerWordWrap: true, headerFilter: true, tooltip: true},
                             {title: 'Phone', field: 'phone', headerWordWrap: true, headerFilter: true, tooltip: true},
                             {title: 'Address', field: 'address', headerWordWrap: true, headerFilter: true, tooltip: true},
                             {title: 'City', field: 'city', headerWordWrap: true, headerFilter: true, tooltip: true,},

@@ -52,7 +52,7 @@ SELECT p.id AS perid, p.first_name, p.middle_name, p.last_name, p.suffix, p.badg
         WHEN p.last_name, != '' THEN
             TRIM(REGEXP_REPLACE(CONCAT(p.last_name, ', ', CONCAT_WS(' ', p.first_name, p.middle_name, p.suffix, '')), '  *', ' ')) 
         ELSE TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.suffix), '  *', ' ')) 
-    END AS fullname,
+    END AS fullName,
     r.regcnt, r.regs
 FROM regcnt r
 JOIN perinfo p ON (p.id = r.id)
@@ -83,7 +83,7 @@ SELECT DISTINCT p.id AS perid, p.first_name, p.middle_name, p.last_name,  p.suff
     CASE  
         WHEN last_name != '' THEN TRIM(REGEXP_REPLACE(CONCAT(p.last_name, ', ', CONCAT_WS(' ', p.first_name, p.middle_name, p.suffix)), '  *', ' ')) 
         ELSE TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.suffix), '  *', ' '))  
-    END AS fullname,      
+    END AS fullName,      
     r.regcnt, r.regs
 FROM regcnt r
 JOIN perinfo p ON (p.id = r.id)

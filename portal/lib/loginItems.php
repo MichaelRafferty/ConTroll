@@ -241,7 +241,7 @@ function chooseAccountFromEmail($email, $id, $linkid, $passedMatch, $validationT
             $match['issue'] = $match['banned'];
             $string = json_encode($match);
             $string = encryptCipher($string, true);
-            echo "<li><a href='?vid=$string'>" .  $match['fullname'] . "</a></li>\n";
+            echo "<li><a href='?vid=$string'>" .  $match['fullName'] . "</a></li>\n";
         }
         ?>
         </ul>

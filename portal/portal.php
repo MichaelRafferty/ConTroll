@@ -141,7 +141,7 @@ SELECT r.status, r.memId, m.*, a.shortname AS ageShort, a.label AS ageLabel, m.t
         WHEN rp.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', rp.first_name, rp.middle_name, rp.last_name, rp.suffix), '  *', ' '))
         WHEN rn.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', rn.first_name, rn.middle_name, rn.last_name, rn.suffix), '  *', ' '))
         ELSE NULL
-    END AS fullname,
+    END AS fullName,
     CASE 
         WHEN rp.id IS NOT NULL THEN rp.id
         WHEN rn.id IS NOT NULL THEN rn.id
@@ -223,7 +223,7 @@ EOS;
                 $item['managedBy'] = $m['managedBy'];
                 $item['managedByNew'] = $m['managedByNew'];
                 $item['badge_name'] = $m['badge_name'];
-                $item['fullname'] = $m['fullname'];
+                $item['fullName'] = $m['fullName'];
                 $item['memberId'] = $m['memberId'];
                 $item['planId'] = $m['planId'];
                 $paidOtherMembership[] = $item;
@@ -873,7 +873,7 @@ if (count($memberships) > 0) {
             <div class='col-sm-1'></div>
             <div class='col-sm-2'><?php echo $status; ?></div>
             <div class='col-sm-3'><?php echo $membership['displayLabel']; ?></div>
-            <div class="col-sm-6"><?php echo $membership['fullname'] . ' / ' . $membership['badge_name'];?></div>
+            <div class="col-sm-6"><?php echo $membership['fullName'] . ' / ' . $membership['badge_name'];?></div>
         </div>
 <?php
     }

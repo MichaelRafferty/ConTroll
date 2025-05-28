@@ -161,7 +161,7 @@ $string = encryptAttach($string, true);
 $token = $portal_conf['portalsite'] . "/respond.php?action=identity&vid=$string";     // convert to link for emailing
 
 load_email_procs();
-$loginFullname = $loginInfo['fullname'];
+$loginFullname = $loginInfo['fullName'];
 $loginEmail = $loginInfo['email_addr'];
 
 $body = "Dear $loginFullname," . PHP_EOL . PHP_EOL .

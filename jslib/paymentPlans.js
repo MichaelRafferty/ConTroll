@@ -94,7 +94,7 @@ class PaymentPlans {
                         planAmt += Number(mem.price) - Number(mem.paid);
                     } else {
                         nonPlanAmt += Number(mem.price) - Number(mem.paid);
-                        notInPlanItems += '<br/>' + mem.fullname + ', ' + mem.label + ', ' +
+                        notInPlanItems += '<br/>' + mem.fullName + ', ' + mem.label + ', ' +
                             (Number(mem.price) - (Number(mem.paid) + Number(mem.couponDiscount))).toFixed(2);
                     }
                 }

@@ -227,8 +227,8 @@ function cc_charge_purchase($results, $buyer, $useLogWrite=false) {
     if ($planPayment == 0) {
         if (array_key_exists('badges', $results) && is_array($results['badges']) && count($results['badges']) > 0) {
             foreach ($results['badges'] as $badge) {
-                if (array_key_exists('fullname', $badge))
-                    $fullname = $badge['fullname'];
+                if (array_key_exists('fullName', $badge))
+                    $fullname = $badge['fullName'];
                 else
                     $fullname = trim(trim($badge['fname'] . ' ' . $badge['mname']) . ' ' . $badge['lname']);
                 if (array_key_exists('perid', $badge) && $badge['perid'] != null) {
