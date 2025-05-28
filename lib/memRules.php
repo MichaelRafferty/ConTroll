@@ -70,11 +70,12 @@ EOS;
 // now get the Membership Rules
     $memRules = array();
     $QQ = <<<EOS
-SELECT r.name, r.optionName, r.description, r.typeList, r.catList, r.ageList, r.memList, 0 AS uses, r.name AS origName
-FROM memRules r
+SELECT name, optionName, description, typeList, catList, ageList, memList, 0 AS uses, name AS origName
+FROM memRules
+WHERE conid = ?
 ORDER BY name;
 EOS;
-    $QR = dbQuery($QQ);
+    $QR = dbSafeQuery($QQ, ;'i', array($conid));
     while ($row = $QR->fetch_assoc()) {
         if ($row['typeList'] != null && $row['typeList'] != '') {
             $row['typeListArray'] = explode(',', $row['typeList']);
@@ -95,12 +96,13 @@ EOS;
     $QQ = <<<EOS
 SELECT name, step, ruleType, applyTo, typeList, catList, ageList, memList, 0 AS uses, name AS origName, step AS origStep
 FROM memRuleSteps
+WHERE conid = ?
 ORDER BY name, step;
 EOS;
 
     $currentName = null;
     $currentRules = array();
-    $QR = dbQuery($QQ);
+    $QR = dbSafeQuery($QQ, 'i', array($conid));
     while ($row = $QR->fetch_assoc()) {
         if ($currentName != $row['name']) {
             if ($currentName != null) {
