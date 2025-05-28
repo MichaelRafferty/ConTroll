@@ -261,91 +261,91 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                     $perid = $badge['newperid'];
                 } else {
                     $perid = 'tbd';
-
-                    $note = $badge['memId'] . ',' . $id . ',' . $regid . ': memId, p/n id, regid';
-                    if ($planName != '') {
-                        $note .= ($badge['inPlan'] ? (', Plan: ' . $planName) : ', NotInPlan');
-                    }
-                    if (array_key_exists('glNum', $badge) && $badge['glNum'] != '') {
-                        $note .= ', ' . $badge['glNum'];
-                    }
-
-                    if (array_key_exists('balDue', $badge)) {
-                        $amount = $badge['balDue'];
-                    } else {
-                        $amount = $badge['price'] - $badge['paid'];
-                    }
-
-                    $metadata = array ('regid' => $regid, 'perid' => $perid, 'memid' => $badge['memId'], 'rowno' => $rowno);
-
-                    $itemName = $badge['label'] . (($badge['memType'] == 'full' || $badge['memType'] == 'oneday') ? ' Membership' : '') .
-                        ' for ' . $fullname;
-                    $item = [
-                        'uid' => 'badge' . ($lineid + 1),
-                        'name' => mb_substr($itemName, 0, 128),
-                        'quantity' => 1,
-                        'note' => $note,
-                        'basePriceMoney' => round($amount * 100),
-                        'metadata' => $metadata,
-                    ];
-                    if ($taxRate > 0 && array_key_exists('taxable', $badge) && $badge['taxable'] == 'Y') {
-                        // create the Line Item tax record, if there is a tax rate, and the membership is taxable
-                        $needTaxes = true;
-                        $item['taxable'] = 'Y';
-                        $item['taxUid'] = $taxLabel;
-                    }
-
-                    if (array_key_exists('newplan', $results) && $results['newplan'] == 1) {
-                        if ($badge['inPlan'])
-                            $item['applied_discounts'][] = 'planDeferment';
-                    }
-
-                    if ($couponDiscount &&
-                        (!array_key_exists('status', $badge) || $badge['status'] == 'unpaid' || $badge['status'] == 'plan')) {
-                        $cat = $badge['memCategory'];
-                        if (in_array($cat, array ('standard', 'supplement', 'upgrade', 'add-on', 'virtual'))) {
-                            $item['applied_discounts'][] = array ('uid' => 'couponDiscount', 'applied_amount' => 0);
-                            $totalDiscountable += $item['basePriceMoney'];
-                        }
-                    }
-                    if ($managerDiscount &&
-                        (!array_key_exists('status', $badge) || $badge['status'] == 'unpaid' || $badge['status'] == 'plan')) {
-                        $item['applied_discounts'][] = array ('uid' => 'managerDiscount', 'applied_amount' => 0);
-                        $totalDiscountable += $item['basePriceMoney'];
-                    }
-                    $orderLineItems[$lineid] = $item;
-                    $orderValue += $badge['price'];
-                    $lineid++;
-                    $rowno++;
                 }
 
-                if ($results['discount'] > 0) {
-                    // apply the coupon discount amounts proportionally, square would do this for us normally
-                    $totalDiscount = $results['discount'] * 100;
-                    $discountRemaining = $totalDiscount;
-                    $lastItemNo = -1;
-                    $maxAmt = -1;
-                    for ($itemNo = 0; $itemNo < count($orderLineItems); $itemNo++) {
-                        $item = $orderLineItems[$itemNo];
-                        if (array_key_exists('applied_discounts', $item)) {
-                            for ($discountNo = 0; $discountNo < count($item['applied_discounts']); $discountNo++) {
-                                $discount = $item['applied_discounts'][$discountNo];
-                                if ($discount['uid'] == 'couponDiscount' || $discount['uid'] == 'managerDiscount') {
-                                    $thisItemDiscount = round(($item['basePriceMoney'] * $totalDiscount) / $totalDiscountable);
-                                    if ($thisItemDiscount > $discountRemaining)
-                                        $thisItemDiscount = $discountRemaining;
-                                    $discountRemaining -= $thisItemDiscount;
-                                    if ($item['basePriceMoney'] > $maxAmt)
-                                        $lastItemNo = $itemNo;
-                                    $orderLineItems[$itemNo]['applied_discounts'][$discountNo]['applied_amount'] = $thisItemDiscount;
-                                }
+                $note = $badge['memId'] . ',' . $id . ',' . $regid . ': memId, p/n id, regid';
+                if ($planName != '') {
+                    $note .= ($badge['inPlan'] ? (', Plan: ' . $planName) : ', NotInPlan');
+                }
+                if (array_key_exists('glNum', $badge) && $badge['glNum'] != '') {
+                    $note .= ', ' . $badge['glNum'];
+                }
+
+                if (array_key_exists('balDue', $badge)) {
+                    $amount = $badge['balDue'];
+                } else {
+                    $amount = $badge['price'] - $badge['paid'];
+                }
+
+                $metadata = array ('regid' => $regid, 'perid' => $perid, 'memid' => $badge['memId'], 'rowno' => $rowno);
+
+                $itemName = $badge['label'] . (($badge['memType'] == 'full' || $badge['memType'] == 'oneday') ? ' Membership' : '') .
+                    ' for ' . $fullname;
+                $item = [
+                    'uid' => 'badge' . ($lineid + 1),
+                    'name' => mb_substr($itemName, 0, 128),
+                    'quantity' => 1,
+                    'note' => $note,
+                    'basePriceMoney' => round($amount * 100),
+                    'metadata' => $metadata,
+                ];
+                if ($taxRate > 0 && array_key_exists('taxable', $badge) && $badge['taxable'] == 'Y') {
+                    // create the Line Item tax record, if there is a tax rate, and the membership is taxable
+                    $needTaxes = true;
+                    $item['taxable'] = 'Y';
+                    $item['taxUid'] = $taxLabel;
+                }
+
+                if (array_key_exists('newplan', $results) && $results['newplan'] == 1) {
+                    if ($badge['inPlan'])
+                        $item['applied_discounts'][] = 'planDeferment';
+                }
+
+                if ($couponDiscount &&
+                    (!array_key_exists('status', $badge) || $badge['status'] == 'unpaid' || $badge['status'] == 'plan')) {
+                    $cat = $badge['memCategory'];
+                    if (in_array($cat, array ('standard', 'supplement', 'upgrade', 'add-on', 'virtual'))) {
+                        $item['applied_discounts'][] = array ('uid' => 'couponDiscount', 'applied_amount' => 0);
+                        $totalDiscountable += $item['basePriceMoney'];
+                    }
+                }
+                if ($managerDiscount &&
+                    (!array_key_exists('status', $badge) || $badge['status'] == 'unpaid' || $badge['status'] == 'plan')) {
+                    $item['applied_discounts'][] = array ('uid' => 'managerDiscount', 'applied_amount' => 0);
+                    $totalDiscountable += $item['basePriceMoney'];
+                }
+                $orderLineItems[$lineid] = $item;
+                $orderValue += $badge['price'];
+                $lineid++;
+                $rowno++;
+            }
+
+            if ($results['discount'] > 0) {
+                // apply the coupon discount amounts proportionally, square would do this for us normally
+                $totalDiscount = $results['discount'] * 100;
+                $discountRemaining = $totalDiscount;
+                $lastItemNo = -1;
+                $maxAmt = -1;
+                for ($itemNo = 0; $itemNo < count($orderLineItems); $itemNo++) {
+                    $item = $orderLineItems[$itemNo];
+                    if (array_key_exists('applied_discounts', $item)) {
+                        for ($discountNo = 0; $discountNo < count($item['applied_discounts']); $discountNo++) {
+                            $discount = $item['applied_discounts'][$discountNo];
+                            if ($discount['uid'] == 'couponDiscount' || $discount['uid'] == 'managerDiscount') {
+                                $thisItemDiscount = round(($item['basePriceMoney'] * $totalDiscount) / $totalDiscountable);
+                                if ($thisItemDiscount > $discountRemaining)
+                                    $thisItemDiscount = $discountRemaining;
+                                $discountRemaining -= $thisItemDiscount;
+                                if ($item['basePriceMoney'] > $maxAmt)
+                                    $lastItemNo = $itemNo;
+                                $orderLineItems[$itemNo]['applied_discounts'][$discountNo]['applied_amount'] = $thisItemDiscount;
                             }
                         }
                     }
-                    // deal with rounding error by fudging largest item
-                    if ($discountRemaining > 0 && $lastItemNo >= 0) {
-                        $orderLineItems[$itemNo]['applied_discounts'][$discountNo]['applied_amount'] += $discountRemaining;
-                    }
+                }
+                // deal with rounding error by fudging largest item
+                if ($discountRemaining > 0 && $lastItemNo >= 0) {
+                    $orderLineItems[$itemNo]['applied_discounts'][$discountNo]['applied_amount'] += $discountRemaining;
                 }
             }
         }
