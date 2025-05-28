@@ -46,7 +46,7 @@ $limit = 99999999;
 $fieldListP = <<<EOS
 SELECT DISTINCT p.id AS perid, TRIM(p.first_name) AS first_name, TRIM(p.middle_name) AS middle_name, TRIM(p.last_name) AS last_name,
     TRIM(p.suffix) AS suffix, TRIM(p.legalName) AS legalName, TRIM(p.pronouns) AS pronouns, TRIM(p.badge_name), 
-    TRIM(p.address) AS address_1, TRIM(p.addr_) AS address_2, TRIM(p.city) AS city, TRIM(p.state) AS state, TRIM(p.zip) AS postal_code, 
+    TRIM(p.address) AS address_1, TRIM(p.addr_2) AS address_2, TRIM(p.city) AS city, TRIM(p.state) AS state, TRIM(p.zip) AS postal_code, 
     TRIM(p.country) as country, TRIM(p.email_addr) AS email_addr, TRIM(p.phone) as phone, p.active, p.banned,
     TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), '  *', ' ')) AS fullName,
     p.open_notes, p.managedBy, cnt.cntManages,
