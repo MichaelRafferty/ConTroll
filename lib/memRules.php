@@ -75,7 +75,7 @@ FROM memRules
 WHERE conid = ?
 ORDER BY name;
 EOS;
-    $QR = dbSafeQuery($QQ, ;'i', array($conid));
+    $QR = dbSafeQuery($QQ, 'i', array($conid));
     while ($row = $QR->fetch_assoc()) {
         if ($row['typeList'] != null && $row['typeList'] != '') {
             $row['typeListArray'] = explode(',', $row['typeList']);
