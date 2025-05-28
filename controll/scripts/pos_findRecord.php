@@ -24,7 +24,7 @@ $return500errors = true;
 $con = get_conf('con');
 $controll = get_conf('controll');
 $usePortal = $controll['useportal'];
-$conid = $con['id'];
+$conid = intval($con['id']);
 $ajax_request_action = '';
 if ($_POST && $_POST['ajax_request_action']) {
     $ajax_request_action = $_POST['ajax_request_action'];
@@ -49,7 +49,7 @@ SELECT DISTINCT p.id AS perid, TRIM(p.first_name) AS first_name, TRIM(p.middle_n
     TRIM(p.last_name) AS last_name, TRIM(p.suffix) AS suffix, 
     TRIM(p.legalName) AS legalName, TRIM(p.pronouns) AS pronouns,
     p.badge_name, TRIM(p.address) AS address_1, TRIM(p.addr_2) AS address_2, 
-    TRIM(p.city) AS city, TRIM(p.state)) AS state, TRIM(p.zip) AS postal_code, 
+    TRIM(p.city) AS city, TRIM(p.state) AS state, TRIM(p.zip) AS postal_code, 
     p.country, TRIM(p.email_addr) AS email_addr,
     TRIM(p.phone) as phone, p.active, p.banned,
     TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), '  *', ' ')) AS fullName,
@@ -215,6 +215,7 @@ EOS;
     // first can we tell if it's a perid or a tid?
     // if [controll].useportal is 1, then its a perid
     // if [controll].useprotal is 0, then it could be a perid or a tid
+    $name_search = intval($name_search); // convert to numeric for sql
     if ($usePortal == 1) {
         $overlapQ = <<<EOS
 SELECT 'p' AS which, id
@@ -406,7 +407,7 @@ EOS;
     $findPattern = '%' . strtolower(str_replace(' ', '%', $name_search)) . '%';
     // name match (same as in people lookup, to get a list of perids that match, then we can use that list for the managed by/manager set
     $nameMatchWith = <<<EOS
-WITh p1 AS (
+WITH p1 AS (
     SELECT id
     FROM perinfo p
     WHERE
