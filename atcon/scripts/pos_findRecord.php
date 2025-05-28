@@ -16,7 +16,7 @@ $response = array('post' => $_POST, 'get' => $_GET);
 $con = get_conf('con');
 $controll = get_conf('controll');
 $usePortal = $controll['useportal'];
-$conid = $con['id'];
+$conid = intval($con['id']);
 $ajax_request_action = '';
 
 if ($_POST && $_POST['ajax_request_action']) {
@@ -45,7 +45,7 @@ $perinfo = [];
 $limit = 99999999;
 $fieldListP = <<<EOS
 SELECT DISTINCT p.id AS perid, TRIM(p.first_name) AS first_name, TRIM(p.middle_name) AS middle_name, TRIM(p.last_name) AS last_name,
-    TRIM(p.suffix) AS suffix, TRIM(p.legalName) AS legalName, TRIM(p.pronouns) AS pronouns, TRIM(p.badge_name), 
+    TRIM(p.suffix) AS suffix, TRIM(p.legalName) AS legalName, TRIM(p.pronouns) AS pronouns, TRIM(p.badge_name) AS badge_name, 
     TRIM(p.address) AS address_1, TRIM(p.addr_2) AS address_2, TRIM(p.city) AS city, TRIM(p.state) AS state, TRIM(p.zip) AS postal_code, 
     TRIM(p.country) as country, TRIM(p.email_addr) AS email_addr, TRIM(p.phone) as phone, p.active, p.banned,
     TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), '  *', ' ')) AS fullName,
@@ -211,6 +211,7 @@ EOS;
     // first can we tell if it's a perid or a tid?
     // if [controll].useportal is 1, then its a perid
     // if [controll].useprotal is 0, then it could be a perid or a tid
+    $name_search = intval($name_search); // sql is requiring we change this to a number
     if ($usePortal == 1 && getSessionVar("POSMode") == 'checkin') {
         $overlapQ = <<<EOS
 SELECT 'p' AS which, id
@@ -331,7 +332,7 @@ EOS;
             ajaxSuccess(array('error' => "Error in numeric membership query for $name_search"));
             return;
         }
-        $rl = dbSafeQuery($searchSQLL, 'iiiiiiii', array($name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1, $conid + 1, $conid));
+        $rl = dbSafeQuery($searchSQLL, 'iiiiiiii', array($name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1, $conid, $conid + 1));
         if ($rl === false) {
             ajaxSuccess(array('error' => "Error in numeric policy query for $name_search"));
             return;

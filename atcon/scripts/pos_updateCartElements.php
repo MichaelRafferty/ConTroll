@@ -183,10 +183,18 @@ if ($master_transid === false) {
 }
 
 $policy_upd = 0;
+$checkNullFields = array('first_name', 'middle_name', 'last_name', 'suffix', 'legalName', 'pronouns', 'email_addr', 'phone', 'badge_name',
+    'address_1', 'address_2', 'city', 'state', 'postal_code', 'country');
+
 // loop over all perinfo records
 for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
     $cartrow = $cart_perinfo[$row];
     $cartrow['rowpos'] = $row;
+    foreach ($checkNullFields as $field) {
+        if (!array_key_exists($field, $cartrow)) {
+            $cartrow[$field] = '';
+        }
+    }
     $cart_perinfo[$row]['rowpos'] = $row;
     if (array_key_exists('open_notes', $cartrow)) {
         $open_notes = $cartrow['open_notes'];
