@@ -156,13 +156,13 @@ LEFT OUTER JOIN his ON (p.id = his.id)
 LIMIT $limit;
 EOS;
     if ($excludeJoin != '') {
-        $typestr = 'iiiiisssssssss';
+        $typestr = 'iiiiissssssss';
         $valArray = array ($conid, $conid, $user_perid, $conid, $conid + 1, $findPattern, $findPattern, $findPattern, $findPattern,
-                           $findPattern, $findPattern, $findPattern, $findPattern, $findPattern);
+                           $findPattern, $findPattern, $findPattern, $findPattern);
     } else {
-        $typestr = 'iiisssssssss';
+        $typestr = 'iiissssssss';
         $valArray = array ($conid, $conid, $conid + 1, $findPattern, $findPattern, $findPattern, $findPattern,
-                           $findPattern, $findPattern, $findPattern, $findPattern, $findPattern);
+                           $findPattern, $findPattern, $findPattern, $findPattern);
     }
     $mR = dbSafeQuery($mQ, $typestr, $valArray);
 }
