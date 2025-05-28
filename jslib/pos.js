@@ -1972,6 +1972,7 @@ addUnpaid(tid) {
             el = document.getElementById('review-btn-nochanges');
             if (el)
                 el.hidden = true;
+            show_message('Memberships added, cart saved, nothing to pay, press the "Next Customer" button to continue', 'success');
             return;
         }
 
