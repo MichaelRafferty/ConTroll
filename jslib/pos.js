@@ -2490,7 +2490,7 @@ addUnpaid(tid) {
 
         if (data.status == 'error') {
             show_message(data.data, 'error');
-            if (data.error.includes("cancelled")) {
+            if (data.includes('error') && data.error.includes("cancelled")) {
                 this.#payPoll = 0;
                 this.#payCurrentRequest = null;
                 this.#pay_button_pay.disabled = false;
