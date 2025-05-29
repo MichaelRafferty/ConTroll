@@ -1524,7 +1524,7 @@ function cellChanged(cell) {
         case 'spaceId':
             // change to spaceId in space prices table, if GL code is non blank, set it to the region GL fields
             rowData = cell.getData();
-            if (rowData.glNum && row.glNum != '')
+            if (rowData.glNum && rowData.glNum != '')
                 break;  // already has a value don't overwrite it
 
             // glNum is empty, fetch from region year
