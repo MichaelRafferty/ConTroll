@@ -34,10 +34,10 @@ WITH regs AS (
 	WHERE r.newperid = ? AND r.conid = ?
 )
 SELECT n.*, 'Y' as active, 'N' AS banned, r.regs, 
-    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), '  *', ' ')) AS fullName,
+    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', n.first_name, n.middle_name, n.last_name, n.suffix), '  *', ' ')) AS fullName,
     TRIM(REGEXP_REPLACE(CONCAT_WS(' ', n.address, n.addr_2, n.city, n.state, n.zip, n.country), '  *', ' ')) AS fullAddr,
     TRIM(REGEXP_REPLACE(CONCAT_WS(' ', m.first_name, m.middle_name, m.last_name, m.suffix), '  *', ' ')) AS manager,
-     IFNULL(n.managedBy, n.managedByNew) AS managerId
+    IFNULL(n.managedBy, n.managedByNew) AS managerId
 FROM newperson n
 LEFT OUTER JOIN newperson mn ON n.managedByNew = mn.id
 LEFT OUTER JOIN perinfo m ON n.managedBy = m.id
@@ -85,7 +85,7 @@ WITH lNew AS (
         LOWER(TRIM(first_name)) AS first_name, 
         LOWER(TRIM(last_name)) AS last_name, 
         LOWER(TRIM(middle_name)) AS middle_name,
-        LOWER(TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), '  *', ' ')) AS fullName,
+        LOWER(TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), '  *', ' '))) AS fullName,
         LOWER(TRIM(email_addr)) AS email_addr,
         LOWER(TRIM(badge_name)) AS badge_name,
         LOWER(TRIM(address)) AS address,
@@ -112,12 +112,12 @@ WITH lNew AS (
         LOWER(TRIM(first_name)) AS first_name, 
         LOWER(TRIM(last_name)) AS last_name, 
         LOWER(TRIM(middle_name)) AS middle_name,
-        LOWER(TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), '  *', ' ')) AS fullName,
+        LOWER(TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), '  *', ' '))) AS fullName,
         LOWER(TRIM(email_addr)) AS email_addr,
         LOWER(TRIM(badge_name)) AS badge_name,
         LOWER(TRIM(address)) AS address,
         LOWER(TRIM(addr_2)) AS addr_2,
-        REPLACE(REPLACE(REPLACE(REPLACE(LOWER(TRIM(phone)), ')', '(', '-', ' ' AS phone,
+        REPLACE(REPLACE(REPLACE(REPLACE(LOWER(TRIM(phone)), ')', ''), '(', ''), '-', ''), ' ', '') AS phone,
         LOWER(TRIM(city)) AS city,
         LOWER(TRIM(state)) AS state,
         LOWER(TRIM(country)) AS country
