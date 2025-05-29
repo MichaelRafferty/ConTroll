@@ -30,6 +30,8 @@ if (array_key_exists('suspended', $portal_conf) && $portal_conf['suspended'] == 
 }
 
 $NomNomExists = array_key_exists('nomnomURL', $portal_conf);
+$BusinessExists = array_key_exists('businessmeetingURL', $portal_conf);
+$SiteExists = array_key_exists('siteselectionURL', $portal_conf);
 
 if (isSessionVar('id') && isSessionVar('idType')) {
     // check for being resolved/baned
@@ -68,8 +70,14 @@ $config_vars['id'] = $loginId;
 $config_vars['idType'] = $loginType;
 $config_vars['conid'] = $conid;
 $config_vars['nomnomExists'] = $NomNomExists;
+$config_vars['businessExists'] = $BusinessExists;
+$config_vars['siteExists'] = $SiteExists;
 if ($NomNomExists)
     $config_vars['nomnomURL'] = $portal_conf['nomnomURL'];
+if ($BusinessExists)
+    $config_vars['businessURL'] = $portal_conf['businessmeetingURL'];
+if ($SiteExists)
+    $config_vars['siteURL'] = $portal_conf['siteselectionURL'];
 if (array_key_exists('onedaycoupons', $con)) {
     $onedaycoupons = $con['onedaycoupons'];
 } else {
@@ -93,6 +101,7 @@ if ($info === false) {
 $dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
 
 $hasWSFS = false;
+$siteSelection = false;
 if (!$refresh) {
     $numPrimary = 0;
 // get the account holder's registrations
@@ -171,6 +180,9 @@ EOS;
             // check if they have a WSFS rights membership
             if (($m['memCategory'] == 'wsfs' || $m['memCategory'] == 'wsfsnom' || $m['memCategory'] == 'dealer') && $m['status'] == 'paid')
                 $hasWSFS = true;
+
+            if ($m['shortname'] == 'Site Selection Token')
+                $siteSelection = true;
 
             if ($m['memType'] == 'donation') {
                 $label = $dolfmt->formatCurrency((float)$m['actPrice'], $currency) . ' ' . $m['label'];
@@ -490,22 +502,24 @@ if ($numExpired > 0) {
     $disablePay = ' disabled';
 }
 
-$NonNomButton = '';
-if ($NomNomExists) {
-    if (!$hasWSFS)
-        $NonNomButton .= '<span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="top" ' .
-            'data-bs-title="Add and pay for a WSFS membership to be able to nominate or vote.">';
-    if (array_key_exists('nomnomBtn', $portal_conf))
-        $nomnomBtnText = $portal_conf['nomnomBtn'];
+$VirtualButton = '';
+if (array_key_exists('virtualURL', $portal_conf)) {
+    $config_vars['virtualURL'] = $portal_conf['virtualURL'];
+    if (array_key_exists('virtualBtn', $portal_conf))
+        $VirtualButtonTxt = $portal_conf['virtualBtn'];
     else
-        $nomnomBtnText = 'Log into the Hugo System';
+        $VirtualButtonTxt = $con['label'] . 'Virtual Portal';
 
-    $NonNomButton .= "<button class='btn btn-primary p-1' type='button' " .
-        ($hasWSFS ? 'onclick="portal.vote();"' : ' disabled') . ">$nomnomBtnText</button>";
-    if (!$hasWSFS)
-        $NonNomButton .= '</span>';
+    if ($numPrimary == 0)
+        $VirtualButton .= '<span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="top" ' .
+            'data-bs-title="Add and pay for an attending or virtual membership to be able to attend the virtual convention.">';
+
+    $VirtualButton .= "<button class='btn btn-primary p-1' type='button' " .
+        ($numPrimary > 0 ? 'onclick="portal.virtual();"' : ' disabled') . ">$VirtualButtonTxt</button>";
+    if ($numPrimary == 0)
+        $VirtualButton .= '</span>';
+
 }
-
 
 portalPageInit('portal', $info,
     /* css */ array($cdn['tabcss'],
@@ -553,12 +567,16 @@ if (count($paymentPlans) > 0) {
 // if this person is managed, print a banner and let them disassociate from the manager.
 if ($info['managedByName'] != null) {
 ?>
-    <div class='row mt-4' id="managedByDiv">
+    <div class='row mt-2' id="managedByDiv">
         <div class='col-sm-auto'><b>This person record is managed by <?php echo $info['managedByName']; ?></b></div>
         <div class='col-sm-auto'><button class="btn btn-warning btn-sm p-1" onclick="portal.disassociate();">Dissociate from <?php echo $info['managedByName']; ?></button></div>
-        <div class='col-sm-auto'><?php echo $NonNomButton; ?></div>
+<?php if ($VirtualButton != '') { ?>
+        <div class='col-sm-auto'><?php echo $VirtualButton; ?></div>
+<?php } ?>
     </div>
 <?php
+    if ($hasWSFS)
+        drawWSFSButtons($NomNomExists, $BusinessExists, $SiteExists, $hasWSFS, $numPrimary > 0, $siteSelection);
 }
 $totalDueFormatted = '';
 if ($totalDue > 0 || $activePaymentPlans) {
@@ -590,7 +608,7 @@ if ($totalDue > 0 || $activePaymentPlans) {
 <?php
 }
 ?>
-<div class='row mt-4'>
+<div class='row mt-2'>
     <div class='col-sm-12'>
         <h1 class="size-h3">
 <?php
@@ -599,9 +617,9 @@ if ($totalDue > 0 || $activePaymentPlans) {
 ?>
                 <button class='btn btn-primary ms-1 p-1' type='button'
                         onclick="window.location='<?php echo $portal_conf['portalsite']; ?>/addUpgrade.php';">
-                    Add Another Person and Create a New Membership for Them
+                    Add Another Person and<br/>Create a New Membership for Them
                 </button>
-                <?php echo $NonNomButton;
+                <?php echo $VirtualButton;
     } else {
 ?>
             This account's information:
@@ -612,9 +630,11 @@ if ($totalDue > 0 || $activePaymentPlans) {
     </div>
 </div>
 <?php
+    if ($hasWSFS)
+        drawWSFSButtons($NomNomExists, $BusinessExists, $SiteExists, $hasWSFS, $numPrimary > 0, $siteSelection);
     outputCustomText('main/people');
 ?>
-<div class="row">
+<div class="row mt-2">
     <div class="col-sm-1" style='text-align: right;'><b>ID</b></div>
     <div class="col-sm-3"><b>Person</b></div>
     <div class="col-sm-3"><b>Badge Name</b></div>
@@ -929,4 +949,73 @@ if (count($memberships) > 0) {
 </div>
 <?php
 portalPageFoot();
+
+function drawWSFSButtons($NomNomExists, $BusinessExists, $SiteExists, $hasWSFS, $attending, $hasSiteSelection) {
+    $portal_conf = get_conf('portal');
+
+// buttons are NomNom, Site Selection, Virtual Business Meeting
+    $NomNomButton = '';
+    if ($NomNomExists) {
+        if (!$hasWSFS)
+            $NomNomButton .= '<span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="top" ' .
+                'data-bs-title="Add and pay for a WSFS membership to be able to nominate or vote.">';
+        if (array_key_exists('nomnomBtn', $portal_conf))
+            $nomnomBtnText = $portal_conf['nomnomBtn'];
+        else
+            $nomnomBtnText = 'Log into the Hugo System';
+
+        $NomNomButton .= "<button class='btn btn-primary p-1' type='button' " .
+            ($hasWSFS ? 'onclick="portal.vote();"' : ' disabled') . ">$nomnomBtnText</button>";
+        if (!$hasWSFS)
+            $NomNomButton .= '</span>';
+    }
+
+    $siteSelectionButton = '';
+    if ($SiteExists) {
+        if (!$hasSiteSelection) {
+            $siteSelectionButton .= '<span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="top" ' .
+                'data-bs-title="Add and pay for a Site Selection Token to be able to vote in site selection.">';
+        }
+        if ($hasWSFS) {
+            if (array_key_exists('siteselectionBtn', $portal_conf))
+                $siteSelectionBtnTxt = $portal_conf['siteselectionBtn'];
+            else
+                $siteSelectionBtnTxt = 'Vote in Site Selection';
+
+            $siteSelectionButton .= "<button class='btn btn-primary p-1' type='button' " .
+                ($hasSiteSelection ? 'onclick="portal.siteSelect();"' : ' disabled') . ">$siteSelectionBtnTxt</button>";
+            if (!$hasSiteSelection)
+                $siteSelectionButton .= '</span>';
+        }
+    }
+
+    $businessMeetingButton = '';
+    if ($BusinessExists) {
+        if (!$hasWSFS)
+            $businessMeetingButton .= '<span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="top" ' .
+                'data-bs-title="Add and pay for a WSFS membership to be able to attend and vote at the on-line WSFS business meeting.">';
+        if (array_key_exists('businessBtn', $portal_conf))
+            $businessBtnText = $portal_conf['businessBtn'];
+        else
+            $businessBtnText = 'Log into the Business Meeting';
+
+        $businessMeetingButton .= "<button class='btn btn-primary p-1' type='button' " .
+            ($hasWSFS ? 'onclick="portal.business();"' : ' disabled') . ">$businessBtnText</button>";
+        if (!$hasWSFS)
+            $businessMeetingButton .= '</span>';
+    }
+    ?>
+    <div class='row' id='wsfsButtonDiv'>
+    <?php if ($NomNomButton != '') { ?>
+        <div class='col-sm-auto'><?php echo $NomNomButton; ?></div>
+    <?php }
+        if ($businessMeetingButton != '') { ?>
+            <div class='col-sm-auto'><?php echo $businessMeetingButton; ?></div>
+        <?php }
+        if ($siteSelectionButton != '') { ?>
+            <div class='col-sm-auto'><?php echo $siteSelectionButton; ?></div>
+        <?php } ?>
+    </div>
+<?php
+}
 ?>
