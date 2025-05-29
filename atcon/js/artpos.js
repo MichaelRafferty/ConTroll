@@ -122,6 +122,11 @@ window.onload = function initpage() {
 
     bootstrap.Tab.getOrCreateInstance(find_tab).show();
 
+    // check of payPoll (terminal in use) before leave
+    window.addEventListener('beforeunload', event => {
+        artPosConfirmExit(event);
+    })
+
     // load the initial data and the proceed to set up the rest of the system
     var postData = {
         ajax_request_action: 'loadInitialData',
@@ -1602,4 +1607,21 @@ function processRelease() {
         },
         error: showAjaxError
     });
+}
+
+// combined exit change check
+function artPosConfirmExit(event) {
+    // if they have a terminal action in process, as if they want to leave install of 'poll' for it's status
+    if (payPoll == 1) {
+        event.preventDefault(); // if the browser lets us set our own variable
+        if (!confirm("You are leaving without polling the terminal for payment completion.\n" +
+            'Please use the "Payment Complete" button to check if the payment is complete,\n' +
+            'or tthe "Cancel Payment" buttons to cancel the payment request and release the terminal.\n' +
+            "Do you wish to leave anyway without releasing the terminal?")) {
+            return false;
+        }
+    }
+
+    delete e.returnValue;
+    return true;
 }

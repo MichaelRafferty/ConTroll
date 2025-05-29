@@ -210,7 +210,6 @@ class Pos {
         this.#clearadd_button = document.getElementById("clearadd-btn");
         this.#add_results_div = document.getElementById("add_results");
         this.#add_edit_initial_state = $("#add-edit-form").serialize();
-        window.addEventListener("beforeunload", this.checkAllUnsaved);
         this.#uspsDiv = document.getElementById("uspsblock");
 
         // review items
@@ -241,6 +240,11 @@ class Pos {
         coupon = new Coupon();
 
         bootstrap.Tab.getOrCreateInstance(this.#find_tab).show();
+
+        // check of payPoll (terminal in use), on unsaved changes before leave
+        window.addEventListener('beforeunload', event => {
+            pos.confirmExit(event);
+        })
 
         // load the initial data and the proceed to set up the rest of the system
         var postData = {
@@ -3176,6 +3180,37 @@ addUnpaid(tid) {
             }
         }
 
+        return true;
+    }
+
+    // combined exit change check
+    confirmExit(event) {
+        // if they have a terminal action in process, as if they want to leave install of 'poll' for it's status
+        if (this.#payPoll == 1) {
+            event.preventDefault(); // if the browser lets us set our own variable
+            if (!confirm("You are leaving without polling the terminal for payment completion.\n" +
+                'Please use the "Payment Complete" button to check if the payment is complete,\n' +
+                'or tthe "Cancel Payment" buttons to cancel the payment request and release the terminal.\n' +
+                "Do you wish to leave anyway without releasing the terminal?")) {
+                return false;
+            }
+            delete e.returnValue;
+            return true;
+        }
+
+        if (!this.confirmDiscardAddEdit(true)) {
+            e.preventDefault();
+            e.returnValue = "You have unsaved member changes, leave anyway";
+            return;
+        }
+
+        if (!cart.confirmDiscardCartEntry(-1, true)) {
+            e.preventDefault();
+            e.returnValue = "You have unsaved cart changes, leave anyway";
+            return;
+        }
+
+        delete e.returnValue;
         return true;
     }
 }
