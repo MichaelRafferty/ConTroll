@@ -549,6 +549,15 @@ class Pos {
         if (!cart.confirmDiscardCartEntry(-1, false))
             return;
 
+        if (this.#payPoll == 1) {
+            if (!confirm("You are leaving without polling the terminal for payment completion.\n" +
+                'Please use the "Payment Complete" button to check if the payment is complete,\n' +
+                'or tthe "Cancel Payment" buttons to cancel the payment request and release the terminal.\n' +
+                "Do you wish to leave anyway without releasing the terminal?")) {
+                return;
+            }
+        }
+
         if (reset_all > 0)
             clear_message();
 
