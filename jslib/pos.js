@@ -556,6 +556,49 @@ class Pos {
                 "Do you wish to leave anyway without releasing the terminal?")) {
                 return;
             }
+            // cancel terminal request
+            var postData = {
+                ajax_request_action: 'cancelPayRequest',
+                requestId: this.#payCurrentRequest,
+                user_id: this.#user_id,
+            };
+            var _this = this;
+            clear_message();
+            $.ajax({
+                method: "POST",
+                url: "scripts/pos_cancelPayment.php",
+                data: postData,
+                success: function (data, textstatus, jqxhr) {
+                    if (typeof data == 'string') {
+                        show_message(data, 'error');
+                        return;
+                    }
+
+                    if (data.error !== undefined) {
+                        show_message(data.error, 'error');
+                        return;
+                    }
+
+                    if (data.status == 'error') {
+                        show_message(data.data, 'error');
+                        return;
+                    }
+
+                    if (data.warn !== undefined) {
+                        show_message(data.warn, 'warn');
+                    }
+
+                    if (data.message !== undefined) {
+                        show_message(data.message, 'success');
+                    }
+                },
+                error: function (jqXHR, textstatus, errorThrown) {
+                    document.getElementById('pollRow').hidden = false;
+                    _this.#pay_button_pay.disabled = true;
+                    showAjaxError(jqXHR, textstatus, errorThrown);
+                },
+            });
+            this.#payPoll = 0;
         }
 
         if (reset_all > 0)
@@ -588,11 +631,12 @@ class Pos {
                         show_message(data.error, 'error');
                         return;
                     }
-                    if (data.message !== undefined) {
-                        show_message(data.message, 'success');
-                    }
                     if (data.warn !== undefined) {
                         show_message(data.warn, 'warn');
+                        return;
+                    }
+                    if (data.message !== undefined) {
+                        show_message(data.message, 'success');
                     }
                 },
                 error: function (jqXHR, textstatus, errorThrown) {

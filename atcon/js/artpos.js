@@ -170,6 +170,49 @@ function startOver(reset_all) {
             "Do you wish to leave anyway without releasing the terminal?")) {
             return;
         }
+
+        // cancel terminal request
+        var postData = {
+            ajax_request_action: 'cancelPayRequest',
+            requestId: payCurrentRequest,
+            user_id: user_id,
+        };
+        clear_message();
+        $.ajax({
+            method: "POST",
+            url: "scripts/pos_cancelPayment.php",
+            data: postData,
+            success: function (data, textstatus, jqxhr) {
+                if (typeof data == 'string') {
+                    show_message(data, 'error');
+                    return;
+                }
+
+                if (data.error !== undefined) {
+                    show_message(data.error, 'error');
+                    return;
+                }
+
+                if (data.status == 'error') {
+                    show_message(data.data, 'error');
+                    return;
+                }
+
+                if (data.warn !== undefined) {
+                    show_message(data.warn, 'warn');
+                }
+
+                if (data.message !== undefined) {
+                    show_message(data.message, 'success');
+                }
+            },
+            error: function (jqXHR, textstatus, errorThrown) {
+                document.getElementById('pollRow').hidden = false;
+                _this.#pay_button_pay.disabled = true;
+                showAjaxError(jqXHR, textstatus, errorThrown);
+            },
+        });
+        payPoll = 0;
     }
     if (reset_all > 0)
         clear_message();
