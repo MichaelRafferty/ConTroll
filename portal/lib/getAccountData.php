@@ -44,7 +44,7 @@ WITH trans AS (
             WHEN pn.id IS NOT NULL THEN
                 TRIM(REGEXP_REPLACE(CONCAT(pn.first_name, ' ', pn.middle_name, ' ', pn.last_name, ' ', pn.suffix), '  *', ' '))
             WHEN nn.id IS NOT NULL THEN
-            CASE TRIM(REGEXP_REPLACE(CONCAT(nn.first_name, ' ', nn.middle_name, ' ', nn.last_name, ' ', nn.suffix), '  *', ' '))
+                TRIM(REGEXP_REPLACE(CONCAT(nn.first_name, ' ', nn.middle_name, ' ', nn.last_name, ' ', nn.suffix), '  *', ' '))
             ELSE ''
         END AS fullName,
         CASE 
