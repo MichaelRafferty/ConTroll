@@ -62,7 +62,7 @@ WHERE p.id = ?
 GROUP BY p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.pronouns, 
     p.address, p.addr_2, p.city, p.state, p.zip, p.country, 
     p.creation_date, p.update_date, p.active, p.banned, p.open_notes, p.admin_notes,
-    p.managedBy, p.managedByNew, p.lastverified, p.managedreason, phoneCheck, fullName, manager, managerId
+    p.managedBy, p.managedByNew, p.lastverified, p.managedreason, phoneCheck, fullName, manager, managerId;
 EOS;
     $mR = dbSafeQuery($mQ, 'iiiiii', array($conid, $conid, $user_perid, $conid, $conid + 1, $findPattern));
 } else {
@@ -76,7 +76,7 @@ SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p
     p.address, p.addr_2, p.city, p.state, p.zip, p.country,
     p.creation_date, p.update_date,  p.active, p.banned, p.open_notes, p.admin_notes,
     p.managedBy, p.managedByNew, p.lastverified, p.managedreason,
-    REPLACE(REPLACE(REPLACE(REPLACE(LOWER(TRIM(p.phone, '')), ')', ''), '(', ''), '-', ''), ' ', '') AS phoneCheck,
+    REPLACE(REPLACE(REPLACE(REPLACE(LOWER(TRIM(p.phone)), ')', ''), '(', ''), '-', ''), ' ', '') AS phoneCheck,
     TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), '  *', ' ')) AS fullName,
     TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.address, p.addr_2, p.city, p.state, p.zip, p.country), '  *', ' ')) AS fullAddr,
     CASE
@@ -123,10 +123,10 @@ WHERE
 ORDER BY priority DESC, p.last_name, p.first_name, p.id
 LIMIT $limit;
 EOS;
-    $mR = dbSafeQuery($mQ, 'iiiiissssssssssssssssss',
+    $mR = dbSafeQuery($mQ, 'iiiiissssssssssssssss',
         array ($conid, $conid, $user_perid, $conid, $conid + 1,
            $findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern,
-           $findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern));
+           $findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern));
 }
 if ($mR === false) {
     $response['error'] = 'Select people matching pattern failed';
