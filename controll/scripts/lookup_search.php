@@ -118,9 +118,9 @@ ORDER BY p.last_name, p.first_name, p.id
 LIMIT $limit;
 EOS;
 
-    $typestr = 'sssssssssii';
+    $typestr = 'ssssssssii';
     $valArray = array ($findPattern, $findPattern, $findPattern, $findPattern,
-                       $findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $conid, $conid +1);
+                       $findPattern, $findPattern, $findPattern, $findPattern, $conid, $conid +1);
 
     $mR = dbSafeQuery($mQ, $typestr, $valArray);
 }
