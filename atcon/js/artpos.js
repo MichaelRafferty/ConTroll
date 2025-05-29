@@ -208,7 +208,6 @@ function startOver(reset_all) {
             },
             error: function (jqXHR, textstatus, errorThrown) {
                 document.getElementById('pollRow').hidden = false;
-                _this.#pay_button_pay.disabled = true;
                 showAjaxError(jqXHR, textstatus, errorThrown);
             },
         });
