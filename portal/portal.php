@@ -575,7 +575,7 @@ if ($info['managedByName'] != null) {
 <?php } ?>
     </div>
 <?php
-    if ($hasWSFS)
+    if ($NomNomExists || $BusinessExists || $SiteExists)
         drawWSFSButtons($NomNomExists, $BusinessExists, $SiteExists, $hasWSFS, $numPrimary > 0, $siteSelection);
 }
 $totalDueFormatted = '';
@@ -630,7 +630,7 @@ if ($totalDue > 0 || $activePaymentPlans) {
     </div>
 </div>
 <?php
-    if ($hasWSFS)
+    if ($NomNomExists || $BusinessExists || $SiteExists)
         drawWSFSButtons($NomNomExists, $BusinessExists, $SiteExists, $hasWSFS, $numPrimary > 0, $siteSelection);
     outputCustomText('main/people');
 ?>
