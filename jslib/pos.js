@@ -644,6 +644,7 @@ class Pos {
                     showAjaxError(jqXHR, textstatus, errorThrown);
                 }
             });
+            this.#pay_currentOrderId = null;
         }
         if (this.#find_unpaid_button)
             this.#find_unpaid_button.hidden = false;
@@ -3243,12 +3244,123 @@ addUnpaid(tid) {
             event.preventDefault(); // if the browser lets us set our own variable
             if (!confirm("You are leaving without polling the terminal for payment completion.\n" +
                 'Please use the "Payment Complete" button to check if the payment is complete,\n' +
-                'or tthe "Cancel Payment" buttons to cancel the payment request and release the terminal.\n' +
-                "Do you wish to leave anyway without releasing the terminal?")) {
+                'or the "Cancel Payment" buttons to cancel the payment request and release the terminal.\n' +
+                "Do you wish to leave anyway and release the terminal?")) {
                 return false;
             }
             delete e.returnValue;
+            var currentOrder = this.#pay_currentOrderId;
+            var user_id = this.#user_id;
+            this.#pay_currentOrderId = null;
+            // cancel terminal request
+            var postData = {
+                ajax_request_action: 'cancelPayRequest',
+                requestId: this.#payCurrentRequest,
+                user_id: this.#user_id,
+            };
+            var _this = this;
+            clear_message();
+            $.ajax({
+                method: "POST",
+                url: "scripts/pos_cancelPayment.php",
+                data: postData,
+                success: function (data, textstatus, jqxhr) {
+                    if (typeof data == 'string') {
+                        show_message(data, 'error');
+                        return;
+                    }
+
+                    if (data.error !== undefined) {
+                        show_message(data.error, 'error');
+                        return;
+                    }
+
+                    if (data.status == 'error') {
+                        show_message(data.data, 'error');
+                        return;
+                    }
+
+                    if (data.warn !== undefined) {
+                        show_message(data.warn, 'warn');
+                    }
+
+                    if (data.message !== undefined) {
+                        show_message(data.message, 'success');
+                    }
+                    if (currentOrder && currentOrder != '') {
+                        var postData = {
+                            ajax_request_action: 'cancelOrder',
+                            orderId: currentOrder,
+                            user_id: user_id,
+                        };
+                        $.ajax({
+                            method: "POST",
+                            url: "scripts/pos_cancelOrder.php",
+                            data: postData,
+                            success: function (data, textstatus, jqxhr) {
+                                if (data.error !== undefined) {
+                                    show_message(data.error, 'error');
+                                    return;
+                                }
+                                if (data.warn !== undefined) {
+                                    show_message(data.warn, 'warn');
+                                    return;
+                                }
+                                if (data.message !== undefined) {
+                                    show_message(data.message, 'success');
+                                }
+                            },
+                            error: function (jqXHR, textstatus, errorThrown) {
+                                $("button[name='find_btn']").attr("disabled", false);
+                                showAjaxError(jqXHR, textstatus, errorThrown);
+                            }
+                        });
+                    }
+                },
+                error: function (jqXHR, textstatus, errorThrown) {
+                    document.getElementById('pollRow').hidden = false;
+                    _this.#pay_button_pay.disabled = true;
+                    showAjaxError(jqXHR, textstatus, errorThrown);
+                },
+            });
+            this.#payPoll = 0;
             return true;
+        }
+        if (this.#pay_currentOrderId && this.#pay_currentOrderId != '') {
+            event.preventDefault(); // if the browser lets us set our own variable
+            if (!confirm("You are leaving with paying for an outstanding order.\n" +
+                "Do you wish to leave anyway and cancel the order?")) {
+                return false;
+            }
+            delete e.returnValue;
+            var postData = {
+                ajax_request_action: 'cancelOrder',
+                orderId: this.#pay_currentOrderId,
+                user_id: this.#user_id,
+            };
+            $.ajax({
+                method: "POST",
+                url: "scripts/pos_cancelOrder.php",
+                data: postData,
+                success: function (data, textstatus, jqxhr) {
+                    if (data.error !== undefined) {
+                        show_message(data.error, 'error');
+                        return;
+                    }
+                    if (data.warn !== undefined) {
+                        show_message(data.warn, 'warn');
+                        return;
+                    }
+                    if (data.message !== undefined) {
+                        show_message(data.message, 'success');
+                    }
+                },
+                error: function (jqXHR, textstatus, errorThrown) {
+                    $("button[name='find_btn']").attr("disabled", false);
+                    showAjaxError(jqXHR, textstatus, errorThrown);
+                }
+            });
+            this.#pay_currentOrderId = null;
         }
 
         if (!this.confirmDiscardAddEdit(true)) {
