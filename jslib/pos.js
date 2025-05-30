@@ -246,7 +246,7 @@ class Pos {
             pos.confirmExit(event);
         })
         window.onunload = function() {
-            pos.onexit();
+            pos.onExit();
         };
 
         // load the initial data and the proceed to set up the rest of the system
