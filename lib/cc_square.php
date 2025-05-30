@@ -705,23 +705,24 @@ function cc_cancelOrder($source, $orderId, $useLogWrite = false, $locationId = n
             ]);
 
     // pass update to cancel state to square
+    $rtn = null;
     try {
           if ($squareDebug) sqcc_logObject(array ('Orders API order update', $body), $useLogWrite);
           $apiResponse = $client->orders->update($body);
           $order = $apiResponse->getOrder();
           if ($squareDebug) sqcc_logObject(array ('Orders API order update response', $order), $useLogWrite);
+          $rtn = array();
+          $rtn['order'] = $order;
+          $rtn['state'] = $order->getState();
+          $rtn['version'] = $order->getVersion();
       }
       catch (SquareApiException $e) {
-          sqcc_logException($source, $e, 'Order API update order Exception', 'Order create failed', $useLogWrite, false);
+          sqcc_logException($source, $e, 'Order API update order Exception', 'Order cancel failed', $useLogWrite, false);
       }
       catch (Exception $e) {
           sqcc_logException($source, $e, 'Order API error while calling Square', 'Error connecting to Square', $useLogWrite, false);
       }
 
-    $rtn = array();
-    $rtn['order'] = $order;
-    $rtn['state'] = $order->getState();
-    $rtn['version'] = $order->getVersion();
     return $rtn;
 }
 // fetch an order to get its details
@@ -751,7 +752,7 @@ function cc_fetchOrder($source, $orderId, $useLogWrite = false) : array {
         if ($squareDebug) sqcc_logObject(array ('Orders API order response', $order), $useLogWrite);
     }
     catch (SquareApiException $e) {
-        sqcc_logException($source, $e, 'Order API create order Exception', 'Order create failed', $useLogWrite);
+        sqcc_logException($source, $e, 'Order API create order Exception', 'Order fetch failed', $useLogWrite);
     }
     catch (Exception $e) {
         sqcc_logException($source, $e, 'Order API error while calling Square', 'Error connecting to Square', $useLogWrite);
