@@ -207,7 +207,10 @@ EOS;
         if ($wifi) {
             $wifiActive = $wifi['wifi_details']['active'] ? true : false;
             $wifiSSID = $wifi['wifi_details']['ssid'];
-            $signalStrength = $wifi['wifi_details']['signal_strength']['value'];
+            if (array_key_exists('signal_strength', $wifi['wifi_details']))
+                $signalStrength = $wifi['wifi_details']['signal_strength']['value'];
+            else
+                $signalStrength = null;
             if (array_key_exists('ip_address_v4', $wifi['wifi_details']))
                 $wifiIPAddressV4 = $wifi['wifi_details']['ip_address_v4'];
             else
