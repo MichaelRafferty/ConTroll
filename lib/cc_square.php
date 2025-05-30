@@ -414,9 +414,9 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     $regid = 'tbd';
                 }
 
-                if (array_key_exists('perid', $badge)) {
+                if (array_key_exists('perid', $badge) && $bnadge['perid'] != null) {
                     $perid = $badge['perid'];
-                } else if (array_key_exists('newperid', $badge)) {
+                } else if (array_key_exists('newperid', $badge) && $badge['newperid'] != null) {
                     $perid = $badge['newperid'];
                 } else {
                     $perid = 'tbd';
