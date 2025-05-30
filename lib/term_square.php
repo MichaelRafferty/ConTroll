@@ -426,6 +426,7 @@ function sqterm_logObject($objArray, $useLogWrite = false) : void {
 }
 
 function sqterm_logException($name, $e, $message, $ajaxMessage, $useLogWrite = false) : void {
+    error_log("$message:" . $e->getMessage());
     web_error_log("$message:" . $e->getMessage());
     $ebody = json_decode($e->getBody(), true);
     $errors = $ebody['errors'];

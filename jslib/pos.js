@@ -245,6 +245,9 @@ class Pos {
         window.addEventListener('beforeunload', event => {
             pos.confirmExit(event);
         })
+        window.addEventListener('onunload', event => {
+            console.log('pos unload');
+        })
 
         // load the initial data and the proceed to set up the rest of the system
         var postData = {
