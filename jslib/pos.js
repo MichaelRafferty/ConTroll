@@ -246,7 +246,7 @@ class Pos {
             pos.confirmExit(event);
         })
         window.addEventListener('onunload', event => {
-            console.log('pos unload');
+            pos.onexit();
         })
 
         // load the initial data and the proceed to set up the rest of the system
@@ -3242,16 +3242,23 @@ addUnpaid(tid) {
 
     // combined exit change check
     confirmExit(event) {
-        // if they have a terminal action in process, as if they want to leave install of 'poll' for it's status
-        if (this.#payPoll == 1) {
-            event.preventDefault(); // if the browser lets us set our own variable
-            if (!confirm("You are leaving without polling the terminal for payment completion.\n" +
+        event.preventDefault();
+        if (this.#payPoll == 1)
+            return "You are leaving without polling the terminal for payment completion.\n" +
                 'Please use the "Payment Complete" button to check if the payment is complete,\n' +
                 'or the "Cancel Payment" buttons to cancel the payment request and release the terminal.\n' +
-                "Do you wish to leave anyway and release the terminal?")) {
-                return false;
-            }
-            delete e.returnValue;
+                "Do you wish to leave anyway and release the terminal?";
+
+        if (this.#pay_currentOrderId && this.#pay_currentOrderId != '')
+            return "You are leaving with paying for an outstanding order.\n" +
+                "Do you wish to leave anyway and cancel the order?"
+
+        return null;
+    }
+
+    onExit() {
+        // if they have a terminal action in process, as if they want to leave install of 'poll' for it's status
+        if (this.#payPoll == 1) {
             var currentOrder = this.#pay_currentOrderId;
             var user_id = this.#user_id;
             this.#pay_currentOrderId = null;
@@ -3330,12 +3337,6 @@ addUnpaid(tid) {
             return true;
         }
         if (this.#pay_currentOrderId && this.#pay_currentOrderId != '') {
-            event.preventDefault(); // if the browser lets us set our own variable
-            if (!confirm("You are leaving with paying for an outstanding order.\n" +
-                "Do you wish to leave anyway and cancel the order?")) {
-                return false;
-            }
-            delete e.returnValue;
             var postData = {
                 ajax_request_action: 'cancelOrder',
                 orderId: this.#pay_currentOrderId,
