@@ -2513,7 +2513,7 @@ addUnpaid(tid) {
         // things that stop us cold....
         if (typeof data == 'string') {
             show_message(data, 'error');
-            if (data.includes("cancelled")) {
+            if (data.hasOwnProperty("cancelled")) {
                 this.#payPoll = 0;
                 this.#payCurrentRequest = null;
                 this.#pay_button_pay.disabled = false;
@@ -2535,7 +2535,7 @@ addUnpaid(tid) {
 
         if (data.status == 'error') {
             show_message(data.data, 'error');
-            if (data.includes('error') && data.error.includes("cancelled")) {
+            if (data.hasOwnProperty('error') && data.error.hasOwnProperty("cancelled")) {
                 this.#payPoll = 0;
                 this.#payCurrentRequest = null;
                 this.#pay_button_pay.disabled = false;
