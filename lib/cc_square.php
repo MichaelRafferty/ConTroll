@@ -712,10 +712,10 @@ function cc_cancelOrder($source, $orderId, $useLogWrite = false, $locationId = n
           if ($squareDebug) sqcc_logObject(array ('Orders API order update response', $order), $useLogWrite);
       }
       catch (SquareApiException $e) {
-          sqcc_logException($source, $e, 'Order API update order Exception', 'Order create failed', $useLogWrite);
+          sqcc_logException($source, $e, 'Order API update order Exception', 'Order create failed', $useLogWrite, false);
       }
       catch (Exception $e) {
-          sqcc_logException($source, $e, 'Order API error while calling Square', 'Error connecting to Square', $useLogWrite);
+          sqcc_logException($source, $e, 'Order API error while calling Square', 'Error connecting to Square', $useLogWrite, false);
       }
 
     $rtn = array();
@@ -1012,7 +1012,7 @@ function sqcc_logObject($objArray, $useLogWrite = false) : void {
     }
 }
 
-function sqcc_logException($name, $e, $message, $ajaxMessage, $useLogWrite = false) : void {
+function sqcc_logException($name, $e, $message, $ajaxMessage, $useLogWrite = false, $doExit = true) : void {
     error_log("$message:" . $e->getMessage());
     web_error_log("$message:" . $e->getMessage());
     $ebody = json_decode($e->getBody(), true);
@@ -1033,5 +1033,6 @@ function sqcc_logException($name, $e, $message, $ajaxMessage, $useLogWrite = fal
         }
     }
     ajaxSuccess(array ('status' => 'error', 'data' => "Error: $ajaxMessage, see logs."));
-    exit();
+    if ($doExit)
+        exit();
 }

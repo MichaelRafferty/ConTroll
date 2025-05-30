@@ -366,10 +366,11 @@ function term_cancelPayment($name, $payRef, $useLogWrite = false) : array | null
         return $checkout;
     }
     catch (SquareApiException $e) {
-        sqterm_logException($name, $e, 'Terminal Square API cancel checkout request Exception', 'Terminal API cancel checkout request failed', $useLogWrite);
+        sqterm_logException($name, $e, 'Terminal Square API cancel checkout request Exception', 'Terminal API cancel checkout request failed', $useLogWrite,
+            false);
     }
     catch (Exception $e) {
-        sqterm_logException($name, $e, 'Terminal received error while calling Square', 'Error connecting to Square', $useLogWrite);
+        sqterm_logException($name, $e, 'Terminal received error while calling Square', 'Error connecting to Square', $useLogWrite, false);
     }
 
     return null;
@@ -425,7 +426,7 @@ function sqterm_logObject($objArray, $useLogWrite = false) : void {
     }
 }
 
-function sqterm_logException($name, $e, $message, $ajaxMessage, $useLogWrite = false) : void {
+function sqterm_logException($name, $e, $message, $ajaxMessage, $useLogWrite = false, $doExit = true) : void {
     error_log("$message:" . $e->getMessage());
     web_error_log("$message:" . $e->getMessage());
     $ebody = json_decode($e->getBody(), true);
@@ -446,5 +447,6 @@ function sqterm_logException($name, $e, $message, $ajaxMessage, $useLogWrite = f
         }
     }
     ajaxSuccess(array ('status' => 'error', 'data' => "Error: $ajaxMessage, see logs."));
-    exit();
+    if ($doExit)
+        exit();
 }
