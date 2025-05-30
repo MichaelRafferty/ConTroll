@@ -675,7 +675,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
 }
 
 // an order is no longer valid, cancel it, via an update to Cancelled status
-function cc_cancelOrder($source, $orderId, $useLogWrite = false, $locationId = null) : array {
+function cc_cancelOrder($source, $orderId, $useLogWrite = false, $locationId = null) : array | null {
     // Try updating the state of the order to CANCELED
     $cc = get_conf('cc');
     if ($locationId == null)
