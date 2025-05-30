@@ -243,11 +243,8 @@ class Pos {
 
         // check of payPoll (terminal in use), on unsaved changes before leave
         window.addEventListener('beforeunload', event => {
-            pos.confirmExit(event);
+            pos.onExit(event);
         })
-        window.onunload = function() {
-            pos.onExit();
-        };
 
         // load the initial data and the proceed to set up the rest of the system
         var postData = {
@@ -769,24 +766,6 @@ class Pos {
         bootstrap.Tab.getOrCreateInstance(this.#add_tab).show();
 
         return confirm("Discard current data in add/edit screen?");
-    }
-
-// event handler for beforeunload event, prevents leaving with unsaved data
-    checkAllUnsaved(e) {
-        // data editing checks
-        if (!this.confirmDiscardAddEdit(true)) {
-            e.preventDefault();
-            e.returnValue = "You have unsaved member changes, leave anyway";
-            return;
-        }
-
-        if (!cart.confirmDiscardCartEntry(-1, true)) {
-            e.preventDefault();
-            e.returnValue = "You have unsaved cart changes, leave anyway";
-            return;
-        }
-
-        delete e.returnValue;
     }
 
     // populate the add/edit screen from a cart item, and switch to add/edit
@@ -3366,20 +3345,7 @@ addUnpaid(tid) {
             });
             this.#pay_currentOrderId = null;
         }
-
-        if (!this.confirmDiscardAddEdit(true)) {
-            e.preventDefault();
-            e.returnValue = "You have unsaved member changes, leave anyway";
-            return;
-        }
-
-        if (!cart.confirmDiscardCartEntry(-1, true)) {
-            e.preventDefault();
-            e.returnValue = "You have unsaved cart changes, leave anyway";
-            return;
-        }
-
-        delete e.returnValue;
+        startOver(1);
         return true;
     }
 }
