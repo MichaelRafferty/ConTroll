@@ -438,7 +438,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
 
                 $metadata = array(
                     'regid' => strval($regid),
-                    'perid' => strval($perid),
+                    'perid' => is_numeric($perid) ? strval($perid) : $perid,
                     'memid' => strval($badge['memId']),
                     'rowno' => strval($rowno)
                 );
