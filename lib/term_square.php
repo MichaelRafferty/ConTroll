@@ -446,7 +446,8 @@ function sqterm_logException($name, $e, $message, $ajaxMessage, $useLogWrite = f
             web_error_log("Name: $name, Cat: $cat: Code $code, Detail: $detail");
         }
     }
-    ajaxSuccess(array ('status' => 'error', 'data' => "Error: $ajaxMessage, see logs."));
-    if ($doExit)
+    if ($doExit) {
+        ajaxSuccess(array ('status' => 'error', 'data' => "Error: $ajaxMessage, see logs."));
         exit();
+    }
 }
