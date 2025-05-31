@@ -100,7 +100,6 @@ function send_email($from, $to, $cc, $subject, $textbody, $htmlbody, $attachment
     try {
         $badEmailAddresses = [];
         $toCount = 0;
-        $ccCount = -1;
         $email = (new Email());
         // from
         $email->from($from);
@@ -132,7 +131,6 @@ function send_email($from, $to, $cc, $subject, $textbody, $htmlbody, $attachment
 
         // cc (single or array)
         if ($cc !== null) {
-            $ccCount = 0;
             if (is_array($cc)) {
                 $first = true;
                 foreach ($cc as $next) {
@@ -142,11 +140,9 @@ function send_email($from, $to, $cc, $subject, $textbody, $htmlbody, $attachment
                     }
                     if ($first) {
                         $email->cc($next);
-                        $ccCount++;
                         $first=false;
                     } else {
                         $email->addCc($next);
-                        $ccCount++;
                     }
                 }
             } else {
@@ -154,7 +150,6 @@ function send_email($from, $to, $cc, $subject, $textbody, $htmlbody, $attachment
                     $badEmailAddresses[] = $cc;
                 else {
                     $email->cc($cc);
-                    $ccCount++;
                 }
             }
         }
@@ -166,13 +161,6 @@ function send_email($from, $to, $cc, $subject, $textbody, $htmlbody, $attachment
             $return_arr['error_code'] = 'invalid-emails';
             $return_arr['email_error'] = "Cannot send email because there was no valid email address, invalid email addresses: " .
                 implode(', ', $badEmailAddresses);
-            return $return_arr;
-        }
-        if ($ccCount == 0) {
-            $return_arr['status'] = 'warn';
-            $return_arr['error_code'] = 'invalid-emails';
-            $return_arr['email_error'] = 'Some email addresses were not used because they were invalid, invalid email addresses: '
-                . implode(', ', $badEmailAddresses);
             return $return_arr;
         }
 
@@ -192,6 +180,14 @@ function send_email($from, $to, $cc, $subject, $textbody, $htmlbody, $attachment
         }
         // now send it
         $mailer->send($email);
+
+        if (count($badEmailAddresses) > 0) {
+            $return_arr['status'] = 'warn';
+            $return_arr['error_code'] = 'invalid-emails';
+            $return_arr['email_error'] = 'Some email addresses were not used because they were invalid, invalid email addresses: '
+                . implode(', ', $badEmailAddresses);
+            return $return_arr;
+        }
     }
     catch (TransportExceptionInterface $e) {
         $return_arr['status'] = "error";
