@@ -81,4 +81,4 @@ ALTER TABLE newperson MODIFY COLUMN managedReason varchar(16) COLLATE utf8mb4_ge
 ALTER TABLE regActions ADD COLUMN source varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL AFTER userid;
 
 
-INSERT INTO patchLog(id, name) VALUES(42, 'Post 1.1 Release Cleanup');
+INSERT INTO patchLog(id, name) VALUES(46, 'Post Balticon Cleanup');
