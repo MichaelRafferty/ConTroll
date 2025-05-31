@@ -302,8 +302,8 @@ function addMembership(formData) {
     // build name and legal name
     var name = formData.fname + " " + formData.mname + " " + formData.lname + " " + formData.suffix;
     name = name.trim();
-    if (formData.legalname=='') {
-        formData.legalname = name;
+    if (formData.legalName=='') {
+        formData.legalName = name;
     }
 
     badges.count +=  1;

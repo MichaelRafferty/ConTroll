@@ -22,7 +22,7 @@ class Login {
     #mnameField = null;
     #lnameField = null;
     #suffixField = null;
-    #legalnameField = null;
+    #legalNameField = null;
     #pronounsField = null;
     #addrField = null;
     #addr2Field = null;
@@ -62,7 +62,7 @@ class Login {
             this.#mnameField = document.getElementById("mname");
             this.#lnameField = document.getElementById("lname");
             this.#suffixField = document.getElementById("suffix");
-            this.#legalnameField = document.getElementById("legalname");
+            this.#legalNameField = document.getElementById("legalName");
             this.#pronounsField = document.getElementById("pronouns");
             this.#addrField = document.getElementById("addr");
             this.#addr2Field = document.getElementById("addr2");
@@ -150,7 +150,7 @@ class Login {
                             // banned,
                             {title: 'T', field: 'tablename', headerWordWrap: true, headerFilter: true, width: 50,},
                             {title: 'ID', field: 'id', hozAlign: "right", width: 65, headerWordWrap: true, headerFilter: false,},
-                            {title: 'Name', field: 'fullname', headerWordWrap: true, headerFilter: true, tooltip: true},
+                            {title: 'Name', field: 'fullName', headerWordWrap: true, headerFilter: true, tooltip: true},
                             {title: 'Phone', field: 'phone', headerWordWrap: true, headerFilter: true, tooltip: true},
                             {title: 'Address', field: 'address', headerWordWrap: true, headerFilter: true, tooltip: true},
                             {title: 'City', field: 'city', headerWordWrap: true, headerFilter: true, tooltip: true,},

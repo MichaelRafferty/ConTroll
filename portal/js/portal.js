@@ -30,7 +30,7 @@ class Portal {
     #mnameField = null;
     #lnameField = null;
     #suffixField = null;
-    #legalnameField = null;
+    #legalNameField = null;
     #pronounsField = null;
     #addrField = null;
     #addr2Field = null;
@@ -54,7 +54,7 @@ class Portal {
     // person fields
     #currentPerson = null;
     #currentPersonType = null;
-    #fullname = null;
+    #fullName = null;
     #personSave = null;
     #uspsAddress = null;
     #personSerializeStart = null;
@@ -130,7 +130,7 @@ class Portal {
             this.#mnameField = document.getElementById("mname");
             this.#lnameField = document.getElementById("lname");
             this.#suffixField = document.getElementById("suffix");
-            this.#legalnameField = document.getElementById("legalname");
+            this.#legalNameField = document.getElementById("legalName");
             this.#pronounsField = document.getElementById("pronouns");
             this.#addrField = document.getElementById("addr");
             this.#addr2Field = document.getElementById("addr2");
@@ -371,23 +371,23 @@ class Portal {
         if (data.policies)
             this.#oldPolicies = data.policies;
 
-        this.#fullname = person.fullname;
-        this.#editPersonTitle.innerHTML = '<strong>Editing: ' + this.#fullname + '</strong>';
+        this.#fullName = person.fullName;
+        this.#editPersonTitle.innerHTML = '<strong>Editing: ' + this.#fullName + '</strong>';
         if (this.#uspsDiv && person.country == 'USA') {
-            this.#editPersonSubmitBtn.innerHTML = 'Validate Address and Update ' + this.#fullname;
+            this.#editPersonSubmitBtn.innerHTML = 'Validate Address and Update ' + this.#fullName;
         } else {
-            this.#editPersonSubmitBtn.innerHTML = 'Update ' + this.#fullname;
+            this.#editPersonSubmitBtn.innerHTML = 'Update ' + this.#fullName;
         }
 
         // now fill in the fields
-        this.#epHeaderDiv.innerHTML = '<strong>Editing: ' + this.#fullname + ' (' + person.email_addr + ')</strong>';
+        this.#epHeaderDiv.innerHTML = '<strong>Editing: ' + this.#fullName + ' (' + person.email_addr + ')</strong>';
         this.#epPersonIdField.value = post.getId;
         this.#epPersonTypeField.value = post.getType;
         this.#fnameField.value = person.first_name;
         this.#mnameField.value = person.middle_name;
         this.#lnameField.value = person.last_name;
         this.#suffixField.value = person.suffix;
-        this.#legalnameField.value = person.legalName;
+        this.#legalNameField.value = person.legalName;
         this.#pronounsField.value = person.pronouns;
         this.#addrField.value = person.address;
         this.#addr2Field.value = person.addr_2;
@@ -455,7 +455,7 @@ class Portal {
         this.#currentPersonType = personData.type;
 
         // change modal fields
-        this.#changeEmailH1.innerHTML = '<strong>Change Email Address for ' + personData.fullname + ' (' + personData.email_addr + ')</strong>';
+        this.#changeEmailH1.innerHTML = '<strong>Change Email Address for ' + personData.fullName + ' (' + personData.email_addr + ')</strong>';
 
         this.#changeEmailSubmitBtn.disabled = true;
         this.#changeEmailModal.show();
@@ -551,9 +551,9 @@ class Portal {
 
         var country = this.#countryField.value;
         if (this.#uspsDiv && country == 'USA') {
-            this.#editPersonSubmitBtn.innerHTML = 'Validate Address and Update ' + this.#fullname;
+            this.#editPersonSubmitBtn.innerHTML = 'Validate Address and Update ' + this.#fullName;
         } else {
-            this.#editPersonSubmitBtn.innerHTML = 'Update ' + this.#fullname;
+            this.#editPersonSubmitBtn.innerHTML = 'Update ' + this.#fullName;
         }
     }
 
@@ -902,11 +902,11 @@ class Portal {
         var post = data.post;
         this.#interests = data.interests;
 
-        this.#fullname = person.fullname ;
-        this.#editInterestsTitle.innerHTML = '<strong>Editing Interests for: ' + this.#fullname + '</strong>';
+        this.#fullName = person.fullName ;
+        this.#editInterestsTitle.innerHTML = '<strong>Editing Interests for: ' + this.#fullName + '</strong>';
 
         // now fill in the fields
-        this.#eiHeaderDiv.innerHTML = 'Editing Interests for: ' + this.#fullname;
+        this.#eiHeaderDiv.innerHTML = 'Editing Interests for: ' + this.#fullName;
         this.#eiPersonIdField.value = post.getId;
         this.#eiPersonTypeField.value = post.getType;
 

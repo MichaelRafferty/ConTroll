@@ -127,8 +127,7 @@ function addMemberships($type, $start, $end, $memId, $testMode, $verboseMode, $c
     $memQ = <<<EOS
 SELECT p.id, 
     REPLACE(REPLACE(REPLACE(REPLACE(LOWER(TRIM(IFNULL(p.phone, ''))), ')', ''), '(', ''), '-', ''), ' ', '') AS phoneCheck,
-    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ',
-    IFNULL(p.suffix, '')), '  *', ' ')) AS fullName, r.create_date
+    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), '  *', ' ')) AS fullName, r.create_date
 FROM perinfo p
 LEFT OUTER JOIN reg r ON r.perid = p.id AND r.conid = ? AND r.memId = ?
 WHERE p.id BETWEEN ? AND ?;

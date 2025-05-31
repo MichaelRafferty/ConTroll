@@ -43,7 +43,7 @@ class Add {
         this.#middleName = document.getElementById('a_mname');
         this.#lastName = document.getElementById('a_lname');
         this.#suffix = document.getElementById('a_suffix');
-        this.#legalName = document.getElementById('a_legalname');
+        this.#legalName = document.getElementById('a_legalName');
         this.#pronouns = document.getElementById('a_pronouns');
         this.#badgeName = document.getElementById('a_badgename');
         this.#address = document.getElementById('a_addr');

@@ -241,7 +241,7 @@ function chooseAccountFromEmail($email, $id, $linkid, $passedMatch, $validationT
             $match['issue'] = $match['banned'];
             $string = json_encode($match);
             $string = encryptCipher($string, true);
-            echo "<li><a href='?vid=$string'>" .  $match['fullname'] . "</a></li>\n";
+            echo "<li><a href='?vid=$string'>" .  $match['fullName'] . "</a></li>\n";
         }
         ?>
         </ul>
@@ -297,8 +297,8 @@ function validationComplete($id, $idType, $email, $validationType, $multiple) : 
     if ($idType == 'p') {
         $rSQL = <<<EOS
 SELECT p.id AS perid, n.id AS newperid, p.email_addr AS email, m.label, m.memCategory, t.complete_date, t.complete_date < ? AS inTime,
-       TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ',  
-        IFNULL(p.suffix, '')), '  *', ' ')) AS fullName, p.first_name, p.last_name
+       TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), '  *', ' ')) AS fullName,
+       p.first_name, p.last_name
 FROM perinfo p
 LEFT OUTER JOIN newperson n ON n.perid = p.id
 LEFT OUTER JOIN reg r ON r.perid = p.id AND r.conid = ? AND r.status = 'paid'
@@ -309,8 +309,8 @@ EOS;
     } else {
         $rSQL = <<<EOS
 SELECT NULL AS perid, n.id AS newperid, n.email_addr AS email, m.label, m.memCategory, t.complete_date, t.complete_date < ? AS inTime,
-       TRIM(REGEXP_REPLACE(CONCAT(IFNULL(n.first_name, ''),' ', IFNULL(n.middle_name, ''), ' ', IFNULL(n.last_name, ''), ' ',  
-        IFNULL(n.suffix, '')), '  *', ' ')) AS fullName, n.first_name, n.last_name
+       TRIM(REGEXP_REPLACE(CONCAT_WS(' ', n.first_name, n.middle_name, n.last_name, n.suffix), '  *', ' ')) AS fullName,
+       n.first_name, n.last_name
 FROM newperson n
 LEFT OUTER JOIN reg r ON r.newperid = n.id AND r.conid = ? AND r.status = 'paid'
 LEFT OUTER JOIN transaction t ON r.complete_trans = t.id

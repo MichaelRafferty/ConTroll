@@ -321,8 +321,8 @@ class ExhibitorInvoice {
             </div>
             <div class='row'>
                 <div class='col-sm-12 ms-0 me-0 p-0'>
-                    <label for="legalname` + suffix + `" class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>Legal Name: for checking against your ID. It will only be visible to Registration Staff.</label><br/>
-                    <input class='form-control-sm' type='text' name="legalname` + suffix + `" id=legalname` + suffix + `" size=64 maxlength='64' placeholder='Defaults to First Name Middle Name Last Name, Suffix'/>
+                    <label for="legalName` + suffix + `" class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>Legal Name: for checking against your ID. It will only be visible to Registration Staff.</label><br/>
+                    <input class='form-control-sm' type='text' name="legalName` + suffix + `" id=legalName` + suffix + `" size=64 maxlength='64' placeholder='Defaults to First Name Middle Name Last Name, Suffix'/>
                 </div>
             </div>
 `;

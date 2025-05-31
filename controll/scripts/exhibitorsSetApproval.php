@@ -60,7 +60,10 @@ $response['info'] = $approvalData;
 if ($approvalValue == 'approved' || $approvalValue == 'denied') {
     $appQ = <<<EOS
 SELECT ownerEmail, ownerName, er.name, e.exhibitorName, e.exhibitorEmail, exY.contactName, exY.contactEmail, e.id as exhibitorId, exRY.exhibitorNumber,
-       IFNULL(TRIM(CONCAT(p.first_name, ' ', p.last_name)), TRIM(CONCAT(n.first_name, ' ', n.last_name))) AS agentName, agentRequest
+    CASE 
+        WHEN p.id IS NOT NULL THEN TRIM(CONCAT(p.first_name, ' ', p.last_name))
+        ELSE TRIM(CONCAT(n.first_name, ' ', n.last_name))
+    END AS agentName, agentRequest
 FROM exhibitorRegionYears exRY
 JOIN exhibitorYears exY ON exRY.exhibitorYearId = exY.id
 JOIN exhibitors e ON exY.exhibitorId = e.id

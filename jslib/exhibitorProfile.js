@@ -31,7 +31,7 @@ class ExhibitorProfile {
     #debugFlag = 0;
 
     static #fieldList = ["artistName", "exhibitorName", "exhibitorEmail", "exhibitorPhone", "salesTaxId", "pw1", "pw2", "description", "publicity",
-        "addr", "city", "state", "zip", "country", "mailin"];
+        "addr", "city", "state", "zip", "country", "mailin", /* note this is validate only not require, see code */ "contactEmail"];
     static #copyFromFieldList = ['exhibitorName', 'addr', 'addr2', 'city', 'state', 'zip', 'country'];
     static #copyToFieldList = ['shipCompany', 'shipAddr', 'shipAddr2', 'shipCity', 'shipState', 'shipZip', 'shipCountry'];
 
@@ -159,8 +159,11 @@ class ExhibitorProfile {
                 continue;
             }
             switch (fieldName) {
-                case 'exhibitorEmail':
                 case 'contactEmail':
+                    if (field.value.length == 0)
+                        break;
+                    // fall into exhibitor email
+                case 'exhibitorEmail':
                     if (validateAddress(field.value)) {
                         field.style.backgroundColor = '';
                     } else {
@@ -230,7 +233,7 @@ class ExhibitorProfile {
         }
 
         if (!valid) {
-            var message = "Fill in required missing fields highlighted in this color" + m2;
+            var message = "Fill in required missing or incorrectly formatted fields highlighted in this color" + m2;
             if (this.#profileUseType == 'register')
                 message += ', use the Previous Page and Next Page buttons to check all of the pages.'
             show_message(message, "warn", 'au_result_message');
@@ -322,7 +325,7 @@ class ExhibitorProfile {
                     this.#profileNextPageBtn.disabled = false;
                     this.#profileSubmitBtn.disabled = true;
                     this.#profileIntroDiv.innerHTML = '<p>This form creates an account on the ' + config['label'] + ' ' + config['portalName'] + ' Portal.</p>';
-                    this.#profileSubmitBtn.innerHTML = 'Register ' + config['portalName'];
+                    this.#profileSubmitBtn.innerHTML = ' Complete ' + config['portalName'] + ' Account Signup';
                     this.#profileModalTitle.innerHTML = "New " + config['portalName'] + ' Registration';
                     this.#creatingAccountMsgDiv.hidden = false;
                     this.clearForm();

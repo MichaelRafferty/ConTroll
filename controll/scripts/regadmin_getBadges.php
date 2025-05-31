@@ -35,24 +35,21 @@ WITH notes AS (
 )
 SELECT R.id AS badgeId, IFNULL(R.complete_trans, R.create_trans) AS display_trans, R.create_trans, R.complete_trans, 
     P.id AS perid, NP.id AS newperson_id,   
-    CASE WHEN R.perid IS NULL THEN 
-            TRIM(CONCAT_WS(' ', TRIM(CONCAT_WS(' ', TRIM(CONCAT_WS(' ', IFNULL(NP.first_name, ''), IFNULL(NP.middle_name, ''))), 
-            IFNULL(NP.last_name, ''))), IFNULL(NP.suffix, '')))
-        ELSE
-            TRIM(CONCAT_WS(' ', TRIM(CONCAT_WS(' ', TRIM(CONCAT_WS(' ', IFNULL(P.first_name, ''), IFNULL(P.middle_name, ''))),
-            IFNULL(P.last_name, ''))), IFNULL(P.suffix, '')))
+    CASE 
+        WHEN R.perid IS NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', NP.first_name, NP.middle_name, NP.last_name, NP.suffix), '  *', ' '))  
+        ELSE TRIM(REGEXP_REPLACE(CONCAT_WS(' ', P.first_name, P.middle_name, P.last_name, P.suffix), '  *', ' '))  
     END AS fullName,
-    CASE WHEN R.perid IS NULL THEN IFNULL(NP.first_name, '') ELSE IFNULL(P.first_name, '') END AS first_name,
-    CASE WHEN R.perid IS NULL THEN IFNULL(NP.middle_name, '') ELSE IFNULL(P.middle_name, '') END AS middle_name,
-    CASE WHEN R.perid IS NULL THEN IFNULL(NP.last_name, '') ELSE IFNULL(P.last_name, '') END AS last_name,
-    CASE WHEN R.perid IS NULL THEN IFNULL(NP.badge_name, '') ELSE IFNULL(P.badge_name, '') END AS badge_name,
-    CASE WHEN R.perid IS NULL THEN IFNULL(NP.email_addr, '') ELSE IFNULL(P.email_addr, '') END AS email_addr,
-    CASE WHEN R.perid IS NULL THEN IFNULL(NP.legalname, '') ELSE IFNULL(P.legalname, '') END AS legalname,
-    CASE WHEN R.perid IS NULL THEN IFNULL(NP.pronouns, '') ELSE IFNULL(P.pronouns, '') END AS pronouns,
+    CASE WHEN R.perid IS NULL THEN NP.first_name ELSE P.first_name END AS first_name,
+    CASE WHEN R.perid IS NULL THEN NP.middle_name ELSE P.middle_name END AS middle_name,
+    CASE WHEN R.perid IS NULL THEN NP.last_name ELSE P.last_name END AS last_name,
+    CASE WHEN R.perid IS NULL THEN NP.badge_name ELSE P.badge_name END AS badge_name,
+    CASE WHEN R.perid IS NULL THEN NP.email_addr ELSE P.email_addr END AS email_addr,
+    CASE WHEN R.perid IS NULL THEN NP.legalName ELSE P.legalName END AS legalName,
+    CASE WHEN R.perid IS NULL THEN NP.pronouns ELSE P.pronouns END AS pronouns,
     CASE WHEN R.perid IS NULL THEN IFNULL(NP.managedBy, NP.managedByNew) ELSE IFNULL(P.managedBy, P.managedByNew) END AS manager,
     M.label, R.memId, R.price, R.couponDiscount, R.paid, R.coupon, R.status, R.create_date, R.change_date,
     M.memCategory AS category, M.memType AS type, M.memAge AS age, 
-    ifnull(C.name, ' None ') as name, N.ncount, H.hcount
+    IFNULL(C.name, ' None ') as name, N.ncount, H.hcount
 FROM reg R
 JOIN memLabel M ON (M.id=R.memId)
 LEFT OUTER JOIN perinfo P ON (P.id=R.perid)

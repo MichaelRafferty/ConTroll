@@ -66,7 +66,7 @@
 
             foreach ($memberships as $membership) {
                 // portalPayment sets the modified flag to true on all regs changed by this payment, and false to all the others.
-                $body .= '     * ' . $membership['fullname'] . ' (' . $membership['label'] . ") for " .
+                $body .= '     * ' . $membership['fullName'] . ' (' . $membership['label'] . ") for " .
                     $dolfmt->formatCurrency((float) $membership['price'], $currency);
 
                 $due = $membership['price'] - ($membership['paid'] + $membership['couponDiscount']);
@@ -138,11 +138,11 @@ function getNoChargeEmailBody($transid, $owner, $memberships): string {
     foreach ($memberships as $membership) {
         // portalPayment sets the modified flag to true on all regs changed by this payment, and false to all the others.
         if ($membership['modified'] == true) {
-            if (array_key_exists($membership['fullname'], $fullnames))
+            if (array_key_exists($membership['fullName'], $fullnames))
                 continue;
-            $body .= '     * ' . $membership['fullname'] . ' (' . $membership['label'] . ")\n\n";
+            $body .= '     * ' . $membership['fullName'] . ' (' . $membership['label'] . ")\n\n";
 
-            $fullnames[$membership['fullname']] = 1;
+            $fullnames[$membership['fullName']] = 1;
         }
     }
 

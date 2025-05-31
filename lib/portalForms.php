@@ -379,7 +379,7 @@ function drawPersonRow($personId, $personType, $person, $memberships, $showInter
     </div>
 <?php
     }
-    $personArgs = json_encode(array('id' => $person['id'] , 'type' => $person['personType'], 'fullname' => $person['fullname'],
+    $personArgs = json_encode(array('id' => $person['id'] , 'type' => $person['personType'], 'fullName' => $person['fullName'],
                                 'first_name' => $person['first_name'], 'last_name' => $person['last_name'],
                                 'email_addr' => $person['email_addr']));
     $personArgs = str_replace('"', '\\u0022', $personArgs);
@@ -387,7 +387,7 @@ function drawPersonRow($personId, $personType, $person, $memberships, $showInter
     ?>
     <div class="row mt-1">
         <div class='col-sm-1' style='text-align: right;'><?php echo $person['personType'] == 'n' ? 'Pending' : $person['id']; ?></div>
-        <div class='col-sm-3'><strong><?php echo $person['fullname']; ?></strong></div>
+        <div class='col-sm-3'><strong><?php echo $person['fullName']; ?></strong></div>
         <div class="col-sm-2"><?php echo $badge_name; ?></div>
         <div class='col-sm-6 p-1'>
                 <button class='btn btn-sm btn-primary p-1' style='--bs-btn-font-size: 80%;'

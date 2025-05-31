@@ -235,8 +235,8 @@ function openInvoice(id) {
             html += `
 <div class='row'>
     <div class='col-sm-12 ms-0 me-0 p-0'>
-        <label for="legalname_i_` + mnum + `" class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>Legal Name: for checking against your ID. It will only be visible to Registration Staff.</label><br/>
-        <input class='form-control-sm' type='text' name="legalname_i_` + mnum + `" id=legalname_i_` + mnum + `" size=64 maxlength='64'
+        <label for="legalName_i_` + mnum + `" class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>Legal Name: for checking against your ID. It will only be visible to Registration Staff.</label><br/>
+        <input class='form-control-sm' type='text' name="legalName_i_` + mnum + `" id=legalName_i_` + mnum + `" size=64 maxlength='64'
             placeholder='Defaults to First Name Middle Name Last Name, Suffix' tabindex=` + tabindex + `/>
     </div>
 </div>
@@ -354,8 +354,8 @@ function openInvoice(id) {
             html += `
 <div class='row'>
     <div class='col-sm-12 ms-0 me-0 p-0'>
-        <label for="legalname_a_` + mnum + `" class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>Legal Name: for checking against your ID. It will only be visible to Registration Staff.</label><br/>
-        <input class='form-control-sm' type='text' name="legalname_a_` + mnum + `" id=legalname_a_` + mnum + `" size=64 maxlength='64'
+        <label for="legalName_a_` + mnum + `" class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>Legal Name: for checking against your ID. It will only be visible to Registration Staff.</label><br/>
+        <input class='form-control-sm' type='text' name="legalName_a_` + mnum + `" id=legalName_a_` + mnum + `" size=64 maxlength='64'
                 placeholder='Defaults to First Name Middle Name Last Name, Suffix' tabindex=` + tabindex + `/>
     </div>
 </div>

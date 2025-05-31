@@ -75,6 +75,7 @@ $config_vars['oneoff'] = $oneoff;
 $config_vars['userid'] = $_SESSION['user_perid'];
 $config_vars['finance'] = $finance ? 1 : 0;
 $config_vars['ae'] = $admin ? 1 : 0;
+$config_vars['source'] = 'regstaff';
 ?>
 <?php bs_tinymceModal(); ?>
 <div id='merge-lookup' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Look up Merge Person' aria-hidden='true' style='--bs-modal-width: 80%;'>

@@ -19,7 +19,7 @@ header('Content-Disposition: attachment; filename="dealers.csv"');
 $dealerCoord = 13;
 
 $query = <<<EOS
-SELECT CONCAT(P.first_name, ' ', P.last_name) AS name, M.label
+SELECT CONCAT_WS(' ', P.first_name, P.last_name) AS name, M.label
 FROM badgeList B
 JOIN perinfo P ON (P.id=B.perid)
 LEFT OUTER JOIN reg R ON (R.perid = P.id)

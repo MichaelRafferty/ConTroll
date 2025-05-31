@@ -106,12 +106,12 @@ foreach ($cart_perinfo as $row) {
             continue;
 
         if (array_key_exists('fullName', $row))
-            $fullname = $row['fullName'];
+            $fullName = $row['fullName'];
         else
-            $fullname = trim(trim($row['first_name'] . ' ' . $row['middle_name']) . ' ' . $row['last_name']);
+            $fullName = trim(trim($row['first_name'] . ' ' . $row['middle_name']) . ' ' . $row['last_name']);
         $badge = [
             'paid' => $paid,
-            'fullname' => $fullname,
+            'fullName' => $fullName,
             'perid' => $row['perid'],
             'memId' => $membership['memId'],
             'glNum' => $membership['glNum'],

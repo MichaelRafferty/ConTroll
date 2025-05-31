@@ -50,13 +50,11 @@ if ($count > 0) {
 
 $insertQ = <<<EOS
 INSERT INTO user(perid, email, name)
-SELECT id, email_addr, 
-    CASE 
-        WHEN IFNULL(last_name, '') != '' THEN
-            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(last_name, ''), ', ', IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) 
-        ELSE
-            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) 
-        END AS name
+SELECT id, email_addr,
+   CASE  
+        WHEN last_name != '' THEN TRIM(REGEXP_REPLACE(CONCAT(last_name, ', ', CONCAT_WS(' ', first_name, middle_name, suffix)), '  *', ' ')) 
+        ELSE TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, suffix), '  *', ' '))  
+    END AS name
 FROM perinfo
 WHERE id = ?
 EOS;

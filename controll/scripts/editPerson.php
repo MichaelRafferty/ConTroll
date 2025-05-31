@@ -27,7 +27,7 @@ WHERE perinfo.id=?
 ORDER BY conlist.id;
 EOS;
     $res = dbSafeQuery($idquery, 'i', array($_GET['id']));
-    $perinfo = fetch_safe_assoc($res);
+    $perinfo = $res->fetch_assoc();
     if (isset($_GET['prefix'])) {
         $perinfo["prefix"] = htmlspecialchars($_GET['prefix']);
     }
@@ -84,7 +84,7 @@ if(isset($_POST['suffix'])) {
     $changeLog .= 'legalName, ';
     $query .= 'legalName=?';
     $types .= 's';
-    $values[] = $_POST['legalname'];
+    $values[] = $_POST['legalName'];
   }
   if (isset($_POST['pronouns'])) {
     if ($change) {

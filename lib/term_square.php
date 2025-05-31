@@ -207,7 +207,10 @@ EOS;
         if ($wifi) {
             $wifiActive = $wifi['wifi_details']['active'] ? true : false;
             $wifiSSID = $wifi['wifi_details']['ssid'];
-            $signalStrength = $wifi['wifi_details']['signal_strength']['value'];
+            if (array_key_exists('signal_strength', $wifi['wifi_details']))
+                $signalStrength = $wifi['wifi_details']['signal_strength']['value'];
+            else
+                $signalStrength = null;
             if (array_key_exists('ip_address_v4', $wifi['wifi_details']))
                 $wifiIPAddressV4 = $wifi['wifi_details']['ip_address_v4'];
             else
@@ -363,10 +366,11 @@ function term_cancelPayment($name, $payRef, $useLogWrite = false) : array | null
         return $checkout;
     }
     catch (SquareApiException $e) {
-        sqterm_logException($name, $e, 'Terminal Square API cancel checkout request Exception', 'Terminal API cancel checkout request failed', $useLogWrite);
+        sqterm_logException($name, $e, 'Terminal Square API cancel checkout request Exception', 'Terminal API cancel checkout request failed', $useLogWrite,
+            false);
     }
     catch (Exception $e) {
-        sqterm_logException($name, $e, 'Terminal received error while calling Square', 'Error connecting to Square', $useLogWrite);
+        sqterm_logException($name, $e, 'Terminal received error while calling Square', 'Error connecting to Square', $useLogWrite, false);
     }
 
     return null;
@@ -422,7 +426,8 @@ function sqterm_logObject($objArray, $useLogWrite = false) : void {
     }
 }
 
-function sqterm_logException($name, $e, $message, $ajaxMessage, $useLogWrite = false) : void {
+function sqterm_logException($name, $e, $message, $ajaxMessage, $useLogWrite = false, $doExit = true) : void {
+    error_log("$message:" . $e->getMessage());
     web_error_log("$message:" . $e->getMessage());
     $ebody = json_decode($e->getBody(), true);
     $errors = $ebody['errors'];
@@ -441,6 +446,8 @@ function sqterm_logException($name, $e, $message, $ajaxMessage, $useLogWrite = f
             web_error_log("Name: $name, Cat: $cat: Code $code, Detail: $detail");
         }
     }
-    ajaxSuccess(array ('status' => 'error', 'data' => "Error: $ajaxMessage, see logs."));
-    exit();
+    if ($doExit) {
+        ajaxSuccess(array ('status' => 'error', 'data' => "Error: $ajaxMessage, see logs."));
+        exit();
+    }
 }

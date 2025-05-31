@@ -28,6 +28,14 @@ if (!(check_atcon('cashier', $conid) || check_atcon('data_entry', $conid))) {
     RenderErrorAjax($message_error);
     exit();
 }
+
+
+if (!array_key_exists('source', $_POST)) {
+    $message_error = 'Source Missing';
+    RenderErrorAjax($message_error);
+    exit();
+}
+$source = $_POST['source'];
 // updatePrintcount
 //      passed array of regid and print count
 //      updates database
@@ -48,13 +56,13 @@ EOS;
     $completed = dbSafeCmd($updCompleteSQL, 'i', array($tid));
 
     $insertSQL = <<<EOS
-INSERT INTO regActions(userid, tid, regid, action)
-VALUES (?,?,?,'print');
+INSERT INTO regActions(userid, source, tid, regid, action)
+VALUES (?,?,?,?,'print');
 EOS;
-    $typestr = 'iii';
+    $typestr = 'isii';
 
     foreach ($regs as $reg) {
-        $paramarray = array($user_id, $tid, $reg['regid']);
+        $paramarray = array($user_id, $source, $tid, $reg['regid']);
         dbSafeInsert($insertSQL, $typestr,$paramarray);
     }
 }
