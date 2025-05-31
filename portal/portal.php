@@ -567,8 +567,8 @@ if (count($paymentPlans) > 0) {
 // if this person is managed, print a banner and let them disassociate from the manager.
 if ($info['managedByName'] != null) {
 ?>
-    <div class='row mt-2' id="managedByDiv">
-        <div class='col-sm-auto'><b>This person record is managed by <?php echo $info['managedByName']; ?></b></div>
+    <div class='row mt-2 mb-2' id="managedByDiv">
+        <div class='col-sm-auto'><h1 class='size-h4'>Your record is managed by <?php echo $info['managedByName']; ?>:</h1></div>
         <div class='col-sm-auto'><button class="btn btn-warning btn-sm p-1" onclick="portal.disassociate();">Dissociate from <?php echo $info['managedByName']; ?></button></div>
 <?php if ($VirtualButton != '') { ?>
         <div class='col-sm-auto'><?php echo $VirtualButton; ?></div>
@@ -610,28 +610,24 @@ if ($totalDue > 0 || $activePaymentPlans) {
 ?>
 <div class='row mt-2'>
     <div class='col-sm-12'>
-        <h1 class="size-h3">
+        <h1 class="size-h3">This account's information:
 <?php
     if ($info['managedByName'] == null) {
-        echo "People managed by " . $info['first_name'] . ' (' . $info['email_addr'] . '):';
 ?>
                 <button class='btn btn-primary ms-1 p-1' type='button'
                         onclick="window.location='<?php echo $portal_conf['portalsite']; ?>/addUpgrade.php';">
                     Add Another Person and<br/>Create a New Membership for Them
                 </button>
                 <?php echo $VirtualButton;
-    } else {
-?>
-            This account's information:
-<?php
     }
 ?>
         </h1>
     </div>
 </div>
 <?php
-    if ($NomNomExists || $BusinessExists || $SiteExists)
+    if ($info['managedByName'] == null && ($NomNomExists || $BusinessExists || $SiteExists))
         drawWSFSButtons($NomNomExists, $BusinessExists, $SiteExists, $hasWSFS, $numPrimary > 0, $siteSelection);
+
     outputCustomText('main/people');
 ?>
 <div class="row mt-2">
@@ -648,34 +644,51 @@ $managedMembershipList = '';
 $currentId = -1;
 $curMB = [];
 // now for the people managed by this account holder
-
-foreach ($managed as $m) {
-    if ($currentId != $m['id']) {
-        if ($currentId > 0) {
-            $totalMemberships += count($curMB);
-            drawPersonRow($loginId, $loginType, $curPT, $curMB, $interests != null && count($interests) > 0, true, $now);
+if ($info['managedByName'] == null && count($managed) > 0) {
+?>
+<div class='row'>
+    <div class='col-sm-12 ms-0 me-0 align-center'>
+        <hr style='height:4px;width:95%;margin:auto;margin-top:18px;margin-bottom:10px;color:#333333;background-color:#333333;'/>
+    </div>
+</div>
+<div class='row mt-2'>
+    <div class='col-sm-12'>
+        <h1 class='size-h3'>
+            <?php echo 'People managed by ' . $info['first_name'] . ' (' . $info['email_addr'] . '):'; ?>
+        </h1>
+    </div>
+</div>
+<?php
+    $hrshow = false;
+    foreach ($managed as $m) {
+        if ($currentId != $m['id']) {
+            if ($currentId > 0) {
+                $totalMemberships += count($curMB);
+                drawPersonRow($loginId, $loginType, $curPT, $curMB, $interests != null && count($interests) > 0, $hrshow, $now);
+                $hrshow = true;
+            }
+            $curPT = $m;
+            $currentId = $m['id'];
+            $currentId = $m['id'];
+            $curMB = [];
         }
-        $curPT = $m;
-        $currentId = $m['id'];
-        $currentId = $m['id'];
-        $curMB = [];
-    }
-    if ($m['memId'] != null) {
-        if ($m['memType'] == 'donation') {
-            $label = $dolfmt->formatCurrency((float) $m['actPrice'], $currency) . ' ' . $m['label'];
-            $shortname = $dolfmt->formatCurrency((float) $m['actPrice'], $currency) . ' ' . $m['shortname'];
-        } else {
-            $label = $m['label'];
-            $shortname = $m['shortname'];
+        if ($m['memId'] != null) {
+            if ($m['memType'] == 'donation') {
+                $label = $dolfmt->formatCurrency((float) $m['actPrice'], $currency) . ' ' . $m['label'];
+                $shortname = $dolfmt->formatCurrency((float) $m['actPrice'], $currency) . ' ' . $m['shortname'];
+            } else {
+                $label = $m['label'];
+                $shortname = $m['shortname'];
+            }
+            $curMB[] = array('label' => ($m['conid'] != $conid ? $m['conid'] . ' ' : '') . $label, 'status' => $m['status'],
+                'memAge' => $m['memAge'], 'type' => $m['memType'], 'category' => $m['memCategory'],
+                'shortname' => ($m['conid'] != $conid ? $m['conid'] . ' ' : '') . $shortname, 'ageShort' => $m['ageShort'], 'ageLabel' => $m['ageLabel'],
+                'createNewperid' => $m['createNewperid'], 'completeNewperid' => $m['completeNewperid'],
+                'createPerid' => $m['createPerid'], 'completePerid' => $m['completePerid'], 'purchaserName' => $m['purchaserName'],
+                'startdate' => $m['startdate'], 'enddate' => $m['enddate'], 'online' => $m['online'],
+                'actPrice' => $m['actPrice'], 'actPaid' => $m['actPaid'], 'actCouponDiscount' => $m['actCouponDiscount'],
+            );
         }
-        $curMB[] = array('label' => ($m['conid'] != $conid ? $m['conid'] . ' ' : '') . $label, 'status' => $m['status'],
-            'memAge' => $m['memAge'], 'type' => $m['memType'], 'category' => $m['memCategory'],
-            'shortname' => ($m['conid'] != $conid ? $m['conid'] . ' ' : '') . $shortname, 'ageShort' => $m['ageShort'], 'ageLabel' => $m['ageLabel'],
-            'createNewperid' => $m['createNewperid'], 'completeNewperid' => $m['completeNewperid'],
-            'createPerid' => $m['createPerid'], 'completePerid' => $m['completePerid'], 'purchaserName' => $m['purchaserName'],
-            'startdate' => $m['startdate'], 'enddate' => $m['enddate'], 'online' => $m['online'],
-            'actPrice' => $m['actPrice'], 'actPaid' => $m['actPaid'], 'actCouponDiscount' => $m['actCouponDiscount'],
-        );
     }
 }
 if ($currentId > 0) { // if there are any at all
