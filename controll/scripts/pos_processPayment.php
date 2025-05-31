@@ -146,8 +146,9 @@ EOS;
 
 $change = 0;
 if ($amt > 0) {
-    // cash, online credit card (square), cash, external: (offline credit card, check, discount, coupon)
+    // cash, online credit card (square), cash, external: check, discount, coupon)
     //      everything now goes to square
+    // offline credit card: not to square because it is already there
     $nonce = 'EXTERNAL';
     $externalType = 'OTHER';
     $desc = '';
@@ -168,7 +169,25 @@ if ($amt > 0) {
             break;
         case 'credit':
             $externalType = 'CARD';
-            $desc = 'offline cc';
+            // set stuff to bypass cc call
+            $desc =  $new_payment['desc'];
+            $rtn['amount'] = $amt;
+            $rtn['paymentType'] = 'credit';
+            $rtn['preTaxAmt'] = $preTaxAmt;
+            $rtn['taxAmt'] = $taxAmt;
+            $rtn['paymentId'] = null;
+            $rtn['url'] = null;
+            $rtn['rid'] = null;
+            $rtn['auth'] = $new_payment['ccauth'];
+            $rtn['payment'] = null;
+            $rtn['last4'] = null;
+            $rtn['txTime'] = date_create()->format('Y-m-d H:i:s');
+            $rtn['status'] = 'COMPLETED';
+            $rtn['transId'] = $master_tid;
+            $rtn['category'] = 'reg';
+            $rtn['description'] = $new_payment['desc'];
+            $rtn['source'] = $source;
+            $rtn['nonce'] = $externalType;
             break;
         case 'check':
             $externalType = 'CHECK';
@@ -176,36 +195,38 @@ if ($amt > 0) {
             break;
     }
 
-    if ($desc == '')
-        $desc = $new_payment['desc'];
-    else
-        $desc = mb_substr($desc . '/' . $new_payment['desc'], 0, 64);
+    if ($new_payment['type'] != 'credit') {
+        if ($desc == '')
+            $desc = $new_payment['desc'];
+        else
+            $desc = mb_substr($desc . '/' . $new_payment['desc'], 0, 64);
 
-    $ccParam = array (
-        'transid' => $master_tid,
-        'counts' => 0,
-        'price' => null,
-        'badges' => null,
-        'taxAmt' => $taxAmt,
-        'preTaxAmt' => $preTaxAmt,
-        'total' => $amt,
-        'orderId' => $orderId,
-        'nonce' => $nonce,
-        'coupon' => $coupon,
-        'externalType' => $externalType,
-        'desc' => $desc,
-        'source' => $source,
-        'change' => $change,
-        'locationId' => $cc['location'],
-    );
+        $ccParam = array (
+            'transid' => $master_tid,
+            'counts' => 0,
+            'price' => null,
+            'badges' => null,
+            'taxAmt' => $taxAmt,
+            'preTaxAmt' => $preTaxAmt,
+            'total' => $amt,
+            'orderId' => $orderId,
+            'nonce' => $nonce,
+            'coupon' => $coupon,
+            'externalType' => $externalType,
+            'desc' => $desc,
+            'source' => $source,
+            'change' => $change,
+            'locationId' => $cc['location'],
+        );
 
-    //log requested badges
-    logWrite(array ('type' => 'online', 'con' => $con['conname'], 'trans' => $master_tid, 'results' => $ccParam));
-    load_cc_procs();
-    $rtn = cc_payOrder($ccParam, $buyer, true);
-    if ($rtn === null) {
-        ajaxSuccess(array ('error' => 'Credit card not approved'));
-        exit();
+        //log requested badges
+        logWrite(array ('type' => 'online', 'con' => $con['conname'], 'trans' => $master_tid, 'results' => $ccParam));
+        load_cc_procs();
+        $rtn = cc_payOrder($ccParam, $buyer, true);
+        if ($rtn === null) {
+            ajaxSuccess(array ('error' => 'Credit card not approved'));
+            exit();
+        }
     }
 
     $approved_amt = $rtn['amount'];
