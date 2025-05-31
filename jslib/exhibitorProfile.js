@@ -322,7 +322,7 @@ class ExhibitorProfile {
                     this.#profileNextPageBtn.disabled = false;
                     this.#profileSubmitBtn.disabled = true;
                     this.#profileIntroDiv.innerHTML = '<p>This form creates an account on the ' + config['label'] + ' ' + config['portalName'] + ' Portal.</p>';
-                    this.#profileSubmitBtn.innerHTML = 'Register ' + config['portalName'];
+                    this.#profileSubmitBtn.innerHTML = ' Complete ' + config['portalName'] + ' Account Signup';
                     this.#profileModalTitle.innerHTML = "New " + config['portalName'] + ' Registration';
                     this.#creatingAccountMsgDiv.hidden = false;
                     this.clearForm();
