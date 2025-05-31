@@ -99,9 +99,7 @@ if ($changedCoupon) {
 }
 
 $newSt = $new['status'];
-if ($newSt != 'plan' && $new['price'] > ($new['paid'] + $new['couponDiscount'])) {
-    $newStatus = 'unpaid';
-} else if ($newSt == 'paid' || $newSt == 'plan' || $newSt == 'unpaid') {
+if ($newSt == 'paid' || $newSt == 'plan' || $newSt == 'unpaid') {
     if ($new['price'] <= ($new['paid'] + $new['couponDiscount']))
         $newStatus = 'paid';
     else if ($newSt != 'plan')
@@ -110,6 +108,8 @@ if ($newSt != 'plan' && $new['price'] > ($new['paid'] + $new['couponDiscount']))
         $newStatus = 'plan';
 } else if ($changedStatus) {
     $newStatus = $new['status'];
+} else {
+    $newStatus = $old['status'];
 }
 
 $upQ .= "status = ?, updatedBy = ? WHERE id = ?;";
