@@ -182,7 +182,8 @@ if (isset($_SESSION['id']) && !isset($_GET['vid'])) {
     }
 
     // Build exhbititorYear on first login if it doesn't exist at the time of this login
-    if ($match['eyID'] == NULL || $match['regions'] != $match['myRegions'] || $match['myRegions'] == 0 ) {
+    $notExists = !(array_key_exists('eyID', $match) && array_key_exists('regions', $match) && array_key_exists('myRegions', $match));
+    if ($notExists || $match['eyID'] == NULL || $match['regions'] != $match['myRegions'] || $match['myRegions'] == 0 ) {
         // create the year related functions
         $newid = exhibitorBuildYears($exhibitor);
         if (is_numeric($newid))
