@@ -321,7 +321,8 @@ class artpos_cart {
         if (this.#freeze_cart) {
             rowhtml += '<div class="row"><div class="col-sm-2">Quantity: ' + '</div><div class="col-sm-10">' + row['purQuantity'] + '</div></div>';
         } else if (row['type'] == 'print') {
-            rowhtml += '<div class="row"><div class="col-sm-2">Quantity: ' + '</div><div class="col-sm-10"><input type="number" min="1" max="' + row['quantity'] + '"' +
+            rowhtml += '<div class="row"><div class="col-sm-2">Quantity: ' + '</div><div class="col-sm-10"><input class="no-spinners" type="number" min="1"' +
+                ' max="' + row['quantity'] + '"' +
                 ' name="purQuantity_' + row['id'] + '" id="purQuantity_' + row['id'] + '" value="' + row['purQuantity'] + '" onchange="cart.updateRowQuantity(' + row['id'] +');"/></div></div>';
         }
         // price
