@@ -282,8 +282,8 @@ class ExhibitorRequest {
                         return;
                     }
                 }
-                if (data['warn'] !== undefined) {
-                    show_message(data['warn'], 'warn', 'sr_message_div');
+                if (data['warn'] !== undefined) { // use main message block because this will close the window
+                    show_message(data['warn'], 'warn');
                 }
             },
             error: showAjaxError
