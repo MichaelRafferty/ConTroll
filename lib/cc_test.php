@@ -320,7 +320,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                 $rowno++;
             }
 
-            if ($results['discount'] > 0) {
+            if (array_key_exists('discount', $results) && $results['discount'] > 0) {
                 // apply the coupon discount amounts proportionally, square would do this for us normally
                 $totalDiscount = $results['discount'] * 100;
                 $discountRemaining = $totalDiscount;
@@ -360,7 +360,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                     $itemName .= $space['exhibitorName'];
                 }
                 $note = $space['id'] . ',' . $space['item_purchased'] . ',' . $space['exhibitorId'] . ',' . $space['exhibitorNumber'] .
-                    ': id, item, exhId, exhNum';
+                    ',' . $space['includedMemberships'] . ': id, item, exhId, exhNum, includedMem';
                 if (array_key_exists('glNum', $space) && $space['glNum'] != '') {
                     $note .= ', ' . $space['glNum'];
                 }

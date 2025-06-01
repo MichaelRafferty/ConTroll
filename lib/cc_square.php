@@ -509,7 +509,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     $itemName .= $space['exhibitorName'];
                 }
                 $note = $space['id'] . ',' . $space['item_purchased'] . ',' . $space['exhibitorId'] . ',' . $space['exhibitorNumber'] .
-                    ': id, item, exhId, exhNum';
+                    ',' . $space['includedMemberships'] . ': id, item, exhId, exhNum, includedMem';
                 if (array_key_exists('glNum', $space) && $space['glNum'] != '') {
                     $note .= ', ' . $space['glNum'];
                 }
