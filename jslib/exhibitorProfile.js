@@ -160,8 +160,10 @@ class ExhibitorProfile {
             }
             switch (fieldName) {
                 case 'contactEmail':
-                    if (field.value.length == 0)
+                    if (field.value.length == 0) {
+                        field.style.backgroundColor = '';
                         break;
+                    }
                     // fall into exhibitor email
                 case 'exhibitorEmail':
                     if (validateAddress(field.value)) {
