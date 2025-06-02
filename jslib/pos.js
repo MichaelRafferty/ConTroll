@@ -3305,8 +3305,10 @@ addUnpaid(tid) {
                                     if (data.hasOwnProperty('paid') && data.paid == 1) {
                                         // it paid while waiting for the poll, process the payment
                                         _this.#payPoll = 1;
+                                        _this.#pay_currentOrderId = currentOrder;
                                         _this.pay('');
                                         _this.#payPoll = 0;
+                                        _this.#pay_currentOrderId = null;
                                     }
                                     return;
                                 }
