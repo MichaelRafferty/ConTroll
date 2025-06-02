@@ -2510,6 +2510,8 @@ addUnpaid(tid) {
                 this.#pay_button_pay.disabled = false;
             } else if (this.#payPoll == 1)
                 document.getElementById('pollRow').hidden = false;
+            else
+                this.#pay_button_pay.disabled = false;
             return;
         }
 
@@ -2521,6 +2523,8 @@ addUnpaid(tid) {
                 this.#pay_button_pay.disabled = false;
             }  else if (this.#payPoll == 1)
                 document.getElementById('pollRow').hidden = false;
+            else
+                this.#pay_button_pay.disabled = false;
             return;
         }
 
@@ -2532,6 +2536,8 @@ addUnpaid(tid) {
                 this.#pay_button_pay.disabled = false;
             } else if (this.#payPoll == 1)
                 document.getElementById('pollRow').hidden = false;
+            else
+                this.#pay_button_pay.disabled = false;
             return;
         }
 
@@ -2540,6 +2546,7 @@ addUnpaid(tid) {
             // warn means we could not get the terminal, ask if we want to override it
             if (data.status != 'OFFLINE') {
                 document.getElementById('overrideRow').hidden = false;
+                this.#pay_button_pay.disabled = false;
                 return;
             }
         }
@@ -2564,6 +2571,7 @@ addUnpaid(tid) {
         cart.updatePmt(data);
         this.#payCurrentRequest = null;
         this.#pay_tid_amt += Number(data.pay_amt);
+        this.#taxAmt -= Number(data.taxAmt);
         this.payShown();
     }
 

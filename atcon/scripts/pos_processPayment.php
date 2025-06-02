@@ -505,6 +505,8 @@ EOS;
     $complete = true;
 }
 
+$new_payment['preTaxAmt'] = $preTaxAmt;
+$new_payment['taxAmt'] = $taxAmt;
 $response['prow'] = $new_payment;
 $response['message'] = "1 payment added";
 $updRegSql = <<<EOS
