@@ -124,7 +124,7 @@ window.onload = function initpage() {
 
     // check of payPoll (terminal in use) before leave
     window.addEventListener('beforeunload', event => {
-        artPosConfirmExit(event);
+        onExit(event);
     })
 
     // load the initial data and the proceed to set up the rest of the system
@@ -180,7 +180,7 @@ function startOver(reset_all) {
         clear_message();
         $.ajax({
             method: "POST",
-            url: "scripts/pos_cancelPayment.php",
+            url: "scripts/artpos_cancelPayment.php",
             data: postData,
             success: function (data, textstatus, jqxhr) {
                 if (typeof data == 'string') {
@@ -200,11 +200,20 @@ function startOver(reset_all) {
 
                 if (data.warn !== undefined) {
                     show_message(data.warn, 'warn');
+                    if (data.hasOwnProperty('paid') && data.paid == 1) {Add commentMore actions
+                        // it paid while waiting for the poll, process the payment
+                        payPoll = 1;
+                        pay('');
+                        payPoll = 0;
+                    }
+                    return;
                 }
 
                 if (data.message !== undefined) {
                     show_message(data.message, 'success');
                 }
+
+                startOver(reset_all);
             },
             error: function (jqXHR, textstatus, errorThrown) {
                 document.getElementById('pollRow').hidden = false;
@@ -212,6 +221,7 @@ function startOver(reset_all) {
             },
         });
         payPoll = 0;
+        return;
     }
     if (reset_all > 0)
         clear_message();
@@ -1660,18 +1670,124 @@ function processRelease() {
 }
 
 // combined exit change check
-function artPosConfirmExit(event) {
+function onExit() {
     // if they have a terminal action in process, as if they want to leave install of 'poll' for it's status
     if (payPoll == 1) {
-        event.preventDefault(); // if the browser lets us set our own variable
-        if (!confirm("You are leaving without polling the terminal for payment completion.\n" +
-            'Please use the "Payment Complete" button to check if the payment is complete,\n' +
-            'or tthe "Cancel Payment" buttons to cancel the payment request and release the terminal.\n' +
-            "Do you wish to leave anyway without releasing the terminal?")) {
-            return false;
-        }
-    }
+        var currentOrder = pay_currentOrderId;
+        var user_id = user_id;
+        pay_currentOrderId = null;
+        // cancel terminal request
+        var postData = {
+            ajax_request_action: 'cancelPayRequest',
+            requestId: payCurrentRequest,
+            user_id: user_id,
+        };
+        var _this = this;
+        clear_message();
+        $.ajax({
+            method: "POST",
+            url: "scripts/artpos_cancelPayment.php",
+            data: postData,
+            success: function (data, textstatus, jqxhr) {
+                if (typeof data == 'string') {
+                    show_message(data, 'error');
+                    return;
+                }
 
-    delete e.returnValue;
+                if (data.error !== undefined) {
+                    show_message(data.error, 'error');
+                    return;
+                }
+
+                if (data.status == 'error') {
+                    show_message(data.data, 'error');
+                    return;
+                }
+
+                if (data.warn !== undefined) {
+                    show_message(data.warn, 'warn');
+                }
+
+                if (data.message !== undefined) {
+                    show_message(data.message, 'success');
+                }
+                if (currentOrder && currentOrder != '') {
+                    var postData = {
+                        ajax_request_action: 'cancelOrder',
+                        orderId: currentOrder,
+                        user_id: user_id,
+                    };
+                    $.ajax({
+                        method: "POST",
+                        url: "scripts/artpos_cancelOrder.php",
+                        data: postData,
+                        success: function (data, textstatus, jqxhr) {
+                            if (data.error !== undefined) {
+                                show_message(data.error, 'error');
+                                return;
+                            }
+                            if (data.warn !== undefined) {
+                                show_message(data.warn, 'warn');
+                                if (data.hasOwnProperty('paid') && data.paid == 1) {
+                                    // it paid while waiting for the poll, process the payment
+                                    _payPoll = 1;
+                                    _pay_currentOrderId = currentOrder;
+                                    _pay('');
+                                    _payPoll = 0;
+                                    _pay_currentOrderId = null;
+                                }
+                                return;
+                            }
+                            if (data.message !== undefined) {
+                                show_message(data.message, 'success');
+                            }
+                        },
+                        error: function (jqXHR, textstatus, errorThrown) {
+                            $("button[name='find_btn']").attr("disabled", false);
+                            showAjaxError(jqXHR, textstatus, errorThrown);
+                        }
+                    });
+                }
+            },
+            error: function (jqXHR, textstatus, errorThrown) {
+                document.getElementById('pollRow').hidden = false;
+                _pay_button_pay.disabled = true;
+                showAjaxError(jqXHR, textstatus, errorThrown);
+            },
+        });
+        payPoll = 0;
+        return true;
+    }
+    if (pay_currentOrderId && pay_currentOrderId != '') {
+        var postData = {
+            ajax_request_action: 'cancelOrder',
+            orderId: pay_currentOrderId,
+            user_id: user_id,
+        };
+        $.ajax({
+            method: "POST",
+            url: "scripts/artpos_cancelOrder.php",
+            data: postData,
+            success: function (data, textstatus, jqxhr) {
+                if (data.error !== undefined) {
+                    show_message(data.error, 'error');
+                    return;
+                }
+                if (data.warn !== undefined) {
+                    show_message(data.warn, 'warn');
+                    return;
+                }
+                if (data.message !== undefined) {
+                    show_message(data.message, 'success');
+                }
+            },
+            error: function (jqXHR, textstatus, errorThrown) {
+                $("button[name='find_btn']").attr("disabled", false);
+                showAjaxError(jqXHR, textstatus, errorThrown);
+            }
+        });
+        pay_currentOrderId = null;
+    }
+    startOver(1);
     return true;
 }
