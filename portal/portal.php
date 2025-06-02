@@ -104,6 +104,7 @@ $hasWSFS = false;
 $siteSelection = false;
 if (!$refresh) {
     $numPrimary = 0;
+    $numPaidPrimary = 0;
 // get the account holder's registrations
     $holderRegSQL = <<<EOS
 SELECT r.status, r.memId, m.*, a.shortname AS ageShort, a.label AS ageLabel, m.taxable,
@@ -181,7 +182,7 @@ EOS;
             if (($m['memCategory'] == 'wsfs' || $m['memCategory'] == 'wsfsnom' || $m['memCategory'] == 'dealer') && $m['status'] == 'paid')
                 $hasWSFS = true;
 
-            if ($m['shortname'] == 'Site Selection Token')
+            if ($m['memCategory'] == 'sitesel' && $m['status'] == 'paid')
                 $siteSelection = true;
 
             if ($m['memType'] == 'donation') {
@@ -240,12 +241,16 @@ EOS;
                 $item['planId'] = $m['planId'];
                 $paidOtherMembership[] = $item;
             }
-            if (isPrimary($m, $conid))
+            if (isPrimary($m, $conid)) {
                 $numPrimary++;
+                if ($m['status'] == 'paid')
+                    $numPaidPrimary++;
+            }
         }
         $holderRegR->free();
     }
     $config_vars['numPrimary'] = $numPrimary;
+    $config_vars['numPaidPrimary'] = $numPaidPrimary;
 // get people managed by this account holder and their registrations
     if ($loginType == 'p') {
         $managedSQL = <<<EOS
@@ -510,13 +515,13 @@ if (array_key_exists('virtualURL', $portal_conf)) {
     else
         $VirtualButtonTxt = $con['label'] . 'Virtual Portal';
 
-    if ($numPrimary == 0)
+    if ($numPaidPrimary == 0)
         $VirtualButton .= '<span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="top" ' .
             'data-bs-title="Add and pay for an attending or virtual membership to be able to attend the virtual convention.">';
 
     $VirtualButton .= "<button class='btn btn-primary p-1' type='button' " .
-        ($numPrimary > 0 ? 'onclick="portal.virtual();"' : ' disabled') . ">$VirtualButtonTxt</button>";
-    if ($numPrimary == 0)
+        ($numPaidPrimary > 0 ? 'onclick="portal.virtual();"' : ' disabled') . ">$VirtualButtonTxt</button>";
+    if ($numPaidPrimary == 0)
         $VirtualButton .= '</span>';
 
 }
@@ -576,7 +581,7 @@ if ($info['managedByName'] != null) {
     </div>
 <?php
     if ($NomNomExists || $BusinessExists || $SiteExists)
-        drawWSFSButtons($NomNomExists, $BusinessExists, $SiteExists, $hasWSFS, $numPrimary > 0, $siteSelection);
+        drawWSFSButtons($NomNomExists, $BusinessExists, $SiteExists, $hasWSFS, $numPaidPrimary > 0, $siteSelection);
 }
 $totalDueFormatted = '';
 if ($totalDue > 0 || $activePaymentPlans) {
@@ -626,7 +631,7 @@ if ($totalDue > 0 || $activePaymentPlans) {
 </div>
 <?php
     if ($info['managedByName'] == null && ($NomNomExists || $BusinessExists || $SiteExists))
-        drawWSFSButtons($NomNomExists, $BusinessExists, $SiteExists, $hasWSFS, $numPrimary > 0, $siteSelection);
+        drawWSFSButtons($NomNomExists, $BusinessExists, $SiteExists, $hasWSFS, $numPaidPrimary > 0, $siteSelection);
 
     outputCustomText('main/people');
 ?>
@@ -989,7 +994,7 @@ function drawWSFSButtons($NomNomExists, $BusinessExists, $SiteExists, $hasWSFS, 
             $siteSelectionButton .= '<span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="top" ' .
                 'data-bs-title="Add and pay for a Site Selection Token to be able to vote in site selection.">';
         }
-        if ($hasWSFS) {
+        if ($SiteExists) {
             if (array_key_exists('siteselectionBtn', $portal_conf))
                 $siteSelectionBtnTxt = $portal_conf['siteselectionBtn'];
             else
