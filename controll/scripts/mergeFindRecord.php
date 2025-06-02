@@ -49,7 +49,7 @@ WITH regcnt AS (
 SELECT p.id AS perid, p.first_name, p.middle_name, p.last_name, p.suffix, p.badge_name, p.address as address_1, p.addr_2 as address_2,
     p.city, p.state, p.zip as postal_code, p.country, p.email_addr, p.phone, p.share_reg_ok, p.contact_ok, p.active, p.banned,
     CASE 
-        WHEN p.last_name, != '' THEN
+        WHEN p.last_name != '' THEN
             TRIM(REGEXP_REPLACE(CONCAT(p.last_name, ', ', CONCAT_WS(' ', p.first_name, p.middle_name, p.suffix, '')), '  *', ' ')) 
         ELSE TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.suffix), '  *', ' ')) 
     END AS fullName,
@@ -79,7 +79,7 @@ WITH regcnt AS (
     GROUP BY p.id
 )
 SELECT DISTINCT p.id AS perid, p.first_name, p.middle_name, p.last_name,  p.suffix, p.badge_name, p.address as address_1, p.addr_2 as address_2,
-    p.city, p.state, p.zip, as postal_code, p.country, p.email_addr, p.phone, p.share_reg_ok, p.contact_ok, p.active, p.banned,
+    p.city, p.state, p.zip as postal_code, p.country, p.email_addr, p.phone, p.share_reg_ok, p.contact_ok, p.active, p.banned,
     CASE  
         WHEN last_name != '' THEN TRIM(REGEXP_REPLACE(CONCAT(p.last_name, ', ', CONCAT_WS(' ', p.first_name, p.middle_name, p.suffix)), '  *', ' ')) 
         ELSE TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.suffix), '  *', ' '))  
@@ -90,7 +90,7 @@ JOIN perinfo p ON (p.id = r.id)
 WHERE p.first_name != 'Merged' AND p.middle_name != 'into'
 ORDER BY last_name, first_name LIMIT $limit;
 EOS;
-    $rp = dbSafeQuery($searchSQLP, 'isssss', array($conid, $name_search, $name_search, $name_search, $name_search, $name_search));
+    $rp = dbSafeQuery($searchSQLP, 'issssss', array($conid, $name_search, $name_search, $name_search, $name_search, $name_search, $name_search));
 }
 
 $perinfo = [];
