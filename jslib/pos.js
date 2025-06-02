@@ -586,11 +586,19 @@ class Pos {
 
                     if (data.warn !== undefined) {
                         show_message(data.warn, 'warn');
+                        if (data.hasOwnProperty('paid') && data.paid == 1) {
+                            // it paid while waiting for the poll, process the payment
+                            _this.#payPoll = 1;
+                            _this.pay('');
+                            _this.#payPoll = 0;
+                        }
+                        return;
                     }
 
                     if (data.message !== undefined) {
                         show_message(data.message, 'success');
                     }
+                    _this.startOver(reset_all);
                 },
                 error: function (jqXHR, textstatus, errorThrown) {
                     document.getElementById('pollRow').hidden = false;
@@ -599,6 +607,7 @@ class Pos {
                 },
             });
             this.#payPoll = 0;
+            return;
         }
 
         if (reset_all > 0)
@@ -3293,6 +3302,12 @@ addUnpaid(tid) {
                                 }
                                 if (data.warn !== undefined) {
                                     show_message(data.warn, 'warn');
+                                    if (data.hasOwnProperty('paid') && data.paid == 1) {
+                                        // it paid while waiting for the poll, process the payment
+                                        _this.#payPoll = 1;
+                                        _this.pay('');
+                                        _this.#payPoll = 0;
+                                    }
                                     return;
                                 }
                                 if (data.message !== undefined) {

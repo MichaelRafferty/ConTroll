@@ -54,6 +54,30 @@ if ($terminal == NULL) {
     exit();
 }
 $name = $terminal['name'];
+
+// first check the status of the payment
+$checkout = term_getPayStatus($name, $requestId, true);
+ if ($checkout == null) {
+     ajaxSuccess(array ('error' => "Unable to get payment status from terminal $name"));
+     exit();
+ }
+ $status = $checkout['status'];
+ switch ($status) {
+     case 'CANCELED':
+         resetTerminalStatus($name);
+         ajaxSuccess(array ('success' => 'The terminal cancelled the payment due to ' . $checkout['cancel_reason']));
+         exit();
+
+     case 'CANCEL_REQUESTED':
+         resetTerminalStatus($name);
+         ajaxSuccess(array ('success' => 'The terminal is working on cancelling the payment.'));
+         exit();
+
+     case 'COMPLETED':
+         ajaxSuccess(array('warn' => 'The terminal already completed the payment.', 'paid' => 1));
+         exit();
+ }
+
 $checkout = term_cancelPayment($name, $requestId, true);
 $response = [];
 $response['status'] = 'success';
