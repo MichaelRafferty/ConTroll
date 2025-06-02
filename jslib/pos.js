@@ -2587,6 +2587,7 @@ addUnpaid(tid) {
             user_id: this.#user_id,
             ajax_request_action: 'printReceipt',
             header: header_text,
+            payTid: this.#pay_tid,
             prows: JSON.stringify(cart.getCartPerinfo()),
             pmtrows: JSON.stringify(cart.getCartPmt()),
             footer: footer_text,

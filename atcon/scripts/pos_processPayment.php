@@ -539,6 +539,7 @@ foreach ($cart_perinfo as $perinfo) {
                 // row is now completely paid
                 $args = array($cart_row['paid'], $master_tid, 'paid', $cart_row['couponDiscount'], $cart_row['coupon'], $cart_row['regid']);
                 $cart_row['status'] = 'paid';
+                $cart_row['tid2'] = $master_tid;
             } else {
                 $args = array($cart_row['paid'], null, $cart_row['status'], $cart_row['couponDiscount'], $cart_row['coupon'], $cart_row['regid'] );
             }
