@@ -98,7 +98,7 @@ $insRDt = 'iidddiiiisi';
 
 $updRegSQL = <<<EOS
 UPDATE reg SET price=?,couponDiscount=?,paid=?, memId=?,coupon=?,updatedBy=?,change_date=now(),status=?,complete_trans=?
-WHERE id = ?;
+WHERE id = ? AND complete_trans IS NULL;
 EOS;
 $updRDt = 'dddiiisii';
 
