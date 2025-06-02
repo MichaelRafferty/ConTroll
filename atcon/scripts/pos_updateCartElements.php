@@ -256,11 +256,13 @@ for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
         if (!array_key_exists('toDelete', $mbr)) {
             if ($mbr['price'] == '')
                 $mbr['price'] = 0;
-            $total_price += $mbr['price'];
 
             if ($mbr['paid'] == '')
                 $mbr['paid'] = 0;
-            $total_paid += $mbr['paid'];
+            if ((!array_key_exists('tid2', $mbr)) || $mbr['tid2'] == null) {
+                $total_price += $mbr['price'];
+                $total_paid += $mbr['paid'];
+            }
         }
 
         if (!array_key_exists('regid', $mbr) || $mbr['regid'] <= 0) {

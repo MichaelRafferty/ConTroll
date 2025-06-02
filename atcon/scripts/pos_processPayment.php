@@ -515,6 +515,7 @@ EOS;
 $ptypestr = 'disdii';
 $index = 0;
 // allocate pre-tax amount to regs
+$allocateAmt = $preTaxAmt;
 foreach ($cart_perinfo as $perinfo) {
     $cart_perinfo[$index]['rowpos'] = $index;
     unset($cart_perinfo[$index]['dirty']);
@@ -530,7 +531,7 @@ foreach ($cart_perinfo as $perinfo) {
             $cart_row['coupon'] = null;
         $unpaid = $cart_row['price'] - ($cart_row['couponDiscount'] + $cart_row['paid']);
         if ($unpaid > 0) {
-            $amt_paid = min($preTaxAmt, $unpaid);
+            $amt_paid = min($allocateAmt, $unpaid);
             $cart_row['paid'] += $amt_paid;
             if ($amt_paid == $unpaid) {
                 // row is now completely paid
@@ -540,7 +541,7 @@ foreach ($cart_perinfo as $perinfo) {
                 $args = array($cart_row['paid'], null, $cart_row['status'], $cart_row['couponDiscount'], $cart_row['coupon'], $cart_row['regid'] );
             }
             $cart_perinfo[$perinfo['index']]['memberships'][$cart_row['index']] = $cart_row;
-            $preTaxAmt -= $amt_paid;
+            $allocateAmt -= $amt_paid;
 
             $upd_rows += dbSafeCmd($updRegSql, $ptypestr, $args);
         }
@@ -575,6 +576,8 @@ EOS;
 }
 
 $response['pay_amt'] = $new_payment['amt'];
+$response['taxAmt'] = $taxAmt;
+$response['preTaxAmt'] = $preTaxAmt;
 $response['message'] .= ", $upd_rows memberships updated" . $completed == 1 ? ", transaction completed." : ".";
 $response['updated_perinfo'] = $cart_perinfo;
 ajaxSuccess($response);
