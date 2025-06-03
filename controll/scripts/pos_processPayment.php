@@ -37,7 +37,6 @@ $source = 'controll-mailinreg';
 
 $log = get_conf('log');
 $con = get_conf('con');
-logInit($log['reg']);
 $conid = $con['id'];
 $debug = get_conf('debug');
 $ini = get_conf('reg');
@@ -45,13 +44,19 @@ $cc = get_conf('cc');
 load_cc_procs();
 logInit($log['reg']);
 
+$conid = $con['id'];
 $upd_rows = 0;
 $cupd_rows = 0;
 
 // processPayment
-//  cart_perinfo: perinfo records with memberships embedded
-//  new_payment: payment being added
-//  pay_tid: current master transaction
+//  orderId: this.#pay_currentOrderId,
+//  new_payment: prow,
+//  coupon: prow.coupon,
+//  change: crow,
+//  nonce: nonce,
+//  user_id: this.#user_id,
+//  pay_tid: this.#pay_tid,
+//  pay_tid_amt: this.#pay_tid_amt,
 
 $user_id = $_POST['user_id'];
 if ($user_id != $_SESSION['user_id']) {
@@ -71,7 +76,7 @@ if ($orderId == null || $orderId == '') {
 
 $new_payment = $_POST['new_payment'];
 if (!array_key_exists('amt', $new_payment) || $new_payment['amt'] <= 0) {
-    ajaxError('invalid payment amount passed: amount <= 0');
+    ajaxError('invalid payment amount passed: payment <= 0');
     return;
 }
 $amt = (float) $new_payment['amt'];
@@ -85,6 +90,18 @@ if (array_key_exists('taxAmt', $_POST))
     $taxAmt = $_POST['taxAmt'];
 else
     $taxAmt = 0;
+
+if (array_key_exists('couponDiscount', $_POST))
+    $couponDiscount = $_POST['couponDiscount'];
+else
+    $couponDiscount = 0;
+
+if (array_key_exists('discountAmt', $_POST))
+    $discountAmt = $_POST['discountAmt'];
+else
+    $discountAmt = 0;
+
+$preTaxAmt -= $couponDiscount + $discountAmt;
 
 if ($amt != $preTaxAmt + $taxAmt) {
     ajaxError('Invalid payment amount passed: preTax + Tax != Amount');
@@ -106,6 +123,18 @@ if (sizeof($cart_perinfo) <= 0) {
     return;
 }
 
+if (array_key_exists('drow', $_POST))
+    $drow = $_POST['drow'];
+else
+    $drow = null;
+
+$override = $_POST['override'];
+if (array_key_exists('poll', $_POST)) {
+    $poll = $_POST['poll'];
+} else {
+    $poll = 0;
+}
+
 if (array_key_exists('coupon', $_POST)) {
     $coupon = $_POST['coupon'];
 }
@@ -117,6 +146,12 @@ $crow = null;
 if (array_key_exists('change', $_POST)) {
     $crow = $_POST['change'];
     $response['crow'] = $crow;
+}
+
+$couponPayment = null;
+if (array_key_exists('couponPayment', $_POST)) {
+    $couponPayment = $_POST['couponPayment'];
+    $response['couponPayment'] = $couponPayment;
 }
 
 $payor_email = $new_payment['payor']['email'];
@@ -260,6 +295,31 @@ INSERT INTO payments(transid, type,category, description, source, pretax, tax, a
 VALUES (?,?,'reg',?,'cashier',?,?,?,now(),?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 EOS;
     $typestr = 'issdddsissssssiss';
+
+    // coupon payment if it exist
+    if ($couponPayment != null) {
+        $paramarray = array ($master_tid, 'coupon', $couponPayment['desc'], $couponPayment['amt'], 0, $couponPayment['amt'], null, $user_perid,
+            null, null, null, null, null, null, $user_perid, 'APPLIED', null);
+        $new_pid = dbSafeInsert($insPmtSQL, $typestr, $paramarray);
+
+        if ($new_pid === false) {
+            ajaxError('Error adding coupon payment to database');
+            return;
+        }
+    }
+
+    if ($drow != null) {
+        $paramarray = array ($master_tid, 'discount', $drow['desc'], $drow['amt'], 0, $drow['amt'], null, $user_perid,
+            null, null, null, null, null, null, $user_perid, 'APPLIED', null);
+        $new_pid = dbSafeInsert($insPmtSQL, $typestr, $paramarray);
+
+        if ($new_pid === false) {
+            ajaxError('Error adding manager discount payment to database');
+            return;
+        }
+    }
+
+    // now the main payment
     $paramarray = array ($master_tid, $paymentType, $desc, $preTaxAmt, $taxAmt, $approved_amt, $auth, $user_perid,
         $last4, $nonceCode, $paymentId, $txTime, $receiptUrl, $receiptNumber, $user_perid, $status, $paymentId);
     $new_pid = dbSafeInsert($insPmtSQL, $typestr, $paramarray);
@@ -273,53 +333,48 @@ EOS;
     $complete = true;
 }
 
+$new_payment['preTaxAmt'] = $preTaxAmt;
+$new_payment['taxAmt'] = $taxAmt;
 $response['prow'] = $new_payment;
 $response['message'] = "1 payment added";
 $updRegSql = <<<EOS
 UPDATE reg
-SET paid = ?, complete_trans = ?, status = ?
+SET paid = ?, complete_trans = ?, status = ?, couponDiscount = ?, coupon = ?
 WHERE id = ?;
 EOS;
-$ptypestr = 'disi';
-$updCouponSQL = <<<EOS
-UPDATE reg
-SET couponDiscount = ?, coupon = ?
-WHERE id = ? AND coupon IS NULL;
-EOS;
-$ctypestr = 'dii';
+$ptypestr = 'disdii';
 $index = 0;
 // allocate pre-tax amount to regs
+$allocateAmt = $preTaxAmt;
 foreach ($cart_perinfo as $perinfo) {
     $cart_perinfo[$index]['rowpos'] = $index;
     unset($cart_perinfo[$index]['dirty']);
     $index++;
     foreach ($perinfo['memberships'] as $cart_row) {
-        if ($cart_row['price'] == '')
+         if ($cart_row['price'] == '')
             $cart_row['price'] = 0;
-        if ($cart_row['couponDiscount'] == '')
+        if ((!array_key_exists('couponDiscount', $cart_row)) || $cart_row['couponDiscount'] == '')
             $cart_row['couponDiscount'] = 0;
         if ($cart_row['paid'] == '')
             $cart_row['paid'] = 0;
+        if ((!array_key_exists('coupon', $cart_row)) || $cart_row['coupon'] == '')
+            $cart_row['coupon'] = null;
         $unpaid = $cart_row['price'] - ($cart_row['couponDiscount'] + $cart_row['paid']);
         if ($unpaid > 0) {
-            if ($coupon == null) {
-                $amt_paid = min($preTaxAmt, $unpaid);
-                $cart_row['paid'] += $amt_paid;
-                if ($amt_paid == $unpaid) {
-                    // row is now completely paid
-                    $args = array($cart_row['paid'], $master_tid, 'paid', $cart_row['regid']);
-                    $cart_row['status'] = 'paid';
-                } else {
-                    $args = array($cart_row['paid'], null, $cart_row['status'], $cart_row['regid'] );
-                }
-                $cart_perinfo[$perinfo['index']]['memberships'][$cart_row['index']] = $cart_row;
-                $preTaxAmt -= $amt_paid;
+            $amt_paid = min($allocateAmt, $unpaid);
+            $cart_row['paid'] += $amt_paid;
+            if ($amt_paid == $unpaid) {
+                // row is now completely paid
+                $args = array($cart_row['paid'], $master_tid, 'paid', $cart_row['couponDiscount'], $cart_row['coupon'], $cart_row['regid']);
+                $cart_row['status'] = 'paid';
+                $cart_row['tid2'] = $master_tid;
+            } else {
+                $args = array($cart_row['paid'], null, $cart_row['status'], $cart_row['couponDiscount'], $cart_row['coupon'], $cart_row['regid'] );
+            }
+            $cart_perinfo[$perinfo['index']]['memberships'][$cart_row['index']] = $cart_row;
+            $allocateAmt -= $amt_paid;
 
-                $upd_rows += dbSafeCmd($updRegSql, $ptypestr, $args);
-            }
-            else {
-                $cupd_rows += dbSafeCmd($updCouponSQL, $ctypestr, array ($cart_row['couponDiscount'], $coupon, $cart_row['regid']));
-            }
+            $upd_rows += dbSafeCmd($updRegSql, $ptypestr, $args);
         }
     }
 }
@@ -331,15 +386,15 @@ UPDATE transaction
 SET coupon = ?, couponDiscountCart = ?, couponDiscountReg = ?
 WHERE id = ?;
 EOS;
-    $completed = dbSafeCmd($updCompleteSQL, 'iddi', array($coupon, $new_payment['cartDiscount'], $new_payment['memDiscount'], $master_tid));
-} else { // normal payment
-    $updCompleteSQL = <<<EOS
+    $completed = dbSafeCmd($updCompleteSQL, 'iddi', array($coupon, $couponDiscount, 0, $master_tid));
+}
+$updCompleteSQL = <<<EOS
 UPDATE transaction
 SET paid = IFNULL(paid,'0.00') + ?
 WHERE id = ?;
 EOS;
-    $completed = dbSafeCmd($updCompleteSQL, 'di', array($approved_amt, $master_tid));
-}
+$completed = dbSafeCmd($updCompleteSQL, 'di', array($approved_amt, $master_tid));
+
 $completed = 0;
 if ($complete) {
     // payment is in full, mark transaction complete
@@ -348,10 +403,12 @@ UPDATE transaction
 SET complete_date = NOW(), change_due = ?, orderId = ?
 WHERE id = ?;
 EOS;
-    $completed = dbSafeCmd($updCompleteSQL, 'ids', array($change, $orderId, $master_tid));
+    $completed = dbSafeCmd($updCompleteSQL, 'dsi', array($change, $orderId, $master_tid));
 }
 
 $response['pay_amt'] = $new_payment['amt'];
+$response['taxAmt'] = $taxAmt;
+$response['preTaxAmt'] = $preTaxAmt;
 $response['message'] .= ", $upd_rows memberships updated" . $completed == 1 ? ", transaction completed." : ".";
 $response['updated_perinfo'] = $cart_perinfo;
 ajaxSuccess($response);

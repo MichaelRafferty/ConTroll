@@ -314,6 +314,7 @@ for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
         }
     }
     // Now process the policies for this person
+    // check to see it they exist
     if (array_key_exists('policies', $cartrow)) {
         $policy_upd += updateExisingMemberPolicies($cartrow['policies'], $conid, $cartrow['perid'], $user_perid);
     } else {
