@@ -1,0 +1,75 @@
+[report]
+	name="RegAllEmails"
+	auth=reg_admin
+	csvfile="RegAllEmails"
+    index=perid
+[F001]
+    name=Perid
+	sql=p.id
+	title="Perid"
+	align=right
+	minWidth=80
+[F002]
+    name=fullName
+    sql="TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), '  *', ' '))"
+    title="Full Name"
+    minWidth=300
+    filter=true
+[F003]
+    name=Email
+    sql=p.email_addr
+    title="Email Address"
+    sort=true
+    minWidth=200
+    filter=true
+[F006]
+    name=Label
+    sql=m.label
+    title=Label
+    filter=true
+[F007]
+    name=Marketing
+    sql=po.response
+    title="Marketing"
+    filter=true
+[F100]
+    name=first_name
+    sql=p.first_name
+    visible=false
+[F101]
+    name=last_name
+    sql=p.last_name
+    visible=false
+[F102]
+    name=middle_name
+    sql=p.middle_name
+    visible=false
+[T001]
+	name=reg
+	alias=r
+[T002]
+	name=memLabel
+	alias=m
+	join="m.id = r.memId"
+[T003]
+    name=perinfo
+    alias=p
+    join="r.perid=p.id"
+[T005]
+    name=memberPolicies
+    alias=po
+    join="po.conid=r.conid AND po.perid=p.id AND po.policy='marketing'"
+    left=true
+[T014]
+    name=regActions
+    alias=ra
+    join="ra.regid = r.id"
+    left=true
+[P001]
+    type=prompt
+    item=conid
+    datatype=s
+[where]
+	001="r.conid = ? AND r.status = 'paid' AND m.memType in ('full','oneday')"
+[sort]
+	001="last_name, first_name, middle_name"

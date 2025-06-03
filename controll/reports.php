@@ -14,6 +14,7 @@ page_init($page,
                     $cdn['tabbs5'],
                    ),
     /* js  */ array($cdn['tabjs'],
+                    $cdn['popjs'],
                     'js/reports.js',
                    ),
               $need_login);
@@ -117,7 +118,7 @@ EOS;
         $groupRpts = array_keys($report);
         sort($groupRpts);
         echo <<<EOS
-        <ul class="nav nav-pills nav-fill mb-3" id="$name-content-tab" role="tablist">
+        <ul class="nav nav-pills mb-3" id="$name-content-tab" role="tablist">
 EOS;
         $active2 = ' active';
         foreach ($groupRpts as $key) {
@@ -150,12 +151,15 @@ EOS;
             } else {
                 $onclick = "noPrompts('$key', '$prefix', '$fileName');";
             }
+            $desc = $rpt['description'];
             echo <<<EOS
             <li class="nav-item" role="presentation $active">
-                <button class="nav-link" id="$tab-tab" data-bs-toggle="pill" data-bs-target="#gen-report-content" type="button"
-                    role="tab" aria-controls="$grpname-tab" aria-selected="false" onclick="$onclick" tabindex="-1">
-                    $name
-                </button>
+                <span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="$desc">
+                    <button class="nav-link" id="$tab-tab" data-bs-toggle="pill" data-bs-target="#gen-report-content" type="button"
+                        role="tab" aria-controls="$grpname-tab" aria-selected="false" onclick="$onclick" tabindex="-1">
+                        $name
+                    </button>
+                </span>
             </li>
 EOS;
         }

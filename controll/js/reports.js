@@ -26,6 +26,10 @@ window.onload = function initpage() {
         reportTabs.push(report.group.name);
         reportContents[report.group.name] = document.getElementById(report.group.name + '-content');
     }
+
+    // enable all tooltips
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
 }
 
 
@@ -178,7 +182,8 @@ function drawReport(data) {
         html += `
     <div class="row">
         <div class="col-sm-auto">
-            <button type="button" class="btn btn-info btn-sm" onclick="downloadCSVReport(); return false;">Download CSV</button>
+            <button type="button" class="btn btn-info btn-sm" onclick="downloadReport('xlsx'); return false;" disabled>Download Excel xlsx</button>
+            <button type="button" class="btn btn-info btn-sm" onclick="downloadReport('csv'); return false;">Download CSV</button>
         </div>
     </div>
 `;
@@ -275,7 +280,7 @@ function drawReport(data) {
         csvfile = data.csvfile;
 }
 
-function downloadCSVReport() {
+function downloadReport(format) {
     var tabledata = JSON.stringify(reportTable.getData("active"));
     downloadCSVPost(csvfile, tabledata);
 }
