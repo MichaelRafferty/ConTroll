@@ -200,7 +200,7 @@ function startOver(reset_all) {
 
                 if (data.warn !== undefined) {
                     show_message(data.warn, 'warn');
-                    if (data.hasOwnProperty('paid') && data.paid == 1) {Add commentMore actions
+                    if (data.hasOwnProperty('paid') && data.paid == 1) {
                         // it paid while waiting for the poll, process the payment
                         payPoll = 1;
                         pay('');
