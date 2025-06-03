@@ -1530,7 +1530,6 @@ function payShown() {
 function releaseShown() {
     current_tab = release_tab;
     pay_tab.disabled = true;
-    cart.hideAdd();
     cart.showNext();
     cart.hideStartOver();
     clear_message();
