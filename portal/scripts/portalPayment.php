@@ -497,13 +497,20 @@ EOS;
             $balance -= $paid_amt;
             $left = $due - $paid_amt;
             $regStatus = ($left < 0.01) ? 'paid' : ($planOnly ? 'plan' : 'unpaid');
+            if (array_key_exists('regid', $badge)) {
+                $regid = $badge['regid'];
+            } else if (array_key_exists('regId', $badge)) {
+                $regid = $badge['regId'];
+            } else {
+                $regid = 'tbd';
+            }
             $rows_upd += dbSafeCmd($regU, 'ddisii', array (
                 $paid_amt,
                 $badge['couponDiscount'],
                 ($left < 0.01) ? $transId : null,
                 $regStatus,
                 $planId,
-                $badge['regid']
+                $regid
             ));
             $badges[$idx]['paid'] += $paid_amt;
             $badges[$idx]['status'] = $regStatus;
