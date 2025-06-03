@@ -49,7 +49,7 @@ $response['personId'] = $loginId;
 if ($loginType == 'p') {
     $piQ = <<<EOS
 SELECT p.id AS perid, n.id AS newperid, p.first_name, p.last_name, p.email_addr,
-    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), '  *', ' ')) AS fullName,
+    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), '  *', ' ')) AS fullName
 FROM perinfo p
 LEFT OUTER JOIN newperson n ON n.perid = p.id
 WHERE p.id = ?
