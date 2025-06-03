@@ -137,7 +137,7 @@ if ($kill == 'c' || $kill == 'p') {
     // ok, check for plans past the due date and kill them
     $kQ = <<<EOS
 SELECT pp.*, pln.name, p.first_name, p.last_name, p.email_addr,
-    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), '  *', ' ')) AS fullName,
+    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), '  *', ' ')) AS fullName
 FROM payorPlans pp
 JOIN paymentPlans pln ON (pp.planId = pln.id)
 JOIN perinfo p ON (p.id = pp.perid)
@@ -238,7 +238,7 @@ WITH pids AS (
     JOIN perinfo p ON pp.perid = p.id
     WHERE pp.status = 'active' /* and pp.conid = ? */
 )
-SELECT p.*, TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), '  *', ' ')) AS fullName,
+SELECT p.*, TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), '  *', ' ')) AS fullName
 FROM pids pp
 JOIN perinfo p ON pp.id = p.id;
 EOS;
