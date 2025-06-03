@@ -20,6 +20,7 @@ class ExhibitorInvoice {
     #payDescription = null;
     #totalAmountDue = 0;
     #paymentTypeDiv = null;
+    #paymentDiv = null;
     #includedMemberships = 0;
     #additionalMemberships = 0;
     #uspsChecked = [];
@@ -48,8 +49,21 @@ class ExhibitorInvoice {
         this.#totalInvCost = document.getElementById('vendor_inv_cost');
         this.#totalMembershipCost = document.getElementById('vendor_inv_mbr_cost');
         this.#paymentTypeDiv = document.getElementById('pt-div');
+        this.#paymentDiv = document.getElementById('paymentDiv');
 
         this.#totalAmountDue = 0;
+    }
+
+// update showing the pay button and the payment fields
+    #updatePaymentDiv() {
+        if (this.#totalAmountDue == 0) {
+            this.#payButton.disabled = false;
+            this.#paymentDiv.hidden = true;
+        } else {
+            this.#payButton.disabled = !(document.getElementById('pt-cash').checked ||
+                document.getElementById('pt-check').checked || document.getElementById('pt-credit').checked)
+            this.#paymentDiv.hidden = false;
+        }
     }
 
 // openInvoice: display the vendor invoice (and registration items)
@@ -103,6 +117,8 @@ class ExhibitorInvoice {
         // refresh the items spaces purchased area
         html = exhibitorName + " is approved for:<br/>\n";
         var exSpaceKeys = Object.keys(exhibitor_spacelist);
+        this.#includedMemberships = 0;
+        this.#additionalMemberships = 0;
         for (var exSpaceIdx in exSpaceKeys) {
             if (region[exSpaceKeys[exSpaceIdx]]) { // space is in our region
                 var space = exhibitor_spacelist[exSpaceKeys[exSpaceIdx]];
@@ -233,7 +249,7 @@ class ExhibitorInvoice {
                 "<input type='hidden' name='includedMemberships' value='" + String(this.#includedMemberships) + "'></div></div>";
             for (var mnum = 0; mnum < this.#includedMemberships; mnum++) {
                 // name fields including legal name
-                html += this.#drawMembershipBlock(mnum, '_i_' + mnum, country_options, false);
+                html += this.#drawMembershipBlock('Included', mnum, '_i_' + mnum, country_options, false);
             }
             html += "<hr/>";
         }
@@ -245,7 +261,7 @@ class ExhibitorInvoice {
                 "<input type='hidden' name='additionalMemberships' value='" + String(this.#additionalMemberships) + "'></div></div>";
             for (var mnum = 0; mnum < this.#additionalMemberships; mnum++) {
                 // name fields includeing legal name
-                html += this.#drawMembershipBlock(mnum, '_a_' + mnum, country_options, true);
+                html += this.#drawMembershipBlock('Additional', mnum, '_a_' + mnum, country_options, true);
             }
             html += "</div><hr/>";
         }
@@ -272,13 +288,14 @@ class ExhibitorInvoice {
             document.getElementById('phone_a_' + mnum).value = exhibitor_info.exhibitorPhone;
         }
         this.#exhibitorInvoiceModal.show();
+        this.#updatePaymentDiv();
     }
 
 // draw a membership block
-    #drawMembershipBlock(mnum, suffix, country_options, doOnChange) {
+    #drawMembershipBlock(label, mnum, suffix, country_options, doOnChange) {
         var html = `
 <div class="row mt-4">
-    <div class="col-sm-auto p-0">Included Member ` + (mnum + 1) + `:</div>
+    <div class="col-sm-auto p-0">` + label + ' Member ' + (mnum + 1) + `:</div>
 </div>
 <div class="row">
     <div class="col-sm-8">
@@ -304,8 +321,8 @@ class ExhibitorInvoice {
             </div>
             <div class='row'>
                 <div class='col-sm-12 ms-0 me-0 p-0'>
-                    <label for="legalname` + suffix + `" class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>Legal Name: for checking against your ID. It will only be visible to Registration Staff.</label><br/>
-                    <input class='form-control-sm' type='text' name="legalname` + suffix + `" id=legalname` + suffix + `" size=64 maxlength='64' placeholder='Defaults to First Name Middle Name Last Name, Suffix'/>
+                    <label for="legalName` + suffix + `" class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>Legal Name: for checking against your ID. It will only be visible to Registration Staff.</label><br/>
+                    <input class='form-control-sm' type='text' name="legalName` + suffix + `" id=legalName` + suffix + `" size=64 maxlength='64' placeholder='Defaults to First Name Middle Name Last Name, Suffix'/>
                 </div>
             </div>
 `;
@@ -388,6 +405,7 @@ class ExhibitorInvoice {
         if (config.debug & 1)
             console.log('After adding this.#totalSpacePrice: ' + String(this.#totalAmountDue));
         this.#totalInvCost.innerHTML = Number(this.#totalAmountDue).toFixed(2);
+        this.#updatePaymentDiv();
     }
 
 // setPayType: shows/hides the appropriate fields for that payment type
@@ -419,7 +437,7 @@ class ExhibitorInvoice {
 
         clear_message('inv_result_message');
 
-        if (prow == null) {
+        if (prow == null && this.#totalAmountDue > 0) {
             // validate the payment entry: It must be >0 and <= amount due
             //      a payment type must be specified
             //      for check: the check number is required
@@ -528,7 +546,8 @@ class ExhibitorInvoice {
 
         this.#payButton.disabled = true;
         var formData = $('#vendor_invoice_form').serialize()
-        formData += "&nonce=" + 'admin';
+        formData += "&nonce=" + 'admin&amtDue=' + this.#totalAmountDue;
+        clear_message('inv_result_message');
         $.ajax({
             url: 'scripts/exhibitorsSpacePayment.php',
             method: 'POST',

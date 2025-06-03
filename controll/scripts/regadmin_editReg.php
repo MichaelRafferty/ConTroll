@@ -5,7 +5,7 @@ require_once "../lib/base.php";
 require_once "../../lib/paymentPlans.php";
 
 $check_auth = google_init("ajax");
-$perm = "reg_admin";
+$perm = "reg_staff";
 
 $response = array("post" => $_POST, "get" => $_GET, "perm"=>$perm);
 
@@ -99,9 +99,7 @@ if ($changedCoupon) {
 }
 
 $newSt = $new['status'];
-if ($newSt != 'plan' && $new['price'] > ($new['paid'] + $new['couponDiscount'])) {
-    $newStatus = 'unpaid';
-} else if ($newSt == 'paid' || $newSt == 'plan' || $newSt == 'unpaid') {
+if ($newSt == 'paid' || $newSt == 'plan' || $newSt == 'unpaid') {
     if ($new['price'] <= ($new['paid'] + $new['couponDiscount']))
         $newStatus = 'paid';
     else if ($newSt != 'plan')
@@ -110,6 +108,8 @@ if ($newSt != 'plan' && $new['price'] > ($new['paid'] + $new['couponDiscount']))
         $newStatus = 'plan';
 } else if ($changedStatus) {
     $newStatus = $new['status'];
+} else {
+    $newStatus = $old['status'];
 }
 
 $upQ .= "status = ?, updatedBy = ? WHERE id = ?;";

@@ -506,8 +506,9 @@ EOS;
                 } else {
                     $requestable = 0;
                 }
-                $numrows = dbSafeInsert($inssql, 'issssddiiii', array($row['spaceId'], $row['code'], $row['description'], $units, $price,
-                    $row['glNum'], $row['glLabel'], $includedMemberships, $additionalMemberships, $requestable, $row['sortorder']));
+                $numrows = dbSafeInsert($inssql, 'issssddiiii', array($row['spaceId'], $row['code'], $row['description'],
+                    $row['glNum'], $row['glLabel'], $units, $price, $includedMemberships, $additionalMemberships, $requestable,
+                    $row['sortorder']));
                 if ($numrows !== false)
                     $inserted++;
             }

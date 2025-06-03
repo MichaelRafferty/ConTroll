@@ -37,9 +37,9 @@ $ageQ = dbSafeQuery($ageSQL, 'i', array($conid));
 while ($l = $ageQ->fetch_assoc()) {
     $ages[] = $l['ageType'];
 }
-mysqli_free_result($ageQ);
+$ageQ->free();
 
-// categorys is memTypes
+// category is memCategories
 $categorySQL = <<<EOS
 SELECT memCategory
 FROM memCategories
@@ -50,7 +50,7 @@ $categoryQ = dbQuery($categorySQL);
 while ($l = $categoryQ->fetch_assoc()) {
     $categories[] = $l['memCategory'];
 }
-mysqli_free_result($categoryQ);
+$categoryQ->free();
 
 $durationSQL = <<<EOS
 SELECT memType
@@ -62,7 +62,7 @@ $durationQ = dbQuery($durationSQL);
 while ($l = $durationQ->fetch_assoc()) {
     $durations[] = $l['memType'];
 }
-mysqli_free_result($durationQ);
+$durationQ->free();
 // compute days from con duration in conlist
 $daySQL = <<<EOS
 SELECT startdate, enddate
@@ -79,7 +79,7 @@ while ($day <= $end) {
     $days[] = date('l', $day);
     $day += 24*60*60;
 }
-mysqli_free_result($dayQ);
+$dayQ->free();
 //var_error_log($days);
 
 ?>

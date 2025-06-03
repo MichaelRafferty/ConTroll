@@ -23,32 +23,6 @@ function rulesClicked(e, cell) {
     coupons.rulesClicked(cell);
 }
 
-window.onload = function initpage() {
-    "use strict";
-
-    coupons = new Coupon();
-
-    var script = "scripts/coupon_getData.php";
-    $.ajax({
-        url: script,
-        method: 'POST',
-        data: 'type=all',
-        success: function (data, textStatus, jhXHR) {
-            if (data['status'] == 'error')
-                show_message(data['error'], 'error');
-            else {
-                if (data['message'])
-                    show_message(data['message'], 'success');
-                coupons.initData(data);
-            }
-        },
-        error: function (jqXHR, textStatus, errorThrown) {
-            showError("ERROR in " + script + ": " + textStatus, jqXHR);
-            return false;
-        }
-    });
-}
-
 class Coupon {
 // coupon items
     #couponTable = null;
@@ -57,6 +31,7 @@ class Coupon {
 
 // coupon data
     #curCoupon = null;
+    #couponArray = null;
 
 // DOM Objects
     #detailsDIV = null;
@@ -116,13 +91,42 @@ class Coupon {
         "use strict";
 
         // build initial tabulator table
-        var couponArray = data['coupons'];
+        this.#couponArray = data['coupons'];
         this.#couponData = new Array();
-        for (var row of couponArray) {
+        for (var row of this.#couponArray) {
             this.#couponData[row['id']] = row;
         }
+        this.draw();
+    }
 
-        this.draw(couponArray);
+    open() {
+        var script = "scripts/coupon_getData.php";
+        $.ajax({
+            url: script,
+            method: 'POST',
+            data: 'type=all',
+            success: function (data, textStatus, jhXHR) {
+                if (data['status'] == 'error')
+                    show_message(data['error'], 'error');
+                else {
+                    if (data['message'])
+                        show_message(data['message'], 'success');
+                    coupons.initData(data);
+                }
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showError("ERROR in " + script + ": " + textStatus, jqXHR);
+                return false;
+            }
+        });
+
+    }
+
+    close() {
+        if (this.#couponTable) {
+            this.#couponTable.destroy();
+        this.#couponTable = null;
+        }
     }
 
     // tabulator display and edit functions
@@ -163,7 +167,7 @@ class Coupon {
         this.#clearUsed(false);
         this.#detailsDIV.innerHTML = this.#couponDetails(cell.getData());
     }
-    draw(couponArray) {
+    draw() {
         "use strict";
 
        this.#clearUsed(true);
@@ -174,7 +178,7 @@ class Coupon {
             pagination: true,
             paginationSize: 10,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
-            data: couponArray,
+            data: this.#couponArray,
             layout: "fitDataTable",
             columns: [
                 {title: "Edit", formatter: this.#addEditIcon, hozAlign:"center", },

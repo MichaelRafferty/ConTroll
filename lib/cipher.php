@@ -18,7 +18,7 @@ function getLoginCipher() {
     $ciphers = openssl_get_cipher_methods();
     $cipher = 'aes-128-cbc';
     $ivlen = openssl_cipher_iv_length($cipher);
-    $configKey = $con['conname'] . '-' .  $conid . $db['db_name'] . '/' . $db['db_user'];
+    $configKey = $con['conname'] . '-' .  $conid . $db['db_name'] . '/' . $db['user'];
     $iv = substr($configKey . $configKey, 0, $ivlen);
     $key = $conid . $label . $email;
     $cipherParams = array('key' => $key, 'iv' => $iv, 'cipher' => $cipher);

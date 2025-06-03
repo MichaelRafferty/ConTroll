@@ -83,10 +83,10 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
     </div>
     <div class='row'>
         <div class='col-sm-12'>
-            <label for='<?php echo $idPrefix . 'legalname'; ?>' class='form-label-sm'>
+            <label for='<?php echo $idPrefix . 'legalName'; ?>' class='form-label-sm'>
                 <span class='text-dark' style='font-size: 10pt;'>Legal Name: for checking against your ID. It will only be visible to registration staff.
             </label><br/>
-            <input class='form-control-sm' type='text' name='legalname' id='<?php echo $idPrefix . 'legalname'; ?>' size=64 maxlength='64'
+            <input class='form-control-sm' type='text' name='legalName' id='<?php echo $idPrefix . 'legalName'; ?>' size=64 maxlength='64'
                    placeholder='Defaults to First Name Middle Name Last Name, Suffix'
                    tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
         </div>
@@ -258,7 +258,7 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
 ?>
     <div class="row">
         <div class="col-sm-auto">
-            Email Address: <span id='email1'></span>
+            <span style="font-weight: bold; font-size: 125%;">Email Address: <span id='email1'></span></span>
         </div>
         <div class="col-sm-auto">
             <p><strong>Note:</strong> Email Address is entered at the start of creating the account or edited using the Change Email Address button on the home

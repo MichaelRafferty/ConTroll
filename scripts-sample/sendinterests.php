@@ -167,10 +167,8 @@ SELECT m.id, m.perid, m.conid, m.newperid, m.interested,
         ELSE n.phone
     END AS phone,
     CASE 
-        WHEN m.perid IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', 
-            IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' '))
-        ELSE TRIM(REGEXP_REPLACE(CONCAT(IFNULL(n.first_name, ''),' ', IFNULL(n.middle_name, ''), ' ',
-            IFNULL(n.last_name, ''), ' ', IFNULL(n.suffix, '')), '  *', ' '))
+        WHEN m.perid IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), '  *', ' '))
+        ELSE TRIM(REGEXP_REPLACE(CONCAT_WS(' ', n.first_name, n.middle_name, n.last_name, n.suffix), '  *', ' '))
     END AS fullName
 FROM memberInterests m
 LEFT OUTER JOIN perinfo p ON (p.id = m.perid)
@@ -331,10 +329,8 @@ SELECT m.perid, m.newperid,
         ELSE n.phone
     END AS phone,
     CASE 
-        WHEN m.perid IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', 
-            IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' '))
-        ELSE TRIM(REGEXP_REPLACE(CONCAT(IFNULL(n.first_name, ''),' ', IFNULL(n.middle_name, ''), ' ',
-            IFNULL(n.last_name, ''), ' ', IFNULL(n.suffix, '')), '  *', ' '))
+        WHEN m.perid IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), '  *', ' '))
+        ELSE TRIM(REGEXP_REPLACE(CONCAT_WS(' ', n.first_name, n.middle_name, n.last_name, n.suffix), '  *', ' '))
     END AS fullName $interestFields
 FROM perids m
 LEFT OUTER JOIN perinfo p ON (p.id = m.perid)

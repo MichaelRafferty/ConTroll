@@ -375,14 +375,14 @@ class mergesetup {
                 data: perinfo,
                 layout: "fitColumns",
                 initialSort: [
-                    {column: "fullname", dir: "asc"},
+                    {column: "fullName", dir: "asc"},
                 ],
                 columns: [
                     {width: 70, headerFilter: false, headerSort: false, formatter: addMergeIcon, formatterParams: {t: "result"},},
                     {title: "perid", field: "perid",width: 100, hozAlign: 'right' },
                     {field: "index", visible: false,},
                     {field: "regcnt", visible: false,},
-                    {title: "Name", field: "fullname", width: 200, headerFilter: true, headerWordWrap: true, tooltip: build_record_hover,},
+                    {title: "Name", field: "fullName", width: 200, headerFilter: true, headerWordWrap: true, tooltip: build_record_hover,},
                     {field: "last_name", visible: false,},
                     {field: "first_name", visible: false,},
                     {field: "middle_name", visible: false,},

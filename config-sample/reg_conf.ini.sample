@@ -39,7 +39,10 @@ hotelname="Hotel Name"
 hoteladdr="Hotel Address"
 survey_url="https://link-to-post-convention-survey"
 id="2022"
+; sales tax rate and Invoice Label
 taxRate=6
+taxLabel="NJ Sales Tax"
+taxuid="NJ-Sales-Tax"  ; uid's are letters, numbers and '-' only, no blanks or other characters
 currency="USD"
 minComp="2021"
 compLen="365" ; day length for growth by day graph
@@ -54,6 +57,7 @@ showConPolicy=1
 showVolunteerPolicy=1
 oneoff=0 ; 1 if this is a one year (one-off convention), 0=if this convention re-occurs every "year".
 multioneday=1 ; =0 for only a single one day can be purchased, =1 if multiple different one day can be purchased
+onedaycoupons=0 ; allow onedays for coupon usage
 
 [debug]
 google=0 ; to enable google debug statements (1=enable, 0=disable)
@@ -68,6 +72,7 @@ api:0 ; to enable api inteface debug statements (currently bitmask from 1-31) (1
 portal=0 ; to enable regportal debug statements (currently bitmask from 1-31) (1=enable, 0=disable)
 atcon=0 ; to enable atcon debug statements (currently bitmask from 1-31) (1=enable, 0=disable)
 oauth=0 ; to enable oauth2 server debug (currently 0 = off, 1 = on)
+square=1 ; logging of square actions (currently 0 = off, 1 = on)
 
 [reg]
 https=1
@@ -115,6 +120,15 @@ badgeps="/home/homedir/config/conname.ps"
 ; production = suppress the 'default' placeholder messages (an alias for this is nodefault)
 ; none = supporess all custom text
 customtext='production'
+;; payment methods allowed
+; 1 = allowed, 0 = disabled
+creditoffline = 0
+creditonline = 1
+;; allage - which badges to show
+; values:
+; allage=0 : act like portal, require age to show age related badges
+; allage=1 : if no badge of an age, show badges of all ages, once an age badge is selected, auto set age
+allage=0
 
 [vendor]
 test=0
@@ -157,10 +171,10 @@ artistBidSheetNumbers=3
 artistBidSheet="Demo 2024 Art Show Bid Sheet"
 ; name for artist print shop price tag header (independent of art area)
 artistPriceTag=""
-taxidlabel="NJ Sales Tax ID"
 artsheets=false ; true/false show sheet print buttons
 artcontrol=false ; true/false show control sheet print button
-
+# taxidlabel is the label used to prompt for their tax id number
+taxidlabel="NJ Sales Tax ID#"
 [client]
 path = "/home/homedir/reg.conname.org/controll"
 
@@ -174,11 +188,15 @@ client_secret=""
 [cc]
 ; valid types are 'square', 'test' or 'bypass' (Note: bypass and test are for testing only and requires localhost or test=1)
 ; appid, token, location come from your square api setup
+;   location = mail in reg location
+;   locationXXX = locations for terminals, where XXX = name of the terminal with spaces converted to _'s and first letter capitalized
 type=square
 appid=""
 token=""
 env="production"
 location=""
+;locationRegistration=""
+;locationArtshow=""
 webpaysdk="https://web.squarecdn.com/v1/square.js"
 
 [log]
@@ -263,7 +281,14 @@ showVolunteerPolicy=1
 ; nomnomURL=https://<FQDN>/controll-redirect/
 ; nomnomKey = Shared Secret Key for Nom Nom JWT signing
 ; nomnomBtn = text for the nomnom button
+; businessmeetingURL = url to the virtual businessmeeting site
+; businessmeetingBtn = text for the business meeting button
+; siteselectionURL = url to site selection voting
+; siteselectionBtn = text for the site selection voting
 ;; End of Items for Worldcon
+
+; virtualURL = url to the virtual portal
+; virtualBtn = text for the virtual portal button
 
 [api]
 path = "" ; full path to the api directory

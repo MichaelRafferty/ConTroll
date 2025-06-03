@@ -24,6 +24,13 @@ $approvalType = $_POST['approvalType'];
 if (array_key_exists('regionYearId', $_POST))
     $regionYearId = $_POST['regionYearId'];
 
+if (array_key_exists('pay', $_POST)) {
+    $pay = $_POST['pay'];
+} else {
+    $pay = 0;
+}
+$response['pay'] = $pay;
+
 switch ($approvalType) {
     case 'req':
         if (!array_key_exists('exhibitorData', $_POST)) {
@@ -50,6 +57,79 @@ EOS;
             $response['status'] = 'success';
             $response['success'] = "Space Approved";
             }
+        if ($num_rows == 0) {
+            $response['status'] = 'success';
+            $response['success'] = 'Nothing to change';
+        }
+        break;
+    case 'approve': // this is a unrequested approval from exhibitor
+        if (!(array_key_exists('requests', $_POST) && array_key_exists('exhibitorYearId', $_POST))) {
+            ajaxError('No Data');
+        }
+
+        $exhibitorId = $_POST['exhibitorId'];
+        $exhibitorYearId = $_POST['exhibitorYearId'];
+
+        $upQ = <<<EOS
+UPDATE exhibitorSpaces eS
+JOIN exhibitorRegionYears exRY ON eS.exhibitorRegionYear = exRY.id
+JOIN exhibitorYears eY ON exRY.exhibitorYearId = eY.id
+JOIN exhibitsSpaces es ON es.id = eS.spaceId
+JOIN exhibitsRegionYears ery ON es.exhibitsRegionYear = ery.id AND eY.conid = ery.conid
+SET item_requested = ?, time_requested = NOW(), item_approved = ?, time_approved = NOW()
+WHERE eS.spaceId = ? and ery.id = ? AND eY.exhibitorId = ?;
+EOS;
+        $existingQ = <<<EOS
+SELECT item_requested, item_approved, time_requested, time_approved
+FROM exhibitorSpaces eS
+JOIN exhibitorRegionYears exRY ON eS.exhibitorRegionYear = exRY.id
+JOIN exhibitorYears eY ON exRY.exhibitorYearId = eY.id
+JOIN exhibitsSpaces es ON es.id = eS.spaceId
+JOIN exhibitsRegionYears ery ON es.exhibitsRegionYear = ery.id AND eY.conid = ery.conid
+WHERE eS.spaceId = ? and ery.id = ? and eY.exhibitorId = ?;
+EOS;
+        $upCanQ = <<<EOS
+UPDATE exhibitorSpaces eS
+JOIN exhibitorRegionYears exRY ON eS.exhibitorRegionYear = exRY.id
+JOIN exhibitorYears eY ON exRY.exhibitorYearId = eY.id
+JOIN exhibitsSpaces es ON es.id = eS.spaceId
+JOIN exhibitsRegionYears ery ON es.exhibitsRegionYear = ery.id AND eY.conid = ery.conid
+SET item_approved = null, time_approved = NOW()
+WHERE eS.spaceId = ? and ery.id = ? and eY.exhibitorId = ?;
+EOS;
+
+        // requests = each space price id in the format
+        $requests = $_POST['requests'];
+        $exhibitorId = $_POST['exhibitorId'];
+        $exhibitorYearId = $_POST['exhibitorYearId'];
+        $regionYearId = $_POST['regionYearId'];
+        $requests = explode('&',$requests);
+        $num_rows = 0;
+        foreach ($requests as $req) {
+            $reqitems = explode('=', $req);
+            $spaceId = $reqitems[0];
+            $value = $reqitems[1];
+            $spaceId = str_replace('exhbibitor_req_price_id_', '', $spaceId);
+            if ($value > 0) {
+                $num_rows += dbSafeCmd($upQ, 'iiiii', array($value, $value, $spaceId, $regionYearId, $exhibitorId));
+            } else {
+                $paramarray = array($spaceId, $regionYearId, $exhibitorId);
+                $typestr = 'iii';
+                $existingR = dbSafeQuery($existingQ, $typestr, $paramarray);
+                if ($existingR === false || $existingR->num_rows != 1) {
+                    web_error_log("Could not retrieve existing space request for $spaceId, $regionYearId, $exhibitorId");
+                }
+                $existing = $existingR->fetch_assoc();
+                $existingR->free();
+                if ($existing['item_requested'] != null) { // only if there was something existing, cancel it}
+                    $num_rows += dbSafeCmd($upCanQ, $typestr, $paramarray);
+                }
+            }
+        }
+        if ($num_rows > 0) {
+            $response['status'] = 'success';
+            $response['success'] = 'Space Approval Updated';
+        }
         if ($num_rows == 0) {
             $response['status'] = 'success';
             $response['success'] = 'Nothing to change';
@@ -222,7 +302,7 @@ EOS;
         $response['error'] =  'Bad type passed, get help';
 }
 
-if ($approvalType == 'pay') {
+if ($approvalType == 'pay' || $approvalType == 'approve' || $pay == 1) {
     $exhibitorSQ = <<<EOS
 SELECT *
 FROM vw_ExhibitorSpace
@@ -238,13 +318,13 @@ EOS;
     $response['exhibitor_spacelist'] = $exhibitorSpaceList;
 }
 
-if (array_key_exists('success', $response) && $approvalType != 'pay') {
+if (array_key_exists('success', $response)) {
     // detail of space for this region
     $details = array();
     $detailQ = <<<EOS
 WITH exh AS (
 SELECT e.id, e.exhibitorName, e.website, e.exhibitorEmail, eRY.id AS exhibitorYearId, exRY.exhibitorNumber, exRY.agentRequest,
-    TRIM(CONCAT(p.first_name, ' ', p.last_name)) as pName, TRIM(CONCAT(n.first_name, ' ', n.last_name)) AS nName,
+    TRIM(CONCAT_WS(' ', p.first_name, p.last_name)) as pName, TRIM(CONCAT_WS(' ', n.first_name, n.last_name)) AS nName,
 	SUM(IFNULL(espr.units, 0)) AS ru, SUM(IFNULL(espa.units, 0)) AS au, SUM(IFNULL(espp.units, 0)) AS pu
 FROM exhibitorSpaces eS
 LEFT OUTER JOIN exhibitsSpacePrices espr ON (eS.item_requested = espr.id)
@@ -288,57 +368,59 @@ EOS;
 
     $response['detail'] = $details;
 
-    // now send the approved email
-    // first get the email addresses
-    $exhibitorQ = <<<EOS
+    if ($approvalType != 'pay' && $approvalType != 'approve' && $pay == 0) {
+
+        // now send the approved email
+        // first get the email addresses
+        $exhibitorQ = <<<EOS
 SELECT exhibitorName, exhibitorEmail, contactName, contactEmail
 FROM exhibitors e
 JOIN exhibitorYears y ON e.id = y.exhibitorId
 WHERE e.id = ?
 EOS;
-    $exhibitorR = dbSafeQuery($exhibitorQ, 'i', array($exhibitorId));
-    $exhibitorL = $exhibitorR->fetch_assoc();
-    $exhibitorName = $exhibitorL['exhibitorName'];
-    $exhibitorEmail = $exhibitorL['exhibitorEmail'];
-    $contactName = $exhibitorL['contactName'];
-    $contactEmail = $exhibitorL['contactEmail'];
-    $exhibitorR->free();
+        $exhibitorR = dbSafeQuery($exhibitorQ, 'i', array ($exhibitorId));
+        $exhibitorL = $exhibitorR->fetch_assoc();
+        $exhibitorName = $exhibitorL['exhibitorName'];
+        $exhibitorEmail = $exhibitorL['exhibitorEmail'];
+        $contactName = $exhibitorL['contactName'];
+        $contactEmail = $exhibitorL['contactEmail'];
+        $exhibitorR->free();
 
-    // Now get/format the approval space details
-    $spaceDetail = '';
-    $spaceHeader = '';
-    $spaceSubject = '';
-    $ownerName = '';
-    $ownerEmail = '';
-    $approved = false;
+        // Now get/format the approval space details
+        $spaceDetail = '';
+        $spaceHeader = '';
+        $spaceSubject = '';
+        $ownerName = '';
+        $ownerEmail = '';
+        $approved = false;
 
-    foreach ($details AS $key => $detail) {
-        if ($detail['exhibitorId'] && $detail['exhibitsRegionYearId'] == $regionYearId) {
-            if ($spaceHeader == '') {
-                $ownerName = $detail['ownerName'];
-                $ownerEmail = $detail['ownerEmail'];
-                $spaceHeader = "Your approval for space in " . $con['label'] . "'s " . $detail['regionName'] . " has been updated.";
-                $spaceSubject = "Update to " . $con['label'] . "'s " . $detail['regionName'] . " space approval";
-            }
-            if ($detail['item_requested'] != null && $detail['item_approved'] != null) { // space was requested and something was approved
-                if ($detail['item_requested'] == $detail['item_approved']) {
-                    $spaceDetail .= "Your request for " . $detail['approved_description'] . " of " . $detail['spaceName'] . " was approved.\n";
-                    $approved = true;
-                } else {
-                    $spaceDetail .= 'Your have been approved for ' . $detail['approved_description'] . ' of ' . $detail['spaceName'] . ".\n";
-                    $approved = true;
+        foreach ($details as $key => $detail) {
+            if ($detail['exhibitorId'] && $detail['exhibitsRegionYearId'] == $regionYearId) {
+                if ($spaceHeader == '') {
+                    $ownerName = $detail['ownerName'];
+                    $ownerEmail = $detail['ownerEmail'];
+                    $spaceHeader = "Your approval for space in " . $con['label'] . "'s " . $detail['regionName'] . " has been updated.";
+                    $spaceSubject = "Update to " . $con['label'] . "'s " . $detail['regionName'] . " space approval";
                 }
-            } else if ($detail['time_approved'] != null && $detail['item_approved'] == null && $detail['item_requested'] != null) {
-                $spaceDetail .= "Your request for " . $detail['spaceName'] . " has been denied.\n";
+                if ($detail['item_requested'] != null && $detail['item_approved'] != null) { // space was requested and something was approved
+                    if ($detail['item_requested'] == $detail['item_approved']) {
+                        $spaceDetail .= "Your request for " . $detail['approved_description'] . " of " . $detail['spaceName'] . " was approved.\n";
+                        $approved = true;
+                    } else {
+                        $spaceDetail .= 'Your have been approved for ' . $detail['approved_description'] . ' of ' . $detail['spaceName'] . ".\n";
+                        $approved = true;
+                    }
+                } else if ($detail['time_approved'] != null && $detail['item_approved'] == null && $detail['item_requested'] != null) {
+                    $spaceDetail .= "Your request for " . $detail['spaceName'] . " has been denied.\n";
+                }
             }
         }
-    }
 
-    if ($approved) {
-        $spaceDetail .= "\nPlease sign into the portal to purchase your space and memberships.\n";
-    }
+        if ($approved) {
+            $spaceDetail .= "\nPlease sign into the portal to purchase your space and memberships.\n";
+        }
 
-    $body = <<<EOS
+        $body = <<<EOS
 Dear $exhibitorName
 
 $spaceHeader
@@ -348,18 +430,19 @@ $spaceDetail
 Thank you.
 $ownerName
 EOS;
-    load_email_procs();
-    $return_arr = send_email($ownerEmail, array($exhibitorEmail, $contactEmail), $ownerEmail, $spaceSubject, $body, null);
+        load_email_procs();
+        $return_arr = send_email($ownerEmail, array ($exhibitorEmail, $contactEmail), $ownerEmail, $spaceSubject, $body, null);
 
-    if (array_key_exists('error_code', $return_arr)) {
-        $error_code = $return_arr['error_code'];
-    } else {
-        $error_code = null;
-    }
-    if (array_key_exists('email_error', $return_arr)) {
-        $response['error'] = 'Unable to send receipt email, error: ' . $return_arr['email_error'] . ', Code: $error_code';
-    } else {
-        $response['success'] .= ', Request sent';
+        if (array_key_exists('error_code', $return_arr)) {
+            $error_code = $return_arr['error_code'];
+        } else {
+            $error_code = null;
+        }
+        if (array_key_exists('email_error', $return_arr)) {
+            $response['error'] = 'Unable to send receipt email, error: ' . $return_arr['email_error'] . ', Code: $error_code';
+        } else {
+            $response['success'] .= ', Request sent';
+        }
     }
 }
 ajaxSuccess($response);

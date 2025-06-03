@@ -21,8 +21,6 @@ if ($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
 global $con;
 $con = get_con();
 $conid=$con['id'];
-$conf = get_conf('con');
-$vendor_conf = get_conf('vendor');
 
 $response['conid'] = $conid;
 

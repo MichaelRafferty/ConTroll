@@ -58,14 +58,6 @@ class artpos_cart {
         return this.#freeze_cart == true;
     }
 
-    hideAdd() {
-        this.#add_button.hidden = true;
-    }
-
-    showAdd() {
-        this.#add_button.hidden = false;
-    }
-
     hidePay() {
         this.#pay_button.hidden = true;
     }
@@ -200,9 +192,47 @@ class artpos_cart {
         this.drawCart();
     }
 
-// remove person and all of their memberships from the cart
+// remove an art item from the cart
     remove(artId) {
         var index = this.#cart_art_map.get(artId);
+
+        var art = this.#cart_art[index];
+        var artSalesId = null;
+        if (art.hasOwnProperty('artSalesId'))
+            artSalesId = art.artSalesId;
+        if (artSalesId != null) {
+            // remove the element from the system, as it was removed from the cart, if the amount paid is 0
+            var paid = Number(art.paid);
+            if (paid == 0) {
+                $.ajax({
+                    method: "POST",
+                    url: "scripts/artpos_removeArtSalesRecord.php",
+                    data: {
+                        artSalesId: artSalesId,
+                        perid: currentPerson.id,
+                        action: 'deleteUnpaid',
+                    },
+                    success: function (data, textstatus, jqxhr) {
+                        if (data.error !== undefined) {
+                            show_message(data.error, 'error');
+                            return;
+                        }
+                        if (data.message !== undefined) {
+                            show_message(data.message, 'success');
+                            return;
+                        }
+                        if (data.warn !== undefined) {
+                            show_message(data.warn, 'warn');
+                            return;
+                        }
+                    },
+                    error: function (jqXHR, textstatus, errorThrown) {
+                        $("button[name='findArtBtn']").attr("disabled", false);
+                        showAjaxError(jqXHR, textstatus, errorThrown);
+                    }
+                });
+            }
+        }
 
         this.#cart_art.splice(index, 1);
         // splices loses me the index number for the cross-reference, so the cart needs renumbering
@@ -291,7 +321,8 @@ class artpos_cart {
         if (this.#freeze_cart) {
             rowhtml += '<div class="row"><div class="col-sm-2">Quantity: ' + '</div><div class="col-sm-10">' + row['purQuantity'] + '</div></div>';
         } else if (row['type'] == 'print') {
-            rowhtml += '<div class="row"><div class="col-sm-2">Quantity: ' + '</div><div class="col-sm-10"><input type="number" min="1" max="' + row['quantity'] + '"' +
+            rowhtml += '<div class="row"><div class="col-sm-2">Quantity: ' + '</div><div class="col-sm-10"><input class="no-spinners" type="number" min="1"' +
+                ' max="' + row['quantity'] + '"' +
                 ' name="purQuantity_' + row['id'] + '" id="purQuantity_' + row['id'] + '" value="' + row['purQuantity'] + '" onchange="cart.updateRowQuantity(' + row['id'] +');"/></div></div>';
         }
         // price
@@ -372,8 +403,8 @@ class artpos_cart {
         this.#total_paid = 0;
         var name = '';
         var num_rows = 0;
-        if (current_person) {
-            name = ' For ' + (current_person['first_name'] + ' ' + current_person['last_name']).trim();
+        if (currentPerson) {
+            name = ' For ' + (currentPerson.first_name + ' ' + currentPerson.last_name).trim();
         }
         var html = `
 <div class="container-fluid">

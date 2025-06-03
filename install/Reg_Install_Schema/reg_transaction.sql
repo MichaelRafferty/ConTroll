@@ -28,6 +28,8 @@ CREATE TABLE `transaction` (
   `notes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
   `change_due` decimal(8,2) DEFAULT NULL,
   `coupon` int DEFAULT NULL,
+  `orderId` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `orderDate` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `transaction_conid_fk` (`conid`),
   KEY `transaction_newperid_fk` (`newperid`),

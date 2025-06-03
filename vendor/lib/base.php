@@ -23,25 +23,27 @@ db_connect();
 session_start();
 
 function exhibitor_page_init($title) {
-$cdn = getTabulatorIncludes();
-$tabbs5=$cdn['tabbs5'];
-$tabcss=$cdn['tabcss'];
-$tabjs=$cdn['tabjs'];
-$bs5js=$cdn['bs5js'];
-$bs5css=$cdn['bs5css'];
-$jqjs=$cdn['jqjs'];
-$jquijs=$cdn['jquijs'];
-$jquicss=$cdn['jquicss'];
+    global $portalJSVersion, $libJSversion, $controllJSversion, $globalJSversion, $atJSversion, $exhibitorJSversion;
 
-$vendor_conf = get_conf('vendor');
-if (array_key_exists('customtext', $vendor_conf)) {
-    $filter = $vendor_conf['customtext'];
-} else {
-    $filter = 'production';
-}
-loadCustomText('exhibitor', basename($_SERVER['PHP_SELF'], '.php'), $filter);
+    $cdn = getTabulatorIncludes();
+    $tabbs5=$cdn['tabbs5'];
+    $tabcss=$cdn['tabcss'];
+    $tabjs=$cdn['tabjs'];
+    $bs5js=$cdn['bs5js'];
+    $bs5css=$cdn['bs5css'];
+    $jqjs=$cdn['jqjs'];
+    $jquijs=$cdn['jquijs'];
+    $jquicss=$cdn['jquicss'];
 
-echo <<<EOF
+    $vendor_conf = get_conf('vendor');
+    if (array_key_exists('customtext', $vendor_conf)) {
+        $filter = $vendor_conf['customtext'];
+    } else {
+        $filter = 'production';
+    }
+    loadCustomText('exhibitor', basename($_SERVER['PHP_SELF'], '.php'), $filter);
+
+    echo <<<EOF
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -59,14 +61,15 @@ echo <<<EOF
     <script type='text/javascript' src='$jqjs''></script>
     <script type='text/javascript' src='$jquijs'></script>
     <script type="text/javascript" src="$tabjs"></script>
-    <script type='text/javascript' src='js/base.js'></script>
-    <script type='text/javascript' src='js/vendor.js'></script>
-    <script type='text/javascript' src='jslib/exhibitorProfile.js'></script>
-    <script type='text/javascript' src='jslib/exhibitorRequest.js'></script>
-    <script type='text/javascript' src='jslib/exhibitorReceipt.js'></script>
-    <script type='text/javascript' src='js/vendor_invoice.js'></script>
-    <script type='text/javascript' src='js/tinymce/tinymce.min.js'></script>
-    <script type='text/javascript' src='js/auctionItemRegistration.js'></script>
+    <script type='text/javascript' src="jslib/global.js?v=$globalJSversion"></script>
+    <script type='text/javascript' src="js/base.js?v=$exhibitorJSversion"></script>
+    <script type='text/javascript' src="js/vendor.js?v=$exhibitorJSversion"></script>
+    <script type='text/javascript' src="jslib/exhibitorProfile.js?v=$libJSversion"></script>
+    <script type='text/javascript' src="jslib/exhibitorRequest.js?v=$libJSversion"></script>
+    <script type='text/javascript' src="jslib/exhibitorReceipt.js?v=$libJSversion"></script>
+    <script type='text/javascript' src="js/vendor_invoice.js?v=$exhibitorJSversion"></script>
+    <script type='text/javascript' src="js/tinymce/tinymce.min.js?v=$exhibitorJSversion"></script>
+    <script type='text/javascript' src="js/auctionItemRegistration.js?v=$exhibitorJSversion"></script>
 </head>
 EOF;
 }
@@ -83,4 +86,19 @@ function vendor_page_foot() {
     <?php
 }
 
+
+function RenderErrorAjax($message_error) : void {
+    global $return500errors;
+    if (isset($return500errors) && $return500errors) {
+        Render500ErrorAjax($message_error);
+    } else {
+        echo "<div class=\"error-container alert\"><span>$message_error</span></div>\n";
+    }
+}
+
+function Render500ErrorAjax($message_error) : void {
+    // pages which know how to handle 500 errors are expected to format the error message appropriately.
+    header($_SERVER['SERVER_PROTOCOL'] . ' 500 Internal Server Error', true, 500);
+    echo "$message_error";
+}
 ?>

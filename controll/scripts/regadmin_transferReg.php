@@ -4,7 +4,7 @@ global $db_ini;
 require_once "../lib/base.php";
 
 $check_auth = google_init('ajax');
-$perm = 'reg_admin';
+$perm = 'reg_staff';
 
 $response = array ('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
 
@@ -28,6 +28,13 @@ if (!isset($_POST) || !isset($_POST['transferList']) || !isset($_POST['action'])
     ajaxSuccess($response);
     exit();
 }
+
+if (!array_key_exists('source', $_POST)) {
+    $message_error = 'Source Missing';
+    RenderErrorAjax($message_error);
+    exit();
+}
+$source = $_POST['source'];
 
 $con = get_conf('con');
 $conid = $con['id'];
@@ -108,8 +115,8 @@ SET status = 'transfered', change_date=CURRENT_TIMESTAMP(), updatedBy = ?
 WHERE id = ?;
 EOS;
 $iN = <<<EOS
-INSERT INTO regActions(logdate,userid,tid,regid,action,notes)
-VALUES (NOW(), ?, ?, ?, 'notes', ?);
+INSERT INTO regActions(logdate,source,userid,tid,regid,action,notes)
+VALUES (NOW(), ?, ?, ?, ?, 'notes', ?);
 EOS;
 
 foreach ($transferList as $from) {
@@ -117,7 +124,7 @@ foreach ($transferList as $from) {
     $newRegId = dbSafeInsert($nQ, 'iiiiiiii', array ($to_person, $from_person, $newtid, $newtid, $user_perid, $from, $user_perid, $from));
     $num_rows = dbSafeCmd($uQ, 'ii', array ($user_perid, $from));
     $notes = "Transfer membership $from from $from_person to $to_person by $user_perid";
-    $notesKey = dbSafeInsert($iN, 'iiis', array ($user_perid, $newtid, $newRegId, $notes));
+    $notesKey = dbSafeInsert($iN, 'siiis', array ($source, $user_perid, $newtid, $newRegId, $notes));
 
     if ($num_rows === false) {
         $response['error'] .= 'Database error transferring membership $from<br/>';

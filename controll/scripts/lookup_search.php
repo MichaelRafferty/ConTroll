@@ -35,8 +35,7 @@ if (is_numeric($findPattern)) {
     // this is a perid/transaction match
     $mQ = <<<EOS
 SELECT p.id AS perid, p.email_addr, p.badge_name, p.first_name, p.middle_name, p.last_name,
-    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ',  
-        IFNULL(p.suffix, '')), '  *', ' ')) AS fullName,
+    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), '  *', ' ')) AS fullName,
     IFNULL(r.complete_trans, r.create_trans) AS tid, 
     CASE 
         WHEN r.status != 'paid' THEN ''
@@ -44,8 +43,7 @@ SELECT p.id AS perid, p.email_addr, p.badge_name, p.first_name, p.middle_name, p
         WHEN r.complete_trans = t1.id THEN t1.create_date
         ELSE ''
     END AS paidDate, r.price, r.paid, r.status, r.create_date, r.change_date, m.label, pm.id AS managerId,
-    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(pm.first_name, ''),' ', IFNULL(pm.middle_name, ''), ' ', IFNULL(pm.last_name, ''), ' ',  
-        IFNULL(pm.suffix, '')), '  *', ' ')) AS managerName
+    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', pm.first_name, pm.middle_name, pm.last_name, pm.suffix), '  *', ' ')) AS managerName
 FROM perinfo p
 JOIN reg r ON (r.perid = p.id AND r.status IN ('paid', 'unpaid', 'plan'))
 JOIN memList m ON (r.memId = m.id AND m.conid in (?, ?))
@@ -55,8 +53,7 @@ LEFT OUTER JOIN perinfo pm ON (p.managedBy = pm.id)
 WHERE p.id = ?
 UNION 
 SELECT p.id AS perid, p.email_addr, p.badge_name, p.first_name, p.middle_name, p.last_name,
-    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ',  
-        IFNULL(p.suffix, '')), '  *', ' ')) AS fullName,
+    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), '  *', ' ')) AS fullName,
     IFNULL(r.complete_trans, r.create_trans) AS tid, 
     CASE 
         WHEN r.status != 'paid' THEN ''
@@ -64,8 +61,7 @@ SELECT p.id AS perid, p.email_addr, p.badge_name, p.first_name, p.middle_name, p
         WHEN r.complete_trans = t1.id THEN t1.create_date
         ELSE ''
     END AS paidDate, r.price, r.paid, r.status, r.create_date, r.change_date, m.label, pm.id AS managerId,
-    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(pm.first_name, ''),' ', IFNULL(pm.middle_name, ''), ' ', IFNULL(pm.last_name, ''), ' ',  
-        IFNULL(pm.suffix, '')), '  *', ' ')) AS managerName
+    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', pm.first_name, pm.middle_name, pm.last_name, pm.suffix), '  *', ' ')) AS managerName
 FROM reg r
 JOIN perinfo p ON (r.perid = p.id)
 JOIN memList m ON (r.memId = m.id AND m.conid in (?, ?))
@@ -85,27 +81,24 @@ EOS;
     $mQ = <<<EOS
 WITH per AS (
     SELECT id, first_name, last_name, middle_name, suffix, legalName, badge_name, address, addr_2, email_addr,
-     TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(last_name, ''), ' ',  
-        IFNULL(suffix, '')), '  *', ' ')) AS fullName
+        TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), '  *', ' ')) AS fullName
     FROM perinfo
     WHERE $notMerge
 ), perids AS (
     SELECT id
     FROM per p
     WHERE
-        (LOWER(p.legalname) LIKE ?
+        (LOWER(p.legalName) LIKE ?
         OR LOWER(p.badge_name) LIKE ?
         OR LOWER(p.address) LIKE ?
         OR LOWER(p.addr_2) LIKE ?
         OR LOWER(p.email_addr) LIKE ?
         OR LOWER(CONCAT(p.first_name, ' ', p.last_name)) LIKE ?
         OR LOWER(CONCAT(p.last_name, ' ', p.first_name)) LIKE ?
-        OR LOWER(CONCAT(p.first_name, ' ', p.middle_name, ' ', p.last_name, ' ', p.suffix)) LIKE ?
         OR LOWER(p.fullName) LIKE ?)
 )
-SELECT p.id AS perid, p.email_addr, p.badge_name, p.legalname, p.first_name, p.middle_name, p.last_name,
-    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ',  
-        IFNULL(p.suffix, '')), '  *', ' ')) AS fullName,
+SELECT p.id AS perid, p.email_addr, p.badge_name, p.legalName, p.first_name, p.middle_name, p.last_name,
+    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), '  *', ' ')) AS fullName,
     IFNULL(r.complete_trans, r.create_trans) AS tid, 
     CASE 
         WHEN r.status != 'paid' THEN ''
@@ -113,8 +106,7 @@ SELECT p.id AS perid, p.email_addr, p.badge_name, p.legalname, p.first_name, p.m
         WHEN r.complete_trans = t1.id THEN t1.create_date
         ELSE ''
     END AS paidDate, r.price, r.paid, r.status, r.create_date, r.change_date, m.label, pm.id AS managerId,
-    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(pm.first_name, ''),' ', IFNULL(pm.middle_name, ''), ' ', IFNULL(pm.last_name, ''), ' ',  
-        IFNULL(pm.suffix, '')), '  *', ' ')) AS managerName
+    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', pm.first_name, pm.middle_name, pm.last_name, pm.suffix), '  *', ' ')) AS managerName
 FROM perids i
 JOIN perinfo p ON (p.id = i.id)
 JOIN reg r ON (r.perid = p.id AND r.status IN ('paid', 'unpaid', 'plan'))
@@ -126,9 +118,9 @@ ORDER BY p.last_name, p.first_name, p.id
 LIMIT $limit;
 EOS;
 
-    $typestr = 'sssssssssii';
+    $typestr = 'ssssssssii';
     $valArray = array ($findPattern, $findPattern, $findPattern, $findPattern,
-                       $findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $conid, $conid +1);
+                       $findPattern, $findPattern, $findPattern, $findPattern, $conid, $conid +1);
 
     $mR = dbSafeQuery($mQ, $typestr, $valArray);
 }

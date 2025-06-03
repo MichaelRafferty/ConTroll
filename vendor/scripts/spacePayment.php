@@ -13,11 +13,11 @@ $return500errors = true;
 
 $response = array('post' => $_POST, 'get' => $_GET);
 
-global $con;
-$con = get_con();
-$conid=$con['id'];
-$conf = get_conf('con');
-$vendor_conf = get_conf('vendor');
+global $condata;
+$condata = get_con();
+$conid=$condata['id'];
+$regconf = get_conf('reg');
+$cc = get_conf('cc');
 
 $response['conid'] = $conid;
 $con = get_conf('con');
@@ -93,7 +93,8 @@ $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale
 // get the specific information allowed
 $regionYearQ = <<<EOS
 SELECT er.id, name, description, ownerName, ownerEmail, includedMemId, additionalMemId, mi.price AS includedPrice, ma.price AS additionalPrice,
-       mi.glNum AS includedGLNum, ma.glNum AS additionalGLNum, ery.mailinFee, ery.atconIdBase, ery.mailinIdBase
+       mi.glNum AS includedGLNum, ma.glNum AS additionalGLNum, mi.label AS includedLabel, ma.label AS additionalLabel,
+       ery.mailinFee, ery.atconIdBase, ery.mailinIdBase, ery.id as yearId
 FROM exhibitsRegionYears ery
 JOIN exhibitsRegions er ON er.id = ery.exhibitsRegion
 LEFT OUTER JOIN memList mi ON ery.includedMemId = mi.id
@@ -142,7 +143,7 @@ $response['exhibitorRegionYear'] = $eryID;
 // now the space information for this regionYearId
 $spaceQ = <<<EOS
 SELECT e.*, esp.price as approved_price, esp.includedMemberships, esp.additionalMemberships, s.name, esp.description, ry.exhibitorNumber,
-       y.exhibitorId, ex.exhibitorName, ex.artistName, er.name AS regionName
+       y.exhibitorId, ex.exhibitorName, ex.artistName, er.name AS regionName, esp.glNum, esp.glLabel
 FROM exhibitorRegionYears ry
 JOIN exhibitorSpaces e ON (e.exhibitorRegionYear = ry.id)
 JOIN exhibitorYears y ON (y.id = ry.exhibitorYearId)
@@ -176,7 +177,7 @@ $spaceR->free();
 // add in mail in fee if this exhibitor is using mail in this year and the fee exist
 if ($region['mailinFee'] > 0 && $exhibitor['mailin'] == 'Y') {
     $spacePriceComputed += $region['mailinFee'];
-    $mailInFee[] = array('name' => $region['name'], 'amount' => $region['mailinFee']);
+    $mailInFee[] = array('name' => $region['name'], 'yearId' => $region['yearId'], 'amount' => $region['mailinFee']);
 }
 
 if ($spacePrice != $spacePriceComputed || $includedMembershipsComputed != $includedMembershipsMax || $additionalMembershipsComputed != $additionalMembershipsMax) {
@@ -200,12 +201,24 @@ $buyer['state'] = $_POST['cc_state'];
 $buyer['zip'] = $_POST['cc_zip'];
 $buyer['country'] = $_POST['cc_country'];
 $buyer['email'] = $_POST['cc_email'];
+$buyer['phone'] = $_POST['cc_phone'];
 
-$membership_fields = array('fname' => 1, 'mname' => 0, 'lname' => 1, 'suffix' => 0, 'legalname' => 0, 'addr' => 1, 'addr2' => 0, 'city' => 1, 'state' => 1, 'zip' => 1,
+$membership_fields = array('fname' => 1, 'mname' => 0, 'lname' => 1, 'suffix' => 0, 'legalName' => 0, 'addr' => 1, 'addr2' => 0, 'city' => 1, 'state' => 1, 'zip' => 1,
     'country' => 1, 'email' => 1, 'phone' => 0, 'badgename' => 0);
-$membership_names = array('fname' => 'First Name', 'mname' => 'Middle Name', 'lname' => 'Last Name', 'legalname' => 'Legal Name', 'suffix' => 'Suffix',
+$membership_names = array('fname' => 'First Name', 'mname' => 'Middle Name', 'lname' => 'Last Name', 'legalName' => 'Legal Name', 'suffix' => 'Suffix',
     'addr' => 'Address Line 1', 'addr2' => 'Company/Address Line 2', 'city' => 'City', 'state' => 'State', 'zip' => 'Zip Code/Postal Code',
     'country' => 'Country', 'email' => 'Email Address', 'phone' => 'Phone Number', 'badgename' => 'Badge Name');
+
+if ($regconf['required'] == 'addr') {
+    $membership_fields['lname'] = 0;
+}
+if ($regconf['required'] == 'first') {
+    $membership_fields['lname'] = 0;
+    $membership_fields['addr'] = 0;
+    $membership_fields['city'] = 0;
+    $membership_fields['state'] = 0;
+    $membership_fields['zip'] = 0;
+}
 
 $missing_msg = '';
 $valid = true;
@@ -376,11 +389,11 @@ EOS;
 //
 $error_msg = '';
 $badges = array();
-$transid = null;
+$transId = null;
 for ($i = 0; $i < count($includedMembershipStatus); $i++) {
     if ($includedMembershipStatus[$i]) {
-        $badge = buildBadge($membership_fields, 'i', $i, $region, $conid, $transid, $portalName);
-        $transid = $badge['transid'];
+        $badge = buildBadge($membership_fields, 'i', $i, $region, $conid, $transId, $portalName);
+        $transId = $badge['transid'];
         $status_msg .= $badge['status'];
         $error_msg .= $badge['error'];
         $badges[] = $badge;
@@ -388,14 +401,14 @@ for ($i = 0; $i < count($includedMembershipStatus); $i++) {
 }
 for ($i = 0; $i < count($additionalMembershipStatus); $i++) {
     if ($additionalMembershipStatus[$i]) {
-        $badge = buildBadge($membership_fields, 'a', $i, $region, $conid, $transid, $portalName);
-        $transid = $badge['transid'];
+        $badge = buildBadge($membership_fields, 'a', $i, $region, $conid, $transId, $portalName);
+        $transId = $badge['transid'];
         $badges[] = $badge;
         $status_msg .= $badge['status'];
         $error_msg .= $badge['error'];
     }
 }
-if ($transid === null) {
+if ($transId === null) {
     // no tranasction yet, because no badges
     $transQ = <<<EOS
 INSERT INTO transaction(price, type, conid, notes)
@@ -403,8 +416,8 @@ INSERT INTO transaction(price, type, conid, notes)
 EOS;
 
     $notes = "exhibitorId: $exhId, exhibitorYearId: $eyID, exhibitsRegionYearId: $regionYearId, portal: $portalName, exhibitorName: " . $exhibitor['exhibitorName'];
-    $transid = dbSafeInsert($transQ, 'dsis', array($totprice, $portalName, $conid, $notes));
-    if ($transid === false) {
+    $transId = dbSafeInsert($transQ, 'dsis', array($totprice, $portalName, $conid, $notes));
+    if ($transId === false) {
         $status_msg .= "Add of transaction for $portalName " . $_POST['name'] . " failed.<br/>\n";
     }
 }
@@ -415,33 +428,34 @@ SELECT R.id AS badge,
     NP.first_name AS fname, NP.middle_name AS mname, NP.last_name AS lname, NP.suffix AS suffix,
     NP.email_addr AS email,
     NP.address AS street, NP.city AS city, NP.state AS state, NP.zip AS zip, NP.country AS country,
-    NP.id as id, R.price AS price, M.memAge AS age, NP.badge_name AS badgename, NP.legalName AS legalname, R.memId
+    NP.id as id, R.price AS price, M.memAge AS age, NP.badge_name AS badgename, NP.legalName, R.memId,
+    M.label, M.memCategory, M.memType, M.glNum, R.perid, R.newperid, R.id AS regId
 FROM newperson NP
 JOIN reg R ON (R.newperid=NP.id)
 JOIN memList M ON (M.id = R.memID)
 WHERE NP.transid=?;
 EOS;
 
-$all_badgeR = dbSafeQuery($all_badgeQ, 'i', array($transid));
+$all_badgeR = dbSafeQuery($all_badgeQ, 'i', array($transId));
 
 $badgeResults = array();
 while ($row = $all_badgeR->fetch_assoc()) {
     $badgeResults[] = $row;
 }
-
+$custId = "spacePayment-$transId";
 // prepare the credit card request
 $results = array(
-    'transid' => $transid,
+    'custid' => $custId,
+    'source' => $portalType,
+    'transid' => $transId,
     'counts' => null,
     'spaces' => $spaces,
     'mailInFee' => $mailInFee,
     'price' => $totprice,
     'badges' => $badgeResults,
     'formbadges' => $badges,
-    'tax' => 0,
     'pretax' => $totprice,
     'total' => $totprice,
-    'nonce' => $_POST['nonce'],
     'vendorId' => $exhId,
     'salesTaxId' => $salesTaxId,
     'specialrequests' => $specialRequests,
@@ -452,39 +466,78 @@ $results = array(
 );
 
 //log requested badges
-logWrite(array('Title' => 'Pre cc_charge_purchase', 'con' => $conid, $portalName => $exhibitor, 'region' => $region, 'spaces' => $spaces, 'trans' => $transid,
-               'results' =>
-    $results, 'request'
-    => $badges));
+logWrite(array('Title' => 'Pre cc_makeOrder', 'con' => $conid, $portalName => $exhibitor, 'region' => $region, 'spaces' => $spaces,
+    'trans' => $transId, 'results' => $results, 'request' => $badges));
 
-$rtn = cc_charge_purchase($results, $buyer['email'], '', true);
-if ($rtn === null) {
-    ajaxSuccess(array('status' => 'error', 'data' => 'Credit card not approved'));
-    exit();
-}
+// end compute, create the order if there is something to pay
+if ($totprice > 0) {
+    $rtn = cc_buildOrder($results, true);
+    if ($rtn == null) {
+        // note there is no reason cc_buildOrder will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
+        logWrite(array ('con' => $condata['name'], 'trans' => $transId, 'error' => 'Credit card order unable to be created'));
+        ajaxSuccess(array ('status' => 'error', 'error' => 'Credit card order not built, seek assistance'));
+        exit();
+    }
+    $response['orderRtn'] = $rtn;
+    logWrite(array('status'=> 'order create', 'con' => $condata['name'], 'trans' => $transId, 'ccrtn' => $rtn));
+    $referenceId = $transId . '-' . 'pay-' . time();
+    $results = array(
+        'source' => $portalType,
+        'nonce' => $_POST['nonce'],
+        'totalAmt' => $rtn['totalAmt'],
+        'orderId' => $rtn['orderId'],
+        'customerId' => $custId,
+        'locationId' => $cc['location'],
+        'referenceId' => $referenceId,
+        'transid' => $transId,
+        'preTaxAmt' => $totprice,
+        'taxAmt' => 0,
+        'vendorId' => $exhId,
+        'salesTaxId' => $salesTaxId,
+        'specialrequests' => $specialRequests,
+        'region' => $region,
+        'vendor' => $exhibitor,
+        'exhibits' => $portalType,
+        'buyer' => $buyer,
+        'counts' => null,
+        'spaces' => $spaces,
+        'mailInFee' => $mailInFee,
+        'price' => $totprice,
+        'badges' => $badgeResults,
+        'formbadges' => $badges,
+        'total' => $totprice,
+    );
 
-logwrite(array('Title' => 'Post cc_charge_purchase', 'rtn' => $rtn));
+// call the credit card processor to make the payment
+    $ccrtn = cc_payOrder($results, $buyer, true);
+    if ($ccrtn === null) {
+        // note there is no reason cc_PayOrder will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
+        logWrite(array('con'=>$condata['name'], 'trans'=>$transId, 'error' => 'Credit card transaction not approved'));
+        ajaxSuccess(array('status' => 'error', 'error' => 'Credit card not approved'));
+        exit();
+    }
 
-//$tnx_record = $rtn['tnx'];
-var_error_log($rtn);
-
-// create the payment record
-$num_fields = sizeof($rtn['txnfields']);
-$val = array();
-for ($i = 0; $i < $num_fields; $i++) {
-    $val[$i] = '?';
-}
-$txnQ = 'INSERT INTO payments(time,' . implode(',', $rtn['txnfields']) . ') VALUES(current_time(),' . implode(',', $val) . ');';
-$txnT = implode('', $rtn['tnxtypes']);
-//error_log("Payment Insert: $txnQ : " .implode(',', $rtn['tnxdata']) . "\n");
-
-$txnid = dbSafeInsert($txnQ, $txnT, $rtn['tnxdata']);
-if ($txnid == false) {
-    $error_msg .= "Insert of payment failed\n";
+    logWrite(array('con'=>$condata['name'], 'trans'=>$transId, 'ccrtn'=>$rtn));
+    $num_fields = sizeof($ccrtn['txnfields']);
+    $val = array();
+    for ($i = 0; $i < $num_fields; $i++) {
+        $val[$i] = '?';
+    }
+    $txnQ = 'INSERT INTO payments(time,' . implode(',', $ccrtn['txnfields']) . ') VALUES(current_time(),' . implode(',', $val) . ');';
+    $txnT = implode('', $ccrtn['tnxtypes']);
+    $txnid = dbSafeInsert($txnQ, $txnT, $ccrtn['tnxdata']);
+    if ($txnid == false) {
+        $error_msg .= "Insert of payment failed\n";
+    } else {
+        $status_msg .= 'Payment for ' . $dolfmt->formatCurrency($ccrtn['amount'], $currency) . " processed<br/>\n";
+    }
+    $approved_amt = $ccrtn['amount'];
 } else {
-    $status_msg .= "Payment for " . $dolfmt->formatCurrency($rtn['amount'], $currency) . " processed<br/>\n";
+    $approved_amt = 0;
+    $ccrtn = array('url' => '');
 }
-$approved_amt = $rtn['amount'];
+
+logwrite(array('Title' => 'Post cc_pay_order', 'rtn' => $ccrtn));
 $results['approved_amt'] = $approved_amt;
 
 // update the other records with the payment information
@@ -495,10 +548,10 @@ if ($approved_amt == $totprice) {
 }
 
 $txnUpdate .= 'paid=? WHERE id=?;';
-$txnU = dbSafeCmd($txnUpdate, 'di', array($approved_amt, $transid));
+$txnU = dbSafeCmd($txnUpdate, 'di', array($approved_amt, $transId));
 // reg (badge)
 $regQ = "UPDATE reg SET paid=price, complete_trans=?, status='paid' WHERE create_trans=?;";
-$numrows = dbSafeCmd($regQ, 'ii', array($transid, $transid));
+$numrows = dbSafeCmd($regQ, 'ii', array($transId, $transId));
 if ($numrows != 1) {
     $error_msg .= "Unable to mark transaction completed\n";
 }
@@ -510,7 +563,7 @@ SET item_purchased = ?, price=?, paid=?, transid = ?, membershipCredits = 0, tim
 WHERE id = ?
 EOS;
 foreach ($spaces as $id => $space) {
-    $num_rows = dbSafeCmd($vendorUQ, 'iddii', array($space['item_approved'], $space['approved_price'], $space['approved_price'], $transid, $space['id']));
+    $num_rows = dbSafeCmd($vendorUQ, 'iddii', array($space['item_approved'], $space['approved_price'], $space['approved_price'], $transId, $space['id']));
     if ($num_rows == 0) {
         $error_msg .= "Unable to mark " . $space['name']  . " space purchased\n";
     } else {
@@ -692,10 +745,10 @@ emailArtistInventoryReq($eryID, 'Payment');
 
 ajaxSuccess(array(
     'status' => $return_arr['status'],
-    'url' => $rtn['url'],
+    'url' => $ccrtn['url'],
     'error' => $error_msg,
     'email' => $return_arr,
-    'trans' => $transid,
+    'trans' => $transId,
     'email_error' => $error_code,
     'message' => $status_msg,
     'exhibitor_spacelist' => $exhibitorSpaceList
@@ -703,17 +756,19 @@ ajaxSuccess(array(
 return;
 
 // build the badge structure and insert the person into newperson, trans, reg after checking for exact match
-function buildBadge($fields, $type, $index, $region, $conid, $transid, $portalName) {
+function buildBadge($fields, $type, $index, $region, $conid, $transId, $portalName) {
     $badge = array();
     $suffix = '_' . $type . '_' . $index;
     if ($type == 'i') {
         $memid = $region['includedMemId'];
         $memprice = $region['includedPrice'];
         $glNum = $region['includedGLNum'];
+        $label = $region['includedLabel'];
     } else {
         $memid = $region['additionalMemId'];
         $memprice = $region['additionalPrice'];
         $glNum = $region['additionalGLNum'];
+        $label = $region['additionalLabel'];
     }
 
     foreach ($fields as $field => $required) {
@@ -722,6 +777,7 @@ function buildBadge($fields, $type, $index, $region, $conid, $transid, $portalNa
     $badge['age'] = 'all';
     $badge['price'] = $memprice;
     $badge['memId'] = $memid;
+    $badge['label'] = $label;
     $badge['contact'] = 'Y';
     $badge['share'] = 'Y';
     $badge['type'] = $type;
@@ -734,31 +790,31 @@ SELECT id
 FROM perinfo p
 WHERE
 	REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.first_name, ''))), '  *', ' ')
+		REGEXP_REPLACE(TRIM(LOWER(p.first_name)), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.middle_name, ''))), '  *', ' ')
+		REGEXP_REPLACE(TRIM(LOWER(p.middle_name)), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.last_name, ''))), '  *', ' ')
+		REGEXP_REPLACE(TRIM(LOWER(p.last_name)), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.suffix, ''))), '  *', ' ')
+		REGEXP_REPLACE(TRIM(LOWER(p.suffix)), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.email_addr, ''))), '  *', ' ')
+		REGEXP_REPLACE(TRIM(LOWER(p.email_addr)), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.phone, ''))), '  *', ' ')
+		REGEXP_REPLACE(TRIM(LOWER(p.phone)), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.badge_name, ''))), '  *', ' ')
+		REGEXP_REPLACE(TRIM(LOWER(p.badge_name)), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.address, ''))), '  *', ' ')
+		REGEXP_REPLACE(TRIM(LOWER(p.address)), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.addr_2, ''))), '  *', ' ')
+		REGEXP_REPLACE(TRIM(LOWER(p.addr_2)), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.city, ''))), '  *', ' ')
+		REGEXP_REPLACE(TRIM(LOWER(p.city)), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.state, ''))), '  *', ' ')
+		REGEXP_REPLACE(TRIM(LOWER(p.state)), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.zip, ''))), '  *', ' ')
+		REGEXP_REPLACE(TRIM(LOWER(p.zip)), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.country, ''))), '  *', ' ');
+		REGEXP_REPLACE(TRIM(LOWER(p.country)), '  *', ' ');
 EOF;
     $value_arr = array($badge['fname'], $badge['mname'], $badge['lname'], $badge['suffix'], $badge['email'], $badge['phone'], $badge['badgename'],
                 $badge['addr'], $badge['addr2'], $badge['city'], $badge['state'], $badge['zip'], $badge['country']);
@@ -774,7 +830,7 @@ EOF;
         $id = null;
     }
     $badge['perid'] = $id;
-    $legalName = $badge['legalname'];
+    $legalName = $badge['legalName'];
     if ($legalName == null || $legalName == '') {
         $legalName = trim($badge['fname']  . ($badge['mname'] == '' ? ' ' : ' ' . $badge['mname'] . ' ' ) . $badge['lname'] . ' ' . $badge['suffix']);
     }
@@ -785,7 +841,8 @@ EOF;
     $insertQ = <<<EOS
 INSERT INTO newperson(last_name, middle_name, first_name, suffix, legalName, email_addr, phone, badge_name,
                       address, addr_2, city, state, zip, country, contact_ok, share_reg_ok, perid)
-    VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+    VALUES(IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''),
+           IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), ?, ?, ?);
 EOS;
 
     $newid = dbSafeInsert($insertQ, 'ssssssssssssssssi', $value_arr);
@@ -796,18 +853,18 @@ EOS;
 
     $badge['newperid'] = $newid;
     // if no tranasction yet, insert one
-    if ($transid == null) {
+    if ($transId == null) {
         $transQ = <<<EOS
 INSERT INTO transaction(newperid, perid, price, type, conid)
     VALUES(?, ?, ?, ?, ?);
 EOS;
 
-        $transid = dbSafeInsert($transQ, 'iidsi', array($newid, $id, $region['price'], $portalName, $conid));
-        if ($transid === false) {
+        $transId = dbSafeInsert($transQ, 'iidsi', array($newid, $id, $region['price'], $portalName, $conid));
+        if ($transId === false) {
             $badge['error'] .= 'Add of transaction for ' . $badge['fname'] . ' ' . $badge['lname'] . " failed.\n";
         }
     }
-    $badge['transid'] = $transid;
+    $badge['transid'] = $transId;
     dbSafeCmd("UPDATE newperson SET transid=? WHERE id = ?;", 'ii', array($badge['transid'], $badge['newperid']));
 
     $badgeQ = <<<EOS
@@ -818,7 +875,7 @@ EOS;
             $conid,
             $badge['newperid'],
             $badge['perid'],
-            $transid,
+            $transId,
             $badge['price'],
             $badge['price'] > 0 ? 'unpaid' : 'paid',
             $badge['memId'])

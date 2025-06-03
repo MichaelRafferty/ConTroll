@@ -4,7 +4,7 @@ global $db_ini;
 require_once "../lib/base.php";
 
 $check_auth = google_init("ajax");
-$perm = "reg_admin";
+$perm = "reg_staff";
 
 $response = array("post" => $_POST, "get" => $_GET, "perm"=>$perm);
 
@@ -27,6 +27,13 @@ if (!isset($_POST) || !isset($_POST['cancelList']) || !isset($_POST['direction']
     ajaxSuccess($response);
     exit();
 }
+
+if (!array_key_exists('source', $_POST)) {
+    $message_error = 'Source Missing';
+    RenderErrorAjax($message_error);
+    exit();
+}
+$source = $_POST['source'];
 
 $con = get_conf('con');
 $conid = $con['id'];
@@ -72,17 +79,17 @@ EOS;
 
 $num_upd = dbSafeCmd($updQ, 'i', array($user_perid));
 if ($num_upd === false || $num_upd < 0) {
-    $response['error'] = "Error running $updQ on $cancelIn";
+    $response['error'] = "Error running $updQ on $inString";
 } else {
     $response['success'] = "$num_upd registrations changed";
     // insert a reg note for the successful action
     $insQ = <<<EOS
-INSERT INTO regActions(userid, regid, action, notes)
-VALUES (?, ?, ?, ?);
+INSERT INTO regActions(userid, source, regid, action, notes)
+VALUES (?, ?, ?, ?, ?);
 EOS;
-    $typestr = 'iiss';
+    $typestr = 'isiss';
     foreach ($cancelList as $regId) {
-        $paramarray = array($user_perid, $regId, 'notes', $noteMsg);
+        $paramarray = array($user_perid, $source, $regId, 'notes', $noteMsg);
         $new_history = dbSafeInsert($insQ, $typestr, $paramarray);
     }
 }

@@ -1,4 +1,6 @@
 <?php
+// updateFromCart: Portal: update the reg and transaction records for any cart changes
+
 require_once('../lib/base.php');
 require_once('../../lib/log.php');
 require_once('../../lib/policies.php');
@@ -50,6 +52,11 @@ $loginId = getSessionVar('id');
 $loginType = getSessionVar('idType');
 $transId = getSessionVar('transid');
 $voidTransId = false; // void the transaction if a free membership was marked paid in this item
+// if any changes were made to the transaction (cart add/substract/change, etc.)
+// mark this to invalidate the order if it exists
+$orderId = null;
+$orderDate = null;
+$orderIdFetched = false;
 
 $action = $_POST['action'];
 $newEmail = $_POST['newEmail'];
@@ -128,6 +135,8 @@ if ($personId < 0) {
     if (array_key_exists('fname', $person)) {
         if ($transId == null) {
             $transId = getNewTransaction($conid, $loginType == 'p' ? $loginId : null, $loginType == 'n' ? $loginId : null);
+            // new transaction, force everything to null, but show we have the orderId and date.
+            $orderIdFetched = true;
         }
 
         // the exact match check for this new person will prevent adding newperson for existing people
@@ -137,35 +146,35 @@ SELECT id
 FROM perinfo p
 WHERE
 	REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.first_name, ''))), '  *', ' ')
+		REGEXP_REPLACE(TRIM(LOWER(p.first_name)), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.middle_name, ''))), '  *', ' ')
+		REGEXP_REPLACE(TRIM(LOWER(p.middle_name)), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.last_name, ''))), '  *', ' ')
+		REGEXP_REPLACE(TRIM(LOWER(p.last_name)), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.suffix, ''))), '  *', ' ')
+		REGEXP_REPLACE(TRIM(LOWER(p.suffix)), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.email_addr, ''))), '  *', ' ')
+		REGEXP_REPLACE(TRIM(LOWER(p.email_addr)), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.phone, ''))), '  *', ' ')
+		REGEXP_REPLACE(TRIM(LOWER(p.phone)), '  *', ' ')
     AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.badge_name, ''))), '  *', ' ')
+		REGEXP_REPLACE(TRIM(LOWER(p.badge_name)), '  *', ' ')
     AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.legalName, ''))), '  *', ' ')
+		REGEXP_REPLACE(TRIM(LOWER(p.legalName)), '  *', ' ')
     AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.pronouns, ''))), '  *', ' ')
+		REGEXP_REPLACE(TRIM(LOWER(p.pronouns)), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.address, ''))), '  *', ' ')
+		REGEXP_REPLACE(TRIM(LOWER(p.address)), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.addr_2, ''))), '  *', ' ')
+		REGEXP_REPLACE(TRIM(LOWER(p.addr_2)), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.city, ''))), '  *', ' ')
+		REGEXP_REPLACE(TRIM(LOWER(p.city)), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.state, ''))), '  *', ' ')
+		REGEXP_REPLACE(TRIM(LOWER(p.state)), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.zip, ''))), '  *', ' ')
+		REGEXP_REPLACE(TRIM(LOWER(p.zip)), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.country, ''))), '  *', ' ');
+		REGEXP_REPLACE(TRIM(LOWER(p.country)), '  *', ' ');
 EOF;
         $value_arr = array (
             trim($person['fname']),
@@ -175,7 +184,7 @@ EOF;
             trim($newEmail),
             trim($person['phone']),
             trim($person['badgename']),
-            trim($person['legalname']),
+            trim($person['legalName']),
             trim($person['pronouns']),
             trim($person['addr']),
             trim($person['addr2']),
@@ -208,9 +217,9 @@ EOS;
             // insert into newPerson
             $iQ = <<<EOS
 INSERT INTO newperson (transid, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, legalName, pronouns, 
-                       address, addr_2, city, state, zip,
-                       country, managedBy, managedByNew, managedReason, updatedBy, lastVerified)
-VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'creation',?,NOW());
+                       address, addr_2, city, state, zip, country, managedBy, managedByNew, managedReason, updatedBy, lastVerified)
+VALUES (?, IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''),
+    IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), ?, ?, 'creation', ?, NOW());
 EOS;
             $typeStr = 'isssssssssssssssiii';
             $valArray = array (
@@ -222,7 +231,7 @@ EOS;
                 trim($newEmail),
                 trim($person['phone']),
                 trim($person['badgename']),
-                trim($person['legalname']),
+                trim($person['legalName']),
                 trim($person['pronouns']),
                 trim($person['addr']),
                 trim($person['addr2']),
@@ -276,7 +285,7 @@ EOS;
     // for from the form which means a correction was passed.  If fname exists, it's from the form, handle that.
     // if first_name, its from the database, so do not update the database.
     if (array_key_exists('fname', $person)) {
-        $fields = ['lname', 'mname', 'fname', 'suffix', 'phone', 'badgename', 'legalname', 'pronouns', 'addr', 'addr2', 'city',
+        $fields = ['lname', 'mname', 'fname', 'suffix', 'phone', 'badgename', 'legalName', 'pronouns', 'addr', 'addr2', 'city',
                    'state', 'zip', 'country'];
         foreach ($fields as $field) {
             if ((!array_key_exists($field, $person)) || $person[$field] == null) {
@@ -295,7 +304,7 @@ EOS;
             trim($person['suffix']),
             trim($person['phone']),
             trim($person['badgename']),
-            trim($person['legalname']),
+            trim($person['legalName']),
             trim($person['pronouns']),
             trim($person['addr']),
             trim($person['addr2']),
@@ -317,6 +326,27 @@ EOS;
         $response['logmessage'] .= $rows_upd == 0 ? "No changes" : "$rows_upd person updated" . PHP_EOL;
     } else {
         $response['logmessage'] .= 'No person passed, no update to person information' . PHP_EOL;
+    }
+}
+
+
+// now fetch the order information from the transaction if necessary
+if ($transId != null && !$orderIdFetched) {
+    // get the current orderId if it exists
+    $transOrderQ = <<<EOS
+SELECT orderId, orderDate
+FROM transaction
+WHERE id = ?;
+EOS;
+    $transOrderR = dbSafeQuery($transOrderQ, 'i', array($transId));
+    if ($transOrderR === false || $transOrderR->num_rows != 1) {
+        $transId = getNewTransaction($conid, $loginType == 'p' ? $loginId : null, $loginType == 'n' ? $loginId : null);
+        $orderIdFetched = true;
+    } else {
+        $transRow = $transOrderR->fetch_assoc();
+        $orderId = $transRow['orderId'];
+        $orderDate = $transRow['orderDate'];
+        $orderIdFetched = true;
     }
 }
 
@@ -358,7 +388,7 @@ EOS;
         }
         if ($cartRow['status'] == 'in-cart') {
             if ($transId == null) {
-                $tranId = $transId = getNewTransaction($conid, $loginType == 'p' ? $loginId : null, $loginType == 'n' ? $loginId : null);
+                $transId = getNewTransaction($conid, $loginType == 'p' ? $loginId : null, $loginType == 'n' ? $loginId : null);
             }
             // insert the new reg record into the cart
             $iQ = <<<EOS
@@ -389,7 +419,12 @@ EOS;
         }
     }
     if ($updateTransPrice) {
-        // we changed a reg for this transaction, recompute the price portion of the record
+        // we changed a reg for this transaction, cancel any pending order and recompute the price portion of the record
+        if ($orderId != null) {
+            cc_cancelOrder('portal', $orderId);
+            $orderId = null;
+            $orderDate = null;
+        }
         $uQ = <<<EOS
 UPDATE transaction t
 JOIN (
@@ -397,7 +432,7 @@ JOIN (
     FROM reg
     WHERE create_trans = ? AND status IN ('unpaid', 'paid', 'plan', 'upgraded')
     ) s
-SET price = s.total
+SET price = s.total, orderId = NULL, orderDate = null
 WHERE id = ?;
 EOS;
         dbSafeCmd($uQ, 'ii', array($transId, $transId));
@@ -519,13 +554,3 @@ logInit($log['reg']);
 logWrite($response);
 
 ajaxSuccess($response);
-
-function getNewTransaction($conid, $perid, $newperid) {
-    $iQ = <<<EOS
-INSERT INTO transaction (conid, perid, newperid, userid, price, couponDiscountCart, couponDiscountReg, paid, type)
-VALUES (?, ?, ?, ?, 0, 0, 0, 0, 'regportal');
-EOS;
-    $transId = dbSafeInsert($iQ, 'iiii', array($conid, $perid, $newperid, $perid));
-    setSessionVar('transId', $transId);
-    return $transId;
-}

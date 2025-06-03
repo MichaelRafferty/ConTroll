@@ -3,7 +3,7 @@ global $db_ini;
 
 require_once "../lib/base.php";
 $check_auth = google_init("ajax");
-$perm = "reg_admin";
+$perm = "reg_staff";
 
 $response = array("post" => $_POST, "get" => $_GET, "perm"=>$perm);
 
@@ -34,10 +34,8 @@ EOS;
     $response['notes'] = $notes;
     $pQ = <<<EOS
 SELECT m.label, CASE 
-    WHEN p.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ',  
-        IFNULL(p.suffix, '')), '  *', ' '))
-    WHEN n.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT(IFNULL(n.first_name, ''),' ', IFNULL(n.middle_name, ''), ' ', IFNULL(n.last_name, ''), ' ',  
-        IFNULL(n.suffix, '')), '  *', ' '))
+    WHEN p.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), '  *', ' '))
+    WHEN n.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', n.first_name, n.middle_name, n.last_name, n.suffix), '  *', ' '))
     ELSE 'Unknown'
 END AS fullName
 FROM reg r

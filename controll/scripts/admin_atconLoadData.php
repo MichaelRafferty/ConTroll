@@ -96,7 +96,7 @@ EOS;
         $servers[] = $server;
     }
     $response['servers'] = $servers;
-    mysqli_free_result($serverQ);
+    $serverQ->free();
 
     $printersSQl = <<<EOS
 SELECT p.serverName, p.printerName, p.printerType, p.codePage, p.active, IF(s.local = 1, '🗑', '') as `delete`
@@ -110,6 +110,6 @@ EOS;
         $printers[] = $printer;
     }
     $response['printers'] = $printers;
-    mysqli_free_result($printerQ);
+    $printerQ->free();
 }
 ajaxSuccess($response);

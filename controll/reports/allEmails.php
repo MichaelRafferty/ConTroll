@@ -18,7 +18,7 @@ header('Content-Type: application/csv');
 header('Content-Disposition: attachment; filename="allEmails.csv"');
 
 $query = <<<EOS
-SELECT DISTINCT P.id, TRIM(CONCAT_WS(' ', TRIM(CONCAT_WS(' ', IFNULL(P.first_name, ''), IFNULL(P.middle_name, ''))), IFNULL(P.last_name, ''))) AS name,
+SELECT DISTINCT P.id, TRIM(REGEXP_REPLACE(CONCAT_WS(' ', P.first_name, P.middle_name, P.last_name, P.suffix), '  *', ' ')) AS name,
                 P.email_addr AS email, M.label, P.contact_ok
 FROM reg AS R
 JOIN perinfo P ON (P.id=R.perid)

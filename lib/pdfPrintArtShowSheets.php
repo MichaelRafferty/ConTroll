@@ -175,7 +175,7 @@ EOS;
             if ($useBarCode) {
                 $v += $blockheight;
                 $barcodeData = sprintf("%7.7d,%3.3d", $print['itemId'], $copy);
-                $pdf->code128($h + $indent, $v + $labeloffset, $barcodeData, $isize - (2 * $indent), $blockheight - (2 * $labeloffset));
+                $pdf->code128($h + $indent, $v + $labeloffset, $barcodeData, ($isize - (2 * $indent)) / 1.5, $blockheight - (2 * $labeloffset));
             }
         }
     }
@@ -474,7 +474,7 @@ EOS;
         if ($useBarCode) {
             $v += $blockheight;
             $barcodeData = sprintf('%7.7d,%3.3d', $art['itemId'], 1);
-            $pdf->code128($h + $indent, $v + $labeloffset, $barcodeData, $isize - (2 * $indent), $blockheight - (2 * $labeloffset));
+            $pdf->code128($h + $indent, $v + $labeloffset, $barcodeData, ($isize - (2 * $indent)) / 1.5, $blockheight - (2 * $labeloffset));
         }
 
         $headerEnd = $v + $blockheight;
@@ -602,7 +602,7 @@ EOS;
     $maxY = $minRowHeight * $pt;
     $y = fitprintXY($h + 0.5, $v + $dataOffset, $col1w - 0.5, $artist['exhibitorName']);
     if ($y > $maxY) $maxY = $y;
-    $rowHeight = $leading + $maxY - $v;
+    $rowHeight = $leading + $maxY + 0.05 - $v;
 
     //  email
     printXY($col2, $v + $dataOffset, 'Email: ' . $artist['email_addr']);

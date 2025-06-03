@@ -11,13 +11,15 @@ var current_tab = null;
 // find person fields
 var id_div = null;
 var badgeid_field = null;
-var current_person = null;
+var currentPerson = null;
 var stats_div = null;
 var showStats_div = null;
 var statsTable = null;
 var active_customers = null;
 var awaiting_payment = null;
 var awaiting_release = null;
+var searchResultsModal = null;
+var searchData = null;
 
 // art items
 var add_found_div = null;
@@ -33,14 +35,16 @@ var pay_button_pay = null;
 var pay_button_rcpt = null;
 var pay_button_ercpt = null;
 var pay_tid = null;
+var pay_currentOrderId = null;
 var pay_InitialCart = true;
 var discount_mode = 'none';
 var total_art_due = 0;
 var total_tax_due = 0;
 var total_amount_due = 0;
-var thisPay_art = 0;
-var thisPay_tax = 0;
-var thisPay_total = 0;
+var tax_label = 'Sales Tax';
+var orderMsg = '';
+var payOverride = 0;
+var payPoll = 0;
 
 // release items
 var releaseModal = null;
@@ -84,6 +88,10 @@ window.onload = function initpage() {
     id_div = document.getElementById("find_results");
     stats_div = document.getElementById("stats-div");
     showStats_div = document.getElementById("showStats-div");
+    var id = document.getElementById("SearchResultsModal");
+    if (id) {
+        searchResultsModal = new bootstrap.Modal(id, { focus: true, backldrop: 'static' });
+    }
 
     artistNumber_field = document.getElementById("artistNumber");
     itemCode_field = document.getElementById("itemCode");
@@ -99,10 +107,10 @@ window.onload = function initpage() {
     pay_div = document.getElementById('pay-div');
 
     // add events
-    find_tab.addEventListener('shown.bs.tab', find_shown)
-    add_tab.addEventListener('shown.bs.tab', add_shown)
-    pay_tab.addEventListener('shown.bs.tab', pay_shown)
-    release_tab.addEventListener('shown.bs.tab', release_shown)
+    find_tab.addEventListener('shown.bs.tab', findShown)
+    add_tab.addEventListener('shown.bs.tab', addShown)
+    pay_tab.addEventListener('shown.bs.tab', payShown)
+    release_tab.addEventListener('shown.bs.tab', releaseShown)
 
     // cash payment requires change
     cashChangeModal = new bootstrap.Modal(document.getElementById('CashChange'), { focus: true, backldrop: 'static' });
@@ -114,6 +122,11 @@ window.onload = function initpage() {
 
     bootstrap.Tab.getOrCreateInstance(find_tab).show();
 
+    // check of payPoll (terminal in use) before leave
+    window.addEventListener('beforeunload', event => {
+        onExit(event);
+    })
+
     // load the initial data and the proceed to set up the rest of the system
     var postData = {
         ajax_request_action: 'loadInitialData',
@@ -123,12 +136,12 @@ window.onload = function initpage() {
         url: "scripts/artpos_loadInitialData.php",
         data: postData,
         success: function (data, textstatus, jqxhr) {
-            if (data['error'] !== undefined) {
-                show_message(data['error'], 'error');
+            if (data.error !== undefined) {
+                show_message(data.error, 'error');
                 return;
             }
-            if (data['message'] !== undefined) {
-                show_message(data['message'], 'success');
+            if (data.message !== undefined) {
+                show_message(data.message, 'success');
             }
             loadInitialData(data);
         },
@@ -140,16 +153,76 @@ window.onload = function initpage() {
 // also retrieve session data about printers
 function loadInitialData(data) {
     // load database and instace items for startup
-    conlabel =  data['label'];
-    conid = data['conid'];
-    user_id = data['user_id']
-    hasManager = data['hasManager'];
-    receiptPrinterAvailable = data['receiptPrinter'] === true;
-    find_shown();
+    conlabel =  data.label;
+    conid = data.conid;
+    user_id = data.user_id
+    hasManager = data.hasManager;
+    receiptPrinterAvailable = data.receiptPrinter === true;
+    findShown();
 }
 
 // if no artSales or payments have been added to the database, this will reset for the next customer
-function start_over(reset_all) {
+function startOver(reset_all) {
+    if (payPoll == 1) {
+        if (!confirm("You are leaving without polling the terminal for payment completion.\n" +
+            'Please use the "Payment Complete" button to check if the payment is complete,\n' +
+            'or tthe "Cancel Payment" buttons to cancel the payment request and release the terminal.\n' +
+            "Do you wish to leave anyway without releasing the terminal?")) {
+            return;
+        }
+
+        // cancel terminal request
+        var postData = {
+            ajax_request_action: 'cancelPayRequest',
+            requestId: payCurrentRequest,
+            user_id: user_id,
+        };
+        clear_message();
+        $.ajax({
+            method: "POST",
+            url: "scripts/artpos_cancelPayment.php",
+            data: postData,
+            success: function (data, textstatus, jqxhr) {
+                if (typeof data == 'string') {
+                    show_message(data, 'error');
+                    return;
+                }
+
+                if (data.error !== undefined) {
+                    show_message(data.error, 'error');
+                    return;
+                }
+
+                if (data.status == 'error') {
+                    show_message(data.data, 'error');
+                    return;
+                }
+
+                if (data.warn !== undefined) {
+                    show_message(data.warn, 'warn');
+                    if (data.hasOwnProperty('paid') && data.paid == 1) {
+                        // it paid while waiting for the poll, process the payment
+                        payPoll = 1;
+                        pay('');
+                        payPoll = 0;
+                    }
+                    return;
+                }
+
+                if (data.message !== undefined) {
+                    show_message(data.message, 'success');
+                }
+
+                startOver(reset_all);
+            },
+            error: function (jqXHR, textstatus, errorThrown) {
+                document.getElementById('pollRow').hidden = false;
+                showAjaxError(jqXHR, textstatus, errorThrown);
+            },
+        });
+        payPoll = 0;
+        return;
+    }
     if (reset_all > 0)
         clear_message();
 
@@ -158,6 +231,7 @@ function start_over(reset_all) {
     }
 
     hideStats();
+    currentPerson = null;
     // empty cart
     cart.startOver();
     cart.hideRelease();
@@ -176,43 +250,96 @@ function start_over(reset_all) {
     pay_tab.disabled = true;
     release_tab.disabled = true;
     cart.hideNext();
-    cart.hideAdd();
     pay_button_pay = null;
     pay_button_rcpt = null;
     pay_button_ercpt = null;
     receeiptEmailAddresses_div = null;
     pay_tid = null;
+    pay_currentOrderId = null;
     pay_InitialCart = true;
 
     // set tab to find-tab
     if (current_tab != find_tab) {
         bootstrap.Tab.getOrCreateInstance(find_tab).show();
     } else {
-        find_shown();
+        findShown();
     }
     badgeid_field.focus();
 }
 
 // switch to the add tab
-function goto_find() {
+function gotoFind() {
     bootstrap.Tab.getOrCreateInstance(find_tab).show();
 }
 
 // switch to the add tab
-function goto_add() {
+function gotoAdd() {
     bootstrap.Tab.getOrCreateInstance(add_tab).show();
 }
 
 // switch to the pay tab
-function goto_pay() {
+function gotoPay() {
     bootstrap.Tab.getOrCreateInstance(pay_tab).show();
 }
 
-function goto_release() {
+// build the order
+function buildOrder() {
+    var postData = {
+        ajax_request_action: 'buildOrder',
+        cart_art: JSON.stringify(cart.getCartArt()),
+        perid: currentPerson.id,
+        pay_tid: pay_tid,
+    };
+    if (pay_currentOrderId) {
+        postData.cancelOrder = pay_currentOrderId;
+        pay_currentOrderId = null;
+    }
+
+    clear_message();
+    $.ajax({
+        method: "POST",
+        url: "scripts/artpos_buildOrder.php",
+        data: postData,
+        success: function (data, textstatus, jqxhr) {
+            var stop = true;
+            if (typeof data == 'string') {
+                show_message(data, 'error');
+            } else if (data.error !== undefined) {
+                show_message(data.error, 'error');
+            } else if (data.message !== undefined) {
+                show_message(data.message, 'success');
+                stop = false;
+            } else if (data.warn !== undefined) {
+                show_message(data.warn, 'warn');
+                stop = false;
+            } else if (data.status == 'error') {
+                show_message(data.data, 'error');
+            } else
+                stop = false;
+            if (!stop)
+                buildOrderSuccess(data);
+        },
+        error: function (jqXHR, textstatus, errorThrown) {
+            showAjaxError(jqXHR, textstatus, errorThrown);
+        },
+    });
+}
+
+function buildOrderSuccess(data) {
+    pay_currentOrderId = data.rtn.orderId;
+    total_art_due = data.rtn.preTaxAmt;
+    total_tax_due = data.rtn.taxAmt;
+    total_amount_due = data.rtn.totalAmt;
+    taxLabel = data.rtn.taxLabel;
+    show_message("Order #" + pay_currentOrderId + " created.<br/>" + orderMsg);
+    payShown();
+}
+
+function gotoRelease() {
     if (current_tab != release_tab) {
         bootstrap.Tab.getOrCreateInstance(release_tab).show();
     } else {
-        release_shown();
+        releaseShown();
     }
 }
 
@@ -222,53 +349,53 @@ function draw_person() {
     <div class="container-fluid">
         <div class="row">
             <div class="col-sm-3">Person ID:</div>
-            <div class="col-sm-9">` + current_person['id'] + `</div>
+            <div class="col-sm-9">` + currentPerson.id + `</div>
         </div>
         <div class="row">
             <div class="col-sm-3">` + 'Badge Name:' + `</div>
-            <div class="col-sm-9">` + badge_name_default(current_person['badge_name'], current_person['first_name'], current_person['last_name']) + `</div>
+            <div class="col-sm-9">` + badge_name_default(currentPerson.badge_name, currentPerson.first_name, currentPerson.last_name) + `</div>
         </div>
         <div class="row">
             <div class="col-sm-3">Name:</div>
             <div class="col-sm-9">` +
-            current_person['first_name'] + ' ' + current_person['middle_name'] + ' ' + current_person['last_name'] + `
+            currentPerson.first_name + ' ' + currentPerson.middle_name + ' ' + currentPerson.last_name + `
             </div>
         </div>  
         <div class="row">
             <div class="col-sm-3">Address:</div>
-            <div class="col-sm-9">` + current_person['address'] + `</div>
+            <div class="col-sm-9">` + currentPerson.address + `</div>
         </div>
 `;
-    if (current_person['address_2'] != '') {
+    if (currentPerson.address_2 != '') {
         html += `
     <div class="row">
         <div class="col-sm-3"></div>
-        <div class="col-sm-9">` + current_person['addr_2'] + `</div>
+        <div class="col-sm-9">` + currentPerson.addr_2 + `</div>
     </div>
 `;
     }
     html += `
     <div class="row">
        <div class="col-sm-3"></div>
-       <div class="col-sm-9">` + current_person['city'] + ', ' + current_person['state'] + ' ' + current_person['postal_code'] + `</div>
+       <div class="col-sm-9">` + currentPerson.city + ', ' + currentPerson.state + ' ' + currentPerson.postal_code + `</div>
     </div>
 `;
-    if (current_person['country'] != '' && current_person['country'] != 'USA') {
+    if (currentPerson.country != '' && currentPerson.country != 'USA') {
         html += `
     <div class="row">
        <div class="col-sm-3"></div>
-       <div class="col-sm-9">` + current_person['country'] + `</div>
+       <div class="col-sm-9">` + currentPerson.country + `</div>
     </div>
 `;
     }
     html += `
     <div class="row">
        <div class="col-sm-3">Email Address:</div>
-       <div class="col-sm-9">` + current_person['email_addr'] + `</div>
+       <div class="col-sm-9">` + currentPerson.email_addr + `</div>
     </div>
     <div class="row">
        <div class="col-sm-3">Phone:</div>
-       <div class="col-sm-9">` + current_person['phone'] + `</div>
+       <div class="col-sm-9">` + currentPerson.phone + `</div>
     </div>
 </div>
 `;
@@ -287,6 +414,7 @@ function badge_name_default(badge_name, first_name, last_name) {
 // find the person by badge id, in prep for loading any art already won by bid
 function findPerson(find_type) {
     id_div.innerHTML = "";
+    searchResultsModal.hide();
     clear_message();
     cart.startOver();
     var name_search = badgeid_field.value.toLowerCase().trim();
@@ -307,16 +435,10 @@ function findPerson(find_type) {
         url: "scripts/artpos_findPerson.php",
         data: postData,
         success: function (data, textstatus, jqxhr) {
-            if (data['error'] !== undefined) {
-                show_message(data['error'], 'error');
+            if (data.error !== undefined) {
+                show_message(data.error, 'error');
                 $("button[name='find_btn']").attr("disabled", false);
                 return;
-            }
-            if (data['message'] !== undefined) {
-                show_message(data['message'], 'success');
-            }
-            if (data['warn'] !== undefined) {
-                show_message(data['warn'], 'warn');
             }
             foundPerson(data);
             $("button[name='find_btn']").attr("disabled", false);
@@ -335,39 +457,71 @@ function findPerson(find_type) {
 //      single row: display record
 //      multiple rows: display table of records with add/trans buttons
 function foundPerson(data) {
-    if (data['num_rows'] == 1) { // one person found
-        current_person = data['person'];
-        // put the person details in the cart, populate the cart with the art they have to purchase
+    if (data.num_rows == 1) { // one person found
+        searchData = data;
+        currentPerson = data.person;
+        // draw the person in the modal
         draw_person();
-        data['art'].forEach((artItem) => {
+        searchResultsModal.show();
+        if (data.message !== undefined) {
+            show_message(data.message, 'success', 'searchResultMessage');``
+        }
+        if (data.warn !== undefined) {
+            show_message(data.warn, 'warn', 'searchResultMessage');
+        }
+    } else { // I'm not sure how we'd get here
+        show_message(data.num_rows + " found.  Multiple people not yet supported.");
+        return;
+    }
+}
+
+// clear result and try again
+function searchResultsClose() {
+    id_div.innerHTML = "";
+    searchResultsModal.hide();
+    clear_message();
+    searchData = null;
+    badgeid_field.focus();
+}
+// select this person and actually start processing them
+function startCheckout() {
+        if (currentPerson == null || currentPerson.id == null) {
+            show_message("No person selected", "warn");
+            return;
+        }
+
+        id_div.innerHTML = "";
+        searchResultsModal.hide();
+
+        searchData.art.forEach((artItem) => {
             if (pay_tid == null) {
-                pay_tid = artItem['transid'];
+                pay_tid = artItem.transid;
             }
             cart.add(artItem);
         });
-        if (data['payment']) {
-            data['payment'].forEach((paymentItem) => {
+        if (searchData.payment) {
+            searchData.payment.forEach((paymentItem) => {
                 cart.addPmt(paymentItem);
             });
         }
         find_tab.disabled = true;
         add_tab.disabled = false;
-        cart.showAdd();
         if (cart.getCartLength() > 0) {
             pay_tab.disabled = false;
             cart.showPay();
         }
         cart.drawCart();
         cart.showStartOver();
-        if (data['release'] > 0 && cart.getCartLength() == 0) {
+        if (searchData.release > 0 && cart.getCartLength() == 0) {
             release_tab.disabled = false;
             cart.showRelease();
+            gotoRelease();
+            searchData = null;
+            return;
         }
+        gotoAdd();
+        searchData = null;
         return;
-    } else { // I'm not sure how we'd get here
-        show_message(data['num_rows'] + " found.  Multiple people not yet supported.");
-        return;
-    }
 }
 
 // findArt: find art matching the criteria with the right parameters
@@ -386,6 +540,8 @@ function findArt(findType) {
             var fields = itemCode.split(',');
             itemId = fields[0];
             unitNumber = fields[1];
+            itemCode_field.value = '';
+            itemCode_field.focus();
             break;
 
         case 'unit':
@@ -421,6 +577,7 @@ function findArt(findType) {
         unitNumber: unitNumber,
         itemId: itemId,
         findType: findType,
+        region: config.region,
     };
 
     $("button[name='findArtBtn']").attr("disabled", true);
@@ -429,16 +586,16 @@ function findArt(findType) {
         url: "scripts/artpos_getArt.php",
         data: postData,
         success: function (data, textstatus, jqxhr) {
-            if (data['error'] !== undefined) {
-                show_message(data['error'], 'error');
+            if (data.error !== undefined) {
+                show_message(data.error, 'error');
                 $("button[name='findArtBtn']").attr("disabled", false);
                 return;
             }
-            if (data['message'] !== undefined) {
-                show_message(data['message'], 'success');
+            if (data.message !== undefined) {
+                show_message(data.message, 'success');
             }
-            if (data['warn'] !== undefined) {
-                show_message(data['warn'], 'warn');
+            if (data.warn !== undefined) {
+                show_message(data.warn, 'warn');
             }
             foundArt(data);
             $("button[name='findArtBtn']").attr("disabled", false);
@@ -455,40 +612,40 @@ function foundArt(data) {
     var html = '';
     var valid = true;
     var btn_color = 'btn-primary';
-    artFoundItems = data['items'];
-    if (data['items'].length == 1) {
-        var item = data['items'][0];
+    artFoundItems = data.items;
+    if (data.items.length == 1) {
+        var item = data.items[0];
         html  = '<div class="row mt-4 mb-1"><div class="col-sm-12 bg-primary text-white">Item Details</div></div>';
-        html += '<div class="row"><div class="col-sm-4">Artist Number:</div><div class="col-sm-8">' + item['exhibitorNumber'] + '</div></div>';
-        html += '<div class="row"><div class="col-sm-4">Artist Item #:</div><div class="col-sm-8">' + item['item_key'] + '</div></div>';
-        html += '<div class="row"><div class="col-sm-4">Type:</div><div class="col-sm-8">' + item['type'] + '</div></div>';
-        html += '<div class="row"><div class="col-sm-4">Status:</div><div class="col-sm-8">' + item['status'] + '</div></div>';
-        html += '<div class="row"><div class="col-sm-4">Artist Name:</div><div class="col-sm-8">' + item['exhibitorName'] + '</div></div>';
-        html += '<div class="row"><div class="col-sm-4">Title:</div><div class="col-sm-8">' + item['title'] + '</div></div>';
-        html += '<div class="row"><div class="col-sm-4">Material:</div><div class="col-sm-8">' + item['material'] + '</div></div>';
-        if (item['bidder'] != null && item['bidder'] != '' && item['bidder'] != current_person['id']) {
+        html += '<div class="row"><div class="col-sm-4">Artist Number:</div><div class="col-sm-8">' + item.exhibitorNumber + '</div></div>';
+        html += '<div class="row"><div class="col-sm-4">Artist Item #:</div><div class="col-sm-8">' + item.item_key + '</div></div>';
+        html += '<div class="row"><div class="col-sm-4">Type:</div><div class="col-sm-8">' + item.type + '</div></div>';
+        html += '<div class="row"><div class="col-sm-4">Status:</div><div class="col-sm-8">' + item.status + '</div></div>';
+        html += '<div class="row"><div class="col-sm-4">Artist Name:</div><div class="col-sm-8">' + item.exhibitorName + '</div></div>';
+        html += '<div class="row"><div class="col-sm-4">Title:</div><div class="col-sm-8">' + item.title + '</div></div>';
+        html += '<div class="row"><div class="col-sm-4">Material:</div><div class="col-sm-8">' + item.material + '</div></div>';
+        if (item.bidder != null && item.bidder != '' && item.bidder != currentPerson.id) {
             valid = false;
             html += '<div class="row"><div class="col-sm-4 bg-warning">Already Sold:</div><div class="col-sm-8 bg-warning">Item has already been sold to someone else.</div></div>';
         }
 
-        if (item['type'] == 'print') {
-            html += '<div class="row"><div class="col-sm-4">Sale Price:</div><div class="col-sm-8">$' + Number(item['sale_price']).toFixed(2) + '</div></div>';
+        if (item.type == 'print') {
+            html += '<div class="row"><div class="col-sm-4">Sale Price:</div><div class="col-sm-8">$' + Number(item.sale_price).toFixed(2) + '</div></div>';
 
-            if (item['quantity'] <= 0) {
+            if (item.quantity <= 0) {
                 html += '<div class="row"><div class="col-sm-4 bg-warning">Quantity:</div><div class="col-sm-8 bg-warning">System shows all of this item is already sold, remaining quantity is 0.</div></div>';
                 btn_color = 'btn-warning';
             }
         }
 
         if (valid) {
-            switch (item['type']) {
+            switch (item.type) {
                 case 'art':
-                    if (item['sale_price'] == 0 || Number(item['sale_price']) < Number(item['min_price'])) {
+                    if (item.sale_price == 0 || Number(item.sale_price) < Number(item.min_price)) {
                         html += '<div class="row"><div class="col-sm-4 bg-danger text-white">Quick Sale:</div><div class="col-sm-8 bg-danger text-white">Item is not available for quick sale.</div></div>';
                         valid = false;
                         break;
                     }
-                    if (item['status'].toLowerCase() == 'checked in') {
+                    if (item.status.toLowerCase() == 'checked in') {
                         priceType = 'Quick Sale Price:';
                         priceField = 'sale_price';
                     } else {
@@ -502,7 +659,7 @@ function foundArt(data) {
                     valid = false;
                     break;
                 case 'print':
-                    html += '<div class="row"><div class="col-sm-4">Remaining Quantity:</div><div class="col-sm-8">' + item['quantity'] + '</div></div>';
+                    html += '<div class="row"><div class="col-sm-4">Remaining Quantity:</div><div class="col-sm-8">' + item.quantity + '</div></div>';
                     priceType = 'Sale Price:'
                     priceField = 'sale_price';
                     break;
@@ -511,15 +668,15 @@ function foundArt(data) {
 
         if (valid) {
             htmlLine = '';
-            switch (item['status'].toLowerCase()) {
+            switch (item.status.toLowerCase()) {
                 case 'checked in':
                     // currently nothing special for checked in items, this will be for sale at priceType via priceField
                     break;
 
                 case 'bid':
-                    item['status'] = 'Sold Bid Sheet';
+                    item.status = 'Sold Bid Sheet';
                     htmlLine = '<div class="row"><div class="col-sm-4">Final Price:</div><div class="col-sm-8">' +
-                        '<input type=number inputmode="numeric" class="no-spinners" id="art-final-price" name="art-final-price" style="width: 9em;" value="' + item['final_price'] + '"/></div></div>';
+                        '<input type=number inputmode="numeric" class="no-spinners" id="art-final-price" name="art-final-price" style="width: 9em;" value="' + item.final_price + '"/></div></div>';
                     break;
 
                 case 'nfs':
@@ -554,7 +711,7 @@ function foundArt(data) {
 
                 case 'sold bid sheet':
                 case 'sold at auction':
-                    if (item['final_price'] == item['paid']) {
+                    if (item.final_price == item.paid) {
                         html += '<div class="row"><div class="col-sm-4 bg-danger text-white">Sold:</div><div class="col-sm-8 bg-danger text-white">System shows item already been sold and paid for.</div></div>';
                         valid = false;
                     }
@@ -564,7 +721,7 @@ function foundArt(data) {
         }
 
         if (valid) {
-            if (cart.notinCart(item['id'])) {
+            if (cart.notinCart(item.id)) {
                 if (htmlLine != '') {
                     html += htmlLine;
                 } else {
@@ -597,20 +754,20 @@ function addToCart(index) {
         var enteredPrice = Number(finalPriceField.value);
         if (enteredPrice == null)
             enteredPrice = 0;
-        var finalPrice = Number(item['final_price']);
+        var finalPrice = Number(item.final_price);
         if (finalPrice == null || finalPrice < 0) {
-            if (item['sale_price'] == null || item['sale_price'] == 0)
-                finalPrice = item['min_price'];
+            if (item.sale_price == null || item.sale_price == 0)
+                finalPrice = item.min_price;
             else
-                finalPrice = item['sale_price'];
+                finalPrice = item.sale_price;
         }
         if (enteredPrice < finalPrice) {
             if (confirm("Entered final price is less than system's sell price of " + finalPrice + ", sell at this price anyway?"))
-                item['final_price'] = Number(finalPrice).toFixed(2);
+                item.final_price = Number(finalPrice).toFixed(2);
             else
                 return;
         } else {
-            item['final_price'] = enteredPrice;
+            item.final_price = enteredPrice;
         }
     }
 
@@ -626,7 +783,7 @@ function initArtSales() {
         cart_art: JSON.stringify(cart.getCartArt()),
         cart_art_map: JSON.stringify(cart.getCartMap()),
         pay_tid: pay_tid,
-        perid: current_person['id'],
+        perid: currentPerson.id,
         user_id: user_id,
     };
     $.ajax({
@@ -634,15 +791,15 @@ function initArtSales() {
         url: "scripts/artpos_initArtSales.php",
         data: postData,
         success: function (data, textstatus, jqxhr) {
-            if (data['error'] !== undefined) {
-                show_message(data['error'], 'error');
+            if (data.error !== undefined) {
+                show_message(data.error, 'error');
                 return;
             }
-            if (data['message'] !== undefined) {
-                show_message(data['message'], 'success');
+            if (data.message !== undefined) {
+                show_message(data.message, 'success');
             }
-            if (data['warn'] !== undefined) {
-                show_message(data['warn'], 'success');
+            if (data.warn !== undefined) {
+                show_message(data.warn, 'success');
             }
             initArtSalesComplete(data);
         },
@@ -650,22 +807,31 @@ function initArtSales() {
     });
 }
 
-// initArtSalesComplete - now update the cart with the new data and call pay_shown again to draw it.
+// initArtSalesComplete - now update the cart with the new data and call payShown again to draw it.
 //  all the data from the cart has been updated in the database, now apply the id's and proceed to the next step
 function initArtSalesComplete(data) {
-    pay_tid = data['pay_tid'];
+    pay_tid = data.pay_tid;
+    if (data.message !== undefined) {
+        orderMsg = data.message;
+    }
+    if (data.warn !== undefined) {
+        orderMsg = data.warn;
+    }
+
     // update cart elements
     var unpaid_rows = cart.updateFromDB(data);
-    pay_shown();
+    payShown();
 }
 
 // setPayType: shows/hides the appropriate fields for that payment type
 function setPayType(ptype) {
     var elcheckno = document.getElementById('pay-check-div');
     var elccauth = document.getElementById('pay-ccauth-div');
+    var elcashtendered = document.getElementById('pay-cash-div');
 
     elcheckno.hidden = ptype != 'check';
     elccauth.hidden = ptype != 'credit';
+    elcashtendered.hidden = ptype != 'cash';
 
     if (ptype != 'check') {
         document.getElementById('pay-checkno').value = null;
@@ -673,11 +839,88 @@ function setPayType(ptype) {
     if (ptype != 'credit') {
         document.getElementById('pay-ccauth').value = null;
     }
-
-    // if they never selected an amount to pay, set it to full pay
-    if (thisPay_art == 0) {
-        setPayAmt('full');
+    if (ptype != 'cash') {
+        document.getElementById('pay-tendered').value = null;
     }
+}
+
+// overridePay - pay returned the terminal was unavailable, operator said to override it
+function overridePay(){
+    payOverride = 1;
+    pay('');
+}
+
+// payPoll - poll to see if the payment is complete
+function payPollfcn(action) {
+    document.getElementById('pollRow').hidden = true;
+    if (action == 1) { // asked to poll for is it complete
+        payPoll = 1;
+        pay('');
+        return;
+    }
+    // cancel terminal request
+    var postData = {
+        ajax_request_action: 'cancelPayRequest',
+        requestId: payCurrentRequest,
+        user_id: user_id,
+    };
+    clear_message();
+    $.ajax({
+        method: "POST",
+        url: "scripts/artpos_cancelPayment.php",
+        data: postData,
+        success: function (data, textstatus, jqxhr) {
+            cancelSuccess(data);
+        },
+        error: function (jqXHR, textstatus, errorThrown) {
+            document.getElementById('pollRow').hidden = false;
+            pay_button_pay.disabled = true;
+            showAjaxError(jqXHR, textstatus, errorThrown);
+        },
+    });
+}
+
+function cancelSuccess(data) {
+    pay_button_pay.disabled = false;
+
+    // things that stop us cold....
+    if (typeof data == 'string') {
+        show_message(data, 'error');
+        document.getElementById('pollRow').hidden = false;
+        return;
+    }
+
+    if (data.error !== undefined) {
+        show_message(data.error, 'error');
+        document.getElementById('pollRow').hidden = false;
+        return;
+    }
+
+    if (data.status == 'error') {
+        show_message(data.data, 'error');
+        document.getElementById('pollRow').hidden = false;
+        return;
+    }
+
+    if (data.warn !== undefined) {
+        show_message(data.warn, 'warn');
+        // warn means we could not get the terminal, ask if we want to override it
+        if (data.status != 'OFFLINE') {
+            document.getElementById('overrideRow').hidden = false;
+            return;
+        }
+    }
+
+    payPoll = 0;
+    payCurrentRequest = null;
+    // and things that continue
+    if (data.message !== undefined) {
+        show_message(data.message, 'success');
+    }
+
+    document.getElementById('pollRow').hidden = true;
+    pay_button_pay.disabled = false;
+    payShown();
 }
 
 // Process a payment against the transaction
@@ -687,10 +930,14 @@ function pay(nomodal, prow = null) {
     var checkno = null;
     var desc = null;
     var ptype = null;
-    var total_amount_due = cart.getTotalPrice() - cart.getTotalPaid();
 
     if (nomodal != '') {
         cashChangeModal.hide();
+    }
+
+    if (pay_currentOrderId == null) {
+        show_message("No order in progress, you have reached an error condition, start over or seek assistance", "error");
+        return;
     }
 
     if (prow == null) {
@@ -699,29 +946,25 @@ function pay(nomodal, prow = null) {
         //      for check: the check number is required
         //      for credit card: the auth code is required
         //      for discount: description is required, it's optional otherwise
-        var elamt = document.getElementById('pay-amt');
-        var pay_amt = Number(elamt.value);
-        if (pay_amt > 0 && pay_amt > thisPay_total) {
-            if (document.getElementById('pt-cash').checked) {
-                if (nomodal == '') {
-                    cashChangeModal.show();
-                    document.getElementById("CashChangeBody").innerHTML = "Customer owes $" + thisPay_total.toFixed(2) + ", and tendered $" + pay_amt.toFixed(2) +
-                        "<br/>Confirm change give to customer of $" + (pay_amt - thisPay_total).toFixed(2);
-                    return;
-                }
-            } else {
-                elamt.style.backgroundColor = 'var(--bs-warning)';
+
+       if (document.getElementById('pt-cash').checked) {
+           amtTendered = Number(document.getElementById('pay-tendered').value)
+            if (nomodal == '' && amtTendered > total_amount_due) {
+                cashChangeModal.show();
+                var tendered = Number(document.getElementById('pay-tendered').value);
+                document.getElementById("CashChangeBody").innerHTML = "Customer owes $" + total_amount_due.toFixed(2) + ", and tendered $" + amtTendered.toFixed(2) +
+                    "<br/>Confirm change given to customer of $" + (amtTendered - total_amount_due).toFixed(2);
+                return;
+            }
+
+            if (amtTendered < total_amount_due) {
+                show_message("Cannot pay less than total amount due of " + total_amount_due.toFixed(2), "error");
                 return;
             }
         }
-        if (pay_amt <= 0) {
-            elamt.style.backgroundColor = 'var(--bs-warning)';
-            return;
-        }
-
-        elamt.style.backgroundColor = '';
 
         var elptdiv = document.getElementById('pt-div');
+        var elterminal = document.getElementById('pt-terminal');
         elptdiv.style.backgroundColor = '';
 
         var eldesc = document.getElementById('pay-desc');
@@ -754,7 +997,8 @@ function pay(nomodal, prow = null) {
             }
             checked = true;
         }
-        if (document.getElementById('pt-credit').checked) {
+        var creditRadio = document.getElementById('pt-credit');
+        if (creditRadio != null && creditRadio.checked) {
             ptype = 'credit';
             var elccauth = document.getElementById('pay-ccauth');
             ccauth = elccauth.value;
@@ -772,22 +1016,30 @@ function pay(nomodal, prow = null) {
             checked = true;
         }
 
+        if (elterminal && elterminal.checked) {
+            ptype = 'terminal';
+            checked = true;
+        }
+
         if (!checked) {
             elptdiv.style.backgroundColor = 'var(--bs-warning)';
             return;
         }
 
-        if (pay_amt > 0) {
+        if (total_amount_due > 0) {
             var crow = null;
             var change = 0;
-            if (pay_amt > thisPay_total) {
-                change = pay_amt - thisPay_total;
-                crow = {
-                    index: cart.getPmtLength() + 1, amt: change, ccauth: ccauth, checkno: checkno, desc: eldesc.value, type: 'change',
+            if (ptype == 'cash') {
+                amtTendered = Number(document.getElementById('pay-tendered').value) > total_amount_due;
+                if (amtTendered > total_amount_due) {
+                    change = -thisPay_total;
+                    crow = {
+                        index: cart.getPmtLength() + 1, amt: change, ccauth: ccauth, checkno: checkno, desc: eldesc.value, type: 'change',
+                    }
                 }
             }
             prow = {
-                index: cart.getPmtLength(), amt: thisPay_total, tax: thisPay_tax, pretax: thisPay_art, ccauth: ccauth, checkno: checkno, desc: eldesc.value, type: ptype,
+                index: cart.getPmtLength(), amt: total_amount_due, tax: total_tax_due, pretax: total_art_due, ccauth: ccauth, checkno: checkno, desc: eldesc.value, type: ptype,
             };
         }
     }
@@ -800,31 +1052,23 @@ function pay(nomodal, prow = null) {
         new_payment: prow,
         change: crow,
         user_id: user_id,
-        perid: current_person['id'],
+        payor: currentPerson,
         pay_tid: pay_tid,
+        order_id: pay_currentOrderId,
+        override: payOverride,
+        poll: payPoll,
+        preTaxAmt: total_art_due,
+        taxAmt: total_tax_due,
+        totalAmtDue: total_amount_due,
     };
     pay_button_pay.disabled = true;
+    clear_message();
     $.ajax({
         method: "POST",
         url: "scripts/artpos_processPayment.php",
         data: postData,
         success: function (data, textstatus, jqxhr) {
-            var stop = true;
-            clear_message();
-            if (typeof data == 'string') {
-                show_message(data, 'error');
-            } else if (data['error'] !== undefined) {
-                show_message(data['error'], 'error');
-            } else if (data['message'] !== undefined) {
-                show_message(data['message'], 'success');
-                stop = false;
-            } else if (data['warn'] !== undefined) {
-                show_message(data['warn'], 'success');
-                stop = false;
-            }
-            if (!stop)
-                updatedPayment(data);
-            pay_button_pay.disabled = false;
+            paySuccess(data);
         },
         error: function (jqXHR, textstatus, errorThrown) {
             pay_button_pay.disabled = false;
@@ -833,12 +1077,75 @@ function pay(nomodal, prow = null) {
     });
 }
 
+// process payment return success
+function paySuccess(data) {
+    // things that stop us cold....
+    if (typeof data == 'string') {
+        show_message(data, 'error');
+        if (data.includes("cancelled")) {
+            payPoll = 0;
+            payCurrentRequest = null;
+            pay_button_pay.disabled = false;
+        } else if (payPoll == 1)
+            document.getElementById('pollRow').hidden = false;
+        return;
+    }
 
-// updatedPayment:
-//  payment entered into the database correctly, update the payment cart and the art with the updated paid amounts
-function updatedPayment(data) {
+    if (data.error !== undefined) {
+        show_message(data.error, 'error');
+        if (data.error.includes("cancelled")) {
+            payPoll = 0;
+            payCurrentRequest = null;
+            pay_button_pay.disabled = false;
+        }  else if (payPoll == 1)
+            document.getElementById('pollRow').hidden = false;
+        return;
+    }
+
+    if (data.status == 'error') {
+        show_message(data.data, 'error');
+        if (data.error.includes("cancelled")) {
+            payPoll = 0;
+            payCurrentRequest = null;
+            pay_button_pay.disabled = false;
+        } else if (payPoll == 1)
+            document.getElementById('pollRow').hidden = false;
+        return;
+    }
+
+    if (data.warn !== undefined) {
+        show_message(data.warn, 'warn');
+        // warn means we could not get the terminal, ask if we want to override it
+        if (data.status != 'OFFLINE') {
+            document.getElementById('overrideRow').hidden = false;
+            return;
+        }
+    }
+
+    payPoll = 0;
+    pay_button_pay.disabled = false;
+    // and things that continue
+    if (data.message !== undefined) {
+        show_message(data.message, 'success');
+    }
+    if (data.hasOwnProperty('poll')) {
+        if (data.poll == 1) {
+            if (data.id) {
+                payCurrentRequest = data.id;
+            }
+            document.getElementById('pollRow').hidden = false;
+            pay_button_pay.disabled = true;
+            payPoll = 1;
+            return;
+        }
+    }
+
+    payCurrentRequest = null;
     cart.updatePmt(data);
-    pay_shown();
+    total_art_due -= data.preTaxAmt;
+    total_tax_due -= data.taxAmt;
+    total_amount_due -= data.approved_amt;
+    payShown();
 }
 
 var last_receipt_type = '';
@@ -846,7 +1153,7 @@ var last_receipt_type = '';
 function print_receipt(receipt_type) {
     last_receipt_type = receipt_type;
     var d = new Date();
-    var payee = (current_person['first_name'] + ' ' + current_person['last_name']).trim();
+    var payee = (currentPerson.first_name + ' ' + currentPerson.last_name).trim();
 
     // header text
     var header_text =  "\nReceipt for payment to " + conlabel + "\nat " + d.toLocaleString() + "\nBy: " + payee + ", Cashier: " + user_id + ", Transaction: " + pay_tid + "\n";
@@ -856,7 +1163,7 @@ function print_receipt(receipt_type) {
     var postData = {
         ajax_request_action: 'printReceipt',
         header: header_text,
-        person: current_person,
+        person: currentPerson,
         arows: JSON.stringify(cart.getCartArt()),
         pmtrows: JSON.stringify(cart.getCartPmt()),
         footer: footer_text,
@@ -877,12 +1184,12 @@ function print_receipt(receipt_type) {
                 clear_message();
                 if (typeof data == "string") {
                     show_message(data,  'error');
-                } else if (data['error'] !== undefined) {
-                    show_message(data['error'], 'error');
-                } else if (data['message'] !== undefined) {
-                    show_message(data['message'], 'success');
-                } else if (data['warn'] !== undefined) {
-                    show_message(data['warn'], 'success');
+                } else if (data.error !== undefined) {
+                    show_message(data.error, 'error');
+                } else if (data.message !== undefined) {
+                    show_message(data.message, 'success');
+                } else if (data.warn !== undefined) {
+                    show_message(data.warn, 'success');
                 }
                 if (last_receipt_type == 'email')
                     pay_button_ercpt.disabled = false;
@@ -903,7 +1210,7 @@ function print_receipt(receipt_type) {
 }
 
 // tab shown events - state mapping for which tab is shown
-function find_shown() {
+function findShown() {
     cart.unfreeze();
     current_tab = find_tab;
     cart.drawCart();
@@ -914,12 +1221,12 @@ function find_shown() {
         url: "scripts/artpos_stats.php",
         data: { stats: 'all' },
         success: function (data, textstatus, jqxhr) {
-            if (data['error'] !== undefined) {
-                show_message(data['error'], 'error');
+            if (data.error !== undefined) {
+                show_message(data.error, 'error');
                 return;
             }
-            if (data['message'] !== undefined) {
-                show_message(data['message'], 'success');
+            if (data.message !== undefined) {
+                show_message(data.message, 'success');
             }
             updateStats(data);
         },
@@ -928,9 +1235,9 @@ function find_shown() {
 }
 
 function updateStats(data) {
-    active_customers = data['active_customers'];
-    awaiting_payment = data['need_pay'];
-    awaiting_release =  data['need_release'];
+    active_customers = data.active_customers;
+    awaiting_payment = data.need_pay;
+    awaiting_release =  data.need_release;
     var html = '<div class="col-sm-2">Stats:</div>';
     if (active_customers.length > 0) {
         html += '<div class="col-sm-3 text-primary" onclick="showStats(' + "'active'" + ');">Active Customers: ' + active_customers.length + '</div>';
@@ -998,9 +1305,16 @@ function showStats(which) {
             {title: "# Items", field: "items", maxWidth: 100, width: 100, hozAlign: 'right', headerHozAlign: 'right', headerSort: false, },
         ],
     });
+
+    statsTable.on("cellClick", personClicked);
 }
 
-function add_shown() {
+function personClicked(e, cell) {
+    badgeid_field.value = cell.getData().perid;
+    findPerson('search');
+}
+
+function addShown() {
     cart.unfreeze();
     current_tab = add_tab;
     clear_message();
@@ -1014,22 +1328,25 @@ function add_shown() {
     pieceNumber_field.value = null;
     unitNumber_field.value = null;
     itemCode_field.value = null;
+    itemCode_field.focus();
 }
 
 var emailAddreesRecipients = [];
 
 // show the pay tab, and its current dataset, if first call, update artSales in the database.
-function pay_shown() {
+function payShown() {
     if (pay_InitialCart) {
         pay_InitialCart = false;
         initArtSales();
+        return;
+    }
+    if (pay_currentOrderId == null) {
+        buildOrder();
+        return;
     }
     cart.freeze();
     current_tab = pay_tab;
     cart.drawCart();
-    total_art_due = cart.getTotalPrice() - cart.getTotalPaid();
-    total_tax_due = Math.round(total_art_due * config['taxRate']) / 100;
-    total_amount_due = total_art_due + total_tax_due;
     thisPay_art = 0;
     thisPay_tax = 0;
     thisPay_total = 0;
@@ -1039,14 +1356,13 @@ function pay_shown() {
         cart.showNext();
         cart.showRelease();
         cart.hideStartOver();
-        cart.hideAdd();
         add_tab.disabled = true;
         if (pay_button_pay != null) {
             var rownum;
             pay_button_pay.hidden = true;
             pay_button_rcpt.hidden = false;
             var email_html = '';
-            var email_addr = current_person['email_addr'];
+            var email_addr = currentPerson.email_addr;
             if (emailRegex.test(email_addr)) {
                 email_html += '<div class="row"><div class="col-sm-1 pe-2"></div><div class="col-sm-8">' + email_addr + '</div></div>';
             }
@@ -1055,14 +1371,11 @@ function pay_shown() {
                 pay_button_ercpt.disabled = false;
                 pay_button_ercpt.disabled = false;
                 receeiptEmailAddresses_div.innerHTML = '<div class="row mt-2"><div class="col-sm-9 p-0">Email receipt to:</div></div>' + email_html;
-                emailAddreesRecipients.push(current_person['email_addr']);
+                emailAddreesRecipients.push(currentPerson.email_addr);
             }
-            document.getElementById('pay-amt').value='';
             document.getElementById('pay-desc').value='';
-            document.getElementById('pay-amt-due').innerHTML = '';
             document.getElementById('pay-check-div').hidden = true;
             document.getElementById('pay-ccauth-div').hidden = true;
-            cart.hideAdd();
         } else {
             cart.showNext();
             cart.showRelease();
@@ -1088,45 +1401,49 @@ function pay_shown() {
         // column headings
         payHtml += `
     <div class="row mt-1">
-        <div class="col-sm-4 ms-0 me-0 p-0"></div>
-        <div class="col-sm-3 ms-0 me-0 p-0 text-end"><b>Remaining<br/>Balance</b></div>
-        <div class="col-sm-3 ms-0 me-0 p-0 text-end"><b>This<br/>Payment</b></div>
+        <div class="col-sm-6 ms-0 me-0 p-0"></div>
+        <div class="col-sm-3 ms-0 me-0 p-0 text-end"><b>Balance Due</b></div>
     </div>        
 `;
         // if tax rate exists show tax items
-        if (config['taxRate'] > 0) {
+        if (config.taxRate > 0) {
             payHtml += `
     <div class="row mt-1">
-        <div class="col-sm-4 m-0 p-0">Art Total:</div>
+        <div class="col-sm-6 m-0 p-0">Art Total:</div>
         <div class="col-sm-3 m-0 p-0 text-end" id="total-art-due">$` + Number(total_art_due).toFixed(2) + `</div>
-        <div class="col-sm-3 m-0 p-0 text-end" id="thisPay-art">$` + Number(thisPay_art).toFixed(2) + `</div>
     </div>
     <div class="row mt-2">
-        <div class="col-sm-4 m-0 p-0">` + config['taxLabel'] + ' ' + config['taxRate'] + ` % sales tax (if paid in full):</div>
+        <div class="col-sm-6 m-0 p-0">` + config.taxLabel + ' ' + config.taxRate + ` % sales tax:</div>
         <div class="col-sm-3 m-0 p-0 text-end" id="total-tax-due">$` + Number(total_tax_due).toFixed(2) + `</div>
-        <div class="col-sm-3 m-0 p-0 text-end" id="thisPay-tax">$` + Number(thisPay_tax).toFixed(2) + `</div>
     </div>
 `;
     }
-    // add prior discounts to screen if any
+
     payHtml += `
     <div class="row mt-1">
-        <div class="col-sm-4 m-0 p-0">Amount Due:</div>
+        <div class="col-sm-6 m-0 p-0">Amount Due:</div>
         <div class="col-sm-3 m-0 p-0 text-end" id="total-amt-due">$` + Number(total_amount_due).toFixed(2) + `</div>
-        <div class="col-sm-3 m-0 p-0 text-end" id="thisPay-total">$` + Number(thisPay_total).toFixed(2) + `</div>
-    </div>
-    <div class="row mt-2">
-        <div class="col-sm-4 m-0 p-0">Amount to pay:</div>
-        <div class="col-sm-3 m-0 p-0 text-end"><button class="btn btn-sm btn-primary" type="button" onclick="setPayAmt('full');">Pay In Full</button></div>
-        <div class="col-sm-3 m-0 p-0 text-end"><input type="number" inputmode="numeric" class="no-spinners" id="pay-amt" name="paid-amt" onchange="setPayAmt('');" style="width: 7em;"/></div>
     </div>
     <div class="row">
-        <div class="col-sm-4 m-0 mt-2 me-2 mb-2 p-0">Payment Type:</div>
-        <div class="col-sm-auto m-0 mt-2 p-0 ms-0 me-2 mb-2 p-0" id="pt-div">
+        <div class="col-sm-2 m-0 mt-2 me-2 mb-2 p-0">Payment Type:</div>
+        <div class="col-sm-auto m-0 mt-2 p-0 mb-2 p-0" id="pt-div">
+`;
+        if (config.terminal == 1) {
+            payHtml += `
+            <input type="radio" id="pt-terminal" name="payment_type" value="terminal" onclick='setPayType("terminal");'/>
+            <label for="pt-terminal">Credit Card Terminal&nbsp;&nbsp;&nbsp;</label>
+`;
+        }
+        if (config.creditoffline == 1) {
+            payHtml += `
             <input type="radio" id="pt-credit" name="payment_type" value="credit" onclick='setPayType("credit");'/>
-            <label for="pt-credit">Credit Card</label>
+            <label for="pt-credit">Offline Credit Card&nbsp;&nbsp;&nbsp;</label>
+`;
+        }
+
+        payHtml += `            
             <input type="radio" id="pt-check" name="payment_type" value="check" onclick='setPayType("check");'/>
-            <label for="pt-check">Check</label>
+            <label for="pt-check">Check&nbsp;&nbsp;&nbsp;</label>
             <input type="radio" id="pt-cash" name="payment_type" value="cash" onclick='setPayType("cash");'/>
             <label for="pt-cash">Cash</label>
 `;
@@ -1141,8 +1458,12 @@ function pay_shown() {
         payHtml += `
         </div>
     </div>
+    <div class="row mb-2" id="pay-cash-div" hidden>
+        <div class="col-sm-2 ms-0 me-2 p-0">Amt Tendered:</div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0"><input type="number" class="no-spinners" id="pay-tendered" name="paid-tendered" size="6"/></div>
+    </div>
     <div class="row mb-2" id="pay-check-div" hidden>
-        <div class="col-sm-2 ms-0 me-2 p-0">Check Number:</div>
+        <div class="col-sm-2 ms-0 me-2 p-0">Check #:</div>
         <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0"><input type="text" size="8" maxlength="10" name="pay-checkno" id="pay-checkno"/></div>
     </div>
     <div class="row mb-2" id="pay-ccauth-div" hidden>
@@ -1165,6 +1486,23 @@ function pay_shown() {
             <button class="btn btn-primary btn-sm" type="button" id="pay-btn-rcpt" onclick="print_receipt('print');" hidden>Print Receipt</button>
         </div>
     </div>
+    <div class="row mt-3" id="overrideRow" hidden>
+        <div class="col-sm-auto ms-0 me-2 p-0">
+            <button class="btn btn-warning btn-sm" type="button" id="pay-btn-override" onclick="overridePay();">Override</button>
+        </div>
+        <div class="col-sm-10 ms-0 me-2 p-0" id="override_msg">
+            <p>The terminal is marked as not available, override the status to take control and use it anyway?</p>
+            <p>This will cancel any payment in process on the terminal.</p>
+        </div>
+    </div>
+     <div class="row mt-3" id="pollRow" hidden>
+        <div class="col-sm-auto ms-0 me-2 p-0">
+            <button class="btn btn-primary btn-sm" type="button" id="pay-poll-complete" onclick="payPollfcn(1);">Payment Complete</button>
+        </div>
+        <div class="col-sm-auto ms-0 me-2 p-0">
+            <button class="btn btn-primary btn-sm" type="button" id="pay-poll-cancel" onclick="payPollfcn(0);">Cancel Payment</button>
+        </div>
+    </div>    
     <div id="receeiptEmailAddresses" class="container-fluid"></div>
   </form>
     <div class="row mt-4">
@@ -1183,53 +1521,15 @@ function pay_shown() {
         if (cart.getPmtLength() > 0) {
             cart.hideStartOver();
         } else {
-            cart.showAdd();
             cart.showStartOver();
         }
     }
 }
 
-
-// setPayAmt - update the payment amount
-function setPayAmt(type) {
-    if (type == 'full') {
-        thisPay_art = total_art_due;
-        thisPay_tax = total_tax_due;
-        thisPay_total = total_amount_due;
-        document.getElementById('pay-amt').value = Number(thisPay_total);
-    } else {
-        // back into the tax and art amounts, deal with rounding error
-        thisPay_total = document.getElementById('pay-amt').value;
-        if (thisPay_total < 0 || thisPay_total > total_amount_due)
-            thisPay_total = total_amount_due;
-        if (Number(config['taxRate']) > 0) {
-            var art = Math.round((10000 * thisPay_total) / (100 + Number(config['taxRate']))) / 100;
-            //console.log("computing art of " + config['taxRate'] + "% on " + thisPay_total + " at " + art)
-            var tax = Math.round(100 * (thisPay_total - art)) / 100;
-            //console.log("tax = " + tax);
-            var tax2 = Math.round(Number(art) * Number(config['taxRate'])) / 100;
-            if (tax2 != tax) {
-                tax = tax2;
-                art = thisPay_total - tax;
-                //console.log("rounded art to " + art + ", tax to " + tax);
-            }
-            thisPay_art = art;
-            thisPay_tax = tax;
-        } else {
-            thisPay_tax = 0;
-            thisPay_art = thisPay_total;
-        }
-    }
-
-    document.getElementById('thisPay-art').innerHTML = '$' + Number(thisPay_art).toFixed(2);
-    document.getElementById('thisPay-tax').innerHTML = '$' + Number(thisPay_tax).toFixed(2);
-    document.getElementById('thisPay-total').innerHTML = '$' + Number(thisPay_total).toFixed(2);
-}
-// release_shown - show the release tab
-function release_shown() {
+// releaseShown - show the release tab
+function releaseShown() {
     current_tab = release_tab;
     pay_tab.disabled = true;
-    cart.hideAdd();
     cart.showNext();
     cart.hideStartOver();
     clear_message();
@@ -1237,22 +1537,22 @@ function release_shown() {
     // search for matching names
     var postData = {
         ajax_request_action: 'findRelease',
-        perid: current_person['id'],
+        perid: currentPerson.id,
     };
     $.ajax({
         method: "POST",
         url: "scripts/artpos_findRelease.php",
         data: postData,
         success: function (data, textstatus, jqxhr) {
-            if (data['error'] !== undefined) {
-                show_message(data['error'], 'error');
+            if (data.error !== undefined) {
+                show_message(data.error, 'error');
                 return;
             }
-            if (data['message'] !== undefined) {
-                show_message(data['message'], 'success');
+            if (data.message !== undefined) {
+                show_message(data.message, 'success');
             }
-            if (data['warn'] !== undefined) {
-                show_message(data['warn'], 'warn');
+            if (data.warn !== undefined) {
+                show_message(data.warn, 'warn');
             }
             foundRelease(data);
         },
@@ -1264,16 +1564,25 @@ function release_shown() {
 }
 
 function foundRelease(data) {
-    releaseTitleDiv.innerHTML = 'Check Artwork Purchased by ' + (current_person['first_name'] + ' ' + current_person['last_name']).trim();
+    releaseTitleDiv.innerHTML = 'Check Artwork Purchased by ' + (currentPerson.first_name + ' ' + currentPerson.last_name).trim();
 
+    var art = data.art;
     if (releaseTable != null) {
         releaseTable.destroy();
         releaseTable = null;
     }
 
+    if (art.length == 0) {
+        // nothing to release, probably was just prints
+        releaseModal.hide();
+        show_message("No artwork to release.  Prints are auto-released on purchase." , "warn");
+        document.getElementById('release_btn').hidden = true;
+        return;
+    }
+
     releaseTable = new Tabulator('#ReleaseArtBody', {
         maxHeight: "600px",
-        data: data['art'],
+        data: art,
         index: 'id',
         layout: "fitColumns",
         initialSort: [
@@ -1335,26 +1644,149 @@ function processRelease() {
     $.ajax({
         url: 'scripts/artpos_processRelease.php',
         method: "POST",
-        data: { art: JSON.stringify(data), perid: current_person['id'], user_id: user_id, },
+        data: { art: JSON.stringify(data), perid: currentPerson.id, user_id: user_id, },
         success: function (data, textstatus, jqxhr) {
-            if (data['error'] !== undefined) {
-                show_message(data['error'], 'error');
+            if (data.error !== undefined) {
+                show_message(data.error, 'error');
                 return;
             }
-            if (data['warn'] !== undefined) {
-                show_message(data['warn'], 'warn');
+            if (data.warn !== undefined) {
+                show_message(data.warn, 'warn');
             }
-            if (data['message'] !== undefined) {
-                show_message(data['message'], 'success');
+            if (data.message !== undefined) {
+                show_message(data.message, 'success');
             }
-            if (data['num_remain'] > 0) {
-                if (confirm(data['num_remain'] + ' items are still not released, return to release?'))
-                    release_shown();
+            if (data.num_remain > 0) {
+                if (confirm(data.num_remain + ' items are still not released, return to release?'))
+                    releaseShown();
             } else {
                 cart.hideRelease();
-                start_over();
+                startOver(0);
             }
         },
         error: showAjaxError
     });
+}
+
+// combined exit change check
+function onExit() {
+    // if they have a terminal action in process, as if they want to leave install of 'poll' for it's status
+    if (payPoll == 1) {
+        var currentOrder = pay_currentOrderId;
+        var user_id = user_id;
+        pay_currentOrderId = null;
+        // cancel terminal request
+        var postData = {
+            ajax_request_action: 'cancelPayRequest',
+            requestId: payCurrentRequest,
+            user_id: user_id,
+        };
+        var _this = this;
+        clear_message();
+        $.ajax({
+            method: "POST",
+            url: "scripts/artpos_cancelPayment.php",
+            data: postData,
+            success: function (data, textstatus, jqxhr) {
+                if (typeof data == 'string') {
+                    show_message(data, 'error');
+                    return;
+                }
+
+                if (data.error !== undefined) {
+                    show_message(data.error, 'error');
+                    return;
+                }
+
+                if (data.status == 'error') {
+                    show_message(data.data, 'error');
+                    return;
+                }
+
+                if (data.warn !== undefined) {
+                    show_message(data.warn, 'warn');
+                }
+
+                if (data.message !== undefined) {
+                    show_message(data.message, 'success');
+                }
+                if (currentOrder && currentOrder != '') {
+                    var postData = {
+                        ajax_request_action: 'cancelOrder',
+                        orderId: currentOrder,
+                        user_id: user_id,
+                    };
+                    $.ajax({
+                        method: "POST",
+                        url: "scripts/artpos_cancelOrder.php",
+                        data: postData,
+                        success: function (data, textstatus, jqxhr) {
+                            if (data.error !== undefined) {
+                                show_message(data.error, 'error');
+                                return;
+                            }
+                            if (data.warn !== undefined) {
+                                show_message(data.warn, 'warn');
+                                if (data.hasOwnProperty('paid') && data.paid == 1) {
+                                    // it paid while waiting for the poll, process the payment
+                                    _payPoll = 1;
+                                    _pay_currentOrderId = currentOrder;
+                                    _pay('');
+                                    _payPoll = 0;
+                                    _pay_currentOrderId = null;
+                                }
+                                return;
+                            }
+                            if (data.message !== undefined) {
+                                show_message(data.message, 'success');
+                            }
+                        },
+                        error: function (jqXHR, textstatus, errorThrown) {
+                            $("button[name='find_btn']").attr("disabled", false);
+                            showAjaxError(jqXHR, textstatus, errorThrown);
+                        }
+                    });
+                }
+            },
+            error: function (jqXHR, textstatus, errorThrown) {
+                document.getElementById('pollRow').hidden = false;
+                _pay_button_pay.disabled = true;
+                showAjaxError(jqXHR, textstatus, errorThrown);
+            },
+        });
+        payPoll = 0;
+        return true;
+    }
+    if (pay_currentOrderId && pay_currentOrderId != '') {
+        var postData = {
+            ajax_request_action: 'cancelOrder',
+            orderId: pay_currentOrderId,
+            user_id: user_id,
+        };
+        $.ajax({
+            method: "POST",
+            url: "scripts/artpos_cancelOrder.php",
+            data: postData,
+            success: function (data, textstatus, jqxhr) {
+                if (data.error !== undefined) {
+                    show_message(data.error, 'error');
+                    return;
+                }
+                if (data.warn !== undefined) {
+                    show_message(data.warn, 'warn');
+                    return;
+                }
+                if (data.message !== undefined) {
+                    show_message(data.message, 'success');
+                }
+            },
+            error: function (jqXHR, textstatus, errorThrown) {
+                $("button[name='find_btn']").attr("disabled", false);
+                showAjaxError(jqXHR, textstatus, errorThrown);
+            }
+        });
+        pay_currentOrderId = null;
+    }
+    startOver(1);
+    return true;
 }

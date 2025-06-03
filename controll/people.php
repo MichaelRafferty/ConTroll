@@ -633,7 +633,7 @@ drawInterestList($interests, true);
                     <div class='row mt-1'>
                         <div class='col-sm-1'>Admin Notes:</div>
                         <div class='col-sm-10'>
-                            <textarea id='f_admin_notes' name='admon_notes' cols="120" rows="10" wrap="soft"
+                            <textarea id='f_admin_notes' name='admin_notes' cols="120" rows="10" wrap="soft"
                                       placeholder='notes visible to registration admins only'>
                             </textarea>
                         </div>

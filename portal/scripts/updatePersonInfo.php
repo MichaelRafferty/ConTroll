@@ -74,13 +74,13 @@ WHERE id = ?;
 EOS;
 }
 
-$fields = ['lname', 'mname', 'fname', 'suffix', 'phone', 'badgename', 'legalname', 'pronouns', 'addr', 'addr2', 'city', 'state', 'zip'];
+$fields = ['lname', 'mname', 'fname', 'suffix', 'phone', 'badgename', 'legalName', 'pronouns', 'addr', 'addr2', 'city', 'state', 'zip'];
 foreach ($fields as $field) {
     if ($person[$field] == null)
         $person[$field] = '';
 }
 
-// temporary diagnotic, why are the other fields found and country is not found sometimes. (Rarely)
+// temporary diagnostic, why are the other fields found and country is not found sometimes. (Rarely)
 if ($person['country'] == NULL || $person['country'] == '') {
     error_log("Country missing on this post:");
     var_error_log($_POST);
@@ -88,20 +88,20 @@ if ($person['country'] == NULL || $person['country'] == '') {
 }
 
 $value_arr = array(
-    trim($person['lname']),
-    trim($person['mname']),
-    trim($person['fname']),
-    trim($person['suffix']),
-    trim($person['phone']),
-    trim($person['badgename']),
-    trim($person['legalname']),
-    trim($person['pronouns']),
-    trim($person['addr']),
-    trim($person['addr2']),
-    trim($person['city']),
-    trim($person['state']),
-    trim($person['zip']),
-    trim($person['country']),
+    $person['lname'] == null ? '' : trim($person['lname']),
+    $person['mname'] == null ? '' : trim($person['mname']),
+    $person['fname'] == null ? '' : trim($person['fname']),
+    $person['suffix'] == null ? '' : trim($person['suffix']),
+    $person['phone'] == null ? '' : trim($person['phone']),
+    $person['badgename'] == null ? '' : trim($person['badgename']),
+    $person['legalName'] == null ? '' : trim($person['legalName']),
+    $person['pronouns'] == null ? '' : trim($person['pronouns']),
+    $person['addr'] == null ? '' : trim($person['addr']),
+    $person['addr2'] == null ? '' : trim($person['addr2']),
+    $person['city'] == null ? '' : trim($person['city']),
+    $person['state'] == null ? '' : trim($person['state']),
+    $person['zip'] == null ? '' : trim($person['zip']),
+    $person['country'] == null ? '' : trim($person['country']),
     $personId,
     $currentPerson,
 );

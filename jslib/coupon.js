@@ -98,6 +98,11 @@ class Coupon {
     isCouponActive() {
         return this.#couponActive;
     }
+
+    isCouponLoaded() {
+        return this.#curCoupon != null;
+    }
+
     getMinMemberships() {
         if (this.#curCoupon == null)
             return 0;
@@ -112,7 +117,7 @@ class Coupon {
         if (this.#curCoupon == null)
             return 999999999;
 
-        if (this.#curCoupon.maxMembersiphs == null)
+        if (this.#curCoupon.maxMemberships == null)
             return 999999999;
 
         return Number(this.#curCoupon.maxMemberships);
@@ -146,6 +151,12 @@ class Coupon {
             return 999999999;
 
         return Number(this.#curCoupon.maxTransaction);
+    }
+
+    getCouponId() {
+        if (this.#curCoupon == null)
+            return null;
+        return this.#curCoupon.id;
     }
 
     getCouponCode() {

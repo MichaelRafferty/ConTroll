@@ -55,11 +55,11 @@ $data_array=array();
 
 if($test) {
     $emailR = dbSafeQuery("select DISTINCT P.email_addr AS email, create_trans AS tid FROM reg R JOIN perinfo P ON (P.id=R.perid) WHERE create_trans=?;", 'i', array($tid));
-    while ($email_value = fetch_safe_assoc($emailR)) {
+    while ($email_value = $emailR->fetch_assoc()) {
         array_push($email_array, array('email'=>$email_value['email'], 'tid'=>$email_value['tid']));
     }
 } else {
-    while($addr = fetch_safe_assoc($emailR)) {
+    while($addr = $emailR->fetch_assoc()) {
         array_push($email_array, array('email'=>$addr['email'], 'tid'=>$addr['tid']));
     }
 }

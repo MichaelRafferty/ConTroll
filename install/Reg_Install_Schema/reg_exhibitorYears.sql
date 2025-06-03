@@ -19,12 +19,15 @@ CREATE TABLE `exhibitorYears` (
   `contactPhone` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `contactPassword` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `mailin` enum('N','Y') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'N',
+  `mailinFeePaidAmount` decimal(8,2) DEFAULT NULL,
+  `mailinFeeTransaction` int DEFAULT NULL,
   `need_new` tinyint(1) DEFAULT '1',
   `confirm` tinyint(1) DEFAULT '0',
   `needReview` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`),
   KEY `ey_exhibitors_fk` (`exhibitorId`),
-  KEY `ey_conlist_fk` (`conid`)
+  KEY `ey_conlist_fk` (`conid`),
+  KEY `ey_mailintrans` (`mailinFeeTransaction`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 

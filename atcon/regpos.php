@@ -17,12 +17,24 @@ $usps = get_conf('usps');
 $vendor = get_conf('vendor');
 $ini = get_conf('reg');
 $controll = get_conf('controll');
+$atcon = get_conf('atcon');
 $condata = get_con();
 $conid = $con['id'];
 $conname = $con['conname'];
 $tab = 'checkin';
 $mode = 'checkin';
 $method='data_entry';
+if (array_key_exists('allage', $atcon)) {
+    $allAgeFirst = $atcon['allage'];
+} else {
+    $allAgeFirst = 0;
+}
+    if (array_key_exists('onedaycoupons', $con)) {
+        $onedaycoupons = $con['onedaycoupons'];
+    } else {
+        $onedaycoupons = 0;
+    }
+
 if (isset($_GET['mode'])) {
     if ($_GET['mode'] == 'cashier') {
         $mode = 'cashier';
@@ -44,8 +56,10 @@ if (array_key_exists('taxRate', $con))
 else
     $taxRate = 0;
 
-if (array_key_exists('taxidlabel', $vendor))
-    $taxLabel = $vendor['taxidlabel'];
+setSessionVar('POSMode', $mode);
+
+if (array_key_exists('taxLabel', $con))
+    $taxLabel = $con['taxLabel'];
 else
     $taxLabel = '';
 
@@ -71,7 +85,22 @@ $config_vars['regadminemail'] = $con['regadminemail'];
 $config_vars['required'] = $ini['required'];
 $config_vars['useportal'] = $controll['useportal'];
 $config_vars['cashier'] = $method == 'cashier' ? 1 : 0;
+$config_vars['cashierAllowed'] = check_atcon('cashier', $conid) ? 1 : 0;
 $config_vars['multiOneDay'] = $multiOneDay;
+$config_vars['allAgeFirst'] = $allAgeFirst;
+$config_vars['posType'] = 'a';
+if (array_key_exists('creditoffline', $atcon)) {
+    $config_vars['creditoffline'] = $atcon['creditoffline'];
+}
+if (array_key_exists('creditonline', $atcon)) {
+    $config_vars['creditonline'] = $atcon['creditonline'];
+}
+if (isset($_GET['tid'])) {
+    $config_vars['autoloadTID'] = $_GET['tid'];
+}
+$config_vars['onedaycoupons'] = $onedaycoupons;
+$config_vars['source'] = 'regpos';
+
 
 $useUSPS = false;
 
@@ -213,7 +242,6 @@ page_init($page, $tab,
                     <button type="button" class="btn btn-primary btn-sm" id="cart_no_changes_btn" onclick="pos.reviewNoChanges();" hidden>No Changes</button>
                     <button type="button" class="btn btn-primary btn-sm" id="review_btn" onclick="pos.startReview();" hidden>Review Data</button>
                     <button type="button" class="btn btn-warning btn-sm" id="startover_btn" onclick="pos.startOver(1);" hidden>Start Over</button>
-                    <button type="button" class="btn btn-warning btn-sm" id="void_btn" onclick="pos.voidTrans();" hidden>Void</button>
                     <button type="button" class="btn btn-primary btn-sm" id="next_btn" onclick="pos.startOver(1);" hidden>Next Customer</button>
                 </div>
             </div>
@@ -242,7 +270,7 @@ page_init($page, $tab,
         </div>
     </div>
     <!--- add/Edit membership modal popup -->
-    <div class='modal modal-x1 fade' id='addEdit' tabindex='-3' aria-labelledby='addEdit' data-bs-backdrop='static'
+    <div class='modal modal-xl fade' id='addEdit' tabindex='-3' aria-labelledby='addEdit' data-bs-backdrop='static'
          data-bs-keyboard='false' aria-hidden='true' style='--bs-modal-width: 96%;'>
         <div class='modal-dialog'>
             <div class='modal-content'>
@@ -295,7 +323,7 @@ page_init($page, $tab,
                 <div class='modal-body' id='CashChangeBody'>
                 </div>
                 <div class='modal-footer'>
-                    <button type='button' id='discard_cash_button' class='btn btn-secondary' onclick='pos.cashChangeModal.hide();'>Cancel Cash Payment</button>
+                    <button type='button' id='discard_cash_button' class='btn btn-secondary' onclick='pos.hideCashChangeModal();'>Cancel Cash Payment</button>
                     <button type='button' id='close_cash_button' class='btn btn-primary' onclick='pos.pay("nomodal");'>Change given to Customer</button>
                 </div>
             </div>

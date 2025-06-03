@@ -19,7 +19,7 @@ header('Content-Disposition: attachment; filename="goh.csv"');
 
 // there was an extra on clause part for badgeList of "and B.conid=50", need to understand why the hardcode?
 $query = <<<EOS
-SELECT DISTINCT CONCAT(P.first_name, ' ', P.last_name), P.badge_name, M.label
+SELECT DISTINCT CONCAT_WS(' ', P.first_name, P.last_name), P.badge_name, M.label
 FROM reg R
 JOIN badgeList B ON (B.perid=R.perid)
 JOIN perinfo P ON (P.id=R.perid)

@@ -13,7 +13,7 @@ function drawGetAgeBracket($updateName, $condata) : void {
     </div>
     <div class="row mt-1" id="ageButtons"></div>
     <div class="row mt-2">
-        <div class="col-sm-12">Please click on the proper age bracket above to continue to the next step.</div>
+        <div id="ageBracketMsg" class="col-sm-12">Please click on the proper age bracket above to continue to the next step.</div>
     </div>
     <?php
 }
@@ -54,7 +54,7 @@ function draw_editPersonModal($source, $policies) : void {
         default => 'badClose()',
     };
 ?>
-    <div id='editPersonModal' class='modal modal-x1 fade' tabindex='-1' aria-labelledby='Edit Person' aria-hidden='true' style='--bs-modal-width: 96%;'>
+    <div id='editPersonModal' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Edit Person' aria-hidden='true' style='--bs-modal-width: 96%;'>
         <div class='modal-dialog'>
             <div class='modal-content'>
                 <div class='modal-header bg-primary text-bg-primary'>
@@ -379,7 +379,7 @@ function drawPersonRow($personId, $personType, $person, $memberships, $showInter
     </div>
 <?php
     }
-    $personArgs = json_encode(array('id' => $person['id'] , 'type' => $person['personType'], 'fullname' => $person['fullname'],
+    $personArgs = json_encode(array('id' => $person['id'] , 'type' => $person['personType'], 'fullName' => $person['fullName'],
                                 'first_name' => $person['first_name'], 'last_name' => $person['last_name'],
                                 'email_addr' => $person['email_addr']));
     $personArgs = str_replace('"', '\\u0022', $personArgs);
@@ -387,7 +387,7 @@ function drawPersonRow($personId, $personType, $person, $memberships, $showInter
     ?>
     <div class="row mt-1">
         <div class='col-sm-1' style='text-align: right;'><?php echo $person['personType'] == 'n' ? 'Pending' : $person['id']; ?></div>
-        <div class='col-sm-3'><strong><?php echo $person['fullname']; ?></strong></div>
+        <div class='col-sm-3'><strong><?php echo $person['fullName']; ?></strong></div>
         <div class="col-sm-2"><?php echo $badge_name; ?></div>
         <div class='col-sm-6 p-1'>
                 <button class='btn btn-sm btn-primary p-1' style='--bs-btn-font-size: 80%;'
@@ -492,7 +492,7 @@ function drawPersonRow($personId, $personType, $person, $memberships, $showInter
 function draw_editInterestsModal($interests) : void {
     if ($interests != null) {
     ?>
-    <div id='editInterestModal' class='modal modal-x1 fade' tabindex='-1' aria-labelledby='Edit Interests' aria-hidden='true' style='--bs-modal-width: 96%;'>
+    <div id='editInterestModal' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Edit Interests' aria-hidden='true' style='--bs-modal-width: 96%;'>
         <div class='modal-dialog'>
             <div class='modal-content'>
                 <div class='modal-header bg-primary text-bg-primary'>

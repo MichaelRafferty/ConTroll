@@ -20,7 +20,7 @@ function draw_login($config_vars, $result_message = '') {
             <form id='exhibitorSignin' method='POST'>
                 <div class='row mt-1'>
                     <div class='col-sm-1'>
-                        <label for='si_email'>*Email: </label>
+                        <label for='si_email'><span class='text-danger'>&bigstar;</span>Email: </label>
                     </div>
                     <div class='col-sm-auto'>
                         <input class='form-control-sm' type='email' name='si_email' id='si_email' size='40' required/>
@@ -28,7 +28,7 @@ function draw_login($config_vars, $result_message = '') {
                 </div>
                 <div class='row mt-1'>
                     <div class='col-sm-1'>
-                        <label for='si_password'>*Password: </label>
+                        <label for='si_password'><span class='text-danger'>&bigstar;</span>Password: </label>
                     </div>
                     <div class='col-sm-auto'>
                         <input class='form-control-sm' type='password' id='si_password' name='si_password' size='40' autocomplete='off' required/>
@@ -74,6 +74,7 @@ function draw_login($config_vars, $result_message = '') {
 
 // draw_RegistratioModal - the modal for reg_control create and edit profile
 function draw_registrationModal($portalType, $portalName, $con, $countryOptions, $tabStart=10 ) {
+    $con = get_conf('con');
     $vendor_conf = get_conf('vendor');
     $tabIndex = $tabStart;
     ?>
@@ -122,7 +123,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                              <?php outputCustomText('profile/bus' . $portalName); if ($portalType == 'artist' || $portalType == 'admin') { ?>
                                 <div class="row mt-1">
                                     <div class='col-sm-2'>
-                                        <label for='artistName'> *Artist Name: </label>
+                                        <label for='artistName'><span class='text-danger'>&bigstar;</span>Artist Name: </label>
                                     </div>
                                     <div class='col-sm-auto p-0 ms-0 me-0'>
                                         <input class='form-control-sm' type='text' name='artistName' id='artistName' maxlength='128' size='50'
@@ -132,7 +133,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                             <?php } ?>
                             <div class='row mt-1'>
                                 <div class="col-sm-2">
-                                    <label for="exhibitorName"> *Business Name: </label>
+                                    <label for="exhibitorName"><span class='text-danger'>&bigstar;</span>Business Name: </label>
                                 </div>
                                 <div class="col-sm-auto p-0 ms-0 me-0">
                                     <input class="form-control-sm" type='text' name='exhibitorName' id="exhibitorName"
@@ -143,7 +144,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                             </div>
                             <div class='row mt-1'>
                                 <div class='col-sm-2'>
-                                    <label for='exhibitorEmail'> *Business Email: </label>
+                                    <label for='exhibitorEmail'><span class='text-danger'>&bigstar;</span>Business Email: </label>
                                 </div>
                                 <div class='col-sm-auto p-0 ms-0 me-0'>
                                     <input class='form-control-sm' type='email' name='exhibitorEmail' id='exhibitorEmail' maxlength='254' size='50' required
@@ -153,7 +154,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                             </div>
                             <div class='row mt-1'>
                                 <div class='col-sm-2'>
-                                    <label for='exhibitorPhone'> *Business Phone: </label>
+                                    <label for='exhibitorPhone'><span class='text-danger'>&bigstar;</span>Business Phone: </label>
                                 </div>
                                 <div class='col-sm-auto p-0 ms-0 me-0'>
                                     <input class='form-control-sm' type='text' name='exhibitorPhone' id='exhibitorPhone' maxlength='32' size='24' required
@@ -161,8 +162,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                                     />
                                 </div>
                             </div>
-                            <?php if ($portalType == 'vendor' && array_key_exists('taxidlabel', $vendor_conf) &&
-                                    $vendor_conf['taxidlabel'] != '') { ?>
+                            <?php if ($portalType == 'vendor' && array_key_exists('taxidlabel', $vendor_conf) && $vendor_conf['taxidlabel'] != '') { ?>
                             <div class='row mt-1'>
                                 <div class='col-sm-2'>
                                     <label for='exhibitorTaxid'><?php echo $vendor_conf['taxidlabel']; ?>:</label>
@@ -176,7 +176,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                             <?php } ?>
                             <div class='row mt-1' id='passwordLine1'>
                                 <div class='col-sm-2'>
-                                    <label for='pw1'> *Password: </label>
+                                    <label for='pw1'><span class='text-danger'>&bigstar;</span>Password: </label>
                                 </div>
                                 <div class='col-sm-auto p-0 ms-0 me-0'>
                                     <input class='form-control-sm' id='pw1' type='password' name='password' autocomplete='off' required
@@ -186,7 +186,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                             </div>
                             <div class='row mt-1' id='passwordLine2'>
                                 <div class='col-sm-2'>
-                                    <label for='pw2'> *Confirm Password: </label>
+                                    <label for='pw2'><span class='text-danger'>&bigstar;</span>Confirm Password: </label>
                                 </div>
                                 <div class='col-sm-auto p-0 ms-0 me-0'>
                                     <input class='form-control-sm' id='pw2' type='password' name='cpassword2' autocomplete='off' required
@@ -208,7 +208,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                              <?php outputCustomText('profile/web' . $portalName); ?>
                             <div class='row mt-1'>
                                 <div class='col-sm-2'>
-                                    <label for='description'>*Description: </label>
+                                    <label for='description'><span class='text-danger'>&bigstar;</span>Description: </label>
                                 </div>
                                 <div class='col-sm-auto p-0 ms-0 me-0'>
                                     <textarea class='form-control-sm' id='description' name='description' rows=5 cols=64 required
@@ -219,7 +219,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                             </div>
                             <div class='row mt-1'>
                                 <div class='col-sm-2'>
-                                    <label for='publicity'> *Publicity: </label>
+                                    <label for='publicity'><span class='text-danger'>&bigstar;</span>Publicity: </label>
                                 </div>
                                 <div class='col-sm-9 p-0 ms-0 me-0'>
                                     <select name='publicity' id='publicity' tabindex="<?php echo $tabIndex; $tabIndex += 2;?>"
@@ -234,7 +234,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                             <?php if ($portalType == 'artist' || $portalType == 'admin') { /* TODO change this to 'mail-in allowed' */ ?>
                                 <div class='row mt-1'>
                                     <div class='col-sm-2'>
-                                        <label for='mailin'> *Are you requesting a mail-in space: </label>
+                                        <label for='mailin'><span class='text-danger'>&bigstar;</span>Are you requesting a mail-in space: </label>
                                     </div>
                                     <div class='col-sm-9 p-0 ms-0 me-0'>
                                         <select name='mailin' id='mailin' tabindex="<?php echo $tabIndex; $tabIndex += 2;?>"
@@ -255,7 +255,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                             <?php outputCustomText('profile/add' . $portalName); ?>
                             <div class="row mt-1">
                                 <div class="col-sm-2">
-                                    <label for="addr"> *Address </label>
+                                    <label for="addr"><span class='text-danger'>&bigstar;</span>Address </label>
                                 </div>
                                 <div class="col-sm-auto p-0 ms-0 me-0">
                                     <input class="form-control-sm" id='addr' type='text' size="64" name='addr'
@@ -275,7 +275,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                             </div>
                             <div class="row mt-1">
                                 <div class="col-sm-2">
-                                    <label for="city"> *City: </label>
+                                    <label for="city"><span class='text-danger'>&bigstar;</span>City: </label>
                                 </div>
                                 <div class="col-sm-auto p-0 ms-0 me-0">
                                     <input class="form-control-sm" id='city' type='text' size="32" maxlength="32" name='city' required
@@ -283,7 +283,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                                     />
                                 </div>
                                 <div class="col-sm-auto ms-0 me-0 p-0 ps-2">
-                                    <label for="state"> *State: </label>
+                                    <label for="state"><span class='text-danger'>&bigstar;</span>State: </label>
                                 </div>
                                 <div class="col-sm-auto p-0 ms-0 me-0 ps-1">
                                     <input class="form-control-sm" id='state' type='text' size="10" maxlength="16" name='state' required
@@ -291,7 +291,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                                     />
                                 </div>
                                 <div class="col-sm-auto ms-0 me-0 p-0 ps-2">
-                                    <label for="zip"> *Zip: </label>
+                                    <label for="zip"><span class='text-danger'>&bigstar;</span>Zip: </label>
                                 </div>
                                 <div class="col-sm-auto p-0 ms-0 me-0 ps-1 pb-2">
                                     <input class="form-control-sm" id='zip' type='text' size="11" maxlength="11" name='zip' required
@@ -317,7 +317,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                             <?php outputCustomText('profile/contact'); ?>
                             <div class='row mt-1'>
                                 <div class='col-sm-2'>
-                                    <label for='contactName'> *Contact Name: </label>
+                                    <label for='contactName'><span class='text-danger'>&bigstar;</span>Contact Name: </label>
                                 </div>
                                 <div class='col-sm-auto p-0 ms-0 me-0'>
                                     <input class='form-control-sm' type='text' name='contactName' id='contactName'
@@ -328,7 +328,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                             </div>
                             <div class='row mt-1'>
                                 <div class='col-sm-2'>
-                                    <label for='contactEmail'> *Email/Login: </label>
+                                    <label for='contactEmail'><span class='text-danger'>&bigstar;</span>Email/Login: </label>
                                 </div>
                                 <div class='col-sm-auto p-0 ms-0 me-0'>
                                     <input class='form-control-sm' type='email' name='contactEmail' id='contactEmail' maxlength='254' size='50'
@@ -339,7 +339,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                             </div>
                             <div class='row mt-1'>
                                 <div class='col-sm-2'>
-                                    <label for='contactPhone'> *Contact Phone: </label>
+                                    <label for='contactPhone'><span class='text-danger'>&bigstar;</span>Contact Phone: </label>
                                 </div>
                                 <div class='col-sm-auto p-0 ms-0 me-0'>
                                     <input class='form-control-sm' type='text' name='contactPhone' id='contactPhone' maxlength='32' size='24' required
@@ -349,7 +349,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                             </div>
                             <div class='row mt-1' id='cpasswordLine1'>
                                 <div class='col-sm-2'>
-                                    <label for='cpw1'> *Contact Password: </label>
+                                    <label for='cpw1'><span class='text-danger'>&bigstar;</span>Contact Password: </label>
                                 </div>
                                 <div class='col-sm-auto p-0 ms-0 me-0'>
                                     <input class='form-control-sm' id='cpw1' type='password' name='cpassword' autocomplete='off' required
@@ -360,7 +360,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                             </div>
                             <div class='row mt-1' id='cpasswordLine2'>
                                 <div class='col-sm-2'>
-                                    <label for='cpw2'> *Confirm Password: </label>
+                                    <label for='cpw2'><span class='text-danger'>&bigstar;</span>Confirm Password: </label>
                                 </div>
                                 <div class='col-sm-auto p-0 ms-0 me-0'>
                                     <input class='form-control-sm' id='cpw2' type='password' name='cpassword2' autocomplete='off' required
@@ -384,7 +384,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                             <?php outputCustomText('profile/shipping'); ?>
                             <div class='row mt-1'>
                                 <div class='col-sm-2'>
-                                    <label for='shipCompany'> *Company </label>
+                                    <label for='shipCompany'><span class='text-danger'>&bigstar;</span>Company </label>
                                 </div>
                                 <div class='col-sm-auto p-0 ms-0 me-0'>
                                     <input class='form-control-sm' id='shipCompany' type='text' size='64' name='shipCompany' required
@@ -394,7 +394,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                             </div>
                             <div class='row mt-1'>
                                 <div class='col-sm-2'>
-                                    <label for='shipAddr'> *Address </label>
+                                    <label for='shipAddr'><span class='text-danger'>&bigstar;</span>Address </label>
                                 </div>
                                 <div class='col-sm-auto p-0 ms-0 me-0'>
                                     <input class='form-control-sm' id='shipAddr' type='text' size='64' name='shipAddr' required
@@ -412,7 +412,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                             </div>
                             <div class='row mt-1'>
                                 <div class='col-sm-2'>
-                                    <label for='shipCity'> *City: </label>
+                                    <label for='shipCity'><span class='text-danger'>&bigstar;</span>City: </label>
                                 </div>
                                 <div class='col-sm-auto p-0 ms-0 me-0'>
                                     <input class='form-control-sm' id='shipCity' type='text' size='32' maxlength='32' name='shipCity'
@@ -420,7 +420,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                                     />
                                 </div>
                                 <div class='col-sm-auto ms-0 me-0 p-0 ps-2'>
-                                    <label for='shipState'> *State: </label>
+                                    <label for='shipState'><span class='text-danger'>&bigstar;</span>State: </label>
                                 </div>
                                 <div class='col-sm-auto p-0 ms-0 me-0 ps-1'>
                                     <input class='form-control-sm' id='shipState' type='text' size='10' maxlength='16' name='shipState'
@@ -428,7 +428,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                                     />
                                 </div>
                                 <div class='col-sm-auto ms-0 me-0 p-0 ps-2'>
-                                    <label for='shipZip'> *Zip: </label>
+                                    <label for='shipZip'><span class='text-danger'>&bigstar;</span>Zip: </label>
                                 </div>
                                 <div class='col-sm-auto p-0 ms-0 me-0 ps-1 pb-2'>
                                     <input class='form-control-sm' id='shipZip' type='text' size='11' maxlength='11' name='shipZip' required
@@ -466,6 +466,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
 
 // draw_RegistratioModal - the modal for exhibitor signup
 function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabStart = 10) {
+    $con = get_conf('con');
     $vendor_conf = get_conf('vendor');
     $tabIndex = $tabStart;
     ?>
@@ -514,7 +515,7 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                 ?>
                                 <div class='row mt-3'>
                                     <div class='col-sm-2'>
-                                        <label for='artistName'> *Artist Name: </label>
+                                        <label for='artistName'><span class='text-danger'>&bigstar;</span>Artist Name: </label>
                                     </div>
                                     <div class='col-sm-auto p-0 ms-0 me-0'>
                                         <input class='form-control-sm' type='text' name='artistName' id='artistName' maxlength='128' size='50'
@@ -527,7 +528,7 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                 </div>
                                 <div class='row mt-1'>
                                     <div class='col-sm-2'>
-                                        <label for='mailin'> *Are you requesting a mail-in space: </label>
+                                        <label for='mailin'><span class='text-danger'>&bigstar;</span>Are you requesting a mail-in space: </label>
                                     </div>
                                     <div class='col-sm-9 p-0 ms-0 me-0'>
                                         <select name='mailin' id='mailin' tabindex="<?php echo $tabIndex; $tabIndex += 2;?>"
@@ -543,7 +544,7 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                 <?php } ?>
                                 <div class='row mt-1'>
                                     <div class='col-sm-2'>
-                                        <label for='publicity'> *Publicity: </label>
+                                        <label for='publicity'><span class='text-danger'>&bigstar;</span>Publicity: </label>
                                     </div>
                                     <div class='col-sm-9 p-0 ms-0 me-0'>
                                         <select name='publicity' id='publicity' tabindex="<?php echo $tabIndex; $tabIndex += 2;?>"
@@ -582,7 +583,7 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                 </div>
                                 <div class="row mt-1">
                                     <div class="col-sm-2">
-                                        <label for="exhibitorName"> *Name: </label>
+                                        <label for="exhibitorName"><span class='text-danger'>&bigstar;</span>Name: </label>
                                     </div>
                                     <div class="col-sm-auto p-0 ms-0 me-0">
                                         <input class="form-control-sm" type='text' name='exhibitorName' id="exhibitorName" maxlength="64" size="50"
@@ -593,7 +594,7 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                 </div>
                                 <div class='row mt-1'>
                                     <div class='col-sm-2'>
-                                        <label for='exhibitorEmail'> *Business Email: </label>
+                                        <label for='exhibitorEmail'><span class='text-danger'>&bigstar;</span>Business Email: </label>
                                     </div>
                                     <div class='col-sm-auto p-0 ms-0 me-0'>
                                         <input class='form-control-sm' type='email' name='exhibitorEmail' id='exhibitorEmail' maxlength='254' size='50'
@@ -604,7 +605,7 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                 </div>
                                 <div class='row mt-1'>
                                     <div class='col-sm-2'>
-                                        <label for='exhibitorPhone'> *Business Phone: </label>
+                                        <label for='exhibitorPhone'><span class='text-danger'>&bigstar;</span>Business Phone: </label>
                                     </div>
                                     <div class='col-sm-auto p-0 ms-0 me-0'>
                                         <input class='form-control-sm' type='text' name='exhibitorPhone' id='exhibitorPhone' maxlength='32' size='24'
@@ -613,8 +614,7 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                         />
                                     </div>
                                 </div>
-                                <?php if ($portalType == 'vendor' && array_key_exists('taxidlabel', $vendor_conf) &&
-                                    $vendor_conf['taxidlabel'] != '') { ?>
+                                <?php if ($portalType == 'vendor' && array_key_exists('taxidlabel', $vendor_conf) && $vendor_conf['taxidlabel'] != '') { ?>
                                     <div class='row mt-1'>
                                         <div class='col-sm-2'>
                                             <label for='exhibitorTaxid'><?php echo $vendor_conf['taxidlabel']; ?>:</label>
@@ -628,7 +628,7 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                 <?php } ?>
                                 <div class='row mt-1' id='passwordLine1'>
                                     <div class='col-sm-2'>
-                                        <label for='pw1'> *Password: </label>
+                                        <label for='pw1'><span class='text-danger'>&bigstar;</span>Password: </label>
                                     </div>
                                     <div class='col-sm-auto p-0 ms-0 me-0'>
                                         <input class='form-control-sm' id='pw1' type='password' name='password' autocomplete='off' required
@@ -638,7 +638,7 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                 </div>
                                 <div class='row mt-1' id='passwordLine2'>
                                     <div class='col-sm-2'>
-                                        <label for='pw2'> *Confirm Password: </label>
+                                        <label for='pw2'><span class='text-danger'>&bigstar;</span>Confirm Password: </label>
                                     </div>
                                     <div class='col-sm-auto p-0 ms-0 me-0'>
                                         <input class='form-control-sm' id='pw2' type='password' name='cpassword2' autocomplete='off' required
@@ -660,7 +660,7 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                 </div>
                                 <div class='row mt-1'>
                                     <div class='col-sm-2'>
-                                        <label for='description'>*Description: </label>
+                                        <label for='description'><span class='text-danger'>&bigstar;</span>Description: </label>
                                     </div>
                                     <div class='col-sm-auto p-0 ms-0 me-0'>
                                         <textarea class='form-control-sm' id='description' name='description' rows=5 cols=64 required
@@ -695,7 +695,7 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                 </div>
                                 <div class='row mt-1'>
                                     <div class='col-sm-2'>
-                                        <label for='contactName'> *Contact Name: </label>
+                                        <label for='contactName'><span class='text-danger'>&bigstar;</span>Contact Name: </label>
                                     </div>
                                     <div class='col-sm-auto p-0 ms-0 me-0'>
                                         <input class='form-control-sm' type='text' name='contactName' id='contactName' maxlength='64' size='50'
@@ -706,7 +706,7 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                 </div>
                                 <div class='row mt-1'>
                                     <div class='col-sm-2'>
-                                        <label for='contactEmail'> *Email/Login: </label>
+                                        <label for='contactEmail'><span class='text-danger'>&bigstar;</span>Email/Login: </label>
                                     </div>
                                     <div class='col-sm-auto p-0 ms-0 me-0'>
                                         <input class='form-control-sm' type='email' name='contactEmail' id='contactEmail' maxlength='254' size='50' required
@@ -717,7 +717,7 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                 </div>
                                 <div class='row mt-1'>
                                     <div class='col-sm-2'>
-                                        <label for='contactPhone'> *Contact Phone: </label>
+                                        <label for='contactPhone'><span class='text-danger'>&bigstar;</span>Contact Phone: </label>
                                     </div>
                                     <div class='col-sm-auto p-0 ms-0 me-0'>
                                         <input class='form-control-sm' type='text' name='contactPhone' id='contactPhone' maxlength='32' size='24' required
@@ -727,7 +727,7 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                 </div>
                                 <div class='row mt-1' id='cpasswordLine1'>
                                     <div class='col-sm-2'>
-                                        <label for='cpw1'> *Contact Password: </label>
+                                        <label for='cpw1'><span class='text-danger'>&bigstar;</span>Contact Password: </label>
                                     </div>
                                     <div class='col-sm-auto p-0 ms-0 me-0'>
                                         <input class='form-control-sm' id='cpw1' type='password' name='cpassword' autocomplete='off' required
@@ -738,7 +738,7 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                 </div>
                                 <div class='row mt-1' id='cpasswordLine2'>
                                     <div class='col-sm-2'>
-                                        <label for='cpw2'> *Confirm Password: </label>
+                                        <label for='cpw2'><span class='text-danger'>&bigstar;</span>Confirm Password: </label>
                                     </div>
                                     <div class='col-sm-auto p-0 ms-0 me-0'>
                                         <input class='form-control-sm' id='cpw2' type='password' name='cpassword2' autocomplete='off' required
@@ -768,7 +768,7 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                 </div>
                                 <div class="row mt-1">
                                     <div class="col-sm-2">
-                                        <label for="addr"> *Address </label>
+                                        <label for="addr"><span class='text-danger'>&bigstar;</span>Address </label>
                                     </div>
                                     <div class="col-sm-auto p-0 ms-0 me-0">
                                         <input class="form-control-sm" id='addr' type='text' size="64" name='addr' required
@@ -788,7 +788,7 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                 </div>
                                 <div class="row mt-1">
                                     <div class="col-sm-2">
-                                        <label for="city"> *City: </label>
+                                        <label for="city"><span class='text-danger'>&bigstar;</span>City: </label>
                                     </div>
                                     <div class="col-sm-auto p-0 ms-0 me-0">
                                         <input class="form-control-sm" id='city' type='text' size="32" maxlength="32" name='city' required
@@ -796,7 +796,7 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                         />
                                     </div>
                                     <div class="col-sm-auto ms-0 me-0 p-0 ps-2">
-                                        <label for="state"> *State: </label>
+                                        <label for="state"><span class='text-danger'>&bigstar;</span>State: </label>
                                     </div>
                                     <div class="col-sm-auto p-0 ms-0 me-0 ps-1">
                                         <input class="form-control-sm" id='state' type='text' size="10" maxlength="16" name='state' required
@@ -804,7 +804,7 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                         />
                                     </div>
                                     <div class="col-sm-auto ms-0 me-0 p-0 ps-2">
-                                        <label for="zip"> *Zip: </label>
+                                        <label for="zip"><span class='text-danger'>&bigstar;</span>Zip: </label>
                                     </div>
                                     <div class="col-sm-auto p-0 ms-0 me-0 ps-1 pb-2">
                                         <input class="form-control-sm" id='zip' type='text' size="11" maxlength="11" name='zip' required
@@ -840,7 +840,7 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                     </div>
                                     <div class='row mt-1'>
                                         <div class='col-sm-2'>
-                                            <label for='shipCompany'> *Company </label>
+                                            <label for='shipCompany'><span class='text-danger'>&bigstar;</span>Company </label>
                                         </div>
                                         <div class='col-sm-auto p-0 ms-0 me-0'>
                                             <input class='form-control-sm' id='shipCompany' type='text' size='64' name='shipCompany' required
@@ -850,7 +850,7 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                     </div>
                                     <div class='row mt-1'>
                                         <div class='col-sm-2'>
-                                            <label for='shipAddr'> *Address </label>
+                                            <label for='shipAddr'><span class='text-danger'>&bigstar;</span>Address </label>
                                         </div>
                                         <div class='col-sm-auto p-0 ms-0 me-0'>
                                             <input class='form-control-sm' id='shipAddr' type='text' size='64' name='shipAddr' required
@@ -869,7 +869,7 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                     </div>
                                     <div class='row mt-1'>
                                         <div class='col-sm-2'>
-                                            <label for='shipCity'> *City: </label>
+                                            <label for='shipCity'><span class='text-danger'>&bigstar;</span>City: </label>
                                         </div>
                                         <div class='col-sm-auto p-0 ms-0 me-0'>
                                             <input class='form-control-sm' id='shipCity' type='text' size='32' maxlength='32' name='shipCity'
@@ -877,7 +877,7 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                             />
                                         </div>
                                         <div class='col-sm-auto ms-0 me-0 p-0 ps-2'>
-                                            <label for='shipState'> *State: </label>
+                                            <label for='shipState'><span class='text-danger'>&bigstar;</span>State: </label>
                                         </div>
                                         <div class='col-sm-auto p-0 ms-0 me-0 ps-1'>
                                             <input class='form-control-sm' id='shipState' type='text' size='10' maxlength='16' name='shipState'
@@ -885,7 +885,7 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                             />
                                         </div>
                                         <div class='col-sm-auto ms-0 me-0 p-0 ps-2'>
-                                            <label for='shipZip'> *Zip: </label>
+                                            <label for='shipZip'><span class='text-danger'>&bigstar;</span>Zip: </label>
                                         </div>
                                         <div class='col-sm-auto p-0 ms-0 me-0 ps-1 pb-2'>
                                             <input class='form-control-sm' id='shipZip' type='text' size='11' maxlength='11' name='shipZip' required

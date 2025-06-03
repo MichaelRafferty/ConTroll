@@ -7,6 +7,7 @@ function exhibitorBuildYears($exhibitor, $contactName = NULL, $contactEmail = NU
     $conid = $con['id'];
     $need_new = 0;
     $confirm = 0;
+    $newyrid = 'Error: No path to set exhibitor year identifier';
 
     // first get the last (if any) contact info for this exhibitor, only check if not directly passed
     if ($contactName == NULL) {
@@ -73,6 +74,19 @@ FROM exhibitorYears
 WHERE conid = ? AND exhibitorId = ?;
 EOS;
         $newyrid = dbSafeInsert($eyinsQ, 'iii', array($conid, $last_year, $exhibitor));
+    } else {
+        // with the new partial exhibits region fill out, we need to return the eyID in all cases
+        $eyselQ = <<<EOS
+SELECT id
+FROM exhibitorYears
+WHERE conid = ? AND exhibitorId = ?;
+EOS;
+        $eyselR = dbSafeQuery($eyselQ, 'ii', array ($conid, $exhibitor));
+        if ($eyselR === false || $eyselR->num_rows != 1) {
+            return 'Exhibitor year not found';
+        }
+        $newyrid = $eyselR->fetch_row()[0];
+        $eyselR->free();
     }
 
     // build a exhibitorRegionYears from exhibitsRegionYears and any past data
@@ -114,11 +128,12 @@ EOS;
     // now for the creation of exhibitorRegionYears taking into account the region approvals above
 
     $appQ = <<<EOS
-SELECT ery.id as exhibitsRegionYearId, et.requestApprovalRequired, ey.id AS exhibitorYearId, ery.exhibitsRegion
+SELECT ery.id as exhibitsRegionYearId, et.requestApprovalRequired, ey.id AS exhibitorYearId, ery.exhibitsRegion, exRY.id AS exRYid
 FROM exhibitsRegionYears ery
 JOIN exhibitsRegions er ON ery.exhibitsRegion = er.id
 JOIN exhibitsRegionTypes et ON (et.regionType = er.regionType)
 JOIN exhibitorYears ey on ery.conid = ey.conid
+LEFT OUTER JOIN exhibitorRegionYears exRY ON ey.id = exRY.exhibitorYearId AND ery.id = exRY.exhibitsRegionYearId
 WHERE ery.conid = ? AND et.active = 'Y' AND ey.exhibitorId = ?
 EOS;
     $insQ = <<<EOS
@@ -131,6 +146,11 @@ EOS;
     $now = date('Y-m-d H-i-s');
     $appR = dbSafeQuery($appQ, 'ii', array($conid, $exhibitor));
     while ($appL = $appR->fetch_assoc()) {
+        if ($appL['exRYid'] != null) {
+            // it already exists, don't add another
+            $sortorder += 10;
+            continue;
+        }
         switch ($appL['requestApprovalRequired']) {
             case 'None':
                 $approval = 'approved';

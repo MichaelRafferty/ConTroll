@@ -39,7 +39,7 @@ if ($loadtypes == 'all' || $loadtypes == 'users') {
     // load authorized users of ATCON along with their allowed roles
     $users = [];
     $query = <<<EOS
-SELECT perid, concat(P.first_name, ' ', P.last_name) as name, A.auth
+SELECT perid, TRIM(CONCAT_WS(' ', P.first_name, P.last_name)) as name, A.auth
 FROM atcon_user U
 LEFT OUTER JOIN atcon_auth A ON (A.authuser = U.id)
 JOIN perinfo P ON (P.id=U.perid)
@@ -60,7 +60,7 @@ EOS;
             $users[$perid][$user['auth']] = true;
         }
     }
-    mysqli_free_result($userQ);
+    $userQ->free();
     $data = [];
     foreach ($users as $user) {
         $data[] = $user;
@@ -92,7 +92,7 @@ EOS;
         $servers[] = $server;
     }
     $response['servers'] = $servers;
-    mysqli_free_result($serverQ);
+    $serverQ->free();
 
     $printersSQl = <<<EOS
 SELECT p.serverName, p.printerName, p.printerType, p.codePage, p.active, IF(s.local = 1, '🗑', '') as `delete`
@@ -106,6 +106,35 @@ EOS;
         $printers[] = $printer;
     }
     $response['printers'] = $printers;
-    mysqli_free_result($printerQ);
+    $printerQ->free();
+}
+
+if ($loadtypes == 'all' || $loadtypes == 'terminals') {
+    $terminals = [];
+    $locations = [];
+
+    $terminalSQL = <<<EOS
+SELECT *
+FROM terminals
+ORDER BY name
+EOS;
+    $terminalQ = dbQuery($terminalSQL);
+    while ($terminal = $terminalQ->fetch_assoc()) {
+        $terminals[] = $terminal;
+    }
+    $response['terminals'] = $terminals;
+    $terminalQ->free();
+
+    // now locations from credit card area of config file
+    $cc = get_conf('cc');
+    foreach ($cc AS $name => $value) {
+        if (str_starts_with($name, 'location')) {
+            $shortname = substr($name, strlen('location'));
+            if ($shortname == '')
+                $shortname = 'default';
+            $locations[$shortname] = $value;
+        }
+    }
+    $response['locations'] = $locations;
 }
 ajaxSuccess($response);

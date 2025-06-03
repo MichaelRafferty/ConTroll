@@ -39,6 +39,7 @@ function drawNotesModal($width = '80%') {
                     </div>
                 </div>
                 <div class='modal-footer border-5 border-black'>
+                    <button type='button' id='cancel_note_button' class='btn btn-secondary' data-bs-dismiss='modal' hidden>Cancel Add Note</button>
                     <button type='button' id='close_note_button' class='btn btn-primary' onclick='$close;'>Close</button>
                 </div>
             </div>

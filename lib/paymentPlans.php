@@ -104,7 +104,6 @@ WITH planUsage AS (
 SELECT p.*, IFNULL(pu.uses, 0) AS uses
 FROM paymentPlans p
 LEFT OUTER JOIN planUsage pu ON (pu.planId = p.id)
-WHERE active = 'Y'
 ORDER BY sortorder;
 EOS;
     $QR = dbQuery($QQ);
@@ -128,7 +127,6 @@ EOS;
 }
 
 function whatMembershipsInPlan($memberships, $computedPlan) : array {
-
     if ($computedPlan == null) {
         $planData = null;
     } else {
@@ -254,7 +252,7 @@ function computeNextPaymentDue($payorPlan, $plans, $dolfmt, $currency) : array {
 
     $planid = $payorPlan['planId'];
     $plan = $plans[$planid];
-    if (array_key_exists('payments', $payorPlan) && $payorPlan['numPayorPayments'] > 0) {
+    if (array_key_exists('payments', $payorPlan) && array_key_exists('numPayorPayments', $payorPlan) && $payorPlan['numPayorPayments'] > 0) {
         $payments = $payorPlan['payments'];
         $numPmts = $payorPlan['numPayorPayments'];
         $lastPayment = $payments[$numPmts];
@@ -350,7 +348,7 @@ WHERE pp.payorPlanId = ?
 ORDER BY payDate;
 EOS;
     $regQ = <<<EOS
-SELECT IFNULL(SUM(reg.price - (paid +couponDiscount)), 0)
+SELECT IFNULL(SUM(price - (paid + couponDiscount)), 0)
 FROM reg
 WHERE status = 'plan' AND planId = ?;
 EOS;
@@ -393,7 +391,7 @@ EOS;
     while ($row = $payR->fetch_assoc()) {
         $payments[] = $row;
         $totalPayments += $row['paymentAmt'];
-        $totalPlanPayments += $row['planPaymentAmount'];
+        $totalPlanPayments += $row['amount'];
         if ($row['transactionPerid'] == $payorPerid)
             $numPayorPaymentsMade++;
     }
@@ -402,7 +400,7 @@ EOS;
 // now the data is loaded, lets check to see if there are any inconsistencies
     $warning = '';
     if ($totalPayments != $totalPlanPayments) {
-        $warning .= "Warning: Total payments on plan of $totalPayments does not match sum of payment table of $totalPayments.<br/>";
+        $warning .= "Warning: Total payments on plan of $totalPayments does not match sum of payment table of $totalPlanPayments.<br/>";
     }
 
     $initialAmt = $payorPlan['initialAmt'];
@@ -440,12 +438,12 @@ EOS;
         // force it to need payment in one more payment
         $upQ = <<<EOS
 UPDATE payorPlans
-SET finalPayment = ?, reg.payorPlans.balanceDue = ?
+SET finalPayment = ?, balanceDue = ?, minPayment = ?
 WHERE id = ?;
 EOS;
-        $numUpd = dbSafeCmd($upQ, 'ddi', array ($calcBalanceDue, $calcBalanceDue, $payorPlanId));
+        $numUpd = dbSafeCmd($upQ, 'dddi', array ($calcBalanceDue, $calcBalanceDue, $calcBalanceDue, $payorPlanId));
         $response['success'] = "Plan recast to pay off on next payment with a payment of $calcBalanceDue.  $numUpd rows updated";
-    } else if ($numPaymentsMade != $numPayorPaymentsMade || $calcBalanceDue != $balanceDue) {
+    } else if ($numPaymentsMade != $numPayorPaymentsMade || $calcBalanceDue != $balanceDue || $remainingPayments * $minPayment < $balanceDue) {
         // recast of plan needed, as someone else made a payment, or the balance due is incorrect
 
         // start with is there enough time to left to handle the number of remaining payments before payoff date
@@ -457,7 +455,7 @@ EOS;
         if ($maxPaymentsLeft < 2) {
             $remainingPayments = 1;
             $finalPayment = $calcBalanceDue;
-            $minPayment = $payorPlan['minPayment'];
+            $minPayment = $calcBalanceDue;
         } else if ($daysneeded > $daysLeft) {
             $minDays = 7 * $remainingPayments;
             if ($minDays > $daysLeft) {
@@ -467,16 +465,27 @@ EOS;
             }
             $minPayment = $calcBalanceDue / $remainingPayments;
             $finalPayment = $calcBalanceDue - (($remainingPayments -1) * $minPayment);
+        } else if ($remainingPayments * $minPayment < $balanceDue) {
+            if ($remainingPayments < 1) {
+                $remainingPayments = 1;
+                $finalPayment = $calcBalanceDue;
+            }
+            $minPayment = round($balanceDue / $remainingPayments, 2);
         }
         // now update the payment plan with the new values
         $numPayments = $numPayorPaymentsMade + $remainingPayments;
+        if ($numPayments * $minPayment != $calcBalanceDue) {
+            $finalPayment = $calcBalanceDue - (($numPayments - 1) * $minPayment);
+        } else {
+            $finalPayment = $minPayment;
+        }
         $updQ = <<<EOS
 UPDATE payorPlans
 SET numPayments = ?, balanceDue = ?, finalPayment = ?, minPayment = ?, daysBetween = ?
 WHERE id = ?;
 EOS;
         $numUpd = dbSafeCmd($updQ, 'idddii', array($numPayments, $calcBalanceDue, $finalPayment, $minPayment, $daysBetween, $payorPlanId));
-        $response['success'] = "Plan recast to for $numPayments with a minimum payment of $minPayment,  $numUpd rows updated.";
+        $response['success'] = "Plan recast to $numPayments with a minimum payment of $minPayment,  $numUpd rows updated.";
     }
     if ($warning != '')
         $response['warning'] = $warning;

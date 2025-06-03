@@ -49,7 +49,7 @@ if(!$res) {
   exit();
 }
 $results = array('active' => array(), 'inactive' => array());
-while ($row = fetch_safe_assoc($res)) {
+while ($row = $res->fetch_assoc()) {
     if($row['active'] == 'Y') {
         array_push($results['active'], $row);
     } else {

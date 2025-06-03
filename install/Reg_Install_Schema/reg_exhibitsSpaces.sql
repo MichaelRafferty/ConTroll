@@ -16,6 +16,8 @@ CREATE TABLE `exhibitsSpaces` (
   `shortname` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `name` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `glNum` varchar(16) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `glLabel` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `unitsAvailable` int NOT NULL DEFAULT '0',
   `unitsAvailableMailin` int NOT NULL DEFAULT '0',
   `sortorder` int NOT NULL DEFAULT '0',

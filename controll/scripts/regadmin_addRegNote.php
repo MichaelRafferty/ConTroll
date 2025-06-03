@@ -4,7 +4,7 @@ global $db_ini;
 require_once "../lib/base.php";
 
 $check_auth = google_init("ajax");
-$perm = "reg_admin";
+$perm = "reg_staff";
 
 $response = array("post" => $_POST, "get" => $_GET, "perm"=>$perm);
 
@@ -28,6 +28,13 @@ if (!isset($_POST) || !isset($_POST['regid']) || !isset($_POST['note'])|| !isset
     exit();
 }
 
+if (!array_key_exists('source', $_POST)) {
+    $message_error = 'Source Missing';
+    RenderErrorAjax($message_error);
+    exit();
+}
+$source = $_POST['source'];
+
 $con = get_conf('con');
 $conid = $con['id'];
 
@@ -36,11 +43,11 @@ $regId = $_POST['regid'];
 
     // insert a reg note for the successful action
 $insQ = <<<EOS
-INSERT INTO regActions(userid, regid, action, notes)
-VALUES (?, ?, ?, ?);
+INSERT INTO regActions(userid, source, regid, action, notes)
+VALUES (?, ?, ?, ?, ?);
 EOS;
-$typestr = 'iiss';
-$paramarray = array($user_perid, $regId, 'notes', $note);
+$typestr = 'isiss';
+$paramarray = array($user_perid, $source, $regId, 'notes', $note);
 $new_history = dbSafeInsert($insQ, $typestr, $paramarray);
 if ($new_history === false) {
     $response['error'] = 'error adding note';

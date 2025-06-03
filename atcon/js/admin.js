@@ -8,6 +8,7 @@ var message_div = null;
 var users = null;
 var printers = null;
 var userid = null;
+var terminals = null;
 
 // search screen
 window.onload = (function() {
@@ -25,6 +26,9 @@ window.onbeforeunload = function() {
     }
     if (printers !== null && printers.dirty) {
         $message += 'You have unsaved changes in the Printers tab. ';
+    }
+    if (terminals !== null && terminals.dirty) {
+        $message += 'You have unsaved changes in the Terminals tab. ';
     }
     if ($message !== '') {
         return $message + "If you leave this page, you will lose them.";
@@ -68,6 +72,14 @@ function loadInitialData(loadtype) {
                     printers.loadPrinters(data['servers'], data['printers']);
                     printers.dirty = false;
                     printers.serverNameToDelete = null;
+                }
+            }
+            if (data['terminals'] !== undefined) {
+                if (terminals == null) {
+                    terminals = new Terminals(data['terminals'], data['locations']);
+                } else {
+                    terminals.loadTerminals(data['terminals'], data['locations']);
+                    terminals.dirty = false;
                 }
             }
         },

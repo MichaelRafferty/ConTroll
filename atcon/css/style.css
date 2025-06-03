@@ -1,0 +1,51 @@
+input.need {
+  background-color: rgba(255,0,0,0.3);
+}
+
+span.need {
+  background-color: rgba(255,0,0,0.3);
+}
+
+span.req, .warn {
+  font-weight: bold;
+  color: red;
+}
+
+.hidden { 
+  display: none;
+  }
+
+.nodisplay { 
+  visibility: hidden;
+  }
+
+.no-spinners {
+  -moz-appearance: textfield;
+}
+
+.no-spinners::-webkit-outer-spin-button,
+.no-spinners::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* this is the styles for each header level for use in a class= to shrink the sizes */
+
+.size-h1 {
+  font-size: 2.5rem;
+}
+.size-h2 {
+  font-size: 2rem;
+}
+.size-h3 {
+  font-size: 1.75rem;
+}
+.size-h4 {
+  font-size: 1.5rem;
+}
+.size-h5 {
+  font-size: 1.25rem;
+}
+.size-h6 {
+  font-size: 1.0rem;
+}

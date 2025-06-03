@@ -1,5 +1,5 @@
 <?php
-// library AJAX Processor: reg_loadInitialData.php
+// library AJAX Processor: pos_loadInitialData.php
 // Balticon Registration System
 // Author: Syd Weinstein
 // Retrieve load the mapping tables and session information into the javascript side of the registration tab
@@ -83,7 +83,7 @@ if ($r->num_rows == 1) {
     RenderErrorAjax('Current convention ($conid) not in the database.');
     exit();
 }
-mysqli_free_result($r);
+$r->free();
 // get all types registration can set
 
 
@@ -105,7 +105,7 @@ WITH memitems AS (
 SELECT id, conid, memCategory, memType, memAge,
        CASE WHEN conid = ? THEN label ELSE concat(conid, ' ', label) END AS label, 
        shortname, sort_order, price, CAST(m.startdate AS date) AS startdate, CAST(m.enddate AS date) AS enddate,
-       CASE WHEN u.startdate = m.startdate AND u.enddate = m.enddate THEN 1 ELSE 0 END AS canSell, m.glNum
+       CASE WHEN u.startdate = m.startdate AND u.enddate = m.enddate THEN 1 ELSE 0 END AS canSell, m.glNum, m.taxable
 FROM useIDs u
 JOIN memLabel m ON (m.id = u.matchid)
 ORDER BY sort_order, price DESC;
@@ -116,7 +116,7 @@ $r = dbSafeQuery($priceQ, 'iii', array($conid, $conid + 1, $conid));
 while ($l = $r->fetch_assoc()) {
     $memarray[] = $l;
 }
-mysqli_free_result($r);
+$r->free();
 $response['memLabels'] = $memarray;
 
 // memTypes
@@ -132,12 +132,12 @@ $r = dbQuery($memTypeSQL);
 while ($l = $r->fetch_assoc()) {
     $typearray[] = $l['memType'];
 }
-mysqli_free_result($r);
+$r->free();
 $response['memTypes'] = $typearray;
 
 // memCategories
 $memCategorySQL = <<<EOS
-SELECT memCategory, onlyOne, standAlone, variablePrice, badgeLabel
+SELECT memCategory, onlyOne, standAlone, variablePrice, taxable, badgeLabel
 FROM memCategories
 WHERE active = 'Y'
 ORDER BY sortorder;
@@ -148,7 +148,7 @@ $r = dbQuery($memCategorySQL);
 while ($l = $r->fetch_assoc()) {
     $catarray[] = $l;
 }
-mysqli_free_result($r);
+$r->free();
 $response['memCategories'] = $catarray;
 
 // ageList
@@ -164,7 +164,7 @@ $r = dbSafeQuery($ageListSQL, 'i', array($conid));
 while ($l = $r->fetch_assoc()) {
     $agearray[] = $l;
 }
-mysqli_free_result($r);
+$r->free();
 $response['ageList'] = $agearray;
 
 // coupons

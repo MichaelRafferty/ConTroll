@@ -40,6 +40,14 @@ if ($user_id != $_SESSION['user_id']) {
     return;
 }
 $user_perid = $_SESSION['user_perid'];
+
+if (!array_key_exists('source', $_POST)) {
+    $message_error = 'Source Missing';
+    RenderErrorAjax($message_error);
+    exit();
+}
+$source = $_POST['source'];
+
 try {
     $cart_perinfo = json_decode($_POST['cart_perinfo'], true, 512, JSON_THROW_ON_ERROR);
 }
@@ -70,29 +78,32 @@ $total_paid = 0;
 $insPerinfoSQL = <<<EOS
 INSERT INTO perinfo(last_name,first_name,middle_name,suffix,legalName,pronouns,email_addr,phone,badge_name,address,addr_2,city,state,zip,country,
                     open_notes,banned,active,contact_ok,creation_date,updatedBy)
-VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'N','Y','Y',now(),?);
+VALUES (IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),
+        IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),?,'N','Y','Y',now(),?);
 EOS;
 $insPDt = 'ssssssssssssssssi';
 
 $updPerinfoSQL = <<<EOS
 UPDATE perinfo SET
-    last_name=?,first_name=?,middle_name=?,suffix=?,legalName=?,pronouns=?,email_addr=?,phone=?,badge_name=?,address=?,addr_2=?,city=?,state=?,zip=?,country=?,
+    last_name=IFNULL(?,''),first_name=IFNULL(?,''),middle_name=IFNULL(?,''),suffix=IFNULL(?,''),legalName=IFNULL(?,''), pronouns=IFNULL(?,''),
+    email_addr=IFNULL(?,''),phone=IFNULL(?,''),badge_name=IFNULL(?,''),address=IFNULL(?,''),addr_2=IFNULL(?,''), city=IFNULL(?,''),
+    state=IFNULL(?,''),zip=IFNULL(?,''),country=IFNULL(?,''),
     open_notes=?,banned='N',update_date=NOW(),active='Y',updatedBy=?
 WHERE id = ?;
 EOS;
 $updPDt = 'ssssssssssssssssii';
 
 $insRegSQL = <<<EOS
-INSERT INTO reg(conid,perid,price,couponDiscount,paid,create_user,create_trans,memId,coupon,create_date,status)
-VALUES (?,?,?,?,?,?,?,?,?,now(),?);
+INSERT INTO reg(conid,perid,price,couponDiscount,paid,create_user,create_trans,memId,coupon,create_date,status, complete_trans)
+VALUES (?,?,?,?,?,?,?,?,?,now(),?,?);
 EOS;
-$insRDt = 'iidddiiiis';
+$insRDt = 'iidddiiiisi';
 
-$updRegSQL = <<<EOS
-UPDATE reg SET price=?,couponDiscount=?,paid=?, memId=?,coupon=?,updatedBy=?,change_date=now()
-WHERE id = ?;
+    $updRegSQL = <<<EOS
+UPDATE reg SET price=?,couponDiscount=?,paid=?, memId=?,coupon=?,updatedBy=?,change_date=now(),status=?,complete_trans=?
+WHERE id = ? AND complete_trans IS NULL;
 EOS;
-$updRDt = 'dddiiii';
+$updRDt = 'dddiiisii';
 
 $delRegSQL = <<<EOS
 DELETE FROM reg
@@ -101,10 +112,10 @@ EOS;
 $delRDt = 'i';
 
 $insHistory = <<<EOS
-INSERT INTO regActions(userid, tid, regid, action, notes)
-VALUES (?, ?, ?, ?, ?);
+INSERT INTO regActions(userid, source, tid, regid, action, notes)
+VALUES (?, ?, ?, ?, ?, ?);
 EOS;
-$insHDt = 'iiiss';
+$insHDt = 'isiiss';
 
 $selReg = <<<EOS
 WITH notes AS (
@@ -127,7 +138,7 @@ SELECT DISTINCT r1.perid, r1.id as regid, r1.conid, r1.price, r1.paid, r1.paid A
     r1.create_date, IFNULL(r1.create_trans, -1) as tid, IFNULL(r1.complete_trans, -1) as tid2,r1.memId, r1.planId, r1.status, 
     IFNULL(pc.printcount, 0) AS printcount,
     IFNULL(ac.attachcount, 0) AS attachcount, n.reg_notes, n.reg_notes_count, m.memCategory, m.memType, m.memAge, m.shortname, null as rstid,
-    CASE WHEN m.conid = ? THEN m.label ELSE concat(m.conid, ' ', m.label) END AS label, m.glNum
+    CASE WHEN m.conid = ? THEN m.label ELSE concat(m.conid, ' ', m.label) END AS label, m.glNum, m.taxable
 FROM reg r1
 JOIN memLabel m ON (r1.memId = m.id)
 LEFT OUTER JOIN notes n ON (r1.id = n.regid)
@@ -162,12 +173,12 @@ if ($master_perid < 0) {
 }
 $tran_type = 'regctl-reg/' . $user_perid;
 $insTransactionSQL = <<<EOS
-INSERT INTO transaction(conid,perid,userid,price,paid,type,create_date)
-VALUES (?,?,?,?,?,?,now());
+INSERT INTO transaction(conid,perid,userid,price,paid,withtax,tax,type,create_date)
+VALUES (?,?,?,0,0,0,0,?,now());
 EOS;
 // now insert the master transaction
-$paramarray = array($conid, $master_perid, $user_perid, 0, 0, $tran_type);
-$typestr = 'iiidds';
+$paramarray = array($conid, $master_perid, $user_perid, $tran_type);
+$typestr = 'iiis';
 $master_transid = dbSafeInsert($insTransactionSQL, $typestr, $paramarray);
 if ($master_transid === false) {
     ajaxError('Unable to create master transaction');
@@ -175,10 +186,17 @@ if ($master_transid === false) {
 }
 
 $policy_upd = 0;
+$checkNullFields = array('first_name', 'middle_name', 'last_name', 'suffix', 'legalName', 'pronouns', 'email_addr', 'phone', 'badge_name',
+    'address_1', 'address_2', 'city', 'state', 'postal_code', 'country');
 // loop over all perinfo records
 for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
     $cartrow = $cart_perinfo[$row];
     $cartrow['rowpos'] = $row;
+    foreach ($checkNullFields as $field) {
+        if (!array_key_exists($field, $cartrow)) {
+            $cartrow[$field] = '';
+        }
+    }
     $cart_perinfo[$row]['rowpos'] = $row;
     if (array_key_exists('open_notes', $cartrow)) {
         $open_notes = $cartrow['open_notes'];
@@ -240,11 +258,14 @@ for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
         if (!array_key_exists('toDelete', $mbr)) {
             if ($mbr['price'] == '')
                 $mbr['price'] = 0;
-            $total_price += $mbr['price'];
 
             if ($mbr['paid'] == '')
                 $mbr['paid'] = 0;
-            $total_paid += $mbr['paid'];
+
+            if ((!array_key_exists('tid2', $mbr)) || $mbr['tid2'] == null) {
+                $total_price += $mbr['price'];
+                $total_paid += $mbr['paid'];
+            }
         }
 
         if (!array_key_exists('regid', $mbr) || $mbr['regid'] <= 0) {
@@ -254,7 +275,8 @@ for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
             }
             $paramarray = array ($mbr['conid'], $mbr['perid'], $mbr['price'], $mbr['couponDiscount'],
                                  $mbr['paid'], $user_perid, $master_transid, $mbr['memId'], $mbr['coupon'],
-                                 $mbr['price'] > $mbr['paid'] ? 'unpaid' : 'paid');
+                                 $mbr['price'] > $mbr['paid'] ? 'unpaid' : 'paid',
+                                 $mbr['price'] > $mbr['paid'] ? null : $master_transid);
             $new_regid = dbSafeInsert($insRegSQL, $insRDt, $paramarray);
             if ($new_regid === false) {
                 $error_message .= "Insert of membership $row failed<BR/>";
@@ -272,18 +294,25 @@ for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
             else {
                 // update membership
                 $paramarray = array ($mbr['price'], $mbr['couponDiscount'], $mbr['paid'], $mbr['memId'], $mbr['coupon'],
-                                     $user_perid, $mbr['regid']);
+                                     $user_perid, $mbr['price'] > $mbr['paid'] ? 'unpaid' : 'paid',
+                                     $mbr['price'] > $mbr['paid'] ? null : $master_transid, $mbr['regid']);
                 $reg_upd += dbSafeCmd($updRegSQL, $updRDt, $paramarray);
             }
         }
         if (!array_key_exists('toDelete', $mbr)) {
             // now if there is a new note for this row, add it now
             if (array_key_exists('new_reg_note', $mbr)) {
-                $paramarray = array ($user_perid, $master_transid, $mbr['regid'], 'notes', $mbr['new_reg_note']);
+                $paramarray = array ($user_perid, $source, $master_transid, $mbr['regid'], 'notes', $mbr['new_reg_note']);
                 $new_history = dbSafeInsert($insHistory, $insHDt, $paramarray);
                 if ($new_history === false) {
                     $error_message .= 'Unable to add note to membership ' . $mbr['regid'] . '<BR/>';
                 }
+            }
+            // and create an attach record for this membership
+            $paramarray = array ($user_perid, $source, $master_transid, $mbr['regid'], 'attach', null);
+            $new_history = dbSafeInsert($insHistory, $insHDt, $paramarray);
+            if ($new_history === false) {
+                $error_message .= 'Unable to add attach to membership ' . $mbr['regid'] . '<BR/>';
             }
         }
     }
