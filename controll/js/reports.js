@@ -14,6 +14,7 @@ var reportTabs = [];
 var reportContents = {};
 var reportPromptDiv = null;
 var reportFields = null;
+var prompts = null;
 
 // initialization at DOM complete
 window.onload = function initpage() {
@@ -30,6 +31,10 @@ window.onload = function initpage() {
     // enable all tooltips
     const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
     const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+
+    if (config.hasOwnProperty('reportName')) {
+        runReport(config['reportName']);
+    }
 }
 
 
@@ -69,7 +74,7 @@ function showPrompts(reportName, prefix, fileName) {
         return;
     }
 
-    var prompts = reportPrompts[reportName];
+    prompts = reportPrompts[reportName];
     reportFields = [];
     console.log(reportName);
     console.log(prompts);
@@ -105,6 +110,34 @@ function noPrompts(reportName, prefix, fileName) {
     reportFields = null;
     reportPromptDiv.innerHTML = '';
     getRpt(reportName, prefix, fileName);
+}
+
+function runReport(name) {
+    console.log(name);
+    console.log(config);
+    console.log("setting tab to " + config.group.name);
+    settab(config.group.name + '-pane');
+    elTab = document.getElementById(config.group.name + '-tab');
+    bootstrap.Tab.getOrCreateInstance(elTab).show();
+    // highlight the report we need
+    rptId = config.values.name.replace(' ', '-') + '-tab';
+    console.log(rptId);
+    elRpt = document.getElementById(rptId);
+    elRpt.classList.add('active');
+    // draw the prompts
+    showPrompts(config.reportName, config.pageName, config.groupName);
+    // initialize the prompts
+    var index = 0;
+    for (var i = 0; i < prompts.length; i++) {
+        var prompt = prompts[i];
+        if (prompt[0] == 'prompt') {
+            field = "P-" + prompt[1];
+            document.getElementById(field).value = config.prompts[index];
+            index++;
+        }
+    }
+    // last - run the report
+    getRpt(config.reportName, config.pageName, config.groupName);
 }
 
 function getRpt(reportName, prefix, fileName) {

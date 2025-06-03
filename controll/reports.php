@@ -65,6 +65,40 @@ if ($groupDir = opendir(__DIR__ . '/reports/local_groups')) {
     closedir($groupDir);
 }
 
+if (array_key_exists('name', $_REQUEST)) {
+    // we have a run a report directly, find the name in the group file
+    $reportName = $_REQUEST['name'];
+    $found = false;
+    foreach ($reports AS $group => $list) {
+        foreach ($list AS $name => $values){
+            if ($name == 'group') {
+                $config_vars['group'] = $values;
+                continue;
+            }
+            $rptname = preg_replace('/^[0-9]+/', '', $name);
+            if ($rptname == $reportName) {
+                $found = true;
+                break;
+            }
+        }
+        if ($found)
+            break;
+    }
+
+    if ($found) {
+        $config_vars['reportName'] = $name;
+        $config_vars['groupName'] = $group;
+        $config_vars['values'] = $values;
+        $prompt = 1;
+        $prompts = [];
+        while (array_key_exists('P' . $prompt, $_REQUEST)) {
+            $prompts[] = $_REQUEST['P' . $prompt];
+            $prompt++;
+        }
+        $config_vars['prompts'] = $prompts;
+    }
+}
+
 ?>
 <script type='text/javascript'>
     var config = <?php echo json_encode($config_vars); ?>;
