@@ -558,7 +558,7 @@ UPDATE transaction
 SET complete_date = NOW(), change_due = ?, orderId = ?
 WHERE id = ?;
 EOS;
-    $completed = dbSafeCmd($updCompleteSQL, 'ids', array($change, $orderId, $master_tid));
+    $completed = dbSafeCmd($updCompleteSQL, 'dsi', array($change, $orderId, $master_tid));
 }
 
 $response['pay_amt'] = $new_payment['amt'];

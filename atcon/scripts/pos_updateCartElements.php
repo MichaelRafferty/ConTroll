@@ -98,7 +98,7 @@ $insRDt = 'iidddiiiisi';
 
 $updRegSQL = <<<EOS
 UPDATE reg SET price=?,couponDiscount=?,paid=?, memId=?,coupon=?,updatedBy=?,change_date=now(),status=?,complete_trans=?
-WHERE id = ?;
+WHERE id = ? AND complete_trans IS NULL;
 EOS;
 $updRDt = 'dddiiisii';
 
@@ -256,11 +256,13 @@ for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
         if (!array_key_exists('toDelete', $mbr)) {
             if ($mbr['price'] == '')
                 $mbr['price'] = 0;
-            $total_price += $mbr['price'];
 
             if ($mbr['paid'] == '')
                 $mbr['paid'] = 0;
-            $total_paid += $mbr['paid'];
+            if ((!array_key_exists('tid2', $mbr)) || $mbr['tid2'] == null) {
+                $total_price += $mbr['price'];
+                $total_paid += $mbr['paid'];
+            }
         }
 
         if (!array_key_exists('regid', $mbr) || $mbr['regid'] <= 0) {
@@ -312,6 +314,7 @@ for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
         }
     }
     // Now process the policies for this person
+    // check to see it they exist
     if (array_key_exists('policies', $cartrow)) {
         $policy_upd += updateExisingMemberPolicies($cartrow['policies'], $conid, $cartrow['perid'], $user_perid);
     } else {

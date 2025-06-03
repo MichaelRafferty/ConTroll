@@ -85,9 +85,9 @@ $insPDt = 'ssssssssssssssssi';
 
 $updPerinfoSQL = <<<EOS
 UPDATE perinfo SET
-    last_name=IFNULL(?,''),first_name=IFNULL(?,''),middle_name=IFNULL(?,''),suffix=IFNULL(?,''),legalName=IFNULL(?,''),
-    pronouns=IFNULL(?,''),email_addr=IFNULL(?,''),phone=IFNULL(?,''),badge_name=IFNULL(?,''),address=IFNULL(?,''),addr_2=IFNULL(?,''),
-    city=IFNULL(?,''),state=IFNULL(?,''),zip=IFNULL(?,''),country=IFNULL(?,''),
+    last_name=IFNULL(?,''),first_name=IFNULL(?,''),middle_name=IFNULL(?,''),suffix=IFNULL(?,''),legalName=IFNULL(?,''), pronouns=IFNULL(?,''),
+    email_addr=IFNULL(?,''),phone=IFNULL(?,''),badge_name=IFNULL(?,''),address=IFNULL(?,''),addr_2=IFNULL(?,''), city=IFNULL(?,''),
+    state=IFNULL(?,''),zip=IFNULL(?,''),country=IFNULL(?,''),
     open_notes=?,banned='N',update_date=NOW(),active='Y',updatedBy=?
 WHERE id = ?;
 EOS;
@@ -101,7 +101,7 @@ $insRDt = 'iidddiiiisi';
 
     $updRegSQL = <<<EOS
 UPDATE reg SET price=?,couponDiscount=?,paid=?, memId=?,coupon=?,updatedBy=?,change_date=now(),status=?,complete_trans=?
-WHERE id = ?;
+WHERE id = ? AND complete_trans IS NULL;
 EOS;
 $updRDt = 'dddiiisii';
 
@@ -186,10 +186,17 @@ if ($master_transid === false) {
 }
 
 $policy_upd = 0;
+$checkNullFields = array('first_name', 'middle_name', 'last_name', 'suffix', 'legalName', 'pronouns', 'email_addr', 'phone', 'badge_name',
+    'address_1', 'address_2', 'city', 'state', 'postal_code', 'country');
 // loop over all perinfo records
 for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
     $cartrow = $cart_perinfo[$row];
     $cartrow['rowpos'] = $row;
+    foreach ($checkNullFields as $field) {
+        if (!array_key_exists($field, $cartrow)) {
+            $cartrow[$field] = '';
+        }
+    }
     $cart_perinfo[$row]['rowpos'] = $row;
     if (array_key_exists('open_notes', $cartrow)) {
         $open_notes = $cartrow['open_notes'];
@@ -251,11 +258,14 @@ for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
         if (!array_key_exists('toDelete', $mbr)) {
             if ($mbr['price'] == '')
                 $mbr['price'] = 0;
-            $total_price += $mbr['price'];
 
             if ($mbr['paid'] == '')
                 $mbr['paid'] = 0;
-            $total_paid += $mbr['paid'];
+
+            if ((!array_key_exists('tid2', $mbr)) || $mbr['tid2'] == null) {
+                $total_price += $mbr['price'];
+                $total_paid += $mbr['paid'];
+            }
         }
 
         if (!array_key_exists('regid', $mbr) || $mbr['regid'] <= 0) {

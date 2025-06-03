@@ -586,11 +586,19 @@ class Pos {
 
                     if (data.warn !== undefined) {
                         show_message(data.warn, 'warn');
+                        if (data.hasOwnProperty('paid') && data.paid == 1) {
+                            // it paid while waiting for the poll, process the payment
+                            _this.#payPoll = 1;
+                            _this.pay('');
+                            _this.#payPoll = 0;
+                        }
+                        return;
                     }
 
                     if (data.message !== undefined) {
                         show_message(data.message, 'success');
                     }
+                    _this.startOver(reset_all);
                 },
                 error: function (jqXHR, textstatus, errorThrown) {
                     document.getElementById('pollRow').hidden = false;
@@ -599,6 +607,7 @@ class Pos {
                 },
             });
             this.#payPoll = 0;
+            return;
         }
 
         if (reset_all > 0)
@@ -2501,6 +2510,8 @@ addUnpaid(tid) {
                 this.#pay_button_pay.disabled = false;
             } else if (this.#payPoll == 1)
                 document.getElementById('pollRow').hidden = false;
+            else
+                this.#pay_button_pay.disabled = false;
             return;
         }
 
@@ -2512,6 +2523,8 @@ addUnpaid(tid) {
                 this.#pay_button_pay.disabled = false;
             }  else if (this.#payPoll == 1)
                 document.getElementById('pollRow').hidden = false;
+            else
+                this.#pay_button_pay.disabled = false;
             return;
         }
 
@@ -2523,6 +2536,8 @@ addUnpaid(tid) {
                 this.#pay_button_pay.disabled = false;
             } else if (this.#payPoll == 1)
                 document.getElementById('pollRow').hidden = false;
+            else
+                this.#pay_button_pay.disabled = false;
             return;
         }
 
@@ -2531,6 +2546,7 @@ addUnpaid(tid) {
             // warn means we could not get the terminal, ask if we want to override it
             if (data.status != 'OFFLINE') {
                 document.getElementById('overrideRow').hidden = false;
+                this.#pay_button_pay.disabled = false;
                 return;
             }
         }
@@ -2555,6 +2571,7 @@ addUnpaid(tid) {
         cart.updatePmt(data);
         this.#payCurrentRequest = null;
         this.#pay_tid_amt += Number(data.pay_amt);
+        this.#taxAmt -= Number(data.taxAmt);
         this.payShown();
     }
 
@@ -2570,6 +2587,7 @@ addUnpaid(tid) {
             user_id: this.#user_id,
             ajax_request_action: 'printReceipt',
             header: header_text,
+            payTid: this.#pay_tid,
             prows: JSON.stringify(cart.getCartPerinfo()),
             pmtrows: JSON.stringify(cart.getCartPmt()),
             footer: footer_text,
@@ -3293,6 +3311,14 @@ addUnpaid(tid) {
                                 }
                                 if (data.warn !== undefined) {
                                     show_message(data.warn, 'warn');
+                                    if (data.hasOwnProperty('paid') && data.paid == 1) {
+                                        // it paid while waiting for the poll, process the payment
+                                        _this.#payPoll = 1;
+                                        _this.#pay_currentOrderId = currentOrder;
+                                        _this.pay('');
+                                        _this.#payPoll = 0;
+                                        _this.#pay_currentOrderId = null;
+                                    }
                                     return;
                                 }
                                 if (data.message !== undefined) {

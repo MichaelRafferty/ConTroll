@@ -47,6 +47,7 @@ $response = array('post' => $_POST, 'get' => $_GET);
 // printReceipt: print the text receipt "text", if printer name starts with 0, then just log the receipt
 $header = $_POST['header'];
 $footer = $_POST['footer'];
+$payTid = $_POST['payTid'];
 try {
     $prows = json_decode($_POST['prows'], true, 512, JSON_THROW_ON_ERROR);
 }
@@ -79,11 +80,25 @@ $receipt = $header . "\n";
 // cart rows, only added to printout:
 $already_paid = 0;
 $total_due = 0;
+$taxPaid = 0;
+foreach ($pmtrows as $pmtrow) {
+    $type = $pmtrow['type'];
+    if ($type == 'prior')
+        continue;
+
+    $taxPaid += $pmtrow['taxAmt'];
+}
 
 foreach ($prows as $prow) {
-    $receipt .= "\nMember: " . trim($prow['fullName']) . "\n";
+    $first = true;
     $member_due = 0;
     foreach ($prow['memberships'] as $mrow) {
+        if ($mrow['tid2'] != $payTid)
+            continue;
+        if ($first) {
+            $receipt .= "\nMember: " . trim($prow['fullName']) . "\n";
+            $first = false;
+        }
         $receipt .= "   " . $mrow['label'] . ", " . $dolfmt->formatCurrency((float) $mrow['price'], $currency) .
             " (" . $mrow['status'] . ")\n";
         if (array_key_exists('prior_paid', $mrow))
@@ -91,8 +106,13 @@ foreach ($prows as $prow) {
         $member_due += $mrow['price'];
     }
     $member_due = round($member_due, 2);
-    $receipt .= "   Subtotal: " . $dolfmt->formatCurrency($member_due, $currency) . "\n";
+    $receipt .= "   Member Subtotal: " . $dolfmt->formatCurrency($member_due, $currency) . "\n";
     $total_due += $member_due;
+}
+if ($taxPaid > 0) {
+    $receipt .= 'Pre Tax Subtotal:  ' . $dolfmt->formatCurrency($total_due, $currency) . "\n";
+    $receipt .= 'Sales Tax:  ' . $dolfmt->formatCurrency($taxPaid, $currency) . "\n";
+    $total_due += $taxPaid;
 }
 $receipt .= "Total Due:   " . $dolfmt->formatCurrency((float) $total_due, $currency) . "\n\nPayment   Amount Description/Code\n";
 $total_pmt = 0;
@@ -103,6 +123,9 @@ if ($already_paid > 0) {
 
 foreach ($pmtrows as $pmtrow) {
     $type = $pmtrow['type'];
+    if ($type == 'prior')
+        continue;
+
     $amtlen = 20 - mb_strlen($type);
 
     $line = sprintf("%s%" . $amtlen . "s %s", $type, $dolfmt->formatCurrency($pmtrow['amt'], $currency), $pmtrow['desc']);

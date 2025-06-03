@@ -1130,7 +1130,7 @@ class PosCart {
     <div class="col-sm-2 p-0">` + pmt.type + `</div>
     <div class="col-sm-6 p-0">` + pmt.desc + `</div>
     <div class="col-sm-2 p-0">` + code + `</div>
-    <div class="col-sm-2 text-end">` + Number(pmt.amt).toFixed(2) + `</div>
+    <div class="col-sm-2 text-end">` + Number(pmt.preTaxAmt).toFixed(2) + `</div>
 </div>
 `;
     }
@@ -1173,6 +1173,7 @@ class PosCart {
             // add in the pre paid amount as a prior payment
             var prow = {
                 amt: this.#totalPaid,
+                preTaxAmt: this.#totalPaid,
                 type: 'prior',
                 desc: 'payments not in this session',
                 code: ''
