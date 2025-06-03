@@ -99,7 +99,7 @@ if (array_key_exists('discountAmt', $_POST))
 else
     $discountAmt = 0;
 
-$preTaxAmt -= (int)$couponDiscount + (int)$discountAmt;
+$preTaxAmt -= $couponDiscount + $discountAmt;
 
 if ($amt != $preTaxAmt + $taxAmt) {
     ajaxError('Invalid payment amount passed: preTax + Tax != Amount');
