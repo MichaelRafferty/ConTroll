@@ -33,7 +33,7 @@ You can find a link to the hotel registration site on our website at
 <p>Our programming team is putting together a great schedule for us this year, and you will be able to soon take a look at it at
 <a title="ComCl&aacute;r Schedule Page" href="#schedulepage#">#schedulepage#</a>.</p>
 <p>Information about other activities, as well as our Guests of Honor, can be found on our website at
-<a title="#label# Web Site" href="#website#">#website#</a>.<</p>
+<a title="#label# Web Site" href="#website#">#website#</a>.</p>
 <p>The #org# (#orgabv#) is dedicated to providing a comfortable and harassment-free environment for everyone at #conname# and
 other #orgabv#-sponsored events. For specific information, including our full Anti-Harassment Policy, see
 <a title="#label# Policy" href="#policy#">#policy#</a>.</p>
