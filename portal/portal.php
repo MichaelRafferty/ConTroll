@@ -945,7 +945,7 @@ if (count($memberships) > 0) {
         <div class="col-sm-12">
             <p>
                 <span class="text-danger"><b>NOTE:</span> You have <?php echo $expMsg;?> no longer valid for purchase. This is bacause they
-                either are either no longer available for sale via the portal or the dates for then they could be purchased has passed.</b>
+                either are no longer available for sale via the portal or the date for which they could have been purchased has passed.</b>
             </p>
             <p>
                 You must use the "Add To/Edit Cart" for each person who has expired items in the list above and delete those items from the account.
