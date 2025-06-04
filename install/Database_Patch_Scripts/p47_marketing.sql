@@ -109,7 +109,8 @@ year&rsquo;s convention. To check the status of your, or the rest of your family
 <li class="p1"><span class="s1">We encourage members to wear their badges above the waist because a higher number of badges are lost when worn at hip level.</span></li>
 <li class="p1"><span class="s1">If you do lose your badge, you can check at Registration or the Lost and Found at Ops to see if it has been turned in</span></li>
 <li class="p1"><span class="s1">Most conventions require you to purchase a new membership if your original badge is lost and has not been found, and that is an option. Such purchases are not refundable if the badge is later located.</span></li>
-<li class="p1"><span class="s1">Alternatively, if the registration lead can confirm that someone has purchased or otherwise been granted a currently valid membership to #conname, they may, at their discretion, issue a replacement badge.<span class="Apple-converted-space">&nbsp; </span>A donation of at least $20 to #org# is requested for that service.</span></li>
+<li class="p1"><span class="s1">Alternatively, if the registration lead can confirm that someone has purchased or otherwise been granted a currently valid
+membership to #conname#, they may, at their discretion, issue a replacement badge.<span class="Apple-converted-space">&nbsp; </span>A donation of at least $20 to #org# is requested for that service.</span></li>
 </ul>
 </li>
 </ul>
@@ -207,7 +208,7 @@ We don’t need no stinkin’ badges!
   * If you do lose your badge, you can check at Registration or the Lost and Found at Ops to see if it has been turned in
   * Most conventions require you to purchase a new membership if your original badge is lost and has not been found, and that is an option. Such purchases
 are not refundable if the badge is later located.
-  * Alternatively, if the registration lead can confirm that someone has purchased or otherwise been granted a currently valid membership to #conname, they
+  * Alternatively, if the registration lead can confirm that someone has purchased or otherwise been granted a currently valid membership to #conname#, they
 may, at their discretion, issue a replacement badge. A donation of at least $20 to #org# is requested for that service.
 
 What about Participants, Dealers, and Artists?
