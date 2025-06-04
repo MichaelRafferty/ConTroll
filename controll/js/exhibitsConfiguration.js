@@ -256,6 +256,8 @@ class exhibitssetup {
                 }
                 _this.draw(data);
                 _this.settab('regionTypes-pane');
+                if (data.success)
+                    show_message(data.success,  'success');
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 showError("ERROR in " + script + ": " + textStatus, jqXHR);
