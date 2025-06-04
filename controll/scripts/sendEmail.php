@@ -42,6 +42,7 @@ $con = get_conf("con");
 $reg = get_conf("reg");
 $emailconf = get_conf("email");
 $conid=$con['id'];
+$label=$con['label'];
 $conname = $con['conname'];
 $code='';
 $email_type = $_POST['type'];
@@ -70,24 +71,36 @@ SELECT DISTINCT P.email_addr AS email
 FROM reg R
 JOIN perinfo P ON (P.id=R.perid)
 JOIN memList M ON (R.memId = M.id)
-WHERE R.conid=? AND R.paid=R.price AND P.email_addr LIKE '%@%' AND P.contact_ok='Y' AND M.label != 'rollover-cancel' AND M.memCategory != 'cancel'
+WHERE R.conid=? AND R.status='paid' AND P.email_addr LIKE '%@%'
 ORDER BY email;
 EOQ;
     $typestr = 'i';
     $paramarray = array($conid);
-    $email_text = preConEmail_last_TEXT($reg['test']);
-    $email_html = preConEmail_last_HTML($reg['test']);
-    $email_subject = "Welcome Email";
+    $email_text = replaceConfigTokens(returnCustomText('reminder/text'));
+    $email_html = replaceConfigTokens(returnCustomText('reminder/html'));
+    $email_subject = "Reminder: $label Starts Soon";
     break;
 
 case 'marketing':
     $priorcon = $conid - 1;
     $emailQ = <<<EOQ
+WITH policyyear AS (
+SELECT perid, max(conid) conid
+FROM memberPolicies
+WHERE perid IS NOT NULL
+GROUP BY perid
+), marketing AS (
+SELECT m.perid, m.response
+FROM policyyear y
+JOIN memberPolicies m ON (m.perid = y.perid AND m.policy = 'marketing')
+)
 SELECT DISTINCT p.email_addr AS email
 FROM perinfo p
 JOIN reg r ON (r.perid = p.id AND r.conid = ?)
 LEFT OUTER JOIN reg r2 ON (r2.perid = p.id and r2.conid = ?)
-WHERE p.email_addr LIKE '%@%' AND p.contact_ok='Y' and r2.id IS NULL AND r.price > 0
+LEFT OUTER JOIN marketing m ON m.perid = p.id
+WHERE p.email_addr LIKE '%@%' AND r.price > 0 AND r.status = 'paid' AND r2.perid IS NULL 
+AND ((m.perid IS NULL AND p.contact_ok='Y') OR (m.response = 'Y'))
 ORDER BY email;
 EOQ;
     $typestr = 'ii';

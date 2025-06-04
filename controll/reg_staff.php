@@ -812,7 +812,7 @@ $config_vars['source'] = 'regstaff';
                 <button class='btn btn-primary btn-sm' onclick="sendEmail('comeback')" disabled>Send Come Back Email</button>
             </div>
             <div class="col-sm-auto p-2">
-                <button class="btn btn-primary btn-sm" onclick="sendEmail('reminder')" disabled>Send Attendance Reminder Email</button>
+                <button class="btn btn-primary btn-sm" onclick="sendEmail('reminder')">Send Attendance Reminder Email</button>
             </div>
             <?php if (array_key_exists('survey_url', $db_ini['con'])) { ?>
             <div class="col-sm-auto p-2">
