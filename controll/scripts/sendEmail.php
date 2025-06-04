@@ -2,6 +2,7 @@
 global $db_ini;
 
 require_once "../lib/base.php";
+require_once "../../lib/global.php";
 require_once "../lib/email.php";
 
 $check_auth = google_init("ajax");
@@ -57,6 +58,8 @@ if ($email == null || $email == '') {
     $email = $con['regadminemail'];
 }
 
+loadCustomText('controll', 'emails', 'production');
+
 $response['test'] = $test;
 $macroSubstitution = false;
 
@@ -89,8 +92,8 @@ ORDER BY email;
 EOQ;
     $typestr = 'ii';
     $paramarray = array($priorcon, $conid);
-    $email_text = MarketingEmail_TEXT($reg['test']);
-    $email_html = MarketingEmail_HTML($reg['test']);
+    $email_text = replaceConfigTokens(returnCustomText('marketing/text'));
+    $email_html = replaceConfigTokens(returnCustomText('marketing/html'));
     $email_subject = "We miss you! Please come back to $conname";
     break;
 
