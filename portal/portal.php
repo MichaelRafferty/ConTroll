@@ -581,7 +581,7 @@ if ($info['managedByName'] != null) {
     </div>
 <?php
     if ($NomNomExists || $BusinessExists || $SiteExists)
-        drawWSFSButtons($NomNomExists, $BusinessExists, $SiteExists, $hasWSFS, $numPaidPrimary > 0, $siteSelection);
+        drawWSFSButtons($NomNomExists, $BusinessExists, $SiteExists, $hasWSFS, $numPaidPrimary > 0, $siteSelection, $loginId, $loginType, $info);
 }
 $totalDueFormatted = '';
 if ($totalDue > 0 || $activePaymentPlans) {
@@ -631,7 +631,7 @@ if ($totalDue > 0 || $activePaymentPlans) {
 </div>
 <?php
     if ($info['managedByName'] == null && ($NomNomExists || $BusinessExists || $SiteExists))
-        drawWSFSButtons($NomNomExists, $BusinessExists, $SiteExists, $hasWSFS, $numPaidPrimary > 0, $siteSelection);
+        drawWSFSButtons($NomNomExists, $BusinessExists, $SiteExists, $hasWSFS, $numPaidPrimary > 0, $siteSelection, $loginId, $loginType, $info);
 
     outputCustomText('main/people');
 ?>
@@ -968,7 +968,7 @@ if (count($memberships) > 0) {
 <?php
 portalPageFoot();
 
-function drawWSFSButtons($NomNomExists, $BusinessExists, $SiteExists, $hasWSFS, $attending, $hasSiteSelection) {
+function drawWSFSButtons($NomNomExists, $BusinessExists, $SiteExists, $hasWSFS, $attending, $hasSiteSelection, $loginId, $loginType, $info) {
     $portal_conf = get_conf('portal');
 
 // buttons are NomNom, Site Selection, Virtual Business Meeting
@@ -1009,16 +1009,26 @@ function drawWSFSButtons($NomNomExists, $BusinessExists, $SiteExists, $hasWSFS, 
 
     $businessMeetingButton = '';
     if ($BusinessExists) {
-        if (!$hasWSFS)
-            $businessMeetingButton .= '<span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="top" ' .
-                'data-bs-title="Add and pay for a WSFS membership to be able to attend and vote at the on-line WSFS business meeting.">';
         if (array_key_exists('businessBtn', $portal_conf))
             $businessBtnText = $portal_conf['businessBtn'];
         else
             $businessBtnText = 'Log into the Business Meeting';
 
+        if (!$hasWSFS) {
+            $businessMeetingButton .= '<span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="top" ' .
+                'data-bs-title="Add and pay for a WSFS membership to be able to attend and vote at the on-line WSFS business meeting.">';
+        } else {
+            // compute the LUMI password, note this is Seattle Worldcon specific, so it will need to be modified for future worldcons
+            $salt = 'SeattleIn2025';
+            $pw = substr(preg_replace('/[a-f]/i', '', md5($loginId . $salt)), 0, 6);
+            $un = $info['email_addr'];
+            $businessBtnText .= "<br/>User Name: $un, Password: $pw";
+        }
+
+        $businessURL = $portal_conf['businessmeetingURL'];
+
         $businessMeetingButton .= "<button class='btn btn-primary p-1' type='button' " .
-            ($hasWSFS ? 'onclick="portal.business();"' : ' disabled') . ">$businessBtnText</button>";
+            ($hasWSFS ? 'onclick="window.open(' . "'$businessURL');" .'"' : ' disabled') . ">$businessBtnText</button>";
         if (!$hasWSFS)
             $businessMeetingButton .= '</span>';
     }
