@@ -14,6 +14,7 @@ var reportTabs = [];
 var reportContents = {};
 var reportPromptDiv = null;
 var reportFields = null;
+var prompts = null;
 
 // initialization at DOM complete
 window.onload = function initpage() {
@@ -25,6 +26,14 @@ window.onload = function initpage() {
         var report = reports[keys[i]];
         reportTabs.push(report.group.name);
         reportContents[report.group.name] = document.getElementById(report.group.name + '-content');
+    }
+
+    // enable all tooltips
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+
+    if (config.hasOwnProperty('reportName')) {
+        runReport(config['reportName']);
     }
 }
 
@@ -65,7 +74,7 @@ function showPrompts(reportName, prefix, fileName) {
         return;
     }
 
-    var prompts = reportPrompts[reportName];
+    prompts = reportPrompts[reportName];
     reportFields = [];
     console.log(reportName);
     console.log(prompts);
@@ -101,6 +110,34 @@ function noPrompts(reportName, prefix, fileName) {
     reportFields = null;
     reportPromptDiv.innerHTML = '';
     getRpt(reportName, prefix, fileName);
+}
+
+function runReport(name) {
+    console.log(name);
+    console.log(config);
+    console.log("setting tab to " + config.group.name);
+    settab(config.group.name + '-pane');
+    elTab = document.getElementById(config.group.name + '-tab');
+    bootstrap.Tab.getOrCreateInstance(elTab).show();
+    // highlight the report we need
+    rptId = config.values.name.replace(' ', '-') + '-tab';
+    console.log(rptId);
+    elRpt = document.getElementById(rptId);
+    elRpt.classList.add('active');
+    // draw the prompts
+    showPrompts(config.reportName, config.pageName, config.groupName);
+    // initialize the prompts
+    var index = 0;
+    for (var i = 0; i < prompts.length; i++) {
+        var prompt = prompts[i];
+        if (prompt[0] == 'prompt') {
+            field = "P-" + prompt[1];
+            document.getElementById(field).value = config.prompts[index];
+            index++;
+        }
+    }
+    // last - run the report
+    getRpt(config.reportName, config.pageName, config.groupName);
 }
 
 function getRpt(reportName, prefix, fileName) {
@@ -178,7 +215,8 @@ function drawReport(data) {
         html += `
     <div class="row">
         <div class="col-sm-auto">
-            <button type="button" class="btn btn-info btn-sm" onclick="downloadCSVReport(); return false;">Download CSV</button>
+            <button type="button" class="btn btn-info btn-sm" onclick="downloadReport('xlsx'); return false;" disabled>Download Excel xlsx</button>
+            <button type="button" class="btn btn-info btn-sm" onclick="downloadReport('csv'); return false;">Download CSV</button>
         </div>
     </div>
 `;
@@ -275,7 +313,7 @@ function drawReport(data) {
         csvfile = data.csvfile;
 }
 
-function downloadCSVReport() {
+function downloadReport(format) {
     var tabledata = JSON.stringify(reportTable.getData("active"));
     downloadCSVPost(csvfile, tabledata);
 }

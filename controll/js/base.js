@@ -366,6 +366,7 @@ var editFieldArea = null;
 var editor_modal = null;
 var editTitleDiv = null;
 var editFieldNameDiv = null;
+var editTextOnly = false;
 
 function editRefs() {
     editTableDiv = document.getElementById("editTable");
@@ -380,7 +381,7 @@ function editRefs() {
         editor_modal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
     }
 }
-function showEdit(classname, table, index, field, titlename, textitem) {
+function showEdit(classname, table, index, field, titlename, textitem, textOnly = false) {
     if (editTableDiv == null)
         editRefs();
 
@@ -397,6 +398,10 @@ function showEdit(classname, table, index, field, titlename, textitem) {
     editClassDiv.innerHTML = classname;
     editFieldArea.innerHTML = textitem;
     editTitleDiv.innerHTML = "Editing " + table + " " + titlename + "<br/>" + field;
+    editTextOnly = textOnly;
+    if (textOnly) {
+        textitem = textitem.replace(/\n/g, '<br/>');
+    }
 
     editor_modal.show();
     if (globalCustomTextEditorInit) {
@@ -448,6 +453,18 @@ function saveEdit() {
     var editIndex = editIndexDiv.innerHTML;
     var editClass = editClassDiv.innerHTML;
     var editValue = tinyMCE.activeEditor.getContent();
+
+    if (editTextOnly) {
+        editValue = editValue.replace(/<\/p>/g, "\n");
+        editValue = editValue.replace(/<p>/g, "");
+        editValue = editValue.replace(/<br[ ]*>/g, "\n");
+        editValue = editValue.replace(/<br\/>/g, "\n");
+        editValue = editValue.replace(/&rsquo;/g, "'");
+        editValue = editValue.replace(/&lsquo;/g, "'");
+        editValue = editValue.replace(/&nbsp;/g, " ");
+        editValue = editValue.replace(/<[^>]+>/g, ''); // strip any left over
+    }
+
     editor_modal.hide();
 
     // force a save and get the field from tinyMCE

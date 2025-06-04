@@ -59,6 +59,11 @@ WHERE appName = ? AND appPage = ? AND appSection = ? AND txtItem = ?;
 EOS;
     // because of the defaults, it's all updates
     foreach ($tableData as $row) {
+        $contents = $row['contents'];
+        if ($row['txtItem'] == 'text') {
+            // convert the contents to text
+
+        }
         $numrows = dbSafeCmd($updsql, 'sssss',
                              array($row['contents'], $row['appName'], $row['appPage'], $row['appSection'], $row['txtItem']));
         $updated += $numrows;

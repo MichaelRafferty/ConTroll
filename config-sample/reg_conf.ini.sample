@@ -306,6 +306,7 @@ clubname='Club Name'
 badgelistfilter="top"
 ; useportal - does this installation use the portal, 1 = yes, 0 = no
 useportal=1
+hrtime=0    ; on critical routines, a call to hrtime to report intervals has been added, enable this feature
 
 [oauth]
 ;;; serverKey - a 32 character random alphanumeric string, generate using any pasword generator
