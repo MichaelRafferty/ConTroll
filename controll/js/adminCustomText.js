@@ -9,6 +9,7 @@ class customTextSetup {
     #customTextSaveBtn = null;
     #customTextUndoBtn = null;
     #customTextRedoBtn = null;
+    #textOnly = false;
 
     #dirty = false;
     #debug = 0;
@@ -146,8 +147,9 @@ class customTextSetup {
         var row = this.#customTextTable.getRow(index).getData();
 
         var titleName = row.appName + '-' + row.appPage + '-' + row.appSection + '-' + row.txtItem;
+        this.#textOnly = row.txtItem == 'text';
         var textItem = row.contents;
-        showEdit('customText', 'customText', index, row.txtItemDescription, titleName, textItem);
+        showEdit('customText', 'customText', index, row.txtItemDescription, titleName, textItem, this.#textOnly);
     }
 
     editReturn(editTable, editfield, editIndex, editvalue) {
