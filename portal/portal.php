@@ -101,7 +101,9 @@ if ($info === false) {
 $dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
 
 $hasWSFS = false;
+$hasNom =  false;
 $siteSelection = false;
+$hasMeeting = false;
 if (!$refresh) {
     $numPrimary = 0;
     $numPaidPrimary = 0;
@@ -176,14 +178,35 @@ EOS;
     $holderRegR = dbSafeQuery($holderRegSQL, 'iii', array ($conid, $loginType == 'p' ? $loginId : -1, $loginType == 'n' ? $loginId : -1));
     $holderMembership = [];
     $paidOtherMembership = [];
+    // determine business meeting, site selection and wsfs
+    // wsfs is any WSFS membership except nomination only
+    // nom = any wsfs membership
+    // siteSelection = has paid token
+    // meeting = (later has WSFS anded with it)
+    //			any type ‘full’ (
+    //				except ‘access caregiver’ (hard code 622) (yuck on the hard code) OR
+    //				 ‘artist’ (mail in artist)
+    //			)
+    //			OR
+    //			any type ‘virtual’ OR
+    //			any type ‘oneday'
     if ($holderRegR !== false && $holderRegR->num_rows > 0) {
         while ($m = $holderRegR->fetch_assoc()) {
-            // check if they have a WSFS rights membership
-            if (($m['memCategory'] == 'wsfs' || $m['memCategory'] == 'wsfsnom' || $m['memCategory'] == 'dealer') && $m['status'] == 'paid')
-                $hasWSFS = true;
+            // check if they have a WSFS rights membership (hasWSFS and hasNom)
+            if (($m['memCategory'] == 'wsfs' || $m['memCategory'] == 'wsfsnom' || $m['memCategory'] == 'dealer') && $m['status'] == 'paid') {
+                $hasNom = true;
+                if ($m['memCategory'] == 'wsfsnom')
+                    $hasWSFS = true;
+                }
 
+            // site selection
             if ($m['memCategory'] == 'sitesel' && $m['status'] == 'paid')
                 $siteSelection = true;
+
+            // hasMeeting
+            if ( ($m['memType'] == 'full' && $m['memCategory'] != 'artist' && $m['shortname'] != 'Access Caregiver')
+                    || $m['memType'] == 'virtual' || strtolower($m['memType']) == 'oneday')
+                $hasMeeting = true;
 
             if ($m['memType'] == 'donation') {
                 $label = $dolfmt->formatCurrency((float)$m['actPrice'], $currency) . ' ' . $m['label'];
@@ -581,7 +604,7 @@ if ($info['managedByName'] != null) {
     </div>
 <?php
     if ($NomNomExists || $BusinessExists || $SiteExists)
-        drawWSFSButtons($NomNomExists, $BusinessExists, $SiteExists, $hasWSFS, $numPaidPrimary > 0, $siteSelection, $loginId, $loginType, $info);
+        drawWSFSButtons($NomNomExists, $BusinessExists, $SiteExists, $hasWSFS, $hasNom, $hasMeeting, $siteSelection, $loginId, $loginType, $info);
 }
 $totalDueFormatted = '';
 if ($totalDue > 0 || $activePaymentPlans) {
@@ -631,7 +654,7 @@ if ($totalDue > 0 || $activePaymentPlans) {
 </div>
 <?php
     if ($info['managedByName'] == null && ($NomNomExists || $BusinessExists || $SiteExists))
-        drawWSFSButtons($NomNomExists, $BusinessExists, $SiteExists, $hasWSFS, $numPaidPrimary > 0, $siteSelection, $loginId, $loginType, $info);
+        drawWSFSButtons($NomNomExists, $BusinessExists, $SiteExists, $hasWSFS, $hasNom, $hasMeeting, $siteSelection, $loginId, $loginType, $info);
 
     outputCustomText('main/people');
 ?>
@@ -968,13 +991,13 @@ if (count($memberships) > 0) {
 <?php
 portalPageFoot();
 
-function drawWSFSButtons($NomNomExists, $BusinessExists, $SiteExists, $hasWSFS, $attending, $hasSiteSelection, $loginId, $loginType, $info) {
+function drawWSFSButtons($NomNomExists, $BusinessExists, $SiteExists, $hasWSFS, $hasNom, $hasMeeting, $hasSiteSelection, $loginId, $loginType, $info) {
     $portal_conf = get_conf('portal');
 
 // buttons are NomNom, Site Selection, Virtual Business Meeting
     $NomNomButton = '';
     if ($NomNomExists) {
-        if (!$hasWSFS)
+        if (!$hasNom)
             $NomNomButton .= '<span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="top" ' .
                 'data-bs-title="Add and pay for a WSFS membership to be able to nominate or vote.">';
         if (array_key_exists('nomnomBtn', $portal_conf))
@@ -983,8 +1006,8 @@ function drawWSFSButtons($NomNomExists, $BusinessExists, $SiteExists, $hasWSFS, 
             $nomnomBtnText = 'Log into the Hugo System';
 
         $NomNomButton .= "<button class='btn btn-primary p-1' type='button' " .
-            ($hasWSFS ? 'onclick="portal.vote();"' : ' disabled') . ">$nomnomBtnText</button>";
-        if (!$hasWSFS)
+            ($hasNom ? 'onclick="portal.vote();"' : ' disabled') . ">$nomnomBtnText</button>";
+        if (!$hasNom)
             $NomNomButton .= '</span>';
     }
 
@@ -1014,7 +1037,7 @@ function drawWSFSButtons($NomNomExists, $BusinessExists, $SiteExists, $hasWSFS, 
         else
             $businessBtnText = 'Log into the Business Meeting';
 
-        if (!$hasWSFS) {
+        if (!$hasMeeting) {
             $businessMeetingButton .= '<span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="top" ' .
                 'data-bs-title="Add and pay for a WSFS membership to be able to attend and vote at the on-line WSFS business meeting.">';
         } else {
@@ -1028,8 +1051,8 @@ function drawWSFSButtons($NomNomExists, $BusinessExists, $SiteExists, $hasWSFS, 
         $businessURL = $portal_conf['businessmeetingURL'];
 
         $businessMeetingButton .= "<button class='btn btn-primary p-1' type='button' " .
-            ($hasWSFS ? 'onclick="window.open(' . "'$businessURL');" .'"' : ' disabled') . ">$businessBtnText</button>";
-        if (!$hasWSFS)
+            ($hasMeeting ? 'onclick="window.open(' . "'$businessURL');" .'"' : ' disabled') . ">$businessBtnText</button>";
+        if (!$hasMeeting)
             $businessMeetingButton .= '</span>';
     }
     ?>
