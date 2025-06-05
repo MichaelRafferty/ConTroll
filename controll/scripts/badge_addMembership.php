@@ -43,7 +43,7 @@ $iQ = <<<EOS
 SELECT r.id, r.memId, r.status, m.memAge, m.memCategory, m.memType, m.price, m.conid
 FROM reg r
 JOIN memList m
-WHERE conid = ? AND perid = ? AND r.status IN ('paid', 'unpaid', 'plan')
+WHERE r.conid = ? AND perid = ? AND r.status IN ('paid', 'unpaid', 'plan')
 EOS;
 $typeStr = 'ii';
 $values = array($conid, $perid);
