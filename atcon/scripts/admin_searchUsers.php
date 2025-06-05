@@ -60,8 +60,8 @@ WHERE a.id is NULL AND
 ORDER BY first_name, last_name;
 EOS;
     $search_string = '%' . str_replace(' ', '%', $search_string) . '%';
-    $typestr = 'iss';
-    $params = [$conid, $search_string, $search_string];
+    $typestr = 'isss';
+    $params = [$conid, $search_string, $search_string, $search_string];
 }
 
 $res = dbSafeQuery($searchSql, $typestr, $params);
