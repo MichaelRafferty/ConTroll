@@ -407,7 +407,7 @@ EOS;
                         $spaceDetail .= "Your request for " . $detail['approved_description'] . " of " . $detail['spaceName'] . " was approved.\n";
                         $approved = true;
                     } else {
-                        $spaceDetail .= 'Your have been approved for ' . $detail['approved_description'] . ' of ' . $detail['spaceName'] . ".\n";
+                        $spaceDetail .= 'You have been approved for ' . $detail['approved_description'] . ' of ' . $detail['spaceName'] . ".\n";
                         $approved = true;
                     }
                 } else if ($detail['time_approved'] != null && $detail['item_approved'] == null && $detail['item_requested'] != null) {
