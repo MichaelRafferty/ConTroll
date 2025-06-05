@@ -274,6 +274,9 @@ EOS;
     }
     $config_vars['numPrimary'] = $numPrimary;
     $config_vars['numPaidPrimary'] = $numPaidPrimary;
+
+    if (!$hasWSFS)
+        $hasMeeting = false;
 // get people managed by this account holder and their registrations
     if ($loginType == 'p') {
         $managedSQL = <<<EOS
