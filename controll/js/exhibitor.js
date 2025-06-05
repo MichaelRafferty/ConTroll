@@ -840,19 +840,21 @@ class exhibitorsAdm {
 
     // space detail button click
     showDetail(id) {
-        var row = this.#spacesTable.getRow(id);
-        var details = row.getCell("space").getValue();
-        var exhibitorId = row.getCell("exhibitorId").getValue();
+        var row = this.#spacesTable.getRow(id).getData();
+        var details = row.space;
+        var exhibitorId = row.exhibitorId;
         var exhibitorRow =  this.#exhibitorsTable.getRow(exhibitorId);
         var exhibitorData = exhibitorRow.getData();
-        exhibitorData.exhibitorNumber = row.getCell('exhibitorNumber').getValue();
-        var exhibitor = row.getCell('exhibitorName').getValue();
-        var mailInAllowed = row.getCell("mailInAllowed").getValue();
+        exhibitorData.exhibitorNumber = row.exhibitorNumber;
+        exhibitorData.exhibitorRegionYearId = row.exhibitorRegionYearId;
+        var exhibitor = row.exhibitorName;
+        var mailInAllowed = row.mailInAllowed;
 
         // build exhibitor info block
         var exhibitorInfo = this.buildExhibitorInfoBlock(exhibitorData, mailInAllowed);
 
-        document.getElementById('space-detail-title').innerHTML = "<strong>Space Detail for " + exhibitor + "(" + exhibitorId + ":" + exhibitorData.exhibitorYearId + ")</strong>";
+        document.getElementById('space-detail-title').innerHTML = "<strong>Space Detail for " + exhibitor + "(" + exhibitorId + ":" + exhibitorData.exhibitorYearId +
+            "," +  exhibitorData.exhibitorRegionYearId  + ")</strong>";
         document.getElementById("spaceDetailHTML").innerHTML = details;
         document.getElementById("exhibitorInfoHTML").innerHTML = exhibitorInfo;
         this.#spaceDetailModal.show();
@@ -927,16 +929,16 @@ class exhibitorsAdm {
     }
     // locations button click
     showLocations(id) {
-        var row = this.#spacesTable.getRow(id);
-        var summary = row.getCell("summary").getValue();
-        var exhibitorId = row.getCell("exhibitorId").getValue();
-        var locations = row.getCell("locations").getValue();
-        var exhibitorRegionYearId = row.getCell("exhibitorRegionYearId").getValue();
+        var row = this.#spacesTable.getRow(id).getData();
+        var summary = row.summary;
+        var exhibitorId = row.exhibitorId;
+        var locations = row.locations;
         var exhibitorRow = this.#exhibitorsTable.getRow(exhibitorId);
         var exhibitorData = exhibitorRow.getData();
-        exhibitorData.exhibitorNumber = row.getCell('exhibitorNumber').getValue();
-        var exhibitor = row.getCell('exhibitorName').getValue();
-        var mailInAllowed = row.getCell("mailInAllowed").getValue();
+        exhibitorData.exhibitorNumber = row.exhibitorNumber;
+        exhibitorData.exhibitorRegionYearId = row.exhibitorRegionYearId;
+        var exhibitor = row.exhibitorName;
+        var mailInAllowed = row.mailInAllowed;
 
         // build exhibitor info block
         var exhibitorInfo = this.buildExhibitorInfoBlock(exhibitorData, mailInAllowed);
@@ -957,7 +959,8 @@ class exhibitorsAdm {
 
 
         var exhibitorData = this.#spacesTable.getRow(id).getData();
-        document.getElementById('locations-edit-title').innerHTML = "<strong>Locations for " + exhibitor + " (" + exhibitorId + ":" + exhibitorData.exhibitorYearId + ")</strong>";
+        document.getElementById('locations-edit-title').innerHTML = "<strong>Locations for " + exhibitor + " (" + exhibitorId + ":" + exhibitorData.exhibitorYearId +
+            "," + exhibitorData.exhibitorRegionYearId +  ")</strong>";
         document.getElementById("spaceHTML").innerHTML = summary.replace("\n", "<br/>");
         document.getElementById("locationsVal").value = locations;
         document.getElementById("spaceRowId").value = id;
