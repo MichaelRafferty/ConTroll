@@ -18,6 +18,15 @@ INSERT INTO controllAppItems(appName, appPage, appSection, txtItem, txtItemDescr
 ('controll', 'emails','reminder','text','Custom Text for the plain text attendence reminder email'),
 ('controll', 'emails','reminder','html','Custom Text for the html attendence reminder email');
 
+INSERT INTO controllTxtItems(appName, appPage, appSection, txtItem, contents)
+SELECT a.appName, a.appPage, a.appSection, a.txtItem,
+       CONCAT('Controll-Default: This is ', a.appName, '-', a.appPage, '-', a.appSection, '-', a.txtItem,
+              '<br/>Custom HTML that can replaced with a custom value in the ConTroll Admin App under RegAdmin/Edit Custom Text.<br/>',
+              'Default text display can be suppressed in the configuration file.')
+FROM controllAppItems a
+         LEFT OUTER JOIN controllTxtItems t ON (a.appName = t.appName AND a.appPage = t.appPage AND a.appSection = t.appSection AND a.txtItem = t.txtItem)
+WHERE t.contents is NULL;
+
 /*
  * default emails for the distribution
  */
