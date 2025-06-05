@@ -42,7 +42,7 @@ $memId = $_POST['memId'];
 $iQ = <<<EOS
 SELECT r.id, r.memId, r.status, m.memAge, m.memCategory, m.memType, m.price, m.conid
 FROM reg r
-JOIN memList m
+JOIN memList m ON r.memId = m.id
 WHERE r.conid = ? AND perid = ? AND r.status IN ('paid', 'unpaid', 'plan')
 EOS;
 $typeStr = 'ii';
