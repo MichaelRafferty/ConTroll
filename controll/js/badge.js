@@ -530,7 +530,7 @@ function updateBadge(perid) {
                 return;
             }
             if (data.warn !== undefined) {
-                show_message(data.error, 'warn', 'find_edit_message');
+                show_message(data.warn, 'warn', 'find_edit_message');
                 return;
             }
             if (data.success !== undefined) {
