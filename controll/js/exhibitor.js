@@ -89,7 +89,7 @@ class exhibitorsAdm {
         }
 
         // exhibitors
-        exhibitorProfile = new ExhibitorProfile(this.#debug, config['portalType']);
+        exhibitorProfile = new ExhibitorProfile(this.#debug, config.portalType);
         id = document.getElementById("import_exhibitor");
         if (id)
             this.#importModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
@@ -111,10 +111,10 @@ class exhibitorsAdm {
         }
 
         // owners
-        this.#ownerTabs['overview'] = document.getElementById('overview-content');
-        this.#ownerTabs['configuration'] = document.getElementById('configuration-pane');
-        this.#ownerTabs['customtext'] = document.getElementById('customtext-pane');
-        this.#currentOwner = this.#ownerTabs['overview'];
+        this.#ownerTabs.overview = document.getElementById('overview-content');
+        this.#ownerTabs.configuration = document.getElementById('configuration-pane');
+        this.#ownerTabs.customtext = document.getElementById('customtext-pane');
+        this.#currentOwner = this.#ownerTabs.overview;
         this.#currentPane = 'overview';
         var ownerKeys = Object.keys(regionOwners);
         for (var idO in ownerKeys) {
@@ -127,7 +127,7 @@ class exhibitorsAdm {
             var regionKeys = Object.keys(regionsInOwner);
             for (var idR in regionKeys) {
                 var region = regionsInOwner[regionKeys[idR]];
-                var regionId = region['name'].replaceAll(' ', '-');
+                var regionId = region.name.replaceAll(' ', '-');
                 this.#regionTabs[regionId] = document.getElementById(regionId + '-div');
             }
         }
@@ -201,7 +201,7 @@ class exhibitorsAdm {
 
         if (content == 'configuration') {
             if (exhibits == null)
-                exhibits = new exhibitssetup(config['conid'], config['debug']);
+                exhibits = new exhibitssetup(config.conid, config.debug);
             exhibits.open();
             return;
         }
@@ -221,7 +221,7 @@ class exhibitorsAdm {
         var regionsInOwner = regionOwners[ownerLookup];
         var regionKey = Object.keys(regionsInOwner)[0];
         var region = regionsInOwner[regionKey];
-        this.settabRegion(region['name'].replaceAll(' ', '-') + '-pane');
+        this.settabRegion(region.name.replaceAll(' ', '-') + '-pane');
     }
 
     // second level - region
@@ -258,8 +258,8 @@ class exhibitorsAdm {
     // open(tabname) - fetch the data and re-draw the region tab
     open(newtabname) {
         fulltabname = newtabname;
-        tabname = regionTabNames[newtabname]['name'];
-        regionid = regionTabNames[newtabname]['id'];
+        tabname = regionTabNames[newtabname].name;
+        regionid = regionTabNames[newtabname].id;
 
         if (this.#debug & 1)
             console.log("opening from " + newtabname + " as " + tabname + ", " + regionid);
@@ -280,22 +280,22 @@ class exhibitorsAdm {
     }
 
     draw(data) {
-        if (data['error']) {
-            show_message(data['error'], 'error');
-            this.#message_div.innerHTML = "Query:\n" + data['query'] + "\n\n" + "Args: " + data['args'].toString();
+        if (data.error) {
+            show_message(data.error, 'error');
+            this.#message_div.innerHTML = "Query:\n" + data.query + "\n\n" + "Args: " + data.args.toString();
             return;
         }
         this.#message_div.innerHTML = '';
-        this.#pricelists = data['price_list'];
-        if (data['locationsUsed'])
-            this.#locationsUsed = data['locationsUsed'];
+        this.#pricelists = data.price_list;
+        if (data.locationsUsed)
+            this.#locationsUsed = data.locationsUsed;
 
-        this.#regionId = data['post']['regionId'];
+        this.#regionId = data.post.regionId;
 
         if (this.#debug & 8)
             console.log(data);
 
-        var regionName = data['post']['region'];
+        var regionName = data.post.region;
         var divId = regionName.replaceAll(' ','-') + '-div';
         var dataDiv = document.getElementById(divId)
 
@@ -303,7 +303,7 @@ class exhibitorsAdm {
         var html = this.drawSummary(data);
         // add in tabs for spaces, approvals and exhibitor
         var region = regions[regionName];
-        var groupid = 'data-' + region['id'];
+        var groupid = 'data-' + region.id;
         this.#regionGroupId = groupid;
         html += "<ul class='nav nav-tabs mb-3' id='" + groupid + "-tab' role='tablist'>\n" +
             "<li class='nav-item' role='presentation'>\n" +
@@ -311,7 +311,7 @@ class exhibitorsAdm {
             "       aria-selected='true' onclick=" + '"' + "exhibitors.settabData('" + groupid + "-spaces-pane');" + '"' + ">Space Requests\n" +
             "</button>\n" +
             "</li>\n";
-        if (region['requestApprovalRequired'] != 'None') {
+        if (region.requestApprovalRequired != 'None') {
             html += "<li class='nav-item' role='presentation'>\n" +
                 "<button class='nav-link' id='" + groupid + "-app-tab' data-bs-toggle='pill' data-bs-target='#" + groupid + "-app-pane' type='button' role='tab' aria-controls='nav-app'\n" +
                 "       aria-selected='false' onclick=" + '"' + "exhibitors.settabData('" + groupid + "-app-pane');" + '"' + ">Approval Requests\n" +
@@ -326,7 +326,7 @@ class exhibitorsAdm {
         html += "</ul>\n";
 
         html += this.drawSpaces(data, groupid);
-        if (region['requestApprovalRequired'] != 'None') {
+        if (region.requestApprovalRequired != 'None') {
             html += this.drawApprovals(data,  groupid);
         }
         html += this.drawExhibitors(data, groupid);
@@ -338,24 +338,24 @@ class exhibitorsAdm {
         this.#spacesTabs[groupid + '-exh'] = document.getElementById(groupid + '-exh-content');
         this.settabData(groupid + '-spaces-pane');
         this.drawSpacesTable(data,  groupid, true);
-        if (region['requestApprovalRequired'] != 'None') {
+        if (region.requestApprovalRequired != 'None') {
             this.drawApprovalsTable(data, groupid);
         }
         this.drawExhibitorsTable(data,  groupid);
     }
 
     redraw(data) {
-        var regionName = data['post']['region'];
+        var regionName = data.post.region;
         var region = regions[regionName];
         this.drawSpacesTable(data,  null, false);
-        if (region['requestApprovalRequired'] != 'None') {
-            this.#approvalsTable.replaceData(data['approvals']);
+        if (region.requestApprovalRequired != 'None') {
+            this.#approvalsTable.replaceData(data.approvals);
         }
-        this.#exhibitorsTable.replaceData(data['exhibitors']);
+        this.#exhibitorsTable.replaceData(data.exhibitors);
     }
     // summary status at the top of the screen
     drawSummary(data) {
-        var summary = data['summary'];
+        var summary = data.summary;
         if (!summary)
             return;
 
@@ -363,14 +363,14 @@ class exhibitorsAdm {
 
         for (var spaceid in summary) {
             var space = summary[spaceid];
-            var remaining =  space['unitsAvailable'] - space['approved'];
+            var remaining =  space.unitsAvailable - space.approved;
             html += `    <div class="row mt-0 mb-0 p-0">
         <div class="col-sm-auto">
-            <span style="font-size: 125%; font-weight: bold;">` + space['name'] + ` Registrations: </span>
+            <span style="font-size: 125%; font-weight: bold;">` + space.name + ` Registrations: </span>
         </div>
-        <div class="col-sm-auto ms-2 pt-1">New: ` + space['new'] + `</div>
-        <div class="col-sm-auto ms-2 pt-1">Pending: ` + space['pending'] + `</div>
-        <div class="col-sm-auto ms-2 pt-1">Purchased: ` + space['purchased'] + `</div>
+        <div class="col-sm-auto ms-2 pt-1">New: ` + space.new + `</div>
+        <div class="col-sm-auto ms-2 pt-1">Pending: ` + space.pending + `</div>
+        <div class="col-sm-auto ms-2 pt-1">Purchased: ` + space.purchased + `</div>
         <div class="col-sm-auto ms-2 pt-1">Remaining: ` + remaining + `</div>
     </div>
         `;
@@ -452,7 +452,7 @@ class exhibitorsAdm {
         var region = null;
         //var currentRegion = -1;
         var currentExhibitor = -1;
-        var spaces = data['detail'];
+        var spaces = data.detail;
         var spaceKeys = Object.keys(spaces);
         var spaceHTML = '';
         var spaceSUM = '';
@@ -463,19 +463,19 @@ class exhibitorsAdm {
         var inv = 0;
         for (var idS in spaceKeys) {
             var space = spaces[idS];
-            //var newRegion = space['exhibitsRegionYearId'];
-            var newExhibitor = space['exhibitorId']
+            //var newRegion = space.exhibitsRegionYearId;
+            var newExhibitor = space.exhibitorId
             if (newExhibitor != currentExhibitor) {
                 // change in region
                 if (currentExhibitor > 0) {
                     spaceSUM = spaceSUM.substring(0, spaceSUM.length - 1);
-                    region['space'] = spaceHTML + "</div>";
-                    region['summary'] = spaceSUM;
-                    region['stage'] = spaceStage;
-                    region['req'] = req;
-                    region['app'] = app;
-                    region['pur'] = pur;
-                    region['inv'] = inv;
+                    region.space = spaceHTML + "</div>";
+                    region.summary = spaceSUM;
+                    region.stage = spaceStage;
+                    region.req = req;
+                    region.app = app;
+                    region.pur = pur;
+                    region.inv = inv;
                     regionsLocal[currentExhibitor] = make_copy(region);
                     spaceHTML = '';
                     spaceStage = '';
@@ -488,97 +488,97 @@ class exhibitorsAdm {
                 currentExhibitor = newExhibitor;
                 spaceSUM = '';
                 spaceHTML = '<div class="container-fluid" style="width: 700px;">';
-                req += space['requested_units'];
-                app += space['approved_units'];
-                pur += space['purchased_units'];
-                inv += space['invCount'];
+                req += space.requested_units;
+                app += space.approved_units;
+                pur += space.purchased_units;
+                inv += space.invCount;
                 region = {
-                    id: space['exhibitorId'],
-                    exhibitorNumber: space['exhibitorNumber'],
+                    id: space.exhibitorId,
+                    exhibitorNumber: space.exhibitorNumber,
                     eYRid: currentExhibitor,
-                    exhibitorRegionYearId: space['exhibitorRegionYearId'],
-                    mailInAllowed: space['mailInAllowed'],
-                    regionId: space['regionId'],
-                    regionYearId: space['exhibitsRegionYearId'],
-                    exhibitorId: space['exhibitorId'],
-                    exhibitorName: space['exhibitorName'],
-                    artistName: space['artistName'],
-                    website: space['website'],
-                    exhibitorEmail: space['exhibitorEmail'],
-                    agentRequest: space['agentRequest'],
-                    agentName: space['agentName'],
-                    transid: space['transid'],
-                    exhibitorYearId: space['exhibitorYearId'],
-                    locations: space['locations'],
-                    s1: space['b1'],
-                    s2: space['b2'],
-                    s3: space['b3'],
-                    s4: space['b4'],
+                    exhibitorRegionYearId: space.exhibitorRegionYearId,
+                    mailInAllowed: space.mailInAllowed,
+                    regionId: space.regionId,
+                    regionYearId: space.exhibitsRegionYearId,
+                    exhibitorId: space.exhibitorId,
+                    exhibitorName: space.exhibitorName,
+                    artistName: space.artistName,
+                    website: space.website,
+                    exhibitorEmail: space.exhibitorEmail,
+                    agentRequest: space.agentRequest,
+                    agentName: space.agentName,
+                    transid: space.transid,
+                    exhibitorYearId: space.exhibitorYearId,
+                    locations: space.locations,
+                    s1: space.b1,
+                    s2: space.b2,
+                    s3: space.b3,
+                    s4: space.b4,
                 };
             }
 
             // add the space data as a formatted region
-            if (space['requested_units'] > 0 || space['approved_units'] > 0 || space['purchased_units'] > 0) {
+            if (space.requested_units > 0 || space.approved_units > 0 || space.purchased_units > 0) {
                 // detail first
                 spaceHTML += '<div class="row">' +
-                    '<div class="col-sm-12"><STRONG>' + space['spaceName'] + '</STRONG></div></div>';
+                    '<div class="col-sm-12"><STRONG>' + space.spaceName + '</STRONG></div></div>';
 
-                if (blankIfNull(space['requested_units']) != '') {
-                    spaceHTML += '<div class="row"><div class="col-sm-2' + (blankIfNull(space['approved_units']) == '' ? ' text-danger' : '') + '">Requested: </div>' +
-                        '<div class="col-sm-2 text-end">' + blankIfNull(space['requested_units']) + '</div>' +
-                        '<div class="col-sm-3">' + blankIfNull(space['requested_description']) + '</div>' +
-                        '<div class="col-sm-4">' + blankIfNull(space['time_requested']) + '</div>' +
+                if (blankIfNull(space.requested_units) != '') {
+                    spaceHTML += '<div class="row"><div class="col-sm-2' + (blankIfNull(space.approved_units) == '' ? ' text-danger' : '') + '">Requested: </div>' +
+                        '<div class="col-sm-2 text-end">' + blankIfNull(space.requested_units) + '</div>' +
+                        '<div class="col-sm-3">' + blankIfNull(space.requested_description) + '</div>' +
+                        '<div class="col-sm-4">' + blankIfNull(space.time_requested) + '</div>' +
                         '</div>';
                 }
 
-                if (blankIfNull(space['approved_units']) != '') {
+                if (blankIfNull(space.approved_units) != '') {
                     spaceHTML += '<div class="row"><div class="col-sm-2">Approved: </div>' +
-                        '<div class="col-sm-2 text-end">' + blankIfNull(space['approved_units']) + '</div>' +
-                        '<div class="col-sm-3">' + blankIfNull(space['approved_description']) + '</div>' +
-                        '<div class="col-sm-4">' + blankIfNull(space['time_approved']) + '</div>' +
+                        '<div class="col-sm-2 text-end">' + blankIfNull(space.approved_units) + '</div>' +
+                        '<div class="col-sm-3">' + blankIfNull(space.approved_description) + '</div>' +
+                        '<div class="col-sm-4">' + blankIfNull(space.time_approved) + '</div>' +
                         '</div>';
                 }
 
-                if (blankIfNull(space['purchased_units']) != '') {
+                if (blankIfNull(space.purchased_units) != '') {
                     spaceHTML += '<div class="row"><div class="col-sm-2">Purchased: </div>' +
-                        '<div class="col-sm-2 text-end">' + blankIfNull(space['purchased_units']) + '</div>' +
-                        '<div class="col-sm-3">' + blankIfNull(space['purchased_description']) + '</div>' +
-                        '<div class="col-sm-4">' + blankIfNull(space['time_purchased']) + '</div>' +
+                        '<div class="col-sm-2 text-end">' + blankIfNull(space.purchased_units) + '</div>' +
+                        '<div class="col-sm-3">' + blankIfNull(space.purchased_description) + '</div>' +
+                        '<div class="col-sm-4">' + blankIfNull(space.time_purchased) + '</div>' +
                         '</div>';
                 }
                 // now the summary lines
-                if (space['purchased_units'] > 0) {
+                if (space.purchased_units > 0) {
                     spaceStage = 'Purchased';
-                    spaceSUM += space['purchased_description'] + ' of ' + space['spaceName'] + "\n";
-                } else if (space['approved_units'] > 0) {
-                    spaceSUM += space['approved_description'] + ' of ' + space['spaceName'] + "\n";
+                    spaceSUM += space.purchased_description + ' of ' + space.spaceName + "\n";
+                } else if (space.approved_units > 0) {
+                    spaceSUM += space.approved_description + ' of ' + space.spaceName + "\n";
                     spaceStage = 'Approved';
-                } else if (space['requested_units'] > 0) {
-                    spaceSUM += space['requested_description'] + ' of ' + space['spaceName'] + "\n";
+                } else if (space.requested_units > 0) {
+                    spaceSUM += space.requested_description + ' of ' + space.spaceName + "\n";
                     spaceStage = 'Requested';
                 }
             }
             // now do agent stuff
-            if (blankIfNull(region['agentRequest']) != '') {
+            if (blankIfNull(region.agentRequest) != '') {
                 spaceHTML += '<div class="row"><div class="col-sm-4">Agent Request: </div>' +
-                    '<div class="col-sm-8">' + blankIfNull(region['agentRequest']) + '</div>' +
+                    '<div class="col-sm-8">' + blankIfNull(region.agentRequest) + '</div>' +
                     '</div>';
             }
-            if (blankIfNull(region['agentName']) != '') {
+            if (blankIfNull(region.agentName) != '') {
                 spaceHTML += '<div class="row"><div class="col-sm-4">Agent Name: </div>' +
-                    '<div class="col-sm-8">' + blankIfNull(region['agentName']) + '</div>' +
+                    '<div class="col-sm-8">' + blankIfNull(region.agentName) + '</div>' +
                     '</div>';
             }
         }
         if (currentExhibitor > 0) {
             spaceSUM = spaceSUM.substring(0, spaceSUM.length - 1);
-            region['space'] = spaceHTML + "</div>";
-            region['summary'] = spaceSUM;
-            region['stage'] = spaceStage;
-            region['req'] = req;
-            region['app'] = app;
-            region['pur'] = pur;
-            region['inv'] = inv;
+            region.space = spaceHTML + "</div>";
+            region.summary = spaceSUM;
+            region.stage = spaceStage;
+            region.req = req;
+            region.app = app;
+            region.pur = pur;
+            region.inv = inv;
             regionsLocal.push(make_copy(region));
         }
 
@@ -626,7 +626,7 @@ class exhibitorsAdm {
     // drawApprovalsTable - now that the DOM is created, draw the actual table
     drawApprovalsTable(data, groupid) {
         this.#approvalsTable = new Tabulator('#' + groupid + '-app-table-div', {
-            data: data['approvals'],
+            data: data.approvals,
             layout: "fitDataTable",
             pagination: true,
             paginationSize: 25,
@@ -654,9 +654,9 @@ class exhibitorsAdm {
     // drawExhibitorsTable
     // update the exhibitors div with the table of exhibitors
     drawExhibitorsTable(data, groupid) {
-        exhibitorsData = data['exhibitors'];
+        exhibitorsData = data.exhibitors;
         this.#exhibitorsTable = new Tabulator('#' + groupid + '-exh-table-div', {
-            data: data['exhibitors'],
+            data: data.exhibitors,
             index: "exhibitorId",
             layout: "fitDataTable",
             pagination: true,
@@ -693,17 +693,17 @@ class exhibitorsAdm {
     buildRecordHover(e, cell, onRendered) {
         var data = cell.getData();
         //console.log(data);
-        var hover_text = 'Exhibitor id: ' + data['id'] + '<br/>' +
-            data['exhibitorName'] + '<br/>' +
-            'Artist Name: ' + data['artistName'] + '<br/>' +
-            'Website: ' + data['website'] + '<br/>' +
-            data['fullAddr'] + '<br/>' +
-            'Needs New Password: ' + (data['needs_new'] ? 'Yes' : 'No') +  '<br/>' +
-            'Publicize: ' + (data['publicity'] ? 'Yes' : 'No') +  '<br/>' +
-            'Mail In: ' + data['mailin'] + '<br/>' +
-            'Sales Tax ID: ' + data['salesTaxId'] + '<br/>';
+        var hover_text = 'Exhibitor id: ' + data.id + '<br/>' +
+            data.exhibitorName + '<br/>' +
+            'Artist Name: ' + data.artistName + '<br/>' +
+            'Website: ' + data.website + '<br/>' +
+            data.fullAddr + '<br/>' +
+            'Needs New Password: ' + (data.needs_new ? 'Yes' : 'No') +  '<br/>' +
+            'Publicize: ' + (data.publicity ? 'Yes' : 'No') +  '<br/>' +
+            'Mail In: ' + data.mailin + '<br/>' +
+            'Sales Tax ID: ' + data.salesTaxId + '<br/>';
 
-        hover_text += 'Description:<br/>&nbsp;&nbsp;&nbsp;&nbsp;' + data['description'].replaceAll('\n', '<br/>&nbsp;&nbsp;&nbsp;&nbsp;');
+        hover_text += 'Description:<br/>&nbsp;&nbsp;&nbsp;&nbsp;' + data.description.replaceAll('\n', '<br/>&nbsp;&nbsp;&nbsp;&nbsp;');
         return hover_text;
     }
 
@@ -731,17 +731,17 @@ class exhibitorsAdm {
 
     // process the data and draw the table
     importDataSuccess(data) {
-        if (data['status'] == 'warn') {
-            show_message($data['message'], 'warn');
+        if (data.status == 'warn') {
+            show_message($data.message, 'warn');
             return;
         }
-        if (data['status'] == 'error') {
-            show_message($data['message'], 'error');
+        if (data.status == 'error') {
+            show_message($data.message, 'error');
             return;
         }
         var _this = this;
         this.#importTable = new Tabulator('#Importtable', {
-            data: data['past'],
+            data: data.past,
             layout: "fitDataTable",
             index: 'id',
             pagination: true,
@@ -787,7 +787,7 @@ class exhibitorsAdm {
     }
 
     importSuccess(data) {
-        this.#exhibitorsTable.replaceData(data['exhibitors']);
+        this.#exhibitorsTable.replaceData(data.exhibitors);
     }
 
 // add new functions
@@ -810,7 +810,7 @@ class exhibitorsAdm {
     exhApprove(e, cell) {
         var exhibitorRow = cell.getRow()
         var exhibitorData = exhibitorRow.getData();
-        if (exhibitorData['b1'] > 0)
+        if (exhibitorData.b1 > 0)
             exhibitors.processApprovalChange('approved', exhibitorData, exhibitorRow);
     }
 
@@ -818,7 +818,7 @@ class exhibitorsAdm {
     exhReset(e, cell) {
         var exhibitorRow = cell.getRow()
         var exhibitorData = exhibitorRow.getData();
-        if (exhibitorData['b1'] > 0)
+        if (exhibitorData.b1 > 0)
             exhibitors.processApprovalChange('requested', exhibitorData, exhibitorRow);
     }
 
@@ -826,7 +826,7 @@ class exhibitorsAdm {
     exhDeny(e, cell) {
         var exhibitorRow = cell.getRow()
         var exhibitorData = exhibitorRow.getData();
-        if (exhibitorData['b1'] > 0)
+        if (exhibitorData.b1 > 0)
             exhibitors.processApprovalChange('denied', exhibitorData, exhibitorRow);
     }
 
@@ -834,7 +834,7 @@ class exhibitorsAdm {
     exhHide(e, cell) {
         var exhibitorRow = cell.getRow()
         var exhibitorData = exhibitorRow.getData();
-        if (exhibitorData['b1'] > 0)
+        if (exhibitorData.b1 > 0)
             exhibitors.processApprovalChange('hide', exhibitorData, exhibitorRow);
     }
 
@@ -845,77 +845,82 @@ class exhibitorsAdm {
         var exhibitorId = row.getCell("exhibitorId").getValue();
         var exhibitorRow =  this.#exhibitorsTable.getRow(exhibitorId);
         var exhibitorData = exhibitorRow.getData();
+        exhibitorData.exhibitorNumber = row.getCell('exhibitorNumber').getValue();
         var exhibitor = row.getCell('exhibitorName').getValue();
         var mailInAllowed = row.getCell("mailInAllowed").getValue();
 
         // build exhibitor info block
         var exhibitorInfo = this.buildExhibitorInfoBlock(exhibitorData, mailInAllowed);
 
-        document.getElementById('space-detail-title').innerHTML = "<strong>Space Detail for " + exhibitor + "(" + exhibitorId + ":" + exhibitorData['exhibitorYearId'] + ")</strong>";
+        document.getElementById('space-detail-title').innerHTML = "<strong>Space Detail for " + exhibitor + "(" + exhibitorId + ":" + exhibitorData.exhibitorYearId + ")</strong>";
         document.getElementById("spaceDetailHTML").innerHTML = details;
         document.getElementById("exhibitorInfoHTML").innerHTML = exhibitorInfo;
         this.#spaceDetailModal.show();
     }
 
     buildExhibitorInfoBlock(exhibitorData, mailInAllowed) {
-        var weburl = exhibitorData['website'];
+        var weburl = exhibitorData.website;
         if (weburl.substr(0, 8) != 'https://')
             weburl = 'https://' + weburl;
         var exhibitorInfo = `
             <div class="row">
+                <div class="col-sm-2">Exhibitor Id/Number:</div>
+                <div class="col-sm-10 p-0 ms-0 me-0">` + exhibitorData.exhibitorId + '/' + exhibitorData.exhibitorNumber + `</div>
+            </div>
+            <div class="row">
                 <div class="col-sm-2">Business Name:</div>
-                <div class="col-sm-10 p-0 ms-0 me-0">` + exhibitorData['exhibitorName'] + `</div>
+                <div class="col-sm-10 p-0 ms-0 me-0">` + exhibitorData.exhibitorName + `</div>
             </div>
             <div class="row">
                 <div class="col-sm-2">Artist Name:</div>
-                <div class="col-sm-10 p-0 ms-0 me-0">` + exhibitorData['artistName'] + `</div>
+                <div class="col-sm-10 p-0 ms-0 me-0">` + exhibitorData.artistName + `</div>
             </div>
             <div class='row'>
                 <div class='col-sm-2'>Business Email:</div>
-                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorData['exhibitorEmail'] + `</div>   
+                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorData.exhibitorEmail + `</div>   
             </div>
             <div class='row'>
                 <div class='col-sm-2'>Business Phone:</div>
-                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorData['exhibitorPhone'] + `</div>   
+                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorData.exhibitorPhone + `</div>   
             </div>
             <div class='row'>
                 <div class='col-sm-2'>Website:</div>
-                <div class='col-sm-10 p-0 ms-0 me-0'><a href="` + weburl + '" target="_blank">' + exhibitorData['website'] + `</a></div>   
+                <div class='col-sm-10 p-0 ms-0 me-0'><a href="` + weburl + '" target="_blank">' + exhibitorData.website + `</a></div>   
             </div>
             <div class='row'>
                 <div class='col-sm-2'>Desc.:</div>
-                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorData['description'] + `</div>   
+                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorData.description + `</div>   
             </div>
 `;
 
         if (mailInAllowed == 'Y') {
             exhibitorInfo += `<div class="row">
                 <div class='col-sm-2'>Mail-In:</div>
-                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorData['mailin'] + `</div>   
+                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorData.mailin + `</div>   
             </div>
 `;
         }
         exhibitorInfo += `<div class='row'>
                 <div class='col-sm-2'>Address:</div>
-                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorData['addr'] + `</div>   
+                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorData.addr + `</div>   
             </div>
 `;
-        if (exhibitorData['addr2'] && exhibitorData['addr2'].length > 0) {
+        if (exhibitorData.addr2 && exhibitorData.addr2.length > 0) {
             exhibitorInfo += `<div class='row'>
             <div class='row'>
                 <div class='col-sm-2'>&nbsp;</div>
-                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorData['addr2'] + `</div>   
+                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorData.addr2 + `</div>   
             </div>
 `;
         }
 
         exhibitorInfo += `<div class='row'>
                 <div class='col-sm-2'>&nbsp;</div>
-                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorData['city'] + ', ' + exhibitorData['state'] + ' ' + exhibitorData['zip'] + `</div>   
+                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorData.city + ', ' + exhibitorData.state + ' ' + exhibitorData.zip + `</div>   
             </div>
              <div class='row'>
                 <div class='col-sm-2'>&nbsp;</div>
-                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorData['country'] + `</div>   
+                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorData.country + `</div>   
             </div>
 `;
         return exhibitorInfo;
@@ -929,6 +934,7 @@ class exhibitorsAdm {
         var exhibitorRegionYearId = row.getCell("exhibitorRegionYearId").getValue();
         var exhibitorRow = this.#exhibitorsTable.getRow(exhibitorId);
         var exhibitorData = exhibitorRow.getData();
+        exhibitorData.exhibitorNumber = row.getCell('exhibitorNumber').getValue();
         var exhibitor = row.getCell('exhibitorName').getValue();
         var mailInAllowed = row.getCell("mailInAllowed").getValue();
 
@@ -951,7 +957,7 @@ class exhibitorsAdm {
 
 
         var exhibitorData = this.#spacesTable.getRow(id).getData();
-        document.getElementById('locations-edit-title').innerHTML = "<strong>Locations for " + exhibitor + " (" + exhibitorId + ":" + exhibitorData['exhibitorYearId'] + ")</strong>";
+        document.getElementById('locations-edit-title').innerHTML = "<strong>Locations for " + exhibitor + " (" + exhibitorId + ":" + exhibitorData.exhibitorYearId + ")</strong>";
         document.getElementById("spaceHTML").innerHTML = summary.replace("\n", "<br/>");
         document.getElementById("locationsVal").value = locations;
         document.getElementById("spaceRowId").value = id;
@@ -965,7 +971,7 @@ class exhibitorsAdm {
     // exhButtons - three buttons for the exhibitor Record
     exhButtons(cell, formatterParams, onRendered) {
         var row = cell.getData();
-        var id = row['exhibitorId'];
+        var id = row.exhibitorId;
         // edit button
         var buttons = '<button class="btn btn-secondary" style="--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; ' +
             '--bs-btn-font-size: .75rem;" onclick="exhibitors.edit(' + id + ');">Edit</button>';
@@ -1007,33 +1013,33 @@ class exhibitorsAdm {
     }
 
     locationsUpdateSuccess(data) {
-        if (data['error']) {
-            show_message(data['error'], 'error');
+        if (data.error) {
+            show_message(data.error, 'error');
             return;
         }
-        if (data['warning']) {
-            show_message(data['warning'], 'warn');
+        if (data.warning) {
+            show_message(data.warning, 'warn');
             return;
         }
-        if (data['success']) {
-            show_message(data['success'], 'success');
+        if (data.success) {
+            show_message(data.success, 'success');
         } else {
             clear_message();
         }
 
-        this.#locationsUsed = data['locationsUsed'];
+        this.#locationsUsed = data.locationsUsed;
     }
 
     // tabulator button formatters
 
     spaceButtons(cell, formatterParams, onRendered) {
         var data = cell.getData();
-        var req = data['req'] || 0;
-        var app = data['app'] || 0;
-        var pur = data['pur'] || 0;
-        var transid = data['transid'] || 0;
-        var agentRequest = data['agentRequest'] || '';
-        var id = data['id'];
+        var req = data.req || 0;
+        var app = data.app || 0;
+        var pur = data.pur || 0;
+        var transid = data.transid || 0;
+        var agentRequest = data.agentRequest || '';
+        var id = data.id;
         var buttons = '';
 
         // details button
@@ -1071,7 +1077,7 @@ class exhibitorsAdm {
         }
 
         // inventory button
-        if (data['inv'] > 0) {
+        if (data.inv > 0) {
             buttons += '<button class="btn btn-sm btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
                 'onclick="exhibitors.printBidSheets(' + id + ')" >Bid Sheets</button>&nbsp;';
             buttons += '<button class="btn btn-sm btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
@@ -1093,10 +1099,10 @@ class exhibitorsAdm {
     // request approval buttons
     approvalButton(cell, formatterParams, onRendered) {
         var data = cell.getData();
-        var id = data['id'];
-        var b1 = data['b1'];
-        var approval = data['approval'] || 'none';
-        var name = formatterParams['name'];
+        var id = data.id;
+        var b1 = data.b1;
+        var approval = data.approval || 'none';
+        var name = formatterParams.name;
         var color = 'secondary';
 
         switch (approval) {
@@ -1148,7 +1154,7 @@ class exhibitorsAdm {
         if (this.#debug & 4)
             console.log(exhibitor);
     exhibitor_info = exhibitor;
-    exhibitorProfile.profileModalOpen('update', exhibitor['exhibitorId'], exhibitor['exhibitorYearId'], exhibitorRow);
+    exhibitorProfile.profileModalOpen('update', exhibitor.exhibitorId, exhibitor.exhibitorYearId, exhibitorRow);
     }
 
     // reset an exhibitor's password
@@ -1158,8 +1164,8 @@ class exhibitorsAdm {
             method: "POST",
             data: { 'exhibitorId': exhibitorId, type: 'exhibitor' },
             success: function (data, textStatus, jqXhr) {
-                if(data['error'] != undefined) { console.log(data['error']); }
-                alert(data['password']);
+                if(data.error != undefined) { console.log(data.error); }
+                alert(data.password);
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 showError("ERROR in emailReceipt: " + textStatus, jqXHR);
@@ -1175,8 +1181,8 @@ class exhibitorsAdm {
             method: "POST",
             data: { 'exhibitorYearId': exhibitorYearId, type: 'contact' },
             success: function (data, textStatus, jqXhr) {
-                if(data['error'] != undefined) { console.log(data['error']); }
-                alert(data['password']);
+                if(data.error != undefined) { console.log(data.error); }
+                alert(data.password);
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 showError("ERROR in emailReceipt: " + textStatus, jqXHR);
@@ -1200,13 +1206,13 @@ class exhibitorsAdm {
 
     // approvalChangeSuccess - successful return from setting the record
     approvalChangeSuccess(data) {
-        if (data['status'] == 'error') {
-            show_message(data['message'], 'error');
+        if (data.status == 'error') {
+            show_message(data.message, 'error');
         } else {
-            if (data['message'])
-                show_message(data['message'], 'success')
+            if (data.message)
+                show_message(data.message, 'success')
             if (this.#approvalRow) {
-                this.#approvalRow.update(data['info']);
+                this.#approvalRow.update(data.info);
             }
         }
     }
@@ -1214,29 +1220,29 @@ class exhibitorsAdm {
     spaceReceipt(id) {
         this.#spaceRow = this.#spacesTable.getRow(id);
         var exhibitorData = this.#spaceRow.getData();
-        this.#regionYearId = exhibitorData['regionYearId'];
-        this.#exhibitorId = exhibitorData['exhibitorId'];
+        this.#regionYearId = exhibitorData.regionYearId;
+        this.#exhibitorId = exhibitorData.exhibitorId;
         exhibitorReceipt.showReceipt(this.#regionYearId, this.#exhibitorId);
     }
 
     printBidSheets(id) {
         this.#spaceRow = this.#spacesTable.getRow(id);
         var exhibitorData = this.#spaceRow.getData();
-        var script = "scripts/exhibitorsBidSheets.php?type=bidsheets&region=" + exhibitorData['regionYearId'] + "&eyid=" + exhibitorData['exhibitorYearId'];
+        var script = "scripts/exhibitorsBidSheets.php?type=bidsheets&region=" + exhibitorData.regionYearId + "&eyid=" + exhibitorData.exhibitorYearId;
         window.open(script, "_blank")
     }
 
     printPriceTags(id) {
         this.#spaceRow = this.#spacesTable.getRow(id);
         var exhibitorData = this.#spaceRow.getData();
-        var script = "scripts/exhibitorsBidSheets.php?type=printshop&region=" + exhibitorData['regionYearId'] + "&eyid=" + exhibitorData['exhibitorYearId'];
+        var script = "scripts/exhibitorsBidSheets.php?type=printshop&region=" + exhibitorData.regionYearId + "&eyid=" + exhibitorData.exhibitorYearId;
         window.open(script, "_blank")
     }
 
     printControlSheet(id, email) {
         this.#spaceRow = this.#spacesTable.getRow(id);
         var exhibitorData = this.#spaceRow.getData();
-        var script = "scripts/exhibitorsBidSheets.php?type=control&region=" + exhibitorData['regionYearId'] + "&eyid=" + exhibitorData['exhibitorYearId'] + '&email=' + email;
+        var script = "scripts/exhibitorsBidSheets.php?type=control&region=" + exhibitorData.regionYearId + "&eyid=" + exhibitorData.exhibitorYearId + '&email=' + email;
         window.open(script, "_blank")
     }
 
@@ -1245,9 +1251,9 @@ class exhibitorsAdm {
     spaceApprovalReq(id) {
         this.#spaceRow = this.#spacesTable.getRow(id);
         var exhibitorData = this.#spaceRow.getData();
-        var req = exhibitorData['req'] || 0;
-        var app = exhibitorData['app'] || 0;
-        var pur = exhibitorData['pur'] || 0;
+        var req = exhibitorData.req || 0;
+        var app = exhibitorData.app || 0;
+        var pur = exhibitorData.pur || 0;
         if (req == 0 || pur > 0)
             return; // suppress click if there is nothing to approve
 
@@ -1267,22 +1273,22 @@ class exhibitorsAdm {
         this.#spaceRow = this.#spacesTable.getRow(id);
         this.#approvalPay = pay;
         var exhibitorData = this.#spaceRow.getData();
-        var req = exhibitorData['req'] || 0;
-        var app = exhibitorData['app'] || 0;
-        var pur = exhibitorData['pur'] || 0;
+        var req = exhibitorData.req || 0;
+        var app = exhibitorData.app || 0;
+        var pur = exhibitorData.pur || 0;
         if (req == 0 || pur > 0)
             return; // suppress click if there is nothing to approve
 
-        this.#exhibitorId = exhibitorData['exhibitorId'];
-        this.#regionId = exhibitorData['regionId'];
-        this.#regionYearId = exhibitorData['regionYearId'];
+        this.#exhibitorId = exhibitorData.exhibitorId;
+        this.#regionId = exhibitorData.regionId;
+        this.#regionYearId = exhibitorData.regionYearId;
 
-        console.log("Space Approval for " + exhibitorData['exhibitorName'] + " of type other");
+        console.log("Space Approval for " + exhibitorData.exhibitorName + " of type other");
 
         $.ajax({
             url: 'scripts/exhibitorGetSingleData.php',
             method: "POST",
-            data: { regionId: exhibitorData['regionId'], exhibitorId: exhibitorData['exhibitorId'] },
+            data: { regionId: exhibitorData.regionId, exhibitorId: exhibitorData.exhibitorId },
             success: function (data, textstatus, jqXHR) {
                 exhibitors.spaceAppDataSuccess(data);
             },
@@ -1293,25 +1299,25 @@ class exhibitorsAdm {
 
     // spaceApprovalSuccess - successful return from marking the space approval
     spaceApprovalSuccess(data) {
-        if (data['status'] == 'error') {
-            show_message(data['message'], 'error');
+        if (data.status == 'error') {
+            show_message(data.message, 'error');
         } else {
-            if (data['message'])
-                show_message(data['message'], 'success');
+            if (data.message)
+                show_message(data.message, 'success');
             this.open(this.#currentSpaceTab);
         }
     }
 
     // spaceAppDataSuccess - set Javascript globals and open the request up
     spaceAppDataSuccess(data) {
-        region_list = data['region_list'];
-        exhibits_spaces = data['exhibits_spaces'];
-        exhibitor_info = data['exhibitor_info'];
-        exhibitor_spacelist = data['exhibitor_spacelist'];
-        exhibitor_perm = data['exhibitor_perm'];
+        region_list = data.region_list;
+        exhibits_spaces = data.exhibits_spaces;
+        exhibitor_info = data.exhibitor_info;
+        exhibitor_spacelist = data.exhibitor_spacelist;
+        exhibitor_perm = data.exhibitor_perm;
         // don't overwrite regions, it's already loaded and its correct for all uses in vendor, exhibitorRequest doesn't use it.
-        spaces = data['spaces'];
-        country_options = data['country_options'];
+        spaces = data.spaces;
+        country_options = data.country_options;
         exhibitorRequest.openReq(this.#regionYearId, 2);
     }
 
@@ -1344,21 +1350,21 @@ class exhibitorsAdm {
 
     // getListSuccess - process the return of the list data
     getListSuccess(data) {
-        if (data['error']) {
+        if (data.error) {
             console.log(data);
-            show_message(data['error'], 'error');
+            show_message(data.error, 'error');
             return;
         }
-        if (data['exhibitors'].length == 0) {
+        if (data.exhibitors.length == 0) {
             show_message('All exhibitors have already paid for their space.  Use Add New Exhibitor if necessary to add this mail order exhibitor.', 'warn');
             return;
         }
-        if (data['message']) {
-            show_message(data['message'], 'success', 'ce_message_div');
+        if (data.message) {
+            show_message(data.message, 'success', 'ce_message_div');
         }
         this.#exhibitorChooseModal.show();
         this.#exhibitorListTable = new Tabulator('#exhibitorHtml', {
-            data: data['exhibitors'],
+            data: data.exhibitors,
             layout: "fitDataTable",
             index: 'id',
             pagination: true,
@@ -1380,7 +1386,7 @@ class exhibitorsAdm {
     // buttons for the exhibitorListTable
     exhibitorListButtons(cell, formatterParams, onRendered) {
         var data = cell.getData();
-        var id = data['exhibitorId'];
+        var id = data.exhibitorId;
         var buttons = '';
 
         // add space button button
@@ -1419,26 +1425,26 @@ class exhibitorsAdm {
 
     // now we have the data draw the scrren
     getAddPaySpaceSuccess(data) {
-        if (data['error']) {
+        if (data.error) {
             console.log(data);
-            show_message(data['error'], 'error');
+            show_message(data.error, 'error');
             return;
         }
 
-        if (data['message']) {
-            show_message(data['message'], 'success');
+        if (data.message) {
+            show_message(data.message, 'success');
         }
         console.log('getAddPaySpaceSuccess');
         console.log(data);
 
-        region_list = data['region_list'];
-        exhibits_spaces = data['exhibits_spaces'];
-        exhibitor_info = data['exhibitor_info'];
-        exhibitor_spacelist = data['exhibitor_spacelist'];
-        this.#regionYearId = data['exhibitor_perm']['exhibitsRegionYearId'];
+        region_list = data.region_list;
+        exhibits_spaces = data.exhibits_spaces;
+        exhibitor_info = data.exhibitor_info;
+        exhibitor_spacelist = data.exhibitor_spacelist;
+        this.#regionYearId = data.exhibitor_perm.exhibitsRegionYearId;
         // don't overwrite regions, it's already loaded and its correct for all uses in vendor, exhibitorRequest doesn't use it.
-        spaces = data['spaces'];
-        country_options = data['country_options'];
+        spaces = data.spaces;
+        country_options = data.country_options;
         exhibitorRequest.openReq(this.#regionYearId, 3);
     }
 };
@@ -1452,7 +1458,7 @@ function updateExhibitorDataDraw(data, textStatus, jqXHR) {
 
 // create class on page render
 window.onload = function initpage() {
-    exhibitors = new exhibitorsAdm(config['conid'], config['debug']);
+    exhibitors = new exhibitorsAdm(config.conid, config.debug);
     exhibitorRequestOnLoad();
     exhibitorReceiptOnLoad();
     exhibitorInvoiceOnLoad();
