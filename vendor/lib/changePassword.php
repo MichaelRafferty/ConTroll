@@ -20,7 +20,7 @@ EOH;
                 <label for='oldPw'>Old or Temp Password:</label>
             </div>
             <div class='col-sm-8'>
-                <input type='password' id='oldPw' name='oldPassword' size="24" autocomplete="off" required placeholder="current or temp password"/>
+                <input type='password' id='oldPw' name='oldPassword' size="24" autocomplete="off" required placeholder="current or temp"/>
             </div>
         </div>
         <div class='row'>
