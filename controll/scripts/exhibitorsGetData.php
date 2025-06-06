@@ -195,7 +195,7 @@ JOIN exhibitsRegions eR ON eR.id = eRY.exhibitsRegion
 JOIN exhibitsRegionTypes eT ON (eT.regionType = eR.RegionType)
 JOIN exh ON (xS.exhibitorId = exh.id)
 WHERE eRY.conid=? AND eRY.exhibitsRegion = ? AND (IFNULL(requested_units, 0) > 0 OR IFNULL(approved_units, 0) > 0)
-ORDER BY sortOrder, exhibitorName, spaceName
+ORDER BY sortOrder, exhibitorName, spaceName;
 EOS;
 
 $detailR = dbSafeQuery($detailQ, 'iiii',  array($conid, $regionId, $conid, $regionId));
