@@ -15,15 +15,19 @@ $conid=$con['id'];
 header('Content-Type: application/csv');
 header('Content-Disposition: attachment; filename="club.csv"');
 
-$query = "SELECT concat(P.last_name, ',', P.first_name),"
-    . " CASE B.type WHEN 'life' THEN '(LM)' WHEN 'child' THEN '(CL)'"
-        . " WHEN 'eternal' THEN '(EM)' WHEN 'annual' THEN concat('(',SUBSTRING(B.year, 2,2),')')"
-        . " END"
-    . " FROM club as B JOIN perinfo as P ON P.id=B.perid"
-    . " WHERE type in ('life', 'child', 'eternal', 'annual')"
-    . " ORDER BY P.last_name, P.first_name"
-    . ";";
-
+$query = <<<EOS
+SELECT CONCAT(P.last_name, ',', P.first_name) AS name,
+CASE B.type
+    WHEN 'life' THEN '(LM)'
+    WHEN 'child' THEN '(CL)'
+    WHEN 'eternal' THEN '(EM)' 
+    WHEN 'annual' THEN concat('(',SUBSTRING(B.year, 2,2),')')
+END AS code
+FROM club B 
+JOIN perinfo P ON P.id=B.perid
+WHERE type in ('life', 'child', 'eternal', 'annual')
+ORDER BY P.last_name, P.first_name;
+EOS;
 
 echo "Club Business Meeting Attendence List"
     . "\n";

@@ -411,7 +411,7 @@ function allocateBalance(&$balance, &$badges, $conid, $newPlanId, $transId, $pla
 SELECT mRI.*
 FROM memRules mR
 JOIN memRuleSteps mRI ON mR.name = mRI.name
-WHERE CONCAT(',', mR.memList, ',') like ?;
+WHERE mR.conid = ? AND mRI.conid = ? AND CONCAT(',', mR.memList, ',') like ?;
 EOS;
 
     $upgradedUP = <<<EOS
@@ -467,7 +467,7 @@ EOS;
                 // ok this upgrade is now paid for, mark the old one upgraded
                 // upgrades require a role to allow them to be bought based on the prior membership being in the cart, get the rule for this membership
 
-                $mrR = dbSafeQuery($mrQ, 's', array ('%,' . $badge['memId'] . ',%'));
+                $mrR = dbSafeQuery($mrQ, 'iis', array ($conid, $conid, '%,' . $badge['memId'] . ',%'));
                 if ($mrR !== false) {
                     if ($mrR->num_rows > 0) {
                         while ($rule = $mrR->fetch_assoc()) {
@@ -497,13 +497,20 @@ EOS;
             $balance -= $paid_amt;
             $left = $due - $paid_amt;
             $regStatus = ($left < 0.01) ? 'paid' : ($planOnly ? 'plan' : 'unpaid');
+            if (array_key_exists('regid', $badge)) {
+                $regid = $badge['regid'];
+            } else if (array_key_exists('regId', $badge)) {
+                $regid = $badge['regId'];
+            } else {
+                $regid = 'tbd';
+            }
             $rows_upd += dbSafeCmd($regU, 'ddisii', array (
                 $paid_amt,
                 $badge['couponDiscount'],
                 ($left < 0.01) ? $transId : null,
                 $regStatus,
                 $planId,
-                $badge['regid']
+                $regid
             ));
             $badges[$idx]['paid'] += $paid_amt;
             $badges[$idx]['status'] = $regStatus;

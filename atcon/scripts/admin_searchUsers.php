@@ -55,7 +55,9 @@ SELECT p.id, first_name, last_name, badge_name, email_addr
 FROM perinfo p
 LEFT OUTER JOIN atcon_user a ON (a.perid = p.id and a.conid = ?)
 WHERE a.id is NULL AND
-    (TRIM(CONCAT_WS(' ', TRIM(CONCAT_WS(' ', IFNULL(first_name, ''), IFNULL(middle_name, ''))), IFNULL(last_name, ''))) LIKE ? OR badge_name like ?);
+    LOWER(TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name), '  *', ' '))) LIKE ? OR
+    LOWER(TRIM(p.badge_name) LIKE ? OR LOWER(TRIM(p.email_addr)) LIKE ?)
+ORDER BY first_name, last_name;
 EOS;
     $search_string = '%' . str_replace(' ', '%', $search_string) . '%';
     $typestr = 'iss';

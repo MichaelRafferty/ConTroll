@@ -22,7 +22,15 @@ if ($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
 }
 
 $con = get_conf('con');
+$controll = get_conf('controll');
 $conid = $con['id'];
+$hrtime = 0;
+if (array_key_exists('hrtime', $controll)) {
+    $hrtime = $controll['hrtime'];
+}
+
+if ($hrtime)
+    $startHRtime = hrtime(true);
 
 if (!isset($_POST) || !isset($_POST['gettype'])) {
     $response['error'] = 'Missing Information';
@@ -705,5 +713,11 @@ EOS;
     }
     $response['memList'] = $memList;
 }
-
+if ($hrtime) {
+    $endHRtime = hrtime(true);
+    $intervalTime = $endHRtime - $startHRtime;
+    $secs = intval($intervalTime / 1000000000);
+    $ns = $intervalTime % 1000000000;
+    $response['success'] = sprintf("Call took %d.%09d seconds", $secs, $ns);
+}
 ajaxSuccess($response);

@@ -104,7 +104,6 @@ WITH planUsage AS (
 SELECT p.*, IFNULL(pu.uses, 0) AS uses
 FROM paymentPlans p
 LEFT OUTER JOIN planUsage pu ON (pu.planId = p.id)
-WHERE active = 'Y'
 ORDER BY sortorder;
 EOS;
     $QR = dbQuery($QQ);

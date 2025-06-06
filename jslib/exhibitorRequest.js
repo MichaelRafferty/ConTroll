@@ -282,8 +282,13 @@ class ExhibitorRequest {
                         return;
                     }
                 }
-                if (data['warn'] !== undefined) {
-                    show_message(data['warn'], 'warn', 'sr_message_div');
+                if (data['warn'] !== undefined) { // use main message block because this will close the window
+                    show_message(data['warn'], 'warn');
+                    _this.#exhibitor_request.hide();
+                    if (cancel > 2 || data['pay'] == 1) {
+                        exhibitorInvoice.openInvoice(exhibitor_info, _this.#regionYearId);
+                        return;
+                    }
                 }
             },
             error: showAjaxError

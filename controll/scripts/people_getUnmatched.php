@@ -43,12 +43,10 @@ WHERE r.perid IS NULL AND n.perid IS NULL AND r.status IN ('paid', 'unpaid', 'pl
 GROUP BY n.id
 )
 SELECT n.*, mby.manages, r.numRegs, r.price, r.paid, r.regs,
-TRIM(REGEXP_REPLACE(
-    CONCAT(IFNULL(n.first_name, ''),' ', IFNULL(n.middle_name, ''), ' ', IFNULL(n.last_name, ''), ' ',  IFNULL(n.suffix, '')),
-    '  *', ' ')) AS fullName,
+TRIM(REGEXP_REPLACE(CONCAT_WS(' ', n.first_name, n.middle_name, n.last_name, n.suffix), '  *', ' ')) AS fullName,
 CASE     
-	WHEN mgrP.id IS NOT NULL THEN TRIM(CONCAT(mgrP.first_name, ' ', mgrP.last_name))
-    WHEN mgrN.id IS NOT NULL THEN TRIM(CONCAT(mgrN.first_name, ' ', mgrN.last_name))
+	WHEN mgrP.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', mgrP.first_name, mgrP.last_name))
+    WHEN mgrN.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', mgrN.first_name, mgrN.last_name))
     ELSE null
 END AS manager,
 CASE     

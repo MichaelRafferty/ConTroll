@@ -72,6 +72,7 @@ api:0 ; to enable api inteface debug statements (currently bitmask from 1-31) (1
 portal=0 ; to enable regportal debug statements (currently bitmask from 1-31) (1=enable, 0=disable)
 atcon=0 ; to enable atcon debug statements (currently bitmask from 1-31) (1=enable, 0=disable)
 oauth=0 ; to enable oauth2 server debug (currently 0 = off, 1 = on)
+square=1 ; logging of square actions (currently 0 = off, 1 = on)
 
 [reg]
 https=1
@@ -280,7 +281,14 @@ showVolunteerPolicy=1
 ; nomnomURL=https://<FQDN>/controll-redirect/
 ; nomnomKey = Shared Secret Key for Nom Nom JWT signing
 ; nomnomBtn = text for the nomnom button
+; businessmeetingURL = url to the virtual businessmeeting site
+; businessmeetingBtn = text for the business meeting button
+; siteselectionURL = url to site selection voting
+; siteselectionBtn = text for the site selection voting
 ;; End of Items for Worldcon
+
+; virtualURL = url to the virtual portal
+; virtualBtn = text for the virtual portal button
 
 [api]
 path = "" ; full path to the api directory
@@ -298,6 +306,7 @@ clubname='Club Name'
 badgelistfilter="top"
 ; useportal - does this installation use the portal, 1 = yes, 0 = no
 useportal=1
+hrtime=0    ; on critical routines, a call to hrtime to report intervals has been added, enable this feature
 
 [oauth]
 ;;; serverKey - a 32 character random alphanumeric string, generate using any pasword generator

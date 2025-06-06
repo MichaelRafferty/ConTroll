@@ -81,6 +81,7 @@ $config_vars['required'] = $ini['required'];
 $config_vars['taxRate'] = $taxRate;
 $config_vars['taxLabel'] = $taxLabel;
 $config_vars['taxUid'] = $taxUid;
+$config_vars['source'] = 'artpos';
 if (array_key_exists('creditoffline', $atcon)) {
     $config_vars['creditoffline'] = $atcon['creditoffline'];
 } else {

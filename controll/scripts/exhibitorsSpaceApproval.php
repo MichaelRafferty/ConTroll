@@ -324,7 +324,7 @@ if (array_key_exists('success', $response)) {
     $detailQ = <<<EOS
 WITH exh AS (
 SELECT e.id, e.exhibitorName, e.website, e.exhibitorEmail, eRY.id AS exhibitorYearId, exRY.exhibitorNumber, exRY.agentRequest,
-    TRIM(CONCAT(p.first_name, ' ', p.last_name)) as pName, TRIM(CONCAT(n.first_name, ' ', n.last_name)) AS nName,
+    TRIM(CONCAT_WS(' ', p.first_name, p.last_name)) as pName, TRIM(CONCAT_WS(' ', n.first_name, n.last_name)) AS nName,
 	SUM(IFNULL(espr.units, 0)) AS ru, SUM(IFNULL(espa.units, 0)) AS au, SUM(IFNULL(espp.units, 0)) AS pu
 FROM exhibitorSpaces eS
 LEFT OUTER JOIN exhibitsSpacePrices espr ON (eS.item_requested = espr.id)

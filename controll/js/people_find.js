@@ -74,9 +74,7 @@ class Find {
         }
         this.#editPersonName = document.getElementById('editPersonName');
         this.#findPattern = document.getElementById('find_pattern');
-        this.#findPattern.addEventListener('keyup', findKeyUpListener);
         this.#messageDiv = document.getElementById('find_edit_message');
-
         this.#addPersonBtn = document.getElementById('findAddPersonBTN');
         this.#findPersonBTN = document.getElementById('findPersonBTN');
 
@@ -88,7 +86,7 @@ class Find {
             this.#middleName = document.getElementById('f_mname');
             this.#lastName = document.getElementById('f_lname');
             this.#suffix = document.getElementById('f_suffix');
-            this.#legalName = document.getElementById('f_legalname');
+            this.#legalName = document.getElementById('f_legalName');
             this.#pronouns = document.getElementById('f_pronouns');
             this.#badgeName = document.getElementById('f_badgename');
             this.#address = document.getElementById('f_addr');
@@ -112,10 +110,8 @@ class Find {
             this.#managerRow = document.getElementById('managerRow');
             this.#managerLookupFind = document.getElementById('managerLookupFind');
             this.#newManagerLookup = document.getElementById('newManagerLookup');
-            this.#newManagerLookup.addEventListener('keyup', managerLookupListener);
             this.#managesLookupFind = document.getElementById('managesLookupFind');
             this.#newManagesLookup = document.getElementById('newManagesLookup');
-            this.#newManagesLookup.addEventListener('keyup', managesLookupListener);
             this.#addManages = document.getElementById('addManages');
             this.#managesId = document.getElementById('f_managesId');
             this.#managesName = document.getElementById('managesName');
@@ -154,7 +150,7 @@ class Find {
         if (id != null) {
             clear_message();
             clearError();
-            this.close();
+            this.close(true, false);
             this.#managerHdr.hidden = true;
             this.#managerRow.hidden = true;
             this.#managesHdr.hidden = true;
@@ -172,6 +168,11 @@ class Find {
             return;
         }
         this.#findPattern.focus();
+        this.#findPattern.addEventListener('keyup', findKeyUpListener);
+        if (this.#newManagerLookup != null)
+            this.#newManagerLookup.addEventListener('keyup', managerLookupListener);
+        if (this.#newManagesLookup != null)
+            this.#newManagesLookup.addEventListener('keyup', managesLookupListener);
     }
 
     // delayed edit
@@ -189,7 +190,7 @@ class Find {
         var _this = this;
         clear_message();
         clearError();
-        this.close();
+        this.close(true, false);
         this.#managerHdr.hidden = true;
         this.#managerRow.hidden = true;
         this.#managesHdr.hidden = true;
@@ -381,7 +382,7 @@ class Find {
         this.#middleName.value = this.#editRow.middle_name;
         this.#lastName.value = this.#editRow.last_name;
         this.#suffix.value = this.#editRow.suffix;
-        this.#legalName.value = this.#editRow.legalname;
+        this.#legalName.value = this.#editRow.legalName;
         this.#pronouns.value = this.#editRow.pronouns;
         this.#badgeName.value = this.#editRow.badge_name;
         this.#address.value = this.#editRow.address;
@@ -422,13 +423,18 @@ class Find {
             }
         }
 
-        if (this.#managed.length > 0) {
-            this.#managerHdr.hidden = true;
-            this.#managerRow.hidden = true;
+        this.#managerHdr.hidden = true;
+        this.#managerRow.hidden = true;
+        this.#managesLookupFind.hidden = true;
+        this.#managesHdr.hidden = true;
+        this.#managesRow.hidden = true;
+        this.#managesLookupFind.hidden = true;
+        this.#addManages.hidden = true;
+        if (!this.#editRow.managerId) {
             this.#managesHdr.hidden = false;
             this.#managesRow.hidden = false;
-            this.#managesLookupFind.hidden = true;
             this.#addManages.hidden = false;
+            this.#managesLookupFind.hidden = false;
             this.#managerId.value = '';
             this.#managerName.innerHTML = '';
             // now the manages section
@@ -443,13 +449,10 @@ class Find {
                     '<div class="col-sm-10">' + mper.fullName + '</div>\n';
             }
             this.#managesRow.innerHTML = html;
-        } else {
+        }
+        if (this.#managed.length == 0) {
             this.#managerHdr.hidden = false;
             this.#managerRow.hidden = false;
-            this.#managesHdr.hidden = true;
-            this.#managesRow.hidden = true;
-            this.#managesLookupFind.hidden = true;
-            this.#addManages.hidden = true;
             this.#managerId.value = this.#editRow.managerId;
             this.#managerName.innerHTML = this.#editRow.manager;
         }
@@ -1077,7 +1080,7 @@ class Find {
     }
 
     // on close of the pane, clean up the items
-    close(clearFind = true) {
+    close(clearFind = true, stopListen=true) {
         this.clearForm();
         if (this.#findTable != null && clearFind) {
             this.#findTable.destroy();
@@ -1091,12 +1094,14 @@ class Find {
             this.#managesLookupTable.destroy();
             this.#managesLookupTable = null;
         }
-        this.#findPattern.removeEventListener('keyup', findKeyUpListener);
-        if (this.#newManagerLookup != null)
-            this.#newManagerLookup.removeEventListener('keyup', managerLookupListener);
-        if (this.#newManagesLookup != null)
-            this.#newManagesLookup.removeEventListener('keyup', managesLookupListener);
-    };
+        if (stopListen) {
+            this.#findPattern.removeEventListener('keyup', findKeyUpListener);
+            if (this.#newManagerLookup != null)
+                this.#newManagerLookup.removeEventListener('keyup', managerLookupListener);
+            if (this.#newManagesLookup != null)
+                this.#newManagesLookup.removeEventListener('keyup', managesLookupListener);
+        }
+    }
 }
 
 function findKeyUpListener(e) {

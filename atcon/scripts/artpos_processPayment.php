@@ -157,8 +157,7 @@ if ($new_payment['type'] == 'terminal') {
             if ($inUseBy != null && $inUseBy != '') {
                 if ($inUseBy != $user_id) {
                     $operatorNameSQL = <<<EOS
-SELECT TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', 
-    IFNULL(last_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) AS fullname
+SELECT TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), '  *', ' ')) AS fullName
 FROM perinfo
 WHERE id = ?;
 EOS;
@@ -559,7 +558,7 @@ UPDATE transaction
 SET complete_date = NOW(), change_due = ?, orderId = ?
 WHERE id = ?;
 EOS;
-    $completed = dbSafeCmd($updCompleteSQL, 'ids', array($change, $orderId, $master_tid));
+    $completed = dbSafeCmd($updCompleteSQL, 'dsi', array($change, $orderId, $master_tid));
 }
 
 $response['pay_amt'] = $new_payment['amt'];

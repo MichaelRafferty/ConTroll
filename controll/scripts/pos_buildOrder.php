@@ -103,7 +103,7 @@ foreach ($cart_perinfo as $row) {
             $fullname = trim(trim($row['first_name'] . ' ' . $row['middle_name']) . ' ' . $row['last_name']);
         $badge = [
             'paid' => $paid,
-            'fullname' => $fullname,
+            'fullName' => $fullname,
             'perid' => $row['perid'],
             'memId' => $membership['memId'],
             'glNum' => $membership['glNum'],

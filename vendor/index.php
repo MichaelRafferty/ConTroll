@@ -182,7 +182,8 @@ if (isset($_SESSION['id']) && !isset($_GET['vid'])) {
     }
 
     // Build exhbititorYear on first login if it doesn't exist at the time of this login
-    if ($match['eyID'] == NULL || $match['regions'] != $match['myRegions'] || $match['myRegions'] == 0 ) {
+    $notExists = !(array_key_exists('eyID', $match) && array_key_exists('regions', $match) && array_key_exists('myRegions', $match));
+    if ($notExists || $match['eyID'] == NULL || $match['regions'] != $match['myRegions'] || $match['myRegions'] == 0 ) {
         // create the year related functions
         $newid = exhibitorBuildYears($exhibitor);
         if (is_numeric($newid))
@@ -195,7 +196,7 @@ if (isset($_SESSION['id']) && !isset($_GET['vid'])) {
     header('location:' . $_SERVER['PHP_SELF']);
 } else if (isset($_POST['si_email']) and isset($_POST['si_password'])) {
     // handle login submit
-    $login = trim(strtolower(sql_safe($_POST['si_email'])));
+    $login = trim(strtolower($_POST['si_email']));
     $loginQ = <<<EOS
 SELECT e.id, e.artistName, e.exhibitorName, LOWER(e.exhibitorEmail) as eEmail, e.password AS ePassword, e.need_new as eNeedNew, ey.id AS eyID, 
        LOWER(ey.contactEmail) AS cEmail, ey.contactPassword AS cPassword, ey.need_new AS cNeedNew, archived, ey.needReview,

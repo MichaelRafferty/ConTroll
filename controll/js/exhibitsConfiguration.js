@@ -256,6 +256,8 @@ class exhibitssetup {
                 }
                 _this.draw(data);
                 _this.settab('regionTypes-pane');
+                if (data.success)
+                    show_message(data.success,  'success');
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 showError("ERROR in " + script + ": " + textStatus, jqXHR);
@@ -1524,7 +1526,7 @@ function cellChanged(cell) {
         case 'spaceId':
             // change to spaceId in space prices table, if GL code is non blank, set it to the region GL fields
             rowData = cell.getData();
-            if (rowData.glNum && row.glNum != '')
+            if (rowData.glNum && rowData.glNum != '')
                 break;  // already has a value don't overwrite it
 
             // glNum is empty, fetch from region year

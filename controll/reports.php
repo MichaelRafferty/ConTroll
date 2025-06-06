@@ -14,6 +14,7 @@ page_init($page,
                     $cdn['tabbs5'],
                    ),
     /* js  */ array($cdn['tabjs'],
+                    $cdn['popjs'],
                     'js/reports.js',
                    ),
               $need_login);
@@ -64,6 +65,40 @@ if ($groupDir = opendir(__DIR__ . '/reports/local_groups')) {
     closedir($groupDir);
 }
 
+if (array_key_exists('name', $_REQUEST)) {
+    // we have a run a report directly, find the name in the group file
+    $reportName = $_REQUEST['name'];
+    $found = false;
+    foreach ($reports AS $group => $list) {
+        foreach ($list AS $name => $values){
+            if ($name == 'group') {
+                $config_vars['group'] = $values;
+                continue;
+            }
+            $rptname = preg_replace('/^[0-9]+/', '', $name);
+            if ($rptname == $reportName) {
+                $found = true;
+                break;
+            }
+        }
+        if ($found)
+            break;
+    }
+
+    if ($found) {
+        $config_vars['reportName'] = $name;
+        $config_vars['groupName'] = $group;
+        $config_vars['values'] = $values;
+        $prompt = 1;
+        $prompts = [];
+        while (array_key_exists('P' . $prompt, $_REQUEST)) {
+            $prompts[] = $_REQUEST['P' . $prompt];
+            $prompt++;
+        }
+        $config_vars['prompts'] = $prompts;
+    }
+}
+
 ?>
 <script type='text/javascript'>
     var config = <?php echo json_encode($config_vars); ?>;
@@ -93,12 +128,14 @@ EOS;
            $active = '';
     }
 }
+if (checkAuth($need_login['sub'], 'admin')){
 ?>
     <li class='nav-item' role='presentation'>
         <button class='nav-link' id='oldreports-tab' data-bs-toggle='pill' data-bs-target='#oldreports-pane' type='button'
                 role='tab' aria-controls='nav-oldreports' aria-selected='true' onclick="settab('oldreports-pane');">Old Reports
         </button>
     </li>
+<?php } ?>
 </ul>
 
 <div class='tab-content ms-2' id='reports-content'>
@@ -115,7 +152,7 @@ EOS;
         $groupRpts = array_keys($report);
         sort($groupRpts);
         echo <<<EOS
-        <ul class="nav nav-pills nav-fill mb-3" id="$name-content-tab" role="tablist">
+        <ul class="nav nav-pills mb-3" id="$name-content-tab" role="tablist">
 EOS;
         $active2 = ' active';
         foreach ($groupRpts as $key) {
@@ -148,12 +185,15 @@ EOS;
             } else {
                 $onclick = "noPrompts('$key', '$prefix', '$fileName');";
             }
+            $desc = $rpt['description'];
             echo <<<EOS
             <li class="nav-item" role="presentation $active">
-                <button class="nav-link" id="$tab-tab" data-bs-toggle="pill" data-bs-target="#gen-report-content" type="button"
-                    role="tab" aria-controls="$grpname-tab" aria-selected="false" onclick="$onclick" tabindex="-1">
-                    $name
-                </button>
+                <span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="$desc">
+                    <button class="nav-link" id="$tab-tab" data-bs-toggle="pill" data-bs-target="#gen-report-content" type="button"
+                        role="tab" aria-controls="$grpname-tab" aria-selected="false" onclick="$onclick" tabindex="-1">
+                        $name
+                    </button>
+                </span>
             </li>
 EOS;
         }

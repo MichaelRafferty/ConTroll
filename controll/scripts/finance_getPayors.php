@@ -54,10 +54,8 @@ SELECT  pp.id, pp.planId, pp.conid, pp.perid, pp.newperid, pp.initialAmt, pp.non
         pp.balanceDue, pp.createDate, pp.updateDate, pp.updateBy,
         p.name, l.paymentsMade, l.lastPaymentDate, l.lastPaymentAmt,
         CASE 
-        WHEN pi.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT(IFNULL(pi.first_name, ''),' ', IFNULL(pi.middle_name, ''), ' ', 
-            IFNULL(pi.last_name, ''), ' ', IFNULL(pi.suffix, '')), '  *', ' '))
-        ELSE TRIM(REGEXP_REPLACE(CONCAT(IFNULL(ni.first_name, ''),' ', IFNULL(ni.middle_name, ''), ' ',
-            IFNULL(ni.last_name, ''), ' ', IFNULL(ni.suffix, '')), '  *', ' '))
+        WHEN pi.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', pi.first_name, pi.middle_name, pi.last_name, pi.suffix), '  *', ' '))
+        ELSE TRIM(REGEXP_REPLACE(CONCAT_WS(' ', ni.first_name, ni.middle_name, ni.last_name, ni.suffix), '  *', ' '))
         END AS fullName
 FROM payorPlans pp
 JOIN paymentPlans p ON pp.planId = p.id

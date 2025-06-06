@@ -75,6 +75,7 @@ $config_vars['oneoff'] = $oneoff;
 $config_vars['userid'] = $_SESSION['user_perid'];
 $config_vars['finance'] = $finance ? 1 : 0;
 $config_vars['ae'] = $admin ? 1 : 0;
+$config_vars['source'] = 'regstaff';
 ?>
 <?php bs_tinymceModal(); ?>
 <div id='merge-lookup' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Look up Merge Person' aria-hidden='true' style='--bs-modal-width: 80%;'>
@@ -795,20 +796,23 @@ $config_vars['ae'] = $admin ? 1 : 0;
 ?>
         <div class="row">
             <div class="col-sm-auto p-2">
-                <button class="btn btn-primary btn-sm" onclick="window.location.href = 'reports/allEmails.php';" disabled>Download Email List</button>
+                <button class="btn btn-primary btn-sm"
+                        onclick="window.location.href='reports.php?name=AllRegEmails&P1=<?php echo $conid; ?>'">
+                    Download Email List
+                </button>
             </div>
             <div class="col-sm-auto p-2">
-                <button class="btn btn-primary btn-sm" onclick="window.location.href = 'reports/regReport.php';">Download Reg Report</button>
+                <button class="btn btn-primary btn-sm" onclick="window.location.href='reports/regReport.php';">Download Reg Report</button>
             </div>
             <?php if ($reg_admin) { ?>
             <div class="col-sm-auto p-2">
-                <button class="btn btn-primary btn-sm" onclick="sendEmail('marketing')" disabled>Send Marketing Email</button>
+                <button class="btn btn-primary btn-sm" onclick="sendEmail('marketing')">Send Marketing Email</button>
             </div>
             <div class='col-sm-auto p-2'>
                 <button class='btn btn-primary btn-sm' onclick="sendEmail('comeback')" disabled>Send Come Back Email</button>
             </div>
             <div class="col-sm-auto p-2">
-                <button class="btn btn-primary btn-sm" onclick="sendEmail('reminder')" disabled>Send Attendance Reminder Email</button>
+                <button class="btn btn-primary btn-sm" onclick="sendEmail('reminder')">Send Attendance Reminder Email</button>
             </div>
             <?php if (array_key_exists('survey_url', $db_ini['con'])) { ?>
             <div class="col-sm-auto p-2">

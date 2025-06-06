@@ -982,7 +982,7 @@ function changeTransfer() {
         return;
     }
 
-    transferFromNameDiv.innerHTML = changeRowdata.perid + ': ' + changeRowdata.fullname;
+    transferFromNameDiv.innerHTML = changeRowdata.perid + ': ' + changeRowdata.fullName;
     transferFromRegistrationDiv.innerHTML =  registrationList;
     transferNameSearchField.value = '';
 
@@ -1097,14 +1097,14 @@ function changeTransferFound(data) {
             data: perinfo,
             layout: "fitDataTable",
             initialSort: [
-                {column: "fullname", dir: "asc"},
+                {column: "fullName", dir: "asc"},
             ],
             columns: [
                 {title: "Transfer", width: 90, headerFilter: false, headerSort: false, formatter: addTransferIcon, formatterParams: {t: "result"},},
                 {title: "ID", field: "perid", width: 120, hozAlign: "right", headerHozAlign: "right" },
                 {field: "index", visible: false,},
                 {field: "regcnt", visible: false,},
-                {title: "Name", field: "fullname", width: 200, headerFilter: true, headerWordWrap: true, tooltip: build_record_hover,},
+                {title: "Name", field: "fullName", width: 200, headerFilter: true, headerWordWrap: true, tooltip: build_record_hover,},
                 {field: "last_name", visible: false,},
                 {field: "first_name", visible: false,},
                 {field: "middle_name", visible: false,},
@@ -1133,6 +1133,7 @@ function transferReg(to, banned) {
         from: changeRowdata.perid,
         to: to,
         transferList: changeList,
+        source: config['source'],
     }
     $.ajax({
         url: script,
@@ -1285,6 +1286,7 @@ function changeRolloverExecute() {
     var data = {
         rolloverList: newIds,
         action: 'rollover',
+        source: config['source'],
     }
     var script= 'scripts/regadmin_rolloverReg.php';
 

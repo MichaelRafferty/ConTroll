@@ -392,8 +392,8 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 if (!array_key_exists('paid', $badge)) {
                     $badge['paid'] = 0;
                 }
-                if (array_key_exists('fullname', $badge))
-                    $fullname = $badge['fullname'];
+                if (array_key_exists('fullName', $badge))
+                    $fullname = $badge['fullName'];
                 else
                     $fullname = trim(trim($badge['fname'] . ' ' . $badge['mname']) . ' ' . $badge['lname']);
                 if (array_key_exists('perid', $badge) && $badge['perid'] != null) {
@@ -414,9 +414,9 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     $regid = 'tbd';
                 }
 
-                if (array_key_exists('perid', $badge)) {
+                if (array_key_exists('perid', $badge) && $badge['perid'] != null) {
                     $perid = $badge['perid'];
-                } else if (array_key_exists('newperid', $badge)) {
+                } else if (array_key_exists('newperid', $badge) && $badge['newperid'] != null) {
                     $perid = $badge['newperid'];
                 } else {
                     $perid = 'tbd';
@@ -438,7 +438,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
 
                 $metadata = array(
                     'regid' => strval($regid),
-                    'perid' => strval($perid),
+                    'perid' => is_numeric($perid) ? strval($perid) : $perid,
                     'memid' => strval($badge['memId']),
                     'rowno' => strval($rowno)
                 );
@@ -509,7 +509,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     $itemName .= $space['exhibitorName'];
                 }
                 $note = $space['id'] . ',' . $space['item_purchased'] . ',' . $space['exhibitorId'] . ',' . $space['exhibitorNumber'] .
-                    ': id, item, exhId, exhNum';
+                    ',' . $space['includedMemberships'] . ': id, item, exhId, exhNum, includedMem';
                 if (array_key_exists('glNum', $space) && $space['glNum'] != '') {
                     $note .= ', ' . $space['glNum'];
                 }
@@ -675,7 +675,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
 }
 
 // an order is no longer valid, cancel it, via an update to Cancelled status
-function cc_cancelOrder($source, $orderId, $useLogWrite = false, $locationId = null) : array {
+function cc_cancelOrder($source, $orderId, $useLogWrite = false, $locationId = null) : array | null {
     // Try updating the state of the order to CANCELED
     $cc = get_conf('cc');
     if ($locationId == null)
@@ -705,23 +705,24 @@ function cc_cancelOrder($source, $orderId, $useLogWrite = false, $locationId = n
             ]);
 
     // pass update to cancel state to square
+    $rtn = null;
     try {
           if ($squareDebug) sqcc_logObject(array ('Orders API order update', $body), $useLogWrite);
           $apiResponse = $client->orders->update($body);
           $order = $apiResponse->getOrder();
           if ($squareDebug) sqcc_logObject(array ('Orders API order update response', $order), $useLogWrite);
+          $rtn = array();
+          $rtn['order'] = $order;
+          $rtn['state'] = $order->getState();
+          $rtn['version'] = $order->getVersion();
       }
       catch (SquareApiException $e) {
-          sqcc_logException($source, $e, 'Order API update order Exception', 'Order create failed', $useLogWrite);
+          sqcc_logException($source, $e, 'Order API update order Exception', 'Order cancel failed', $useLogWrite, false);
       }
       catch (Exception $e) {
-          sqcc_logException($source, $e, 'Order API error while calling Square', 'Error connecting to Square', $useLogWrite);
+          sqcc_logException($source, $e, 'Order API error while calling Square', 'Error connecting to Square', $useLogWrite, false);
       }
 
-    $rtn = array();
-    $rtn['order'] = $order;
-    $rtn['state'] = $order->getState();
-    $rtn['version'] = $order->getVersion();
     return $rtn;
 }
 // fetch an order to get its details
@@ -751,7 +752,7 @@ function cc_fetchOrder($source, $orderId, $useLogWrite = false) : array {
         if ($squareDebug) sqcc_logObject(array ('Orders API order response', $order), $useLogWrite);
     }
     catch (SquareApiException $e) {
-        sqcc_logException($source, $e, 'Order API create order Exception', 'Order create failed', $useLogWrite);
+        sqcc_logException($source, $e, 'Order API create order Exception', 'Order fetch failed', $useLogWrite);
     }
     catch (Exception $e) {
         sqcc_logException($source, $e, 'Order API error while calling Square', 'Error connecting to Square', $useLogWrite);
@@ -1012,7 +1013,8 @@ function sqcc_logObject($objArray, $useLogWrite = false) : void {
     }
 }
 
-function sqcc_logException($name, $e, $message, $ajaxMessage, $useLogWrite = false) : void {
+function sqcc_logException($name, $e, $message, $ajaxMessage, $useLogWrite = false, $doExit = true) : void {
+    error_log("$message:" . $e->getMessage());
     web_error_log("$message:" . $e->getMessage());
     $ebody = json_decode($e->getBody(), true);
     $errors = $ebody['errors'];
@@ -1031,6 +1033,8 @@ function sqcc_logException($name, $e, $message, $ajaxMessage, $useLogWrite = fal
             web_error_log("Name: $name, Cat: $cat: Code $code, Detail: $detail");
         }
     }
-    ajaxSuccess(array ('status' => 'error', 'data' => "Error: $ajaxMessage, see logs."));
-    exit();
+    if ($doExit) {
+        ajaxSuccess(array ('status' => 'error', 'data' => "Error: $ajaxMessage, see logs."));
+        exit();
+    }
 }

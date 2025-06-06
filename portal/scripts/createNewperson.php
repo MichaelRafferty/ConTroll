@@ -55,7 +55,8 @@ $response['personId'] = $loginId;
 $iQ = <<<EOS
 insert into newperson (last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, legalName, pronouns, address, addr_2, city, state, zip,
                        country, updatedBy, lastVerified)
-values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,NOW());
+values (IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), 
+        IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), ?, NOW());
 EOS;
 $typeStr = 'sssssssssssssssi';
 $valArray = array(
@@ -66,7 +67,7 @@ $valArray = array(
     trim($validationEmail),
     trim($person['phone']),
     trim($person['badgename']),
-    trim($person['legalname']),
+    trim($person['legalName']),
     trim($person['pronouns']),
     trim($person['addr']),
     trim($person['addr2']),

@@ -48,9 +48,8 @@ $response['personId'] = $loginId;
 // Ok, we need the payload now, lets start with the main info
 if ($loginType == 'p') {
     $piQ = <<<EOS
-SELECT p.id AS perid, n.id AS newperid, p.first_name, p.last_name, p.email_addr, 
-    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ',  
-        IFNULL(p.suffix, '')), '  *', ' ')) AS fullName
+SELECT p.id AS perid, n.id AS newperid, p.first_name, p.last_name, p.email_addr,
+    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), '  *', ' ')) AS fullName
 FROM perinfo p
 LEFT OUTER JOIN newperson n ON n.perid = p.id
 WHERE p.id = ?
@@ -58,9 +57,8 @@ ORDER BY n.id DESC;
 EOS;
 } else {
     $piQ = <<<EOS
-SELECT NULL AS perid, id AS newperid, first_name, last_name, email_addr, 
-    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(last_name, ''), ' ',  
-        IFNULL(suffix, '')), '  *', ' ')) AS fullName
+SELECT NULL AS perid, id AS newperid, first_name, last_name, email_addr,
+    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), '  *', ' ')) AS fullName
 FROM newperson 
 WHERE id = ?;
 EOS;

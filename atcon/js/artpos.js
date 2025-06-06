@@ -122,6 +122,11 @@ window.onload = function initpage() {
 
     bootstrap.Tab.getOrCreateInstance(find_tab).show();
 
+    // check of payPoll (terminal in use) before leave
+    window.addEventListener('beforeunload', event => {
+        onExit(event);
+    })
+
     // load the initial data and the proceed to set up the rest of the system
     var postData = {
         ajax_request_action: 'loadInitialData',
@@ -158,6 +163,66 @@ function loadInitialData(data) {
 
 // if no artSales or payments have been added to the database, this will reset for the next customer
 function startOver(reset_all) {
+    if (payPoll == 1) {
+        if (!confirm("You are leaving without polling the terminal for payment completion.\n" +
+            'Please use the "Payment Complete" button to check if the payment is complete,\n' +
+            'or tthe "Cancel Payment" buttons to cancel the payment request and release the terminal.\n' +
+            "Do you wish to leave anyway without releasing the terminal?")) {
+            return;
+        }
+
+        // cancel terminal request
+        var postData = {
+            ajax_request_action: 'cancelPayRequest',
+            requestId: payCurrentRequest,
+            user_id: user_id,
+        };
+        clear_message();
+        $.ajax({
+            method: "POST",
+            url: "scripts/artpos_cancelPayment.php",
+            data: postData,
+            success: function (data, textstatus, jqxhr) {
+                if (typeof data == 'string') {
+                    show_message(data, 'error');
+                    return;
+                }
+
+                if (data.error !== undefined) {
+                    show_message(data.error, 'error');
+                    return;
+                }
+
+                if (data.status == 'error') {
+                    show_message(data.data, 'error');
+                    return;
+                }
+
+                if (data.warn !== undefined) {
+                    show_message(data.warn, 'warn');
+                    if (data.hasOwnProperty('paid') && data.paid == 1) {
+                        // it paid while waiting for the poll, process the payment
+                        payPoll = 1;
+                        pay('');
+                        payPoll = 0;
+                    }
+                    return;
+                }
+
+                if (data.message !== undefined) {
+                    show_message(data.message, 'success');
+                }
+
+                startOver(reset_all);
+            },
+            error: function (jqXHR, textstatus, errorThrown) {
+                document.getElementById('pollRow').hidden = false;
+                showAjaxError(jqXHR, textstatus, errorThrown);
+            },
+        });
+        payPoll = 0;
+        return;
+    }
     if (reset_all > 0)
         clear_message();
 
@@ -882,17 +947,24 @@ function pay(nomodal, prow = null) {
         //      for credit card: the auth code is required
         //      for discount: description is required, it's optional otherwise
 
-        if (document.getElementById('pt-cash').checked) {
-            if (nomodal == '' && tendered != total_amount_due) {
+       if (document.getElementById('pt-cash').checked) {
+           amtTendered = Number(document.getElementById('pay-tendered').value)
+            if (nomodal == '' && amtTendered > total_amount_due) {
                 cashChangeModal.show();
                 var tendered = Number(document.getElementById('pay-tendered').value);
-                document.getElementById("CashChangeBody").innerHTML = "Customer owes $" + total_amount_due.toFixed(2) + ", and tendered $" + tendered.toFixed(2) +
-                    "<br/>Confirm change given to customer of $" + (tendered - total_amount_due).toFixed(2);
+                document.getElementById("CashChangeBody").innerHTML = "Customer owes $" + total_amount_due.toFixed(2) + ", and tendered $" + amtTendered.toFixed(2) +
+                    "<br/>Confirm change given to customer of $" + (amtTendered - total_amount_due).toFixed(2);
+                return;
+            }
+
+            if (amtTendered < total_amount_due) {
+                show_message("Cannot pay less than total amount due of " + total_amount_due.toFixed(2), "error");
                 return;
             }
         }
 
         var elptdiv = document.getElementById('pt-div');
+        var elterminal = document.getElementById('pt-terminal');
         elptdiv.style.backgroundColor = '';
 
         var eldesc = document.getElementById('pay-desc');
@@ -944,7 +1016,7 @@ function pay(nomodal, prow = null) {
             checked = true;
         }
 
-        if (document.getElementById('pt-terminal').checked) {
+        if (elterminal && elterminal.checked) {
             ptype = 'terminal';
             checked = true;
         }
@@ -1458,7 +1530,6 @@ function payShown() {
 function releaseShown() {
     current_tab = release_tab;
     pay_tab.disabled = true;
-    cart.hideAdd();
     cart.showNext();
     cart.hideStartOver();
     clear_message();
@@ -1595,4 +1666,127 @@ function processRelease() {
         },
         error: showAjaxError
     });
+}
+
+// combined exit change check
+function onExit() {
+    // if they have a terminal action in process, as if they want to leave install of 'poll' for it's status
+    if (payPoll == 1) {
+        var currentOrder = pay_currentOrderId;
+        var user_id = user_id;
+        pay_currentOrderId = null;
+        // cancel terminal request
+        var postData = {
+            ajax_request_action: 'cancelPayRequest',
+            requestId: payCurrentRequest,
+            user_id: user_id,
+        };
+        var _this = this;
+        clear_message();
+        $.ajax({
+            method: "POST",
+            url: "scripts/artpos_cancelPayment.php",
+            data: postData,
+            success: function (data, textstatus, jqxhr) {
+                if (typeof data == 'string') {
+                    show_message(data, 'error');
+                    return;
+                }
+
+                if (data.error !== undefined) {
+                    show_message(data.error, 'error');
+                    return;
+                }
+
+                if (data.status == 'error') {
+                    show_message(data.data, 'error');
+                    return;
+                }
+
+                if (data.warn !== undefined) {
+                    show_message(data.warn, 'warn');
+                }
+
+                if (data.message !== undefined) {
+                    show_message(data.message, 'success');
+                }
+                if (currentOrder && currentOrder != '') {
+                    var postData = {
+                        ajax_request_action: 'cancelOrder',
+                        orderId: currentOrder,
+                        user_id: user_id,
+                    };
+                    $.ajax({
+                        method: "POST",
+                        url: "scripts/artpos_cancelOrder.php",
+                        data: postData,
+                        success: function (data, textstatus, jqxhr) {
+                            if (data.error !== undefined) {
+                                show_message(data.error, 'error');
+                                return;
+                            }
+                            if (data.warn !== undefined) {
+                                show_message(data.warn, 'warn');
+                                if (data.hasOwnProperty('paid') && data.paid == 1) {
+                                    // it paid while waiting for the poll, process the payment
+                                    _payPoll = 1;
+                                    _pay_currentOrderId = currentOrder;
+                                    _pay('');
+                                    _payPoll = 0;
+                                    _pay_currentOrderId = null;
+                                }
+                                return;
+                            }
+                            if (data.message !== undefined) {
+                                show_message(data.message, 'success');
+                            }
+                        },
+                        error: function (jqXHR, textstatus, errorThrown) {
+                            $("button[name='find_btn']").attr("disabled", false);
+                            showAjaxError(jqXHR, textstatus, errorThrown);
+                        }
+                    });
+                }
+            },
+            error: function (jqXHR, textstatus, errorThrown) {
+                document.getElementById('pollRow').hidden = false;
+                _pay_button_pay.disabled = true;
+                showAjaxError(jqXHR, textstatus, errorThrown);
+            },
+        });
+        payPoll = 0;
+        return true;
+    }
+    if (pay_currentOrderId && pay_currentOrderId != '') {
+        var postData = {
+            ajax_request_action: 'cancelOrder',
+            orderId: pay_currentOrderId,
+            user_id: user_id,
+        };
+        $.ajax({
+            method: "POST",
+            url: "scripts/artpos_cancelOrder.php",
+            data: postData,
+            success: function (data, textstatus, jqxhr) {
+                if (data.error !== undefined) {
+                    show_message(data.error, 'error');
+                    return;
+                }
+                if (data.warn !== undefined) {
+                    show_message(data.warn, 'warn');
+                    return;
+                }
+                if (data.message !== undefined) {
+                    show_message(data.message, 'success');
+                }
+            },
+            error: function (jqXHR, textstatus, errorThrown) {
+                $("button[name='find_btn']").attr("disabled", false);
+                showAjaxError(jqXHR, textstatus, errorThrown);
+            }
+        });
+        pay_currentOrderId = null;
+    }
+    startOver(1);
+    return true;
 }

@@ -233,8 +233,8 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                 if (!array_key_exists('paid', $badge)) {
                     $badge['paid'] = 0;
                 }
-                if (array_key_exists('fullname', $badge))
-                    $fullname = $badge['fullname'];
+                if (array_key_exists('fullName', $badge))
+                    $fullname = $badge['fullName'];
                 else
                     $fullname = trim(trim($badge['fname'] . ' ' . $badge['mname']) . ' ' . $badge['lname']);
                 if (array_key_exists('perid', $badge) && $badge['perid'] != null) {
@@ -261,6 +261,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                     $perid = $badge['newperid'];
                 } else {
                     $perid = 'tbd';
+                }
 
                 $note = $badge['memId'] . ',' . $id . ',' . $regid . ': memId, p/n id, regid';
                 if ($planName != '') {
@@ -276,9 +277,9 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                     $amount = $badge['price'] - $badge['paid'];
                 }
 
-                $metadata = array('regid' => $regid, 'perid' => $perid, 'memid' => $badge['memId'], 'rowno' => $rowno);
+                $metadata = array ('regid' => $regid, 'perid' => $perid, 'memid' => $badge['memId'], 'rowno' => $rowno);
 
-                $itemName =  $badge['label'] . (($badge['memType'] == 'full' || $badge['memType'] == 'oneday') ? ' Membership' : '') .
+                $itemName = $badge['label'] . (($badge['memType'] == 'full' || $badge['memType'] == 'oneday') ? ' Membership' : '') .
                     ' for ' . $fullname;
                 $item = [
                     'uid' => 'badge' . ($lineid + 1),
@@ -303,14 +304,14 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                 if ($couponDiscount &&
                     (!array_key_exists('status', $badge) || $badge['status'] == 'unpaid' || $badge['status'] == 'plan')) {
                     $cat = $badge['memCategory'];
-                    if (in_array($cat, array('standard','supplement','upgrade','add-on', 'virtual'))) {
-                        $item['applied_discounts'][] = array('uid' => 'couponDiscount', 'applied_amount' => 0);
+                    if (in_array($cat, array ('standard', 'supplement', 'upgrade', 'add-on', 'virtual'))) {
+                        $item['applied_discounts'][] = array ('uid' => 'couponDiscount', 'applied_amount' => 0);
                         $totalDiscountable += $item['basePriceMoney'];
                     }
                 }
                 if ($managerDiscount &&
                     (!array_key_exists('status', $badge) || $badge['status'] == 'unpaid' || $badge['status'] == 'plan')) {
-                    $item['applied_discounts'][] = array('uid' => 'managerDiscount',  'applied_amount' => 0);
+                    $item['applied_discounts'][] = array ('uid' => 'managerDiscount', 'applied_amount' => 0);
                     $totalDiscountable += $item['basePriceMoney'];
                 }
                 $orderLineItems[$lineid] = $item;
@@ -319,7 +320,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                 $rowno++;
             }
 
-            if ($results['discount'] > 0) {
+            if (array_key_exists('discount', $results) && $results['discount'] > 0) {
                 // apply the coupon discount amounts proportionally, square would do this for us normally
                 $totalDiscount = $results['discount'] * 100;
                 $discountRemaining = $totalDiscount;
@@ -359,7 +360,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                     $itemName .= $space['exhibitorName'];
                 }
                 $note = $space['id'] . ',' . $space['item_purchased'] . ',' . $space['exhibitorId'] . ',' . $space['exhibitorNumber'] .
-                    ': id, item, exhId, exhNum';
+                    ',' . $space['includedMemberships'] . ': id, item, exhId, exhNum, includedMem';
                 if (array_key_exists('glNum', $space) && $space['glNum'] != '') {
                     $note .= ', ' . $space['glNum'];
                 }

@@ -113,7 +113,7 @@ This configuration file must be parsable by the parse_ini_file function with sec
   * calc: type (sum,avg,min,max,count,unique) (see topCalc and bottomCalc in tabulator)
   * precision: integer (number of decimal points, only used if calc exists for the field, optional, default is 0) (see topCalcParameters and 
     bottomCalcParameters in Tabulator)
-  * filter: header filter type (defaults to false), true, textarea, fullname, number (see headerFilter in Tabulator)
+  * filter: header filter type (defaults to false), true, textarea, fullName, number (see headerFilter in Tabulator)
     * true: use text input style
     * textarea: use a text area instead of text for the input style
     * fullname: use ConTroll's custom fullName filter that searches (and requires) the invisible fields first_name, middle_name and last_name
@@ -162,7 +162,7 @@ This configuration file must be parsable by the parse_ini_file function with sec
 	minWidth=80
 [F002]
     name=fullName
-    sql="TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' '))"
+    sql="TRIM(REGEXP_REPLACE(CONCAT(p.first_name, ' ', p.middle_name, ' ', p.last_name, ' ', p.suffix), '  *', ' '))"
     title="Full Name"
     minWidth=300
 [F003]
