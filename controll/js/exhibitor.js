@@ -1141,7 +1141,7 @@ class exhibitorsAdm {
         // approval buttons
         if (req > 0 && (pur < app || pur == 0)) {
             addNewLine = true;
-            if (app != req) {
+            if (data.approved != data.requested) {
                 if (app == 0) {
                     buttons += '<button class="btn btn-sm btn-primary' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
                         'onclick="exhibitors.spaceApprovalReq(' + id + ')" >Approve Req</button>&nbsp;';
