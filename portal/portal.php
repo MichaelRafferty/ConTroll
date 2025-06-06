@@ -195,7 +195,7 @@ EOS;
             // check if they have a WSFS rights membership (hasWSFS and hasNom)
             if (($m['memCategory'] == 'wsfs' || $m['memCategory'] == 'wsfsnom' || $m['memCategory'] == 'dealer') && $m['status'] == 'paid') {
                 $hasNom = true;
-                if ($m['memCategory'] == 'wsfsnom')
+                if ($m['memCategory'] != 'wsfsnom')
                     $hasWSFS = true;
                 }
 
