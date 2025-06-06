@@ -197,23 +197,25 @@ EOS;
     <input type='submit' value='Get'/>
   </form>
     <?php // this stuff below is obsolete and needs to be rewritten for mondern art show
-    if (false) {
+    if (true || false) {
         ?>
   <form action='reports/artCheckout.php' method='GET'>
     <select name='artid'>
         <?php
             $artistQ = <<<EOS
-SELECT S.id, art_key, TRIM(CONCAT_WS(' ', P.first_name, P.last_name)) AS name
-FROM artshow AS S
-JOIN artist AS A ON A.id = S.artid
-JOIN perinfo AS P ON P.id=A.artist
-WHERE conid=?
-ORDER by art_key;
+SELECT ery.exhibitorNumber, e.exhibitorName, ery.id
+FROM `exhibitsRegionYears` xry 
+JOIN exhibitorRegionYears ery on xry.id=ery.exhibitsRegionYearId 
+JOIN exhibitorYears ey on ey.id=ery.exhibitorYearId 
+JOIN exhibitors e on e.id=ey.exhibitorId 
+JOIN exhibitsRegions xr on xr.id = xry.exhibitsRegion and xr.name like '%Art Show%'
+WHERE xry.conid=? and ery.exhibitorNumber is not null
+ORDER BY ery.exhibitorNumber;
 EOS;
             $artistR = dbSafeQuery($artistQ, 'i', array($conid));
             while($artist = $artistR->fetch_assoc()) {
                 printf("<option value = '%s'>%s (%s)</option>",
-                    $artist['id'], $artist['name'], $artist['art_key']);
+                    $artist['id'], $artist['exhibitorName'], $artist['exhibitorNumber']);
             }
         ?>
     </select>
