@@ -78,7 +78,6 @@ class exhibitorsAdm {
         this.#conid = conid;
         this.#message_div = document.getElementById('test');
         this.#result_message_div = document.getElementById('result_message');
-        var id = document.getElementById('profile');
 
         if (this.#debug & 1) {
             console.log("Debug = " + debug);
@@ -90,7 +89,7 @@ class exhibitorsAdm {
 
         // exhibitors
         exhibitorProfile = new ExhibitorProfile(this.#debug, config.portalType);
-        id = document.getElementById("import_exhibitor");
+        var id = document.getElementById("import_exhibitor");
         if (id)
             this.#importModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
         this.#importHTML = document.getElementById('importHTML');
