@@ -19,7 +19,7 @@ const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // globals for exhibits configuration
 exhibits = null;
 
-// exhibitors class - functions for spae ownerto review and approve spaces requested by exhibitors
+// exhibitors class - functions for space owner to review and approve spaces requested by exhibitors
 class exhibitorsAdm {
     // global items
     #conid = null;
@@ -460,14 +460,41 @@ class exhibitorsAdm {
         var app = 0;
         var pur = 0;
         var inv = 0;
-        for (var idS in spaceKeys) {
-            var space = spaces[idS];
+        var spaceSUMPurchased = '';
+        var spaceSUMApproved = '';
+        var spaceSUMRequested = '';
+        var newExhibitor = -1;
+        var space = -1;
+        var idS = ''
+        for (idS in spaceKeys) {
+            space = spaces[idS];
             //var newRegion = space.exhibitsRegionYearId;
-            var newExhibitor = space.exhibitorId
+            newExhibitor = space.exhibitorId
             if (newExhibitor != currentExhibitor) {
                 // change in region
                 if (currentExhibitor > 0) {
-                    spaceSUM = spaceSUM.substring(0, spaceSUM.length - 1);
+                    if (spaceSUMPurchased != '') {
+                        spaceSUM = spaceSUMPurchased;
+                    } else if (spaceSUMApproved == spaceSUMRequested) {
+                        spaceSUM = '<div style="background-color: #e9ffe9;">' + spaceSUMApproved.substring(0, spaceSUMApproved.length - 5) +
+                            "</div><br/>";
+                    } else {
+                        if (spaceSUMApproved != '') {
+                            if (spaceSUMRequested != '')
+                                spaceSUM = '<div style="background-color: #e9ffe9;">Approved:<br/>' +
+                                    spaceSUMApproved.substring(0, spaceSUMApproved.length - 5) +
+                                    '</div><div style="background-color: #e9e9ff;">Requested:<br/>' +
+                                    spaceSUMRequested.substring(0, spaceSUMRequested.length - 5) +
+                                    "</div><br/>";
+                            else
+                                spaceSUM += '<div style="background-color: #e9ffe9;">' +
+                                    spaceSUMApproved.substring(0, spaceSUMApproved.length - 5) + "</div><br/>";
+                        } else {
+                            spaceSUM = '<div style="background-color: #e9e9ff;">' +
+                                spaceSUMRequested.substring(0, spaceSUMRequested.length - 5) + "</div><br/>";
+                        }
+                    }
+                    spaceSUM = spaceSUM.substring(0, spaceSUM.length - 5);
                     region.space = spaceHTML + "</div>";
                     region.summary = spaceSUM;
                     region.stage = spaceStage;
@@ -475,7 +502,10 @@ class exhibitorsAdm {
                     region.app = app;
                     region.pur = pur;
                     region.inv = inv;
-                    regionsLocal[currentExhibitor] = make_copy(region);
+                    region.requested = spaceSUMRequested;
+                    region.approved = spaceSUMApproved;
+                    region.purchased = spaceSUMPurchased;
+                    regionsLocal.push(make_copy(region));
                     spaceHTML = '';
                     spaceStage = '';
                     spaceSUM = '';
@@ -483,6 +513,9 @@ class exhibitorsAdm {
                     app = 0;
                     pur = 0;
                     inv = 0;
+                    spaceSUMPurchased = '';
+                    spaceSUMApproved = '';
+                    spaceSUMRequested = '';
                 }
                 currentExhibitor = newExhibitor;
                 spaceSUM = '';
@@ -545,16 +578,20 @@ class exhibitorsAdm {
                         '<div class="col-sm-4">' + blankIfNull(space.time_purchased) + '</div>' +
                         '</div>';
                 }
-                // now the summary lines
+                // space summary stuff
                 if (space.purchased_units > 0) {
                     spaceStage = 'Purchased';
-                    spaceSUM += space.purchased_description + ' of ' + space.spaceName + "\n";
-                } else if (space.approved_units > 0) {
-                    spaceSUM += space.approved_description + ' of ' + space.spaceName + "\n";
-                    spaceStage = 'Approved';
-                } else if (space.requested_units > 0) {
-                    spaceSUM += space.requested_description + ' of ' + space.spaceName + "\n";
-                    spaceStage = 'Requested';
+                    spaceSUMPurchased += space.purchased_description + ' of ' + space.spaceName + "<br/>";
+                }
+                if (space.approved_units > 0) {
+                    spaceSUMApproved += space.approved_description + ' of ' + space.spaceName + "<br/>";
+                    if (spaceStage == '' || spaceStage == 'Requested')
+                        spaceStage = 'Approved';
+                } 
+                if (space.requested_units > 0) {
+                    spaceSUMRequested += space.requested_description + ' of ' + space.spaceName + "<br/>";
+                    if (spaceStage == '')
+                        spaceStage = 'Requested';
                 }
             }
             // now do agent stuff
@@ -570,7 +607,28 @@ class exhibitorsAdm {
             }
         }
         if (currentExhibitor > 0) {
-            spaceSUM = spaceSUM.substring(0, spaceSUM.length - 1);
+            if (spaceSUMPurchased != '') {
+                spaceSUM = spaceSUMPurchased;
+            } else if (spaceSUMApproved == spaceSUMRequested) {
+                spaceSUM = '<div style="background-color: #e9ffe9;">' + spaceSUMApproved.substring(0, spaceSUMApproved.length - 5) +
+                    "</div><br/>";
+            } else {
+                if (spaceSUMApproved != '') {
+                    if (spaceSUMRequested != '')
+                        spaceSUM = '<div style="background-color: #e9ffe9;">Approved:<br/>' +
+                            spaceSUMApproved.substring(0, spaceSUMApproved.length - 5) +
+                            '</div><div style="background-color: #e9e9ff;">Requested:<br/>' +
+                            spaceSUMRequested.substring(0, spaceSUMRequested.length - 5) +
+                            "</div><br/>";
+                    else
+                        spaceSUM += '<div style="background-color: #e9ffe9;">' +
+                            spaceSUMApproved.substring(0, spaceSUMApproved.length - 5) + "</div><br/>";
+                } else {
+                    spaceSUM = '<div style="background-color: #e9e9ff;">' +
+                        spaceSUMRequested.substring(0, spaceSUMRequested.length - 5) + "</div><br/>";
+                }
+            }
+            spaceSUM = spaceSUM.substring(0, spaceSUM.length - 5);
             region.space = spaceHTML + "</div>";
             region.summary = spaceSUM;
             region.stage = spaceStage;
@@ -578,10 +636,23 @@ class exhibitorsAdm {
             region.app = app;
             region.pur = pur;
             region.inv = inv;
+            region.requested = spaceSUMRequested;
+            region.approved = spaceSUMApproved;
+            region.purchased = spaceSUMPurchased;
+            spaceHTML = '';
+            spaceStage = '';
+            spaceSUM = '';
+            req = 0;
+            app = 0;
+            pur = 0;
+            inv = 0;
+            spaceSUMPurchased = '';
+            spaceSUMApproved = '';
+            spaceSUMRequested = '';
             regionsLocal.push(make_copy(region));
         }
 
-        if (this.#debug & 8) {
+        if (1 || this.#debug & 8) {
             console.log("regions:");
             console.log(regionsLocal);
         }
@@ -615,7 +686,7 @@ class exhibitorsAdm {
                     {title: "Email", field: "exhibitorEmail", width: 200, headerSort: true, headerFilter: true,},
                     {title: "Stage", field: "stage", headerSort: true, formatter: this.stageColor,
                         headerFilter: 'list', headerFilterParams: { values: ['Requested', 'Purchased', 'Approved'], },},
-                    {title: "Summary", field: "summary", minWdth: 200, headerSort: false, headerFilter: true, formatter: "textarea", },
+                    {title: "Summary", field: "summary", minWdth: 200, headerSort: false, headerFilter: true, formatter: "html", },
                     {field: "space", visible: false},
                 ]});
         } else {

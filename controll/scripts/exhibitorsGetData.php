@@ -186,8 +186,7 @@ SELECT xS.id, xS.exhibitorId, exh.exhibitorName, exh.website, exh.exhibitorEmail
     xS.item_approved, xS.time_approved, xS.approved_units, xS.approved_code, xS.approved_description,
     xS.item_purchased, xS.time_purchased, xS.purchased_units, xS.purchased_code, xS.purchased_description, xS.transid, xS.shortname,
     eRY.id AS exhibitsRegionYearId, eRY.exhibitsRegion AS regionId, exh.exhibitorNumber, exh.exhibitorYearId, exh.locations,
-    IFNULL(pName, nName) as agentName,
-    exh.pu * 10000 + exh.au * 100 + exh.ru AS sortOrder, exh.invCount, exh.exhibitorRegionYearId, eT.mailInAllowed
+    IFNULL(pName, nName) as agentName, exh.invCount, exh.exhibitorRegionYearId, eT.mailInAllowed
 FROM vw_ExhibitorSpace xS
 JOIN exhibitsSpaces eS ON xS.spaceId = eS.id
 JOIN exhibitsRegionYears eRY ON eS.exhibitsRegionYear = eRY.id
@@ -195,7 +194,7 @@ JOIN exhibitsRegions eR ON eR.id = eRY.exhibitsRegion
 JOIN exhibitsRegionTypes eT ON (eT.regionType = eR.RegionType)
 JOIN exh ON (xS.exhibitorId = exh.id)
 WHERE eRY.conid=? AND eRY.exhibitsRegion = ? AND (IFNULL(requested_units, 0) > 0 OR IFNULL(approved_units, 0) > 0)
-ORDER BY sortOrder, exhibitorName, spaceName;
+ORDER BY xS.exhibitorId, exhibitorName, spaceName;
 EOS;
 
 $detailR = dbSafeQuery($detailQ, 'iiii',  array($conid, $regionId, $conid, $regionId));
