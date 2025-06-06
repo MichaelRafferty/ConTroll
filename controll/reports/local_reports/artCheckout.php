@@ -37,7 +37,7 @@ header('Content-Type: application/csv');
 header('Content-Disposition: attachment; filename="checkout_'.$name.'.csv"');
 
 $query = <<<EOS
-SELECT A.exhibitorNumber as art_key, I.item_key, I.title, 
+SELECT A.art_key, I.item_key, I.title, 
     CASE I.quantity < I.original_qty
         WHEN true THEN I.original_qty - I.quantity
         ELSE 1 
@@ -47,8 +47,8 @@ SELECT A.exhibitorNumber as art_key, I.item_key, I.title,
         ELSE I.sale_price
     END as item_price
 FROM artItems I
-JOIN exhibitorRegionYears A ON A.id=I.exhibitorRegionYearId
-WHERE I.exhibitorRegionyearId = ? AND (I.quantity < I.original_qty OR I.final_price IS NOT null OR status='Sold Bid Sheet');
+JOIN artshow A ON A.id=I.artshow
+WHERE I.artshow = ? AND (I.quantity < I.original_qty OR I.final_price IS NOT null OR status='Sold Bid Sheet');
 EOS;
 
 //echo $query; exit();
