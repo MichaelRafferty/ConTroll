@@ -596,6 +596,7 @@ class exhibitorsAdm {
                 paginationSize: 25,
                 paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
                 columns: [
+                    {title: "Actions", field: "s1", formatter: this.spaceButtons, maxWidth: 900, headerSort: false },
                     {title: "ID", field: "id", visible: true, width: 65, },
                     {title: "RegionId", field: "regionId", visible: false},
                     {title: "Exh Num", field: "exhibitorNumber", headerWordWrap: true, width: 75 },
@@ -613,14 +614,30 @@ class exhibitorsAdm {
                     {title: "Name", field: "exhibitorName", width: 200, headerSort: true, headerFilter: true,},
                     {title: "Website", field: "website", width: 200, headerSort: true, headerFilter: true,},
                     {title: "Email", field: "exhibitorEmail", width: 200, headerSort: true, headerFilter: true,},
-                    {title: "Stage", field: "stage", headerSort: true, headerFilter: 'list', headerFilterParams: { values: ['Requested', 'Purchased', 'Approved'], },},
+                    {title: "Stage", field: "stage", headerSort: true, formatter: this.stageColor,
+                        headerFilter: 'list', headerFilterParams: { values: ['Requested', 'Purchased', 'Approved'], },},
                     {title: "Summary", field: "summary", minWdth: 200, headerSort: false, headerFilter: true, formatter: "textarea", },
                     {field: "space", visible: false},
-                    { title: "Actions", field: "s1", formatter: this.spaceButtons, maxWidth: 900, headerSort: false },
                 ]});
         } else {
             this.#spacesTable.replaceData(regionsLocal);
         }
+    }
+
+    // formatter for this table
+    stageColor(cell, formatterParams, onRendered) {
+        var data = cell.getValue();
+        switch (data) {
+            case 'Requested':
+                cell.getElement().style.backgroundColor = "#e9e9ff";
+                break;
+            case 'Approved':
+                cell.getElement().style.backgroundColor = "#e9ffe9";
+                break;
+            default:
+                cell.getElement().style.backgroundColor = '';
+        }
+        return data;
     }
 
     // drawApprovalsTable - now that the DOM is created, draw the actual table
@@ -633,6 +650,10 @@ class exhibitorsAdm {
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
                 {title: "Exhibitor Approval Requests Detail:", columns: [
+                        {title: "", field: "b1", formatter: this.approvalButton, formatterParams: {name: 'Approve'}, width: 100, hozAlign: "center", cellClick: this.exhApprove, headerSort: false,},
+                        {title: "", field: "b2", formatter: this.approvalButton, formatterParams: {name: 'Reset'}, width: 80, hozAlign: "center", cellClick: this.exhReset, headerSort: false,},
+                        {title: "", field: "b3", formatter: this.approvalButton, formatterParams: {name: 'Deny'}, width: 80, hozAlign: "center", cellClick: this.exhDeny, headerSort: false,},
+                        {title: "", field: "b4", formatter: this.approvalButton, formatterParams: {name: 'Hide'}, width: 80, hozAlign: "center", cellClick: this.exhHide, headerSort: false,},
                         {title: "Region", field: "name", headerSort: true, headerFilter: true },
                         {title: "id", field: "id", visible: false},
                         {title: "exhibitorId", field: "exhibitorId", visible: false},
@@ -641,10 +662,6 @@ class exhibitorsAdm {
                         {title: "Email", field: "exhibitorEmail", headerSort: true, headerFilter: true,},
                         {title: "Approval", field: "approval", headerSort: true, headerFilter: 'list', headerFilterParams: {values: this.#approvalValues},},
                         {title: "Timestamp", field: "updateDate", headerSort: true, },
-                        {title: "", field: "b1", formatter: this.approvalButton, formatterParams: {name: 'Approve'}, width: 100, hozAlign: "center", cellClick: this.exhApprove, headerSort: false,},
-                        {title: "", field: "b2", formatter: this.approvalButton, formatterParams: {name: 'Reset'}, width: 80, hozAlign: "center", cellClick: this.exhReset, headerSort: false,},
-                        {title: "", field: "b3", formatter: this.approvalButton, formatterParams: {name: 'Deny'}, width: 80, hozAlign: "center", cellClick: this.exhDeny, headerSort: false,},
-                        {title: "", field: "b4", formatter: this.approvalButton, formatterParams: {name: 'Hide'}, width: 80, hozAlign: "center", cellClick: this.exhHide, headerSort: false,},
                     ]
                 }
             ]
@@ -1044,53 +1061,72 @@ class exhibitorsAdm {
         var agentRequest = data.agentRequest || '';
         var id = data.id;
         var buttons = '';
+        var addNewLine = false;
+        var margin = (transid > 0 ||  data.inv > 0 || (agentRequest != '' && !agentRequest.startsWith('Processed: '))) ? ' mb-2' : '';
 
         // details button
-        buttons += '<button class="btn btn-sm btn-info" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
+        buttons += '<button class="btn btn-sm btn-info' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
             'onclick="exhibitors.showDetail(' + id + ', true)" >Details</button>&nbsp;';
 
         // approval buttons
         if (req > 0 && (pur < app || pur == 0)) {
+            addNewLine = true;
             if (app != req) {
                 if (app == 0) {
-                    buttons += '<button class="btn btn-sm btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
+                    buttons += '<button class="btn btn-sm btn-primary' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
                         'onclick="exhibitors.spaceApprovalReq(' + id + ')" >Approve Req</button>&nbsp;';
                 } else {
-                    buttons += '<button class="btn btn-sm btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
+                    buttons += '<button class="btn btn-sm btn-primary' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
                         'onclick="exhibitors.spaceApprovalReq(' + id + ')" >Revert to Orig Req</button>&nbsp;';
                 }
             }
             if (app > 0) {
-                buttons += '<button class="btn btn-sm btn-warning" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
+                buttons += '<button class="btn btn-sm btn-warning' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
                     'onclick="exhibitors.spaceApprovalOther(' + id + ')" >Change</button>&nbsp;' +
-                    '<button class="btn btn-sm btn-warning" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
+                    '<button class="btn btn-sm btn-warning' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
                     'onclick="exhibitors.spaceApprovalOther(' + id + ', 1)" >Change&Pay</button>&nbsp;';
             }
             if (app == 0)
-                buttons += '<button class="btn btn-sm btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
+                buttons += '<button class="btn btn-sm btn-primary' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
                     'onclick="exhibitors.spaceApprovalOther(' + id + ')" >Approve Other</button>&nbsp;';
         }
 
+        if (addNewLine) {
+            buttons += "<br/>";
+            addNewLine = false;
+        }
+        margin = (data.inv > 0 || (agentRequest != '' && !agentRequest.startsWith('Processed: '))) ? 'mb-2' : '';
         // receipt button
         if (transid > 0) {
-            buttons += '<button class="btn btn-sm btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
+            buttons += '<button class="btn btn-sm btn-secondary' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
                 'onclick="exhibitors.spaceReceipt(' + id + ')" >Receipt</button>&nbsp;';
-            buttons += '<button class="btn btn-sm btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
+            buttons += '<button class="btn btn-sm btn-primary' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
                 'onclick="exhibitors.showLocations(' + id + ', true)" >Locations</button>&nbsp;';
+            addNewLine = true;
         }
 
+        if (addNewLine) {
+            buttons += "<br/>";
+            addNewLine = false;
+        }
+        margin = (agentRequest != '' && !agentRequest.startsWith('Processed: ')) ? 'mb-2' : '';
         // inventory button
         if (data.inv > 0) {
-            buttons += '<button class="btn btn-sm btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
+            addNewLine = true;
+            buttons += '<button class="btn btn-sm btn-secondary' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
                 'onclick="exhibitors.printBidSheets(' + id + ')" >Bid Sheets</button>&nbsp;';
-            buttons += '<button class="btn btn-sm btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
+            buttons += '<button class="btn btn-sm btn-secondary' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
                 'onclick="exhibitors.printPriceTags(' + id + ')" >Price Tags</button>&nbsp;';
-            buttons += '<button class="btn btn-sm btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
+            buttons += '<button class="btn btn-sm btn-secondary' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
                 'onclick="exhibitors.printControlSheet(' + id + ', false)" >Control Sheet</button>&nbsp;';
-            buttons += '<button class="btn btn-sm btn-warning" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
+            buttons += '<button class="btn btn-sm btn-warning' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
                 'onclick="exhibitors.printControlSheet(' + id + ', true)" >Control Sheet w/Emails</button>&nbsp;';
         }
 
+        if (addNewLine) {
+            buttons += "<br/>";
+            addNewLine = false;
+        }
         // agent
         if (agentRequest != '' && !agentRequest.startsWith('Processed: '))
             buttons += '<button class="btn btn-sm btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
@@ -1374,6 +1410,7 @@ class exhibitorsAdm {
             paginationSize: 25,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
+                {title: "Actions", field: "s1", formatter: this.exhibitorListButtons, maxWidth: 300, headerSort: false },
                 {title: "ID", field: "exhibitorId", visible: true, width: 65, },
                 {title: "Artist Name", field: "artistName", headerFilter: true, visible: true, width: 200, },
                 {title: "Name", field: "exhibitorName", headerFilter: true, visible: true, width: 200, },
@@ -1382,7 +1419,6 @@ class exhibitorsAdm {
                 {title: "City", field: "city", visible: true, headerFilter: true, width: 200, },
                 {title: "State", field: "state", visible: true, headerFilter: true, width: 100, },
                 {title: "Zip", field: "zip", visible: true, headerFilter: true, width: 100, },
-                {title: "Actions", field: "s1", formatter: this.exhibitorListButtons, maxWidth: 300, headerSort: false },
         ]});
     }
 
