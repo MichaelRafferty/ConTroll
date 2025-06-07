@@ -1131,16 +1131,20 @@ class exhibitorsAdm {
         var agentRequest = data.agentRequest || '';
         var id = data.id;
         var buttons = '';
-        var addNewLine = false;
-        var margin = (transid > 0 ||  data.inv > 0 || (agentRequest != '' && !agentRequest.startsWith('Processed: '))) ? ' mb-2' : '';
+        var approvalBtns = req > 0 && (pur < app || pur == 0);
+        var paidBtns = transid > 0;
+        var invBtns = data.inv > 0;
+        var agentBtns = agentRequest != '' && !agentRequest.startsWith('Processed: ');
+
+        // determine if we need the margin for the first section of buttons
+        var margin = (invBtns || agentBtns) ? ' mb-2' : '';
 
         // details button
         buttons += '<button class="btn btn-sm btn-info' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
             'onclick="exhibitors.showDetail(' + id + ', true)" >Details</button>&nbsp;';
 
         // approval buttons
-        if (req > 0 && (pur < app || pur == 0)) {
-            addNewLine = true;
+        if (approvalBtns) {
             if (data.approved != data.requested) {
                 if (app == 0) {
                     buttons += '<button class="btn btn-sm btn-primary' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
@@ -1159,30 +1163,24 @@ class exhibitorsAdm {
             if (app == 0)
                 buttons += '<button class="btn btn-sm btn-primary' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
                     'onclick="exhibitors.spaceApprovalOther(' + id + ')" >Approve Other</button>&nbsp;';
+            // force a break after the approval buttons
+            buttons += "<br/>";
         }
 
-        if (addNewLine) {
-            buttons += "<br/>";
-            addNewLine = false;
-        }
-        margin = (data.inv > 0 || (agentRequest != '' && !agentRequest.startsWith('Processed: '))) ? 'mb-2' : '';
-        // receipt button
-        if (transid > 0) {
+        margin = (invBtns || agentBtns) ? 'mb-2' : '';
+        // receipt button and locations
+        if (paidBtns) {
             buttons += '<button class="btn btn-sm btn-secondary' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
                 'onclick="exhibitors.spaceReceipt(' + id + ')" >Receipt</button>&nbsp;';
             buttons += '<button class="btn btn-sm btn-primary' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
                 'onclick="exhibitors.showLocations(' + id + ', true)" >Locations</button>&nbsp;';
-            addNewLine = true;
+
+            buttons += "<br/>";
         }
 
-        if (addNewLine) {
-            buttons += "<br/>";
-            addNewLine = false;
-        }
-        margin = (agentRequest != '' && !agentRequest.startsWith('Processed: ')) ? 'mb-2' : '';
+        margin = agentBtns ? 'mb-2' : '';
         // inventory button
-        if (data.inv > 0) {
-            addNewLine = true;
+        if (invBtns) {
             buttons += '<button class="btn btn-sm btn-secondary' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
                 'onclick="exhibitors.printBidSheets(' + id + ')" >Bid Sheets</button>&nbsp;';
             buttons += '<button class="btn btn-sm btn-secondary' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
@@ -1191,14 +1189,12 @@ class exhibitorsAdm {
                 'onclick="exhibitors.printControlSheet(' + id + ', false)" >Control Sheet</button>&nbsp;';
             buttons += '<button class="btn btn-sm btn-warning' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
                 'onclick="exhibitors.printControlSheet(' + id + ', true)" >Control Sheet w/Emails</button>&nbsp;';
+
+            buttons += "<br/>";
         }
 
-        if (addNewLine) {
-            buttons += "<br/>";
-            addNewLine = false;
-        }
         // agent
-        if (agentRequest != '' && !agentRequest.startsWith('Processed: '))
+        if (agentBtns)
             buttons += '<button class="btn btn-sm btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
                 'onclick="exhibitors.spaceAgent(' + id + ');" >Agent</button>&nbsp;';
 
