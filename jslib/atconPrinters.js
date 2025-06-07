@@ -270,11 +270,12 @@ class Printers {
         if (this.printerlist !== null) {
             this.printerlist.destroy();
             this.printerlist = null;
-
         }
+
         if (this.serverlist !== null) {
             this.serverlist.destroy();
             this.serverlist = null;
+        }
 
         this.printers_savebtn.disabled = false;
         this.printers_savebtn.innerHTML = "Save";
