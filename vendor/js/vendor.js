@@ -6,6 +6,7 @@ var purchase_label = 'purchase';
 var additional_cost = {};
 var switchPortalbtn = null;
 exhibitorProfile = null;
+si_password = null;
 
 // initial setup
 window.onload = function () {
@@ -28,6 +29,16 @@ window.onload = function () {
         if (exhibitor_info['needReview']) {
             exhibitorProfile.profileModalOpen('review');
         }
+    }
+
+    var id = document.getElementById('toogle_si_password');
+    if (id) {
+        si_password = document.getElementById("si_password");
+        id.addEventListener('click', function (e) {
+            var type = si_password.getAttribute('type') === 'password' ? 'text' : 'password';
+            si_password.setAttribute('type', type);
+            this.classList.toggle("bi-eye");
+        })
     }
 }
 

@@ -32,6 +32,7 @@ function draw_login($config_vars, $result_message = '') {
                     </div>
                     <div class='col-sm-auto'>
                         <input class='form-control-sm' type='password' id='si_password' name='si_password' size='40' autocomplete='off' required/>
+                        <i class='bi bi-eye-slash' id='toogle_si_password' style="margin-left: -30px;"></i>
                     </div>
                 </div>
                 <div class='row mt-2'>
