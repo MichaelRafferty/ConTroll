@@ -49,8 +49,8 @@ other #orgabv#-sponsored events. For specific information, including our full An
 <p>If you have any further questions, please feel free to contact us at <a href="mailto:#feedbackemail#">#feedbackemail#</a>,
 or visit our website for information on how to contact individual departments.</p>
 <p>We hope to see you at the convention!</p>
-<p>Philcon Registration Team</p>
-<p>If you wish to opt out of this marketing email going forward, please email us at <a href="mailto:#regadminemail#">#regadminemail#</a> or send us postal email at:</p>
+<p>#conname# Registration Team</p>
+<p>If you wish to opt out of this marketing email going forward, please email us at <a href="mailto:#regadminemail#">#regadminemail#</a> or send us postal mail at:</p>
 <p>#label#<br>PO BOX 8303<br>Philadelphia, PA 19101-8303</p>'
 where appName = 'controll' and appPage = 'emails' and appSection = 'marketing' and txtItem = 'html';
 
@@ -87,7 +87,7 @@ year&rsquo;s convention. To check the status of your, or the rest of your family
 <li class="p1"><span class="s1">Yes. If you pre-purchased a badge, we would like to make sure tat no one else picks up your badge. We are very reasonable about what we consider valid ID; we just need to know the badge is going to the right person.</span></li>
 </ul>
 </li>
-<li class="p1"><span class="s1"><strong>Remember a mask strongly recommended at Philcon.<br><br></strong></span></li>
+<li class="p1"><span class="s1"><strong>Remember a mask strongly recommended at #conname#.<br><br></strong></span></li>
 <li class="p1"><strong><span class="s1">Can I pick up my spouse/girlfriend/child&rsquo;s membership as well as my own?</span></strong>
 <ul>
 <li class="p1"><span class="s1">Maybe! You can pick up someone else&rsquo;s membership&nbsp;<strong>IF</strong> one of the following is true:</span>
@@ -153,9 +153,9 @@ If you have any further questions, please feel free to contact us at #feedbackem
 
 We hope to see you at the convention!
 
-Philcon Registration Team
+#conname# Registration Team
 
-If you wish to opt out of this marketing email going forward, please email us at #regadminemail# or send us postal email at:.
+If you wish to opt out of this marketing email going forward, please email us at #regadminemail# or send us postal mail at:.
 
 #label#
 PO BOX 8303
@@ -194,7 +194,7 @@ Registration hours are
 Do I have to show ID?
   * Yes. If you pre-purchased a badge, we would like to make sure tat no one else picks up your badge. We are very reasonable about what we consider valid ID; we just need to know the badge is going to the right person.
 
-Remember a mask strongly recommended at Philcon.
+Remember a mask strongly recommended at #conname#.
 
 Can I pick up my spouse/girlfriend/child’s membership as well as my own?
   * Maybe! You can pick up someone else’s membership IF one of the following is true:
