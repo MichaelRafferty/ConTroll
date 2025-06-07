@@ -331,7 +331,7 @@ function buildOrderSuccess(data) {
     total_tax_due = data.rtn.taxAmt;
     total_amount_due = data.rtn.totalAmt;
     taxLabel = data.rtn.taxLabel;
-    show_message("Order #" + pay_currentOrderId + " created.<br/>" + orderMsg);
+    show_message("Credit Card Order #" + pay_currentOrderId + " created.<br/>" + orderMsg);
     payShown();
 }
 

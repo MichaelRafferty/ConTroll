@@ -57,4 +57,4 @@ load_cc_procs();
  }
 
  cc_cancelOrder('atcon', $orderId, true, $locationId);
- ajaxSuccess(array ('status' => 'success', 'message' => "Order $orderId cancelled."));
+ ajaxSuccess(array ('status' => 'success', 'message' => "Credit Card Order $orderId cancelled."));
