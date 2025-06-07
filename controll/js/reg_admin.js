@@ -913,6 +913,7 @@ function changeRevoke(direction) {
         cancelList: changeList,
         direction: direction,
         action: 'cancel',
+        source: config['source'],
     }
     var script= 'scripts/regadmin_cancelReg.php';
 
@@ -1480,6 +1481,7 @@ function changeEditSave(override) {
             couponDiscount: newDiscount,
             status: newStatus,
         },
+        source: config['source'],
     };
     var script = 'scripts/regadmin_editReg.php';
     $.ajax({
