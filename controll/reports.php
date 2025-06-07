@@ -236,12 +236,9 @@ EOS;
     <input type='number' name='conid'/>
     <input type='submit' value='Get'/>
   </form>
-    <?php // this stuff below is obsolete and needs to be rewritten for mondern art show
-    if (true || false) {
-        ?>
   <form action='reports/artCheckout.php' method='GET'>
     <select name='artid'>
-        <?php
+        <?php //TODO is this stuff below is now rewritten for modern art show ???
             $artistQ = <<<EOS
 SELECT ery.exhibitorNumber, e.exhibitorName, ery.id
 FROM `exhibitsRegionYears` xry 
@@ -261,7 +258,6 @@ EOS;
     </select>
     <input type='submit' value='Artshow Checkout'/>
   </form>
-    <?php } ?>
         </div>
     </div>
     <div id='result_message' class='mt-4 p-2'></div>
