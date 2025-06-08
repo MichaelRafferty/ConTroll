@@ -1034,6 +1034,7 @@ function drawWSFSButtons($NomNomExists, $BusinessExists, $SiteExists, $hasWSFS, 
     }
 
     $businessMeetingButton = '';
+    $businessBtnSubText = '';
     if ($BusinessExists) {
         if (array_key_exists('businessBtn', $portal_conf))
             $businessBtnText = $portal_conf['businessBtn'];
@@ -1047,8 +1048,8 @@ function drawWSFSButtons($NomNomExists, $BusinessExists, $SiteExists, $hasWSFS, 
             // compute the LUMI password, note this is Seattle Worldcon specific, so it will need to be modified for future worldcons
             $salt = 'SeattleIn2025';
             $pw = substr(preg_replace('/[a-f]/i', '', md5($loginId . $salt)), 0, 6);
-            $un = $info['email_addr'];
-            $businessBtnText .= "<br/>User Name: $un, Password: $pw";
+            $un = $info['id'];
+            $businessBtnSubText = "<br/>Badge Number: $un, Password: $pw";
         }
 
         $businessURL = $portal_conf['businessmeetingURL'];
@@ -1067,7 +1068,7 @@ function drawWSFSButtons($NomNomExists, $BusinessExists, $SiteExists, $hasWSFS, 
             <div class='col-sm-auto'><?php echo $businessMeetingButton; ?></div>
         <?php }
         if ($siteSelectionButton != '') { ?>
-            <div class='col-sm-auto'><?php echo $siteSelectionButton; ?></div>
+            <div class='col-sm-auto'><?php echo $siteSelectionButton; if ($businessBtnSubText != '') echo "<br/>$businessBtnSubText"; ?></div>
         <?php } ?>
     </div>
 <?php
