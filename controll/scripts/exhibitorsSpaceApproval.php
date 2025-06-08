@@ -323,37 +323,42 @@ if (array_key_exists('success', $response)) {
     $details = array();
     $detailQ = <<<EOS
 WITH exh AS (
-SELECT e.id, e.exhibitorName, e.website, e.exhibitorEmail, eRY.id AS exhibitorYearId, exRY.exhibitorNumber, exRY.agentRequest,
+SELECT e.id, e.exhibitorName, e.website, e.exhibitorEmail, exRY.exhibitorNumber, exRY.agentRequest,
     TRIM(CONCAT_WS(' ', p.first_name, p.last_name)) as pName, TRIM(CONCAT_WS(' ', n.first_name, n.last_name)) AS nName,
-	SUM(IFNULL(espr.units, 0)) AS ru, SUM(IFNULL(espa.units, 0)) AS au, SUM(IFNULL(espp.units, 0)) AS pu
+     eY.id AS exhibitorYearId, exRY.locations, exRY.id AS exhibitorRegionYearId,
+	SUM(IFNULL(espr.units, 0)) AS ru, SUM(IFNULL(espa.units, 0)) AS au, SUM(IFNULL(espp.units, 0)) AS pu,
+	COUNT(a.id) AS invCount
 FROM exhibitorSpaces eS
 LEFT OUTER JOIN exhibitsSpacePrices espr ON (eS.item_requested = espr.id)
 LEFT OUTER JOIN exhibitsSpacePrices espa ON (eS.item_approved = espa.id)
 LEFT OUTER JOIN exhibitsSpacePrices espp ON (eS.item_purchased = espp.id)
-JOIN exhibitorRegionYears exRY ON exRY.id = eS.exhibitorRegionYear
+JOIN exhibitorRegionYears exRY ON (exRY.id = eS.exhibitorRegionYear)
 JOIN exhibitorYears eY ON (eY.id = exRY.exhibitorYearId)
 JOIN exhibitors e ON (e.id = eY.exhibitorId)
 JOIN exhibitsSpaces s ON (s.id = eS.spaceId)
 JOIN exhibitsRegionYears eRY ON s.exhibitsRegionYear = eRY.id
 LEFT OUTER JOIN perinfo p ON p.id = exRY.agentPerid
 LEFT OUTER JOIN newperson n ON n.id = exRY.agentNewperson
+LEFT OUTER JOIN artItems a ON (a.exhibitorRegionYearId = exRY.id)
 WHERE eY.conid = ? AND eRY.id = ? AND e.id = ?
-GROUP BY e.id, e.exhibitorName, e.website, e.exhibitorEmail, eRY.id, exRY.exhibitorNumber, exRY.agentRequest, pName, nName
+GROUP BY e.id, e.exhibitorName, e.website, e.exhibitorEmail, exRY.exhibitorNumber, exRY.agentRequest, pName, nName, eY.id, exRY.locations,
+    exRY.id
 )
 SELECT xS.id, xS.exhibitorId, exh.exhibitorName, exh.website, exh.exhibitorEmail,
     xS.spaceId, xS.name as spaceName, xS.item_requested, xS.time_requested, xS.requested_units, xS.requested_code, xS.requested_description,
     xS.item_approved, xS.time_approved, xS.approved_units, xS.approved_code, xS.approved_description,
-    xS.item_purchased, xS.time_purchased, xS.purchased_units, xS.purchased_code, xS.purchased_description, xS.transid,
-    eRY.id AS exhibitsRegionYearId, eRY.exhibitsRegion AS regionId, eRY.ownerName, eRY.ownerEmail, eR.name AS regionName, exh.exhibitorNumber,
-    IFNULL(pName, nName) as agentName,
-    exh.pu * 10000 + exh.au * 100 + exh.ru AS sortOrder
+    xS.item_purchased, xS.time_purchased, xS.purchased_units, xS.purchased_code, xS.purchased_description, xS.transid, xS.shortname,
+    eRY.id AS exhibitsRegionYearId, eRY.exhibitsRegion AS regionId, eRY.ownerName, eRY.ownerEmail, eR.name AS regionName, 
+    exh.exhibitorNumber, exh.exhibitorYearId, exh.locations,
+    IFNULL(pName, nName) as agentName, exh.invCount, exh.exhibitorRegionYearId, eT.mailInAllowed
 FROM vw_ExhibitorSpace xS
     JOIN exhibitsSpaces eS ON xS.spaceId = eS.id
     JOIN exhibitsRegionYears eRY ON eS.exhibitsRegionYear = eRY.id
     JOIN exhibitsRegions eR ON eR.id = eRY.exhibitsRegion
+    JOIN exhibitsRegionTypes eT ON (eT.regionType = eR.RegionType)
     JOIN exh ON (xS.exhibitorId = exh.id)
 WHERE eRY.conid=? AND eRY.id = ? AND xS.exhibitorId = ? AND (time_requested IS NOT NULL OR time_approved IS NOT NULL)
-ORDER BY sortOrder, exhibitorName, spaceName
+ORDER BY xS.exhibitorId, spaceId;
 EOS;
 
     $detailR = dbSafeQuery($detailQ, 'iiiiii', array($conid, $regionYearId, $exhibitorId, $conid, $regionYearId, $exhibitorId));
@@ -361,8 +366,9 @@ EOS;
     while ($detailL = $detailR->fetch_assoc()) {
         $detail = $detailL;
         $detail['b1'] = time();
-        $detail['b2'] = time();
-        $detail['b3'] = time();
+        $detail['b2'] = $detail['b1'] + 1;
+        $detail['b3'] = $detail['b2'] + 1;
+        $detail['b4'] = $detail['b3'] + 1;
         $details[] = $detail;
     }
 

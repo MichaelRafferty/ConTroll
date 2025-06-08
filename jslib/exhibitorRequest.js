@@ -272,7 +272,7 @@ class ExhibitorRequest {
                 if (data['exhibitor_spacelist'] && cancel > 2) {
                     exhibitor_spacelist = data['exhibitor_spacelist'];
                     _this.updateRequestStatusBlock(regionYearId);
-                    exhibitors.open(fulltabname);
+                    exhibitors.spaceApprovalSuccess(data);
                 }
                 if (data['success'] !== undefined) {
                     _this.#exhibitor_request.hide();
@@ -290,6 +290,7 @@ class ExhibitorRequest {
                         return;
                     }
                 }
+                exhibitors.spaceApprovalSuccess(data);
             },
             error: showAjaxError
         })

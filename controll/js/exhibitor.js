@@ -269,7 +269,7 @@ class exhibitorsAdm {
             method: "POST",
             data: { region: tabname, regionId: regionid },
             success: function (data, textstatus, jqXHR) {
-            exhibitors.draw(data);
+                exhibitors.draw(data);
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 showError("ERROR in getExhibitorData: " + textStatus, jqXHR);
@@ -444,9 +444,8 @@ class exhibitorsAdm {
         return html;
     }
 
-    // drawSpacesTable - now that the DOM is created, draw the actual table
-    drawSpacesTable(data, groupid, newTable) {
-        // build new data array
+    // build spaces Items
+    #buildSpacesItems(data) {
         var regionsLocal = [];
         var region = null;
         //var currentRegion = -1;
@@ -587,7 +586,7 @@ class exhibitorsAdm {
                     spaceSUMApproved += space.approved_description + ' of ' + space.spaceName + "<br/>";
                     if (spaceStage == '' || spaceStage == 'Requested')
                         spaceStage = 'Approved';
-                } 
+                }
                 if (space.requested_units > 0) {
                     spaceSUMRequested += space.requested_description + ' of ' + space.spaceName + "<br/>";
                     if (spaceStage == '')
@@ -651,8 +650,14 @@ class exhibitorsAdm {
             spaceSUMRequested = '';
             regionsLocal.push(make_copy(region));
         }
+        return regionsLocal;
+    }
+    // drawSpacesTable - now that the DOM is created, draw the actual table
+    drawSpacesTable(data, groupid, newTable) {
+        // build new data array
+        var regionsLocal = this.#buildSpacesItems(data);
 
-        if (1 || this.#debug & 8) {
+        if (this.#debug & 8) {
             console.log("regions:");
             console.log(regionsLocal);
         }
@@ -686,7 +691,7 @@ class exhibitorsAdm {
                     {title: "Email", field: "exhibitorEmail", width: 200, headerSort: true, headerFilter: true,},
                     {title: "Stage", field: "stage", headerSort: true, formatter: this.stageColor,
                         headerFilter: 'list', headerFilterParams: { values: ['Requested', 'Purchased', 'Approved'], },},
-                    {title: "Summary", field: "summary", minWdth: 200, headerSort: false, headerFilter: true, formatter: "html", },
+                    {title: "Summary", field: "summary", minWidth: 200, headerSort: false, headerFilter: true, formatter: "html", },
                     {field: "space", visible: false},
                 ]});
         } else {
@@ -1410,7 +1415,12 @@ class exhibitorsAdm {
         } else {
             if (data.message)
                 show_message(data.message, 'success');
-            this.open(this.#currentSpaceTab);
+            if (this.#debug & 8)
+                console.log(data.detail);
+            var exhRow = this.#buildSpacesItems(data);
+            if (this.#debug & 8)
+                console.log(exhRow);
+            this.#spacesTable.updateData(exhRow);
         }
     }
 
