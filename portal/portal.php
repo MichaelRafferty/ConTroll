@@ -1065,10 +1065,10 @@ function drawWSFSButtons($NomNomExists, $BusinessExists, $SiteExists, $hasWSFS, 
         <div class='col-sm-auto'><?php echo $NomNomButton; ?></div>
     <?php }
         if ($businessMeetingButton != '') { ?>
-            <div class='col-sm-auto'><?php echo $businessMeetingButton; ?></div>
+            <div class='col-sm-auto'><?php echo $businessMeetingButton; if ($businessBtnSubText != '') echo "<br/>$businessBtnSubText"; ?></div>
         <?php }
         if ($siteSelectionButton != '') { ?>
-            <div class='col-sm-auto'><?php echo $siteSelectionButton; if ($businessBtnSubText != '') echo "<br/>$businessBtnSubText"; ?></div>
+            <div class='col-sm-auto'><?php echo $siteSelectionButton; ?></div>
         <?php } ?>
     </div>
 <?php
