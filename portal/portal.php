@@ -1049,7 +1049,7 @@ function drawWSFSButtons($NomNomExists, $BusinessExists, $SiteExists, $hasWSFS, 
             $salt = 'SeattleIn2025';
             $pw = substr(preg_replace('/[a-f]/i', '', md5($loginId . $salt)), 0, 6);
             $un = $info['id'];
-            $businessBtnSubText = "<br/>Badge Number: $un, Password: $pw";
+            $businessBtnSubText = "<br/>Badge Number: $un<br/>Password: $pw";
         }
 
         $businessURL = $portal_conf['businessmeetingURL'];
@@ -1065,7 +1065,7 @@ function drawWSFSButtons($NomNomExists, $BusinessExists, $SiteExists, $hasWSFS, 
         <div class='col-sm-auto'><?php echo $NomNomButton; ?></div>
     <?php }
         if ($businessMeetingButton != '') { ?>
-            <div class='col-sm-auto'><?php echo $businessMeetingButton; if ($businessBtnSubText != '') echo "<br/>$businessBtnSubText"; ?></div>
+            <div class='col-sm-auto'><?php echo $businessMeetingButton; if ($businessBtnSubText != '') echo "$businessBtnSubText"; ?></div>
         <?php }
         if ($siteSelectionButton != '') { ?>
             <div class='col-sm-auto'><?php echo $siteSelectionButton; ?></div>
