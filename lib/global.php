@@ -347,3 +347,13 @@ function phoneNumberNormalize($buyer) : string {
     // rest of the world, presume the number has the country code on it already
     return $phone;
 }
+
+// return a eyeslash toggle style password field
+function eyepwField($id, $name, $width = 40, $placeholder = '', $tabIndex = -1) {
+    $html = <<<EOS
+<input class='form-control-sm' type='password' id='$id' name='$name' size="$width" autocomplete="off" required 
+    tabindex="$tabIndex" placeholder="$placeholder"/>
+<i class='bi bi-eye-slash' id='toggle_$id' style="margin-left: -30px;"></i>
+EOS;
+    return $html;
+}

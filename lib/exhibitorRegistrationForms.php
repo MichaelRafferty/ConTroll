@@ -30,9 +30,8 @@ function draw_login($config_vars, $result_message = '') {
                     <div class='col-sm-1'>
                         <label for='si_password'><span class='text-danger'>&bigstar;</span>Password: </label>
                     </div>
-                    <div class='col-sm-auto'>
-                        <input class='form-control-sm' type='password' id='si_password' name='si_password' size='40' autocomplete='off' required/>
-                        <i class='bi bi-eye-slash' id='toogle_si_password' style="margin-left: -30px;"></i>
+                    <div class='col-sm-10'>
+                        <?php echo eyepwField('si_password', 'si_password', 40); ?>
                     </div>
                 </div>
                 <div class='row mt-2'>
@@ -179,20 +178,20 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                                 <div class='col-sm-2'>
                                     <label for='pw1'><span class='text-danger'>&bigstar;</span>Password: </label>
                                 </div>
-                                <div class='col-sm-auto p-0 ms-0 me-0'>
-                                    <input class='form-control-sm' id='pw1' type='password' name='password' autocomplete='off' required
-                                           tabindex="<?php echo $tabIndex; $tabIndex += 2;?>" size='24' placeholder='minimum of 8 characters'
-                                    />
+                                <div class='col-sm-10 p-0 ms-0 me-0'>
+                                    <?php echo eyepwField('pw1', 'password', 40,'minimum of 8 characters', $tabIndex);
+                                        $tabIndex += 2;
+                                    ?>
                                 </div>
                             </div>
                             <div class='row mt-1' id='passwordLine2'>
                                 <div class='col-sm-2'>
                                     <label for='pw2'><span class='text-danger'>&bigstar;</span>Confirm Password: </label>
                                 </div>
-                                <div class='col-sm-auto p-0 ms-0 me-0'>
-                                    <input class='form-control-sm' id='pw2' type='password' name='cpassword2' autocomplete='off' required
-                                           tabindex="<?php echo $tabIndex; $tabIndex += 2;?>" size='24' placeholder='minimum of 8 characters'
-                                    />
+                                <div class='col-sm-10 p-0 ms-0 me-0'>
+                                    <?php echo eyepwField('pw2', 'password2', 40,'retype password', $tabIndex);
+                                        $tabIndex += 2;
+                                    ?>
                                 </div>
                             </div>
                             <div class='row mt-1'>
@@ -352,22 +351,20 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                                 <div class='col-sm-2'>
                                     <label for='cpw1'><span class='text-danger'>&bigstar;</span>Contact Password: </label>
                                 </div>
-                                <div class='col-sm-auto p-0 ms-0 me-0'>
-                                    <input class='form-control-sm' id='cpw1' type='password' name='cpassword' autocomplete='off' required
-                                           tabindex="<?php echo $tabIndex; $tabIndex += 2;?>" size='24'
-                                           placeholder='minimum of 8 characters'
-                                    />
+                                <div class='col-sm-10 p-0 ms-0 me-0'>
+                                    <?php echo eyepwField('cpw1', 'cpassword', 40,'minimum of 8 characters', $tabIndex);
+                                        $tabIndex += 2;
+                                    ?>
                                 </div>
                             </div>
                             <div class='row mt-1' id='cpasswordLine2'>
                                 <div class='col-sm-2'>
                                     <label for='cpw2'><span class='text-danger'>&bigstar;</span>Confirm Password: </label>
                                 </div>
-                                <div class='col-sm-auto p-0 ms-0 me-0'>
-                                    <input class='form-control-sm' id='cpw2' type='password' name='cpassword2' autocomplete='off' required
-                                           tabindex="<?php echo $tabIndex; $tabIndex += 2;?>" size='24'
-                                           placeholder='minimum of 8 characters'
-                                    />
+                                <div class='col-sm-10 p-0 ms-0 me-0'>
+                                    <?php echo eyepwField('cpw2', 'cpassword2', 40,'retype the contact password', $tabIndex);
+                                        $tabIndex += 2;
+                                    ?>
                                 </div>
                             </div>
                             <!-- Shipping Address (artist only) -->
@@ -465,7 +462,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
     <?php
     }
 
-// draw_RegistratioModal - the modal for exhibitor signup
+// draw_RegistratioModal - the modal for exhibitor signup in the vendor subsystem
 function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabStart = 10) {
     $con = get_conf('con');
     $vendor_conf = get_conf('vendor');
@@ -631,21 +628,20 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                     <div class='col-sm-2'>
                                         <label for='pw1'><span class='text-danger'>&bigstar;</span>Password: </label>
                                     </div>
-                                    <div class='col-sm-auto p-0 ms-0 me-0'>
-                                        <input class='form-control-sm' id='pw1' type='password' name='password' autocomplete='off' required
-                                               tabindex="<?php echo $tabIndex; $tabIndex += 2;?>"
-                                               size='24' placeholder='minimum of 8 characters'/>
+                                    <div class='col-sm-10 p-0 ms-0 me-0'>
+                                        <?php echo eyepwField('pw1', 'password', 40,'minimum of 8 characters', $tabIndex);
+                                            $tabIndex += 2;
+                                        ?>
                                     </div>
                                 </div>
                                 <div class='row mt-1' id='passwordLine2'>
                                     <div class='col-sm-2'>
                                         <label for='pw2'><span class='text-danger'>&bigstar;</span>Confirm Password: </label>
                                     </div>
-                                    <div class='col-sm-auto p-0 ms-0 me-0'>
-                                        <input class='form-control-sm' id='pw2' type='password' name='cpassword2' autocomplete='off' required
-                                               tabindex="<?php echo $tabIndex; $tabIndex += 2;?>"
-                                               size='24' placeholder='minimum of 8 characters'
-                                        />
+                                    <div class='col-sm-10 p-0 ms-0 me-0'>
+                                        <?php echo eyepwField('pw2', 'password2', 40,'retype the exhibitor password', $tabIndex);
+                                            $tabIndex += 2;
+                                        ?>
                                     </div>
                                 </div>
                                 <div class='row mt-1'>
@@ -730,22 +726,20 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                     <div class='col-sm-2'>
                                         <label for='cpw1'><span class='text-danger'>&bigstar;</span>Contact Password: </label>
                                     </div>
-                                    <div class='col-sm-auto p-0 ms-0 me-0'>
-                                        <input class='form-control-sm' id='cpw1' type='password' name='cpassword' autocomplete='off' required
-                                               tabindex="<?php echo $tabIndex; $tabIndex += 2;?>"
-                                               size='24' placeholder='minimum of 8 characters'
-                                        />
+                                    <div class='col-sm-10 p-0 ms-0 me-0'>
+                                        <?php echo eyepwField('cpw1', 'cpassword', 40,'minimum of 8 characters', $tabIndex);
+                                            $tabIndex += 2;
+                                        ?>
                                     </div>
                                 </div>
                                 <div class='row mt-1' id='cpasswordLine2'>
                                     <div class='col-sm-2'>
                                         <label for='cpw2'><span class='text-danger'>&bigstar;</span>Confirm Password: </label>
                                     </div>
-                                    <div class='col-sm-auto p-0 ms-0 me-0'>
-                                        <input class='form-control-sm' id='cpw2' type='password' name='cpassword2' autocomplete='off' required
-                                               tabindex="<?php echo $tabIndex; $tabIndex += 2;?>"
-                                               size='24' placeholder='minimum of 8 characters'
-                                        />
+                                    <div class='col-sm-10 p-0 ms-0 me-0'>
+                                        <?php echo eyepwField('cpw2', 'cpassword2', 40,'retype the contact password', $tabIndex);
+                                            $tabIndex += 2;
+                                        ?>
                                     </div>
                                 </div>
                                 <div class='row mt-4'>

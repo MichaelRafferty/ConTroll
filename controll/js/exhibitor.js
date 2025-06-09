@@ -1590,4 +1590,9 @@ window.onload = function initpage() {
     exhibitorRequestOnLoad();
     exhibitorReceiptOnLoad();
     exhibitorInvoiceOnLoad();
+
+    pwEyeToggle('pw1');
+    pwEyeToggle('pw2');
+    pwEyeToggle('cpw1');
+    pwEyeToggle('cpw2');
 }

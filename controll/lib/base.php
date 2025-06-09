@@ -183,6 +183,7 @@ echo <<<EOF
     <link rel='icon' type='image/x-icon' href='/lib/favicon.ico'>
     <link href='$jquicss' rel='stylesheet' type='text/css' />
     <link href='$bs5css' rel='stylesheet'/>
+    <link href='csslib/bootstrap-icons.css' rel='stylesheet' type='text/css' />
 EOF;
     if(isset($css) && $css != null) {
         foreach ($css as $sheet) {

@@ -163,7 +163,7 @@ if (isset($_SESSION['id']) && !isset($_GET['vid'])) {
     $timediff = time() - $match['ts'];
     web_error_log("login @ " . time() . " with ts " . $match['ts']);
     if ($timediff > 120) {
-        draw_registrationModal($portalType, $portalName, $con, $countryOptions);
+        draw_signupModal($portalType, $portalName, $con, $countryOptions);
         draw_login($config_vars, "<div class='bg-danger text-white'>The link has expired, please log in again</div>");
         exit();
     }
@@ -447,7 +447,7 @@ $exhibitorSR->free();
     var country_options = <?php echo json_encode($countryOptions); ?>;
     </script>
 <?php
-draw_registrationModal($portalType, $portalName, $con, $countryOptions);
+draw_rdraw_regisegistrationModal($portalType, $portalName, $con, $countryOptions);
 draw_passwordModal();
 draw_exhibitorRequestModal();
 draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $reg_conf, $cc, $portalName, $portalType);
