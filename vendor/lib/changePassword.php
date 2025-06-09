@@ -20,7 +20,9 @@ EOH;
                 <label for='oldPw'>Old or Temp Password:</label>
             </div>
             <div class='col-sm-8'>
-                <input type='password' id='oldPw' name='oldPassword' size="24" autocomplete="off" required placeholder="current or temp"/>
+                <input class='form-control-sm' type='password' id='oldPw' name='oldPassword' size="40" autocomplete="off" required
+                    placeholder="current or temp password"/>
+                <i class='bi bi-eye-slash' id='toogle_oldPassword' style="margin-left: -30px;"></i>
             </div>
         </div>
         <div class='row'>
@@ -28,7 +30,9 @@ EOH;
                 <label for='newPw'>New Password:</label>
             </div>
             <div class='col-sm-8'>
-                <input type='password' id='newPw' name='password' size="24" autocomplete="off" required placeholder="minimum of 8 characters"/>
+                <input class='form-control-sm' type='password' id='newPw' name='password' size="40" autocomplete="off" required 
+                    placeholder="minimum of 8 characters"/>
+                <i class='bi bi-eye-slash' id='toogle_password' style="margin-left: -30px;"></i>
             </div>
         </div>
         <div class='row'>
@@ -36,7 +40,9 @@ EOH;
                 <label for='newPw2'>Re-enter New Password:</label>
             </div>
             <div class='col-sm-8'>
-                <input type='password' id='newPw2' name='password2' size="24" autocomplete="off" required placeholder="re-enter the password"/>
+                <input class='form-control-sm' type='password' id='newPw2' name='password2' size="40" autocomplete="off" required 
+                    placeholder="re-enter the password"/>
+                <i class='bi bi-eye-slash' id='toogle_password2' style="margin-left: -30px;"></i>
             </div>
         </div>
 EOH;

@@ -37,7 +37,34 @@ window.onload = function () {
         id.addEventListener('click', function (e) {
             var type = si_password.getAttribute('type') === 'password' ? 'text' : 'password';
             si_password.setAttribute('type', type);
-            this.classList.toggle("bi-eye");
+            document.getElementById('toogle_si_password').classList.toggle("bi-eye");
+        })
+    }
+    var id = document.getElementById('toogle_oldPassword');
+    if (id) {
+        oldPw = document.getElementById("oldPw");
+        id.addEventListener('click', function (e) {
+            var type = oldPw.getAttribute('type') === 'password' ? 'text' : 'password';
+            oldPw.setAttribute('type', type);
+            document.getElementById('toogle_oldPassword').classList.toggle("bi-eye");
+        })
+    }
+    var id = document.getElementById('toogle_password');
+    if (id) {
+        newPw = document.getElementById("newPw");
+        id.addEventListener('click', function (e) {
+            var type = newPw.getAttribute('type') === 'password' ? 'text' : 'password';
+            newPw.setAttribute('type', type);
+            document.getElementById('toggle_password').classList.toggle("bi-eye");
+        })
+    }
+    var id = document.getElementById('toogle_password2');
+    if (id) {
+        newPw2 = document.getElementById("newPw2");
+        id.addEventListener('click', function (e) {
+            var type = newPw2.getAttribute('type') === 'password' ? 'text' : 'password';
+            newPw2.setAttribute('type', type);
+            document.getElementById('toggle_password2').classList.toggle("bi-eye");
         })
     }
 }
