@@ -112,14 +112,8 @@ while ($approvalL = $approvalR->fetch_assoc()) {
     $approvalData = $approvalL;
     if ($approvalData['used'] > 0) {
         $approvalData['b1'] = -1;
-        $approvalData['b2'] = -1;
-        $approvalData['b3'] = -1;
-        $approvalData['b4'] = -1;
     } else {
         $approvalData['b1'] = time();
-        $approvalData['b2'] = $approvalData['b1'] + 1;
-        $approvalData['b3'] = $approvalData['b2'] + 1;
-        $approvalData['b4'] = $approvalData['b3'] + 1;
     }
     $approvals[] = $approvalData;
 }
@@ -211,9 +205,6 @@ if (!$detailR) {
 while($detailL = $detailR->fetch_assoc()) {
     $detail = $detailL;
     $detail['b1'] = time();
-    $detail['b2'] = $detail['b1'] + 1;
-    $detail['b3'] = $detail['b2'] + 1;
-    $detail['b4'] = $detail['b3'] + 1;
     $details[] = $detail;
 }
 

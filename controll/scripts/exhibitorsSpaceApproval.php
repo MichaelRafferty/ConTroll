@@ -366,13 +366,43 @@ EOS;
     while ($detailL = $detailR->fetch_assoc()) {
         $detail = $detailL;
         $detail['b1'] = time();
-        $detail['b2'] = $detail['b1'] + 1;
-        $detail['b3'] = $detail['b2'] + 1;
-        $detail['b4'] = $detail['b3'] + 1;
         $details[] = $detail;
+        $regionId = $detail['regionId'];
     }
 
     $response['detail'] = $details;
+
+    // update the summary
+    // Get the summary of each space for this region
+    $spaceQ = <<<EOS
+SELECT xS.spaceId, xS.name, IFNULL(SUM(requested_units), 0) AS requested, IFNULL(SUM(approved_units),0) AS approved, IFNULL(SUM(purchased_units),0) AS purchased,
+    IFNULL(SUM(CASE WHEN approved_units IS NULL THEN requested_units ELSE 0 END), 0) AS new,
+    IFNULL(SUM(CASE WHEN purchased_units IS NULL THEN approved_units ELSE 0 END), 0) AS pending,
+    unitsAvailable
+FROM vw_ExhibitorSpace xS
+JOIN exhibitsSpaces eS ON xS.spaceId = eS.id
+JOIN exhibitsRegionYears eRY ON eS.exhibitsRegionYear = eRY.id
+WHERE eRY.conid=? AND eRY.exhibitsRegion = ?
+GROUP BY xS.spaceId, xS.name, eS.unitsAvailable
+EOS;
+
+    $spaceR = dbSafeQuery($spaceQ, 'ii', array($conid, $regionId));
+    if (!$spaceR) {
+        ajaxSuccess(array(
+            'args' => $_POST,
+            'query' => $spaceQ,
+            'error' => 'query failed'));
+        exit();
+    }
+
+    $spaces = array();
+    while($spaceLine = $spaceR->fetch_assoc()) {
+        $spaces[] = $spaceLine;
+
+    }
+    $spaceR->free();
+
+    $response['summary'] = $spaces;
 
     if ($approvalType != 'pay' && $approvalType != 'approve' && $pay == 0) {
 

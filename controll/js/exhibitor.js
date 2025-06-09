@@ -353,12 +353,17 @@ class exhibitorsAdm {
         this.#exhibitorsTable.replaceData(data.exhibitors);
     }
     // summary status at the top of the screen
-    drawSummary(data) {
+    drawSummary(data, full = true) {
+        if (!data.hasOwnProperty('summary'))
+            return;
+
         var summary = data.summary;
         if (!summary)
             return;
 
-        var html = '<div class="container-fluid">';
+        var html = '';
+        if (full)
+            html += '<div class="container-fluid" id="summary_div">';
 
         for (var spaceid in summary) {
             var space = summary[spaceid];
@@ -375,7 +380,10 @@ class exhibitorsAdm {
         `;
         }
 
-        html += '<hr/></div>';
+        html += '<hr/>';
+
+        if (full)
+            html += '</div>';
         return html;
     }
 
@@ -542,9 +550,6 @@ class exhibitorsAdm {
                     exhibitorYearId: space.exhibitorYearId,
                     locations: space.locations,
                     s1: space.b1,
-                    s2: space.b2,
-                    s3: space.b3,
-                    s4: space.b4,
                 };
             }
 
@@ -667,11 +672,11 @@ class exhibitorsAdm {
                 data: regionsLocal,
                 layout: "fitDataTable",
                 index: 'id',
-                pagination: true,
+                pagination: regionsLocal > 10,
                 paginationSize: 25,
                 paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
                 columns: [
-                    {title: "Actions", field: "s1", formatter: this.spaceButtons, maxWidth: 900, headerSort: false },
+                    {title: "Actions", field: "s1", formatter: this.spaceButtons, maxWidth: 900, headerSort: false, },
                     {title: "ID", field: "id", visible: true, width: 65, },
                     {title: "RegionId", field: "regionId", visible: false},
                     {title: "Exh Num", field: "exhibitorNumber", headerWordWrap: true, width: 75 },
@@ -720,15 +725,19 @@ class exhibitorsAdm {
         this.#approvalsTable = new Tabulator('#' + groupid + '-app-table-div', {
             data: data.approvals,
             layout: "fitDataTable",
-            pagination: true,
+            pagination: data.approvals.length > 10,
             paginationSize: 25,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
                 {title: "Exhibitor Approval Requests Detail:", columns: [
-                        {title: "", field: "b1", formatter: this.approvalButton, formatterParams: {name: 'Approve'}, width: 100, hozAlign: "center", cellClick: this.exhApprove, headerSort: false,},
-                        {title: "", field: "b2", formatter: this.approvalButton, formatterParams: {name: 'Reset'}, width: 80, hozAlign: "center", cellClick: this.exhReset, headerSort: false,},
-                        {title: "", field: "b3", formatter: this.approvalButton, formatterParams: {name: 'Deny'}, width: 80, hozAlign: "center", cellClick: this.exhDeny, headerSort: false,},
-                        {title: "", field: "b4", formatter: this.approvalButton, formatterParams: {name: 'Hide'}, width: 80, hozAlign: "center", cellClick: this.exhHide, headerSort: false,},
+                        {title: "", formatter: this.approvalButton, formatterParams: {name: 'Approve'}, width: 100, hozAlign: "center",
+                            cellClick: this.exhApprove, headerSort: false, },
+                        {title: "", formatter: this.approvalButton, formatterParams: {name: 'Reset'}, width: 80, hozAlign: "center",
+                            cellClick: this.exhReset, headerSort: false, },
+                        {title: "", formatter: this.approvalButton, formatterParams: {name: 'Deny'}, width: 80, hozAlign: "center",
+                            cellClick: this.exhDeny, headerSort: false, },
+                        {title: "", formatter: this.approvalButton, formatterParams: {name: 'Hide'}, width: 80, hozAlign: "center",
+                            cellClick: this.exhHide, headerSort: false, },
                         {title: "Region", field: "name", headerSort: true, headerFilter: true },
                         {title: "id", field: "id", visible: false},
                         {title: "exhibitorId", field: "exhibitorId", visible: false},
@@ -751,7 +760,7 @@ class exhibitorsAdm {
             data: data.exhibitors,
             index: "exhibitorId",
             layout: "fitDataTable",
-            pagination: true,
+            pagination: data.exhibitors > 10,
             paginationSize: 25,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
@@ -836,11 +845,12 @@ class exhibitorsAdm {
             data: data.past,
             layout: "fitDataTable",
             index: 'id',
-            pagination: true,
+            pagination: data.past > 10,
             paginationSize: 25,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
-                { title: "Import", field: "import", headerSort: true, hozAlign: "center", formatter:"tickCross", editorParams: { tristate: false, }, },
+                { title: "Import", field: "import", headerSort: true, hozAlign: "center",
+                    formatter:"tickCross", editorParams: { tristate: false, }, },
                 { title: "ID", field: 'id', headerSort: true, },
                 { title: "Exh Nbr", field: "exhibitorNumber", headerSort: true, headerWordWrap: true, width: 80, },
                 { title: "Exhibitor Name", field: "exhibitorName", headerSort: true, headerFilter: true, width: 300, },
@@ -1421,6 +1431,8 @@ class exhibitorsAdm {
             if (this.#debug & 8)
                 console.log(exhRow);
             this.#spacesTable.updateData(exhRow);
+            if (data.hasOwnProperty('summary'))
+               document.getElementById('summary_div').innerHTML = this.drawSummary(data, false);
         }
     }
 
@@ -1483,11 +1495,11 @@ class exhibitorsAdm {
             data: data.exhibitors,
             layout: "fitDataTable",
             index: 'id',
-            pagination: true,
+            pagination: data.exhibitors > 0,
             paginationSize: 25,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
-                {title: "Actions", field: "s1", formatter: this.exhibitorListButtons, maxWidth: 300, headerSort: false },
+                {title: "Actions", field: "s1", formatter: this.exhibitorListButtons, maxWidth: 300, headerSort: false, },
                 {title: "ID", field: "exhibitorId", visible: true, width: 65, },
                 {title: "Artist Name", field: "artistName", headerFilter: true, visible: true, width: 200, },
                 {title: "Name", field: "exhibitorName", headerFilter: true, visible: true, width: 200, },
