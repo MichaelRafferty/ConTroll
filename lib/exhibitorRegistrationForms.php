@@ -3,6 +3,7 @@
 // draw_login - draw the login/signup form
 function draw_login($config_vars, $result_message = '') {
     $portalName = $config_vars['portalName'];
+    $tabIndex = 10;
     ?>
 
  <!-- signin form (at body level) -->
@@ -23,7 +24,8 @@ function draw_login($config_vars, $result_message = '') {
                         <label for='si_email'><span class='text-danger'>&bigstar;</span>Email: </label>
                     </div>
                     <div class='col-sm-auto'>
-                        <input class='form-control-sm' type='email' name='si_email' id='si_email' size='40' required/>
+                        <input class='form-control-sm' type='email' name='si_email' id='si_email' size='40'
+                               tabindex="<?php echo $tabIndex; $tabIndex += 2;?>" required/>
                     </div>
                 </div>
                 <div class='row mt-1'>
@@ -31,13 +33,16 @@ function draw_login($config_vars, $result_message = '') {
                         <label for='si_password'><span class='text-danger'>&bigstar;</span>Password: </label>
                     </div>
                     <div class='col-sm-10'>
-                        <?php echo eyepwField('si_password', 'si_password', 40); ?>
+                        <?php echo eyepwField('si_password', 'si_password', 40, '', $tabIndex);
+                            $tabIndex += 2;
+                        ?>
                     </div>
                 </div>
                 <div class='row mt-2'>
                     <div class='col-sm-1'></div>
                     <div class='col-sm-auto'>
-                        <input type='submit' class='btn btn-primary' value='Existing Account Sign-in'/>
+                        <input type='submit' class='btn btn-primary' value='Existing Account Sign-in'
+                            tabindex="<?php echo $tabIndex; $tabIndex += 2;?>" />
                     </div>
                 </div>
             </form>
@@ -47,7 +52,9 @@ function draw_login($config_vars, $result_message = '') {
         <div class='container-fluid'>
             <div class='row mt-4'>
                 <div class='col-sm-auto'>
-                    <button class='btn btn-secondary' onclick='resetPassword()'>Reset Forgotten Password</button>
+                    <button class='btn btn-secondary' onclick='resetPassword()' tabindex="<?php echo $tabIndex; $tabIndex += 2;?>">
+                        Reset Forgotten Password
+                    </button>
                 </div>
             </div>
         </div>
@@ -55,7 +62,10 @@ function draw_login($config_vars, $result_message = '') {
     <div class='container-fluid'>
         <div class='row mt-4'>
             <div class='col-sm-auto'>
-                <button type="button" class="btn btn-sm btn-secondary" onclick="exhibitorProfile.profileModalOpen('register');">Sign Up for a New Account</button>
+                <button type="button" class="btn btn-sm btn-secondary" onclick="exhibitorProfile.profileModalOpen('register');"
+                    tabindex="<?php echo $tabIndex; $tabIndex += 2;?>">
+                    Sign Up for a New Account
+                </button>
             </div>
         </div>
     </div>
