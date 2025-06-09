@@ -43,8 +43,8 @@ class ExhibitorRequest {
             return;
 
         var regionList = region_list[regionYearId];
-        this.#countCombined = regionList['purchaseAreaTotals'] == 'combined';
-        if (config['debug'] & 1) {
+        this.#countCombined = regionList.purchaseAreaTotals == 'combined';
+        if (config.debug & 1) {
             console.log("regionList");
             console.log(regionList);
             console.log("Region Spaces");
@@ -54,7 +54,7 @@ class ExhibitorRequest {
         regionName = regionList.name;
         var mailIn = exhibitor_info.mailin == 'Y';
         this.#unitLimit = mailIn ? regionList.mailinMaxUnits : regionList.inPersonMaxUnits;
-        if (config['debug'] & 1) {
+        if (config.debug & 1) {
             console.log("Unit limit: " + this.#unitLimit + ", countCombined: " + this.#countCombined);
         }
 
@@ -75,12 +75,12 @@ class ExhibitorRequest {
                 break;
             case 2:
                 prompt = 'Approve ';
-                exhibitor = ' for ' + (exhibitor_info['artistName'] ? exhibitor_info['artistName'] : exhibitor_info['exhibitorName']);
+                exhibitor = ' for ' + (exhibitor_info.artistName ? exhibitor_info.artistName : exhibitor_info.exhibitorName);
                 nospace = 'Cancel Space Requested';
                 break;
             case 3:
                 prompt = 'Save Approved Space and go to Pay for ';
-                exhibitor = ' for ' + (exhibitor_info['artistName'] ? exhibitor_info['artistName'] : exhibitor_info['exhibitorName']);
+                exhibitor = ' for ' + (exhibitor_info.artistName ? exhibitor_info.artistName : exhibitor_info.exhibitorName);
                 nospace = 'No Space Approved';
                 break;
         }
@@ -152,8 +152,8 @@ class ExhibitorRequest {
                 // now build block
                 spaceHtml += "<div class='col-sm-" + colWidth + " p-0 m-0'>\n" +
                     "<div class='container-fluid ms-0 me-0 mt-2 mb-1'><div class='container-fluid ms-0 me-0 border border-3 border-primary'>\n" +
-                    "<div class='row'><div class='col-sm-12 p-0 m-0' style='text-align: center;'>\n" + space['spaceName'] + "</div></div>\n" +
-                    "<div class='row'><div class='col-sm-12 p-2 m-0'>\n" + (space['description'] ? space['description'] : '') + "</div></div>\n" +
+                    "<div class='row'><div class='col-sm-12 p-0 m-0' style='text-align: center;'>\n" + space.spaceName + "</div></div>\n" +
+                    "<div class='row'><div class='col-sm-12 p-2 m-0'>\n" + (space.description ? space.description : '') + "</div></div>\n" +
                     "<div class='row p-1'><div class='col-sm-auto p-0 pe-2'>\n" +
                     "<label htmlFor='exhibitor_req_price_id'>How many spaces are you requesting?</label>\n" +
                     "</div>\n" +
@@ -244,17 +244,17 @@ class ExhibitorRequest {
         var dataobj = {
             regionYearId: regionYearId,
             requests: $('#exhibitor_req_form').serialize(),
-            'type': config['portalType'],
-            'name': config['portalName'],
+            'type': config.portalType,
+            'name': config.portalName,
         };
         var url = 'scripts/spaceReq.php';
         if (cancel >= 2) {
             url = 'scripts/exhibitorsSpaceApproval.php';
-            dataobj['approvalType'] = cancel == 2 ? 'other' : 'approve';
-            dataobj['exhibitorId'] = exhibitor_info['exhibitorId'];
-            dataobj['exhibitorYearId'] = exhibitor_info['exhibitorYearId'];
-            dataobj['cancel'] = cancel;
-            dataobj['pay'] = exhibitors.getApprovalPay();
+            dataobj.approvalType = cancel == 2 ? 'other' : 'approve';
+            dataobj.exhibitorId = exhibitor_info.exhibitorId;
+            dataobj.exhibitorYearId = exhibitor_info.exhibitorYearId;
+            dataobj.cancel = cancel;
+            dataobj.pay = exhibitors.getApprovalPay();
         }
         var _this = this;
         $.ajax({
@@ -262,30 +262,34 @@ class ExhibitorRequest {
             data: dataobj,
             method: 'POST',
             success: function (data, textstatus, jqxhr) {
-                if (config['debug'] & 1) {
+                if (config.debug & 1) {
                     console.log(data);
                 }
-                if (data['error'] !== undefined) {
-                    show_message(data['error'], 'error', 'sr_message_div');
+                if (data.error !== undefined) {
+                    show_message(data.error, 'error', 'sr_message_div');
                     return;
                 }
-                if (data['exhibitor_spacelist'] && cancel > 2) {
-                    exhibitor_spacelist = data['exhibitor_spacelist'];
+                if (data.hasOwnProperty('exhibitor_spacelist') && cancel > 2) {
+                    exhibitor_spacelist = data.exhibitor_spacelist;
                     _this.updateRequestStatusBlock(regionYearId);
                     exhibitors.spaceApprovalSuccess(data);
                 }
-                if (data['success'] !== undefined) {
+                if (data.success !== undefined) {
                     _this.#exhibitor_request.hide();
-                    show_message(data['success'], 'success');
-                    if (cancel > 2 || data['pay'] == 1) {
+                    show_message(data.success, 'success');
+                    if (cancel > 2 || data.pay == 1) {
                         exhibitorInvoice.openInvoice(exhibitor_info, _this.#regionYearId);
                         return;
                     }
+                    if (data.hasOwnProperty('exhibitor_spacelist')) {
+                        exhibitor_spacelist = data.exhibitor_spacelist;
+                        _this.updateRequestStatusBlock(regionYearId)
+                    }
                 }
-                if (data['warn'] !== undefined) { // use main message block because this will close the window
-                    show_message(data['warn'], 'warn');
+                if (data.warn !== undefined) { // use main message block because this will close the window
+                    show_message(data.warn, 'warn');
                     _this.#exhibitor_request.hide();
-                    if (cancel > 2 || data['pay'] == 1) {
+                    if (cancel > 2 || data.pay == 1) {
                         exhibitorInvoice.openInvoice(exhibitor_info, _this.#regionYearId);
                         return;
                     }
