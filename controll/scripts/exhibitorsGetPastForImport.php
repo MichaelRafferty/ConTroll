@@ -32,7 +32,7 @@ WITH maxcid AS (
     GROUP BY exhibitorId
 )
 SELECT e.id, e.perid, e.newperid, e.exhibitorName, e.exhibitorEmail, e.exhibitorPhone, e.website, e.publicity,
-    e.addr, e.addr2, e.city, e.state, e.zip, e.country, 
+    e.addr, e.addr2, e.city, e.state, e.zip, e.country, IFNULL(e.notes, '') AS exhNotes,
     e.shipCompany, e.shipAddr, e.shipAddr2, e.shipCity, e.shipState, e.shipZip, e.shipCountry, e.archived,
     ey.id as eyId, ey.conid, ey.exhibitorId, ey.contactName, ey.contactEmail, ey.contactPhone, ey.mailin, 0 as import
 FROM exhibitors e

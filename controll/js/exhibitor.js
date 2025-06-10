@@ -772,6 +772,7 @@ class exhibitorsAdm {
                         {title: "Email", field: "exhibitorEmail", headerSort: true, headerFilter: true, width: 250, },
                         {title: "Phone", field: "exhibitorPhone", width: 140, headerSort: true, headerFilter: true,},
                         {title: "Website", field: "website", headerSort: true, headerFilter: true, width: 250, },
+                        {title: "Exhibitor Notes", field: "exhNotes", headerFilter: true, width: 250, formatter: "textarea" },
                         {title: "Contact Id", field: "exhibitorYearId", visible: false, },
                         {title: "Contact", field: "contact", headerSort: true, headerFilter: true,
                             width: 250, formatter: this.toHTML, },
@@ -784,6 +785,7 @@ class exhibitorsAdm {
                         {title: "Salex Tax ID", field: "salesTaxId", visible: true, headerWordWrap: true, width: 150, },
                         {title: "City", field: "city", width: 140, headerSort: true, headerFilter: true, visible: false, },
                         {title: "State", field: "state", headerSort: true, headerFilter: true, visible: false,},
+                        {title: "Contact Notes", field: "state",  headerFilter: true, formatter: "textarea", visible: false,},
                     ]
                 }
             ]
@@ -798,11 +800,16 @@ class exhibitorsAdm {
             data.exhibitorName + '<br/>' +
             'Artist Name: ' + data.artistName + '<br/>' +
             'Website: ' + data.website + '<br/>' +
-            data.fullAddr + '<br/>' +
+            data.fullAddress + '<br/>' +
             'Needs New Password: ' + (data.needs_new ? 'Yes' : 'No') +  '<br/>' +
             'Publicize: ' + (data.publicity ? 'Yes' : 'No') +  '<br/>' +
             'Mail In: ' + data.mailin + '<br/>' +
-            'Sales Tax ID: ' + data.salesTaxId + '<br/>';
+            'Exhibitor Notes: ' + data.exhNotes.replaceAll('\n', '<br/>&nbsp;&nbsp;&nbsp;&nbsp;') + '<br/>' +
+            'Sales Tax ID: ' + data.salesTaxId + '<br/>' +
+            'Contact Name: ' + data.contactName + '<br/>' +
+            'Contact Email: ' + data.contactEmail + '<br/>' +
+            'Contact Phone: ' + data.contactPhone + '<br/>' +
+            'Contact Notes: ' + data.contactNotes.replaceAll('\n', '<br/>&nbsp;&nbsp;&nbsp;&nbsp;') + '<br/>';
 
         hover_text += 'Description:<br/>&nbsp;&nbsp;&nbsp;&nbsp;' + data.description.replaceAll('\n', '<br/>&nbsp;&nbsp;&nbsp;&nbsp;');
         return hover_text;
@@ -994,6 +1001,20 @@ class exhibitorsAdm {
             <div class='row'>
                 <div class='col-sm-2'>Desc.:</div>
                 <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorData.description + `</div>   
+            </div>
+`;
+
+        if (exhibitorData.exhNotes != null && exhibitorData.exhNotes.trim() != '')
+            exhibitorInfo += `<div class='row'>
+                <div class='col-sm-2'>Exhibitor Notes.:</div>
+                <div class='col-sm-10 p-0 ms-0 me-0'>\` + exhibitorData.exhNotes + \`</div>
+            </div>
+`;
+
+        if (exhibitorData.contactNotes != null && exhibitorData.contactNotes.trim() != '')
+            exhibitorInfo += `<div class='row'>
+                <div class='col-sm-2'>Contact Notes.:</div>
+                <div class='col-sm-10 p-0 ms-0 me-0'>\` + exhibitorData.contactNotes + \`</div>
             </div>
 `;
 

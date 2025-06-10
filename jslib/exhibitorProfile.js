@@ -23,6 +23,8 @@ class ExhibitorProfile {
     #passwordLine2 = null;
     #cpasswordLine1 = null;
     #cpasswordLine2 = null;
+    #exhNotes = null;
+    #contactNotes = null;
     #creatingAccountMsgDiv = null;
     #exhibitorId = null;
     #exhibitorYearId = null;
@@ -55,6 +57,8 @@ class ExhibitorProfile {
                 if (portalType == 'admin') {
                     this.#exhibitorId = document.getElementById('exhibitorId');
                     this.#exhibitorYearId = document.getElementById('exhibitorYearId');
+                    this.#exhNotes = document.getElementById('exhNotes');
+                    this.#contactNotes = document.getElementById('contactNotes');
                 }
             }
         }
@@ -188,6 +192,28 @@ class ExhibitorProfile {
                     if (this.#profileUseType != 'register' && this.#profileUseType != 'add')
                         break;
                     field2 = document.getElementById("pw1");
+                    if (field.value == field2.value && field.value.length >= 8) {
+                        field.style.backgroundColor = '';
+                    } else {
+                        field.style.backgroundColor = 'var(--bs-warning)';
+                        valid = false;
+                    }
+                    break;
+                case 'cpw1':
+                    if (this.#profileUseType != 'register' && this.#profileUseType != 'add')
+                        break;
+                    field2 = document.getElementById("cpw2");
+                    if (field.value == field2.value && field.value.length >= 8) {
+                        field.style.backgroundColor = '';
+                    } else {
+                        field.style.backgroundColor = 'var(--bs-warning)';
+                        valid = false;
+                    }
+                    break;
+                case 'cpw2':
+                    if (this.#profileUseType != 'register' && this.#profileUseType != 'add')
+                        break;
+                    field2 = document.getElementById("cpw1");
                     if (field.value == field2.value && field.value.length >= 8) {
                         field.style.backgroundColor = '';
                     } else {

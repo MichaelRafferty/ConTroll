@@ -67,10 +67,11 @@ EOS;
         // email address validated on the source side
         $exhibitorInsertQ = <<<EOS
 INSERT INTO exhibitors (exhibitorName, exhibitorEmail, exhibitorPhone, website, description, password, need_new, confirm, 
-                     addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, publicity) 
-VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
+    addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, 
+    publicity, notes) 
+VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
 EOS;
-        $typestr = 'ssssssiisssssssssssssi';
+        $typestr = 'ssssssiisssssssssssssis';
         $paramarr = array(
             trim($_POST['exhibitorName']),
             trim($_POST['exhibitorEmail']),
@@ -93,12 +94,14 @@ EOS;
             trim($_POST['shipState']),
             trim($_POST['shipZip']),
             trim($_POST['shipCountry']),
-            $_POST['publicity']
+            $_POST['publicity'],
+            trim($_POST['exhNotes']) != '' ? trim($_POST['exhNotes']) : null
         );
         $newExhibitor = dbSafeInsert($exhibitorInsertQ, $typestr, $paramarr);
 
         // create the year related functions
-        $yearId = exhibitorBuildYears($newExhibitor, $_POST['contactName'], $_POST['contactEmail'], $_POST['contactPhone'], $_POST['password'], $mailin);
+        $yearId = exhibitorBuildYears($newExhibitor, $_POST['contactName'], $_POST['contactEmail'], $_POST['contactPhone'], $_POST['password'], $mailin,
+            $_POST['contactNotes']);
         exhibitorCheckMissingSpaces($newExhibitor, $yearId);
         break;
 
@@ -111,7 +114,8 @@ EOS;
         $updateQ = <<<EOS
 UPDATE exhibitors
 SET exhibitorName=?, exhibitorEmail=?, exhibitorPhone=?, website=?, description=?,
-    addr=?, addr2=?, city=?, state=?, zip=?, country=?, shipCompany=?, shipAddr=?, shipAddr2=?, shipCity=?, shipState=?, shipZip=?, shipCountry=?, publicity=?
+    addr=?, addr2=?, city=?, state=?, zip=?, country=?, shipCompany=?, shipAddr=?, shipAddr2=?, shipCity=?, shipState=?, shipZip=?, shipCountry=?, 
+    publicity=?, notes = ?
 WHERE id=?
 EOS;
         $updateArr = array(
@@ -134,13 +138,14 @@ EOS;
             trim($_POST['shipZip']),
             trim($_POST['shipCountry']),
             $publicity,
+            trim($_POST['exhNotes']) != '' ? trim($_POST['exhNotes']) : null,
             $vendor
         );
-        $numrows = dbSafeCmd($updateQ, 'ssssssssssssssssssii', $updateArr);
+        $numrows = dbSafeCmd($updateQ, 'ssssssssssssssssssisi', $updateArr);
 
         $updateQ = <<<EOS
 UPDATE exhibitorYears
-SET contactName=?, contactEmail=?, contactPhone=?, mailin = ?, needReview = 0
+SET contactName=?, contactEmail=?, contactPhone=?, mailin = ?, needReview = 0, notes = ?
 WHERE id=?
 EOS;
             $updateArr = array(
@@ -148,15 +153,17 @@ EOS;
                 trim($_POST['contactEmail']),
                 trim($_POST['contactPhone']),
                 $mailin,
+                trim($_POST['contactNotes']) == '' ? trim($_POST['contactNotes']) : null,
                 $vendorYear
             );
-            $numrows1 = dbSafeCmd($updateQ, 'ssssi', $updateArr);
+            $numrows1 = dbSafeCmd($updateQ, 'sssssi', $updateArr);
         if ($numrows == 1 || $numrows1 == 1) {
             $response['status'] = 'success';
             $response['message'] = 'Profile Updated';
             // get the update info
             $vendorQ = <<<EOS
-SELECT exhibitorName, exhibitorEmail, exhibitorPhone, website, description, e.need_new AS eNeedNew, e.confirm AS eConfirm, ey.mailin,
+SELECT exhibitorName, exhibitorEmail, exhibitorPhone, website, description, e.need_new AS eNeedNew, e.confirm AS eConfirm,
+       IFNULL(notes, '') AS exhNotes, IFNULL(ey.notes, '') AS contactNotes, ey.mailin,
        ey.contactName, ey.contactEmail, ey.contactPhone, ey.need_new AS cNeedNew, ey.confirm AS cConfirm, ey.needReview as needReview,
        addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, publicity
 FROM exhibitors e

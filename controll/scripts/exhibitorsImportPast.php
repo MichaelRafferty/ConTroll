@@ -38,7 +38,7 @@ foreach ($past as $exh) {
 $exhibitorQ = <<<EOS
 SELECT e.id as exhibitorId, perid, artistName, exhibitorName, exhibitorEmail, exhibitorPhone, website, description, password, publicity, 
        addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, archived,
-       eY.id as exhibitorYearId, conid, contactName, contactEmail, contactPhone, contactPassword, mailin
+       IFNULL(e.notes, '') AS exhNotes, eY.id as exhibitorYearId, conid, contactName, contactEmail, contactPhone, contactPassword, mailin
 FROM exhibitors e
 JOIN exhibitorYears eY ON e.id = eY.exhibitorId
 WHERE eY.conid = ?;

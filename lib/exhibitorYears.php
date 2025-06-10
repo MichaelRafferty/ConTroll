@@ -2,7 +2,8 @@
 // exhibitorYears and exhibiorRegionYears related functions for create/retrieval
 
 // exhibitorBuildYears - build exhibitorYears and exhibitorRegionYears for this year
-function exhibitorBuildYears($exhibitor, $contactName = NULL, $contactEmail = NULL, $contactPhone = NULL, $contactPassword = NULL, $mailin = 'N'): bool|string {
+function exhibitorBuildYears($exhibitor, $contactName = NULL, $contactEmail = NULL, $contactPhone = NULL, $contactPassword = NULL,
+    $mailin = 'N', $conNotes = null): bool|string {
     $con = get_conf('con');
     $conid = $con['id'];
     $need_new = 0;
@@ -49,10 +50,10 @@ EOS;
             $contactPassword = password_hash(trim($contactPassword), PASSWORD_DEFAULT);
         }
         $eyinsq = <<<EOS
-INSERT INTO exhibitorYears(conid, exhibitorId, contactName, contactEmail, contactPhone, contactPassword, mailin, need_new, confirm)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO exhibitorYears(conid, exhibitorId, contactName, contactEmail, contactPhone, contactPassword, mailin, need_new, confirm, notes)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 EOS;
-        $typestr = 'iisssssii';
+        $typestr = 'iisssssiis';
         $paramArray = array(
             $conid,
             $exhibitor,
@@ -62,14 +63,19 @@ EOS;
             $contactPassword,
             $mailin,
             $need_new,
-            $confirm
+            $confirm,
+            trim($conNotes) != '' ? trim($conNotes) : null
         );
         $newyrid = dbSafeInsert($eyinsq, $typestr, $paramArray);
     } else if ($last_year < $conid) {
         // build from last year
+        if ($conNotes == null || trim($conNotes) == '')
+            $conNotes = 'null';
+        else
+            $conNotes = "'" . trim($conNotes) . "'";
         $eyinsQ = <<<EOS
 INSERT INTO exhibitorYears (conid, exhibitorId, contactName, contactEmail, contactPhone, contactPassword, mailin, need_new, confirm)
-SELECT ?, exhibitorId, contactName, contactEmail, contactPhone, contactPassword, mailin, need_new, confirm
+SELECT ?, exhibitorId, contactName, contactEmail, contactPhone, contactPassword, mailin, need_new, confirm, $conNotes
 FROM exhibitorYears
 WHERE conid = ? AND exhibitorId = ?;
 EOS;

@@ -34,8 +34,8 @@ if (array_key_exists('currency', $con)) {
 $exhibitorQ = <<<EOS
 SELECT e.id as exhibitorId, perid, exhibitorName, exhibitorEmail, exhibitorPhone, salesTaxId, website, description, password, publicity, 
        addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, archived,
-       artistName,
-       eY.id as exhibitorYearId, conid, contactName, contactEmail, contactPhone, contactPassword, mailin
+       artistName, IFNULL(e.notes, '') AS exhNotes, eY.id as exhibitorYearId, conid, contactName, contactEmail, contactPhone, contactPassword,
+       mailin, IFNULL(eY.notes, '') AS contactNotes
 FROM exhibitors e
 JOIN exhibitorYears eY ON e.id = eY.exhibitorId
 WHERE eY.conid = ?;

@@ -227,6 +227,20 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                                     </textarea>
                                 </div>
                             </div>
+                            <?php if ($portalType == 'admin') { ?>
+                            <div class='row mt-1'>
+                                <div class='col-sm-2'>
+                                    <label for='exhNotes'>Exhibitor Notes:</label>
+                                </div>
+                                <div class='col-sm-9 p-0 ms-0 me-0'>
+                                    <textarea class='form-control-sm' id='exhNotes' name='exhNotes' rows=5 cols=100
+                                              placeholder='Administrators Notes for this Exhibitor'
+                                              tabindex="<?php echo $tabIndex;
+                                                  $tabIndex += 2; ?>">
+                                    </textarea>
+                                </div>
+                            </div>
+                            <?php } ?>
                             <div class='row mt-1'>
                                 <div class='col-sm-2'>
                                     <label for='publicity'><span class='text-danger'>&bigstar;</span>Publicity: </label>
@@ -357,6 +371,20 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                                     />
                                 </div>
                             </div>
+                            <?php if ($portalType == 'admin') { ?>
+                                <div class='row mt-1'>
+                                    <div class='col-sm-2'>
+                                        <label for='contactNotes'>Contactor Notes:<br/>or<br/>Notes for this year</label>
+                                    </div>
+                                    <div class='col-sm-9 p-0 ms-0 me-0'>
+                                    <textarea class='form-control-sm' id='contactNotes' name='contactNotes' rows=5 cols=100
+                                              placeholder='This Years Notes for this Contact/Exhibitor'
+                                              tabindex="<?php echo $tabIndex;
+                                                  $tabIndex += 2; ?>">
+                                    </textarea>
+                                    </div>
+                                </div>
+                            <?php } ?>
                             <div class='row mt-1' id='cpasswordLine1'>
                                 <div class='col-sm-2'>
                                     <label for='cpw1'><span class='text-danger'>&bigstar;</span>Contact Password: </label>
@@ -674,6 +702,20 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                                   tabindex="<?php echo $tabIndex; $tabIndex += 2;?>"></textarea>
                                     </div>
                                 </div>
+                                <?php if ($portalType == 'admin') { ?>
+                                    <div class='row mt-1'>
+                                        <div class='col-sm-2'>
+                                            <label for='exhNotes'>Exhibitor Notes:</label>
+                                        </div>
+                                        <div class='col-sm-9 p-0 ms-0 me-0'>
+                                    <textarea class='form-control-sm' id='exhNotes' name='exhNotes' rows=5 cols=100
+                                              placeholder='Administrators Notes for this Exhibitor'
+                                              tabindex="<?php echo $tabIndex;
+                                                  $tabIndex += 2; ?>">
+                                    </textarea>
+                                        </div>
+                                    </div>
+                                <?php } ?>
                                 <div class='row mt-4'>
                                     <div class='col-sm-2'></div>
                                     <div class='col-sm-auto p-0 ms-0 me-0'><strong>Signup page 2 of 4, please complete all 4 pages, register button is on page
@@ -732,6 +774,20 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                         '/>
                                     </div>
                                 </div>
+                                <?php if ($portalType == 'admin') { ?>
+                                    <div class='row mt-1'>
+                                        <div class='col-sm-2'>
+                                            <label for='contactNotes'>Contactor Notes:<br/>or<br/>Notes for this year</label>
+                                        </div>
+                                        <div class='col-sm-9 p-0 ms-0 me-0'>
+                                    <textarea class='form-control-sm' id='contactNotes' name='contactNotes' rows=5 cols=100
+                                              placeholder='This Years Notes for this Contact/Exhibitor'
+                                              tabindex="<?php echo $tabIndex;
+                                                  $tabIndex += 2; ?>">
+                                    </textarea>
+                                        </div>
+                                    </div>
+                                <?php } ?>
                                 <div class='row mt-1' id='cpasswordLine1'>
                                     <div class='col-sm-2'>
                                         <label for='cpw1'><span class='text-danger'>&bigstar;</span>Contact Password: </label>
