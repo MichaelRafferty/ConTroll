@@ -447,7 +447,7 @@ $exhibitorSR->free();
     var country_options = <?php echo json_encode($countryOptions); ?>;
     </script>
 <?php
-draw_rdraw_regisegistrationModal($portalType, $portalName, $con, $countryOptions);
+draw_registrationModal($portalType, $portalName, $con, $countryOptions);
 draw_passwordModal();
 draw_exhibitorRequestModal();
 draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $reg_conf, $cc, $portalName, $portalType);

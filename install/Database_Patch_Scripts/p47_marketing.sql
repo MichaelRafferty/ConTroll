@@ -231,5 +231,5 @@ PO BOX 8303
 Philadelphia, PA 19101-8303
 ' where appName = 'controll' and appPage = 'emails' and appSection = 'reminder' and txtItem = 'text';
 
-INSERT INTO patchLog(id, name) VALUES(xx, 'Marketing Customization');
+INSERT INTO patchLog(id, name) VALUES(47, 'Marketing Customization');
 
