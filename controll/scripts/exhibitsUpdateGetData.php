@@ -126,13 +126,14 @@ switch ($tablename) {
         }
         $inssql = <<<EOS
 INSERT INTO exhibitsRegionTypes(regionType, portalType, requestApprovalRequired, purchaseApprovalRequired, purchaseAreaTotals, 
-                                inPersonMaxUnits, mailinAllowed, mailinMaxUnits, needW9, usesInventory, sortorder, active)
-VALUES(?,?,?,?,?,?,?,?,?,?, ?, ?);
+                                inPersonMaxUnits, mailinAllowed, mailinMaxUnits, needW9, usesInventory, maxInventory, sortorder, active)
+VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?);
 EOS;
         $updsql = <<<EOS
 UPDATE exhibitsRegionTypes
 SET regionType = ?, portalType = ?, requestApprovalRequired = ?, purchaseApprovalRequired = ?, purchaseAreaTotals = ?, 
-    inPersonMaxUnits = ?, mailinAllowed = ?, mailinMaxUnits = ?, needW9 = ?, usesInventory = ?, sortorder = ?, active = ?
+    inPersonMaxUnits = ?, mailinAllowed = ?, mailinMaxUnits = ?, needW9 = ?, usesInventory = ?, maxInventory = ?,
+    sortorder = ?, active = ?
 WHERE regionType = ?;
 EOS;
 
@@ -153,8 +154,8 @@ EOS;
                 } else {
                     $mailinMaxUnits = null;
                 }
-                $numrows = dbSafeCmd($updsql, 'sssssisississ', array($row['regionType'], $row['portalType'], $row['requestApprovalRequired'], $row['purchaseApprovalRequired'],
-                    $row['purchaseAreaTotals'], $inPersonMaxUnits, $row['mailinAllowed'], $mailinMaxUnits, $row['needW9'], $row['usesInventory'],
+                $numrows = dbSafeCmd($updsql, 'sssssisissiiss', array($row['regionType'], $row['portalType'], $row['requestApprovalRequired'], $row['purchaseApprovalRequired'],
+                    $row['purchaseAreaTotals'], $inPersonMaxUnits, $row['mailinAllowed'], $mailinMaxUnits, $row['needW9'], $row['usesInventory'], $row['maxInventory'],
                     $row['sortorder'], $row['active'],$row[$keyfield]));
                 $updated += $numrows;
             }
@@ -177,9 +178,9 @@ EOS;
                 } else {
                     $mailinMaxUnits = null;
                 }
-                $numrows = dbSafeInsert($inssql, 'sssssisissis', array($row['regionType'], $row['portalType'], $row['requestApprovalRequired'], $row['purchaseApprovalRequired'],
-                    $row['purchaseAreaTotals'], $inPersonMaxUnits, $row['mailinAllowed'], $mailinMaxUnits, $row['needW9'], $row['usesInventory'],
-                    $row['sortorder'], $row['active']));
+                $numrows = dbSafeInsert($inssql, 'sssssisissiis', array($row['regionType'], $row['portalType'], $row['requestApprovalRequired'],
+                    $row['purchaseApprovalRequired'], $row['purchaseAreaTotals'], $inPersonMaxUnits, $row['mailinAllowed'], $mailinMaxUnits,
+                    $row['needW9'], $row['usesInventory'], $row['maxInventory'],$row['sortorder'], $row['active']));
                 if ($numrows !== false)
                     $inserted++;
             }
