@@ -7,6 +7,8 @@ class AuctionItemRegistration {
     #item_registration_btn = null;
 
     #region = 0;
+    #numItems = null;
+    #maxItems = null;
 
     #artItemTable = null;
     #artItemsDirty = false;
@@ -59,7 +61,7 @@ class AuctionItemRegistration {
             data: {gettype: 'all', region: region},
             success: function (data, textSatus, jhXHR) {
                 if (data['error']) {
-                    show_message(data['error'], 'error', 'ir_message_div');
+                    show_message(data['error'], 'error');
                     return false;
                 }
                 console.log(data);
@@ -67,13 +69,18 @@ class AuctionItemRegistration {
 
             },
             error: function (jqXHR, textStatus, errorThrown) {
-                show_message("ERROR in " + script + ": " + textStatus, 'error', 'ir_message_div');
+                show_message("ERROR in " + script + ": " + textStatus, 'error');
                 return false;
             }
         });
     };
 
     draw(data) {
+        this.#maxItems = data.maxInventory;
+        this.#numItems = data.itemCount;
+        if (this.#maxItems == 0)
+            this.#maxItems = 999999;
+
         this.#artSaveBtn = document.getElementById('art-save');
         this.#artUndoBtn = document.getElementById('art-undo');
         this.#artRedoBtn = document.getElementById('art-redo');
