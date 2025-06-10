@@ -1007,14 +1007,14 @@ class exhibitorsAdm {
         if (exhibitorData.exhNotes != null && exhibitorData.exhNotes.trim() != '')
             exhibitorInfo += `<div class='row'>
                 <div class='col-sm-2'>Exhibitor Notes.:</div>
-                <div class='col-sm-10 p-0 ms-0 me-0'>\` + exhibitorData.exhNotes + \`</div>
+                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorData.exhNotes.replace(/\n/g, '<br/>') + `</div>
             </div>
 `;
 
         if (exhibitorData.contactNotes != null && exhibitorData.contactNotes.trim() != '')
             exhibitorInfo += `<div class='row'>
                 <div class='col-sm-2'>Contact Notes.:</div>
-                <div class='col-sm-10 p-0 ms-0 me-0'>\` + exhibitorData.contactNotes + \`</div>
+                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorData.contactNotes.replace(/\n/g, '<br/>') + `</div>
             </div>
 `;
 
