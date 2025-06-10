@@ -66,7 +66,7 @@ $itemR->free();
 
 // now get the max item count for this region
 $maxQ = <<<EOS
-SELECT IFNULL(ert.maxInventory, 999999) AS maxInventory
+SELECT IFNULL(ert.maxInventory, 999999) AS maxInventory, ery.ownerName, ery.ownerEmail, er.name
 FROM exhibitsRegionYears ery
 JOIN exhibitsRegions er ON er.id = ery.exhibitsRegion
 JOIN exhibitsRegionTypes ert ON ert.regionType = er.regionType
@@ -78,7 +78,7 @@ if ($maxR === false || $maxR->num_rows != 1) {
     $response['error'] = 'Cannot retrive max inventory limit, seek assistance';
 }
 
-$response['maxInventory'] = $maxR->fetch_row()[0];
+$response['inv'] = $maxR->fetch_assoc();
 $maxR->free();
 
 ajaxSuccess($response);

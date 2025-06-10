@@ -9,24 +9,30 @@ class AuctionItemRegistration {
     #region = 0;
     #numItems = null;
     #maxItems = null;
+    #ownerName = '';
+    #ownerEmail = '';
+    #regionName = '';
 
     #artItemTable = null;
     #artItemsDirty = false;
     #artSaveBtn = null;
     #artUndoBtn = null;
     #artRedoBtn = null;
+    #artAddBtn = null;
 
     #printItemTable = null;
     #printItemsDirty = false;
     #printSaveBtn = null;
     #printUndoBtn = null;
     #printRedoBtn = null;
+    #printAddBtn = null;
 
     #nfsItemTable = null;
     #nfsItemsDirty = false;
     #nfsSaveBtn = null;
     #nfsUndoBtn = null;
     #nfsRedoBtn = null;
+    #nfsAddBtn = null;
 
     #debug = 0;
     #debugVisible = false;
@@ -76,26 +82,35 @@ class AuctionItemRegistration {
     };
 
     draw(data) {
-        this.#maxItems = data.maxInventory;
+        this.#maxItems = data.inv.maxInventory;
+        this.#ownerName = data.inv.ownerName;
+        this.#ownerEmail = data.inv.ownerEmail;
+        this.#regionName = data.inv.name;
         this.#numItems = data.itemCount;
         if (this.#maxItems == 0)
             this.#maxItems = 999999;
 
+        this.#maxItems = 8; // temporary hack */
+
         this.#artSaveBtn = document.getElementById('art-save');
         this.#artUndoBtn = document.getElementById('art-undo');
         this.#artRedoBtn = document.getElementById('art-redo');
+        this.#artAddBtn = document.getElementById('art-addrow');
         this.drawArtItemTable(data['items']);
 
         this.#printSaveBtn = document.getElementById('print-save');
         this.#printUndoBtn = document.getElementById('print-undo');
         this.#printRedoBtn = document.getElementById('print-redo');
+        this.#printAddBtn = document.getElementById('print-addrow');
         this.drawPrintItemTable(data['items']);
 
         this.#nfsSaveBtn = document.getElementById('nfs-save');
         this.#nfsUndoBtn = document.getElementById('nfs-undo');
         this.#nfsRedoBtn = document.getElementById('nfs-redo');
+        this.#nfsAddBtn = document.getElementById('nfs-addrow');
         this.drawNfsItemTable(data['items']);
 
+        this.validateLoadLimit(false);
         this.#item_registration.show();
     };
 
@@ -165,14 +180,68 @@ class AuctionItemRegistration {
         }
     };
 
+    // validate we are not over the limit
+    validateMaxLimit(artType) {
+        if (this.#numItems >= this.#maxItems) {
+            show_message('You already have ' + this.#numItems + ' items in your total inventory, out of a limit of ' + this.#maxItems +
+                ' for the ' + this.#regionName +
+                '<br/>You must delete one or more items from your inventory and save the changes before you can add any more.', 'error', 'ir_message_div');
+
+            this.#artAddBtn.disabled = true;
+            this.#printAddBtn.disabled = true;
+            this.#nfsAddBtn.disabled = true;
+            return false;
+        }
+
+        this.#numItems++;
+        return true;
+    }
+
+    validateLoadLimit(recomputeItemCount, section='', data = null) {
+        if (recomputeItemCount) {
+            this.#numItems = 0;
+            if (section == 'art')
+                this.#numItems += data.length;
+            else if (this.#artItemTable)
+                this.#numItems += this.#artItemTable.getData().length;
+            if (section == 'print')
+                this.#numItems += data.length;
+            else if (this.#printItemTable)
+                this.#numItems += this.#printItemTable.getData().length;
+            if (section == 'nfs')
+                this.#numItems += data.length;
+            else if (this.#nfsItemTable)
+                this.#numItems += this.#nfsItemTable.getData().length;
+
+        }
+        if (this.#numItems >= this.#maxItems) {
+            var limitWord = this.#numItems == this.#maxItems ? 'at' : 'beyond';
+            show_message("Warning: You are " + limitWord + " the limit of " + this.#maxItems + " inventory items for " + this.#regionName +
+                ",<br/>You will not be allowed to add more until you delete some and save your changes to get below the limit.<br/><br/>" +
+                "If you have any questions about the limit, please reach out to " + this.#ownerName + " at " + this.#ownerEmail,
+                'warn', 'ir_message_div');
+
+            this.#artAddBtn.disabled = true;
+            this.#printAddBtn.disabled = true;
+            this.#nfsAddBtn.disabled = true;
+            return;
+        }
+
+        this.#artAddBtn.disabled = false;
+        this.#printAddBtn.disabled = false;
+        this.#nfsAddBtn.disabled = false;
+    }
+
     addrowArt() {
-        var _this = this;
-        this.#artItemTable.addRow({item_key: 'new'}, false).then(function (row) {
-            row.pageTo().then(function() {
-                row.getCell("item_key").getElement().style.backgroundColor = "#fff3cd";
-                _this.checkArtUndoRedo();
+        if (this.validateMaxLimit('Art Auction')) {
+            var _this = this;
+            this.#artItemTable.addRow({item_key: 'new'}, false).then(function (row) {
+                row.pageTo().then(function () {
+                    row.getCell("item_key").getElement().style.backgroundColor = "#fff3cd";
+                    _this.checkArtUndoRedo();
+                });
             });
-        });
+        }
     };
 
     saveArt() {
@@ -193,7 +262,7 @@ class AuctionItemRegistration {
                 tabledata: JSON.stringify(this.#artItemTable.getData())
             };
 
-            console.log(postdata);
+            //console.log(postdata);
             $.ajax({
                 url: script,
                 method: 'POST',
@@ -223,10 +292,10 @@ class AuctionItemRegistration {
             show_message(data['warn'], 'warn', 'ir_message_div');
         }
 
-        console.log(data);
         this.drawArtItemTable(data['items']);
+        this.validateLoadLimit(true, 'art', data['items']['art']);
     }
-//TODO Delete Art Items
+
 //TODO change Item Number
 
     dataChangedPrint(data=null) {
@@ -272,13 +341,15 @@ class AuctionItemRegistration {
         }
     };
     addrowPrint() {
-        var _this = this;
-        this.#printItemTable.addRow({item_key: 'new'}, false).then(function (row) {
-            row.pageTo().then(function() {
-                row.getCell("item_key").getElement().style.backgroundColor = "#fff3cd";
-                _this.checkPrintUndoRedo();
+        if (this.validateMaxLimit('Print Shop')) {
+            var _this = this;
+            this.#printItemTable.addRow({item_key: 'new'}, false).then(function (row) {
+                row.pageTo().then(function () {
+                    row.getCell("item_key").getElement().style.backgroundColor = "#fff3cd";
+                    _this.checkPrintUndoRedo();
+                });
             });
-        });
+        }
     };
     savePrint() {
         var type = 'print';
@@ -298,7 +369,7 @@ class AuctionItemRegistration {
                 tabledata: JSON.stringify(this.#printItemTable.getData())
             };
 
-            console.log(postdata);
+            //console.log(postdata);
             $.ajax({
                 url: script,
                 method: 'POST',
@@ -336,8 +407,9 @@ class AuctionItemRegistration {
             show_message(data['warn'], 'warn', 'ir_message_div');
         }
 
-        console.log(data);
+        //console.log(data);
         this.drawPrintItemTable(data['items']);
+        this.validateLoadLimit(true, 'print', data['items']['print']);
     }
 
     dataChangedNfs(data = null) {
@@ -383,13 +455,15 @@ class AuctionItemRegistration {
         }
     };
     addrowNfs() {
-        var _this = this;
-        this.#nfsItemTable.addRow({item_key: 'new'}, false).then(function (row) {
-            row.pageTo().then(function() {
-                row.getCell("item_key").getElement().style.backgroundColor = "#fff3cd";
-                _this.checkNfsUndoRedo();
+        if (this.validateMaxLimit('Display/Not For Sale')) {
+            var _this = this;
+            this.#nfsItemTable.addRow({item_key: 'new'}, false).then(function (row) {
+                row.pageTo().then(function () {
+                    row.getCell("item_key").getElement().style.backgroundColor = "#fff3cd";
+                    _this.checkNfsUndoRedo();
+                });
             });
-        });
+        }
     };
     saveNfs() {
         var type = 'nfs';
@@ -409,7 +483,7 @@ class AuctionItemRegistration {
                 tabledata: JSON.stringify(this.#nfsItemTable.getData())
             };
 
-            console.log(postdata);
+            //console.log(postdata);
             $.ajax({
                 url: script,
                 method: 'POST',
@@ -419,7 +493,7 @@ class AuctionItemRegistration {
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
                     show_message("ERROR in " + script + ": " + textStatus, 'error', 'ir_message_div');
-                    _this.dataChangedArt();
+                    _this.dataChangedNfs();
                     return false;
                 }
             });
@@ -447,8 +521,9 @@ class AuctionItemRegistration {
             show_message(data['warn'], 'warn', 'ir_message_div');
         }
 
-        console.log(data);
+        //console.log(data);
         this.drawNfsItemTable(data['items']);
+        this.validateLoadLimit(true,  'nfs', data['items']['nfs']);
     }
     
     drawArtItemTable(data) {

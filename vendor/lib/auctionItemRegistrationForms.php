@@ -98,7 +98,7 @@ function draw_itemRegistrationModal($portalType = '', $showsheets=false, $showco
                                 <button id='print_controlsheet' type='button' class='btn btn-primary btn-sm' onclick="auctionItemRegistration.printSheets('control'); return false;">Print Control Sheet</button>
                             </div>
                         </div>
-                        <div class='row' id='ir_message_div'></div>
+                        <div class='row mt-2' id='ir_message_div'></div>
                     </div>
                 </div>
                 <div class='modal-footer'>
