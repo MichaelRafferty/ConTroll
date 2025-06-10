@@ -90,8 +90,6 @@ class AuctionItemRegistration {
         if (this.#maxItems == 0)
             this.#maxItems = 999999;
 
-        this.#maxItems = 8; // temporary hack */
-
         this.#artSaveBtn = document.getElementById('art-save');
         this.#artUndoBtn = document.getElementById('art-undo');
         this.#artRedoBtn = document.getElementById('art-redo');
