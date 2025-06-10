@@ -46,6 +46,18 @@ if (array_key_exists('mailin', $_POST)) {
     $mailin = 'N';
 }
 
+if (array_key_exists('exhNotes', $_POST)) {
+    $exhNotes = $_POST['exhNotes'] == null ? '' : trim($_POST['exhNotes']);
+} else {
+    $exhNotes = '';
+}
+
+if (array_key_exists('contactNotes', $_POST)) {
+    $contactNotes = $_POST['contactNotes'] == null ? '' : trim($_POST['contactNotes']);
+} else {
+    $contactNotes = '';
+}
+
 // if register check for existence of vendor
 switch ($profileMode) {
     case 'register':
@@ -95,13 +107,13 @@ EOS;
             trim($_POST['shipZip']),
             trim($_POST['shipCountry']),
             $_POST['publicity'],
-            trim($_POST['exhNotes']) != '' ? trim($_POST['exhNotes']) : null
+            $exhNotes = '' ? null : $exhNotes
         );
         $newExhibitor = dbSafeInsert($exhibitorInsertQ, $typestr, $paramarr);
 
         // create the year related functions
         $yearId = exhibitorBuildYears($newExhibitor, $_POST['contactName'], $_POST['contactEmail'], $_POST['contactPhone'], $_POST['password'], $mailin,
-            $_POST['contactNotes']);
+            $contactNotes);
         exhibitorCheckMissingSpaces($newExhibitor, $yearId);
         break;
 
@@ -138,7 +150,7 @@ EOS;
             trim($_POST['shipZip']),
             trim($_POST['shipCountry']),
             $publicity,
-            trim($_POST['exhNotes']) != '' ? trim($_POST['exhNotes']) : null,
+            $exhNotes = '' ? null : $exhNotes,
             $vendor
         );
         $numrows = dbSafeCmd($updateQ, 'ssssssssssssssssssisi', $updateArr);
@@ -153,7 +165,7 @@ EOS;
                 trim($_POST['contactEmail']),
                 trim($_POST['contactPhone']),
                 $mailin,
-                trim($_POST['contactNotes']) == '' ? trim($_POST['contactNotes']) : null,
+                $contactNotes == '' ? null : $contactNotes,
                 $vendorYear
             );
             $numrows1 = dbSafeCmd($updateQ, 'sssssi', $updateArr);
@@ -163,7 +175,7 @@ EOS;
             // get the update info
             $vendorQ = <<<EOS
 SELECT exhibitorName, exhibitorEmail, exhibitorPhone, website, description, e.need_new AS eNeedNew, e.confirm AS eConfirm,
-       IFNULL(notes, '') AS exhNotes, IFNULL(ey.notes, '') AS contactNotes, ey.mailin,
+       IFNULL(e.notes, '') AS exhNotes, IFNULL(ey.notes, '') AS contactNotes, ey.mailin,
        ey.contactName, ey.contactEmail, ey.contactPhone, ey.need_new AS cNeedNew, ey.confirm AS cConfirm, ey.needReview as needReview,
        addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, publicity
 FROM exhibitors e

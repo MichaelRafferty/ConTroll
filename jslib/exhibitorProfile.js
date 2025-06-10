@@ -23,8 +23,6 @@ class ExhibitorProfile {
     #passwordLine2 = null;
     #cpasswordLine1 = null;
     #cpasswordLine2 = null;
-    #exhNotes = null;
-    #contactNotes = null;
     #creatingAccountMsgDiv = null;
     #exhibitorId = null;
     #exhibitorYearId = null;
@@ -57,8 +55,6 @@ class ExhibitorProfile {
                 if (portalType == 'admin') {
                     this.#exhibitorId = document.getElementById('exhibitorId');
                     this.#exhibitorYearId = document.getElementById('exhibitorYearId');
-                    this.#exhNotes = document.getElementById('exhNotes');
-                    this.#contactNotes = document.getElementById('contactNotes');
                 }
             }
         }
