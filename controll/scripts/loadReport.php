@@ -2,6 +2,7 @@
 // downloadCSV - take an associative array passed in and a file name, and output that
 global $db_ini;
 require_once "../lib/base.php";
+require_once "../../lib/log.php";
 
 $check_auth = google_init("ajax");
 $perm = "overview";
@@ -61,6 +62,15 @@ if ($reportAuth != $hdrAuth) {
     }
 }
 
+$debug = get_conf('debug');
+if (array_key_exists('controll_reports', $debug)) {
+    $dumpSQL = $debug['controll_reports'];
+    $log_conf = get_conf('log');
+    logInit($log_conf['controll']);
+} else {
+    $dumpSQL = 0;
+}
+
 $response["reportTitle"] = $reportHdr['name'];
 if (array_key_exists('totals', $reportHdr))
     $response['calcPosition'] = $reportHdr['totals'];
@@ -96,7 +106,7 @@ foreach ($sections AS $key => $section) {
 if ($first == false)
     $sql .= ")\n";
 // now the main body of the select
-$sql .= "SELECT" . PHP_EOL;
+$sql .= "SELECT DISTINCT" . PHP_EOL;
 $first = '';
 foreach ($sections AS $key => $section) {
     if (!str_starts_with($section, 'F'))
@@ -203,6 +213,10 @@ foreach ($sections as $key => $section) {
                 $value = $postVars[$param['item']];
     }
     $paramArray[] = $value;
+}
+
+if ($dumpSQL > 0) {
+    logWrite(array("message" => "report $reportName SQL Dump", "SQL" => $sql, "typeStr" => $typeStr, "params" => $paramArray));
 }
 
 // run the SQL and get the data
