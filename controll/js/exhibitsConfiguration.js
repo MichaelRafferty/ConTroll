@@ -404,6 +404,12 @@ class exhibitssetup {
         }
     }
 
+    // each save of the edit modals - back into the table
+    saveRYEdit() {
+        console.log("not yet");
+        show_message("Not Yet", "warn", 'ry_message_div');
+    }
+
     // editDesc - use tinymce to edit a description
     editDesc(table, index, field, title) {
         var row;

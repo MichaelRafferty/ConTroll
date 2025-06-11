@@ -126,7 +126,7 @@ function draw_exhibitsConfigurationModals() {
                 </div>
                 <div class='modal-footer'>
                     <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
-                    <button class='btn btn-sm btn-primary' id="saveRYedit" onclick="saveRYEdit()">Save back to table</button>
+                    <button class='btn btn-sm btn-primary' id="saveRYedit" onclick="exhibits.saveRYEdit()">Save back to table</button>
                 </div>
             </div>
         </div>
