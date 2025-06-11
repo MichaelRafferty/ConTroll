@@ -143,7 +143,7 @@ EOS;
                 if ($row['to_delete'] == 1)
                     continue;
             }
-            if (array_key_exists($keyfield, $row)) { // if key is there, it's an update
+            if (array_key_exists($keyfield, $row) && $row[$keyfield] > 0) { // if key is there and positive, it's an update
                 if (array_key_exists('inPersonMaxUnits', $row)) {
                     $inPersonMaxUnits = $row['inPersonMaxUnits'];
                 } else {
@@ -167,7 +167,7 @@ EOS;
                 if ($row['to_delete'] == 1)
                     continue;
             }
-            if (!array_key_exists($keyfield, $row)) { // if key is not there, it is an insert
+            if ((!array_key_exists($keyfield, $row)) || $row[$keyfield] < 0) { // if key is not there, or it's negative, it is an insert
                 if (array_key_exists('inPersonMaxUnits', $row)) {
                     $inPersonMaxUnits = $row['inPersonMaxUnits'];
                 } else {

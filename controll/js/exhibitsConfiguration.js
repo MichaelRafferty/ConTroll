@@ -29,6 +29,7 @@ class exhibitssetup {
     #regionYearsavebtn = null;
     #regionYearundobtn = null;
     #regionYearredobtn = null;
+    #regionYearRoomStatuses = ['precon', 'bid', 'checkout', 'closed', 'all'];
 
     // exhibits spaces (sections of a region)
     #spaces = null;
@@ -58,6 +59,12 @@ class exhibitssetup {
     #debug = 0;
     #debugVisible = false;
     #priceregexp = 'regex:^([0-9]+([.][0-9]*)?|[.][0-9]+)';
+    #insertID = -1;
+
+    // exhibitsRegionYear Configuration items
+    #exhibitsRegionYearModal = null;
+    #exhibitsRegionYear_editTitle = null;
+    #saveRYedit = null;
 
     // globals before open
     // none
@@ -68,9 +75,11 @@ class exhibitssetup {
         this.#message_div = document.getElementById('test');
         this.#exhibits_pane = document.getElementById('configuration-pane');
         this.#result_message_div = document.getElementById('result_message');
-        id = document.getElementById("RegionYearModal");
-        if (id) {
-            console.log("setup Region Year Modal");
+        var id = document.getElementById("exhibitorRegionYearModal");
+        if (id != null) {
+                this.#exhibitsRegionYearModal = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
+                this.#exhibitsRegionYear_editTitle = document.getElementById('exhibitsRegionYear_editTitle');
+                this.#saveRYedit = document.getElementById('saveRYedit');
         }
         if (this.#debug & 1) {
             console.log("Debug = " + debug);
@@ -319,8 +328,73 @@ class exhibitssetup {
 
     // editRow - call up the proper modal to edit a full row
     editRow(table, index, field) {
+        var row;
         switch (table) {
             case 'RegionYears':
+                var regionYearName;
+                row = this.#regionYearsTable.getRow(index).getData();
+                // set the title for the modal
+                if (this.#regionListArr.hasOwnProperty(row.exhibitsRegion)) {
+                    regionYearName = this.#regionListArr[row.exhibitsRegion];
+                } else {
+                    regionYearName = 'New Row';
+                }
+                var html = '<strong>Editing Region Year for ' + (row.id > 0 ? (row.id + ':') : '') + regionYearName + '</strong>';
+                this.#exhibitsRegionYear_editTitle.innerHTML = html;
+                document.getElementById("eryH1Title").innerHTML = html;
+
+                // set the select lists
+                // region
+                var keys = Object.keys(this.#regionListArr);
+                var optionList = '';
+                if (row.exhibitsRegion == undefined || row.exhibitsRegion <= 0) {
+                    optionList += '<option value="-1">Select a region</option>';
+                }
+                for (var index = 0; index < keys.length; index++) {
+                    var key = keys[index];
+                    var value = this.#regionListArr[key];
+                    optionList += '\n<option value="' + key + '">' + value + '</option>';
+                }
+                document.getElementById('eyrExhibitsRegion').innerHTML = optionList;
+
+                keys = Object.keys(this.#memListArr);
+                // included memberships
+                optionList = '';
+                for (index = 0; index < keys.length; index++) {
+                    key = keys[index];
+                    value = this.#memListArr[key];
+                    optionList += '\n<option value="' + key + '">' + value + '</option>';
+                }
+                var defSel = '';
+                if (row.includedMemId == undefined || row.includedMemId <= 0) {
+                    var defSel = '<option value="-1">Select a type</option>';
+                }
+                document.getElementById('eryIncludedMemId').innerHTML = defSel + optionList;
+
+                defSel = '';
+                if (row.additionalMemId == undefined || row.additionalMemId <= 0) {
+                    var defSel = '<option value="-1">Select a type</option>';
+                }
+                document.getElementById('eryAdditionalMemId').innerHTML = defSel + optionList;
+
+
+                // set the fields
+                document.getElementById("eyrExhibitsRegion").value = row.exhibitsRegion > 0 ? row.exhibitsRegion : -1;
+                document.getElementById('eryRoomStatus').value = row.roomStatus;
+                document.getElementById("eyrOwnerName").value = row.ownerName;
+                document.getElementById('eyrOwnerEmail').value = row.ownerEmail;
+                document.getElementById('eryIncludedMemId').value = row.includedMemId > 0 ? row.includedMemId : -1;
+                document.getElementById('eryAdditionalMemId').value = row.additionalMemId > 0 ? row.additionalMemId : -1;
+                document.getElementById('eyrTotalUnits').value = row.totalUnitsAvailable;
+                document.getElementById('eyrAtConBase').value = row.atconIdBase;
+                document.getElementById('eyrGLNum').value = row.glNum;
+                document.getElementById('eyrGLLabel').value = row.glLabel;
+                document.getElementById('eyrMailInFee').value = row.mailinFee;
+                document.getElementById('eyrMailInBase').value = row.mailinIdBase;
+                document.getElementById('eyrFeeGLNum').value = row.mailinGLNum;
+                document.getElementById('eyrFeeGLLabel').value = row.mailinGLLabel;
+
+                this.#exhibitsRegionYearModal.show();
                 break;
             default:
                 show_message("Invalid edit button, seek assistance", 'error');
@@ -374,6 +448,14 @@ class exhibitssetup {
                 return;
         }
 
+    }
+
+    // formatId formatter: suppress showing negatives
+    formatId(cell, formatterParams, onRendered) {
+        var index = cell.getRow().getIndex();
+        if (index > 0)
+            return index;
+        return '';
     }
 
     // editRowBtn: formatter for a table edit button
@@ -646,19 +728,21 @@ class exhibitssetup {
                         deleterow(e, cell.getRow());
                     }
                 },
-                {title: "ID", field: "id", width: 50, hozAlign: "right", headerSort: false, },
+                {title: "ID", field: "id", width: 50, hozAlign: "right", headerSort: false, formatter: this.formatId },
                 {title: "&bigstar;Conid", field: "conid", width: 80, hozAlign: "right", headerSort: false, visible: false },
                 {
                     title: "&bigstar;Exhibits Region", field: "exhibitsRegion", headerSort: true, width: 150, headerWordWrap: true, headerFilter: true, headerFilterParams: {values: this.#regionListArr},
                     editor: "list", editorParams: {values: this.#regionListArr}, validator: "required",
                     formatter: "lookup", formatterParams: this.#regionListArr,
                 },
-                {
-                    title: "&bigstar;Owner Name", field: "ownerName", headerSort: true, headerFilter: true, width: 200, formatter: "textarea",
+                {title: "&bigstar;Room Status", field: "roomStatus", width:100, headerSort: true, headerFilter: true, headerWordWrap: true,
+                    editor: "list", editorParams: {values: this.#regionYearRoomStatuses}, validator: "required",
+                    formatter: "lookup", formatterParams: this.#regionYearRoomStatuses,
+                },
+                {title: "&bigstar;Owner Name", field: "ownerName", headerSort: true, headerFilter: true, width: 200, formatter: "textarea",
                     editor: "input", editorParams: {elementAttributes: {maxlength: "64"}}, validator: "required"
                 },
-                {
-                    title: "&bigstar;Owner Email", field: "ownerEmail", width: 300, headerSort: true, headerFilter: true,
+                {title: "&bigstar;Owner Email", field: "ownerEmail", width: 300, headerSort: true, headerFilter: true,
                     editor: "input", editorParams: {elementAttributes: {maxlength: "64"}}, validator: "required"
                 },
                 { title: '&bigstar;Included', field: "includedMemId", width: 230, headerSort: false, validator: "required",
@@ -670,14 +754,17 @@ class exhibitssetup {
                 {title: 'Total Units Avail', field: "totalUnitsAvailable", width: 70, hozAlign: "right", headerWordWrap: true, headerSort: false,
                     editor: "input", editorParams: {maxlength: "10"}},
                 {title: 'At-Con Id Base', field: "atconIdBase", width: 80, hozAlign: "right", headerWordWrap: true, headerSort: false, editor: "number",},
-                {
-                    title: 'Mail-In Fee', field: "mailinFee", width: 90, hozAlign: "right", headerWordWrap: true, headerSort: false,
+                {title: "Default GL Num", field: "glNum", headerWordWrap: true, headerSort: true, headerFilter: true,
+                    editor: "input", editorParams: {maxlength: "16"}, width: 120, },
+                {title: "Default GL Label", field: "glLabel", headerWordWrap: true, headerSort: true, headerFilter: "textarea", formatter: "textarea",
+                    editor: "input", editorParams: {maxlength: "64"}, width: 200, },
+                {title: 'Mail-In Fee', field: "mailinFee", width: 90, hozAlign: "right", headerWordWrap: true, headerSort: false,
                     formatter: "money", formatterParams: {decimal: '.', thousand: ',', symbol: '$', negativeSign: true},
                     editor: "input", validator: ["required", this.#priceregexp],},
                 {title: 'Mail-In Id Base', field: "mailinIdBase", width: 80, hozAlign: "right", headerWordWrap: true, headerSort: false, editor: "number",},
-                {title: "Default GL Num", field: "glNum", headerWordWrap: true, headerSort: true, headerFilter: true,
+                {title: "Fee GL Num", field: "mailinGLNum", headerWordWrap: true, headerSort: true, headerFilter: true,
                         editor: "input", editorParams: {maxlength: "16"}, width: 120, },
-                {title: "Default GL Label", field: "glLabel", headerWordWrap: true, headerSort: true, headerFilter: "textarea", formatter: "textarea",
+                {title: "Fee GL Label", field: "mailinGLLabel", headerWordWrap: true, headerSort: true, headerFilter: "textarea", formatter: "textarea",
                     editor: "input", editorParams: {maxlength: "64"}, width: 200, },
                 {title: "Sort Order", field: "sortorder", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, hozAlign: "right", width: 90,},
                 {title: "Orig Key", field: "regionYearKey", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
@@ -1187,7 +1274,8 @@ class exhibitssetup {
     // add row to Years table and scroll to that new row
     addrowYears() {
         var _this = this;
-        this.#regionYearsTable.addRow({conid: this.#conid, ownerName: 'new-row', sortorder: 99, uses: 0}, false).then(function (row) {
+        this.#insertID--;
+        this.#regionYearsTable.addRow({id: this.#insertID, conid: this.#conid, ownerName: 'new-row', sortorder: 99, uses: 0}, false).then(function (row) {
             _this.#regionYearsTable.setPage("last"); // adding new to last page always
             row.getTable().setPage('last').then(function () {
                 row.getCell("ownerName").getElement().style.backgroundColor = "#fff3cd";

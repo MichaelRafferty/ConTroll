@@ -4,6 +4,7 @@ require_once "../lib/exhibitorRegistrationForms.php";
 require_once "../lib/exhibitorRequestForms.php";
 require_once "../lib/exhibitorReceiptForms.php";
 require_once "../lib/exhibitorInvoice.php";
+require_once "lib/exhibitsConfiguration.php";
 require_once "lib/exhibitorChooseExhibitor.php";
 
 //initialize google session
@@ -100,6 +101,7 @@ draw_exhibitorRequestModal('admin');
 draw_exhibitorReceiptModal('admin');
 draw_exhibitorInvoiceModal('', null, $countryOptions, $regConf, null, 'Exhibitors', 'admin');
 draw_exhibitorChooseModal();
+draw_exhibitsConfigurationModals();
 ?>
 <!-- space detail modal -->
 <div id='space_detail' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Space Detail' aria-hidden='true' style='--bs-modal-width: 90%;'>
