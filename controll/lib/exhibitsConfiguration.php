@@ -80,7 +80,7 @@ function draw_exhibitsConfigurationModals() {
                         <div class="row mt-2">
                             <div class='col-sm-2'>At Con Base Exhibitor Number:</div>
                             <div class='col-sm-auto'>
-                                <input type='number' class='no-spinners' inputmode='numeric' id='eyrAtConBase' name='eyrAtConBase'/>
+                                <input type='number' class='no-spinners' inputmode='numeric' id='eyrAtConBase' name='eyrAtConBase' min="0"/>
                             </div>
                         </div>
                         <div class="row mt-2">
@@ -98,13 +98,13 @@ function draw_exhibitsConfigurationModals() {
                         <div class="row mt-2">
                             <div class='col-sm-2'>Mail In Fee:</div>
                             <div class='col-sm-auto'>
-                                <input type='number' class='no-spinners' inputmode='numeric' id='eyrMailInFee' name='eyrMailInFee'/>
+                                <input type='number' class='no-spinners' inputmode='numeric' id='eyrMailInFee' name='eyrMailInFee' min="0"/>
                             </div>
                         </div>
                         <div class="row mt-2">
                             <div class='col-sm-2'>Mail-In Base Exhibitor Number:</div>
                             <div class='col-sm-auto'>
-                                <input type='number' class='no-spinners' inputmode='numeric' id='eyrMailInBase' name='eyrMailInBase'/>
+                                <input type='number' class='no-spinners' inputmode='numeric' id='eyrMailInBase' name='eyrMailInBase' min="0"/>
                             </div>
                         </div>
                         <div class="row mt-2">
