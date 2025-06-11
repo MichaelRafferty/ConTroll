@@ -68,6 +68,10 @@ class exhibitssetup {
         this.#message_div = document.getElementById('test');
         this.#exhibits_pane = document.getElementById('configuration-pane');
         this.#result_message_div = document.getElementById('result_message');
+        id = document.getElementById("RegionYearModal");
+        if (id) {
+            console.log("setup Region Year Modal");
+        }
         if (this.#debug & 1) {
             console.log("Debug = " + debug);
             console.log("conid = " + conid);
@@ -313,6 +317,19 @@ class exhibitssetup {
         clear_message();
     }
 
+    // editRow - call up the proper modal to edit a full row
+    editRow(table, index, field) {
+        switch (table) {
+            case 'RegionYears':
+                break;
+            default:
+                show_message("Invalid edit button, seek assistance", 'error');
+                console.log(table);
+                console.log(index);
+                console.log(field);
+        }
+    }
+
     // editDesc - use tinymce to edit a description
     editDesc(table, index, field, title) {
         var row;
@@ -358,6 +375,14 @@ class exhibitssetup {
         }
 
     }
+
+    // editRowBtn: formatter for a table edit button
+    editRowBtn(cell, formatterParams, onRendered) {
+        var index = cell.getRow().getIndex();
+        return '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
+            ' onclick="exhibits.editRow(\'' + formatterParams.table + '\',' + index + ',\'' +  formatterParams.fieldName + '\');">Edit</button>';
+    }
+
     // display edit button for a long field
     editbutton(cell, formatterParams, onRendered) {
         var index = cell.getRow().getIndex();
@@ -452,7 +477,7 @@ class exhibitssetup {
             movableRows: true,
             data: this.#regionType,
             layout: "fitDataTable",
-            pagination: true,
+            pagination: this.#regionType.length > 10,
             paginationAddRow:"table",
             paginationSize: 10,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
@@ -528,7 +553,7 @@ class exhibitssetup {
             movableRows: true,
             data: this.#regions,
             layout: "fitDataTable",
-            pagination: true,
+            pagination: this.#regions.length > 10,
             paginationAddRow:"table",
             paginationSize: 10,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
@@ -605,13 +630,23 @@ class exhibitssetup {
             movableRows: true,
             data: this.#regionYears,
             layout: "fitDataTable",
-            pagination: true,
+            pagination: this.#regionYears.length > 10,
             paginationAddRow:"table",
             paginationSize: 10,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
                 {rowHandle: true, formatter: "handle", frozen: true, width: 40, headerSort: false},
-                {title: "ID", field: "id", width: 50, hozAlign: "right", headerSort: false,},
+                {title: "Edit", formatter: this.editRowBtn, formatterParams: {table: 'RegionYears', fieldName: 'id', },
+                    hozAlign:"left", headerSort: false,
+                },
+                {title: "To Del", field: "to_delete", visible: this.#debugVisible,},
+                {
+                    title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
+                    cellClick: function (e, cell) {
+                        deleterow(e, cell.getRow());
+                    }
+                },
+                {title: "ID", field: "id", width: 50, hozAlign: "right", headerSort: false, },
                 {title: "&bigstar;Conid", field: "conid", width: 80, hozAlign: "right", headerSort: false, visible: false },
                 {
                     title: "&bigstar;Exhibits Region", field: "exhibitsRegion", headerSort: true, width: 150, headerWordWrap: true, headerFilter: true, headerFilterParams: {values: this.#regionListArr},
@@ -646,13 +681,6 @@ class exhibitssetup {
                     editor: "input", editorParams: {maxlength: "64"}, width: 200, },
                 {title: "Sort Order", field: "sortorder", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, hozAlign: "right", width: 90,},
                 {title: "Orig Key", field: "regionYearKey", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
-                {
-                    title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
-                    cellClick: function (e, cell) {
-                        deleterow(e, cell.getRow());
-                    }
-                },
-                {title: "To Del", field: "to_delete", visible: this.#debugVisible,}
             ],
         });
         this.#regionYearsTable.on("dataChanged", function (data) {
@@ -700,8 +728,8 @@ class exhibitssetup {
             movableRows: true,
             data: this.#spaces,
             layout: "fitDataTable",
-            pagination: true,
-            paginationAddRow:"table",
+            pagination: this.#spaces.length > 10,
+            paginationAddRow: "table",
             paginationSize: 10,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
@@ -777,8 +805,8 @@ class exhibitssetup {
             movableRows: true,
             data: this.#spacePrices,
             layout: "fitDataTable",
-            pagination: true,
-            paginationAddRow:"table",
+            pagination: this.#spacePrices.length > 10,
+            paginationAddRow: "table",
             paginationSize: 10,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
