@@ -355,7 +355,7 @@ class exhibitssetup {
                     var value = this.#regionListArr[key];
                     optionList += '\n<option value="' + key + '">' + value + '</option>';
                 }
-                document.getElementById('eyrExhibitsRegion').innerHTML = optionList;
+                document.getElementById('eryExhibitsRegion').innerHTML = optionList;
 
                 keys = Object.keys(this.#memListArr);
                 // included memberships
@@ -379,20 +379,21 @@ class exhibitssetup {
 
 
                 // set the fields
-                document.getElementById("eyrExhibitsRegion").value = row.exhibitsRegion > 0 ? row.exhibitsRegion : -1;
+                document.getElementById("eryID").value = row.id;
+                document.getElementById("eryExhibitsRegion").value = row.exhibitsRegion > 0 ? row.exhibitsRegion : -1;
                 document.getElementById('eryRoomStatus').value = row.roomStatus;
-                document.getElementById("eyrOwnerName").value = row.ownerName;
-                document.getElementById('eyrOwnerEmail').value = row.ownerEmail;
+                document.getElementById("eryOwnerName").value = row.ownerName;
+                document.getElementById('eryOwnerEmail').value = row.ownerEmail;
                 document.getElementById('eryIncludedMemId').value = row.includedMemId > 0 ? row.includedMemId : -1;
                 document.getElementById('eryAdditionalMemId').value = row.additionalMemId > 0 ? row.additionalMemId : -1;
-                document.getElementById('eyrTotalUnits').value = row.totalUnitsAvailable;
-                document.getElementById('eyrAtConBase').value = row.atconIdBase;
-                document.getElementById('eyrGLNum').value = row.glNum;
-                document.getElementById('eyrGLLabel').value = row.glLabel;
-                document.getElementById('eyrMailInFee').value = row.mailinFee;
-                document.getElementById('eyrMailInBase').value = row.mailinIdBase;
-                document.getElementById('eyrFeeGLNum').value = row.mailinGLNum;
-                document.getElementById('eyrFeeGLLabel').value = row.mailinGLLabel;
+                document.getElementById('eryTotalUnits').value = row.totalUnitsAvailable;
+                document.getElementById('eryAtConBase').value = row.atconIdBase;
+                document.getElementById('eryGLNum').value = row.glNum;
+                document.getElementById('eryGLLabel').value = row.glLabel;
+                document.getElementById('eryMailInFee').value = row.mailinFee;
+                document.getElementById('eryMailInBase').value = row.mailinIdBase;
+                document.getElementById('eryFeeGLNum').value = row.mailinGLNum;
+                document.getElementById('eryFeeGLLabel').value = row.mailinGLLabel;
 
                 this.#exhibitsRegionYearModal.show();
                 break;
@@ -406,8 +407,26 @@ class exhibitssetup {
 
     // each save of the edit modals - back into the table
     saveRYEdit() {
-        console.log("not yet");
-        show_message("Not Yet", "warn", 'ry_message_div');
+        var newrow = {
+            id: document.getElementById('eryID').value,
+            exhibitsRegion: document.getElementById('eryExhibitsRegion').value,
+            roomStatus: document.getElementById('eryRoomStatus').value,
+            ownerName: document.getElementById('eryOwnerName').value,
+            ownerEmail: document.getElementById('eryOwnerEmail').value,
+            includedMemId: document.getElementById('eryIncludedMemId').value,
+            additionalMemId: document.getElementById('eryAdditionalMemId').value,
+            totalUnitsAvailable: document.getElementById('eryTotalUnits').value,
+            atconIdBase: document.getElementById('eryAtConBase').value,
+            glNum: document.getElementById('eryGLNum').value,
+            glLabel: document.getElementById('eryGLLabel').value,
+            mailinFee: document.getElementById('eryMailInFee').value,
+            mailinIdBase: document.getElementById('eryMailInBase').value,
+            mailinGLNum: document.getElementById('eryFeeGLNum').value,
+            mailinGLLabel: document.getElementById('eryFeeGLLabel').value,
+        }
+        this.#regionYearsTable.updateData([newrow]);
+        this.#exhibitsRegionYearModal.hide();
+        show_message("Row Updated", 'success');
     }
 
     // editDesc - use tinymce to edit a description
