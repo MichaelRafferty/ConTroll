@@ -342,7 +342,7 @@ class exhibitorsAdm {
         }
         this.drawExhibitorsTable(data,  groupid);
         if (message)
-            show_message(message, success);
+            show_message(message, 'success');
     }
 
     redraw(data) {
