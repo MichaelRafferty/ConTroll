@@ -94,7 +94,7 @@ $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale
 $regionYearQ = <<<EOS
 SELECT er.id, name, description, ownerName, ownerEmail, includedMemId, additionalMemId, mi.price AS includedPrice, ma.price AS additionalPrice,
        mi.glNum AS includedGLNum, ma.glNum AS additionalGLNum, mi.label AS includedLabel, ma.label AS additionalLabel,
-       ery.mailinFee, ery.atconIdBase, ery.mailinIdBase, ery.id as yearId
+       ery.mailinFee, ery.atconIdBase, ery.mailinIdBase, ery.id as yearId, ery.mailinGLNum, ery.mailinGLLabel
 FROM exhibitsRegionYears ery
 JOIN exhibitsRegions er ON er.id = ery.exhibitsRegion
 LEFT OUTER JOIN memList mi ON ery.includedMemId = mi.id
@@ -176,8 +176,11 @@ while ($space =  $spaceR->fetch_assoc()) {
 $spaceR->free();
 // add in mail in fee if this exhibitor is using mail in this year and the fee exist
 if ($region['mailinFee'] > 0 && $exhibitor['mailin'] == 'Y') {
+    $mailIn['amount'] = $region['mailinFee'];
+    $mailIn['name'] = $region['name'];
+    $mailIn['glNum'] = $region['mailinGLNum'];
+    $mailIn['desc'] = $region['name'] . ' Mail In Fee';
     $spacePriceComputed += $region['mailinFee'];
-    $mailInFee[] = array('name' => $region['name'], 'yearId' => $region['yearId'], 'amount' => $region['mailinFee']);
 }
 
 if ($spacePrice != $spacePriceComputed || $includedMembershipsComputed != $includedMembershipsMax || $additionalMembershipsComputed != $additionalMembershipsMax) {
@@ -450,7 +453,7 @@ $results = array(
     'transid' => $transId,
     'counts' => null,
     'spaces' => $spaces,
-    'mailInFee' => $mailInFee,
+    'mailInFee' => [$mailInFee],
     'price' => $totprice,
     'badges' => $badgeResults,
     'formbadges' => $badges,
@@ -501,7 +504,7 @@ if ($totprice > 0) {
         'buyer' => $buyer,
         'counts' => null,
         'spaces' => $spaces,
-        'mailInFee' => $mailInFee,
+        'mailInFee' => [$mailInFee],
         'price' => $totprice,
         'badges' => $badgeResults,
         'formbadges' => $badges,
