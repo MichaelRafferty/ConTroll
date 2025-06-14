@@ -152,13 +152,18 @@ $response['exhibitorRegionYear'] = $eryID;
 
 // now the space information for this regionYearId
 $spaceQ = <<<EOS
-SELECT e.*, esp.price as approved_price, esp.includedMemberships, esp.additionalMemberships, s.name, esp.glNum, esp.glLabel
-FROM exhibitorSpaces e
+SELECT e.*, esp.price as approved_price, esp.includedMemberships, esp.additionalMemberships, s.name, esp.description, ry.exhibitorNumber,
+       y.exhibitorId, ex.exhibitorName, ex.artistName, er.name AS regionName, esp.glNum, esp.glLabel
+FROM exhibitorRegionYears ry
+JOIN exhibitorSpaces e ON (e.exhibitorRegionYear = ry.id)
+JOIN exhibitorYears y ON (y.id = ry.exhibitorYearId)
+JOIN exhibitors ex ON (ex.id = y.exhibitorId)
 JOIN exhibitsSpaces s ON (s.id = e.spaceId)
 JOIN exhibitsSpacePrices esp ON (s.id = esp.spaceId AND e.item_approved = esp.id)
 JOIN exhibitsRegionYears ery ON (ery.id = s.exhibitsRegionYear)
 JOIN exhibitsRegions er ON (ery.exhibitsRegion = er.id)
-WHERE e.exhibitorRegionYear = ?;
+WHERE e.exhibitorRegionYear = ?
+ORDER BY id ASC;
 EOS;
 $spaceR = dbSafeQuery($spaceQ, 'i', array($eryID));
 if ($spaceR == false || $spaceR->num_rows == 0) {
@@ -282,10 +287,10 @@ for ($num = 0; $num < $additionalMembershipsMax; $num++) {
     $fname = '';
     $lname = '';
     if (array_key_exists('fname_a_' . $num, $_POST))
-        $fname = $_POST['fname_i_' . $num];
+        $fname = $_POST['fname_a_' . $num];
 
     if (array_key_exists('lname_a_' . $num, $_POST))
-        $lname = $_POST['lname_i_' . $num];
+        $lname = $_POST['lname_a_' . $num];
 
     if ($fname == '' && $lname == '')
         continue;
@@ -415,7 +420,7 @@ while ($row = $all_badgeR->fetch_assoc()) {
     $badgeResults[] = $row;
 }
 $orderId = null;
-
+$custId = "spacePayment-$transid";
 // prepare the credit card request
 $results = array(
     'transid' => $transid,
@@ -438,6 +443,10 @@ $results = array(
     'totalPaid' => 0,
     'source' => $source,
     'discount' => 0,
+    'custid' => $custId,
+    'spaces' => $spaces,
+    'buyer' => $buyer,
+
 );
 
 //log requested badges
@@ -478,7 +487,7 @@ if ($totprice > 0) {
     switch ($prow['type']) {
         case 'cash':
             $externalType = 'CASH';
-            $nonce = 'CASH';
+            $nonce = 'EXTERNAL';
             if ($crow)
                 $change = -$crow['amt'];
             break;
@@ -512,6 +521,7 @@ if ($totprice > 0) {
             break;
         case 'check':
             $externalType = 'CHECK';
+            $nonce = 'EXTERNAL';
             $desc = 'Chk No: ' . $prow['checkno'];
             break;
     }
