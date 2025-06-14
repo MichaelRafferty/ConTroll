@@ -186,7 +186,7 @@ $spaceR->free();
 $mailIn = null;
 // add in mail in fee if this exhibitor is using mail in this year and the fee exist
 if ($region['mailinFee'] > 0 && $exhibitor['mailin'] == 'Y') {
-    $mailIn['fee'] = $region['mailinFee'];
+    $mailIn['amount'] = $region['mailinFee'];
     $mailIn['name'] = $region['name'];
     $mailIn['glNum'] = $region['mailinGLNum'];
     $mailIn['desc'] = $region['name'] . " Mail In Fee";
@@ -428,7 +428,7 @@ $results = array(
     'spaceName' => $region['name'],
     'spaceDescription' => $region['description'],
     'spacePrice' => $spacePrice,
-    'mailIn' => $mailIn,
+    'mailInFee' => [$mailIn],
     'price' => $totprice,
     'badges' => $badgeResults,
     'formbadges' => $badges,

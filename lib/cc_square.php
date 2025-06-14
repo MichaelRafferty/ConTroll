@@ -540,7 +540,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     $note .= ', GL: ' . $fee['glNum'];
                 $item = new OrderLineItem([
                     'itemType' => OrderLineItemItemType::Item->value,
-                    'uid' => 'region-' . $fee['name'],
+                    'uid' => 'region-' . str_replace(' ', '-', $fee['name']),
                     'name' => mb_substr($itemName, 0, 128),
                     'quantity' => 1,
                     'note' => mb_substr($note, 0, 128),

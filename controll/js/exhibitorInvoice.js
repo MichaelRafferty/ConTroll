@@ -608,7 +608,7 @@ class ExhibitorInvoice {
                 exhibitor_spacelist = data.exhibitor_spacelist;
             }
             this.#currentOrderId = null; // successful payment clears the current order
-            exhibitors.open(fulltabname);
+            exhibitors.open(fulltabname, data.message);
         } else {
             show_message('There was an unexpected error, please email ' + config.vemail + ' to let us know.  Thank you.', 'error', 'inv_result_message');
             this.#payButton.disabled = false;

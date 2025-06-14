@@ -255,7 +255,7 @@ class exhibitorsAdm {
     }
 
     // open(tabname) - fetch the data and re-draw the region tab
-    open(newtabname) {
+    open(newtabname, message = null) {
         fulltabname = newtabname;
         tabname = regionTabNames[newtabname].name;
         regionid = regionTabNames[newtabname].id;
@@ -269,7 +269,7 @@ class exhibitorsAdm {
             method: "POST",
             data: { region: tabname, regionId: regionid },
             success: function (data, textstatus, jqXHR) {
-                exhibitors.draw(data);
+                exhibitors.draw(data, message);
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 showError("ERROR in getExhibitorData: " + textStatus, jqXHR);
@@ -278,7 +278,7 @@ class exhibitorsAdm {
         })
     }
 
-    draw(data) {
+    draw(data, message = null) {
         if (data.error) {
             show_message(data.error, 'error');
             this.#message_div.innerHTML = "Query:\n" + data.query + "\n\n" + "Args: " + data.args.toString();
@@ -341,6 +341,8 @@ class exhibitorsAdm {
             this.drawApprovalsTable(data, groupid);
         }
         this.drawExhibitorsTable(data,  groupid);
+        if (message)
+            show_message(message, success);
     }
 
     redraw(data) {
