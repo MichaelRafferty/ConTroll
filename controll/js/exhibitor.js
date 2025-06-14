@@ -528,7 +528,7 @@ class exhibitorsAdm {
                 }
                 currentExhibitor = newExhibitor;
                 spaceSUM = '';
-                spaceHTML = '<div class="container-fluid" style="width: 700px;">';
+                spaceHTML = '<div class="container-fluid" style="width: 80%;">';
                 req += space.requested_units;
                 app += space.approved_units;
                 pur += space.purchased_units;
@@ -562,25 +562,28 @@ class exhibitorsAdm {
                     '<div class="col-sm-12"><STRONG>' + space.spaceName + '</STRONG></div></div>';
 
                 if (blankIfNull(space.requested_units) != '') {
-                    spaceHTML += '<div class="row"><div class="col-sm-2' + (blankIfNull(space.approved_units) == '' ? ' text-danger' : '') + '">Requested: </div>' +
-                        '<div class="col-sm-2 text-end">' + blankIfNull(space.requested_units) + '</div>' +
-                        '<div class="col-sm-3">' + blankIfNull(space.requested_description) + '</div>' +
+                    spaceHTML += '<div class="row">' +
+                        '<div class="col-sm-2' + (blankIfNull(space.approved_units) == '' ? ' text-danger' : '') + '">Requested: </div>' +
+                        '<div class="col-sm-1 text-end">' + blankIfNull(space.requested_units) + '</div>' +
+                        '<div class="col-sm-5">' + blankIfNull(space.requested_description) + '</div>' +
                         '<div class="col-sm-4">' + blankIfNull(space.time_requested) + '</div>' +
                         '</div>';
                 }
 
                 if (blankIfNull(space.approved_units) != '') {
-                    spaceHTML += '<div class="row"><div class="col-sm-2">Approved: </div>' +
-                        '<div class="col-sm-2 text-end">' + blankIfNull(space.approved_units) + '</div>' +
-                        '<div class="col-sm-3">' + blankIfNull(space.approved_description) + '</div>' +
+                    spaceHTML += '<div class="row">' +
+                        '<div class="col-sm-2">Approved: </div>' +
+                        '<div class="col-sm-1 text-end">' + blankIfNull(space.approved_units) + '</div>' +
+                        '<div class="col-sm-5">' + blankIfNull(space.approved_description) + '</div>' +
                         '<div class="col-sm-4">' + blankIfNull(space.time_approved) + '</div>' +
                         '</div>';
                 }
 
                 if (blankIfNull(space.purchased_units) != '') {
-                    spaceHTML += '<div class="row"><div class="col-sm-2">Purchased: </div>' +
-                        '<div class="col-sm-2 text-end">' + blankIfNull(space.purchased_units) + '</div>' +
-                        '<div class="col-sm-3">' + blankIfNull(space.purchased_description) + '</div>' +
+                    spaceHTML += '<div class="row">' +
+                        '<div class="col-sm-2">Purchased: </div>' +
+                        '<div class="col-sm-1 text-end">' + blankIfNull(space.purchased_units) + '</div>' +
+                        '<div class="col-sm-5">' + blankIfNull(space.purchased_description) + '</div>' +
                         '<div class="col-sm-4">' + blankIfNull(space.time_purchased) + '</div>' +
                         '</div>';
                 }
@@ -602,13 +605,13 @@ class exhibitorsAdm {
             }
             // now do agent stuff
             if (blankIfNull(region.agentRequest) != '') {
-                spaceHTML += '<div class="row"><div class="col-sm-4">Agent Request: </div>' +
-                    '<div class="col-sm-8">' + blankIfNull(region.agentRequest) + '</div>' +
+                spaceHTML += '<div class="row"><div class="col-sm-2">Agent Request: </div>' +
+                    '<div class="col-sm-10">' + blankIfNull(region.agentRequest) + '</div>' +
                     '</div>';
             }
             if (blankIfNull(region.agentName) != '') {
-                spaceHTML += '<div class="row"><div class="col-sm-4">Agent Name: </div>' +
-                    '<div class="col-sm-8">' + blankIfNull(region.agentName) + '</div>' +
+                spaceHTML += '<div class="row"><div class="col-sm-2">Agent Name: </div>' +
+                    '<div class="col-sm-10">' + blankIfNull(region.agentName) + '</div>' +
                     '</div>';
             }
         }
