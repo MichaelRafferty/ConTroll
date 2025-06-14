@@ -116,7 +116,7 @@ VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
 EOS;
             $typestr = 'ssssssssiisssssssssssssi';
             $paramarr = array (
-                trim($_POST['artistName']),
+                trim($artistName),
                 trim($_POST['exhibitorName']),
                 trim($_POST['exhibitorEmail']),
                 trim($_POST['exhibitorPhone']),

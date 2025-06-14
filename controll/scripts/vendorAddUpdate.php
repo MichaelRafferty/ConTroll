@@ -58,6 +58,42 @@ if (array_key_exists('contactNotes', $_POST)) {
     $contactNotes = '';
 }
 
+// now for the optional fields
+$shipCompany = null;
+if (array_key_exists('shipCompany', $_POST) && $_POST['shipCompany'] != null) {
+    $shipCompany = trim($_POST['shipCompany']);
+}
+$shipAddr = null;
+if (array_key_exists('shipAddr', $_POST) && $_POST['shipAddr'] != null) {
+    $shipAddr = trim($_POST['shipAddr']);
+}
+$shipAddr2 = null;
+if (array_key_exists('shipAddr2', $_POST) && $_POST['shipAddr2'] != null) {
+    $shipAddr2 = trim($_POST['shipAddr2']);
+}
+$shipCity = null;
+if (array_key_exists('shipCity', $_POST) && $_POST['shipCity'] != null) {
+    $shipCity = trim($_POST['shipCity']);
+}
+$shipState = null;
+if (array_key_exists('shipState', $_POST) && $_POST['shipState'] != null) {
+    $shipState = trim($_POST['shipState']);
+}
+$shipZip = null;
+if (array_key_exists('shipZip', $_POST) && $_POST['shipZip'] != null) {
+    $shipZip = trim($_POST['shipZip']);
+}
+$shipCountry = null;
+if (array_key_exists('shipCountry', $_POST) && $_POST['shipCountry'] != null) {
+    $shipCountry = trim($_POST['shipCountry']);
+}
+
+// artist name is only in the Artist version of the form, it should be NULL for dealers
+$artistName = null;
+if (array_key_exists('artistName', $_POST)) {
+    $artistName = trim($_POST['artistName']);
+}
+
 // if register check for existence of vendor
 switch ($profileMode) {
     case 'register':
@@ -85,6 +121,7 @@ VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
 EOS;
         $typestr = 'ssssssiisssssssssssssis';
         $paramarr = array(
+            trim($artistName),
             trim($_POST['exhibitorName']),
             trim($_POST['exhibitorEmail']),
             trim($_POST['exhibitorPhone']),
@@ -99,13 +136,13 @@ EOS;
             trim($_POST['state']),
             trim($_POST['zip']),
             trim($_POST['country']),
-            trim($_POST['shipCompany']),
-            trim($_POST['shipAddr']),
-            trim($_POST['shipAddr2']),
-            trim($_POST['shipCity']),
-            trim($_POST['shipState']),
-            trim($_POST['shipZip']),
-            trim($_POST['shipCountry']),
+            trim($shipCompany),
+            trim($shipAddr),
+            trim($shipAddr2),
+            trim($shipCity),
+            trim($shipState),
+            trim($shipZip),
+            trim($shipCountry),
             $_POST['publicity'],
             $exhNotes = '' ? null : $exhNotes
         );
