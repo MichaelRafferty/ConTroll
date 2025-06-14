@@ -5,7 +5,7 @@ require_once "../lib/base.php";
 require_once "../../lib/outputCSV.php";
 
 $check_auth = google_init("ajax");
-$perm = "overview";
+$perm = "gen_rpts";
 
 $response = array("perm"=>$perm);
 

@@ -5,7 +5,7 @@ require_once '../lib/base.php';
 require_once('../../lib/uspsValidate.php');
 
 $check_auth = google_init('ajax');
-$perm = 'overview';
+$perm = 'gen_rpts';
 
 $response = array ('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
 
