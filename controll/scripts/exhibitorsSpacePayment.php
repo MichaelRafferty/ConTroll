@@ -486,8 +486,9 @@ if ($totprice > 0) {
     // now process the payment itself
     switch ($prow['type']) {
         case 'cash':
-            $externalType = 'CASH';
+            $externalType = 'OTHER';
             $nonce = 'EXTERNAL';
+            $desc = 'CASH';
             if ($crow)
                 $change = -$crow['amt'];
             break;
