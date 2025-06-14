@@ -29,7 +29,7 @@ class exhibitssetup {
     #regionYearsavebtn = null;
     #regionYearundobtn = null;
     #regionYearredobtn = null;
-    #regionYearRoomStatuses = ['precon', 'bid', 'checkout', 'closed', 'all'];
+    #regionYearRoomStatuses = {precon: 'precon', bid: 'bid', checkout: 'checkout', closed: 'closed', all: 'all'};
 
     // exhibits spaces (sections of a region)
     #spaces = null;
@@ -608,7 +608,9 @@ class exhibitssetup {
                     editor: "list", editorParams: { values: ['Y', 'N'] }, },
                 { title: "&bigstar;Uses Inventory Mgmt", field: "usesInventory", headerSort: false, width: 90, headerWordWrap: true, validator: "required",
                     editor: "list", editorParams: { values: ['Y', 'N'] }, },
-                { title: "Max Inv Items", field: "maxInventory", width: 70, headerSort: false, headerWordWrap: true, editor: "number" },
+                { title: "Max Inv Items", field: "if ((!array_key_exists('usesInventory', $row)) || $row['usesInventory'] == null || trim($row['usesInventory']) == '') {\n" +
+                        "                $error .= 'The region type with Region Type ' . $row['regionType'] . ' is missing the Uses Inventory Mgmt field, that field is required<br/>';\n" +
+                        "            }", width: 70, headerSort: false, headerWordWrap: true, editor: "number" },
                 { title: "&bigstar;Active", field: "active", headerSort: true, width: 120, validator: "required",
                     editor: "list", editorParams: { values: ['Y', 'N'] }, },
                 { title: "Sort Order", field: "sortorder", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 80,},
@@ -762,7 +764,7 @@ class exhibitssetup {
                 },
                 {title: "&bigstar;Room Status", field: "roomStatus", width:100, headerSort: true, headerFilter: true, headerWordWrap: true,
                     editor: "list", editorParams: {values: this.#regionYearRoomStatuses}, validator: "required",
-                    formatter: "lookup", formatterParams: this.#regionYearRoomStatuses,
+                    formatter: "lookup", formatterParams: {values: this.#regionYearRoomStatuses, }
                 },
                 {title: "&bigstar;Owner Name", field: "ownerName", headerSort: true, headerFilter: true, width: 200, formatter: "textarea",
                     editor: "input", editorParams: {elementAttributes: {maxlength: "64"}}, validator: "required"

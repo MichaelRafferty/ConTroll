@@ -13,6 +13,5 @@ ALTER TABLE exhibitsRegionTypes ADD maxInventory int DEFAULT NULL AFTER usesInve
 ALTER TABLE exhibitsRegionYears ADD mailinGLNum varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL AFTER mailinFee;
 ALTER TABLE exhibitsRegionYears ADD mailinGLLabel varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL AFTER mailinGLNum;
 ALTER TABLE exhibitsRegionYears ADD roomStatus enum('precon', 'bid', 'checkout', 'closed', 'all') DEFAULT 'precon' AFTER exhibitsRegion;
-mailinGLNum;
 
 INSERT INTO patchLog(id, name) VALUES(xx, 'artshow');

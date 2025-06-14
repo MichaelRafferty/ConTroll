@@ -111,6 +111,9 @@ switch ($tablename) {
             if ((!array_key_exists('usesInventory', $row)) || $row['usesInventory'] == null || trim($row['usesInventory']) == '') {
                 $error .= 'The region type with Region Type ' . $row['regionType'] . ' is missing the Uses Inventory Mgmt field, that field is required<br/>';
             }
+            if ((!array_key_exists('maxInventory', $row)) || $row['maxInventory'] < 0 || $row['maxInventory']) > 999999) {
+                $error .= 'The region type with Region Type ' . $row['regionType'] . ', the maximum number of art inventory pieces is out of range.<br/>';
+            }
         }
         if ($error != '') {
             $error .= 'Correct the missing data and save again.';
@@ -252,14 +255,14 @@ EOS;
             $deleted += dbCmd($delsql);
         }
         $inssql = <<<EOS
-INSERT INTO exhibitsRegionYears(conid, exhibitsRegion, ownerName, ownerEmail, glNum, glLabel, includedMemId, additionalMemId,
-    totalUnitsAvailable, atconIdBase, mailinFee, mailinIdBase, sortorder)
-VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?);
+INSERT INTO exhibitsRegionYears(conid, exhibitsRegion, roomStatus, ownerName, ownerEmail, glNum, glLabel, includedMemId, additionalMemId,
+    totalUnitsAvailable, atconIdBase, mailinFee, mailinIdBase, mailinGLNum, mailinGLLabel, sortorder)
+VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
 EOS;
         $updsql = <<<EOS
 UPDATE exhibitsRegionYears
-SET exhibitsRegion = ?, ownerName = ?, ownerEmail = ?, glNum = ?, glLabel = ?, includedMemId = ?, additionalMemId = ?, 
-    totalUnitsAvailable = ?, atconIdBase = ?, mailinFee = ?, mailinIdBase = ?, sortorder = ?
+SET exhibitsRegion = ?, roomStatus = ?, ownerName = ?, ownerEmail = ?, glNum = ?, glLabel = ?, includedMemId = ?, additionalMemId = ?, 
+    totalUnitsAvailable = ?, atconIdBase = ?, mailinFee = ?, mailinIdBase = ?, mailinGLNum = ?, mailinGLLabel = ?, sortorder = ?
 WHERE id = ?;
 EOS;
 
@@ -285,9 +288,10 @@ EOS;
                 } else {
                     $totalUnitsAvailable = 0;
                 }
-                $numrows = dbSafeCmd($updsql, 'sssssiiiidiii', array($row['exhibitsRegion'], $row['ownerName'], $row['ownerEmail'],
-                    $row['glNum'], $row['glLabel'], $row['includedMemId'], $row['additionalMemId'],
-                    $totalUnitsAvailable, $row['atconIdBase'], $row['mailinFee'], $row['mailinIdBase'], $row['sortorder'], $row[$keyfield]));
+                $numrows = dbSafeCmd($updsql, 'ssssssiiiidissii', array($row['exhibitsRegion'], $row['roomStatus'], $row['ownerName'],
+                    $row['ownerEmail'], $row['glNum'], $row['glLabel'], $row['includedMemId'], $row['additionalMemId'],
+                    $totalUnitsAvailable, $row['atconIdBase'], $row['mailinFee'], $row['mailinIdBase'],
+                    $row['mailinGLNum'], $row['mailinGLLabel'],$row['sortorder'], $row[$keyfield]));
                 $updated += $numrows;
             }
         }
@@ -314,9 +318,10 @@ EOS;
                 } else {
                     $totalUnitsAvailable = 0;
                 }
-                $numrows = dbSafeInsert($inssql, 'iissssiiiidii', array($conid, $row['exhibitsRegion'], $row['ownerName'], $row['ownerEmail'],
-                    $row['glNum'], $row['glLabel'], $includedMemId, $additionalMemId, $totalUnitsAvailable, $row['atconIdBase'],
-                    $row['mailinFee'], $row['mailinIdBase'], $row['sortorder']));
+                $numrows = dbSafeInsert($inssql, 'iisssssiiiidissi', array($conid, $row['exhibitsRegion'], $row['roomStatus'],
+                    $row['ownerName'], $row['ownerEmail'], $row['glNum'], $row['glLabel'], $includedMemId, $additionalMemId,
+                    $totalUnitsAvailable, $row['atconIdBase'], $row['mailinFee'], $row['mailinIdBase'],
+                    $row['mailinGLNum'], $row['mailinGLLabel'], $row['sortorder']));
                 if ($numrows !== false)
                     $inserted++;
             }
