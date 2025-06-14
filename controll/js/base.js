@@ -236,20 +236,6 @@ function showError(str, data = null) {
     }
 }
 
-function showAjaxError(jqXHR, textStatus, errorThrown) {
-    'use strict';
-    var message = '';
-    if (jqXHR && jqXHR.responseText) {
-        message = jqXHR.responseText;
-    } else {
-        message = 'An error occurred on the server.';
-    }
-    if (textStatus != '' && textStatus != 'error')
-        message += '<BR/>' + textStatus;
-    message += '<BR/>Error Thrown: ' + errorThrown;
-    show_message(message, 'error');
-}
-
 function showAlert(str) {
     $('#alertInner').empty().html(str);
     $('#alert').show();
