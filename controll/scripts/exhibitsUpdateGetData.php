@@ -111,7 +111,7 @@ switch ($tablename) {
             if ((!array_key_exists('usesInventory', $row)) || $row['usesInventory'] == null || trim($row['usesInventory']) == '') {
                 $error .= 'The region type with Region Type ' . $row['regionType'] . ' is missing the Uses Inventory Mgmt field, that field is required<br/>';
             }
-            if ((!array_key_exists('maxInventory', $row)) || $row['maxInventory'] < 0 || $row['maxInventory']) > 999999) {
+            if ((!array_key_exists('maxInventory', $row)) || $row['maxInventory'] < 0 || $row['maxInventory'] > 999999) {
                 $error .= 'The region type with Region Type ' . $row['regionType'] . ', the maximum number of art inventory pieces is out of range.<br/>';
             }
         }
