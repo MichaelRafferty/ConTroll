@@ -21,7 +21,7 @@ if ((!array_key_exists('table', $_POST)) || (!array_key_exists('filename', $_POS
     exit();
 }
 
-$fileName = $_POST['filename'];
+$fileName = $_POST['filename'] . '-' . date("Y-m-d_H-i-s");
 
 try {
     $tableData = json_decode($_POST['table'], true, 512, JSON_THROW_ON_ERROR);
