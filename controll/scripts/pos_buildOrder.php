@@ -149,8 +149,6 @@ logWrite(array('con'=>$con['label'], 'trans'=>$transId, 'results'=>$results, 're
 if ($cancelOrderId) // cancel the old order if it exists
     cc_cancelOrder($results['source'], $cancelOrderId, true);
 
-
-
 $rtn = cc_buildOrder($results, true);
 if ($rtn == null) {
     // note there is no reason cc_buildOrder will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case

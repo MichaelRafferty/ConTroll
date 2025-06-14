@@ -30,6 +30,8 @@ class ExhibitorInvoice {
     #allStar = '';
     #currentSuffix = null;
     #uspsDiv = null;
+    #currentOrderId = null;
+    #invalidFields = '';
 
 // constructor function - intializes dom objects and inital privates
     constructor() {
@@ -68,9 +70,8 @@ class ExhibitorInvoice {
 
 // openInvoice: display the vendor invoice (and registration items)
     openInvoice(exhibitorInfo, regionYearId) {
-        var regionName = '';
+        var regionName, html, mnum;
         var spacePriceName = '';
-        var html = '';
         var priceIdx = 0;
 
         this.#regionYearId = regionYearId;
@@ -183,10 +184,10 @@ class ExhibitorInvoice {
         }
         html += "</p>\n";
         if (spaces == 0) {
-            html += "<input type='hidden' name='agreeNone' value='on'></input>"
+            html += "<input type='hidden' name='agreeNone' value='on'/>";
         }
-        html += "<input type='hidden' name='exhibitorId' value='" + this.#exhibitorId + "'></input>\n" +
-            "<input type='hidden' name='exhibitorYearId' value='"+ this.#exhibitorYearId + "'></input>\n";
+        html += "<input type='hidden' name='exhibitorId' value='" + this.#exhibitorId + "'/>\n" +
+            "<input type='hidden' name='exhibitorYearId' value='"+ this.#exhibitorYearId + "'/>\n";
         if (spaces > 0) {
              if (portalType == 'artist' && this.#mailin == 'N') {
                 html += "<p>In addition, all non-mail-in artists need to declare an on-site agent. " +
@@ -210,7 +211,8 @@ class ExhibitorInvoice {
         document.getElementById('vendor_inv_included').innerHTML = html;
         this.#totalAmountDue = Number(this.#totalSpacePrice);
         this.#totalInvCost.innerHTML = Number(this.#totalSpacePrice).toFixed(2);
-        document.getElementById('vendorSpacePrice').value = this.#totalSpacePrice;document.getElementById('vendor_inv_region_id').value = regionYearId;
+        document.getElementById('vendorSpacePrice').value = this.#totalSpacePrice;
+        document.getElementById('vendor_inv_region_id').value = regionYearId;
 
        this.#membershipCostdiv.hidden = (this.#includedMemberships == 0 && this.#additionalMemberships == 0);
 
@@ -236,8 +238,10 @@ class ExhibitorInvoice {
             switch (config.required) {
                 case 'all':
                     this.#allStar = '<span class="text-danger">&bigstar;</span>';
+                    // fall through
                 case 'addr':
                     this.#addrStar = '<span class="text-danger">&bigstar;</span>';
+                    // fall through
                 case 'first':
                     this.#firstStar = '<span class="text-danger">&bigstar;</span>';
             }
@@ -247,7 +251,7 @@ class ExhibitorInvoice {
                 "<div class='container-fluid'>\n" +
                 "<div class='row'><div class='col-sm-auto p-2 pe-0'><strong>Included Memberships: (up to " + this.#includedMemberships + ")</strong>" +
                 "<input type='hidden' name='includedMemberships' value='" + String(this.#includedMemberships) + "'></div></div>";
-            for (var mnum = 0; mnum < this.#includedMemberships; mnum++) {
+            for (mnum = 0; mnum < this.#includedMemberships; mnum++) {
                 // name fields including legal name
                 html += this.#drawMembershipBlock('Included', mnum, '_i_' + mnum, country_options, false);
             }
@@ -259,7 +263,7 @@ class ExhibitorInvoice {
             html += "<input type='hidden' name='addl_mem_count' value='" + this.#additionalMemberships + "'>\n" +
                 "<div class='row'><div class='col-sm-auto p-2 pe-0'><strong>Additional Memberships: (up to " + this.#additionalMemberships + ")</strong>" +
                 "<input type='hidden' name='additionalMemberships' value='" + String(this.#additionalMemberships) + "'></div></div>";
-            for (var mnum = 0; mnum < this.#additionalMemberships; mnum++) {
+            for (mnum = 0; mnum < this.#additionalMemberships; mnum++) {
                 // name fields includeing legal name
                 html += this.#drawMembershipBlock('Additional', mnum, '_a_' + mnum, country_options, true);
             }
@@ -391,7 +395,6 @@ class ExhibitorInvoice {
 // update invoice for the Cost of Memberships and total Cost when an additional member is started
     updateCost(regionYearId, item) {
         var regionList = region_list[regionYearId];
-        var price = Number(regionList.additionalMemPrice);
         var fname = document.getElementById('fname_a_' + item).value;
         this.#totalAmountDue = 0;
         this.#additional_cost[item] = fname == '' ? 0 : Number(regionList.additionalMemPrice);
@@ -434,6 +437,7 @@ class ExhibitorInvoice {
         var pt_credit = document.getElementById('pt-credit').checked;
         var valid = true;
         var mnum = 0;
+        this.#invalidFields = '';
 
         clear_message('inv_result_message');
 
@@ -446,10 +450,12 @@ class ExhibitorInvoice {
             var pay_amt = Number(this.#payAmt.value);
             if (pay_amt > 0 && pay_amt > this.#totalAmountDue) {
                 this.#payAmt.style.backgroundColor = 'var(--bs-warning)';
+                this.#invalidFields += "Amount Paid, ";
                 valid = false;
             }
-            if (pay_amt <= 0) {
+            if (valid && pay_amt <= 0 && this.#totalAmountDue > 0) {
                 this.#payAmt.style.backgroundColor = 'var(--bs-warning)';
+                this.#invalidFields += "Amount Paid, ";
                 valid = false;
             }
 
@@ -458,26 +464,28 @@ class ExhibitorInvoice {
 
             if (pt_check) {
                 ptype = 'check';
+                checked = true;
                 checkno = this.#payCheckno.value;
                 if (checkno == null || checkno == '') {
+                    this.#invalidFields += 'Check Number, ';
                     this.#payCheckno.style.backgroundColor = 'var(--bs-warning)';
-                    return;
+                    valid = false;
                 } else {
                     this.#payCheckno.style.backgroundColor = '';
                 }
-                checked = true;
             }
 
             if (pt_credit) {
                 ptype = 'credit';
+                checked = true;
                 ccauth = this.#payCcauth.value;
                 if (ccauth == null || ccauth == '') {
+                    this.#invalidFields += 'CC Auth Code, '
                     this.#payCcauth.style.backgroundColor = 'var(--bs-warning)';
-                    return;
+                    valid = false;
                 } else {
                     this.#payCcauth.style.backgroundColor = '';
                 }
-                checked = true;
             }
 
             if (pt_cash) {
@@ -487,6 +495,7 @@ class ExhibitorInvoice {
 
             if (!checked) {
                 this.#paymentTypeDiv.style.backgroundColor = 'var(--bs-warning)';
+                this.#invalidFields += "Payment Type, ";
                 valid = false;
             }
 
@@ -495,7 +504,7 @@ class ExhibitorInvoice {
                 this.#currentSuffix = '_i_' + mnum;
                 if (document.getElementById('fname' + this.#currentSuffix).value != '' ||
                     document.getElementById('lname' + this.#currentSuffix).value != '') {
-                    if (!this.#checkValid(this.#currentSuffix))
+                    if (!this.#checkValid(this.#currentSuffix, 'Included #' + (mnum + 1)))
                         valid = false;
                 }
             }
@@ -503,13 +512,16 @@ class ExhibitorInvoice {
                 this.#currentSuffix = '_a_' + mnum;
                 if (document.getElementById('fname' + this.#currentSuffix).value != '' ||
                     document.getElementById('lname' + this.#currentSuffix).value != '') {
-                    if (!this.#checkValid(this.#currentSuffix))
+                    if (!this.#checkValid(this.#currentSuffix,  'Additional #' + (mnum + 1)))
                         valid = false;
                 }
             }
 
             if (!valid) {
-                show_message('Please correct the items marked in yellow to process the payment.' +
+                if (this.#invalidFields != '') {
+                    this.#invalidFields = '<br/>' + this.#invalidFields.substring(0, this.#invalidFields.length - 2);
+                }
+                show_message('Please correct the items marked in yellow to process the payment.' + this.#invalidFields +
                     '<br/>For fields in the membership area that are required and not available, use /r to indicate not available.',
                     'warn', 'inv_result_message')
                 return;
@@ -545,8 +557,17 @@ class ExhibitorInvoice {
         // process payment
 
         this.#payButton.disabled = true;
-        var formData = $('#vendor_invoice_form').serialize()
-        formData += "&nonce=" + 'admin&amtDue=' + this.#totalAmountDue;
+        var formArr = $('#vendor_invoice_form').serializeArray();
+        var formData = {};
+        for (var index = 0; index <formArr.length; index++)
+            formData[formArr[index].name] = formArr[index].value;
+        formData.nonce= 'admin';
+        formData.amtDue= this.#totalAmountDue;
+        formData.prow = prow;
+        if (this.#currentOrderId) {
+            formData.cancelOrderId = this.#currentOrderId;
+            this.#currentOrderId = null;
+        }
         clear_message('inv_result_message');
         $.ajax({
             url: 'scripts/exhibitorsSpacePayment.php',
@@ -564,32 +585,36 @@ class ExhibitorInvoice {
     }
 
     // enablePayButton - for AJAX, re-enable the pay button
-        enablePayButton() {
+    enablePayButton() {
         this.#payButton.disabled = false;
     }
 
     // pay succeedd - deal with it
-        paySuccess(data) {
-            if (config.debug & 1)
-                console.log(data);
-            if (data.error) {
-                show_message(data.error, 'error', 'inv_result_message');
-                this.#payButton.disabled = false;
-            } else if (data.status == 'error') {
-                show_message(data.data, 'error', 'inv_result_message');
-                this.#payButton.disabled = false;
-            } else if (data.status == 'success') {
-                this.#exhibitorInvoiceModal.hide();
-                show_message(data.message + "Payment for space recorded.");
-                if (data.exhibitor_spacelist) {
-                    exhibitor_spacelist = data.exhibitor_spacelist;
-                }
-                exhibitors.open(fulltabname);
-            } else {
-                show_message('There was an unexpected error, please email ' + config.vemail + ' to let us know.  Thank you.', 'error', 'inv_result_message');
-                this.#payButton.disabled = false;
+    paySuccess(data) {
+        if (config.debug & 1)
+            console.log(data);
+        if (data.currentOrderId)
+            this.#currentOrderId = data.currentOrderId;
+        if (data.error) {
+            show_message(data.error, 'error', 'inv_result_message');
+            this.#payButton.disabled = false;
+        } else if (data.status == 'error') {
+            show_message(data.data, 'error', 'inv_result_message');
+            this.#payButton.disabled = false;
+        } else if (data.status == 'success') {
+            this.#exhibitorInvoiceModal.hide();
+            show_message(data.message + "Payment for space recorded.");
+            if (data.exhibitor_spacelist) {
+                exhibitor_spacelist = data.exhibitor_spacelist;
             }
+            this.#currentOrderId = null; // successful payment clears the current order
+            exhibitors.open(fulltabname);
+        } else {
+            show_message('There was an unexpected error, please email ' + config.vemail + ' to let us know.  Thank you.', 'error', 'inv_result_message');
+            this.#payButton.disabled = false;
         }
+    }
+
     // check if value is non blank
     #checkNonBlank(id) {
         if (id.value == '') {
@@ -601,43 +626,52 @@ class ExhibitorInvoice {
     }
 
     // check the additional membership section for valid entries
-    #checkValid(suffix) {
+    #checkValid(suffix, label = '') {
         var id = null;
         var value = null;
         var country = null;
         var valid = true;
+        if (label != '')
+            label += ': ';
 
         // if first name or last name is set, do the check, else it's not in use, skip it
 
         if (config.required != '') {
-            if (!this.#checkNonBlank(document.getElementById('fname' + suffix)))
+            if (!this.#checkNonBlank(document.getElementById('fname' + suffix))) {
+                this.#invalidFields += label + 'First Name, ';
                 valid = false;
+            }
         }
 
         if (config.required == 'all') {
-            if (!this.#checkNonBlank(document.getElementById('lname' + suffix)))
+            if (!this.#checkNonBlank(document.getElementById('lname' + suffix))) {
+                this.#invalidFields += label + 'Last Name, ';
                 valid = false;
+            }
         }
 
         if (config.required == 'all' || config.required == 'addr') {
-            if (!this.#checkNonBlank(document.getElementById('addr' + suffix)))
-               valid = false;
-
-            if (!this.#checkNonBlank(document.getElementById('city' + suffix)))
+            if (!this.#checkNonBlank(document.getElementById('addr' + suffix))) {
+                this.#invalidFields += label + 'Address, ';
                 valid = false;
+            }
 
-            if (!this.#checkNonBlank(document.getElementById('state' + suffix)))
+            if (!this.#checkNonBlank(document.getElementById('city' + suffix))) {
+                this.#invalidFields += label + 'City, ';
                 valid = false;
+            }
 
             country = document.getElementById('state' + suffix).value;
             id = document.getElementById('state' + suffix);
             value = id.value;
             if (value == '') {
+                this.#invalidFields += label + 'State, ';
                 valid = false;
                 id.style.backgroundColor = 'var(--bs-warning)';
             } else {
                 if (country == 'USA') {
                     if (value.length != 2) {
+                        this.#invalidFields += label + 'State, ';
                         valid = false;
                         id.style.backgroundColor = 'var(--bs-warning)';
                     } else {
@@ -648,13 +682,16 @@ class ExhibitorInvoice {
                 }
             }
 
-            if (!this.#checkNonBlank(document.getElementById('zip' + suffix)))
+            if (!this.#checkNonBlank(document.getElementById('zip' + suffix))) {
+                this.#invalidFields += label + 'Zip/Postal Code, ';
                 valid = false;
+            }
         }
 
         id = document.getElementById('email' + suffix);
         value = id.value;
         if (value != '/r' && !emailRegex.test(value)) {
+            this.#invalidFields += label + 'Email, ';
             valid = false;
             id.style.backgroundColor = 'var(--bs-warning)';
         } else {

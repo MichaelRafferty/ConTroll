@@ -383,11 +383,13 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                 $itemName = 'Mail in Fee for ' . $fee['name'];
                 $itemPrice = $fee['amount'];
                 $note = 'Mail in fee';
+                if (array_key_exists('glNum', $fee) && $fee['glNum'] != null && $fee['glNum'] != '')
+                    $note .= ", GL: " . $fee['glNum'];
                 $item = [
                     'uid' => 'region-' . $fee['name'],
                     'name' => mb_substr($itemName, 0, 128),
                     'quantity' => 1,
-                    'note' => $note,
+                    'note' => mb_substr($note, 0, 128),
                     'basePriceMoney' => round($itemPrice * 100),
                 ];
                 $order_lineitems[$lineid] = $item;

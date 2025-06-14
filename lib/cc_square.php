@@ -533,19 +533,24 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
 
         if (array_key_exists('mailInFee', $results)) {
             foreach ($results['mailInFee'] as $fee) {
+                $itemName = 'Mail in Fee for ' . $fee['name'];
+                $itemPrice = $fee['amount'];
+                $note = 'Mail in fee';
+                if (array_key_exists('glNum', $fee) && $fee['glNum'] != null && $fee['glNum'] != '')
+                    $note .= ', GL: ' . $fee['glNum'];
                 $item = new OrderLineItem([
                     'itemType' => OrderLineItemItemType::Item->value,
-                    'uid' => 'region-' . $fee['yearId'],
-                    'name' => 'Mail in Fee for ' . $fee['name'],
+                    'uid' => 'region-' . $fee['name'],
+                    'name' => mb_substr($itemName, 0, 128),
                     'quantity' => 1,
-                    'note' => 'Mail in fee',
+                    'note' => mb_substr($note, 0, 128),
                     'basePriceMoney' => new Money([
-                        'amount' => round($fee['amount'] * 100),
+                        'amount' => round($itemPrice * 100),
                         'currency' => $currency,
                         ]),
                 ]);
                 $orderLineitems[$lineid] = $item;
-                $orderValue += $fee['amount'];
+                $orderValue += $itemPrice;
                 $lineid++;
             }
         }
