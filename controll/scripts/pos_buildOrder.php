@@ -131,8 +131,11 @@ foreach ($cart_perinfo as $row) {
             'balDue' => $unpaid,
             'label' => $membership['label'],
             'memType' => $membership['memType'],
+            'memCategory' => $membership['memCategory'],
             'taxable' => $membership['taxable'],
             'price' => $price - $paid,
+            'status' => $membership['status'],
+            'regid' => $membership['regid'],
         ];
 
         $badges[] = $badge;
