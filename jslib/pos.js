@@ -2408,6 +2408,7 @@ addUnpaid(tid) {
                 }
                 this.#drow = {
                     index: cart.getPmtLength() + 1, amt: discount_amt, ccauth: ccauth, checkno: checkno, desc: eldesc.value, type: 'discount',
+                        preTaxAmt: discount_amt, taxAmt: 0
                 };
                 cart.addPmt(this.#drow, true);
                 this.#managerDiscount = discount_amt;
