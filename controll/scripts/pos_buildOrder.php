@@ -6,6 +6,7 @@
 
 require_once '../lib/base.php';
 require_once('../../lib/log.php');
+require_once('../../lib/coupon.php');
 require_once('../../lib/cc__load_methods.php');
 
 $check_auth = google_init('ajax');
@@ -53,6 +54,26 @@ if ($action != 'buildOrder') {
 $transId = $_POST['pay_tid'];
 if ($transId <= 0) {
     ajaxError('No current transaction in process');
+}
+
+$discount = 0;
+if (array_key_exists('couponCode', $_POST) && $_POST['couponCode'] != '') {
+    $result = load_coupon_data($_POST['couponCode']);
+    if ($result['status'] == 'success') {
+        $coupon = $result['coupon'];
+        $discount = $_POST['couponDiscount'];
+    } else {
+        ajaxError($result['error']);
+        return;
+    }
+} else {
+    $coupon = null;
+}
+
+$drow = null;
+if (array_key_exists('drow', $_POST) && $_POST['drow'] != null) {
+    $drow = $_POST['drow'];
+    $discount = $_POST['discountAmt'];
 }
 
 try {
@@ -132,13 +153,14 @@ $payorId = $badges[0]['perid'];
 
 $results = array(
     'custid' => "p-$payorId",
-    'source' => 'atcon',
+    'source' => 'registration',
     'transid' => $transId,
     'price' => $totalAmountDue,
     'badges' => $badges,
     'total' => $amount,
     'totalPaid' => $totalPaid,
-    'discount' => 0,
+    'discount' => $discount,
+    'coupon' => $coupon,
 );
 $response['amount'] = $amount;
 
@@ -158,6 +180,47 @@ if ($rtn == null) {
 }
 $rtn['totalPaid'] = $totalPaid;
 $response['rtn'] = $rtn;
+
+// if coupon discount, update the badges with the coupon discount to update the in memory cart
+if ($coupon != null) {
+    foreach ($rtn['items'] as $item) {
+        if (array_key_exists('applied_discounts', $item)) {
+            for ($discountNo = 0; $discountNo < count($item['applied_discounts']); $discountNo++) {
+                $discount = $item['applied_discounts'][$discountNo];
+                if (str_starts_with($discount['uid'], 'couponDiscount')) {
+                    if (array_key_exists('applied_amount', $discount))
+                        $thisItemDiscount = $discount['applied_amount'];
+                    else
+                        $thisItemDiscount = $discount['applied_money']['amount'];
+                    // now find the reg entry to match this item
+                    $rowno = $item['metadata']['rowno'];
+                    $badges[$rowno]['couponDiscount'] = $thisItemDiscount / 100;
+                    $badges[$rowno]['coupon'] = $coupon['id'];
+                }
+            }
+        }
+    }
+}
+if ($drow != null) {
+    foreach ($rtn['items'] as $item) {
+        if (array_key_exists('applied_discounts', $item)) {
+            for ($discountNo = 0; $discountNo < count($item['applied_discounts']); $discountNo++) {
+                $discount = $item['applied_discounts'][$discountNo];
+                if (str_starts_with($discount['uid'], 'managerDiscount')) {
+                    if (array_key_exists('applied_amount', $discount))
+                        $thisItemDiscount = $discount['applied_amount'];
+                    else
+                        $thisItemDiscount = $discount['applied_money']['amount'];
+                    // now find the reg entry to match this item
+                    $rowno = $item['metadata']['rowno'];
+                    $badges[$rowno]['paid'] += $thisItemDiscount / 100;
+                }
+            }
+        }
+    }
+    $response['badges'] = $badges;
+    $response['drow'] = $drow;
+}
 
 $upT = <<<EOS
 UPDATE transaction
