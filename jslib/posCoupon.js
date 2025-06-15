@@ -212,7 +212,7 @@ class Coupon {
             // add coupon discount as payment row
             var prow = {
                 index: cart.getPmtLength(), amt: couponDiscount, cartDiscount: Number(this.#cartDiscount), memDiscount: Number(this.#memDiscount),
-                        ccauth: null, checkno: null, desc: coupon.getCouponName(), type: 'coupon',
+                        ccauth: null, checkno: null, desc: coupon.getCouponName(), type: 'coupon', preTaxAmt: couponDiscount,  taxAmt: 0,
                 coupon: coupon.getCouponId(),
             };
             cart.addPmt(prow, true);
