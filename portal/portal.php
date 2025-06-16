@@ -1031,18 +1031,21 @@ EOS;
             $sslR = dbSafeQuery($sslQ, 'si', array ($key, $loginId));
             if ($sslR !== false && $sslR->num_rows == 1) {
                 $sslToken = $sslR->fetch_row()[0];
-                $site=$url . '/' . $sslToken;
-                if (array_key_exists('siteselectionBtn', $portal_conf))
-                    $siteSelectionBtnTxt = $portal_conf['siteselectionBtn'];
-                else
-                    $siteSelectionBtnTxt = 'Vote in Site Selection';
-
-                $siteSelectionButton .= "<button class='btn btn-primary p-1' type='button' " .
-                    ($hasSiteSelection ? 'onclick="portal.siteSelect(' . "'$site'" . ');"' : ' disabled') . ">$siteSelectionBtnTxt</button>" .
-                    "<br/>Token: $sslToken";
-                if (!$hasSiteSelection)
-                    $siteSelectionButton .= '</span>';
+                $site = $url . '/' . $sslToken;
+            } else {
+                $sslToken = '';
+                $site = '';
             }
+            if (array_key_exists('siteselectionBtn', $portal_conf))
+                $siteSelectionBtnTxt = $portal_conf['siteselectionBtn'];
+            else
+                $siteSelectionBtnTxt = 'Vote in Site Selection';
+
+            $siteSelectionButton .= "<button class='btn btn-primary p-1' type='button' " .
+                (($hasSiteSelection && $sslToken != '') ? 'onclick="portal.siteSelect(' . "'$site'" . ');"' : ' disabled') . ">$siteSelectionBtnTxt</button>" .
+                "<br/>Token: $sslToken";
+            if (!$hasSiteSelection)
+                $siteSelectionButton .= '</span>';
         }
     }
 
