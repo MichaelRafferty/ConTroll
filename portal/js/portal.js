@@ -1707,6 +1707,11 @@ class Portal {
             },
         });
     }
+
+    // site selection
+    siteSelect(url) {
+        openWindowWithFallback(url);
+    }
 }
 
 

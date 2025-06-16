@@ -1020,16 +1020,29 @@ function drawWSFSButtons($NomNomExists, $BusinessExists, $SiteExists, $hasWSFS, 
             $siteSelectionButton .= '<span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="top" ' .
                 'data-bs-title="Add and pay for a Site Selection Token to be able to vote in site selection.">';
         }
-        if ($SiteExists) {
-            if (array_key_exists('siteselectionBtn', $portal_conf))
-                $siteSelectionBtnTxt = $portal_conf['siteselectionBtn'];
-            else
-                $siteSelectionBtnTxt = 'Vote in Site Selection';
+        if ($SiteExists && $loginType == 'p' && array_key_exists('siteselectionURL', $portal_conf)) {
+            $key = $portal_conf['siteselectionKey'];
+            $url = $portal_conf['siteselectionURL'];
+            $sslQ = <<<EOS
+SELECT CAST(AES_DECRYPT(encTokenKey, ?) AS char)
+FROM siteSelectionTokens
+WHERE perid = ?;
+EOS;
+            $sslR = dbSafeQuery($sslQ, 'si', array ($key, $loginId));
+            if ($sslR !== false && $sslR->num_rows == 1) {
+                $sslToken = $sslR->fetch_row()[0];
+                $site=$url . '/' . $sslToken;
+                if (array_key_exists('siteselectionBtn', $portal_conf))
+                    $siteSelectionBtnTxt = $portal_conf['siteselectionBtn'];
+                else
+                    $siteSelectionBtnTxt = 'Vote in Site Selection';
 
-            $siteSelectionButton .= "<button class='btn btn-primary p-1' type='button' " .
-                ($hasSiteSelection ? 'onclick="portal.siteSelect();"' : ' disabled') . ">$siteSelectionBtnTxt</button>";
-            if (!$hasSiteSelection)
-                $siteSelectionButton .= '</span>';
+                $siteSelectionButton .= "<button class='btn btn-primary p-1' type='button' " .
+                    ($hasSiteSelection ? 'onclick="portal.siteSelect(' . "'$site'" . ');"' : ' disabled') . ">$siteSelectionBtnTxt</button>" .
+                    "<br/>Token: $sslToken";
+                if (!$hasSiteSelection)
+                    $siteSelectionButton .= '</span>';
+            }
         }
     }
 

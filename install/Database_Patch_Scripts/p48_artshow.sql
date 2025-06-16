@@ -29,11 +29,10 @@ CREATE INDEX exhibitorYears_idx_email ON exhibitorYears(contactEmail);
  */
 CREATE TABLE siteSelectionTokens (
     id int NOT NULL AUTO_INCREMENT,
-    tokenKey varchar(64) NOT NULL,
+    encTokenKey varbinary(256) NOT NULL,
     perid int DEFAULT NULL,
     PRIMARY KEY (id)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 ALTER TABLE siteSelectionTokens ADD CONSTRAINT `sst_perinfo_fk` FOREIGN KEY (perid) REFERENCES perinfo(id) ON UPDATE CASCADE;
-
 
 INSERT INTO patchLog(id, name) VALUES(xx, 'artshow-siteselection');
