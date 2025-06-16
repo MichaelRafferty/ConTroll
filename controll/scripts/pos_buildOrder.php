@@ -29,7 +29,6 @@ $conid = $con['id'];
 $debug = get_conf('debug');
 $ini = get_conf('reg');
 $log = get_conf('log');
-$ccauth = get_conf('cc');
 load_cc_procs();
 logInit($log['reg']);
 
@@ -97,11 +96,6 @@ if (array_key_exists('cancelOrder', $_POST)) {
     $cancelOrderId = null;
 }
 
-// all the records are in the database, so lets build the order
-
-// get this person
-//$info = getPersonInfo($conid);
-
 // build the badge list for the order, do not include the already paid items
 $amount = 0;
 $totalAmountDue = 0;
@@ -119,12 +113,12 @@ foreach ($cart_perinfo as $row) {
             continue;
 
         if (array_key_exists('fullName', $row))
-            $fullname = $row['fullName'];
+            $fullName = $row['fullName'];
         else
-            $fullname = trim(trim($row['first_name'] . ' ' . $row['middle_name']) . ' ' . $row['last_name']);
+            $fullName = trim(trim($row['first_name'] . ' ' . $row['middle_name']) . ' ' . $row['last_name']);
         $badge = [
             'paid' => $paid,
-            'fullName' => $fullname,
+            'fullName' => $fullName,
             'perid' => $row['perid'],
             'memId' => $membership['memId'],
             'glNum' => $membership['glNum'],
@@ -216,7 +210,11 @@ if ($drow != null) {
                         $thisItemDiscount = $discount['applied_money']['amount'];
                     // now find the reg entry to match this item
                     $rowno = $item['metadata']['rowno'];
-                    $badges[$rowno]['paid'] += $thisItemDiscount / 100;
+                    if (!array_key_exists('paid', $badges[$rowno]))
+                        $badges[$rowno]['paid'] = 0;
+                    if (!array_key_exists('couponDiscount', $badges[$rowno]))
+                        $badges[$rowno]['couponDiscount'] = 0;
+                    $badges[$rowno]['couponDiscount'] += $thisItemDiscount / 100;
                 }
             }
         }

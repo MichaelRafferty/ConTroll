@@ -2415,10 +2415,14 @@ addUnpaid(tid) {
                 document.getElementById('pt-discount').checked = false;
                 document.getElementById('pay-discount').value = '';
                 eldesc.value = '';
-                this.setPayType('none');
-                this.#payForcePayShown = true;
-                pos.gotoPay();
-                return;
+                // check if full paid now
+                if (discount_amt < total_amount_due) {
+                    this.setPayType('none');
+                    this.#payForcePayShown = true;
+                    pos.gotoPay();
+                    return;
+                }
+                total_amount_due -= discount_amt;
             }
 
             if (tendered_amt > 0) {
@@ -2444,7 +2448,6 @@ addUnpaid(tid) {
                 payorPerid = cart.getPerid(payor);
                 country = cart.getCountry(payor);
             }
-
             prow = {
                 index: cart.getPmtLength(), amt: total_amount_due, ccauth: ccauth, checkno: checkno, desc: eldesc.value,
                 type: ptype, nonce: nonce, coupon: couponCode,

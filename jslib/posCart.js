@@ -927,10 +927,12 @@ class PosCart {
     updatePmt(data) {
         this.#cartIgnorePmtRound = false;
         if (data.prow) {
-            this.#cartPmt.push(data.prow);
+            if (data.prow.amt > 0)
+                this.#cartPmt.push(data.prow);
         }
         if (data.crow) {
-            this.#cartPmt.push(data.crow);
+            if (data.prow.amt > 0)
+                this.#cartPmt.push(data.crow);
         }
         this.updateFromDB(data);
     }

@@ -5,8 +5,8 @@
 // create order from cart for payment processing
 
 require_once '../lib/base.php';
-require_once('../../lib/coupon.php');
 require_once('../../lib/log.php');
+require_once('../../lib/coupon.php');
 require_once('../../lib/cc__load_methods.php');
 
 // use common global Ajax return functions
@@ -48,6 +48,26 @@ if ($transId <= 0) {
     ajaxError('No current transaction in process');
 }
 
+$discount = 0;
+if (array_key_exists('couponCode', $_POST) && $_POST['couponCode'] != '') {
+    $result = load_coupon_data($_POST['couponCode']);
+    if ($result['status'] == 'success') {
+        $coupon = $result['coupon'];
+        $discount = $_POST['couponDiscount'];
+    } else {
+        ajaxError($result['error']);
+        return;
+    }
+} else {
+    $coupon = null;
+}
+
+$drow = null;
+if (array_key_exists('drow', $_POST) && $_POST['drow'] != null) {
+    $drow = $_POST['drow'];
+    $discount = $_POST['discountAmt'];
+}
+
 try {
     $cart_perinfo = json_decode($_POST['cart_perinfo'], true, 512, JSON_THROW_ON_ERROR);
 }
@@ -67,26 +87,6 @@ if (array_key_exists('cancelOrder', $_POST)) {
     $cancelOrderId = $_POST['cancelOrder'];
 } else {
     $cancelOrderId = null;
-}
-
-$discount = 0;
-if (array_key_exists('couponCode', $_POST) && $_POST['couponCode'] != '') {
-    $result = load_coupon_data($_POST['couponCode']);
-    if ($result['status'] == 'success') {
-        $coupon = $result['coupon'];
-        $discount = $_POST['couponDiscount'];
-    } else {
-        ajaxError($result['error']);
-        return;
-    }
-} else {
-    $coupon = null;
-}
-
-$drow = null;
-if (array_key_exists('drow', $_POST) && $_POST['drow'] != null) {
-    $drow = $_POST['drow'];
-    $discount = $_POST['discountAmt'];
 }
 
 // build the badge list for the order, do not include the already paid items
@@ -210,7 +210,11 @@ if ($drow != null) {
                         $thisItemDiscount = $discount['applied_money']['amount'];
                     // now find the reg entry to match this item
                     $rowno = $item['metadata']['rowno'];
-                    $badges[$rowno]['paid'] += $thisItemDiscount / 100;
+                    if (!array_key_exists('paid', $badges[$rowno]))
+                        $badges[$rowno]['paid'] = 0;
+                    if (!array_key_exists('couponDiscount', $badges[$rowno]))
+                        $badges[$rowno]['couponDiscount'] = 0;
+                    $badges[$rowno]['couponDiscount'] += $thisItemDiscount / 100;
                 }
             }
         }
