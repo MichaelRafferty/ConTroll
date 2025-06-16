@@ -288,6 +288,7 @@ showVolunteerPolicy=1
 ; businessmeetingBtn = text for the business meeting button
 ; siteselectionURL = url to site selection voting
 ; siteselectionBtn = text for the site selection voting
+; siteselectionKey = encryption key for the site selection data
 ;; End of Items for Worldcon
 
 ; virtualURL = url to the virtual portal
