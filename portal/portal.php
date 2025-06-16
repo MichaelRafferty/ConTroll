@@ -1042,8 +1042,9 @@ EOS;
                 $siteSelectionBtnTxt = 'Vote in Site Selection';
 
             $siteSelectionButton .= "<button class='btn btn-primary p-1' type='button' " .
-                (($hasSiteSelection && $sslToken != '') ? 'onclick="portal.siteSelect(' . "'$site'" . ');"' : ' disabled') . ">$siteSelectionBtnTxt</button>" .
-                "<br/>Token: $sslToken";
+                (($hasSiteSelection && $sslToken != '') ? 'onclick="portal.siteSelect(' . "'$site'" . ');"' : ' disabled') . ">$siteSelectionBtnTxt</button>";
+            if ($sslToken != '')
+                $siteSelectionButton .= "<br/>Token: $sslToken";
             if (!$hasSiteSelection)
                 $siteSelectionButton .= '</span>';
         }
