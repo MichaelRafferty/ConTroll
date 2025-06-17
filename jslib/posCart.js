@@ -927,11 +927,11 @@ class PosCart {
     updatePmt(data) {
         this.#cartIgnorePmtRound = false;
         if (data.prow) {
-            if (data.prow.amt > 0)
+            if (data.prow.preTaxAmt > 0 || data.prow.amt > 0)
                 this.#cartPmt.push(data.prow);
         }
         if (data.crow) {
-            if (data.prow.amt > 0)
+            if (data.crow.preTaxAmt > 0 || data.crow.amt > 0)
                 this.#cartPmt.push(data.crow);
         }
         this.updateFromDB(data);
@@ -1182,18 +1182,19 @@ class PosCart {
             };
             this.#cartPmt.push(prow);
         }
-        // loop over the cartPmt row and if it is less than the total paid, increment the prior paid by the difference because the new row
-        // added to the cart has a prior payment.
+        // loop over the cartPmt row and recompute the prior paid row added to the cart has a prior payment.
         var totalPayments = 0;
         var priorIndex = 0;
         for (var i = 0; i < this.#cartPmt.length; i++) {
-            totalPayments += Number(this.#cartPmt[i].amt);
+            totalPayments += Number(this.#cartPmt[i].preTaxAmt);
             if (this.#cartPmt[i].type == 'prior')
                 priorIndex = i;
         }
+
         if (this.#totalPaid != totalPayments && !this.#cartIgnorePmtRound) {
             // adjust the prior prow
-            this.#cartPmt[priorIndex].amt = Number(this.#cartPmt[priorIndex].amt) + Number(this.#totalPaid) - Number(totalPayments);
+            this.#cartPmt[priorIndex].preTaxAmt = Number(this.#cartPmt[priorIndex].preTaxAmt) + Number(this.#totalPaid) - Number(totalPayments);
+           //this.#cartPmt[priorIndex].preTaxAmt = Number(this.#cartPmt[priorIndex].amt);
         }
         if (this.#cartPmt.length > 0) {
             html += `
@@ -1206,7 +1207,7 @@ class PosCart {
             this.#totalPmt = 0;
             for (var prow in this.#cartPmt) {
                 html += this.#drawCartPmtRow(prow);
-                this.#totalPmt += Number(this.#cartPmt[prow].amt);
+                this.#totalPmt += Number(this.#cartPmt[prow].preTaxAmt);
             }
             html += `<div class="row">
     <div class="col-sm-8 p-0 text-end">Payment Total:</div>`;
