@@ -1020,21 +1020,46 @@ function drawWSFSButtons($NomNomExists, $BusinessExists, $SiteExists, $hasWSFS, 
             $siteSelectionButton .= '<span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="top" ' .
                 'data-bs-title="Add and pay for a Site Selection Token to be able to vote in site selection.">';
         }
-        if ($SiteExists && $loginType == 'p' && array_key_exists('siteselectionURL', $portal_conf)) {
-            $key = $portal_conf['siteselectionKey'];
-            $url = $portal_conf['siteselectionURL'];
-            $sslQ = <<<EOS
+        if ($SiteExists) {
+            if ($hasSiteSelection && $loginType == 'p' && array_key_exists('siteselectionURL', $portal_conf)) {
+                $key = $portal_conf['siteselectionKey'];
+                $url = $portal_conf['siteselectionURL'];
+                $sslQ = <<<EOS
 SELECT CAST(AES_DECRYPT(encTokenKey, ?) AS char)
 FROM siteSelectionTokens
 WHERE perid = ?;
 EOS;
-            $sslR = dbSafeQuery($sslQ, 'si', array ($key, $loginId));
-            if ($sslR !== false && $sslR->num_rows == 1) {
-                $sslToken = $sslR->fetch_row()[0];
-                $site = $url . '/' . $sslToken;
-            } else {
-                $sslToken = '';
-                $site = '';
+                $sslR = dbSafeQuery($sslQ, 'si', array ($key, $loginId));
+                if ($sslR !== false && $sslR->num_rows > 0) { // don't care if more than one, just get the first, in case of an error
+                    $sslToken = $sslR->fetch_row()[0];
+                    $site = $url . '/' . $sslToken;
+                } else { // it hasn't been assigned yet, assign one
+                    if ($sslR !== false)
+                        $sslR->free();
+                    $loginId = intval($loginId); // force it to be integer to avoid sql issues
+                    $sslM = <<<EOS
+SELECT @next := MIN(id) FROM siteSelectionTokens WHERE perid IS NULL;
+UPDATE siteSelectionTokens
+	SET perid = $loginId
+    WHERE id = @next;
+EOS;
+
+                    $sslR = dbMultiQuery($sslM);
+                    if ($sslR !== false) {
+                        while (dbNextResult());
+                        $sslR->free();
+                        $sslR = dbSafeQuery($sslQ, 'si', array ($key, $loginId));
+                        if ($sslR !== false && $sslR->num_rows > 0) {
+                            $sslToken = $sslR->fetch_row()[0];
+                            $site = $url . '/' . $sslToken;
+                        } else {
+                            $sslToken = '';
+                            $site = '';
+                        }
+                    }
+                }
+                if ($sslR !== false)
+                    $sslR->free();
             }
             if (array_key_exists('siteselectionBtn', $portal_conf))
                 $siteSelectionBtnTxt = $portal_conf['siteselectionBtn'];
