@@ -1194,7 +1194,6 @@ class PosCart {
         if (this.#totalPaid != totalPayments && !this.#cartIgnorePmtRound) {
             // adjust the prior prow
             this.#cartPmt[priorIndex].preTaxAmt = Number(this.#cartPmt[priorIndex].preTaxAmt) + Number(this.#totalPaid) - Number(totalPayments);
-           //this.#cartPmt[priorIndex].preTaxAmt = Number(this.#cartPmt[priorIndex].amt);
         }
         if (this.#cartPmt.length > 0) {
             html += `
