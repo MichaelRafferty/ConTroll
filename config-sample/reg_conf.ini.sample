@@ -130,7 +130,10 @@ creditonline = 1
 ; allage=0 : act like portal, require age to show age related badges
 ; allage=1 : if no badge of an age, show badges of all ages, once an age badge is selected, auto set age
 allage=0
-
+;; inlineinventory - allow for modal change to inventory status at time of checkout for artpos (not require inventory update first)
+; inlineinventory=0 : artpos will sell as quicksale if no bids, or if 'restrict to inventory sale statuses and prices' for art not sold at quicksale
+; inlineinventory=1 : art pos will use an intelligent modal popup based on Region Year Room Status for allowing what to sell and price
+inlineinventory=1
 [vendor]
 test=0
 open=1
