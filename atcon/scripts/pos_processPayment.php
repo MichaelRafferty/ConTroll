@@ -104,6 +104,11 @@ if (array_key_exists('discountAmt', $_POST))
 else
     $discountAmt = 0;
 
+if (array_key_exists('couponDiscount', $_POST))
+    $couponDiscount = $_POST['couponDiscount'];
+else
+    $couponDiscount = 0;
+
 $preTaxAmt -= $couponDiscount + $discountAmt;
 
 if ($amt != $preTaxAmt + $taxAmt) {
@@ -625,7 +630,6 @@ foreach ($cart_perinfo as $perinfo) {
         $cart_perinfo[$perinfo['index']]['memberships'][$cart_row['index']] = $cart_row;
         if ($args != null)
             $upd_rows += dbSafeCmd($updRegSql, $ptypestr, $args);
-        }
     }
 }
 
