@@ -40,7 +40,7 @@ $testPw = $testR->fetch_assoc();
 
 if(!password_verify($_POST['oldPassword'], $testPw['password'])) {
     $response['status']='error';
-    $response['message']='Authentication Failure';
+    $response['message']='Authentication Failure - Incorrect Old Password';
     ajaxSuccess($response);
     exit();
 } else {
