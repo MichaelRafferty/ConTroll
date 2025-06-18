@@ -165,7 +165,7 @@ $spacePriceComputed = 0;
 $includedMembershipsComputed = 0;
 $additionalMembershipsComputed = 0;
 $spaces = [];
-$mailInFee = [];
+$mailIn = [];
 while ($space =  $spaceR->fetch_assoc()) {
     var_error_log($space);
     $spaces[$space['spaceId']] = $space;
@@ -504,7 +504,7 @@ if ($totprice > 0) {
         'buyer' => $buyer,
         'counts' => null,
         'spaces' => $spaces,
-        'mailInFee' => [$mailInFee],
+        'mailInFee' => [$mailIn],
         'price' => $totprice,
         'badges' => $badgeResults,
         'formbadges' => $badges,
