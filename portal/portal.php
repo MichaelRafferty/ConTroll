@@ -1016,6 +1016,7 @@ function drawWSFSButtons($NomNomExists, $BusinessExists, $SiteExists, $hasWSFS, 
 
     $siteSelectionButton = '';
     if ($SiteExists) {
+        $sslToken = '';
         if (!$hasSiteSelection) {
             $siteSelectionButton .= '<span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="top" ' .
                 'data-bs-title="Add and pay for a Site Selection Token to be able to vote in site selection.">';
