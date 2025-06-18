@@ -72,6 +72,19 @@ var hasManager = false;
 var receiptPrinterAvailable = false;
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const statusCodes = {
+    'Entered': 'Ent',
+    'Not In Show': 'NIS',
+    'Checked In': 'In',
+    'Removed from Show': 'Rem',
+    'BID': 'Bid',
+    'Quicksale/Sold': 'QS',
+    'To Auction': 'Auc',
+    'Sold Bid Sheet': 'SBS',
+    'Sold at Auction': 'SAuc',
+    'Checked Out': 'Out',
+    'Purchased/Released': 'Pur'
+};
 
 // initialization
 // lookup all DOM elements
@@ -636,9 +649,14 @@ function foundArt(data) {
         html += '<div class="row"><div class="col-sm-4">Artist Name:</div><div class="col-sm-8">' + item.exhibitorName + '</div></div>';
         html += '<div class="row"><div class="col-sm-4">Title:</div><div class="col-sm-8">' + item.title + '</div></div>';
         html += '<div class="row"><div class="col-sm-4">Material:</div><div class="col-sm-8">' + item.material + '</div></div>';
-        if (item.bidder != null && item.bidder != '' && item.bidder != currentPerson.id) {
+        if (config.inlineInventory != 1 && item.bidder != null && item.bidder != '' && item.bidder != currentPerson.id) {
             valid = false;
-            html += '<div class="row"><div class="col-sm-4 bg-warning">Already Sold:</div><div class="col-sm-8 bg-warning">Item has already been sold to someone else.</div></div>';
+            if (item.status != 'BID')
+                html += '<div class="row"><div class="col-sm-4 bg-warning">Already Sold:</div>' +
+                    '<div class="col-sm-8 bg-warning">Item has already been sold to someone else.</div></div>';
+            else
+                html += '<div class="row"><div class="col-sm-4 bg-warning">Bidder Mismatch:</div>' +
+                    '<div class="col-sm-8 bg-warning">someone else is the high bidder.</div></div>';
         }
 
         if (item.type == 'print') {
@@ -647,6 +665,8 @@ function foundArt(data) {
             if (item.quantity <= 0) {
                 html += '<div class="row"><div class="col-sm-4 bg-warning">Quantity:</div><div class="col-sm-8 bg-warning">System shows all of this item is already sold, remaining quantity is 0.</div></div>';
                 btn_color = 'btn-warning';
+                if (config.inlineInventory != 1)
+                    valid = false;
             }
         }
 
@@ -682,6 +702,14 @@ function foundArt(data) {
         if (valid) {
             htmlLine = '';
             switch (item.status.toLowerCase()) {
+                case 'entered':
+                case 'not in show':
+                    if (config.inlineInventory == 1)
+                        btn_color = 'btn-warning';
+                    else
+                        valid = 'false';
+                    break;
+
                 case 'checked in':
                     // currently nothing special for checked in items, this will be for sale at priceType via priceField
                     break;
@@ -699,7 +727,7 @@ function foundArt(data) {
 
                 case 'removed from show':
                     html += '<div class="row"><div class="col-sm-4 bg-danger text-white">Removed:</div><div class="col-sm-8 bg-danger text-white">System shows item has been removed from the show.</div></div>';
-                    valid = false;
+                    btn_color = 'btn-warning';
                     break;
 
                 case 'to auction':
@@ -793,29 +821,54 @@ function foundArt(data) {
 // itemAction - what to do with this row
 function itemAction(cell, formatterParams, onRendered) {
     var row = cell.getData();
-    if (row.type == 'nfs')
+    var color ='primary';
+    if (row.type == 'nfs') // not for sale = not for sale, require admin to change the status in the back end art inventory
         return '';
 
-    if (row.status == 'Entered' || row.status == 'Not In Show' || row.status == 'Removed from Show' || row.status == 'Checked Out' ||
-        row.status == 'Purchased/Released')
-    return '';
+    // if its already sold or returned to the artist, require admin to change the status in the back end art inventory
+    if (row.status == 'Checked Out' || row.status == 'Purchased/Released' || row.status == 'Quicksale/Sold')
+        return '';
+
+    // if it's not checked in, or checked in as 'missing' (not in show), allow inventory overide if inline, else nothing
+    if (row.status == 'Entered' || row.status == 'Not In Show') {
+        if (config.inlineInventory == 1)
+            return '<button class="btn btn-sm btn-warning" style= "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
+                ' onclick="updateInventory(' + row.item_key + ');">Inv</button>';
+
+        return '';
+    }
+
+    if (row.status == 'Removed from Show') // warn anything in removed from show status, be it add or inventory
+        color = 'warning';
 
     if (row.type == 'print') {
-        if (row.quantity <= 0)
-            return '';
+        if (row.quantity <= 0) {
+            // only allow inLineInventory to fix remaining quantity for a print
+            if (config.inlineInventory != 1)
+                return '';
 
-        return '<button class="btn btn-secondary" style= "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
+            return '<button class="btn btn-sm btn-warning" style= "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
+                ' onclick="updateInventory(' + row.item_key + ');">Inv</button>';
+        }
+
+        return '<button class="btn btn-sm btn-' + color + '" style= "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
             ' onclick="addToCart(' + row.item_key + ');">Add</button>';
     }
 
-    if (config.inlineInventory == 1)
-        return '<button class="btn btn-secondary" style= "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
-            ' onclick="updateInventory(' + row.item_key + ');">Inv</button>';
+    if (config.inlineInventory == 1) {
+        // auto warn anything that is not marked for this person
+        if (row.bidder != null && row.bidder != currentPerson.id)
+            color = 'warning'
 
+        return '<button class="btn btn-sm btn-' + color + '" style= "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
+            ' onclick="updateInventory(' + row.item_key + ');">Inv</button>';
+    }
+
+    // if not us, and bid, to auction, sold bid sheet, sold at auction, deny it
     if (row.bidder != null && row.bidder != currentPerson.id)
         return '';
 
-    return '<button class="btn btn-secondary" style= "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
+    return '<button class="btn btn-sm btn-' + color + '" style= "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
         ' onclick="addToCart(' + row.item_key + ');">Add</button>';
 }
 

@@ -63,6 +63,18 @@ $response['itemId'] = $itemId;
 $response['findType'] = $findType;
 $response['region'] = $region;
 
+$atcon = get_conf('atcon');
+if (array_key_exists('inlineInventory', $atcon))
+    $inlineInventory = $atcon['inlineInventory'];
+else
+    $inlineInventory = 1;
+
+if ($inlineInventory != 1) {
+    $statusExclude = "AND A.status NOT IN ('Entered','Not In Show')";
+} else {
+    $statusExclude = '';
+}
+
 if ($itemId != null && $itemId != '') {
     $itemQ = <<<EOS
 SELECT A.*, s.id AS artSalesId, s.transid, s.amount, IFNULL(s.paid, 0.00) AS paid, s.quantity AS artSalesQuantity, s.unit, t.id AS create_trans,
@@ -75,7 +87,7 @@ JOIN exhibitsRegionYears eRY ON eRY.id = exRY.exhibitsRegionYearId
 JOIN exhibitsRegions eR ON eR.id = eRY.exhibitsRegion
 LEFT OUTER JOIN artSales s ON A.id = s.artid AND IFNULL(s.paid, 0) != IFNULL(s.amount, 0)
 LEFT OUTER JOIN transaction t on s.transid = t.id AND t.price != t.paid
-WHERE A.id = ? AND A.status not in ('Entered','Not In Show') AND eR.shortname LIKE ?;
+WHERE A.id = ? $statusExclude AND eR.shortname LIKE ?;
 EOS;
     $paramTypes = 'is';
     $paramArray = array($itemId, $region);
@@ -93,7 +105,7 @@ JOIN exhibitsRegionYears eRY ON eRY.id = exRY.exhibitsRegionYearId
 JOIN exhibitsRegions eR ON eR.id = eRY.exhibitsRegion
 LEFT OUTER JOIN artSales s ON A.id = s.artid AND IFNULL(s.paid, 0) != IFNULL(s.amount, 0)
 LEFT OUTER JOIN transaction t on s.transid = t.id AND t.price != t.paid
-WHERE exRY.exhibitorNumber = ? AND A.item_key = ? AND exY.conid = ? AND A.status not in ('Entered','Not In Show') AND eR.shortname LIKE ?;
+WHERE exRY.exhibitorNumber = ? AND A.item_key = ? AND exY.conid = ? $statusExclude AND eR.shortname LIKE ?;
 EOS;
     $paramTypes = 'iiis';
     $paramArray = array($artistNumber, $pieceNumber, $conid, $region);
@@ -111,7 +123,7 @@ JOIN exhibitsRegionYears eRY ON eRY.id = exRY.exhibitsRegionYearId
 JOIN exhibitsRegions eR ON eR.id = eRY.exhibitsRegion
 LEFT OUTER JOIN artSales s ON A.id = s.artid AND IFNULL(s.paid, 0) != IFNULL(s.amount, 0)
 LEFT OUTER JOIN transaction t on s.transid = t.id AND t.price != t.paid
-WHERE exRY.exhibitorNumber = ? AND exY.conid = ? AND A.status not in ('Entered','Not In Show') AND eR.shortname LIKE ?;
+WHERE exRY.exhibitorNumber = ? AND exY.conid = ? $statusExclude AND eR.shortname LIKE ?;
 EOS;
         $paramTypes = 'iis';
         $paramArray = array($artistNumber, $conid, $region);
