@@ -28,6 +28,8 @@ var itemCode_field = null;
 var artistNumber_field = null;
 var pieceNumber_field = null;
 var unitNumber_field = null;
+var artTable = null;
+var currentArtist = null;
 
 // pay items
 var pay_div = null;
@@ -56,6 +58,11 @@ var releaseTable = null;
 var unpaid_table = [];
 var result_perinfo = [];
 var cashChangeModal = null;
+
+// inventory items
+var inventoryModal = null;
+var inventoryTitleDiv = null;
+var inventoryBodyDiv = null;
 
 // global items
 var conid = null;
@@ -90,7 +97,7 @@ window.onload = function initpage() {
     showStats_div = document.getElementById("showStats-div");
     var id = document.getElementById("SearchResultsModal");
     if (id) {
-        searchResultsModal = new bootstrap.Modal(id, { focus: true, backldrop: 'static' });
+        searchResultsModal = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
     }
 
     artistNumber_field = document.getElementById("artistNumber");
@@ -113,12 +120,19 @@ window.onload = function initpage() {
     release_tab.addEventListener('shown.bs.tab', releaseShown)
 
     // cash payment requires change
-    cashChangeModal = new bootstrap.Modal(document.getElementById('CashChange'), { focus: true, backldrop: 'static' });
+    cashChangeModal = new bootstrap.Modal(document.getElementById('CashChange'), { focus: true, backdrop: 'static' });
 
     // release works in a modal
-    releaseModal = new bootstrap.Modal(document.getElementById('ReleaseArt'), { focus: true, backldrop: 'static' });
+    releaseModal = new bootstrap.Modal(document.getElementById('ReleaseArt'), { focus: true, backdrop: 'static' });
     releaseTitleDiv = document.getElementById("ReleaseArtTitle");
     releaseBodyDiv = document.getElementById("ReleaseArtBody");
+
+    // inline inventory in a modal
+    if (config.inlineInventory == 1) {
+        inventoryModal = new bootstrap.Modal(document.getElementById('Inventory'), { focus: true, backdrop: 'static' });
+        inventoryTitleDiv = document.getElementById("InventoryTitle");
+        inventoryBodyDiv = document.getElementById("InventoryBody");
+    }
 
     bootstrap.Tab.getOrCreateInstance(find_tab).show();
 
@@ -450,12 +464,10 @@ function findPerson(find_type) {
     });
 }
 
-// successful return from 2 AJAX call - processes found records
+// successful return from 2 AJAX calls - processes found records
 // unpaid: one record: put it in the cart and go to pay screen
-//      multiple records: show table of records with pay icons
 // normal:
 //      single row: display record
-//      multiple rows: display table of records with add/trans buttons
 function foundPerson(data) {
     if (data.num_rows == 1) { // one person found
         searchData = data;
@@ -469,7 +481,7 @@ function foundPerson(data) {
         if (data.warn !== undefined) {
             show_message(data.warn, 'warn', 'searchResultMessage');
         }
-    } else { // I'm not sure how we'd get here
+    } else { // I'm not sure how we'd get here, we are searching by perid (badgeid)
         show_message(data.num_rows + " found.  Multiple people not yet supported.");
         return;
     }
@@ -597,6 +609,7 @@ function findArt(findType) {
             if (data.warn !== undefined) {
                 show_message(data.warn, 'warn');
             }
+            currentArtist = artistNumber;
             foundArt(data);
             $("button[name='findArtBtn']").attr("disabled", false);
         },
@@ -725,28 +738,124 @@ function foundArt(data) {
                 if (htmlLine != '') {
                     html += htmlLine;
                 } else {
-                    html += '<div class="row"><div class="col-sm-4">' + priceType + '</div><div class="col-sm-8">$' + Number(item[priceField]).toFixed(2) + '</div></div>';
-                    html += '<div class="row mt-2"><div class="col-sm-4"></div><div class="col-sm-8"><button class="btn btn-sm ' + btn_color + '" type="button" onclick="addToCart(-1);">Add Art Item to Cart</button></div></div>';
+                    html += '<div class="row"><div class="col-sm-4">' + priceType + '</div><div class="col-sm-8">$' +
+                        Number(item[priceField]).toFixed(2) + '</div></div>';
+                    if (config.inlineInventory == 1 && item.type == 'art')
+                        html += '<div class="row mt-2"><div class="col-sm-4"></div><div class="col-sm-8"><button class="btn btn-sm ' + btn_color +
+                            '" type="button" onclick="updateInventory(-1);">Update Art Item Inventory</button></div></div>';
+                    else
+                        html += '<div class="row mt-2"><div class="col-sm-4"></div><div class="col-sm-8"><button class="btn btn-sm ' + btn_color +
+                            '" type="button" onclick="addToCart(-1);">Add Art Item to Cart</button></div></div>';
                 }
             } else {
                 html += '<div class="row mt-2"><div class="col-sm-4"></div><div class="col-sm-auto bg-warning">Already in Cart</div></div>';
             }
         }
+    } else {
+        // multiple rows returned - do we want to show them and let them select which ones to add to cart
+        if (artTable != null){
+            artTable.destroy();
+            artTable = null;
+        }
+        html = '<div class="row"><div class="col-sm-12" id="artTable"></div></div>';
     }
-
     add_found_div.innerHTML = html;
+    if (data.items.length == 1)
+        return; // one item we are done
+
+    // multiple rows fill the table
+    artTable = new Tabulator('#artTable', {
+        data: data.items,
+        index: 'item_key',
+        layout: "fitColumns",
+        pagination: data.items.length > 10,
+        paginationSize: 10,
+        paginationSizeSelector: [10, 25, 50, true], //enable page size select element with these options
+
+        columns: [
+            {title: "Artist " + currentArtist, headerWordWrap: true, formatter: itemAction,width: 70, headerSort: false, },
+            {field: "id", visible: false },
+            {title: "Piece #", field: "item_key", headerWordWrap: true,  headerSort: true, headerFilter: true, maxWidth: 70, width: 70, hozAlign: 'right', headerHozAlign: 'right' },
+            {title: "Title", field: "title", headerFilter: true, maxWidth: 300, minWidth: 100, },
+            {title: "Type", field: "type", maxWidth: 100, width: 100, headerSort: true, headerFilter: true, },
+            {title: "Status", field: "status", minWidth: 100,  },
+            {title: "Bidder", field: "bidder", minWidth: 70, hozAlign: 'right', headerHozAlign: 'right' },
+            {field: "minPrice", visible: false, },
+            {field: "sale_price", visible: false, },
+            {field: "final_price", visible: false, },
+            {field: "bidder", visible: false, },
+        ],
+    });
+
     return;
 }
 
-// addToCart - add this row index to the cart
-function addToCart(index) {
+// itemAction - what to do with this row
+function itemAction(cell, formatterParams, onRendered) {
+    var row = cell.getData();
+    if (row.type == 'nfs')
+        return '';
+
+    if (row.status == 'Entered' || row.status == 'Not In Show' || row.status == 'Removed from Show' || row.status == 'Checked Out' ||
+        row.status == 'Purchased/Released')
+    return '';
+
+    if (row.type == 'print') {
+        if (row.quantity <= 0)
+            return '';
+
+        return '<button class="btn btn-secondary" style= "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
+            ' onclick="addToCart(' + row.item_key + ');">Add</button>';
+    }
+
+    if (config.inlineInventory == 1)
+        return '<button class="btn btn-secondary" style= "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
+            ' onclick="updateInventory(' + row.item_key + ');">Inv</button>';
+
+    if (row.bidder != null && row.bidder != currentPerson.id)
+        return '';
+
+    return '<button class="btn btn-secondary" style= "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
+        ' onclick="addToCart(' + row.item_key + ');">Add</button>';
+}
+
+// updateInventory - open modal and allow updating the inventory for this art item
+function updateInventory(itemKey) {
     var item = null;
-    if (index < 0 && artFoundItems.length > 0) {
-        item = artFoundItems[0];
-    } else if (index >= artFoundItems.length) {
+
+    if (artFoundItems.length == 0)
         return;
+
+    if (itemKey < 0) {
+        item = artFoundItems[0];
     } else {
-        item = artFoundItems[index];
+        if (artTable == null)
+            return;
+
+        item = artTable.getRow(itemKey).getData();
+        if (item == null)
+            return;
+    }
+
+    inventoryModal.show();
+}
+
+// addToCart - add this row index to the cart
+function addToCart(itemKey) {
+    var item = null;
+
+    if (artFoundItems.length == 0)
+        return;
+
+    if (itemKey < 0) {
+        item = artFoundItems[0];
+    } else {
+        if (artTable == null)
+            return;
+
+        item = artTable.getRow(itemKey).getData();
+        if (item == null)
+            return;
     }
 
     var finalPriceField = document.getElementById('art-final-price');
