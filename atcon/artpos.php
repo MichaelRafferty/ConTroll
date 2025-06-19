@@ -317,13 +317,13 @@ if (count($regionList) > 1) {
         <div class='modal-dialog'>
             <div class='modal-content'>
                 <div class='modal-header bg-primary text-bg-primary'>
-                    <div class='modal-title' id='Update Art Item Inventory'></div>
+                    <div class='modal-title' id='Update Inventory for Art Item'></div>
                 </div>
                 <div class='modal-body' id='InventoryBody'>
                 </div>
                 <div class='modal-footer'>
                     <button type='button' id='invNoChange_button' class='btn btn-primary' onclick='invUpdate(false);'>No Inventory Changes</button>
-                    <button type='button' id='invChange_button' class='btn btn-primary' onclick='releaseSetAll(false);'>Update Inventory Record</button>
+                    <button type='button' id='invChange_button' class='btn btn-primary' onclick='invUpdate(true);'>Update Inventory Record</button>
                     <button type='button' id='discardInv_button' class='btn btn-secondary' onclick='inventoryModal.hide();'>Cancel Update</button>
                 </div>
             </div>
