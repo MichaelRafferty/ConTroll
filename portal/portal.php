@@ -193,7 +193,8 @@ EOS;
     if ($holderRegR !== false && $holderRegR->num_rows > 0) {
         while ($m = $holderRegR->fetch_assoc()) {
             // check if they have a WSFS rights membership (hasWSFS and hasNom)
-            if (($m['memCategory'] == 'wsfs' || $m['memCategory'] == 'wsfsnom' || $m['memCategory'] == 'dealer') && $m['status'] == 'paid') {
+            if (($m['memCategory'] == 'wsfs' || $m['memCategory'] == 'wsfsnom' || $m['memType'] == 'wsfsfree' || $m['memCategory'] == 'dealer') &&
+                $m['status'] == 'paid') {
                 $hasNom = true;
                 if ($m['memCategory'] != 'wsfsnom')
                     $hasWSFS = true;
