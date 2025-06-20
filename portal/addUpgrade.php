@@ -35,6 +35,11 @@ if (array_key_exists('multioneday', $con))
 else
     $multiOneDay = 0;
 
+if (array_key_exists('oneoff', $con))
+    $oneoff =$con['oneoff'];
+else
+    $oneoff = 0;
+
 $config_vars = array();
 $config_vars['label'] = $con['label'];
 $config_vars['debug'] = $debug['portal'];
@@ -46,6 +51,7 @@ $config_vars['idType'] = $loginType;
 $config_vars['personEmail'] = getSessionVar('email');
 $config_vars['required'] = $ini['required'];
 $config_vars['multiOneDay'] = $multiOneDay;
+$config_vars['oneoff'] = $oneoff;
 $cdn = getTabulatorIncludes();
 
 if ($loginType == 'n') {
