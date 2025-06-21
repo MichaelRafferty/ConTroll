@@ -326,10 +326,25 @@ EOS;
         }
         $linkL = $linkR->fetch_assoc();
         if ($linkL['email'] != $email) {
-            draw_login($config_vars,
-                       "The link is invalid, please request a new link", 'bg-danger text-white',
-                   $why);
-            exit();
+            // mismatch, check to see if it's one of the perinfo identity emails
+            $piQ = <<<EOS
+SELECT i.perid, i.email_addr AS iEmail, p.email_addr AS pEmail
+FROM perinfoIdentities i
+JOIN perinfo p ON i.perid = p.id
+WHERE i.email_addr = ? AND p.email_addr = ?;
+EOS;
+            $piR = dbSafeQuery($piQ, 'ss', array ($linkL['email'], $email));
+            if ($piR === false || $piR->num_rows == 0) {
+                draw_login($config_vars,
+                    "The link is invalid, please request a new link", 'bg-danger text-white', $why);
+                exit();
+            }
+
+            $possibleIDs = [];
+            while ($pid = $piR->fetch_assoc()) {
+                $possibleIDs[] = $pid;
+            }
+            $piR->free();
         }
 
         if ($linkL['useCnt'] > 100) {
