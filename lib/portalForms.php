@@ -470,7 +470,7 @@ function drawPersonRow($personId, $personType, $person, $memberships, $showInter
            } else {
                $ageRow = '<br/><b>' . $membership['ageShort'] . '</b> (' . $membership['ageLabel'] . ')';
            }
-           $expired = $membership['status'] == 'unpaid' &&
+           $expired = $membership['status'] == 'unpaid' && ($membership['actPaid'] + $membership['actCouponDiscount']) > 0 &&
                 ($membership['startdate'] > $now || $membership['enddate'] < $now || $membership['online'] == 'N');
            ?>
         <div class="col-sm-3 ps-1 pe-1 m-0"><button class="btn btn-light border border-5 mt-1 <?php echo $borderColor; ?>"
