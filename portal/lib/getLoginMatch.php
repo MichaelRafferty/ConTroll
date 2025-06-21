@@ -34,7 +34,7 @@ EOS;
         $regcountR = dbSafeQuery($regcountQ, 'si', array($email, $id));
     } else {
         $regcountQ = <<<EOS
-SELECT id, last_name, first_name, middle_name, suffix, email_addr, phone, badge_name, legalName, pronouns,
+SELECT DISTINCT id, last_name, first_name, middle_name, suffix, email_addr, phone, badge_name, legalName, pronouns,
        address, addr_2, city, state, zip, country, creation_date, update_date, active, banned,
     CASE 
         WHEN last_name != '' THEN TRIM(REGEXP_REPLACE(CONCAT(last_name, ', ', CONCAT_WS(' ', first_name, middle_name, suffix)), '  *', ' ')) 
@@ -88,7 +88,7 @@ EOS;
         $regcountR = dbSafeQuery($regcountQ, 'si', array($email, $id));
     } else {
         $regcountQ = <<<EOS
-SELECT n.id, n.last_name, n.first_name, n.middle_name, n.suffix, n.email_addr, n.phone, n.badge_name, n.legalName, n.pronouns,
+SELECT DISTINCT n.id, n.last_name, n.first_name, n.middle_name, n.suffix, n.email_addr, n.phone, n.badge_name, n.legalName, n.pronouns,
        n.address, n.addr_2, n.city, n.state, n.zip, n.country, createtime AS creation_date, 'Y' AS active, 'N' AS banned,
     CASE 
         WHEN n.last_name != '' THEN TRIM(REGEXP_REPLACE(CONCAT(n.last_name, ', ', CONCAT_WS(' ', n.first_name, n.middle_name, n.suffix)), '  *', ' ')) 
@@ -117,7 +117,7 @@ EOS;
     // if the provider is known, we search for that provider, else we search for email as the provider.
     if (isSessionVar('oauth2')) {
         $regcountQ = <<<EOS
-SELECT id, last_name, first_name, middle_name, suffix, p.email_addr, phone, badge_name, legalName, pronouns,
+SELECT DISTINCT id, last_name, first_name, middle_name, suffix, p.email_addr, phone, badge_name, legalName, pronouns,
        address, addr_2, city, state, zip, country, creation_date, update_date, active, banned,
     CASE 
         WHEN last_name != '' THEN TRIM(REGEXP_REPLACE(CONCAT(last_name, ', ', CONCAT_WS(' ', first_name, middle_name, suffix)), '  *', ' ')) 
@@ -145,7 +145,7 @@ EOS;
 
     if ($validationType != null && $validationType == 'token') {
         $regcountQ = <<<EOS
-SELECT id, last_name, first_name, middle_name, suffix, p.email_addr, phone, badge_name, legalName, pronouns,
+SELECT DISTINCT id, last_name, first_name, middle_name, suffix, p.email_addr, phone, badge_name, legalName, pronouns,
        address, addr_2, city, state, zip, country, creation_date, update_date, active, banned,
     CASE 
         WHEN last_name != '' THEN TRIM(REGEXP_REPLACE(CONCAT(last_name, ', ', CONCAT_WS(' ', first_name, middle_name, suffix)), '  *', ' ')) 
@@ -170,6 +170,19 @@ EOS;
         $regcountR->free();
     }
 
+    if (count($matches) > 1) {
+        // need to dedup the match list, as any of the three queries could have brought it back.
+        $pids = [];
+        $dedup = [];
+        foreach ($matches as $match) {
+            if (array_key_exists($match['id'], $pids)) {
+                continue;
+            }
+            $dedup[] = $match;
+            $pids[$match['id']] = 1;
+        }
+        $matches = $dedup;
+    }
     $response['matches'] = $matches;
 
     // now we have them all
