@@ -1020,7 +1020,7 @@ function drawWSFSButtons($NomNomExists, $BusinessExists, $SiteExists, $hasWSFS, 
         $sslToken = '';
         if (!$hasSiteSelection) {
             $siteSelectionButton .= '<span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="top" ' .
-                'data-bs-title="Add and pay for a Site Selection Token using the \'Add To/Edit Cart\' button to be able to vote in site selection.">';
+                'data-bs-title="Add and pay for a Site Selection Token using the \'Add To/Edit Cart\' button to the right, to be able to vote in site selection.">';
         }
         if ($SiteExists) {
             if ($hasSiteSelection && $loginType == 'p' && array_key_exists('siteselectionURL', $portal_conf)) {
