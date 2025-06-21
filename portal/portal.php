@@ -900,7 +900,7 @@ if (count($memberships) > 0) {
                 $color = !$color
 ?>
         </div>
-        <div class="container-fluid<?php echo $bgcolor; ?> p-0 m-0" id="t-<?php echo $trans['t-' . $membership['sortTrans']];?>">
+        <div class="container-fluid<?php echo $bgcolor; ?> p-0 m-0" name="t-<?php echo $trans['t-' . $membership['sortTrans']];?>">
         <div class='row'>
             <div class='col-sm-12 p-0 m-0 align-center'>
                 <hr style='height:4px;width:98%;margin:auto;margin-top:0px;margin-bottom:0px;color:#333333;background-color:#333333;'/>
