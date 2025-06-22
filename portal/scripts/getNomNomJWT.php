@@ -120,14 +120,16 @@ $nom = '';
 $vote = '';
 for ($row = 0; $row < count($regs); $row++) {
     $reg = $regs[$row];
-    if ((($reg['memCategory'] == 'wsfs' || $reg['memCategory'] == 'dealer') && $reg['inTime'] == 1) || ($reg['memCategory'] == 'wsfsnom')) {
+    if ((($reg['memCategory'] == 'wsfs' || $reg['memCategory'] == 'dealer') && $reg['inTime'] == 1) || ($reg['memType'] == 'wsfsfree')
+        || ($reg['memCategory'] == 'wsfsnom')) {
         $nom = 'hugo_nominate';
         break;
     }
 }
 for ($row = 0; $row < count($regs); $row++) {
     $reg = $regs[$row];
-    if (($reg['memCategory'] == 'wsfs' && str_contains(strtolower($reg['label']), ' only') == false) || ($reg['memCategory'] == 'dealer')) {
+    if (($reg['memCategory'] == 'wsfs' && str_contains(strtolower($reg['label']), ' only') == false) ||
+        ($reg['memCategory'] == 'dealer') || ($reg['memType'] == 'wsfsfree')) {
         $vote = 'hugo_vote';
          break;
     }
