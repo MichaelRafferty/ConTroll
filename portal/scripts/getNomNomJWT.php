@@ -87,7 +87,8 @@ $payload['resType'] = 'fullRights';
 
 if ($loginType == 'p') {
     $rSQL = <<<EOS
-SELECT r.perid AS perid, r.newperid AS newperid, m.label, m.memCategory, t.create_date, t.complete_date, t.create_date < ? AS inTime
+SELECT r.perid AS perid, r.newperid AS newperid, m.label, m.memCategory, m.memType,
+       t.create_date, t.complete_date, t.create_date < ? AS inTime
 FROM reg r
 LEFT OUTER JOIN transaction t ON r.complete_trans = t.id
 LEFT OUTER JOIN memList m ON r.memId = m.id
@@ -95,7 +96,8 @@ WHERE r.perid = ? AND r.conid = ? AND r.status = 'paid';
 EOS;
 } else {
     $rSQL = <<<EOS
-SELECT NULL AS perid, r.newperid AS newperid, m.label, m.memCategory, t.create_date, t.complete_date, t.create_date < ? AS inTime
+SELECT NULL AS perid, r.newperid AS newperid, m.label, m.memCategory, m.memType,
+       t.create_date, t.complete_date, t.create_date < ? AS inTime
 FROM reg r
 LEFT OUTER JOIN transaction t ON r.complete_trans = t.id
 LEFT OUTER JOIN memList m ON r.memId = m.id
