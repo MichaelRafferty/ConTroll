@@ -143,7 +143,7 @@ EOS;
         $regcountR->free();
     }
 
-    if ($validationType != null && $validationType == 'token') {
+    if ($validationType != null && ($validationType == 'token' || $validationType == 'switch')) {
         $regcountQ = <<<EOS
 SELECT DISTINCT id, last_name, first_name, middle_name, suffix, p.email_addr, phone, badge_name, legalName, pronouns,
        address, addr_2, city, state, zip, country, creation_date, update_date, active, banned,

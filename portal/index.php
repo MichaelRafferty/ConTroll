@@ -289,7 +289,7 @@ if (isset($_GET['vid'])) {
     }
     if (array_key_exists('validationType', $match)) {
         $validationType = $match['validationType'];
-        if ($match['validationType'] != 'token') {
+        if ($match['validationType'] != 'token' && $match['validationType'] != 'switched') {
             if ($match['validationType'] != getSessionVar('oauth2') || $email != getSessionVar('email')) {
                 draw_login($config_vars, "The link is invalid", 'bg-danger text-white',
                            $why);
@@ -309,60 +309,62 @@ if (isset($_GET['vid'])) {
         exit();
     }
 
-    if ($validationType == 'token') {
-        // check if the link has been used
-        $linkQ = <<<EOS
+    if ($validationType == 'token' || $validationType == 'switched') {
+        if ($validationType == 'token') {
+            // check if the link has been used
+            $linkQ = <<<EOS
 SELECT id, LOWER(email) AS email, useCnt
 FROM portalTokenLinks
 WHERE id = ? AND action = 'login'
 ORDER BY createdTS DESC;
 EOS;
-        $linkR = dbSafeQuery($linkQ, 's', array ($linkid));
-        if ($linkR == false || $linkR->num_rows != 1) {
-            draw_login($config_vars,
-                       "The link is invalid, please request a new link",  'bg-danger text-white',
-                       $why);
-            exit();
-        }
-        $linkL = $linkR->fetch_assoc();
-        if ($linkL['email'] != $email) {
-            // mismatch, check to see if it's one of the perinfo identity emails
-            $piQ = <<<EOS
+            $linkR = dbSafeQuery($linkQ, 's', array ($linkid));
+            if ($linkR == false || $linkR->num_rows != 1) {
+                draw_login($config_vars,
+                    "The link is invalid, please request a new link", 'bg-danger text-white',
+                    $why);
+                exit();
+            }
+            $linkL = $linkR->fetch_assoc();
+            if ($linkL['email'] != $email) {
+                // mismatch, check to see if it's one of the perinfo identity emails
+                $piQ = <<<EOS
 SELECT i.perid, i.email_addr AS iEmail, p.email_addr AS pEmail
 FROM perinfoIdentities i
 JOIN perinfo p ON i.perid = p.id
 WHERE i.email_addr = ? AND p.email_addr = ?;
 EOS;
-            $piR = dbSafeQuery($piQ, 'ss', array ($linkL['email'], $email));
-            if ($piR === false || $piR->num_rows == 0) {
+                $piR = dbSafeQuery($piQ, 'ss', array ($linkL['email'], $email));
+                if ($piR === false || $piR->num_rows == 0) {
+                    draw_login($config_vars,
+                        "The link is invalid, please request a new link", 'bg-danger text-white', $why);
+                    exit();
+                }
+
+                $possibleIDs = [];
+                while ($pid = $piR->fetch_assoc()) {
+                    $possibleIDs[] = $pid;
+                }
+                $piR->free();
+            }
+
+            if ($linkL['useCnt'] > 100) {
                 draw_login($config_vars,
-                    "The link is invalid, please request a new link", 'bg-danger text-white', $why);
+                    "The link has already been used, please request a new link", 'bg-danger text-white',
+                    $why);
                 exit();
             }
 
-            $possibleIDs = [];
-            while ($pid = $piR->fetch_assoc()) {
-                $possibleIDs[] = $pid;
-            }
-            $piR->free();
-        }
-
-        if ($linkL['useCnt'] > 100) {
-            draw_login($config_vars,
-                       "The link has already been used, please request a new link", 'bg-danger text-white',
-                   $why);
-            exit();
-        }
-
-        // mark link as used
-        $updQ = <<<EOS
+            // mark link as used
+            $updQ = <<<EOS
         UPDATE portalTokenLinks
         SET useCnt = useCnt + 1, useIP = ?, useTS = NOW()
         WHERE id = ?;
         EOS;
-        $updcnt = dbSafeCmd($updQ, 'si', array ($_SERVER['REMOTE_ADDR'], $linkid));
-        if ($updcnt != 1) {
-            web_error_log("Error updating link $linkid as used");
+            $updcnt = dbSafeCmd($updQ, 'si', array ($_SERVER['REMOTE_ADDR'], $linkid));
+            if ($updcnt != 1) {
+                web_error_log("Error updating link $linkid as used");
+            }
         }
 
         // set expiration for email
@@ -388,7 +390,7 @@ EOS;
     setSessionVar('tokenType', $tokenType);
 
     // now choose the account from the email
-    $account = chooseAccountFromEmail($email, $id, $linkid, $match, 'token');
+    $account = chooseAccountFromEmail($email, $id, $linkid, $match, $validationType);
     if ($account == null || !is_numeric($account)) {
         if ($account == null) {
             $account = "Error looking up data for $email";
@@ -400,7 +402,7 @@ EOS;
     }
     exit();
 } else if ($loginId != null && isSessionVar('multiple') && isset($_REQUEST['switch']) && $_REQUEST['switch'] == 'account') {
-    $account = chooseAccountFromEmail(getSessionVar('multiple'), null,null, null, 'token');
+    $account = chooseAccountFromEmail(getSessionVar('multiple'), null,null, null, 'switch');
     if ($account == null || !is_numeric($account)) {
         if ($account == null) {
             $account = "Error looking up data for $email";

@@ -108,14 +108,24 @@ function draw_login($config_vars, $result_message = '', $result_color = '', $why
 function chooseAccountFromEmail($email, $id, $linkid, $passedMatch, $validationType) {
     global $config_vars;
 
+    if ($validationType == 'switch') {
+        $nextValidationType = 'switched';
+    } else {
+        $nextValidationType = $validationType;
+    }
+
     $con_conf = get_conf('con');
     $origEmail = strtolower($email);
 
-    $loginData = getLoginMatch($email, $id, $validationType);
-    if (!is_array($loginData)) {
-        return $loginData;  // return the error message from getLoginMatch
+    if (is_array($passedMatch) && array_key_exists('multiple', $passedMatch))
+        $matches = array($passedMatch);
+    else {
+        $loginData = getLoginMatch($email, $id, $validationType);
+        if (!is_array($loginData)) {
+            return $loginData;  // return the error message from getLoginMatch
+        }
+        $matches = $loginData['matches'];
     }
-    $matches = $loginData['matches'];
     $count = count($matches);
     if ($count == 1) {
         $match = $matches[0];
@@ -236,7 +246,7 @@ function chooseAccountFromEmail($email, $id, $linkid, $passedMatch, $validationT
         foreach ($matches as $match) {
             $match['ts'] = time();
             $match['lid'] = $linkid;
-            $match['validationType'] = $validationType;
+            $match['validationType'] = $nextValidationType;
             $match['multiple'] = strtolower($email);
             $match['issue'] = $match['banned'];
             $string = json_encode($match);
