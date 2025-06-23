@@ -380,6 +380,9 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
 
         if (array_key_exists('mailInFee', $results)) {
             foreach ($results['mailInFee'] as $fee) {
+                // because it expects an array, the array of an empty element needs to be skipped
+                if ((!array_key_exists('amount', $fee)) || $fee['amount'] <= 0)
+                    continue;
                 $itemName = 'Mail in Fee for ' . $fee['name'];
                 $itemPrice = $fee['amount'];
                 $note = 'Mail in fee';
