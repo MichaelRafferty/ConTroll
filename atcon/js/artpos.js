@@ -1113,6 +1113,8 @@ function invUpdate(doUpdate) {
     }
 
 
+    clear_message();
+    clear_message('inv_result_msg');
     var postData = {
         ajax_request_action: 'inlineUpdate',
         item: JSON.stringify(item),
