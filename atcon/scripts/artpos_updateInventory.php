@@ -73,9 +73,29 @@ foreach ($updates as $update) {
         continue;
     }
 
+    if ($update['field'] == '' && $update['id'] == 'updateBidderYN') {
+        // if update bidder is NO, return warning message
+        if ($update['value'] == 'N') {
+            $response['warn'] = 'The bidder does not match the current bidder, and you chose not to update it to the current bidder. ' .
+                'Other changes are being ingored';
+            ajaxSuccess($response);
+            return;
+        }
+        continue;
+    }
+
     if ($update['field'] == 'final_price' || $update['field'] == 'status') {
         if ($skipFinalPrice)
             continue;
+    }
+
+    if (array_key_exists('prior', $update)) {
+        if (floatval($update['value']) <= floatval($update['prior'])) {
+            $response['error'] = 'For ' . $update['field'] . ', New value of ' . $update['value'] .
+                ' must be larger than current value of ' . $update['prior'];
+            ajaxSuccess($response);
+            return;
+        }
     }
 
     $updQ .= $update['field'] . ' =  ?,';

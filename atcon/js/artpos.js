@@ -273,6 +273,7 @@ function startOver(reset_all) {
     badgeid_field.value = "";
     id_div.innerHTML = "";
     unpaid_table = null;
+    add_found_div.innerHTML = '';
 
     // reset data to call up
     emailAddreesRecipients = [];
@@ -658,14 +659,18 @@ function drawItemDetails(item, full = false) {
     html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Artist Name:</div><div class="col-sm-7">' + item.exhibitorName + '</div></div>';
     html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Title:</div><div class="col-sm-7">' + item.title + '</div></div>';
     html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Material:</div><div class="col-sm-7">' + item.material + '</div></div>';
-    if (config.inlineInventory != 1 && item.bidder != null && item.bidder != '' && item.bidder != currentPerson.id) {
-        valid = false;
+    if (item.bidder != null && item.bidder != '' && item.bidder != currentPerson.id) {
+        btn_color = 'btn-warning';
+        if (config.inlineInventory != 1)
+            valid = false;
         if (item.status != 'BID')
             html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + ' bg-warning">Already Sold:</div>' +
                 '<div class="col-sm-7 bg-warning">Item has already been sold to someone else.</div></div>';
-        else
+        else {
             html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + ' bg-warning">Bidder Mismatch:</div>' +
                 '<div class="col-sm-7 bg-warning">Someone else is the high bidder.</div></div>';
+            priceType = 'Current Bid';
+        }
     }
 
     if (item.type == 'print') {
@@ -685,8 +690,10 @@ function drawItemDetails(item, full = false) {
                 if (full) {
                     html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Minimum Bid:</div>' +
                         '<div class="col-sm-7">' + Number(item.min_price).toFixed(2) + '</div></div>';
-                    html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Quick Sale Price:</div>' +
-                        '<div class="col-sm-7">' + Number(item.sale_price).toFixed(2) + '</div></div>';
+                    if (item.bidder == null || item.bidder == '') {
+                        html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Quick Sale Price:</div>' +
+                            '<div class="col-sm-7">' + Number(item.sale_price).toFixed(2) + '</div></div>';
+                    }
                     if (item.final_price != null && item.final_price > 0)
                         html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Final Price:</div>' +
                             '<div class="col-sm-7">' + Number(item.final_price).toFixed(2) + '</div></div>';
@@ -704,7 +711,8 @@ function drawItemDetails(item, full = false) {
                     priceType = 'Quick Sale Price:';
                     priceField = 'sale_price';
                 } else {
-                    priceType = 'Final Price:';
+                    if (priceType == '')
+                        priceType = 'Final Price:';
                     priceField = 'final_price';
                 }
                 break;
@@ -743,9 +751,11 @@ function drawItemDetails(item, full = false) {
                 break;
 
             case 'bid':
-                item.status = 'Sold Bid Sheet';
-                htmlLine = '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Final Price:</div><div class="col-sm-7">' +
-                    '<input type=number inputmode="numeric" class="no-spinners" id="art-final-price" name="art-final-price" style="width: 9em;" value="' + item.final_price + '"/></div></div>';
+                if (btn_color != 'btn-warning' && config.inlineInventory != 1) {
+                    htmlLine = '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Final Price:</div><div class="col-sm-7">' +
+                        '<input type=number inputmode="numeric" class="no-spinners" id="art-final-price" name="art-final-price" ' +
+                            'style="width: 9em;" value="' + item.final_price + '"/></div></div>';
+                }
                 break;
 
             case 'nfs':
@@ -785,7 +795,6 @@ function drawItemDetails(item, full = false) {
                     valid = false;
                 }
                 break;
-
         }
     }
 
@@ -804,7 +813,7 @@ function foundArt(data) {
     if (data.items.length == 1) {
         var item = data.items[0];
         var details = drawItemDetails(item, false);
-        html = '<div id="itemDetailsDiv" class="container-fluid">' + details.html + '</div>';
+        html = '<div id="itemDetailsDiv" class="container-fluid">' + details.html + '</div><div class="container-fluid">';
         valid = details.valid;
         btn_color = details.color;
         priceField = details.priceField;
@@ -815,7 +824,7 @@ function foundArt(data) {
                 if (htmlLine != '') {
                     html += htmlLine;
                 } else {
-                    if (item.type != 'print') {
+                    if (item.type != 'print' && Number(item[priceField]) > 0 ) {
                         html += '<div class="row"><div class="col-sm-4">' + priceType + '</div><div class="col-sm-8">$' +
                             Number(item[priceField]).toFixed(2) + '</div></div>';
                     }
@@ -838,6 +847,7 @@ function foundArt(data) {
         }
         html = '<div class="row"><div class="col-sm-12" id="artTable"></div></div>';
     }
+    html += '</div>';
     add_found_div.innerHTML = html;
     if (data.items.length == 1) {
         itemDetailsDiv = document.getElementById("itemDetailsDiv");
@@ -1001,6 +1011,7 @@ function updateInventoryStep(item, repeatPass) {
                 html += '<div class="row mt-2"><div class="col-sm-12">This item is current bid on by ' + item.bidder + ', change it to this person? ' +
                     '<select id="updateBidderYN" name="updateBidderYN"><option value="N">No</option><option value="Y">Yes</option></select>' +
                     '</div></div>';
+                inventoryUpdates.push({field: '', id: 'updateBidderYN', type: 'p'});
                 inventoryUpdates.push({field: 'bidder', value: currentPerson.id, type: 'i'});
                 valid = false;
             }
@@ -1008,19 +1019,19 @@ function updateInventoryStep(item, repeatPass) {
             html += '<div class="row mt-2"><div class="col-sm-12">Current High bid? ' +
                 '<input type="number" class="no-spinners" inputmode="numeric" id="finalPrice" name="finalPrice" size="20" placeholder="High Bid" ' +
                 ' min=1 max=9999999 value="' + (item.final_price > item.min_price ? item.final_price : item.min_price) + '"></div></div>';
-            inventoryUpdates.push({field: 'final_price', id: 'finalPrice', type: 'd'});
-            inventoryUpdates.push({field: 'status', value: 'Sold Bid Sheet'});
+            inventoryUpdates.push({field: 'final_price', id: 'finalPrice', type: 'd',
+                prior: item.final_price > item.min_price ? item.final_price : item.min_price });
         }
     }
 
 
-    invNoChangeBtn.disabled = (!details.valid) || (details.color = 'btn-warning');
+    invNoChangeBtn.disabled = (!details.valid) || (details.color == 'btn-warning');
     invChange_button.disabled = inventoryUpdates.length == 0;
     btn_color = details.color;
     inventoryBodyDiv.innerHTML = html +
         '<div class="row mt-2"><div class="col-sm-12" id="inv_result_msg"></div></div>';
 
-    if (invNoChangeBtn.disabled && invChange_button.disabled) {
+    if (!invNoChangeBtn.disabled && invChange_button.disabled) {
         if (config.roomStatus != 'precon' && config.roomStatus != 'closed') {
             addItemToCart(item);
             add_found_div.innerHTML = "";
@@ -1035,6 +1046,18 @@ function updateInventoryStep(item, repeatPass) {
 function invUpdate(doUpdate) {
     var item = null;
 
+    if (artFoundItems.length == 1)
+        item = artFoundItems[0];
+    else
+        item = artTable.getRow(inventoryCurrentIndex).getData();
+
+    if (!doUpdate) {
+        addItemToCart(item);
+        add_found_div.innerHTML = '';
+        inventoryModal.hide();
+        return;
+    }
+
     if (inventoryUpdates == null || inventoryUpdates.length == 0) {
         show_message('Nothing to update', 'warn');
         inventoryModal.hide();
@@ -1047,10 +1070,6 @@ function invUpdate(doUpdate) {
         }
     }
 
-    if (artFoundItems.length == 1)
-        item = artFoundItems[0];
-    else
-        item = artTable.getRow(inventoryCurrentIndex).getData();
 
     var postData = {
         ajax_request_action: 'inlineUpdate',
@@ -1065,7 +1084,7 @@ function invUpdate(doUpdate) {
         data: postData,
         success: function (data, textstatus, jqxhr) {
             if (data.error !== undefined) {
-                show_message(data.error, 'error');
+                show_message(data.error, 'error', 'inv_result_msg');
                 return;
             }
             if (data.message !== undefined) {
@@ -1084,8 +1103,8 @@ function invUpdate(doUpdate) {
                     step = drawItemDetails(data.item);
                     itemDetailsDiv.innerHTML = step.html;
                 }
+                updateInventoryStep(data.item, true);
             }
-            updateInventoryStep(data.item, true);
         },
         error: showAjaxError,
     });
