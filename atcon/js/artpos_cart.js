@@ -323,7 +323,9 @@ class artpos_cart {
         } else if (row['type'] == 'print') {
             rowhtml += '<div class="row"><div class="col-sm-2">Quantity: ' + '</div><div class="col-sm-10"><input class="no-spinners" type="number" min="1"' +
                 ' max="' + row['quantity'] + '"' +
-                ' name="purQuantity_' + row['id'] + '" id="purQuantity_' + row['id'] + '" value="' + row['purQuantity'] + '" onchange="cart.updateRowQuantity(' + row['id'] +');"/></div></div>';
+                ' name="purQuantity_' + row['id'] + '" id="purQuantity_' + row['id'] + '" value="' + row['purQuantity'] +
+                '" onchange="cart.updateRowQuantity(' + row['id'] +');"/>' +
+                ' of ' + row['quantity'] + ' remaining</div></div>';
         }
         // price
         var priceType = 'Final';
@@ -450,7 +452,7 @@ class artpos_cart {
             html += `<div class="row">
     <div class="col-sm-6 p-0"></div>
     <div class="col-sm-6 p-0">
-        <hr style="height:4px; color:#0;background-color:#0;border-width:0;"/>
+        <hr style="height:4px; color: black;background-color:black;border-width:0;"/>
     </div>
 </div>
 <div class="row">
