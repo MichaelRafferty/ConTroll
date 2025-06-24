@@ -64,17 +64,38 @@ SET
 EOS;
 $typestr = '';
 $values = [];
+$skipFinalPrice = false;
 foreach ($updates as $update) {
+    if ($update['field'] == '' && $update['id'] == 'quickSaleYN') {
+        // if quick sale == y, skip the final price update
+        if ($update['value'] == 'Y')
+            $skipFinalPrice = true;
+        continue;
+    }
+
+    if ($update['field'] == 'final_price' || $update['field'] == 'status') {
+        if ($skipFinalPrice)
+            continue;
+    }
+
     $updQ .= $update['field'] . ' =  ?,';
-    $typestr .= 's';
+    if (array_key_exists('type', $update)) {
+        $typestr .= $update['type'];
+    } else {
+        $typestr .= 's';
+    }
     $values[] = $update['value'];
 }
-$updQ = mb_substr($updQ, 0, mb_strlen($updQ) - 1);
-$updQ .= "\nWHERE id = ?;\n";
-$typestr .= 'i';
-$values[] = $item['id'];
+if (count($values) > 0) {
+    $updQ = mb_substr($updQ, 0, mb_strlen($updQ) - 1);
+    $updQ .= "\nWHERE id = ?;\n";
+    $typestr .= 'i';
+    $values[] = $item['id'];
 
-$numUpd = dbSafeCmd($updQ, $typestr, $values);
+    $numUpd = dbSafeCmd($updQ, $typestr, $values);
+} else
+    $numUpd = 0;
+
 if ($numUpd === false) {
     $response['error'] = 'Invalid Sql update statement';
 } else if ($numUpd == 0) {

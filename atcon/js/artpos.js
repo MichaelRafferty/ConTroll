@@ -946,11 +946,12 @@ function updateInventory(itemKey) {
     }
 
     inventoryCurrentIndex = item.item_key;
-    updateInventoryStep(item);
+    updateInventoryStep(item, false);
     inventoryModal.show();
 }
 
-function updateInventoryStep(item) {
+// update art inventory step - decide if anything needs changing in the inventory
+function updateInventoryStep(item, repeatPass) {
     // build the contents for the modal, first the item data as it presently exists:
     var details = drawItemDetails(item, true);
     inventoryUpdates = [];
@@ -969,6 +970,49 @@ function updateInventoryStep(item) {
             inventoryUpdates.push({field: 'quantity', id: 'availQty', type: 'i'});
         }
     }
+
+    // print is covered in general status.
+    // NFS is only allowed to be checked in, if it even gets this far, (as a safety valve)
+    if (item.type == 'art' && config.roomStatus != 'precon' && config.roomStatus != 'closed' && repeatPass == false) {
+        // that leaves art.
+        // based on the room status: No sales if 'precon', no sales if 'closed', that leaves bids and checkout.
+        //      'bids' will allow quicksale and updating the bidder, but only adding it to the cart if quicksale.
+        //      'checkout' will allow quicksale and updating the bidder and highest bid and adds everything to the cart
+        //
+        // based on item status:
+        //   if the status is 'Checked out', 'Purchased/Release', 'Quicksale Sold' we should not allow anything else to be done as those are final statues
+        //      (except for releasing Quicksale Sold which is not an inventory item.)
+        //   For the status: 'Checked In', Removed from Show: allow setting for quicksale and allow going to cart as quicksale
+        //   For the status: 'Checked In', Removed from Show, BID: update bidder, and allow going to the cart as checkout for this person
+
+        // quicksale Y/N (note entered will become checked in)
+        if ((item.status == 'Entered' || item.status == 'Checked In' || item.status == 'Removed from Show') && item.bidder == null) {
+            html += '<div class="row mt-2"><div class="col-sm-12">Is this a quick sale? ' +
+                '<select id="quickSaleYN" name="quickSaleYN"><option value="N">No</option><option value="Y">Yes</option></select>' +
+                '</div></div>';
+            inventoryUpdates.push({field: '', id: 'quickSaleYN', type: 'p'});
+            valid = false;
+        }
+
+        // bid item
+        if (item.status == 'Entered' || item.status == 'Checked In' || item.status == 'Removed from Show' || item.status == 'BID') {
+            // update bidder if bid and not use
+            if (item.bidder != null && item.bidder != currentPerson.id) {
+                html += '<div class="row mt-2"><div class="col-sm-12">This item is current bid on by ' + item.bidder + ', change it to this person? ' +
+                    '<select id="updateBidderYN" name="updateBidderYN"><option value="N">No</option><option value="Y">Yes</option></select>' +
+                    '</div></div>';
+                inventoryUpdates.push({field: 'bidder', value: currentPerson.id, type: 'i'});
+                valid = false;
+            }
+
+            html += '<div class="row mt-2"><div class="col-sm-12">Current High bid? ' +
+                '<input type="number" class="no-spinners" inputmode="numeric" id="finalPrice" name="finalPrice" size="20" placeholder="High Bid" ' +
+                ' min=1 max=9999999 value="' + (item.final_price > item.min_price ? item.final_price : item.min_price) + '"></div></div>';
+            inventoryUpdates.push({field: 'final_price', id: 'finalPrice', type: 'd'});
+            inventoryUpdates.push({field: 'status', value: 'Sold Bid Sheet'});
+        }
+    }
+
 
     invNoChangeBtn.disabled = (!details.valid) || (details.color = 'btn-warning');
     invChange_button.disabled = inventoryUpdates.length == 0;
@@ -1030,16 +1074,18 @@ function invUpdate(doUpdate) {
             if (data.warn !== undefined) {
                 show_message(data.warn, 'warn', 'inv_result_msg');
             }
-            if (artFoundItems.length > 1) {
-                var row = artTable.getRow(inventoryCurrentIndex);
-                row.update(data.item).then(row.reformat());
-            } else {
-                artFoundItems = [ data.item ];
-                // redraw the item details block
-                step = drawItemDetails(data.item);
-                itemDetailsDiv.innerHTML = step.html;
+            if (data.hasOwnProperty('item')) { // successful update
+                if (artFoundItems.length > 1) {
+                    var row = artTable.getRow(inventoryCurrentIndex);
+                    row.update(data.item).then(row.reformat());
+                } else {
+                    artFoundItems = [data.item];
+                    // redraw the item details block
+                    step = drawItemDetails(data.item);
+                    itemDetailsDiv.innerHTML = step.html;
+                }
             }
-            updateInventoryStep(data.item);
+            updateInventoryStep(data.item, true);
         },
         error: showAjaxError,
     });
