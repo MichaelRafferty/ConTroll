@@ -977,8 +977,12 @@ function updateInventoryStep(item) {
         '<div class="row mt-2"><div class="col-sm-12" id="inv_result_msg"></div></div>';
 
     if (invNoChangeBtn.disabled && invChange_button.disabled) {
-        addItemToCart(item);
-        add_found_div.innerHTML = "";
+        if (config.roomStatus != 'precon' && config.roomStatus != 'closed') {
+            addItemToCart(item);
+            add_found_div.innerHTML = "";
+        } else {
+            show_message("Room Status is " + config.roomStatus + ", cannot add items to the cart.", 'warn');
+        }
         inventoryModal.hide();
     }
 }
@@ -1058,12 +1062,16 @@ function addToCart(itemKey) {
         if (item == null)
             return;
     }
-    addItemToCart(item);
-    if (artFoundItems.length > 1) {
-        var row = artTable.getRow(inventoryCurrentIndex);
-        row.reformat();
+    if (config.inlineInventory == 0 || (config.roomStatus != 'precon' && config.roomStatus != 'closed')) {
+        addItemToCart(item);
+        if (artFoundItems.length > 1) {
+            var row = artTable.getRow(inventoryCurrentIndex);
+            row.reformat();
+        } else {
+            add_found_div.innerHTML = "";
+        }
     } else {
-        add_found_div.innerHTML = "";
+        show_message("Room Status is " + config.roomStatus + ", cannot add items to the cart.", 'warn');
     }
 }
 

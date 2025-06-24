@@ -55,7 +55,7 @@ if (array_key_exists('taxLabel', $con)) {
 }
 
 $regionQ = <<<EOS
-SELECT xR.shortname AS regionName
+SELECT xR.shortname AS regionName, xRY.roomStatus
 FROM exhibitsRegionTypes xRT
     JOIN exhibitsRegions xR ON xR.regionType=xRT.regionType
     JOIN exhibitsRegionYears xRY ON xRY.exhibitsRegion = xR.id
@@ -66,12 +66,14 @@ $setRegion = false;
 if ($regionR->num_rows == 1 && $region == '') {
     $setRegion = true;
 }
+$roomStatus = 'all';
 $regionList = [];
 while ($regionInfo = $regionR->fetch_assoc()) {
     $regionList[] = $regionInfo['regionName'];
-    if ($setRegion) {
+    if ($setRegion)
         $region = $regionInfo['regionName'];
-    }
+    if ($region == $regionInfo['regionName'])
+        $roomStatus = $regionInfo['roomStatus'];
 }
 $regionR->free();
 setSessionVar('ARTPOSRegion', $region);
@@ -86,6 +88,7 @@ $config_vars['taxRate'] = $taxRate;
 $config_vars['taxLabel'] = $taxLabel;
 $config_vars['taxUid'] = $taxUid;
 $config_vars['source'] = 'artpos';
+$config_vars['roomStatus'] = $roomStatus;
 $config_vars['inlineInventory'] = $inlineInventory;
 if (array_key_exists('creditoffline', $atcon)) {
     $config_vars['creditoffline'] = $atcon['creditoffline'];
