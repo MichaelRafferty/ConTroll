@@ -966,18 +966,21 @@ function updateInventoryStep(item, repeatPass) {
     var details = drawItemDetails(item, true);
     inventoryUpdates = [];
     html = '<h1 class="h4">Update Inventory Record:</h1>' + details.html;
+    notes = '';
 
     // general status issues first
     if (item.status == 'Entered' || item.status == 'Not In Show') {
         html += '<div class="row mt-4"><div class="col-sm-12">The item is not available for sale because of it\'s status.' +
             ' If you are sure the item is checked in, click "Update Inventory Record" to set it to "Checked In"</div></div>';
         inventoryUpdates.push({field: 'status', value: 'Checked In'});
+        notes += 'Updated to Checked In via artpos inventory\n';
 
         if (item.type == 'print') {
             html += '<div class="row"><div class="col-sm-12">The item is of type print, please verify it\'s available quantity before updating the record: ' +
                 '<input type="number" class="no-spinners" inputmode="numeric" id="availQty" name="availQty" size="20" placeholder="Avail Qty" ' +
                     ' min=0 max=9999 value="' + item.quantity + '"></div></div>';
             inventoryUpdates.push({field: 'quantity', id: 'availQty', type: 'i'});
+            notes += 'Updated print quantity from ' + item.quantity + '\n';
         }
     }
 
@@ -1042,6 +1045,7 @@ function updateInventoryStep(item, repeatPass) {
             inventoryUpdates.push({field: 'final_price', id: 'finalPrice', type: 'd',
                 prior: (item.final_price > item.min_price ? item.final_price : item.min_price) - 0.01 });
             inventoryUpdates.push({field: 'status',  value: 'Sold at Auction'});
+            notes += 'Updated status from To Auction to Sold At Auction\n';
         }
 
         // Checked Out Item
@@ -1056,9 +1060,12 @@ function updateInventoryStep(item, repeatPass) {
             inventoryUpdates.push({field: 'final_price', id: 'finalPrice', type: 'd',
                 prior: item.min_price - 0.01 });
             inventoryUpdates.push({field: 'status',  value: 'Bid'});
+            notes += 'Updated Status from Checked Out to Bid for sale after return to artist';
         }
     }
 
+    if (notes != '')
+        inventoryUpdates.push({field: 'notes',  value: notes,  append: 1 });
 
     invNoChangeBtn.disabled = (!details.valid) || (details.color == 'btn-warning');
     invChange_button.disabled = inventoryUpdates.length == 0;

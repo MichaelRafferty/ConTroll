@@ -98,7 +98,11 @@ foreach ($updates as $update) {
         }
     }
 
-    $updQ .= $update['field'] . ' =  ?,';
+    if ($update['field'] == 'notes') {
+        $updQ .= "notes = CONCAT(IFNULL(notes, ''), '" . PHP_EOL . "', '" . date('Y-m-d H:i:s') . "', ' by " . $userId . "','" . PHP_EOL . "', ?),";
+    } else {
+        $updQ .= $update['field'] . ' =  ?,';
+    }
     if (array_key_exists('type', $update)) {
         $typestr .= $update['type'];
     } else {
