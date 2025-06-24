@@ -1040,8 +1040,22 @@ function updateInventoryStep(item, repeatPass) {
                 '<input type="number" class="no-spinners" inputmode="numeric" id="finalPrice" name="finalPrice" size="20" placeholder="High Bid" ' +
                 ' min=1 max=9999999 value="' + (item.final_price > item.min_price ? item.final_price : item.min_price) + '"></div></div>';
             inventoryUpdates.push({field: 'final_price', id: 'finalPrice', type: 'd',
-                prior: item.final_price > item.min_price ? item.final_price : item.min_price });
+                prior: (item.final_price > item.min_price ? item.final_price : item.min_price) - 0.01 });
             inventoryUpdates.push({field: 'status',  value: 'Sold at Auction'});
+        }
+
+        // Checked Out Item
+        if (item.status == 'Checked Out') {
+            // update bidder, as there should be none
+            // update final price
+            inventoryUpdates.push({field: 'bidder', value: currentPerson.id, type: 'i'});
+            valid = false;
+            html += '<div class="row mt-2"><div class="col-sm-12">Final Bid Price? ' +
+                '<input type="number" class="no-spinners" inputmode="numeric" id="finalPrice" name="finalPrice" size="20" placeholder="High Bid" ' +
+                ' min=1 max=9999999 value="' + (item.final_price > item.min_price ? item.final_price : item.min_price) + '"></div></div>';
+            inventoryUpdates.push({field: 'final_price', id: 'finalPrice', type: 'd',
+                prior: item.min_price - 0.01 });
+            inventoryUpdates.push({field: 'status',  value: 'Bid'});
         }
     }
 
