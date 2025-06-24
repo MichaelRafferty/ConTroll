@@ -663,7 +663,7 @@ function drawItemDetails(item, full = false) {
         btn_color = 'btn-warning';
         if (config.inlineInventory != 1)
             valid = false;
-        if (item.status != 'BID')
+        if (item.status != 'BID' && item.status != 'To Auction')
             html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + ' bg-warning">Already Sold:</div>' +
                 '<div class="col-sm-7 bg-warning">Item has already been sold to someone else.</div></div>';
         else {
@@ -1021,6 +1021,27 @@ function updateInventoryStep(item, repeatPass) {
                 ' min=1 max=9999999 value="' + (item.final_price > item.min_price ? item.final_price : item.min_price) + '"></div></div>';
             inventoryUpdates.push({field: 'final_price', id: 'finalPrice', type: 'd',
                 prior: item.final_price > item.min_price ? item.final_price : item.min_price });
+        }
+
+        // to Auction Item:
+        if (item.status == 'To Auction') {
+            // update bidder if not us
+            // update final price
+            if (item.bidder != null && item.bidder != currentPerson.id) {
+                html += '<div class="row mt-2"><div class="col-sm-12">This item was last bid on by ' + item.bidder + ', change it to this person? ' +
+                    '<select id="updateBidderYN" name="updateBidderYN"><option value="N">No</option><option value="Y">Yes</option></select>' +
+                    '</div></div>';
+                inventoryUpdates.push({field: '', id: 'updateBidderYN', type: 'p'});
+                inventoryUpdates.push({field: 'bidder', value: currentPerson.id, type: 'i'});
+                valid = false;
+            }
+
+            html += '<div class="row mt-2"><div class="col-sm-12">Final Bid Price? ' +
+                '<input type="number" class="no-spinners" inputmode="numeric" id="finalPrice" name="finalPrice" size="20" placeholder="High Bid" ' +
+                ' min=1 max=9999999 value="' + (item.final_price > item.min_price ? item.final_price : item.min_price) + '"></div></div>';
+            inventoryUpdates.push({field: 'final_price', id: 'finalPrice', type: 'd',
+                prior: item.final_price > item.min_price ? item.final_price : item.min_price });
+            inventoryUpdates.push({field: 'status',  value: 'Sold at Auction'});
         }
     }
 
