@@ -7,7 +7,6 @@ ALTER TABLE artItemsHistory ADD COLUMN notes text CHARACTER SET utf8mb4 COLLATE 
 
 DROP TRIGGER IF EXISTS artItems_update;
 DELIMITER ;;
-ALTER TABLE artItems DROP TRIGGER artItems_update;
 CREATE DEFINER=CURRENT_USER  TRIGGER `artItems_update` BEFORE UPDATE ON `artItems` FOR EACH ROW BEGIN
 IF (OLD.id != NEW.id OR OLD.item_key != NEW.item_key OR OLD.title != NEW.title OR OLD.type != NEW.type OR OLD.status != NEW.status
 OR OLD.location != NEW.location OR OLD.quantity != NEW.quantity OR OLD.original_qty != NEW.original_qty
