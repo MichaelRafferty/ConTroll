@@ -24,4 +24,4 @@ END IF;
 END;;
 DELIMITER ;
 
-INSERT INTO patchLog(id, name) VALUES(49 'artinventory');
+INSERT INTO patchLog(id, name) VALUES(49, 'artinventory');
