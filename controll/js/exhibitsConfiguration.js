@@ -147,6 +147,7 @@ class exhibitssetup {
                         <button id="types-redo" type="button" class="btn btn-secondary btn-sm" onclick="exhibits.redoTypes(); return false;" disabled>Redo</button>
                         <button id="types-addrow" type="button" class="btn btn-secondary btn-sm" onclick="exhibits.addrowTypes(); return false;">Add New</button>
                         <button id="types-save" type="button" class="btn btn-primary btn-sm"  onclick="exhibits.saveTypes(); return false;" disabled>Save Changes</button>
+                        <button id="types-csv" type="button" class="btn btn-info btn-sm"  onclick="exhibits.csvTypes(); return false;">Download CSV</button>
                     </div>
                 </div>
             </div>
@@ -608,9 +609,7 @@ class exhibitssetup {
                     editor: "list", editorParams: { values: ['Y', 'N'] }, },
                 { title: "&bigstar;Uses Inventory Mgmt", field: "usesInventory", headerSort: false, width: 90, headerWordWrap: true, validator: "required",
                     editor: "list", editorParams: { values: ['Y', 'N'] }, },
-                { title: "Max Inv Items", field: "if ((!array_key_exists('usesInventory', $row)) || $row['usesInventory'] == null || trim($row['usesInventory']) == '') {\n" +
-                        "                $error .= 'The region type with Region Type ' . $row['regionType'] . ' is missing the Uses Inventory Mgmt field, that field is required<br/>';\n" +
-                        "            }", width: 70, headerSort: false, headerWordWrap: true, editor: "number" },
+                { title: "Max Inv Items", field: "maxInventory", width: 70, headerSort: false, headerWordWrap: true, editor: "number" },
                 { title: "&bigstar;Active", field: "active", headerSort: true, width: 120, validator: "required",
                     editor: "list", editorParams: { values: ['Y', 'N'] }, },
                 { title: "Sort Order", field: "sortorder", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 80,},
@@ -1124,6 +1123,31 @@ class exhibitssetup {
                 }
             });
         }
+    }
+
+    // save off the csv file
+    csvTypes() {
+        if (this.#regionsTable == null)
+            return;
+
+        var filename = 'exhibitorRegionTypes';
+        var tabledata = JSON.stringify(this.#regionTypeTable.getData("active"));
+        var fieldList = [
+            "regionType",
+            "portalType",
+            "requestApprovalRequired",
+            "purchaseApprovalRequired",
+            "purchaseAreaTotals",
+            "inPersonMaxUnits",
+            "mailinAllowed",
+            "mailinMaxUnits",
+            "needW9",
+            "usesInventory",
+            "maxInventory",
+            "active",
+            "sortorder",
+        ];
+        downloadCSVPost(filename, tabledata, null, fieldList);
     }
 
     //// Processing functions for regions
