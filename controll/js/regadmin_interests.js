@@ -102,7 +102,6 @@ class interestsSetup {
                 <button id="interests-addrow" type="button" class="btn btn-secondary btn-sm" onclick="interests.addrow(); return false;">Add New</button>
                 <button id="interests-save" type="button" class="btn btn-primary btn-sm"  onclick="interests.save(); return false;" disabled>Save Changes</button>
                 <button id="interests-csv" type="button" class="btn btn-info btn-sm"  onclick="interests.csv(); return false;">Download CSV</button>
-
             </div>
         </div>
         <div class="row mt-4">
