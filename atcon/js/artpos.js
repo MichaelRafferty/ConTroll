@@ -967,6 +967,7 @@ function updateInventoryStep(item, repeatPass) {
     inventoryUpdates = [];
     html = '<h1 class="h4">Update Inventory Record:</h1>' + details.html;
     notes = '';
+    didQuantity = false;
 
     // general status issues first
     if (item.status == 'Entered' || item.status == 'Not In Show') {
@@ -974,6 +975,7 @@ function updateInventoryStep(item, repeatPass) {
             ' If you are sure the item is checked in, click "Update Inventory Record" to set it to "Checked In"</div></div>';
         inventoryUpdates.push({field: 'status', value: 'Checked In'});
         notes += 'Updated to Checked In via artpos inventory\n';
+        didQuantity = true;
 
         if (item.type == 'print') {
             html += '<div class="row"><div class="col-sm-12">The item is of type print, please verify it\'s available quantity before updating the record: ' +
@@ -984,7 +986,16 @@ function updateInventoryStep(item, repeatPass) {
         }
     }
 
-    // print is covered in general status.
+    // print - 0 quantity refresh
+    if (item.type == 'print' && item.quantity <= 0 && didQuantity == false) {
+        html += '<div class="row"><div class="col-sm-12">The item is of type print, and shows none remaining, ' +
+            ' please verify it\'s available quantity before updating the record: ' +
+            '<input type="number" class="no-spinners" inputmode="numeric" id="availQty" name="availQty" size="20" placeholder="Avail Qty" ' +
+            ' min=0 max=9999 value="' + item.quantity + '"></div></div>';
+        inventoryUpdates.push({field: 'quantity', id: 'availQty', type: 'i'});
+        notes += 'Updated print quantity from ' + item.quantity + ' due to trying to sell one when none is marked available\n';
+    }
+
     // NFS is only allowed to be checked in, if it even gets this far, (as a safety valve)
     if (item.type == 'art' && config.roomStatus != 'precon' && config.roomStatus != 'closed' && repeatPass == false) {
         // that leaves art.
