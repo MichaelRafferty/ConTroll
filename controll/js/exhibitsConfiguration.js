@@ -1430,7 +1430,7 @@ class exhibitssetup {
     }
 
     // save off the csv file
-    csvRegionYears() {
+    csvYears() {
         if (this.#regionYearsTable == null)
             return;
 
