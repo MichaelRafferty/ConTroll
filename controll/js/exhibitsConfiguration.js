@@ -166,6 +166,7 @@ class exhibitssetup {
                         <button id="regions-redo" type="button" class="btn btn-secondary btn-sm" onclick="exhibits.redoRegions(); return false;" disabled>Redo</button>
                         <button id="regions-addrow" type="button" class="btn btn-secondary btn-sm" onclick="exhibits.addrowRegions(); return false;">Add New</button>
                         <button id="regions-save" type="button" class="btn btn-primary btn-sm"  onclick="exhibits.saveRegions(); return false;" disabled>Save Changes</button>
+                        <button id="types-csv" type="button" class="btn btn-info btn-sm"  onclick="exhibits.csvRegions(); return false;">Download CSV</button>
                     </div>
                 </div>
             </div>
@@ -184,6 +185,7 @@ class exhibitssetup {
                         <button id="years-redo" type="button" class="btn btn-secondary btn-sm" onclick="exhibits.redoYears(); return false;" disabled>Redo</button>
                         <button id="years-addrow" type="button" class="btn btn-secondary btn-sm" onclick="exhibits.addrowYears(); return false;">Add New</button>
                         <button id="years-save" type="button" class="btn btn-primary btn-sm"  onclick="exhibits.saveYears(); return false;" disabled>Save Changes</button>
+                        <button id="types-csv" type="button" class="btn btn-info btn-sm"  onclick="exhibits.csvYears(); return false;">Download CSV</button>
                     </div>
                 </div>
             </div>
@@ -202,6 +204,7 @@ class exhibitssetup {
                         <button id="spaces-redo" type="button" class="btn btn-secondary btn-sm" onclick="exhibits.redoSpaces(); return false;" disabled>Redo</button>
                         <button id="spaces-addrow" type="button" class="btn btn-secondary btn-sm" onclick="exhibits.addrowSpaces(); return false;">Add New</button>
                         <button id="spaces-save" type="button" class="btn btn-primary btn-sm"  onclick="exhibits.saveSpaces(); return false;" disabled>Save Changes</button>
+                        <button id="types-csv" type="button" class="btn btn-info btn-sm"  onclick="exhibits.csvSpaces(); return false;">Download CSV</button>
                     </div>
                 </div>                        
             </div>
@@ -220,6 +223,7 @@ class exhibitssetup {
                         <button id="spacePrices-redo" type="button" class="btn btn-secondary btn-sm" onclick="exhibits.redoSpacePrices(); return false;" disabled>Redo</button>
                         <button id="spacePrices-addrow" type="button" class="btn btn-secondary btn-sm" onclick="exhibits.addrowSpacePrices(); return false;">Add New</button>
                         <button id="spacePrices-save" type="button" class="btn btn-primary btn-sm"  onclick="exhibits.saveSpacePrices(); return false;" disabled>Save Changes</button>
+                        <button id="types-csv" type="button" class="btn btn-info btn-sm"  onclick="exhibits.csvSpacePrices(); return false;">Download CSV</button>
                     </div>
                 </div>        
             </div>
@@ -1127,7 +1131,7 @@ class exhibitssetup {
 
     // save off the csv file
     csvTypes() {
-        if (this.#regionsTable == null)
+        if (this.#regionTypeTable == null)
             return;
 
         var filename = 'exhibitorRegionTypes';
@@ -1277,6 +1281,24 @@ class exhibitssetup {
         }
     }
 
+    // save off the csv file
+    csvRegions() {
+        if (this.#regionsTable == null)
+            return;
+
+        var filename = 'exhibitorRegions';
+        var tabledata = JSON.stringify(this.#regionsTable.getData("active"));
+        var fieldList = [
+            "id",
+            "regionType",
+            "shortname",
+            "name",
+            "description",
+            "sortorder"
+        ];
+        downloadCSVPost(filename, tabledata, null, fieldList);
+    }
+
     //// Processing functions for regionYears
 
     dataChangedYears(data) {
@@ -1405,6 +1427,35 @@ class exhibitssetup {
                 }
             });
         }
+    }
+
+    // save off the csv file
+    csvRegionYears() {
+        if (this.#regionYearsTable == null)
+            return;
+
+        var filename = 'exhibitorRegionYears';
+        var tabledata = JSON.stringify(this.#regionYearsTable.getData("active"));
+        var fieldList = [
+            "id",
+            "conid",
+            "exhibitsRegion",
+            "roomStatus",
+            "ownerName",
+            "ownerEmail",
+            "includedMemId",
+            "additionalMemId",
+            "totalUnitsAvailable",
+            "atconIdBase",
+            "glNum",
+            "glLabel",
+            "mailinFee",
+            "mailinIdBase",
+            "mailinGLNum",
+            "mailinGLLabel",
+            "sortorder"
+        ];
+        downloadCSVPost(filename, tabledata, null, fieldList);
     }
 
     //// Processing functions for spaces
@@ -1536,7 +1587,27 @@ class exhibitssetup {
         }
     }
 
-    //// Processing functions for spacePricedss
+    // save off the csv file
+    csvSpaces() {
+        if (this.#spacesTable == null)
+            return;
+
+        var filename = 'exhibitorSpaces';
+        var tabledata = JSON.stringify(this.#spacesTable.getData("active"));
+        var fieldList = [
+            "id",
+            "shortname",
+            "name",
+            "description",
+            "unitsAvailable",
+            "glNum",
+            "glLabel",
+            "sortorder"
+        ];
+        downloadCSVPost(filename, tabledata, null, fieldList);
+    }
+
+    //// Processing functions for spacePrices
 
     dataChangedSpacePrices(data) {
         //data - the updated table data
@@ -1602,7 +1673,7 @@ class exhibitssetup {
         return undosize;
     }
 
-    saveSpacePricessComplete(data, textStatus, jhXHR) {
+    saveSpacePricesComplete(data, textStatus, jhXHR) {
         var _this = this;
 
         if ('error' in data) {
@@ -1656,7 +1727,7 @@ class exhibitssetup {
                 method: 'POST',
                 data: postdata,
                 success: function (data, textStatus, jhXHR) {
-                    _this.saveSpacePricessComplete(data, textStatus, jhXHR);
+                    _this.saveSpacePricesComplete(data, textStatus, jhXHR);
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
                     showError("ERROR in " + script + ": " + textStatus, jqXHR);
@@ -1665,6 +1736,32 @@ class exhibitssetup {
             });
         }
     }
+
+    // save off the csv file
+    csvSpacePrices() {
+        if (this.#spacePricesTable == null)
+            return;
+
+        var filename = 'exhibitorSpacePrices';
+        var tabledata = JSON.stringify(this.#spacePricesTable.getData("active"));
+        var fieldList = [
+            "id",
+            "regionId",
+            "spaceId",
+            "code",
+            "description",
+            "units",
+            "price",
+            "includedMemberships",
+            "additionalMemberships",
+            "requestable",
+            "glNum",
+            "glLabel",
+            "sortorder"
+        ];
+        downloadCSVPost(filename, tabledata, null, fieldList);
+    }
+
 };
 
 var dirty = false;
