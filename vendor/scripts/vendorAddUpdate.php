@@ -334,4 +334,3 @@ EOS;
 }
 
 ajaxSuccess($response);
-?>

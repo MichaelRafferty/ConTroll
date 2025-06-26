@@ -63,4 +63,3 @@ if ($numrows == 1) {
 }
 
 ajaxSuccess($response);
-?>

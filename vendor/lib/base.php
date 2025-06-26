@@ -102,4 +102,3 @@ function Render500ErrorAjax($message_error) : void {
     header($_SERVER['SERVER_PROTOCOL'] . ' 500 Internal Server Error', true, 500);
     echo "$message_error";
 }
-?>

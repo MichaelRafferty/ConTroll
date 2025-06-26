@@ -134,4 +134,3 @@ $response['success'] = "Payment Plans updated: $inserted added, $updated changed
 $response['paymentPlans'] = getPlanConfig();
 
 ajaxSuccess($response);
-?>

@@ -95,4 +95,3 @@ $response['newperson'] = $newperson;
 
 $response['success'] = 'Deleted the newperson ' . $newperson['fullName'] . ", $delcnt records deleted.";
 ajaxSuccess($response);
-?>

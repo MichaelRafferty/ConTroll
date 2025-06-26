@@ -654,4 +654,3 @@ function cc_getPayment($source, $paymentid, $useLogWrite = false) : array {
 
     return $payment;
 }
-?>

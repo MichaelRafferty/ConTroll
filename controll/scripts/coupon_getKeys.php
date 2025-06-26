@@ -51,4 +51,3 @@ $response['status'] = 'success';
 $response['keys'] = $couponKeys;
 
 ajaxSuccess($response);
-?>

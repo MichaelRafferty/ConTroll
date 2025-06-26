@@ -92,4 +92,3 @@ write_badge($label_4, $file_full, '4');
 var_dump(print_badge('4', $file_full));
 unlink($file_full);
 /**/
-?>

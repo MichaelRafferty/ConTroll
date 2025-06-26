@@ -222,4 +222,3 @@ function checkNoWhitespace($rows, $table, $field) {
         exit(1);
     }
 }
-?>

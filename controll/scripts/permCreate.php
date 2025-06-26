@@ -67,4 +67,3 @@ if ($newid > 0) {
 }
 
 ajaxSuccess($response);
-?>

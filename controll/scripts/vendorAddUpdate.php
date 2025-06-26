@@ -238,4 +238,3 @@ EOS;
 }
 
 ajaxSuccess($response);
-?>

@@ -183,4 +183,3 @@ $exhibitorSR->free();
 $response['exhibitor_spacelist'] = $exhibitorSpaceList;
 
 ajaxSuccess($response);
-?>

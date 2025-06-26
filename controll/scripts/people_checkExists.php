@@ -203,4 +203,3 @@ $response['matches'] = $matches;
 $response['success'] = count($matches) . ' potential matches found';
 
 ajaxSuccess($response);
-?>

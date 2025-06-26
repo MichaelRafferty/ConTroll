@@ -264,4 +264,3 @@ function validateConfigFile($options) : int {
 
     return $errors;
 }
-?>

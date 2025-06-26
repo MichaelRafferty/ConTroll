@@ -102,6 +102,5 @@ if ($interest_upd > 0) {
 //  4. manages
 // handled directly in the JS using people_unmanage.php and people_manage.php
 
-    $response['success'] = $message;
-    ajaxSuccess($response);
-?>
+$response['success'] = $message;
+ajaxSuccess($response);

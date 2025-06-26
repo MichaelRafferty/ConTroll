@@ -146,4 +146,3 @@ EOS;
 }
 
 ajaxSuccess($response);
-?>

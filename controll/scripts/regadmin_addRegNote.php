@@ -57,4 +57,3 @@ if ($new_history === false) {
 
 $response['success'] = 'Note added successfully';
 ajaxSuccess($response);
-?>

@@ -62,4 +62,3 @@ $exhibitorR->free();
 $response['exhibitors'] = $exhibitors;
 
 ajaxSuccess($response);
-?>

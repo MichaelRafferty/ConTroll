@@ -173,4 +173,3 @@ $config_vars['useUSPS'] = $useUSPS;
 <pre id='test'></pre>
 <?php
     page_foot($page);
-?>

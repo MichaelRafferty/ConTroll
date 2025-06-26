@@ -108,4 +108,3 @@ if ($type == 'nextage' || $type == 'all') {
 }
 
 ajaxSuccess($response);
-?>

@@ -255,4 +255,3 @@ EOQ;
 }
 
 ajaxSuccess($response);
-?>

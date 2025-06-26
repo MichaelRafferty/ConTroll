@@ -76,4 +76,3 @@ $config_vars['conid'] = $conid;
 <pre id='test'></pre>
 <?php
     page_foot($page);
-?>

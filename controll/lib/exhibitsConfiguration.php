@@ -134,4 +134,3 @@ function draw_exhibitsConfigurationModals() {
     </div>
     <?php
 }
-?>

@@ -370,4 +370,3 @@ foreach ($regionOwners AS $regionOwner => $regionList) {
 
 <?php
 page_foot($page);
-?>

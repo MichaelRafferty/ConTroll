@@ -61,4 +61,3 @@ if ($error != '')
     $response['error'] = $error;
 
 ajaxSuccess($response);
-?>

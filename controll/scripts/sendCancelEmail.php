@@ -84,4 +84,3 @@ $response['error'] = $data_array;
 $response['email_array'] = $email_array;
 
 ajaxSuccess($response);
-?>

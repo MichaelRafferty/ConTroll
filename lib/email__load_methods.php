@@ -51,4 +51,3 @@ function redirectTestEmails($to, $cc) {
 
     return array($to, $cc, $subjectPrefix);
 }
-?>

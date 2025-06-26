@@ -503,4 +503,3 @@ $response = array(
 );
 //var_error_log($response);
 ajaxSuccess($response);
-?>

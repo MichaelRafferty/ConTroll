@@ -35,5 +35,3 @@ function calc_tables($quarters) {
 
     return trim($result);
 }
-
-?>

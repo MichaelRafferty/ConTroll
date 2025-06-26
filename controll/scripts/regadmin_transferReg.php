@@ -138,4 +138,3 @@ foreach ($transferList as $from) {
 }
 
 ajaxSuccess($response);
-?>

@@ -122,6 +122,3 @@ function drawEditPane($tabIndex=100)
     </div>
     <?php
 }
-
-
-?>

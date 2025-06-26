@@ -67,4 +67,3 @@ $response['status'] = 'success';
 $response['message'] = count($exhibitors) . ' exhibitors found.';
 
 ajaxSuccess($response);
-?>

@@ -458,4 +458,3 @@ function startEndDateTimeToNextYear($datestr) {
 
         return "$nYear-$month-$day";
     }
-?>

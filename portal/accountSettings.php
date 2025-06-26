@@ -260,4 +260,3 @@ if ($personType == 'n') {
 <?php
 }
 portalPageFoot();
-?>

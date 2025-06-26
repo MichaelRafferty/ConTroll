@@ -215,4 +215,3 @@ $response['year'] = $year;
 $response['success'] = "$table updated: $inserted added, $updated changed, $deleted removed.";
 //error_log("$action = $action on year $year");
 ajaxSuccess($response);
-?>

@@ -52,4 +52,3 @@ $response['history'] = $history;
 $response['query']=$bQ;
 
 ajaxSuccess($response);
-?>

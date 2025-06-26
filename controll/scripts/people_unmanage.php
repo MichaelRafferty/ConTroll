@@ -61,4 +61,3 @@ if ($num_upd === false) {
 }
 
 ajaxSuccess($response);
-?>

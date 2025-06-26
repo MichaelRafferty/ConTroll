@@ -106,4 +106,3 @@ EOS;
 }
 
 ajaxSuccess($response);
-?>

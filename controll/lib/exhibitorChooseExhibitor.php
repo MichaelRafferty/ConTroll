@@ -35,4 +35,3 @@ function draw_exhibitorChooseModal() {
     </div>
     <?php
 }
-?>

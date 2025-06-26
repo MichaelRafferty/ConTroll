@@ -164,4 +164,3 @@ $response['spaces'] = $spaces;
 $response['country_options'] = $countryOptions;
 
 ajaxSuccess($response);
-?>

@@ -106,4 +106,3 @@ $mR->free();
 $response['managed'] = $managed;
 
 ajaxSuccess($response);
-?>

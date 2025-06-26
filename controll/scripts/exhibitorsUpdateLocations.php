@@ -61,4 +61,3 @@ if (strlen($locationsUsed) > 1) {
 }
 $response['locationsUsed'] = $locationsUsed;
 ajaxSuccess($response);
-?>

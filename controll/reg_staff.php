@@ -885,4 +885,3 @@ function drawFilters() {
     </div>
     <?php
 }
-?>

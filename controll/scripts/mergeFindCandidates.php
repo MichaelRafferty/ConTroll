@@ -38,4 +38,3 @@ if (array_key_exists('matchCount', $_POST)) {
 $response = checkmerge($remain, $matchCount);
 
 ajaxSuccess($response);
-?>

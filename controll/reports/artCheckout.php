@@ -92,5 +92,3 @@ while($reportL = fetch_safe_array($reportR)) {
 echo ",,$name RETURNED\n";
 
 //echo $query; exit();
-
-?>

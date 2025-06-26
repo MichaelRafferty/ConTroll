@@ -61,4 +61,3 @@ $response['count'] = $res->num_rows;
 $response['results'] = $results;
 
 ajaxSuccess($response);
-?>

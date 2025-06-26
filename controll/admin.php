@@ -363,4 +363,3 @@ if (array_key_exists('msg', $_REQUEST)) {
 <pre id='test'></pre>
 <?php
 page_foot($page);
-?>

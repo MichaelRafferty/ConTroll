@@ -968,4 +968,3 @@ EOS;
     $response['message'] = "$page pages output";
     return $response;
 }
-?>

@@ -79,5 +79,3 @@ $config_vars['compLen'] = $con['compLen'];
 <?php
 
 page_foot($page);
-
-?>

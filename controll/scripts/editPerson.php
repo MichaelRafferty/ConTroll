@@ -253,4 +253,3 @@ $response['changed'] = $change;
 $response['changeLog'] = $changeLog;
 
 ajaxSuccess($response);
-?>

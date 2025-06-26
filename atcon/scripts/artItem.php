@@ -52,4 +52,3 @@ if($itemR->num_rows > 0) {
 }
 
 ajaxSuccess($response);
-?>

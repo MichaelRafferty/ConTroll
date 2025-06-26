@@ -482,4 +482,3 @@ EOS;
     }
 }
 ajaxSuccess($response);
-?>

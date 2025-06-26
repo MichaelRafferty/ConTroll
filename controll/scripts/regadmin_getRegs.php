@@ -46,4 +46,3 @@ $response['memberships'] = $memberships;
 $response['query']=$bQ;
 
 ajaxSuccess($response);
-?>

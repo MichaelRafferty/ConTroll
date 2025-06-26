@@ -63,4 +63,3 @@ while($newItem = $itemR->fetch_assoc()) {
 $response['items'] = $itemArr;
 
 ajaxSuccess($response);
-?>

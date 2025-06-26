@@ -45,4 +45,3 @@ $response['status'] = 'success';
 $response['used'] = $couponUsage;
 
 ajaxSuccess($response);
-?>

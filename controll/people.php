@@ -746,4 +746,3 @@ drawInterestList($interests, true);
 
 <?php
 page_foot($page);
-?>

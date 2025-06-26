@@ -51,4 +51,3 @@ foreach($locations as $key => $value) {
 $response['locations'] = $locations;
 
 ajaxSuccess($response);
-?>

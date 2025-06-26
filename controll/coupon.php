@@ -215,4 +215,3 @@ while ($row = $limitR->fetch_assoc()) {
 <?php
 
 page_foot($page);
-?>

@@ -52,4 +52,3 @@ $pastR->free();
 
 $response['past'] = $past;
 ajaxSuccess($response);
-?>

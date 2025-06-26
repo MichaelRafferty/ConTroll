@@ -73,6 +73,4 @@ $artists=array();
 
 $response['artists'] = $artists;
 
-
 ajaxSuccess($response);
-?>

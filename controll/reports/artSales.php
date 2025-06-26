@@ -57,5 +57,3 @@ while($reportL = $reportR->fetch_assoc()) {
         echo '"' . $reportL['exhibitorName'] . '","'. $total. '","' . $reportL['address'] . "\"\n";
     }
 }
-
-?>

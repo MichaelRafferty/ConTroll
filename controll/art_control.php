@@ -92,4 +92,3 @@ foreach ($regions as $region) {
 </pre>
 <?php
 page_foot($page);
-?>

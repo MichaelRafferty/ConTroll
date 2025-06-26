@@ -251,4 +251,3 @@ $response['emailType'] = $email_type;
 $response['macroSubstitution'] = $macroSubstitution;
 
 ajaxSuccess($response);
-?>

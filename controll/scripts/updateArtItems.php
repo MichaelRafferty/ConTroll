@@ -61,4 +61,3 @@ foreach ($tabledata as $row) {
 $response['status'] = "$updated items Updated";
 
 ajaxSuccess($response);
-?>

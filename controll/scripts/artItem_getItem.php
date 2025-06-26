@@ -77,4 +77,3 @@ if($bidderId != null) {
 } else { $response['bidder'] = null;}
 
 ajaxSuccess($response);
-?>

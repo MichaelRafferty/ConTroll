@@ -227,4 +227,3 @@ $response['numins'] = $numins;
 $response['numupd'] = $numupd;
 $response['numdel'] = $numdel;
 ajaxSuccess($response);
-?>

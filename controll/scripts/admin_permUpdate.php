@@ -78,4 +78,3 @@ if($_POST['action'] == 'clear') {
 }
 
 ajaxSuccess($response);
-?>

@@ -297,4 +297,3 @@ EOS;
         logEcho("Errors while adding initial users");
     return $errors;
 }
-?>

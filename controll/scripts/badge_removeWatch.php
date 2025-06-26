@@ -93,4 +93,3 @@ while($badge = $watchR->fetch_assoc()) {
 $watchR->free();
 $response['watchMembers'] = $badges;
 ajaxSuccess($response);
-?>

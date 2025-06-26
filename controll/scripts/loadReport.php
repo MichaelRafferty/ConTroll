@@ -242,4 +242,3 @@ $response['fields'] = $fieldArr;
 $response['success'] = count($data) . " rows returned";
 
 ajaxSuccess($response);
-?>

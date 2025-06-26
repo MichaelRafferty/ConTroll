@@ -355,4 +355,3 @@ EOS;
 
     return join(',', $newListItems);
     }
-?>

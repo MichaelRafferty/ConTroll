@@ -22,5 +22,3 @@ function logWrite($message) {
   fprintf($fh, "%s\n", $res);
   logClose($fh);
   }
-
-?>

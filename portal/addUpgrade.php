@@ -317,4 +317,3 @@ drawVerifyPersonInfo($policies);
 ?>
 <?php
 portalPageFoot();
-?>

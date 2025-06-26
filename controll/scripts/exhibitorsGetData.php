@@ -269,4 +269,3 @@ $response['locationsUsed'] = $locationsUsed;
 $response['price_list'] = $price_list;
 
 ajaxSuccess($response);
-?>

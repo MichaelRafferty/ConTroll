@@ -83,4 +83,3 @@ $rows = $menuR->num_rows;
 $menuR->free();
 $response['menu'] = $menuItems;
 ajaxSuccess($response);
-?>

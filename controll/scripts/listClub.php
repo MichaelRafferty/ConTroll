@@ -74,4 +74,3 @@ $response['badge']=$badgeId;
 
 
 ajaxSuccess($response);
-?>

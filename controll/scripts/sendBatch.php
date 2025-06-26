@@ -139,4 +139,3 @@ $response['email_array'] = $email_array;
 $response['emails_sent'] = $numsent;
 
 ajaxSuccess($response);
-?>

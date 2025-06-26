@@ -95,4 +95,3 @@ EOS;
 }
 
 ajaxSuccess($response);
-?>

@@ -24,4 +24,3 @@ if (!isset($_POST) || !isset($_POST['ajax_request_action']) || !isset($_POST['ta
 
 $response['customText'] = getCustomText('exhibitor');
 ajaxSuccess($response);
-?>

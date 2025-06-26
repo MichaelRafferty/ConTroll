@@ -84,4 +84,3 @@ $response['payorPlans'] = $payorPlans;
 $response['paymentPlans'] = getPlanConfig();
 
 ajaxSuccess($response);
-?>

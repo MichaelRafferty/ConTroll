@@ -60,4 +60,3 @@ if ($num_rows != 1) {
 $response['password'] = $newpasswd;
 
 ajaxSuccess($response);
-?>

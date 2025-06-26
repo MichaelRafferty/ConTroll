@@ -97,4 +97,3 @@ else
 $response['numUnmatched'] = $unmatchedCnt;
 
 ajaxSuccess($response);
-?>

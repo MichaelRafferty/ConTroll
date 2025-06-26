@@ -174,4 +174,3 @@ else
     $response['success'] = "Too many records were matched, only the first $limit additional matches returned";
 
 ajaxSuccess($response);
-?>

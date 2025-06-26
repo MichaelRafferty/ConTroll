@@ -213,4 +213,3 @@ $response['message'] = count($rolloverList) . " regs rolled over for $perid: $fi
 
 ajaxSuccess($response);
 return true;
-?>

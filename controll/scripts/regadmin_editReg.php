@@ -142,4 +142,3 @@ if ($num_upd < 0) {
     $response['message'] = 'Reg successfully updated';
 }
 ajaxSuccess($response);
-?>

@@ -64,4 +64,3 @@ $updated = updateCustomText($tabledata);
 $response['success'] = "$tablename updated: $updated changed";
 $response['customText'] = getCustomText('exhibitor');
 ajaxSuccess($response);
-?>

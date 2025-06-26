@@ -128,4 +128,3 @@ EOS;
     }
 }
 ajaxSuccess($response);
-?>

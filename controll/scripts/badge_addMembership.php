@@ -95,4 +95,3 @@ if ($newReg === false) {
 }
 $response['success'] = "$perid update with $memId";
 ajaxSuccess($response);
-?>

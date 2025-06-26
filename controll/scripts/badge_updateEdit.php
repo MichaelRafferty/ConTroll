@@ -86,4 +86,3 @@ if ($policy_upd > 0) {
 
 $response['success'] = $message;
 ajaxSuccess($response);
-?>

@@ -48,4 +48,3 @@ $menuR->free();
 $response['menu'] = $menuItems;
 $response['success'] = "$rows menu rows selected";
 ajaxSuccess($response);
-?>

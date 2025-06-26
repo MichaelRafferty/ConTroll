@@ -255,4 +255,3 @@ $response['matchPolicies'] = $matchPolicies;
 $response['success'] = count($matches) . ' potential matches found';
 
 ajaxSuccess($response);
-?>

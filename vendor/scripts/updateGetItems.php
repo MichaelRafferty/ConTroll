@@ -231,4 +231,3 @@ while ($item = $itemR->fetch_assoc()) {
 $response['items'] = $items;
 
 ajaxSuccess($response);
-?>

@@ -34,6 +34,4 @@ while($club = fetch_safe_assoc($entryR)) {
   array_push($response['club'], $club);
 }
 
-
 ajaxSuccess($response);
-?>

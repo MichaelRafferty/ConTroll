@@ -78,4 +78,3 @@ $response['status'] = $status;
 $response['rollback'] = $rollback;
 
 ajaxSuccess($response);
-?>

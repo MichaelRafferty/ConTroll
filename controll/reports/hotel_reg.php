@@ -43,5 +43,3 @@ while($reportL = fetch_safe_array($reportR)) {
     }
     echo "\n";
 }
-
-?>

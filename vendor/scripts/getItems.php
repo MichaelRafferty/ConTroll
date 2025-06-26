@@ -82,4 +82,3 @@ $response['inv'] = $maxR->fetch_assoc();
 $maxR->free();
 
 ajaxSuccess($response);
-?>

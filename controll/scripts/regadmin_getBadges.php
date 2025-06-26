@@ -264,4 +264,3 @@ while($memLabel = $memLabelA->fetch_assoc()) {
 $response['memLabelsNext'] = $memLabels;
 
 ajaxSuccess($response);
-?>

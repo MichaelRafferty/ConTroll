@@ -50,5 +50,3 @@ function send_email($from, $to, $cc, $subject, $textbody, $htmlbody) {
 
     return $return_arr;
 }
-
-?>

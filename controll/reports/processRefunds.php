@@ -162,6 +162,3 @@ while($txn = $txnR->fetch_assoc()) {
         echo "$result,$reason\n";
     }
 }
-
-
-?>
