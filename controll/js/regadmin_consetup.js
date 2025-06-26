@@ -100,7 +100,8 @@ class consetup {
     <button id="` + this.#setup_type + `memlist-redo" type="button" class="btn btn-secondary btn-sm" onclick="` + this.#setup_type + `.redoMemList(); return false;" disabled>Redo</button>
     <button id="` + this.#setup_type + `memlist-addrow" type="button" class="btn btn-secondary btn-sm" onclick="` + this.#setup_type + `.addrowMemList(); return false;">Add New</button>
     <button id="` + this.#setup_type + `memlist-save" type="button" class="btn btn-primary btn-sm"  onclick="` + this.#setup_type + `.saveMemList(); return false;" disabled>Save Changes</button>
-    <button id="` + this.#setup_type + `memlist-csv" type="button" class="btn btn-info btn-sm"  onclick="` + this.#setup_type + `.downloadMemList(); return false;">Download CSV</button>
+    <button id="` + this.#setup_type + `memlist-csv" type="button" class="btn btn-info btn-sm"  onclick="` + this.#setup_type + `.downloadMemList('csv'); return false;">Download CSV</button>
+    <button id="` + this.#setup_type + `memlist-xlsx" type="button" class="btn btn-info btn-sm"  onclick="` + this.#setup_type + `.downloadMemList('xlsx'); return false;">Download Excel</button>
 </div>
 <div>&nbsp;</div>
 </div>
@@ -554,7 +555,7 @@ class consetup {
         }
     };
 
-    downloadMemList() {
+    downloadMemList(format) {
         if (this.#memtable == null)
             return;
 
@@ -576,6 +577,6 @@ class consetup {
             'notes',
             'sort_order'
         ];
-        downloadCSVPost(filename, tabledata, null, fieldList);
+        downloadFilePost(format, filename, tabledata, null, fieldList);
     }
 };

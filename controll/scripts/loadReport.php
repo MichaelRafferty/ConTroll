@@ -1,5 +1,5 @@
 <?php
-// downloadCSV - take an associative array passed in and a file name, and output that
+// loadReport - load a .rpt type processor report and output same
 global $db_ini;
 require_once "../lib/base.php";
 require_once "../../lib/log.php";

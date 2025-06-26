@@ -477,14 +477,19 @@ function blankIfNull(value) {
 }
 
 // pass object to a window.open via a post with json data
-function downloadCSVPost(fileName, tableData, excludeList = null, fieldList = null) {
+function downloadFilePost(format, fileName, tableData, excludeList = null, fieldList = null) {
     // create the form
     var form = document.createElement('form');
     form.method = 'POST';
-    form.action = 'scripts/downloadCSV.php';
+    form.action = 'scripts/downloadFile.php';
     // append it to the body
     document.body.appendChild(form);
     // create the file name to suggest to save it to....
+    var field = document.createElement('input');
+    field.type = 'text';
+    field.name = 'format';
+    field.value = format;
+    form.appendChild(field);
     var field = document.createElement('input');
     field.type = 'text';
     field.name = 'filename';

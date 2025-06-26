@@ -44,7 +44,8 @@ class customTextSetup {
             <button id="customText-undo" type="button" class="btn btn-secondary btn-sm" onclick="customText.undo(); return false;" disabled>Undo</button>
             <button id="customText-redo" type="button" class="btn btn-secondary btn-sm" onclick="customText.redo(); return false;" disabled>Redo</button>
             <button id="customText-save" type="button" class="btn btn-primary btn-sm"  onclick="customText.save(); return false;" disabled>Save Changes</button>
-            <button id="customText-csv" type="button" class="btn btn-info btn-sm"  onclick="customText.csv(); return false;">Download CSV</button>
+            <button id="customText-csv" type="button" class="btn btn-info btn-sm"  onclick="customText.download('csv'); return false;">Download CSV</button>
+            <button id="customText-csv" type="button" class="btn btn-info btn-sm"  onclick="customText.download('xlsx'); return false;">Download Excel</button>
         </div>
     </div>
 </div>
@@ -263,8 +264,8 @@ class customTextSetup {
         show_message(data['success'], 'success');
     }
 
-    // save off the csv file
-    csv() {
+    // save off the table as a file
+    download(format) {
         if (this.#customTextTable == null)
             return;
 
@@ -278,7 +279,7 @@ class customTextSetup {
             { key: 'txtItemDescription', label: 'Description' },
             { key: 'contents', label: 'Custom_Text' },
         ];
-        downloadCSVPost(filename, tabledata, null, fieldList);
+        downloadFilePost(format,  filename, tabledata, null, fieldList);
     }
 
     // on close of the pane, clean up the items

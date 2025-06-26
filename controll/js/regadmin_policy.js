@@ -131,7 +131,8 @@ class policySetup {
                     <button id="policy-redo" type="button" class="btn btn-secondary btn-sm" onclick="policy.redo(); return false;" disabled>Redo</button>
                     <button id="policy-addrow" type="button" class="btn btn-secondary btn-sm" onclick="policy.addrow(); return false;">Add New</button>
                     <button id="policy-save" type="button" class="btn btn-primary btn-sm"  onclick="policy.save(); return false;" disabled>Save Changes</button>
-                    <button id="policy-csv" type="button" class="btn btn-info btn-sm"  onclick="policy.csv(); return false;">Download CSV</button>
+                    <button id="policy-csv" type="button" class="btn btn-info btn-sm"  onclick="policy.download('csv'); return false;">Download CSV</button>
+                    <button id="policy-xlsx" type="button" class="btn btn-info btn-sm"  onclick="policy.download('xlsx'); return false;">Download Excel</button>
                 </div>
             </div>
         </div>`;
@@ -453,8 +454,8 @@ class policySetup {
         $("#previewTip").hide();
     }
 
-    // save off the csv file
-    csv() {
+    // save off the table as a file
+    download(format) {
         if (this.#policyTable == null)
             return;
 
@@ -471,7 +472,7 @@ class policySetup {
             'updateDate',
             'sortOrder'
         ];
-        downloadCSVPost(filename, tabledata, null, fieldList);
+        downloadFilePost(format,  filename, tabledata, null, fieldList);
     }
 
     // on close of the pane, clean up the items

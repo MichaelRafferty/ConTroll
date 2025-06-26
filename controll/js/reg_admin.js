@@ -1589,15 +1589,15 @@ function draw_registrations(data) {
     reglistDiv.hidden = false;
 }
 
-// save off the csv file
-function reglistCSV() {
+// save off the data file
+function reglistDownload(format) {
     if (registrationtable == null)
         return;
 
     var filename = 'registrations';
     var tabledata = JSON.stringify(registrationtable.getData("active"));
     var excludeList = ['hcount','ncount'];
-    downloadCSVPost(filename, tabledata, excludeList);
+    downloadFilePost(format, filename, tabledata, excludeList);
 }
 
 // called from data load - draws the filter stats block and the registrations block

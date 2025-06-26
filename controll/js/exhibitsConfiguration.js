@@ -147,7 +147,8 @@ class exhibitssetup {
                         <button id="types-redo" type="button" class="btn btn-secondary btn-sm" onclick="exhibits.redoTypes(); return false;" disabled>Redo</button>
                         <button id="types-addrow" type="button" class="btn btn-secondary btn-sm" onclick="exhibits.addrowTypes(); return false;">Add New</button>
                         <button id="types-save" type="button" class="btn btn-primary btn-sm"  onclick="exhibits.saveTypes(); return false;" disabled>Save Changes</button>
-                        <button id="types-csv" type="button" class="btn btn-info btn-sm"  onclick="exhibits.csvTypes(); return false;">Download CSV</button>
+                        <button id="types-csv" type="button" class="btn btn-info btn-sm"  onclick="exhibits.downloadTypes('csv'); return false;">Download CSV</button>
+                        <button id="types-xlsx" type="button" class="btn btn-info btn-sm"  onclick="exhibits.downloadTypes('xlsx'); return false;">Download Excel</button>
                     </div>
                 </div>
             </div>
@@ -166,7 +167,8 @@ class exhibitssetup {
                         <button id="regions-redo" type="button" class="btn btn-secondary btn-sm" onclick="exhibits.redoRegions(); return false;" disabled>Redo</button>
                         <button id="regions-addrow" type="button" class="btn btn-secondary btn-sm" onclick="exhibits.addrowRegions(); return false;">Add New</button>
                         <button id="regions-save" type="button" class="btn btn-primary btn-sm"  onclick="exhibits.saveRegions(); return false;" disabled>Save Changes</button>
-                        <button id="types-csv" type="button" class="btn btn-info btn-sm"  onclick="exhibits.csvRegions(); return false;">Download CSV</button>
+                        <button id="types-csv" type="button" class="btn btn-info btn-sm"  onclick="exhibits.downloadRegions('csv'); return false;">Download CSV</button>
+                        <button id="types-xlsx" type="button" class="btn btn-info btn-sm"  onclick="exhibits.downloadRegions('xlsx'); return false;">Download Excel</button>
                     </div>
                 </div>
             </div>
@@ -185,7 +187,8 @@ class exhibitssetup {
                         <button id="years-redo" type="button" class="btn btn-secondary btn-sm" onclick="exhibits.redoYears(); return false;" disabled>Redo</button>
                         <button id="years-addrow" type="button" class="btn btn-secondary btn-sm" onclick="exhibits.addrowYears(); return false;">Add New</button>
                         <button id="years-save" type="button" class="btn btn-primary btn-sm"  onclick="exhibits.saveYears(); return false;" disabled>Save Changes</button>
-                        <button id="types-csv" type="button" class="btn btn-info btn-sm"  onclick="exhibits.csvYears(); return false;">Download CSV</button>
+                        <button id="types-csv" type="button" class="btn btn-info btn-sm"  onclick="exhibits.downloadYears('csv'); return false;">Download CSV</button>
+                        <button id="types-xlsx" type="button" class="btn btn-info btn-sm"  onclick="exhibits.downloadYears('xlsx'); return false;">Download Excel</button>
                     </div>
                 </div>
             </div>
@@ -204,7 +207,8 @@ class exhibitssetup {
                         <button id="spaces-redo" type="button" class="btn btn-secondary btn-sm" onclick="exhibits.redoSpaces(); return false;" disabled>Redo</button>
                         <button id="spaces-addrow" type="button" class="btn btn-secondary btn-sm" onclick="exhibits.addrowSpaces(); return false;">Add New</button>
                         <button id="spaces-save" type="button" class="btn btn-primary btn-sm"  onclick="exhibits.saveSpaces(); return false;" disabled>Save Changes</button>
-                        <button id="types-csv" type="button" class="btn btn-info btn-sm"  onclick="exhibits.csvSpaces(); return false;">Download CSV</button>
+                        <button id="types-csv" type="button" class="btn btn-info btn-sm"  onclick="exhibits.downloadSpaces('csv'); return false;">Download CSV</button>
+                        <button id="types-xlsx" type="button" class="btn btn-info btn-sm"  onclick="exhibits.downloadSpaces('xlsx'); return false;">Download Excel</button>
                     </div>
                 </div>                        
             </div>
@@ -223,7 +227,8 @@ class exhibitssetup {
                         <button id="spacePrices-redo" type="button" class="btn btn-secondary btn-sm" onclick="exhibits.redoSpacePrices(); return false;" disabled>Redo</button>
                         <button id="spacePrices-addrow" type="button" class="btn btn-secondary btn-sm" onclick="exhibits.addrowSpacePrices(); return false;">Add New</button>
                         <button id="spacePrices-save" type="button" class="btn btn-primary btn-sm"  onclick="exhibits.saveSpacePrices(); return false;" disabled>Save Changes</button>
-                        <button id="types-csv" type="button" class="btn btn-info btn-sm"  onclick="exhibits.csvSpacePrices(); return false;">Download CSV</button>
+                        <button id="types-csv" type="button" class="btn btn-info btn-sm"  onclick="exhibits.downloadSpacePrices('csv'); return false;">Download CSV</button>
+                        <button id="types-xlsx" type="button" class="btn btn-info btn-sm"  onclick="exhibits.downloadSpacePrices('xlsx'); return false;">Download Excel</button>
                     </div>
                 </div>        
             </div>
@@ -1129,8 +1134,8 @@ class exhibitssetup {
         }
     }
 
-    // save off the csv file
-    csvTypes() {
+    // save off the data file
+    downloadTypes(format) {
         if (this.#regionTypeTable == null)
             return;
 
@@ -1151,7 +1156,7 @@ class exhibitssetup {
             "active",
             "sortorder",
         ];
-        downloadCSVPost(filename, tabledata, null, fieldList);
+        downloadFilePost(format, filename, tabledata, null, fieldList);
     }
 
     //// Processing functions for regions
@@ -1281,8 +1286,8 @@ class exhibitssetup {
         }
     }
 
-    // save off the csv file
-    csvRegions() {
+    // save off the data file
+    downloadRegions(format) {
         if (this.#regionsTable == null)
             return;
 
@@ -1296,7 +1301,7 @@ class exhibitssetup {
             "description",
             "sortorder"
         ];
-        downloadCSVPost(filename, tabledata, null, fieldList);
+        downloadFilePost(format, filename, tabledata, null, fieldList);
     }
 
     //// Processing functions for regionYears
@@ -1429,8 +1434,8 @@ class exhibitssetup {
         }
     }
 
-    // save off the csv file
-    csvYears() {
+    // save off the data file
+    downloadYears(format) {
         if (this.#regionYearsTable == null)
             return;
 
@@ -1455,7 +1460,7 @@ class exhibitssetup {
             "mailinGLLabel",
             "sortorder"
         ];
-        downloadCSVPost(filename, tabledata, null, fieldList);
+        downloadFilePost(format, filename, tabledata, null, fieldList);
     }
 
     //// Processing functions for spaces
@@ -1587,8 +1592,8 @@ class exhibitssetup {
         }
     }
 
-    // save off the csv file
-    csvSpaces() {
+    // save off the data file
+    downloadSpaces(format) {
         if (this.#spacesTable == null)
             return;
 
@@ -1604,7 +1609,7 @@ class exhibitssetup {
             "glLabel",
             "sortorder"
         ];
-        downloadCSVPost(filename, tabledata, null, fieldList);
+        downloadFilePost(format,  filename, tabledata, null, fieldList);
     }
 
     //// Processing functions for spacePrices
@@ -1737,8 +1742,8 @@ class exhibitssetup {
         }
     }
 
-    // save off the csv file
-    csvSpacePrices() {
+    // save off the data file
+    downloadSpacePrices(format) {
         if (this.#spacePricesTable == null)
             return;
 
@@ -1759,7 +1764,7 @@ class exhibitssetup {
             "glLabel",
             "sortorder"
         ];
-        downloadCSVPost(filename, tabledata, null, fieldList);
+        downloadFilePost(format, filename, tabledata, null, fieldList);
     }
 
 };

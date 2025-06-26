@@ -2,7 +2,7 @@
 // downloadCSV - take an associative array passed in and a file name, and output that
 global $db_ini;
 require_once "../lib/base.php";
-require_once "../../lib/outputCSV.php";
+require_once "../../lib/outputFile.php";
 
 $check_auth = google_init("ajax");
 $perm = "gen_rpts";
@@ -15,13 +15,15 @@ if($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
     exit();
 }
 
-if ((!array_key_exists('table', $_POST)) || (!array_key_exists('filename', $_POST))) {
+if ((!array_key_exists('format', $_POST)) || (!array_key_exists('table', $_POST)) || (!array_key_exists('filename', $_POST))) {
     $response['error'] = 'Invalid Arguments';
     ajaxSuccess($response);
     exit();
 }
 
-$fileName = $_POST['filename'] . '-' . date("Y-m-d_H-i-s");
+$format = $_POST['format'];
+$sheetname = $_POST['filename'];
+$filename = $sheetname . '-' . date("Y-m-d_H-i-s");
 
 try {
     $tableData = json_decode($_POST['table'], true, 512, JSON_THROW_ON_ERROR);
@@ -68,5 +70,4 @@ if (array_key_exists('fieldList', $_POST)) {
   }
 }
 
-outputCSV($fileName, $tableData, $excludeList, $fieldList);
-?>
+outputFile($format, $sheetname, $filename, $tableData, $excludeList, $fieldList);

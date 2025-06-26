@@ -1,6 +1,6 @@
 <?php
 require_once "../lib/base.php";
-require_once '../../lib/outputCSV.php';
+require_once '../../lib/outputFile.php';
 
 
 $need_login = google_init("page");

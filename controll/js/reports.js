@@ -37,18 +37,6 @@ window.onload = function initpage() {
     }
 }
 
-
-// save off the csv file
-function reportCSV() {
-    if (registrationtable == null)
-        return;
-
-    var filename = 'registrations';
-    var tabledata = JSON.stringify(registrationtable.getData("active"));
-    var excludeList = ['hcount','ncount'];
-    downloadCSVPost(filename, tabledata, excludeList);
-}
-
 function settab(tabname) {
     // now open the relevant one, and create the class if needed
     if (reportTable) {
@@ -315,5 +303,5 @@ function drawReport(data) {
 
 function downloadReport(format) {
     var tabledata = JSON.stringify(reportTable.getData("active"));
-    downloadCSVPost(csvfile, tabledata);
+    downloadFilePost(format, csvfile, tabledata);
 }
