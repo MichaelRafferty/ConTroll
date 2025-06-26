@@ -1,4 +1,4 @@
- <?php
+<?php
 // cipher.php - cipher key file
 
 //

@@ -24,8 +24,6 @@ function outputFile($format, $sheetname, $fileName, $tableData, $excludeList = n
             $worksheet->setTitle($sheetname);
             break;
     }
-
-    header('Content-Type: application/download');
     header('Content-Disposition: attachment;filename="' . $fileName . '.' . $format . '"');
 
     if ($format == 'csv') {

@@ -1,4 +1,4 @@
- <?php
+<?php
 // library AJAX Processor: artpos_processPayment.php
 // ConTroll Registration System
 // Author: Syd Weinstein
