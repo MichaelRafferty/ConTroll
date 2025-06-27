@@ -75,7 +75,7 @@ EOS;
 
 $maxR = dbSafeQuery($maxQ, 'i', array($region));
 if ($maxR === false || $maxR->num_rows != 1) {
-    $response['error'] = 'Cannot retrive max inventory limit, seek assistance';
+    $response['error'] = 'Cannot retrieve max inventory limit, seek assistance';
 }
 
 $response['inv'] = $maxR->fetch_assoc();
