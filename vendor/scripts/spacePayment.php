@@ -715,7 +715,7 @@ EOS;
     }
 }
 
-
+loadCustomText('exhibitor', 'index', null, false);
 $emails = payment($results);
 $return_arr = send_email($region['ownerEmail'], array($exhibitor['exhibitorEmail'], $buyer['email']), $region['ownerEmail'], $region['name'] . ' Payment', $emails[0], $emails[1]);
 
