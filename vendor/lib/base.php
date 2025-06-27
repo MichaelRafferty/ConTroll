@@ -56,7 +56,6 @@ function exhibitor_page_init($title) {
     <link href='$jquicss' rel='stylesheet' type='text/css' /> 
     <link href='$tabcss' rel='stylesheet'>
     <link href='$bs5css' rel='stylesheet'>
-    <link href='csslib/style.css' rel='stylesheet' type='text/css' />
     <link href='csslib/bootstrap-icons.css' rel='stylesheet' type='text/css' />
     <script src='$bs5js'></script>
     <script type='text/javascript' src='$jqjs''></script>
