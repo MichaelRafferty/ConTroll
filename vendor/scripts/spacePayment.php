@@ -715,7 +715,13 @@ EOS;
     }
 }
 
-loadCustomText('exhibitor', 'index', null, false);
+$vendor_conf = get_conf('vendor');
+if (array_key_exists('customtext', $vendor_conf)) {
+    $filter = $vendor_conf['customtext'];
+} else {
+    $filter = 'production';
+}
+loadCustomText('exhibitor', 'index', $filter, false);
 $emails = payment($results);
 $return_arr = send_email($region['ownerEmail'], array($exhibitor['exhibitorEmail'], $buyer['email']), $region['ownerEmail'], $region['name'] . ' Payment', $emails[0], $emails[1]);
 
