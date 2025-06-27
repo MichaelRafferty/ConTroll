@@ -200,7 +200,7 @@ EOS;
         if ($vendor['addr2'] && $vendor['addr2'] != '')
             $body .= $vendor['addr2'] . "\n";
         $body .= $vendor['city'] . ', ' . $vendor['state'] . ' ' . $vendor['zip'] . "\n\n" .
-            "Space: " . $region['name'] . ' (' . $region['description'] . ') with up to ' . $region['includedMemberships'] .
+            "Space: " . $region['name'] . ' with up to ' . $region['includedMemberships'] .
                 ' included memberships and up to ' .
             $region['additionalMemberships'] . " additional memberships\n" .
             $conf['taxLabel'] . ': ' . $results['salesTaxId'] . "\n\n" .
@@ -246,7 +246,7 @@ EOS;
     if ($vendor['addr2'] && $vendor['addr2'] != '')
         $bodyHtml .= $vendor['addr2'] . "<br/>\n";
     $bodyHtml .= $vendor['city'] . ', ' . $vendor['state'] . ' ' . $vendor['zip'] . "</p>\n" .
-        '<p>Space: ' . $region['name'] . ' (' . $region['description'] . ') with up to ' . $region['includedMemberships'] .
+        '<p>Space: ' . $region['name'] . ' with up to ' . $region['includedMemberships'] .
             ' included memberships and up to ' . $region['additionalMemberships'] . " additional memberships</p>\n" .
         '<p>' . $conf['taxLabel'] . ': ' . $results['salesTaxId'] . "</p>\n" .
         '<p>Price for Space: ' . $dolfmt->formatCurrency($region['price'], $currency) . "</p>\n" .
