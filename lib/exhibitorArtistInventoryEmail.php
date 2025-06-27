@@ -18,7 +18,7 @@ function emailArtistInventoryReq($regionYearId, $type): bool|array {
     $vendor = get_conf("vendor");
 
     // load the custom text fields
-    loadCustomText('exhibitor', 'index',null, true);
+    loadCustomText('exhibitor', 'index',null, false);
 
     $artistOnSiteInventoryText = returnCustomText('email/onsiteInvText');
     $artistOnSiteInventoryHTML = returnCustomText('email/onsiteInvHTML');
