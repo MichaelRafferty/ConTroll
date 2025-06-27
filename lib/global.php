@@ -120,6 +120,7 @@ function isPrimary($mtype, $conid, $use = 'all') : bool {
 //// functions for custom text usage
 global $customTexT, $keyPrefix, $customTextFilter, $loadedPrefixes;
 $loadedPrefixes = [];
+$keyPrefix = '';
 
 // loadCustomText - load all the relevant custom text for this page
     function loadCustomText($app, $page, $filter, $addmode = false) : void {
