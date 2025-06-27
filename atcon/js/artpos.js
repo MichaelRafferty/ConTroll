@@ -702,9 +702,14 @@ function drawItemDetails(item, full = false) {
                             '<div class="col-sm-7">' + item.bidder + '</div></div>';
                 }
                 if (item.sale_price == 0 || Number(item.sale_price) < Number(item.min_price)) {
-                    html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + ' bg-danger text-white">Quick Sale:</div>' +
-                        '<div class="col-sm-7 bg-danger text-white">Item is not available for quick sale.</div></div>';
-                    valid = false;
+                    if (config.inlineInventory == 1) {
+                        html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + ' bg-warning">Quick Sale:</div>' +
+                            '<div class="col-sm-7 bg-warning">Item is not available for quick sale.</div></div>';
+                    } else {
+                        html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + ' bg-danger text-white">Quick Sale:</div>' +
+                            '<div class="col-sm-7 bg-danger text-white">Item is not available for quick sale.</div></div>';
+                        valid = false;
+                    }
                     break;
                 }
                 if (item.status.toLowerCase() == 'checked in') {
@@ -1011,11 +1016,14 @@ function updateInventoryStep(item, repeatPass) {
 
         // quicksale Y/N (note entered will become checked in)
         if ((item.status == 'Entered' || item.status == 'Checked In' || item.status == 'Removed from Show') && item.bidder == null) {
-            html += '<div class="row mt-2"><div class="col-sm-12">Is this a quick sale? ' +
-                '<select id="quickSaleYN" name="quickSaleYN"><option value="N">No</option><option value="Y">Yes</option></select>' +
-                '</div></div>';
-            inventoryUpdates.push({field: '', id: 'quickSaleYN', type: 'p'});
-            valid = false;
+            if (item.sale_price > 0 || Number(item.sale_price) >= Number(item.min_price)) {
+                html += '<div class="row mt-2"><div class="col-sm-12">Is this a quick sale? ' +
+                    '<select id="quickSaleYN" name="quickSaleYN"><option value="N">No</option>' +
+                    '<option value="Y"' + (item.sale_price > 0 ? ' selected' : '') + '>Yes</option></select>' +
+                    '</div></div>';
+                inventoryUpdates.push({field: '', id: 'quickSaleYN', type: 'p'});
+                valid = false;
+            }
         }
 
         // bid item
@@ -1033,8 +1041,10 @@ function updateInventoryStep(item, repeatPass) {
             html += '<div class="row mt-2"><div class="col-sm-12">Current High bid? ' +
                 '<input type="number" class="no-spinners" inputmode="numeric" id="finalPrice" name="finalPrice" size="20" placeholder="High Bid" ' +
                 ' min=1 max=9999999 value="' + (item.final_price > item.min_price ? item.final_price : item.min_price) + '"></div></div>';
-            inventoryUpdates.push({field: 'final_price', id: 'finalPrice', type: 'd',
-                prior: item.final_price > item.min_price ? item.final_price : item.min_price });
+            var cmp_price = item.final_price > item.min_price ? item.final_price : item.min_price;
+            if (item.status != 'BID')
+                cmp_price = cmp_price - 0.01;
+            inventoryUpdates.push({field: 'final_price', id: 'finalPrice', type: 'd', prior: cmp_price });
         }
 
         // to Auction Item:
