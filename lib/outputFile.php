@@ -99,6 +99,5 @@ function outputFile($format, $sheetname, $fileName, $tableData, $excludeList = n
             $worksheet->fromArray($rows);
             $writer = new Xlsx($spreadsheet);
             $writer->save('php://output');
-            $writer->save('/tmp/test.xlsx');
     }
 }
