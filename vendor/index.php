@@ -449,7 +449,7 @@ $exhibitorSR->free();
 <?php
 draw_registrationModal($portalType, $portalName, $con, $countryOptions);
 draw_passwordModal();
-draw_exhibitorRequestModal();
+draw_exhibitorRequestModal($portalType);
 draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $reg_conf, $cc, $portalName, $portalType);
 draw_exhibitorReceiptModal($portalType);
 draw_itemRegistrationModal($portalType, $vendor_conf['artsheets'], $vendor_conf['artcontrol']);
