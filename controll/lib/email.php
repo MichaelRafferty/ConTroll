@@ -1,20 +1,19 @@
 <?php
 
-function refundEmail_HTML($test, $email, $tid) {
-    $ini = get_conf('reg');
+function refundEmail_HTML($test, $email, $tid) {;
     $con = get_conf('con');
     $conid = $con['id'];
 
     $conlabel = $con['label'];
-    $canceldate = $ini['cancel_date'];
+    $canceldate = getConfValue('reg', 'cancel_date');
     $refundemail = $con['refundemail'];
     $conname = $con['conname'];
     $orgname = $con['org'];
     $orgabv = $con['orgabv'];
     $regemail = $con['regadminemail'];
 
-    $url = $ini['server'] . "/cancelation.php";
-    $url2 = $ini['server'];
+    $url = getConfValue('reg', 'server') . "/cancelation.php";
+    $url2 = getConfValue('reg', 'server');
     $regpage = $con['regpage'];
     $homepage = $con['website'];
 
@@ -77,19 +76,18 @@ EOT;
 }
 
 function refundEmail_TEXT($test, $email, $tid) {
-    $ini = get_conf('reg');
     $con = get_conf('con');
     $conid = $con['id'];
 
     $conlabel = $con['label'];
-    $canceldate = $ini['cancel_date'];
+    $canceldate = getConfValue('reg', 'cancel_date');
     $refundemail = $con['refundemail'];
     $conname = $con['conname'];
     $orgname = $con['org'];
     $orgabv = $con['orgabv'];
     $regemail = $con['regadminemail'];
 
-    $url = $ini['server'] . "/cancelation.php";
+    $url = getConfValue('reg', 'server') . '/cancelation.php';
 
     $transQ = <<<EOS
 SELECT T.paid, M.label, M.memAge, P.first_name, P.last_name, P.badge_name, R.paid
@@ -141,14 +139,13 @@ EOT;
 }
 
 function ComeBackCouponEmail_HTML($test, $expirationDate) {
-    $ini = get_conf('reg');
     $con = get_conf('con');
 
     $conlabel = $con['label'];
     $conname = $con['conname'];
     $orgname = $con['org'];
     $orgabv = $con['orgabv'];
-    $url = rtrim($ini['server'], '/');
+    $url = rtrim(getConfValue('reg', 'server'), '/');
     $hotelpage = $con['hotelwebsite'];
     $hotelname = $con['hotelname'];
     $hoteladdr = $con['hoteladdr'];
@@ -158,7 +155,7 @@ function ComeBackCouponEmail_HTML($test, $expirationDate) {
     $homepage = $con['website'];
     $policypage = $con['policy'];
     $feedbackemail = $con['feedbackemail'];
-    $regsite = $ini['server'];
+    $regsite = getConfValue('reg', 'server');
 
     $html = <<<EOT
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head><META http-equiv="Content-Type" content="text/html; charset=utf-8"></head><body><p>Hello #FirstName# #LastName#,</p>
@@ -199,14 +196,13 @@ EOT;
 }
 
 function ComeBackCouponEmail_TEXT($test, $expirationDate) {
-    $ini = get_conf('reg');
     $con = get_conf('con');
 
     $conlabel = $con['label'];
     $conname = $con['conname'];
     $orgname = $con['org'];
     $orgabv = $con['orgabv'];
-    $url = rtrim($ini['server'], '/');
+    $url = rtrim(getConfValue('reg', 'server'), '/');
     $hotelname = $con['hotelname'];
     $hoteladdr = $con['hoteladdr'];
     $pickupareatext = $con['pickupareatext'];
@@ -215,7 +211,7 @@ function ComeBackCouponEmail_TEXT($test, $expirationDate) {
     $homepage = $con['website'];
     $policypage = $con['policy'];
     $feedbackemail = $con['feedbackemail'];
-    $regsite = $ini['server'];
+    $regsite = getConfValue('reg', 'server');
 
     $text = <<<EOT
 Hello #FirstName# #LastName#,
