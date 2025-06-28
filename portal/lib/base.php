@@ -38,12 +38,7 @@ function index_page_init($title) {
     $jqjs=$cdn['jqjs'];
     $jquijs=$cdn['jquijs'];
     $jquicss=$cdn['jquicss'];
-    $portal_conf = get_conf('portal');
-    if (array_key_exists('customtext', $portal_conf)) {
-        $filter = $portal_conf['customtext'];
-    } else {
-        $filter = 'production';
-    }
+    $filter = getConfValue('portal', 'customtext', 'production');
     loadCustomText('portal', basename($_SERVER['PHP_SELF'], '.php'), $filter);
 
     echo <<<EOF
@@ -81,11 +76,7 @@ function portalPageInit($page, $info, $css, $js, $refresh = false) {
     $ini = get_conf('reg');
     $portal_conf = get_conf('portal');
     if(isWebRequest()) {
-        if (array_key_exists('customtext', $portal_conf)) {
-            $filter = $portal_conf['customtext'];
-        } else {
-            $filter = 'production';
-        }
+        $filter = getConfValue('portal', 'customtext', 'production');
         loadCustomText('portal', basename($_SERVER['PHP_SELF'], '.php'), $filter);
         $includes = getTabulatorIncludes();
         $loginId = getSessionVar('id');
@@ -177,7 +168,7 @@ function portalPageInit($page, $info, $css, $js, $refresh = false) {
                 </div>
             </div>
             <?php
-        if ($portal_conf['open'] == 0) { ?>
+        if (getConfValue('portal', 'open') != 1) { ?>
             <p class='text-primary'>The membership portal is currently closed. Please check the website to determine when it will open or try again tomorrow.</p>
             <?php
             exit;
@@ -230,12 +221,7 @@ function portalPageFoot() {
 function tabBar($page, $portal_conf, $info, $refresh = false) {
     $page_list = [];
     if (!$refresh) {
-        $showHistory = true;
-        if (array_key_exists('history', $portal_conf) && $portal_conf['history'] == '0') {
-            $showHistory = false;
-        }
-
-        if ($showHistory) {
+        if (getConfValue('portal', 'history') == 1) {
             $page_list[] = ['name' => 'membershipHistory', 'display' => 'Membership History'];
         }
         // always provide account settings.  The managed sections is for managers only, the identity section is for perinfo only.
@@ -265,7 +251,7 @@ function tabBar($page, $portal_conf, $info, $refresh = false) {
             <button class="btn btn-outline-light navitem me-3 <?php echo $active; ?>" type="button" <?php echo $ariainfo; ?>
                 style='border-bottom-right-radius: 20px;' onclick='window.location="portal.php";'>Home</button>
 <?php
-    if ($portal_conf['open'] != 0) {
+    if (getConfValue('portal', 'open') == 1) {
         foreach ($page_list as $pageInfo) {
             $p = $pageInfo['name'];
             $d = $pageInfo['display'];
