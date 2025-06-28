@@ -35,12 +35,7 @@ function exhibitor_page_init($title) {
     $jquijs=$cdn['jquijs'];
     $jquicss=$cdn['jquicss'];
 
-    $vendor_conf = get_conf('vendor');
-    if (array_key_exists('customtext', $vendor_conf)) {
-        $filter = $vendor_conf['customtext'];
-    } else {
-        $filter = 'production';
-    }
+    $filter = getConfValue('vendor', 'customtext', 'production');
     loadCustomText('exhibitor', basename($_SERVER['PHP_SELF'], '.php'), $filter);
 
     echo <<<EOF
