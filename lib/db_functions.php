@@ -13,7 +13,7 @@ global $debug_set;
 
 $dbObject = null;
 if (!$db_ini) {
-    $db_ini = parse_ini_file(__DIR__ . "/../config/reg_conf.ini", true);
+    $db_ini = loadConfFile();
 }
 $debug_set = get_conf('debug');
 $log = get_conf("log");
