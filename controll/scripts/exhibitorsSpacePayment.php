@@ -31,10 +31,9 @@ $return500errors = true;
 
 $con = get_conf('con');
 $conid=$con['id'];
-$reg_conf = get_conf('reg');
 $cc = get_conf('cc');
 
-$required = $reg_conf['required'];
+$required = getConfValue('reg', 'required', 'addr');
 $response['conid'] = $conid;
 
 $log = get_conf('log');

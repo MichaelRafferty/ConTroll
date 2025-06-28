@@ -13,7 +13,6 @@ $con = get_conf('con');
 $conid = $con['id'];
 $portal_conf = get_conf('portal');
 $debug = get_conf('debug');
-$ini = get_conf('reg');
 $condata = get_con();
 
 if (isSessionVar('id') && isSessionVar('idType')) {
@@ -49,7 +48,7 @@ $config_vars['regadminemail'] = $con['regadminemail'];
 $config_vars['id'] = $loginId;
 $config_vars['idType'] = $loginType;
 $config_vars['personEmail'] = getSessionVar('email');
-$config_vars['required'] = $ini['required'];
+$config_vars['required'] = getConfValue('reg', 'required', 'addr');
 $config_vars['multiOneDay'] = $multiOneDay;
 $config_vars['oneoff'] = $oneoff;
 $cdn = getTabulatorIncludes();

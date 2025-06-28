@@ -16,7 +16,7 @@ $response = array('post' => $_POST, 'get' => $_GET);
 global $condata;
 $condata = get_con();
 $conid=$condata['id'];
-$regconf = get_conf('reg');
+$required = getConfValue('reg', 'required', 'addr');
 $cc = get_conf('cc');
 
 $response['conid'] = $conid;
@@ -212,10 +212,10 @@ $membership_names = array('fname' => 'First Name', 'mname' => 'Middle Name', 'ln
     'addr' => 'Address Line 1', 'addr2' => 'Company/Address Line 2', 'city' => 'City', 'state' => 'State', 'zip' => 'Zip Code/Postal Code',
     'country' => 'Country', 'email' => 'Email Address', 'phone' => 'Phone Number', 'badgename' => 'Badge Name');
 
-if ($regconf['required'] == 'addr') {
+if ($required == 'addr') {
     $membership_fields['lname'] = 0;
 }
-if ($regconf['required'] == 'first') {
+if ($required == 'first') {
     $membership_fields['lname'] = 0;
     $membership_fields['addr'] = 0;
     $membership_fields['city'] = 0;

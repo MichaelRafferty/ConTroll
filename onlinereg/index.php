@@ -50,7 +50,7 @@ if (array_key_exists('onedaycoupons', $con)) {
 
 $config_vars = array();
 $config_vars['label'] = $con['label'];
-$config_vars['required'] = getConfValue('reg', 'required');
+$config_vars['required'] = getConfValue('reg', 'required', 'addr');
 $config_vars['conid'] = $condata['id'];
 $config_vars['debug'] = $debug;
 $config_vars['onedaycoupons'] = $onedaycoupons;
