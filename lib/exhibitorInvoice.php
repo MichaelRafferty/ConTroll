@@ -1,6 +1,6 @@
 <?php
 // draw the invoice screen for buying space in the vendor/artist portal
-function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $cc, $portalName, $portalType) {
+function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $testsite, $cc, $portalName, $portalType) {
     $con = get_conf('con');
     $vendor_conf = get_conf('vendor');
     if ($info == null) {
@@ -260,7 +260,7 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $ini, $c
                              </div>
                              <div class='row'>
                                 <div class='col-sm-12'>
-                                    <?php if ($ini['test'] == 1) {
+                                    <?php if ($testsite) {
                                         ?>
                                         <h2 class='warn'>This won't charge your credit card, or do anything else.</h2>
                                         <?php

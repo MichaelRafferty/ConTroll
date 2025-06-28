@@ -28,7 +28,6 @@ if ($user_id != getSessionVar('user')) {
 }
 $user_perid = $user_id;
 
-$reg_info = get_conf('reg');
 $ajax_request_action = '';
 if ($_POST && $_POST['ajax_request_action']) {
     $ajax_request_action = $_POST['ajax_request_action'];
@@ -162,7 +161,7 @@ if ($receipt_type == 'email') {
     }
     else {
         load_email_procs();
-        if ($reg_info['test'] == 1) {
+        if (getConfValue('reg','test']) == 1) {
             $emails = array ($con['regadminemail']);
         }
         else {

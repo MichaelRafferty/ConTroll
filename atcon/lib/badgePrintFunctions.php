@@ -112,7 +112,7 @@ function write_ps($badge, $tempfile)//: void {
 
     //info line
     $type='';
-    if($badge['category'] == 'test') { $type = 'x'; }
+    if($badge['category'] == 'test') { $type = 'test'; }
     else { $type = $badgeTypes[$badge['category']]; }
     $id = $badge['id'];
 

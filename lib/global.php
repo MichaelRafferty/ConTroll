@@ -40,7 +40,17 @@ function loadConfFile(): false|array {
     return $db_ini;
 }
 
-function getConfValue($section, $key) : null|string {
+// older function to get an entire conf section, but it doesn't handle global overrides,
+// should be reserved only for things without overrides
+function get_conf($name) {
+    global $db_ini;
+    if (array_key_exists($name, $db_ini))
+        return $db_ini[$name];
+    return null;
+}
+
+// get a specific value from the config file section, using [global] for defaults if not set
+function getConfValue($section, $key, $default = '') : null|string {
     global $db_ini;
 
     if (array_key_exists($section, $db_ini)) {
@@ -54,7 +64,7 @@ function getConfValue($section, $key) : null|string {
         }
     }
 
-    return null;
+    return $default;
 }
 
 // non Windows implementation of guidv4

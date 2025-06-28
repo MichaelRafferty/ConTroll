@@ -1,15 +1,10 @@
 <?php
-    function getEmailBody($transid, $owner, $memberships, $coupon, $planRec, $rid, $url, $amount, $planPayment = 0): string {
+function getEmailBody($transid, $owner, $memberships, $coupon, $planRec, $rid, $url, $amount, $planPayment = 0): string {
     $condata = get_con();
-    $ini = get_conf('reg');
     $con = get_conf('con');
+    $testsite = getConfValue('portal', 'test') == 1;
 
-    if (array_key_exists('currency', $con)) {
-        $currency = $con['currency'];
-    } else {
-        $currency = 'USD';
-    }
-
+    $currency = getConfValue('con', 'currency', 'USD');
     $dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
 
     if (array_key_exists('oneoff', $con)) {
@@ -26,7 +21,7 @@
     $body = 'Dear ' . trim($owner['first_name'] . ' ' . $owner['last_name']) . ",\n\n";
     $body .= 'Thank you for paying via the registration portal for ' . $condata['label'] . "!\n\n";
 
-    if ($ini['test'] == 1) {
+    if ($testsite) {
         $body .= "This email was sent as part of testing.\n\n";
     }
 
@@ -102,7 +97,7 @@
 
 function getNoChargeEmailBody($transid, $owner, $memberships): string {
     $condata = get_con();
-    $ini = get_conf('reg');
+    $testsite = getConfValue('portal', 'test') == 1;
     $con = get_conf('con');
 
     if (array_key_exists('oneoff', $con)) {
@@ -119,7 +114,7 @@ function getNoChargeEmailBody($transid, $owner, $memberships): string {
     $body = 'Dear ' . trim($owner['first_name'] . ' ' . $owner['last_name']) . ",\n\n";
     $body .= 'Thank you for registering for ' . $condata['label'] . "!\n\n";
 
-    if ($ini['test'] == 1) {
+    if ($testsite) {
         $body .= "This email was sent as part of testing.\n\n";
     }
 

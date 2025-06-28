@@ -161,7 +161,7 @@ function portalPageInit($page, $info, $css, $js, $refresh = false) {
                             </div>
                         </div>
                         <?php
-                    if ($portal_conf['test'] == 1) {
+                    if (getConfValue('portal', 'test') == 1) {
                     ?>
                             <div class="row">
                                 <div class="col-sm-12">
@@ -399,13 +399,9 @@ EOS;
 
 // isDirectAllowed - check direct flag and server address to allow direct login
     function isDirectAllowed() {
-        $portal_conf = get_conf('portal');
-        if (array_key_exists('direct',$portal_conf))
-            $direct = $portal_conf['direct'];
-        else
-            $direct = 0;
-        $test = $portal_conf['test'];
-        if ($test != 1 || $direct != 1)
+        $direct = getConfValue('portal', 'direct') == 1;
+        $test = getConfValue('portal', 'test') == 1;
+        if ($test || $direct)
             return false; // no test, no direct login
 
         if ($_SERVER['SERVER_ADDR'] == '127.0.0.1' || $_SERVER['SERVER_ADDR'] == '::1')

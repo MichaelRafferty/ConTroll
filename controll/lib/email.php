@@ -1,44 +1,46 @@
 <?php
 
 function refundEmail_HTML($test, $email, $tid) {
-  $ini = get_conf('reg');
-  $con = get_conf('con');
-  $conid=$con['id'];
+    $ini = get_conf('reg');
+    $con = get_conf('con');
+    $conid = $con['id'];
 
-  $conlabel = $con['label'];
-  $canceldate = $ini['cancel_date'];
-  $refundemail = $con['refundemail'];
-  $conname = $con['conname'];
-  $orgname = $con['org'];
-  $orgabv = $con['orgabv'];
-  $regemail = $con['regadminemail'];
+    $conlabel = $con['label'];
+    $canceldate = $ini['cancel_date'];
+    $refundemail = $con['refundemail'];
+    $conname = $con['conname'];
+    $orgname = $con['org'];
+    $orgabv = $con['orgabv'];
+    $regemail = $con['regadminemail'];
 
-  $url = $ini['server'] . "/cancelation.php";
-  $url2 = $ini['server'];
-  $regpage = $con['regpage'] ;
-  $homepage = $con['website'];
+    $url = $ini['server'] . "/cancelation.php";
+    $url2 = $ini['server'];
+    $regpage = $con['regpage'];
+    $homepage = $con['website'];
 
-  $transQ = <<<EOS
+    $transQ = <<<EOS
 SELECT T.paid, M.label, M.memAge, P.first_name, P.last_name, P.badge_name, R.paid
-FROM transaction as T
+FROM transaction AS T
 JOIN reg R ON (R.create_trans=T.id)
 JOIN perinfo P ON (P.id=R.perid)
 JOIN memLabel M ON (M.id=R.memId)
 JOIN payments Y ON (Y.transid=T.id)
-WHERE T.id = ? AND M.memCategory in ('standard', 'yearahead') AND M.conid=?;
+WHERE T.id = ? AND M.memCategory IN ('standard', 'yearahead') AND M.conid=?;
 EOS;
 
-  $transR = dbSafeQuery($transQ, 'ii', array($tid, $conid));
+    $transR = dbSafeQuery($transQ, 'ii', array ($tid, $conid));
 
-  $names = "<ul>\n";
-  while($trans = $transR->fetch_assoc()) {
-    $names .= "\t<li>" . $trans['first_name'] . " " . $trans['last_name'];
-    if($trans['badge_name'] != '') {$names .= " (" .$trans['badge_name'] . ")";}
-    $names .= "</li>\n";
-  }
-  $names .= "</ul>\n";
+    $names = "<ul>\n";
+    while ($trans = $transR->fetch_assoc()) {
+        $names .= "\t<li>" . $trans['first_name'] . " " . $trans['last_name'];
+        if ($trans['badge_name'] != '') {
+            $names .= " (" . $trans['badge_name'] . ")";
+        }
+        $names .= "</li>\n";
+    }
+    $names .= "</ul>\n";
 
-$text = <<<EOT
+    $text = <<<EOT
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head><META http-equiv="Content-Type" content="text/html; charset=utf-8"></head><body>
 
 <p>As we announced on $canceldate, we had to make the unfortunate decision to cancel $conlabel. Your email address is associated with a membership to $conlabel.</p>
@@ -67,13 +69,17 @@ $text = <<<EOT
 
 EOT;
 
-return $text;
+    if ($test) {
+        $text = "THIS IS A TEST\n\n" . $text;
+    }
+
+    return $text;
 }
 
 function refundEmail_TEXT($test, $email, $tid) {
     $ini = get_conf('reg');
     $con = get_conf('con');
-    $conid=$con['id'];
+    $conid = $con['id'];
 
     $conlabel = $con['label'];
     $canceldate = $ini['cancel_date'];
@@ -85,24 +91,24 @@ function refundEmail_TEXT($test, $email, $tid) {
 
     $url = $ini['server'] . "/cancelation.php";
 
-  $transQ = <<<EOS
+    $transQ = <<<EOS
 SELECT T.paid, M.label, M.memAge, P.first_name, P.last_name, P.badge_name, R.paid
 FROM transaction T
 JOIN reg R ON (R.create_trans=T.id)
 JOIN perinfo P ON (P.id=R.perid)
 JOIN memLabel M ON (M.id=R.memId)
 JOIN payments Y ON (Y.transid=T.id)
-WHERE T.id = ? AND M.memCategory in ('standard', 'yearahead') AND M.conid=?;
+WHERE T.id = ? AND M.memCategory IN ('standard', 'yearahead') AND M.conid=?;
 EOS;
 
-  $transR = dbSafeQuery($transQ, 'ii', array($tid, $conid));
+    $transR = dbSafeQuery($transQ, 'ii', array ($tid, $conid));
 
-  $names = "";
-  while($trans = $transR->fetch_assoc()) {
-    $names .= $trans['first_name'] . " " . $trans['last_name'] . " (" .$trans['badge_name'] . ")\n";
-  }
+    $names = "";
+    while ($trans = $transR->fetch_assoc()) {
+        $names .= $trans['first_name'] . " " . $trans['last_name'] . " (" . $trans['badge_name'] . ")\n";
+    }
 
-$text = <<<EOT
+    $text = <<<EOT
 As we announced on $canceldate, we had to make the unfortunate decision to cancel $conlabel. Your email address is associated with a membership to $conlabel.
 
 Our records show this email address is associated with Transaction #$tid, which has the following memberships:
@@ -127,11 +133,14 @@ Memberships will be processed as staff is available. We hope to have all rollove
 
 EOT;
 
-return $text;
+    if ($test) {
+        $html = "THIS IS A TEST\n\n" . $test;
+
+        return $text;
+    }
 }
 
-function ComeBackCouponEmail_HTML($test, $expirationDate)
-{
+function ComeBackCouponEmail_HTML($test, $expirationDate) {
     $ini = get_conf('reg');
     $con = get_conf('con');
 
@@ -189,8 +198,7 @@ EOT;
     return $html;
 }
 
-function ComeBackCouponEmail_TEXT($test, $expirationDate)
-{
+function ComeBackCouponEmail_TEXT($test, $expirationDate) {
     $ini = get_conf('reg');
     $con = get_conf('con');
 
@@ -241,7 +249,6 @@ EOT;
 
 
 function surveyEmail_HTML($test) {
-
     $con = get_conf('con');
 
     if (!array_key_exist('survey_url', $con))

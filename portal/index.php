@@ -488,7 +488,7 @@ EOS;
         </div>
     </div>
 EOS;
-    if ($portal_conf['test'] == 1) {
+    if (getConfValue('portal', 'test') == 1) {
         echo <<<EOS
         <div class="row">
             <div class="col-sm-12">

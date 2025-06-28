@@ -32,7 +32,7 @@ if (array_key_exists('h', $options)) {
     calling_seq("Calling Sequence");
 }
 
-$testMode = array_key_exists('t', $options);
+$testsite = array_key_exists('t', $options);
 $verboseMode = array_key_exists('v', $options);
 $gohMemId = array_key_exists('g', $options) ? $options['g'] : 986;
 $lifeMemId = array_key_exists('l', $options) ? $options['l'] : 987;
@@ -72,7 +72,7 @@ Parameter Summary:
 Convention id: $conid
 Life Members: $life_start through $life_end of memory type $lifeMemId
 Former GoH: $guest_start through $guest_end of memory type $gohMemId
-Test Mode: $testMode
+Test Mode: $testsite
 
 EOS;
 }
@@ -111,15 +111,15 @@ if ($numRows != $numRowsExpected) {
 // all the arguments are now validated
 
 // lifeMembers
-$numRows = addMemberships('Life', $life_start, $life_end, $lifeMemId, $testMode, $verboseMode, $conid);
+$numRows = addMemberships('Life', $life_start, $life_end, $lifeMemId, $testsite, $verboseMode, $conid);
 echo "$numRows life memberships added\n";
 // goh's
-$numRows = addMemberships('GoH', $guest_start, $guest_end, $gohMemId, $testMode, $verboseMode, $conid);
+$numRows = addMemberships('GoH', $guest_start, $guest_end, $gohMemId, $testsite, $verboseMode, $conid);
 echo "$numRows GoH memberships added\n";
 
 exit(0);
 
-function addMemberships($type, $start, $end, $memId, $testMode, $verboseMode, $conid): int {
+function addMemberships($type, $start, $end, $memId, $testsite, $verboseMode, $conid): int {
     if ($verboseMode) {
         echo "Starting check for how many new $type Memberships are needed in the range of $start-$end using $conid:$memId\n";
     }
@@ -172,7 +172,7 @@ EOS;
 
 
     foreach ($people as $person) {
-        if ($testMode) {
+        if ($testsite) {
             echo "Would: insert tranaction for $conid:" . $person['id'] . " and registration of id $memId for $type\n";
             continue;
         }

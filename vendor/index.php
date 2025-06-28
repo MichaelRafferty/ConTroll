@@ -16,14 +16,13 @@ $con = get_conf('con');
 $conid = $con['id'];
 $vendor_conf = get_conf('vendor');
 $debug = get_conf('debug');
-$reg_conf = get_conf('reg');
 $usps = get_conf('usps');
 load_cc_procs();
 
 $condata = get_con();
 
 $in_session = false;
-$regserver = $reg_conf['server'];
+$regserver = getConfValue('reg', 'server');
 $exhibitor = '';
 
 $reg_link = "<a href='$regserver'>Convention Registration</a>";
@@ -46,11 +45,8 @@ $useUSPS = false;
 if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
     $useUSPS = true;
 
-if (array_key_exists('required', $reg_conf)) {
-    $required = $reg_conf['required'];
-} else {
-    $required = 'addr';
-}
+$required = getConfValue('reg', 'required', 'addr');
+$testsite = getConfValue('vendor', 'test') == 1;
 $firstStar = '';
 $addrStar = '';
 $allStar = '';
@@ -73,7 +69,7 @@ $config_vars['portalName'] = $portalName;
 $config_vars['artistsite'] = $vendor_conf['artistsite'];
 $config_vars['vendorsite'] = $vendor_conf['vendorsite'];
 $config_vars['debug'] = $debug['vendors'];
-$config_vars['required'] = $reg_conf['required'];
+$config_vars['required'] = $required;
 $config_vars['useUSPS'] = $useUSPS;
 $config_vars['allStar'] = $allStar;
 $config_vars['addrStar'] = $addrStar;
@@ -95,19 +91,15 @@ fclose($fh);
 <div class="container-fluid">
     <div class="row">
         <div class="col-sm-12 p-0">
-            <?php
-if (array_key_exists('logoimage', $reg_conf) && $reg_conf['logoimage'] != '') {
-    if (array_key_exists('logoalt', $reg_conf)) {
-        $altstring = $reg_conf['logoalt'];
-    } else {
-        $altstring = 'Logo';
-    } ?>
-                <img class="img-fluid" src="images/<?php echo $reg_conf['logoimage']; ?>" alt="<?php echo $altstring; ?>"/>
+<?php
+$logoImage = getConfValue('reg', 'logoimage');
+if ($logoImage != '') {
+    $altString = getConfValue('reg', 'logoalt', 'Logo');
+    ?>
+                <img class="img-fluid" src="images/<?php echo $logoImage; ?>" alt="<?php echo $altString; ?>"/>
 <?php
 }
-if (array_key_exists('logotext', $reg_conf) && $reg_conf['logotext'] != '') {
-    echo $reg_conf['logotext'];
-}
+echo getConfValue('reg', 'logotext');
 ?>
         </div>
     </div>
@@ -117,7 +109,7 @@ if (array_key_exists('logotext', $reg_conf) && $reg_conf['logotext'] != '') {
         </div>
     </div>
     <?php
-if ($vendor_conf['open'] == 0) { ?>
+if (getConfValue('vendor', 'open') != 1) { ?>
     <p class='text-primary'>The <?php echo $portalName;?> portal is currently closed. Please check the website to determine when it will open or try again tomorrow.</p>
 <?php
     exit;
@@ -134,7 +126,7 @@ if ($vendor_conf['open'] == 0) { ?>
         </div>
     </div>
 <?php
-if ($vendor_conf['test'] == 1) {
+if (getConfValue('vendor', 'test') == 1) {
 ?>
     <div class="row">
         <div class="col-sm-12">
@@ -450,7 +442,7 @@ $exhibitorSR->free();
 draw_registrationModal($portalType, $portalName, $con, $countryOptions);
 draw_passwordModal();
 draw_exhibitorRequestModal($portalType);
-draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $reg_conf, $cc, $portalName, $portalType);
+draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $testsite, $cc, $portalName, $portalType);
 draw_exhibitorReceiptModal($portalType);
 draw_itemRegistrationModal($portalType, $vendor_conf['artsheets'], $vendor_conf['artcontrol']);
 ?>

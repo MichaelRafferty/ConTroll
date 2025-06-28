@@ -28,6 +28,7 @@ load_email_procs();
 
 $test = true;
 $email = null;
+$testsite = getConfValue('reg', 'test') == 1;
 
 if (!array_key_exists('data', $_POST)) {
     $response['error'] = "missing data to send";
@@ -36,7 +37,6 @@ if (!array_key_exists('data', $_POST)) {
 }
 
 $con = get_conf("con");
-$reg = get_conf("reg");
 $emailconf = get_conf("email");
 $conid=$con['id'];
 $conname = $con['conname'];
@@ -45,7 +45,7 @@ $code='';
 $json = urldecode(base64_decode($_POST['data']));
 $data = json_decode($json, true);
 
-if ($data['emailTest'] || $reg['test'] == 1) {
+if ($data['emailTest'] || $testsite) {
     $email = $data['emailTest'][0]['email'];
 }
 
@@ -53,10 +53,10 @@ if ($data['emailTest'] || $reg['test'] == 1) {
 if ($email == null || $email == '') {
     $email = $con['regadminemail'];
 }
-if ($data['action'] == 'full' && $reg['test'] == 0)
+if ($data['action'] == 'full' && !$testsite)
     $test = false;
 
-if ($data['action'] == 'full' && $reg['test'] == 0)
+if ($data['action'] == 'full' && !$testsite)
     $test = false;
 
 $response['test'] = $test;

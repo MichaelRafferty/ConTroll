@@ -97,8 +97,7 @@ function setJWTKey($key) {
 
     if ($key == null || $key == '') {
         $con = get_conf('con');
-        $reg = get_conf('reg');
-        $jwtSigningKey = $con['label'] . '-' . $con['id'] . '-' . ($reg['test'] == 1 ? 'Test' : 'Prod');
+        $jwtSigningKey = $con['label'] . '-' . $con['id'] . '-' . ((getConfValue('reg', 'test') == 1) ? 'Test' : 'Prod');
         return;
     }
 

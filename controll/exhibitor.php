@@ -19,13 +19,16 @@ $con = get_con();
 $conid = $con['id'];
 $debug = get_conf('debug');
 $vendor_conf = get_conf('vendor');
-$reg_conf = get_conf('reg');
+
 $usps = get_conf('usps');
 $conf = get_conf('con');
 if (array_key_exists('controll_exhibitors', $debug))
     $debug_exhibitors = $debug['controll_exhibitors'];
 else
     $debug_exhibitors = 0;
+
+$required = getConfValue('reg', 'required', 'addr');
+$testsite = getConfValue('vendor', 'test') == 1;
 
 $scriptName = $_SERVER['SCRIPT_NAME'];
 if (array_key_exists('tab', $_REQUEST)) {
@@ -35,7 +38,6 @@ if (array_key_exists('tab', $_REQUEST)) {
 }
 
 $conf = get_conf('con');
-$regConf = get_conf('reg');
 
 $cdn = getTabulatorIncludes();
 page_init($page,
@@ -89,7 +91,7 @@ $config_vars['artistsite'] = $vendor_conf['artistsite'];
 $config_vars['vendorsite'] = $vendor_conf['vendorsite'];
 $config_vars['debug'] = $debug['controll_exhibitors'];
 $config_vars['conid'] = $conid;
-$config_vars['required'] = $reg_conf['required'];
+$config_vars['required'] = $required;
 $config_vars['useUSPS'] = $useUSPS;
 $config_vars['initialTab'] = $initialTab;
 $config_vars['scriptName'] = $scriptName;
@@ -99,7 +101,7 @@ bs_tinymceModal();
 draw_registrationModal('admin', 'Admin', $conf, $countryOptions);
 draw_exhibitorRequestModal('admin');
 draw_exhibitorReceiptModal('admin');
-draw_exhibitorInvoiceModal('', null, $countryOptions, $regConf, null, 'Exhibitors', 'admin');
+draw_exhibitorInvoiceModal('', null, $countryOptions, $testsite, null, 'Exhibitors', 'admin');
 draw_exhibitorChooseModal();
 draw_exhibitsConfigurationModals();
 ?>

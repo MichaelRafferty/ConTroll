@@ -25,14 +25,12 @@ function load_email_procs() {
 
 function redirectTestEmails($to, $cc) {
     $subjectPrefix = '';
-    $test = false;
-    $reg = get_conf('reg');
-    if (array_key_exists('test', $reg))
-        $test = $reg['test'] != '0';
+    $test = getConfValue('reg','test') == 1;
 
     if ($test == true) {
-        if (array_key_exists('testemail', $reg) && $reg['testemail'] != null) {
-            $testEmail = trim($reg['testemail']);
+        $testEmail = getConfValue('reg','testemail');
+        if ($testEmail != null) {
+            $testEmail = trim($testEmail);
             if ($testEmail == '')
                 $test = false;
         } else {
