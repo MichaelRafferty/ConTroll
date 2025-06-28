@@ -23,15 +23,15 @@ $cc = get_conf('cc');
 $condata = get_con();
 load_cc_procs();
 
-if (array_key_exists('suspended', $portal_conf) && $portal_conf['suspended'] == 1) {
+if (getConfValue('portal', 'suspended') == 1) {
     // the portal is now closed, redirect the user back as a logout and let them get the closed screen
     header('location:' . $portal_conf['portalsite'] . '?logout');
     exit();
 }
 
-$NomNomExists = array_key_exists('nomnomURL', $portal_conf);
-$BusinessExists = array_key_exists('businessmeetingURL', $portal_conf);
-$SiteExists = array_key_exists('siteselectionURL', $portal_conf);
+$NomNomURL = getConfValue('portal', 'nomnomURL');
+$BusinessMeetingURL = getConfValue('portal', 'businessmeetingURL');
+$SiteSelectionURL = getConfValue('portal', 'siteselectionURL');
 
 if (isSessionVar('id') && isSessionVar('idType')) {
     // check for being resolved/baned
@@ -69,15 +69,15 @@ $config_vars['initCouponSerial'] = $initCouponSerial;
 $config_vars['id'] = $loginId;
 $config_vars['idType'] = $loginType;
 $config_vars['conid'] = $conid;
-$config_vars['nomnomExists'] = $NomNomExists;
-$config_vars['businessExists'] = $BusinessExists;
-$config_vars['siteExists'] = $SiteExists;
-if ($NomNomExists)
-    $config_vars['nomnomURL'] = $portal_conf['nomnomURL'];
-if ($BusinessExists)
-    $config_vars['businessURL'] = $portal_conf['businessmeetingURL'];
-if ($SiteExists)
-    $config_vars['siteURL'] = $portal_conf['siteselectionURL'];
+$config_vars['nomnomExists'] = $NomNomURL != '';
+$config_vars['businessExists'] = $BusinessMeetingURL != '';
+$config_vars['siteExists'] = $SiteSelectionURL != '';
+if ($NomNomURL != '')
+    $config_vars['nomnomURL'] = $NomNomURL;
+if ($BusinessMeetingURL != '')
+    $config_vars['businessURL'] = $BusinessMeetingURL;
+if ($SiteSelectionURL != '')
+    $config_vars['siteURL'] = $SiteSelectionURL;
 if (array_key_exists('onedaycoupons', $con)) {
     $onedaycoupons = $con['onedaycoupons'];
 } else {
@@ -607,8 +607,8 @@ if ($info['managedByName'] != null) {
 <?php } ?>
     </div>
 <?php
-    if ($NomNomExists || $BusinessExists || $SiteExists)
-        drawWSFSButtons($NomNomExists, $BusinessExists, $SiteExists, $hasWSFS, $hasNom, $hasMeeting, $siteSelection, $loginId, $loginType, $info);
+    if ($NomNomURL != '' || $BusinessMeetingURL != '' || $SiteSelectionURL != '')
+        drawWSFSButtons($NomNomURL != '', $BusinessMeetingURL != '', $SiteSelectionURL != '', $hasWSFS, $hasNom, $hasMeeting, $siteSelection, $loginId, $loginType, $info);
 }
 $totalDueFormatted = '';
 if ($totalDue > 0 || $activePaymentPlans) {
@@ -657,8 +657,8 @@ if ($totalDue > 0 || $activePaymentPlans) {
     </div>
 </div>
 <?php
-    if ($info['managedByName'] == null && ($NomNomExists || $BusinessExists || $SiteExists))
-        drawWSFSButtons($NomNomExists, $BusinessExists, $SiteExists, $hasWSFS, $hasNom, $hasMeeting, $siteSelection, $loginId, $loginType, $info);
+    if ($info['managedByName'] == null && ($NomNomURL != '' || $BusinessMeetingURL != '' || $SiteSelectionURL != ''))
+        drawWSFSButtons($NomNomURL != '', $BusinessMeetingURL != '', $SiteSelectionURL != '', $hasWSFS, $hasNom, $hasMeeting, $siteSelection, $loginId, $loginType, $info);
 
     outputCustomText('main/people');
 ?>
