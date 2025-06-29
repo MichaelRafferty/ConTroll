@@ -1,0 +1,71 @@
+Configuration  File Format and Usage
+
+ConTroll three text based configuration files:
+
+reg_secret.ini - Contains all usernames, passwords, api id's and secrets, and other confidential information.  Sections in the reg_secret
+    file should not appear in any other configuration file.  They should be 'complete' within this file.
+    (During the migration to the three file format from the single file format, reg_secret is loaded first and can be overridden by the
+        other files.  In a future release it will be loaded last and its sections will overwrite the complete sections loaded by the other files.)
+reg_admin.ini - Contains all items that should not be changed on a day to day basis by Reg Admins.  This file is editable by those with
+    shell access to the config directory.
+reg_conf.ini - Contains all other item, such as email addresses, option usage, and text additions that the Reg Admin is allowed to edit.
+    A future release will add the ability for the reg-admin's to edit the contents of this file in the website.
+
+All of these files are found in the config directory and samples of the current possibe contents are in the config-sample directory.
+
+ConTroll uses PHP's parse_ini_file() function to read and place the contents into an associative array. All 3 files are read and merged into
+    one array by the global library function loadConfFile() which should be called after any
+
+File Formats:
+    All files should be of the following format:
+
+    Comments:
+        ;;; Start of block comment
+        ; continued comment or single line comment
+
+    Section Headers
+        [section]
+        All lower case, should be mnemonic of what is in that section
+        There should be an empty (blank) line before section headers for readability
+
+    Parameters
+       param=value ; optional comment
+       param="value string" ; optional comment
+       Parameter names are alphanumeric and start with a letter.
+       Quotes are required if the value has any non alphanumeric characters in it, including blanks.
+            See the PHP parse_ini_file documentation for futher explaination of the rules for parameter formatting.
+       Case is the developers choice, but they are case sensitive
+       Avoid the same name with different cases or spellings
+       Try to be mnemonic with the parameter name
+
+
+File Contents:
+    The top of the file has comments with the name of this file and explaining this files usage.
+    If a file has global defaults, those whould be in the [global] section and appear first in the file.
+    All other sections can be in any order, but the general order is:
+        Common
+        Specific to an app within ConTroll
+
+Using Configuration File Values:
+    Use of the globl $db_ini is discouraged.  The name is historical to when the db_functions file loaded the configuration parameters.
+        It will be renamed in a future release.  It is now loaded by loadConfFile() in /lib/global.php.  Thus the require once for that file
+        must preceed any require on db_functions (which will load it if not already loaded as that file is loaded) or use of any
+        configuration file values. If you need a configuration file value before db_functions is loaded you must call that function yourself.
+        (All of the base.php files should already be doing this so they can do the HTTPS redirects as needed.
+
+    If you have need for any configuration file value that appears in both the [global] and a [section] override, you must use the function
+    getConfValue(section, key, defaultValue = '') function.
+        section is the primary section for the key
+        key is the name of the parameter in that section
+        defaultValue is what to return if the parameter is not in the configutation file.  The third argument defaults to the empty string.
+            If you want null returned for not found you must pass null as the third argument.
+
+        This function first looks in the section passed for the key.  If not found there it looks in 'global' for the key. And if still not
+            found returns defaultValue.
+
+    If you only need one or two keys in your function, using the getConfValue is preferred because it avoids having to code all the
+        array_key_exists protections for keys not actually in this conventions configuration file.
+
+    If you need many keys from a section, the get_conf(section) call is still provided, which returns an associate array of the section.
+
+
