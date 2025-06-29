@@ -1,14 +1,14 @@
 <?php
-require_once("isResolvedBaned.php");
+require_once(__DIR__ . '/../../lib/global.php');
 // portal - base.php - base functions for membership portal
-global $db_ini;
-global $appSessionPrefix;
+global $db_ini, $appSessionPrefix;
 
 if (!$db_ini) {
-    $db_ini = parse_ini_file(__DIR__ . '/../../config/reg_conf.ini', true);
+    $db_ini = loadConfFile();
+    $include_path_additions = PATH_SEPARATOR . $db_ini['client']['path'] . '/../Composer';
 }
 
-if ($db_ini['reg']['https'] <> 0) {
+if (getConfValue('reg', 'https') <> 0) {
     if (!isset($_SERVER['HTTPS']) or $_SERVER['HTTPS'] != 'on') {
         header('HTTP/1.1 301 Moved Permanently');
         header('Location: https://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI']);
@@ -18,9 +18,9 @@ if ($db_ini['reg']['https'] <> 0) {
 
 require_once(__DIR__ . "/../../lib/db_functions.php");
 require_once(__DIR__ . '/../../lib/ajax_functions.php');
-require_once(__DIR__ . '/../../lib/global.php');
 require_once(__DIR__ . '/../../lib/cipher.php');
 require_once(__DIR__ . '/../../lib/jsVersions.php');
+require_once('isResolvedBaned.php');
 
 db_connect();
 $appSessionPrefix = 'Ctrl/Portal/';
@@ -387,7 +387,7 @@ EOS;
     function isDirectAllowed() {
         $direct = getConfValue('portal', 'direct') == 1;
         $test = getConfValue('portal', 'test') == 1;
-        if ($test || $direct)
+        if (!$test || !$direct)
             return false; // no test, no direct login
 
         if ($_SERVER['SERVER_ADDR'] == '127.0.0.1' || $_SERVER['SERVER_ADDR'] == '::1')

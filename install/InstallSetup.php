@@ -1,5 +1,6 @@
 <?php
 // Need DB library
+require_once(__DIR__ . '/../lib/global.php');
 require_once(__DIR__ . '/../lib/db_functions.php');
 require_once('lib/base.php');
 require_once('lib/validateConfigMYSQL.php');
@@ -15,7 +16,7 @@ global $options;
 $systemName = 'ConTroll';
 $patchLevelFile = 'Reg_Install_Schema/AA_Patchlevel.txt';
 $phpMajor = 8;
-$phpMinor = 1;
+$phpMinor = 2;
 
 // get command line options
 $options = getopt("cfhinopstv");
