@@ -149,8 +149,6 @@ function ComeBackCouponEmail_HTML($test, $expirationDate) {
     $hotelpage = $con['hotelwebsite'];
     $hotelname = $con['hotelname'];
     $hoteladdr = $con['hoteladdr'];
-    $pickupareatext = $con['pickupareatext'];
-    $addlpickuptext = $con['addlpickuptext'];
     $schedulepage = $con['schedulepage'];
     $homepage = $con['website'];
     $policypage = $con['policy'];
@@ -205,8 +203,6 @@ function ComeBackCouponEmail_TEXT($test, $expirationDate) {
     $url = rtrim(getConfValue('reg', 'server'), '/');
     $hotelname = $con['hotelname'];
     $hoteladdr = $con['hoteladdr'];
-    $pickupareatext = $con['pickupareatext'];
-    $addlpickuptext = $con['addlpickuptext'];
     $schedulepage = $con['schedulepage'];
     $homepage = $con['website'];
     $policypage = $con['policy'];
