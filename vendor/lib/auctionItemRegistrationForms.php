@@ -30,7 +30,7 @@ function draw_itemRegistrationModal($portalType = '', $showsheets=false, $showco
         $nfsTitle = 'Display Only / Not For Sale Items';
 
 ?>
-    <div id='item_registration' class='modal modal-x1 fade' tabindex='-1' aria-labelledby='Register Items' aria-hidden='true' style='--bs-modal-width: 96%;'>
+    <div id='item_registration' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Register Items' aria-hidden='true' style='--bs-modal-width: 96%;'>
         <div class='modal-dialog'>
             <div class='modal-content'>
                 <div class='modal-header bg-primary text-bg-primary'>

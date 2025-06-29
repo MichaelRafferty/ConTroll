@@ -146,6 +146,7 @@ INSERT INTO `controllAppItems` VALUES
 ('portal','portal','main','people','Just after the people managed header'),
 ('portal','portal','main','plan','Just after the plan header'),
 ('portal','portal','main','purchased','Just aqfter the purchased header'),
+('portal','portal','main','purchOthers','Custom Text for You have unpaid purchases for you by others section'),
 ('portal','portal','main','top','The top of the page/section');
 ALTER TABLE `controllAppItems` ENABLE KEYS;
 UNLOCK TABLES;

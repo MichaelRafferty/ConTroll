@@ -624,7 +624,7 @@ EOS;
             $aprvl = " (last 4: $cc, auth: $aprvl)";
         else if ($cc != '')
             $aprvl = ", last4: $cc";
-        else
+        else if ($aprvl != '')
             $aprvl = " (auth: $aprvl)";
 
         $url = $pmt['receipt_url'];

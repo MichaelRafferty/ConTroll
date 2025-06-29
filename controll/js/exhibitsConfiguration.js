@@ -819,9 +819,9 @@ class exhibitssetup {
                     title: "&bigstar;Req", field: "requestable", width: 80, hozAlign: "right", headerSort: false,
                     editor: "tickCross", formatter: "tickCross", validator: "required",
                 },
-                {title: "Default GL Num", field: "glNum", headerWordWrap: true, headerSort: true, headerFilter: true,
+                {title: "GL Num", field: "glNum", headerWordWrap: true, headerSort: true, headerFilter: true,
                     editor: "input", editorParams: {maxlength: "16"}, width: 120, },
-                {title: "Default GL Label", field: "glLabel", headerWordWrap: true, headerSort: true, headerFilter: "textarea", formatter: "textarea",
+                {title: "GL Label", field: "glLabel", headerWordWrap: true, headerSort: true, headerFilter: "textarea", formatter: "textarea",
                     editor: "input", editorParams: {maxlength: "64"}, width: 200, },
                 {title: "Sort Order", field: "sortorder", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 80,},
                 {title: "Orig Key", field: "priceKey", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
@@ -889,12 +889,23 @@ class exhibitssetup {
     // add row to types table and scroll to that new row
     addrowTypes() {
         var _this = this;
-        this.#regionTypeTable.addRow({regionType: 'new-row', portalType: 'vendor', purchaseApprovalRequired: 'Y',  inPersonMaxUnits: 0, mailinAllowed: 'N', mailinMaxUnits: 0,
+        this.#regionTypeTable.addRow({regionType: 'new-row', portalType: 'vendor', requestApprovalRequired: 'None', purchaseApprovalRequired: 'Y',
+            purchaseAreaTotals: 'unique', inPersonMaxUnits: 0, mailinAllowed: 'N', mailinMaxUnits: 0, needW9: 'N', usesInventory: 'N',
             active: 'Y', sortorder: 99, uses: 0}, false).then(function (row) {
-                _this.#regionTypeTable.setPage("last"); // adding new to last page always
-                row.getTable().scrollToRow(row);
+            row.getTable().setPage('last').then(function () {
                 row.getCell("regionType").getElement().style.backgroundColor = "#fff3cd";
+                row.getCell("portalType").getElement().style.backgroundColor = "#fff3cd";
+                row.getCell("requestApprovalRequired").getElement().style.backgroundColor = "#fff3cd";
+                row.getCell("purchaseApprovalRequired").getElement().style.backgroundColor = "#fff3cd";
+                row.getCell("purchaseAreaTotals").getElement().style.backgroundColor = "#fff3cd";
+                row.getCell("inPersonMaxUnits").getElement().style.backgroundColor = "#fff3cd";
+                row.getCell("mailinAllowed").getElement().style.backgroundColor = "#fff3cd";
+                row.getCell("mailinMaxUnits").getElement().style.backgroundColor = "#fff3cd";
+                row.getCell("needW9").getElement().style.backgroundColor = "#fff3cd";
+                row.getCell("usesInventory").getElement().style.backgroundColor = "#fff3cd";
+                row.getCell("active").getElement().style.backgroundColor = "#fff3cd";
                 _this.checkTypesUndoRedo();
+            });
         });
     }
 
@@ -1018,9 +1029,10 @@ class exhibitssetup {
     addrowRegions() {
         var _this = this;
         this.#regionsTable.addRow({ sortorder: 99, uses: 0}, false).then(function (row) {
-            _this.#regionsTable.setPage("last"); // adding new to last page always
-            row.getTable().scrollToRow(row);
-            _this.checkRegionsUndoRedo();
+            row.getTable().setPage('last').then(function() {
+                row.getCell("shortname").getElement().style.backgroundColor = "#fff3cd";
+                _this.checkRegionsUndoRedo();
+            });
         });
     }
 
@@ -1146,9 +1158,10 @@ class exhibitssetup {
         var _this = this;
         this.#regionYearsTable.addRow({conid: this.#conid, ownerName: 'new-row', sortorder: 99, uses: 0}, false).then(function (row) {
             _this.#regionYearsTable.setPage("last"); // adding new to last page always
-            row.getTable().scrollToRow(row);
-            row.getCell("ownerName").getElement().style.backgroundColor = "#fff3cd";
-            _this.checkYearsUndoRedo();
+            row.getTable().setPage('last').then(function () {
+                row.getCell("ownerName").getElement().style.backgroundColor = "#fff3cd";
+                _this.checkYearsUndoRedo();
+            });
         });
     }
 
@@ -1274,9 +1287,10 @@ class exhibitssetup {
         var _this = this;
         this.#spacesTable.addRow({shortname: 'new-row', sortorder: 99, uses: 0}, false).then(function (row) {
             _this.#spacesTable.setPage("last"); // adding new to last page always
-            row.getTable().scrollToRow(row);
-            row.getCell("shortname").getElement().style.backgroundColor = "#fff3cd";
-            _this.checkSpacesUndoRedo();
+            row.getTable().setPage('last').then(function () {
+                row.getCell("shortname").getElement().style.backgroundColor = "#fff3cd";
+                _this.checkSpacesUndoRedo();
+            });
         });
     }
 
@@ -1402,9 +1416,11 @@ class exhibitssetup {
         var _this = this;
         this.#spacePricesTable.addRow({code: 'new-row', sortorder: 99, requestable: 0, uses: 0, }, false).then(function (row) {
             _this.#spacePricesTable.setPage("last"); // adding new to last page always
-            row.getTable().scrollToRow(row);
-            row.getCell("code").getElement().style.backgroundColor = "#fff3cd";
-            _this.checkSpacePricesUndoRedo();
+            row.getTable().setPage('last').then(function () {
+                row.getCell("code").getElement().style.backgroundColor = "#fff3cd";
+                row.getCell("requestable").getElement().style.backgroundColor = "#fff3cd";
+                _this.checkSpacePricesUndoRedo();
+            });
         });
     }
 
@@ -1508,7 +1524,7 @@ function cellChanged(cell) {
         case 'spaceId':
             // change to spaceId in space prices table, if GL code is non blank, set it to the region GL fields
             rowData = cell.getData();
-            if (rowData.glNum && row.glNum != '')
+            if (rowData.glNum && rowData.glNum != '')
                 break;  // already has a value don't overwrite it
 
             // glNum is empty, fetch from region year

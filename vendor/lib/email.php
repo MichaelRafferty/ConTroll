@@ -4,7 +4,6 @@
 // Psssword reset
 function vendorReset($passwd, $dest, $portalName, $reply) {
     $conf = get_conf('con');
-    $vendor_conf = get_conf('vendor');
     $body = "The password to you " . $conf['conname'] . " " . $portalName . " Portal account has been reset.\nThe new password is:\n\n\t$passwd\n\n" .
         "Please login to the " . $conf['conname'] . " " . $portalName . " Portal site at " . $dest .
         " to change your password.\n\n" .
@@ -188,7 +187,6 @@ EOS;
 
 
     $conf = get_conf('con');
-    $vendor_conf = get_conf('vendor');
     $curLocale = locale_get_default();
     $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
 
@@ -205,7 +203,7 @@ EOS;
             "Space: " . $region['name'] . ' (' . $region['description'] . ') with up to ' . $region['includedMemberships'] .
                 ' included memberships and up to ' .
             $region['additionalMemberships'] . " additional memberships\n" .
-            $vendor_conf['taxidlabel'] . ': ' . $results['salesTaxId'] . "\n\n" .
+            $conf['taxLabel'] . ': ' . $results['salesTaxId'] . "\n\n" .
             "Price for Space: " . $dolfmt->formatCurrency($region['price'], $currency) . "\n\n" .
             "Special Requests:\n" . $results['specialrequests'] . "\n\n";
 
@@ -250,7 +248,7 @@ EOS;
     $bodyHtml .= $vendor['city'] . ', ' . $vendor['state'] . ' ' . $vendor['zip'] . "</p>\n" .
         '<p>Space: ' . $region['name'] . ' (' . $region['description'] . ') with up to ' . $region['includedMemberships'] .
             ' included memberships and up to ' . $region['additionalMemberships'] . " additional memberships</p>\n" .
-        '<p>' . $vendor_conf['taxidlabel'] . ': ' . $results['salesTaxId'] . "</p>\n" .
+        '<p>' . $conf['taxLabel'] . ': ' . $results['salesTaxId'] . "</p>\n" .
         '<p>Price for Space: ' . $dolfmt->formatCurrency($region['price'], $currency) . "</p>\n" .
         "<p>Special Requests:<br/>\n" . $results['specialrequests'] . "</p>\n";
 

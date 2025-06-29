@@ -43,15 +43,14 @@ if (is_numeric($name_search)) {
 // this is perid
 //
     $findPersonQ = <<<EOS
-SELECT DISTINCT P.id as perid, IFNULL(P.first_name, '') as first_name, IFNULL(P.middle_name, '') as middle_name, IFNULL(P.last_name, '') as last_name, IFNULL(P.suffix, '') as suffix, IFNULL(P.badge_name, '') as badge_name, IFNULL(P.email_addr, '') as email_addr, IFNULL(P.phone, '') as phone,
-    CASE 
-        WHEN IFNULL(p.last_name, '') != '' THEN
-            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.last_name, ''), ', ', IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' '))
-        ELSE
-            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' '))
-        END AS fullname
-    FROM perinfo P 
-    WHERE P.id=?
+SELECT DISTINCT id as perid, first_name, middle_name, last_name, suffix, badge_name, email_addr, phone, 
+    CASE WHEN last_name != '' THEN
+        TRIM(REGEXP_REPLACE(CONCAT(last_name, ', ', CONCAT_WS(' ', first_name, middle_name, suffix)), '  *', ' '))
+    ELSE
+        TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, suffix), '  *', ' '))
+    END AS fullName
+    FROM perinfo
+    WHERE id=?
 EOS;
     //web_error_log($findPersonQ);
     $findPersonR = dbSafeQuery($findPersonQ, 'i', array($name_search));
@@ -64,16 +63,17 @@ EOS;
     $name_search = '%' . preg_replace('/ +/', '%', $name_search) . '%';
     web_error_log("match string: $name_search");
     $findPersonQ = <<<EOS
-SELECT DISTINCT P.id as perid, IFNULL(P.first_name, '') as first_name, IFNULL(P.middle_name, '') as middle_name, IFNULL(P.last_name, '') as last_name, IFNULL(P.suffix, '') as suffix, IFNULL(P.badge_name, '') as badge_name, IFNULL(P.email_addr, '') as email_addr, IFNULL(P.phone, '') as phone,
+SELECT DISTINCT p.id as perid, p.first_name, p.middle_name, p.last_name, p.suffix, p.badge_name, p.email_addr, p.phone,
     CASE 
         WHEN IFNULL(p.last_name, '') != '' THEN
-            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.last_name, ''), ', ', IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' '))
+            TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.last_name, p.first_name, p.middle_name, p.suffix), '  *', ' '))
         ELSE
-            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' '))
-        END AS fullname
-FROM perinfo P
+            TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.suffix), '  *', ' '))
+        END AS fullName
+FROM perinfo p
 WHERE 
-(LOWER(TRIM(CONCAT_WS(' ', TRIM(CONCAT_WS(' ', IFNULL(first_name, ''), IFNULL(middle_name, ''))), IFNULL(last_name, '')))) LIKE ? OR LOWER(badge_name) LIKE ? OR LOWER(email_addr) LIKE ?)
+     LOWER(TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name), '  *', ' '))) LIKE ? OR
+     LOWER(TRIM(p.badge_name) LIKE ? OR LOWER(TRIM(p.email_addr)) LIKE ?)
 ORDER BY last_name, first_name LIMIT $limit;
 EOS;
     //web_error_log($findPersonQ);
@@ -96,6 +96,6 @@ if ($num_rows >= $limit) {
 } else {
     $response['message'] = "$num_rows people found";
 }
-mysqli_free_result($findPersonR);
+$findPersonR->free();
 
 ajaxSuccess($response);

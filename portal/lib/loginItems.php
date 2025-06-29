@@ -1,6 +1,6 @@
 <?php
 // draw_login - draw the login options form
-function draw_login($config_vars, $result_message = '', $result_color = '', $why = 'continue to the portal') {
+function draw_login($config_vars, $result_message = '', $result_color = '', $why = 'continue to the portal') : void {
     $con = get_conf('con');
     $policies = getPolicies();
     ?>
@@ -46,7 +46,7 @@ function draw_login($config_vars, $result_message = '', $result_color = '', $why
                 // TODO: back out seattle regtest from here.
     if (isDirectAllowed()) {
                 ?>
-            <div class="row mt-3><div class="col-sm-12"><hr></div></div>
+            <div class="row mt-3"><div class="col-sm-12"><hr></div></div>
             <div class='row mt-2'>
                 <div class='col-sm-auto'>
                     <label for='dev_email'>*Direct to Email/Perid/Newperid: </label>
@@ -108,7 +108,6 @@ function draw_login($config_vars, $result_message = '', $result_color = '', $why
 function chooseAccountFromEmail($email, $id, $linkid, $passedMatch, $validationType) {
     global $config_vars;
 
-    $portal_conf = get_conf('portal');
     $con_conf = get_conf('con');
     $origEmail = strtolower($email);
 
@@ -227,8 +226,6 @@ function chooseAccountFromEmail($email, $id, $linkid, $passedMatch, $validationT
     }
 
     if (count($matches) > 1) {
-        $condata = get_con();
-        $ini = get_conf('reg');
 ?>
         <h4>This email address has access to multiple membership accounts</h4>
 <?php
@@ -244,7 +241,7 @@ function chooseAccountFromEmail($email, $id, $linkid, $passedMatch, $validationT
             $match['issue'] = $match['banned'];
             $string = json_encode($match);
             $string = encryptCipher($string, true);
-            echo "<li><a href='?vid=$string'>" .  $match['fullname'] . "</a></li>\n";
+            echo "<li><a href='?vid=$string'>" .  $match['fullName'] . "</a></li>\n";
         }
         ?>
         </ul>
@@ -270,7 +267,7 @@ function chooseAccountFromEmail($email, $id, $linkid, $passedMatch, $validationT
 //  possible responses:
 //      direct login: redirect to portal
 //      oauth authentication request: redirect back to oauth with the appropriate values
-function validationComplete($id, $idType, $email, $validationType, $multiple) {
+function validationComplete($id, $idType, $email, $validationType, $multiple) : void {
     // if not oauth session variable to go portal
     $portal_conf = get_conf('portal');
     if (!isSessionVar('oauth')) {
@@ -291,7 +288,6 @@ function validationComplete($id, $idType, $email, $validationType, $multiple) {
 
     // oauth session variable found, delete that variable and go to the server to respond back to the app
     // get the information for this response
-    $reg_conf = get_conf('reg');
     $con_conf = get_conf('con');
     $conid = $con_conf['id'];
     $nomDate = $portal_conf['nomdate'];
@@ -301,8 +297,8 @@ function validationComplete($id, $idType, $email, $validationType, $multiple) {
     if ($idType == 'p') {
         $rSQL = <<<EOS
 SELECT p.id AS perid, n.id AS newperid, p.email_addr AS email, m.label, m.memCategory, t.complete_date, t.complete_date < ? AS inTime,
-       TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ',  
-        IFNULL(p.suffix, '')), '  *', ' ')) AS fullName, p.first_name, p.last_name
+       TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), '  *', ' ')) AS fullName,
+       p.first_name, p.last_name
 FROM perinfo p
 LEFT OUTER JOIN newperson n ON n.perid = p.id
 LEFT OUTER JOIN reg r ON r.perid = p.id AND r.conid = ? AND r.status = 'paid'
@@ -313,8 +309,8 @@ EOS;
     } else {
         $rSQL = <<<EOS
 SELECT NULL AS perid, n.id AS newperid, n.email_addr AS email, m.label, m.memCategory, t.complete_date, t.complete_date < ? AS inTime,
-       TRIM(REGEXP_REPLACE(CONCAT(IFNULL(n.first_name, ''),' ', IFNULL(n.middle_name, ''), ' ', IFNULL(n.last_name, ''), ' ',  
-        IFNULL(n.suffix, '')), '  *', ' ')) AS fullName, n.first_name, n.last_name
+       TRIM(REGEXP_REPLACE(CONCAT_WS(' ', n.first_name, n.middle_name, n.last_name, n.suffix), '  *', ' ')) AS fullName,
+       n.first_name, n.last_name
 FROM newperson n
 LEFT OUTER JOIN reg r ON r.newperid = n.id AND r.conid = ? AND r.status = 'paid'
 LEFT OUTER JOIN transaction t ON r.complete_trans = t.id
@@ -353,7 +349,8 @@ EOS;
         case 'nom':
             for ($row = 0; $row < count($regs); $row++) {
                 $reg = $regs[$row];
-                if ((($reg['memCategory'] == 'wsfs' || $reg['memCategory'] == 'dealer') && $reg['inTime'] == 1) || ($reg['memCategory'] == 'wsfsnom')) {
+                if ((($reg['memCategory'] == 'wsfs' || $reg['memCategory'] == 'dealer' || $reg['memType'] == 'wsfsfree') && $reg['inTime'] == 1) ||
+                    ($reg['memCategory'] == 'wsfsnom')) {
                     $resp['rights'] = 'hugo_nominate';
                     break;
                 }
@@ -362,7 +359,8 @@ EOS;
         case 'vote':
             for ($row = 0; $row < count($regs); $row++) {
                 $reg = $regs[$row];
-                if (($reg['memCategory'] == 'wsfs' && str_contains(strtolower($reg['label']), ' only') == false) || ($reg['memCategory'] == 'dealer')) {
+                if (($reg['memCategory'] == 'wsfs' && str_contains(strtolower($reg['label']), ' only') == false) ||
+                    $reg['memCategory'] == 'dealer' || $reg['memType'] == 'wsfsfree') {
                     $resp['rights'] = 'hugo_vote';
                     break;
                 }

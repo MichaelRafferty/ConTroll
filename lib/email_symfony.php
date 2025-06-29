@@ -98,6 +98,8 @@ function send_email($from, $to, $cc, $subject, $textbody, $htmlbody, $attachment
 
     // now send the email
     try {
+        $badEmailAddresses = [];
+        $toCount = 0;
         $email = (new Email());
         // from
         $email->from($from);
@@ -105,15 +107,26 @@ function send_email($from, $to, $cc, $subject, $textbody, $htmlbody, $attachment
         if (is_array($to)) {
             $first = true;
             foreach ($to as $next) {
+                if (!filter_var($next, FILTER_VALIDATE_EMAIL)) {
+                    $badEmailAddresses[] = $next;
+                    continue;
+                }
                 if ($first) {
                     $email->to($next);
+                    $toCount++;
                     $first=false;
                 } else {
                     $email->addTo($next);
+                    $toCount++;
                 }
             }
         } else {
-            $email->to($to);
+            if (!filter_var($to, FILTER_VALIDATE_EMAIL))
+                $badEmailAddresses[] = $to;
+            else {
+                $email->to($to);
+                $toCount++;
+            }
         }
 
         // cc (single or array)
@@ -121,6 +134,10 @@ function send_email($from, $to, $cc, $subject, $textbody, $htmlbody, $attachment
             if (is_array($cc)) {
                 $first = true;
                 foreach ($cc as $next) {
+                    if (!filter_var($next, FILTER_VALIDATE_EMAIL)) {
+                        $badEmailAddresses[] = $next;
+                        continue;
+                    }
                     if ($first) {
                         $email->cc($next);
                         $first=false;
@@ -129,9 +146,24 @@ function send_email($from, $to, $cc, $subject, $textbody, $htmlbody, $attachment
                     }
                 }
             } else {
-                $email->cc($cc);
+                if (!filter_var($cc, FILTER_VALIDATE_EMAIL))
+                    $badEmailAddresses[] = $cc;
+                else {
+                    $email->cc($cc);
+                }
             }
         }
+        if (count($badEmailAddresses) > 0) {
+            error_log("symfony send_email: received bad email addresses: " . implode(', ', $badEmailAddresses));
+        }
+        if ($toCount == 0) {
+            $return_arr['status'] = 'error';
+            $return_arr['error_code'] = 'invalid-emails';
+            $return_arr['email_error'] = "Cannot send email because there was no valid email address, invalid email addresses: " .
+                implode(', ', $badEmailAddresses);
+            return $return_arr;
+        }
+
         // subject
         $email->subject($subject);
         // text body
@@ -148,6 +180,14 @@ function send_email($from, $to, $cc, $subject, $textbody, $htmlbody, $attachment
         }
         // now send it
         $mailer->send($email);
+
+        if (count($badEmailAddresses) > 0) {
+            $return_arr['status'] = 'warn';
+            $return_arr['error_code'] = 'invalid-emails';
+            $return_arr['email_error'] = 'Some email addresses were not used because they were invalid, invalid email addresses: '
+                . implode(', ', $badEmailAddresses);
+            return $return_arr;
+        }
     }
     catch (TransportExceptionInterface $e) {
         $return_arr['status'] = "error";

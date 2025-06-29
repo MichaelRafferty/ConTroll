@@ -37,6 +37,10 @@ $name_search = $_POST['name_search'];
 $response['find_type'] = $find_type;
 $response['name_search'] = $name_search;
 
+$region = getSessionVar('ARTPOSRegion');
+if ($region == '' || $region == null)
+    $region = '%';
+
 if (is_numeric($name_search)) {
 //
 // this is perid
@@ -57,6 +61,7 @@ EOS;
         $response['status'] = 'success';
         // now find any art for which is final and they are the high bidder
         $perid = $response['person']['id'];
+        // status was: 'Sold Bid Sheet','Sold at Auction', widened as a test
         $findArtQ = <<<EOS
 SELECT a.id, a.item_key, a.title, a.type, a.status, a.location, a.quantity, a.original_qty, a.min_price, a.sale_price, a.final_price, a.material, a.bidder,
        s.id AS artSalesId, s.transid, s.amount, IFNULL(s.paid, 0.00) AS paid, s.quantity AS artSalesQuantity, s.unit, t.id AS create_trans, IFNULL(s.quantity, 1) AS purQuantity,
@@ -65,13 +70,16 @@ FROM artItems a
 JOIN exhibitorRegionYears exRY ON a.exhibitorRegionYearId = exRY.id
 JOIN exhibitorYears exY ON exRY.exhibitorYearId = exY.id
 JOIN exhibitors ex ON exY.exhibitorId = ex.id
-LEFT OUTER JOIN artSales s ON a.id = s.artid AND IFNULL(s.paid, 0) != IFNULL(s.amount, 0)
+JOIN exhibitsRegionYears eRY ON eRY.id = exRY.exhibitsRegionYearId
+JOIN exhibitsRegions eR ON eR.id = eRY.exhibitsRegion
+LEFT OUTER JOIN artSales s ON a.id = s.artid /* ) */
 LEFT OUTER JOIN transaction t on s.transid = t.id AND t.price != t.paid                   
 WHERE (a.bidder = ? OR s.perid = ?) AND a.conid = ? AND 
-      (a.status IN ('Sold Bid Sheet','Sold at Auction') OR a.type = 'print') AND
-      ((t.id IS NULL AND s.transid IS NULL) OR (t.id = s.transid));
+      IFNULL(s.paid, 0) != IFNULL(s.amount, 0) AND
+      (a.status IN ('Checked In', 'Quicksale/Sold', 'Sold Bid Sheet','Sold at Auction') OR a.type = 'print') AND
+      ((t.id IS NULL AND s.transid IS NULL) OR (t.id = s.transid)) AND eR.shortname LIKE ?;
 EOS;
-        $findArtR = dbSafeQuery($findArtQ, 'iii', array($perid, $perid, $conid));
+        $findArtR = dbSafeQuery($findArtQ, 'iiis', array($perid, $perid, $conid, $region));
         $art = [];
         $transaction = null;
         while ($findArtL = $findArtR->fetch_assoc()) {

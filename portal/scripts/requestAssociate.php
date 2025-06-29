@@ -47,13 +47,13 @@ $email = $_POST['email'];
 $cQ = <<<EOS
 SELECT id, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, legalName, pronouns, address, addr_2, city, state, zip, country, 
     managedBy, NULL AS managedByNew, lastVerified, 'p' AS personType,
-    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(last_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) AS fullname
+    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), '  *', ' ')) AS fullName
 FROM perinfo
 WHERE id=? AND email_addr = ? AND NOT (first_name = 'Merged' AND middle_name = 'into')
 UNION
 SELECT id, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, legalName, pronouns, address, addr_2, city, state, zip, country, 
     managedBy, managedByNew, lastVerified, 'n' AS personType,
-    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(last_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) AS fullname
+    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), '  *', ' ')) AS fullName
 FROM newperson
 WHERE id=? AND email_addr = ? AND perid IS NULL AND NOT (first_name = 'Merged' AND middle_name = 'into');
 EOS;
@@ -145,7 +145,7 @@ if ($loginType == 'p') {
 $cQ = <<<EOS
 SELECT id, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, legalName, pronouns, address, addr_2, city, state, zip, country, 
     managedBy, NULL AS managedByNew, lastVerified, 'p' AS personType,
-    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(first_name, ''),' ', IFNULL(middle_name, ''), ' ', IFNULL(last_name, ''), ' ', IFNULL(suffix, '')), '  *', ' ')) AS fullname
+    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), '  *', ' ')) AS fullName,
 FROM $table
 WHERE id=?;
 EOS;
@@ -190,9 +190,9 @@ $string = encryptAttach($string, true);
 $token = $portal_conf['portalsite'] . "/respond.php?action=attach&vid=$string";     // convert to link for emailing
 
 load_email_procs();
-$loginFullname = $loginInfo['fullname'];
+$loginFullname = $loginInfo['fullName'];
 $loginEmail = $loginInfo['email_addr'];
-$personFullname = $personInfo['fullname'];
+$personFullname = $personInfo['fullName'];
 $personEmail = $personInfo['email_addr'];
 $label = $conf['label'];
 $regadminemail = $conf['regadminemail'];

@@ -54,5 +54,5 @@ $l = $r->fetch_assoc();
 $response['rollover_memId'] = $l['id'];
 $response['rollover_label'] = $l['label'];
 $response['rollover_shortname'] = $l['shortname'];
-mysqli_free_result($r);
+$r->free();
 ajaxSuccess($response);

@@ -16,6 +16,8 @@ CREATE TABLE `exhibitsRegionYears` (
   `exhibitsRegion` int NOT NULL,
   `ownerName` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `ownerEmail` varchar(254) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `glNum` varchar(16) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `glLabel` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `includedMemId` int DEFAULT NULL,
   `additionalMemId` int DEFAULT NULL,
   `totalUnitsAvailable` int NOT NULL DEFAULT '0',

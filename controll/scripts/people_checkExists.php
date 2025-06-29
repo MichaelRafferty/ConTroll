@@ -52,22 +52,18 @@ if ($firstName . $middleName .  $lastName .  $suffix .  $legalName .  $pronouns 
 
 // does anyone match this person?
 $mQ = <<<EOS
-SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalname, p.pronouns, 
+SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.pronouns, 
     p.address, p.addr_2, p.city, p.state, p.zip, p.country, p.banned, 
     p.creation_date, p.update_date, p.active, p.open_notes,
     p.managedBy, p.managedByNew, p.lastverified, p.managedreason,
-    REPLACE(REPLACE(REPLACE(REPLACE(LOWER(TRIM(IFNULL(p.phone, ''))), ')', ''), '(', ''), '-', ''), ' ', '') AS phoneCheck,
-    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ',  
-        IFNULL(p.suffix, '')), '  *', ' ')) AS fullName,
-    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.address, ''),' ', IFNULL(p.addr_2, ''), ' ', IFNULL(p.city, ''), ' ',
-        IFNULL(p.state, ''), ' ', IFNULL(p.zip, ''), ' ', IFNULL(p.country, '')), '  *', ' ')) AS fullAddr,
+    REPLACE(REPLACE(REPLACE(REPLACE(LOWER(TRIM(p.phone)), ')', ''), '(', ''), '-', ''), ' ', '') AS phoneCheck,
+    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), '  *', ' ')) AS fullName,
+    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.address, p.addr_2, p.city, p.state, p.zip, p.country), '  *', ' ')) AS fullAddr,
     CASE
-        WHEN mp.id IS NOT NULL THEN 
-            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(mp.first_name, ''),' ', IFNULL(mp.middle_name, ''), ' ',
-                IFNULL(mp.last_name, ''), ' ', IFNULL(mp.suffix, '')), '  *', ' ')) 
+        WHEN mp.id IS NOT NULL THEN
+            TRIM(REGEXP_REPLACE(CONCAT_WS(' ', mp.first_name, mp.middle_name, mp.last_name, mp.suffix), '  *', ' '))
         WHEN mn.id IS NOT NULL THEN
-            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(mn.first_name, ''),' ', IFNULL(mn.middle_name, ''), ' ',
-                IFNULL(mn.last_name, ''), ' ', IFNULL(mn.suffix, '')), '  *', ' '))
+            TRIM(REGEXP_REPLACE(CONCAT_WS(' ', mn.first_name, mn.middle_name, mn.last_name, mn.suffix), '  *', ' '))
         ELSE ''
     END AS manager,
     CASE

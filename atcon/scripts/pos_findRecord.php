@@ -16,7 +16,7 @@ $response = array('post' => $_POST, 'get' => $_GET);
 $con = get_conf('con');
 $controll = get_conf('controll');
 $usePortal = $controll['useportal'];
-$conid = $con['id'];
+$conid = intval($con['id']);
 $ajax_request_action = '';
 
 if ($_POST && $_POST['ajax_request_action']) {
@@ -44,18 +44,13 @@ $perinfo = [];
 
 $limit = 99999999;
 $fieldListP = <<<EOS
-SELECT DISTINCT p.id AS perid, TRIM(IFNULL(p.first_name, '')) AS first_name, TRIM(IFNULL(p.middle_name, '')) AS middle_name, 
-    TRIM(IFNULL(p.last_name, '')) AS last_name, TRIM(IFNULL(p.suffix, '')) AS suffix, 
-    TRIM(IFNULL(p.legalName, '')) AS legalName, TRIM(IFNULL(p.pronouns, '')) AS pronouns,
-    p.badge_name, TRIM(IFNULL(p.address, '')) AS address_1, TRIM(IFNULL(p.addr_2, '')) AS address_2, 
-    TRIM(IFNULL(p.city, '')) AS city, TRIM(IFNULL(p.state, '')) AS state, TRIM(IFNULL(p.zip, '')) AS postal_code, 
-    IFNULL(p.country, '') as country, TRIM(IFNULL(p.email_addr, '')) AS email_addr,
-    TRIM(IFNULL(p.phone, '')) as phone, p.active, p.banned,
-    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ',  
-        IFNULL(p.suffix, '')), '  *', ' ')) AS fullName,
+SELECT DISTINCT p.id AS perid, TRIM(p.first_name) AS first_name, TRIM(p.middle_name) AS middle_name, TRIM(p.last_name) AS last_name,
+    TRIM(p.suffix) AS suffix, TRIM(p.legalName) AS legalName, TRIM(p.pronouns) AS pronouns, TRIM(p.badge_name) AS badge_name, 
+    TRIM(p.address) AS address_1, TRIM(p.addr_2) AS address_2, TRIM(p.city) AS city, TRIM(p.state) AS state, TRIM(p.zip) AS postal_code, 
+    TRIM(p.country) as country, TRIM(p.email_addr) AS email_addr, TRIM(p.phone) as phone, p.active, p.banned,
+    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), '  *', ' ')) AS fullName,
     p.open_notes, p.managedBy, cnt.cntManages,
-    TRIM(REGEXP_REPLACE(CONCAT(IFNULL(mgr.first_name, ''),' ', IFNULL(mgr.middle_name, ''), ' ', IFNULL(mgr.last_name, ''), ' ',  
-        IFNULL(mgr.suffix, '')), '  *', ' ')) AS mgrFullName
+    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', mgr.first_name, mgr.middle_name, mgr.last_name, mgr.suffix), '  *', ' ')) AS mgrFullName
 EOS;
 $withClauseMgr = <<<EOS
 , manages AS (
@@ -90,7 +85,7 @@ SELECT DISTINCT r1.perid, r1.id as regid, m.conid, r1.price, r1.paid, r1.paid AS
     r1.create_date, IFNULL(r1.create_trans, -1) as tid,IFNULL(r1.complete_trans, -1) as tid2,r1.memId, r1.planId, r1.status, IFNULL(pc.printcount, 0) AS 
     printcount,
     IFNULL(ac.attachcount, 0) AS attachcount, n.reg_notes, n.reg_notes_count, m.memCategory, m.memType, m.memAge, m.shortname, rs.tid as rstid,
-    CASE WHEN m.conid = ? THEN m.label ELSE concat(m.conid, ' ', m.label) END AS label, m.glNum
+    CASE WHEN m.conid = ? THEN m.label ELSE concat(m.conid, ' ', m.label) END AS label, m.glNum, m.taxable
 EOS;
 $fieldListL = <<<EOS
 SELECT DISTINCT p.id AS perid, mp.policy, mp.response, mp.id AS policyId
@@ -216,7 +211,8 @@ EOS;
     // first can we tell if it's a perid or a tid?
     // if [controll].useportal is 1, then its a perid
     // if [controll].useprotal is 0, then it could be a perid or a tid
-    if ($usePortal == 1) {
+    $name_search = intval($name_search); // sql is requiring we change this to a number
+    if ($usePortal == 1 && getSessionVar("POSMode") == 'checkin') {
         $overlapQ = <<<EOS
 SELECT 'p' AS which, id
 FROM perinfo p
@@ -308,7 +304,7 @@ JOIN memLabel m ON (r1.memId = m.id)
 LEFT OUTER JOIN printcount pc ON (r1.id = pc.regid)
 LEFT OUTER JOIN attachcount ac ON (r1.id = ac.regid)
 LEFT OUTER JOIN notes n ON (r1.id = n.regid)
-WHERE (r1.conid = ? OR (r1.conid = ? AND m.memCategory in ('yearahead', 'rollover'))) AND r1.status IN ('unpaid', 'paid', 'plan') AND
+WHERE (r1.conid = ? OR (r1.conid = ? AND m.memCategory in ('yearahead', 'rollover'))) AND r1.status IN ('unpaid', 'paid', 'plan')
 AND r1.status IN ('unpaid', 'paid', 'plan')
 ORDER BY r1.perid, r1.create_date;
 EOS;
@@ -319,6 +315,7 @@ $fieldListL
 FROM regids r
 JOIN reg r1 ON (r1.id = r.regid)
 JOIN perinfo p ON (p.id = r1.perid)
+JOIN memList m ON (r1.memId = m.id)
 JOIN memberPolicies mp ON (p.id = mp.perid AND r1.conid = mp.conid)
 WHERE (r1.conid = ? OR (r1.conid = ? AND m.memCategory in ('yearahead', 'rollover'))) AND r1.status IN ('unpaid', 'paid', 'plan')
 ORDER BY perid, policy;
@@ -330,12 +327,12 @@ EOS;
             ajaxSuccess(array('error' => "Error in string person query $name_search"));
             return;
         }
-        $rm = dbSafeQuery($searchSQLM, 'iiiiiiiii', array($name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1, $conid, $conid + 1, $conid));
+        $rm = dbSafeQuery($searchSQLM, 'iiiiiiiii', array($name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1, $conid, $conid, $conid + 1));
         if ($rm === false) {
             ajaxSuccess(array('error' => "Error in numeric membership query for $name_search"));
             return;
         }
-        $rl = dbSafeQuery($searchSQLL, 'iiiiiiii', array($name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1, $conid + 1, $conid));
+        $rl = dbSafeQuery($searchSQLL, 'iiiiiiii', array($name_search, $conid, $conid + 1, $name_search, $conid, $conid + 1, $conid, $conid + 1));
         if ($rl === false) {
             ajaxSuccess(array('error' => "Error in numeric policy query for $name_search"));
             return;
@@ -352,7 +349,7 @@ JOIN manages cnt ON (cnt.id = p.id)
 LEFT OUTER JOIN perinfo mgr ON (mgr.id = p.managedBy)
 ORDER BY last_name, first_name;
 EOS;
-        // noe the registration entries for these perids
+        // now the registration entries for these perids
         $searchSQLM = <<<EOS
 $managerWith, regids AS (
     SELECT r.id AS regid, create_trans as tid
@@ -411,14 +408,14 @@ WITh p1 AS (
     FROM perinfo p
     WHERE
         (
-            LOWER(p.legalname) LIKE ?
+            LOWER(p.legalName) LIKE ?
             OR LOWER(p.badge_name) LIKE ?
             OR LOWER(p.address) LIKE ?
             OR LOWER(p.addr_2) LIKE ?
             OR LOWER(p.email_addr) LIKE ?
-            OR LOWER(CONCAT(p.first_name, ' ', p.last_name)) LIKE ?
-            OR LOWER(CONCAT(p.last_name, ' ', p.first_name)) LIKE ?
-            OR LOWER(CONCAT(p.first_name, ' ', p.middle_name, ' ', p.last_name, ' ', p.suffix)) LIKE ?
+            OR LOWER(CONCAT_WS(' ', p.first_name, p.last_name)) LIKE ?
+            OR LOWER(CONCAT_WS(' ', p.last_name, p.first_name)) LIKE ?
+            OR LOWER(TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), '  *', ' '))) LIKE ?
         )
         AND (NOT (p.first_name = 'Merged' AND p.middle_name = 'into'))
 ), manager AS (

@@ -41,11 +41,18 @@ if ($oneoff != 1)
 else
     $rollovers = '';
 
+if (array_key_exists('onedaycoupons', $con)) {
+    $onedaycoupons = $con['onedaycoupons'];
+} else {
+    $onedaycoupons = 0;
+}
+
 $config_vars = array();
 $config_vars['label'] = $con['label'];
 $config_vars['required'] = $reg_conf['required'];
 $config_vars['conid'] = $condata['id'];
 $config_vars['debug'] = $debug;
+$config_vars['onedaycoupons'] = $onedaycoupons;
 
 $numCoupons = num_coupons();
 if ($numCoupons == 0)

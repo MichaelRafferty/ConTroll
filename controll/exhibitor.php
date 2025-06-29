@@ -20,6 +20,7 @@ $debug = get_conf('debug');
 $vendor_conf = get_conf('vendor');
 $reg_conf = get_conf('reg');
 $usps = get_conf('usps');
+$conf = get_conf('con');
 if (array_key_exists('controll_exhibitors', $debug))
     $debug_exhibitors = $debug['controll_exhibitors'];
 else
@@ -91,6 +92,7 @@ $config_vars['required'] = $reg_conf['required'];
 $config_vars['useUSPS'] = $useUSPS;
 $config_vars['initialTab'] = $initialTab;
 $config_vars['scriptName'] = $scriptName;
+$config_vars['regserver'] = $conf['server'];
 
 bs_tinymceModal();
 draw_registrationModal('admin', 'Admin', $conf, $countryOptions);

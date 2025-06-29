@@ -182,7 +182,8 @@ if (isset($_SESSION['id']) && !isset($_GET['vid'])) {
     }
 
     // Build exhbititorYear on first login if it doesn't exist at the time of this login
-    if ($match['eyID'] == NULL) {
+    $notExists = !(array_key_exists('eyID', $match) && array_key_exists('regions', $match) && array_key_exists('myRegions', $match));
+    if ($notExists || $match['eyID'] == NULL || $match['regions'] != $match['myRegions'] || $match['myRegions'] == 0 ) {
         // create the year related functions
         $newid = exhibitorBuildYears($exhibitor);
         if (is_numeric($newid))
@@ -195,15 +196,20 @@ if (isset($_SESSION['id']) && !isset($_GET['vid'])) {
     header('location:' . $_SERVER['PHP_SELF']);
 } else if (isset($_POST['si_email']) and isset($_POST['si_password'])) {
     // handle login submit
-    $login = trim(strtolower(sql_safe($_POST['si_email'])));
+    $login = trim(strtolower($_POST['si_email']));
     $loginQ = <<<EOS
 SELECT e.id, e.artistName, e.exhibitorName, LOWER(e.exhibitorEmail) as eEmail, e.password AS ePassword, e.need_new as eNeedNew, ey.id AS eyID, 
-       LOWER(ey.contactEmail) AS cEmail, ey.contactPassword AS cPassword, ey.need_new AS cNeedNew, archived, ey.needReview
+       LOWER(ey.contactEmail) AS cEmail, ey.contactPassword AS cPassword, ey.need_new AS cNeedNew, archived, ey.needReview,
+       COUNT(eRY.id) AS regions, COUNT(exRY.id) AS myRegions
 FROM exhibitors e
 LEFT OUTER JOIN exhibitorYears ey ON e.id = ey.exhibitorId AND conid = ?
-WHERE e.exhibitorEmail=? OR ey.contactEmail = ?
+JOIN exhibitsRegionYears eRY ON eRY.conid = ?
+LEFT JOIN exhibitorRegionYears exRY ON ey.id = exRY.exhibitorYearId AND exRY.exhibitsRegionYearId = eRY.id
+WHERE e.exhibitorEmail = ? OR ey.contactEmail = ?
+GROUP BY e.id, e.artistName, e.exhibitorName, LOWER(e.exhibitorEmail), e.password, e.need_new, ey.id, LOWER(ey.contactEmail), 
+         ey.contactPassword, ey.need_new, archived, ey.needReview
 EOS;
-    $loginR = dbSafeQuery($loginQ, 'iss', array($conid, $login, $login));
+    $loginR = dbSafeQuery($loginQ, 'iiss', array($conid, $conid, $login, $login));
     // find out how many match
     $matches = array();
     while ($result = $loginR->fetch_assoc()) { // check exhibitor email/password first
@@ -274,7 +280,7 @@ EOS;
     }
 
     // Build exhbititorYear on first login if it doesn't exist at the time of this login
-    if ($match['eyID'] == NULL) {
+    if ($match['eyID'] == NULL || $match['regions'] != $match['myRegions'] || $match['myRegions'] == 0 ) {
         // create the year related functions
         $newid = exhibitorBuildYears($exhibitor);
         if (is_numeric($newid))

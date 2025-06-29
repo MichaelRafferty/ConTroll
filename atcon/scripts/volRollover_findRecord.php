@@ -46,13 +46,11 @@ if (is_numeric($name_search)) {
     $searchSQL = <<<EOS
 SELECT DISTINCT p.id AS perid, p.first_name, p.middle_name, p.last_name, p.suffix, p.badge_name,
     p.address as address_1, p.addr_2 as address_2, p.city, p.state, p.zip as postal_code, p.country, p.email_addr, p.phone,
-    p.share_reg_ok, p.contact_ok, p.active, p.banned,
+    p.share_reg_ok, p.contact_ok, p.active, p.banned, 
     CASE 
-        WHEN IFNULL(p.last_name, '') != '' THEN
-            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.last_name, ''), ', ', IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' '))
-        ELSE
-            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' '))
-        END AS fullname,
+        WHEN p.last_name != '' THEN TRIM(REGEXP_REPLACE(CONCAT(p.last_name, ', ', CONCAT_WS(' ', p.first_name, p.middle_name, p.suffix)), '  *', ' '))
+        ELSE TRIM(REGEXP_REPLACE(CONCAT_WS(p.first_name, p.middle_name, p.suffix), '  *', ' '))
+    END AS fullName,
     p.open_notes, r.id AS regid, m.label, rn.id AS roll_regid, mn.shortname,
     CASE 
         WHEN m.memCategory is null THEN 'no membership'
@@ -81,12 +79,12 @@ EOS;
 SELECT DISTINCT p.id AS perid, p.first_name, p.middle_name, p.last_name, p.suffix, p.badge_name,
     p.address as address_1, p.addr_2 as address_2, p.city, p.state, p.zip as postal_code, p.country, p.email_addr, p.phone,
     p.share_reg_ok, p.contact_ok, p.active, p.banned,
-    CASE 
+    CASE
         WHEN IFNULL(p.last_name, '') != '' THEN
-            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.last_name, ''), ', ', IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' '))
+            TRIM(REGEXP_REPLACE(CONCAT(p.last_name, ', ', p.first_name, ' ', p.middle_name, ' ', p.suffix), '  *', ' '))
         ELSE
-            TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' '))
-        END AS fullname,
+            TRIM(REGEXP_REPLACE(CONCAT(p.first_name,' ', p.middle_name, ' ', p.suffix), '  *', ' '))
+        END AS fullName
     p.open_notes, r.id AS regid, m.label, rn.id AS roll_regid, mn.shortname,
     CASE
         WHEN m.memCategory is null THEN 'no membership'
@@ -99,8 +97,8 @@ LEFT OUTER JOIN reg rn ON (rn.perid = p.id AND rn.conid = ?)
 JOIN memLabel m ON (r.memId = m.id)
 LEFT OUTER JOIN memLabel mn ON (rn.memId = mn.id)
 WHERE r.conid = ? AND (
-    LOWER(TRIM(CONCAT_WS(' ', TRIM(CONCAT_WS(' ', IFNULL(first_name, ''), IFNULL(middle_name, ''))), IFNULL(last_name, ''))))  LIKE ? OR 
-    LOWER(badge_name) LIKE ? OR LOWER(email_addr) LIKE ?)
+    LOWER(TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name), '  *', ' '))) LIKE ? OR
+    LOWER(TRIM(p.badge_name) LIKE ? OR LOWER(TRIM(p.email_addr)) LIKE ?)
 ORDER BY last_name, first_name
 LIMIT $limit;
 EOS;
@@ -126,5 +124,5 @@ if ($num_rows >= $limit) {
 } else {
     $response['message'] = "$num_rows memberships found";
 }
-mysqli_free_result($r);
+$r->free();
 ajaxSuccess($response);

@@ -32,7 +32,11 @@ else {
 }
 $nonce = $_POST['nonce'];
 $purchaseform = $_POST['purchaseform'];
-$policyInterestForm = $_POST['policyInterestForm'];
+if (array_key_exists('policyInterestForm', $_POST))
+    $policyInterestForm = $_POST['policyInterestForm'];
+else
+    $policyInterestForm = [];
+
 $badges = $badgestruct['badges'];
 $webtotal = $badgestruct['total'];
 $couponDiscount = null;
@@ -70,8 +74,10 @@ load_email_procs();
 $condata = get_con();
 $log = get_conf('log');
 $con = get_conf('con');
+$cc = get_conf('cc');
 $conid = $condata['id'];
 logInit($log['reg']);
+$source = 'onlinereg';
 //web_error_log("badgestruct");
 //var_error_log($badgestruct);
 //web_error_log("couponCode");
@@ -167,31 +173,31 @@ SELECT id
 FROM perinfo p
 WHERE
 	REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.first_name, ''))), '  *', ' ')
+		REGEXP_REPLACE(TRIM(LOWER(p.first_name, '')), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.middle_name, ''))), '  *', ' ')
+		REGEXP_REPLACE(TRIM(LOWER(p.middle_name, '')), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.last_name, ''))), '  *', ' ')
+		REGEXP_REPLACE(TRIM(LOWER(p.last_name, '')), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.suffix, ''))), '  *', ' ')
+		REGEXP_REPLACE(TRIM(LOWER(p.suffix)), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.email_addr, ''))), '  *', ' ')
+		REGEXP_REPLACE(TRIM(LOWER(p.email_addr)), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.phone, ''))), '  *', ' ')
+		REGEXP_REPLACE(TRIM(LOWER(p.phone)), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.badge_name, ''))), '  *', ' ')
+		REGEXP_REPLACE(TRIM(LOWER(p.badge_name)), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.address, ''))), '  *', ' ')
+		REGEXP_REPLACE(TRIM(LOWER(p.address)), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.addr_2, ''))), '  *', ' ')
+		REGEXP_REPLACE(TRIM(LOWER(p.addr_2)), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.city, ''))), '  *', ' ')
+		REGEXP_REPLACE(TRIM(LOWER(p.city)), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.state, ''))), '  *', ' ')
+		REGEXP_REPLACE(TRIM(LOWER(p.state))), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.zip, ''))), '  *', ' ')
+		REGEXP_REPLACE(TRIM(LOWER(p.zip,)), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(IFNULL(p.country, ''))), '  *', ' ');
+		REGEXP_REPLACE(TRIM(LOWER(p.country)), '  *', ' ');
 EOF;
         $value_arr = array(
             trim($badge['fname']),
@@ -225,7 +231,7 @@ EOF;
             trim($badge['mname']),
             trim($badge['fname']),
             trim($badge['suffix']),
-            trim($badge['legalname']),
+            trim($badge['legalName']),
             trim($badge['pronouns']),
             trim($badge['email1']),
             trim($badge['phone']),
@@ -244,7 +250,8 @@ EOF;
         $insertQ = <<<EOS
 INSERT INTO newperson(last_name, middle_name, first_name, suffix, legalName, pronouns, email_addr, phone,
     badge_name, address, addr_2, city, state, zip, country, contact_ok, share_reg_ok, perid)
-    VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+    VALUES(IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''),
+           IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''),  ?, ?, ?);
 EOS;
 
         $newid = dbSafeInsert($insertQ, 'sssssssssssssssssi', $value_arr);
@@ -269,11 +276,11 @@ if ($coupon == null)
 else
     $cid = $coupon['id'];
 
-$transid= dbSafeInsert($transQ, "iidddsii", array($people[0]['newperid'], $id, $preDiscount, $totalDiscount, 0, 'website', $condata['id'], $cid));
+$transId= dbSafeInsert($transQ, "iidddsii", array($people[0]['newperid'], $id, $preDiscount, $totalDiscount, 0, 'website', $condata['id'], $cid));
 
-$newid_list .= "transid='$transid'";
+$newid_list .= "transid='$transId'";
 
-$person_update = "UPDATE newperson SET transid='$transid' WHERE $newid_list;";
+$person_update = "UPDATE newperson SET transid='$transId' WHERE $newid_list;";
 // This dbQuery is all internal veriables, (id's returned by the database functions) so the Safe version is not needed.
 dbQuery($person_update);
 
@@ -288,7 +295,7 @@ foreach($people as $person) {
       $condata['id'],
       $person['newperid'],
       $person['perid'],
-      $transid,
+      $transId,
       $person['price'] > 0 ? 'unpaid' : 'paid',
       $person['price'],
       $person['discount'],
@@ -300,66 +307,92 @@ foreach($people as $person) {
 }
 
 $all_badgeQ = <<<EOS
-SELECT R.id AS badge,
-    NP.first_name AS fname, NP.middle_name AS mname, NP.last_name AS lname, NP.suffix AS suffix, NP.legalName AS legalName,
+SELECT R.id AS badge, R.id AS regid,
+    NP.first_name AS fname, NP.middle_name AS mname, NP.last_name AS lname, NP.suffix AS suffix, NP.legalName,
     NP.email_addr AS email,
     NP.address AS street, NP.city AS city, NP.state AS state, NP.zip AS zip, NP.country AS country,
-    NP.id as id, R.price AS price, R.couponDiscount as discount, M.memAge AS age, NP.badge_name AS badgename, R.memId, M.glNum
+    NP.id as id, R.price AS price, R.couponDiscount as discount, M.memAge AS age, NP.badge_name AS badgename, R.memId, M.glNum,
+    M.label, M.memCategory, M.memType
 FROM newperson NP
 JOIN reg R ON (R.newperid=NP.id)
-JOIN memList M ON (M.id = R.memID)
+JOIN memLabel M ON (M.id = R.memID)
 WHERE NP.transid=?;
 EOS;
 
-$all_badgeR = dbSafeQuery($all_badgeQ, "i", array($transid));
+$all_badgeR = dbSafeQuery($all_badgeQ, "i", array($transId));
 
 $badgeResults = [];
 while ($row = $all_badgeR->fetch_assoc()) {
   $badgeResults[] = $row;
 }
 
+$custId = "onlinereg-$transId";
 $results = array(
-    'transid' => $transid,
+    'custid' => $custId,
+    'source' => $source,
+    'transid' => $transId,
     'counts' => $counts,
     'price' => $totalDue,
-    'tax' => 0,
-    'pretax' => $totalDue,
     'badges' => $badgeResults,
     'total' => $total,
-    'nonce' => $nonce,
     'coupon' => $coupon,
     'discount' => $totalDiscount,
 );
 
 //log requested badges
-logWrite(array('con'=>$condata['name'], 'trans'=>$transid, 'results'=>$results, 'request'=>$badges));
+logWrite(array('con'=>$condata['name'], 'trans'=>$transId, 'results'=>$results, 'request'=>$badges));
+
+// end compute, create the order if there is something to pay
 if ($total > 0) {
-    $email = $purchaseform['cc_email'];
-    $phone = '';
-    if ($email == '/r')
-        $email = '';
-    $rtn = cc_charge_purchase($results, $email, $phone, true);
-    if ($rtn === null) {
-        // note there is no reason cc_charge_purchase will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
-        logWrite(array('con'=>$condata['name'], 'trans'=>$transid, 'error' => 'Credit card transaction not approved'));
+    $rtn = cc_buildOrder($results, true);
+    if ($rtn == null) {
+        // note there is no reason cc_buildOrder will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
+        logWrite(array ('con' => $condata['name'], 'trans' => $transId, 'error' => 'Credit card order unable to be created'));
+        ajaxSuccess(array ('status' => 'error', 'error' => 'Credit card order not built, seek assistance'));
+        exit();
+    }
+    $response['orderRtn'] = $rtn;
+    logWrite(array('status'=> 'order create', 'con' => $condata['name'], 'trans' => $transId, 'ccrtn' => $rtn));
+    $buyer['email'] = $purchaseform['cc_email'];
+    $buyer['phone'] = '';
+    $buyer['country'] = '';
+    $referenceId = $transId . '-' . 'pay-' . time();
+    $results = array(
+        'source' => $source,
+        'nonce' => $nonce,
+        'totalAmt' => $rtn['totalAmt'],
+        'orderId' => $rtn['orderId'],
+        'custid' => $custId,
+        'locationId' => $cc['location'],
+        'referenceId' => $referenceId,
+        'transid' => $transId,
+        'preTaxAmt' => $totalDue,
+        'taxAmt' => 0,
+        'total' => $totalDue,
+        );
+
+// call the credit card processor to make the payment
+    $ccrtn = cc_payOrder($results, $buyer, true);
+    if ($ccrtn === null) {
+        // note there is no reason cc_payOrder will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
+        logWrite(array('con'=>$condata['name'], 'trans'=>$transId, 'error' => 'Credit card transaction not approved'));
         ajaxSuccess(array('status' => 'error', 'error' => 'Credit card not approved'));
         exit();
     }
 
-//$tnx_record = $rtn['tnx'];
-    logWrite(array('con'=>$condata['name'], 'trans'=>$transid, 'ccrtn'=>$rtn));
-    $num_fields = sizeof($rtn['txnfields']);
+    logWrite(array('con'=>$condata['name'], 'trans'=>$transId, 'ccrtn'=>$rtn));
+    $num_fields = sizeof($ccrtn['txnfields']);
     $val = array();
     for ($i = 0; $i < $num_fields; $i++) {
         $val[$i] = '?';
     }
-    $txnQ = "INSERT INTO payments(time," . implode(',', $rtn['txnfields']) . ') VALUES(current_time(),' . implode(',', $val) . ');';
-    $txnT = implode('', $rtn['tnxtypes']);
-    $txnid = dbSafeInsert($txnQ, $txnT, $rtn['tnxdata']);
-    $approved_amt = $rtn['amount'];
+    $txnQ = 'INSERT INTO payments(time,' . implode(',', $ccrtn['txnfields']) . ') VALUES(current_time(),' . implode(',', $val) . ');';
+    $txnT = implode('', $ccrtn['tnxtypes']);
+    $txnid = dbSafeInsert($txnQ, $txnT, $ccrtn['tnxdata']);
+    $approved_amt = $ccrtn['amount'];
 } else {
     $approved_amt = 0;
-    $rtn = array('url' => '');
+    $ccrtn = array('url' => '');
 }
 
 if ($totalDiscount > 0) {
@@ -369,7 +402,7 @@ INSERT INTO payments(transid, type, category, description, source, pretax, tax, 
 VALUES (?, 'coupon', 'reg', ?, 'online', ?, 0, ?, now(), 'APPLIED');
 EOS;
     $couponDesc = $coupon['id'] . ':' . $coupon['code'] . ' - ' . $coupon['name'];
-    $cpmtID = dbSafeInsert($ipQ, 'isdd', array($transid, $couponDesc, $totalDiscount, $totalDiscount));
+    $cpmtID = dbSafeInsert($ipQ, 'isdd', array($transId, $couponDesc, $totalDiscount, $totalDiscount));
     $coupon['totalDiscount'] = $totalDiscount;
 }
 
@@ -383,15 +416,16 @@ if ($totalDiscount > 0)
     $couponId = $coupon['id'];
 else
     $couponId = null;
-$txnU = dbSafeCmd($txnUpdate, "ddii", array($approved_amt, $totalDiscount, $couponId, $transid) );
+
+$txnU = dbSafeCmd($txnUpdate, "ddii", array($approved_amt, $totalDiscount, $couponId, $transId) );
 
 $regQ = "UPDATE reg SET paid=price-couponDiscount, complete_trans = ?, status = 'paid' WHERE create_trans=?;";
-dbSafeCmd($regQ, "ii", array($transid, $transid));
+dbSafeCmd($regQ, "ii", array($transId, $transId));
 
 // mark coupon used
 if ($coupon !== null && $coupon['keyId'] !== null) {
     $cupQ = 'UPDATE couponKeys SET usedBy = ?, useTS = current_timestamp WHERE id = ?';
-    dbSafeCmd($cupQ, 'ii', array($transid, $coupon['keyId']));
+    dbSafeCmd($cupQ, 'ii', array($transId, $coupon['keyId']));
 }
 
 // insert policies
@@ -433,7 +467,7 @@ if ($interests != null) {
 }
 
 if ($total > 0) {
-    $body = getEmailBody($transid, $totalDiscount);
+    $body = getEmailBody($transId, $totalDiscount);
 }
 else {
     $body = getNoChargeEmailBody($results, $totalDiscount);
@@ -461,11 +495,10 @@ if (array_key_exists('email_error', $return_arr)) {
 
 $response = array(
   "status"=>$return_arr['status'],
-  "url"=>$rtn['url'],
+  "url"=>$ccrtn['url'],
   "data"=> $error_msg,
   "email"=>$return_arr,
-  "trans"=>$transid,
-  //"email"=>$email_msg,
+  "trans"=>$transId,
   "email_error"=>$error_code
 );
 //var_error_log($response);

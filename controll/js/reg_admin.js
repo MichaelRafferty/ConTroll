@@ -801,7 +801,7 @@ function changeRegsData(data, rowdata) {
         <div class="col-sm-2 text-primary">` + rowdata.label + `</div>
         <div class="col-sm-1 text-primary" style="text-align: right;">` + rowdata.price + `</div>
         <div class="col-sm-1 text-primary" style="text-align: right;">` + rowdata.paid + `</div>
-        <div class="col-sm-1 text-primary" style="text-align: right;">` + rowdata.couponDiscount + `.</div>
+        <div class="col-sm-1 text-primary" style="text-align: right;">` + rowdata.couponDiscount + `</div>
         <div class="col-sm-1 text-primary">` + rowdata.status + `</div>
         <div class="col-sm-2">
             <button class="btn btn-sm btn-secondary" onclick="changeEdit(` + rowdata.badgeId + `)";>Edit</button>
@@ -824,12 +824,12 @@ function changeRegsData(data, rowdata) {
             <label for="m-` + membership.id + '">' + membership.id + `</label></div>
         <div class="col-sm-1" style="text-align: right;">` + membership.create_trans + `</div>
         <div class="col-sm-1" style="text-align: right;">` + membership.memId + `</div>
-        <div class="col-sm-3">` + membership.label + `</div>
+        <div class="col-sm-2">` + membership.label + `</div>
         <div class="col-sm-1" style="text-align: right;">` + membership.price + `</div>
         <div class="col-sm-1" style="text-align: right;">` + membership.paid + `</div>
-        <div class="col-sm-1" style="text-align: right;">` + membership.couponDiscount + `.</div>
+        <div class="col-sm-1" style="text-align: right;">` + membership.couponDiscount + `</div>
         <div class="col-sm-1">` + membership.status + `</div>
-        <div class="col-sm-1">
+        <div class="col-sm-2">
             <button class="btn btn-sm btn-secondary" onclick="changeEdit(` + membership.id + `)";>Edit</button>
             <button class="btn btn-sm btn-secondary" onclick="addNote(` + membership.id + `)";>Add Note</button>
         </div>
@@ -982,7 +982,7 @@ function changeTransfer() {
         return;
     }
 
-    transferFromNameDiv.innerHTML = changeRowdata.perid + ': ' + changeRowdata.fullname;
+    transferFromNameDiv.innerHTML = changeRowdata.perid + ': ' + changeRowdata.fullName;
     transferFromRegistrationDiv.innerHTML =  registrationList;
     transferNameSearchField.value = '';
 
@@ -1097,14 +1097,14 @@ function changeTransferFound(data) {
             data: perinfo,
             layout: "fitDataTable",
             initialSort: [
-                {column: "fullname", dir: "asc"},
+                {column: "fullName", dir: "asc"},
             ],
             columns: [
                 {title: "Transfer", width: 90, headerFilter: false, headerSort: false, formatter: addTransferIcon, formatterParams: {t: "result"},},
                 {title: "ID", field: "perid", width: 120, hozAlign: "right", headerHozAlign: "right" },
                 {field: "index", visible: false,},
                 {field: "regcnt", visible: false,},
-                {title: "Name", field: "fullname", width: 200, headerFilter: true, headerWordWrap: true, tooltip: build_record_hover,},
+                {title: "Name", field: "fullName", width: 200, headerFilter: true, headerWordWrap: true, tooltip: build_record_hover,},
                 {field: "last_name", visible: false,},
                 {field: "first_name", visible: false,},
                 {field: "middle_name", visible: false,},
@@ -1133,6 +1133,7 @@ function transferReg(to, banned) {
         from: changeRowdata.perid,
         to: to,
         transferList: changeList,
+        source: config['source'],
     }
     $.ajax({
         url: script,
@@ -1285,6 +1286,7 @@ function changeRolloverExecute() {
     var data = {
         rolloverList: newIds,
         action: 'rollover',
+        source: config['source'],
     }
     var script= 'scripts/regadmin_rolloverReg.php';
 
@@ -1341,23 +1343,22 @@ function changeEdit(badgeId) {
 
 
     // build the select list, first the ones for this mem Age and All
-    var memOptionList = '<select id="newMemId" onchange="changeEditRegChange();">' + "\n" +
-        "    <option value=''>Do Not Modify The Registration Type</option>\n";
+    var memOptionList = '<select id="newMemId" onchange="changeEditRegChange();">' + "\n";
     for (var i = 0; i < memLabels.length; i++) {
         var memItem = memLabels[i];
         if (ageList[memItem.memAge]) {
-            memOptionList += '   <option value="' + memItem.id + '">' + memItem.id + ':' + memItem.memAge + '-' +
-                memItem.memType + '-' + memItem.memCategory + ' $' + memItem.price + ' ' +
-                memItem.shortname + "</option>\n";
+            memOptionList += '   <option value="' + memItem.id + '"' + (currentRow.memId == memItem.id ? ' selected' : '') + '>' +
+            memItem.id + ':' + memItem.memAge + '-' + memItem.memType + '-' + memItem.memCategory + ' $' + memItem.price + ' ' +
+            memItem.shortname + "</option>\n";
         }
     }
     // now the rest of them
     for (var i = 0; i < memLabels.length; i++) {
         var memItem = memLabels[i];
         if (!ageList[memItem.memAge]) {
-            memOptionList += '   <option value="' + memItem.id + '">' + memItem.id + ':' + memItem.memAge + '-' +
-                memItem.memType + '-' + memItem.memCategory + ' $' + memItem.price + ' ' +
-                memItem.shortname + "</option>\n";
+            memOptionList += '   <option value="' + memItem.id + '"' + (currentRow.memId == memItem.id ? ' selected' : '') +'>' +
+            memItem.id + ':' + memItem.memAge + '-' + memItem.memType + '-' + memItem.memCategory + ' $' + memItem.price + ' ' +
+            memItem.shortname + "</option>\n";
         }
     }
     memOptionList += "</select>\n";
@@ -1767,4 +1768,9 @@ function deleterow(e, row) {
         row.getCell("to_delete").setValue(1);
         row.getCell("uses").setValue('<span style="color:red;"><b>Del</b></span>');
     }
+}
+
+// reg note items
+function addNote(regId) {
+    showRegNotes(regId, false);
 }

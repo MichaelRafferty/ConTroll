@@ -4,7 +4,7 @@ global $db_ini;
 require_once '../lib/base.php';
 
 $check_auth = google_init('ajax');
-$perm = 'reg_admin';
+$perm = 'reg_staff';
 
 $response = array ('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
 
@@ -27,6 +27,13 @@ if (!isset($_POST) || !isset($_POST['rolloverList']) || !isset($_POST['action'])
     ajaxSuccess($response);
     exit();
 }
+
+if (!array_key_exists('source', $_POST)) {
+    $message_error = 'Source Missing';
+    RenderErrorAjax($message_error);
+    exit();
+}
+$source = $_POST['source'];
 
 $con = get_conf('con');
 $conid = $con['id'];
@@ -173,8 +180,8 @@ INSERT INTO reg(conid, perid, create_date, price, couponDiscount, paid, status, 
 VALUES(?, ?, CURRENT_TIMESTAMP, 0, 0, 0, 'paid', ?, ?, ?, ?, ?);
 EOS;
 $insNoteSQL = <<<EOS
-insert into regActions(logdate, userid, tid, regid, action,notes)
-values(now(), ?,?,?,'notes', ?);
+insert into regActions(logdate, source, userid, tid, regid, action,notes)
+values(now(),?,?,?,?,'notes', ?);
 EOS;
 
 foreach ($rolloverList as $basdgeId => $rollover) {
@@ -199,7 +206,7 @@ foreach ($rolloverList as $basdgeId => $rollover) {
 
     // add reg note
     $logNote = "Rolled over from $conid-$badgeId to $nextcon by $user_perid";
-    $noteid = dbSafeInsert($insNoteSQL, 'iiis', array($user_perid, $newtid, $newid, $logNote));
+    $noteid = dbSafeInsert($insNoteSQL, 'siiis', array($source, $user_perid, $newtid, $newid, $logNote));
 }
 
 $response['message'] = count($rolloverList) . " regs rolled over for $perid: $first_name $last_name";

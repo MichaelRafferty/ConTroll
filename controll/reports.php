@@ -93,12 +93,14 @@ EOS;
            $active = '';
     }
 }
+if (checkAuth($need_login['sub'], 'admin')){
 ?>
     <li class='nav-item' role='presentation'>
         <button class='nav-link' id='oldreports-tab' data-bs-toggle='pill' data-bs-target='#oldreports-pane' type='button'
                 role='tab' aria-controls='nav-oldreports' aria-selected='true' onclick="settab('oldreports-pane');">Old Reports
         </button>
     </li>
+<?php } ?>
 </ul>
 
 <div class='tab-content ms-2' id='reports-content'>

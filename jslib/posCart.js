@@ -4,7 +4,6 @@
 // Author: Syd Weinstein
 class PosCart {
 // cart dom items
-    #voidButton = null;
     #startoverButton = null;
     #reviewButton = null;
     #nextButton = null;
@@ -26,6 +25,7 @@ class PosCart {
     #cartPerinfo = [];
     #cartPerinfoMap = new map();
     #cartPmt = [];
+    #cartIgnorePmtRound = false;
 
 // Add Edit Memberships
     #addEditModal = null;
@@ -37,6 +37,7 @@ class PosCart {
     #membershipButtonsDiv = null;
     #memberAge = null;
     #memberAgeLabel = null;
+    #ageBracketMsg = null;
     #currentAge = null;
     #currentPerid = null;
     #currentPerIdx = null;
@@ -44,6 +45,7 @@ class PosCart {
     #allMemberships = [];
     #cartContentsDiv = null;
     #cartChanges = 0;
+    #rebuildAgeButtons = false;
     #newIDKey = -1;
     #newMembershipSave = null;
     #amountField = null;
@@ -70,7 +72,6 @@ class PosCart {
 // lookup all DOM elements
 // ask to load mapping tables
         this.#cartDiv = document.getElementById("cart");
-        this.#voidButton = document.getElementById("void_btn");
         this.#startoverButton = document.getElementById("startover_btn");
         this.#reviewButton = document.getElementById("review_btn");
         this.#nextButton = document.getElementById("next_btn");
@@ -84,6 +85,7 @@ class PosCart {
             this.#addEditTitle = document.getElementById('addEditTitle');
             this.#addEditFullName = document.getElementById('addEditFullName');
             this.#ageButtonsDiv = document.getElementById('ageButtons');
+            this.#ageBracketMsg = document.getElementById('ageBracketMsg');
             this.#membershipButtonsDiv = document.getElementById('membershipButtons');
             this.#cartContentsDiv = document.getElementById('cartContentsDiv');
         }
@@ -144,14 +146,6 @@ class PosCart {
         this.#nochangesButton.hidden = false;
     }
 
-    hideVoid() {
-        this.#voidButton.hidden = true;
-    }
-
-    showVoid() {
-        this.#voidButton.hidden = false;
-    }
-
     hideNext() {
         this.#nextButton.hidden = true;
     }
@@ -179,6 +173,19 @@ class PosCart {
         return this.#cartPmt.length;
     }
 
+    getPmt() {
+        return make_copy(this.#cartPmt);
+    }
+
+    getCouponPmt() {
+        for (var rownum in this.#cartPmt) {
+            var prow = this.#cartPmt[rownum];
+            if (prow.type == 'coupon')
+                return make_copy(prow);
+        }
+        return null;
+    }
+
     // get total price
     getTotalPrice() {
         return Number(this.#totalPrice);
@@ -201,8 +208,24 @@ class PosCart {
 
     // notes fields in the cart, get current values and set new values, marking dirty for saving records
 
+    getPerid(index) {
+        return this.#cartPerinfo[index].perid;
+    }
+
     getFullName(index) {
         return this.#cartPerinfo[index].fullName;
+    }
+
+    getEmail(index) {
+        return this.#cartPerinfo[index].email_addr;
+    }
+
+    getPhone(index) {
+        return this.#cartPerinfo[index].phone;
+    }
+
+    getCountry(index) {
+        return this.#cartPerinfo[index].country;
     }
 
     getRegFullName(perid) {
@@ -238,6 +261,19 @@ class PosCart {
         this.drawCart();
     }
 
+    setCouponDisount(perid, regid, paid, couponId, discount) {
+        var pindex = this.#cartPerinfoMap.get(perid);
+        var mem =  this.#cartPerinfo[pindex].memberships;
+        for (var i = 0; i < mem.length; i++) {
+            if (mem[i].regid == regid) {
+                this.#cartPerinfo[pindex].memberships[i].paid = paid;
+                this.#cartPerinfo[pindex].memberships[i].couponDiscount = discount;
+                this.#cartPerinfo[pindex].memberships[i].coupon = couponId;
+                break;
+            }
+        }
+    }
+
     getPerinfoNote(index) {
         return this.#cartPerinfo[index].open_notes;
     }
@@ -268,24 +304,20 @@ class PosCart {
 
     allowAddCouponToCart() {
         this.#anyUnpaid = false;
+        if (coupon.isCouponActive())
+            return true;
         var numCoupons = pos.everyMembership(this.#cartPerinfo, function(_this, mem) {
             if (isPrimary(mem.conid, mem.memType, mem.memCategory, mem.price, 'coupon') && mem.status != 'paid')
                 cart.setAnyUnpaid();
             if (mem.coupon)
-                return 1;
-            return 0;
+                return true;
+            return false;
         });
 
         if (this.#anyUnpaid == false || numCoupons > 0)
             return false;
 
         return true;
-    }
-
-    getPriorDiscount() {
-        console.log("getPriorDiscount: TODO: Get transactional discount");
-        // TODO get transactional discounts
-        return 0;
     }
 
     pushMembership(mem) {
@@ -306,15 +338,28 @@ class PosCart {
         this.#priorPayments = null;
 
         this.hideNext();
-        this.hideVoid();
         this.#inReview = false;
         this.drawCart();
     }
 
     // add search result_perinfo record to the cart
-    add(p) {
+    add(p, first=false) {
         var pindex = this.#cartPerinfo.length;
-        this.#cartPerinfo.push(make_copy(p));
+        if (first)
+            this.#cartPerinfo.unshift(make_copy(p));
+        else {
+            // see if this person is the manager of anyone in the cart
+            var added = false;
+            for (var i = 0; i < this.#cartPerinfo.length; i++) {
+                if (this.#cartPerinfo[i].managedBy == p.perid) {
+                    this.#cartPerinfo.unshift(make_copy(p));
+                    added = true;
+                    break;
+                }
+            }
+            if (!added)
+                this.#cartPerinfo.push(make_copy(p));
+        }
         this.#cartPerinfo[pindex].index = pindex;
         this.#cartPerinfoMap.set(this.#cartPerinfo[pindex].perid, pindex);
         var mrows = p.memberships;
@@ -457,6 +502,14 @@ class PosCart {
                 cart.pushAllMembership(mem);
             });
             this.buildAgeButtons();
+            this.#rebuildAgeButtons = false;
+            if (this.#currentAge != null) {
+                this.#ageBracketMsg.innerHTML = "To change the age, you need to remove any membership that is specific to that age from the cart."
+            } else if (config.allAgeFirst == 1) {
+                this.#ageBracketMsg.innerHTML = "Select a membership below, or an age above to set the age and filter the memberships available."
+            } else {
+                this.#ageBracketMsg.innerHTML = "Select an age above to set the age and filter the memberships available."
+            }
             this.buildRegItemButtons();
             this.redrawRegItems(index);
             this.#currentPerid = cart_row.perid;
@@ -608,9 +661,19 @@ class PosCart {
         // loop over memList and build each button
         var html = '';
         var rules = new MembershipRules(pos.getConid(), this.#memberAge != null ? this.#memberAge : this.#currentAge, this.#memberships, this.#allMemberships);
+        var atcon = false;
+        if (config.hasOwnProperty('posType')) {
+            atcon = config.posType == 'a';
+        }
 
+        var noAgeFilter = config.allAgeFirst == 1 && this.#currentAge == null;
         for (var row in memList) {
             var mem = memList[row];
+
+            // if atcon, skip items without atcon = 'Y'
+            if (atcon && mem.atcon != 'Y')
+                continue;
+
             // skip auto create mem items
             if (mem.hasOwnProperty('notes') && mem.notes && mem.notes == 'Auto created by rollover')
                 continue;
@@ -619,7 +682,7 @@ class PosCart {
                 continue;
 
             // apply age filter from age select
-            if (mem.memAge == 'all' || mem.memAge == this.#currentAge) {
+            if (noAgeFilter || mem.memAge == 'all' || mem.memAge == this.#currentAge) {
                 var memLabel = mem.label;
                 if (memCategories[mem.memCategory].variablePrice != 'Y') {
                     memLabel += ' (' + mem.price + ')';
@@ -715,6 +778,12 @@ class PosCart {
         if (memrow == null)
             return;
 
+        // set age if age is null
+        if (this.#currentAge == null) {
+            this.#ageBracketMsg.innerHTML = "To change the age, you need to remove any membership that is specific to that age from the cart."
+            this.#rebuildAgeButtons = true;
+        }
+
         var now = new Date();
         var newMembership = {};
         newMembership.id = this.#newIDKey;
@@ -729,6 +798,7 @@ class PosCart {
         newMembership.label = memrow.label;
         newMembership.memCategory = memrow.memCategory;
         newMembership.glNum = memrow.glNum;
+        newMembership.taxable = memrow.taxable;
         newMembership.memType = memrow.memType;
         newMembership.memAge = memrow.memAge;
         newMembership.perid =  this.#addEditPerid;
@@ -790,6 +860,10 @@ class PosCart {
         this.#memberships.push(make_copy(newMembership));
         this.newIDKey--;
         this.#cartChanges++;
+        if (this.#rebuildAgeButtons) {
+            this.buildAgeButtons();
+            this.#rebuildAgeButtons = false;
+        }
         this.redrawRegItems();
         this.buildRegItemButtons();
     }
@@ -827,6 +901,7 @@ class PosCart {
 
         this.#memberships.splice(row, 1);
         this.#cartChanges--;
+        this.buildAgeButtons();
         this.redrawRegItems();
         this.buildRegItemButtons();
     }
@@ -843,9 +918,14 @@ class PosCart {
         this.#currentPerid = null;
         this.#addEditModal.hide();
     }
-
+// add non database payment to the cart
+    addPmt(pmtrow, setIgnore=false) {
+        this.#cartPmt.push(pmtrow);
+        this.#cartIgnorePmtRound = setIgnore;
+    }
 // update payment data in  cart
     updatePmt(data) {
+        this.#cartIgnorePmtRound = false;
         if (data.prow) {
             this.#cartPmt.push(data.prow);
         }
@@ -874,12 +954,14 @@ class PosCart {
 
     // Clear the coupon matching couponId from all rows in the cart
     clearCoupon(couponId) {
-        // clear the discount from the membership rows
-        for (var rownum in this.#membershipRows ) {
-            var mrow = this.#membershipRows[rownum];
-            if (mrow.coupon == couponId) {
-                mrow.coupon = null;
-                mrow.couponDiscount = 0;
+        // clear the discount from the membership rows from the cart element
+        for (var cartRow in this.#cartPerinfo) {
+            for (var rownum in this.#cartPerinfo[cartRow].memberships ) {
+                var mrow = this.#cartPerinfo[cartRow].memberships[rownum];
+                if (mrow.coupon == couponId && (mrow.status == 'unpaid' || mrow.status == 'plan')) {
+                    this.#cartPerinfo[cartRow].memberships[rownum].coupon = null;
+                    this.#cartPerinfo[cartRow].memberships[rownum].couponDiscount = 0;
+                }
             }
         }
         // remove the discount coupon from the payment
@@ -1048,7 +1130,7 @@ class PosCart {
     <div class="col-sm-2 p-0">` + pmt.type + `</div>
     <div class="col-sm-6 p-0">` + pmt.desc + `</div>
     <div class="col-sm-2 p-0">` + code + `</div>
-    <div class="col-sm-2 text-end">` + Number(pmt.amt).toFixed(2) + `</div>
+    <div class="col-sm-2 text-end">` + Number(pmt.preTaxAmt).toFixed(2) + `</div>
 </div>
 `;
     }
@@ -1091,13 +1173,14 @@ class PosCart {
             // add in the pre paid amount as a prior payment
             var prow = {
                 amt: this.#totalPaid,
+                preTaxAmt: this.#totalPaid,
                 type: 'prior',
                 desc: 'payments not in this session',
                 code: ''
             };
             this.#cartPmt.push(prow);
         }
-        // loop over the cartPmt row and if its less than the total paid, increment the prior paid by the difference because the new row
+        // loop over the cartPmt row and if it is less than the total paid, increment the prior paid by the difference because the new row
         // added to the cart has a prior payment.
         var totalPayments = 0;
         var priorIndex = 0;
@@ -1106,9 +1189,9 @@ class PosCart {
             if (this.#cartPmt[i].type == 'prior')
                 priorIndex = i;
         }
-        if (this.#totalPaid != totalPayments) {
+        if (this.#totalPaid != totalPayments && !this.#cartIgnorePmtRound) {
             // adjust the prior prow
-            this.#cartPmt[priorIndex].amt += this.#totalPaid - totalPayments;
+            this.#cartPmt[priorIndex].amt = Number(this.#cartPmt[priorIndex].amt) + Number(this.#totalPaid) - Number(totalPayments);
         }
         if (this.#cartPmt.length > 0) {
             html += `
@@ -1153,7 +1236,6 @@ class PosCart {
         if (this.#freezeCart) {
             pos.setReviewTabDisable(true);
             this.#reviewButton.hidden = true;
-            this.hideStartOver();
         }
         pos.setFindUnpaidHidden(num_rows > 0);
     }
@@ -1466,10 +1548,5 @@ class PosCart {
         params.regId = printrow.regid;
         params.printCount = printrow.printcount;
         return params;
-    }
-
-    // getEmail: return the email address of an entry
-    getEmail(index) {
-        return this.#cartPerinfo[index].email_addr;
     }
 }

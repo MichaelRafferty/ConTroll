@@ -189,13 +189,13 @@ function add_found(data) {
             data: perinfo,
             layout: "fitColumns",
             initialSort: [
-                {column: "fullname", dir: "asc"},
+                {column: "fullName", dir: "asc"},
             ],
             columns: [
                 {width: 100, headerFilter: false, headerSort: false, formatter: addNewUser, formatterParams: {t: "result"},},
                 {title: "perid", field: "perid", width: 100, },
                 {field: "index", visible: debug > 2,},
-                {title: "Name", field: "fullname", width: 200, headerFilter: true, headerWordWrap: true, tooltip: build_record_hover,},
+                {title: "Name", field: "fullName", width: 200, headerFilter: true, headerWordWrap: true, tooltip: build_record_hover,},
                 {field: "last_name", visible: debug > 2,},
                 {field: "first_name", visible: debug > 2,},
                 {field: "middle_name", visible: debug > 2,},
@@ -584,7 +584,7 @@ function loadInitialData(loadtype) {
     };
     $.ajax({
         method: "POST",
-        url: "scripts/admin_atconloadData.php",
+        url: "scripts/admin_atconLoadData.php",
         data: postData,
         success: function(data, textstatus, jqxhr) {
             if (data['message'] !== undefined) {

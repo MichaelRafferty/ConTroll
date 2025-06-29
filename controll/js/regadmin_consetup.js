@@ -205,7 +205,9 @@ class consetup {
                         deleterow(e, cell.getRow());
                     }
                 },
-                { title: "ID", field: "id", width: 70, headerSort: true, headerHozAlign:"right", hozAlign: "right", },
+                { title: "ID", field: "id", width: 70, headerSort: true, headerHozAlign:"right", hozAlign: "right",
+                    headerFilter: "input", headerFilterFunc:numberHeaderFilter,
+                },
                 { field: "memlistkey", visible: false, },
                 { title: "Con ID", field: "conid", width: 70, headerWordWrap: true, headerFilter: true, headerHozAlign:"right", hozAlign: "right", },
                 { title: "Sort", field: "sort_order", headerSort: false, visible: false },
@@ -235,8 +237,8 @@ class consetup {
                 },
                 {
                     title: "Notes", field: "notes", minWidth: 300,
-                    editor: "textarea", editorParams: { elementAttributes: { maxlength: "1024" } },
-                    headerFilter: true, formatter: "textarea",
+                    editor: "input", editorParams: { elementAttributes: { maxlength: "1024" } },
+                    headerFilter: true,
                 },
                 {
                     title: "GL Num", field: "glNum", minWidth: 120, headerWordWrap: true,
@@ -354,8 +356,15 @@ class consetup {
         var _this = this;
 
         this.#memtable.addRow({ id: -99999, conid: this.#conid, shortname: 'new-row', price:0, atcon: 'N', online:'N', sortorder: 199, uses: 0 }, false).then(function(row) {
-            row.getTable().scrollToRow(row);
-            _this.checkMemlistUndoRedo();
+            row.getTable().setPage('last').then(function() {
+                row.getCell("id").getElement().style.backgroundColor = "#fff3cd";
+                row.getCell("conid").getElement().style.backgroundColor = "#fff3cd";
+                row.getCell("shortname").getElement().style.backgroundColor = "#fff3cd";
+                row.getCell("price").getElement().style.backgroundColor = "#fff3cd";
+                row.getCell("atcon").getElement().style.backgroundColor = "#fff3cd";
+                row.getCell("online").getElement().style.backgroundColor = "#fff3cd";
+                _this.checkMemlistUndoRedo();
+            });
         });
     };
 

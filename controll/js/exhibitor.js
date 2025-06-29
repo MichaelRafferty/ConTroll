@@ -45,7 +45,7 @@ class exhibitorsAdm {
     #approvalsTable = null;
     #approvalValues = ['none', 'requested', 'approved', 'denied', 'hide'];
     #approvalRow = null;
-
+    #approvalPay = 0;
     // exhibitor items
     #exhibitorsTable = null;
     #pricelists = null;
@@ -159,6 +159,11 @@ class exhibitorsAdm {
     };
 
     // set / get functions
+
+    getApprovalPay() {
+        return this.#approvalPay;
+    }
+
     setCacheDirty() {
         this.#cacheDirty = true;
     }
@@ -658,7 +663,7 @@ class exhibitorsAdm {
             paginationSize: 25,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
-                {title: "Vendors:", columns: [
+                {title: "Exhibitors:", columns: [
                         {title: "", formatter: this.exhButtons, hozAlign: "center", headerSort: false,},
                         {title: "Exh Id", field: "exhibitorId", visible: true, headerWordWrap: true, width: 75, },
                         {title: "Name", field: "exhibitorName", width: 250, headerSort: true, headerFilter: true, tooltip: this.buildRecordHover,
@@ -666,7 +671,7 @@ class exhibitorsAdm {
                         {title: "Email", field: "exhibitorEmail", headerSort: true, headerFilter: true, width: 250, },
                         {title: "Phone", field: "exhibitorPhone", width: 140, headerSort: true, headerFilter: true,},
                         {title: "Website", field: "website", headerSort: true, headerFilter: true, width: 250, },
-                        {title: "Contact Id", field: "contactId", visible: false, },
+                        {title: "Contact Id", field: "exhibitorYearId", visible: false, },
                         {title: "Contact", field: "contact", headerSort: true, headerFilter: true,
                             width: 250, formatter: this.toHTML, },
                         {title: "Contact Name", field: "contactName", headerSort: true, headerFilter: true, formatter: "textarea", visible: false, },
@@ -858,7 +863,7 @@ class exhibitorsAdm {
             weburl = 'https://' + weburl;
         var exhibitorInfo = `
             <div class="row">
-                <div class="col-sm-2">Name:</div>
+                <div class="col-sm-2">Business Name:</div>
                 <div class="col-sm-10 p-0 ms-0 me-0">` + exhibitorData['exhibitorName'] + `</div>
             </div>
             <div class="row">
@@ -1040,9 +1045,12 @@ class exhibitorsAdm {
             if (app != req)
                 buttons += '<button class="btn btn-sm btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
                     'onclick="exhibitors.spaceApprovalReq(' + id + ')" >Approve Req</button>&nbsp;';
-            if (app > 0)
+            if (app > 0) {
                 buttons += '<button class="btn btn-sm btn-warning" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
-                    'onclick="exhibitors.spaceApprovalOther(' + id + ')" >Change</button>&nbsp;';
+                    'onclick="exhibitors.spaceApprovalOther(' + id + ')" >Change</button>&nbsp;' +
+                    '<button class="btn btn-sm btn-warning" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
+                    'onclick="exhibitors.spaceApprovalOther(' + id + ', 1)" >Change&Pay</button>&nbsp;';
+            }
             if (app == 0)
                 buttons += '<button class="btn btn-sm btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
                     'onclick="exhibitors.spaceApprovalOther(' + id + ')" >Approve Other</button>&nbsp;';
@@ -1134,7 +1142,7 @@ class exhibitorsAdm {
         if (this.#debug & 4)
             console.log(exhibitor);
     exhibitor_info = exhibitor;
-    exhibitorProfile.profileModalOpen('update', exhibitor['exhibitorId'], exhibitor['contactId'], exhibitorRow);
+    exhibitorProfile.profileModalOpen('update', exhibitor['exhibitorId'], exhibitor['exhibitorYearId'], exhibitorRow);
     }
 
     // reset an exhibitor's password
@@ -1155,11 +1163,11 @@ class exhibitorsAdm {
 
     // reset a contact's password
     resetCpw(exhibitorId) {
-        var contactId = this.#exhibitorsTable.getRow(exhibitorId).getCell("contactId").getValue();
+        var exhibitorYearId = this.#exhibitorsTable.getRow(exhibitorId).getCell("exhibitorYearId").getValue();
         $.ajax({
             url: 'scripts/exhibitorsSetPassword.php',
             method: "POST",
-            data: { 'contactId': contactId, type: 'contact' },
+            data: { 'exhibitorYearId': exhibitorYearId, type: 'contact' },
             success: function (data, textStatus, jqXhr) {
                 if(data['error'] != undefined) { console.log(data['error']); }
                 alert(data['password']);
@@ -1249,8 +1257,9 @@ class exhibitorsAdm {
     }
 
     // process approve other than requested
-    spaceApprovalOther(id) {
+    spaceApprovalOther(id, pay = 0) {
         this.#spaceRow = this.#spacesTable.getRow(id);
+        this.#approvalPay = pay;
         var exhibitorData = this.#spaceRow.getData();
         var req = exhibitorData['req'] || 0;
         var app = exhibitorData['app'] || 0;

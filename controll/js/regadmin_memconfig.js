@@ -281,13 +281,17 @@ class memsetup {
                     editor: "input", editorParams: { elementAttributes: { maxlength: "1024" } },
                 },
                 {
-                    title: "Only One", field: "onlyOne", headerWordWrap: true, headerSort: true, editable: reqEditable,
+                    title: "Only One", field: "onlyOne", headerWordWrap: true, headerSort: true, editable: adminEditable,
                     editor: "list", editorParams: { values: ["Y", "N"], }, width: 70, validator: "required" },
                 {
-                    title: "Stand Alone", field: "standAlone", headerWordWrap: true, headerSort: true, editable: reqEditable,
+                    title: "Stand Alone", field: "standAlone", headerWordWrap: true, headerSort: true, editable: adminEditable,
                     editor: "list", editorParams: { values: ["Y", "N"], }, width: 75, validator: "required" },
                 {
-                    title: "Var. Price", field: "variablePrice", headerWordWrap: true, headerSort: true, editable: reqEditable,
+                    title: "Var. Price", field: "variablePrice", headerWordWrap: true, headerSort: true, editable: adminEditable,
+                    editor: "list", editorParams: { values: ["Y", "N"], }, width: 70, validator: "required"
+                },
+                {
+                    title: "Tax", field: "taxable", headerWordWrap: true, headerSort: true, editable: adminEditable,
                     editor: "list", editorParams: { values: ["Y", "N"], }, width: 70, validator: "required"
                 },
                 {
@@ -503,8 +507,11 @@ class memsetup {
     addrowTypes() {
         var _this = this;
         this.#memtypetable.addRow({memType: 'new-row', active: 'Y', sortorder: 99, uses: 0, notes: '', required: 'N'}, false).then(function (row) {
-            row.getTable().scrollToRow(row);
-            _this.checkTypeUndoRedo();
+            row.getTable().setPage('last').then(function () {
+                row.getCell("memType").getElement().style.backgroundColor = "#fff3cd";
+                row.getCell("active").getElement().style.backgroundColor = "#fff3cd";
+                _this.checkTypeUndoRedo();
+            });
         });
     }
 
@@ -606,11 +613,19 @@ class memsetup {
     addrowCat() {
         var _this = this;
 
-        this.#categorytable.addRow({memCategory: 'new-row', onlyOne: 'Y', standAlone: 'N', variablePrice: 'N', badgeLabel: 'X', active: 'Y', sortorder: 99,
-                uses: 0, regUses: 0, notes:'', required: 'N'},
+        this.#categorytable.addRow({memCategory: 'new-row', onlyOne: 'Y', standAlone: 'N', variablePrice: 'N', taxable: 'N',
+                badgeLabel: 'X', active: 'Y', sortorder: 99, uses: 0, regUses: 0, notes:'', required: 'N'},
             false).then(function (row) {
-            row.getTable().scrollToRow(row);
-            _this.checkCatUndoRedo();
+            row.getTable().setPage('last').then(function () {
+                row.getCell("memCategory").getElement().style.backgroundColor = "#fff3cd";
+                row.getCell("onlyOne").getElement().style.backgroundColor = "#fff3cd";
+                row.getCell("standAlone").getElement().style.backgroundColor = "#fff3cd";
+                row.getCell("variablePrice").getElement().style.backgroundColor = "#fff3cd";
+                row.getCell("taxable").getElement().style.backgroundColor = "#fff3cd";
+                row.getCell("badgeLabel").getElement().style.backgroundColor = "#fff3cd";
+                row.getCell("active").getElement().style.backgroundColor = "#fff3cd";
+                _this.checkCatUndoRedo();
+            });
         });
     }
     
@@ -714,8 +729,12 @@ class memsetup {
         var _this = this;
 
         this.#curagetable.addRow({conid: this.#current_conid, ageType: 'new-row', label: 'new-label', shortname: 'new-shortname', sortorder: 99, uses: 0}, false).then(function (row) {
-            row.getTable().scrollToRow(row);
-            _this.checkCurageUndoRedo();
+            row.getTable().setPage('last').then(function () {
+                row.getCell("ageType").getElement().style.backgroundColor = "#fff3cd";
+                row.getCell("label").getElement().style.backgroundColor = "#fff3cd";
+                row.getCell("shortname").getElement().style.backgroundColor = "#fff3cd";
+                _this.checkCurageUndoRedo();
+            });
         });
     }
 
@@ -820,8 +839,12 @@ class memsetup {
         var _this = this;
 
         this.#nextagetable.addRow({conid: this.#next_conid, ageType: 'new-row', label: 'new-label', shortname: 'new-shortname', sortorder: 99, uses: 0}, false).then(function (row) {
-            row.getTable().scrollToRow(row);
-            _this.checkNextageUndoRedo();
+            row.getTable().setPage('last').then(function () {
+                row.getCell("ageType").getElement().style.backgroundColor = "#fff3cd";
+                row.getCell("label").getElement().style.backgroundColor = "#fff3cd";
+                row.getCell("shortname").getElement().style.backgroundColor = "#fff3cd";
+                _this.checkNextageUndoRedo();
+            });
         });
     }
 
@@ -900,6 +923,17 @@ class memsetup {
 };
 
 function reqEditable(cell) {
+    if (cell.getData().required == 'N')
+        return true;
+
+    cell.getElement().style.backgroundColor ="#E8FFE8";
+    return false;
+}
+
+function adminEditable(cell) {
+    if (config['ae'])
+        return true;
+    
     if (cell.getData().required == 'N')
         return true;
 

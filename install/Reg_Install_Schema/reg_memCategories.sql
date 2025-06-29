@@ -16,6 +16,7 @@ CREATE TABLE `memCategories` (
   `onlyOne` enum('Y','N') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'Y',
   `standAlone` enum('Y','N') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'N',
   `variablePrice` enum('Y','N') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'N',
+  `taxable` enum('Y','N') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'N',
   `sortorder` int NOT NULL DEFAULT '0',
   `active` enum('N','Y') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT 'Y',
   `badgeLabel` varchar(16) COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'X',

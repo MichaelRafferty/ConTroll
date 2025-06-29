@@ -11,7 +11,7 @@
 	minWidth=80
 [F002]
     name=fullName
-    sql="TRIM(REGEXP_REPLACE(CONCAT(IFNULL(p.first_name, ''),' ', IFNULL(p.middle_name, ''), ' ', IFNULL(p.last_name, ''), ' ', IFNULL(p.suffix, '')), '  *', ' '))"
+    sql="TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), '  *', ' '))"
     title="Full Name"
     minWidth=300
 [F003]
@@ -44,20 +44,31 @@
     filter=number
     align=right
 [F008]
+    name=paid
+    sql=r.paid
+    title=Paid
+    filter=number
+    align=right
+[F009]
+    name=status
+    sql=r.status
+    title=Status
+    filter=true
+[F010]
     name=createdBy
     sql=r.create_user
     title="Created by"
     align=right
     minWidth=80
-[F009]
+[F011]
     name=createDate
     sql=r.create_date
     title="Create Date"
-[F010]
+[F012]
     name=pickup
     sql=ra.logdate
     title="First Pickup"
-[F011]
+[F013]
     name=source
     sql=t.type
     title=Source
@@ -72,6 +83,7 @@
     name=transaction
     alias=t
     join="r.complete_trans = t.id"
+    left=true
 [T004]
     name=perinfo
     alias=p

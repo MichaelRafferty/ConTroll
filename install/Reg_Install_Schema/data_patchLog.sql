@@ -46,7 +46,12 @@ INSERT INTO `patchLog` VALUES
 (37,'triggerdups','2024-12-27 16:20:46'),
 (38,'rules conid','2024-12-27 16:20:52'),
 (39,'add portal text item','2024-12-30 22:13:57'),
-(40,'exhibitor_tax_id'),
-(41,'index and exhibitor website custom text');
+(40,'exhibitor_tax_id','2025-01-25 18:46:55'),
+(41,'index and exhibitor website custom text','2025-01-25 18:47:19'),
+(42,'Post 1.1 Release Cleanup','2025-03-14 02:04:01'),
+(43,'General Reports','2025-03-14 02:04:20'),
+(43,'General Reports','2025-03-14 02:04:20'),
+(44,'Payment Cleanup','2025-05-08 02:04:20'),
+(45,'Square Terminals','2025-05-08 02:04:20');
 ALTER TABLE `patchLog` ENABLE KEYS;
 UNLOCK TABLES;

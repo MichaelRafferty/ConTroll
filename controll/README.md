@@ -9,7 +9,7 @@ One top level file per menu item in the ConTroll™ Administration Site (listed 
 
 **Membership**: overview.php - chart of current memberships and graph of this year versus prior years
 
-**Registration Admin**: reg_admin.php - registration configuration and management
+**Registration Admin**: reg_staff.php - registration configuration and management
 
 **People**: people.php - match/add/search/edit perinfo records (People persist from year to year)
 

@@ -45,6 +45,12 @@ if (array_key_exists('multioneday', $con))
 else
     $multiOneDay = 0;
 
+if (array_key_exists('onedaycoupons', $con)) {
+    $onedaycoupons = $con['onedaycoupons'];
+} else {
+    $onedaycoupons = 0;
+}
+
 $policies = getPolicies();
 $policyIndex = array();
 if ($policies != null) {
@@ -53,16 +59,29 @@ if ($policies != null) {
     }
 }
 
+if (array_key_exists('controll_registration', $debug)) {
+    $debug_registration = $debug['controll_registration'];
+} else
+    $debug_registration = 0;
+
+if (array_key_exists('useportal', $controll)) {
+    $usePortal = $controll['useportal'];
+} else {
+    $usePortal = 0;
+}
+
 $config_vars = array();
 $config_vars['label'] = $con['label'];
-$config_vars['debug'] = $debug['controll_registration'];
+$config_vars['debug'] = $debug_registration;
 $config_vars['conid'] = $conid;
 $config_vars['mode'] = 'admin';
 $config_vars['regadminemail'] = $con['regadminemail'];
 $config_vars['required'] = $ini['required'];
-$config_vars['useportal'] = $controll['useportal'];
+$config_vars['useportal'] = $usePortal;
 $config_vars['cashier'] = 1;
 $config_vars['multiOneDay'] = $multiOneDay;
+$config_vars['onedaycoupons'] = $onedaycoupons;
+$config_vars['source'] = 'registration';
 
 // form as laid out has no room for usps block, if we want it we need to reconsider how to do it here.
 //if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
@@ -243,7 +262,7 @@ drawEditPersonBlock($conid, $useUSPS, $policies, 'registration', false, true, ''
         </div>
     </div>
     <!--- add/Edit membership modal popup -->
-    <div class='modal modal-x1 fade' id='addEdit' tabindex='-3' aria-labelledby='addEdit' data-bs-backdrop='static'
+    <div class='modal modal-xl fade' id='addEdit' tabindex='-3' aria-labelledby='addEdit' data-bs-backdrop='static'
         data-bs-keyboard='false' aria-hidden='true' style='--bs-modal-width: 96%;'>
         <div class='modal-dialog'>
             <div class='modal-content'>

@@ -26,10 +26,10 @@ if ($pwtype == 'exhibitor') {
     }
     $exhibitorId = $_POST['exhibitorId'];
 } else {
-    if (!array_key_exists('contactId', $_POST)) {
+    if (!array_key_exists('exhibitorYearId', $_POST)) {
         ajaxError('No Data');
     }
-    $contactId = $_POST['contactId'];
+    $exhibitorYearId = $_POST['exhibitorYearId'];
 }
 
 
@@ -50,7 +50,7 @@ if ($pwtype == 'exhibitor') {
     $num_rows = dbSafeCmd($pwQ, 'si', array($hash, $exhibitorId));
 } else {
     $pwQ = 'UPDATE exhibitorYears SET contactPassword=?, need_new=true where id=?;';
-    $num_rows = dbSafeCmd($pwQ, 'si', array($hash, $contactId));
+    $num_rows = dbSafeCmd($pwQ, 'si', array($hash, $exhibitorYearId));
 }
 
 if ($num_rows != 1) {

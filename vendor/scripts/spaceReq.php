@@ -16,10 +16,8 @@ global $con;
 $con = get_con();
 $conid=$con['id'];
 $conf = get_conf('con');
-$vendor_conf = get_conf('vendor');
-$con = get_conf('con');
 if (array_key_exists('currency', $con)) {
-    $currency = $con['currency'];
+    $currency = $conf['currency'];
 } else {
     $currency = 'USD';
 }
@@ -165,7 +163,7 @@ if (array_key_exists('error_code', $return_arr)) {
     $error_code = null;
 }
 if (array_key_exists('email_error', $return_arr)) {
-    $response['error'] = 'Unable to send receipt email, error: ' . $return_arr['email_error'] . ', Code: $error_code';
+    $response[$return_arr['status']] = 'Unable to send receipt email, error: ' . $return_arr['email_error'] . ", Code: $error_code";
 } else {
     $response['success'] = "Request sent";
 }

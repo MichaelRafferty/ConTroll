@@ -250,10 +250,11 @@ class ExhibitorRequest {
         var url = 'scripts/spaceReq.php';
         if (cancel >= 2) {
             url = 'scripts/exhibitorsSpaceApproval.php';
-            dataobj['approvalType'] = cancel == 2 ? 'other' : 'pay';
+            dataobj['approvalType'] = cancel == 2 ? 'other' : 'approve';
             dataobj['exhibitorId'] = exhibitor_info['exhibitorId'];
             dataobj['exhibitorYearId'] = exhibitor_info['exhibitorYearId'];
             dataobj['cancel'] = cancel;
+            dataobj['pay'] = exhibitors.getApprovalPay();
         }
         var _this = this;
         $.ajax({
@@ -268,21 +269,26 @@ class ExhibitorRequest {
                     show_message(data['error'], 'error', 'sr_message_div');
                     return;
                 }
-                if (data['exhibitor_spacelist']) {
+                if (data['exhibitor_spacelist'] && cancel > 2) {
                     exhibitor_spacelist = data['exhibitor_spacelist'];
+                    _this.updateRequestStatusBlock(regionYearId);
+                    exhibitors.open(fulltabname);
                 }
                 if (data['success'] !== undefined) {
                     _this.#exhibitor_request.hide();
                     show_message(data['success'], 'success');
-                    if (cancel >= 2) {
-                        exhibitor_spacelist = data['exhibitor_spacelist']
+                    if (cancel > 2 || data['pay'] == 1) {
                         exhibitorInvoice.openInvoice(exhibitor_info, _this.#regionYearId);
                         return;
                     }
-                    _this.updateRequestStatusBlock(regionYearId);
                 }
-                if (data['warn'] !== undefined) {
-                    show_message(data['warn'], 'warn', 'sr_message_div');
+                if (data['warn'] !== undefined) { // use main message block because this will close the window
+                    show_message(data['warn'], 'warn');
+                    _this.#exhibitor_request.hide();
+                    if (cancel > 2 || data['pay'] == 1) {
+                        exhibitorInvoice.openInvoice(exhibitor_info, _this.#regionYearId);
+                        return;
+                    }
                 }
             },
             error: showAjaxError
@@ -293,6 +299,9 @@ class ExhibitorRequest {
     updateRequestStatusBlock(regionYearId) {
         var blockname = region_list[regionYearId].shortname + '_div';
         var blockdiv = document.getElementById(blockname);
+
+        if (blockdiv == null)
+            return;
 
         // get the name for this region
         var regionName = region_list[regionYearId].name;

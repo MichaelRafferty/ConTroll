@@ -40,10 +40,11 @@ if ($user_id == null || $user_id == '') {
 }
 
 // at present ony a manager can update a perinfo note
-if (!checkAuth($check_auth['sub'], 'reg_admin')) {
-    $message_error = 'No permission.';
-    RenderErrorAjax($message_error);
-    exit();
+    if (!check_atcon('manager', $conid)) {
+        $message_error = 'No permission.';
+        RenderErrorAjax($message_error);
+        exit();
+    }
 }
 
 // updatePerinfoNote:

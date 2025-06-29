@@ -61,7 +61,7 @@ $response['artist'] = $artistInfo;
 //TODO get perinfo.id from bidder number in itemData (if id exists) or return null
 $bidderId = $artistInfo['bidder'];
 $getBidderQuery = <<<EOQ
-SELECT concat(p.first_name, ' ', p.last_name) as name, p.badge_name
+SELECT CONCAT_WS(' ', p.first_name, p.last_name) as name, p.badge_name
 FROM perinfo p
 WHERE p.id = ?
 EOQ;

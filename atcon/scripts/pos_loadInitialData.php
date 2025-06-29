@@ -51,6 +51,10 @@ $response['conid'] = $conid;
 $response['discount'] = $atcon['discount'];
 $response['badgePrinter'] = getSessionVar('badgePrinter')['name'] != 'None';
 $response['receiptPrinter'] = getSessionVar('receiptPrinter')['name'] != 'None';
+if (isSessionVar('terminal'))
+    $response['terminal'] = getSessionVar('terminal')['name'] != 'None';
+else
+    $response['terminal'] = false;
 $response['user_id'] = getSessionVar('user');
 $response['Manager'] = check_atcon('manager', $conid);
 
@@ -85,7 +89,7 @@ if (time() < strtotime($startdate) || strtotime($enddate) +24*60*60 < time()) {
 
 // get all the memLabels
 $priceQ = <<<EOS
-SELECT id, conid, memCategory, memType, memAge,
+SELECT id, conid, memCategory, memType, memAge, taxable,
        CASE WHEN conid = ? THEN label ELSE concat(conid, ' ', label) END AS label, 
        shortname, sort_order, price, CAST(startdate AS date) AS startdate, CAST(enddate AS date) AS enddate,
     CASE 
@@ -121,12 +125,12 @@ $r = dbQuery($memTypeSQL);
 while ($l = $r->fetch_assoc()) {
     $typearray[] = $l['memType'];
 }
-mysqli_free_result($r);
+$r->free();
 $response['memTypes'] = $typearray;
 
 // memCategories
 $memCategorySQL = <<<EOS
-SELECT memCategory, onlyOne, standAlone, variablePrice, badgeLabel
+SELECT memCategory, onlyOne, standAlone, variablePrice, taxable, badgeLabel
 FROM memCategories
 WHERE active = 'Y'
 ORDER BY sortorder;
@@ -137,7 +141,7 @@ $r = dbQuery($memCategorySQL);
 while ($l = $r->fetch_assoc()) {
     $catarray[] = $l;
 }
-mysqli_free_result($r);
+$r->free();
 $response['memCategories'] = $catarray;
 
 // ageList
@@ -153,7 +157,7 @@ $r = dbSafeQuery($ageListSQL, 'i', array($conid));
 while ($l = $r->fetch_assoc()) {
     $agearray[] = $l;
 }
-mysqli_free_result($r);
+$r->free();
 $response['ageList'] = $agearray;
 
 // coupons
