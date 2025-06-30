@@ -417,7 +417,7 @@ Daily rates are posted on <a href="<?php echo escape_quotes($con['dailywebsite']
 <p class="text-primary">Online registration for <?php echo $condata['id']; ?> is not yet open. We aim to have online registration open 6 months before the convention.
 
 We will post a notice when online registration opens on the
-<a href="<?php echo escape_quotes(getConfValue('reg', 'registrationpage']); ?>">The <?php echo $con['conname']; ?> Registration Page</a>.  Mail-in forms are
+<a href="<?php echo escape_quotes(getConfValue('reg', 'registrationpage')); ?>">The <?php echo $con['conname']; ?> Registration Page</a>.  Mail-in forms are
     also
     available on that page.</p>
 
