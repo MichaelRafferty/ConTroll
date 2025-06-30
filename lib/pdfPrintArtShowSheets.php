@@ -904,10 +904,24 @@ EOS;
             popFont();
             $y = mprintXY($cM, $v, $wM, $artItem['material']);
             if ($y > $maxY) $maxY = $y;
-            if ($artItem['min_price'] && $artItem['type'] != 'print')
+            if ($artItem['min_price'] && $artItem['type'] != 'print') {
+                if ($artItem['min_price'] > 9999.99) {
+                    pushFont('Arial', '', $artItem['min_price'] > 999999.99 ? 7.5 : 9);
+                }
                 rightPrintXY($cMin, $v, $wMin, $dolfmt->formatCurrency((float)$artItem['min_price'], $currency));
-            if ($artItem['sale_price'] && $artItem['type'] != 'nfs')
+                if ($artItem['min_price'] > 9999.99) {
+                    popFont();
+                }
+            }
+            if ($artItem['sale_price'] && $artItem['type'] != 'nfs') {
+                if ($artItem['sale_price'] > 9999.99) {
+                    pushFont('Arial', '', $artItem['sale_price'] > 999999.99 ? 7.5 : 9);
+                }
                 rightPrintXY($cSale, $v, $wSale, $dolfmt->formatCurrency((float)$artItem['sale_price'], $currency));
+                if ($artItem['sale_price'] > 9999.99) {
+                    popFont();
+                }
+            }
             if ($artItem['original_qty'] > 0)
                 rightPrintXY($cOrig, $v, $wOrig, $artItem['original_qty']);
             if ($artItem['quantity'] > 0)
@@ -916,8 +930,15 @@ EOS;
             $y = fitprintXY($cStatus - $pt, $v, $wStatus + $pt, $artItem['status']);
             if ($y > $maxY) $maxY = $y;
             popFont();
-            if ($artItem['final_price'])
+            if ($artItem['final_price']) {
+                if ($artItem['final_price'] > 9999.99) {
+                    pushFont('Arial', '', $artItem['final_price'] > 999999.99 ? 7.5 : 9);
+                }
                 rightPrintXY($cFinal, $v, $wFinal, $dolfmt->formatCurrency((float)$artItem['final_price'], $currency));
+                if ($artItem['final_price'] > 9999.99) {
+                    popFont();
+                }
+            }
             $y = mprintXY($cWin, $v, $wWin, $winnerName);
             if ($y > $maxY) $maxY = $y;
             if ($printContactInfo === true) {
