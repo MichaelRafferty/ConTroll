@@ -210,12 +210,14 @@ class ExhibitorRequest {
             var priceId = keys[key];
 
             field = document.getElementById('exhibitor_req_price_id_' + String(keys[key]));
-            var value = field.value;
-            if (value > 0) {
-                var prices = region[keys[key]].prices;
-                for (var priceIdx in prices) {
-                    if (prices[priceIdx].id == value) {
-                        requestedUnits += Number(prices[priceIdx].units);
+            if (field) { // the field might not exist if it was skipped over due to nothing requestable
+                var value = field.value;
+                if (value > 0) {
+                    var prices = region[keys[key]].prices;
+                    for (var priceIdx in prices) {
+                        if (prices[priceIdx].id == value) {
+                            requestedUnits += Number(prices[priceIdx].units);
+                        }
                     }
                 }
             }
