@@ -155,7 +155,7 @@ class ExhibitorProfile {
             var field = document.getElementById(fieldName);
             minLength = 2;
             if (field == null) {
-                if (fieldName != 'salesTaxId') // salestax id is optional don't log it.
+                if (fieldName != 'salesTaxId' && this.#debugFlag > 0) // salestax id is optional don't log it.
                 console.log(fieldName + ' not found');
                 continue;
             }
@@ -447,7 +447,8 @@ class ExhibitorProfile {
         } else {
             focusField = this.#profilePublicityField;
         }
-        setTimeout(function() { console.log(focusField); focusField.focus({focusVisible: true}) }, 600);
+        var debugFlag = this.#debugFlag;
+        setTimeout(function() { if (debugFlag > 0) console.log(focusField); focusField.focus({focusVisible: true}) }, 600);
     }
 
     // profileModalClose - close the modal edit profile dialog
