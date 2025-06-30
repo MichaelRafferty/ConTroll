@@ -435,25 +435,22 @@ EOS;
                 if ($spaceHeader == '') {
                     $ownerName = $detail['ownerName'];
                     $ownerEmail = $detail['ownerEmail'];
-                    $spaceHeader = "Your approval for space in " . $con['label'] . "'s " . $detail['regionName'] . " has been updated.";
+
                     $spaceSubject = "Update to " . $con['label'] . "'s " . $detail['regionName'] . " space approval";
                 }
-                if ($detail['item_requested'] != null && $detail['item_approved'] != null) { // space was requested and something was approved
-                    if ($detail['item_requested'] == $detail['item_approved']) {
-                        $spaceDetail .= "Your request for " . $detail['approved_description'] . " of " . $detail['spaceName'] . " was approved.\n";
-                        $approved = true;
-                    } else {
-                        $spaceDetail .= 'You have been approved for ' . $detail['approved_description'] . ' of ' . $detail['spaceName'] . ".\n";
-                        $approved = true;
-                    }
-                } else if ($detail['time_approved'] != null && $detail['item_approved'] == null && $detail['item_requested'] != null) {
-                    $spaceDetail .= "Your request for " . $detail['spaceName'] . " has been denied.\n";
+
+                if ( $detail['item_approved'] != null) {
+                    $spaceDetail = .= $detail['approved_description'] . " of " . $detail['spaceName'] . PHP_EOL;
+                    $approved = true;
                 }
             }
         }
 
         if ($approved) {
+            $spaceHeader = 'You have been approved for the following space in ' . $con['label'] . "'s " . $detail['regionName'] . ':';
             $spaceDetail .= "\nPlease sign into the portal to purchase your space and memberships.\n";
+        } else {
+            $spaceHeader = 'You have not been approved for space in ' . $con['label'] . "'s " . $detail['regionName'] . '.';
         }
 
         $body = <<<EOS
