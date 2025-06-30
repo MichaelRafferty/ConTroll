@@ -890,11 +890,6 @@ EOS;
                 $v += 2 * $minRowHeight;
             }
 
-            /*
-                                <div class='col-sm-4 m-0 border border=1 border-black'>Bidder<br/>&nbsp;</div>
-                                <div class='col-sm-5 border border=1 border-black'>Bidder Email</div>
-    */
-
             $winnerName = TRIM(TRIM(TRIM($artItem['first_name'] . ' ' . $artItem['middle_name']) . ' ' . $artItem['last_name']) . ' ' . $artItem['suffix']);
             $winnerPerid = $artItem['bidder'];
             $winnerEmail = $artItem['email_addr'];
