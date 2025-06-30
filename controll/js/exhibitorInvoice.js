@@ -193,8 +193,10 @@ class ExhibitorInvoice {
                 html += "<p>In addition, all non-mail-in artists need to declare an on-site agent. " +
                     "This is the person that will be contacted if there are any issues with setup, operation, or teardown of your exhibit. " +
                     "The agent needs a membership, and you can be the agent.</p>" +
-                    "<p><input type='radio' name='agent' id='agent_self' value='self' style='transform: scale(1.5);'>&nbsp;&nbsp;&nbsp;I will be my own agent and my membership is not one of the ones below.<br/>" +
-                    "<input type='radio' name='agent' id='agent_first' value='first' style='transform: scale(1.5);'>&nbsp;&nbsp;&nbsp;The first membership below will be my agent.<br/>";
+                    "<p><input type='radio' name='agent' id='agent_self' value='self' style='transform: scale(1.5);'>&nbsp;&nbsp;&nbsp;" +
+                    "I will be my own agent and my membership is not one of the ones below.<br/>" +
+                    "<input type='radio' name='agent' id='agent_first' value='first' style='transform: scale(1.5);'>&nbsp;&nbsp;&nbsp;" +
+                    "The first membership below is for myself or my agent<br/>";
 
                 if (exhibitor_info.perid) {
                     html += "<input type='radio' name='agent' id='agent_perid' value='p" + exhibitor_info.perid + "' style='transform: scale(1.5);'>&nbsp;&nbsp;&nbsp;Assign " +

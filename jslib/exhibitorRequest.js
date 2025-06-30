@@ -105,7 +105,7 @@ class ExhibitorRequest {
         if (mailIn) {
             if (cancel < 2) {
                 spaceHtml += "<div class='row'>\n<div class='col-sm-12 p-0 m-2'><i>You are requesting space as mail-in. " +
-                    "If this is not correct, please dismiss this form using the 'Cancel' button in grey below and update your profile.</i></div>"
+                    "If this is not correct, please dismiss this form using the 'Cancel' button in gray below and update your profile.</i></div>"
             } else {
                 spaceHtml += "<div class='row'>\n<div class='col-sm-12 p-0 m-2'><i>This exhibitor is requesting space as mail-in.</i></div>";
             }
