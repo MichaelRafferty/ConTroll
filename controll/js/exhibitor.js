@@ -976,7 +976,7 @@ class exhibitorsAdm {
 
     buildExhibitorInfoBlock(exhibitorData, mailInAllowed) {
         var weburl = exhibitorData.website;
-        if (weburl.substr(0, 8) != 'https://')
+        if (weburl.substring(0, 8) != 'https://')
             weburl = 'https://' + weburl;
         var exhibitorInfo = `
             <div class="row">

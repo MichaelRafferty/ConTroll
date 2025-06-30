@@ -144,7 +144,7 @@ function getRpt(reportName, prefix, fileName) {
     if (reportFields && reportFields.length > 0) {
         var postVars = {};
         for (var i = 0; i < reportFields.length; i++) {
-            var fieldName = reportFields[i].substr(2);
+            var fieldName = reportFields[i].substring(2);
             postVars[fieldName] = document.getElementById(reportFields[i]).value;
         }
         postdata.postVars = postVars;
