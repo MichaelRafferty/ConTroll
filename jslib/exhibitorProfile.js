@@ -154,7 +154,8 @@ class ExhibitorProfile {
             var fieldName = ExhibitorProfile.#fieldList[fieldNum];
             var field = document.getElementById(fieldName);
             minLength = 2;
-            if (field == null && fieldName != 'salesTaxId') { // salesTaxId is vendor only don't log it missing
+            if (field == null) {
+                if (fieldName != 'salesTaxId') // salestax id is optional don't log it.
                 console.log(fieldName + ' not found');
                 continue;
             }
