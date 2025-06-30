@@ -391,11 +391,11 @@ EOS;
         // draw Minimum Bid Amount
         pushLineWidth(0.016);
         $v += $blockheight;
-        $pdf->Rect($h, $v, $isize * 0.7, $priceheight);
-        $pdf->Rect($h + $isize * 0.7, $v, $isize * 0.3, $priceheight);
+        $pdf->Rect($h, $v, $isize * 0.6, $priceheight);
+        $pdf->Rect($h + $isize * 0.6, $v, $isize * 0.4, $priceheight);
         $label = 'Minimum bid amount';
         $length = $pdf->getStringWidth($label);
-        printXY($h + ($isize * 0.7) - (0.1 + $length), $v + $priceoffset, $label );
+        printXY($h + ($isize * 0.6) - (0.1 + $length), $v + $priceoffset, $label );
 
         if ($art['type'] == 'nfs') {
             $priceFmt = 'N/A';
@@ -407,11 +407,11 @@ EOS;
 
         // draw Quick Sale Amount
         $v += $priceheight;
-        $pdf->Rect($h, $v, $isize * 0.7, $priceheight);
-        $pdf->Rect($h + $isize * 0.7, $v, $isize * 0.3, $priceheight);
+        $pdf->Rect($h, $v, $isize * 0.6, $priceheight);
+        $pdf->Rect($h + $isize * 0.6, $v, $isize * 0.4, $priceheight);
         $label = 'Quicksale price';
         $length = $pdf->getStringWidth($label);
-        printXY($h + ($isize * 0.7) - (0.1 + $length), $v + $priceoffset, $label );
+        printXY($h + ($isize * 0.6) - (0.1 + $length), $v + $priceoffset, $label );
 
         $price = $art['sale_price'];
         if ($price > 0 && $art['type'] != 'nfs') {
