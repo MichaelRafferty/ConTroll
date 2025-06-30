@@ -1441,7 +1441,8 @@ class exhibitorsAdm {
         this.#regionId = exhibitorData.regionId;
         this.#regionYearId = exhibitorData.regionYearId;
 
-        console.log("Space Approval for " + exhibitorData.exhibitorName + " of type other");
+        if (this.#debug & 1)
+            console.log("Space Approval for " + exhibitorData.exhibitorName + " of type other");
 
         $.ajax({
             url: 'scripts/exhibitorGetSingleData.php',
