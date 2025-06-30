@@ -975,9 +975,18 @@ class exhibitorsAdm {
     }
 
     buildExhibitorInfoBlock(exhibitorData, mailInAllowed) {
-        var weburl = exhibitorData.website;
-        if (weburl.substring(0, 8) != 'https://')
-            weburl = 'https://' + weburl;
+        var none = '<i>(None Entered)</i>';
+        var weburl = blankIfNull(exhibitorData.website).trim();
+        var website = weburl;
+        if (weburl != "") {
+            if (weburl.substring(0, 8) != 'https://')
+                weburl = 'https://' + weburl;
+        } else {
+            website = none;
+        }
+        var exhibitorName = blankIfNull(exhibitorData.exhibitorName).trim() == '' ? none :  exhibitorData.exhibitorName.trim();
+        var artistName = blankIfNull(exhibitorData.artistName).trim() == '' ? none :  exhibitorData.artistName.trim();
+        var exhibitorPhone = blankIfNull(exhibitorData.exhibitorPhone).trim() == '' ? none :  exhibitorData.exhibitorPhone.trim();
         var exhibitorInfo = `
             <div class="row">
                 <div class="col-sm-2">Exhibitor Id/Number:</div>
@@ -985,11 +994,11 @@ class exhibitorsAdm {
             </div>
             <div class="row">
                 <div class="col-sm-2">Business Name:</div>
-                <div class="col-sm-10 p-0 ms-0 me-0">` + exhibitorData.exhibitorName + `</div>
+                <div class="col-sm-10 p-0 ms-0 me-0">` + exhibitorName + `</div>
             </div>
             <div class="row">
                 <div class="col-sm-2">Artist Name:</div>
-                <div class="col-sm-10 p-0 ms-0 me-0">` + exhibitorData.artistName + `</div>
+                <div class="col-sm-10 p-0 ms-0 me-0">` + artistName + `</div>
             </div>
             <div class='row'>
                 <div class='col-sm-2'>Business Email:</div>
@@ -997,29 +1006,31 @@ class exhibitorsAdm {
             </div>
             <div class='row'>
                 <div class='col-sm-2'>Business Phone:</div>
-                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorData.exhibitorPhone + `</div>   
+                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorPhone + `</div>   
             </div>
             <div class='row'>
                 <div class='col-sm-2'>Website:</div>
-                <div class='col-sm-10 p-0 ms-0 me-0'><a href="` + weburl + '" target="_blank">' + exhibitorData.website + `</a></div>   
+                <div class='col-sm-10 p-0 ms-0 me-0'>` +
+                    (weburl != '' ? '<a href="' + weburl + '" target="_blank">' : '') + website +
+                    (weburl != '' ? '</a>' : '') + `</div>   
             </div>
             <div class='row'>
                 <div class='col-sm-2'>Desc.:</div>
-                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorData.description + `</div>   
+                <div class='col-sm-10 p-0 ms-0 me-0'>` + blankIfNull(exhibitorData.description).trim() + `</div>   
             </div>
 `;
 
-        if (exhibitorData.exhNotes != null && exhibitorData.exhNotes.trim() != '')
+        if (blankIfNull(exhibitorData.exhNotes).trim() != '')
             exhibitorInfo += `<div class='row'>
-                <div class='col-sm-2'>Exhibitor Notes.:</div>
-                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorData.exhNotes.replace(/\n/g, '<br/>') + `</div>
+                <div class='col-sm-2'>Exhibitor Notes:</div>
+                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorData.exhNotes.replace(/\n/g, '<br/>').trim() + `</div>
             </div>
 `;
 
-        if (exhibitorData.contactNotes != null && exhibitorData.contactNotes.trim() != '')
+        if (blankIfNull(exhibitorData.contactNotes).trim() != '')
             exhibitorInfo += `<div class='row'>
                 <div class='col-sm-2'>Contact Notes.:</div>
-                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorData.contactNotes.replace(/\n/g, '<br/>') + `</div>
+                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorData.contactNotes.replace(/\n/g, '<br/>').trim() + `</div>
             </div>
 `;
 
@@ -1032,14 +1043,14 @@ class exhibitorsAdm {
         }
         exhibitorInfo += `<div class='row'>
                 <div class='col-sm-2'>Address:</div>
-                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorData.addr + `</div>   
+                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorData.addr.trim() + `</div>   
             </div>
 `;
-        if (exhibitorData.addr2 && exhibitorData.addr2.length > 0) {
+        if (blankIfNull(exhibitorData.addr2).trim() != '') {
             exhibitorInfo += `<div class='row'>
             <div class='row'>
                 <div class='col-sm-2'>&nbsp;</div>
-                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorData.addr2 + `</div>   
+                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorData.addr2.trim() + `</div>   
             </div>
 `;
         }
