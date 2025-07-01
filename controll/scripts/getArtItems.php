@@ -26,7 +26,7 @@ else { ajaxError('No Data'); }
 
 $artQ = <<<EOS
 SELECT I.id, I.exhibitorRegionYearId, I.item_key, I.title, I.type, I.status, I.location, I.quantity, I.original_qty, 
-       I.min_price, I.sale_price, I.final_price, I.bidder, I.material,
+       I.min_price, I.sale_price, I.final_price, I.bidder, I.material, I.notes,
     ery.exhibitorNumber, ery.locations, e.exhibitorName, exR.name as exhibitRegionName,
     concat(trim(p.first_name), ' ', trim(p.last_name)) as bidderName,
     concat(trim(p.first_name), ' ', trim(p.last_name), ' (', I.bidder, ')') as bidderText,

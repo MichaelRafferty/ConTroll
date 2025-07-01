@@ -129,7 +129,8 @@ function draw(data, textStatus, jqXHR) {
             {title: 'BidderNum', field: 'bidder', visible: false, },
             {title: 'Bidder', field: 'bidderText', headerSort: true, headerFilter:true, },
             {title: 'Final Price', field: 'final_price', headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter,
-                headerWordWrap: true, width: 100, formatter: "money", hozAlign: "right", }
+                headerWordWrap: true, width: 100, formatter: "money", hozAlign: "right", },
+            {title: 'Notes', field: 'notes'}
         ]
     });
 

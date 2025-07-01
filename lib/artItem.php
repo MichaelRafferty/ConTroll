@@ -106,6 +106,12 @@ function drawEditPane($tabIndex=100)
                                     <!--only valid for some statuses -->
                                 </div>
                             </div>
+                            <div class="row mb-2">
+                                <div class="col-sm-auto">
+                                    <label for="artItemNotes">Notes:</label>
+                                    <textarea tabindex="<?php echo $tabIndex+15; ?>" id="artItemNotes" name="notes"></textarea>
+                                </div>
+                            </div>
                         </form>
                     </div>
                     <div id='ai_result_message' class='mt-4 p-2'></div>

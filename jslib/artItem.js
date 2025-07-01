@@ -99,6 +99,7 @@ class artItem {
     exhibitorName;
     #exhibitRegionYearId
     regionYearName;
+    itemNotes;
 
     #editPane;
     #exhibitorNameField;
@@ -119,6 +120,7 @@ class artItem {
     #bidderNameField;
     #final_priceField;
     #itemTable;
+    #notesField;
 
 //functions to fetch and update based on id
 constructor(itemTable) {
@@ -137,7 +139,7 @@ constructor(itemTable) {
     this.#itemNumberField=document.getElementById('artItemItemNumber');
     this.#typeField=document.getElementById('artItemType');
     this.#sale_priceNameField=document.getElementById('artItemSalePriceName');
-    this.#bidderNameField=document.getElementById('artItemBidderName');//TODO make this field auto-update when bidder updates
+    this.#bidderNameField=document.getElementById('artItemBidderName');//TODO make this field auto-update when bidder updatea
 
     /* editable fields */
     this.#titleField=document.getElementById('artItemTitle');
@@ -160,6 +162,8 @@ constructor(itemTable) {
     this.#bidderField.addEventListener('change',function() {_this.setIsChanged('artItemBidder','bidder');});
     this.#final_priceField=document.getElementById('artItemFinalPrice');
     this.#final_priceField.addEventListener('change',function() { _this.setIsChanged('artItemFinalPrice', 'final_price') });
+    this.#notesField=document.getElementById('artItemNotes');
+    this.#notesField.addEventListener('change',function() { _this.setIsChanged('artItemNotes', 'notes') });
 
     ai_message_div = document.getElementById('ai_result_message');
 }
@@ -205,6 +209,7 @@ resetEditPane() {
     this.#bidderField.value = this.#bidder;
     this.#bidderNameField = this.bidderName;
     this.#final_priceField = this.final_price;
+    this.#notesField.value = this.itemNotes;
 
     this.#isChanged=false;
     this.#changedFields= {};
@@ -234,8 +239,9 @@ setValuesFromData(artItemData) {
     this.bidderName = artItemData['bidderName'];
     this.#exhibitorRegionYearId = artItemData['exhibitorRegionYearId'];
     this.exhibitorName = artItemData['exhibitorName'];
-    this.#exhibitRegionYearId = artItemData['exhibitRegionYearId']
-    this.regionYearName = artItemData['exhibitRegionName']
+    this.#exhibitRegionYearId = artItemData['exhibitRegionYearId'];
+    this.regionYearName = artItemData['exhibitRegionName'];
+    this.itemNotes = artItemData['notes'];
 
     if(this.type === false) {
         show_message('invalid item type', 'warn', ai_message_div); //TODO append if possible
