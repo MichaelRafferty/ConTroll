@@ -1086,7 +1086,7 @@ EOS;
 
         if (!$hasMeeting) {
             $businessMeetingButton .= '<span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="top" ' .
-                'data-bs-title="Add and pay for a WSFS membership to be able to attend and vote at the on-line WSFS business meeting.">';
+                'data-bs-title="You must have a WSFS membership AND one of the following supplements: Friend, Attending, Virtual or One Day.">';
         } else {
             // compute the LUMI password, note this is Seattle Worldcon specific, so it will need to be modified for future worldcons
             $salt = 'SeattleIn2025';
