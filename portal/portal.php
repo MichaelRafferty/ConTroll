@@ -1092,7 +1092,7 @@ EOS;
             $salt = 'SeattleIn2025';
             $pw = substr(preg_replace('/[a-f]/i', '', md5($loginId . $salt)), 0, 6);
             $un = $info['id'];
-            $businessBtnSubText = "<br/>Badge Number: $un<br/>Password: $pw";
+            $businessBtnSubText = "<br/>Membership Number: $un<br/>Password: $pw";
         }
 
         $businessURL = $portal_conf['businessmeetingURL'];
