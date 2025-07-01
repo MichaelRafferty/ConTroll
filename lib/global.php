@@ -6,13 +6,26 @@
 function loadConfFile(): false|array {
     global $db_ini;
 
+    // localize the path, try going up a couple of directories
+    $path = __DIR__ . '/../config';
+    if (!is_dir($path)) {
+        $path = __DIR__ . '/../../config';
+        if (!is_dir($path)) {
+            $path = __DIR__ . '/../../../config';
+        }
+    }
+    if (!is_dir($path)) {
+        error_log("Unable to find the configuration directory");
+        exit(1);
+    }
+
     // our config files are only two level
     // load admin file
-    $db_ini = parse_ini_file(__DIR__ . '/../config/reg_admin.ini', true);
+    $db_ini = parse_ini_file($path . '/reg_admin.ini', true);
     if ($db_ini === false)
         $db_ini = [];
     // now merge/override in config file
-    $db_conf = parse_ini_file(__DIR__ . '/../config/reg_conf.ini', true);
+    $db_conf = parse_ini_file($path . '/reg_conf.ini', true);
     if ($db_conf !== false) {
         foreach ($db_conf as $section => $values) {
             if (is_array($values)) {
@@ -25,7 +38,7 @@ function loadConfFile(): false|array {
         }
     }
     // now override secret file
-    $db_conf = parse_ini_file(__DIR__ . '/../config/reg_secret.ini', true);
+    $db_conf = parse_ini_file($path . '/reg_secret.ini', true);
     if ($db_conf !== false) {
         foreach ($db_conf as $section => $values) {
             if (is_array($values)) {
