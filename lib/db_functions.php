@@ -10,7 +10,7 @@ if (!$db_ini) {
 $logdest = getConfValue('log', 'web');
 
 // always set the default timezone for PHP
-$phptz = getConfValue('mysql', $logdest);
+$phptz = getConfValue('mysql', 'php_timezone');
 if ($phptz) {
     date_default_timezone_set($phptz);
 } else {
