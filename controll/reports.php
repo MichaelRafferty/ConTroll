@@ -169,6 +169,8 @@ EOS;
             $group = $report['group'];
             $fileName = $group['file'];
             $prefix = $group['prefix'];
+            $type = $rpt['type'];
+            $template = $rpt['template'];
             $keys = array_keys($rpt);
             $prompts = [];
             sort($keys);
@@ -181,9 +183,9 @@ EOS;
             $tab = str_replace(' ', '-', $name);
             if (count($prompts) > 0) {
                 $reportPrompts[$key] = $prompts;
-                $onclick = "showPrompts('$key', '$prefix', '$fileName');";
+                $onclick = "showPrompts('$key', '$prefix', '$fileName', '$t ype', '$template');";
             } else {
-                $onclick = "noPrompts('$key', '$prefix', '$fileName');";
+                $onclick = "noPrompts('$key', '$prefix', '$fileName', '$type', '$template');";
             }
             $desc = $rpt['description'];
             echo <<<EOS
