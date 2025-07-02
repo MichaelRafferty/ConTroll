@@ -109,7 +109,8 @@ function drawEditPane($tabIndex=100)
                             <div class="row mb-2">
                                 <div class="col-sm-auto">
                                     <label for="artItemNotes">Notes:</label>
-                                    <textarea tabindex="<?php echo $tabIndex+15; ?>" id="artItemNotes" name="notes"></textarea>
+                                    <textarea cols='70' rows='10' wrap='soft'
+                                            tabindex="<?php echo $tabIndex+15; ?>" id="artItemNotes" name="notes"></textarea>
                                 </div>
                             </div>
                         </form>
