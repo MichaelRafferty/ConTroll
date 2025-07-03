@@ -245,6 +245,7 @@ if ($info['managedByName'] == null) {
         </div>
         <?php
     }
+    if (array_key_exists('HTTPS', $_SERVER) && (isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == 'on')) {
 ?>
     <div class='row mt-4'>
         <div class='col-sm-2'>
@@ -256,7 +257,7 @@ if ($info['managedByName'] == null) {
 
             <div class='col-sm-auto'><input type='text' id='userDisplayName' name='userDisplayName' size=64 maxlength=255 /></div>
     </div>
-<?php
+<?php }
 // identities
 if ($personType == 'n') {
 ?>

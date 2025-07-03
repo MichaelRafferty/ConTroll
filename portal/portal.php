@@ -103,6 +103,7 @@ $hasWSFS = false;
 $hasNom =  false;
 $siteSelection = false;
 $hasMeeting = false;
+$hasPasskey = false;
 if (!$refresh) {
     $numPrimary = 0;
     $numPaidPrimary = 0;
@@ -643,6 +644,14 @@ if ($totalDue > 0 || $activePaymentPlans) {
     <div class='col-sm-12'>
         <h1 class="size-h3">This account's information:
 <?php
+    if (!$hasPasskey && array_key_exists('HTTPS', $_SERVER) && (isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == 'on')) {
+?>
+        <button class='btn btn-primary ms-1 p-1' type='button'
+                        onclick="window.location='<?php echo $portal_conf['portalsite']; ?>/accountSettings.php?passkey=create';">
+                    <img src='lib/passkey.png'>Create Passkey
+                </button>
+<?php
+    }
     if ($info['managedByName'] == null) {
 ?>
                 <button class='btn btn-primary ms-1 p-1' type='button'

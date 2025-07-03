@@ -12,6 +12,15 @@ function draw_login($config_vars, $result_message = '', $result_color = '', $why
                     <h4>Please log in to <?php echo $why; ?>.</h4>
                 </div>
             </div>
+            <?php  if (array_key_exists('HTTPS', $_SERVER) && (isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == 'on')) { ?>
+            <div class='row mb-2'>
+                <div class='col-sm-auto'>
+                    <button class='btn btn-sm btn-primary' onclick='login.loginWithPasskey();'>
+                        <img src="lib/passkey.png">Create Account or Login with Passkey
+                    </button>
+                </div>
+            </div>
+            <?php } ?>
             <div class="row mb-2">
                 <div class='col-sm-auto'>
                     <button class="btn btn-sm btn-primary" onclick="login.loginWithToken();">

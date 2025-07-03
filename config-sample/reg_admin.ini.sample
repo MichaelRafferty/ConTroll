@@ -24,6 +24,13 @@ cancelled=0 ; can override in each app section
 cancel_date="Day, Month Day" ; can override in each app section
 ;; testemail: if set, and test=1, then all emails from the system will be forced to go to the testemail email address
 ; testemail=
+;;; passkeyRpLevel: passkey rp domain level
+;;      this is meant to be global so the system can recognize/create passkeys properly.
+;; 2: org.root - right 2 most sections in host name (aka philcon.org)
+;; 3: site.org.root - right 3 most sections in the host name (aka reg.philcon.org, or exhibitor.philcon.org and all of it's subdomains
+;;      for the exhibitor types, if so setup)
+;; h: host  (full hostname, less "www." if on the front.  (so vendor.exhibitor.philcon.org is different than artist.exhibitor.philcon.org)
+passkeyRpLevel=2
 
 [con]
 ;;; id = numeric identifier for this year, be it the number of the con (1,2,3,4) or the year of the con (2025, 2026, ...)
