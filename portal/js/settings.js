@@ -209,7 +209,14 @@ class Settings {
     newPasskey() {
         var displayName = document.getElementById('userDisplayName').value;
 
-        createPasskeyRegistration('scripts/createPasskey.php', displayName, config.email, 'portal');
+        if (displayName.length == 0) {
+            if (config.badgeName.length > 0)
+                displayName = config.badgeName
+            else
+                displayName = config.firstName + ' ' + config.lastName;
+        }
+
+        createPasskeyRegistration('scripts/createPasskey.php', displayName.trim(), config.email, 'portal');
         return;
     }
 }

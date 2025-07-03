@@ -21,6 +21,7 @@ async function createPasskeyRegistration(script, displayName, email, source) {
         return;
     }
 
+    /*
 // get create args from server
     var data = {
         displayName: displayName,
@@ -47,17 +48,27 @@ async function createPasskeyRegistration(script, displayName, email, source) {
         },
     });
 }
-
+     */
+    var rep = await window.fetch(server + '?action=create&source=portal&email=' + email, {method:'POST', cache:'no-cache'});
+    const createArgs = await rep.json();
+/*
 async function createPasskeyJS(data) {
-    var createArgs = data.args;
-    if (createArgs.success === false) {
+    var args = data.args;
+    if (args.success === false) {
         show_message("Error: " + createArgs.msg, 'error');
         return;
     }
 
+    console.log(args);
+    createArgs = JSON.parse(args);
+
+ */
+    console.log(createArgs);
+
 // replace binary base64 data with ArrayBuffer. another way to do this
 // is the reviver function of JSON.parse()
     recursiveBase64StrToArrayBuffer(createArgs);
+    console.log(createArgs);
 
 // create credentials
     var cred = await navigator.credentials.create(createArgs);

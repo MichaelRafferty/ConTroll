@@ -44,6 +44,9 @@ if ($info === false) {
 }
 
 $config_vars['email'] = $info['email_addr'];
+$config_vars['firstName'] = $info['first_name'];
+$config_vars['lastName'] = $info['last_name'];
+$config_vars['badgeName'] = $info['badge_name'];
 
 // get people managed by this account
 // get people managed by this account holder
