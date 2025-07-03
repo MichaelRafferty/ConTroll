@@ -9,7 +9,7 @@ function draw_login($config_vars, $result_message = '', $result_color = '', $why
         <div class='container-fluid form-floating'>
             <div class='row mb-2'>
                 <div class='col-sm-auto'>
-                    <h4>Please log in to <?php echo $why; ?>.</h4>
+                    <h4>Please log in to <?php echo $why; ?>:</h4>
                 </div>
             </div>
             <?php  if (array_key_exists('HTTPS', $_SERVER) && (isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == 'on')) { ?>
