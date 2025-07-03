@@ -53,8 +53,6 @@ async function createPasskeyRegistration(script, displayName, email, source) {
         "&email=" + encodeURIComponent(email) +
         "&source=" + encodeURIComponent(source) +
         "&action=create";
-    console.log(params);
-
 
     var rep = await fetch(script + '?' + params, {
         method: 'GET',

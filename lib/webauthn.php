@@ -53,9 +53,11 @@ function createWebauthnArgs($userId, $userName, $userDisplayName, $source) {
     }
     $crossPlatformAttachment = null;
 
+    $formats = ['android-key', 'android-safetynet', 'apple', 'fido-u2f', 'packed', 'tpm' ];
+
     // new Instance of the server library.
     // make sure that $rpId is the domain name.
-    $WebAuthn = new lbuchs\WebAuthn\WebAuthn('WebAuthn Library', $rpId);
+    $WebAuthn = new lbuchs\WebAuthn\WebAuthn('Philcon ConTroll', $rpId, $formats);
     $createArgs = $WebAuthn->getCreateArgs(\hex2bin($userId), $userName, $userDisplayName, 60*4,
         $requireResidentKey, $userVerification, $crossPlatformAttachment);
 
