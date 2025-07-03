@@ -49,7 +49,7 @@ async function createPasskeyRegistration(script, displayName, email, source) {
     });
 }
      */
-    var rep = await window.fetch(server + '?action=create&source=portal&email=' + email, {method:'POST', cache:'no-cache'});
+    var rep = await window.fetch(script + '?action=create&source=portal&email=' + email, {method:'POST', cache:'no-cache'});
     const createArgs = await rep.json();
 /*
 async function createPasskeyJS(data) {
