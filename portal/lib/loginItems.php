@@ -16,7 +16,7 @@ function draw_login($config_vars, $result_message = '', $result_color = '', $why
             <div class='row mb-2'>
                 <div class='col-sm-auto'>
                     <button class='btn btn-sm btn-primary' onclick='login.loginWithPasskey();'>
-                        <img src="lib/passkey.png">Create Account or Login with Passkey
+                        <img src="lib/passkey.png">Login with Passkey
                     </button>
                 </div>
             </div>
