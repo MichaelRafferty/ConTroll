@@ -59,12 +59,15 @@ function createWebauthnArgs($userId, $userName, $userDisplayName, $source) {
 
     // new Instance of the server library.
     // make sure that $rpId is the domain name.
+    $name = getConfValue('global', 'conname', 'ConTroll') . ' ConTroll';
     $WebAuthn = new lbuchs\WebAuthn\WebAuthn($name, $rpId, $formats);
     $createArgs = $WebAuthn->getCreateArgs(\hex2bin($userId), $userName, $userDisplayName, 60*4,
         $requireResidentKey, $userVerification, $crossPlatformAttachment, $excludeCredentialIds);
 
     // save challenge to session. you have to deliver it to processGet later.
     setSessionVar('passkeyChallenge', $WebAuthn->getChallenge());
+    setSessionVar('passkeyRPid', $rpId);
+    setSessionVar('passkeyName', $name);
 
     return $createArgs;
 }
@@ -77,10 +80,10 @@ function savePasskey($post, $userId, $userName, $userDisplayName) {
     $formats = ['android-key', 'android-safetynet', 'apple', 'fido-u2f', 'packed', 'tpm' ];
     $excludeCredentialIds = [];
 
-    $WebAuthn = new lbuchs\WebAuthn\WebAuthn($name, $rpId, $formats);
+    $WebAuthn = new lbuchs\WebAuthn\WebAuthn(getSessionVar('passkeyName'), getSessionVar('rpId'), $formats);
     // processCreate returns data to be stored for future logins.
-    $data = $WebAuthn->processCreate($clientDataJSON, $attestationObject, $challenge, $userVerification === 'required', true, false);
-    $data = json_decode(json_encode($data), true)); // convert from object to structure
+    $data = $WebAuthn->processCreate($clientDataJSON, $attestationObject, $challenge, true, true, false);
+    $data = json_decode(json_encode($data), true); // convert from object to structure
     // add user infos
     $data['userId'] = $userId;
     $data['userName'] = $userName;
