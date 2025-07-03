@@ -13,42 +13,11 @@
  */
 async function createPasskeyRegistration(script, displayName, email, source) {
     // check browser support
-    console.log(navigator.credentials);
-    console.log(navigator.credentials.create);
-
     if (!window.fetch || !navigator.credentials || !navigator.credentials.create) {
         show_message('Your browser does not support passkeys.', 'error');
         return;
     }
 
-    /*
-// get create args from server
-    var data = {
-        displayName: displayName,
-        email: email,
-        source: source,
-        action: 'create',
-    }
-    $.ajax({
-        method: 'POST',
-        url: script,
-        data: data,
-        success: function (data, textStatus, jqXhr) {
-            if (data['status'] == 'error') {
-                show_message(data['message'], 'error');
-            } else if (data['status'] == 'warn') {
-                show_message(data['message'], 'warn');
-            } else {
-                createPasskeyJS(data);
-            }
-        },
-        error: function (jqXHR, textStatus, errorThrown) {
-            showAjaxError(jqXHR, textStatus, errorThrown);
-            return false;
-        },
-    });
-}
-     */
     var params = "displayName=" + encodeURIComponent(displayName) +
         "&email=" + encodeURIComponent(email) +
         "&source=" + encodeURIComponent(source) +
@@ -60,12 +29,10 @@ async function createPasskeyRegistration(script, displayName, email, source) {
     });
 
     const createArgs = await rep.json();
-    console.log(createArgs);
 
 // replace binary base64 data with ArrayBuffer. another way to do this
 // is the reviver function of JSON.parse()
-    recursiveBase64StrToArrayBuffer(createArgs);
-    console.log(createArgs);
+    recursiveBase64StrToArrayBuffer(createArgs);;
 
 // create credentials
     var cred = await navigator.credentials.create(createArgs);
