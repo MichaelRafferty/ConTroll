@@ -49,17 +49,20 @@ async function createPasskeyRegistration(script, displayName, email, source) {
     });
 }
      */
-    var rep = await window.fetch(script, {
-        method:'POST',
+    var params = JSON.stringify({
+        displayName: displayName,
+        email: email,
+        source: source,
+        action: 'create',
+    });
+    console.log(body);
+    var rep = await fetch(script, {
+        method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
         },
-        body: JSON.stringify({
-            displayName: displayName,
-            email: email,
-            source: source,
-            action: 'create',
-        })
+        body: params
     });
 
     const createArgs = await rep.json();
