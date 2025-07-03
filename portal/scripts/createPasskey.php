@@ -44,7 +44,12 @@ switch ($action) {
         exit();
 
     case 'save':
-        $data = savePasskey($post, $userId, $userName, $userDisplayName);
+        if (!(array_key_exists('cred', $_REQUEST) && array_key_exists('att', $_REQUEST))) {
+            ajaxSuccess(array('status'=>'error', 'message'=>'Parameter error - get assistance'));
+            exit();
+        }
+
+        $data = savePasskey($_REQUEST['cred'], $_REQUEST['att'], $userId, $userName, $userDisplayName);
         $response['passkey'] = $data;
         $response['message'] = "Passkey Created";
         $response['success'] = 'success';

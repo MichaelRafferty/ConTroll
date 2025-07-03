@@ -44,21 +44,8 @@ async function createPasskeyRegistration(script, displayName, email, source) {
         attestationObject: cred.response.attestationObject ? arrayBufferToBase64(cred.response.attestationObject) : null
     };
 
-// check auth on server side
-    rep = await window.fetch(script + '?' + params, {
-        method: 'POST',
-        body: JSON.stringify(authenticatorAttestationResponse),
-        cache: 'no-cache'
-    });
-    var authenticatorAttestationServerResponse = await rep.json();
 
-// prompt server response
-    if (!authenticatorAttestationServerResponse.success) {
-        show_message('Error: ' + authenticatorAttestationServerResponse.msg, 'error');
-        return;
-    }
-
-    // attestation successful
+    // check asstetation and store in server if successful
     // save key in server database
     data = {
         action: save,
@@ -67,7 +54,6 @@ async function createPasskeyRegistration(script, displayName, email, source) {
         source: source,
         cred: JSON.stringify(cred),
         att: JSON.stringify(authenticatorAttestationResponse),
-        attresp: JSON.stringify(authenticatorAttestationServerResponse),
     };
 
     $.ajax({

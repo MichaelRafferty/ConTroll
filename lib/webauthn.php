@@ -72,13 +72,12 @@ function createWebauthnArgs($userId, $userName, $userDisplayName, $source) {
     return $createArgs;
 }
 
-function savePasskey($post, $userId, $userName, $userDisplayName) {
-    $clientDataJSON = !empty($post->clientDataJSON) ? base64_decode($post->clientDataJSON) : null;
-    $attestationObject = !empty($post->attestationObject) ? base64_decode($post->attestationObject) : null;
+function savePasskey($cred, $att, $userId, $userName, $userDisplayName) {
+    $clientDataJSON = !empty($att->clientDataJSON) ? base64_decode($att->clientDataJSON) : null;
+    $attestationObject = !empty($att->attestationObject) ? base64_decode($att->attestationObject) : null;
     $challenge = getSessionVar('passkeyChallenge');
 
     $formats = ['android-key', 'android-safetynet', 'apple', 'fido-u2f', 'packed', 'tpm' ];
-    $excludeCredentialIds = [];
 
     $WebAuthn = new lbuchs\WebAuthn\WebAuthn(getSessionVar('passkeyName'), getSessionVar('rpId'), $formats);
     // processCreate returns data to be stored for future logins.
