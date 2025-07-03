@@ -145,6 +145,7 @@ class Settings {
         });
     }
 
+    // newidentity - add new identity
     newIdentity() {
         var id = document.getElementById('provider');
         if (id == null)
@@ -201,5 +202,14 @@ class Settings {
                 return false;
             },
         });
+    }
+
+    // passkeys
+    // newPasskey - request generate passkey on device and store same in database
+    newPasskey() {
+        var displayName = document.getElementById('userDisplayName').value;
+
+        createPasskeyRegistration('scripts/createPasskey.php', displayName, config.email, 'portal');
+        return;
     }
 }
