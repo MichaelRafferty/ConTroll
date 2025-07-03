@@ -62,18 +62,6 @@ async function createPasskeyRegistration(script, displayName, email, source) {
     });
 
     const createArgs = await rep.json();
-/*
-async function createPasskeyJS(data) {
-    var args = data.args;
-    if (args.success === false) {
-        show_message("Error: " + createArgs.msg, 'error');
-        return;
-    }
-
-    console.log(args);
-    createArgs = JSON.parse(args);
-
- */
     console.log(createArgs);
 
 // replace binary base64 data with ArrayBuffer. another way to do this

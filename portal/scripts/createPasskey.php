@@ -10,7 +10,7 @@ $return500errors = true;
 
 $response = array('post' => $_POST, 'get' => $_GET);
 
-if (!(array_key_exists('action', $_RESQUEST) && array_key_exists('email', $_REQUEST) && array_key_exists('source', $_REQUEST))) {
+if (!(array_key_exists('action', $_REQUEST) && array_key_exists('email', $_REQUEST) && array_key_exists('source', $_REQUEST))) {
     ajaxSuccess(array('status'=>'error', 'message'=>'Parameter error - get assistance'));
     exit();
 }
@@ -34,7 +34,7 @@ switch ($action) {
         // try emulating their method
         $createArgs = json_encode(createWebauthnArgs(bin2hex($email), $email, $_REQUEST['displayName'], $source), JSON_FORCE_OBJECT, 512);
         header('Content-Type: application/json');
-        print(json_encode($createArgs));
+        print $createArgs;
         exit();
 
     case 'save':
