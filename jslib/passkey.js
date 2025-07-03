@@ -45,7 +45,7 @@ async function createPasskeyRegistration(script, displayName, email, source) {
     };
 
 // check auth on server side
-    rep = await window.fetch(server + '?fn=processCreate' + getGetParams(), {
+    rep = await window.fetch(script + '?' + params, {
         method: 'POST',
         body: JSON.stringify(authenticatorAttestationResponse),
         cache: 'no-cache'
@@ -111,7 +111,7 @@ async function checkRegistration(server) {
         }
 
     // get check args
-        let rep = await window.fetch(server + '?fn=getGetArgs' + getGetParams(), {method:'GET',cache:'no-cache'});
+        let rep = await window.fetch(script + '?fn=getGetArgs' + getGetParams(), {method:'GET',cache:'no-cache'});
         const getArgs = await rep.json();
 
         // error handling
