@@ -63,113 +63,34 @@ function createWebauthnArgs($userId, $userName, $userDisplayName, $source) {
     $createArgs = $WebAuthn->getCreateArgs(\hex2bin($userId), $userName, $userDisplayName, 60*4,
         $requireResidentKey, $userVerification, $crossPlatformAttachment, $excludeCredentialIds);
 
+    // save challenge to session. you have to deliver it to processGet later.
+    setSessionVar('passkeyChallenge', $WebAuthn->getChallenge());
+
     return $createArgs;
 }
 
+function savePasskey($post, $userId, $userName, $userDisplayName) {
+    $clientDataJSON = !empty($post->clientDataJSON) ? base64_decode($post->clientDataJSON) : null;
+    $attestationObject = !empty($post->attestationObject) ? base64_decode($post->attestationObject) : null;
+    $challenge = getSessionVar('passkeyChallenge');
+
+    $formats = ['android-key', 'android-safetynet', 'apple', 'fido-u2f', 'packed', 'tpm' ];
+    $excludeCredentialIds = [];
+
+    $WebAuthn = new lbuchs\WebAuthn\WebAuthn($name, $rpId, $formats);
+    // processCreate returns data to be stored for future logins.
+    $data = $WebAuthn->processCreate($clientDataJSON, $attestationObject, $challenge, $userVerification === 'required', true, false);
+    $data = json_decode(json_encode($data), true)); // convert from object to structure
+    // add user infos
+    $data['userId'] = $userId;
+    $data['userName'] = $userName;
+    $data['userDisplayName'] = $userDisplayName;
+
+    // now insert the key into the database
+    return $data;
+}
+
 /*
-try {
-    // read get argument and post body
-    $fn = filter_input(INPUT_GET, 'fn');
-    $requireResidentKey = !!filter_input(INPUT_GET, 'requireResidentKey');
-    $userVerification = filter_input(INPUT_GET, 'userVerification', FILTER_SANITIZE_SPECIAL_CHARS);
-
-    $userId = filter_input(INPUT_GET, 'userId', FILTER_SANITIZE_SPECIAL_CHARS);
-    $userName = filter_input(INPUT_GET, 'userName', FILTER_SANITIZE_SPECIAL_CHARS);
-
-
-    $userId = $userId ? preg_replace('/[^0-9a-f]/i', '', $userId): "";
-    $userName = $userName ? preg_replace('/[^0-9a-z]/i', '', $userName): "";
-    $userDisplayName = $userDisplayName ? preg_replace('/[^0-9a-z öüäéèàÖÜÄÉÈÀÂÊÎÔÛâêîôû]/i', '', $userDisplayName): "";
-
-    $post = trim(file_get_contents('php://input'));
-    if ($post) {
-        $post = json_decode($post, null, 512, JSON_THROW_ON_ERROR);
-    }
-
-    if ($fn !== 'getStoredDataHtml') {
-
-        // Formats
-        $formats = [];
-        if (filter_input(INPUT_GET, 'fmt_android-key')) {
-            $formats[] = 'android-key';
-        }
-        if (filter_input(INPUT_GET, 'fmt_android-safetynet')) {
-            $formats[] = 'android-safetynet';
-        }
-        if (filter_input(INPUT_GET, 'fmt_apple')) {
-            $formats[] = 'apple';
-        }
-        if (filter_input(INPUT_GET, 'fmt_fido-u2f')) {
-            $formats[] = 'fido-u2f';
-        }
-        if (filter_input(INPUT_GET, 'fmt_none')) {
-            $formats[] = 'none';
-        }
-        if (filter_input(INPUT_GET, 'fmt_packed')) {
-            $formats[] = 'packed';
-        }
-        if (filter_input(INPUT_GET, 'fmt_tpm')) {
-            $formats[] = 'tpm';
-        }
-
-        $rpId = 'localhost';
-        if (filter_input(INPUT_GET, 'rpId')) {
-            $rpId = filter_input(INPUT_GET, 'rpId', FILTER_VALIDATE_DOMAIN);
-            if ($rpId === false) {
-                throw new Exception('invalid relying party ID');
-            }
-        }
-
-        // types selected on front end
-        $typeUsb = !!filter_input(INPUT_GET, 'type_usb');
-        $typeNfc = !!filter_input(INPUT_GET, 'type_nfc');
-        $typeBle = !!filter_input(INPUT_GET, 'type_ble');
-        $typeInt = !!filter_input(INPUT_GET, 'type_int');
-        $typeHyb = !!filter_input(INPUT_GET, 'type_hybrid');
-
-        // cross-platform: true, if type internal is not allowed
-        //                 false, if only internal is allowed
-        //                 null, if internal and cross-platform is allowed
-        $crossPlatformAttachment = null;
-        if (($typeUsb || $typeNfc || $typeBle || $typeHyb) && !$typeInt) {
-            $crossPlatformAttachment = true;
-
-        } else if (!$typeUsb && !$typeNfc && !$typeBle && !$typeHyb && $typeInt) {
-            $crossPlatformAttachment = false;
-        }
-
-
-        // new Instance of the server library.
-        // make sure that $rpId is the domain name.
-        $WebAuthn = new lbuchs\WebAuthn\WebAuthn('WebAuthn Library', $rpId, $formats);
-
-        // add root certificates to validate new registrations
-        if (filter_input(INPUT_GET, 'solo')) {
-            $WebAuthn->addRootCertificates('rootCertificates/solo.pem');
-            $WebAuthn->addRootCertificates('rootCertificates/solokey_f1.pem');
-            $WebAuthn->addRootCertificates('rootCertificates/solokey_r1.pem');
-        }
-        if (filter_input(INPUT_GET, 'apple')) {
-            $WebAuthn->addRootCertificates('rootCertificates/apple.pem');
-        }
-        if (filter_input(INPUT_GET, 'yubico')) {
-            $WebAuthn->addRootCertificates('rootCertificates/yubico.pem');
-        }
-        if (filter_input(INPUT_GET, 'hypersecu')) {
-            $WebAuthn->addRootCertificates('rootCertificates/hypersecu.pem');
-        }
-        if (filter_input(INPUT_GET, 'google')) {
-            $WebAuthn->addRootCertificates('rootCertificates/globalSign.pem');
-            $WebAuthn->addRootCertificates('rootCertificates/googleHardware.pem');
-        }
-        if (filter_input(INPUT_GET, 'microsoft')) {
-            $WebAuthn->addRootCertificates('rootCertificates/microsoftTpmCollection.pem');
-        }
-        if (filter_input(INPUT_GET, 'mds')) {
-            $WebAuthn->addRootCertificates('rootCertificates/mds');
-        }
-
-    }
 
     // ------------------------------------
     // request for create arguments

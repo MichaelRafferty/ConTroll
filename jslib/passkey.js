@@ -59,13 +59,24 @@ async function createPasskeyRegistration(script, displayName, email, source) {
     }
 
     // attestation successful
-    // save key in server databse
-    data.action = 'save';
+    // save key in server database
+    data = {
+        action: save,
+        displayName: displayName,
+        email: email,
+        source: source,
+        cred: JSON.stringify(cred),
+        att: JSON.stringify(authenticatorAttestationResponse),
+        attresp: JSON.stringify(authenticatorAttestationServerResponse),
+    };
+
     $.ajax({
         method: 'POST',
-        url: data.script,
+        url: script,
         data: data,
         success: function (data, textStatus, jqXhr) {
+            console.log("Create:");
+            console.log(data);
             if (data['status'] == 'error') {
                 show_message(data['message'], 'error');
                 return;
