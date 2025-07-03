@@ -52,7 +52,6 @@ async function createPasskeyRegistration(script, displayName, email, source) {
         displayName: displayName,
         email: email,
         source: source,
-        cred: JSON.stringify(cred),
         att: JSON.stringify(authenticatorAttestationResponse),
     };
 

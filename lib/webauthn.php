@@ -72,7 +72,7 @@ function createWebauthnArgs($userId, $userName, $userDisplayName, $source) {
     return $createArgs;
 }
 
-function savePasskey($cred, $att, $userId, $userName, $userDisplayName) {
+function savePasskey($att, $userId, $userName, $userDisplayName) {
     $clientDataJSON = !empty($att->clientDataJSON) ? base64_decode($att->clientDataJSON) : null;
     $attestationObject = !empty($att->attestationObject) ? base64_decode($att->attestationObject) : null;
     $challenge = getSessionVar('passkeyChallenge');
