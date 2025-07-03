@@ -11,56 +11,106 @@
  * creates a new FIDO2 registration
  * @returns {undefined}
  */
-async function createRegistration(server) {
-    try {
-        // check browser support
-        if (!window.fetch || !navigator.credentials || !navigator.credentials.create) {
-            throw new Error('Browser not supported.');
-        }
+async function createPasskeyRegistration(script, displayName, email, source) {
+    // check browser support
+    console.log(navigator.credentials);
+    console.log(navigator.credentials.create);
 
-// get create args
-        let rep = await window.fetch(server + '?fn=getCreateArgs' + getGetParams(), {method: 'GET', cache: 'no-cache'});
-        const createArgs = await rep.json();
+    if (!window.fetch || !navigator.credentials || !navigator.credentials.create) {
+        show_message('Your browser does not support passkeys.', 'error');
+        return;
+    }
 
-// error handling
-        if (createArgs.success === false) {
-            throw new Error(createArgs.msg || 'unknown error occured');
-        }
+// get create args from server
+    var data = {
+        displayName: displayName,
+        email: email,
+        source: source,
+        action: 'create',
+    }
+    $.ajax({
+        method: 'POST',
+        url: script,
+        data: data,
+        success: function (data, textStatus, jqXhr) {
+            if (data['status'] == 'error') {
+                show_message(data['message'], 'error');
+            } else if (data['status'] == 'warn') {
+                show_message(data['message'], 'warn');
+            } else {
+                createPasskeyJS(data);
+            }
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            showAjaxError(jqXHR, textStatus, errorThrown);
+            return false;
+        },
+    });
+}
+
+async function createPasskeyJS(data) {
+    var createArgs = data.args;
+    if (createArgs.success === false) {
+        show_message("Error: " + createArgs.msg, 'error');
+        return;
+    }
 
 // replace binary base64 data with ArrayBuffer. another way to do this
 // is the reviver function of JSON.parse()
-        recursiveBase64StrToArrayBuffer(createArgs);
+    recursiveBase64StrToArrayBuffer(createArgs);
 
 // create credentials
-        const cred = await navigator.credentials.create(createArgs);
+    var cred = await navigator.credentials.create(createArgs);
 
 // create object
-        const authenticatorAttestationResponse = {
-            transports: cred.response.getTransports ? cred.response.getTransports() : null,
-            clientDataJSON: cred.response.clientDataJSON ? arrayBufferToBase64(cred.response.clientDataJSON) : null,
-            attestationObject: cred.response.attestationObject ? arrayBufferToBase64(cred.response.attestationObject) : null
-        };
+    var authenticatorAttestationResponse = {
+        transports: cred.response.getTransports ? cred.response.getTransports() : null,
+        clientDataJSON: cred.response.clientDataJSON ? arrayBufferToBase64(cred.response.clientDataJSON) : null,
+        attestationObject: cred.response.attestationObject ? arrayBufferToBase64(cred.response.attestationObject) : null
+    };
 
 // check auth on server side
-        rep = await window.fetch(server + '?fn=processCreate' + getGetParams(), {
-            method: 'POST',
-            body: JSON.stringify(authenticatorAttestationResponse),
-            cache: 'no-cache'
-        });
-        const authenticatorAttestationServerResponse = await rep.json();
+    rep = await window.fetch(server + '?fn=processCreate' + getGetParams(), {
+        method: 'POST',
+        body: JSON.stringify(authenticatorAttestationResponse),
+        cache: 'no-cache'
+    });
+    var authenticatorAttestationServerResponse = await rep.json();
 
 // prompt server response
-        if (authenticatorAttestationServerResponse.success) {
-            reloadServerPreview();
-            window.alert(authenticatorAttestationServerResponse.msg || 'registration success');
-        } else {
-            throw new Error(authenticatorAttestationServerResponse.msg);
-        }
-
-    } catch (err) {
-        reloadServerPreview();
-        window.alert(err.message || 'unknown error occured');
+    if (!authenticatorAttestationServerResponse.success) {
+        show_message('Error: ' + authenticatorAttestationServerResponse.msg, 'error');
+        return;
     }
+
+    // attestation successful
+    // save key in server databse
+    data.action = 'save';
+    $.ajax({
+        method: 'POST',
+        url: data.script,
+        data: data,
+        success: function (data, textStatus, jqXhr) {
+            if (data['status'] == 'error') {
+                show_message(data['message'], 'error');
+                return;
+            } else if (data['status'] == 'warn') {
+                show_message(data['message'], 'warn');
+            } else {
+                switch (data.source) {
+                    case 'portal':
+                        window.location = '?messageFwd=' + encodeURI(data['message']);
+                        return;
+                }
+                show_message(data['message'], 'success');
+                return;
+            }
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            showAjaxError(jqXHR, textStatus, errorThrown);
+            return false;
+        },
+    });
 }
 
 
