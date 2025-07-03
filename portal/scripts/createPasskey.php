@@ -10,14 +10,14 @@ $return500errors = true;
 
 $response = array('post' => $_POST, 'get' => $_GET);
 
-if (!(array_key_exists('action', $_POST) && array_key_exists('email', $_POST) && array_key_exists('source', $_POST))) {
+if (!(array_key_exists('action', $_RESQUEST) && array_key_exists('email', $_REQUEST) && array_key_exists('source', $_REQUEST))) {
     ajaxSuccess(array('status'=>'error', 'message'=>'Parameter error - get assistance'));
     exit();
 }
 
-$action = $_POST['action'];
-$email = $_POST['email'];
-$source = $_POST['source'];
+$action = $_REQUEST['action'];
+$email = $_REQUEST['email'];
+$source = $_REQUEST['source'];
 $loginEmail = getSessionVar('email');
 if ($email != $loginEmail) {
     ajaxSuccess(array('status'=>'error', 'message'=>'Your login session has expired, please logout and back in again.'));
@@ -26,13 +26,13 @@ if ($email != $loginEmail) {
 
 switch ($action) {
     case 'create':
-        if (!array_key_exists('displayName', $_POST)) {
+        if (!array_key_exists('displayName', $_REQUEST)) {
             ajaxSuccess(array('status'=>'error', 'message'=>'Parameter error - get assistance'));
             exit();
         }
 
         // try emulating their method
-        $createArgs = json_encode(createWebauthnArgs(bin2hex($email), $email, $_POST['displayName'], $source), JSON_FORCE_OBJECT, 512);
+        $createArgs = json_encode(createWebauthnArgs(bin2hex($email), $email, $_REQUEST['displayName'], $source), JSON_FORCE_OBJECT, 512);
         header('Content-Type: application/json');
         print(json_encode($createArgs));
         exit();
