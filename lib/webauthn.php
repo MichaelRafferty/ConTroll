@@ -40,6 +40,7 @@ function createWebauthnArgs($userId, $userName, $userDisplayName, $source) {
     $requireResidentKey = true;
     $userVerification = 'required';
     $rpLevel = getConfValue('global', 'passkeyRpLevel', '2');
+    $name=getConfValue('global', 'conname','ConTroll') . " ConTroll";
     $server = $_SERVER['SERVER_NAME'];
     if ($server == null || trim($server) == '')
         $server = 'unknown';
@@ -54,12 +55,13 @@ function createWebauthnArgs($userId, $userName, $userDisplayName, $source) {
     $crossPlatformAttachment = null;
 
     $formats = ['android-key', 'android-safetynet', 'apple', 'fido-u2f', 'packed', 'tpm' ];
+    $excludeCredentialIds = [];
 
     // new Instance of the server library.
     // make sure that $rpId is the domain name.
-    $WebAuthn = new lbuchs\WebAuthn\WebAuthn('Philcon ConTroll', $rpId, $formats);
+    $WebAuthn = new lbuchs\WebAuthn\WebAuthn($name, $rpId, $formats);
     $createArgs = $WebAuthn->getCreateArgs(\hex2bin($userId), $userName, $userDisplayName, 60*4,
-        $requireResidentKey, $userVerification, $crossPlatformAttachment);
+        $requireResidentKey, $userVerification, $crossPlatformAttachment, $excludeCredentialIds);
 
     return $createArgs;
 }
