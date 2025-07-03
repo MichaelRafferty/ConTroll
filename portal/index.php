@@ -25,7 +25,7 @@ $config_vars['required'] = getConfValue('reg', 'required', 'addr');
 $loginId = null;
 $loginType = null;
 $purpose = "From here you can create and manage your membership account.";
-$why = "continue to the Portal.";
+$why = "continue to the Portal";
 
 // first lets check the authentication stuff. but only if not loging out
     // in session or not, is it a logout? (force clear session method, as well as logout)
