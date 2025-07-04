@@ -5,7 +5,7 @@
 DROP TABLE IF EXISTS passkeys;
 CREATE TABLE passkeys(
     id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    credentialId varchar(1023) CHARACTER SET ascii  NOT NULL COMMENT 'Received from the authentication device',
+    credentialId varchar(1023) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'Received from the authentication device',
     relyingParty varchar(255) NOT NULL COMMENT 'Set in the reg_admin.ini file as how many parts of the hostname (R-L)',
     source varchar(32) DEFAULT NULL COMMENT 'Which application created this entry',
     userId varchar(64) NOT NULL COMMENT 'sha256 of the email address (hex string)',

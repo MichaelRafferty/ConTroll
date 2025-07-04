@@ -157,8 +157,8 @@ async function passkeyRequest(script, successPage, source, enable) {
     // save key in server database
     data = {
         action: 'check',
-        displayName: displayName,
-        email: email,
+        displayName: '',
+        email: '',
         source: source,
         att: JSON.stringify(authenticatorAttestationResponse),
     };
@@ -179,7 +179,10 @@ async function passkeyRequest(script, successPage, source, enable) {
             } else {
                 switch (source) {
                     case 'portal':
-                        window.location = successPage + '?messageFwd=' + encodeURI(data['message']);
+                        if (data['numMatch'] == 1)
+                            window.location = successPage + '?messageFwd=' + encodeURI(data['message']);
+                        else
+                            window.location = '?switch=account';
                         return;
                 }
                 show_message(data['message'], 'success');

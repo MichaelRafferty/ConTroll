@@ -114,8 +114,48 @@ EOS;
         if (array_key_exists('message', $data))
             $response['message'] = $data['message'];
 
-        if (array_key_exists('status', $data))
+        if (array_key_exists('status', $data)) {
             $response['status'] = $data['status'];
+            if ($data['status'] == 'success') {
+                $passkey = $data['passkey'];
+                // create the session, we are logged in....
+                // first get the items that match
+                $matchQ = <<<EOS
+SELECT 'p' AS idType, id, email_addr
+FROM perinfo
+WHERE email_addr = '?' AND banned = 'N'
+UNION SELECT 'n' AS idType, id, email_addr
+FROM newperson
+WHERE email_addr = '?' AND perid IS NULL
+ORDER BY 1 DESC, 2 ASC;
+EOS;
+                $matchR = dbSafeQuery($matchQ, 'ss', array ($passkey['userName'], $passkey['userName']));
+                if ($matchR === false || $matchR->num_rows == 0) {
+                    $response['status'] = 'error';
+                    $response['message'] = 'No membership portal accounts found for that passkey';
+                    break;
+                }
+
+                $firstMatch = $matchR->fetch_assoc();
+                $numMatch = $matchR->num_rows;
+                $response['numMatch'] = $numMatch;
+                $matchR->free();
+
+                $hrs = getConfigValue('portal', 'emailhrs', 24);
+                unsetSessionVar('transId');    // just in case it is hanging around, clear this
+                unsetSessionVar('totalDue');   // just in case it is hanging around, clear this
+                setSessionVar('id', $firstMatch['id']);
+                setSessionVar('idType', $firstMatch['idType']);
+                setSessionVar('idSource', 'passkey');
+                setSessionVar('tokenType', 'passkey');
+                setSessionVar('email', $passkey['userName']);
+                setSessionVar('tokenExpiration', time() + ($hrs * 3600));
+
+                if ($numMatch > 1) {
+                    setSessionVar('multiple', strtolower($passkey['userName']));
+                }
+            }
+        }
         break;
 
     default:

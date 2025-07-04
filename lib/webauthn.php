@@ -189,7 +189,7 @@ SELECT *
 FROM passkeys
 WHERE credentialId = ?;
 EOS;
-    $pkR = dbSafeQuery($pkQ, 's', array($id));
+    $pkR = dbSafeQuery($pkQ, 's', array($att['id']));
     if ($pkR === false || $pkR->num_rows === 0) {
         // no matching key in our database
         return array('status' => 'error',
@@ -209,6 +209,14 @@ EOS;
         return array('status' => 'error',
             'message' => 'Invalid passkey returned, please log in with a different passkey, or use a different method and create a new passkey.');
     }
+
+    // we got a match, update the last used and IP
+    $upQ = <<<EOS
+UPDATE passkeys
+SET  lastUsedDate = NOW(), lastUsedIP = ?, useCount = useCount + 1
+WHERE id = ?;
+EOS;
+    $numUpd = dbSafeCmd($upQ, 'si', array($_SERVER['REMOTE_ADDR'], $passkey['id']));
 
     clearSession('passkey');
     return array('status' => 'success', 'message' => 'Authentication successful', 'passkey' => $passkey);
