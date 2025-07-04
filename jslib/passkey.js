@@ -40,8 +40,8 @@ async function createPasskeyRegistration(script, displayName, email, source) {
 // create object
     var authenticatorAttestationResponse = {
         transports: cred.response.getTransports ? cred.response.getTransports() : null,
-        clientDataJSON: cred.response.clientDataJSON,
-        attestationObject: cred.response.attestationObject
+        clientDataJSON: cred.response.clientDataJSON ? arrayBufferToBase64(cred.response.clientDataJSON) : null,
+        attestationObject: cred.response.attestationObject ? arrayBufferToBase64(cred.response.attestationObject) : null
     };
 
 
