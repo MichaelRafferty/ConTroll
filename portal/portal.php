@@ -103,7 +103,24 @@ $hasWSFS = false;
 $hasNom =  false;
 $siteSelection = false;
 $hasMeeting = false;
-$hasPasskey = false;
+$tokenType = getSessionVar('tokenType');
+$hasPasskey = $tokenType == 'passkey';
+if ($hasPasskey == false) {
+    // check for a potential passkey
+    $passkeyQ = <<<EOS
+SELECT count(*)
+FROM passkeys
+WHERE userName = ?;
+EOS;
+    $passKeyR = dbSafeQuery($passkeyQ, 's', array($info['email_addr']));
+    if ($passKeyR !== false) {
+        $numKeys = $passKeyR->fetch_row()[0];
+        $passKeyR->free();
+
+        $hasPasskey = $numKeys > 0;
+    }
+}
+
 if (!$refresh) {
     $numPrimary = 0;
     $numPaidPrimary = 0;
