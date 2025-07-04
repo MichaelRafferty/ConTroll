@@ -123,13 +123,13 @@ EOS;
                 $matchQ = <<<EOS
 SELECT 'p' AS idType, id, email_addr
 FROM perinfo
-WHERE email_addr = '?' AND banned = 'N'
+WHERE email_addr = ? AND banned = 'N'
 UNION SELECT 'n' AS idType, id, email_addr
 FROM newperson
-WHERE email_addr = '?' AND perid IS NULL
+WHERE email_addr = ? AND perid IS NULL
 ORDER BY 1 DESC, 2 ASC;
 EOS;
-                $matchR = dbSafeQuery($matchQ, 'ss', array ($passkey['userName'], $passkey['userName']));
+                $matchR = dbSafeQuery($matchQ, 'ss', array($passkey['userName'], $passkey['userName']));
                 if ($matchR === false || $matchR->num_rows == 0) {
                     $response['status'] = 'error';
                     $response['message'] = 'No membership portal accounts found for that passkey';
