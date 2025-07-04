@@ -123,7 +123,7 @@ FROM passkeys
 WHERE userName = ?
 ORDER BY createDate;
 EOS;
-$passKeysR = dbSafeQuery($passKeySQL, 'i', array($info['email_addr']));
+$passKeysR = dbSafeQuery($passKeySQL, 's', array($info['email_addr']));
 $passKeys = [];
 if ($passKeysR !== false) {
     while ($p = $passKeysR->fetch_assoc()) {
