@@ -104,8 +104,8 @@ function savePasskey($att, $userId, $userName, $userDisplayName, $source) {
     clearSession('passkey');
     // now insert the key into the database
     $insPK = <<<EOS
-INSERT INTO passkeys(credentialId, relyingParty, source, userId, userName, userDisplayName, publicKey) 
-VALUES (?, ?, ?, ?, ?, ?, ?);
+INSERT INTO passkeys(credentialId, relyingParty, source, userId, userName, userDisplayName, publicKey, createIP) 
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
 EOS;
     $keyFind = <<<EOS
 SELECT id
@@ -119,7 +119,8 @@ WHERE id = ?;
 EOS;
     $keyFindR = dbSafeQuery($keyFind, 'ss', array($data['credentialId'], $data['rpId']));
     if ($keyFindR === false || $keyFindR->num_rows === 0) {
-        $insKey = dbSafeInsert($insPK, 'sssssss', array($data['credentialId'], $data['rpId'], $source, $userId, $userName, $userDisplayName, $data['credentialPublicKey']));
+        $insKey = dbSafeInsert($insPK, 'ssssssss', array($data['credentialId'], $data['rpId'], $source, $userId, $userName, $userDisplayName,
+            $data['credentialPublicKey'], $_SERVER['REMOTE_ADDR']));
         if ($insKey === false) {
             $data['message'] = "Unable to store key in the database";
             $data['status'] = 'error';

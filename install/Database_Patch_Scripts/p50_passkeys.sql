@@ -12,7 +12,9 @@ CREATE TABLE passkeys(
     userName varchar(255) NOT NULL COMMENT 'This is the email address again, but stored separately in case we want to change the userId',
     userDisplayName varchar(255) NOT NULL COMMENT 'This is a friendly name the user chooses when registering the passkey',
     createDate datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    createIP varchar(32) DEFAULT NULL,
     lastUsedDate datetime DEFAULT NULL,
+    lastUsedIP varchar(32) DEFAULT NULL,
     useCount int NOT NULL DEFAULT 0,
     publicKey varchar(255)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
