@@ -118,7 +118,7 @@ WHERE id = ?;
 EOS;
     $keyFindR = dbSafeQuery($keyFind, 'ss', array($data['credentialId'], $data['rpId']));
     if ($keyFindR === false || $keyFindR->num_rows === 0) {
-        $insKey = dbSafeInsert($insPK, 'ssssss', array($data['credentialId'], $data['rpId'], $userId, $userName, $userDisplayName, $data['publicKey']));
+        $insKey = dbSafeInsert($insPK, 'ssssss', array($data['credentialId'], $data['rpId'], $userId, $userName, $userDisplayName, $data['credentialPublicKey']));
         if ($insKey === false) {
             $data['message'] = "Unable to store key in the database";
             $data['status'] = 'error';
