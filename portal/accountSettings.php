@@ -228,7 +228,7 @@ if ($info['managedByName'] == null) {
         <div class='col-sm-1'><b>Created</b></div>
         <div class='col-sm-1'><b>Create IP</b></div>
         <div class='col-sm-1'><b>Last Used</b></div>
-        <div class='col-sm-1'><b>Last Used IP</b></div>
+        <div class='col-sm-1'><b>Last IP</b></div>
         <div class='col-sm-1' style='text-align: right;'><b>Use Count</b></div>
     </div>
 <?php
@@ -242,7 +242,7 @@ if ($info['managedByName'] == null) {
         <div class="row">
             <div class="col-sm-1"><button class="btn btn-sm btn-warning pt-0 pb-0"
                 onclick="settings.deletePasskey('<?php echo $passkey['id'];?>')">Delete</button></div>
-            <div class='col-sm-4'><?php echo $passkey['userName'];?></div>
+            <div class='col-sm-3'><?php echo $passkey['userName'];?></div>
             <div class='col-sm-2'><?php echo $passkey['userDisplayName'];?></div>
             <div class='col-sm-1'><?php echo $createDate;?></div>
             <div class='col-sm-1'><?php echo $passkey['createIP'];?></div>
