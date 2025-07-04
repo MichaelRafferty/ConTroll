@@ -141,7 +141,7 @@ EOS;
                 $response['numMatch'] = $numMatch;
                 $matchR->free();
 
-                $hrs = getConfigValue('portal', 'emailhrs', 24);
+                $hrs = getConfValue('portal', 'emailhrs', 24);
                 unsetSessionVar('transId');    // just in case it is hanging around, clear this
                 unsetSessionVar('totalDue');   // just in case it is hanging around, clear this
                 setSessionVar('id', $firstMatch['id']);
