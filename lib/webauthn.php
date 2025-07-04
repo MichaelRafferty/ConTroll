@@ -74,8 +74,8 @@ function createWebauthnArgs($userId, $userName, $userDisplayName, $source) {
 }
 
 function savePasskey($att, $userId, $userName, $userDisplayName) {
-    $clientDataJSON = !empty($att->clientDataJSON) ? base64_decode($att->clientDataJSON) : null;
-    $attestationObject = !empty($att->attestationObject) ? base64_decode($att->attestationObject) : null;
+    $clientDataJSON = !empty($att['clientDataJSON']) ? base64_decode($att['clientDataJSON']) : null;
+    $attestationObject = !empty($att['attestationObject']) ? base64_decode($att['attestationObject']) : null;
     $challenge = getSessionVar('passkeyChallenge');
 
     $formats = ['android-key', 'android-safetynet', 'apple', 'fido-u2f', 'packed', 'tpm' ];

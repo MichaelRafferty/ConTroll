@@ -44,7 +44,15 @@ switch ($action) {
             exit();
         }
 
-        $data = savePasskey($_REQUEST['att'], getSessionVar('passkeyUserId'), $_REQUEST['email'], $_REQUEST['displayName']);
+        try {
+            $att = json_decode($_REQUEST['att'], true);
+        }
+        catch (Exception $e) {
+            ajaxSuccess(array('status'=>'error', 'message'=>$e->getMessage()));
+            exit();
+        }
+
+        $data = savePasskey($att, getSessionVar('passkeyUserId'), $_REQUEST['email'], $_REQUEST['displayName']);
         $response['passkey'] = $data;
         $response['message'] = "Passkey Created";
         $response['success'] = 'success';
