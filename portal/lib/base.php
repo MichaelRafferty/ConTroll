@@ -60,6 +60,7 @@ function index_page_init($title) {
     <script type='text/javascript' src='$jquijs'></script>
     <script type="text/javascript" src="$tabjs"></script>
     <script type="text/javascript" src="jslib/global.js?v=$globalJSversion"></script>
+    <script type="text/javascript" src="jslib/passkey.js?v=$globalJSversion"></script>
     <script type='text/javascript' src="js/base.js?v=$portalJSVersion"></script>
     <script type='text/javascript' src="js/login.js?v=$portalJSVersion"></script>
 </head>
