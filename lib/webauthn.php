@@ -33,7 +33,9 @@
  * ------------------------------------------------------------
  */
 
-require_once(__DIR__ . '/../Composer/vendor/autoload.php');
+    use lbuchs\WebAuthn\Binary\ByteBuffer;
+
+    require_once(__DIR__ . '/../Composer/vendor/autoload.php');
 
 function createWebauthnArgs($userId, $userName, $userDisplayName, $source) {
     $userDisplayName = filter_var($userDisplayName, FILTER_SANITIZE_SPECIAL_CHARS);
@@ -54,7 +56,7 @@ function createWebauthnArgs($userId, $userName, $userDisplayName, $source) {
     }
     $crossPlatformAttachment = null;
 
-    $formats = ['android-key', 'android-safetynet', 'apple', 'fido-u2f', 'packed', 'tpm' ];
+    $formats = ['android-key', 'android-safetynet', 'apple', 'fido-u2f', 'packed', 'tpm', 'none' ];
     $excludeCredentialIds = [];
 
     // new Instance of the server library.
@@ -65,7 +67,8 @@ function createWebauthnArgs($userId, $userName, $userDisplayName, $source) {
         $requireResidentKey, $userVerification, $crossPlatformAttachment, $excludeCredentialIds);
 
     // save challenge to session. you have to deliver it to processGet later.
-    setSessionVar('passkeyChallenge', $WebAuthn->getChallenge());
+    $challenge = base64_encode($WebAuthn->getChallenge()->getBinaryString());
+    setSessionVar('passkeyChallenge', $challenge);
     setSessionVar('passkeyRPid', $rpId);
     setSessionVar('passkeyName', $name);
     setSessionVar('passkeyUserId', $userId);
@@ -76,11 +79,12 @@ function createWebauthnArgs($userId, $userName, $userDisplayName, $source) {
 function savePasskey($att, $userId, $userName, $userDisplayName) {
     $clientDataJSON = !empty($att['clientDataJSON']) ? base64_decode($att['clientDataJSON']) : null;
     $attestationObject = !empty($att['attestationObject']) ? base64_decode($att['attestationObject']) : null;
-    $challenge = getSessionVar('passkeyChallenge');
+    $challengeStr = getSessionVar('passkeyChallenge');
+    $challenge = base64_decode($challengeStr);
 
-    $formats = ['android-key', 'android-safetynet', 'apple', 'fido-u2f', 'packed', 'tpm' ];
+    $formats = ['android-key', 'android-safetynet', 'apple', 'fido-u2f', 'packed', 'tpm', 'none' ];
 
-    $WebAuthn = new lbuchs\WebAuthn\WebAuthn(getSessionVar('passkeyName'), getSessionVar('rpId'), $formats);
+    $WebAuthn = new lbuchs\WebAuthn\WebAuthn(getSessionVar('passkeyName'), getSessionVar('passkeyRPid'), $formats);
     // processCreate returns data to be stored for future logins.
     $data = $WebAuthn->processCreate($clientDataJSON, $attestationObject, $challenge, true, true, false);
     $data = json_decode(json_encode($data), true); // convert from object to structure
