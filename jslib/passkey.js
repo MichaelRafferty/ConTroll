@@ -32,7 +32,7 @@ async function createPasskeyRegistration(script, displayName, email, source) {
 
 // replace binary base64 data with ArrayBuffer. another way to do this
 // is the reviver function of JSON.parse()
-    recursiveBase64StrToArrayBuffer(createArgs);;
+    recursiveBase64StrToArrayBuffer(createArgs);
 
 // create credentials
     var cred = await navigator.credentials.create(createArgs);
@@ -118,16 +118,84 @@ function deletePasskeyEntry(script, id, userName, source) {
     });
 }
 
-/**
-* checks a FIDO2 registration
-* @returns {undefined}
-*/
-async function checkRegistration(server) {
-    try {
-        if (!window.fetch || !navigator.credentials || !navigator.credentials.create) {
-            throw new Error('Browser not supported.');
-        }
+async function passkeyRequest(script, successPage, source, enable) {
+    if (!window.fetch || !navigator.credentials || !navigator.credentials.create) {
+        show_message('Your browser does not support passkeys.', 'error');
+        return;
+    }
 
+    var params = "displayName=NA" +
+        "&email=NA" +
+        "&source=" + encodeURIComponent(source) +
+        "&action=request";
+
+    var rep = await fetch(script + '?' + params, {
+        method: 'GET',
+        cache: 'no-cache'
+    });
+
+    const requestArgs = await rep.json();
+
+// replace binary base64 data with ArrayBuffer. another way to do this
+// is the reviver function of JSON.parse()
+    recursiveBase64StrToArrayBuffer(requestArgs);
+
+// get credentials
+    var cred = await navigator.credentials.get(requestArgs);
+
+// create object
+    // create object for transmission to server
+    var authenticatorAttestationResponse = {
+        id: cred.rawId ? arrayBufferToBase64(cred.rawId) : null,
+        clientDataJSON: cred.response.clientDataJSON  ? arrayBufferToBase64(cred.response.clientDataJSON) : null,
+        authenticatorData: cred.response.authenticatorData ? arrayBufferToBase64(cred.response.authenticatorData) : null,
+        signature: cred.response.signature ? arrayBufferToBase64(cred.response.signature) : null,
+        userHandle: cred.response.userHandle ? arrayBufferToBase64(cred.response.userHandle) : null
+    };
+
+    // check asstetation and store in server if successful
+    // save key in server database
+    data = {
+        action: 'check',
+        displayName: displayName,
+        email: email,
+        source: source,
+        att: JSON.stringify(authenticatorAttestationResponse),
+    };
+
+    $.ajax({
+        method: 'POST',
+        url: script,
+        data: data,
+        success: function (data, textStatus, jqXhr) {
+            if (enable)
+                enable.disabled = false;
+
+            if (data['status'] == 'error') {
+                show_message(data['message'], 'error');
+                return;
+            } else if (data['status'] == 'warn') {
+                show_message(data['message'], 'warn');
+            } else {
+                switch (source) {
+                    case 'portal':
+                        window.location = successPage + '?messageFwd=' + encodeURI(data['message']);
+                        return;
+                }
+                show_message(data['message'], 'success');
+                return;
+            }
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            if (enable)
+                enable.disabled = false;
+
+            showAjaxError(jqXHR, textStatus, errorThrown);
+            return false;
+        },
+    });
+}
+/*
     // get check args
         let rep = await window.fetch(script + '?fn=getGetArgs' + getGetParams(), {method:'GET',cache:'no-cache'});
         const getArgs = await rep.json();
@@ -174,20 +242,7 @@ async function checkRegistration(server) {
         window.alert(err.message || 'unknown error occured');
     }
 }
-
-function queryFidoMetaDataService(server) {
-    window.fetch(server + '?fn=queryFidoMetaDataService' + getGetParams(), {method:'GET',cache:'no-cache'}).then(function(response) {
-        return response.json();
-    }).then(function(json) {
-        if (json.success) {
-            window.alert(json.msg);
-        } else {
-            throw new Error(json.msg);
-        }
-    }).catch(function(err) {
-        window.alert(err.message || 'unknown error occured');
-    });
-}
+*/
 
 /**
 * convert RFC 1342-like base64 strings to array buffer
@@ -232,69 +287,4 @@ function arrayBufferToBase64(buffer) {
         binary += String.fromCharCode(bytes[i]);
     }
     return window.btoa(binary);
-}
-
-/**
-* Get URL parameter
-* @returns {String}
-*/
-function getGetParams() {
-    let url = '';
-
-    url += '&apple=' + (document.getElementById('cert_apple').checked ? '1' : '0');
-    url += '&yubico=' + (document.getElementById('cert_yubico').checked ? '1' : '0');
-    url += '&solo=' + (document.getElementById('cert_solo').checked ? '1' : '0');
-    url += '&hypersecu=' + (document.getElementById('cert_hypersecu').checked ? '1' : '0');
-    url += '&google=' + (document.getElementById('cert_google').checked ? '1' : '0');
-    url += '&microsoft=' + (document.getElementById('cert_microsoft').checked ? '1' : '0');
-    url += '&mds=' + (document.getElementById('cert_mds').checked ? '1' : '0');
-
-    url += '&requireResidentKey=' + (document.getElementById('requireResidentKey').checked ? '1' : '0');
-
-    url += '&type_usb=' + (document.getElementById('type_usb').checked ? '1' : '0');
-    url += '&type_nfc=' + (document.getElementById('type_nfc').checked ? '1' : '0');
-    url += '&type_ble=' + (document.getElementById('type_ble').checked ? '1' : '0');
-    url += '&type_int=' + (document.getElementById('type_int').checked ? '1' : '0');
-    url += '&type_hybrid=' + (document.getElementById('type_hybrid').checked ? '1' : '0');
-
-    url += '&fmt_android-key=' + (document.getElementById('fmt_android-key').checked ? '1' : '0');
-    url += '&fmt_android-safetynet=' + (document.getElementById('fmt_android-safetynet').checked ? '1' : '0');
-    url += '&fmt_apple=' + (document.getElementById('fmt_apple').checked ? '1' : '0');
-    url += '&fmt_fido-u2f=' + (document.getElementById('fmt_fido-u2f').checked ? '1' : '0');
-    url += '&fmt_none=' + (document.getElementById('fmt_none').checked ? '1' : '0');
-    url += '&fmt_packed=' + (document.getElementById('fmt_packed').checked ? '1' : '0');
-    url += '&fmt_tpm=' + (document.getElementById('fmt_tpm').checked ? '1' : '0');
-
-    url += '&rpId=' + encodeURIComponent(document.getElementById('rpId').value);
-
-    url += '&userId=' + encodeURIComponent(document.getElementById('userId').value);
-    url += '&userName=' + encodeURIComponent(document.getElementById('userName').value);
-    url += '&userDisplayName=' + encodeURIComponent(document.getElementById('userDisplayName').value);
-
-    if (document.getElementById('userVerification_required').checked) {
-        url += '&userVerification=required';
-
-    } else if (document.getElementById('userVerification_preferred').checked) {
-        url += '&userVerification=preferred';
-
-    } else if (document.getElementById('userVerification_discouraged').checked) {
-        url += '&userVerification=discouraged';
-    }
-
-    return url;
-}
-
-function setAttestation(attestation) {
-    let inputEls = document.getElementsByTagName('input');
-    for (const inputEl of inputEls) {
-        if (inputEl.id && inputEl.id.match(/^(fmt|cert)\_/)) {
-            inputEl.disabled = !attestation;
-        }
-        if (inputEl.id && inputEl.id.match(/^fmt\_/)) {
-            inputEl.checked = attestation ? inputEl.id !== 'fmt_none' : inputEl.id === 'fmt_none';
-        }
-        if (inputEl.id && inputEl.id.match(/^cert\_/)) {
-            inputEl.checked = attestation ? inputEl.id === 'cert_mds' : false;
-        }
-    }
 }

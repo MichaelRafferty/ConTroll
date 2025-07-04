@@ -42,7 +42,6 @@ function createWebauthnArgs($userId, $userName, $userDisplayName, $source) {
     $requireResidentKey = true;
     $userVerification = 'required';
     $rpLevel = getConfValue('global', 'passkeyRpLevel', '2');
-    $name=getConfValue('global', 'conname','ConTroll') . " ConTroll";
     $server = $_SERVER['SERVER_NAME'];
     if ($server == null || trim($server) == '')
         $server = 'unknown';
@@ -135,6 +134,84 @@ EOS;
     }
 
     return $data;
+}
+
+function getWebauthnArgs($source) {
+    $requireResidentKey = true;
+    $userVerification = 'required';
+    $rpLevel = getConfValue('global', 'passkeyRpLevel', '2');
+    $server = $_SERVER['SERVER_NAME'];
+    if ($server == null || trim($server) == '')
+        $server = 'unknown';
+    $serverArr = explode('.', $server);
+    $elements = count($serverArr);
+    if ($elements >= $rpLevel) {
+        // take right most rpLevel elements of the server name
+        $rpId = implode('.', array_slice($serverArr, -$rpLevel));
+    } else {
+        $rpId = $server;
+    }
+    $crossPlatformAttachment = null;
+
+    $formats = ['android-key', 'android-safetynet', 'apple', 'fido-u2f', 'packed', 'tpm', 'none'];
+    $excludeCredentialIds = [];
+
+    // new Instance of the server library.
+    // make sure that $rpId is the domain name.
+    $name = getConfValue('global', 'conname', 'ConTroll') . ' ConTroll';
+    $WebAuthn = new lbuchs\WebAuthn\WebAuthn($name, $rpId, $formats);
+    $getArgs = $WebAuthn->getGetArgs(null, 60*4, true, true, true, true, true, true);
+
+    // save challenge to session. you have to deliver it to processGet later.
+    $challenge = base64_encode($WebAuthn->getChallenge()->getBinaryString());
+    setSessionVar('passkeyChallenge', $challenge);
+    setSessionVar('passkeyRPid', $rpId);
+    setSessionVar('passkeyName', $name);
+
+    return $getArgs;
+}
+
+function checkPasskey($att, $source) {
+    $clientDataJSON = !empty($att['clientDataJSON']) ? base64_decode($att['clientDataJSON']) : null;
+    $authenticatorData = !empty($att['authenticatorData']) ? base64_decode($att['authenticatorData']) : null;
+    $signature = !empty($att['signature']) ? base64_decode($att['signature']) : null;
+    $userHandle = !empty($att['userHandle']) ? base64_decode($att['userHandle']) : null;
+    $id = !empty($att['id']) ? base64_decode($att['id']) : null;
+    $challengeStr = getSessionVar('passkeyChallenge');
+    $challenge = base64_decode($challengeStr);
+    $credentialPublicKey = null;
+
+    // looking up correspondending public key of the credential id
+    // you should also validate that only ids of the given user name
+    // are taken for the login.
+    $pkQ = <<<EOS
+SELECT *
+FROM passkeys
+WHERE credentialId = ?;
+EOS;
+    $pkR = dbSafeQuery($pkQ, 's', array($id));
+    if ($pkR === false || $pkR->num_rows === 0) {
+        // no matching key in our database
+        return array('status' => 'error',
+            'message' => 'No matching entry found for that passkey, please log in with a different passkey, or use a different method and create a new passkey.');
+    }
+    $passkey = $pkR->fetch_assoc();
+    $credentialPublicKey = $passkey['publicKey'];
+
+    $formats = ['android-key', 'android-safetynet', 'apple', 'fido-u2f', 'packed', 'tpm', 'none' ];
+
+    $WebAuthn = new lbuchs\WebAuthn\WebAuthn(getSessionVar('passkeyName'), getSessionVar('passkeyRPid'), $formats);
+    // process the get request. throws WebAuthnException if it fails
+    try {
+        $WebAuthn->processGet($clientDataJSON, $authenticatorData, $signature, $credentialPublicKey, $challenge, null, true);
+    }
+    catch (Exception $e) {
+        return array('status' => 'error',
+            'message' => 'Invalid passkey returned, please log in with a different passkey, or use a different method and create a new passkey.');
+    }
+
+    clearSession('passkey');
+    return array('status' => 'success', 'message' => 'Authentication successful', 'passkey' => $passkey);
 }
 
 /*

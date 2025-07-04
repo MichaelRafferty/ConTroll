@@ -15,7 +15,7 @@ function draw_login($config_vars, $result_message = '', $result_color = '', $why
             <?php  if (array_key_exists('HTTPS', $_SERVER) && (isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == 'on')) { ?>
             <div class='row mb-2'>
                 <div class='col-sm-auto'>
-                    <button class='btn btn-sm btn-primary' onclick='login.loginWithPasskey();'>
+                    <button class='btn btn-sm btn-primary' id="loginPasskeyBtn" onclick='login.loginWithPasskey();'>
                         <img src="lib/passkey.png">Login with Passkey
                     </button>
                 </div>

@@ -18,12 +18,15 @@ if (!(array_key_exists('action', $_REQUEST) && array_key_exists('email', $_REQUE
 $action = $_REQUEST['action'];
 $email = $_REQUEST['email'];
 $source = $_REQUEST['source'];
-$loginEmail = getSessionVar('email');
-$response['email'] = $loginEmail;
 $response['source'] = $source;
-if ($email != $loginEmail) {
-    ajaxSuccess(array('status'=>'error', 'message'=>'Your login session has expired, please logout and back in again.'));
-    exit();
+if ($action != 'request' && $action != 'check') {
+    $loginEmail = getSessionVar('email');
+    $response['email'] = $loginEmail;
+
+    if ($email != $loginEmail) {
+        ajaxSuccess(array ('status' => 'error', 'message' => 'Your login session has expired, please logout and back in again.'));
+        exit();
+    }
 }
 
 switch ($action) {
@@ -80,6 +83,39 @@ EOS;
             $response['status'] = 'success';
             $response['message'] = "Passkey Deleted";
         }
+        break;
+
+    case 'request':
+        $requestArgs = json_encode(getWebauthnArgs($source));
+        header('Content-Type: application/json');
+        print $requestArgs;
+        exit();
+
+    case 'check':
+        if (!array_key_exists('att', $_REQUEST)) {
+            ajaxSuccess(array('status'=>'error', 'message'=>'Parameter error - get assistance'));
+            exit();
+        }
+
+        try {
+            $att = json_decode($_REQUEST['att'], true);
+        }
+        catch (Exception $e) {
+            ajaxSuccess(array('status'=>'error', 'message'=>$e->getMessage()));
+            exit();
+        }
+
+        // now finish up and return if get got a passkey or not
+        $data = checkPasskey($att, $source);
+
+        if (array_key_exists('passkey', $data))
+            $response['passkey'] = $data['passkey'];
+
+        if (array_key_exists('message', $data))
+            $response['message'] = $data['message'];
+
+        if (array_key_exists('status', $data))
+            $response['status'] = $data['status'];
         break;
 
     default:
