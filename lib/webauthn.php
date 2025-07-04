@@ -86,14 +86,52 @@ function savePasskey($att, $userId, $userName, $userDisplayName) {
 
     $WebAuthn = new lbuchs\WebAuthn\WebAuthn(getSessionVar('passkeyName'), getSessionVar('passkeyRPid'), $formats);
     // processCreate returns data to be stored for future logins.
-    $data = $WebAuthn->processCreate($clientDataJSON, $attestationObject, $challenge, true, true, false);
-    $data = json_decode(json_encode($data), true); // convert from object to structure
+    $dataObj = $WebAuthn->processCreate($clientDataJSON, $attestationObject, $challenge, true, true, false);
+    $data = [];
+    $data['rpId'] = $dataObj->rpId;
+    $data['attestationFormat'] = $dataObj->attestationFormat;
+    $data['credentialId'] = base64_encode($dataObj->credentialId);
+    $data['credentialPublicKey'] = $dataObj->credentialPublicKey;
+    $data['AAGUID'] = base64_encode($dataObj->AAGUID);
+    $data['userPresent'] = $dataObj->userPresent;
+    $data['userVerified'] = $dataObj->userVerified;
+
     // add user infos
     $data['userId'] = $userId;
     $data['userName'] = $userName;
     $data['userDisplayName'] = $userDisplayName;
 
     // now insert the key into the database
+    $insPK = <<<EOS
+INSERT INTO passkeys(credentialId, relyingParty, userId, userName, userDisplayName, publicKey) 
+VALUES (?, ?, ?, ?, ?, ?);
+EOS;
+    $keyFind = <<<EOS
+SELECT id
+FROM passkeys
+WHERE credentialId = ? AND relyingParty = ?;
+EOS;
+    $updPK = <<<EOS
+UPDATE passkeys
+SET userId = ?, userName = ?, userDisplayName = ?, publicKey = ?
+WHERE id = ?;
+EOS;
+    $keyFindR = dbSafeQuery($keyFind, 'ss', array($data['credentialId'], $data['rpId']));
+    if ($keyFindR === false || $keyFindR->num_rows === 0) {
+        $insKey = dbSafeInsert($insPK, 'ssssss', array($data['credentialId'], $data['rpId'], $userId, $userName, $userDisplayName, $data['publicKey']));
+        if ($insKey === false) {
+            $data['message'] = "Unable to store key in the database";
+            $data['status'] = 'error';
+            return $data;
+        }
+        $data['passkeyId'] = $insKey;
+    } else {
+        $id = $keyFindR->fetch_assoc()['id'];
+        $keyFindR->free();
+        $num_rows = dbSafeCmd($updPK, 'ssssi', array($userId, $userName, $userDisplayName, $data['publicKey'], $id));
+        $data['passkeyId'] = $id;
+    }
+
     return $data;
 }
 
