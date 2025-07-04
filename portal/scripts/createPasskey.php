@@ -53,7 +53,7 @@ switch ($action) {
         }
 
         // now finish up and save the key in the database
-        $data = savePasskey($att, getSessionVar('passkeyUserId'), $_REQUEST['email'], $_REQUEST['displayName']);
+        $data = savePasskey($att, getSessionVar('passkeyUserId'), $_REQUEST['email'], $_REQUEST['displayName'], $source);
 
         $response['passkey'] = $data;
         $response['message'] = "Passkey Created";

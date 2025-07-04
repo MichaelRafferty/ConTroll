@@ -76,7 +76,7 @@ function createWebauthnArgs($userId, $userName, $userDisplayName, $source) {
     return $createArgs;
 }
 
-function savePasskey($att, $userId, $userName, $userDisplayName) {
+function savePasskey($att, $userId, $userName, $userDisplayName, $source) {
     $clientDataJSON = !empty($att['clientDataJSON']) ? base64_decode($att['clientDataJSON']) : null;
     $attestationObject = !empty($att['attestationObject']) ? base64_decode($att['attestationObject']) : null;
     $challengeStr = getSessionVar('passkeyChallenge');
@@ -101,10 +101,11 @@ function savePasskey($att, $userId, $userName, $userDisplayName) {
     $data['userName'] = $userName;
     $data['userDisplayName'] = $userDisplayName;
 
+    clearSession('passkey');
     // now insert the key into the database
     $insPK = <<<EOS
-INSERT INTO passkeys(credentialId, relyingParty, userId, userName, userDisplayName, publicKey) 
-VALUES (?, ?, ?, ?, ?, ?);
+INSERT INTO passkeys(credentialId, relyingParty, source, userId, userName, userDisplayName, publicKey) 
+VALUES (?, ?, ?, ?, ?, ?, ?);
 EOS;
     $keyFind = <<<EOS
 SELECT id
@@ -118,7 +119,7 @@ WHERE id = ?;
 EOS;
     $keyFindR = dbSafeQuery($keyFind, 'ss', array($data['credentialId'], $data['rpId']));
     if ($keyFindR === false || $keyFindR->num_rows === 0) {
-        $insKey = dbSafeInsert($insPK, 'ssssss', array($data['credentialId'], $data['rpId'], $userId, $userName, $userDisplayName, $data['credentialPublicKey']));
+        $insKey = dbSafeInsert($insPK, 'sssssss', array($data['credentialId'], $data['rpId'], $source, $userId, $userName, $userDisplayName, $data['credentialPublicKey']));
         if ($insKey === false) {
             $data['message'] = "Unable to store key in the database";
             $data['status'] = 'error';
@@ -136,21 +137,6 @@ EOS;
 }
 
 /*
-
-    // ------------------------------------
-    // request for create arguments
-    // ------------------------------------
-
-    if ($fn === 'getCreateArgs') {
-        $createArgs = $WebAuthn->getCreateArgs(\hex2bin($userId), $userName, $userDisplayName, 60*4, $requireResidentKey, $userVerification, $crossPlatformAttachment);
-
-        header('Content-Type: application/json');
-        print(json_encode($createArgs));
-
-        // save challange to session. you have to deliver it to processGet later.
-        $_SESSION['challenge'] = $WebAuthn->getChallenge();
-
-
 
     // ------------------------------------
     // request for get arguments
