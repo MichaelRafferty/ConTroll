@@ -86,7 +86,7 @@ async function createPasskeyRegistration(script, displayName, email, source) {
 function deletePasskeyEntry(script, id, userName, source) {
     data = {
         action: 'delete',
-        email: username,
+        email: userName,
         id: id,
         source: source,
     };
