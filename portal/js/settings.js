@@ -10,10 +10,12 @@ window.onload = function () {
 class Settings {
     #people = null;
     #emails = null;
+    #newPasskeyBtn = null;
 
     constructor() {
         this.#people = [];
         this.#emails = [];
+        this.#newPasskeyBtn = document.getElementById('newPasskey');
     }
 
 // associate / disassociate a person from this account, by the account holders requests
@@ -207,6 +209,9 @@ class Settings {
     // passkeys
     // newPasskey - request generate passkey on device and store same in database
     newPasskey() {
+        if (this.#newPasskeyBtn)
+            this.#newPasskeyBtn.disabled = true;
+
         var displayName = document.getElementById('userDisplayName').value;
 
         if (displayName.length == 0) {
@@ -217,6 +222,8 @@ class Settings {
         }
 
         createPasskeyRegistration('scripts/createPasskey.php', displayName.trim(), config.email, 'portal');
+        if (this.#newPasskeyBtn)
+            this.#newPasskeyBtn.disabled = false;
         return;
     }
 }
