@@ -8,11 +8,6 @@ global $returnAjaxErrors, $return500errors;
 $returnAjaxErrors = true;
 $return500errors = true;
 
-$post = trim(file_get_contents('php://input'));
-if ($post) {
-    $post = json_decode($post, null, 512, JSON_THROW_ON_ERROR);
-}
-
 $response = array('post' => $_POST, 'get' => $_GET);
 
 if (!(array_key_exists('action', $_REQUEST) && array_key_exists('email', $_REQUEST) && array_key_exists('source', $_REQUEST))) {
@@ -49,7 +44,7 @@ switch ($action) {
             exit();
         }
 
-        $data = savePasskey($_REQUEST['att'], $userId, $userName, $userDisplayName);
+        $data = savePasskey($_REQUEST['att'], getSessionVar('passkeyUserId'), $_REQUEST['email'], $_REQUEST['displayName']);
         $response['passkey'] = $data;
         $response['message'] = "Passkey Created";
         $response['success'] = 'success';

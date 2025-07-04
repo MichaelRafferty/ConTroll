@@ -68,6 +68,7 @@ function createWebauthnArgs($userId, $userName, $userDisplayName, $source) {
     setSessionVar('passkeyChallenge', $WebAuthn->getChallenge());
     setSessionVar('passkeyRPid', $rpId);
     setSessionVar('passkeyName', $name);
+    setSessionVar('passkeyUserId', $userId);
 
     return $createArgs;
 }
