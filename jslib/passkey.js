@@ -60,8 +60,6 @@ async function createPasskeyRegistration(script, displayName, email, source) {
         url: script,
         data: data,
         success: function (data, textStatus, jqXhr) {
-            console.log("Create:");
-            console.log(data);
             if (data['status'] == 'error') {
                 show_message(data['message'], 'error');
                 return;
@@ -84,6 +82,41 @@ async function createPasskeyRegistration(script, displayName, email, source) {
     });
 }
 
+// deletePasskeyEntry - delete from the database the passkey with this id and userName
+function deletePasskeyEntry(script, id, userName, source) {
+    data = {
+        action: 'delete',
+        email: username,
+        id: id,
+        source: source,
+    };
+
+    $.ajax({
+        method: 'POST',
+        url: script,
+        data: data,
+        success: function (data, textStatus, jqXhr) {
+            if (data['status'] == 'error') {
+                show_message(data['message'], 'error');
+                return;
+            } else if (data['status'] == 'warn') {
+                show_message(data['message'], 'warn');
+            } else {
+                switch (data.source) {
+                    case 'portal':
+                        window.location = '?messageFwd=' + encodeURI(data['message']);
+                        return;
+                }
+                show_message(data['message'], 'success');
+                return;
+            }
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            showAjaxError(jqXHR, textStatus, errorThrown);
+            return false;
+        },
+    });
+}
 
 /**
 * checks a FIDO2 registration

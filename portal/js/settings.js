@@ -221,9 +221,14 @@ class Settings {
                 displayName = config.firstName + ' ' + config.lastName;
         }
 
-        createPasskeyRegistration('scripts/createPasskey.php', displayName.trim(), config.email, 'portal');
+        createPasskeyRegistration('scripts/passkeyActions.php', displayName.trim(), config.email, 'portal');
         if (this.#newPasskeyBtn)
             this.#newPasskeyBtn.disabled = false;
         return;
+    }
+
+    // delete passkey - clicked the delete button
+    deletePasskey(id) {
+        deletePasskeyEntry('scripts/passkeyActions.php', id, config.email, 'portal');
     }
 }

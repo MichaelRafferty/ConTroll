@@ -62,6 +62,26 @@ switch ($action) {
         $response['success'] = 'success';
     break;
 
+    case 'delete':
+        if (!array_key_exists('id', $_REQUEST)) {
+            ajaxSuccess(array('status'=>'error', 'message'=>'Parameter error - get assistance'));
+            exit();
+        }
+        $id = $_REQUEST['id'];
+        $delSQL = <<<EOS
+DELETE FROM passkeys
+WHERE id = ? AND userName = ?;
+EOS;
+        $numdel = dbSafeCmd($delSQL, 'is', array($id, $email));
+        if ($numdel === false || $numdel == 0) {
+            $response['status'] = 'warn';
+            $response['message'] = 'Passkey not deleted';
+        } else {
+            $response['status'] = 'success';
+            $response['message'] = "Passkey Deleted";
+        }
+        break;
+
     default:
         $response['message'] = 'Invalid action';
         $response['status'] = 'error';
