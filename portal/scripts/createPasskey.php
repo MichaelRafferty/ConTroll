@@ -19,6 +19,8 @@ $action = $_REQUEST['action'];
 $email = $_REQUEST['email'];
 $source = $_REQUEST['source'];
 $loginEmail = getSessionVar('email');
+$response['email'] = $loginEmail;
+$response['source'] = $source;
 if ($email != $loginEmail) {
     ajaxSuccess(array('status'=>'error', 'message'=>'Your login session has expired, please logout and back in again.'));
     exit();
