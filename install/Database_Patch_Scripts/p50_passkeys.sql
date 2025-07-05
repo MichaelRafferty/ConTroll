@@ -43,5 +43,15 @@ SET contents = REPLACE(contents,
            'or a login with provider such as Google.<br/>'))
 WHERE appName = 'portal' AND appPage = 'accountSettings' AND appSection = 'main' AND txtItem = 'identities';
 
+/*
+ * piggybacking in a vendor change for when vendors have to re-confirm their profile
+ */
+
+ALTER TABLE exhibitors DROP COLUMN confirm;
+ALTER TABLE exhibitors ADD COLUMN lastVerified datetime DEFAULT current_timestamp NOT NULL AFTER need_new;
+
+ALTER TABLE exhibitorYears DROP COLUMN confirm;
+ALTER TABLE exhibitorYears ADD COLUMN lastVerified datetime DEFAULT current_timestamp NOT NULL AFTER need_new;
+
 
 INSERT INTO patchLog(id, name) VALUES(xx, 'passkeys');
