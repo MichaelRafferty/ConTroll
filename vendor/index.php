@@ -183,9 +183,17 @@ if (isSessionVar('id') && !isset($_GET['vid'])) {
     exhibitorCheckMissingSpaces($exhibitor, getSessionVar('eyID'));
     // reload page to get rid of vid in url
     header('location:' . $_SERVER['PHP_SELF']);
-} else if ((isset($_POST['si_email']) && isset($_POST['si_password']))) {
+} else if ((isset($_POST['si_email']) && isset($_POST['si_password'])) || isSessionVar('passkeyUserId')) {
     // handle login submit
-    $login = trim(strtolower($_POST['si_email']));
+    if (isset($_POST['si_email'])) {
+        $noCheckPassword = false;
+        $login = trim(strtolower($_POST['si_email']));
+    } else {
+        $noCheckPassword = true;
+        $login = trim(getSessionVar('passkeyUserId'));
+        unsetSessionVar('passkeyUserId');
+    }
+
     $loginQ = <<<EOS
 SELECT e.id, e.artistName, e.exhibitorName, LOWER(e.exhibitorEmail) as eEmail, e.password AS ePassword, e.need_new as eNeedNew, ey.id AS eyID, 
        LOWER(ey.contactEmail) AS cEmail, ey.contactPassword AS cPassword, ey.need_new AS cNeedNew, archived, ey.needReview,
@@ -204,14 +212,14 @@ EOS;
     while ($result = $loginR->fetch_assoc()) { // check exhibitor email/password first
         $found = false;
         if ($login == $result['eEmail']) {
-            if (password_verify($_POST['si_password'], $result['ePassword'])) {
+            if ($noCheckPassword || password_verify($_POST['si_password'], $result['ePassword'])) {
                 $result['loginType'] = 'e';
                 $matches[] = $result;
                 $found = true;
             }
         }
         if (!$found && $login == $result['cEmail']) { // try contact login second
-            if (password_verify($_POST['si_password'], $result['cPassword'])) {
+            if ($noCheckPassword || password_verify($_POST['si_password'], $result['cPassword'])) {
                 $result['loginType'] = 'c';
                 $matches[] = $result;
                 $found = true;
