@@ -278,6 +278,9 @@ function tabBar($page, $portal_conf, $info, $refresh = false) {
 <?php
         }
     }
+
+    $active = '';
+    $ariainfo = '';
 ?>
             <button class="btn btn-outline-light navitem <?php echo $active; ?>" type='button' <?php echo $ariainfo; ?>
                 style='border-top-left-radius: 20px;' onclick="window.location='index.php?logout';">Logout</button>
