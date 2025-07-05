@@ -204,8 +204,8 @@ function drawReport(data) {
         html += `
     <div class="row">
         <div class="col-sm-auto">
-            <button type="button" class="btn btn-info btn-sm" onclick="downloadReport('xlsx'); return false;" disabled>Download Excel xlsx</button>
             <button type="button" class="btn btn-info btn-sm" onclick="downloadReport('csv'); return false;">Download CSV</button>
+            <button type="button" class="btn btn-info btn-sm" onclick="downloadReport('xlsx'); return false;">Download Excel xlsx</button>
         </div>
     </div>
 `;
