@@ -60,6 +60,7 @@ function exhibitor_page_init($title) {
     <script type='text/javascript' src="jslib/global.js?v=$globalJSversion"></script>
     <script type='text/javascript' src="js/base.js?v=$exhibitorJSversion"></script>
     <script type='text/javascript' src="js/vendor.js?v=$exhibitorJSversion"></script>
+    <script type='text/javascript' src="jslib/passkey.js?v=$libJSversion"></script>
     <script type='text/javascript' src="jslib/exhibitorProfile.js?v=$libJSversion"></script>
     <script type='text/javascript' src="jslib/exhibitorRequest.js?v=$libJSversion"></script>
     <script type='text/javascript' src="jslib/exhibitorReceipt.js?v=$libJSversion"></script>
