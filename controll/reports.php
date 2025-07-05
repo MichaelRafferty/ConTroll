@@ -183,7 +183,7 @@ EOS;
             $tab = str_replace(' ', '-', $name);
             if (count($prompts) > 0) {
                 $reportPrompts[$key] = $prompts;
-                $onclick = "showPrompts('$key', '$prefix', '$fileName', '$t ype', '$template');";
+                $onclick = "showPrompts('$key', '$prefix', '$fileName', '$type', '$template');";
             } else {
                 $onclick = "noPrompts('$key', '$prefix', '$fileName', '$type', '$template');";
             }
