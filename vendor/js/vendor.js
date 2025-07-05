@@ -26,7 +26,7 @@ window.onload = function () {
     vendorInvoiceOnLoad()
     exhibitorReceiptOnLoad();
     if (typeof exhibitor_info !== 'undefined') {
-        if (exhibitor_info['needReview']) {
+        if (exhibitor_info['DaysSinceLastVerified'] > 180) {
             exhibitorProfile.profileModalOpen('review');
         }
     }

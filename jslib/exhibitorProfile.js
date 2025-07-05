@@ -386,7 +386,7 @@ class ExhibitorProfile {
                     var keys = Object.keys(exhibitor_info);
                     for (var keyindex in keys) {
                         var key = keys[keyindex];
-                        if (key == 'eNeedNew' || key == 'cNeedNew' || key == 'eConfirm' || key == 'cConfirm')
+                        if (key == 'eNeedNew' || key == 'cNeedNew' || key == 'DaysSinceLastVerified')
                             continue;
 
                         var value = exhibitor_info[key];

@@ -48,9 +48,8 @@ WHERE appName = 'portal' AND appPage = 'accountSettings' AND appSection = 'main'
  */
 
 ALTER TABLE exhibitors DROP COLUMN confirm;
-ALTER TABLE exhibitors ADD COLUMN lastVerified datetime DEFAULT current_timestamp NOT NULL AFTER need_new;
-
 ALTER TABLE exhibitorYears DROP COLUMN confirm;
+ALTER TABLE exhibitorYears DROP COLUMN needReview;
 ALTER TABLE exhibitorYears ADD COLUMN lastVerified datetime DEFAULT current_timestamp NOT NULL AFTER need_new;
 
 

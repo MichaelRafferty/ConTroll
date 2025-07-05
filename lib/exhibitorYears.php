@@ -50,10 +50,10 @@ EOS;
             $contactPassword = password_hash(trim($contactPassword), PASSWORD_DEFAULT);
         }
         $eyinsq = <<<EOS
-INSERT INTO exhibitorYears(conid, exhibitorId, contactName, contactEmail, contactPhone, contactPassword, mailin, need_new, confirm, notes)
+INSERT INTO exhibitorYears(conid, exhibitorId, contactName, contactEmail, contactPhone, contactPassword, mailin, need_new, lastVerified, notes)
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 EOS;
-        $typestr = 'iisssssiis';
+        $typestr = 'iisssssiss';
         $paramArray = array(
             $conid,
             $exhibitor,
@@ -63,7 +63,7 @@ EOS;
             $contactPassword,
             $mailin,
             $need_new,
-            $confirm,
+            '2001/01/01',
             trim($conNotes) != '' ? trim($conNotes) : null
         );
         $newyrid = dbSafeInsert($eyinsq, $typestr, $paramArray);
@@ -74,8 +74,8 @@ EOS;
         else
             $conNotes = "'" . trim($conNotes) . "'";
         $eyinsQ = <<<EOS
-INSERT INTO exhibitorYears (conid, exhibitorId, contactName, contactEmail, contactPhone, contactPassword, mailin, need_new, confirm)
-SELECT ?, exhibitorId, contactName, contactEmail, contactPhone, contactPassword, mailin, need_new, confirm, $conNotes
+INSERT INTO exhibitorYears (conid, exhibitorId, contactName, contactEmail, contactPhone, contactPassword, mailin, need_new, lastVerified)
+SELECT ?, exhibitorId, contactName, contactEmail, contactPhone, contactPassword, mailin, need_new, '2001/01/01', $conNotes
 FROM exhibitorYears
 WHERE conid = ? AND exhibitorId = ?;
 EOS;

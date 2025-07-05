@@ -288,7 +288,7 @@ EOS;
 
         $updateQ = <<<EOS
 UPDATE exhibitorYears
-SET contactName=?, contactEmail=?, contactPhone=?, mailin = ?, needReview = 0
+SET contactName=?, contactEmail=?, contactPhone=?, mailin = ?, lastVerified = NOW()
 WHERE id=?
 EOS;
             $updateArr = array(
@@ -304,9 +304,8 @@ EOS;
             $response['message'] = 'Profile Updated';
             // get the update info
             $vendorQ = <<<EOS
-SELECT artistName, exhibitorName, exhibitorEmail, exhibitorPhone, salesTaxId, website, description, e.need_new AS eNeedNew, e.lastVerified AS eLastVerified, ey
-.mailin,
-       ey.contactName, ey.contactEmail, ey.contactPhone, ey.need_new AS cNeedNew, ey.lastVerified AS cLastVerified, ey.needReview as needReview,
+SELECT artistName, exhibitorName, exhibitorEmail, exhibitorPhone, salesTaxId, website, description, e.need_new AS eNeedNew,
+       ey.mailin, ey.contactName, ey.contactEmail, ey.contactPhone, ey.need_new AS cNeedNew, DATEDIFF(now(), ey.lastVerified) AS DaysSinceLastVerified,
        addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, publicity
 FROM exhibitors e
 LEFT OUTER JOIN exhibitorYears ey ON e.id = ey.exhibitorId
