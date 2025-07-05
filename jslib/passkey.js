@@ -198,54 +198,6 @@ async function passkeyRequest(script, successPage, source, enable) {
         },
     });
 }
-/*
-    // get check args
-        let rep = await window.fetch(script + '?fn=getGetArgs' + getGetParams(), {method:'GET',cache:'no-cache'});
-        const getArgs = await rep.json();
-
-        // error handling
-        if (getArgs.success === false) {
-            throw new Error(getArgs.msg);
-        }
-
-        // replace binary base64 data with ArrayBuffer. a other way to do this
-        // is the reviver function of JSON.parse()
-        recursiveBase64StrToArrayBuffer(getArgs);
-
-        // check credentials with hardware
-        const cred = await navigator.credentials.get(getArgs);
-
-        // create object for transmission to server
-        const authenticatorAttestationResponse = {
-            id: cred.rawId ? arrayBufferToBase64(cred.rawId) : null,
-            clientDataJSON: cred.response.clientDataJSON  ? arrayBufferToBase64(cred.response.clientDataJSON) : null,
-            authenticatorData: cred.response.authenticatorData ? arrayBufferToBase64(cred.response.authenticatorData) : null,
-            signature: cred.response.signature ? arrayBufferToBase64(cred.response.signature) : null,
-            userHandle: cred.response.userHandle ? arrayBufferToBase64(cred.response.userHandle) : null
-        };
-
-        // send to server
-        rep = await window.fetch(server + '?fn=processGet' + getGetParams(), {
-            method:'POST',
-            body: JSON.stringify(authenticatorAttestationResponse),
-            cache:'no-cache'
-        });
-        const authenticatorAttestationServerResponse = await rep.json();
-
-        // check server response
-        if (authenticatorAttestationServerResponse.success) {
-            reloadServerPreview();
-            window.alert(authenticatorAttestationServerResponse.msg || 'login success');
-        } else {
-            throw new Error(authenticatorAttestationServerResponse.msg);
-        }
-
-    } catch (err) {
-        reloadServerPreview();
-        window.alert(err.message || 'unknown error occured');
-    }
-}
-*/
 
 /**
 * convert RFC 1342-like base64 strings to array buffer
