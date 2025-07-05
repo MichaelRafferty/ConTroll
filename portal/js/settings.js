@@ -16,6 +16,8 @@ class Settings {
         this.#people = [];
         this.#emails = [];
         this.#newPasskeyBtn = document.getElementById('newPasskey');
+        if (config.hasOwnProperty('passkey') && config.passkey == 'create')
+            this.newPasskey();
     }
 
 // associate / disassociate a person from this account, by the account holders requests

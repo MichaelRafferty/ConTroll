@@ -33,6 +33,10 @@ $config_vars['uri'] = $portal_conf['portalsite'];
 $config_vars['regadminemail'] = $con['regadminemail'];
 $config_vars['id'] = $personId;
 $config_vars['idType'] = $personType;
+if (array_key_exists('passkey', $_REQUEST) && $_REQUEST['passkey'] == 'create') {
+    $config_vars['passkey'] = $_REQUEST['passkey'];
+}
+
 $cdn = getTabulatorIncludes();
 
 // build info array about the account holder
