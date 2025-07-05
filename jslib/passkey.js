@@ -184,6 +184,10 @@ async function passkeyRequest(script, successPage, source, enable) {
                         else
                             window.location = '?switch=account';
                         return;
+
+                    case 'vendor':
+                        window.location = successPage + '?messageFwd=' + encodeURI(data['message']);
+                        return;
                 }
                 show_message(data['message'], 'success');
                 return;
