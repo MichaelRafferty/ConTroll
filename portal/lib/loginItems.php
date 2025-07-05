@@ -19,6 +19,9 @@ function draw_login($config_vars, $result_message = '', $result_color = '', $why
                         <img src="lib/passkey.png">Login with Passkey
                     </button>
                 </div>
+                <div class='col-sm-auto'>
+                    Don't have one? Create a passkey after signing on and skip the password next time.
+                </div>
             </div>
             <?php } ?>
             <div class="row mb-2">
