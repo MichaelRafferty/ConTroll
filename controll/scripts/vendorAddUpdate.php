@@ -114,12 +114,12 @@ EOS;
         // create the vendor
         // email address validated on the source side
         $exhibitorInsertQ = <<<EOS
-INSERT INTO exhibitors (exhibitorName, exhibitorEmail, exhibitorPhone, website, description, password, need_new, confirm, 
+INSERT INTO exhibitors (exhibitorName, exhibitorEmail, exhibitorPhone, website, description, password, need_new, 
     addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, 
     publicity, notes) 
-VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
+VALUES (?,?,?,?,?,?,0,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
 EOS;
-        $typestr = 'ssssssiisssssssssssssis';
+        $typestr = 'sssssssssssssssssssis';
         $paramarr = array(
             trim($artistName),
             trim($_POST['exhibitorName']),
@@ -128,8 +128,6 @@ EOS;
             trim($_POST['website']),
             trim($_POST['description']),
             password_hash(trim($_POST['password']), PASSWORD_DEFAULT),
-            0, // need_new_passwd
-            0, // confirm
             trim($_POST['addr']),
             trim($_POST['addr2']),
             trim($_POST['city']),
@@ -194,7 +192,7 @@ EOS;
 
         $updateQ = <<<EOS
 UPDATE exhibitorYears
-SET contactName=?, contactEmail=?, contactPhone=?, mailin = ?, needReview = 0, notes = ?
+SET contactName=?, contactEmail=?, contactPhone=?, mailin = ?, lastVerified = NOW(), notes = ?
 WHERE id=?
 EOS;
             $updateArr = array(
@@ -211,9 +209,9 @@ EOS;
             $response['message'] = 'Profile Updated';
             // get the update info
             $vendorQ = <<<EOS
-SELECT exhibitorName, exhibitorEmail, exhibitorPhone, website, description, e.need_new AS eNeedNew, e.confirm AS eConfirm,
-       IFNULL(e.notes, '') AS exhNotes, IFNULL(ey.notes, '') AS contactNotes, ey.mailin,
-       ey.contactName, ey.contactEmail, ey.contactPhone, ey.need_new AS cNeedNew, ey.confirm AS cConfirm, ey.needReview as needReview,
+SELECT exhibitorName, exhibitorEmail, exhibitorPhone, website, description, e.need_new AS eNeedNew,
+       IFNULL(e.notes, '') AS exhNotes, IFNULL(ey.notes, '') AS contactNotes, ey.mailin, ey.contactName, ey.contactEmail, ey.contactPhone, 
+       ey.need_new AS cNeedNew, DATEDIFF(now(), ey.lastVerified) AS DaysSinceLastVerified, ey.lastVerified,
        addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, publicity
 FROM exhibitors e
 LEFT OUTER JOIN exhibitorYears ey ON e.id = ey.exhibitorId
