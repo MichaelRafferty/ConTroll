@@ -364,8 +364,8 @@ EOS;
 
 // get this exhibitor
 $exhibitorQ = <<<EOS
-SELECT artistName, exhibitorName, exhibitorEmail, exhibitorPhone, salesTaxId, website, description, e.need_new AS eNeedNew, e.confirm AS eConfirm, 
-       ey.contactName, ey.contactEmail, ey.contactPhone, ey.need_new AS cNeedNew, ey.confirm AS cConfirm, ey.needReview, ey.mailin,
+SELECT artistName, exhibitorName, exhibitorEmail, exhibitorPhone, salesTaxId, website, description, e.need_new AS eNeedNew, e.lastVerified AS eLastVerified, 
+       ey.contactName, ey.contactEmail, ey.contactPhone, ey.need_new AS cNeedNew, ey.lastVerified AS cLastVerified, ey.needReview, ey.mailin,
        e.addr, e.addr2, e.city, e.state, e.zip, e.country, e.shipCompany, e.shipAddr, e.shipAddr2, e.shipCity, e.shipState, e.shipZip, e.shipCountry, e.publicity,
        p.id AS perid, p.first_name AS p_first_name, p.last_name AS p_last_name, n.id AS newperid, n.first_name AS n_first_name, n.last_name AS n_last_name
 FROM exhibitors e
