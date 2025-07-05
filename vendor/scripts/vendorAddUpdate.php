@@ -14,8 +14,8 @@ $conid = $con['id'];
 
 $response = array('post' => $_POST, 'get' => $_GET);
 
-if (array_key_exists('eyID', $_SESSION)) {
-    $exyID = $_SESSION['eyID'];
+if (isSessionVar('eyID')) {
+    $exyID = getSessionVar('eyID');
 } else {
     $exyID = null;
 }
@@ -185,9 +185,9 @@ EOS;
     case 'review':
         $vendor = 0;
 
-        if (isset($_SESSION['id'])) {
-            $vendor = $_SESSION['id'];
-            $vendorYear = $_SESSION['eyID'];
+        if (isSessionVar('id')) {
+            $vendor = getSessionVar('id');
+            $vendorYear = getSessionVar('eyID');
         } else {
             $response['status'] = 'error';
             $response['message'] = 'Authentication Failure';

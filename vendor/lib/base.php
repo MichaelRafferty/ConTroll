@@ -1,7 +1,7 @@
 <?php
 // exhibitor - base.php - base functions for exhibitor reg
 require_once(__DIR__ . '/../../lib/global.php');
-global $db_ini;
+global $db_ini, $appSessionPrefix;
 if (!$db_ini) {
     $db_ini = loadConfFile();
     $include_path_additions = PATH_SEPARATOR . $db_ini['client']['path'] . '/../Composer';
@@ -21,6 +21,7 @@ require_once(__DIR__ . '/../../lib/cipher.php');
 require_once(__DIR__ . '/../../lib/jsVersions.php');
 
 db_connect();
+$appSessionPrefix = 'Ctrl/Vendor/';
 session_start();
 
 function exhibitor_page_init($title) {

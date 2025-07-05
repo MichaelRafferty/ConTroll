@@ -19,8 +19,8 @@ $response = array('post' => $_POST, 'get' => $_GET);
 $region = $_POST['region']; // TODO error checking
 $getType = $_POST['gettype'];
 
-$vendor = $_SESSION['id'];
-$vendor_year = $_SESSION['eyID'];
+$vendor = getSessionVar('id');
+$vendor_year = getSessionVar('eyID');
 $response['vendor'] = $vendor;
 $response['vendor_year'] = $vendor_year;
 if($vendor == false) {

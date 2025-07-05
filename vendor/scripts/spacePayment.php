@@ -36,10 +36,10 @@ logInit($log['vendors']);
 
 $email = "no send attempt or a failure";
 
-if(!isset($_SESSION['id'])) { ajaxSuccess(array('status'=>'error', 'message'=>'Session Failure')); exit; }
+if(!isSessionVar('id')) { ajaxSuccess(array('status'=>'error', 'message'=>'Session Failure')); exit; }
 
-$exhId = $_SESSION['id'];
-$eyID = $_SESSION['eyID'];
+$exhId = getSessionVar('id');
+$eyID = getSessionVar('eyID');
 
 $response = array("post" => $_POST, "get" => $_GET);
 

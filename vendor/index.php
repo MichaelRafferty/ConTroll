@@ -136,18 +136,15 @@ if (getConfValue('vendor', 'test') == 1) {
 <?php
 }
 
-if (isset($_SESSION['id']) && !isset($_GET['vid'])) {
+if (isSessionVar('id') && !isset($_GET['vid'])) {
 // in session, is it a logout?
     if (isset($_REQUEST['logout'])) {
-        session_destroy();
-        unset($_SESSION['id']);
-        unset($_SESSION['eyID']);
-        unset($_SESSION['login_type']);
+        clearSession();
         header('location:' . $_SERVER['PHP_SELF']);
         exit();
     } else {
         // nope, just set the exhibitor id
-        $exhibitor = $_SESSION['id'];
+        $exhibitor = getSessionVar('id');
         $in_session = true;
     }
 } else if (isset($_GET['vid'])) {
@@ -160,9 +157,9 @@ if (isset($_SESSION['id']) && !isset($_GET['vid'])) {
         exit();
     }
     $exhibitor = $match['id'];
-    $_SESSION['id'] = $exhibitor;
-    $_SESSION['eyID'] = $match['eyID'];
-    $_SESSION['login_type'] = $match['loginType'];
+    setSessionVar('id', $exhibitor);
+    setSessionVar('eyID', $match['eyID']);
+    setSessionVar('login_type', $match['loginType']);
     $in_session = true;
 
     // if archived, unarchive them, they just logged in again
@@ -179,14 +176,14 @@ if (isset($_SESSION['id']) && !isset($_GET['vid'])) {
         // create the year related functions
         $newid = exhibitorBuildYears($exhibitor);
         if (is_numeric($newid))
-            $_SESSION['eyID'] = $newid;
+            setSessionVar('eyID', $newid);
     } else {
-        $_SESSION['eyID'] = $match['eyID'];
+        setSessionVar('eyID', $match['eyID']);
     }
-    exhibitorCheckMissingSpaces($exhibitor, $_SESSION['eyID']);
+    exhibitorCheckMissingSpaces($exhibitor, getSessionVar('eyID'));
     // reload page to get rid of vid in url
     header('location:' . $_SERVER['PHP_SELF']);
-} else if (isset($_POST['si_email']) and isset($_POST['si_password'])) {
+} else if ((isset($_POST['si_email']) && isset($_POST['si_password']))) {
     // handle login submit
     $login = trim(strtolower($_POST['si_email']));
     $loginQ = <<<EOS
@@ -258,9 +255,9 @@ EOS;
 
     // a single  match....
     $match = $matches[0];
-    $_SESSION['id'] = $match['id'];
-    $exhibitor = $_SESSION['id'];
-    $_SESSION['login_type'] = $match['loginType'];
+    $exhibitor = $match['id'];
+    setSessionVar('id', $exhibitor);
+    setSessionVar('login_type', $match['loginType']);
     $in_session = true;
 
     // if archived, unarchive them, they just logged in again
@@ -276,11 +273,11 @@ EOS;
         // create the year related functions
         $newid = exhibitorBuildYears($exhibitor);
         if (is_numeric($newid))
-            $_SESSION['eyID'] = $newid;
+            setSessionVar('eyID', $newid);
     } else {
-        $_SESSION['eyID'] = $match['eyID'];
+        setSessionVar('eyID', $match['eyID']);
     }
-    exhibitorCheckMissingSpaces($exhibitor, $_SESSION['eyID']);
+    exhibitorCheckMissingSpaces($exhibitor, getSessionVar('eyID'));
 } else {
     draw_signupModal($portalType, $portalName, $con, $countryOptions);
     draw_login($config_vars);
@@ -392,7 +389,7 @@ while(($data = fgetcsv($fh, 1000, ',', '"'))!=false) {
 fclose($fh);
 
 
-$config_vars['loginType'] = $_SESSION['login_type'];
+$config_vars['loginType'] = getSessionVar('login_type');
 
 $exhibitorPQ = <<<EOS
 SELECT exRY.*, ey.exhibitorId,
