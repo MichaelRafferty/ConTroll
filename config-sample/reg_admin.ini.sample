@@ -30,7 +30,8 @@ cancel_date="Day, Month Day" ; can override in each app section
 ;; 3: site.org.root - right 3 most sections in the host name (aka reg.philcon.org, or exhibitor.philcon.org and all of it's subdomains
 ;;      for the exhibitor types, if so setup)
 ;; h: host  (full hostname, less "www." if on the front.  (so vendor.exhibitor.philcon.org is different than artist.exhibitor.philcon.org)
-passkeyRpLevel=2
+;; d: disabled - disable passkeys
+passkeyRpLevel=2 ; can override in each app section
 
 [con]
 ;;; id = numeric identifier for this year, be it the number of the con (1,2,3,4) or the year of the con (2025, 2026, ...)

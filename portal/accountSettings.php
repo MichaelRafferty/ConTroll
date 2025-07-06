@@ -120,20 +120,22 @@ if ($identitiesR !== false) {
     $identitiesR->free();
 }
 
+if (getConfValue('portal', 'passkeyRpLevel') != 'd') {
 // get the passkeys
-$passKeySQL = <<<EOS
+    $passKeySQL = <<<EOS
 SELECT *
 FROM passkeys
 WHERE userName = ?
 ORDER BY createDate;
 EOS;
-$passKeysR = dbSafeQuery($passKeySQL, 's', array($info['email_addr']));
-$passKeys = [];
-if ($passKeysR !== false) {
-    while ($p = $passKeysR->fetch_assoc()) {
-        $passKeys[] = $p;
+    $passKeysR = dbSafeQuery($passKeySQL, 's', array ($info['email_addr']));
+    $passKeys = [];
+    if ($passKeysR !== false) {
+        while ($p = $passKeysR->fetch_assoc()) {
+            $passKeys[] = $p;
+        }
+        $passKeysR->free();
     }
-    $passKeysR->free();
 }
 
 // if we get here, we are logged in and it's a purely new person or we manage the person to be processed
@@ -216,6 +218,7 @@ if ($info['managedByName'] == null) {
 <?php
 }
 // passkeys (independent of personType
+    if (getConfValue('portal', 'passkeyRpLevel') != 'd') {
 ?>
     <div id='passkeyDiv'>
         <div class='row mt-3'>
@@ -223,7 +226,7 @@ if ($info['managedByName'] == null) {
         </div>
     </div>
 <?php
-    outputCustomText('main/passkeys');
+        outputCustomText('main/passkeys');
 ?>
     <div class='row'>
         <div class='col-sm-1'></div>
@@ -236,12 +239,12 @@ if ($info['managedByName'] == null) {
         <div class='col-sm-1' style='text-align: right;'><b>Use Count</b></div>
     </div>
 <?php
-    foreach ($passKeys as $passkey) {
-        $createDate = date_format(date_create($passkey['createDate']), 'Y-m-d');
-        $lastUsed = '';
-        if ($passkey['lastUseTS'] != null) {
-            $lastUsed = date_format(date_create($passkey['lastUsedDate']), 'Y-m-d');
-        }
+        foreach ($passKeys as $passkey) {
+            $createDate = date_format(date_create($passkey['createDate']), 'Y-m-d');
+            $lastUsed = '';
+            if ($passkey['lastUseTS'] != null) {
+                $lastUsed = date_format(date_create($passkey['lastUsedDate']), 'Y-m-d');
+            }
         ?>
         <div class="row">
             <div class="col-sm-1"><button class="btn btn-sm btn-warning pt-0 pb-0"
@@ -255,8 +258,8 @@ if ($info['managedByName'] == null) {
             <div class='col-sm-1' style='text-align: right;'><?php echo $passkey['useCount'];?></div>
         </div>
         <?php
-    }
-    if (array_key_exists('HTTPS', $_SERVER) && (isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == 'on')) {
+        }
+        if (array_key_exists('HTTPS', $_SERVER) && (isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == 'on')) {
 ?>
     <div class='row mt-4'>
         <div class='col-sm-2'>
@@ -268,7 +271,8 @@ if ($info['managedByName'] == null) {
 
             <div class='col-sm-auto'><input type='text' id='userDisplayName' name='userDisplayName' size=64 maxlength=255 /></div>
     </div>
-<?php }
+<?php   }
+    }
 // identities
 if ($personType == 'n') {
 ?>

@@ -12,7 +12,7 @@ function draw_login($config_vars, $result_message = '', $result_color = '', $why
                     <h4>Please log in to <?php echo $why; ?>:</h4>
                 </div>
             </div>
-            <?php  if (array_key_exists('HTTPS', $_SERVER) && (isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == 'on')) { ?>
+            <?php  if (getConfValue('portal', 'passkeyRpLevel') != 'd' && array_key_exists('HTTPS', $_SERVER) && (isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == 'on')) { ?>
             <div class='row mb-2'>
                 <div class='col-sm-auto'>
                     <button class='btn btn-sm btn-primary' id="loginPasskeyBtn" onclick='login.loginWithPasskey();'>
