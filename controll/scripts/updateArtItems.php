@@ -50,7 +50,7 @@ INSERT INTO artItems (item_key, location, min_price, original_qty, quantity, sal
     (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);                                                                                                            
 EOS;
 
-$insertTypes = "isiiiissssiiiii";
+$insertTypes = "isiiiissssiisii";
 
 
 foreach ($tabledata as $row) {
@@ -61,6 +61,8 @@ foreach ($tabledata as $row) {
     if($row['sale_price'] == '') {$row['sale_price'] = null;}
     if($row['notes'] == '') { $row['notes'] = null;}
 
+    if(($row['id'] < 0) && ($row['min_price']==null)) { $row['min_price']=$row['sale_price']; }
+
     $paramarray = array($row['item_key'], $row['location'], $row['min_price'], $row['original_qty'], $row['quantity'],
         $row['sale_price'], $row['status'] , $row['title'], $row['type'], $row['material'], $row['bidder'], $row['final_price'],
         $row['notes'],
@@ -69,7 +71,7 @@ foreach ($tabledata as $row) {
         $updated += dbSafeCmd($updateSQL, $updateTypes, $paramarray);
     } else {
         array_pop($paramarray);
-       $paramarray[] = $row['exhibitorRegionYearId'];
+        $paramarray[] = $row['exhibitorRegionYearId'];
 
         $maxKey = array('item_key'=>0);
         $maxKeyR = dbSafeQuery("SELECT max(item_key) as item_key FROM artItems WHERE exhibitorRegionYearId=? GROUP BY exhibitorRegionYearId", 'i', array($row['exhibitorRegionYearId']));
@@ -82,6 +84,8 @@ foreach ($tabledata as $row) {
             if($checkKeyR->num_rows >0) { $paramarray[0] = $maxKey['item_key']+1; }
             }
 
+        $response['insert'] = $insertSQL;
+        $response['insertArray'] = $paramarray;
         $paramarray[]=$_SESSION['user_perid'];
         $new_index = dbSafeInsert($insertSQL,$insertTypes,$paramarray);
         if($new_index > 0 ) { $new++; }
