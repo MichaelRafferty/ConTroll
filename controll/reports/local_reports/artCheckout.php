@@ -1,39 +1,10 @@
 <?php
-require_once "../../lib/base.php";
+require_once "../../lib/phpReports.php";
 
-$check_auth = google_init('ajax');
-$perm = "art_control";
-$response = array ('perm' => $perm);
+$response = loadReportInfo();
+$postVars = $response['postVars'];
+$conid = $response['conid'];
 
-if ($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
-    $response['error'] = 'Authentication Failed';
-    ajaxSuccess($response);
-    exit();
-}
-
-if ((!array_key_exists('postVars', $_POST)) || (!array_key_exists('report', $_POST)) || (!array_key_exists('group', $_POST))
-    || (!array_key_exists('prefix', $_POST)) || $_POST['action'] != 'fetch') {
-    $response['error'] = 'Invalid Arguments';
-    ajaxSuccess($response);
-    exit();
-}
-
-$con = get_conf("con");
-$conid=$con['id'];
-
-$group = $_POST['group'];
-$reportName = $_POST['report'];
-$prefix = $_POST['prefix'];
-$groupParams = parse_ini_file(__DIR__ . "/../../reports/$group", true);
-$hdrAuth = $groupParams['group']['auth'];
-$report = $groupParams[$reportName];
-
-$response['hdrAuth'] = $hdrAuth;
-$response['reportName'] = $reportName;
-$response['prefix'] = $prefix;
-$response['report'] = $report;
-
-$postVars = $_POST['postVars'];
 if (array_key_exists('artid', $postVars)) {
     $artid = $postVars['artid'];
 } else {
@@ -123,5 +94,5 @@ $output = str_replace("\n", "<br/>", $output);
 //echo $query; exit();
 $response['output'] = $output;
 $response['status'] = 'success';
-$response['meesage'] = 'Report Complete';
+$response['message'] = 'Report Complete';
 ajaxSuccess($response);
