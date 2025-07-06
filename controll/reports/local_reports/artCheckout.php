@@ -1,23 +1,43 @@
 <?php
-require_once "../lib/base.php";
+require_once "../../lib/base.php";
 
-$need_login = google_init("page");
-$page = "reports";
+$check_auth = google_init('ajax');
+$perm = "art_control";
+$response = array ('perm' => $perm);
 
-if(!$need_login or !checkAuth($need_login['sub'], $page)) {
-    bounce_page("index.php");
+if ($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
+    $response['error'] = 'Authentication Failed';
+    ajaxSuccess($response);
+    exit();
 }
 
+if ((!array_key_exists('postVars', $_POST)) || (!array_key_exists('report', $_POST)) || (!array_key_exists('group', $_POST))
+    || (!array_key_exists('prefix', $_POST)) || $_POST['action'] != 'fetch') {
+    $response['error'] = 'Invalid Arguments';
+    ajaxSuccess($response);
+    exit();
+}
 
 $con = get_conf("con");
 $conid=$con['id'];
-$artid=100;
 
-if(!isset($_GET) || !isset($_GET['artid'])) {
-    #echo "Artist #, Item #, Title, Number Sold, Item Price, Total" . "\n";
-    #exit();
+$group = $_POST['group'];
+$reportName = $_POST['report'];
+$prefix = $_POST['prefix'];
+$groupParams = parse_ini_file(__DIR__ . "/../../reports/$group", true);
+$hdrAuth = $groupParams['group']['auth'];
+$report = $groupParams[$reportName];
+
+$response['hdrAuth'] = $hdrAuth;
+$response['reportName'] = $reportName;
+$response['prefix'] = $prefix;
+$response['report'] = $report;
+
+$postVars = $_POST['postVars'];
+if (array_key_exists('artid', $postVars)) {
+    $artid = $postVars['artid'];
 } else {
-    $artid = $_GET['artid'];
+    $artid = 100;
 }
 
 $nameQuery = <<<EOS
@@ -27,17 +47,23 @@ from exhibitors e
     join exhibitorRegionYears eRY on eRY.exhibitorYearId = eY.id 
     join exhibitsRegionYears xRY on xRY.id = eRY.exhibitsRegionYearId 
     JOIN exhibitsRegions xR on xR.id=xRY.exhibitsRegion 
-where eY.conid=58 and xR.regionType='Art Show' and exhibitorNumber=?;
+where eY.conid=? and xR.regionType='artshow' and exhibitorNumber=?;
 EOS;
+$nameR = dbSafeQuery($nameQuery, 'ii', array($conid, $artid));
+if ($nameR === false) {
+    ajaxSuccess(array('status' => 'error', 'message' => 'Error in artist query, get help'));
+    exit();
+}
+if ($nameR->num_rows == 0) {
+    ajaxSuccess(array('status' => 'error', 'message' => "Artist $artid not found"));
+    exit();
+}
 
-$nameR = fetch_safe_array(dbSafeQuery($nameQuery, 'i', array($artid)));
-$name=$nameR[0];
-
-header('Content-Type: application/csv');
-header('Content-Disposition: attachment; filename="checkout_'.$name.'.csv"');
+$name = $nameR->fetch_row()[0];
+$nameR->free();
 
 $query = <<<EOS
-SELECT A.art_key, I.item_key, I.title, 
+SELECT E.exhibitorNumber, I.item_key, I.title, 
     CASE I.quantity < I.original_qty
         WHEN true THEN I.original_qty - I.quantity
         ELSE 1 
@@ -47,26 +73,27 @@ SELECT A.art_key, I.item_key, I.title,
         ELSE I.sale_price
     END as item_price
 FROM artItems I
-JOIN artshow A ON A.id=I.artshow
-WHERE I.artshow = ? AND (I.quantity < I.original_qty OR I.final_price IS NOT null OR status='Sold Bid Sheet');
+JOIN exhibitorRegionYears E ON (E.id=I.exhibitorRegionYearId)
+JOIN artSales A ON A.artid=I.id
+WHERE E.exhibitorNumber = ? AND (I.quantity < I.original_qty OR I.final_price IS NOT null OR I.status='Sold Bid Sheet');
 EOS;
 
+$output = '';
 //echo $query; exit();
 
-echo "Artist #, Item #, Title, Number Sold, Item Price, Total"
-    . "\n";
+$output .= "Artist #, Item #, Title, Number Sold, Item Price, Total\n";
 
 $reportR = dbSafeQuery($query, 'i', array($artid));
 $total = 0;
 while($reportL = fetch_safe_array($reportR)) {
     for($i = 0 ; $i < count($reportL); $i++) {
-        printf("\"%s\",", html_entity_decode($reportL[$i], ENT_QUOTES | ENT_HTML401));
+        $output .= sprintf("\"%s\",", html_entity_decode($reportL[$i], ENT_QUOTES | ENT_HTML401));
     }
-    printf("\"%s\"", $reportL[3]*$reportL[4] );
+    $output .= sprintf("\"%s\"", $reportL[3]*$reportL[4] );
     $total = $total + ($reportL[3]*$reportL[4]);
-    echo "\n";
+    $output .= "\n";
 }
-echo ",,$name TOTAL,,,$total\n";
+$output .= ",,$name TOTAL,,,$total\n";
 
 $query = <<<EOS
 SELECT A.exhibitorNumber as art_key, I.item_key, I.title, I.quantity
@@ -79,16 +106,22 @@ WHERE I.exhibitorRegionYearId = ? AND (
 );
 EOS;
 
-echo "\n\n\n";
+$output .= "\n\n\n";
 
-echo "Artist #, Item #, Title, Number Returned" . "\n";
+$output .= "Artist #, Item #, Title, Number Returned" . "\n";
 $reportR = dbSafeQuery($query, 'i', array($artid));
 while($reportL = fetch_safe_array($reportR)) {
     for($i = 0 ; $i < count($reportL); $i++) {
-        printf("\"%s\",", html_entity_decode($reportL[$i], ENT_QUOTES | ENT_HTML401));
+        sprintf("\"%s\",", html_entity_decode($reportL[$i], ENT_QUOTES | ENT_HTML401));
     }
-    echo "\n";
+    $output .= "\n";
 }
-echo ",,$name RETURNED\n";
+$output .= ",,$name RETURNED\n";
+
+$output = str_replace("\n", "<br/>", $output);
 
 //echo $query; exit();
+$response['output'] = $output;
+$response['status'] = 'success';
+$response['meesage'] = 'Report Complete';
+ajaxSuccess($response);

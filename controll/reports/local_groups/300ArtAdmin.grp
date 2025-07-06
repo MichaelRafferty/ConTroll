@@ -1,8 +1,11 @@
 [group]
 	name="ArtAdmin"
 	description="Art Admin Reports"
-	auth=artshow_admin
+	auth=art_control
 [300ArtCheckout]
 	name='Artist Checkout'
 	description='Checkhout Report Artshow'
-	P001=""
+	template=artCheckout.php
+	auth=art_control
+	type=php
+	P001="prompt/~/artid/~/Check-out report for Artist ID: /~/Enter Artist's ID"
