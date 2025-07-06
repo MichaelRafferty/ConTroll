@@ -236,8 +236,8 @@ setValuesForNew(exhibitor, number, type) {
     this.type=typeList.getType(type);
     this.status=statusList.getDefault();
     this.location='';
-    if (artItemData['locations'])
-        this.#locationList = artItemData['locations'].split(',');
+    if (exhibitor['locations'])
+        this.#locationList = exhibitor['locations'].split(',');
     else
         this.#locationList = [];
     this.quantity = 1;
