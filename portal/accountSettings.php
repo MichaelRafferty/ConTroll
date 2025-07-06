@@ -33,6 +33,10 @@ $config_vars['uri'] = $portal_conf['portalsite'];
 $config_vars['regadminemail'] = $con['regadminemail'];
 $config_vars['id'] = $personId;
 $config_vars['idType'] = $personType;
+if (array_key_exists('passkey', $_REQUEST) && $_REQUEST['passkey'] == 'create') {
+    $config_vars['passkey'] = $_REQUEST['passkey'];
+}
+
 $cdn = getTabulatorIncludes();
 
 // build info array about the account holder
@@ -42,6 +46,11 @@ if ($info === false) {
     portalPageFoot();
     exit();
 }
+
+$config_vars['email'] = $info['email_addr'];
+$config_vars['firstName'] = $info['first_name'];
+$config_vars['lastName'] = $info['last_name'];
+$config_vars['badgeName'] = $info['badge_name'];
 
 // get people managed by this account
 // get people managed by this account holder
@@ -111,6 +120,22 @@ if ($identitiesR !== false) {
     $identitiesR->free();
 }
 
+// get the passkeys
+$passKeySQL = <<<EOS
+SELECT *
+FROM passkeys
+WHERE userName = ?
+ORDER BY createDate;
+EOS;
+$passKeysR = dbSafeQuery($passKeySQL, 's', array($info['email_addr']));
+$passKeys = [];
+if ($passKeysR !== false) {
+    while ($p = $passKeysR->fetch_assoc()) {
+        $passKeys[] = $p;
+    }
+    $passKeysR->free();
+}
+
 // if we get here, we are logged in and it's a purely new person or we manage the person to be processed
 portalPageInit('accountSettings', $info,
     /* css */ array($cdn['tabcss'],
@@ -119,6 +144,7 @@ portalPageInit('accountSettings', $info,
     /* js  */ array( //$cdn['luxon'],
         $cdn['tabjs'],
         //'js/tinymce/tinymce.min.js',
+        'jslib/passkey.js',
         'js/settings.js',
     ),
 );
@@ -189,6 +215,60 @@ if ($info['managedByName'] == null) {
     </div>
 <?php
 }
+// passkeys (independent of personType
+?>
+    <div id='passkeyDiv'>
+        <div class='row mt-3'>
+            <h2 class='size-h4'>Passkeys:</h2>
+        </div>
+    </div>
+<?php
+    outputCustomText('main/passkeys');
+?>
+    <div class='row'>
+        <div class='col-sm-1'></div>
+        <div class='col-sm-3'><b>Email Address</b></div>
+        <div class='col-sm-2'><b>Display Name</b></div>
+        <div class='col-sm-1'><b>Created</b></div>
+        <div class='col-sm-1'><b>Create IP</b></div>
+        <div class='col-sm-1'><b>Last Used</b></div>
+        <div class='col-sm-1'><b>Last IP</b></div>
+        <div class='col-sm-1' style='text-align: right;'><b>Use Count</b></div>
+    </div>
+<?php
+    foreach ($passKeys as $passkey) {
+        $createDate = date_format(date_create($passkey['createDate']), 'Y-m-d');
+        $lastUsed = '';
+        if ($passkey['lastUseTS'] != null) {
+            $lastUsed = date_format(date_create($passkey['lastUsedDate']), 'Y-m-d');
+        }
+        ?>
+        <div class="row">
+            <div class="col-sm-1"><button class="btn btn-sm btn-warning pt-0 pb-0"
+                onclick="settings.deletePasskey('<?php echo $passkey['id'];?>')">Delete</button></div>
+            <div class='col-sm-3'><?php echo $passkey['userName'];?></div>
+            <div class='col-sm-2'><?php echo $passkey['userDisplayName'];?></div>
+            <div class='col-sm-1'><?php echo $createDate;?></div>
+            <div class='col-sm-1'><?php echo $passkey['createIP'];?></div>
+            <div class='col-sm-1'><?php echo $lastUsed;?></div>
+            <div class='col-sm-1'><?php echo $passkey['lastUsedIP'];?></div>
+            <div class='col-sm-1' style='text-align: right;'><?php echo $passkey['useCount'];?></div>
+        </div>
+        <?php
+    }
+    if (array_key_exists('HTTPS', $_SERVER) && (isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == 'on')) {
+?>
+    <div class='row mt-4'>
+        <div class='col-sm-2'>
+            <button class='btn btn-sm btn-primary' id='newPasskey' onclick='settings.newPasskey();'>
+                <img src="lib/passkey.png">Add New Passkey
+            </button>
+        </div>
+        <div class='col-sm-auto'><label for='userDisplayName'>Display Name:</label></div>
+
+            <div class='col-sm-auto'><input type='text' id='userDisplayName' name='userDisplayName' size=64 maxlength=255 /></div>
+    </div>
+<?php }
 // identities
 if ($personType == 'n') {
 ?>
@@ -211,7 +291,7 @@ if ($personType == 'n') {
             <div class="col-sm-3"><b>Subscriber ID</b></div>
             <div class="col-sm-1"><b>Created</b></div>
             <div class="col-sm-1"><b>Last Used</b></div>
-            <div class="col-sm-1"><b>Use Count</b></div>
+            <div class="col-sm-1" style='text-align: right;'><b>Use Count</b></div>
         </div>
 <?php
     foreach ($identities as $identity) {
@@ -229,7 +309,7 @@ if ($personType == 'n') {
             <div class='col-sm-3'><?php echo $identity['subscriberID'];?></div>
             <div class='col-sm-1'><?php echo $createDate;?></div>
             <div class='col-sm-1'><?php echo $lastUsed;?></div>
-            <div class='col-sm-1'><?php echo $identity['useCount'];?></div>
+            <div class='col-sm-1' style='text-align: right;'><?php echo $identity['useCount'];?></div>
         </div>
 <?php
         }

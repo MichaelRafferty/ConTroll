@@ -2,6 +2,84 @@
 //  global.php
 // functions useful everywhere in the reg system
 
+// load the configuration file
+function loadConfFile(): false|array {
+    global $db_ini;
+
+    // localize the path, try going up a couple of directories
+    $path = __DIR__ . '/../config';
+    if (!is_dir($path)) {
+        $path = __DIR__ . '/../../config';
+        if (!is_dir($path)) {
+            $path = __DIR__ . '/../../../config';
+        }
+    }
+    if (!is_dir($path)) {
+        error_log("Unable to find the configuration directory");
+        exit(1);
+    }
+
+    // our config files are only two level
+    // load admin file
+    $db_ini = parse_ini_file($path . '/reg_admin.ini', true);
+    if ($db_ini === false)
+        $db_ini = [];
+    // now merge/override in config file
+    $db_conf = parse_ini_file($path . '/reg_conf.ini', true);
+    if ($db_conf !== false) {
+        foreach ($db_conf as $section => $values) {
+            if (is_array($values)) {
+                foreach ($values as $key => $value) {
+                    $db_ini[$section][$key] = $value;
+                }
+            } else {
+                $db_ini[$section] = $values;
+            }
+        }
+    }
+    // now override secret file
+    $db_conf = parse_ini_file($path . '/reg_secret.ini', true);
+    if ($db_conf !== false) {
+        foreach ($db_conf as $section => $values) {
+            if (is_array($values)) {
+                foreach ($values as $key => $value) {
+                    $db_ini[$section][$key] = $value;
+                }
+            } else {
+                $db_ini[$section] = $values;
+            }
+        }
+    }
+    return $db_ini;
+}
+
+// older function to get an entire conf section, but it doesn't handle global overrides,
+// should be reserved only for things without overrides
+function get_conf($name) {
+    global $db_ini;
+    if (array_key_exists($name, $db_ini))
+        return $db_ini[$name];
+    return null;
+}
+
+// get a specific value from the config file section, using [global] for defaults if not set
+function getConfValue($section, $key, $default = '') : null|string {
+    global $db_ini;
+
+    if (array_key_exists($section, $db_ini)) {
+        if (array_key_exists($key, $db_ini[$section])) {
+            return $db_ini[$section][$key];
+        }
+    }
+    if (array_key_exists('global', $db_ini)) {
+        if (array_key_exists($key, $db_ini['global'])) {
+            return $db_ini['global'][$key];
+        }
+    }
+
+    return $default;
+}
+
 // non Windows implementation of guidv4
 function guidv4($data = null) {
     // Generate 16 bytes (128 bits) of random data or use the data passed into the function.
@@ -120,6 +198,7 @@ function isPrimary($mtype, $conid, $use = 'all') : bool {
 //// functions for custom text usage
 global $customTexT, $keyPrefix, $customTextFilter, $loadedPrefixes;
 $loadedPrefixes = [];
+$keyPrefix = '';
 
 // loadCustomText - load all the relevant custom text for this page
     function loadCustomText($app, $page, $filter, $addmode = false) : void {

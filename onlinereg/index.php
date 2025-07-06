@@ -20,6 +20,7 @@ $urlCouponCode = '';
 $urlSerialNum = '';
 $serialHidden = 'hidden';
 $class = '';
+$testsite = getConfValue('reg', 'test') == 1;
 
 if (array_key_exists('onlinereg', $debug_conf))
     $debug = $debug_conf['onlinereg'];
@@ -49,7 +50,7 @@ if (array_key_exists('onedaycoupons', $con)) {
 
 $config_vars = array();
 $config_vars['label'] = $con['label'];
-$config_vars['required'] = $reg_conf['required'];
+$config_vars['required'] = getConfValue('reg', 'required', 'addr');
 $config_vars['conid'] = $condata['id'];
 $config_vars['debug'] = $debug;
 $config_vars['onedaycoupons'] = $onedaycoupons;
@@ -120,12 +121,12 @@ $onsitesale = $startdate->format("l, F j");
     </div>
     <h1> Welcome to the <?php echo $condata['label']; ?> Online Registration Page</h1>
 <?php
-  if($reg_conf['test']==1) {
+  if ($testsite) {
     ?>
     <h2 class='text-danger'><strong>This Page is for test purposes only</strong></h2>
     <?php
   }
-  if($reg_conf['open']==1 and $reg_conf['close']==0 and $reg_conf['suspended']==0) {
+  if(getConfValue('reg', 'open') ==1 && getConfValue('reg','close') != 1 && getConfValue('reg', 'suspended') != 1) {
     ?>
 
      <!--- aother membership modal popup -->
@@ -358,7 +359,7 @@ $onsitesale = $startdate->format("l, F j");
                          </div>
                      </div>
 <?php
-      if($reg_conf['test']==1) {
+      if ($testsite) {
 ?>
                      <div class='row mt-2'>
                          <div class='col-sm-12'>
@@ -396,15 +397,15 @@ $onsitesale = $startdate->format("l, F j");
              </div>
          </div>
      </div>
-<?php } else if($reg_conf['cancelled']==1) { ?>
+<?php } else if (getConfValue('reg', 'cancelled') == 1) { ?>
 <p class='text-primary'>
 <?php echo $condata['label']; ?> has been canceled.  If you had previously purchased a membership you should have received an email with instructions. Please go to our <a href='cancelation.php'>Membership Cancelation Page</a> to tell us how you'd like your membership handled.
 </p>
-<?php } else if ($reg_conf['suspended'] == 1) { ?>
+<?php } else if (getConfValue('reg', 'suspended') == 1) { ?>
 <p class="text-primary">
-<?php echo $con['conname']; ?> has temporarily suspended online registration <?php echo $reg_conf['suspendreason']; ?>
+<?php echo $con['conname']; ?> has temporarily suspended online registration <?php echo getConfValue('reg', 'suspendreason'); ?>
 </p>
-<?php } else if($reg_conf['close']==1) { ?>
+<?php } else if (getConfValue('reg','close') == 1) { ?>
 <p class="text-primary">Preregistration for <?php echo $condata['label']; ?> is now closed.
 Memberships will be available for purchase starting <?php echo $onsitesale; ?> by <?php echo $reg_conf['onsiteopen'] . ' ' . $con['pickupareatext']; ?>
 <a href="<?php echo escape_quotes($con['hotelwebsite']); ?>"> <?php echo $con['hotelname']; ?></a>.
@@ -416,7 +417,9 @@ Daily rates are posted on <a href="<?php echo escape_quotes($con['dailywebsite']
 <p class="text-primary">Online registration for <?php echo $condata['id']; ?> is not yet open. We aim to have online registration open 6 months before the convention.
 
 We will post a notice when online registration opens on the
-<a href="<?php echo escape_quotes($reg_conf['registrationpage']); ?>">The <?php echo $con['conname']; ?> Registration Page</a>.  Mail-in forms are also available on that page.</p>
+<a href="<?php echo escape_quotes(getConfValue('reg', 'registrationpage')); ?>">The <?php echo $con['conname']; ?> Registration Page</a>.  Mail-in forms are
+    also
+    available on that page.</p>
 
 <?php } ?>
     <div class='container-fluid'>

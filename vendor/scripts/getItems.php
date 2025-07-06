@@ -19,8 +19,8 @@ $response = array('post' => $_POST, 'get' => $_GET);
 $region = $_POST['region']; // TODO error checking
 $getType = $_POST['gettype'];
 
-$vendor = $_SESSION['id'];
-$vendor_year = $_SESSION['eyID'];
+$vendor = getSessionVar('id');
+$vendor_year = getSessionVar('eyID');
 $response['vendor'] = $vendor;
 $response['vendor_year'] = $vendor_year;
 if($vendor == false) {
@@ -75,7 +75,7 @@ EOS;
 
 $maxR = dbSafeQuery($maxQ, 'i', array($region));
 if ($maxR === false || $maxR->num_rows != 1) {
-    $response['error'] = 'Cannot retrive max inventory limit, seek assistance';
+    $response['error'] = 'Cannot retrieve max inventory limit, seek assistance';
 }
 
 $response['inv'] = $maxR->fetch_assoc();

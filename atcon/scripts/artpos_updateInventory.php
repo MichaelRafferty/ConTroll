@@ -99,7 +99,8 @@ foreach ($updates as $update) {
     }
 
     if ($update['field'] == 'notes') {
-        $updQ .= "notes = CONCAT(IFNULL(notes, ''), '" . PHP_EOL . "', '" . date('Y-m-d H:i:s') . "', ' by " . $userId . "','" . PHP_EOL . "', ?),";
+        $updQ .= "notes = TRIM( LEADING '\n' FROM CONCAT(IFNULL(notes, ''), '" . PHP_EOL . "', '" . date('Y-m-d H:i:s') .
+            "', ' by " . $userId . "','" . PHP_EOL . "', ?)),";
     } else {
         $updQ .= $update['field'] . ' =  ?,';
     }

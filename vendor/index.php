@@ -16,14 +16,13 @@ $con = get_conf('con');
 $conid = $con['id'];
 $vendor_conf = get_conf('vendor');
 $debug = get_conf('debug');
-$reg_conf = get_conf('reg');
 $usps = get_conf('usps');
 load_cc_procs();
 
 $condata = get_con();
 
 $in_session = false;
-$regserver = $reg_conf['server'];
+$regserver = getConfValue('reg', 'server');
 $exhibitor = '';
 
 $reg_link = "<a href='$regserver'>Convention Registration</a>";
@@ -46,11 +45,8 @@ $useUSPS = false;
 if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
     $useUSPS = true;
 
-if (array_key_exists('required', $reg_conf)) {
-    $required = $reg_conf['required'];
-} else {
-    $required = 'addr';
-}
+$required = getConfValue('reg', 'required', 'addr');
+$testsite = getConfValue('vendor', 'test') == 1;
 $firstStar = '';
 $addrStar = '';
 $allStar = '';
@@ -73,7 +69,7 @@ $config_vars['portalName'] = $portalName;
 $config_vars['artistsite'] = $vendor_conf['artistsite'];
 $config_vars['vendorsite'] = $vendor_conf['vendorsite'];
 $config_vars['debug'] = $debug['vendors'];
-$config_vars['required'] = $reg_conf['required'];
+$config_vars['required'] = $required;
 $config_vars['useUSPS'] = $useUSPS;
 $config_vars['allStar'] = $allStar;
 $config_vars['addrStar'] = $addrStar;
@@ -95,19 +91,15 @@ fclose($fh);
 <div class="container-fluid">
     <div class="row">
         <div class="col-sm-12 p-0">
-            <?php
-if (array_key_exists('logoimage', $reg_conf) && $reg_conf['logoimage'] != '') {
-    if (array_key_exists('logoalt', $reg_conf)) {
-        $altstring = $reg_conf['logoalt'];
-    } else {
-        $altstring = 'Logo';
-    } ?>
-                <img class="img-fluid" src="images/<?php echo $reg_conf['logoimage']; ?>" alt="<?php echo $altstring; ?>"/>
+<?php
+$logoImage = getConfValue('reg', 'logoimage');
+if ($logoImage != '') {
+    $altString = getConfValue('reg', 'logoalt', 'Logo');
+    ?>
+                <img class="img-fluid" src="images/<?php echo $logoImage; ?>" alt="<?php echo $altString; ?>"/>
 <?php
 }
-if (array_key_exists('logotext', $reg_conf) && $reg_conf['logotext'] != '') {
-    echo $reg_conf['logotext'];
-}
+echo getConfValue('reg', 'logotext');
 ?>
         </div>
     </div>
@@ -117,7 +109,7 @@ if (array_key_exists('logotext', $reg_conf) && $reg_conf['logotext'] != '') {
         </div>
     </div>
     <?php
-if ($vendor_conf['open'] == 0) { ?>
+if (getConfValue('vendor', 'open') != 1) { ?>
     <p class='text-primary'>The <?php echo $portalName;?> portal is currently closed. Please check the website to determine when it will open or try again tomorrow.</p>
 <?php
     exit;
@@ -134,7 +126,7 @@ if ($vendor_conf['open'] == 0) { ?>
         </div>
     </div>
 <?php
-if ($vendor_conf['test'] == 1) {
+if (getConfValue('vendor', 'test') == 1) {
 ?>
     <div class="row">
         <div class="col-sm-12">
@@ -144,18 +136,15 @@ if ($vendor_conf['test'] == 1) {
 <?php
 }
 
-if (isset($_SESSION['id']) && !isset($_GET['vid'])) {
+if (isSessionVar('id') && !isset($_GET['vid'])) {
 // in session, is it a logout?
     if (isset($_REQUEST['logout'])) {
-        session_destroy();
-        unset($_SESSION['id']);
-        unset($_SESSION['eyID']);
-        unset($_SESSION['login_type']);
+        clearSession();
         header('location:' . $_SERVER['PHP_SELF']);
         exit();
     } else {
         // nope, just set the exhibitor id
-        $exhibitor = $_SESSION['id'];
+        $exhibitor = getSessionVar('id');
         $in_session = true;
     }
 } else if (isset($_GET['vid'])) {
@@ -168,9 +157,9 @@ if (isset($_SESSION['id']) && !isset($_GET['vid'])) {
         exit();
     }
     $exhibitor = $match['id'];
-    $_SESSION['id'] = $exhibitor;
-    $_SESSION['eyID'] = $match['eyID'];
-    $_SESSION['login_type'] = $match['loginType'];
+    setSessionVar('id', $exhibitor);
+    setSessionVar('eyID', $match['eyID']);
+    setSessionVar('login_type', $match['loginType']);
     $in_session = true;
 
     // if archived, unarchive them, they just logged in again
@@ -187,27 +176,35 @@ if (isset($_SESSION['id']) && !isset($_GET['vid'])) {
         // create the year related functions
         $newid = exhibitorBuildYears($exhibitor);
         if (is_numeric($newid))
-            $_SESSION['eyID'] = $newid;
+            setSessionVar('eyID', $newid);
     } else {
-        $_SESSION['eyID'] = $match['eyID'];
+        setSessionVar('eyID', $match['eyID']);
     }
-    exhibitorCheckMissingSpaces($exhibitor, $_SESSION['eyID']);
+    exhibitorCheckMissingSpaces($exhibitor, getSessionVar('eyID'));
     // reload page to get rid of vid in url
     header('location:' . $_SERVER['PHP_SELF']);
-} else if (isset($_POST['si_email']) and isset($_POST['si_password'])) {
+} else if ((isset($_POST['si_email']) && isset($_POST['si_password'])) || isSessionVar('passkeyUserId')) {
     // handle login submit
-    $login = trim(strtolower($_POST['si_email']));
+    if (isset($_POST['si_email'])) {
+        $noCheckPassword = false;
+        $login = trim(strtolower($_POST['si_email']));
+    } else {
+        $noCheckPassword = true;
+        $login = trim(getSessionVar('passkeyUserId'));
+        unsetSessionVar('passkeyUserId');
+    }
+
     $loginQ = <<<EOS
 SELECT e.id, e.artistName, e.exhibitorName, LOWER(e.exhibitorEmail) as eEmail, e.password AS ePassword, e.need_new as eNeedNew, ey.id AS eyID, 
-       LOWER(ey.contactEmail) AS cEmail, ey.contactPassword AS cPassword, ey.need_new AS cNeedNew, archived, ey.needReview,
-       COUNT(eRY.id) AS regions, COUNT(exRY.id) AS myRegions
+       LOWER(ey.contactEmail) AS cEmail, ey.contactPassword AS cPassword, ey.need_new AS cNeedNew, archived,
+       DATEDIFF(now(), ey.lastVerified) AS DaysSinceLastVerified, COUNT(eRY.id) AS regions, COUNT(exRY.id) AS myRegions
 FROM exhibitors e
 LEFT OUTER JOIN exhibitorYears ey ON e.id = ey.exhibitorId AND conid = ?
 JOIN exhibitsRegionYears eRY ON eRY.conid = ?
 LEFT JOIN exhibitorRegionYears exRY ON ey.id = exRY.exhibitorYearId AND exRY.exhibitsRegionYearId = eRY.id
 WHERE e.exhibitorEmail = ? OR ey.contactEmail = ?
 GROUP BY e.id, e.artistName, e.exhibitorName, LOWER(e.exhibitorEmail), e.password, e.need_new, ey.id, LOWER(ey.contactEmail), 
-         ey.contactPassword, ey.need_new, archived, ey.needReview
+         ey.contactPassword, ey.need_new, archived, DaysSinceLastVerified
 EOS;
     $loginR = dbSafeQuery($loginQ, 'iiss', array($conid, $conid, $login, $login));
     // find out how many match
@@ -215,14 +212,14 @@ EOS;
     while ($result = $loginR->fetch_assoc()) { // check exhibitor email/password first
         $found = false;
         if ($login == $result['eEmail']) {
-            if (password_verify($_POST['si_password'], $result['ePassword'])) {
+            if ($noCheckPassword || password_verify($_POST['si_password'], $result['ePassword'])) {
                 $result['loginType'] = 'e';
                 $matches[] = $result;
                 $found = true;
             }
         }
         if (!$found && $login == $result['cEmail']) { // try contact login second
-            if (password_verify($_POST['si_password'], $result['cPassword'])) {
+            if ($noCheckPassword || password_verify($_POST['si_password'], $result['cPassword'])) {
                 $result['loginType'] = 'c';
                 $matches[] = $result;
                 $found = true;
@@ -266,9 +263,9 @@ EOS;
 
     // a single  match....
     $match = $matches[0];
-    $_SESSION['id'] = $match['id'];
-    $exhibitor = $_SESSION['id'];
-    $_SESSION['login_type'] = $match['loginType'];
+    $exhibitor = $match['id'];
+    setSessionVar('id', $exhibitor);
+    setSessionVar('login_type', $match['loginType']);
     $in_session = true;
 
     // if archived, unarchive them, they just logged in again
@@ -284,11 +281,11 @@ EOS;
         // create the year related functions
         $newid = exhibitorBuildYears($exhibitor);
         if (is_numeric($newid))
-            $_SESSION['eyID'] = $newid;
+            setSessionVar('eyID', $newid);
     } else {
-        $_SESSION['eyID'] = $match['eyID'];
+        setSessionVar('eyID', $match['eyID']);
     }
-    exhibitorCheckMissingSpaces($exhibitor, $_SESSION['eyID']);
+    exhibitorCheckMissingSpaces($exhibitor, getSessionVar('eyID'));
 } else {
     draw_signupModal($portalType, $portalName, $con, $countryOptions);
     draw_login($config_vars);
@@ -367,10 +364,11 @@ EOS;
 
 // get this exhibitor
 $exhibitorQ = <<<EOS
-SELECT artistName, exhibitorName, exhibitorEmail, exhibitorPhone, salesTaxId, website, description, e.need_new AS eNeedNew, e.confirm AS eConfirm, 
-       ey.contactName, ey.contactEmail, ey.contactPhone, ey.need_new AS cNeedNew, ey.confirm AS cConfirm, ey.needReview, ey.mailin,
-       e.addr, e.addr2, e.city, e.state, e.zip, e.country, e.shipCompany, e.shipAddr, e.shipAddr2, e.shipCity, e.shipState, e.shipZip, e.shipCountry, e.publicity,
-       p.id AS perid, p.first_name AS p_first_name, p.last_name AS p_last_name, n.id AS newperid, n.first_name AS n_first_name, n.last_name AS n_last_name
+SELECT artistName, exhibitorName, exhibitorEmail, exhibitorPhone, salesTaxId, website, description, e.need_new AS eNeedNew,
+       ey.contactName, ey.contactEmail, ey.contactPhone, ey.need_new AS cNeedNew, DATEDIFF(now(), ey.lastVerified) AS DaysSinceLastVerified,
+       ey.mailin, e.addr, e.addr2, e.city, e.state, e.zip, e.country, e.shipCompany, e.shipAddr, e.shipAddr2, e.shipCity, e.shipState,
+       e.shipZip, e.shipCountry, e.publicity, p.id AS perid, p.first_name AS p_first_name, p.last_name AS p_last_name, n.id AS newperid, 
+       n.first_name AS n_first_name, n.last_name AS n_last_name
 FROM exhibitors e
 LEFT OUTER JOIN exhibitorYears ey ON e.id = ey.exhibitorId
 LEFT OUTER JOIN perinfo p ON p.id = e.perid
@@ -400,7 +398,7 @@ while(($data = fgetcsv($fh, 1000, ',', '"'))!=false) {
 fclose($fh);
 
 
-$config_vars['loginType'] = $_SESSION['login_type'];
+$config_vars['loginType'] = getSessionVar('login_type');
 
 $exhibitorPQ = <<<EOS
 SELECT exRY.*, ey.exhibitorId,
@@ -449,8 +447,8 @@ $exhibitorSR->free();
 <?php
 draw_registrationModal($portalType, $portalName, $con, $countryOptions);
 draw_passwordModal();
-draw_exhibitorRequestModal();
-draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $reg_conf, $cc, $portalName, $portalType);
+draw_exhibitorRequestModal($portalType);
+draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $testsite, $cc, $portalName, $portalType);
 draw_exhibitorReceiptModal($portalType);
 draw_itemRegistrationModal($portalType, $vendor_conf['artsheets'], $vendor_conf['artcontrol']);
 ?>

@@ -12,9 +12,9 @@ $vendor = 0;
 $con = get_conf('con');
 $conid = $con['id'];
 
-if(isset($_SESSION['id'])) {
-    $vendor = $_SESSION['id'];
-    $client = $_SESSION['eyID'];
+if(isSessionVar('id')) {
+    $vendor = getSessionVar('id');
+    $client = getSessionVar('eyID');
 } else {
     $response['status']='error';
     $response['message']='Authentication Failure';

@@ -15,18 +15,17 @@ $con = get_conf('con');
 $conid = $con['id'];
 $portal_conf = get_conf('portal');
 $debug = get_conf('debug');
-$ini = get_conf('reg');
 $condata = get_con();
 
 $config_vars = array();
 $config_vars['label'] = $con['label'];
 $config_vars['debug'] = $debug['portal'];
 $config_vars['uri'] = $portal_conf['portalsite'];
-$config_vars['required'] = $ini['required'];
+$config_vars['required'] = getConfValue('reg', 'required', 'addr');
 $loginId = null;
 $loginType = null;
 $purpose = "From here you can create and manage your membership account.";
-$why = "continue to the Portal.";
+$why = "continue to the Portal";
 
 // first lets check the authentication stuff. but only if not loging out
     // in session or not, is it a logout? (force clear session method, as well as logout)
@@ -458,18 +457,17 @@ EOS;
     </div>
 EOS;
 
-    if ($portal_conf['open'] == 0) { ?>
+    if (getConfValue('portal', 'open') != 1) { ?>
         <p class='text-primary'>The membership portal is currently closed. Please check the website to determine when it will open or try again
             tomorrow.</p>
         <?php
         exit;
     }
-    if (array_key_exists('suspended', $portal_conf) && $portal_conf['suspended'] == 1) { ?>
+    if (getConfValue('portal','suspended') == 1) { ?>
 <p class="text-primary">
-    <?php echo $con['conname']; ?> has temporarily suspended the registration portal <?php
-        if (array_key_exists('suspendreason', $portal_conf))
-        echo $portal_conf['suspendreason'];
-    ?>
+<?php
+        echo $con['conname'] ." has temporarily suspended the registration portal " . getConfValue('portal','suspendreason');
+?>
 </p>
     <?php
         exit;
@@ -488,7 +486,7 @@ EOS;
         </div>
     </div>
 EOS;
-    if ($portal_conf['test'] == 1) {
+    if (getConfValue('portal', 'test') == 1) {
         echo <<<EOS
         <div class="row">
             <div class="col-sm-12">

@@ -56,7 +56,7 @@ function settab(tabname) {
     clearError();
 }
 
-function showPrompts(reportName, prefix, fileName) {
+function showPrompts(reportName, prefix, fileName, type, template) {
     if (!reportPrompts.hasOwnProperty(reportName)) {
         show_message("Report not configured properly, no prompts found, seek assistance", "error");
         return;
@@ -89,15 +89,16 @@ function showPrompts(reportName, prefix, fileName) {
     }
 
     html += '<div class="row mt-2">\n<div class="col-sm-auto">\n' +
-        '<button class="btn btn-sm btn-primary" type="button" onclick="getRpt(\'' + reportName + '\', \'' + prefix + '\', \'' + fileName + '\');">\n' +
-        'Run Report\n</button>\n</div>\n</div>\n';
+        '<button class="btn btn-sm btn-primary" type="button" onclick="getRpt(\'' + reportName + '\', \'' + prefix + '\', \'' + fileName +
+            '\', \'' + type + '\', \'' + template + '\');">\n' +
+            'Run Report\n</button>\n</div>\n</div>\n';
     reportPromptDiv.innerHTML = html;
 }
 
-function noPrompts(reportName, prefix, fileName) {
+function noPrompts(reportName, prefix, fileName, type, template) {
     reportFields = null;
     reportPromptDiv.innerHTML = '';
-    getRpt(reportName, prefix, fileName);
+    getRpt(reportName, prefix, fileName, type, template);
 }
 
 function runReport(name) {
@@ -113,7 +114,7 @@ function runReport(name) {
     elRpt = document.getElementById(rptId);
     elRpt.classList.add('active');
     // draw the prompts
-    showPrompts(config.reportName, config.pageName, config.groupName);
+    showPrompts(config.reportName, config.pageName, config.groupName, type,  template);
     // initialize the prompts
     var index = 0;
     for (var i = 0; i < prompts.length; i++) {
@@ -128,10 +129,10 @@ function runReport(name) {
     getRpt(config.reportName, config.pageName, config.groupName);
 }
 
-function getRpt(reportName, prefix, fileName) {
-    console.log(reportName, prefix,  fileName);
+function getRpt(reportName, prefix, fileName, type, template) {
+    console.log(reportName, prefix,  fileName, type,  template);
     // now open the relevant one, and create the class if needed
-    var script = 'scripts/loadReport.php'
+    var script = type == 'php' ? 'reports/' + prefix + '/' + template : 'scripts/loadReport.php';
     var postdata = {
         group: fileName,
         prefix: prefix,
@@ -144,7 +145,7 @@ function getRpt(reportName, prefix, fileName) {
     if (reportFields && reportFields.length > 0) {
         var postVars = {};
         for (var i = 0; i < reportFields.length; i++) {
-            var fieldName = reportFields[i].substr(2);
+            var fieldName = reportFields[i].substring(2);
             postVars[fieldName] = document.getElementById(reportFields[i]).value;
         }
         postdata.postVars = postVars;

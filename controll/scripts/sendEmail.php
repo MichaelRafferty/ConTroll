@@ -39,7 +39,7 @@ if (!array_key_exists('type', $_POST)) {
 }
 
 $con = get_conf("con");
-$reg = get_conf("reg");
+$testsite = getConfValue('reg', 'test') == 1;
 $emailconf = get_conf("email");
 $conid=$con['id'];
 $label=$con['label'];
@@ -47,7 +47,7 @@ $conname = $con['conname'];
 $code='';
 $email_type = $_POST['type'];
 
-if ($_POST['action'] == 'test' || $reg['test'] == 1) {
+if ($_POST['action'] == 'test' || $testsite) {
     if ($_POST['email']) {
         $email = $_POST['email'];
     }
@@ -181,8 +181,8 @@ ORDER BY e.email;
 EOQ;
     $typestr = 'iiii';
     $paramarray = array($conid, $priorcon, $priorcon2, $couponid);
-    $email_text = ComeBackCouponEmail_TEXT($reg['test'], date_format($expires, 'M d, Y'));
-    $email_html = ComeBackCouponEmail_HTML($reg['test'], date_format($expires, 'M d, Y'));
+    $email_text = ComeBackCouponEmail_TEXT($testsite, date_format($expires, 'M d, Y'));
+    $email_html = ComeBackCouponEmail_HTML($testsite, date_format($expires, 'M d, Y'));
     $email_subject = "We miss you! Please come back to $conname";
     $macroSubstitution = true;
     break;
@@ -203,8 +203,8 @@ ORDER BY P.email_addr;
 EOQ;
     $typestr = 'i';
     $paramarray = array($conid);
-    $email_text = surveyEmail_TEXT($reg['test']);
-    $email_html = surveyEmail_HTML($reg['test']);
+    $email_text = surveyEmail_TEXT($testsite);
+    $email_html = surveyEmail_HTML($testsite);
     $email_subject = "Thanks for attending, can you help us improve by answering this 3 question survey";
     break;
 

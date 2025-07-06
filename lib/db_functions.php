@@ -1,30 +1,19 @@
 <?php
 
-// This is now a common db_functions for all of the reg sections including:
-//      onlinereg
-//      reg_control
-//  (others still need checking and adding as required)
-//  goal is for it to be common, and used by all of the reg system, so database API changes are in a common location.
-
-global $dbObject;
-global $db_ini;
-global $logdest;
-global $debug_set;
+// This is the common db_functions for all of ConTroll
+global $dbObject, $db_ini, $logdest;
 
 $dbObject = null;
 if (!$db_ini) {
-    $db_ini = parse_ini_file(__DIR__ . "/../config/reg_conf.ini", true);
+    $db_ini = loadConfFile();
 }
-$debug_set = get_conf('debug');
-$log = get_conf("log");
-$logdest = $log['web'];
+$logdest = getConfValue('log', 'web');
 
 // always set the default timezone for PHP
-$db_conf = get_conf('mysql');
-if (array_key_exists('php_timezone', $db_conf)) {
-    date_default_timezone_set($db_conf['php_timezone']);
-}
-else {
+$phptz = getConfValue('mysql', 'php_timezone');
+if ($phptz) {
+    date_default_timezone_set($phptz);
+} else {
     date_default_timezone_set('America/New_York'); // default if not configured
 }
 
@@ -33,10 +22,10 @@ else {
 function web_error_log($string, $debug = ''): void
 {
     global $logdest;
-    global $debug_set;
 
-    if (($debug == '') or (array_key_exists($debug, $debug_set) and ($debug_set[$debug] == 1))) {
-        error_log(date("Y-m-d H:i:s") . ": " . $string . "\n", 3, $logdest);
+    if ($debug == '' || getConfValue('debug', $debug) > 0) {
+        if ($logdest)
+            error_log(date("Y-m-d H:i:s") . ": " . $string . "\n", 3, $logdest);
         error_log(date("Y-m-d H:i:s") . ": " . $string . "\n");
     }
 }
@@ -80,22 +69,22 @@ function log_mysqli_error($query, $additional_error_message):void
 function db_connect($nodb = false):bool
 {
     global $dbObject;
-    global $db_ini;
-
-    $port = 3306;
-    $dbName = $db_ini['mysql']['db_name'];
-    if ($nodb)
-        $dbName = null;
-    if (array_key_exists("port", $db_ini['mysql'])) {
-        $port = $db_ini['mysql']['port'];
-    }
 
     if (is_null($dbObject)) {
+        $port = 3306;
+        $mysql = get_conf('mysql');
+        $dbName = $mysql['db_name'];
+        if ($nodb)
+            $dbName = null;
+        if (array_key_exists('port', $mysql)) {
+            $port = $mysql['port'];
+        }
+
         try {
             $dbObject = new mysqli(
-                $db_ini['mysql']['host'],
-                $db_ini['mysql']['user'],
-                $db_ini['mysql']['password'],
+                $mysql['host'],
+                $mysql['user'],
+                $mysql['password'],
                 $dbName,
                 $port
             );
@@ -116,22 +105,26 @@ function db_connect($nodb = false):bool
         // set our character set of choice
         $dbObject->set_charset('utf8mb4');
 
-        // for mysql with nonstandard sql_mode (from zambia point of view) temporarily force ours
-        $sql = "SET sql_mode='" .  $db_ini['mysql']['sql_mode'] . "';";
-        try {
-            $success = $dbObject -> query($sql);
-        } catch (\mysqli_sql_exception $e) {
-            log_mysqli_error($sql, $e->getMessage());
-            web_error_log('failed setting sql mode on db connection');
-            return false;
-        } catch (Exception $e) {
-            log_mysqli_error($sql, $e->getMessage());
-            web_error_log('failed setting sql mode on db connection');
-            return false;
+        // for mysql with nonstandard sql_mode temporarily force ours
+        if (array_key_exists('sql_mode', $mysql)) {
+            $sql = "SET sql_mode='" . $mysql['sql_mode'] . "';";
+            try {
+                $success = $dbObject->query($sql);
+            }
+            catch (\mysqli_sql_exception $e) {
+                log_mysqli_error($sql, $e->getMessage());
+                web_error_log('failed setting sql mode on db connection');
+                return false;
+            }
+            catch (Exception $e) {
+                log_mysqli_error($sql, $e->getMessage());
+                web_error_log('failed setting sql mode on db connection');
+                return false;
+            }
         }
 
-        if (array_key_exists('db_timezone', $db_ini['mysql'])) {
-            $sql = "SET time_zone ='" .  $db_ini['mysql']['db_timezone'] . "';";
+        if (array_key_exists('db_timezone', $mysql)) {
+            $sql = "SET time_zone ='" .  $mysql['db_timezone'] . "';";
             try {
                 $success = $dbObject->query($sql);
             } catch (\mysqli_sql_exception $e) {
@@ -681,18 +674,9 @@ function fetch_safe_array($res)
     return $assoc;
 }
 
-function get_conf($name)
-{
-    global $db_ini;
-    if (array_key_exists($name, $db_ini))
-        return $db_ini[$name];
-    return null;
-}
-
 function get_con($id = null) {
-    global $db_ini;
     if ($id === null) {
-        $id = $db_ini['con']['id'];
+        $id = getConfValue('con','id');
     }
     $r = dbSafeQuery('SELECT * FROM conlist WHERE id=?;', 'i', array($id));
     return $r->fetch_assoc();

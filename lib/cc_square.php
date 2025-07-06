@@ -45,11 +45,11 @@ function draw_cc_html($cc, $postal_code = "--") : string {
                   },
                   "input": {
                       "color": "blue",
-                      "fontSize": '12px',
+                      "fontSize": '24px',
                   },
                   "@media screen and (max-width: 600px)": {
                       "input": {
-                          "fontSize": "16px",
+                          "fontSize": "24px",
                       }
                   }
               }

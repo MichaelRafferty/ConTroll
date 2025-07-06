@@ -15,7 +15,7 @@ function draw_login($config_vars, $result_message = '') {
         <div class='container-fluid form-floating'>
             <div class='row mb-2'>
                 <div class='col-sm-auto'>
-                    <h1 class="h4">Please log in to continue to the Portal.</h1>
+                    <h1 class="h4">Please log in to continue to the <?php echo $portalName; ?> Portal.</h1>
                 </div>
             </div>
             <form id='exhibitorSignin' method='POST'>
@@ -46,6 +46,20 @@ function draw_login($config_vars, $result_message = '') {
                     </div>
                 </div>
             </form>
+            <?php  if (array_key_exists('HTTPS', $_SERVER) && (isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == 'on')) { ?>
+            <div class='row mt-1'>
+                <div class='col-sm-1'></div>
+                <div class='col-sm-2' style="text-align: center">OR</div>
+            </div>
+            <div class='row mt-1'>
+                <div class='col-sm-1'></div>
+                <div class='col-sm-auto'>
+                    <button class='btn btn-sm btn-primary' id="loginPasskeyBtn" onclick='loginWithPasskey();'>
+                        <img src="lib/passkey.png">Login with Passkey
+                    </button>
+                </div>
+            </div>
+            <?php } ?>
         </div>
     </div>
     <div id='resetpw'>

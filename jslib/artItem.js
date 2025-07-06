@@ -267,7 +267,10 @@ setValuesFromData(artItemData) {
     this.type=typeList.getType(artItemData['type']);
     this.status=statusList.getStatus(artItemData['status']);
     this.location=artItemData['location'];
-    this.#locationList = artItemData['locations'].split(',');
+    if (artItemData['locations'])
+        this.#locationList = artItemData['locations'].split(',');
+    else
+        this.#locationList = [];
     this.quantity = artItemData['quantity'];
     this.original_qty = artItemData['orig_qty'];
     this.min_price = artItemData['min_price'];

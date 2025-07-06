@@ -26,7 +26,7 @@ window.onload = function () {
     vendorInvoiceOnLoad()
     exhibitorReceiptOnLoad();
     if (typeof exhibitor_info !== 'undefined') {
-        if (exhibitor_info['needReview']) {
+        if (exhibitor_info['DaysSinceLastVerified'] > 180) {
             exhibitorProfile.profileModalOpen('review');
         }
     }
@@ -142,3 +142,13 @@ function requestPermission(id, tag) {
         }
     });
 }
+
+// passkey functions
+// login with passkey - ask for a confirm and return either retry or go to portal
+function loginWithPasskey() {
+    if (this.loginWithPasskeyBtn)
+        this.loginWithPasskeyBtn.disabled = true;
+
+    passkeyRequest('scripts/passkeyActions.php', 'index.php', 'vendor', document.getElementById('loginPasskeyBtn'));
+}
+

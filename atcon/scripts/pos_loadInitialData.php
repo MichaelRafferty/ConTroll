@@ -17,7 +17,6 @@ $return500errors = true;
 
 $con = get_conf('con');
 $atcon = get_conf('atcon');
-$reg_conf = get_conf('reg');
 $controll = get_conf('controll');
 $debug = get_conf('debug');
 $usps = get_conf('usps');
@@ -180,7 +179,7 @@ $cdebug = 0;
 if (array_key_exists('controll_registration', $debug))
     $cdebug = $debug['controll_registration'];
 $response['debug'] = $cdebug;
-$response['required'] = $reg_conf['required'];
+$response['required'] = getConfValue('reg', 'required', 'addr');
 $response['useUSPS'] = $useUSPS;
 
 ajaxSuccess($response);

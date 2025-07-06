@@ -13,6 +13,9 @@ function draw_exhibitorRequestModal($portalType = '')
         case 'fan':
             $portalName = 'Fan';
             break;
+        case 'admin':
+            $portalName = '';
+            break;
         default:
             $portalName = 'Vendor';
             break;
@@ -32,14 +35,14 @@ function draw_exhibitorRequestModal($portalType = '')
                 <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
                     <div class='container-fluid'>
                         <form id='exhibitor_req_form' action='javascript:void(0)'>
-                            <?php if ($portalType == '') { ?>
+                            <?php if ($portalName == 'Vendor') { ?>
                             <div class='row p-0 bg-warning'>
                                 <div class='col-sm-12 p-2'>
                                     Please make sure your profile contains a good description of what you will be vending and a link for our staff to see what
                                     you sell if at all possible.
                                 </div>
                             </div>
-                            <?php } outputCustomText('request/top'); outputCustomText('request/top' . $portalName); ?>
+                            <?php } if ($portalType != 'admin') outputCustomText('request/top'); outputCustomText('request/top' . $portalName); ?>
                             <div class="container-fluid p-0 m-0" id="spaceHtml"></div>
                             <?php
                             if ($portalType != 'admin') {
@@ -82,7 +85,7 @@ EOS;
                             ?>
 
                         </form>
-                        <?php outputCustomText('request/bottom'); outputCustomText('request/bottom' . $portalName); ?>
+                        <?php if ($portalType != 'admin') { outputCustomText('request/bottom'); outputCustomText('request/bottom' . $portalName); } ?>
                         <div class="row">
                             <div class="col-sm-12" id="sr_message_div"></div>
                         </div>

@@ -155,6 +155,7 @@ class ExhibitorProfile {
             var field = document.getElementById(fieldName);
             minLength = 2;
             if (field == null) {
+                if (fieldName != 'salesTaxId' && this.#debugFlag > 0) // salestax id is optional don't log it.
                 console.log(fieldName + ' not found');
                 continue;
             }
@@ -385,7 +386,7 @@ class ExhibitorProfile {
                     var keys = Object.keys(exhibitor_info);
                     for (var keyindex in keys) {
                         var key = keys[keyindex];
-                        if (key == 'eNeedNew' || key == 'cNeedNew' || key == 'eConfirm' || key == 'cConfirm')
+                        if (key == 'eNeedNew' || key == 'cNeedNew' || key == 'DaysSinceLastVerified')
                             continue;
 
                         var value = exhibitor_info[key];
@@ -446,7 +447,8 @@ class ExhibitorProfile {
         } else {
             focusField = this.#profilePublicityField;
         }
-        setTimeout(function() { console.log(focusField); focusField.focus({focusVisible: true}) }, 600);
+        var debugFlag = this.#debugFlag;
+        setTimeout(function() { if (debugFlag > 0) console.log(focusField); focusField.focus({focusVisible: true}) }, 600);
     }
 
     // profileModalClose - close the modal edit profile dialog

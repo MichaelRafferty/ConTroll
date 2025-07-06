@@ -2,7 +2,7 @@
 ![Control Troll Logo](onlinereg/lib/ConTroll.png)\
 ConTroll™ and the ConTroll Troll Logo are Copyright 2015-2025, Michael Rafferty
 
-## This README file is current as of Release 1.2 of the ConTroll Regitration System.
+## This README file is current as of Release 1.4 of the ConTroll Regitration System.
 
 ConTroll™ is designed as an all in one system to support registration for conventions.  It supports on-line, mail-in, and on-site registration.
 
@@ -13,7 +13,7 @@ for tabulator and bootstrap.  Relevant versions are found in lib/jsVersions.php.
 
 ## Release Notes
 
-Release notes can be found in the ReleaseNotes directory
+Release notes can be found in the ReleaseNotes directory.
 
 ## System Documentation and Coding Standards
 
@@ -23,29 +23,30 @@ As with all projects this is a work in progress, but the current items are in th
 
 The system is under active development by a team of developers and has functions currently in development to support:
 - Adding reports to the rewritten report subsystem
-- Making email message content editable using the custom text subsystem
-- Support of Square Terminals as At-Convention POS Payment Devices (controlled by atcon)
+- Making email message content editable using the custom text subsystem (mostly completed in 1.3)
 
 Planned future additions:
 - Configurable Exhibitor Portals (not just artist and vendor)
 - Online editing of the non security sections of the configuration file
 - Reconfiguring the control menu structure and addition of more detailed role based permissions
+- Passkey support for portal, exhibitor portals, and the controll back end.
 
 ## Registration Tools in this Repository:
 
 - Composer: Add-on's to PHP tracked by Composer (composer.json and composer.lock)
 - atcon: Onsite Registration Processing and Management
-  - admin: Administer on-site reg system
+  - admin: Administer on-site reg system (Users, Printers, Square Terminals)
   - artInventory: Audit and maintain art inventory in the artist spaces
-  - artpos: Point of Sale (Cashier) for artwork managed by the inventory system
+  - artpos: Point of Sale (Cashier) for artwork managed by the inventory system, supports use of Square Terminal API
   - printform: Print arbitary badges
-  - regpos: Point of Sale (Check-in and Cashier)
+  - regpos: Point of Sale (Check-in and Cashier), supports use of Square Terminal API
   - volRollover: Volunteer Rollover for sufficient hours worked
 
 - controll: Registration Administration, control, and reports
   - Current:
     - Administration
       - ConTroll Users and Roles
+      - Main Menu Tab Ordering
       - Atcon Users and Roles
       - Atcon Printer Setup
     - Membership Graphs
@@ -61,7 +62,7 @@ Planned future additions:
       - Registration List/Transfer/Rollover/Edit
       - Membership Setup: Membership Items/Prices/Availability
       - Membership Configuration
-      - Custom Text
+      - Custom Text (All but Exhibitor pages)
       - Policies: For people to agree to
       - Interests: For people to express interest and get referred
       - Membership Rules: Which memberships require special rules to be available for purchase
@@ -71,6 +72,7 @@ Planned future additions:
     - Finance
       - Payment Plan Configuration
       - Payment Plan Management (Payors)
+      - Coupon Management
     - Exhibits/Exhibitor Mangement
       - Exhibits Configuration
         - Types (rules)
@@ -82,11 +84,11 @@ Planned future additions:
       - Exhibitor Mangement (by Region Owner)
         - Exhibitor Information (Add/Edit)
         - Approval Requests (for regions that require approval to ask for space)
-        - Space Requests (enter/approve/control space requests)
-    - Art Control (Manage art inventory)
+        - Space Requests (enter/approve/control/pay space requests)
+    - Art Control (Manage/Edit art inventory)
     - Report Subsystem
       - Both ConTroll administered reports and Local report additions
-      - Support for both PHP and text configurable reports
+      - Support for both PHP and report processor (text template) based configurable reports
       - Assigning permission rights to access specific reports
   - In controll, but still in old format (functions, but not updated)
     - Club Management
@@ -94,10 +96,10 @@ Planned future additions:
   - buy memberships in a single web page without login or history
   - checkReg - obsoleted by portal, but still provided for onlinereg
 - portal
-  - Login page/functions
+  - Login page/functions  (Supports mail tokens, Google/Facebook and potentially other "login with") and passkeys
   - Portal - main home page, see/pay for memberships
   - addUpdate - add/update information/memberships
-  - accountSettings - alternate identities (emails) and people you manage
+  - accountSettings - alternate identities (emails), passkeys, and people you manage
   - Membership History - current and prior years registrations
   - respond - back end respond to authorization requests
 - vendor

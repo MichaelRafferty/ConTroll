@@ -820,7 +820,7 @@ $config_vars['source'] = 'regstaff';
                 <button class="btn btn-primary btn-sm" onclick="sendEmail('survey')" disabled>Send Survey Email</button>
             </div>
             <?php } ?>
-            <?php if ($db_ini['reg']['cancelled']) { ?>
+            <?php if (getConfValue('reg','cancelled') == 1) { ?>
             <div class="col-sm-auto p-2">
                 <button class="btn btn-primary btn-sm" onclick="sendCancel()" disabled>Send Cancelation Instructions</button>
             </div>

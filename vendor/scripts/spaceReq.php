@@ -10,7 +10,7 @@ $return500errors = true;
 
 $response = array('post' => $_POST, 'get' => $_GET);
 
-$vendor = $_SESSION['id'];
+$vendor = getSessionVar('id');
 
 global $con;
 $con = get_con();

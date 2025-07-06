@@ -18,20 +18,19 @@ $con = get_conf('con');
 $conid = $con['id'];
 $portal_conf = get_conf('portal');
 $debug = get_conf('debug');
-$ini = get_conf('reg');
 $cc = get_conf('cc');
 $condata = get_con();
 load_cc_procs();
 
-if (array_key_exists('suspended', $portal_conf) && $portal_conf['suspended'] == 1) {
+if (getConfValue('portal', 'suspended') == 1) {
     // the portal is now closed, redirect the user back as a logout and let them get the closed screen
     header('location:' . $portal_conf['portalsite'] . '?logout');
     exit();
 }
 
-$NomNomExists = array_key_exists('nomnomURL', $portal_conf);
-$BusinessExists = array_key_exists('businessmeetingURL', $portal_conf);
-$SiteExists = array_key_exists('siteselectionURL', $portal_conf);
+$NomNomURL = getConfValue('portal', 'nomnomURL');
+$BusinessMeetingURL = getConfValue('portal', 'businessmeetingURL');
+$SiteSelectionURL = getConfValue('portal', 'siteselectionURL');
 
 if (isSessionVar('id') && isSessionVar('idType')) {
     // check for being resolved/baned
@@ -63,21 +62,21 @@ $config_vars['label'] = $con['label'];
 $config_vars['debug'] = $debug['portal'];
 $config_vars['uri'] = $portal_conf['portalsite'];
 $config_vars['loadPlans'] = true;
-$config_vars['required'] = $ini['required'];
+$config_vars['required'] = getConfValue('reg', 'required', 'addr');
 $config_vars['initCoupon'] = $initCoupon;
 $config_vars['initCouponSerial'] = $initCouponSerial;
 $config_vars['id'] = $loginId;
 $config_vars['idType'] = $loginType;
 $config_vars['conid'] = $conid;
-$config_vars['nomnomExists'] = $NomNomExists;
-$config_vars['businessExists'] = $BusinessExists;
-$config_vars['siteExists'] = $SiteExists;
-if ($NomNomExists)
-    $config_vars['nomnomURL'] = $portal_conf['nomnomURL'];
-if ($BusinessExists)
-    $config_vars['businessURL'] = $portal_conf['businessmeetingURL'];
-if ($SiteExists)
-    $config_vars['siteURL'] = $portal_conf['siteselectionURL'];
+$config_vars['nomnomExists'] = $NomNomURL != '';
+$config_vars['businessExists'] = $BusinessMeetingURL != '';
+$config_vars['siteExists'] = $SiteSelectionURL != '';
+if ($NomNomURL != '')
+    $config_vars['nomnomURL'] = $NomNomURL;
+if ($BusinessMeetingURL != '')
+    $config_vars['businessURL'] = $BusinessMeetingURL;
+if ($SiteSelectionURL != '')
+    $config_vars['siteURL'] = $SiteSelectionURL;
 if (array_key_exists('onedaycoupons', $con)) {
     $onedaycoupons = $con['onedaycoupons'];
 } else {
@@ -104,6 +103,24 @@ $hasWSFS = false;
 $hasNom =  false;
 $siteSelection = false;
 $hasMeeting = false;
+$tokenType = getSessionVar('tokenType');
+$hasPasskey = $tokenType == 'passkey';
+if ($hasPasskey == false) {
+    // check for a potential passkey
+    $passkeyQ = <<<EOS
+SELECT count(*)
+FROM passkeys
+WHERE userName = ?;
+EOS;
+    $passKeyR = dbSafeQuery($passkeyQ, 's', array($info['email_addr']));
+    if ($passKeyR !== false) {
+        $numKeys = $passKeyR->fetch_row()[0];
+        $passKeyR->free();
+
+        $hasPasskey = $numKeys > 0;
+    }
+}
+
 if (!$refresh) {
     $numPrimary = 0;
     $numPaidPrimary = 0;
@@ -607,8 +624,8 @@ if ($info['managedByName'] != null) {
 <?php } ?>
     </div>
 <?php
-    if ($NomNomExists || $BusinessExists || $SiteExists)
-        drawWSFSButtons($NomNomExists, $BusinessExists, $SiteExists, $hasWSFS, $hasNom, $hasMeeting, $siteSelection, $loginId, $loginType, $info);
+    if ($NomNomURL != '' || $BusinessMeetingURL != '' || $SiteSelectionURL != '')
+        drawWSFSButtons($NomNomURL != '', $BusinessMeetingURL != '', $SiteSelectionURL != '', $hasWSFS, $hasNom, $hasMeeting, $siteSelection, $loginId, $loginType, $info);
 }
 $totalDueFormatted = '';
 if ($totalDue > 0 || $activePaymentPlans) {
@@ -644,6 +661,14 @@ if ($totalDue > 0 || $activePaymentPlans) {
     <div class='col-sm-12'>
         <h1 class="size-h3">This account's information:
 <?php
+    if (!$hasPasskey && array_key_exists('HTTPS', $_SERVER) && (isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == 'on')) {
+?>
+        <button class='btn btn-primary ms-1 p-1' type='button'
+                        onclick="window.location='<?php echo $portal_conf['portalsite']; ?>/accountSettings.php?passkey=create';">
+                    <img src='lib/passkey.png'>Create Passkey
+                </button>
+<?php
+    }
     if ($info['managedByName'] == null) {
 ?>
                 <button class='btn btn-primary ms-1 p-1' type='button'
@@ -657,8 +682,8 @@ if ($totalDue > 0 || $activePaymentPlans) {
     </div>
 </div>
 <?php
-    if ($info['managedByName'] == null && ($NomNomExists || $BusinessExists || $SiteExists))
-        drawWSFSButtons($NomNomExists, $BusinessExists, $SiteExists, $hasWSFS, $hasNom, $hasMeeting, $siteSelection, $loginId, $loginType, $info);
+    if ($info['managedByName'] == null && ($NomNomURL != '' || $BusinessMeetingURL != '' || $SiteSelectionURL != ''))
+        drawWSFSButtons($NomNomURL != '', $BusinessMeetingURL != '', $SiteSelectionURL != '', $hasWSFS, $hasNom, $hasMeeting, $siteSelection, $loginId, $loginType, $info);
 
     outputCustomText('main/people');
 ?>
@@ -1087,13 +1112,13 @@ EOS;
 
         if (!$hasMeeting) {
             $businessMeetingButton .= '<span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="top" ' .
-                'data-bs-title="Add and pay for a WSFS membership to be able to attend and vote at the on-line WSFS business meeting.">';
+                'data-bs-title="You must have a WSFS membership AND one of the following supplements: Friend, Attending, Virtual or One Day.">';
         } else {
             // compute the LUMI password, note this is Seattle Worldcon specific, so it will need to be modified for future worldcons
             $salt = 'SeattleIn2025';
             $pw = substr(preg_replace('/[a-f]/i', '', md5($loginId . $salt)), 0, 6);
             $un = $info['id'];
-            $businessBtnSubText = "<br/>Badge Number: $un<br/>Password: $pw";
+            $businessBtnSubText = "<br/>Membership Number: $un<br/>Password: $pw";
         }
 
         $businessURL = $portal_conf['businessmeetingURL'];

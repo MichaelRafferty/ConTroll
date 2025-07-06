@@ -563,7 +563,7 @@ function draw_PaymentDueModal() : void {
 
 // draw_makePaymentModal - the modap popup to take a payment via credit card
 function draw_makePaymentModal() : void {
-    $ini = get_conf('reg');
+    $testsite = getConfValue('portal', 'test') == 1;
     $cc = get_conf('cc');
     $con = get_conf('con');
     ?>
@@ -589,7 +589,7 @@ function draw_makePaymentModal() : void {
                         <div class='row'>
                             <div class='col-sm-12'>
 <?php
-    if ($ini['test'] == 1) {
+    if ($testsite) {
 ?>
                             <span class='text-danger size-h2'><strong>This won't charge your credit card.<br/>It also won't get you real
                                     memberships

@@ -95,9 +95,8 @@ class ExhibitorRequest {
         if (spaceCount < 3) {
             colWidth = 12 / spaceCount;
         }
-        var index = 0;
-        var col = 0;
-        var last = 0;
+
+        var index, col, hasRequestable;
         var space = null;
         var req_item = -1;
         var sel = '';
@@ -105,65 +104,75 @@ class ExhibitorRequest {
         if (mailIn) {
             if (cancel < 2) {
                 spaceHtml += "<div class='row'>\n<div class='col-sm-12 p-0 m-2'><i>You are requesting space as mail-in. " +
-                    "If this is not correct, please dismiss this form using the 'Cancel' button in grey below and update your profile.</i></div>"
+                    "If this is not correct, please dismiss this form using the 'Cancel' button in gray below and update your profile.</i></div>"
             } else {
                 spaceHtml += "<div class='row'>\n<div class='col-sm-12 p-0 m-2'><i>This exhibitor is requesting space as mail-in.</i></div>";
             }
         }
 
-        for (index = 0; index < spaceCount; index += 3) { // look over the spaces up to 3 per row
-            spaceHtml += "<div class='row'>\n";
-            last = index + 3;
-            if (last > spaceCount)
-                last = spaceCount;
-            for (col = index; col < last; col++) {
-                space = region[keys[col]];
-                var reg_item = -1;
-                var exSpace = exhibitor_spacelist[keys[col]];
-                if (exSpace) {
-                    if (exSpace.item_approved)
-                        req_item = exSpace.item_approved;
-                    else
-                        req_item = exSpace.item_requested;
-                }
+        var first = true;
+        col = 999;
+        for (index = 0; index < spaceCount; index++) { // look over the spaces
+            space = region[keys[index]];
+            var reg_item = -1;
+            var exSpace = exhibitor_spacelist[keys[index]];
+            if (exSpace) {
+                if (exSpace.item_approved)
+                    req_item = exSpace.item_approved;
+                else
+                    req_item = exSpace.item_requested;
+            }
+            hasRequestable = false;
 
-                // build option pulldown
-                var options = "<option value='-1'" + (reg_item == -1 ? ' selected>' : '>') + nospace + "</option>\n";
-                var prices = space.prices;
-                var price_keys = Object.keys(prices).sort();
-                var units = '';
-                for (var priceid in price_keys) {
-                    var price = prices[price_keys[priceid]];
-                    if ((price.requestable == 1 && (price.units <= this.#unitLimit || this.#unitLimit == 0) || this.#cancelType >= 2)) {
-                        if (this.#unitLimit > 0) {
-                            units = ' (' + String(price.units) + ' unit' + (price.units > 1 ? 's' : '') + ')';
-                        }
-                        sel = "'>";
-                        if (exSpace) {
-                            if (req_item == price.id) {
-                                totalUnitsRequested += Number(price.units);
-                                sel = "' selected>";
-                            }
-                        }
-                        options += "<option value='" + price.id + sel + price.description + ' for ' + Number(price.price).toFixed(2) + units + "</option>\n";
+            // build option pulldown
+            var options = "<option value='-1'" + (reg_item == -1 ? ' selected>' : '>') + nospace + "</option>\n";
+            var prices = space.prices;
+            var price_keys = Object.keys(prices).sort();
+            var units = '';
+            for (var priceid in price_keys) {
+                var price = prices[price_keys[priceid]];
+
+                // determine if selected, used for items not requested but selected by admin for this exhibitor
+                sel = "'>";
+                if (exSpace) {
+                    if (req_item == price.id) {
+                        totalUnitsRequested += Number(price.units);
+                        sel = "' selected>";
                     }
                 }
 
-                // now build block
-                spaceHtml += "<div class='col-sm-" + colWidth + " p-0 m-0'>\n" +
-                    "<div class='container-fluid ms-0 me-0 mt-2 mb-1'><div class='container-fluid ms-0 me-0 border border-3 border-primary'>\n" +
-                    "<div class='row'><div class='col-sm-12 p-0 m-0' style='text-align: center;'>\n" + space.spaceName + "</div></div>\n" +
-                    "<div class='row'><div class='col-sm-12 p-2 m-0'>\n" + (space.description ? space.description : '') + "</div></div>\n" +
-                    "<div class='row p-1'><div class='col-sm-auto p-0 pe-2'>\n" +
-                    "<label htmlFor='exhibitor_req_price_id'>How many spaces are you requesting?</label>\n" +
-                    "</div>\n" +
-                    "<div class='col-sm-auto p-0'>\n" +
-                    "<select name='exhbibitor_req_price_id_" + keys[col] + "' id='exhibitor_req_price_id_" + keys[col] + "' onchange='exhibitorRequest.updateTotalUnits(" + regionYearId + "," + this.#unitLimit + ");'>\n" +
-                    options + "\n</select></div></div>\n" +
-                    "</div></div></div>\n";
+                if ((price.requestable == 1 && (price.units <= this.#unitLimit || this.#unitLimit == 0) || this.#cancelType >= 2) || sel != "'>") {
+                    if (this.#unitLimit > 0) {
+                        units = ' (' + String(price.units) + ' unit' + (price.units > 1 ? 's' : '') + ')';
+                    }
+
+                    options += "<option value='" + price.id + sel + price.description + ' for ' + Number(price.price).toFixed(2) + units + "</option>\n";
+                    hasRequestable = true;
+                }
             }
-            spaceHtml += "</div>\n";
-            // now check if we need to track limits
+
+            if (!hasRequestable)
+                continue;
+
+            if (col > 3) {
+                if (!first)
+                    spaceHtml += "</div>\n";
+                spaceHtml += "<div class='row'>\n";
+                col = 1;
+                first = false;
+            }
+            // now build block
+            spaceHtml += "<div class='col-sm-" + colWidth + " p-0 m-0'>\n" +
+                "<div class='container-fluid ms-0 me-0 mt-2 mb-1'><div class='container-fluid ms-0 me-0 border border-3 border-primary'>\n" +
+                "<div class='row'><div class='col-sm-12 p-0 m-0' style='text-align: center;'>\n" + space.spaceName + "</div></div>\n" +
+                "<div class='row'><div class='col-sm-12 p-2 m-0'>\n" + (space.description ? space.description : '') + "</div></div>\n" +
+                "<div class='row p-1'><div class='col-sm-auto p-0 pe-2'>\n" +
+                "<label htmlFor='exhibitor_req_price_id'>How many spaces are you requesting?</label>\n" +
+                "</div>\n" +
+                "<div class='col-sm-auto p-0'>\n" +
+                "<select name='exhbibitor_req_price_id_" + keys[col] + "' id='exhibitor_req_price_id_" + keys[col] + "' onchange='exhibitorRequest.updateTotalUnits(" + regionYearId + "," + this.#unitLimit + ");'>\n" +
+                options + "\n</select></div></div>\n" +
+                "</div></div></div>\n";
         }
         // add until limit if needed
         spaceHtml += "</div>\n<div class='row mt-2' id='TotalUnitsRequestedRow'" + (this.#unitLimit > 0 && this.#countCombined ? '' : ' hidden') + ">\n" +
@@ -201,12 +210,14 @@ class ExhibitorRequest {
             var priceId = keys[key];
 
             field = document.getElementById('exhibitor_req_price_id_' + String(keys[key]));
-            var value = field.value;
-            if (value > 0) {
-                var prices = region[keys[key]].prices;
-                for (var priceIdx in prices) {
-                    if (prices[priceIdx].id == value) {
-                        requestedUnits += Number(prices[priceIdx].units);
+            if (field) { // the field might not exist if it was skipped over due to nothing requestable
+                var value = field.value;
+                if (value > 0) {
+                    var prices = region[keys[key]].prices;
+                    for (var priceIdx in prices) {
+                        if (prices[priceIdx].id == value) {
+                            requestedUnits += Number(prices[priceIdx].units);
+                        }
                     }
                 }
             }

@@ -14,8 +14,8 @@ $conid = $con['id'];
 
 $response = array('post' => $_POST, 'get' => $_GET);
 
-if (array_key_exists('eyID', $_SESSION)) {
-    $exyID = $_SESSION['eyID'];
+if (isSessionVar('eyID')) {
+    $exyID = getSessionVar('eyID');
 } else {
     $exyID = null;
 }
@@ -110,11 +110,11 @@ EOS;
 
         if ($artistName != null) {
             $exhibitorInsertQ = <<<EOS
-INSERT INTO exhibitors (artistName, exhibitorName, exhibitorEmail, exhibitorPhone, salesTaxId, website, description, password, need_new, confirm, 
+INSERT INTO exhibitors (artistName, exhibitorName, exhibitorEmail, exhibitorPhone, salesTaxId, website, description, password, need_new, 
                      addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, publicity) 
-VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
+VALUES (?,?,?,?,?,?,?,?,0,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
 EOS;
-            $typestr = 'ssssssssiisssssssssssssi';
+            $typestr = 'sssssssssssssssssssssi';
             $paramarr = array (
                 trim($artistName),
                 trim($_POST['exhibitorName']),
@@ -124,8 +124,6 @@ EOS;
                 trim($_POST['website']),
                 $description,
                 password_hash(trim($_POST['password']), PASSWORD_DEFAULT),
-                0, // need_new_passwd
-                0, // confirm
                 trim($_POST['addr']),
                 trim($_POST['addr2']),
                 trim($_POST['city']),
@@ -143,11 +141,11 @@ EOS;
             );
         } else {
             $exhibitorInsertQ = <<<EOS
-INSERT INTO exhibitors (exhibitorName, exhibitorEmail, exhibitorPhone, salesTaxId, website, description, password, need_new, confirm, 
+INSERT INTO exhibitors (exhibitorName, exhibitorEmail, exhibitorPhone, salesTaxId, website, description, password, need_new, 
                      addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, publicity) 
-VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
+VALUES (?,?,?,?,?,?,?,0,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
 EOS;
-            $typestr = 'sssssssiisssssssssssssi';
+            $typestr = 'sssssssisssssssssssssi';
             $paramarr = array (
                 trim($_POST['exhibitorName']),
                 trim($_POST['exhibitorEmail']),
@@ -156,8 +154,6 @@ EOS;
                 trim($_POST['website']),
                 $description,
                 password_hash(trim($_POST['password']), PASSWORD_DEFAULT),
-                0, // need_new_passwd
-                0, // confirm
                 trim($_POST['addr']),
                 trim($_POST['addr2']),
                 trim($_POST['city']),
@@ -185,9 +181,9 @@ EOS;
     case 'review':
         $vendor = 0;
 
-        if (isset($_SESSION['id'])) {
-            $vendor = $_SESSION['id'];
-            $vendorYear = $_SESSION['eyID'];
+        if (isSessionVar('id')) {
+            $vendor = getSessionVar('id');
+            $vendorYear = getSessionVar('eyID');
         } else {
             $response['status'] = 'error';
             $response['message'] = 'Authentication Failure';
@@ -292,7 +288,7 @@ EOS;
 
         $updateQ = <<<EOS
 UPDATE exhibitorYears
-SET contactName=?, contactEmail=?, contactPhone=?, mailin = ?, needReview = 0
+SET contactName=?, contactEmail=?, contactPhone=?, mailin = ?, lastVerified = NOW()
 WHERE id=?
 EOS;
             $updateArr = array(
@@ -308,8 +304,8 @@ EOS;
             $response['message'] = 'Profile Updated';
             // get the update info
             $vendorQ = <<<EOS
-SELECT artistName, exhibitorName, exhibitorEmail, exhibitorPhone, salesTaxId, website, description, e.need_new AS eNeedNew, e.confirm AS eConfirm, ey.mailin,
-       ey.contactName, ey.contactEmail, ey.contactPhone, ey.need_new AS cNeedNew, ey.confirm AS cConfirm, ey.needReview as needReview,
+SELECT artistName, exhibitorName, exhibitorEmail, exhibitorPhone, salesTaxId, website, description, e.need_new AS eNeedNew,
+       ey.mailin, ey.contactName, ey.contactEmail, ey.contactPhone, ey.need_new AS cNeedNew, DATEDIFF(now(), ey.lastVerified) AS DaysSinceLastVerified,
        addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, publicity
 FROM exhibitors e
 LEFT OUTER JOIN exhibitorYears ey ON e.id = ey.exhibitorId

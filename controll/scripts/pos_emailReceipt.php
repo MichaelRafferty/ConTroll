@@ -27,7 +27,6 @@ $response = [];
 
 $con = get_conf('con');
 $conid = $con['id'];
-$reg_info = get_conf('reg');
 $ajax_request_action = '';
 if ($_POST && $_POST['ajax_request_action']) {
     $ajax_request_action = $_POST['ajax_request_action'];
@@ -144,7 +143,7 @@ if (!array_key_exists('email_addrs', $_POST)) {
     $response['error'] = "No email recipeints specified";
 } else {
     load_email_procs();
-    if ($reg_info['test'] == 1) {
+    if (getConfValue('reg','test') == 1) {
         $emails = array($con['regadminemail']);
     } else {
         $emails = $_POST['email_addrs'];

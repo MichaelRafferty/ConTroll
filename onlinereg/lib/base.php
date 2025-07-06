@@ -1,16 +1,21 @@
 <?php
+require_once(__DIR__ . '/../../lib/global.php');
+// portal - base.php - base functions for membership portal
 global $db_ini;
+
 if (!$db_ini) {
-    $db_ini = parse_ini_file(__DIR__ . '/../../config/reg_conf.ini', true);
+    $db_ini = loadConfFile();
+    $include_path_additions = PATH_SEPARATOR . $db_ini['client']['path'] . '/../Composer';
 }
 
-if ($db_ini['reg']['https'] <> 0) {
+if (getConfValue('reg', 'https') <> 0) {
     if (!isset($_SERVER['HTTPS']) or $_SERVER['HTTPS'] != 'on') {
         header('HTTP/1.1 301 Moved Permanently');
         header('Location: https://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI']);
         exit();
     }
 }
+
 // onlinereg - base.php - base functions for online reg
 require_once(__DIR__ . "/../../lib/db_functions.php");
 require_once(__DIR__ . '/../../lib/ajax_functions.php');

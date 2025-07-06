@@ -1,13 +1,15 @@
 <?php
 ## Pull INI for variables
-global $db_ini;
-global $appSessionPrefix;
+    require_once(__DIR__ . '/../../lib/global.php');
+// atcon - base.php - base functions for on-site actions
+    global $db_ini, $appSessionPrefix;
 
-if (!$db_ini) {
-    $db_ini = parse_ini_file(__DIR__ . '/../../config/reg_conf.ini', true);
-}
+    if (!$db_ini) {
+        $db_ini = loadConfFile();
+        $include_path_additions = PATH_SEPARATOR . $db_ini['client']['path'] . '/../Composer';
+    }
 
-if ($db_ini['reg']['https'] <> 0) {
+    if (getConfValue('reg', 'https') <> 0) {
     if (!isset($_SERVER['HTTPS']) or $_SERVER['HTTPS'] != 'on') {
         header('HTTP/1.1 301 Moved Permanently');
         header('Location: https://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI']);
@@ -17,7 +19,6 @@ if ($db_ini['reg']['https'] <> 0) {
 
 require_once(__DIR__ . '/../../lib/db_functions.php');
 require_once(__DIR__ . '/../../lib/ajax_functions.php');
-require_once(__DIR__ . '/../../lib/global.php');
 require_once(__DIR__ . '/../../lib/cipher.php');
 require_once(__DIR__ . '/../../lib/jsVersions.php');
 

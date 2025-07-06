@@ -1,11 +1,13 @@
 <?php
 // exhibitor - base.php - base functions for exhibitor reg
-global $db_ini;
+require_once(__DIR__ . '/../../lib/global.php');
+global $db_ini, $appSessionPrefix;
 if (!$db_ini) {
-    $db_ini = parse_ini_file(__DIR__ . '/../../config/reg_conf.ini', true);
+    $db_ini = loadConfFile();
+    $include_path_additions = PATH_SEPARATOR . $db_ini['client']['path'] . '/../Composer';
 }
 
-if ($db_ini['reg']['https'] <> 0) {
+if (getConfValue('reg', 'https') <> 0) {
     if (!isset($_SERVER['HTTPS']) or $_SERVER['HTTPS'] != 'on') {
         header('HTTP/1.1 301 Moved Permanently');
         header('Location: https://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI']);
@@ -15,11 +17,11 @@ if ($db_ini['reg']['https'] <> 0) {
 
 require_once(__DIR__ . "/../../lib/db_functions.php");
 require_once(__DIR__ . '/../../lib/ajax_functions.php');
-require_once(__DIR__ . '/../../lib/global.php');
 require_once(__DIR__ . '/../../lib/cipher.php');
 require_once(__DIR__ . '/../../lib/jsVersions.php');
 
 db_connect();
+$appSessionPrefix = 'Ctrl/Vendor/';
 session_start();
 
 function exhibitor_page_init($title) {
@@ -35,12 +37,7 @@ function exhibitor_page_init($title) {
     $jquijs=$cdn['jquijs'];
     $jquicss=$cdn['jquicss'];
 
-    $vendor_conf = get_conf('vendor');
-    if (array_key_exists('customtext', $vendor_conf)) {
-        $filter = $vendor_conf['customtext'];
-    } else {
-        $filter = 'production';
-    }
+    $filter = getConfValue('vendor', 'customtext', 'production');
     loadCustomText('exhibitor', basename($_SERVER['PHP_SELF'], '.php'), $filter);
 
     echo <<<EOF
@@ -56,7 +53,6 @@ function exhibitor_page_init($title) {
     <link href='$jquicss' rel='stylesheet' type='text/css' /> 
     <link href='$tabcss' rel='stylesheet'>
     <link href='$bs5css' rel='stylesheet'>
-    <link href='csslib/style.css' rel='stylesheet' type='text/css' />
     <link href='csslib/bootstrap-icons.css' rel='stylesheet' type='text/css' />
     <script src='$bs5js'></script>
     <script type='text/javascript' src='$jqjs''></script>
@@ -65,6 +61,7 @@ function exhibitor_page_init($title) {
     <script type='text/javascript' src="jslib/global.js?v=$globalJSversion"></script>
     <script type='text/javascript' src="js/base.js?v=$exhibitorJSversion"></script>
     <script type='text/javascript' src="js/vendor.js?v=$exhibitorJSversion"></script>
+    <script type='text/javascript' src="jslib/passkey.js?v=$libJSversion"></script>
     <script type='text/javascript' src="jslib/exhibitorProfile.js?v=$libJSversion"></script>
     <script type='text/javascript' src="jslib/exhibitorRequest.js?v=$libJSversion"></script>
     <script type='text/javascript' src="jslib/exhibitorReceipt.js?v=$libJSversion"></script>

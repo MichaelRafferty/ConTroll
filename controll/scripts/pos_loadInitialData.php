@@ -27,7 +27,6 @@ $return500errors = true;
 
 $con = get_conf('con');
 $atcon = get_conf('atcon');
-$reg_conf = get_conf('reg');
 $controll = get_conf('controll');
 $debug = get_conf('debug');
 $usps = get_conf('usps');
@@ -187,7 +186,7 @@ $cdebug = 0;
 if (array_key_exists('controll_registration', $debug))
     $cdebug = $debug['controll_registration'];
 $response['debug'] = $cdebug;
-$response['required'] = $reg_conf['required'];
+$config_vars['required'] = getConfValue('reg', 'required', 'addr');
 $response['useUSPS'] = $useUSPS;
 $response['userId'] = $_SESSION['user_perid'];
 

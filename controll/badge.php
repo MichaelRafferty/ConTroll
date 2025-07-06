@@ -14,7 +14,6 @@ $conid = $con['id'];
 
 $conf = get_conf('con');
 $google = get_conf('google');
-$reg_conf = get_conf('reg');
 $debug = get_conf('debug');
 $usps = get_conf('usps');
 $url = $google['redirect_base'];
@@ -73,7 +72,7 @@ $config_vars['label'] = $con['label'];
 $config_vars['regadminemail'] = $conf['regadminemail'];
 $config_vars['debug'] = $debug_freebadge;
 $config_vars['conid'] = $conid;
-$config_vars['required'] = $reg_conf['required'];
+$config_vars['required'] = getConfValue('reg', 'required', 'addr');
 $config_vars['useUSPS'] = $useUSPS;
 ?>
 <script type='text/javascript'>

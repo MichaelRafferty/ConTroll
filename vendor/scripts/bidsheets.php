@@ -19,12 +19,12 @@ db_connect();
 session_start();
 
 $response = array('post' => $_POST, 'get' => $_GET);
-if(!array_key_exists('type', $_GET) || !array_key_exists('region', $_GET) || !array_key_exists('eyID', $_SESSION)) {
+if(!array_key_exists('type', $_GET) || !array_key_exists('region', $_GET) || !isSessionVar('eyID')) {
     echo "Invalid Session\n";
     exit;
 }
 
-$eyID = $_SESSION['eyID'];
+$eyID = getSessionVar('eyID');
 $region = $_GET['region'];
 
 switch($_GET['type']) {

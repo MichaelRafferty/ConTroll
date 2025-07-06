@@ -2,13 +2,12 @@
 require_once("lib/base.php");
 
 $condata = get_con();
-$ini = get_conf('reg');
 $con = get_conf('con');
 $startdate = new DateTime($condata['startdate']);
 $enddate = new DateTime($condata['enddate']);
 $daterange = $startdate->format("F j-") . $enddate->format("j, Y");
 $altstring = $con['org'] . '. ' . $condata['label'] . ' . ' . $daterange;
-
+$testsite = getConfValue('reg', 'test') == 1;
 
 $transid = 0;
 if(isset($_GET) && isset($_GET['trans']) && is_numeric($_GET['trans'])) {
@@ -34,11 +33,14 @@ ol_page_init($condata['label'] . ' Registration Complete');
 ?>
 <body>
     <div class="container-fluid">
-        <?php if (array_key_exists('logoimage', $ini) && $ini['logoimage'] != '') { ?>
-        <img class="img-fluid" src="images/<?php echo $ini['logoimage']; ?>" alt="<?php echo escape_quotes($altstring);?>"/>
+        <?php
+            $logoImage = getConfValue('reg', 'logoimage');
+            if ($logoImage != '') { ?>
+        <img class="img-fluid" src="images/<?php echo $logoImage; ?>" alt="<?php echo escape_quotes($altstring);?>"/>
         <?php }
-              if(array_key_exists('logotext', $ini) && $ini['logotext'] != '') { ?>       
-        <div style='display:inline-block' class='display-1'><?php echo $ini['logotext']; ?></div>
+            $logoText = getConfValue('reg', 'logotext');
+            if ($logoText != '') { ?>
+        <div style='display:inline-block' class='display-1'><?php echo $logoText; ?></div>
         <?php } ?>
     </div>
     <h1>
@@ -46,7 +48,7 @@ ol_page_init($condata['label'] . ' Registration Complete');
     </h1>
     <div>
         <?php
-  if($ini['test']==1) {
+  if($testsite) {
         ?>
         <h2 class='warn'>This Page is for test purposes only</h2>
         <?php

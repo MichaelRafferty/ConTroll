@@ -391,11 +391,11 @@ EOS;
         // draw Minimum Bid Amount
         pushLineWidth(0.016);
         $v += $blockheight;
-        $pdf->Rect($h, $v, $isize * 0.7, $priceheight);
-        $pdf->Rect($h + $isize * 0.7, $v, $isize * 0.3, $priceheight);
+        $pdf->Rect($h, $v, $isize * 0.6, $priceheight);
+        $pdf->Rect($h + $isize * 0.6, $v, $isize * 0.4, $priceheight);
         $label = 'Minimum bid amount';
         $length = $pdf->getStringWidth($label);
-        printXY($h + ($isize * 0.7) - (0.1 + $length), $v + $priceoffset, $label );
+        printXY($h + ($isize * 0.6) - (0.1 + $length), $v + $priceoffset, $label );
 
         if ($art['type'] == 'nfs') {
             $priceFmt = 'N/A';
@@ -407,11 +407,11 @@ EOS;
 
         // draw Quick Sale Amount
         $v += $priceheight;
-        $pdf->Rect($h, $v, $isize * 0.7, $priceheight);
-        $pdf->Rect($h + $isize * 0.7, $v, $isize * 0.3, $priceheight);
+        $pdf->Rect($h, $v, $isize * 0.6, $priceheight);
+        $pdf->Rect($h + $isize * 0.6, $v, $isize * 0.4, $priceheight);
         $label = 'Quicksale price';
         $length = $pdf->getStringWidth($label);
-        printXY($h + ($isize * 0.7) - (0.1 + $length), $v + $priceoffset, $label );
+        printXY($h + ($isize * 0.6) - (0.1 + $length), $v + $priceoffset, $label );
 
         $price = $art['sale_price'];
         if ($price > 0 && $art['type'] != 'nfs') {
@@ -890,11 +890,6 @@ EOS;
                 $v += 2 * $minRowHeight;
             }
 
-            /*
-                                <div class='col-sm-4 m-0 border border=1 border-black'>Bidder<br/>&nbsp;</div>
-                                <div class='col-sm-5 border border=1 border-black'>Bidder Email</div>
-    */
-
             $winnerName = TRIM(TRIM(TRIM($artItem['first_name'] . ' ' . $artItem['middle_name']) . ' ' . $artItem['last_name']) . ' ' . $artItem['suffix']);
             $winnerPerid = $artItem['bidder'];
             $winnerEmail = $artItem['email_addr'];
@@ -909,10 +904,24 @@ EOS;
             popFont();
             $y = mprintXY($cM, $v, $wM, $artItem['material']);
             if ($y > $maxY) $maxY = $y;
-            if ($artItem['min_price'] && $artItem['type'] != 'print')
+            if ($artItem['min_price'] && $artItem['type'] != 'print') {
+                if ($artItem['min_price'] > 9999.99) {
+                    pushFont('Arial', '', $artItem['min_price'] > 999999.99 ? 7.5 : 9);
+                }
                 rightPrintXY($cMin, $v, $wMin, $dolfmt->formatCurrency((float)$artItem['min_price'], $currency));
-            if ($artItem['sale_price'] && $artItem['type'] != 'nfs')
+                if ($artItem['min_price'] > 9999.99) {
+                    popFont();
+                }
+            }
+            if ($artItem['sale_price'] && $artItem['type'] != 'nfs') {
+                if ($artItem['sale_price'] > 9999.99) {
+                    pushFont('Arial', '', $artItem['sale_price'] > 999999.99 ? 7.5 : 9);
+                }
                 rightPrintXY($cSale, $v, $wSale, $dolfmt->formatCurrency((float)$artItem['sale_price'], $currency));
+                if ($artItem['sale_price'] > 9999.99) {
+                    popFont();
+                }
+            }
             if ($artItem['original_qty'] > 0)
                 rightPrintXY($cOrig, $v, $wOrig, $artItem['original_qty']);
             if ($artItem['quantity'] > 0)
@@ -921,8 +930,15 @@ EOS;
             $y = fitprintXY($cStatus - $pt, $v, $wStatus + $pt, $artItem['status']);
             if ($y > $maxY) $maxY = $y;
             popFont();
-            if ($artItem['final_price'])
+            if ($artItem['final_price']) {
+                if ($artItem['final_price'] > 9999.99) {
+                    pushFont('Arial', '', $artItem['final_price'] > 999999.99 ? 7.5 : 9);
+                }
                 rightPrintXY($cFinal, $v, $wFinal, $dolfmt->formatCurrency((float)$artItem['final_price'], $currency));
+                if ($artItem['final_price'] > 9999.99) {
+                    popFont();
+                }
+            }
             $y = mprintXY($cWin, $v, $wWin, $winnerName);
             if ($y > $maxY) $maxY = $y;
             if ($printContactInfo === true) {

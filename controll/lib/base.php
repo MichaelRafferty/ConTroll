@@ -1,4 +1,5 @@
 <?php
+require_once(__DIR__ . '/../../lib/global.php');
 ## Pull INI for variables
 global $db_ini, $monthLengths, $oneYearInterval;
 //              XXX, Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec
@@ -6,11 +7,11 @@ $monthLengths = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 $oneYearInterval = date_interval_create_from_date_string('1 year');
 
 if (!$db_ini) {    
-    $db_ini = parse_ini_file(__DIR__ . "/../../config/reg_conf.ini", true);
+    $db_ini = loadConfFile();
     $include_path_additions = PATH_SEPARATOR . $db_ini['client']['path'] . "/../Composer";
 }
 
-if ($db_ini['reg']['https'] <> 0) {
+if (getConfValue('reg', 'https') <> 0) {
     if(!isset($_SERVER['HTTPS']) or $_SERVER["HTTPS"] != "on") {
         header("HTTP/1.1 301 Moved Permanently");
         header("Location: https://" . $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"]);
@@ -21,7 +22,6 @@ set_include_path(get_include_path(). $include_path_additions);
 
 require_once("vendor/autoload.php");
 require_once(__DIR__ . "/../../lib/db_functions.php");
-require_once(__DIR__ . "/../../lib/global.php");
 require_once(__DIR__ . "/../../lib/cipher.php");
 require_once(__DIR__ . '/../../lib/jsVersions.php');
 require_once(__DIR__ . "/../../lib/ajax_functions.php");
@@ -30,8 +30,7 @@ session_start();
 
 
 function bounce_page($new_page) {
-    global $db_ini;
-    $url = $db_ini['google']['redirect_base'] . "/$new_page";
+    $url = getConfValue('google','redirect_base') . "/$new_page";
     header("Location: $url");
 }
 
@@ -155,7 +154,6 @@ return isset($_SERVER['HTTP_USER_AGENT']);
 }
 
 function page_init($title, $css, $js, $auth) {
-    global $db_ini;
     global $portalJSVersion, $libJSversion, $controllJSversion, $globalJSversion, $atJSversion, $exhibitorJSversion;
 
     // auth gets the token in need_login
@@ -172,7 +170,7 @@ function page_init($title, $css, $js, $auth) {
     $jqjs=$cdn['jqjs'];
     $jquijs=$cdn['jquijs'];
     $jquicss=$cdn['jquicss'];
-    $pageTitle = $title . '--' . $db_ini['con']['conname'];
+    $pageTitle = $title . '--' . getConfValue('con', 'conname');
 
 echo <<<EOF
 <!DOCTYPE html>
@@ -221,8 +219,6 @@ EOF;
 }
 
 function page_head($title, $auth) {
-    global $db_ini;
-
     $displayQ = <<<EOS
 SELECT display
 FROM auth
@@ -243,7 +239,7 @@ EOS;
         <div class="row titlebar" id='titlebar'>
             <div class="col-sm-9">
                 <h1 class='title'>
-                    <?php echo $db_ini['con']['conname']?> ConTroll <?php echo $display; ?> page
+                    <?php echo getConfValue('con', 'conname');?> ConTroll <?php echo $display; ?> page
                 </h1>
             </div>
             <div class="col-sm-3">
@@ -252,7 +248,7 @@ EOS;
                 </button>
             </div>         
         </div>
-    <?php if ($db_ini['reg']['test']==1) { ?>
+    <?php if (getConfValue('reg','test') == 1) { ?>
 
         <div class="row">
             <h2 class='text-danger'><strong>This Page is for test purposes only</strong></h2>
