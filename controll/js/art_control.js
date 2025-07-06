@@ -8,6 +8,9 @@ var itemRedoBtn = null;
 
 var itemTable_dirty = false;
 var artItemModal = null;
+var createPaneModal = null;
+
+var artists = null;
 
 var priceregexp = 'regex:^([0-9]+([.][0-9]*)?|[.][0-9]+)$';
 
@@ -16,7 +19,13 @@ var testdiv = null;
 $(document).ready(function() {
     testdiv = document.getElementById('test');
     artItemModal = artItemModalOnLoad(itemTable);
+
     setRegion('overview', null);
+
+    var createPaneId = document.getElementById('artItemCreatePane');
+    if(createPaneId != null) {
+        createPaneModal = new bootstrap.Modal(createPaneId, {focus: true, backdrop: 'static'});
+    }
 });
 
 function setRegion(name, id) {
@@ -32,9 +41,13 @@ function setRegion(name, id) {
     regionElem.setAttribute('aria-selected', 'true');
     regionTab=regionElem;
 
-    if(region != null) { getData(); }
+    if(region != null) {
+        getData();
+        document.getElementById('item-addnew').disabled=false;
+    }
     else { 
         document.getElementById('artItems_table').innerHTML="<p>This is an Overview tab, please select one of the regions above to see the items in that region</p>";
+        document.getElementById('item-addnew').disabled=true;
     }
 }
 
@@ -47,6 +60,15 @@ function getData() {
         success: function (data, textStatus, jqXHR) {
             if('error' in data) {
                 showError("ERROR in getArt: " + data['error']);
+            }
+            artists=data.artists;
+            var artistList = document.getElementById('artItemCreateExhibitor')
+
+            for(artist in artists) {
+                var opt = document.createElement('option')
+                opt.value = artist;
+                opt.innerHTML=artists[artist].exhibitorName+' ('+artists[artist].exhibitorNumber+')';
+                artistList.appendChild(opt);
             }
             draw(data, textStatus, jqXHR);
         },
@@ -205,8 +227,17 @@ function checkItemUndoRedo() {
 }
 
 function addnewItem() {
-    // need to do this as a modal
-    alert("Adding Items from ConTroll Admin is not implemented yet");
+    document.getElementById('artItemCreateNumber').value=0;
+    createPaneModal.show();
+}
+
+function createNewItem() {
+    var artist = document.getElementById('artItemCreateExhibitor').value;
+    var itemNumber = document.getElementById('artItemCreateNumber').value;
+    var type = document.getElementById('artItemCreateType').value;
+    artItemModal.setValuesForNew(artists[artist], itemNumber, type);
+    artItemModal.resetEditPane();
+    artItemModal.openEditPane();
 }
 
 function saveItem() {
