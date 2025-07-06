@@ -7,7 +7,7 @@
 ; none = supporess all custom text
 customtext='production'
 ;; where on the convention website is the registration information page, not the reg server
-registrationpage='http://reg'
+regpage='http://reg'
 ; required person field sets
 ;   all = require all fields: first, last, addr, city, st, zip, country, email
 ;   first = require only first name: first, country, email
