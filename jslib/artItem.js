@@ -55,6 +55,9 @@ class artItemStatuses {
             case artItemStatuses.RELEASED: return artItemStatuses.RELEASED;
         }
     }
+    getDefault() {
+        return this.getStatus('Entered');
+    }
 
     // maybe add in functions to show valid transitions or check transition validity
     setValidOptions(status  = '') {
@@ -204,6 +207,7 @@ resetEditPane() {
     this.#locationField.value = this.location;
     this.#quantityField.value = this.quantity;
     this.#quantityField.setAttribute('max',this.original_qty);
+    this.#original_qtyField.value = this.original_qty;
     this.#min_bidField.value = this.min_price; // hidden unless type = ART
     this.#sale_priceField.value = this.sale_price;
     this.#bidderField.value = this.#bidder;
@@ -219,7 +223,40 @@ setIsChanged(value,field) {
     this.#isChanged=true;
     this.#changedFields[value]=field;
 }
+
 setItemTable(itemTable) {this.#itemTable = itemTable;}
+
+setValuesForNew(exhibitor, number, type) {
+    this.#index = -99;
+    this.id = -99;
+    this.artistNumber = exhibitor.exhibitorNumber;
+    this.itemNumber = number;
+    this.title='';
+    this.material=''
+    this.type=typeList.getType(type);
+    this.status=statusList.getDefault();
+    this.location='';
+    this.#locationList = exhibitor['locations'].split(',');
+    this.quantity = 1;
+    this.original_qty = 1;
+    this.min_price = null;
+    this.sale_price = null;
+    this.#bidder = null;
+    this.bidderName = null;
+    this.final_price=null;
+    this.#exhibitorRegionYearId = exhibitor.exhibitorRegionYearId;
+    this.exhibitorName = exhibitor.exhibitorName;
+    this.#exhibitRegionYearId = region;
+    this.regionYearName = region;
+    this.itemNotes = null;
+
+    if(this.type === false) {
+        show_message('invalid item type', 'warn', ai_message_div); //TODO append if possible
+        }
+    if(this.status === false) {
+        show_message('invalid item status', 'warn', ai_message_div); //TODO append if possible
+        }
+    }
 
 setValuesFromData(artItemData) {
     this.id = artItemData['id'];
@@ -269,14 +306,37 @@ fetchArtItem(index) {
 }
 
 updateArtItem () {
-    for(const changed in this.#changedFields) {
+    if(this.#index < 0) {
+        this.#itemTable.addData([{
+            id: this.id,
+            exhibitorRegionYearId: this.#exhibitorRegionYearId,
+            locations: this.#locationList,
+            exhibitorName: this.exhibitorName,
+            exhibitorNumber: this.artistNumber,
+            type: this.type,
+            item_key: this.itemNumber,
+            title: this.title,
+            material: this.material,
+            min_price: this.min_price,
+            sale_price: this.sale_price,
+            original_qty: this.original_qty,
+            quantity: this.quantity,
+            status: this.status,
+            location: this.location,
+            bidder: this.#bidder,
+            final_price: this.final_price,
+            notes: this.itemNotes
+            }], true);
+    }
+    for (const changed in this.#changedFields) {
         var value = document.getElementById(changed).value;
         this.#itemTable.getRow(this.#index).getCell(this.#changedFields[changed]).setValue(value);
 
-        if(this.#changedFields[changed] == 'bidder') {
+        if (this.#changedFields[changed] == 'bidder') {
             this.#itemTable.getRow(this.#index).getCell('bidderText').setValue(value);
         }
     }
+
     this.closeEditPane();
 }
 

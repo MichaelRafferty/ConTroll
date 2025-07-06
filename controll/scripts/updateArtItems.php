@@ -43,6 +43,14 @@ EOS;
 $updateTypes = "issiisssssiisi";
 
 $updated = 0;
+$new = 0;
+$insertSQL = <<<EOS
+INSERT INTO artItems (item_key, location, min_price, original_qty, quantity, sale_price, status, title, type, material, 
+                      bidder, final_price, notes, exhibitorRegionYearId, updatedBy) VALUES
+    (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);                                                                                                            
+EOS;
+
+$insertTypes = "isiiiissssiiiii";
 
 
 foreach ($tabledata as $row) {
@@ -57,9 +65,33 @@ foreach ($tabledata as $row) {
         $row['sale_price'], $row['status'] , $row['title'], $row['type'], $row['material'], $row['bidder'], $row['final_price'],
         $row['notes'],
         $row['id']);
-    $updated += dbSafeCmd($updateSQL, $updateTypes, $paramarray);
+    if($row['id'] > 0) {
+        $updated += dbSafeCmd($updateSQL, $updateTypes, $paramarray);
+    } else {
+        array_pop($paramarray);
+       $paramarray[] = $row['exhibitorRegionYearId'];
+
+        $maxKey = array('item_key'=>0);
+        $maxKeyR = dbSafeQuery("SELECT max(item_key) as item_key FROM artItems WHERE exhibitorRegionYearId=? GROUP BY exhibitorRegionYearId", 'i', array($row['exhibitorRegionYearId']));
+        if($maxKeyR->num_rows > 0) { $maxKey = $maxKeyR->fetch_array(); }
+
+        if($row['item_key'] == 0) { $paramarray[0] = $maxKey['item_key']+1; }
+        elseif($row['item_key'] <= $maxKey['item_key']) {
+            $checkKeyR = dbSafeQuery("SELECT item_key FROM artItems WHERE exhibitorRegionYearId=? and item_key=?", 'ii',
+                array($row['exhibitorRegionYearId'], $row['item_key']));
+            if($checkKeyR->num_rows >0) { $paramarray[0] = $maxKey['item_key']+1; }
+            }
+
+        $paramarray[]=$_SESSION['user_perid'];
+        $new_index = dbSafeInsert($insertSQL,$insertTypes,$paramarray);
+        if($new_index > 0 ) { $new++; }
+        }
+    }
+
+$response['status'] = "$updated items Updated $new items Inserted";
+
+if($new > 0) {
+
 }
-    
-$response['status'] = "$updated items Updated";
 
 ajaxSuccess($response);
