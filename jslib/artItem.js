@@ -236,7 +236,10 @@ setValuesForNew(exhibitor, number, type) {
     this.type=typeList.getType(type);
     this.status=statusList.getDefault();
     this.location='';
-    this.#locationList = exhibitor['locations'].split(',');
+    if (artItemData['locations'])
+        this.#locationList = artItemData['locations'].split(',');
+    else
+        this.#locationList = [];
     this.quantity = 1;
     this.original_qty = 1;
     this.min_price = null;
