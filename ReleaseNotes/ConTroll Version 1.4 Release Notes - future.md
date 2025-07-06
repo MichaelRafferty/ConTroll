@@ -17,6 +17,8 @@
     * Support for top level domain passkey RP domain or full application pass key RP domaion
   * Many fields have been cleaned up, please see the sample files for all of the parameters now supported.  While R1.4 will support a single configuration 
     file, you should migrate from the one file to the three files during 1.4.  That support is considered Depreciated in 1.4 and will be removed in 1.5.
+  * There were two config file values regpage= and registrationpage= that had the same meaning. Portal, et al used regpage and onlinereg used 
+    registrationpage.  Only regpage is now used and registrationpage is obsolete and ignored.
         
 * New Scripts: None
 
