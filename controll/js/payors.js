@@ -196,6 +196,7 @@ class Payors {
         if (this.#planEditIndex == null) {
             newRow['id'] =  -99;
             newRow['torder'] = 99999;
+            this.#payorsTable.clearFilter(true);
             this.#payorsTable.addRow(newRow);
         } else {
             this.#payorsTable.updateData([newRow]);

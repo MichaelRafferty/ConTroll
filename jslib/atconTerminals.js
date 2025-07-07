@@ -100,6 +100,7 @@ class Terminals {
         this.#newTerminalName.value = '';
         this.#newTerminalLocation.value = '';
         this.#pairBlock.hidden = true;
+        this.#terminalList.clearFilter(true);
         document.getElementById('AddTerminalCreate').disabled = false;
         document.getElementById('createName').innerHTML = '';
         document.getElementById('createSquareCode').innerHTML = '';

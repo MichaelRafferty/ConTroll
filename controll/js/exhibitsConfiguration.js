@@ -1206,6 +1206,7 @@ class exhibitssetup {
     // add row to Regions table and scroll to that new row
     addrowRegions() {
         var _this = this;
+        this.#regionsTable.clearFilter(true);
         this.#regionsTable.addRow({ sortorder: 99, uses: 0}, false).then(function (row) {
             row.getTable().setPage('last').then(function() {
                 row.getCell("shortname").getElement().style.backgroundColor = "#fff3cd";
@@ -1353,6 +1354,7 @@ class exhibitssetup {
     addrowYears() {
         var _this = this;
         this.#insertID--;
+        this.#regionYearsTable.clearFilter(true);
         this.#regionYearsTable.addRow({id: this.#insertID, conid: this.#conid, ownerName: 'new-row', sortorder: 99, uses: 0}, false).then(function (row) {
             _this.#regionYearsTable.setPage("last"); // adding new to last page always
             row.getTable().setPage('last').then(function () {
@@ -1511,6 +1513,7 @@ class exhibitssetup {
     // add row to Spaces table and scroll to that new row
     addrowSpaces() {
         var _this = this;
+        this.#spacesTable.clearFilter(true);
         this.#spacesTable.addRow({shortname: 'new-row', sortorder: 99, uses: 0}, false).then(function (row) {
             _this.#spacesTable.setPage("last"); // adding new to last page always
             row.getTable().setPage('last').then(function () {
@@ -1660,6 +1663,7 @@ class exhibitssetup {
     // add row to Spaces table and scroll to that new row
     addrowSpacePrices() {
         var _this = this;
+        this.#spacePricesTable.clearFilter(true);
         this.#spacePricesTable.addRow({code: 'new-row', sortorder: 99, requestable: 0, uses: 0, }, false).then(function (row) {
             _this.#spacePricesTable.setPage("last"); // adding new to last page always
             row.getTable().setPage('last').then(function () {

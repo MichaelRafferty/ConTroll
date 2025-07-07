@@ -199,10 +199,12 @@ class Printers {
     }
 
     addServer() {
+        this.serverlist.clearFilter(true);
         this.serverlist.addData([{local:true, serverName: "NewServer", address:"", location:"", active: false, delete: '🗑'}], true);
     }
 
     addPrinter() {
+        this.printerlist.clearFilter(true);
         this.printerlist.addData([{serverName: "New Server", printerName: "NewPrinter", printerType: "generic", active: false, delete: '🗑'}], true);
     }
 

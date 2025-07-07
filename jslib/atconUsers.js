@@ -279,6 +279,7 @@ class Users {
 
         var row = this.addlist.getRow(id);
         var rowData = row.getData();
+        this.userlist.clearFilter(true);
         this.userlist.addRow({
             id: rowData['id'],
             name: (rowData['first_name'] + ' ' + rowData['last_name']).trim(),
