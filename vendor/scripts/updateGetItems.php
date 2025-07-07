@@ -128,25 +128,12 @@ EOS;
 $updated = 0;
 $inserted = 0;
 $data_errors = '';
-foreach ($data as $index => $row) { 
+
+// loop one - just check for errors
+foreach ($data as $index => $row) {
+    // don't error check to-delete rows
     if (array_key_exists('to_delete', $row)) {
         if ($row['to_delete'] == 1) continue;
-    }
-    $item_key = 0;
-    if (array_key_exists('item_key', $row)) {
-        $item_key = $row['item_key'];
-    }
-    $title = 'Unknown';
-    if (array_key_exists('title', $row)) {
-        $title = $row['title'];
-    }
-    $material = null;
-    if (array_key_exists('material', $row)) {
-        $material = $row['material'];
-    }
-    $qty = 1;
-    if (array_key_exists('original_qty', $row)) {
-        $qty= $row['original_qty'];
     }
 
     if (!array_key_exists('sale_price', $row) && ($itemType != 'art')) {
@@ -165,6 +152,38 @@ foreach ($data as $index => $row) {
         $data_errors .= "Item: " . $row['item_key'] . ", Sale Price must be > Min Bid<br/>";
         continue; // invalid
     }
+}
+if ($data_errors != '') {
+    $response['error'] = "$data_errors<br/>Please correct and re-save the section.";
+    ajaxSuccess($response);
+    exit();
+}
+
+// second loop, actually do the inserts
+foreach ($data as $index => $row) {
+    if (array_key_exists('to_delete', $row)) {
+        if ($row['to_delete'] == 1) continue;
+    }
+    $item_key = 0;
+    if (array_key_exists('item_key', $row)) {
+        $item_key = $row['item_key'];
+    }
+    $title = 'Unknown';
+    if (array_key_exists('title', $row)) {
+        $title = $row['title'];
+    }
+    $material = null;
+    if (array_key_exists('material', $row)) {
+        $material = $row['material'];
+    }
+    $qty = 1;
+    if (array_key_exists('original_qty', $row)) {
+        $qty = $row['original_qty'];
+    }
+
+    if (!array_key_exists('min_price', $row)) {
+        $row['min_price'] = $row['sale_price'];
+    }
 
     $sale_price = null;
     $min_price = null;
@@ -174,26 +193,24 @@ foreach ($data as $index => $row) {
         $min_price = $row['min_price'];
     if (array_key_exists('id', $row) && ($row['id'] > 0)) { // update
         $typestr = 'issiiddi';
-        $vararray = array($item_key, $title, $material, $qty, $qty, $min_price, $sale_price, $row['id']);
+        $vararray = array ($item_key, $title, $material, $qty, $qty, $min_price, $sale_price, $row['id']);
         $numrows = dbSafeCmd($updsql, $typestr, $vararray);
         $updated += $numrows;
-        logWrite(array($updsql, $typestr, $vararray, $numrows));
+        logWrite(array ($updsql, $typestr, $vararray, $numrows));
     } else { // new!
         $typestr = 'isssiiddii';
-        $paramarray =  array($nextItemKey++, $title, $material, $itemType, $qty, $qty, $min_price, $sale_price, $conid, $exhibitorRegionYearId);
+        $paramarray = array ($nextItemKey++, $title, $material, $itemType, $qty, $qty, $min_price, $sale_price, $conid, $exhibitorRegionYearId);
 
         $numrows = dbSafeCmd($inssql, $typestr, $paramarray);
-        logWrite(array($inssql, $typestr, $paramarray, $numrows));
+        logWrite(array ($inssql, $typestr, $paramarray, $numrows));
         if ($numrows !== false) {
             $inserted++;
         }
     }
 }
-if ($data_errors != '') {
-    $response['warn'] = "$data_errors<BR/>$itemType updated: $inserted added, $updated changed, $deleted removed.";
-} else {
-    $response['message'] = "$itemType updated: $inserted added, $updated changed, $deleted removed.";
-}
+
+$response['message'] = "$itemType updated: $inserted added, $updated changed, $deleted removed.";
+
 logWrite($response);
 logWrite("End of changes made by exhibitor $vendor for year $vendor_year");
 

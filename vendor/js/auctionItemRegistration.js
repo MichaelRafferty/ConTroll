@@ -61,6 +61,7 @@ class AuctionItemRegistration {
         this.#region = region;
         var _this = this;
         var script = "scripts/getItems.php"
+        clear_message();
         $.ajax({
             url: script,
             method: 'POST',
@@ -254,6 +255,7 @@ class AuctionItemRegistration {
             var script = "scripts/updateGetItems.php";
 
             clear_message();
+            clear_message('ir_message_div');
             var postdata = {
                 region: this.#region,
                 itemType: type,
@@ -361,6 +363,7 @@ class AuctionItemRegistration {
             var script = "scripts/updateGetItems.php";
 
             clear_message();
+            clear_message('ir_message_div');
             var postdata = {
                 region: this.#region,
                 itemType: type,
@@ -475,6 +478,7 @@ class AuctionItemRegistration {
             var script = "scripts/updateGetItems.php";
 
             clear_message();
+            clear_message('ir_message_div');
             var postdata = {
                 region: this.#region,
                 itemType: type,
