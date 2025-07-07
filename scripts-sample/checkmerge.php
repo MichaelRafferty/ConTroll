@@ -1,9 +1,10 @@
 <?php
 // check merge, check the perinfo table for potential merge records
+require_once('../../lib/global.php');
 
 global $db_ini;
 if (!$db_ini) {
-    $db_ini = parse_ini_file(__DIR__ . '/../config/reg_conf.ini', true);
+    $db_ini = $db_ini = loadConfFile();
 }
 require_once(__DIR__ . '/../lib/db_functions.php');
 require_once(__DIR__ . '/../lib/checkmerge.php');

@@ -1,13 +1,9 @@
 <?php
 // send interests - send csv file and direct emails for those receiving interest notifications for new entries
-global $db_ini;
-if (!$db_ini) {
-    $db_ini = parse_ini_file(__DIR__ . '/../config/reg_conf.ini', true);
-}
-require_once(__DIR__ . '/../lib/db_functions.php');
-require_once(__DIR__ . '/../lib/global.php');
-require_once(__DIR__ . '/../lib/cleanMemberDups.php');
-require_once(__DIR__ . '/../lib/email__load_methods.php');
+require_once('../lib/global.php');
+require_once('../lib/db_functions.php');
+require_once('../lib/cleanMemberDups.php');
+require_once('../lib/email__load_methods.php');
 
 db_connect();
 $con = get_conf('con');
