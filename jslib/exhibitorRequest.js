@@ -170,7 +170,7 @@ class ExhibitorRequest {
                 "<label htmlFor='exhibitor_req_price_id'>How many spaces are you requesting?</label>\n" +
                 "</div>\n" +
                 "<div class='col-sm-auto p-0'>\n" +
-                "<select name='exhbibitor_req_price_id_" + keys[col] + "' id='exhibitor_req_price_id_" + keys[col] + "' onchange='exhibitorRequest.updateTotalUnits(" + regionYearId + "," + this.#unitLimit + ");'>\n" +
+                "<select name='exhbibitor_req_price_id_" + keys[index] + "' id='exhibitor_req_price_id_" + keys[index] + "' onchange='exhibitorRequest.updateTotalUnits(" + regionYearId + "," + this.#unitLimit + ");'>\n" +
                 options + "\n</select></div></div>\n" +
                 "</div></div></div>\n";
         }
