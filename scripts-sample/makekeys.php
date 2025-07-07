@@ -3,8 +3,7 @@
 require_once('../lib/global.php');
 require_once('../lib/db_functions.php');
 db_connect();
-$con = get_conf('con');
-$server = $con['server'];
+$server = getConfValue('reg','server');
 
 // parameters -
 // -c coupon id (number of that coupon)

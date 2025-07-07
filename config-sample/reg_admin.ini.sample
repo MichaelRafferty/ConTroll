@@ -24,6 +24,8 @@ cancelled=0 ; can override in each app section
 cancel_date="Day, Month Day" ; can override in each app section
 ;; testemail: if set, and test=1, then all emails from the system will be forced to go to the testemail email address
 ; testemail=
+; server is the URL to the main reg/portal of the ConTroll system
+server="https://reg.conname.org/"
 ;;; passkeyRpLevel: passkey rp domain level
 ;;      this is meant to be global so the system can recognize/create passkeys properly.
 ;; 2: org.root - right 2 most sections in host name (aka philcon.org)
@@ -49,8 +51,6 @@ currency="USD"
 minComp="2021"
 compLen="365" ; day length for membership growth by day graph
 conLen="3" ; how many days long is the convention
-; server is the URL to the main reg/portal of the ConTroll system
-server="https://reg.conname.org/"
 
 [debug]
 api=0 ; to enable api inteface debug statements (currently bitmask from 1-31) (1=enable, 0=disable)

@@ -95,7 +95,7 @@ $config_vars['required'] = $required;
 $config_vars['useUSPS'] = $useUSPS;
 $config_vars['initialTab'] = $initialTab;
 $config_vars['scriptName'] = $scriptName;
-$config_vars['regserver'] = $conf['server'];
+$config_vars['regserver'] = getConfValue('reg', 'server');
 
 bs_tinymceModal();
 draw_registrationModal('admin', 'Admin', $conf, $countryOptions);
