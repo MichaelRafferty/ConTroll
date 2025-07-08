@@ -22,10 +22,10 @@ require_once(__DIR__ . '/../../lib/jsVersions.php');
 
 db_connect();
 $appSessionPrefix = 'Ctrl/Vendor/';
-    if (!session_start()) {
-        session_regenerate_id(true);
-        session_start();
-    }
+if (!session_start()) {
+    session_regenerate_id(true);
+    session_start();
+}
 
 function exhibitor_page_init($title) {
     global $portalJSVersion, $libJSversion, $controllJSversion, $globalJSversion, $atJSversion, $exhibitorJSversion;
