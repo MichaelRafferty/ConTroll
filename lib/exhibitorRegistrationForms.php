@@ -516,7 +516,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
     }
 
 // draw_RegistratioModal - the modal for exhibitor signup in the vendor subsystem
-function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabStart = 10) {
+function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabStart = 5000) {
     $con = get_conf('con');
     $vendor_conf = get_conf('vendor');
     $tabIndex = $tabStart;

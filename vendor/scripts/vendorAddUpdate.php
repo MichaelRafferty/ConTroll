@@ -10,8 +10,8 @@ $return500errors = true;
 $vconf = get_conf('vendor');
 $urlparts = explode('.', $_SERVER['SERVER_NAME']);
 $hostType = strtolower(substr($urlparts[0], 0, 1));
-if ($host == 'a')
-    $veemail = $vconf['artist'];
+if ($hostType == 'a')
+    $vemail = $vconf['artist'];
 else
     $vemail = $vconf['vendor'];
 

@@ -74,7 +74,9 @@ class ExhibitorProfile {
     copyArtistNametoBusinessName() {
         var artname = document.getElementById("artistName");
         if (artname) {
-            document.getElementById("exhibitorName").focus().value = artname.value;
+            var exhName = document.getElementById("exhibitorName");
+            exhName.value = artname.value;
+            exhName.focus();
         }
     }
 
