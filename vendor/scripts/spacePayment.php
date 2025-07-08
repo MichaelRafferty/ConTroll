@@ -389,6 +389,7 @@ EOS;
 }
 
 // build the badges to insert into newperson and create the transaction
+// track the badges built to remove them if the payment fails
 //
 $error_msg = '';
 $badges = array();
@@ -478,6 +479,9 @@ if ($totprice > 0) {
     if ($rtn == null) {
         // note there is no reason cc_buildOrder will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
         logWrite(array ('con' => $condata['name'], 'trans' => $transId, 'error' => 'Credit card order unable to be created'));
+
+        // because this will retry once the issue is corrected, the newperson records and memberships need to be deleted.  it's all in $badgeResults
+        cleanupRegs($badgeResults);
         ajaxSuccess(array ('status' => 'error', 'error' => 'Credit card order not built, seek assistance'));
         exit();
     }
@@ -514,6 +518,8 @@ if ($totprice > 0) {
 // call the credit card processor to make the payment
     $ccrtn = cc_payOrder($results, $buyer, true);
     if ($ccrtn === null) {
+        // because this will retry once the issue is corrected, the newperson records and memberships need to be deleted.  it's all in $badgeResults
+        cleanupRegs($badgeResults);
         // note there is no reason cc_PayOrder will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
         logWrite(array('con'=>$condata['name'], 'trans'=>$transId, 'error' => 'Credit card transaction not approved'));
         ajaxSuccess(array('status' => 'error', 'error' => 'Credit card not approved'));
@@ -894,4 +900,32 @@ EOS;
     }
 
     return $badge;
+}
+
+// cleanup up on a credit card failure (order or payment)
+function cleanRegs($badges) {
+    $delReg = <<<EOS
+DELETE FROM reg
+WHERE id = ?;
+EOS;
+    $delNewperson = <<<EOS
+DELETE FROM newperson
+WHERE id = ?;
+EOS;
+
+// first the regs
+    foreach ($badges as $badge) {
+        $regId = $badge['badgeId'];
+        // delete the reg entry
+        $numDel = dbSafeCmd($delReg, 'i', array ($regId));
+    }
+
+    // now the new perid
+    foreach ($badges as $badge) {
+        if (array_key_exists('newperid', $badge)) {
+            $newPerid = $badge['newperid'];
+            // delete the reg entry
+            $numDel = dbSafeCmd($delNewperson, 'i', array ($newPerid));
+        }
+    }
 }

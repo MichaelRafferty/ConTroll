@@ -503,3 +503,31 @@ $response = array(
 );
 //var_error_log($response);
 ajaxSuccess($response);
+
+// cleanup up on a credit card failure (order or payment)
+function cleanRegs($badges) {
+    $delReg = <<<EOS
+DELETE FROM reg
+WHERE id = ?;
+EOS;
+    $delNewperson = <<<EOS
+DELETE FROM newperson
+WHERE id = ?;
+EOS;
+
+// first the regs
+    foreach ($badges as $badge) {
+        $regId = $badge['badgeId'];
+        // delete the reg entry
+        $numDel = dbSafeCmd($delReg, 'i', array ($regId));
+    }
+
+    // now the new perid
+    foreach ($badges as $badge) {
+        if (array_key_exists('newperid', $badge)) {
+            $newPerid = $badge['newperid'];
+            // delete the reg entry
+            $numDel = dbSafeCmd($delNewperson, 'i', array ($newPerid));
+        }
+    }
+}
