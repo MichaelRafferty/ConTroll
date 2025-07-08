@@ -24,7 +24,10 @@ require_once('isResolvedBaned.php');
 
 db_connect();
 $appSessionPrefix = 'Ctrl/Portal/';
-session_start();
+if (!session_start()) {
+    session_regenerate_id(true);
+    session_start();
+}
 
 function index_page_init($title) {
     global $portalJSVersion, $libJSversion, $controllJSversion, $globalJSversion, $atJSversion, $exhibitorJSversion;

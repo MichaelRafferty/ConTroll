@@ -31,6 +31,7 @@ $why = "continue to the Portal";
     // in session or not, is it a logout? (force clear session method, as well as logout)
     if (isset($_REQUEST['logout'])) {
         clearSession();
+        session_regenerate_id(true);
         header('location:' . $portal_conf['portalsite']);
         exit();
     }

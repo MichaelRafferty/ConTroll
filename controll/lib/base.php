@@ -26,8 +26,10 @@ require_once(__DIR__ . "/../../lib/cipher.php");
 require_once(__DIR__ . '/../../lib/jsVersions.php');
 require_once(__DIR__ . "/../../lib/ajax_functions.php");
 db_connect();
-session_start();
-
+if (!session_start()) {
+    session_regenerate_id(true);
+    session_start();
+}
 
 function bounce_page($new_page) {
     $url = getConfValue('google','redirect_base') . "/$new_page";
@@ -44,6 +46,9 @@ function google_init($mode) {
 
   // bypass for testing on Development PC
   if (stripos(__DIR__, "/Users/syd/") !== false && $_SERVER['SERVER_ADDR'] == "127.0.0.1") {
+      if(isset($_REQUEST['logout'])) {
+          session_regenerate_id(true);
+      }
       $token_data = array();
       $token_data['email'] = 'syd.weinstein@philcon.org';
       $token_data['sub'] = '114007818392249665998';
@@ -77,6 +82,7 @@ function google_init($mode) {
       $client->setPrompt('select_account');
       $client->setState('logout');
       $auth_url = $client->createAuthUrl();
+      session_regenerate_id(true);
       header('Location: ' . filter_var($auth_url, FILTER_SANITIZE_URL));
       exit();
   }

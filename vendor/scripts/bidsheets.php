@@ -17,7 +17,10 @@ require_once('../../lib/db_functions.php');
 require_once('../../lib/pdfPrintArtShowSheets.php');
 
 db_connect();
-session_start();
+if (!session_start()) {
+    session_regenerate_id(true);
+    session_start();
+}
 
 $response = array('post' => $_POST, 'get' => $_GET);
 if(!array_key_exists('type', $_GET) || !array_key_exists('region', $_GET) || !isSessionVar('eyID')) {

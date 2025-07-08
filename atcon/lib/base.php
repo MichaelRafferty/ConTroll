@@ -24,7 +24,10 @@ require_once(__DIR__ . '/../../lib/jsVersions.php');
 
 db_connect();
 $appSessionPrefix = 'Ctrl/Atcon/';
-session_start();
+if (!session_start()) {
+    session_regenerate_id(true);
+    session_start();
+}
 
 function isWebRequest()
 {
