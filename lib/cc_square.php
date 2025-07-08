@@ -355,7 +355,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
             }
         } else {
             if ($cleanupRegs)
-                cleanRegs($results['badges'], , $results['transid']);
+                cleanRegs($results['badges'], $results['transid']);
             ajaxSuccess(array ('status' => 'error', 'data' => 'Error: Art Data not passed, get assistance.'));
             exit();
         }
@@ -657,12 +657,12 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     }
     catch (SquareApiException $e) {
         if ($cleanupRegs)
-            cleanRegs($results['badges']);
+            cleanRegs($results['badges'], $results['transid']);
         sqcc_logException($source, $e, 'Order API create order Exception', 'Order create failed', $useLogWrite);
     }
     catch (Exception $e) {
         if ($cleanupRegs)
-            cleanRegs($results['badges']);
+            cleanRegs($results['badges'], $results['transid');
         sqcc_logException($source, $e, 'Order API error while calling Square', 'Error connecting to Square', $useLogWrite);
     }
 
