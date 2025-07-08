@@ -903,29 +903,67 @@ EOS;
 }
 
 // cleanup up on a credit card failure (order or payment)
-function cleanRegs($badges) {
+function cleanRegs($badges, $transid) {
     $delReg = <<<EOS
 DELETE FROM reg
 WHERE id = ?;
 EOS;
+
+    $delInterests = <<<EOS
+DELETE FROM memberInterests
+WHERE newperid = ?;
+EOS;
+
+    $delPolicies = <<<EOS
+DELETE FROM memberPolicies
+WHERE newperid = ?;
+EOS;
+
+    $clrNewperson = <<<EOS
+UPDATE newperson
+SET transid = NULL
+WHERE id = ?;
+EOS;
+
+    $clrTransaction = <<<EOS
+UPDATE transaction
+SET newperid = NULL
+WHERE newperid = ?;
+EOS;
+
     $delNewperson = <<<EOS
 DELETE FROM newperson
 WHERE id = ?;
 EOS;
 
+    $delTransaction = <<<EOS
+DELETE FROM transaction
+WHERE id = ?;
+EOS;
+
+
 // first the regs
     foreach ($badges as $badge) {
-        $regId = $badge['badgeId'];
+        $regId = $badge['regid'];
         // delete the reg entry
         $numDel = dbSafeCmd($delReg, 'i', array ($regId));
     }
 
     // now the new perid
     foreach ($badges as $badge) {
-        if (array_key_exists('newperid', $badge)) {
-            $newPerid = $badge['newperid'];
-            // delete the reg entry
+        if (array_key_exists('id', $badge)) {
+            $newPerid = $badge['id'];
+            // clear the newperson entry
+            $numDel = dbSafeCmd($clrNewperson, 'i', array ($newPerid));
+            $numDel = dbSafeCmd($clrTransaction, 'i', array ($newPerid));
+            $numDel = dbSafeCmd($delInterests, 'i', array ($newPerid));
+            $numDel = dbSafeCmd($delPolicies, 'i', array ($newPerid));
+
+            // delete the newperson entry
             $numDel = dbSafeCmd($delNewperson, 'i', array ($newPerid));
+
+            // delete the transaction
+            $numDel = dbSafeCmd($delTransaction, 'i', array ($transid));
         }
     }
 }

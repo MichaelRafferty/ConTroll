@@ -143,7 +143,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
             }
         } else {
             if ($cleanupRegs)
-                cleanRegs($results['badges']);
+                cleanRegs($results['badges'], $results['transid']);
             ajaxSuccess(array ('status' => 'error', 'data' => 'Error: Plan payment missing plan information, get assistance.'));
             exit();
         }
@@ -545,7 +545,14 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
         if (is_array($pNonce)) {
             if ($pNonce[0] != '1') {
                 if ($cleanupRegs)
-                    cleanRegs($ccParams['badges']);
+                    cleanRegs($ccParams['badges'], $ccParams['transid']);
+                ajaxSuccess(array ('status' => 'error', 'data' => 'bad CC number'));
+                exit();
+            }
+        } else {
+            if ($pNonce != '1') {
+                if ($cleanupRegs)
+                    cleanRegs($ccParams['badges'], $ccParams['transid']);
                 ajaxSuccess(array ('status' => 'error', 'data' => 'bad CC number'));
                 exit();
             }
