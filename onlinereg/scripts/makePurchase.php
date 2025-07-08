@@ -307,7 +307,7 @@ foreach($people as $person) {
 }
 
 $all_badgeQ = <<<EOS
-SELECT R.id AS badge, R.id AS regid,
+SELECT R.id AS badge, R.id AS regId,
     NP.first_name AS fname, NP.middle_name AS mname, NP.last_name AS lname, NP.suffix AS suffix, NP.legalName,
     NP.email_addr AS email,
     NP.address AS street, NP.city AS city, NP.state AS state, NP.zip AS zip, NP.country AS country,
@@ -547,7 +547,7 @@ EOS;
 
 // first the regs
     foreach ($badges as $badge) {
-        $regId = $badge['regid'];
+        $regId = $badge['regId'];
         // delete the reg entry
         $numDel = dbSafeCmd($delReg, 'i', array ($regId));
     }
@@ -564,9 +564,8 @@ EOS;
 
             // delete the newperson entry
             $numDel = dbSafeCmd($delNewperson, 'i', array ($newPerid));
-
-            // delete the transaction
-            $numDel = dbSafeCmd($delTransaction, 'i', array ($transid));
         }
     }
+    // delete the transaction
+    $numDel = dbSafeCmd($delTransaction, 'i', array ($transid));
 }

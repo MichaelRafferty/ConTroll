@@ -944,7 +944,7 @@ EOS;
 
 // first the regs
     foreach ($badges as $badge) {
-        $regId = $badge['regid'];
+        $regId = $badge['regId'];
         // delete the reg entry
         $numDel = dbSafeCmd($delReg, 'i', array ($regId));
     }
@@ -961,9 +961,8 @@ EOS;
 
             // delete the newperson entry
             $numDel = dbSafeCmd($delNewperson, 'i', array ($newPerid));
-
-            // delete the transaction
-            $numDel = dbSafeCmd($delTransaction, 'i', array ($transid));
         }
     }
+    // delete the transaction
+    $numDel = dbSafeCmd($delTransaction, 'i', array ($transid));
 }
