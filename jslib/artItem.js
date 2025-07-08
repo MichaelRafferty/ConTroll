@@ -275,7 +275,7 @@ setValuesFromData(artItemData) {
     else
         this.#locationList = [];
     this.quantity = artItemData['quantity'];
-    this.original_qty = artItemData['orig_qty'];
+    this.original_qty = artItemData['original_qty'];
     this.min_price = artItemData['min_price'];
     this.sale_price = artItemData['sale_price'];
     this.#bidder = artItemData['bidder'];
