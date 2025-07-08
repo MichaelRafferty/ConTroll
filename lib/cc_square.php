@@ -662,7 +662,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     }
     catch (Exception $e) {
         if ($cleanupRegs)
-            cleanRegs($results['badges'], $results['transid');
+            cleanRegs($results['badges'], $results['transid']);
         sqcc_logException($source, $e, 'Order API error while calling Square', 'Error connecting to Square', $useLogWrite);
     }
 
