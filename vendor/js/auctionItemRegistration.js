@@ -5,6 +5,7 @@ class AuctionItemRegistration {
 // items related to artists, or other exhibitors registering items
     #item_registration = null;
     #item_registration_btn = null;
+    #closeAnyway = false;
 
     #region = 0;
     #numItems = null;
@@ -57,6 +58,17 @@ class AuctionItemRegistration {
         window.open(script, "_blank")
     }
 
+    closeModal() {
+        if ((!this.#closeAnyway) && (this.#artItemsDirty || this.#printItemsDirty || this.#nfsItemsDirty)) {
+            show_message("You have unsaved changes, save them first, press close again to close without saving them.", 'warn', 'ir_message_div');
+            this.#closeAnyway = true;
+            return;
+        }
+        clear_message('ir_message_div');
+        this.#closeAnyway = false;
+        this.#item_registration.hide();
+    }
+
     open(region) {
         clear_message('ir_message_div');
         this.#region = region;
@@ -99,7 +111,7 @@ class AuctionItemRegistration {
         this.drawArtItemTable(data['items']);
 
         this.#printSaveBtn = document.getElementById('print-save');
-        this.#printUndoBtn = document.getElementById('print-undo');
+        this.#printUndoBtn = document.getElementById('print-undo')
         this.#printRedoBtn = document.getElementById('print-redo');
         this.#printAddBtn = document.getElementById('print-addrow');
         this.drawPrintItemTable(data['items']);

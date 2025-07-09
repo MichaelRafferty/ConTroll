@@ -169,7 +169,8 @@ foreach ($data as $index => $row) {
         $row['min_price'] = $row['sale_price'];
     }
 
-    if ($itemType == 'art' && array_key_exists('sale_price', $row) && $row['sale_price'] != null && $row['sale_price'] <= $row['min_price']) {
+    if ($itemType == 'art' && array_key_exists('sale_price', $row) && $row['sale_price'] != null && $row['sale_price'] != 0.00
+        && $row['sale_price'] <= $row['min_price']) {
         $data_errors .= "Item: " . $row['item_key'] . ", $label must be greater than Min Bid<br/>";
         $data_marks[] = [ 'item_key' => $row['item_key'], 'field' => 'sale_price' ];
     }

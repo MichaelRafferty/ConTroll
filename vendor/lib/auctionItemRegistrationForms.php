@@ -37,7 +37,7 @@ function draw_itemRegistrationModal($portalType = '', $showsheets=false, $showco
                     <div class='modal-title' id='item_registration_title'>
                         <strong>Item Registration</strong>
                     </div>
-                    <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+                    <button type='button' class='btn-close' onclick="auctionItemRegistration.closeModal(); return false;" aria-label='Close'></button>
                 </div>
                 <div class='modal-body' stype='padding: 4px; background-color: lightcyan;'>
                     <div class='container-fluid'>
@@ -92,10 +92,15 @@ function draw_itemRegistrationModal($portalType = '', $showsheets=false, $showco
                             </div>
                         </div>
                         <div class='row'>
-                            <div class='col-sm-auto' id='print_buttons'>
+                            <div class='col-sm-10' id='print_buttons'>
                                 <button id='print_bidsheet' type='button' class='btn btn-primary btn-sm' onclick="auctionItemRegistration.printSheets('bidsheets'); return false;">Print Bidsheets</button>
                                 <button id='print_printshop' type='button' class='btn btn-primary btn-sm' onclick="auctionItemRegistration.printSheets('printshop'); return false;">Print Sales Tags</button>
                                 <button id='print_controlsheet' type='button' class='btn btn-primary btn-sm' onclick="auctionItemRegistration.printSheets('control'); return false;">Print Control Sheet</button>
+                            </div>
+                            <div class='col-sm-2 justify-content-end' id='close_buttons'>
+                                <button type="button" class='btn btn-primary btn-sm' onclick="auctionItemRegistration.closeModal(); return false;">
+                                    Close Item Registration
+                                </button>
                             </div>
                         </div>
                         <div class='row mt-2' id='ir_message_div'></div>

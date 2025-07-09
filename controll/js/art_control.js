@@ -52,7 +52,7 @@ function setRegion(name, id) {
 }
 
 function getData() {
-    var script = "scripts/getArtItems.php";
+    var script = "scripts/artcontrol_getArtItems.php";
     $.ajax({
         method: "GET",
         url: script,
@@ -259,7 +259,7 @@ function saveItem() {
     itemSaveBtn.innerHTML = "Saving...";
     itemSaveBtn.disabled = true;
 
-    script = "scripts/updateArtItems.php"
+    script = "scripts/artcontrol_updateArtItems.php"
     var postdata = {
         tabledata: JSON.stringify(itemTable.getData()),
         indexcol: "id",
