@@ -63,4 +63,11 @@ UPDATE memCategories SET notes = 'Req: Paid badge-able memberships' WHERE memCat
 UPDATE memCategories SET notes = 'Req: Next Con-Year Memberships' WHERE memCategory = 'yearahead';
 UPDATE memCategories SET notes = 'Req: Taxable add-on''s to memberships' WHERE memCategory = 'addonTaxable';
 
+/*
+ * for the insurance line allow artItems to be 11,2, not 8,2 decimal
+ */
+ALTER TABLE artItems MODIFY COLUMN min_price decimal(11,2) NOT NULL DEFAULT 0.00;
+ALTER TABLE artItems MODIFY COLUMN sale_price decimal(11,2)  NULL;
+ALTER TABLE artItems MODIFY COLUMN final_price decimal(11,2) NULL;
+
 INSERT INTO patchLog(id, name) VALUES(xx, 'passkeys');
