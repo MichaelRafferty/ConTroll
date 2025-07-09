@@ -513,7 +513,7 @@ function pdfArtistControlSheet($regionYearId, $region, $response, $printContactI
 
     $artistQ = <<<EOS
 SELECT e.*, exY.conid,exY.mailin,exY.contactName,exY.contactPhone, exY.contactEmail, exRY.agentPerid, exRY.agentRequest, exRY.exhibitorNumber, eR.name,
-       p.first_name, p.last_name, p.middle_name, p.suffix, p.phone, p.email_addr
+       p.first_name, p.last_name, p.middle_name, p.suffix, p.phone, p.email_addr, e.exhibitorEmail
 FROM exhibitorRegionYears exRY
 JOIN exhibitorYears exY ON exY.id = exRY.exhibitorYearId
 JOIN exhibitors e ON e.id = exY.exhibitorId
@@ -605,7 +605,11 @@ EOS;
     $rowHeight = $leading + $maxY + 0.05 - $v;
 
     //  email
-    printXY($col2, $v + $dataOffset, 'Email: ' . $artist['email_addr']);
+    if ($artist['email_addr' == null || $artist['email_addr'] == '')
+        $emailAddr = $artist['exhibitorEmail'];
+    else
+        $emailAddr = $artist['email_addr'];
+    printXY($col2, $v + $dataOffset, 'Email: ' . $emailAddr);
 
     // Phone
     printXY($col3, $v + $dataOffset, 'Phone: ' . $artist['exhibitorPhone']);
