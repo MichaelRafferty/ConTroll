@@ -605,7 +605,7 @@ EOS;
     $rowHeight = $leading + $maxY + 0.05 - $v;
 
     //  email
-    if ($artist['email_addr' == null || $artist['email_addr'] == '')
+    if ($artist['email_addr'] == null || $artist['email_addr'] == '')
         $emailAddr = $artist['exhibitorEmail'];
     else
         $emailAddr = $artist['email_addr'];
