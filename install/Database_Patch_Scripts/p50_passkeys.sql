@@ -52,5 +52,15 @@ ALTER TABLE exhibitorYears DROP COLUMN confirm;
 ALTER TABLE exhibitorYears DROP COLUMN needReview;
 ALTER TABLE exhibitorYears ADD COLUMN lastVerified datetime DEFAULT current_timestamp NOT NULL AFTER need_new;
 
+/*
+ * fix bad typing in membership tables
+ */
+UPDATE memTypes SET notes = 'Req: full ''run of convention'' badge-able membership' WHERE memType ='full';
+UPDATE memTypes SET notes = 'Req: virtual non badge-able membership' WHERE memType ='virtual';
+UPDATE memTypes SET notes = 'Req: single day badge-able membership' WHERE memType ='oneday';
+UPDATE memTypes SET notes = 'Req: Donation: both variable and fixed price' WHERE memType ='donation';
+UPDATE memCategories SET notes = 'Req: Paid badge-able memberships' WHERE memCategory = 'standard';
+UPDATE memCategories SET notes = 'Req: Next Con-Year Memberships' WHERE memCategory = 'yearahead';
+UPDATE memCategories SET notes = 'Req: Taxable add-on''s to memberships' WHERE memCategory = 'addonTaxable';
 
 INSERT INTO patchLog(id, name) VALUES(xx, 'passkeys');
