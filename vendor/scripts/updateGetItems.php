@@ -128,6 +128,21 @@ EOS;
 $updated = 0;
 $inserted = 0;
 $data_errors = '';
+$data_marks = [];
+
+switch ($itemType) {
+    case 'art':
+        $label = 'Quick Sale Price';
+        break;
+
+    case 'print':
+        $label = 'Sale Price';
+        break;
+
+    case 'nfs':
+        $label = 'Insurance Price';
+        break;
+}
 
 // loop one - just check for errors
 foreach ($data as $index => $row) {
@@ -136,25 +151,32 @@ foreach ($data as $index => $row) {
         if ($row['to_delete'] == 1) continue;
     }
 
+    if (!array_key_exists('title', $row)) {
+        $data_errors .= 'Item: ' . $row['item_key'] . ", Title is required<br/>";
+        $data_marks[] = ['item_key' => $row['item_key'], 'field' => 'title'];
+    }
+
     if (!array_key_exists('sale_price', $row) && ($itemType != 'art')) {
-        $data_errors .= "Item: " . $row['item_key'] . ", Sale Price is required<br/>";
-        continue; // print and nfs need sale
+        $data_errors .= "Item: " . $row['item_key'] . ", $label is required<br/>";
+        $data_marks[] = [ 'item_key' => $row['item_key'], 'field' => 'sale_price' ];
     }
 
     if (!array_key_exists('min_price', $row) && ($itemType == 'art')) {
         $data_errors .= "Item: " . $row['item_key'] . ", Min Bid is required<br/>";
+        $data_marks[] = [ 'item_key' => $row['item_key'], 'field' => 'min_price' ];
         continue; // art need min bid
     } else if (!array_key_exists('min_price', $row)) {
         $row['min_price'] = $row['sale_price'];
     }
 
     if ($itemType == 'art' && array_key_exists('sale_price', $row) && $row['sale_price'] != null && $row['sale_price'] <= $row['min_price']) {
-        $data_errors .= "Item: " . $row['item_key'] . ", Sale Price must be > Min Bid<br/>";
-        continue; // invalid
+        $data_errors .= "Item: " . $row['item_key'] . ", $label must be greater than Min Bid<br/>";
+        $data_marks[] = [ 'item_key' => $row['item_key'], 'field' => 'sale_price' ];
     }
 }
 if ($data_errors != '') {
     $response['error'] = "$data_errors<br/>Please correct and re-save the section.";
+    $response['marks'] = $data_marks;
     ajaxSuccess($response);
     exit();
 }
