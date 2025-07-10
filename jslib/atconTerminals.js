@@ -61,7 +61,7 @@ class Terminals {
             history: true,
             index: 'name',
             columns: [
-                { title: "Actions",  formatter: this.termActions, },
+                { title: "Actions", minWidth: 230, formatter: this.termActions, },
                 { title: "Name", field: "name", minWidth: 150, headerSort: true, headerFilter: true },
                 { title: "Status", field: "status", minWidth: 100, headerSort: true, headerFilter:true, headerWordWrap: true, },
                 { title: "Status Updated", field: "statusChanged", minWidth: 150, headerSort: true, headerFilter:true, headerWordWrap: true, },
@@ -69,9 +69,9 @@ class Terminals {
                 { title: "Battery Level", field: "batteryLevel", width: 100, headerSort: true, headerFilter:true, headerWordWrap: true,
                     formatter: "progress", formatterParams: { min: 0, max: 100, color: ["red", "yellow", "green"], legend: true, },
                 },
-                { title: "External Power", field: "externalPower", width: 100, headerSort: true, headerFilter:true, headerWordWrap: true, },
-                { title: "Current Order", field: "currentOrder", width: 150, headerSort: true, headerFilter:true, headerWordWrap: true, },
-                { title: "Current Payment", field: "currentPayment", width: 150, headerSort: true, headerFilter:true, headerWordWrap: true, },
+                { title: "External Power", field: "externalPower", minWidth: 100, headerSort: true, headerFilter:true, headerWordWrap: true, },
+                { title: "Current Order", field: "currentOrder", minWidth: 150, headerSort: true, headerFilter:true, headerWordWrap: true, },
+                { title: "Current Payment", field: "currentPayment", minWidth: 150, headerSort: true, headerFilter:true, headerWordWrap: true, },
             ],
         });
     }
