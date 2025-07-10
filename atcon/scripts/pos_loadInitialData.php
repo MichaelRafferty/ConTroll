@@ -75,13 +75,14 @@ if ($r->num_rows == 1) {
     exit();
 }
 $r->free();
-// get all types registration can set
-// if now is pre or post con set search date to first day of con
-//web_error_log("start = " . strtotime($startdate) . ", end = " . strtotime($enddate) . ", now = " . time());
-if (time() < strtotime($startdate) || strtotime($enddate) +24*60*60 < time()) {
-    $searchdate = $startdate;
-} else {
-    $searchdate = date('Y-m-d');
+$searchdate = date('Y-m-d');
+if (getConfValue('atcon', 'precon', 0) == 0) {
+    // get all types registration can set
+    // if now is pre or post con set search date to first day of con
+    //web_error_log("start = " . strtotime($startdate) . ", end = " . strtotime($enddate) . ", now = " . time());
+    if (time() < strtotime($startdate) || strtotime($enddate) + 24 * 60 * 60 < time()) {
+        $searchdate = $startdate;
+    }
 }
 //web_error_log("Search date now $searchdate");
 
