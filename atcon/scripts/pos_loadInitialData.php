@@ -166,7 +166,7 @@ $response['num_coupons'] = $ret[0];
 $response['couponList'] = $ret[1];
 
 // membership rules, policies, configuration items
-$ruleData = getRulesData($conid, true, false);
+$ruleData = getRulesData($conid, false, true);
 
 $response['gageList'] = $ruleData['ageList'];
 $response['gageListIdx'] = $ruleData['ageListIdx'];
