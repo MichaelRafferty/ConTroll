@@ -82,7 +82,7 @@ EOS;
         }
 
         $eyinsQ = <<<EOS
-INSERT INTO exhibitorYears (conid, exhibitorId, contactName, contactEmail, contactPhone, contactPassword, mailin, need_new, lastVerified, notes
+INSERT INTO exhibitorYears (conid, exhibitorId, contactName, contactEmail, contactPhone, contactPassword, mailin, need_new, lastVerified, notes)
 SELECT ?, exhibitorId, contactName, contactEmail, contactPhone, contactPassword, mailin, need_new, '2001/01/01', ?
 FROM exhibitorYears
 WHERE conid = ? AND exhibitorId = ?;
