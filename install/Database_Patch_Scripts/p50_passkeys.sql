@@ -70,4 +70,10 @@ ALTER TABLE artItems MODIFY COLUMN min_price decimal(11,2) NOT NULL DEFAULT 0.00
 ALTER TABLE artItems MODIFY COLUMN sale_price decimal(11,2)  NULL;
 ALTER TABLE artItems MODIFY COLUMN final_price decimal(11,2) NULL;
 
+/*
+ * add missing ref to perinfo for artItems
+ */
+ALTER TABLE artItems ADD CONSTRAINT `artItems_fk_bidder` FOREIGN KEY (`bidder`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
+
+
 INSERT INTO patchLog(id, name) VALUES(xx, 'passkeys');

@@ -99,6 +99,10 @@ allage=0
 ; inlineinventory=0 : artpos will sell as quicksale if no bids, or if 'restrict to inventory sale statuses and prices' for art not sold at quicksale
 ; inlineinventory=1 : art pos will use an intelligent modal popup based on Region Year Room Status for allowing what to sell and price
 inlineinventory=1
+;; precon - allow use of atcon for pre-con sales
+; precon=0 - only work correctly at con, precon simiulates the first day of the con
+; precon=1 - works pre-con, follows the date range for precon
+precon=0
 
 [vendor]
 ;;; overrides
