@@ -829,6 +829,8 @@ class exhibitorsAdm {
             this.#importTable.destroy();
             this.#importTable = null;
         }
+        clear_message();
+        clearError();
         $.ajax({
             url: 'scripts/exhibitorsGetPastForImport.php',
             method: "POST",
@@ -887,6 +889,8 @@ class exhibitorsAdm {
     importPastExhibitors() {
         var data = this.#importTable.getData();
         this.#importModal.hide();
+        clear_message();
+        clearError();
         $.ajax({
             url: 'scripts/exhibitorsImportPast.php',
             method: "POST",
@@ -1142,6 +1146,8 @@ class exhibitorsAdm {
         var exhibitorRegionYearId = row.getCell("exhibitorRegionYearId").getValue();
         var regionYearId = row.getCell("regionYearId").getValue();
 
+        clear_message();
+        clearError();
         $.ajax({
             url: 'scripts/exhibitorsUpdateLocations.php',
             method: "POST",
@@ -1317,6 +1323,8 @@ class exhibitorsAdm {
 
     // reset an exhibitor's password
     resetpw(exhibitorId) {
+        clear_message();
+        clearError();
         $.ajax({
             url: 'scripts/exhibitorsSetPassword.php',
             method: "POST",
@@ -1334,6 +1342,8 @@ class exhibitorsAdm {
     // reset a contact's password
     resetCpw(exhibitorId) {
         var exhibitorYearId = this.#exhibitorsTable.getRow(exhibitorId).getCell("exhibitorYearId").getValue();
+        clear_message();
+        clearError();
         $.ajax({
             url: 'scripts/exhibitorsSetPassword.php',
             method: "POST",
@@ -1351,6 +1361,8 @@ class exhibitorsAdm {
     // processApprovalChange - change the value of the approval record for this exhibitor
     processApprovalChange(value, approvalData, approvalRow) {
         this.#approvalRow = approvalRow
+        clear_message();
+        clearError();
         $.ajax({
             url: 'scripts/exhibitorsSetApproval.php',
             method: "POST",
@@ -1415,6 +1427,8 @@ class exhibitorsAdm {
         if (req == 0 || pur > 0)
             return; // suppress click if there is nothing to approve
 
+        clear_message();
+        clearError();
         $.ajax({
             url: 'scripts/exhibitorsSpaceApproval.php',
             method: "POST",
@@ -1444,6 +1458,8 @@ class exhibitorsAdm {
         if (this.#debug & 1)
             console.log("Space Approval for " + exhibitorData.exhibitorName + " of type other");
 
+        clear_message();
+        clearError();
         $.ajax({
             url: 'scripts/exhibitorGetSingleData.php',
             method: "POST",
@@ -1503,6 +1519,8 @@ class exhibitorsAdm {
             regionId: this.#regionId,
             action: 'list',
         };
+        clear_message();
+        clearError();
         $.ajax({
             url: script,
             data: data,
@@ -1578,6 +1596,8 @@ class exhibitorsAdm {
             regionId: this.#regionId,
             action: 'get',
         };
+        clear_message();
+        clearError();
         $.ajax({
             url: script,
             data: data,
