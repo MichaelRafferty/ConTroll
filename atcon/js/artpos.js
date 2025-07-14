@@ -412,7 +412,7 @@ function draw_person() {
     html += `
     <div class="row">
        <div class="col-sm-3"></div>
-       <div class="col-sm-9">` + currentPerson.city + ', ' + currentPerson.state + ' ' + currentPerson.postal_code + `</div>
+       <div class="col-sm-9">` + currentPerson.city + ', ' + currentPerson.state + ' ' + currentPerson.zip + `</div>
     </div>
 `;
     if (currentPerson.country != '' && currentPerson.country != 'USA') {
