@@ -40,12 +40,31 @@ $log = get_conf('log');
 logInit($log['vendors']);
 
 // which space purchased
-if (!(array_key_exists('regionYearId', $_POST) && array_key_exists('prow', $_POST))) {
+if (!(array_key_exists('regionYearId', $_POST))) {
     ajaxError("invalid calling sequence");
     exit();
 }
 
-$prow = $_POST['prow'];
+// check for amtDue to see if it's > 0 and if so check for prow
+if (array_key_exists('amtDue', $_POST)) {
+    $amtDue = $_POST['amtDue'];
+} else {
+    $amtDue = null;
+}
+
+if ($amtDue != null && $amtDue > 0) {
+    if (!(array_key_exists('prow', $_POST))) {
+        ajaxError('invalid calling sequence');
+        exit();
+    }
+}
+
+if (array_key_exists('prow', $_POST)) {
+    $prow = $_POST['prow'];
+} else {
+    $prow = null;
+}
+
 $crow = null;   // common code, no change processed in this routine
 $desc='';
 
@@ -68,11 +87,6 @@ if (array_key_exists('spacePrice', $_POST))
     $spacePrice = $_POST['spacePrice'];
 else
     $spacePrice = 0;
-
-if (array_key_exists('amtDue', $_POST))
-    $amtDue = $_POST['amtDue'];
-else
-    $amtDue = null;
 
 if (array_key_exists('payment_type', $_POST))
     $paymentType = $_POST['payment_type'];
@@ -451,7 +465,7 @@ $results = array(
 //log requested badges
 logWrite(array('con' => $conid, $portalName => $exhibitor, 'region' => $region, 'spaces' => $spaces, 'trans' => $transid, 'results' => $results, 'request' => $badges));
 
-if ($prow['type'] != 'credit') {
+if ($prow != null && $prow['type'] != 'credit') {
     load_cc_procs();
     // for cash/check/etc build the order so it can be recorded
     if ($cancelOrderId) // cancel the old order if it exists
@@ -585,24 +599,25 @@ if ($totprice > 0) {
 }
 
 // extract the values needed for the payment
-
-$txnQ = <<<EOS
+if ($prow != null) {
+    $txnQ = <<<EOS
 INSERT INTO payments (transid, type, category, description, source, pretax, tax, amount, time, nonce, cc_approval_code, txn_time, userPerid)
 VALUES (?,?,?,?,?,?,?,?,NOW(),?,?,NOW(),?);
 EOS;
-$typestr = 'issssdddssi';
-if ($paymentType == 'check') {
-    $desc = 'Check No: ' . $_POST['pay-checkno']  . ', ' . $payDesc;
-} else {
-    $desc = $payDesc;
-}
-$values = array($transid, $paymentType, 'vendor', $desc, $source, $totprice, 0, $totprice, 'admin', $ccAuth, $_SESSION['user_perid']);
+    $typestr = 'issssdddssi';
+    if ($paymentType == 'check') {
+        $desc = 'Check No: ' . $_POST['pay-checkno'] . ', ' . $payDesc;
+    } else {
+        $desc = $payDesc;
+    }
+    $values = array ($transid, $paymentType, 'vendor', $desc, $source, $totprice, 0, $totprice, 'admin', $ccAuth, $_SESSION['user_perid']);
 
-$txnid = dbSafeInsert($txnQ, $typestr, $values);
-if ($txnid == false) {
-    $error_msg .= "Insert of payment failed\n";
-} else {
-    $status_msg .= "Payment for " . $dolfmt->formatCurrency($totprice, 'USD') . " processed<br/>\n";
+    $txnid = dbSafeInsert($txnQ, $typestr, $values);
+    if ($txnid == false) {
+        $error_msg .= "Insert of payment failed\n";
+    } else {
+        $status_msg .= "Payment for " . $dolfmt->formatCurrency($totprice, 'USD') . " processed<br/>\n";
+    }
 }
 $approved_amt = $totprice;
 $results['approved_amt'] = $approved_amt;
