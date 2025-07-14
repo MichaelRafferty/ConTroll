@@ -134,6 +134,11 @@ emailhrs=24
 oauthhrs=8
 
 ;; Items for Worldcon's
+; enable worldcon checking features (not all require this to be =1, but the virtual
+; to work for non worldcons depends on this being 0
+;   1: this is a worldcon require wsfs for attending status
+;   0: this is not a worldcon, ignore wsfs memberships
+; worldcon=
 ; nomdate = cutoff for WSFS nominations memberships, older than this can nominate
 ; nomdate="YYYY/MM/DD"
 ; nomnomURL = redirect URL with page for this worldcon's instance of No Nom
@@ -147,6 +152,7 @@ oauthhrs=8
 ; siteselectionKey = encryption key for the site selection data
 ;; End of Items for Worldcon
 
+;; items for conventions with virtual/hybrid access to the convention
 ; virtualURL = url to the virtual portal
 ; virtualBtn = text for the virtual portal button
 
