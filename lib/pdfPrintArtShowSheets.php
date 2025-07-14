@@ -563,7 +563,7 @@ EOS;
     } else {
         $artistName = $artist['artistName'];
     }
-    $showAlt = $artist['contactName'] != $artistName || $artist['contactPhone'] != $artist['exhibitorPhone'] ||
+    $showContact = $artist['contactName'] != $artistName || $artist['contactPhone'] != $artist['exhibitorPhone'] ||
         $artist['exhibitorEmail'] != $artist['contactEmail'];
     $showShip = $artist['mailin'] == 'Y';
 
@@ -699,15 +699,15 @@ EOS;
     $pdf->Rect($h + 3.0, $v, 6.0,$rowHeight);
     $v += $rowHeight;
 
-    if ($showAlt || $showShip) {
-        if ($showAlt && $showShip)
-            $title = 'Alternate Contact/Shipping Information';
-        else if ($showAlt)
-            $title = 'Alternate Contact';
+    if ($showContact || $showShip) {
+        if ($showContact && $showShip)
+            $title = 'Primary Contact/Shipping Information';
+        else if ($showContact)
+            $title = 'Primary Contact';
         else
             $title = 'Shipping Information';
 
-        // Section Line - Alternate Contact
+        // Section Line - Primary Contact
         $v += 0.25;
         pushFont('Arial', 'B', 13);
         printXY($h, $v, $title);
@@ -717,9 +717,9 @@ EOS;
         $col2 = $h + 2.0 + 3 * $pt;
         $col2w = 6.0 - 4 * $pt;
 
-        if ($showAlt) {
-            // alternate contact info
-            printXY($col1, $v + $dataOffset, 'Alternate Contact:');
+        if ($showContact) {
+            // Primary contact info
+            printXY($col1, $v + $dataOffset, 'Primary Contact:');
             $maxY = $minRowHeight;
             $y = mprintXY($col2, $v + $mprintXYoffset, $col2w, $artist['contactName']);
             if ($y > $maxY) $maxY = $y;
