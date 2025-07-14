@@ -31,6 +31,8 @@ if (getConfValue('portal', 'suspended') == 1) {
 $NomNomURL = getConfValue('portal', 'nomnomURL');
 $BusinessMeetingURL = getConfValue('portal', 'businessmeetingURL');
 $SiteSelectionURL = getConfValue('portal', 'siteselectionURL');
+$virtualURL = getConfValue('portal', 'virtualURL');
+$worldCon = getConfValue('portal', 'worldcon', '0');
 
 if (isSessionVar('id') && isSessionVar('idType')) {
     // check for being resolved/baned
@@ -68,8 +70,10 @@ $config_vars['initCouponSerial'] = $initCouponSerial;
 $config_vars['id'] = $loginId;
 $config_vars['idType'] = $loginType;
 $config_vars['conid'] = $conid;
+$config_vars['worldcon'] = $worldCon;
 $config_vars['nomnomExists'] = $NomNomURL != '';
 $config_vars['businessExists'] = $BusinessMeetingURL != '';
+$config_vars['virtualExists'] = $virtualURL != '';
 $config_vars['siteExists'] = $SiteSelectionURL != '';
 if ($NomNomURL != '')
     $config_vars['nomnomURL'] = $NomNomURL;
@@ -295,6 +299,7 @@ EOS;
 
     if (!$hasWSFS)
         $hasMeeting = false;
+    $hasVirtual = ($numPaidPrimary > 0) && ((!$worldCon) || $hasWSFS);
 // get people managed by this account holder and their registrations
     if ($loginType == 'p') {
         $managedSQL = <<<EOS
@@ -552,20 +557,20 @@ if ($numExpired > 0) {
 }
 
 $VirtualButton = '';
-if (array_key_exists('virtualURL', $portal_conf)) {
-    $config_vars['virtualURL'] = $portal_conf['virtualURL'];
+if ($virtualURL != '') {
     if (array_key_exists('virtualBtn', $portal_conf))
         $VirtualButtonTxt = $portal_conf['virtualBtn'];
     else
         $VirtualButtonTxt = $con['label'] . 'Virtual Portal';
 
-    if ($numPaidPrimary == 0)
+    if (!$hasVirtual) {
         $VirtualButton .= '<span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="top" ' .
-            'data-bs-title="Add and pay for an attending or virtual membership to be able to attend the virtual convention.">';
+            'data-bs-title="Add and pay for ' . ($worldCon ? "a WSFS and " : "") . 'an attending or virtual membership to be able to attend the virtual convention.">';
+        }
 
     $VirtualButton .= "<button class='btn btn-primary p-1' type='button' " .
-        ($numPaidPrimary > 0 ? 'onclick="portal.virtual();"' : ' disabled') . ">$VirtualButtonTxt</button>";
-    if ($numPaidPrimary == 0)
+        ($hasVirtual ? 'onclick="portal.virtual();"' : ' disabled') . ">$VirtualButtonTxt</button>";
+    if (!$hasVirtual)
         $VirtualButton .= '</span>';
 
 }
