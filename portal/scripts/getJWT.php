@@ -230,8 +230,6 @@ WHERE
 ORDER BY create_date;
 EOS;
     $holderRegR = dbSafeQuery($holderRegSQL, 'iii', array ($conid, $loginType == 'p' ? $loginId : -1, $loginType == 'n' ? $loginId : -1));
-    $holderMembership = [];
-    $paidOtherMembership = [];
     // determine business meeting, site selection and wsfs
     // wsfs is any WSFS membership except nomination only
     // meeting = (later has WSFS anded with it)
@@ -242,34 +240,34 @@ EOS;
     //			OR
     //			any type ‘virtual’ OR
     //			any type ‘oneday'
+    $memberships = [];
     if ($holderRegR !== false && $holderRegR->num_rows > 0) {
         while ($m = $holderRegR->fetch_assoc()) {
             // check if they have a WSFS rights membership (hasWSFS and hasNom)
-            if (($m['memCategory'] == 'wsfs' ||  $m['memType'] == 'wsfsfree' || $m['memCategory'] == 'dealer') &&  $m['status'] == 'paid')
+            if (($m['memCategory'] == 'wsfs' || $m['memType'] == 'wsfsfree' || $m['memCategory'] == 'dealer') && $m['status'] == 'paid') {
                 $hasWSFS = true;
+                continue;
+            }
 
             // check age to prevent virtual
             if ($m['ageType'] == 'child' || $m['ageType'] == 'kit')
                 $numChild++;
 
-            if ($m['memType'] == 'donation') {
-                continue;
-            } else {
-                $label = $m['label'];
-                $shortname = $m['shortname'];
-            }
-
             if (isPrimary($m, $conid) && $m['status'] == 'paid')
                 $numPaidPrimary++;
-            }
+            else
+                continue;
+
+            $memberships[] .= implode(':', array ($m['memAge'], $m['memType'], $m['memCategory'], $m['shortname']));
         }
         $holderRegR->free();
+    }
 
-    $hasVirtual = ($numPaidPrimary > 0) && ((!$worldCon) || $hasWSFS);
+    $hasVirtual = ($numPaidPrimary > 0) && ((!$worldCon) || $hasWSFS) && ($worldCon || $numChild == 0);
     if ($hasVirtual) {
         if ($rights != '')
             $rights .= ',';
-        $rights .= 'virtual';
+        $rights .= 'virtual,' . implode(',', $memberships);
     }
     if ($key == null)
         $key = getConfValue('portal', 'nomnomKey', '');
