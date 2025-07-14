@@ -1239,7 +1239,7 @@ class Portal {
         if (this.#orderData.rtn.taxAmt > 0) {
             html += `
             <div className="row mt-4">
-                <div className="col-sm-auto"><b>The Pre Tax Amount Due is ` + Number(this.#orderData.rtn.preTaxAmt).toFixed(2) + `</b></div>
+                <div className="col-sm-auto"><b>The Pre-Tax Amount Due is ` + Number(this.#orderData.rtn.preTaxAmt).toFixed(2) + `</b></div>
             </div>
             <div className="row mt-2">
                 <div className="col-sm-auto"><b>` + this.#orderData.rtn.taxLabel + ` is ` + Number(this.#orderData.rtn.taxAmt).toFixed(2) + `</b></div>

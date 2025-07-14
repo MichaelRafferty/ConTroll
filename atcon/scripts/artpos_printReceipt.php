@@ -93,13 +93,17 @@ foreach ($arows as $arow) {
         $receipt .= '     Quantity: ' . $arow['purQuantity'] . ' at ' . $dolfmt->formatCurrency((float) $arow['sale_price'], $currency) . ' each' . PHP_EOL;
         $arow['final_price'] = $arow['sale_price'] * $arow['purQuantity'];
     }
-    // price
-    $receipt .= $arow['priceType'] . ' Price: ' . $dolfmt->formatCurrency((float) $arow['final_price'], $currency) . PHP_EOL . PHP_EOL;
-
-    $total_due += $arow['final_price'];
+    // price - quick sale or bid
+    if ($arow['priceType'] == 'Quick Sale') {
+        $receipt .= $arow['priceType'] . ' Price: ' . $dolfmt->formatCurrency((float)$arow['sale_price'], $currency) . PHP_EOL . PHP_EOL;
+        $total_due += $arow['sale_price'];
+    } else {
+        $receipt .= $arow['priceType'] . ' Price: ' . $dolfmt->formatCurrency((float)$arow[''], $currency) . PHP_EOL . PHP_EOL;
+        $total_due += $arow['final_price'];
+    }
 }
 if ($taxAmt > 0) {
-    $receipt .= 'Pre Tax Due: ' . $dolfmt->formatCurrency((float)$total_due, $currency) . PHP_EOL .
+    $receipt .= 'Pre-Tax Due: ' . $dolfmt->formatCurrency((float)$total_due, $currency) . PHP_EOL .
         'Sales Tax:   ' . $dolfmt->formatCurrency((float)$taxAmt, $currency) . PHP_EOL;
     $total_due += $taxAmt;
 }
