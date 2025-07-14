@@ -81,6 +81,8 @@ if ($BusinessMeetingURL != '')
     $config_vars['businessURL'] = $BusinessMeetingURL;
 if ($SiteSelectionURL != '')
     $config_vars['siteURL'] = $SiteSelectionURL;
+if ($virtualURL != '')
+    $config_vars['virtualURL'] = $virtualURL;
 if (array_key_exists('onedaycoupons', $con)) {
     $onedaycoupons = $con['onedaycoupons'];
 } else {
@@ -128,9 +130,10 @@ EOS;
 if (!$refresh) {
     $numPrimary = 0;
     $numPaidPrimary = 0;
+    $numChild = 0;
 // get the account holder's registrations
     $holderRegSQL = <<<EOS
-SELECT r.status, r.memId, m.*, a.shortname AS ageShort, a.label AS ageLabel, m.taxable,
+SELECT r.status, r.memId, m.*, a.shortname AS ageShort, a.label AS ageLabel, a.ageType, m.taxable,
        r.price AS actPrice, IFNULL(r.paid, 0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,
        r.conid, r.create_date, r.id AS regid, r.create_trans, r.complete_trans,
        r.perid AS regPerid, r.newperid AS regNewperid, r.planId,
@@ -230,6 +233,10 @@ EOS;
                     || $m['memType'] == 'virtual' || strtolower($m['memType']) == 'oneday')
                 $hasMeeting = true;
 
+            // check age to prevent virtual
+            if ($m['ageType'] == 'child' || $m['ageType'] == 'kit')
+                $numChild++;
+
             if ($m['memType'] == 'donation') {
                 $label = $dolfmt->formatCurrency((float)$m['actPrice'], $currency) . ' ' . $m['label'];
                 $shortname = $dolfmt->formatCurrency((float)$m['actPrice'], $currency) . ' ' . $m['shortname'];
@@ -299,7 +306,7 @@ EOS;
 
     if (!$hasWSFS)
         $hasMeeting = false;
-    $hasVirtual = ($numPaidPrimary > 0) && ((!$worldCon) || $hasWSFS);
+    $hasVirtual = $numPaidPrimary > 0 && $numChild == 0 && ((!$worldCon) || $hasWSFS);
 // get people managed by this account holder and their registrations
     if ($loginType == 'p') {
         $managedSQL = <<<EOS

@@ -155,6 +155,7 @@ oauthhrs=8
 ;; items for conventions with virtual/hybrid access to the convention
 ; virtualURL = url to the virtual portal
 ; virtualBtn = text for the virtual portal button
+; virtualKey = Shared Secret Key for Virtual JWT signing
 
 [controll]
 ; useportal - does this installation use the portal, 1 = yes, 0 = no
