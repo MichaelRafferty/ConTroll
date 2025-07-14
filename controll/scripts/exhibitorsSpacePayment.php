@@ -474,8 +474,8 @@ if ($prow != null && $prow['type'] != 'credit') {
     $orderRtn = cc_buildOrder($results, true);
     if ($orderRtn == null) {
         // note there is no reason cc_buildOrder will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
-        logWrite(array ('con' => $con['label'], 'trans' => $transid, 'error' => 'Credit card order unable to be created'));
-        ajaxSuccess(array ('status' => 'error', 'error' => 'Credit card order not built'));
+        logWrite(array ('con' => $con['label'], 'trans' => $transid, 'error' => 'Order unable to be created'));
+        ajaxSuccess(array ('status' => 'error', 'error' => 'Order not built'));
         exit();
     }
     $orderRtn['totalPaid'] = 0;

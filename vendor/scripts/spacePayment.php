@@ -478,11 +478,11 @@ if ($totprice > 0) {
     $rtn = cc_buildOrder($results, true);
     if ($rtn == null) {
         // note there is no reason cc_buildOrder will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
-        logWrite(array ('con' => $condata['name'], 'trans' => $transId, 'error' => 'Credit card order unable to be created'));
+        logWrite(array ('con' => $condata['name'], 'trans' => $transId, 'error' => 'Order unable to be created'));
 
         // because this will retry once the issue is corrected, the newperson records and memberships need to be deleted.  it's all in $badgeResults
         cleanupRegs($badgeResults);
-        ajaxSuccess(array ('status' => 'error', 'error' => 'Credit card order not built, seek assistance'));
+        ajaxSuccess(array ('status' => 'error', 'error' => 'Order not built, seek assistance'));
         exit();
     }
     $response['orderRtn'] = $rtn;

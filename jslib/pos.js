@@ -2109,7 +2109,7 @@ addUnpaid(tid) {
         this.#taxAmt = data.rtn.taxAmt;
         this.#taxLabel = data.rtn.taxLabel;
         this.#totalPaid = data.rtn.totalPaid;
-        show_message("Credit Card Order #" + this.#pay_currentOrderId + " created.");
+        show_message("Order #" + this.#pay_currentOrderId + " created.");
         bootstrap.Tab.getOrCreateInstance(this.#pay_tab).show();
         if (this.#payForcePayShown) {
             this.#payForcePayShown = false;
