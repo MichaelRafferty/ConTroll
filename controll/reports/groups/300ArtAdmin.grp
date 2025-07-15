@@ -2,13 +2,19 @@
 	name="ArtAdmin"
 	description="Art Admin Reports"
 	auth=art_control
-[100ArArtists]
+[100Artists]
     name='Recent Artist'
 	description='Recent artists since a selected starting convention id.  Limited to those that entered art inventory.'
 	template=artists.rpt
 	auth=art_control
 	type=rpt
 	P001="prompt/~/conid/~/Earliest Convention ID: /~/Enter the first convention ID"
+[110ArtInventory]
+    name='Art Inventory By Location'
+	description='Art Inventory by Location for the current convention year'
+	template=artInventory.rpt
+	auth=art_control
+	type=rpt
 [200ArtSales]
     name='Artist Sales'
 	description='Total Sales by Artist'
