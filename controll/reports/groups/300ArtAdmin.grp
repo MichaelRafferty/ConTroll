@@ -1,0 +1,26 @@
+[group]
+	name="ArtAdmin"
+	description="Art Admin Reports"
+	auth=art_control
+[100ArArtists]
+    name='Recent Artist'
+	description='Recent artists since a selected starting convention id.  Limited to those that entered art inventory.'
+	template=artists.rpt
+	auth=art_control
+	type=rpt
+	P001="prompt/~/conid/~/Earliest Convention ID: /~/Enter the first convention ID"
+[200ArtSales]
+    name='Artist Sales'
+	description='Total Sales by Artist'
+	template=artSales.rpt
+	auth=art_control
+	type=rpt
+	P001="prompt/~/conid/~/Convention ID: /~/Enter the convention ID"
+	P002="prompt/~/region/~/Exhibits Region Short Name: /~/Enter the region"
+[300ArtCheckout]
+	name='Artist Checkout'
+	description='Checkhout Report Artshow'
+	template=artCheckout.php
+	auth=art_control
+	type=php
+	P001="prompt/~/artid/~/Check-out report for Artist ID: /~/Enter Artist's ID"
