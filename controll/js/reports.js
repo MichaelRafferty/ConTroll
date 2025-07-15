@@ -71,15 +71,15 @@ function showPrompts(reportName, prefix, fileName, type, template) {
     for (var i = 0; i < prompts.length; i++) {
         var prompt = prompts[i];
         if (prompt[0] == 'prompt') {
-            html += '<div class="row">\n<div class="col-sm-auto"><label for="P-' + prompt[1] + '">' + prompt[2] + '</label></div>\n';
-            html += '<div class="col-sm-auto"><input type="text" id="P-' + prompt[1] + '" name="P-' + prompt[1] + '"';
+            html += '<div class="row mb-1">\n<div class="col-sm-2"><label for="P-' + prompt[1] + '">' + prompt[2] + '</label></div>\n';
+            html += '<div class="col-sm-6"><input type="text" id="P-' + prompt[1] + '" name="P-' + prompt[1] + '"';
             if (prompt.length > 3) {
                 html += ' placeholder="' + prompt[3] + '" ';
             }
             if (prompt.length > 4) {
                 html += ' value="' + prompt[4] + '" ';
             }
-            html += '></div>\n</div>\n';
+            html += ' size=60></div>\n</div>\n';
             reportFields.push("P-" + prompt[1]);
         }
     }
