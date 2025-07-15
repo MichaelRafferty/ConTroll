@@ -701,8 +701,9 @@ if ($totalDue > 0 || $activePaymentPlans) {
 ?>
 <div class="row mt-2">
     <div class="col-sm-1" style='text-align: right;'><b>ID</b></div>
-    <div class="col-sm-3"><b>Person</b></div>
-    <div class="col-sm-3"><b>Badge Name</b></div>
+    <div class="col-sm-2"><b>Person</b></div>
+    <div class="col-sm-2"><b>Badge Name</b></div>
+    <div class="col-sm-2"><b>Email Address</b></div>
     <div class="col-sm-1"><b>Actions</b></div>
 </div>
 <?php
