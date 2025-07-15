@@ -9,7 +9,13 @@
 	auth=art_control
 	type=rpt
 	P001="prompt/~/conid/~/Earliest Convention ID: /~/Enter the first convention ID"
-[110ArtInventory]
+[110ArtShowReg]
+    name='Art Show Registration'
+	description='Art Show Registration by Region Name for the current convention'
+	template=artShowReg.rpt
+	auth=art_control
+	type=rpt
+[120ArtInventory]
     name='Art Inventory By Location'
 	description='Art Inventory by Location for the current convention year'
 	template=artInventory.rpt
