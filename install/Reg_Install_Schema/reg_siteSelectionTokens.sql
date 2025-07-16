@@ -6,19 +6,16 @@
 
 
 --
--- Table structure for table `badgeList`
+-- Table structure for table `siteSelectionTokens`
 --
 
-DROP TABLE IF EXISTS `badgeList`;
-CREATE TABLE `badgeList` (
-  `user_perid` int DEFAULT NULL,
-  `conid` int DEFAULT NULL,
-  `perid` int DEFAULT NULL,
+DROP TABLE IF EXISTS `siteSelectionTokens`;
+CREATE TABLE `siteSelectionTokens` (
   `id` int NOT NULL AUTO_INCREMENT,
+  `encTokenKey` varbinary(256) NOT NULL,
+  `perid` int DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `badgeList_conid_fk` (`conid`),
-  KEY `badgeList_perid_fk` (`perid`),
-  KEY `badgeList_user_perid_fk` (`user_perid`)
+  KEY `sst_perinfo_fk` (`perid`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 

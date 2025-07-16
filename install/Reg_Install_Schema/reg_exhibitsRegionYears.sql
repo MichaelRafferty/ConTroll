@@ -1,4 +1,4 @@
--- MySQL dump 10.13  Distrib 8.0.34, for macos13 (arm64)
+-- MySQL dump 10.13  Distrib 8.0.42, for macos15 (arm64)
 --
 -- Host: localhost    Database: reg
 -- ------------------------------------------------------
@@ -14,6 +14,7 @@ CREATE TABLE `exhibitsRegionYears` (
   `id` int NOT NULL AUTO_INCREMENT,
   `conid` int NOT NULL,
   `exhibitsRegion` int NOT NULL,
+  `roomStatus` enum('precon','bid','checkout','closed','all') COLLATE utf8mb4_general_ci DEFAULT 'precon',
   `ownerName` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `ownerEmail` varchar(254) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `glNum` varchar(16) COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -23,6 +24,8 @@ CREATE TABLE `exhibitsRegionYears` (
   `totalUnitsAvailable` int NOT NULL DEFAULT '0',
   `atconIdBase` int NOT NULL DEFAULT '0',
   `mailinFee` decimal(8,2) NOT NULL DEFAULT '0.00',
+  `mailinGLNum` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `mailinGLLabel` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `mailinIdBase` int NOT NULL DEFAULT '0',
   `sortorder` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
