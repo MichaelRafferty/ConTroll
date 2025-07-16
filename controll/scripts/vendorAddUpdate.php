@@ -114,12 +114,12 @@ EOS;
         // create the vendor
         // email address validated on the source side
         $exhibitorInsertQ = <<<EOS
-INSERT INTO exhibitors (exhibitorName, exhibitorEmail, exhibitorPhone, website, description, password, need_new, 
+INSERT INTO exhibitors (artistName, exhibitorName, exhibitorEmail, exhibitorPhone, website, description, password, need_new, 
     addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, 
     publicity, notes) 
-VALUES (?,?,?,?,?,?,0,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
+VALUES (?,?,?,?,?,?,?,0,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
 EOS;
-        $typestr = 'sssssssssssssssssssis';
+        $typestr = 'ssssssssssssssssssssis';
         $paramarr = array(
             trim($artistName),
             trim($_POST['exhibitorName']),
