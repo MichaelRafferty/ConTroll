@@ -128,14 +128,7 @@ EOS;
            $active = '';
     }
 }
-if (checkAuth($need_login['sub'], 'admin')){
 ?>
-    <li class='nav-item' role='presentation'>
-        <button class='nav-link' id='oldreports-tab' data-bs-toggle='pill' data-bs-target='#oldreports-pane' type='button'
-                role='tab' aria-controls='nav-oldreports' aria-selected='true' onclick="settab('oldreports-pane');">Old Reports
-        </button>
-    </li>
-<?php } ?>
 </ul>
 
 <div class='tab-content ms-2' id='reports-content'>
@@ -221,22 +214,6 @@ EOS;
     <?php
 }
 ?>
-    <div class='tab-pane fade show <?php echo $active; ?>' id='oldreports-pane' role='tabpanel' aria-labelledby='oldreports-tab' tabindex='0'>
-        <div class='container-fluid'>
-  <a href='reports/newMembers.php'>New Members</a><br/>
-  <a href='reports/clubHistory.php'><?PHP echo $controll['clubname']; ?> History</a><br/>
-  <form action='reports/hotel_reg.php' method='GET'>
-    Registration Report For <?PHP echo $con['conname']; ?>
-    <input type='number' name='conid'/>
-    <input type='submit' value='Get'/>
-  </form>
-  <form action='reports/participants.php' method='GET'>
-    Participant list for <?PHP echo $con['conname']; ?>
-    <input type='number' name='conid'/>
-    <input type='submit' value='Get'/>
-  </form>
-        </div>
-    </div>
     <div id='result_message' class='mt-4 p-2'></div>
     <pre id='test'></pre>
 </div>
