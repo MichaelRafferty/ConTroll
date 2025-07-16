@@ -76,4 +76,4 @@ ALTER TABLE artItems MODIFY COLUMN final_price decimal(11,2) NULL;
 ALTER TABLE artItems ADD CONSTRAINT `artItems_fk_bidder` FOREIGN KEY (`bidder`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 
 
-INSERT INTO patchLog(id, name) VALUES(xx, 'passkeys');
+INSERT INTO patchLog(id, name) VALUES(50, 'passkeys');
