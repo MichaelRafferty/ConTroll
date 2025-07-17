@@ -156,6 +156,7 @@ oauthhrs=8
 ; virtualURL = url to the virtual portal
 ; virtualBtn = text for the virtual portal button
 ; virtualKey = Shared Secret Key for Virtual JWT signing
+; virtualChild = Allow Child to attend virtual 0=no, 1=yes
 
 [controll]
 ; useportal - does this installation use the portal, 1 = yes, 0 = no

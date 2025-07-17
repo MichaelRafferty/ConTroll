@@ -214,6 +214,7 @@ EOS;
     //			OR
     //			any type ‘virtual’ OR
     //			any type ‘oneday'
+    $allowChild = getConfValue('portal', 'virtualChild', 0) == 1;
     if ($holderRegR !== false && $holderRegR->num_rows > 0) {
         while ($m = $holderRegR->fetch_assoc()) {
             // check if they have a WSFS rights membership (hasWSFS and hasNom)
@@ -233,8 +234,8 @@ EOS;
                     || $m['memType'] == 'virtual' || strtolower($m['memType']) == 'oneday')
                 $hasMeeting = true;
 
-            // check age to prevent virtual
-            if ($m['ageType'] == 'child' || $m['ageType'] == 'kit')
+            // check age to prevent virtual, allowChild is true if child is allowed
+            if (($m['ageType'] == 'child' && !$allowChild) || $m['ageType'] == 'kit')
                 $numChild++;
 
             if ($m['memType'] == 'donation') {
