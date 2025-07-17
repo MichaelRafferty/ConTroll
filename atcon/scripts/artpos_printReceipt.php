@@ -98,7 +98,7 @@ foreach ($arows as $arow) {
         $receipt .= $arow['priceType'] . ' Price: ' . $dolfmt->formatCurrency((float)$arow['sale_price'], $currency) . PHP_EOL . PHP_EOL;
         $total_due += $arow['sale_price'];
     } else {
-        $receipt .= $arow['priceType'] . ' Price: ' . $dolfmt->formatCurrency((float)$arow[''], $currency) . PHP_EOL . PHP_EOL;
+        $receipt .= $arow['priceType'] . ' Price: ' . $dolfmt->formatCurrency((float)$arow['final_price'], $currency) . PHP_EOL . PHP_EOL;
         $total_due += $arow['final_price'];
     }
 }
