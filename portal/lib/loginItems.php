@@ -13,7 +13,7 @@ function draw_login($config_vars, $result_message = '', $result_color = '', $why
                 </div>
             </div>
             <?php  if (getConfValue('portal', 'passkeyRpLevel') != 'd' && array_key_exists('HTTPS', $_SERVER) && (isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == 'on')) { ?>
-            <div class='row mb-2'>
+            <div class='row mb-2 align-items-center'>
                 <div class='col-sm-auto'>
                     <button class='btn btn-sm btn-primary' id="loginPasskeyBtn" onclick='login.loginWithPasskey();'>
                         <img src="lib/passkey.png" width="25">Login with Passkey
