@@ -90,7 +90,7 @@ if (getConfValue('atcon', 'precon', 0) == 0) {
 // get all the memLabels
 $priceQ = <<<EOS
 SELECT id, conid, memCategory, memType, memAge, taxable,
-       CASE WHEN conid = ? THEN label ELSE concat(conid, ' ', label) END AS label, 
+       CASE WHEN conid = ? THEN label ELSE concat(conid, ' ', label) END AS label, ageShortName, 
        shortname, sort_order, price, CAST(startdate AS date) AS startdate, CAST(enddate AS date) AS enddate,
     CASE 
         WHEN (atcon != 'Y') THEN 0

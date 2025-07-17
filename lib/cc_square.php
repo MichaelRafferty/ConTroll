@@ -453,8 +453,10 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 if (array_key_exists('complete_trans', $badge) && $badge['complete_trans'] > 0 && $amount == 0)
                     continue; // skip paid complete items in order for sending to square
 
-                $itemName =  $badge['label'] . (($badge['memType'] == 'full' || $badge['memType'] == 'oneday') ? ' Membership' : '') .
-                    ' for ' . $fullname;
+                $addMbr = str_contains(strtolower($badge['shortname']), 'membership') == false &&
+                    ($badge['memType'] == 'full' || $badge['memType'] == 'oneday');
+                $itemName =  $badge['fname'] . ': ' . $badge['shortname'] .' ' . ($badge['ageshortname'] != 'All' ? $badge['ageshortname'] : '') .
+                    ($addMbr ? ' Mbr ' : ' ') . 'for ' . $fullname;
                 $item = new OrderLineItem ([
                     'itemType' => OrderLineItemItemType::Item->value,
                     'uid' => 'badge' . ($lineid + 1),

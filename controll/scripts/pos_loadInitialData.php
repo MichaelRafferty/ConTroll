@@ -104,7 +104,8 @@ WITH memitems AS (
 SELECT id, conid, memCategory, memType, memAge,
        CASE WHEN conid = ? THEN label ELSE concat(conid, ' ', label) END AS label, 
        shortname, sort_order, price, CAST(m.startdate AS date) AS startdate, CAST(m.enddate AS date) AS enddate,
-       CASE WHEN u.startdate = m.startdate AND u.enddate = m.enddate THEN 1 ELSE 0 END AS canSell, m.glNum, m.taxable
+       CASE WHEN u.startdate = m.startdate AND u.enddate = m.enddate THEN 1 ELSE 0 END AS canSell,
+       m.glNum, m.taxable, m.ageShortName
 FROM useIDs u
 JOIN memLabel m ON (m.id = u.matchid)
 ORDER BY sort_order, price DESC;

@@ -282,9 +282,10 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                 }
 
                 $metadata = array ('regid' => $regid, 'perid' => $perid, 'memid' => $badge['memId'], 'rowno' => $rowno);
-
-                $itemName = $badge['label'] . (($badge['memType'] == 'full' || $badge['memType'] == 'oneday') ? ' Membership' : '') .
-                    ' for ' . $fullname;
+                $addMbr = str_contains(strtolower($badge['shortname']), 'membership') == false &&
+                    ($badge['memType'] == 'full' || $badge['memType'] == 'oneday');
+                $itemName =  $badge['fname'] . ': ' . $badge['shortname'] .' ' . ($badge['ageshortname'] != 'All' ? $badge['ageshortname'] : '') .
+                    ($addMbr ? ' Mbr ' : ' ') . '/ ' . $fullname;
                 $item = [
                     'uid' => 'badge' . ($lineid + 1),
                     'name' => mb_substr($itemName, 0, 128),

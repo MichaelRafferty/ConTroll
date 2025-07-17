@@ -242,7 +242,11 @@ if ($otherPay == 0) { // this is a plan payment or badge purchase payment
                               'planId' => $mem['planId'],
                               'email_addr' => $mem['email_addr'],
                               'phone' => $mem['phone'],
-                              'inPlan' => false
+                              'inPlan' => false,
+                              'fname' => $mem['first_name'],
+                              'shortname' => $mem['shortname'],
+                              'ageshortname' => $mem['ageShortName'],
+                              'taxable' => $mem['taxable'],
             );
             if ($mem['planId'] != 0) {
                 $planRecast = 1;
