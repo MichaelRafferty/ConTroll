@@ -75,5 +75,20 @@ ALTER TABLE artItems MODIFY COLUMN final_price decimal(11,2) NULL;
  */
 ALTER TABLE artItems ADD CONSTRAINT `artItems_fk_bidder` FOREIGN KEY (`bidder`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 
+/*
+ * late addition to add shortname and ageShortName to view
+ */
+DROP VIEW IF EXISTS memLabel;
+CREATE ALGORITHM=UNDEFINED
+SQL SECURITY INVOKER
+VIEW memLabel AS
+SELECT m.id AS id,m.conid AS conid,m.sort_order AS sort_order,
+       m.memCategory AS memCategory,m.memType AS memType,m.memAge AS memAge, a.shortname AS ageShortName,
+       m.label AS shortname,concat(m.label,' [',a.label,']') AS label,
+       m.notes AS notes,m.price AS price,m.startdate AS startdate,m.enddate AS enddate,
+       m.atcon AS atcon,m.online AS online,m.glNum AS glNum,m.glLabel AS glLabel,c.taxable AS taxable
+FROM memList m
+JOIN ageList a ON m.memAge = a.ageType AND m.conid = a.conid
+JOIN memCategories c on m.memCategory = c.memCategory;
 
 INSERT INTO patchLog(id, name) VALUES(50, 'passkeys');

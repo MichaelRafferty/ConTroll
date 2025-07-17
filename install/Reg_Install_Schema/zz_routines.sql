@@ -27,10 +27,18 @@ VIEW `couponUsage` AS select `t`.`conid` AS `conid`,`t`.`id` AS `transId`,`c`.`i
 -- Final view structure for view `memLabel`
 --
 
-DROP VIEW IF EXISTS `memLabel`;
-CREATE ALGORITHM=UNDEFINED 
-SQL SECURITY INVOKER
-VIEW `memLabel` AS select `m`.`id` AS `id`,`m`.`conid` AS `conid`,`m`.`sort_order` AS `sort_order`,`m`.`memCategory` AS `memCategory`,`m`.`memType` AS `memType`,`m`.`memAge` AS `memAge`,`m`.`label` AS `shortname`,concat(`m`.`label`,' [',`a`.`label`,']') AS `label`,`m`.`notes` AS `notes`,`m`.`price` AS `price`,`m`.`startdate` AS `startdate`,`m`.`enddate` AS `enddate`,`m`.`atcon` AS `atcon`,`m`.`online` AS `online`,`m`.`glNum` AS `glNum`,`m`.`glLabel` AS `glLabel`,`c`.`taxable` AS `taxable` from ((`memList` `m` join `ageList` `a` on(((`m`.`memAge` = `a`.`ageType`) and (`m`.`conid` = `a`.`conid`)))) join `memCategories` `c` on((`m`.`memCategory` = `c`.`memCategory`))) ;
+DROP VIEW IF EXISTS memLabel;
+CREATE ALGORITHM=UNDEFINED
+    SQL SECURITY INVOKER
+    VIEW memLabel AS
+SELECT m.id AS id,m.conid AS conid,m.sort_order AS sort_order,
+       m.memCategory AS memCategory,m.memType AS memType,m.memAge AS memAge, a.shortname AS ageShortName,
+       m.label AS shortname,concat(m.label,' [',a.label,']') AS label,
+       m.notes AS notes,m.price AS price,m.startdate AS startdate,m.enddate AS enddate,
+       m.atcon AS atcon,m.online AS online,m.glNum AS glNum,m.glLabel AS glLabel,c.taxable AS taxable
+FROM memList m
+         JOIN ageList a ON m.memAge = a.ageType AND m.conid = a.conid
+         JOIN memCategories c on m.memCategory = c.memCategory;
 
 --
 -- Final view structure for view `vw_ExhibitorSpace`
