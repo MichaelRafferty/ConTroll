@@ -72,7 +72,14 @@ EOF;
             $label = $resA['label']; // membership label
             $count = $resA['cnt']; // # of matching memberships
 
-            $response['overview'][$status][$cat][$label]= $count;
+            if(array_key_exists('overview', $response) &&
+                array_key_exists($status, $response['overview']) &&
+                array_key_exists($cat, $response['overview'][$status]) &&
+                array_key_exists($label, $response['overview'][$status][$cat])) {
+                $response['overview'][$status][$cat][$label] += $count;
+            } else {
+                $response['overview'][$status][$cat][$label]= $count;
+            }
         }
 
 
