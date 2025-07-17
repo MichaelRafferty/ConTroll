@@ -1,0 +1,86 @@
+[report]
+	name="artSales"
+	auth=art_control
+	csvfile="artSales"
+	index=exhibitorNumber
+    totals=bottom
+[F001]
+    name=artistId
+	sql="IFNULL(eRY.exhibitorNumber, e.id)"
+	title="Exhibitor Number"
+	align=right
+	minWidth=80
+[F002]
+    name=artistName
+    sql="CASE WHEN e.artistName IS NULL THEN e.exhibitorName ELSE e.artistName END"
+    title="Artist Name"
+    minWidth=300
+    filter=true
+[F004]
+    name=artistAddr
+    sql="TRIM(concat_ws(' ', e.addr, e.addr2, e.city, e.state, e.zip, e.country))"
+    title="Artist Address"
+    minWidth=300
+[F005]
+    name=Total
+    sql="IFNULL(a.total, 0) + IFNULL(p.total, 0)"
+    title=Total
+    calc=sum
+[F010]
+    name=Email
+    sql=e.exhibitorEmail
+    title="Email Address"
+    sort=true
+    minWidth=200
+    filter=true
+[T001]
+	name=exhibitors
+	alias=e
+[T002]
+	name=exhibitorYears
+	alias=eY
+	join="eY.exhibitorId=e.id"
+[T003]
+    name=exhibitorRegionYears
+    alias=eRY
+    join=" eRY.exhibitorYearId = eY.id"
+[T005]
+    name=exhibitsRegionYears
+    alias=xRY
+    join="xRY.id = eRY.exhibitsRegionYearId"
+[T006]
+    name=exhibitsRegions
+    alias=xR
+    join="xR.id=xRY.exhibitsRegion"
+[T010]
+    name=art
+    alias=a
+    join="a.eRY = eRY.id"
+    left=true
+[T011]
+    name=print
+    alias=p
+    join="p.eRY = eRY.id"
+    left=true
+[C001]
+    name=art
+    select="SELECT eRY.id as eRY, SUM(CASE WHEN IFNULL(I.final_price, 0) > 0 THEN I.final_price ELSE I.sale_price END) AS total"
+    tables="FROM artItems I JOIN exhibitorRegionYears eRY ON eRY.id=I.exhibitorRegionYearId JOIN exhibitorYears eY on eRY.exhibitorYearId = eY.id"
+    where="WHERE I.type='art' AND I.status IN ('Quicksale/Sold','Sold Bid Sheet','Sold at Auction','Purchased/Released') GROUP BY eRY.id"
+[C002]
+    name=print
+    select="SELECT eRY.id as eRY, SUM(I.sale_price * (I.original_qty-I.quantity)) AS total"
+    tables="FROM artItems I JOIN exhibitorRegionYears eRY ON eRY.id=I.exhibitorRegionYearId JOIN exhibitorYears eY on eRY.exhibitorYearId = eY.id"
+    where="WHERE I.type='print' AND I.status IN ('Quicksale/Sold','Sold Bid Sheet','Sold at Auction','Purchased/Released') GROUP BY eRY.id"
+[P001]
+    type=prompt
+    item=conid
+    datatype=i
+[P002]
+    type=prompt
+    item=region
+    datatype=s
+[where]
+	001="eY.conid = ? AND LOWER(xR.shortname) = LOWER(?)"
+[sort]
+	001="1"

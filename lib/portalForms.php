@@ -387,9 +387,10 @@ function drawPersonRow($personId, $personType, $person, $memberships, $showInter
     ?>
     <div class="row mt-1">
         <div class='col-sm-1' style='text-align: right;'><?php echo $person['personType'] == 'n' ? 'Pending' : $person['id']; ?></div>
-        <div class='col-sm-3'><strong><?php echo $person['fullName']; ?></strong></div>
+        <div class='col-sm-2'><strong><?php echo $person['fullName']; ?></strong></div>
         <div class="col-sm-2"><?php echo $badge_name; ?></div>
-        <div class='col-sm-6 p-1'>
+        <div class="col-sm-2"><?php echo $person['email_addr']; ?></div>
+        <div class='col-sm-5 p-1'>
                 <button class='btn btn-sm btn-primary p-1' style='--bs-btn-font-size: 80%;'
                 data-id="<?php echo $person['id']?>" data-type="<?php echo $person['personType']; ?>"
                 onclick="portal.changeEmail('<?php echo $personArgs; ?>');">

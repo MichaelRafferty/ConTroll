@@ -24,13 +24,16 @@ cancelled=0 ; can override in each app section
 cancel_date="Day, Month Day" ; can override in each app section
 ;; testemail: if set, and test=1, then all emails from the system will be forced to go to the testemail email address
 ; testemail=
+; server is the URL to the main reg/portal of the ConTroll system
+server="https://reg.conname.org/"
 ;;; passkeyRpLevel: passkey rp domain level
 ;;      this is meant to be global so the system can recognize/create passkeys properly.
 ;; 2: org.root - right 2 most sections in host name (aka philcon.org)
 ;; 3: site.org.root - right 3 most sections in the host name (aka reg.philcon.org, or exhibitor.philcon.org and all of it's subdomains
 ;;      for the exhibitor types, if so setup)
 ;; h: host  (full hostname, less "www." if on the front.  (so vendor.exhibitor.philcon.org is different than artist.exhibitor.philcon.org)
-passkeyRpLevel=2
+;; d: disabled - disable passkeys
+passkeyRpLevel=2 ; can override in each app section
 
 [con]
 ;;; id = numeric identifier for this year, be it the number of the con (1,2,3,4) or the year of the con (2025, 2026, ...)
@@ -48,8 +51,6 @@ currency="USD"
 minComp="2021"
 compLen="365" ; day length for membership growth by day graph
 conLen="3" ; how many days long is the convention
-; server is the URL to the main reg/portal of the ConTroll system
-server="https://reg.conname.org/"
 
 [debug]
 api=0 ; to enable api inteface debug statements (currently bitmask from 1-31) (1=enable, 0=disable)
@@ -66,6 +67,16 @@ portal=0 ; to enable regportal debug statements (currently bitmask from 1-31) (1
 square=1 ; logging of square actions (currently 0 = off, 1 = on)
 usps=0 ; to enable usps address validation debug (currently bitmast from 1-31)
 vendors=0 ; to enable vendor and artist admin tab debug statement (currently bitmask from 1-31) (1=enable, 0=disable)
+
+[log]
+artshow='/...PathtoLogDirectory.../artshowReg'
+cancel='/...PathtoLogDirectory.../cancel'
+controll='/...PathtoLogDirectory.../controll'
+db='/...PathtoLogDirectory.../db'
+reg='/...PathtoLogDirectory.../onlineReg'
+term='/...PathtoLogDirectory.../term'
+vendors='/...PathtoLogDirectory.../vendors'
+web='/...PathtoLogDirectory.../web-reg'
 
 [reg]
 ;;; overrides
@@ -123,6 +134,11 @@ emailhrs=24
 oauthhrs=8
 
 ;; Items for Worldcon's
+; enable worldcon checking features (not all require this to be =1, but the virtual
+; to work for non worldcons depends on this being 0
+;   1: this is a worldcon require wsfs for attending status
+;   0: this is not a worldcon, ignore wsfs memberships
+; worldcon=
 ; nomdate = cutoff for WSFS nominations memberships, older than this can nominate
 ; nomdate="YYYY/MM/DD"
 ; nomnomURL = redirect URL with page for this worldcon's instance of No Nom
@@ -136,8 +152,11 @@ oauthhrs=8
 ; siteselectionKey = encryption key for the site selection data
 ;; End of Items for Worldcon
 
+;; items for conventions with virtual/hybrid access to the convention
 ; virtualURL = url to the virtual portal
 ; virtualBtn = text for the virtual portal button
+; virtualKey = Shared Secret Key for Virtual JWT signing
+; virtualChild = Allow Child to attend virtual 0=no, 1=yes
 
 [controll]
 ; useportal - does this installation use the portal, 1 = yes, 0 = no

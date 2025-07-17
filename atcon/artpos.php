@@ -19,7 +19,7 @@ if(array_key_exists('region', $_GET)) {
     $region = $_GET['region'];
 }
 
-$page = "Atcon POS ($tab)";
+$page = "Point of Sale ($tab)";
 
 if (!check_atcon($method, $conid)) {
     header('Location: /index.php');

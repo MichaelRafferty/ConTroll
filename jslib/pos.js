@@ -2109,7 +2109,7 @@ addUnpaid(tid) {
         this.#taxAmt = data.rtn.taxAmt;
         this.#taxLabel = data.rtn.taxLabel;
         this.#totalPaid = data.rtn.totalPaid;
-        show_message("Credit Card Order #" + this.#pay_currentOrderId + " created.");
+        show_message("Order #" + this.#pay_currentOrderId + " created.");
         bootstrap.Tab.getOrCreateInstance(this.#pay_tab).show();
         if (this.#payForcePayShown) {
             this.#payForcePayShown = false;
@@ -2947,7 +2947,7 @@ addUnpaid(tid) {
         <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-coupon-disc">$` + (-Number(this.#couponDiscount)).toFixed(2) + `</div>
     </div>
        <div class="row mt-1">
-        <div class="col-sm-2 ms-0 me-2 p-0">Pre Tax:</div>
+        <div class="col-sm-2 ms-0 me-2 p-0">Pre-Tax:</div>
         <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-post-coupon">$` + Number(pretax).toFixed(2) + `</div>
     </div>
 `;

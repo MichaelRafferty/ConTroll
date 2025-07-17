@@ -24,7 +24,10 @@ require_once(__DIR__ . '/../../lib/jsVersions.php');
 
 db_connect();
 $appSessionPrefix = 'Ctrl/Atcon/';
-session_start();
+if (!session_start()) {
+    session_regenerate_id(true);
+    session_start();
+}
 
 function isWebRequest()
 {
@@ -113,7 +116,7 @@ function page_init($title, $tab, $css, $js, $configVars = null)
                     <div class="row">
                         <div class="col-sm-12">
                             <h1 class='title'>
-                                    <?php echo $label; ?> Registration <?php echo $title; ?>
+                                    <?php echo "$label $title"; ?>
                             </h1>
                         </div>
                     </div>
@@ -259,7 +262,7 @@ function page_init($title, $tab, $css, $js, $configVars = null)
         ?>
         <div id='titlebar' class="container-fluid bg-primary text-white">
             <h1 class='title'>
-                <?php echo $label; ?> Registration <?php echo $title; ?> page
+                <?php echo "$label $title"; ?> page
             </h1>
         </div>
         <?php

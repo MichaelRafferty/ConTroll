@@ -31,6 +31,8 @@ if (getConfValue('portal', 'suspended') == 1) {
 $NomNomURL = getConfValue('portal', 'nomnomURL');
 $BusinessMeetingURL = getConfValue('portal', 'businessmeetingURL');
 $SiteSelectionURL = getConfValue('portal', 'siteselectionURL');
+$virtualURL = getConfValue('portal', 'virtualURL');
+$worldCon = getConfValue('portal', 'worldcon', '0');
 
 if (isSessionVar('id') && isSessionVar('idType')) {
     // check for being resolved/baned
@@ -68,8 +70,10 @@ $config_vars['initCouponSerial'] = $initCouponSerial;
 $config_vars['id'] = $loginId;
 $config_vars['idType'] = $loginType;
 $config_vars['conid'] = $conid;
+$config_vars['worldcon'] = $worldCon;
 $config_vars['nomnomExists'] = $NomNomURL != '';
 $config_vars['businessExists'] = $BusinessMeetingURL != '';
+$config_vars['virtualExists'] = $virtualURL != '';
 $config_vars['siteExists'] = $SiteSelectionURL != '';
 if ($NomNomURL != '')
     $config_vars['nomnomURL'] = $NomNomURL;
@@ -77,6 +81,8 @@ if ($BusinessMeetingURL != '')
     $config_vars['businessURL'] = $BusinessMeetingURL;
 if ($SiteSelectionURL != '')
     $config_vars['siteURL'] = $SiteSelectionURL;
+if ($virtualURL != '')
+    $config_vars['virtualURL'] = $virtualURL;
 if (array_key_exists('onedaycoupons', $con)) {
     $onedaycoupons = $con['onedaycoupons'];
 } else {
@@ -124,9 +130,10 @@ EOS;
 if (!$refresh) {
     $numPrimary = 0;
     $numPaidPrimary = 0;
+    $numChild = 0;
 // get the account holder's registrations
     $holderRegSQL = <<<EOS
-SELECT r.status, r.memId, m.*, a.shortname AS ageShort, a.label AS ageLabel, m.taxable,
+SELECT r.status, r.memId, m.*, a.shortname AS ageShort, a.label AS ageLabel, a.ageType, m.taxable, m.ageShortName,
        r.price AS actPrice, IFNULL(r.paid, 0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,
        r.conid, r.create_date, r.id AS regid, r.create_trans, r.complete_trans,
        r.perid AS regPerid, r.newperid AS regNewperid, r.planId,
@@ -207,6 +214,7 @@ EOS;
     //			OR
     //			any type ‘virtual’ OR
     //			any type ‘oneday'
+    $allowChild = getConfValue('portal', 'virtualChild', 0) == 1;
     if ($holderRegR !== false && $holderRegR->num_rows > 0) {
         while ($m = $holderRegR->fetch_assoc()) {
             // check if they have a WSFS rights membership (hasWSFS and hasNom)
@@ -225,6 +233,10 @@ EOS;
             if ( ($m['memType'] == 'full' && $m['memCategory'] != 'artist' && $m['shortname'] != 'Access Caregiver')
                     || $m['memType'] == 'virtual' || strtolower($m['memType']) == 'oneday')
                 $hasMeeting = true;
+
+            // check age to prevent virtual, allowChild is true if child is allowed
+            if (($m['ageType'] == 'child' && !$allowChild) || $m['ageType'] == 'kit')
+                $numChild++;
 
             if ($m['memType'] == 'donation') {
                 $label = $dolfmt->formatCurrency((float)$m['actPrice'], $currency) . ' ' . $m['label'];
@@ -295,6 +307,7 @@ EOS;
 
     if (!$hasWSFS)
         $hasMeeting = false;
+    $hasVirtual = $numPaidPrimary > 0 && $numChild == 0 && ((!$worldCon) || $hasWSFS);
 // get people managed by this account holder and their registrations
     if ($loginType == 'p') {
         $managedSQL = <<<EOS
@@ -307,7 +320,7 @@ WITH ppl AS (
         r.conid, r.status, r.memId, r.create_date,
         r.price AS actPrice, IFNULL(r.paid, 0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,        
         m.memCategory, m.memType, m.memAge, m.shortname, m.label, m.startdate, m.enddate, m.online,
-        a.shortname AS ageShort, a.label AS ageLabel, 'p' AS personType, m.taxable,
+        a.shortname AS ageShort, a.label AS ageLabel, 'p' AS personType, m.taxable, m.ageShortName,
         nc.id AS createNewperid, np.id AS completeNewperid, pc.id AS createPerid, pp.id AS completePerid,
         CASE
             WHEN pp.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pp.first_name, pp.last_name))
@@ -337,7 +350,7 @@ WITH ppl AS (
         r.conid, r.status, r.memId, r.create_date, 
         r.price AS actPrice, IFNULL(r.paid, 0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,
         m.memCategory, m.memType, m.memAge, m.shortname, m.label, m.startdate, m.enddate, m.online,
-        a.shortname AS ageShort, a.label AS ageLabel, 'n' AS personType, m.taxable,
+        a.shortname AS ageShort, a.label AS ageLabel, 'n' AS personType, m.taxable, m.ageShortName,
         nc.id AS createNewperid, np.id AS completeNewperid, pc.id AS createPerid, pp.id AS completePerid,
         CASE
             WHEN pp.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pp.first_name, pp.last_name))
@@ -387,7 +400,7 @@ WITH ppl AS (
         r.conid, r.status, r.memId, r.create_date, m.memCategory, m.memType, m.memAge, m.shortname, m.label,
         r.price AS actPrice, IFNULL(r.paid, 0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,
         m.startdate, m.enddate, m.online,
-        a.shortname AS ageShort, a.label AS ageLabel, 'p' AS personType, m.taxable,
+        a.shortname AS ageShort, a.label AS ageLabel, 'p' AS personType, m.taxable, m.ageShortName,
         nc.id AS createNewperid, np.id AS completeNewperid, pc.id AS createPerid, pp.id AS completePerid,
         CASE
             WHEN pp.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pp.first_name, pp.last_name))
@@ -417,7 +430,7 @@ WITH ppl AS (
         r.conid, r.status, r.memId, r.create_date, m.memCategory, m.memType, m.memAge, m.shortname, m.label,
         r.price AS actPrice, IFNULL(r.paid, 0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,
         m.startdate, m.enddate, m.online,
-        a.shortname AS ageShort, a.label AS ageLabel, 'n' AS personType, m.taxable,
+        a.shortname AS ageShort, a.label AS ageLabel, 'n' AS personType, m.taxable, m.ageShortName,
         nc.id AS createNewperid, np.id AS completeNewperid, pc.id AS createPerid, pp.id AS completePerid,
         CASE
             WHEN pp.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pp.first_name, pp.last_name))
@@ -552,20 +565,20 @@ if ($numExpired > 0) {
 }
 
 $VirtualButton = '';
-if (array_key_exists('virtualURL', $portal_conf)) {
-    $config_vars['virtualURL'] = $portal_conf['virtualURL'];
+if ($virtualURL != '') {
     if (array_key_exists('virtualBtn', $portal_conf))
         $VirtualButtonTxt = $portal_conf['virtualBtn'];
     else
         $VirtualButtonTxt = $con['label'] . 'Virtual Portal';
 
-    if ($numPaidPrimary == 0)
+    if (!$hasVirtual) {
         $VirtualButton .= '<span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="top" ' .
-            'data-bs-title="Add and pay for an attending or virtual membership to be able to attend the virtual convention.">';
+            'data-bs-title="Add and pay for ' . ($worldCon ? "a WSFS and " : "") . 'an attending or virtual membership to be able to attend the virtual convention.">';
+        }
 
     $VirtualButton .= "<button class='btn btn-primary p-1' type='button' " .
-        ($numPaidPrimary > 0 ? 'onclick="portal.virtual();"' : ' disabled') . ">$VirtualButtonTxt</button>";
-    if ($numPaidPrimary == 0)
+        ($hasVirtual ? 'onclick="portal.virtual();"' : ' disabled') . ">$VirtualButtonTxt</button>";
+    if (!$hasVirtual)
         $VirtualButton .= '</span>';
 
 }
@@ -661,7 +674,8 @@ if ($totalDue > 0 || $activePaymentPlans) {
     <div class='col-sm-12'>
         <h1 class="size-h3">This account's information:
 <?php
-    if (!$hasPasskey && array_key_exists('HTTPS', $_SERVER) && (isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == 'on')) {
+    if (!$hasPasskey && getConfValue('portal', 'passkeyRpLevel', 'd') != 'd' &&
+        array_key_exists('HTTPS', $_SERVER) && (isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == 'on')) {
 ?>
         <button class='btn btn-primary ms-1 p-1' type='button'
                         onclick="window.location='<?php echo $portal_conf['portalsite']; ?>/accountSettings.php?passkey=create';">
@@ -689,8 +703,9 @@ if ($totalDue > 0 || $activePaymentPlans) {
 ?>
 <div class="row mt-2">
     <div class="col-sm-1" style='text-align: right;'><b>ID</b></div>
-    <div class="col-sm-3"><b>Person</b></div>
-    <div class="col-sm-3"><b>Badge Name</b></div>
+    <div class="col-sm-2"><b>Person</b></div>
+    <div class="col-sm-2"><b>Badge Name</b></div>
+    <div class="col-sm-2"><b>Email Address</b></div>
     <div class="col-sm-1"><b>Actions</b></div>
 </div>
 <?php

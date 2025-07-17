@@ -109,7 +109,7 @@ foreach ($prows as $prow) {
     $total_due += $member_due;
 }
 if ($taxPaid > 0) {
-    $receipt .= 'Pre Tax Subtotal:  ' . $dolfmt->formatCurrency($total_due, $currency) . "\n";
+    $receipt .= 'Pre-Tax Subtotal:  ' . $dolfmt->formatCurrency($total_due, $currency) . "\n";
     $receipt .= 'Sales Tax:  ' . $dolfmt->formatCurrency($taxPaid, $currency) . "\n";
     $total_due += $taxPaid;
 }

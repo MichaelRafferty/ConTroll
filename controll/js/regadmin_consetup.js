@@ -356,6 +356,7 @@ class consetup {
     addrowMemList() {
         var _this = this;
 
+        this.#memtable.clearFilter(true);
         this.#memtable.addRow({ id: -99999, conid: this.#conid, shortname: 'new-row', price:0, atcon: 'N', online:'N', sortorder: 199, uses: 0 }, false).then(function(row) {
             row.getTable().setPage('last').then(function() {
                 row.getCell("id").getElement().style.backgroundColor = "#fff3cd";

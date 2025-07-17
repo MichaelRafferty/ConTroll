@@ -5,6 +5,7 @@ class AuctionItemRegistration {
 // items related to artists, or other exhibitors registering items
     #item_registration = null;
     #item_registration_btn = null;
+    #closeAnyway = false;
 
     #region = 0;
     #numItems = null;
@@ -12,6 +13,7 @@ class AuctionItemRegistration {
     #ownerName = '';
     #ownerEmail = '';
     #regionName = '';
+    #addItemIndex = 1;
 
     #artItemTable = null;
     #artItemsDirty = false;
@@ -56,11 +58,23 @@ class AuctionItemRegistration {
         window.open(script, "_blank")
     }
 
+    closeModal() {
+        if ((!this.#closeAnyway) && (this.#artItemsDirty || this.#printItemsDirty || this.#nfsItemsDirty)) {
+            show_message("You have unsaved changes, save them first, press close again to close without saving them.", 'warn', 'ir_message_div');
+            this.#closeAnyway = true;
+            return;
+        }
+        clear_message('ir_message_div');
+        this.#closeAnyway = false;
+        this.#item_registration.hide();
+    }
+
     open(region) {
         clear_message('ir_message_div');
         this.#region = region;
         var _this = this;
         var script = "scripts/getItems.php"
+        clear_message();
         $.ajax({
             url: script,
             method: 'POST',
@@ -97,7 +111,7 @@ class AuctionItemRegistration {
         this.drawArtItemTable(data['items']);
 
         this.#printSaveBtn = document.getElementById('print-save');
-        this.#printUndoBtn = document.getElementById('print-undo');
+        this.#printUndoBtn = document.getElementById('print-undo')
         this.#printRedoBtn = document.getElementById('print-redo');
         this.#printAddBtn = document.getElementById('print-addrow');
         this.drawPrintItemTable(data['items']);
@@ -233,7 +247,9 @@ class AuctionItemRegistration {
     addrowArt() {
         if (this.validateMaxLimit('Art Auction')) {
             var _this = this;
-            this.#artItemTable.addRow({item_key: 'new'}, false).then(function (row) {
+            var itemKey = 'new' + this.#addItemIndex.toString();
+            this.#addItemIndex++;
+            this.#artItemTable.addRow({item_key: itemKey}, false).then(function (row) {
                 row.pageTo().then(function () {
                     row.getCell("item_key").getElement().style.backgroundColor = "#fff3cd";
                     _this.checkArtUndoRedo();
@@ -254,6 +270,7 @@ class AuctionItemRegistration {
             var script = "scripts/updateGetItems.php";
 
             clear_message();
+            clear_message('ir_message_div');
             var postdata = {
                 region: this.#region,
                 itemType: type,
@@ -281,6 +298,9 @@ class AuctionItemRegistration {
             show_message(data['error'], 'error', 'ir_message_div');
             this.#artSaveBtn.innerHTML = "Save Changes*";
             this.#artSaveBtn.disabled = false;
+            if (data.hasOwnProperty('marks')) {
+                this.markRows(this.#artItemTable, data.marks);
+            }
             return false;
         }
         if(data['message']) {
@@ -292,6 +312,14 @@ class AuctionItemRegistration {
 
         this.drawArtItemTable(data['items']);
         this.validateLoadLimit(true, 'art', data['items']['art']);
+    }
+
+    markRows(table, marks) {
+        for(var index = 0; index < marks.length; index++) {
+            var mark = marks[index];
+            var row = table.getRow(mark.item_key);
+            row.getCell(mark.field).getElement().style.backgroundColor = "#ffc0c0";
+        }
     }
 
 //TODO change Item Number
@@ -341,7 +369,9 @@ class AuctionItemRegistration {
     addrowPrint() {
         if (this.validateMaxLimit('Print Shop')) {
             var _this = this;
-            this.#printItemTable.addRow({item_key: 'new'}, false).then(function (row) {
+            var itemKey = 'new' + this.#addItemIndex.toString();
+            this.#addItemIndex++;
+            this.#printItemTable.addRow({item_key: itemKey}, false).then(function (row) {
                 row.pageTo().then(function () {
                     row.getCell("item_key").getElement().style.backgroundColor = "#fff3cd";
                     _this.checkPrintUndoRedo();
@@ -361,6 +391,7 @@ class AuctionItemRegistration {
             var script = "scripts/updateGetItems.php";
 
             clear_message();
+            clear_message('ir_message_div');
             var postdata = {
                 region: this.#region,
                 itemType: type,
@@ -389,6 +420,9 @@ class AuctionItemRegistration {
                 show_message(data['error'], 'error', 'ir_message_div');
                 this.#printSaveBtn.innerHTML = "Save Changes*";
                 this.#printSaveBtn.disabled = false;
+                if (data.hasOwnProperty('marks')) {
+                    this.markRows(this.#printItemTable, data.marks);
+                }
                 return false;
             }
             if (data['message']) {
@@ -455,7 +489,9 @@ class AuctionItemRegistration {
     addrowNfs() {
         if (this.validateMaxLimit('Display/Not For Sale')) {
             var _this = this;
-            this.#nfsItemTable.addRow({item_key: 'new'}, false).then(function (row) {
+            var itemKey = 'new' + this.#addItemIndex.toString();
+            this.#addItemIndex++;
+            this.#nfsItemTable.addRow({item_key: itemKey}, false).then(function (row) {
                 row.pageTo().then(function () {
                     row.getCell("item_key").getElement().style.backgroundColor = "#fff3cd";
                     _this.checkNfsUndoRedo();
@@ -475,6 +511,7 @@ class AuctionItemRegistration {
             var script = "scripts/updateGetItems.php";
 
             clear_message();
+            clear_message('ir_message_div');
             var postdata = {
                 region: this.#region,
                 itemType: type,
@@ -503,6 +540,9 @@ class AuctionItemRegistration {
                 show_message(data['error'], 'error', 'ir_message_div');
                 this.#nfsSaveBtn.innerHTML = "Save Changes*";
                 this.#nfsSaveBtn.disabled = false;
+                if (data.hasOwnProperty('marks')) {
+                    this.markRows(this.#nfsItemTable, data.marks);
+                }
                 return false;
             }
             if (data['message']) {
@@ -532,6 +572,7 @@ class AuctionItemRegistration {
             data: data['art'],
             layout: 'fitDataTable',
             pagination: true,
+            index: 'item_key',
             paginationAddRow:"table",
             paginationSize: 10,
             paginationSizeSelector: [5, 10, 25, 50, true], //enable page size select element with these options

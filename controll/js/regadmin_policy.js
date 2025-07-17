@@ -251,6 +251,7 @@ class policySetup {
     // add row to  table and scroll to that new row
     addrow() {
         var _this = this;
+        this.#policyTable.clearFilter(true);
         this.#policyTable.addRow({policy: 'new-row', prompt: '', description: '', required: 'N', active: 'Y',
             defaultValue: 'Y', sortOrder: 99, uses: 0}, false).then(function (row) {
             row.getTable().setPage('last').then(function() {

@@ -21,7 +21,8 @@ function pdfPrintShopPriceSheets($regionYearId, $region, $response) {
     $dataOffset = 0.22;
 
     $itemSQL = <<<EOS
-SELECT e.exhibitorName, exRY.exhibitorNumber, aI.title, aI.item_key, aI.sale_price, aI.original_qty, aI.material, e.id, eR.name, aI.id AS itemId
+SELECT e.exhibitorName, exRY.exhibitorNumber, aI.title, aI.item_key, aI.sale_price, aI.original_qty, aI.material, e.id, eR.name, 
+       aI.id AS itemId, e.artistName
 FROM exhibitorRegionYears exRY
 JOIN exhibitorYears exY ON exY.id = exRY.exhibitorYearId
 JOIN exhibitors e ON e.id = exY.exhibitorId
@@ -42,6 +43,7 @@ EOS;
         $response['num_rows'] = $itemR->num_rows;
         $response['status'] = 'No art found requiring price tags';
         echo "No art found requiring price tags\n";
+        $itemR->free();
         return $response;
     }
 
@@ -71,6 +73,14 @@ EOS;
         $artItems[] = $artItem;
         $numTags += $artItem['original_qty'];
     }
+    $itemR->free();
+
+    if ($artItems[0]['artistName'] == null || $artItems[0]['artistName'] == '') {
+        $artistName = $artItems[0]['exhibitorName'];
+    } else {
+        $artistName = $artItems[0]['artistName'];
+    }
+
     $pages = ceil($numTags / ($numrows * $numcols));
 
     $curLocale = locale_get_default();
@@ -108,8 +118,8 @@ EOS;
                 $pdf->AddPage();
                 $page++;
                 pushFont('Arial', 'B', 11);
-                printXY($margin, $margin,"Price Tags for $conname's " . $print['name'] . "; Artist: " . $print['exhibitorName']);
-                $fileLabel = $conname . "_" . $print['name'] . "_" . $print['exhibitorName'];
+                printXY($margin, $margin,"Price Tags for $conname's " . $print['name'] . "; Artist: " . $artistName);
+                $fileLabel = str_replace(' ', '_', $conname . "_" . $print['name'] . "_" . $artistName);
                 $y = $pdf->GetPageHeight() - ($margin);
                 printXY($margin, $y,"Generated: $createDate");
                 $pageStr = "Page $page of $pages";
@@ -139,7 +149,7 @@ EOS;
             printXY($h + 0.025, $v + $labeloffset,'ARTIST');
             printXY($h + 0.025 + $isize * 0.8, $v + $labeloffset,'ARTIST#');
             popFont();
-            fitprintXY($h + 0.1, $v + $dataOffset, (0.8 * $isize),$print['exhibitorName']);
+            fitprintXY($h + 0.1, $v + $dataOffset, (0.8 * $isize), $artistName);
             printXY($h + 0.1 + (0.8 * $isize), $v + $dataOffset, $print['exhibitorNumber']);
 
             // draw print title block
@@ -274,7 +284,9 @@ function pdfPrintBidSheets($regionYearId, $region, $response) {
     }
 
     $itemSQL = <<<EOS
-SELECT e.exhibitorName, exRY.exhibitorNumber, aI.title, aI.item_key, aI.min_price, aI.sale_price, aI.original_qty, aI.material, aI.type, aI.id AS itemId, e.id, eR.name
+SELECT e.exhibitorName, exRY.exhibitorNumber, e.artistName,
+       aI.title, aI.item_key, aI.min_price, aI.sale_price, aI.original_qty, aI.material, aI.type,
+       aI.id AS itemId, e.id, eR.name, e.artistName
 FROM exhibitorRegionYears exRY
 JOIN exhibitorYears exY ON exY.id = exRY.exhibitorYearId
 JOIN exhibitors e ON e.id = exY.exhibitorId
@@ -295,6 +307,7 @@ EOS;
         $response['num_rows'] = $itemR->num_rows;
         $response['status'] = 'No art found requiring bid sheets';
         echo "No art found requiring bid sheets\n";
+        $itemR->free();
         return $response;
     }
 
@@ -304,6 +317,14 @@ EOS;
         $artItems[] = $artItem;
     }
     $numSheets = $itemR->num_rows;
+    $itemR->free();
+
+    if ($artItems[0]['artistName'] == null || $artItems[0]['artistName'] == '') {
+        $artistName = $artItems[0]['exhibitorName'];
+    } else {
+        $artistName = $artItems[0]['artistName'];
+    }
+
     $pages = ceil($numSheets / ($numrows * $numcols));
 
     $curLocale = locale_get_default();
@@ -335,8 +356,8 @@ EOS;
             $pdf->AddPage();
             $page++;
             pushFont('Arial', 'B', 11);
-            printXY($margin, $margin, "Bid Sheets for $conname's " . $art['name'] . '; Artist: ' . $art['exhibitorName']);
-            $fileLabel = $conname . '_' . $art['name'] . '_' . $art['exhibitorName'];
+            printXY($margin, $margin, "Bid Sheets for $conname's " . $art['name'] . '; Artist: ' . $artistName);
+            $fileLabel = str_replace(' ', '_',$conname . '_' . $art['name'] . '_' . $artistName . '.pdf');
             $y = $pdf->GetPageHeight() - ($margin);
             printXY($margin, $y, "Generated: $createDate");
             $pageStr = "Page $page of $pages";
@@ -366,7 +387,7 @@ EOS;
         printXY($h + 0.025, $v + $labeloffset,'ARTIST');
         printXY($h + 0.025 + $isize * 0.8, $v + $labeloffset,'ARTIST#');
         popFont();
-        fitprintXY($h + 0.1, $v + $dataOffset, (0.8 * $isize),  $art['exhibitorName']);
+        fitprintXY($h + 0.1, $v + $dataOffset, (0.8 * $isize),  $artistName);
         printXY($h + 0.1 + (0.8 * $isize), $v + $dataOffset, $art['exhibitorNumber']);
 
         // draw print title block
@@ -513,7 +534,7 @@ function pdfArtistControlSheet($regionYearId, $region, $response, $printContactI
 
     $artistQ = <<<EOS
 SELECT e.*, exY.conid,exY.mailin,exY.contactName,exY.contactPhone, exY.contactEmail, exRY.agentPerid, exRY.agentRequest, exRY.exhibitorNumber, eR.name,
-       p.first_name, p.last_name, p.middle_name, p.suffix, p.phone, p.email_addr
+       p.first_name, p.last_name, p.middle_name, p.suffix, p.phone, p.email_addr, e.exhibitorEmail, e.artistName, e.exhibitorPhone
 FROM exhibitorRegionYears exRY
 JOIN exhibitorYears exY ON exY.id = exRY.exhibitorYearId
 JOIN exhibitors e ON e.id = exY.exhibitorId
@@ -536,7 +557,17 @@ EOS;
     $con = get_con();
     $conname = $con['label'];
 
-    $title = "$conname Art Control Sheet for " . $artist['exhibitorName'];
+    // determine which parts of the second block we need
+    if ($artist['artistName'] == null || $artist['artistName'] == '' ) {
+        $artistName = $artist['exhibitorName'];
+    } else {
+        $artistName = $artist['artistName'];
+    }
+    $showContact = $artist['contactName'] != $artistName || $artist['contactPhone'] != $artist['exhibitorPhone'] ||
+        $artist['exhibitorEmail'] != $artist['contactEmail'];
+    $showShip = $artist['mailin'] == 'Y';
+
+    $title = "$conname Art Control Sheet for " . $artistName;
 
     $pdf = new Fpdf\Fpdf('L', 'in', 'Letter');
     initPDF($pdf, 0.008, 'Arial', '', 11);
@@ -558,8 +589,8 @@ EOS;
     $pdf->AddPage();
     $page++;
     pushFont('Arial', 'B', 11);
-    printXY($margin, $margin, "Control Sheets for $conname's " . $artist['name'] . '; Artist: ' . $artist['exhibitorName']);
-    $fileLabel = $conname . '_' . $artist['name'] . '_' . $artist['exhibitorName'];
+    printXY($margin, $margin, "Control Sheets for $conname's " . $artist['name'] . '; Artist: ' . $artistName);
+    $fileLabel = str_replace(' ', '-', $conname . '_' . $artist['name'] . '_' . $artistName);
     $y = $pdf->GetPageHeight() - ($margin);
     printXY($margin, $y, "Generated: $createDate");
     $pageStr = "Page $page";
@@ -600,12 +631,16 @@ EOS;
     //  artist name
     printXY($col1, $v + $dataOffset, "Artist:");
     $maxY = $minRowHeight * $pt;
-    $y = fitprintXY($h + 0.5, $v + $dataOffset, $col1w - 0.5, $artist['exhibitorName']);
+    $y = fitprintXY($h + 0.5, $v + $dataOffset, $col1w - 0.5, $artistName);
     if ($y > $maxY) $maxY = $y;
     $rowHeight = $leading + $maxY + 0.05 - $v;
 
     //  email
-    printXY($col2, $v + $dataOffset, 'Email: ' . $artist['email_addr']);
+    if ($artist['email_addr'] == null || $artist['email_addr'] == '')
+        $emailAddr = $artist['exhibitorEmail'];
+    else
+        $emailAddr = $artist['email_addr'];
+    printXY($col2, $v + $dataOffset, 'Email: ' . $emailAddr);
 
     // Phone
     printXY($col3, $v + $dataOffset, 'Phone: ' . $artist['exhibitorPhone']);
@@ -664,95 +699,108 @@ EOS;
     $pdf->Rect($h + 3.0, $v, 6.0,$rowHeight);
     $v += $rowHeight;
 
-    // Section Line - Alternate Contact
-    $v += 0.25;
-    pushFont('Arial', 'B', 13);
-    printXY($h, $v, 'Alternate Contact/Shipping Information');
-    popFont();
-    $v += 0.3;
+    if ($showContact || $showShip) {
+        if ($showContact && $showShip)
+            $title = 'Primary Contact/Shipping Information';
+        else if ($showContact)
+            $title = 'Primary Contact';
+        else
+            $title = 'Shipping Information';
 
-    $col2 = $h + 2.0 + 3 * $pt;
-    $col2w = 4.0 - 4 * $pt;
+        // Section Line - Primary Contact
+        $v += 0.25;
+        pushFont('Arial', 'B', 13);
+        printXY($h, $v, $title);
+        popFont();
+        $v += 0.3;
 
-    // alternate contact info
-    printXY($col1, $v + $dataOffset, 'Alternate Contact:');
-    $maxY = $minRowHeight;
-    $y = mprintXY($col2, $v +$mprintXYoffset, $col2w, $artist['contactName']);
-    if ($y > $maxY) $maxY = $y;
-    $rowHeight = $leading + $maxY - $v;
-    $pdf->Rect($h, $v, 2.0, $rowHeight);
-    $pdf->Rect($h + 2.0, $v, 4.0, $rowHeight);
-    $v += $rowHeight;
+        $col2 = $h + 2.0 + 3 * $pt;
+        $col2w = 6.0 - 4 * $pt;
 
-    printXY($col1, $v + $dataOffset, 'Phone:');
-    $maxY = $minRowHeight;
-    $y = mprintXY($col2, $v + $mprintXYoffset, $col2w, $artist['contactPhone']);
-    if ($y > $maxY) $maxY = $y;
-    $rowHeight = $leading + $maxY - $v;
-    $pdf->Rect($h, $v, 2.0,$rowHeight);
-    $pdf->Rect($h + 2.0, $v, 4.0,$rowHeight);
-    $v += $rowHeight;
+        if ($showContact) {
+            // Primary contact info
+            printXY($col1, $v + $dataOffset, 'Primary Contact:');
+            $maxY = $minRowHeight;
+            $y = mprintXY($col2, $v + $mprintXYoffset, $col2w, $artist['contactName']);
+            if ($y > $maxY) $maxY = $y;
+            $rowHeight = $leading + $maxY - $v;
+            $pdf->Rect($h, $v, 2.0, $rowHeight);
+            $pdf->Rect($h + 2.0, $v, 4.0, $rowHeight);
+            $v += $rowHeight;
 
-    printXY($col1, $v + $dataOffset, 'Email:');
-    $maxY = $minRowHeight;
-    $y = mprintXY($col2, $v + $mprintXYoffset, $col2w, $artist['contactEmail']);
-    if ($y > $maxY) $maxY = $y;
-    $rowHeight = $leading + $maxY - $v;
-    $pdf->Rect($h, $v, 2.0,$rowHeight);
-    $pdf->Rect($h + 2.0, $v, 4.0,$rowHeight);
-    $v += $rowHeight;
+            printXY($col1, $v + $dataOffset, 'Phone:');
+            $maxY = $minRowHeight;
+            $y = mprintXY($col2, $v + $mprintXYoffset, $col2w, $artist['contactPhone']);
+            if ($y > $maxY) $maxY = $y;
+            $rowHeight = $leading + $maxY - $v;
+            $pdf->Rect($h, $v, 2.0, $rowHeight);
+            $pdf->Rect($h + 2.0, $v, 4.0, $rowHeight);
+            $v += $rowHeight;
 
-    // ship to lines
+            printXY($col1, $v + $dataOffset, 'Email:');
+            $maxY = $minRowHeight;
+            $y = mprintXY($col2, $v + $mprintXYoffset, $col2w, $artist['contactEmail']);
+            if ($y > $maxY) $maxY = $y;
+            $rowHeight = $leading + $maxY - $v;
+            $pdf->Rect($h, $v, 2.0, $rowHeight);
+            $pdf->Rect($h + 2.0, $v, 4.0, $rowHeight);
+            $v += $rowHeight;
+        }
 
-    printXY($col1, $v + $dataOffset, 'Shipping Info:');
-    $maxY = $minRowHeight;
-    $y = mprintXY($col2, $v + $mprintXYoffset, $col2w, "Ship to:");
-    if ($y > $maxY) $maxY = $y;
-    $rowHeight = $leading + $maxY - $v;
-    $pdf->Rect($h, $v, 2.0,$rowHeight);
-    $pdf->Rect($h + 2.0, $v, 4.0,$rowHeight);
-    $v += $rowHeight;
+        if ($showShip) {
+            // ship to lines
 
-    printXY($col1, $v + $dataOffset, 'Company:');
-    $maxY = $minRowHeight;
-    $y = mprintXY($col2, $v + $mprintXYoffset, $col2w, $artist['shipCompany']);
-    if ($y > $maxY) $maxY = $y;
-    $rowHeight = $leading + $maxY - $v;
-    $pdf->Rect($h, $v, 2.0,$rowHeight);
-    $pdf->Rect($h + 2.0, $v, 4.0,$rowHeight);
-    $v += $rowHeight;
+            printXY($col1, $v + $dataOffset, 'Shipping Info:');
+            $maxY = $minRowHeight;
+            $y = mprintXY($col2, $v + $mprintXYoffset, $col2w, "Ship to:");
+            if ($y > $maxY) $maxY = $y;
+            $rowHeight = $leading + $maxY - $v;
+            $pdf->Rect($h, $v, 2.0, $rowHeight);
+            $pdf->Rect($h + 2.0, $v, 4.0, $rowHeight);
+            $v += $rowHeight;
 
-    $addr = $artist['shipAddr'];
-    if (array_key_exists('shipAddr2', $artist) && isset($artist['shipAddr2']) && $artist['shipAddr2'] != '') {
-        $addr .= PHP_EOL . $artist['shipAddr2'];
+            printXY($col1, $v + $dataOffset, 'Company:');
+            $maxY = $minRowHeight;
+            $y = mprintXY($col2, $v + $mprintXYoffset, $col2w, $artist['shipCompany']);
+            if ($y > $maxY) $maxY = $y;
+            $rowHeight = $leading + $maxY - $v;
+            $pdf->Rect($h, $v, 2.0, $rowHeight);
+            $pdf->Rect($h + 2.0, $v, 4.0, $rowHeight);
+            $v += $rowHeight;
+
+            $addr = $artist['shipAddr'];
+            if (array_key_exists('shipAddr2', $artist) && isset($artist['shipAddr2']) && $artist['shipAddr2'] != '') {
+                $addr .= PHP_EOL . $artist['shipAddr2'];
+            }
+            printXY($col1, $v + $dataOffset, 'Address:');
+            $maxY = $minRowHeight;
+            $y = mprintXY($col2, $v + $mprintXYoffset, $col2w, $addr);
+            if ($y > $maxY) $maxY = $y;
+            $rowHeight = $leading + $maxY - $v;
+            $pdf->Rect($h, $v, 2.0, $rowHeight);
+            $pdf->Rect($h + 2.0, $v, 4.0, $rowHeight);
+            $v += $rowHeight;
+
+            $addr = $artist['shipCity'] . ', ' . $artist['shipState'] . ' ' . $artist['shipZip'];
+            printXY($col1, $v + $dataOffset, 'City/State/Zip:');
+            $maxY = $minRowHeight;
+            $y = mprintXY($col2, $v + $mprintXYoffset, $col2w, $addr);
+            if ($y > $maxY) $maxY = $y;
+            $rowHeight = $leading + $maxY - $v;
+            $pdf->Rect($h, $v, 2.0, $rowHeight);
+            $pdf->Rect($h + 2.0, $v, 4.0, $rowHeight);
+            $v += $rowHeight;
+
+            printXY($col1, $v + $dataOffset, 'Country:');
+            $maxY = $minRowHeight;
+            $y = mprintXY($col2, $v + $mprintXYoffset, $col2w, $artist['shipCountry']);
+            if ($y > $maxY) $maxY = $y;
+            $rowHeight = $leading + $maxY - $v;
+            $pdf->Rect($h, $v, 2.0, $rowHeight);
+            $pdf->Rect($h + 2.0, $v, 4.0, $rowHeight);
+            $v += $rowHeight;
+        }
     }
-    printXY($col1, $v + $dataOffset, 'Address:');
-    $maxY = $minRowHeight;
-    $y = mprintXY($col2, $v + $mprintXYoffset, $col2w, $addr);
-    if ($y > $maxY) $maxY = $y;
-    $rowHeight = $leading + $maxY - $v;
-    $pdf->Rect($h, $v, 2.0,$rowHeight);
-    $pdf->Rect($h + 2.0, $v, 4.0,$rowHeight);
-    $v += $rowHeight;
-
-    $addr = $artist['shipCity'] . ', ' . $artist['shipState'] . ' ' . $artist['shipZip'];
-    printXY($col1, $v + $dataOffset, 'City/State/Zip:');
-    $maxY = $minRowHeight;
-    $y = mprintXY($col2, $v + $mprintXYoffset, $col2w, $addr);
-    if ($y > $maxY) $maxY = $y;
-    $rowHeight = $leading + $maxY - $v;
-    $pdf->Rect($h, $v, 2.0,$rowHeight);
-    $pdf->Rect($h + 2.0, $v, 4.0,$rowHeight);
-    $v += $rowHeight;
-
-    printXY($col1, $v + $dataOffset, 'Country:');
-    $maxY = $minRowHeight;
-    $y = mprintXY($col2, $v + $mprintXYoffset, $col2w, $artist['shipCountry']);
-    if ($y > $maxY) $maxY = $y;
-    $rowHeight = $leading + $maxY - $v;
-    $pdf->Rect($h, $v, 2.0,$rowHeight);
-    $pdf->Rect($h + 2.0, $v, 4.0,$rowHeight);
-    $v += $rowHeight;
 
     // Section Line - Artwork
     $v += 0.25;
@@ -763,8 +811,9 @@ EOS;
 
     // now get art info
     $itemSQL = <<<EOS
-SELECT e.exhibitorName, exRY.exhibitorNumber, aI.title, aI.item_key, aI.min_price, aI.sale_price, aI.original_qty, aI.quantity, aI.material, aI.type, aI.status,
-       aI.bidder, aI.final_price, e.id, eR.name,
+SELECT e.exhibitorName, exRY.exhibitorNumber, e.artistName,
+       aI.title, aI.item_key, aI.min_price, aI.sale_price, aI.original_qty, aI.quantity, aI.material, aI.type,
+       aI.status, aI.bidder, aI.final_price, e.id, eR.name, e.artistName,
        p.first_name, p.last_name, p.middle_name, p.suffix, p.phone, p.email_addr
 FROM exhibitorRegionYears exRY
 JOIN exhibitorYears exY ON exY.id = exRY.exhibitorYearId
@@ -794,6 +843,7 @@ EOS;
         while ($artItem = $itemR->fetch_assoc()) {
             $artItems[] = $artItem;
         }
+        $itemR->free();
 
         pushFont('Arial', '', 10);
         $numwidth = $pdf->GetStringWidth("123");
@@ -833,7 +883,7 @@ EOS;
                 $pdf->AddPage();
                 $page++;
                 pushFont('Arial', 'B', 11);
-                printXY($margin, $margin, "Control Sheets for $conname's " . $artist['name'] . '; Artist: ' . $artist['exhibitorName']);
+                printXY($margin, $margin, "Control Sheets for $conname's " . $artist['name'] . '; Artist: ' . $artistName);
                 $y = $pdf->GetPageHeight() - ($margin);
                 printXY($margin, $y, "Generated: $createDate");
                 $pageStr = "Page $page";

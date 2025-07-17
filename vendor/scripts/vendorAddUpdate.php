@@ -8,7 +8,13 @@ $returnAjaxErrors = true;
 $return500errors = true;
 
 $vconf = get_conf('vendor');
-$vemail = $vconf['vendor'];
+$urlparts = explode('.', $_SERVER['SERVER_NAME']);
+$hostType = strtolower(substr($urlparts[0], 0, 1));
+if ($hostType == 'a')
+    $vemail = $vconf['artist'];
+else
+    $vemail = $vconf['vendor'];
+
 $con = get_conf('con');
 $conid = $con['id'];
 

@@ -74,7 +74,7 @@ $config_vars['useUSPS'] = $useUSPS;
 $config_vars['allStar'] = $allStar;
 $config_vars['addrStar'] = $addrStar;
 $config_vars['firstStar'] = $firstStar;
-$config_vars['regserver'] = $con['server'];
+$config_vars['regserver'] = getConfValue('reg','server');
 
 exhibitor_page_init($condata['label'] . " $portalName Registration");
 
@@ -140,6 +140,7 @@ if (isSessionVar('id') && !isset($_GET['vid'])) {
 // in session, is it a logout?
     if (isset($_REQUEST['logout'])) {
         clearSession();
+        session_regenerate_id(true);
         header('location:' . $_SERVER['PHP_SELF']);
         exit();
     } else {
@@ -161,6 +162,7 @@ if (isSessionVar('id') && !isset($_GET['vid'])) {
     setSessionVar('eyID', $match['eyID']);
     setSessionVar('login_type', $match['loginType']);
     $in_session = true;
+    session_regenerate_id(true);
 
     // if archived, unarchive them, they just logged in again
     if ($match['archived'] == 'Y') {
@@ -267,6 +269,7 @@ EOS;
     setSessionVar('id', $exhibitor);
     setSessionVar('login_type', $match['loginType']);
     $in_session = true;
+    session_regenerate_id(true);
 
     // if archived, unarchive them, they just logged in again
     if ($match['archived'] == 'Y') {

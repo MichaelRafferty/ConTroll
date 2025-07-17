@@ -1,15 +1,17 @@
 <?php
 require_once("ajax_functions.php");
+require_once('../../lib/global.php');
+
 $uspsAPIToken = null;
 $uspsAuthorization = null;
 $uspsKey = null;
 $validstate = ['AA','AE','AL','AK','AP','AS','AZ','AR','CA','CO','CT','DE','DC','FM','FL','GA','GU','HI','ID','IL','IN','IA','KS','KY','LA',
                'ME','MH','MD','MA','MI','MN','MS','MO','MP','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PW','PA','PR','RI',
                'SC','SD','TN','TX','UT','VT','VI','VA','WA','WV','WI','WY'];
-global $db_ini;
 
+global $db_ini;
 if (!$db_ini) {
-    $db_ini = parse_ini_file(__DIR__ . '/../config/reg_conf.ini', true);
+    $db_ini = $db_ini = loadConfFile();
 }
 
 function getUSPSV3Token() {

@@ -7,12 +7,11 @@ $cc = get_conf('cc');
 $con = get_conf('con');
 $conid = $con['id'];
 $debug = get_conf('debug');
-$ini = get_conf('reg');
 
 $condata = get_con();
 
 $in_session = false;
-$regserver = $ini['server'];
+$regserver = getConfValue('reg','server');
 $vendor = '';
 
 if (isSessionVar('id') && isset($_GET['site'])) {

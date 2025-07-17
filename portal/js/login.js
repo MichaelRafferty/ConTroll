@@ -79,7 +79,7 @@ class Login {
             this.#uspsDiv = document.getElementById("uspsblock");
         }
 
-        this.loginWithPasskeyBtn = document.getElementById("loginPasskeyBtn");
+        this.#loginWithPasskeyBtn = document.getElementById("loginPasskeyBtn");
         this.#sendLinkBtn = document.getElementById("sendLinkBtn");
         this.#devEmail = document.getElementById("dev_email");
         this.#tokenEmail = document.getElementById("token_email");
@@ -181,8 +181,8 @@ class Login {
 
     // login with passkey - ask for a confirm and return either retry or go to portal
     loginWithPasskey() {
-        if (this.loginWithPasskeyBtn)
-            this.loginWithPasskeyBtn.disabled = true;
+        if (this.#loginWithPasskeyBtn)
+            this.#loginWithPasskeyBtn.disabled = true;
 
        passkeyRequest('scripts/passkeyActions.php', 'portal.php', 'portal', this.#loginWithPasskeyBtn);
     }

@@ -5,13 +5,11 @@
 //  notes: must have a perid assigned and match the perid of the paid transaction
 // currently only looks for payments within one week of original transaction
 
-global $db_ini;
-if (!$db_ini) {
-    $db_ini = parse_ini_file(__DIR__ . '/../config/reg_conf.ini', true);
-}
-require_once(__DIR__ . '/../lib/db_functions.php');
+require_once('../lib/global.php');
+require_once('../lib/db_functions.php');
 require_once(__DIR__ . '/../lib/log.php');
 db_connect();
+
 $con = get_conf('con');
 $log = get_conf('log');
 $controll = get_conf('controll');

@@ -48,6 +48,9 @@ function start_over() {
     init_locations();
     init_cart();
 
+    // clear the error message block
+    clear_message();
+
     //disable tabs...
 
     //set tab to find_tab

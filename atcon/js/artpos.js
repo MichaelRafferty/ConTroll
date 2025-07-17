@@ -366,7 +366,7 @@ function buildOrderSuccess(data) {
     total_tax_due = data.rtn.taxAmt;
     total_amount_due = data.rtn.totalAmt;
     taxLabel = data.rtn.taxLabel;
-    show_message("Credit Card Order #" + pay_currentOrderId + " created.<br/>" + orderMsg);
+    show_message("Order #" + pay_currentOrderId + " created.<br/>" + orderMsg);
     payShown();
 }
 
@@ -412,7 +412,7 @@ function draw_person() {
     html += `
     <div class="row">
        <div class="col-sm-3"></div>
-       <div class="col-sm-9">` + currentPerson.city + ', ' + currentPerson.state + ' ' + currentPerson.postal_code + `</div>
+       <div class="col-sm-9">` + currentPerson.city + ', ' + currentPerson.state + ' ' + currentPerson.zip + `</div>
     </div>
 `;
     if (currentPerson.country != '' && currentPerson.country != 'USA') {

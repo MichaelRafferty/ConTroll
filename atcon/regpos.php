@@ -43,7 +43,7 @@ if (isset($_GET['mode'])) {
         $tab = 'cashier';
     }
 }
-$page = "Atcon POS ($tab)";
+$page = "Point of Sale ($tab)";
 
 if (!check_atcon($method, $conid)) {
     header('Location: /index.php');

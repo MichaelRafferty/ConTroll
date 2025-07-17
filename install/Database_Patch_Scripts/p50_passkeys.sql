@@ -52,5 +52,43 @@ ALTER TABLE exhibitorYears DROP COLUMN confirm;
 ALTER TABLE exhibitorYears DROP COLUMN needReview;
 ALTER TABLE exhibitorYears ADD COLUMN lastVerified datetime DEFAULT current_timestamp NOT NULL AFTER need_new;
 
+/*
+ * fix bad typing in membership tables
+ */
+UPDATE memTypes SET notes = 'Req: full ''run of convention'' badge-able membership' WHERE memType ='full';
+UPDATE memTypes SET notes = 'Req: virtual non badge-able membership' WHERE memType ='virtual';
+UPDATE memTypes SET notes = 'Req: single day badge-able membership' WHERE memType ='oneday';
+UPDATE memTypes SET notes = 'Req: Donation: both variable and fixed price' WHERE memType ='donation';
+UPDATE memCategories SET notes = 'Req: Paid badge-able memberships' WHERE memCategory = 'standard';
+UPDATE memCategories SET notes = 'Req: Next Con-Year Memberships' WHERE memCategory = 'yearahead';
+UPDATE memCategories SET notes = 'Req: Taxable add-on''s to memberships' WHERE memCategory = 'addonTaxable';
 
-INSERT INTO patchLog(id, name) VALUES(xx, 'passkeys');
+/*
+ * for the insurance line allow artItems to be 11,2, not 8,2 decimal
+ */
+ALTER TABLE artItems MODIFY COLUMN min_price decimal(11,2) NOT NULL DEFAULT 0.00;
+ALTER TABLE artItems MODIFY COLUMN sale_price decimal(11,2)  NULL;
+ALTER TABLE artItems MODIFY COLUMN final_price decimal(11,2) NULL;
+
+/*
+ * add missing ref to perinfo for artItems
+ */
+ALTER TABLE artItems ADD CONSTRAINT `artItems_fk_bidder` FOREIGN KEY (`bidder`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
+
+/*
+ * late addition to add shortname and ageShortName to view
+ */
+DROP VIEW IF EXISTS memLabel;
+CREATE ALGORITHM=UNDEFINED
+SQL SECURITY INVOKER
+VIEW memLabel AS
+SELECT m.id AS id,m.conid AS conid,m.sort_order AS sort_order,
+       m.memCategory AS memCategory,m.memType AS memType,m.memAge AS memAge, a.shortname AS ageShortName,
+       m.label AS shortname,concat(m.label,' [',a.label,']') AS label,
+       m.notes AS notes,m.price AS price,m.startdate AS startdate,m.enddate AS enddate,
+       m.atcon AS atcon,m.online AS online,m.glNum AS glNum,m.glLabel AS glLabel,c.taxable AS taxable
+FROM memList m
+JOIN ageList a ON m.memAge = a.ageType AND m.conid = a.conid
+JOIN memCategories c on m.memCategory = c.memCategory;
+
+INSERT INTO patchLog(id, name) VALUES(50, 'passkeys');

@@ -338,6 +338,7 @@ function clearfilter() {
             row.getCell("name").getElement().style.backgroundColor = "";
         }
     }
+    registrationtable.clearFilter(true);
 }
 
 // draw all of the filter tables with the progress bar as statistics with counts

@@ -126,6 +126,10 @@ foreach ($cart_perinfo as $row) {
             'label' => $membership['label'],
             'memType' => $membership['memType'],
             'memCategory' => $membership['memCategory'],
+            'memAge' => $membership['memAge'],
+            'fname' => $row['first_name'],
+            'shortname' => $membership['shortname'],
+            'ageshortname' => $membership['ageShortName'],
             'taxable' => $membership['taxable'],
             'price' => $price - $paid,
             'status' => $membership['status'],
@@ -171,8 +175,8 @@ if ($cancelOrderId) // cancel the old order if it exists
 $rtn = cc_buildOrder($results, true);
 if ($rtn == null) {
     // note there is no reason cc_buildOrder will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
-    logWrite(array ('con' => $con['label'], 'trans' => $transId, 'error' => 'Credit card order unable to be created'));
-    ajaxSuccess(array ('status' => 'error', 'error' => 'Credit card order not built'));
+    logWrite(array ('con' => $con['label'], 'trans' => $transId, 'error' => 'Order unable to be created'));
+    ajaxSuccess(array ('status' => 'error', 'error' => 'Order not built'));
     exit();
 }
 $rtn['totalPaid'] = $totalPaid;

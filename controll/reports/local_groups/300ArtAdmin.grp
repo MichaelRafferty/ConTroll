@@ -1,8 +1,0 @@
-[group]
-	name="ArtAdmin"
-	description="Art Admin Reports"
-	auth=artshow_admin
-[300ArtCheckout]
-	name='Artist Checkout'
-	description='Checkhout Report Artshow'
-	P001=""

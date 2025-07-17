@@ -56,6 +56,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
     if (array_key_exists('source', $results)) {
         $source = $results['source'];
     }
+    $cleanupRegs = $source == 'onlinereg';
     if (array_key_exists('custid', $results)) {
         $custid = $results['custid'];
     } else if (array_key_exists('badges', $results) && is_array($results['badges']) && count($results['badges']) > 0) {
@@ -70,6 +71,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
     } else if (array_key_exists('exhibits', $results) && array_key_exists('vendorId', $results)) {
         $custid = 'e-' . $results['vendorId'];
         $source = $results['exhibits'];
+        $cleanUpRegs = true;
     } else {
         $custid = 't-' . $results['transid'];
     }
@@ -140,6 +142,8 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                 $id = 'n' . $ep['newperid'];
             }
         } else {
+            if ($cleanupRegs)
+                cleanRegs($results['badges'], $results['transid']);
             ajaxSuccess(array ('status' => 'error', 'data' => 'Error: Plan payment missing plan information, get assistance.'));
             exit();
         }
@@ -278,9 +282,10 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                 }
 
                 $metadata = array ('regid' => $regid, 'perid' => $perid, 'memid' => $badge['memId'], 'rowno' => $rowno);
-
-                $itemName = $badge['label'] . (($badge['memType'] == 'full' || $badge['memType'] == 'oneday') ? ' Membership' : '') .
-                    ' for ' . $fullname;
+                $addMbr = str_contains(strtolower($badge['shortname']), 'membership') == false &&
+                    ($badge['memType'] == 'full' || $badge['memType'] == 'oneday');
+                $itemName =  $badge['fname'] . ': ' . $badge['shortname'] .' ' . ($badge['ageshortname'] != 'All' ? $badge['ageshortname'] : '') .
+                    ($addMbr ? ' Mbr ' : ' ') . '/ ' . $fullname;
                 $item = [
                     'uid' => 'badge' . ($lineid + 1),
                     'name' => mb_substr($itemName, 0, 128),
@@ -524,8 +529,9 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     if (array_key_exists('source', $ccParams)) {
         $source = $ccParams['source'];
     }
+    $cleanupRegs = $source == 'artist' || $source == 'exhibitor' || $source == 'fan' || $source == 'vendor' || $source == 'onlinereg';
 
-	// set category based on if exhibits is a portal type
+    // set category based on if exhibits is a portal type
     if (array_key_exists('exhibits', $ccParams)) {
         if ($ccParams['exhibits'] == 'vendor')
             $category = 'vendor';
@@ -539,6 +545,15 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
         $pNonce = $_POST['nonce'];
         if (is_array($pNonce)) {
             if ($pNonce[0] != '1') {
+                if ($cleanupRegs)
+                    cleanRegs($ccParams['badges'], $ccParams['transid']);
+                ajaxSuccess(array ('status' => 'error', 'data' => 'bad CC number'));
+                exit();
+            }
+        } else {
+            if ($pNonce != '1') {
+                if ($cleanupRegs)
+                    cleanRegs($ccParams['badges'], $ccParams['transid']);
                 ajaxSuccess(array ('status' => 'error', 'data' => 'bad CC number'));
                 exit();
             }

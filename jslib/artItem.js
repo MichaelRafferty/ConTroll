@@ -142,7 +142,7 @@ constructor(itemTable) {
     this.#itemNumberField=document.getElementById('artItemItemNumber');
     this.#typeField=document.getElementById('artItemType');
     this.#sale_priceNameField=document.getElementById('artItemSalePriceName');
-    this.#bidderNameField=document.getElementById('artItemBidderName');//TODO make this field auto-update when bidder updatea
+    this.#bidderNameField=document.getElementById('artItemBidderName');//TODO make this field auto-update when bidder updates
 
     /* editable fields */
     this.#titleField=document.getElementById('artItemTitle');
@@ -211,8 +211,8 @@ resetEditPane() {
     this.#min_bidField.value = this.min_price; // hidden unless type = ART
     this.#sale_priceField.value = this.sale_price;
     this.#bidderField.value = this.#bidder;
-    this.#bidderNameField = this.bidderName;
-    this.#final_priceField = this.final_price;
+    this.#bidderNameField.innerHTML = this.bidderName;
+    this.#final_priceField.value = this.final_price;
     this.#notesField.value = this.itemNotes;
 
     this.#isChanged=false;
@@ -236,7 +236,10 @@ setValuesForNew(exhibitor, number, type) {
     this.type=typeList.getType(type);
     this.status=statusList.getDefault();
     this.location='';
-    this.#locationList = exhibitor['locations'].split(',');
+    if (exhibitor['locations'])
+        this.#locationList = exhibitor['locations'].split(',');
+    else
+        this.#locationList = [];
     this.quantity = 1;
     this.original_qty = 1;
     this.min_price = null;
@@ -275,6 +278,7 @@ setValuesFromData(artItemData) {
     this.original_qty = artItemData['original_qty'];
     this.min_price = artItemData['min_price'];
     this.sale_price = artItemData['sale_price'];
+    this.final_price = artItemData['final_price'];
     this.#bidder = artItemData['bidder'];
     this.bidderName = artItemData['bidderName'];
     this.#exhibitorRegionYearId = artItemData['exhibitorRegionYearId'];

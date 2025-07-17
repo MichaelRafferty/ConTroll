@@ -1,4 +1,4 @@
--- MySQL dump 10.13  Distrib 8.0.34, for macos13 (arm64)
+-- MySQL dump 10.13  Distrib 8.0.42, for macos15 (arm64)
 --
 -- Host: localhost    Database: reg
 -- ------------------------------------------------------
@@ -22,12 +22,13 @@ CREATE TABLE `exhibitorYears` (
   `mailinFeePaidAmount` decimal(8,2) DEFAULT NULL,
   `mailinFeeTransaction` int DEFAULT NULL,
   `need_new` tinyint(1) DEFAULT '1',
-  `confirm` tinyint(1) DEFAULT '0',
-  `needReview` tinyint(1) NOT NULL DEFAULT '1',
+  `lastVerified` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `notes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
   PRIMARY KEY (`id`),
   KEY `ey_exhibitors_fk` (`exhibitorId`),
   KEY `ey_conlist_fk` (`conid`),
-  KEY `ey_mailintrans` (`mailinFeeTransaction`)
+  KEY `ey_mailintrans` (`mailinFeeTransaction`),
+  KEY `exhibitorYears_idx_email` (`contactEmail`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 

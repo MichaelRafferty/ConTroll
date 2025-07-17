@@ -71,15 +71,15 @@ function showPrompts(reportName, prefix, fileName, type, template) {
     for (var i = 0; i < prompts.length; i++) {
         var prompt = prompts[i];
         if (prompt[0] == 'prompt') {
-            html += '<div class="row">\n<div class="col-sm-auto"><label for="P-' + prompt[1] + '">' + prompt[2] + '</label></div>\n';
-            html += '<div class="col-sm-auto"><input type="text" id="P-' + prompt[1] + '" name="P-' + prompt[1] + '"';
+            html += '<div class="row mb-1">\n<div class="col-sm-2"><label for="P-' + prompt[1] + '">' + prompt[2] + '</label></div>\n';
+            html += '<div class="col-sm-6"><input type="text" id="P-' + prompt[1] + '" name="P-' + prompt[1] + '"';
             if (prompt.length > 3) {
                 html += ' placeholder="' + prompt[3] + '" ';
             }
             if (prompt.length > 4) {
                 html += ' value="' + prompt[4] + '" ';
             }
-            html += '></div>\n</div>\n';
+            html += ' size=60></div>\n</div>\n';
             reportFields.push("P-" + prompt[1]);
         }
     }
@@ -204,96 +204,100 @@ function drawReport(data) {
         html += `
     <div class="row">
         <div class="col-sm-auto">
-            <button type="button" class="btn btn-info btn-sm" onclick="downloadReport('xlsx'); return false;" disabled>Download Excel xlsx</button>
             <button type="button" class="btn btn-info btn-sm" onclick="downloadReport('csv'); return false;">Download CSV</button>
+            <button type="button" class="btn btn-info btn-sm" onclick="downloadReport('xlsx'); return false;">Download Excel xlsx</button>
         </div>
     </div>
 `;
     }
     reportContentDiv.innerHTML = html;
 
-    // build tabulator specs
-    params = {
-        data: data.data,
-        layout: "fitDataTable",
-        pagination: true,
-        paginationSize: 25,
-        paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
-    };
-    if (data.hasOwnProperty('groupby')) {
-        params.groupBy = data['groupby'];
-    }
+    if (data.hasOwnProperty('output')) {
+        document.getElementById('reportTable').innerHTML = data.output;
+    } else {
+        // build tabulator specs
+        params = {
+            data: data.data,
+            layout: "fitDataTable",
+            pagination: true,
+            paginationSize: 25,
+            paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
+        };
+        if (data.hasOwnProperty('groupby')) {
+            params.groupBy = data['groupby'];
+        }
 
-    // set the calc position
-    var calcPosition = 'bottom';
-    if (data.hasOwnProperty('calcPosition'))
-        calcPosition = data['calcPosition'];
-    // build the column list
-    var fields = data.fields;
-    var columns = []
-    for (var i = 0; i < fields.length; i++) {
-        var field = fields[i];
-        var column = {};
-        if (field.hasOwnProperty('title')) {
-            column.title = field.title;
-            column.headerWordWrap = true;
-        }
-        if (field.hasOwnProperty('name'))
-            column.field = field.name;
-        if (field.hasOwnProperty('sort'))
-            column.headerSort = true;
-        if (field.hasOwnProperty('width'))
-            column.width = field.width;
-        if (field.hasOwnProperty('minWidth'))
-            column.minWidth = field.minWidth;
-        if (field.hasOwnProperty('align')) {
-            column.hozAlign = field.align;
-            column.headerHozAlign = field.align;
-        }
-        if (field.hasOwnProperty('calc')) {
-            column[calcPosition + 'Calc'] = field.calc;
-            if (field.hasOwnProperty('precision')) {
-                column[calcPosition + 'CalcParams'] = { precision: field.precision };
+        // set the calc position
+        var calcPosition = 'bottom';
+        if (data.hasOwnProperty('calcPosition'))
+            calcPosition = data['calcPosition'];
+        // build the column list
+        var fields = data.fields;
+        var columns = []
+        for (var i = 0; i < fields.length; i++) {
+            var field = fields[i];
+            var column = {};
+            if (field.hasOwnProperty('title')) {
+                column.title = field.title;
+                column.headerWordWrap = true;
             }
-        }
-        if (field.hasOwnProperty('format')) {
-            column.formatter = field.format;
-        }
-        if (field.hasOwnProperty('visible')) {
-            if (field.visible == 'true' || field.visible === true)
-                column.visible = true;
-            else
-                column.visible = false;
-        }
-        if (field.hasOwnProperty('filter')) {
-            switch (field.filter) {
-                case 'textarea':
-                case 'true':
-                    column.headerFilter = field.filter;
-                    break;
-                case 'number':
-                    column.headerFilter = true;
-                    column.headerFilterFunc = numberHeaderFilter;
-                    break;
-                case 'fullname':
-                    column.headerFilter = true;
-                    column.headerFilterFunc = fullNameHeaderFilter;
-                    break;
-                default:
-                    column.headerFilter = true;
+            if (field.hasOwnProperty('name'))
+                column.field = field.name;
+            if (field.hasOwnProperty('sort'))
+                column.headerSort = true;
+            if (field.hasOwnProperty('width'))
+                column.width = field.width;
+            if (field.hasOwnProperty('minWidth'))
+                column.minWidth = field.minWidth;
+            if (field.hasOwnProperty('align')) {
+                column.hozAlign = field.align;
+                column.headerHozAlign = field.align;
             }
+            if (field.hasOwnProperty('calc')) {
+                column[calcPosition + 'Calc'] = field.calc;
+                if (field.hasOwnProperty('precision')) {
+                    column[calcPosition + 'CalcParams'] = {precision: field.precision};
+                }
+            }
+            if (field.hasOwnProperty('format')) {
+                column.formatter = field.format;
+            }
+            if (field.hasOwnProperty('visible')) {
+                if (field.visible == 'true' || field.visible === true)
+                    column.visible = true;
+                else
+                    column.visible = false;
+            }
+            if (field.hasOwnProperty('filter')) {
+                switch (field.filter) {
+                    case 'textarea':
+                    case 'true':
+                        column.headerFilter = field.filter;
+                        break;
+                    case 'number':
+                        column.headerFilter = true;
+                        column.headerFilterFunc = numberHeaderFilter;
+                        break;
+                    case 'fullname':
+                        column.headerFilter = true;
+                        column.headerFilterFunc = fullNameHeaderFilter;
+                        break;
+                    default:
+                        column.headerFilter = true;
+                }
+            }
+            //console.log(column);
+            columns.push(column);
         }
-        //console.log(column);
-        columns.push(column);
-    }
-    params.columns = columns;
+        params.columns = columns;
 
-    if (data.hasOwnProperty('index')) {
-        params.index = data.index;
-    }
+        if (data.hasOwnProperty('index')) {
+            params.index = data.index;
+        }
 
-    // open table
-    reportTable =  new Tabulator('#reportTable', params);
+        // open table
+        reportTable = new Tabulator('#reportTable', params);
+    }
 
     if (data.success)
         show_message(data.success, 'success');

@@ -12,12 +12,15 @@ function draw_login($config_vars, $result_message = '', $result_color = '', $why
                     <h4>Please log in to <?php echo $why; ?>:</h4>
                 </div>
             </div>
-            <?php  if (array_key_exists('HTTPS', $_SERVER) && (isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == 'on')) { ?>
-            <div class='row mb-2'>
+            <?php  if (getConfValue('portal', 'passkeyRpLevel') != 'd' && array_key_exists('HTTPS', $_SERVER) && (isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == 'on')) { ?>
+            <div class='row mb-2 align-items-center'>
                 <div class='col-sm-auto'>
                     <button class='btn btn-sm btn-primary' id="loginPasskeyBtn" onclick='login.loginWithPasskey();'>
-                        <img src="lib/passkey.png">Login with Passkey
+                        <img src="lib/passkey.png" width="25">Login with Passkey
                     </button>
+                </div>
+                <div class='col-sm-auto'>
+                    Don't have one?<br/>Create a passkey after signing on and skip the password next time.
                 </div>
             </div>
             <?php } ?>
@@ -297,6 +300,8 @@ function validationComplete($id, $idType, $email, $validationType, $multiple) : 
             setSessionVar('idType', $idType);
             setSessionVar('idSource', $validationType);
             setSessionVar('email', $email);
+            // new login reset the PHP session id
+            session_regenerate_id(true);
         }
         if ($multiple != null) {
             setSessionVar('multiple', $multiple);

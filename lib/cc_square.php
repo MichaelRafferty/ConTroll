@@ -164,6 +164,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     if (array_key_exists('source', $results)) {
         $source = $results['source'];
     }
+    $cleanupRegs = $source == 'onlinereg';
     if (array_key_exists('custid', $results)) {
         $custid = $results['custid'];
     } else if (array_key_exists('badges', $results) && is_array($results['badges']) && count($results['badges']) > 0) {
@@ -178,6 +179,8 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     } else if (array_key_exists('exhibits', $results) && array_key_exists('vendorId', $results)) {
         $custid = 'e-' . $results['vendorId'];
         $source = $results['exhibits'];
+        // failures in the exhibitor payments need to delete the regs they were going to product
+        $cleanUpRegs = true;
     } else {
         $custid = 't-' . $results['transid'];
     }
@@ -286,6 +289,8 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 $id = 'n' . $ep['newperid'];
             }
         } else {
+            if ($cleanupRegs)
+                cleanRegs($results['badges'], $results['transid']);
             ajaxSuccess(array ('status' => 'error', 'data' => 'Error: Plan payment missing plan information, get assistance.'));
             exit();
         }
@@ -349,6 +354,8 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 $lineid++;
             }
         } else {
+            if ($cleanupRegs)
+                cleanRegs($results['badges'], $results['transid']);
             ajaxSuccess(array ('status' => 'error', 'data' => 'Error: Art Data not passed, get assistance.'));
             exit();
         }
@@ -446,8 +453,10 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 if (array_key_exists('complete_trans', $badge) && $badge['complete_trans'] > 0 && $amount == 0)
                     continue; // skip paid complete items in order for sending to square
 
-                $itemName =  $badge['label'] . (($badge['memType'] == 'full' || $badge['memType'] == 'oneday') ? ' Membership' : '') .
-                    ' for ' . $fullname;
+                $addMbr = str_contains(strtolower($badge['shortname']), 'membership') == false &&
+                    ($badge['memType'] == 'full' || $badge['memType'] == 'oneday');
+                $itemName =  $badge['fname'] . ': ' . $badge['shortname'] .' ' . ($badge['ageshortname'] != 'All' ? $badge['ageshortname'] : '') .
+                    ($addMbr ? ' Mbr ' : ' ') . 'for ' . $fullname;
                 $item = new OrderLineItem ([
                     'itemType' => OrderLineItemItemType::Item->value,
                     'uid' => 'badge' . ($lineid + 1),
@@ -649,9 +658,13 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
         if ($squareDebug) sqcc_logObject(array ('Orders API order response', json_decode(json_encode($order), true)), $useLogWrite);
     }
     catch (SquareApiException $e) {
+        if ($cleanupRegs)
+            cleanRegs($results['badges'], $results['transid']);
         sqcc_logException($source, $e, 'Order API create order Exception', 'Order create failed', $useLogWrite);
     }
     catch (Exception $e) {
+        if ($cleanupRegs)
+            cleanRegs($results['badges'], $results['transid']);
         sqcc_logException($source, $e, 'Order API error while calling Square', 'Error connecting to Square', $useLogWrite);
     }
 
@@ -791,6 +804,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     if (array_key_exists('source', $ccParams)) {
         $source = $ccParams['source'];
     }
+    $cleanupRegs = $source == 'artist' || $source == 'exhibitor' || $source == 'fan' || $source == 'vendor' || $source == 'onlinereg';
 
     // 1. create payment for order
     //  a. create payment object with order id and payment amount plus credit card nonce
@@ -914,15 +928,20 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
                 }
                 web_error_log('Square card payment error for ' . $ccParams['transid'] . " of $msg");
 
+                if ($cleanupRegs)
+                    cleanRegs($ccParams['badges'], $ccParams['transid']);
                 ajaxSuccess(array ('status' => 'error', 'data' => "Payment Error: $msg"));
                 exit();
             }
         }
-
+        if ($cleanupRegs)
+            cleanRegs($ccParams['badges'], $ccParams['transid']);
         ajaxSuccess(array ('status' => 'error', 'data' => 'Error: Error connecting to Square'));
         exit();
     }
     catch (Exception $e) {
+        if ($cleanupRegs)
+            cleanRegs($ccParams['badges'], $ccParams['transid']);
         sqcc_logException($source, $e, 'Payment API error while calling Square', 'Error connecting to Square', $useLogWrite);
     }
     $id = $payment->getId();

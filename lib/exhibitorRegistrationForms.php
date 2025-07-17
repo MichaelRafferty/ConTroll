@@ -46,7 +46,8 @@ function draw_login($config_vars, $result_message = '') {
                     </div>
                 </div>
             </form>
-            <?php  if (array_key_exists('HTTPS', $_SERVER) && (isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == 'on')) { ?>
+            <?php  if (getConfValue('vendor', 'passkeyRpLevel') != 'd' && array_key_exists('HTTPS', $_SERVER) &&
+                (isset($_SERVER['HTTPS']) ||  $_SERVER['HTTPS'] == 'on')) { ?>
             <div class='row mt-1'>
                 <div class='col-sm-1'></div>
                 <div class='col-sm-2' style="text-align: center">OR</div>
@@ -515,7 +516,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
     }
 
 // draw_RegistratioModal - the modal for exhibitor signup in the vendor subsystem
-function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabStart = 10) {
+function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabStart = 5000) {
     $con = get_conf('con');
     $vendor_conf = get_conf('vendor');
     $tabIndex = $tabStart;
