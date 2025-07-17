@@ -529,6 +529,7 @@ foreach ($cart_art as $cart_row) {
             $upd_cart += dbSafeCmd($updQuantitySQL, $uqstr, array($quantity, $quantity, $cart_row['id']));
 
             if ($cart_row['priceType'] == 'Quick Sale') {
+                $cart_row['final_price'] = $cart_row['paid']; // for quick sale, need to update cart row itself with the final price
                 $upd_cart += dbSafeCmd($updStatusSQL, $usstr, array($perid, $cart_row['paid'], $cart_row['id']));
                 $upd_rows += dbSafeCmd($updArtSalesStatusSQL, $usrstr, array('Quicksale/Sold', $cart_row['artSalesId']));
             }
