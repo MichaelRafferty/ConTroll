@@ -196,7 +196,7 @@ function chooseAccountFromEmail($email, $id, $linkid, $passedMatch, $validationT
 
         if ($idType == 'p')
             updateIdentityUsage($id, $validationType, $origEmail);
-        web_error_log("$type @ " . time() . "$ts for $email/$id via $validationType");
+        web_error_log("$type @ " . time() . "$ts for $email/$id via $validationType", '', false);
         validationComplete($id, $idType, $email, $validationType, $multiple);
         exit();
     }
