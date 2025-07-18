@@ -139,6 +139,10 @@
     name=exhibitsRegions
     alias=xR
     join="xR.id=xRY.exhibitsRegion"
+[T022]
+    name=exhibitsRegionTypes
+    alias=xRT
+    join="xR.regionType=xRT.regionType"
 [T030]
     name=items
     alias=i
@@ -175,6 +179,6 @@
     item=id
     datatype=i
 [where]
-	001="eY.conid = ?"
+	001="eY.conid = ? AND xRT.portalType='artist' AND (IFNULL(r.units, 0) > 0 OR IFNULL(e.artistName, '') != '')"
 [sort]
 	001="xR.name, eRY.exhibitorNumber"
