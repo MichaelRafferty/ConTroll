@@ -243,9 +243,9 @@ if ($otherPay == 0) { // this is a plan payment or badge purchase payment
                               'email_addr' => $mem['email_addr'],
                               'phone' => $mem['phone'],
                               'inPlan' => false,
-                              'fname' => $mem['first_name'],
+                              'fname' => array_key_exists('first_name', $mem) ? $mem['first_name'] : $mem['fname'],
                               'shortname' => $mem['shortname'],
-                              'ageshortname' => $mem['ageShortName'],
+                              'ageshortname' => array_key_exists('ageShortName', $mem) ? $mem['ageShortName'] : $mem['ageshortname'],
                               'taxable' => $mem['taxable'],
             );
             if ($mem['planId'] != 0) {
