@@ -151,7 +151,7 @@ if (isSessionVar('id') && !isset($_GET['vid'])) {
 } else if (isset($_GET['vid'])) {
     $match = decryptCipher($_GET['vid'], true);
     $timediff = time() - $match['ts'];
-    web_error_log("login @ " . time() . " with ts " . $match['ts']);
+    web_error_log("login @ " . time() . " with ts " . $match['ts'], '', false);
     if ($timediff > 120) {
         draw_signupModal($portalType, $portalName, $con, $countryOptions);
         draw_login($config_vars, "<div class='bg-danger text-white'>The link has expired, please log in again</div>");

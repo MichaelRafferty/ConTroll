@@ -301,7 +301,7 @@ if (isset($_GET['vid'])) {
         $validationType = 'token';
     }
     $timediff = time() - $match['ts'];
-    web_error_log('login @ ' . time() . ' with ts ' . $match['ts'] . " for $email/$id via $validationType");
+    web_error_log('login @ ' . time() . ' with ts ' . $match['ts'] . " for $email/$id via $validationType", '', false);
     if ($timediff > (4 * 3600)) {
         draw_login($config_vars,
                    "The link has expired, please request a new link",  'bg-danger text-white',

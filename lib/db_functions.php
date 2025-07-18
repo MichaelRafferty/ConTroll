@@ -19,14 +19,15 @@ if ($phptz) {
 
 // Function web_error_log($string)
 // $string = string to write to file $logdest with added newline at end
-function web_error_log($string, $debug = ''): void
+function web_error_log($string, $debug = '', $both = true): void
 {
     global $logdest;
 
     if ($debug == '' || getConfValue('debug', $debug) > 0) {
         if ($logdest)
             error_log(date("Y-m-d H:i:s") . ": " . $string . "\n", 3, $logdest);
-        error_log(date("Y-m-d H:i:s") . ": " . $string . "\n");
+        if ($both || $logdest == null || $logdest == '')
+            error_log(date("Y-m-d H:i:s") . ": " . $string . "\n");
     }
 }
 // Function var_error_log()
