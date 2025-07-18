@@ -258,7 +258,12 @@ EOS;
             else
                 continue;
 
-            $memberships[] .= implode(':', array ($m['memAge'], $m['memType'], $m['memCategory'], $m['shortname']));
+            if ($m['conid'] != $conid)
+                $shortname = $m['conid'] . ' ' . $m['shortname'];
+            else
+                $shortname = $m['shortname'];
+
+            $memberships[] .= implode(':', array ($m['memAge'], $m['memType'], $m['memCategory'], $shortname));
         }
         $holderRegR->free();
     }
