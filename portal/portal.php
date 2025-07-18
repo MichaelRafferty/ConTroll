@@ -133,7 +133,7 @@ if (!$refresh) {
     $numChild = 0;
 // get the account holder's registrations
     $holderRegSQL = <<<EOS
-SELECT r.status, r.memId, m.*, a.shortname AS ageShort, a.label AS ageLabel, a.ageType, m.taxable, m.ageShortName,
+SELECT r.status, r.memId, m.*, a.shortname AS ageShort, a.label AS ageLabel, a.ageType,
        r.price AS actPrice, IFNULL(r.paid, 0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,
        r.conid, r.create_date, r.id AS regid, r.create_trans, r.complete_trans,
        r.perid AS regPerid, r.newperid AS regNewperid, r.planId,
@@ -173,6 +173,11 @@ SELECT r.status, r.memId, m.*, a.shortname AS ageShort, a.label AS ageLabel, a.a
         WHEN rn.id IS NOT NULL THEN rn.phone
         ELSE NULL
     END AS phone,
+    CASE 
+        WHEN rp.id IS NOT NULL THEN rp.first_name
+        WHEN rn.id IS NOT NULL THEN rn.first_name
+        ELSE NULL
+    END AS fname,
     CASE 
         WHEN rp.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', rp.first_name, rp.middle_name, rp.last_name, rp.suffix), '  *', ' '))
         WHEN rn.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', rn.first_name, rn.middle_name, rn.last_name, rn.suffix), '  *', ' '))
@@ -255,6 +260,7 @@ EOS;
                 'actPrice' => $m['actPrice'], 'actPaid' => $m['actPaid'], 'actCouponDiscount' => $m['actCouponDiscount'],
                 'email_addr' => $m['email_addr'], 'phone' => $m['phone'],
                 'transPerid' => $m['transPerid'], 'transNewPerid' => $m['transNewPerid'], 'taxable' => $m['taxable'],
+                'fname' => $m['fname'], 'ageshortname' => $m['ageshortname'],
             );
             $holderMembership[] = $item;
             if ($item['completePerid'] != NULL) {

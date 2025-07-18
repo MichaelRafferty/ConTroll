@@ -1295,18 +1295,6 @@ class Portal {
         }
 
         return amount;
-/* save this part for Make Payment if other is 1
-        this.#paymentAmount = type == 'full' ? this.#otherPayAmt : this.#partialPayAmt;
-        this.#makePaymentBody.innerHTML = `
-        <div class="row mt-4 mb-4">
-            <div class="col-sm-auto"><b>You are making a payment against memberships purchased for you by others of ` +
-                Number(this.#paymentAmount).toFixed(2) + `</b></div>
-         </div>        
-`;
-
-        this.#otherPay = 1;
-        this.#makePaymentModal.show();
-*/
     }
 
     // makePurchase - make the membership/plan purchase.
