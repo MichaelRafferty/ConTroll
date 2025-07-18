@@ -83,7 +83,7 @@ WITH trans AS (
         CASE WHEN r.complete_trans IS NULL THEN r.create_trans ELSE r.complete_trans END AS sortTrans,
         CASE WHEN tp.complete_date IS NULL THEN t.create_date ELSE tp.complete_date END AS transDate,
         m.label, m.memAge, m.memAge AS age, m.memType, m.memCategory,  m.startdate, m.enddate, m.online, m.taxable, 
-        m.ageShortName, m.shortname, nn.first_name AS fname, nn.managedBy, nn.managedByNew, nn.badge_name, 
+        m.ageShortName AS ageshortname, m.shortname, nn.first_name AS fname, nn.managedBy, nn.managedByNew, nn.badge_name, 
         TRIM(REGEXP_REPLACE(CONCAT(nn.first_name, ' ', nn.middle_name, ' ', nn.last_name, ' ', nn.suffix), '  *', ' ')) AS fullName, 
         nn.id as memberId, nn.email_addr, nn.phone,
         IFNULL(tp.perid, t.perid) AS transPerid,
@@ -107,7 +107,7 @@ WITH mems AS (
     SELECT t.id, r.create_date, r.id AS regid, r.memId, r.conid, r.status, r.price, r.paid, r.complete_trans,
         r.couponDiscount, r.perid, r.newperid,
         m.label, m.memAge, m.memAge AS age, m.memType, m.memCategory,  m.startdate, m.enddate, m.online, m.taxable, 
-        m.ageShortName, m.shortname, p.first_name AS fname, p.managedBy, p.managedByNew,
+        m.ageShortName AS ageshortname, m.shortname, p.first_name AS fname, p.managedBy, p.managedByNew,
         CASE WHEN r.complete_trans IS NULL THEN r.create_trans ELSE r.complete_trans END AS sortTrans,
         CASE WHEN tp.complete_date IS NULL THEN t.create_date ELSE tp.complete_date END AS transDate,
         CASE 
