@@ -310,10 +310,8 @@ EOS;
 
 // replaceConfigTokens - replace configuration tokens of the form #section.element# in a text string with values from the parsed configuration file
 // NOTE: the sections cc, client, debug, email, google, local, log, mysql are skipped for security reasons as they hold keys and other protected data
-const replaceConfigTokensSkip = ['cc', 'client', 'debug', 'email', 'google', 'local', 'log', 'mysql'];
+const replaceConfigTokensSkip = ['global', 'cc', 'client', 'debug', 'email', 'google', 'local', 'log', 'mysql'];
     function replaceConfigTokens($string) : string {
-        global $db_ini;
-
         $pattern = '/#[^#]+#/';     // config tokens are #item.section#, but if the dot is missing, 'reg' will be assumed
         // get the matches if any
         $count = preg_match_all($pattern, $string, $matches);
@@ -335,12 +333,11 @@ const replaceConfigTokensSkip = ['cc', 'client', 'debug', 'email', 'google', 'lo
             if (in_array($section, replaceConfigTokensSkip)) // skip over restricted tokens
                 continue;
 
-            if (!array_key_exists($section, $db_ini))
-                continue;       // section missing, leave token in the string and move on
-            if (!array_key_exists($element, $db_ini[$section]))
-                continue;       // element missing, leave token in the string and move on
+            $replaceValue = getConfValue($section, $element, null);
+            if ($replaceValue == null)
+                continue; // item is missing, both in the section and in global, leave token in the string and move on
 
-            $string = str_replace($match, $db_ini[$section][$element], $string);
+            $string = str_replace($match, $replaceValue, $string);
         }
 
         return $string;
