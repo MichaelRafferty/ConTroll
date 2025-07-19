@@ -1229,9 +1229,11 @@ class exhibitorsAdm {
         margin = (invBtns || agentBtns) ? 'mb-2' : '';
         // receipt button and locations
         if (paidBtns) {
-            buttons += '<button class="btn btn-sm btn-secondary' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
+            buttons += '<button class="btn btn-sm btn-secondary ' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem;' +
+                ' --bs-btn-font-size: .75rem;" ' +
                 'onclick="exhibitors.spaceReceipt(' + id + ')" >Receipt</button>&nbsp;';
-            buttons += '<button class="btn btn-sm btn-primary' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
+            buttons += '<button class="btn btn-sm btn-primary ' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem;' +
+                ' --bs-btn-font-size: .75rem;" ' +
                 'onclick="exhibitors.showLocations(' + id + ', true)" >Locations</button>&nbsp;';
 
             buttons += "<br/>";
