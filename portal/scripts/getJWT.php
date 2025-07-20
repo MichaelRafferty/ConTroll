@@ -275,7 +275,7 @@ EOS;
         $rights .= 'virtual,' . implode(',', $memberships);
     }
     if ($key == null)
-        $key = getConfValue('portal', 'nomnomKey', '');
+        $key = getConfValue('portal', 'virtualKey', '');
 }
 
 $payload['rights'] = $rights;
