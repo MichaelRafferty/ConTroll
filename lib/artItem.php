@@ -45,13 +45,13 @@ function drawEditPane($tabIndex=100)
                             <div class="row mb-2">
                                 <div class="col-sm-auto">
                                     <label for="artItemTitle">Title:</label>
-                                    <input tabindex="<?php echo $tabIndex+5; ?>" type="text" id="artItemTitle" name="title"/>
+                                    <input tabindex="<?php echo $tabIndex+5; ?>" type="text" id="artItemTitle" name="title" size="64" maxlength="64"/>
                                 </div>
                             </div>
                             <div class="row mb-2">
                                 <div class="col-sm-auto">
                                     <label for="artItemMaterial">Material:</label>
-                                    <input tabindex="<?php echo $tabIndex+6; ?>" type="text" id="artItemMaterial" name="material"/>
+                                    <input tabindex="<?php echo $tabIndex+6; ?>" type="text" id="artItemMaterial" name="material" size='32' maxlength='32'/>
                                 </div>
                             </div>
                             <div class="row mb-2">
