@@ -69,7 +69,7 @@ function drawEditPane($tabIndex=100)
                                     </select>
                                 </div>
                             </div>
-                            <div class="row mb-2">
+                            <div class="row mb-2" id="quantityRowDiv">
                                 <div class="col-sm-auto">
                                     <label for="artItemQuantity">Quantity:</label>
                                     <input tabindex="<?php echo $tabIndex+9; ?>" type="number" id="artItemQuantity" name="quantity"/>

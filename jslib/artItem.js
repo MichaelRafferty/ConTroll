@@ -119,6 +119,7 @@ class artItem {
     #min_bidField;
     #sale_priceField;
     #sale_priceNameField;
+    #quantityRowDiv;
     #bidderField;
     #bidderNameField;
     #final_priceField;
@@ -142,6 +143,7 @@ constructor(itemTable) {
     this.#itemNumberField=document.getElementById('artItemItemNumber');
     this.#typeField=document.getElementById('artItemType');
     this.#sale_priceNameField=document.getElementById('artItemSalePriceName');
+    this.#quantityRowDiv=document.getElementById('quantityRowDiv');
     this.#bidderNameField=document.getElementById('artItemBidderName');//TODO make this field auto-update when bidder updates
 
     /* editable fields */
@@ -175,14 +177,17 @@ setPriceNames(type){
         case artItemTypes.ART:
             document.getElementById('minPriceRow').style.display = 'block';
             this.#sale_priceNameField.innerHTML = "Quicksale Price";
+            this.#quantityRowDiv.style.display = 'none';
             break;
         case artItemTypes.NFS:
             document.getElementById('minPriceRow').style.display = 'none';
             this.#sale_priceNameField.innerHTML = "Insurance Amount";
+            this.#quantityRowDiv.style.display = 'none';
             break;
         case artItemTypes.PRINT:
             document.getElementById('minPriceRow').style.display = 'none';
             this.#sale_priceNameField.innerHTML = "Sale Price";
+            this.#quantityRowDiv.style.display = 'block';
             break;
     }
 }
