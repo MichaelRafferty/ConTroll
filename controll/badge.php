@@ -26,7 +26,7 @@ if(!$need_login or !checkAuth($need_login['sub'], $page)) {
 $freeSQL = <<<EOS
 SELECT M.id, M.label
 FROM memList M
-WHERE M.conid = ? and M.memCategory in ('freebie', 'goh') AND m.memType in ('full', 'oneday', 'virtual');
+WHERE M.conid = ? and M.memCategory in ('freebie', 'goh') AND M.memType in ('full', 'oneday', 'virtual');
 EOS;
 
 $freeMems = [];
