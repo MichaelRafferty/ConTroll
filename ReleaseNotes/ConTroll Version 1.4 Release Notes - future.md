@@ -1,6 +1,6 @@
 # ConTroll Version 1.4 Release Notes
 
-## Version 1.4: Art Show/Configuration/Passkeys, Release Date: TDB
+## Version 1.4: Art Show/Configuration/Passkeys, Release Date: July 21, 2025
 
 # Major Configuration Changes in 1.4:
 
@@ -17,6 +17,9 @@
     * Support for top level domain passkey RP domain or full application pass key RP domaion
   * Many fields have been cleaned up, please see the sample files for all of the parameters now supported.  While R1.4 will support a single configuration 
     file, you should migrate from the one file to the three files during 1.4.  That support is considered Depreciated in 1.4 and will be removed in 1.5.
+    * 1.4 will load the three files in the order reg_secret.ini, reg_admin.ini and reg_conf.ini with each file overwriting any fields found in a prior file.
+    * 1.5 will load the three files in the order reg_conf.ini, reg_admin.ini and finally reg_secret.ini.  reg_admin.ini will overwrite any fields aleady 
+      loaded by reg_conf.ini.  reg_secret will overwrite any section already loaded.
   * There were two config file values regpage= and registrationpage= that had the same meaning. Portal, et al used regpage and onlinereg used 
     registrationpage.  Only regpage is now used and registrationpage is obsolete and ignored.
         
