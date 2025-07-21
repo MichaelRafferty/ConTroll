@@ -2046,7 +2046,7 @@ function foundRelease(data) {
             {column: "exhibitorNumber", dir: "asc"},
             {column: "item_key", dir: "asc"},
         ],
-        pagination: true,
+        pagination: art.length > 25,
         paginationSize: 25,
         paginationSizeSelector: [25, 50, 100, 250, true], //enable page size select element with these options
 
