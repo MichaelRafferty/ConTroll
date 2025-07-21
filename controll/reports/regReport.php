@@ -32,4 +32,6 @@ while ($reportL = $reportR->fetch_assoc()) {
    $tableData[] = $reportL;
 }
 
-outputCSV('reg_report', $tableData);
+$sheetname = 'reg_report';
+$filename = $sheetname . '-' . date('Y-m-d_H-i-s');
+outputFile('csv', $sheetname, $filename, $tableData);
