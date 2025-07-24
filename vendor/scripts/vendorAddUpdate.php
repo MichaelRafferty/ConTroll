@@ -151,7 +151,7 @@ INSERT INTO exhibitors (exhibitorName, exhibitorEmail, exhibitorPhone, salesTaxI
                      addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, publicity) 
 VALUES (?,?,?,?,?,?,?,0,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
 EOS;
-            $typestr = 'sssssssisssssssssssssi';
+            $typestr = 'ssssssssssssssssssssi';
             $paramarr = array (
                 trim($_POST['exhibitorName']),
                 trim($_POST['exhibitorEmail']),
