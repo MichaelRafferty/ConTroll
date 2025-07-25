@@ -1049,7 +1049,7 @@ function updateInventoryStep(item, repeatPass) {
 
         // to Auction Item:
         if (item.status == 'To Auction') {
-            // update bidder if not us
+            // update bidder if not this person
             // update final price
             if (item.bidder != null && item.bidder != currentPerson.id) {
                 html += '<div class="row mt-2"><div class="col-sm-12">This item was last bid on by ' + item.bidder + ', change it to this person? ' +
