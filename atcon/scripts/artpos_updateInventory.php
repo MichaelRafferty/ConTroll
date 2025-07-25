@@ -87,6 +87,13 @@ foreach ($updates as $update) {
     if ($update['field'] == 'final_price' || $update['field'] == 'status') {
         if ($skipFinalPrice)
             continue;
+
+        if ($item['status'] == 'Entered' || $item['status'] == 'Checked In') {
+            // item is bid on, set to status bid
+            $values[] = 'BID';
+            $updQ .= 'status = ?,';
+            $typestr .= 's';
+        }
     }
 
     if (array_key_exists('prior', $update)) {
