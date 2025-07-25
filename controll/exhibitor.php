@@ -317,8 +317,10 @@ while ($regionL = $regionOwnerR->fetch_assoc()) {
             <div class='row'>
                 <div class='col-sm-12'>
                     <p>
-                        <strong>NOTE:</strong> When you approve requests for a space, any request from the same exhibitor that is not approved will be cancelled when you press the save button.
-                        It is necessary to approve all the spaces for an exhibitor in the same save transaction.
+                        <strong>NOTE:</strong> When you approve requests for a Space in a Region, any request in that Region,
+                        from the same exhibitor ,that is not approved will be cancelled when you press the save button.
+                        It is necessary to approve all the Spaces in a Region for an exhibitor in the same save transaction.
+                        (All of the Spaces, in that Region, for that Exhibitor will appear on the same approve request popup.)
                     </p>
                 </div>
             </div>
