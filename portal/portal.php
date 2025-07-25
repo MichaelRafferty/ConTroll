@@ -109,6 +109,7 @@ $hasWSFS = false;
 $hasNom =  false;
 $siteSelection = false;
 $hasMeeting = false;
+$hasVirtual = false;
 $tokenType = getSessionVar('tokenType');
 $hasPasskey = $tokenType == 'passkey';
 if ($hasPasskey == false) {
