@@ -3,7 +3,7 @@
 // ConTroll Registration System
 // Author: Syd Weinstein
 // Store the cart into the system using add/update/delete and create appropriate transaction records
-// Used both by mail in registration (controll/registration.php) and atcon (atcon/regpos.php)
+// Used both by mail-in registration (controll/registration.php) and atcon (atcon/regpos.php)
 
 require_once '../lib/base.php';
 require_once '../../lib/policies.php';

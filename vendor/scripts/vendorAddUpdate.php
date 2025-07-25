@@ -214,7 +214,7 @@ EOS;
             $checkR = dbSafeQuery($checkQ, 'i', array($exyID));
             if ($checkR == false || $checkR->num_rows != 1) {
                 $response['error'] = 'error';
-                $response['message'] = 'Error checkin mail in restrictions';
+                $response['message'] = 'Error checkin mail-in restrictions';
                 break;
             }
             $conflicts = $checkR->fetch_row()[0];

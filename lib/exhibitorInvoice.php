@@ -383,7 +383,7 @@ function exhibitor_showInvoice($regionYearId, $regionName, $regionSpaces, $exhib
         }
     }
     if ($info['mailin'] == 'Y' && $region['mailinFee'] > 0) {
-        echo "Mail in Fee of " . $dolfmt->formatCurrency($region['mailinFee'], $currency) . "<br/>\n";
+        echo "Mail-in Fee of " . $dolfmt->formatCurrency($region['mailinFee'], $currency) . "<br/>\n";
         $totalPrice += $region['mailinFee'];
     }
     echo "__________________________________________________________<br/>\nTotal price for $regionName spaces " . $dolfmt->formatCurrency($totalPrice, $currency) . "<br/>\n";

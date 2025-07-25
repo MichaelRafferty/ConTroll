@@ -174,12 +174,12 @@ while ($space =  $spaceR->fetch_assoc()) {
     $additionalMembershipsComputed = max($additionalMembershipsComputed, $space['additionalMemberships']);
 }
 $spaceR->free();
-// add in mail in fee if this exhibitor is using mail in this year and the fee exist
+// add in mail-in fee if this exhibitor is using mail-in this year and the fee exist
 if ($region['mailinFee'] > 0 && $exhibitor['mailin'] == 'Y') {
     $mailIn['amount'] = $region['mailinFee'];
     $mailIn['name'] = $region['name'];
     $mailIn['glNum'] = $region['mailinGLNum'];
-    $mailIn['desc'] = $region['name'] . ' Mail In Fee';
+    $mailIn['desc'] = $region['name'] . ' Mail-in Fee';
     $spacePriceComputed += $region['mailinFee'];
 }
 

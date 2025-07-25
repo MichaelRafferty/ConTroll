@@ -233,9 +233,9 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
 
         if (array_key_exists('mailInFee', $results)) {
             foreach ($results['mailInFee'] as $fee) {
-                $itemName = 'Mail in Fee for ' . $fee['name'];
+                $itemName = 'Mail-in Fee for ' . $fee['name'];
                 $itemPrice = $fee['amount'];
-                $note = 'Mail in fee';
+                $note = 'Mail-in fee';
                 $item = [
                     'uid' => 'region-' . $fee['name'],
                     'name' => mb_substr($itemName, 0, 128),

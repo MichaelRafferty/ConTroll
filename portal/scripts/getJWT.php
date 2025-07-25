@@ -235,7 +235,7 @@ EOS;
     // meeting = (later has WSFS anded with it)
     //			any type ‘full’ (
     //				except ‘access caregiver’ (hard code 622) (yuck on the hard code) OR
-    //				 ‘artist’ (mail in artist)
+    //				 ‘artist’ (mail-in artist)
     //			)
     //			OR
     //			any type ‘virtual’ OR

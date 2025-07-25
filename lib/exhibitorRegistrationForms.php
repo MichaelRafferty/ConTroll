@@ -278,8 +278,8 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                                     <div class='col-sm-9 p-0 ms-0 me-0'>
                                         <select name='mailin' id='mailin' tabindex="<?php echo $tabIndex; $tabIndex += 2;?>"
                                                 style='min-width:100% !important;'>
-                                            <option value='N'>No, (Not Mail In), On-site or Using Agent to transport and hang/collect art</option>
-                                            <option value='Y'>Yes, (Mail In), if shipping art, it will be returned to the Shipping Address</option>
+                                            <option value='N'>No, (Not Mail-in), On-site or Using Agent to transport and hang/collect art</option>
+                                            <option value='Y'>Yes, (Mail-in), if shipping art, it will be returned to the Shipping Address</option>
                                         </select>
                                     </div>
                                 </div>
@@ -552,7 +552,7 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                             <div class="row" id="creatingAccountMsg">
                                 <div class="col-sm-12">Creating an account does not guarantee space.</div>
                             </div>
-                            <!-- Page 1 - Are you a mail in Artist - display only if artist -->
+                            <!-- Page 1 - Are you a mail-in Artist - display only if artist -->
                             <div id="page1">
                                 <?php if ($portalType != 'admin') { ?>
                                     <div class="row mt-1">
@@ -575,7 +575,7 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                 </div>
                                 <div class='row mt-3'>
                                     <div class='col-sm-2'></div>
-                                    <div class='col-sm-auto p-0 ms-0 me-0'><h1 class="h4">Are You a Mail In Artist</h1></div>
+                                    <div class='col-sm-auto p-0 ms-0 me-0'><h1 class="h4">Are You a Mail-in Artist</h1></div>
                                 </div>
                                 <div class='row mt-1'>
                                     <div class='col-sm-2'>
@@ -585,8 +585,8 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                         <select name='mailin' id='mailin' tabindex="<?php echo $tabIndex; $tabIndex += 2;?>"
                                                 style="min-width:100% !important;">
                                             <option value="">--Choose Yes or No--</option>
-                                            <option value="N">No, (Not Mail In), On-site or Using Agent to transport and hang/collect art</option>
-                                            <option value="Y">Yes, (Mail In), if shipping art, it will be returned to the Shipping Address</option>
+                                            <option value="N">No, (Not Mail-in), On-site or Using Agent to transport and hang/collect art</option>
+                                            <option value="Y">Yes, (Mail-in), if shipping art, it will be returned to the Shipping Address</option>
                                         </select>
                                     </div>
                                 </div>

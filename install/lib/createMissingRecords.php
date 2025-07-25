@@ -100,7 +100,7 @@ EOS;
         logEcho('Created person 4 for Portal');
     }
 
-    // check if person 5 exists in the system (Mail In Reg)
+    // check if person 5 exists in the system (Mail-in Reg)
     $checkR = dbSafeQuery($checkSQL, 'i', array(5));
     if ($checkR === false || $checkR->num_rows == 0) {
         logEcho('Error retrieving number of people in the database, cannot continue');
@@ -112,12 +112,12 @@ EOS;
         logEcho('Person 5 exists', true);
     } else {
         // insert person 3
-        $newid = dbSafeInsert($insertPQ, 'issssssssi', array(5, 'Mail In', 'Registration', NULL, 'N', 'N', 'INTERNAL NOT FOR REGISTRATION USE', 'N', 'N'));
+        $newid = dbSafeInsert($insertPQ, 'issssssssi', array(5, 'Mail-in', 'Registration', NULL, 'N', 'N', 'INTERNAL NOT FOR REGISTRATION USE', 'N', 'N'));
         if ($newid === false) {
-            logEcho('Unable to insert Person Info 5 for Mail In');
+            logEcho('Unable to insert Person Info 5 for Mail-in');
             $errors++;
         }
-        logEcho('Created person 5 for Mail In');
+        logEcho('Created person 5 for Mail-in');
     }
 
     // check if the initial conid exists in the system

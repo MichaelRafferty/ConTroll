@@ -97,19 +97,19 @@ function draw_exhibitsConfigurationModals() {
                             </div>
                         </div>
                         <div class="row mt-2">
-                            <div class='col-sm-2'>Mail In Fee:</div>
+                            <div class='col-sm-2'>Mail-in Fee:</div>
                             <div class='col-sm-auto'>
                                 <input type='number' class='no-spinners' inputmode='numeric' id='eryMailInFee' name='eryMailInFee' min="0"/>
                             </div>
                         </div>
                         <div class="row mt-2">
-                            <div class='col-sm-2'>Mail-In Base Exhibitor Number:</div>
+                            <div class='col-sm-2'>Mail-in Base Exhibitor Number:</div>
                             <div class='col-sm-auto'>
                                 <input type='number' class='no-spinners' inputmode='numeric' id='eryMailInBase' name='eryMailInBase' min="0"/>
                             </div>
                         </div>
                         <div class="row mt-2">
-                            <div class='col-sm-2'>Mail-In Fee GL Num:</div>
+                            <div class='col-sm-2'>Mail-in Fee GL Num:</div>
                             <div class='col-sm-auto'>
                                 <input type='text' id='eryFeeGLNum' name='eryFeeGLNum' maxlength='16' size='24'/>
                             </div>

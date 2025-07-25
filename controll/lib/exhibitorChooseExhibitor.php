@@ -1,13 +1,13 @@
 <?php
     // exhibitorChooseExhibitor
-    // functions relating to choosing an exhibitor to work on for the mail in and other options
+    // functions relating to choosing an exhibitor to work on for the mail-in and other options
 
     // draw_exhibitorChooseModal(
 function draw_exhibitorChooseModal() {
     $exhibitor_conf = get_conf('vendor');
     ?>
     <!-- request -->
-    <div id='exhibitor_choose' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Choose Exhibitor for Mail-In Functions' aria-hidden='true'
+    <div id='exhibitor_choose' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Choose Exhibitor for Mail-in Functions' aria-hidden='true'
          style='--bs-modal-width: 96%;'>
         <div class='modal-dialog'>
             <div class='modal-content'>

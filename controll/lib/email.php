@@ -59,7 +59,8 @@ EOS;
 <DD>A rollover will convert your existing $conlabel membership(s) to a membership for the next $conname, at no additional cost to you.</DD>
 
 <DT><strong>Refund</strong></DT>
-<DD>For online purchases, we can refund your purchase to your original method of payment. For at con or mail in purchases, we can mail you a check to refund your membership(s). If the refund needs to be done another way, please contact $regemail so that we can discuss options. We will process the refund as soon as possible.</DD>
+<DD>For online purchases, we can refund your purchase to your original method of payment. For at con or mail-in purchases, we can mail you a check to refund 
+your membership(s). If the refund needs to be done another way, please contact $regemail so that we can discuss options. We will process the refund as soon as possible.</DD>
 </DL>
 
 <p>You can let us know your preference by visiting <a href='$url?email=$email&tid=$tid'>our Membership Cancelation Page</a> at <a href='$url'>$url</a> and entering your email address and transaction number (<strong>$tid</strong>). You can also reach the page by following links from <a href='$url2'>$conname Online Registration</a> or the <a href="$regpage">Registration page</a> on the <a href="$homepage>$conname Website</a>. If we do not hear from you by <strong>within two weeks</strong>, we will process your membership as a Rollover, and you will be pre-registered for the next $conname. Any difference between the amount paid and pre-registration rate for the next $conname will be considered a (very appreciated) tax-deductible donation to $orgabv.</p>

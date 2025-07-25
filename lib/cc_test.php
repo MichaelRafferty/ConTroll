@@ -388,9 +388,9 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                 // because it expects an array, the array of an empty element needs to be skipped
                 if ((!array_key_exists('amount', $fee)) || $fee['amount'] <= 0)
                     continue;
-                $itemName = 'Mail in Fee for ' . $fee['name'];
+                $itemName = 'Mail-in Fee for ' . $fee['name'];
                 $itemPrice = $fee['amount'];
-                $note = 'Mail in fee';
+                $note = 'Mail-in fee';
                 if (array_key_exists('glNum', $fee) && $fee['glNum'] != null && $fee['glNum'] != '')
                     $note .= ", GL: " . $fee['glNum'];
                 $item = [
