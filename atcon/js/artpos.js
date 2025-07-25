@@ -1028,7 +1028,7 @@ function updateInventoryStep(item, repeatPass) {
 
         // bid item
         if (item.status == 'Entered' || item.status == 'Checked In' || item.status == 'Removed from Show' || item.status == 'BID') {
-            // update bidder if bid and not use
+            // update bidder if bid and not user
             if (item.bidder != null && item.bidder != currentPerson.id) {
                 html += '<div class="row mt-2"><div class="col-sm-12">This item is current bid on by ' + item.bidder + ', change it to this person? ' +
                     '<select id="updateBidderYN" name="updateBidderYN"><option value="N">No</option><option value="Y">Yes</option></select>' +
