@@ -56,14 +56,17 @@ $insertTypes = "isiiiissssiisii";
 foreach ($tabledata as $row) {
     if($row['final_price'] == '') {$row['final_price'] = null;}
     if($row['bidder'] == '') {$row['bidder'] = null;}
-    if($row['location'] == '') {$row['location'] = null;}
+    if($row['location'] == null) {
+        $location = '';
+    else
+        $location = trim($row['location']);
     if($row['min_price'] == '') {$row['min_price'] = null;}
     if($row['sale_price'] == '') {$row['sale_price'] = null;}
     if($row['notes'] == '') { $row['notes'] = null;}
 
     if(($row['id'] < 0) && ($row['min_price']==null)) { $row['min_price']=$row['sale_price']; }
 
-    $paramarray = array($row['item_key'], $row['location'], $row['min_price'], $row['original_qty'], $row['quantity'],
+    $paramarray = array($row['item_key'], $location, $row['min_price'], $row['original_qty'], $row['quantity'],
         $row['sale_price'], $row['status'] , $row['title'], $row['type'], $row['material'], $row['bidder'], $row['final_price'],
         $row['notes'],
         $row['id']);
