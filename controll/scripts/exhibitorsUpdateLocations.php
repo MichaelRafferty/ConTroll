@@ -20,6 +20,8 @@ if (!array_key_exists('exhibitorRegionYearId', $_POST) || !array_key_exists('exh
 $exhibitorRegionYearId = $_POST['exhibitorRegionYearId'];
 $exhibitsRegionYearId = $_POST['exhibitsRegionYearId'];
 $locations = $_POST['locations'];
+if ($locations == null)
+    $locations = '';
 
 $upQ = <<<EOS
 UPDATE exhibitorRegionYears 
@@ -42,7 +44,7 @@ $locationQ = <<<EOS
 SELECT exRY.locations
 FROM exhibitorRegionYears exRY
 JOIN exhibitsRegionYears eRY ON exRY.exhibitsRegionYearId = eRY.id
-WHERE locations IS NOT NULL AND locations != '' AND exhibitsRegionYearId = ?;
+WHERE locations != '' AND exhibitsRegionYearId = ?;
 EOS;
 $locationR = dbSafeQuery($locationQ, 'i', array($exhibitsRegionYearId));
 $locationsUsed = '';

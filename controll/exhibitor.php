@@ -161,7 +161,8 @@ draw_exhibitsConfigurationModals();
                         <div class='col-sm-1'>Space:</div>
                         <div class='col-sm-2' id='spaceHTML'></div>
                         <div class='col-sm-9'>
-                            <input type="text" name="locations", id="locationsVal", placeholder="Enter locations separated by commas", maxlength="256" size="90"/>
+                            <input type="text" name="locations", id="locationsVal", placeholder="Enter locations separated by commas", maxlength="512"
+                                   size="90"/>
                         </div>
                     </div>
                     <div class='row mt-3'>
