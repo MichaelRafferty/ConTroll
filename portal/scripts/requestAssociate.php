@@ -124,7 +124,7 @@ SET $pfield = ?, managedReason = 'Req Email Match', updatedBy=?
 WHERE id = ?;
 EOS;
     }
-    $updCnt = dbSafeCmd($uQ, 'iii', array($loginId, $loginId, $loginId));
+    $updCnt = dbSafeCmd($uQ, 'iii', array($loginId, $loginId, $acctId));
     if ($updCnt != 1) {
         ajaxSuccess(array('status'=>'error', 'message'=>'Unable to attach, get assistance'));
     } else {
