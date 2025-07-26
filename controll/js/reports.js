@@ -62,6 +62,15 @@ function showPrompts(reportName, prefix, fileName, type, template) {
         return;
     }
 
+    if (reportTable) {
+        reportTable.destroy();
+        reportTable = null;
+    }
+    reportContentDiv.innerHTML = '';
+    reportPromptDiv.innerHTML = '';
+    clear_message();
+    clearError();
+
     prompts = reportPrompts[reportName];
     reportFields = [];
     console.log(reportName);
@@ -98,6 +107,11 @@ function showPrompts(reportName, prefix, fileName, type, template) {
 function noPrompts(reportName, prefix, fileName, type, template) {
     reportFields = null;
     reportPromptDiv.innerHTML = '';
+    if (reportTable) {
+        reportTable.destroy();
+        reportTable = null;
+    }
+    reportContentDiv.innerHTML = '';
     getRpt(reportName, prefix, fileName, type, template);
 }
 
