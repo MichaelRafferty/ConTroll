@@ -197,12 +197,7 @@ foreach ($sections as $key => $section) {
     $value = null;
     switch ($param['type']) {
         case 'config':
-            $conf = get_conf($param['section']);
-            if ($conf) {
-                if (array_key_exists($param['item'], $conf)) {
-                    $value = $conf[$param['item']];
-                }
-            }
+            $value = getConfValue($param['section'], $param['item'], null);
             break;
 
         case 'constant':

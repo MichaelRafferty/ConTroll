@@ -219,7 +219,7 @@ function drawReport(data) {
         params = {
             data: data.data,
             layout: "fitDataTable",
-            pagination: true,
+            pagination: data.data.length > 25,
             paginationSize: 25,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
         };
