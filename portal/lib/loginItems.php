@@ -299,13 +299,13 @@ function validationComplete($id, $idType, $email, $validationType, $multiple) : 
             setSessionVar('id', $id);
             setSessionVar('idType', $idType);
             setSessionVar('idSource', $validationType);
-            setSessionVar('email', $email);
             // new login reset the PHP session id
             session_regenerate_id(true);
         }
         if ($multiple != null) {
             setSessionVar('multiple', $multiple);
         }
+        setSessionVar('email', $email);
         header('location:' . $portal_conf['portalsite'] . '/portal.php');
         exit();
     }
