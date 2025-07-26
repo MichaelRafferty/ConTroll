@@ -1,5 +1,5 @@
 ;;; reg_admin.ini
-; this file contains the values that should NOT be changed by a reg-admin, but only edited by a systems admin
+; this file contains the values that should NOT be changed by a use with reg-admin privledges, but only edited by a systems admin
 ; Changing the values in this file can have consequences to the data or overall operation of Controll
 
 ;;; this section contains the default values globally that can be overritten in each following section as needed
