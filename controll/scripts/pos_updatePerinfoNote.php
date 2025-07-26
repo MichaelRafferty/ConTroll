@@ -34,12 +34,13 @@ if ($ajax_request_action != 'updatePerinfoNote') {
     exit();
 }
 
-if (array_key_exists('user_id', $_SESSION)) {
-    $user_perid = $_SESSION['user_perid'];
-} else {
+$user_id = $_POST['user_id'];
+if ($user_id != $_SESSION['user_id']) {
     ajaxError('Invalid credentials passed');
     return;
 }
+
+$user_perid = $_SESSION['user_perid'];
 
 // at present ony a manager can update a perinfo note
 if (!checkAuth($check_auth['sub'], 'reg_admin')) {
