@@ -133,9 +133,15 @@ EOS;
 // build the rights
     $nom = '';
     $vote = '';
+    $addlWSFS = getConfValue('portal', 'addlWSFS');
+    if ($addlWSFS == '')
+        $addlWSFS = [];
+    else
+        $addlWSFS = explode(',', $addlWSFS);
+
     for ($row = 0; $row < count($regs); $row++) {
         $reg = $regs[$row];
-        if ((($reg['memCategory'] == 'wsfs' || $reg['memCategory'] == 'dealer') && $reg['inTime'] == 1) || ($reg['memType'] == 'wsfsfree')
+        if ((($reg['memCategory'] == 'wsfs' || $reg['memCategory'] == 'dealer') && $reg['inTime'] == 1) || in_array($reg['memId'], $addlWSFS)
             || ($reg['memCategory'] == 'wsfsnom')) {
             $nom = 'hugo_nominate';
             break;
@@ -144,7 +150,7 @@ EOS;
     for ($row = 0; $row < count($regs); $row++) {
         $reg = $regs[$row];
         if (($reg['memCategory'] == 'wsfs' && str_contains(strtolower($reg['label']), ' only') == false) ||
-            ($reg['memCategory'] == 'dealer') || ($reg['memType'] == 'wsfsfree')) {
+            ($reg['memCategory'] == 'dealer') || in_array($reg['memId'], $addlWSFS)) {
             $vote = 'hugo_vote';
             break;
         }
@@ -244,7 +250,7 @@ EOS;
     if ($holderRegR !== false && $holderRegR->num_rows > 0) {
         while ($m = $holderRegR->fetch_assoc()) {
             // check if they have a WSFS rights membership (hasWSFS and hasNom)
-            if (($m['memCategory'] == 'wsfs' || $m['memType'] == 'wsfsfree' || $m['memCategory'] == 'dealer') && $m['status'] == 'paid') {
+            if (($m['memCategory'] == 'wsfs' || $m['memCategory'] == 'dealer' || in_array($m['memId'], $addlWSFS)) && $m['status'] == 'paid') {
                 $hasWSFS = true;
                 continue;
             }

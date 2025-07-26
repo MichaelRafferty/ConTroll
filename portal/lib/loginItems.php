@@ -368,12 +368,17 @@ EOS;
     $resp['last_name'] = $regs[0]['last_name'];
     $resp['fullName'] = $regs[0]['fullName'];
     $resp['rights'] = '';
+    $addlWSFS = getConfValue('portal', 'addlWSFS');
+    if ($addlWSFS == '')
+        $addlWSFS = [];
+    else
+        $addlWSFS = explode(',', $addlWSFS);
 
     switch (strtolower($resp['resType'])) {
         case 'nom':
             for ($row = 0; $row < count($regs); $row++) {
                 $reg = $regs[$row];
-                if ((($reg['memCategory'] == 'wsfs' || $reg['memCategory'] == 'dealer' || $reg['memType'] == 'wsfsfree') && $reg['inTime'] == 1) ||
+                if ((($reg['memCategory'] == 'wsfs' || $reg['memCategory'] == 'dealer' || in_array($reg['memId'], $addlWSFS)) && $reg['inTime'] == 1) ||
                     ($reg['memCategory'] == 'wsfsnom')) {
                     $resp['rights'] = 'hugo_nominate';
                     break;
@@ -384,7 +389,7 @@ EOS;
             for ($row = 0; $row < count($regs); $row++) {
                 $reg = $regs[$row];
                 if (($reg['memCategory'] == 'wsfs' && str_contains(strtolower($reg['label']), ' only') == false) ||
-                    $reg['memCategory'] == 'dealer' || $reg['memType'] == 'wsfsfree') {
+                    $reg['memCategory'] == 'dealer' || in_array($reg['memId'], $addlWSFS)) {
                     $resp['rights'] = 'hugo_vote';
                     break;
                 }
