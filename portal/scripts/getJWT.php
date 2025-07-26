@@ -247,6 +247,12 @@ EOS;
     //			any type ‘virtual’ OR
     //			any type ‘oneday'
     $memberships = [];
+    $addlWSFS = getConfValue('portal', 'addlWSFS');
+    if ($addlWSFS == '')
+        $addlWSFS = [];
+    else
+        $addlWSFS = explode(',', $addlWSFS);
+
     if ($holderRegR !== false && $holderRegR->num_rows > 0) {
         while ($m = $holderRegR->fetch_assoc()) {
             // check if they have a WSFS rights membership (hasWSFS and hasNom)
