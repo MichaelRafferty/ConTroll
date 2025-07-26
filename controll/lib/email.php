@@ -157,14 +157,18 @@ function ComeBackCouponEmail_HTML($test, $expirationDate) {
     $regsite = getConfValue('reg', 'server');
 
     $html = <<<EOT
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head><META http-equiv="Content-Type" content="text/html; charset=utf-8"></head><body><p>Hello #FirstName# #LastName#,</p>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head><META http-equiv="Content-Type" content="text/html; charset=utf-8"></head><body>
+<p>Hello [[FirstName]] [[LastName]],</p>
 
 <p>
 	$conlabel is almost upon us! You are receiving this email because your email address is associated with a valid registration to a prior convention, but you haven't registered in the past few years and we don't have you registered for this year's convention.
 </p>
 <p>
 	We would like to encourage you to come back this year by offering you a single use coupon you can use to get a 10% discount on all memberships.  This coupon expires on $expirationDate and you must use the link in this email to register and apply the coupon.
-	You can always register on-site, but you can save money by purchasing your membership in advance and applying this coupon at <a href="$regsite?#CouponCode#" target-"_blank">$regsite?#CouponCode#</a>. To check the status of your, or the rest of your family's, registration  you can always visit: <a href="$url/checkReg.php" target="_blank">$url/checkReg.php</a>
+	You can always register on-site, but you can save money by purchasing your membership in advance and applying this coupon at
+	 <a href="$regsite?[[CouponCode]]" target-"_blank">$regsite?[[CouponCode]]</a>. To check the status of your, or the rest of your family's, registration  
+	 you can
+	 always visit: <a href="$url/checkReg.php" target="_blank">$url/checkReg.php</a>
 </p>
 <p>
 	This year, we are again at the <a href="$hotelpage" target="_blank">$hotelname</a>, at $hoteladdr.  Please register for rooms as soon as possible as the block will be closing soon.
@@ -211,11 +215,11 @@ function ComeBackCouponEmail_TEXT($test, $expirationDate) {
     $regsite = getConfValue('reg', 'server');
 
     $text = <<<EOT
-Hello #FirstName# #LastName#,
+Hello [[FirstName]] [[LastName]],
 
 $conlabel is almost upon us! You are receiving this email because your email address is associated with a valid registration to a prior convention, but you haven't registered in the past few years and we don't have you registered for this year's convention.
  
-We would like to encourage you to come back this year by offering you a single use coupon you can use to get a 10% discount on all memberships.  This coupon expires on $expirationDate and you must use the link in this email to register and apply the coupon. You can always register on-site, but you can save money by purchasing your membership in advance and applying this coupon with at $regsite?#CouponCode#. To check the status of your, or the rest of your family's, registration  you can always visit: $url/checkReg.php
+We would like to encourage you to come back this year by offering you a single use coupon you can use to get a 10% discount on all memberships.  This coupon expires on $expirationDate and you must use the link in this email to register and apply the coupon. You can always register on-site, but you can save money by purchasing your membership in advance and applying this coupon with at $regsite?[[CouponCode]]. To check the status of your, or the rest of your family's, registration  you can always visit: $url/checkReg.php
 
 This year, we are at the same hotel which is now the $hotelname, at $hoteladdr.  Please rsgister for rooms as soon as possible as the block will be closing soon.
 

@@ -96,17 +96,29 @@ foreach ($email_array as $email) {
     $sendhtml = $emailHTML;
     if ($macroSubstitution) {
         if (array_key_exists('first_name', $email)) {
-            $sendtext = str_replace('#FirstName#', $email['first_name'], $sendtext);
-            $sendhtml = str_replace('#FirstName#', $email['first_name'], $sendhtml);
+            $sendtext = str_replace('[[FirstName]]', $email['first_name'], $sendtext);
+            $sendhtml = str_replace('[[FirstName]]', $email['first_name'], $sendhtml);
         }
         if (array_key_exists('last_name', $email)) {
-            $sendtext = str_replace('#LastName#', $email['last_name'], $sendtext);
-            $sendhtml = str_replace('#LastName#', $email['last_name'], $sendhtml);
+            $sendtext = str_replace('[[LastName]]', $email['last_name'], $sendtext);
+            $sendhtml = str_replace('[[LastName]]', $email['last_name'], $sendhtml);
+        }
+        if (array_key_exists('label', $email)) {
+            $sendtext = str_replace('[[label]]', $email['label'], $sendtext);
+            $sendhtml = str_replace('[[label]]', $email['label'], $sendhtml);
+        }
+        if (array_key_exists('createdate', $email)) {
+            $sendtext = str_replace('[[createdate]]', $email['createdate'], $sendtext);
+            $sendhtml = str_replace('[[createdate]]', $email['createdate'], $sendhtml);
+        }
+        if (array_key_exists('enddate', $email)) {
+            $sendtext = str_replace('[[enddate]]', $email['enddate'], $sendtext);
+            $sendhtml = str_replace('[[enddate]]', $email['enddate'], $sendhtml);
         }
         if (array_key_exists('guid', $email)) {
             $cc = 'offer=' . base64_encode_url($code . '~!~' . $email['guid']);
-            $sendtext = str_replace('#CouponCode#', $cc, $sendtext);
-            $sendhtml = str_replace('#CouponCode#', $cc, $sendhtml);
+            $sendtext = str_replace('[[CouponCode]]', $cc, $sendtext);
+            $sendhtml = str_replace('[[CouponCode]]', $cc, $sendhtml);
         }
     }
     try {

@@ -65,6 +65,25 @@ $response['test'] = $test;
 $macroSubstitution = false;
 
 switch ($email_type) {
+case 'expire':
+    $emailQ = <<<EOQ
+    SELECT p.first_name, p.email_addr AS email, p.id, GROUP_CONCAT(m.label SEPARATOR ', ') AS label, 
+           DATE_FORMAT(min(r.create_date), '%Y-%m-%d') AS createdate,
+           DATE_FORMAT(min(m.enddate), '%Y-%m-%d') AS enddate 
+    FROM reg r
+    JOIN perinfo p ON p.id = r.perid
+    JOIN memLabel m ON m.id = r.memId
+    WHERE r.status = 'unpaid' AND r.conid >= ? AND DATEDIFF(now(), m.enddate) < 60
+    GROUP BY p.first_name, p.email_addr, p.id
+EOQ;
+    $typestr = 'i';
+    $paramarray = array($conid);
+    $macroSubstitution = true;
+    $email_text = returnCustomText('expire/text');
+    $email_html = returnCustomText('expire/html');
+    $email_subject = "Reminder: You have unpaid memberships that will expire soon";
+    break;
+
 case 'reminder':
     $emailQ = <<<EOQ
 SELECT DISTINCT P.email_addr AS email
@@ -76,8 +95,8 @@ ORDER BY email;
 EOQ;
     $typestr = 'i';
     $paramarray = array($conid);
-    $email_text = replaceConfigTokens(returnCustomText('reminder/text'));
-    $email_html = replaceConfigTokens(returnCustomText('reminder/html'));
+    $email_text = returnCustomText('reminder/text');
+    $email_html = returnCustomText('reminder/html');
     $email_subject = "Reminder: $label Starts Soon";
     break;
 
@@ -105,8 +124,8 @@ ORDER BY email;
 EOQ;
     $typestr = 'ii';
     $paramarray = array($priorcon, $conid);
-    $email_text = replaceConfigTokens(returnCustomText('marketing/text'));
-    $email_html = replaceConfigTokens(returnCustomText('marketing/html'));
+    $email_text = returnCustomText('marketing/text');
+    $email_html = returnCustomText('marketing/html');
     $email_subject = "We miss you! Please come back to $conname";
     break;
 
@@ -231,15 +250,16 @@ if ($response['numEmails'] == 0) {
 $email_array=array();
 $data_array=array();
 
-if ($test) {
-    $email_test[] = array('email' => $email, 'first_name' => 'First', 'last_name' => 'Last', 'guid' => guidv4());
-    $response['emailTest'] = $email_test;
-}
-
 while($addr =  $emailR->fetch_assoc()) {
    $email_array[] = $addr;
 }
 
+if ($test) {
+    $email_test = [];
+    $email_array[0]['email'] = $email;
+    $email_test[] = $email_array[0];
+    $response['emailTest'] = $email_test;
+}
 
 $response['emailText'] = $email_text;
 $response['emailHTML'] = $email_html;

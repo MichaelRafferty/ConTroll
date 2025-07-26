@@ -1,6 +1,4 @@
 <?php
-global $db_ini;
-
 require_once "lib/base.php";
 require_once "../lib/notes.php";
 //initialize google session
@@ -806,6 +804,9 @@ $config_vars['source'] = 'regstaff';
                 <button class="btn btn-primary btn-sm" onclick="window.location.href='reports/regReport.php';">Download Reg Report</button>
             </div>
             <?php if ($reg_admin) { ?>
+            <div class='col-sm-auto p-2'>
+                <button class='btn btn-primary btn-sm' onclick="sendEmail('expire')">Send Expiring Reminder Email</button>
+            </div>
             <div class="col-sm-auto p-2">
                 <button class="btn btn-primary btn-sm" onclick="sendEmail('marketing')">Send Marketing Email</button>
             </div>
@@ -815,7 +816,7 @@ $config_vars['source'] = 'regstaff';
             <div class="col-sm-auto p-2">
                 <button class="btn btn-primary btn-sm" onclick="sendEmail('reminder')">Send Attendance Reminder Email</button>
             </div>
-            <?php if (array_key_exists('survey_url', $db_ini['con'])) { ?>
+            <?php if (getConfValue('con', 'survey_url') != '') { ?>
             <div class="col-sm-auto p-2">
                 <button class="btn btn-primary btn-sm" onclick="sendEmail('survey')" disabled>Send Survey Email</button>
             </div>
