@@ -22,8 +22,6 @@ if (!array_key_exists('user_id', $_SESSION)) {
     ajaxError('Invalid credentials passed');
     return;
 }
-$user_id = $_SESSION['user_id'];
-
 load_email_procs();
 
 $test = true;
