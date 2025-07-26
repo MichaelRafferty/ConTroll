@@ -35,7 +35,7 @@ if ($ajax_request_action != 'updatePerinfoNote') {
 }
 
 if (array_key_exists('user_id', $_SESSION)) {
-    $user_id = $_SESSION['user_id'];
+    $user_perid = $_SESSION['user_perid'];
 } else {
     ajaxError('Invalid credentials passed');
     return;
@@ -73,7 +73,7 @@ UPDATE perinfo
 SET open_notes = ?, updatedBy=?
 WHERE id = ?;
 EOS;
-$num_upd = dbSafeCmd($updSQL, 'sii', array($notes, $user_id, $perid));
+$num_upd = dbSafeCmd($updSQL, 'sii', array($notes, $user_perid, $perid));
 if ($num_upd === false) {
     $response['error'] = "Unable to update notes";
 } else {
