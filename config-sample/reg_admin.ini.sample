@@ -21,7 +21,7 @@ suspendreason="while we examine the impact of recent developments" ; can overrid
 ;;; has the event been canceled, 0 = no, 1 = yes
 cancelled=0 ; can override in each app section
 ;;; as of what date is it cancelled, fill in the date below
-cancel_date="Day, Month Day" ; can override in each app section
+cancel_date="YYYY-MM-DD" ; can override in each app section
 ;; testemail: if set, and test=1, then all emails from the system will be forced to go to the testemail email address
 ; testemail=
 ; server is the URL to the main reg/portal of the ConTroll system
@@ -87,7 +87,7 @@ web='/...PathtoLogDirectory.../web-reg'
 ;; suspended=0
 ;; suspendreason="while we examine the impact of COVID-19"
 ;; cancelled=0
-;; cancel_date="Day, Month Day"
+;; cancel_date="YYYY-MM-DD"
 ;; server="http://reg"
 ;; testemail: if set, and test=1, then all emails from the system will be forced to go to the testemail email address
 ;; testemail=
@@ -123,7 +123,7 @@ taxidlabel="NJ Sales Tax ID#"
 ;; suspended=0
 ;; suspendreason="while we examine the impact of COVID-19"
 ;; cancelled=0
-;; cancel_date="Day, Month Day"
+;; cancel_date="YYYY-MM-DD"
 ;; server="http://reg"
 
 ;; membership portal items
