@@ -6,7 +6,7 @@
 $cipherParams = null;
 $attachParams = null;
 $jwtSigningKey = null;
-function getLoginCipher() {
+function getLoginCipher() : array {
     global $cipherParams;
 
     $con = get_conf('con');
@@ -25,7 +25,7 @@ function getLoginCipher() {
     return $cipherParams;
 }
 
-function getAttachCipher() {
+function getAttachCipher() : array {
     global $attachParams;
 
     $attachParams = getLoginCipher();
@@ -48,7 +48,7 @@ function decryptCipher($string, $doJson = false) {
     return $decValue;
 }
 
-function encryptCipher($string, $doURLencode = false) {
+function encryptCipher($string, $doURLencode = false) : string {
     global $cipherParams;
 
     if ($cipherParams == null) {
@@ -77,7 +77,7 @@ function decryptAttach($string, $doJson = false) {
     return $decValue;
 }
 
-function encryptAttach($string, $doURLencode = false) {
+function encryptAttach($string, $doURLencode = false) : string {
     global $attachParams;
 
     if ($attachParams == null) {
@@ -92,7 +92,7 @@ function encryptAttach($string, $doURLencode = false) {
 }
 
 //  JWT related functions for cross system passing
-function setJWTKey($key) {
+function setJWTKey($key) : void {
     global $jwtSigningKey;
 
     if ($key == null || $key == '') {
@@ -122,7 +122,7 @@ function genJWT($payload): string {
     return $jwt;
 }
 
-function checkJWT($jwt) {
+function checkJWT($jwt) : bool {
     global $jwtSigningKey;
 
     if ($jwtSigningKey == null) {

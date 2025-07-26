@@ -1,6 +1,8 @@
 Encryption Usage
 
-Encryption should be used for:
+There are two types of Encryption used in ConTroll: Internal token passing encryption and external parameter signing encryption
+
+Internal Encryption should be used for:
     Tokens - login, email, attach
     Login Strings - Redirect, account switching, email match subaccount choice
     Oauth requests/responses to the ConTroll Oauth2 Server
@@ -33,5 +35,19 @@ Cipher.php module:
         encryptAttach(string, doURLencode: bool) : string
             encrypts the string using the attach cipher and if doURLencode is true, performs a urlencode on the encoded string
 
+External Signing with JWT
 
+To pass our values to an external site, the parameter block method of a signed JWT is used.  This does not hide the values passed, so if
+they need to be hidden, another API method must be used.
+
+The following routines are used to support the JWT methods:
+
+Externally Referenced Functions:
+    setJWTKey(key) : void
+        sets the key for the signing of the token.  If the key is null or an empty string, a default key is used.
+    genJWT(payload): string
+        generates a JWT with the contents of the payload and the signature
+    checkJWT(jwt) : bool
+        passed a complete JWT argument, parses it and checks the arguments against the signature.  Returns pass/fail (true/false) on the
+            signature check
 
