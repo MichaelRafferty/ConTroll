@@ -165,7 +165,7 @@ foreach ($data as $index => $row) {
         $data_errors .= "Item: " . $row['item_key'] . ", Min Bid is required<br/>";
         $data_marks[] = [ 'item_key' => $row['item_key'], 'field' => 'min_price' ];
         continue; // art need min bid
-    } else if (!array_key_exists('min_price', $row)) {
+    } else if ((!array_key_exists('min_price', $row)) && array_key_exists('sale_price', $row)) {
         $row['min_price'] = $row['sale_price'];
     }
 
