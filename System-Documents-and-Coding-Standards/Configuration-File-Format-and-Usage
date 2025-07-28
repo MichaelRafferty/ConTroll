@@ -6,15 +6,16 @@ reg_secret.ini - Contains all usernames, passwords, api id's and secrets, and ot
     file should not appear in any other configuration file.  They should be 'complete' within this file.
     (During the migration to the three file format from the single file format, reg_secret is loaded first and can be overridden by the
         other files.  In a future release it will be loaded last and its sections will overwrite the complete sections loaded by the other files.)
-reg_admin.ini - Contains all items that should not be changed on a day to day basis by Reg Admins.  This file is editable by those with
-    shell access to the config directory.
+reg_admin.ini - Contains all items that should not be changed on a day to day basis by Reg Admins in the controll application.
+    This file is editable by those with shell access to the config directory.
 reg_conf.ini - Contains all other item, such as email addresses, option usage, and text additions that the Reg Admin is allowed to edit.
     A future release will add the ability for the reg-admin's to edit the contents of this file in the website.
 
 All of these files are found in the config directory and samples of the current possibe contents are in the config-sample directory.
 
 ConTroll uses PHP's parse_ini_file() function to read and place the contents into an associative array. All 3 files are read and merged into
-    one array by the global library function loadConfFile() which should be called after any
+    one array by the global library function loadConfFile() which should be called after requiring global.php.  Since the HTTPS redirect flag
+    is in the configiuration file, this should be done before checking for the redirect for HTTPS code.
 
 File Formats:
     All files should be of the following format:
