@@ -1,15 +1,13 @@
 <?php
 require_once(__DIR__ . '/../../lib/global.php');
 ## Pull INI for variables
-global $db_ini, $monthLengths, $oneYearInterval;
+global $monthLengths, $oneYearInterval;
 //              XXX, Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec
 $monthLengths = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 $oneYearInterval = date_interval_create_from_date_string('1 year');
 
-if (!$db_ini) {    
-    $db_ini = loadConfFile();
-    $include_path_additions = PATH_SEPARATOR . $db_ini['client']['path'] . "/../Composer";
-}
+if (loadConfFile())
+    $include_path_additions = PATH_SEPARATOR . getConfValue('client', 'path', '.') . '/../Composer';
 
 if (getConfValue('reg', 'https') <> 0) {
     if(!isset($_SERVER['HTTPS']) or $_SERVER["HTTPS"] != "on") {
@@ -42,8 +40,6 @@ function bounce_page($new_page) {
  * return current status of google session
  */
 function google_init($mode) {
-  global $db_ini;
-
   // bypass for testing on Development PC
   if (stripos(__DIR__, "/Users/syd/") !== false && $_SERVER['SERVER_ADDR'] == "127.0.0.1") {
       if(isset($_REQUEST['logout'])) {
@@ -67,7 +63,7 @@ function google_init($mode) {
   $state = $_SERVER['PHP_SELF'];
 
   $client = new Google\Client();
-  $client->setAuthConfigFile($db_ini['google']['json']);
+  $client->setAuthConfigFile(getConfValue('google','json'));
   $client->addScope('email');
   $client->setAccessType('offline');
   $client->setState($state);

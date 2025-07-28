@@ -1,5 +1,4 @@
 9<?php
-global $db_ini;
 require_once "lib/base.php";
 require_once "../lib/term__load_methods.php";
 require_once('../lib/log.php');

@@ -1,6 +1,4 @@
 <?php
-global $db_ini;
-
 require_once "../lib/base.php";
 require_once "../../lib/global.php";
 require_once "../lib/email.php";

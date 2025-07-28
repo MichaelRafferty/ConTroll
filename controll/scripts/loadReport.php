@@ -1,6 +1,5 @@
 <?php
 // loadReport - load a .rpt type processor report and output same
-global $db_ini;
 require_once "../lib/base.php";
 require_once "../../lib/log.php";
 

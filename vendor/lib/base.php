@@ -1,11 +1,10 @@
 <?php
 // exhibitor - base.php - base functions for exhibitor reg
 require_once(__DIR__ . '/../../lib/global.php');
-global $db_ini, $appSessionPrefix;
-if (!$db_ini) {
-    $db_ini = loadConfFile();
-    $include_path_additions = PATH_SEPARATOR . $db_ini['client']['path'] . '/../Composer';
-}
+global $appSessionPrefix;
+
+if (loadConfFile())
+    $include_path_additions = PATH_SEPARATOR . getConfValue('client', 'path', '.') . '/../Composer';
 
 if (getConfValue('reg', 'https') <> 0) {
     if (!isset($_SERVER['HTTPS']) or $_SERVER['HTTPS'] != 'on') {

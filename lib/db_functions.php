@@ -1,12 +1,10 @@
 <?php
 
 // This is the common db_functions for all of ConTroll
-global $dbObject, $db_ini, $logdest;
+global $dbObject, $logdest;
 
 $dbObject = null;
-if (!$db_ini) {
-    $db_ini = loadConfFile();
-}
+loadConfFile();
 $logdest = getConfValue('log', 'web');
 
 // always set the default timezone for PHP

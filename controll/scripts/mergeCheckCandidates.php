@@ -1,5 +1,4 @@
 <?php
-global $db_ini;
 
 require_once "../lib/base.php";
 

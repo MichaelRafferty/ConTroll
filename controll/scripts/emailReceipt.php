@@ -1,6 +1,4 @@
 <?php
-global $db_ini;
-
 require_once "../lib/base.php";
 require_once(__DIR__ . '/../../lib/email__load_methods.php');
 

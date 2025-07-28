@@ -9,10 +9,7 @@ $validstate = ['AA','AE','AL','AK','AP','AS','AZ','AR','CA','CO','CT','DE','DC',
                'ME','MH','MD','MA','MI','MN','MS','MO','MP','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PW','PA','PR','RI',
                'SC','SD','TN','TX','UT','VT','VI','VA','WA','WV','WI','WY'];
 
-global $db_ini;
-if (!$db_ini) {
-    $db_ini = $db_ini = loadConfFile();
-}
+loadConfFile();
 
 function getUSPSV3Token() {
     global $uspsAPIToken, $uspsAuthorization, $uspsKey;

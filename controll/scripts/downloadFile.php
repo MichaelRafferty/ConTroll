@@ -1,6 +1,5 @@
 <?php
 // downloadCSV - take an associative array passed in and a file name, and output that
-global $db_ini;
 require_once "../lib/base.php";
 require_once "../../lib/outputFile.php";
 

@@ -1,10 +1,8 @@
 <?php
 ## Pull INI for variables
 require_once('../../lib/global.php');
-global $db_ini;
-if (!$db_ini) {
-    $db_ini = loadConfFile();
-}
+
+loadConfFile();
 
 if (getConfValue('reg','https') <> 0) {
     if(!isset($_SERVER['HTTPS']) or $_SERVER["HTTPS"] != "on") {

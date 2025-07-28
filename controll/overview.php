@@ -1,5 +1,4 @@
 <?php
-global $db_ini;
 require_once "lib/base.php";
 //initialize google session
 $need_login = google_init("page");

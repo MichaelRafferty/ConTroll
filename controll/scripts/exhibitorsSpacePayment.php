@@ -5,9 +5,6 @@
 // process the payment of space and memberships from the exhibitor tab of controll
 //     if payment type != offline credit card - create order and payment information in credit card syste,
 //     if payment succeeds, create/update all the elements in the database.
-
-global $db_ini;
-
 require_once '../lib/base.php';
 require_once '../../lib/log.php';
 require_once('../../lib/cc__load_methods.php');

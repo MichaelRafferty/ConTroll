@@ -1,12 +1,9 @@
 <?php
 require_once(__DIR__ . '/../../lib/global.php');
 // portal - base.php - base functions for membership portal
-global $db_ini;
 
-if (!$db_ini) {
-    $db_ini = loadConfFile();
-    $include_path_additions = PATH_SEPARATOR . $db_ini['client']['path'] . '/../Composer';
-}
+if (loadConfFile())
+    $include_path_additions = PATH_SEPARATOR . getConfValue('client', 'path', '.') . '/../Composer';
 
 if (getConfValue('reg', 'https') <> 0) {
     if (!isset($_SERVER['HTTPS']) or $_SERVER['HTTPS'] != 'on') {

@@ -3,8 +3,11 @@
 // functions useful everywhere in the reg system
 
 // load the configuration file
-function loadConfFile(): false|array {
+function loadConfFile(): bool {
     global $db_ini;
+
+    if ($db_ini != null)  // already loaded
+        return false;
 
     // localize the path, try going up a couple of directories
     $path = __DIR__ . '/../config';
@@ -50,7 +53,7 @@ function loadConfFile(): false|array {
             }
         }
     }
-    return $db_ini;
+    return true;
 }
 
 // older function to get an entire conf section, but it doesn't handle global overrides,

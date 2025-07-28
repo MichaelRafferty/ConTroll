@@ -1,12 +1,10 @@
 <?php
 require_once(__DIR__ . '/../../lib/global.php');
 // portal - base.php - base functions for membership portal
-global $db_ini, $appSessionPrefix;
+global $appSessionPrefix;
 
-if (!$db_ini) {
-    $db_ini = loadConfFile();
-    $include_path_additions = PATH_SEPARATOR . $db_ini['client']['path'] . '/../Composer';
-}
+if (loadConfFile())
+    $include_path_additions = PATH_SEPARATOR . getConfValue('client', 'path', '.') . '/../Composer';
 
 if (getConfValue('reg', 'https') <> 0) {
     if (!isset($_SERVER['HTTPS']) or $_SERVER['HTTPS'] != 'on') {
@@ -71,7 +69,6 @@ EOF;
 }
 
 function portalPageInit($page, $info, $css, $js, $refresh = false) {
-    global $db_ini;
     global $portalJSVersion, $libJSversion, $controllJSversion, $globalJSversion, $atJSversion, $exhibitorJSversion;
 
 
@@ -91,7 +88,7 @@ function portalPageInit($page, $info, $css, $js, $refresh = false) {
         <html lang="en">
         <head>
             <meta charset="utf-8"/>
-            <title><?php echo $title . '--' . $db_ini['con']['conname']?> Reg</title>
+            <title><?php echo $title . '--' . getConfValue('con','conname', 'Missing-Conname')?> Reg</title>
             <link rel='icon' type='image/x-icon' href='/images/favicon.ico'>
             <link href='css/style.css' rel='stylesheet' type='text/css' />
             <link href='<?php echo $includes['jquicss'];?>' rel='stylesheet' type='text/css' />

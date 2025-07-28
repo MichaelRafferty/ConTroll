@@ -1,6 +1,4 @@
 <?php
-global $db_ini;
-
 // build the missing current year and the required new year items for ConTroll setup
 // registration items next year
 //      first check for conlist entries and build conid + 1 if not found

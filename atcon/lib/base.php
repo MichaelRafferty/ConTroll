@@ -2,12 +2,10 @@
 ## Pull INI for variables
     require_once(__DIR__ . '/../../lib/global.php');
 // atcon - base.php - base functions for on-site actions
-    global $db_ini, $appSessionPrefix;
+    global $appSessionPrefix;
 
-    if (!$db_ini) {
-        $db_ini = loadConfFile();
-        $include_path_additions = PATH_SEPARATOR . $db_ini['client']['path'] . '/../Composer';
-    }
+    if (loadConfFile())
+        $include_path_additions = PATH_SEPARATOR . getConfValue('client', 'path', '.') . '/../Composer';
 
     if (getConfValue('reg', 'https') <> 0) {
     if (!isset($_SERVER['HTTPS']) or $_SERVER['HTTPS'] != 'on') {
