@@ -3,9 +3,7 @@
 // checks for the required perinfo records and creates the initial admin if needed
 //  options: the array returned by getoptions.
 function createMissingRecords($options) : int {
-    global $db_ini;
-
-    $conid = $db_ini['con']['id'];
+    $conid = getConfValue('con','id');
     $errors = 0;
     logEcho('Creating missing records in the database');
 
@@ -18,7 +16,7 @@ EOS;
 
     $insertPQ = <<<EOS
 INSERT INTO perinfo(id, first_name, last_name, email_addr, banned, active, open_notes, contact_ok, share_reg_ok)
-VALUES (?,?,?,?,?,?,?,?,?,?);
+VALUES (?,?,?,?,?,?,?,?,?);
 EOS;
 
     $insertUQ = <<<EOS
@@ -140,8 +138,8 @@ VALUES(?, ?, ?, ?, ?, ?);
 EOS;
         $params = array(
             $conid,
-            $db_ini['con']['conname'] . $conid,
-            $db_ini['con']['label'],
+            getConfValue('con', 'conname', 'Missing-') . $conid,
+            getConfValue('con', 'label', 'Missing Label'),
             'Y',
             '1900-01-01',
             '2099-12-31'
