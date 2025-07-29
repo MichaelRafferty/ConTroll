@@ -6,23 +6,27 @@ function validateConfigFile($options) : int {
     global $configData;  // this is specific to walking the configuration, it needs $configData and will need to track it's new name
     
     $sectionsFound = [
-        'mysql' => false,
-        'con' => false,
-        'debug' => false,
-        'reg' => false,
+        /* 'api' => false, API is optional, and a future development */
         'atcon' => false,
-        'vendor' => false,
-        'client' => false,
-        'google' => false,
         'cc' => false,
-        'log' => false,
+        'client' => false,
+        'con' => false,
+        'controll' => false,
+        'debug' => false,
         'email' => false,
-        'artshow' => false,
-        'control' => false,
+        'global' => false,
+        'google' => false,
+        'local' => false,
+        'log' => false,
+        'mysql' => false,
+        'portal' => false,
+        'reg' => false,
+        'usps' => false,
+        'vendor' => false,
     ];
     
     $errors = 0;
-    logEcho("Validating reg_conf.ini");
+    logEcho("Validating configuration file merge of reg_conf.ini, reg_admin.ini and reg_secret.ini");
 
     foreach($configData as $section => $presentflag) {
         $sectionsFound[$section] = true;
