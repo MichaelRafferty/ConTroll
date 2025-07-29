@@ -2,6 +2,8 @@
 //  global.php
 // functions useful everywhere in the reg system
 
+// this is the configuration file array, and should only be referenced in this file.
+global $db_ini;
 // load the configuration file
 function loadConfFile(): bool {
     global $db_ini;
@@ -24,40 +26,51 @@ function loadConfFile(): bool {
 
     // our config files are only two level
     // load admin file
-    $db_ini = parse_ini_file($path . '/reg_admin.ini', true);
-    if ($db_ini === false)
+    $adminFile = $path . '/reg_admin.ini';
+    $confFile = $path . '/reg_conf.ini';
+    $secretFile = $path . '/reg_secret.ini';
+    if (is_readable($adminFile)) {
+        $db_ini = parse_ini_file($path . '/reg_admin.ini', true);
+        if ($db_ini === false)
+            $db_ini = [];
+    } else {
         $db_ini = [];
+    }
     // now merge/override in config file
-    $db_conf = parse_ini_file($path . '/reg_conf.ini', true);
-    if ($db_conf !== false) {
-        foreach ($db_conf as $section => $values) {
-            if (is_array($values)) {
-                foreach ($values as $key => $value) {
-                    $db_ini[$section][$key] = $value;
+    if (is_readable($confFile)) {
+        $db_conf = parse_ini_file($path . '/reg_conf.ini', true);
+        if ($db_conf !== false) {
+            foreach ($db_conf as $section => $values) {
+                if (is_array($values)) {
+                    foreach ($values as $key => $value) {
+                        $db_ini[$section][$key] = $value;
+                    }
+                } else {
+                    $db_ini[$section] = $values;
                 }
-            } else {
-                $db_ini[$section] = $values;
             }
         }
     }
-    // now override secret file
-    $db_conf = parse_ini_file($path . '/reg_secret.ini', true);
-    if ($db_conf !== false) {
-        foreach ($db_conf as $section => $values) {
-            if (is_array($values)) {
-                foreach ($values as $key => $value) {
-                    $db_ini[$section][$key] = $value;
+    if (is_readable($secretFile)) {
+        // now override secret file
+        $db_conf = parse_ini_file($path . '/reg_secret.ini', true);
+        if ($db_conf !== false) {
+            foreach ($db_conf as $section => $values) {
+                if (is_array($values)) {
+                    foreach ($values as $key => $value) {
+                        $db_ini[$section][$key] = $value;
+                    }
+                } else {
+                    $db_ini[$section] = $values;
                 }
-            } else {
-                $db_ini[$section] = $values;
             }
         }
     }
     return true;
 }
 
-// older function to get an entire conf section, but it doesn't handle global overrides,
-// should be reserved only for things without overrides
+// older depreciated function to get an entire conf section, but it doesn't handle global overrides,
+// should be reserved only for things without overrides, and perhaps phased out entirely
 function get_conf($name) {
     global $db_ini;
     if (array_key_exists($name, $db_ini))
