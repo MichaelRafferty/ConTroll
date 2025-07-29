@@ -48,11 +48,14 @@ File Contents:
         Specific to an app within ConTroll
 
 Using Configuration File Values:
-    Use of the globl $db_ini is discouraged.  The name is historical to when the db_functions file loaded the configuration parameters.
-        It will be renamed in a future release.  It is now loaded by loadConfFile() in /lib/global.php.  Thus the require once for that file
-        must preceed any require on db_functions (which will load it if not already loaded as that file is loaded) or use of any
-        configuration file values. If you need a configuration file value before db_functions is loaded you must call that function yourself.
-        (All of the base.php files should already be doing this so they can do the HTTPS redirects as needed.
+    Use of the globl $db_ini is depreciated and no longer available.  The name was historical to when the db_functions file
+        loaded the configuration parameters.
+
+    It is now loaded by loadConfFile() in /lib/global.php.
+        The PHP require once for that file must preceed any require or use of any configuration file values.
+        Before you use any configuration file value you must call loadConfFile().
+        This function returns true if the file was loaded and false if it's called a second time and the file was already loaded.
+        (All of the base.php files are already be doing this so they can do the HTTPS redirects as needed.)
 
     If you have need for any configuration file value that appears in both the [global] and a [section] override, you must use the function
     getConfValue(section, key, defaultValue = '') function.
@@ -67,6 +70,6 @@ Using Configuration File Values:
     If you only need one or two keys in your function, using the getConfValue is preferred because it avoids having to code all the
         array_key_exists protections for keys not actually in this conventions configuration file.
 
-    If you need many keys from a section, the get_conf(section) call is still provided, which returns an associate array of the section.
-
-
+    If you need many keys from a section, the get_conf(section) call is still provided, which returns an associate array of the section,
+        but it is depreciated and should be avoided. The minimal amount of CPU overhead calling getConfValue allows the isolation of the
+        contents of the configuration array from normal PHP code.
