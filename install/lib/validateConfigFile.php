@@ -3,7 +3,7 @@
 // validate remainder of the config file, except for mysql
 //  options: the array returned by getoptions.
 function validateConfigFile($options) : int {
-    global $db_ini;
+    global $db_ini;  // this is specific to walking the configuration, it needs $db_ini and will need to track it's new name
     
     $sectionsFound = [
         'mysql' => false,
