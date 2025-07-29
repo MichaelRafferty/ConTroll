@@ -91,7 +91,7 @@ if (array_key_exists('o', $options)) {
     $mode = 'a';
     echo "Logfile is being appended to $siteName/InstallSetup.log" . PHP_EOL;
 }
-
+loadConfFile();
 $logFile = fopen('../../InstallSetup.log', $mode);
 fwrite($logFile, PHP_EOL . PHP_EOL . date('Y-m-d H:i:s') . ": Start of $systemName" . PHP_EOL . "Git Depo Path: $siteName/$depoName" . PHP_EOL . PHP_EOL);
 fwrite($logFile, "PHP Command Line Version: " . $phpVersion . PHP_EOL . $phpinfo . PHP_EOL . PHP_EOL);
