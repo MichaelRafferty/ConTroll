@@ -3,7 +3,7 @@
 // validate remainder of the config file, except for mysql
 //  options: the array returned by getoptions.
 function validateConfigFile($options) : int {
-    global $db_ini;  // this is specific to walking the configuration, it needs $db_ini and will need to track it's new name
+    global $configData;  // this is specific to walking the configuration, it needs $configData and will need to track it's new name
     
     $sectionsFound = [
         'mysql' => false,
@@ -24,12 +24,12 @@ function validateConfigFile($options) : int {
     $errors = 0;
     logEcho("Validating reg_conf.ini");
 
-    foreach($db_ini as $section => $presentflag) {
+    foreach($configData as $section => $presentflag) {
         $sectionsFound[$section] = true;
         if ($section == 'mysql')
             continue; // already checked this one first
 
-        $cfg = $db_ini[$section];
+        $cfg = $configData[$section];
         $required = [];
         $warn = [];
         $filepath = [];

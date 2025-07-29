@@ -3,12 +3,12 @@
 // functions useful everywhere in the reg system
 
 // this is the configuration file array, and should only be referenced in this file.
-global $db_ini;
+global $configData;
 // load the configuration file
 function loadConfFile(): bool {
-    global $db_ini;
+    global $configData;
 
-    if ($db_ini != null)  // already loaded
+    if ($configData != null)  // already loaded
         return false;
 
     // localize the path, try going up a couple of directories
@@ -30,11 +30,11 @@ function loadConfFile(): bool {
     $confFile = $path . '/reg_conf.ini';
     $secretFile = $path . '/reg_secret.ini';
     if (is_readable($adminFile)) {
-        $db_ini = parse_ini_file($path . '/reg_admin.ini', true);
-        if ($db_ini === false)
-            $db_ini = [];
+        $configData = parse_ini_file($path . '/reg_admin.ini', true);
+        if ($configData === false)
+            $configData = [];
     } else {
-        $db_ini = [];
+        $configData = [];
     }
     // now merge/override in config file
     if (is_readable($confFile)) {
@@ -43,10 +43,10 @@ function loadConfFile(): bool {
             foreach ($db_conf as $section => $values) {
                 if (is_array($values)) {
                     foreach ($values as $key => $value) {
-                        $db_ini[$section][$key] = $value;
+                        $configData[$section][$key] = $value;
                     }
                 } else {
-                    $db_ini[$section] = $values;
+                    $configData[$section] = $values;
                 }
             }
         }
@@ -58,10 +58,10 @@ function loadConfFile(): bool {
             foreach ($db_conf as $section => $values) {
                 if (is_array($values)) {
                     foreach ($values as $key => $value) {
-                        $db_ini[$section][$key] = $value;
+                        $configData[$section][$key] = $value;
                     }
                 } else {
-                    $db_ini[$section] = $values;
+                    $configData[$section] = $values;
                 }
             }
         }
@@ -72,24 +72,24 @@ function loadConfFile(): bool {
 // older depreciated function to get an entire conf section, but it doesn't handle global overrides,
 // should be reserved only for things without overrides, and perhaps phased out entirely
 function get_conf($name) {
-    global $db_ini;
-    if (array_key_exists($name, $db_ini))
-        return $db_ini[$name];
+    global $configData;
+    if (array_key_exists($name, $configData))
+        return $configData[$name];
     return null;
 }
 
 // get a specific value from the config file section, using [global] for defaults if not set
 function getConfValue($section, $key, $default = '') : null|string {
-    global $db_ini;
+    global $configData;
 
-    if (array_key_exists($section, $db_ini)) {
-        if (array_key_exists($key, $db_ini[$section])) {
-            return $db_ini[$section][$key];
+    if (array_key_exists($section, $configData)) {
+        if (array_key_exists($key, $configData[$section])) {
+            return $configData[$section][$key];
         }
     }
-    if (array_key_exists('global', $db_ini)) {
-        if (array_key_exists($key, $db_ini['global'])) {
-            return $db_ini['global'][$key];
+    if (array_key_exists('global', $configData)) {
+        if (array_key_exists($key, $configData['global'])) {
+            return $configData['global'][$key];
         }
     }
 
