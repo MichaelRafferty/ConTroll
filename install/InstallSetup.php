@@ -9,7 +9,6 @@ require_once('lib/createMissingTables.php');
 require_once('lib/createMissingRecords.php');
 require_once('lib/checkTableDML.php');
 global $dbObject;
-global $db_ini;
 global $logFile;
 global $options;
 // setup parameters
