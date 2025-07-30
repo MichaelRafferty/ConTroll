@@ -585,7 +585,7 @@ if ($virtualURL != '') {
         $VirtualButtonTxt = $con['label'] . 'Virtual Portal';
 
     if (!$hasVirtual) {
-        $VirtualButton .= '<span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="top" ' .
+        $VirtualButton .= '<span class="d-inline-block h-100" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="top" ' .
             'data-bs-title="Add and pay for ' . ($worldCon ? "a WSFS and " : "") . 'an attending or virtual membership to be able to attend the virtual convention.">';
         }
 
