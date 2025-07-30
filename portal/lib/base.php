@@ -147,9 +147,9 @@ function portalPageInit($page, $info, $css, $js, $refresh = false) {
                     <div class='container-fluid'>
                         <div class='row'>
                             <div class='col-sm-12'>
-                                <h2 class='title'>
+                                <h1 class='title size-h2'>
                                         <?php echo $label; ?> Membership Portal for <?php echo $title; ?>
-                                </h2>
+                                </h1>
                             </div>
                         </div>
                         <?php
