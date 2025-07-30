@@ -589,7 +589,7 @@ if ($virtualURL != '') {
             'data-bs-title="Add and pay for ' . ($worldCon ? "a WSFS and " : "") . 'an attending or virtual membership to be able to attend the virtual convention.">';
         }
 
-    $VirtualButton .= "<button class='btn btn-primary p-1' type='button' " .
+    $VirtualButton .= "<button class='btn btn-primary p-1 mx-2 h-100' type='button' " .
         ($hasVirtual ? 'onclick="portal.virtual();"' : ' disabled') . ">$VirtualButtonTxt</button>";
     if (!$hasVirtual)
         $VirtualButton .= '</span>';
@@ -643,8 +643,9 @@ if (count($paymentPlans) > 0) {
 if ($info['managedByName'] != null) {
 ?>
     <div class='row mt-2 mb-2' id="managedByDiv">
-        <div class='col-sm-auto'><h1 class='size-h4'>Your record is managed by <?php echo $info['managedByName']; ?>:</h1></div>
-        <div class='col-sm-auto'><button class="btn btn-warning btn-sm p-1" onclick="portal.disassociate();">Dissociate from <?php echo $info['managedByName']; ?></button></div>
+        <div class='col-sm-auto'><h2 class='size-h3'>Your record is managed by <?php echo $info['managedByName']; ?>:</h2></div>
+        <div class='col-sm-auto'><button class="btn btn-warning p-1 h-100" onclick="portal.disassociate();">Dissociate from <?php echo $info['managedByName'];
+        ?></button></div>
 <?php if ($VirtualButton != '') { ?>
         <div class='col-sm-auto'><?php echo $VirtualButton; ?></div>
 <?php } ?>
@@ -684,13 +685,13 @@ if ($totalDue > 0 || $activePaymentPlans) {
 }
 ?>
 <div class='row mt-2'>
-    <div class='col-sm-12'>
-        <h1 class="size-h3">This account's information:
+    <div class='col-sm-12 d-flex align-items-center mb-2'>
+        <h2 class="size-h3 mb-0">This account's information:</h2>
 <?php
     if (!$hasPasskey && getConfValue('portal', 'passkeyRpLevel', 'd') != 'd' &&
         array_key_exists('HTTPS', $_SERVER) && (isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == 'on')) {
 ?>
-        <button class='btn btn-primary ms-1 p-1' type='button'
+        <button class='btn btn-primary mx-2 p-1 h-100' type='button'
                         onclick="window.location='<?php echo $portal_conf['portalsite']; ?>/accountSettings.php?passkey=create';">
                     <img src='lib/passkey.png'>Create Passkey
                 </button>
@@ -698,14 +699,13 @@ if ($totalDue > 0 || $activePaymentPlans) {
     }
     if ($info['managedByName'] == null) {
 ?>
-                <button class='btn btn-primary ms-1 p-1' type='button'
+                <button class='btn btn-primary mx-2 p-1 h-100' type='button'
                         onclick="window.location='<?php echo $portal_conf['portalsite']; ?>/addUpgrade.php';">
                     Add Another Person and<br/>Create a New Membership for Them
                 </button>
                 <?php echo $VirtualButton;
     }
 ?>
-        </h1>
     </div>
 </div>
 <?php
