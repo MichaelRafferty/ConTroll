@@ -258,7 +258,6 @@ EOS;
             // check if they have a WSFS rights membership (hasWSFS and hasNom)
             if (($m['memCategory'] == 'wsfs' || $m['memCategory'] == 'dealer' || in_array($m['memId'], $addlWSFS)) && $m['status'] == 'paid') {
                 $hasWSFS = true;
-                continue;
             }
 
             // check age to prevent virtual
