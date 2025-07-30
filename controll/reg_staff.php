@@ -75,7 +75,108 @@ $config_vars['finance'] = $finance ? 1 : 0;
 $config_vars['ae'] = $admin ? 1 : 0;
 $config_vars['source'] = 'regstaff';
 ?>
-<?php bs_tinymceModal(); ?>
+<?php bs_tinymceModal();
+// edit memList entry modal
+?>
+<div id='editMemListModal' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Edit Membership Sequence' aria-hidden='true'
+     style='--bs-modal-width: 96%;'>
+    <div class='modal-dialog'>
+        <div class='modal-content'>
+            <div class='modal-header bg-primary text-bg-primary'>
+                <div class='modal-title'>
+                    <strong id='editMemListTitle'>Edit Memlist Series Title</strong>
+                </div>
+                <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+            </div>
+            <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                <div class='container-fluid' id='editMemListBlockDiv'>
+                    <div class='row mt-4'>
+                        <div class='col-sm-12'><h4>Edit the <span id='editMemListName'>memListName</span> and it's time series</h4></div>
+                    </div>
+                    <div class='row mt-2'>
+                        <div class='col-sm-auto'><b>Membership ID:</b></div>
+                        <div class='col-sm-auto' id="editMemListID"></div>
+                        <div class='col-sm-auto'><b>Con ID:</b></div>
+                        <div class='col-sm-auto' id='editMemListConID'></div>
+                    </div>
+                    <div class='row mt-1'>
+                        <div class='col-sm-1'>Category:</div>
+                        <div class='col-sm-8' id="editMemListCategory"></div>
+                    </div>
+                    <div class='row mt-1'>
+                        <div class='col-sm-1'>Type:</div>
+                        <div class='col-sm-8' id='editMemListType'></div>
+                    </div>
+                    <div class='row mt-1'>
+                        <div class='col-sm-1'>Age:</div>
+                        <div class='col-sm-8' id='editMemListAge'></div>
+                    </div>
+                    <div class='row mt-1'>
+                        <div class='col-sm-1'>Label:</div>
+                        <div class='col-sm-8'>
+                            <input type="text" name='editMemListLabel' id='editMemListLabel' placeholder="Short Label" size="64" maxlength="64" />
+                        </div>
+                    </div>
+                    <div class='row mt-1'>
+                        <div class='col-sm-1'>Price:</div>
+                        <div class='col-sm-8'>
+                            <input type="number" id='editMemListPrice' name="editMemListPrice" min="0"/>
+                        </div>
+                    </div>
+                    <div class='row mt-1'>
+                        <div class='col-sm-1'>Start Date:</div>
+                        <div class='col-sm-2'>
+                            <input type="datetime-local" id='editMemListStart' name='editMemListStart'/>
+                        </div>
+                        <div class='col-sm-1'>End Date:</div>
+
+                        <div class='col-sm-2'>
+                            <input type='datetime-local' id='editMemListEnd' name='editMemListEnd'/>
+                        </div>
+                    </div>
+                    <div class='row mt-1'>
+                        <div class='col-sm-1'>At-Con:</div>
+                        <div class='col-sm-auto'>
+                            <select name="editMemListAtcon" id="editMemListAtcon">
+                                <option value='N'>No</option>
+                                <option value='Y'>Yes</option>
+                            </select>
+                        </div>
+                        <div class='col-sm-auto'>OnLine:</div>
+                        <div class='col-sm-auto'>
+                            <select name='editMemListOnline' id='editMemListOnline'>
+                                <option value='N'>No</option>
+                                <option value='Y'>Yes</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class='row mt-1'>
+                        <div class='col-sm-1'>Notes:</div>
+                        <div class='col-sm-11'>
+                            <textarea id="editMemListNotes" name="editMemListNotes" cols="120" rows="5"></textarea>
+                        </div>
+                    </div>
+                    <div class='row mt-1'>
+                        <div class='col-sm-1'>Gen. Ledger</div>
+                        <div class='col-sm-auto'>Num:</div>
+                        <div class='col-sm-auto'>
+                            <input type='text' name='editMemListGLNum' id='editMemListGLNum' placeholder='GL Num' size='16' maxlength='16'/>
+                        </div>
+                        <div class='col-sm-auto'>Label:</div>
+                        <div class='col-sm-auto'>
+                            <input type='text' name='editMemListGLLabel' id='editMemListGLLabel' placeholder='GL Label' size='64' maxlength='64'/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class='modal-footer'>
+                <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
+                <button class='btn btn-sm btn-primary' id='editMemListSaveBtn' onClick='editMemListSave("year")'>Save Changes</button>
+            </div>
+            <div id='result_message_editMemList' class='mt-4 p-2'></div>
+        </div>
+    </div>
+</div>
 <div id='merge-lookup' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Look up Merge Person' aria-hidden='true' style='--bs-modal-width: 80%;'>
     <div class='modal-dialog'>
         <div class='modal-content'>

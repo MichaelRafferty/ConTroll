@@ -26,9 +26,16 @@ class consetup {
     #message_div = null;
     #setup_type = null;
     #setup_title = null;
+    #memListData = null;
+    #catListData = null;
+    #typeListData = null;
+    #ageListData = null;
+    #catListSelect = null;
+    #typeListSelect = null;
+    #ageListSelect = null;
+    #memListModal = null;
 
     constructor(setup_type) {
-
         this.#message_div = document.getElementById('test');
         if (setup_type == 'current' || setup_type == 'c') {
             this.#conlist_pane = document.getElementById('consetup-pane');
@@ -39,6 +46,10 @@ class consetup {
             this.#conlist_pane = document.getElementById('nextconsetup-pane');
             this.#setup_type = 'next';
             this.#setup_title = 'Next';
+        }
+        var id = document.getElementById('editMemListModal');
+        if (id) {
+            this.#memListModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
         }
     };
 
@@ -78,7 +89,7 @@ class consetup {
         this.checkMemlistUndoRedo();
     };
 
-    draw(data, textStatus, jhXHR) {
+    draw(year, data, textStatus, jhXHR) {
         var _this = this;
         //console.log('in draw');
         //console.log(data);
@@ -123,11 +134,11 @@ class consetup {
         this.#memlist_redobtn = document.getElementById(this.#setup_type + 'memlist-redo')
         this.#memlist_addrowbtn = document.getElementById(this.#setup_type + 'memlist-addrow')
 
-        this.draw_conlist(data, textStatus, jhXHR);
-        this.draw_memlist(data, textStatus, jhXHR);
+        this.draw_conlist(year,  data, textStatus, jhXHR);
+        this.draw_memlist(year,  data, textStatus, jhXHR);
     };
 
-    draw_conlist(data, textStatus, jhXHR) {
+    draw_conlist(year, data, textStatus, jhXHR) {
         var _this = this;
         this.#conlist_dirty = false;
 
@@ -169,8 +180,38 @@ class consetup {
         }
     };
 
-    draw_memlist(data, textStatus, jhXHR) {
+    draw_memlist(year, data, textStatus, jhXHR) {
         var _this = this;
+        var index = 0;
+
+        // save off the select list data
+        this.#catListData = data['memCats'];
+        this.#typeListData = data['memTypes'];
+        this.#ageListData = data['ageTypes'];
+
+        // build the select lists
+        this.#catListSelect = "<select name='memListCategorySelect' id='memListCategorySelect'>";
+        for (index = 0; index < this.#catListData.length; index++) {
+            var cat = this.#catListData[index];
+            this.#catListSelect += "\n<option value='" + cat + "'>" + cat + "</option>";
+        }
+        this.#ageListSelect += "\n</select>";
+        this.#ageListSelect = "<select name='memListAgeSelect' id='memListAgeSelect'>";
+        for (index = 0; index < this.#ageListData.length; index++) {
+            var age = this.#ageListData[index];
+            this.#ageListSelect += "\n<option value='" + age + "'>" + age + "</option>";
+        }
+        this.#typeListSelect += "\n</select>";
+        this.#typeListSelect = "<select name='memListTypeSelect' id='memListTypeSelect'>";
+        for (index = 0; index < this.#typeListData.length; index++) {
+            var type = this.#typeListData[index];
+            this.#typeListSelect += "\n<option value='" + type + "'>" + type + "</option>";
+        }
+        this.#typeListSelect += "\n</select>";
+        document.getElementById('editMemListCategory').innerHTML = this.#catListSelect;
+        document.getElementById('editMemListAge').innerHTML = this.#ageListSelect;
+        document.getElementById('editMemListType').innerHTML = this.#typeListSelect;
+
         var memListData = new Array();
 
         if (this.#memtable != null) {
@@ -194,7 +235,7 @@ class consetup {
             movableRows: true,
             data: data['memlist'],
             layout: "fitDataTable",
-            pagination: true,
+            pagination: data['memlist'].length > 25,
             paginationAddRow:"table",
             paginationSize: 25,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
@@ -206,6 +247,7 @@ class consetup {
                         deleterow(e, cell.getRow());
                     }
                 },
+                { title: "Edit", formatter: this.editbutton, formatterParams: {year: year }, hozAlign:"left", headerSort: false },
                 { title: "ID", field: "id", width: 70, headerSort: true, headerHozAlign:"right", hozAlign: "right",
                     headerFilter: "input", headerFilterFunc:numberHeaderFilter,
                 },
@@ -265,6 +307,56 @@ class consetup {
         this.#memtable.on("cellEdited", cellChanged);
     };
 
+    // display edit button for a long field
+    editbutton(cell, formatterParams, onRendered) {
+        var index = cell.getRow().getIndex()
+        var year = formatterParams.year;
+        return '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
+            ' onclick="' + year + '.editSeries(' + index + ');">Edit</button>';
+    }
+
+    editSeries(index) {
+        var row = this.#memtable.getRow(index);
+        var rowData = row.getData();
+        var listData = this.#memtable.getData();
+        var editData = [];
+        editData.push(rowData);
+        console.log(rowData);
+        // build an array of all of the rows in this series
+        for (var index = 0; index < listData.length; index++) {
+            var matchRow = listData[index];
+            if (matchRow.id == rowData.id)
+                continue; // skip itself
+            if (matchRow.conid != rowData.conid || matchRow.memCategory != rowData.memCategory || matchRow.memType != rowData.memType ||
+                matchRow.memAge != rowData.memAge || matchRow.shortname != rowData.shortname)
+                continue; // not one of the series
+
+            editData.push(matchRow);
+        }
+
+        var seriesName = rowData.conid + '/' + rowData.memCategory + '/' + rowData.memType + '/' + rowData.memAge + '/' + rowData.shortname;
+        document.getElementById('editMemListTitle').innerHTML = 'Edit Memlist Series - ' + rowData.id + ': ' + seriesName;
+        document.getElementById('editMemListName').innerHTML = seriesName;
+        document.getElementById('editMemListID').innerHTML = rowData.id;
+        document.getElementById('editMemListConID').innerHTML = rowData.conid;
+        this.#memListModal.show();
+
+        document.getElementById('memListCategorySelect').value = rowData.memCategory;
+        document.getElementById('memListAgeSelect').value = rowData.memAge;
+        document.getElementById('memListTypeSelect').value = rowData.memType;
+        document.getElementById('editMemListAtcon').value = rowData.atcon;
+        document.getElementById('editMemListOnline').value = rowData.online;
+        document.getElementById('editMemListLabel').value = rowData.shortname;
+        document.getElementById('editMemListPrice').value = rowData.price;
+        document.getElementById('editMemListStart').value = rowData.startdate;
+        document.getElementById('editMemListEnd').value = rowData.enddate;
+        document.getElementById('editMemListNotes').value = rowData.notes;
+        document.getElementById('editMemListGLNum').value = rowData.glNum;
+        document.getElementById('editMemListGLLabel').value = rowData.glLabel;
+
+        console.log(editData);
+    }
+
     open() {
         var script = "scripts/regadmin_getCondata.php";
         $.ajax({
@@ -273,9 +365,9 @@ class consetup {
             data: 'year=' + this.#setup_type + '&type=all',
             success: function (data, textStatus, jhXHR) {
                 if (data['year'] == 'current') {
-                    current.draw(data, textStatus, jhXHR);
+                    current.draw('current', data, textStatus, jhXHR);
                 } else {
-                    next.draw(data, textStatus, jhXHR);
+                    next.draw('next', data, textStatus, jhXHR);
                 }
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -392,9 +484,9 @@ class consetup {
                     return false;
                 }
                 if (data['year'] == 'current') {
-                    current.draw_conlist(data, textStatus, jhXHR);
+                    current.draw_conlist(data['year'], data, textStatus, jhXHR);
                 } else {
-                    next.draw_conlist(data, textStatus, jhXHR);
+                    next.draw_conlist(data['year'], data, textStatus, jhXHR);
                 }
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -472,9 +564,9 @@ class consetup {
             data: 'year=' + this.#setup_type + '&type=memlist',
             success: function (data, textStatus, jhXHR) {
                 if (data['year'] == 'current') {
-                    current.draw_memlist(data, textStatus, jhXHR);
+                    current.draw_memlist(data['year'], data, textStatus, jhXHR);
                 } else {
-                    next.draw_memlist(data, textStatus, jhXHR);
+                    next.draw_memlist(data['year'], data, textStatus, jhXHR);
                 }
             },
             error: function (jqXHR, textStatus, errorThrown) {
