@@ -369,13 +369,13 @@ class consetup {
         // build an array of all of the rows in this series
         for (var index = 0; index < listData.length; index++) {
             var matchRow = listData[index];
-            if (matchRow.id == rowData.id)
-                this.#memListMasterRow = index;
 
             if (matchRow.conid != rowData.conid || matchRow.memCategory != rowData.memCategory || matchRow.memType != rowData.memType ||
                 matchRow.memAge != rowData.memAge || matchRow.shortname != rowData.shortname)
                 continue; // not one of the series
 
+            if (matchRow.id == rowData.id)
+                this.#memListMasterRow = this.#editData.length;
             this.#editData.push(matchRow);
         }
 
@@ -838,6 +838,24 @@ class consetup {
         }
 
         clear_message('result_message_editMemList');
+    }
+
+    // save the modal data back to the table and close the modal
+    editMemListSave() {
+        this.saveTimeSeries(); // write the data back to the this.#editData array
+
+        // copy the edit data back to the main array
+        this.#memtable.updateData(this.#editData);
+        for (var index = 0; index < this.#editData.length; index++) {
+            var id = this.#editData[index].id;
+            this.#memtable.getRow(id).getElement().style.backgroundColor = "#fff3cd";
+        }
+        this.#memListModal.hide();
+
+        // mark that we need to save the screen
+        this.#memlist_savebtn.innerHTML = "Save Changes*";
+        this.#memlist_savebtn.disabled = false;
+        this.#memlist_dirty = true;
     }
 };
 
