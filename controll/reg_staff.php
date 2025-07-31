@@ -120,7 +120,7 @@ $config_vars['source'] = 'regstaff';
                     <div class='row mt-1'>
                         <div class='col-sm-1'>Price:</div>
                         <div class='col-sm-8'>
-                            <input type="number" id='editMemListPrice' name="editMemListPrice" min="0"/>
+                            <input type="number" id='editMemListPrice' name="editMemListPrice" min="0" style='text-align: right;'/>
                         </div>
                     </div>
                     <div class='row mt-1'>
@@ -167,11 +167,64 @@ $config_vars['source'] = 'regstaff';
                             <input type='text' name='editMemListGLLabel' id='editMemListGLLabel' placeholder='GL Label' size='64' maxlength='64'/>
                         </div>
                     </div>
+                    <div class='row mt-4'>
+                        <div class='col-sm-auto'><h4>Time Series Data</h4></div>
+                        <div class="col-sm-auto">
+                            <button class="btn btn-sm btn-primary" onclick="copyMemListChanges();">Copy Changes above to Time Series Rows</button>
+                        </div>
+                        <div class='col-sm-auto'>
+                            <button class='btn btn-sm btn-primary' onclick='resetEndDates();'>Set End Date Next Start Date</button>
+                        </div>
+                        <div class='col-sm-auto'>
+                            <button class='btn btn-sm btn-primary' onclick='reSortTimeSeries();'>Re-sort into Time Series Order</button>
+                        </div>
+                    </div>
+                    <div class='row mt-2'>
+                        <div class="col-sm-1">TS#</div>
+                        <div class="col-sm-1">ID</div>
+                        <div class="col-sm-2">Price</div>
+                        <div class="col-sm-2">Start Date</div>
+                        <div class="col-sm-2">End Date</div>
+                        <div class="col-sm-1">At-Con</div>
+                        <div class="col-sm-1">OnLine</div>
+                    </div>
+<?php
+    for ($i = 0; $i < 10; $i++) {
+        $bgColor = $i % 2 ? 'light-cyan' : '#e0e0e0';
+?>
+                    <div class='row mt-2' style="background-color: <?php echo $bgColor;?>">
+                        <div class='col-sm-1'><?php echo $i; ?></div>
+                        <div class='col-sm-1' id="EMLTS<?php echo $i;?>_ID"></div>
+                        <div class='col-sm-2'>
+                            <input type='number' id='EMLTS<?php echo $i;?>_Price' style="text-align: right;" min='0'/>
+                        </div>
+                        <div class='col-sm-2'>
+                            <input type='datetime-local' id='EMLTS<?php echo $i;?>_Start'/>
+                        </div>
+                        <div class='col-sm-2'>
+                            <input type='datetime-local' id='EMLTS<?php echo $i;?>_End'/>
+                        </div>
+                        <div class='col-sm-1'>
+                            <select id="EMLTS<?php echo $i;?>_Atcon">
+                                <option value='N'>No</option>
+                                <option value='Y'>Yes</option>
+                            </select>
+                        </div>
+                        <div class='col-sm-1'>
+                            <select id="EMLTS<?php echo $i;?>_Online">
+                                <option value='N'>No</option>
+                                <option value='Y'>Yes</option>
+                            </select>
+                        </div>
+                    </div>
+<?php
+    }
+?>
                 </div>
             </div>
             <div class='modal-footer'>
                 <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
-                <button class='btn btn-sm btn-primary' id='editMemListSaveBtn' onClick='editMemListSave("year")'>Save Changes</button>
+                <button class='btn btn-sm btn-primary' id='editMemListSaveBtn' onClick='editMemListSave()'>Save Changes</button>
             </div>
             <div id='result_message_editMemList' class='mt-4 p-2'></div>
         </div>
@@ -706,7 +759,7 @@ $config_vars['source'] = 'regstaff';
                     <div class='col-sm-1'>Price:</div>
                     <div class='col-sm-auto'>New:</div>
                     <div class='col-sm-auto'>
-                        <input type="number" placeholder="New Price" id="edit_newPrice"/>
+                        <input type="number" placeholder="New Price" id="edit_newPrice" style='text-align: right;'/>
                     </div>
                     <div class='col-sm-auto'>Original:</div>
                     <div class='col-sm-auto' id='edit_origPrice'></div>
