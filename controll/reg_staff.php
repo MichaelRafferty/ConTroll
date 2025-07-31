@@ -173,7 +173,7 @@ $config_vars['source'] = 'regstaff';
                             <button class="btn btn-sm btn-primary" onclick="copyMemListChanges();">Copy Changes above to Time Series Rows</button>
                         </div>
                         <div class='col-sm-auto'>
-                            <button class='btn btn-sm btn-primary' onclick='resetEndDates();'>Set End Date Next Start Date</button>
+                            <button class='btn btn-sm btn-primary' onclick='resetEndDates();'>Align End Date Next Start Date</button>
                         </div>
                         <div class='col-sm-auto'>
                             <button class='btn btn-sm btn-primary' onclick='reSortTimeSeries();'>Re-sort into Time Series Order</button>

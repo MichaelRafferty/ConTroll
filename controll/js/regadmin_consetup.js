@@ -764,18 +764,28 @@ class consetup {
 
     // save the time series data back to the edit data array
     saveTimeSeries() {
-        for (var index = 0; index < 10; index++) {
-            if (document.getElementById('EMLTS' + index + '_Price').value != '') {
+        var index = 0;
+        for (var row = 0; row < 10; row++) {
+            if (document.getElementById('EMLTS' + row + '_Price').value != '') {
                 // has price, copy the data rows
                 if (index >= this.#editData.length) {
                     this.#editData.push({id: 'new' + index });
+                    // new rows also get all the master row data
+                    this.#editData[index].memCategory = document.getElementById('memListCategorySelect').value;
+                    this.#editData[index].memAge = document.getElementById('memListAgeSelect').value;
+                    this.#editData[index].memType = document.getElementById('memListTypeSelect').value;
+                    this.#editData[index].shortname = document.getElementById('editMemListLabel').value;
+                    this.#editData[index].notes = document.getElementById('editMemListNotes').value;
+                    this.#editData[index].glNum = document.getElementById('editMemListGLNum').value;
+                    this.#editData[index].glLabel = document.getElementById('editMemListGLLabel').value;
                     document.getElementById('EMLTS' + index + '_ID').innerHTML = this.#editData[index].id;
                 }
-                this.#editData[index].price = document.getElementById('EMLTS' + index + '_Price').value;
-                this.#editData[index].startdate = document.getElementById('EMLTS' + index + '_Start').value;
-                this.#editData[index].enddate = document.getElementById('EMLTS' + index + '_End').value;
-                this.#editData[index].atcon = document.getElementById('EMLTS' + index + '_Atcon').value;
-                this.#editData[index].online = document.getElementById('EMLTS' + index + '_Online').value;
+                this.#editData[index].price = document.getElementById('EMLTS' + row + '_Price').value;
+                this.#editData[index].startdate = document.getElementById('EMLTS' + row + '_Start').value;
+                this.#editData[index].enddate = document.getElementById('EMLTS' + row + '_End').value;
+                this.#editData[index].atcon = document.getElementById('EMLTS' + row + '_Atcon').value;
+                this.#editData[index].online = document.getElementById('EMLTS' + row + '_Online').value;
+                index++;
             }
         }
         // now copy the main row data into editData
@@ -845,7 +855,7 @@ class consetup {
         this.saveTimeSeries(); // write the data back to the this.#editData array
 
         // copy the edit data back to the main array
-        this.#memtable.updateData(this.#editData);
+        this.#memtable.updateOrAddData(this.#editData);
         for (var index = 0; index < this.#editData.length; index++) {
             var id = this.#editData[index].id;
             this.#memtable.getRow(id).getElement().style.backgroundColor = "#fff3cd";
