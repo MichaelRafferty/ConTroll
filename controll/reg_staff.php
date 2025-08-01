@@ -120,31 +120,32 @@ $config_vars['source'] = 'regstaff';
                     <div class='row mt-1'>
                         <div class='col-sm-1'>Price:</div>
                         <div class='col-sm-8'>
-                            <input type="number" id='editMemListPrice' name="editMemListPrice" min="0" style='text-align: right;'/>
+                            <input type='number' class='no-spinners' inputmode='numeric' id='editMemListPrice' name="editMemListPrice" min="0"
+                                   style='text-align: right; width: 6em;' onchange='priceChange(editListMasterRow)'/>
                         </div>
                     </div>
                     <div class='row mt-1'>
                         <div class='col-sm-1'>Start Date:</div>
                         <div class='col-sm-2'>
-                            <input type="datetime-local" id='editMemListStart' name='editMemListStart'/>
+                            <input type="datetime-local" id='editMemListStart' name='editMemListStart' onchange='startdateChange(editListMasterRow)'/>
                         </div>
                         <div class='col-sm-1'>End Date:</div>
 
                         <div class='col-sm-2'>
-                            <input type='datetime-local' id='editMemListEnd' name='editMemListEnd'/>
+                            <input type='datetime-local' id='editMemListEnd' name='editMemListEnd' onchange='enddateChange(editListMasterRow)'/>
                         </div>
                     </div>
                     <div class='row mt-1'>
                         <div class='col-sm-1'>At-Con:</div>
                         <div class='col-sm-auto'>
-                            <select name="editMemListAtcon" id="editMemListAtcon">
+                            <select name="editMemListAtcon" id="editMemListAtcon" onchange='atconChange(editListMasterRow)'>
                                 <option value='N'>No</option>
                                 <option value='Y'>Yes</option>
                             </select>
                         </div>
                         <div class='col-sm-auto'>OnLine:</div>
                         <div class='col-sm-auto'>
-                            <select name='editMemListOnline' id='editMemListOnline'>
+                            <select name='editMemListOnline' id='editMemListOnline' onchange="onlineChange(editListMasterRow)">
                                 <option value='N'>No</option>
                                 <option value='Y'>Yes</option>
                             </select>
@@ -160,11 +161,15 @@ $config_vars['source'] = 'regstaff';
                         <div class='col-sm-1'>Gen. Ledger</div>
                         <div class='col-sm-auto'>Num:</div>
                         <div class='col-sm-auto'>
-                            <input type='text' name='editMemListGLNum' id='editMemListGLNum' placeholder='GL Num' size='16' maxlength='16'/>
+                            <input type='text' name='editMemListGLNum' id='editMemListGLNum' placeholder='GL Num' size='16' maxlength='16'
+                               onchange="glNumChange(editListMasterRow);"
+                            />
                         </div>
                         <div class='col-sm-auto'>Label:</div>
                         <div class='col-sm-auto'>
-                            <input type='text' name='editMemListGLLabel' id='editMemListGLLabel' placeholder='GL Label' size='64' maxlength='64'/>
+                            <input type='text' name='editMemListGLLabel' id='editMemListGLLabel' placeholder='GL Label' size='64' maxlength='64'
+                                onchange="glLabelChange(editListMasterRow);"
+                            />
                         </div>
                     </div>
                     <div class='row mt-4'>
@@ -180,23 +185,24 @@ $config_vars['source'] = 'regstaff';
                         </div>
                     </div>
                     <div class='row mt-2'>
-                        <div class="col-sm-1">TS#</div>
-                        <div class="col-sm-1">ID</div>
-                        <div class="col-sm-2">Price</div>
+                        <div class="col-sm-1" style='text-align: right;'>ID</div>
+                        <div class="col-sm-1" style='text-align: center;'>Price</div>
                         <div class="col-sm-2">Start Date</div>
                         <div class="col-sm-2">End Date</div>
                         <div class="col-sm-1">At-Con</div>
                         <div class="col-sm-1">OnLine</div>
+                        <div class="col-sm-1">GL Num</div>
+                        <div class="col-sm-3">GL Label</div>
                     </div>
 <?php
     for ($i = 0; $i < 10; $i++) {
         $bgColor = $i % 2 ? 'light-cyan' : '#e0e0e0';
 ?>
                     <div class='row mt-2' style="background-color: <?php echo $bgColor;?>">
-                        <div class='col-sm-1'><?php echo $i; ?></div>
-                        <div class='col-sm-1' id="EMLTS<?php echo $i;?>_ID"></div>
-                        <div class='col-sm-2'>
-                            <input type='number' id='EMLTS<?php echo $i;?>_Price' style="text-align: right;" min='0'/>
+                        <div class='col-sm-1' id="EMLTS<?php echo $i;?>_ID" style="text-align: right;"></div>
+                        <div class='col-sm-1'>
+                            <input type='number' class='no-spinners' inputmode='numeric' id='EMLTS<?php echo $i;?>_Price'
+                                   style="text-align: right; width: 6em;" min='0'/>
                         </div>
                         <div class='col-sm-2'>
                             <input type='datetime-local' id='EMLTS<?php echo $i;?>_Start'/>
@@ -215,6 +221,12 @@ $config_vars['source'] = 'regstaff';
                                 <option value='N'>No</option>
                                 <option value='Y'>Yes</option>
                             </select>
+                        </div>
+                        <div class='col-sm-1'>
+                            <input type='text' id='EMLTS<?php echo $i;?>_glNum' placeholder='GL Num' size='12' maxlength='16'/>
+                        </div>
+                        <div class='col-sm-3'>
+                            <input type='text' id='EMLTS<?php echo $i;?>_glLabel' placeholder='GL Label' size='45' maxlength='64'/>
                         </div>
                     </div>
 <?php

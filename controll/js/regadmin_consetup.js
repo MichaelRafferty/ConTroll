@@ -1,6 +1,7 @@
 //import { TabulatorFull as Tabulator } from 'tabulator-tables';
 
 var activeConSetup = 'none';
+var editListMasterRow = null;
 
 class consetup {
     #active = false;
@@ -374,8 +375,10 @@ class consetup {
                 matchRow.memAge != rowData.memAge || matchRow.shortname != rowData.shortname)
                 continue; // not one of the series
 
-            if (matchRow.id == rowData.id)
+            if (matchRow.id == rowData.id) {
                 this.#memListMasterRow = this.#editData.length;
+                editListMasterRow = this.#memListMasterRow;
+                }
             this.#editData.push(matchRow);
         }
 
@@ -747,6 +750,8 @@ class consetup {
                 this.#editData[index].notes = document.getElementById('editMemListNotes').value;
                 this.#editData[index].glNum = document.getElementById('editMemListGLNum').value;
                 this.#editData[index].glLabel = document.getElementById('editMemListGLLabel').value;
+                document.getElementById('EMLTS' + index + '_glNum').value = this.#editData[index].glNum;
+                document.getElementById('EMLTS' + index + '_glLabel').value = this.#editData[index].glLabel;
             }
         }
         show_message("Fields copied", 'success', 'result_message_editMemList');
@@ -785,6 +790,8 @@ class consetup {
                 this.#editData[index].enddate = document.getElementById('EMLTS' + row + '_End').value;
                 this.#editData[index].atcon = document.getElementById('EMLTS' + row + '_Atcon').value;
                 this.#editData[index].online = document.getElementById('EMLTS' + row + '_Online').value;
+                this.#editData[index].glNum = document.getElementById('EMLTS' + row + '_glNum').value;
+                this.#editData[index].glLabel = document.getElementById('EMLTS' + row + '_glLabel').value;
                 index++;
             }
         }
@@ -835,6 +842,8 @@ class consetup {
             document.getElementById('EMLTS' + index + '_End').value = row.enddate;
             document.getElementById('EMLTS' + index + '_Atcon').value = row.atcon;
             document.getElementById('EMLTS' + index + '_Online').value = row.online;
+            document.getElementById('EMLTS' + index + '_glNum').value = row.glNum;
+            document.getElementById('EMLTS' + index + '_glLabel').value = row.glLabel;
         }
 
         // clear the remaining bottom rows
@@ -845,6 +854,8 @@ class consetup {
             document.getElementById('EMLTS' + index + '_End').value = '';
             document.getElementById('EMLTS' + index + '_Atcon').value = 'N';
             document.getElementById('EMLTS' + index + '_Online').value = 'N';
+            document.getElementById('EMLTS' + index + '_glNum').value = '';
+            document.getElementById('EMLTS' + index + '_glLabel').value = '';
         }
 
         clear_message('result_message_editMemList');
@@ -896,4 +907,39 @@ function reSortTimeSeries() {
         return next.reSortTimeSeries(true);
 
     return current.reSortTimeSeries(true);
+}
+
+// top section edited price, set bottom screen
+function priceChange(masterRow) {
+    document.getElementById('EMLTS' + masterRow + '_Price').value = document.getElementById('editMemListPrice').value;
+}
+
+// top section edited startdate, set bottom screen
+function startdateChange(masterRow) {
+    document.getElementById('EMLTS' + masterRow + '_Start').value = document.getElementById('editMemListStart').value;
+}
+
+// top section edited enddate, set bottom screen
+function enddateChange(masterRow) {
+    document.getElementById('EMLTS' + masterRow + '_End').value = document.getElementById('editMemListEnd').value;
+}
+
+// top section edited atcon, set bottom screen
+function atconChange(masterRow) {
+    document.getElementById('EMLTS' + masterRow + '_Atcon').value = document.getElementById('editMemListAtcon').value;
+}
+
+// top section edited online, set bottom screen
+function onlineChange(masterRow) {
+    document.getElementById('EMLTS' + masterRow + '_Online').value = document.getElementById('editMemListOnline').value;
+}
+
+// top section edited glNum, set bottom screen
+function glNumChange(masterRow) {
+    document.getElementById('EMLTS' + masterRow + '_glNum').value = document.getElementById('editMemListGLNum').value;
+}
+
+// top section edited glLabel, set bottom screen
+function glLabelChange(masterRow) {
+    document.getElementById('EMLTS' + masterRow + '_glLabel').value = document.getElementById('editMemListGLLabel').value;
 }
