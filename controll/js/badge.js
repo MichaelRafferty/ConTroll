@@ -81,7 +81,7 @@ function loadWatchList(data) {
             data: watchMembers,
             layout: "fitColumns",
             index: 'id',
-            pagination: true,
+            pagination: watchMembers.length > 25,
             paginationAddRow: "table",
             paginationSize: 10,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
@@ -260,10 +260,10 @@ function loadSelectList(data) {
         data: matches,
         layout: "fitColumns",
         index: 'id',
-        //pagination: true,
-        //paginationAddRow: "table",
-        //paginationSize: 10,
-        //paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
+        pagination: matches.length > 25,
+        paginationAddRow: "table",
+        paginationSize: 25,
+        paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
         initialSort: [
             {column: "last_name", dir: "asc"},
             {column: "first_name", dir: "asc"},
@@ -651,7 +651,7 @@ function addCheckSuccess(dataFound) {
             data: matched,
             layout: "fitDataTable",
             index: "id",
-            pagination: true,
+            pagination: matched.length > 25,
             paginationAddRow: "table",
             paginationSize: 10,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options

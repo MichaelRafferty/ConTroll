@@ -1546,10 +1546,10 @@ function draw_registrations(data) {
         registrationtable = null;
     }
     registrationtable = new Tabulator('#registration-table', {
-        data: data['badges'],
+        data: data.badges,
         layout: "fitDataTable",
         index: "badgeId",
-        pagination: true,
+        pagination: data.badges.length > 25,
         paginationSize: 25,
         paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
         columns: [

@@ -175,7 +175,7 @@ class Coupon {
         this.#couponTable = new Tabulator('#couponTable', {
             movableRows: false,
             history: false,
-            pagination: true,
+            pagination: this.#couponArray.length > 25,
             paginationSize: 10,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             data: this.#couponArray,
@@ -404,7 +404,7 @@ class Coupon {
         this.#detailTable = new Tabulator('#detailTable', {
             movableRows: false,
             history: false,
-            pagination: true,
+            pagination: usageData.length > 25,
             paginationSize: 10,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             data: usageData,
@@ -440,7 +440,7 @@ class Coupon {
         this.#detailTable = new Tabulator('#detailTable', {
             movableRows: false,
             history: false,
-            pagination: true,
+            pagination: keyData.length > 25,
             paginationSize: 10,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             data: keyData,

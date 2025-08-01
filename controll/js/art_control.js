@@ -122,7 +122,7 @@ function draw(data, textStatus, jqXHR) {
         history: true,
         data: data['art'],
         layout: 'fitDataTable',
-        pagination: true,
+        pagination: data['art'].length > 50,
         paginationSize: 50,
         paginationSizeSelector: [10, 25, 50, 100, true], // enable page size select with these options
         columns: [

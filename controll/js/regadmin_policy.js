@@ -184,7 +184,7 @@ class policySetup {
             data: this.#policies,
             layout: "fitDataTable",
             index: "policy",
-            pagination: true,
+            pagination: this.#policies.length > 25,
             paginationAddRow:"table",
             paginationSize: 10,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options

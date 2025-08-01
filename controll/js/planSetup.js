@@ -228,7 +228,7 @@ class PlansSetup {
                     data: memLabels,
                     layout: "fitDataTable",
                     index: "id",
-                    pagination: true,
+                    pagination: memLabels.length > 25,
                     paginationSize: 9999,
                     paginationAddRow:"table",
                     paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
@@ -251,7 +251,7 @@ class PlansSetup {
                     data: memLabels,
                     layout: "fitDataTable",
                     index: "id",
-                    pagination: true,
+                    pagination: memLabels.length > 25,
                     paginationAddRow:"table",
                     paginationSize: 9999,
                     paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options

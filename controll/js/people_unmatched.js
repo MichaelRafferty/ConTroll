@@ -201,7 +201,7 @@ class Unmatched {
             data: this.#unmatched,
             layout: "fitDataTable",
             index: "id",
-            pagination: true,
+            pagination: this.#unmatched.length > 100,
             paginationAddRow:"table",
             paginationSize: 100,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
@@ -389,7 +389,7 @@ class Unmatched {
             data: this.#candidates,
             layout: "fitDataTable",
             index: "id",
-            pagination: true,
+            pagination: this.#candidates.length > 25,
             paginationAddRow:"table",
             paginationSize: 10,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
@@ -422,7 +422,7 @@ class Unmatched {
             data: this.#additional,
             layout: "fitDataTable",
             index: "id",
-            pagination: true,
+            pagination: this.#additional.length > 25,
             paginationAddRow:"table",
             paginationSize: 10,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options

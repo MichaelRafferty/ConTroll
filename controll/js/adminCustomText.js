@@ -107,7 +107,7 @@ class customTextSetup {
             data: this.#customText,
             layout: "fitDataTable",
             index: 'rownum',
-            pagination: true,
+            pagination: this.#customText.length > 25,
             paginationAddRow:"table",
             paginationSize: 10,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
