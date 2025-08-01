@@ -202,31 +202,35 @@ $config_vars['source'] = 'regstaff';
                         <div class='col-sm-1' id="EMLTS<?php echo $i;?>_ID" style="text-align: right;"></div>
                         <div class='col-sm-1'>
                             <input type='number' class='no-spinners' inputmode='numeric' id='EMLTS<?php echo $i;?>_Price'
-                                   style="text-align: right; width: 6em;" min='0'/>
+                                   style="text-align: right; width: 6em;" min='0' onchange="tsPriceChange(<?php echo $i;?>)"/>
                         </div>
                         <div class='col-sm-2'>
-                            <input type='datetime-local' id='EMLTS<?php echo $i;?>_Start'/>
+                            <input type='datetime-local' id='EMLTS<?php echo $i;?>_Start' onchange="tsStartChange(<?php echo $i;?>)"/>
                         </div>
                         <div class='col-sm-2'>
-                            <input type='datetime-local' id='EMLTS<?php echo $i;?>_End'/>
+                            <input type='datetime-local' id='EMLTS<?php echo $i;?>_End' onchange="tsEndChange(<?php echo $i;?>)"/>
                         </div>
                         <div class='col-sm-1'>
-                            <select id="EMLTS<?php echo $i;?>_Atcon">
+                            <select id="EMLTS<?php echo $i;?>_Atcon" onchange="tsAtconChange(<?php echo $i;?>)">
                                 <option value='N'>No</option>
                                 <option value='Y'>Yes</option>
                             </select>
                         </div>
                         <div class='col-sm-1'>
-                            <select id="EMLTS<?php echo $i;?>_Online">
+                            <select id="EMLTS<?php echo $i;?>_Online" onchange="tsOnlineChange(<?php echo $i;?>)">
                                 <option value='N'>No</option>
                                 <option value='Y'>Yes</option>
                             </select>
                         </div>
                         <div class='col-sm-1'>
-                            <input type='text' id='EMLTS<?php echo $i;?>_glNum' placeholder='GL Num' size='12' maxlength='16'/>
+                            <input type='text' id='EMLTS<?php echo $i;?>_glNum' placeholder='GL Num' size='12' maxlength='16'
+                                   onchange="tsGlNumChange(<?php echo $i;?>)"
+                            />
                         </div>
                         <div class='col-sm-3'>
-                            <input type='text' id='EMLTS<?php echo $i;?>_glLabel' placeholder='GL Label' size='45' maxlength='64'/>
+                            <input type='text' id='EMLTS<?php echo $i;?>_glLabel' placeholder='GL Label' size='45' maxlength='64'
+                                   onchange="tsGlLabelChange(<?php echo $i;?>)"
+                            />
                         </div>
                     </div>
 <?php

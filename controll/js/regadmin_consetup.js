@@ -943,3 +943,46 @@ function glNumChange(masterRow) {
 function glLabelChange(masterRow) {
     document.getElementById('EMLTS' + masterRow + '_glLabel').value = document.getElementById('editMemListGLLabel').value;
 }
+
+// bottom section edited price, set top screen
+function tsPriceChange(row) {
+    if (row == editListMasterRow)
+        document.getElementById('editMemListPrice').value = document.getElementById('EMLTS' + row + '_Price').value;
+}
+
+// bottom section edited startdate, set top screen
+function tsStartChange(row) {
+    if (row == editListMasterRow)
+        document.getElementById('editMemListStart').value = document.getElementById('EMLTS' + row + '_Start').value;
+}
+
+// bottom section edited enddate, set top screen
+function tsEndChange(row) {
+    if (row == editListMasterRow)
+        document.getElementById('editMemListEnd').value = document.getElementById('EMLTS' + row + '_End').value;
+
+}
+
+// bottom section edited atcon, set top screen
+function tsAtconChange(row) {
+    if (row == editListMasterRow)
+        document.getElementById('editMemListAtcon').value = document.getElementById('EMLTS' + row + '_Atcon').value;
+}
+
+// bottom section edited online, set top screen
+function tsOnlineChange(row) {
+    if (row == editListMasterRow)
+    document.getElementById('editMemListOnline').value = document.getElementById('EMLTS' + row + '_Online').value;
+}
+
+// bottom section edited glnum, set top screen
+function tsGlNumChange(row) {
+    if (row == editListMasterRow)
+        document.getElementById('editMemListGLNum').value = document.getElementById('EMLTS' + row + '_glNum').value;
+}
+
+// bottom section edited gllabel, set top screen
+function tsGlLabelChange(row) {
+    if (row == editListMasterRow)
+        document.getElementById('editMemListGLLabel').value = document.getElementById('EMLTS' + row + '_glLabel').value;
+}
