@@ -2,6 +2,8 @@
 // make coupon keys file from a file of perid's, one per line,
 require_once('../lib/global.php');
 require_once('../lib/db_functions.php');
+
+loadConfFile();
 db_connect();
 $server = getConfValue('reg','server');
 

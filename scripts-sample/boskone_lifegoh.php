@@ -3,6 +3,7 @@
 // this script will just add to those already make if they exists, so new life members or GoH's can get memberships.
 require_once('../lib/global.php');
 require_once('../lib/db_functions.php');
+loadConfFile();
 db_connect();
 $con = get_conf('con');
 $conid = $con['id'];

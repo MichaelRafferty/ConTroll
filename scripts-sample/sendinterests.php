@@ -5,6 +5,7 @@ require_once('../lib/db_functions.php');
 require_once('../lib/cleanMemberDups.php');
 require_once('../lib/email__load_methods.php');
 
+loadConfFile();
 db_connect();
 $con = get_conf('con');
 $local = get_conf('local');

@@ -7,7 +7,9 @@
 
 require_once('../lib/global.php');
 require_once('../lib/db_functions.php');
-require_once(__DIR__ . '/../lib/log.php');
+require_once('../lib/log.php');
+
+loadConfFile();
 db_connect();
 
 $con = get_conf('con');

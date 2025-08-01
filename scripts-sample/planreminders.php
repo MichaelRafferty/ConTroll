@@ -4,7 +4,10 @@ require_once('../lib/global.php');
 require_once('../lib/db_functions.php');
 require_once('../lib/paymentPlans.php');
 require_once(_'../lib/email__load_methods.php');
+
+loadConfFile();
 db_connect();
+
 $con = get_conf('con');
 $portal = get_conf('portal');
 $conid = $con['id'];
