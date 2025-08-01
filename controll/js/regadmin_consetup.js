@@ -2,6 +2,7 @@
 
 var activeConSetup = 'none';
 var editListMasterRow = null;
+var memListModalDirty = false;
 
 class consetup {
     #active = false;
@@ -212,19 +213,19 @@ class consetup {
         this.#ageListData = data['ageTypes'];
 
         // build the select lists
-        this.#catListSelect = "<select name='memListCategorySelect' id='memListCategorySelect'>";
+        this.#catListSelect = "<select name='memListCategorySelect' id='memListCategorySelect' onchange='memListModalDirty = true;'>";
         for (index = 0; index < this.#catListData.length; index++) {
             var cat = this.#catListData[index];
             this.#catListSelect += "\n<option value='" + cat + "'>" + cat + "</option>";
         }
         this.#ageListSelect += "\n</select>";
-        this.#ageListSelect = "<select name='memListAgeSelect' id='memListAgeSelect'>";
+        this.#ageListSelect = "<select name='memListAgeSelect' id='memListAgeSelect' onchange='memListModalDirty = true;'>";
         for (index = 0; index < this.#ageListData.length; index++) {
             var age = this.#ageListData[index];
             this.#ageListSelect += "\n<option value='" + age + "'>" + age + "</option>";
         }
         this.#typeListSelect += "\n</select>";
-        this.#typeListSelect = "<select name='memListTypeSelect' id='memListTypeSelect'>";
+        this.#typeListSelect = "<select name='memListTypeSelect' id='memListTypeSelect' onchange='memListModalDirty = true;'>";
         for (index = 0; index < this.#typeListData.length; index++) {
             var type = this.#typeListData[index];
             this.#typeListSelect += "\n<option value='" + type + "'>" + type + "</option>";
@@ -388,6 +389,7 @@ class consetup {
         document.getElementById('editMemListName').innerHTML = seriesName;
         document.getElementById('editMemListID').innerHTML = rowData.id;
         document.getElementById('editMemListConID').innerHTML = rowData.conid;
+        memListModalDirty = false;
         this.#memListModal.show();
 
         document.getElementById('memListCategorySelect').value = rowData.memCategory;
@@ -755,7 +757,7 @@ class consetup {
             }
         }
         show_message("Fields copied", 'success', 'result_message_editMemList');
-        console.log(this.#editData);
+        //console.log(this.#editData);
     }
 
     // sequence the end dates for the time series
@@ -878,6 +880,19 @@ class consetup {
         this.#memlist_savebtn.disabled = false;
         this.#memlist_dirty = true;
     }
+
+    // cancel check dirty flag
+    editMemListCancel() {
+        if (memListModalDirty) {
+            if (!confirm('You have unsaved changes you need to save back to the underlying page with the "Save Changes" button.' +
+                '\n\nDo you wish to discard those changes?')) {
+                return;
+            }
+
+            memListModalDirty = false;
+        }
+        this.#memListModal.hide();
+    }
 };
 
 // static functions to call appropriate class
@@ -909,80 +924,107 @@ function reSortTimeSeries() {
     return current.reSortTimeSeries(true);
 }
 
+function editMemListCancel() {
+    if (activeConSetup == 'next')
+        return next.editMemListCancel();
+
+    return current.editMemListCancel();
+}
+
 // top section edited price, set bottom screen
 function priceChange(masterRow) {
     document.getElementById('EMLTS' + masterRow + '_Price').value = document.getElementById('editMemListPrice').value;
+    memListModalDirty = true;
 }
 
 // top section edited startdate, set bottom screen
 function startdateChange(masterRow) {
     document.getElementById('EMLTS' + masterRow + '_Start').value = document.getElementById('editMemListStart').value;
+    memListModalDirty = true;
 }
 
 // top section edited enddate, set bottom screen
 function enddateChange(masterRow) {
     document.getElementById('EMLTS' + masterRow + '_End').value = document.getElementById('editMemListEnd').value;
+    memListModalDirty = true;
 }
 
 // top section edited atcon, set bottom screen
 function atconChange(masterRow) {
     document.getElementById('EMLTS' + masterRow + '_Atcon').value = document.getElementById('editMemListAtcon').value;
+    memListModalDirty = true;
 }
 
 // top section edited online, set bottom screen
 function onlineChange(masterRow) {
     document.getElementById('EMLTS' + masterRow + '_Online').value = document.getElementById('editMemListOnline').value;
+    memListModalDirty = true;
 }
 
 // top section edited glNum, set bottom screen
 function glNumChange(masterRow) {
     document.getElementById('EMLTS' + masterRow + '_glNum').value = document.getElementById('editMemListGLNum').value;
+    memListModalDirty = true;
 }
 
 // top section edited glLabel, set bottom screen
 function glLabelChange(masterRow) {
     document.getElementById('EMLTS' + masterRow + '_glLabel').value = document.getElementById('editMemListGLLabel').value;
+    memListModalDirty = true;
 }
 
 // bottom section edited price, set top screen
 function tsPriceChange(row) {
-    if (row == editListMasterRow)
+    if (row == editListMasterRow) {
         document.getElementById('editMemListPrice').value = document.getElementById('EMLTS' + row + '_Price').value;
+        memListModalDirty = true;
+    }
 }
 
 // bottom section edited startdate, set top screen
 function tsStartChange(row) {
-    if (row == editListMasterRow)
+    if (row == editListMasterRow) {
         document.getElementById('editMemListStart').value = document.getElementById('EMLTS' + row + '_Start').value;
+        memListModalDirty = true;
+    }
 }
 
 // bottom section edited enddate, set top screen
 function tsEndChange(row) {
-    if (row == editListMasterRow)
+    if (row == editListMasterRow) {
         document.getElementById('editMemListEnd').value = document.getElementById('EMLTS' + row + '_End').value;
-
+        memListModalDirty = true;
+    }
 }
 
 // bottom section edited atcon, set top screen
 function tsAtconChange(row) {
-    if (row == editListMasterRow)
+    if (row == editListMasterRow) {
         document.getElementById('editMemListAtcon').value = document.getElementById('EMLTS' + row + '_Atcon').value;
+        memListModalDirty = true;
+    }
 }
 
 // bottom section edited online, set top screen
 function tsOnlineChange(row) {
-    if (row == editListMasterRow)
-    document.getElementById('editMemListOnline').value = document.getElementById('EMLTS' + row + '_Online').value;
+    if (row == editListMasterRow) {
+        document.getElementById('editMemListOnline').value = document.getElementById('EMLTS' + row + '_Online').value;
+        memListModalDirty = true;
+    }
 }
 
 // bottom section edited glnum, set top screen
 function tsGlNumChange(row) {
-    if (row == editListMasterRow)
+    if (row == editListMasterRow) {
         document.getElementById('editMemListGLNum').value = document.getElementById('EMLTS' + row + '_glNum').value;
+        memListModalDirty = true;
+    }
 }
 
 // bottom section edited gllabel, set top screen
 function tsGlLabelChange(row) {
-    if (row == editListMasterRow)
+    if (row == editListMasterRow) {
         document.getElementById('editMemListGLLabel').value = document.getElementById('EMLTS' + row + '_glLabel').value;
+        memListModalDirty = true;
+    }
 }

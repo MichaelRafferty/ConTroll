@@ -86,7 +86,7 @@ $config_vars['source'] = 'regstaff';
                 <div class='modal-title'>
                     <strong id='editMemListTitle'>Edit Memlist Series Title</strong>
                 </div>
-                <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+                <button type='button' class='btn-close' aria-label='Close' onclick='editMemListCancel();'></button>
             </div>
             <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
                 <div class='container-fluid' id='editMemListBlockDiv'>
@@ -114,7 +114,8 @@ $config_vars['source'] = 'regstaff';
                     <div class='row mt-1'>
                         <div class='col-sm-1'>Label:</div>
                         <div class='col-sm-8'>
-                            <input type="text" name='editMemListLabel' id='editMemListLabel' placeholder="Short Label" size="64" maxlength="64" />
+                            <input type="text" name='editMemListLabel' id='editMemListLabel' placeholder="Short Label"
+                                   onchange='memListModalDirty = true;' size="64" maxlength="64" />
                         </div>
                     </div>
                     <div class='row mt-1'>
@@ -127,7 +128,8 @@ $config_vars['source'] = 'regstaff';
                     <div class='row mt-1'>
                         <div class='col-sm-1'>Start Date:</div>
                         <div class='col-sm-2'>
-                            <input type="datetime-local" id='editMemListStart' name='editMemListStart' onchange='startdateChange(editListMasterRow)'/>
+                            <input type="datetime-local" id='editMemListStart' name='editMemListStart'
+                                   onchange='startdateChange(editListMasterRow)'/>
                         </div>
                         <div class='col-sm-1'>End Date:</div>
 
@@ -154,7 +156,8 @@ $config_vars['source'] = 'regstaff';
                     <div class='row mt-1'>
                         <div class='col-sm-1'>Notes:</div>
                         <div class='col-sm-11'>
-                            <textarea id="editMemListNotes" name="editMemListNotes" cols="120" rows="5"></textarea>
+                            <textarea id="editMemListNotes" name="editMemListNotes" cols="120" rows="5" onchange="memListModalDirty = true;">
+                            </textarea>
                         </div>
                     </div>
                     <div class='row mt-1'>
@@ -162,13 +165,13 @@ $config_vars['source'] = 'regstaff';
                         <div class='col-sm-auto'>Num:</div>
                         <div class='col-sm-auto'>
                             <input type='text' name='editMemListGLNum' id='editMemListGLNum' placeholder='GL Num' size='16' maxlength='16'
-                               onchange="glNumChange(editListMasterRow);"
+                               onchange='glNumChange(editListMasterRow);'
                             />
                         </div>
                         <div class='col-sm-auto'>Label:</div>
                         <div class='col-sm-auto'>
                             <input type='text' name='editMemListGLLabel' id='editMemListGLLabel' placeholder='GL Label' size='64' maxlength='64'
-                                onchange="glLabelChange(editListMasterRow);"
+                                onchange='glLabelChange(editListMasterRow);'
                             />
                         </div>
                     </div>
@@ -239,7 +242,7 @@ $config_vars['source'] = 'regstaff';
                 </div>
             </div>
             <div class='modal-footer'>
-                <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
+                <button class='btn btn-sm btn-secondary' onclick='editMemListCancel();'>Cancel</button>
                 <button class='btn btn-sm btn-primary' id='editMemListSaveBtn' onClick='editMemListSave()'>Save Changes</button>
             </div>
             <div id='result_message_editMemList' class='mt-4 p-2'></div>
