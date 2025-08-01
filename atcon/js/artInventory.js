@@ -198,7 +198,7 @@ function build_table(tableData) {
             data: datatbl,
             layout: "fitColumns",
             responsiveLayout:true,
-            pagination: true,
+            pagination: datatbl.length > 25,
             paginationSize: 10,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [

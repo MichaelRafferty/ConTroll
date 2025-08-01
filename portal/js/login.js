@@ -143,7 +143,7 @@ class Login {
                         data: data.matches,
                         layout: "fitColumns",
                         responsiveLayout: true,
-                        pagination: true,
+                        pagination: data.matches.length > 25,
                         paginationSize: 10,
                         paginationSizeSelector: [10, 25, 50, 100, true], // enable page size select with these options
                         columns: [

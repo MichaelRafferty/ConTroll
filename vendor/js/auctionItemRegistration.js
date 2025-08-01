@@ -569,9 +569,9 @@ class AuctionItemRegistration {
         this.#artItemTable = new Tabulator('#artItemTable', {
             maxHeight: "400px",
             history: true,
-            data: data['art'],
+            data: data.art,
             layout: 'fitDataTable',
-            pagination: true,
+            pagination: data.art.length > 25,
             index: 'item_key',
             paginationAddRow:"table",
             paginationSize: 10,
@@ -607,9 +607,9 @@ class AuctionItemRegistration {
         this.#printItemTable = new Tabulator('#printItemTable', {
             maxHeight: "400px",
             history: true,
-            data: data['print'],
+            data: data.print,
             layout: 'fitDataTable',
-            pagination: true,
+            pagination: data.print.length > 25,
             paginationAddRow:"table",
             paginationSize: 10,
             paginationSizeSelector: [5, 10, 25, 50, true], //enable page size select element with these options
@@ -642,9 +642,9 @@ class AuctionItemRegistration {
         this.#nfsItemTable = new Tabulator('#nfsItemTable', {
             maxHeight: "400px",
             history: true,
-            data: data['nfs'],
+            data: data.nfs,
             layout: 'fitDataTable',
-            pagination: true,
+            pagination: data.nfs.length > 25,
             paginationAddRow:"table",
             paginationSize: 10,
             paginationSizeSelector: [5, 10, 25, 50, true], //enable page size select element with these options

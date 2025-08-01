@@ -1752,7 +1752,7 @@ function showStats(which) {
         data: data,
         index: 'perid',
         layout: "fitColumns",
-        pagination: true,
+        pagination: data.length > 25,
         paginationSize: 10,
         paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
 
