@@ -185,6 +185,14 @@ function getAllSessionVars($prefix = '') : array {
     return $vars;
 }
 
+// php equivalent of SQL IFNULL()
+function ifnull($value, $default) {
+    if (is_null($value))
+        return $default;
+
+    return $value;
+}
+
 // is a memList item a primary membership type
 function isPrimary($mtype, $conid, $use = 'all') : bool {
     if ($conid != $mtype['conid']) // must be a current year membership to be primary, no year aheads for next year
