@@ -395,24 +395,36 @@ function draw_cart_row(rownum) {
             }
 
             var min_price=item['min_price'];
-            if(item['final_price'] != null) {
+            if (min_price.toLowerCase() == 'null')
+                min_price = 0;
+            if (item['final_price'] != null && item['final_price'].toLowerCase != 'null') {
                 min_price = item['final_price'];
             }
+
+            var bidder = item['bidder'];
+            if (bidder == null || bidder.toLowerCase == 'null') {
+                bidder = '';
+            }
+            var final_price = item['final_price'];
+            if (final_price == null || final_price.toLowerCase == 'null') {
+                final_price = '';
+            }
+
             if(item['status'] == 'Quicksale/Sold') {
                 html += `Purchased by ` + item['bidder'] + ` @ $` + item['final_price'];
             } else if((item['status'] == 'To Auction')) {
                 html += 'Bid ';
                 html += `<input type='number' min=0 id='bidder_` + item['id']
-                    + `' value="` + item['bidder'] + `" style="width: 7em"></input> @ $`
+                    + `' value="` + bidder + `" style="width: 7em"></input> @ $`
                     + `<input type='number' min=`+min_price+` id='bid_` + item['id']
-                    + `' value="` + item['final_price'] + `" style="width: 7em"></input><br/>`;
+                    + `' value="` + final_price + `" style="width: 7em"></input><br/>`;
                 action_html += `<button class="`+btnClass+` btn-success" `+btnStyle+` type="button" id="` + item['id'] + `"_at_auction" onclick="update_bid(`+rownum+`,false,true);">Sold At Auction</button><br/>`;
             } else {
                 html += 'Bid ';
                 html += `<input type='number' min=0 id='bidder_` + item['id']
-                    + `' value="` + item['bidder'] + `" style="width: 7em"></input> @ $`
+                    + `' value="` + bidder + `" style="width: 7em"></input> @ $`
                     + `<input type='number' min=`+min_price+` id='bid_` + item['id']
-                    + `' value="` + item['final_price'] + `" style="width: 7em"></input><br/>`
+                    + `' value="` + final_price + `" style="width: 7em"></input><br/>`
                 action_html += `<button class="`+btnClass+` btn-primary" `+btnStyle+` type="button" id="` + item['id'] + `"_update_bid" onclick="update_bid(`+rownum+`);">Bid</button>`;
                 action_html += `<button class="`+btnClass+` btn-secondary" `+btnStyle+` type="button" id="` + item['id'] + `"_to_auction" onclick="update_bid(`+rownum+`,true);">To Auction</button>`;
             }
