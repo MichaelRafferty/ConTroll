@@ -194,11 +194,11 @@ SET contactName=?, contactEmail=?, contactPhone=?, mailin = ?, lastVerified = NO
 WHERE id=?
 EOS;
             $updateArr = array(
-                trim($_POST['contactName']),
-                trim($_POST['contactEmail']),
-                trim($_POST['contactPhone']),
+                trim(ifnull($_POST['contactName'],'')),
+                trim(ifnull($_POST['contactEmail'],'')),
+                trim(ifnull($_POST['contactPhone'],'')),
                 $mailin,
-                $contactNotes == '' ? null : $contactNotes,
+                $ifnull($contactNotes, ''),
                 $vendorYear
             );
             $numrows1 = dbSafeCmd($updateQ, 'sssssi', $updateArr);
