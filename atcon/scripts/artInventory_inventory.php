@@ -39,7 +39,13 @@ EOS;
             $log .= " changed $checkInR";
             break;
         case 'Set Location':
-            $log .= " to " . $action['value'];
+            $location = $action['value'];
+            if ($location == null)
+                $location = '';
+            else
+                $location = trim($location);
+
+            $log .= " to $location ";
             $locationQ = <<<EOS
 UPDATE artItems I 
 JOIN exhibitorRegionYears eRY on eRY.id=I.exhibitorRegionYearId
@@ -47,7 +53,7 @@ JOIN exhibitorRegionYears eRY on eRY.id=I.exhibitorRegionYearId
 SET I.location=?
 WHERE I.item_key=? and eY.conid=? and eRY.exhibitorNumber=?;
 EOS;
-            $locationR = dbSafeCmd($locationQ, 'siii', array($action['value'],$item[1], $conid, $item[0]));
+            $locationR = dbSafeCmd($locationQ, 'siii', array($location,$item[1], $conid, $item[0]));
             $log .= " changed $locationR";
             break;
         case 'Inventory':
@@ -146,4 +152,3 @@ EOS;
 }
 
 ajaxSuccess($response);
-?>

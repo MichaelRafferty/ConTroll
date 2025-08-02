@@ -1,4 +1,4 @@
--- MySQL dump 10.13  Distrib 8.0.34, for macos13 (arm64)
+-- MySQL dump 10.13  Distrib 8.0.42, for macos15 (arm64)
 --
 -- Host: localhost    Database: reg
 -- ------------------------------------------------------
@@ -23,7 +23,6 @@ CREATE TABLE `exhibitors` (
   `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
   `password` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `need_new` tinyint(1) DEFAULT '1',
-  `confirm` tinyint(1) DEFAULT '0',
   `publicity` tinyint(1) DEFAULT '0',
   `addr` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `addr2` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -39,9 +38,11 @@ CREATE TABLE `exhibitors` (
   `shipZip` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `shipCountry` varchar(3) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `archived` enum('N','Y') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'N',
+  `notes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
   PRIMARY KEY (`id`),
   KEY `exhibitor_perid_fk` (`perid`),
-  KEY `exhibitors_newperson_fk` (`newperid`)
+  KEY `exhibitors_newperson_fk` (`newperid`),
+  KEY `exhibitors_idx_email` (`exhibitorEmail`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 

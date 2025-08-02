@@ -55,6 +55,9 @@ class artItemStatuses {
             case artItemStatuses.RELEASED: return artItemStatuses.RELEASED;
         }
     }
+    getDefault() {
+        return this.getStatus('Entered');
+    }
 
     // maybe add in functions to show valid transitions or check transition validity
     setValidOptions(status  = '') {
@@ -99,6 +102,7 @@ class artItem {
     exhibitorName;
     #exhibitRegionYearId
     regionYearName;
+    itemNotes;
 
     #editPane;
     #exhibitorNameField;
@@ -115,10 +119,12 @@ class artItem {
     #min_bidField;
     #sale_priceField;
     #sale_priceNameField;
+    #quantityRowDiv;
     #bidderField;
     #bidderNameField;
     #final_priceField;
     #itemTable;
+    #notesField;
 
 //functions to fetch and update based on id
 constructor(itemTable) {
@@ -137,6 +143,7 @@ constructor(itemTable) {
     this.#itemNumberField=document.getElementById('artItemItemNumber');
     this.#typeField=document.getElementById('artItemType');
     this.#sale_priceNameField=document.getElementById('artItemSalePriceName');
+    this.#quantityRowDiv=document.getElementById('quantityRowDiv');
     this.#bidderNameField=document.getElementById('artItemBidderName');//TODO make this field auto-update when bidder updates
 
     /* editable fields */
@@ -160,6 +167,8 @@ constructor(itemTable) {
     this.#bidderField.addEventListener('change',function() {_this.setIsChanged('artItemBidder','bidder');});
     this.#final_priceField=document.getElementById('artItemFinalPrice');
     this.#final_priceField.addEventListener('change',function() { _this.setIsChanged('artItemFinalPrice', 'final_price') });
+    this.#notesField=document.getElementById('artItemNotes');
+    this.#notesField.addEventListener('change',function() { _this.setIsChanged('artItemNotes', 'notes') });
 
     ai_message_div = document.getElementById('ai_result_message');
 }
@@ -168,14 +177,17 @@ setPriceNames(type){
         case artItemTypes.ART:
             document.getElementById('minPriceRow').style.display = 'block';
             this.#sale_priceNameField.innerHTML = "Quicksale Price";
+            this.#quantityRowDiv.style.display = 'none';
             break;
         case artItemTypes.NFS:
             document.getElementById('minPriceRow').style.display = 'none';
             this.#sale_priceNameField.innerHTML = "Insurance Amount";
+            this.#quantityRowDiv.style.display = 'none';
             break;
         case artItemTypes.PRINT:
             document.getElementById('minPriceRow').style.display = 'none';
             this.#sale_priceNameField.innerHTML = "Sale Price";
+            this.#quantityRowDiv.style.display = 'block';
             break;
     }
 }
@@ -200,11 +212,13 @@ resetEditPane() {
     this.#locationField.value = this.location;
     this.#quantityField.value = this.quantity;
     this.#quantityField.setAttribute('max',this.original_qty);
+    this.#original_qtyField.value = this.original_qty;
     this.#min_bidField.value = this.min_price; // hidden unless type = ART
     this.#sale_priceField.value = this.sale_price;
     this.#bidderField.value = this.#bidder;
-    this.#bidderNameField = this.bidderName;
-    this.#final_priceField = this.final_price;
+    this.#bidderNameField.innerHTML = this.bidderName;
+    this.#final_priceField.value = this.final_price;
+    this.#notesField.value = this.itemNotes;
 
     this.#isChanged=false;
     this.#changedFields= {};
@@ -214,7 +228,43 @@ setIsChanged(value,field) {
     this.#isChanged=true;
     this.#changedFields[value]=field;
 }
+
 setItemTable(itemTable) {this.#itemTable = itemTable;}
+
+setValuesForNew(exhibitor, number, type) {
+    this.#index = -99;
+    this.id = -99;
+    this.artistNumber = exhibitor.exhibitorNumber;
+    this.itemNumber = number;
+    this.title='';
+    this.material=''
+    this.type=typeList.getType(type);
+    this.status=statusList.getDefault();
+    this.location='';
+    if (exhibitor['locations'])
+        this.#locationList = exhibitor['locations'].split(',');
+    else
+        this.#locationList = [];
+    this.quantity = 1;
+    this.original_qty = 1;
+    this.min_price = null;
+    this.sale_price = null;
+    this.#bidder = null;
+    this.bidderName = null;
+    this.final_price=null;
+    this.#exhibitorRegionYearId = exhibitor.exhibitorRegionYearId;
+    this.exhibitorName = exhibitor.exhibitorName;
+    this.#exhibitRegionYearId = region;
+    this.regionYearName = region;
+    this.itemNotes = null;
+
+    if(this.type === false) {
+        show_message('invalid item type', 'warn', ai_message_div); //TODO append if possible
+        }
+    if(this.status === false) {
+        show_message('invalid item status', 'warn', ai_message_div); //TODO append if possible
+        }
+    }
 
 setValuesFromData(artItemData) {
     this.id = artItemData['id'];
@@ -225,17 +275,22 @@ setValuesFromData(artItemData) {
     this.type=typeList.getType(artItemData['type']);
     this.status=statusList.getStatus(artItemData['status']);
     this.location=artItemData['location'];
-    this.#locationList = artItemData['locations'].split(',');
+    if (artItemData['locations'])
+        this.#locationList = artItemData['locations'].split(',');
+    else
+        this.#locationList = [];
     this.quantity = artItemData['quantity'];
-    this.original_qty = artItemData['orig_qty'];
+    this.original_qty = artItemData['original_qty'];
     this.min_price = artItemData['min_price'];
     this.sale_price = artItemData['sale_price'];
+    this.final_price = artItemData['final_price'];
     this.#bidder = artItemData['bidder'];
     this.bidderName = artItemData['bidderName'];
     this.#exhibitorRegionYearId = artItemData['exhibitorRegionYearId'];
     this.exhibitorName = artItemData['exhibitorName'];
-    this.#exhibitRegionYearId = artItemData['exhibitRegionYearId']
-    this.regionYearName = artItemData['exhibitRegionName']
+    this.#exhibitRegionYearId = artItemData['exhibitRegionYearId'];
+    this.regionYearName = artItemData['exhibitRegionName'];
+    this.itemNotes = artItemData['notes'];
 
     if(this.type === false) {
         show_message('invalid item type', 'warn', ai_message_div); //TODO append if possible
@@ -263,14 +318,37 @@ fetchArtItem(index) {
 }
 
 updateArtItem () {
-    for(const changed in this.#changedFields) {
+    if(this.#index < 0) {
+        this.#itemTable.addData([{
+            id: this.id,
+            exhibitorRegionYearId: this.#exhibitorRegionYearId,
+            locations: this.#locationList,
+            exhibitorName: this.exhibitorName,
+            exhibitorNumber: this.artistNumber,
+            type: this.type,
+            item_key: this.itemNumber,
+            title: this.title,
+            material: this.material,
+            min_price: this.min_price,
+            sale_price: this.sale_price,
+            original_qty: this.original_qty,
+            quantity: this.quantity,
+            status: this.status,
+            location: this.location,
+            bidder: this.#bidder,
+            final_price: this.final_price,
+            notes: this.itemNotes
+            }], true);
+    }
+    for (const changed in this.#changedFields) {
         var value = document.getElementById(changed).value;
         this.#itemTable.getRow(this.#index).getCell(this.#changedFields[changed]).setValue(value);
 
-        if(this.#changedFields[changed] == 'bidder') {
+        if (this.#changedFields[changed] == 'bidder') {
             this.#itemTable.getRow(this.#index).getCell('bidderText').setValue(value);
         }
     }
+
     this.closeEditPane();
 }
 

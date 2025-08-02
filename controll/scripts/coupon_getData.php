@@ -17,4 +17,3 @@ if($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
 $response = getCouponData($response);
 
 ajaxSuccess($response);
-?>

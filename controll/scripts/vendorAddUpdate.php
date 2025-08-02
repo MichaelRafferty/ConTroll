@@ -1,6 +1,4 @@
 <?php
-global $db_ini;
-
 require_once '../lib/base.php';
 require_once('../../lib/exhibitorYears.php');
 // use common global Ajax return functions
@@ -46,6 +44,54 @@ if (array_key_exists('mailin', $_POST)) {
     $mailin = 'N';
 }
 
+if (array_key_exists('exhNotes', $_POST)) {
+    $exhNotes = $_POST['exhNotes'] == null ? '' : trim($_POST['exhNotes']);
+} else {
+    $exhNotes = '';
+}
+
+if (array_key_exists('contactNotes', $_POST)) {
+    $contactNotes = $_POST['contactNotes'] == null ? '' : trim($_POST['contactNotes']);
+} else {
+    $contactNotes = '';
+}
+
+// now for the optional fields
+$shipCompany = null;
+if (array_key_exists('shipCompany', $_POST) && $_POST['shipCompany'] != null) {
+    $shipCompany = trim($_POST['shipCompany']);
+}
+$shipAddr = null;
+if (array_key_exists('shipAddr', $_POST) && $_POST['shipAddr'] != null) {
+    $shipAddr = trim($_POST['shipAddr']);
+}
+$shipAddr2 = null;
+if (array_key_exists('shipAddr2', $_POST) && $_POST['shipAddr2'] != null) {
+    $shipAddr2 = trim($_POST['shipAddr2']);
+}
+$shipCity = null;
+if (array_key_exists('shipCity', $_POST) && $_POST['shipCity'] != null) {
+    $shipCity = trim($_POST['shipCity']);
+}
+$shipState = null;
+if (array_key_exists('shipState', $_POST) && $_POST['shipState'] != null) {
+    $shipState = trim($_POST['shipState']);
+}
+$shipZip = null;
+if (array_key_exists('shipZip', $_POST) && $_POST['shipZip'] != null) {
+    $shipZip = trim($_POST['shipZip']);
+}
+$shipCountry = null;
+if (array_key_exists('shipCountry', $_POST) && $_POST['shipCountry'] != null) {
+    $shipCountry = trim($_POST['shipCountry']);
+}
+
+// artist name is only in the Artist version of the form, it should be NULL for dealers
+$artistName = null;
+if (array_key_exists('artistName', $_POST)) {
+    $artistName = trim($_POST['artistName']);
+}
+
 // if register check for existence of vendor
 switch ($profileMode) {
     case 'register':
@@ -66,39 +112,41 @@ EOS;
         // create the vendor
         // email address validated on the source side
         $exhibitorInsertQ = <<<EOS
-INSERT INTO exhibitors (exhibitorName, exhibitorEmail, exhibitorPhone, website, description, password, need_new, confirm, 
-                     addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, publicity) 
-VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
+INSERT INTO exhibitors (artistName, exhibitorName, exhibitorEmail, exhibitorPhone, website, description, password, need_new, 
+    addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, 
+    publicity, notes) 
+VALUES (?,?,?,?,?,?,?,0,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
 EOS;
-        $typestr = 'ssssssiisssssssssssssi';
+        $typestr = 'ssssssssssssssssssssis';
         $paramarr = array(
+            trim($artistName),
             trim($_POST['exhibitorName']),
             trim($_POST['exhibitorEmail']),
             trim($_POST['exhibitorPhone']),
             trim($_POST['website']),
             trim($_POST['description']),
             password_hash(trim($_POST['password']), PASSWORD_DEFAULT),
-            0, // need_new_passwd
-            0, // confirm
             trim($_POST['addr']),
             trim($_POST['addr2']),
             trim($_POST['city']),
             trim($_POST['state']),
             trim($_POST['zip']),
             trim($_POST['country']),
-            trim($_POST['shipCompany']),
-            trim($_POST['shipAddr']),
-            trim($_POST['shipAddr2']),
-            trim($_POST['shipCity']),
-            trim($_POST['shipState']),
-            trim($_POST['shipZip']),
-            trim($_POST['shipCountry']),
-            $_POST['publicity']
+            trim($shipCompany),
+            trim($shipAddr),
+            trim($shipAddr2),
+            trim($shipCity),
+            trim($shipState),
+            trim($shipZip),
+            trim($shipCountry),
+            $_POST['publicity'],
+            $exhNotes = '' ? null : $exhNotes
         );
         $newExhibitor = dbSafeInsert($exhibitorInsertQ, $typestr, $paramarr);
 
         // create the year related functions
-        $yearId = exhibitorBuildYears($newExhibitor, $_POST['contactName'], $_POST['contactEmail'], $_POST['contactPhone'], $_POST['password'], $mailin);
+        $yearId = exhibitorBuildYears($newExhibitor, $_POST['contactName'], $_POST['contactEmail'], $_POST['contactPhone'], $_POST['password'], $mailin,
+            $contactNotes);
         exhibitorCheckMissingSpaces($newExhibitor, $yearId);
         break;
 
@@ -111,7 +159,8 @@ EOS;
         $updateQ = <<<EOS
 UPDATE exhibitors
 SET exhibitorName=?, exhibitorEmail=?, exhibitorPhone=?, website=?, description=?,
-    addr=?, addr2=?, city=?, state=?, zip=?, country=?, shipCompany=?, shipAddr=?, shipAddr2=?, shipCity=?, shipState=?, shipZip=?, shipCountry=?, publicity=?
+    addr=?, addr2=?, city=?, state=?, zip=?, country=?, shipCompany=?, shipAddr=?, shipAddr2=?, shipCity=?, shipState=?, shipZip=?, shipCountry=?, 
+    publicity=?, notes = ?
 WHERE id=?
 EOS;
         $updateArr = array(
@@ -126,21 +175,22 @@ EOS;
             trim($_POST['state']),
             trim($_POST['zip']),
             trim($_POST['country']),
-            trim($_POST['shipCompany']),
-            trim($_POST['shipAddr']),
-            trim($_POST['shipAddr2']),
-            trim($_POST['shipCity']),
-            trim($_POST['shipState']),
-            trim($_POST['shipZip']),
-            trim($_POST['shipCountry']),
+            trim($shipCompany),
+            trim($shipAddr),
+            trim($shipAddr2),
+            trim($shipCity),
+            trim($shipState),
+            trim($shipZip),
+            trim($shipCountry),
             $publicity,
+            $exhNotes = '' ? null : $exhNotes,
             $vendor
         );
-        $numrows = dbSafeCmd($updateQ, 'ssssssssssssssssssii', $updateArr);
+        $numrows = dbSafeCmd($updateQ, 'ssssssssssssssssssisi', $updateArr);
 
         $updateQ = <<<EOS
 UPDATE exhibitorYears
-SET contactName=?, contactEmail=?, contactPhone=?, mailin = ?, needReview = 0
+SET contactName=?, contactEmail=?, contactPhone=?, mailin = ?, lastVerified = NOW(), notes = ?
 WHERE id=?
 EOS;
             $updateArr = array(
@@ -148,16 +198,18 @@ EOS;
                 trim($_POST['contactEmail']),
                 trim($_POST['contactPhone']),
                 $mailin,
+                $contactNotes == '' ? null : $contactNotes,
                 $vendorYear
             );
-            $numrows1 = dbSafeCmd($updateQ, 'ssssi', $updateArr);
+            $numrows1 = dbSafeCmd($updateQ, 'sssssi', $updateArr);
         if ($numrows == 1 || $numrows1 == 1) {
             $response['status'] = 'success';
             $response['message'] = 'Profile Updated';
             // get the update info
             $vendorQ = <<<EOS
-SELECT exhibitorName, exhibitorEmail, exhibitorPhone, website, description, e.need_new AS eNeedNew, e.confirm AS eConfirm, ey.mailin,
-       ey.contactName, ey.contactEmail, ey.contactPhone, ey.need_new AS cNeedNew, ey.confirm AS cConfirm, ey.needReview as needReview,
+SELECT exhibitorName, exhibitorEmail, exhibitorPhone, website, description, e.need_new AS eNeedNew,
+       IFNULL(e.notes, '') AS exhNotes, IFNULL(ey.notes, '') AS contactNotes, ey.mailin, ey.contactName, ey.contactEmail, ey.contactPhone, 
+       ey.need_new AS cNeedNew, DATEDIFF(now(), ey.lastVerified) AS DaysSinceLastVerified, ey.lastVerified,
        addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, publicity
 FROM exhibitors e
 LEFT OUTER JOIN exhibitorYears ey ON e.id = ey.exhibitorId
@@ -182,4 +234,3 @@ EOS;
 }
 
 ajaxSuccess($response);
-?>

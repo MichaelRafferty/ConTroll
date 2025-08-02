@@ -4,6 +4,7 @@ require_once "../lib/exhibitorRegistrationForms.php";
 require_once "../lib/exhibitorRequestForms.php";
 require_once "../lib/exhibitorReceiptForms.php";
 require_once "../lib/exhibitorInvoice.php";
+require_once "lib/exhibitsConfiguration.php";
 require_once "lib/exhibitorChooseExhibitor.php";
 
 //initialize google session
@@ -18,13 +19,16 @@ $con = get_con();
 $conid = $con['id'];
 $debug = get_conf('debug');
 $vendor_conf = get_conf('vendor');
-$reg_conf = get_conf('reg');
+
 $usps = get_conf('usps');
 $conf = get_conf('con');
 if (array_key_exists('controll_exhibitors', $debug))
     $debug_exhibitors = $debug['controll_exhibitors'];
 else
     $debug_exhibitors = 0;
+
+$required = getConfValue('reg', 'required', 'addr');
+$testsite = getConfValue('vendor', 'test') == 1;
 
 $scriptName = $_SERVER['SCRIPT_NAME'];
 if (array_key_exists('tab', $_REQUEST)) {
@@ -34,7 +38,6 @@ if (array_key_exists('tab', $_REQUEST)) {
 }
 
 $conf = get_conf('con');
-$regConf = get_conf('reg');
 
 $cdn = getTabulatorIncludes();
 page_init($page,
@@ -88,18 +91,19 @@ $config_vars['artistsite'] = $vendor_conf['artistsite'];
 $config_vars['vendorsite'] = $vendor_conf['vendorsite'];
 $config_vars['debug'] = $debug['controll_exhibitors'];
 $config_vars['conid'] = $conid;
-$config_vars['required'] = $reg_conf['required'];
+$config_vars['required'] = $required;
 $config_vars['useUSPS'] = $useUSPS;
 $config_vars['initialTab'] = $initialTab;
 $config_vars['scriptName'] = $scriptName;
-$config_vars['regserver'] = $conf['server'];
+$config_vars['regserver'] = getConfValue('reg', 'server');
 
 bs_tinymceModal();
 draw_registrationModal('admin', 'Admin', $conf, $countryOptions);
 draw_exhibitorRequestModal('admin');
 draw_exhibitorReceiptModal('admin');
-draw_exhibitorInvoiceModal('', null, $countryOptions, $regConf, null, 'Exhibitors', 'admin');
+draw_exhibitorInvoiceModal('', null, $countryOptions, $testsite, null, 'Exhibitors', 'admin');
 draw_exhibitorChooseModal();
+draw_exhibitsConfigurationModals();
 ?>
 <!-- space detail modal -->
 <div id='space_detail' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Space Detail' aria-hidden='true' style='--bs-modal-width: 90%;'>
@@ -157,7 +161,8 @@ draw_exhibitorChooseModal();
                         <div class='col-sm-1'>Space:</div>
                         <div class='col-sm-2' id='spaceHTML'></div>
                         <div class='col-sm-9'>
-                            <input type="text" name="locations", id="locationsVal", placeholder="Enter locations separated by commas", maxlength="256" size="90"/>
+                            <input type="text" name="locations", id="locationsVal", placeholder="Enter locations separated by commas", maxlength="512"
+                                   size="90"/>
                         </div>
                     </div>
                     <div class='row mt-3'>
@@ -312,8 +317,10 @@ while ($regionL = $regionOwnerR->fetch_assoc()) {
             <div class='row'>
                 <div class='col-sm-12'>
                     <p>
-                        <strong>NOTE:</strong> When you approve requests for a space, any request from the same exhibitor that is not approved will be cancelled when you press the save button.
-                        It is necessary to approve all the spaces for an exhibitor in the same save transaction.
+                        <strong>NOTE:</strong> When you approve requests for a Space in a Region, any request in that Region,
+                        from the same exhibitor ,that is not approved will be cancelled when you press the save button.
+                        It is necessary to approve all the Spaces in a Region for an exhibitor in the same save transaction.
+                        (All of the Spaces, in that Region, for that Exhibitor will appear on the same approve request popup.)
                     </p>
                 </div>
             </div>
@@ -368,4 +375,3 @@ foreach ($regionOwners AS $regionOwner => $regionList) {
 
 <?php
 page_foot($page);
-?>

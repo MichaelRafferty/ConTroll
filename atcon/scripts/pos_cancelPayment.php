@@ -1,4 +1,4 @@
- <?php
+<?php
 // library AJAX Processor: pos_cancelPayment.php
 // ConTroll Registration System
 // Author: Syd Weinstein

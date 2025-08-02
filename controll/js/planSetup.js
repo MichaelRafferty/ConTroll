@@ -427,6 +427,7 @@ class PlansSetup {
         if (this.#planEditIndex == null) {
             newRow['id'] =  -99;
             newRow['torder'] = 99999;
+            this.#plansTable.clearFilter(true);
             this.#plansTable.addRow(newRow);
         } else {
             this.#plansTable.updateData([newRow]);

@@ -1,5 +1,9 @@
 //import { TabulatorFull as Tabulator } from 'tabulator-tables';
 
+var activeConSetup = 'none';
+var editListMasterRow = null;
+var memListModalDirty = false;
+
 class consetup {
     #active = false;
     #contable = null;
@@ -26,9 +30,18 @@ class consetup {
     #message_div = null;
     #setup_type = null;
     #setup_title = null;
+    #memListData = null;
+    #catListData = null;
+    #typeListData = null;
+    #ageListData = null;
+    #catListSelect = null;
+    #typeListSelect = null;
+    #ageListSelect = null;
+    #memListModal = null;
+    #memListMasterRow = null;
+    #editData = null;
 
     constructor(setup_type) {
-
         this.#message_div = document.getElementById('test');
         if (setup_type == 'current' || setup_type == 'c') {
             this.#conlist_pane = document.getElementById('consetup-pane');
@@ -39,6 +52,11 @@ class consetup {
             this.#conlist_pane = document.getElementById('nextconsetup-pane');
             this.#setup_type = 'next';
             this.#setup_title = 'Next';
+        }
+        activeConSetup = this.#setup_type;
+        var id = document.getElementById('editMemListModal');
+        if (id) {
+            this.#memListModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
         }
     };
 
@@ -78,7 +96,7 @@ class consetup {
         this.checkMemlistUndoRedo();
     };
 
-    draw(data, textStatus, jhXHR) {
+    draw(year, data, textStatus, jhXHR) {
         var _this = this;
         //console.log('in draw');
         //console.log(data);
@@ -100,7 +118,8 @@ class consetup {
     <button id="` + this.#setup_type + `memlist-redo" type="button" class="btn btn-secondary btn-sm" onclick="` + this.#setup_type + `.redoMemList(); return false;" disabled>Redo</button>
     <button id="` + this.#setup_type + `memlist-addrow" type="button" class="btn btn-secondary btn-sm" onclick="` + this.#setup_type + `.addrowMemList(); return false;">Add New</button>
     <button id="` + this.#setup_type + `memlist-save" type="button" class="btn btn-primary btn-sm"  onclick="` + this.#setup_type + `.saveMemList(); return false;" disabled>Save Changes</button>
-    <button id="` + this.#setup_type + `memlist-csv" type="button" class="btn btn-info btn-sm"  onclick="` + this.#setup_type + `.downloadMemList(); return false;">Download CSV</button>
+    <button id="` + this.#setup_type + `memlist-csv" type="button" class="btn btn-info btn-sm"  onclick="` + this.#setup_type + `.downloadMemList('csv'); return false;">Download CSV</button>
+    <button id="` + this.#setup_type + `memlist-xlsx" type="button" class="btn btn-info btn-sm"  onclick="` + this.#setup_type + `.downloadMemList('xlsx'); return false;">Download Excel</button>
 </div>
 <div>&nbsp;</div>
 </div>
@@ -122,11 +141,11 @@ class consetup {
         this.#memlist_redobtn = document.getElementById(this.#setup_type + 'memlist-redo')
         this.#memlist_addrowbtn = document.getElementById(this.#setup_type + 'memlist-addrow')
 
-        this.draw_conlist(data, textStatus, jhXHR);
-        this.draw_memlist(data, textStatus, jhXHR);
+        this.draw_conlist(year, data, textStatus, jhXHR);
+        this.draw_memlist(year, data, textStatus, jhXHR);
     };
 
-    draw_conlist(data, textStatus, jhXHR) {
+    draw_conlist(year, data, textStatus, jhXHR) {
         var _this = this;
         this.#conlist_dirty = false;
 
@@ -140,7 +159,7 @@ class consetup {
 
         if (data['conlist'] == null) {
             this.#conlist_div.innerHTML = 'Nothing defined yet.' +
-                (this.#setup_type == 'next') ? ' After the current year is set up, ask you admin to run the "Build &lt;id&gt; Setup" ' +
+            (this.#setup_type == 'next') ? ' After the current year is set up, ask you admin to run the "Build &lt;id&gt; Setup" ' +
                 'from the home page before continuing the the next year setup.' : '';
 
         } else {
@@ -150,12 +169,28 @@ class consetup {
                 data: [data['conlist']],
                 layout: "fitDataTable",
                 columns: [
-                    { title: "ID", field: "id", width: 50, headerSort: false },
-                    { title: "Name", field: "name", headerSort: false, width: 100, editor: "input", editorParams: { elementAttributes: { maxlength: "10" } }, validator: "required" },
-                    { title: "Label", field: "label", headerSort: false, width: 350, editor: "input", editorParams: { elementAttributes: { maxlength: "40" } }, validator: "required" },
-                    { title: "Start Date", field: "startdate", width: 100, headerSort: false, editor: "date", validator: "required" },
-                    { title: "End Date", field: "enddate", width: 100, headerSort: false, editor: "date", validator: "required" },
-                    { field: "to_delete", visible: false, }
+                    {title: "ID", field: "id", width: 50, headerSort: false},
+                    {
+                        title: "Name",
+                        field: "name",
+                        headerSort: false,
+                        width: 100,
+                        editor: "input",
+                        editorParams: {elementAttributes: {maxlength: "10"}},
+                        validator: "required"
+                    },
+                    {
+                        title: "Label",
+                        field: "label",
+                        headerSort: false,
+                        width: 350,
+                        editor: "input",
+                        editorParams: {elementAttributes: {maxlength: "40"}},
+                        validator: "required"
+                    },
+                    {title: "Start Date", field: "startdate", width: 100, headerSort: false, editor: "date", validator: "required"},
+                    {title: "End Date", field: "enddate", width: 100, headerSort: false, editor: "date", validator: "required"},
+                    {field: "to_delete", visible: false,}
                 ],
             });
         }
@@ -168,8 +203,38 @@ class consetup {
         }
     };
 
-    draw_memlist(data, textStatus, jhXHR) {
+    draw_memlist(year, data, textStatus, jhXHR) {
         var _this = this;
+        var index = 0;
+
+        // save off the select list data
+        this.#catListData = data['memCats'];
+        this.#typeListData = data['memTypes'];
+        this.#ageListData = data['ageTypes'];
+
+        // build the select lists
+        this.#catListSelect = "<select name='memListCategorySelect' id='memListCategorySelect' onchange='memListModalDirty = true;'>";
+        for (index = 0; index < this.#catListData.length; index++) {
+            var cat = this.#catListData[index];
+            this.#catListSelect += "\n<option value='" + cat + "'>" + cat + "</option>";
+        }
+        this.#ageListSelect += "\n</select>";
+        this.#ageListSelect = "<select name='memListAgeSelect' id='memListAgeSelect' onchange='memListModalDirty = true;'>";
+        for (index = 0; index < this.#ageListData.length; index++) {
+            var age = this.#ageListData[index];
+            this.#ageListSelect += "\n<option value='" + age + "'>" + age + "</option>";
+        }
+        this.#typeListSelect += "\n</select>";
+        this.#typeListSelect = "<select name='memListTypeSelect' id='memListTypeSelect' onchange='memListModalDirty = true;'>";
+        for (index = 0; index < this.#typeListData.length; index++) {
+            var type = this.#typeListData[index];
+            this.#typeListSelect += "\n<option value='" + type + "'>" + type + "</option>";
+        }
+        this.#typeListSelect += "\n</select>";
+        document.getElementById('editMemListCategory').innerHTML = this.#catListSelect;
+        document.getElementById('editMemListAge').innerHTML = this.#ageListSelect;
+        document.getElementById('editMemListType').innerHTML = this.#typeListSelect;
+
         var memListData = new Array();
 
         if (this.#memtable != null) {
@@ -193,64 +258,89 @@ class consetup {
             movableRows: true,
             data: data['memlist'],
             layout: "fitDataTable",
-            pagination: true,
-            paginationAddRow:"table",
+            pagination: data['memlist'].length > 25,
+            paginationAddRow: "table",
             paginationSize: 25,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
-                { rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false },
+                {rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false},
                 {
                     title: "Del", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
                     cellClick: function (e, cell) {
                         deleterow(e, cell.getRow());
                     }
                 },
-                { title: "ID", field: "id", width: 70, headerSort: true, headerHozAlign:"right", hozAlign: "right",
-                    headerFilter: "input", headerFilterFunc:numberHeaderFilter,
+                {title: "Edit", formatter: this.editbutton, formatterParams: {year: year}, hozAlign: "left", headerSort: false},
+                {
+                    title: "ID", field: "id", width: 70, headerSort: true, headerHozAlign: "right", hozAlign: "right",
+                    headerFilter: "input", headerFilterFunc: numberHeaderFilter,
                 },
-                { field: "memlistkey", visible: false, },
-                { title: "Con ID", field: "conid", width: 70, headerWordWrap: true, headerFilter: true, headerHozAlign:"right", hozAlign: "right", },
-                { title: "Sort", field: "sort_order", headerSort: false, visible: false },
-                { title: "Category", field: "memCategory", editor: "list", editorParams: { values: data['memCats'], }, headerFilter: true, headerFilterParams: { values: data['memCats'] } },
-                { title: "Type", field: "memType", editor: "list", editorParams: { values: data['memTypes'], }, headerFilter: true, headerFilterParams: { values: data['memTypes'], } },
-                { title: "Age", field: "memAge", editor: "list", editorParams: { values: data['ageTypes'], }, headerFilter: true, headerFilterParams: { values: data['ageTypes'], }, },
+                {field: "memlistkey", visible: false,},
+                {title: "Con ID", field: "conid", width: 70, headerWordWrap: true, headerFilter: true, headerHozAlign: "right", hozAlign: "right",},
+                {title: "Sort", field: "sort_order", headerSort: false, visible: false},
+                {
+                    title: "Category",
+                    field: "memCategory",
+                    editor: "list",
+                    editorParams: {values: data['memCats'],},
+                    headerFilter: true,
+                    headerFilterParams: {values: data['memCats']}
+                },
+                {
+                    title: "Type",
+                    field: "memType",
+                    editor: "list",
+                    editorParams: {values: data['memTypes'],},
+                    headerFilter: true,
+                    headerFilterParams: {values: data['memTypes'],}
+                },
+                {
+                    title: "Age",
+                    field: "memAge",
+                    editor: "list",
+                    editorParams: {values: data['ageTypes'],},
+                    headerFilter: true,
+                    headerFilterParams: {values: data['ageTypes'],},
+                },
                 {
                     title: "Label", field: "shortname", minWidth: 300,
-                    tooltip: function (e, cell, onRendered) { return cell.getRow().getCell("label").getValue(); },
-                    editor: "input", editorParams: { elementAttributes: { maxlength: "64" } },
+                    tooltip: function (e, cell, onRendered) {
+                        return cell.getRow().getCell("label").getValue();
+                    },
+                    editor: "input", editorParams: {elementAttributes: {maxlength: "64"}},
                     headerFilter: true
                 },
-                { title: "Label", field: "label", visible: false },
+                {title: "Label", field: "label", visible: false},
                 {
                     title: "Price", field: "price", hozAlign: "right", editor: "input", validator: ["required", this.#priceregexp],
-                    headerFilter: "input", headerFilterFunc:numberHeaderFilter,
+                    headerFilter: "input", headerFilterFunc: numberHeaderFilter,
                 },
-                { title: "Start Date", field: "startdate", width: 170, editor: "datetime", validator: "required", headerFilter: "input" },
-                { title: "End Date", field: "enddate", width: 170, editor: "datetime", validator: "required", headerFilter: "input" },
+                {title: "Start Date", field: "startdate", width: 170, editor: "datetime", validator: "required", headerFilter: "input"},
+                {title: "End Date", field: "enddate", width: 170, editor: "datetime", validator: "required", headerFilter: "input"},
                 {
-                    title: "At", field: "atcon", editor: "list", editorParams: { values: ["Y", "N"], },
-                    headerFilter: true, headerFilterParams: { values: ["Y", "N"], }
+                    title: "At", field: "atcon", editor: "list", editorParams: {values: ["Y", "N"],},
+                    headerFilter: true, headerFilterParams: {values: ["Y", "N"],}
                 },
                 {
-                    title: "On", field: "online", editor: "list", editorParams: { values: ["Y", "N"], },
-                    headerFilter: true, headerFilterParams: { values: ["Y", "N"], }
+                    title: "On", field: "online", editor: "list", editorParams: {values: ["Y", "N"],},
+                    headerFilter: true, headerFilterParams: {values: ["Y", "N"],}
                 },
                 {
                     title: "Notes", field: "notes", minWidth: 300,
-                    editor: "input", editorParams: { elementAttributes: { maxlength: "1024" } },
+                    editor: "input", editorParams: {elementAttributes: {maxlength: "1024"}},
                     headerFilter: true,
                 },
                 {
                     title: "GL Num", field: "glNum", minWidth: 120, headerWordWrap: true,
-                    editor: "input", editorParams: { elementAttributes: { maxlength: "16" } },
+                    editor: "input", editorParams: {elementAttributes: {maxlength: "16"}},
                     headerFilter: true
                 },
                 {
                     title: "GL Label", field: "glLabel", minWidth: 200, headerWordWrap: true,
-                    editor: "input", editorParams: { elementAttributes: { maxlength: "64" } },
+                    editor: "input", editorParams: {elementAttributes: {maxlength: "64"}},
                     headerFilter: true
                 },
-                { field: "to_delete", visible: false, },
+                {field: "to_delete", visible: false,},
             ],
 
         });
@@ -264,6 +354,60 @@ class consetup {
         this.#memtable.on("cellEdited", cellChanged);
     };
 
+    // display edit button for a long field
+    editbutton(cell, formatterParams, onRendered) {
+        var index = cell.getRow().getIndex()
+        var year = formatterParams.year;
+        return '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
+            ' onclick="' + year + '.editSeries(' + index + ');">Edit</button>';
+    }
+
+    editSeries(index) {
+        var row = this.#memtable.getRow(index);
+        var rowData = row.getData();
+        var listData = this.#memtable.getData();
+        this.#editData = [];
+
+        // build an array of all of the rows in this series
+        for (var index = 0; index < listData.length; index++) {
+            var matchRow = listData[index];
+
+            if (matchRow.conid != rowData.conid || matchRow.memCategory != rowData.memCategory || matchRow.memType != rowData.memType ||
+                matchRow.memAge != rowData.memAge || matchRow.shortname != rowData.shortname)
+                continue; // not one of the series
+
+            if (matchRow.id == rowData.id) {
+                this.#memListMasterRow = this.#editData.length;
+                editListMasterRow = this.#memListMasterRow;
+                }
+            this.#editData.push(matchRow);
+        }
+
+        // populate the form with the master row (the one with the edit select
+        var seriesName = rowData.conid + '/' + rowData.memCategory + '/' + rowData.memType + '/' + rowData.memAge + '/' + rowData.shortname;
+        document.getElementById('editMemListTitle').innerHTML = 'Edit Memlist Series - ' + rowData.id + ': ' + seriesName;
+        document.getElementById('editMemListName').innerHTML = seriesName;
+        document.getElementById('editMemListID').innerHTML = rowData.id;
+        document.getElementById('editMemListConID').innerHTML = rowData.conid;
+        memListModalDirty = false;
+        this.#memListModal.show();
+
+        document.getElementById('memListCategorySelect').value = rowData.memCategory;
+        document.getElementById('memListAgeSelect').value = rowData.memAge;
+        document.getElementById('memListTypeSelect').value = rowData.memType;
+        document.getElementById('editMemListAtcon').value = rowData.atcon;
+        document.getElementById('editMemListOnline').value = rowData.online;
+        document.getElementById('editMemListLabel').value = rowData.shortname;
+        document.getElementById('editMemListPrice').value = rowData.price;
+        document.getElementById('editMemListStart').value = rowData.startdate;
+        document.getElementById('editMemListEnd').value = rowData.enddate;
+        document.getElementById('editMemListNotes').value = rowData.notes;
+        document.getElementById('editMemListGLNum').value = rowData.glNum;
+        document.getElementById('editMemListGLLabel').value = rowData.glLabel;
+
+        this.reSortTimeSeries(false);
+    }
+
     open() {
         var script = "scripts/regadmin_getCondata.php";
         $.ajax({
@@ -272,9 +416,9 @@ class consetup {
             data: 'year=' + this.#setup_type + '&type=all',
             success: function (data, textStatus, jhXHR) {
                 if (data['year'] == 'current') {
-                    current.draw(data, textStatus, jhXHR);
+                    current.draw('current', data, textStatus, jhXHR);
                 } else {
-                    next.draw(data, textStatus, jhXHR);
+                    next.draw('next', data, textStatus, jhXHR);
                 }
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -297,7 +441,7 @@ class consetup {
             this.#contable.off("cellEdited");
             this.#contable.destroy();
             this.#contable = null;
-        } 
+        }
 
         this.#conlist_pane.innerHTML = '';
         this.#conlist_dirty = false;
@@ -355,8 +499,18 @@ class consetup {
     addrowMemList() {
         var _this = this;
 
-        this.#memtable.addRow({ id: -99999, conid: this.#conid, shortname: 'new-row', price:0, atcon: 'N', online:'N', sortorder: 199, uses: 0 }, false).then(function(row) {
-            row.getTable().setPage('last').then(function() {
+        this.#memtable.clearFilter(true);
+        this.#memtable.addRow({
+            id: -99999,
+            conid: this.#conid,
+            shortname: 'new-row',
+            price: 0,
+            atcon: 'N',
+            online: 'N',
+            sortorder: 199,
+            uses: 0
+        }, false).then(function (row) {
+            row.getTable().setPage('last').then(function () {
                 row.getCell("id").getElement().style.backgroundColor = "#fff3cd";
                 row.getCell("conid").getElement().style.backgroundColor = "#fff3cd";
                 row.getCell("shortname").getElement().style.backgroundColor = "#fff3cd";
@@ -375,7 +529,7 @@ class consetup {
         this.checkMemlistUndoRedo();
     }
 
-    saveConlistComplete(data, textStatus, jhXHR) {        
+    saveConlistComplete(data, textStatus, jhXHR) {
         this.#conlist_savebtn.innerHTML = "Save Changes";
 
         clear_message();
@@ -383,16 +537,16 @@ class consetup {
         $.ajax({
             url: script,
             method: 'GET',
-            data: 'year=' + this.#setup_type + '&type=conlist',      
+            data: 'year=' + this.#setup_type + '&type=conlist',
             success: function (data, textStatus, jhXHR) {
                 if (data['error']) {
                     show_message(data['error'], 'error');
                     return false;
                 }
                 if (data['year'] == 'current') {
-                    current.draw_conlist(data, textStatus, jhXHR);
+                    current.draw_conlist(data['year'], data, textStatus, jhXHR);
                 } else {
-                    next.draw_conlist(data, textStatus, jhXHR);
+                    next.draw_conlist(data['year'], data, textStatus, jhXHR);
                 }
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -445,7 +599,7 @@ class consetup {
                         current.saveConlistComplete(data, textStatus, jhXHR);
                     } else {
                         next.saveConlistComplete(data, textStatus, jhXHR);
-                    }                   
+                    }
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
                     showError("ERROR in " + script + ": " + textStatus, jqXHR);
@@ -470,9 +624,9 @@ class consetup {
             data: 'year=' + this.#setup_type + '&type=memlist',
             success: function (data, textStatus, jhXHR) {
                 if (data['year'] == 'current') {
-                    current.draw_memlist(data, textStatus, jhXHR);
+                    current.draw_memlist(data['year'], data, textStatus, jhXHR);
                 } else {
-                    next.draw_memlist(data, textStatus, jhXHR);
+                    next.draw_memlist(data['year'], data, textStatus, jhXHR);
                 }
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -540,9 +694,9 @@ class consetup {
                         show_message(data['success'], 'success');
                     }
 
-                    if (data['year'] == 'current') {                        
+                    if (data['year'] == 'current') {
                         current.saveMemListComplete(data, textStatus, jhXHR);
-                    } else {                        
+                    } else {
                         next.saveMemListComplete(data, textStatus, jhXHR);
                     }
                 },
@@ -554,7 +708,7 @@ class consetup {
         }
     };
 
-    downloadMemList() {
+    downloadMemList(format) {
         if (this.#memtable == null)
             return;
 
@@ -563,9 +717,9 @@ class consetup {
         var fieldList = [
             'id',
             'conid',
-            { key: 'memCategory', label: 'Category' },
-            { key: 'memType', label: 'Type' },
-            { key: 'memAge', label: 'Age' },
+            {key: 'memCategory', label: 'Category'},
+            {key: 'memType', label: 'Type'},
+            {key: 'memAge', label: 'Age'},
             'shortname',
             'label',
             'price',
@@ -574,8 +728,303 @@ class consetup {
             'atcon',
             'online',
             'notes',
-            'sort_order'
+            'glNum',
+            'glLabel',
+            'sort_order',
+            {field: "to_delete", visible: false,},
         ];
-        downloadCSVPost(filename, tabledata, null, fieldList);
+        downloadFilePost(format, filename, tabledata, null, fieldList);
+    };
+
+    // copy the fixed fields from the upper Edit block to the lower time series rows
+    copyMemListChanges() {
+        for (var index = 0; index < 10; index++) {
+            if (document.getElementById('EMLTS' + index + '_Price').value != '') {
+                // has price, copy the data rows
+                if (index >= this.#editData.length) {
+                    this.#editData.push({id: 'new' + index });
+                    document.getElementById('EMLTS' + index + '_ID').innerHTML = this.#editData[index].id;
+                }
+                this.#editData[index].memCategory = document.getElementById('memListCategorySelect').value;
+                this.#editData[index].memAge = document.getElementById('memListAgeSelect').value;
+                this.#editData[index].memType = document.getElementById('memListTypeSelect').value;
+                this.#editData[index].shortname = document.getElementById('editMemListLabel').value;
+                this.#editData[index].notes = document.getElementById('editMemListNotes').value;
+                this.#editData[index].glNum = document.getElementById('editMemListGLNum').value;
+                this.#editData[index].glLabel = document.getElementById('editMemListGLLabel').value;
+                document.getElementById('EMLTS' + index + '_glNum').value = this.#editData[index].glNum;
+                document.getElementById('EMLTS' + index + '_glLabel').value = this.#editData[index].glLabel;
+            }
+        }
+        show_message("Fields copied", 'success', 'result_message_editMemList');
+        //console.log(this.#editData);
+    }
+
+    // sequence the end dates for the time series
+    resetEndDates() {
+        for (var index = 0; index < this.#editData.length - 1; index++) {
+            this.#editData[index].enddate = this.#editData[index + 1].startdate;
+            document.getElementById('EMLTS' + index + '_End').value = this.#editData[index].enddate;
+        }
+        show_message("End Dates reset", 'success', 'result_message_editMemList');
+    }
+
+    // save the time series data back to the edit data array
+    saveTimeSeries() {
+        var index = 0;
+        for (var row = 0; row < 10; row++) {
+            if (document.getElementById('EMLTS' + row + '_Price').value != '') {
+                // has price, copy the data rows
+                if (index >= this.#editData.length) {
+                    this.#editData.push({id: 'new' + index });
+                    // new rows also get all the master row data
+                    this.#editData[index].memCategory = document.getElementById('memListCategorySelect').value;
+                    this.#editData[index].memAge = document.getElementById('memListAgeSelect').value;
+                    this.#editData[index].memType = document.getElementById('memListTypeSelect').value;
+                    this.#editData[index].shortname = document.getElementById('editMemListLabel').value;
+                    this.#editData[index].notes = document.getElementById('editMemListNotes').value;
+                    this.#editData[index].glNum = document.getElementById('editMemListGLNum').value;
+                    this.#editData[index].glLabel = document.getElementById('editMemListGLLabel').value;
+                    document.getElementById('EMLTS' + index + '_ID').innerHTML = this.#editData[index].id;
+                }
+                this.#editData[index].price = document.getElementById('EMLTS' + row + '_Price').value;
+                this.#editData[index].startdate = document.getElementById('EMLTS' + row + '_Start').value;
+                this.#editData[index].enddate = document.getElementById('EMLTS' + row + '_End').value;
+                this.#editData[index].atcon = document.getElementById('EMLTS' + row + '_Atcon').value;
+                this.#editData[index].online = document.getElementById('EMLTS' + row + '_Online').value;
+                this.#editData[index].glNum = document.getElementById('EMLTS' + row + '_glNum').value;
+                this.#editData[index].glLabel = document.getElementById('EMLTS' + row + '_glLabel').value;
+                index++;
+            }
+        }
+        // now copy the main row data into editData
+        index = this.#memListMasterRow;
+        this.#editData[index].memCategory = document.getElementById('memListCategorySelect').value;
+        this.#editData[index].memAge = document.getElementById('memListAgeSelect').value;
+        this.#editData[index].memType = document.getElementById('memListTypeSelect').value;
+        this.#editData[index].shortname = document.getElementById('editMemListLabel').value;
+        this.#editData[index].notes = document.getElementById('editMemListNotes').value;
+        this.#editData[index].glNum = document.getElementById('editMemListGLNum').value;
+        this.#editData[index].glLabel = document.getElementById('editMemListGLLabel').value;
+    }
+
+    reSortTimeSeries(saveFirst = false) {
+        if (saveFirst)
+            this.saveTimeSeries();
+
+        // now sort the rows into date order and display them
+        this.#editData.sort(function (a, b) {
+            if (a.startdate < b.startdate)
+                return -1;
+
+            if (a.enddate < b.enddate)
+                return -1;
+
+            if (a.price < b.price)
+                return -1;
+
+            if (a.startdate > b.startdate)
+                return 1;
+
+            if (a.enddate > b.enddate)
+                return 1;
+
+            if (a.price > b.price)
+                return 1;
+
+            return 0;
+        });
+
+        // fill in the bottom rows from the edit array
+        for (var index = 0; index < this.#editData.length; index++) {
+            var row = this.#editData[index];
+            document.getElementById('EMLTS' + index + '_ID').innerHTML = row.id;
+            document.getElementById('EMLTS' + index + '_Price').value = row.price;
+            document.getElementById('EMLTS' + index + '_Start').value = row.startdate;
+            document.getElementById('EMLTS' + index + '_End').value = row.enddate;
+            document.getElementById('EMLTS' + index + '_Atcon').value = row.atcon;
+            document.getElementById('EMLTS' + index + '_Online').value = row.online;
+            document.getElementById('EMLTS' + index + '_glNum').value = row.glNum;
+            document.getElementById('EMLTS' + index + '_glLabel').value = row.glLabel;
+        }
+
+        // clear the remaining bottom rows
+        for (index = this.#editData.length; index < 10; index++) {
+            document.getElementById('EMLTS' + index + '_ID').innerHTML = '';
+            document.getElementById('EMLTS' + index + '_Price').value = '';
+            document.getElementById('EMLTS' + index + '_Start').value = '';
+            document.getElementById('EMLTS' + index + '_End').value = '';
+            document.getElementById('EMLTS' + index + '_Atcon').value = 'N';
+            document.getElementById('EMLTS' + index + '_Online').value = 'N';
+            document.getElementById('EMLTS' + index + '_glNum').value = '';
+            document.getElementById('EMLTS' + index + '_glLabel').value = '';
+        }
+
+        clear_message('result_message_editMemList');
+    }
+
+    // save the modal data back to the table and close the modal
+    editMemListSave() {
+        this.saveTimeSeries(); // write the data back to the this.#editData array
+
+        // copy the edit data back to the main array
+        this.#memtable.updateOrAddData(this.#editData);
+        for (var index = 0; index < this.#editData.length; index++) {
+            var id = this.#editData[index].id;
+            this.#memtable.getRow(id).getElement().style.backgroundColor = "#fff3cd";
+        }
+        this.#memListModal.hide();
+
+        // mark that we need to save the screen
+        this.#memlist_savebtn.innerHTML = "Save Changes*";
+        this.#memlist_savebtn.disabled = false;
+        this.#memlist_dirty = true;
+    }
+
+    // cancel check dirty flag
+    editMemListCancel() {
+        if (memListModalDirty) {
+            if (!confirm('You have unsaved changes you need to save back to the underlying page with the "Save Changes" button.' +
+                '\n\nDo you wish to discard those changes?')) {
+                return;
+            }
+
+            memListModalDirty = false;
+        }
+        this.#memListModal.hide();
     }
 };
+
+// static functions to call appropriate class
+function editMemListSave() {
+    if (activeConSetup == 'next')
+        return next.editMemListSave();
+
+    return current.editMemListSave();
+}
+
+function copyMemListChanges() {
+    if (activeConSetup == 'next')
+        return next.copyMemListChanges();
+
+    return current.copyMemListChanges();
+}
+
+function resetEndDates() {
+    if (activeConSetup == 'next')
+        return next.resetEndDates();
+
+    return current.resetEndDates();
+}
+
+function reSortTimeSeries() {
+    if (activeConSetup == 'next')
+        return next.reSortTimeSeries(true);
+
+    return current.reSortTimeSeries(true);
+}
+
+function editMemListCancel() {
+    if (activeConSetup == 'next')
+        return next.editMemListCancel();
+
+    return current.editMemListCancel();
+}
+
+// top section edited price, set bottom screen
+function priceChange(masterRow) {
+    document.getElementById('EMLTS' + masterRow + '_Price').value = document.getElementById('editMemListPrice').value;
+    memListModalDirty = true;
+}
+
+// top section edited startdate, set bottom screen
+function startdateChange(masterRow) {
+    document.getElementById('EMLTS' + masterRow + '_Start').value = document.getElementById('editMemListStart').value;
+    memListModalDirty = true;
+}
+
+// top section edited enddate, set bottom screen
+function enddateChange(masterRow) {
+    document.getElementById('EMLTS' + masterRow + '_End').value = document.getElementById('editMemListEnd').value;
+    memListModalDirty = true;
+}
+
+// top section edited atcon, set bottom screen
+function atconChange(masterRow) {
+    document.getElementById('EMLTS' + masterRow + '_Atcon').value = document.getElementById('editMemListAtcon').value;
+    memListModalDirty = true;
+}
+
+// top section edited online, set bottom screen
+function onlineChange(masterRow) {
+    document.getElementById('EMLTS' + masterRow + '_Online').value = document.getElementById('editMemListOnline').value;
+    memListModalDirty = true;
+}
+
+// top section edited glNum, set bottom screen
+function glNumChange(masterRow) {
+    document.getElementById('EMLTS' + masterRow + '_glNum').value = document.getElementById('editMemListGLNum').value;
+    memListModalDirty = true;
+}
+
+// top section edited glLabel, set bottom screen
+function glLabelChange(masterRow) {
+    document.getElementById('EMLTS' + masterRow + '_glLabel').value = document.getElementById('editMemListGLLabel').value;
+    memListModalDirty = true;
+}
+
+// bottom section edited price, set top screen
+function tsPriceChange(row) {
+    if (row == editListMasterRow) {
+        document.getElementById('editMemListPrice').value = document.getElementById('EMLTS' + row + '_Price').value;
+        memListModalDirty = true;
+    }
+}
+
+// bottom section edited startdate, set top screen
+function tsStartChange(row) {
+    if (row == editListMasterRow) {
+        document.getElementById('editMemListStart').value = document.getElementById('EMLTS' + row + '_Start').value;
+        memListModalDirty = true;
+    }
+}
+
+// bottom section edited enddate, set top screen
+function tsEndChange(row) {
+    if (row == editListMasterRow) {
+        document.getElementById('editMemListEnd').value = document.getElementById('EMLTS' + row + '_End').value;
+        memListModalDirty = true;
+    }
+}
+
+// bottom section edited atcon, set top screen
+function tsAtconChange(row) {
+    if (row == editListMasterRow) {
+        document.getElementById('editMemListAtcon').value = document.getElementById('EMLTS' + row + '_Atcon').value;
+        memListModalDirty = true;
+    }
+}
+
+// bottom section edited online, set top screen
+function tsOnlineChange(row) {
+    if (row == editListMasterRow) {
+        document.getElementById('editMemListOnline').value = document.getElementById('EMLTS' + row + '_Online').value;
+        memListModalDirty = true;
+    }
+}
+
+// bottom section edited glnum, set top screen
+function tsGlNumChange(row) {
+    if (row == editListMasterRow) {
+        document.getElementById('editMemListGLNum').value = document.getElementById('EMLTS' + row + '_glNum').value;
+        memListModalDirty = true;
+    }
+}
+
+// bottom section edited gllabel, set top screen
+function tsGlLabelChange(row) {
+    if (row == editListMasterRow) {
+        document.getElementById('editMemListGLLabel').value = document.getElementById('EMLTS' + row + '_glLabel').value;
+        memListModalDirty = true;
+    }
+}

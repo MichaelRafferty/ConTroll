@@ -526,11 +526,11 @@ function updateBadge(perid) {
         data: postData,
         success: function (data, textstatus, jqxhr) {
             if (data.error !== undefined) {
-                show_message(data.error, 'error', 'find_edit_message');
+                show_message(data.error, 'error');
                 return;
             }
             if (data.warn !== undefined) {
-                show_message(data.error, 'warn', 'find_edit_message');
+                show_message(data.warn, 'warn');
                 return;
             }
             if (data.success !== undefined) {

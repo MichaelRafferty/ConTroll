@@ -1,4 +1,4 @@
- <?php
+<?php
 // library AJAX Processor: artpos_processPayment.php
 // ConTroll Registration System
 // Author: Syd Weinstein
@@ -493,10 +493,10 @@ $uqstr = 'iii';
 
 $updStatusSQL = <<<EOS
 UPDATE artItems
-SET status = 'Quicksale/Sold', bidder = ?, final_price = ?
+SET status = ?, bidder = ?, final_price = ?
 WHERE id = ?;
 EOS;
-$usstr = 'idi';
+$usstr = 'sidi';
 
 $updArtSalesStatusSQL = <<<EOS
 UPDATE artSales
@@ -524,13 +524,21 @@ foreach ($cart_art as $cart_row) {
         $amt -= $amt_paid;
         $upd_rows += dbSafeCmd($updArtSalesSQL, $atypestr, array($cart_row['paid'], $master_tid, $quantity, $cart_row['amount'], $cart_row['artSalesId']));
 
-        // change status of items sold by quick sale to quicksale sold, decrease quantity of print items
+        // change status of items sold, decrease quantity of print items
         if (round($cart_row['amount'],2) == round($cart_row['paid'],2)) {
             $upd_cart += dbSafeCmd($updQuantitySQL, $uqstr, array($quantity, $quantity, $cart_row['id']));
 
             if ($cart_row['priceType'] == 'Quick Sale') {
-                $upd_cart += dbSafeCmd($updStatusSQL, $usstr, array($perid, $cart_row['paid'], $cart_row['id']));
+                $cart_row['final_price'] = $cart_row['paid']; // for quick sale, need to update cart row itself with the final price
+                $upd_cart += dbSafeCmd($updStatusSQL, $usstr, array('Quicksale/Sold', $perid, $cart_row['paid'], $cart_row['id']));
                 $upd_rows += dbSafeCmd($updArtSalesStatusSQL, $usrstr, array('Quicksale/Sold', $cart_row['artSalesId']));
+            } else if ($cart_row['status'] == 'BID') {
+                $cart_row['final_price'] = $cart_row['paid'];
+                $upd_cart += dbSafeCmd($updStatusSQL, $usstr, array('Sold Bid Sheet', $perid, $cart_row['paid'], $cart_row['id']));
+                $upd_rows += dbSafeCmd($updArtSalesStatusSQL, $usrstr, array('Sold Bid Sheet', $cart_row['artSalesId']));
+            } else if ($cart_row['status'] == 'To Auction') {
+                $upd_cart += dbSafeCmd($updStatusSQL, $usstr, array('Sold Auction', $perid, $cart_row['paid'], $cart_row['id']));
+                $upd_rows += dbSafeCmd($updArtSalesStatusSQL, $usrstr, array('Sold Auction', $cart_row['artSalesId']));
             }
             if ($cart_row['type'] == 'print') {
                 $upd_rows += dbSafeCmd($updArtSalesStatusSQL, $usrstr, array('Purchased/Released', $cart_row['artSalesId']));

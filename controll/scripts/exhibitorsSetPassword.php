@@ -1,6 +1,4 @@
 <?php
-global $db_ini;
-
 require_once '../lib/base.php';
 $check_auth = google_init('ajax');
 $perm = 'exhibitor';
@@ -60,4 +58,3 @@ if ($num_rows != 1) {
 $response['password'] = $newpasswd;
 
 ajaxSuccess($response);
-?>

@@ -1,6 +1,4 @@
 <?php
-global $db_ini;
-
 require_once "../lib/base.php";
 require_once "../../lib/policies.php";
 
@@ -71,4 +69,3 @@ if ($policy_upd > 0) {
 $response['success'] = $message;
 $response['perid'] = $perid;
 ajaxSuccess($response);
-?>

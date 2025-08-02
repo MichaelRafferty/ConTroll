@@ -19,7 +19,7 @@ if(array_key_exists('region', $_GET)) {
     $region = $_GET['region'];
 }
 
-$page = "Atcon POS ($tab)";
+$page = "Point of Sale ($tab)";
 
 if (!check_atcon($method, $conid)) {
     header('Location: /index.php');
@@ -30,12 +30,15 @@ $con = get_conf('con');
 $debug = get_conf('debug');
 $usps = get_conf('usps');
 $vendor = get_conf('vendor');
-$ini = get_conf('reg');
 $controll = get_conf('controll');
 $atcon = get_conf('atcon');
 $condata = get_con();
 $conid = $con['id'];
 $conname = $con['conname'];
+if (array_key_exists('inlineInventory', $atcon))
+    $inlineInventory = $atcon['inlineInventory'];
+else
+    $inlineInventory = 1;
 
 if (array_key_exists('taxRate', $con))
     $taxRate = $con['taxRate'];
@@ -51,7 +54,7 @@ if (array_key_exists('taxLabel', $con)) {
 }
 
 $regionQ = <<<EOS
-SELECT xR.shortname AS regionName
+SELECT xR.shortname AS regionName, xRY.roomStatus
 FROM exhibitsRegionTypes xRT
     JOIN exhibitsRegions xR ON xR.regionType=xRT.regionType
     JOIN exhibitsRegionYears xRY ON xRY.exhibitsRegion = xR.id
@@ -62,12 +65,14 @@ $setRegion = false;
 if ($regionR->num_rows == 1 && $region == '') {
     $setRegion = true;
 }
+$roomStatus = 'all';
 $regionList = [];
 while ($regionInfo = $regionR->fetch_assoc()) {
     $regionList[] = $regionInfo['regionName'];
-    if ($setRegion) {
+    if ($setRegion)
         $region = $regionInfo['regionName'];
-    }
+    if ($region == $regionInfo['regionName'])
+        $roomStatus = $regionInfo['roomStatus'];
 }
 $regionR->free();
 setSessionVar('ARTPOSRegion', $region);
@@ -77,11 +82,13 @@ $config_vars['label'] = $con['label'];
 $config_vars['region'] = $region;
 $config_vars['conid'] = $conid;
 $config_vars['regadminemail'] = $con['regadminemail'];
-$config_vars['required'] = $ini['required'];
+$config_vars['required'] = getConfValue('reg','required', 'addr');
 $config_vars['taxRate'] = $taxRate;
 $config_vars['taxLabel'] = $taxLabel;
 $config_vars['taxUid'] = $taxUid;
 $config_vars['source'] = 'artpos';
+$config_vars['roomStatus'] = $roomStatus;
+$config_vars['inlineInventory'] = $inlineInventory;
 if (array_key_exists('creditoffline', $atcon)) {
     $config_vars['creditoffline'] = $atcon['creditoffline'];
 } else {
@@ -268,7 +275,8 @@ if (count($regionList) > 1) {
         </div>
     </div>
     <!--- pay cash change modal popup -->
-    <div class='modal modal-lg' id='CashChange' tabindex='-4' aria-labelledby='CashChange' data-bs-backdrop='static' data-bs-keyboard='false' aria-hidden='true'>
+    <div class='modal modal-lg' id='CashChange' tabindex='-6' aria-labelledby='CashChange' data-bs-backdrop='static' data-bs-keyboard='false'
+         aria-hidden='true'>
         <div class='modal-dialog'>
             <div class='modal-content'>
                 <div class='modal-header bg-primary text-bg-primary'>
@@ -285,8 +293,9 @@ if (count($regionList) > 1) {
             </div>
         </div>
     </div>
-    <!--- pay cash change modal popup -->
-    <div class='modal modal-xl' id='ReleaseArt' tabindex='-4' aria-labelledby='ReleaseArt' data-bs-backdrop='static' data-bs-keyboard='false' aria-hidden='true' style='--bs-modal-width: 98%;'>
+    <!--- release art modal popup -->
+    <div class='modal modal-xl' id='ReleaseArt' tabindex='-7' aria-labelledby='ReleaseArt' data-bs-backdrop='static' data-bs-keyboard='false'
+         aria-hidden='true' style='--bs-modal-width: 98%;'>
         <div class='modal-dialog'>
             <div class='modal-content'>
                 <div class='modal-header bg-primary text-bg-primary'>
@@ -296,13 +305,33 @@ if (count($regionList) > 1) {
                 </div>
                 <div class='modal-footer'>
                     <button type='button' id='check_all_button' class='btn btn-light' onclick='releaseSetAll(true);'>Mark All Released</button>
-                    <button type='button' id='clear_all_buton' class='btn btn-light' onclick='releaseSetAll(false);'>Mark All Not Released</button>
+                    <button type='button' id='clear_all_button' class='btn btn-light' onclick='releaseSetAll(false);'>Mark All Not Released</button>
                     <button type='button' id='discard_release_button' class='btn btn-secondary' onclick='releaseModal.hide();'>Cancel Release</button>
                     <button type='button' id='submit_release' class='btn btn-primary' onclick='processRelease();'>Process Release of Artwork</button>
                 </div>
             </div>
         </div>
     </div>
+<?php if ($inlineInventory == 1) { ?>
+    <!--- inventory modal popup -->
+    <div class='modal modal-xl' id='Inventory' tabindex='-8' aria-labelledby='Inventory' data-bs-backdrop='static' data-bs-keyboard='false' aria-hidden='true'
+         style='--bs-modal-width: 98%;'>
+        <div class='modal-dialog'>
+            <div class='modal-content'>
+                <div class='modal-header bg-primary text-bg-primary'>
+                    <div class='modal-title' id='Update Inventory for Art Item'></div>
+                </div>
+                <div class='modal-body' id='InventoryBody'>
+                </div>
+                <div class='modal-footer'>
+                    <button type='button' id='invNoChange_button' class='btn btn-primary' onclick='invUpdate(false);'>No Inventory Changes</button>
+                    <button type='button' id='invChange_button' class='btn btn-primary' onclick='invUpdate(true);'>Update Inventory Record</button>
+                    <button type='button' id='discardInv_button' class='btn btn-secondary' onclick='inventoryModal.hide();'>Cancel Update</button>
+                </div>
+            </div>
+        </div>
+    </div>
+<?php } ?>
     <div id='result_message' class='mt-4 p-2'></div>
 </div>
 <pre id='test'></pre><?php

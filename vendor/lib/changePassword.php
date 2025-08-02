@@ -12,6 +12,9 @@ function drawChangePassword($title, $width, $drawbutton, $info = null, $pwtype =
     </div>
 EOH;
         }
+    $oldPwHTML = eyepwField('oldPw', 'oldPassword', 40, 'current or temp password');
+    $newPwHTML = eyepwField('newPw', 'password', 40, 'minimum of 8 characters');
+    $newPw2HTML = eyepwField('newPw2', 'password2', 40, 're-enter the new password');
     $html .= <<<EOH
     <div class='container-fluid'>
         <form id='changepw' action='javascript:void(0)'>
@@ -20,7 +23,7 @@ EOH;
                 <label for='oldPw'>Old or Temp Password:</label>
             </div>
             <div class='col-sm-8'>
-                <input type='password' id='oldPw' name='oldPassword' size="24" autocomplete="off" required/>
+                $oldPwHTML
             </div>
         </div>
         <div class='row'>
@@ -28,7 +31,7 @@ EOH;
                 <label for='newPw'>New Password:</label>
             </div>
             <div class='col-sm-8'>
-                <input type='password' id='newPw' name='password' size="24" autocomplete="off" required placeholder="minimum of 8 characters"/>
+               $newPwHTML
             </div>
         </div>
         <div class='row'>
@@ -36,7 +39,7 @@ EOH;
                 <label for='newPw2'>Re-enter New Password:</label>
             </div>
             <div class='col-sm-8'>
-                <input type='password' id='newPw2' name='password2' size="24" autocomplete="off" required placeholder="re-enter the password"/>
+                $newPw2HTML
             </div>
         </div>
 EOH;

@@ -112,4 +112,3 @@ function rightPrintXY($x, $y, $hsize, $string) {
     printXY($x + ($hsize - ($len + 2 * $pt)), $y, $string);
     return null;
 }
-?>

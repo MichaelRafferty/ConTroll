@@ -1,6 +1,4 @@
 <?php
-global $db_ini;
-
 require_once "../lib/base.php";
 
 $check_auth = google_init("ajax");
@@ -264,4 +262,3 @@ while($memLabel = $memLabelA->fetch_assoc()) {
 $response['memLabelsNext'] = $memLabels;
 
 ajaxSuccess($response);
-?>

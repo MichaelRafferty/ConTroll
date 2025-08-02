@@ -1,8 +1,14 @@
 <?php
-global $db_ini;
-
+// library AJAX Processor: exhibitorSpacePayments.php
+// ConTroll Registration System
+// Author: Syd Weinstein
+// process the payment of space and memberships from the exhibitor tab of controll
+//     if payment type != offline credit card - create order and payment information in credit card syste,
+//     if payment succeeds, create/update all the elements in the database.
 require_once '../lib/base.php';
 require_once '../../lib/log.php';
+require_once('../../lib/cc__load_methods.php');
+
 $check_auth = google_init('ajax');
 $perm = 'exhibitor';
 
@@ -20,21 +26,44 @@ global $returnAjaxErrors, $return500errors;
 $returnAjaxErrors = true;
 $return500errors = true;
 
-$con = get_con();
+$con = get_conf('con');
 $conid=$con['id'];
-$reg_conf = get_conf('reg');
+$cc = get_conf('cc');
 
-$required = $reg_conf['required'];
+$required = getConfValue('reg', 'required', 'addr');
 $response['conid'] = $conid;
 
 $log = get_conf('log');
 logInit($log['vendors']);
 
 // which space purchased
-if (!array_key_exists('regionYearId', $_POST)) {
+if (!(array_key_exists('regionYearId', $_POST))) {
     ajaxError("invalid calling sequence");
     exit();
 }
+
+// check for amtDue to see if it's > 0 and if so check for prow
+if (array_key_exists('amtDue', $_POST)) {
+    $amtDue = $_POST['amtDue'];
+} else {
+    $amtDue = null;
+}
+
+if ($amtDue != null && $amtDue > 0) {
+    if (!(array_key_exists('prow', $_POST))) {
+        ajaxError('invalid calling sequence');
+        exit();
+    }
+}
+
+if (array_key_exists('prow', $_POST)) {
+    $prow = $_POST['prow'];
+} else {
+    $prow = null;
+}
+
+$crow = null;   // common code, no change processed in this routine
+$desc='';
 
 if (array_key_exists('portalType', $_POST))
     $portalType = $_POST['portalType'];
@@ -56,11 +85,6 @@ if (array_key_exists('spacePrice', $_POST))
 else
     $spacePrice = 0;
 
-if (array_key_exists('amtDue', $_POST))
-    $amtDue = $_POST['amtDue'];
-else
-    $amtDue = null;
-
 if (array_key_exists('payment_type', $_POST))
     $paymentType = $_POST['payment_type'];
 else
@@ -76,15 +100,21 @@ if (array_key_exists('pay-ccauth', $_POST))
 else
     $ccAuth = null;
 
+if (array_key_exists('cancelOrderId', $_POST))
+    $cancelOrderId = $_POST['cancelOrderId'];
+else
+    $cancelOrderId = null;
+
 $exhId = $_POST['exhibitorId'];
 $eyID = $_POST['exhibitorYearId'];
+$source = 'controll-exhibitor';
 
 $curLocale = locale_get_default();
 $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
 // get the specific information allowed
 $regionYearQ = <<<EOS
 SELECT er.id, name, description, ownerName, ownerEmail, includedMemId, additionalMemId, mi.price AS includedPrice, ma.price AS additionalPrice,
-       mi.glNum AS includedGLNum, ma.glNum AS additionalGLNum, ery.mailinFee, ery.atconIdBase, ery.mailinIdBase
+       mi.glNum AS includedGLNum, ma.glNum AS additionalGLNum, ery.mailinFee, ery.atconIdBase, ery.mailinIdBase, ery.mailinGLNum, ery.mailinGLLabel
 FROM exhibitsRegionYears ery
 JOIN exhibitsRegions er ON er.id = ery.exhibitsRegion
 LEFT OUTER JOIN memList mi ON ery.includedMemId = mi.id
@@ -104,7 +134,7 @@ $regionYearR->free();
 
 // get current exhibitor information
 $exhibitorQ = <<<EOS
-SELECT exhibitorId, artistName, exhibitorName, exhibitorEmail, website, description, addr, addr2, city, state, zip, perid, newperid,
+SELECT exhibitorId, artistName, exhibitorName, exhibitorEmail, exhibitorPhone, website, description, addr, addr2, city, state, zip, country, perid, newperid,
        contactEmail, contactName, ey.mailin
 FROM exhibitors e
 JOIN exhibitorYears ey ON e.id = ey.exhibitorId
@@ -132,13 +162,18 @@ $response['exhibitorRegionYear'] = $eryID;
 
 // now the space information for this regionYearId
 $spaceQ = <<<EOS
-SELECT e.*, esp.price as approved_price, esp.includedMemberships, esp.additionalMemberships, s.name, esp.glNum, esp.glLabel
-FROM exhibitorSpaces e
+SELECT e.*, esp.price as approved_price, esp.includedMemberships, esp.additionalMemberships, s.name, esp.description, ry.exhibitorNumber,
+       y.exhibitorId, ex.exhibitorName, ex.artistName, er.name AS regionName, esp.glNum, esp.glLabel
+FROM exhibitorRegionYears ry
+JOIN exhibitorSpaces e ON (e.exhibitorRegionYear = ry.id)
+JOIN exhibitorYears y ON (y.id = ry.exhibitorYearId)
+JOIN exhibitors ex ON (ex.id = y.exhibitorId)
 JOIN exhibitsSpaces s ON (s.id = e.spaceId)
 JOIN exhibitsSpacePrices esp ON (s.id = esp.spaceId AND e.item_approved = esp.id)
 JOIN exhibitsRegionYears ery ON (ery.id = s.exhibitsRegionYear)
 JOIN exhibitsRegions er ON (ery.exhibitsRegion = er.id)
-WHERE e.exhibitorRegionYear = ?;
+WHERE e.exhibitorRegionYear = ?
+ORDER BY id ASC;
 EOS;
 $spaceR = dbSafeQuery($spaceQ, 'i', array($eryID));
 if ($spaceR == false || $spaceR->num_rows == 0) {
@@ -158,9 +193,14 @@ while ($space =  $spaceR->fetch_assoc()) {
     $additionalMembershipsComputed = max($additionalMembershipsComputed, $space['additionalMemberships']);
 }
 $spaceR->free();
-// add in mail in fee if this exhibitor is using mail in this year and the fee exist
+$mailIn = null;
+// add in mail-in fee if this exhibitor is using mail-in this year and the fee exist
 if ($region['mailinFee'] > 0 && $exhibitor['mailin'] == 'Y') {
-    $spacePriceComputed += $region['mailinFee'];
+    $mailIn['amount'] = $region['mailinFee'];
+    $mailIn['name'] = $region['name'];
+    $mailIn['glNum'] = $region['mailinGLNum'];
+    $mailIn['desc'] = $region['name'] . " Mail-in Fee";
+    $spacePriceComputed +=  $region['mailinFee'];
 }
 
 if ($spacePrice != $spacePriceComputed || $includedMembershipsComputed != $includedMembershipsMax || $additionalMembershipsComputed != $additionalMembershipsMax) {
@@ -171,6 +211,10 @@ if ($spacePrice != $spacePriceComputed || $includedMembershipsComputed != $inclu
     ajaxSuccess($response);
     return;
 }
+
+$buyer['email'] = $exhibitor['exhibitorEmail'];
+$buyer['phone'] = $exhibitor['exhibitorPhone'];
+$buyer['country'] = $exhibitor['country'];
 
 $region['includedMemberships'] = $includedMembershipsComputed;
 $region['additionalMemberships'] = $additionalMembershipsComputed;
@@ -253,10 +297,10 @@ for ($num = 0; $num < $additionalMembershipsMax; $num++) {
     $fname = '';
     $lname = '';
     if (array_key_exists('fname_a_' . $num, $_POST))
-        $fname = $_POST['fname_i_' . $num];
+        $fname = $_POST['fname_a_' . $num];
 
     if (array_key_exists('lname_a_' . $num, $_POST))
-        $lname = $_POST['lname_i_' . $num];
+        $lname = $_POST['lname_a_' . $num];
 
     if ($fname == '' && $lname == '')
         continue;
@@ -385,7 +429,8 @@ $badgeResults = array();
 while ($row = $all_badgeR->fetch_assoc()) {
     $badgeResults[] = $row;
 }
-
+$orderId = null;
+$custId = "spacePayment-$transid";
 // prepare the credit card request
 $results = array(
     'transid' => $transid,
@@ -393,6 +438,7 @@ $results = array(
     'spaceName' => $region['name'],
     'spaceDescription' => $region['description'],
     'spacePrice' => $spacePrice,
+    'mailInFee' => [$mailIn],
     'price' => $totprice,
     'badges' => $badgeResults,
     'formbadges' => $badges,
@@ -404,29 +450,171 @@ $results = array(
     'region' => $region,
     'vendor' => $exhibitor,
     'exhibits' => $portalType,
+    'totalPaid' => 0,
+    'source' => $source,
+    'discount' => 0,
+    'custid' => $custId,
+    'spaces' => $spaces,
+    'buyer' => $buyer,
+
 );
 
 //log requested badges
 logWrite(array('con' => $conid, $portalName => $exhibitor, 'region' => $region, 'spaces' => $spaces, 'trans' => $transid, 'results' => $results, 'request' => $badges));
 
+if ($prow != null && $prow['type'] != 'credit') {
+    load_cc_procs();
+    // for cash/check/etc build the order so it can be recorded
+    if ($cancelOrderId) // cancel the old order if it exists
+        cc_cancelOrder($results['source'], $cancelOrderId, true);
 
-$txnQ = <<<EOS
+    $orderRtn = cc_buildOrder($results, true);
+    if ($orderRtn == null) {
+        // note there is no reason cc_buildOrder will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
+        logWrite(array ('con' => $con['label'], 'trans' => $transid, 'error' => 'Order unable to be created'));
+        ajaxSuccess(array ('status' => 'error', 'error' => 'Order not built'));
+        exit();
+    }
+    $orderRtn['totalPaid'] = 0;
+    $response['orderRtn'] = $orderRtn;
+    $orderId = $orderRtn['orderId'];
+
+    $upT = <<<EOS
+UPDATE transaction
+SET price = ?, tax = ?, withTax = ?, couponDiscountCart = ?
+WHERE id = ?;
+EOS;
+
+    $preTaxAmt = $orderRtn['preTaxAmt'];
+    $taxAmt = $orderRtn['taxAmt'];
+    $withTax = $orderRtn['totalAmt'];
+    $rows_upd = dbSafeCmd($upT, 'ddddi', array($preTaxAmt, $taxAmt, $withTax, 0, $transid));
+}
+
+if ($totprice > 0) {
+    $change = 0;
+    // now process the payment itself
+    switch ($prow['type']) {
+        case 'cash':
+            $externalType = 'OTHER';
+            $nonce = 'EXTERNAL';
+            $desc = 'CASH';
+            if ($crow)
+                $change = -$crow['amt'];
+            break;
+        case 'online':
+            $nonce = $prow['nonce'];
+            break;
+        case 'discount':
+            $desc = 'disc: ';
+            break;
+        case 'credit':
+            $externalType = 'CARD';
+            // set stuff to bypass cc call
+            $desc = $prow['desc'];
+            $rtn['amount'] = $totprice;
+            $rtn['paymentType'] = 'credit';
+            $rtn['preTaxAmt'] = $preTaxAmt;
+            $rtn['taxAmt'] = $taxAmt;
+            $rtn['paymentId'] = null;
+            $rtn['url'] = null;
+            $rtn['rid'] = null;
+            $rtn['auth'] = $prow['ccauth'];
+            $rtn['payment'] = null;
+            $rtn['last4'] = null;
+            $rtn['txTime'] = date_create()->format('Y-m-d H:i:s');
+            $rtn['status'] = 'COMPLETED';
+            $rtn['transId'] = $transid;
+            $rtn['category'] = 'reg';
+            $rtn['description'] = $prow['desc'];
+            $rtn['source'] = $source;
+            $rtn['nonce'] = $externalType;
+            break;
+        case 'check':
+            $externalType = 'CHECK';
+            $nonce = 'EXTERNAL';
+            $desc = 'Chk No: ' . $prow['checkno'];
+            break;
+    }
+
+    if ($prow['type'] != 'credit') {
+        if ($desc == '')
+            $desc = $prow['desc'];
+        else
+            $desc = mb_substr($desc . '/' . $prow['desc'], 0, 64);
+
+        $ccParam = array (
+            'transid' => $transid,
+            'counts' => 0,
+            'price' => null,
+            'badges' => null,
+            'taxAmt' => $taxAmt,
+            'preTaxAmt' => $preTaxAmt,
+            'total' => $totprice,
+            'orderId' => $orderId,
+            'nonce' => $nonce,
+            'coupon' => null,
+            'externalType' => $externalType,
+            'desc' => $desc,
+            'source' => $source,
+            'change' => $change,
+            'locationId' => $cc['location'],
+        );
+
+        //log requested badges
+        logWrite(array ('type' => 'online', 'con' => $con['conname'], 'trans' => $transid, 'results' => $ccParam));
+        $rtn = cc_payOrder($ccParam, $buyer, true);
+        if ($rtn === null) {
+            ajaxSuccess(array ('error' => 'Credit card not approved'));
+            exit();
+        }
+    }
+
+    $approved_amt = $rtn['amount'];
+    $type = $rtn['paymentType'];
+    $preTaxAmt = $rtn['preTaxAmt'];
+    $taxAmt = $rtn['taxAmt'];
+    $paymentId = $rtn['paymentId'];
+    $receiptUrl = $rtn['url'];
+    $receiptNumber = $rtn['rid'];
+    $paymentType = $rtn['paymentType'];
+    $auth = $rtn['auth'];
+    $payment = $rtn['payment'];
+    $last4 = $rtn['last4'];
+    $txTime = $rtn['txTime'];
+    $status = $rtn['status'];
+    $transId = $rtn['transId'];
+    $category = $rtn['category'];
+    $description = $rtn['description'];
+    $source = $rtn['source'];
+    $nonce = $rtn['nonce'];
+    if ($nonce == 'EXTERNAL')
+        $nonceCode = $ccParam['externalType'];
+    else
+        $nonceCode = $nonce;
+    $complete = round($approved_amt,2) == round($totprice,2);
+}
+
+// extract the values needed for the payment
+if ($prow != null) {
+    $txnQ = <<<EOS
 INSERT INTO payments (transid, type, category, description, source, pretax, tax, amount, time, nonce, cc_approval_code, txn_time, userPerid)
 VALUES (?,?,?,?,?,?,?,?,NOW(),?,?,NOW(),?);
 EOS;
-$typestr = 'issssdddssi';
-if ($paymentType == 'check') {
-    $desc = 'Check No: ' . $_POST['pay-checkno']  . ', ' . $payDesc;
-} else {
-    $desc = $payDesc;
-}
-$values = array($transid, $paymentType, 'vendor', $desc, 'controll', $totprice, 0, $totprice, 'admin', $ccAuth, $_SESSION['user_perid']);
+    $typestr = 'issssdddssi';
+    if ($paymentType == 'check') {
+        $desc = 'Check No: ' . $_POST['pay-checkno'] . ', ' . $payDesc;
+    } else {
+        $desc = $payDesc;
+    }
+    $values = array ($transid, $paymentType, 'vendor', $desc, $source, $totprice, 0, $totprice, 'admin', $ccAuth, $_SESSION['user_perid']);
 
-$txnid = dbSafeInsert($txnQ, $typestr, $values);
-if ($txnid == false) {
-    $error_msg .= "Insert of payment failed\n";
-} else {
-    $status_msg .= "Payment for " . $dolfmt->formatCurrency($totprice, 'USD') . " processed<br/>\n";
+    $txnid = dbSafeInsert($txnQ, $typestr, $values);
+    if ($txnid == false) {
+        $error_msg .= "Insert of payment failed\n";
+    } else {
+        $status_msg .= "Payment for " . $dolfmt->formatCurrency($totprice, 'USD') . " processed<br/>\n";
+    }
 }
 $approved_amt = $totprice;
 $results['approved_amt'] = $approved_amt;
@@ -635,31 +823,31 @@ SELECT id
 FROM perinfo p
 WHERE
 	REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.first_name, '')), '  *', ' ')
+		REGEXP_REPLACE(TRIM(LOWER(p.first_name)), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.middle_name, '')), '  *', ' ')
+		REGEXP_REPLACE(TRIM(LOWER(p.middle_name)), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.last_name, '')), '  *', ' ')
+		REGEXP_REPLACE(TRIM(LOWER(p.last_name)), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.suffix, '')), '  *', ' ')
+		REGEXP_REPLACE(TRIM(LOWER(p.suffix)), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.email_addr, '')), '  *', ' ')
+		REGEXP_REPLACE(TRIM(LOWER(p.email_addr)), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.phone, '')), '  *', ' ')
+		REGEXP_REPLACE(TRIM(LOWER(p.phone)), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.badge_name, '')), '  *', ' ')
+		REGEXP_REPLACE(TRIM(LOWER(p.badge_name)), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.address, '')), '  *', ' ')
+		REGEXP_REPLACE(TRIM(LOWER(p.address)), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.addr_2, '')), '  *', ' ')
+		REGEXP_REPLACE(TRIM(LOWER(p.addr_2)), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.city, '')), '  *', ' ')
+		REGEXP_REPLACE(TRIM(LOWER(p.city)), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.state, '')), '  *', ' ')
+		REGEXP_REPLACE(TRIM(LOWER(p.state)), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.zip, '')), '  *', ' ')
+		REGEXP_REPLACE(TRIM(LOWER(p.zip)), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.country, '')), '  *', ' ');
+		REGEXP_REPLACE(TRIM(LOWER(p.country)), '  *', ' ');
 EOF;
     $value_arr = array($badge['fname'], $badge['mname'], $badge['lname'], $badge['suffix'], $badge['email'], $badge['phone'], $badge['badgename'],
                 $badge['addr'], $badge['addr2'], $badge['city'], $badge['state'], $badge['zip'], $badge['country']);
@@ -684,9 +872,9 @@ EOF;
         $badge['addr'], $badge['addr2'], $badge['city'], $badge['state'], $badge['zip'], $badge['country'], $badge['contact'], $badge['share'], $id);
 
     $insertQ = <<<EOS
-I0NSERT INTO newperson(last_name, middle_name, first_name, suffix, legalName, email_addr, phone, badge_name,
+INSERT INTO newperson(last_name, middle_name, first_name, suffix, legalName, email_addr, phone, badge_name,
                       address, addr_2, city, state, zip, country, contact_ok, share_reg_ok, perid)
-    VALUES(IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, '')
+    VALUES(IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''),
      IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), ?, ?, ?);
 EOS;
 
@@ -723,7 +911,7 @@ EOS;
 INSERT INTO reg(conid, newperid, perid, create_trans, price, status, memID)
 VALUES(?, ?, ?, ?, ?, ?, ?);
 EOS;
-    $badgeId = dbSafeInsert($badgeQ,  'iiiidi', array(
+    $badgeId = dbSafeInsert($badgeQ,  'iiiidsi', array(
             $conid,
             $badge['newperid'],
             $badge['perid'],

@@ -1,6 +1,4 @@
 <?php
-global $db_ini;
-
 require_once "lib/base.php";
 require_once "../lib/notes.php";
 //initialize google session
@@ -77,7 +75,180 @@ $config_vars['finance'] = $finance ? 1 : 0;
 $config_vars['ae'] = $admin ? 1 : 0;
 $config_vars['source'] = 'regstaff';
 ?>
-<?php bs_tinymceModal(); ?>
+<?php bs_tinymceModal();
+// edit memList entry modal
+?>
+<div id='editMemListModal' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Edit Membership Sequence' aria-hidden='true'
+     style='--bs-modal-width: 96%;'>
+    <div class='modal-dialog'>
+        <div class='modal-content'>
+            <div class='modal-header bg-primary text-bg-primary'>
+                <div class='modal-title'>
+                    <strong id='editMemListTitle'>Edit Memlist Series Title</strong>
+                </div>
+                <button type='button' class='btn-close' aria-label='Close' onclick='editMemListCancel();'></button>
+            </div>
+            <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                <div class='container-fluid' id='editMemListBlockDiv'>
+                    <div class='row mt-4'>
+                        <div class='col-sm-12'><h4>Edit the <span id='editMemListName'>memListName</span> and it's time series</h4></div>
+                    </div>
+                    <div class='row mt-2'>
+                        <div class='col-sm-auto'><b>Membership ID:</b></div>
+                        <div class='col-sm-auto' id="editMemListID"></div>
+                        <div class='col-sm-auto'><b>Con ID:</b></div>
+                        <div class='col-sm-auto' id='editMemListConID'></div>
+                    </div>
+                    <div class='row mt-1'>
+                        <div class='col-sm-1'>Category:</div>
+                        <div class='col-sm-8' id="editMemListCategory"></div>
+                    </div>
+                    <div class='row mt-1'>
+                        <div class='col-sm-1'>Type:</div>
+                        <div class='col-sm-8' id='editMemListType'></div>
+                    </div>
+                    <div class='row mt-1'>
+                        <div class='col-sm-1'>Age:</div>
+                        <div class='col-sm-8' id='editMemListAge'></div>
+                    </div>
+                    <div class='row mt-1'>
+                        <div class='col-sm-1'>Label:</div>
+                        <div class='col-sm-8'>
+                            <input type="text" name='editMemListLabel' id='editMemListLabel' placeholder="Short Label"
+                                   onchange='memListModalDirty = true;' size="64" maxlength="64" />
+                        </div>
+                    </div>
+                    <div class='row mt-1'>
+                        <div class='col-sm-1'>Price:</div>
+                        <div class='col-sm-8'>
+                            <input type='number' class='no-spinners' inputmode='numeric' id='editMemListPrice' name="editMemListPrice" min="0"
+                                   style='text-align: right; width: 6em;' onchange='priceChange(editListMasterRow)'/>
+                        </div>
+                    </div>
+                    <div class='row mt-1'>
+                        <div class='col-sm-1'>Start Date:</div>
+                        <div class='col-sm-2'>
+                            <input type="datetime-local" id='editMemListStart' name='editMemListStart'
+                                   onchange='startdateChange(editListMasterRow)'/>
+                        </div>
+                        <div class='col-sm-1'>End Date:</div>
+
+                        <div class='col-sm-2'>
+                            <input type='datetime-local' id='editMemListEnd' name='editMemListEnd' onchange='enddateChange(editListMasterRow)'/>
+                        </div>
+                    </div>
+                    <div class='row mt-1'>
+                        <div class='col-sm-1'>At-Con:</div>
+                        <div class='col-sm-auto'>
+                            <select name="editMemListAtcon" id="editMemListAtcon" onchange='atconChange(editListMasterRow)'>
+                                <option value='N'>No</option>
+                                <option value='Y'>Yes</option>
+                            </select>
+                        </div>
+                        <div class='col-sm-auto'>OnLine:</div>
+                        <div class='col-sm-auto'>
+                            <select name='editMemListOnline' id='editMemListOnline' onchange="onlineChange(editListMasterRow)">
+                                <option value='N'>No</option>
+                                <option value='Y'>Yes</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class='row mt-1'>
+                        <div class='col-sm-1'>Notes:</div>
+                        <div class='col-sm-11'>
+                            <textarea id="editMemListNotes" name="editMemListNotes" cols="120" rows="5" onchange="memListModalDirty = true;">
+                            </textarea>
+                        </div>
+                    </div>
+                    <div class='row mt-1'>
+                        <div class='col-sm-1'>Gen. Ledger</div>
+                        <div class='col-sm-auto'>Num:</div>
+                        <div class='col-sm-auto'>
+                            <input type='text' name='editMemListGLNum' id='editMemListGLNum' placeholder='GL Num' size='16' maxlength='16'
+                               onchange='glNumChange(editListMasterRow);'
+                            />
+                        </div>
+                        <div class='col-sm-auto'>Label:</div>
+                        <div class='col-sm-auto'>
+                            <input type='text' name='editMemListGLLabel' id='editMemListGLLabel' placeholder='GL Label' size='64' maxlength='64'
+                                onchange='glLabelChange(editListMasterRow);'
+                            />
+                        </div>
+                    </div>
+                    <div class='row mt-4'>
+                        <div class='col-sm-auto'><h4>Time Series Data</h4></div>
+                        <div class="col-sm-auto">
+                            <button class="btn btn-sm btn-primary" onclick="copyMemListChanges();">Copy Changes above to Time Series Rows</button>
+                        </div>
+                        <div class='col-sm-auto'>
+                            <button class='btn btn-sm btn-primary' onclick='resetEndDates();'>Align End Date to Next Start Date</button>
+                        </div>
+                        <div class='col-sm-auto'>
+                            <button class='btn btn-sm btn-primary' onclick='reSortTimeSeries();'>Re-sort into Time Series Order</button>
+                        </div>
+                    </div>
+                    <div class='row mt-2'>
+                        <div class="col-sm-1" style='text-align: right;'>ID</div>
+                        <div class="col-sm-1" style='text-align: center;'>Price</div>
+                        <div class="col-sm-2">Start Date</div>
+                        <div class="col-sm-2">End Date</div>
+                        <div class="col-sm-1">At-Con</div>
+                        <div class="col-sm-1">OnLine</div>
+                        <div class="col-sm-1">GL Num</div>
+                        <div class="col-sm-3">GL Label</div>
+                    </div>
+<?php
+    for ($i = 0; $i < 10; $i++) {
+        $bgColor = $i % 2 ? 'light-cyan' : '#e0e0e0';
+?>
+                    <div class='row mt-2' style="background-color: <?php echo $bgColor;?>">
+                        <div class='col-sm-1' id="EMLTS<?php echo $i;?>_ID" style="text-align: right;"></div>
+                        <div class='col-sm-1'>
+                            <input type='number' class='no-spinners' inputmode='numeric' id='EMLTS<?php echo $i;?>_Price'
+                                   style="text-align: right; width: 6em;" min='0' onchange="tsPriceChange(<?php echo $i;?>)"/>
+                        </div>
+                        <div class='col-sm-2'>
+                            <input type='datetime-local' id='EMLTS<?php echo $i;?>_Start' onchange="tsStartChange(<?php echo $i;?>)"/>
+                        </div>
+                        <div class='col-sm-2'>
+                            <input type='datetime-local' id='EMLTS<?php echo $i;?>_End' onchange="tsEndChange(<?php echo $i;?>)"/>
+                        </div>
+                        <div class='col-sm-1'>
+                            <select id="EMLTS<?php echo $i;?>_Atcon" onchange="tsAtconChange(<?php echo $i;?>)">
+                                <option value='N'>No</option>
+                                <option value='Y'>Yes</option>
+                            </select>
+                        </div>
+                        <div class='col-sm-1'>
+                            <select id="EMLTS<?php echo $i;?>_Online" onchange="tsOnlineChange(<?php echo $i;?>)">
+                                <option value='N'>No</option>
+                                <option value='Y'>Yes</option>
+                            </select>
+                        </div>
+                        <div class='col-sm-1'>
+                            <input type='text' id='EMLTS<?php echo $i;?>_glNum' placeholder='GL Num' size='12' maxlength='16'
+                                   onchange="tsGlNumChange(<?php echo $i;?>)"
+                            />
+                        </div>
+                        <div class='col-sm-3'>
+                            <input type='text' id='EMLTS<?php echo $i;?>_glLabel' placeholder='GL Label' size='45' maxlength='64'
+                                   onchange="tsGlLabelChange(<?php echo $i;?>)"
+                            />
+                        </div>
+                    </div>
+<?php
+    }
+?>
+                </div>
+            </div>
+            <div class='modal-footer'>
+                <button class='btn btn-sm btn-secondary' onclick='editMemListCancel();'>Cancel</button>
+                <button class='btn btn-sm btn-primary' id='editMemListSaveBtn' onClick='editMemListSave()'>Save Changes</button>
+            </div>
+            <div id='result_message_editMemList' class='mt-4 p-2'></div>
+        </div>
+    </div>
+</div>
 <div id='merge-lookup' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Look up Merge Person' aria-hidden='true' style='--bs-modal-width: 80%;'>
     <div class='modal-dialog'>
         <div class='modal-content'>
@@ -607,7 +778,7 @@ $config_vars['source'] = 'regstaff';
                     <div class='col-sm-1'>Price:</div>
                     <div class='col-sm-auto'>New:</div>
                     <div class='col-sm-auto'>
-                        <input type="number" placeholder="New Price" id="edit_newPrice"/>
+                        <input type="number" placeholder="New Price" id="edit_newPrice" style='text-align: right;'/>
                     </div>
                     <div class='col-sm-auto'>Original:</div>
                     <div class='col-sm-auto' id='edit_origPrice'></div>
@@ -787,7 +958,8 @@ $config_vars['source'] = 'regstaff';
         </div>
         <div class='row mt-2'  id="reglist-csv-div" hidden>
             <div class='col-sm-auto' id='admin-buttons'>
-                <button id='reglist-csv' type='button' class='btn btn-info btn-sm' onclick='reglistCSV(); return false;'>Download CSV</button>
+                <button id='reglist-csv' type='button' class='btn btn-info btn-sm' onclick='reglistDownload('csv'); return false;'>Download CSV</button>
+                <button id='reglist-xlsx' type='button' class='btn btn-info btn-sm' onclick='reglistDownload('xlsx'); return false;'>Download Excel</button>
             </div>
         </div>
 <?php
@@ -796,27 +968,33 @@ $config_vars['source'] = 'regstaff';
 ?>
         <div class="row">
             <div class="col-sm-auto p-2">
-                <button class="btn btn-primary btn-sm" onclick="window.location.href = 'reports/allEmails.php';" disabled>Download Email List</button>
+                <button class="btn btn-primary btn-sm"
+                        onclick="window.location.href='reports.php?name=AllRegEmails&P1=<?php echo $conid; ?>'">
+                    Download Email List
+                </button>
             </div>
             <div class="col-sm-auto p-2">
-                <button class="btn btn-primary btn-sm" onclick="window.location.href = 'reports/regReport.php';">Download Reg Report</button>
+                <button class="btn btn-primary btn-sm" onclick="window.location.href='reports/regReport.php';">Download Reg Report</button>
             </div>
             <?php if ($reg_admin) { ?>
+            <div class='col-sm-auto p-2'>
+                <button class='btn btn-primary btn-sm' onclick="sendEmail('expire')">Send Expiring Reminder Email</button>
+            </div>
             <div class="col-sm-auto p-2">
-                <button class="btn btn-primary btn-sm" onclick="sendEmail('marketing')" disabled>Send Marketing Email</button>
+                <button class="btn btn-primary btn-sm" onclick="sendEmail('marketing')">Send Marketing Email</button>
             </div>
             <div class='col-sm-auto p-2'>
                 <button class='btn btn-primary btn-sm' onclick="sendEmail('comeback')" disabled>Send Come Back Email</button>
             </div>
             <div class="col-sm-auto p-2">
-                <button class="btn btn-primary btn-sm" onclick="sendEmail('reminder')" disabled>Send Attendance Reminder Email</button>
+                <button class="btn btn-primary btn-sm" onclick="sendEmail('reminder')">Send Attendance Reminder Email</button>
             </div>
-            <?php if (array_key_exists('survey_url', $db_ini['con'])) { ?>
+            <?php if (getConfValue('con', 'survey_url') != '') { ?>
             <div class="col-sm-auto p-2">
                 <button class="btn btn-primary btn-sm" onclick="sendEmail('survey')" disabled>Send Survey Email</button>
             </div>
             <?php } ?>
-            <?php if ($db_ini['reg']['cancelled']) { ?>
+            <?php if (getConfValue('reg','cancelled') == 1) { ?>
             <div class="col-sm-auto p-2">
                 <button class="btn btn-primary btn-sm" onclick="sendCancel()" disabled>Send Cancelation Instructions</button>
             </div>
@@ -881,4 +1059,3 @@ function drawFilters() {
     </div>
     <?php
 }
-?>

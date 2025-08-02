@@ -7,19 +7,18 @@ $cc = get_conf('cc');
 $con = get_conf('con');
 $conid = $con['id'];
 $debug = get_conf('debug');
-$ini = get_conf('reg');
 
 $condata = get_con();
 
 $in_session = false;
-$regserver = $ini['server'];
+$regserver = getConfValue('reg','server');
 $vendor = '';
 
-if (isset($_SESSION['id']) && isset($_GET['site'])) {
+if (isSessionVar('id') && isset($_GET['site'])) {
     $match = array();
-    $match['id'] = $_SESSION['id'];
-    $match['eyID'] = $_SESSION['eyID'];
-    $match['loginType'] = $_SESSION['login_type'];
+    $match['id'] = getSessionVar('id');
+    $match['eyID'] = getSessionVar('eyID');
+    $match['loginType'] = getSessionVar('login_type');
     $match['eNeedNew'] = 0;
     $match['cNeedNew'] = 0;
     $match['archived'] = 'N';

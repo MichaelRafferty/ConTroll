@@ -1,6 +1,4 @@
 <?php
-global $db_ini;
-
 require_once "../lib/base.php";
 
 $check_auth = google_init("ajax");
@@ -48,4 +46,3 @@ $menuR->free();
 $response['menu'] = $menuItems;
 $response['success'] = "$rows menu rows selected";
 ajaxSuccess($response);
-?>

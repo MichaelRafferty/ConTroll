@@ -1,7 +1,6 @@
 <?php
-global $db_ini;
-
 require_once "../lib/base.php";
+require_once "../../lib/global.php";
 require_once "../lib/email.php";
 
 $check_auth = google_init("ajax");
@@ -38,14 +37,15 @@ if (!array_key_exists('type', $_POST)) {
 }
 
 $con = get_conf("con");
-$reg = get_conf("reg");
+$testsite = getConfValue('reg', 'test') == 1;
 $emailconf = get_conf("email");
 $conid=$con['id'];
+$label=$con['label'];
 $conname = $con['conname'];
 $code='';
 $email_type = $_POST['type'];
 
-if ($_POST['action'] == 'test' || $reg['test'] == 1) {
+if ($_POST['action'] == 'test' || $testsite) {
     if ($_POST['email']) {
         $email = $_POST['email'];
     }
@@ -57,40 +57,73 @@ if ($email == null || $email == '') {
     $email = $con['regadminemail'];
 }
 
+loadCustomText('controll', 'emails', 'production');
+
 $response['test'] = $test;
 $macroSubstitution = false;
 
 switch ($email_type) {
+case 'expire':
+    $emailQ = <<<EOQ
+    SELECT p.first_name, p.email_addr AS email, p.id, GROUP_CONCAT(m.label SEPARATOR ', ') AS label, 
+           DATE_FORMAT(min(r.create_date), '%Y-%m-%d') AS createdate,
+           DATE_FORMAT(min(m.enddate), '%Y-%m-%d') AS enddate 
+    FROM reg r
+    JOIN perinfo p ON p.id = r.perid
+    JOIN memLabel m ON m.id = r.memId
+    WHERE r.status = 'unpaid' AND r.conid >= ? AND DATEDIFF(now(), m.enddate) < 60
+    GROUP BY p.first_name, p.email_addr, p.id
+EOQ;
+    $typestr = 'i';
+    $paramarray = array($conid);
+    $macroSubstitution = true;
+    $email_text = returnCustomText('expire/text');
+    $email_html = returnCustomText('expire/html');
+    $email_subject = "Reminder: You have unpaid memberships that will expire soon";
+    break;
+
 case 'reminder':
     $emailQ = <<<EOQ
 SELECT DISTINCT P.email_addr AS email
 FROM reg R
 JOIN perinfo P ON (P.id=R.perid)
 JOIN memList M ON (R.memId = M.id)
-WHERE R.conid=? AND R.paid=R.price AND P.email_addr LIKE '%@%' AND P.contact_ok='Y' AND M.label != 'rollover-cancel' AND M.memCategory != 'cancel'
+WHERE R.conid=? AND R.status='paid' AND P.email_addr LIKE '%@%'
 ORDER BY email;
 EOQ;
     $typestr = 'i';
     $paramarray = array($conid);
-    $email_text = preConEmail_last_TEXT($reg['test']);
-    $email_html = preConEmail_last_HTML($reg['test']);
-    $email_subject = "Welcome Email";
+    $email_text = returnCustomText('reminder/text');
+    $email_html = returnCustomText('reminder/html');
+    $email_subject = "Reminder: $label Starts Soon";
     break;
 
 case 'marketing':
     $priorcon = $conid - 1;
     $emailQ = <<<EOQ
+WITH policyyear AS (
+SELECT perid, max(conid) conid
+FROM memberPolicies
+WHERE perid IS NOT NULL
+GROUP BY perid
+), marketing AS (
+SELECT m.perid, m.response
+FROM policyyear y
+JOIN memberPolicies m ON (m.perid = y.perid AND m.policy = 'marketing')
+)
 SELECT DISTINCT p.email_addr AS email
 FROM perinfo p
 JOIN reg r ON (r.perid = p.id AND r.conid = ?)
 LEFT OUTER JOIN reg r2 ON (r2.perid = p.id and r2.conid = ?)
-WHERE p.email_addr LIKE '%@%' AND p.contact_ok='Y' and r2.id IS NULL AND r.price > 0
+LEFT OUTER JOIN marketing m ON m.perid = p.id
+WHERE p.email_addr LIKE '%@%' AND r.price > 0 AND r.status = 'paid' AND r2.perid IS NULL 
+AND ((m.perid IS NULL AND p.contact_ok='Y') OR (m.response = 'Y'))
 ORDER BY email;
 EOQ;
     $typestr = 'ii';
     $paramarray = array($priorcon, $conid);
-    $email_text = MarketingEmail_TEXT($reg['test']);
-    $email_html = MarketingEmail_HTML($reg['test']);
+    $email_text = returnCustomText('marketing/text');
+    $email_html = returnCustomText('marketing/html');
     $email_subject = "We miss you! Please come back to $conname";
     break;
 
@@ -165,8 +198,8 @@ ORDER BY e.email;
 EOQ;
     $typestr = 'iiii';
     $paramarray = array($conid, $priorcon, $priorcon2, $couponid);
-    $email_text = ComeBackCouponEmail_TEXT($reg['test'], date_format($expires, 'M d, Y'));
-    $email_html = ComeBackCouponEmail_HTML($reg['test'], date_format($expires, 'M d, Y'));
+    $email_text = ComeBackCouponEmail_TEXT($testsite, date_format($expires, 'M d, Y'));
+    $email_html = ComeBackCouponEmail_HTML($testsite, date_format($expires, 'M d, Y'));
     $email_subject = "We miss you! Please come back to $conname";
     $macroSubstitution = true;
     break;
@@ -187,8 +220,8 @@ ORDER BY P.email_addr;
 EOQ;
     $typestr = 'i';
     $paramarray = array($conid);
-    $email_text = surveyEmail_TEXT($reg['test']);
-    $email_html = surveyEmail_HTML($reg['test']);
+    $email_text = surveyEmail_TEXT($testsite);
+    $email_html = surveyEmail_HTML($testsite);
     $email_subject = "Thanks for attending, can you help us improve by answering this 3 question survey";
     break;
 
@@ -215,15 +248,16 @@ if ($response['numEmails'] == 0) {
 $email_array=array();
 $data_array=array();
 
-if ($test) {
-    $email_test[] = array('email' => $email, 'first_name' => 'First', 'last_name' => 'Last', 'guid' => guidv4());
-    $response['emailTest'] = $email_test;
-}
-
 while($addr =  $emailR->fetch_assoc()) {
    $email_array[] = $addr;
 }
 
+if ($test) {
+    $email_test = [];
+    $email_array[0]['email'] = $email;
+    $email_test[] = $email_array[0];
+    $response['emailTest'] = $email_test;
+}
 
 $response['emailText'] = $email_text;
 $response['emailHTML'] = $email_html;
@@ -235,4 +269,3 @@ $response['emailType'] = $email_type;
 $response['macroSubstitution'] = $macroSubstitution;
 
 ajaxSuccess($response);
-?>

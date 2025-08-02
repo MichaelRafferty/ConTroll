@@ -1,5 +1,4 @@
 <?php
-global $db_ini;
 require_once "lib/base.php";
 require_once "lib/sets.php";
 //initialize google session
@@ -363,4 +362,3 @@ if (array_key_exists('msg', $_REQUEST)) {
 <pre id='test'></pre>
 <?php
 page_foot($page);
-?>

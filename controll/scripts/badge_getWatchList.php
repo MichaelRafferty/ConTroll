@@ -1,6 +1,4 @@
 <?php
-global $db_ini;
-
 require_once "../lib/base.php";
 
 $check_auth = google_init("ajax");
@@ -72,4 +70,3 @@ while($badge = $watchR->fetch_assoc()) {
 $watchR->free();
 $response['watchMembers'] = $badges;
 ajaxSuccess($response);
-?>

@@ -10,10 +10,14 @@ window.onload = function () {
 class Settings {
     #people = null;
     #emails = null;
+    #newPasskeyBtn = null;
 
     constructor() {
         this.#people = [];
         this.#emails = [];
+        this.#newPasskeyBtn = document.getElementById('newPasskey');
+        if (config.hasOwnProperty('passkey') && config.passkey == 'create')
+            this.newPasskey();
     }
 
 // associate / disassociate a person from this account, by the account holders requests
@@ -145,6 +149,7 @@ class Settings {
         });
     }
 
+    // newidentity - add new identity
     newIdentity() {
         var id = document.getElementById('provider');
         if (id == null)
@@ -201,5 +206,31 @@ class Settings {
                 return false;
             },
         });
+    }
+
+    // passkeys
+    // newPasskey - request generate passkey on device and store same in database
+    newPasskey() {
+        if (this.#newPasskeyBtn)
+            this.#newPasskeyBtn.disabled = true;
+
+        var displayName = document.getElementById('userDisplayName').value;
+
+        if (displayName.length == 0) {
+            if (config.badgeName.length > 0)
+                displayName = config.badgeName
+            else
+                displayName = config.firstName + ' ' + config.lastName;
+        }
+
+        createPasskeyRegistration('scripts/passkeyActions.php', displayName.trim(), config.email, 'portal');
+        if (this.#newPasskeyBtn)
+            this.#newPasskeyBtn.disabled = false;
+        return;
+    }
+
+    // delete passkey - clicked the delete button
+    deletePasskey(id) {
+        deletePasskeyEntry('scripts/passkeyActions.php', id, config.email, 'portal');
     }
 }

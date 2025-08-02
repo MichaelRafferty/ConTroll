@@ -1,0 +1,91 @@
+[report]
+	name="artInventory"
+	auth=art_control
+	csvfile="artInventory"
+	index=artId
+[F001]
+    name=artId
+	sql="i.id"
+	visible=false
+[F010]
+    name=regionName
+    title="Region Name"
+    sql="xR.name"
+    sort=true
+    filter=true
+[F011]
+    name=location
+    title=Location
+    sql="i.location"
+    sort=true
+    filter=true
+[F012]
+    name=exhibitorId
+    title="Exhibitor ID"
+    sql=e.id
+    sort=true
+    filter=true
+    align=right
+[F013]
+    name=artistNum
+    title="Artist #"
+    sql=eRY.exhibitorNumber
+    sort=true
+    filter=true
+    align=right
+[F014]
+    name=itemKey
+    title="Item #"
+    sql=i.item_key
+    sort=true
+    filter=true
+    align=right
+[F020]
+    name=title
+    sql=i.title
+    title="Title"
+    minWidth=300
+    filter=true
+    sort=false
+[F021]
+    name=statusd
+    sql=i.status
+    title="Status"
+    minWidth=300
+[F022]
+    name=lastChanged
+    sql=i.time_updated
+    title="Last Changed"
+    sort=true
+[T001]
+    name=artItems
+    alias=i
+[T010]
+    name=exhibitorRegionYears
+    alias=eRY
+    join=" i.exhibitorRegionYearId = eRY.id"
+[T012]
+	name=exhibitorYears
+	alias=eY
+	join="eRY.exhibitorYearId=eY.id"
+[T013]
+	name=exhibitors
+	alias=e
+	join="e.id=eY.exhibitorId"
+[T020]
+    name=exhibitsRegionYears
+    alias=xRY
+    join="xRY.id = eRY.exhibitsRegionYearId"
+[T021]
+    name=exhibitsRegions
+    alias=xR
+    join="xR.id=xRY.exhibitsRegion"
+[P001]
+    type=config
+    section=con
+    item=id
+    datatype=i
+[where]
+	001="i.conid = ?"
+[sort]
+	001="xR.name, i.location, e.id, eRY.exhibitorNumber, i.item_key"

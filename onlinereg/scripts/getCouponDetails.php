@@ -18,4 +18,3 @@ if (array_key_exists('serial', $_POST))
 
 $results = load_coupon_data($code, $serial);
 ajaxSuccess($results);
-?>

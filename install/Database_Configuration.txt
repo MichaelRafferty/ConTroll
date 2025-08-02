@@ -14,8 +14,8 @@ Configuration Tables:
                 'manager'   (Administrator, needs other roles to access those functions)
                 'data_entry' (Check-in)
                 'cashier'   (Cashier)
-                'artshow'
-                'artinventory'
+                'artsales'  (Art Show Cashier)
+                'artinventory' (Art Inventory)
                 'vol_roll'  (Volunteer Rollover)
 
     Convention Configuration:

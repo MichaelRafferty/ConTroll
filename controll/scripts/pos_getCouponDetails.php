@@ -44,4 +44,3 @@ $con = get_conf('con');
 $id = $_POST['couponId'];
 $results = load_coupon_details($id);
 ajaxSuccess($results);
-?>

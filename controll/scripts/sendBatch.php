@@ -1,6 +1,4 @@
 <?php
-global $db_ini;
-
 require_once "../lib/base.php";
 require_once "../lib/email.php";
 require_once(__DIR__ . "/../../lib/email__load_methods.php");
@@ -22,12 +20,11 @@ if (!array_key_exists('user_id', $_SESSION)) {
     ajaxError('Invalid credentials passed');
     return;
 }
-$user_id = $_SESSION['user_id'];
-
 load_email_procs();
 
 $test = true;
 $email = null;
+$testsite = getConfValue('reg', 'test') == 1;
 
 if (!array_key_exists('data', $_POST)) {
     $response['error'] = "missing data to send";
@@ -36,7 +33,6 @@ if (!array_key_exists('data', $_POST)) {
 }
 
 $con = get_conf("con");
-$reg = get_conf("reg");
 $emailconf = get_conf("email");
 $conid=$con['id'];
 $conname = $con['conname'];
@@ -45,7 +41,7 @@ $code='';
 $json = urldecode(base64_decode($_POST['data']));
 $data = json_decode($json, true);
 
-if ($data['emailTest'] || $reg['test'] == 1) {
+if ($data['emailTest'] || $testsite) {
     $email = $data['emailTest'][0]['email'];
 }
 
@@ -53,10 +49,10 @@ if ($data['emailTest'] || $reg['test'] == 1) {
 if ($email == null || $email == '') {
     $email = $con['regadminemail'];
 }
-if ($data['action'] == 'full' && $reg['test'] == 0)
+if ($data['action'] == 'full' && !$testsite)
     $test = false;
 
-if ($data['action'] == 'full' && $reg['test'] == 0)
+if ($data['action'] == 'full' && !$testsite)
     $test = false;
 
 $response['test'] = $test;
@@ -98,17 +94,29 @@ foreach ($email_array as $email) {
     $sendhtml = $emailHTML;
     if ($macroSubstitution) {
         if (array_key_exists('first_name', $email)) {
-            $sendtext = str_replace('#FirstName#', $email['first_name'], $sendtext);
-            $sendhtml = str_replace('#FirstName#', $email['first_name'], $sendhtml);
+            $sendtext = str_replace('[[FirstName]]', $email['first_name'], $sendtext);
+            $sendhtml = str_replace('[[FirstName]]', $email['first_name'], $sendhtml);
         }
         if (array_key_exists('last_name', $email)) {
-            $sendtext = str_replace('#LastName#', $email['last_name'], $sendtext);
-            $sendhtml = str_replace('#LastName#', $email['last_name'], $sendhtml);
+            $sendtext = str_replace('[[LastName]]', $email['last_name'], $sendtext);
+            $sendhtml = str_replace('[[LastName]]', $email['last_name'], $sendhtml);
+        }
+        if (array_key_exists('label', $email)) {
+            $sendtext = str_replace('[[label]]', $email['label'], $sendtext);
+            $sendhtml = str_replace('[[label]]', $email['label'], $sendhtml);
+        }
+        if (array_key_exists('createdate', $email)) {
+            $sendtext = str_replace('[[createdate]]', $email['createdate'], $sendtext);
+            $sendhtml = str_replace('[[createdate]]', $email['createdate'], $sendhtml);
+        }
+        if (array_key_exists('enddate', $email)) {
+            $sendtext = str_replace('[[enddate]]', $email['enddate'], $sendtext);
+            $sendhtml = str_replace('[[enddate]]', $email['enddate'], $sendhtml);
         }
         if (array_key_exists('guid', $email)) {
             $cc = 'offer=' . base64_encode_url($code . '~!~' . $email['guid']);
-            $sendtext = str_replace('#CouponCode#', $cc, $sendtext);
-            $sendhtml = str_replace('#CouponCode#', $cc, $sendhtml);
+            $sendtext = str_replace('[[CouponCode]]', $cc, $sendtext);
+            $sendhtml = str_replace('[[CouponCode]]', $cc, $sendhtml);
         }
     }
     try {
@@ -139,4 +147,3 @@ $response['email_array'] = $email_array;
 $response['emails_sent'] = $numsent;
 
 ajaxSuccess($response);
-?>

@@ -1,6 +1,4 @@
 <?php
-global $db_ini;
-
 require_once '../lib/base.php';
 require_once('../../lib/email__load_methods.php');
 $check_auth = google_init('ajax');
@@ -323,37 +321,42 @@ if (array_key_exists('success', $response)) {
     $details = array();
     $detailQ = <<<EOS
 WITH exh AS (
-SELECT e.id, e.exhibitorName, e.website, e.exhibitorEmail, eRY.id AS exhibitorYearId, exRY.exhibitorNumber, exRY.agentRequest,
+SELECT e.id, e.exhibitorName, e.website, e.exhibitorEmail, exRY.exhibitorNumber, exRY.agentRequest,
     TRIM(CONCAT_WS(' ', p.first_name, p.last_name)) as pName, TRIM(CONCAT_WS(' ', n.first_name, n.last_name)) AS nName,
-	SUM(IFNULL(espr.units, 0)) AS ru, SUM(IFNULL(espa.units, 0)) AS au, SUM(IFNULL(espp.units, 0)) AS pu
+     eY.id AS exhibitorYearId, exRY.locations, exRY.id AS exhibitorRegionYearId,
+	SUM(IFNULL(espr.units, 0)) AS ru, SUM(IFNULL(espa.units, 0)) AS au, SUM(IFNULL(espp.units, 0)) AS pu,
+	COUNT(a.id) AS invCount
 FROM exhibitorSpaces eS
 LEFT OUTER JOIN exhibitsSpacePrices espr ON (eS.item_requested = espr.id)
 LEFT OUTER JOIN exhibitsSpacePrices espa ON (eS.item_approved = espa.id)
 LEFT OUTER JOIN exhibitsSpacePrices espp ON (eS.item_purchased = espp.id)
-JOIN exhibitorRegionYears exRY ON exRY.id = eS.exhibitorRegionYear
+JOIN exhibitorRegionYears exRY ON (exRY.id = eS.exhibitorRegionYear)
 JOIN exhibitorYears eY ON (eY.id = exRY.exhibitorYearId)
 JOIN exhibitors e ON (e.id = eY.exhibitorId)
 JOIN exhibitsSpaces s ON (s.id = eS.spaceId)
 JOIN exhibitsRegionYears eRY ON s.exhibitsRegionYear = eRY.id
 LEFT OUTER JOIN perinfo p ON p.id = exRY.agentPerid
 LEFT OUTER JOIN newperson n ON n.id = exRY.agentNewperson
+LEFT OUTER JOIN artItems a ON (a.exhibitorRegionYearId = exRY.id)
 WHERE eY.conid = ? AND eRY.id = ? AND e.id = ?
-GROUP BY e.id, e.exhibitorName, e.website, e.exhibitorEmail, eRY.id, exRY.exhibitorNumber, exRY.agentRequest, pName, nName
+GROUP BY e.id, e.exhibitorName, e.website, e.exhibitorEmail, exRY.exhibitorNumber, exRY.agentRequest, pName, nName, eY.id, exRY.locations,
+    exRY.id
 )
 SELECT xS.id, xS.exhibitorId, exh.exhibitorName, exh.website, exh.exhibitorEmail,
     xS.spaceId, xS.name as spaceName, xS.item_requested, xS.time_requested, xS.requested_units, xS.requested_code, xS.requested_description,
     xS.item_approved, xS.time_approved, xS.approved_units, xS.approved_code, xS.approved_description,
-    xS.item_purchased, xS.time_purchased, xS.purchased_units, xS.purchased_code, xS.purchased_description, xS.transid,
-    eRY.id AS exhibitsRegionYearId, eRY.exhibitsRegion AS regionId, eRY.ownerName, eRY.ownerEmail, eR.name AS regionName, exh.exhibitorNumber,
-    IFNULL(pName, nName) as agentName,
-    exh.pu * 10000 + exh.au * 100 + exh.ru AS sortOrder
+    xS.item_purchased, xS.time_purchased, xS.purchased_units, xS.purchased_code, xS.purchased_description, xS.transid, xS.shortname,
+    eRY.id AS exhibitsRegionYearId, eRY.exhibitsRegion AS regionId, eRY.ownerName, eRY.ownerEmail, eR.name AS regionName, 
+    exh.exhibitorNumber, exh.exhibitorYearId, exh.locations,
+    IFNULL(pName, nName) as agentName, exh.invCount, exh.exhibitorRegionYearId, eT.mailInAllowed
 FROM vw_ExhibitorSpace xS
     JOIN exhibitsSpaces eS ON xS.spaceId = eS.id
     JOIN exhibitsRegionYears eRY ON eS.exhibitsRegionYear = eRY.id
     JOIN exhibitsRegions eR ON eR.id = eRY.exhibitsRegion
+    JOIN exhibitsRegionTypes eT ON (eT.regionType = eR.RegionType)
     JOIN exh ON (xS.exhibitorId = exh.id)
 WHERE eRY.conid=? AND eRY.id = ? AND xS.exhibitorId = ? AND (time_requested IS NOT NULL OR time_approved IS NOT NULL)
-ORDER BY sortOrder, exhibitorName, spaceName
+ORDER BY xS.exhibitorId, spaceId;
 EOS;
 
     $detailR = dbSafeQuery($detailQ, 'iiiiii', array($conid, $regionYearId, $exhibitorId, $conid, $regionYearId, $exhibitorId));
@@ -361,12 +364,43 @@ EOS;
     while ($detailL = $detailR->fetch_assoc()) {
         $detail = $detailL;
         $detail['b1'] = time();
-        $detail['b2'] = time();
-        $detail['b3'] = time();
         $details[] = $detail;
+        $regionId = $detail['regionId'];
     }
 
     $response['detail'] = $details;
+
+    // update the summary
+    // Get the summary of each space for this region
+    $spaceQ = <<<EOS
+SELECT xS.spaceId, xS.name, IFNULL(SUM(requested_units), 0) AS requested, IFNULL(SUM(approved_units),0) AS approved, IFNULL(SUM(purchased_units),0) AS purchased,
+    IFNULL(SUM(CASE WHEN approved_units IS NULL THEN requested_units ELSE 0 END), 0) AS new,
+    IFNULL(SUM(CASE WHEN purchased_units IS NULL THEN approved_units ELSE 0 END), 0) AS pending,
+    unitsAvailable
+FROM vw_ExhibitorSpace xS
+JOIN exhibitsSpaces eS ON xS.spaceId = eS.id
+JOIN exhibitsRegionYears eRY ON eS.exhibitsRegionYear = eRY.id
+WHERE eRY.conid=? AND eRY.exhibitsRegion = ?
+GROUP BY xS.spaceId, xS.name, eS.unitsAvailable
+EOS;
+
+    $spaceR = dbSafeQuery($spaceQ, 'ii', array($conid, $regionId));
+    if (!$spaceR) {
+        ajaxSuccess(array(
+            'args' => $_POST,
+            'query' => $spaceQ,
+            'error' => 'query failed'));
+        exit();
+    }
+
+    $spaces = array();
+    while($spaceLine = $spaceR->fetch_assoc()) {
+        $spaces[] = $spaceLine;
+
+    }
+    $spaceR->free();
+
+    $response['summary'] = $spaces;
 
     if ($approvalType != 'pay' && $approvalType != 'approve' && $pay == 0) {
 
@@ -399,25 +433,22 @@ EOS;
                 if ($spaceHeader == '') {
                     $ownerName = $detail['ownerName'];
                     $ownerEmail = $detail['ownerEmail'];
-                    $spaceHeader = "Your approval for space in " . $con['label'] . "'s " . $detail['regionName'] . " has been updated.";
+
                     $spaceSubject = "Update to " . $con['label'] . "'s " . $detail['regionName'] . " space approval";
                 }
-                if ($detail['item_requested'] != null && $detail['item_approved'] != null) { // space was requested and something was approved
-                    if ($detail['item_requested'] == $detail['item_approved']) {
-                        $spaceDetail .= "Your request for " . $detail['approved_description'] . " of " . $detail['spaceName'] . " was approved.\n";
-                        $approved = true;
-                    } else {
-                        $spaceDetail .= 'Your have been approved for ' . $detail['approved_description'] . ' of ' . $detail['spaceName'] . ".\n";
-                        $approved = true;
-                    }
-                } else if ($detail['time_approved'] != null && $detail['item_approved'] == null && $detail['item_requested'] != null) {
-                    $spaceDetail .= "Your request for " . $detail['spaceName'] . " has been denied.\n";
+
+                if ( $detail['item_approved'] != null) {
+                    $spaceDetail .= $detail['approved_description'] . " of " . $detail['spaceName'] . PHP_EOL;
+                    $approved = true;
                 }
             }
         }
 
         if ($approved) {
+            $spaceHeader = 'You have been approved for the following space in ' . $con['label'] . "'s " . $detail['regionName'] . ':';
             $spaceDetail .= "\nPlease sign into the portal to purchase your space and memberships.\n";
+        } else {
+            $spaceHeader = 'You have not been approved for space in ' . $con['label'] . "'s " . $detail['regionName'] . '.';
         }
 
         $body = <<<EOS
@@ -446,4 +477,3 @@ EOS;
     }
 }
 ajaxSuccess($response);
-?>

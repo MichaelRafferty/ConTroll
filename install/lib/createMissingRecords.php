@@ -3,9 +3,7 @@
 // checks for the required perinfo records and creates the initial admin if needed
 //  options: the array returned by getoptions.
 function createMissingRecords($options) : int {
-    global $db_ini;
-
-    $conid = $db_ini['con']['id'];
+    $conid = getConfValue('con','id');
     $errors = 0;
     logEcho('Creating missing records in the database');
 
@@ -18,7 +16,7 @@ EOS;
 
     $insertPQ = <<<EOS
 INSERT INTO perinfo(id, first_name, last_name, email_addr, banned, active, open_notes, contact_ok, share_reg_ok)
-VALUES (?,?,?,?,?,?,?,?,?,?);
+VALUES (?,?,?,?,?,?,?,?,?);
 EOS;
 
     $insertUQ = <<<EOS
@@ -100,7 +98,7 @@ EOS;
         logEcho('Created person 4 for Portal');
     }
 
-    // check if person 5 exists in the system (Mail In Reg)
+    // check if person 5 exists in the system (Mail-in Reg)
     $checkR = dbSafeQuery($checkSQL, 'i', array(5));
     if ($checkR === false || $checkR->num_rows == 0) {
         logEcho('Error retrieving number of people in the database, cannot continue');
@@ -112,12 +110,12 @@ EOS;
         logEcho('Person 5 exists', true);
     } else {
         // insert person 3
-        $newid = dbSafeInsert($insertPQ, 'issssssssi', array(5, 'Mail In', 'Registration', NULL, 'N', 'N', 'INTERNAL NOT FOR REGISTRATION USE', 'N', 'N'));
+        $newid = dbSafeInsert($insertPQ, 'issssssssi', array(5, 'Mail-in', 'Registration', NULL, 'N', 'N', 'INTERNAL NOT FOR REGISTRATION USE', 'N', 'N'));
         if ($newid === false) {
-            logEcho('Unable to insert Person Info 5 for Mail In');
+            logEcho('Unable to insert Person Info 5 for Mail-in');
             $errors++;
         }
-        logEcho('Created person 5 for Mail In');
+        logEcho('Created person 5 for Mail-in');
     }
 
     // check if the initial conid exists in the system
@@ -140,8 +138,8 @@ VALUES(?, ?, ?, ?, ?, ?);
 EOS;
         $params = array(
             $conid,
-            $db_ini['con']['conname'] . $conid,
-            $db_ini['con']['label'],
+            getConfValue('con', 'conname', 'Missing-') . $conid,
+            getConfValue('con', 'label', 'Missing Label'),
             'Y',
             '1900-01-01',
             '2099-12-31'
@@ -297,4 +295,3 @@ EOS;
         logEcho("Errors while adding initial users");
     return $errors;
 }
-?>

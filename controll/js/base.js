@@ -236,20 +236,6 @@ function showError(str, data = null) {
     }
 }
 
-function showAjaxError(jqXHR, textStatus, errorThrown) {
-    'use strict';
-    var message = '';
-    if (jqXHR && jqXHR.responseText) {
-        message = jqXHR.responseText;
-    } else {
-        message = 'An error occurred on the server.';
-    }
-    if (textStatus != '' && textStatus != 'error')
-        message += '<BR/>' + textStatus;
-    message += '<BR/>Error Thrown: ' + errorThrown;
-    show_message(message, 'error');
-}
-
 function showAlert(str) {
     $('#alertInner').empty().html(str);
     $('#alert').show();
@@ -366,6 +352,7 @@ var editFieldArea = null;
 var editor_modal = null;
 var editTitleDiv = null;
 var editFieldNameDiv = null;
+var editTextOnly = false;
 
 function editRefs() {
     editTableDiv = document.getElementById("editTable");
@@ -380,7 +367,7 @@ function editRefs() {
         editor_modal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
     }
 }
-function showEdit(classname, table, index, field, titlename, textitem) {
+function showEdit(classname, table, index, field, titlename, textitem, textOnly = false) {
     if (editTableDiv == null)
         editRefs();
 
@@ -397,6 +384,10 @@ function showEdit(classname, table, index, field, titlename, textitem) {
     editClassDiv.innerHTML = classname;
     editFieldArea.innerHTML = textitem;
     editTitleDiv.innerHTML = "Editing " + table + " " + titlename + "<br/>" + field;
+    editTextOnly = textOnly;
+    if (textOnly) {
+        textitem = textitem.replace(/\n/g, '<br/>');
+    }
 
     editor_modal.show();
     if (globalCustomTextEditorInit) {
@@ -448,6 +439,18 @@ function saveEdit() {
     var editIndex = editIndexDiv.innerHTML;
     var editClass = editClassDiv.innerHTML;
     var editValue = tinyMCE.activeEditor.getContent();
+
+    if (editTextOnly) {
+        editValue = editValue.replace(/<\/p>/g, "\n");
+        editValue = editValue.replace(/<p>/g, "");
+        editValue = editValue.replace(/<br[ ]*>/g, "\n");
+        editValue = editValue.replace(/<br\/>/g, "\n");
+        editValue = editValue.replace(/&rsquo;/g, "'");
+        editValue = editValue.replace(/&lsquo;/g, "'");
+        editValue = editValue.replace(/&nbsp;/g, " ");
+        editValue = editValue.replace(/<[^>]+>/g, ''); // strip any left over
+    }
+
     editor_modal.hide();
 
     // force a save and get the field from tinyMCE
@@ -474,14 +477,19 @@ function blankIfNull(value) {
 }
 
 // pass object to a window.open via a post with json data
-function downloadCSVPost(fileName, tableData, excludeList = null, fieldList = null) {
+function downloadFilePost(format, fileName, tableData, excludeList = null, fieldList = null) {
     // create the form
     var form = document.createElement('form');
     form.method = 'POST';
-    form.action = 'scripts/downloadCSV.php';
+    form.action = 'scripts/downloadFile.php';
     // append it to the body
     document.body.appendChild(form);
     // create the file name to suggest to save it to....
+    var field = document.createElement('input');
+    field.type = 'text';
+    field.name = 'format';
+    field.value = format;
+    form.appendChild(field);
     var field = document.createElement('input');
     field.type = 'text';
     field.name = 'filename';

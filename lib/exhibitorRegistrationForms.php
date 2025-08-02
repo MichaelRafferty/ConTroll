@@ -3,6 +3,7 @@
 // draw_login - draw the login/signup form
 function draw_login($config_vars, $result_message = '') {
     $portalName = $config_vars['portalName'];
+    $tabIndex = 10;
     ?>
 
  <!-- signin form (at body level) -->
@@ -14,7 +15,7 @@ function draw_login($config_vars, $result_message = '') {
         <div class='container-fluid form-floating'>
             <div class='row mb-2'>
                 <div class='col-sm-auto'>
-                    <h1 class="h4">Please log in to continue to the Portal.</h1>
+                    <h1 class="h4">Please log in to continue to the <?php echo $portalName; ?> Portal.</h1>
                 </div>
             </div>
             <form id='exhibitorSignin' method='POST'>
@@ -23,31 +24,52 @@ function draw_login($config_vars, $result_message = '') {
                         <label for='si_email'><span class='text-danger'>&bigstar;</span>Email: </label>
                     </div>
                     <div class='col-sm-auto'>
-                        <input class='form-control-sm' type='email' name='si_email' id='si_email' size='40' required/>
+                        <input class='form-control-sm' type='email' name='si_email' id='si_email' size='40'
+                               tabindex="<?php echo $tabIndex; $tabIndex += 2;?>" required/>
                     </div>
                 </div>
                 <div class='row mt-1'>
                     <div class='col-sm-1'>
                         <label for='si_password'><span class='text-danger'>&bigstar;</span>Password: </label>
                     </div>
-                    <div class='col-sm-auto'>
-                        <input class='form-control-sm' type='password' id='si_password' name='si_password' size='40' autocomplete='off' required/>
+                    <div class='col-sm-10'>
+                        <?php echo eyepwField('si_password', 'si_password', 40, '', $tabIndex);
+                            $tabIndex += 2;
+                        ?>
                     </div>
                 </div>
                 <div class='row mt-2'>
                     <div class='col-sm-1'></div>
                     <div class='col-sm-auto'>
-                        <input type='submit' class='btn btn-primary' value='Existing Account Sign-in'/>
+                        <input type='submit' class='btn btn-primary' value='Existing Account Sign-in'
+                            tabindex="<?php echo $tabIndex; $tabIndex += 2;?>" />
                     </div>
                 </div>
             </form>
+            <?php  if (getConfValue('vendor', 'passkeyRpLevel') != 'd' && array_key_exists('HTTPS', $_SERVER) &&
+                (isset($_SERVER['HTTPS']) ||  $_SERVER['HTTPS'] == 'on')) { ?>
+            <div class='row mt-1'>
+                <div class='col-sm-1'></div>
+                <div class='col-sm-2' style="text-align: center">OR</div>
+            </div>
+            <div class='row mt-1'>
+                <div class='col-sm-1'></div>
+                <div class='col-sm-auto'>
+                    <button class='btn btn-sm btn-primary' id="loginPasskeyBtn" onclick='loginWithPasskey();'>
+                        <img src="lib/passkey.png">Login with Passkey
+                    </button>
+                </div>
+            </div>
+            <?php } ?>
         </div>
     </div>
     <div id='resetpw'>
         <div class='container-fluid'>
             <div class='row mt-4'>
                 <div class='col-sm-auto'>
-                    <button class='btn btn-secondary' onclick='resetPassword()'>Reset Forgotten Password</button>
+                    <button class='btn btn-secondary' onclick='resetPassword()' tabindex="<?php echo $tabIndex; $tabIndex += 2;?>">
+                        Reset Forgotten Password
+                    </button>
                 </div>
             </div>
         </div>
@@ -55,7 +77,10 @@ function draw_login($config_vars, $result_message = '') {
     <div class='container-fluid'>
         <div class='row mt-4'>
             <div class='col-sm-auto'>
-                <button type="button" class="btn btn-sm btn-secondary" onclick="exhibitorProfile.profileModalOpen('register');">Sign Up for a New Account</button>
+                <button type="button" class="btn btn-sm btn-secondary" onclick="exhibitorProfile.profileModalOpen('register');"
+                    tabindex="<?php echo $tabIndex; $tabIndex += 2;?>">
+                    Sign Up for a New Account
+                </button>
             </div>
         </div>
     </div>
@@ -178,20 +203,20 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                                 <div class='col-sm-2'>
                                     <label for='pw1'><span class='text-danger'>&bigstar;</span>Password: </label>
                                 </div>
-                                <div class='col-sm-auto p-0 ms-0 me-0'>
-                                    <input class='form-control-sm' id='pw1' type='password' name='password' autocomplete='off' required
-                                           tabindex="<?php echo $tabIndex; $tabIndex += 2;?>" size='24' placeholder='minimum of 8 characters'
-                                    />
+                                <div class='col-sm-10 p-0 ms-0 me-0'>
+                                    <?php echo eyepwField('pw1', 'password', 40,'minimum of 8 characters', $tabIndex);
+                                        $tabIndex += 2;
+                                    ?>
                                 </div>
                             </div>
                             <div class='row mt-1' id='passwordLine2'>
                                 <div class='col-sm-2'>
                                     <label for='pw2'><span class='text-danger'>&bigstar;</span>Confirm Password: </label>
                                 </div>
-                                <div class='col-sm-auto p-0 ms-0 me-0'>
-                                    <input class='form-control-sm' id='pw2' type='password' name='cpassword2' autocomplete='off' required
-                                           tabindex="<?php echo $tabIndex; $tabIndex += 2;?>" size='24' placeholder='minimum of 8 characters'
-                                    />
+                                <div class='col-sm-10 p-0 ms-0 me-0'>
+                                    <?php echo eyepwField('pw2', 'password2', 40,'retype password', $tabIndex);
+                                        $tabIndex += 2;
+                                    ?>
                                 </div>
                             </div>
                             <div class='row mt-1'>
@@ -217,6 +242,20 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                                     </textarea>
                                 </div>
                             </div>
+                            <?php if ($portalType == 'admin') { ?>
+                            <div class='row mt-1'>
+                                <div class='col-sm-2'>
+                                    <label for='exhNotes'>Exhibitor Notes:</label>
+                                </div>
+                                <div class='col-sm-9 p-0 ms-0 me-0'>
+                                    <textarea class='form-control-sm' id='exhNotes' name='exhNotes' rows=5 cols=100
+                                              placeholder='Administrators Notes for this Exhibitor'
+                                              tabindex="<?php echo $tabIndex;
+                                                  $tabIndex += 2; ?>">
+                                    </textarea>
+                                </div>
+                            </div>
+                            <?php } ?>
                             <div class='row mt-1'>
                                 <div class='col-sm-2'>
                                     <label for='publicity'><span class='text-danger'>&bigstar;</span>Publicity: </label>
@@ -239,8 +278,8 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                                     <div class='col-sm-9 p-0 ms-0 me-0'>
                                         <select name='mailin' id='mailin' tabindex="<?php echo $tabIndex; $tabIndex += 2;?>"
                                                 style='min-width:100% !important;'>
-                                            <option value='N'>No, (Not Mail In), On-site or Using Agent to transport and hang/collect art</option>
-                                            <option value='Y'>Yes, (Mail In), if shipping art, it will be returned to the Shipping Address</option>
+                                            <option value='N'>No, (Not Mail-in), On-site or Using Agent to transport and hang/collect art</option>
+                                            <option value='Y'>Yes, (Mail-in), if shipping art, it will be returned to the Shipping Address</option>
                                         </select>
                                     </div>
                                 </div>
@@ -347,26 +386,38 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                                     />
                                 </div>
                             </div>
+                            <?php if ($portalType == 'admin') { ?>
+                                <div class='row mt-1'>
+                                    <div class='col-sm-2'>
+                                        <label for='contactNotes'>Contactor Notes:<br/>or<br/>Notes for this year</label>
+                                    </div>
+                                    <div class='col-sm-9 p-0 ms-0 me-0'>
+                                    <textarea class='form-control-sm' id='contactNotes' name='contactNotes' rows=5 cols=100
+                                              placeholder='This Years Notes for this Contact/Exhibitor'
+                                              tabindex="<?php echo $tabIndex;
+                                                  $tabIndex += 2; ?>">
+                                    </textarea>
+                                    </div>
+                                </div>
+                            <?php } ?>
                             <div class='row mt-1' id='cpasswordLine1'>
                                 <div class='col-sm-2'>
                                     <label for='cpw1'><span class='text-danger'>&bigstar;</span>Contact Password: </label>
                                 </div>
-                                <div class='col-sm-auto p-0 ms-0 me-0'>
-                                    <input class='form-control-sm' id='cpw1' type='password' name='cpassword' autocomplete='off' required
-                                           tabindex="<?php echo $tabIndex; $tabIndex += 2;?>" size='24'
-                                           placeholder='minimum of 8 characters'
-                                    />
+                                <div class='col-sm-10 p-0 ms-0 me-0'>
+                                    <?php echo eyepwField('cpw1', 'cpassword', 40,'minimum of 8 characters', $tabIndex);
+                                        $tabIndex += 2;
+                                    ?>
                                 </div>
                             </div>
                             <div class='row mt-1' id='cpasswordLine2'>
                                 <div class='col-sm-2'>
                                     <label for='cpw2'><span class='text-danger'>&bigstar;</span>Confirm Password: </label>
                                 </div>
-                                <div class='col-sm-auto p-0 ms-0 me-0'>
-                                    <input class='form-control-sm' id='cpw2' type='password' name='cpassword2' autocomplete='off' required
-                                           tabindex="<?php echo $tabIndex; $tabIndex += 2;?>" size='24'
-                                           placeholder='minimum of 8 characters'
-                                    />
+                                <div class='col-sm-10 p-0 ms-0 me-0'>
+                                    <?php echo eyepwField('cpw2', 'cpassword2', 40,'retype the contact password', $tabIndex);
+                                        $tabIndex += 2;
+                                    ?>
                                 </div>
                             </div>
                             <!-- Shipping Address (artist only) -->
@@ -464,8 +515,8 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
     <?php
     }
 
-// draw_RegistratioModal - the modal for exhibitor signup
-function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabStart = 10) {
+// draw_RegistratioModal - the modal for exhibitor signup in the vendor subsystem
+function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabStart = 5000) {
     $con = get_conf('con');
     $vendor_conf = get_conf('vendor');
     $tabIndex = $tabStart;
@@ -501,7 +552,7 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                             <div class="row" id="creatingAccountMsg">
                                 <div class="col-sm-12">Creating an account does not guarantee space.</div>
                             </div>
-                            <!-- Page 1 - Are you a mail in Artist - display only if artist -->
+                            <!-- Page 1 - Are you a mail-in Artist - display only if artist -->
                             <div id="page1">
                                 <?php if ($portalType != 'admin') { ?>
                                     <div class="row mt-1">
@@ -524,7 +575,7 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                 </div>
                                 <div class='row mt-3'>
                                     <div class='col-sm-2'></div>
-                                    <div class='col-sm-auto p-0 ms-0 me-0'><h1 class="h4">Are You a Mail In Artist</h1></div>
+                                    <div class='col-sm-auto p-0 ms-0 me-0'><h1 class="h4">Are You a Mail-in Artist</h1></div>
                                 </div>
                                 <div class='row mt-1'>
                                     <div class='col-sm-2'>
@@ -534,8 +585,8 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                         <select name='mailin' id='mailin' tabindex="<?php echo $tabIndex; $tabIndex += 2;?>"
                                                 style="min-width:100% !important;">
                                             <option value="">--Choose Yes or No--</option>
-                                            <option value="N">No, (Not Mail In), On-site or Using Agent to transport and hang/collect art</option>
-                                            <option value="Y">Yes, (Mail In), if shipping art, it will be returned to the Shipping Address</option>
+                                            <option value="N">No, (Not Mail-in), On-site or Using Agent to transport and hang/collect art</option>
+                                            <option value="Y">Yes, (Mail-in), if shipping art, it will be returned to the Shipping Address</option>
                                         </select>
                                     </div>
                                 </div>
@@ -630,21 +681,20 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                     <div class='col-sm-2'>
                                         <label for='pw1'><span class='text-danger'>&bigstar;</span>Password: </label>
                                     </div>
-                                    <div class='col-sm-auto p-0 ms-0 me-0'>
-                                        <input class='form-control-sm' id='pw1' type='password' name='password' autocomplete='off' required
-                                               tabindex="<?php echo $tabIndex; $tabIndex += 2;?>"
-                                               size='24' placeholder='minimum of 8 characters'/>
+                                    <div class='col-sm-10 p-0 ms-0 me-0'>
+                                        <?php echo eyepwField('pw1', 'password', 40,'minimum of 8 characters', $tabIndex);
+                                            $tabIndex += 2;
+                                        ?>
                                     </div>
                                 </div>
                                 <div class='row mt-1' id='passwordLine2'>
                                     <div class='col-sm-2'>
                                         <label for='pw2'><span class='text-danger'>&bigstar;</span>Confirm Password: </label>
                                     </div>
-                                    <div class='col-sm-auto p-0 ms-0 me-0'>
-                                        <input class='form-control-sm' id='pw2' type='password' name='cpassword2' autocomplete='off' required
-                                               tabindex="<?php echo $tabIndex; $tabIndex += 2;?>"
-                                               size='24' placeholder='minimum of 8 characters'
-                                        />
+                                    <div class='col-sm-10 p-0 ms-0 me-0'>
+                                        <?php echo eyepwField('pw2', 'password2', 40,'retype the exhibitor password', $tabIndex);
+                                            $tabIndex += 2;
+                                        ?>
                                     </div>
                                 </div>
                                 <div class='row mt-1'>
@@ -667,6 +717,20 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                                   tabindex="<?php echo $tabIndex; $tabIndex += 2;?>"></textarea>
                                     </div>
                                 </div>
+                                <?php if ($portalType == 'admin') { ?>
+                                    <div class='row mt-1'>
+                                        <div class='col-sm-2'>
+                                            <label for='exhNotes'>Exhibitor Notes:</label>
+                                        </div>
+                                        <div class='col-sm-9 p-0 ms-0 me-0'>
+                                    <textarea class='form-control-sm' id='exhNotes' name='exhNotes' rows=5 cols=100
+                                              placeholder='Administrators Notes for this Exhibitor'
+                                              tabindex="<?php echo $tabIndex;
+                                                  $tabIndex += 2; ?>">
+                                    </textarea>
+                                        </div>
+                                    </div>
+                                <?php } ?>
                                 <div class='row mt-4'>
                                     <div class='col-sm-2'></div>
                                     <div class='col-sm-auto p-0 ms-0 me-0'><strong>Signup page 2 of 4, please complete all 4 pages, register button is on page
@@ -725,26 +789,38 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                         '/>
                                     </div>
                                 </div>
+                                <?php if ($portalType == 'admin') { ?>
+                                    <div class='row mt-1'>
+                                        <div class='col-sm-2'>
+                                            <label for='contactNotes'>Contactor Notes:<br/>or<br/>Notes for this year</label>
+                                        </div>
+                                        <div class='col-sm-9 p-0 ms-0 me-0'>
+                                    <textarea class='form-control-sm' id='contactNotes' name='contactNotes' rows=5 cols=100
+                                              placeholder='This Years Notes for this Contact/Exhibitor'
+                                              tabindex="<?php echo $tabIndex;
+                                                  $tabIndex += 2; ?>">
+                                    </textarea>
+                                        </div>
+                                    </div>
+                                <?php } ?>
                                 <div class='row mt-1' id='cpasswordLine1'>
                                     <div class='col-sm-2'>
                                         <label for='cpw1'><span class='text-danger'>&bigstar;</span>Contact Password: </label>
                                     </div>
-                                    <div class='col-sm-auto p-0 ms-0 me-0'>
-                                        <input class='form-control-sm' id='cpw1' type='password' name='cpassword' autocomplete='off' required
-                                               tabindex="<?php echo $tabIndex; $tabIndex += 2;?>"
-                                               size='24' placeholder='minimum of 8 characters'
-                                        />
+                                    <div class='col-sm-10 p-0 ms-0 me-0'>
+                                        <?php echo eyepwField('cpw1', 'cpassword', 40,'minimum of 8 characters', $tabIndex);
+                                            $tabIndex += 2;
+                                        ?>
                                     </div>
                                 </div>
                                 <div class='row mt-1' id='cpasswordLine2'>
                                     <div class='col-sm-2'>
                                         <label for='cpw2'><span class='text-danger'>&bigstar;</span>Confirm Password: </label>
                                     </div>
-                                    <div class='col-sm-auto p-0 ms-0 me-0'>
-                                        <input class='form-control-sm' id='cpw2' type='password' name='cpassword2' autocomplete='off' required
-                                               tabindex="<?php echo $tabIndex; $tabIndex += 2;?>"
-                                               size='24' placeholder='minimum of 8 characters'
-                                        />
+                                    <div class='col-sm-10 p-0 ms-0 me-0'>
+                                        <?php echo eyepwField('cpw2', 'cpassword2', 40,'retype the contact password', $tabIndex);
+                                            $tabIndex += 2;
+                                        ?>
                                     </div>
                                 </div>
                                 <div class='row mt-4'>

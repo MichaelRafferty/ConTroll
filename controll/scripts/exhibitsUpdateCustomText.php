@@ -1,6 +1,4 @@
 <?php
-global $db_ini;
-
 require_once "../lib/base.php";
 require_once "../lib/customText.php";
 
@@ -64,4 +62,3 @@ $updated = updateCustomText($tabledata);
 $response['success'] = "$tablename updated: $updated changed";
 $response['customText'] = getCustomText('exhibitor');
 ajaxSuccess($response);
-?>

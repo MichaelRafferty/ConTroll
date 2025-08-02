@@ -338,6 +338,7 @@ function clearfilter() {
             row.getCell("name").getElement().style.backgroundColor = "";
         }
     }
+    registrationtable.clearFilter(true);
 }
 
 // draw all of the filter tables with the progress bar as statistics with counts
@@ -913,6 +914,7 @@ function changeRevoke(direction) {
         cancelList: changeList,
         direction: direction,
         action: 'cancel',
+        source: config['source'],
     }
     var script= 'scripts/regadmin_cancelReg.php';
 
@@ -1480,6 +1482,7 @@ function changeEditSave(override) {
             couponDiscount: newDiscount,
             status: newStatus,
         },
+        source: config['source'],
     };
     var script = 'scripts/regadmin_editReg.php';
     $.ajax({
@@ -1587,15 +1590,15 @@ function draw_registrations(data) {
     reglistDiv.hidden = false;
 }
 
-// save off the csv file
-function reglistCSV() {
+// save off the data file
+function reglistDownload(format) {
     if (registrationtable == null)
         return;
 
     var filename = 'registrations';
     var tabledata = JSON.stringify(registrationtable.getData("active"));
     var excludeList = ['hcount','ncount'];
-    downloadCSVPost(filename, tabledata, excludeList);
+    downloadFilePost(format, filename, tabledata, excludeList);
 }
 
 // called from data load - draws the filter stats block and the registrations block

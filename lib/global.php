@@ -2,6 +2,100 @@
 //  global.php
 // functions useful everywhere in the reg system
 
+// this is the configuration file array, and should only be referenced in this file.
+global $configData;
+// load the configuration file
+function loadConfFile(): bool {
+    global $configData;
+
+    if ($configData != null)  // already loaded
+        return false;
+
+    // localize the path, try going up a couple of directories
+    $path = __DIR__ . '/../config';
+    if (!is_dir($path)) {
+        $path = __DIR__ . '/../../config';
+        if (!is_dir($path)) {
+            $path = __DIR__ . '/../../../config';
+        }
+    }
+    if (!is_dir($path)) {
+        error_log("Unable to find the configuration directory");
+        exit(1);
+    }
+
+    // our config files are only two level
+    // load admin file
+    $adminFile = $path . '/reg_admin.ini';
+    $confFile = $path . '/reg_conf.ini';
+    $secretFile = $path . '/reg_secret.ini';
+    if (is_readable($adminFile)) {
+        $configData = parse_ini_file($path . '/reg_admin.ini', true);
+        if ($configData === false)
+            $configData = [];
+    } else {
+        $configData = [];
+    }
+    // now merge/override in config file
+    if (is_readable($confFile)) {
+        $db_conf = parse_ini_file($path . '/reg_conf.ini', true);
+        if ($db_conf !== false) {
+            foreach ($db_conf as $section => $values) {
+                if (is_array($values)) {
+                    foreach ($values as $key => $value) {
+                        $configData[$section][$key] = $value;
+                    }
+                } else {
+                    $configData[$section] = $values;
+                }
+            }
+        }
+    }
+    if (is_readable($secretFile)) {
+        // now override secret file
+        $db_conf = parse_ini_file($path . '/reg_secret.ini', true);
+        if ($db_conf !== false) {
+            foreach ($db_conf as $section => $values) {
+                if (is_array($values)) {
+                    foreach ($values as $key => $value) {
+                        $configData[$section][$key] = $value;
+                    }
+                } else {
+                    $configData[$section] = $values;
+                }
+            }
+        }
+    }
+    return true;
+}
+
+// older depreciated function to get an entire conf section, but it doesn't handle global overrides,
+// should be reserved only for things without overrides, and perhaps phased out entirely
+function get_conf($name) {
+    global $configData;
+    if (array_key_exists($name, $configData))
+        return $configData[$name];
+    return null;
+}
+
+// get a specific value from the config file section, using [global] for defaults if not set
+function getConfValue($section, $key, $default = '') : null|string {
+    global $configData;
+
+    if (array_key_exists($section, $configData)) {
+        if (array_key_exists($key, $configData[$section])) {
+            return $configData[$section][$key];
+        }
+    }
+    if (array_key_exists('global', $configData)) {
+        if (array_key_exists($key, $configData['global'])) {
+            return $configData['global'][$key];
+        }
+    }
+
+    return $default;
+}
+
 // non Windows implementation of guidv4
 function guidv4($data = null) {
     // Generate 16 bytes (128 bits) of random data or use the data passed into the function.
@@ -120,6 +214,7 @@ function isPrimary($mtype, $conid, $use = 'all') : bool {
 //// functions for custom text usage
 global $customTexT, $keyPrefix, $customTextFilter, $loadedPrefixes;
 $loadedPrefixes = [];
+$keyPrefix = '';
 
 // loadCustomText - load all the relevant custom text for this page
     function loadCustomText($app, $page, $filter, $addmode = false) : void {
@@ -179,7 +274,7 @@ EOS;
                         return;
                 }
 
-                echo '<div class="container-fluid">' . PHP_EOL .
+                echo '<div class="container-fluid p-0 m-0">' . PHP_EOL .
                     replaceConfigTokens($contents) . PHP_EOL .
                     '</div>' . PHP_EOL;
             }
@@ -231,10 +326,8 @@ EOS;
 
 // replaceConfigTokens - replace configuration tokens of the form #section.element# in a text string with values from the parsed configuration file
 // NOTE: the sections cc, client, debug, email, google, local, log, mysql are skipped for security reasons as they hold keys and other protected data
-const replaceConfigTokensSkip = ['cc', 'client', 'debug', 'email', 'google', 'local', 'log', 'mysql'];
+const replaceConfigTokensSkip = ['global', 'cc', 'client', 'debug', 'email', 'google', 'local', 'log', 'mysql'];
     function replaceConfigTokens($string) : string {
-        global $db_ini;
-
         $pattern = '/#[^#]+#/';     // config tokens are #item.section#, but if the dot is missing, 'reg' will be assumed
         // get the matches if any
         $count = preg_match_all($pattern, $string, $matches);
@@ -256,12 +349,11 @@ const replaceConfigTokensSkip = ['cc', 'client', 'debug', 'email', 'google', 'lo
             if (in_array($section, replaceConfigTokensSkip)) // skip over restricted tokens
                 continue;
 
-            if (!array_key_exists($section, $db_ini))
-                continue;       // section missing, leave token in the string and move on
-            if (!array_key_exists($element, $db_ini[$section]))
-                continue;       // element missing, leave token in the string and move on
+            $replaceValue = getConfValue($section, $element, null);
+            if ($replaceValue == null)
+                continue; // item is missing, both in the section and in global, leave token in the string and move on
 
-            $string = str_replace($match, $db_ini[$section][$element], $string);
+            $string = str_replace($match, $replaceValue, $string);
         }
 
         return $string;
@@ -346,4 +438,14 @@ function phoneNumberNormalize($buyer) : string {
 
     // rest of the world, presume the number has the country code on it already
     return $phone;
+}
+
+// return a eyeslash toggle style password field
+function eyepwField($id, $name, $width = 40, $placeholder = '', $tabIndex = -1) {
+    $html = <<<EOS
+<input class='form-control-sm' type='password' id='$id' name='$name' size="$width" autocomplete="off" required 
+    tabindex="$tabIndex" placeholder="$placeholder"/>
+<i class='bi bi-eye-slash' id='toggle_$id' style="margin-left: -30px;"></i>
+EOS;
+    return $html;
 }

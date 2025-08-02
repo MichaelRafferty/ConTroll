@@ -199,10 +199,12 @@ class Printers {
     }
 
     addServer() {
+        this.serverlist.clearFilter(true);
         this.serverlist.addData([{local:true, serverName: "NewServer", address:"", location:"", active: false, delete: '🗑'}], true);
     }
 
     addPrinter() {
+        this.printerlist.clearFilter(true);
         this.printerlist.addData([{serverName: "New Server", printerName: "NewPrinter", printerType: "generic", active: false, delete: '🗑'}], true);
     }
 
@@ -270,15 +272,13 @@ class Printers {
         if (this.printerlist !== null) {
             this.printerlist.destroy();
             this.printerlist = null;
-
         }
+
         if (this.serverlist !== null) {
             this.serverlist.destroy();
             this.serverlist = null;
-
         }
-        this.serverlist.savebtn.disabled = false;
-        this.serverlist.savebtn.innerHTML = "Save";
+
         this.printers_savebtn.disabled = false;
         this.printers_savebtn.innerHTML = "Save";
     }

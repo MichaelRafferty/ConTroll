@@ -16,7 +16,7 @@ $response = array('post' => $_POST, 'get' => $_GET);
 global $condata;
 $condata = get_con();
 $conid=$condata['id'];
-$regconf = get_conf('reg');
+$required = getConfValue('reg', 'required', 'addr');
 $cc = get_conf('cc');
 
 $response['conid'] = $conid;
@@ -36,10 +36,10 @@ logInit($log['vendors']);
 
 $email = "no send attempt or a failure";
 
-if(!isset($_SESSION['id'])) { ajaxSuccess(array('status'=>'error', 'message'=>'Session Failure')); exit; }
+if(!isSessionVar('id')) { ajaxSuccess(array('status'=>'error', 'message'=>'Session Failure')); exit; }
 
-$exhId = $_SESSION['id'];
-$eyID = $_SESSION['eyID'];
+$exhId = getSessionVar('id');
+$eyID = getSessionVar('eyID');
 
 $response = array("post" => $_POST, "get" => $_GET);
 
@@ -94,7 +94,7 @@ $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale
 $regionYearQ = <<<EOS
 SELECT er.id, name, description, ownerName, ownerEmail, includedMemId, additionalMemId, mi.price AS includedPrice, ma.price AS additionalPrice,
        mi.glNum AS includedGLNum, ma.glNum AS additionalGLNum, mi.label AS includedLabel, ma.label AS additionalLabel,
-       ery.mailinFee, ery.atconIdBase, ery.mailinIdBase, ery.id as yearId
+       ery.mailinFee, ery.atconIdBase, ery.mailinIdBase, ery.id as yearId, ery.mailinGLNum, ery.mailinGLLabel
 FROM exhibitsRegionYears ery
 JOIN exhibitsRegions er ON er.id = ery.exhibitsRegion
 LEFT OUTER JOIN memList mi ON ery.includedMemId = mi.id
@@ -165,7 +165,7 @@ $spacePriceComputed = 0;
 $includedMembershipsComputed = 0;
 $additionalMembershipsComputed = 0;
 $spaces = [];
-$mailInFee = [];
+$mailIn = [];
 while ($space =  $spaceR->fetch_assoc()) {
     var_error_log($space);
     $spaces[$space['spaceId']] = $space;
@@ -174,10 +174,13 @@ while ($space =  $spaceR->fetch_assoc()) {
     $additionalMembershipsComputed = max($additionalMembershipsComputed, $space['additionalMemberships']);
 }
 $spaceR->free();
-// add in mail in fee if this exhibitor is using mail in this year and the fee exist
+// add in mail-in fee if this exhibitor is using mail-in this year and the fee exist
 if ($region['mailinFee'] > 0 && $exhibitor['mailin'] == 'Y') {
+    $mailIn['amount'] = $region['mailinFee'];
+    $mailIn['name'] = $region['name'];
+    $mailIn['glNum'] = $region['mailinGLNum'];
+    $mailIn['desc'] = $region['name'] . ' Mail-in Fee';
     $spacePriceComputed += $region['mailinFee'];
-    $mailInFee[] = array('name' => $region['name'], 'yearId' => $region['yearId'], 'amount' => $region['mailinFee']);
 }
 
 if ($spacePrice != $spacePriceComputed || $includedMembershipsComputed != $includedMembershipsMax || $additionalMembershipsComputed != $additionalMembershipsMax) {
@@ -209,10 +212,10 @@ $membership_names = array('fname' => 'First Name', 'mname' => 'Middle Name', 'ln
     'addr' => 'Address Line 1', 'addr2' => 'Company/Address Line 2', 'city' => 'City', 'state' => 'State', 'zip' => 'Zip Code/Postal Code',
     'country' => 'Country', 'email' => 'Email Address', 'phone' => 'Phone Number', 'badgename' => 'Badge Name');
 
-if ($regconf['required'] == 'addr') {
+if ($required == 'addr') {
     $membership_fields['lname'] = 0;
 }
-if ($regconf['required'] == 'first') {
+if ($required == 'first') {
     $membership_fields['lname'] = 0;
     $membership_fields['addr'] = 0;
     $membership_fields['city'] = 0;
@@ -386,6 +389,7 @@ EOS;
 }
 
 // build the badges to insert into newperson and create the transaction
+// track the badges built to remove them if the payment fails
 //
 $error_msg = '';
 $badges = array();
@@ -428,11 +432,11 @@ SELECT R.id AS badge,
     NP.first_name AS fname, NP.middle_name AS mname, NP.last_name AS lname, NP.suffix AS suffix,
     NP.email_addr AS email,
     NP.address AS street, NP.city AS city, NP.state AS state, NP.zip AS zip, NP.country AS country,
-    NP.id as id, R.price AS price, M.memAge AS age, NP.badge_name AS badgename, NP.legalName, R.memId,
-    M.label, M.memCategory, M.memType, M.glNum, R.perid, R.newperid, R.id AS regId
+    NP.id as id, R.price AS price, M.memAge AS age, NP.badge_name AS badgename, NP.legalName, R.memId, M.memAge,
+    M.shortname, M.ageShortName AS ageshortname, M.taxable, M.memCategory, M.memType, M.glNum, R.perid, R.newperid, R.id AS regId
 FROM newperson NP
 JOIN reg R ON (R.newperid=NP.id)
-JOIN memList M ON (M.id = R.memID)
+JOIN memLabel M ON (M.id = R.memID)
 WHERE NP.transid=?;
 EOS;
 
@@ -450,7 +454,7 @@ $results = array(
     'transid' => $transId,
     'counts' => null,
     'spaces' => $spaces,
-    'mailInFee' => $mailInFee,
+    'mailInFee' => [$mailIn],
     'price' => $totprice,
     'badges' => $badgeResults,
     'formbadges' => $badges,
@@ -474,8 +478,11 @@ if ($totprice > 0) {
     $rtn = cc_buildOrder($results, true);
     if ($rtn == null) {
         // note there is no reason cc_buildOrder will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
-        logWrite(array ('con' => $condata['name'], 'trans' => $transId, 'error' => 'Credit card order unable to be created'));
-        ajaxSuccess(array ('status' => 'error', 'error' => 'Credit card order not built, seek assistance'));
+        logWrite(array ('con' => $condata['name'], 'trans' => $transId, 'error' => 'Order unable to be created'));
+
+        // because this will retry once the issue is corrected, the newperson records and memberships need to be deleted.  it's all in $badgeResults
+        cleanupRegs($badgeResults);
+        ajaxSuccess(array ('status' => 'error', 'error' => 'Order not built, seek assistance'));
         exit();
     }
     $response['orderRtn'] = $rtn;
@@ -501,7 +508,7 @@ if ($totprice > 0) {
         'buyer' => $buyer,
         'counts' => null,
         'spaces' => $spaces,
-        'mailInFee' => $mailInFee,
+        'mailInFee' => [$mailIn],
         'price' => $totprice,
         'badges' => $badgeResults,
         'formbadges' => $badges,
@@ -511,6 +518,8 @@ if ($totprice > 0) {
 // call the credit card processor to make the payment
     $ccrtn = cc_payOrder($results, $buyer, true);
     if ($ccrtn === null) {
+        // because this will retry once the issue is corrected, the newperson records and memberships need to be deleted.  it's all in $badgeResults
+        cleanupRegs($badgeResults);
         // note there is no reason cc_PayOrder will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
         logWrite(array('con'=>$condata['name'], 'trans'=>$transId, 'error' => 'Credit card transaction not approved'));
         ajaxSuccess(array('status' => 'error', 'error' => 'Credit card not approved'));
@@ -712,7 +721,8 @@ EOS;
     }
 }
 
-
+$filter = getConfValue('vendor', 'customtext', 'production');
+loadCustomText('exhibitor', 'index', $filter, false);
 $emails = payment($results);
 $return_arr = send_email($region['ownerEmail'], array($exhibitor['exhibitorEmail'], $buyer['email']), $region['ownerEmail'], $region['name'] . ' Payment', $emails[0], $emails[1]);
 
@@ -890,4 +900,69 @@ EOS;
     }
 
     return $badge;
+}
+
+// cleanup up on a credit card failure (order or payment)
+function cleanRegs($badges, $transid) {
+    $delReg = <<<EOS
+DELETE FROM reg
+WHERE id = ?;
+EOS;
+
+    $delInterests = <<<EOS
+DELETE FROM memberInterests
+WHERE newperid = ?;
+EOS;
+
+    $delPolicies = <<<EOS
+DELETE FROM memberPolicies
+WHERE newperid = ?;
+EOS;
+
+    $clrNewperson = <<<EOS
+UPDATE newperson
+SET transid = NULL
+WHERE id = ?;
+EOS;
+
+    $clrTransaction = <<<EOS
+UPDATE transaction
+SET newperid = NULL
+WHERE newperid = ?;
+EOS;
+
+    $delNewperson = <<<EOS
+DELETE FROM newperson
+WHERE id = ?;
+EOS;
+
+    $delTransaction = <<<EOS
+DELETE FROM transaction
+WHERE id = ?;
+EOS;
+
+
+// first the regs
+    foreach ($badges as $badge) {
+        $regId = $badge['regId'];
+        // delete the reg entry
+        $numDel = dbSafeCmd($delReg, 'i', array ($regId));
+    }
+
+    // now the new perid
+    foreach ($badges as $badge) {
+        if (array_key_exists('id', $badge)) {
+            $newPerid = $badge['id'];
+            // clear the newperson entry
+            $numDel = dbSafeCmd($clrNewperson, 'i', array ($newPerid));
+            $numDel = dbSafeCmd($clrTransaction, 'i', array ($newPerid));
+            $numDel = dbSafeCmd($delInterests, 'i', array ($newPerid));
+            $numDel = dbSafeCmd($delPolicies, 'i', array ($newPerid));
+
+            // delete the newperson entry
+            $numDel = dbSafeCmd($delNewperson, 'i', array ($newPerid));
+        }
+    }
+    // delete the transaction
+    $numDel = dbSafeCmd($delTransaction, 'i', array ($transid));
 }

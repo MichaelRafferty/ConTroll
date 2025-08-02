@@ -37,7 +37,6 @@ $usps = get_conf('usps');
 $controll = get_conf('controll');
 $conid = $con['id'];
 $conname = $con['conname'];
-$ini = get_conf('reg');
 $useUSPS = false;
 
 if (array_key_exists('multioneday', $con))
@@ -76,7 +75,7 @@ $config_vars['debug'] = $debug_registration;
 $config_vars['conid'] = $conid;
 $config_vars['mode'] = 'admin';
 $config_vars['regadminemail'] = $con['regadminemail'];
-$config_vars['required'] = $ini['required'];
+$config_vars['required'] = getConfValue('reg','required', 'addr');
 $config_vars['useportal'] = $usePortal;
 $config_vars['cashier'] = 1;
 $config_vars['multiOneDay'] = $multiOneDay;

@@ -13,7 +13,6 @@ $con = get_conf('con');
 $conid = $con['id'];
 $portal_conf = get_conf('portal');
 $debug = get_conf('debug');
-$ini = get_conf('reg');
 $condata = get_con();
 
 if (isSessionVar('id') && isSessionVar('idType')) {
@@ -35,6 +34,11 @@ if (array_key_exists('multioneday', $con))
 else
     $multiOneDay = 0;
 
+if (array_key_exists('oneoff', $con))
+    $oneoff =$con['oneoff'];
+else
+    $oneoff = 0;
+
 $config_vars = array();
 $config_vars['label'] = $con['label'];
 $config_vars['debug'] = $debug['portal'];
@@ -44,8 +48,9 @@ $config_vars['regadminemail'] = $con['regadminemail'];
 $config_vars['id'] = $loginId;
 $config_vars['idType'] = $loginType;
 $config_vars['personEmail'] = getSessionVar('email');
-$config_vars['required'] = $ini['required'];
+$config_vars['required'] = getConfValue('reg', 'required', 'addr');
 $config_vars['multiOneDay'] = $multiOneDay;
+$config_vars['oneoff'] = $oneoff;
 $cdn = getTabulatorIncludes();
 
 if ($loginType == 'n') {
@@ -311,4 +316,3 @@ drawVerifyPersonInfo($policies);
 ?>
 <?php
 portalPageFoot();
-?>

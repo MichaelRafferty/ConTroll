@@ -131,7 +131,7 @@ FROM exhibitsRegionTypes xRT
     JOIN exhibitors e ON e.id=eY.exhibitorId
 WHERE xRT.active='Y' AND xRT.usesInventory='Y' AND xRY.conid=? 
     AND xR.shortname=? AND eRY.exhibitorNumber is not null
-ORDER BY xRY.id;
+ORDER BY eRY.exhibitorNumber;
 EOS;
 $artistR = dbSafeQuery($artistQ, 'is', array($conid, $region));
                                     ?>

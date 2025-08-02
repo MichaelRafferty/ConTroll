@@ -15,23 +15,23 @@ $con = get_conf('con');
 $conid = $con['id'];
 $portal_conf = get_conf('portal');
 $debug = get_conf('debug');
-$ini = get_conf('reg');
 $condata = get_con();
 
 $config_vars = array();
 $config_vars['label'] = $con['label'];
 $config_vars['debug'] = $debug['portal'];
 $config_vars['uri'] = $portal_conf['portalsite'];
-$config_vars['required'] = $ini['required'];
+$config_vars['required'] = getConfValue('reg', 'required', 'addr');
 $loginId = null;
 $loginType = null;
 $purpose = "From here you can create and manage your membership account.";
-$why = "continue to the Portal.";
+$why = "continue to the Portal";
 
 // first lets check the authentication stuff. but only if not loging out
     // in session or not, is it a logout? (force clear session method, as well as logout)
     if (isset($_REQUEST['logout'])) {
         clearSession();
+        session_regenerate_id(true);
         header('location:' . $portal_conf['portalsite']);
         exit();
     }
@@ -258,6 +258,10 @@ if (isSessionVar('id')) {
                 $tablename = null;
                 if (array_key_exists('id', $match)) {
                     $id = $match['id'];
+                    if (!array_key_exists('tablename', $match)) {
+                        error_log('Missing table name, match:');
+                        var_error_log($match);
+                    } else
                     $tablename = $match['tablename'];
                 }
                 validationComplete($id, $tablename, $email, getSessionVar('idSource'), getSessionVar('multiple'));
@@ -289,7 +293,7 @@ if (isset($_GET['vid'])) {
     }
     if (array_key_exists('validationType', $match)) {
         $validationType = $match['validationType'];
-        if ($match['validationType'] != 'token') {
+        if ($match['validationType'] != 'token' && $match['validationType'] != 'switched') {
             if ($match['validationType'] != getSessionVar('oauth2') || $email != getSessionVar('email')) {
                 draw_login($config_vars, "The link is invalid", 'bg-danger text-white',
                            $why);
@@ -301,7 +305,7 @@ if (isset($_GET['vid'])) {
         $validationType = 'token';
     }
     $timediff = time() - $match['ts'];
-    web_error_log('login @ ' . time() . ' with ts ' . $match['ts'] . " for $email/$id via $validationType");
+    web_error_log('login @ ' . time() . ' with ts ' . $match['ts'] . " for $email/$id via $validationType", '', false);
     if ($timediff > (4 * 3600)) {
         draw_login($config_vars,
                    "The link has expired, please request a new link",  'bg-danger text-white',
@@ -309,45 +313,62 @@ if (isset($_GET['vid'])) {
         exit();
     }
 
-    if ($validationType == 'token') {
-        // check if the link has been used
-        $linkQ = <<<EOS
+    if ($validationType == 'token' || $validationType == 'switched') {
+        if ($validationType == 'token') {
+            // check if the link has been used
+            $linkQ = <<<EOS
 SELECT id, LOWER(email) AS email, useCnt
 FROM portalTokenLinks
 WHERE id = ? AND action = 'login'
 ORDER BY createdTS DESC;
 EOS;
-        $linkR = dbSafeQuery($linkQ, 's', array ($linkid));
-        if ($linkR == false || $linkR->num_rows != 1) {
-            draw_login($config_vars,
-                       "The link is invalid, please request a new link",  'bg-danger text-white',
-                       $why);
-            exit();
-        }
-        $linkL = $linkR->fetch_assoc();
-        if ($linkL['email'] != $email) {
-            draw_login($config_vars,
-                       "The link is invalid, please request a new link", 'bg-danger text-white',
-                   $why);
-            exit();
-        }
+            $linkR = dbSafeQuery($linkQ, 's', array ($linkid));
+            if ($linkR == false || $linkR->num_rows != 1) {
+                draw_login($config_vars,
+                    "The link is invalid, please request a new link", 'bg-danger text-white',
+                    $why);
+                exit();
+            }
+            $linkL = $linkR->fetch_assoc();
+            if ($linkL['email'] != $email) {
+                // mismatch, check to see if it's one of the perinfo identity emails
+                $piQ = <<<EOS
+SELECT i.perid, i.email_addr AS iEmail, p.email_addr AS pEmail
+FROM perinfoIdentities i
+JOIN perinfo p ON i.perid = p.id
+WHERE i.email_addr = ? AND p.email_addr = ?;
+EOS;
+                $piR = dbSafeQuery($piQ, 'ss', array ($linkL['email'], $email));
+                if ($piR === false || $piR->num_rows == 0) {
+                    draw_login($config_vars,
+                        "The link is invalid, please request a new link", 'bg-danger text-white', $why);
+                    exit();
+                }
 
-        if ($linkL['useCnt'] > 100) {
-            draw_login($config_vars,
-                       "The link has already been used, please request a new link", 'bg-danger text-white',
-                   $why);
-            exit();
-        }
+                $possibleIDs = [];
+                while ($pid = $piR->fetch_assoc()) {
+                    $possibleIDs[] = $pid;
+                }
+                $piR->free();
+            }
 
-        // mark link as used
-        $updQ = <<<EOS
+            if ($linkL['useCnt'] > 100) {
+                draw_login($config_vars,
+                    "The link has already been used, please request a new link", 'bg-danger text-white',
+                    $why);
+                exit();
+            }
+
+            // mark link as used
+            $updQ = <<<EOS
         UPDATE portalTokenLinks
         SET useCnt = useCnt + 1, useIP = ?, useTS = NOW()
         WHERE id = ?;
         EOS;
-        $updcnt = dbSafeCmd($updQ, 'si', array ($_SERVER['REMOTE_ADDR'], $linkid));
-        if ($updcnt != 1) {
-            web_error_log("Error updating link $linkid as used");
+            $updcnt = dbSafeCmd($updQ, 'si', array ($_SERVER['REMOTE_ADDR'], $linkid));
+            if ($updcnt != 1) {
+                web_error_log("Error updating link $linkid as used");
+            }
         }
 
         // set expiration for email
@@ -373,7 +394,7 @@ EOS;
     setSessionVar('tokenType', $tokenType);
 
     // now choose the account from the email
-    $account = chooseAccountFromEmail($email, $id, $linkid, $match, 'token');
+    $account = chooseAccountFromEmail($email, $id, $linkid, $match, $validationType);
     if ($account == null || !is_numeric($account)) {
         if ($account == null) {
             $account = "Error looking up data for $email";
@@ -385,7 +406,7 @@ EOS;
     }
     exit();
 } else if ($loginId != null && isSessionVar('multiple') && isset($_REQUEST['switch']) && $_REQUEST['switch'] == 'account') {
-    $account = chooseAccountFromEmail(getSessionVar('multiple'), null,null, null, 'token');
+    $account = chooseAccountFromEmail(getSessionVar('multiple'), null,null, null, 'switch');
     if ($account == null || !is_numeric($account)) {
         if ($account == null) {
             $account = "Error looking up data for $email";
@@ -441,18 +462,17 @@ EOS;
     </div>
 EOS;
 
-    if ($portal_conf['open'] == 0) { ?>
+    if (getConfValue('portal', 'open') != 1) { ?>
         <p class='text-primary'>The membership portal is currently closed. Please check the website to determine when it will open or try again
             tomorrow.</p>
         <?php
         exit;
     }
-    if (array_key_exists('suspended', $portal_conf) && $portal_conf['suspended'] == 1) { ?>
+    if (getConfValue('portal','suspended') == 1) { ?>
 <p class="text-primary">
-    <?php echo $con['conname']; ?> has temporarily suspended the registration portal <?php
-        if (array_key_exists('suspendreason', $portal_conf))
-        echo $portal_conf['suspendreason'];
-    ?>
+<?php
+        echo $con['conname'] ." has temporarily suspended the registration portal " . getConfValue('portal','suspendreason');
+?>
 </p>
     <?php
         exit;
@@ -471,7 +491,7 @@ EOS;
         </div>
     </div>
 EOS;
-    if ($portal_conf['test'] == 1) {
+    if (getConfValue('portal', 'test') == 1) {
         echo <<<EOS
         <div class="row">
             <div class="col-sm-12">

@@ -129,4 +129,3 @@ EOS;
 }
 
 page_foot($page);
-?>

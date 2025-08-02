@@ -172,12 +172,12 @@ foreach ($badges as $badge) {
 SELECT id
 FROM perinfo p
 WHERE
-	REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.first_name, '')), '  *', ' ')
+    	REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.first_name)), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.middle_name, '')), '  *', ' ')
+		REGEXP_REPLACE(TRIM(LOWER(p.middle_name)), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.last_name, '')), '  *', ' ')
+		REGEXP_REPLACE(TRIM(LOWER(p.last_name)), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
 		REGEXP_REPLACE(TRIM(LOWER(p.suffix)), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
@@ -193,9 +193,9 @@ WHERE
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
 		REGEXP_REPLACE(TRIM(LOWER(p.city)), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.state))), '  *', ' ')
+		REGEXP_REPLACE(TRIM(LOWER(p.state)), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.zip,)), '  *', ' ')
+		REGEXP_REPLACE(TRIM(LOWER(p.zip)), '  *', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
 		REGEXP_REPLACE(TRIM(LOWER(p.country)), '  *', ' ');
 EOF;
@@ -307,12 +307,12 @@ foreach($people as $person) {
 }
 
 $all_badgeQ = <<<EOS
-SELECT R.id AS badge, R.id AS regid,
+SELECT R.id AS badge, R.id AS regId,
     NP.first_name AS fname, NP.middle_name AS mname, NP.last_name AS lname, NP.suffix AS suffix, NP.legalName,
     NP.email_addr AS email,
     NP.address AS street, NP.city AS city, NP.state AS state, NP.zip AS zip, NP.country AS country,
     NP.id as id, R.price AS price, R.couponDiscount as discount, M.memAge AS age, NP.badge_name AS badgename, R.memId, M.glNum,
-    M.label, M.memCategory, M.memType
+    M.label, M.memCategory, M.memType, M.taxable, M.ageShortName AS ageshortname, M.memAge, M.shortname
 FROM newperson NP
 JOIN reg R ON (R.newperid=NP.id)
 JOIN memLabel M ON (M.id = R.memID)
@@ -347,8 +347,8 @@ if ($total > 0) {
     $rtn = cc_buildOrder($results, true);
     if ($rtn == null) {
         // note there is no reason cc_buildOrder will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
-        logWrite(array ('con' => $condata['name'], 'trans' => $transId, 'error' => 'Credit card order unable to be created'));
-        ajaxSuccess(array ('status' => 'error', 'error' => 'Credit card order not built, seek assistance'));
+        logWrite(array ('con' => $condata['name'], 'trans' => $transId, 'error' => 'Order unable to be created'));
+        ajaxSuccess(array ('status' => 'error', 'error' => 'Order not built, seek assistance'));
         exit();
     }
     $response['orderRtn'] = $rtn;
@@ -369,6 +369,7 @@ if ($total > 0) {
         'preTaxAmt' => $totalDue,
         'taxAmt' => 0,
         'total' => $totalDue,
+        'badges' => $badgeResults,
         );
 
 // call the credit card processor to make the payment
@@ -503,4 +504,68 @@ $response = array(
 );
 //var_error_log($response);
 ajaxSuccess($response);
-?>
+
+// cleanup up on a credit card failure (order or payment)
+function cleanRegs($badges, $transid) {
+    $delReg = <<<EOS
+DELETE FROM reg
+WHERE id = ?;
+EOS;
+
+    $delInterests = <<<EOS
+DELETE FROM memberInterests
+WHERE newperid = ?;
+EOS;
+
+    $delPolicies = <<<EOS
+DELETE FROM memberPolicies
+WHERE newperid = ?;
+EOS;
+
+    $clrNewperson = <<<EOS
+UPDATE newperson
+SET transid = NULL
+WHERE id = ?;
+EOS;
+
+    $clrTransaction = <<<EOS
+UPDATE transaction
+SET newperid = NULL
+WHERE newperid = ?;
+EOS;
+
+    $delNewperson = <<<EOS
+DELETE FROM newperson
+WHERE id = ?;
+EOS;
+
+    $delTransaction = <<<EOS
+DELETE FROM transaction
+WHERE id = ?;
+EOS;
+
+
+// first the regs
+    foreach ($badges as $badge) {
+        $regId = $badge['regId'];
+        // delete the reg entry
+        $numDel = dbSafeCmd($delReg, 'i', array ($regId));
+    }
+
+    // now the new perid
+    foreach ($badges as $badge) {
+        if (array_key_exists('id', $badge)) {
+            $newPerid = $badge['id'];
+            // clear the newperson entry
+            $numDel = dbSafeCmd($clrNewperson, 'i', array ($newPerid));
+            $numDel = dbSafeCmd($clrTransaction, 'i', array ($newPerid));
+            $numDel = dbSafeCmd($delInterests, 'i', array ($newPerid));
+            $numDel = dbSafeCmd($delPolicies, 'i', array ($newPerid));
+
+            // delete the newperson entry
+            $numDel = dbSafeCmd($delNewperson, 'i', array ($newPerid));
+        }
+    }
+    // delete the transaction
+    $numDel = dbSafeCmd($delTransaction, 'i', array ($transid));
+}

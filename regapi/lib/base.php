@@ -1,12 +1,10 @@
 <?php
 ## Pull INI for variables
-global $db_ini;
-if (!$db_ini) {    
-    $db_ini = parse_ini_file(__DIR__ . "/../../config/reg_conf.ini", true);
-    $include_path_additions = PATH_SEPARATOR . $db_ini['api']['path'] . "/../Composer";
-}
+require_once('../../lib/global.php');
 
-if ($db_ini['reg']['https'] <> 0) {
+loadConfFile();
+
+if (getConfValue('reg','https') <> 0) {
     if(!isset($_SERVER['HTTPS']) or $_SERVER["HTTPS"] != "on") {
         header("HTTP/1.1 301 Moved Permanently");
         header("Location: https://" . $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"]);
@@ -16,9 +14,8 @@ if ($db_ini['reg']['https'] <> 0) {
 set_include_path(get_include_path(). $include_path_additions);
 
 require_once("vendor/autoload.php");
-require_once(__DIR__ . '/../../lib/db_functions.php');
-require_once(__DIR__ . '/../../lib/global.php');
-require_once(__DIR__ . '/../../lib/ajax_functions.php');
+require_once('../../lib/db_functions.php');
+require_once('../../lib/ajax_functions.php');
 db_connect();
 
 function get_oauthkey() {
@@ -54,4 +51,3 @@ function Render500ErrorAjax($message_error)
     header($_SERVER['SERVER_PROTOCOL'] . ' 500 Internal Server Error', true, 500);
     echo "$message_error";
 }
-?>

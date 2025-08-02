@@ -233,9 +233,9 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
 
         if (array_key_exists('mailInFee', $results)) {
             foreach ($results['mailInFee'] as $fee) {
-                $itemName = 'Mail in Fee for ' . $fee['name'];
+                $itemName = 'Mail-in Fee for ' . $fee['name'];
                 $itemPrice = $fee['amount'];
-                $note = 'Mail in fee';
+                $note = 'Mail-in fee';
                 $item = [
                     'uid' => 'region-' . $fee['name'],
                     'name' => mb_substr($itemName, 0, 128),
@@ -364,10 +364,9 @@ function cc_cancelOrder($source, $orderId, $useLogWrite = false) : void {
 // enter a payment against an exist order: build the payment, submit it to square and process the resulting payment
 function cc_payOrder($results, $buyer, $useLogWrite = false) {
     $cc = get_conf('cc');
-    $reg = get_conf('reg');
 
     if ((!array_key_exists('demo', $cc)) || $cc['demo'] != 1) { // allow demo override on test for cc
-        if (($cc['env'] != 'sandbox') || $reg['test'] != 1) {
+        if ($cc['env'] != 'sandbox' || getConfValue('reg','test') != 1) {
             ajaxSuccess(array ('status' => 'error', 'data' => 'Something thinks this is a real charge method'));
             exit();
         }

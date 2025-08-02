@@ -1,5 +1,4 @@
 <?php
-global $db_ini;
 require_once "lib/base.php";
 
 //initialize google session
@@ -76,4 +75,3 @@ $config_vars['conid'] = $conid;
 <pre id='test'></pre>
 <?php
     page_foot($page);
-?>

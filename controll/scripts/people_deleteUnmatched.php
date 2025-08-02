@@ -1,6 +1,4 @@
 <?php
-global $db_ini;
-
 require_once "../lib/base.php";
 
 $check_auth = google_init("ajax");
@@ -95,4 +93,3 @@ $response['newperson'] = $newperson;
 
 $response['success'] = 'Deleted the newperson ' . $newperson['fullName'] . ", $delcnt records deleted.";
 ajaxSuccess($response);
-?>

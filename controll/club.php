@@ -291,4 +291,3 @@ $(function() {
 </pre>
 <?php
 page_foot($page);
-?>

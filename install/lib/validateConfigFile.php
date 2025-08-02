@@ -3,33 +3,37 @@
 // validate remainder of the config file, except for mysql
 //  options: the array returned by getoptions.
 function validateConfigFile($options) : int {
-    global $db_ini;
+    global $configData;  // this is specific to walking the configuration, it needs $configData and will need to track it's new name
     
     $sectionsFound = [
-        'mysql' => false,
-        'con' => false,
-        'debug' => false,
-        'reg' => false,
+        /* 'api' => false, API is optional, and a future development */
         'atcon' => false,
-        'vendor' => false,
-        'client' => false,
-        'google' => false,
         'cc' => false,
-        'log' => false,
+        'client' => false,
+        'con' => false,
+        'controll' => false,
+        'debug' => false,
         'email' => false,
-        'artshow' => false,
-        'control' => false,
+        'global' => false,
+        'google' => false,
+        'local' => false,
+        'log' => false,
+        'mysql' => false,
+        'portal' => false,
+        'reg' => false,
+        'usps' => false,
+        'vendor' => false,
     ];
     
     $errors = 0;
-    logEcho("Validating reg_conf.ini");
+    logEcho("Validating configuration file merge of reg_conf.ini, reg_admin.ini and reg_secret.ini");
 
-    foreach($db_ini as $section => $presentflag) {
+    foreach($configData as $section => $presentflag) {
         $sectionsFound[$section] = true;
         if ($section == 'mysql')
             continue; // already checked this one first
 
-        $cfg = $db_ini[$section];
+        $cfg = $configData[$section];
         $required = [];
         $warn = [];
         $filepath = [];
@@ -62,7 +66,7 @@ function validateConfigFile($options) : int {
                 $required = [
                     'https' => 'should always be 1 to redirect to the secure server. and only should be zero when testing servers prior to the SSL certificate being applied',
                     'test' => '0 for the production server and 1 for any test servers',
-                    'registrationpage' => 'the URL where when registration will open will be posted.',
+                    'regpage' => 'the URL where when registration will open will be posted.',
                     'open' => "0 when registration is not open and 1 when it's open",
                     'close' => '0 when registration is allowed to be open, and 1 when registration is closed for being too close to the convention or the convention is over',
                     'suspended' => '0 when registration is available and 1 when registration is temporarily closed, and the suspendreason is then shown to inform users',
@@ -264,4 +268,3 @@ function validateConfigFile($options) : int {
 
     return $errors;
 }
-?>

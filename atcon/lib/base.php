@@ -1,13 +1,13 @@
 <?php
 ## Pull INI for variables
-global $db_ini;
-global $appSessionPrefix;
+    require_once(__DIR__ . '/../../lib/global.php');
+// atcon - base.php - base functions for on-site actions
+    global $appSessionPrefix;
 
-if (!$db_ini) {
-    $db_ini = parse_ini_file(__DIR__ . '/../../config/reg_conf.ini', true);
-}
+    if (loadConfFile())
+        $include_path_additions = PATH_SEPARATOR . getConfValue('client', 'path', '.') . '/../Composer';
 
-if ($db_ini['reg']['https'] <> 0) {
+    if (getConfValue('reg', 'https') <> 0) {
     if (!isset($_SERVER['HTTPS']) or $_SERVER['HTTPS'] != 'on') {
         header('HTTP/1.1 301 Moved Permanently');
         header('Location: https://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI']);
@@ -17,13 +17,15 @@ if ($db_ini['reg']['https'] <> 0) {
 
 require_once(__DIR__ . '/../../lib/db_functions.php');
 require_once(__DIR__ . '/../../lib/ajax_functions.php');
-require_once(__DIR__ . '/../../lib/global.php');
 require_once(__DIR__ . '/../../lib/cipher.php');
 require_once(__DIR__ . '/../../lib/jsVersions.php');
 
 db_connect();
 $appSessionPrefix = 'Ctrl/Atcon/';
-session_start();
+if (!session_start()) {
+    session_regenerate_id(true);
+    session_start();
+}
 
 function isWebRequest()
 {
@@ -112,7 +114,7 @@ function page_init($title, $tab, $css, $js, $configVars = null)
                     <div class="row">
                         <div class="col-sm-12">
                             <h1 class='title'>
-                                    <?php echo $label; ?> Registration <?php echo $title; ?>
+                                    <?php echo "$label $title"; ?>
                             </h1>
                         </div>
                     </div>
@@ -258,7 +260,7 @@ function page_init($title, $tab, $css, $js, $configVars = null)
         ?>
         <div id='titlebar' class="container-fluid bg-primary text-white">
             <h1 class='title'>
-                <?php echo $label; ?> Registration <?php echo $title; ?> page
+                <?php echo "$label $title"; ?> page
             </h1>
         </div>
         <?php
@@ -717,4 +719,3 @@ EOS;
 
     return  $html;
 }
-?>

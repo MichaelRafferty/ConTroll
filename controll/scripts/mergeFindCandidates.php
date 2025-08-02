@@ -1,6 +1,4 @@
 <?php
-global $db_ini;
-
 require_once "../lib/base.php";
 require_once(__DIR__ . '/../../lib/checkmerge.php');
 
@@ -38,4 +36,3 @@ if (array_key_exists('matchCount', $_POST)) {
 $response = checkmerge($remain, $matchCount);
 
 ajaxSuccess($response);
-?>

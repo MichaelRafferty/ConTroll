@@ -1,6 +1,4 @@
 <?php
-global $db_ini;
-
 require_once "../lib/base.php";
 $check_auth = google_init("ajax");
 $perm = 'exhibitor';
@@ -34,8 +32,8 @@ if (array_key_exists('currency', $con)) {
 $exhibitorQ = <<<EOS
 SELECT e.id as exhibitorId, perid, exhibitorName, exhibitorEmail, exhibitorPhone, salesTaxId, website, description, password, publicity, 
        addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, archived,
-       artistName,
-       eY.id as exhibitorYearId, conid, contactName, contactEmail, contactPhone, contactPassword, mailin
+       artistName, IFNULL(e.notes, '') AS exhNotes, eY.id as exhibitorYearId, conid, contactName, contactEmail, contactPhone, contactPassword,
+       mailin, IFNULL(eY.notes, '') AS contactNotes
 FROM exhibitors e
 JOIN exhibitorYears eY ON e.id = eY.exhibitorId
 WHERE eY.conid = ?;
@@ -112,14 +110,8 @@ while ($approvalL = $approvalR->fetch_assoc()) {
     $approvalData = $approvalL;
     if ($approvalData['used'] > 0) {
         $approvalData['b1'] = -1;
-        $approvalData['b2'] = -1;
-        $approvalData['b3'] = -1;
-        $approvalData['b4'] = -1;
     } else {
         $approvalData['b1'] = time();
-        $approvalData['b2'] = $approvalData['b1'] + 1;
-        $approvalData['b3'] = $approvalData['b2'] + 1;
-        $approvalData['b4'] = $approvalData['b3'] + 1;
     }
     $approvals[] = $approvalData;
 }
@@ -161,7 +153,7 @@ $response['summary'] = $spaces;
 $details = array();
 $detailQ = <<<EOS
 WITH exh AS (
-SELECT e.id, e.exhibitorName, e.website, e.exhibitorEmail, eRY.id AS exhibitsYearId, exRY.exhibitorNumber, exRY.agentRequest,
+SELECT e.id, e.exhibitorName, e.website, e.exhibitorEmail, exRY.exhibitorNumber, exRY.agentRequest,
     TRIM(CONCAT(p.first_name, ' ', p.last_name)) as pName, TRIM(CONCAT(n.first_name, ' ', n.last_name)) AS nName, 
     eY.id AS exhibitorYearId, exRY.locations, exRY.id AS exhibitorRegionYearId,
 	SUM(IFNULL(espr.units, 0)) AS ru, SUM(IFNULL(espa.units, 0)) AS au, SUM(IFNULL(espp.units, 0)) AS pu,
@@ -179,15 +171,16 @@ LEFT OUTER JOIN perinfo p ON p.id = exRY.agentPerid
 LEFT OUTER JOIN newperson n ON n.id = exRY.agentNewperson
 LEFT OUTER JOIN artItems a ON (a.exhibitorRegionYearId = exRY.id)
 WHERE eY.conid = ? AND eRY.exhibitsRegion = ?
-GROUP BY e.id, e.exhibitorName, e.website, e.exhibitorEmail, eRY.id, exRY.id, exRY.exhibitorNumber, pName, nName, agentRequest, eY.id, locations
+GROUP BY e.id, e.exhibitorName, e.website, e.exhibitorEmail, exRY.exhibitorNumber, exRY.agentRequest, pName, nName, eY.id, exRY.locations,
+    exRY.id
 )
 SELECT xS.id, xS.exhibitorId, exh.exhibitorName, exh.website, exh.exhibitorEmail,
     xS.spaceId, xS.name as spaceName, xS.item_requested, xS.time_requested, xS.requested_units, xS.requested_code, xS.requested_description,
     xS.item_approved, xS.time_approved, xS.approved_units, xS.approved_code, xS.approved_description,
     xS.item_purchased, xS.time_purchased, xS.purchased_units, xS.purchased_code, xS.purchased_description, xS.transid, xS.shortname,
-    eRY.id AS exhibitsRegionYearId, eRY.exhibitsRegion AS regionId, exh.exhibitorNumber, exh.exhibitorYearId, exh.locations,
-    IFNULL(pName, nName) as agentName,
-    exh.pu * 10000 + exh.au * 100 + exh.ru AS sortOrder, exh.invCount, exh.exhibitorRegionYearId, eT.mailInAllowed
+    eRY.id AS exhibitsRegionYearId, eRY.exhibitsRegion AS regionId, eRY.ownerName, eRY.ownerEmail, eR.name AS regionName, 
+    exh.exhibitorNumber, exh.exhibitorYearId, exh.locations,
+    IFNULL(pName, nName) as agentName, exh.invCount, exh.exhibitorRegionYearId, eT.mailInAllowed
 FROM vw_ExhibitorSpace xS
 JOIN exhibitsSpaces eS ON xS.spaceId = eS.id
 JOIN exhibitsRegionYears eRY ON eS.exhibitsRegionYear = eRY.id
@@ -195,7 +188,7 @@ JOIN exhibitsRegions eR ON eR.id = eRY.exhibitsRegion
 JOIN exhibitsRegionTypes eT ON (eT.regionType = eR.RegionType)
 JOIN exh ON (xS.exhibitorId = exh.id)
 WHERE eRY.conid=? AND eRY.exhibitsRegion = ? AND (IFNULL(requested_units, 0) > 0 OR IFNULL(approved_units, 0) > 0)
-ORDER BY sortOrder, exhibitorName, spaceName
+ORDER BY xS.exhibitorId, spaceId;
 EOS;
 
 $detailR = dbSafeQuery($detailQ, 'iiii',  array($conid, $regionId, $conid, $regionId));
@@ -210,9 +203,6 @@ if (!$detailR) {
 while($detailL = $detailR->fetch_assoc()) {
     $detail = $detailL;
     $detail['b1'] = time();
-    $detail['b2'] = $detail['b1'] + 1;
-    $detail['b3'] = $detail['b2'] + 1;
-    $detail['b4'] = $detail['b3'] + 1;
     $details[] = $detail;
 }
 
@@ -277,4 +267,3 @@ $response['locationsUsed'] = $locationsUsed;
 $response['price_list'] = $price_list;
 
 ajaxSuccess($response);
-?>

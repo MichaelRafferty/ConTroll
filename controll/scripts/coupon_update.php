@@ -144,4 +144,3 @@ function nullPostField($field) {
 
     return $val;
 }
-?>

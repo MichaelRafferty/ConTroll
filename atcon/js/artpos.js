@@ -28,6 +28,9 @@ var itemCode_field = null;
 var artistNumber_field = null;
 var pieceNumber_field = null;
 var unitNumber_field = null;
+var artTable = null;
+var currentArtist = null;
+var itemDetailsDiv = null;
 
 // pay items
 var pay_div = null;
@@ -57,6 +60,15 @@ var unpaid_table = [];
 var result_perinfo = [];
 var cashChangeModal = null;
 
+// inventory items
+var inventoryModal = null;
+var inventoryTitleDiv = null;
+var inventoryBodyDiv = null;
+var inventoryCurrentIndex = null;
+var invChangeBtn = null;
+var invNoChangeBtn = null;
+var inventoryUpdates = null;
+
 // global items
 var conid = null;
 var conlabel = null;
@@ -65,6 +77,19 @@ var hasManager = false;
 var receiptPrinterAvailable = false;
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const statusCodes = {
+    'Entered': 'Ent',
+    'Not In Show': 'NIS',
+    'Checked In': 'In',
+    'Removed from Show': 'Rem',
+    'BID': 'Bid',
+    'Quicksale/Sold': 'QS',
+    'To Auction': 'Auc',
+    'Sold Bid Sheet': 'SBS',
+    'Sold at Auction': 'SAuc',
+    'Checked Out': 'Out',
+    'Purchased/Released': 'Pur'
+};
 
 // initialization
 // lookup all DOM elements
@@ -90,7 +115,7 @@ window.onload = function initpage() {
     showStats_div = document.getElementById("showStats-div");
     var id = document.getElementById("SearchResultsModal");
     if (id) {
-        searchResultsModal = new bootstrap.Modal(id, { focus: true, backldrop: 'static' });
+        searchResultsModal = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
     }
 
     artistNumber_field = document.getElementById("artistNumber");
@@ -113,12 +138,21 @@ window.onload = function initpage() {
     release_tab.addEventListener('shown.bs.tab', releaseShown)
 
     // cash payment requires change
-    cashChangeModal = new bootstrap.Modal(document.getElementById('CashChange'), { focus: true, backldrop: 'static' });
+    cashChangeModal = new bootstrap.Modal(document.getElementById('CashChange'), { focus: true, backdrop: 'static' });
 
     // release works in a modal
-    releaseModal = new bootstrap.Modal(document.getElementById('ReleaseArt'), { focus: true, backldrop: 'static' });
+    releaseModal = new bootstrap.Modal(document.getElementById('ReleaseArt'), { focus: true, backdrop: 'static' });
     releaseTitleDiv = document.getElementById("ReleaseArtTitle");
     releaseBodyDiv = document.getElementById("ReleaseArtBody");
+
+    // inline inventory in a modal
+    if (config.inlineInventory == 1) {
+        inventoryModal = new bootstrap.Modal(document.getElementById('Inventory'), { focus: true, backdrop: 'static' });
+        inventoryTitleDiv = document.getElementById("InventoryTitle");
+        inventoryBodyDiv = document.getElementById("InventoryBody");
+        invNoChangeBtn = document.getElementById("invNoChange_button");
+        invChangeBtn = document.getElementById("invChange_button");
+    }
 
     bootstrap.Tab.getOrCreateInstance(find_tab).show();
 
@@ -239,6 +273,7 @@ function startOver(reset_all) {
     badgeid_field.value = "";
     id_div.innerHTML = "";
     unpaid_table = null;
+    add_found_div.innerHTML = '';
 
     // reset data to call up
     emailAddreesRecipients = [];
@@ -377,7 +412,7 @@ function draw_person() {
     html += `
     <div class="row">
        <div class="col-sm-3"></div>
-       <div class="col-sm-9">` + currentPerson.city + ', ' + currentPerson.state + ' ' + currentPerson.postal_code + `</div>
+       <div class="col-sm-9">` + currentPerson.city + ', ' + currentPerson.state + ' ' + currentPerson.zip + `</div>
     </div>
 `;
     if (currentPerson.country != '' && currentPerson.country != 'USA') {
@@ -450,12 +485,10 @@ function findPerson(find_type) {
     });
 }
 
-// successful return from 2 AJAX call - processes found records
+// successful return from 2 AJAX calls - processes found records
 // unpaid: one record: put it in the cart and go to pay screen
-//      multiple records: show table of records with pay icons
 // normal:
 //      single row: display record
-//      multiple rows: display table of records with add/trans buttons
 function foundPerson(data) {
     if (data.num_rows == 1) { // one person found
         searchData = data;
@@ -469,7 +502,7 @@ function foundPerson(data) {
         if (data.warn !== undefined) {
             show_message(data.warn, 'warn', 'searchResultMessage');
         }
-    } else { // I'm not sure how we'd get here
+    } else { // I'm not sure how we'd get here, we are searching by perid (badgeid)
         show_message(data.num_rows + " found.  Multiple people not yet supported.");
         return;
     }
@@ -597,6 +630,7 @@ function findArt(findType) {
             if (data.warn !== undefined) {
                 show_message(data.warn, 'warn');
             }
+            currentArtist = artistNumber;
             foundArt(data);
             $("button[name='findArtBtn']").attr("disabled", false);
         },
@@ -607,148 +641,572 @@ function findArt(findType) {
     });
 }
 
-// foundArt - process the returned array of art items to select from
-function foundArt(data) {
+// Common routine to draw the item record details for both found art and inventory updates.
+function drawItemDetails(item, full = false) {
     var html = '';
     var valid = true;
     var btn_color = 'btn-primary';
+    var priceType = '';
+    var priceField = '';
+
+    var cols = full ? '2' : '4';
+
+    html  = '<div class="row mt-4 mb-1"><div class="col-sm-11 ms-3 bg-primary text-white">Item Details</div></div>';
+    html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Artist Number:</div><div class="col-sm-auto">' + item.exhibitorNumber + '</div></div>';
+    html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Artist Item #:</div><div class="col-sm-auto">' + item.item_key + '</div></div>';
+    html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Type:</div><div class="col-sm-auto">' + item.type + '</div></div>';
+    html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Status:</div><div class="col-sm-auto">' + item.status + '</div></div>';
+    html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Artist Name:</div><div class="col-sm-7">' + item.exhibitorName + '</div></div>';
+    html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Title:</div><div class="col-sm-7">' + item.title + '</div></div>';
+    html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Material:</div><div class="col-sm-7">' + item.material + '</div></div>';
+    if (item.bidder != null && item.bidder != '' && item.bidder != currentPerson.id) {
+        btn_color = 'btn-warning';
+        if (config.inlineInventory != 1)
+            valid = false;
+        if (item.status != 'BID' && item.status != 'To Auction')
+            html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + ' bg-warning">Already Sold:</div>' +
+                '<div class="col-sm-7 bg-warning">Item has already been sold to someone else.</div></div>';
+        else {
+            html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + ' bg-warning">Bidder Mismatch:</div>' +
+                '<div class="col-sm-7 bg-warning">Someone else is the high bidder.</div></div>';
+            priceType = 'Current Bid';
+        }
+    }
+
+    if (item.type == 'print') {
+        html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Sale Price:</div><div class="col-sm-auto">$' + Number(item.sale_price).toFixed(2) + '</div></div>';
+
+        if (item.quantity <= 0) {
+            html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + ' bg-warning">Quantity:</div><div class="col-sm-7 bg-warning">System shows all of this item is already sold, remaining quantity is 0.</div></div>';
+            btn_color = 'btn-warning';
+            if (config.inlineInventory != 1)
+                valid = false;
+        }
+    }
+
+    if (valid) {
+        switch (item.type) {
+            case 'art':
+                if (full) {
+                    html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Minimum Bid:</div>' +
+                        '<div class="col-sm-7">' + Number(item.min_price).toFixed(2) + '</div></div>';
+                    if (item.bidder == null || item.bidder == '') {
+                        html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Quick Sale Price:</div>' +
+                            '<div class="col-sm-7">' + Number(item.sale_price).toFixed(2) + '</div></div>';
+                    }
+                    if (item.final_price != null && item.final_price > 0)
+                        html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Final Price:</div>' +
+                            '<div class="col-sm-7">' + Number(item.final_price).toFixed(2) + '</div></div>';
+                    if (item.bidder != null && item.bidder > 0)
+                        html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Bidder:</div>' +
+                            '<div class="col-sm-7">' + item.bidder + '</div></div>';
+                }
+                if (item.sale_price == 0 || Number(item.sale_price) < Number(item.min_price)) {
+                    if (config.inlineInventory == 1) {
+                        html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + ' bg-warning">Quick Sale:</div>' +
+                            '<div class="col-sm-7 bg-warning">Item is not available for quick sale.</div></div>';
+                    } else {
+                        html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + ' bg-danger text-white">Quick Sale:</div>' +
+                            '<div class="col-sm-7 bg-danger text-white">Item is not available for quick sale.</div></div>';
+                        valid = false;
+                    }
+                    break;
+                }
+                if (item.status.toLowerCase() == 'checked in') {
+                    priceType = 'Quick Sale Price:';
+                    priceField = 'sale_price';
+                } else {
+                    if (priceType == '')
+                        priceType = 'Final Price:';
+                    priceField = 'final_price';
+                }
+                break;
+
+            case 'nfs':
+                html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + ' bg-danger text-white">Not For Sale:</div>' +
+                    '<div class="col-sm-7 bg-danger text-white">You cannot buy a Not For Sale item.</div></div>';
+                valid = false;
+                break;
+            case 'print':
+                if (full) {
+                    html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Original Quantity:</div>' +
+                        '<div class="col-sm-7">' + item.original_qty + '</div></div>';
+                }
+                html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Remaining Quantity:</div>' +
+                    '<div class="col-sm-7">' + item.quantity + '</div></div>';
+                priceType = 'Sale Price:'
+                priceField = 'sale_price';
+                break;
+        }
+    }
+
+    if (valid) {
+        htmlLine = '';
+        switch (item.status.toLowerCase()) {
+            case 'entered':
+            case 'not in show':
+                if (config.inlineInventory == 1)
+                    btn_color = 'btn-warning';
+                else
+                    valid = 'false';
+                break;
+
+            case 'checked in':
+                // currently nothing special for checked in items, this will be for sale at priceType via priceField
+                break;
+
+            case 'bid':
+                if (btn_color != 'btn-warning' && config.inlineInventory != 1) {
+                    htmlLine = '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Final Price:</div><div class="col-sm-7">' +
+                        '<input type=number inputmode="numeric" class="no-spinners" id="art-final-price" name="art-final-price" ' +
+                            'style="width: 9em;" value="' + item.final_price + '"/></div></div>';
+                }
+                break;
+
+            case 'nfs':
+                valid = false;
+                html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + ' bg-danger text-white">Not For Sale:</div><div class="col-sm-7 bg-danger text-white">You cannot buy a Not For Sale item.</div></div>';
+                break;
+
+            case 'removed from show':
+                html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + ' bg-danger text-white">Removed:</div><div class="col-sm-7 bg-danger text-white">System shows item has been removed from the show.</div></div>';
+                btn_color = 'btn-warning';
+                break;
+
+            case 'to auction':
+                html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + ' bg-warning">Auction:</div><div class="col-sm-7 bg-warning">System shows item has been sent to the voice auction. Sell anyway?</div></div>';
+                btn_color = 'btn-warning';
+                break;
+
+            case 'checked out':
+                html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + ' bg-warning">Checked Out:</div><div class="col-sm-7 bg-warning">System shows item has been returned to the artist. Sell anyway?</div></div>';
+                btn_color = 'btn-warning';
+                break;
+
+            case 'quicksale/sold':
+                html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + ' bg-danger text-white">Released:</div><div class="col-sm-7 bg-danger text-white">System shows item already been sold via quicksale.</div></div>';
+                valid = false;
+                break;
+
+            case 'purchased/released':
+                html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + ' bg-danger text-white">Released:</div><div class="col-sm-7 bg-danger text-white">System shows item already been released to a purchaser.</div></div>';
+                valid = false;
+                break;
+
+            case 'sold bid sheet':
+            case 'sold at auction':
+                if (item.final_price == item.paid) {
+                    html += '<div class="row"><div class="col-sm-4 bg-danger text-white">Sold:</div><div class="col-sm-7 bg-danger text-white">System shows item already been sold and paid for.</div></div>';
+                    valid = false;
+                }
+                break;
+        }
+    }
+
+    step = {};
+    step.html = html;
+    step.valid = valid;
+    step.color = btn_color;
+    step.priceType = priceType;
+    step.priceField = priceField;
+    return step;
+}
+
+// foundArt - process the returned array of art items to select from
+function foundArt(data) {
     artFoundItems = data.items;
     if (data.items.length == 1) {
         var item = data.items[0];
-        html  = '<div class="row mt-4 mb-1"><div class="col-sm-12 bg-primary text-white">Item Details</div></div>';
-        html += '<div class="row"><div class="col-sm-4">Artist Number:</div><div class="col-sm-8">' + item.exhibitorNumber + '</div></div>';
-        html += '<div class="row"><div class="col-sm-4">Artist Item #:</div><div class="col-sm-8">' + item.item_key + '</div></div>';
-        html += '<div class="row"><div class="col-sm-4">Type:</div><div class="col-sm-8">' + item.type + '</div></div>';
-        html += '<div class="row"><div class="col-sm-4">Status:</div><div class="col-sm-8">' + item.status + '</div></div>';
-        html += '<div class="row"><div class="col-sm-4">Artist Name:</div><div class="col-sm-8">' + item.exhibitorName + '</div></div>';
-        html += '<div class="row"><div class="col-sm-4">Title:</div><div class="col-sm-8">' + item.title + '</div></div>';
-        html += '<div class="row"><div class="col-sm-4">Material:</div><div class="col-sm-8">' + item.material + '</div></div>';
-        if (item.bidder != null && item.bidder != '' && item.bidder != currentPerson.id) {
-            valid = false;
-            html += '<div class="row"><div class="col-sm-4 bg-warning">Already Sold:</div><div class="col-sm-8 bg-warning">Item has already been sold to someone else.</div></div>';
-        }
-
-        if (item.type == 'print') {
-            html += '<div class="row"><div class="col-sm-4">Sale Price:</div><div class="col-sm-8">$' + Number(item.sale_price).toFixed(2) + '</div></div>';
-
-            if (item.quantity <= 0) {
-                html += '<div class="row"><div class="col-sm-4 bg-warning">Quantity:</div><div class="col-sm-8 bg-warning">System shows all of this item is already sold, remaining quantity is 0.</div></div>';
-                btn_color = 'btn-warning';
-            }
-        }
-
-        if (valid) {
-            switch (item.type) {
-                case 'art':
-                    if (item.sale_price == 0 || Number(item.sale_price) < Number(item.min_price)) {
-                        html += '<div class="row"><div class="col-sm-4 bg-danger text-white">Quick Sale:</div><div class="col-sm-8 bg-danger text-white">Item is not available for quick sale.</div></div>';
-                        valid = false;
-                        break;
-                    }
-                    if (item.status.toLowerCase() == 'checked in') {
-                        priceType = 'Quick Sale Price:';
-                        priceField = 'sale_price';
-                    } else {
-                        priceType = 'Final Price:';
-                        priceField = 'final_price';
-                    }
-                    break;
-
-                case 'nfs':
-                    html += '<div class="row"><div class="col-sm-4 bg-danger text-white">Not For Sale:</div><div class="col-sm-8 bg-danger text-white">You cannot buy a Not For Sale item.</div></div>';
-                    valid = false;
-                    break;
-                case 'print':
-                    html += '<div class="row"><div class="col-sm-4">Remaining Quantity:</div><div class="col-sm-8">' + item.quantity + '</div></div>';
-                    priceType = 'Sale Price:'
-                    priceField = 'sale_price';
-                    break;
-            }
-        }
-
-        if (valid) {
-            htmlLine = '';
-            switch (item.status.toLowerCase()) {
-                case 'checked in':
-                    // currently nothing special for checked in items, this will be for sale at priceType via priceField
-                    break;
-
-                case 'bid':
-                    item.status = 'Sold Bid Sheet';
-                    htmlLine = '<div class="row"><div class="col-sm-4">Final Price:</div><div class="col-sm-8">' +
-                        '<input type=number inputmode="numeric" class="no-spinners" id="art-final-price" name="art-final-price" style="width: 9em;" value="' + item.final_price + '"/></div></div>';
-                    break;
-
-                case 'nfs':
-                    valid = false;
-                    html += '<div class="row"><div class="col-sm-4 bg-danger text-white">Not For Sale:</div><div class="col-sm-8 bg-danger text-white">You cannot buy a Not For Sale item.</div></div>';
-                    break;
-
-                case 'removed from show':
-                    html += '<div class="row"><div class="col-sm-4 bg-danger text-white">Removed:</div><div class="col-sm-8 bg-danger text-white">System shows item has been removed from the show.</div></div>';
-                    valid = false;
-                    break;
-
-                case 'to auction':
-                    html += '<div class="row"><div class="col-sm-4 bg-warning">Auction:</div><div class="col-sm-8 bg-warning">System shows item has been sent to the voice auction. Sell anyway?</div></div>';
-                    btn_color = 'btn-warning';
-                    break;
-
-                case 'checked out':
-                    html += '<div class="row"><div class="col-sm-4 bg-warning">Checked Out:</div><div class="col-sm-8 bg-warning">System shows item has been returned to the artist. Sell anyway?</div></div>';
-                    btn_color = 'btn-warning';
-                    break;
-
-                case 'quicksale/sold':
-                    html += '<div class="row"><div class="col-sm-4 bg-danger text-white">Released:</div><div class="col-sm-8 bg-danger text-white">System shows item already been sold via quicksale.</div></div>';
-                    valid = false;
-                    break;
-
-                case 'purchased/released':
-                    html += '<div class="row"><div class="col-sm-4 bg-danger text-white">Released:</div><div class="col-sm-8 bg-danger text-white">System shows item already been released to a purchaser.</div></div>';
-                    valid = false;
-                    break;
-
-                case 'sold bid sheet':
-                case 'sold at auction':
-                    if (item.final_price == item.paid) {
-                        html += '<div class="row"><div class="col-sm-4 bg-danger text-white">Sold:</div><div class="col-sm-8 bg-danger text-white">System shows item already been sold and paid for.</div></div>';
-                        valid = false;
-                    }
-                    break;
-
-            }
-        }
+        var details = drawItemDetails(item, false);
+        html = '<div id="itemDetailsDiv" class="container-fluid">' + details.html + '</div><div class="container-fluid">';
+        valid = details.valid;
+        btn_color = details.color;
+        priceField = details.priceField;
+        priceType = details.priceType;
 
         if (valid) {
             if (cart.notinCart(item.id)) {
                 if (htmlLine != '') {
                     html += htmlLine;
                 } else {
-                    html += '<div class="row"><div class="col-sm-4">' + priceType + '</div><div class="col-sm-8">$' + Number(item[priceField]).toFixed(2) + '</div></div>';
-                    html += '<div class="row mt-2"><div class="col-sm-4"></div><div class="col-sm-8"><button class="btn btn-sm ' + btn_color + '" type="button" onclick="addToCart(-1);">Add Art Item to Cart</button></div></div>';
+                    if (item.type != 'print' && Number(item[priceField]) > 0 ) {
+                        html += '<div class="row"><div class="col-sm-4">' + priceType + '</div><div class="col-sm-8">$' +
+                            Number(item[priceField]).toFixed(2) + '</div></div>';
+                    }
+                    if ((config.inlineInventory == 1 && item.type == 'art') || btn_color == 'btn-warning')
+                        html += '<div class="row mt-2"><div class="col-sm-4"></div><div class="col-sm-8"><button class="btn btn-sm ' + btn_color +
+                            '" type="button" onclick="updateInventory(-1);">Update Art Item Inventory</button></div></div>';
+                    else
+                        html += '<div class="row mt-2"><div class="col-sm-4"></div><div class="col-sm-8"><button class="btn btn-sm ' + btn_color +
+                            '" type="button" onclick="addToCart(-1);">Add Art Item to Cart</button></div></div>';
                 }
             } else {
                 html += '<div class="row mt-2"><div class="col-sm-4"></div><div class="col-sm-auto bg-warning">Already in Cart</div></div>';
             }
         }
+    } else {
+        // multiple rows returned - do we want to show them and let them select which ones to add to cart
+        if (artTable != null){
+            artTable.destroy();
+            artTable = null;
+        }
+        html = '<div class="row"><div class="col-sm-12" id="artTable"></div></div>';
+    }
+    html += '</div>';
+    add_found_div.innerHTML = html;
+    if (data.items.length == 1) {
+        itemDetailsDiv = document.getElementById("itemDetailsDiv");
+        return; // one item we are done
     }
 
-    add_found_div.innerHTML = html;
+    // multiple rows fill the table
+    artTable = new Tabulator('#artTable', {
+        data: data.items,
+        index: 'item_key',
+        layout: "fitColumns",
+        pagination: data.items.length > 10,
+        paginationSize: 10,
+        paginationSizeSelector: [10, 25, 50, true], //enable page size select element with these options
+
+        columns: [
+            {title: "Artist " + currentArtist, headerWordWrap: true, formatter: itemAction, width: 70, headerSort: false, },
+            {field: "id", visible: false },
+            {title: "Piece #", field: "item_key", headerWordWrap: true,  headerSort: true, headerFilter: true, maxWidth: 70, width: 70, hozAlign: 'right', headerHozAlign: 'right' },
+            {title: "Title", field: "title", headerFilter: true, maxWidth: 300, minWidth: 100, },
+            {title: "Type", field: "type", maxWidth: 100, width: 100, headerSort: true, headerFilter: true, },
+            {title: "Status", field: "status", minWidth: 100,  },
+            {title: "Bidder", field: "bidder", minWidth: 70, hozAlign: 'right', headerHozAlign: 'right' },
+            {title: "Current Price", field: "final_price", headerWordWrap: true, hozAlign: 'right', headerHozAlign: 'right', headerSort: false, },
+            {field: "minPrice", visible: false, },
+            {field: "sale_price", visible: false, },
+        ],
+    });
+
     return;
 }
 
-// addToCart - add this row index to the cart
-function addToCart(index) {
-    var item = null;
-    if (index < 0 && artFoundItems.length > 0) {
-        item = artFoundItems[0];
-    } else if (index >= artFoundItems.length) {
-        return;
-    } else {
-        item = artFoundItems[index];
+// itemAction - what to do with this row
+function itemAction(cell, formatterParams, onRendered) {
+    var row = cell.getData();
+    if (!cart.notinCart(row.id))
+        return 'Cart';
+
+    var color ='primary';
+    if (row.type == 'nfs') // not for sale = not for sale, require admin to change the status in the back end art inventory
+        return '';
+
+    // if its already sold or returned to the artist, require admin to change the status in the back end art inventory
+    if (row.status == 'Checked Out' || row.status == 'Purchased/Released' || row.status == 'Quicksale/Sold')
+        return '';
+
+    // if it's not checked in, or checked in as 'missing' (not in show), allow inventory overide if inline, else nothing
+    if (row.status == 'Entered' || row.status == 'Not In Show') {
+        if (config.inlineInventory == 1)
+            return '<button class="btn btn-sm btn-warning" style= "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
+                ' onclick="updateInventory(' + row.item_key + ');">Inv</button>';
+
+        return '';
     }
 
+    if (row.status == 'Removed from Show') // warn anything in removed from show status, be it add or inventory
+        color = 'warning';
+
+    if (row.type == 'print') {
+        if (row.quantity <= 0) {
+            // only allow inLineInventory to fix remaining quantity for a print
+            if (config.inlineInventory != 1)
+                return '';
+
+            return '<button class="btn btn-sm btn-warning" style= "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
+                ' onclick="updateInventory(' + row.item_key + ');">Inv</button>';
+        }
+
+        return '<button class="btn btn-sm btn-' + color + '" style= "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
+            ' onclick="addToCart(' + row.item_key + ');">Add</button>';
+    }
+
+    if (config.inlineInventory == 1) {
+        // auto warn anything that is not marked for this person
+        if (row.bidder != null && row.bidder != currentPerson.id)
+            color = 'warning'
+
+        return '<button class="btn btn-sm btn-' + color + '" style= "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
+            ' onclick="updateInventory(' + row.item_key + ');">Inv</button>';
+    }
+
+    // if not us, and bid, to auction, sold bid sheet, sold at auction, deny it
+    if (row.bidder != null && row.bidder != currentPerson.id)
+        return '';
+
+    return '<button class="btn btn-sm btn-' + color + '" style= "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
+        ' onclick="addToCart(' + row.item_key + ');">Add</button>';
+}
+
+// updateInventory - open modal and allow updating the inventory for this art item
+function updateInventory(itemKey) {
+    var item = null;
+
+    if (artFoundItems.length == 0)
+        return;
+
+    if (itemKey < 0) {
+        item = artFoundItems[0];
+    } else {
+        if (artTable == null)
+            return;
+
+        item = artTable.getRow(itemKey).getData();
+        if (item == null)
+            return;
+    }
+
+    inventoryCurrentIndex = item.item_key;
+    updateInventoryStep(item, false);
+    inventoryModal.show();
+}
+
+// update art inventory step - decide if anything needs changing in the inventory
+function updateInventoryStep(item, repeatPass) {
+    // build the contents for the modal, first the item data as it presently exists:
+    var details = drawItemDetails(item, true);
+    inventoryUpdates = [];
+    html = '<h1 class="h4">Update Inventory Record:</h1>' + details.html;
+    notes = '';
+    didQuantity = false;
+
+    // general status issues first
+    if (item.status == 'Entered' || item.status == 'Not In Show') {
+        html += '<div class="row mt-4"><div class="col-sm-12">The item is not available for sale because of it\'s status.' +
+            ' If you are sure the item is checked in, click "Update Inventory Record" to set it to "Checked In"</div></div>';
+        inventoryUpdates.push({field: 'status', value: 'Checked In'});
+        notes += 'Updated to Checked In via artpos inventory\n';
+        didQuantity = true;
+
+        if (item.type == 'print') {
+            html += '<div class="row"><div class="col-sm-12">The item is of type print, please verify it\'s available quantity before updating the record: ' +
+                '<input type="number" class="no-spinners" inputmode="numeric" id="availQty" name="availQty" size="20" placeholder="Avail Qty" ' +
+                    ' min=0 max=9999 value="' + item.quantity + '"></div></div>';
+            inventoryUpdates.push({field: 'quantity', id: 'availQty', type: 'i'});
+            notes += 'Updated print quantity from ' + item.quantity + '\n';
+        }
+    }
+
+    // print - 0 quantity refresh
+    if (item.type == 'print' && item.quantity <= 0 && didQuantity == false) {
+        html += '<div class="row"><div class="col-sm-12">The item is of type print, and shows none remaining, ' +
+            ' please verify it\'s available quantity before updating the record: ' +
+            '<input type="number" class="no-spinners" inputmode="numeric" id="availQty" name="availQty" size="20" placeholder="Avail Qty" ' +
+            ' min=0 max=9999 value="' + item.quantity + '"></div></div>';
+        inventoryUpdates.push({field: 'quantity', id: 'availQty', type: 'i'});
+        notes += 'Updated print quantity from ' + item.quantity + ' due to trying to sell one when none is marked available\n';
+    }
+
+    // NFS is only allowed to be checked in, if it even gets this far, (as a safety valve)
+    if (item.type == 'art' && config.roomStatus != 'precon' && config.roomStatus != 'closed' && repeatPass == false) {
+        // that leaves art.
+        // based on the room status: No sales if 'precon', no sales if 'closed', that leaves bids and checkout.
+        //      'bids' will allow quicksale and updating the bidder, but only adding it to the cart if quicksale.
+        //      'checkout' will allow quicksale and updating the bidder and highest bid and adds everything to the cart
+        //
+        // based on item status:
+        //   if the status is 'Checked out', 'Purchased/Release', 'Quicksale Sold' we should not allow anything else to be done as those are final statues
+        //      (except for releasing Quicksale Sold which is not an inventory item.)
+        //   For the status: 'Checked In', Removed from Show: allow setting for quicksale and allow going to cart as quicksale
+        //   For the status: 'Checked In', Removed from Show, BID: update bidder, and allow going to the cart as checkout for this person
+
+        // quicksale Y/N (note entered will become checked in)
+        if ((item.status == 'Entered' || item.status == 'Checked In' || item.status == 'Removed from Show') && item.bidder == null) {
+            if (item.sale_price > 0 || Number(item.sale_price) >= Number(item.min_price)) {
+                html += '<div class="row mt-2"><div class="col-sm-12">Is this a quick sale? ' +
+                    '<select id="quickSaleYN" name="quickSaleYN"><option value="N">No</option>' +
+                    '<option value="Y"' + (item.sale_price > 0 ? ' selected' : '') + '>Yes</option></select>' +
+                    '</div></div>';
+                inventoryUpdates.push({field: '', id: 'quickSaleYN', type: 'p'});
+                valid = false;
+            }
+        }
+
+        // bid item
+        if (item.status == 'Entered' || item.status == 'Checked In' || item.status == 'Removed from Show' || item.status == 'BID') {
+            // update bidder if bid and not user
+            if (item.bidder != null && item.bidder != currentPerson.id) {
+                html += '<div class="row mt-2"><div class="col-sm-12">This item is current bid on by ' + item.bidder + ', change it to this person? ' +
+                    '<select id="updateBidderYN" name="updateBidderYN"><option value="N">No</option><option value="Y">Yes</option></select>' +
+                    '</div></div>';
+                inventoryUpdates.push({field: '', id: 'updateBidderYN', type: 'p'});
+                inventoryUpdates.push({field: 'bidder', value: currentPerson.id, type: 'i'});
+                valid = false;
+            }
+
+            html += '<div class="row mt-2"><div class="col-sm-12">Current High bid? ' +
+                '<input type="number" class="no-spinners" inputmode="numeric" id="finalPrice" name="finalPrice" size="20" placeholder="High Bid" ' +
+                ' min=1 max=9999999 value="' + (item.final_price > item.min_price ? item.final_price : item.min_price) + '"></div></div>';
+            var cmp_price = item.final_price > item.min_price ? item.final_price : item.min_price;
+            if (item.status != 'BID')
+                cmp_price = cmp_price - 0.01;
+            inventoryUpdates.push({field: 'final_price', id: 'finalPrice', type: 'd', prior: cmp_price });
+        }
+
+        // to Auction Item:
+        if (item.status == 'To Auction') {
+            // update bidder if not this person
+            // update final price
+            if (item.bidder != null && item.bidder != currentPerson.id) {
+                html += '<div class="row mt-2"><div class="col-sm-12">This item was last bid on by ' + item.bidder + ', change it to this person? ' +
+                    '<select id="updateBidderYN" name="updateBidderYN"><option value="N">No</option><option value="Y">Yes</option></select>' +
+                    '</div></div>';
+                inventoryUpdates.push({field: '', id: 'updateBidderYN', type: 'p'});
+                inventoryUpdates.push({field: 'bidder', value: currentPerson.id, type: 'i'});
+                valid = false;
+            }
+
+            html += '<div class="row mt-2"><div class="col-sm-12">Final Bid Price? ' +
+                '<input type="number" class="no-spinners" inputmode="numeric" id="finalPrice" name="finalPrice" size="20" placeholder="High Bid" ' +
+                ' min=1 max=9999999 value="' + (item.final_price > item.min_price ? item.final_price : item.min_price) + '"></div></div>';
+            inventoryUpdates.push({field: 'final_price', id: 'finalPrice', type: 'd',
+                prior: (item.final_price > item.min_price ? item.final_price : item.min_price) - 0.01 });
+            inventoryUpdates.push({field: 'status',  value: 'Sold at Auction'});
+            notes += 'Updated status from To Auction to Sold At Auction\n';
+        }
+
+        // Checked Out Item
+        if (item.status == 'Checked Out') {
+            // update bidder, as there should be none
+            // update final price
+            inventoryUpdates.push({field: 'bidder', value: currentPerson.id, type: 'i'});
+            valid = false;
+            html += '<div class="row mt-2"><div class="col-sm-12">Final Bid Price? ' +
+                '<input type="number" class="no-spinners" inputmode="numeric" id="finalPrice" name="finalPrice" size="20" placeholder="High Bid" ' +
+                ' min=1 max=9999999 value="' + (item.final_price > item.min_price ? item.final_price : item.min_price) + '"></div></div>';
+            inventoryUpdates.push({field: 'final_price', id: 'finalPrice', type: 'd',
+                prior: item.min_price - 0.01 });
+            inventoryUpdates.push({field: 'status',  value: 'Bid'});
+            notes += 'Updated Status from Checked Out to Bid for sale after return to artist';
+        }
+    }
+
+    if (notes != '')
+        inventoryUpdates.push({field: 'notes',  value: notes,  append: 1 });
+
+    invNoChangeBtn.disabled = (!details.valid) || (details.color == 'btn-warning');
+    invChange_button.disabled = inventoryUpdates.length == 0;
+    btn_color = details.color;
+    inventoryBodyDiv.innerHTML = html +
+        '<div class="row mt-2"><div class="col-sm-12" id="inv_result_msg"></div></div>';
+
+    if (!invNoChangeBtn.disabled && invChange_button.disabled) {
+        if (config.roomStatus != 'precon' && config.roomStatus != 'closed') {
+            addItemToCart(item);
+            add_found_div.innerHTML = "";
+        } else {
+            show_message("Room Status is " + config.roomStatus + ", cannot add items to the cart.", 'warn');
+        }
+        inventoryModal.hide();
+    }
+}
+
+// actually update the inventory record
+function invUpdate(doUpdate) {
+    var item = null;
+
+    if (artFoundItems.length == 1)
+        item = artFoundItems[0];
+    else
+        item = artTable.getRow(inventoryCurrentIndex).getData();
+
+    if (!doUpdate) {
+        addItemToCart(item);
+        add_found_div.innerHTML = '';
+        inventoryModal.hide();
+        return;
+    }
+
+    if (inventoryUpdates == null || inventoryUpdates.length == 0) {
+        show_message('Nothing to update', 'warn');
+        inventoryModal.hide();
+        return;
+    }
+
+    for (var index = 0; index < inventoryUpdates.length; index++) {
+        if (inventoryUpdates[index].hasOwnProperty('id')) {
+            inventoryUpdates[index].value = document.getElementById(inventoryUpdates[index].id).value;
+        }
+    }
+
+
+    clear_message();
+    clear_message('inv_result_msg');
+    var postData = {
+        ajax_request_action: 'inlineUpdate',
+        item: JSON.stringify(item),
+        perid: currentPerson.id,
+        user_id: user_id,
+        updates: JSON.stringify(inventoryUpdates),
+    };
+    $.ajax({
+        method: "POST",
+        url: "scripts/artpos_updateInventory.php",
+        data: postData,
+        success: function (data, textstatus, jqxhr) {
+            if (data.error !== undefined) {
+                show_message(data.error, 'error', 'inv_result_msg');
+                return;
+            }
+            if (data.message !== undefined) {
+                show_message(data.message, 'success', 'inv_result_msg');
+            }
+            if (data.warn !== undefined) {
+                show_message(data.warn, 'warn', 'inv_result_msg');
+            }
+            if (data.hasOwnProperty('item')) { // successful update
+                if (artFoundItems.length > 1) {
+                    var row = artTable.getRow(inventoryCurrentIndex);
+                    row.update(data.item).then(row.reformat());
+                } else {
+                    artFoundItems = [data.item];
+                    // redraw the item details block
+                    step = drawItemDetails(data.item);
+                    itemDetailsDiv.innerHTML = step.html;
+                }
+                updateInventoryStep(data.item, true);
+            }
+        },
+        error: showAjaxError,
+    });
+}
+
+// addToCart - add this row index to the cart
+function addToCart(itemKey) {
+    var item = null;
+
+    if (artFoundItems.length == 0)
+        return;
+
+    if (itemKey < 0) {
+        item = artFoundItems[0];
+    } else {
+        if (artTable == null)
+            return;
+
+        item = artTable.getRow(itemKey).getData();
+        if (item == null)
+            return;
+    }
+    if (config.inlineInventory == 0 || (config.roomStatus != 'precon' && config.roomStatus != 'closed')) {
+        addItemToCart(item);
+        if (artFoundItems.length > 1) {
+            var row = artTable.getRow(inventoryCurrentIndex);
+            row.reformat();
+        } else {
+            add_found_div.innerHTML = "";
+        }
+    } else {
+        show_message("Room Status is " + config.roomStatus + ", cannot add items to the cart.", 'warn');
+    }
+}
+
+// addItemToCart - knowing the item, add it to the cart
+function addItemToCart(item) {
     var finalPriceField = document.getElementById('art-final-price');
     if (finalPriceField) {
         var enteredPrice = Number(finalPriceField.value);
@@ -772,7 +1230,6 @@ function addToCart(index) {
     }
 
     cart.add(item);
-    add_found_div.innerHTML = "";
 }
 
 // initArtSales - create/update artSales records for this cart to prepare for payment, create master transaction if none exists
@@ -1589,7 +2046,7 @@ function foundRelease(data) {
             {column: "exhibitorNumber", dir: "asc"},
             {column: "item_key", dir: "asc"},
         ],
-        pagination: true,
+        pagination: art.length > 25,
         paginationSize: 25,
         paginationSizeSelector: [25, 50, 100, 250, true], //enable page size select element with these options
 

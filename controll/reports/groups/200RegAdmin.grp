@@ -2,17 +2,30 @@
 	name="RegAdmin"
 	description="Registration Admin Reports"
 	auth=reg_admin
-[100RegHistory]
+[100ExpiringRegs]
+    name="Expiring Registrations"
+    description="Unpaid Registrations with their 'expire' (rate change) date"
+    template=reg_expire.rpt
+    auth=reg_admin
+    type=rpt
+[200RegHistory]
 	name="Registration History"
 	description="Registration History for a Person"
 	template=reg_history.rpt
 	auth=reg_admin
 	type=rpt
 	P001="prompt/~/perid/~/History for: /~/Enter Person's Perid"
-[110RegHistory]
+[300NoShows]
     name="No Shows"
     description="No Shows for a convention year"
     template=reg_noshows.rpt
     auth=reg_admin
     type=rpt
     P001="prompt/~/conid/~/No shows for: /~/Conid (number only)"
+[400AllRegEmails]
+    name="Registration Emails"
+    description="All Email Address for those registered"
+    template=reg_allemails.rpt
+    auth=reg_admin
+    type=rpt
+    P001="prompt/~/conid/~/Registered Peoples Emails for: /~/Conid (number only)"

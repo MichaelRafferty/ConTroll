@@ -1,4 +1,4 @@
--- MySQL dump 10.13  Distrib 8.0.34, for macos13 (arm64)
+-- MySQL dump 10.13  Distrib 8.0.42, for macos15 (arm64)
 --
 -- Host: localhost    Database: reg
 -- ------------------------------------------------------
@@ -11,10 +11,16 @@
 LOCK TABLES `controllAppItems` WRITE;
 ALTER TABLE `controllAppItems` DISABLE KEYS;
 INSERT INTO `controllAppItems` VALUES
+('controll','emails','comeback','html','Custom Text for the html comeback email - not registered insert into past few years'),
+('controll','emails','comeback','text','Custom Text for the plain text comeback email - not registered insert into past few years'),
+('controll','emails','marketing','html','Custom Text for the html marketing email - not registered this year'),
+('controll','emails','marketing','text','Custom Text for the plain text marketing email - not registered this year'),
+('controll','emails','reminder','html','Custom Text for the html attendence reminder email'),
+('controll','emails','reminder','text','Custom Text for the plain text attendence reminder email'),
 ('exhibitor','index','email','mailinInvHTML','Mail In Artist Inventory HTML Email'),
 ('exhibitor','index','email','mailinInvText','Mail In Artist Inventory Text Email'),
 ('exhibitor','index','email','onsiteInvHTML','On Site Artist Inventory HTML Email'),
-('exhibitor','index','email','onsiteInvText','On Site Artist Inventory Test Email'),
+('exhibitor','index','email','onsiteInvText','On Site Artist Inventory Text Email'),
 ('exhibitor','index','invoice','afterPrice','After the price of the modal invoice popup-all portals'),
 ('exhibitor','index','invoice','afterPriceArtist','After the price custom text of the modal invoice popup-artist portal'),
 ('exhibitor','index','invoice','afterPriceExhibitor','After the price custom text of the modal invoice popup-exhibitor portals'),
@@ -126,6 +132,7 @@ INSERT INTO `controllAppItems` VALUES
 ('portal','accountSettings','main','bottom','The bottom of the page/section'),
 ('portal','accountSettings','main','identities','Just after the identities header'),
 ('portal','accountSettings','main','managed','Just after the managed header'),
+('portal','accountSettings','main','passkeys','Just after the passkeys header'),
 ('portal','accountSettings','main','top','The top of the page/section'),
 ('portal','addUpgrade','main','bottom','The bottom of the page/section'),
 ('portal','addUpgrade','main','step0','The email address (Step 0)'),
