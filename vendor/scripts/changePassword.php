@@ -54,7 +54,7 @@ SET contactPassword = ?, need_new = 0
 WHERE id=? AND conid=?;
 EOS;
     $typestr = 'sii';
-    $params = array(password_hash($_POST['password'], PASSWORD_DEFAULT), $client, $conid);
+    $params = array(password_hash(ifnull($_POST['password'], ''), PASSWORD_DEFAULT), $client, $conid);
 } else {
     $updateQ = <<<EOS
 UPDATE exhibitors
@@ -62,7 +62,7 @@ SET password = ?, need_new = 0
 WHERE id=?;
 EOS;
     $typestr = 'si';
-    $params = array(password_hash($_POST['password'], PASSWORD_DEFAULT), $vendor);
+    $params = array(password_hash(ifnull($_POST['password'], ''), PASSWORD_DEFAULT), $vendor);
 }
 
 $numRows = dbSafeCmd($updateQ, $typestr, $params);

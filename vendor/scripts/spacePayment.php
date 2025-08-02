@@ -379,8 +379,9 @@ UPDATE exhibitors
 SET exhibitorName=?, exhibitorEmail=?, addr=?, addr2=?, city=?, state=?, zip=?, salesTaxId = ?
 WHERE id=?;
 EOS;
-    $exhibitorA = array(trim($_POST['name']), trim($_POST['email']), trim($_POST['addr']), trim($_POST['addr2']), trim($_POST['city']), trim($_POST['state']),
-        trim($_POST['zip']), $salesTaxId, $exhId);
+    $exhibitorA = array(trim(ifnull($_POST['name'],'')), trim(ifnull($_POST['email'],'')), trim(ifnull($_POST['addr'],'')),
+        trim(ifnull($_POST['addr2'],'')), trim(ifnull($_POST['city'],'')), trim(ifnull($_POST['state'],'')),
+        trim(ifnull($_POST['zip'],'')), trim(ifnull($salesTaxId,'')), $exhId);
     $num_rows = dbSafeCmd($updateV, 'ssssssssi',$exhibitorA);
     if ($num_rows == 1)
         $status_msg = "$portalName Profile Updated<br/>\n";
