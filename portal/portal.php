@@ -227,6 +227,13 @@ EOS;
     else
         $addlWSFS = explode(',', $addlWSFS);
 
+    $addlVirtual = getConfValue('portal', 'addlVirtual');
+    if ($addlVirtual == '')
+        $addlVirtual = [];
+    else
+        $addlVirtual = explode(',', $addlVirtual);
+
+    $hasAddlVirtual = false;
     if ($holderRegR !== false && $holderRegR->num_rows > 0) {
         while ($m = $holderRegR->fetch_assoc()) {
             // check if they have a WSFS rights membership (hasWSFS and hasNom)
@@ -250,11 +257,14 @@ EOS;
             if (($m['ageType'] == 'child' && !$allowChild) || $m['ageType'] == 'kit')
                 $numChild++;
 
+             // force additional virtual's from array
+             if (in_array($m['memId'], $addlVirtual) && $m['status'] == 'paid')
+                $hasAddlVirtual = true;
+
             if ($m['memType'] == 'donation') {
                 $label = $dolfmt->formatCurrency((float)$m['actPrice'], $currency) . ' ' . $m['label'];
                 $shortname = $dolfmt->formatCurrency((float)$m['actPrice'], $currency) . ' ' . $m['shortname'];
-            }
-            else {
+            }  else {
                 $label = $m['label'];
                 $shortname = $m['shortname'];
             }
@@ -320,7 +330,9 @@ EOS;
 
     if (!$hasWSFS)
         $hasMeeting = false;
-    $hasVirtual = $numPaidPrimary > 0 && $numChild == 0 && ((!$worldCon) || $hasWSFS);
+
+    $hasVirtual = ($numPaidPrimary > 0 && $numChild == 0 && ((!$worldCon) || $hasWSFS)) || $hasAddlVirtual;
+
 // get people managed by this account holder and their registrations
     if ($loginType == 'p') {
         $managedSQL = <<<EOS

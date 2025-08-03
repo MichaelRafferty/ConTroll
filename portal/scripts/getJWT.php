@@ -253,7 +253,14 @@ EOS;
     else
         $addlWSFS = explode(',', $addlWSFS);
 
+    $addlVirtual = getConfValue('portal', 'addlVirtual');
+    if ($addlVirtual == '')
+        $addlVirtual = [];
+    else
+        $addlVirtual = explode(',', $addlVirtual);
+
     if ($holderRegR !== false && $holderRegR->num_rows > 0) {
+        $hasAddlVirtual = false;
         while ($m = $holderRegR->fetch_assoc()) {
             // check if they have a WSFS rights membership (hasWSFS and hasNom)
             if (($m['memCategory'] == 'wsfs' || $m['memCategory'] == 'dealer' || in_array($m['memId'], $addlWSFS)) && $m['status'] == 'paid') {
@@ -263,6 +270,9 @@ EOS;
             // check age to prevent virtual
             if ($m['ageType'] == 'child' || $m['ageType'] == 'kit')
                 $numChild++;
+
+            if (in_array($m['memId'], $addlVirtual) && $m['status'] == 'paid')
+                $hasAddlVirtual = true;
 
             if (isPrimary($m, $conid) && $m['status'] == 'paid')
                 $numPaidPrimary++;
@@ -279,7 +289,7 @@ EOS;
         $holderRegR->free();
     }
 
-    $hasVirtual = ($numPaidPrimary > 0) && ((!$worldCon) || $hasWSFS) && ($worldCon || $numChild == 0);
+    $hasVirtual = (($numPaidPrimary > 0) && ((!$worldCon) || $hasWSFS) && ($worldCon || $numChild == 0)) || $hasAddlVirtual;
     if ($hasVirtual) {
         if ($rights != '')
             $rights .= ',';
