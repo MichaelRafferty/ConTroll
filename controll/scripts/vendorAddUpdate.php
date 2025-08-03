@@ -158,12 +158,13 @@ EOS;
 
         $updateQ = <<<EOS
 UPDATE exhibitors
-SET exhibitorName=?, exhibitorEmail=?, exhibitorPhone=?, website=?, description=?,
+SET artistName = ?, exhibitorName=?, exhibitorEmail=?, exhibitorPhone=?, website=?, description=?,
     addr=?, addr2=?, city=?, state=?, zip=?, country=?, shipCompany=?, shipAddr=?, shipAddr2=?, shipCity=?, shipState=?, shipZip=?, shipCountry=?, 
     publicity=?, notes = ?
 WHERE id=?
 EOS;
         $updateArr = array(
+            trim(ifnull($artistName,'')),
             trim(ifnull($_POST['exhibitorName'], '')),
             trim(ifnull($_POST['exhibitorEmail'], '')),
             trim(ifnull($_POST['exhibitorPhone'], '')),
@@ -186,7 +187,7 @@ EOS;
             trim(ifnull($exhNotes, '')),
             $vendor
         );
-        $numrows = dbSafeCmd($updateQ, 'ssssssssssssssssssisi', $updateArr);
+        $numrows = dbSafeCmd($updateQ, 'sssssssssssssssssssisi', $updateArr);
 
         $updateQ = <<<EOS
 UPDATE exhibitorYears
@@ -207,7 +208,7 @@ EOS;
             $response['message'] = 'Profile Updated';
             // get the update info
             $vendorQ = <<<EOS
-SELECT exhibitorName, exhibitorEmail, exhibitorPhone, website, description, e.need_new AS eNeedNew,
+SELECT artistName, exhibitorName, exhibitorEmail, exhibitorPhone, website, description, e.need_new AS eNeedNew,
        IFNULL(e.notes, '') AS exhNotes, IFNULL(ey.notes, '') AS contactNotes, ey.mailin, ey.contactName, ey.contactEmail, ey.contactPhone, 
        ey.need_new AS cNeedNew, DATEDIFF(now(), ey.lastVerified) AS DaysSinceLastVerified, ey.lastVerified,
        addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, publicity
