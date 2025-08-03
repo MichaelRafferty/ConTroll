@@ -198,7 +198,7 @@ EOS;
                 trim(ifnull($_POST['contactEmail'],'')),
                 trim(ifnull($_POST['contactPhone'],'')),
                 $mailin,
-                $ifnull($contactNotes, ''),
+                ifnull($contactNotes, ''),
                 $vendorYear
             );
             $numrows1 = dbSafeCmd($updateQ, 'sssssi', $updateArr);
