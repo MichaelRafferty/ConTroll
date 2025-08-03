@@ -17,7 +17,7 @@ function pdfPrintShopPriceSheets($regionYearId, $region, $response) {
     $vsize = 1.6;
     $indent = 0.1;
     $blockheight = 0.35;
-    $labeloffset = 0.06;
+    $labelOffset = 0.06;
     $dataOffset = 0.22;
 
     $itemSQL = <<<EOS
@@ -146,8 +146,8 @@ EOS;
             $pdf->Rect($h, $v, $isize * 0.8, $blockheight);
             $pdf->Rect($h + $isize * 0.8, $v, $isize * 0.2, $blockheight);
             pushFont('Arial', '', 5);
-            printXY($h + 0.025, $v + $labeloffset,'ARTIST');
-            printXY($h + 0.025 + $isize * 0.8, $v + $labeloffset,'ARTIST#');
+            printXY($h + 0.025, $v + $labelOffset,'ARTIST');
+            printXY($h + 0.025 + $isize * 0.8, $v + $labelOffset,'ARTIST#');
             popFont();
             fitprintXY($h + 0.1, $v + $dataOffset, (0.8 * $isize), $artistName);
             printXY($h + 0.1 + (0.8 * $isize), $v + $dataOffset, $print['exhibitorNumber']);
@@ -157,8 +157,8 @@ EOS;
             $pdf->Rect($h, $v, $isize * 0.8, $blockheight);
             $pdf->Rect($h + $isize * 0.8, $v, $isize * 0.2, $blockheight);
             pushFont('Arial', '', 5);
-            printXY($h + 0.025, $v + $labeloffset,'TITLE');
-            printXY($h + 0.025 + $isize * 0.8, $v + $labeloffset,'PIECE#');
+            printXY($h + 0.025, $v + $labelOffset,'TITLE');
+            printXY($h + 0.025 + $isize * 0.8, $v + $labelOffset,'PIECE#');
             popFont();
 
             fitprintXY($h + 0.1, $v + $dataOffset, ($isize * 0.8) - 0.2, $print['title']);
@@ -170,10 +170,10 @@ EOS;
             $pdf->Rect($h + $isize * 0.5, $v, $isize * 0.25, $blockheight);
             $pdf->Rect($h + $isize * 0.75, $v, $isize * 0.25, $blockheight);
             pushFont('Arial', '', 5);
-            printXY($h + 0.025, $v + $labeloffset, 'BUYER (ART SHOW USE ONLY)');
-            printXY($h + 0.025 + $isize * 0.5, $v + $labeloffset,'UNIT');
-            printXY($h + 0.025 + $isize * 0.625, $v + $labeloffset, 'OF');
-            printXY($h + 0.025 + $isize * 0.75, $v + $labeloffset, 'PRICE');
+            printXY($h + 0.025, $v + $labelOffset, 'BUYER (ART SHOW USE ONLY)');
+            printXY($h + 0.025 + $isize * 0.5, $v + $labelOffset,'UNIT');
+            printXY($h + 0.025 + $isize * 0.625, $v + $labelOffset, 'OF');
+            printXY($h + 0.025 + $isize * 0.75, $v + $labelOffset, 'PRICE');
             popFont();
 
             printXY($h + 0.1 + (0.5 * $isize), $v + $dataOffset, $copy);
@@ -185,7 +185,7 @@ EOS;
             if ($useBarCode) {
                 $v += $blockheight;
                 $barcodeData = sprintf("%7.7d,%3.3d", $print['itemId'], $copy);
-                $pdf->code128($h + $indent, $v + $labeloffset, $barcodeData, ($isize - (2 * $indent)) / 1.5, $blockheight - (2 * $labeloffset));
+                $pdf->code128($h + $indent, $v + $labelOffset, $barcodeData, ($isize - (2 * $indent)) / 1.5, $blockheight - (2 * $labelOffset));
             }
         }
     }
@@ -262,7 +262,7 @@ function pdfPrintBidSheets($regionYearId, $region, $response) {
     $blockheight = 0.33;
     $priceheight = 0.25;
     $headerheight = 0.15;
-    $labeloffset = 0.06;
+    $labelOffset = 0.06;
     $dataOffset = 0.20;
     $priceoffset = 0.14;
 
@@ -384,8 +384,8 @@ EOS;
         $pdf->Rect($h, $v, $isize * 0.8, $blockheight);
         $pdf->Rect($h + $isize * 0.8, $v, $isize * 0.2, $blockheight);
         pushFont('Arial', '', 5);
-        printXY($h + 0.025, $v + $labeloffset,'ARTIST');
-        printXY($h + 0.025 + $isize * 0.8, $v + $labeloffset,'ARTIST#');
+        printXY($h + 0.025, $v + $labelOffset,'ARTIST');
+        printXY($h + 0.025 + $isize * 0.8, $v + $labelOffset,'ARTIST#');
         popFont();
         fitprintXY($h + 0.1, $v + $dataOffset, (0.8 * $isize),  $artistName);
         printXY($h + 0.1 + (0.8 * $isize), $v + $dataOffset, $art['exhibitorNumber']);
@@ -394,7 +394,7 @@ EOS;
         $v += $blockheight;
         $pdf->Rect($h, $v, $isize, $blockheight);
         pushFont('Arial', '', 5);
-        printXY($h + 0.025, $v + $labeloffset, 'TITLE');
+        printXY($h + 0.025, $v + $labelOffset, 'TITLE');
         popFont();
         fitprintXY($h + 0.1, $v + $dataOffset,$isize-0.2, $art['title']);
 
@@ -403,99 +403,109 @@ EOS;
         $pdf->Rect($h, $v, $isize * 0.8, $blockheight);
         $pdf->Rect($h + $isize * 0.8, $v, $isize * 0.2, $blockheight);
         pushFont('Arial', '', 5);
-        printXY($h + 0.025, $v + $labeloffset, 'MEDIUM');
-        printXY($h + 0.025 + $isize * 0.8, $v + $labeloffset, 'PIECE#');
+        printXY($h + 0.025, $v + $labelOffset, 'MEDIUM');
+        printXY($h + 0.025 + $isize * 0.8, $v + $labelOffset, 'PIECE#');
         popFont();
         fitprintXY($h + 0.1, $v + $dataOffset, ($isize * 0.8) -0.2, $art['material']);
         printXY($h + 0.1 + (0.8 * $isize), $v + $dataOffset, $art['item_key']);
 
-        // draw Minimum Bid Amount
-        pushLineWidth(0.016);
-        $v += $blockheight;
-        $pdf->Rect($h, $v, $isize * 0.6, $priceheight);
-        $pdf->Rect($h + $isize * 0.6, $v, $isize * 0.4, $priceheight);
-        $label = 'Minimum bid amount';
-        $length = $pdf->getStringWidth($label);
-        printXY($h + ($isize * 0.6) - (0.1 + $length), $v + $priceoffset, $label );
-
         if ($art['type'] == 'nfs') {
-            $priceFmt = 'N/A';
-        } else {
-            $priceFmt = $dolfmt->formatCurrency((float)$art['min_price'], $currency);
-        }
-        $pricewidth = $pdf->getStringWidth($priceFmt);
-        printXY($h + (0.97 * $isize) - $pricewidth, $v + $priceoffset, $priceFmt);
-
-        // draw Quick Sale Amount
-        $v += $priceheight;
-        $pdf->Rect($h, $v, $isize * 0.6, $priceheight);
-        $pdf->Rect($h + $isize * 0.6, $v, $isize * 0.4, $priceheight);
-        $label = 'Quicksale price';
-        $length = $pdf->getStringWidth($label);
-        printXY($h + ($isize * 0.6) - (0.1 + $length), $v + $priceoffset, $label );
-
-        $price = $art['sale_price'];
-        if ($price > 0 && $art['type'] != 'nfs') {
-            $priceFmt = $dolfmt->formatCurrency((float)$art['sale_price'], $currency);
-        } else {
-            $priceFmt = "N/A";
-        }
-        $pricewidth = $pdf->getStringWidth($priceFmt);
-        printXY($h + (0.97 * $isize) - $pricewidth, $v + $priceoffset, $priceFmt);
-        popLineWidth();
-
-        // now bid header
-        $v += $priceheight;
-        $headerStart = $v;
-        $pdf->Rect($h, $v, $isize * 0.6, $headerheight);
-        $pdf->Rect($h + $isize * 0.6, $v, $isize * 0.2, $headerheight);
-        $pdf->Rect($h + $isize * 0.8, $v, $isize * 0.2, $headerheight);
-        pushFont('Arial', '', 8);
-        printXY($h + 0.025, $v + $labeloffset + 0.01, "Bidder Name (Please Print)");
-        printXY($h + 0.025 + $isize * 0.6, $v + $labeloffset + 0.01, 'Badge #');
-        printXY($h + 0.025 + $isize * 0.8, $v + $labeloffset + 0.01, 'Bid ($)');
-        popFont();
-
-        $v += $headerheight;
-        pushFont('Arial', '', 6);
-        for ($lineno = 1; $lineno <= $numberedLines; $lineno++) {
-            $pdf->Rect($h, $v, $isize, $blockheight);
-            if ($bidSep) {
-                $pdf->Rect($h + $isize * 0.6, $v, $isize * 0.2, $blockheight);
-            }
-            printXY($h, $v + $labeloffset, "$lineno)");
+            pushLineWidth(0.024);
             $v += $blockheight;
-        }
-        popFont();
-        for (; $lineno <= $bidlines; $lineno++) {
-            $pdf->Rect($h, $v, $isize, $blockheight);
-            if ($bidSep) {
-                $pdf->Rect($h + $isize * 0.6, $v, $isize * 0.2, $blockheight);
-            }
+            // NFS just output a large NFS line
+            $isize = $hsize - 2 * $indent;
+            $pdf->Rect($h, $v, $isize, $blockheight * 1.6);
+            pushFont('Arial', '', 32);
+            centerPrintXY($h, $v + 0.30, $isize - 0.1, 'NOT FOR SALE');
+            popFont();
+            popLineWidth();
+            $v += $blockheight * 0.6;
+        } else {
+            // draw Minimum Bid Amount
+            pushLineWidth(0.016);
             $v += $blockheight;
+            $pdf->Rect($h, $v, $isize * 0.6, $priceheight);
+            $pdf->Rect($h + $isize * 0.6, $v, $isize * 0.4, $priceheight);
+            $label = 'Minimum bid amount';
+            $length = $pdf->getStringWidth($label);
+            printXY($h + ($isize * 0.6) - (0.1 + $length), $v + $priceoffset, $label);
+
+            if ($art['type'] == 'nfs') {
+                $priceFmt = 'N/A';
+            } else {
+                $priceFmt = $dolfmt->formatCurrency((float)$art['min_price'], $currency);
+            }
+            $pricewidth = $pdf->getStringWidth($priceFmt);
+            printXY($h + (0.97 * $isize) - $pricewidth, $v + $priceoffset, $priceFmt);
+
+            // draw Quick Sale Amount
+            $v += $priceheight;
+            $pdf->Rect($h, $v, $isize * 0.6, $priceheight);
+            $pdf->Rect($h + $isize * 0.6, $v, $isize * 0.4, $priceheight);
+            $label = 'Quicksale price';
+            $length = $pdf->getStringWidth($label);
+            printXY($h + ($isize * 0.6) - (0.1 + $length), $v + $priceoffset, $label);
+
+            $price = $art['sale_price'];
+            if ($price > 0 && $art['type'] != 'nfs') {
+                $priceFmt = $dolfmt->formatCurrency((float)$art['sale_price'], $currency);
+            } else {
+                $priceFmt = "N/A";
+            }
+            $pricewidth = $pdf->getStringWidth($priceFmt);
+            printXY($h + (0.97 * $isize) - $pricewidth, $v + $priceoffset, $priceFmt);
+            popLineWidth();
+
+            // now bid header
+            $v += $priceheight;
+            $headerStart = $v;
+            $pdf->Rect($h, $v, $isize * 0.6, $headerheight);
+            $pdf->Rect($h + $isize * 0.6, $v, $isize * 0.2, $headerheight);
+            $pdf->Rect($h + $isize * 0.8, $v, $isize * 0.2, $headerheight);
+            pushFont('Arial', '', 8);
+            printXY($h + 0.025, $v + $labelOffset + 0.01, "Bidder Name (Please Print)");
+            printXY($h + 0.025 + $isize * 0.6, $v + $labelOffset + 0.01, 'Badge #');
+            printXY($h + 0.025 + $isize * 0.8, $v + $labelOffset + 0.01, 'Bid ($)');
+            popFont();
+
+            $v += $headerheight;
+            pushFont('Arial', '', 6);
+            for ($lineno = 1; $lineno <= $numberedLines; $lineno++) {
+                $pdf->Rect($h, $v, $isize, $blockheight);
+                if ($bidSep) {
+                    $pdf->Rect($h + $isize * 0.6, $v, $isize * 0.2, $blockheight);
+                }
+                printXY($h, $v + $labelOffset, "$lineno)");
+                $v += $blockheight;
+            }
+            popFont();
+            for (; $lineno <= $bidlines; $lineno++) {
+                $pdf->Rect($h, $v, $isize, $blockheight);
+                if ($bidSep) {
+                    $pdf->Rect($h + $isize * 0.6, $v, $isize * 0.2, $blockheight);
+                }
+                $v += $blockheight;
+            }
+
+            // artshow use only block
+            pushFont('Arial', 'B', 11);
+            $pdf->Rect($h, $v, $isize, $blockheight);
+            printXY($h, $v + $dataOffset, "ART SHOW USE ONLY");
+            popFont();
+
+            pushFont('Arial', '', 9);
+            $pdf->Rect($h + 1.75, $v + $labelOffset + 0.05, 0.15, 0.15);
+            printXY($h + 1.95, $v + $dataOffset, "AUC");
+            $pdf->Rect($h + 2.45, $v + $labelOffset + 0.05, 0.15, 0.15);
+            printXY($h + 2.65, $v + $dataOffset, 'SOLD');
+            $pdf->Rect($h + 3.25, $v + $labelOffset + 0.05, 0.15, 0.15);
+            printXY($h + 3.45, $v + $dataOffset, 'QS');
         }
-
-        // artshow use only block
-        pushFont('Arial', 'B', 7);
-        $pdf->Rect($h, $v, $isize, $blockheight);
-        $pdf->SetXY($h, $v + $labeloffset);
-        $pdf->MultiCell(0, 0.12, "ART SHOW\nUSE ONLY");
-        popFont();
-
-        pushFont('Arial', '', 12);
-        $pdf->Rect($h + 0.7, $v + $labeloffset + 0.05, 0.15, 0.15);
-        printXY($h + 0.85, $v + $dataOffset, "AUC");
-        $pdf->Rect($h + 1.37, $v + $labeloffset + 0.05, 0.15, 0.15);
-        printXY($h + 1.52, $v + $dataOffset, 'SOLD');
-        $pdf->Rect($h + 2.15, $v + $labeloffset + 0.05, 0.15, 0.15);
-        printXY($h + 2.3, $v + $dataOffset, 'QS');
-        $pdf->Rect($h + 2.7, $v + $labeloffset + 0.05, 0.15, 0.15, $art['type'] == 'nfs' ? 'DF' : 'D');
-        printXY($h + 2.85, $v + $dataOffset, 'NFS');
 
         if ($useBarCode) {
             $v += $blockheight;
             $barcodeData = sprintf('%7.7d,%3.3d', $art['itemId'], 1);
-            $pdf->code128($h + $indent, $v + $labeloffset, $barcodeData, ($isize - (2 * $indent)) / 1.5, $blockheight - (2 * $labeloffset));
+            $pdf->code128($h + $indent, $v + $labelOffset, $barcodeData, ($isize - (2 * $indent)) / 1.5, $blockheight - (2 * $labelOffset));
         }
 
         $headerEnd = $v + $blockheight;
