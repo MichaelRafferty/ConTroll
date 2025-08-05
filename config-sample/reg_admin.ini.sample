@@ -157,6 +157,8 @@ oauthhrs=8
 ; virtualBtn = text for the virtual portal button
 ; virtualKey = Shared Secret Key for Virtual JWT signing
 ; virtualChild = Allow Child to attend virtual 0=no, 1=yes
+; addlVirtual = comma separated list of items not primary that are virtual elegible
+; noVirtual = comma separated list of items that are primary and that should not have virtual access
 
 [controll]
 ; useportal - does this installation use the portal, 1 = yes, 0 = no
