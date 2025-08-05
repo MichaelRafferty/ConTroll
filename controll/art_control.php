@@ -40,12 +40,7 @@ $regions = array();
 while($region = $regionsR->fetch_assoc()) {
     $regions[] = $region;
 }
-$debug = get_conf('debug');
-
-if (array_key_exists('controll_art_control', $debug))
-    $debug_art_control=$debug['controll_art_control'];
-else
-    $debug_art_control = 0;
+$debug_art_control = getConfValue('debug', 'controll_art_control', 0);
 
 ?>
 <div id='parameters' <?php if (!($debug_art_control & 4)) echo 'hidden'; ?>>

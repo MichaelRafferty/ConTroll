@@ -61,13 +61,9 @@ if ($reportAuth != $hdrAuth) {
     }
 }
 
-$debug = get_conf('debug');
-if (array_key_exists('controll_reports', $debug)) {
-    $dumpSQL = $debug['controll_reports'];
-    $log_conf = get_conf('log');
-    logInit($log_conf['controll']);
-} else {
-    $dumpSQL = 0;
+$dumpSQL = getConfValue('debug','controll_reports', 0);
+if ($dumpSQL > 0) {
+    logInit(getConfValue('log', 'controll', 'controllLog');
 }
 
 $response["reportTitle"] = $reportHdr['name'];

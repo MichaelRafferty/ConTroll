@@ -13,7 +13,6 @@ $conid = $con['id'];
 
 $conf = get_conf('con');
 $google = get_conf('google');
-$debug = get_conf('debug');
 $usps = get_conf('usps');
 $url = $google['redirect_base'];
 
@@ -56,11 +55,6 @@ page_init($page,
         $freeSelect .= "<option value='" . $free['id'] . "'>" . $free['label'] . "</option>\\n";
     }
 
-if (array_key_exists('controll_freebadge', $debug))
-    $debug_freebadge=$debug['controll_freebadge'];
-else
-    $debug_freebadge = 0;
-
 $useUSPS = false;
 if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
     $useUSPS = true;
@@ -69,7 +63,7 @@ $policies = getPolicies();
 $config_vars = array();
 $config_vars['label'] = $con['label'];
 $config_vars['regadminemail'] = $conf['regadminemail'];
-$config_vars['debug'] = $debug_freebadge;
+$config_vars['debug'] = getConfValue('debug', 'controll_freebadge', 0);;
 $config_vars['conid'] = $conid;
 $config_vars['required'] = getConfValue('reg', 'required', 'addr');
 $config_vars['useUSPS'] = $useUSPS;

@@ -127,11 +127,7 @@ function cc_getCurrency($con) : string {
 function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : array {
     $cc = get_conf('cc');
     $con = get_conf('con');
-    $debug = get_conf('debug');
-    if (array_key_exists('square', $debug))
-        $squareDebug = $debug['square'];
-    else
-        $squareDebug = 0;
+    $squareDebug = getConfValue('debug', 'square', 0);
     $id = null;
 
     $client = new SquareClient(
@@ -701,11 +697,7 @@ function cc_cancelOrder($source, $orderId, $useLogWrite = false, $locationId = n
     $cc = get_conf('cc');
     if ($locationId == null)
         $locationId = $cc['location'];
-    $debug = get_conf('debug');
-    if (array_key_exists('square', $debug))
-        $squareDebug = $debug['square'];
-    else
-        $squareDebug = 0;
+    $squareDebug = getConfValue('debug', 'square', 0);
 
     $order = new Order([
         'locationId' => $locationId,
@@ -749,11 +741,7 @@ function cc_cancelOrder($source, $orderId, $useLogWrite = false, $locationId = n
 // fetch an order to get its details
 function cc_fetchOrder($source, $orderId, $useLogWrite = false) : array {
     $cc = get_conf('cc');
-    $debug = get_conf('debug');
-    if (array_key_exists('square', $debug))
-        $squareDebug = $debug['square'];
-    else
-        $squareDebug = 0;
+    $squareDebug = getConfValue('debug', 'square', 0);
 
     $body = new Square\Orders\Requests\GetOrdersRequest([
         'orderId' => $orderId,
@@ -794,11 +782,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     $con = get_conf('con');
     $cc = get_conf('cc');
     $currency = cc_getCurrency($con);
-    $debug = get_conf('debug');
-    if (array_key_exists('square', $debug))
-        $squareDebug = $debug['square'];
-    else
-        $squareDebug = 0;
+    $squareDebug = getConfValue('debug', 'square', 0);
 
     $source = 'onlinereg';
     if (array_key_exists('source', $ccParams)) {
@@ -998,11 +982,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
 // fetch an payment to get its details
 function cc_getPayment($source, $paymentid, $useLogWrite = false) : array {
     $cc = get_conf('cc');
-    $debug = get_conf('debug');
-    if (array_key_exists('square', $debug))
-        $squareDebug = $debug['square'];
-    else
-        $squareDebug = 0;
+    $squareDebug = getConfValue('debug', 'square', 0);
 
     $body = new Square\Payments\Requests\GetPaymentsRequest([
         'paymentId' => $paymentid,

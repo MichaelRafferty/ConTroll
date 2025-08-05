@@ -14,12 +14,11 @@ global $config_vars;
 $con = get_conf('con');
 $conid = $con['id'];
 $portal_conf = get_conf('portal');
-$debug = get_conf('debug');
 $condata = get_con();
 
 $config_vars = array();
 $config_vars['label'] = $con['label'];
-$config_vars['debug'] = $debug['portal'];
+$config_vars['debug'] = getConfValue('debug', 'portal', 0);
 $config_vars['uri'] = $portal_conf['portalsite'];
 $config_vars['required'] = getConfValue('reg', 'required', 'addr');
 $loginId = null;

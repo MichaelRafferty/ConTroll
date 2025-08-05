@@ -31,15 +31,9 @@ page_init($page,
               $need_login);
 $con = get_conf("con");
 $conid=$con['id'];
-$debug = get_conf('debug');
 $buildNext = array_key_exists('buildNext', $_REQUEST);
 
-if (array_key_exists('controll_admin', $debug))
-    $debug_admin=$debug['controll_admin'];
-else
-    $debug_admin = 0;
-
-$config_vars['debug'] = $debug_admin;
+$config_vars['debug'] = getConfValue('debug', 'controll_admin', 0);
 $config_vars['conid'] = $conid;
 $config_vars['buildNext'] = $buildNext ? 1 : 0;
 if (array_key_exists('msg', $_REQUEST)) {
