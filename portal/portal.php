@@ -233,7 +233,14 @@ EOS;
     else
         $addlVirtual = explode(',', $addlVirtual);
 
+        $noVirtual = getConfValue('portal', 'noVirtual');
+    if ($noVirtual == '')
+        $noVirtual = [];
+    else
+        $noVirtual = explode(',', $noVirtual);
+
     $hasAddlVirtual = false;
+    $denyVirtual = false;
     if ($holderRegR !== false && $holderRegR->num_rows > 0) {
         while ($m = $holderRegR->fetch_assoc()) {
             // check if they have a WSFS rights membership (hasWSFS and hasNom)
@@ -260,6 +267,9 @@ EOS;
              // force additional virtual's from array
              if (in_array($m['memId'], $addlVirtual) && $m['status'] == 'paid')
                 $hasAddlVirtual = true;
+
+             if (in_array($m['memId'], $noVirtual) && $m['status'] == 'paid')
+                $denyVirtual = true;
 
             if ($m['memType'] == 'donation') {
                 $label = $dolfmt->formatCurrency((float)$m['actPrice'], $currency) . ' ' . $m['label'];
@@ -331,7 +341,7 @@ EOS;
     if (!$hasWSFS)
         $hasMeeting = false;
 
-    $hasVirtual = (($numPaidPrimary > 0) && ($worldCon || $numChild == 0)) || $hasAddlVirtual;
+    $hasVirtual = ($numPaidPrimary > 0 && ($worldCon || $numChild == 0) && $denyVirtual == false) || $hasAddlVirtual;
 
 // get people managed by this account holder and their registrations
     if ($loginType == 'p') {

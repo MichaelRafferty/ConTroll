@@ -253,8 +253,15 @@ EOS;
     else
         $addlVirtual = explode(',', $addlVirtual);
 
+    $noVirtual = getConfValue('portal', 'noVirtual');
+    if ($noVirtual == '')
+        $noVirtual = [];
+    else
+        $noVirtual = explode(',', $noVirtual);
+
     if ($holderRegR !== false && $holderRegR->num_rows > 0) {
         $hasAddlVirtual = false;
+        $denyVirtual = false;
         while ($m = $holderRegR->fetch_assoc()) {
             // check age to prevent virtual
             if ($m['ageType'] == 'child' || $m['ageType'] == 'kit')
@@ -262,6 +269,9 @@ EOS;
 
             if (in_array($m['memId'], $addlVirtual) && $m['status'] == 'paid')
                 $hasAddlVirtual = true;
+
+            if (in_array($m['memId'], $noVirtual) && $m['status'] == 'paid')
+                $denyVirtual = true;
 
             if (isPrimary($m, $conid) && $m['status'] == 'paid')
                 $numPaidPrimary++;
@@ -278,7 +288,7 @@ EOS;
         $holderRegR->free();
     }
 
-    $hasVirtual = (($numPaidPrimary > 0) && ($worldCon || $numChild == 0)) || $hasAddlVirtual;
+    $hasVirtual = ($numPaidPrimary > 0 && ($worldCon || $numChild == 0) && $denyVirtual == false) || $hasAddlVirtual;
     if ($hasVirtual) {
         if ($rights != '')
             $rights .= ',';
