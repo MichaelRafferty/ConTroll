@@ -18,7 +18,6 @@ $return500errors = true;
 $con = get_conf('con');
 $atcon = get_conf('atcon');
 $controll = get_conf('controll');
-$debug = get_conf('debug');
 $usps = get_conf('usps');
 $conid = $con['id'];
 $ajax_request_action = '';

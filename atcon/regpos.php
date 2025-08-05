@@ -12,7 +12,6 @@ if (!isSessionVar('user')) {
 }
 
 $con = get_conf('con');
-$debug = get_conf('debug');
 $usps = get_conf('usps');
 $vendor = get_conf('vendor');
 $controll = get_conf('controll');

@@ -42,7 +42,6 @@ $source = 'atcon';
 
 $log = get_conf('log');
 $con = get_conf('con');
-$debug = get_conf('debug');
 $ini = get_conf('reg');
 $cc = get_conf('cc');
 load_cc_procs();
