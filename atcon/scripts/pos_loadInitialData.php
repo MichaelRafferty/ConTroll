@@ -175,10 +175,7 @@ $response['gmemList'] = $ruleData['memList'];
 $response['gmemListIdx'] = $ruleData['memListIdx'];
 $response['gmemRules'] = $ruleData['memRules'];
 $response['policies'] = getPolicies();
-$cdebug = 0;
-if (array_key_exists('controll_registration', $debug))
-    $cdebug = $debug['controll_registration'];
-$response['debug'] = $cdebug;
+$response['debug'] = getConfValue('atcon','debug', 0);;
 $response['required'] = getConfValue('reg', 'required', 'addr');
 $response['useUSPS'] = $useUSPS;
 
