@@ -199,3 +199,8 @@ input:placeholder-shown {
     margin: 0;
 
 }
+
+span.req, .warn {
+    font-weight: bold;
+    color: red;
+}

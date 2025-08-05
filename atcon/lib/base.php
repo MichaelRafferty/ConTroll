@@ -36,24 +36,11 @@ function page_init($title, $tab, $css, $js, $configVars = null)
 {
     global $portalJSVersion, $libJSversion, $controllJSversion, $globalJSversion, $atJSversion, $exhibitorJSversion;
 
-    $con = get_conf('con');
-    $vendor = get_conf('vendor');
-    $label = $con['label'];
-    $debug = get_conf('debug');
-    if (array_key_exists('atcon', $debug))
-        $atconDebug = $debug['atcon'];
-    else
-        $atconDebug = 0;
-
-    if (array_key_exists('taxRate', $con))
-        $taxRate = $con['taxRate'];
-    else
-        $taxRate = 0;
-
-    if (array_key_exists('taxLabel', $con))
-        $taxLabel = $con['taxLabel'];
-    else
-        $taxLabel = '';
+    $label = getConfValue('con', 'label', 'Unlabeled');
+    $atconDebug = getConfValue('debug', 'atcon', 0);
+    $taxRate = getConfValue('con', 'taxRate', 0);
+    $taxLabel = getConfValue('con', 'taxLabel', '');
+    $test = getConfValue('atcon', 'test', 0);
 
     if ($configVars == null) {
         $configVars = array ();
@@ -114,7 +101,7 @@ function page_init($title, $tab, $css, $js, $configVars = null)
                     <div class="row">
                         <div class="col-sm-12">
                             <h1 class='title'>
-                                    <?php echo "$label $title"; ?>
+                                    <?php echo "$label $title"; if ($test) echo " <span class='warn'>(TEST)</span>"; ?>
                             </h1>
                         </div>
                     </div>
