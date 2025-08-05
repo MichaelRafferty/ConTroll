@@ -28,10 +28,8 @@ $return500errors = true;
 $con = get_conf('con');
 $atcon = get_conf('atcon');
 $controll = get_conf('controll');
-$debug = get_conf('debug');
 $usps = get_conf('usps');
 $conid = $con['id'];
-
 
 $useUSPS = false;
 if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
@@ -183,10 +181,7 @@ $response['gmemList'] = $ruleData['memList'];
 $response['gmemListIdx'] = $ruleData['memListIdx'];
 $response['gmemRules'] = $ruleData['memRules'];
 $response['policies'] = getPolicies();
-$cdebug = 0;
-if (array_key_exists('controll_registration', $debug))
-    $cdebug = $debug['controll_registration'];
-$response['debug'] = $cdebug;
+$response['debug'] = getConfValue('debug', 'controll_registration', 0);
 $config_vars['required'] = getConfValue('reg', 'required', 'addr');
 $response['useUSPS'] = $useUSPS;
 $response['userId'] = $_SESSION['user_perid'];

@@ -36,11 +36,7 @@ page_init($page,
               ),
                     $need_login);
 
-$con_conf = get_conf('con');
-if (array_key_exists('oneoff', $con_conf))
-    $oneoff = $con_conf['oneoff'];
-else
-    $oneoff = 0;
+$oneoff = getConfValue('con', 'oneoff', 0);
 if ($oneoff == null || $oneoff == '')
     $oneoff = 0;
 $controll = get_conf('controll');
@@ -51,22 +47,11 @@ if ($controll != null && array_key_exists('badgelistfilter', $controll)) {
 } else
     $badgeListFilter = "top";
 
-$conid = $con_conf['id'];
-$debug = get_conf('debug');
-
-if (array_key_exists('controll_regadmin', $debug))
-    $debug_regadmin=$debug['controll_regadmin'];
-else
-    $debug_regadmin = 0;
-
-if (array_key_exists('multioneday', $con_conf))
-    $multiOneDay =$con_conf['multioneday'];
-else
-    $multiOneDay = 0;
-
+$conid = getConfValue('con', 'id', '-1');
+$multiOneDay = getConfValue('con', 'multioneday', '0');
 $config_vars = array();
 $config_vars['pageName'] = 'regAdmin';
-$config_vars['debug'] = $debug_regadmin;
+$config_vars['debug'] = getConfValue('debug', 'controll_regadmin', 0);
 $config_vars['conid'] = $conid;
 $config_vars['multiOneDay'] = $multiOneDay;
 $config_vars['oneoff'] = $oneoff;
@@ -857,14 +842,16 @@ $config_vars['source'] = 'regstaff';
             </div>
             <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
                 <div id="receipt-div"></div>
-                <div id="regadminemail" hidden="true"><?php echo $con_conf['regadminemail'];?></div>
+                <div id="regadminemail" hidden="true"><?php echo getConfValue('con', 'regadminemail');?></div>
                 <div id="receipt-text" hidden="true"></div>
                 <div id="receipt-tables" hidden="true"></div>
             </div>
             <div class='modal-footer'>
                 <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Close</button>
                 <button class='btn btn-sm btn-primary' id='emailReceipt' onClick='receipt_email("payor")'>Email Receipt</button>
-                <button class='btn btn-sm btn-primary' id='emailReceiptReg' onClick='receipt_email("reg")'>Email Receipt to regadmin at <?php echo $con_conf['regadminemail'];?></button>
+                <button class='btn btn-sm btn-primary' id='emailReceiptReg' onClick='receipt_email("reg")'>Email Receipt to regadmin at <?php
+                        echo getConfValue('con', 'regadminemail');
+                ?></button>
             </div>
         </div>
     </div>

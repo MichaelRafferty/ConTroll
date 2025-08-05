@@ -9,7 +9,6 @@ $return500errors = true;
 
 $con = get_conf('con');
 $conid = $con['id'];
-$debug = get_conf('debug');
 
 $condata = get_con();
 $in_session = false;

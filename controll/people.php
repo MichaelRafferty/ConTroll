@@ -44,22 +44,16 @@ page_init($page,
 $con_conf = get_conf('con');
 $controll = get_conf('controll');
 $conid = $con_conf['id'];
-$debug = get_conf('debug');
 $usps = get_conf('usps');
 $policies = getPolicies();
 $interests = getInterests();
-
-if (array_key_exists('controll_people', $debug))
-    $debug_people=$debug['controll_people'];
-else
-    $debug_people = 0;
 
 $useUSPS = false;
 if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
     $useUSPS = true;
 
 // first the passed in parameters and the the modals
-$config_vars['debug'] = $debug_people;
+$config_vars['debug'] = getConfValue('debug', 'controll_people', 0);
 $config_vars['conid'] = $conid;
 $config_vars['useUSPS'] = $useUSPS;
 $config_vars['policies'] = $policies;

@@ -15,7 +15,6 @@ $cc = get_conf('cc');
 $con = get_conf('con');
 $conid = $con['id'];
 $vendor_conf = get_conf('vendor');
-$debug = get_conf('debug');
 $usps = get_conf('usps');
 load_cc_procs();
 
@@ -68,7 +67,7 @@ $config_vars['portalType'] = $portalType;
 $config_vars['portalName'] = $portalName;
 $config_vars['artistsite'] = $vendor_conf['artistsite'];
 $config_vars['vendorsite'] = $vendor_conf['vendorsite'];
-$config_vars['debug'] = $debug['vendors'];
+$config_vars['debug'] = getConfValue('debug', 'vendors', 0);
 $config_vars['required'] = $required;
 $config_vars['useUSPS'] = $useUSPS;
 $config_vars['allStar'] = $allStar;

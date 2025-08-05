@@ -38,7 +38,6 @@ $source = 'controll-mailinreg';
 $log = get_conf('log');
 $con = get_conf('con');
 $conid = $con['id'];
-$debug = get_conf('debug');
 $ini = get_conf('reg');
 $cc = get_conf('cc');
 load_cc_procs();

@@ -32,7 +32,6 @@ page_init($page,
     $need_login);
 
 $con = get_conf('con');
-$debug = get_conf('debug');
 $usps = get_conf('usps');
 $controll = get_conf('controll');
 $conid = $con['id'];
@@ -58,11 +57,6 @@ if ($policies != null) {
     }
 }
 
-if (array_key_exists('controll_registration', $debug)) {
-    $debug_registration = $debug['controll_registration'];
-} else
-    $debug_registration = 0;
-
 if (array_key_exists('useportal', $controll)) {
     $usePortal = $controll['useportal'];
 } else {
@@ -71,7 +65,7 @@ if (array_key_exists('useportal', $controll)) {
 
 $config_vars = array();
 $config_vars['label'] = $con['label'];
-$config_vars['debug'] = $debug_registration;
+$config_vars['debug'] = getConfValue('debug', 'controll_registration', 0);
 $config_vars['conid'] = $conid;
 $config_vars['mode'] = 'admin';
 $config_vars['regadminemail'] = $con['regadminemail'];

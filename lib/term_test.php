@@ -18,11 +18,6 @@ function createDeviceCode($name, $locationId, $useLogWrite = false) : array {
 
 function term_getStatus($name, $useLogWrite = false) : array | null {
     $cc = get_conf('cc');
-    $debug = get_conf('debug');
-    if (array_key_exists('square', $debug))
-        $squareDebug = $debug['square'];
-    else
-        $squareDebug = 0;
 
     // get the device name
     $terminal = getTerminal($name);
@@ -95,4 +90,21 @@ function term_getPayStatus($name, $payRef, $useLogWrite = false) : array {
     );
 
     return $checkout;
+}
+
+function term_printReceipt($name, $paymentId, $useLogWrite = false) : array {
+    $terminal = get_terminak($name);
+    $request = array(
+        'id' => 'P' . time(),
+        'action' => array(
+            'device_id' => $terminal['deviceId'],
+            'type' => 'RECEIPT',
+            'receipt_options' => array(
+                'payment_id' => $paymentId,
+                'print_only' => true
+            ),
+        ),
+    );
+
+    return $request;
 }

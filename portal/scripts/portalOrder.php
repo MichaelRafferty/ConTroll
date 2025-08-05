@@ -19,7 +19,6 @@ $condata = get_con();
 $conid=$condata['id'];
 $conf = get_conf('con');
 $portal_conf = get_conf('portal');
-$debug = get_conf('debug');
 $ini = get_conf('reg');
 $log = get_conf('log');
 $ccauth = get_conf('cc');

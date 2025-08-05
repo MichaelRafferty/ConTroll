@@ -7,7 +7,6 @@ global $config_vars;
 $con = get_conf('con');
 $conid = $con['id'];
 $portal_conf = get_conf('portal');
-$debug = get_conf('debug');
 $ini = get_conf('reg');
 $condata = get_con();
 
@@ -39,7 +38,7 @@ else
 
 $config_vars = array();
 $config_vars['label'] = $con['label'];
-$config_vars['debug'] = $debug['portal'];
+$config_vars['debug'] = getConfValue('debug', 'portal', 0);
 $config_vars['conid'] = $conid;
 $config_vars['uri'] = $portal_conf['portalsite'];
 $config_vars['regadminemail'] = $con['regadminemail'];

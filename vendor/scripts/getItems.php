@@ -8,7 +8,6 @@ $return500errors = true;
 
 $con = get_conf('con');
 $conid = $con['id'];
-$debug = get_conf('debug');
 $ini = get_conf('reg');
 
 $condata = get_con();

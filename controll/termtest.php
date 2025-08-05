@@ -29,7 +29,6 @@ page_init($page,
               $need_login);
 $con = get_conf("con");
 $conid=$con['id'];
-$debug = get_conf('debug');
 $cc = get_conf('cc');
 
 $log = get_conf('log');

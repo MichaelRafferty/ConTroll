@@ -6,7 +6,6 @@ global $config_vars;
 $cc = get_conf('cc');
 $con = get_conf('con');
 $conid = $con['id'];
-$debug = get_conf('debug');
 
 $condata = get_con();
 

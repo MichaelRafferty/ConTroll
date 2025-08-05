@@ -24,8 +24,7 @@ $minCon = $conConf['minComp'];
 $maxLen = $conConf['compLen'];
 $conLen = $conConf['conLen'];
 
-$debug = get_conf('debug');
-if(!array_key_exists('controll_stats', $debug)) { $debug['controll_stats']=0;}
+$debug_stats = getConfValiue('debug', 'controll_stats', 0);
 if(isset($_GET['conid'])) {
     $conid=$_GET['conid'];
     $con = dbSafeQuery('SELECT id, name, label, startdate, DATE_ADD(enddate, INTERVAL 1 DAY) as enddate FROM conlist WHERE id=?;', 'i', array($conid))->fetch_assoc();
@@ -216,7 +215,7 @@ ORDER BY R.conid;
 EOQ;
         $maxRegR = dbSafeQuery($maxRegQ, 'i', array($minCon));
         $response['maxReg'] = array();
-        if ($debug['controll_stats'] & 1) {  // make up 10 years of history data so there's something there.
+        if ($debug_stats & 1) {  // make up 10 years of history data so there's something there.
             for ($i = 10; $i > 0; $i--) {
                 $rand = random_int(5,50);
                 $rand2 = random_int(1,$rand-1);
@@ -246,7 +245,7 @@ EOQ;
             $lastDebugValue = 0;
             if ((!array_key_exists($preconR['conid'], $preconResponse)) || ($preconResponse[$preconR['conid']] === null))
             {$preconResponse[$preconR['conid']]=array();}
-            if($preconR['conid'] == $minCon && ($debug['controll_stats'] & 1)) {
+            if($preconR['conid'] == $minCon && ($debug_stats & 1)) {
                 for($i = 10 ; $i > 0; $i--) {
                     $rand = random_int(0,$preconR['cnt_all']*2);
                     if ($preconResponse[$minCon - $i*5] === null) {$preconResponse[$minCon - $i*5]=array();}

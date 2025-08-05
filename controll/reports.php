@@ -24,16 +24,9 @@ $con = get_conf("con");
 $controll = get_conf("controll");
 $conid=$con['id'];
 
-$debug = get_conf('debug');
-
-if (array_key_exists('controll_reports', $debug))
-    $debug_reports=$debug['controll_reports'];
-else
-    $debug_reports = 0;
-
 $config_vars = array();
 $config_vars['pageName'] = 'reports';
-$config_vars['debug'] = $debug_reports;
+$config_vars['debug'] = getConfValue('debug', 'controll_reports', 0);
 $config_vars['conid'] = $conid;
 
 // loop ver the groups directory and local groups directory finding groups to make into tabs

@@ -12,15 +12,9 @@ if(!$need_login or !checkAuth($need_login['sub'], $page)) {
 
 $con = get_con();
 $conid = $con['id'];
-$debug = get_conf('debug');
 $regConf = get_conf('reg');
 $conConf = get_conf('con');
 $usps = get_conf('usps');
-if (array_key_exists('controll_finance', $debug))
-    $debug_finance = $debug['controll_finance'];
-else
-    $debug_finance = 0;
-
 
 $cdn = getTabulatorIncludes();
 page_init($page,
@@ -41,7 +35,7 @@ $config_vars = array();
 $config_vars['pageName'] = 'finance';
 $config_vars['label'] = $con['label'];
 $config_vars['vemail'] = $conConf['regadminemail'];
-$config_vars['debug'] = $debug_finance;
+$config_vars['debug'] = getConfValue('debug', 'controll_finance', 0);
 $config_vars['conid'] = $conid;
 $paymentPlans = getPlanConfig();
 // finance needs membership list (not counting free items) and category list
