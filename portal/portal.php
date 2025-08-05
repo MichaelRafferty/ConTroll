@@ -331,7 +331,7 @@ EOS;
     if (!$hasWSFS)
         $hasMeeting = false;
 
-    $hasVirtual = ($numPaidPrimary > 0 && $numChild == 0 && ((!$worldCon) || $hasWSFS)) || $hasAddlVirtual;
+    $hasVirtual = (($numPaidPrimary > 0) && ($worldCon || $numChild == 0)) || $hasAddlVirtual;
 
 // get people managed by this account holder and their registrations
     if ($loginType == 'p') {

@@ -165,7 +165,6 @@ if ($Virtual) {
     // if we got to this routine, virtual was alredy verified in portal, but we can just check for the attending part and skip the WSFS part here.
     $numPaidPrimary = 0;
     $numChild = 0;
-    $hasWSFS = false;
 
 // get the account holder's registrations
     $holderRegSQL = <<<EOS
@@ -247,11 +246,6 @@ EOS;
     //			any type ‘virtual’ OR
     //			any type ‘oneday'
     $memberships = [];
-    $addlWSFS = getConfValue('portal', 'addlWSFS');
-    if ($addlWSFS == '')
-        $addlWSFS = [];
-    else
-        $addlWSFS = explode(',', $addlWSFS);
 
     $addlVirtual = getConfValue('portal', 'addlVirtual');
     if ($addlVirtual == '')
@@ -262,11 +256,6 @@ EOS;
     if ($holderRegR !== false && $holderRegR->num_rows > 0) {
         $hasAddlVirtual = false;
         while ($m = $holderRegR->fetch_assoc()) {
-            // check if they have a WSFS rights membership (hasWSFS and hasNom)
-            if (($m['memCategory'] == 'wsfs' || $m['memCategory'] == 'dealer' || in_array($m['memId'], $addlWSFS)) && $m['status'] == 'paid') {
-                $hasWSFS = true;
-            }
-
             // check age to prevent virtual
             if ($m['ageType'] == 'child' || $m['ageType'] == 'kit')
                 $numChild++;
@@ -289,7 +278,7 @@ EOS;
         $holderRegR->free();
     }
 
-    $hasVirtual = (($numPaidPrimary > 0) && ((!$worldCon) || $hasWSFS) && ($worldCon || $numChild == 0)) || $hasAddlVirtual;
+    $hasVirtual = (($numPaidPrimary > 0) && ($worldCon || $numChild == 0)) || $hasAddlVirtual;
     if ($hasVirtual) {
         if ($rights != '')
             $rights .= ',';
