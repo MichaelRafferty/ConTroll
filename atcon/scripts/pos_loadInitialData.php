@@ -175,7 +175,7 @@ $response['gmemList'] = $ruleData['memList'];
 $response['gmemListIdx'] = $ruleData['memListIdx'];
 $response['gmemRules'] = $ruleData['memRules'];
 $response['policies'] = getPolicies();
-$response['debug'] = getConfValue('atcon','debug', 0);;
+$response['debug'] = getConfValue('debug','atcon', 0);;
 $response['required'] = getConfValue('reg', 'required', 'addr');
 $response['useUSPS'] = $useUSPS;
 
