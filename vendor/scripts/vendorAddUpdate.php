@@ -117,8 +117,8 @@ EOS;
         if ($artistName != null) {
             $exhibitorInsertQ = <<<EOS
 INSERT INTO exhibitors (artistName, exhibitorName, exhibitorEmail, exhibitorPhone, salesTaxId, website, description, password, need_new, 
-                     addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, publicity) 
-VALUES (?,?,?,?,?,?,?,?,0,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
+                     addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, publicity, notes) 
+VALUES (?,?,?,?,?,?,?,?,0,?,?,?,?,?,?,?,?,?,?,?,?,?,?, '');
 EOS;
             $typestr = 'sssssssssssssssssssssi';
             $paramarr = array (
@@ -148,8 +148,8 @@ EOS;
         } else {
             $exhibitorInsertQ = <<<EOS
 INSERT INTO exhibitors (exhibitorName, exhibitorEmail, exhibitorPhone, salesTaxId, website, description, password, need_new, 
-                     addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, publicity) 
-VALUES (?,?,?,?,?,?,?,0,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
+                     addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, publicity, notes) 
+VALUES (?,?,?,?,?,?,?,0,?,?,?,?,?,?,?,?,?,?,?,?,?,?, '');
 EOS;
             $typestr = 'ssssssssssssssssssssi';
             $paramarr = array (
