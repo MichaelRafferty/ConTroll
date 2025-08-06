@@ -3124,7 +3124,6 @@ addUnpaid(tid) {
         this.#find_tab.disabled = true;
         this.#add_tab.disabled = true;
         this.#review_tab.disabled = true;
-        cart.hideStartOver();
         cart.showNext();
         cart.freeze();
         this.#current_tab = this.#print_tab;
@@ -3136,6 +3135,7 @@ addUnpaid(tid) {
             this.#printedObj = new map();
         }
         cart.drawCart();
+        cart.hideStartOver();
 
         // draw the print screen
         var print_html = `<div id='printBody' class="container-fluid form-floating">
