@@ -15,7 +15,7 @@ require_once('../../lib/db_functions.php');
 require_once('../../lib/pdfPrintArtShowSheets.php');
 
 db_connect();
-$appSessionPrefix = 'Ctrl/Vendor/';
+$appSessionPrefix = 'Ctrl/Exhibitor/';
 $result = session_start();
 
 $response = array('post' => $_POST, 'get' => $_GET);
