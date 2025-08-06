@@ -24,7 +24,7 @@ $minCon = $conConf['minComp'];
 $maxLen = $conConf['compLen'];
 $conLen = $conConf['conLen'];
 
-$debug_stats = getConfValiue('debug', 'controll_stats', 0);
+$debug_stats = getConfValue('debug', 'controll_stats', 0);
 if(isset($_GET['conid'])) {
     $conid=$_GET['conid'];
     $con = dbSafeQuery('SELECT id, name, label, startdate, DATE_ADD(enddate, INTERVAL 1 DAY) as enddate FROM conlist WHERE id=?;', 'i', array($conid))->fetch_assoc();
