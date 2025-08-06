@@ -1,6 +1,6 @@
 <?php
 require_once('../../lib/global.php');
-
+global $appSessionPrefix;
 loadConfFile();
 
 if (getConfValue('reg','https') <> 0) {
