@@ -44,7 +44,7 @@ function show_message(message, type = 'success', div='result_message') {
 }
 
 function showAjaxError(jqXHR, textStatus, errorThrown, divElement = null) {
-    var message = '';
+    var message;
     if (jqXHR && jqXHR.responseText) {
         message = jqXHR.responseText;
     } else {
@@ -57,9 +57,42 @@ function showAjaxError(jqXHR, textStatus, errorThrown, divElement = null) {
 }
 
 // validate RFC-5311/2 addresses regexp pattern from https://regex101.com/r/3uvtNl/1, found by searching validate RFC-5311/2  addresses
+// first determine if we can use a regexp for this
+
+var validateAddressRegexpOK = true;
+var validateEmailRegexp = null;
+if (navigator.userAgent.includes('Safari') &&  !navigator.userAgent.includes('Chrome')) {
+    var safariOSVersion = navigator.userAgent.replace(/.*Version\//, '');
+    safariOSVersion = safariOSVersion.replace(/([0-9]+\.[0-9]+).*/, '$1');
+    validateAddressRegexpOK = safariOSVersion >= 16.4;
+    console.log('Safari ' + safariOSVersion + ' ' + validateAddressRegexpOK);
+}
+if (validateAddressRegexpOK)
+    validateEmailRegexp =  new RegExp('^((?:[A-Za-z0-9!#$%&' + "'" + '*+\-\/=?^_`{|}~]|(?<=^|\.)"|"(?=$|\.|@)|(?<=".*)' +
+        '[ .](?=.*")|(?<!\.)\.){1,64})(@)((?:[A-Za-z0-9.\-])*(?:[A-Za-z0-9])\.(?:[A-Za-z0-9]){2,})$', 'gm');
+
 function validateAddress(addr) {
-    const regPattern = /^((?:[A-Za-z0-9!#$%&'*+\-\/=?^_`{|}~]|(?<=^|\.)"|"(?=$|\.|@)|(?<=".*)[ .](?=.*")|(?<!\.)\.){1,64})(@)((?:[A-Za-z0-9.\-])*(?:[A-Za-z0-9])\.(?:[A-Za-z0-9]){2,})$/gm;
-    return regPattern.test(String(addr).toLowerCase());
+   if (validateAddressRegexpOK)
+       return validateEmailRegexp.test(String(addr).toLowerCase());
+
+   // ok we can't do it by regexp, use a simpler algorithm
+    let atSymbol = addr.indexOf("@");
+    let dotSymbol = addr.lastIndexOf(".");
+    let spaceSymbol = addr.indexOf(" ");
+    let doubleDotSymbol = addr.indexOf("..");
+
+    if ((atSymbol != -1) &&
+        (atSymbol != 0) &&
+        (dotSymbol != -1) &&
+        (dotSymbol != 0) &&
+        (dotSymbol > atSymbol + 1) &&
+        (addr.length > dotSymbol + 1) &&
+        (spaceSymbol == -1) &&
+        (doubleDotSymbol == -1)) {
+        return true;
+    }
+
+    return false;
 }
 
 // convert a form post string to an arrray
