@@ -63,7 +63,7 @@ if ($reportAuth != $hdrAuth) {
 
 $dumpSQL = getConfValue('debug','controll_reports', 0);
 if ($dumpSQL > 0) {
-    logInit(getConfValue('log', 'controll', 'controllLog');
+    logInit(getConfValue('log', 'controll', 'controllLog'));
 }
 
 $response["reportTitle"] = $reportHdr['name'];
