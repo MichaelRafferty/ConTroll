@@ -1,5 +1,4 @@
-
- How to make a badgeLabel.ps File
+# How to make a badgeLabel.ps File
 An optional feature to ConTroll badge labels is the ability to embed a graphic in the background to brand the label and make them slightly harder to fake.
 This document describes how to create such a file.
 
