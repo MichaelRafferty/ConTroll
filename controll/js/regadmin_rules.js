@@ -525,13 +525,15 @@ class rulesSetup {
                     controlled += rule.name;
                 }
 
-                var steps = Object.keys(ruleset);
-                for (var s = 0; s < steps.length; s++) {
-                    var step = ruleset[steps[s]];
-                    if (this.#checkItem(row, step)) {
-                        if (usedby != '')
-                            usedby += ',';
-                        usedby += step.name + '.' + step.step;
+                if (ruleset) {
+                    var steps = Object.keys(ruleset);
+                    for (var s = 0; s < steps.length; s++) {
+                        var step = ruleset[steps[s]];
+                        if (this.#checkItem(row, step)) {
+                            if (usedby != '')
+                                usedby += ',';
+                            usedby += step.name + '.' + step.step;
+                        }
                     }
                 }
             }
