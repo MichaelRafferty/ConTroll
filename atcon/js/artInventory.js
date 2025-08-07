@@ -395,18 +395,18 @@ function draw_cart_row(rownum) {
             }
 
             var min_price=item['min_price'];
-            if (min_price == null || min_price.toLowerCase() == 'null')
+            if (min_price == null || min_price.toString().toLowerCase() == 'null')
                 min_price = 0;
-            if (item['final_price'] != null && item['final_price'].toLowerCase != 'null') {
+            if (item['final_price'] != null && item['final_price'].toString().toLowerCase() != 'null') {
                 min_price = item['final_price'];
             }
 
             var bidder = item['bidder'];
-            if (bidder == null || bidder.toLowerCase == 'null') {
+            if (bidder == null || bidder.toString().toLowerCase() == 'null') {
                 bidder = '';
             }
             var final_price = item['final_price'];
-            if (final_price == null || final_price.toLowerCase == 'null') {
+            if (final_price == null || final_price.toString().toLowerCase() == 'null') {
                 final_price = '';
             }
 
