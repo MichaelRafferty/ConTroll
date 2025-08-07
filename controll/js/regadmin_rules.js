@@ -114,13 +114,13 @@ class rulesSetup {
 
     // globals before open
     constructor() {
-        this.#debug =  Number(config['debug']);
-        this.#conid =  Number(config['conid']);
+        this.#debug =  Number(config.debug);
+        this.#conid =  Number(config.conid);
         if (this.#debug & 2) {
             this.#debugVisible = true;
         }
-        config['debug'] = this.#debug;
-        config['conid'] = this.#conid;
+        config.debug = this.#debug;
+        config.conid = this.#conid;
 
         this.#messageDiv = document.getElementById('test');
         this.#rulesPane = document.getElementById('rules-pane');
@@ -307,18 +307,18 @@ class rulesSetup {
             this.#rulesTable.destroy();
             this.#rulesTable = null;
         }
-        if (!data['memRules']) {
+        if (!data.memRules) {
             show_message("Error loading rules", 'error');
             return;
         }
-        memRules = data['memRules'];
-        memTypes = data['memTypes'];
-        memCategories = data['memCategories'];
-        ageList = data['ageList'];
-        ageListIdx = data['ageListIdx'];
-        memList = data['memListFull'];
-        memListFull = data['memListFull'];
-        memListIdx = data['memListFullIdx'];
+        memRules = data.memRules;
+        memTypes = data.memTypes;
+        memCategories = data.memCategories;
+        ageList = data.ageList;
+        ageListIdx = data.ageListIdx;
+        memList = data.memListFull;
+        memListFull = data.memListFull;
+        memListIdx = data.memListFullIdx;
 
         // make arrays from objects
         memTypesArr = [];
@@ -1522,16 +1522,17 @@ class rulesSetup {
 
     // save complete - reset buttons, refresh data
     saveSuccess(data) {
-        if (data['error']) {
-            show_message(data['error'], 'error');
+        if (data.error) {
+            show_message(data.error, 'error');
             return;
         }
-        if (data['warn']) {
-            show_message(data['warn'], 'warn');
+        if (data.warn) {
+            show_message(data.warn, 'warn');
             return;
         }
         this.open();
-        show_message(data['success'], 'success');
+        if (data.success)
+            show_message(data.success, 'success');
     }
     
     // on close of the pane, clean up the items
