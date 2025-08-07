@@ -565,32 +565,45 @@ class rulesSetup {
             this.updatePreviewPane();
     }
 
+    // check if the item refers to the memList row
     #checkItem(row, item) {
         var match = true;
         if (match && item.ageList != null && item.ageList != '') {
-            if (!item.hasOwnProperty('ageListArray')) {
+            if (!item.ageListArray) {
                 item.ageListArray = item.ageList.split(',');
             }
             if (!item.ageListArray.includes(row.memAge))
                 match = false;
         }
         if (match && item.catList != null && item.catList != '') {
-            if (!item.hasOwnProperty('catListArray')) {
+            if (!item.catListArray) {
                 item.catListArray = item.catList.split(',');
             }
             if (!item.catListArray.includes(row.memCategory))
                 match = false;
         }
         if (match && item.typeList != null && item.typeList != '') {
-            if (!item.hasOwnProperty('typeListArray')) {
+            if (!item.typeListArray) {
                 item.typeListArray = item.typeList.split(',');
             }
             if (!item.typeListArray.includes(row.memType))
                 match = false;
         }
         if (match && item.memList != null && item.memList != '') {
-            if (!item.hasOwnProperty('memListArray')) {
+            if (!item.memListArray) {
                 item.memListArray = item.memList.split(',');
+                if (!item.memListArray) {
+                    console.log("split failed?");
+                    console.log(item);
+                }
+            }
+            if (!row.memId) {
+                console.log('no memId in row');
+                console.log(row);
+            }
+            if (!item.memListArray) {
+                console.log('no memListArray in item');
+                console.log(item);
             }
             if (!item.memListArray.includes(row.memId.toString()))
                 match = false;
@@ -858,6 +871,7 @@ class rulesSetup {
     editRuleStepSave(dosave) {
         // save the results back to the underlying table
         if (dosave) {
+            clear_message('result_message_editRuleStep')
             if (this.#debug > 0) console.log('editRuleStepSave:' + this.#editRuleStepItem);
             // store all the fields back into the table row
             var row = this.#ruleStepsTable.getRow(this.#editRuleStepItem);

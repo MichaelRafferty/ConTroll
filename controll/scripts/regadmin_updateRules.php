@@ -136,7 +136,15 @@ foreach ($rules as $name => $rule) {
         $memList = null;
         if (array_key_exists('memList', $ruleItem) && $ruleItem['memList'] != '')
             $memList = $ruleItem['memList'];
-        
+
+        if ($ruleItem['origStep'] == 0) {
+            error_log("for $ruleName, step: " . $ruleItem['step'] . " origStep is 0.");
+            continue;
+        }
+        if ($ruleItem['step'] == 0) {
+            error_log("for $ruleName, origStep: " . $ruleItem['origStep'] . ' step is 0.');
+            continue;
+        }
         $numupd += dbSafeCmd($uRI, 'sisssssssii', array($ruleName, $ruleItem['step'], $ruleItem['ruleType'], $ruleItem['applyTo'],
             $typeList, $catList, $ageList, $memList, $rule['name'], $ruleItem['origStep'], $conid));
     }

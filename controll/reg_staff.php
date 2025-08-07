@@ -589,7 +589,7 @@ $config_vars['source'] = 'regstaff';
                                                 Not All (No reg can match all [and within group, and between groups])
                                             </option>
                                             <option value='limitAge'>
-                                                Limit Age (One reg must match any (like needany) but the age check is manadatory)
+                                                Limit Age (One reg must match any (like needany) but age check is manadatory)
                                             </option>
                                             <option value='currentAge'>
                                                 Current Age (Future, currently not used)
