@@ -395,7 +395,7 @@ function draw_cart_row(rownum) {
             }
 
             var min_price=item['min_price'];
-            if (min_price.toLowerCase() == 'null')
+            if (min_price == null || min_price.toLowerCase() == 'null')
                 min_price = 0;
             if (item['final_price'] != null && item['final_price'].toLowerCase != 'null') {
                 min_price = item['final_price'];
