@@ -345,7 +345,9 @@ class rulesSetup {
 
         // load the filter arrays
         this.#filterTypes = Object.keys(memTypes);
-        this.#filterAges = Object.keys(ageList);
+        for (i = 0; i < ageList.length; i++) {
+            this.#filterAges.push(ageList[i].ageType);
+        }
         this.#filterCats = Object.keys(memCategories);
 
         this.#rulesDirty = false;
