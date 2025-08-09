@@ -344,13 +344,26 @@ class PosCart {
 
     // add search result_perinfo record to the cart
     add(p, first=false) {
+        var i;
         var pindex = this.#cartPerinfo.length;
-        if (first)
+        if (first) {
             this.#cartPerinfo.unshift(make_copy(p));
+            // need to renumber the existing cart
+            for (pindex = 1; i < this.#cartPerinfo.length; pindex++) {
+                this.#cartPerinfo[pindex].index = i;
+                this.#cartPerinfoMap.set(this.#cartPerinfo[pindex].perid, pindex);
+                var mrows = this.#cartPerinfo[pindex].memberships;
+                for (var mrownum in mrows) {
+                    this.#cartPerinfo[pindex].memberships[mrownum].index = mrownum;
+                    this.#cartPerinfo[pindex].memberships[mrownum].pindex = pindex;
+                }
+            }
+            pindex = 0;
+        }
         else {
             // see if this person is the manager of anyone in the cart
             var added = false;
-            for (var i = 0; i < this.#cartPerinfo.length; i++) {
+            for (i = 0; i < this.#cartPerinfo.length; i++) {
                 if (this.#cartPerinfo[i].managedBy == p.perid) {
                     this.#cartPerinfo.unshift(make_copy(p));
                     added = true;
