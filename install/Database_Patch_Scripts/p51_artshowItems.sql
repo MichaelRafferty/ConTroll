@@ -130,4 +130,4 @@ ALTER TABLE exhibitorYears MODIFY COLUMN contactPhone varchar(32) NOT NULL DEFAU
 ALTER TABLE exhibitorYears MODIFY COLUMN contactPassword varchar(64) NOT NULL DEFAULT '';
 ALTER TABLE exhibitorYears MODIFY COLUMN notes text NOT NULL;
 
-INSERT INTO patchLog(id, name) VALUES(xx, 'artshowItems');
+INSERT INTO patchLog(id, name) VALUES(51, 'artshowItems');
