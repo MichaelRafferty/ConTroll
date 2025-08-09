@@ -140,8 +140,11 @@ class customTextSetup {
     }
 
     toHTML(cell,  formatterParams, onRendered) {
-        var item = cell.getValue();
-        return item;
+        var text = cell.getValue();
+        var item = cell.getData().txtItem;
+        if (item == 'text')
+            text = text.replaceAll("\n", '<br/>');
+        return text;
     }
 
     editCustomText(index) {
