@@ -2,6 +2,12 @@
  * Upgrades/changes to art show items
  */
 
+/*
+ * WARNING: These alter table statements for notes may fail, some databases seem to be missing this field
+ */
+ALTER TABLE exhibitors ADD COLUMN IF NOT EXISTS `notes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+ALTER TABLE exhibitorYears ADD COLUMN IF NOT EXISTS `notes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+
 /* delete the auth artshow, as obsolete replaced by artsales and artinventory */
 DELETE FROM atcon_auth WHERE auth = 'artshow';
 ALTER TABLE atcon_auth MODIFY COLUMN  auth enum('data_entry','cashier','manager','artinventory','artsales','vol_roll');
