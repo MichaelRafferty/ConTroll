@@ -278,6 +278,7 @@ class MembershipRules {
         var checkMore= true;
         var stepPass = step.ruleType == 'notAny' || step.ruleType == 'notAll';
         var mlist = null;
+        var row;
 
         if (step.applyTo == 'all') {
             mlist = this.#allMemberships;
@@ -320,25 +321,25 @@ class MembershipRules {
             if (step.ruleType == 'needAll' || step.ruleType == 'notall') {
                 // set up the check matrix for 'All' rules
                 if (step.typeList != null && step.typeList != '') {
-                    for (var row in step.typeListArray) {
-                        this.#allTypes[typeListArray[row]] = false;
+                    for (row in step.typeListArray) {
+                        this.#allTypes[step.typeListArray[row]] = false;
                     }
                 }
 
                 if (step.catList != null && step.catList != '') {
-                    for (var row in step.catListArray) {
-                        this.#allCats[catListArray[row]] = false;
+                    for (row in step.catListArray) {
+                        this.#allCats[step.catListArray[row]] = false;
                     }
                 }
 
                 if (step.ageList != null && step.ageList != '') {
-                    for (var row in step.ageListArray) {
-                        this.#allAges[ageListArray[row]] = false;
+                    for (row in step.ageListArray) {
+                        this.#allAges[step.ageListArray[row]] = false;
                     }
                 }
 
                 if (step.memList != null && step.memList != '') {
-                    for (var row in step.memListArray) {
+                    for (row in step.memListArray) {
                         this.#allMems[step.memListArray[row]] = false;
                     }
                 }
@@ -407,7 +408,7 @@ class MembershipRules {
             }
         } // end of membership list loop
         if (step.ruleType == 'needAll') {
-            for (var row in this.#allTypes) {
+            for (row in this.#allTypes) {
                 if (this.#allTypes[[row].toString()] == false) {
                     if (this.#debug & 16) {
                         console.log("Step return false on needAll on type");
@@ -415,7 +416,7 @@ class MembershipRules {
                     return false;
                 }
             }
-            for (var row in this.#allCats) {
+            for (row in this.#allCats) {
                 if (this.#allCats[[row].toString()] == false) {
                     if (this.#debug & 16) {
                         console.log("Step return false on needAll on categoy");
@@ -423,7 +424,7 @@ class MembershipRules {
                     return false;
                 }
             }
-            for (var row in this.#allMems) {
+            for (row in this.#allMems) {
                 if (this.#allMems[[row].toString()] == false) {
                     if (this.#debug & 16) {
                         console.log("Step return false on needAll on memId");
@@ -431,7 +432,7 @@ class MembershipRules {
                     return false;
                 }
             }
-            for (var row in this.#allAges) {
+            for (row in this.#allAges) {
                 if (this.#allAges[[row].toString()] == false) {
                     if (this.#debug & 16) {
                         console.log("Step return false on needAll on age");
@@ -444,7 +445,7 @@ class MembershipRules {
             }
             return true;
         } else if (step.ruleType == 'notall') {
-            for (var row in this.#allTypes) {
+            for (row in this.#allTypes) {
                 if (this.#allTypes[[row].toString()]) {
                     if (this.#debug & 16) {
                         console.log("Step return false on notAll on type");
@@ -452,7 +453,7 @@ class MembershipRules {
                     return false;
                 }
             }
-            for (var row in this.#allCats) {
+            for (row in this.#allCats) {
                 if (this.#allCats[[row].toString()]) {
                     if (this.#debug & 16) {
                         console.log("Step return false on notAll on category");
@@ -460,7 +461,7 @@ class MembershipRules {
                     return false;
                 }
             }
-            for (var row in this.#allMems) {
+            for (row in this.#allMems) {
                 if (this.#allMems[[row].toString()]) {
                     if (this.#debug & 16) {
                         console.log("Step return false on notAll on memId");
@@ -468,7 +469,7 @@ class MembershipRules {
                     return false;
                 }
             }
-            for (var row in this.#allAges) {
+            for (row in this.#allAges) {
                 if (this.#allAges[[row].toString()]) {
                     if (this.#debug & 16) {
                         console.log("Step return false on notAll on age");
@@ -491,7 +492,7 @@ class MembershipRules {
     // checkAny - check if a membership matches any of the requirements
     checkAny(step, mbr, skipSelfChecks) {
         // any one of anything defined succeeds the rule test
-        if (step.step = 999 && skipSelfChecks == true)
+        if (step.step == 999 && skipSelfChecks == true)
             return false; // shortcut this check for removes, as its only a not itself for adds.
 
         if (step.typeList != null && step.typeList != '') {
