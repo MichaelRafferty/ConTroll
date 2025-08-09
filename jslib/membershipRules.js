@@ -197,7 +197,7 @@ class MembershipRules {
         // to apply, each of the items (if present) typeList, catList, ageList and memList must match the memList item
         for (var key in memRules) {
             var rule = memRules[key];
-            if (rule.typeList != null) {
+            if (rule.typeList != null && rule.typeList != '') {
                 if (rule.typeListArray.indexOf(mem.memType.toString()) == -1) {
                     if (this.#debug & 8) {
                         console.log("testMembership: continue-type not found " + mem.memType.toString());
@@ -205,7 +205,7 @@ class MembershipRules {
                     continue;
                 }
             }
-            if (rule.catList != null) {
+            if (rule.catList != null && rule.catList != '') {
                 if (rule.catListArray.indexOf(mem.memCategory.toString()) == -1) {
                     if (this.#debug & 8) {
                         console.log("testMembership: continue-category not found " + mem.memCategory.toString());
@@ -213,7 +213,7 @@ class MembershipRules {
                     continue;
                 }
             }
-            if (rule.ageList != null) {
+            if (rule.ageList != null && rule.ageList != '') {
                 if (rule.ageListArray.indexOf(mem.memAge.toString()) == -1) {
                     if (this.#debug & 8) {
                         console.log("testMembership: continue-age not found " + mem.memAge.toString());
@@ -221,7 +221,7 @@ class MembershipRules {
                     continue;
                 }
             }
-            if (rule.memList != null) {
+            if (rule.memList != null && rule.memList != '') {
                 if (rule.memListArray.indexOf(mem.memId.toString()) == -1) {
                     if (this.#debug & 8) {
                         console.log("testMembership: continue-memId not found " + mem.memId.toString());
@@ -292,7 +292,7 @@ class MembershipRules {
         }
 
         // check ageList against the person's age first
-        if (step.ageList != null && this.#age != null && this.#age != '' && step.applyTo == 'person') {
+        if (step.ageList != null && step.ageList != '' && this.#age != null && this.#age != '' && step.applyTo == 'person') {
             var match = step.ageListArray.indexOf(this.#age) != -1;
             if (step.ruleType == 'notAny' || step.ruleType == 'notAll') {
                 if (match) {
@@ -319,25 +319,25 @@ class MembershipRules {
             this.#allMems = [];
             if (step.ruleType == 'needAll' || step.ruleType == 'notall') {
                 // set up the check matrix for 'All' rules
-                if (step.typeList != null) {
+                if (step.typeList != null && step.typeList != '') {
                     for (var row in step.typeListArray) {
                         this.#allTypes[typeListArray[row]] = false;
                     }
                 }
 
-                if (step.catList != null) {
+                if (step.catList != null && step.catList != '') {
                     for (var row in step.catListArray) {
                         this.#allCats[catListArray[row]] = false;
                     }
                 }
 
-                if (step.ageList != null) {
+                if (step.ageList != null && step.ageList != '') {
                     for (var row in step.ageListArray) {
                         this.#allAges[ageListArray[row]] = false;
                     }
                 }
 
-                if (step.memList != null) {
+                if (step.memList != null && step.memList != '') {
                     for (var row in step.memListArray) {
                         this.#allMems[step.memListArray[row]] = false;
                     }
@@ -377,16 +377,16 @@ class MembershipRules {
                     var catCheck = step.catList == null;
                     var ageCheck = false;
                     // the entire membership list must have one item that matches all of the non null tests (however the age item must be non null
-                    if (step.typeList != null) {
+                    if (step.typeList != null && step.typeList != '') {
                         typeCheck = step.typeListArray.indexOf(mbr.memType.toString()) != -1;
                     }
-                    if (step.catList != null) {
+                    if (step.catList != null && step.catList != '') {
                         catCheck = step.catListArray.indexOf(mbr.memCategory.toString()) != -1;
                     }
-                    if (step.memList != null) {
+                    if (step.memList != null && step.memList != '') {
                         memCheck = step.memListArray.indexOf(mbr.memId.toString()) != -1;
                     }
-                    if (step.ageList != null) {
+                    if (step.ageList != null && step.ageList != '') {
                         ageCheck = step.ageListArray.indexOf(mbr.memAge.toString()) != -1;
                     }
                     stepPass = typeCheck && memCheck && ageCheck && ageCheck;
@@ -494,21 +494,21 @@ class MembershipRules {
         if (step.step = 999 && skipSelfChecks == true)
             return false; // shortcut this check for removes, as its only a not itself for adds.
 
-        if (step.typeList != null) {
+        if (step.typeList != null && step.typeList != '') {
             if (step.typeListArray.indexOf(mbr.memType.toString()) != -1)
                 return true;
         }
-        if (step.catList != null) {
+        if (step.catList != null && step.catList != '') {
             if (step.catListArray.indexOf(mbr.memCategory.toString()) != -1)
                 return true;
         }
-        if (step.ageList != null) {
+        if (step.ageList != null && step.ageList != '') {
             if (step.ageListArray.indexOf(this.#age) != -1)
                 return true;
             if (step.ageListArray.indexOf(mbr.memAge.toString()) != -1)
                 return true;
         }
-        if (step.memList != null) {
+        if (step.memList != null && step.memList != '') {
             if (step.memListArray.indexOf(mbr.memId.toString()) != -1)
                 return true;
         }
@@ -519,22 +519,22 @@ class MembershipRules {
     // checkAll - add a membership matches to the all tracking items
     checkAll(step, mbr) {
         // any one of anything defined succeeds the rule test
-        if (step.typeList != null) {
+        if (step.typeList != null && step.typeList != '') {
             if (step.typeListArray.indexOf(mbr.memType.toString()) != -1)
                 allTypes[mbr.memType.toString()] = true;
         }
 
-        if (step.catList != null) {
+        if (step.catList != null && step.catList != '') {
             if (step.catListArray.indexOf(mbr.memCategory.toString()) != -1)
                 this.#allCats[mbr.memCategory.toString()] = true;
         }
 
-        if (step.ageList != null) {
+        if (step.ageList != null && step.ageList != '') {
             if (step.ageListArray.indexOf(mbr.memAge.toString()) != -1)
                 this.#allAges[mbr.memAge.toString()] = true;
         }
 
-        if (step.memList != null) {
+        if (step.memList != null && step.memList != '') {
             if (step.memListArray.indexOf(mbr.memId.toString()) != -1)
                 this.#allMems[mbr.memId.toString()] = true;
         }
