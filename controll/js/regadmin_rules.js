@@ -990,17 +990,26 @@ class rulesSetup {
     editTypes(level) {
         this.closeSelTable(level);
         var tableField = null;
+        var set = null;
         this.#selItem = 'typeList';
         switch (level) {
             case 'r':
-                this.#selValues = this.#rTypeList.innerHTML.split(',');
+                set = this.#rTypeList.innerHTML;
+                if (set != null)
+                    this.#selValues = set.split(',');
+                else
+                    this.#selValues = [];
                 this.#editRuleSelLabel.innerHTML = "<b>Select which Types apply to this rule:</b>"
                 tableField = '#editRuleSelTable';
                 this.#selField = this.#rTypeList;
                 $('#editRuleSelButtons').show();
                 break;
             case 's':
-                this.#selValues = this.#sTypeList.innerHTML.split(',');
+                set = this.#sTypeList.innerHTML;
+                if (set != null)
+                    this.#selValues = set.split(',');
+                else
+                    this.#selValues = [];
                 this.#editRuleStepSelLabel.innerHTML = "<b>Select which Types apply to this step:</b>"
                 tableField = '#editRuleStepSelTable';
                 this.#selField = this.#sTypeList;
@@ -1025,18 +1034,27 @@ class rulesSetup {
     // editCategories - select the category list for this rule
     editCategories(level) {
         this.closeSelTable(level);
+        var set = null;
         var tableField = null;
         this.#selItem = 'catList';
         switch (level) {
             case 'r':
-                this.#selValues = this.#rCatList.innerHTML.split(',');
+                set = this.#rCatList.innerHTML;
+                if (set != null)
+                    this.#selValues = set.split(',');
+                else
+                    this.#selValues = [];
                 this.#editRuleSelLabel.innerHTML = "<b>Select which Categories apply to this rule:</b>"
                 tableField = '#editRuleSelTable';
                 this.#selField = this.#rCatList;
                 $('#editRuleSelButtons').show();
                 break;
             case 's':
-                this.#selValues = this.#sCatList.innerHTML.split(',');
+                set = this.#sCatList.innerHTML;
+                if (set != null)
+                    this.#selValues = set.split(',');
+                else
+                    this.#selValues = [];
                 this.#editRuleStepSelLabel.innerHTML = "<b>Select which Categories apply to this step:</b>"
                 tableField = '#editRuleStepSelTable';
                 this.#selField = this.#sCatList;
@@ -1062,17 +1080,26 @@ class rulesSetup {
     editAges(level) {
         this.closeSelTable(level);
         var tableField = null;
+        var set = null;
         this.#selItem = 'ageList';
         switch (level) {
             case 'r':
-                this.#selValues = this.#rAgeList.innerHTML.split(',');
+                set = this.#rAgeList.innerHTML;
+                if (set != null)
+                    this.#selValues = set.split(',');
+                else
+                    this.#selValues = [];
                 this.#editRuleSelLabel.innerHTML = "<b>Select which Ages apply to this rule:</b>"
                 tableField = '#editRuleSelTable';
                 this.#selField = this.#rAgeList;
                 $('#editRuleSelButtons').show();
                 break;
             case 's':
-                this.#selValues = this.#sAgeList.innerHTML.split(',');
+                set = this.#sAgeList.innerHTML;
+                if (set != null)
+                    this.#selValues = set.split(',');
+                else
+                    this.#selValues = [];
                 this.#editRuleStepSelLabel.innerHTML = "<b>Select which Ages apply to this step:</b>"
                 tableField = '#editRuleStepSelTable';
                 this.#selField = this.#sAgeList;
@@ -1099,17 +1126,26 @@ class rulesSetup {
     editMemList(level) {
         this.closeSelTable(level);
         var tableField = null;
+        var set = null;
         this.#selItem = 'memList';
         switch (level) {
             case 'r':
-                this.#selValues = this.#rMemList.innerHTML.split(',');
+                set = this.#rMemList.innerHTML;
+                if (set != null)
+                    this.#selValues = set.split(',');
+                else
+                    this.#selValues = [];
                 this.#editRuleSelLabel.innerHTML = "<b>Select which memId's apply to this rule:</b>"
                 tableField = '#editRuleSelTable';
                 this.#selField = this.#rMemList;
                 $('#editRuleSelButtons').show();
                 break;
             case 's':
-                this.#selValues = this.#sMemList.innerHTML.split(',');
+                set = this.#sMemList.innerHTML;
+                if (set != null)
+                    this.#selValues = set.split(',');
+                else
+                    this.#selValues = [];
                 this.#editRuleStepSelLabel.innerHTML = "<b>Select which memId's apply to this step:</b>"
                 tableField = '#editRuleStepSelTable';
                 this.#selField = this.#sMemList;
@@ -1422,7 +1458,10 @@ class rulesSetup {
         if (rowdata.ageList != newValue) {
             row.getCell("ageList").setValue(newValue);
             memRules[this.#editRuleName].ageList = newValue;
-            memRules[this.#editRuleName].ageListArray = newValue.split(',');
+            if (newValue != null && newValue != '')
+                memRules[this.#editRuleName].ageListArray = newValue.split(',');
+            else
+                memRules[this.#editRuleName].ageListArray = [];
         }
         newValue = this.#rTypeList.innerHTML;
         if (newValue == '' || newValue == undefined || newValue == '<i>None</i>')
@@ -1430,7 +1469,10 @@ class rulesSetup {
         if (rowdata.typeList != newValue) {
             row.getCell("typeList").setValue(newValue);
             memRules[this.#editRuleName].typeList = newValue;
-            memRules[this.#editRuleName].typeListArray = newValue.split(',');
+            if (newValue != null && newValue != '')
+                memRules[this.#editRuleName].typeListArray = newValue.split(',');
+            else
+                memRules[this.#editRuleName].typeListArray = [];
         }
         newValue = this.#rCatList.innerHTML;
         if (newValue == '' || newValue == undefined || newValue == '<i>None</i>')
@@ -1438,7 +1480,10 @@ class rulesSetup {
         if (rowdata.catList != newValue) {
             row.getCell("catList").setValue(newValue);
             memRules[this.#editRuleName].catList = newValue;
-            memRules[this.#editRuleName].catListArray = newValue.split(',');
+            if (newValue != null && newValue != '')
+                memRules[this.#editRuleName].catListArray = newValue.split(',');
+            else
+                memRules[this.#editRuleName].catListArray = [];
         }
         newValue = this.#rMemList.innerHTML;
         if (newValue == '' || newValue == undefined || newValue == '<i>None</i>')
@@ -1446,7 +1491,10 @@ class rulesSetup {
         if (rowdata.memList != newValue) {
             row.getCell("memList").setValue(newValue);
             memRules[this.#editRuleName].memList = newValue;
-            memRules[this.#editRuleName].memListArray = newValue.split(',');
+            if (newValue != null)
+                memRules[this.#editRuleName].memListArray = newValue.split(',');
+            else
+                memRules[this.#editRuleName].memListArray = [];
         }
 
         if (this.#ruleStepsTable != null) {
