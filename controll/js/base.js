@@ -377,6 +377,9 @@ function showEdit(classname, table, index, field, titlename, textitem, textOnly 
     if (textitem == null)
         textitem = '';
 
+    if (textOnly) {
+        textitem = textitem.replaceAll('\n', '<br/>');
+    }
     editTableDiv.innerHTML = table;
     editFieldDiv.innerHTML = field;
     editFieldNameDiv.innerHTML = field + ':';
@@ -385,9 +388,6 @@ function showEdit(classname, table, index, field, titlename, textitem, textOnly 
     editFieldArea.innerHTML = textitem;
     editTitleDiv.innerHTML = "Editing " + table + " " + titlename + "<br/>" + field;
     editTextOnly = textOnly;
-    if (textOnly) {
-        textitem = textitem.replace(/\n/g, '<br/>');
-    }
 
     editor_modal.show();
     if (globalCustomTextEditorInit) {
