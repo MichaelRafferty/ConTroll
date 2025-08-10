@@ -261,7 +261,7 @@ if ($test) {
 
 $response['emailText'] = $email_text;
 $response['emailHTML'] = $email_html;
-$response['emailFrom'] = $email;
+$response['emailFrom'] = $con['regadminemail'];
 $response['emailTo'] =  $email_array;
 $response['emailCC'] = null;
 $response['emailSubject'] = $con['label'] . ": $email_subject";
