@@ -1,0 +1,71 @@
+[report]
+	name="NewNoReg"
+	auth=reg_admin
+	csvfile="newNoReg"
+    index=perid
+[F001]
+    name="Created"
+    sql=p.creation_date
+    title="Create Date"
+[F004]
+    name=Perid
+	sql=p.id
+	title="Perid"
+	align=right
+	minWidth=80
+[F005]
+    name=fullName
+    sql="TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), '  *', ' '))"
+    title="Full Name"
+    minWidth=300
+[F006]
+    name=Email
+    sql=p.email_addr
+    title=Label
+    filter=true
+[F006]
+    name=City
+    sql=p.city
+    title=City
+[F007]
+    name=State
+    sql=p.state
+    title=State
+[F008]
+    name=Zip
+    sql=p.zip
+    title="Postal Code"
+[F020]
+    name=manager
+    sql=p.managedBy
+    title=Manager
+    filter=number
+    align=right
+[F100]
+    name=first_name
+    sql=p.first_name
+    visible=false
+[F101]
+    name=last_name
+    sql=p.last_name
+    visible=false
+[F102]
+    name=middle_name
+    sql=p.middle_name
+    visible=false
+[T001]
+	name=perinfo
+	alias=p
+[T002]
+	name=reg
+	alias=r
+	join="p.id = r.perid"
+	left=true
+[P001]
+	type=prompt
+	item=startDate
+	datatype=s
+[where]
+	001="r.conid IS NULL AND p.id > 9 AND p.first_name != 'Merged' AND p.middle_name != 'into' AND p.creation_date > ?"
+[sort]
+	001="p.creation_date,p.last_name,p.first_name"

@@ -2,6 +2,13 @@
 	name="RegAdmin"
 	description="Registration Admin Reports"
 	auth=reg_admin
+[050ExpiringRegs]
+    name="New Without Membership"
+    description="New Accounts that didn't buy a membrership"
+    template=new_noreg.rpt
+    auth=reg_admin
+    type=rpt
+    P001="prompt/~/startDate/~/Start Date: /~/Enter Start Creation Date (YYYY-MM-DD)"
 [100ExpiringRegs]
     name="Expiring Registrations"
     description="Unpaid Registrations with their 'expire' (rate change) date"
