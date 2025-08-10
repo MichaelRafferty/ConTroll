@@ -967,6 +967,9 @@ $config_vars['source'] = 'regstaff';
             <div class='col-sm-auto p-2'>
                 <button class='btn btn-primary btn-sm' onclick="sendEmail('expire')">Send Expiring Reminder Email</button>
             </div>
+            <div class='col-sm-auto p-2'>
+                <button class='btn btn-primary btn-sm' onclick="sendEmail('new')">Send New No Membership Email</button>
+            </div>
             <div class="col-sm-auto p-2">
                 <button class="btn btn-primary btn-sm" onclick="sendEmail('marketing')">Send Marketing Email</button>
             </div>
