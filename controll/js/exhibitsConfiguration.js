@@ -689,7 +689,7 @@ class exhibitssetup {
                 },
                 {title: "Edit", formatter: this.editbutton, formatterParams: {table: 'Regions', fieldName: 'description', name: 'name' },
                     hozAlign:"left", headerSort: false },
-                {title: "Description", field: "description", headerFilter: true, width: 500, headerSort: false,},
+                {title: "Description", field: "description", headerFilter: true, width: 500, headerSort: false, formatter: "html", },
                 {title: "Sort Order", field: "sortorder", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 90,},
                 {title: "Orig Key", field: "regionKey", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
                 {
