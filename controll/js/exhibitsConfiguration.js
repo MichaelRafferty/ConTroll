@@ -589,7 +589,6 @@ class exhibitssetup {
 
         this.#regionTypedirty = false;
         this.#regionTypeTable = new Tabulator('#regionType-div', {
-            maxHeight: "800px",
             history: true,
             movableRows: true,
             data: this.#regionType,
@@ -665,7 +664,6 @@ class exhibitssetup {
 
         this.#regiondirty = false;
         this.#regionsTable = new Tabulator('#regions-div', {
-            maxHeight: "800px",
             history: true,
             movableRows: true,
             data: this.#regions,
@@ -742,7 +740,6 @@ class exhibitssetup {
 
         this.#regionYeardirty = false;
         this.#regionYearsTable = new Tabulator('#regionYears-div', {
-            maxHeight: "800px",
             history: true,
             movableRows: true,
             data: this.#regionYears,
@@ -845,7 +842,6 @@ class exhibitssetup {
 
         this.#spacedirty = false;
         this.#spacesTable = new Tabulator('#spaces-div', {
-            maxHeight: "800px",
             history: true,
             movableRows: true,
             data: this.#spaces,
@@ -922,7 +918,6 @@ class exhibitssetup {
 
         this.#spacePricedirty = false;
         this.#spacePricesTable = new Tabulator('#spacePrices-div', {
-            maxHeight: "800px",
             history: true,
             movableRows: true,
             data: this.#spacePrices,
