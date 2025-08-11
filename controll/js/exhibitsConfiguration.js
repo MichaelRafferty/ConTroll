@@ -760,7 +760,7 @@ class exhibitssetup {
                         deleterow(e, cell.getRow());
                     }
                 },
-                {title: "ID", field: "id", width: 50, hozAlign: "right", headerSort: false, formatter: this.formatId },
+                {title: "ID", field: "id", width: 80, hozAlign: "right", headerSort: false, formatter: this.formatId },
                 {title: "&bigstar;Conid", field: "conid", width: 80, hozAlign: "right", headerSort: false, visible: false },
                 {
                     title: "&bigstar;Exhibits Region", field: "exhibitsRegion", headerSort: true, width: 150, headerWordWrap: true, headerFilter: true, headerFilterParams: {values: this.#regionListArr},
