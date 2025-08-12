@@ -56,7 +56,7 @@ class Terminals {
         this.#terminalList = new Tabulator ('#terminalsTable', {
             data: terminals,
             layout: "fitData",
-            maxHeight: "300px",
+            maxHeight: "800px",
             movableRows: false,
             history: true,
             index: 'name',
