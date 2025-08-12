@@ -961,7 +961,10 @@ $config_vars['source'] = 'regstaff';
                 </button>
             </div>
             <div class="col-sm-auto p-2">
-                <button class="btn btn-primary btn-sm" onclick="window.location.href='reports/regReport.php';">Download Reg Report</button>
+                <button class="btn btn-primary btn-sm"
+                        onclick="window.location.href='reports.php?name=RegReport&P1=<?php echo $conid; ?>'">
+                    Download Reg Report
+                </button>
             </div>
             <?php if ($reg_admin) { ?>
             <div class='col-sm-auto p-2'>

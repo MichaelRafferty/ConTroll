@@ -128,7 +128,7 @@ function runReport(name) {
     elRpt = document.getElementById(rptId);
     elRpt.classList.add('active');
     // draw the prompts
-    showPrompts(config.reportName, config.pageName, config.groupName, type,  template);
+    showPrompts(config.reportName, config.pageName, config.groupName, config.values.type,  config.values.template);
     // initialize the prompts
     var index = 0;
     for (var i = 0; i < prompts.length; i++) {
