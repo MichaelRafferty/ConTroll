@@ -34,7 +34,7 @@ $userR = dbSafeQuery($userQ, 's', array($user))->fetch_assoc();
 $userid = $userR['id'];
 
 if ($merge == $remain) {
-    ajaxSuccess(array('status'=>'error', 'error'=>'Merge cannot be the sane as Survive'));
+    ajaxSuccess(array('status'=>'error', 'error'=>'Merge cannot be the same as Survive'));
     exit();
 }
 
@@ -50,7 +50,7 @@ if ($mR === false) {
 }
 while ($mL = $mR->fetch_assoc()) {
     if (($mL['first_name'] == 'Merged' && $mL['middle_name'] == 'into') || str_starts_with($mL['email_addr'], 'merged into')) {
-        ajaxSuccess(array('status'=>'error', 'error'=>'One of the candidiates is already a merged record, not allowed to merge a merged record'));
+        ajaxSuccess(array('status'=>'error', 'error'=>'One of the candidates is already a merged record, not allowed to merge a merged record'));
         exit();
     }
 }
