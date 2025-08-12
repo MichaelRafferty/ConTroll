@@ -377,7 +377,8 @@ BEGIN
                                   'rollback_stmts=', CHAR(10),
                                   REPLACE(rollback_stmts, '''', ''''''), '''', char(10)
                            ),
-            first_name = 'Merged', middle_name = 'into', last_name = to_survivePID, email_addr = CONCAT('merged into ', to_survivePID)
+            first_name = 'Merged', middle_name = 'into', last_name = to_survivePID, email_addr = CONCAT('merged into ', to_survivePID),
+                contact_ok = 'N', active='N'
         WHERE id = to_mergePID;
         SET msg = CONCAT(msg, 'perinfo: ', to_mergePID, ': ', CONVERT(ROW_COUNT(), char), CHAR(10));
 
