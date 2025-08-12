@@ -34,8 +34,8 @@ WITH notes AS (
 SELECT R.id AS badgeId, IFNULL(R.complete_trans, R.create_trans) AS display_trans, R.create_trans, R.complete_trans, 
     P.id AS perid, NP.id AS newperson_id,   
     CASE 
-        WHEN R.perid IS NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', NP.first_name, NP.middle_name, NP.last_name, NP.suffix), '  *', ' '))  
-        ELSE TRIM(REGEXP_REPLACE(CONCAT_WS(' ', P.first_name, P.middle_name, P.last_name, P.suffix), '  *', ' '))  
+        WHEN R.perid IS NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', NP.first_name, NP.middle_name, NP.last_name, NP.suffix), ' +', ' '))  
+        ELSE TRIM(REGEXP_REPLACE(CONCAT_WS(' ', P.first_name, P.middle_name, P.last_name, P.suffix), ' +', ' '))  
     END AS fullName,
     CASE WHEN R.perid IS NULL THEN NP.first_name ELSE P.first_name END AS first_name,
     CASE WHEN R.perid IS NULL THEN NP.middle_name ELSE P.middle_name END AS middle_name,

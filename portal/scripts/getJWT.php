@@ -55,7 +55,7 @@ $worldCon = getConfValue('portal', 'worldcon', '0');
 if ($loginType == 'p') {
     $piQ = <<<EOS
 SELECT p.id AS perid, n.id AS newperid, p.first_name, p.last_name, p.email_addr, p.badge_name,
-    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), '  *', ' ')) AS fullName
+    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName
 FROM perinfo p
 LEFT OUTER JOIN newperson n ON n.perid = p.id
 WHERE p.id = ?
@@ -64,7 +64,7 @@ EOS;
 } else {
     $piQ = <<<EOS
 SELECT NULL AS perid, id AS newperid, first_name, last_name, email_addr, badge_name,
-    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), '  *', ' ')) AS fullName
+    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), ' +', ' ')) AS fullName
 FROM newperson 
 WHERE id = ?;
 EOS;
@@ -209,8 +209,8 @@ SELECT r.status, r.memId, m.*, a.shortname AS ageShort, a.label AS ageLabel, a.a
         ELSE NULL
     END AS phone,
     CASE 
-        WHEN rp.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', rp.first_name, rp.middle_name, rp.last_name, rp.suffix), '  *', ' '))
-        WHEN rn.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', rn.first_name, rn.middle_name, rn.last_name, rn.suffix), '  *', ' '))
+        WHEN rp.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', rp.first_name, rp.middle_name, rp.last_name, rp.suffix), ' +', ' '))
+        WHEN rn.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', rn.first_name, rn.middle_name, rn.last_name, rn.suffix), ' +', ' '))
         ELSE NULL
     END AS fullName,
     CASE 

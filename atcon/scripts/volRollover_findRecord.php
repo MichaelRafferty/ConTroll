@@ -48,8 +48,8 @@ SELECT DISTINCT p.id AS perid, p.first_name, p.middle_name, p.last_name, p.suffi
     p.address as address_1, p.addr_2 as address_2, p.city, p.state, p.zip as postal_code, p.country, p.email_addr, p.phone,
     p.share_reg_ok, p.contact_ok, p.active, p.banned, 
     CASE 
-        WHEN p.last_name != '' THEN TRIM(REGEXP_REPLACE(CONCAT(p.last_name, ', ', CONCAT_WS(' ', p.first_name, p.middle_name, p.suffix)), '  *', ' '))
-        ELSE TRIM(REGEXP_REPLACE(CONCAT_WS(p.first_name, p.middle_name, p.suffix), '  *', ' '))
+        WHEN p.last_name != '' THEN TRIM(REGEXP_REPLACE(CONCAT(p.last_name, ', ', CONCAT_WS(' ', p.first_name, p.middle_name, p.suffix)), ' +', ' '))
+        ELSE TRIM(REGEXP_REPLACE(CONCAT_WS(p.first_name, p.middle_name, p.suffix), ' +', ' '))
     END AS fullName,
     p.open_notes, r.id AS regid, m.label, rn.id AS roll_regid, mn.shortname,
     CASE 
@@ -81,9 +81,9 @@ SELECT DISTINCT p.id AS perid, p.first_name, p.middle_name, p.last_name, p.suffi
     p.share_reg_ok, p.contact_ok, p.active, p.banned,
     CASE
         WHEN IFNULL(p.last_name, '') != '' THEN
-            TRIM(REGEXP_REPLACE(CONCAT(p.last_name, ', ', p.first_name, ' ', p.middle_name, ' ', p.suffix), '  *', ' '))
+            TRIM(REGEXP_REPLACE(CONCAT(p.last_name, ', ', p.first_name, ' ', p.middle_name, ' ', p.suffix), ' +', ' '))
         ELSE
-            TRIM(REGEXP_REPLACE(CONCAT(p.first_name,' ', p.middle_name, ' ', p.suffix), '  *', ' '))
+            TRIM(REGEXP_REPLACE(CONCAT(p.first_name,' ', p.middle_name, ' ', p.suffix), ' +', ' '))
         END AS fullName
     p.open_notes, r.id AS regid, m.label, rn.id AS roll_regid, mn.shortname,
     CASE
@@ -97,7 +97,7 @@ LEFT OUTER JOIN reg rn ON (rn.perid = p.id AND rn.conid = ?)
 JOIN memLabel m ON (r.memId = m.id)
 LEFT OUTER JOIN memLabel mn ON (rn.memId = mn.id)
 WHERE r.conid = ? AND (
-    LOWER(TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name), '  *', ' '))) LIKE ? OR
+    LOWER(TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name), ' +', ' '))) LIKE ? OR
     LOWER(TRIM(p.badge_name) LIKE ? OR LOWER(TRIM(p.email_addr)) LIKE ?)
 ORDER BY last_name, first_name
 LIMIT $limit;

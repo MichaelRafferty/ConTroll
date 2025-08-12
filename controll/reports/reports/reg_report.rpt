@@ -1,0 +1,118 @@
+[report]
+	name="RegReport"
+	auth=reg_admin
+	csvfile="regReport"
+    index=regid
+[F001]
+    name=Perid
+	sql=p.id
+	title="Per ID"
+	align=right
+	minWidth=80
+[F002]
+    name=Regid
+	sql=r.id
+	title="Reg ID"
+	align=right
+	minWidth=80
+[F010]
+    name=fullName
+    sql="TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' '))"
+    title="Full Name"
+    minWidth=300
+[F011]
+    name=fullAddr
+    sql="TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.address, p.addr_2, p.city, p.state, p.zip, p.country), ' +', ' '))"
+    title="Full Address"
+    minWidth=300
+[F020]
+    name=locale
+    sql=p.zip
+    title="Postal Code"
+    sort=true
+    filter=true
+[F021]
+    name=country
+    sql=p.country
+    title="Country"
+    filter=true
+[F022]
+    name=email
+    sql=p.email_addr
+    title="Email Address"
+    filter=true
+[F030]
+    name=label
+    sql=m.label
+    title=Label
+    filter=true
+[F031]
+    name=price
+    sql=r.price
+    title=Price
+    filter=number
+    align=right
+[F032]
+    name=paid
+    sql=r.paid
+    title=Paid
+    filter=number
+    align=right
+[F033]
+    name=status
+    sql=r.status
+    title=Status
+    filter=true
+    sort=true
+[F034]
+    name=createdate
+    sql=r.create_date
+    title="Create Date"
+    filter=true
+    sort=true
+[F040]
+    name=createdBy
+    sql=r.create_user
+    title="Created by"
+[F041]
+    name=firstprint
+    sql="MIN(h.logdate)"
+    title="First Print"
+[F100]
+    name=first_name
+    sql=p.first_name
+    visible=false
+[F101]
+    name=last_name
+    sql=p.last_name
+    visible=false
+[F102]
+    name=middle_name
+    sql=p.middle_name
+    visible=false
+[T001]
+	name=reg
+	alias=r
+[T002]
+	name=memLabel
+	alias=m
+	join="m.id = r.memId"
+[T003]
+    name=perinfo
+    alias=p
+    join="r.perid = p.id"
+[T004]
+    name=regActions
+    alias=h
+    join="h.regid = r.id AND h.action='print'"
+    left=true
+[P001]
+    type=prompt
+    item=conid
+    datatype=s
+[where]
+	001="r.conid = ? GROUP BY p.id, r.id, fullName, fullAddr, locale, country, email_addr, label, price, paid, status, createdate, first_name, middle_name,
+	last_name"
+[sort]
+	001="last_name, first_name, middle_name,create_date, regid"
+

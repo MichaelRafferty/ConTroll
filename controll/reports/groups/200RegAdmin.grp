@@ -36,3 +36,10 @@
     auth=reg_admin
     type=rpt
     P001="prompt/~/conid/~/Registered Peoples Emails for: /~/Conid (number only)"
+[500RegReport]
+    name="Registration Report"
+    description="All registrations with price, paid and print status"
+    template="reg_report.rpt"
+    auth=reg_admin
+    type=rpt
+    P001="prompt/~/conid/~/Registration report for: /~/Conid (number only)"
