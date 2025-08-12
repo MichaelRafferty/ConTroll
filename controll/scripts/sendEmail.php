@@ -99,25 +99,15 @@ EOQ;
     break;
 
 case 'marketing':
+    updateContactOK($conid);
+
     $priorcon = $conid - 1;
     $emailQ = <<<EOQ
-WITH policyyear AS (
-SELECT perid, max(conid) conid
-FROM memberPolicies
-WHERE perid IS NOT NULL
-GROUP BY perid
-), marketing AS (
-SELECT m.perid, m.response
-FROM policyyear y
-JOIN memberPolicies m ON (m.perid = y.perid AND m.policy = 'marketing')
-)
 SELECT DISTINCT p.email_addr AS email
 FROM perinfo p
 JOIN reg r ON (r.perid = p.id AND r.conid = ?)
 LEFT OUTER JOIN reg r2 ON (r2.perid = p.id and r2.conid = ?)
-LEFT OUTER JOIN marketing m ON m.perid = p.id
-WHERE p.email_addr LIKE '%@%' AND r.price > 0 AND r.status = 'paid' AND r2.perid IS NULL 
-AND ((m.perid IS NULL AND p.contact_ok='Y') OR (m.response = 'Y'))
+WHERE p.email_addr LIKE '%@%' AND r.price > 0 AND r.status = 'paid' AND r2.perid IS NULL AND p.contact_ok='Y'
 ORDER BY email;
 EOQ;
     $typestr = 'ii';
@@ -128,6 +118,8 @@ EOQ;
     break;
 
 case 'comeback':
+    updateContactOK($conid);
+
     $priorcon = $conid - 1;
     $priorcon2 = $conid - 2;
     $expires = date_add(date_create(), DateInterval::createFromDateString('30 day'));
@@ -205,6 +197,8 @@ EOQ;
     break;
 
 case 'survey':
+    updateContactOK($conid);
+
     $emailQ = <<<EOQ
 SELECT Distinct P.email_addr AS email
 FROM reg R 
@@ -213,9 +207,9 @@ JOIN reg R ON (R.id=H.regid)
 JOIN transaction T ON (T.id=H.tid)
 JOIN memLabel M ON (M.id=R.memId)
 JOIN perinfo P ON (R.perid = P.id)
-WHERE R.conid=? AND (H.action = 'attach')
+WHERE R.conid=? AND (H.action = 'print') AND P.contact_ok='Y'
 AND M.shortname not like '%cancel%' AND M.shortname not like '%Child%' AND M.shortname not like '% In Tow%'
-AND P.email_addr != ''
+AND P.email_addr LIKE '%@%'
 ORDER BY P.email_addr;
 EOQ;
     $typestr = 'i';
@@ -269,3 +263,15 @@ $response['emailType'] = $email_type;
 $response['macroSubstitution'] = $macroSubstitution;
 
 ajaxSuccess($response);
+
+function updateContactOK($conid) : void {
+    // updates the contact ok values in perinfo from this conId's values in policies 'marketing'.
+    // It expects the prior years were already loaded into 'Contact ok'
+    $sql = <<<EOS
+UPDATE perinfo p
+JOIN memberPolicies m ON (p.id = m.perid AND m.conid = ? AND m.policy = 'marketing')
+SET p.contact_ok = m.response
+WHERE p.contact_ok != m.response && p.active = 'Y' AND p.first_name != 'merged' AND p.last_name != 'into';
+EOS;
+    $rows = dbSafeCmd($sql, 'i', array($conid));
+}
