@@ -87,11 +87,11 @@ case 'new':
     SELECT p.first_name, p.email_addr AS email, p.id
     FROM perinfo p
     LEFT OUTER JOIN reg r ON p.id = r.perid
-    WHERE r.status IS NULL AND DATEDIFF(now(), p.creation_date) <= 180 
+    WHERE r.status IS NULL AND DATEDIFF(now(), p.creation_date) <= ? 
     GROUP BY p.first_name, p.email_addr, p.id
 EOQ;
     $typestr = 'i';
-    $paramarray = array ($conid);
+    $paramarray = array (getConfValue('reg', 'noNewDays'));
     $macroSubstitution = true;
     $email_text = returnCustomText('noMembership/text');
     $email_html = returnCustomText('noMembership/html');
