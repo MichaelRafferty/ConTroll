@@ -58,8 +58,9 @@ foreach ($tabledata as $row) {
     if($row['bidder'] == '') {$row['bidder'] = null;}
     if($row['location'] == null) {
         $location = '';
-    else
+    } else {
         $location = trim($row['location']);
+    }
     if($row['min_price'] == '') {$row['min_price'] = null;}
     if($row['sale_price'] == '') {$row['sale_price'] = null;}
     if($row['notes'] == '') { $row['notes'] = null;}
