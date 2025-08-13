@@ -15,6 +15,12 @@ function show_message(message, type = 'success', div='result_message') {
 
     var message_div = document.getElementById(div);
 
+    if (!message_div) {
+        if (message !== undefined && message != '')
+            console.log(type + ': ' + message);
+        return;
+    }
+
     if (message_div.classList.contains('bg-danger')) {
         message_div.classList.remove('bg-danger');
     }
