@@ -73,6 +73,8 @@ logoimage="conname2022.png"
 logoalt="logo image alternate text"
 logotext="Tagline not alt=text"
 onsiteopen="3:00 PM"
+;;; noNewDays = how new must a new account be with no memberships to get warned when the "Send New Acct/No New Membership" email is sent
+noNewDays=180
 
 [atcon]
 ;;; overrides
