@@ -98,7 +98,7 @@ SELECT R.conid, M.id, M.memCategory, M.shortname as label
 FROM reg R
 JOIN memLabel M on M.id=R.memId
 WHERE R.conid=? 
-GROUP BY R.conid, M.id
+GROUP BY R.conid, M.id, M.memCategory, M.shortname
 order by M.id;
 EOF;
         $yearaheadR = dbSafeQuery($yearaheadQ, 'i', array($conid+1));
@@ -111,9 +111,9 @@ $currR = dbSafeQuery($currQ, 'i', array($conid))->fetch_assoc();
 $con['paid_members'] = $currR['c'];
 
         $preregQ = <<<EOF
-SELECT R.conid, M.memCategory, M.shortname as label, count(DISTINCT R.perid) as c
+SELECT R.conid, M.memCategory, M.label , count(DISTINCT R.perid) as c
 FROM reg R
-JOIN memLabel M on M.id=R.memId
+JOIN memList M on M.id=R.memId
 LEFT OUTER JOIN regActions H ON H.regid=R.id and H.action='print'
 WHERE R.conid=? and H.action is null
 GROUP BY R.conid, M.label
@@ -125,9 +125,9 @@ EOF;
         }
 
         $atconQ = <<<EOF
-SELECT R.conid, M.memCategory, LOWER(M.memType) as memType, M.shortname as label, count(DISTINCT R.perid) as c
+SELECT R.conid, M.memCategory, LOWER(M.memType) as memType, M.label, count(DISTINCT R.perid) as c
 FROM reg R
-JOIN memLabel M on M.id=R.memId
+JOIN memList M on M.id=R.memId
 JOIN regActions H ON H.regid=R.id and H.action='print'
 WHERE R.conid=? 
 GROUP BY R.conid, M.label
@@ -178,7 +178,7 @@ SELECT COUNT(distinct P.cashier) AS cashier
 FROM transaction T
 LEFT OUTER JOIN payments P ON (P.transid=T.id and P.cashier IS NOT NULL)
 JOIN regActions H ON (H.tid=T.id)
-WHERE T.conid=?
+WHERE T.conid=? AND H.action IN ('attach', 'print')
 GROUP BY time;
 EOF;
         $staffR = dbSafeQuery($staffQ, 'i', array($conid));
