@@ -82,6 +82,22 @@ EOQ;
     $email_subject = "Reminder: You have unpaid memberships that will expire soon";
     break;
 
+case 'new':
+    $emailQ = <<<EOQ
+    SELECT p.first_name, p.email_addr AS email, p.id
+    FROM perinfo p
+    LEFT OUTER JOIN reg r ON p.id = r.perid
+    WHERE r.status IS NULL AND DATEDIFF(now(), p.creation_date) <= 180 
+    GROUP BY p.first_name, p.email_addr, p.id
+EOQ;
+    $typestr = 'i';
+    $paramarray = array ($conid);
+    $macroSubstitution = true;
+    $email_text = returnCustomText('noMembership/text');
+    $email_html = returnCustomText('noMembership/html');
+    $email_subject = 'Reminder: You created an account but have not purchased any memberships.';
+    break;
+
 case 'reminder':
     $emailQ = <<<EOQ
 SELECT DISTINCT P.email_addr AS email
