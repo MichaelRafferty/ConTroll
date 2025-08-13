@@ -173,17 +173,52 @@ function page_init($title, $tab, $css, $js, $configVars = null)
                 if (in_array('manager', $perms)) {
                     echo '&nbsp; <button type="button" class="btn btn-sm btn-warning p-0" id="base_toggleMgr" onclick="base_toggleManager();">Enable Mgr</button>';
                 }
+                $currentBadgePrinter = 'None';
+                $currentReceiptPrinter = 'None';
+                $currentGeneralPrinter = 'None';
+                $currentBadgePrinter = 'None';
+                $currentCCTerminal = 'None';
+                $badgePrinter = getSessionVar('badgePrinter');
+                if ($badgePrinter != null && $badgePrinter['name'] != 'None')
+                    $currentBadgePrinter =  escape_quotes($badgePrinter['name']) . ':::' . escape_quotes($badgePrinter['host']) .
+                        ':-:' . escape_quotes($badgePrinter['queue']) . ':-:' . escape_quotes($badgePrinter['type']) .
+                        ':-:' . escape_quotes($badgePrinter['code']);
+
+                $receiptPrinter = getSessionVar('receiptPrinter');
+                if ($receiptPrinter != null && $receiptPrinter['name'] != 'None')
+                $currentReceiptPrinter =  escape_quotes($receiptPrinter['name']) . ':::' . escape_quotes($receiptPrinter['host']) .
+                        ':-:' . escape_quotes($receiptPrinter['queue']) . ':-:' . escape_quotes($receiptPrinter['type']) .
+                        ':-:' . escape_quotes($receiptPrinter['code']);
+
+                $genericPrinter = getSessionVar('genericPrinter');
+                if ($genericPrinter != null && $genericPrinter['name'] != 'None')
+                $currentGeneralPrinter =  escape_quotes($genericPrinter['name']) . ':::' . escape_quotes($genericPrinter['host']) .
+                        ':-:' . escape_quotes($genericPrinter['queue']) . ':-:' . escape_quotes($genericPrinter['type']) .
+                        ':-:' . escape_quotes($genericPrinter['code']);
+
+
                 $terminal = getSessionVar('terminal');
-                if ($terminal) {
+                if ($terminal && $terminal['name'] != 'None') {
                     $termName = $terminal['name'];
-                } else
+                    $currentCCTerminal =   escape_quotes($terminal['name']) .
+                            ':::' . escape_quotes($terminal['squareId']) . ':::' . escape_quotes($terminal['deviceId']) .
+                            ':::' . escape_quotes($terminal['squareCode']) . ':::' . escape_quotes($terminal['locationId']);
+                } else {
                     $termName = 'None';
+                    $currentCCTerminal = '';
+                }
                 ?><br/>
+                <div id='currentPrinters' hidden>
+                    <span id='currentBadgePrinter'><?php echo $currentBadgePrinter; ?></span>
+                    <span id="currentReceiptPrinter"><?php echo $currentReceiptPrinter; ?></span>
+                    <span id="currentGeneralPrinter"><?php echo $currentGeneralPrinter; ?></span>
+                    <span id="currentCCTerminal"><?php echo $currentCCTerminal; ?></span>
+                </div>
                 <div id="page_head_printers">
-                    Badge: <?php echo getSessionVar('badgePrinter')['name']; ?>&nbsp; <button type="button" class="btn btn-sm btn-secondary pt-0 pb-0"
+                    Badge: <?php echo $badgePrinter['name']; ?>&nbsp; <button type="button" class="btn btn-sm btn-secondary pt-0 pb-0"
                                                                                        onclick="base_changePrintersShow();">Chg</button><br/>
-                    Receipt: <?php echo getSessionVar('receiptPrinter')['name']; ?><br/>
-                    General: <?php echo getSessionVar('genericPrinter')['name']; ?><br/>
+                    Receipt: <?php echo $receiptPrinter['name']; ?><br/>
+                    General: <?php echo $genericPrinter['name']; ?><br/>
                     Terminal: <?php echo $termName; ?>
                 </div>
             </div>
