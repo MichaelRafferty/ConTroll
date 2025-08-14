@@ -116,7 +116,7 @@ function term_getStatus($name, $useLogWrite = false) : array | null {
     ]);
 
     try {
-        if ($squareDebug) sqterm_logObject(array ('Terminal API get device by id for ' + $terminal['deviceId'], $body), $useLogWrite);
+        if ($squareDebug) sqterm_logObject(array ('Terminal API get device by id for ' . $terminal['deviceId'], $body), $useLogWrite);
         $apiResponse = $client->devices->get($body);
         if ($squareDebug) sqterm_logObject(array ('Terminal API get device by id: apiResponse', $apiResponse), $useLogWrite);
 
