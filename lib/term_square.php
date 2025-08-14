@@ -116,7 +116,7 @@ function term_getStatus($name, $useLogWrite = false) : array | null {
     ]);
 
     try {
-        if ($squareDebug) sqterm_logObject(array ('Terminal API get device by id', $body), $useLogWrite);
+        if ($squareDebug) sqterm_logObject(array ('Terminal API get device by id for ' + $terminal['deviceId'], $body), $useLogWrite);
         $apiResponse = $client->devices->get($body);
         if ($squareDebug) sqterm_logObject(array ('Terminal API get device by id: apiResponse', $apiResponse), $useLogWrite);
 
@@ -442,7 +442,7 @@ function sqterm_logObject($objArray, $useLogWrite = false) : void {
         logWrite($objArray);
     } else {
         web_error_log($objArray[0]);
-        var_error_log($objArray[1]);
+        var_error_log((array) $objArray[1]);
     }
 }
 

@@ -1016,7 +1016,7 @@ function sqcc_logObject($objArray, $useLogWrite = false) : void {
         logWrite($objArray);
     } else {
         web_error_log($objArray[0]);
-        var_error_log($objArray[1]);
+        var_error_log((array) $objArray[1]);
     }
 }
 
