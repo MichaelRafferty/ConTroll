@@ -161,7 +161,7 @@ if ($receipt_type == 'email') {
     }
     else {
         load_email_procs();
-        if (getConfValue('reg','test']) == 1) {
+        if (getConfValue('reg','test') == 1) {
             $emails = array ($con['regadminemail']);
         }
         else {
