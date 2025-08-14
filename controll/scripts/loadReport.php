@@ -147,9 +147,9 @@ if (array_key_exists('group', $reportParams)) {
     $sql .= 'GROUP BY ' . PHP_EOL;
     $clause = $reportParams['group'];
     $skeys = array_keys($clause);
-    sort($wkeys);
+    sort($skeys);
     $first = '';
-    foreach ($wkeys as $value) {
+    foreach ($skeys as $value) {
         if ($first == '') {
             $first = ', ';
         }
@@ -165,9 +165,9 @@ if (array_key_exists('sort', $reportParams)) {
     $sql .= 'ORDER BY ' . PHP_EOL;
     $clause = $reportParams['sort'];
     $skeys = array_keys($clause);
-    sort($wkeys);
+    sort($skeys);
     $first = "";
-    foreach ($wkeys AS $value) {
+    foreach ($skeys AS $value) {
         if ($first == "") {
             $first = ", ";
         } else {
