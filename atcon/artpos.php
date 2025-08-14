@@ -235,7 +235,7 @@ if (count($regionList) > 1) {
                     <button type="button" class="btn btn-primary btn-sm" id="pay_btn" onclick="gotoPay();" hidden>Pay Cart</button>
                     <button type='button' class='btn btn-primary btn-sm' id='release_btn' onclick='gotoRelease();' hidden>Release Artwork</button>
                     <button type="button" class="btn btn-warning btn-sm" id="startover_btn" onclick="startOver(1);" hidden>Start Over</button>
-                    <button type="button" class="btn btn-primary btn-sm" id="next_btn" onclick="startOver(1);" hidden>Next Customer</button>
+                    <button type="button" class="btn btn-primary btn-sm" id="next_btn" onclick="startOver(2);" hidden>Next Customer</button>
                 </div>
             </div>
         </div>       

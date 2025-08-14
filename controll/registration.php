@@ -226,7 +226,7 @@ drawEditPersonBlock($conid, $useUSPS, $policies, 'registration', false, true, ''
                             onclick="pos.voidTrans();" hidden>Void
                     </button>
                     <button type="button" class="btn btn-primary btn-sm" id="next_btn"
-                            onclick="pos.startOver(1);" hidden>Next Customer
+                            onclick="pos.startOver(2);" hidden>Next Customer
                     </button>
                 </div>
             </div>

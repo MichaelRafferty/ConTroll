@@ -599,6 +599,7 @@ class Pos {
                         show_message(data.message, 'success');
                     }
                     _this.startOver(reset_all);
+                    _this.#pay_currentOrderId = null;
                 },
                 error: function (jqXHR, textstatus, errorThrown) {
                     document.getElementById('pollRow').hidden = false;
@@ -612,6 +613,9 @@ class Pos {
 
         if (reset_all > 0)
             clear_message();
+
+        if (reset_all > 1)
+            this.#pay_currentOrderId = null;
 
         // reset admin mode if enabled
         if (!inConTroll && baseManagerEnabled) {
