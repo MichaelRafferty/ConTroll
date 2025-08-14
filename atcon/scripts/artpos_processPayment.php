@@ -102,8 +102,10 @@ if (array_key_exists('tax', $new_payment))
 else
     $taxAmt = 0;
 
-if ($amt != $preTaxAmt + $taxAmt) {
-    ajaxError('Invalid payment amount passed: preTax + Tax != Amount');
+$offset = $amt - ($preTaxAmt + $taxAmt);
+if (abs($offset) > 0.008) {
+    error_log("Invalid payment amount passed: preTax ($preTaxAmt) + Tax ($taxAmt) != Amount ($amt), offset = $offset");
+    ajaxError("Invalid payment amount passed: preTax ($preTaxAmt) + Tax ($taxAmt) != Amount ($amt), offset = $offset");
     return;
 }
 
@@ -130,6 +132,7 @@ if (array_key_exists('poll', $_POST)) {
 }
 
 // we need an available terminal, so get the latest status
+    $name = 'None';
 if ($new_payment['type'] == 'terminal') {
     load_term_procs();
     $terminal = getSessionVar('terminal');
@@ -577,7 +580,7 @@ $response['taxAmt'] = $rtn['taxAmt'];
 $response['cart_art'] = $cart_art;
 ajaxSuccess($response);
 
-function resetTerminalStatus($name) {
+function resetTerminalStatus($name) :void {
     $updQ = <<<EOS
 UPDATE terminals
 SET currentOperator = 0, currentOrder = '', currentPayment = '', controllStatus = '', controllStatusChanged = now()
