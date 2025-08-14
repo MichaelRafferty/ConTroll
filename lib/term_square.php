@@ -42,9 +42,9 @@ function term_createDeviceCode($name, $locationId, $useLogWrite = false) : array
     ]);
 
     try {
-        if ($squareDebug & 6) sqterm_logObject($squareDebug, array ('Terminal API create device', $body), $useLogWrite);
+        if ($squareDebug & 14) sqterm_logObject($squareDebug, array ('Terminal API create device', $body), $useLogWrite);
         $apiResponse = $client->devices->codes->create($body);
-        if ($squareDebug & 6) sqterm_logObject($squareDebug, array ('Terminal API create device: apiResponse', $apiResponse), $useLogWrite);
+        if ($squareDebug & 14) sqterm_logObject($squareDebug, array ('Terminal API create device: apiResponse', $apiResponse), $useLogWrite);
 
         // convert the object into an associative array
         $terminal = json_decode(json_encode($apiResponse->getDeviceCode()), true);
@@ -79,9 +79,9 @@ function term_getDevice($name, $useLogWrite = false) : array | null {
     $body = new Requests\GetCodesRequest(['id' => $terminal['squareId'], ]);
 
     try {
-        if ($squareDebug & 6) sqterm_logObject($squareDebug, array ('Terminal API get device code', $body), $useLogWrite);
+        if ($squareDebug & 12) sqterm_logObject($squareDebug, array ('Terminal API get device code', $body), $useLogWrite);
         $apiResponse = $client->devices->codes->get($body);
-        if ($squareDebug & 6) sqterm_logObject($squareDebug, array ('Terminal API get device code: apiResponse', $apiResponse), $useLogWrite);
+        if ($squareDebug & 12) sqterm_logObject($squareDebug, array ('Terminal API get device code: apiResponse', $apiResponse), $useLogWrite);
 
         // convert the object into an associative array
         $terminal = json_decode(json_encode($apiResponse->getDeviceCode()), true);
@@ -116,9 +116,9 @@ function term_getStatus($name, $useLogWrite = false) : array | null {
     ]);
 
     try {
-        if ($squareDebug & 6) sqterm_logObject($squareDebug, array ('Terminal API get device by id for ' . $terminal['deviceId'], $body), $useLogWrite);
+        if ($squareDebug & 12) sqterm_logObject($squareDebug, array ('Terminal API get device by id for ' . $terminal['deviceId'], $body), $useLogWrite);
         $apiResponse = $client->devices->get($body);
-        if ($squareDebug & 6) sqterm_logObject($squareDebug, array ('Terminal API get device by id: apiResponse', $apiResponse), $useLogWrite);
+        if ($squareDebug & 12) sqterm_logObject($squareDebug, array ('Terminal API get device by id: apiResponse', $apiResponse), $useLogWrite);
 
         // convert the object into an associative array
         $apiResult = json_decode(json_encode($apiResponse->getDevice()), true);
@@ -301,9 +301,9 @@ function term_payOrder($name, $orderId, $amount, $useLogWrite = false) : array |
     ]);
 
     try {
-        if ($squareDebug & 6) sqterm_logObject($squareDebug, array ('Terminal API pay request', $payRequest), $useLogWrite);
+        if ($squareDebug & 14) sqterm_logObject($squareDebug, array ('Terminal API pay request', $payRequest), $useLogWrite);
         $apiResponse = $client->terminal->checkouts->create($payRequest);
-        if ($squareDebug & 6) sqterm_logObject($squareDebug, array ('Terminal API pay request: apiResponse', $apiResponse), $useLogWrite);
+        if ($squareDebug & 14) sqterm_logObject($squareDebug, array ('Terminal API pay request: apiResponse', $apiResponse), $useLogWrite);
 
         // convert the object into an associative array
         $checkout = json_decode(json_encode($apiResponse->getCheckout()), true);
@@ -337,9 +337,9 @@ function term_cancelPayment($name, $payRef, $useLogWrite = false) : array | null
     ]);
 
     try {
-        if ($squareDebug & 6) sqterm_logObject($squareDebug, array ('Terminal API cancel checkout request', $cancelRequest), $useLogWrite);
+        if ($squareDebug & 14) sqterm_logObject($squareDebug, array ('Terminal API cancel checkout request', $cancelRequest), $useLogWrite);
         $apiResponse = $client->terminal->checkouts->cancel($cancelRequest);
-        if ($squareDebug & 6) sqterm_logObject($squareDebug, array ('Terminal API cancel checkout request: apiResponse', $apiResponse), $useLogWrite);
+        if ($squareDebug & 14) sqterm_logObject($squareDebug, array ('Terminal API cancel checkout request: apiResponse', $apiResponse), $useLogWrite);
 
         // convert the object into an associative array
         $checkout = json_decode(json_encode($apiResponse->getCheckout()), true);
@@ -374,9 +374,9 @@ function term_getPayStatus($name, $payRef, $useLogWrite = false) : array | null 
     ]);
 
     try {
-        if ($squareDebug & 6) sqterm_logObject($squareDebug, array ('Terminal API pay status', $statusRequest), $useLogWrite);
+        if ($squareDebug & 14) sqterm_logObject($squareDebug, array ('Terminal API pay status', $statusRequest), $useLogWrite);
         $apiResponse = $client->terminal->checkouts->get($statusRequest);
-        if ($squareDebug & 6) sqterm_logObject($squareDebug, array ('Terminal API pay status: apiResponse', $apiResponse), $useLogWrite);
+        if ($squareDebug & 14) sqterm_logObject($squareDebug, array ('Terminal API pay status: apiResponse', $apiResponse), $useLogWrite);
 
         // convert the object into an associative array
         $checkout = json_decode(json_encode($apiResponse->getCheckout()), true);
@@ -418,9 +418,9 @@ function term_printReceipt($name, $paymentId, $useLogWrite = false) : null | arr
     ]);
 
     try {
-        if ($squareDebug & 6) sqterm_logObject($squareDebug, array ('Terminal API receipt', $receiptRequest), $useLogWrite);
+        if ($squareDebug & 14) sqterm_logObject($squareDebug, array ('Terminal API receipt', $receiptRequest), $useLogWrite);
         $apiResponse = $client->terminal->actions->create($receiptRequest);
-        if ($squareDebug & 6) sqterm_logObject($squareDebug, array ('Terminal API receipt: apiResponse', $apiResponse), $useLogWrite);
+        if ($squareDebug & 14) sqterm_logObject($squareDebug, array ('Terminal API receipt: apiResponse', $apiResponse), $useLogWrite);
 
         // convert the object into an associative array
         $receipt = json_decode(json_encode($apiResponse->getAction()), true);
@@ -440,9 +440,12 @@ function term_printReceipt($name, $paymentId, $useLogWrite = false) : null | arr
 function sqterm_logObject($squareDebug, $objArray, $useLogWrite = false) : void {
     if ($useLogWrite) {
         logWrite($objArray);
-    } else if ($squareDebug & 4) {
+    } else if ($squareDebug & 8) {
         web_error_log($objArray[0]);
-        var_error_log(json_decode(json_encode( $objArray[1]), true));
+        // stretched out for debugging breaksteps to see it in the debugger
+        $response = json_encode($objArray[1]);
+        $response = json_decode($response, true);
+        var_error_log($response, true);
     }
 }
 
