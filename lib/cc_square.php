@@ -1019,7 +1019,7 @@ function sqcc_logObject($objArray, $useLogWrite = false) : void {
         // stretched out for debugging breaksteps to see it in the debugger
         $response = json_encode($objArray[1]);
         $response = json_decode($response, true);
-        var_error_log((array) $objArray[1]);
+        var_error_log($response, true);
     }
 }
 
