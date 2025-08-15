@@ -933,13 +933,24 @@ $config_vars['source'] = 'regstaff';
 </ul>
 <div class='tab-content ms-2' id='regadmin-content'>
     <div class='tab-pane fade show active' id='registrationlist-pane' role='tabpanel' aria-labelledby='registrationlist-tab' tabindex='0'>
-        <div class="container-fluid">
 <?php
     if ($badgeListFilter == "top")
         drawFilters();
 ?>
+    <div class='container-fluid'>
         <div class="row">
-            <div class="col-sm-auto p-0">
+            <div class="col-sm-1">Restrict To:</div>
+            <div class="col-sm-auto">
+                <input type="text" size="64" maxlength="256" placeholder="PERID, TID, or name/badge name/email search string"
+                       id="regListSearch" name="regListSearch"/>
+            </div>
+            <div class="col-sm-auto">
+                <button class='btn btn-primary mb-4 ms-4' onclick='getData("s");'>Search Registration List</button>
+                <button class='btn btn-warning mb-4 ms-4' onclick='getData("f");'>Load Full Registration List</button>
+            </div>
+        </div>
+        <div class='row'>
+            <div class="col-sm-12 p-0">
                 <div id="registration-table"></div>
             </div>
         </div>
@@ -949,10 +960,12 @@ $config_vars['source'] = 'regstaff';
                 <button id='reglist-xlsx' type='button' class='btn btn-info btn-sm' onclick='reglistDownload('xlsx'); return false;'>Download Excel</button>
             </div>
         </div>
+    </div>
 <?php
     if ($badgeListFilter == 'bottom')
         drawFilters();
 ?>
+    <div class='container-fluid'>
         <div class="row">
             <div class="col-sm-auto p-2">
                 <button class="btn btn-primary btn-sm"
@@ -1001,7 +1014,8 @@ $config_vars['source'] = 'regstaff';
             <?php } ?>
         </div>
     </div>
-    </div></div>
+    </div>
+</div>
     <div class='tab-pane fade' id='consetup-pane' role='tabpanel' aria-labelledby='consetup-tab' tabindex='0'></div>
     <div class='tab-pane fade' id='nextconsetup-pane' role='tabpanel' aria-labelledby='nextconsetup-tab' tabindex='0'></div>
     <div class='tab-pane fade' id='memconfig-pane' role='tabpanel' aria-labelledby='memconfig-tab' tabindex='0'></div>
@@ -1020,8 +1034,8 @@ page_foot($page);
 
 function drawFilters() {
 ?>
-<div class="container-fluid">
-    <div class="row mb-2">
+<div class="container-fluid" id="regListFilters">
+    <div class="row mb-2" hidden>
         <div class="col-sm-auto me-1 p-0">Click on a row to toggle filtering by that value</div>
         <div class="col-sm-auto me-1 p-0">
             <button class="btn btn-primary btn-sm" onclick="clearfilter();">Clear All Filters</button>
@@ -1050,5 +1064,6 @@ function drawFilters() {
             <div id='status-table'></div>
         </div>
     </div>
+</div>
     <?php
 }
