@@ -102,7 +102,7 @@ switch ($_REQUEST['action']) {
         if ($order == null || $amount == null) {
             $order = buildOrder($name);
         }
-        $response = term_payOrder($name, $order, $amount,true);
+        $response = term_payOrder($name, $order, '12345', $amount, true);
         echo "\npay request status:\n<pre>";
         var_dump($response);
         echo "</pre>\n";

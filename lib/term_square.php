@@ -267,7 +267,7 @@ EOS;
     return null;
 }
 
-function term_payOrder($name, $orderId, $amount, $useLogWrite = false) : array | null {
+function term_payOrder($name, $orderId, $tid, $amount, $useLogWrite = false) : array | null {
     $cc = get_conf('cc');
     $con = get_conf('con');
     $squareDebug = getConfValue('debug', 'square', 0);
@@ -292,7 +292,7 @@ function term_payOrder($name, $orderId, $amount, $useLogWrite = false) : array |
             ]),
             'note' => 'Payment Note for ' . time(),
             'orderId' => $orderId,
-            'referenceId' => 'testOrder',
+            'referenceId' =>  $con['id'] . '-' . $tid . '-' . time(),
             'deviceOptions' => new Square\Types\DeviceCheckoutOptions([
                 'deviceId' => $terminal['deviceId'],
                 'showItemizedCart' => true,

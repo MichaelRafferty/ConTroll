@@ -40,7 +40,7 @@ EOS;
     return $response;
 }
 
-function term_payOrder($name, $orderId, $amount, $useLogWrite = false) : array {
+function term_payOrder($name, $orderId, $tid, $amount, $useLogWrite = false) : array {
     // fake it by returning a pending status for any amount not ending in $0.01 and failure for ending in $.01
     $term_testAmt = $amount * 100;
     $_SESSION['term_testAmt'] = $term_testAmt;

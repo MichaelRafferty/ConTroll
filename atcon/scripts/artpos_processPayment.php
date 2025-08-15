@@ -398,7 +398,7 @@ if ($amt > 0) {
             resetTerminalStatus($name);
         } else {
             // this is the send the request to the terminal, then we need a separate poll section to get it back and continue to record the payment.
-            $checkout = term_payOrder($name, $orderId, $amt, true);
+            $checkout = term_payOrder($name, $orderId, $master_tid, $amt, true);
             $status = $checkout['status'];
             if ($status == 'PENDING') {
                 $updQ = <<<EOS
