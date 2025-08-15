@@ -41,13 +41,13 @@ WITH notes AS (
     SELECT R.id, count(N.id) AS ncount
     FROM reg R
     JOIN regActions N on R.id = N.regId
-    WHERE R.conid = ? AND N.action = 'notes' AND (R.perid = ? OR R.create_trans = ? OR R.complete_trans = ?))
+    WHERE R.conid = ? AND N.action = 'notes' AND (R.perid = ? OR R.create_trans = ? OR R.complete_trans = ?)
     GROUP BY R.id
 ), history AS (
     SELECT R.id, count(H.historyId) AS hcount
     FROM reg R
     JOIN regHistory H ON R.id = H.id
-    WHERE R.conid = ? AND (R.perid = ? OR R.create_trans = ? OR R.complete_trans = ?))
+    WHERE R.conid = ? AND (R.perid = ? OR R.create_trans = ? OR R.complete_trans = ?)
     GROUP BY R.id
 )
 SELECT R.id AS badgeId, IFNULL(R.complete_trans, R.create_trans) AS display_trans, R.create_trans, R.complete_trans, 

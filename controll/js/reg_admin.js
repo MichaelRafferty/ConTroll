@@ -1613,6 +1613,10 @@ function reglistDownload(format) {
 // called from data load - draws the filter stats block and the registrations block
 function draw(data, textStatus, jqXHR) {
     conid = Number(data['conid']);
+    if (!data.hasOwnProperty('memLabels')) {
+        show_message("Error in query", 'error');
+        return;
+    }
     memLabels = data['memLabels'];
     memLabelsNext = data['memLabelsNext'];
     memLabelsIdx = {};
