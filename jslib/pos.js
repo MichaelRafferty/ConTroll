@@ -22,7 +22,8 @@ class Pos {
         'email_addr',
         'address_1',
         'address_2',
-        'city', 'state', 'postal_code', 'phone'
+        'city', 'state', 'postal_code', 'country',
+        'phone'
     ];
 
     // pay items
