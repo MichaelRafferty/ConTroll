@@ -27,9 +27,9 @@ EOS;
 
 $unQ = <<<EOS
 WITH mby AS (
-SELECT n.id, count(*) manages
+SELECT n.id, count(nm.id) manages
 FROM newperson n
-JOIN newperson nm ON nm.managedByNew = n.id
+LEFT OUTER JOIN newperson nm ON nm.managedByNew = n.id
 WHERE n.perid IS NULL
 GROUP BY n.id
 ), regs AS (
