@@ -58,7 +58,7 @@ LEFT OUTER JOIN newperson mgrN ON n.managedByNew = mgrN.id
 LEFT OUTER JOIN perinfo mgrP ON n.managedBy = mgrP.id
 LEFT OUTER JOIN regs r ON n.id = r.id
 WHERE n.perid IS NULL
-ORDER BY mby.manages, manager, n.createtime
+ORDER BY mby.manages DESC, manager, n.createtime
 LIMIT $limit;
 EOS;
 
