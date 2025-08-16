@@ -135,6 +135,15 @@ window.onload = function initpage() {
 
     testdiv = document.getElementById('test');
     reglistDiv = document.getElementById('reglist-csv-div');
+
+    // set up the restrict to search field for listen
+
+    id = document.getElementById("regListSearch");
+    if (id) {
+        id.addEventListener('keyup', (e) => {
+            if (e.code === 'Enter') getData('s');
+        });
+    }
 }
 
 // filters for RegistrationList
