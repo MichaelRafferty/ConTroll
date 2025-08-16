@@ -333,4 +333,37 @@ FROM controllAppItems a
          LEFT OUTER JOIN controllTxtItems t ON (a.appName = t.appName AND a.appPage = t.appPage AND a.appSection = t.appSection AND a.txtItem = t.txtItem)
 WHERE t.contents is NULL;
 
+UPDATE controllTxtItems
+SET contents = '<p><strong>Hello!</strong></p>
+<p>Dear [[FirstName]],</p>
+<p>You are receiving this email because you created an account in our registration system, but you never adding a membership to your account.<br><br>Attending #conname# requires a paid membership and since our rates go up shortly, we though we would remind you of this and give you a chance to save a few dollars by registering now.</p>
+<p>Please sign in to our registration portal at <a href="#server#">#server#</a> and click on the "Add To/Edit Cart" button on the line with your name and ID number. This will take you to a page to start the process. Since our memberships are age based you will need to verify your age as of the start of #conname#. Once you''ve done that and verified your information if you have not already verified it, you will be taken to the cart page to add items to your cart.</p>
+<p>Once you have your membership in the cart, please click the "Save, Add Another Membership or Pay for Cart" button to return to the main screen to pay for your registration.<br><br>Use the Pay Total Amount due portion to pay for your membership. We securely accept credit cards using Square. #conname# never sees your credit card number, instead that is entered directly into Square for us to process purchase.<br><br>We look forward to seeing you at #conname#.</p>
+<p>If you have any issues please reach out to us at <a href="mailto:#regadminemail#">#regadminemail#</a>.</p>
+<p>Thank you,<br>#conname# Registration</p>'
+WHERE appName = 'controll' AND appPage = 'emails' AND appSection = 'noMembership' AND txtItem = 'html';
+
+UPDATE controllTxtItems
+SET contents = 'Dear [[FirstName]],
+
+        You are receiving this email because you created an account in our registration system, but you never adding a membership to your account.
+
+        Attending #conname# requires a paid membership and since our rates go up shortly, we though we would remind you of this and give you a chance to save a few dollars by registering now.
+
+        Please sign in to our registration portal at #server# and click on the "Add To/Edit Cart" button on the line with your name and ID number. This will take you to a page to start the process. Since our memberships are age based you will need to verify your age as of the start of #conname#. Once you''ve done that and verified your information if you have not already verified it, you will be taken to the cart page to add items to your cart.
+
+        Once you have your membership in the cart, please click the "Save, Add Another Membership or Pay for Cart" button to return to the main screen to pay for your registration.
+
+        Use the Pay Total Amount due portion to pay for your membership. We securely accept credit cards using Square. #conname# never sees your credit card number, instead that is entered directly into Square for us to process purchase.
+
+        We look forward to seeing you at #conname#.
+
+        If you have any issues please reach out to us at #regadminemail#.
+
+        Thank you,
+        #conname# Registration
+        '
+WHERE appName = 'controll' AND appPage = 'emails' AND appSection = 'noMembership' AND txtItem = 'text';
+
+
 INSERT INTO patchLog(id, name) VALUES(xx, 'marketingEmails');
