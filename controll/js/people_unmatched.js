@@ -805,7 +805,7 @@ class Unmatched {
 
             case 'matchAddress':
                 this.#address.value = this.#matchPerson.address;
-                this.#addr2.value = this.#matchPerson.addr2;
+                this.#addr2.value = this.#matchPerson.addr_2;
                 this.#city.value = this.#matchPerson.city;
                 this.#state.value = this.#matchPerson.state;
                 this.#zip.value = this.#matchPerson.zip;
@@ -881,7 +881,7 @@ class Unmatched {
                 this.#pronouns.value = this.#matchPerson.pronouns;
                 this.#badgeName.value = this.#matchPerson.badge_name;
                 this.#address.value = this.#matchPerson.address;
-                this.#addr2.value = this.#matchPerson.addr2;
+                this.#addr2.value = this.#matchPerson.addr_2;
                 this.#city.value = this.#matchPerson.city;
                 this.#state.value = this.#matchPerson.state;
                 this.#zip.value = this.#matchPerson.zip;
