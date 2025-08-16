@@ -800,7 +800,7 @@ class Unmatched {
                 break;
 
             case 'newBadge':
-                this.#pronouns.value = this.#newperson.badge_name;
+                this.#badgeName.value = this.#newperson.badge_name;
                 break;
 
             case 'matchAddress':
