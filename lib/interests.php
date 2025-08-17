@@ -28,20 +28,19 @@ function drawInterestList($interests, $modal = false, $tabIndexStart = 800) {
     if ($interests == null) // null? no interests, nothing to draw
         return;
     $tabindex = $tabIndexStart;
+    $filter = getConfValue('portal', 'customtext', 'production');
+    loadCustomText('profile', 'all', $filter, true);
+    $header = returnCustomText('interests/header', 'profile/all/');
+    $footer = returnCustomText('interests/footer', 'profile/all/');
+    if ($header != '') {
 ?>
     <div class='row'>
         <div class='col-sm-auto'>
-            <h<?php echo $modal ? '2 class="size-h3"' : '3 class="text-primary"';?>>
-                Additional Interests or Needs
-            </h<?php echo $modal ? '2' : '3';?>>
-        </div>
-    </div>
-    <div class='row mb-2'>
-        <div class='col-sm-auto'>
-            This form lets us know if you want to be contacted about specific things. We ask these questions to help us give you the experience you are after.
+            <?php  echo $header . PHP_EOL; ?>
         </div>
     </div>
 <?php
+    }
     foreach ($interests as $interest) {
         $desc = replaceVariables($interest['description']);
 ?>
@@ -54,6 +53,15 @@ function drawInterestList($interests, $modal = false, $tabIndexStart = 800) {
                 <label for='i_<?php echo $interest['interest'];?>'><?php echo $desc; ?></label>
             </div>
         </div>
+<?php
+    }
+    if ($footer != '') {
+?>
+            <div class='row'>
+        <div class='col-sm-auto'>
+            <?php  echo $footer . PHP_EOL; ?>
+        </div>
+    </div>
 <?php
     }
 }

@@ -1,11 +1,12 @@
 /* P52
  * Updates for various marketing emails and related items such as no membership created, comeback, etc.
+ * Plus a re-push because some people have an older mergePerid proc
+ * Change to make policy and interest headers custom text
  */
 
 DROP PROCEDURE IF EXISTS `mergePerid` ;
 DELIMITER ;;
 CREATE PROCEDURE `mergePerid`(IN userid INT, IN to_mergePID INT, IN to_survivePID INT, OUT statusmsg TEXT, OUT rollback_log TEXT)
-    SQL SECURITY INVOKER
     SQL SECURITY INVOKER
 BEGIN
     /* updates the database to change records with to_mergePID to to_survivePID to preserver referential integrity as it merges two perinfo records together
@@ -315,6 +316,7 @@ DELIMITER ;
 /* force all existing to match the changed stored procedure values */
 UPDATE perinfo SET contact_ok = 'N', active = 'N' WHERE first_name = 'merged' AND middle_name = 'into';
 
+/* noMembership emails */
 INSERT INTO controllAppSections (appName, appPage, appSection, sectionDescription) VALUES
    ('controll', 'emails', 'noMembership', 'No Membership Email - Created Account - but put no memberships in cart');
 UPDATE controllAppSections SET sectionDescription = 'Comeback Email - Not bought a membership for a few years'
@@ -364,6 +366,34 @@ SET contents = 'Dear [[FirstName]],
         #conname# Registration
         '
 WHERE appName = 'controll' AND appPage = 'emails' AND appSection = 'noMembership' AND txtItem = 'text';
+
+/* Portal Interest and Policy headers */
+INSERT INTO controllAppPages(appName, appPage, pageDescription) VALUES
+    ('profile', 'all', 'Custom text related to the member profile');
+
+INSERT INTO controllAppSections (appName, appPage, appSection, sectionDescription) VALUES
+    ('profile', 'all', 'policies', 'In profiles, policies section'),
+    ('profile', 'all', 'interests', 'In profiles, interests section');
+
+INSERT INTO controllAppItems(appName, appPage, appSection, txtItem, txtItemDescription) VALUES
+    ('profile', 'all','policies','header','header before policies in edit profile'),
+    ('profile', 'all','policies','footer','footer after policies in edit profile'),
+    ('profile', 'all','interests','header','header before interests in edit profile'),
+    ('profile', 'all','interests','footer','footer after interests in edit profile');
+
+INSERT INTO controllTxtItems(appName, appPage, appSection, txtItem, contents)
+SELECT a.appName, a.appPage, a.appSection, a.txtItem,
+       CONCAT('Controll-Default: This is ', a.appName, '-', a.appPage, '-', a.appSection, '-', a.txtItem,
+              '<br/>Custom HTML that can replaced with a custom value in the ConTroll Admin App under RegAdmin/Edit Custom Text.<br/>',
+              'Default text display can be suppressed in the configuration file.')
+FROM controllAppItems a
+         LEFT OUTER JOIN controllTxtItems t ON (a.appName = t.appName AND a.appPage = t.appPage AND a.appSection = t.appSection AND a.txtItem = t.txtItem)
+WHERE t.contents is NULL;
+
+UPDATE controllTxtItems
+SET contents = '<span class="size-h3" style="font-weight: bold;">Additional Interests or Needs</span>
+<p>This form lets us know if you want to be contacted about specific things. We ask these questions to help us give you the experience you are after.</p>'
+WHERE appName = 'profile' AND appPage = 'all' AND appSection = 'interests' AND txtItem = 'header';
 
 
 INSERT INTO patchLog(id, name) VALUES(xx, 'marketingEmails');
