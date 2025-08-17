@@ -2,6 +2,7 @@
  * Updates for various marketing emails and related items such as no membership created, comeback, etc.
  * Plus a re-push because some people have an older mergePerid proc
  * Change to make policy and interest headers custom text
+ * Changes to track payments in terminal for later cleanup
  */
 
 DROP PROCEDURE IF EXISTS `mergePerid` ;
@@ -395,5 +396,10 @@ SET contents = '<span class="size-h3" style="font-weight: bold;">Additional Inte
 <p>This form lets us know if you want to be contacted about specific things. We ask these questions to help us give you the experience you are after.</p>'
 WHERE appName = 'profile' AND appPage = 'all' AND appSection = 'interests' AND txtItem = 'header';
 
+/*
+ * transaction fields for terminal payment tracking
+ */
+ALTER TABLE transaction ADD COLUMN  paymentId varchar(64) DEFAULT NULL;
+ALTER TABLE transaction ADD COLUMN  paymentStatus varchar(32) DEFAULT NULL;
 
 INSERT INTO patchLog(id, name) VALUES(xx, 'marketingEmails');
