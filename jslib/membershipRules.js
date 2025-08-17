@@ -118,7 +118,7 @@ class MembershipRules {
         if (this.#age != null) {
             if (mem.memAge != 'all' && mem.memAge != this.#age) {
                 if (this.#debug & 8) {
-                    console.log("testMembership: return false due to not applying to this age");
+                    console.log("testMembership: return false due to not applying to this age: " + this.#age + ', memAge: ' + mem.memAge);
                 }
                 return false;   // skip this mem entry, its's not all or the current age bracket
                 }
@@ -200,7 +200,7 @@ class MembershipRules {
             if (rule.typeList != null && rule.typeList != '') {
                 if (rule.typeListArray.indexOf(mem.memType.toString()) == -1) {
                     if (this.#debug & 8) {
-                        console.log("testMembership: continue-type not found " + mem.memType.toString());
+                        console.log('testMembership/' + key + ': continue-type not found ' + mem.memType.toString());
                     }
                     continue;
                 }
@@ -208,7 +208,7 @@ class MembershipRules {
             if (rule.catList != null && rule.catList != '') {
                 if (rule.catListArray.indexOf(mem.memCategory.toString()) == -1) {
                     if (this.#debug & 8) {
-                        console.log("testMembership: continue-category not found " + mem.memCategory.toString());
+                        console.log('testMembership/' + key + ': continue-category not found ' + mem.memCategory.toString());
                     }
                     continue;
                 }
@@ -216,7 +216,7 @@ class MembershipRules {
             if (rule.ageList != null && rule.ageList != '') {
                 if (rule.ageListArray.indexOf(mem.memAge.toString()) == -1) {
                     if (this.#debug & 8) {
-                        console.log("testMembership: continue-age not found " + mem.memAge.toString());
+                        console.log('testMembership/' + key + ': continue-age not found ' + mem.memAge.toString());
                     }
                     continue;
                 }
@@ -224,7 +224,7 @@ class MembershipRules {
             if (rule.memList != null && rule.memList != '') {
                 if (rule.memListArray.indexOf(mem.memId.toString()) == -1) {
                     if (this.#debug & 8) {
-                        console.log("testMembership: continue-memId not found " + mem.memId.toString());
+                        console.log('testMembership/' + key + ': continue-memId not found ' + mem.memId.toString());
                     }
                     continue;
                 }
@@ -233,7 +233,7 @@ class MembershipRules {
             // ok this rule applies to this memList entry, now apply it
             if (!this.testMembershipRule(rule, mem, skipImplicit)) {
                 if (this.#debug & 8) {
-                    console.log("testMembership: return false-failed test on rule steps");
+                    console.log('testMembership/' + key + ': return false-failed test on rule steps');
                 }
                 return false;
             }
@@ -256,12 +256,12 @@ class MembershipRules {
             var step = steps[row];
 
             if (this.#debug & 16) {
-                console.log('step ' + step.step + ', type=' + step.ruleType);
+                console.log(rule.name + ':step ' + step.step + ', type=' + step.ruleType);
             }
 
             if (!this.testMembershipRuleStep(step, mem, skipSelfChecks)) {
                 if (this.#debug & 16) {
-                    console.log('returning false: failed step');
+                    console.log(rule.name + ':step ' + step.step + ' returning false: failed step');
                 }
                 return false;
             }
@@ -298,14 +298,16 @@ class MembershipRules {
             if (step.ruleType == 'notAny' || step.ruleType == 'notAll') {
                 if (match) {
                     if (this.#debug & 16) {
-                        console.log("Step return false on age: " + this.#age + " in " + step.ageList + " for " + step.ruleType);
+                        console.log('Step ' + step.name + '/' + step.step + ": return false on age: " + this.#age + " in " + step.ageList +
+                            " for " + step.ruleType);
                     }
                     return false;
                 }
             } else {
                 if (!match) {
                     if (this.#debug & 16) {
-                        console.log("Step return false on age: " + this.#age + " not in " + step.ageList + " for " + step.ruleType);
+                        console.log('Step ' + step.name + '/' + step.step + ":  return false on age: " + this.#age + " not in " + step.ageList +
+                            " for " + step.ruleType);
                     }
                     return false;
                 }
@@ -411,7 +413,7 @@ class MembershipRules {
             for (row in this.#allTypes) {
                 if (this.#allTypes[[row].toString()] == false) {
                     if (this.#debug & 16) {
-                        console.log("Step return false on needAll on type");
+                        console.log('Step ' + step.name + '/' + step.step + ": return false on needAll on type");
                     }
                     return false;
                 }
@@ -419,7 +421,7 @@ class MembershipRules {
             for (row in this.#allCats) {
                 if (this.#allCats[[row].toString()] == false) {
                     if (this.#debug & 16) {
-                        console.log("Step return false on needAll on categoy");
+                        console.log('Step ' + step.name + '/' + step.step + ": return false on needAll on categoy");
                     }
                     return false;
                 }
@@ -427,7 +429,7 @@ class MembershipRules {
             for (row in this.#allMems) {
                 if (this.#allMems[[row].toString()] == false) {
                     if (this.#debug & 16) {
-                        console.log("Step return false on needAll on memId");
+                        console.log("'Step ' + step.name + '/' + step.step + \": return false on needAll on memId");
                     }
                     return false;
                 }
@@ -435,20 +437,20 @@ class MembershipRules {
             for (row in this.#allAges) {
                 if (this.#allAges[[row].toString()] == false) {
                     if (this.#debug & 16) {
-                        console.log("Step return false on needAll on age");
+                        console.log('Step ' + step.name + '/' + step.step + ": return false on needAll on age");
                     }
                     return false;
                 }
             }
             if (this.#debug & 16) {
-                console.log("Step return true on needAll");
+                console.log('Step ' + step.name + '/' + step.step + ": return true on needAll");
             }
             return true;
         } else if (step.ruleType == 'notall') {
             for (row in this.#allTypes) {
                 if (this.#allTypes[[row].toString()]) {
                     if (this.#debug & 16) {
-                        console.log("Step return false on notAll on type");
+                        console.log('Step ' + step.name + '/' + step.step + ": return false on notAll on type");
                     }
                     return false;
                 }
@@ -456,7 +458,7 @@ class MembershipRules {
             for (row in this.#allCats) {
                 if (this.#allCats[[row].toString()]) {
                     if (this.#debug & 16) {
-                        console.log("Step return false on notAll on category");
+                        console.log('Step ' + step.name + '/' + step.step + ": return false on notAll on category");
                     }
                     return false;
                 }
@@ -464,7 +466,7 @@ class MembershipRules {
             for (row in this.#allMems) {
                 if (this.#allMems[[row].toString()]) {
                     if (this.#debug & 16) {
-                        console.log("Step return false on notAll on memId");
+                        console.log('Step ' + step.name + '/' + step.step + ": return false on notAll on memId");
                     }
                     return false;
                 }
@@ -472,18 +474,18 @@ class MembershipRules {
             for (row in this.#allAges) {
                 if (this.#allAges[[row].toString()]) {
                     if (this.#debug & 16) {
-                        console.log("Step return false on notAll on age");
+                        console.log('Step ' + step.name + '/' + step.step + ": return false on notAll on age");
                     }
                     return false;
                 }
             }
             if (this.#debug & 16) {
-                console.log("Step return true on notAll");
+                console.log('Step ' + step.name + '/' + step.step + ": return true on notAll");
             }
             return true;
         } else {
             if (this.#debug & 16) {
-                console.log("Step return " + stepPass + " on others");
+                console.log('Step ' + step.name + '/' + step.step + ": return " + stepPass + " on others");
             }
             return stepPass;
         }
