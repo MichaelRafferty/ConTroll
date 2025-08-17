@@ -481,7 +481,7 @@ class Portal {
             return;
 
         if (!valid) {
-            show_message("Please enter a valid email address", 'warn');
+            show_message("Please enter a valid email address", 'warn', 'ceMessageDiv');
             return;
         }
         if (autoCall == 2)

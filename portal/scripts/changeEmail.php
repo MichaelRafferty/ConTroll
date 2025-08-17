@@ -155,7 +155,6 @@ EOS;
         ajaxSuccess(array('status'=>'error', 'message'=>'Error finding valid email addresses for you - get assistance'));
         exit();
     }
-    $validEmails = array();
     while ($vL = $vR->fetch_row()) {
         $validEmails[] = $vL[0];
     }
