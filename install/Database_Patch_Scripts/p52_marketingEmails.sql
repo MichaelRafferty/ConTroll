@@ -401,5 +401,6 @@ WHERE appName = 'profile' AND appPage = 'all' AND appSection = 'interests' AND t
  */
 ALTER TABLE transaction ADD COLUMN  paymentId varchar(64) DEFAULT NULL;
 ALTER TABLE transaction ADD COLUMN  paymentStatus varchar(32) DEFAULT NULL;
+ALTER TABLE transaction ADD COLUMN  checkoutId varchar(32) DEFAULT NULL;
 
 INSERT INTO patchLog(id, name) VALUES(xx, 'marketingEmails');
