@@ -402,5 +402,8 @@ WHERE appName = 'profile' AND appPage = 'all' AND appSection = 'interests' AND t
 ALTER TABLE transaction ADD COLUMN  paymentId varchar(64) DEFAULT NULL;
 ALTER TABLE transaction ADD COLUMN  paymentStatus varchar(32) DEFAULT NULL;
 ALTER TABLE transaction ADD COLUMN  checkoutId varchar(32) DEFAULT NULL;
+CREATE INDEX trans_orderId ON transaction(orderId);
+CREATE INDEX trans_paymentId ON transaction(paymentId);
+CREATE INDEX trans_checkoutId ON transaction(checkoutId);
 
 INSERT INTO patchLog(id, name) VALUES(xx, 'marketingEmails');
