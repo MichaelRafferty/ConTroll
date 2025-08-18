@@ -180,8 +180,19 @@ if ($rtn == null) {
     exit();
 }
 $rtn['totalPaid'] = $totalPaid;
-$response['rtn'] = $rtn;
 
+$upT = <<<EOS
+UPDATE transaction
+SET price = ?, tax = ?, withTax = ?, couponDiscountCart = ?, orderId = ?, paymentStatus = 'ORDER'
+WHERE id = ?;
+EOS;
+
+$preTax = $rtn['preTaxAmt'];
+$taxAmt = $rtn['taxAmt'];
+$withTax = $rtn['totalAmt'];
+$rows_upd = dbSafeCmd($upT, 'ddddsi', array($preTax, $taxAmt, $withTax, 0, $rtn['orderId'], $transId));
+
+$response['rtn'] = $rtn;
 
 //$tnx_record = $rtn['tnx'];
 logWrite(array('con' => $con['label'], 'payorId' => $payorId, 'ccrtn' => $rtn));

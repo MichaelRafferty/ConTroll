@@ -367,6 +367,15 @@ if ($amt > 0 || $discountAmt > 0) {
                 exit();
             }
             $status = $checkout['status'];
+
+            // update the transaction status
+            $updTranStatusSQL = <<<EOS
+UPDATE transaction
+SET paymentStatus = ?
+WHERE id = ?;
+EOS;
+            $updcnt = dbSafeCmd($updTranStatusSQL, 'si', array($status, $master_tid));
+
             switch ($status) {
                 case 'CANCELED':
                     resetTerminalStatus($name);
@@ -400,7 +409,16 @@ if ($amt > 0 || $discountAmt > 0) {
                 web_error_log($paymentIds);
             }
             $paymentId = $paymentIds[0];
+
             $payment = cc_getPayment('atcon', $paymentId, true);
+
+            // update the transaction status
+            $updTranPaymentIdSQL = <<<EOS
+UPDATE transaction
+SET paymentId = ?
+WHERE id = ?;
+EOS;
+            $updcnt = dbSafeCmd($updTranStatusSQL, 'si', array($paymentId, $master_tid));
 
             $approved_amt = $payment['approved_money']['amount'] / 100;
             $category = 'atcon';
@@ -476,6 +494,16 @@ EOS;
                     ajaxSuccess(array ('error' => "Unable to update terminal ($name) status"));
                     exit();
                 }
+
+                /* update the transaction */
+                // update the transaction status
+                $updTranStatusSQL = <<<EOS
+UPDATE transaction
+SET paymentStatus = ?, checkoutId = ?
+WHERE id = ?;
+EOS;
+                $updcnt = dbSafeCmd($updTranStatusSQL, 'ssi', array($status, $checkout['id'], $master_tid));
+
                 $response['status'] = 'success';
                 $response['poll'] = 1;
                 $response['id'] = $checkout['id'];
@@ -512,6 +540,14 @@ EOS;
     else
         $nonceCode = $nonce;
     $complete = round($approved_amt,2) == round($amt,2);
+
+    // now update the transaction with the data
+    $updTranStatusSQL = <<<EOS
+UPDATE transaction
+SET paymentStatus = ?, paymentId = ?
+WHERE id = ?;
+EOS;
+    $updcnt = dbSafeCmd($updTranStatusSQL, 'ssi', array($status, $paymentId, $master_tid));
 
     // now add the payment and process to which rows it applies
     $insPmtSQL = <<<EOS
