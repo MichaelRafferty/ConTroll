@@ -20,7 +20,8 @@ if (!check_atcon($method, $conid)) {
 $cdn = getTabulatorIncludes();
 page_init($page, 'admin',
     /* css */ array($cdn['tabcss'], $cdn['tabbs5'], 'css/style.css'),
-    /* js  */ array($cdn['tabjs'],'js/admin.js','jslib/atconPrinters.js','jslib/atconUsers.js','jslib/atconTerminals.js')
+    /* js  */ array($cdn['tabjs'],'js/admin.js', 'js/atconPayments.js',
+                'jslib/atconPrinters.js','jslib/atconUsers.js','jslib/atconTerminals.js')
     );
 
 ?>
@@ -38,6 +39,11 @@ page_init($page, 'admin',
     <li class='nav-item' role='presentation'>
         <button class='nav-link' id='terminals-tab' data-bs-toggle='pill' data-bs-target='#terminals-pane' type='button'
                 role='tab' aria-controls='nav-terminals' aria-selected='false' onclick="settab('terminals-pane');">Square Terminals
+        </button>
+    </li>
+    <li class='nav-item' role='presentation'>
+        <button class='nav-link' id='payments-tab' data-bs-toggle='pill' data-bs-target='#payments-pane' type='button'
+                role='tab' aria-controls='nav-payments' aria-selected='false' onclick="settab('payments-pane');">Terminal Payment Issues
         </button>
     </li>
 </ul>
@@ -121,6 +127,21 @@ page_init($page, 'admin',
             <div class='row mt-2'>
                 <div class='col-sm-4'>
                     <button type='button' class='btn btn-secondary btn-sm' id='terminals_add_btn' onclick='terminals.addTerminal();'>Add Terminal</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class='tab-pane fade' id='payments-pane' role='tabpanel' aria-labelledby='payments-tab' tabindex='0'>
+        <div class='container-fluid'>
+            <div class='row'>
+                <div class='col-sm-auto'><h2>Terminal Payment Issues</h2></div>
+            </div>
+            <div class='row'>
+                <div class='col-sm-auto table-bordered table-sm' id='paymentsTable'></div>
+            </div>
+            <div class='row mt-2'>
+                <div class='col-sm-4'>
+                    <button type='button' class='btn btn-primary btn-sm' id='payments_refresh_btn' onclick='payments.loadPaymentIssues();'>Refresh Issue List</button>
                 </div>
             </div>
         </div>

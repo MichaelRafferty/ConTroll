@@ -1,8 +1,8 @@
 <?php
-// library AJAX Processor: admin_deleteTerminsl.php
+// library AJAX Processor: admin_getTerminalStatus.php
 // Balticon Registration System
 // Author: Syd Weinstein
-// delete and re-get the list of terminals
+// refresh the status of a single terminal
 
 require_once('../lib/base.php');
 require_once('../../lib/term__load_methods.php');
