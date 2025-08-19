@@ -1,4 +1,4 @@
-// Balticon Reg System
+// ConTroll Registration System, Copyright 2015-2025, Michael Rafferty, Licensed under the GNU Affero General Public License, Version 3.
 // ATCON System
 // Author: Syd Weinstein
 // Client Side for index.php

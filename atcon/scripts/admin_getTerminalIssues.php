@@ -1,6 +1,6 @@
 <?php
+// ConTroll Registration System, Copyright 2015-2025, Michael Rafferty, Licensed under the GNU Affero General Public License, Version 3.
 // library AJAX Processor: admin_getTerminalIssues.php
-// Balticon Registration System
 // Author: Syd Weinstein
 // refresh the list of terminal payments not yet completed/cancelled
 

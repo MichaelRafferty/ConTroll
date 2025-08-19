@@ -1,7 +1,6 @@
 <?php
-
+// ConTroll Registration System, Copyright 2015-2025, Michael Rafferty, Licensed under the GNU Affero General Public License, Version 3.
 // library AJAX ProcessorvolRollover_rolloverMember.php
-// Balticon Registration System
 // Author: Syd Weinstein
 // update the database to add the rollover
 

@@ -1,6 +1,6 @@
 <?php
+// ConTroll Registration System, Copyright 2015-2025, Michael Rafferty, Licensed under the GNU Affero General Public License, Version 3.
 // library AJAX Processor: change_passwd
-// Balticon Registration System
 // Author: Syd Weinstein
 
 require_once('../lib/base.php');
