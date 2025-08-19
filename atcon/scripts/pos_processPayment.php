@@ -425,7 +425,10 @@ EOS;
             $desc = $payment['application_details']['square_product'];
             $txtime = $payment['created_at'];
             $receiptNumber = $payment['receipt_number'];
-            $receiptUrl = $payment['receipt_url'];
+            if (array_key_exists('receipt_url', $payment))
+                $receiptUrl = $payment['receipt_url'];
+            else
+                $receiptUrl = null;
             $last4 = $payment['card_details']['card']['last_4'];
             $id = $payment['id'];
             $location_id = $payment['location_id'];
