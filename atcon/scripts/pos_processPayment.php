@@ -42,8 +42,6 @@ $source = 'atcon';
 
 $log = get_conf('log');
 $con = get_conf('con');
-$ini = get_conf('reg');
-$cc = get_conf('cc');
 load_cc_procs();
 logInit($log['term']);
 
@@ -329,7 +327,7 @@ if ($amt > 0 || $discountAmt > 0) {
             if ($locationId) {
                 $locationId = $locationId['locationId'];
             } else {
-                $locationId = $cc['location'];
+                $locationId = getConfValue('cc', 'location');
             }
             $ccParam = array (
                 'transid' => $master_tid,
