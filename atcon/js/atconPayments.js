@@ -55,6 +55,7 @@ class Payments {
                     {title: "TID", field: "id", minWidth: 100, headerSort: true, headerFilter: true,  hozAlign: 'right', headerHozAlign: 'right'},
                     {title: "Status", field: "paymentStatus", minWidth: 100, headerSort: true, headerFilter: true, headerWordWrap: true,},
                     {title: "Checkout ID", field: "checkoutId", minWidth: 100, headerSort: true, headerFilter: true, headerWordWrap: true,},
+                    {title: "Card Status", field: "cardStatus", headerSort: true, headerFilter: true, headerWordWrap: true,},
                     {title: "Order ID", field: "orderId", minWidth: 100, headerSort: true, headerFilter: true, headerWordWrap: true,},
                     {title: "Create Date", field: "create_date", headerSort: true, headerFilter: true, headerWordWrap: true,},
                     {title: "Complete Date", field: "complete_date", headerSort: true, headerFilter: true, headerWordWrap: true,},
@@ -63,6 +64,8 @@ class Payments {
                     {title: "Paid", field: "paid",headerSort: false,  hozAlign: 'right', headerHozAlign: 'right', },
                     {title: "Perid", field: "perid",headerSort: false, hozAlign: 'right', headerHozAlign: 'right', },
                     {title: "Full Name", field: "fullName", headerSort: true, headerFilter: true, headerWordWrap: true, },
+                    {title: "Payment ID", field: "paymentId",  headerSort: true, headerFilter: true, headerWordWrap: true,},
+                    {title: "Card Payment ID", field: "cardPaymentId", headerSort: true, headerFilter: true, headerWordWrap: true,},
                 ],
             });
         }

@@ -31,10 +31,13 @@ if (!check_atcon($method, $conid)) {
 $issueSQL = <<<EOS
 SELECT t.id, t.paymentId, t.paymentStatus, t.checkoutId, t.create_date, t.complete_date, t.perid, t.userid, t.withtax, t.paid, 
        t.type, t.orderId, t.lastUpdate, TIMESTAMPDIFF(MINUTE, t.lastUpdate, NOW()) as minutes,
-       TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName
+       TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
+       y.id AS payTableId, y.status AS cardStatus, y.paymentId AS cardPaymentId
 FROM transaction t
 JOIN perinfo p ON t.perid = p.id
-WHERE t.conid = ? AND t.checkoutId IS NOT NULL AND t.paymentStatus NOT IN ('COMPLETED', 'CANCELED')
+LEFT OUTER JOIN payments y ON t.id = y.transid
+WHERE t.conid = ? AND (t.checkoutId IS NOT NULL AND IFNULL(t.paymentStatus,'') NOT IN ('COMPLETED', 'CANCELED')) 
+   OR IFNULL(y.status,'') = 'APPROVED'
 ORDER BY minutes DESC;
 EOS;
 

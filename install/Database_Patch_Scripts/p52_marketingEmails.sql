@@ -407,4 +407,6 @@ CREATE INDEX trans_orderId ON transaction(orderId);
 CREATE INDEX trans_paymentId ON transaction(paymentId);
 CREATE INDEX trans_checkoutId ON transaction(checkoutId);
 
+UPDATE transaction SET lastUpdate = IFNULL(complete_date, create_date);
+
 INSERT INTO patchLog(id, name) VALUES(xx, 'marketingEmails');
