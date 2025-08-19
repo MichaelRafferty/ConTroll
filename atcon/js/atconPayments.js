@@ -37,6 +37,7 @@ class Payments {
     }
 
     drawPaymentIssues(data) {
+        this.#refreshButton.disabled = false;
         if (this.#issueList !== null) {
             this.#issueList.replaceData(data.issues);
         }
@@ -49,7 +50,7 @@ class Payments {
                 history: true,
                 index: 'name',
                 columns: [
-                    {title: "Actions", minWidth: 230, formatter: this.issueActions,},
+                    {title: "Actions", minWidth: 80, formatter: this.issueActions,},
                     {title: "Age<br/>(Mins)", field: "minutes", minWidth: 60, headerSort: true, headerFilter: true, headerWordWrap: true,
                         hozAlign: 'right', headerHozAlign: 'right'},
                     {title: "TID", field: "id", minWidth: 100, headerSort: true, headerFilter: true,  hozAlign: 'right', headerHozAlign: 'right'},
@@ -64,8 +65,8 @@ class Payments {
                     {title: "Paid", field: "paid",headerSort: false,  hozAlign: 'right', headerHozAlign: 'right', },
                     {title: "Perid", field: "perid",headerSort: false, hozAlign: 'right', headerHozAlign: 'right', },
                     {title: "Full Name", field: "fullName", headerSort: true, headerFilter: true, headerWordWrap: true, },
-                    {title: "Payment ID", field: "paymentId",  headerSort: true, headerFilter: true, headerWordWrap: true,},
-                    {title: "Card Payment ID", field: "cardPaymentId", headerSort: true, headerFilter: true, headerWordWrap: true,},
+                    {title: "Payment<br/>ID", field: "paymentId", headerSort: false,  headerWordWrap: true,},
+                    {title: "Card<br/>Payment<br/>ID", field: "cardPaymentId", headerSort: false, headerWordWrap: true,},
                 ],
             });
         }
@@ -81,8 +82,9 @@ class Payments {
         var btns = "";
 
         if (data.minutes > 15) {
-            btns += '<button class="btn btn-primary me-1" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
-                ' onclick="payments.poll(\'' + data.id + '\')">Poll</button>';
+            btns += '<button class="btn btn-primary me-1" id="pollBTN_' + data.id + '"' +
+            ' style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;"' +
+            ' onclick="payments.poll(\'' + data.id + '\')">Poll</button>';
         } else {
             btns += 'Too New';
         }
@@ -92,7 +94,31 @@ class Payments {
 
     // poll the payment to update it's status and finish its processing if 'complete'
     poll(transid) {
-        // clear the fields
         console.log("Poll of " + transid + " requested");
+
+        this.#refreshButton.disabled = true;
+        document.getElementById("pollBTN_" + transid).disabled = true;
+
+        var postData = {
+            ajax_request_action: 'update',
+            transid: transid,
+        };
+        $.ajax({
+            method: "POST",
+            url: "scripts/admin_updateTerminalIssues.php",
+            data: postData,
+            success: function (data, textstatus, jqxhr) {
+                if (data.error) {
+                    show_message(data.error, 'error');
+                    document.getElementById("pollBTN_" + transid).disabled = false;
+
+                }
+                if (data.success) {
+                    show_message(data.message, 'success');
+                }
+                payments.drawPaymentIssues(data);
+            },
+            error: showAjaxError,
+        });
     }
 }
