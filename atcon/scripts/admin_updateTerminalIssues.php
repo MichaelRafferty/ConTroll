@@ -72,7 +72,7 @@ $message = '';
 if ($issue['cardStatus'] != '' && $issue['cardStatus'] != 'COMPLETED' && $issue['cardPaymentId'] != '') {
     // it has a card payment id and a card status, it's just not 'COMPLETED', poll the payment record and if it's now completed
     $payment = cc_getPayment('issue', $issue['cardPaymentId'], true);
-    if ($payment['paymentStatus'] == 'COMPLETED') {
+    if ($payment['status'] == 'COMPLETED') {
         // it's now complete, update the payment record with the status and the receipt URL
         $updPaySQL = <<<EOS
 UPDATE payments
