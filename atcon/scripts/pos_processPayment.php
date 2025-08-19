@@ -40,10 +40,9 @@ $user_perid = $user_id;
 $paymentType = 'credit'; // default type
 $source = 'atcon';
 
-$log = get_conf('log');
 $con = get_conf('con');
 load_cc_procs();
-logInit($log['term']);
+logInit(getConfValue('log', 'term'));
 
 $conid = $con['id'];
 $upd_rows = 0;

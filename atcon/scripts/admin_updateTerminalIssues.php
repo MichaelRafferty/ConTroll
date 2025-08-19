@@ -19,7 +19,7 @@ $method = 'manager';
 $con = get_conf('con');
 $conid = $con['id'];
 load_cc_procs();
-logInit(getConfValue('log', 'term');
+logInit(getConfValue('log', 'term'));
 
 
 $ajax_request_action = '';
