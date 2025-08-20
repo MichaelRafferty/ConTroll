@@ -37,7 +37,7 @@ EOS;
         $website =  '<i>(None Entered)</i>';
         $websiteURL = $website;
     } else {
-        $websiteURL = '<a href="$website" target="_blank">$website</a>';
+        $websiteURL = "<a href='$website' target='_blank'>$website</a>";
     }
     $websiteText = strip_tags($website);
 
@@ -116,7 +116,7 @@ function request($exhibitorInfo, $regionInfo, $portalName, $portalType, $spaces)
         $website =  '<i>(None Entered)</i>';
         $websiteURL = $website;
     } else {
-        $websiteURL = '<a href="$website" target="_blank">$website</a>';
+        $websiteURL = "<a href='$website' target='_blank'>$website</a>";
     }
     $websiteText = strip_tags($website);
 
