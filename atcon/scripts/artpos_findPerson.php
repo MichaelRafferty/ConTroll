@@ -75,7 +75,7 @@ LEFT OUTER JOIN artSales s ON a.id = s.artid
 LEFT OUTER JOIN transaction t on s.transid = t.id AND t.price != t.paid                   
 WHERE (a.bidder = ? OR IFNULL(s.perid, -1) = ?) AND a.conid = ? AND 
       IFNULL(s.paid, 0) != IFNULL(s.amount, -1) AND
-      (a.status IN ('Checked In', 'Quicksale/Sold', 'Sold Bid Sheet','Sold at Auction') OR a.type = 'print') AND
+      (a.status IN ('Checked In', 'Bid', 'Quicksale/Sold', 'Sold Bid Sheet','Sold at Auction') OR a.type = 'print') AND
       ((t.id IS NULL AND s.transid IS NULL) OR (t.id = s.transid)) AND eR.shortname LIKE ?;
 EOS;
         $findArtR = dbSafeQuery($findArtQ, 'iiis', array($perid, $perid, $conid, $region));
