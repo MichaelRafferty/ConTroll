@@ -5,6 +5,8 @@ var login = null;
 // initial setup
 window.onload = function () {
     login = new Login();
+    if (config.refresh == 'passkey')
+        login.loginWithPasskey();
 }
 
 class Login {

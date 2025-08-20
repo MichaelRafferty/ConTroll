@@ -7,7 +7,7 @@ function refreshSession() {
 
     switch($type) {
         case 'token':
-            echo "working on login via email token<br/>\n";
+            //echo "working on login via email token<br/>\n";
             // send a refresh link email
             $message = sendEmailToken(getSessionVar('email'), true);
             if ($message) {
@@ -28,10 +28,8 @@ function refreshSession() {
             exit();
 
         case 'oauth2':
-            $portal_conf = get_conf('portal');
-
             $provider = getSessionVar('oauth2');
-            $redirect = $portal_conf['portalsite'] . "?oauth2=$provider&refresh";
+            $redirect = getConfValue('portal', 'portalsite') . "?oauth2=$provider&refresh";
 ?>
             <div class="row">
                 <div class='col-sm-12 bg-success text-white'>
@@ -43,6 +41,21 @@ function refreshSession() {
     </script>
 <?php
             exit();
+
+        case 'passkey':
+            $redirect = getConfValue('portal', 'portalsite') . "?passkey&refresh";
+?>
+            <div class="row">
+                <div class='col-sm-12 bg-success text-white'>
+                    Your session has expired, you are being redirected to refresh your passkey based session.
+                </div>
+            </div>
+            <script type='text/javascript'>
+                window.location = "<?php echo $redirect; ?>";
+            </script>
+            <?php
+            exit();
+
     }
     echo "Unknown refresh request\n";
     exit();

@@ -89,7 +89,7 @@ function draw_login($config_vars, $result_message = '', $result_color = '', $why
                 </p>
             </div>
         </div>
-        <div class='row mt-4'>
+        <div class='row'>
             <div class='col-sm-11'><?php echo outputCustomText('footer/difficulties', 'portal/all/'); ?></div>
         </div>
         <div class='row'>
