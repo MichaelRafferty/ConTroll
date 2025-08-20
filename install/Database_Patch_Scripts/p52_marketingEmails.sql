@@ -345,6 +345,43 @@ BEGIN
 END ;;
 DELIMITER ;
 
+DROP PROCEDURE IF EXISTS `deleteDupsIntPol` ;
+DELIMITER ;;
+CREATE PROCEDURE `deleteDupsIntPol`()
+    SQL SECURITY INVOKER
+BEGIN
+    DROP TABLE IF exists remainPolicy;
+
+    CREATE TEMPORARY TABLE remainPolicy AS
+    SELECT perid, conid, policy, MAX(IFNULL(updateDate, createDate)) AS matchDate, COUNT(*) dups
+    FROM memberPolicies
+    WHERE perid IS NOT NULL
+    GROUP BY perid, conid, policy HAVING COUNT(*) > 1;
+
+    DELETE memberPolicies
+    FROM memberPolicies
+    JOIN remainPolicy r ON (memberPolicies.perid = r.perid AND memberPolicies.conid = memberPolicies.conid AND memberPolicies.policy = r.policy)
+    WHERE r.perid IS NOT NULL AND IFNULL(memberPolicies.updateDate, memberPolicies.createDate) < r.matchDate;
+
+    DROP TABLE IF EXISTS remainPolicy;
+
+    DROP TABLE IF EXISTS remainInterest;
+
+    CREATE TEMPORARY TABLE remainInterest AS
+    SELECT perid, conid, interest, MAX(IFNULL(updateDate, createDate)) AS matchDate, COUNT(*) dups
+    FROM memberInterests
+    WHERE perid IS NOT NULL
+    GROUP BY perid, conid, interest HAVING COUNT(*) > 1;
+
+    DELETE memberInterests
+    FROM memberInterests
+    JOIN remainInterest r ON (memberInterests.perid = r.perid AND memberInterests.conid = memberInterests.conid AND memberInterests.interest = r.interest)
+    WHERE r.perid IS NOT NULL AND IFNULL(memberInterests.updateDate, memberInterests.createDate) < r.matchDate;
+
+    DROP TABLE IF EXISTS remainInterest;
+END ;;
+DELIMITER ;
+
 /* force all existing to match the changed stored procedure values */
 UPDATE perinfo SET contact_ok = 'N', active = 'N' WHERE first_name = 'merged' AND middle_name = 'into';
 
