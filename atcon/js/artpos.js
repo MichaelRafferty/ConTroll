@@ -648,14 +648,26 @@ function drawItemDetails(item, full = false) {
     var btn_color = 'btn-primary';
     var priceType = '';
     var priceField = '';
+    var statusColor = '';
+    var statusMsg = '';
 
     var cols = full ? '2' : '4';
+
+    if (config.inlineInventory == 0 && item.status == 'BID') {
+        btn_color = 'btn-warning';
+        statusColor = 'bg-warning';
+        statusMsg = ' (You cannot buy an item in this status)';
+        valid = false;
+    }
 
     html  = '<div class="row mt-4 mb-1"><div class="col-sm-11 ms-3 bg-primary text-white">Item Details</div></div>';
     html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Artist Number:</div><div class="col-sm-auto">' + item.exhibitorNumber + '</div></div>';
     html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Artist Item #:</div><div class="col-sm-auto">' + item.item_key + '</div></div>';
     html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Type:</div><div class="col-sm-auto">' + item.type + '</div></div>';
-    html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Status:</div><div class="col-sm-auto">' + item.status + '</div></div>';
+    html += '<div class="row m-0 p-0">' +
+            '<div class="col-sm-' + cols + ' ' + statusColor + '">Status:</div>' +
+            '<div class="col-sm-auto ' + statusColor + '">' + item.status + statusMsg + '</div>' +
+        '</div>';
     html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Artist Name:</div><div class="col-sm-7">' + item.exhibitorName + '</div></div>';
     html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Title:</div><div class="col-sm-7">' + item.title + '</div></div>';
     html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Material:</div><div class="col-sm-7">' + item.material + '</div></div>';
@@ -830,12 +842,17 @@ function foundArt(data) {
                     html += htmlLine;
                 } else {
                     if (btn_color == 'btn-warning') {
-                        if ((config.inlineInventory == 1 && item.type == 'art'))
-                            html += '<div class="row mt-2"><div class="col-sm-4"></div><div class="col-sm-8"><button class="btn btn-sm ' + btn_color +
-                                '" type="button" onclick="updateInventory(-1);">Update Art Item Inventory</button></div></div>';
-                    } else
+                        if (item.type == 'art') {
+                            if (config.inlineInventory == 1) {
+                                html += '<div class="row mt-2"><div class="col-sm-4"></div><div class="col-sm-8"><button class="btn btn-sm '
+                                    + btn_color + '" type="button" onclick="updateInventory(-1);">Update Art Item Inventory</button>' +
+                                    '</div></div>';
+                            }
+                        }
+                    } else {
                         html += '<div class="row mt-2"><div class="col-sm-4"></div><div class="col-sm-8"><button class="btn btn-sm ' + btn_color +
                             '" type="button" onclick="addToCart(-1);">Add Art Item to Cart</button></div></div>';
+                    }
                 }
             } else {
                 html += '<div class="row mt-2"><div class="col-sm-4"></div><div class="col-sm-auto bg-warning">Already in Cart</div></div>';
@@ -1077,7 +1094,7 @@ function updateInventoryStep(item, repeatPass) {
                 ' min=1 max=9999999 value="' + (item.final_price > item.min_price ? item.final_price : item.min_price) + '"></div></div>';
             inventoryUpdates.push({field: 'final_price', id: 'finalPrice', type: 'd',
                 prior: item.min_price - 0.01 });
-            inventoryUpdates.push({field: 'status',  value: 'Bid'});
+            inventoryUpdates.push({field: 'status',  value: 'BID'});
             notes += 'Updated Status from Checked Out to Bid for sale after return to artist';
         }
     }

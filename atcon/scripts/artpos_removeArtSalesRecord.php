@@ -36,7 +36,7 @@ if (!(array_key_exists('artSalesId', $_POST) && array_key_exists('perid', $_POST
 $delSQL = <<<EOS
 DELETE FROM artSales
 WHERE
-    id = ? AND status IN ('Checked In', 'Bid') AND perid = ?
+    id = ? AND status IN ('Checked In', 'BID') AND perid = ?
 ;
 EOS;
 
