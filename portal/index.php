@@ -71,7 +71,7 @@ $why = "continue to the Portal";
     // END OF FUTURE FOR Controll Oauth validation request */
 
     $refresh = isset($_REQUEST['refresh']) && isSessionVar('id');
-    if (isset($_REQUEST['passkey'] && $refresh))
+    if (isset($_REQUEST['passkey']) && $refresh)
         $config_vars['refresh'] = 'passkey';
 
     // oauth2= indicates a new account login via oAUTH2 or the selected account is re-verifying, clear the old information,
