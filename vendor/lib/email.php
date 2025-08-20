@@ -56,7 +56,13 @@ EOS;
     $body = <<<EOS
 Dear $ownerName:
     $exhibitorName has requested permission to request space in $regionName.
-    
+
+Their business and contact info is:
+Business name: $exhibitorName
+Business email: $exhibitorEmail
+Contact name: $contactName
+Contact email: $contactEmail
+
 They have provided the following description:
 
 $descriptionText
@@ -71,6 +77,13 @@ EOS;
     $bodyhtml = <<<EOS
 <p>Dear $ownerName</p>
 <p>$exhibitorName has requested permission to request space in $regionName.</p>
+<p>
+Their business and contact info is:<br/>
+Business name: $exhibitorName<br/>
+Business email: $exhibitorEmail<br/>
+Contact name: $contactName<br/>
+Contact email: $contactEmail
+</p>
 <p>They have provided the following description:</p>
 <hr>
 $description
@@ -132,6 +145,12 @@ function request($exhibitorInfo, $regionInfo, $portalName, $portalType, $spaces)
 Dear $ownerName:
     $exhibitorName has $requestType space in $regionName.
     
+Their business and contact info is:
+Business name: $exhibitorName
+Business email: $exhibitorEmail
+Contact name: $contactName
+Contact email: $contactEmail
+
 They have provided the following description:
 
 $descriptionText
@@ -150,6 +169,13 @@ EOS;
     $bodyhtml = <<<EOS
 <p>Dear $ownerName</p>
 <p>$exhibitorName has $requestType space in $regionName.</p>
+<p>
+Their business and contact info is:<br/>
+Business name: $exhibitorName<br/>
+Business email: $exhibitorEmail<br/>
+Contact name: $contactName<br/>
+Contact email: $contactEmail
+</p>
 <p>They have provided the following description:</p>
 <hr>
 $description
