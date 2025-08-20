@@ -303,6 +303,37 @@ BEGIN
         WHERE id = to_mergePID;
         SET msg = CONCAT(msg, 'perinfo: ', to_mergePID, ': ', CONVERT(ROW_COUNT(), char), CHAR(10));
 
+        /* keep only the most recent interests and policies */
+        DROP TABLE IF EXISTS remainPolicy;
+
+        CREATE TEMPORARY TABLE remainPolicy AS
+        SELECT perid, conid, policy, MAX(IFNULL(updateDate, createDate)) AS matchDate, COUNT(*) dups
+        FROM memberPolicies
+        WHERE perid = to_survivePID
+        GROUP BY perid, conid, policy HAVING COUNT(*) > 1;
+
+        DELETE memberPolicies
+        FROM memberPolicies
+        JOIN remainPolicy r ON (memberPolicies.perid = r.perid AND memberPolicies.conid = memberPolicies.conid AND memberPolicies.policy = r.policy)
+        WHERE r.perid IS NOT NULL AND IFNULL(memberPolicies.updateDate, memberPolicies.createDate) < r.matchDate;
+
+        DROP TABLE IF EXISTS remainPolicy;
+
+        DROP TABLE IF EXISTS remainInterest;
+
+        CREATE TEMPORARY TABLE remainInterest AS
+        SELECT perid, conid, interest, MAX(IFNULL(updateDate, createDate)) AS matchDate, COUNT(*) dups
+        FROM memberInterests
+        WHERE perid = to_survivePID
+        GROUP BY perid, conid, interest HAVING COUNT(*) > 1;
+
+        DELETE memberInterests
+        FROM memberInterests
+        JOIN remainInterest r ON (memberInterests.perid = r.perid AND memberInterests.conid = memberInterests.conid AND memberInterests.interest = r.interest)
+        WHERE r.perid IS NOT NULL AND IFNULL(memberInterests.updateDate, memberInterests.createDate) < r.matchDate;
+
+        DROP TABLE IF EXISTS remainInterest;
+
         COMMIT;
 
     END procBlock;
