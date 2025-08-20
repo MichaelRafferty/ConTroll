@@ -1390,6 +1390,9 @@ class PosCart {
             var policies = row.policies;
             for (var polrow in policies) {
                 var policyName = policies[polrow].policy;
+                if (policyIndex[policyName] == undefined) // skip over inactive policies
+                    continue;
+
                 var policyResp = policies[polrow].response;
                 var color = '';
                 if (config.mode != 'admin' && allPolicies[policyIndex[policyName]].required == 'Y' && policyResp == 'N') {
