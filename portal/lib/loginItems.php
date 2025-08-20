@@ -90,12 +90,7 @@ function draw_login($config_vars, $result_message = '', $result_color = '', $why
             </div>
         </div>
         <div class='row mt-4'>
-            <div class='col-sm-11'>
-                For any difficulties with the registration system please contact registration at
-                <a href="mailto:<?php echo $con['regadminemail']; ?>?subject=Portal%20Difficulties">
-                    <?php echo $con['regadminemail']; ?>
-                </a>
-            </div>
+            <div class='col-sm-11'><?php echo outputCustomText('footer/difficulties', 'portal/all/'); ?></div>
         </div>
         <div class='row'>
             <div class='col-sm-12 m-0 p-0'>

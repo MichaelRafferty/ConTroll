@@ -41,6 +41,7 @@ function index_page_init($title) {
     $jquicss=$cdn['jquicss'];
     $filter = getConfValue('portal', 'customtext', 'production');
     loadCustomText('portal', basename($_SERVER['PHP_SELF'], '.php'), $filter);
+    loadCustomText('portal', 'all', $filter, true);
 
     echo <<<EOF
 <!DOCTYPE html>
@@ -79,6 +80,7 @@ function portalPageInit($page, $info, $css, $js, $refresh = false) {
     if(isWebRequest()) {
         $filter = getConfValue('portal', 'customtext', 'production');
         loadCustomText('portal', basename($_SERVER['PHP_SELF'], '.php'), $filter);
+        loadCustomText('portal', 'all', $filter, true);
         $includes = getTabulatorIncludes();
         $loginId = getSessionVar('id');
         $loginType = getSessionVar('idType');
@@ -197,12 +199,7 @@ function portalPageFoot() {
     outputCustomText('main/bottom');
     ?>
     <div class="row mt-4">
-        <div class="col-sm-12">
-            For any difficulties with the registration system please contact registration at
-            <a href="mailto:<?php echo $con['regadminemail'];?>?subject=Portal%20Difficulties">
-            <?php echo $con['regadminemail']; ?>
-            </a>
-        </div>
+        <div class='col-sm-12'><?php echo outputCustomText('footer/difficulties', 'portal/all/'); ?></div>
     </div>
     <div class="container-fluid">
         <div class='row'>

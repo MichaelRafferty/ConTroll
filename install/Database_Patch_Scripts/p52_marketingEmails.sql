@@ -438,13 +438,16 @@ WHERE appName = 'controll' AND appPage = 'emails' AND appSection = 'noMembership
 
 /* Portal Interest and Policy headers */
 INSERT INTO controllAppPages(appName, appPage, pageDescription) VALUES
+    ('portal', 'all', 'Custom text related to the entire portal application'),
     ('profile', 'all', 'Custom text related to the member profile');
 
 INSERT INTO controllAppSections (appName, appPage, appSection, sectionDescription) VALUES
+    ('portal', 'all', 'footer', 'All portal pages, the footer text'),
     ('profile', 'all', 'policies', 'In profiles, policies section'),
     ('profile', 'all', 'interests', 'In profiles, interests section');
 
 INSERT INTO controllAppItems(appName, appPage, appSection, txtItem, txtItemDescription) VALUES
+    ('portal', 'all','footer','difficulties','footer line: for any difficulties'),
     ('profile', 'all','policies','header','header before policies in edit profile'),
     ('profile', 'all','policies','footer','footer after policies in edit profile'),
     ('profile', 'all','interests','header','header before interests in edit profile'),
@@ -464,6 +467,11 @@ SET contents = '<span class="size-h3" style="font-weight: bold;">Additional Inte
 <p>This form lets us know if you want to be contacted about specific things. We ask these questions to help us give you the experience you are after.</p>'
 WHERE appName = 'profile' AND appPage = 'all' AND appSection = 'interests' AND txtItem = 'header';
 
+UPDATE controllTxtItems
+SET contents = 'For any difficulties with the registration system please contact registration at
+            <a href="mailto:#regadminemail#?subject=Portal%20Difficulties">#regadminemail#</a>'
+WHERE appName = 'portal' AND appPage = 'all' AND appSection = 'footer' AND txtItem = 'difficulties';
+
 /*
  * transaction fields for terminal payment tracking
  */
@@ -477,4 +485,4 @@ CREATE INDEX trans_checkoutId ON transaction(checkoutId);
 
 UPDATE transaction SET lastUpdate = IFNULL(complete_date, create_date);
 
-INSERT INTO patchLog(id, name) VALUES(xx, 'marketingEmails');
+INSERT INTO patchLog(id, name) VALUES(52, 'marketingEmails');
