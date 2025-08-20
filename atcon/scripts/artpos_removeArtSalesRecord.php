@@ -36,13 +36,13 @@ if (!(array_key_exists('artSalesId', $_POST) && array_key_exists('perid', $_POST
 $delSQL = <<<EOS
 DELETE FROM artSales
 WHERE
-    id = ? AND status = 'Checked In' AND perid = ?
+    id = ? AND status IN ('Checked In', 'Bid') AND perid = ?
 ;
 EOS;
 
 $artSalesId = $_POST['artSalesId'];
 $perid = $_POST['perid'];
-
+$response = [];
 $rowsDeleted = dbSafeCmd($delSQL, 'ii', array($artSalesId, $perid));
 if ($rowsDeleted > 0)
     $response['message'] = "$rowsDeleted artSales record(s) deleted";
