@@ -756,8 +756,8 @@ function drawItemDetails(item, full = false) {
                 break;
 
             case 'bid':
-                if (btn_color != 'btn-warning' && config.inlineInventory != 1) {
-                    htmlLine = '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Final Price:</div><div class="col-sm-7">' +
+                if (btn_color != 'btn-warning' && config.inlineInventory == 1) {
+                    html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Final Price:</div><div class="col-sm-7">' +
                         '<input type=number inputmode="numeric" class="no-spinners" id="art-final-price" name="art-final-price" ' +
                             'style="width: 9em;" value="' + item.final_price + '"/></div></div>';
                 }
@@ -829,14 +829,11 @@ function foundArt(data) {
                 if (htmlLine != '') {
                     html += htmlLine;
                 } else {
-                    if (item.type != 'print' && Number(item[priceField]) > 0 ) {
-                        html += '<div class="row"><div class="col-sm-4">' + priceType + '</div><div class="col-sm-8">$' +
-                            Number(item[priceField]).toFixed(2) + '</div></div>';
-                    }
-                    if ((config.inlineInventory == 1 && item.type == 'art') || btn_color == 'btn-warning')
-                        html += '<div class="row mt-2"><div class="col-sm-4"></div><div class="col-sm-8"><button class="btn btn-sm ' + btn_color +
-                            '" type="button" onclick="updateInventory(-1);">Update Art Item Inventory</button></div></div>';
-                    else
+                    if (btn_color == 'btn-warning') {
+                        if ((config.inlineInventory == 1 && item.type == 'art'))
+                            html += '<div class="row mt-2"><div class="col-sm-4"></div><div class="col-sm-8"><button class="btn btn-sm ' + btn_color +
+                                '" type="button" onclick="updateInventory(-1);">Update Art Item Inventory</button></div></div>';
+                    } else
                         html += '<div class="row mt-2"><div class="col-sm-4"></div><div class="col-sm-8"><button class="btn btn-sm ' + btn_color +
                             '" type="button" onclick="addToCart(-1);">Add Art Item to Cart</button></div></div>';
                 }

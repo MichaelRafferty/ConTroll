@@ -34,8 +34,8 @@ $atcon = get_conf('atcon');
 $condata = get_con();
 $conid = $con['id'];
 $conname = $con['conname'];
-if (array_key_exists('inlineInventory', $atcon))
-    $inlineInventory = $atcon['inlineInventory'];
+if (array_key_exists('inlineinventory', $atcon))
+    $inlineInventory = $atcon['inlineinventory'];
 else
     $inlineInventory = 1;
 
