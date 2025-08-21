@@ -519,7 +519,7 @@ if ($totprice > 0) {
     // update the transaction with the order id
     $updTrans = <<<EOS
 UPDATE transaction
-SET orderId = ?, paymentStatus = 'ORDER', tax = ?, withtax = ?
+SET orderId = ?, paymentStatus = 'ORDER', tax = ?, withtax = ?, orderDate = now()
 WHERE id = ?;
 EOS;
     $numUpd = dbSafeCmd($updTrans, 'sddi', array($rtn['orderId'], $rtn['taxAmt'], $rtn['totalAmt'], $transId));
