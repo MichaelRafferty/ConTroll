@@ -424,7 +424,7 @@ if($approved_amt == $total) {
     $txnUpdate .= "complete_date=current_timestamp(), ";
 }
 
-$txnUpdate .= "paid=?, couponDiscountCart = ?, coupon = ? WHERE id=?;";
+$txnUpdate .= "paid=?, couponDiscountCart = ?, coupon = ?, paymentId = ?, paymentStatus = ? WHERE id=?;";
 if ($totalDiscount > 0)
     $couponId = $coupon['id'];
 else
