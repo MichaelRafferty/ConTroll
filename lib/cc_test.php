@@ -551,7 +551,9 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
                 exit();
             }
         } else {
-            if ($pNonce != '1') {
+            if ($pNonce == '')
+                $pNonce = 'cc_test';
+            else if ($pNonce != '1') {
                 if ($cleanupRegs)
                     cleanRegs($ccParams['badges'], $ccParams['transid']);
                 ajaxSuccess(array ('status' => 'error', 'data' => 'bad CC number'));
