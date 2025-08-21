@@ -498,8 +498,8 @@ if ($totprice > 0) {
         'locationId' => $cc['location'],
         'referenceId' => $referenceId,
         'transid' => $transId,
-        'preTaxAmt' => $totprice,
-        'taxAmt' => 0,
+        'preTaxAmt' => $rtn['preTaxAmt'],
+        'taxAmt' => $rtn['taxAmt'],
         'vendorId' => $exhId,
         'salesTaxId' => $salesTaxId,
         'specialrequests' => $specialRequests,
@@ -515,6 +515,14 @@ if ($totprice > 0) {
         'formbadges' => $badges,
         'total' => $totprice,
     );
+
+    // update the transaction with the order id
+    $updTrans = <<<EOS
+UPDATE transaction
+SET orderId = ?, paymentStatus = 'ORDER', tax = ?, withtax = ?
+WHERE id = ?;
+EOS;
+    $numUpd = dbSafeCmd($updTrans, 'sddi', array($rtn['orderId'], $rtn['taxAmt'], $rtn['totalAmt'], $transId));
 
 // call the credit card processor to make the payment
     $ccrtn = cc_payOrder($results, $buyer, true);
@@ -542,6 +550,14 @@ if ($totprice > 0) {
         $status_msg .= 'Payment for ' . $dolfmt->formatCurrency($ccrtn['amount'], $currency) . " processed<br/>\n";
     }
     $approved_amt = $ccrtn['amount'];
+
+    // update the transaction status with the payment details
+    $updTrans = <<<EOS
+UPDATE transaction
+SET paymentId = ?, paymentStatus = ?
+WHERE id = ?;
+EOS;
+    $numUpd = dbSafeCmd($updTrans, 'ssi', array($ccrtn['paymentId'], $ccrtn['status'],  $transId));
 } else {
     $approved_amt = 0;
     $ccrtn = array('url' => '');

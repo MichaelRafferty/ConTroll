@@ -357,20 +357,32 @@ if ($total > 0) {
     $buyer['phone'] = '';
     $buyer['country'] = '';
     $referenceId = $transId . '-' . 'pay-' . time();
+    $preTaxAmt = $rtn['preTaxAmt'];
+    $taxAmt = $rtn['taxAmt'];
+    $withTax = $rtn['totalAmt'];
+
     $results = array(
         'source' => $source,
         'nonce' => $nonce,
-        'totalAmt' => $rtn['totalAmt'],
+        'totalAmt' => $withTax,
         'orderId' => $rtn['orderId'],
         'custid' => $custId,
         'locationId' => $cc['location'],
         'referenceId' => $referenceId,
         'transid' => $transId,
-        'preTaxAmt' => $totalDue,
-        'taxAmt' => 0,
-        'total' => $totalDue,
+        'preTaxAmt' => $preTaxAmt,
+        'taxAmt' => $taxAmt,
+        'total' => $withTax,
         'badges' => $badgeResults,
         );
+
+    $upT = <<<EOS
+UPDATE transaction
+SET price = ?, tax = ?, withTax = ?, couponDiscountCart = ?, orderId = ?, paymentStatus = 'ORDER'
+WHERE id = ?;
+EOS;
+
+    $rows_upd = dbSafeCmd($upT, 'ddddsi', array($preTaxAmt, $taxAmt, $withTax, 0, $rtn['orderId'], $transId));
 
 // call the credit card processor to make the payment
     $ccrtn = cc_payOrder($results, $buyer, true);
@@ -418,7 +430,9 @@ if ($totalDiscount > 0)
 else
     $couponId = null;
 
-$txnU = dbSafeCmd($txnUpdate, "ddii", array($approved_amt, $totalDiscount, $couponId, $transId) );
+
+$txnU = dbSafeCmd($txnUpdate, 'ddissi',
+    array($approved_amt, $totalDiscount, $couponId, $ccrtn['paymentId'], $ccrtn['status'], $transId));
 
 $regQ = "UPDATE reg SET paid=price-couponDiscount, complete_trans = ?, status = 'paid' WHERE create_trans=?;";
 dbSafeCmd($regQ, "ii", array($transId, $transId));

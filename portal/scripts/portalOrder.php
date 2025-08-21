@@ -294,6 +294,14 @@ if ($amount > 0) {
         exit();
     }
     $response['rtn'] = $rtn;
+
+    // update the transaction with the order id
+    $updTrans = <<<EOS
+UPDATE transaction
+SET orderId = ?, paymentStatus = 'ORDER', tax = ?, withtax = ?
+WHERE id = ?;
+EOS;
+    $numUpd = dbSafeCmd($updTrans, 'sddi', array($rtn['orderId'], $rtn['taxAmt'], $rtn['totalAmt'], $transId));
 } else {
     $rtn = array();
 }

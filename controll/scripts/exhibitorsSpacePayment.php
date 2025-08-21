@@ -481,14 +481,14 @@ if ($prow != null && $prow['type'] != 'credit') {
 
     $upT = <<<EOS
 UPDATE transaction
-SET price = ?, tax = ?, withTax = ?, couponDiscountCart = ?
+SET price = ?, tax = ?, withTax = ?, couponDiscountCart = ?, orderId = ?, paymentStatus = 'ORDER'
 WHERE id = ?;
 EOS;
 
     $preTaxAmt = $orderRtn['preTaxAmt'];
     $taxAmt = $orderRtn['taxAmt'];
     $withTax = $orderRtn['totalAmt'];
-    $rows_upd = dbSafeCmd($upT, 'ddddi', array($preTaxAmt, $taxAmt, $withTax, 0, $transid));
+    $rows_upd = dbSafeCmd($upT, 'ddddsi', array($preTaxAmt, $taxAmt, $withTax, 0, $orderRtn['orderId'], $transid));
 }
 
 if ($totprice > 0) {
@@ -598,16 +598,16 @@ if ($totprice > 0) {
 // extract the values needed for the payment
 if ($prow != null) {
     $txnQ = <<<EOS
-INSERT INTO payments (transid, type, category, description, source, pretax, tax, amount, time, nonce, cc_approval_code, txn_time, userPerid)
-VALUES (?,?,?,?,?,?,?,?,NOW(),?,?,NOW(),?);
+INSERT INTO payments (transid, type, category, description, source, pretax, tax, amount, time, nonce, cc_approval_code, txn_time, userPerid, paymentId)
+VALUES (?,?,?,?,?,?,?,?,NOW(),?,?,NOW(),?,?);
 EOS;
-    $typestr = 'issssdddssi';
+    $typestr = 'issssdddssis';
     if ($paymentType == 'check') {
         $desc = 'Check No: ' . $_POST['pay-checkno'] . ', ' . $payDesc;
     } else {
         $desc = $payDesc;
     }
-    $values = array ($transid, $paymentType, 'vendor', $desc, $source, $totprice, 0, $totprice, 'admin', $ccAuth, $_SESSION['user_perid']);
+    $values = array ($transid, $paymentType, 'vendor', $desc, $source, $totprice, 0, $totprice, 'admin', $ccAuth, $_SESSION['user_perid'], $paymentId);
 
     $txnid = dbSafeInsert($txnQ, $typestr, $values);
     if ($txnid == false) {
@@ -626,11 +626,12 @@ if ($approved_amt == $totprice) {
     $txnUpdate .= 'complete_date=current_timestamp(), ';
 }
 
-$txnUpdate .= 'paid=?, withtax=price WHERE id=?;';
-$txnU = dbSafeCmd($txnUpdate, 'di', array($approved_amt, $transid));
+$txnUpdate .= 'paid=?,  paymentId = ?, paymentStatus = ? WHERE id=?;';
+$txnU = dbSafeCmd($txnUpdate, 'dssi', array($approved_amt, $rtn['paymentId'], $rtn['status'], $transid));
 if ($txnU != 1) {
     $error_msg .= "Unable to mark transaction completed\n";
 }
+
 // reg (badge)
 $regQ = "UPDATE reg SET paid=price, status='paid', complete_trans=? WHERE create_trans=?;";
 $numrows = dbSafeCmd($regQ, 'ii', array($transid, $transid));

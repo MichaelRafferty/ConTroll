@@ -311,12 +311,14 @@ if ($approved_amt == $totalAmountDue) {
     $txnUpdate .= 'complete_date=current_timestamp(), ';
 }
 
-$txnUpdate .= 'paid=?, couponDiscountCart = ?, coupon = ? WHERE id=?;';
+$txnUpdate .= 'paid=?, couponDiscountCart = ?, coupon = ?, paymentId = ?, paymentStatus = ?
+WHERE id=?;';
 if ($webCouponDiscount > 0)
     $couponId = $coupon['id'];
 else
     $couponId = null;
-$txnU = dbSafeCmd($txnUpdate, 'ddii', array($approved_amt, $webCouponDiscount, $couponId, $transId));
+$txnU = dbSafeCmd($txnUpdate, 'ddissi',
+    array($approved_amt, $webCouponDiscount, $couponId, $rtn['paymentId'], $rtn['status'], $transId));
 
 $upgradedCnt = 0;
 if ($amount > 0 && $planPayment != 1) {
