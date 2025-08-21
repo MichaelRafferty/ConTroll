@@ -451,7 +451,7 @@ EOS;
 
 $updCompleteSQL = <<<EOS
 UPDATE transaction
-SET paid = IFNULL(paid,'0.00') + ?, paymentId = ?, paymentStatus = ?
+SET paid = ?, paymentId = ?, paymentStatus = ?
 WHERE id = ?;
 EOS;
 $completed = dbSafeCmd($updCompleteSQL, 'dssi', array($approved_amt, $rtn['paymentId'], $rtn['status'], $master_tid));

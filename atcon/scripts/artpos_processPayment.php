@@ -594,7 +594,7 @@ foreach ($cart_art as $cart_row) {
 
 $updCompleteSQL = <<<EOS
 UPDATE transaction
-SET paid = IFNULL(paid,'0.00') + ?
+SET paid = ?
 WHERE id = ?;
 EOS;
 $completed = dbSafeCmd($updCompleteSQL, 'di', array($approved_amt, $master_tid));
