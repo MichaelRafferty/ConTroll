@@ -232,7 +232,7 @@ $upT = <<<EOS
 UPDATE transaction
 SET price = ?, tax = ?, withTax = ?, couponDiscountCart = ?, orderId = ?, paymentStatus = 'ORDER'
 WHERE id = ?;
-EOS
+EOS;
 
 $preTax = $rtn['preTaxAmt'];
 $taxAmt = $rtn['taxAmt'];
