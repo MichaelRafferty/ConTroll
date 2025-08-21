@@ -449,11 +449,6 @@ EOS;
     $completed = dbSafeCmd($updCompleteSQL, 'iddi', array($coupon, $couponDiscount + $discountAmt, 0, $master_tid));
 }
 
-    $txnUpdate = 'UPDATE transaction SET ';
-    if ($approved_amt == $totalAmountDue) {
-        $txnUpdate .= 'complete_date=current_timestamp(), ';
-    }
-
 $updCompleteSQL = <<<EOS
 UPDATE transaction
 SET paid = IFNULL(paid,'0.00') + ?, paymentId = ?, paymentStatus = ?
