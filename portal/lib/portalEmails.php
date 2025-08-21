@@ -1,5 +1,5 @@
 <?php
-function getEmailBody($transid, $owner, $memberships, $coupon, $planRec, $rid, $url, $amount, $planPayment = 0): string {
+function getEmailBody($transid, $owner, $memberships, $coupon, $planRec, $rid, $url, $amount, $preTaxAmt, $taxAmt, $planPayment = 0): string {
     $condata = get_con();
     $con = get_conf('con');
     $testsite = getConfValue('portal', 'test') == 1;
@@ -54,6 +54,11 @@ function getEmailBody($transid, $owner, $memberships, $coupon, $planRec, $rid, $
     }
 
     if ($planPayment != 1) {
+        if ($taxAmt > 0) {
+            $body .= 'The pre sales tax price for your order was ' . $dolfmt->formatCurrency((float)$preTaxAmt, $currency) . "\n" .
+                'The sales tax for the taxable portion of this order was ' . $dolfmt->formatCurrency((float)$taxAmt, $currency) . "\n" .
+                'For a total amount due of ' . $dolfmt->formatCurrency((float)$amount, $currency) . "\n\n";
+        }
         $body .= "Your card was charged " . $dolfmt->formatCurrency((float)$amount, $currency) . " for this transaction\n\n";
 
         if ($memberships && count($memberships) > 0) {

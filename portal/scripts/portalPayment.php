@@ -331,7 +331,9 @@ if ($amount > 0 && $planPayment != 1) {
     $rows_upd += allocateBalance($balance, $badges, $conid, $newPlanId, $transId, true);
 }
 if ($totalAmountDue > 0) {
-    $body = getEmailBody($transId, $info, $badges, $coupon, $planPayment == 1 ? $existingPlan : $planRec, $rtn['rid'], $rtn['url'], $amount, $planPayment);
+    $body = getEmailBody($transId, $info, $badges, $coupon, $planPayment == 1 ? $existingPlan : $planRec, $rtn['rid'], $rtn['url'],
+        $rtn['amount'], $rtn['preTaxAmt'], $rtn['taxAmt'], $planPayment );
+
 } else {
     $body = getNoChargeEmailBody($results, $info, $badges);
 }

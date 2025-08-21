@@ -1318,7 +1318,7 @@ class Portal {
                 newplan = true;
 
         var totalAmountDue = this.#otherPay == 1 ? this.#paymentAmount : this.#totalAmountDue;
-        var taxAmount = 0;
+        var taxAmount = 0
         var preTaxAmount = totalAmountDue;
         if (this.#existingPlan == null && this.#orderData && this.#orderData.rtn) {
             preTaxAmount = this.#orderData.rtn.preTaxAmt;
@@ -1349,7 +1349,7 @@ class Portal {
             nonce: token,
             amount: this.#paymentAmount,
             totalAmountDue: this.#otherPay == 1 ? this.#paymentAmount : this.#totalAmountDue,
-            preTaxAmountDue: preTaxAmount,
+            preTaxAmount: preTaxAmount,
             taxAmount: taxAmount,
             couponDiscount: this.#couponDiscount,
             preCouponAmountDue: this.#preCouponAmountDue,
