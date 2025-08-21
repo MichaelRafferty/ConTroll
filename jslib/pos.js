@@ -2314,7 +2314,7 @@ addUnpaid(tid) {
             if (pt_cash) {
                 var eltenderedamt = document.getElementById('pay-tendered');
                 var tendered_amt = Number(eltenderedamt.value);
-                if (Math.abs(tendered_amt - total_amount_due) > 0.008) {
+                if (tendered_amt + 0.004 < total_amount_due) {
                     eltenderedamt.style.backgroundColor = 'var(--bs-warning)';
                     return;
                 }
