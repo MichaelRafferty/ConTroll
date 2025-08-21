@@ -221,5 +221,5 @@ memberships to refund.
    3. A transaction record is created to cover this refund
    4. Each registration covered by that payment has its amount paid reduced by the allocated portion of the refund. 
    If the paid amount is now zero, the registration status is set to refunded.
-   4. A payment record of type refund is created with the original transaction and paymentId, the new refundid, the transaction id, and the appropriate amounts
+   5A payment record of type refund is created with the original transaction and paymentId, the new refundid, the transaction id, and the appropriate amounts
 4. Proper status is returned to the AJAX caller
