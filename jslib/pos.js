@@ -2314,11 +2314,12 @@ addUnpaid(tid) {
             if (pt_cash) {
                 var eltenderedamt = document.getElementById('pay-tendered');
                 var tendered_amt = Number(eltenderedamt.value);
-                if (tendered_amt < total_amount_due) {
+                if (Math.abs(tendered_amt - total_amount_due) > 0.008) {
                     eltenderedamt.style.backgroundColor = 'var(--bs-warning)';
                     return;
                 }
-                if (tendered_amt > total_amount_due) {
+
+                if ((tendered_amt - total_amount_due) > 0.008) {
                     if (nomodal == '') {
                         this.#cashChangeModal.show();
                         document.getElementById("CashChangeBody").innerHTML = "<div class='row mt-2'>\n<div class='col-sm-12'>" +
