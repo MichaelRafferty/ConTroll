@@ -187,3 +187,39 @@ TODO: should it be converted to building the fields directly in the payment flow
 14. Update the transaction with the payment amount
 15. If nothing more is owed, update the transaction as complete
 16. create the response back to the AJAX caller and exit.
+
+## Refund Processing
+
+NOTE: This is a concept of how refund processing will work
+
+Refunds are executed off of the back end Finance Menu Item using the refund screen and
+require finance permissions.
+Since payments are made on Exhibitor Spaces and for Registrations, they will require separate processes.
+A separate tab will be provided for registration refunds and space refunds.
+Registrations bundled with spaces will be refunded using the registration refund tab.
+
+NOTE: space refunds flow still needs to be designed as it could include:
+- overpayments if the space amount is reduced
+- complete refund of the space for approved refunds
+  - a decision eneds to be made about refunding the memberships along with the space refund
+
+### Membership Refund Flow (no plan involved)
+
+NOTE: do we need a refund record due to all of the tracking fields or should it be part of the payment record.
+Receipt generation will be easier if it is all in the payment record.
+
+A search box will be used to select the person to find their memberships, similar to Registration Lookup.  A list of people will be returned to choose from 
+to refund against.  Selecting a person to refund will open a popup with a list of their registrations and which payments they are under.  The operator will 
+be able to select which memberships to refund.  It will not matter how many payments are involved in this selected list.  The popup will submit the 
+memberships to refund.
+
+1. The back end will validate the list of memberships to refund and compute the amount paid for each membership to compute the refund amounts.
+2. Based on the complete transactions in the memberships it will compute a list of payments to refund and the amount to refund on each payment
+3. Loop over the payments involved
+   1. A refund request will be sent to the credit card processor
+   2. If an error is returned an appropriate error message is returned to the AJAX called and the process exits.
+   3. A transaction record is created to cover this refund
+   4. Each registration covered by that payment has its amount paid reduced by the allocated portion of the refund. 
+   If the paid amount is now zero, the registration status is set to refunded.
+   4. A payment record of type refund is created with the original transaction and paymentId, the new refundid, the transaction id, and the appropriate amounts
+4. Proper status is returned to the AJAX caller
