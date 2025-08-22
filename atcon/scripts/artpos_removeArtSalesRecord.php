@@ -26,8 +26,7 @@ if (!(check_atcon('artsales', $conid))) {
     exit();
 }
 
-// delete a 'checked in' status artSales Record, these are ones not assigned to the user directly (becoming quicksale, or a print)
-// statuses are: enum('Entered','Not In Show','Checked In','Removed from Show','BID','Quicksale/Sold','To Auction','Sold Bid Sheet','Sold at Auction','Checked Out','Purchased/Released')
+// delete a unpaid  artSales Record, these are ones not assigned to the user directly (becoming quicksale, or a print)
 if (!(array_key_exists('artSalesId', $_POST) && array_key_exists('perid', $_POST))) {
     RenderErrorAjax('Invalid calling sequence.');
     exit();
@@ -36,14 +35,25 @@ if (!(array_key_exists('artSalesId', $_POST) && array_key_exists('perid', $_POST
 $delSQL = <<<EOS
 DELETE FROM artSales
 WHERE
-    id = ? AND status IN ('Checked In', 'BID') AND perid = ?
+    id = ? AND perid = ? AND IFNULL(paid, 0) = 0
+;
+EOS;
+
+    $delAllSQL = <<<EOS
+DELETE FROM artSales
+WHERE
+    perid = ? AND IFNULL(paid, 0) = 0
 ;
 EOS;
 
 $artSalesId = $_POST['artSalesId'];
 $perid = $_POST['perid'];
 $response = [];
-$rowsDeleted = dbSafeCmd($delSQL, 'ii', array($artSalesId, $perid));
+if ($artSalesId > 0) {
+    $rowsDeleted = dbSafeCmd($delSQL, 'ii', array ($artSalesId, $perid));
+} else {
+    $rowsDeleted = dbSafeCmd($delAllSQL, 'i', array ($perid));
+}
 if ($rowsDeleted > 0)
     $response['message'] = "$rowsDeleted artSales record(s) deleted";
 ajaxSuccess($response);

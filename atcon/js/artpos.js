@@ -265,11 +265,11 @@ function startOver(reset_all) {
     }
 
     hideStats();
-    currentPerson = null;
     // empty cart
     cart.startOver();
     cart.hideRelease();
     // empty search strings and results
+    currentPerson = null;
     badgeid_field.value = "";
     id_div.innerHTML = "";
     unpaid_table = null;

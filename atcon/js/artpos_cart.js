@@ -171,7 +171,44 @@ class artpos_cart {
 
 // if no art or payments have been added to the database, this will reset for the next customer
 
-    startOver() {
+    startOver(mode = 0) {
+        // if cart has unpaid items in it, delete the artSales items
+        var numUnpaid = 0;
+        for (var i = 0; i < this.#cart_art.length; i++) {
+            if (this.#cart_art[i].paid == undefined || Number(this.#cart_art[i].paid) == 0)
+                numUnpaid++;
+        }
+        if (numUnpaid > 0) {
+            // delete the unpaid's from ArtSales
+            $.ajax({
+                method: "POST",
+                url: "scripts/artpos_removeArtSalesRecord.php",
+                data: {
+                    artSalesId: -1,
+                    perid: currentPerson.id,
+                    action: 'deleteUnpaid',
+                },
+                success: function (data, textstatus, jqxhr) {
+                    if (data.error !== undefined) {
+                        show_message(data.error, 'error');
+                        return;
+                    }
+                    if (data.message !== undefined) {
+                        show_message(data.message, 'success');
+                        return;
+                    }
+                    if (data.warn !== undefined) {
+                        show_message(data.warn, 'warn');
+                        return;
+                    }
+                },
+                error: function (jqXHR, textstatus, errorThrown) {
+                    $("button[name='findArtBtn']").attr("disabled", false);
+                    showAjaxError(jqXHR, textstatus, errorThrown);
+                }
+            });
+
+        }
         // empty cart
         this.#cart_art = [];
         this.#cart_pmt = [];
@@ -318,6 +355,10 @@ class artpos_cart {
         rowhtml += '<div class="row"><div class="col-sm-2">Title: ' + '</div><div class="col-sm-10">' + row['title'] + '</div></div>';
         // Material
         rowhtml += '<div class="row"><div class="col-sm-2">Material: ' + '</div><div class="col-sm-10">' + row['material'] + '</div></div>';
+        if (row['type'] == 'art') {
+            // Status of art item
+            rowhtml += '<div class="row"><div class="col-sm-2">Status: ' + '</div><div class="col-sm-10">' + row['status'] + '</div></div>';
+        }
         if (this.#freeze_cart) {
             rowhtml += '<div class="row"><div class="col-sm-2">Quantity: ' + '</div><div class="col-sm-10">' + row['purQuantity'] + '</div></div>';
         } else if (row['type'] == 'print') {
