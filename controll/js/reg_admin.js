@@ -1642,11 +1642,17 @@ function draw(data, textStatus, jqXHR) {
 
 // ajax call to retrieve the starting set of data for the filters and the registration list
 function getData(style) {
-    if (style == 's')
-        curRegListSearch = document.getElementById('regListSearch').value;
+    if (style == 's') {
+        curRegListSearch = document.getElementById('regListSearch').value.trim();
+        if (curRegListSearch.length == 0) {
+            document.getElementById('regListSearch').style.backgroundColor = "#FFC107";
+            return;
+        }
+    }
     if (style == 'f')
         curRegListSearch = '';
-    
+
+    document.getElementById('regListSearch').style.backgroundColor = "";
     $.ajax({
         url: "scripts/regadmin_getBadges.php",
         method: "POST",
