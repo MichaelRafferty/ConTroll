@@ -1,0 +1,62 @@
+[report]
+	name="Current Attendance"
+	auth=reg_admin
+	csvfile="attendance"
+    index=label
+    totals=bottom
+[F001]
+	name=label
+	sql=m.label
+	title="Label"
+	filter=true
+	sort=true
+	calc=count
+[F002]
+	name=type
+	sql=m.memType
+	title="Type"
+	filter=true
+	sort=true
+[F003]
+	name=category
+	sql=m.memCategory
+	title="Category"
+	filter=true
+	sort=true
+[F010]
+	name=Printed
+	sql="COUNT(IF(p.printCount > 0, 1, NULL))"
+    align=right
+	title="Printed"
+	width=80
+	calc=sum
+[F011]
+	name=Unprinted
+	sql="COUNT(IF(p.printCount IS NULL, 1, NULL))"
+    align=right
+	title="Unprinted"
+	width=80
+	calc=sum
+[T001]
+	name=reg
+	alias=r
+[T002]
+	name=memList
+	alias=m
+	join="m.id = r.memId"
+[T003]
+	name=prints
+	alias=p
+	join="p.regid = r.id"
+	left=true
+[C001]
+    name=prints
+    select="SELECT a.regid, count(*) AS printCount"
+    tables="FROM regActions a"
+    where="WHERE a.action='print' GROUP BY a.regid"
+[where]
+    001="m.memType IN ('full', 'oneday')"
+[group]
+    001=label, memType, memCategory
+[sort]
+	001=label, memType, memCategory

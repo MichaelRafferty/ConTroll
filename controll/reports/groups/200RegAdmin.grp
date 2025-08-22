@@ -43,3 +43,9 @@
     auth=reg_admin
     type=rpt
     P001="prompt/~/conid/~/Registration report for: /~/Conid (number only)"
+[600Attendance]
+    name="Current Attendance"
+    description="Badges Printed by Label for this year"
+    template=attendance.rpt
+    auth=reg_admin
+    type=rpt
