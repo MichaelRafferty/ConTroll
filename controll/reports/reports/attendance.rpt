@@ -55,7 +55,7 @@
     tables="FROM regActions a"
     where="WHERE a.action='print' GROUP BY a.regid"
 [where]
-    001="m.memType IN ('full', 'oneday')"
+    001="m.memType IN ('full', 'oneday') AND r.status = 'paid'"
 [group]
     001=label, memType, memCategory
 [sort]
