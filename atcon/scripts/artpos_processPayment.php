@@ -561,7 +561,6 @@ foreach ($cart_art as $cart_row) {
     if ($unpaid > 0) {
         $amt_paid = min($amt, $unpaid);
         $cart_row['paid'] += $amt_paid;
-        $cart_art[$cart_row['index']] = $cart_row;
         $amt -= $amt_paid;
         $upd_rows += dbSafeCmd($updArtSalesSQL, $atypestr, array($cart_row['paid'], $master_tid, $quantity, $cart_row['amount'], $cart_row['artSalesId']));
 
@@ -571,11 +570,13 @@ foreach ($cart_art as $cart_row) {
 
             if ($cart_row['priceType'] == 'Quick Sale') {
                 $cart_row['final_price'] = $cart_row['paid']; // for quick sale, need to update cart row itself with the final price
+                $cart_row['status'] = 'Quicksale/Sold';
                 $upd_cart += dbSafeCmd($updStatusSQL, $usstr, array('Quicksale/Sold', $perid, $cart_row['paid'], $cart_row['id']));
                 $upd_rows += dbSafeCmd($updArtSalesStatusSQL, $usrstr, array('Quicksale/Sold', $cart_row['artSalesId']));
             } else if ($cart_row['status'] == 'BID' || $cart_row['status'] == 'To Auction' ||
                 $cart_row['status'] == 'Sold Bid Sheet' || $cart_row['status'] == 'Sold Auction'  ) {
                 $cart_row['final_price'] = $cart_row['paid'];
+                $cart_row['status'] = 'Purchased/Released';
                 $upd_cart += dbSafeCmd($updStatusSQL, $usstr, array ('Purchased/Released', $perid, $cart_row['paid'], $cart_row['id']));
                 $upd_rows += dbSafeCmd($updArtSalesStatusSQL, $usrstr, array ('Purchased/Released', $cart_row['artSalesId']));
             }
@@ -583,6 +584,7 @@ foreach ($cart_art as $cart_row) {
             if ($cart_row['type'] == 'print') {
                 $upd_rows += dbSafeCmd($updArtSalesStatusSQL, $usrstr, array('Purchased/Released', $cart_row['artSalesId']));
             }
+            $cart_art[$cart_row['index']] = $cart_row;
         }
     } else {
         if (array_key_exists('updSales', $cart_row) && $cart_row['updSales'] == true) {
