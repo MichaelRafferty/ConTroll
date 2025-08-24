@@ -626,13 +626,26 @@ portalPageInit('portal', $info,
         //'js/tinymce/tinymce.min.js',
         'jslib/paymentPlans.js',
         'jslib/coupon.js',
+        'jslib/passkey.js',
         'js/portal.js',
+        'js/login.js',
     ),
     false // refresh
 );
 if ($refresh) {
-    echo "refresh needed<br/>\n";
-    echo refreshSession();
+    if (getSessionVar('tokenType') == 'passkey') {
+        $config_vars['refresh'] = 'passkey';
+        portalPageFoot();
+?>
+<script type="text/javascript">
+    var config = <?php echo json_encode($config_vars); ?>;
+    show_message("Passkey session has expired, a refresh of your is being requested.", 'warn');
+</script>
+<?php
+    } else {
+        echo "refresh needed<br/>\n";
+        echo refreshSession();
+    }
     exit();
 }
 ?>
