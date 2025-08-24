@@ -1,0 +1,123 @@
+[report]
+	name="artSalesByItem"
+	auth=art_control
+	csvfile="artSalesByItem"
+	index=exhibitorNumber
+    totals=bottom
+[F001]
+    name=artId
+	sql=a.id
+	title="Art ID#"
+	align=right
+	minWidth=80
+[F005]
+    name=artistId
+	sql="IFNULL(eRY.exhibitorNumber, e.id)"
+	title="Artist Number"
+	align=right
+	minWidth=80
+	filter=true
+	sort=true
+[F006]
+    name=itemNum
+    sql=a.item_key
+    title="Item #"
+    align=right
+    minwidth=80
+    filter=true
+[F008]
+    name=artistName
+    sql="CASE WHEN IFNULL(e.artistName, '') = '' THEN e.exhibitorName ELSE e.artistName END"
+    title="Artist Name"
+    minwidth: 200
+    filter=true
+[F010]
+    name=title
+    sql=a.title
+    title="Title"
+    filter=true
+    minwidth=200
+[F012]
+    name=type
+    sql=a.type
+    title="Type"
+    filter=true
+[F015]
+    name=qtyDiff
+    sql="CASE WHEN a.quantity <= a.original_qty THEN a.original_qty - a.quantity ELSE NULL END"
+    title="Qty Diff"
+    align=right
+    minwidth:80
+[F020]
+    name=numberSold
+    sql="COUNT(s.artId)"
+    title="# Sold"
+    align=right
+    minwidth=80
+[F022]
+    name=itemPrice
+    sql="CASE WHEN a.type = 'art' THEN a.final_price ELSE a.sale_price END"
+    title="Item Price"
+    align=right
+    minwidth:120
+[F025]
+    name=purchasedBy
+    sql="GROUP_CONCAT(s.perid SEPARATOR ', ')"
+    title="Purchased By"
+    filter=true
+    width=150
+    format=textarea
+[F030]
+    name=total
+    sql="SUM(s.amount)"
+    title="Total $"
+    align=right
+    minwidth:120
+[F040]
+    name="qTotal"
+    sql="CASE WHEN a.quantity <= a.original_qty AND a.type='art' THEN (a.original_qty - a.quantity) * a.final_price WHEN a.quantity <= a.original_qty AND a.type='print' THEN (a.original_qty - a.quantity) * a.sale_price  ELSE NULL END"
+    title="Qty Total"
+    align=right
+    minwidth:120
+[T001]
+	name=exhibitors
+	alias=e
+[T002]
+	name=exhibitorYears
+	alias=eY
+	join="eY.exhibitorId=e.id"
+[T003]
+    name=exhibitorRegionYears
+    alias=eRY
+    join=" eRY.exhibitorYearId = eY.id"
+[T005]
+    name=exhibitsRegionYears
+    alias=xRY
+    join="xRY.id = eRY.exhibitsRegionYearId"
+[T006]
+    name=exhibitsRegions
+    alias=xR
+    join="xR.id=xRY.exhibitsRegion"
+[T010]
+    name=artItems
+    alias=a
+    join="eRY.id = a.exhibitorRegionYearId"
+[T011]
+    name=artSales
+    alias=s
+    join="a.id = s.artId"
+    left=true
+[P001]
+    type=prompt
+    item=conid
+    datatype=i
+[P002]
+    type=prompt
+    item=region
+    datatype=s
+[where]
+	001="eY.conid = ? AND LOWER(xR.shortname) = LOWER(?) AND a.type != 'nfs' AND (a.quantity != a.original_qty || s.amount IS NOT NULL)"
+[group]
+    001="a.id,artistId,itemNum,e.artistName,e.exhibitorName,title,a.type,a.sale_price,a.final_price,itemPrice,a.quantity, a.original_qty"
+[sort]
+	001="1,2"
