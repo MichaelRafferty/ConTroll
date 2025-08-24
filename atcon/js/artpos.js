@@ -849,7 +849,7 @@ function foundArt(data) {
                 if (htmlLine != '') {
                     html += htmlLine;
                 } else {
-                    if (btn_color == 'btn-warning') {
+                    if (btn_color == 'btn-warning' || (item.status != 'Sold Bid Sheet' && item.status != 'Sold at Auction' )) {
                         if (item.type == 'art') {
                             if (config.inlineInventory == 1) {
                                 html += '<div class="row mt-2"><div class="col-sm-4"></div><div class="col-sm-8"><button class="btn btn-sm '
@@ -1102,8 +1102,8 @@ function updateInventoryStep(item, repeatPass) {
                 ' min=1 max=9999999 value="' + (item.final_price > item.min_price ? item.final_price : item.min_price) + '"></div></div>';
             inventoryUpdates.push({field: 'final_price', id: 'finalPrice', type: 'd',
                 prior: item.min_price - 0.01 });
-            inventoryUpdates.push({field: 'status',  value: 'BID'});
-            notes += 'Updated Status from Checked Out to Bid for sale after return to artist';
+            inventoryUpdates.push({field: 'status',  value: 'Checked In'});
+            notes += 'Updated Status from Checked Out to Checked In for sale after return to artist';
         }
     }
 
