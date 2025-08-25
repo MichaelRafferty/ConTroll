@@ -2738,7 +2738,7 @@ addUnpaid(tid) {
         this.#printActive = false;
         this.#pay_currentOrderId = null; // leaving pay clears order id
         cart.clearInReview();
-        cart.unfreeze();ƒvoi
+        cart.unfreeze();
         cart.drawCart();
     }
 
