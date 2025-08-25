@@ -13,6 +13,8 @@ window.onload = function () {
     if (config.initCoupon && config.initCoupon != '') {
         coupon.addCouponCode(config.initCoupon, config.initCouponSerial);
     }
+    if (config.refresh == 'passkey')
+        portal.loginWithPasskey();
 }
 
 class Portal {
@@ -1708,6 +1710,15 @@ class Portal {
     // site selection
     siteSelect(url) {
         openWindowWithFallback(url);
+    }
+
+    // passkey refresh
+    // login with passkey - ask for a confirm and return either retry or go to portal
+    loginWithPasskey() {
+        if (this.#loginWithPasskeyBtn)
+            this.#loginWithPasskeyBtn.disabled = true;
+
+        passkeyRequest('scripts/passkeyActions.php', 'portal.php', 'portal', this.#loginWithPasskeyBtn);
     }
 }
 

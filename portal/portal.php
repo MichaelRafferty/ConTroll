@@ -628,7 +628,6 @@ portalPageInit('portal', $info,
         'jslib/coupon.js',
         'jslib/passkey.js',
         'js/portal.js',
-        'js/login.js',
     ),
     false // refresh
 );
