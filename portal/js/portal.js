@@ -1715,9 +1715,6 @@ class Portal {
     // passkey refresh
     // login with passkey - ask for a confirm and return either retry or go to portal
     loginWithPasskey() {
-        if (this.#loginWithPasskeyBtn)
-            this.#loginWithPasskeyBtn.disabled = true;
-
         passkeyRequest('scripts/passkeyActions.php', 'portal.php', 'portal', this.#loginWithPasskeyBtn);
     }
 }
