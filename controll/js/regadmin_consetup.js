@@ -731,7 +731,6 @@ class consetup {
             'glNum',
             'glLabel',
             'sort_order',
-            {field: "to_delete", visible: false,},
         ];
         downloadFilePost(format, filename, tabledata, null, fieldList);
     };
