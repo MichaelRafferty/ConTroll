@@ -191,8 +191,10 @@ function completeReg($master_tid, $checkout, $order, $payment) : string {
     $coupon = null; // need coupon
     $user_perid = getSessionVar('user');
     $discountAmt = 0; // need discount amount
-    $cart_perinfo = []; // need to build from order items
     $message = '';
+
+    if ($coupon == '')
+        $coupon = null;
 
     // items from $payment
     $amt = $payment['total_money']['amount'] / 100;
@@ -237,6 +239,8 @@ function completeReg($master_tid, $checkout, $order, $payment) : string {
         $nonceCode = $nonce;
 
     $complete = round($approved_amt, 2) == round($amt, 2);
+
+    // build the order line items array
 
     // now add the payment and process to which rows it applies
     $insPmtSQL = <<<EOS
@@ -290,73 +294,21 @@ UPDATE reg
 SET paid = ?, complete_trans = ?, status = ?, couponDiscount = ?, coupon = ?
 WHERE id = ?;
 EOS;
-    $ptypestr = 'disdii';
-    $index = 0;
-// allocate pre-tax amount to regs
-    $allocateAmt = $preTaxAmt;
-    $allocateDiscount = $discountAmt;
-    foreach ($cart_perinfo as $perinfo) {
-        $cart_perinfo[$index]['rowpos'] = $index;
-        unset($cart_perinfo[$index]['dirty']);
-        $index++;
-        foreach ($perinfo['memberships'] as $cart_row) {
-            // Clear args to indicate if an update is needed
-            $args = null;
+    // update regs with their amount paid and discounted
+    $lines = $order['line_items'];
+    foreach ($lines as $line) {
+        $applied_disc = $line['total_discount_money']['amount'] / 100;
+        $paid = $line['total_money']['amount'] / 100;
+        $gross = $line['gross_sales_money']['amount'] / 100;
+        $note = $line['note'];
+        $note = substr($note, 0, strpos($note, ':'));
+        $regid = explode(',', $note)[2];
 
-            if ($cart_row['price'] == '')
-                $cart_row['price'] = 0;
-            if ((!array_key_exists('couponDiscount', $cart_row)) || $cart_row['couponDiscount'] == '')
-                $cart_row['couponDiscount'] = 0;
-            if ($cart_row['paid'] == '')
-                $cart_row['paid'] = 0;
-            if ((!array_key_exists('coupon', $cart_row)) || $cart_row['coupon'] == '')
-                $cart_row['coupon'] = null;
-
-            if ($cart_row['couponDiscount'] > 0) {
-                $allocateDiscount -= $cart_row['couponDiscount'];
-            } else {
-                $unpaid = $cart_row['price'] - ($cart_row['couponDiscount'] + $cart_row['paid']);
-                if ($unpaid > 0) {
-                    // first the discount
-                    $amt_disc = min($allocateDiscount, $unpaid);
-                    if ($amt_disc > 0 && $cart_row['couponDiscount'] == 0) {
-                        $cart_row['couponDiscount'] += $amt_disc;
-                        if ($amt_disc == $unpaid) {
-                            // row is now completely paid
-                            $args = array ($cart_row['paid'], $master_tid, 'paid', $cart_row['couponDiscount'], $cart_row['coupon'], $cart_row['regid']);
-                            $cart_row['status'] = 'paid';
-                            $cart_row['tid2'] = $master_tid;
-                        } else {
-                            $args = array ($cart_row['paid'], null, $cart_row['status'], $cart_row['couponDiscount'], $cart_row['coupon'], $cart_row['regid']);
-                        }
-                        $allocateDiscount -= $amt_disc;
-                    }
-                }
-            }
-
-            // now the payment
-            $unpaid = $cart_row['price'] - ($cart_row['couponDiscount'] + $cart_row['paid']);
-            if ($unpaid > 0) {
-                $amt_paid = min($allocateAmt, $unpaid);
-                $cart_row['paid'] += $amt_paid;
-                if ($amt_paid == $unpaid) {
-                    // row is now completely paid
-                    $args = array ($cart_row['paid'], $master_tid, 'paid', $cart_row['couponDiscount'], $cart_row['coupon'], $cart_row['regid']);
-                    $cart_row['status'] = 'paid';
-                    $cart_row['tid2'] = $master_tid;
-                } else {
-                    $args = array ($cart_row['paid'], null, $cart_row['status'], $cart_row['couponDiscount'], $cart_row['coupon'], $cart_row['regid']);
-                }
-                $allocateAmt -= $amt_paid;
-            }
-            // update the data in the system
-            $cart_perinfo[$perinfo['index']]['memberships'][$cart_row['index']] = $cart_row;
-            if ($args != null) {
-                $message .= "\$upd_rows += dbSafeCmd($updRegSql, $ptypestr, array(" . implode(',', $args) . '));<br/>';
-                //$upd_rows += dbSafeCmd($updRegSql, $ptypestr, $args);
-            }
+        // update the database
+        $message .= "\$upd_rows += dbSafeCmd($updRegSql, 'disdii', array($gross, $master_tid, 'paid', $applied_disc, $coupon, $regid));<br/>";
+        //$upd_rows += dbSafeCmd($updRegSql, 'disdii', array($paid, $master_tid, 'paid', $applied_disc, $coupon, $regid));
         }
-    }
+
 
 // if coupon is specified, mark transaction as having a coupon
     if ($coupon || $discountAmt > 0) {
@@ -365,19 +317,17 @@ UPDATE transaction
 SET coupon = ?, couponDiscountCart = ?, couponDiscountReg = ?
 WHERE id = ?;
 EOS;
-        if ($coupon == '')
-            $coupon = null;
-
         $message .= "\$completed = dbSafeCmd($updCompleteSQL, 'iddi', array ($coupon, $couponDiscount + $discountAmt, 0, $master_tid))<br/>";
         //$completed = dbSafeCmd($updCompleteSQL, 'iddi', array ($coupon, $couponDiscount + $discountAmt, 0, $master_tid));
     }
+
     $updCompleteSQL = <<<EOS
 UPDATE transaction
-SET paid = ?
+SET paid = ?,  paymentStatus = ?, paymentId = ?
 WHERE id = ?;
 EOS;
-    $message .= "\$completed = dbSafeCmd($updCompleteSQL, 'di', array ($approved_amt, $master_tid))<br/>";
-    //$completed = dbSafeCmd($updCompleteSQL, 'di', array ($approved_amt, $master_tid));
+    $message .= "\$completed = dbSafeCmd($updCompleteSQL, 'dssi', array ($approved_amt, " . $checkout['status'] . ", $id, $master_tid))<br/>";
+    //$completed = dbSafeCmd($updCompleteSQL, 'dssi', array ($approved_amt, $checkout['status'], $id, $master_tid));
 
     $completed = 0;
     if ($complete) {
@@ -387,20 +337,11 @@ UPDATE transaction
 SET complete_date = NOW(), change_due=0
 WHERE id = ?;
 EOS;
-        $message .= "\$completed = dbSafeCmd($updCompleteSQL, 'si', array ($master_tid))<br/>";
+        $message .= "\$completed = dbSafeCmd($updCompleteSQL, 'i', array ($master_tid))<br/>";
         //$completed = dbSafeCmd($updCompleteSQL, 'i', array ($master_tid));
     }
 
     $message .= "\$upd_rows memberships updated" . ($completed == 1 ? ', transaction completed.<br/>' : '.<br/>');
-
-//  it all worked, update the transaction status
-    $updTranStatusSQL = <<<EOS
-UPDATE transaction
-SET paymentStatus = ?, paymentId = ?
-WHERE id = ?;
-EOS;
-    $message .= "\$updcnt = dbSafeCmd($updTranStatusSQL, 'sssi', array(" . $checkout['status'] . ", $id, $master_tid))<br/>";
-    //$updcnt = dbSafeCmd($updTranStatusSQL, 'ssi', array($checkout['status'], $id, $master_tid));
     return $message;
 }
 
