@@ -13,12 +13,12 @@ class PosCart {
 // cart states
     #inReview = false;
     #freezeCart = false;
-    #changeRow = null;
 
 // cart internals
     #totalPrice = 0;
     #totalPaid = 0;
     #totalPmt = 0;
+    #totalCouponUnpaid = 0;
     #unpaidRows = 0;
     #membershipRows = 0;
     #needMembershipRows = 0;
@@ -69,6 +69,7 @@ class PosCart {
 
 // initialization
     constructor() {
+        var id;
 // lookup all DOM elements
 // ask to load mapping tables
         this.#cartDiv = document.getElementById("cart");
@@ -78,7 +79,7 @@ class PosCart {
         this.#nochangesButton = document.getElementById("cart_no_changes_btn");
 
         // addEdit membership
-        var id = document.getElementById('addEdit');
+        id = document.getElementById('addEdit');
         if (id) {
             this.#addEditModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
             this.#addEditBody = document.getElementById('addEditBody');
@@ -89,7 +90,7 @@ class PosCart {
             this.#membershipButtonsDiv = document.getElementById('membershipButtons');
             this.#cartContentsDiv = document.getElementById('cartContentsDiv');
         }
-        var id = document.getElementById("variablePriceModal");
+        id = document.getElementById("variablePriceModal");
         if (id) {
             this.#vpModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
             id.addEventListener('hidden.bs.modal', amountModalHiddenHelper);
@@ -199,6 +200,11 @@ class PosCart {
     // get total pmts in cart
     getTotalPmt() {
         return Number(this.#totalPmt);
+    }
+
+    // get the total coupon discounts on memberships in the cart
+    getTotalCouponDiscountUnpaid() {
+        return Number(this.#totalCouponUnpaid);
     }
 
     // check if a person is in cart already
@@ -1061,8 +1067,11 @@ class PosCart {
 `;
             this.#totalPrice += Number(mrow.price);
             this.#totalPaid += Number(mrow.paid);
-            if (mrow.couponDiscount > 0)
+            if (mrow.couponDiscount > 0) {
                 this.#totalPaid += Number(mrow.couponDiscount);
+                if (mrow.status == 'unpaid')
+                    this.#totalCouponUnpaid += Number(mrow.couponDiscount);
+            }
             membership_found = true;
             if (mrow.status != 'paid') {
                 this.#unpaidRows++;
@@ -1155,6 +1164,7 @@ class PosCart {
         this.cartRenumber(); // to keep indexing intact, renumber the index and pindex each time
         this.#totalPrice = 0;
         this.#totalPaid = 0;
+        this.#totalCouponUnpaid = 0;
         var num_rows = 0;
         this.#membershipRows = 0;
         this.#needMembershipRows = 0;
