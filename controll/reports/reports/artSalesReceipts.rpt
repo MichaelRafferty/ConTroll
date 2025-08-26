@@ -9,13 +9,13 @@
 	sql=a.id
 	title="Art ID#"
 	align=right
-	minWidth=80
+	Width=80
 [F005]
     name=artistId
 	sql="IFNULL(eRY.exhibitorNumber, e.id)"
 	title="Artist Number"
 	align=right
-	minWidth=80
+	width=100
 	filter=true
 	sort=true
 [F006]
@@ -53,6 +53,18 @@
     filter=true
     width=150
     format=textarea
+[F030]
+    name=fullName
+    sql="TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' '))"
+    title="Buyers Full Name"
+    minWidth=300
+    filter=true
+[F032]
+    name=email
+    sql=p.email_addr
+    title="Buyers Email Name"
+    minWidth=100
+    filter=true
 [T001]
 	name=exhibitors
 	alias=e
@@ -88,6 +100,10 @@
     name=payments
     alias=y
     join="y.transid = t.id"
+[T014]
+    name=perinfo
+    alias=p
+    join="s.perid = p.id"
 [P001]
     type=prompt
     item=conid
