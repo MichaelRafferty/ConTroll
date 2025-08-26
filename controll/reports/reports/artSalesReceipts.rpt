@@ -1,0 +1,102 @@
+[report]
+	name="artSalesReceipts"
+	auth=art_control
+	csvfile="artSalesReceipts"
+	index=exhibitorNumber
+    totals=bottom
+[F001]
+    name=artId
+	sql=a.id
+	title="Art ID#"
+	align=right
+	minWidth=80
+[F005]
+    name=artistId
+	sql="IFNULL(eRY.exhibitorNumber, e.id)"
+	title="Artist Number"
+	align=right
+	minWidth=80
+	filter=true
+	sort=true
+[F006]
+    name=itemNum
+    sql=a.item_key
+    title="Item #"
+    align=right
+    minwidth=80
+    filter=true
+[F008]
+    name=artistName
+    sql="CASE WHEN IFNULL(e.artistName, '') = '' THEN e.exhibitorName ELSE e.artistName END"
+    title="Artist Name"
+    minwidth: 200
+    filter=true
+[F010]
+    name=title
+    sql=a.title
+    title="Title"
+    filter=true
+    minwidth=200
+[F012]
+    name=type
+    sql=a.type
+    title="Type"
+    filter=true
+[F015]
+    name=receiptURL
+    sql=y.receipt_url
+    title="Receipt URL"
+[F025]
+    name=purchasedBy
+    sql=s.perid
+    title="Purchased By"
+    filter=true
+    width=150
+    format=textarea
+[T001]
+	name=exhibitors
+	alias=e
+[T002]
+	name=exhibitorYears
+	alias=eY
+	join="eY.exhibitorId=e.id"
+[T003]
+    name=exhibitorRegionYears
+    alias=eRY
+    join=" eRY.exhibitorYearId = eY.id"
+[T005]
+    name=exhibitsRegionYears
+    alias=xRY
+    join="xRY.id = eRY.exhibitsRegionYearId"
+[T006]
+    name=exhibitsRegions
+    alias=xR
+    join="xR.id=xRY.exhibitsRegion"
+[T010]
+    name=artItems
+    alias=a
+    join="eRY.id = a.exhibitorRegionYearId"
+[T011]
+    name=artSales
+    alias=s
+    join="a.id = s.artId"
+[T012]
+    name=transaction
+    alias=t
+    join="s.transid = t.id"
+[T013]
+    name=payments
+    alias=y
+    join="y.transid = t.id"
+[P001]
+    type=prompt
+    item=conid
+    datatype=i
+[P002]
+    type=prompt
+    item=region
+    datatype=s
+[where]
+	001="eY.conid = ? AND LOWER(xR.shortname) = LOWER(?) AND a.type != 'nfs' AND s.status IN ('Purchased/Released', 'Quicksale/Sold')"
+[sort]
+	001="artistId,a.item_key,s.perid"

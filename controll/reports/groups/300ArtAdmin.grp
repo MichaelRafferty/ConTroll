@@ -37,6 +37,14 @@
 	type=rpt
 	P001="prompt/~/conid/~/Convention ID: /~/Enter the convention ID"
 	P002="prompt/~/region/~/Exhibits Region Short Name: /~/Enter the region"
+[250ArtSalesReceipts]
+    name='Artist Sale Receipts'
+	description='Receipts for all Sold Art Items'
+	template=artSalesReceipts.rpt
+	auth=art_control
+	type=rpt
+	P001="prompt/~/conid/~/Convention ID: /~/Enter the convention ID"
+	P002="prompt/~/region/~/Exhibits Region Short Name: /~/Enter the region"
 [300ArtCheckout]
 	name='Artist Checkout'
 	description='Checkhout Report Artshow'
