@@ -164,7 +164,7 @@ EOS;
     $result = array('status' => 'success', 'coupon' => $coupon);
     if ($coupon['memId']) {
         $priceQ = <<<EOS
-SELECT id, label, shortname, price, memCategory, memType, memAge, conid
+SELECT id, label, shortname, sort_order, price, memCategory, memType, memAge, conid
 FROM memLabel
 WHERE
     conid=? 
@@ -175,7 +175,7 @@ EOS;
         $priceR = dbSafeQuery($priceQ, 'ii', array($con['id'], $coupon['memId']));
     } else {
         $priceQ = <<<EOS
-SELECT id, label, shortname, sort_order, price, memAge, memCategory, conid
+SELECT id, label, shortname, sort_order, price, memCategory, memType, memAge, conid
 FROM memLabel
 WHERE
     conid=? 
