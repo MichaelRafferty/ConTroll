@@ -3,7 +3,7 @@
 
 function refreshSession() {
     $type = getSessionVar('tokenType');
-    echo "Refreshibng $type\n";
+    echo "Refreshing $type\n";
 
     switch($type) {
         case 'token':
