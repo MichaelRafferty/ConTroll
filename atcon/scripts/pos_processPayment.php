@@ -496,13 +496,23 @@ EOS;
                 }
 
                 /* update the transaction */
-                // update the transaction status
+                // update the transaction status and add the additional payment info as a JSON
+                $paymentInfo = [];
+                $paymentInfo['prow'] = $new_payment;
+                $paymentInfo['orderId'] = $orderId;
+                $paymentInfo['discountAmt'] = $discountAmt;
+                $paymentInfo['couponDiscount'] = $couponDiscount;
+                $paymentInfo['couponPayment'] = $couponPayment;
+                $paymentInfo['coupon'] = $coupon;
+                $paymentInfo['crow'] = $crow;
+                $paymentInfoJSON = json_encode($paymentInfo);
+
                 $updTranStatusSQL = <<<EOS
 UPDATE transaction
-SET paymentStatus = ?, checkoutId = ?
+SET paymentStatus = ?, checkoutId = ?, paymentInfo = ?
 WHERE id = ?;
 EOS;
-                $updcnt = dbSafeCmd($updTranStatusSQL, 'ssi', array($status, $checkout['id'], $master_tid));
+                $updcnt = dbSafeCmd($updTranStatusSQL, 'sssi', array($status, $checkout['id'], $paymentInfoJSON, $master_tid));
 
                 $response['status'] = 'success';
                 $response['poll'] = 1;
