@@ -330,6 +330,7 @@ EOS;
     }
 
     $message .= '1 payment added<br/>';
+    $upd_rows = 0;
     $updRegSql = <<<EOS
 UPDATE reg
 SET paid = ?, complete_trans = ?, status = ?, couponDiscount = ?, coupon = ?
