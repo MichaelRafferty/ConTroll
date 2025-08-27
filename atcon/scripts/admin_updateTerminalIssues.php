@@ -54,7 +54,7 @@ if ($_POST && $_POST['transid']) {
 // get the information for this transaction
 $issueSQL = <<<EOS
 SELECT t.id, t.paymentId, t.paymentStatus, t.checkoutId, t.create_date, t.complete_date, t.perid, t.userid, t.withtax, t.paid, 
-       t.type, t.orderId, t.lastUpdate, TIMESTAMPDIFF(MINUTE, t.lastUpdate, NOW()) as minutes,
+       t.type, t.orderId, t.lastUpdate, TIMESTAMPDIFF(MINUTE, t.lastUpdate, NOW()) as minutes, t.paymentInfo,
        TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
        y.id AS payTableId, IFNULL(y.status, '') AS cardStatus, IFNULL(y.paymentId, '') AS cardPaymentId
 FROM transaction t
@@ -136,16 +136,31 @@ EOS;
                 $receiptUrl = null;
             $status = $payment['status'];
             $message .= "Completing order $orderId of type $orderType and payment $paymentId of status $status with a receipt of $receiptUrl" . "<br/>";
-            if ($orderType == 'reg')
-                $message .= completeReg($issue['id'], $checkout, $order, $payment);
+
+            if ($issue['paymentInfo'] != null && $issue['paymentInfo'] != '')
+                $paymentInfo = json_decode($issue['paymentInfo'], true);
             else
-                $message .= completeArt($issue['id'], $checkout, $order, $payment);
+                $paymentInfo = array();
+
+            if ($orderType == 'reg')
+                $message .= completeReg($issue['id'], $checkout, $order, $payment, $issue['paymentInfo']);
+            else
+                $message .= completeArt($issue['id'], $checkout, $order, $payment, $issue['[paymentInfo']);
             break;
 
         default:
             $message .= "Unable to correct this status value currently, see assistance <br/>";
     }
 }
+
+// Clear the terminal if it's reserved for this checkout id
+$updTermSQL = <<<EOS
+UPDATE terminals
+SET currentOperator = 0, currentOrder = '', currentPayment = '', controllStatus = '', controllStatusChanged = now()
+WHERE currentPayment = ?;
+EOS;
+$num_upd = dbSafeCmd($updTermSQL, 's', array($issue['checkoutId']));
+$message .= "$num_upd terminals released and marked available<br/>";
 
 // now get the remaining issues
 $issueSQL = <<<EOS
@@ -183,8 +198,8 @@ ajaxSuccess($response);
 
 // Action Functions, one per payment order type
 // Actions needed to complete an item of source Reg Cashier
-function completeReg($master_tid, $checkout, $order, $payment) : string {
-    $new_payment_desc = 'Need new_payment';
+function completeReg($master_tid, $checkout, $order, $payment, $paymentInfo) : string {
+    $new_payment_desc = '';
     $drow = null; // need $drow
     $couponPayment = null; // new coupon payment
     $couponDiscount = 0; // need coupon info
@@ -192,6 +207,26 @@ function completeReg($master_tid, $checkout, $order, $payment) : string {
     $user_perid = getSessionVar('user');
     $discountAmt = 0; // need discount amount
     $message = '';
+
+    // items from payment Info
+    if (array_key_exists('prow', $paymentInfo)) {
+        $new_payment_desc = $paymentInfo['prow']['desc'];
+    }
+    if (array_key_exists('drow', $paymentInfo)) {
+        $drow = $paymentInfo['drow'];
+    }
+    if (array_key_exists('discountAmt', $paymentInfo)) {
+        $discountAmt = $paymentInfo['discountAmt'];
+    }
+    if (array_key_exists('couponDiscount', $paymentInfo)) {
+        $couponDiscount = $paymentInfo['couponDiscount'];
+    }
+    if (array_key_exists('couponPayment', $paymentInfo)) {
+        $couponPayment = $paymentInfo['couponPayment'];
+    }
+    if (array_key_exists('coupon', $paymentInfo)) {
+        $coupon = $paymentInfo['coupon'];
+    }
 
     if ($coupon == '')
         $coupon = null;
@@ -254,38 +289,42 @@ EOS;
     if ($couponPayment != null) {
         $paramarray = array ($master_tid, 'coupon', $couponPayment['desc'], $couponPayment['amt'], 0, $couponPayment['amt'], null, $user_perid,
             null, null, null, null, null, null, $user_perid, 'APPLIED', null);
-        $message .= "\$new_pid = dbSafeInsert($insPmtSQL, $typestr, array(" . implode(',', $paramarray) . "));<br/>";
-        //$new_pid = dbSafeInsert($insPmtSQL, $typestr, $paramarray);
+        //$message .= "\$new_pid = dbSafeInsert($insPmtSQL, $typestr, array(" . implode(',', $paramarray) . "));<br/>";
+        $new_pid = dbSafeInsert($insPmtSQL, $typestr, $paramarray);
 
-        //if ($new_pid === false) {
-        //   ajaxError('Error adding coupon payment to database');
-        //    exit();
-        //}
+        if ($new_pid === false) {
+           ajaxError('Error adding coupon payment to database');
+           exit();
+        }
+        $message .= "Payment Row $new_pid inserted of type 'coupon' for " . $couponPayment['amt'] . "<br/>";
     }
 
     if ($drow != null) {
         $paramarray = array ($master_tid, 'discount', $drow['desc'], $drow['amt'], 0, $drow['amt'], null, $user_perid,
             null, null, null, null, null, null, $user_perid, 'APPLIED', null);
-        $message .= "\$new_pid = dbSafeInsert($insPmtSQL, $typestr, array(" . implode(',', $paramarray) . '));<br/>';
-        //$new_pid = dbSafeInsert($insPmtSQL, $typestr, $paramarray
+        //$message .= "\$new_pid = dbSafeInsert($insPmtSQL, $typestr, array(" . implode(',', $paramarray) . '));<br/>';
+        $new_pid = dbSafeInsert($insPmtSQL, $typestr, $paramarray);
 
-//        if ($new_pid === false) {
-//            ajaxError('Error adding manager discount payment to database');
-//            exit();
-//        }
+        if ($new_pid === false) {
+            ajaxError('Error adding manager discount payment to database');
+            exit();
+        }
+        $message .= "Payment Row $new_pid inserted of type 'discount' for " . $drow['amt'] . " due to " .
+            $drow['desc'] . '<br/>';
     }
 
     // now the main payment
     if ($amt > 0) {
         $paramarray = array ($master_tid, $paymentType, $desc, $preTaxAmt, $taxAmt, $approved_amt, $auth, $user_perid,
             $last4, $nonceCode, $id, $txTime, $receiptUrl, $receiptNumber, $user_perid, $status, $id);
-        $message .= "\$new_pid = dbSafeInsert($insPmtSQL, $typestr, array(" . implode(',', $paramarray) . '));<br/>';
-        //$new_pid = dbSafeInsert($insPmtSQL, $typestr, $paramarray
+        //$message .= "\$new_pid = dbSafeInsert($insPmtSQL, $typestr, array(" . implode(',', $paramarray) . '));<br/>';
+        $new_pid = dbSafeInsert($insPmtSQL, $typestr, $paramarray);
 
-//        if ($new_pid === false) {
-//            ajaxError('Error adding payment to database');
-//            exit();
-//        }
+        if ($new_pid === false) {
+            ajaxError('Error adding payment to database');
+            exit();
+        }
+        $message .= "Payment Row $new_pid inserted of type 'main' for $approved_amt with desc $desc<br/>";
     }
 
     $message .= '1 payment added<br/>';
@@ -305,8 +344,8 @@ EOS;
         $regid = explode(',', $note)[2];
 
         // update the database
-        $message .= "\$upd_rows += dbSafeCmd($updRegSql, 'disdii', array($gross, $master_tid, 'paid', $applied_disc, $coupon, $regid));<br/>";
-        //$upd_rows += dbSafeCmd($updRegSql, 'disdii', array($paid, $master_tid, 'paid', $applied_disc, $coupon, $regid));
+        //$message .= "\$upd_rows += dbSafeCmd($updRegSql, 'disdii', array($gross, $master_tid, 'paid', $applied_disc, $coupon, $regid));<br/>";
+        $upd_rows += dbSafeCmd($updRegSql, 'disdii', array($paid, $master_tid, 'paid', $applied_disc, $coupon, $regid));
         }
 
 
@@ -317,8 +356,8 @@ UPDATE transaction
 SET coupon = ?, couponDiscountCart = ?, couponDiscountReg = ?
 WHERE id = ?;
 EOS;
-        $message .= "\$completed = dbSafeCmd($updCompleteSQL, 'iddi', array ($coupon, $couponDiscount + $discountAmt, 0, $master_tid))<br/>";
-        //$completed = dbSafeCmd($updCompleteSQL, 'iddi', array ($coupon, $couponDiscount + $discountAmt, 0, $master_tid));
+        //$message .= "\$completed = dbSafeCmd($updCompleteSQL, 'iddi', array ($coupon, $couponDiscount + $discountAmt, 0, $master_tid))<br/>";
+        $completed = dbSafeCmd($updCompleteSQL, 'iddi', array ($coupon, $couponDiscount + $discountAmt, 0, $master_tid));
     }
 
     $updCompleteSQL = <<<EOS
@@ -326,8 +365,8 @@ UPDATE transaction
 SET paid = ?,  paymentStatus = ?, paymentId = ?
 WHERE id = ?;
 EOS;
-    $message .= "\$completed = dbSafeCmd($updCompleteSQL, 'dssi', array ($approved_amt, " . $checkout['status'] . ", $id, $master_tid))<br/>";
-    //$completed = dbSafeCmd($updCompleteSQL, 'dssi', array ($approved_amt, $checkout['status'], $id, $master_tid));
+    //$message .= "\$completed = dbSafeCmd($updCompleteSQL, 'dssi', array ($approved_amt, " . $checkout['status'] . ", $id, $master_tid))<br/>";
+    $completed = dbSafeCmd($updCompleteSQL, 'dssi', array ($approved_amt, $checkout['status'], $id, $master_tid));
 
     $completed = 0;
     if ($complete) {
@@ -337,15 +376,15 @@ UPDATE transaction
 SET complete_date = NOW(), change_due=0
 WHERE id = ?;
 EOS;
-        $message .= "\$completed = dbSafeCmd($updCompleteSQL, 'i', array ($master_tid))<br/>";
-        //$completed = dbSafeCmd($updCompleteSQL, 'i', array ($master_tid));
+        //$message .= "\$completed = dbSafeCmd($updCompleteSQL, 'i', array ($master_tid))<br/>";
+        $completed = dbSafeCmd($updCompleteSQL, 'i', array ($master_tid));
     }
 
-    $message .= "\$upd_rows memberships updated" . ($completed == 1 ? ', transaction completed.<br/>' : '.<br/>');
+    $message .= "$upd_rows memberships updated" . ($completed == 1 ? ', transaction completed.<br/>' : '.<br/>');
     return $message;
 }
 
 
-function completeArt($issueId, $checkout, $order, $payment) : string {
+function completeArt($issueId, $checkout, $order, $payment, $paymentInfo) : string {
     return 'In completeArt<br/>';
 }
