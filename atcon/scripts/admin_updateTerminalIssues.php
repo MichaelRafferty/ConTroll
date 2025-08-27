@@ -208,24 +208,26 @@ function completeReg($master_tid, $checkout, $order, $payment, $paymentInfo) : s
     $discountAmt = 0; // need discount amount
     $message = '';
 
-    // items from payment Info
-    if (array_key_exists('prow', $paymentInfo)) {
-        $new_payment_desc = $paymentInfo['prow']['desc'];
-    }
-    if (array_key_exists('drow', $paymentInfo)) {
-        $drow = $paymentInfo['drow'];
-    }
-    if (array_key_exists('discountAmt', $paymentInfo)) {
-        $discountAmt = $paymentInfo['discountAmt'];
-    }
-    if (array_key_exists('couponDiscount', $paymentInfo)) {
-        $couponDiscount = $paymentInfo['couponDiscount'];
-    }
-    if (array_key_exists('couponPayment', $paymentInfo)) {
-        $couponPayment = $paymentInfo['couponPayment'];
-    }
-    if (array_key_exists('coupon', $paymentInfo)) {
-        $coupon = $paymentInfo['coupon'];
+    if (is_array($paymentInfo)) {
+        // items from payment Info
+        if (array_key_exists('prow', $paymentInfo)) {
+            $new_payment_desc = $paymentInfo['prow']['desc'];
+        }
+        if (array_key_exists('drow', $paymentInfo)) {
+            $drow = $paymentInfo['drow'];
+        }
+        if (array_key_exists('discountAmt', $paymentInfo)) {
+            $discountAmt = $paymentInfo['discountAmt'];
+        }
+        if (array_key_exists('couponDiscount', $paymentInfo)) {
+            $couponDiscount = $paymentInfo['couponDiscount'];
+        }
+        if (array_key_exists('couponPayment', $paymentInfo)) {
+            $couponPayment = $paymentInfo['couponPayment'];
+        }
+        if (array_key_exists('coupon', $paymentInfo)) {
+            $coupon = $paymentInfo['coupon'];
+        }
     }
 
     if ($coupon == '')
