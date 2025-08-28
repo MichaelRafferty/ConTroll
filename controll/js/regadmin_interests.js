@@ -68,6 +68,12 @@ class interestsSetup {
                         'preview fullscreen ',
                         'alignleft aligncenter alignright alignnone | outdent indent | numlist bullist checklist | forecolor backcolor | link image'
                     ],
+                    link_target_list: [
+                        { title: 'None', value: '' },
+                        { title: 'Same page', value: '_self' },
+                        { title: 'New page', value: '_blank' },
+                    ],
+                    link_default_target: '_blank',
                     content_style: 'body {font - family:Helvetica,Arial,sans-serif; font-size:14px }',
                     placeholder: 'Edit the interests prompt...',
                     auto_focus: 'editFieldArea',
