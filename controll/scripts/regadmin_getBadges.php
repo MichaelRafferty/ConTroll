@@ -74,11 +74,11 @@ LEFT OUTER JOIN newperson NP ON (NP.id=R.newperid)
 LEFT OUTER JOIN coupon C on (C.id = R.coupon)
 LEFT OUTER JOIN notes N on N.id = R.id
 LEFT OUTER JOIN history H on H.id = R.id
-WHERE R.conid=? AND (R.perid = ? OR R.create_trans = ? OR R.complete_trans = ?)
+WHERE R.conid=? AND (R.perid = ? OR R.create_trans = ? OR R.complete_trans = ? OR R.newperid = ?)
 ORDER BY R.create_date DESC;
 EOS;
-    $typeString = 'iiiiiiiiiiii';
-    $params = array($conid, $search, $search, $search, $conid, $search, $search, $search, $conid, $search, $search, $search);
+    $typeString = 'iiiiiiiiiiiii';
+    $params = array($conid, $search, $search, $search, $conid, $search, $search, $search, $conid, $search, $search, $search, $search);
 } else {
     if ($search != '%')
         $search = '%' . str_replace(' ', '%', $search) . '%';
