@@ -24,7 +24,7 @@
 	P001="prompt/~/perid/~/History for: /~/Enter Person's Perid"
 [300NoShows]
     name="No Shows"
-    description="No Shows for a convention year"
+    description="No Shows for a convention year (paid badges never printed)"
     template=reg_noshows.rpt
     auth=reg_admin
     type=rpt
