@@ -1,5 +1,8 @@
 <?php
 require_once("base.php");
+require_once('../../lib/pdfFunctions.php');
+require_once('../../lib/pdf/tfpdf/tfpdf.php');
+require_once('../../lib/pdf/fpdf-barcode/src/Barcode.php');
 
 $con = get_conf('con');
 $conid = $con['id'];
@@ -40,7 +43,7 @@ function init_file($printer)//:string {
 
     $codepage = $printer['code'];
     switch($codepage) {
-        default:
+        case 'PS':
             $atcon = get_conf('atcon');
             if (array_key_exists('badgeps', $atcon)) {
                 $filename = $atcon['badgeps'];
@@ -61,11 +64,189 @@ function init_file($printer)//:string {
 function write_badge($badge, $tempfile, $printer):void {
     $codepage = $printer['code'];
     switch ($codepage) {
-        default:
+        case 'PS':
             write_ps($badge, $tempfile);
             break;
+        case 'Dymo3xx':
+            write_pdf($badge, $tempfile, 3);
+            break;
+        default:
+            write_pdf($badge, $tempfile, 4);
     }
 }
+
+function write_pdf($badge, $tempfile, $originType)//: void {
+{
+    global $badgeTypes;
+    global $badgeFlags;
+    $temp = fopen($tempfile, 'w');
+    if (!$temp) {
+        $response['error'] = 'Unable to get open file';
+        $response['error_message'] = error_get_last();
+        ajaxSuccess($response);
+        exit();
+    }
+
+    $useBarcode = getConfValue('atcon', 'badgeBarcode', 0) == 1;
+
+    // set up pdf
+    $pdf = new Barcode('L', 'in', array(3.25, 1.125));
+
+    // set up fonts
+    #$pdf->AddFont('Arial','','arial.ttf',true);
+    $pdf->AddFont('Arial','B','arialbd.ttf',true);
+    #$pdf->AddFont('Arial','BI','arialbi.ttf',true);
+    #$pdf->AddFont('Arial','I','ariali.ttf',true);
+
+    initPDF($pdf, 0.008, 'Arial', '', 11);
+
+    $pdf->setLeftMargin(0);
+    $pdf->setRightMargin(0);
+    $pdf->setTopMargin(0);
+    $pdf->AddPage();
+
+    $xmargin = 12/72.0;
+    $ymargin = 15/72.0;
+
+    // output an image if any
+    $image = getConfValue('atcon', 'badgeLogo');
+    if ($image != '') {
+        $imageW = getConfValue('atcon', 'badgeLogoWidth', 1);
+        $imageH = getConfValue('atcon', 'badgeLogoHeight', 1);
+        $pdf->image("../../config/$image", 2.2, 0.1, $imageW, $imageH);
+    }
+
+    // Lines 1 and 2 - Badge Name
+    //build badge name
+    $bn = $badge['badge_name'] == '' ? $badge['full_name'] : $badge['badge_name'];
+    $lines = explode('~~', $bn, 2);
+    if (count($lines) > 1) {
+        $line1 = $lines[0];
+        $line2 = $lines[1];
+    } else {
+        $line1 = $bn;
+        $line2 = '';
+    }
+
+    $x = $xmargin;
+    $y = $ymargin;
+    // badge name line 1: trim to what fits in 3.05" width using Arial Bold 22pt font
+    //  intelligent split based on blanks or character count if no blanks
+    pushFont('Arial', 'B', 22);
+    $maxWidth = 3.05;
+    $lineWidth = $pdf->getStringWidth($line1);
+    if ($lineWidth > $maxWidth && $line2 != '') {
+        // undo the split and let it split naturally
+        $line1 = str_replace('~~', ' ', $bn);
+        $line2 = '';
+    }
+    $maxLoop = 0;
+    while ($lineWidth > $maxWidth && $maxLoop < 30) {
+        //echo "lineWidth = $lineWidth, maxWidth = $maxWidth\n";
+        $lastBlank = strrpos($line1, ' ');
+        //echo $lastBlank . PHP_EOL;
+        if ($lastBlank === false) {
+            // no blanks, move 1 character from line1 to line2
+            $line2 = mb_substr($line1, -1) . $line2;
+            $line1 = mb_substr($line1, 0, mb_strlen($line1) - 1);
+            //echo "one character: line1='$line1', line2='$line2'" . PHP_EOL;
+        } else {
+            // pull back to a blank
+            $line2 = mb_substr($line1, $lastBlank) . $line2;
+            $line1 = mb_substr($line1, 0, $lastBlank);
+            //echo "last blank: line1='$line1', line2='$line2'" . PHP_EOL;
+        }
+        $lineWidth = $pdf->getStringWidth($line1);
+
+        $maxLoop++;
+    }
+    //echo "x=$x, y=$y\n";
+    printXY($x - 6/72, $y, $line1);
+    popFont();
+
+    // line 2: overflow of the badge name
+    $line2 = trim($line2);
+    if ($line2 != '') {
+        $y = $ymargin + 22/72;
+        pushFont('Arial', 'B', 16);
+        $lineWidth = $pdf->getStringWidth($line2);
+        //echo "lineWidth = $lineWidth\n";
+        if ($lineWidth > $maxWidth) {
+            popFont();
+            //echo "font 17\n";
+            pushFont('Arial', 'B', 15);
+            $lineWidth = $pdf->getStringWidth($line2);
+            //echo "lineWidth = $lineWidth\n";
+            if ($lineWidth > $maxWidth) {
+                popFont();
+                //echo "font 16\n";
+                pushFont('Arial', 'B', 14);
+                $lineWidth = $pdf->getStringWidth($line2);
+                //echo "lineWidth = $lineWidth\n";
+            }
+        }
+        $maxLoop = 0;
+        while ($lineWidth > $maxWidth && $maxLoop < 40) {
+            $line2 = mb_substr($line2, 0, mb_strlen($line2) - 1);
+            $lineWidth = $pdf->getStringWidth($line2);
+            //echo "line2='$line2'" . PHP_EOL;
+            //echo "lineWidth = $lineWidth\n";
+            $maxLoop++;
+        }
+        //echo "x=$x, y=$y\n";
+        printXY($x - 6/72, $y, $line2);
+        popFont();
+    }
+
+    $type = '';
+    if ($badge['category'] == 'test') {
+        $type = 'test';
+    } else {
+        $type = $badgeTypes[$badge['category']];
+    }
+    $pid = $badge['id'];
+
+    // line3 Day of Week: left margin, 1.5 lines high
+    if (strtolower($badge['type']) == 'oneday') {
+        $day = substr($badge['day'], 0, 3);
+
+        $x = $xmargin;
+        $y = $ymargin + 42 / 72;
+        pushFont('Arial', 'BI', 24);
+        printXY($x - 6 / 72, $y, $day);
+        popFont();
+    }
+
+    // line3 info: type and badge number, indented 100pt
+    $x = $xmargin + 100/72;
+    $y = $ymargin + 38/72;
+    printXY($x, $y, $type . ' ' . $pid);
+
+    // line4 limitation indented 100 pts, in reverse video
+
+    if (array_key_exists($badge['age'], $badgeFlags)) {
+        $flag = $badgeFlags[$badge['age']];
+
+        $x = $xmargin + 100/72;
+        $y = $ymargin + 52/72;
+        $pdf->Rect($x, $y - 7 / 72, 90 / 72, 14 / 72, 'DF');
+        $pdf->SetTextColor(255, 255, 255);
+        centerPrintXY($x, $y, 85 / 72, $flag);
+        $pdf->SetTextColor(0, 0, 0);
+    }
+
+    if ($useBarcode) {
+        // line 4 Barcode - if desired
+
+        $y = $ymargin + 52/72;
+        $x = $xmargin;
+        $pdf->code128($x, $y, $pid, 90 / 72, 10 / 72);
+    }
+
+    $output = $pdf->Output('S');
+    fwrite($temp, $output);
+    fclose($temp);
+    }
 
 function write_ps($badge, $tempfile)//: void {
 {
@@ -166,6 +347,7 @@ function print_badge($printer, $tempfile)//: string|false
 
     $queue = $printer['queue'];
     $codepage = $printer['code'];
+    $suffix = $codepage = 'PS' ? 'ps' : 'pdf';
     $name = $printer['name'];
     $result_code = 0;
 
@@ -173,7 +355,7 @@ function print_badge($printer, $tempfile)//: string|false
         web_error_log("trying to save file");
         $atcon_conf = get_conf('atcon');
         $location = $atcon_conf['badges'];
-        $newname = "ps/" . basename($tempfile) . ".ps";
+        $newname = "$suffix/" . basename($tempfile) . ".$suffix";
         $command = "cp $tempfile " . "$location/$newname";
         $output = [];
         $result = exec($command,$output,$result_code);
@@ -190,11 +372,11 @@ function print_badge($printer, $tempfile)//: string|false
         $options = '';
         switch ($codepage) {
             // turbo 330. et al, -o PageSize=w82h248  -o orientation-requested=5
-            case 'Dymo3xxPS':
-                $options = '-o PageSize=w82h248 -o orientation-requested=5';
+            case 'Dymo3xx':
+                $options = '-o PageSize=w82h248 -o orientation-requested45';
                 break;
             // turbo 450 et al, -o PageSize=30252_Address
-            case 'Dymo4xxPS':
+            case 'Dymo4xx':
                 $options = '-o PageSize=30252_Address';
                 break;
             default:
