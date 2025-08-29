@@ -88,6 +88,13 @@ EOS;
     $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
 
     $pdf = new Barcode('L', 'in', 'Letter');
+
+    // get unicode fonts
+    $pdf->AddFont('Arial','','arial.ttf',true);
+    $pdf->AddFont('Arial','B','arialbd.ttf',true);
+    #$pdf->AddFont('Arial','BI','arialbi.ttf',true);
+    #$pdf->AddFont('Arial','I','ariali.ttf',true);
+
     initPDF($pdf, 0.008, 'Arial', '', 11);
 
     // computes from those offsets
@@ -332,6 +339,13 @@ EOS;
     $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
 
     $pdf = new Barcode($orient, 'in', 'Letter');
+
+    // get unicode fonts
+    $pdf->AddFont('Arial','','arial.ttf',true);
+    $pdf->AddFont('Arial','B','arialbd.ttf',true);
+    #$pdf->AddFont('Arial','BI','arialbi.ttf',true);
+    #$pdf->AddFont('Arial','I','ariali.ttf',true);
+
     initPDF($pdf, 0.008, 'Arial', '', 11);
 
 // computes from those offsets
@@ -581,6 +595,13 @@ EOS;
     $title = "$conname Art Control Sheet for " . $artistName;
 
     $pdf = new tFPDF('L', 'in', 'Letter');
+
+    // get unicode fonts
+    $pdf->AddFont('Arial','','arial.ttf',true);
+    $pdf->AddFont('Arial','B','arialbd.ttf',true);
+    #$pdf->AddFont('Arial','BI','arialbi.ttf',true);
+    #$pdf->AddFont('Arial','I','ariali.ttf',true);
+
     initPDF($pdf, 0.008, 'Arial', '', 11);
 
     // computes from those offsets
