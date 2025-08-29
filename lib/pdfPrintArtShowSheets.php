@@ -1,6 +1,7 @@
 <?php
 // pdfPrintArtShowSheets.php - routines for creating the art show bid sheets, price tags and control sheets
-require_once (__DIR__ . '/../Composer/vendor/autoload.php');
+require_once(__DIR__ . '/../lib/pdf/tfpdf/tfpdf.php');
+require_once(__DIR__ . '/../lib/pdf/fpdf-barcode/src/Barcode.php');
 require_once ("pdfFunctions.php");
 
 function pdfPrintShopPriceSheets($regionYearId, $region, $response) {
@@ -86,7 +87,7 @@ EOS;
     $curLocale = locale_get_default();
     $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
 
-    $pdf = new \Erkens\Fpdf\Barcode('L', 'in', 'Letter');
+    $pdf = new Barcode('L', 'in', 'Letter');
     initPDF($pdf, 0.008, 'Arial', '', 11);
 
     // computes from those offsets
@@ -330,7 +331,7 @@ EOS;
     $curLocale = locale_get_default();
     $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
 
-    $pdf = new \Erkens\Fpdf\Barcode($orient, 'in', 'Letter');
+    $pdf = new Barcode($orient, 'in', 'Letter');
     initPDF($pdf, 0.008, 'Arial', '', 11);
 
 // computes from those offsets
@@ -579,7 +580,7 @@ EOS;
 
     $title = "$conname Art Control Sheet for " . $artistName;
 
-    $pdf = new Fpdf\Fpdf('L', 'in', 'Letter');
+    $pdf = new tFPDF('L', 'in', 'Letter');
     initPDF($pdf, 0.008, 'Arial', '', 11);
 
     // computes from those offsets
