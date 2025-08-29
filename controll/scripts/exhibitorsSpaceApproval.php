@@ -438,7 +438,7 @@ EOS;
                 }
 
                 if ( $detail['item_approved'] != null) {
-                    $spaceDetail .= $detail['approved_description'] . " of " . $detail['spaceName'] . PHP_EOL;
+                    $spaceDetail .= $detail['approved_description'] . " of " . $detail['regionName'] . ' ' . $detail['spaceName'] . PHP_EOL;
                     $approved = true;
                 }
             }
