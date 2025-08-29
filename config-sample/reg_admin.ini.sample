@@ -95,6 +95,13 @@ web='/...PathtoLogDirectory.../web-reg'
 [atcon]
 ; badgeps = fill path to the Postscript header for printing badges
 badgeps="/home/homedir/config/conname.ps"
+; badgeLogo = pdf logo image (png or jpg) for the badge, grayscale, light
+; height/width are size in inches to print the logo on the badge
+;badgeLogo=yourLogo.png
+;badgeLogoWidth=1.0
+;badgeLogoHeight=1.0
+;badgeBarcode - display the ID as a barcode for artshow scanning, 1 = yes, 0 = no
+badgeBarcode=0
 ;; payment methods allowed
 ; 1 = allowed, 0 = disabled
 creditoffline = 0
