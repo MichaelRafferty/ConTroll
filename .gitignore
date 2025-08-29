@@ -24,6 +24,7 @@
 /install/Reg_Install_Schema/data/
 /portal/images/
 /controll/images/
+/lib/pdf/tfpdf/font/
 
 # stuff for local overrides
 .htaccess
