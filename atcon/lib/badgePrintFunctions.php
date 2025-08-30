@@ -238,9 +238,9 @@ function write_pdf($badge, $tempfile, $originType)//: void {
     if ($useBarcode) {
         // line 4 Barcode - if desired
 
-        $y = $ymargin + 52/72;
+        $y = $ymargin + 54/72;
         $x = $xmargin;
-        $pdf->code128($x, $y, $pid, 90 / 72, 10 / 72);
+        $pdf->code128($x, $y, $pid, 90 / 72, 8 / 72);
     }
 
     $output = $pdf->Output('S');
