@@ -1,9 +1,9 @@
 <?php
 
-require_once ("type/Code128.php");
-require_once ("type/Code39.php");
-require_once ("type/Ean13.php");
-require_once ("type/UpcA.php");
+require_once ("Type/Code128.php");
+require_once ("Type/Code39.php");
+require_once ("Type/Ean13.php");
+require_once ("Type/UpcA.php");
 
 class Barcode extends tFPDF
 {
