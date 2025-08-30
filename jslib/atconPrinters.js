@@ -83,7 +83,7 @@ class Printers {
                 },
                 { title: "Code Page", field: "codePage", headerSort: true, headerFilter:true,
                     editor: "list", editorParams: {
-                        values: ["PS", "HPCL", "Dymo4xxPS", "Dymo3xxPS", "DymoSEL", "Windows-1252", "ASCII", "7bit", "8bit", "UTF-8", "UTF-16"],
+                        values: ["PS", "HPCL", "Dymo4xx", "Dymo3xx", "Windows-1252", "ASCII", "7bit", "8bit", "UTF-8", "UTF-16"],
                         defaultValue: "ASCII",
                         emptyValue: "ASCII",
                     }
