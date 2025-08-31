@@ -61,10 +61,6 @@ span.activeTab a {
     text-decoration: none;
 }
 
-div {
-    overflow: auto;
-}
-
 #main {
     padding: 0px;
     margin: 0px;
