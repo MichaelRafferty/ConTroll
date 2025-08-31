@@ -404,10 +404,19 @@ function showEdit(classname, table, index, field, titlename, textitem, textOnly 
             plugins: 'advlist lists image link charmap fullscreen help nonbreaking preview searchreplace',
             toolbar: [
                 'help undo redo searchreplace copy cut paste pastetext | fontsizeinput styles h1 h2 h3 h4 h5 h6 | ' +
-                'bold italic underline strikethrough removeformat | ' +
+                'bold italic underline strikethrough language removeformat | ' +
                 'visualchars nonbreaking charmap hr | ' +
                 'preview fullscreen ',
                 'alignleft aligncenter alignright alignnone | outdent indent | numlist bullist checklist | forecolor backcolor | link image'
+            ],
+            content_langs: [
+                { title: 'English', code: 'en' },
+                { title: 'French Canadian', code: 'fr-CA' },
+                { title: 'French', code: 'fr' },
+                { title: 'Spanish', code: 'es' },
+                { title: 'German', code: 'de' },
+                { title: 'Portuguese', code: 'pt' },
+                { title: 'Chinese', code: 'zh' }
             ],
             link_default_target: '_blank',
             content_style: 'body {font - family:Helvetica,Arial,sans-serif; font-size:14px }',

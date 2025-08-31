@@ -10,6 +10,7 @@ if(!$need_login or !checkAuth($need_login['sub'], $page)) {
 
 page_init($page,
     /* css */ array('css/base.css',
+                    'css/oldbase.css'
                     'css/club.css'
                    ),
     /* js  */ array('js/d3.js',
