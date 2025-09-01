@@ -3,6 +3,7 @@
 	auth=reg_admin
 	csvfile="newNoReg"
     index=perid
+    totals=bottom
 [F001]
     name="Created"
     sql=p.creation_date
@@ -13,6 +14,7 @@
 	title="Perid"
 	align=right
 	minWidth=80
+	calc=count
 [F005]
     name=fullName
     sql="TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' '))"
