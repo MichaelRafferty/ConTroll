@@ -238,6 +238,7 @@ function drawReport(data) {
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
         };
         if (data.hasOwnProperty('groupby')) {
+            params.columnCalcs = "both";
             params.groupBy = data['groupby'];
         }
 

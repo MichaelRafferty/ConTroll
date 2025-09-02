@@ -137,14 +137,14 @@ This configuration file must be parsable by the parse_ini_file function with sec
   * item: config item (if config) or input field if prompt
   * datatype: sql datatype: s,i,d (string, integer, floating point decimal)
 * [where]: sql where clause (broken into lines for readability)
-  * 001: line 1 of where clause
-  * 002: line 2 of where clause… (repeat as needed for readability)
+  * W001: line 1 of where clause
+  * W002: line 2 of where clause… (repeat as needed for readability)
 * [group]: sql group by clause (broken into lines for readability)
-  * 001: line 1 of group by clause
-  * 002: line 2 of group by clause… (repeat as needed for readability)
+  * G001: line 1 of group by clause
+  * G002: line 2 of group by clause… (repeat as needed for readability)
 * [sort]: sql order by clause (broken into lines for readability)
-  * 001: sql order by clause
-  * 002: sql order by clause continued for readability
+  * S001: sql order by clause
+  * S002: sql order by clause continued for readability
 
 ### Sample Report File:
 

@@ -1,16 +1,16 @@
 [report]
-	name="artSalesByItem"
+	name="artSalesReconcile"
 	auth=art_control
-	csvfile="artSalesByItem"
+	csvfile="artSalesReconcile"
 	index=exhibitorNumber
     totals=bottom
     subtotals=artistName
 [F001]
     name=artId
-	sql=a.artId
+	sql=a.id
 	title="Art ID#"
 	align=right
-	width=60
+	width=80
 [F005]
     name=artistId
 	sql="IFNULL(eRY.exhibitorNumber, e.id)"
@@ -21,7 +21,7 @@
 	sort=true
 [F006]
     name=itemNum
-    sql=a.itemNum
+    sql=a.item_key
     title="Item #"
     align=right
     width=80
@@ -30,7 +30,7 @@
     name=artistName
     sql="CASE WHEN IFNULL(e.artistName, '') = '' THEN e.exhibitorName ELSE e.artistName END"
     title="Artist Name"
-    width= 200
+    width=300
     filter=true
     format=textarea
 [F010]
@@ -38,7 +38,7 @@
     sql=a.title
     title="Title"
     filter=true
-    width=200
+    width=300
     format=textarea
 [F012]
     name=type
@@ -50,64 +50,68 @@
     sql=a.status
     title="Item Status"
     filter=true
-    width=200
+    width=140
+[F014]
+    name=salesStatus
+    sql=l.status
+    title="Sales Status"
+    filter=true
+    width=140
 [F015]
     name=qtyDiff
-    sql="CASE WHEN l.salesCount IS NULL THEN NULL ELSE a.qtyDiff END"
+    sql="CASE WHEN a.quantity <= a.original_qty THEN a.original_qty - a.quantity ELSE NULL END"
     title="Qty Diff"
     align=right
-    width=80
+    width=60
+    calc=sum
 [F020]
     name=numberSold
-    sql=l.salesCount
+    sql="l.salesCount"
     title="# Sold"
     align=right
-    width=80
+    width=60
+    calc=sum
 [F022]
     name=itemPrice
-    sql=a.itemPrice
+    sql="CASE WHEN a.type = 'art' THEN a.final_price ELSE a.sale_price END"
+    title="Item Price"
+    align=right
+    width=120
+[F023]
+    name=salesPrice
+    sql=s.amount
     title="Item Price"
     align=right
     width=120
 [F025]
     name=purchasedBy
-    sql="GROUP_CONCAT(CASE WHEN a.type = 'art' THEN s.perid ELSE CONCAT_WS('', s.perid, ' (', s.quantity, ')') END SEPARATOR ',\n')"
+    sql="GROUP_CONCAT(s.perid SEPARATOR ', ')"
     title="Purchased By"
     filter=true
-    width=140
-    align=right,
+    align=right
+    width=100
     format=textarea
 [F030]
+    name=totalPrice
+    sql="CASE WHEN a.type = 'art' THEN a.final_price ELSE a.sale_price END * CASE WHEN a.quantity <= a.original_qty THEN a.original_qty - a.quantity ELSE NULL END"
+    title="Total Price"
+    align=right
+    width=120
+    calc=sum
+[F035]
     name=totalAmt
-    sql=l.amount
+    sql="l.amount"
     title="Total Amt"
     align=right
     width=120
-    format=money
     calc=sum
-[F035]
+[F036]
     name=totalPaid
-    sql=l.paid
-    title="Total Paid"
+    sql="l.paid"
+    title="Total Amt"
     align=right
     width=120
-    format=money
     calc=sum
-[F040]
-    name="qTotal"
-    sql="CASE WHEN l.salesCount IS NULL THEN NULL ELSE a.qtyDiff * itemPrice END"
-    title="Qty Total"
-    align=right
-    width=120
-    format=money
-    calc=sum
-[C001]
-    name=art
-    select="SELECT a.id AS artId, a.item_key AS itemNum, a.title AS title, a.type AS type, a.exhibitorRegionYearId, a.status,
-    CASE WHEN a.type = 'art' THEN a.original_qty WHEN a.quantity <= a.original_qty THEN a.original_qty - a.quantity ELSE NULL END AS qtyDiff,
-    CASE WHEN a.type = 'art' THEN a.final_price ELSE a.sale_price END AS itemPrice"
-    tables="FROM artItems a"
-    where="WHERE a.type != 'nfs'"
 [C002]
     name=sales
     select="SELECT s.artId, SUM(s.amount) AS amount, SUM(s.paid) AS paid, SUM(s.quantity) AS salesCount, MAX(status) AS status"
@@ -133,18 +137,18 @@
     alias=xR
     join="xR.id=xRY.exhibitsRegion"
 [T010]
-    name=art
+    name=artItems
     alias=a
     join="eRY.id = a.exhibitorRegionYearId"
 [T011]
     name=artSales
     alias=s
-    join="a.artId = s.artId"
+    join="a.id = s.artId"
     left=true
 [T012]
     name=sales
     alias=l
-    join="a.artId = l.artId"
+    join="a.id = l.artId"
     left=true
 [P001]
     type=prompt
@@ -155,9 +159,8 @@
     item=region
     datatype=s
 [where]
-	W001="eY.conid = ? AND LOWER(xR.shortname) = LOWER(?) AND a.type != 'nfs' AND (a.qtyDiff > 0 || s.amount IS NOT NULL)"
-	;W002="AND (a.itemPrice * a.qtyDiff) != l.paid"
+	W001="eY.conid = ? AND LOWER(xR.shortname) = LOWER(?) AND a.type != 'nfs' AND (a.quantity != a.original_qty || s.amount IS NOT NULL)"
 [group]
-    G001="a.artId,artistId,itemNum,e.artistName,e.exhibitorName,title,a.type,itemPrice,qtyDiff"
+    G001="a.id,artistId,itemNum,e.artistName,e.exhibitorName,title,a.type,a.sale_price,a.final_price,itemPrice,a.quantity, a.original_qty"
 [sort]
 	S001="1,2"

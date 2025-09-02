@@ -1,10 +1,9 @@
 [report]
-	name="artSalesByItem"
+	name="artSalesReconcile"
 	auth=art_control
-	csvfile="artSalesByItem"
+	csvfile="artSalesReconcile"
 	index=exhibitorNumber
-    totals=bottom
-    subtotals=artistName
+	totals=bottom
 [F001]
     name=artId
 	sql=a.artId
@@ -30,7 +29,7 @@
     name=artistName
     sql="CASE WHEN IFNULL(e.artistName, '') = '' THEN e.exhibitorName ELSE e.artistName END"
     title="Artist Name"
-    width= 200
+    width=300
     filter=true
     format=textarea
 [F010]
@@ -38,7 +37,7 @@
     sql=a.title
     title="Title"
     filter=true
-    width=200
+    width=300
     format=textarea
 [F012]
     name=type
@@ -50,25 +49,40 @@
     sql=a.status
     title="Item Status"
     filter=true
-    width=200
+    width=140
+[F014]
+    name=salesStatus
+    sql=l.status
+    title="Sales Status"
+    filter=true
+    width=140
 [F015]
     name=qtyDiff
-    sql="CASE WHEN l.salesCount IS NULL THEN NULL ELSE a.qtyDiff END"
+    sql=a.qtyDiff
     title="Qty Diff"
     align=right
-    width=80
+    width=60
+    calc=sum
 [F020]
     name=numberSold
     sql=l.salesCount
     title="# Sold"
     align=right
-    width=80
+    width=60
+    calc=sum
 [F022]
     name=itemPrice
     sql=a.itemPrice
     title="Item Price"
     align=right
-    width=120
+    width=100
+[F023]
+    name=salesPrice
+    sql=s.amount
+    title="Sales Price"
+    align=right
+    width=100
+    format=money
 [F025]
     name=purchasedBy
     sql="GROUP_CONCAT(CASE WHEN a.type = 'art' THEN s.perid ELSE CONCAT_WS('', s.perid, ' (', s.quantity, ')') END SEPARATOR ',\n')"
@@ -78,29 +92,29 @@
     align=right,
     format=textarea
 [F030]
+    name=totalPrice
+    sql="a.itemPrice * a.qtyDiff"
+    title="Total Price"
+    align=right
+    width=100
+    calc=sum
+    cormat=money
+[F035]
     name=totalAmt
     sql=l.amount
     title="Total Amt"
     align=right
-    width=120
-    format=money
+    width=100
     calc=sum
-[F035]
+    format=money
+[F036]
     name=totalPaid
     sql=l.paid
     title="Total Paid"
     align=right
-    width=120
-    format=money
+    width=100
     calc=sum
-[F040]
-    name="qTotal"
-    sql="CASE WHEN l.salesCount IS NULL THEN NULL ELSE a.qtyDiff * itemPrice END"
-    title="Qty Total"
-    align=right
-    width=120
     format=money
-    calc=sum
 [C001]
     name=art
     select="SELECT a.id AS artId, a.item_key AS itemNum, a.title AS title, a.type AS type, a.exhibitorRegionYearId, a.status,
@@ -155,9 +169,14 @@
     item=region
     datatype=s
 [where]
-	W001="eY.conid = ? AND LOWER(xR.shortname) = LOWER(?) AND a.type != 'nfs' AND (a.qtyDiff > 0 || s.amount IS NOT NULL)"
-	;W002="AND (a.itemPrice * a.qtyDiff) != l.paid"
+	W001="eY.conid = ? AND LOWER(xR.shortname) = LOWER(?) AND"
+	W010="("
+	W011="(a.qtyDiff != l.salesCount) OR "
+	W012="((a.itemPrice * qtyDiff) != l.amount) OR "
+	W013="(s.status IS NOT NULL AND a.type = 'art' AND a.status != 'Purchased/Released') OR "
+	W014="(l.amount != l.paid)"
+	W019=")"
 [group]
-    G001="a.artId,artistId,itemNum,e.artistName,e.exhibitorName,title,a.type,itemPrice,qtyDiff"
+    G001="a.artId,artistId,a.itemNum,artistName,exhibitorName,a.status,title,type,itemPrice,qtyDiff"
 [sort]
 	S001="1,2"

@@ -150,6 +150,8 @@ if (array_key_exists('group', $reportParams)) {
     sort($skeys);
     $first = '';
     foreach ($skeys as $value) {
+        if ($clause[$value] == '')
+            continue;
         if ($first == '') {
             $first = ', ';
         }
@@ -168,6 +170,8 @@ if (array_key_exists('sort', $reportParams)) {
     sort($skeys);
     $first = "";
     foreach ($skeys AS $value) {
+        if ($clause[$value] == '')
+            continue;
         if ($first == "") {
             $first = ", ";
         } else {
