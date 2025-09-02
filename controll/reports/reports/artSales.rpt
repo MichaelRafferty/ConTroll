@@ -9,7 +9,7 @@
 	sql="IFNULL(eRY.exhibitorNumber, e.id)"
 	title="Exhibitor Number"
 	align=right
-	minWidth=80
+	width=100
 [F002]
     name=artistName
     sql="CASE WHEN IFNULL(e.artistName, '') = '' THEN e.exhibitorName ELSE e.artistName END"
@@ -25,6 +25,9 @@
     name=Total
     sql="IFNULL(a.total, 0) + IFNULL(p.total, 0)"
     title=Total
+    width=140
+    format=money
+    align=right
     calc=sum
 [F010]
     name=Email
@@ -71,7 +74,7 @@
     name=print
     select="SELECT eRY.id as eRY, SUM(I.sale_price * (I.original_qty-I.quantity)) AS total"
     tables="FROM artItems I JOIN exhibitorRegionYears eRY ON eRY.id=I.exhibitorRegionYearId JOIN exhibitorYears eY on eRY.exhibitorYearId = eY.id"
-    where="WHERE I.type='print' AND I.status IN ('Quicksale/Sold','Sold Bid Sheet','Sold at Auction','Purchased/Released') GROUP BY eRY.id"
+    where="WHERE I.type='print' GROUP BY eRY.id"
 [P001]
     type=prompt
     item=conid

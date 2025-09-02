@@ -273,9 +273,18 @@ function drawReport(data) {
                 if (field.hasOwnProperty('precision')) {
                     column[calcPosition + 'CalcParams'] = {precision: field.precision};
                 }
+                if (field.hasOwnProperty('format')) {
+                    column[calcPosition + 'CalcFormatter'] = field.format;
+                    if (field.format == 'money') {
+                        column[calcPosition + 'CalcFormatterParams'] = { decimal: '.', thousand: ',', negative: true, precision: 2};
+                    }
+                }
             }
             if (field.hasOwnProperty('format')) {
                 column.formatter = field.format;
+                if (field.format == 'money') {
+                    column.formatterParams = { decimal: '.', thousand: ',', negative: true, precision: 2};
+                }
             }
             if (field.hasOwnProperty('visible')) {
                 if (field.visible == 'true' || field.visible === true)
