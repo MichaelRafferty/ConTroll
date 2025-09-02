@@ -956,7 +956,7 @@ $config_vars['source'] = 'regstaff';
         </div>
         <div class='row mt-2 mb-3' id='reglist-csv-div' hidden>
             <div class="col-sm-auto p-1 ps-3 pe-3 tabulator-paginator" id="tabPaginationDiv" style="background-color: #e5e5e5;"></div>
-            <div class='col-sm-auto' id='admin-buttons'>
+            <div class='col-sm-auto p-1' id='admin-buttons'>
                 <button id='reglist-csv' type='button' class='btn btn-info btn-sm' onclick='reglistDownload("csv"); return false;'>Download CSV</button>
                 <button id='reglist-xlsx' type='button' class='btn btn-info btn-sm' onclick='reglistDownload("xlsx"); return false;'>Download Excel</button>
             </div>
