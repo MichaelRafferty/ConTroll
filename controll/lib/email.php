@@ -183,7 +183,7 @@ function ComeBackCouponEmail_HTML($test, $expirationDate) {
 <p>
 	We would like to encourage you to come back this year by letting you know that our early discount period is ending soon.
 	You can see the complete registration price list on our website at: <a href="$regpage" target-"_blank">$regpage</a>.
-	You can register on-site of course, if you register now you can save up to 20% on each membership.	
+	You can register on-site of course, but if you register now you can save up to 20% on each membership.	
 </p>
 <p>
 	This year, we are again at the <a href="$hotelpage" target="_blank">$hotelname</a>, at $hoteladdr.  Please register for rooms as soon as possible as the block will be closing soon.
@@ -240,7 +240,7 @@ Hello [[FirstName]] [[LastName]],
 $conlabel is almost upon us! You are receiving this email because your email address is associated with a valid registration to a prior convention, but you haven't registered in the past few years and we don't have you registered for this year's convention.
  
 
-We would like to encourage you to come back this year by letting you know that our early discount period is ending soon. You can see the complete registration price list on our website at: $regpage. You can register on-site of course, if you register now you can save up to 20% on each membership.	
+We would like to encourage you to come back this year by letting you know that our early discount period is ending soon. You can see the complete registration price list on our website at: $regpage. You can register on-site of course,  but if you register now you can save up to 20% on each membership.	
 
 This year, we are at the same hotel which is now the $hotelname, at $hoteladdr.  Please rsgister for rooms as soon as possible as the block will be closing soon.
 
