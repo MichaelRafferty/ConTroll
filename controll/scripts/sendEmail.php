@@ -138,7 +138,7 @@ case 'comeback':
 
     $priorcon = $conid - 1;
     $priorcon2 = $conid - 2;
-    $expires = '';
+    $expires = '2001-01-01';
     /* no coupon for now
     $expires = date_add(date_create(), DateInterval::createFromDateString('30 day'));
     $code='ComeBack' . date_format(date_create(), 'Md');
