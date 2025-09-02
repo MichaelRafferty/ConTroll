@@ -83,6 +83,7 @@
     title="Item Price"
     align=right
     width=120
+    format=money
 [F025]
     name=purchasedBy
     sql="GROUP_CONCAT(s.perid SEPARATOR ', ')"
@@ -98,6 +99,7 @@
     align=right
     width=120
     calc=sum
+    format=money
 [F035]
     name=totalAmt
     sql="l.amount"
@@ -105,6 +107,7 @@
     align=right
     width=120
     calc=sum
+    format=money
 [F036]
     name=totalPaid
     sql="l.paid"
@@ -112,6 +115,7 @@
     align=right
     width=120
     calc=sum
+    format=money
 [C002]
     name=sales
     select="SELECT s.artId, SUM(s.amount) AS amount, SUM(s.paid) AS paid, SUM(s.quantity) AS salesCount, MAX(status) AS status"

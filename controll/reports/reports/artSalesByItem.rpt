@@ -69,6 +69,7 @@
     title="Item Price"
     align=right
     width=120
+    format=money
 [F025]
     name=purchasedBy
     sql="GROUP_CONCAT(CASE WHEN a.type = 'art' THEN s.perid ELSE CONCAT_WS('', s.perid, ' (', s.quantity, ')') END SEPARATOR ',\n')"

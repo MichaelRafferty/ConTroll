@@ -76,6 +76,7 @@
     title="Item Price"
     align=right
     width=100
+    format=money
 [F023]
     name=salesPrice
     sql=s.amount
@@ -98,7 +99,7 @@
     align=right
     width=100
     calc=sum
-    cormat=money
+    format=money
 [F035]
     name=totalAmt
     sql=l.amount
