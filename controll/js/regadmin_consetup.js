@@ -317,6 +317,7 @@ class consetup {
                 {title: "Label", field: "label", visible: false},
                 {
                     title: "Price", field: "price", hozAlign: "right", editor: "input", validator: ["required", this.#priceregexp],
+                    formatter: "money",  formatterParams: { decimal: '.', thousand: ',', negative: true, precision: 2},
                     headerFilter: "input", headerFilterFunc: numberHeaderFilter,
                 },
                 {title: "Start Date", field: "startdate", width: 170, editor: "datetime", validator: "required", headerFilter: "input"},
