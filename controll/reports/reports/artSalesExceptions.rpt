@@ -179,5 +179,6 @@
 	W019=")"
 [group]
     G001="a.artId,artistId,a.itemNum,artistName,exhibitorName,a.status,title,type,itemPrice,qtyDiff"
+    G002="l.status,s.status,l.salesCount,s.amount,s.paid,l.amount,l.paid"
 [sort]
 	S001="1,2"
