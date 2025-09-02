@@ -132,12 +132,13 @@ EOQ;
     $email_html = returnCustomText('marketing/html');
     $email_subject = "We miss you! Please come back to $conname";
     break;
-
+//TODO get a way for one use coupons to work in reg portal so I can reenable the coupon stuff
 case 'comeback':
     updateContactOK($conid);
 
     $priorcon = $conid - 1;
     $priorcon2 = $conid - 2;
+    /* no coupon for now
     $expires = date_add(date_create(), DateInterval::createFromDateString('30 day'));
     $code='ComeBack' . date_format(date_create(), 'Md');
 
@@ -188,24 +189,27 @@ EOS;
         ajaxSuccess($response);
         exit();
     }
+*/
     $emailQ = <<<EOQ
 WITH people AS (
     SELECT p.email_addr as email, MIN(p.id) AS perid
     FROM perinfo p
     LEFT OUTER JOIN reg r1 ON (r1.perid = p.id and r1.conid = ?)
     LEFT OUTER JOIN reg r2 ON (r2.perid = p.id and r2.conid = ?)
-        LEFT OUTER JOIN reg r3 ON (r3.perid = p.id and r3.conid = ?)
+    LEFT OUTER JOIN reg r3 ON (r3.perid = p.id and r3.conid = ?)
     WHERE p.email_addr LIKE '%@%' AND p.contact_ok='Y' AND r1.id IS NULL AND r2.id IS NULL AND r3.id IS NULL
     GROUP BY p.email_addr
 )
-SELECT e.email, e.perid, p.first_name, p.last_name, k.guid
+SELECT e.email, e.perid, p.first_name, p.last_name/*, k.guid */
 FROM people e
 JOIN perinfo p ON (e.perid = p.id)
-JOIN couponKeys k ON (e.perid = k.perid AND k.couponId = ?)
+/*JOIN couponKeys k ON (e.perid = k.perid AND k.couponId = ?)*/
 ORDER BY e.email;
 EOQ;
+    //$typestr = 'iii';
     $typestr = 'iiii';
-    $paramarray = array($conid, $priorcon, $priorcon2, $couponid);
+    //$paramarray = array($conid, $priorcon, $priorcon2, $couponid);
+    $paramarray = array($conid, $priorcon, $priorcon2);
     $email_text = ComeBackCouponEmail_TEXT($testsite, date_format($expires, 'M d, Y'));
     $email_html = ComeBackCouponEmail_HTML($testsite, date_format($expires, 'M d, Y'));
     $email_subject = "We miss you! Please come back to $conname";

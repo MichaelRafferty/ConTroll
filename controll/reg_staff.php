@@ -990,7 +990,7 @@ $config_vars['source'] = 'regstaff';
                 <button class="btn btn-primary btn-sm" onclick="sendEmail('marketing')">Send Marketing Email</button>
             </div>
             <div class='col-sm-auto p-2'>
-                <button class='btn btn-primary btn-sm' onclick="sendEmail('comeback')" disabled>Send Come Back Email</button>
+                <button class='btn btn-primary btn-sm' onclick="sendEmail('comeback')">Send Come Back Email</button>
             </div>
             <div class="col-sm-auto p-2">
                 <button class="btn btn-primary btn-sm" onclick="sendEmail('reminder')">Send Attendance Reminder Email</button>
