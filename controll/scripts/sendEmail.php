@@ -138,58 +138,57 @@ case 'comeback':
 
     $priorcon = $conid - 1;
     $priorcon2 = $conid - 2;
-    $expires = '2001-01-01';
-    /* no coupon for now
     $expires = date_add(date_create(), DateInterval::createFromDateString('30 day'));
-    $code='ComeBack' . date_format(date_create(), 'Md');
+    /* no coupon for now
+$code='ComeBack' . date_format(date_create(), 'Md');
 
-    // create the coupon now
-    // get the user id for createdby
-    $usergetQ = <<<EOS
+// create the coupon now
+// get the user id for createdby
+$usergetQ = <<<EOS
 SELECT id
 FROM user
 WHERE email = ?;
 EOS;
-    // create the coupon for this comeback email
-    $couponCreate = <<<EOS
+// create the coupon for this comeback email
+$couponCreate = <<<EOS
 INSERT INTO coupon(conid, oneuse, code, name, startdate, enddate, coupontype, discount, createby)
 VALUES (?, 1, ?, ?, NOW(), DATE_ADD(NOW(), INTERVAL 30 DAY), '%mem', 10.00, ?);
 EOS;
 
-    $name='Come Back 10% Off Exp ' . date_format($expires, 'M d');
-    $couponTypestr = 'issi';
-    $couponParamArray = array($conid, $code, $name, $user_perid);
-    $couponid = dbSafeInsert($couponCreate, $couponTypestr, $couponParamArray);
-    if ($couponid === false) {
-        $response['error'] = 'Count not create coupon';
-        ajaxSuccess($response);
-        exit();
-    }
+$name='Come Back 10% Off Exp ' . date_format($expires, 'M d');
+$couponTypestr = 'issi';
+$couponParamArray = array($conid, $code, $name, $user_perid);
+$couponid = dbSafeInsert($couponCreate, $couponTypestr, $couponParamArray);
+if ($couponid === false) {
+    $response['error'] = 'Count not create coupon';
+    ajaxSuccess($response);
+    exit();
+}
 
-    // now create the coupon keys for this email
-    $couponKeysCreate = <<<EOS
-INSERT INTO couponKeys(couponId, guid, perid, notes, createBy) 
+// now create the coupon keys for this email
+$couponKeysCreate = <<<EOS
+INSERT INTO couponKeys(couponId, guid, perid, notes, createBy)
 WITH people AS (
 SELECT  p.email_addr as email, MIN(p.id) AS perid
-    FROM perinfo p
-    LEFT OUTER JOIN reg r1 ON (r1.perid = p.id and r1.conid = ?)
-    LEFT OUTER JOIN reg r2 ON (r2.perid = p.id and r2.conid = ?)
-    LEFT OUTER JOIN reg r3 ON (r3.perid = p.id and r3.conid = ?)
-    WHERE p.email_addr LIKE '%@%' AND p.contact_ok='Y' AND r1.id IS NULL AND r2.id IS NULL AND r3.id IS NULL
-    GROUP BY p.email_addr
+FROM perinfo p
+LEFT OUTER JOIN reg r1 ON (r1.perid = p.id and r1.conid = ?)
+LEFT OUTER JOIN reg r2 ON (r2.perid = p.id and r2.conid = ?)
+LEFT OUTER JOIN reg r3 ON (r3.perid = p.id and r3.conid = ?)
+WHERE p.email_addr LIKE '%@%' AND p.contact_ok='Y' AND r1.id IS NULL AND r2.id IS NULL AND r3.id IS NULL
+GROUP BY p.email_addr
 )
 SELECT ?, uuid_v4s(), people.perid, ?, ?
 FROM people;
 EOS;
-    $couponTypestr = 'iiiiis';
-    $note = 'Autogen: ' . $code;
-    $couponParamArray = array($conid, $priorcon, $priorcon2, $couponid, $note, $user_perid);
-    $num_keys = dbSafeCmd($couponKeysCreate, $couponTypestr, $couponParamArray);
-    if ($num_keys === false) {
-        $response['error'] = 'Count not create couponKeys';
-        ajaxSuccess($response);
-        exit();
-    }
+$couponTypestr = 'iiiiis';
+$note = 'Autogen: ' . $code;
+$couponParamArray = array($conid, $priorcon, $priorcon2, $couponid, $note, $user_perid);
+$num_keys = dbSafeCmd($couponKeysCreate, $couponTypestr, $couponParamArray);
+if ($num_keys === false) {
+    $response['error'] = 'Count not create couponKeys';
+    ajaxSuccess($response);
+    exit();
+}
 */
     $emailQ = <<<EOQ
 WITH people AS (
