@@ -1574,7 +1574,7 @@ function draw_registrations(data) {
         paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
         columns: [
             { title: "Action", formatter: actionbuttons, hozAlign:"left", headerSort: false },
-            { title: "TID", field: "display_trans", hozAlign: "right",  headerSort: true, headerFilter: true },
+            { title: "TID", field: "display_trans", hozAlign: "right",  headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter,  },
             { title: "PID", field: "perid", width: 80, hozAlign: "right", headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter,  },
             { title: "NPID", field: "newperson_id", width: 80, hozAlign: "right", headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter,  },
             { title: "Mgr", field: "manager", width: 80, hozAlign: "right", headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter,  },
