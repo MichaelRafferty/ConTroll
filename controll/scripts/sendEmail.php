@@ -206,8 +206,8 @@ JOIN perinfo p ON (e.perid = p.id)
 /*JOIN couponKeys k ON (e.perid = k.perid AND k.couponId = ?)*/
 ORDER BY e.email;
 EOQ;
-    //$typestr = 'iii';
-    $typestr = 'iiii';
+    //$typestr = 'iiii';
+    $typestr = 'iii';
     //$paramarray = array($conid, $priorcon, $priorcon2, $couponid);
     $paramarray = array($conid, $priorcon, $priorcon2);
     $email_text = ComeBackCouponEmail_TEXT($testsite, date_format($expires, 'M d, Y'));
