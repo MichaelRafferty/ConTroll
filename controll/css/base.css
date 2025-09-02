@@ -65,3 +65,31 @@ label.blocks {
     -webkit-appearance: none;
     margin: 0;
 }
+
+/* tabulator pagination styling */
+button.tabulator-page {
+    background: hsla(0,0%,100%,.2);
+    border: 1px solid #aaa;
+    border-radius: 3px;
+    display: inline-block;
+    margin: 0 2px;
+    padding: 2px 5px;
+}
+
+button.tabulator-page.active {
+    color: #d00
+}
+
+button.tabulator-page:disabled {
+    opacity: .5
+}
+
+div.tabulator-paginator {
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: bold;
+}
+
+select.tabulator-page-size {
+    padding-left: 8px;
+}

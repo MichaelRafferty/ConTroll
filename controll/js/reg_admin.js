@@ -1563,12 +1563,14 @@ function draw_registrations(data) {
         registrationtable.destroy();
         registrationtable = null;
     }
+    document.getElementById('tabPaginationDiv').innerHTML = '';
     registrationtable = new Tabulator('#registration-table', {
         data: data.badges,
         layout: "fitDataTable",
         index: "badgeId",
         pagination: data.badges.length > 25,
         paginationSize: 25,
+        paginationElement: document.getElementById('tabPaginationDiv'),
         paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
         columns: [
             { title: "Action", formatter: actionbuttons, hozAlign:"left", headerSort: false },
