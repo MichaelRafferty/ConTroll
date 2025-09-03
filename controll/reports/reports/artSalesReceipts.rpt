@@ -113,6 +113,6 @@
     item=region
     datatype=s
 [where]
-	001="eY.conid = ? AND LOWER(xR.shortname) = LOWER(?) AND a.type != 'nfs' AND s.status IN ('Purchased/Released', 'Quicksale/Sold')"
+	001="eY.conid = ? AND LOWER(xR.shortname) LIKE LOWER(?) AND a.type != 'nfs' AND s.status IN ('Purchased/Released', 'Quicksale/Sold')"
 [sort]
 	001="artistId,a.item_key,s.perid"

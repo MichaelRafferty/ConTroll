@@ -170,7 +170,7 @@
     item=region
     datatype=s
 [where]
-	W001="eY.conid = ? AND LOWER(xR.shortname) = LOWER(?) AND"
+	W001="eY.conid = ? AND LOWER(xR.shortname) LIKE LOWER(?) AND"
 	W010="("
 	W011="(a.qtyDiff != l.salesCount) OR "
 	W012="((a.itemPrice * qtyDiff) != l.amount) OR "

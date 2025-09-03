@@ -163,7 +163,7 @@
     item=region
     datatype=s
 [where]
-	W001="eY.conid = ? AND LOWER(xR.shortname) = LOWER(?) AND a.type != 'nfs' AND (a.quantity != a.original_qty || s.amount IS NOT NULL)"
+	W001="eY.conid = ? AND LOWER(xR.shortname) LIKE LOWER(?) AND a.type != 'nfs' AND (a.quantity != a.original_qty || s.amount IS NOT NULL)"
 [group]
     G001="a.id,artistId,itemNum,e.artistName,e.exhibitorName,title,a.type,a.sale_price,a.final_price,itemPrice,a.quantity, a.original_qty"
     G002="l.status,s.status,l.salesCount,s.amount,s.paid,l.amount,l.paid"

@@ -84,6 +84,6 @@
     item=region
     datatype=s
 [where]
-	001="eY.conid = ? AND LOWER(xR.shortname) = LOWER(?)"
+	001="eY.conid = ? AND LOWER(xR.shortname) LIKE LOWER(?)"
 [sort]
 	001="1"

@@ -156,7 +156,7 @@
     item=region
     datatype=s
 [where]
-	W001="eY.conid = ? AND LOWER(xR.shortname) = LOWER(?) AND a.type != 'nfs' AND (a.qtyDiff > 0 || s.amount IS NOT NULL)"
+	W001="eY.conid = ? AND LOWER(xR.shortname) LIKE LOWER(?) AND a.type != 'nfs' AND (a.qtyDiff > 0 || s.amount IS NOT NULL)"
 	;W002="AND (a.itemPrice * a.qtyDiff) != l.paid"
 [group]
     G001="a.artId,artistId,itemNum,e.artistName,e.exhibitorName,title,a.type,itemPrice,qtyDiff"
