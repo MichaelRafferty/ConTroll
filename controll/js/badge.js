@@ -9,9 +9,6 @@ editTitle = null;
 editPersonName = null;
 updateExisting = null;
 editCurrentPerid = null;
-memberPolicies = null;
-memberInterests = null;
-memberManaged = null;
 
 // add items
 addPersonModal = null;
@@ -98,7 +95,6 @@ function loadWatchList(data) {
                 {field: "first_name", visible: false,},
                 {field: "middle_name", visible: false,},
                 {field: "suffix", visible: false,},
-                {field: "legalName", visible: false,},
                 {field: "pronouns", visible: false,},
                 {field: "address", visible: false,},
                 {field: "addr_2", visible: false,},
@@ -127,7 +123,6 @@ function watchBuildRecordHover(e, cell, onRendered) {
     var hover_text = 'Person id: ' + data.id + '<br/>' +
         'Full Name: ' + data.fullName + '<br/>' +
         'Pronouns: ' + data.pronouns + '<br/>' +
-        'Legal Name: ' + data.legalName + '<br/>' +
         data.address + '<br/>';
     if (data.addr_2 != '') {
         hover_text += data.addr_2 + '<br/>';
@@ -144,15 +139,6 @@ function watchBuildRecordHover(e, cell, onRendered) {
         hover_text += 'Manages: ' + data.cntManages + '<br/>';
     }
     hover_text += 'Active:' + data.active;
-
-    // append the policies to the active flag line
-    var policies = data.policies;
-    for (var row in policies) {
-        var policyName = policies[row].policy;
-        var policyResp = policies[row].response;
-        hover_text += ', ' + policyName + ': ' + policyResp;
-    }
-
     hover_text += '<br/>' +
         'Memberships: ' + data.memberships + '<br/>';
 
@@ -277,7 +263,6 @@ function loadSelectList(data) {
             {field: "first_name", visible: false,},
             {field: "middle_name", visible: false,},
             {field: "suffix", visible: false,},
-            {field: "legalName", visible: false,},
             {field: "pronouns", visible: false,},
             {field: "address", visible: false,},
             {field: "addr_2", visible: false,},
@@ -404,16 +389,11 @@ function findDetailsSuccess(dataFound) {
         return;
     }
 
-    memberPolicies = dataFound['policies'];
-    memberInterests = dataFound['interests'];
-    memberManaged = dataFound['managed'];
-
     var data = watchTable.getRow(editCurrentPerid).getData();
     document.getElementById('f_fname').value = data.first_name;
     document.getElementById('f_mname').value = data.middle_name;
     document.getElementById('f_lname').value = data.last_name;
     document.getElementById('f_suffix').value = data.suffix;
-    document.getElementById('f_legalName').value = data.legalName;
     document.getElementById('f_pronouns').value = data.pronouns;
     document.getElementById('f_addr').value = data.address;
     document.getElementById('f_addr2').value = data.addr_2;
@@ -425,17 +405,6 @@ function findDetailsSuccess(dataFound) {
     document.getElementById('f_email2').value = data.email_addr;
     document.getElementById('f_phone').value = data.phone;
     document.getElementById('f_badgename').value = data.badge_name;
-
-    // loop over the policies
-    var keys = Object.keys(memberPolicies);
-    for (i = 0; i < keys.length; i++) {
-        var policy = memberPolicies[keys[i]];
-        var response = policy.response;
-        if (response === null || response === undefined) {
-            response = policy.defaultValue;
-        }
-        document.getElementById('p_f_' + policy.policy).checked = response == 'Y';
-    }
     editPersonName.innerHTML = data.fullName + ' (' + data.id + ')';
     editPersonModal.show();
 }
@@ -461,7 +430,6 @@ function saveEdit() {
         middleName: document.getElementById('f_mname').value,
         lastName: document.getElementById('f_lname').value,
         suffix: document.getElementById('f_suffix').value,
-        legalName: document.getElementById('f_legalName').value,
         pronouns: document.getElementById('f_pronouns').value,
         address: document.getElementById('f_addr').value,
         addr2: document.getElementById('f_addr2').value,
@@ -472,20 +440,8 @@ function saveEdit() {
         emailAddr: email1,
         phone: document.getElementById('f_phone').value,
         badgeName: document.getElementById('f_badgename').value,
-        oldPolicies: JSON.stringify(memberPolicies),
     };
 
-    // now the policies
-    var keys = Object.keys(memberPolicies);
-    var i;
-    var newPolicies = {};
-    for (i = 0; i < keys.length; i++) {
-        var policy = memberPolicies[keys[i]];
-        if (document.getElementById('p_f_' + policy.policy).checked) {
-            newPolicies['p_' + policy.policy] = 'Y';
-        }
-    }
-    postData['newPolicies'] = JSON.stringify(newPolicies);
     $.ajax({
         method: "POST",
         url: "scripts/badge_updateEdit.php",
@@ -554,7 +510,6 @@ function addClearForm() {
     document.getElementById('a_mname').value = '';
     document.getElementById('a_lname').value = '';
     document.getElementById('a_suffix').value = '';
-    document.getElementById('a_legalName').value = '';
     document.getElementById('a_pronouns').value = '';
     document.getElementById('a_addr').value = '';
     document.getElementById('a_addr2').value = '';
@@ -567,14 +522,6 @@ function addClearForm() {
     document.getElementById('a_phone').value = '';
     document.getElementById('a_badgename').value = '';
 
-    // loop over the policies
-    if (policies && policies.length > 0) {
-        var keys = Object.keys(policies);
-        for (i = 0; i < keys.length; i++) {
-            var policy = policies[keys[i]];
-            document.getElementById('p_a_' + policy.policy).checked = policy.defaultValue == 'Y';
-        }
-    }
     addPersonBtn.disabled = true;
     if (addMatchTable != null) {
         addMatchTable.destroy();
@@ -604,7 +551,6 @@ function addCheckExists() {
         middleName: document.getElementById('a_mname').value,
         lastName: document.getElementById('a_lname').value,
         suffix: document.getElementById('a_suffix').value,
-        legalName: document.getElementById('a_legalName').value,
         pronouns: document.getElementById('a_pronouns').value,
         badgeName: document.getElementById('a_badgename').value,
         address: document.getElementById('a_addr').value,
@@ -670,7 +616,6 @@ function addCheckSuccess(dataFound) {
                 {field: 'middle_name', visible: false,},
                 {field: 'last_name', visible: false,},
                 {field: 'suffix', visible: false,},
-                {field: 'legalName', visible: false,},
                 {field: 'pronouns', visible: false,},
                 {field: 'address', visible: false,},
                 {field: 'addr_2', visible: false,},
@@ -726,23 +671,14 @@ function saveAdd() {
         return;
     }
 
-    var newPolicies = {};
-    // loop over the policies
-    if (policies && policies.length > 0) {
-        var keys = Object.keys(policies);
-        for (i = 0; i < keys.length; i++) {
-            var policy = policies[keys[i]];
-            newPolicies['p_' + policy.policy] = document.getElementById('p_a_' + policy.policy).checked ? 'Y' : 'N';
-        }
-    }
     var postdata = {
         type: 'add',
         firstName: document.getElementById('a_fname').value,
         middleName: document.getElementById('a_mname').value,
         lastName: document.getElementById('a_lname').value,
         suffix: document.getElementById('a_suffix').value,
-        legalName: document.getElementById('a_legalName').value,
         pronouns: document.getElementById('a_pronouns').value,
+        legalName: '',
         badgeName: document.getElementById('a_badgename').value,
         address: document.getElementById('a_addr').value,
         addr2: document.getElementById('a_addr2').value,
@@ -752,7 +688,6 @@ function saveAdd() {
         country: document.getElementById('a_country').value,
         emailAddr: email1,
         phone: document.getElementById('a_phone').value,
-        newPolicies: JSON.stringify(newPolicies),
     };
 
     var script = 'scripts/people_addNewPerson.php';
