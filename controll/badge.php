@@ -93,7 +93,7 @@ $config_vars['useUSPS'] = $useUSPS;
                         drawEditPersonBlock($conid, $useUSPS, $policies, 'find', true, true, '', array (), 200, true, 'f_');
                     ?>
                 </div>
-                <div id='find_edit_message' class='mt-4 p-2'></div>l
+                <div id='find_edit_message' class='mt-4 p-2'></div>
             </div>
             <div class='modal-footer'>
                 <button class='btn btn-sm btn-secondary' type='button' data-bs-dismiss='modal'>Cancel</button>
