@@ -115,7 +115,7 @@ class consetup {
 <div id="` + this.#setup_type + `-memlist"></div>
 <div class='row mt-2 mb-3' id='reglist-csv-div'>
     <div class="col-sm-auto p-1 ps-3 pe-3 tabulator-paginator" id="` + this.#setup_type + `PaginationDiv" style="background-color: #e5e5e5;"></div>
-    <div class='col-sm-auto p-1' id="memlist-buttons">  
+    <div class='col-sm-auto p-1 ms-4' id="memlist-buttons">  
         <button id="` + this.#setup_type + `memlist-undo" type="button" class="btn btn-secondary btn-sm" onclick="` + this.#setup_type + `.undoMemList(); return false;" disabled>Undo</button>
         <button id="` + this.#setup_type + `memlist-redo" type="button" class="btn btn-secondary btn-sm" onclick="` + this.#setup_type + `.redoMemList(); return false;" disabled>Redo</button>
         <button id="` + this.#setup_type + `memlist-addrow" type="button" class="btn btn-secondary btn-sm" onclick="` + this.#setup_type + `.addrowMemList(); return false;">Add New</button>
