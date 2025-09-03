@@ -28,21 +28,21 @@
     template=reg_noshows.rpt
     auth=reg_admin
     type=rpt
-    P001="prompt/~/conid/~/No shows for: /~/Conid (number only)"
+    P001="prompt/~/conid/~/No shows for: /~/Conid (number only)/~/#con.id#"
 [400AllRegEmails]
     name="Registration Emails"
     description="All Email Address for those registered"
     template=reg_allemails.rpt
     auth=reg_admin
     type=rpt
-    P001="prompt/~/conid/~/Registered Peoples Emails for: /~/Conid (number only)"
+    P001="prompt/~/conid/~/Registered Peoples Emails for: /~/Conid (number only)/~/#con.id#"
 [500RegReport]
     name="Registration Report"
     description="All registrations with price, paid and print status"
     template="reg_report.rpt"
     auth=reg_admin
     type=rpt
-    P001="prompt/~/conid/~/Registration report for: /~/Conid (number only)"
+    P001="prompt/~/conid/~/Registration report for: /~/Conid (number only)/~/#con.id#"
 [600Attendance]
     name="Current Attendance"
     description="Badges Printed by Label for this year"
