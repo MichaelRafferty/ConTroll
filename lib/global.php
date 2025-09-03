@@ -237,6 +237,10 @@ $keyPrefix = '';
             $customTexT = [];
             $customTextFilter = $filter;
         }
+        // in case add mode is the only one called
+        if ($customTextFilter == null) {
+            $customTextFilter = $filter;
+        }
         $txtQ = <<<EOS
 SELECT *
 FROM controllTxtItems
