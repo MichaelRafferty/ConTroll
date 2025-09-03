@@ -217,7 +217,8 @@ function drawReport(data) {
     if (data.hasOwnProperty('csvfile')) {
         html += `
     <div class="row">
-        <div class="col-sm-auto">
+        <div class="col-sm-auto p-1 ps-3 pe-3 tabulator-paginator" id="ReportsPaginationDiv" style="background-color: #e5e5e5;"></div>
+        <div class="col-sm-auto p-1 ms-4">
             <button type="button" class="btn btn-info btn-sm" onclick="downloadReport('csv'); return false;">Download CSV</button>
             <button type="button" class="btn btn-info btn-sm" onclick="downloadReport('xlsx'); return false;">Download Excel xlsx</button>
         </div>
@@ -236,6 +237,7 @@ function drawReport(data) {
             pagination: data.data.length > 25,
             paginationSize: 25,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
+            paginationElement: document.getElementById('ReportsPaginationDiv'),
         };
         if (data.hasOwnProperty('groupby')) {
             params.columnCalcs = "both";
