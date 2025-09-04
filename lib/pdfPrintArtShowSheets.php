@@ -4,8 +4,8 @@ require_once(__DIR__ . '/../lib/pdf/tfpdf/tfpdf.php');
 require_once(__DIR__ . '/../lib/pdf/fpdf-barcode/src/Barcode.php');
 require_once ("pdfFunctions.php");
 
-global $pdfObject;
-$pdfObject = null;
+global $pdf;
+$pdf = null;
 
 function pdfPrintShopPriceSheets($regionYearId, $region, $response, $first, $last) {
     global $pdf;
@@ -49,7 +49,6 @@ EOS;
         if ($first == $last) {
             $response['num_rows'] = $itemR->num_rows;
             $response['status'] = 'No art found requiring price tags';
-            echo "No art found requiring price tags\n";
         }
         $itemR->free();
         return $response;
@@ -337,7 +336,6 @@ EOS;
         if ($first == $last) {
             $response['num_rows'] = $itemR->num_rows;
             $response['status'] = 'No art found requiring bid sheets';
-            echo "No art found requiring bid sheets\n";
         }
         $itemR->free();
         return $response;
@@ -912,9 +910,8 @@ EOS;
         printXY($h, $v, "No art found for this artist");
         $response['num_rows'] = $itemR->num_rows;
         if ($first == $last)
-            $response['status'] = 'No art found requiring bid sheets';
+            $response['status'] = 'No art found requiring control sheets';
     } else {
-
         // load data array
         $artItems = [];
         while ($artItem = $itemR->fetch_assoc()) {
