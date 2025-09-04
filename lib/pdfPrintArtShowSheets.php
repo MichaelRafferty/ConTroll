@@ -4,6 +4,9 @@ require_once(__DIR__ . '/../lib/pdf/tfpdf/tfpdf.php');
 require_once(__DIR__ . '/../lib/pdf/fpdf-barcode/src/Barcode.php');
 require_once ("pdfFunctions.php");
 
+global $pdfObject;
+$pdfObject = null;
+
 function pdfPrintShopPriceSheets($regionYearId, $region, $response) {
     $con = get_conf('con');
     if (array_key_exists('currency', $con)) {
@@ -87,15 +90,17 @@ EOS;
     $curLocale = locale_get_default();
     $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
 
-    $pdf = new Barcode('L', 'in', 'Letter');
+    if ($pdf == null) {
+        $pdf = new Barcode('L', 'in', 'Letter');
 
-    // get unicode fonts
-    $pdf->AddFont('Arial','','arial.ttf',true);
-    $pdf->AddFont('Arial','B','arialbd.ttf',true);
-    #$pdf->AddFont('Arial','BI','arialbi.ttf',true);
-    #$pdf->AddFont('Arial','I','ariali.ttf',true);
+        // get unicode fonts
+        $pdf->AddFont('Arial', '', 'arial.ttf', true);
+        $pdf->AddFont('Arial', 'B', 'arialbd.ttf', true);
+        #$pdf->AddFont('Arial','BI','arialbi.ttf',true);
+        #$pdf->AddFont('Arial','I','ariali.ttf',true);
 
-    initPDF($pdf, 0.008, 'Arial', '', 11);
+        initPDF($pdf, 0.008, 'Arial', '', 11);
+    }
 
     // computes from those offsets
     $hsize = ($pdf->GetPageWidth() - 2 * $margin) / $numcols;
@@ -127,7 +132,12 @@ EOS;
                 $page++;
                 pushFont('Arial', 'B', 11);
                 printXY($margin, $margin,"Price Tags for $conname's " . $print['name'] . "; Artist: " . $artistName);
-                $fileLabel = str_replace(' ', '_', $conname . "_" . $print['name'] . "_" . $artistName);
+                if ($first != $last) {
+                    $fileLabel = str_replace(' ', '-', $conname . '_' . 'Multi-Artist');
+                } else {
+                    $fileLabel = str_replace(' ', '-', $conname . '_' . $artist['name'] . '_' . $artistName);
+                }
+
                 $y = $pdf->GetPageHeight() - ($margin);
                 printXY($margin, $y,"Generated: $createDate");
                 $pageStr = "Page $page of $pages";
@@ -198,18 +208,23 @@ EOS;
         }
     }
 
-    header('Content-Type: application/pdf');
-    $fileLabel = preg_replace('/[^A-Za-z0-9_]/', '', $fileLabel);
-    $filename = $fileLabel . '_' . $fileDate . '.pdf';
-    header('Content-Disposition: inline; filename="' . $filename . '"');
-    $output = $pdf->Output();
-    print($output);
-    $response['success'] = true;
-    $response['message'] = "$numTags output on $pages pages";
+    if ($first) {
+        header('Content-Type: application/pdf');
+        $fileLabel = preg_replace('/[^A-Za-z0-9_]/', '', $fileLabel);
+        $filename = $fileLabel . '_' . $fileDate . '.pdf';
+        header('Content-Disposition: inline; filename="' . $filename . '"');
+    }
+
+    if ($last) {
+        $output = $pdf->Output();
+        print($output);
+        $response['success'] = true;
+        $response['message'] = "$numTags output on $pages pages";
+    }
     return $response;
 }
 
-function pdfPrintBidSheets($regionYearId, $region, $response) {
+function pdfPrintBidSheets($regionYearId, $region, $response, $first, $last) {
     $con = get_conf('con');
     if (array_key_exists('currency', $con)) {
         $currency = $con['currency'];
@@ -338,15 +353,17 @@ EOS;
     $curLocale = locale_get_default();
     $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
 
-    $pdf = new Barcode($orient, 'in', 'Letter');
+    if ($pdf == null) {
+        $pdf = new Barcode($orient, 'in', 'Letter');
 
-    // get unicode fonts
-    $pdf->AddFont('Arial','','arial.ttf',true);
-    $pdf->AddFont('Arial','B','arialbd.ttf',true);
-    #$pdf->AddFont('Arial','BI','arialbi.ttf',true);
-    #$pdf->AddFont('Arial','I','ariali.ttf',true);
+        // get unicode fonts
+        $pdf->AddFont('Arial', '', 'arial.ttf', true);
+        $pdf->AddFont('Arial', 'B', 'arialbd.ttf', true);
+        #$pdf->AddFont('Arial','BI','arialbi.ttf',true);
+        #$pdf->AddFont('Arial','I','ariali.ttf',true);
 
-    initPDF($pdf, 0.008, 'Arial', '', 11);
+        initPDF($pdf, 0.008, 'Arial', '', 11);
+    }
 
 // computes from those offsets
     $hsize = ($pdf->GetPageWidth() - 2 * $margin) / $numcols;
@@ -372,7 +389,12 @@ EOS;
             $page++;
             pushFont('Arial', 'B', 11);
             printXY($margin, $margin, "Bid Sheets for $conname's " . $art['name'] . '; Artist: ' . $artistName);
-            $fileLabel = str_replace(' ', '_',$conname . '_' . $art['name'] . '_' . $artistName . '.pdf');
+            if ($first != $last) {
+                $fileLabel = str_replace(' ', '-', $conname . '_' . 'Multi-Artist');
+            } else {
+                $fileLabel = str_replace(' ', '-', $conname . '_' . $artist['name'] . '_' . $artistName);
+            }
+
             $y = $pdf->GetPageHeight() - ($margin);
             printXY($margin, $y, "Generated: $createDate");
             $pageStr = "Page $page of $pages";
@@ -542,7 +564,9 @@ EOS;
 
 // pdfArtistControlSheet.php - creates the control sheet as a web page for printing
 
-function pdfArtistControlSheet($regionYearId, $region, $response, $printContactInfo = false) {
+function pdfArtistControlSheet($regionYearId, $region, $response, $printContactInfo = false, $first=true, $last=true) {
+    global $pdf;
+
     $con = get_conf('con');
     if (array_key_exists('currency', $con)) {
         $currency = $con['currency'];
@@ -594,15 +618,17 @@ EOS;
 
     $title = "$conname Art Control Sheet for " . $artistName;
 
-    $pdf = new tFPDF('L', 'in', 'Letter');
+    if ($pdf == null) {
+        $pdf = new tFPDF('L', 'in', 'Letter');
 
-    // get unicode fonts
-    $pdf->AddFont('Arial','','arial.ttf',true);
-    $pdf->AddFont('Arial','B','arialbd.ttf',true);
-    #$pdf->AddFont('Arial','BI','arialbi.ttf',true);
-    #$pdf->AddFont('Arial','I','ariali.ttf',true);
+        // get unicode fonts
+        $pdf->AddFont('Arial', '', 'arial.ttf', true);
+        $pdf->AddFont('Arial', 'B', 'arialbd.ttf', true);
+        #$pdf->AddFont('Arial','BI','arialbi.ttf',true);
+        #$pdf->AddFont('Arial','I','ariali.ttf',true);
 
-    initPDF($pdf, 0.008, 'Arial', '', 11);
+        initPDF($pdf, 0.008, 'Arial', '', 11);
+    }
 
     // computes from those offsets
     $hsize = ($pdf->GetPageWidth() - 2 * $margin);
@@ -622,7 +648,11 @@ EOS;
     $page++;
     pushFont('Arial', 'B', 11);
     printXY($margin, $margin, "Control Sheets for $conname's " . $artist['name'] . '; Artist: ' . $artistName);
-    $fileLabel = str_replace(' ', '-', $conname . '_' . $artist['name'] . '_' . $artistName);
+    if ($first != $last) {
+        $fileLabel = str_replace(' ', '-', $conname . '_' . 'Multi-Artist');
+    } else {
+        $fileLabel = str_replace(' ', '-', $conname . '_' . $artist['name'] . '_' . $artistName);
+    }
     $y = $pdf->GetPageHeight() - ($margin);
     printXY($margin, $y, "Generated: $createDate");
     $pageStr = "Page $page";
@@ -1056,13 +1086,18 @@ EOS;
         centerPrintXY(0, $v, $pdf->getPageWidth(), "* * * * * End of Artwork * * * * *");
     }
 
-    header('Content-Type: application/pdf');
-    $fileLabel = preg_replace('/[^A-Za-z0-9_]/', '', $fileLabel);
-    $filename = $fileLabel . '_' . $fileDate . '.pdf';
-    header('Content-Disposition: inline; filename="' . $filename . '"');
-    $output = $pdf->Output();
-    print($output);
-    $response['success'] = true;
-    $response['message'] = "$page pages output";
+    if ($first) {
+        header('Content-Type: application/pdf');
+        $fileLabel = preg_replace('/[^A-Za-z0-9_]/', '', $fileLabel);
+        $filename = $fileLabel . '_' . $fileDate . '.pdf';
+        header('Content-Disposition: inline; filename="' . $filename . '"');
+    }
+
+    if ($last) {
+        $output = $pdf->Output();
+        print($output);
+        $response['success'] = true;
+        $response['message'] = "$page pages output";
+    }
     return $response;
 }
