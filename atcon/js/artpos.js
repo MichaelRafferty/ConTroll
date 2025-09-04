@@ -707,13 +707,13 @@ function drawItemDetails(item, full = false) {
     if (valid) {
         switch (item.type) {
             case 'art':
+                html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Minimum Bid:</div>' +
+                    '<div class="col-sm-7">' + Number(item.min_price).toFixed(2) + '</div></div>';
+                if (item.bidder == null || item.bidder == '') {
+                    html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Quick Sale Price:</div>' +
+                        '<div class="col-sm-7">' + Number(item.sale_price).toFixed(2) + '</div></div>';
+                }
                 if (full) {
-                    html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Minimum Bid:</div>' +
-                        '<div class="col-sm-7">' + Number(item.min_price).toFixed(2) + '</div></div>';
-                    if (item.bidder == null || item.bidder == '') {
-                        html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Quick Sale Price:</div>' +
-                            '<div class="col-sm-7">' + Number(item.sale_price).toFixed(2) + '</div></div>';
-                    }
                     if (item.final_price != null && item.final_price > 0)
                         html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Final Price:</div>' +
                             '<div class="col-sm-7">' + Number(item.final_price).toFixed(2) + '</div></div>';
@@ -855,6 +855,20 @@ function foundArt(data) {
                                 html += '<div class="row mt-2"><div class="col-sm-4"></div><div class="col-sm-8"><button class="btn btn-sm '
                                     + btn_color + '" type="button" onclick="updateInventory(-1);">Update Art Item Inventory</button>' +
                                     '</div></div>';
+                            } else if (item.status == 'Checked In') {
+                                html += '<div class="row mt-2"><div class="col-sm-4"></div><div class="col-sm-8"><button class="btn btn-sm ' + btn_color +
+                                    '" type="button" onclick="addToCart(-1);">Add Art Item to Cart</button></div></div>';
+                            }
+                        } else if (item.type == 'print') {
+                            if (btn_color == 'btn-warning') {
+                                if (config.inlineInventory == 1) {
+                                    html += '<div class="row mt-2"><div class="col-sm-4"></div><div class="col-sm-8"><button class="btn btn-sm '
+                                        + btn_color + '" type="button" onclick="updateInventory(-1);">Update Art Item Inventory</button>' +
+                                        '</div></div>';
+                                }
+                            } else {
+                                html += '<div class="row mt-2"><div class="col-sm-4"></div><div class="col-sm-8"><button class="btn btn-sm ' + btn_color +
+                                    '" type="button" onclick="addToCart(-1);">Add Art Item to Cart</button></div></div>';
                             }
                         }
                     } else {
