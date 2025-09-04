@@ -46,12 +46,12 @@ EOS;
         return $response;
     }
     if ($itemR->num_rows == 0) {
-        $itemR->free();
         if ($first == $last) {
             $response['num_rows'] = $itemR->num_rows;
             $response['status'] = 'No art found requiring price tags';
             echo "No art found requiring price tags\n";
         }
+        $itemR->free();
         return $response;
     }
 
@@ -333,13 +333,13 @@ EOS;
         return $response;
     }
     if ($itemR->num_rows == 0) {
-        $itemR->free();
+
         if ($first == $last) {
             $response['num_rows'] = $itemR->num_rows;
             $response['status'] = 'No art found requiring bid sheets';
             echo "No art found requiring bid sheets\n";
         }
-
+        $itemR->free();
         return $response;
     }
 
