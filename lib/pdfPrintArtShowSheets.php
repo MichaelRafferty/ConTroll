@@ -46,10 +46,12 @@ EOS;
         return $response;
     }
     if ($itemR->num_rows == 0) {
-        $response['num_rows'] = $itemR->num_rows;
-        $response['status'] = 'No art found requiring price tags';
-        echo "No art found requiring price tags\n";
         $itemR->free();
+        if ($first == $last) {
+            $response['num_rows'] = $itemR->num_rows;
+            $response['status'] = 'No art found requiring price tags';
+            echo "No art found requiring price tags\n";
+        }
         return $response;
     }
 
@@ -331,10 +333,13 @@ EOS;
         return $response;
     }
     if ($itemR->num_rows == 0) {
-        $response['num_rows'] = $itemR->num_rows;
-        $response['status'] = 'No art found requiring bid sheets';
-        echo "No art found requiring bid sheets\n";
         $itemR->free();
+        if ($first == $last) {
+            $response['num_rows'] = $itemR->num_rows;
+            $response['status'] = 'No art found requiring bid sheets';
+            echo "No art found requiring bid sheets\n";
+        }
+
         return $response;
     }
 
@@ -906,7 +911,8 @@ EOS;
     if ($itemR->num_rows == 0) {
         printXY($h, $v, "No art found for this artist");
         $response['num_rows'] = $itemR->num_rows;
-        $response['status'] = 'No art found requiring bid sheets';
+        if ($first == $last)
+            $response['status'] = 'No art found requiring bid sheets';
     } else {
 
         // load data array
