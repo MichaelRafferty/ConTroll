@@ -129,6 +129,7 @@ function draw(data, textStatus, jqXHR) {
         columns: [
             {title: 'Actions', hozAlign: "center", headerFilter: false, headerSort: false, formatter: addEditButton, responsive:0},
             {title: 'id', field: 'id', visible: false},
+            {title: 'exhibitorYearId', field: 'exhibitorYearId', visible: false},
             {title: 'locations', field: 'locations', visible: false},
             {title: 'Name', field: 'exhibitorName', headerSort: true, headerFilter: 'list', headerFilterParams: { values: data['artists'].map(function(a) { return a.exhibitorName;})}, },
             {title: 'Artist #', field: 'exhibitorNumber', headerWordWrap: true, headerSort: true, width: 60,
@@ -295,4 +296,27 @@ function download(format) {
     var tabledata = JSON.stringify(itemTable.getData("active"));
     var excludeList = [];
     downloadFilePost(format, filename, tabledata, excludeList);
+}
+
+// print control sheets
+function controlSheets(email) {
+    var regionYearId = '';
+    var itemData = itemTable.getData("active");
+    var ids = [];
+
+    if (itemData.length == 0) {
+        show_message("No Art Items in filtered table.", 'error');
+        return;
+    }
+
+    var regionYearId = itemData[0].exhibitsRegionYearId;
+    for (var i = 0; i < itemData.length; i++) {
+        if (!ids.includes(itemData[i].exhibitorYearId)) {
+            ids.push(itemData[i].exhibitorYearId);
+        }
+    }
+    var eyid = ids.join(',');
+
+    var script = "scripts/exhibitorsBidSheets.php?type=control&region=" + regionYearId + "&eyid=" + eyid + "&email=" + email;
+    window.open(script, "_blank")
 }

@@ -89,8 +89,17 @@ foreach ($regions as $region) {
                 <button id='item-save' type='button' class='btn btn-secondary btn-sm' onclick="saveItem(); return false;" disabled>Save</button>
             </div>
             <div class='col-sm-auto p-1 ms-4' id='admin-buttons'>
-                <button id='reglist-csv' type='button' class='btn btn-info btn-sm' onclick='download("csv"); return false;'>Download CSV</button>
-                <button id='reglist-xlsx' type='button' class='btn btn-info btn-sm' onclick='download("xlsx"); return false;'>Download Excel</button>
+                <button id='artControl-csv' type='button' class='btn btn-info btn-sm' onclick='download("csv"); return false;'>Download CSV</button>
+                <button id='artControl-xlsx' type='button' class='btn btn-info btn-sm' onclick='download("xlsx"); return false;'>Download Excel</button>
+            </div>
+            <div class='col-sm-auto p-1 ms-4' id='sheets-buttons'>
+                <button id='artControl-sheet' type='button' class='btn btn-secondary btn-sm me-1' onclick='controlSheets(false); return false;'>
+                    Control Sheets
+                </button>
+                <button id='artControl-sheetsEmail' type='button' class='btn btn-warning btn-sm' onclick='controlSheets(true); return false;'>
+                    Control Sheets w/Emails
+                </button>
+                <br/><strong>Note:</strong> Will display control sheet for all artists filtered table above.
             </div>
         </div>
     </div>
