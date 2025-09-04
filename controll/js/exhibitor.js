@@ -469,6 +469,7 @@ class exhibitorsAdm {
         var app = 0;
         var pur = 0;
         var inv = 0;
+        var transid = 0;
         var spaceSUMPurchased = '';
         var spaceSUMApproved = '';
         var spaceSUMRequested = '';
@@ -511,6 +512,7 @@ class exhibitorsAdm {
                     region.app = app;
                     region.pur = pur;
                     region.inv = inv;
+                    region.transid = transid;
                     region.requested = spaceSUMRequested;
                     region.approved = spaceSUMApproved;
                     region.purchased = spaceSUMPurchased;
@@ -522,6 +524,7 @@ class exhibitorsAdm {
                     app = 0;
                     pur = 0;
                     inv = 0;
+                    transid = 0;
                     spaceSUMPurchased = '';
                     spaceSUMApproved = '';
                     spaceSUMRequested = '';
@@ -529,10 +532,6 @@ class exhibitorsAdm {
                 currentExhibitor = newExhibitor;
                 spaceSUM = '';
                 spaceHTML = '<div class="container-fluid" style="width: 80%;">';
-                req += space.requested_units;
-                app += space.approved_units;
-                pur += space.purchased_units;
-                inv += space.invCount;
                 region = {
                     id: space.exhibitorId,
                     exhibitorNumber: space.exhibitorNumber,
@@ -548,12 +547,18 @@ class exhibitorsAdm {
                     exhibitorEmail: space.exhibitorEmail,
                     agentRequest: space.agentRequest,
                     agentName: space.agentName,
-                    transid: space.transid,
+                    transid: transid,
                     exhibitorYearId: space.exhibitorYearId,
                     locations: space.locations,
                     s1: space.b1,
                 };
             }
+            req += space.requested_units == null ? 0 : space.requested_units;
+            app += space.approved_units == null ? 0 : space.approved_units;
+            pur += space.purchased_units == null ? 0 : space.purchased_units;
+            inv += space.invCount == null ? 0 : space.invCount;
+            if (space.transid > 0 && transid == 0)
+                transid = space.transid;
 
             // add the space data as a formatted region
             if (space.requested_units > 0 || space.approved_units > 0 || space.purchased_units > 0) {
@@ -645,6 +650,7 @@ class exhibitorsAdm {
             region.app = app;
             region.pur = pur;
             region.inv = inv;
+            region.transid = transid;
             region.requested = spaceSUMRequested;
             region.approved = spaceSUMApproved;
             region.purchased = spaceSUMPurchased;
@@ -655,6 +661,7 @@ class exhibitorsAdm {
             app = 0;
             pur = 0;
             inv = 0;
+            transid = 0;
             spaceSUMPurchased = '';
             spaceSUMApproved = '';
             spaceSUMRequested = '';
@@ -1189,7 +1196,7 @@ class exhibitorsAdm {
         var agentRequest = data.agentRequest || '';
         var id = data.id;
         var buttons = '';
-        var approvalBtns = req > 0 && (pur < app || pur == 0);
+        var approvalBtns = req > 0 && pur == 0;
         var paidBtns = transid > 0;
         var invBtns = data.inv > 0;
         var agentBtns = agentRequest != '' && !agentRequest.startsWith('Processed: ');
