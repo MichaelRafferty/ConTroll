@@ -12,9 +12,9 @@ function drawChangePassword($title, $width, $drawbutton, $info = null, $pwtype =
     </div>
 EOH;
         }
-    $oldPwHTML = eyepwField('oldPw', 'oldPassword', 40, 'current or temp password');
-    $newPwHTML = eyepwField('newPw', 'password', 40, 'minimum of 8 characters');
-    $newPw2HTML = eyepwField('newPw2', 'password2', 40, 're-enter the new password');
+    $oldPwHTML = eyepwField('oldPw', 'oldPassword', 40, 'current or temp password', 1);
+    $newPwHTML = eyepwField('newPw', 'password', 40, 'minimum of 8 characters', 2);
+    $newPw2HTML = eyepwField('newPw2', 'password2', 40, 're-enter the new password', 3);
     $html .= <<<EOH
     <div class='container-fluid'>
         <form id='changepw' action='javascript:void(0)'>
@@ -49,7 +49,7 @@ EOH;
         <div class='row mt-2'>
             <div class='col-sm-$width'></div>
             <div class='col-sm-8'>
-                <button class='btn btn-sm btn-primary' onClick='changePassword()'>Change Password</button>
+                <button class='btn btn-sm btn-primary' onClick='changePassword()' tabindex = 5>Change Password</button>
             </div>
         </div>
         </form>
@@ -102,8 +102,8 @@ function draw_passwordModal() {
                     </div>
                 </div>
                 <div class='modal-footer'>
-                    <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
-                    <button class='btn btn-sm btn-primary' onClick='changePassword()'>Change Password</button>
+                    <button class='btn btn-sm btn-secondary' tabindex=5 data-bs-dismiss='modal'>Cancel</button>
+                    <button class='btn btn-sm btn-primary' tabindex=6, onClick='changePassword()'>Change Password</button>
                 </div>
             </div>
         </div>
