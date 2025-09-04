@@ -116,13 +116,14 @@ function draw(data, textStatus, jqXHR) {
     itemSaveBtn.innerHTML = "Save Changes"
     itemSaveBtn.disabled = true;
 
-
+    document.getElementById('artControlPaginationDiv').innerHTML = '';
     itemTable = new Tabulator('#artItems_table', {
         mxHeight: "800px",
         history: true,
         data: data['art'],
         layout: 'fitDataTable',
         pagination: data['art'].length > 50,
+        paginationElement: document.getElementById('artControlPaginationDiv'),
         paginationSize: 50,
         paginationSizeSelector: [10, 25, 50, 100, true], // enable page size select with these options
         columns: [
@@ -160,6 +161,7 @@ function draw(data, textStatus, jqXHR) {
     itemTable.on("cellEdited", cellChanged)
 
     itemTable_dirty = false;
+    document.getElementById('artControl-csv-div').hidden = false;
 
     artItemModal.setItemTable(itemTable);
 }
@@ -282,4 +284,15 @@ function saveItem() {
             }
         }
     });
+}
+
+// download buttons, save off the data file
+function download(format) {
+    if (itemTable == null)
+        return;
+
+    var filename = 'artitems';
+    var tabledata = JSON.stringify(itemTable.getData("active"));
+    var excludeList = [];
+    downloadFilePost(format, filename, tabledata, excludeList);
 }
