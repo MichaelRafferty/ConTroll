@@ -299,7 +299,7 @@ function download(format) {
 }
 
 // print control sheets
-function controlSheets(email) {
+function pdfSheets(type, email) {
     var regionYearId = '';
     var itemData = itemTable.getData("active");
     var ids = [];
@@ -317,6 +317,6 @@ function controlSheets(email) {
     }
     var eyid = ids.join(',');
 
-    var script = "scripts/exhibitorsBidSheets.php?type=control&region=" + regionYearId + "&eyid=" + eyid + "&email=" + email;
+    var script = "scripts/exhibitorsBidSheets.php?type=" + type + "&region=" + regionYearId + "&eyid=" + eyid + "&email=" + email;
     window.open(script, "_blank")
 }

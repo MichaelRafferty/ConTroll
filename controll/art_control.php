@@ -93,13 +93,23 @@ foreach ($regions as $region) {
                 <button id='artControl-xlsx' type='button' class='btn btn-info btn-sm' onclick='download("xlsx"); return false;'>Download Excel</button>
             </div>
             <div class='col-sm-auto p-1 ms-4' id='sheets-buttons'>
-                <button id='artControl-sheet' type='button' class='btn btn-secondary btn-sm me-1' onclick='controlSheets(false); return false;'>
+                <button id='artControl-bids' class='btn btn-secondary btn-sm me-1'
+                        onclick="pdfSheets('bidsheets', false); return false;">
+                    Bid Sheets
+                </button>
+                <button id='artControl-price' class='btn btn-secondary btn-sm me-1'
+                        onclick="pdfSheets('printshop', false); return false;">
+                    Price Tags
+                </button>
+                <button id='artControl-sheet' type='button' class='btn btn-secondary btn-sm me-1'
+                        onclick="pdfSheets('control', false); return false;">
                     Control Sheets
                 </button>
-                <button id='artControl-sheetsEmail' type='button' class='btn btn-warning btn-sm' onclick='controlSheets(true); return false;'>
+                <button id='artControl-sheetsEmail' type='button' class='btn btn-warning btn-sm'
+                        onclick="pdfSheets('control', true); return false;">
                     Control Sheets w/Emails
                 </button>
-                <br/><strong>Note:</strong> Will display control sheet for all artists filtered table above.
+                <br/><strong>Note:</strong> Will display/print sheets for all artists filtered in the table above.
             </div>
         </div>
     </div>

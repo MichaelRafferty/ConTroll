@@ -7,7 +7,9 @@ require_once ("pdfFunctions.php");
 global $pdfObject;
 $pdfObject = null;
 
-function pdfPrintShopPriceSheets($regionYearId, $region, $response) {
+function pdfPrintShopPriceSheets($regionYearId, $region, $response, $first, $last) {
+    global $pdf;
+
     $con = get_conf('con');
     if (array_key_exists('currency', $con)) {
         $currency = $con['currency'];
@@ -114,6 +116,11 @@ EOS;
     // timestamp for printing when generated
     $createDate = date('Y/m/d h:i:s A');
     $fileDate = date('Y-m-d-H-i-s');
+    if ($first != $last) {
+        $fileLabel = str_replace(' ', '-', $conname . '_PriceTags_' . 'Multi-Artist');
+    } else {
+        $fileLabel = str_replace(' ', '-', $conname . '_PriceTags_' . $artistName);
+    }
 
     $row = $numrows;
     $col = $numcols;
@@ -132,11 +139,6 @@ EOS;
                 $page++;
                 pushFont('Arial', 'B', 11);
                 printXY($margin, $margin,"Price Tags for $conname's " . $print['name'] . "; Artist: " . $artistName);
-                if ($first != $last) {
-                    $fileLabel = str_replace(' ', '-', $conname . '_' . 'Multi-Artist');
-                } else {
-                    $fileLabel = str_replace(' ', '-', $conname . '_' . $artist['name'] . '_' . $artistName);
-                }
 
                 $y = $pdf->GetPageHeight() - ($margin);
                 printXY($margin, $y,"Generated: $createDate");
@@ -225,6 +227,8 @@ EOS;
 }
 
 function pdfPrintBidSheets($regionYearId, $region, $response, $first, $last) {
+    global $pdf;
+
     $con = get_conf('con');
     if (array_key_exists('currency', $con)) {
         $currency = $con['currency'];
@@ -372,6 +376,11 @@ EOS;
 // timestamp for printing when generated
     $createDate = date('Y/m/d h:i:s A');
     $fileDate = date('Y-m-d-H-i-s');
+    if ($first != $last) {
+        $fileLabel = str_replace(' ', '-', $conname . '_BidSheets_' . 'Multi-Artist');
+    } else {
+        $fileLabel = str_replace(' ', '-', $conname . '_BidSheets_' . $artistName);
+    }
 
     $row = $numrows;
     $col = $numcols;
@@ -389,11 +398,6 @@ EOS;
             $page++;
             pushFont('Arial', 'B', 11);
             printXY($margin, $margin, "Bid Sheets for $conname's " . $art['name'] . '; Artist: ' . $artistName);
-            if ($first != $last) {
-                $fileLabel = str_replace(' ', '-', $conname . '_' . 'Multi-Artist');
-            } else {
-                $fileLabel = str_replace(' ', '-', $conname . '_' . $artist['name'] . '_' . $artistName);
-            }
 
             $y = $pdf->GetPageHeight() - ($margin);
             printXY($margin, $y, "Generated: $createDate");
@@ -551,14 +555,19 @@ EOS;
         popLineWidth();
     }
 
-    header('Content-Type: application/pdf');
-    $fileLabel = preg_replace('/[^A-Za-z0-9_]/', '', $fileLabel);
-    $filename = $fileLabel . '_' . $fileDate . '.pdf';
-    header('Content-Disposition: inline; filename="' . $filename . '"');
-    $output = $pdf->Output();
-    print($output);
-    $response['success'] = true;
-    $response['message'] = "$pages pages output";
+    if ($first) {
+        header('Content-Type: application/pdf');
+        $fileLabel = preg_replace('/[^A-Za-z0-9_]/', '', $fileLabel);
+        $filename = $fileLabel . '_' . $fileDate . '.pdf';
+        header('Content-Disposition: inline; filename="' . $filename . '"');
+    }
+
+    if ($last) {
+        $output = $pdf->Output();
+        print($output);
+        $response['success'] = true;
+        $response['message'] = "$page pages output";
+    }
     return $response;
 }
 
