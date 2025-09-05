@@ -96,7 +96,7 @@ EOS;
     if ($pieceNumber != null && $pieceNumber != '') {
         $itemQ = <<<EOS
 SELECT A.*, s.id AS artSalesId, s.transid, s.amount, IFNULL(s.paid, 0.00) AS paid, s.quantity AS artSalesQuantity, s.unit, t.id AS create_trans,
-       ex.artistName, ex.exhibitorName, exRY.exhibitorNumber, IFNULL(s.quantity, 1) AS purQuantity
+       ex.artistName, ex.exhibitorName, exRY.exhibitorNumber, IFNULL(s.quantity, 1) AS purQuantity, exY.exhibitorId
 FROM artItems A
 JOIN exhibitorRegionYears exRY ON exRY.id = A.exhibitorRegionYearId
 JOIN exhibitorYears exY ON exY.id = exRY.exhibitorYearId
