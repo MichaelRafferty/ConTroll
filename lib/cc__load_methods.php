@@ -120,6 +120,6 @@ function cc_newPlanNotes($planName, $planId, $nonPlanAmt, $downPmt, $balanceDue,
 // art Sales
 function cc_artSalesNotes($art, $payorId, $transid) : string {
     // perid, payorid, exhId, exhNum, artId, type,  artSalesId, priceType, transid)
-    return implode('~', array($art['perid'], $payorid, $art['exhibitorId'], $art['exhibitorNumber'], $art['id'], $art['type'],
-        $art['artSalesId'], $art['priceType'], $transid);
+    return implode('~', array($art['perid'], $payorId, $art['exhibitorId'], $art['exhibitorNumber'], $art['id'], $art['type'],
+        $art['artSalesId'], $art['priceType'], $transid));
 }
