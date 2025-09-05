@@ -17,6 +17,8 @@ if (!check_atcon('artinventory', $conid)) {
     exit(0);
 }
 
+$manager = check_atcon('manager', $conid) ? 'true' : 'false';
+
 $cdn = getTabulatorIncludes();
 page_init($page, $tab,
     /* css */ array($cdn['tabcss'], $cdn['tabbs5']),
@@ -31,24 +33,11 @@ if(array_key_exists('region', $_GET)) {
     $region = $_GET['region'];
 }
 
-
 $conInfoQ = <<<EOS
 SELECT DATE(startdate) as start, DATE(enddate) as end
 FROM conlist
 WHERE id=?;
 EOS;
-
-?>
-<script type="text/javascript">
-    var mode = '<?php echo $mode; ?>';
-    var conid = '<?php echo $label; ?>';
-    var manager = false;
-    var region = '<?php echo $region; ?>';
-    <?php if(check_atcon('manager', $conid)) { ?>
-        manager = true;
-    <?php } ?>
-</script>
-<?php
 
 $conInfoR = dbSafeQuery($conInfoQ, 'i', array($conid));
 $conInfo = $conInfoR->fetch_assoc();
@@ -57,7 +46,7 @@ $enddate = $conInfo['end'];
 $method='manager';
 
 $regionQ = <<<EOS
-SELECT xR.shortname AS regionName
+SELECT xR.shortname AS regionName, xRY.id
 FROM exhibitsRegionTypes xRT
     JOIN exhibitsRegions xR ON xR.regionType=xRT.regionType
     JOIN exhibitsRegionYears xRY ON xRY.exhibitsRegion = xR.id
@@ -66,7 +55,7 @@ EOS;
 $regionR = dbSafeQuery($regionQ, 'i', array($conid));
 $setRegion = false;
 if(($regionR->num_rows==1) && ($region=='')) { $setRegion = true; }
-
+$regionYearId = -1;
 /** /
 var_dump(getAllSessionVars());
 echo $conid;
@@ -78,9 +67,11 @@ echo $conid;
     <ul class='nav nav-tabs mb-3' id='region-tabs' role='tablist'>
         <?php
             while($regionInfo = $regionR->fetch_assoc()) {
-                if($setRegion) { $region = $regionInfo['regionName']; }
-                $isRegion = false;
-                if($region == $regionInfo['regionName']) { $isRegion = true; }
+                $isRegion = $region == $regionInfo['regionName'];
+                if ($setRegion || $isRegion) {
+                    $region = $regionInfo['regionName'];
+                    $regionYearId = $regionInfo['id'];
+                }
                 $regionName = $regionInfo['regionName']; 
                 $actual_link = 'http://'.$_SERVER['HTTP_HOST'].$_SERVER['PHP_SELF'];
                 ?>
@@ -95,6 +86,13 @@ echo $conid;
         ?>
     </ul>
 </div>
+<script type="text/javascript">
+    var mode = '<?php echo $mode; ?>';
+    var conid = '<?php echo $label; ?>';
+    var manager = <?php echo $manager; ?>;
+    var region = '<?php echo $region; ?>';
+    var regionYearId = <?php echo $regionYearId; ?>;
+</script>
 <div id="pos" class="container-fluid">
     <div class="row mt-2">
         <div class="col-sm-7">
@@ -160,7 +158,16 @@ while($artist = $artistR->fetch_assoc()) {
                                 </div>
                             </div>
                             <div class="row">
-                                <div class="col-sm-12" id="find_results">
+                                <div class="col-sm-12" id="find_results"></div>
+                            </div>
+                            <div class='row mt-2 mb-3' id='artInventory-csv-div' hidden>
+                                <div class='col-sm-auto p-1 ps-3 pe-3 tabulator-paginator' id='artInventoryPaginationDiv'
+                                     style='background-color: #e5e5e5;'></div>
+                                <div class='col-sm-auto p-1 ms-4' id='sheets-buttons'>
+                                    <button id='artControl-sheet' type='button' class='btn btn-secondary btn-sm me-1'
+                                            onclick="pdfSheets('control', false); return false;">
+                                        Control Sheets
+                                    </button>
                                 </div>
                             </div>
                         </div>
