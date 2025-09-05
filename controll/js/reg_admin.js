@@ -1564,6 +1564,7 @@ function draw_registrations(data) {
         registrationtable = null;
     }
     document.getElementById('tabPaginationDiv').innerHTML = '';
+    document.getElementById('tabPaginationDiv').hidden = data.badges.length <= 25;
     registrationtable = new Tabulator('#registration-table', {
         data: data.badges,
         layout: "fitDataTable",

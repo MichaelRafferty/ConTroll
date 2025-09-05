@@ -256,6 +256,8 @@ class consetup {
         } else {
             memListData = data['memList'];
         }
+        document.getElementById(this.#setup_type + 'PaginationDiv').hidden = data['memlist'].length <= 25;
+
         this.#memtable = new Tabulator('#' + this.#setup_type + '-memlist', {
             history: true,
             movableRows: true,

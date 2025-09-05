@@ -195,6 +195,7 @@ function build_table(tableData) {
             datatbl.push(row);
         }
         document.getElementById('artInventoryPaginationDiv').innerHTML = '';
+        document.getElementById('artInventoryPaginationDiv').hidden = datatbl.length <= 25;
         find_result_table = new Tabulator('#find_results', {
             maxHeight: "700px",
             data: datatbl,

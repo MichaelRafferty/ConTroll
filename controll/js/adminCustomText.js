@@ -104,6 +104,7 @@ class customTextSetup {
         this.#customText = data['customText'];
         this.#customTextDirty = false;
         document.getElementById('ctxPaginationDiv').innerHTML = '';
+        document.getElementById('ctxPaginationDiv').hidden = this.#customText.length <= 25;
         this.#customTextTable = new Tabulator('#customTextTableDiv', {
             history: true,
             data: this.#customText,

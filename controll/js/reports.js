@@ -231,6 +231,8 @@ function drawReport(data) {
         document.getElementById('reportTable').innerHTML = data.output;
     } else {
         // build tabulator specs
+        document.getElementById('ReportsPaginationDiv').hidden = data.data.length <= 25;
+
         params = {
             data: data.data,
             layout: "fitDataTable",

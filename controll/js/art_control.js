@@ -117,6 +117,7 @@ function draw(data, textStatus, jqXHR) {
     itemSaveBtn.disabled = true;
 
     document.getElementById('artControlPaginationDiv').innerHTML = '';
+    document.getElementById('artControlPaginationDiv').hidden = data['art'].length <= 50;
     itemTable = new Tabulator('#artItems_table', {
         mxHeight: "800px",
         history: true,
