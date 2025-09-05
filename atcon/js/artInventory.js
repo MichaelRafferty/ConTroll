@@ -199,7 +199,7 @@ function build_table(tableData) {
             data: datatbl,
             layout: "fitColumns",
             responsiveLayout:true,
-            pagination: datatbl.length > 5,
+            pagination: datatbl.length > 25,
             paginationElement: document.getElementById('artInventoryPaginationDiv'),
             paginationSize: 10,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
