@@ -194,6 +194,7 @@ function build_table(tableData) {
             row.prev_status = row.status;
             datatbl.push(row);
         }
+        document.getElementById('artInventoryPaginationDiv').innerHTML = '';
         find_result_table = new Tabulator('#find_results', {
             maxHeight: "700px",
             data: datatbl,
