@@ -155,6 +155,15 @@ class artpos_cart {
         return this.#cart_art[index].exhibitorNumber;
     }
 
+    // check for print quantities > 1 in the cart
+    getQtyGT1Rows() {
+        var num = 0;
+        for (var i = 0; i < this.#cart_art.length; i++) {
+            if (this.#cart_art[i].type == 'print' && this.#cart_art[i].purQuantity > 1)
+                num++;
+        }
+        return num;
+    }
 
     // make a copy of private structures for use in ajax calls back to the PHP.   The master copies are only accessible within the class.
     getCartArt() {
