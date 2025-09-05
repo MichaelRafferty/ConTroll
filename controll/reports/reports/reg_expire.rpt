@@ -81,6 +81,6 @@
     item=id
     datatype=i
 [where]
-	001="r.conid = ? AND r.status = 'unpaid' AND r.price > 0  AND r.paid = 0"
+	001="r.conid = ? AND r.status = 'unpaid' AND r.price > 0  AND r.paid = 0 AND m.enddate < l.enddate"
 [sort]
 	001="m.enddate, last_name, first_name, middle_name"
