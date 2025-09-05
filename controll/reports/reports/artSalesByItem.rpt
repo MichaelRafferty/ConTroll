@@ -160,6 +160,6 @@
 	;W002="AND (a.itemPrice * a.qtyDiff) != l.paid"
 [group]
     G001="a.artId,artistId,itemNum,e.artistName,e.exhibitorName,title,a.type,itemPrice,qtyDiff"
-    G002="l.status,s.status,l.salesCount,s.amount,s.paid,l.amount,l.paid"
+    G002="l.status,s.status,l.salesCount,l.amount,l.paid"
 [sort]
 	S001="1,2"
