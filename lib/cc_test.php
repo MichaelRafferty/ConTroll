@@ -34,10 +34,13 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
     $id = null;
 
     $loginPerid = getSessionVar('user_perid');
+    $loginNewperid = null;
     if ($loginPerid == null) {
         $userType = getSessionVar('idType');
         if ($userType == 'p')
             $loginPerid = getSessionVar('id');
+        else
+            $loginNewperid = getSessionVar('id');
     }
 
     // faking the cc order api steps
@@ -407,7 +410,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
         if (array_key_exists('newplan', $results) && $results['newplan'] == 1) {
             // deferment is total of the items - total of the payment
             $deferment = $orderValue - $results['total'];
-            $note = cc_newPlanNotes($planName, 'TBA', $nonPlanAmt, $downPmt, $balanceDue, $loginPerid, $results['transid']);
+            $note = cc_newPlanNotes($planName, 'TBA', $nonPlanAmt, $downPmt, $balanceDue, $loginPerid, $loginNewperid, $results['transid']);
             // this is the down payment on a payment plan
             $item = [
                 'uid' => 'planDeferment',
@@ -511,10 +514,13 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     }
 
     $loginPerid = getSessionVar('user_perid');
+    $loginNewperid = null;
     if ($loginPerid == null) {
         $userType = getSessionVar('idType');
         if ($userType == 'p')
             $loginPerid = getSessionVar('id');
+        else
+            $loginNewperid = getSessionVar('id');
     }
     // sanitize the email address to avoid empty and refused
     if ($buyer['email'] == '/r' || $buyer['email'] == null)

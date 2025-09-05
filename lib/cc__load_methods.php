@@ -83,7 +83,7 @@ function cc_planNotes($ep, $transId) : string {
     else
         $payorNewPerid = '';
 
-    return "$planId~$planName~$payorPerid~$payorNewPerid~$transId";
+    return implode("~", array($planId, $planName, $payorPerid, $payorNewPerid, $transId));
 }
 
 // Exhibitor Space Payments
@@ -112,14 +112,18 @@ function cc_mailFeeNotes($fee, $transid) : string {
     }
 
 // plan deferement amounts
-function cc_newPlanNotes($planName, $planId, $nonPlanAmt, $downPmt, $balanceDue,$loginPerid, $transid) : string {
-    // planName~planId~nonPlanAmt~downPmt~balanceDue~perid~transid
-    return implode('~', array($planName, $planId, $nonPlanAmt, $downPmt, $balanceDue,$loginPerid, $transid));
+function cc_newPlanNotes($planName, $planId, $nonPlanAmt, $downPmt, $balanceDue,$loginPerid, $loginNewperid, $transid) : string {
+    // planName~planId~nonPlanAmt~downPmt~balanceDue~perid~newperid~transid
+    return implode('~', array($planName, $planId, $nonPlanAmt, $downPmt, $balanceDue, $loginPerid, $loginNewperid, $transid));
 }
 
 // art Sales
 function cc_artSalesNotes($art, $payorId, $transid) : string {
     // perid, payorid, exhId, exhNum, artId, type,  artSalesId, priceType, transid)
-    return implode('~', array($art['perid'], $payorId, $art['exhibitorId'], $art['exhibitorNumber'], $art['id'], $art['type'],
+    // default perid to payorId if null (non bid on item)
+    $perid = $art['perid'];
+    if ($perid == null)
+        $perid = $payorId;
+    return implode('~', array($perid, $payorId, $art['exhibitorId'], $art['exhibitorNumber'], $art['id'], $art['type'],
         $art['artSalesId'], $art['priceType'], $transid));
 }
