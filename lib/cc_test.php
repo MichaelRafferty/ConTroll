@@ -148,7 +148,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
             exit();
         }
 
-        $note = cc_planNotes($ep, $results[$transId]);
+        $note = cc_planNotes($ep, $results['transid']);
         $item = [
             'uid' => 'planPayment',
             'name' => mb_substr('Plan Payment: ' . $note, 0, 128),
@@ -178,7 +178,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                 $priceType = $art['priceType'];
                 $quantity = $art['artSalesQuantity'];
                 $amount = $art['amount'];
-                $note = cc_artSalesNotes($art, $results['payorId'], $results[$transId]);
+                $note = cc_artSalesNotes($art, $results['payorId'], $results['transid']);
 
                 $item = [
                     'uid' => 'art' . ($lineid + 1),

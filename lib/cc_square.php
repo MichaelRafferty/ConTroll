@@ -291,7 +291,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
             exit();
         }
 
-        $note = cc_planNotes($ep, $results[$transId]);
+        $note = cc_planNotes($ep, $results['transid']);
         $item = new OrderLineItem ([
             'itemType' => OrderLineItemItemType::Item->value,
             'uid' => 'planPayment',
@@ -325,7 +325,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 $priceType = $art['priceType'];
                 $quantity = $art['purQuantity'];
                 $amount = $art['amount'];
-                $note = cc_artSalesNotes($art, $results['payorId'], $results[$transId]);
+                $note = cc_artSalesNotes($art, $results['payorId'], $results['transid']);
 
                 $item = new OrderLineItem([
                     'itemType' => OrderLineItemItemType::Item->value,
