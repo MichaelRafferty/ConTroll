@@ -1995,7 +1995,11 @@ function payShown(readWrite = true) {
     if (total_amount_due  < 0.01) { // allow for rounding error, no need to round here
         // nothing more to pay
         cart.showNext();
-        cart.showRelease();
+        // show release if there is anything in the cart that is not in Purchased/Released status, and is not a print
+        if (cart.getUnReleased() > 0)
+            cart.showRelease();
+        else
+            cart.hideRelease();
         cart.hideStartOver();
         add_tab.disabled = true;
         drawPay(false);

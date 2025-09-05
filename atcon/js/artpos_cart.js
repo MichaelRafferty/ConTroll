@@ -165,6 +165,16 @@ class artpos_cart {
         return num;
     }
 
+    // how many items in the cart need releasing
+    getUnReleased() {
+        var num = 0;
+        for (var i = 0; i < this.#cart_art.length; i++) {
+            if (this.#cart_art[i].type != 'print' && this.#cart_art[i].status != 'Purchased/Released')
+                num++;
+        }
+        return num;
+    }
+
     // make a copy of private structures for use in ajax calls back to the PHP.   The master copies are only accessible within the class.
     getCartArt() {
         return make_copy(this.#cart_art);
