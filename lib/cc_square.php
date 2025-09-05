@@ -547,7 +547,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     'uid' => 'region-' . str_replace(' ', '-', $fee['name']),
                     'name' => mb_substr($itemName, 0, 128),
                     'quantity' => 1,
-                    'note' => mb_substr($note, 0, 128),
+                    'note' => $note,
                     'basePriceMoney' => new Money([
                         'amount' => round($itemPrice * 100),
                         'currency' => $currency,

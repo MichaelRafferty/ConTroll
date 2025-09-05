@@ -148,7 +148,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
             exit();
         }
 
-        $note = "Plan Id: $planId, Name: $planName, Perid: $loginPerid";
+        $note = cc_planNotes($ep, $results[$transId]);
         $item = [
             'uid' => 'planPayment',
             'name' => mb_substr('Plan Payment: ' . $note, 0, 128),
@@ -178,12 +178,13 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                 $priceType = $art['priceType'];
                 $quantity = $art['artSalesQuantity'];
                 $amount = $art['amount'];
+                $note = cc_artSalesNotes($art, $results['payorId'], $results[$transId]);
 
                 $item = [
                     'uid' => 'art' . ($lineid + 1),
                     'name' => mb_substr($artistName, 0, 50) . ' / ' . mb_substr($title, 0, 70),
                     'quantity' => $quantity,
-                    'note' => $artId . ':' . $artistNumber . ',' . $itemKey . '; ' . $type . ',' . $priceType,
+                    'note' => $note,
                     'basePriceMoney' => round($amount * 100),
                 ];
                 if ($taxRate > 0) {
@@ -267,14 +268,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                     $perid = 'tbd';
                 }
 
-                $note = $badge['memId'] . ',' . $id . ',' . $regid . ': memId, p/n id, regid';
-                if ($planName != '') {
-                    $note .= ($badge['inPlan'] ? (', Plan: ' . $planName) : ', NotInPlan');
-                }
-                if (array_key_exists('glNum', $badge) && $badge['glNum'] != '') {
-                    $note .= ', ' . $badge['glNum'];
-                }
-
+                $note = cc_regNotes($badge, $planName, $results['transid'], $results['custid']);
                 if (array_key_exists('balDue', $badge)) {
                     $amount = $badge['balDue'];
                 } else {
@@ -364,11 +358,15 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                 } else {
                     $itemName .= $space['exhibitorName'];
                 }
-                $note = $space['id'] . ',' . $space['item_purchased'] . ',' . $space['exhibitorId'] . ',' . $space['exhibitorNumber'] .
-                    ',' . $space['includedMemberships'] . ': id, item, exhId, exhNum, includedMem';
-                if (array_key_exists('glNum', $space) && $space['glNum'] != '') {
-                    $note .= ', ' . $space['glNum'];
+                $incCount = 0;
+                $addCount = 0;
+                foreach ($results['badges'] as $badge) {
+                    if ($badge['memId'] == $space['includedMemId'])
+                        $incCount++;
+                    if ($badge['memId'] == $space['additionalMemId'])
+                        $addCount++;
                 }
+                $note = cc_spaceNotes($space, $results['transid'], $incCount, $addCount);
 
                 $item = [
                     'uid' => 'space-' . $spaceId,
@@ -390,14 +388,13 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                     continue;
                 $itemName = 'Mail-in Fee for ' . $fee['name'];
                 $itemPrice = $fee['amount'];
-                $note = 'Mail-in fee';
-                if (array_key_exists('glNum', $fee) && $fee['glNum'] != null && $fee['glNum'] != '')
-                    $note .= ", GL: " . $fee['glNum'];
+                $note = cc_mailFeeNotes($fee, $results['transid']);
+
                 $item = [
                     'uid' => 'region-' . $fee['name'],
                     'name' => mb_substr($itemName, 0, 128),
                     'quantity' => 1,
-                    'note' => mb_substr($note, 0, 128),
+                    'note' => $note,
                     'basePriceMoney' => round($itemPrice * 100),
                 ];
                 $order_lineitems[$lineid] = $item;
@@ -410,7 +407,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
         if (array_key_exists('newplan', $results) && $results['newplan'] == 1) {
             // deferment is total of the items - total of the payment
             $deferment = $orderValue - $results['total'];
-            $note = "Name: $planName, ID: TBA, Non Plan Amt: $nonPlanAmt, Down Payment: $downPmt, Balance Due: $balanceDue, Perid: $loginPerid";
+            $note = cc_newPlanNotes($planName, 'TBA', $nonPlanAmt, $downPmt, $balanceDue, $loginPerid, $results['transid']);
             // this is the down payment on a payment plan
             $item = [
                 'uid' => 'planDeferment',
