@@ -49,12 +49,6 @@ h1.title {
     color: red
 }
 
-label.blocks {
-    display: inline-block;
-    width: 12ch;
-    white-space: nowrap;
-}
-
 /* hide up/down arrows ("spinners") on input fields marked type="number" */
 .no-spinners {
     -moz-appearance: textfield;
