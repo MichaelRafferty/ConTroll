@@ -136,8 +136,8 @@ EOQ;
 case 'comeback':
     updateContactOK($conid);
 
-    $priorcon = $conid - 1;
-    $priorcon2 = $conid - 2;
+    $priorcon = $conid - 2;
+    $priorcon2 = $conid - 3;
     $expires = date_add(date_create(), DateInterval::createFromDateString('30 day'));
     /* no coupon for now
 $code='ComeBack' . date_format(date_create(), 'Md');
@@ -174,7 +174,7 @@ FROM perinfo p
 LEFT OUTER JOIN reg r1 ON (r1.perid = p.id and r1.conid = ?)
 LEFT OUTER JOIN reg r2 ON (r2.perid = p.id and r2.conid = ?)
 LEFT OUTER JOIN reg r3 ON (r3.perid = p.id and r3.conid = ?)
-WHERE p.email_addr LIKE '%@%' AND p.contact_ok='Y' AND r1.id IS NULL AND r2.id IS NULL AND r3.id IS NULL
+WHERE p.email_addr LIKE '%@%' AND p.contact_ok='Y' AND r1.id IS NULL AND (r2.id IS NOT NULL OR r3.id IS NOT NULL)
 GROUP BY p.email_addr
 )
 SELECT ?, uuid_v4s(), people.perid, ?, ?
@@ -197,7 +197,7 @@ WITH people AS (
     LEFT OUTER JOIN reg r1 ON (r1.perid = p.id and r1.conid = ?)
     LEFT OUTER JOIN reg r2 ON (r2.perid = p.id and r2.conid = ?)
     LEFT OUTER JOIN reg r3 ON (r3.perid = p.id and r3.conid = ?)
-    WHERE p.email_addr LIKE '%@%' AND p.contact_ok='Y' AND r1.id IS NULL AND r2.id IS NULL AND r3.id IS NULL
+    WHERE p.email_addr LIKE '%@%' AND p.contact_ok='Y' AND r1.id IS NULL AND (r2.id IS NOT NULL OR r3.id IS NOT NULL)
     GROUP BY p.email_addr
 )
 SELECT e.email, e.perid, p.first_name, p.last_name/*, k.guid */
