@@ -402,7 +402,7 @@ EOS;
             // get the payment id to get the payment details
             $paymentIds = $checkout['payment_ids'];
             if (count($paymentIds) > 1) {
-                web_error_log("pos_processPayment: terminal: returned more than one paymentId");
+                web_error_log("pos_processPayment: terminal: returned more than one credit card payment id");
                 web_error_log($paymentIds);
             }
             $paymentId = $paymentIds[0];
@@ -412,7 +412,7 @@ EOS;
             // update the transaction status
             $updTranPaymentIdSQL = <<<EOS
 UPDATE transaction
-SET paymentId = ?
+SET ccPaymentId = ?
 WHERE id = ?;
 EOS;
             $updcnt = dbSafeCmd($updTranStatusSQL, 'si', array($paymentId, $master_tid));
@@ -554,7 +554,7 @@ EOS;
     // now update the transaction with the data
     $updTranStatusSQL = <<<EOS
 UPDATE transaction
-SET paymentStatus = ?, paymentId = ?
+SET paymentStatus = ?, ccPaymentId = ?
 WHERE id = ?;
 EOS;
     $updcnt = dbSafeCmd($updTranStatusSQL, 'ssi', array($status, $paymentId, $master_tid));
@@ -562,7 +562,7 @@ EOS;
     // now add the payment and process to which rows it applies
     $insPmtSQL = <<<EOS
 INSERT INTO payments(transid, type,category, description, source, pretax, tax, amount, time, cc_approval_code, cashier, 
-    cc, nonce, cc_txn_id, txn_time, receipt_url, receipt_id, userPerid, status, paymentId)
+    cc, nonce, cc_txn_id, txn_time, receipt_url, receipt_id, userPerid, status, ccPaymentId)
 VALUES (?,?,'reg',?,'cashier',?,?,?,now(),?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 EOS;
     $typestr = 'issdddsissssssiss';

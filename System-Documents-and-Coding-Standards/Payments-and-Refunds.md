@@ -32,7 +32,7 @@ From the payment point of view the following fields in transaction are relevant:
    - Others: scripts used to import records and manual changes.  The type name is supposed to be descriptive of the action.
 - orderId: credit card system order identifier for this transaction
 - orderDate: timestamp the order was created
-- paymentId: credit card system payment identifier if a payment was made
+- ccPaymentId: credit card system payment identifier if a payment was made
 - checkoutId: credit card system device transaction identifier if a device was used to make this payment
 - paymentStatus: text string used by the credit card system for the current state of this transaction. Examples:
   - ORDER: order created, no payment request yet submitted
@@ -89,7 +89,7 @@ The following fields are relevant to this discussion:
   - APPROVED: credit card approved, processing not finished
   - COMPLETED: payment completed
 - receipt_id: credit card processor receipt id
-- paymentId: credit card processor payment id
+- ccPaymentId: credit card processor payment id
 
 ## Payment Processing
 This is the overall steps involved in processing a payment.
@@ -221,5 +221,5 @@ memberships to refund.
    3. A transaction record is created to cover this refund
    4. Each registration covered by that payment has its amount paid reduced by the allocated portion of the refund. 
    If the paid amount is now zero, the registration status is set to refunded.
-   5A payment record of type refund is created with the original transaction and paymentId, the new refundid, the transaction id, and the appropriate amounts
+   5. A payment record of type refund is created with the original transaction and paymentId, the new refundid, the transaction id, and the appropriate amounts
 4. Proper status is returned to the AJAX caller

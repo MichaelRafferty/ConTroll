@@ -317,7 +317,7 @@ if ($amt > 0 || $discountAmt > 0) {
     // now add the payment and process to which rows it applies
     $insPmtSQL = <<<EOS
 INSERT INTO payments(transid, type,category, description, source, pretax, tax, amount, time, cc_approval_code, cashier, 
-    cc, nonce, cc_txn_id, txn_time, receipt_url, receipt_id, userPerid, status, paymentId)
+    cc, nonce, cc_txn_id, txn_time, receipt_url, receipt_id, userPerid, status, ccPaymentId)
 VALUES (?,?,'reg',?,'cashier',?,?,?,now(),?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 EOS;
     $typestr = 'issdddsissssssiss';
@@ -451,7 +451,7 @@ EOS;
 
 $updCompleteSQL = <<<EOS
 UPDATE transaction
-SET paid = ?, paymentId = ?, paymentStatus = ?
+SET paid = ?, ccPaymentId = ?, paymentStatus = ?
 WHERE id = ?;
 EOS;
 $completed = dbSafeCmd($updCompleteSQL, 'dssi', array($approved_amt, $rtn['paymentId'], $rtn['status'], $master_tid));

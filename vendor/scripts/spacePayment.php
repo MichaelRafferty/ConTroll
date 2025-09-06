@@ -554,7 +554,7 @@ EOS;
     // update the transaction status with the payment details
     $updTrans = <<<EOS
 UPDATE transaction
-SET paymentId = ?, paymentStatus = ?
+SET ccPaymentId = ?, paymentStatus = ?
 WHERE id = ?;
 EOS;
     $numUpd = dbSafeCmd($updTrans, 'ssi', array($ccrtn['paymentId'], $ccrtn['status'],  $transId));

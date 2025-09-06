@@ -18,4 +18,7 @@ ALTER TABLE printers MODIFY COLUMN
     codePage enum('PS','HPCL','Dymo4xx','Dymo3xx','Windows-1252','ASCII','7bit','8bit','UTF-8','UTF-16')
     COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'Windows-1252';
 
+ALTER TABLE payments RENAME COLUMN  paymentId TO ccPaymentId;
+ALTER TABLE transaction RENAME COLUMN  paymentId TO ccPaymentId;
+
 INSERT INTO patchLog(id, name) VALUES(xx, 'moreTerminal');

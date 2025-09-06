@@ -53,10 +53,10 @@ if ($_POST && $_POST['transid']) {
 
 // get the information for this transaction
 $issueSQL = <<<EOS
-SELECT t.id, t.paymentId, t.paymentStatus, t.checkoutId, t.create_date, t.complete_date, t.perid, t.userid, t.withtax, t.paid, 
+SELECT t.id, t.ccPaymentId, t.paymentStatus, t.checkoutId, t.create_date, t.complete_date, t.perid, t.userid, t.withtax, t.paid, 
        t.type, t.orderId, t.lastUpdate, TIMESTAMPDIFF(MINUTE, t.lastUpdate, NOW()) as minutes, t.paymentInfo,
        TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
-       y.id AS payTableId, IFNULL(y.status, '') AS cardStatus, IFNULL(y.paymentId, '') AS cardPaymentId
+       y.id AS payTableId, IFNULL(y.status, '') AS cardStatus, IFNULL(y.ccPaymentId, '') AS cardPaymentId
 FROM transaction t
 JOIN perinfo p ON t.perid = p.id
 LEFT OUTER JOIN payments y ON t.id = y.transid AND y.type NOT IN ('coupon', 'discount')
@@ -93,7 +93,7 @@ EOS;
 }
 
 // now that the credit card approval/url is fixed, look at the terminal status
-if ($issue['checkoutId'] != '' && $issue['paymentStatus'] != 'COMPLETED' && $issue['paymentId'] != 'CANCELED') {
+if ($issue['checkoutId'] != '' && $issue['paymentStatus'] != 'COMPLETED' && $issue['ccPaymentId'] != 'CANCELED') {
     $message .= $issue['id'] . " needs to be polled<br/>";
     // get the current status
     $checkout = term_getPayStatus($name, $issue['checkoutId'], true);
@@ -124,7 +124,7 @@ EOS;
             $orderType = $orderSource == 'con' ? 'reg' : 'art';
             $paymentIds = $checkout['payment_ids'];
             if (count($paymentIds) > 1) {
-                $message .= 'terminal: returned more than one paymentId<br/>';
+                $message .= 'terminal: returned more than one credit card payment id<br/>';
                 break;
             }
             $paymentId = $paymentIds[0];
@@ -164,10 +164,10 @@ $message .= "$num_upd terminals released and marked available<br/>";
 
 // now get the remaining issues
 $issueSQL = <<<EOS
-SELECT t.id, t.paymentId, t.paymentStatus, t.checkoutId, t.create_date, t.complete_date, t.perid, t.userid, t.withtax, t.paid, 
+SELECT t.id, t.ccPaymentId, t.paymentStatus, t.checkoutId, t.create_date, t.complete_date, t.perid, t.userid, t.withtax, t.paid, 
        t.type, t.orderId, t.lastUpdate, TIMESTAMPDIFF(MINUTE, t.lastUpdate, NOW()) as minutes,
        TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
-       y.id AS payTableId, y.status AS cardStatus, y.paymentId AS cardPaymentId
+       y.id AS payTableId, y.status AS cardStatus, y.ccPaymentId AS cardPaymentId
 FROM transaction t
 JOIN perinfo p ON t.perid = p.id
 LEFT OUTER JOIN payments y ON t.id = y.transid AND y.type NOT IN ('coupon', 'discount')
@@ -282,7 +282,7 @@ function completeReg($master_tid, $checkout, $order, $payment, $paymentInfo) : s
     // now add the payment and process to which rows it applies
     $insPmtSQL = <<<EOS
 INSERT INTO payments(transid, type,category, description, source, pretax, tax, amount, time, cc_approval_code, cashier, 
-    cc, nonce, cc_txn_id, txn_time, receipt_url, receipt_id, userPerid, status, paymentId)
+    cc, nonce, cc_txn_id, txn_time, receipt_url, receipt_id, userPerid, status, ccPaymentId)
 VALUES (?,?,'reg',?,'cashier',?,?,?,NOW(),?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 EOS;
     $typestr = 'issdddsissssssiss';
@@ -365,7 +365,7 @@ EOS;
 
     $updCompleteSQL = <<<EOS
 UPDATE transaction
-SET paid = ?,  paymentStatus = ?, paymentId = ?
+SET paid = ?,  paymentStatus = ?, ccPaymentId = ?
 WHERE id = ?;
 EOS;
     //$message .= "\$completed = dbSafeCmd($updCompleteSQL, 'dssi', array ($approved_amt, " . $checkout['status'] . ", $id, $master_tid))<br/>";

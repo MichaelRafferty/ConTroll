@@ -311,7 +311,7 @@ if ($approved_amt == $totalAmountDue) {
     $txnUpdate .= 'complete_date=current_timestamp(), ';
 }
 
-$txnUpdate .= 'paid=?, couponDiscountCart = ?, coupon = ?, paymentId = ?, paymentStatus = ?
+$txnUpdate .= 'paid=?, couponDiscountCart = ?, coupon = ?, ccPaymentId = ?, paymentStatus = ?
 WHERE id=?;';
 if ($webCouponDiscount > 0)
     $couponId = $coupon['id'];

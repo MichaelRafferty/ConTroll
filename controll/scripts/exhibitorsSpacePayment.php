@@ -598,7 +598,7 @@ if ($totprice > 0) {
 // extract the values needed for the payment
 if ($prow != null) {
     $txnQ = <<<EOS
-INSERT INTO payments (transid, type, category, description, source, pretax, tax, amount, time, nonce, cc_approval_code, txn_time, userPerid, paymentId)
+INSERT INTO payments (transid, type, category, description, source, pretax, tax, amount, time, nonce, cc_approval_code, txn_time, userPerid, ccPaymentId)
 VALUES (?,?,?,?,?,?,?,?,NOW(),?,?,NOW(),?,?);
 EOS;
     $typestr = 'issssdddssis';
@@ -626,7 +626,7 @@ if ($approved_amt == $totprice) {
     $txnUpdate .= 'complete_date=current_timestamp(), ';
 }
 
-$txnUpdate .= 'paid=?,  paymentId = ?, paymentStatus = ? WHERE id=?;';
+$txnUpdate .= 'paid=?,  ccPaymentId = ?, paymentStatus = ? WHERE id=?;';
 $txnU = dbSafeCmd($txnUpdate, 'dssi', array($approved_amt, $rtn['paymentId'], $rtn['status'], $transid));
 if ($txnU != 1) {
     $error_msg .= "Unable to mark transaction completed\n";

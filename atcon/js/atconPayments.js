@@ -65,7 +65,7 @@ class Payments {
                     {title: "Paid", field: "paid",headerSort: false,  hozAlign: 'right', headerHozAlign: 'right', },
                     {title: "Perid", field: "perid",headerSort: false, hozAlign: 'right', headerHozAlign: 'right', },
                     {title: "Full Name", field: "fullName", headerSort: true, headerFilter: true, headerWordWrap: true, },
-                    {title: "Payment<br/>ID", field: "paymentId", headerSort: false,  headerWordWrap: true,},
+                    {title: "Payment<br/>ID", field: "ccPaymentId", headerSort: false,  headerWordWrap: true,},
                     {title: "Card<br/>Payment<br/>ID", field: "cardPaymentId", headerSort: false, headerWordWrap: true,},
                 ],
             });
