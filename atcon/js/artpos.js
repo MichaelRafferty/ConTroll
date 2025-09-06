@@ -320,12 +320,15 @@ function gotoAdd() {
 // switch to the pay tab
 function gotoPay() {
     // check if any prints in the cart have a purchase quantity > 1
-    if (cart.getQtyGT1Rows() > 0) {
-        if (!confirm("You have prints in the cart with quantities > 1 and this is unusual.\n\n" +
-            '    Press "OK" to keep these quantities > 1\n' +
-            '          and proceed to payment\n\n' +
-            '    Press "Cancel" to return to the cart\n' +
-            '          to change the quantity values.'))
+    var ret = cart.getQtyGT1Rows();
+    var msg = 'You have ' + ret[0] + ' print in the cart with an unusual quantity:\n\n';
+    if (ret[0] > 0) {
+        if (ret[1] > 1)
+            msg = 'You have ' + ret[0] + ' prints in the cart with unusual quantities:\n\n';
+
+        if (!confirm(msg + ret[1] + "\n" +
+            '   Press "OK" to keep these quantities and go to payment.\n\n' +
+            '   Press "Cancel" to return to the cart to fix them.'))
             return;
     }
     bootstrap.Tab.getOrCreateInstance(pay_tab).show();

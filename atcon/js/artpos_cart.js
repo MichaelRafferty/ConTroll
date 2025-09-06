@@ -158,11 +158,18 @@ class artpos_cart {
     // check for print quantities > 1 in the cart
     getQtyGT1Rows() {
         var num = 0;
+        var msg = '';
+        var row = null;
         for (var i = 0; i < this.#cart_art.length; i++) {
-            if (this.#cart_art[i].type == 'print' && this.#cart_art[i].purQuantity > 1)
-                num++;
+            if (this.#cart_art[i].type == 'print' && this.#cart_art[i].purQuantity > 1) {
+                num++
+                row = this.#cart_art[i];
+                msg += "Item " + row.exhibitorNumber + '-' + row.item_key + ': ' + row.exhibitorName + '/' + row.title +
+                    ' has quantity of ' + row.purQuantity + ".\n";
+            }
         }
-        return num;
+
+        return [num,  msg];
     }
 
     // how many items in the cart need releasing
