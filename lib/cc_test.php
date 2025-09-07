@@ -182,13 +182,14 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                 $priceType = $art['priceType'];
                 $quantity = $art['artSalesQuantity'];
                 $amount = $art['amount'];
-                $note = cc_artSalesNotes($art, $results['payorId'], $results['transid']);
+                $notesData = cc_artSalesNotes($art, $results['payorId'], $results['transid']);
 
                 $item = [
                     'uid' => 'art' . ($lineid + 1),
                     'name' => mb_substr($artistName, 0, 50) . ' / ' . mb_substr($title, 0, 70),
                     'quantity' => $quantity,
-                    'note' => $note,
+                    'note' => $notesData['note'],
+                    'metadata' => $notesData['metadata'],
                     'basePriceMoney' => round($amount * 100),
                 ];
                 if ($taxRate > 0) {
@@ -412,11 +413,12 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
         if (array_key_exists('newplan', $results) && $results['newplan'] == 1) {
             // deferment is total of the items - total of the payment
             $deferment = $orderValue - $results['total'];
-            $note = cc_newPlanNotes($planName, 'TBA', $nonPlanAmt, $downPmt, $balanceDue, $loginPerid, $loginNewperid, $results['transid']);
+            $notesData = cc_newPlanNotes($planName, 'TBA', $nonPlanAmt, $downPmt, $balanceDue, $loginPerid, $loginNewperid, $results['transid']);
             // this is the down payment on a payment plan
             $item = [
                 'uid' => 'planDeferment',
-                'name' => mb_substr('Payment Deferral Amount: ' . $note, 0, 128),
+                'name' => mb_substr('Payment Deferral Amount: ' . $notesData['note'], 0, 128),
+                'metadata' => $notesData['metadata'],
                 'type' => 'FixedAmount',
                 'amountMoney' => round($deferment * 100),
             ];

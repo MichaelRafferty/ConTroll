@@ -146,7 +146,7 @@ function cc_mailFeeNotes($fee, $transid) : array {
     else
         $glNum = '';
 
-    $fee['notes'] = implode("~", array($version, $glNum));
+    $fee['note'] = implode("~", array($version, $glNum));
     $fee['metadata'] = array(
         'version' => $version,
         'regionName' => $fee['name'],
@@ -157,18 +157,46 @@ function cc_mailFeeNotes($fee, $transid) : array {
     }
 
 // plan deferement amounts
-function cc_newPlanNotes($planName, $planId, $nonPlanAmt, $downPmt, $balanceDue,$loginPerid, $loginNewperid, $transid) : string {
+function cc_newPlanNotes($planName, $planId, $nonPlanAmt, $downPmt, $balanceDue,$loginPerid, $loginNewperid, $transid) : array {
     // planName~planId~nonPlanAmt~downPmt~balanceDue~perid~newperid~transid
-    return implode('~', array($planName, $planId, $nonPlanAmt, $downPmt, $balanceDue, $loginPerid, $loginNewperid, $transid));
+    $version = 'plan.01';
+    $newPlan['note'] = implode('~', array($version,$planName, $planId, $nonPlanAmt, $downPmt, $balanceDue, $loginPerid, $loginNewperid, $transid));
+    $newPlan['metadata'] = array(
+        'version' => $version,
+        'planName' => $planName,
+        'planId' => $planId,
+        'nonPlanAmt' => $nonPlanAmt,
+        'downPmt' => $downPmt,
+        'balanceDue' => $balanceDue,
+        'loginPerid' => $loginPerid,
+        'loginNewperid' => $loginNewperid,
+        'transId' => $transid,
+    );
+    return $newPlan;
 }
 
 // art Sales
-function cc_artSalesNotes($art, $payorId, $transid) : string {
-    // perid, payorid, exhId, exhNum, artId, type,  artSalesId, priceType, transid)
+function cc_artSalesNotes($art, $payorId, $transid) : array {
+    // perid, payorid, exhId, exhNum, artId, type,  artSalesId, priceType, transid, glnum (placeholder))
     // default perid to payorId if null (non bid on item)
+    $version = 'art.01';
     $perid = $art['perid'];
     if ($perid == null)
         $perid = $payorId;
-    return implode('~', array($perid, $payorId, $art['exhibitorId'], $art['exhibitorNumber'], $art['id'], $art['type'],
-        $art['artSalesId'], $art['priceType'], $transid));
+    if ($perid == null)
+        $perid = '';
+    $art['notes'] = implode('~', array($version, $perid, $art['exhibitorId'], $art['id'], $art['type'], $transid, ''));
+    $art['metadata'] = array(
+        'version' => $art['version'],
+        'perId' => $perid,
+        'exhibitorId' => $art['exhibitorId'],
+        'exhibitorNumber' => $art['exhibitorNumber'],
+        'artId' => $art['id'],
+        'type' => $art['type'],
+        'artSalesId' =>  $art['artSalesId'],
+        'priceType' => $art['priceType'],
+        'transId' => $transid,
+        'glNum' => ''
+    );
+    return $art;
 }
