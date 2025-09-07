@@ -151,13 +151,13 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
             exit();
         }
 
-        $regData = cc_planNotes($ep, $results['transid']);
+        $notesData = cc_planNotes($ep, $results['transid']);
         $item = [
             'uid' => 'planPayment',
             'name' => mb_substr('Plan Payment: ' . $planName, 0, 128),
             'quantity' => 1,
-            'note' => $regData['note'],
-            'metadata' => $regData['metadata'],
+            'note' => $notesData['note'],
+            'metadata' => $notesData['metadata'],
             'basePriceMoney' => round($results['total'] * 100),
         ];
         $orderLineItems[$lineid] = $item;
@@ -272,7 +272,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                     $perid = 'tbd';
                 }
 
-                $regData = cc_regNotes($badge, $planName, $results['transid'], $results['custid'], $regid, $rowno);
+                $notesData = cc_regNotes($badge, $planName, $results['transid'], $results['custid'], $regid, $rowno);
                 if (array_key_exists('balDue', $badge)) {
                     $amount = $badge['balDue'];
                 } else {
@@ -287,9 +287,9 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                     'uid' => 'badge' . ($lineid + 1),
                     'name' => mb_substr($itemName, 0, 128),
                     'quantity' => 1,
-                    'note' => $regData['note'],
+                    'note' => $notesData['note'],
                     'basePriceMoney' => round($amount * 100),
-                    'metadata' => $regData['metadata'],
+                    'metadata' => $notesData['metadata'],
                 ];
                 if ($taxRate > 0 && array_key_exists('taxable', $badge) && $badge['taxable'] == 'Y') {
                     // create the Line Item tax record, if there is a tax rate, and the membership is taxable
@@ -369,13 +369,14 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                     if ($badge['memId'] == $space['additionalMemId'])
                         $addCount++;
                 }
-                $note = cc_spaceNotes($space, $results['transid'], $incCount, $addCount);
+                $notesData = cc_spaceNotes($space, $results['transid'], $incCount, $addCount);
 
                 $item = [
                     'uid' => 'space-' . $spaceId,
                     'name' => mb_substr($itemName, 0, 128),
                     'quantity' => 1,
-                    'note' => $note,
+                    'note' => $notesData['note'],
+                    'metadata' => $notesData['metadata'],
                     'basePriceMoney' => round($space['approved_price'] * 100),
                 ];
                 $orderLineItems[$lineid] = $item;
@@ -391,13 +392,14 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                     continue;
                 $itemName = 'Mail-in Fee for ' . $fee['name'];
                 $itemPrice = $fee['amount'];
-                $note = cc_mailFeeNotes($fee, $results['transid']);
+                $notesData = cc_mailFeeNotes($fee, $results['transid']);
 
                 $item = [
                     'uid' => 'region-' . $fee['name'],
                     'name' => mb_substr($itemName, 0, 128),
                     'quantity' => 1,
-                    'note' => $note,
+                    'note' => $notesData['note'],
+                    'metadata' => $notesData['metadata'],
                     'basePriceMoney' => round($itemPrice * 100),
                 ];
                 $order_lineitems[$lineid] = $item;

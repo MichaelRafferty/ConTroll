@@ -293,14 +293,14 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
             exit();
         }
 
-        $regData = cc_planNotes($ep, $results['transid']);
+        $notesData = cc_planNotes($ep, $results['transid']);
         $item = new OrderLineItem ([
             'itemType' => OrderLineItemItemType::Item->value,
             'uid' => 'planPayment',
             'name' => mb_substr('Plan Payment: ' .  $planName, 0, 128),
             'quantity' => 1,
-            'note' => $regData['note'],
-            'metadata' => $regData['metadata'],
+            'note' => $notesData['note'],
+            'metadata' => $notesData['metadata'],
             'basePriceMoney' => new Money([
                 'amount' => round($results['total'] * 100),
                 'currency' => $currency,
@@ -429,7 +429,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     $perid = 'tbd';
                 }
 
-                $regData = cc_regNotes($badge, $planName, $results['transid'], $results['custid'], $regid, $rowno);
+                $notesData = cc_regNotes($badge, $planName, $results['transid'], $results['custid'], $regid, $rowno);
                 if (array_key_exists('balDue', $badge)) {
                     $amount = round($badge['balDue'] * 100);
                 } else {
@@ -448,8 +448,8 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     'uid' => 'badge' . ($lineid + 1),
                     'name' => mb_substr($itemName, 0, 128),
                     'quantity' => 1,
-                    'note' => $regData['note'],
-                    'metadata' => $regData['metadata'],
+                    'note' => $notesData['note'],
+                    'metadata' => $notesData['metadata'],
                     'basePriceMoney' => new Money([
                         'amount' => $amount,
                         'currency' => $currency,
@@ -511,14 +511,15 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     if ($badge['memId'] == $space['additionalMemId'])
                         $addCount++;
                 }
-                $note = cc_spaceNotes($space, $results['transid'], $incCount, $addCount);
+                $notesData = cc_spaceNotes($space, $results['transid'], $incCount, $addCount);
 
                 $item = new OrderLineItem([
                     'itemType' => OrderLineItemItemType::Item->value,
                     'uid' => 'space-' . $spaceId,
                     'name' => mb_substr($itemName, 0, 128),
                     'quantity' => 1,
-                    'note' => $note,
+                    'note' => $notesData['note'],
+                    'metadata' => $notesData['metadata'],
                     'basePriceMoney' => new Money([
                         'amount' => round($space['approved_price'] * 100),
                         'currency' => $currency,
@@ -537,13 +538,14 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     continue;
                 $itemName = 'Mail-in Fee for ' . $fee['name'];
                 $itemPrice = $fee['amount'];
-                $note = cc_mailFeeNotes($fee, $results['transid']);
+                $notesData = cc_mailFeeNotes($fee, $results['transid']);
                 $item = new OrderLineItem([
                     'itemType' => OrderLineItemItemType::Item->value,
                     'uid' => 'region-' . str_replace(' ', '-', $fee['name']),
                     'name' => mb_substr($itemName, 0, 128),
                     'quantity' => 1,
-                    'note' => $note,
+                    'note' => $notesData['note'],
+                    'metadata' => $notesData['metadata'],
                     'basePriceMoney' => new Money([
                         'amount' => round($itemPrice * 100),
                         'currency' => $currency,

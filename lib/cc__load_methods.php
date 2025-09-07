@@ -109,28 +109,51 @@ function cc_planNotes($ep, $transId) : array {
 }
 
 // Exhibitor Space Payments
-function cc_spaceNotes($space, $transid, $incCount, $addCount) : string {
-    // exhibitorId~exhibitorNum~regionName~incMbrAllowed~addMbrAllowed~incUsed~addUsed~spaceId~transid~glnum
+function cc_spaceNotes($space, $transid, $incCount, $addCount) : array {
+    // Note: sp.01,regionName,exhibitorId,incMbrAllowed,AddUsed,transid,glnum
+    // MetaData: 9: sp.01,regionName,exhibitorId~exhibitorNum~incMbrAllowed/incMbrUsed~addMbrAllowed/addUsed~spaceId~transid~glnum
 
+    $version = 'sp.01';
     if (array_key_exists('glNum', $space) && $space['glNum'] != '')
         $glNum = $space['glNum'];
     else
         $glNum = '';
 
-    return implode("~", array($space['exhibitorId'], $space['exhibitorNumber'], $space['regionName'],
-        $space['includedMemberships'], $space['additionalMemberships'], $incCount,$addCount, $space['id'], $transid,
-        $glNum));
+    $space['note'] = implode("~", array($version, $space['regionName'], $space['exhibitorId'],
+        $space['includedMemberships'],$addCount, $transid, $glNum));
+
+    $space['metadata'] = array(
+        'version' => $version,
+        'regionName' => $space['regionName'],
+        'exhibitorId' => $space['exhibitorId'],
+        'exhibitorNumber' => $space['exhibitorNumber'],
+        'includedMemberships' => $space['includedMemberships'] . '/' . $incCount,
+        'additionalMemberships' => $space['additionalMemberships'] . '/' . $addCount,
+        'spaceId' => $space['id'],
+        'transId' => $transid,
+        'glNum' => $glNum,
+    );
+
+    return $space;
 }
 
 // exhibitor mail in fee
-function cc_mailFeeNotes($fee, $transid) : string {
-    // name~feeGL
+function cc_mailFeeNotes($fee, $transid) : array {
+    // 'fee.01',name~feeGL
+    $version = 'mail.01';
     if (array_key_exists('glNum', $fee) && $fee['glNum'] != '')
         $glNum = $fee['glNum'];
     else
         $glNum = '';
 
-    return implode("~", array('Mail-in fee', $glNum));
+    $fee['notes'] = implode("~", array($version, $glNum));
+    $fee['metadata'] = array(
+        'version' => $version,
+        'regionName' => $fee['name'],
+        'transId' => $transid,
+        'glNum' => $glNum,
+    );
+    return $fee;
     }
 
 // plan deferement amounts
