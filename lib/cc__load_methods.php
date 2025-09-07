@@ -63,7 +63,7 @@ function cc_regNotes($badge, $planNameSrc, $transid, $custid, $regid, $rowno) : 
     $reg['note'] = implode('~', array($version,$badge['memId'],$perid,$newperid,$transid,$glNum));
     $reg['metadata'] = array(
         'version' => $version,
-        'memId' => $$badge['memId'],
+        'memId' => $badge['memId'],
         'perid' => $perid,
         'newperid' => $newperid,
         'planName' => $planName,
@@ -185,9 +185,9 @@ function cc_artSalesNotes($art, $payorId, $transid) : array {
         $perid = $payorId;
     if ($perid == null)
         $perid = '';
-    $art['notes'] = implode('~', array($version, $perid, $art['exhibitorId'], $art['id'], $art['type'], $transid, ''));
+    $art['note'] = implode('~', array($version, $perid, $art['exhibitorId'], $art['id'], $art['type'], $transid, ''));
     $art['metadata'] = array(
-        'version' => $art['version'],
+        'version' => $version,
         'perId' => $perid,
         'exhibitorId' => $art['exhibitorId'],
         'exhibitorNumber' => $art['exhibitorNumber'],
