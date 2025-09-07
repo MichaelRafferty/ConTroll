@@ -293,13 +293,14 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
             exit();
         }
 
-        $note = cc_planNotes($ep, $results['transid']);
+        $regData = cc_planNotes($ep, $results['transid']);
         $item = new OrderLineItem ([
             'itemType' => OrderLineItemItemType::Item->value,
             'uid' => 'planPayment',
-            'name' => mb_substr('Plan Payment: ' . $note, 0, 128),
+            'name' => mb_substr('Plan Payment: ' .  $planName, 0, 128),
             'quantity' => 1,
-            'note' => $note,
+            'note' => $regData['note'],
+            'metadata' => $regData['metadata'],
             'basePriceMoney' => new Money([
                 'amount' => round($results['total'] * 100),
                 'currency' => $currency,
@@ -428,19 +429,12 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     $perid = 'tbd';
                 }
 
-                $note = cc_regNotes($badge, $planName, $results['transid'], $results['custid']);
+                $regData = cc_regNotes($badge, $planName, $results['transid'], $results['custid'], $regid, $rowno);
                 if (array_key_exists('balDue', $badge)) {
                     $amount = round($badge['balDue'] * 100);
                 } else {
                     $amount = round(($badge['price']-$badge['paid']) * 100);
                 }
-
-                $metadata = array(
-                    'regid' => strval($regid),
-                    'perid' => is_numeric($perid) ? strval($perid) : $perid,
-                    'memid' => strval($badge['memId']),
-                    'rowno' => strval($rowno)
-                );
 
                 if (array_key_exists('complete_trans', $badge) && $badge['complete_trans'] > 0 && $amount == 0)
                     continue; // skip paid complete items in order for sending to square
@@ -454,8 +448,8 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     'uid' => 'badge' . ($lineid + 1),
                     'name' => mb_substr($itemName, 0, 128),
                     'quantity' => 1,
-                    'note' => $note,
-                    'metadata' => $metadata,
+                    'note' => $regData['note'],
+                    'metadata' => $regData['metadata'],
                     'basePriceMoney' => new Money([
                         'amount' => $amount,
                         'currency' => $currency,
@@ -566,7 +560,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
         if (array_key_exists('newplan', $results) && $results['newplan'] == 1) {
             // deferment is total of the items - total of the payment
             $deferment = $orderValue - $results['total'];
-            $note = cc_newPlanNotes($planName, 'TBA', $nonPlanAmt, $downPmt, $balanceDue, $loginPerid, $loginNewperid, $results['transid']);
+            $redData = cc_newPlanNotes($planName, 'TBA', $nonPlanAmt, $downPmt, $balanceDue, $loginPerid, $loginNewperid, $results['transid']);
             // this is the down payment on a payment plan
             $item = new OrderLineItemDiscount ([
                 'uid' => 'planDeferment',

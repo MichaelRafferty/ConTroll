@@ -32,58 +32,80 @@ function load_cc_procs() : void {
     }
 }
 
-// common build the notes fields for the credit card build order routines
+// common build the notes fields for the credit card build order routines, builds notes and metadata
 // Registration order line items
-function cc_regNotes($badge, $planName, $transid, $custid) : string {
-    // memid~perid~newPerid~TransId~planName~custid~GL Num
-    $notesFields = array($badge['memId']);
-    if (array_key_exists('perid', $badge))
-        $notesFields[] = $badge['perid'];
-    else
-        $notesFields[] = '';
+function cc_regNotes($badge, $planNameSrc, $transid, $custid, $regid, $rowno) : array {
+    // notes for alexia: 'reg.01'memid~perid~newperid~transid~glnum
+    // metadata 10: reg.01,memid,perid,newperid,planname,transid,custId,glnum, regid, rowno
 
+    $version = 'reg.01';
     if (array_key_exists('perid', $badge))
-        $notesFields[] = $badge['perid'];
+        $perid = $badge['perid'];
     else
-        $notesFields[] = '';
+        $perid = '';
+
     if (array_key_exists('newperid', $badge))
-        $notesFields[] = $badge['newperid'];
+        $newperid = $badge['newperid'];
     else
-        $notesFields[] = '';
-
-    $notesFields[] = $transid;
-
-    if ($planName != '') {
-        $notesFields[] = $badge['inPlan'] ? $planName : 'NotInPlan';
-    } else {
-        $notesFields[] = '';
-    }
-
-    $notesFields[] = $custid;
+        $newperid = '';
 
     if (array_key_exists('glNum', $badge))
-        $notesFields[] = $badge['glNum'];
+        $glNum = $badge['glNum'];
     else
-        $notesFields[] = '';
+        $glNum = '';
 
-    return implode("~", $notesFields);
+    if ($planNameSrc != '') {
+        $planName = $badge['inPlan'] ? $planNameSrc : 'NotInPlan';
+    } else {
+        $planName = '';
+    }
+
+    $reg['note'] = implode('~', array($version,$badge['memId'],$perid,$newperid,$transid,$glNum));
+    $reg['metadata'] = array(
+        'version' => $version,
+        'memId' => $$badge['memId'],
+        'perid' => $perid,
+        'newperid' => $newperid,
+        'planName' => $planName,
+        'transid' => $transid,
+        'custId' => $custid,
+        'glNum' => $glNum,
+        'regId' => $regid,
+        'rowno' => $rowno,
+    );
+
+    return $reg;
 }
 
 // Payments on Payment Plan items
-function cc_planNotes($ep, $transId) : string {
-    // planId~planName~payorPerid~payorNewPerid~transid
+function cc_planNotes($ep, $transId) : array {
+    // note: 'pplan.01',planId~planName~payorPerid~payorNewPerid~transid
+    // meta: 8: version, planId, planName, payorPeri, payorNewPerid, transId, currentPayment, BalanceDue
+    $version = 'pplan.01';
     $planName = $ep['name'];
     $planId = $ep['id'];
     if ($ep['perid'])
         $payorPerid = $ep['perid'];
     else
         $payorPerid = '';
+
     if ($ep['newperid'])
         $payorNewPerid = $ep['newperid'];
     else
         $payorNewPerid = '';
 
-    return implode("~", array($planId, $planName, $payorPerid, $payorNewPerid, $transId));
+    $plan['note'] = implode("~", array($version, $planId, $planName, $payorPerid, $payorNewPerid, $transId));
+    $plan['metadata'] = array(
+        'version' => $version,
+        'planId' => $planId,
+        'planName' => $planName,
+        'payorPerid' => $payorPerid,
+        'payorNewPerid' => $payorNewPerid,
+        'transId' => $transId,
+        'currentPayment' => $ep['currentPayment'],
+        'balanceDue' => $ep['balanceDue'],
+    );
+    return $plan;
 }
 
 // Exhibitor Space Payments

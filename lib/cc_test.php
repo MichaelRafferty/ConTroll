@@ -151,12 +151,13 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
             exit();
         }
 
-        $note = cc_planNotes($ep, $results['transid']);
+        $regData = cc_planNotes($ep, $results['transid']);
         $item = [
             'uid' => 'planPayment',
-            'name' => mb_substr('Plan Payment: ' . $note, 0, 128),
+            'name' => mb_substr('Plan Payment: ' . $planName, 0, 128),
             'quantity' => 1,
-            'note' => $note,
+            'note' => $regData['note'],
+            'metadata' => $regData['metadata'],
             'basePriceMoney' => round($results['total'] * 100),
         ];
         $orderLineItems[$lineid] = $item;
@@ -271,14 +272,13 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                     $perid = 'tbd';
                 }
 
-                $note = cc_regNotes($badge, $planName, $results['transid'], $results['custid']);
+                $regData = cc_regNotes($badge, $planName, $results['transid'], $results['custid'], $regid, $rowno);
                 if (array_key_exists('balDue', $badge)) {
                     $amount = $badge['balDue'];
                 } else {
                     $amount = $badge['price'] - $badge['paid'];
                 }
 
-                $metadata = array ('regid' => $regid, 'perid' => $perid, 'memid' => $badge['memId'], 'rowno' => $rowno);
                 $addMbr = str_contains(strtolower($badge['shortname']), 'membership') == false &&
                     ($badge['memType'] == 'full' || $badge['memType'] == 'oneday');
                 $itemName =  $badge['fname'] . ': ' . $badge['shortname'] .' ' . ($badge['ageshortname'] != 'All' ? $badge['ageshortname'] : '') .
@@ -287,9 +287,9 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                     'uid' => 'badge' . ($lineid + 1),
                     'name' => mb_substr($itemName, 0, 128),
                     'quantity' => 1,
-                    'note' => $note,
+                    'note' => $regData['note'],
                     'basePriceMoney' => round($amount * 100),
-                    'metadata' => $metadata,
+                    'metadata' => $regData['metadata'],
                 ];
                 if ($taxRate > 0 && array_key_exists('taxable', $badge) && $badge['taxable'] == 'Y') {
                     // create the Line Item tax record, if there is a tax rate, and the membership is taxable
