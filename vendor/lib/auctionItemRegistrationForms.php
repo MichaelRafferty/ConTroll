@@ -41,15 +41,23 @@ function draw_itemRegistrationModal($portalType = '', $showsheets=false, $showco
                 </div>
                 <div class='modal-body' stype='padding: 4px; background-color: lightcyan;'>
                     <div class='container-fluid'>
-                        <?php outputCustomText('items/top');?>
+                        <div class='row'>
+                            <div class='col-sm-12'>
+                                <?php outputCustomText('items/top');?>
+                            </div>
+                        </div>
                         <div class='row'> <?php /* art items */ ?>
-                            <div class='col-sm-auto'>
-                                <h4> Registration for <?php echo $auctionTitle; ?></h4>
-                                <div id='artItemTable'>placeholder</div>
+                            <div class='col-sm-12'>
+                                <h4>Registration for <?php echo $auctionTitle; ?></h4>
                             </div>
                         </div>
                         <div class='row'>
-                            <div class='col-sm-auto m-0 p-0' id='art-buttons'>
+                            <div class='col-sm-12 p-0'>
+                                <div id='artItemTable'></div>
+                            </div>
+                        </div>
+                        <div class='row mt-2'>
+                            <div class='col-sm-12 m-0 p-0' id='art-buttons'>
                                 <button id="art-undo" type="button" class="btn btn-secondary btn-sm" onclick="auctionItemRegistration.undoArt(); return false;" disabled>Undo</button>
                                 <button id="art-redo" type="button" class="btn btn-secondary btn-sm" onclick="auctionItemRegistration.redoArt(); return false;" disabled>Redo</button>
                                 <button id="art-addrow" type="button" class="btn btn-secondary btn-sm" onclick="auctionItemRegistration.addrowArt(); return false;">Add New</button>
@@ -57,13 +65,17 @@ function draw_itemRegistrationModal($portalType = '', $showsheets=false, $showco
                             </div>
                         </div>
                         <div class='row'> <?php /* print items */ ?>
-                            <div class='col-sm-auto'>
+                            <div class='col-sm-12'>
                                 <h4>Registration for <?php echo $salesTitle; ?></h4>
-                                <div id='printItemTable'>placeholder</div>
                             </div>
                         </div>
                         <div class='row'>
-                            <div class='col-sm-auto m-0 p-0' id='print-buttons'>
+                            <div class='col-sm-12 p-0'>
+                                <div id='printItemTable'></div>
+                            </div>
+                        </div>
+                        <div class='row mt-2'>
+                            <div class='col-sm-12 m-0 p-0' id='print-buttons'>
                                 <button id="print-undo" type="button" class="btn btn-secondary btn-sm" onclick="auctionItemRegistration.undoPrint(); return false;" disabled>Undo</button>
                                 <button id="print-redo" type="button" class="btn btn-secondary btn-sm" onclick="auctionItemRegistration.redoPrint(); return false;" disabled>Redo</button>
                                 <button id="print-addrow" type="button" class="btn btn-secondary btn-sm" onclick="auctionItemRegistration.addrowPrint(); return false;">Add New</button>
@@ -71,13 +83,17 @@ function draw_itemRegistrationModal($portalType = '', $showsheets=false, $showco
                             </div>
                         </div>
                         <div class='row'> <?php /* nfs items */ ?>
-                            <div class='col-sm-auto'>
+                            <div class='col-sm-12'>
                                 <h4>Registration for <?php echo $nfsTitle; ?></h4>
-                                <div id='nfsItemTable'>placeholder</div>
                             </div>
                         </div>
                         <div class='row'>
-                            <div class='col-sm-auto m-0 p-0' id='nfs-buttons'>
+                            <div class='col-sm-12 p-0'>
+                                <div id='nfsItemTable'></div>
+                            </div>
+                        </div>
+                        <div class='row mt-2'>
+                            <div class='col-sm-12 m-0 p-0' id='nfs-buttons'>
                                 <button id="nfs-undo" type="button" class="btn btn-secondary btn-sm" onclick="auctionItemRegistration.undoNfs(); return false;" disabled>Undo</button>
                                 <button id="nfs-redo" type="button" class="btn btn-secondary btn-sm" onclick="auctionItemRegistration.redoNfs(); return false;" disabled>Redo</button>
                                 <button id="nfs-addrow" type="button" class="btn btn-secondary btn-sm" onclick="auctionItemRegistration.addrowNfs(); return false;">Add New</button>
@@ -87,7 +103,7 @@ function draw_itemRegistrationModal($portalType = '', $showsheets=false, $showco
                         <?php outputCustomText('items/bottom');?>
                         <hr/>
                         <div class='row'>
-                            <div class='col-sm-auto'>
+                            <div class='col-sm-12'>
                             <h4>Buttons to print out bidsheets and control sheets.</h4>
                             </div>
                         </div>

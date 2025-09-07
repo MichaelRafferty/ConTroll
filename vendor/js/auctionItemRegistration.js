@@ -570,16 +570,17 @@ class AuctionItemRegistration {
             maxHeight: "400px",
             history: true,
             data: data.art,
-            layout: 'fitDataTable',
+            layout: 'fitDataFill', // Note: fitDataTable caused it to not honor the window width and create scoll bar, unsure why
             pagination: data.art.length > 25,
             index: 'item_key',
-            paginationAddRow:"table",
+            paginationAddRow: "table",
             paginationSize: 10,
             paginationSizeSelector: [5, 10, 25, 50, true], //enable page size select element with these options
             columns: [
                 {title: 'id', field: 'id', visible: false},
                 {title: '#', field: 'item_key', width: 50, hozAlign: "right"},
-                {title: 'Title', field: 'title', width: 600, editor: 'input', editable:artItemEditCheck, editorParams: { elementAttributes: { maxlength: "64"} } },
+                {title: 'Title', field: 'title', width: 600, editor: 'input', editable:artItemEditCheck, editorParams: { elementAttributes: { maxlength:
+                 "64"} } },
                 {title: "Material", field: "material", width: 300, editor: 'input', editable:artItemEditCheck, editorParams: { elementAttributes: { maxlength: "32"} } },
                 {title: "Minimim Bid", field: "min_price", headerWordWrap: true, width: 100, hozAlign: "right",
                     editor: 'number', editable:artItemEditCheck, editorParams: {min: 1}, formatter: "money",
@@ -597,7 +598,6 @@ class AuctionItemRegistration {
             _this.dataChangedArt(data);
         });
         this.#artItemTable.on("cellEdited", cellChanged);
-
         this.#artSaveBtn.innerHTML='Save Changes';
         this.#artSaveBtn.disbled=true;
     }
@@ -608,7 +608,7 @@ class AuctionItemRegistration {
             maxHeight: "400px",
             history: true,
             data: data.print,
-            layout: 'fitDataTable',
+            layout: 'fitData', // Note: fitDataTable caused it to not honor the window width and create scoll bar, unsure why
             pagination: data.print.length > 25,
             paginationAddRow:"table",
             paginationSize: 10,
@@ -643,7 +643,7 @@ class AuctionItemRegistration {
             maxHeight: "400px",
             history: true,
             data: data.nfs,
-            layout: 'fitDataTable',
+            layout: 'fitData', // Note: fitDataTable caused it to not honor the window width and create scoll bar, unsure why
             pagination: data.nfs.length > 25,
             paginationAddRow:"table",
             paginationSize: 10,
