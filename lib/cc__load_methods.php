@@ -76,7 +76,7 @@ function cc_regNotes($badge, $planNameSrc, $transid, $custid, $regid, $rowno) : 
     $reg['note'] = implode('~', array($version,$badge['memId'],$perid,$newperid,$transid,$memCategory,$glNum));
     $reg['metadata'] = array(
         'version' => $version,
-        'memId' => cc_metaval($badge['memId']),
+        'memId' => cc__metaval($badge['memId']),
         'perid' => $perid,
         'newperid' => $newperid,
         'planName' => $planName,
@@ -132,12 +132,12 @@ function cc_spaceNotes($space, $transid, $incCount, $addCount) : array {
     $space['metadata'] = array(
         'version' => $version,
         'regionName' => cc__metaval($space['regionName']),
-        'exhibitorId' => cc_metaval($space['exhibitorId']),
-        'exhibitorNumber' => cc_metaval($space['exhibitorNumber']),
+        'exhibitorId' => cc__metaval($space['exhibitorId']),
+        'exhibitorNumber' => cc__metaval($space['exhibitorNumber']),
         'includedMemberships' => strval($space['includedMemberships']) . '/' . strval($incCount),
         'additionalMemberships' => strval($space['additionalMemberships']) . '/' . strval($addCount),
-        'spaceId' => cc_metaval($space['id']),
-        'transId' => cc_metaval($transid),
+        'spaceId' => cc__metaval($space['id']),
+        'transId' => cc__metaval($transid),
         'glNum' => cc__metaval($glNum),
     );
 
@@ -157,8 +157,8 @@ function cc_mailFeeNotes($fee, $transid) : array {
     $fee['metadata'] = array(
         'version' => $version,
         'regionName' => cc__metaval($fee['name']),
-        'transId' => cc_metaval($transid),
-        'glNum' => cc_metaval($glNum),
+        'transId' => cc__metaval($transid),
+        'glNum' => cc__metaval($glNum),
     );
     return $fee;
     }
@@ -170,14 +170,14 @@ function cc_newPlanNotes($planName, $planId, $nonPlanAmt, $downPmt, $balanceDue,
     $newPlan['note'] = implode('~', array($version,$planName, $planId, $nonPlanAmt, $downPmt, $balanceDue, $loginPerid, $loginNewperid, $transid));
     $newPlan['metadata'] = array(
         'version' => $version,
-        'planName' => cc_metaval($planName),
-        'planId' => cc_metaval($planId),
-        'nonPlanAmt' => cc_metaval($nonPlanAmt),
-        'downPmt' => cc_metaval($downPmt),
-        'balanceDue' => cc_metaval($balanceDue),
-        'loginPerid' => cc_metaval($loginPerid),
-        'loginNewperid' => cc_metaval($loginNewperid),
-        'transId' => cc_metaval($transid),
+        'planName' => cc__metaval($planName),
+        'planId' => cc__metaval($planId),
+        'nonPlanAmt' => cc__metaval($nonPlanAmt),
+        'downPmt' => cc__metaval($downPmt),
+        'balanceDue' => cc__metaval($balanceDue),
+        'loginPerid' => cc__metaval($loginPerid),
+        'loginNewperid' => cc__metaval($loginNewperid),
+        'transId' => cc__metaval($transid),
     );
     return $newPlan;
 }
@@ -195,14 +195,14 @@ function cc_artSalesNotes($art, $payorId, $transid) : array {
     $art['note'] = implode('~', array($version, $perid, $art['exhibitorId'], $art['id'], $art['type'], $transid, ''));
     $art['metadata'] = array(
         'version' => $version,
-        'perId' => cc_metaval($perid),
-        'exhibitorId' => cc_metaval($art['exhibitorId']),
-        'exhibitorNumber' => cc_metaval($art['exhibitorNumber']),
-        'artId' => cc_metaval($art['id']),
-        'type' => cc_metaval($art['type']),
-        'artSalesId' =>  cc_metaval($art['artSalesId']),
-        'priceType' => cc_metaval($art['priceType']),
-        'transId' => cc_metaval($transid),
+        'perId' => cc__metaval($perid),
+        'exhibitorId' => cc__metaval($art['exhibitorId']),
+        'exhibitorNumber' => cc__metaval($art['exhibitorNumber']),
+        'artId' => cc__metaval($art['id']),
+        'type' => cc__metaval($art['type']),
+        'artSalesId' =>  cc__metaval($art['artSalesId']),
+        'priceType' => cc__metaval($art['priceType']),
+        'transId' => cc__metaval($transid),
         'glNum' => 'Future'
     );
     return $art;
