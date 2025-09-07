@@ -32,6 +32,13 @@ function load_cc_procs() : void {
     }
 }
 
+function cc__metaval($value) :string {
+    if ($value === null)
+        return 'null';
+    if ($value == '')
+        return 'N/A';
+    return strval($value);
+}
 // common build the notes fields for the credit card build order routines, builds notes and metadata
 // Registration order line items
 function cc_regNotes($badge, $planNameSrc, $transid, $custid, $regid, $rowno) : array {
@@ -40,43 +47,44 @@ function cc_regNotes($badge, $planNameSrc, $transid, $custid, $regid, $rowno) : 
 
     $version = 'reg.01';
     if (array_key_exists('perid', $badge))
-        $perid = $badge['perid'];
+        $perid = cc__metaval($badge['perid']);
     else
-        $perid = '';
+        $perid = 'missing';
 
     if (array_key_exists('newperid', $badge))
-        $newperid = $badge['newperid'];
+        $newperid = cc__metaval($badge['newperid']);
     else
-        $newperid = '';
+        $newperid = 'missing';
 
     if (array_key_exists('memCategory', $badge))
-        $memCategory = $badge['memCategory'];
+        $memCategory = cc__metaval($badge['memCategory']);
     else
-        $memCategory = '';
+        $memCategory = 'missing';
 
-    if (array_key_exists('glNum', $badge))
+    if (array_key_exists('glNum', $badge)) {
         $glNum = $badge['glNum'];
-    else
+    } else {
         $glNum = '';
+    }
 
     if ($planNameSrc != '') {
-        $planName = $badge['inPlan'] ? $planNameSrc : 'NotInPlan';
+        $planName = $badge['inPlan'] !== null ? cc__metaval($planNameSrc) : 'NotInPlan';
     } else {
-        $planName = '';
+        $planName = 'missing';
     }
 
     $reg['note'] = implode('~', array($version,$badge['memId'],$perid,$newperid,$transid,$memCategory,$glNum));
     $reg['metadata'] = array(
         'version' => $version,
-        'memId' => $badge['memId'],
+        'memId' => cc_metaval($badge['memId']),
         'perid' => $perid,
         'newperid' => $newperid,
         'planName' => $planName,
-        'transid' => $transid,
-        'custId' => $custid,
-        'glNum' => $glNum,
-        'regId' => $regid,
-        'rowno' => $rowno,
+        'transid' => cc__metaval($transid ),
+        'custId' => cc__metaval($custid),
+        'glNum' => cc__metaval($glNum),
+        'regId' => cc__metaval($regid),
+        'rowno' => cc__metaval($rowno),
     );
 
     return $reg;
@@ -87,17 +95,10 @@ function cc_planNotes($ep, $transId) : array {
     // note: 'pplan.01',planId~planName~payorPerid~payorNewPerid~transid
     // meta: 8: version, planId, planName, payorPeri, payorNewPerid, transId, currentPayment, BalanceDue
     $version = 'pplan.01';
-    $planName = $ep['name'];
-    $planId = $ep['id'];
-    if ($ep['perid'])
-        $payorPerid = $ep['perid'];
-    else
-        $payorPerid = '';
-
-    if ($ep['newperid'])
-        $payorNewPerid = $ep['newperid'];
-    else
-        $payorNewPerid = '';
+    $planName = $ep['name'] !== null ? cc__metaval($ep['name']) : 'missing';
+    $planId = $ep['id'] !== null ? cc__metaval($ep['id']) : 'missing';
+    $payorPerid = $ep['perid'] !== null ? cc__metaval($ep['perid']) : 'missing';
+    $payorNewPerid = $ep['newperid'] !== null ? cc__metaval($ep['newperid']) : 'missing';
 
     $plan['note'] = implode("~", array($version, $planId, $planName, $payorPerid, $payorNewPerid, $transId));
     $plan['metadata'] = array(
@@ -106,9 +107,9 @@ function cc_planNotes($ep, $transId) : array {
         'planName' => $planName,
         'payorPerid' => $payorPerid,
         'payorNewPerid' => $payorNewPerid,
-        'transId' => $transId,
-        'currentPayment' => $ep['currentPayment'],
-        'balanceDue' => $ep['balanceDue'],
+        'transId' => cc__metaval($transId),
+        'currentPayment' => cc__metaval($ep['currentPayment']),
+        'balanceDue' => cc__metaval($ep['balanceDue']),
     );
     return $plan;
 }
@@ -119,24 +120,25 @@ function cc_spaceNotes($space, $transid, $incCount, $addCount) : array {
     // MetaData: 9: sp.01,regionName,exhibitorId~exhibitorNum~incMbrAllowed/incMbrUsed~addMbrAllowed/addUsed~spaceId~transid~glnum
 
     $version = 'sp.01';
-    if (array_key_exists('glNum', $space) && $space['glNum'] != '')
+    if (array_key_exists('glNum', $space)) {
         $glNum = $space['glNum'];
-    else
+    } else {
         $glNum = '';
+    }
 
     $space['note'] = implode("~", array($version, $space['regionName'], $space['exhibitorId'],
         $space['includedMemberships'],$addCount, $transid, $glNum));
 
     $space['metadata'] = array(
         'version' => $version,
-        'regionName' => $space['regionName'],
-        'exhibitorId' => $space['exhibitorId'],
-        'exhibitorNumber' => $space['exhibitorNumber'],
-        'includedMemberships' => $space['includedMemberships'] . '/' . $incCount,
-        'additionalMemberships' => $space['additionalMemberships'] . '/' . $addCount,
-        'spaceId' => $space['id'],
-        'transId' => $transid,
-        'glNum' => $glNum,
+        'regionName' => cc__metaval($space['regionName']),
+        'exhibitorId' => cc_metaval($space['exhibitorId']),
+        'exhibitorNumber' => cc_metaval($space['exhibitorNumber']),
+        'includedMemberships' => strval($space['includedMemberships']) . '/' . strval($incCount),
+        'additionalMemberships' => strval($space['additionalMemberships']) . '/' . strval($addCount),
+        'spaceId' => cc_metaval($space['id']),
+        'transId' => cc_metaval($transid),
+        'glNum' => cc__metaval($glNum),
     );
 
     return $space;
@@ -146,7 +148,7 @@ function cc_spaceNotes($space, $transid, $incCount, $addCount) : array {
 function cc_mailFeeNotes($fee, $transid) : array {
     // 'fee.01',name~feeGL
     $version = 'mail.01';
-    if (array_key_exists('glNum', $fee) && $fee['glNum'] != '')
+    if (array_key_exists('glNum', $fee))
         $glNum = $fee['glNum'];
     else
         $glNum = '';
@@ -154,9 +156,9 @@ function cc_mailFeeNotes($fee, $transid) : array {
     $fee['note'] = implode("~", array($version, $glNum));
     $fee['metadata'] = array(
         'version' => $version,
-        'regionName' => $fee['name'],
-        'transId' => $transid,
-        'glNum' => $glNum,
+        'regionName' => cc__metaval($fee['name']),
+        'transId' => cc_metaval($transid),
+        'glNum' => cc_metaval($glNum),
     );
     return $fee;
     }
@@ -168,14 +170,14 @@ function cc_newPlanNotes($planName, $planId, $nonPlanAmt, $downPmt, $balanceDue,
     $newPlan['note'] = implode('~', array($version,$planName, $planId, $nonPlanAmt, $downPmt, $balanceDue, $loginPerid, $loginNewperid, $transid));
     $newPlan['metadata'] = array(
         'version' => $version,
-        'planName' => $planName,
-        'planId' => $planId,
-        'nonPlanAmt' => $nonPlanAmt,
-        'downPmt' => $downPmt,
-        'balanceDue' => $balanceDue,
-        'loginPerid' => $loginPerid,
-        'loginNewperid' => $loginNewperid,
-        'transId' => $transid,
+        'planName' => cc_metaval($planName),
+        'planId' => cc_metaval($planId),
+        'nonPlanAmt' => cc_metaval($nonPlanAmt),
+        'downPmt' => cc_metaval($downPmt),
+        'balanceDue' => cc_metaval($balanceDue),
+        'loginPerid' => cc_metaval($loginPerid),
+        'loginNewperid' => cc_metaval($loginNewperid),
+        'transId' => cc_metaval($transid),
     );
     return $newPlan;
 }
@@ -193,15 +195,15 @@ function cc_artSalesNotes($art, $payorId, $transid) : array {
     $art['note'] = implode('~', array($version, $perid, $art['exhibitorId'], $art['id'], $art['type'], $transid, ''));
     $art['metadata'] = array(
         'version' => $version,
-        'perId' => $perid,
-        'exhibitorId' => $art['exhibitorId'],
-        'exhibitorNumber' => $art['exhibitorNumber'],
-        'artId' => $art['id'],
-        'type' => $art['type'],
-        'artSalesId' =>  $art['artSalesId'],
-        'priceType' => $art['priceType'],
-        'transId' => $transid,
-        'glNum' => ''
+        'perId' => cc_metaval($perid),
+        'exhibitorId' => cc_metaval($art['exhibitorId']),
+        'exhibitorNumber' => cc_metaval($art['exhibitorNumber']),
+        'artId' => cc_metaval($art['id']),
+        'type' => cc_metaval($art['type']),
+        'artSalesId' =>  cc_metaval($art['artSalesId']),
+        'priceType' => cc_metaval($art['priceType']),
+        'transId' => cc_metaval($transid),
+        'glNum' => 'Future'
     );
     return $art;
 }
