@@ -35,7 +35,7 @@ function load_cc_procs() : void {
 // common build the notes fields for the credit card build order routines, builds notes and metadata
 // Registration order line items
 function cc_regNotes($badge, $planNameSrc, $transid, $custid, $regid, $rowno) : array {
-    // notes for alexia: 'reg.01'memid~perid~newperid~transid~glnum
+    // notes for alexia: 'reg.01'~memid~perid~newperid~transid~memCategory~glnum
     // metadata 10: reg.01,memid,perid,newperid,planname,transid,custId,glnum, regid, rowno
 
     $version = 'reg.01';
@@ -49,6 +49,11 @@ function cc_regNotes($badge, $planNameSrc, $transid, $custid, $regid, $rowno) : 
     else
         $newperid = '';
 
+    if (array_key_exists('memCategory', $badge))
+        $memCategory = $badge['memCategory'];
+    else
+        $memCategory = '';
+
     if (array_key_exists('glNum', $badge))
         $glNum = $badge['glNum'];
     else
@@ -60,7 +65,7 @@ function cc_regNotes($badge, $planNameSrc, $transid, $custid, $regid, $rowno) : 
         $planName = '';
     }
 
-    $reg['note'] = implode('~', array($version,$badge['memId'],$perid,$newperid,$transid,$glNum));
+    $reg['note'] = implode('~', array($version,$badge['memId'],$perid,$newperid,$transid,$memCategory,$glNum));
     $reg['metadata'] = array(
         'version' => $version,
         'memId' => $badge['memId'],
