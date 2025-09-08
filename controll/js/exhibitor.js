@@ -553,15 +553,15 @@ class exhibitorsAdm {
                     s1: space.b1,
                 };
             }
-            req += space.requested_units == null ? 0 : space.requested_units;
-            app += space.approved_units == null ? 0 : space.approved_units;
-            pur += space.purchased_units == null ? 0 : space.purchased_units;
-            inv += space.invCount == null ? 0 : space.invCount;
-            if (space.transid > 0 && transid == 0)
-                transid = space.transid;
+            req += space.requested_units == null ? 0 : Number(space.requested_units);
+            app += space.approved_units == null ? 0 : Number(space.approved_units);
+            pur += space.purchased_units == null ? 0 : Number(space.purchased_units);
+            inv += space.invCount == null ? 0 : Number(space.invCount);
+            if (Number(space.transid) > 0 && transid == 0)
+                transid = Number(space.transid);
 
             // add the space data as a formatted region
-            if (space.requested_units > 0 || space.approved_units > 0 || space.purchased_units > 0) {
+            if (Number(space.requested_units) > 0 || Number(space.approved_units) > 0 || Number(space.purchased_units) > 0) {
                 // detail first
                 spaceHTML += '<div class="row">' +
                     '<div class="col-sm-12"><STRONG>' + space.spaceName + '</STRONG></div></div>';
@@ -593,16 +593,16 @@ class exhibitorsAdm {
                         '</div>';
                 }
                 // space summary stuff
-                if (space.purchased_units > 0) {
+                if (Number(space.purchased_units) > 0) {
                     spaceStage = 'Purchased';
                     spaceSUMPurchased += space.purchased_description + ' of ' + space.spaceName + "<br/>";
                 }
-                if (space.approved_units > 0) {
+                if (Number(space.approved_units) > 0) {
                     spaceSUMApproved += space.approved_description + ' of ' + space.spaceName + "<br/>";
                     if (spaceStage == '' || spaceStage == 'Requested')
                         spaceStage = 'Approved';
                 }
-                if (space.requested_units > 0) {
+                if (Number(space.requested_units) > 0) {
                     spaceSUMRequested += space.requested_description + ' of ' + space.spaceName + "<br/>";
                     if (spaceStage == '')
                         spaceStage = 'Requested';
