@@ -163,7 +163,7 @@ $response['exhibitorRegionYear'] = $eryID;
 // now the space information for this regionYearId
 $spaceQ = <<<EOS
 SELECT e.*, esp.price as approved_price, esp.includedMemberships, esp.additionalMemberships, s.name, esp.description, ry.exhibitorNumber,
-       y.exhibitorId, ex.exhibitorName, ex.artistName, er.name AS regionName, esp.glNum, esp.glLabel
+       y.exhibitorId, ex.exhibitorName, ex.artistName, er.name AS regionName, esp.glNum, esp.glLabel, ery.includedMemId, ery.additionalMemId
 FROM exhibitorRegionYears ry
 JOIN exhibitorSpaces e ON (e.exhibitorRegionYear = ry.id)
 JOIN exhibitorYears y ON (y.id = ry.exhibitorYearId)
@@ -193,7 +193,7 @@ while ($space =  $spaceR->fetch_assoc()) {
     $additionalMembershipsComputed = max($additionalMembershipsComputed, $space['additionalMemberships']);
 }
 $spaceR->free();
-$mailIn = null;
+$mailIn = [];
 // add in mail-in fee if this exhibitor is using mail-in this year and the fee exist
 if ($region['mailinFee'] > 0 && $exhibitor['mailin'] == 'Y') {
     $mailIn['amount'] = $region['mailinFee'];
@@ -416,10 +416,11 @@ SELECT R.id AS badge,
     NP.email_addr AS email,
     NP.address AS street, NP.city AS city, NP.state AS state, NP.zip AS zip, NP.country AS country,
     NP.id as id, R.price AS price, M.memAge AS age, NP.badge_name AS badgename, NP.legalName, R.memId,
-    M.label, M.memCategory, M.memType, M.glNum, R.perid, R.newperid, R.id AS regId
+    M.label, M.label AS shortname, A.shortname AS ageshortname, M.memCategory, M.memType, M.glNum, R.perid, R.newperid, R.id AS regId
 FROM newperson NP
 JOIN reg R ON (R.newperid=NP.id)
 JOIN memList M ON (M.id = R.memID)
+JOIN ageList A ON (A.ageType = M.memAge AND M.conid = A.conid)
 WHERE NP.transid=?;
 EOS;
 
