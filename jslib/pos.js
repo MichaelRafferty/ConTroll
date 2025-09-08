@@ -2831,8 +2831,8 @@ addUnpaid(tid) {
         var totalPaid = cart.getTotalPaid();
         this.#couponDiscount = Number(this.#couponDiscount);
         var unpaidCouponDiscount = cart.getTotalCouponDiscountUnpaid();
-        if (unpaidCouponDiscount == this.#couponDiscount)
-            totalPaid = 0; // if it's in the membership rows,
+        if (unpaidCouponDiscount === this.#couponDiscount)
+            totalPaid -= this.#couponDiscount; // if it's in the membership rows,
         var total_amount_due = this.#taxAmt + totalCart - (totalPaid + Number(this.#couponDiscount) + Number(this.#managerDiscount));
         if (total_amount_due < 0.01) { // allow for rounding error, no need to round here
             this.#pay_currentOrderId = null;
