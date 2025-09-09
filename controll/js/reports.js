@@ -289,6 +289,9 @@ function drawReport(data) {
                 if (field.format == 'money') {
                     column.formatterParams = { decimal: '.', thousand: ',', negative: true, precision: 2};
                 }
+                if (field.format == 'link') {
+                    column.formatterParams = { target: "_blank" };
+                    }
             }
             if (field.hasOwnProperty('visible')) {
                 if (field.visible == 'true' || field.visible === true)
