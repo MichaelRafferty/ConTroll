@@ -46,6 +46,7 @@
     name=receiptURL
     sql=y.receipt_url
     title="Receipt URL"
+    format=link
 [F025]
     name=purchasedBy
     sql=s.perid
