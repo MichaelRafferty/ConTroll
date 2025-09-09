@@ -54,8 +54,13 @@
     select="SELECT a.regid, count(*) AS printCount"
     tables="FROM regActions a"
     where="WHERE a.action='print' GROUP BY a.regid"
+[P001]
+    type=config
+    section=con
+    item=id
+    datatype=i
 [where]
-    001="m.memType IN ('full', 'oneday') AND r.status = 'paid'"
+    001="m.memType IN ('full', 'oneday') AND r.status = 'paid' and r.conid=?"
 [group]
     001=label, memType, memCategory
 [sort]
