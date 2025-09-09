@@ -519,4 +519,10 @@ BEGIN
 END;;
 DELIMITER ;
 
+/* update artItemsHistory for prices to 11,2 to match artItems, missed in Patch 50
+ */
+ALTER TABLE artItemsHistory MODIFY COLUMN min_price decimal(11,2) NOT NULL DEFAULT 0.00;
+ALTER TABLE artItemsHistory MODIFY COLUMN sale_price decimal(11,2)  NULL;
+ALTER TABLE artItemsHistory MODIFY COLUMN final_price decimal(11,2) NULL;
+
 INSERT INTO patchLog(id, name) VALUES(53, 'moreTerminal');
