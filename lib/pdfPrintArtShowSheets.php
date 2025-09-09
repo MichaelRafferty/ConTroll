@@ -61,7 +61,7 @@ EOS;
     $vendor = get_conf('vendor');
     $title = $vendor['artistPriceTag'];
     if ($title == null || $title == '') {
-        $title = "Unconfigured Print Shop Price Tag";
+        $title = "Unconfigured Print Price Tag";
     }
 
     $useBarCode = false;
@@ -110,7 +110,14 @@ EOS;
     $firstrow = $margin + 0.3;
 
     pushFont('Arial', '', 14);
+    $titleFontSize = 14;
     $titlewidth = $pdf->getStringWidth($title);
+    while ($titlewidth > ($hsize - (2 * $indent)) && $titleFontSize > 12) {
+        $titleFontSize--;
+        popFont();
+        pushFont('Arial', '', $titleFontSize);
+        $titlewidth = $pdf->getStringWidth($title);
+    }
     $titleoffset = ($hsize - (2 * $indent) - $titlewidth) / 2;
     popFont();
 
@@ -158,7 +165,7 @@ EOS;
             // now title header
             $isize = $hsize - 2 * $indent;
             $pdf->Rect($h, $v, $isize, $blockheight);
-            pushFont('Arial', '', 14);
+            pushFont('Arial', '', $titleFontSize);
             centerPrintXY($h, $v + 0.16, $isize - 0.1, $title);
             popFont();
 
@@ -376,6 +383,18 @@ EOS;
     $hsize = ($pdf->GetPageWidth() - 2 * $margin) / $numcols;
     $firstrow = $margin + 0.15;
 
+    pushFont('Arial', '', 14);
+    $titleFontSize = 14;
+    $titlewidth = $pdf->getStringWidth($title);
+    while ($titlewidth > ($hsize - (3 * $indent)) && $titleFontSize > 12) {
+        $titleFontSize--;
+        popFont();
+        pushFont('Arial', '', $titleFontSize);
+        $titlewidth = $pdf->getStringWidth($title);
+    }
+    $titleoffset = ($hsize - (2 * $indent) - $titlewidth) / 2;
+    popFont();
+
 // timestamp for printing when generated
     $createDate = date('Y/m/d h:i:s A');
     $fileDate = date('Y-m-d-H-i-s');
@@ -419,7 +438,7 @@ EOS;
         // now title header
         $isize = $hsize - 2 * $indent;
         $pdf->Rect($h, $v, $isize, $blockheight);
-        pushFont('Arial', '', 14);
+        pushFont('Arial', '', $titleFontSize);
         centerPrintXY($h, $v + 0.16, $isize - 0.1, $title);
         popFont();
 
