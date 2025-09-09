@@ -7,7 +7,7 @@ require_once ("pdfFunctions.php");
 global $pdf;
 $pdf = null;
 
-function pdfPrintShopPriceSheets($regionYearId, $region, $response, $first, $last) {
+function pdfPrintShopPriceSheets($regionYearId, $region, $response, $first = true, $last = true) {
     global $pdf;
 
     $con = get_conf('con');
@@ -227,7 +227,7 @@ EOS;
     return $response;
 }
 
-function pdfPrintBidSheets($regionYearId, $region, $response, $first, $last) {
+function pdfPrintBidSheets($regionYearId, $region, $response, $first = true, $last = true) {
     global $pdf;
 
     $con = get_conf('con');
