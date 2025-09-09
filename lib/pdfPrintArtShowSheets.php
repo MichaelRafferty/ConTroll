@@ -473,12 +473,7 @@ EOS;
             $label = 'Minimum bid amount';
             $length = $pdf->getStringWidth($label);
             printXY($h + ($isize * 0.6) - (0.1 + $length), $v + $priceoffset, $label);
-
-            if ($art['type'] == 'nfs') {
-                $priceFmt = 'N/A';
-            } else {
-                $priceFmt = $dolfmt->formatCurrency((float)$art['min_price'], $currency);
-            }
+            $priceFmt = $dolfmt->formatCurrency((float)$art['min_price'], $currency);
             $pricewidth = $pdf->getStringWidth($priceFmt);
             printXY($h + (0.97 * $isize) - $pricewidth, $v + $priceoffset, $priceFmt);
 
@@ -491,7 +486,7 @@ EOS;
             printXY($h + ($isize * 0.6) - (0.1 + $length), $v + $priceoffset, $label);
 
             $price = $art['sale_price'];
-            if ($price > 0 && $art['type'] != 'nfs') {
+            if ($price > 0) {
                 $priceFmt = $dolfmt->formatCurrency((float)$art['sale_price'], $currency);
             } else {
                 $priceFmt = "N/A";
@@ -552,10 +547,12 @@ EOS;
             $pdf->code128($h + $indent, $v + $labelOffset, $barcodeData, ($isize - (2 * $indent)) / 1.5, $blockheight - (2 * $labelOffset));
         }
 
-        $headerEnd = $v + $blockheight;
-        pushLineWidth(0.024);
-        $pdf->Rect($h, $headerStart, $isize, $headerEnd - $headerStart);
-        popLineWidth();
+        if ($art['type'] != 'nfs') {
+            $headerEnd = $v + $blockheight;
+            pushLineWidth(0.024);
+            $pdf->Rect($h, $headerStart, $isize, $headerEnd - $headerStart);
+            popLineWidth();
+        }
     }
 
     if ($first) {
