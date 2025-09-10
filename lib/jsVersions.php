@@ -23,5 +23,5 @@ $libJSversion = '1.4.1l';
 $controllJSversion = '1.4.1l';
 $globalJSversion = '1.4.1l';
 $atJSversion = '1.4.1l';
-$exhibitorJSversion = '1.4.1l';
+$exhibitorJSversion = '1.4.1m';
 $onlineregJSversion = '1.4.1l';
