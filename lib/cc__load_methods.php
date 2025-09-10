@@ -125,6 +125,10 @@ function cc_spaceNotes($space, $transid, $incCount, $addCount) : array {
     } else {
         $glNum = '';
     }
+    if (array_key_exists('exhibitorNumber', $space))
+        $exhNum = $space['exhibitorNumber'];
+    else
+        $exhNum = '';
 
     $space['note'] = implode("~", array($version, $space['regionName'], $space['exhibitorId'],
         $space['includedMemberships'],$addCount, $transid, $glNum));
@@ -133,7 +137,7 @@ function cc_spaceNotes($space, $transid, $incCount, $addCount) : array {
         'version' => $version,
         'regionName' => cc__metaval($space['regionName']),
         'exhibitorId' => cc__metaval($space['exhibitorId']),
-        'exhibitorNumber' => cc__metaval($space['exhibitorNumber']),
+        'exhibitorNumber' => cc__metaval($exhNum),
         'includedMemberships' => strval($space['includedMemberships']) . '/' . strval($incCount),
         'additionalMemberships' => strval($space['additionalMemberships']) . '/' . strval($addCount),
         'spaceId' => cc__metaval($space['id']),
@@ -192,12 +196,17 @@ function cc_artSalesNotes($art, $payorId, $transid) : array {
         $perid = $payorId;
     if ($perid == null)
         $perid = '';
+    if (array_key_exists('exhibitorNumber', $art))
+        $exhNum = $art['exhibitorNumber'];
+    else
+        $exhNum = '';
     $art['note'] = implode('~', array($version, $perid, $art['exhibitorId'], $art['id'], $art['type'], $transid, ''));
+
     $art['metadata'] = array(
         'version' => $version,
         'perId' => cc__metaval($perid),
         'exhibitorId' => cc__metaval($art['exhibitorId']),
-        'exhibitorNumber' => cc__metaval($art['exhibitorNumber']),
+        'exhibitorNumber' => cc__metaval($exhNum),
         'artId' => cc__metaval($art['id']),
         'type' => cc__metaval($art['type']),
         'artSalesId' =>  cc__metaval($art['artSalesId']),
