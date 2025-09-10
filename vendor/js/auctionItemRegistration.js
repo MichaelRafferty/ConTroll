@@ -255,7 +255,6 @@ class AuctionItemRegistration {
     // deal with tab at end to add a row
     tabNewRow()  {
         // recompute and warn if over the limit
-        this.#maxItems = 9;
         this.validateLoadLimit(true);
         this.#addItemIndex++;
         if (this.#numItems >= this.#maxItems) { // note: >= because the new row hasn't been added yet.
