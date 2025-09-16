@@ -641,7 +641,7 @@ function draw_cart() {
 
     //clear buttons
     startover_button.hidden = num_rows == 0;
-    inventory_update_button.hidden = !((num_rows > 0) & (need_count == 0) & (need_location == 0));
+    inventory_update_button.hidden = !((num_rows > 0) & (need_count == 0)); // & (need_location == 0));
     location_change_button.hidden = (locations_changed == 0);
 }
 
