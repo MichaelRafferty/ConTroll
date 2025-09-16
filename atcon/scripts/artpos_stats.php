@@ -26,13 +26,14 @@ if (!check_atcon('artsales', $conid)) {
 }
 
 // load stats
-
+$inlineInventory = getConfValue('atcon', 'inlineinventory', 1);
+$allowBid = $inlineInventory == 1 ? '' : " AND a.status != 'BID'";
 $activeQ = <<<EOS
 SELECT a.bidder AS perid, TRIM(CONCAT_WS(' ', p.first_name, p.last_name)) AS name, COUNT(*) AS items
 FROM artItems a
 LEFT OUTER JOIN artSales s ON a.id = s.artid
 JOIN perinfo p ON p.id = a.bidder
-WHERE conid = ? AND (s.status IS NULL OR s.status != 'Purchased/Released')
+WHERE conid = ? AND (s.status IS NULL OR s.status != 'Purchased/Released')$allowBid
 GROUP BY a.bidder, TRIM(CONCAT_WS(' ', p.first_name, p.last_name)) ;
 EOS;
 

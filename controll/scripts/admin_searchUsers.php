@@ -1,7 +1,6 @@
 <?php
-
+// ConTroll Registration System, Copyright 2015-2025, Michael Rafferty, Licensed under the GNU Affero General Public License, Version 3.
 // library AJAX Processor: admin_searchUsers.php
-// Balticon Registration System
 // Author: Syd Weinstein
 // search the perinfo table for matches for adding a user to atcon
 
@@ -61,7 +60,7 @@ SELECT p.id, first_name, last_name, badge_name, email_addr
 FROM perinfo p
 LEFT OUTER JOIN atcon_user a ON (a.perid = p.id and a.conid = ?)
 WHERE a.id is NULL AND
-    (LOWER(TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name), '  *', ' '))) LIKE ? OR LOWER(badge_name) LIKE ?);
+    (LOWER(TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name), ' +', ' '))) LIKE ? OR LOWER(badge_name) LIKE ?);
 EOS;
     $search_string = '%' . str_replace(' ', '%', $search_string) . '%';
     $typestr = 'iss';

@@ -589,7 +589,6 @@ class exhibitssetup {
 
         this.#regionTypedirty = false;
         this.#regionTypeTable = new Tabulator('#regionType-div', {
-            maxHeight: "800px",
             history: true,
             movableRows: true,
             data: this.#regionType,
@@ -665,7 +664,6 @@ class exhibitssetup {
 
         this.#regiondirty = false;
         this.#regionsTable = new Tabulator('#regions-div', {
-            maxHeight: "800px",
             history: true,
             movableRows: true,
             data: this.#regions,
@@ -691,7 +689,7 @@ class exhibitssetup {
                 },
                 {title: "Edit", formatter: this.editbutton, formatterParams: {table: 'Regions', fieldName: 'description', name: 'name' },
                     hozAlign:"left", headerSort: false },
-                {title: "Description", field: "description", headerFilter: true, width: 500, headerSort: false,},
+                {title: "Description", field: "description", headerFilter: true, width: 500, headerSort: false, formatter: "html", },
                 {title: "Sort Order", field: "sortorder", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 90,},
                 {title: "Orig Key", field: "regionKey", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 200,},
                 {
@@ -742,7 +740,6 @@ class exhibitssetup {
 
         this.#regionYeardirty = false;
         this.#regionYearsTable = new Tabulator('#regionYears-div', {
-            maxHeight: "800px",
             history: true,
             movableRows: true,
             data: this.#regionYears,
@@ -763,7 +760,7 @@ class exhibitssetup {
                         deleterow(e, cell.getRow());
                     }
                 },
-                {title: "ID", field: "id", width: 50, hozAlign: "right", headerSort: false, formatter: this.formatId },
+                {title: "ID", field: "id", width: 80, hozAlign: "right", headerSort: false, formatter: this.formatId },
                 {title: "&bigstar;Conid", field: "conid", width: 80, hozAlign: "right", headerSort: false, visible: false },
                 {
                     title: "&bigstar;Exhibits Region", field: "exhibitsRegion", headerSort: true, width: 150, headerWordWrap: true, headerFilter: true, headerFilterParams: {values: this.#regionListArr},
@@ -845,7 +842,6 @@ class exhibitssetup {
 
         this.#spacedirty = false;
         this.#spacesTable = new Tabulator('#spaces-div', {
-            maxHeight: "800px",
             history: true,
             movableRows: true,
             data: this.#spaces,
@@ -922,7 +918,6 @@ class exhibitssetup {
 
         this.#spacePricedirty = false;
         this.#spacePricesTable = new Tabulator('#spacePrices-div', {
-            maxHeight: "800px",
             history: true,
             movableRows: true,
             data: this.#spacePrices,

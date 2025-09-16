@@ -1,6 +1,6 @@
 <?php
 require_once "lib/base.php";
-require_once '../lib/policies.php';
+//require_once '../lib/policies.php';
 require_once '../lib/profile.php';
 
 //initialize google session
@@ -13,7 +13,6 @@ $conid = $con['id'];
 
 $conf = get_conf('con');
 $google = get_conf('google');
-$debug = get_conf('debug');
 $usps = get_conf('usps');
 $url = $google['redirect_base'];
 
@@ -56,27 +55,20 @@ page_init($page,
         $freeSelect .= "<option value='" . $free['id'] . "'>" . $free['label'] . "</option>\\n";
     }
 
-if (array_key_exists('controll_freebadge', $debug))
-    $debug_freebadge=$debug['controll_freebadge'];
-else
-    $debug_freebadge = 0;
-
 $useUSPS = false;
 if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
     $useUSPS = true;
 
-$policies = getPolicies();
 $config_vars = array();
 $config_vars['label'] = $con['label'];
 $config_vars['regadminemail'] = $conf['regadminemail'];
-$config_vars['debug'] = $debug_freebadge;
+$config_vars['debug'] = getConfValue('debug', 'controll_freebadge', 0);;
 $config_vars['conid'] = $conid;
 $config_vars['required'] = getConfValue('reg', 'required', 'addr');
 $config_vars['useUSPS'] = $useUSPS;
 ?>
 <script type='text/javascript'>
     var config = <?php echo json_encode($config_vars); ?>;
-    var policies = <?php echo json_encode($policies, JSON_FORCE_OBJECT | JSON_HEX_QUOT); ?>;
     var freeMems = <?php echo json_encode($freeMems, JSON_FORCE_OBJECT | JSON_HEX_QUOT); ?>;
     var freeSelect = <?php echo json_encode($freeSelect, JSON_FORCE_OBJECT | JSON_HEX_QUOT); ?>;
 </script>
@@ -93,13 +85,13 @@ $config_vars['useUSPS'] = $useUSPS;
             <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
                 <div class='container-fluid'>
                     <div class='row mt-2'>
-                        <div class='col-sm-12'><h2 class='size=h3'>Profile/Policies</h2></div>
+                        <div class='col-sm-12'><h2 class='size=h3'>Profile</h2></div>
                     </div>
                     <?php
-                        drawEditPersonBlock($conid, $useUSPS, $policies, 'find', true, true, '', array (), 200, true, 'f_');
+                        drawEditPersonBlock($conid, $useUSPS, null, 'find', true, true, '', array (), 200, true, 'f_', true);
                     ?>
                 </div>
-                <div id='find_edit_message' class='mt-4 p-2'></div>l
+                <div id='find_edit_message' class='mt-4 p-2'></div>
             </div>
             <div class='modal-footer'>
                 <button class='btn btn-sm btn-secondary' type='button' data-bs-dismiss='modal'>Cancel</button>
@@ -121,14 +113,14 @@ $config_vars['useUSPS'] = $useUSPS;
             <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
                 <div class='container-fluid'>
                     <div class='row mt-2'>
-                        <div class='col-sm-12'><h2 class='size=h3'>Profile/Policies</h2></div>
+                        <div class='col-sm-12'><h2 class='size=h3'>Profile</h2></div>
                     </div>
                     <?php
-                        drawEditPersonBlock($conid, $useUSPS, $policies, 'add', true, true, '', array (), 1000, true, 'a_');
+                        drawEditPersonBlock($conid, $useUSPS, null, 'add', true, true, '', array (), 1000, true, 'a_', true);
                     ?>
-                </div>
-                <div class='row mt-2'>
-                    <div class='col-sm-12' id='addMatchTable'></div>
+                    <div class='row mt-2'>
+                        <div class='col-sm-12' id='addMatchTable'></div>
+                    </div>
                 </div>
                 <div id='add_message' class='mt-4 p-2'></div>
             </div>

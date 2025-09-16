@@ -70,7 +70,7 @@ $dirName = $cwdArray[$last];
 $depoName = $cwdArray[$last - 1];
 $siteName = $cwdArray[$last - 2];
 
-if ($dirName != 'install' || ($depoName != $systemName && $depoName != 'ConTroll' && $depotName != 'BalticonReg')) {
+if ($dirName != 'install' || ($depoName != $systemName && $depoName != 'ConTroll')) {
     echo "This program must be run from the install directory in the depot, not $cwd" . PHP_EOL;
     exit(3);
 }

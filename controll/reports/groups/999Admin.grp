@@ -1,0 +1,16 @@
+[group]
+	name=Admin
+	description="Admin Health Reports"
+	auth=admin
+[100InterestDups]
+	name="Duplicate Interests"
+	description="Members that have more than one copy of an interest for any con year"
+	template=admin_interestDuplicates.rpt
+	auth=admin
+	type=rpt
+[100PolicyDups]
+	name="Duplicate Policies"
+	description="Members that have more than one copy of an policy for any con year"
+	template=admin_policyDuplicates.rpt
+	auth=admin
+	type=rpt

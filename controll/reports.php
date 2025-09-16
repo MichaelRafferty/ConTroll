@@ -24,16 +24,9 @@ $con = get_conf("con");
 $controll = get_conf("controll");
 $conid=$con['id'];
 
-$debug = get_conf('debug');
-
-if (array_key_exists('controll_reports', $debug))
-    $debug_reports=$debug['controll_reports'];
-else
-    $debug_reports = 0;
-
 $config_vars = array();
 $config_vars['pageName'] = 'reports';
-$config_vars['debug'] = $debug_reports;
+$config_vars['debug'] = getConfValue('debug', 'controll_reports', 0);
 $config_vars['conid'] = $conid;
 
 // loop ver the groups directory and local groups directory finding groups to make into tabs
@@ -171,7 +164,14 @@ EOS;
                 if (!str_starts_with($keys[$i], 'P'))
                     continue;
 
-                $prompts[] = explode('/~/', $rpt[$keys[$i]]);
+                $prompt = explode('/~/', $rpt[$keys[$i]]);
+                if (count($prompt) > 4) {
+                    $default = $prompt[4];
+                    if (preg_match('/^#.+#$/', $default)) {
+                        $prompt[4] = replaceConfigTokens($default);
+                    }
+                }
+                $prompts[] = $prompt;
             }
             $tab = str_replace(' ', '-', $name);
             if (count($prompts) > 0) {

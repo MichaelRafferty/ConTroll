@@ -48,29 +48,24 @@ EOS;
             $need_new = $eyDefL['need_new'];
             $eyDefR->free();
         } else {
-            $contactPassword = password_hash(trim($contactPassword), PASSWORD_DEFAULT);
+            $contactPassword = password_hash(trim(ifnull($contactPassword,'')), PASSWORD_DEFAULT);
         }
         $eyinsq = <<<EOS
 INSERT INTO exhibitorYears(conid, exhibitorId, contactName, contactEmail, contactPhone, contactPassword, mailin, need_new, lastVerified, notes)
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 EOS;
         $typestr = 'iisssssiss';
-        if ($conNotes != null) {
-            $conNotes = trim($conNotes);
-            if ($conNotes == '')
-                $conNotes = 'null';
-        }
         $paramArray = array(
             $conid,
             $exhibitor,
-            trim($contactName),
-            trim($contactEmail),
-            trim($contactPhone),
+            trim(ifnull($contactName, '')),
+            trim(ifnull($contactEmail,'')),
+            trim(ifnull($contactPhone,'')),
             $contactPassword,
             $mailin,
             $need_new,
             '2001/01/01',
-            $conNotes
+            trim(ifnull($conNotes,''))
         );
         $newyrid = dbSafeInsert($eyinsq, $typestr, $paramArray);
     } else if ($last_year < $conid) {
@@ -87,7 +82,7 @@ SELECT ?, exhibitorId, contactName, contactEmail, contactPhone, contactPassword,
 FROM exhibitorYears
 WHERE conid = ? AND exhibitorId = ?;
 EOS;
-        $newyrid = dbSafeInsert($eyinsQ, 'isii', array($conid, $conNotes, $last_year, $exhibitor));
+        $newyrid = dbSafeInsert($eyinsQ, 'isii', array($conid, ifnull($conNotes, ''), $last_year, $exhibitor));
     } else {
         // with the new partial exhibits region fill out, we need to return the eyID in all cases
         $eyselQ = <<<EOS

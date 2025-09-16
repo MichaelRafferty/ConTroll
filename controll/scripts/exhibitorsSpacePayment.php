@@ -163,7 +163,7 @@ $response['exhibitorRegionYear'] = $eryID;
 // now the space information for this regionYearId
 $spaceQ = <<<EOS
 SELECT e.*, esp.price as approved_price, esp.includedMemberships, esp.additionalMemberships, s.name, esp.description, ry.exhibitorNumber,
-       y.exhibitorId, ex.exhibitorName, ex.artistName, er.name AS regionName, esp.glNum, esp.glLabel
+       y.exhibitorId, ex.exhibitorName, ex.artistName, er.name AS regionName, esp.glNum, esp.glLabel, ery.includedMemId, ery.additionalMemId
 FROM exhibitorRegionYears ry
 JOIN exhibitorSpaces e ON (e.exhibitorRegionYear = ry.id)
 JOIN exhibitorYears y ON (y.id = ry.exhibitorYearId)
@@ -193,7 +193,7 @@ while ($space =  $spaceR->fetch_assoc()) {
     $additionalMembershipsComputed = max($additionalMembershipsComputed, $space['additionalMemberships']);
 }
 $spaceR->free();
-$mailIn = null;
+$mailIn = [];
 // add in mail-in fee if this exhibitor is using mail-in this year and the fee exist
 if ($region['mailinFee'] > 0 && $exhibitor['mailin'] == 'Y') {
     $mailIn['amount'] = $region['mailinFee'];
@@ -416,10 +416,11 @@ SELECT R.id AS badge,
     NP.email_addr AS email,
     NP.address AS street, NP.city AS city, NP.state AS state, NP.zip AS zip, NP.country AS country,
     NP.id as id, R.price AS price, M.memAge AS age, NP.badge_name AS badgename, NP.legalName, R.memId,
-    M.label, M.memCategory, M.memType, M.glNum, R.perid, R.newperid, R.id AS regId
+    M.label, M.label AS shortname, A.shortname AS ageshortname, M.memCategory, M.memType, M.glNum, R.perid, R.newperid, R.id AS regId
 FROM newperson NP
 JOIN reg R ON (R.newperid=NP.id)
 JOIN memList M ON (M.id = R.memID)
+JOIN ageList A ON (A.ageType = M.memAge AND M.conid = A.conid)
 WHERE NP.transid=?;
 EOS;
 
@@ -481,14 +482,14 @@ if ($prow != null && $prow['type'] != 'credit') {
 
     $upT = <<<EOS
 UPDATE transaction
-SET price = ?, tax = ?, withTax = ?, couponDiscountCart = ?
+SET price = ?, tax = ?, withTax = ?, couponDiscountCart = ?, orderId = ?, paymentStatus = 'ORDER', orderDate = now()
 WHERE id = ?;
 EOS;
 
     $preTaxAmt = $orderRtn['preTaxAmt'];
     $taxAmt = $orderRtn['taxAmt'];
     $withTax = $orderRtn['totalAmt'];
-    $rows_upd = dbSafeCmd($upT, 'ddddi', array($preTaxAmt, $taxAmt, $withTax, 0, $transid));
+    $rows_upd = dbSafeCmd($upT, 'ddddsi', array($preTaxAmt, $taxAmt, $withTax, 0, $orderRtn['orderId'], $transid));
 }
 
 if ($totprice > 0) {
@@ -598,16 +599,16 @@ if ($totprice > 0) {
 // extract the values needed for the payment
 if ($prow != null) {
     $txnQ = <<<EOS
-INSERT INTO payments (transid, type, category, description, source, pretax, tax, amount, time, nonce, cc_approval_code, txn_time, userPerid)
-VALUES (?,?,?,?,?,?,?,?,NOW(),?,?,NOW(),?);
+INSERT INTO payments (transid, type, category, description, source, pretax, tax, amount, time, nonce, cc_approval_code, txn_time, userPerid, ccPaymentId)
+VALUES (?,?,?,?,?,?,?,?,NOW(),?,?,NOW(),?,?);
 EOS;
-    $typestr = 'issssdddssi';
+    $typestr = 'issssdddssis';
     if ($paymentType == 'check') {
         $desc = 'Check No: ' . $_POST['pay-checkno'] . ', ' . $payDesc;
     } else {
         $desc = $payDesc;
     }
-    $values = array ($transid, $paymentType, 'vendor', $desc, $source, $totprice, 0, $totprice, 'admin', $ccAuth, $_SESSION['user_perid']);
+    $values = array ($transid, $paymentType, 'vendor', $desc, $source, $totprice, 0, $totprice, 'admin', $ccAuth, $_SESSION['user_perid'], $paymentId);
 
     $txnid = dbSafeInsert($txnQ, $typestr, $values);
     if ($txnid == false) {
@@ -626,11 +627,12 @@ if ($approved_amt == $totprice) {
     $txnUpdate .= 'complete_date=current_timestamp(), ';
 }
 
-$txnUpdate .= 'paid=?, withtax=price WHERE id=?;';
-$txnU = dbSafeCmd($txnUpdate, 'di', array($approved_amt, $transid));
+$txnUpdate .= 'paid=?,  ccPaymentId = ?, paymentStatus = ? WHERE id=?;';
+$txnU = dbSafeCmd($txnUpdate, 'dssi', array($approved_amt, $rtn['paymentId'], $rtn['status'], $transid));
 if ($txnU != 1) {
     $error_msg .= "Unable to mark transaction completed\n";
 }
+
 // reg (badge)
 $regQ = "UPDATE reg SET paid=price, status='paid', complete_trans=? WHERE create_trans=?;";
 $numrows = dbSafeCmd($regQ, 'ii', array($transid, $transid));
@@ -822,32 +824,32 @@ function buildBadge($fields, $type, $index, $region, $conid, $transid, $portalNa
 SELECT id
 FROM perinfo p
 WHERE
-	REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.first_name)), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.middle_name)), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.last_name)), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.suffix)), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.email_addr)), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.phone)), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.badge_name)), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.address)), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.addr_2)), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.city)), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.state)), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.zip)), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.country)), '  *', ' ');
+	REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.first_name)), ' +', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.middle_name)), ' +', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.last_name)), ' +', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.suffix)), ' +', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.email_addr)), ' +', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.phone)), ' +', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.badge_name)), ' +', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.address)), ' +', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.addr_2)), ' +', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.city)), ' +', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.state)), ' +', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.zip)), ' +', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.country)), ' +', ' ');
 EOF;
     $value_arr = array($badge['fname'], $badge['mname'], $badge['lname'], $badge['suffix'], $badge['email'], $badge['phone'], $badge['badgename'],
                 $badge['addr'], $badge['addr2'], $badge['city'], $badge['state'], $badge['zip'], $badge['country']);

@@ -29,6 +29,19 @@ function drawPoliciesBlock($policies, $tabIndexStart, $idPrefix = '') {
     if ($policies === null || count($policies) == 0) {
         return;
     }
+    $filter = getConfValue('portal', 'customtext', 'production');
+    loadCustomText('profile', 'all', $filter, true);
+    $header = returnCustomText('policies/header', 'profile/all/');
+    $footer = returnCustomText('policies/footer', 'profile/all/');
+    if ($header != '') {
+        ?>
+        <div class='row'>
+            <div class='col-sm-auto'>
+                <?php  echo $header . PHP_EOL; ?>
+            </div>
+        </div>
+        <?php
+    }
     $tabindex = $tabIndexStart;
     foreach ($policies as $policy) {
         $name = $policy['policy'];
@@ -76,6 +89,15 @@ function drawPoliciesBlock($policies, $tabIndexStart, $idPrefix = '') {
     </div>
 </div>
 <?php
+    }
+    if ($footer != '') {
+        ?>
+        <div class='row'>
+            <div class='col-sm-auto'>
+                <?php  echo $footer . PHP_EOL; ?>
+            </div>
+        </div>
+        <?php
     }
 }
 

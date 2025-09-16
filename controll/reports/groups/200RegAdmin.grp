@@ -2,6 +2,13 @@
 	name="RegAdmin"
 	description="Registration Admin Reports"
 	auth=reg_admin
+[050ExpiringRegs]
+    name="New Without Membership"
+    description="New Accounts that didn't buy a membrership"
+    template=new_noreg.rpt
+    auth=reg_admin
+    type=rpt
+    P001="prompt/~/startDate/~/Start Date: /~/Enter Start Creation Date (YYYY-MM-DD)"
 [100ExpiringRegs]
     name="Expiring Registrations"
     description="Unpaid Registrations with their 'expire' (rate change) date"
@@ -17,15 +24,28 @@
 	P001="prompt/~/perid/~/History for: /~/Enter Person's Perid"
 [300NoShows]
     name="No Shows"
-    description="No Shows for a convention year"
+    description="No Shows for a convention year (paid badges never printed)"
     template=reg_noshows.rpt
     auth=reg_admin
     type=rpt
-    P001="prompt/~/conid/~/No shows for: /~/Conid (number only)"
+    P001="prompt/~/conid/~/No shows for: /~/Conid (number only)/~/#con.id#"
 [400AllRegEmails]
     name="Registration Emails"
     description="All Email Address for those registered"
     template=reg_allemails.rpt
     auth=reg_admin
     type=rpt
-    P001="prompt/~/conid/~/Registered Peoples Emails for: /~/Conid (number only)"
+    P001="prompt/~/conid/~/Registered Peoples Emails for: /~/Conid (number only)/~/#con.id#"
+[500RegReport]
+    name="Registration Report"
+    description="All registrations with price, paid and print status"
+    template="reg_report.rpt"
+    auth=reg_admin
+    type=rpt
+    P001="prompt/~/conid/~/Registration report for: /~/Conid (number only)/~/#con.id#"
+[600Attendance]
+    name="Current Attendance"
+    description="Badges Printed by Label for this year"
+    template=attendance.rpt
+    auth=reg_admin
+    type=rpt

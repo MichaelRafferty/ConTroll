@@ -127,11 +127,7 @@ function cc_getCurrency($con) : string {
 function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : array {
     $cc = get_conf('cc');
     $con = get_conf('con');
-    $debug = get_conf('debug');
-    if (array_key_exists('square', $debug))
-        $squareDebug = $debug['square'];
-    else
-        $squareDebug = 0;
+    $squareDebug = getConfValue('debug', 'square', 0);
     $id = null;
 
     $client = new SquareClient(
@@ -146,6 +142,8 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
         $userType = getSessionVar('idType');
         if ($userType == 'p')
             $loginPerid = getSessionVar('id');
+        else
+            $loginNewperid = getSessionVar('id');
     }
 
     // square order api steps
@@ -295,13 +293,14 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
             exit();
         }
 
-        $note = "Plan Id: $planId, Name: $planName, Perid: $loginPerid";
+        $notesData = cc_planNotes($ep, $results['transid']);
         $item = new OrderLineItem ([
             'itemType' => OrderLineItemItemType::Item->value,
             'uid' => 'planPayment',
-            'name' => mb_substr('Plan Payment: ' . $note, 0, 128),
+            'name' => mb_substr('Plan Payment: ' .  $planName, 0, 128),
             'quantity' => 1,
-            'note' => $note,
+            'note' => $notesData['note'],
+            'metadata' => $notesData['metadata'],
             'basePriceMoney' => new Money([
                 'amount' => round($results['total'] * 100),
                 'currency' => $currency,
@@ -329,13 +328,15 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 $priceType = $art['priceType'];
                 $quantity = $art['purQuantity'];
                 $amount = $art['amount'];
+                $notesData = cc_artSalesNotes($art, $results['payorId'], $results['transid']);
 
                 $item = new OrderLineItem([
                     'itemType' => OrderLineItemItemType::Item->value,
                     'uid' => 'art-' . ($lineid + 1),
                     'name' => mb_substr($artistName, 0, 50) . ' / ' . mb_substr($title, 0, 70),
                     'quantity' => $quantity,
-                    'note' => $artId . ':' . $artistNumber . ',' . $itemKey . '; ' . $type . ',' . $priceType,
+                    'note' => $notesData['note'],
+                    'metadata' => $notesData['metadata'],
                     'basePriceMoney' => new Money([
                         'amount' => round($amount * 100 / $quantity),
                         'currency' => $currency,
@@ -429,26 +430,12 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     $perid = 'tbd';
                 }
 
-                $note = $badge['memId'] . ',' . $id . ',' . $regid . ': memId, p/n id, regid';
-                if ($planName != '') {
-                    $note .= ($badge['inPlan'] ? (', Plan: ' . $planName) : ', NotInPlan');
-                }
-                if (array_key_exists('glNum', $badge) && $badge['glNum'] != '') {
-                    $note .= ', ' . $badge['glNum'];
-                }
-
+                $notesData = cc_regNotes($badge, $planName, $results['transid'], $results['custid'], $regid, $rowno);
                 if (array_key_exists('balDue', $badge)) {
                     $amount = round($badge['balDue'] * 100);
                 } else {
                     $amount = round(($badge['price']-$badge['paid']) * 100);
                 }
-
-                $metadata = array(
-                    'regid' => strval($regid),
-                    'perid' => is_numeric($perid) ? strval($perid) : $perid,
-                    'memid' => strval($badge['memId']),
-                    'rowno' => strval($rowno)
-                );
 
                 if (array_key_exists('complete_trans', $badge) && $badge['complete_trans'] > 0 && $amount == 0)
                     continue; // skip paid complete items in order for sending to square
@@ -462,8 +449,8 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     'uid' => 'badge' . ($lineid + 1),
                     'name' => mb_substr($itemName, 0, 128),
                     'quantity' => 1,
-                    'note' => $note,
-                    'metadata' => $metadata,
+                    'note' => $notesData['note'],
+                    'metadata' => $notesData['metadata'],
                     'basePriceMoney' => new Money([
                         'amount' => $amount,
                         'currency' => $currency,
@@ -517,18 +504,23 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 } else {
                     $itemName .= $space['exhibitorName'];
                 }
-                $note = $space['id'] . ',' . $space['item_purchased'] . ',' . $space['exhibitorId'] . ',' . $space['exhibitorNumber'] .
-                    ',' . $space['includedMemberships'] . ': id, item, exhId, exhNum, includedMem';
-                if (array_key_exists('glNum', $space) && $space['glNum'] != '') {
-                    $note .= ', ' . $space['glNum'];
+                $incCount = 0;
+                $addCount = 0;
+                foreach ($results['badges'] as $badge) {
+                    if ($badge['memId'] == $space['includedMemId'])
+                        $incCount++;
+                    if ($badge['memId'] == $space['additionalMemId'])
+                        $addCount++;
                 }
+                $notesData = cc_spaceNotes($space, $results['transid'], $incCount, $addCount);
 
                 $item = new OrderLineItem([
                     'itemType' => OrderLineItemItemType::Item->value,
                     'uid' => 'space-' . $spaceId,
                     'name' => mb_substr($itemName, 0, 128),
                     'quantity' => 1,
-                    'note' => $note,
+                    'note' => $notesData['note'],
+                    'metadata' => $notesData['metadata'],
                     'basePriceMoney' => new Money([
                         'amount' => round($space['approved_price'] * 100),
                         'currency' => $currency,
@@ -547,15 +539,14 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     continue;
                 $itemName = 'Mail-in Fee for ' . $fee['name'];
                 $itemPrice = $fee['amount'];
-                $note = 'Mail-in fee';
-                if (array_key_exists('glNum', $fee) && $fee['glNum'] != null && $fee['glNum'] != '')
-                    $note .= ', GL: ' . $fee['glNum'];
+                $notesData = cc_mailFeeNotes($fee, $results['transid']);
                 $item = new OrderLineItem([
                     'itemType' => OrderLineItemItemType::Item->value,
                     'uid' => 'region-' . str_replace(' ', '-', $fee['name']),
                     'name' => mb_substr($itemName, 0, 128),
                     'quantity' => 1,
-                    'note' => mb_substr($note, 0, 128),
+                    'note' => $notesData['note'],
+                    'metadata' => $notesData['metadata'],
                     'basePriceMoney' => new Money([
                         'amount' => round($itemPrice * 100),
                         'currency' => $currency,
@@ -572,11 +563,12 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
         if (array_key_exists('newplan', $results) && $results['newplan'] == 1) {
             // deferment is total of the items - total of the payment
             $deferment = $orderValue - $results['total'];
-            $note = "Name: $planName, ID: TBA, Non Plan Amt: $nonPlanAmt, Down Payment: $downPmt, Balance Due: $balanceDue, Perid: $loginPerid";
+            $notesData = cc_newPlanNotes($planName, 'TBA', $nonPlanAmt, $downPmt, $balanceDue, $loginPerid, $loginNewperid, $results['transid']);
             // this is the down payment on a payment plan
             $item = new OrderLineItemDiscount ([
                 'uid' => 'planDeferment',
-                'name' => mb_substr("Payment Deferral Amount: " . $note, 0, 128),
+                'name' => mb_substr("Payment Deferral Amount: " . $notesData['note'], 0, 128),
+                'metadata' => $notesData['metadata'],
                 'type' => OrderLineItemDiscountType::FixedAmount->value,
                 'amountMoney' => new Money([
                     'amount' => round($deferment * 100),
@@ -652,10 +644,10 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     // pass order to square and get order id
 
     try {
-        if ($squareDebug) sqcc_logObject(array ('Orders API order create', json_decode(json_encode($body), true)), $useLogWrite);
+        if ($squareDebug & 14) sqcc_logObject(array ('Orders API order create', json_decode(json_encode($body), true)), $useLogWrite);
         $apiResponse = $client->orders->create($body);
         $order = $apiResponse->getOrder();
-        if ($squareDebug) sqcc_logObject(array ('Orders API order response', json_decode(json_encode($order), true)), $useLogWrite);
+        if ($squareDebug & 14) sqcc_logObject(array ('Orders API order response', json_decode(json_encode($order), true)), $useLogWrite);
     }
     catch (SquareApiException $e) {
         if ($cleanupRegs)
@@ -701,11 +693,7 @@ function cc_cancelOrder($source, $orderId, $useLogWrite = false, $locationId = n
     $cc = get_conf('cc');
     if ($locationId == null)
         $locationId = $cc['location'];
-    $debug = get_conf('debug');
-    if (array_key_exists('square', $debug))
-        $squareDebug = $debug['square'];
-    else
-        $squareDebug = 0;
+    $squareDebug = getConfValue('debug', 'square', 0);
 
     $order = new Order([
         'locationId' => $locationId,
@@ -728,10 +716,10 @@ function cc_cancelOrder($source, $orderId, $useLogWrite = false, $locationId = n
     // pass update to cancel state to square
     $rtn = null;
     try {
-          if ($squareDebug) sqcc_logObject(array ('Orders API order update', $body), $useLogWrite);
+          if ($squareDebug & 12) sqcc_logObject(array ('Orders API order update', $body), $useLogWrite);
           $apiResponse = $client->orders->update($body);
           $order = $apiResponse->getOrder();
-          if ($squareDebug) sqcc_logObject(array ('Orders API order update response', $order), $useLogWrite);
+          if ($squareDebug & 12) sqcc_logObject(array ('Orders API order update response', $order), $useLogWrite);
           $rtn = array();
           $rtn['order'] = $order;
           $rtn['state'] = $order->getState();
@@ -749,11 +737,7 @@ function cc_cancelOrder($source, $orderId, $useLogWrite = false, $locationId = n
 // fetch an order to get its details
 function cc_fetchOrder($source, $orderId, $useLogWrite = false) : array {
     $cc = get_conf('cc');
-    $debug = get_conf('debug');
-    if (array_key_exists('square', $debug))
-        $squareDebug = $debug['square'];
-    else
-        $squareDebug = 0;
+    $squareDebug = getConfValue('debug', 'square', 0);
 
     $body = new Square\Orders\Requests\GetOrdersRequest([
         'orderId' => $orderId,
@@ -767,10 +751,10 @@ function cc_fetchOrder($source, $orderId, $useLogWrite = false) : array {
 
     // pass update to cancel state to square
     try {
-        if ($squareDebug) sqcc_logObject(array ('Orders API order create', $body), $useLogWrite);
+        if ($squareDebug & 12) sqcc_logObject(array ('Orders API order create', $body), $useLogWrite);
         $apiResponse = $client->orders->get($body);
         $order = $apiResponse->getOrder();
-        if ($squareDebug) sqcc_logObject(array ('Orders API order response', $order), $useLogWrite);
+        if ($squareDebug & 12) sqcc_logObject(array ('Orders API order response', $order), $useLogWrite);
     }
     catch (SquareApiException $e) {
         sqcc_logException($source, $e, 'Order API create order Exception', 'Order fetch failed', $useLogWrite);
@@ -785,6 +769,7 @@ function cc_fetchOrder($source, $orderId, $useLogWrite = false) : array {
     $rtn['netAmountDue'] = $order->getNetAmountDueMoney()->getAmount() / 100;
     $rtn['netAmount'] = $order->getNetAmounts()->getTotalMoney()->getAmount() / 100;
     $rtn['customerId'] = $order->getCustomerId();
+    $rtn['order'] = $order;
 
     return $rtn;
 }
@@ -794,11 +779,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     $con = get_conf('con');
     $cc = get_conf('cc');
     $currency = cc_getCurrency($con);
-    $debug = get_conf('debug');
-    if (array_key_exists('square', $debug))
-        $squareDebug = $debug['square'];
-    else
-        $squareDebug = 0;
+    $squareDebug = getConfValue('debug', 'square', 0);
 
     $source = 'onlinereg';
     if (array_key_exists('source', $ccParams)) {
@@ -817,6 +798,8 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
         $userType = getSessionVar('idType');
         if ($userType == 'p')
             $loginPerid = getSessionVar('id');
+        else
+            $loginNewperid = getSessionVar('id');
     }
     // sanitize the email address to avoid empty and refused
     if ($buyer['email'] == '/r' || $buyer['email'] == null)
@@ -887,10 +870,10 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
         ]);
 
     try {
-        if ($squareDebug) sqcc_logObject(array ('Payments API create', json_decode(json_encode($pbody), true)), $useLogWrite);
+        if ($squareDebug & 14) sqcc_logObject(array ('Payments API create', json_decode(json_encode($pbody), true)), $useLogWrite);
         $apiResponse = $client->payments->create($pbody);
         $payment = $apiResponse->getPayment();
-        if ($squareDebug) sqcc_logObject(array ('Payments API Response', json_decode(json_encode($payment), true)), $useLogWrite);
+        if ($squareDebug & 14) sqcc_logObject(array ('Payments API Response', json_decode(json_encode($payment), true)), $useLogWrite);
     }
     catch (SquareApiException $e) {
         web_error_log('Order Square API Exception: ' . $e->getMessage());
@@ -969,11 +952,11 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
 
     $rtn = array();
     $rtn['txnfields'] = array('transid','type','category','description','source','pretax', 'tax', 'amount',
-        'txn_time', 'cc','nonce','cc_txn_id','cc_approval_code','receipt_url','status','receipt_id', 'cashier');
+        'txn_time', 'cc','nonce','cc_txn_id','cc_approval_code','receipt_url','status','receipt_id', 'ccPaymentId','cashier');
     $rtn['tnxtypes'] = array('i', 's', 's', 's', 's', 'd', 'd', 'd',
-            's', 's', 's', 's', 's', 's', 's', 's', 'i');
+            's', 's', 's', 's', 's', 's', 's', 's', 's', 'i');
     $rtn['tnxdata'] = array($ccParams['transid'],$paymentType,$category,$desc,$source,$ccParams['preTaxAmt'], $ccParams['taxAmt'], $approved_amt,
-        $txtime,$last4,$ccParams['nonce'],$id,$auth,$receipt_url,$status,$receipt_number, $loginPerid);
+        $txtime,$last4,$ccParams['nonce'],$id,$auth,$receipt_url,$status,$receipt_number, $id, $loginPerid);
     $rtn['url'] = $receipt_url;
     $rtn['rid'] = $receipt_number;
     $rtn['payment'] = $payment;
@@ -998,11 +981,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
 // fetch an payment to get its details
 function cc_getPayment($source, $paymentid, $useLogWrite = false) : array {
     $cc = get_conf('cc');
-    $debug = get_conf('debug');
-    if (array_key_exists('square', $debug))
-        $squareDebug = $debug['square'];
-    else
-        $squareDebug = 0;
+    $squareDebug = getConfValue('debug', 'square', 0);
 
     $body = new Square\Payments\Requests\GetPaymentsRequest([
         'paymentId' => $paymentid,
@@ -1016,10 +995,10 @@ function cc_getPayment($source, $paymentid, $useLogWrite = false) : array {
 
     // pass update to cancel state to square
     try {
-        if ($squareDebug) sqcc_logObject(array ('Payments API get payment', $body), $useLogWrite);
+        if ($squareDebug & 14) sqcc_logObject(array ('Payments API get payment', $body), $useLogWrite);
         $apiResponse = $client->payments->get($body);
         $payment = json_decode(json_encode($apiResponse->getPayment()), true);
-        if ($squareDebug) sqcc_logObject(array ('Payments API get payment', $payment), $useLogWrite);
+        if ($squareDebug & 14) sqcc_logObject(array ('Payments API get payment', $payment), $useLogWrite);
     }
     catch (SquareApiException $e) {
         sqcc_logException($source, $e, 'Payments API get payment Exception', 'get payment failed', $useLogWrite);
@@ -1036,7 +1015,10 @@ function sqcc_logObject($objArray, $useLogWrite = false) : void {
         logWrite($objArray);
     } else {
         web_error_log($objArray[0]);
-        var_error_log($objArray[1]);
+        // stretched out for debugging breaksteps to see it in the debugger
+        $response = json_encode($objArray[1]);
+        $response = json_decode($response, true);
+        var_error_log($response, true);
     }
 }
 

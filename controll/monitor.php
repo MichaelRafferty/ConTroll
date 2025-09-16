@@ -24,10 +24,8 @@ page_init($page,
 $con = get_conf("con");
 $conid=$con['id'];
 $minComp = $con['minComp'];
-$debug = get_conf('debug');
-if(!array_key_exists('controll_stats', $debug)) { $debug['controll_stats']=0;}
 
-$config_vars['debug'] = $debug['controll_stats'];
+$config_vars['debug'] = getConfValue('debug', 'controll_stats', 0);
 $config_vars['conid'] = $conid;
 $config_vars['minComp'] = $con['minComp'];
 $config_vars['compLen'] = $con['compLen'];

@@ -113,13 +113,16 @@ class consetup {
 <h5><strong>` + this.#setup_title + ` Membership Types:</strong></h5>
 <p><strong>NOTE:</strong> All date ranges are '>=' Start Date and '<' End Date, so the End Date of one period should be the start date of the next.</p>
 <div id="` + this.#setup_type + `-memlist"></div>
-<div id="memlist-buttons">  
-    <button id="` + this.#setup_type + `memlist-undo" type="button" class="btn btn-secondary btn-sm" onclick="` + this.#setup_type + `.undoMemList(); return false;" disabled>Undo</button>
-    <button id="` + this.#setup_type + `memlist-redo" type="button" class="btn btn-secondary btn-sm" onclick="` + this.#setup_type + `.redoMemList(); return false;" disabled>Redo</button>
-    <button id="` + this.#setup_type + `memlist-addrow" type="button" class="btn btn-secondary btn-sm" onclick="` + this.#setup_type + `.addrowMemList(); return false;">Add New</button>
-    <button id="` + this.#setup_type + `memlist-save" type="button" class="btn btn-primary btn-sm"  onclick="` + this.#setup_type + `.saveMemList(); return false;" disabled>Save Changes</button>
-    <button id="` + this.#setup_type + `memlist-csv" type="button" class="btn btn-info btn-sm"  onclick="` + this.#setup_type + `.downloadMemList('csv'); return false;">Download CSV</button>
-    <button id="` + this.#setup_type + `memlist-xlsx" type="button" class="btn btn-info btn-sm"  onclick="` + this.#setup_type + `.downloadMemList('xlsx'); return false;">Download Excel</button>
+<div class='row mt-2 mb-3' id='reglist-csv-div'>
+    <div class="col-sm-auto p-1 ps-3 pe-3 tabulator-paginator" id="` + this.#setup_type + `PaginationDiv" style="background-color: #e5e5e5;"></div>
+    <div class='col-sm-auto p-1 ms-4' id="memlist-buttons">  
+        <button id="` + this.#setup_type + `memlist-undo" type="button" class="btn btn-secondary btn-sm" onclick="` + this.#setup_type + `.undoMemList(); return false;" disabled>Undo</button>
+        <button id="` + this.#setup_type + `memlist-redo" type="button" class="btn btn-secondary btn-sm" onclick="` + this.#setup_type + `.redoMemList(); return false;" disabled>Redo</button>
+        <button id="` + this.#setup_type + `memlist-addrow" type="button" class="btn btn-secondary btn-sm" onclick="` + this.#setup_type + `.addrowMemList(); return false;">Add New</button>
+        <button id="` + this.#setup_type + `memlist-save" type="button" class="btn btn-primary btn-sm"  onclick="` + this.#setup_type + `.saveMemList(); return false;" disabled>Save Changes</button>
+        <button id="` + this.#setup_type + `memlist-csv" type="button" class="btn btn-info btn-sm"  onclick="` + this.#setup_type + `.downloadMemList('csv'); return false;">Download CSV</button>
+        <button id="` + this.#setup_type + `memlist-xlsx" type="button" class="btn btn-info btn-sm"  onclick="` + this.#setup_type + `.downloadMemList('xlsx'); return false;">Download Excel</button>
+    </div>
 </div>
 <div>&nbsp;</div>
 </div>
@@ -253,6 +256,8 @@ class consetup {
         } else {
             memListData = data['memList'];
         }
+        document.getElementById(this.#setup_type + 'PaginationDiv').hidden = data['memlist'].length <= 25;
+
         this.#memtable = new Tabulator('#' + this.#setup_type + '-memlist', {
             history: true,
             movableRows: true,
@@ -262,6 +267,7 @@ class consetup {
             paginationAddRow: "table",
             paginationSize: 25,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
+            paginationElement: document.getElementById( this.#setup_type + 'PaginationDiv'),
             columns: [
                 {rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false},
                 {
@@ -313,6 +319,7 @@ class consetup {
                 {title: "Label", field: "label", visible: false},
                 {
                     title: "Price", field: "price", hozAlign: "right", editor: "input", validator: ["required", this.#priceregexp],
+                    formatter: "money",  formatterParams: { decimal: '.', thousand: ',', negative: true, precision: 2},
                     headerFilter: "input", headerFilterFunc: numberHeaderFilter,
                 },
                 {title: "Start Date", field: "startdate", width: 170, editor: "datetime", validator: "required", headerFilter: "input"},
@@ -731,7 +738,6 @@ class consetup {
             'glNum',
             'glLabel',
             'sort_order',
-            {field: "to_delete", visible: false,},
         ];
         downloadFilePost(format, filename, tabledata, null, fieldList);
     };

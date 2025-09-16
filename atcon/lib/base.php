@@ -36,24 +36,11 @@ function page_init($title, $tab, $css, $js, $configVars = null)
 {
     global $portalJSVersion, $libJSversion, $controllJSversion, $globalJSversion, $atJSversion, $exhibitorJSversion;
 
-    $con = get_conf('con');
-    $vendor = get_conf('vendor');
-    $label = $con['label'];
-    $debug = get_conf('debug');
-    if (array_key_exists('atcon', $debug))
-        $atconDebug = $debug['atcon'];
-    else
-        $atconDebug = 0;
-
-    if (array_key_exists('taxRate', $con))
-        $taxRate = $con['taxRate'];
-    else
-        $taxRate = 0;
-
-    if (array_key_exists('taxLabel', $con))
-        $taxLabel = $con['taxLabel'];
-    else
-        $taxLabel = '';
+    $label = getConfValue('con', 'label', 'Unlabeled');
+    $atconDebug = getConfValue('debug', 'atcon', 0);
+    $taxRate = getConfValue('con', 'taxRate', 0);
+    $taxLabel = getConfValue('con', 'taxLabel', '');
+    $test = getConfValue('atcon', 'test', 0);
 
     if ($configVars == null) {
         $configVars = array ();
@@ -76,10 +63,10 @@ function page_init($title, $tab, $css, $js, $configVars = null)
     <link rel='icon' type='image/x-icon' href='/lib/favicon.ico'>
     <link href='<?php echo $includes['jquicss'];?>' rel='stylesheet' type='text/css' />
     <link href='<?php echo $includes['bs5css'];?>' rel='stylesheet'/>
-    <link href="/css/base.css" rel='stylesheet' type='text/css' />
+    <link href="/css/base.css?v=<?php echo $atJSversion; ?>" rel='stylesheet' type='text/css' />
         <?php  if (isset($css) && $css != null) {
             foreach ($css as $sheet) { ?>
-    <link href='<?php echo $sheet; ?>' rel=stylesheet type='text/css' />
+    <link href='<?php echo "$sheet?v=$atJSversion"; ?>' rel=stylesheet type='text/css' />
             <?php }
         } ?>
     <script src='<?php echo $includes['bs5js'];?>'></script>
@@ -114,7 +101,7 @@ function page_init($title, $tab, $css, $js, $configVars = null)
                     <div class="row">
                         <div class="col-sm-12">
                             <h1 class='title'>
-                                    <?php echo "$label $title"; ?>
+                                    <?php echo "$label $title"; if ($test) echo " <span class='warn'>(TEST)</span>"; ?>
                             </h1>
                         </div>
                     </div>
@@ -186,17 +173,52 @@ function page_init($title, $tab, $css, $js, $configVars = null)
                 if (in_array('manager', $perms)) {
                     echo '&nbsp; <button type="button" class="btn btn-sm btn-warning p-0" id="base_toggleMgr" onclick="base_toggleManager();">Enable Mgr</button>';
                 }
+                $currentBadgePrinter = 'None';
+                $currentReceiptPrinter = 'None';
+                $currentGeneralPrinter = 'None';
+                $currentBadgePrinter = 'None';
+                $currentCCTerminal = 'None';
+                $badgePrinter = getSessionVar('badgePrinter');
+                if ($badgePrinter != null && $badgePrinter['name'] != 'None')
+                    $currentBadgePrinter =  escape_quotes($badgePrinter['name']) . ':::' . escape_quotes($badgePrinter['host']) .
+                        ':-:' . escape_quotes($badgePrinter['queue']) . ':-:' . escape_quotes($badgePrinter['type']) .
+                        ':-:' . escape_quotes($badgePrinter['code']);
+
+                $receiptPrinter = getSessionVar('receiptPrinter');
+                if ($receiptPrinter != null && $receiptPrinter['name'] != 'None')
+                $currentReceiptPrinter =  escape_quotes($receiptPrinter['name']) . ':::' . escape_quotes($receiptPrinter['host']) .
+                        ':-:' . escape_quotes($receiptPrinter['queue']) . ':-:' . escape_quotes($receiptPrinter['type']) .
+                        ':-:' . escape_quotes($receiptPrinter['code']);
+
+                $genericPrinter = getSessionVar('genericPrinter');
+                if ($genericPrinter != null && $genericPrinter['name'] != 'None')
+                $currentGeneralPrinter =  escape_quotes($genericPrinter['name']) . ':::' . escape_quotes($genericPrinter['host']) .
+                        ':-:' . escape_quotes($genericPrinter['queue']) . ':-:' . escape_quotes($genericPrinter['type']) .
+                        ':-:' . escape_quotes($genericPrinter['code']);
+
+
                 $terminal = getSessionVar('terminal');
-                if ($terminal) {
+                if ($terminal && $terminal['name'] != 'None') {
                     $termName = $terminal['name'];
-                } else
+                    $currentCCTerminal =   escape_quotes($terminal['name']) .
+                            ':::' . escape_quotes($terminal['squareId']) . ':::' . escape_quotes($terminal['deviceId']) .
+                            ':::' . escape_quotes($terminal['squareCode']) . ':::' . escape_quotes($terminal['locationId']);
+                } else {
                     $termName = 'None';
+                    $currentCCTerminal = '';
+                }
                 ?><br/>
+                <div id='currentPrinters' hidden>
+                    <span id='currentBadgePrinter'><?php echo $currentBadgePrinter; ?></span>
+                    <span id="currentReceiptPrinter"><?php echo $currentReceiptPrinter; ?></span>
+                    <span id="currentGeneralPrinter"><?php echo $currentGeneralPrinter; ?></span>
+                    <span id="currentCCTerminal"><?php echo $currentCCTerminal; ?></span>
+                </div>
                 <div id="page_head_printers">
-                    Badge: <?php echo getSessionVar('badgePrinter')['name']; ?>&nbsp; <button type="button" class="btn btn-sm btn-secondary pt-0 pb-0"
+                    Badge: <?php echo $badgePrinter['name']; ?>&nbsp; <button type="button" class="btn btn-sm btn-secondary pt-0 pb-0"
                                                                                        onclick="base_changePrintersShow();">Chg</button><br/>
-                    Receipt: <?php echo getSessionVar('receiptPrinter')['name']; ?><br/>
-                    General: <?php echo getSessionVar('genericPrinter')['name']; ?><br/>
+                    Receipt: <?php echo $receiptPrinter['name']; ?><br/>
+                    General: <?php echo $genericPrinter['name']; ?><br/>
                     Terminal: <?php echo $termName; ?>
                 </div>
             </div>
@@ -277,269 +299,6 @@ function page_foot($title = '') {
     </div>
     </body>
     </html>
-    <?php
-}
-
-function paymentDialogs()
-{
- /* obsolete method, to be phased out, only used by art sales right now */
-    $con = get_conf('con');
-    $taxRate = array_key_exists('taxRate', $con) ? $con['taxRate'] : 0;
-    ?>
-<script>
-    $(function() {
-    $('#getAge').dialog({
-        autoOpen: false,
-        width: 400,
-        height: 310,
-        title: "Set Age"
-    })
-    $('#cashPayment').dialog({
-      autoOpen: false,
-      width: 325,
-      height: 310,
-      modal: true,
-      title: "Cash Payment Window"
-    })
-    $('#offline').dialog({
-      autoOpen: false,
-      width: 325,
-      height: 310,
-      modal: true,
-      title: "Credit Card Payment Window"
-    })
-    $('#creditPayment').dialog({
-      autoOpen: false,
-      width: 325,
-      height: 310,
-      modal: true,
-      title: "Creditcard Payment Window"
-    })
-    $('#checkPayment').dialog({
-      autoOpen: false,
-      width: 325,
-      height: 310,
-      modal: true,
-      title: "Check Payment Window"
-    });
-    $('#discountPayment').dialog({
-      autoOpen: false,
-      width: 325,
-      height: 310,
-      modal: true,
-      title: "Discount Window"
-    });
-    $('#signature').dialog({
-      autoOpen: false,
-      width: 300,
-      height: 500,
-      modal: true,
-      title: "Receipt"
-    });
-    $('#receipt').dialog({
-      autoOpen: false,
-      width: 300,
-      height: 500,
-      modal: true,
-      title: "Receipt"
-    });
-    });
-</script>
-<style>
-    ui-dialog { padding: .3em; }
-</style>
-    <?php //ageDialog($con); ?>
-<div id='signature' class='dialog'>
-    <div id='signatureHolder'></div>
-    <button id='signaturePrint' class='bigButton'
-        onclick='checkSignature($("#signatureHolder").data("transid"),
-                                $("#signatureHolder").data("payment"),
-                                false);'>
-        Reprint Signature Form
-    </button>
-    <button id='signatureComplete' class='bigButton'
-        onclick='checkReceipt($("#signatureHolder").data("transid"));
-                 $("#signature").dialog("close");'>
-        Print Receipt
-    </button>
-</div>
-<div id='receipt' class='dialog'>
-    <div id='receiptHolder'></div>
-    <button id='receiptPrint' class='bigButton'
-        onclick='checkReceipt($("#receiptHolder").data("transid"));'>
-        Reprint Receipt
-    </button>
-    <button id='receiptComplete' class='bigButton'
-        onclick='completeTransaction("transactionForm");
-                 $("#receipt").dialog("close");'>
-        Complete Transaction
-    </button>
-</div>
-<div id='discountPayment' class='dialog'>
-    <form id='discountPaymentForm' action='javascript:void(0);'>
-        TransactionID: <span id='discountTransactionId'></span>
-        <hr />
-        <table class='center'>
-            <tr>
-                <td>SubTotal</td>
-                <td width=50></td>
-                <td id='discountPaymentSub' class='right'></td>
-            </tr>
-            <tr style='border-bottom: 1px solid black;'>
-                <td>
-                    + <?php echo $taxRate; ?>% Tax
-                </td>
-                <td width=50></td>
-                <td id='discountPaymentTax' class='right'></td>
-            </tr>
-            <tr>
-                <td>Total</td>
-                <td width=50></td>
-                <td id='discountPaymentTotal' class='right'></td>
-            </tr>
-        </table>
-        <div>
-            <input required='required' class='right' type='text' size=10 name='amt' id='discountAmt' />Amount
-        </div>
-        <div>
-            <input required='required' class='right' type='text' size=20 name='notes' id='discountDesc' />Note
-        </div>
-        <input id='discountPay' class='payBtn' type='submit' value='Pay' onclick='testValid("#discountPaymentForm") && makePayment("discount");' />
-    </form>
-</div>
-<div id='checkPayment' class='dialog'>
-    <form id='checkPaymentForm' action='javascript:void(0);'>
-        TransactionID: <span id='checkTransactionId'></span>
-        <hr />
-        <table class='center'>
-            <tr>
-                <td>SubTotal</td>
-                <td width=50></td>
-                <td id='checkPaymentSub' class='right'></td>
-            </tr>
-            <tr style='border-bottom: 1px solid black;'>
-                <td>
-                    + <?php echo $taxRate; ?>% Tax
-                </td>
-                <td width=50></td>
-                <td id='checkPaymentTax' class='right'></td>
-            </tr>
-            <tr>
-                <td>Total</td>
-                <td width=50></td>
-                <td id='checkPaymentTotal' class='right'></td>
-            </tr>
-        </table>
-        <div>
-            <input required='required' class='right' type='text' size=10 id='checkNo' />
-            Check #
-        </div>
-        <div>
-            <input required='required' class='right' type='text' size=10 name='amt' id='checkAmt' />Amount
-        </div>
-        <div>
-            <input class='right' type='text' size=20 name='notes' id='checkDesc' />Note
-        </div>
-        <input id='checkPay' class='payBtn' type='submit' value='Pay' onclick='testValid("#checkPaymentForm") && makePayment("check");' />
-    </form>
-</div>
-<div id='cashPayment' class='dialog'>
-    <form id='cashPaymentForm' action='javascript:void(0);'>
-        TransactionID: <span id='cashTransactionId'></span>
-        <hr />
-        <table class='center'>
-            <tr>
-                <td>SubTotal</td>
-                <td width=50></td>
-                <td id='cashPaymentSub' class='right'></td>
-            </tr>
-            <tr style='border-bottom: 1px solid black;'>
-                <td>
-                    + <?php echo $taxRate; ?>% Tax
-                </td>
-                <td width=50></td>
-                <td id='cashPaymentTax' class='right'></td>
-            </tr>
-            <tr>
-                <td>Total</td>
-                <td width=50></td>
-                <td id='cashPaymentTotal' class='right'></td>
-            </tr>
-        </table>
-        <div>
-            <input required='required' class='right' type='text' size=10 name='amt' id='cashAmt' />Amount
-        </div>
-        <div>
-            <input class='right' type='text' size=20 name='notes' id='cashDesc' />Note
-        </div>
-        <input id='cashPay' class='payBtn' type='submit' value='Pay' onclick='testValid("#cashPaymentForm") && makePayment("cash");' />
-    </form>
-</div>
-<div id='offline' class='dialog'>
-    <form id='offlinePaymentForm' action='javascript:void(0);'>
-        TransactionID: <span id='creditTransactionId'></span>
-        <hr />
-        <table class='center'>
-            <tr>
-                <td>SubTotal</td>
-                <td width=50></td>
-                <td id='offlinePaymentSub' class='right'></td>
-            </tr>
-            <tr style='border-bottom: 1px solid black;'>
-                <td>
-                    + <?php echo $taxRate; ?>% Tax
-                </td>
-                <td width=50></td>
-                <td id='offlinePaymentTax' class='right'></td>
-            </tr>
-            <tr>
-                <td>Total</td>
-                <td width=50></td>
-                <td id='offlinePaymentTotal' class='right'></td>
-            </tr>
-        </table>
-        <input type='hidden' name='amt' id='offlineAmt' />
-        <div>
-            <input disabled='disabled' class='right' type='text' size=10 name='view' id='offlineView' />Amount
-        </div>
-        <div>
-            <input required='optional' class='right' type='text' size=10 name='cc_approval_code' id='offlineCode' autocomplete='off' />Approval Code
-        </div>
-        <input id='offlinePay' class='payBtn' type='submit' value='Pay' onclick='testValid("#offlinePaymentForm") && makePayment("offline");' />
-        <div id='creditPayment' class='dialog'>
-            <form id='creditPaymentForm' action='javascript:void(0);'>
-                TransactionID: <span id='creditTransactionId'></span>
-                <hr />
-                <table class='center'>
-                    <tr>
-                        <td>SubTotal</td>
-                        <td width=50></td>
-                        <td id='creditPaymentSub' class='right'></td>
-                    </tr>
-                    <tr style='border-bottom: 1px solid black;'>
-                        <td>
-                            + <?php echo $taxRate; ?>% Tax
-                        </td>
-                        <td width=50></td>
-                        <td id='creditPaymentTax' class='right'></td>
-                    </tr>
-                    <tr>
-                        <td>Total</td>
-                        <td width=50></td>
-                        <td id='creditPaymentTotal' class='right'></td>
-                    </tr>
-                </table>
-                <input type='hidden' name='amt' id='creditAmt' />
-                <div>
-                    <input disabled='disabled' class='right' type='text' size=10 name='view' id='creditView' />Amount
-                </div>
-                <div>
-                    <input required='required' class='right' type='password' size=4 name='track' id='creditTrack' autocomplete='off' />CC
-                </div>
-                <input id='creditPay' class='payBtn' type='submit' value='Pay' onclick='testValid("#creditPaymentForm") && makePayment("credit");' />
-        </div>
-        </form>
-</div>
     <?php
 }
 

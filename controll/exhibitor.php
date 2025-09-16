@@ -17,15 +17,9 @@ if(!$need_login or !checkAuth($need_login['sub'], $page)) {
 
 $con = get_con();
 $conid = $con['id'];
-$debug = get_conf('debug');
 $vendor_conf = get_conf('vendor');
-
 $usps = get_conf('usps');
 $conf = get_conf('con');
-if (array_key_exists('controll_exhibitors', $debug))
-    $debug_exhibitors = $debug['controll_exhibitors'];
-else
-    $debug_exhibitors = 0;
 
 $required = getConfValue('reg', 'required', 'addr');
 $testsite = getConfValue('vendor', 'test') == 1;
@@ -89,7 +83,7 @@ $config_vars['portalType'] = $portalType;
 $config_vars['portalName'] = $portalName;
 $config_vars['artistsite'] = $vendor_conf['artistsite'];
 $config_vars['vendorsite'] = $vendor_conf['vendorsite'];
-$config_vars['debug'] = $debug['controll_exhibitors'];
+$config_vars['debug'] = getConfValue('debug', 'controll_exhibitors', 0);
 $config_vars['conid'] = $conid;
 $config_vars['required'] = $required;
 $config_vars['useUSPS'] = $useUSPS;

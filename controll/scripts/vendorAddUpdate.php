@@ -119,28 +119,28 @@ VALUES (?,?,?,?,?,?,?,0,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
 EOS;
         $typestr = 'ssssssssssssssssssssis';
         $paramarr = array(
-            trim($artistName),
-            trim($_POST['exhibitorName']),
-            trim($_POST['exhibitorEmail']),
-            trim($_POST['exhibitorPhone']),
-            trim($_POST['website']),
-            trim($_POST['description']),
-            password_hash(trim($_POST['password']), PASSWORD_DEFAULT),
-            trim($_POST['addr']),
-            trim($_POST['addr2']),
-            trim($_POST['city']),
-            trim($_POST['state']),
-            trim($_POST['zip']),
-            trim($_POST['country']),
-            trim($shipCompany),
-            trim($shipAddr),
-            trim($shipAddr2),
-            trim($shipCity),
-            trim($shipState),
-            trim($shipZip),
-            trim($shipCountry),
+            trim(ifnull($artistName,'')),
+            trim(ifnull($_POST['exhibitorName'], '')),
+            trim(ifnull($_POST['exhibitorEmail'], '')),
+            trim(ifnull($_POST['exhibitorPhone'], '')),
+            trim(ifnull($_POST['website'], '')),
+            trim(ifnull($_POST['description'], '')),
+            password_hash(trim(ifnull($_POST['password'], '')), PASSWORD_DEFAULT),
+            trim(ifnull($_POST['addr'], '')),
+            trim(ifnull($_POST['addr2'], '')),
+            trim(ifnull($_POST['city'], '')),
+            trim(ifnull($_POST['state'], '')),
+            trim(ifnull($_POST['zip'], '')),
+            trim(ifnull($_POST['country'], '')),
+            trim(ifnull($shipCompany, '')),
+            trim(ifnull($shipAddr, '')),
+            trim(ifnull($shipAddr2, '')),
+            trim(ifnull($shipCity, '')),
+            trim(ifnull($shipState, '')),
+            trim(ifnull($shipZip, '')),
+            trim(ifnull($shipCountry, '')),
             $_POST['publicity'],
-            $exhNotes = '' ? null : $exhNotes
+            ifnull($exhNotes, '')
         );
         $newExhibitor = dbSafeInsert($exhibitorInsertQ, $typestr, $paramarr);
 
@@ -158,35 +158,36 @@ EOS;
 
         $updateQ = <<<EOS
 UPDATE exhibitors
-SET exhibitorName=?, exhibitorEmail=?, exhibitorPhone=?, website=?, description=?,
+SET artistName = ?, exhibitorName=?, exhibitorEmail=?, exhibitorPhone=?, website=?, description=?,
     addr=?, addr2=?, city=?, state=?, zip=?, country=?, shipCompany=?, shipAddr=?, shipAddr2=?, shipCity=?, shipState=?, shipZip=?, shipCountry=?, 
     publicity=?, notes = ?
 WHERE id=?
 EOS;
         $updateArr = array(
-            trim($_POST['exhibitorName']),
-            trim($_POST['exhibitorEmail']),
-            trim($_POST['exhibitorPhone']),
-            trim($_POST['website']),
-            trim($_POST['description']),
-            trim($_POST['addr']),
-            trim($_POST['addr2']),
-            trim($_POST['city']),
-            trim($_POST['state']),
-            trim($_POST['zip']),
-            trim($_POST['country']),
-            trim($shipCompany),
-            trim($shipAddr),
-            trim($shipAddr2),
-            trim($shipCity),
-            trim($shipState),
-            trim($shipZip),
-            trim($shipCountry),
+            trim(ifnull($artistName,'')),
+            trim(ifnull($_POST['exhibitorName'], '')),
+            trim(ifnull($_POST['exhibitorEmail'], '')),
+            trim(ifnull($_POST['exhibitorPhone'], '')),
+            trim(ifnull($_POST['website'], '')),
+            trim(ifnull($_POST['description'], '')),
+            trim(ifnull($_POST['addr'], '')),
+            trim(ifnull($_POST['addr2'], '')),
+            trim(ifnull($_POST['city'], '')),
+            trim(ifnull($_POST['state'], '')),
+            trim(ifnull($_POST['zip'], '')),
+            trim(ifnull($_POST['country'], '')),
+            trim(ifnull($shipCompany, '')),
+            trim(ifnull($shipAddr, '')),
+            trim(ifnull($shipAddr2, '')),
+            trim(ifnull($shipCity, '')),
+            trim(ifnull($shipState, '')),
+            trim(ifnull($shipZip, '')),
+            trim(ifnull($shipCountry, '')),
             $publicity,
-            $exhNotes = '' ? null : $exhNotes,
+            trim(ifnull($exhNotes, '')),
             $vendor
         );
-        $numrows = dbSafeCmd($updateQ, 'ssssssssssssssssssisi', $updateArr);
+        $numrows = dbSafeCmd($updateQ, 'sssssssssssssssssssisi', $updateArr);
 
         $updateQ = <<<EOS
 UPDATE exhibitorYears
@@ -194,11 +195,11 @@ SET contactName=?, contactEmail=?, contactPhone=?, mailin = ?, lastVerified = NO
 WHERE id=?
 EOS;
             $updateArr = array(
-                trim($_POST['contactName']),
-                trim($_POST['contactEmail']),
-                trim($_POST['contactPhone']),
+                trim(ifnull($_POST['contactName'],'')),
+                trim(ifnull($_POST['contactEmail'],'')),
+                trim(ifnull($_POST['contactPhone'],'')),
                 $mailin,
-                $contactNotes == '' ? null : $contactNotes,
+                ifnull($contactNotes, ''),
                 $vendorYear
             );
             $numrows1 = dbSafeCmd($updateQ, 'sssssi', $updateArr);
@@ -207,7 +208,7 @@ EOS;
             $response['message'] = 'Profile Updated';
             // get the update info
             $vendorQ = <<<EOS
-SELECT exhibitorName, exhibitorEmail, exhibitorPhone, website, description, e.need_new AS eNeedNew,
+SELECT artistName, exhibitorName, exhibitorEmail, exhibitorPhone, website, description, e.need_new AS eNeedNew,
        IFNULL(e.notes, '') AS exhNotes, IFNULL(ey.notes, '') AS contactNotes, ey.mailin, ey.contactName, ey.contactEmail, ey.contactPhone, 
        ey.need_new AS cNeedNew, DATEDIFF(now(), ey.lastVerified) AS DaysSinceLastVerified, ey.lastVerified,
        addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, publicity

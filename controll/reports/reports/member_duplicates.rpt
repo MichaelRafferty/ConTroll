@@ -14,7 +14,7 @@
     align=right
 [F002]
 	name=fullName
-	sql="TRIM(REGEXP_REPLACE(CONCAT(p.first_name,' ', p.middle_name, ' ', p.last_name, ' ', p.suffix), '  *', ' '))"
+	sql="TRIM(REGEXP_REPLACE(CONCAT(p.first_name,' ', p.middle_name, ' ', p.last_name, ' ', p.suffix), ' +', ' '))"
 	title="Full Name"
 	filter=fullname
 	sort=true
@@ -44,12 +44,14 @@
 	title="Price"
 	filter=number
 	align=right
+	format=money
 [F007]
 	name=paid
 	sql=r1.paid
 	title="Paid"
 	filter=number
 	align=right
+	format=money
 [F013]
 	name=dupregid
 	sql=r2.id
@@ -75,12 +77,14 @@
 	title="Dup Price"
 	filter=number
 	align=right
+	format=money
 [F017]
 	name=dupaid
 	sql=r2.paid
 	title="Dup Paid"
 	filter=number
 	align=right
+	format=money
 [F100]
     name=first_name
     sql=p.first_name

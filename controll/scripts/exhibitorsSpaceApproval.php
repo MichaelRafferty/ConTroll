@@ -348,7 +348,7 @@ SELECT xS.id, xS.exhibitorId, exh.exhibitorName, exh.website, exh.exhibitorEmail
     xS.item_purchased, xS.time_purchased, xS.purchased_units, xS.purchased_code, xS.purchased_description, xS.transid, xS.shortname,
     eRY.id AS exhibitsRegionYearId, eRY.exhibitsRegion AS regionId, eRY.ownerName, eRY.ownerEmail, eR.name AS regionName, 
     exh.exhibitorNumber, exh.exhibitorYearId, exh.locations,
-    IFNULL(pName, nName) as agentName, exh.invCount, exh.exhibitorRegionYearId, eT.mailInAllowed
+    IFNULL(pName, nName) as agentName, exh.invCount, exh.exhibitorRegionYearId, eT.mailInAllowed, eT.portalType
 FROM vw_ExhibitorSpace xS
     JOIN exhibitsSpaces eS ON xS.spaceId = eS.id
     JOIN exhibitsRegionYears eRY ON eS.exhibitsRegionYear = eRY.id
@@ -366,6 +366,7 @@ EOS;
         $detail['b1'] = time();
         $details[] = $detail;
         $regionId = $detail['regionId'];
+        $portalType = $detail['portalType'];
     }
 
     $response['detail'] = $details;
@@ -427,6 +428,10 @@ EOS;
         $ownerName = '';
         $ownerEmail = '';
         $approved = false;
+        $portalURL = getConfValue('vendor', $portalType . 'site', '');
+        if ($portalURL != '') {
+            $portalURL = 'at ' . $portalURL;
+        }
 
         foreach ($details as $key => $detail) {
             if ($detail['exhibitorId'] && $detail['exhibitsRegionYearId'] == $regionYearId) {
@@ -438,7 +443,7 @@ EOS;
                 }
 
                 if ( $detail['item_approved'] != null) {
-                    $spaceDetail .= $detail['approved_description'] . " of " . $detail['spaceName'] . PHP_EOL;
+                    $spaceDetail .= $detail['approved_description'] . " of " . $detail['regionName'] . ' ' . $detail['spaceName'] . PHP_EOL;
                     $approved = true;
                 }
             }
@@ -446,10 +451,12 @@ EOS;
 
         if ($approved) {
             $spaceHeader = 'You have been approved for the following space in ' . $con['label'] . "'s " . $detail['regionName'] . ':';
-            $spaceDetail .= "\nPlease sign into the portal to purchase your space and memberships.\n";
+            $spaceDetail .= "\nPlease sign into the $portalType portal $portalURL to purchase your space and memberships.\n";
         } else {
             $spaceHeader = 'You have not been approved for space in ' . $con['label'] . "'s " . $detail['regionName'] . '.';
         }
+
+        $spaceDetail .= "\n\nIf you have questions, please reach out to $ownerName at $ownerEmail.";
 
         $body = <<<EOS
 Dear $exhibitorName

@@ -1,8 +1,8 @@
 <?php
-// library AJAX Processor: admin_deleteTerminsl.php
-// Balticon Registration System
+// ConTroll Registration System, Copyright 2015-2025, Michael Rafferty, Licensed under the GNU Affero General Public License, Version 3.
+// library AJAX Processor: admin_getTerminalStatus.php
 // Author: Syd Weinstein
-// delete and re-get the list of terminals
+// refresh the status of a single terminal
 
 require_once('../lib/base.php');
 require_once('../../lib/term__load_methods.php');

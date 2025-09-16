@@ -22,7 +22,8 @@ class Pos {
         'email_addr',
         'address_1',
         'address_2',
-        'city', 'state', 'postal_code', 'phone'
+        'city', 'state', 'postal_code', 'country',
+        'phone'
     ];
 
     // pay items
@@ -599,6 +600,7 @@ class Pos {
                         show_message(data.message, 'success');
                     }
                     _this.startOver(reset_all);
+                    _this.#pay_currentOrderId = null;
                 },
                 error: function (jqXHR, textstatus, errorThrown) {
                     document.getElementById('pollRow').hidden = false;
@@ -612,6 +614,9 @@ class Pos {
 
         if (reset_all > 0)
             clear_message();
+
+        if (reset_all > 1)
+            this.#pay_currentOrderId = null;
 
         // reset admin mode if enabled
         if (!inConTroll && baseManagerEnabled) {
@@ -2309,11 +2314,12 @@ addUnpaid(tid) {
             if (pt_cash) {
                 var eltenderedamt = document.getElementById('pay-tendered');
                 var tendered_amt = Number(eltenderedamt.value);
-                if (tendered_amt < total_amount_due) {
+                if (tendered_amt + 0.004 < total_amount_due) {
                     eltenderedamt.style.backgroundColor = 'var(--bs-warning)';
                     return;
                 }
-                if (tendered_amt > total_amount_due) {
+
+                if ((tendered_amt - total_amount_due) > 0.008) {
                     if (nomodal == '') {
                         this.#cashChangeModal.show();
                         document.getElementById("CashChangeBody").innerHTML = "<div class='row mt-2'>\n<div class='col-sm-12'>" +
@@ -2732,7 +2738,7 @@ addUnpaid(tid) {
         this.#printActive = false;
         this.#pay_currentOrderId = null; // leaving pay clears order id
         cart.clearInReview();
-        cart.unfreeze();ƒvoi
+        cart.unfreeze();
         cart.drawCart();
     }
 
@@ -2820,7 +2826,14 @@ addUnpaid(tid) {
         this.#current_tab = this.#pay_tab;
         cart.drawCart();
 
-        var total_amount_due = this.#taxAmt + cart.getTotalPrice() - (cart.getTotalPaid() + Number(this.#couponDiscount) + Number(this.#managerDiscount));
+        // split them out so they can be seen in the debugger
+        var totalCart = cart.getTotalPrice();
+        var totalPaid = cart.getTotalPaid();
+        this.#couponDiscount = Number(this.#couponDiscount);
+        var unpaidCouponDiscount = cart.getTotalCouponDiscountUnpaid();
+        if (unpaidCouponDiscount === this.#couponDiscount)
+            totalPaid -= this.#couponDiscount; // if it's in the membership rows,
+        var total_amount_due = this.#taxAmt + totalCart - (totalPaid + Number(this.#couponDiscount) + Number(this.#managerDiscount));
         if (total_amount_due < 0.01) { // allow for rounding error, no need to round here
             this.#pay_currentOrderId = null;
             // nothing more to pay
@@ -3124,7 +3137,6 @@ addUnpaid(tid) {
         this.#find_tab.disabled = true;
         this.#add_tab.disabled = true;
         this.#review_tab.disabled = true;
-        cart.hideStartOver();
         cart.showNext();
         cart.freeze();
         this.#current_tab = this.#print_tab;
@@ -3136,6 +3148,7 @@ addUnpaid(tid) {
             this.#printedObj = new map();
         }
         cart.drawCart();
+        cart.hideStartOver();
 
         // draw the print screen
         var print_html = `<div id='printBody' class="container-fluid form-floating">

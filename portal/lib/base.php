@@ -41,6 +41,7 @@ function index_page_init($title) {
     $jquicss=$cdn['jquicss'];
     $filter = getConfValue('portal', 'customtext', 'production');
     loadCustomText('portal', basename($_SERVER['PHP_SELF'], '.php'), $filter);
+    loadCustomText('portal', 'all', $filter, true);
 
     echo <<<EOF
 <!DOCTYPE html>
@@ -79,6 +80,7 @@ function portalPageInit($page, $info, $css, $js, $refresh = false) {
     if(isWebRequest()) {
         $filter = getConfValue('portal', 'customtext', 'production');
         loadCustomText('portal', basename($_SERVER['PHP_SELF'], '.php'), $filter);
+        loadCustomText('portal', 'all', $filter, true);
         $includes = getTabulatorIncludes();
         $loginId = getSessionVar('id');
         $loginType = getSessionVar('idType');
@@ -197,12 +199,7 @@ function portalPageFoot() {
     outputCustomText('main/bottom');
     ?>
     <div class="row mt-4">
-        <div class="col-sm-12">
-            For any difficulties with the registration system please contact registration at
-            <a href="mailto:<?php echo $con['regadminemail'];?>?subject=Portal%20Difficulties">
-            <?php echo $con['regadminemail']; ?>
-            </a>
-        </div>
+        <div class='col-sm-12'><?php echo outputCustomText('footer/difficulties', 'portal/all/'); ?></div>
     </div>
     <div class="container-fluid">
         <div class='row'>
@@ -305,8 +302,8 @@ function getPersonInfo($conid) {
 SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.pronouns,
     p.address, p.addr_2, p.city, p.state, p.zip, p.country,
     p.banned, p.creation_date, p.update_date, p.change_notes, p.active, p.managedBy, p.lastVerified, 'p' AS personType,
-    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), '  *', ' ')) AS fullName,
-    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', pm.first_name, pm.middle_name, pm.last_name, pm.suffix), '  *', ' ')) AS managedByName
+    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
+    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', pm.first_name, pm.middle_name, pm.last_name, pm.suffix), ' +', ' ')) AS managedByName
 FROM perinfo p
 LEFT OUTER JOIN perinfo pm ON p.managedBy = pm.id
 WHERE p.id = ?;
@@ -317,12 +314,12 @@ EOS;
 SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.pronouns,
     p.address, p.addr_2, p.city, p.state, p.zip, p.country,
     'N' AS banned, p.createtime AS creation_date, 'Y' AS active, p.managedByNew, p.managedBy, p.lastVerified, 'n' AS personType,
-    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), '  *', ' ')) AS fullName,
+    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
     CASE
         WHEN pmp.id IS NOT NULL THEN
-            TRIM(REGEXP_REPLACE(CONCAT_WS(' ', pmp.first_name, pmp.middle_name, pmp.last_name, pmp.suffix), '  *', ' '))
+            TRIM(REGEXP_REPLACE(CONCAT_WS(' ', pmp.first_name, pmp.middle_name, pmp.last_name, pmp.suffix), ' +', ' '))
         WHEN pmp.id IS NOT NULL THEN
-            TRIM(REGEXP_REPLACE(CONCAT_WS(' ', pmn.first_name, pmn.middle_name, pmn.last_name, pmn.suffix), '  *', ' ')) 
+            TRIM(REGEXP_REPLACE(CONCAT_WS(' ', pmn.first_name, pmn.middle_name, pmn.last_name, pmn.suffix), ' +', ' ')) 
         ELSE NULL
        END AS managedByName
     FROM newperson p

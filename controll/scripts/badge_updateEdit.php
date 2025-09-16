@@ -1,7 +1,5 @@
 <?php
 require_once "../lib/base.php";
-require_once "../../lib/policies.php";
-require_once "../../lib/interests.php";
 
 $check_auth = google_init("ajax");
 $perm = "people";
@@ -32,17 +30,12 @@ if ($action != 'updatePerinfo' || $perid == null || is_numeric($perid) == false 
 $con = get_con();
 $conid=$con['id'];
 
-// this updates the database for a free badge screen edit of a person
-// it has several sections...
-//  1. profile
-//  2. policies
-//  1. Profile, update the perinfo record
+// this updates the profile database for a free badge screen edit of a person
 
 $last_name = $_POST['lastName'] == null ? '' : trim($_POST['lastName']);
 $first_name = $_POST['firstName'] == null ? '' : trim($_POST['firstName']);
 $middle_name = $_POST['middleName'] == null ? '' : trim($_POST['middleName']);
 $suffix = $_POST['suffix'] == null ? '' : trim($_POST['suffix']);
-$legalName = $_POST['legalName'] == null ? '' : trim($_POST['legalName']);
 $pronouns = $_POST['pronouns'] == null ? '' : trim($_POST['pronouns']);
 $badge_name = $_POST['badgeName'] == null ? '' : trim($_POST['badgeName']);
 $address = $_POST['address'] == null ? '' : trim($_POST['address']);
@@ -56,14 +49,14 @@ $phone = $_POST['phone'] == null ? '' : trim($_POST['phone']);
 
 $uP = <<<EOS
 UPDATE perinfo
-SET last_name = ?, first_name = ?, middle_name = ?, suffix = ?, email_addr = ?, phone = ?, badge_name = ?, legalName = ?, pronouns = ?,
+SET last_name = ?, first_name = ?, middle_name = ?, suffix = ?, email_addr = ?, phone = ?, badge_name = ?, pronouns = ?,
     address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?, updatedBy = ?, 
     lastVerified = NULL, update_date = NOW(), change_notes = CONCAT(change_notes, '<br/>Updated by Free Badge Edit screen')
 WHERE id = ?;
 EOS;
 
-$typeStr = 'sssssssssssssssii';
-$valArray = array($last_name, $first_name, $middle_name, $suffix, $email_addr, $phone, $badge_name, $legalName, $pronouns, $address, $addr_2,
+$typeStr = 'ssssssssssssssii';
+$valArray = array($last_name, $first_name, $middle_name, $suffix, $email_addr, $phone, $badge_name, $pronouns, $address, $addr_2,
     $city, $state, $zip, $country, $updatedBy, $perid);
 
 $upd = dbSafeCmd($uP, $typeStr, $valArray);
@@ -74,13 +67,5 @@ if ($upd === false) {
 }
 
 $message = 'Perinfo Record Updated';
-
-//  2. Policies
-
-$policy_upd =  updateMemberPolicies($conid, $perid, 'p', $updatedBy, 'p');
-if ($policy_upd > 0) {
-    $message .= "<br/>$policy_upd policy responses updated";
-}
-
 $response['success'] = $message;
 ajaxSuccess($response);

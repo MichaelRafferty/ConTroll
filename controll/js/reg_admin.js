@@ -13,6 +13,7 @@ memLabels = null;
 memLabelsIdx = null;
 memLabelsNext = null;
 memLabelsNextIdx = null;
+curRegListSearch = '';
 // debug meaning
 //  1 = console.logs
 //  2 = show hidden table fields
@@ -135,7 +136,14 @@ window.onload = function initpage() {
     testdiv = document.getElementById('test');
     reglistDiv = document.getElementById('reglist-csv-div');
 
-    $('#registration-table').html('<button class="btn btn-primary mb-4 ms-4" onclick="getData();">Load Registration List</button>');
+    // set up the restrict to search field for listen
+
+    id = document.getElementById("regListSearch");
+    if (id) {
+        id.addEventListener('keyup', (e) => {
+            if (e.code === 'Enter') getData('s');
+        });
+    }
 }
 
 // filters for RegistrationList
@@ -348,145 +356,155 @@ function draw_stats(data) {
         category.destroy();
         category = null;
     }
-    category = new Tabulator('#category-table', {
-        data: data['categories'],
-        layout: "fitDataTable",
-        columns: [
-            {
-                title: "Category", columns: [
-                    { field: "memCategory" },
-                    { field: "percent", formatter: "progress", width: 100, headerSort: false, },
-                    { field: "occurs", hozAlign: "right" },
-                ]
-            },
-        ],
-    });
-    category.on("cellClick", catclicked)
-    catfilter = [];
     if (type !== null) {
         type.off("cellClick");
         type.destroy();
         type = null;
     }
-    type = new Tabulator('#type-table', {
-        data: data['types'],
-        layout: "fitDataTable",
-        columns: [
-            {
-                title: "Type", columns: [
-                    { field: "memType" },
-                    { field: "percent", formatter: "progress", width: 100, headerSort: false, },
-                    { field: "occurs", hozAlign: "right" },
-                ]
-            },
-        ],
-    });
-    type.on("cellClick", typeclicked);
-    typefilter = [];
+
     if (age !== null) {
         age.off("cellClick");
         age.destroy();
         age = null;
     }
-    age = new Tabulator('#age-table', {
-        data: data['ages'],
-        layout: "fitDataTable",
-        columns: [
-            {
-                title: "Age", columns: [
-                    { field: "memAge", hozAlign: "right" },
-                    { field: "percent", formatter: "progress", width: 100, headerSort: false, },
-                    { field: "occurs", hozAlign: "right" },
-                ]
-            },
-        ],
-    });
-    age.on("cellClick", ageclicked);
-    agefilter = [];
 
     if (price !== null) {
         price.off("cellClick");
         price.destroy();
         price = null;
     }
-    price = new Tabulator('#price-table', {
-        data: data['prices'],
-        layout: "fitDataTable",
-        columns: [
-            {
-                title: "price", columns: [
-                    { field: "price", hozAlign: "right" },
-                    { field: "percent", formatter: "progress", width: 100, headerSort: false, },
-                    { field: "occurs", hozAlign: "right" },
-                ]
-            },
-        ],
-    });
-    price.on("cellClick", priceclicked);
-    pricefilter = [];
 
     if (label !== null) {
         label.off("cellClick");
         label.destroy();
         label = null;
     }
-    label = new Tabulator('#label-table', {
-        data: data['labels'],
-        layout: "fitDataTable",
-        columns: [
-            {
-                title: "Label", columns: [
-                    { field: "label", maxWidth: 400, },
-                    { field: "percent", formatter: "progress", width: 100, maxWidth: 100, headerSort: false, },
-                    { field: "occurs", hozAlign: "right" },
-                ]
-            },
-        ],
-    });
-    label.on("cellClick",  labelclicked);
-    labelfilter = [];
 
     if (coupon !== null) {
         coupon.off("cellClick");
         coupon.destroy();
         coupon = null;
     }
-    coupon = new Tabulator('#coupon-table', {
-        data: data['coupons'],
-        layout: "fitDataTable",
-        columns: [
-            {
-                title: "Coupon", columns: [
-                    { field: "name" },
-                    { field: "percent", formatter: "progress", width: 100, headerSort: false, },
-                    { field: "occurs", hozAlign: "right" },
-                ]
-            },
-        ],
-    });
-    coupon.on("cellClick",  couponclicked);
-    couponfilter = [];
 
     if (statusTable !== null) {
         statusTable.off("cellClick");
         statusTable.destroy();
         statusTable = null;
     }
-    statusTable = new Tabulator('#status-table', {
-        data: data['statuses'],
-        layout: "fitDataTable",
-        columns: [
-            {
-                title: "status", columns: [
-                    { field: "name" },
-                    { field: "percent", formatter: "progress", width: 100, headerSort: false, },
-                    { field: "occurs", hozAlign: "right" },
-                ]
-            },
-        ],
-    });
-    statusTable.on("cellClick",  statusclicked);
-    statusfilter = [];
+
+    if (curRegListSearch == '') {
+        category = new Tabulator('#category-table', {
+            data: data['categories'],
+            layout: "fitDataTable",
+            columns: [
+                {
+                    title: "Category", columns: [
+                        {field: "memCategory"},
+                        {field: "percent", formatter: "progress", width: 100, headerSort: false,},
+                        {field: "occurs", hozAlign: "right"},
+                    ]
+                },
+            ],
+        });
+        category.on("cellClick", catclicked)
+        catfilter = [];
+
+        type = new Tabulator('#type-table', {
+            data: data['types'],
+            layout: "fitDataTable",
+            columns: [
+                {
+                    title: "Type", columns: [
+                        {field: "memType"},
+                        {field: "percent", formatter: "progress", width: 100, headerSort: false,},
+                        {field: "occurs", hozAlign: "right"},
+                    ]
+                },
+            ],
+        });
+        type.on("cellClick", typeclicked);
+        typefilter = [];
+
+        age = new Tabulator('#age-table', {
+            data: data['ages'],
+            layout: "fitDataTable",
+            columns: [
+                {
+                    title: "Age", columns: [
+                        {field: "memAge", hozAlign: "right"},
+                        {field: "percent", formatter: "progress", width: 100, headerSort: false,},
+                        {field: "occurs", hozAlign: "right"},
+                    ]
+                },
+            ],
+        });
+        age.on("cellClick", ageclicked);
+        agefilter = [];
+
+        price = new Tabulator('#price-table', {
+            data: data['prices'],
+            layout: "fitDataTable",
+            columns: [
+                {
+                    title: "price", columns: [
+                        {field: "price", hozAlign: "right"},
+                        {field: "percent", formatter: "progress", width: 100, headerSort: false,},
+                        {field: "occurs", hozAlign: "right"},
+                    ]
+                },
+            ],
+        });
+        price.on("cellClick", priceclicked);
+        pricefilter = [];
+
+        label = new Tabulator('#label-table', {
+            data: data['labels'],
+            layout: "fitDataTable",
+            columns: [
+                {
+                    title: "Label", columns: [
+                        {field: "label", maxWidth: 400,},
+                        {field: "percent", formatter: "progress", width: 100, maxWidth: 100, headerSort: false,},
+                        {field: "occurs", hozAlign: "right"},
+                    ]
+                },
+            ],
+        });
+        label.on("cellClick", labelclicked);
+        labelfilter = [];
+
+        coupon = new Tabulator('#coupon-table', {
+            data: data['coupons'],
+            layout: "fitDataTable",
+            columns: [
+                {
+                    title: "Coupon", columns: [
+                        {field: "name"},
+                        {field: "percent", formatter: "progress", width: 100, headerSort: false,},
+                        {field: "occurs", hozAlign: "right"},
+                    ]
+                },
+            ],
+        });
+        coupon.on("cellClick", couponclicked);
+        couponfilter = [];
+
+        statusTable = new Tabulator('#status-table', {
+            data: data['statuses'],
+            layout: "fitDataTable",
+            columns: [
+                {
+                    title: "status", columns: [
+                        {field: "name"},
+                        {field: "percent", formatter: "progress", width: 100, headerSort: false,},
+                        {field: "occurs", hozAlign: "right"},
+                    ]
+                },
+            ],
+        });
+        statusTable.on("cellClick", statusclicked);
+        statusfilter = [];
+    }
 }
 
 // display actions as buttons in a cell for this membership
@@ -932,7 +950,7 @@ function changeRevoke(direction) {
                 return;
             }
             changeModal.hide();
-            getData();
+            getData('r');
             if (data['success'] !== undefined) {
                 show_message(data['success'], 'success', 'changeMessageDiv');
             }
@@ -1162,7 +1180,7 @@ function transferReg(to, banned) {
                     find_result_table = null;
                 }
                 changeModal.hide();
-                getData();
+                getData('r');
                 if (data.message)
                     show_message(data.message, 'success');
             }
@@ -1311,7 +1329,7 @@ function changeRolloverExecute() {
             rolloverSelect.innerHTML = '';
             rolloverDiv.hidden = true;
             changeModal.hide();
-            getData();
+            getData('r');
             if (data.message)
                 show_message(data.message, 'success');
         },
@@ -1502,7 +1520,7 @@ function changeEditSave(override) {
                 return;
             }
             changeEditClose();
-            getData();
+            getData('r');
             if (data.message)
                 show_message(data.message, 'success');
         },
@@ -1545,26 +1563,42 @@ function draw_registrations(data) {
         registrationtable.destroy();
         registrationtable = null;
     }
+    document.getElementById('tabPaginationDiv').innerHTML = '';
+    document.getElementById('tabPaginationDiv').hidden = data.badges.length <= 25;
     registrationtable = new Tabulator('#registration-table', {
-        data: data['badges'],
+        data: data.badges,
         layout: "fitDataTable",
         index: "badgeId",
-        pagination: true,
+        pagination: data.badges.length > 25,
         paginationSize: 25,
+        paginationElement: document.getElementById('tabPaginationDiv'),
         paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
         columns: [
             { title: "Action", formatter: actionbuttons, hozAlign:"left", headerSort: false },
-            { title: "TID", field: "display_trans", hozAlign: "right",  headerSort: true, headerFilter: true },
-            { title: "PID", field: "perid", width: 110, hozAlign: "right", headerSort: true, headerFilter: true, },
-            { title: "Manager", field: "manager", width: 110, hozAlign: "right", headerSort: true, headerFilter: true, },
-            { title: "Full Name", field: "fullName", headerSort: true, headerFilter: true, headerFilterFunc: fullNameHeaderFilter, },
+            { title: "TID", field: "display_trans", hozAlign: "right",
+                headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter,  },
+            { title: "PID", field: "perid", width: 80, hozAlign: "right",
+                headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter,  },
+            { title: "NPID", field: "newperson_id", width: 80, hozAlign: "right",
+                headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter,  },
+            { title: "Mgr", field: "manager", width: 80, hozAlign: "right",
+                headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter,  },
+            { title: "Full Name", field: "fullName", headerSort: true,
+                headerFilter: true, headerFilterFunc: fullNameHeaderFilter, },
             { title: "Badge Name", field: "badge_name", headerSort: true, headerFilter: true },
             { title: "Email", field: "email_addr", headerSort: true, headerFilter: true },
             { title: "Membership Type", field: "label", width: 300, headerSort: true, headerFilter: true, },
-            { title: "memId", field: "memId", hozAlign: "right", headerSort: true, headerFilter: true, },
-            { title: "Price", field: "price", hozAlign: "right", headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter, },
-            { title: "Disc", field: "couponDiscount", hozAlign: "right", headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter, },
-            { title: "Paid", field: "paid", hozAlign: "right", headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter, },
+            { title: "mId", field: "memId", hozAlign: "right",
+                headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter,  },
+            { title: "Price", field: "price", hozAlign: "right",
+                formatter: "money", formatterParams: { decimal: '.', thousand: ',', negative: true, precision: 2},
+                headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter, },
+            { title: "Disc", field: "couponDiscount", hozAlign: "right",
+                formatter: "money", formatterParams: { decimal: '.', thousand: ',', negative: true, precision: 2},
+                headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter, },
+            { title: "Paid", field: "paid", hozAlign: "right",
+                formatter: "money", formatterParams: { decimal: '.', thousand: ',', negative: true, precision: 2},
+                headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter, },
             { title: "Coupon", field: "name", headerSort: true, headerFilter: true, },
             { title: "Status", field: "status", headerSort: true, headerFilter: true, },
             { title: "Created", field: "create_date", headerSort: true, headerFilter: true },
@@ -1604,6 +1638,10 @@ function reglistDownload(format) {
 // called from data load - draws the filter stats block and the registrations block
 function draw(data, textStatus, jqXHR) {
     conid = Number(data['conid']);
+    if (!data.hasOwnProperty('memLabels')) {
+        show_message("Error in query", 'error');
+        return;
+    }
     memLabels = data['memLabels'];
     memLabelsNext = data['memLabelsNext'];
     memLabelsIdx = {};
@@ -1619,11 +1657,36 @@ function draw(data, textStatus, jqXHR) {
 }
 
 // ajax call to retrieve the starting set of data for the filters and the registration list
-function getData() {
+function getData(style) {
+    if (style == 's') {
+        curRegListSearch = document.getElementById('regListSearch').value.trim();
+        if (curRegListSearch.length == 0) {
+            document.getElementById('regListSearch').style.backgroundColor = "#FFC107";
+            return;
+        }
+    }
+    if (style == 'f')
+        curRegListSearch = '';
+
+    document.getElementById('regListSearch').style.backgroundColor = "";
     $.ajax({
         url: "scripts/regadmin_getBadges.php",
-        method: "GET",
-        success: draw,
+        method: "POST",
+        data:   { style: style, action: 'badges', search: curRegListSearch },
+        success: function (data, textStatus, jqXHR) {
+            if (data.error !== undefined) {
+                show_message(data.error, 'error');
+                return;
+            }
+            if (data.success !== undefined) {
+                show_message(data.success, 'success');
+            }
+            if (data.warn !== undefined) {
+                show_message(data.warn, 'warn');
+                return;
+            }
+            draw(data);
+        },
         error: function (jqXHR, textStatus, errorThrown) {
             showError("ERROR in getBadges: " + textStatus, jqXHR);
             return false;
@@ -1648,7 +1711,7 @@ function sendCancel() {
         data: { 'action': action, 'tid': tid },
         method: "POST",
         success: function (data, textStatus, jqXHR) {
-            if (data.erro) {
+            if (data.error) {
                 $('#test').empty().append(JSON.stringify(data));
                 alert(data.error);
             } else {
@@ -1708,9 +1771,9 @@ function settab(tabname) {
 
     // now open the relevant one, and create the class if needed
     switch (tabname) {
-        case 'registrationlist-pane':
-            getData();
-            break;
+        //case 'registrationlist-pane':
+            //getData();
+            //break;
         case 'consetup-pane':
             if (current == null)
                 current = new consetup('current');

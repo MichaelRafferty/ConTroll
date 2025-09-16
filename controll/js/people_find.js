@@ -236,7 +236,7 @@ class Find {
             data: this.#matched,
             layout: "fitDataTable",
             index: "id",
-            pagination: true,
+            pagination: this.#matched.length > 25,
             paginationAddRow:"table",
             paginationSize: 10,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
@@ -572,7 +572,7 @@ class Find {
             data: this.#managerLookupRows,
             layout: "fitDataTable",
             index: "id",
-            pagination: true,
+            pagination: this.#managerLookupRows.length > 25,
             paginationAddRow:"table",
             paginationSize: 10,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
@@ -678,7 +678,7 @@ class Find {
             data: this.#managesLookupRows,
             layout: "fitDataTable",
             index: "id",
-            pagination: true,
+            pagination: this.#managesLookupRows.length > 25,
             paginationAddRow:"table",
             paginationSize: 10,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
@@ -840,7 +840,7 @@ class Find {
             data: data.history,
             layout: "fitDataTable",
             index: "historyId",
-            pagination: true,
+            pagination: data.history.length > 25,
             paginationAddRow: "table",
             paginationSize: 50,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options

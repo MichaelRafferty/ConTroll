@@ -197,11 +197,14 @@ class Unmatched {
         this.#unmatched = data['unmatched'];
         this.#unmatchedCount = data['numUnmatched'];
         this.#unmatchedCountSpan.innerHTML = this.#unmatchedCount;
+        var pagination = false;
+        if (this.#unmatched)
+            pagination = this.#unmatched.length > 100;
         this.#unmatchedTable = new Tabulator('#unmatchedTable', {
             data: this.#unmatched,
             layout: "fitDataTable",
             index: "id",
-            pagination: true,
+            pagination: pagination,
             paginationAddRow:"table",
             paginationSize: 100,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
@@ -385,11 +388,15 @@ class Unmatched {
                 {field: 'managerId', visible: false,},
             ],
         });
+
+        pagination = false;
+        if (this.#candidates)
+            pagination = this.#candidates.length > 25;
         this.#candidateTable = new Tabulator('#candidateTable', {
             data: this.#candidates,
             layout: "fitDataTable",
             index: "id",
-            pagination: true,
+            pagination: pagination,
             paginationAddRow:"table",
             paginationSize: 10,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
@@ -418,11 +425,15 @@ class Unmatched {
             ],
         });
 
+        var pagination = false;
+        if (this.#additional)
+            pagination = this.#additional.length > 25;
+
         this.#additionalTable = new Tabulator('#additionalTable', {
             data: this.#additional,
             layout: "fitDataTable",
             index: "id",
-            pagination: true,
+            pagination: pagination,
             paginationAddRow:"table",
             paginationSize: 10,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
@@ -789,12 +800,12 @@ class Unmatched {
                 break;
 
             case 'newBadge':
-                this.#pronouns.value = this.#newperson.badge_name;
+                this.#badgeName.value = this.#newperson.badge_name;
                 break;
 
             case 'matchAddress':
                 this.#address.value = this.#matchPerson.address;
-                this.#addr2.value = this.#matchPerson.addr2;
+                this.#addr2.value = this.#matchPerson.addr_2;
                 this.#city.value = this.#matchPerson.city;
                 this.#state.value = this.#matchPerson.state;
                 this.#zip.value = this.#matchPerson.zip;
@@ -870,7 +881,7 @@ class Unmatched {
                 this.#pronouns.value = this.#matchPerson.pronouns;
                 this.#badgeName.value = this.#matchPerson.badge_name;
                 this.#address.value = this.#matchPerson.address;
-                this.#addr2.value = this.#matchPerson.addr2;
+                this.#addr2.value = this.#matchPerson.addr_2;
                 this.#city.value = this.#matchPerson.city;
                 this.#state.value = this.#matchPerson.state;
                 this.#zip.value = this.#matchPerson.zip;

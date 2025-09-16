@@ -1,9 +1,15 @@
 <?php
 // pdfPrintArtShowSheets.php - routines for creating the art show bid sheets, price tags and control sheets
-require_once (__DIR__ . '/../Composer/vendor/autoload.php');
+require_once(__DIR__ . '/../lib/pdf/tfpdf/tfpdf.php');
+require_once(__DIR__ . '/../lib/pdf/fpdf-barcode/src/Barcode.php');
 require_once ("pdfFunctions.php");
 
-function pdfPrintShopPriceSheets($regionYearId, $region, $response) {
+global $pdf;
+$pdf = null;
+
+function pdfPrintShopPriceSheets($regionYearId, $region, $response, $first = true, $last = true) {
+    global $pdf;
+
     $con = get_conf('con');
     if (array_key_exists('currency', $con)) {
         $currency = $con['currency'];
@@ -17,7 +23,7 @@ function pdfPrintShopPriceSheets($regionYearId, $region, $response) {
     $vsize = 1.6;
     $indent = 0.1;
     $blockheight = 0.35;
-    $labeloffset = 0.06;
+    $labelOffset = 0.06;
     $dataOffset = 0.22;
 
     $itemSQL = <<<EOS
@@ -40,9 +46,10 @@ EOS;
         return $response;
     }
     if ($itemR->num_rows == 0) {
-        $response['num_rows'] = $itemR->num_rows;
-        $response['status'] = 'No art found requiring price tags';
-        echo "No art found requiring price tags\n";
+        if ($first == $last) {
+            $response['num_rows'] = $itemR->num_rows;
+            $response['status'] = 'No art found requiring price tags';
+        }
         $itemR->free();
         return $response;
     }
@@ -54,7 +61,7 @@ EOS;
     $vendor = get_conf('vendor');
     $title = $vendor['artistPriceTag'];
     if ($title == null || $title == '') {
-        $title = "Unconfigured Print Shop Price Tag";
+        $title = "Unconfigured Print Price Tag";
     }
 
     $useBarCode = false;
@@ -86,21 +93,36 @@ EOS;
     $curLocale = locale_get_default();
     $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
 
-    $pdf = new \Erkens\Fpdf\Barcode('L', 'in', 'Letter');
-    initPDF($pdf, 0.008, 'Arial', '', 11);
+    if ($pdf == null) {
+        $pdf = new Barcode('L', 'in', 'Letter');
+
+        // get unicode fonts
+        $pdf->AddFont('Roboto', '', 'Roboto-Regular.ttf', true);
+        $pdf->AddFont('Roboto', 'B', 'Roboto-Bold.ttf', true);
+        $pdf->AddFont('Roboto', 'SC', 'Roboto_SemiCondensed-Regular.ttf', true);
+        $pdf->AddFont('Roboto', 'C', 'Roboto_Condensed-Regular.ttf', true);
+        #$pdf->AddFont('Roboto','BI','Roboto-BoldItalic.ttf',true);
+        #$pdf->AddFont('Roboto','I','Roboto-Italic.ttf',true);
+
+        initPDF($pdf, 0.008, 'Roboto', '', 11);
+    }
 
     // computes from those offsets
     $hsize = ($pdf->GetPageWidth() - 2 * $margin) / $numcols;
     $firstrow = $margin + 0.3;
 
-    pushFont('Arial', '', 14);
-    $titlewidth = $pdf->getStringWidth($title);
-    $titleoffset = ($hsize - (2 * $indent) - $titlewidth) / 2;
-    popFont();
+    $titleArgs = computeTitleFont($pdf, $title, $hsize - (2 * $indent));
+    $titleFontSize = $titleArgs[0];
+    $titleWeight = $titleArgs[1];
 
     // timestamp for printing when generated
     $createDate = date('Y/m/d h:i:s A');
     $fileDate = date('Y-m-d-H-i-s');
+    if ($first != $last) {
+        $fileLabel = str_replace(' ', '-', $conname . '_PriceTags_' . 'Multi-Artist');
+    } else {
+        $fileLabel = str_replace(' ', '-', $conname . '_PriceTags_' . $artistName);
+    }
 
     $row = $numrows;
     $col = $numcols;
@@ -117,9 +139,9 @@ EOS;
                 $row = 0;
                 $pdf->AddPage();
                 $page++;
-                pushFont('Arial', 'B', 11);
+                pushFont('Roboto', 'B', 11);
                 printXY($margin, $margin,"Price Tags for $conname's " . $print['name'] . "; Artist: " . $artistName);
-                $fileLabel = str_replace(' ', '_', $conname . "_" . $print['name'] . "_" . $artistName);
+
                 $y = $pdf->GetPageHeight() - ($margin);
                 printXY($margin, $y,"Generated: $createDate");
                 $pageStr = "Page $page of $pages";
@@ -137,7 +159,7 @@ EOS;
             // now title header
             $isize = $hsize - 2 * $indent;
             $pdf->Rect($h, $v, $isize, $blockheight);
-            pushFont('Arial', '', 14);
+            pushFont('Roboto', $titleWeight, $titleFontSize);
             centerPrintXY($h, $v + 0.16, $isize - 0.1, $title);
             popFont();
 
@@ -145,9 +167,9 @@ EOS;
             $v += $blockheight;
             $pdf->Rect($h, $v, $isize * 0.8, $blockheight);
             $pdf->Rect($h + $isize * 0.8, $v, $isize * 0.2, $blockheight);
-            pushFont('Arial', '', 5);
-            printXY($h + 0.025, $v + $labeloffset,'ARTIST');
-            printXY($h + 0.025 + $isize * 0.8, $v + $labeloffset,'ARTIST#');
+            pushFont('Roboto', '', 5);
+            printXY($h + 0.025, $v + $labelOffset,'ARTIST');
+            printXY($h + 0.025 + $isize * 0.8, $v + $labelOffset,'ARTIST#');
             popFont();
             fitprintXY($h + 0.1, $v + $dataOffset, (0.8 * $isize), $artistName);
             printXY($h + 0.1 + (0.8 * $isize), $v + $dataOffset, $print['exhibitorNumber']);
@@ -156,9 +178,9 @@ EOS;
             $v += $blockheight;
             $pdf->Rect($h, $v, $isize * 0.8, $blockheight);
             $pdf->Rect($h + $isize * 0.8, $v, $isize * 0.2, $blockheight);
-            pushFont('Arial', '', 5);
-            printXY($h + 0.025, $v + $labeloffset,'TITLE');
-            printXY($h + 0.025 + $isize * 0.8, $v + $labeloffset,'PIECE#');
+            pushFont('Roboto', '', 5);
+            printXY($h + 0.025, $v + $labelOffset,'TITLE');
+            printXY($h + 0.025 + $isize * 0.8, $v + $labelOffset,'PIECE#');
             popFont();
 
             fitprintXY($h + 0.1, $v + $dataOffset, ($isize * 0.8) - 0.2, $print['title']);
@@ -169,11 +191,11 @@ EOS;
             $pdf->Rect($h, $v, $isize * 0.5, $blockheight);
             $pdf->Rect($h + $isize * 0.5, $v, $isize * 0.25, $blockheight);
             $pdf->Rect($h + $isize * 0.75, $v, $isize * 0.25, $blockheight);
-            pushFont('Arial', '', 5);
-            printXY($h + 0.025, $v + $labeloffset, 'BUYER (ART SHOW USE ONLY)');
-            printXY($h + 0.025 + $isize * 0.5, $v + $labeloffset,'UNIT');
-            printXY($h + 0.025 + $isize * 0.625, $v + $labeloffset, 'OF');
-            printXY($h + 0.025 + $isize * 0.75, $v + $labeloffset, 'PRICE');
+            pushFont('Roboto', '', 5);
+            printXY($h + 0.025, $v + $labelOffset, 'BUYER (ART SHOW USE ONLY)');
+            printXY($h + 0.025 + $isize * 0.5, $v + $labelOffset,'UNIT');
+            printXY($h + 0.025 + $isize * 0.625, $v + $labelOffset, 'OF');
+            printXY($h + 0.025 + $isize * 0.75, $v + $labelOffset, 'PRICE');
             popFont();
 
             printXY($h + 0.1 + (0.5 * $isize), $v + $dataOffset, $copy);
@@ -185,23 +207,30 @@ EOS;
             if ($useBarCode) {
                 $v += $blockheight;
                 $barcodeData = sprintf("%7.7d,%3.3d", $print['itemId'], $copy);
-                $pdf->code128($h + $indent, $v + $labeloffset, $barcodeData, ($isize - (2 * $indent)) / 1.5, $blockheight - (2 * $labeloffset));
+                $pdf->code128($h + $indent, $v + $labelOffset, $barcodeData, ($isize - (2 * $indent)) / 1.5, $blockheight - (2 * $labelOffset));
             }
         }
     }
 
-    header('Content-Type: application/pdf');
-    $fileLabel = preg_replace('/[^A-Za-z0-9_]/', '', $fileLabel);
-    $filename = $fileLabel . '_' . $fileDate . '.pdf';
-    header('Content-Disposition: inline; filename="' . $filename . '"');
-    $output = $pdf->Output();
-    print($output);
-    $response['success'] = true;
-    $response['message'] = "$numTags output on $pages pages";
+    if ($first) {
+        header('Content-Type: application/pdf');
+        $fileLabel = preg_replace('/[^A-Za-z0-9_]/', '', $fileLabel);
+        $filename = $fileLabel . '_' . $fileDate . '.pdf';
+        header('Content-Disposition: inline; filename="' . $filename . '"');
+    }
+
+    if ($last) {
+        $output = $pdf->Output();
+        print($output);
+        $response['success'] = true;
+        $response['message'] = "$numTags output on $pages pages";
+    }
     return $response;
 }
 
-function pdfPrintBidSheets($regionYearId, $region, $response) {
+function pdfPrintBidSheets($regionYearId, $region, $response, $first = true, $last = true) {
+    global $pdf;
+
     $con = get_conf('con');
     if (array_key_exists('currency', $con)) {
         $currency = $con['currency'];
@@ -262,7 +291,7 @@ function pdfPrintBidSheets($regionYearId, $region, $response) {
     $blockheight = 0.33;
     $priceheight = 0.25;
     $headerheight = 0.15;
-    $labeloffset = 0.06;
+    $labelOffset = 0.06;
     $dataOffset = 0.20;
     $priceoffset = 0.14;
 
@@ -304,9 +333,11 @@ EOS;
         return $response;
     }
     if ($itemR->num_rows == 0) {
-        $response['num_rows'] = $itemR->num_rows;
-        $response['status'] = 'No art found requiring bid sheets';
-        echo "No art found requiring bid sheets\n";
+
+        if ($first == $last) {
+            $response['num_rows'] = $itemR->num_rows;
+            $response['status'] = 'No art found requiring bid sheets';
+        }
         $itemR->free();
         return $response;
     }
@@ -330,16 +361,37 @@ EOS;
     $curLocale = locale_get_default();
     $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
 
-    $pdf = new \Erkens\Fpdf\Barcode($orient, 'in', 'Letter');
-    initPDF($pdf, 0.008, 'Arial', '', 11);
+    if ($pdf == null) {
+        $pdf = new Barcode($orient, 'in', 'Letter');
+
+        // get unicode fonts
+        $pdf->AddFont('Roboto', '', 'Roboto-Regular.ttf', true);
+        $pdf->AddFont('Roboto', 'B', 'Roboto-Bold.ttf', true);
+        $pdf->AddFont('Roboto', 'BK', 'Roboto-Black.ttf', true);
+        $pdf->AddFont('Roboto', 'SC', 'Roboto_SemiCondensed-Regular.ttf', true);
+        $pdf->AddFont('Roboto', 'C', 'Roboto_Condensed-Regular.ttf', true);
+        #$pdf->AddFont('Roboto','BI','Roboto-BoldItalic.ttf',true);
+        #$pdf->AddFont('Roboto','I','Roboto-Italic.ttf',true);
+
+        initPDF($pdf, 0.008, 'Roboto', '', 11);
+    }
 
 // computes from those offsets
     $hsize = ($pdf->GetPageWidth() - 2 * $margin) / $numcols;
     $firstrow = $margin + 0.15;
 
+    $titleArgs = computeTitleFont($pdf, $title, $hsize - (3 * $indent));
+    $titleFontSize = $titleArgs[0];
+    $titleWeight = $titleArgs[1];
+
 // timestamp for printing when generated
     $createDate = date('Y/m/d h:i:s A');
     $fileDate = date('Y-m-d-H-i-s');
+    if ($first != $last) {
+        $fileLabel = str_replace(' ', '-', $conname . '_BidSheets_' . 'Multi-Artist');
+    } else {
+        $fileLabel = str_replace(' ', '-', $conname . '_BidSheets_' . $artistName);
+    }
 
     $row = $numrows;
     $col = $numcols;
@@ -355,9 +407,9 @@ EOS;
             $row = 0;
             $pdf->AddPage();
             $page++;
-            pushFont('Arial', 'B', 11);
+            pushFont('Roboto', 'B', 11);
             printXY($margin, $margin, "Bid Sheets for $conname's " . $art['name'] . '; Artist: ' . $artistName);
-            $fileLabel = str_replace(' ', '_',$conname . '_' . $art['name'] . '_' . $artistName . '.pdf');
+
             $y = $pdf->GetPageHeight() - ($margin);
             printXY($margin, $y, "Generated: $createDate");
             $pageStr = "Page $page of $pages";
@@ -375,7 +427,7 @@ EOS;
         // now title header
         $isize = $hsize - 2 * $indent;
         $pdf->Rect($h, $v, $isize, $blockheight);
-        pushFont('Arial', '', 14);
+        pushFont('Roboto', $titleWeight, $titleFontSize);
         centerPrintXY($h, $v + 0.16, $isize - 0.1, $title);
         popFont();
 
@@ -383,9 +435,9 @@ EOS;
         $v += $blockheight;
         $pdf->Rect($h, $v, $isize * 0.8, $blockheight);
         $pdf->Rect($h + $isize * 0.8, $v, $isize * 0.2, $blockheight);
-        pushFont('Arial', '', 5);
-        printXY($h + 0.025, $v + $labeloffset,'ARTIST');
-        printXY($h + 0.025 + $isize * 0.8, $v + $labeloffset,'ARTIST#');
+        pushFont('Roboto', '', 5);
+        printXY($h + 0.025, $v + $labelOffset,'ARTIST');
+        printXY($h + 0.025 + $isize * 0.8, $v + $labelOffset,'ARTIST#');
         popFont();
         fitprintXY($h + 0.1, $v + $dataOffset, (0.8 * $isize),  $artistName);
         printXY($h + 0.1 + (0.8 * $isize), $v + $dataOffset, $art['exhibitorNumber']);
@@ -393,8 +445,8 @@ EOS;
         // draw print title block
         $v += $blockheight;
         $pdf->Rect($h, $v, $isize, $blockheight);
-        pushFont('Arial', '', 5);
-        printXY($h + 0.025, $v + $labeloffset, 'TITLE');
+        pushFont('Roboto', '', 5);
+        printXY($h + 0.025, $v + $labelOffset, 'TITLE');
         popFont();
         fitprintXY($h + 0.1, $v + $dataOffset,$isize-0.2, $art['title']);
 
@@ -402,122 +454,137 @@ EOS;
         $v += $blockheight;
         $pdf->Rect($h, $v, $isize * 0.8, $blockheight);
         $pdf->Rect($h + $isize * 0.8, $v, $isize * 0.2, $blockheight);
-        pushFont('Arial', '', 5);
-        printXY($h + 0.025, $v + $labeloffset, 'MEDIUM');
-        printXY($h + 0.025 + $isize * 0.8, $v + $labeloffset, 'PIECE#');
+        pushFont('Roboto', '', 5);
+        printXY($h + 0.025, $v + $labelOffset, 'MEDIUM');
+        printXY($h + 0.025 + $isize * 0.8, $v + $labelOffset, 'PIECE#');
         popFont();
         fitprintXY($h + 0.1, $v + $dataOffset, ($isize * 0.8) -0.2, $art['material']);
         printXY($h + 0.1 + (0.8 * $isize), $v + $dataOffset, $art['item_key']);
 
-        // draw Minimum Bid Amount
-        pushLineWidth(0.016);
-        $v += $blockheight;
-        $pdf->Rect($h, $v, $isize * 0.6, $priceheight);
-        $pdf->Rect($h + $isize * 0.6, $v, $isize * 0.4, $priceheight);
-        $label = 'Minimum bid amount';
-        $length = $pdf->getStringWidth($label);
-        printXY($h + ($isize * 0.6) - (0.1 + $length), $v + $priceoffset, $label );
-
         if ($art['type'] == 'nfs') {
-            $priceFmt = 'N/A';
+            pushLineWidth(0.024);
+            $v += $blockheight;
+            // NFS just output a large NFS line
+            $isize = $hsize - 2 * $indent;
+            $pdf->Rect($h, $v, $isize, $blockheight * 1.6);
+            pushFont('Roboto', 'BK', 32);
+            centerPrintXY($h, $v + 0.30, $isize - 0.1, 'NOT FOR SALE');
+            popFont();
+            popLineWidth();
+            $v += $blockheight * 0.6;
         } else {
+            // draw Minimum Bid Amount
+            pushLineWidth(0.016);
+            $v += $blockheight;
+            $pdf->Rect($h, $v, $isize * 0.6, $priceheight);
+            $pdf->Rect($h + $isize * 0.6, $v, $isize * 0.4, $priceheight);
+            $label = 'Minimum bid amount';
+            $length = $pdf->getStringWidth($label);
+            printXY($h + ($isize * 0.6) - (0.1 + $length), $v + $priceoffset, $label);
             $priceFmt = $dolfmt->formatCurrency((float)$art['min_price'], $currency);
-        }
-        $pricewidth = $pdf->getStringWidth($priceFmt);
-        printXY($h + (0.97 * $isize) - $pricewidth, $v + $priceoffset, $priceFmt);
+            $pricewidth = $pdf->getStringWidth($priceFmt);
+            printXY($h + (0.97 * $isize) - $pricewidth, $v + $priceoffset, $priceFmt);
 
-        // draw Quick Sale Amount
-        $v += $priceheight;
-        $pdf->Rect($h, $v, $isize * 0.6, $priceheight);
-        $pdf->Rect($h + $isize * 0.6, $v, $isize * 0.4, $priceheight);
-        $label = 'Quicksale price';
-        $length = $pdf->getStringWidth($label);
-        printXY($h + ($isize * 0.6) - (0.1 + $length), $v + $priceoffset, $label );
+            // draw Quick Sale Amount
+            $v += $priceheight;
+            $pdf->Rect($h, $v, $isize * 0.6, $priceheight);
+            $pdf->Rect($h + $isize * 0.6, $v, $isize * 0.4, $priceheight);
+            $label = 'Quicksale price';
+            $length = $pdf->getStringWidth($label);
+            printXY($h + ($isize * 0.6) - (0.1 + $length), $v + $priceoffset, $label);
 
-        $price = $art['sale_price'];
-        if ($price > 0 && $art['type'] != 'nfs') {
-            $priceFmt = $dolfmt->formatCurrency((float)$art['sale_price'], $currency);
-        } else {
-            $priceFmt = "N/A";
-        }
-        $pricewidth = $pdf->getStringWidth($priceFmt);
-        printXY($h + (0.97 * $isize) - $pricewidth, $v + $priceoffset, $priceFmt);
-        popLineWidth();
-
-        // now bid header
-        $v += $priceheight;
-        $headerStart = $v;
-        $pdf->Rect($h, $v, $isize * 0.6, $headerheight);
-        $pdf->Rect($h + $isize * 0.6, $v, $isize * 0.2, $headerheight);
-        $pdf->Rect($h + $isize * 0.8, $v, $isize * 0.2, $headerheight);
-        pushFont('Arial', '', 8);
-        printXY($h + 0.025, $v + $labeloffset + 0.01, "Bidder Name (Please Print)");
-        printXY($h + 0.025 + $isize * 0.6, $v + $labeloffset + 0.01, 'Badge #');
-        printXY($h + 0.025 + $isize * 0.8, $v + $labeloffset + 0.01, 'Bid ($)');
-        popFont();
-
-        $v += $headerheight;
-        pushFont('Arial', '', 6);
-        for ($lineno = 1; $lineno <= $numberedLines; $lineno++) {
-            $pdf->Rect($h, $v, $isize, $blockheight);
-            if ($bidSep) {
-                $pdf->Rect($h + $isize * 0.6, $v, $isize * 0.2, $blockheight);
+            $price = $art['sale_price'];
+            if ($price > 0) {
+                $priceFmt = $dolfmt->formatCurrency((float)$art['sale_price'], $currency);
+            } else {
+                $priceFmt = "N/A";
             }
-            printXY($h, $v + $labeloffset, "$lineno)");
-            $v += $blockheight;
-        }
-        popFont();
-        for (; $lineno <= $bidlines; $lineno++) {
-            $pdf->Rect($h, $v, $isize, $blockheight);
-            if ($bidSep) {
-                $pdf->Rect($h + $isize * 0.6, $v, $isize * 0.2, $blockheight);
+            $pricewidth = $pdf->getStringWidth($priceFmt);
+            printXY($h + (0.97 * $isize) - $pricewidth, $v + $priceoffset, $priceFmt);
+            popLineWidth();
+
+            // now bid header
+            $v += $priceheight;
+            $headerStart = $v;
+            $pdf->Rect($h, $v, $isize * 0.6, $headerheight);
+            $pdf->Rect($h + $isize * 0.6, $v, $isize * 0.2, $headerheight);
+            $pdf->Rect($h + $isize * 0.8, $v, $isize * 0.2, $headerheight);
+            pushFont('Roboto', '', 8);
+            printXY($h + 0.025, $v + $labelOffset + 0.01, "Bidder Name (Please Print)");
+            printXY($h + 0.025 + $isize * 0.6, $v + $labelOffset + 0.01, 'Badge #');
+            printXY($h + 0.025 + $isize * 0.8, $v + $labelOffset + 0.01, 'Bid ($)');
+            popFont();
+
+            $v += $headerheight;
+            pushFont('Roboto', '', 6);
+            for ($lineno = 1; $lineno <= $numberedLines; $lineno++) {
+                $pdf->Rect($h, $v, $isize, $blockheight);
+                if ($bidSep) {
+                    $pdf->Rect($h + $isize * 0.6, $v, $isize * 0.2, $blockheight);
+                }
+                printXY($h, $v + $labelOffset, "$lineno)");
+                $v += $blockheight;
             }
-            $v += $blockheight;
+            popFont();
+            for (; $lineno <= $bidlines; $lineno++) {
+                $pdf->Rect($h, $v, $isize, $blockheight);
+                if ($bidSep) {
+                    $pdf->Rect($h + $isize * 0.6, $v, $isize * 0.2, $blockheight);
+                }
+                $v += $blockheight;
+            }
+
+            // artshow use only block
+            pushFont('Roboto', 'B', 11);
+            $pdf->Rect($h, $v, $isize, $blockheight);
+            printXY($h, $v + $dataOffset, "ART SHOW USE ONLY");
+            popFont();
+
+            pushFont('Roboto', '', 9);
+            $pdf->Rect($h + 1.75, $v + $labelOffset + 0.05, 0.15, 0.15);
+            printXY($h + 1.95, $v + $dataOffset, "AUC");
+            $pdf->Rect($h + 2.45, $v + $labelOffset + 0.05, 0.15, 0.15);
+            printXY($h + 2.65, $v + $dataOffset, 'SOLD');
+            $pdf->Rect($h + 3.25, $v + $labelOffset + 0.05, 0.15, 0.15);
+            printXY($h + 3.45, $v + $dataOffset, 'QS');
+            popFont();
         }
-
-        // artshow use only block
-        pushFont('Arial', 'B', 7);
-        $pdf->Rect($h, $v, $isize, $blockheight);
-        $pdf->SetXY($h, $v + $labeloffset);
-        $pdf->MultiCell(0, 0.12, "ART SHOW\nUSE ONLY");
-        popFont();
-
-        pushFont('Arial', '', 12);
-        $pdf->Rect($h + 0.7, $v + $labeloffset + 0.05, 0.15, 0.15);
-        printXY($h + 0.85, $v + $dataOffset, "AUC");
-        $pdf->Rect($h + 1.37, $v + $labeloffset + 0.05, 0.15, 0.15);
-        printXY($h + 1.52, $v + $dataOffset, 'SOLD');
-        $pdf->Rect($h + 2.15, $v + $labeloffset + 0.05, 0.15, 0.15);
-        printXY($h + 2.3, $v + $dataOffset, 'QS');
-        $pdf->Rect($h + 2.7, $v + $labeloffset + 0.05, 0.15, 0.15, $art['type'] == 'nfs' ? 'DF' : 'D');
-        printXY($h + 2.85, $v + $dataOffset, 'NFS');
 
         if ($useBarCode) {
             $v += $blockheight;
             $barcodeData = sprintf('%7.7d,%3.3d', $art['itemId'], 1);
-            $pdf->code128($h + $indent, $v + $labeloffset, $barcodeData, ($isize - (2 * $indent)) / 1.5, $blockheight - (2 * $labeloffset));
+            $pdf->code128($h + $indent, $v + $labelOffset, $barcodeData, ($isize - (2 * $indent)) / 1.5, $blockheight - (2 * $labelOffset));
         }
 
-        $headerEnd = $v + $blockheight;
-        pushLineWidth(0.024);
-        $pdf->Rect($h, $headerStart, $isize, $headerEnd - $headerStart);
-        popLineWidth();
+        if ($art['type'] != 'nfs') {
+            $headerEnd = $v + $blockheight;
+            pushLineWidth(0.024);
+            $pdf->Rect($h, $headerStart, $isize, $headerEnd - $headerStart);
+            popLineWidth();
+        }
     }
 
-    header('Content-Type: application/pdf');
-    $fileLabel = preg_replace('/[^A-Za-z0-9_]/', '', $fileLabel);
-    $filename = $fileLabel . '_' . $fileDate . '.pdf';
-    header('Content-Disposition: inline; filename="' . $filename . '"');
-    $output = $pdf->Output();
-    print($output);
-    $response['success'] = true;
-    $response['message'] = "$pages pages output";
+    if ($first) {
+        header('Content-Type: application/pdf');
+        $fileLabel = preg_replace('/[^A-Za-z0-9_]/', '', $fileLabel);
+        $filename = $fileLabel . '_' . $fileDate . '.pdf';
+        header('Content-Disposition: inline; filename="' . $filename . '"');
+    }
+
+    if ($last) {
+        $output = $pdf->Output();
+        print($output);
+        $response['success'] = true;
+        $response['message'] = "$page pages output";
+    }
     return $response;
 }
 
 // pdfArtistControlSheet.php - creates the control sheet as a web page for printing
 
-function pdfArtistControlSheet($regionYearId, $region, $response, $printContactInfo = false) {
+function pdfArtistControlSheet($regionYearId, $region, $response, $printContactInfo = false, $first=true, $last=true) {
+    global $pdf;
+
     $con = get_conf('con');
     if (array_key_exists('currency', $con)) {
         $currency = $con['currency'];
@@ -569,8 +636,17 @@ EOS;
 
     $title = "$conname Art Control Sheet for " . $artistName;
 
-    $pdf = new Fpdf\Fpdf('L', 'in', 'Letter');
-    initPDF($pdf, 0.008, 'Arial', '', 11);
+    if ($pdf == null) {
+        $pdf = new tFPDF('L', 'in', 'Letter');
+
+        // get unicode fonts
+        $pdf->AddFont('Roboto', '', 'Roboto-Regular.ttf', true);
+        $pdf->AddFont('Roboto', 'B', 'Roboto-Bold.ttf', true);
+        #$pdf->AddFont('Roboto','BI','Roboto-BoldItalic.ttf',true);
+        #$pdf->AddFont('Roboto','I','Roboto-Italic.ttf',true);
+
+        initPDF($pdf, 0.008, 'Roboto', '', 11);
+    }
 
     // computes from those offsets
     $hsize = ($pdf->GetPageWidth() - 2 * $margin);
@@ -588,9 +664,13 @@ EOS;
     // print header on first page
     $pdf->AddPage();
     $page++;
-    pushFont('Arial', 'B', 11);
+    pushFont('Roboto', 'B', 11);
     printXY($margin, $margin, "Control Sheets for $conname's " . $artist['name'] . '; Artist: ' . $artistName);
-    $fileLabel = str_replace(' ', '-', $conname . '_' . $artist['name'] . '_' . $artistName);
+    if ($first != $last) {
+        $fileLabel = str_replace(' ', '-', $conname . '_' . 'Multi-Artist');
+    } else {
+        $fileLabel = str_replace(' ', '-', $conname . '_' . $artist['name'] . '_' . $artistName);
+    }
     $y = $pdf->GetPageHeight() - ($margin);
     printXY($margin, $y, "Generated: $createDate");
     $pageStr = "Page $page";
@@ -598,7 +678,7 @@ EOS;
     popFont();
 
     // Title Line
-    pushFont('Arial', 'B', 14);
+    pushFont('Roboto', 'B', 14);
     $v = $firstrow;
     $h = $margin;
     printXY($h, $v, $title);
@@ -606,13 +686,13 @@ EOS;
     $v += 0.4;
 
     // Section Line - Artist & Agent Info
-    pushFont('Arial', 'B', 13);
+    pushFont('Roboto', 'B', 13);
     printXY($h, $v, "Artist & Agent Information");
     popFont();
     $v += 0.3;
 
     // Artist Number:
-    pushFont('Arial', 'B', 12);
+    pushFont('Roboto', 'B', 12);
     printXY($h, $v, "Artist Number: ". $artist['exhibitorNumber']);
     popFont();
     $v += 0.15;
@@ -709,7 +789,7 @@ EOS;
 
         // Section Line - Primary Contact
         $v += 0.25;
-        pushFont('Arial', 'B', 13);
+        pushFont('Roboto', 'B', 13);
         printXY($h, $v, $title);
         popFont();
         $v += 0.3;
@@ -804,7 +884,7 @@ EOS;
 
     // Section Line - Artwork
     $v += 0.25;
-    pushFont('Arial', 'B', 13);
+    pushFont('Roboto', 'B', 13);
     printXY($h, $v, 'Artwork');
     popFont();
     $v += 0.3;
@@ -835,9 +915,9 @@ EOS;
     if ($itemR->num_rows == 0) {
         printXY($h, $v, "No art found for this artist");
         $response['num_rows'] = $itemR->num_rows;
-        $response['status'] = 'No art found requiring bid sheets';
+        if ($first == $last)
+            $response['status'] = 'No art found requiring control sheets';
     } else {
-
         // load data array
         $artItems = [];
         while ($artItem = $itemR->fetch_assoc()) {
@@ -845,7 +925,7 @@ EOS;
         }
         $itemR->free();
 
-        pushFont('Arial', '', 10);
+        pushFont('Roboto', '', 10);
         $numwidth = $pdf->GetStringWidth("123");
         $cPN = $margin + $pt;
         $wPN = $numwidth;
@@ -882,7 +962,7 @@ EOS;
                 $titleNeeded = true;
                 $pdf->AddPage();
                 $page++;
-                pushFont('Arial', 'B', 11);
+                pushFont('Roboto', 'B', 11);
                 printXY($margin, $margin, "Control Sheets for $conname's " . $artist['name'] . '; Artist: ' . $artistName);
                 $y = $pdf->GetPageHeight() - ($margin);
                 printXY($margin, $y, "Generated: $createDate");
@@ -897,19 +977,19 @@ EOS;
                 $titleNeeded = false;
                 rightPrintXY($cPN, $v, $wPN, '#');
                 printXY($cT, $v,'Title');
-                pushFont('Arial', '', 7);
+                pushFont('Roboto', '', 7);
                 printXY($cType - $pt, $v, 'Type');
                 popFont();
                 printXY($cM, $v, 'Material');
-                pushFont('Arial', '', 8);
+                pushFont('Roboto', '', 8);
                 mprintXY($cMin, $v, $wMin, 'Min bid or Ins Value');
                 mprintXY($cSale, $v, $wSale, 'Quick Sale or Print Price');
                 popFont();
-                pushFont('Arial', '', 6);
+                pushFont('Roboto', '', 6);
                 mprintXY($cOrig - $pt, $v, $wOrig + $pt, 'Orig Qty');
                 mprintXY($cQty - $pt, $v, $wQty + $pt, 'Cur. Qty');
                 popFont();
-                pushFont('Arial', '', 8);
+                pushFont('Roboto', '', 8);
                 printXY($cLoc, $v, 'Location');
                 popFont();
                 printXY($cStatus, $v, 'Status');
@@ -949,14 +1029,14 @@ EOS;
             rightPrintXY($cPN, $v, $wPN, $artItem['item_key']);
             $y = mprintXY($cT, $v, $wT, $artItem['title']);
             if ($y > $maxY) $maxY = $y;
-            pushFont('Arial', '', 7);
+            pushFont('Roboto', '', 7);
             printXY($cType, $v, $artItem['type']);
             popFont();
             $y = mprintXY($cM, $v, $wM, $artItem['material']);
             if ($y > $maxY) $maxY = $y;
             if ($artItem['min_price'] && $artItem['type'] != 'print') {
                 if ($artItem['min_price'] > 9999.99) {
-                    pushFont('Arial', '', $artItem['min_price'] > 999999.99 ? 7.5 : 9);
+                    pushFont('Roboto', '', $artItem['min_price'] > 999999.99 ? 7.5 : 9);
                 }
                 rightPrintXY($cMin, $v, $wMin, $dolfmt->formatCurrency((float)$artItem['min_price'], $currency));
                 if ($artItem['min_price'] > 9999.99) {
@@ -965,7 +1045,7 @@ EOS;
             }
             if ($artItem['sale_price'] && $artItem['type'] != 'nfs') {
                 if ($artItem['sale_price'] > 9999.99) {
-                    pushFont('Arial', '', $artItem['sale_price'] > 999999.99 ? 7.5 : 9);
+                    pushFont('Roboto', '', $artItem['sale_price'] > 999999.99 ? 7.5 : 9);
                 }
                 rightPrintXY($cSale, $v, $wSale, $dolfmt->formatCurrency((float)$artItem['sale_price'], $currency));
                 if ($artItem['sale_price'] > 9999.99) {
@@ -976,13 +1056,13 @@ EOS;
                 rightPrintXY($cOrig, $v, $wOrig, $artItem['original_qty']);
             if ($artItem['quantity'] > 0)
                 rightPrintXY($cQty, $v, $wQty, $artItem['quantity']);
-            pushFont('Arial', '', 7);
+            pushFont('Roboto', '', 7);
             $y = fitprintXY($cStatus - $pt, $v, $wStatus + $pt, $artItem['status']);
             if ($y > $maxY) $maxY = $y;
             popFont();
             if ($artItem['final_price']) {
                 if ($artItem['final_price'] > 9999.99) {
-                    pushFont('Arial', '', $artItem['final_price'] > 999999.99 ? 7.5 : 9);
+                    pushFont('Roboto', '', $artItem['final_price'] > 999999.99 ? 7.5 : 9);
                 }
                 rightPrintXY($cFinal, $v, $wFinal, $dolfmt->formatCurrency((float)$artItem['final_price'], $currency));
                 if ($artItem['final_price'] > 9999.99) {
@@ -1020,17 +1100,52 @@ EOS;
         }
 
         $v += $minRowHeight;
-        pushFont('Arial', 'B', 12);
+        pushFont('Roboto', 'B', 12);
         centerPrintXY(0, $v, $pdf->getPageWidth(), "* * * * * End of Artwork * * * * *");
     }
 
-    header('Content-Type: application/pdf');
-    $fileLabel = preg_replace('/[^A-Za-z0-9_]/', '', $fileLabel);
-    $filename = $fileLabel . '_' . $fileDate . '.pdf';
-    header('Content-Disposition: inline; filename="' . $filename . '"');
-    $output = $pdf->Output();
-    print($output);
-    $response['success'] = true;
-    $response['message'] = "$page pages output";
+    if ($first) {
+        header('Content-Type: application/pdf');
+        $fileLabel = preg_replace('/[^A-Za-z0-9_]/', '', $fileLabel);
+        $filename = $fileLabel . '_' . $fileDate . '.pdf';
+        header('Content-Disposition: inline; filename="' . $filename . '"');
+    }
+
+    if ($last) {
+        $output = $pdf->Output();
+        print($output);
+        $response['success'] = true;
+        $response['message'] = "$page pages output";
+    }
     return $response;
+}
+
+function computeTitleFont($pdf, $title, $width) {
+    pushFont('Roboto', '', 14);
+    $titleFontSize = 14;
+    $titleWidth = $pdf->getStringWidth($title);
+    $titleWeight = '';
+    while ($titleWidth > $width && $titleFontSize >= 12) {
+        popFont();
+        $titleWeight = 'SC';
+        pushFont('Roboto', $titleWeight, $titleFontSize);
+        $titleWidth = $pdf->getStringWidth($title);
+        if ($titleWidth <= $width)
+            break;
+
+        popFont();
+        $titleWeight = 'C';
+        pushFont('Roboto', $titleWeight, $titleFontSize);
+        $titleWidth = $pdf->getStringWidth($title);
+        if ($titleFontSize == 12 || $titleWidth <= $width)
+            break;
+
+        $titleFontSize--;
+        $titleWeight = '';
+        popFont();
+        pushFont('Roboto', $titleWeight, $titleFontSize);
+        $titleWidth = $pdf->getStringWidth($title);
+    }
+    popFont();
+    return array($titleFontSize, $titleWeight);
 }

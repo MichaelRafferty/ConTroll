@@ -2,6 +2,12 @@
  * Upgrades/changes to art show items
  */
 
+/*
+ * WARNING: These alter table statements for notes may fail, some databases seem to be missing this field
+ */
+ALTER TABLE exhibitors ADD COLUMN IF NOT EXISTS `notes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+ALTER TABLE exhibitorYears ADD COLUMN IF NOT EXISTS `notes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+
 /* delete the auth artshow, as obsolete replaced by artsales and artinventory */
 DELETE FROM atcon_auth WHERE auth = 'artshow';
 ALTER TABLE atcon_auth MODIFY COLUMN  auth enum('data_entry','cashier','manager','artinventory','artsales','vol_roll');
@@ -71,4 +77,63 @@ Thank you,
 '
 where appName = 'controll' and appPage = 'emails' and appSection = 'expire' and txtItem = 'text';
 
-INSERT INTO patchLog(id, name) VALUES(xx, 'artshowItems');
+/*
+ *  Clean up exhibitors and exhibitorYears for text fields to be not null default blank
+ */
+UPDATE exhibitors SET artistName = '' WHERE  artistName IS NULL;
+UPDATE exhibitors SET exhibitorName = '' WHERE  exhibitorName IS NULL;
+UPDATE exhibitors SET exhibitorPhone = '' WHERE  exhibitorPhone IS NULL;
+UPDATE exhibitors SET salesTaxId = '' WHERE  salesTaxId IS NULL;
+UPDATE exhibitors SET website = '' WHERE  website IS NULL;
+UPDATE exhibitors SET description = '' WHERE  description IS NULL;
+UPDATE exhibitors SET password = '' WHERE  password IS NULL;
+UPDATE exhibitors SET addr = '' WHERE  addr IS NULL;
+UPDATE exhibitors SET addr2 = '' WHERE  addr2 IS NULL;
+UPDATE exhibitors SET city = '' WHERE  city IS NULL;
+UPDATE exhibitors SET state = '' WHERE  state IS NULL;
+UPDATE exhibitors SET zip = '' WHERE  zip IS NULL;
+UPDATE exhibitors SET country = '' WHERE  country IS NULL;
+UPDATE exhibitors SET shipCompany = '' WHERE  shipCompany IS NULL;
+UPDATE exhibitors SET shipAddr = '' WHERE  shipAddr IS NULL;
+UPDATE exhibitors SET shipAddr2 = '' WHERE  shipAddr2 IS NULL;
+UPDATE exhibitors SET shipCity = '' WHERE  shipCity IS NULL;
+UPDATE exhibitors SET shipState = '' WHERE  shipState IS NULL;
+UPDATE exhibitors SET shipZip = '' WHERE  shipZip IS NULL;
+UPDATE exhibitors SET shipCountry = '' WHERE  shipCountry IS NULL;
+UPDATE exhibitors SET notes = '' WHERE  notes IS NULL;
+
+UPDATE exhibitorYears SET contactName = '' WHERE  contactName IS NULL;
+UPDATE exhibitorYears SET contactEmail = '' WHERE  contactEmail IS NULL;
+UPDATE exhibitorYears SET contactPhone = '' WHERE  contactPhone IS NULL;
+UPDATE exhibitorYears SET contactPassword = '' WHERE  contactPassword IS NULL;
+UPDATE exhibitorYears SET notes = '' WHERE  notes IS NULL;
+
+ALTER TABLE exhibitors MODIFY COLUMN artistName varchar(128) NOT NULL DEFAULT '';
+ALTER TABLE exhibitors MODIFY COLUMN exhibitorName varchar(64) NOT NULL DEFAULT '';
+ALTER TABLE exhibitors MODIFY COLUMN exhibitorPhone varchar(32) NOT NULL DEFAULT '';
+ALTER TABLE exhibitors MODIFY COLUMN salesTaxId varchar(32) NOT NULL DEFAULT '';
+ALTER TABLE exhibitors MODIFY COLUMN website varchar(256) NOT NULL DEFAULT '';
+ALTER TABLE exhibitors MODIFY COLUMN description text NOT NULL;
+ALTER TABLE exhibitors MODIFY COLUMN password varchar(64) NOT NULL DEFAULT '';
+ALTER TABLE exhibitors MODIFY COLUMN addr varchar(64) NOT NULL DEFAULT '';
+ALTER TABLE exhibitors MODIFY COLUMN addr2 varchar(64) NOT NULL DEFAULT '';
+ALTER TABLE exhibitors MODIFY COLUMN city varchar(32) NOT NULL DEFAULT '';
+ALTER TABLE exhibitors MODIFY COLUMN state varchar(16) NOT NULL DEFAULT '';
+ALTER TABLE exhibitors MODIFY COLUMN zip varchar(10) NOT NULL DEFAULT '';
+ALTER TABLE exhibitors MODIFY COLUMN country varchar(3) NOT NULL DEFAULT '';
+ALTER TABLE exhibitors MODIFY COLUMN shipCompany varchar(64) NOT NULL DEFAULT '';
+ALTER TABLE exhibitors MODIFY COLUMN shipAddr varchar(64) NOT NULL DEFAULT '';
+ALTER TABLE exhibitors MODIFY COLUMN shipAddr2 varchar(64) NOT NULL DEFAULT '';
+ALTER TABLE exhibitors MODIFY COLUMN shipCity varchar(64) NOT NULL DEFAULT '';
+ALTER TABLE exhibitors MODIFY COLUMN shipState varchar(16) NOT NULL DEFAULT '';
+ALTER TABLE exhibitors MODIFY COLUMN shipZip varchar(10) NOT NULL DEFAULT '';
+ALTER TABLE exhibitors MODIFY COLUMN shipCountry varchar(3) NOT NULL DEFAULT '';
+ALTER TABLE exhibitors MODIFY COLUMN notes text NOT NULL;
+
+ALTER TABLE exhibitorYears MODIFY COLUMN contactName varchar(64) NOT NULL DEFAULT '';
+ALTER TABLE exhibitorYears MODIFY COLUMN contactEmail varchar(254) NOT NULL DEFAULT '';
+ALTER TABLE exhibitorYears MODIFY COLUMN contactPhone varchar(32) NOT NULL DEFAULT '';
+ALTER TABLE exhibitorYears MODIFY COLUMN contactPassword varchar(64) NOT NULL DEFAULT '';
+ALTER TABLE exhibitorYears MODIFY COLUMN notes text NOT NULL;
+
+INSERT INTO patchLog(id, name) VALUES(51, 'artshowItems');

@@ -61,13 +61,9 @@ if ($reportAuth != $hdrAuth) {
     }
 }
 
-$debug = get_conf('debug');
-if (array_key_exists('controll_reports', $debug)) {
-    $dumpSQL = $debug['controll_reports'];
-    $log_conf = get_conf('log');
-    logInit($log_conf['controll']);
-} else {
-    $dumpSQL = 0;
+$dumpSQL = getConfValue('debug','controll_reports', 0);
+if ($dumpSQL > 0) {
+    logInit(getConfValue('log', 'controll', 'controllLog'));
 }
 
 $response["reportTitle"] = $reportHdr['name'];
@@ -151,9 +147,11 @@ if (array_key_exists('group', $reportParams)) {
     $sql .= 'GROUP BY ' . PHP_EOL;
     $clause = $reportParams['group'];
     $skeys = array_keys($clause);
-    sort($wkeys);
+    sort($skeys);
     $first = '';
-    foreach ($wkeys as $value) {
+    foreach ($skeys as $value) {
+        if ($clause[$value] == '')
+            continue;
         if ($first == '') {
             $first = ', ';
         }
@@ -169,9 +167,11 @@ if (array_key_exists('sort', $reportParams)) {
     $sql .= 'ORDER BY ' . PHP_EOL;
     $clause = $reportParams['sort'];
     $skeys = array_keys($clause);
-    sort($wkeys);
+    sort($skeys);
     $first = "";
-    foreach ($wkeys AS $value) {
+    foreach ($skeys AS $value) {
+        if ($clause[$value] == '')
+            continue;
         if ($first == "") {
             $first = ", ";
         } else {

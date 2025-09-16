@@ -1,7 +1,6 @@
 <?php
-
+// ConTroll Registration System, Copyright 2015-2025, Michael Rafferty, Licensed under the GNU Affero General Public License, Version 3.
 // library AJAX Processor: admin_atconLoadData.php
-// Balticon Registration System
 // Author: Syd Weinstein
 // load all objects needed at start of atcon admin functions
 

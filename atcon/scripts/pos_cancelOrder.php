@@ -49,12 +49,20 @@ $orderId = $_POST['orderId'];
 
 load_cc_procs();
 
- $locationId = getSessionVar('terminal');
- if ($locationId) {
-     $locationId = $locationId['locationId'];
- } else {
-     $locationId = $cc['location'];
- }
+$locationId = getSessionVar('terminal');
+if ($locationId) {
+    $locationId = $locationId['locationId'];
+} else {
+    $locationId = $cc['location'];
+}
+cc_cancelOrder('atcon', $orderId, true, $locationId);
 
- cc_cancelOrder('atcon', $orderId, true, $locationId);
+$upT = <<<EOS
+UPDATE transaction
+SET orderId = NULL
+WHERE orderId = ?;
+EOS;
+
+$rows_upd = dbSafeCmd($upT, 's', array($orderId));
+
  ajaxSuccess(array ('status' => 'success', 'message' => "Order $orderId cancelled."));

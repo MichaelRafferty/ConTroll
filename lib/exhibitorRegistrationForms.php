@@ -190,7 +190,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                             <?php if ($portalType == 'vendor' && array_key_exists('taxidlabel', $vendor_conf) && $vendor_conf['taxidlabel'] != '') { ?>
                             <div class='row mt-1'>
                                 <div class='col-sm-2'>
-                                    <label for='exhibitorTaxid'><?php echo $vendor_conf['taxidlabel']; ?>:</label>
+                                    <label for='exhibitorTaxid'><span class='text-danger'>&bigstar;</span><?php echo $vendor_conf['taxidlabel']; ?>:</label>
                                 </div>
                                 <div class="col-sm-10 p-0">
                                     <input class='form-control-sm' type='text' id="salesTaxId" name='salesTaxId'
@@ -214,7 +214,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                                     <label for='pw2'><span class='text-danger'>&bigstar;</span>Confirm Password: </label>
                                 </div>
                                 <div class='col-sm-10 p-0 ms-0 me-0'>
-                                    <?php echo eyepwField('pw2', 'password2', 40,'retype password', $tabIndex);
+                                    <?php echo eyepwField('pw2', 'password2', 40,'retype password, min 8 characters', $tabIndex);
                                         $tabIndex += 2;
                                     ?>
                                 </div>
@@ -415,7 +415,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                                     <label for='cpw2'><span class='text-danger'>&bigstar;</span>Confirm Password: </label>
                                 </div>
                                 <div class='col-sm-10 p-0 ms-0 me-0'>
-                                    <?php echo eyepwField('cpw2', 'cpassword2', 40,'retype the contact password', $tabIndex);
+                                    <?php echo eyepwField('cpw2', 'cpassword2', 40,'retype the contact password, min 8 chars', $tabIndex);
                                         $tabIndex += 2;
                                     ?>
                                 </div>
@@ -668,7 +668,7 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                 <?php if ($portalType == 'vendor' && array_key_exists('taxidlabel', $vendor_conf) && $vendor_conf['taxidlabel'] != '') { ?>
                                     <div class='row mt-1'>
                                         <div class='col-sm-2'>
-                                            <label for='exhibitorTaxid'><?php echo $vendor_conf['taxidlabel']; ?>:</label>
+                                            <label for='exhibitorTaxid'><span class='text-danger'>&bigstar;</span><?php echo $vendor_conf['taxidlabel']; ?>:</label>
                                         </div>
                                         <div class="col-sm-10 p-0">
                                             <input class='form-control-sm' type='text' id="salesTaxId" name='salesTaxId'
@@ -692,7 +692,7 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                         <label for='pw2'><span class='text-danger'>&bigstar;</span>Confirm Password: </label>
                                     </div>
                                     <div class='col-sm-10 p-0 ms-0 me-0'>
-                                        <?php echo eyepwField('pw2', 'password2', 40,'retype the exhibitor password', $tabIndex);
+                                        <?php echo eyepwField('pw2', 'password2', 40,'retype the exhibitor password, min 8 chars', $tabIndex);
                                             $tabIndex += 2;
                                         ?>
                                     </div>
@@ -818,7 +818,7 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                         <label for='cpw2'><span class='text-danger'>&bigstar;</span>Confirm Password: </label>
                                     </div>
                                     <div class='col-sm-10 p-0 ms-0 me-0'>
-                                        <?php echo eyepwField('cpw2', 'cpassword2', 40,'retype the contact password', $tabIndex);
+                                        <?php echo eyepwField('cpw2', 'cpassword2', 40,'retype the contact password, min 8 chars', $tabIndex);
                                             $tabIndex += 2;
                                         ?>
                                     </div>

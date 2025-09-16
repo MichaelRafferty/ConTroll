@@ -89,13 +89,8 @@ function draw_login($config_vars, $result_message = '', $result_color = '', $why
                 </p>
             </div>
         </div>
-        <div class='row mt-4'>
-            <div class='col-sm-11'>
-                For any difficulties with the registration system please contact registration at
-                <a href="mailto:<?php echo $con['regadminemail']; ?>?subject=Portal%20Difficulties">
-                    <?php echo $con['regadminemail']; ?>
-                </a>
-            </div>
+        <div class='row'>
+            <div class='col-sm-11'><?php echo outputCustomText('footer/difficulties', 'portal/all/'); ?></div>
         </div>
         <div class='row'>
             <div class='col-sm-12 m-0 p-0'>
@@ -321,7 +316,7 @@ function validationComplete($id, $idType, $email, $validationType, $multiple) : 
     if ($idType == 'p') {
         $rSQL = <<<EOS
 SELECT p.id AS perid, n.id AS newperid, p.email_addr AS email, m.label, m.memCategory, t.complete_date, t.complete_date < ? AS inTime,
-       TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), '  *', ' ')) AS fullName,
+       TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
        p.first_name, p.last_name
 FROM perinfo p
 LEFT OUTER JOIN newperson n ON n.perid = p.id
@@ -333,7 +328,7 @@ EOS;
     } else {
         $rSQL = <<<EOS
 SELECT NULL AS perid, n.id AS newperid, n.email_addr AS email, m.label, m.memCategory, t.complete_date, t.complete_date < ? AS inTime,
-       TRIM(REGEXP_REPLACE(CONCAT_WS(' ', n.first_name, n.middle_name, n.last_name, n.suffix), '  *', ' ')) AS fullName,
+       TRIM(REGEXP_REPLACE(CONCAT_WS(' ', n.first_name, n.middle_name, n.last_name, n.suffix), ' +', ' ')) AS fullName,
        n.first_name, n.last_name
 FROM newperson n
 LEFT OUTER JOIN reg r ON r.newperid = n.id AND r.conid = ? AND r.status = 'paid'

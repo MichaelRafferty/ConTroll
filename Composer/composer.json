@@ -5,16 +5,13 @@
         "symfony/amazon-mailer": "^7.2",
         "google/apiclient": "^2.18",
         "aws/aws-sdk-php": "^3.307",
-        "tinymce/tinymce": "^7.7",
-        "fpdf/fpdf": "^1.86",
-        "picqer/php-barcode-generator": "^3.0",
-        "erkens/fpdf-barcode": "^2.2",
+        "tinymce/tinymce": "^8",
         "guzzlehttp/psr7": "^2.6",
         "league/oauth2-client": "^2.7",
         "league/oauth2-google": "^4.0",
         "league/oauth2-facebook": "^2.2",
         "erusev/parsedown": "^1.7",
-        "phpoffice/phpspreadsheet": "^4.1",
+        "phpoffice/phpspreadsheet": "^5",
         "lbuchs/webauthn": "^2.2"
     }
 }

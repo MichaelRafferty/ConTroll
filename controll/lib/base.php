@@ -182,12 +182,12 @@ echo <<<EOF
     <title>$pageTitle Reg</title>
     <link rel='icon' type='image/x-icon' href='/lib/favicon.ico'>
     <link href='$jquicss' rel='stylesheet' type='text/css' />
-    <link href='$bs5css' rel='stylesheet'/>
-    <link href='csslib/bootstrap-icons.css' rel='stylesheet' type='text/css' />
+    <link href='$bs5css' rel='stylesheet' type='text/css' />
+    <link href="csslib/bootstrap-icons.css?v=$controllJSversion" rel='stylesheet' type='text/css' />
 EOF;
     if(isset($css) && $css != null) {
         foreach ($css as $sheet) {
-?><link href='<?php echo $sheet; ?>' rel=stylesheet type='text/css' />
+?><link href='<?php echo "$sheet?v=$controllJSversion"; ?>' rel=stylesheet type='text/css' />
 <?php
         }
     }
@@ -245,7 +245,8 @@ EOS;
                 </h1>
             </div>
             <div class="col-sm-3">
-                <button class="btn btn-light" id="login" style="float: right;" onclick="window.location.href='<?php echo $auth == null ? "index.php?logout" : "?logout"; ?>'">
+                <button class="btn" id="login" style="background-color: #ccc; float: right;" onclick="window.location.href='<?php echo $auth ==
+                null ? "index.php?logout" : "?logout"; ?>'">
                     <?php echo $auth == null ? "Login" : "Logout " . $auth['email']; ?>
                 </button>
             </div>         

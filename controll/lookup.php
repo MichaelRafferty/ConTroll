@@ -12,7 +12,6 @@ $conid = $con['id'];
 $conf = get_conf('con');
 $google = get_conf('google');
 $reg_conf = get_conf('reg');
-$debug = get_conf('debug');
 $url = $google['redirect_base'];
 
 if(!$need_login or !checkAuth($need_login['sub'], $page)) {
@@ -28,17 +27,10 @@ page_init($page,
                    ),
               $need_login);
 
-
-if (array_key_exists('controll_lookup', $debug))
-    $debug_lookup=$debug['controll_lookup'];
-else
-    $debug_lookup = 0;
-
-
 $config_vars = array();
 $config_vars['label'] = $con['label'];
 $config_vars['regadminemail'] = $conf['regadminemail'];
-$config_vars['debug'] = $debug_lookup;
+$config_vars['debug'] = getConfValue('debug', 'controll_lookup', 0);
 $config_vars['conid'] = $conid;
 ?>
 <script type='text/javascript'>

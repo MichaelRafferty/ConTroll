@@ -26,14 +26,6 @@ function get_oauthkey() {
     return 'def00000a40f753f22d669707fd0adf040bf3bac8b56decd939eea3761f65e00c3b4a545009ba030019b0778e83e9966a15f008d1438c11e820ed2a297ad2ce4d5660c0d';
 }
 
-function get_debug($type) {
-    $debug = get_conf("debug");
-    if ($debug && array_key_exists($type, $debug)) {
-        return $debug[$type];
-    }
-    return (0);
-}
-
 // reg_ uses the atcon ajax renders
 function RenderErrorAjax($message_error)
 {

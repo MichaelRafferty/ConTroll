@@ -9,6 +9,7 @@ var users = null;
 var printers = null;
 var userid = null;
 var terminals = null;
+var payments = null;
 
 // search screen
 window.onload = (function() {
@@ -82,6 +83,9 @@ function loadInitialData(loadtype) {
                     terminals.dirty = false;
                 }
             }
+            if (payments == null) {
+                payments = new Payments();
+            }
         },
         error: showAjaxError,
     });
@@ -89,6 +93,9 @@ function loadInitialData(loadtype) {
 
 function settab(pane) {
     clear_message();
+    if (pane == 'payments-pane') {
+        payments.loadPaymentIssues();
+    }
 }
 
 // Useful tabulator functions (formatters, invert toggle)

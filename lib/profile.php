@@ -3,7 +3,7 @@
 
 // drawEditPersonBlock - just output the block to edit the person
 function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $editEmail=false, $ageByDate = '',
-                             $membershipTypes = [], $tabIndexStart = 100, $admin = false, $idPrefix = '') {
+                             $membershipTypes = [], $tabIndexStart = 100, $admin = false, $idPrefix = '', $free=false) {
     $reg = get_conf('reg');
     if ($editEmail)
         $polConf = $reg;
@@ -76,6 +76,7 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
                    tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
         </div>
     </div>
+    <?php if ($free == false) { ?>
     <div class='row'>
         <div class='col-sm-12'>
             <label for='<?php echo $idPrefix . 'legalName'; ?>' class='form-label-sm'>
@@ -86,6 +87,7 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
                    tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
         </div>
     </div>
+    <?php } ?>
     <div class='row'>
         <div class='col-sm-auto me-2'>
             <label for='<?php echo $idPrefix . 'badgename'; ?>' class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>Badge Name (optional)

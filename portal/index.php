@@ -14,12 +14,11 @@ global $config_vars;
 $con = get_conf('con');
 $conid = $con['id'];
 $portal_conf = get_conf('portal');
-$debug = get_conf('debug');
 $condata = get_con();
 
 $config_vars = array();
 $config_vars['label'] = $con['label'];
-$config_vars['debug'] = $debug['portal'];
+$config_vars['debug'] = getConfValue('debug', 'portal', 0);
 $config_vars['uri'] = $portal_conf['portalsite'];
 $config_vars['required'] = getConfValue('reg', 'required', 'addr');
 $loginId = null;
@@ -27,7 +26,7 @@ $loginType = null;
 $purpose = "From here you can create and manage your membership account.";
 $why = "continue to the Portal";
 
-// first lets check the authentication stuff. but only if not loging out
+    // first lets check the authentication stuff. but only if not loging out
     // in session or not, is it a logout? (force clear session method, as well as logout)
     if (isset($_REQUEST['logout'])) {
         clearSession();
@@ -35,7 +34,11 @@ $why = "continue to the Portal";
         header('location:' . $portal_conf['portalsite']);
         exit();
     }
+
+    /* NOTE: This is a 'future', as the oauth server didn't get written.
     // oauth= indicates an authentication request from the ConTroll Oauth2 server via redirect
+    // This is not a login to portal via an oauth2 request (google, facebook, etc.)
+
     if (isset($_REQUEST['oauth'])) {
         // decrypt the request
         $request = decryptCipher($_GET['oauth'], true);
@@ -65,8 +68,11 @@ $why = "continue to the Portal";
             chooseAccountFromEmail(getSessionVar('email'), null, null, null, 'logged-in');
         }
     }
+    // END OF FUTURE FOR Controll Oauth validation request */
 
     $refresh = isset($_REQUEST['refresh']) && isSessionVar('id');
+    if (isset($_REQUEST['passkey']) && $refresh)
+        $config_vars['refresh'] = 'passkey';
 
     // oauth2= indicates a new account login via oAUTH2 or the selected account is re-verifying, clear the old information,
     //  unless the GET variable of 'refresh' is found
@@ -94,7 +100,7 @@ $why = "continue to the Portal";
         // is this session validation taking too long?
         $oauth2timeout = getSessionVar('oauth2timeout');
         if ($oauth2timeout == null) {  // no timeout set one
-            $oauth2timeout = time() + 5 * 60;
+            $oauth2timeout = time() + 2 * 60;
             setSessionVar('oauth2timeout', $oauth2timeout);
         }
         if (time() > $oauth2timeout) {

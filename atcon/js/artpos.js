@@ -33,7 +33,9 @@ var currentArtist = null;
 var itemDetailsDiv = null;
 
 // pay items
-var pay_div = null;
+var_pay_div = null;
+var pay_div_amt = null;
+var pay_div_pay = null;
 var pay_button_pay = null;
 var pay_button_rcpt = null;
 var pay_button_ercpt = null;
@@ -44,6 +46,9 @@ var discount_mode = 'none';
 var total_art_due = 0;
 var total_tax_due = 0;
 var total_amount_due = 0;
+var display_art_due = 0;
+var display_tax_due = 0;
+var display_amount_due = 0;
 var tax_label = 'Sales Tax';
 var orderMsg = '';
 var payOverride = 0;
@@ -265,11 +270,11 @@ function startOver(reset_all) {
     }
 
     hideStats();
-    currentPerson = null;
     // empty cart
     cart.startOver();
     cart.hideRelease();
     // empty search strings and results
+    currentPerson = null;
     badgeid_field.value = "";
     id_div.innerHTML = "";
     unpaid_table = null;
@@ -288,7 +293,7 @@ function startOver(reset_all) {
     pay_button_pay = null;
     pay_button_rcpt = null;
     pay_button_ercpt = null;
-    receeiptEmailAddresses_div = null;
+    receiptEmailAddresses_div = null;
     pay_tid = null;
     pay_currentOrderId = null;
     pay_InitialCart = true;
@@ -314,6 +319,18 @@ function gotoAdd() {
 
 // switch to the pay tab
 function gotoPay() {
+    // check if any prints in the cart have a purchase quantity > 1
+    var ret = cart.getQtyGT1Rows();
+    var msg = 'You have ' + ret[0] + ' print in the cart with an unusual quantity:\n\n';
+    if (ret[0] > 0) {
+        if (ret[1] > 1)
+            msg = 'You have ' + ret[0] + ' prints in the cart with unusual quantities:\n\n';
+
+        if (!confirm(msg + ret[1] + "\n" +
+            '   Press "OK" to keep these quantities and go to payment.\n\n' +
+            '   Press "Cancel" to return to the cart to fix them.'))
+            return;
+    }
     bootstrap.Tab.getOrCreateInstance(pay_tab).show();
 }
 
@@ -365,6 +382,9 @@ function buildOrderSuccess(data) {
     total_art_due = data.rtn.preTaxAmt;
     total_tax_due = data.rtn.taxAmt;
     total_amount_due = data.rtn.totalAmt;
+    display_art_due = total_art_due;
+    display_tax_due = total_tax_due;
+    display_amount_due = total_amount_due;
     taxLabel = data.rtn.taxLabel;
     show_message("Order #" + pay_currentOrderId + " created.<br/>" + orderMsg);
     payShown();
@@ -648,14 +668,26 @@ function drawItemDetails(item, full = false) {
     var btn_color = 'btn-primary';
     var priceType = '';
     var priceField = '';
+    var statusColor = '';
+    var statusMsg = '';
 
     var cols = full ? '2' : '4';
+
+    if (config.inlineInventory == 0 && item.status == 'BID') {
+        btn_color = 'btn-warning';
+        statusColor = 'bg-warning';
+        statusMsg = ' (You cannot buy an item in this status)';
+        valid = false;
+    }
 
     html  = '<div class="row mt-4 mb-1"><div class="col-sm-11 ms-3 bg-primary text-white">Item Details</div></div>';
     html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Artist Number:</div><div class="col-sm-auto">' + item.exhibitorNumber + '</div></div>';
     html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Artist Item #:</div><div class="col-sm-auto">' + item.item_key + '</div></div>';
     html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Type:</div><div class="col-sm-auto">' + item.type + '</div></div>';
-    html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Status:</div><div class="col-sm-auto">' + item.status + '</div></div>';
+    html += '<div class="row m-0 p-0">' +
+            '<div class="col-sm-' + cols + ' ' + statusColor + '">Status:</div>' +
+            '<div class="col-sm-auto ' + statusColor + '">' + item.status + statusMsg + '</div>' +
+        '</div>';
     html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Artist Name:</div><div class="col-sm-7">' + item.exhibitorName + '</div></div>';
     html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Title:</div><div class="col-sm-7">' + item.title + '</div></div>';
     html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Material:</div><div class="col-sm-7">' + item.material + '</div></div>';
@@ -687,13 +719,13 @@ function drawItemDetails(item, full = false) {
     if (valid) {
         switch (item.type) {
             case 'art':
+                html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Minimum Bid:</div>' +
+                    '<div class="col-sm-7">' + Number(item.min_price).toFixed(2) + '</div></div>';
+                if (item.bidder == null || item.bidder == '') {
+                    html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Quick Sale Price:</div>' +
+                        '<div class="col-sm-7">' + Number(item.sale_price).toFixed(2) + '</div></div>';
+                }
                 if (full) {
-                    html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Minimum Bid:</div>' +
-                        '<div class="col-sm-7">' + Number(item.min_price).toFixed(2) + '</div></div>';
-                    if (item.bidder == null || item.bidder == '') {
-                        html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Quick Sale Price:</div>' +
-                            '<div class="col-sm-7">' + Number(item.sale_price).toFixed(2) + '</div></div>';
-                    }
                     if (item.final_price != null && item.final_price > 0)
                         html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Final Price:</div>' +
                             '<div class="col-sm-7">' + Number(item.final_price).toFixed(2) + '</div></div>';
@@ -756,8 +788,8 @@ function drawItemDetails(item, full = false) {
                 break;
 
             case 'bid':
-                if (btn_color != 'btn-warning' && config.inlineInventory != 1) {
-                    htmlLine = '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Final Price:</div><div class="col-sm-7">' +
+                if (btn_color != 'btn-warning' && config.inlineInventory == 1) {
+                    html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Final Price:</div><div class="col-sm-7">' +
                         '<input type=number inputmode="numeric" class="no-spinners" id="art-final-price" name="art-final-price" ' +
                             'style="width: 9em;" value="' + item.final_price + '"/></div></div>';
                 }
@@ -829,16 +861,32 @@ function foundArt(data) {
                 if (htmlLine != '') {
                     html += htmlLine;
                 } else {
-                    if (item.type != 'print' && Number(item[priceField]) > 0 ) {
-                        html += '<div class="row"><div class="col-sm-4">' + priceType + '</div><div class="col-sm-8">$' +
-                            Number(item[priceField]).toFixed(2) + '</div></div>';
-                    }
-                    if ((config.inlineInventory == 1 && item.type == 'art') || btn_color == 'btn-warning')
-                        html += '<div class="row mt-2"><div class="col-sm-4"></div><div class="col-sm-8"><button class="btn btn-sm ' + btn_color +
-                            '" type="button" onclick="updateInventory(-1);">Update Art Item Inventory</button></div></div>';
-                    else
+                    if (btn_color == 'btn-warning' || (item.status != 'Sold Bid Sheet' && item.status != 'Sold at Auction' )) {
+                        if (item.type == 'art') {
+                            if (config.inlineInventory == 1) {
+                                html += '<div class="row mt-2"><div class="col-sm-4"></div><div class="col-sm-8"><button class="btn btn-sm '
+                                    + btn_color + '" type="button" onclick="updateInventory(-1);">Update Art Item Inventory</button>' +
+                                    '</div></div>';
+                            } else if (item.status == 'Checked In') {
+                                html += '<div class="row mt-2"><div class="col-sm-4"></div><div class="col-sm-8"><button class="btn btn-sm ' + btn_color +
+                                    '" type="button" onclick="addToCart(-1);">Add Art Item to Cart</button></div></div>';
+                            }
+                        } else if (item.type == 'print') {
+                            if (btn_color == 'btn-warning') {
+                                if (config.inlineInventory == 1) {
+                                    html += '<div class="row mt-2"><div class="col-sm-4"></div><div class="col-sm-8"><button class="btn btn-sm '
+                                        + btn_color + '" type="button" onclick="updateInventory(-1);">Update Art Item Inventory</button>' +
+                                        '</div></div>';
+                                }
+                            } else {
+                                html += '<div class="row mt-2"><div class="col-sm-4"></div><div class="col-sm-8"><button class="btn btn-sm ' + btn_color +
+                                    '" type="button" onclick="addToCart(-1);">Add Art Item to Cart</button></div></div>';
+                            }
+                        }
+                    } else {
                         html += '<div class="row mt-2"><div class="col-sm-4"></div><div class="col-sm-8"><button class="btn btn-sm ' + btn_color +
                             '" type="button" onclick="addToCart(-1);">Add Art Item to Cart</button></div></div>';
+                    }
                 }
             } else {
                 html += '<div class="row mt-2"><div class="col-sm-4"></div><div class="col-sm-auto bg-warning">Already in Cart</div></div>';
@@ -1080,8 +1128,8 @@ function updateInventoryStep(item, repeatPass) {
                 ' min=1 max=9999999 value="' + (item.final_price > item.min_price ? item.final_price : item.min_price) + '"></div></div>';
             inventoryUpdates.push({field: 'final_price', id: 'finalPrice', type: 'd',
                 prior: item.min_price - 0.01 });
-            inventoryUpdates.push({field: 'status',  value: 'Bid'});
-            notes += 'Updated Status from Checked Out to Bid for sale after return to artist';
+            inventoryUpdates.push({field: 'status',  value: 'Checked In'});
+            notes += 'Updated Status from Checked Out to Checked In for sale after return to artist';
         }
     }
 
@@ -1277,7 +1325,7 @@ function initArtSalesComplete(data) {
 
     // update cart elements
     var unpaid_rows = cart.updateFromDB(data);
-    payShown();
+    payShown(unpaid_rows > 0);
 }
 
 // setPayType: shows/hides the appropriate fields for that payment type
@@ -1752,7 +1800,7 @@ function showStats(which) {
         data: data,
         index: 'perid',
         layout: "fitColumns",
-        pagination: true,
+        pagination: data.length > 25,
         paginationSize: 10,
         paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
 
@@ -1790,64 +1838,10 @@ function addShown() {
 
 var emailAddreesRecipients = [];
 
-// show the pay tab, and its current dataset, if first call, update artSales in the database.
-function payShown() {
-    if (pay_InitialCart) {
-        pay_InitialCart = false;
-        initArtSales();
-        return;
-    }
-    if (pay_currentOrderId == null) {
-        buildOrder();
-        return;
-    }
-    cart.freeze();
-    current_tab = pay_tab;
-    cart.drawCart();
-    thisPay_art = 0;
-    thisPay_tax = 0;
-    thisPay_total = 0;
-
-    if (total_amount_due  < 0.01) { // allow for rounding error, no need to round here
-        // nothing more to pay
-        cart.showNext();
-        cart.showRelease();
-        cart.hideStartOver();
-        add_tab.disabled = true;
-        if (pay_button_pay != null) {
-            var rownum;
-            pay_button_pay.hidden = true;
-            pay_button_rcpt.hidden = false;
-            var email_html = '';
-            var email_addr = currentPerson.email_addr;
-            if (emailRegex.test(email_addr)) {
-                email_html += '<div class="row"><div class="col-sm-1 pe-2"></div><div class="col-sm-8">' + email_addr + '</div></div>';
-            }
-            if (email_html.length > 2) {
-                pay_button_ercpt.hidden = false;
-                pay_button_ercpt.disabled = false;
-                pay_button_ercpt.disabled = false;
-                receeiptEmailAddresses_div.innerHTML = '<div class="row mt-2"><div class="col-sm-9 p-0">Email receipt to:</div></div>' + email_html;
-                emailAddreesRecipients.push(currentPerson.email_addr);
-            }
-            document.getElementById('pay-desc').value='';
-            document.getElementById('pay-check-div').hidden = true;
-            document.getElementById('pay-ccauth-div').hidden = true;
-        } else {
-            cart.showNext();
-            cart.showRelease();
-            cart.hideStartOver();
-        }
-    } else {
-        if (pay_button_pay != null) {
-            pay_button_pay.hidden = false;
-            pay_button_rcpt.hidden = true;
-            pay_button_ercpt.hidden = true;
-            pay_button_ercpt.disabled = true;
-        }
-
-        // draw the pay screen
-        var payHtml = `
+// draw the pay secion of the payment show left screen
+function drawPay(readWrite = true) {
+// draw the pay amount area first
+    var payHtml = `
 <div id='payBody' class="container-fluid form-floating">
   <form id='payForm' action='javascript: return false; ' class="form-floating">
     <div class="row pb-2">
@@ -1855,23 +1849,23 @@ function payShown() {
     </div>
 `;
 
-        // column headings
-        payHtml += `
+// column headings
+    payHtml += `
     <div class="row mt-1">
         <div class="col-sm-6 ms-0 me-0 p-0"></div>
         <div class="col-sm-3 ms-0 me-0 p-0 text-end"><b>Balance Due</b></div>
     </div>        
 `;
-        // if tax rate exists show tax items
-        if (config.taxRate > 0) {
-            payHtml += `
+// if tax rate exists show tax items
+    if (config.taxRate > 0) {
+        payHtml += `
     <div class="row mt-1">
         <div class="col-sm-6 m-0 p-0">Art Total:</div>
-        <div class="col-sm-3 m-0 p-0 text-end" id="total-art-due">$` + Number(total_art_due).toFixed(2) + `</div>
+        <div class="col-sm-3 m-0 p-0 text-end" id="total-art-due">$` + Number(display_art_due).toFixed(2) + `</div>
     </div>
     <div class="row mt-2">
         <div class="col-sm-6 m-0 p-0">` + config.taxLabel + ' ' + config.taxRate + ` % sales tax:</div>
-        <div class="col-sm-3 m-0 p-0 text-end" id="total-tax-due">$` + Number(total_tax_due).toFixed(2) + `</div>
+        <div class="col-sm-3 m-0 p-0 text-end" id="total-tax-due">$` + Number(display_tax_due).toFixed(2) + `</div>
     </div>
 `;
     }
@@ -1879,8 +1873,50 @@ function payShown() {
     payHtml += `
     <div class="row mt-1">
         <div class="col-sm-6 m-0 p-0">Amount Due:</div>
-        <div class="col-sm-3 m-0 p-0 text-end" id="total-amt-due">$` + Number(total_amount_due).toFixed(2) + `</div>
+        <div class="col-sm-3 m-0 p-0 text-end" id="total-amt-due">$` + Number(display_amount_due).toFixed(2) + `</div>
     </div>
+    </div>
+    <div id="pay-div-pay"></div>
+    <div class="row mt-3">
+        <div class="col-sm-2 ms-0 me-2 p-0">&nbsp;</div>
+        <div class="col-sm-auto ms-0 me-2 p-0">
+            <button class="btn btn-primary btn-sm" type="button" id="pay-btn-pay" onclick="pay('');">Confirm Pay</button>
+        </div>
+        <div class="col-sm-auto ms-0 me-2 p-0">
+            <button class="btn btn-primary btn-sm" type="button" id="pay-btn-ercpt" onclick="print_receipt('email');" hidden disabled>Email Receipt</button>
+        </div>
+        <div class="col-sm-auto ms-0 me-2 p-0">
+            <button class="btn btn-primary btn-sm" type="button" id="pay-btn-rcpt" onclick="print_receipt('print');" hidden>Print Receipt</button>
+        </div>
+    </div>
+    <div class="row mt-3" id="overrideRow" hidden>
+        <div class="col-sm-auto ms-0 me-2 p-0">
+            <button class="btn btn-warning btn-sm" type="button" id="pay-btn-override" onclick="overridePay();">Override</button>
+        </div>
+        <div class="col-sm-10 ms-0 me-2 p-0" id="override_msg">
+            <p>The terminal is marked as not available, override the status to take control and use it anyway?</p>
+            <p>This will cancel any payment in process on the terminal.</p>
+        </div>
+    </div>
+     <div class="row mt-3" id="pollRow" hidden>
+        <div class="col-sm-auto ms-0 me-2 p-0">
+            <button class="btn btn-primary btn-sm" type="button" id="pay-poll-complete" onclick="payPollfcn(1);">Payment Complete</button>
+        </div>
+        <div class="col-sm-auto ms-0 me-2 p-0">
+            <button class="btn btn-primary btn-sm" type="button" id="pay-poll-cancel" onclick="payPollfcn(0);">Cancel Payment</button>
+        </div>
+    </div>
+    <div id="receiptEmailAddresses" class="container-fluid"></div>
+  </form>
+    <div class="row mt-4">
+        <div class="col-sm-12 p-0" id="pay_status"></div>
+    </div>
+</div>
+`;
+    pay_div.innerHTML = payHtml;
+
+    if (readWrite) {
+        payHtml = `<div class="container-fluid form-floating">
     <div class="row">
         <div class="col-sm-2 m-0 mt-2 me-2 mb-2 p-0">Payment Type:</div>
         <div class="col-sm-auto m-0 mt-2 p-0 mb-2 p-0" id="pt-div">
@@ -1931,50 +1967,87 @@ function payShown() {
         <div class="col-sm-2 ms-0 me-2 p-0">Description:</div>
         <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0"><input type="text" size="60" maxlength="64" name="pay-desc" id="pay-desc"/></div>
     </div>
-    <div class="row mt-3">
-        <div class="col-sm-2 ms-0 me-2 p-0">&nbsp;</div>
-        <div class="col-sm-auto ms-0 me-2 p-0">
-            <button class="btn btn-primary btn-sm" type="button" id="pay-btn-pay" onclick="pay('');">Confirm Pay</button>
-        </div>
-        <div class="col-sm-auto ms-0 me-2 p-0">
-            <button class="btn btn-primary btn-sm" type="button" id="pay-btn-ercpt" onclick="print_receipt('email');" hidden disabled>Email Receipt</button>
-        </div>
-        <div class="col-sm-auto ms-0 me-2 p-0">
-            <button class="btn btn-primary btn-sm" type="button" id="pay-btn-rcpt" onclick="print_receipt('print');" hidden>Print Receipt</button>
-        </div>
-    </div>
-    <div class="row mt-3" id="overrideRow" hidden>
-        <div class="col-sm-auto ms-0 me-2 p-0">
-            <button class="btn btn-warning btn-sm" type="button" id="pay-btn-override" onclick="overridePay();">Override</button>
-        </div>
-        <div class="col-sm-10 ms-0 me-2 p-0" id="override_msg">
-            <p>The terminal is marked as not available, override the status to take control and use it anyway?</p>
-            <p>This will cancel any payment in process on the terminal.</p>
-        </div>
-    </div>
-     <div class="row mt-3" id="pollRow" hidden>
-        <div class="col-sm-auto ms-0 me-2 p-0">
-            <button class="btn btn-primary btn-sm" type="button" id="pay-poll-complete" onclick="payPollfcn(1);">Payment Complete</button>
-        </div>
-        <div class="col-sm-auto ms-0 me-2 p-0">
-            <button class="btn btn-primary btn-sm" type="button" id="pay-poll-cancel" onclick="payPollfcn(0);">Cancel Payment</button>
-        </div>
-    </div>    
-    <div id="receeiptEmailAddresses" class="container-fluid"></div>
-  </form>
-    <div class="row mt-4">
-        <div class="col-sm-12 p-0" id="pay_status"></div>
-    </div>
 </div>
 `;
+    } else {
+        payHtml = '';
+    }
+    document.getElementById('pay-div-pay').innerHTML = payHtml;
+    pay_button_pay = document.getElementById('pay-btn-pay');
+    pay_button_rcpt = document.getElementById('pay-btn-rcpt');
+    pay_button_ercpt = document.getElementById('pay-btn-ercpt');
+}
+// show the pay tab, and its current dataset, if first call, update artSales in the database.
+function payShown(readWrite = true) {
+    if (pay_InitialCart) {
+        pay_InitialCart = false;
+        initArtSales();
+        return;
+    }
+    if (pay_currentOrderId == null) {
+        buildOrder();
+        return;
+    }
+    cart.freeze();
+    current_tab = pay_tab;
+    cart.drawCart();
+    thisPay_art = 0;
+    thisPay_tax = 0;
+    thisPay_total = 0;
 
-        pay_div.innerHTML = payHtml;
-        pay_button_pay = document.getElementById('pay-btn-pay');
-        pay_button_rcpt = document.getElementById('pay-btn-rcpt');
-        pay_button_ercpt = document.getElementById('pay-btn-ercpt');
-        receeiptEmailAddresses_div = document.getElementById('receeiptEmailAddresses');
-        if (receeiptEmailAddresses_div)
-            receeiptEmailAddresses_div.innerHTML = '';
+    if (total_amount_due  < 0.01) { // allow for rounding error, no need to round here
+        // nothing more to pay
+        cart.showNext();
+        // show release if there is anything in the cart that is not in Purchased/Released status, and is not a print
+        if (cart.getUnReleased() > 0)
+            cart.showRelease();
+        else
+            cart.hideRelease();
+        cart.hideStartOver();
+        add_tab.disabled = true;
+        drawPay(false);
+        if (pay_button_pay != null) {
+            var rownum;
+            pay_button_pay.hidden = true;
+            pay_button_rcpt.hidden = false;
+            var email_html = '';
+            var email_addr = currentPerson.email_addr;
+            if (emailRegex.test(email_addr)) {
+                email_html += '<div class="row"><div class="col-sm-1 pe-2"></div><div class="col-sm-8">' + email_addr + '</div></div>';
+            }
+            if (email_html.length > 2) {
+                pay_button_ercpt.hidden = false;
+                pay_button_ercpt.disabled = false;
+                pay_button_ercpt.disabled = false;
+                receiptEmailAddresses_div = document.getElementById('receiptEmailAddresses');
+                receiptEmailAddresses_div.innerHTML = '<div class="container-fluid for-floating">' +
+                    '<div class="row mt-2"><div class="col-sm-9 p-0">Email receipt to:</div></div>' + email_html;
+                emailAddreesRecipients.push(currentPerson.email_addr);
+            }
+            var pay_desc = document.getElementById('pay-desc');
+            if (pay_desc) {
+                pay_desc.value = '';
+                document.getElementById('pay-check-div').hidden = true;
+                document.getElementById('pay-ccauth-div').hidden = true;
+            }
+        } else {
+            cart.showNext();
+            cart.showRelease();
+            cart.hideStartOver();
+        }
+    } else {
+        if (pay_button_pay != null) {
+            pay_button_pay.hidden = false;
+            pay_button_rcpt.hidden = true;
+            pay_button_ercpt.hidden = true;
+            pay_button_ercpt.disabled = true;
+        }
+
+        drawPay();
+
+        receiptEmailAddresses_div = document.getElementById('receiptEmailAddresses');
+        if (receiptEmailAddresses_div)
+            receiptEmailAddresses_div.innerHTML = '';
         if (cart.getPmtLength() > 0) {
             cart.hideStartOver();
         } else {

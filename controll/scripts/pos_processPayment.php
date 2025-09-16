@@ -38,7 +38,6 @@ $source = 'controll-mailinreg';
 $log = get_conf('log');
 $con = get_conf('con');
 $conid = $con['id'];
-$debug = get_conf('debug');
 $ini = get_conf('reg');
 $cc = get_conf('cc');
 load_cc_procs();
@@ -108,8 +107,10 @@ else
 
 $preTaxAmt -= $couponDiscount + $discountAmt;
 
-if ($amt != $preTaxAmt + $taxAmt) {
-    ajaxError('Invalid payment amount passed: preTax + Tax != Amount');
+$offset = $amt - ($preTaxAmt + $taxAmt);
+if (abs($offset) > 0.008) {
+    error_log("Invalid payment amount passed: preTax ($preTaxAmt) + Tax ($taxAmt) != Amount ($amt), offset = $offset");
+    ajaxError("Invalid payment amount passed: preTax ($preTaxAmt) + Tax ($taxAmt) != Amount ($amt), offset = $offset");
     return;
 }
 
@@ -316,7 +317,7 @@ if ($amt > 0 || $discountAmt > 0) {
     // now add the payment and process to which rows it applies
     $insPmtSQL = <<<EOS
 INSERT INTO payments(transid, type,category, description, source, pretax, tax, amount, time, cc_approval_code, cashier, 
-    cc, nonce, cc_txn_id, txn_time, receipt_url, receipt_id, userPerid, status, paymentId)
+    cc, nonce, cc_txn_id, txn_time, receipt_url, receipt_id, userPerid, status, ccPaymentId)
 VALUES (?,?,'reg',?,'cashier',?,?,?,now(),?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 EOS;
     $typestr = 'issdddsissssssiss';
@@ -447,12 +448,13 @@ EOS;
 
     $completed = dbSafeCmd($updCompleteSQL, 'iddi', array($coupon, $couponDiscount + $discountAmt, 0, $master_tid));
 }
+
 $updCompleteSQL = <<<EOS
 UPDATE transaction
-SET paid = IFNULL(paid,'0.00') + ?
+SET paid = ?, ccPaymentId = ?, paymentStatus = ?
 WHERE id = ?;
 EOS;
-$completed = dbSafeCmd($updCompleteSQL, 'di', array($approved_amt, $master_tid));
+$completed = dbSafeCmd($updCompleteSQL, 'dssi', array($approved_amt, $rtn['paymentId'], $rtn['status'], $master_tid));
 
 $completed = 0;
 if ($complete) {

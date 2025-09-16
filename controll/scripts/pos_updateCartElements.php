@@ -171,7 +171,7 @@ if ($master_perid < 0) {
         $master_perid = $new_perid;
     }
 }
-$tran_type = 'regctl-reg/' . $user_perid;
+$tran_type = 'regpos/' . $user_perid;
 $insTransactionSQL = <<<EOS
 INSERT INTO transaction(conid,perid,userid,price,paid,withtax,tax,type,create_date)
 VALUES (?,?,?,0,0,0,0,?,now());

@@ -84,7 +84,7 @@ EOS;
 UPDATE artItems I
 JOIN exhibitorRegionYears eRY on eRY.id=I.exhibitorRegionYearId
     JOIN exhibitorYears eY on eY.id=eRY.exhibitorYearId
-SET I.status='Bid', I.bidder=?
+SET I.status='BID', I.bidder=?
 WHERE I.item_key=? and eY.conid=? and eRY.exhibitorNumber=?;
 EOS;
             $bidR = dbSafeCmd($bidQ, 'iiii', array($action['value'], $item[1], $conid, $item[0]));
@@ -96,7 +96,7 @@ EOS;
 UPDATE artItems I
 JOIN exhibitorRegionYears eRY on eRY.id=I.exhibitorRegionYearId
     JOIN exhibitorYears eY on eY.id=eRY.exhibitorYearId
-SET I.status='Bid', I.final_price=?
+SET I.status='BID', I.final_price=?
 WHERE I.item_key=? and eY.conid=? and eRY.exhibitorNumber=?;
 EOS;
             $bidR = dbSafeCmd($bidQ, 'iiii', array($action['value'], $item[1], $conid, $item[0]));

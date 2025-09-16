@@ -1,14 +1,8 @@
-
 body {
     font-size: 100%;
     font-family: Verdana, Arial, Helvetica, sans-serif;
     background: #faf4ef;
-}
-
-.address {
-    display: inline-grid;
-    border: 1px solid blue;
-    margin: 5px;
+    margin: auto;
 }
 
 span.req, .warn {
@@ -20,45 +14,58 @@ input[type=number] {
     width: 4em;
 }
 
-.line { white-space: nowrap; }
-
 label { white-space: wrap; }
-
 
 select, option {
   max-width:30ch;
 }
 
-.editbutton {
-  width: 25px;
-  padding: 0px;
-  margin: 0px;
-  }
-
 .hidden { 
   display: none;
   }
+
 .nodisplay { 
   visibility: hidden;
   }
 
-.mask {
-  background-color:#ccc;
-  position:fixed;
-  width:100%;
-  height:100%;
-  top:0px;
-  left:0px;
-  z-index:1000;
+form, hr { border-color: inherit; }
+
+/* hide up/down arrows ("spinners") on input fields marked type="number" */
+.no-spinners {
+    -moz-appearance: textfield;
 }
 
-#review {
- opacity:1;
- background-color:white;
- position:fixed;
- width:80%;
- height:90%;
- overflow:auto;
- }
+.no-spinners::-webkit-outer-spin-button,
+.no-spinners::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
 
-form, hr { border-color: inherit; }
+/* tabulator pagination styling */
+button.tabulator-page {
+    background: hsla(0,0%,100%,.2);
+    border: 1px solid #aaa;
+    border-radius: 3px;
+    display: inline-block;
+    margin: 0 2px;
+    padding: 2px 5px;
+}
+
+button.tabulator-page.active {
+    color: #d00
+}
+
+button.tabulator-page:disabled {
+    opacity: .5
+}
+
+div.tabulator-paginator {
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: bold;
+}
+
+select.tabulator-page-size {
+    padding-left: 8px;
+}
+

@@ -21,6 +21,7 @@ class artpos_cart {
     #total_art = 0;
     #total_tax = 0;
     #unpaid_rows = 0;
+    #notReleasedRows = 0;
     #cart_art = [];
     #cart_art_map = new map();
     #cart_pmt = [];
@@ -71,7 +72,8 @@ class artpos_cart {
     }
 
     showRelease() {
-        this.#release_button.hidden = false;
+        if (this.#notReleasedRows > 0)
+            this.#release_button.hidden = false;
     }
 
     hideNext() {
@@ -122,37 +124,63 @@ class artpos_cart {
     }
 
     getItemKey(index) {
-        return this.#cart_art[index]['item_key'];
+        return this.#cart_art[index].item_key;
     }
 
     getArtId(index) {
-        return this.#cart_art[index]['id'];
+        return this.#cart_art[index].id;
     }
 
     getTitle(index) {
-        return this.#cart_art[index]['title'];
+        return this.#cart_art[index].title;
     }
 
     getMaterial(index) {
-        return this.#cart_art[index]['material'];
+        return this.#cart_art[index].material;
     }
 
     getArtType(index) {
-        return this.#cart_art[index]['Type'];
+        return this.#cart_art[index].Type;
     }
 
     getStatus(index) {
-        return this.#cart_art[index]['Status'];
+        return this.#cart_art[index].Status;
     }
 
     getFinalPrice(index) {
-        return this.#cart_art[index]['final_price'];
+        return this.#cart_art[index].final_price;
     }
 
     getExhibitorNumber(index) {
-        return this.#cart_art[index]['exhibitorNumber'];
+        return this.#cart_art[index].exhibitorNumber;
     }
 
+    // check for print quantities > 1 in the cart
+    getQtyGT1Rows() {
+        var num = 0;
+        var msg = '';
+        var row = null;
+        for (var i = 0; i < this.#cart_art.length; i++) {
+            if (this.#cart_art[i].type == 'print' && this.#cart_art[i].purQuantity > 1) {
+                num++
+                row = this.#cart_art[i];
+                msg += "Item " + row.exhibitorNumber + '-' + row.item_key + ': ' + row.exhibitorName + '/' + row.title +
+                    ' has quantity of ' + row.purQuantity + ".\n";
+            }
+        }
+
+        return [num,  msg];
+    }
+
+    // how many items in the cart need releasing
+    getUnReleased() {
+        var num = 0;
+        for (var i = 0; i < this.#cart_art.length; i++) {
+            if (this.#cart_art[i].type != 'print' && this.#cart_art[i].status != 'Purchased/Released')
+                num++;
+        }
+        return num;
+    }
 
     // make a copy of private structures for use in ajax calls back to the PHP.   The master copies are only accessible within the class.
     getCartArt() {
@@ -171,7 +199,44 @@ class artpos_cart {
 
 // if no art or payments have been added to the database, this will reset for the next customer
 
-    startOver() {
+    startOver(mode = 0) {
+        // if cart has unpaid items in it, delete the artSales items
+        var numUnpaid = 0;
+        for (var i = 0; i < this.#cart_art.length; i++) {
+            if (this.#cart_art[i].paid == undefined || Number(this.#cart_art[i].paid) == 0)
+                numUnpaid++;
+        }
+        if (numUnpaid > 0) {
+            // delete the unpaid's from ArtSales
+            $.ajax({
+                method: "POST",
+                url: "scripts/artpos_removeArtSalesRecord.php",
+                data: {
+                    artSalesId: -1,
+                    perid: currentPerson.id,
+                    action: 'deleteUnpaid',
+                },
+                success: function (data, textstatus, jqxhr) {
+                    if (data.error !== undefined) {
+                        show_message(data.error, 'error');
+                        return;
+                    }
+                    if (data.message !== undefined) {
+                        show_message(data.message, 'success');
+                        return;
+                    }
+                    if (data.warn !== undefined) {
+                        show_message(data.warn, 'warn');
+                        return;
+                    }
+                },
+                error: function (jqXHR, textstatus, errorThrown) {
+                    $("button[name='findArtBtn']").attr("disabled", false);
+                    showAjaxError(jqXHR, textstatus, errorThrown);
+                }
+            });
+
+        }
         // empty cart
         this.#cart_art = [];
         this.#cart_pmt = [];
@@ -188,7 +253,7 @@ class artpos_cart {
     add(artItem) {
         var pindex = this.#cart_art.length;
         this.#cart_art.push(make_copy(artItem));
-        this.#cart_art[pindex]['index'] = pindex;
+        this.#cart_art[pindex].index = pindex;
         this.drawCart();
     }
 
@@ -241,15 +306,15 @@ class artpos_cart {
 
 // update payment data in  cart
     updatePmt(data) {
-        if (data['prow']) {
-            this.#cart_pmt.push(data['prow']);
+        if (data.prow) {
+            this.#cart_pmt.push(data.prow);
         }
-        if (data['crow']) {
-            this.#cart_pmt.push(data['crow']);
+        if (data.crow) {
+            this.#cart_pmt.push(data.crow);
         }
 
-        data['cart_art'].forEach((artitem) => {
-            var index = this.#cart_art_map.get(artitem['id']);
+        data.cart_art.forEach((artitem) => {
+            var index = this.#cart_art_map.get(artitem.id);
             this.#cart_art[index] = artitem;
         });
     }
@@ -265,13 +330,13 @@ class artpos_cart {
         //console.log(newqty);
         //console.log(this.#cart_art_map);
         var row = this.#cart_art[this.#cart_art_map.get(rowid)];
-        if (newqty > row['quantity'] && newqty != row['purQuantity']) {
-            if (!confirm("Only " + row['quantity'] + " are available, are you sure?")) {
-                document.getElementById('purQuantity_' + rowid).value = row['purQuantity'];
+        if (newqty > row.quantity && newqty != row.purQuantity) {
+            if (!confirm("Only " + row.quantity + " are available, are you sure?")) {
+                document.getElementById('purQuantity_' + rowid).value = row.purQuantity;
                 return;
             }
         }
-        row['purQuantity'] = newqty;
+        row.purQuantity = newqty;
         this.drawCart();
     }
 // cart_renumber:
@@ -282,8 +347,8 @@ class artpos_cart {
         var index;
         this.#cart_art_map = new map();
         for (index = 0; index < this.#cart_art.length; index++) {
-            this.#cart_art[index]['index'] = index;
-            this.#cart_art_map.set(this.#cart_art[index]['id'], index);
+            this.#cart_art[index].index = index;
+            this.#cart_art_map.set(this.#cart_art[index].id, index);
         }
     }
 
@@ -295,7 +360,7 @@ class artpos_cart {
 // format all of the memberships for one record in the cart
     #drawCartRow(rownum) {
         var row = this.#cart_art[rownum];
-        var artLabel = (row['exhibitorNumber'] + '-' + row['item_key'])
+        var artLabel = (row.exhibitorNumber + '-' + row.item_key)
         var rowlabel;
 
 
@@ -304,49 +369,56 @@ class artpos_cart {
 
         // first row - member name, remove button
         var rowhtml = '<div class="row">';
-        rowhtml += '<div class="col-sm-8 text-bg-success">Art Item: ' + artLabel + ' (' + row['type'] + ')</div>';
-        if (!this.#freeze_cart && row['paid'] == 0) {
+        rowhtml += '<div class="col-sm-8 text-bg-success">Art Item: ' + artLabel + ' (' + row.type + ')</div>';
+        if (!this.#freeze_cart && row.paid == 0) {
             rowhtml += `
-        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-sm btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="cart.remove(` + row['id'] + `)">Remove</button></div>
+        <div class="col-sm-2 p-0 text-center"><button type="button" class="btn btn-sm btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="cart.remove(` + row.id + `)">Remove</button></div>
 `;
         }
         rowhtml += '</div>'; // end of exhibitor Number/ItemKey row
 
         // Artist
-        rowhtml += '<div class="row"><div class="col-sm-2">Artist:' + '</div><div class="col-sm-10">' + row['exhibitorName'] + '</div></div>';
+        rowhtml += '<div class="row"><div class="col-sm-2">Artist:' + '</div><div class="col-sm-10">' + row.exhibitorName + '</div></div>';
         // Title
-        rowhtml += '<div class="row"><div class="col-sm-2">Title: ' + '</div><div class="col-sm-10">' + row['title'] + '</div></div>';
+        rowhtml += '<div class="row"><div class="col-sm-2">Title: ' + '</div><div class="col-sm-10">' + row.title + '</div></div>';
         // Material
-        rowhtml += '<div class="row"><div class="col-sm-2">Material: ' + '</div><div class="col-sm-10">' + row['material'] + '</div></div>';
+        rowhtml += '<div class="row"><div class="col-sm-2">Material: ' + '</div><div class="col-sm-10">' + row.material + '</div></div>';
+        if (row.type == 'art') {
+            // Status of art item
+            rowhtml += '<div class="row"><div class="col-sm-2">Status: ' + '</div><div class="col-sm-10">' + row.status + '</div></div>';
+        }
         if (this.#freeze_cart) {
-            rowhtml += '<div class="row"><div class="col-sm-2">Quantity: ' + '</div><div class="col-sm-10">' + row['purQuantity'] + '</div></div>';
-        } else if (row['type'] == 'print') {
+            rowhtml += '<div class="row"><div class="col-sm-2">Quantity: ' + '</div><div class="col-sm-10">' + row.purQuantity + '</div></div>';
+        } else if (row.type == 'print') {
             rowhtml += '<div class="row"><div class="col-sm-2">Quantity: ' + '</div><div class="col-sm-10"><input class="no-spinners" type="number" min="1"' +
-                ' max="' + row['quantity'] + '"' +
-                ' name="purQuantity_' + row['id'] + '" id="purQuantity_' + row['id'] + '" value="' + row['purQuantity'] +
-                '" onchange="cart.updateRowQuantity(' + row['id'] +');"/>' +
-                ' of ' + row['quantity'] + ' remaining</div></div>';
+                ' max="' + row.quantity + '"' +
+                ' name="purQuantity_' + row.id + '" id="purQuantity_' + row.id + '" value="' + row.purQuantity +
+                '" onchange="cart.updateRowQuantity(' + row.id +');"/>' +
+                ' of ' + row.quantity + ' remaining</div></div>';
         }
         // price
         var priceType = 'Final';
-        if (row['type'] == 'print') {
+        if (row.type == 'print') {
             priceType = 'Sale';
-            row['display_price'] = row['sale_price'] * row['purQuantity'];
-        } else if (row['type'] == 'art' && (row['final_price'] == null || row['final_price'] == 0)) {
+            row.display_price = row.sale_price * row.purQuantity;
+        } else if (row.type == 'art' && (row.final_price == null || row.final_price == 0)) {
             priceType = 'Quick Sale';
-            row['display_price'] = row['sale_price'];
+            row.display_price = row.sale_price;
         } else {
-            row['display_price'] = row['final_price'];
+            row.display_price = row.final_price;
         }
-        row['priceType'] = priceType;
+        row.priceType = priceType;
         rowhtml += '<div class="row"><div class="col-sm-8 p-0 text-end">' + priceType + ' Price:</div>' +
-            '<div class="col-sm-2 text-end">$' + Number(row['display_price']).toFixed(2) + '</div>' +
-            '<div class="col-sm-2 text-end">$' + Number(row['paid']).toFixed(2) + '</div></div>';
+            '<div class="col-sm-2 text-end">$' + Number(row.display_price).toFixed(2) + '</div>' +
+            '<div class="col-sm-2 text-end">$' + Number(row.paid).toFixed(2) + '</div></div>';
 
-        this.#total_price += Number(row['display_price']);
-        this.#total_paid += Number(row['paid']);
-        if (row['display_price'] > row['paid'])
+        this.#total_price += Number(row.display_price);
+        this.#total_paid += Number(row.paid);
+        if (row.display_price > row.paid)
             this.#unpaid_rows++;
+        if (row.status != 'Purchased/Released')
+            this.#notReleasedRows++;
+
         return rowhtml;
     }
 
@@ -356,32 +428,32 @@ class artpos_cart {
 
         var pmt = this.#cart_pmt[prow];
         var code = '';
-        var desc = pmt['desc'] ? pmt['desc'] :'';
-        if (pmt['type'] == 'check') {
-            if ((!pmt['checkno']) || pmt['checkno'] == '') {
+        var desc = pmt.desc ? pmt.desc :'';
+        if (pmt.type == 'check') {
+            if ((!pmt.checkno) || pmt.checkno == '') {
                 code = desc.substring(desc.indexOf(':') + 1, desc.indexOf(';'));
                 if (code == undefined || code == null) {
                     code = '';
                 }
                 desc = desc.substring(desc.indexOf(';') + 1);
             } else {
-                code = pmt['checkno'];
+                code = pmt.checkno;
             }
-        } else if (pmt['type'] == 'credit') {
-            code = pmt['ccauth'];
+        } else if (pmt.type == 'credit') {
+            code = pmt.ccauth;
         }
-        var ttype = pmt['type'];
+        var ttype = pmt.type;
         var html = '';
-        if (pmt['time']) {
-            html = '<div class="row mt-1"><div class="col-sm-12 p-0">' + pmt['time'] + '</div></div>';
+        if (pmt.time) {
+            html = '<div class="row mt-1"><div class="col-sm-12 p-0">' + pmt.time + '</div></div>';
         }
         if (desc == '') {
             html += `<div class="row">
     <div class="col-sm-4 p-0">` + ttype + `</div>
     <div class="col-sm-2 p-0">` + code + `</div>
-    <div class="col-sm-2 text-end">` + Number(pmt['pretax']).toFixed(2) + `</div>
-    <div class="col-sm-2 text-end">` + Number(pmt['tax']).toFixed(2) + `</div>
-    <div class="col-sm-2 text-end">` + Number(pmt['amt']).toFixed(2) + `</div>
+    <div class="col-sm-2 text-end">` + Number(pmt.pretax).toFixed(2) + `</div>
+    <div class="col-sm-2 text-end">` + Number(pmt.tax).toFixed(2) + `</div>
+    <div class="col-sm-2 text-end">` + Number(pmt.amt).toFixed(2) + `</div>
 </div>
 `;
         } else {
@@ -389,9 +461,9 @@ class artpos_cart {
     <div class="col-sm-2 p-0">` + ttype + `</div>
     <div class="col-sm-2 p-0">` + desc + `</div>
     <div class="col-sm-2 p-0">` + code + `</div>
-    <div class="col-sm-2 text-end">` + Number(pmt['pretax']).toFixed(2) + `</div>
-    <div class="col-sm-2 text-end">` + Number(pmt['tax']).toFixed(2) + `</div>
-    <div class="col-sm-2 text-end">` + Number(pmt['amt']).toFixed(2) + `</div>
+    <div class="col-sm-2 text-end">` + Number(pmt.pretax).toFixed(2) + `</div>
+    <div class="col-sm-2 text-end">` + Number(pmt.tax).toFixed(2) + `</div>
+    <div class="col-sm-2 text-end">` + Number(pmt.amt).toFixed(2) + `</div>
 </div>
 `;
         }
@@ -417,6 +489,7 @@ class artpos_cart {
 </div>
 `;
         this.#unpaid_rows = 0;
+        this.#notReleasedRows = 0;
         for (var rownum in this.#cart_art) {
             num_rows++;
             html += this.#drawCartRow(rownum);
@@ -445,9 +518,9 @@ class artpos_cart {
             this.#total_tax = 0;
             for (var prow in this.#cart_pmt) {
                 html += this.#drawCartPmtRow(prow);
-                this.#total_pmt += Number(this.#cart_pmt[prow]['amt']);
-                this.#total_art += Number(this.#cart_pmt[prow]['pretax']);
-                this.#total_tax += Number(this.#cart_pmt[prow]['tax']);
+                this.#total_pmt += Number(this.#cart_pmt[prow].amt);
+                this.#total_art += Number(this.#cart_pmt[prow].pretax);
+                this.#total_tax += Number(this.#cart_pmt[prow].tax);
             }
             html += `<div class="row">
     <div class="col-sm-6 p-0"></div>
@@ -486,15 +559,15 @@ class artpos_cart {
         var newrow;
 
         // update the fields created by the database transactions
-        var updated_art = data['updated_art'];
+        var updated_art = data.updated_art;
         for (rownum in updated_art) {
             newrow = updated_art[rownum];
             var keys = Object.keys(newrow);
             for (var keynum in keys) {
                 var key = keys[keynum];
-                this.#cart_art[newrow['rowpos']][key] = newrow[key];
+                this.#cart_art[newrow.rowpos][key] = newrow[key];
             }
-            this.#cart_art[newrow['rowpos']]['dirty'] = false;
+            this.#cart_art[newrow.rowpos].dirty = false;
         }
 
 
@@ -502,7 +575,7 @@ class artpos_cart {
         var delrows = [];
         var splicerow = null;
         for (var rownum in this.#cart_art) {
-            if (this.#cart_art[rownum]['todelete'] == 1) {
+            if (this.#cart_art[rownum].todelete == 1) {
                 delrows.push(rownum);
             }
         }

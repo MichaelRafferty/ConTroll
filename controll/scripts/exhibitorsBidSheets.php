@@ -30,15 +30,22 @@ if (array_key_exists('email', $_GET)) {
     $email = $_GET['email'] == 'true';
 }
 
-switch($_GET['type']) {
-    case 'bidsheets':
-        $response = pdfPrintBidSheets($eyID, $region, $response);
-        break;
-    case 'printshop':
-        $response = pdfPrintShopPriceSheets($eyID, $region, $response);
-        break;
-    case 'control':
-        $response = pdfArtistControlSheet($eyID, $region, $response, $email);
-        break;
-    default:
+if (str_contains($eyID, ','))
+    $eyIDlist = explode(',', $eyID);
+else
+    $eyIDlist = array($eyID);
+
+foreach ($eyIDlist as $id) {
+    switch ($_GET['type']) {
+        case 'bidsheets':
+            $response = pdfPrintBidSheets($id, $region, $response, $id == $eyIDlist[0], $id == $eyIDlist[count($eyIDlist) - 1]);
+            break;
+        case 'printshop':
+            $response = pdfPrintShopPriceSheets($id, $region, $response, $id == $eyIDlist[0], $id == $eyIDlist[count($eyIDlist) - 1]);
+            break;
+        case 'control':
+            $response = pdfArtistControlSheet($id, $region, $response, $email, $id == $eyIDlist[0], $id == $eyIDlist[count($eyIDlist) - 1]);
+            break;
+        default:
+    }
 }

@@ -139,6 +139,7 @@ EOT;
     }
 }
 
+//TODO re-enable the coupon code when one use coupons work for reg portal
 function ComeBackCouponEmail_HTML($test, $expirationDate) {
     $con = get_conf('con');
 
@@ -153,38 +154,49 @@ function ComeBackCouponEmail_HTML($test, $expirationDate) {
     $schedulepage = $con['schedulepage'];
     $homepage = $con['website'];
     $policypage = $con['policy'];
+    $regpage = $con['regpage'];
     $feedbackemail = $con['feedbackemail'];
     $regsite = getConfValue('reg', 'server');
 
+    // old paragraph
+    /*
+    	We would like to encourage you to come back this year by offering you a single use coupon you can use to get a 10% discount on all memberships.  This coupon expires on $expirationDate and you must use the link in this email to register and apply the coupon.
+	You can always register on-site, but you can save money by purchasing your membership in advance and applying this coupon at
+	 <a href="$regsite?[[CouponCode]]" target-'_blank'>$regsite?[[CouponCode]]</a>. To check the status of your, or the rest of your family's, registration
+	 you can
+	 always visit: <a href="$url/checkReg.php" target="_blank">$url/checkReg.php</a>
+
+    	We would like to encourage you to come back this year by offering you a single use coupon you can use to get a 10% discount on all memberships.  This coupon expires on $expirationDate and you must use the link in this email to register and apply the coupon.
+	You can always register on-site, but you can save money by purchasing your membership in advance and applying this coupon at
+	 <a href="$regsite?[[CouponCode]]" target-'_blank'>$regsite?[[CouponCode]]</a>. To check the status of your, or the rest of your family's, registration
+	 you can
+	 always visit: <a href="$url/checkReg.php" target="_blank">$url/checkReg.php</a>
+    */
     $html = <<<EOT
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head><META http-equiv="Content-Type" content="text/html; charset=utf-8"></head><body>
 <p>Hello [[FirstName]] [[LastName]],</p>
 
 <p>
-	$conlabel is almost upon us! You are receiving this email because your email address is associated with a valid registration to a prior convention, but you haven't registered in the past few years and we don't have you registered for this year's convention.
+	$conlabel is almost upon us! You are receiving this email because your email address is associated with a valid registration to a prior convention,
+	but you haven't registered in the past few years and we don't have you registered for this year's convention.
 </p>
 <p>
-	We would like to encourage you to come back this year by offering you a single use coupon you can use to get a 10% discount on all memberships.  This coupon expires on $expirationDate and you must use the link in this email to register and apply the coupon.
-	You can always register on-site, but you can save money by purchasing your membership in advance and applying this coupon at
-	 <a href="$regsite?[[CouponCode]]" target-"_blank">$regsite?[[CouponCode]]</a>. To check the status of your, or the rest of your family's, registration  
-	 you can
-	 always visit: <a href="$url/checkReg.php" target="_blank">$url/checkReg.php</a>
+	We would like to encourage you to come back this year by letting you know that our early discount period is ending soon.
+	You can see the complete registration price list on our website at: <a href="$regpage" target-"_blank">$regpage</a>.
+	You can register on-site of course, but if you register now you can save up to 20% on each membership.	
 </p>
 <p>
 	This year, we are again at the <a href="$hotelpage" target="_blank">$hotelname</a>, at $hoteladdr.  Please register for rooms as soon as possible as the block will be closing soon.
 </p>
-
 <p>
 	Our programming team is putting together a great schedule for us this year, and you will soon be able to take a look at it at <a href="$schedulepage" target="_blank">$schedulepage</a> . Information about other activities, as well as our Guests of Honor, can be found on our website at <a href="$homepage" target="_blank">$homepage</a>.
 </p>
-
 <p>
 	The $orgname ($orgabv) is dedicated to providing a comfortable and harassment-free environment for everyone at $conname and other $orgabv-sponsored events. For specific information, including our full Anti-Harassment Policy, see <a href="$policypage" target="_blank">$policypage</a>.
 </p>
 <p>
 	If you have any further questions, please feel free to contact us at <a href="mailto:$feedbackemail" target="_blank">$feedbackemail</a>, or visit our website for information on how to contact individual departments.
 </p>
-
 <p>We hope to see you at the convention!</p>
 <br>
 EOT;
@@ -211,15 +223,24 @@ function ComeBackCouponEmail_TEXT($test, $expirationDate) {
     $schedulepage = $con['schedulepage'];
     $homepage = $con['website'];
     $policypage = $con['policy'];
+    $regpage = $con['regpage'];
     $feedbackemail = $con['feedbackemail'];
     $regsite = getConfValue('reg', 'server');
+
+    /*
+     * old text
+     We would like to encourage you to come back this year by offering you a single use coupon you can use to get a 10% discount on all memberships.  This coupon expires on $expirationDate and you must use the link in this email to register and apply the coupon. You can always register on-site, but you can save money by purchasing your membership in advance and applying this coupon with at $regsite?[[CouponCode]]. To check the status of your, or the rest of your family's, registration  you can always visit: $url/checkReg.php
+
+
+     */
 
     $text = <<<EOT
 Hello [[FirstName]] [[LastName]],
 
 $conlabel is almost upon us! You are receiving this email because your email address is associated with a valid registration to a prior convention, but you haven't registered in the past few years and we don't have you registered for this year's convention.
  
-We would like to encourage you to come back this year by offering you a single use coupon you can use to get a 10% discount on all memberships.  This coupon expires on $expirationDate and you must use the link in this email to register and apply the coupon. You can always register on-site, but you can save money by purchasing your membership in advance and applying this coupon with at $regsite?[[CouponCode]]. To check the status of your, or the rest of your family's, registration  you can always visit: $url/checkReg.php
+
+We would like to encourage you to come back this year by letting you know that our early discount period is ending soon. You can see the complete registration price list on our website at: $regpage. You can register on-site of course,  but if you register now you can save up to 20% on each membership.	
 
 This year, we are at the same hotel which is now the $hotelname, at $hoteladdr.  Please rsgister for rooms as soon as possible as the block will be closing soon.
 
@@ -243,7 +264,6 @@ EOT;
 
     return $text;
 }
-
 
 function surveyEmail_HTML($test) {
     $con = get_conf('con');

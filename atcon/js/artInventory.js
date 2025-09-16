@@ -11,6 +11,7 @@ var artist_field = null;
 var find_result_table = null;
 var id_div = null;
 var cart_div = null;
+var exhibitorYearId = -1;
 
 //tables
 var datatbl = new Array();
@@ -85,7 +86,7 @@ function inventory() {
             url: script,
             data: "actions=" + JSON.stringify(actionlist),
             success: function(data, textStatus, jqXhr) {
-                $('#test').empty().append(JSON.stringify(data['log'], null, 2));
+                $('#test').empty().append(JSON.stringify(data.log, null, 2));
                 
                 start_over();
                 find_item('refresh');
@@ -102,7 +103,7 @@ function init_locations() {
             url: script,
             data: data,
             success: function(data, textStatus, jqXhr) {
-                locations = data['locations'];
+                locations = data.locations;
                 $('#test').empty();
             },
             error: showAjaxError,
@@ -167,13 +168,13 @@ function addInventoryIcon(cell, formatterParams, onRendered) {
 
 function build_record_hover(e, cell, onRendered) {
     data = cell.getData();
-    hover_text = data['id'] + '<br/>' + data['name'].trim() + '<br/>' 
-    hover_text += data['title'].trim() + '<br/>';
-    hover_text += data['status'].trim() + ' @ ' + data['location'] + '<br/>';
-    if((data['status'] == 'BID') || (data['status'] == 'To Auction')) { 
-        hover_text += 'by ' + data['bidder'] + ' @ $' + data['final_price'] + '<br/>';
+    hover_text = data.id + '<br/>' + data.name.trim() + '<br/>' 
+    hover_text += data.title.trim() + '<br/>';
+    hover_text += data.status.trim() + ' @ ' + data.location + '<br/>';
+    if((data.status == 'BID') || (data.status == 'To Auction')) { 
+        hover_text += 'by ' + data.bidder + ' @ $' + data.final_price + '<br/>';
     }
-    hover_text += 'updated: ' + data['time_updated'] + '<br/>';
+    hover_text += 'updated: ' + data.time_updated + '<br/>';
 
     return hover_text
 }
@@ -187,18 +188,21 @@ function build_table(tableData) {
         for (var trow in tableData) {
             var row = tableData[trow];
             row.index = trow;
-            row.prev_loc = row['location'];
-            row.prev_bid = row['final_price'];
-            row.prev_bidder = row['bidder'];
-            row.prev_status = row['status'];
+            row.prev_loc = row.location;
+            row.prev_bid = row.final_price;
+            row.prev_bidder = row.bidder;
+            row.prev_status = row.status;
             datatbl.push(row);
         }
+        document.getElementById('artInventoryPaginationDiv').innerHTML = '';
+        document.getElementById('artInventoryPaginationDiv').hidden = datatbl.length <= 25;
         find_result_table = new Tabulator('#find_results', {
             maxHeight: "700px",
             data: datatbl,
             layout: "fitColumns",
             responsiveLayout:true,
-            pagination: true,
+            pagination: datatbl.length > 25,
+            paginationElement: document.getElementById('artInventoryPaginationDiv'),
             paginationSize: 10,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
@@ -213,8 +217,10 @@ function build_table(tableData) {
                 { title: 'Actions', width: 150, hozAlign: "center", headerFilter: false, headerSort: false, formatter: addInventoryIcon, responsive:0},
             ],
         });
+        document.getElementById('artInventory-csv-div').hidden = false;
     } else { 
         id_div.innerHTML = 'No matching items found';
+        document.getElementById('artInventory-csv-div').hidden = true;
     }
     return;
 
@@ -226,14 +232,15 @@ function find_item(action) {
     var script = 'scripts/artInventory_getItem.php';
 
     $.ajax({
-        data: "artist="+artist,
-        method: "GET",
+        data: { artist: artist },
+        method: "POST",
         url: script,
         success: function(data, textStatus, jqXhr) {
-            if(data['noitem']!=undefined) {
+            if(data.noitem!=undefined) {
                 alert("No matching Item Found");
             } else {
-                build_table(data['items']);
+                exhibitorYearId = data.exhibitorYearId;
+                build_table(data.items);
                 $('#test').empty();
             }
         }
@@ -244,24 +251,24 @@ function remove_from_cart(index) {
     var key = cart_items[index]
     var item = cart[index];
 
-    if(item['need_count']) { need_count--; }
-    if(item['need_location']) { need_location--; }
+    if(item.need_count) { need_count--; }
+    if(item.need_location) { need_location--; }
     for (action in actionlist) {
-        while((actionlist.length>0) && actionlist[action]['item'] == key) {
-            switch(actionlist[action]['action']) {
+        while((actionlist.length>0) && actionlist[action].item == key) {
+            switch(actionlist[action].action) {
             case 'Set Location':
-                cart[index]['location']=cart[index]['prev_loc'];
+                cart[index].location=cart[index].prev_loc;
                 break;
             case 'Set Bid':
-                cart[index]['final_price']=cart[index]['prev_bid'];
+                cart[index].final_price=cart[index].prev_bid;
                 break;
             case 'Set Bidder':
-                cart[index]['bidder']=cart[index]['prev_bidder'];
+                cart[index].bidder=cart[index].prev_bidder;
                 break;
             case 'Check In':
             case 'Sell To Bidsheet':
             case 'Send To Auction':
-                cart[index]['status']=cart[index]['prev_status'];
+                cart[index].status=cart[index].prev_status;
                 break;
             }
             actionlist.splice(action, 1);
@@ -288,13 +295,13 @@ function add_to_cart(index, action) {
     case 'Check Out':
         //ready for checkin?
         //does item have location?
-        if(item['location'] == "") {
-            item['need_location'] = true;
+        if(item.location == "") {
+            item.need_location = true;
             need_location++;
         }
         //have we confirmed count?
-        if(item['type'] == 'print') {
-            item['need_count'] = true;
+        if(item.type == 'print') {
+            item.need_count = true;
             need_count++;
         }
         break;
@@ -305,15 +312,15 @@ function add_to_cart(index, action) {
         return; 
     }
         
-    if (cart_items.includes(item['id']) == false) {
-        cart_items.push(item['id']);
+    if (cart_items.includes(item.id) == false) {
+        cart_items.push(item.id);
         cart.push(item);
     } else {
         alert('item is already in the cart');
         return;
     }
 
-    item['action']=action;
+    item.action=action;
     draw_cart();
 }
 
@@ -340,106 +347,118 @@ function draw_cart_row(rownum) {
     var trailing_html = '</div></div>';
 
     var location_select = '<select onchange="changed_loc();"'
-    if(item['need_location']) { location_select += 'class="bg-warning" '; }
-    location_select += 'id="loc_' + item['id'] + '">';
-    if(item['location'] == "") {
+    if(item.need_location) { location_select += 'class="bg-warning" '; }
+    location_select += 'id="loc_' + item.id + '">';
+    if(item.location == "") {
         location_select += '<option></option>';
     }
-    for(loc in locations[item['exhibitorNumber']]) {
-        if((item['location'] != "") && (locations[item['exhibitorNumber']][loc] == item['location'])) {
-            location_select += '<option selected=selected>' + locations[item['exhibitorNumber']][loc] + '</option>';
+    for(loc in locations[item.exhibitorNumber]) {
+        if((item.location != "") && (locations[item.exhibitorNumber][loc] == item.location)) {
+            location_select += '<option selected=selected>' + locations[item.exhibitorNumber][loc] + '</option>';
         } else { 
-            location_select += '<option>' + locations[item['exhibitorNumber']][loc] + '</option>';
+            location_select += '<option>' + locations[item.exhibitorNumber][loc] + '</option>';
         }
     }
     location_select += '</select>';
     var show_location = true;
-    if((item['action'] == 'Check Out') || (item['action']=='Remove')){
+    if((item.action == 'Check Out') || (item.action=='Remove')){
         show_location = false;
         need_location = false;
     }
-    switch(item['type']) {
+    switch(item.type) {
         case 'nfs':
-                html += item['id'] + '<span class="right">'+item['action']+'</span></div>'
-                    + item['exhibitorName'] + ': ' + item['title'] + '<br/>'
+                html += item.id + '<span class="right">'+item.action+'</span></div>'
+                    + item.exhibitorName + ': ' + item.title + '<br/>'
                     + ((show_location)?'Location: ' + location_select + '<br/>':'')
-                    + 'Display Only @ ' + item['status'] + '<br/>';
+                    + 'Display Only @ ' + item.status + '<br/>';
                 action_html += '<br/>';
                 if(show_location) {
-                  if(item['need_location']) {
-                    action_html += `<button class="`+btnClass+` btn-primary" `+btnStyle+` type="button" id="` + item['id'] + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
+                  if(item.need_location) {
+                    action_html += `<button class="`+btnClass+` btn-primary" `+btnStyle+` type="button" id="` + item.id + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
                   } else {
-                    action_html += `<button class="`+btnClass+` btn-info" `+btnStyle+` type="button" id="` + item['id'] + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
+                    action_html += `<button class="`+btnClass+` btn-info" `+btnStyle+` type="button" id="` + item.id + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
                   }
                 }
                 action_html += '<br/>';
             break;
         case 'art':
-            html += item['id'] + '<span class="right">'+item['action']+'</span></div>'
-                + item['exhibitorName'] + ': ' + item['title'] + '<br/>'
+            html += item.id + '<span class="right">'+item.action+'</span></div>'
+                + item.exhibitorName + ': ' + item.title + '<br/>'
                 + ((show_location)?'Location: ' + location_select + '<br/>':'')
-                + 'Art Item @ ' + item['status'] + '<br/>';
+                + 'Art Item @ ' + item.status + '<br/>';
             action_html += '<br/>';
             if(show_location) {
-              if(item['need_location']) {
-                action_html += `<button class="`+btnClass+` btn-primary" `+btnStyle+` type="button" id="` + item['id'] + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
+              if(item.need_location) {
+                action_html += `<button class="`+btnClass+` btn-primary" `+btnStyle+` type="button" id="` + item.id + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
               } else {
-                action_html += `<button class="`+btnClass+` btn-info" `+btnStyle+` type="button" id="` + item['id'] + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
+                action_html += `<button class="`+btnClass+` btn-info" `+btnStyle+` type="button" id="` + item.id + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
               }
             }
             action_html += '<br/>';
-            if(item['status'] == 'BID') {
-                action_html += `<button class="`+btnClass+` btn-success" `+btnStyle+` type="button" id="` + item['id'] + `"_to_bidsheet" onclick="update_bid(`+rownum+`,false,true);">To Bid Sheet</button><br/>`;
+            if(item.status == 'BID') {
+                action_html += `<button class="`+btnClass+` btn-success" `+btnStyle+` type="button" id="` + item.id + `"_to_bidsheet" onclick="update_bid(`+rownum+`,false,true);">To Bid Sheet</button><br/>`;
             } else {
                 action_html += '<br/>'; 
             }
 
-            var min_price=item['min_price'];
-            if(item['final_price'] != null) {
-                min_price = item['final_price'];
+            var min_price=item.min_price;
+            if (min_price == null || min_price.toString().toLowerCase() == 'null')
+                min_price = 0;
+            if (item.final_price != null && item.final_price.toString().toLowerCase() != 'null') {
+                min_price = item.final_price;
             }
-            if(item['status'] == 'Quicksale/Sold') {
-                html += `Purchased by ` + item['bidder'] + ` @ $` + item['final_price'];
-            } else if((item['status'] == 'To Auction')) {
+
+            var bidder = item.bidder;
+            if (bidder == null || bidder.toString().toLowerCase() == 'null') {
+                bidder = '';
+            }
+            var final_price = item.final_price;
+            if (final_price == null || final_price.toString().toLowerCase() == 'null') {
+                final_price = '';
+            }
+
+            if(item.status == 'Quicksale/Sold') {
+                html += `Purchased by ` + item.bidder + ` @ $` + item.final_price;
+            } else if((item.status == 'To Auction')) {
                 html += 'Bid ';
-                html += `<input type='number' min=0 id='bidder_` + item['id']
-                    + `' value="` + item['bidder'] + `" style="width: 7em"></input> @ $`
-                    + `<input type='number' min=`+min_price+` id='bid_` + item['id']
-                    + `' value="` + item['final_price'] + `" style="width: 7em"></input><br/>`;
-                action_html += `<button class="`+btnClass+` btn-success" `+btnStyle+` type="button" id="` + item['id'] + `"_at_auction" onclick="update_bid(`+rownum+`,false,true);">Sold At Auction</button><br/>`;
+                html += `<input type='number' min=0 id='bidder_` + item.id
+                    + `' value="` + bidder + `" style="width: 7em"></input> @ $`
+                    + `<input type='number' min=`+min_price+` id='bid_` + item.id
+                    + `' value="` + final_price + `" style="width: 7em"></input><br/>`;
+                action_html += `<button class="`+btnClass+` btn-success" `+btnStyle+` type="button" id="` + item.id + `"_at_auction" onclick="update_bid(`+rownum+`,false,true);">Sold At Auction</button><br/>`;
             } else {
                 html += 'Bid ';
-                html += `<input type='number' min=0 id='bidder_` + item['id']
-                    + `' value="` + item['bidder'] + `" style="width: 7em"></input> @ $`
-                    + `<input type='number' min=`+min_price+` id='bid_` + item['id']
-                    + `' value="` + item['final_price'] + `" style="width: 7em"></input><br/>`
-                action_html += `<button class="`+btnClass+` btn-primary" `+btnStyle+` type="button" id="` + item['id'] + `"_update_bid" onclick="update_bid(`+rownum+`);">Bid</button>`;
-                action_html += `<button class="`+btnClass+` btn-secondary" `+btnStyle+` type="button" id="` + item['id'] + `"_to_auction" onclick="update_bid(`+rownum+`,true);">To Auction</button>`;
+                html += `<input type='number' min=0 id='bidder_` + item.id
+                    + `' value="` + bidder + `" style="width: 7em"></input> @ $`
+                    + `<input type='number' min=`+min_price+` id='bid_` + item.id
+                    + `' value="` + final_price + `" style="width: 7em"></input><br/>`
+                action_html += `<button class="`+btnClass+` btn-primary" `+btnStyle+` type="button" id="` + item.id + `"_update_bid" onclick="update_bid(`+rownum+`);">Bid</button>`;
+                action_html += `<button class="`+btnClass+` btn-secondary" `+btnStyle+` type="button" id="` + item.id + `"_to_auction" onclick="update_bid(`+rownum+`,true);">To Auction</button>`;
             }
             action_html += "<br/>"
             break;
         case 'print':
-            html += item['id'] + '<span class="right">'+item['action']+'</span></div>'
-                + item['exhibitorName'] + ': ' + item['title'] + '<br/>'
+            html += item.id + '<span class="right">'+item.action+'</span></div>'
+                + item.exhibitorName + ': ' + item.title + '<br/>'
                 + ((show_location)?'Location: ' + location_select + '<br/>':'')
-                + 'Print Shop @ ' + item['status'] + '<br/>';
-            if(item['need_count']) {
-                html += '<span class="bg-warning">' + item['quantity'] + '</span>'
-                + ' @ ' + item['status'] + '<br/>';
+                + 'Print Shop @ ' + item.status + '<br/>';
+            if(item.need_count) {
+                html += '<span class="bg-warning">' + item.quantity + '</span>'
+                + ' @ ' + item.status + '<br/>';
             } else {
-                html += item['quantity'] + ' @ ' + item['status'] + '<br/>';
+                html += item.quantity + ' @ ' + item.status + '<br/>';
             }
             action_html += '<br/>';
             if(show_location) {
-              if(item['need_location']) {
-                action_html += `<button class="`+btnClass+` btn-primary" `+btnStyle+` type="button" id="` + item['id'] + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
+              if(item.need_location) {
+                action_html += `<button class="`+btnClass+` btn-primary" `+btnStyle+` type="button" id="` + item.id + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
                 } else {
-                action_html += `<button class="`+btnClass+` btn-info" `+btnStyle+` type="button" id="` + item['id'] + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
+                action_html += `<button class="`+btnClass+` btn-info" `+btnStyle+` type="button" id="` + item.id + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
               }
             }
             action_html += '<br/>';
-            if(item['need_count']) {
-                action_html += `<button class="`+btnClass+` btn-primary" `+btnStyle+` type="button" id="` + item['id'] + `"_confirm_count" onclick="confirm_count(`+rownum+`);">Confirm Qty</button>`;
+            if(item.need_count) {
+                action_html += `<button class="`+btnClass+` btn-primary" `+btnStyle+` type="button" id="` + item.id + `"_confirm_count" onclick="confirm_count(`+rownum+`);">Confirm Qty</button>`;
             }
             action_html += '<br/>';
             break;
@@ -452,9 +471,9 @@ function draw_cart_row(rownum) {
 
 function change_locs() {
     for (row in cart) {
-        var item = cart[row]['id'];
+        var item = cart[row].id;
         var new_loc = document.getElementById('loc_' + item).value;
-        if(new_loc != cart[row]['location']) {
+        if(new_loc != cart[row].location) {
             update_loc(row, new_loc, false);
         }
     }
@@ -463,48 +482,48 @@ function change_locs() {
 }
 
 function update_bid(row, to_auction=false, close=false) {
-    var item = cart[row]['id'];
+    var item = cart[row].id;
     var bidder = document.getElementById('bidder_' + item).value; 
     var price = document.getElementById('bid_' + item).value; 
     //check if valid
-    if(cart[row]['type'] != "art") {
+    if(cart[row].type != "art") {
         alert("Item not in auction");
     } else {
         actionlist.push(create_action('Set Bidder', item, bidder));
         actionlist.push(create_action('Set Bid', item, price));
 
-        if (cart[row]['final_price'] != null) {
-            if (Number(cart[row]['final_price']) > price) {
+        if (cart[row].final_price != null) {
+            if (Number(cart[row].final_price) > price) {
                 if (!confirm("Price is less than last bid, are you sure?")) {
-                    document.getElementById('bid_' + item).value = cart[row]['final_price'];
+                    document.getElementById('bid_' + item).value = cart[row].final_price;
                     return;
                 }
             }
         }
 
-        if (cart[row]['min_price'] != null) {
-            if (Number(cart[row]['min_price']) > price) {
-                if (!confirm("Price is less than minimum price of " + cart[row]['min_price'] + ", are you sure?")) {
-                    document.getElementById('bid_' + item).value = cart[row]['final_price'];
-                    document.getElementById('bidder_' + item).value = cart[row]['bidder'];
+        if (cart[row].min_price != null) {
+            if (Number(cart[row].min_price) > price) {
+                if (!confirm("Price is less than minimum price of " + cart[row].min_price + ", are you sure?")) {
+                    document.getElementById('bid_' + item).value = cart[row].final_price;
+                    document.getElementById('bidder_' + item).value = cart[row].bidder;
                     return;
                 }
             }
         }
-        cart[row]['bidder']=bidder;
-        cart[row]['final_price']=price;
+        cart[row].bidder=bidder;
+        cart[row].final_price=price;
 
         if(to_auction) {
             actionlist.push(create_action('Send To Auction', item));
-            cart[row]['status']='To Auction';
+            cart[row].status='To Auction';
         }
         if(close) {
-            if(cart[row]['status'] == 'To Auction') {
+            if(cart[row].status == 'To Auction') {
                 actionlist.push(create_action('Sell At Auction', item));
-                cart[row]['status']='Sold At Auction';
+                cart[row].status='Sold At Auction';
             } else {
                 actionlist.push(create_action('Sell To Bidsheet', item));
-                cart[row]['status']='Sold To Bidsheet';
+                cart[row].status='Sold To Bidsheet';
             }
         }
     }
@@ -513,19 +532,19 @@ function update_bid(row, to_auction=false, close=false) {
 }
 
 function update_loc(row, loc, redraw=true) {
-    var item = cart[row]['id'];
+    var item = cart[row].id;
     if(loc == undefined) { loc = document.getElementById('loc_' + item).value; }
     console.log("Shift " + item + " to " + loc);
     //check if valid
-    if(!locations[cart[row]['exhibitorNumber']].includes(loc)) {
+    if(!locations[cart[row].exhibitorNumber].includes(loc)) {
         alert("Invalid location");
     } else {
         actionlist.push(create_action('Set Location', item, loc));
 
-        cart[row]['location']=loc;
+        cart[row].location=loc;
 
-        if(cart[row]['need_location']) {
-            cart[row]['need_location']=false;
+        if(cart[row].need_location) {
+            cart[row].need_location=false;
             need_location--;
         }
     }
@@ -535,7 +554,7 @@ function update_loc(row, loc, redraw=true) {
 
 
 function confirm_count(row) {
-    cart[row]['need_count'] = false;
+    cart[row].need_count = false;
     need_count--;
     draw_cart();
 }
@@ -563,12 +582,12 @@ function draw_notes() {
     <div id="artInventory_pending" class="text-info" style="display: none"><ul>`;
 
     for (action in actionlist) {
-        html += "<li>" + actionlist[action]['action'] + " " + actionlist[action]['item'] 
-        switch(actionlist[action]['action']){
+        html += "<li>" + actionlist[action].action + " " + actionlist[action].item 
+        switch(actionlist[action].action){
             case "Set Location": 
             case "Set Bidder":
             case "Set Bid":
-                html += " to " + actionlist[action]['value']
+                html += " to " + actionlist[action].value
                 break;
             case "Check In":
             case "To Auction":
@@ -631,4 +650,10 @@ function create_action(action, item, value) {
         item: item,
         value: value
     };
+}
+
+// print control sheets
+function pdfSheets(type, email) {
+    var script = "scripts/artInventory_bidSheets.php?type=" + type + "&region=" + regionYearId + "&eyid=" + exhibitorYearId + "&email=" + email;
+    window.open(script, "_blank")
 }

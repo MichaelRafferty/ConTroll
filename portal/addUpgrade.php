@@ -12,7 +12,6 @@ global $config_vars;
 $con = get_conf('con');
 $conid = $con['id'];
 $portal_conf = get_conf('portal');
-$debug = get_conf('debug');
 $condata = get_con();
 
 if (isSessionVar('id') && isSessionVar('idType')) {
@@ -41,7 +40,7 @@ else
 
 $config_vars = array();
 $config_vars['label'] = $con['label'];
-$config_vars['debug'] = $debug['portal'];
+$config_vars['debug'] = getConfValue('debug', 'portal', 0);
 $config_vars['conid'] = $conid;
 $config_vars['uri'] = $portal_conf['portalsite'];
 $config_vars['regadminemail'] = $con['regadminemail'];
@@ -61,11 +60,11 @@ if ($loginType == 'n') {
 // we need the list of people we are managing so we can check for matching email addresses and allow them
 $emQ = <<<EOS
 SELECT LOWER(email_addr) AS email_addr, 
-    TRIM(REGEXP_REPLACE(CONCAT(first_name, ' ', middle_name, ' ', last_name, ' ', suffix), '  *', ' ')) AS fullName
+    TRIM(REGEXP_REPLACE(CONCAT(first_name, ' ', middle_name, ' ', last_name, ' ', suffix), ' +', ' ')) AS fullName
 FROM newperson
 WHERE $mfield = ?
 UNION SELECT LOWER(email_addr) AS email_addr,
-    TRIM(REGEXP_REPLACE(CONCAT(first_name, ' ', middle_name, ' ', last_name, ' ', suffix), '  *', ' ')) AS fullName   
+    TRIM(REGEXP_REPLACE(CONCAT(first_name, ' ', middle_name, ' ', last_name, ' ', suffix), ' +', ' ')) AS fullName   
 FROM perinfo
 WHERE $mfield = ?;
 EOS;
@@ -116,7 +115,7 @@ if ($action == 'upgrade') {
         $field = 'managedBy';
     }
         $checkQ = <<<EOS
-SELECT IFNULL($field, -1) AS mid, id, TRIM(REGEXP_REPLACE(CONCAT(first_name, ' ', middle_name, ' ', last_name, ' ', suffix), '  *', ' ')) AS fullName
+SELECT IFNULL($field, -1) AS mid, id, TRIM(REGEXP_REPLACE(CONCAT(first_name, ' ', middle_name, ' ', last_name, ' ', suffix), ' +', ' ')) AS fullName
 FROM $table
 WHERE id = ?;
 EOS;

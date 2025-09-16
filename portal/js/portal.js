@@ -13,6 +13,8 @@ window.onload = function () {
     if (config.initCoupon && config.initCoupon != '') {
         coupon.addCouponCode(config.initCoupon, config.initCouponSerial);
     }
+    if (config.refresh == 'passkey')
+        portal.loginWithPasskey();
 }
 
 class Portal {
@@ -481,7 +483,7 @@ class Portal {
             return;
 
         if (!valid) {
-            show_message("Please enter a valid email address", 'warn');
+            show_message("Please enter a valid email address", 'warn', 'ceMessageDiv');
             return;
         }
         if (autoCall == 2)
@@ -1318,7 +1320,7 @@ class Portal {
                 newplan = true;
 
         var totalAmountDue = this.#otherPay == 1 ? this.#paymentAmount : this.#totalAmountDue;
-        var taxAmount = 0;
+        var taxAmount = 0
         var preTaxAmount = totalAmountDue;
         if (this.#existingPlan == null && this.#orderData && this.#orderData.rtn) {
             preTaxAmount = this.#orderData.rtn.preTaxAmt;
@@ -1349,7 +1351,7 @@ class Portal {
             nonce: token,
             amount: this.#paymentAmount,
             totalAmountDue: this.#otherPay == 1 ? this.#paymentAmount : this.#totalAmountDue,
-            preTaxAmountDue: preTaxAmount,
+            preTaxAmount: preTaxAmount,
             taxAmount: taxAmount,
             couponDiscount: this.#couponDiscount,
             preCouponAmountDue: this.#preCouponAmountDue,
@@ -1708,6 +1710,12 @@ class Portal {
     // site selection
     siteSelect(url) {
         openWindowWithFallback(url);
+    }
+
+    // passkey refresh
+    // login with passkey - ask for a confirm and return either retry or go to portal
+    loginWithPasskey() {
+        passkeyRequest('scripts/passkeyActions.php', 'portal.php', 'portal');
     }
 }
 

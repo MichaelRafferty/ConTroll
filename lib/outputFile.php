@@ -43,8 +43,7 @@ function outputFile($format, $sheetname, $fileName, $tableData, $excludeList = n
                 if (!array_is_list($field)) {
                     $keys[] = $field['key'];
                     $labels[] = $field['label'];
-                }
-                else {
+                }  else {
                     $keys = $field[0];
                     $labels[] = $field[count($field) - 1];
                 }

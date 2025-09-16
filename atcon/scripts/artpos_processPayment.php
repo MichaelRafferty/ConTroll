@@ -42,7 +42,6 @@ $source = 'artsales';
 
 $log = get_conf('log');
 $con = get_conf('con');
-$debug = get_conf('debug');
 $ini = get_conf('reg');
 $cc = get_conf('cc');
 load_cc_procs();
@@ -103,8 +102,10 @@ if (array_key_exists('tax', $new_payment))
 else
     $taxAmt = 0;
 
-if ($amt != $preTaxAmt + $taxAmt) {
-    ajaxError('Invalid payment amount passed: preTax + Tax != Amount');
+$offset = $amt - ($preTaxAmt + $taxAmt);
+if (abs($offset) > 0.008) {
+    error_log("Invalid payment amount passed: preTax ($preTaxAmt) + Tax ($taxAmt) != Amount ($amt), offset = $offset");
+    ajaxError("Invalid payment amount passed: preTax ($preTaxAmt) + Tax ($taxAmt) != Amount ($amt), offset = $offset");
     return;
 }
 
@@ -131,6 +132,7 @@ if (array_key_exists('poll', $_POST)) {
 }
 
 // we need an available terminal, so get the latest status
+    $name = 'None';
 if ($new_payment['type'] == 'terminal') {
     load_term_procs();
     $terminal = getSessionVar('terminal');
@@ -157,7 +159,7 @@ if ($new_payment['type'] == 'terminal') {
             if ($inUseBy != null && $inUseBy != '') {
                 if ($inUseBy != $user_id) {
                     $operatorNameSQL = <<<EOS
-SELECT TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), '  *', ' ')) AS fullName
+SELECT TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), ' +', ' ')) AS fullName
 FROM perinfo
 WHERE id = ?;
 EOS;
@@ -292,6 +294,15 @@ if ($amt > 0) {
                 exit();
             }
             $status = $checkout['status'];
+
+            // update the transaction status
+            $updTranStatusSQL = <<<EOS
+UPDATE transaction
+SET paymentStatus = ?
+WHERE id = ?;
+EOS;
+            $updcnt = dbSafeCmd($updTranStatusSQL, 'si', array($status, $master_tid));
+
             switch ($status) {
                 case 'CANCELED':
                     resetTerminalStatus($name);
@@ -321,18 +332,29 @@ if ($amt > 0) {
             // get the payment id to get the payment details
             $paymentIds = $checkout['payment_ids'];
             if (count($paymentIds) > 1) {
-                web_error_log("pos_processPayment: terminal: returned more than one paymentId");
+                web_error_log("pos_processPayment: terminal: returned more than one credit card payment id");
                 web_error_log($paymentIds);
             }
             $paymentId = $paymentIds[0];
             $payment = cc_getPayment('artsales', $paymentId, true);
+
+            // update the transaction status
+            $updTranPaymentIdSQL = <<<EOS
+UPDATE transaction
+SET ccPaymentId = ?
+WHERE id = ?;
+EOS;
+            $updcnt = dbSafeCmd($updTranStatusSQL, 'si', array($paymentId, $master_tid));
 
             $approved_amt = $payment['approved_money']['amount'] / 100;
             $category = 'artsales';
             $desc = $payment['application_details']['square_product'];
             $txtime = $payment['created_at'];
             $receiptNumber = $payment['receipt_number'];
-            $receiptUrl = $payment['receipt_url'];
+            if (array_key_exists('receipt_url', $payment))
+                $receiptUrl = $payment['receipt_url'];
+            else
+                $receiptUrl = null;
             $last4 = $payment['card_details']['card']['last_4'];
             $id = $payment['id'];
             $location_id = $payment['location_id'];
@@ -396,7 +418,7 @@ if ($amt > 0) {
             resetTerminalStatus($name);
         } else {
             // this is the send the request to the terminal, then we need a separate poll section to get it back and continue to record the payment.
-            $checkout = term_payOrder($name, $orderId, $amt, true);
+            $checkout = term_payOrder($name, $orderId, $master_tid, $amt, true);
             $status = $checkout['status'];
             if ($status == 'PENDING') {
                 $updQ = <<<EOS
@@ -409,6 +431,17 @@ EOS;
                     ajaxSuccess(array ('error' => "Unable to update terminal ($name) status"));
                     exit();
                 }
+
+
+                /* update the transaction */
+                // update the transaction status
+                $updTranStatusSQL = <<<EOS
+UPDATE transaction
+SET paymentStatus = ?, checkoutId = ?
+WHERE id = ?;
+EOS;
+                $updcnt = dbSafeCmd($updTranStatusSQL, 'ssi', array($status, $checkout['id'], $master_tid));
+
                 $response['status'] = 'success';
                 $response['poll'] = 1;
                 $response['id'] = $checkout['id'];
@@ -446,10 +479,18 @@ EOS;
         $nonceCode = $nonce;
     $complete = round($approved_amt,2) == round($amt,2);
 
+    // now update the transaction with the data
+    $updTranStatusSQL = <<<EOS
+UPDATE transaction
+SET paymentStatus = ?, ccPaymentId = ?
+WHERE id = ?;
+EOS;
+    $updcnt = dbSafeCmd($updTranStatusSQL, 'ssi', array($status, $paymentId, $master_tid));
+
     // now add the payment and process to which rows it applies
     $insPmtSQL = <<<EOS
 INSERT INTO payments(transid, type,category, description, source, pretax, tax, amount, time, cc_approval_code, cashier, 
-    cc, nonce, cc_txn_id, txn_time, receipt_url, receipt_id, userPerid, status, paymentId)
+    cc, nonce, cc_txn_id, txn_time, receipt_url, receipt_id, userPerid, status, ccPaymentId)
 VALUES (?,?,'artshow',?,'cashier',?,?,?,now(),?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 EOS;
     $typestr = 'issdddsissssssiss';
@@ -520,7 +561,6 @@ foreach ($cart_art as $cart_row) {
     if ($unpaid > 0) {
         $amt_paid = min($amt, $unpaid);
         $cart_row['paid'] += $amt_paid;
-        $cart_art[$cart_row['index']] = $cart_row;
         $amt -= $amt_paid;
         $upd_rows += dbSafeCmd($updArtSalesSQL, $atypestr, array($cart_row['paid'], $master_tid, $quantity, $cart_row['amount'], $cart_row['artSalesId']));
 
@@ -530,19 +570,21 @@ foreach ($cart_art as $cart_row) {
 
             if ($cart_row['priceType'] == 'Quick Sale') {
                 $cart_row['final_price'] = $cart_row['paid']; // for quick sale, need to update cart row itself with the final price
+                $cart_row['status'] = 'Quicksale/Sold';
                 $upd_cart += dbSafeCmd($updStatusSQL, $usstr, array('Quicksale/Sold', $perid, $cart_row['paid'], $cart_row['id']));
                 $upd_rows += dbSafeCmd($updArtSalesStatusSQL, $usrstr, array('Quicksale/Sold', $cart_row['artSalesId']));
-            } else if ($cart_row['status'] == 'BID') {
+            } else if ($cart_row['status'] == 'BID' || $cart_row['status'] == 'To Auction' ||
+                $cart_row['status'] == 'Sold Bid Sheet' || $cart_row['status'] == 'Sold Auction'  ) {
                 $cart_row['final_price'] = $cart_row['paid'];
-                $upd_cart += dbSafeCmd($updStatusSQL, $usstr, array('Sold Bid Sheet', $perid, $cart_row['paid'], $cart_row['id']));
-                $upd_rows += dbSafeCmd($updArtSalesStatusSQL, $usrstr, array('Sold Bid Sheet', $cart_row['artSalesId']));
-            } else if ($cart_row['status'] == 'To Auction') {
-                $upd_cart += dbSafeCmd($updStatusSQL, $usstr, array('Sold Auction', $perid, $cart_row['paid'], $cart_row['id']));
-                $upd_rows += dbSafeCmd($updArtSalesStatusSQL, $usrstr, array('Sold Auction', $cart_row['artSalesId']));
+                $cart_row['status'] = 'Purchased/Released';
+                $upd_cart += dbSafeCmd($updStatusSQL, $usstr, array ('Purchased/Released', $perid, $cart_row['paid'], $cart_row['id']));
+                $upd_rows += dbSafeCmd($updArtSalesStatusSQL, $usrstr, array ('Purchased/Released', $cart_row['artSalesId']));
             }
+
             if ($cart_row['type'] == 'print') {
                 $upd_rows += dbSafeCmd($updArtSalesStatusSQL, $usrstr, array('Purchased/Released', $cart_row['artSalesId']));
             }
+            $cart_art[$cart_row['index']] = $cart_row;
         }
     } else {
         if (array_key_exists('updSales', $cart_row) && $cart_row['updSales'] == true) {
@@ -553,7 +595,7 @@ foreach ($cart_art as $cart_row) {
 
 $updCompleteSQL = <<<EOS
 UPDATE transaction
-SET paid = IFNULL(paid,'0.00') + ?
+SET paid = ?
 WHERE id = ?;
 EOS;
 $completed = dbSafeCmd($updCompleteSQL, 'di', array($approved_amt, $master_tid));
@@ -578,7 +620,7 @@ $response['taxAmt'] = $rtn['taxAmt'];
 $response['cart_art'] = $cart_art;
 ajaxSuccess($response);
 
-function resetTerminalStatus($name) {
+function resetTerminalStatus($name) :void {
     $updQ = <<<EOS
 UPDATE terminals
 SET currentOperator = 0, currentOrder = '', currentPayment = '', controllStatus = '', controllStatusChanged = now()

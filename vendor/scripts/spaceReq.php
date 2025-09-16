@@ -111,7 +111,9 @@ EOS;
     }
 
     if (array_key_exists('price', $price)) {
-        $spaces .= $price['description'] . ' in the ' . $regionInfo['name'] . ' for ' . $dolfmt->formatCurrency($price['price'], $currency) . PHP_EOL;
+        $spaces .= $price['description'] . ' in the ' . $regionInfo['name'] . ' ' . $price['shortname'] . ' for ' . $dolfmt->formatCurrency($price['price'],
+                $currency) .
+        PHP_EOL;
     }
     // see if there already is an entry for this space for this vendor
     $vendorQ = <<<EOS
