@@ -91,9 +91,8 @@ EOS;
         $appRegion = "You have been $approvalValue to appear in the $region at " . $conf['label'] . PHP_EOL . PHP_EOL;
         if ($approvalValue == 'approved') {
             $appRegion .= "Please sign into the $portalType portal $portalURL and request your space.";
-        } else {
-            $appRegion .= "If you have questions, please reach out to $ownerName at $ownerEmail.";
         }
+        $appRegion .= "\n\nIf you have questions, please reach out to $ownerName at $ownerEmail.";
 
 // now tell the exhibitor they have been approved
         $body = <<<EOS

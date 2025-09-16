@@ -456,6 +456,8 @@ EOS;
             $spaceHeader = 'You have not been approved for space in ' . $con['label'] . "'s " . $detail['regionName'] . '.';
         }
 
+        $spaceDetail .= "\n\nIf you have questions, please reach out to $ownerName at $ownerEmail.";
+
         $body = <<<EOS
 Dear $exhibitorName
 
