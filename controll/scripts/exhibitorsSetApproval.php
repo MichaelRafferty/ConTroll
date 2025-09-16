@@ -58,12 +58,13 @@ SELECT ownerEmail, ownerName, er.name, e.exhibitorName, e.exhibitorEmail, exY.co
     CASE 
         WHEN p.id IS NOT NULL THEN TRIM(CONCAT(p.first_name, ' ', p.last_name))
         ELSE TRIM(CONCAT(n.first_name, ' ', n.last_name))
-    END AS agentName, agentRequest
+    END AS agentName, agentRequest, et.portalType
 FROM exhibitorRegionYears exRY
 JOIN exhibitorYears exY ON exRY.exhibitorYearId = exY.id
 JOIN exhibitors e ON exY.exhibitorId = e.id
 JOIN exhibitsRegionYears ery ON ery.id = exRY.exhibitsRegionYearId
 JOIN exhibitsRegions er on ery.exhibitsRegion = er.id
+JOIN exhibitsRegionTypes et ON (et.regionType = er.RegionType)
 LEFT OUTER JOIN perinfo p ON p.id = exRY.agentPerid
 LEFT OUTER JOIN newperson n ON n.id = exRY.agentNewperson
 WHERE exRY.id = ?
@@ -80,11 +81,16 @@ EOS;
         $exhibitorName = $appdata['exhibitorName'];
         $exhibitorEmail = $appdata['exhibitorEmail'];
         $contactEmail = $appdata['contactEmail'];
+        $portalType = $appdata['portalType'];
+        $portalURL = getConfValue('vendor', $portalType . 'site', '');
+        if ($portalURL != '') {
+            $portalURL = 'at ' . $portalURL;
+        }
 
         $appSubject = "Request to appear in the $region";
         $appRegion = "You have been $approvalValue to appear in the $region at " . $conf['label'] . PHP_EOL . PHP_EOL;
         if ($approvalValue == 'approved') {
-            $appRegion .= "Please sign into the portal and request your space.";
+            $appRegion .= "Please sign into the $portalType portal $portalURL and request your space.";
         } else {
             $appRegion .= "If you have questions, please reach out to $ownerName at $ownerEmail.";
         }
