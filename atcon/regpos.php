@@ -15,7 +15,6 @@ $con = get_conf('con');
 $debug = get_conf('debug');
 $usps = get_conf('usps');
 $vendor = get_conf('vendor');
-$ini = get_conf('reg');
 $controll = get_conf('controll');
 $atcon = get_conf('atcon');
 $condata = get_con();
@@ -44,7 +43,7 @@ if (isset($_GET['mode'])) {
         $tab = 'cashier';
     }
 }
-$page = "Atcon POS ($tab)";
+$page = "Point of Sale ($tab)";
 
 if (!check_atcon($method, $conid)) {
     header('Location: /index.php');
@@ -82,7 +81,7 @@ $config_vars['mode'] = $mode;
 $config_vars['tab'] = $tab;
 $config_vars['conid'] = $conid;
 $config_vars['regadminemail'] = $con['regadminemail'];
-$config_vars['required'] = $ini['required'];
+$config_vars['required'] = getConfValue('reg', 'required', 'addr');
 $config_vars['useportal'] = $controll['useportal'];
 $config_vars['cashier'] = $method == 'cashier' ? 1 : 0;
 $config_vars['cashierAllowed'] = check_atcon('cashier', $conid) ? 1 : 0;

@@ -5,8 +5,8 @@
 // create order from cart for payment processing
 
 require_once '../lib/base.php';
-require_once('../../lib/coupon.php');
 require_once('../../lib/log.php');
+require_once('../../lib/coupon.php');
 require_once('../../lib/cc__load_methods.php');
 
 // use common global Ajax return functions
@@ -48,6 +48,26 @@ if ($transId <= 0) {
     ajaxError('No current transaction in process');
 }
 
+$discount = 0;
+if (array_key_exists('couponCode', $_POST) && $_POST['couponCode'] != '') {
+    $result = load_coupon_data($_POST['couponCode']);
+    if ($result['status'] == 'success') {
+        $coupon = $result['coupon'];
+        $discount = $_POST['couponDiscount'];
+    } else {
+        ajaxError($result['error']);
+        return;
+    }
+} else {
+    $coupon = null;
+}
+
+$drow = null;
+if (array_key_exists('drow', $_POST) && $_POST['drow'] != null) {
+    $drow = $_POST['drow'];
+    $discount = $_POST['discountAmt'];
+}
+
 try {
     $cart_perinfo = json_decode($_POST['cart_perinfo'], true, 512, JSON_THROW_ON_ERROR);
 }
@@ -67,26 +87,6 @@ if (array_key_exists('cancelOrder', $_POST)) {
     $cancelOrderId = $_POST['cancelOrder'];
 } else {
     $cancelOrderId = null;
-}
-
-$discount = 0;
-if (array_key_exists('couponCode', $_POST) && $_POST['couponCode'] != '') {
-    $result = load_coupon_data($_POST['couponCode']);
-    if ($result['status'] == 'success') {
-        $coupon = $result['coupon'];
-        $discount = $_POST['couponDiscount'];
-    } else {
-        ajaxError($result['error']);
-        return;
-    }
-} else {
-    $coupon = null;
-}
-
-$drow = null;
-if (array_key_exists('drow', $_POST) && $_POST['drow'] != null) {
-    $drow = $_POST['drow'];
-    $discount = $_POST['discountAmt'];
 }
 
 // build the badge list for the order, do not include the already paid items
@@ -119,7 +119,12 @@ foreach ($cart_perinfo as $row) {
             'label' => $membership['label'],
             'memType' => $membership['memType'],
             'memCategory' => $membership['memCategory'],
+            'memAge' => $membership['memAge'],
             'taxable' => $membership['taxable'],
+            'fname' => $row['first_name'],
+            'shortname' => ($membership['conid'] != $conid ? $membership['conid'] . ' ' : '') . $membership['shortname'],
+            'conid' => $membership['conid'],
+            'ageshortname' => $membership['ageShortName'],
             'price' => $price - $paid,
             'status' => $membership['status'],
             'regid' => $membership['regid'],
@@ -171,8 +176,8 @@ if ($cancelOrderId) // cancel the old order if it exists
 $rtn = cc_buildOrder($results, true, $locationId);
 if ($rtn == null) {
     // note there is no reason cc_buildOrder will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
-    logWrite(array ('con' => $con['label'], 'trans' => $transId, 'error' => 'Credit card order unable to be created'));
-    ajaxSuccess(array ('status' => 'error', 'error' => 'Credit card order not built'));
+    logWrite(array ('con' => $con['label'], 'trans' => $transId, 'error' => 'Order unable to be created'));
+    ajaxSuccess(array ('status' => 'error', 'error' => 'Order not built'));
     exit();
 }
 $rtn['totalPaid'] = $totalPaid;
@@ -210,7 +215,11 @@ if ($drow != null) {
                         $thisItemDiscount = $discount['applied_money']['amount'];
                     // now find the reg entry to match this item
                     $rowno = $item['metadata']['rowno'];
-                    $badges[$rowno]['paid'] += $thisItemDiscount / 100;
+                    if (!array_key_exists('paid', $badges[$rowno]))
+                        $badges[$rowno]['paid'] = 0;
+                    if (!array_key_exists('couponDiscount', $badges[$rowno]))
+                        $badges[$rowno]['couponDiscount'] = 0;
+                    $badges[$rowno]['couponDiscount'] += $thisItemDiscount / 100;
                 }
             }
         }

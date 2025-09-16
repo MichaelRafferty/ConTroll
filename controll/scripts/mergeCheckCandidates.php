@@ -1,5 +1,4 @@
 <?php
-global $db_ini;
 
 require_once "../lib/base.php";
 
@@ -61,4 +60,3 @@ if ($error != '')
     $response['error'] = $error;
 
 ajaxSuccess($response);
-?>

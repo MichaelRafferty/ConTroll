@@ -10,6 +10,7 @@ window.onload = function () {
 class Login {
     // login fields
     #matchTable = null;
+    #loginWithPasskeyBtn = null;
 
     // edit person items
     #editPersonModal = null;
@@ -78,6 +79,7 @@ class Login {
             this.#uspsDiv = document.getElementById("uspsblock");
         }
 
+        this.#loginWithPasskeyBtn = document.getElementById("loginPasskeyBtn");
         this.#sendLinkBtn = document.getElementById("sendLinkBtn");
         this.#devEmail = document.getElementById("dev_email");
         this.#tokenEmail = document.getElementById("token_email");
@@ -175,6 +177,14 @@ class Login {
     loginSelectIcon(cell, formatterParams, onRendered) {
         var id = cell.getRow().getData().id;
         return "<button type='button' class='btn btn-sm btn-primary pt-0 pb-0' onclick='login.loginWithEmail(" + id + ");'>Login</button>";
+    }
+
+    // login with passkey - ask for a confirm and return either retry or go to portal
+    loginWithPasskey() {
+        if (this.#loginWithPasskeyBtn)
+            this.#loginWithPasskeyBtn.disabled = true;
+
+       passkeyRequest('scripts/passkeyActions.php', 'portal.php', 'portal', this.#loginWithPasskeyBtn);
     }
 
     // loginWithToken: show email for token

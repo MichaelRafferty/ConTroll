@@ -112,7 +112,7 @@ function write_ps($badge, $tempfile)//: void {
 
     //info line
     $type='';
-    if($badge['category'] == 'test') { $type = 'x'; }
+    if($badge['category'] == 'test') { $type = 'test'; }
     else { $type = $badgeTypes[$badge['category']]; }
     $id = $badge['id'];
 
@@ -162,7 +162,7 @@ function write_ps($badge, $tempfile)//: void {
 // print_badge: printer contains array(4) of display name, server, queue name (printer), printer type
 function print_badge($printer, $tempfile)//: string|false
 {
-error_log($printer['name'] . ' ' . $printer['host'] . ' ' . $printer['queue'] . ' ' . $printer['type'] . ' ' . $printer['code']);
+//error_log($printer['name'] . ' ' . $printer['host'] . ' ' . $printer['queue'] . ' ' . $printer['type'] . ' ' . $printer['code']);
 
     $queue = $printer['queue'];
     $codepage = $printer['code'];

@@ -17,7 +17,6 @@ $return500errors = true;
 
 $con = get_conf('con');
 $atcon = get_conf('atcon');
-$reg_conf = get_conf('reg');
 $controll = get_conf('controll');
 $debug = get_conf('debug');
 $usps = get_conf('usps');
@@ -76,13 +75,14 @@ if ($r->num_rows == 1) {
     exit();
 }
 $r->free();
-// get all types registration can set
-// if now is pre or post con set search date to first day of con
-//web_error_log("start = " . strtotime($startdate) . ", end = " . strtotime($enddate) . ", now = " . time());
-if (time() < strtotime($startdate) || strtotime($enddate) +24*60*60 < time()) {
-    $searchdate = $startdate;
-} else {
-    $searchdate = date('Y-m-d');
+$searchdate = date('Y-m-d');
+if (getConfValue('atcon', 'precon', 0) == 0) {
+    // get all types registration can set
+    // if now is pre or post con set search date to first day of con
+    //web_error_log("start = " . strtotime($startdate) . ", end = " . strtotime($enddate) . ", now = " . time());
+    if (time() < strtotime($startdate) || strtotime($enddate) + 24 * 60 * 60 < time()) {
+        $searchdate = $startdate;
+    }
 }
 //web_error_log("Search date now $searchdate");
 
@@ -90,7 +90,7 @@ if (time() < strtotime($startdate) || strtotime($enddate) +24*60*60 < time()) {
 // get all the memLabels
 $priceQ = <<<EOS
 SELECT id, conid, memCategory, memType, memAge, taxable,
-       CASE WHEN conid = ? THEN label ELSE concat(conid, ' ', label) END AS label, 
+       CASE WHEN conid = ? THEN label ELSE concat(conid, ' ', label) END AS label, ageShortName, 
        shortname, sort_order, price, CAST(startdate AS date) AS startdate, CAST(enddate AS date) AS enddate,
     CASE 
         WHEN (atcon != 'Y') THEN 0
@@ -166,7 +166,7 @@ $response['num_coupons'] = $ret[0];
 $response['couponList'] = $ret[1];
 
 // membership rules, policies, configuration items
-$ruleData = getRulesData($conid, true, false);
+$ruleData = getRulesData($conid, false, true);
 
 $response['gageList'] = $ruleData['ageList'];
 $response['gageListIdx'] = $ruleData['ageListIdx'];
@@ -180,7 +180,7 @@ $cdebug = 0;
 if (array_key_exists('controll_registration', $debug))
     $cdebug = $debug['controll_registration'];
 $response['debug'] = $cdebug;
-$response['required'] = $reg_conf['required'];
+$response['required'] = getConfValue('reg', 'required', 'addr');
 $response['useUSPS'] = $useUSPS;
 
 ajaxSuccess($response);

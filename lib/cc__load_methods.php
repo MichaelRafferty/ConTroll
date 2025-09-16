@@ -2,9 +2,7 @@
 
 // load the appropriate methods for processing credit cards based on the config file
 function load_cc_procs() : void {
-    $reg = get_conf('reg');
     $cc = get_conf('cc');
-    $con = get_conf('con');
 
     switch ($cc['type']) {
         case 'square':
@@ -13,7 +11,7 @@ function load_cc_procs() : void {
             break;
         case 'test':
             if ((!array_key_exists('demo', $cc)) || $cc['demo'] != 1) { // allow demo override on test for cc
-                if (($cc['env'] != 'sandbox') || $reg['test'] != 1) {
+                if (($cc['env'] != 'sandbox') || getConfValue('reg','test') != 1) {
                     ajaxSuccess(array ('status' => 'error', 'data' => 'Something thinks this is a real charge method'));
                     exit();
                 }

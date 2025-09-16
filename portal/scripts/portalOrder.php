@@ -242,7 +242,11 @@ if ($otherPay == 0) { // this is a plan payment or badge purchase payment
                               'planId' => $mem['planId'],
                               'email_addr' => $mem['email_addr'],
                               'phone' => $mem['phone'],
-                              'inPlan' => false
+                              'inPlan' => false,
+                              'fname' => array_key_exists('first_name', $mem) ? $mem['first_name'] : $mem['fname'],
+                              'shortname' => $mem['shortname'],
+                              'ageshortname' => array_key_exists('ageShortName', $mem) ? $mem['ageShortName'] : $mem['ageshortname'],
+                              'taxable' => $mem['taxable'],
             );
             if ($mem['planId'] != 0) {
                 $planRecast = 1;
@@ -286,8 +290,8 @@ if ($amount > 0) {
     $rtn = cc_buildOrder($results, true);
     if ($rtn == null) {
         // note there is no reason cc_buildOrder will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
-        logWrite(array ('con' => $condata['name'], 'trans' => $transId, 'error' => 'Credit card order unable to be created'));
-        ajaxSuccess(array ('status' => 'error', 'error' => 'Credit card order not built'));
+        logWrite(array ('con' => $condata['name'], 'trans' => $transId, 'error' => 'Order unable to be created'));
+        ajaxSuccess(array ('status' => 'error', 'error' => 'Order not built'));
         exit();
     }
     $response['rtn'] = $rtn;

@@ -1,6 +1,4 @@
 <?php
-global $db_ini;
-
 require_once '../lib/base.php';
 require_once '../lib/customText.php';
 
@@ -24,4 +22,3 @@ if (!isset($_POST) || !isset($_POST['ajax_request_action']) || !isset($_POST['ta
 
 $response['customText'] = getCustomText('exhibitor');
 ajaxSuccess($response);
-?>

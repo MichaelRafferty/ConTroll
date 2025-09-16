@@ -1,5 +1,4 @@
 <?php
-global $db_ini;
 require_once "lib/base.php";
 //initialize google session
 $need_login = google_init("page");
@@ -79,5 +78,3 @@ $config_vars['compLen'] = $con['compLen'];
 <?php
 
 page_foot($page);
-
-?>

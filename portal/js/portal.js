@@ -669,7 +669,7 @@ class Portal {
         }
 
         // Check USPS for standardized address
-        if (this.#uspsDiv != null && person.country == 'USA' && person.city != '' && person.state != '\r' && validateUSPS == 0) {
+        if (this.#uspsDiv != null && person.country == 'USA' && person.city != '' && person.state != '/r' && validateUSPS == 0) {
             this.#personSave = person;
             this.#uspsAddress = null;
             var script = "scripts/uspsCheck.php";
@@ -1239,7 +1239,7 @@ class Portal {
         if (this.#orderData.rtn.taxAmt > 0) {
             html += `
             <div className="row mt-4">
-                <div className="col-sm-auto"><b>The Pre Tax Amount Due is ` + Number(this.#orderData.rtn.preTaxAmt).toFixed(2) + `</b></div>
+                <div className="col-sm-auto"><b>The Pre-Tax Amount Due is ` + Number(this.#orderData.rtn.preTaxAmt).toFixed(2) + `</b></div>
             </div>
             <div className="row mt-2">
                 <div className="col-sm-auto"><b>` + this.#orderData.rtn.taxLabel + ` is ` + Number(this.#orderData.rtn.taxAmt).toFixed(2) + `</b></div>
@@ -1295,18 +1295,6 @@ class Portal {
         }
 
         return amount;
-/* save this part for Make Payment if other is 1
-        this.#paymentAmount = type == 'full' ? this.#otherPayAmt : this.#partialPayAmt;
-        this.#makePaymentBody.innerHTML = `
-        <div class="row mt-4 mb-4">
-            <div class="col-sm-auto"><b>You are making a payment against memberships purchased for you by others of ` +
-                Number(this.#paymentAmount).toFixed(2) + `</b></div>
-         </div>        
-`;
-
-        this.#otherPay = 1;
-        this.#makePaymentModal.show();
-*/
     }
 
     // makePurchase - make the membership/plan purchase.
@@ -1671,15 +1659,25 @@ class Portal {
         }
     }
 
-    // voting - access to nom nom
     vote() {
+        var rights = { NomNom: 1};
+        this.getJWT(rights, config.nomnomURL);
+    }
+
+    virtual() {
+        var rights = { Virtual: 1};
+        this.getJWT(rights, config.virtualURL);
+    }
+
+    // voting, virtual, etc. - get jwt strings
+    getJWT(rights, url) {
         var data = {
             loginId: config.id,
             loginType: config.idType,
-            NomNom: 1,
+            rights: rights,
         }
         clear_message();
-        var script = 'scripts/getNomNomJWT.php';
+        var script = 'scripts/getJWT.php';
         $.ajax({
             method: 'POST',
             url: script,
@@ -1695,10 +1693,9 @@ class Portal {
                         console.log(data.rights);
                         console.log(data.payload);
                         console.log(data.jwt);
-                        console.log(config.nomnomURL + '?r=' + data.jwt);
+                        console.log(url + '?r=' + data.jwt);
                     }
-                    openWindowWithFallback(config.nomnomURL + '?r=' + data.jwt);
-                    //window.open(config.nomnomURL + '?r=' + data.jwt);
+                    openWindowWithFallback(url + '?r=' + data.jwt);
                 }
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -1706,6 +1703,11 @@ class Portal {
                 return false;
             },
         });
+    }
+
+    // site selection
+    siteSelect(url) {
+        openWindowWithFallback(url);
     }
 }
 

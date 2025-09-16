@@ -55,4 +55,3 @@ if ($results['status'] == 'success') {
 }
 
 ajaxSuccess($results);
-?>

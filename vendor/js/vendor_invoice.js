@@ -158,7 +158,7 @@ function openInvoice(id) {
                 "&nbsp;&nbsp;&nbsp;I will be my" +
                 " own agent and my membership is not one of the ones below.<br/>" +
                 "<input type='radio' name='agent' id='agent_first' value='first' style='transform: scale(1.5);' tabindex=" + (tabindex + 2) + ">" +
-                "&nbsp;&nbsp;&nbsp;The first membership below will be my agent.<br/>";
+                "&nbsp;&nbsp;&nbsp;The first membership below is for myself or my agent.<br/>";
             tabindex += 4;
             
             var ry = exhibitor_regionyears[regionYearId];
@@ -535,7 +535,7 @@ function updatePaidStatusBlock() {
 
     spaceStatus += "<button class='btn btn-primary m-1' onclick='exhibitorReceipt.showReceipt(" + regionYearId + ");' > Show receipt for " + regionName + " space</button>";
     if (region_list[regionYearId].portalType == 'artist') {
-        spaceStatus += "<button class='btn btn-primary m-1' onclick='auctionItemRegistration.open();'>Open Item Registration</button>";
+        spaceStatus += "<button class='btn btn-primary m-1' onclick='auctionItemRegistration.open(regionYearId);'>Open Item Registration</button>";
     }
     blockdiv.innerHTML = '<div class="col-sm-auto p-0">You have purchased:<br/>' + spaceStatus + "</div>";
 

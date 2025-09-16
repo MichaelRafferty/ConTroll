@@ -20,12 +20,12 @@ $response['conid'] = $conid;
 load_email_procs();
 
 
-if(!isset($_SESSION['id'])) {
+if(!isSessionVar('id')) {
     ajaxSuccess(array('status'=>'error', 'message'=>'Session Failure'));
     exit;
 }
 
-$exhId = $_SESSION['id'];
+$exhId = getSessionVar('id');
 
 // which space purchased
 if (!array_key_exists('email', $_POST)) {

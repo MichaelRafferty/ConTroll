@@ -5,7 +5,7 @@
 # Major Configuration Changes in 1.2:
 
 * **ConTroll now requires at least PHP 8.2** and uses the rewritten Square API
-* Addition of PHPOffice to composer.json for reading/writing XSLX, XSL, ODT files
+* Addition of PHPOffice to composer.json for reading/writing XLSX, XLS, ODT files
 
 * New Database Patches   
   * 42: New lookup Role, cleanup of mergePerid stored procedure  

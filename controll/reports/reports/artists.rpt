@@ -1,0 +1,74 @@
+[report]
+	name="artists"
+	auth=art_control
+	csvfile="artists"
+	index=exhibitorNumber
+[F001]
+    name=exhibitorId
+	sql="e.id"
+	title="Exhibitor Number"
+	align=right
+	minWidth=80
+[F002]
+    name=artistName
+    sql="CASE WHEN e.artistName IS NULL THEN e.exhibitorName ELSE e.artistName END"
+    title="Artist Name"
+    minWidth=200
+    filter=true
+[F003]
+    name=firstCon
+    title="First Con"
+    align=right
+    sql="MIN(i.conid)"
+[F004]
+    name=lastCon
+    title="Last Con"
+    align=right
+    sql="MAX(i.conid)"
+[F005]
+    name=avgEntries
+    title="Avg Entries"
+    align=right
+    sql="FORMAT(AVG(i.items), 1)"
+[F010]
+    name=artistAddr
+    sql="TRIM(concat_ws(' ', e.addr, e.addr2, e.city, e.state, e.zip, e.country))"
+    title="Artist Address"
+    minWidth=300
+[F015]
+    name=email
+    sql=e.exhibitorEmail
+    title="Email Address"
+    sort=true
+    minWidth=200
+    filter=true
+[T001]
+	name=exhibitors
+	alias=e
+[T002]
+	name=exhibitorYears
+	alias=eY
+	join="eY.exhibitorId=e.id"
+[T003]
+    name=exhibitorRegionYears
+    alias=eRY
+    join=" eRY.exhibitorYearId = eY.id"
+[T010]
+    name=art
+    alias=i
+    join="i.eRY = eRY.id"
+[C001]
+    name=art
+    select="SELECT eRY.id as eRY, I.conid, COUNT(*) AS items"
+    tables="FROM artItems I JOIN exhibitorRegionYears eRY ON eRY.id=I.exhibitorRegionYearId"
+    where="GROUP BY eRY.id, I.conid"
+[P001]
+    type=prompt
+    item=conid
+    datatype=i
+[where]
+	001="eY.conid >= ?"
+[group]
+    001="e.id, artistName, artistAddr, email"
+[sort]
+	001="1"

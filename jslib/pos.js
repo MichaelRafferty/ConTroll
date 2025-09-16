@@ -2408,16 +2408,21 @@ addUnpaid(tid) {
                 }
                 this.#drow = {
                     index: cart.getPmtLength() + 1, amt: discount_amt, ccauth: ccauth, checkno: checkno, desc: eldesc.value, type: 'discount',
+                        preTaxAmt: discount_amt, taxAmt: 0
                 };
                 cart.addPmt(this.#drow, true);
                 this.#managerDiscount = discount_amt;
                 document.getElementById('pt-discount').checked = false;
                 document.getElementById('pay-discount').value = '';
                 eldesc.value = '';
-                this.setPayType('none');
-                this.#payForcePayShown = true;
-                pos.gotoPay();
-                return;
+                // check if full paid now
+                if (discount_amt < total_amount_due) {
+                    this.setPayType('none');
+                    this.#payForcePayShown = true;
+                    pos.gotoPay();
+                    return;
+                }
+                total_amount_due -= discount_amt;
             }
 
             if (tendered_amt > 0) {
@@ -2443,7 +2448,6 @@ addUnpaid(tid) {
                 payorPerid = cart.getPerid(payor);
                 country = cart.getCountry(payor);
             }
-
             prow = {
                 index: cart.getPmtLength(), amt: total_amount_due, ccauth: ccauth, checkno: checkno, desc: eldesc.value,
                 type: ptype, nonce: nonce, coupon: couponCode,
@@ -2943,7 +2947,7 @@ addUnpaid(tid) {
         <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-coupon-disc">$` + (-Number(this.#couponDiscount)).toFixed(2) + `</div>
     </div>
        <div class="row mt-1">
-        <div class="col-sm-2 ms-0 me-2 p-0">Pre Tax:</div>
+        <div class="col-sm-2 ms-0 me-2 p-0">Pre-Tax:</div>
         <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-post-coupon">$` + Number(pretax).toFixed(2) + `</div>
     </div>
 `;

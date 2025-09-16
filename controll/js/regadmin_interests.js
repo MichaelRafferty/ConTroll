@@ -101,8 +101,8 @@ class interestsSetup {
                 <button id="interests-redo" type="button" class="btn btn-secondary btn-sm" onclick="interests.redo(); return false;" disabled>Redo</button>
                 <button id="interests-addrow" type="button" class="btn btn-secondary btn-sm" onclick="interests.addrow(); return false;">Add New</button>
                 <button id="interests-save" type="button" class="btn btn-primary btn-sm"  onclick="interests.save(); return false;" disabled>Save Changes</button>
-                <button id="interests-csv" type="button" class="btn btn-info btn-sm"  onclick="interests.csv(); return false;">Download CSV</button>
-
+                <button id="interests-csv" type="button" class="btn btn-info btn-sm"  onclick="interests.download('csv'); return false;">Download CSV</button>
+                <button id="interests-xlsx" type="button" class="btn btn-info btn-sm"  onclick="interests.download('xlsx'); return false;">Download Excel</button>
             </div>
         </div>
         <div class="row mt-4">
@@ -222,6 +222,7 @@ class interestsSetup {
     // add row to  table and scroll to that new row
     addrow() {
         var _this = this;
+        this.#interestsTable.clearFilter(true);
         this.#interestsTable.addRow({interest: 'new-row', notifyList: '', description: '', csv: 'N',
             active: 'Y', sortOrder: 99, uses: 0}, false).then(function (row) {
             _this.#interestsTable.setPage("last"); // adding new to last page always
@@ -429,8 +430,8 @@ class interestsSetup {
     }
 
 
-    // save off the csv file
-    csv() {
+    // save off the data file
+    download(format) {
         if (this.#interestsTable == null)
             return;
 
@@ -446,7 +447,7 @@ class interestsSetup {
             'updateDate',
             'sortOrder'
         ];
-        downloadCSVPost(filename, tabledata, null, fieldList);
+        downloadFilePost(format, filename, tabledata, null, fieldList);
     }
 }
 

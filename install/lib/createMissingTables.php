@@ -268,4 +268,3 @@ EOS;
         logEcho("Errors while adding missing items, cannot continue");
     return $errors;
 }
-?>

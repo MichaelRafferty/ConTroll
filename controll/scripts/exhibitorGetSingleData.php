@@ -1,6 +1,4 @@
 <?php
-global $db_ini;
-
 require_once '../lib/base.php';
 $check_auth = google_init('ajax');
 $perm = 'exhibitor';
@@ -97,10 +95,11 @@ EOS;
 
 // get this exhibitor
 $vendorQ = <<<EOS
-SELECT e.id as exhibitorId, artistName, exhibitorName, exhibitorEmail, exhibitorPhone, website, description, e.need_new AS eNeedNew, e.confirm AS eConfirm,
-ey.id AS exhibitorYearId, ey.contactName, ey.contactEmail, ey.contactPhone, ey.need_new AS cNeedNew, ey.confirm AS cConfirm, ey.needReview, ey.mailin,
-e.addr, e.addr2, e.city, e.state, e.zip, e.country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, publicity,
-p.id AS perid, p.first_name AS p_first_name, p.last_name AS p_last_name, n.id AS newperid, n.first_name AS n_first_name, n.last_name AS n_last_name
+SELECT e.id as exhibitorId, artistName, exhibitorName, exhibitorEmail, exhibitorPhone, website, description, e.need_new AS eNeedNew, 
+    IFNULL(e.notes, '') AS exhNotes, ey.id AS exhibitorYearId, ey.contactName, ey.contactEmail, ey.contactPhone, 
+    ey.need_new AS cNeedNew, DATEDIFF(now(), ey.lastVerified) AS DaysSinceLastVerified, ey.lastVerified, ey.mailin, IFNULL(ey.notes, '') AS contactNotes,
+    e.addr, e.addr2, e.city, e.state, e.zip, e.country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, publicity,
+    p.id AS perid, p.first_name AS p_first_name, p.last_name AS p_last_name, n.id AS newperid, n.first_name AS n_first_name, n.last_name AS n_last_name
 FROM exhibitors e
 LEFT OUTER JOIN exhibitorYears ey ON e.id = ey.exhibitorId
 LEFT OUTER JOIN perinfo p ON p.id = e.perid
@@ -163,4 +162,3 @@ $response['spaces'] = $spaces;
 $response['country_options'] = $countryOptions;
 
 ajaxSuccess($response);
-?>

@@ -1,6 +1,4 @@
 <?php
-global $db_ini;
-
 require_once '../lib/base.php';
 require_once('../../lib/email__load_methods.php');
 $check_auth = google_init('ajax');
@@ -45,9 +43,6 @@ EOS;
         $response['message'] = "Approval changed to $approvalValue";
         $approvalData['approval'] = $approvalValue;
         $approvalData['b1'] = time();
-        $approvalData['b2'] = $approvalData['b1'] + 1;
-        $approvalData['b3'] = $approvalData['b2'] + 1;
-        $approvalData['b4'] = $approvalData['b3'] + 1;
     }
     if ($num_rows == 0) {
         $response['status'] = 'success';
@@ -121,4 +116,3 @@ EOS;
 
 
 ajaxSuccess($response);
-?>

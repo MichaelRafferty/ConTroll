@@ -1,6 +1,4 @@
 <?php
-global $db_ini;
-
 require_once "../lib/base.php";
 
 $check_auth = google_init("ajax");
@@ -38,10 +36,12 @@ $response['user_perid'] = $user_perid;
 $perid = $_POST['perid'];
 $memId = $_POST['memId'];
 
-// chech to see if there already is a free membership for this person
+// chech to see if there already is a primary membership for this person
 $iQ = <<<EOS
-SELECT COUNT(*) mem FROM reg
-WHERE conid = ? AND perid = ?;
+SELECT r.id, r.memId, r.status, m.memAge, m.memCategory, m.memType, m.price, m.conid
+FROM reg r
+JOIN memList m ON r.memId = m.id
+WHERE r.conid = ? AND perid = ? AND r.status IN ('paid', 'unpaid', 'plan')
 EOS;
 $typeStr = 'ii';
 $values = array($conid, $perid);
@@ -53,9 +53,15 @@ if ($iR === false) {
     exit();
 }
 
-$numRows = $iR->fetch_row()[0];
-if ($numRows > 0) {
-    $response['warn'] = "$perid already has a free membership.";
+$numPrimary = 0;
+while ($row = $iR->fetch_assoc()) {
+    if (isPrimary($row, $conid, 'all'))
+        $numPrimary++;
+}
+$iR->free();
+
+if ($numPrimary > 0) {
+    $response['warn'] = "$perid already has a membership.";
     ajaxSuccess($response);
     exit();
 }
@@ -87,4 +93,3 @@ if ($newReg === false) {
 }
 $response['success'] = "$perid update with $memId";
 ajaxSuccess($response);
-?>

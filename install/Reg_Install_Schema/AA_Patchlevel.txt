@@ -1,2 +1,2 @@
-Current=45
-Text=This schema is current as of Patch 45 (p45_SquareTerminals.sql)
+Current=50
+Text=This schema is current as of Patch 50 (p50_passkeys.sql)

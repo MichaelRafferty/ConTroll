@@ -10,5 +10,3 @@ function ajaxSuccess($msg) {
     header('Content-Type: application/json; charset=utf-8');
     print json_encode($msg, JSON_INVALID_UTF8_SUBSTITUTE);
 }
-
-?>

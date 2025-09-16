@@ -6,6 +6,7 @@
 
 require_once '../lib/base.php';
 require_once('../../lib/log.php');
+require_once('../../lib/coupon.php');
 require_once('../../lib/cc__load_methods.php');
 
 $check_auth = google_init('ajax');
@@ -28,7 +29,6 @@ $conid = $con['id'];
 $debug = get_conf('debug');
 $ini = get_conf('reg');
 $log = get_conf('log');
-$ccauth = get_conf('cc');
 load_cc_procs();
 logInit($log['reg']);
 
@@ -55,6 +55,26 @@ if ($transId <= 0) {
     ajaxError('No current transaction in process');
 }
 
+$discount = 0;
+if (array_key_exists('couponCode', $_POST) && $_POST['couponCode'] != '') {
+    $result = load_coupon_data($_POST['couponCode']);
+    if ($result['status'] == 'success') {
+        $coupon = $result['coupon'];
+        $discount = $_POST['couponDiscount'];
+    } else {
+        ajaxError($result['error']);
+        return;
+    }
+} else {
+    $coupon = null;
+}
+
+$drow = null;
+if (array_key_exists('drow', $_POST) && $_POST['drow'] != null) {
+    $drow = $_POST['drow'];
+    $discount = $_POST['discountAmt'];
+}
+
 try {
     $cart_perinfo = json_decode($_POST['cart_perinfo'], true, 512, JSON_THROW_ON_ERROR);
 }
@@ -76,11 +96,6 @@ if (array_key_exists('cancelOrder', $_POST)) {
     $cancelOrderId = null;
 }
 
-// all the records are in the database, so lets build the order
-
-// get this person
-//$info = getPersonInfo($conid);
-
 // build the badge list for the order, do not include the already paid items
 $amount = 0;
 $totalAmountDue = 0;
@@ -98,20 +113,28 @@ foreach ($cart_perinfo as $row) {
             continue;
 
         if (array_key_exists('fullName', $row))
-            $fullname = $row['fullName'];
+            $fullName = $row['fullName'];
         else
-            $fullname = trim(trim($row['first_name'] . ' ' . $row['middle_name']) . ' ' . $row['last_name']);
+            $fullName = trim(trim($row['first_name'] . ' ' . $row['middle_name']) . ' ' . $row['last_name']);
         $badge = [
             'paid' => $paid,
-            'fullName' => $fullname,
+            'fullName' => $fullName,
             'perid' => $row['perid'],
             'memId' => $membership['memId'],
             'glNum' => $membership['glNum'],
             'balDue' => $unpaid,
             'label' => $membership['label'],
             'memType' => $membership['memType'],
+            'memCategory' => $membership['memCategory'],
+            'memAge' => $membership['memAge'],
+            'fname' => $row['first_name'],
+            'shortname' => ($membership['conid'] != $conid ? $membership['conid'] . ' ' : '') . $membership['shortname'],
+            'conid' => $membership['conid'],
+            'ageshortname' => $membership['ageShortName'],
             'taxable' => $membership['taxable'],
             'price' => $price - $paid,
+            'status' => $membership['status'],
+            'regid' => $membership['regid'],
         ];
 
         $badges[] = $badge;
@@ -132,13 +155,14 @@ $payorId = $badges[0]['perid'];
 
 $results = array(
     'custid' => "p-$payorId",
-    'source' => 'atcon',
+    'source' => 'registration',
     'transid' => $transId,
     'price' => $totalAmountDue,
     'badges' => $badges,
     'total' => $amount,
     'totalPaid' => $totalPaid,
-    'discount' => 0,
+    'discount' => $discount,
+    'coupon' => $coupon,
 );
 $response['amount'] = $amount;
 
@@ -149,17 +173,60 @@ logWrite(array('con'=>$con['label'], 'trans'=>$transId, 'results'=>$results, 're
 if ($cancelOrderId) // cancel the old order if it exists
     cc_cancelOrder($results['source'], $cancelOrderId, true);
 
-
-
 $rtn = cc_buildOrder($results, true);
 if ($rtn == null) {
     // note there is no reason cc_buildOrder will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
-    logWrite(array ('con' => $con['label'], 'trans' => $transId, 'error' => 'Credit card order unable to be created'));
-    ajaxSuccess(array ('status' => 'error', 'error' => 'Credit card order not built'));
+    logWrite(array ('con' => $con['label'], 'trans' => $transId, 'error' => 'Order unable to be created'));
+    ajaxSuccess(array ('status' => 'error', 'error' => 'Order not built'));
     exit();
 }
 $rtn['totalPaid'] = $totalPaid;
 $response['rtn'] = $rtn;
+
+// if coupon discount, update the badges with the coupon discount to update the in memory cart
+if ($coupon != null) {
+    foreach ($rtn['items'] as $item) {
+        if (array_key_exists('applied_discounts', $item)) {
+            for ($discountNo = 0; $discountNo < count($item['applied_discounts']); $discountNo++) {
+                $discount = $item['applied_discounts'][$discountNo];
+                if (str_starts_with($discount['uid'], 'couponDiscount')) {
+                    if (array_key_exists('applied_amount', $discount))
+                        $thisItemDiscount = $discount['applied_amount'];
+                    else
+                        $thisItemDiscount = $discount['applied_money']['amount'];
+                    // now find the reg entry to match this item
+                    $rowno = $item['metadata']['rowno'];
+                    $badges[$rowno]['couponDiscount'] = $thisItemDiscount / 100;
+                    $badges[$rowno]['coupon'] = $coupon['id'];
+                }
+            }
+        }
+    }
+}
+if ($drow != null) {
+    foreach ($rtn['items'] as $item) {
+        if (array_key_exists('applied_discounts', $item)) {
+            for ($discountNo = 0; $discountNo < count($item['applied_discounts']); $discountNo++) {
+                $discount = $item['applied_discounts'][$discountNo];
+                if (str_starts_with($discount['uid'], 'managerDiscount')) {
+                    if (array_key_exists('applied_amount', $discount))
+                        $thisItemDiscount = $discount['applied_amount'];
+                    else
+                        $thisItemDiscount = $discount['applied_money']['amount'];
+                    // now find the reg entry to match this item
+                    $rowno = $item['metadata']['rowno'];
+                    if (!array_key_exists('paid', $badges[$rowno]))
+                        $badges[$rowno]['paid'] = 0;
+                    if (!array_key_exists('couponDiscount', $badges[$rowno]))
+                        $badges[$rowno]['couponDiscount'] = 0;
+                    $badges[$rowno]['couponDiscount'] += $thisItemDiscount / 100;
+                }
+            }
+        }
+    }
+    $response['badges'] = $badges;
+    $response['drow'] = $drow;
+}
 
 $upT = <<<EOS
 UPDATE transaction

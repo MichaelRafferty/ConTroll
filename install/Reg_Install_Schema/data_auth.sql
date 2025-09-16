@@ -1,4 +1,4 @@
--- MySQL dump 10.13  Distrib 8.0.34, for macos13 (arm64)
+-- MySQL dump 10.13  Distrib 8.0.42, for macos15 (arm64)
 --
 -- Host: localhost    Database: reg
 -- ------------------------------------------------------
@@ -13,11 +13,11 @@ ALTER TABLE `auth` DISABLE KEYS;
 INSERT INTO `auth` VALUES
 (1,'overview','Y','Membership',10),
 (2,'admin','Y','Admin',20),
-(3,'people','Y','People',40),
-(5,'registration','Y','Registration',50),
+(3,'people','Y','People',50),
+(5,'registration','Y','Registration',40),
 (6,'reg_staff','Y','Registration Admin',30),
-(7,'finance','Y','Finance',70),
-(8,'lookup','Y','Reg Lookup',65),
+(7,'finance','Y','Finance',80),
+(8,'lookup','Y','Reg Lookup',70),
 (9,'badge','Y','Free Badges',60),
 (10,'atcon','N','N',1000),
 (11,'art_control','Y','Art Control',100),

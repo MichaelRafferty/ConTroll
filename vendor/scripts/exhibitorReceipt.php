@@ -15,12 +15,12 @@ $conid=$con['id'];
 
 $response['conid'] = $conid;
 
-if (!isset($_SESSION['id'])) {
+if (!isSessionVar('id')) {
     ajaxSuccess(array('status'=>'error', 'message'=>'Session Failure'));
     exit;
 }
 
-$exhId = $_SESSION['id'];
+$exhId = getSessionVar('id');
 
 $response = array("post" => $_POST, "get" => $_GET);
 

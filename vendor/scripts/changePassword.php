@@ -12,9 +12,9 @@ $vendor = 0;
 $con = get_conf('con');
 $conid = $con['id'];
 
-if(isset($_SESSION['id'])) {
-    $vendor = $_SESSION['id'];
-    $client = $_SESSION['eyID'];
+if(isSessionVar('id')) {
+    $vendor = getSessionVar('id');
+    $client = getSessionVar('eyID');
 } else {
     $response['status']='error';
     $response['message']='Authentication Failure';
@@ -40,7 +40,7 @@ $testPw = $testR->fetch_assoc();
 
 if(!password_verify($_POST['oldPassword'], $testPw['password'])) {
     $response['status']='error';
-    $response['message']='Authentication Failure';
+    $response['message']='Authentication Failure - Incorrect Old Password';
     ajaxSuccess($response);
     exit();
 } else {
@@ -83,4 +83,3 @@ EOS;
 }
 
 ajaxSuccess($response);
-?>

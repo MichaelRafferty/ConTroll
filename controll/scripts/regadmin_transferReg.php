@@ -1,6 +1,4 @@
 <?php
-global $db_ini;
-
 require_once "../lib/base.php";
 
 $check_auth = google_init('ajax');
@@ -138,4 +136,3 @@ foreach ($transferList as $from) {
 }
 
 ajaxSuccess($response);
-?>

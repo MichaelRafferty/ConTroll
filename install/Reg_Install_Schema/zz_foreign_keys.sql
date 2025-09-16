@@ -35,6 +35,7 @@ ALTER TABLE payments ADD CONSTRAINT `payments_transid_fk` FOREIGN KEY (`transid`
 ALTER TABLE paymentPlans ADD CONSTRAINT `paymentPlans_ibfk_1` FOREIGN KEY (`updateBy`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 ALTER TABLE controllAppItems ADD CONSTRAINT `controllAppItems_ibfk_1` FOREIGN KEY (`appName`, `appPage`, `appSection`) REFERENCES `controllAppSections` (`appName`, `appPage`, `appSection`) ON UPDATE CASCADE;
 ALTER TABLE memRuleSteps ADD CONSTRAINT `mrs_mr_fk` FOREIGN KEY (`conid`, `name`) REFERENCES `memRules` (`conid`, `name`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE siteSelectionTokens ADD CONSTRAINT `sst_perinfo_fk` FOREIGN KEY (`perid`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 ALTER TABLE perinfo ADD CONSTRAINT `perinfo_ibfk_1` FOREIGN KEY (`managedBy`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 ALTER TABLE perinfo ADD CONSTRAINT `perinfo_ibfk_2` FOREIGN KEY (`updatedBy`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 ALTER TABLE perinfo ADD CONSTRAINT `perinfo_ibfk_3` FOREIGN KEY (`managedByNew`) REFERENCES `newperson` (`id`) ON UPDATE CASCADE;
@@ -100,6 +101,7 @@ ALTER TABLE exhibitsRegionYears ADD CONSTRAINT `ery_memList_i` FOREIGN KEY (`inc
 ALTER TABLE oauthAccessTokens ADD CONSTRAINT `fk_access_tokens_clients` FOREIGN KEY (`clientId`) REFERENCES `oauthClients` (`clientId`) ON UPDATE CASCADE;
 ALTER TABLE artItems ADD CONSTRAINT `artItems_conid_fk` FOREIGN KEY (`conid`) REFERENCES `conlist` (`id`) ON UPDATE CASCADE;
 ALTER TABLE artItems ADD CONSTRAINT `artItems_exhibitorRegionYear_fk` FOREIGN KEY (`exhibitorRegionYearId`) REFERENCES `exhibitorRegionYears` (`id`) ON UPDATE CASCADE;
+ALTER TABLE artItems ADD CONSTRAINT `artItems_fk_bidder` FOREIGN KEY (`bidder`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 ALTER TABLE artItems ADD CONSTRAINT `artItems_updatedBy_fk` FOREIGN KEY (`updatedBy`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 ALTER TABLE memberInterests ADD CONSTRAINT `memberInterestsInterest_fk` FOREIGN KEY (`interest`) REFERENCES `interests` (`interest`) ON UPDATE CASCADE;
 ALTER TABLE memberInterests ADD CONSTRAINT `memberInterestsNewperson_fk` FOREIGN KEY (`newperid`) REFERENCES `newperson` (`id`) ON UPDATE CASCADE;

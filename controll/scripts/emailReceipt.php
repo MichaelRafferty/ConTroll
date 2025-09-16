@@ -1,6 +1,4 @@
 <?php
-global $db_ini;
-
 require_once "../lib/base.php";
 require_once(__DIR__ . '/../../lib/email__load_methods.php');
 
@@ -34,8 +32,9 @@ if (array_key_exists('okmsg', $_POST)) {
 
 load_email_procs();
 $con = get_conf('con');
-$reg = get_conf('reg');
-if ($reg['test'] == 1 && $email != $con['regadminemail']) {
+$testsite = getConfValue('reg', 'test') == 1;
+
+if ($testsite && $email != $con['regadminemail']) {
     $send_email = $con['regadminemail'];
     $send_subject = "Test email to $email for $subject";
 } else {

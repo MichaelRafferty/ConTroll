@@ -1,0 +1,184 @@
+[report]
+	name="artShowReg"
+	auth=art_control
+	csvfile="artShowReg"
+[F010]
+    name=regionName
+    title="Region"
+    sql="xR.name"
+    sort=true
+    filter=true
+[F012]
+    name=exhibitorId
+    title="Ex#"
+    sql=e.id
+    sort=true
+    filter=true
+    align=right
+[F013]
+    name=artistNum
+    title="Art#"
+    sql=eRY.exhibitorNumber
+    sort=true
+    filter=true
+    align=right
+[F011]
+    name=locations
+    title=Locs
+    sql="REGEXP_REPLACE(REGEXP_REPLACE(p.locs, ',+', ','), '^,', '')"
+    sort=false
+    format="textarea"
+    width=100
+[F014]
+    name=reqUnits
+    title="#Req"
+    sql=r.units
+    sort=false
+    align=right
+[F015]
+    name=purUnits
+    title="#Pur"
+    sql=p.units
+    sort=false
+    align=right
+[F016]
+    name=items
+    sql=i.items
+    title="Items"
+    align=right
+    sort=false
+[F021]
+    name=email
+    sql=e.exhibitorEmail
+    title="Email"
+    minWidth=200
+[F022]
+    name=Phone
+    sql=e.exhibitorPhone
+    title="Artist Phone"
+    sort=false
+    filter=false
+[F024]
+    name=website
+    sql=e.website
+    title="Artist Website"
+    sort=false
+    filter=false
+[F024]
+    name=publicity
+    sql="CASE WHEN e.publicity = 1 THEN 'YES' ELSE 'NO' END"
+    title="Pub OK?"
+    sort=false
+    filter=true
+[F026]
+    name=artistAddr
+    sql="TRIM(concat_ws(' ', e.addr, e.addr2, e.city, e.state, e.zip, e.country))"
+    title="Artist Address"
+    width=150
+    format="textarea"
+[F030]
+    name=agentPerid
+    sql=eRY.agentPerid
+    title="Agent Perid"
+    sort=false
+    filter=false
+[F031]
+    name=agentRequest
+    sql=eRY.agentRequest
+    title="Agent Request"
+    sort=false
+    filter=false
+    width=150
+    format=textarea
+[F032]
+    name=description
+    sql=e.description
+    title="Description"
+    sort=false
+    filter=false
+    width=200
+    format=textarea
+[F032]
+    name=dateRegistered
+    sql=r.requested
+    title="Date Registered"
+    sort=true
+    filter=false
+[C001]
+    name=items
+    select="SELECT eRY.id as eRY, COUNT(*) AS items"
+    tables="FROM artItems I JOIN exhibitorRegionYears eRY ON eRY.id=I.exhibitorRegionYearId"
+    where="WHERE I.conid = ? GROUP BY eRY.id"
+[C002]
+    name=requested
+    select="SELECT eRY.id, MIN(time_requested) AS requested, SUM(xsp.units) AS units"
+    tables="FROM exhibitorSpaces s JOIN exhibitorRegionYears eRY ON eRY.id = s.exhibitorRegionYear JOIN exhibitorYears eY ON eRY.exhibitorYearId = eY.id LEFT OUTER JOIN exhibitsSpacePrices xsp ON s.item_requested = xsp.id"
+    where="WHERE eY.conid = ? AND s.time_requested IS NOT NULL GROUP BY eRY.id"
+[C003]
+     name=purchased
+     select="SELECT eRY.id, SUM(xsp.units) AS units, GROUP_CONCAT(s.locations SEPARATOR ',') AS locs"
+     tables="FROM exhibitorSpaces s JOIN exhibitorRegionYears eRY ON eRY.id = s.exhibitorRegionYear JOIN exhibitorYears eY ON eRY.exhibitorYearId = eY.id LEFT
+ OUTER JOIN exhibitsSpacePrices xsp ON s.item_purchased = xsp.id"
+     where="WHERE eY.conid = ? AND s.time_purchased IS NOT NULL GROUP BY eRY.id"
+[T001]
+    name=exhibitorRegionYears
+    alias=eRY
+[T002]
+	name=exhibitorYears
+	alias=eY
+	join="eRY.exhibitorYearId=eY.id"
+[T003]
+	name=exhibitors
+	alias=e
+	join="e.id=eY.exhibitorId"
+[T020]
+    name=exhibitsRegionYears
+    alias=xRY
+    join="xRY.id = eRY.exhibitsRegionYearId"
+[T021]
+    name=exhibitsRegions
+    alias=xR
+    join="xR.id=xRY.exhibitsRegion"
+[T022]
+    name=exhibitsRegionTypes
+    alias=xRT
+    join="xR.regionType=xRT.regionType"
+[T030]
+    name=items
+    alias=i
+    join="eRY.id = i.eRY"
+    left=true
+[T031]
+    name=requested
+    alias=r
+    join="eRY.id = r.id"
+    left=true
+[T032]
+    name=purchased
+    alias=p
+    join="eRY.id = p.id"
+    left=true
+[P001]
+    type=config
+    section=con
+    item=id
+    datatype=i
+[P002]
+    type=config
+    section=con
+    item=id
+    datatype=i
+[P003]
+    type=config
+    section=con
+    item=id
+    datatype=i
+[P004]
+    type=config
+    section=con
+    item=id
+    datatype=i
+[where]
+	001="eY.conid = ? AND xRT.portalType='artist' AND (IFNULL(r.units, 0) > 0 OR IFNULL(e.artistName, '') != '')"
+[sort]
+	001="xR.name, eRY.exhibitorNumber"

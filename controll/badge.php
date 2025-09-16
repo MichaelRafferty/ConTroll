@@ -1,5 +1,4 @@
 <?php
-global $db_ini;
 require_once "lib/base.php";
 require_once '../lib/policies.php';
 require_once '../lib/profile.php';
@@ -14,7 +13,6 @@ $conid = $con['id'];
 
 $conf = get_conf('con');
 $google = get_conf('google');
-$reg_conf = get_conf('reg');
 $debug = get_conf('debug');
 $usps = get_conf('usps');
 $url = $google['redirect_base'];
@@ -27,7 +25,7 @@ if(!$need_login or !checkAuth($need_login['sub'], $page)) {
 $freeSQL = <<<EOS
 SELECT M.id, M.label
 FROM memList M
-WHERE M.conid = ? and M.memCategory in ('freebie', 'goh');
+WHERE M.conid = ? and M.memCategory in ('freebie', 'goh') AND M.memType in ('full', 'oneday', 'virtual');
 EOS;
 
 $freeMems = [];
@@ -73,7 +71,7 @@ $config_vars['label'] = $con['label'];
 $config_vars['regadminemail'] = $conf['regadminemail'];
 $config_vars['debug'] = $debug_freebadge;
 $config_vars['conid'] = $conid;
-$config_vars['required'] = $reg_conf['required'];
+$config_vars['required'] = getConfValue('reg', 'required', 'addr');
 $config_vars['useUSPS'] = $useUSPS;
 ?>
 <script type='text/javascript'>
@@ -173,4 +171,3 @@ $config_vars['useUSPS'] = $useUSPS;
 <pre id='test'></pre>
 <?php
     page_foot($page);
-?>

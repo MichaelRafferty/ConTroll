@@ -1,5 +1,6 @@
 <?php
 // Need DB library
+require_once(__DIR__ . '/../lib/global.php');
 require_once(__DIR__ . '/../lib/db_functions.php');
 require_once('lib/base.php');
 require_once('lib/validateConfigMYSQL.php');
@@ -8,14 +9,13 @@ require_once('lib/createMissingTables.php');
 require_once('lib/createMissingRecords.php');
 require_once('lib/checkTableDML.php');
 global $dbObject;
-global $db_ini;
 global $logFile;
 global $options;
 // setup parameters
 $systemName = 'ConTroll';
 $patchLevelFile = 'Reg_Install_Schema/AA_Patchlevel.txt';
 $phpMajor = 8;
-$phpMinor = 1;
+$phpMinor = 2;
 
 // get command line options
 $options = getopt("cfhinopstv");
@@ -91,7 +91,7 @@ if (array_key_exists('o', $options)) {
     $mode = 'a';
     echo "Logfile is being appended to $siteName/InstallSetup.log" . PHP_EOL;
 }
-
+loadConfFile();
 $logFile = fopen('../../InstallSetup.log', $mode);
 fwrite($logFile, PHP_EOL . PHP_EOL . date('Y-m-d H:i:s') . ": Start of $systemName" . PHP_EOL . "Git Depo Path: $siteName/$depoName" . PHP_EOL . PHP_EOL);
 fwrite($logFile, "PHP Command Line Version: " . $phpVersion . PHP_EOL . $phpinfo . PHP_EOL . PHP_EOL);

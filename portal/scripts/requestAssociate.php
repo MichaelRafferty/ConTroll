@@ -124,7 +124,7 @@ SET $pfield = ?, managedReason = 'Req Email Match', updatedBy=?
 WHERE id = ?;
 EOS;
     }
-    $updCnt = dbSafeCmd($uQ, 'iii', array($loginId, $loginId, $loginId));
+    $updCnt = dbSafeCmd($uQ, 'iii', array($loginId, $loginId, $acctId));
     if ($updCnt != 1) {
         ajaxSuccess(array('status'=>'error', 'message'=>'Unable to attach, get assistance'));
     } else {
@@ -145,7 +145,7 @@ if ($loginType == 'p') {
 $cQ = <<<EOS
 SELECT id, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, legalName, pronouns, address, addr_2, city, state, zip, country, 
     managedBy, NULL AS managedByNew, lastVerified, 'p' AS personType,
-    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), '  *', ' ')) AS fullName,
+    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), '  *', ' ')) AS fullName
 FROM $table
 WHERE id=?;
 EOS;

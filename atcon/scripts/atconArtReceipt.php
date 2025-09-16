@@ -162,5 +162,3 @@ $reesponse['result'] = shell_exec("$command");
 unlink($tempfile);
 
 ajaxSuccess($response);
-
-?>

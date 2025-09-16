@@ -1,6 +1,4 @@
 <?php
-global $db_ini;
-
 require_once "../lib/base.php";
 require_once "../../lib/paymentPlans.php";
 
@@ -142,4 +140,3 @@ if ($num_upd < 0) {
     $response['message'] = 'Reg successfully updated';
 }
 ajaxSuccess($response);
-?>

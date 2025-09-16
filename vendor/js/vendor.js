@@ -6,6 +6,7 @@ var purchase_label = 'purchase';
 var additional_cost = {};
 var switchPortalbtn = null;
 exhibitorProfile = null;
+si_password = null;
 
 // initial setup
 window.onload = function () {
@@ -25,10 +26,23 @@ window.onload = function () {
     vendorInvoiceOnLoad()
     exhibitorReceiptOnLoad();
     if (typeof exhibitor_info !== 'undefined') {
-        if (exhibitor_info['needReview']) {
+        if (exhibitor_info['DaysSinceLastVerified'] > 180) {
             exhibitorProfile.profileModalOpen('review');
         }
     }
+
+    // login
+    pwEyeToggle('si_password');
+    // change password
+    pwEyeToggle('oldPw');
+    pwEyeToggle('newPw');
+    pwEyeToggle('newPw2');
+    // signup
+    pwEyeToggle('pw1');
+    pwEyeToggle('pw2');
+    pwEyeToggle('cpw1');
+    pwEyeToggle('cpw2');
+
 }
 
 // execute the change password request
@@ -128,3 +142,13 @@ function requestPermission(id, tag) {
         }
     });
 }
+
+// passkey functions
+// login with passkey - ask for a confirm and return either retry or go to portal
+function loginWithPasskey() {
+    if (this.loginWithPasskeyBtn)
+        this.loginWithPasskeyBtn.disabled = true;
+
+    passkeyRequest('scripts/passkeyActions.php', 'index.php', 'vendor', document.getElementById('loginPasskeyBtn'));
+}
+

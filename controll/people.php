@@ -1,5 +1,4 @@
 <?php
-global $db_ini;
 
 // people - administrative control of
 //      matching newperid's to existing perid's or creating a new perid if no patch
@@ -746,4 +745,3 @@ drawInterestList($interests, true);
 
 <?php
 page_foot($page);
-?>

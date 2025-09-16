@@ -1,6 +1,4 @@
 <?php
-global $db_ini;
-
 require_once "../lib/base.php";
 
 $check_auth = google_init("ajax");
@@ -106,4 +104,3 @@ $mR->free();
 $response['managed'] = $managed;
 
 ajaxSuccess($response);
-?>

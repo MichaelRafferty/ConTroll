@@ -1,4 +1,4 @@
--- MySQL dump 10.13  Distrib 8.0.34, for macos13 (arm64)
+-- MySQL dump 10.13  Distrib 8.0.42, for macos15 (arm64)
 --
 -- Host: localhost    Database: reg
 -- ------------------------------------------------------
@@ -23,6 +23,7 @@ CREATE TABLE `exhibitsRegionTypes` (
   `active` enum('N','Y') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'Y',
   `needW9` enum('N','Y') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'N',
   `usesInventory` enum('N','Y') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'N',
+  `maxInventory` int DEFAULT NULL,
   PRIMARY KEY (`regionType`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 

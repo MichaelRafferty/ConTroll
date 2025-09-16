@@ -148,15 +148,6 @@ class Users {
                     headerWordWrap: true
                 },
                 {
-                    title: "Art Show",
-                    field: "artshow",
-                    headerSort: false,
-                    formatter: "tickCross",
-                    cellClick: invertTickCross,
-                    headerFilter: "tickCross", headerFilterParams:{ tristate: true },
-                    headerWordWrap: true
-                },
-                {
                     title: "Vol-Roll",
                     field: "vol_roll",
                     headerSort: false,
@@ -279,6 +270,7 @@ class Users {
 
         var row = this.addlist.getRow(id);
         var rowData = row.getData();
+        this.userlist.clearFilter(true);
         this.userlist.addRow({
             id: rowData['id'],
             name: (rowData['first_name'] + ' ' + rowData['last_name']).trim(),

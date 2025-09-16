@@ -34,7 +34,7 @@ $locR = dbSafeQuery($locQ, 'ii', array($conid, $region));
 
 $locations = array();
 while($loc = $locR->fetch_assoc()) {
-    if ($loc['locations'] != null && $loc['locations'] != "") {
+    if ($loc['locations'] != "") {
         if (!array_key_exists($loc['exhibitorNumber'], $locations)) {
             $locations[$loc['exhibitorNumber']] = explode(',', str_replace(' ','',$loc['locations']));
         } else {
@@ -51,4 +51,3 @@ foreach($locations as $key => $value) {
 $response['locations'] = $locations;
 
 ajaxSuccess($response);
-?>

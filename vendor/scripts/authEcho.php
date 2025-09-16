@@ -9,4 +9,3 @@ $return500errors = true;
 $response = array('post' => $_POST, 'get' => $_GET);
 
 ajaxSuccess($response);
-?>

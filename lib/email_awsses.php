@@ -108,4 +108,3 @@ function send_email($from, $to, $cc, $subject, $textbody, $htmlbody) {
     $return_arr['status'] = "success";
     return $return_arr;
 }
-?>

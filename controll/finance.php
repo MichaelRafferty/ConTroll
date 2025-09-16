@@ -657,4 +657,3 @@ EOS;
 
 <?php
 page_foot($page);
-?>

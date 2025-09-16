@@ -1,6 +1,4 @@
 <?php
-global $db_ini;
-
 require_once "../lib/base.php";
 require_once "../lib/email.php";
 require_once(__DIR__ . "/../../lib/email__load_methods.php");
@@ -35,7 +33,7 @@ if($_POST['action'] == "test") {
 }
 
 $con = get_conf("con");
-$reg = get_conf("reg");
+$testsite = getConfValue('reg', 'test') == 1;
 $conid=$con['id'];
 
 $emailQ = <<<EOS
@@ -66,7 +64,8 @@ if($test) {
 
 $success = 'success';
 foreach ($email_array as $email) {
-    $return_arr = send_email($con['regadminemail'], trim($email['email']), /* cc */ null, $condata['label']. " Membership Cancelation Instructions",  refundEmail_TEXT($reg['test'], $email['email'], $email['tid']), refundEmail_HTML($reg['test'], $email['email'], $email['tid']));
+    $return_arr = send_email($con['regadminemail'], trim($email['email']), /* cc */ null, $con['label']. " Membership Cancelation Instructions",  
+        refundEmail_TEXT($testsite, $email['email'], $email['tid']), refundEmail_HTML($testsite, $email['email'], $email['tid']));
 
 
     if ($return_arr[''] == 'success') {
@@ -84,4 +83,3 @@ $response['error'] = $data_array;
 $response['email_array'] = $email_array;
 
 ajaxSuccess($response);
-?>

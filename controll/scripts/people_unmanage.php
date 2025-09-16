@@ -1,6 +1,4 @@
 <?php
-global $db_ini;
-
 require_once "../lib/base.php";
 $check_auth = google_init("ajax");
 $perm = "people";
@@ -61,4 +59,3 @@ if ($num_upd === false) {
 }
 
 ajaxSuccess($response);
-?>

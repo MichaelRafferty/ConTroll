@@ -52,4 +52,3 @@ EOS;
 
     return $response;
 }
-?>

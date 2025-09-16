@@ -1,44 +1,45 @@
 <?php
 
-function refundEmail_HTML($test, $email, $tid) {
-  $ini = get_conf('reg');
-  $con = get_conf('con');
-  $conid=$con['id'];
+function refundEmail_HTML($test, $email, $tid) {;
+    $con = get_conf('con');
+    $conid = $con['id'];
 
-  $conlabel = $con['label'];
-  $canceldate = $ini['cancel_date'];
-  $refundemail = $con['refundemail'];
-  $conname = $con['conname'];
-  $orgname = $con['org'];
-  $orgabv = $con['orgabv'];
-  $regemail = $con['regadminemail'];
+    $conlabel = $con['label'];
+    $canceldate = getConfValue('reg', 'cancel_date');
+    $refundemail = $con['refundemail'];
+    $conname = $con['conname'];
+    $orgname = $con['org'];
+    $orgabv = $con['orgabv'];
+    $regemail = $con['regadminemail'];
 
-  $url = $ini['server'] . "/cancelation.php";
-  $url2 = $ini['server'];
-  $regpage = $con['regpage'] ;
-  $homepage = $con['website'];
+    $url = getConfValue('reg', 'server') . "/cancelation.php";
+    $url2 = getConfValue('reg', 'server');
+    $regpage = $con['regpage'];
+    $homepage = $con['website'];
 
-  $transQ = <<<EOS
+    $transQ = <<<EOS
 SELECT T.paid, M.label, M.memAge, P.first_name, P.last_name, P.badge_name, R.paid
-FROM transaction as T
+FROM transaction AS T
 JOIN reg R ON (R.create_trans=T.id)
 JOIN perinfo P ON (P.id=R.perid)
 JOIN memLabel M ON (M.id=R.memId)
 JOIN payments Y ON (Y.transid=T.id)
-WHERE T.id = ? AND M.memCategory in ('standard', 'yearahead') AND M.conid=?;
+WHERE T.id = ? AND M.memCategory IN ('standard', 'yearahead') AND M.conid=?;
 EOS;
 
-  $transR = dbSafeQuery($transQ, 'ii', array($tid, $conid));
+    $transR = dbSafeQuery($transQ, 'ii', array ($tid, $conid));
 
-  $names = "<ul>\n";
-  while($trans = $transR->fetch_assoc()) {
-    $names .= "\t<li>" . $trans['first_name'] . " " . $trans['last_name'];
-    if($trans['badge_name'] != '') {$names .= " (" .$trans['badge_name'] . ")";}
-    $names .= "</li>\n";
-  }
-  $names .= "</ul>\n";
+    $names = "<ul>\n";
+    while ($trans = $transR->fetch_assoc()) {
+        $names .= "\t<li>" . $trans['first_name'] . " " . $trans['last_name'];
+        if ($trans['badge_name'] != '') {
+            $names .= " (" . $trans['badge_name'] . ")";
+        }
+        $names .= "</li>\n";
+    }
+    $names .= "</ul>\n";
 
-$text = <<<EOT
+    $text = <<<EOT
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head><META http-equiv="Content-Type" content="text/html; charset=utf-8"></head><body>
 
 <p>As we announced on $canceldate, we had to make the unfortunate decision to cancel $conlabel. Your email address is associated with a membership to $conlabel.</p>
@@ -58,7 +59,8 @@ $text = <<<EOT
 <DD>A rollover will convert your existing $conlabel membership(s) to a membership for the next $conname, at no additional cost to you.</DD>
 
 <DT><strong>Refund</strong></DT>
-<DD>For online purchases, we can refund your purchase to your original method of payment. For at con or mail in purchases, we can mail you a check to refund your membership(s). If the refund needs to be done another way, please contact $regemail so that we can discuss options. We will process the refund as soon as possible.</DD>
+<DD>For online purchases, we can refund your purchase to your original method of payment. For at con or mail-in purchases, we can mail you a check to refund 
+your membership(s). If the refund needs to be done another way, please contact $regemail so that we can discuss options. We will process the refund as soon as possible.</DD>
 </DL>
 
 <p>You can let us know your preference by visiting <a href='$url?email=$email&tid=$tid'>our Membership Cancelation Page</a> at <a href='$url'>$url</a> and entering your email address and transaction number (<strong>$tid</strong>). You can also reach the page by following links from <a href='$url2'>$conname Online Registration</a> or the <a href="$regpage">Registration page</a> on the <a href="$homepage>$conname Website</a>. If we do not hear from you by <strong>within two weeks</strong>, we will process your membership as a Rollover, and you will be pre-registered for the next $conname. Any difference between the amount paid and pre-registration rate for the next $conname will be considered a (very appreciated) tax-deductible donation to $orgabv.</p>
@@ -67,42 +69,45 @@ $text = <<<EOT
 
 EOT;
 
-return $text;
+    if ($test) {
+        $text = "THIS IS A TEST\n\n" . $text;
+    }
+
+    return $text;
 }
 
 function refundEmail_TEXT($test, $email, $tid) {
-    $ini = get_conf('reg');
     $con = get_conf('con');
-    $conid=$con['id'];
+    $conid = $con['id'];
 
     $conlabel = $con['label'];
-    $canceldate = $ini['cancel_date'];
+    $canceldate = getConfValue('reg', 'cancel_date');
     $refundemail = $con['refundemail'];
     $conname = $con['conname'];
     $orgname = $con['org'];
     $orgabv = $con['orgabv'];
     $regemail = $con['regadminemail'];
 
-    $url = $ini['server'] . "/cancelation.php";
+    $url = getConfValue('reg', 'server') . '/cancelation.php';
 
-  $transQ = <<<EOS
+    $transQ = <<<EOS
 SELECT T.paid, M.label, M.memAge, P.first_name, P.last_name, P.badge_name, R.paid
 FROM transaction T
 JOIN reg R ON (R.create_trans=T.id)
 JOIN perinfo P ON (P.id=R.perid)
 JOIN memLabel M ON (M.id=R.memId)
 JOIN payments Y ON (Y.transid=T.id)
-WHERE T.id = ? AND M.memCategory in ('standard', 'yearahead') AND M.conid=?;
+WHERE T.id = ? AND M.memCategory IN ('standard', 'yearahead') AND M.conid=?;
 EOS;
 
-  $transR = dbSafeQuery($transQ, 'ii', array($tid, $conid));
+    $transR = dbSafeQuery($transQ, 'ii', array ($tid, $conid));
 
-  $names = "";
-  while($trans = $transR->fetch_assoc()) {
-    $names .= $trans['first_name'] . " " . $trans['last_name'] . " (" .$trans['badge_name'] . ")\n";
-  }
+    $names = "";
+    while ($trans = $transR->fetch_assoc()) {
+        $names .= $trans['first_name'] . " " . $trans['last_name'] . " (" . $trans['badge_name'] . ")\n";
+    }
 
-$text = <<<EOT
+    $text = <<<EOT
 As we announced on $canceldate, we had to make the unfortunate decision to cancel $conlabel. Your email address is associated with a membership to $conlabel.
 
 Our records show this email address is associated with Transaction #$tid, which has the following memberships:
@@ -127,241 +132,43 @@ Memberships will be processed as staff is available. We hope to have all rollove
 
 EOT;
 
-return $text;
+    if ($test) {
+        $html = "THIS IS A TEST\n\n" . $test;
+
+        return $text;
+    }
 }
 
-
-function preConEmail_last_HTML($test) {
-
-  $ini = get_conf('reg');
-  $con = get_conf('con');
-
-  $conlabel = $con['label'];
-  $conname = $con['conname'];
-  $orgname = $con['org'];
-  $orgabv = $con['orgabv'];
-  $url = rtrim($ini['server'], '/');
-  $hotelpage = $con['hotelwebsite'];
-  $hotelname = $con['hotelname'];
-  $hoteladdr = $con['hoteladdr'];
-  $pickupareatext = $con['pickupareatext'];
-  $addlpickuptext = $con['addlpickuptext'];
-  $schedulepage = $con['schedulepage'];
-  $homepage = $con['website'];
-  $policypage = $con['policy'];
-  $feedbackemail = $con['feedbackemail'];
-
-  $html = <<<EOT
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head><META http-equiv="Content-Type" content="text/html; charset=utf-8"></head><body><p>Hello!</p>
-
-<p>
-	$conlabel is almost upon us! You are receiving this email because your email address is associated with a valid registration to attend this year’s convention. To check the status of your, or the rest of your family's, registration you can always visit: <a href="$url/checkReg.php" target="_blank">$url/checkReg.php</a>
-</p>
-<p>
-	This year we are at the same hotel, which is now the <a href="$hotelpage" target="_blank">$hotelname</a>, at $hoteladdr. Badges can be picked up or purchased at $conname Registration, which is $pickupareatext. $addlpickuptext
-</p>
-
-<p>
-	Our programming team has put together a great schedule for us this year, and you can take a look at it at <a href="$schedulepage" target="_blank">$schedulepage/</a> on your computer or portable device. Information about other activities, as well as our Guests of Honor, can be found on our website at <a href="$homepage" target="_blank">$homepage</a>.
-</p>
-
-<p>
-	The $orgname ($orgabv) is dedicated to providing a comfortable and harassment-free environment for everyone at $conname and other $orgabv-sponsored events. For specific information, including our full Anti-Harassment Policy, see <a href="$policypage" target="_blank">$policypage</a>.
-</p>
-<p>
-	If you have any further questions, please feel free to contact us at <a href="mailto:$feedbackemail" target="_blank">$feedbackemail</a>, or visit our website for information on how to contact individual departments.
-</p>
-
-<p>See you at the convention!</p>
-<br>
-EOT;
-  $addlemailhtml= __DIR__ . "/../../config/ConSpecificReminderEmailAddlHTML.txt";
-  if (is_readable($addlemailhtml)) {
-      $html .= file_get_contents($addlemailhtml);
-  }
-  if($test) {
-      $html= "THIS IS A TEST\n\n" . $html;
-  }
-  return $html;
-}
-
-function preConEmail_last_TEXT($test) {
-    $ini = get_conf('reg');
+function ComeBackCouponEmail_HTML($test, $expirationDate) {
     $con = get_conf('con');
 
     $conlabel = $con['label'];
     $conname = $con['conname'];
     $orgname = $con['org'];
     $orgabv = $con['orgabv'];
-    $url = rtrim($ini['server'], '/');
-    $hotelname = $con['hotelname'];
-    $hoteladdr = $con['hoteladdr'];
-    $pickupareatext = $con['pickupareatext'];
-    $addlpickuptext = $con['addlpickuptext'];
-    $schedulepage = $con['schedulepage'];
-    $homepage = $con['website'];
-    $policypage = $con['policy'];
-    $feedbackemail = $con['feedbackemail'];
-
-  $text = <<<EOT
-Hello!
-
-$conlabel is almost upon us! You are receiving this email because your email address is associated with a valid registration to attend this year’s convention. To check the status of your, or the rest of your family's, registration you can always visit: $url/checkreg.php
-
-This year we are at the same hotel, which is now the $hotelname</a>, at $hoteladdr. Badges can be picked up or purchased at $conname Registration, which is $pickupareatext. $addlpickuptext
-
-Our programming team has put together a great schedule for us this year, and you can take a look at it at $schedulepage on your computer or portable device. Information about other activities, as well as our Guests of Honor, can be found on our website at $homepage.
-
-The $orgname ($orgabv) is dedicated to providing a comfortable and harassment-free environment for everyone at $conname and other $orgabv-sponsored events. For specific information, including our full Anti-Harassment Policy, see $policypage.
-
-If you have any further questions, please feel free to contact us at $feedbackemail, or visit our website for information on how to contact individual departments.
-
-See you at the convention!
-EOT;
-
-  $addlemailtxt= __DIR__ . "/../../config/ConSpecificReminderEmailAddlText.txt";
-  if (is_readable($addlemailtxt)) {
-      $text .= file_get_contents($addlemailtxt);
-  }
-  if($test) {
-      $text = "THIS IS A TEST\n\n" . $text;
-  }
-
-  return $text;
-}
-
-function MarketingEmail_HTML($test) {
-    $ini = get_conf('reg');
-    $con = get_conf('con');
-
-    $conlabel = $con['label'];
-    $conname = $con['conname'];
-    $orgname = $con['org'];
-    $orgabv = $con['orgabv'];
-    $url = rtrim($ini['server'], '/');
+    $url = rtrim(getConfValue('reg', 'server'), '/');
     $hotelpage = $con['hotelwebsite'];
     $hotelname = $con['hotelname'];
     $hoteladdr = $con['hoteladdr'];
-    $pickupareatext = $con['pickupareatext'];
-    $addlpickuptext = $con['addlpickuptext'];
     $schedulepage = $con['schedulepage'];
     $homepage = $con['website'];
     $policypage = $con['policy'];
     $feedbackemail = $con['feedbackemail'];
-    $regsite = $ini['server'];
+    $regsite = getConfValue('reg', 'server');
 
     $html = <<<EOT
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head><META http-equiv="Content-Type" content="text/html; charset=utf-8"></head><body><p>Hello!</p>
-
-<p>
-	$conlabel is almost upon us! You are receiving this email because your email address is associated with a valid registration to attend last year’s convention, but we don't have you registered for this year's convention. You can always register on-site, but you can save money by purchasing your membership in advance at <a href="$regsite" target-"_blank">$regsite</a>. To check the status of your, or the rest of your family's, registration  you can always visit: <a href="$url/checkReg.php" target="_blank">$url/checkReg.php</a>
-</p>
-<p>
-	This year, we are again at the <a href="$hotelpage" target="_blank">$hotelname</a>, at $hoteladdr.  Please register for rooms as soon as possible as the block will be closing soon.
-</p>
-
-<p>
-	Our programming team is putting together a great schedule for us this year, and you will soon be able to take a look at it at <a href="$schedulepage" target="_blank">$schedulepage</a> . Information about other activities, as well as our Guests of Honor, can be found on our website at <a href="$homepage" target="_blank">$homepage</a>.
-</p>
-
-<p>
-	The $orgname ($orgabv) is dedicated to providing a comfortable and harassment-free environment for everyone at $conname and other $orgabv-sponsored events. For specific information, including our full Anti-Harassment Policy, see <a href="$policypage" target="_blank">$policypage</a>.
-</p>
-<p>
-	If you have any further questions, please feel free to contact us at <a href="mailto:$feedbackemail" target="_blank">$feedbackemail</a>, or visit our website for information on how to contact individual departments.
-</p>
-
-<p>We hope to see you at the convention!</p>
-<br>
-EOT;
-    $addlemailhtml= __DIR__ . "/../../config/ConSpecificMarketingEmailAddlHTML.txt";
-    if (is_readable($addlemailhtml)) {
-        $html .= file_get_contents($addlemailhtml);
-    }
-    if($test) {
-        $html= "THIS IS A TEST\n\n" . $html;
-    }
-    return $html;
-}
-
-function MarketingEmail_TEXT($test) {
-    $ini = get_conf('reg');
-    $con = get_conf('con');
-
-    $conlabel = $con['label'];
-    $conname = $con['conname'];
-    $orgname = $con['org'];
-    $orgabv = $con['orgabv'];
-    $url = rtrim($ini['server'], '/');
-    $hotelname = $con['hotelname'];
-    $hoteladdr = $con['hoteladdr'];
-    $pickupareatext = $con['pickupareatext'];
-    $addlpickuptext = $con['addlpickuptext'];
-    $schedulepage = $con['schedulepage'];
-    $homepage = $con['website'];
-    $policypage = $con['policy'];
-    $feedbackemail = $con['feedbackemail'];
-    $regsite = $ini['server'];
-
-    $text = <<<EOT
-Hello!
-
-$conlabel is almost upon us! You are receiving this email because your email address is associated with a valid registration to attend last year’s convention, but we don't have you registered for this year's convention. You can always register on-site, but you can save money by purchasing your membership in advance at $regsite. To check the status of your, or the rest of your family's, memberships, you can always visit: $url/checkReg.php
-
-This year, we are at the same hotel which is now the $hotelname, at $hoteladdr.  Please register for rooms as soon as possible as the block will be closing soon.
-
-Our programming team is putting together a great schedule for us this year, and you will be able to soon take a look at it at $schedulepage. Information about other activities, as well as our Guests of Honor, can be found on our website at $homepage.
-
-The $orgname ($orgabv) is dedicated to providing a comfortable and harassment-free environment for everyone at $conname and other $orgabv-sponsored events. For specific information, including our full Anti-Harassment Policy, see $policypage.
-
-If you have any further questions, please feel free to contact us at $feedbackemail, or visit our website for information on how to contact individual departments.
-
-We hope to see you at the convention!
-
-EOT;
-
-    $addlemailtxt= __DIR__ . "/../../config/ConSpecificMarketingEmailAddlText.txt";
-    if (is_readable($addlemailtxt)) {
-        $text .= file_get_contents($addlemailtxt);
-    }
-    if($test) {
-        $text = "THIS IS A TEST\n\n" . $text;
-    }
-
-    return $text;
-}
-
-
-function ComeBackCouponEmail_HTML($test, $expirationDate)
-{
-    $ini = get_conf('reg');
-    $con = get_conf('con');
-
-    $conlabel = $con['label'];
-    $conname = $con['conname'];
-    $orgname = $con['org'];
-    $orgabv = $con['orgabv'];
-    $url = rtrim($ini['server'], '/');
-    $hotelpage = $con['hotelwebsite'];
-    $hotelname = $con['hotelname'];
-    $hoteladdr = $con['hoteladdr'];
-    $pickupareatext = $con['pickupareatext'];
-    $addlpickuptext = $con['addlpickuptext'];
-    $schedulepage = $con['schedulepage'];
-    $homepage = $con['website'];
-    $policypage = $con['policy'];
-    $feedbackemail = $con['feedbackemail'];
-    $regsite = $ini['server'];
-
-    $html = <<<EOT
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head><META http-equiv="Content-Type" content="text/html; charset=utf-8"></head><body><p>Hello #FirstName# #LastName#,</p>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head><META http-equiv="Content-Type" content="text/html; charset=utf-8"></head><body>
+<p>Hello [[FirstName]] [[LastName]],</p>
 
 <p>
 	$conlabel is almost upon us! You are receiving this email because your email address is associated with a valid registration to a prior convention, but you haven't registered in the past few years and we don't have you registered for this year's convention.
 </p>
 <p>
 	We would like to encourage you to come back this year by offering you a single use coupon you can use to get a 10% discount on all memberships.  This coupon expires on $expirationDate and you must use the link in this email to register and apply the coupon.
-	You can always register on-site, but you can save money by purchasing your membership in advance and applying this coupon at <a href="$regsite?#CouponCode#" target-"_blank">$regsite?#CouponCode#</a>. To check the status of your, or the rest of your family's, registration  you can always visit: <a href="$url/checkReg.php" target="_blank">$url/checkReg.php</a>
+	You can always register on-site, but you can save money by purchasing your membership in advance and applying this coupon at
+	 <a href="$regsite?[[CouponCode]]" target-"_blank">$regsite?[[CouponCode]]</a>. To check the status of your, or the rest of your family's, registration  
+	 you can
+	 always visit: <a href="$url/checkReg.php" target="_blank">$url/checkReg.php</a>
 </p>
 <p>
 	This year, we are again at the <a href="$hotelpage" target="_blank">$hotelname</a>, at $hoteladdr.  Please register for rooms as soon as possible as the block will be closing soon.
@@ -391,32 +198,28 @@ EOT;
     return $html;
 }
 
-function ComeBackCouponEmail_TEXT($test, $expirationDate)
-{
-    $ini = get_conf('reg');
+function ComeBackCouponEmail_TEXT($test, $expirationDate) {
     $con = get_conf('con');
 
     $conlabel = $con['label'];
     $conname = $con['conname'];
     $orgname = $con['org'];
     $orgabv = $con['orgabv'];
-    $url = rtrim($ini['server'], '/');
+    $url = rtrim(getConfValue('reg', 'server'), '/');
     $hotelname = $con['hotelname'];
     $hoteladdr = $con['hoteladdr'];
-    $pickupareatext = $con['pickupareatext'];
-    $addlpickuptext = $con['addlpickuptext'];
     $schedulepage = $con['schedulepage'];
     $homepage = $con['website'];
     $policypage = $con['policy'];
     $feedbackemail = $con['feedbackemail'];
-    $regsite = $ini['server'];
+    $regsite = getConfValue('reg', 'server');
 
     $text = <<<EOT
-Hello #FirstName# #LastName#,
+Hello [[FirstName]] [[LastName]],
 
 $conlabel is almost upon us! You are receiving this email because your email address is associated with a valid registration to a prior convention, but you haven't registered in the past few years and we don't have you registered for this year's convention.
  
-We would like to encourage you to come back this year by offering you a single use coupon you can use to get a 10% discount on all memberships.  This coupon expires on $expirationDate and you must use the link in this email to register and apply the coupon. You can always register on-site, but you can save money by purchasing your membership in advance and applying this coupon with at $regsite?#CouponCode#. To check the status of your, or the rest of your family's, registration  you can always visit: $url/checkReg.php
+We would like to encourage you to come back this year by offering you a single use coupon you can use to get a 10% discount on all memberships.  This coupon expires on $expirationDate and you must use the link in this email to register and apply the coupon. You can always register on-site, but you can save money by purchasing your membership in advance and applying this coupon with at $regsite?[[CouponCode]]. To check the status of your, or the rest of your family's, registration  you can always visit: $url/checkReg.php
 
 This year, we are at the same hotel which is now the $hotelname, at $hoteladdr.  Please rsgister for rooms as soon as possible as the block will be closing soon.
 
@@ -443,7 +246,6 @@ EOT;
 
 
 function surveyEmail_HTML($test) {
-
     $con = get_conf('con');
 
     if (!array_key_exist('survey_url', $con))

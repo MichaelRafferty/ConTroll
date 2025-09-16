@@ -200,4 +200,3 @@ function send_email($from, $to, $cc, $subject, $textbody, $htmlbody, $attachment
     $return_arr['status'] = "success";
     return $return_arr;
 }
-?>

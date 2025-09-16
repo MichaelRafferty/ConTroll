@@ -40,4 +40,3 @@ $response['message'] = "Coupon " . $couponId . " deleted";
 $response = getCouponData($response);
 
 ajaxSuccess($response);
-?>

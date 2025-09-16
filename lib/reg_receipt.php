@@ -513,12 +513,12 @@ EOS;
             $receipt_html .= <<<EOS
     <div class="row">
         <div class="col-sm-1"></div>
-        <div class="col-sm-6">Mail In Fee</div>
+        <div class="col-sm-6">Mail-in Fee</div>
         <div class="col-sm-2" style="text-align: right;">$fee</div>
     </div>
 EOS;
-            $receipt_tables .= "<tr><td></td><td>Mail In Fee</td><td>$fee</td></tr>\n";
-            $receipt .= "     Mail In Fee: $fee\n";
+            $receipt_tables .= "<tr><td></td><td>Mail-in Fee</td><td>$fee</td></tr>\n";
+            $receipt .= "     Mail-in Fee: $fee\n";
         }
     }
 

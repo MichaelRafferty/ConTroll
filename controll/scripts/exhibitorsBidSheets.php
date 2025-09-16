@@ -42,5 +42,3 @@ switch($_GET['type']) {
         break;
     default:
 }
-
-?>

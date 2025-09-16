@@ -199,7 +199,7 @@ function draw_list_row(rownum) {
     var rowhtml = `<div class="row">
         <div class="col-sm-8">Member: ` + membername + `</div>
         <div class="col-sm-2 text-end">` + row['roll_tid'] + `</div>
-        <div class="col-sm-2 text-end">\` + row['roll_regid'] + \`</div>
+        <div class="col-sm-2 text-end">` + row['roll_regid'] + `</div>
     </div>`;
 
     // second row - badge name

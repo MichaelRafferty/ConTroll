@@ -135,8 +135,10 @@ EOS;
         $newPolicies = array();
 // convert oldPolicies to an associative array with the p_ in the front of the indicies
     $oldPolicies = array();
-    foreach ($oldPoliciesArr as $oldPolicy) {
-        $oldPolicies['p_' . $oldPolicy['policy']] = $oldPolicy;
+    if (is_array($oldPoliciesArr)) {
+        foreach ($oldPoliciesArr as $oldPolicy) {
+            $oldPolicies['p_' . $oldPolicy['policy']] = $oldPolicy;
+        }
     }
 
     if ($policies != null) {

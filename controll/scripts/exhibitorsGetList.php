@@ -1,6 +1,4 @@
 <?php
-global $db_ini;
-
 require_once "../lib/base.php";
 $check_auth = google_init("ajax");
 $perm = 'exhibitor';
@@ -67,4 +65,3 @@ $response['status'] = 'success';
 $response['message'] = count($exhibitors) . ' exhibitors found.';
 
 ajaxSuccess($response);
-?>

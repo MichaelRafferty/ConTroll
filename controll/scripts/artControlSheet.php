@@ -15,4 +15,3 @@ if($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
 
 
 ajaxSuccess($response);
-?>

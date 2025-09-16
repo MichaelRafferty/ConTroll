@@ -24,6 +24,8 @@ WHERE e.id=? AND ey.conid = ?;
 EOS;
     $vendorR = dbSafeQuery($vendorQ, 'ii', array($vendorId, $conid));
     $vendorL = $vendorR->fetch_assoc();
+    $vendorR->free();
+
     $exhibitorName = $vendorL['exhibitorName'];
     $artistName = $vendorL['artistName'];
     if ($portalType == 'artist' && $artistName != null && $artistName != '' && $artistName != $exhibitorName) {
@@ -31,11 +33,25 @@ EOS;
     }
     $exhibitorEmail = $vendorL['exhibitorEmail'];
     $website = $vendorL['website'];
+    if ($website == null || trim($website) == '') {
+        $website =  '<i>(None Entered)</i>';
+        $websiteURL = $website;
+    } else {
+        $websiteURL = '<a href="$website" target="_blank">$website</a>';
+    }
+    $websiteText = strip_tags($website);
+
     $description = $vendorL['description'];
+    if ($description == null || trim($description) == '')
+        $description = '<i>(None Entered)</i>';
     $descriptionText =strip_tags($description);
+
     $contactName = $vendorL['contactName'];
     $contactEmail = $vendorL['contactEmail'];
-    $vendorR->free();
+    if ($contactName == null || trim($contactName) == '') {
+        $contactName = $exhibitorName;
+        $contactEmail = $exhibitorEmail;
+    }
 
     $body = <<<EOS
 Dear $ownerName:
@@ -45,7 +61,7 @@ They have provided the following description:
 
 $descriptionText
 
-Their website is $website
+Their website is $websiteText
 
 Please followup with $contactName at $contactEmail if you have any further questions.
 
@@ -59,7 +75,7 @@ EOS;
 <hr>
 $description
 <hr>
-<p>Their website is <a href="$website" target="_blank">$website</a>.<p>
+<p>Their website is $websiteURL.<p>
 <p>Please followup with $contactName at <a href="mainto:$contactEmail">$contactEmail</a> if you have any further questions.</p>
 <p>Respectfully submitted,<br/>$portalName Portal</p>
 EOS;
@@ -78,13 +94,32 @@ function request($exhibitorInfo, $regionInfo, $portalName, $portalType, $spaces)
     if ($portalType == 'artist' && $artistName != null && $artistName != '' && $artistName != $exhibitorName) {
         $exhibitorName .= "($artistName)";
     }
+
+    $exhibitorEmail = $exhibitorInfo['exhibitorEmail'];
     $contactName = $exhibitorInfo['contactName'];
     $contactEmail = $exhibitorInfo['contactEmail'];
+    if ($contactName == null || trim($contactName) == '') {
+        $contactName = $exhibitorName;
+        $contactEmail = $exhibitorEmail;
+    }
+
     $description = $exhibitorInfo['description'];
+    if ($description == null || trim($description) == '')
+        $description = '<i>(None Entered)</i>';
     $descriptionText =strip_tags($description);
+
     $regionName = $regionInfo['name'];
     $ownerName = $regionInfo['ownerName'];
+
     $website = $exhibitorInfo['website'];
+    if ($website == null || trim($website) == '') {
+        $website =  '<i>(None Entered)</i>';
+        $websiteURL = $website;
+    } else {
+        $websiteURL = '<a href="$website" target="_blank">$website</a>';
+    }
+    $websiteText = strip_tags($website);
+
     if ($spaces == '') {
         $requestType = 'cancelled their';
         $spaces =  "We are sorry $exhibitorName has had to cancel their space request in the $regionName.";
@@ -92,6 +127,7 @@ function request($exhibitorInfo, $regionInfo, $portalName, $portalType, $spaces)
         $requestType = 'requested';
         $spaces = "They have requested:\n" . $spaces;
     }
+
     $body = <<<EOS
 Dear $ownerName:
     $exhibitorName has $requestType space in $regionName.
@@ -100,7 +136,7 @@ They have provided the following description:
 
 $descriptionText
 
-Their website is $website
+Their website is $websiteText
 
 $spaces
 
@@ -118,7 +154,7 @@ EOS;
 <hr>
 $description
 <hr>
-<p>Their website is <a href="$website" target="_blank">$website</a>.<p>
+<p>Their website is $websiteURL.<p>
 <p>$spacesHtml</p>
 <p>Please followup with $contactName at <a href="mainto:$contactEmail">$contactEmail</a> if you have any further questions.</p>
 <p>Respectfully submitted,<br/>$portalName Portal</p>
@@ -200,7 +236,7 @@ EOS;
         if ($vendor['addr2'] && $vendor['addr2'] != '')
             $body .= $vendor['addr2'] . "\n";
         $body .= $vendor['city'] . ', ' . $vendor['state'] . ' ' . $vendor['zip'] . "\n\n" .
-            "Space: " . $region['name'] . ' (' . $region['description'] . ') with up to ' . $region['includedMemberships'] .
+            "Space: " . $region['name'] . ' with up to ' . $region['includedMemberships'] .
                 ' included memberships and up to ' .
             $region['additionalMemberships'] . " additional memberships\n" .
             $conf['taxLabel'] . ': ' . $results['salesTaxId'] . "\n\n" .
@@ -246,7 +282,7 @@ EOS;
     if ($vendor['addr2'] && $vendor['addr2'] != '')
         $bodyHtml .= $vendor['addr2'] . "<br/>\n";
     $bodyHtml .= $vendor['city'] . ', ' . $vendor['state'] . ' ' . $vendor['zip'] . "</p>\n" .
-        '<p>Space: ' . $region['name'] . ' (' . $region['description'] . ') with up to ' . $region['includedMemberships'] .
+        '<p>Space: ' . $region['name'] . ' with up to ' . $region['includedMemberships'] .
             ' included memberships and up to ' . $region['additionalMemberships'] . " additional memberships</p>\n" .
         '<p>' . $conf['taxLabel'] . ': ' . $results['salesTaxId'] . "</p>\n" .
         '<p>Price for Space: ' . $dolfmt->formatCurrency($region['price'], $currency) . "</p>\n" .

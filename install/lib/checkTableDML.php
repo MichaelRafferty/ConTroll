@@ -60,4 +60,3 @@ function checkTableDML($table, $fname) : int {
 
     return $match;
 }
-?>

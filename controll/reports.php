@@ -14,6 +14,7 @@ page_init($page,
                     $cdn['tabbs5'],
                    ),
     /* js  */ array($cdn['tabjs'],
+                    $cdn['popjs'],
                     'js/reports.js',
                    ),
               $need_login);
@@ -64,6 +65,40 @@ if ($groupDir = opendir(__DIR__ . '/reports/local_groups')) {
     closedir($groupDir);
 }
 
+if (array_key_exists('name', $_REQUEST)) {
+    // we have a run a report directly, find the name in the group file
+    $reportName = $_REQUEST['name'];
+    $found = false;
+    foreach ($reports AS $group => $list) {
+        foreach ($list AS $name => $values){
+            if ($name == 'group') {
+                $config_vars['group'] = $values;
+                continue;
+            }
+            $rptname = preg_replace('/^[0-9]+/', '', $name);
+            if ($rptname == $reportName) {
+                $found = true;
+                break;
+            }
+        }
+        if ($found)
+            break;
+    }
+
+    if ($found) {
+        $config_vars['reportName'] = $name;
+        $config_vars['groupName'] = $group;
+        $config_vars['values'] = $values;
+        $prompt = 1;
+        $prompts = [];
+        while (array_key_exists('P' . $prompt, $_REQUEST)) {
+            $prompts[] = $_REQUEST['P' . $prompt];
+            $prompt++;
+        }
+        $config_vars['prompts'] = $prompts;
+    }
+}
+
 ?>
 <script type='text/javascript'>
     var config = <?php echo json_encode($config_vars); ?>;
@@ -93,14 +128,7 @@ EOS;
            $active = '';
     }
 }
-if (checkAuth($need_login['sub'], 'admin')){
 ?>
-    <li class='nav-item' role='presentation'>
-        <button class='nav-link' id='oldreports-tab' data-bs-toggle='pill' data-bs-target='#oldreports-pane' type='button'
-                role='tab' aria-controls='nav-oldreports' aria-selected='true' onclick="settab('oldreports-pane');">Old Reports
-        </button>
-    </li>
-<?php } ?>
 </ul>
 
 <div class='tab-content ms-2' id='reports-content'>
@@ -117,7 +145,7 @@ EOS;
         $groupRpts = array_keys($report);
         sort($groupRpts);
         echo <<<EOS
-        <ul class="nav nav-pills nav-fill mb-3" id="$name-content-tab" role="tablist">
+        <ul class="nav nav-pills mb-3" id="$name-content-tab" role="tablist">
 EOS;
         $active2 = ' active';
         foreach ($groupRpts as $key) {
@@ -134,6 +162,8 @@ EOS;
             $group = $report['group'];
             $fileName = $group['file'];
             $prefix = $group['prefix'];
+            $type = $rpt['type'];
+            $template = $rpt['template'];
             $keys = array_keys($rpt);
             $prompts = [];
             sort($keys);
@@ -146,16 +176,19 @@ EOS;
             $tab = str_replace(' ', '-', $name);
             if (count($prompts) > 0) {
                 $reportPrompts[$key] = $prompts;
-                $onclick = "showPrompts('$key', '$prefix', '$fileName');";
+                $onclick = "showPrompts('$key', '$prefix', '$fileName', '$type', '$template');";
             } else {
-                $onclick = "noPrompts('$key', '$prefix', '$fileName');";
+                $onclick = "noPrompts('$key', '$prefix', '$fileName', '$type', '$template');";
             }
+            $desc = $rpt['description'];
             echo <<<EOS
             <li class="nav-item" role="presentation $active">
-                <button class="nav-link" id="$tab-tab" data-bs-toggle="pill" data-bs-target="#gen-report-content" type="button"
-                    role="tab" aria-controls="$grpname-tab" aria-selected="false" onclick="$onclick" tabindex="-1">
-                    $name
-                </button>
+                <span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="$desc">
+                    <button class="nav-link" id="$tab-tab" data-bs-toggle="pill" data-bs-target="#gen-report-content" type="button"
+                        role="tab" aria-controls="$grpname-tab" aria-selected="false" onclick="$onclick" tabindex="-1">
+                        $name
+                    </button>
+                </span>
             </li>
 EOS;
         }
@@ -181,49 +214,6 @@ EOS;
     <?php
 }
 ?>
-    <div class='tab-pane fade show <?php echo $active; ?>' id='oldreports-pane' role='tabpanel' aria-labelledby='oldreports-tab' tabindex='0'>
-        <div class='container-fluid'>
-  <a href='reports/artSales.php'>Artshow amounts sold</a><br/>
-  <a href='reports/artists.php'>Artists since <?PHP echo $con['minComp']; ?></a><br/>
-  <a href="reports/artInventory.php">Art Inventory</a><br/>
-  <a href='reports/newMembers.php'>New Members</a><br/>
-  <a href='reports/clubHistory.php'><?PHP echo $controll['clubname']; ?> History</a><br/>
-  <form action='reports/hotel_reg.php' method='GET'>
-    Registration Report For <?PHP echo $con['conname']; ?>
-    <input type='number' name='conid'/>
-    <input type='submit' value='Get'/>
-  </form>
-  <form action='reports/participants.php' method='GET'>
-    Participant list for <?PHP echo $con['conname']; ?>
-    <input type='number' name='conid'/>
-    <input type='submit' value='Get'/>
-  </form>
-    <?php // this stuff below is obsolete and needs to be rewritten for mondern art show
-    if (false) {
-        ?>
-  <form action='reports/artCheckout.php' method='GET'>
-    <select name='artid'>
-        <?php
-            $artistQ = <<<EOS
-SELECT S.id, art_key, TRIM(CONCAT_WS(' ', P.first_name, P.last_name)) AS name
-FROM artshow AS S
-JOIN artist AS A ON A.id = S.artid
-JOIN perinfo AS P ON P.id=A.artist
-WHERE conid=?
-ORDER by art_key;
-EOS;
-            $artistR = dbSafeQuery($artistQ, 'i', array($conid));
-            while($artist = $artistR->fetch_assoc()) {
-                printf("<option value = '%s'>%s (%s)</option>",
-                    $artist['id'], $artist['name'], $artist['art_key']);
-            }
-        ?>
-    </select>
-    <input type='submit' value='Artshow Checkout'/>
-  </form>
-    <?php } ?>
-        </div>
-    </div>
     <div id='result_message' class='mt-4 p-2'></div>
     <pre id='test'></pre>
 </div>

@@ -45,13 +45,13 @@ function drawEditPane($tabIndex=100)
                             <div class="row mb-2">
                                 <div class="col-sm-auto">
                                     <label for="artItemTitle">Title:</label>
-                                    <input tabindex="<?php echo $tabIndex+5; ?>" type="text" id="artItemTitle" name="title"/>
+                                    <input tabindex="<?php echo $tabIndex+5; ?>" type="text" id="artItemTitle" name="title" size="64" maxlength="64"/>
                                 </div>
                             </div>
                             <div class="row mb-2">
                                 <div class="col-sm-auto">
                                     <label for="artItemMaterial">Material:</label>
-                                    <input tabindex="<?php echo $tabIndex+6; ?>" type="text" id="artItemMaterial" name="material"/>
+                                    <input tabindex="<?php echo $tabIndex+6; ?>" type="text" id="artItemMaterial" name="material" size='32' maxlength='32'/>
                                 </div>
                             </div>
                             <div class="row mb-2">
@@ -69,7 +69,7 @@ function drawEditPane($tabIndex=100)
                                     </select>
                                 </div>
                             </div>
-                            <div class="row mb-2">
+                            <div class="row mb-2" id="quantityRowDiv">
                                 <div class="col-sm-auto">
                                     <label for="artItemQuantity">Quantity:</label>
                                     <input tabindex="<?php echo $tabIndex+9; ?>" type="number" id="artItemQuantity" name="quantity"/>
@@ -106,6 +106,13 @@ function drawEditPane($tabIndex=100)
                                     <!--only valid for some statuses -->
                                 </div>
                             </div>
+                            <div class="row mb-2">
+                                <div class="col-sm-auto">
+                                    <label for="artItemNotes">Notes:</label>
+                                    <textarea cols='70' rows='10' wrap='soft'
+                                            tabindex="<?php echo $tabIndex+15; ?>" id="artItemNotes" name="notes"></textarea>
+                                </div>
+                            </div>
                         </form>
                     </div>
                     <div id='ai_result_message' class='mt-4 p-2'></div>
@@ -122,6 +129,3 @@ function drawEditPane($tabIndex=100)
     </div>
     <?php
 }
-
-
-?>

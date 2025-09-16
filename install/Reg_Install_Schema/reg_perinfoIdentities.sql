@@ -1,4 +1,4 @@
--- MySQL dump 10.13  Distrib 8.0.34, for macos13 (arm64)
+-- MySQL dump 10.13  Distrib 8.0.42, for macos15 (arm64)
 --
 -- Host: localhost    Database: reg
 -- ------------------------------------------------------
@@ -18,7 +18,8 @@ CREATE TABLE `perinfoIdentities` (
   `creationTS` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `lastUseTS` timestamp NULL DEFAULT NULL,
   `useCount` int NOT NULL DEFAULT '0',
-  PRIMARY KEY (`perid`,`provider`,`email_addr`)
+  PRIMARY KEY (`perid`,`provider`,`email_addr`),
+  KEY `perinfoIdent_idx_email` (`email_addr`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 

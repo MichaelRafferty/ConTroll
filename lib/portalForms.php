@@ -387,9 +387,10 @@ function drawPersonRow($personId, $personType, $person, $memberships, $showInter
     ?>
     <div class="row mt-1">
         <div class='col-sm-1' style='text-align: right;'><?php echo $person['personType'] == 'n' ? 'Pending' : $person['id']; ?></div>
-        <div class='col-sm-3'><strong><?php echo $person['fullName']; ?></strong></div>
+        <div class='col-sm-2'><strong><?php echo $person['fullName']; ?></strong></div>
         <div class="col-sm-2"><?php echo $badge_name; ?></div>
-        <div class='col-sm-6 p-1'>
+        <div class="col-sm-2"><?php echo $person['email_addr']; ?></div>
+        <div class='col-sm-5 p-1'>
                 <button class='btn btn-sm btn-primary p-1' style='--bs-btn-font-size: 80%;'
                 data-id="<?php echo $person['id']?>" data-type="<?php echo $person['personType']; ?>"
                 onclick="portal.changeEmail('<?php echo $personArgs; ?>');">
@@ -470,7 +471,7 @@ function drawPersonRow($personId, $personType, $person, $memberships, $showInter
            } else {
                $ageRow = '<br/><b>' . $membership['ageShort'] . '</b> (' . $membership['ageLabel'] . ')';
            }
-           $expired = $membership['status'] == 'unpaid' &&
+           $expired = $membership['status'] == 'unpaid' && ($membership['actPaid'] + $membership['actCouponDiscount']) > 0 &&
                 ($membership['startdate'] > $now || $membership['enddate'] < $now || $membership['online'] == 'N');
            ?>
         <div class="col-sm-3 ps-1 pe-1 m-0"><button class="btn btn-light border border-5 mt-1 <?php echo $borderColor; ?>"
@@ -563,7 +564,7 @@ function draw_PaymentDueModal() : void {
 
 // draw_makePaymentModal - the modap popup to take a payment via credit card
 function draw_makePaymentModal() : void {
-    $ini = get_conf('reg');
+    $testsite = getConfValue('portal', 'test') == 1;
     $cc = get_conf('cc');
     $con = get_conf('con');
     ?>
@@ -589,7 +590,7 @@ function draw_makePaymentModal() : void {
                         <div class='row'>
                             <div class='col-sm-12'>
 <?php
-    if ($ini['test'] == 1) {
+    if ($testsite) {
 ?>
                             <span class='text-danger size-h2'><strong>This won't charge your credit card.<br/>It also won't get you real
                                     memberships

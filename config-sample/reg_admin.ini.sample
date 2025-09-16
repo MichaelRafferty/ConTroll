@@ -1,0 +1,169 @@
+;;; reg_admin.ini
+; this file contains the values that should NOT be changed by a use with reg-admin privledges, but only edited by a systems admin
+; Changing the values in this file can have consequences to the data or overall operation of Controll
+
+;;; this section contains the default values globally that can be overritten in each following section as needed
+
+[global]
+;;; 1 if this is a test instance, 0 if production
+test=0 ; can override in each app section
+;;; redirect to https if 1, 0 to allow https or http, all non localhost systems should be 1
+https=0 ; can override in each app section
+;;; 0 = site is closed, 1 = site is open
+open=0 ; can override in each app section
+;;; 0 = registration has ended, 1 = registration is open
+close=0 ; can override in each app section
+;;; 1 = registration temporarily suspended for the reason below, 0 = no suspension
+;;; use this for maintenance items
+suspended=0 ; can override in each app section
+;;; reason to tell the user for the suspension
+suspendreason="while we examine the impact of recent developments" ; can override in each app section
+;;; has the event been canceled, 0 = no, 1 = yes
+cancelled=0 ; can override in each app section
+;;; as of what date is it cancelled, fill in the date below
+cancel_date="YYYY-MM-DD" ; can override in each app section
+;; testemail: if set, and test=1, then all emails from the system will be forced to go to the testemail email address
+; testemail=
+; server is the URL to the main reg/portal of the ConTroll system
+server="https://reg.conname.org/"
+;;; passkeyRpLevel: passkey rp domain level
+;;      this is meant to be global so the system can recognize/create passkeys properly.
+;; 2: org.root - right 2 most sections in host name (aka philcon.org)
+;; 3: site.org.root - right 3 most sections in the host name (aka reg.philcon.org, or exhibitor.philcon.org and all of it's subdomains
+;;      for the exhibitor types, if so setup)
+;; h: host  (full hostname, less "www." if on the front.  (so vendor.exhibitor.philcon.org is different than artist.exhibitor.philcon.org)
+;; d: disabled - disable passkeys
+passkeyRpLevel=2 ; can override in each app section
+
+[con]
+;;; id = numeric identifier for this year, be it the number of the con (1,2,3,4) or the year of the con (2025, 2026, ...)
+id="2025"
+;;; conname = very short handle for the convention, usually one word, used in keys and other items in the database as well as display
+conname="ConTroll"
+; sales tax rate in percent and Invoice Label for the tax. The uid is used for Square and must be the same as the tax id with any non
+;      allowed character changed to a '-'.
+taxRate=6
+taxLabel="NJ Sales Tax"
+taxuid="NJ-Sales-Tax"  ; uid's are letters, numbers and '-' only, no blanks or other characters
+; the currency codes are the ones used by PHP
+currency="USD"
+; how far back to run the membership comparision graph, by id#
+minComp="2021"
+compLen="365" ; day length for membership growth by day graph
+conLen="3" ; how many days long is the convention
+
+[debug]
+api=0 ; to enable api inteface debug statements (currently bitmask from 1-31) (1=enable, 0=disable)
+atcon=0 ; to enable atcon debug statements (currently bitmask from 1-31) (1=enable, 0=disable)
+controll_admin=0 ; to enable controll admin tab debug statement (currently bitmask from 1-31) (1=enable, 0=disable)
+controll_exhibitors=0 ; to enable controll exhibitors tab debug statement (currently bitmask from 1-31) (1=enable, 0=disable)
+controll_regadmin=0 ; to enable controll reg_admin tab debug statement (currently bitmask from 1-31) (1=enable, 0=disable)
+controll_registration=0 ; to enable controll registration tab debug statement (currently bitmask from 1-31) (1=enable, 0=disable)
+controll_reports=0 ; to enable sql dump of query set = 1
+controll_stats=0 ; to enable controll statistics screens, currently =1 means invent prior year stats
+google=0 ; to enable google debug statements (1=enable, 0=disable)
+oauth=0 ; to enable oauth2 server debug (currently 0 = off, 1 = on)
+portal=0 ; to enable regportal debug statements (currently bitmask from 1-31) (1=enable, 0=disable)
+square=1 ; logging of square actions (currently 0 = off, 1 = on)
+usps=0 ; to enable usps address validation debug (currently bitmast from 1-31)
+vendors=0 ; to enable vendor and artist admin tab debug statement (currently bitmask from 1-31) (1=enable, 0=disable)
+
+[log]
+artshow='/...PathtoLogDirectory.../artshowReg'
+cancel='/...PathtoLogDirectory.../cancel'
+controll='/...PathtoLogDirectory.../controll'
+db='/...PathtoLogDirectory.../db'
+reg='/...PathtoLogDirectory.../onlineReg'
+term='/...PathtoLogDirectory.../term'
+vendors='/...PathtoLogDirectory.../vendors'
+web='/...PathtoLogDirectory.../web-reg'
+
+[reg]
+;;; overrides
+;; https=0
+;; test=1
+;; open=1
+;; close=0
+;; suspended=0
+;; suspendreason="while we examine the impact of COVID-19"
+;; cancelled=0
+;; cancel_date="YYYY-MM-DD"
+;; server="http://reg"
+;; testemail: if set, and test=1, then all emails from the system will be forced to go to the testemail email address
+;; testemail=
+
+[atcon]
+; badgeps = fill path to the Postscript header for printing badges
+badgeps="/home/homedir/config/conname.ps"
+;; payment methods allowed
+; 1 = allowed, 0 = disabled
+creditoffline = 0
+creditonline = 1
+
+[vendor]
+;;; overrides
+;; https=0
+;; test=1
+;; open=1
+;; close=0
+
+;vendorsite: url to vendor website
+vendorsite="http://vendor"
+; path to file in config of any additional text you wish to add to explain the signup form for vendor portal
+artistsite="http://artist"
+# taxidlabel is the label used to prompt for their tax id number
+taxidlabel="NJ Sales Tax ID#"
+
+[portal]
+;;; overrides
+;; https=0
+;; test=1
+;; open=1
+;; close=0
+;; suspended=0
+;; suspendreason="while we examine the impact of COVID-19"
+;; cancelled=0
+;; cancel_date="YYYY-MM-DD"
+;; server="http://reg"
+
+;; membership portal items
+portalsite="http://portal/"
+redirect_base="http://portal/index.php"
+;;; token lifetimes
+emailhrs=24
+oauthhrs=8
+
+;; Items for Worldcon's
+; enable worldcon checking features (not all require this to be =1, but the virtual
+; to work for non worldcons depends on this being 0
+;   1: this is a worldcon require wsfs for attending status
+;   0: this is not a worldcon, ignore wsfs memberships
+; worldcon=
+; nomdate = cutoff for WSFS nominations memberships, older than this can nominate
+; nomdate="YYYY/MM/DD"
+; nomnomURL = redirect URL with page for this worldcon's instance of No Nom
+; nomnomURL=https://<FQDN>/controll-redirect/
+; nomnomKey = Shared Secret Key for Nom Nom JWT signing
+; nomnomBtn = text for the nomnom button
+; businessmeetingURL = url to the virtual businessmeeting site
+; businessmeetingBtn = text for the business meeting button
+; siteselectionURL = url to site selection voting
+; siteselectionBtn = text for the site selection voting
+; siteselectionKey = encryption key for the site selection data
+;; End of Items for Worldcon
+
+;; items for conventions with virtual/hybrid access to the convention
+; virtualURL = url to the virtual portal
+; virtualBtn = text for the virtual portal button
+; virtualKey = Shared Secret Key for Virtual JWT signing
+; virtualChild = Allow Child to attend virtual 0=no, 1=yes
+
+[controll]
+; useportal - does this installation use the portal, 1 = yes, 0 = no
+useportal=1
+hrtime=0    ; on critical routines, a call to hrtime to report intervals has been added, enable this feature
+
+[local]
+;;; local parameters for the sendinterests.php send script
+;   csvsavedir = directory relative to the scripts directory, where the CVS files are saved so local copies are availalbe if the emails fail
+;csvsavedir="sentCSV"

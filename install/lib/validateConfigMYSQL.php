@@ -156,4 +156,3 @@ EOS;
         logEcho("Errors in [mysql] section of reg_conf.ini, cannot continue");
     return $errors;
 }
-?>

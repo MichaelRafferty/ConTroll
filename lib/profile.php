@@ -9,17 +9,12 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
         $polConf = $reg;
     else
         $polConf = get_conf('portal');
-    if (array_key_exists('required', $reg)) {
-        $required = $reg['required'];
-    } else {
-        $required = 'addr';
-    }
+    $required = getConfValue('reg', 'required', 'addr');
     $firstStar = '';
     $addrStar = '';
     $allStar = '';
     switch ($required) {
         // cascading list of required fields, each case adds more so the breaks fall into the next section
-
         case 'all':
             $allStar = '<span class="text-danger">&bigstar;</span>';
         case 'addr':

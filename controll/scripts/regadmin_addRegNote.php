@@ -1,6 +1,4 @@
 <?php
-global $db_ini;
-
 require_once "../lib/base.php";
 
 $check_auth = google_init("ajax");
@@ -57,4 +55,3 @@ if ($new_history === false) {
 
 $response['success'] = 'Note added successfully';
 ajaxSuccess($response);
-?>

@@ -9,9 +9,21 @@ function draw_login($config_vars, $result_message = '', $result_color = '', $why
         <div class='container-fluid form-floating'>
             <div class='row mb-2'>
                 <div class='col-sm-auto'>
-                    <h4>Please log in to <?php echo $why; ?>.</h4>
+                    <h4>Please log in to <?php echo $why; ?>:</h4>
                 </div>
             </div>
+            <?php  if (getConfValue('portal', 'passkeyRpLevel') != 'd' && array_key_exists('HTTPS', $_SERVER) && (isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == 'on')) { ?>
+            <div class='row mb-2 align-items-center'>
+                <div class='col-sm-auto'>
+                    <button class='btn btn-sm btn-primary' id="loginPasskeyBtn" onclick='login.loginWithPasskey();'>
+                        <img src="lib/passkey.png" width="25">Login with Passkey
+                    </button>
+                </div>
+                <div class='col-sm-auto'>
+                    Don't have one?<br/>Create a passkey after signing on and skip the password next time.
+                </div>
+            </div>
+            <?php } ?>
             <div class="row mb-2">
                 <div class='col-sm-auto'>
                     <button class="btn btn-sm btn-primary" onclick="login.loginWithToken();">
@@ -108,14 +120,24 @@ function draw_login($config_vars, $result_message = '', $result_color = '', $why
 function chooseAccountFromEmail($email, $id, $linkid, $passedMatch, $validationType) {
     global $config_vars;
 
+    if ($validationType == 'switch') {
+        $nextValidationType = 'switched';
+    } else {
+        $nextValidationType = $validationType;
+    }
+
     $con_conf = get_conf('con');
     $origEmail = strtolower($email);
 
-    $loginData = getLoginMatch($email, $id, $validationType);
-    if (!is_array($loginData)) {
-        return $loginData;  // return the error message from getLoginMatch
+    if (is_array($passedMatch) && array_key_exists('multiple', $passedMatch))
+        $matches = array($passedMatch);
+    else {
+        $loginData = getLoginMatch($email, $id, $validationType);
+        if (!is_array($loginData)) {
+            return $loginData;  // return the error message from getLoginMatch
+        }
+        $matches = $loginData['matches'];
     }
-    $matches = $loginData['matches'];
     $count = count($matches);
     if ($count == 1) {
         $match = $matches[0];
@@ -174,7 +196,7 @@ function chooseAccountFromEmail($email, $id, $linkid, $passedMatch, $validationT
 
         if ($idType == 'p')
             updateIdentityUsage($id, $validationType, $origEmail);
-        web_error_log("$type @ " . time() . "$ts for $email/$id via $validationType");
+        web_error_log("$type @ " . time() . "$ts for $email/$id via $validationType", '', false);
         validationComplete($id, $idType, $email, $validationType, $multiple);
         exit();
     }
@@ -236,7 +258,7 @@ function chooseAccountFromEmail($email, $id, $linkid, $passedMatch, $validationT
         foreach ($matches as $match) {
             $match['ts'] = time();
             $match['lid'] = $linkid;
-            $match['validationType'] = $validationType;
+            $match['validationType'] = $nextValidationType;
             $match['multiple'] = strtolower($email);
             $match['issue'] = $match['banned'];
             $string = json_encode($match);
@@ -277,11 +299,13 @@ function validationComplete($id, $idType, $email, $validationType, $multiple) : 
             setSessionVar('id', $id);
             setSessionVar('idType', $idType);
             setSessionVar('idSource', $validationType);
-            setSessionVar('email', $email);
+            // new login reset the PHP session id
+            session_regenerate_id(true);
         }
         if ($multiple != null) {
             setSessionVar('multiple', $multiple);
         }
+        setSessionVar('email', $email);
         header('location:' . $portal_conf['portalsite'] . '/portal.php');
         exit();
     }
@@ -344,12 +368,17 @@ EOS;
     $resp['last_name'] = $regs[0]['last_name'];
     $resp['fullName'] = $regs[0]['fullName'];
     $resp['rights'] = '';
+    $addlWSFS = getConfValue('portal', 'addlWSFS');
+    if ($addlWSFS == '')
+        $addlWSFS = [];
+    else
+        $addlWSFS = explode(',', $addlWSFS);
 
     switch (strtolower($resp['resType'])) {
         case 'nom':
             for ($row = 0; $row < count($regs); $row++) {
                 $reg = $regs[$row];
-                if ((($reg['memCategory'] == 'wsfs' || $reg['memCategory'] == 'dealer' || $reg['memType'] == 'wsfsfree') && $reg['inTime'] == 1) ||
+                if ((($reg['memCategory'] == 'wsfs' || $reg['memCategory'] == 'dealer' || in_array($reg['memId'], $addlWSFS)) && $reg['inTime'] == 1) ||
                     ($reg['memCategory'] == 'wsfsnom')) {
                     $resp['rights'] = 'hugo_nominate';
                     break;
@@ -360,7 +389,7 @@ EOS;
             for ($row = 0; $row < count($regs); $row++) {
                 $reg = $regs[$row];
                 if (($reg['memCategory'] == 'wsfs' && str_contains(strtolower($reg['label']), ' only') == false) ||
-                    $reg['memCategory'] == 'dealer' || $reg['memType'] == 'wsfsfree') {
+                    $reg['memCategory'] == 'dealer' || in_array($reg['memId'], $addlWSFS)) {
                     $resp['rights'] = 'hugo_vote';
                     break;
                 }

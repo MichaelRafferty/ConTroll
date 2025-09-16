@@ -4,14 +4,10 @@ require_once(__DIR__ . "/../../lib/db_functions.php");
 function getEmailBody($transid, $totalDiscount) : string
 {
     $condata = get_con();
-    $ini = get_conf('reg');
     $con = get_conf('con');
 
-    if (array_key_exists('currency', $con)) {
-        $currency = $con['currency'];
-    } else {
-        $currency = 'USD';
-    }
+    $testsite = getConfValue('portal', 'test') == 1;
+    $currency = getConfValue('con', 'currency', 'USD');
     $dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
 
     if (array_key_exists('oneoff', $con)) {
@@ -39,7 +35,7 @@ EOS;
     $body = trim($owner['first_name'] . " " . $owner['last_name']) . ",\n\n";
     $body .= "Thank you for registering for " . $condata['label'] . "!\n\n";
 
-    if ($ini['test'] == 1) {
+    if ($testsite) {
         $body .= "This email was sent as part of testing.\n\n";
     }
 
@@ -92,14 +88,10 @@ EOS;
 function getNoChargeEmailBody($results, $totalDiscount) : string
 {
     $condata = get_con();
-    $ini = get_conf('reg');
     $con = get_conf('con');
 
-    if (array_key_exists('currency', $con)) {
-        $currency = $con['currency'];
-    } else {
-        $currency = 'USD';
-    }
+    $testsite = getConfValue('portal', 'test') == 1;
+    $currency = getConfValue('con', 'currency', 'USD');
     $dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
 
     if (array_key_exists('oneoff', $con)) {
@@ -137,7 +129,7 @@ EOS;
     $body = trim($owner['first_name'] . ' ' . $owner['last_name']) . ",\n\n";
     $body .= 'Thank you for registering for ' . $condata['label'] . "!\n\n";
 
-    if ($ini['test'] == 1) {
+    if ($testsite) {
         $body .= "This email was sent as part of testing.\n\n";
     }
 

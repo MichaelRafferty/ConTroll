@@ -1,6 +1,4 @@
 <?php
-global $db_ini;
-
 require_once "../lib/base.php";
 require_once "../lib/customText.php";
 
@@ -222,4 +220,3 @@ function checkNoWhitespace($rows, $table, $field) {
         exit(1);
     }
 }
-?>

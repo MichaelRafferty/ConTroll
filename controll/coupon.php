@@ -1,5 +1,4 @@
 <?php
-global $db_ini;
 
 require_once "lib/base.php";
 //initialize google session
@@ -215,4 +214,3 @@ while ($row = $limitR->fetch_assoc()) {
 <?php
 
 page_foot($page);
-?>

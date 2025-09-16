@@ -133,3 +133,17 @@ function openWindowWithFallback(uri, target = '_blank') {
 
     }, 1000); // Adjust timeout as needed
 }
+
+// add password toggle listener
+function pwEyeToggle(pwFieldId) {
+    var pwField = document.getElementById(pwFieldId);
+    var eyeField = document.getElementById('toggle_' + pwFieldId);
+
+    if (eyeField == null || pwField == null)
+        return; // both fields have to exits
+    eyeField.addEventListener('click', function (e) {
+        var type = pwField.getAttribute('type') === 'password' ? 'text' : 'password';
+        pwField.setAttribute('type', type);
+        eyeField.classList.toggle("bi-eye");
+    });
+}

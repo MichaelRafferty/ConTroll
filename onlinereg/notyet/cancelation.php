@@ -52,7 +52,8 @@ if(($ini['suspended'] != 1) or ($ini['close'] != 1)) {
     ?>
     <h1>Membership Cancelation Page</h1>
     <p>Thank you for coming to our membership cancelation page. We regret that we had to cancel <?php echo $condata['label']; ?> and thank you for your patience with us during these difficult times and your support for <?PHP echo $con['conname']; ?> and the <?PHP echo $con['org']; ?>.</p>
-    <p>This page handles the cancelation of convention memberships purchased at the prior convention and via online registration or mail in. If you're looking for information on refunds for the Art Show, Artist Alley, or Dealer Room please email <a href='mailto:<?php echo $con['refundemail']; ?>'><?php echo $con['refundemail']; ?></a>.</p> 
+    <p>This page handles the cancelation of convention memberships purchased at the prior convention and via online registration or mail-in. If you're
+        looking for information on refunds for the Art Show, Artist Alley, or Dealer Room please email <a href='mailto:<?php echo $con['refundemail']; ?>'><?php echo $con['refundemail']; ?></a>.</p>
     <?php
     if(!isset($_GET) or !isset($_GET['email']) or !isset($_GET['tid'])) {
       ?><p>Please provide the transaction id from your receipt or the email from registration</p>
@@ -132,7 +133,7 @@ if(($ini['suspended'] != 1) or ($ini['close'] != 1)) {
                     ?>For online purchases, we can refund your purchase to your original method of payment.<?php
                     break;
                 case 'atcon':
-                    ?>For at con or mail in purchases, we can mail you a check to refund the full amount of your membership(s).<?php
+                    ?>For at con or mail-in purchases, we can mail you a check to refund the full amount of your membership(s).<?php
                     break;
                 case 'weird': 
                 default:

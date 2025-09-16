@@ -1,14 +1,12 @@
 <?php
-require_once("isResolvedBaned.php");
+require_once(__DIR__ . '/../../lib/global.php');
 // portal - base.php - base functions for membership portal
-global $db_ini;
 global $appSessionPrefix;
 
-if (!$db_ini) {
-    $db_ini = parse_ini_file(__DIR__ . '/../../config/reg_conf.ini', true);
-}
+if (loadConfFile())
+    $include_path_additions = PATH_SEPARATOR . getConfValue('client', 'path', '.') . '/../Composer';
 
-if ($db_ini['reg']['https'] <> 0) {
+if (getConfValue('reg', 'https') <> 0) {
     if (!isset($_SERVER['HTTPS']) or $_SERVER['HTTPS'] != 'on') {
         header('HTTP/1.1 301 Moved Permanently');
         header('Location: https://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI']);
@@ -18,13 +16,16 @@ if ($db_ini['reg']['https'] <> 0) {
 
 require_once(__DIR__ . "/../../lib/db_functions.php");
 require_once(__DIR__ . '/../../lib/ajax_functions.php');
-require_once(__DIR__ . '/../../lib/global.php');
 require_once(__DIR__ . '/../../lib/cipher.php');
 require_once(__DIR__ . '/../../lib/jsVersions.php');
+require_once('isResolvedBaned.php');
 
 db_connect();
 $appSessionPrefix = 'Ctrl/Portal/';
-session_start();
+if (!session_start()) {
+    session_regenerate_id(true);
+    session_start();
+}
 
 function index_page_init($title) {
     global $portalJSVersion, $libJSversion, $controllJSversion, $globalJSversion, $atJSversion, $exhibitorJSversion;
@@ -38,12 +39,7 @@ function index_page_init($title) {
     $jqjs=$cdn['jqjs'];
     $jquijs=$cdn['jquijs'];
     $jquicss=$cdn['jquicss'];
-    $portal_conf = get_conf('portal');
-    if (array_key_exists('customtext', $portal_conf)) {
-        $filter = $portal_conf['customtext'];
-    } else {
-        $filter = 'production';
-    }
+    $filter = getConfValue('portal', 'customtext', 'production');
     loadCustomText('portal', basename($_SERVER['PHP_SELF'], '.php'), $filter);
 
     echo <<<EOF
@@ -65,6 +61,7 @@ function index_page_init($title) {
     <script type='text/javascript' src='$jquijs'></script>
     <script type="text/javascript" src="$tabjs"></script>
     <script type="text/javascript" src="jslib/global.js?v=$globalJSversion"></script>
+    <script type="text/javascript" src="jslib/passkey.js?v=$globalJSversion"></script>
     <script type='text/javascript' src="js/base.js?v=$portalJSVersion"></script>
     <script type='text/javascript' src="js/login.js?v=$portalJSVersion"></script>
 </head>
@@ -72,7 +69,6 @@ EOF;
 }
 
 function portalPageInit($page, $info, $css, $js, $refresh = false) {
-    global $db_ini;
     global $portalJSVersion, $libJSversion, $controllJSversion, $globalJSversion, $atJSversion, $exhibitorJSversion;
 
 
@@ -81,11 +77,7 @@ function portalPageInit($page, $info, $css, $js, $refresh = false) {
     $ini = get_conf('reg');
     $portal_conf = get_conf('portal');
     if(isWebRequest()) {
-        if (array_key_exists('customtext', $portal_conf)) {
-            $filter = $portal_conf['customtext'];
-        } else {
-            $filter = 'production';
-        }
+        $filter = getConfValue('portal', 'customtext', 'production');
         loadCustomText('portal', basename($_SERVER['PHP_SELF'], '.php'), $filter);
         $includes = getTabulatorIncludes();
         $loginId = getSessionVar('id');
@@ -96,7 +88,7 @@ function portalPageInit($page, $info, $css, $js, $refresh = false) {
         <html lang="en">
         <head>
             <meta charset="utf-8"/>
-            <title><?php echo $title . '--' . $db_ini['con']['conname']?> Reg</title>
+            <title><?php echo $title . '--' . getConfValue('con','conname', 'Missing-Conname')?> Reg</title>
             <link rel='icon' type='image/x-icon' href='/images/favicon.ico'>
             <link href='css/style.css' rel='stylesheet' type='text/css' />
             <link href='<?php echo $includes['jquicss'];?>' rel='stylesheet' type='text/css' />
@@ -155,13 +147,13 @@ function portalPageInit($page, $info, $css, $js, $refresh = false) {
                     <div class='container-fluid'>
                         <div class='row'>
                             <div class='col-sm-12'>
-                                <h2 class='title'>
+                                <h1 class='title size-h2'>
                                         <?php echo $label; ?> Membership Portal for <?php echo $title; ?>
-                                </h2>
+                                </h1>
                             </div>
                         </div>
                         <?php
-                    if ($portal_conf['test'] == 1) {
+                    if (getConfValue('portal', 'test') == 1) {
                     ?>
                             <div class="row">
                                 <div class="col-sm-12">
@@ -177,7 +169,7 @@ function portalPageInit($page, $info, $css, $js, $refresh = false) {
                 </div>
             </div>
             <?php
-        if ($portal_conf['open'] == 0) { ?>
+        if (getConfValue('portal', 'open') != 1) { ?>
             <p class='text-primary'>The membership portal is currently closed. Please check the website to determine when it will open or try again tomorrow.</p>
             <?php
             exit;
@@ -230,12 +222,7 @@ function portalPageFoot() {
 function tabBar($page, $portal_conf, $info, $refresh = false) {
     $page_list = [];
     if (!$refresh) {
-        $showHistory = true;
-        if (array_key_exists('history', $portal_conf) && $portal_conf['history'] == '0') {
-            $showHistory = false;
-        }
-
-        if ($showHistory) {
+        if (getConfValue('portal', 'history') == 1) {
             $page_list[] = ['name' => 'membershipHistory', 'display' => 'Membership History'];
         }
         // always provide account settings.  The managed sections is for managers only, the identity section is for perinfo only.
@@ -265,7 +252,7 @@ function tabBar($page, $portal_conf, $info, $refresh = false) {
             <button class="btn btn-outline-light navitem me-3 <?php echo $active; ?>" type="button" <?php echo $ariainfo; ?>
                 style='border-bottom-right-radius: 20px;' onclick='window.location="portal.php";'>Home</button>
 <?php
-    if ($portal_conf['open'] != 0) {
+    if (getConfValue('portal', 'open') == 1) {
         foreach ($page_list as $pageInfo) {
             $p = $pageInfo['name'];
             $d = $pageInfo['display'];
@@ -291,6 +278,9 @@ function tabBar($page, $portal_conf, $info, $refresh = false) {
 <?php
         }
     }
+
+    $active = '';
+    $ariainfo = '';
 ?>
             <button class="btn btn-outline-light navitem <?php echo $active; ?>" type='button' <?php echo $ariainfo; ?>
                 style='border-top-left-radius: 20px;' onclick="window.location='index.php?logout';">Logout</button>
@@ -399,13 +389,9 @@ EOS;
 
 // isDirectAllowed - check direct flag and server address to allow direct login
     function isDirectAllowed() {
-        $portal_conf = get_conf('portal');
-        if (array_key_exists('direct',$portal_conf))
-            $direct = $portal_conf['direct'];
-        else
-            $direct = 0;
-        $test = $portal_conf['test'];
-        if ($test != 1 || $direct != 1)
+        $direct = getConfValue('portal', 'direct') == 1;
+        $test = getConfValue('portal', 'test') == 1;
+        if (!$test || !$direct)
             return false; // no test, no direct login
 
         if ($_SERVER['SERVER_ADDR'] == '127.0.0.1' || $_SERVER['SERVER_ADDR'] == '::1')

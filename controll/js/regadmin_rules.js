@@ -840,6 +840,7 @@ class rulesSetup {
     addrowSteps() {
         var _this = this;
         this.#ruleStepAddStepNum--;
+        this.#ruleStepsTable.clearFilter(true);
         this.#ruleStepsTable.addRow({
             name: this.#rName.value, uses: 0, origStep: this.#ruleStepAddStepNum, step: this.#ruleStepMaxStep, origName: this.#editRuleName
             }, false).then(function (row) {

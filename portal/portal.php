@@ -18,20 +18,21 @@ $con = get_conf('con');
 $conid = $con['id'];
 $portal_conf = get_conf('portal');
 $debug = get_conf('debug');
-$ini = get_conf('reg');
 $cc = get_conf('cc');
 $condata = get_con();
 load_cc_procs();
 
-if (array_key_exists('suspended', $portal_conf) && $portal_conf['suspended'] == 1) {
+if (getConfValue('portal', 'suspended') == 1) {
     // the portal is now closed, redirect the user back as a logout and let them get the closed screen
     header('location:' . $portal_conf['portalsite'] . '?logout');
     exit();
 }
 
-$NomNomExists = array_key_exists('nomnomURL', $portal_conf);
-$BusinessExists = array_key_exists('businessmeetingURL', $portal_conf);
-$SiteExists = array_key_exists('siteselectionURL', $portal_conf);
+$NomNomURL = getConfValue('portal', 'nomnomURL');
+$BusinessMeetingURL = getConfValue('portal', 'businessmeetingURL');
+$SiteSelectionURL = getConfValue('portal', 'siteselectionURL');
+$virtualURL = getConfValue('portal', 'virtualURL');
+$worldCon = getConfValue('portal', 'worldcon', '0');
 
 if (isSessionVar('id') && isSessionVar('idType')) {
     // check for being resolved/baned
@@ -63,21 +64,25 @@ $config_vars['label'] = $con['label'];
 $config_vars['debug'] = $debug['portal'];
 $config_vars['uri'] = $portal_conf['portalsite'];
 $config_vars['loadPlans'] = true;
-$config_vars['required'] = $ini['required'];
+$config_vars['required'] = getConfValue('reg', 'required', 'addr');
 $config_vars['initCoupon'] = $initCoupon;
 $config_vars['initCouponSerial'] = $initCouponSerial;
 $config_vars['id'] = $loginId;
 $config_vars['idType'] = $loginType;
 $config_vars['conid'] = $conid;
-$config_vars['nomnomExists'] = $NomNomExists;
-$config_vars['businessExists'] = $BusinessExists;
-$config_vars['siteExists'] = $SiteExists;
-if ($NomNomExists)
-    $config_vars['nomnomURL'] = $portal_conf['nomnomURL'];
-if ($BusinessExists)
-    $config_vars['businessURL'] = $portal_conf['businessmeetingURL'];
-if ($SiteExists)
-    $config_vars['siteURL'] = $portal_conf['siteselectionURL'];
+$config_vars['worldcon'] = $worldCon;
+$config_vars['nomnomExists'] = $NomNomURL != '';
+$config_vars['businessExists'] = $BusinessMeetingURL != '';
+$config_vars['virtualExists'] = $virtualURL != '';
+$config_vars['siteExists'] = $SiteSelectionURL != '';
+if ($NomNomURL != '')
+    $config_vars['nomnomURL'] = $NomNomURL;
+if ($BusinessMeetingURL != '')
+    $config_vars['businessURL'] = $BusinessMeetingURL;
+if ($SiteSelectionURL != '')
+    $config_vars['siteURL'] = $SiteSelectionURL;
+if ($virtualURL != '')
+    $config_vars['virtualURL'] = $virtualURL;
 if (array_key_exists('onedaycoupons', $con)) {
     $onedaycoupons = $con['onedaycoupons'];
 } else {
@@ -101,13 +106,35 @@ if ($info === false) {
 $dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
 
 $hasWSFS = false;
+$hasNom =  false;
 $siteSelection = false;
+$hasMeeting = false;
+$hasVirtual = false;
+$tokenType = getSessionVar('tokenType');
+$hasPasskey = $tokenType == 'passkey';
+if ($hasPasskey == false) {
+    // check for a potential passkey
+    $passkeyQ = <<<EOS
+SELECT count(*)
+FROM passkeys
+WHERE userName = ?;
+EOS;
+    $passKeyR = dbSafeQuery($passkeyQ, 's', array($info['email_addr']));
+    if ($passKeyR !== false) {
+        $numKeys = $passKeyR->fetch_row()[0];
+        $passKeyR->free();
+
+        $hasPasskey = $numKeys > 0;
+    }
+}
+
 if (!$refresh) {
     $numPrimary = 0;
     $numPaidPrimary = 0;
+    $numChild = 0;
 // get the account holder's registrations
     $holderRegSQL = <<<EOS
-SELECT r.status, r.memId, m.*, a.shortname AS ageShort, a.label AS ageLabel, m.taxable,
+SELECT r.status, r.memId, m.*, a.shortname AS ageShort, a.label AS ageLabel, a.ageType, a.shortname AS ageshortname,
        r.price AS actPrice, IFNULL(r.paid, 0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,
        r.conid, r.create_date, r.id AS regid, r.create_trans, r.complete_trans,
        r.perid AS regPerid, r.newperid AS regNewperid, r.planId,
@@ -148,6 +175,11 @@ SELECT r.status, r.memId, m.*, a.shortname AS ageShort, a.label AS ageLabel, m.t
         ELSE NULL
     END AS phone,
     CASE 
+        WHEN rp.id IS NOT NULL THEN rp.first_name
+        WHEN rn.id IS NOT NULL THEN rn.first_name
+        ELSE NULL
+    END AS fname,
+    CASE 
         WHEN rp.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', rp.first_name, rp.middle_name, rp.last_name, rp.suffix), '  *', ' '))
         WHEN rn.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', rn.first_name, rn.middle_name, rn.last_name, rn.suffix), '  *', ' '))
         ELSE NULL
@@ -176,14 +208,47 @@ EOS;
     $holderRegR = dbSafeQuery($holderRegSQL, 'iii', array ($conid, $loginType == 'p' ? $loginId : -1, $loginType == 'n' ? $loginId : -1));
     $holderMembership = [];
     $paidOtherMembership = [];
+    // determine business meeting, site selection and wsfs
+    // wsfs is any WSFS membership except nomination only
+    // nom = any wsfs membership
+    // siteSelection = has paid token
+    // meeting = (later has WSFS anded with it)
+    //			any type ‘full’ (
+    //				except ‘access caregiver’ (hard code 622) (yuck on the hard code) OR
+    //				 ‘artist’ (mail-in artist)
+    //			)
+    //			OR
+    //			any type ‘virtual’ OR
+    //			any type ‘oneday'
+    $allowChild = getConfValue('portal', 'virtualChild', 0) == 1;
+    $addlWSFS = getConfValue('portal', 'addlWSFS');
+    if ($addlWSFS == '')
+        $addlWSFS = [];
+    else
+        $addlWSFS = explode(',', $addlWSFS);
+
     if ($holderRegR !== false && $holderRegR->num_rows > 0) {
         while ($m = $holderRegR->fetch_assoc()) {
-            // check if they have a WSFS rights membership
-            if (($m['memCategory'] == 'wsfs' || $m['memCategory'] == 'wsfsnom' || $m['memCategory'] == 'dealer') && $m['status'] == 'paid')
-                $hasWSFS = true;
+            // check if they have a WSFS rights membership (hasWSFS and hasNom)
+            if (($m['memCategory'] == 'wsfs' || $m['memCategory'] == 'wsfsnom' || $m['memCategory'] == 'dealer'
+                || in_array($m['memId'], $addlWSFS)) && $m['status'] == 'paid') {
+                $hasNom = true;
+                if ($m['memCategory'] != 'wsfsnom')
+                    $hasWSFS = true;
+                }
 
+            // site selection
             if ($m['memCategory'] == 'sitesel' && $m['status'] == 'paid')
                 $siteSelection = true;
+
+            // hasMeeting
+            if ( ($m['memType'] == 'full' && $m['memCategory'] != 'artist' && $m['shortname'] != 'Access Caregiver')
+                    || $m['memType'] == 'virtual' || strtolower($m['memType']) == 'oneday')
+                $hasMeeting = true;
+
+            // check age to prevent virtual, allowChild is true if child is allowed
+            if (($m['ageType'] == 'child' && !$allowChild) || $m['ageType'] == 'kit')
+                $numChild++;
 
             if ($m['memType'] == 'donation') {
                 $label = $dolfmt->formatCurrency((float)$m['actPrice'], $currency) . ' ' . $m['label'];
@@ -202,6 +267,7 @@ EOS;
                 'actPrice' => $m['actPrice'], 'actPaid' => $m['actPaid'], 'actCouponDiscount' => $m['actCouponDiscount'],
                 'email_addr' => $m['email_addr'], 'phone' => $m['phone'],
                 'transPerid' => $m['transPerid'], 'transNewPerid' => $m['transNewPerid'], 'taxable' => $m['taxable'],
+                'fname' => $m['fname'], 'ageshortname' => $m['ageshortname'],
             );
             $holderMembership[] = $item;
             if ($item['completePerid'] != NULL) {
@@ -251,6 +317,10 @@ EOS;
     }
     $config_vars['numPrimary'] = $numPrimary;
     $config_vars['numPaidPrimary'] = $numPaidPrimary;
+
+    if (!$hasWSFS)
+        $hasMeeting = false;
+    $hasVirtual = $numPaidPrimary > 0 && $numChild == 0 && ((!$worldCon) || $hasWSFS);
 // get people managed by this account holder and their registrations
     if ($loginType == 'p') {
         $managedSQL = <<<EOS
@@ -263,7 +333,7 @@ WITH ppl AS (
         r.conid, r.status, r.memId, r.create_date,
         r.price AS actPrice, IFNULL(r.paid, 0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,        
         m.memCategory, m.memType, m.memAge, m.shortname, m.label, m.startdate, m.enddate, m.online,
-        a.shortname AS ageShort, a.label AS ageLabel, 'p' AS personType, m.taxable,
+        a.shortname AS ageShort, a.label AS ageLabel, 'p' AS personType, m.taxable, m.ageShortName,
         nc.id AS createNewperid, np.id AS completeNewperid, pc.id AS createPerid, pp.id AS completePerid,
         CASE
             WHEN pp.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pp.first_name, pp.last_name))
@@ -293,7 +363,7 @@ WITH ppl AS (
         r.conid, r.status, r.memId, r.create_date, 
         r.price AS actPrice, IFNULL(r.paid, 0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,
         m.memCategory, m.memType, m.memAge, m.shortname, m.label, m.startdate, m.enddate, m.online,
-        a.shortname AS ageShort, a.label AS ageLabel, 'n' AS personType, m.taxable,
+        a.shortname AS ageShort, a.label AS ageLabel, 'n' AS personType, m.taxable, m.ageShortName,
         nc.id AS createNewperid, np.id AS completeNewperid, pc.id AS createPerid, pp.id AS completePerid,
         CASE
             WHEN pp.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pp.first_name, pp.last_name))
@@ -343,7 +413,7 @@ WITH ppl AS (
         r.conid, r.status, r.memId, r.create_date, m.memCategory, m.memType, m.memAge, m.shortname, m.label,
         r.price AS actPrice, IFNULL(r.paid, 0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,
         m.startdate, m.enddate, m.online,
-        a.shortname AS ageShort, a.label AS ageLabel, 'p' AS personType, m.taxable,
+        a.shortname AS ageShort, a.label AS ageLabel, 'p' AS personType, m.taxable, m.ageShortName,
         nc.id AS createNewperid, np.id AS completeNewperid, pc.id AS createPerid, pp.id AS completePerid,
         CASE
             WHEN pp.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pp.first_name, pp.last_name))
@@ -373,7 +443,7 @@ WITH ppl AS (
         r.conid, r.status, r.memId, r.create_date, m.memCategory, m.memType, m.memAge, m.shortname, m.label,
         r.price AS actPrice, IFNULL(r.paid, 0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,
         m.startdate, m.enddate, m.online,
-        a.shortname AS ageShort, a.label AS ageLabel, 'n' AS personType, m.taxable,
+        a.shortname AS ageShort, a.label AS ageLabel, 'n' AS personType, m.taxable, m.ageShortName,
         nc.id AS createNewperid, np.id AS completeNewperid, pc.id AS createPerid, pp.id AS completePerid,
         CASE
             WHEN pp.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pp.first_name, pp.last_name))
@@ -508,20 +578,20 @@ if ($numExpired > 0) {
 }
 
 $VirtualButton = '';
-if (array_key_exists('virtualURL', $portal_conf)) {
-    $config_vars['virtualURL'] = $portal_conf['virtualURL'];
+if ($virtualURL != '') {
     if (array_key_exists('virtualBtn', $portal_conf))
         $VirtualButtonTxt = $portal_conf['virtualBtn'];
     else
         $VirtualButtonTxt = $con['label'] . 'Virtual Portal';
 
-    if ($numPaidPrimary == 0)
-        $VirtualButton .= '<span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="top" ' .
-            'data-bs-title="Add and pay for an attending or virtual membership to be able to attend the virtual convention.">';
+    if (!$hasVirtual) {
+        $VirtualButton .= '<span class="d-inline-block h-100" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="top" ' .
+            'data-bs-title="Add and pay for ' . ($worldCon ? "a WSFS and " : "") . 'an attending or virtual membership to be able to attend the virtual convention.">';
+        }
 
-    $VirtualButton .= "<button class='btn btn-primary p-1' type='button' " .
-        ($numPaidPrimary > 0 ? 'onclick="portal.virtual();"' : ' disabled') . ">$VirtualButtonTxt</button>";
-    if ($numPaidPrimary == 0)
+    $VirtualButton .= "<button class='btn btn-primary p-1 mx-2 h-100' type='button' " .
+        ($hasVirtual ? 'onclick="portal.virtual();"' : ' disabled') . ">$VirtualButtonTxt</button>";
+    if (!$hasVirtual)
         $VirtualButton .= '</span>';
 
 }
@@ -573,15 +643,16 @@ if (count($paymentPlans) > 0) {
 if ($info['managedByName'] != null) {
 ?>
     <div class='row mt-2 mb-2' id="managedByDiv">
-        <div class='col-sm-auto'><h1 class='size-h4'>Your record is managed by <?php echo $info['managedByName']; ?>:</h1></div>
-        <div class='col-sm-auto'><button class="btn btn-warning btn-sm p-1" onclick="portal.disassociate();">Dissociate from <?php echo $info['managedByName']; ?></button></div>
+        <div class='col-sm-auto'><h2 class='size-h3'>Your record is managed by <?php echo $info['managedByName']; ?>:</h2></div>
+        <div class='col-sm-auto'><button class="btn btn-warning p-1 h-100" onclick="portal.disassociate();">Dissociate from <?php echo $info['managedByName'];
+        ?></button></div>
 <?php if ($VirtualButton != '') { ?>
         <div class='col-sm-auto'><?php echo $VirtualButton; ?></div>
 <?php } ?>
     </div>
 <?php
-    if ($NomNomExists || $BusinessExists || $SiteExists)
-        drawWSFSButtons($NomNomExists, $BusinessExists, $SiteExists, $hasWSFS, $numPaidPrimary > 0, $siteSelection);
+    if ($NomNomURL != '' || $BusinessMeetingURL != '' || $SiteSelectionURL != '')
+        drawWSFSButtons($NomNomURL != '', $BusinessMeetingURL != '', $SiteSelectionURL != '', $hasWSFS, $hasNom, $hasMeeting, $siteSelection, $loginId, $loginType, $info);
 }
 $totalDueFormatted = '';
 if ($totalDue > 0 || $activePaymentPlans) {
@@ -614,31 +685,40 @@ if ($totalDue > 0 || $activePaymentPlans) {
 }
 ?>
 <div class='row mt-2'>
-    <div class='col-sm-12'>
-        <h1 class="size-h3">This account's information:
+    <div class='col-sm-12 d-flex align-items-center mb-2'>
+        <h2 class="size-h3 mb-0">This account's information:</h2>
 <?php
+    if (!$hasPasskey && getConfValue('portal', 'passkeyRpLevel', 'd') != 'd' &&
+        array_key_exists('HTTPS', $_SERVER) && (isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == 'on')) {
+?>
+        <button class='btn btn-primary mx-2 p-1 h-100' type='button'
+                        onclick="window.location='<?php echo $portal_conf['portalsite']; ?>/accountSettings.php?passkey=create';">
+                    <img src='lib/passkey.png'>Create Passkey
+                </button>
+<?php
+    }
     if ($info['managedByName'] == null) {
 ?>
-                <button class='btn btn-primary ms-1 p-1' type='button'
+                <button class='btn btn-primary mx-2 p-1 h-100' type='button'
                         onclick="window.location='<?php echo $portal_conf['portalsite']; ?>/addUpgrade.php';">
                     Add Another Person and<br/>Create a New Membership for Them
                 </button>
                 <?php echo $VirtualButton;
     }
 ?>
-        </h1>
     </div>
 </div>
 <?php
-    if ($info['managedByName'] == null && ($NomNomExists || $BusinessExists || $SiteExists))
-        drawWSFSButtons($NomNomExists, $BusinessExists, $SiteExists, $hasWSFS, $numPaidPrimary > 0, $siteSelection);
+    if ($info['managedByName'] == null && ($NomNomURL != '' || $BusinessMeetingURL != '' || $SiteSelectionURL != ''))
+        drawWSFSButtons($NomNomURL != '', $BusinessMeetingURL != '', $SiteSelectionURL != '', $hasWSFS, $hasNom, $hasMeeting, $siteSelection, $loginId, $loginType, $info);
 
     outputCustomText('main/people');
 ?>
 <div class="row mt-2">
     <div class="col-sm-1" style='text-align: right;'><b>ID</b></div>
-    <div class="col-sm-3"><b>Person</b></div>
-    <div class="col-sm-3"><b>Badge Name</b></div>
+    <div class="col-sm-2"><b>Person</b></div>
+    <div class="col-sm-2"><b>Badge Name</b></div>
+    <div class="col-sm-2"><b>Email Address</b></div>
     <div class="col-sm-1"><b>Actions</b></div>
 </div>
 <?php
@@ -873,7 +953,7 @@ if (count($memberships) > 0) {
                 $color = !$color
 ?>
         </div>
-        <div class="container-fluid<?php echo $bgcolor; ?> p-0 m-0" id="t-<?php echo $trans['t-' . $membership['sortTrans']];?>">
+        <div class="container-fluid<?php echo $bgcolor; ?> p-0 m-0" name="t-<?php echo $trans['t-' . $membership['sortTrans']];?>">
         <div class='row'>
             <div class='col-sm-12 p-0 m-0 align-center'>
                 <hr style='height:4px;width:98%;margin:auto;margin-top:0px;margin-bottom:0px;color:#333333;background-color:#333333;'/>
@@ -945,7 +1025,7 @@ if (count($memberships) > 0) {
         <div class="col-sm-12">
             <p>
                 <span class="text-danger"><b>NOTE:</span> You have <?php echo $expMsg;?> no longer valid for purchase. This is bacause they
-                either are either no longer available for sale via the portal or the dates for then they could be purchased has passed.</b>
+                either are no longer available for sale via the portal or the date for which they could have been purchased has passed.</b>
             </p>
             <p>
                 You must use the "Add To/Edit Cart" for each person who has expired items in the list above and delete those items from the account.
@@ -968,13 +1048,13 @@ if (count($memberships) > 0) {
 <?php
 portalPageFoot();
 
-function drawWSFSButtons($NomNomExists, $BusinessExists, $SiteExists, $hasWSFS, $attending, $hasSiteSelection) {
+function drawWSFSButtons($NomNomExists, $BusinessExists, $SiteExists, $hasWSFS, $hasNom, $hasMeeting, $hasSiteSelection, $loginId, $loginType, $info) {
     $portal_conf = get_conf('portal');
 
 // buttons are NomNom, Site Selection, Virtual Business Meeting
     $NomNomButton = '';
     if ($NomNomExists) {
-        if (!$hasWSFS)
+        if (!$hasNom)
             $NomNomButton .= '<span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="top" ' .
                 'data-bs-title="Add and pay for a WSFS membership to be able to nominate or vote.">';
         if (array_key_exists('nomnomBtn', $portal_conf))
@@ -983,43 +1063,97 @@ function drawWSFSButtons($NomNomExists, $BusinessExists, $SiteExists, $hasWSFS, 
             $nomnomBtnText = 'Log into the Hugo System';
 
         $NomNomButton .= "<button class='btn btn-primary p-1' type='button' " .
-            ($hasWSFS ? 'onclick="portal.vote();"' : ' disabled') . ">$nomnomBtnText</button>";
-        if (!$hasWSFS)
+            ($hasNom ? 'onclick="portal.vote();"' : ' disabled') . ">$nomnomBtnText</button>";
+        if (!$hasNom)
             $NomNomButton .= '</span>';
     }
 
     $siteSelectionButton = '';
     if ($SiteExists) {
+        $sslToken = '';
         if (!$hasSiteSelection) {
             $siteSelectionButton .= '<span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="top" ' .
-                'data-bs-title="Add and pay for a Site Selection Token to be able to vote in site selection.">';
+                'data-bs-title="Add and pay for a Site Selection Token using the \'Add To/Edit Cart\' button to the right, to be able to vote in site selection.">';
         }
         if ($SiteExists) {
+            if ($hasSiteSelection && $loginType == 'p' && array_key_exists('siteselectionURL', $portal_conf)) {
+                $key = $portal_conf['siteselectionKey'];
+                $url = $portal_conf['siteselectionURL'];
+                $sslQ = <<<EOS
+SELECT CAST(AES_DECRYPT(encTokenKey, ?) AS char)
+FROM siteSelectionTokens
+WHERE perid = ?;
+EOS;
+                $sslR = dbSafeQuery($sslQ, 'si', array ($key, $loginId));
+                if ($sslR !== false && $sslR->num_rows > 0) { // don't care if more than one, just get the first, in case of an error
+                    $sslToken = $sslR->fetch_row()[0];
+                    $site = $url . '/' . $sslToken;
+                } else { // it hasn't been assigned yet, assign one
+                    if ($sslR !== false)
+                        $sslR->free();
+                    $loginId = intval($loginId); // force it to be integer to avoid sql issues
+                    $sslM = <<<EOS
+SELECT @next := MIN(id) FROM siteSelectionTokens WHERE perid IS NULL;
+UPDATE siteSelectionTokens
+	SET perid = $loginId
+    WHERE id = @next;
+EOS;
+
+                    $sslR = dbMultiQuery($sslM);
+                    if ($sslR !== false) {
+                        while (dbNextResult());
+                        $sslR->free();
+                        $sslR = dbSafeQuery($sslQ, 'si', array ($key, $loginId));
+                        if ($sslR !== false && $sslR->num_rows > 0) {
+                            $sslToken = $sslR->fetch_row()[0];
+                            $site = $url . '/' . $sslToken;
+                        } else {
+                            $sslToken = '';
+                            $site = '';
+                        }
+                    }
+                }
+                if ($sslR !== false)
+                    $sslR->free();
+            }
             if (array_key_exists('siteselectionBtn', $portal_conf))
                 $siteSelectionBtnTxt = $portal_conf['siteselectionBtn'];
             else
                 $siteSelectionBtnTxt = 'Vote in Site Selection';
 
             $siteSelectionButton .= "<button class='btn btn-primary p-1' type='button' " .
-                ($hasSiteSelection ? 'onclick="portal.siteSelect();"' : ' disabled') . ">$siteSelectionBtnTxt</button>";
+                (($hasSiteSelection && $sslToken != '') ? 'onclick="portal.siteSelect(' . "'$site'" . ');"' : ' disabled') . ">$siteSelectionBtnTxt</button>";
+            if ($sslToken != '')
+                $siteSelectionButton .= "<br/>Token: $sslToken";
             if (!$hasSiteSelection)
                 $siteSelectionButton .= '</span>';
         }
     }
 
     $businessMeetingButton = '';
+    $businessBtnSubText = '';
     if ($BusinessExists) {
-        if (!$hasWSFS)
-            $businessMeetingButton .= '<span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="top" ' .
-                'data-bs-title="Add and pay for a WSFS membership to be able to attend and vote at the on-line WSFS business meeting.">';
         if (array_key_exists('businessBtn', $portal_conf))
             $businessBtnText = $portal_conf['businessBtn'];
         else
             $businessBtnText = 'Log into the Business Meeting';
 
+        if (!$hasMeeting) {
+            $businessMeetingButton .= '<span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="top" ' .
+                'data-bs-title="You must have a WSFS membership AND one of the following supplements: Friend, Attending, Virtual or One Day.">';
+        } else {
+            // compute the LUMI password, note this is Seattle Worldcon specific, so it will need to be modified for future worldcons
+            $salt = 'SeattleIn2025';
+            $pw = substr(preg_replace('/[a-f]/i', '', md5($loginId . $salt)), 0, 6);
+            $un = $info['id'];
+            $businessBtnSubText = "<br/>Membership Number: $un<br/>Password: $pw";
+        }
+
+        $businessURL = $portal_conf['businessmeetingURL'];
+
         $businessMeetingButton .= "<button class='btn btn-primary p-1' type='button' " .
-            ($hasWSFS ? 'onclick="portal.business();"' : ' disabled') . ">$businessBtnText</button>";
-        if (!$hasWSFS)
+            ($hasMeeting ? 'onclick="window.open(' . "'$businessURL');" .'"' : ' disabled') . ">$businessBtnText</button>";
+        if (!$hasMeeting)
             $businessMeetingButton .= '</span>';
     }
     ?>
@@ -1028,7 +1162,7 @@ function drawWSFSButtons($NomNomExists, $BusinessExists, $SiteExists, $hasWSFS, 
         <div class='col-sm-auto'><?php echo $NomNomButton; ?></div>
     <?php }
         if ($businessMeetingButton != '') { ?>
-            <div class='col-sm-auto'><?php echo $businessMeetingButton; ?></div>
+            <div class='col-sm-auto'><?php echo $businessMeetingButton; if ($businessBtnSubText != '') echo "$businessBtnSubText"; ?></div>
         <?php }
         if ($siteSelectionButton != '') { ?>
             <div class='col-sm-auto'><?php echo $siteSelectionButton; ?></div>
@@ -1036,4 +1170,3 @@ function drawWSFSButtons($NomNomExists, $BusinessExists, $SiteExists, $hasWSFS, 
     </div>
 <?php
 }
-?>

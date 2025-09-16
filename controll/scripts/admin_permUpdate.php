@@ -1,5 +1,4 @@
 <?php
-global $db_ini;
 require_once "../lib/base.php";
 require_once "../lib/sets.php";
 
@@ -78,4 +77,3 @@ if($_POST['action'] == 'clear') {
 }
 
 ajaxSuccess($response);
-?>
