@@ -25,7 +25,6 @@ $badgeFlags[$badgeFlag['ageType']] = $badgeFlag['badgeFlag'];
 
 function init_file($printer)//:string {
 {
-    global $badgeTypes;
     if ($printer['name'] == 'None' && $printer['queue'] == '') {
         $response['error'] = "You have no printer defined, you cannot print a badge.";
         ajaxSuccess($response);
@@ -77,8 +76,8 @@ function write_badge($badge, $tempfile, $printer):void {
 
 function write_pdf($badge, $tempfile, $originType)//: void {
 {
-    global $badgeTypes;
-    global $badgeFlags;
+    global $badgeTypes, $badgeFlags;
+
     $temp = fopen($tempfile, 'w');
     if (!$temp) {
         $response['error'] = 'Unable to get open file';
@@ -93,12 +92,15 @@ function write_pdf($badge, $tempfile, $originType)//: void {
     $pdf = new Barcode('L', 'in', array(3.25, 1.125));
 
     // set up fonts
-    #$pdf->AddFont('Arial','','arial.ttf',true);
-    $pdf->AddFont('Arial','B','arialbd.ttf',true);
-    #$pdf->AddFont('Arial','BI','arialbi.ttf',true);
-    #$pdf->AddFont('Arial','I','ariali.ttf',true);
+    $pdf->AddFont('Roboto', '', 'Roboto-Regular.ttf', true);
+    $pdf->AddFont('Roboto', 'B', 'Roboto-Bold.ttf', true);
+    //$pdf->AddFont('Roboto', 'BI', 'Roboto-BoldItalic.ttf', true);
+    $pdf->AddFont('Roboto', 'BK', 'Roboto-Black.ttf', true);
+    $pdf->AddFont('Roboto', 'KI', 'Roboto-BlackItalic.ttf', true);
+    $pdf->AddFont('Roboto', 'SC', 'Roboto_SemiCondensed-Bold.ttf', true);
+    $pdf->AddFont('Roboto', 'C', 'Roboto_Condensed-Bold.ttf', true);
 
-    initPDF($pdf, 0.008, 'Arial', '', 11);
+    initPDF($pdf, 0.008, 'Roboto', '', 11);
 
     $pdf->setLeftMargin(0);
     $pdf->setRightMargin(0);
@@ -130,15 +132,29 @@ function write_pdf($badge, $tempfile, $originType)//: void {
 
     $x = $xmargin;
     $y = $ymargin;
-    // badge name line 1: trim to what fits in 3.05" width using Arial Bold 22pt font
+    // badge name line 1: trim to what fits in 3.05" width using Roboto Bold 22pt font
     //  intelligent split based on blanks or character count if no blanks
-    pushFont('Arial', 'B', 22);
+    pushFont('Roboto', 'B', 22);
     $maxWidth = 3.05;
     $lineWidth = $pdf->getStringWidth($line1);
     if ($lineWidth > $maxWidth && $line2 != '') {
-        // undo the split and let it split naturally
-        $line1 = str_replace('~~', ' ', $bn);
-        $line2 = '';
+        // try a narrower font first
+        popFont();
+        pushFont('Roboto', 'SC', 22);
+        $lineWidth = $pdf->getStringWidth($line1);
+        if ($lineWidth > $maxWidth) {
+            popFont();
+            pushFont('Roboto', 'C', 22);
+            $lineWidth = $pdf->getStringWidth($line1);
+        }
+        if ($lineWidth > $maxWidth) {
+            // restore original font
+            popFont();
+            pushFont('Roboto', 'B', 22);
+            // undo the split and let it split naturally
+            $line1 = str_replace('~~', ' ', $bn);
+            $line2 = '';
+        }
     }
     $maxLoop = 0;
     while ($lineWidth > $maxWidth && $maxLoop < 30) {
@@ -168,21 +184,56 @@ function write_pdf($badge, $tempfile, $originType)//: void {
     $line2 = trim($line2);
     if ($line2 != '') {
         $y = $ymargin + 22/72;
-        pushFont('Arial', 'B', 16);
+        pushFont('Roboto', 'B', 16);
         $lineWidth = $pdf->getStringWidth($line2);
         //echo "lineWidth = $lineWidth\n";
         if ($lineWidth > $maxWidth) {
             popFont();
-            //echo "font 17\n";
-            pushFont('Arial', 'B', 15);
+            // try semicondensed
+            pushFont('Roboto', 'SC', 16);
             $lineWidth = $pdf->getStringWidth($line2);
+            if ($lineWidth > $maxWidth) {
+                // try condensed
+                popFont();
+                pushFont('Roboto', 'C', 16);
+                $lineWidth = $pdf->getStringWidth($line2);
+            }
+            if ($lineWidth > $maxWidth) {
+                //echo "font 17\n";
+                popFont();
+                pushFont('Roboto', 'B', 15);
+                $lineWidth = $pdf->getStringWidth($line2);
+            }
+            if ($lineWidth > $maxWidth) {
+                // try semicondensed
+                popFont();
+                pushFont('Roboto', 'SC', 15);
+                $lineWidth = $pdf->getStringWidth($line2);
+            }
+            if ($lineWidth > $maxWidth) {
+                // try condensed
+                popFont();
+                pushFont('Roboto', 'C', 15);
+                $lineWidth = $pdf->getStringWidth($line2);
+            }
             //echo "lineWidth = $lineWidth\n";
             if ($lineWidth > $maxWidth) {
                 popFont();
-                //echo "font 16\n";
-                pushFont('Arial', 'B', 14);
+                //echo "font 14\n";
+                pushFont('Roboto', 'B', 14);
                 $lineWidth = $pdf->getStringWidth($line2);
-                //echo "lineWidth = $lineWidth\n";
+            }
+            if ($lineWidth > $maxWidth) {
+                // try semicondensed
+                popFont();
+                pushFont('Roboto', 'SC', 14);
+                $lineWidth = $pdf->getStringWidth($line2);
+            }
+            if ($lineWidth > $maxWidth) {
+                // try condensed
+                popFont();
+                pushFont('Roboto', 'C', 14);
+                $lineWidth = $pdf->getStringWidth($line2);
             }
         }
         $maxLoop = 0;
@@ -212,7 +263,7 @@ function write_pdf($badge, $tempfile, $originType)//: void {
 
         $x = $xmargin;
         $y = $ymargin + 42 / 72;
-        pushFont('Arial', 'BI', 24);
+        pushFont('Roboto', 'KI', 24);
         printXY($x - 6 / 72, $y, $day);
         popFont();
     }
@@ -231,6 +282,7 @@ function write_pdf($badge, $tempfile, $originType)//: void {
         $y = $ymargin + 52/72;
         $pdf->Rect($x, $y - 7 / 72, 90 / 72, 14 / 72, 'DF');
         $pdf->SetTextColor(255, 255, 255);
+        pushFont('Roboto', 'BK', 11);
         centerPrintXY($x, $y, 85 / 72, $flag);
         $pdf->SetTextColor(0, 0, 0);
     }
@@ -250,8 +302,8 @@ function write_pdf($badge, $tempfile, $originType)//: void {
 
 function write_ps($badge, $tempfile)//: void {
 {
-    global $badgeTypes;
-    global $badgeFlags;
+    global $badgeTypes, $badgeFlags;
+
     $temp = fopen($tempfile, "a");
     if(!$temp) {
         $response['error'] = "Unable to get open file";
