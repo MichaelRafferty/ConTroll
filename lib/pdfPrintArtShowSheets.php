@@ -97,28 +97,27 @@ EOS;
         $pdf = new Barcode('L', 'in', 'Letter');
 
         // get unicode fonts
-        $pdf->AddFont('Arimo', '', 'Arimo-Regular.ttf', true);
-        $pdf->AddFont('Arimo', 'B', 'Arimo-Bold.ttf', true);
-        #$pdf->AddFont('Arimo','BI','Arimo-BoldItalic.ttf',true);
-        #$pdf->AddFont('Arimo','I','Arimo-Italic.ttf',true);
+        $pdf->AddFont('Roboto', '', 'Roboto-Regular.ttf', true);
+        $pdf->AddFont('Roboto', 'B', 'Roboto-Bold.ttf', true);
+        #$pdf->AddFont('Roboto','BI','Roboto-BoldItalic.ttf',true);
+        #$pdf->AddFont('Roboto','I','Roboto-Italic.ttf',true);
 
-        initPDF($pdf, 0.008, 'Arimo', '', 11);
+        initPDF($pdf, 0.008, 'Roboto', '', 11);
     }
 
     // computes from those offsets
     $hsize = ($pdf->GetPageWidth() - 2 * $margin) / $numcols;
     $firstrow = $margin + 0.3;
 
-    pushFont('Arimo', '', 14);
+    pushFont('Roboto', '', 14);
     $titleFontSize = 14;
     $titlewidth = $pdf->getStringWidth($title);
     while ($titlewidth > ($hsize - (2 * $indent)) && $titleFontSize > 12) {
         $titleFontSize--;
         popFont();
-        pushFont('Arimo', '', $titleFontSize);
+        pushFont('Roboto', '', $titleFontSize);
         $titlewidth = $pdf->getStringWidth($title);
     }
-    $titleoffset = ($hsize - (2 * $indent) - $titlewidth) / 2;
     popFont();
 
     // timestamp for printing when generated
@@ -145,7 +144,7 @@ EOS;
                 $row = 0;
                 $pdf->AddPage();
                 $page++;
-                pushFont('Arimo', 'B', 11);
+                pushFont('Roboto', 'B', 11);
                 printXY($margin, $margin,"Price Tags for $conname's " . $print['name'] . "; Artist: " . $artistName);
 
                 $y = $pdf->GetPageHeight() - ($margin);
@@ -165,7 +164,7 @@ EOS;
             // now title header
             $isize = $hsize - 2 * $indent;
             $pdf->Rect($h, $v, $isize, $blockheight);
-            pushFont('Arimo', '', $titleFontSize);
+            pushFont('Roboto', '', $titleFontSize);
             centerPrintXY($h, $v + 0.16, $isize - 0.1, $title);
             popFont();
 
@@ -173,7 +172,7 @@ EOS;
             $v += $blockheight;
             $pdf->Rect($h, $v, $isize * 0.8, $blockheight);
             $pdf->Rect($h + $isize * 0.8, $v, $isize * 0.2, $blockheight);
-            pushFont('Arimo', '', 5);
+            pushFont('Roboto', '', 5);
             printXY($h + 0.025, $v + $labelOffset,'ARTIST');
             printXY($h + 0.025 + $isize * 0.8, $v + $labelOffset,'ARTIST#');
             popFont();
@@ -184,7 +183,7 @@ EOS;
             $v += $blockheight;
             $pdf->Rect($h, $v, $isize * 0.8, $blockheight);
             $pdf->Rect($h + $isize * 0.8, $v, $isize * 0.2, $blockheight);
-            pushFont('Arimo', '', 5);
+            pushFont('Roboto', '', 5);
             printXY($h + 0.025, $v + $labelOffset,'TITLE');
             printXY($h + 0.025 + $isize * 0.8, $v + $labelOffset,'PIECE#');
             popFont();
@@ -197,7 +196,7 @@ EOS;
             $pdf->Rect($h, $v, $isize * 0.5, $blockheight);
             $pdf->Rect($h + $isize * 0.5, $v, $isize * 0.25, $blockheight);
             $pdf->Rect($h + $isize * 0.75, $v, $isize * 0.25, $blockheight);
-            pushFont('Arimo', '', 5);
+            pushFont('Roboto', '', 5);
             printXY($h + 0.025, $v + $labelOffset, 'BUYER (ART SHOW USE ONLY)');
             printXY($h + 0.025 + $isize * 0.5, $v + $labelOffset,'UNIT');
             printXY($h + 0.025 + $isize * 0.625, $v + $labelOffset, 'OF');
@@ -371,28 +370,46 @@ EOS;
         $pdf = new Barcode($orient, 'in', 'Letter');
 
         // get unicode fonts
-        $pdf->AddFont('Arimo', '', 'Arimo-Regular.ttf', true);
-        $pdf->AddFont('Arimo', 'B', 'Arimo-Bold.ttf', true);
-        #$pdf->AddFont('Arimo','BI','Arimo-BoldItalic.ttf',true);
-        #$pdf->AddFont('Arimo','I','Arimo-Italic.ttf',true);
+        $pdf->AddFont('Roboto', '', 'Roboto-Regular.ttf', true);
+        $pdf->AddFont('Roboto', 'B', 'Roboto-Bold.ttf', true);
+        $pdf->AddFont('Roboto', 'BK', 'Roboto-Black.ttf', true);
+        $pdf->AddFont('Roboto', 'SC', 'Roboto_SemiCondensed-Regular.ttf', true);
+        $pdf->AddFont('Roboto', 'C', 'Roboto_Condensed-Regular.ttf', true);
+        #$pdf->AddFont('Roboto','BI','Roboto-BoldItalic.ttf',true);
+        #$pdf->AddFont('Roboto','I','Roboto-Italic.ttf',true);
 
-        initPDF($pdf, 0.008, 'Arimo', '', 11);
+        initPDF($pdf, 0.008, 'Roboto', '', 11);
     }
 
 // computes from those offsets
     $hsize = ($pdf->GetPageWidth() - 2 * $margin) / $numcols;
     $firstrow = $margin + 0.15;
 
-    pushFont('Arimo', '', 14);
+    pushFont('Roboto', '', 14);
     $titleFontSize = 14;
     $titlewidth = $pdf->getStringWidth($title);
-    while ($titlewidth > ($hsize - (3 * $indent)) && $titleFontSize > 12) {
-        $titleFontSize--;
+    $titleWeight = '';
+    while ($titlewidth > ($hsize - (3 * $indent)) && $titleFontSize >= 12) {
         popFont();
-        pushFont('Arimo', '', $titleFontSize);
+        $titleWeight = 'SC';
+        pushFont('Roboto', $titleWeight, $titleFontSize);
+        $titlewidth = $pdf->getStringWidth($title);
+        if ($titlewidth <= ($hsize - (3 * $indent)))
+            break;
+
+        popFont();
+        $titleWeight = 'C';
+        pushFont('Roboto', $titleWeight, $titleFontSize);
+        $titlewidth = $pdf->getStringWidth($title);
+        if ($titleFontSize == 12 || $titlewidth <= ($hsize - (3 * $indent)))
+            break;
+
+        $titleFontSize--;
+        $titleWeight = '';
+        popFont();
+        pushFont('Roboto', $titleWeight, $titleFontSize);
         $titlewidth = $pdf->getStringWidth($title);
     }
-    $titleoffset = ($hsize - (2 * $indent) - $titlewidth) / 2;
     popFont();
 
 // timestamp for printing when generated
@@ -418,7 +435,7 @@ EOS;
             $row = 0;
             $pdf->AddPage();
             $page++;
-            pushFont('Arimo', 'B', 11);
+            pushFont('Roboto', 'B', 11);
             printXY($margin, $margin, "Bid Sheets for $conname's " . $art['name'] . '; Artist: ' . $artistName);
 
             $y = $pdf->GetPageHeight() - ($margin);
@@ -438,7 +455,7 @@ EOS;
         // now title header
         $isize = $hsize - 2 * $indent;
         $pdf->Rect($h, $v, $isize, $blockheight);
-        pushFont('Arimo', '', $titleFontSize);
+        pushFont('Roboto', $titleWeight, $titleFontSize);
         centerPrintXY($h, $v + 0.16, $isize - 0.1, $title);
         popFont();
 
@@ -446,7 +463,7 @@ EOS;
         $v += $blockheight;
         $pdf->Rect($h, $v, $isize * 0.8, $blockheight);
         $pdf->Rect($h + $isize * 0.8, $v, $isize * 0.2, $blockheight);
-        pushFont('Arimo', '', 5);
+        pushFont('Roboto', '', 5);
         printXY($h + 0.025, $v + $labelOffset,'ARTIST');
         printXY($h + 0.025 + $isize * 0.8, $v + $labelOffset,'ARTIST#');
         popFont();
@@ -456,7 +473,7 @@ EOS;
         // draw print title block
         $v += $blockheight;
         $pdf->Rect($h, $v, $isize, $blockheight);
-        pushFont('Arimo', '', 5);
+        pushFont('Roboto', '', 5);
         printXY($h + 0.025, $v + $labelOffset, 'TITLE');
         popFont();
         fitprintXY($h + 0.1, $v + $dataOffset,$isize-0.2, $art['title']);
@@ -465,7 +482,7 @@ EOS;
         $v += $blockheight;
         $pdf->Rect($h, $v, $isize * 0.8, $blockheight);
         $pdf->Rect($h + $isize * 0.8, $v, $isize * 0.2, $blockheight);
-        pushFont('Arimo', '', 5);
+        pushFont('Roboto', '', 5);
         printXY($h + 0.025, $v + $labelOffset, 'MEDIUM');
         printXY($h + 0.025 + $isize * 0.8, $v + $labelOffset, 'PIECE#');
         popFont();
@@ -478,7 +495,7 @@ EOS;
             // NFS just output a large NFS line
             $isize = $hsize - 2 * $indent;
             $pdf->Rect($h, $v, $isize, $blockheight * 1.6);
-            pushFont('Arimo', '', 32);
+            pushFont('Roboto', 'BK', 32);
             centerPrintXY($h, $v + 0.30, $isize - 0.1, 'NOT FOR SALE');
             popFont();
             popLineWidth();
@@ -520,14 +537,14 @@ EOS;
             $pdf->Rect($h, $v, $isize * 0.6, $headerheight);
             $pdf->Rect($h + $isize * 0.6, $v, $isize * 0.2, $headerheight);
             $pdf->Rect($h + $isize * 0.8, $v, $isize * 0.2, $headerheight);
-            pushFont('Arimo', '', 8);
+            pushFont('Roboto', '', 8);
             printXY($h + 0.025, $v + $labelOffset + 0.01, "Bidder Name (Please Print)");
             printXY($h + 0.025 + $isize * 0.6, $v + $labelOffset + 0.01, 'Badge #');
             printXY($h + 0.025 + $isize * 0.8, $v + $labelOffset + 0.01, 'Bid ($)');
             popFont();
 
             $v += $headerheight;
-            pushFont('Arimo', '', 6);
+            pushFont('Roboto', '', 6);
             for ($lineno = 1; $lineno <= $numberedLines; $lineno++) {
                 $pdf->Rect($h, $v, $isize, $blockheight);
                 if ($bidSep) {
@@ -546,18 +563,19 @@ EOS;
             }
 
             // artshow use only block
-            pushFont('Arimo', 'B', 11);
+            pushFont('Roboto', 'B', 11);
             $pdf->Rect($h, $v, $isize, $blockheight);
             printXY($h, $v + $dataOffset, "ART SHOW USE ONLY");
             popFont();
 
-            pushFont('Arimo', '', 9);
+            pushFont('Roboto', '', 9);
             $pdf->Rect($h + 1.75, $v + $labelOffset + 0.05, 0.15, 0.15);
             printXY($h + 1.95, $v + $dataOffset, "AUC");
             $pdf->Rect($h + 2.45, $v + $labelOffset + 0.05, 0.15, 0.15);
             printXY($h + 2.65, $v + $dataOffset, 'SOLD');
             $pdf->Rect($h + 3.25, $v + $labelOffset + 0.05, 0.15, 0.15);
             printXY($h + 3.45, $v + $dataOffset, 'QS');
+            popFont();
         }
 
         if ($useBarCode) {
@@ -650,12 +668,12 @@ EOS;
         $pdf = new tFPDF('L', 'in', 'Letter');
 
         // get unicode fonts
-        $pdf->AddFont('Arimo', '', 'Arimo-Regular.ttf', true);
-        $pdf->AddFont('Arimo', 'B', 'Arimo-Bold.ttf', true);
-        #$pdf->AddFont('Arimo','BI','Arimo-BoldItalic.ttf',true);
-        #$pdf->AddFont('Arimo','I','Arimo-Italic.ttf',true);
+        $pdf->AddFont('Roboto', '', 'Roboto-Regular.ttf', true);
+        $pdf->AddFont('Roboto', 'B', 'Roboto-Bold.ttf', true);
+        #$pdf->AddFont('Roboto','BI','Roboto-BoldItalic.ttf',true);
+        #$pdf->AddFont('Roboto','I','Roboto-Italic.ttf',true);
 
-        initPDF($pdf, 0.008, 'Arimo', '', 11);
+        initPDF($pdf, 0.008, 'Roboto', '', 11);
     }
 
     // computes from those offsets
@@ -674,7 +692,7 @@ EOS;
     // print header on first page
     $pdf->AddPage();
     $page++;
-    pushFont('Arimo', 'B', 11);
+    pushFont('Roboto', 'B', 11);
     printXY($margin, $margin, "Control Sheets for $conname's " . $artist['name'] . '; Artist: ' . $artistName);
     if ($first != $last) {
         $fileLabel = str_replace(' ', '-', $conname . '_' . 'Multi-Artist');
@@ -688,7 +706,7 @@ EOS;
     popFont();
 
     // Title Line
-    pushFont('Arimo', 'B', 14);
+    pushFont('Roboto', 'B', 14);
     $v = $firstrow;
     $h = $margin;
     printXY($h, $v, $title);
@@ -696,13 +714,13 @@ EOS;
     $v += 0.4;
 
     // Section Line - Artist & Agent Info
-    pushFont('Arimo', 'B', 13);
+    pushFont('Roboto', 'B', 13);
     printXY($h, $v, "Artist & Agent Information");
     popFont();
     $v += 0.3;
 
     // Artist Number:
-    pushFont('Arimo', 'B', 12);
+    pushFont('Roboto', 'B', 12);
     printXY($h, $v, "Artist Number: ". $artist['exhibitorNumber']);
     popFont();
     $v += 0.15;
@@ -799,7 +817,7 @@ EOS;
 
         // Section Line - Primary Contact
         $v += 0.25;
-        pushFont('Arimo', 'B', 13);
+        pushFont('Roboto', 'B', 13);
         printXY($h, $v, $title);
         popFont();
         $v += 0.3;
@@ -894,7 +912,7 @@ EOS;
 
     // Section Line - Artwork
     $v += 0.25;
-    pushFont('Arimo', 'B', 13);
+    pushFont('Roboto', 'B', 13);
     printXY($h, $v, 'Artwork');
     popFont();
     $v += 0.3;
@@ -935,7 +953,7 @@ EOS;
         }
         $itemR->free();
 
-        pushFont('Arimo', '', 10);
+        pushFont('Roboto', '', 10);
         $numwidth = $pdf->GetStringWidth("123");
         $cPN = $margin + $pt;
         $wPN = $numwidth;
@@ -972,7 +990,7 @@ EOS;
                 $titleNeeded = true;
                 $pdf->AddPage();
                 $page++;
-                pushFont('Arimo', 'B', 11);
+                pushFont('Roboto', 'B', 11);
                 printXY($margin, $margin, "Control Sheets for $conname's " . $artist['name'] . '; Artist: ' . $artistName);
                 $y = $pdf->GetPageHeight() - ($margin);
                 printXY($margin, $y, "Generated: $createDate");
@@ -987,19 +1005,19 @@ EOS;
                 $titleNeeded = false;
                 rightPrintXY($cPN, $v, $wPN, '#');
                 printXY($cT, $v,'Title');
-                pushFont('Arimo', '', 7);
+                pushFont('Roboto', '', 7);
                 printXY($cType - $pt, $v, 'Type');
                 popFont();
                 printXY($cM, $v, 'Material');
-                pushFont('Arimo', '', 8);
+                pushFont('Roboto', '', 8);
                 mprintXY($cMin, $v, $wMin, 'Min bid or Ins Value');
                 mprintXY($cSale, $v, $wSale, 'Quick Sale or Print Price');
                 popFont();
-                pushFont('Arimo', '', 6);
+                pushFont('Roboto', '', 6);
                 mprintXY($cOrig - $pt, $v, $wOrig + $pt, 'Orig Qty');
                 mprintXY($cQty - $pt, $v, $wQty + $pt, 'Cur. Qty');
                 popFont();
-                pushFont('Arimo', '', 8);
+                pushFont('Roboto', '', 8);
                 printXY($cLoc, $v, 'Location');
                 popFont();
                 printXY($cStatus, $v, 'Status');
@@ -1039,14 +1057,14 @@ EOS;
             rightPrintXY($cPN, $v, $wPN, $artItem['item_key']);
             $y = mprintXY($cT, $v, $wT, $artItem['title']);
             if ($y > $maxY) $maxY = $y;
-            pushFont('Arimo', '', 7);
+            pushFont('Roboto', '', 7);
             printXY($cType, $v, $artItem['type']);
             popFont();
             $y = mprintXY($cM, $v, $wM, $artItem['material']);
             if ($y > $maxY) $maxY = $y;
             if ($artItem['min_price'] && $artItem['type'] != 'print') {
                 if ($artItem['min_price'] > 9999.99) {
-                    pushFont('Arimo', '', $artItem['min_price'] > 999999.99 ? 7.5 : 9);
+                    pushFont('Roboto', '', $artItem['min_price'] > 999999.99 ? 7.5 : 9);
                 }
                 rightPrintXY($cMin, $v, $wMin, $dolfmt->formatCurrency((float)$artItem['min_price'], $currency));
                 if ($artItem['min_price'] > 9999.99) {
@@ -1055,7 +1073,7 @@ EOS;
             }
             if ($artItem['sale_price'] && $artItem['type'] != 'nfs') {
                 if ($artItem['sale_price'] > 9999.99) {
-                    pushFont('Arimo', '', $artItem['sale_price'] > 999999.99 ? 7.5 : 9);
+                    pushFont('Roboto', '', $artItem['sale_price'] > 999999.99 ? 7.5 : 9);
                 }
                 rightPrintXY($cSale, $v, $wSale, $dolfmt->formatCurrency((float)$artItem['sale_price'], $currency));
                 if ($artItem['sale_price'] > 9999.99) {
@@ -1066,13 +1084,13 @@ EOS;
                 rightPrintXY($cOrig, $v, $wOrig, $artItem['original_qty']);
             if ($artItem['quantity'] > 0)
                 rightPrintXY($cQty, $v, $wQty, $artItem['quantity']);
-            pushFont('Arimo', '', 7);
+            pushFont('Roboto', '', 7);
             $y = fitprintXY($cStatus - $pt, $v, $wStatus + $pt, $artItem['status']);
             if ($y > $maxY) $maxY = $y;
             popFont();
             if ($artItem['final_price']) {
                 if ($artItem['final_price'] > 9999.99) {
-                    pushFont('Arimo', '', $artItem['final_price'] > 999999.99 ? 7.5 : 9);
+                    pushFont('Roboto', '', $artItem['final_price'] > 999999.99 ? 7.5 : 9);
                 }
                 rightPrintXY($cFinal, $v, $wFinal, $dolfmt->formatCurrency((float)$artItem['final_price'], $currency));
                 if ($artItem['final_price'] > 9999.99) {
@@ -1110,7 +1128,7 @@ EOS;
         }
 
         $v += $minRowHeight;
-        pushFont('Arimo', 'B', 12);
+        pushFont('Roboto', 'B', 12);
         centerPrintXY(0, $v, $pdf->getPageWidth(), "* * * * * End of Artwork * * * * *");
     }
 
