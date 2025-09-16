@@ -99,6 +99,8 @@ EOS;
         // get unicode fonts
         $pdf->AddFont('Roboto', '', 'Roboto-Regular.ttf', true);
         $pdf->AddFont('Roboto', 'B', 'Roboto-Bold.ttf', true);
+        $pdf->AddFont('Roboto', 'SC', 'Roboto_SemiCondensed-Regular.ttf', true);
+        $pdf->AddFont('Roboto', 'C', 'Roboto_Condensed-Regular.ttf', true);
         #$pdf->AddFont('Roboto','BI','Roboto-BoldItalic.ttf',true);
         #$pdf->AddFont('Roboto','I','Roboto-Italic.ttf',true);
 
@@ -109,16 +111,9 @@ EOS;
     $hsize = ($pdf->GetPageWidth() - 2 * $margin) / $numcols;
     $firstrow = $margin + 0.3;
 
-    pushFont('Roboto', '', 14);
-    $titleFontSize = 14;
-    $titlewidth = $pdf->getStringWidth($title);
-    while ($titlewidth > ($hsize - (2 * $indent)) && $titleFontSize > 12) {
-        $titleFontSize--;
-        popFont();
-        pushFont('Roboto', '', $titleFontSize);
-        $titlewidth = $pdf->getStringWidth($title);
-    }
-    popFont();
+    $titleArgs = computeTitleFont($pdf, $title, $hsize - (2 * $indent));
+    $titleFontSize = $titleArgs[0];
+    $titleWeight = $titleArgs[1];
 
     // timestamp for printing when generated
     $createDate = date('Y/m/d h:i:s A');
@@ -164,7 +159,7 @@ EOS;
             // now title header
             $isize = $hsize - 2 * $indent;
             $pdf->Rect($h, $v, $isize, $blockheight);
-            pushFont('Roboto', '', $titleFontSize);
+            pushFont('Roboto', $titleWeight, $titleFontSize);
             centerPrintXY($h, $v + 0.16, $isize - 0.1, $title);
             popFont();
 
@@ -385,32 +380,9 @@ EOS;
     $hsize = ($pdf->GetPageWidth() - 2 * $margin) / $numcols;
     $firstrow = $margin + 0.15;
 
-    pushFont('Roboto', '', 14);
-    $titleFontSize = 14;
-    $titlewidth = $pdf->getStringWidth($title);
-    $titleWeight = '';
-    while ($titlewidth > ($hsize - (3 * $indent)) && $titleFontSize >= 12) {
-        popFont();
-        $titleWeight = 'SC';
-        pushFont('Roboto', $titleWeight, $titleFontSize);
-        $titlewidth = $pdf->getStringWidth($title);
-        if ($titlewidth <= ($hsize - (3 * $indent)))
-            break;
-
-        popFont();
-        $titleWeight = 'C';
-        pushFont('Roboto', $titleWeight, $titleFontSize);
-        $titlewidth = $pdf->getStringWidth($title);
-        if ($titleFontSize == 12 || $titlewidth <= ($hsize - (3 * $indent)))
-            break;
-
-        $titleFontSize--;
-        $titleWeight = '';
-        popFont();
-        pushFont('Roboto', $titleWeight, $titleFontSize);
-        $titlewidth = $pdf->getStringWidth($title);
-    }
-    popFont();
+    $titleArgs = computeTitleFont($pdf, $title, $hsize - (3 * $indent));
+    $titleFontSize = $titleArgs[0];
+    $titleWeight = $titleArgs[1];
 
 // timestamp for printing when generated
     $createDate = date('Y/m/d h:i:s A');
@@ -1146,4 +1118,34 @@ EOS;
         $response['message'] = "$page pages output";
     }
     return $response;
+}
+
+function computeTitleFont($pdf, $title, $width) {
+    pushFont('Roboto', '', 14);
+    $titleFontSize = 14;
+    $titleWidth = $pdf->getStringWidth($title);
+    $titleWeight = '';
+    while ($titleWidth > $width && $titleFontSize >= 12) {
+        popFont();
+        $titleWeight = 'SC';
+        pushFont('Roboto', $titleWeight, $titleFontSize);
+        $titleWidth = $pdf->getStringWidth($title);
+        if ($titleWidth <= $width)
+            break;
+
+        popFont();
+        $titleWeight = 'C';
+        pushFont('Roboto', $titleWeight, $titleFontSize);
+        $titleWidth = $pdf->getStringWidth($title);
+        if ($titleFontSize == 12 || $titleWidth <= $width)
+            break;
+
+        $titleFontSize--;
+        $titleWeight = '';
+        popFont();
+        pushFont('Roboto', $titleWeight, $titleFontSize);
+        $titleWidth = $pdf->getStringWidth($title);
+    }
+    popFont();
+    return array($titleFontSize, $titleWeight);
 }
