@@ -22,6 +22,56 @@ $response = array();
 $response['actions'] = $actions;
 $response['log'] = array();
 
+function clearAbandonedSale($item_key, $exhibitorNumber) {
+    global $conid, $response;
+    $numrows = 0;
+    $artid = 0;
+    $checkQ = <<<EOS
+SELECT I.id, I.type 
+FROM artItems I 
+    JOIN exhibitorRegionYears eRY on eRY.id=I.exhibitorRegionYearId
+    JOIN exhibitorYears eY on eY.id=eRY.exhibitorYearId
+WHERE item_key=? and eY.conid=? and eRY.exhibitorNumber=?;
+EOS;
+    $checkR = dbSafeQuery($checkQ, 'iii', array($item_key, $conid, $exhibitorNumber));
+    if($checkR->num_rows > 0) {
+        $checkA = $checkR->fetch_assoc();
+        if($checkA['type'] != 'art') {
+            $type = $checkA['type'];
+            //array_push($response['log'], "$item_key, $exhibitorNumber ($conid) cleaning - not art: ");
+            return false; // only do this for art
+        }
+        $artid = $checkA['id'];
+        //array_push($response['log'], "$item_key, $exhibitorNumber ($conid) cleaning - artid: $artid");
+    } else {
+        //array_push($response['log'], "$item_key, $exhibitorNumber ($conid) cleaning - no item");
+        return false; // if there are no items with this id then don't
+    }
+
+    $cleanCnt = <<<EOS
+SELECT id, transid, status, perid, paid FROM artSales where artid=? and paid=0 and amount>0;
+EOS;
+$cleanR = dbSafeQuery($cleanCnt, 'i', array($artid));
+if($cleanR->num_rows == 0) {
+    //array_push($response['log'], "$item_key, $exhibitorNumber ($conid) cleaning - no sales");
+    return 0; // no rows to delete
+}
+else { $numrows = $cleanR->num_rows; }
+
+    $cleanCmd = <<<EOS
+DELETE FROM artSales where artid=? and paid=0 and amount > 0;
+EOS;
+    $countCleaned = dbSafeCmd($cleanCmd, 'i', array($artid));
+
+    if($numrows != $countCleaned) {
+        //array_push($response['log'], "$item_key, $exhibitorNumber cleaning - count mismatch $numrows v $countCleaned");
+        web_error_log("WARNING: cleanSales: mismatch between count seen and count cleaned");
+    }
+    array_push($response['log'], "$item_key, $exhibitorNumber cleaning - $countCleaned deleted");
+    return $countCleaned;
+}
+
+
 foreach ($actions as $action) {
     $action = (array)$action;
     $item = explode("-", $action['item']); 
@@ -37,6 +87,8 @@ WHERE I.item_key=? and eY.conid=? and eRY.exhibitorNumber=?;
 EOS;
             $checkInR = dbSafeCmd($checkInQ, 'iii', array($item[1], $conid, $item[0]));
             $log .= " changed $checkInR";
+            $clearCount = clearAbandonedSale($item[1], $item[0]);
+            if($clearCount>0) { $log .= " cleared $clearCount abandoned sales";}
             break;
         case 'Set Location':
             $location = $action['value'];
@@ -77,6 +129,8 @@ WHERE I.item_key=? and eY.conid=? and eRY.exhibitorNumber=?;
 EOS;
             $checkOutR = dbSafeCmd($checkOutQ, 'iii', array($item[1], $conid, $item[0]));
             $log .= " changed $checkOutR";
+            $clearCount = clearAbandonedSale($item[1], $item[0]);
+            if($clearCount>0) { $log .= " cleared $clearCount abandoned sales";}
             break;
         case 'Set Bidder':
             $log .= " to " . $action['value'];
@@ -89,6 +143,8 @@ WHERE I.item_key=? and eY.conid=? and eRY.exhibitorNumber=?;
 EOS;
             $bidR = dbSafeCmd($bidQ, 'iiii', array($action['value'], $item[1], $conid, $item[0]));
             $log .= " changed $bidR";
+            $clearCount = clearAbandonedSale($item[1], $item[0]);
+            if($clearCount>0) { $log .= " cleared $clearCount abandoned sales";}
             break;
         case 'Set Bid': // currently not enforcing bid values
             $log .= " to " . $action['value'];
@@ -100,6 +156,8 @@ SET I.status='BID', I.final_price=?
 WHERE I.item_key=? and eY.conid=? and eRY.exhibitorNumber=?;
 EOS;
             $bidR = dbSafeCmd($bidQ, 'iiii', array($action['value'], $item[1], $conid, $item[0]));
+            $clearCount = clearAbandonedSale($item[1], $item[0]);
+            if($clearCount>0) { $log .= " cleared $clearCount abandoned sales";}
             break;
         case 'Sell To Bidsheet':
             $checkInQ = <<<EOS
@@ -111,6 +169,8 @@ WHERE I.item_key=? and eY.conid=? and eRY.exhibitorNumber=?;
 EOS;
             $checkInR = dbSafeCmd($checkInQ, 'iii', array($item[1], $conid, $item[0]));
             $log .= " changed $checkInR";
+            $clearCount = clearAbandonedSale($item[1], $item[0]);
+            if($clearCount>0) { $log .= " cleared $clearCount abandoned sales";}
             break;
         case 'Sell At Auction':
             $checkInQ = <<<EOS
@@ -122,6 +182,8 @@ WHERE I.item_key=? and eY.conid=? and eRY.exhibitorNumber=?;
 EOS;
             $checkInR = dbSafeCmd($checkInQ, 'iii', array($item[1], $conid, $item[0]));
             $log .= " changed $checkInR";
+            $clearCount = clearAbandonedSale($item[1], $item[0]);
+            if($clearCount>0) { $log .= " cleared $clearCount abandoned sales";}
             break;
         case 'Send To Auction':
             $checkInQ = <<<EOS
@@ -133,6 +195,8 @@ WHERE I.item_key=? and eY.conid=? and eRY.exhibitorNumber=?;
 EOS;
             $checkInR = dbSafeCmd($checkInQ, 'iii', array($item[1], $conid, $item[0]));
             $log .= " changed $checkInR";
+            $clearCount = clearAbandonedSale($item[1], $item[0]);
+            if($clearCount>0) { $log .= " cleared $clearCount abandoned sales";}
             break;
         case 'Release':
             $checkInQ = <<<EOS
