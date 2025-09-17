@@ -8,10 +8,20 @@ INSERT INTO controllAppItems(appName, appPage, appSection, txtItem, txtItemDescr
 ('exhibitor', 'index','invoice','termsExhibitor','Custom Text for the plain text email for exhibitor invoice terms'),
 ('exhibitor', 'index','invoice','termsFan','Custom Text for the plain text email for fan invoice terms'),
 ('exhibitor', 'index','invoice','termsVendor','Custom Text for the plain text email for vendor invoice terms'),
+('exhibitor', 'index','profile','webExhibitor','Before the website field insert into the exhibitor profile'),
+('exhibitor', 'index','profile','webFan','Before the website field insert into the fan profile'),
 ('exhibitor', 'index','profile','descArtist','Before the description field insert into the artist profile'),
 ('exhibitor', 'index','profile','descExhibitor','Before the description field insert into the exhibitor profile'),
 ('exhibitor', 'index','profile','descFan','Before the description field insert into the fan profile'),
 ('exhibitor', 'index','profile','descVendor','Before the description field insert into the vendor profile');
+
+UPDATE controllAppItems
+SET txtItemDescription = 'Before the website field insert into the artist profile'
+WHERE appName = 'exhibitor' AND appPage = 'index' AND appSection = 'profile' AND txtItem = 'webArtist';
+
+UPDATE controllAppItems
+SET txtItemDescription = 'Before the website field insert into the vendor profile'
+WHERE appName = 'exhibitor' AND appPage = 'index' AND appSection = 'profile' AND txtItem = 'webVendor';
 
 
 INSERT INTO controllTxtItems(appName, appPage, appSection, txtItem, contents)
