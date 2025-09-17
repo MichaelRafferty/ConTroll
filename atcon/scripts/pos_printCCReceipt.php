@@ -24,7 +24,7 @@ if ($ajax_request_action != 'printReceipt') {
     exit();
 }
 
-if (!(check_atcon('cashier', $conid) || check_atcon('data_entry', $conid))) {
+if (!(check_atcon('cashier', $conid) || check_atcon('data_entry', $conid) z|| check_atcon('artsales', $conid))) {
     $message_error = 'No permission.';
     RenderErrorAjax($message_error);
     exit();

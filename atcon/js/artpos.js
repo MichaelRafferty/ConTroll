@@ -399,7 +399,7 @@ function gotoRelease() {
 }
 
 // draw_person: findPerson found someone.  Display their details
-function draw_person() {
+function draw_person(receipts) {
     var html = `
     <div class="container-fluid">
         <div class="row">
@@ -452,6 +452,22 @@ function draw_person() {
        <div class="col-sm-3">Phone:</div>
        <div class="col-sm-9">` + currentPerson.phone + `</div>
     </div>
+`;
+    for (var i = 0; i < receipts.length ; i++) {
+        var receipt = receipts[i];
+        html += `
+    <div class="row mt-2">
+        <div class="col-sm-3">
+            <button class="btn btn-secondary btn-sm" type="button" onclick="termPrintReceipt('` + receipt.ccPaymentId + `')">
+                Print CC Receipt
+            </button>
+        </div>
+        <div class="col-sm-9">` + receipt.transid + '/' + receipt.time + `</div>
+        </div>
+    </div>
+`;
+    }
+    html += `
 </div>
 `;
     id_div.innerHTML = html;
@@ -464,6 +480,53 @@ function badge_name_default(badge_name, first_name, last_name) {
         return '<i>' + default_name.replace(/ +/, ' ') + '</i>';
     }
     return badge_name;
+}
+
+// termPrintReceipt - reprint a receipt on the CC Terminal
+function termPrintReceipt(ccPaymentId) {
+    if (config.terminal != 1) {
+        show_message('No active terminal defined, use "Chg" to select a terminal', 'error');
+        return;
+    }
+
+    var postData = {
+        ajax_request_action: 'printReceipt',
+        pay_tid: pay_tid,
+        paymentId: ccPaymentId,
+        user_id: user_id,
+    }
+
+    clear_message();
+    $.ajax({
+        method: "POST",
+        url: "scripts/pos_printCCReceipt.php",
+        data: postData,
+        success: function (data, textstatus, jqxhr) {
+            if (typeof data == 'string') {
+                show_message(data, 'error', 'searchResultMessage');
+                return;
+            }
+
+            if (data.error !== undefined) {
+                show_message(data.error, 'error', 'searchResultMessage');
+                return;
+            }
+
+            if (data.status == 'error') {
+                show_message(data.data, 'error', 'searchResultMessage');
+                return;
+            }
+
+            if (data.warn !== undefined) {
+                show_message(data.warn, 'warn', 'searchResultMessage');
+            }
+
+            if (data.message !== undefined) {
+                show_message(data.message, 'success', 'searchResultMessage');
+            }
+        },
+        error: showAjaxError,
+    });
 }
 
 // find the person by badge id, in prep for loading any art already won by bid
@@ -514,7 +577,7 @@ function foundPerson(data) {
         searchData = data;
         currentPerson = data.person;
         // draw the person in the modal
-        draw_person();
+        draw_person(data.receipts);
         searchResultsModal.show();
         if (data.message !== undefined) {
             show_message(data.message, 'success', 'searchResultMessage');``
