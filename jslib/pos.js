@@ -3150,6 +3150,55 @@ addUnpaid(tid) {
         cart.drawCart();
         cart.hideStartOver();
 
+        if (this.#ccTerminalAvailable) {
+            // get the receipts for this set of records
+            var postData = {
+                ajax_request_action: 'findReceipts',
+                user_id: this.#user_id,
+                cart_perinfo: JSON.stringify(cart.getCartPerinfo()),
+            };
+
+            var _this = this;
+            clear_message();
+            $.ajax({
+                method: "POST",
+                url: "scripts/pos_findReceipts.php",
+                data: postData,
+                success: function (data, textstatus, jqxhr) {
+                    if (typeof data == 'string') {
+                        show_message(data, 'error');
+                        return;
+                    }
+
+                    if (data.error !== undefined) {
+                        show_message(data.error, 'error');
+                        return;
+                    }
+
+                    if (data.status == 'error') {
+                        show_message(data.data, 'error');
+                        return;
+                    }
+
+                    if (data.warn !== undefined) {
+                        show_message(data.warn, 'warn');
+                    }
+
+                    if (data.message !== undefined) {
+                        show_message(data.message, 'success');
+                    }
+                    pos.showPrintArea(data);
+                },
+                error: showAjaxError,
+            });
+        } else {
+            var data = [];
+            data.receipts = [];
+            this.showPrintArea(data);
+        }
+    }
+
+    showPrintArea(data) {
         // draw the print screen
         var print_html = `<div id='printBody' class="container-fluid form-floating">
 `;
@@ -3167,12 +3216,82 @@ addUnpaid(tid) {
             <button class="btn btn-primary btn-sm" type="button" id="pay-print-all" name="print_btn" onclick="pos.printBadge(-1, -1);">Print All</button>
         </div>
     </div>
+`;
+
+        // now add any receipts
+        var receipts = data.receipts;
+        if (receipts.length > 0) {
+            // we have receipts build the buttons
+            for (var i = 0; i < receipts.length; i++) {
+                var receipt = receipts[i];
+                print_html += `
+        <div class="row mt-2">
+            <div class="col-sm-2 ms-0 me-2 p-0">
+                <button class="btn btn-secondary btn-sm" type="button" onclick="pos.termPrintReceipt('` + receipt.ccPaymentId + `')">
+                    Print CC Receipt
+                </button>
+            </div>
+            <div class="col-sm-9 ms-2 p-0">` + receipt.fullName + '/' + receipt.time + `</div>
+        </div>
+`;
+            }
+        }
+
+        print_html += `
     <div class="row mt-4">
         <div class="col-sm-12 m-0 mt-4 p-0" id="pt-status"></div>
     </div>
-</div>`;
-
+</div>
+`;
         this.#printDiv.innerHTML = print_html;
+    }
+
+// termPrintReceipt - reprint a receipt on the CC Terminal
+    termPrintReceipt(ccPaymentId) {
+        if (!this.#ccTerminalAvailable) {
+            show_message('No active terminal defined, use "Chg" to select a terminal', 'error');
+            return;
+        }
+
+        var postData = {
+            ajax_request_action: 'printReceipt',
+            pay_tid: this.#pay_tid,
+            paymentId: ccPaymentId,
+            user_id: this.#user_id,
+        }
+
+        var _this = this;
+        clear_message();
+        $.ajax({
+            method: "POST",
+            url: "scripts/pos_printCCReceipt.php",
+            data: postData,
+            success: function (data, textstatus, jqxhr) {
+                if (typeof data == 'string') {
+                    show_message(data, 'error');
+                    return;
+                }
+
+                if (data.error !== undefined) {
+                    show_message(data.error, 'error');
+                    return;
+                }
+
+                if (data.status == 'error') {
+                    show_message(data.data, 'error');
+                    return;
+                }
+
+                if (data.warn !== undefined) {
+                    show_message(data.warn, 'warn');
+                }
+
+                if (data.message !== undefined) {
+                    show_message(data.message, 'success');
+                }
+            },
+            error: showAjaxError,
+        });
     }
 
 // addToBadgeList - add to badge Print List array
