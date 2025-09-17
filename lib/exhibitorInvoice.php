@@ -377,7 +377,7 @@ function exhibitor_showInvoice($regionYearId, $regionName, $regionSpaces, $exhib
                 $date = date_create($date);
                 $date = date_format($date, 'F j, Y') . ' at ' . date_format($date, 'g:i A');
                 echo $spaceItem['approved_description'] . ' in ' . $spaceItem['regionName'] . ' for ' . $dolfmt->formatCurrency($spaceItem['approved_price'], $currency) .
-                    " at $date<br/>\n";
+                    " on $date<br/>\n";
                 $totalPrice += $spaceItem['approved_price'];
             }
         }
@@ -414,7 +414,7 @@ function vendor_receipt($regionYearId, $regionName, $regionSpaces, $exhibitorSpa
                 $date = date_create($date);
                 $date = date_format($date, 'F j, Y') . ' at ' . date_format($date, 'g:i A');
                 echo $spaceItem['purchased_description'] . ' in ' . $spaceItem['regionName'] . ' for ' . $dolfmt->formatCurrency($spaceItem['purchased_price'], $currency) .
-                    " at $date<br/>\n";
+                    " on $date<br/>\n";
                 $totalPrice += $spaceItem['purchased_price'];
             }
         }

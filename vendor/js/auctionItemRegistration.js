@@ -108,18 +108,18 @@ class AuctionItemRegistration {
         this.#artUndoBtn = document.getElementById('art-undo');
         this.#artRedoBtn = document.getElementById('art-redo');
         this.#artAddBtn = document.getElementById('art-addrow');
-        this.drawArtItemTable(data['items']);
 
         this.#printSaveBtn = document.getElementById('print-save');
         this.#printUndoBtn = document.getElementById('print-undo')
         this.#printRedoBtn = document.getElementById('print-redo');
         this.#printAddBtn = document.getElementById('print-addrow');
-        this.drawPrintItemTable(data['items']);
 
         this.#nfsSaveBtn = document.getElementById('nfs-save');
         this.#nfsUndoBtn = document.getElementById('nfs-undo');
         this.#nfsRedoBtn = document.getElementById('nfs-redo');
         this.#nfsAddBtn = document.getElementById('nfs-addrow');
+        this.drawArtItemTable(data['items']);
+        this.drawPrintItemTable(data['items']);
         this.drawNfsItemTable(data['items']);
 
         this.validateLoadLimit(false);
@@ -216,14 +216,22 @@ class AuctionItemRegistration {
                 this.#numItems += data.length;
             else if (this.#artItemTable)
                 this.#numItems += this.#artItemTable.getData().length;
+            else if (data.hasOwnProperty('items') && data.items.hasOwnProperty('art'))
+                this.#numItems += data.items.art.length;
+
             if (section == 'print')
                 this.#numItems += data.length;
             else if (this.#printItemTable)
                 this.#numItems += this.#printItemTable.getData().length;
+            else if (data.hasOwnProperty('items') && data.items.hasOwnProperty('print'))
+                this.#numItems += data.items.print.length;
+
             if (section == 'nfs')
                 this.#numItems += data.length;
             else if (this.#nfsItemTable)
                 this.#numItems += this.#nfsItemTable.getData().length;
+            else if (data.hasOwnProperty('items') && data.items.hasOwnProperty('nfs'))
+                this.#numItems += data.items.nfs.length;
 
         }
         if (this.#numItems >= this.#maxItems) {
@@ -242,6 +250,18 @@ class AuctionItemRegistration {
         this.#artAddBtn.disabled = false;
         this.#printAddBtn.disabled = false;
         this.#nfsAddBtn.disabled = false;
+    }
+
+    // deal with tab at end to add a row
+    tabNewRow()  {
+        // recompute and warn if over the limit
+        this.validateLoadLimit(true);
+        this.#addItemIndex++;
+        if (this.#numItems >= this.#maxItems) { // note: >= because the new row hasn't been added yet.
+           return {id: -9999, item_key: 'Over' + this.#addItemIndex.toString(), title: 'Over limit, this item will be deleted on save'};
+        }
+
+        return {item_key: 'New' + this.#addItemIndex.toString()};
     }
 
     addrowArt() {
@@ -563,10 +583,10 @@ class AuctionItemRegistration {
         this.drawNfsItemTable(data['items']);
         this.validateLoadLimit(true,  'nfs', data['items']['nfs']);
     }
-    
+
     drawArtItemTable(data) {
         var _this = this;
-        this.#artItemTable = new Tabulator('#artItemTable', {
+        var tableSpecs = {
             maxHeight: "400px",
             history: true,
             data: data.art,
@@ -578,7 +598,7 @@ class AuctionItemRegistration {
             paginationSizeSelector: [5, 10, 25, 50, true], //enable page size select element with these options
             columns: [
                 {title: 'id', field: 'id', visible: false},
-                {title: '#', field: 'item_key', width: 50, hozAlign: "right"},
+                {title: '#', field: 'item_key', width: 60, hozAlign: "right"},
                 {title: 'Title', field: 'title', width: 600, editor: 'input', editable:artItemEditCheck, editorParams: { elementAttributes: { maxlength:
                  "64"} } },
                 {title: "Material", field: "material", width: 300, editor: 'input', editable:artItemEditCheck, editorParams: { elementAttributes: { maxlength: "32"} } },
@@ -592,7 +612,14 @@ class AuctionItemRegistration {
                 {title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false, cellClick: function (e, cell) { deleterow(e, cell.getRow());}},
                 {title: "To Del", field: "to_delete", visible: this.#debugVisible},
             ]
-        });
+        };
+        this.validateLoadLimit(true, 'art', data.art);
+        if (this.#numItems < this.#maxItems) {
+            tableSpecs['tabEndNewRow'] = function (row) {
+                return auctionItemRegistration.tabNewRow();
+            };
+        }
+        this.#artItemTable = new Tabulator('#artItemTable', tableSpecs);
         this.#artItemsDirty = false;
         this.#artItemTable.on("dataChanged", function (data) {
             _this.dataChangedArt(data);
@@ -604,7 +631,7 @@ class AuctionItemRegistration {
 
     drawPrintItemTable(data) {
         var _this = this;
-        this.#printItemTable = new Tabulator('#printItemTable', {
+        var tableSpecs = {
             maxHeight: "400px",
             history: true,
             data: data.print,
@@ -615,7 +642,7 @@ class AuctionItemRegistration {
             paginationSizeSelector: [5, 10, 25, 50, true], //enable page size select element with these options
             columns: [
                 {title: 'id', field: 'id', visible: false},
-                {title: '#', field: 'item_key', width: 50, hozAlign: "right"},
+                {title: '#', field: 'item_key', width: 60, hozAlign: "right"},
                 {title: 'Title', field: 'title', width: 600, editor: 'input', editable:artItemEditCheck, editorParams: { elementAttributes: { maxlength: "64"} } },
                 {title: "Material", field: "material", width: 300, editor: 'input', editable:artItemEditCheck, editorParams: { elementAttributes: { maxlength: "32"} } },
                 {title: "Quantity", field: "original_qty", headerWordWrap: true, width: 100, hozAlign: "right", editor: 'number', editable:artItemEditCheck, editorParams: {min: 1} },
@@ -626,7 +653,14 @@ class AuctionItemRegistration {
                 {title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false, cellClick: function (e, cell) { deleterow(e, cell.getRow());}},
                 {title: "To Del", field: "to_delete", visible: this.#debugVisible},
             ]
-        });
+        };
+        this.validateLoadLimit(true, 'print', data.art);
+        if (this.#numItems < this.#maxItems) {
+            tableSpecs['tabEndNewRow'] = function (row) {
+                return auctionItemRegistration.tabNewRow();
+            };
+        }
+        this.#printItemTable = new Tabulator('#printItemTable', tableSpecs);
         this.#printItemsDirty = false;
         this.#printItemTable.on("dataChanged", function (data) {
             _this.dataChangedPrint(data);
@@ -639,7 +673,7 @@ class AuctionItemRegistration {
 
     drawNfsItemTable(data) {
         var _this = this;
-        this.#nfsItemTable = new Tabulator('#nfsItemTable', {
+        var tableSpecs = {
             maxHeight: "400px",
             history: true,
             data: data.nfs,
@@ -650,7 +684,7 @@ class AuctionItemRegistration {
             paginationSizeSelector: [5, 10, 25, 50, true], //enable page size select element with these options
             columns: [
                 {title: 'id', field: 'id', visible: false},
-                {title: '#', field: 'item_key', width: 50, hozAlign: "right"},
+                {title: '#', field: 'item_key', width: 60, hozAlign: "right"},
                 {title: 'Title', field: 'title', width: 600, editor: 'input', editable:artItemEditCheck, editorParams: { elementAttributes: { maxlength: "64"} } },
                 {title: "Material", field: "material", width: 300, editor: 'input', editable:artItemEditCheck, editorParams: { elementAttributes: { maxlength: "32"} } },
                 {title: "Insurance Price", field: "sale_price", headerWordWrap: true, width: 100, hozAlign: "right",
@@ -660,7 +694,14 @@ class AuctionItemRegistration {
                 {title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false, cellClick: function (e, cell) { deleterow(e, cell.getRow());}},
                 {title: "To Del", field: "to_delete", visible: this.#debugVisible},
             ]
-        });
+        };
+        this.validateLoadLimit(true, 'nfs', data.nfs);
+        if (this.#numItems < this.#maxItems) {
+            tableSpecs['tabEndNewRow'] = function (row) {
+                return auctionItemRegistration.tabNewRow();
+            };
+        }
+        this.#nfsItemTable = new Tabulator('#nfsItemTable', tableSpecs);
         this.#nfsItemsDirty = false;
         this.#nfsItemTable.on("dataChanged", function (data) {
             _this.dataChangedNfs(data);
@@ -686,13 +727,17 @@ function cellChanged(cell) {
 
 function deleteicon(cell, formattParams, onRendered) {
     var value = cell.getValue();
-    if (value == 0)
+    if (value == 0 || value == null)
         return "&#x1F5D1;";
     return value;
 }
 
 function deleterow(e, row) {
     var count = row.getCell("uses").getValue();
+    if (count == null) {
+        row.delete();
+        return;
+    }
     if (count == 0) {
         row.getCell("to_delete").setValue(1);
         row.getCell("uses").setValue('<span style="color:red;"><b>Del</b></span>');

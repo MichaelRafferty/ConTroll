@@ -76,6 +76,11 @@ $config_vars['firstStar'] = $firstStar;
 $config_vars['regserver'] = getConfValue('reg','server');
 
 exhibitor_page_init($condata['label'] . " $portalName Registration");
+$config_vars['termsArtistMailin'] = returnCustomText('invoice/termsArtistMailin');
+$config_vars['termsArtistOnsite'] = returnCustomText('invoice/termsArtistOnsite');
+$config_vars['termsExhibitor'] = returnCustomText('invoice/termsExhibitor');
+$config_vars['termsFan'] = returnCustomText('invoice/termsFan');
+$config_vars['termsVendor'] = returnCustomText('invoice/termsVendor');
 
 // load country select
 $countryOptions = '';

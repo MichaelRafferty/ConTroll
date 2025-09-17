@@ -190,7 +190,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                             <?php if ($portalType == 'vendor' && array_key_exists('taxidlabel', $vendor_conf) && $vendor_conf['taxidlabel'] != '') { ?>
                             <div class='row mt-1'>
                                 <div class='col-sm-2'>
-                                    <label for='exhibitorTaxid'><?php echo $vendor_conf['taxidlabel']; ?>:</label>
+                                    <label for='exhibitorTaxid'><span class='text-danger'>&bigstar;</span><?php echo $vendor_conf['taxidlabel']; ?>:</label>
                                 </div>
                                 <div class="col-sm-10 p-0">
                                     <input class='form-control-sm' type='text' id="salesTaxId" name='salesTaxId'
@@ -220,6 +220,11 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                                 </div>
                             </div>
                             <div class='row mt-1'>
+                                <div class='col-sm-12'>
+                                    <?php outputCustomText('profile/web' . $portalName); ?>
+                                </div>
+                            </div>
+                            <div class='row mt-1'>
                                 <div class='col-sm-2'>
                                     <label for='website'>Website: </label>
                                 </div>
@@ -230,7 +235,11 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                                     />
                                 </div>
                             </div>
-                             <?php outputCustomText('profile/web' . $portalName); ?>
+                            <div class='row mt-1'>
+                                <div class='col-sm-12'>
+                                    <?php outputCustomText('profile/desc' . $portalName); ?>
+                                </div>
+                            </div>
                             <div class='row mt-1'>
                                 <div class='col-sm-2'>
                                     <label for='description'><span class='text-danger'>&bigstar;</span>Description: </label>
@@ -668,7 +677,7 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                 <?php if ($portalType == 'vendor' && array_key_exists('taxidlabel', $vendor_conf) && $vendor_conf['taxidlabel'] != '') { ?>
                                     <div class='row mt-1'>
                                         <div class='col-sm-2'>
-                                            <label for='exhibitorTaxid'><?php echo $vendor_conf['taxidlabel']; ?>:</label>
+                                            <label for='exhibitorTaxid'><span class='text-danger'>&bigstar;</span><?php echo $vendor_conf['taxidlabel']; ?>:</label>
                                         </div>
                                         <div class="col-sm-10 p-0">
                                             <input class='form-control-sm' type='text' id="salesTaxId" name='salesTaxId'
@@ -698,6 +707,11 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                     </div>
                                 </div>
                                 <div class='row mt-1'>
+                                    <div class='col-sm-12'>
+                                        <?php outputCustomText('profile/web' . $portalName); ?>
+                                    </div>
+                                </div>
+                                <div class='row mt-1'>
                                     <div class='col-sm-2'>
                                         <label for='website'>Website: </label>
                                     </div>
@@ -706,6 +720,11 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                                placeholder='Please enter your web, Etsy or social media site, or other appropriate URL.'
                                                tabindex="<?php echo $tabIndex; $tabIndex += 2;?>"
                                         />
+                                    </div>
+                                </div>
+                                <div class='row mt-1'>
+                                    <div class='col-sm-12'>
+                                        <?php outputCustomText('profile/desc' . $portalName); ?>
                                     </div>
                                 </div>
                                 <div class='row mt-1'>

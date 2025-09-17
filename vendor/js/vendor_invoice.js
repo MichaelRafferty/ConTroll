@@ -127,26 +127,43 @@ function openInvoice(id) {
         html += "<input type='hidden' name='agreeNone' value='on'></input>"
     }
     if (spaces > 0) {
+        terms = '';
+        defterms = '';
         switch (portalType) {
             case 'artist':
                 if (mailin == 'N') {
-                    html += "<p>All non mail-in artists must have a membership. Included and additional discounted memberships can only be purchased while paying for your space.";
+                    terms = config['termsArtistOnsite'];
+                    if (terms == '')
+                        defterms = "<p>All non mail-in artists must have a membership. " +
+                            "Included and additional discounted memberships can only be purchased while paying for your space.";
                 } else {
-                    html += "<p>Mail-in artists do not need a membership. Included and additional discounted memberships, however, can only be purchased while paying for your space.";
+                    terms = config['termsArtistMailin'];
+                    if (terms == '')
+                        defterms = "<p>Mail-in artists do not need a membership. " +
+                            "Included and additional discounted memberships, however, can only be purchased while paying for your space.";
                 }
                 break;
             case 'vendor':
-                html += "<p>All vendors must have a membership. Included and additional discounted memberships can only be purchased while paying for your space.";
+                terms = config['termsVendor'];
+                if (terms == '')
+                    defterms = "<p>All vendors must have a membership. " +
+                        "Included and additional discounted memberships can only be purchased while paying for your space.";
                 break;
             default:
-                html += "<p>All exhibitors must have a membership. Included and additional discounted memberships can only be purchased while paying for your space.";
+                defterms = "<p>All exhibitors must have a membership. " +
+                    "Included and additional discounted memberships can only be purchased while paying for your space.";
         }
-        html += " If you do not purchase them now while paying your space invoice, you will have to purchase them at the current membership rates.</p>" +
-            "<p>If you are unsure who will be using the registrations please use the first name of ‘Provided’ and a last name of ‘At Con’. " +
-            "The on-site registration desk will update the membership to the name on their ID.</p>" +
-            "<p>Program participants do not need to buy memberships; however, we will confirm that they meet the requirements to waive the membership cost. " +
-            "If they do not, they will need to purchase a membership on-site at the on-site rates.</p>" +
-            "<p><input type='checkbox' style='transform: scale(2);' name='agreeNone' id='agreeNone' tabindex=" + tabindex + "> &nbsp;&nbsp;" +
+        if (terms == '') {
+            html += defterms + " If you do not purchase them now while paying your space invoice, " +
+                "you will have to purchase them at the current membership rates.</p>" +
+                "<p>If you are unsure who will be using the registrations please use the first name of ‘Provided’ and a last name of ‘At Con’. " +
+                "The on-site registration desk will update the membership to the name on their ID.</p>" +
+                "<p>Program participants do not need to buy memberships; however, we will confirm that they meet the requirements to waive the membership cost. " +
+                "If they do not, they will need to purchase a membership on-site at the on-site rates.</p>";
+        } else {
+            html += terms;
+        }
+        html += "<p><input type='checkbox' style='transform: scale(2);' name='agreeNone' id='agreeNone' tabindex=" + tabindex + "> &nbsp;&nbsp;" +
             "If you do not wish to purchase any memberships at this time, check this box to acknowledge the requirement for memberships above.</p>";
         tabindex += 2;
 

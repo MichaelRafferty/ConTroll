@@ -6,7 +6,7 @@
     totals=bottom
 [F001]
     name=artistId
-	sql="IFNULL(eRY.exhibitorNumber, e.id)"
+	sql="eRY.exhibitorNumber"
 	title="Exhibitor Number"
 	align=right
 	width=100
@@ -84,6 +84,6 @@
     item=region
     datatype=s
 [where]
-	001="eY.conid = ? AND LOWER(xR.shortname) LIKE LOWER(?)"
+	001="eRY.exhibitorNumber IS NOT NULL AND eY.conid = ? AND LOWER(xR.shortname) LIKE LOWER(?)"
 [sort]
 	001="1"
