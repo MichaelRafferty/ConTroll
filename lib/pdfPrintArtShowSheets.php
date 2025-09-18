@@ -1113,12 +1113,7 @@ EOS;
 
         // leave room for 3 rows at the end
         $v += $minRowHeight;
-        if ($salesTotal > 0) {
-            $minRows = 2;
-        } else {
-            $minRows = 0;
-        }
-        if (($v + $minRows*$minRowHeight) > $maxV) {
+        if ($salesTotal > 0 && ($v + 2*$minRowHeight) > $maxV) {
             $titleNeeded = true;
             $pdf->AddPage();
             $page++;
