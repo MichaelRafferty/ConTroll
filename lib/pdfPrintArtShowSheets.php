@@ -1177,11 +1177,13 @@ EOS;
             $v += 2 * $minRowHeight;
         }
 
-        pushFont('Roboto', 'B', 11);
-        $y = mprintXY($cT, $v, $wT, 'Calculated Total Sales');
-        rightPrintXY($cFinal, $v, $wFinal, $dolfmt->formatCurrency((float)$salesTotal, $currency));
-        $v += $minRowHeight;
-        popFont();
+        if ($salesTotal > 0) {
+            pushFont('Roboto', 'B', 11);
+            $y = mprintXY($cT, $v, $wT, 'Calculated Total Sales');
+            rightPrintXY($cFinal, $v, $wFinal, $dolfmt->formatCurrency((float)$salesTotal, $currency));
+            $v += $minRowHeight;
+            popFont();
+        }
 
         pushFont('Roboto', 'B', 12);
         centerPrintXY(0, $v, $pdf->getPageWidth(), "* * * * * End of Artwork * * * * *");
