@@ -642,6 +642,7 @@ EOS;
         // get unicode fonts
         $pdf->AddFont('Roboto', '', 'Roboto-Regular.ttf', true);
         $pdf->AddFont('Roboto', 'B', 'Roboto-Bold.ttf', true);
+        $pdf->AddFont('Roboto', 'C', 'Roboto_Condensed-Regular.ttf', true);
         #$pdf->AddFont('Roboto','BI','Roboto-BoldItalic.ttf',true);
         #$pdf->AddFont('Roboto','I','Roboto-Italic.ttf',true);
 
@@ -957,6 +958,7 @@ EOS;
         $boxOffset = (11 / 144);
 
         $titleNeeded = true;
+        $salesTotal = 0;
         foreach ($artItems as $artItem) {
             if ($v > $maxV) {
                 $titleNeeded = true;
@@ -985,7 +987,7 @@ EOS;
                 mprintXY($cMin, $v, $wMin, 'Min bid or Ins Value');
                 mprintXY($cSale, $v, $wSale, 'Quick Sale or Print Price');
                 popFont();
-                pushFont('Roboto', '', 6);
+                pushFont('Roboto', 'C', 7);
                 mprintXY($cOrig - $pt, $v, $wOrig + $pt, 'Orig Qty');
                 mprintXY($cQty - $pt, $v, $wQty + $pt, 'Cur. Qty');
                 popFont();
@@ -993,7 +995,9 @@ EOS;
                 printXY($cLoc, $v, 'Location');
                 popFont();
                 printXY($cStatus, $v, 'Status');
-                mprintXY($cFinal, $v, $wFinal, 'Winning Bid');
+                pushFont('Roboto', 'C', 9);
+                mprintXY($cFinal, $v, $wFinal, 'Winning Bid / Print Sales');
+                popFont();
                 printXY($cWin, $v, 'Bidder');
                 if ($printContactInfo === true) {
                     printXY($cWEmail, $v, 'Bidder Email');
@@ -1060,14 +1064,22 @@ EOS;
             $y = fitprintXY($cStatus - $pt, $v, $wStatus + $pt, $artItem['status']);
             if ($y > $maxY) $maxY = $y;
             popFont();
-            if ($artItem['final_price']) {
-                if ($artItem['final_price'] > 9999.99) {
-                    pushFont('Roboto', '', $artItem['final_price'] > 999999.99 ? 7.5 : 9);
+            if ($artItem['type'] == 'print') {
+                $final_price = ($artItem['original_qty'] - $artItem['quantity']) * $artItem['sale_price'];
+                if ($final_price == 0)
+                    $final_price = null;
+            } else {
+                $final_price = $artItem['final_price'];
+            }
+            if ($final_price) {
+                if ($final_price > 9999.99) {
+                    pushFont('Roboto', '', $final_price > 999999.99 ? 7.5 : 9);
                 }
-                rightPrintXY($cFinal, $v, $wFinal, $dolfmt->formatCurrency((float)$artItem['final_price'], $currency));
-                if ($artItem['final_price'] > 9999.99) {
+                rightPrintXY($cFinal, $v, $wFinal, $dolfmt->formatCurrency((float)$final_price, $currency));
+                if ($final_price > 9999.99) {
                     popFont();
                 }
+                $salesTotal += $final_price;
             }
             $y = mprintXY($cWin, $v, $wWin, $winnerName);
             if ($y > $maxY) $maxY = $y;
@@ -1099,9 +1111,81 @@ EOS;
             $v = $maxY + 0.1;
         }
 
+        // leave room for 3 rows at the end
         $v += $minRowHeight;
+        if (($v + 3*$minRowHeight) > $maxV) {
+            $titleNeeded = true;
+            $pdf->AddPage();
+            $page++;
+            pushFont('Roboto', 'B', 11);
+            printXY($margin, $margin, "Control Sheets for $conname's " . $artist['name'] . '; Artist: ' . $artistName);
+            $y = $pdf->GetPageHeight() - ($margin);
+            printXY($margin, $y, "Generated: $createDate");
+            $pageStr = "Page $page";
+            rightPrintXY(0,  $y, $pdf->GetPageWidth() - $margin,  $pageStr);
+            popFont();
+            $v = $firstrow;;
+        }
+
+        if ($titleNeeded) {
+            // print title
+            $titleNeeded = false;
+            rightPrintXY($cPN, $v, $wPN, '#');
+            printXY($cT, $v,'Title');
+            pushFont('Roboto', '', 7);
+            printXY($cType - $pt, $v, 'Type');
+            popFont();
+            printXY($cM, $v, 'Material');
+            pushFont('Roboto', '', 8);
+            mprintXY($cMin, $v, $wMin, 'Min bid or Ins Value');
+            mprintXY($cSale, $v, $wSale, 'Quick Sale or Print Price');
+            popFont();
+            pushFont('Roboto', 'C', 7);
+            mprintXY($cOrig - $pt, $v, $wOrig + $pt, 'Orig Qty');
+            mprintXY($cQty - $pt, $v, $wQty + $pt, 'Cur. Qty');
+            popFont();
+            pushFont('Roboto', '', 8);
+            printXY($cLoc, $v, 'Location');
+            popFont();
+            printXY($cStatus, $v, 'Status');
+            pushFont('Roboto', 'C', 9);
+            mprintXY($cFinal, $v, $wFinal, 'Winning Bid / Print Sales');
+            popFont();
+            printXY($cWin, $v, 'Bidder');
+            if ($printContactInfo === true) {
+                printXY($cWEmail, $v, 'Bidder Email');
+            } else {
+                printXY($cWEmail, $v, 'Bidder Id');
+            }
+
+            $bv = $v - ($boxOffset + $pt);
+            $boxHeight = 2 * $minRowHeight;
+            $pdf->Rect($margin, $bv, $wPN + $pt * 3, $boxHeight);
+            $pdf->Rect($cT - $pt, $bv, $wT + $pt * 3, $boxHeight);
+            $pdf->Rect($cType - $pt, $bv, $wType + $pt * 3, $boxHeight);
+            $pdf->Rect($cM - $pt, $bv, $wM + $pt * 3, $boxHeight);
+            $pdf->Rect($cMin - $pt, $bv, $wMin + $pt * 3, $boxHeight);
+            $pdf->Rect($cSale - $pt, $bv, $wSale + $pt * 3, $boxHeight);
+            $pdf->Rect($cOrig - $pt, $bv, $wOrig + $pt * 3, $boxHeight);
+            $pdf->Rect($cQty - $pt, $bv, $wQty + $pt * 3, $boxHeight);
+            $pdf->Rect($cLoc - $pt, $bv, $wLoc + $pt * 3, $boxHeight);
+            $pdf->Rect($cStatus - $pt, $bv, $wStatus + $pt * 3, $boxHeight);
+            $pdf->Rect($cFinal - $pt, $bv, $wFinal + $pt * 3, $boxHeight);
+            $pdf->Rect($cWin - $pt, $bv, $wWin + $pt * 3, $boxHeight);
+            $pdf->Rect($cWEmail - $pt, $bv, $wWEmail + $pt * 3, $boxHeight);
+
+            $v += 2 * $minRowHeight;
+        }
+
+        pushFont('Roboto', 'B', 11);
+        $y = mprintXY($cT, $v, $wT, 'Calculated Total Sales');
+        rightPrintXY($cFinal, $v, $wFinal, $dolfmt->formatCurrency((float)$salesTotal, $currency));
+        $v += $minRowHeight;
+        popFont();
+
         pushFont('Roboto', 'B', 12);
         centerPrintXY(0, $v, $pdf->getPageWidth(), "* * * * * End of Artwork * * * * *");
+        popFont();
     }
 
     if ($first) {
