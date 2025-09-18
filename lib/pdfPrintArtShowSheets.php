@@ -1061,7 +1061,7 @@ EOS;
             if ($artItem['quantity'] > 0)
                 rightPrintXY($cQty, $v, $wQty, $artItem['quantity']);
             pushFont('Roboto', '', 7);
-            $y = fitprintXY($cStatus - $pt, $v, $wStatus + $pt, $artItem['status']);
+            $y = fitprintXY($cStatus - $pt, $v, $wStatus + $pt, $artItem['status'] == 'Purchased/Released' ? 'Purchased' : $artItem['status']);
             if ($y > $maxY) $maxY = $y;
             popFont();
             if ($artItem['type'] == 'print') {
