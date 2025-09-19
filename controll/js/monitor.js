@@ -93,7 +93,7 @@ function buildStaffing(data, con) {
    
     var cashLine = {'name': 'Cashier', x:[], y:[], mode:'lines',
         line: {
-            color: 'rgba(0, 128, 0, 1)',
+            color: 'rgba(0, 255, 0, 1)',
             size: 3,
         },
         showlegend: true,
@@ -167,7 +167,7 @@ function buildThroughput(data, con) {
    
     var badgeLine = {'name': 'Badges', x:[], y:[], mode:'lines',
         line: {
-            color: 'rgba(128, 0, 128, 1)',
+            color: 'rgba(255, 0, 128, 1)',
             size: 3,
         },
         showlegend: true,
@@ -175,7 +175,7 @@ function buildThroughput(data, con) {
 
     var transLine = {'name': 'Transactions', x:[], y:[], mode:'lines',
         line: {
-            color: 'rgba(0, 0, 128, 1)',
+            color: 'rgba(0, 0, 255, 1)',
             size: 3,
         },
         showlegend: true,
