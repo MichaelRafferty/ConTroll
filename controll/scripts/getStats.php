@@ -173,13 +173,13 @@ EOF;
 	$max_staff = 0;
         $staffQ = <<<EOF
 SELECT COUNT(distinct P.cashier) AS cashier
-    , COUNT(distinct T.userid) AS checkin
-    , FROM_UNIXTIME(FLOOR(UNIX_TIMESTAMP(P.time)/900)*900) AS time
+    , COUNT(distinct H.userid) AS checkin
+    , FROM_UNIXTIME(FLOOR(UNIX_TIMESTAMP(H.logdate)/900)*900) AS log_time
 FROM transaction T
 LEFT OUTER JOIN payments P ON (P.transid=T.id and P.cashier IS NOT NULL)
 JOIN regActions H ON (H.tid=T.id)
 WHERE T.conid=? AND H.action IN ('attach', 'print')
-GROUP BY time;
+GROUP BY log_time;
 EOF;
         $staffR = dbSafeQuery($staffQ, 'i', array($conid));
         $staffing = array();

@@ -112,9 +112,9 @@ function buildStaffing(data, con) {
 
     for(const arr in data) {
         dataline = data[arr];
-	if(dataline.time == null) { continue; }
+	if(dataline.log_time == null) { continue; }
 
-        var newtime = new Date(dataline.time);
+        var newtime = new Date(dataline.log_time);
         if(!lasttime) { lasttime = newtime; }
 
         var expectedtime = new Date(lasttime.getTime() + 15 * 60000);
@@ -134,8 +134,8 @@ function buildStaffing(data, con) {
             lasttime=newtime;
         }
 
-        cashLine.x.push(dataline.time);
-        checkLine.x.push(dataline.time);
+        cashLine.x.push(dataline.log_time);
+        checkLine.x.push(dataline.log_time);
         cashLine.y.push(dataline.cashier);
         checkLine.y.push(dataline.checkin);
     }
