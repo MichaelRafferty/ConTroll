@@ -120,6 +120,25 @@ EOS;
             $response['payment'] = $payment;
             $paymentR->free();
         }
+
+        // get prior payments to receipts
+        $recQ = <<<EOS
+SELECT DISTINCT t.perid, p.transid, p.ccPaymentId, p.time
+FROM artSales s
+JOIN transaction t ON t.id = s.transid
+JOIN payments p ON t.id = p.transid
+WHERE s.perid = ?;
+EOS;
+        $receipts = [];
+        $recR = dbSafeQuery($recQ, 'i', array($perid));
+        if ($recR !== false) {
+            while ($recL = $recR->fetch_assoc()) {
+                $receipts[] = $recL;
+            }
+            $recR->free();
+        }
+
+        $response['receipts'] = $receipts;
     } else { // id -is key, numrows can only be zero or 1.
         $response['error'] = $personR->num_rows . " People Found, seek assistance.";
     }

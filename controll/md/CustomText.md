@@ -20,7 +20,7 @@ Custom text is configurable by the system administator via the configuration fil
 
 ## Editing Custom Text
 A 'Custom Text' menu tab appears on each section of the back end that supports custom text.
-Each section only shows the applications avaialble for editing from that top level memu item.
+Each section only shows the applications available for editing from that top level menu item.
 
 * Admin can edit controll items
 * Registraiton Admin can edit atcon, onlinereg and portal 
