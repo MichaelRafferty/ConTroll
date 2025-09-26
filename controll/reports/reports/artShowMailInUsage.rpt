@@ -36,7 +36,7 @@
     filter=false
 [F020]
     name=reqUnits
-    title="#Req"
+    title="Req Units"
     sql=r.units
     sort=false
     align=right
@@ -48,7 +48,7 @@
     format=textarea
 [F022]
     name=appUnits
-    title="#App"
+    title="App Units"
     sql=a.units
     sort=false
     align=right
@@ -60,7 +60,7 @@
     format=textarea
 [F024]
     name=purUnits
-    title="#Pur"
+    title="Pur Units"
     sql=p.units
     sort=false
     align=right
