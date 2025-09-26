@@ -45,6 +45,7 @@
     title="Requested"
     sql=r.items
     sort=false
+    format=textarea
 [F022]
     name=appUnits
     title="#App"
@@ -56,6 +57,7 @@
     title="Approved"
     sql=a.items
     sort=false
+    format=textarea
 [F024]
     name=purUnits
     title="#Pur"
@@ -67,32 +69,58 @@
     title="Purchased"
     sql=p.items
     sort=false
+    format=textarea
 [F026]
     name=items
     sql=i.items
-    title="Items"
+    title="# Items"
     align=right
     sort=false
 [C001]
     name=items
     select="SELECT eRY.id as eRY, COUNT(*) AS items"
-    tables="FROM artItems I JOIN exhibitorRegionYears eRY ON eRY.id=I.exhibitorRegionYearId"
-    where="WHERE I.conid = ? GROUP BY eRY.id"
+    tables="FROM artItems I
+    JOIN exhibitorRegionYears eRY ON eRY.id=I.exhibitorRegionYearId
+    JOIN exhibitsRegionYears xry ON eRY.exhibitsRegionYearId
+    JOIN exhibitsRegions xr ON xr.id = xry.exhibitsRegion
+    "
+    where="WHERE I.conid = ? AND LOWER(xr.shortname) LIKE LOWER(?) GROUP BY eRY.id"
 [C002]
     name=requested
     select="SELECT eRY.id, MIN(time_requested) AS requested, SUM(xsp.units) AS units, GROUP_CONCAT(xsp.description SEPARATOR ',\n') AS items"
-    tables="FROM exhibitorSpaces s JOIN exhibitorRegionYears eRY ON eRY.id = s.exhibitorRegionYear JOIN exhibitorYears eY ON eRY.exhibitorYearId = eY.id LEFT OUTER JOIN exhibitsSpacePrices xsp ON s.item_requested = xsp.id"
-    where="WHERE eY.conid = ? AND s.time_requested IS NOT NULL GROUP BY eRY.id"
+    tables="FROM exhibitorSpaces s
+    JOIN exhibitorRegionYears eRY ON eRY.id = s.exhibitorRegionYear
+    JOIN exhibitorYears eY ON eRY.exhibitorYearId = eY.id
+    JOIN exhibitsSpacePrices xsp ON s.item_requested = xsp.id
+    JOIN exhibitsSpaces xs ON xs.id = xsp.spaceId
+    JOIN exhibitsRegionYears xry ON xs.exhibitsRegionYear = xry.id
+    JOIN exhibitsRegions xr ON xr.id = xry.exhibitsRegion
+    "
+    where="WHERE eY.conid = ? AND s.time_requested IS NOT NULL AND LOWER(xr.shortname) LIKE LOWER(?) GROUP BY eRY.id"
 [C003]
      name=purchased
      select="SELECT eRY.id, MIN(time_purchased) AS purchased, SUM(xsp.units) AS units, GROUP_CONCAT(xsp.description SEPARATOR ',\n') AS items"
-     tables="FROM exhibitorSpaces s JOIN exhibitorRegionYears eRY ON eRY.id = s.exhibitorRegionYear JOIN exhibitorYears eY ON eRY.exhibitorYearId = eY.id LEFT OUTER JOIN exhibitsSpacePrices xsp ON s.item_purchased = xsp.id"
-     where="WHERE eY.conid = ? AND s.time_purchased IS NOT NULL GROUP BY eRY.id"
+     tables="FROM exhibitorSpaces s
+     JOIN exhibitorRegionYears eRY ON eRY.id = s.exhibitorRegionYear
+     JOIN exhibitorYears eY ON eRY.exhibitorYearId = eY.id
+     JOIN exhibitsSpacePrices xsp ON s.item_purchased = xsp.id
+     JOIN exhibitsSpaces xs ON xs.id = xsp.spaceId
+     JOIN exhibitsRegionYears xry ON xs.exhibitsRegionYear = xry.id
+     JOIN exhibitsRegions xr ON xr.id = xry.exhibitsRegion
+     "
+     where="WHERE eY.conid = ? AND s.time_purchased IS NOT NULL AND LOWER(xr.shortname) LIKE LOWER(?) GROUP BY eRY.id"
 [C004]
      name=approved
      select="SELECT eRY.id, MIN(time_approved) AS approved, SUM(xsp.units) AS units, GROUP_CONCAT(xsp.description SEPARATOR ',\n') AS items"
-     tables="FROM exhibitorSpaces s JOIN exhibitorRegionYears eRY ON eRY.id = s.exhibitorRegionYear JOIN exhibitorYears eY ON eRY.exhibitorYearId = eY.id LEFT OUTER JOIN exhibitsSpacePrices xsp ON s.item_requested = xsp.id"
-     where="WHERE eY.conid = ? AND s.time_approved IS NOT NULL GROUP BY eRY.id"
+     tables="FROM exhibitorSpaces s
+     JOIN exhibitorRegionYears eRY ON eRY.id = s.exhibitorRegionYear
+     JOIN exhibitorYears eY ON eRY.exhibitorYearId = eY.id
+     JOIN exhibitsSpacePrices xsp ON s.item_requested = xsp.id
+     JOIN exhibitsSpaces xs ON xs.id = xsp.spaceId
+     JOIN exhibitsRegionYears xry ON xs.exhibitsRegionYear = xry.id
+     JOIN exhibitsRegions xr ON xr.id = xry.exhibitsRegion
+     "
+     where="WHERE eY.conid = ? AND s.time_approved IS NOT NULL AND LOWER(xr.shortname) LIKE LOWER(?) GROUP BY eRY.id"
 [T001]
     name=exhibitorRegionYears
     alias=eRY
@@ -136,31 +164,47 @@
     alias=a
     join="eRY.id = a.id"
     left=true
-[P001]
+[P0101]
     type=prompt
     item=conid
     datatype=i
-[P002]
+[P011]
+    type=prompt
+    item=region
+    datatype=s
+[P020]
     type=prompt
     item=conid
     datatype=i
-[P003]
+[P021]
+    type=prompt
+    item=region
+    datatype=s
+[P030]
     type=prompt
     item=conid
     datatype=i
-[P004]
+[P031]
+    type=prompt
+    item=region
+    datatype=s
+[P040]
     type=prompt
     item=conid
     datatype=i
-[P005]
+[P041]
+    type=prompt
+    item=region
+    datatype=s
+[P050]
     type=prompt
     item=conid
     datatype=i
-[P006]
+[P051]
     type=prompt
     item=region
     datatype=s
 [where]
-	001="eY.conid = ? AND LOWER(xR.shortname) LIKE LOWER(?) AND eY.mailin = 'Y' AND (IFNULL(r.units, 0) > 0 OR IFNULL(e.artistName, '') != '')"
+	001="eY.conid = ? AND LOWER(xR.shortname) LIKE LOWER(?) AND eY.mailin = 'Y' AND IFNULL(r.units, 0) > 0"
 [sort]
-	001="eRY.exhibitorNumber"
+	001="e.id"
