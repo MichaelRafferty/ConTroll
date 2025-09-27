@@ -173,6 +173,6 @@ function newPasskey() {
 }
 
 // delete passkey - clicked the delete button
-deletePasskey(id) {
+function deletePasskey(id) {
     deletePasskeyEntry('scripts/passkeyActions.php', id, config.email, 'vendor');
 }
