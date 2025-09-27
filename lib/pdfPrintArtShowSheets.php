@@ -251,8 +251,8 @@ function pdfPrintBidSheets($regionYearId, $region, $response, $first = true, $la
     }
 
     $useBarCode = false;
-    if (array_key_exists('artistPriceTagBarcode', $vendor)) {
-        $value = strtolower($vendor['artistPriceTagBarcode']);
+    if (array_key_exists('artistBidSheetBarcode', $vendor)) {
+        $value = strtolower($vendor['artistBidSheetBarcode']);
         if ($value == '1' || $value == 'yes') {
             $useBarCode = true;
         }
