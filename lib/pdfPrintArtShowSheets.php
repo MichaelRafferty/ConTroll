@@ -541,12 +541,12 @@ EOS;
             popFont();
 
             pushFont('Roboto', '', 9);
-            $pdf->Rect($h + 1.75, $v + $labelOffset + 0.05, 0.15, 0.15);
-            printXY($h + 1.95, $v + $dataOffset, "AUC");
-            $pdf->Rect($h + 2.45, $v + $labelOffset + 0.05, 0.15, 0.15);
-            printXY($h + 2.65, $v + $dataOffset, 'SOLD');
-            $pdf->Rect($h + 3.25, $v + $labelOffset + 0.05, 0.15, 0.15);
-            printXY($h + 3.45, $v + $dataOffset, 'QS');
+            $pdf->Rect($h + 1.7, $v + $labelOffset + 0.05, 0.15, 0.15);
+            printXY($h + 1.85, $v + $dataOffset, "AUC");
+            $pdf->Rect($h + 2.22, $v + $labelOffset + 0.05, 0.15, 0.15);
+            printXY($h + 2.37, $v + $dataOffset, 'SOLD');
+            $pdf->Rect($h + 2.84, $v + $labelOffset + 0.05, 0.15, 0.15);
+            printXY($h + 2.99, $v + $dataOffset, 'QS');
             popFont();
         }
 
