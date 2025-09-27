@@ -92,7 +92,7 @@ JOIN exhibitorYears eY on exRY.exhibitorYearId = eY.id
 JOIN exhibitsSpaces es ON es.exhibitsRegionYear = eRY.id
 LEFT JOIN exhibitorSpaces exS ON es.id = exS.spaceId AND exS.exhibitorRegionYear = exRY.id
 JOIN exhibitors e ON eY.exhibitorId = e.id
-WHERE eRY.exhibitsRegion = ? and eRY.conid = ?
+WHERE eRY.exhibitsRegion = ? and eRY.conid = ? AND exRY.approval != 'none'
 GROUP BY exRY.id, eY.exhibitorId, exRY.exhibitsRegionYearId, exRY.approval, exRY.updateDate, exRY.updateBy, eR.name, eR.shortname, e.exhibitorName, e.exhibitorEmail, e.website;
 EOS;
 

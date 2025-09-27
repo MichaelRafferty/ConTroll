@@ -52,6 +52,7 @@ class exhibitssetup {
     // global items
     #memList = null;
     #memListArr = {};
+    #memListArrIncl = {};
     #message_div = null;
     #result_message_div = null;
     #exhibits_pane = null;
@@ -367,19 +368,22 @@ class exhibitssetup {
                 }
                 document.getElementById('eryExhibitsRegion').innerHTML = optionList;
 
-                keys = Object.keys(this.#memListArr);
                 // included memberships
                 optionList = '';
-                for (index = 0; index < keys.length; index++) {
-                    key = keys[index];
+                var optionListIncl = '';
+                for (index = 0; index < this.#memList.length; index++) {
+                    key = this.#memList[index].id;
                     value = this.#memListArr[key];
+                    if (Number(this.#memList[index].price) == 0) {
+                        optionListIncl += '\n<option value="' + key + '">' + value + '</option>';
+                    }
                     optionList += '\n<option value="' + key + '">' + value + '</option>';
                 }
                 var defSel = '';
                 if (row.includedMemId == undefined || row.includedMemId <= 0) {
                     var defSel = '<option value="-1">Select a type</option>';
                 }
-                document.getElementById('eryIncludedMemId').innerHTML = defSel + optionList;
+                document.getElementById('eryIncludedMemId').innerHTML = defSel + optionListIncl;
 
                 defSel = '';
                 if (row.additionalMemId == undefined || row.additionalMemId <= 0) {
@@ -521,8 +525,12 @@ class exhibitssetup {
         if (data.memList) {
             this.#memList = data.memList;
             this.#memListArr = {};
+            this.#memListArrIncl = {};
             this.#memList.forEach(m => {
                 this.#memListArr[m.id] = m.label + ':' + m.price.toString() + ' (' + m.id + ')';
+                if (Number(m.price) == 0) {
+                    this.#memListArrIncl[m.id] = m.label + ':' + m.price.toString() + ' (' + m.id + ')';
+                }
             });
 
             if (this.#debug & 1) {
@@ -778,7 +786,7 @@ class exhibitssetup {
                     editor: "input", editorParams: {elementAttributes: {maxlength: "64"}}, validator: "required"
                 },
                 { title: '&bigstar;Included', field: "includedMemId", width: 230, headerSort: false, validator: "required",
-                    editor: "list", formatter:"lookup", formatterParams: this.#memListArr, editorParams: { values: this.#memListArr },
+                    editor: "list", formatter:"lookup", formatterParams: this.#memListArrIncl, editorParams: { values: this.#memListArrIncl },
                 },
                 { title: '&bigstar;Additional', field: "additionalMemId", width: 230, headerSort: false, validator: "required",
                     editor: "list", formatter:"lookup", formatterParams: this.#memListArr, editorParams: { values: this.#memListArr  }

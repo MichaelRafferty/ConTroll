@@ -28,6 +28,8 @@ cancel_date="YYYY-MM-DD" ; can override in each app section
 server="https://reg.conname.org/"
 ;;; passkeyRpLevel: passkey rp domain level
 ;;      this is meant to be global so the system can recognize/create passkeys properly.
+;;      For test=1, the system will enforce a minumum level of 3.
+;;      For production (test=0), the system will enforce a minumum level of 2)
 ;; 2: org.root - right 2 most sections in host name (aka philcon.org)
 ;; 3: site.org.root - right 3 most sections in the host name (aka reg.philcon.org, or exhibitor.philcon.org and all of it's subdomains
 ;;      for the exhibitor types, if so setup)
