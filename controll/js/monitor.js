@@ -484,12 +484,13 @@ function buildBreakdownLevel(label, ptr, data, lvl) {
   if(lvl == 2) {
     next = $(document.createElement('ul'));
     for (key in data) {
-      var leaf = $(document.createElement('li')).append(key + ": " + data[key]);
-      next.append(leaf);
+        var leaf = $(document.createElement('li')).append(key + ": " + data[key]['printed'] + " of " + data[key]['total']);
+        next.append(leaf);
 
-      acc += parseInt(data[key]);
+        acc['printed'] += parseInt(data[key]['printed']);
+        acc['total'] += parseInt(data[key]['total']);
     }
-    var sum = $(document.createElement('li')).append(label + ": " + acc);
+    var sum = $(document.createElement('li')).append(label + ": " + acc['printed'] + " of " + acc['total']);
     ptr.append(sum.append(next));
     return acc;
   } else {
@@ -497,12 +498,13 @@ function buildBreakdownLevel(label, ptr, data, lvl) {
       next = $(document.createElement('ul'));
       for (key in data) {
         var tot = parseInt(buildBreakdownLevel(key, next, data[key], lvl+1));
-        acc += parseInt(tot);
+          acc['printed'] += parseInt(tot['printed']);
+          acc['total'] += parseInt(tot['total']);
       }
-      var sum = $(document.createElement('li')).append(label + ": " + acc);
+      var sum = $(document.createElement('li')).append(label + ": " + acc['printed'] + " of " + acc['total']);
       ptr.append(sum.append(next));
     } else { 
-      acc = parseInt(buildBreakdownLevel(label, ptr, data[keys[0]], lvl+1));
+      acc = buildBreakdownLevel(label, ptr, data[keys[0]], lvl+1);
     }
     return acc;
   }
