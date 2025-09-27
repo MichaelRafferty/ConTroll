@@ -119,22 +119,8 @@ if ($identitiesR !== false) {
     $identitiesR->free();
 }
 
-if (getConfValue('portal', 'passkeyRpLevel') != 'd') {
-// get the passkeys
-    $passKeySQL = <<<EOS
-SELECT *
-FROM passkeys
-WHERE userName = ?
-ORDER BY createDate;
-EOS;
-    $passKeysR = dbSafeQuery($passKeySQL, 's', array ($info['email_addr']));
-    $passKeys = [];
-    if ($passKeysR !== false) {
-        while ($p = $passKeysR->fetch_assoc()) {
-            $passKeys[] = $p;
-        }
-        $passKeysR->free();
-    }
+if (getConfValue('portal', 'passkeyRpLevel', 'd') != 'd') {
+    $passKeys = getPasskey($info['email_addr'], 'portal')
 }
 
 // if we get here, we are logged in and it's a purely new person or we manage the person to be processed

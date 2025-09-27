@@ -5,6 +5,7 @@ var changePasswordTitleDiv = null;
 var purchase_label = 'purchase';
 var additional_cost = {};
 var switchPortalbtn = null;
+var newPasskeyBtn = null;
 exhibitorProfile = null;
 si_password = null;
 
@@ -15,18 +16,20 @@ window.onload = function () {
         change_password = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
     }
 
+    newPasskeyBtn = document.getElementById('newPasskeyBtn');
+
     switchPortalbtn = document.getElementById('switchPortalbtn');
     if (switchPortalbtn != null) {
-        switchPortalbtn.innerHTML = 'Switch to ' + (config['portalName'] == 'Artist' ? 'Vendor' : 'Artist') + ' Portal';
+        switchPortalbtn.innerHTML = 'Switch to ' + (config.portalName == 'Artist' ? 'Vendor' : 'Artist') + ' Portal';
     }
 
-    exhibitorProfile = new ExhibitorProfile(config['debug']);
+    exhibitorProfile = new ExhibitorProfile(config.debug);
     exhibitorRequestOnLoad();
     auctionItemRegistrationOnLoad()
     vendorInvoiceOnLoad()
     exhibitorReceiptOnLoad();
     if (typeof exhibitor_info !== 'undefined') {
-        if (exhibitor_info['DaysSinceLastVerified'] > 180) {
+        if (exhibitor_info.DaysSinceLastVerified > 180) {
             exhibitorProfile.profileModalOpen('review');
         }
     }
@@ -59,7 +62,7 @@ function changePassword(field) {
     clear_message('cp_result_message');
     var param = $('#changepw').serialize();
     if (typeof pwtype === 'undefined') {
-        param += '&pwType=' + config['loginType'];
+        param += '&pwType=' + config.loginType;
     } else {
         param += '&pwType=' + pwtype;
     }
@@ -69,10 +72,10 @@ function changePassword(field) {
         data: param,
         method: 'POST',
         success: function(data, textstatus, jqXHR) {
-            if(data['status'] == 'error') {
-                show_message(data['message'], 'error', 'cp_result_message');
+            if(data.status == 'error') {
+                show_message(data.message, 'error', 'cp_result_message');
             } else {
-                if (config['debug'] & 1)
+                if (config.debug & 1)
                     console.log(data);
                 location.reload();
             }
@@ -86,14 +89,14 @@ function resetPassword() {
     $.ajax({
         method: 'POST',
         url: 'scripts/resetPassword.php',
-        data: {'login' : email, 'type': config['portalType'], 'name': config['portalName']},
+        data: {'login' : email, 'type': config.portalType, 'name': config.portalName},
         success: function(data, textStatus, jqXhr) {
-            if(data['error']) {
-                show_message(data['error'], 'error');
+            if(data.error) {
+                show_message(data.error, 'error');
             } else {
-                if (config['debug'] & 1)
+                if (config.debug & 1)
                     console.log(data);
-                show_message(data['message'], 'success');
+                show_message(data.message, 'success');
             }
         }
     });
@@ -104,25 +107,25 @@ function changePasswordOpen() {
     if (changePasswordTitleDiv == null)
         changePasswordTitleDiv = document.getElementById('changePasswordTitle');
 
-    if (config['loginType'] == 'c')
-        changePasswordTitleDiv.innerHTML = "Change " + config['portalName'] + " Portal Contact Password";
+    if (config.loginType == 'c')
+        changePasswordTitleDiv.innerHTML = "Change " + config.portalName + " Portal Contact Password";
     else
-        changePasswordTitleDiv.innerHTML = "Change " + config['portalName'] + " Portal Account Password";
+        changePasswordTitleDiv.innerHTML = "Change " + config.portalName + " Portal Account Password";
 
     change_password.show();
 }
 
 // change to the other portal
 function switchPortal() {
-    window.location = "/switchPortal.php?site=" + encodeURIComponent(config['portalName'] == 'Artist' ? config['vendorsite'] : config['artistsite']);
+    window.location = "/switchPortal.php?site=" + encodeURIComponent(config.portalName == 'Artist' ? config.vendorsite : config.artistsite);
 }
 
 // request permission to apply for space in a region that requires 'permission' to apply
 function requestPermission(id, tag) {
     var data = {
         'regionYearId': id,
-        'type': config['portalType'],
-        'name': config['portalName'],
+        'type': config.portalType,
+        'name': config.portalName,
         'tag' : tag
     }
     $.ajax({
@@ -130,14 +133,14 @@ function requestPermission(id, tag) {
         url: 'scripts/requestPermission.php',
         data: data,
         success: function(data, textStatus, jqXhr) {
-            if(data['error']) {
-                show_message(data['error'], 'error');
+            if(data.error) {
+                show_message(data.error, 'error');
             } else {
-                if (config['debug'] & 1)
+                if (config.debug & 1)
                     console.log(data);
                 // now redraw that section of the screen to show permission requested
-                document.getElementById(tag).innerHTML = data['block'];
-                show_message(data['message'], 'success');
+                document.getElementById(tag).innerHTML = data.block;
+                show_message(data.message, 'success');
             }
         }
     });
@@ -152,3 +155,24 @@ function loginWithPasskey() {
     passkeyRequest('scripts/passkeyActions.php', 'index.php', 'vendor', document.getElementById('loginPasskeyBtn'));
 }
 
+// newPasskey - request generate passkey on device and store same in database
+function newPasskey() {
+    if (newPasskeyBtn)
+        newPasskeyBtn.disabled = true;
+
+    var displayName = config.exhibitorName;
+
+    if (displayName.length == 0) {
+        displayName = config.artistName;
+    }
+
+    createPasskeyRegistration('scripts/passkeyActions.php', displayName.trim(), config.email, 'vendor');
+    if (newPasskeyBtn)
+        newPasskeyBtn.disabled = false;
+    return;
+}
+
+// delete passkey - clicked the delete button
+deletePasskey(id) {
+    deletePasskeyEntry('scripts/passkeyActions.php', id, config.email, 'vendor');
+}

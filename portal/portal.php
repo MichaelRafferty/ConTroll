@@ -4,6 +4,7 @@ require_once("lib/base.php");
 require_once('lib/getAccountData.php');
 require_once('lib/sessionManagement.php');
 require_once('../lib/portalForms.php');
+require_once('../lib/webauthn.php');
 require_once('../lib/email__load_methods.php');
 require_once("../lib/interests.php");
 require_once("../lib/profile.php");
@@ -112,20 +113,12 @@ $hasVirtual = false;
 $tokenType = getSessionVar('tokenType');
 $hasPasskey = $tokenType == 'passkey';
 if ($hasPasskey == false) {
-    // check for a potential passkey
-    $passkeyQ = <<<EOS
-SELECT count(*)
-FROM passkeys
-WHERE userName = ?;
-EOS;
-    $passKeyR = dbSafeQuery($passkeyQ, 's', array($info['email_addr']));
-    if ($passKeyR !== false) {
-        $numKeys = $passKeyR->fetch_row()[0];
-        $passKeyR->free();
-
-        $hasPasskey = $numKeys > 0;
-    }
+    $hasPasskey = hasPasskey($info['email_addr'], 'portal');
 }
+
+$allowPasskey = getConfValue('vendor', 'passkeyRpLevel', 'd') != 'd' && array_key_exists('HTTPS', $_SERVER) && (isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] ==
+                'on')) {
+
 
 if (!$refresh) {
     $numPrimary = 0;
