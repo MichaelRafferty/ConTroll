@@ -82,7 +82,7 @@
     where="WHERE I.conid = ? AND LOWER(xr.shortname) LIKE LOWER(?) GROUP BY eRY.id"
 [C002]
     name=requested
-    select="SELECT eRY.id, MIN(time_requested) AS requested, SUM(xsp.units) AS units, xs.shortname AS space"
+    select="SELECT eRY.id, MIN(time_requested) AS requested, SUM(xsp.units) AS units, xs.shortname AS space, xs.id AS spaceId"
     tables="FROM exhibitorSpaces s
     JOIN exhibitorRegionYears eRY ON eRY.id = s.exhibitorRegionYear
     JOIN exhibitorYears eY ON eRY.exhibitorYearId = eY.id
@@ -91,10 +91,10 @@
     JOIN exhibitsRegionYears xry ON xs.exhibitsRegionYear = xry.id
     JOIN exhibitsRegions xr ON xr.id = xry.exhibitsRegion
     "
-    where="WHERE eY.conid = ? AND s.time_requested IS NOT NULL AND LOWER(xr.shortname) LIKE LOWER(?) GROUP BY eRY.id, xs.shortname"
+    where="WHERE eY.conid = ? AND s.time_requested IS NOT NULL AND LOWER(xr.shortname) LIKE LOWER(?) GROUP BY eRY.id, xs.shortname, xs.id"
 [C003]
      name=purchased
-     select="SELECT eRY.id, MIN(time_purchased) AS purchased, SUM(xsp.units) AS units, xs.shortname AS space"
+     select="SELECT eRY.id, MIN(time_purchased) AS purchased, SUM(xsp.units) AS units, xs.shortname AS space, xs.id AS spaceId"
      tables="FROM exhibitorSpaces s
      JOIN exhibitorRegionYears eRY ON eRY.id = s.exhibitorRegionYear
      JOIN exhibitorYears eY ON eRY.exhibitorYearId = eY.id
@@ -103,10 +103,10 @@
      JOIN exhibitsRegionYears xry ON xs.exhibitsRegionYear = xry.id
      JOIN exhibitsRegions xr ON xr.id = xry.exhibitsRegion
      "
-     where="WHERE eY.conid = ? AND s.time_purchased IS NOT NULL AND LOWER(xr.shortname) LIKE LOWER(?) GROUP BY eRY.id, xs.shortname"
+     where="WHERE eY.conid = ? AND s.time_purchased IS NOT NULL AND LOWER(xr.shortname) LIKE LOWER(?) GROUP BY eRY.id, xs.shortname, xs.id"
 [C004]
      name=approved
-     select="SELECT eRY.id, MIN(time_approved) AS approved, SUM(xsp.units) AS units, xs.shortname AS space"
+     select="SELECT eRY.id, MIN(time_approved) AS approved, SUM(xsp.units) AS units, xs.shortname AS space, xs.id AS spaceId"
      tables="FROM exhibitorSpaces s
      JOIN exhibitorRegionYears eRY ON eRY.id = s.exhibitorRegionYear
      JOIN exhibitorYears eY ON eRY.exhibitorYearId = eY.id
@@ -115,7 +115,7 @@
      JOIN exhibitsRegionYears xry ON xs.exhibitsRegionYear = xry.id
      JOIN exhibitsRegions xr ON xr.id = xry.exhibitsRegion
      "
-     where="WHERE eY.conid = ? AND s.time_approved IS NOT NULL AND LOWER(xr.shortname) LIKE LOWER(?) GROUP BY eRY.id, xs.shortname"
+     where="WHERE eY.conid = ? AND s.time_approved IS NOT NULL AND LOWER(xr.shortname) LIKE LOWER(?) GROUP BY eRY.id, xs.shortname, xs.id"
 [T001]
     name=exhibitorRegionYears
     alias=eRY
@@ -139,6 +139,10 @@
     name=exhibitsRegionTypes
     alias=xRT
     join="xR.regionType=xRT.regionType"
+[T024]
+    name=exhibitsSpaces
+    alias=xs
+    join="xRY.id=xs.exhibitsRegionYear"
 [T030]
     name=items
     alias=i
@@ -147,17 +151,17 @@
 [T031]
     name=requested
     alias=r
-    join="eRY.id = r.id"
+    join="eRY.id = r.id AND xs.id = r.spaceId"
     left=true
 [T032]
     name=purchased
     alias=p
-    join="eRY.id = p.id"
+    join="eRY.id = p.id AND xs.id = p.spaceId"
     left=true
 [T033]
     name=approved
     alias=a
-    join="eRY.id = a.id"
+    join="eRY.id = a.id AND xs.id = a.spaceId"
     left=true
 [P0101]
     type=prompt
