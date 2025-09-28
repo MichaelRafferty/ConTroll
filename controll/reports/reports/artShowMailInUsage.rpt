@@ -2,6 +2,8 @@
 	name="artShowMailInUsage"
 	auth=art_control
 	csvfile="artShowMailInUsage"
+	totals="bottom"
+	subtotals="reqSpace"
 [F010]
     name=exhibitorId
     title="Ex#"
@@ -23,58 +25,46 @@
     minWidth=200
     sort=true
     filter=true
-[F017]
-    name=email
-    sql=e.exhibitorEmail
-    title="Email"
-    minWidth=200
-[F019]
-    name=Phone
-    sql=e.exhibitorPhone
-    title="Artist Phone"
-    sort=false
-    filter=false
 [F020]
     name=reqUnits
     title="Req Units"
     sql=r.units
     sort=false
     align=right
+    calc="sum"
 [F021]
-    name=reqItems
-    title="Requested"
-    sql=r.items
+    name=reqSpace
+    title="Requested Space"
+    sql=r.space
     sort=false
-    format=textarea
 [F022]
     name=appUnits
-    title="App Units"
-    sql=a.units
+    title="App/Pur Units"
+    sql="IFNULL(p.units, a.units)"
     sort=false
     align=right
+    calc="sum"
 [F023]
-    name=appItems
-    title="Approved"
-    sql=a.items
+    name=appSpace
+    title="App/Pur Space"
+    sql="IFNULL(p.space, a.space)"
     sort=false
-    format=textarea
-[F024]
-    name=purUnits
-    title="Pur Units"
-    sql=p.units
-    sort=false
-    align=right
-[F025]
-    name=purItems
-    title="Purchased"
-    sql=p.items
-    sort=false
-    format=textarea
 [F026]
+    name=status
+    title="Status"
+    sql="CASE WHEN purchased IS NOT NULL THEN 'Purchased' WHEN approved IS NOT NULL THEN 'Approved' WHEN requested IS NOT NULL THEN 'Requested' ELSE '' END"
+    sort=false
+[F028]
     name=items
     sql=i.items
     title="# Items"
     align=right
+    sort=false
+    calc="sum"
+[F030]
+    name="Date"
+    sql="IFNULL(purchased, IFNULL(approved, requested))"
+    title=date
     sort=false
 [C001]
     name=items
@@ -87,7 +77,7 @@
     where="WHERE I.conid = ? AND LOWER(xr.shortname) LIKE LOWER(?) GROUP BY eRY.id"
 [C002]
     name=requested
-    select="SELECT eRY.id, MIN(time_requested) AS requested, SUM(xsp.units) AS units, GROUP_CONCAT(xsp.description SEPARATOR ',\n') AS items"
+    select="SELECT eRY.id, MIN(time_requested) AS requested, SUM(xsp.units) AS units, xs.shortname AS space"
     tables="FROM exhibitorSpaces s
     JOIN exhibitorRegionYears eRY ON eRY.id = s.exhibitorRegionYear
     JOIN exhibitorYears eY ON eRY.exhibitorYearId = eY.id
@@ -96,10 +86,10 @@
     JOIN exhibitsRegionYears xry ON xs.exhibitsRegionYear = xry.id
     JOIN exhibitsRegions xr ON xr.id = xry.exhibitsRegion
     "
-    where="WHERE eY.conid = ? AND s.time_requested IS NOT NULL AND LOWER(xr.shortname) LIKE LOWER(?) GROUP BY eRY.id"
+    where="WHERE eY.conid = ? AND s.time_requested IS NOT NULL AND LOWER(xr.shortname) LIKE LOWER(?) GROUP BY eRY.id, xs.shortname"
 [C003]
      name=purchased
-     select="SELECT eRY.id, MIN(time_purchased) AS purchased, SUM(xsp.units) AS units, GROUP_CONCAT(xsp.description SEPARATOR ',\n') AS items"
+     select="SELECT eRY.id, MIN(time_purchased) AS purchased, SUM(xsp.units) AS units, xs.shortname AS space"
      tables="FROM exhibitorSpaces s
      JOIN exhibitorRegionYears eRY ON eRY.id = s.exhibitorRegionYear
      JOIN exhibitorYears eY ON eRY.exhibitorYearId = eY.id
@@ -108,10 +98,10 @@
      JOIN exhibitsRegionYears xry ON xs.exhibitsRegionYear = xry.id
      JOIN exhibitsRegions xr ON xr.id = xry.exhibitsRegion
      "
-     where="WHERE eY.conid = ? AND s.time_purchased IS NOT NULL AND LOWER(xr.shortname) LIKE LOWER(?) GROUP BY eRY.id"
+     where="WHERE eY.conid = ? AND s.time_purchased IS NOT NULL AND LOWER(xr.shortname) LIKE LOWER(?) GROUP BY eRY.id, xs.shortname"
 [C004]
      name=approved
-     select="SELECT eRY.id, MIN(time_approved) AS approved, SUM(xsp.units) AS units, GROUP_CONCAT(xsp.description SEPARATOR ',\n') AS items"
+     select="SELECT eRY.id, MIN(time_approved) AS approved, SUM(xsp.units) AS units, xs.shortname AS space"
      tables="FROM exhibitorSpaces s
      JOIN exhibitorRegionYears eRY ON eRY.id = s.exhibitorRegionYear
      JOIN exhibitorYears eY ON eRY.exhibitorYearId = eY.id
@@ -120,7 +110,7 @@
      JOIN exhibitsRegionYears xry ON xs.exhibitsRegionYear = xry.id
      JOIN exhibitsRegions xr ON xr.id = xry.exhibitsRegion
      "
-     where="WHERE eY.conid = ? AND s.time_approved IS NOT NULL AND LOWER(xr.shortname) LIKE LOWER(?) GROUP BY eRY.id"
+     where="WHERE eY.conid = ? AND s.time_approved IS NOT NULL AND LOWER(xr.shortname) LIKE LOWER(?) GROUP BY eRY.id, xs.shortname"
 [T001]
     name=exhibitorRegionYears
     alias=eRY
@@ -207,4 +197,4 @@
 [where]
 	001="eY.conid = ? AND LOWER(xR.shortname) LIKE LOWER(?) AND eY.mailin = 'Y' AND IFNULL(r.units, 0) > 0"
 [sort]
-	001="e.id"
+	001="r.space, e.id"
