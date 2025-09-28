@@ -23,7 +23,7 @@
     sql="IFNULL(e.artistName, e.exhibitorName)"
     title="Artist Name"
     minWidth=200
-    sort=true
+    sort=false
     filter=true
 [F020]
     name=reqUnits
@@ -37,8 +37,8 @@
     name=reqSpace
     title="Requested Space"
     sql=r.space
-    minwidth=100
-    sort=false
+    width=150
+    sort=true
 [F022]
     name=appUnits
     title="App/Pur Units"
@@ -51,7 +51,7 @@
     name=appSpace
     title="App/Pur Space"
     sql="IFNULL(p.space, a.space)"
-    minwidth=100
+    width=150
     sort=false
 [F026]
     name=status
@@ -60,10 +60,11 @@
     sort=false
 [F028]
     name=items
-    sql=i.items
+    sql="IFNULL(i.items,0)"
     title="# Items"
     align=right
     sort=false
+    width=80
     calc="sum"
 [F030]
     name="Date"
