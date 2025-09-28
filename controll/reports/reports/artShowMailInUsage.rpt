@@ -65,7 +65,6 @@
     align=right
     sort=false
     width=80
-    calc="sum"
 [F030]
     name="Date"
     sql="IFNULL(purchased, IFNULL(approved, requested))"
