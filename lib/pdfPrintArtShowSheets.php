@@ -545,8 +545,10 @@ EOS;
             printXY($h + 1.85, $v + $dataOffset, "AUC");
             $pdf->Rect($h + 2.22, $v + $labelOffset + 0.05, 0.15, 0.15);
             printXY($h + 2.37, $v + $dataOffset, 'SOLD');
-            $pdf->Rect($h + 2.84, $v + $labelOffset + 0.05, 0.15, 0.15);
-            printXY($h + 2.99, $v + $dataOffset, 'QS');
+            if ($art['sale_price'] > 0) {
+                $pdf->Rect($h + 2.84, $v + $labelOffset + 0.05, 0.15, 0.15);
+                printXY($h + 2.99, $v + $dataOffset, 'QS');
+            }
             popFont();
         }
 
