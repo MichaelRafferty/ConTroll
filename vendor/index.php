@@ -484,7 +484,7 @@ draw_itemRegistrationModal($portalType, $vendor_conf['artsheets'], $vendor_conf[
         <div class="row p-1">
             <div class="col-sm-auto p-0">
                 <button class="btn btn-secondary m-1 h-100" onclick="exhibitorProfile.profileModalOpen('update');">View/Change your profile</button>
-                <?php if ($allowPasskey) { ?>
+                <?php if ($allowPasske && !$hasPasskey) { ?>
                     <button class='btn btn-primary mx-2 p-1 h-100' id='newPasskeyBtn' type='button' onclick='newPasskey();'>
                         <img src='lib/passkey.png'>Create Passkey
                     </button>
