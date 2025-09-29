@@ -97,7 +97,7 @@ SELECT R.conid, M.id, M.memCategory, M.shortname as label
     , count(DISTINCT R.perid) as c 
 FROM reg R
 JOIN memLabel M on M.id=R.memId
-WHERE R.conid=? 
+WHERE R.conid=? and M.category in ('yearahead','rollover')
 GROUP BY R.conid, M.id, M.memCategory, M.shortname
 order by M.id;
 EOF;
@@ -110,34 +110,23 @@ $currQ = "SELECT count(DISTINCT R.perid) as c FROM reg R WHERE R.conid=? and R.s
 $currR = dbSafeQuery($currQ, 'i', array($conid))->fetch_assoc();
 $con['paid_members'] = $currR['c'];
 
-        $preregQ = <<<EOF
-SELECT R.conid, M.memCategory, M.label , count(DISTINCT R.perid) as c
+        $totalQ = <<<EOF
+SELECT R.conid, COUNT(DISTINCT R.perid) as total,
+        COUNT(DISTINCT CASE WHEN H.action='print' THEN R.perid END) as printed,         LOWER(M.memType) as memType, M.label
 FROM reg R
-JOIN memList M on M.id=R.memId
-LEFT OUTER JOIN regActions H ON H.regid=R.id and H.action='print'
-WHERE R.conid=? and H.action is null
-GROUP BY R.conid, M.label
-order by M.label;
+        JOIN memList M on M.id=R.memId
+    LEFT OUTER JOIN regActions H on H.regid=R.id
+WHERE R.conid=?
+GROUP BY R.conid, M.memType, M.label
+ORDER BY M.label;
 EOF;
-        $preregR = dbSafeQuery($preregQ, 'i', array($conid));
-        while($badgeType = $preregR->fetch_assoc()) {
-            $badgeList['unprinted'][$badgeType['label']]=$badgeType['c'];
+        $totalR = dbSafeQuery($totalQ, 'i', array($conid));
+        while($badgeType = $totalR->fetch_assoc()) {
+            $badgeList[$badgeType['memType']][$badgeType['label']]=array(
+                'printed'=>$badgeType['printed'],
+                'total'=>$badgeType['total']);
         }
 
-        $atconQ = <<<EOF
-SELECT R.conid, M.memCategory, LOWER(M.memType) as memType, M.label, count(DISTINCT R.perid) as c
-FROM reg R
-JOIN memList M on M.id=R.memId
-JOIN regActions H ON H.regid=R.id and H.action='print'
-WHERE R.conid=? 
-GROUP BY R.conid, M.label
-order by M.label;
-EOF;
-
-        $atconR = dbSafeQuery($atconQ, 'i', array($conid));
-        while($badgeType = $atconR->fetch_assoc()) {
-            $badgeList[$badgeType['memType']][$badgeType['label']]=$badgeType['c'];
-        }
 
         $acc = array('full'=>0, 'oneday'=>0);
         $track = array();
