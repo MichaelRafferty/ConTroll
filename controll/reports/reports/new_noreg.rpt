@@ -23,7 +23,7 @@
 [F006]
     name=Email
     sql=p.email_addr
-    title=Label
+    title=Email
     filter=true
 [F010]
     name=City
