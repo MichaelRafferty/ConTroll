@@ -119,7 +119,11 @@ class artItem {
     #min_bidField;
     #sale_priceField;
     #sale_priceNameField;
-    #quantityRowDiv;
+    #minPriceRow;
+    #salePriceRow;
+    #quantityRow;
+    #bidderRow;
+    #finalPriceRow;
     #bidderField;
     #bidderNameField;
     #final_priceField;
@@ -143,7 +147,11 @@ constructor(itemTable) {
     this.#itemNumberField=document.getElementById('artItemItemNumber');
     this.#typeField=document.getElementById('artItemType');
     this.#sale_priceNameField=document.getElementById('artItemSalePriceName');
-    this.#quantityRowDiv=document.getElementById('quantityRowDiv');
+    this.#minPriceRow=document.getElementById('minPriceRow');
+    this.#salePriceRow=document.getElementById('salePriceRow');
+    this.#quantityRow=document.getElementById('quantityRow');
+    this.#bidderRow=document.getElementById('bidderRow');
+    this.#finalPriceRow=document.getElementById('finalPriceRow');
     this.#bidderNameField=document.getElementById('artItemBidderName');//TODO make this field auto-update when bidder updates
 
     /* editable fields */
@@ -175,23 +183,33 @@ constructor(itemTable) {
 setPriceNames(type){
     switch(type) {
         case artItemTypes.ART:
-            document.getElementById('minPriceRow').style.display = 'block';
+            this.#minPriceRow.style.display = 'block';
+            this.#salePriceRow.style.display = 'block';
             this.#sale_priceNameField.innerHTML = "Quicksale Price";
-            this.#quantityRowDiv.style.display = 'none';
+            this.#finalPriceRow.style.display = 'block';
+            this.#quantityRow.style.display = 'none';
+            this.#bidderRow.style.display = 'block';
             break;
         case artItemTypes.NFS:
-            document.getElementById('minPriceRow').style.display = 'none';
+            this.#minPriceRow.style.display = 'none';
+            this.#salePriceRow.style.display = 'block';
             this.#sale_priceNameField.innerHTML = "Insurance Amount";
-            this.#quantityRowDiv.style.display = 'none';
+            this.#finalPriceRow.style.display = 'none';
+            this.#quantityRow.style.display = 'none';
+            this.#bidderRow.style.display = 'none';
             break;
         case artItemTypes.PRINT:
-            document.getElementById('minPriceRow').style.display = 'none';
+            this.#minPriceRow.style.display = 'none';
+            this.#salePriceRow.style.display = 'block';
             this.#sale_priceNameField.innerHTML = "Sale Price";
-            this.#quantityRowDiv.style.display = 'block';
+            this.#finalPriceRow.style.display = 'none';
+            this.#quantityRow.style.display = 'block';
+            this.#bidderRow.style.display = 'none';
             break;
     }
 }
 resetEditPane() {
+    clear_message('ai_result_message');
     this.#exhibitorNameField.innerHTML = this.exhibitorName;
     this.#exhibitShowNameField.innerHTML = this.regionYearName;
     this.#artistNumberField.innerHTML = this.artistNumber;
@@ -210,23 +228,106 @@ resetEditPane() {
         this.#locationField.innerHTML += "<option>" + loc + "</option>";
     }
     this.#locationField.value = this.location;
-    this.#quantityField.value = this.quantity;
-    this.#quantityField.setAttribute('max',this.original_qty);
-    this.#original_qtyField.value = this.original_qty;
-    this.#min_bidField.value = this.min_price; // hidden unless type = ART
+
+    /* art only items */
+    if (this.type == artItemTypes.ART) {
+        this.#min_bidField.value = this.min_price;
+        this.#bidderField.value = this.#bidder;
+        this.#bidderNameField.innerHTML = this.bidderName;
+        this.#final_priceField.value = this.final_price;
+    } else {
+        this.#min_bidField.value = null;
+        this.#bidderField.value = null;
+        this.#bidderNameField.innerHTML = '';
+        this.#final_priceField.value = null;
+    }
+
+    if (this.#typeField == artItemTypes.PRINT) {
+        this.#quantityField.value = this.quantity;
+        this.#quantityField.setAttribute('max',this.original_qty);
+        this.#original_qtyField.value = this.original_qty;
+    } else {
+        if (this.status == artItemStatuses.QUICKSALE || this.status == artItemStatuses.SOLDAUCTION ||
+            this.status == artItemStatuses.SOLDAUCTION || this.status == artItemStatuses.RELEASED)
+            this.#quantityField.value = 0;
+        else
+            this.#quantityField.value = 1;
+        this.#original_qtyField.value = 1;
+    }
     this.#sale_priceField.value = this.sale_price;
-    this.#bidderField.value = this.#bidder;
-    this.#bidderNameField.innerHTML = this.bidderName;
-    this.#final_priceField.value = this.final_price;
     this.#notesField.value = this.itemNotes;
 
     this.#isChanged=false;
     this.#changedFields= {};
 }
 
-setIsChanged(value,field) {
+setIsChanged(value,fieldName) {
+    // validate the fields
+    var _this = this;
+    clear_message('ai_result_message');
+    let fieldValue = document.getElementById(value).value;
+    switch (value) {
+        case 'artItemMinPrice':
+            if (Number(fieldValue) < 1) {
+                show_message("Minimum must be $1.00 or more", 'warn', 'ai_result_message');
+                return;
+            }
+            if (this.type == artItemTypes.ART && Number(fieldValue) >= Number(this.#sale_priceField.value)) {
+                show_message("Minimum must be less than sale price", 'warn', 'ai_result_message');
+                return;
+            }
+            break;
+        case 'artItemSalePrice':
+            if (this.type == artItemTypes.ART && Number(fieldValue) != 0 && Number(fieldValue) <= Number(this.#min_bidField.value)) {
+                show_message("Sale price must not be less than minimum", 'warn', 'ai_result_message');
+                return;
+            }
+            break;
+        case 'artItemFinalPrice':
+            let checkPrice = this.#statusField.value == artItemStatuses.QUICKSALE ? Number(this.#sale_priceField.value) : Number(this.#min_bidField.value);
+            let checkPriceField = this.#statusField.value == artItemStatuses.QUICKSALE ? 'sale price' : 'minimum';
+            if (Number(fieldValue) < checkPrice) {
+                show_message("Sale price must not be less than " + checkPriceField, 'warn', 'ai_result_message');
+                return;
+            }
+        case 'artItemBidder':
+            if (Number(fieldValue) < 1) {
+                show_message("Invalid bidder number", 'warn', 'ai_result_message');
+                return;
+            }
+            // use ajax to validate bidder number
+            let script = "scripts/artcontrol_validateBidder.php"
+            let postdata = {
+                bidder: Number(fieldValue),
+                action: 'ValidateBidder',
+            }
+            $.ajax({
+                url: script,
+                method: 'POST',
+                data: postdata,
+                success: function (data, textStatus, jhXHR) {
+                    if (data.error != undefined) {
+                        show_message(data.error, 'error', 'ai_result_message');
+                        return;
+                    }
+                    if (data.warning != undefined) {
+                        show_message(data.warning, 'warn', 'ai_result_message');
+                        return;
+                    }
+                    // valid return
+                    _this.#isChanged=true;
+                    _this.#changedFields.value = fieldName;
+                    _this.#bidderNameField.innerHTML = data.name;
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    showError("ERROR in artControl: " + textStatus, jqXHR);
+                    return false;
+                }
+            });
+            break;
+    }
     this.#isChanged=true;
-    this.#changedFields[value]=field;
+    this.#changedFields[value]=fieldName;
 }
 
 setItemTable(itemTable) {this.#itemTable = itemTable;}
