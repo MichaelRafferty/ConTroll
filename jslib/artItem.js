@@ -76,7 +76,6 @@ class artItemStatuses {
 }
 var statusList = new artItemStatuses();
 
-var ai_message_div; //file variable so it can be accessed anywhere
 class artItem {
     #index;
     #isChanged=false;
@@ -98,6 +97,7 @@ class artItem {
     final_price;
     #bidder;
     bidderName;
+    #bidderValid = true;
     #exhibitorRegionYearId;
     exhibitorName;
     #exhibitRegionYearId
@@ -177,8 +177,6 @@ constructor(itemTable) {
     this.#final_priceField.addEventListener('change',function() { _this.setIsChanged('artItemFinalPrice', 'final_price') });
     this.#notesField=document.getElementById('artItemNotes');
     this.#notesField.addEventListener('change',function() { _this.setIsChanged('artItemNotes', 'notes') });
-
-    ai_message_div = document.getElementById('ai_result_message');
 }
 setPriceNames(type){
     switch(type) {
@@ -215,6 +213,7 @@ resetEditPane() {
     this.#artistNumberField.innerHTML = this.artistNumber;
     this.#itemNumberField.innerHTML = this.itemNumber;
     this.#typeField.innerHTML = this.type;
+    this.#bidderValid = true;
 
     this.setPriceNames(this.type)
     //editable fields
@@ -272,31 +271,42 @@ setIsChanged(value,fieldName) {
                 show_message("Minimum must be $1.00 or more", 'warn', 'ai_result_message');
                 return;
             }
-            if (this.type == artItemTypes.ART && Number(fieldValue) >= Number(this.#sale_priceField.value)) {
+            let salePriceValue = Number(this.#sale_priceField.value);
+            if (this.type == artItemTypes.ART && salePriceValue > 0 && Number(fieldValue) >= salePriceValue) {
                 show_message("Minimum must be less than sale price", 'warn', 'ai_result_message');
                 return;
             }
             break;
+
         case 'artItemSalePrice':
             if (this.type == artItemTypes.ART && Number(fieldValue) != 0 && Number(fieldValue) <= Number(this.#min_bidField.value)) {
                 show_message("Sale price must not be less than minimum", 'warn', 'ai_result_message');
                 return;
             }
             break;
+
         case 'artItemFinalPrice':
             let checkPrice = this.#statusField.value == artItemStatuses.QUICKSALE ? Number(this.#sale_priceField.value) : Number(this.#min_bidField.value);
             let checkPriceField = this.#statusField.value == artItemStatuses.QUICKSALE ? 'sale price' : 'minimum';
             if (Number(fieldValue) < checkPrice) {
-                show_message("Sale price must not be less than " + checkPriceField, 'warn', 'ai_result_message');
+                show_message("Final price must not be less than " + checkPriceField, 'warn', 'ai_result_message');
                 return;
             }
+            break;
+
         case 'artItemBidder':
+            if (fieldValue == undefined || fieldValue == null || fieldValue == '' ) {
+                _this.#bidderNameField.innerHTML = '';
+                _this.bidderValid = true;
+                break;
+            }
             if (Number(fieldValue) < 1) {
                 show_message("Invalid bidder number", 'warn', 'ai_result_message');
                 return;
             }
             // use ajax to validate bidder number
             let script = "scripts/artcontrol_validateBidder.php"
+            this.#bidderValid = false;
             let postdata = {
                 bidder: Number(fieldValue),
                 action: 'ValidateBidder',
@@ -318,6 +328,7 @@ setIsChanged(value,fieldName) {
                     _this.#isChanged=true;
                     _this.#changedFields.value = fieldName;
                     _this.#bidderNameField.innerHTML = data.name;
+                    _this.#bidderValid = true;
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
                     showError("ERROR in artControl: " + textStatus, jqXHR);
@@ -360,10 +371,10 @@ setValuesForNew(exhibitor, number, type) {
     this.itemNotes = null;
 
     if(this.type === false) {
-        show_message('invalid item type', 'warn', ai_message_div); //TODO append if possible
+        show_message('invalid item type', 'warn', 'ai_result_message'); //TODO append if possible
         }
     if(this.status === false) {
-        show_message('invalid item status', 'warn', ai_message_div); //TODO append if possible
+        show_message('invalid item status', 'warn', 'ai_result_message'); //TODO append if possible
         }
     }
 
@@ -394,10 +405,10 @@ setValuesFromData(artItemData) {
     this.itemNotes = artItemData['notes'];
 
     if(this.type === false) {
-        show_message('invalid item type', 'warn', ai_message_div); //TODO append if possible
+        show_message('invalid item type', 'warn', 'ai_result_message'); //TODO append if possible
     }
     if(this.status === false) {
-        show_message('invalid item status', 'warn', ai_message_div); //TODO append if possible
+        show_message('invalid item status', 'warn', 'ai_result_message'); //TODO append if possible
     }
 }
 
@@ -419,6 +430,34 @@ fetchArtItem(index) {
 }
 
 updateArtItem () {
+    clear_message('ai_result_message');
+    if (!this.#bidderValid) {
+        show_message('Cannot save back to the table, the bidder field is still invalid', 'warn', 'ai_result_message');
+        return;
+    }
+    // now perform a pre-save validation, the bidder we already know is valid or empty (still valid, if empty)
+    // we only need to do this for art, as there are no interdependencies for the other types
+    if (this.type == artItemTypes.ART) {
+        let minPriceValue = Number(this.#min_bidField.value);
+        if (minPriceValue < 1) {
+            show_message("Cannot update: Minimum must be $1.00 or more", 'warn', 'ai_result_message');
+            return;
+        }
+
+        let salePriceValue = Number(this.#sale_priceField.value);
+        if (salePriceValue > 0 && minPriceValue >= salePriceValue) {
+            show_message("Cannot update: Minimum must be less than sale price", 'warn', 'ai_result_message');
+            return;
+        }
+
+        let finalPriceValue = Number(this.#final_priceField.value);
+        let checkPriceValue = this.#statusField.value == artItemStatuses.QUICKSALE ? salePriceValue : minPriceValue;
+        let checkPriceField = this.#statusField.value == artItemStatuses.QUICKSALE ? 'sale price' : 'minimum';
+        if (finalPriceValue > 0 && finalPriceValue < checkPriceValue) {
+            show_message("Cannot update: Final price must not be less than " + checkPriceField, 'warn', 'ai_result_message');
+            return;
+        }
+    }
     if(this.#index < 0) {
         this.#itemTable.addData([{
             id: this.id,
