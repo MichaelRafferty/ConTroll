@@ -47,8 +47,11 @@ $items=array();
     while($artItem = $artR->fetch_assoc()) {
         $items[] = $artItem;
     }
+    $artR->free();
 
-$artistQ = <<<EOS
+$response['art'] = $items;
+
+    $artistQ = <<<EOS
 SELECT DISTINCT e.exhibitorName, ery.id as exhibitorRegionYearId, ery.exhibitorNumber, ery.locations
 FROM exhibitorYears ey 
     JOIN exhibitorRegionYears ery ON ery.exhibitorYearId = ey.id
@@ -58,16 +61,15 @@ FROM exhibitorYears ey
 WHERE ey.conid=? AND exRY.exhibitsRegion=? AND S.item_purchased IS NOT NULL
     AND ery.exhibitorNumber IS NOT NULL
 ORDER BY e.exhibitorName;
-EOS; 
-
-$response['art'] = $items;
-$artistR = dbSafeQuery($artistQ, 'ii', array($conid, $region));
+EOS;
+    $artistR = dbSafeQuery($artistQ, 'ii', array($conid, $region));
 
 $artists=array();
 
     while($artist = $artistR->fetch_assoc()) {
         $artists[] = $artist;
     }
+    $artistR->free();
 
 $response['artists'] = $artists;
 

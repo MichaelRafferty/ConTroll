@@ -70,7 +70,7 @@ function getData() {
                 opt.innerHTML=artists[artist].exhibitorName+' ('+artists[artist].exhibitorNumber+')';
                 artistList.appendChild(opt);
             }
-            draw(data, textStatus, jqXHR);
+            draw(data);
         },
         error: function (jqXHR, textStatus, errorThrown) {
             showError("ERROR in getArt: " + textStatus, jqXHR);
@@ -98,7 +98,7 @@ function findDuplicates(data) {
     return errorString;
 }
 
-function draw(data, textStatus, jqXHR) {
+function draw(data) {
     //set buttons
     itemSaveBtn = document.getElementById("item-save");
     itemUndoBtn = document.getElementById("item-undo");
@@ -282,7 +282,7 @@ function saveItem() {
             } else {
                 //console.log(data);
                 show_message(data['message'], 'success');
-                getData();
+                draw(data);
             }
         }
     });
