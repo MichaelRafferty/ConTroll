@@ -15,6 +15,7 @@ function pivotArray($source, $keyfields, $rowLabel) : array | null {
     for ($i = 1; $i < count($source); $i++) {
         $row = '';
         foreach ($keyfields as $keyfield) {
+            $keyfield = trim($keyfield);
             if ($row != '')
                 $row .= '/';
             $row .= $source[$i][$keyfield];
@@ -34,6 +35,7 @@ function pivotArray($source, $keyfields, $rowLabel) : array | null {
             $key = '';
             $v = 0;
             foreach ($keyfields as $keyfield) {
+                $keyfield = trim($keyfield);
                 if ($key != '')
                     $key .= '/';
                 $key .= $source[$s][$keyfield];

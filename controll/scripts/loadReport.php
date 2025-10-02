@@ -231,7 +231,20 @@ while ($row = $rows->fetch_assoc()) {
     $data[] = $row;
 }
 $rows->free();
-$response['data'] = $data;
+
+// now pivot the table if required by pivotFields
+if (array_key_exists('pivotFields', $reportHdr)) {
+    $keyfields = explode(',', $reportHdr['pivotFields']);
+    $rowLabel = 'rowName';
+    if (array_key_exists('pivotRowName', $reportHdr))
+        $rowLabel = $reportHdr['pivotRowName'];
+    $newData = pivotArray($data, $keyfields, $rowLabel);
+    $response['data'] = $newData;
+    $response['pivoted'] = 1;
+} else {
+    $response['data'] = $data;
+    $response['pivoted'] = 0;
+}
 $response['fields'] = $fieldArr;
 $response['success'] = count($data) . " rows returned";
 
