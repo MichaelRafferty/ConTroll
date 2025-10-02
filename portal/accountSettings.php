@@ -120,7 +120,7 @@ if ($identitiesR !== false) {
 }
 
 if (getConfValue('portal', 'passkeyRpLevel', 'd') != 'd') {
-    $passKeys = getPasskey($info['email_addr'], 'portal')
+    $passKeys = getPasskey($info['email_addr'], 'portal');
 }
 
 // if we get here, we are logged in and it's a purely new person or we manage the person to be processed
