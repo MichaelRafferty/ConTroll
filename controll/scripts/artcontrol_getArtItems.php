@@ -23,8 +23,18 @@ if(array_key_exists('region', $_GET)) {$region = $_GET['region']; }
 else { ajaxError('No Data'); } 
 
 $artQ = <<<EOS
+WITH historyCount AS (
+    SELECT H.id, count(*) AS historyCount
+    FROM artItemsHistory H
+    JOIN exhibitorRegionYears ery ON ery.id = H.exhibitorRegionYearId
+    JOIN exhibitorYears ey ON ey.id=ery.exhibitorYearId
+    JOIN exhibitsRegionYears exRY ON exRY.id=ery.exhibitsRegionYearId
+    WHERE ey.conid=? and exRY.exhibitsRegion=?
+    GROUP BY H.id
+)
 SELECT I.id, I.exhibitorRegionYearId, I.item_key, I.title, I.type, I.status, I.location, I.quantity, I.original_qty, 
-       I.min_price, I.sale_price, I.final_price, I.bidder, I.material, I.notes, ey.id AS exhibitorYearId, ery.exhibitsRegionYearId,
+    I.min_price, I.sale_price, I.final_price, I.bidder, I.material, I.notes, h.historyCount,
+    ey.id AS exhibitorYearId, ery.exhibitsRegionYearId,
     ery.exhibitorNumber, ery.locations, e.exhibitorName, exR.name as exhibitRegionName,
     concat(trim(p.first_name), ' ', trim(p.last_name)) as bidderName,
     concat(trim(p.first_name), ' ', trim(p.last_name), ' (', I.bidder, ')') as bidderText,
@@ -36,11 +46,12 @@ FROM artItems I
     JOIN exhibitsRegionYears exRY ON exRY.id=ery.exhibitsRegionYearId
     JOIN exhibitsRegions exR on exR.id=exRY.exhibitsRegion
     LEFT JOIN perinfo p ON p.id=I.bidder
+    LEFT JOIN historyCount h on h.id = I.id
 WHERE ey.conid=? and exRY.exhibitsRegion=?
 ORDER BY ery.exhibitorNumber, I.item_key;
 EOS;
 
-$artR = dbSafeQuery($artQ, 'ii', array($conid, $region));
+$artR = dbSafeQuery($artQ, 'iiii', array($conid, $region,$conid, $region));
 
 $items=array();
 
