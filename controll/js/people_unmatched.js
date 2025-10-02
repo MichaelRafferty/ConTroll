@@ -371,7 +371,7 @@ class Unmatched {
                 {title: "Full Name", field: "fullName", width: 250, formatter: "textarea", headerSort: false, },
                 {title: "Address", field: "fullAddr", width: 300, formatter: "textarea", headerSort: false, },
                 {title: "Badge Name", field: "badge_name", width: 150, headerSort: false, },
-                {title: "Manager By", field: "manager", headerWordWrap: true, width: 150, headerSort: false, },
+                {title: "Managed By", field: "manager", headerWordWrap: true, width: 150, headerSort: false, },
                 {title: "Email", field: "email_addr", width: 250, headerSort: false, },
                 {title: "Phone", field: "phone", width: 150, headerSort: false, },
                 {title: "Date Created", field: "createtime", width: 180, headerSort: false, },
