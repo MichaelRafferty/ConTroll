@@ -99,6 +99,10 @@ This configuration file must be parsable by the parse_ini_file function with sec
   * csvfile: default file name for the csv download
   * totals: position of the overall totals (top/bottom)
   * subtotals: (field list to do a group by and subtotal, if calc fields exist
+  * pivotFields: comma separated list of fields to make the new keys of the pivoted columns
+    * Note: If this field is included the table is pivoted after the select phase and before the report writing phase
+  * pivotRowName: name assigned to the first field (identifier) of the pivoted rows
+    * Note: this field is only valid if pivbotFields is present and non empty.  If missing it defaults to "rowName"
 * [Cnumber] (the number is the sort order of the CTE in the sql, number should be 3 digits with leading zeros) (CTE is Common Table Expression and uses the 
   with subquery notation in the SQL)
   * name: CTE name
