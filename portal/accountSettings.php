@@ -1,6 +1,7 @@
 <?php
 // Registration  Portal - accountSettings.php - maintain the list of mananged members and the account identities email addresses
 require_once("lib/base.php");
+require_once("../lib/webauthn.php");
 
 global $config_vars;
 
