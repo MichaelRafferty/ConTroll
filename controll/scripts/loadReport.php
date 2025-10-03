@@ -1,6 +1,7 @@
 <?php
 // loadReport - load a .rpt type processor report and output same
 require_once "../lib/base.php";
+require_once "../../lib/pivotArray.php";
 require_once "../../lib/log.php";
 
 $check_auth = google_init("ajax");
@@ -73,6 +74,7 @@ if (array_key_exists('subtotals', $reportHdr))
     $response['groupby'] = $reportHdr['subtotals'];
 
 $fieldArr = [];
+$pivotArr = [];
 $postVars = [];
 if (array_key_exists('postVars', $_POST)) {
     $postVars = $_POST['postVars'];
@@ -104,15 +106,20 @@ if ($first == false)
 $sql .= "SELECT DISTINCT" . PHP_EOL;
 $first = '';
 foreach ($sections AS $key => $section) {
-    if (!str_starts_with($section, 'F'))
-        continue;
+    if (str_starts_with($section, 'F')) {
+        // F start is a sql/field setting
+        $fields = $reportParams[$section];
+        $sql .= $first . $fields['sql'] . ' AS ' . $fields['name'] . PHP_EOL;
+        unset($fields['sql']);
+        $fieldArr[] = $fields;
+        $first = ', ';
+    }
 
-    // F start is a sql/field setting
-    $fields = $reportParams[$section];
-    $sql .= $first . $fields['sql'] . ' AS ' . $fields['name'] . PHP_EOL;
-    unset($fields['sql']);
-    $fieldArr[] = $fields;
-    $first = ', ';
+    if (str_starts_with($section, 'R')) {
+        // R start is a pivot field setting
+        $fields = $reportParams[$section];
+        $pivotArr[] = $fields;
+    }
 }
 
 // after the main SQL stuff we need the from/joins
@@ -239,13 +246,15 @@ if (array_key_exists('pivotFields', $reportHdr)) {
     if (array_key_exists('pivotRowName', $reportHdr))
         $rowLabel = $reportHdr['pivotRowName'];
     $newData = pivotArray($data, $keyfields, $rowLabel);
-    $response['data'] = $newData;
+    $response['data'] = $newData;;
     $response['pivoted'] = 1;
+    $response['fields'] = $pivotArr;
 } else {
     $response['data'] = $data;
     $response['pivoted'] = 0;
+    $response['fields'] = $fieldArr;
 }
-$response['fields'] = $fieldArr;
+
 $response['success'] = count($data) . " rows returned";
 
 ajaxSuccess($response);

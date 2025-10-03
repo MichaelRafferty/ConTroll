@@ -22,7 +22,7 @@ function pivotArray($source, $keyfields, $rowLabel) : array | null {
         }
         $keyrow[] = $row;
     }
-    var_dump([ 'keyrow' => $keyrow ]);
+    //var_dump([ 'keyrow' => $keyrow ]);
     $rows = [];
     for ($i = 0; $i < count($keys); $i++) {
         if (in_array($keys[$i], $keyfields, true))
