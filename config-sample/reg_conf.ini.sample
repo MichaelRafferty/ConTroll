@@ -145,6 +145,10 @@ artistBidSheet="Demo 2024 Art Show Bid Sheet"
 artistPriceTag=""
 artsheets=false ; true/false show sheet print buttons
 artcontrol=false ; true/false show control sheet print button
+;;; artcontrolsort = one of item or type (/item): default if missing: item
+;;  if =item it is one group by item #,
+;; if =type then the 3 types (print, sale, nfs) are listed separetely sorted by item id
+artcontrolsort=item
 
 [portal]
 ;;; overrides

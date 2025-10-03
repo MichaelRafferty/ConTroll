@@ -600,6 +600,7 @@ function pdfArtistControlSheet($regionYearId, $region, $response, $printContactI
     $lineHeight = 11 * $pt;
     $boxHeight = 13 * $pt;
     $dataOffset = 0.12;
+    $sortOption = getConfValue('vendor', 'artcontrolsort', 'item');
 
     $artistQ = <<<EOS
 SELECT e.*, exY.conid,exY.mailin,exY.contactName,exY.contactPhone, exY.contactEmail, exRY.agentPerid, exRY.agentRequest, exRY.exhibitorNumber, eR.name,
@@ -892,6 +893,7 @@ EOS;
     popFont();
     $v += 0.3;
 
+    $orderBy = $sortOption == 'item' ? 'aI.item_key' : 'aI.type, aI.item_key';
     // now get art info
     $itemSQL = <<<EOS
 SELECT e.exhibitorName, exRY.exhibitorNumber, e.artistName,
@@ -906,7 +908,7 @@ JOIN exhibitsRegionYears eRY ON exRY.exhibitsRegionYearId = eRY.id
 JOIN exhibitsRegions eR ON eRY.exhibitsRegion = eR.id
 LEFT OUTER JOIN perinfo p ON aI.bidder = p.id
 WHERE exRY.exhibitorYearId=? AND exRY.exhibitsRegionYearId = ?
-ORDER BY aI.item_key
+ORDER BY $orderBy;
 EOS;
 
     $itemR = dbSafeQuery($itemSQL, 'ii', array($regionYearId, $region));
@@ -960,6 +962,7 @@ EOS;
         $boxOffset = (11 / 144);
 
         $titleNeeded = true;
+        $currentType = $artItems[0]['type'];
         $salesTotal = 0;
         foreach ($artItems as $artItem) {
             if ($v > $maxV) {
@@ -973,12 +976,34 @@ EOS;
                 $pageStr = "Page $page";
                 rightPrintXY(0,  $y, $pdf->GetPageWidth() - $margin,  $pageStr);
                 popFont();
-                $v = $firstrow;;
+                $v = $firstrow;
+            }
+
+            if ($artItem['type'] != $currentType && $sortOption == 'type') {
+                $titleNeeded = true;
+                $currentType = $artItem['type'];
             }
 
             if ($titleNeeded) {
                 // print title
                 $titleNeeded = false;
+
+                if (($v + 4 * $minRowHeight) > $maxV) {
+                    // no room for a title and two rows, force new page
+                    $pdf->AddPage();
+                    $page++;
+                    pushFont('Roboto', 'B', 11);
+                    printXY($margin, $margin, "Control Sheets for $conname's " . $artist['name'] . '; Artist: ' . $artistName);
+                    $y = $pdf->GetPageHeight() - ($margin);
+                    printXY($margin, $y, "Generated: $createDate");
+                    $pageStr = "Page $page";
+                    rightPrintXY(0,  $y, $pdf->GetPageWidth() - $margin,  $pageStr);
+                    popFont();
+                    $v = $firstrow;
+                }
+                if ($v != $firstrow)
+                    $v += $minRowHeight;
+
                 rightPrintXY($cPN, $v, $wPN, '#');
                 printXY($cT, $v,'Title');
                 pushFont('Roboto', '', 7);
@@ -986,25 +1011,69 @@ EOS;
                 popFont();
                 printXY($cM, $v, 'Material');
                 pushFont('Roboto', '', 8);
-                mprintXY($cMin, $v, $wMin, 'Min bid or Ins Value');
-                mprintXY($cSale, $v, $wSale, 'Quick Sale or Print Price');
+                if ($sortOption == 'type') {
+                    switch ($currentType) {
+                        case 'art':
+                            mprintXY($cMin, $v, $wMin, 'Min bid');
+                            break;
+                        case 'nfs':
+                            mprintXY($cMin, $v, $wMin, 'Ins Value');
+                            break;
+                        case 'print':
+                            break;
+                    }
+                } else {
+                    mprintXY($cMin, $v, $wMin, 'Min bid or Ins Value');
+                }
+                if ($sortOption == 'type') {
+                    switch ($currentType) {
+                        case 'art':
+                            mprintXY($cSale, $v, $wMin, 'Quick Sale');
+                            break;
+                        case 'nfs':
+                            break;
+                        case 'print':
+                            mprintXY($cSale, $v, $wMin, 'Print Price');
+                            break;
+                    }
+                } else {
+                    mprintXY($cSale, $v, $wSale, 'Quick Sale or Print Price');
+                }
+
                 popFont();
-                pushFont('Roboto', 'C', 7);
-                mprintXY($cOrig - $pt, $v, $wOrig + $pt, 'Orig Qty');
-                mprintXY($cQty - $pt, $v, $wQty + $pt, 'Cur. Qty');
-                popFont();
+                if ($sortOption != 'type' || $currentType == 'print') {
+                    pushFont('Roboto', 'C', 7);
+                    mprintXY($cOrig - $pt, $v, $wOrig + $pt, 'Orig Qty');
+                    mprintXY($cQty - $pt, $v, $wQty + $pt, 'Cur. Qty');
+                    popFont();
+                }
                 pushFont('Roboto', '', 8);
                 printXY($cLoc, $v, 'Location');
                 popFont();
                 printXY($cStatus, $v, 'Status');
                 pushFont('Roboto', 'C', 9);
-                mprintXY($cFinal, $v, $wFinal, 'Winning Bid / Print Sales');
-                popFont();
-                printXY($cWin, $v, 'Bidder');
-                if ($printContactInfo === true) {
-                    printXY($cWEmail, $v, 'Bidder Email');
+                if ($sortOption == 'type') {
+                    switch ($currentType) {
+                        case 'art':
+                            mprintXY($cFinal, $v, $wMin, 'Winning Bid');
+                            break;
+                        case 'nfs':
+                            break;
+                        case 'print':
+                            mprintXY($cFinal, $v, $wMin, 'Print Sales');
+                            break;
+                    }
                 } else {
-                    printXY($cWEmail, $v, 'Bidder Id');
+                    mprintXY($cFinal, $v, $wFinal, 'Winning Bid / Print Sales');
+                }
+                popFont();
+                if ($sortOption != 'type' || $currentType == 'art') {
+                    printXY($cWin, $v, 'Bidder');
+                    if ($printContactInfo === true) {
+                        printXY($cWEmail, $v, 'Bidder Email');
+                    } else {
+                        printXY($cWEmail, $v, 'Bidder Id');
+                    }
                 }
 
                 $bv = $v - ($boxOffset + $pt);
@@ -1019,12 +1088,17 @@ EOS;
                 $pdf->Rect($cQty - $pt, $bv, $wQty + $pt * 3, $boxHeight);
                 $pdf->Rect($cLoc - $pt, $bv, $wLoc + $pt * 3, $boxHeight);
                 $pdf->Rect($cStatus - $pt, $bv, $wStatus + $pt * 3, $boxHeight);
-                $pdf->Rect($cFinal - $pt, $bv, $wFinal + $pt * 3, $boxHeight);
-                $pdf->Rect($cWin - $pt, $bv, $wWin + $pt * 3, $boxHeight);
-                $pdf->Rect($cWEmail - $pt, $bv, $wWEmail + $pt * 3, $boxHeight);
+                if ($sortOption != 'type' || $currentType != 'nfs') {
+                    $pdf->Rect($cFinal - $pt, $bv, $wFinal + $pt * 3, $boxHeight);
+                }
+                if ($sortOption != 'type' || $currentType == 'art') {
+                    $pdf->Rect($cWin - $pt, $bv, $wWin + $pt * 3, $boxHeight);
+                    $pdf->Rect($cWEmail - $pt, $bv, $wWEmail + $pt * 3, $boxHeight);
+                }
 
                 $v += 2 * $minRowHeight;
             }
+            // end of print title
 
             $winnerName = TRIM(TRIM(TRIM($artItem['first_name'] . ' ' . $artItem['middle_name']) . ' ' . $artItem['last_name']) . ' ' . $artItem['suffix']);
             $winnerPerid = $artItem['bidder'];
@@ -1040,6 +1114,7 @@ EOS;
             popFont();
             $y = mprintXY($cM, $v, $wM, $artItem['material']);
             if ($y > $maxY) $maxY = $y;
+
             if ($artItem['min_price'] && $artItem['type'] != 'print') {
                 if ($artItem['min_price'] > 9999.99) {
                     pushFont('Roboto', '', $artItem['min_price'] > 999999.99 ? 7.5 : 9);
@@ -1058,10 +1133,12 @@ EOS;
                     popFont();
                 }
             }
-            if ($artItem['original_qty'] > 0)
-                rightPrintXY($cOrig, $v, $wOrig, $artItem['original_qty']);
-            if ($artItem['quantity'] > 0)
-                rightPrintXY($cQty, $v, $wQty, $artItem['quantity']);
+            if ($artItem['type'] == 'print') {
+                if ($artItem['original_qty'] > 0)
+                    rightPrintXY($cOrig, $v, $wOrig, $artItem['original_qty']);
+                if ($artItem['quantity'] > 0)
+                    rightPrintXY($cQty, $v, $wQty, $artItem['quantity']);
+            }
             pushFont('Roboto', '', 7);
             $y = fitprintXY($cStatus - $pt, $v, $wStatus + $pt, $artItem['status'] == 'Purchased/Released' ? 'Purchased' : $artItem['status']);
             if ($y > $maxY) $maxY = $y;
@@ -1073,7 +1150,7 @@ EOS;
             } else {
                 $final_price = $artItem['final_price'];
             }
-            if ($final_price) {
+            if ($final_price && $artItem['type'] != 'nfs') {
                 if ($final_price > 9999.99) {
                     pushFont('Roboto', '', $final_price > 999999.99 ? 7.5 : 9);
                 }
@@ -1083,14 +1160,16 @@ EOS;
                 }
                 $salesTotal += $final_price;
             }
-            $y = mprintXY($cWin, $v, $wWin, $winnerName);
-            if ($y > $maxY) $maxY = $y;
-            if ($printContactInfo === true) {
-                $y = mprintXY($cWEmail, $v, $wWEmail, $winnerEmail);
-            } else {
-                $y = mprintXY($cWEmail, $v, $wWEmail, $winnerPerid);
+            if ($artItem['type'] == 'art') {
+                $y = mprintXY($cWin, $v, $wWin, $winnerName);
+                if ($y > $maxY) $maxY = $y;
+                if ($printContactInfo === true) {
+                    $y = mprintXY($cWEmail, $v, $wWEmail, $winnerEmail);
+                } else {
+                    $y = mprintXY($cWEmail, $v, $wWEmail, $winnerPerid);
+                }
+                if ($y > $maxY) $maxY = $y;
             }
-            if ($y > $maxY) $maxY = $y;
 
             // now draw the borders
 
@@ -1106,10 +1185,13 @@ EOS;
             $pdf->Rect($cQty - $pt, $bv, $wQty + $pt * 3, $boxHeight);
             $pdf->Rect($cLoc - $pt, $bv, $wLoc + $pt * 3, $boxHeight);
             $pdf->Rect($cStatus - $pt, $bv, $wStatus + $pt * 3, $boxHeight);
-            $pdf->Rect($cFinal - $pt, $bv, $wFinal + $pt * 3, $boxHeight);
-            $pdf->Rect($cWin - $pt, $bv, $wWin + $pt * 3, $boxHeight);
-            $pdf->Rect($cWEmail - $pt, $bv, $wWEmail + $pt * 3, $boxHeight);
-
+            if ($sortOption != 'type' || $artItem['type'] != 'nfs') {
+                $pdf->Rect($cFinal - $pt, $bv, $wFinal + $pt * 3, $boxHeight);
+            }
+            if ($sortOption != 'type' || $artItem['type'] == 'art') {
+                $pdf->Rect($cWin - $pt, $bv, $wWin + $pt * 3, $boxHeight);
+                $pdf->Rect($cWEmail - $pt, $bv, $wWEmail + $pt * 3, $boxHeight);
+            }
             $v = $maxY + 0.1;
         }
 
