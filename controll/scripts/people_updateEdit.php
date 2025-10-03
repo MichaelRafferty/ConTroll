@@ -62,6 +62,33 @@ $banned = $_POST['banned'] == null ? 'N' : trim($_POST['banned']);
 $admin_notes = $_POST['adminNotes'] == null ? '' : trim($_POST['adminNotes']);
 $open_notes = $_POST['openNotes'] == null ? '' : trim($_POST['openNotes']);
 
+// check if manager is managed by someone else if $managedBy is not null
+if ($managedBy != null) {
+    $chkQ = <<<EOS
+SELECT managedByNew, managedBy
+FROM perinfo
+WHERE id = ?;
+EOS;
+    $chkR = dbSafeQuery($chkQ, 'i', array($managedBy));
+    if ($chkR === false) {
+        $response['error'] = 'SQL Error in checking if manager is managed' . '<br/>Nothing updated.';
+        ajaxSuccess($response);
+        exit();
+    }
+    $managerData = $chkR->fetch_assoc();
+    $chkR->free();
+    if ($managerData['managedBy'] != null) {
+        $response['error'] = "Manager $managedBy is already managed by " . $managerData['managedBy'] . "<br/>Nothing updated.";
+        ajaxSuccess($response);
+        exit();
+    }
+    if ($managerData['managedByNew'] != null) {
+        $response['error'] = "Manager $managedBy is already managed by newperson" . $managerData['managedByNew'];
+        ajaxSuccess($response);
+        exit();
+    }
+}
+
 $uP = <<<EOS
 UPDATE perinfo
 SET last_name = ?, first_name = ?, middle_name = ?, suffix = ?, email_addr = ?, phone = ?, badge_name = ?, legalName = ?, pronouns = ?,

@@ -142,7 +142,7 @@ if ($personId < 0) {
         // the exact match check for this new person will prevent adding newperson for existing people
         // see if there is an exact match
         $exactMsql = <<<EOF
-SELECT id
+SELECT id, managedBy
 FROM perinfo p
 WHERE
 	REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
@@ -197,18 +197,20 @@ EOF;
         if ($res !== false) {
             if ($res->num_rows > 0) {
                 $match = $res->fetch_assoc();
-                $matchId = $match['id'];
-                $personType = 'p';
-                $personId = $matchId;
+                if ($match['managedBy'] == null) { // not already managed by someone else
+                    $matchId = $match['id'];
+                    $personType = 'p';
+                    $personId = $matchId;
 
-                // now update the perid to set the managed by flag
-                $updPQ = <<<EOS
+                    // now update the perid to set the managed by flag
+                    $updPQ = <<<EOS
 UPDATE perinfo
 SET managedBy = ?, managedReason = 'Exact Match'
 WHERE id = ?;
 EOS;
-                $upd = dbSafeCmd($updPQ, 'ii', array ($loginId, $matchId));
-                logWrite(array ('con' => $con['name'], 'trans' => $transId, 'action' => 'Exact Match for management', 'person' => $person, 'managedBy' => $loginId));
+                    $upd = dbSafeCmd($updPQ, 'ii', array ($loginId, $matchId));
+                    logWrite(array ('con' => $con['name'], 'trans' => $transId, 'action' => 'Exact Match for management', 'person' => $person, 'managedBy' => $loginId));
+                }
             }
         }
 
