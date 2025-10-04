@@ -312,7 +312,7 @@ $config_vars['inrerests'] = $interests;
                             <input type='text' id='address' name='address' maxlength='64' size='64' placeholder='Address'/>
                             <input type='text' id='addr2' name='addr2' maxlength='64' size='64' placeholder='Address Line 2 or Company'/>
                             <input type='text' id='city' name='city' maxlength='32' size='32' placeholder='City'/>
-                            <input type='text' id='state' name='state' maxlength='16' size='16' placeholder='State'/>
+                            <input type='text' id='state' name='state' maxlength='16' size='16' placeholder='State/Prov'/>
                             <input type='text' id='zip' name='zip' maxlength='10' size='10' placeholder='Postal Code'/>
 
                             <label for='country' class='form-label-sm'>

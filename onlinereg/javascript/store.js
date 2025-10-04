@@ -61,7 +61,7 @@ function process(formRef) {
     }
 
     if (formData.country == 'USA') {
-        message += "<br/>Note: If any of the address fields Address, City, State or Zip are used and the country is United States, " +
+        message += "<br/>Note: If any of the address fields Address, City, State/Prov or Zip/PC are used and the country is United States, " +
             "then the Address, City, State, and Zip fields must all be entered and the state field must be a valid USPS two character state code.";
     }
     // validation

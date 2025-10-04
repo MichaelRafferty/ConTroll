@@ -331,7 +331,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                                     />
                                 </div>
                                 <div class="col-sm-auto ms-0 me-0 p-0 ps-2">
-                                    <label for="state"><span class='text-danger'>&bigstar;</span>State: </label>
+                                    <label for="state"><span class='text-danger'>&bigstar;</span>State/Prov: </label>
                                 </div>
                                 <div class="col-sm-auto p-0 ms-0 me-0 ps-1">
                                     <input class="form-control-sm" id='state' type='text' size="10" maxlength="16" name='state' required
@@ -480,7 +480,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                                     />
                                 </div>
                                 <div class='col-sm-auto ms-0 me-0 p-0 ps-2'>
-                                    <label for='shipState'><span class='text-danger'>&bigstar;</span>State: </label>
+                                    <label for='shipState'><span class='text-danger'>&bigstar;</span>State/Prov: </label>
                                 </div>
                                 <div class='col-sm-auto p-0 ms-0 me-0 ps-1'>
                                     <input class='form-control-sm' id='shipState' type='text' size='10' maxlength='16' name='shipState'
@@ -891,7 +891,7 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                         />
                                     </div>
                                     <div class="col-sm-auto ms-0 me-0 p-0 ps-2">
-                                        <label for="state"><span class='text-danger'>&bigstar;</span>State: </label>
+                                        <label for="state"><span class='text-danger'>&bigstar;</span>State/Prov: </label>
                                     </div>
                                     <div class="col-sm-auto p-0 ms-0 me-0 ps-1">
                                         <input class="form-control-sm" id='state' type='text' size="10" maxlength="16" name='state' required
@@ -899,7 +899,7 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                         />
                                     </div>
                                     <div class="col-sm-auto ms-0 me-0 p-0 ps-2">
-                                        <label for="zip"><span class='text-danger'>&bigstar;</span>Zip: </label>
+                                        <label for="zip"><span class='text-danger'>&bigstar;</span>Zip/PC: </label>
                                     </div>
                                     <div class="col-sm-auto p-0 ms-0 me-0 ps-1 pb-2">
                                         <input class="form-control-sm" id='zip' type='text' size="11" maxlength="11" name='zip' required
@@ -972,7 +972,7 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                             />
                                         </div>
                                         <div class='col-sm-auto ms-0 me-0 p-0 ps-2'>
-                                            <label for='shipState'><span class='text-danger'>&bigstar;</span>State: </label>
+                                            <label for='shipState'><span class='text-danger'>&bigstar;</span>State/Prov: </label>
                                         </div>
                                         <div class='col-sm-auto p-0 ms-0 me-0 ps-1'>
                                             <input class='form-control-sm' id='shipState' type='text' size='10' maxlength='16' name='shipState'
@@ -980,7 +980,7 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                             />
                                         </div>
                                         <div class='col-sm-auto ms-0 me-0 p-0 ps-2'>
-                                            <label for='shipZip'><span class='text-danger'>&bigstar;</span>Zip: </label>
+                                            <label for='shipZip'><span class='text-danger'>&bigstar;</span>Zip/PC: </label>
                                         </div>
                                         <div class='col-sm-auto p-0 ms-0 me-0 ps-1 pb-2'>
                                             <input class='form-control-sm' id='shipZip' type='text' size='11' maxlength='11' name='shipZip' required

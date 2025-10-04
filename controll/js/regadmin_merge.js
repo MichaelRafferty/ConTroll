@@ -202,8 +202,8 @@ class mergesetup {
                 { title: "Address", field: "address", headerSort: true, },
                 { title: "Address 2", field: "addr_2", headerSort: true, },
                 { title: "City", field: "city", headerSort: true, },
-                { title: "State", field: "state", headerSort: true, },
-                { title: "Zip", field: "zip", headerSort: true, },
+                { title: "State/Prov", field: "state", headerSort: true, },
+                { title: "Zip/PC", field: "zip", headerSort: true, },
                 { title: "Country", field: "Country", headerSort: true, },
 
             ]

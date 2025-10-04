@@ -32,7 +32,7 @@
 [F011]
     name=State
     sql=p.state
-    title=State
+    title="State/Prov"
 [F012]
     name=Zip
     sql=p.zip

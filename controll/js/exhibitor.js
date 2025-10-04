@@ -852,7 +852,7 @@ class exhibitorsAdm {
                         {title: "Mail In", field: "mailin", visible: true, headerWordWrap: true, width: 75, },
                         {title: "Salex Tax ID", field: "salesTaxId", visible: true, headerWordWrap: true, width: 150, },
                         {title: "City", field: "city", width: 140, headerSort: true, headerFilter: true, visible: false, },
-                        {title: "State", field: "state", headerSort: true, headerFilter: true, visible: false,},
+                        {title: "State/Prov", field: "state", headerSort: true, headerFilter: true, visible: false,},
                         {title: "Contact Notes", field: "state",  headerFilter: true, formatter: "textarea", visible: false,},
                     ]
                 }
@@ -948,8 +948,8 @@ class exhibitorsAdm {
                 { title: "Contact Name", field: "contactName", headerSort: true, headerFilter: true, width: 300, },
                 { title: "Contact Email", field: "contactEmail", headerSort: true, headerFilter: true, width: 300, },
                 { title: "City", field: "city", headerSort: true, headerFilter: true, width: 150 },
-                { title: "State", field: "state", headerSort: true, headerFilter: true, width: 60 },
-                { title: "Zip", field: "zip", headerSort: true, headerFilter: true, width: 120 },
+                { title: "St", field: "state", headerSort: true, headerFilter: true, width: 65 },
+                { title: "Zip/PC", field: "zip", headerSort: true, headerFilter: true, width: 120 },
         ]});
         this.#importTable.on("rowClick", function(e, row){
             var cell = row.getCell('import');
@@ -1639,8 +1639,8 @@ class exhibitorsAdm {
                 {title: "Email", field: "exhibitorEmail", headerFilter: true, visible: true, width: 200, },
                 {title: "Website", field: "website", headerFilter: true, visible: true, width: 200, },
                 {title: "City", field: "city", visible: true, headerFilter: true, width: 200, },
-                {title: "State", field: "state", visible: true, headerFilter: true, width: 100, },
-                {title: "Zip", field: "zip", visible: true, headerFilter: true, width: 100, },
+                {title: "St/Prov", field: "state", visible: true, headerFilter: true, width: 100, },
+                {title: "Zip/PC", field: "zip", visible: true, headerFilter: true, width: 100, },
         ]});
     }
 

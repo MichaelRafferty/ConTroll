@@ -285,13 +285,13 @@ function openInvoice(id) {
             tabindex += 2;
             html += `
     <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="state_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + addrStar + `State</span></label><br/>
+        <label for="state_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + addrStar + `State/Proc</span></label><br/>
         <input class="form-control-sm" type="text" name="state_i_` + mnum + `" id='state_i_` + mnum + `' size="10" maxlength=16" tabindex=` + tabindex + `/>
     </div>`;
             tabindex += 2;
             html += `
     <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="zip_i_` + mnum + `" class="form-label-sm"><class="text-dark" style="font-size: 10pt;">` + addrStar + `Zip</span></label><br/>
+        <label for="zip_i_` + mnum + `" class="form-label-sm"><class="text-dark" style="font-size: 10pt;">` + addrStar + `Zip/PC</span></label><br/>
         <input class="form-control-sm" type="text" name="zip_i_` + mnum + `" id='zip_i_` + mnum + `' size="5" maxlength="10" tabindex=` + tabindex + `/>
     </div>`;
             tabindex += 2;
@@ -404,13 +404,13 @@ function openInvoice(id) {
             tabindex += 2;
             html += `
     <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="state_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + addrStar + `State</span></label><br/>
+        <label for="state_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + addrStar + `State/Prov</span></label><br/>
         <input class="form-control-sm" type="text" name="state_a_` + mnum + `" id='state_a_` + mnum + `' size="10" maxlength="16" tabindex=` + tabindex + `/>
     </div>`;
             tabindex += 2;
             html += `
     <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="zip_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + addrStar + `Zip</span></label><br/>
+        <label for="zip_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + addrStar + `Zip/PC</span></label><br/>
         <input class="form-control-sm" type="text" name="zip_a_` + mnum + `" id='zip_a_` + mnum + `' size="5" maxlength="10" tabindex=` + tabindex + `/>
     </div>`;
             tabindex += 2;

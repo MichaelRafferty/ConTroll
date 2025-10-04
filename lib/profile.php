@@ -151,9 +151,10 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
         </div>
         <div class="col-sm-auto">
             <label for="<?php echo $idPrefix . 'state'; ?>" class="form-label-sm">
-                <span class="text-dark" style="font-size: 10pt;"><?php echo $addrStar; ?>State: U.S./CAN 2-letter abv.</span>
+                <span class="text-dark" style="font-size: 10pt;"><?php echo $addrStar; ?>State/Provence</span>
             </label><br/>
-            <input class="form-control-sm" type="text" name="state" id='<?php echo $idPrefix . 'state'; ?>' size="16" maxlength="16"
+            <input class="form-control-sm" type="text" name="state" id='<?php echo $idPrefix . 'state'; ?>' size="18" maxlength="16"
+                   placeholder="US/CAN 2-letter abv."
                    tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
         </div>
         <div class="col-sm-auto">

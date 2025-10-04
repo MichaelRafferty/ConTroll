@@ -352,11 +352,11 @@ class ExhibitorInvoice {
                     <input class="form-control-sm" type="text" name="city` + suffix + `" id='city` + suffix + `' size="22" maxlength="32" />
                 </div>
                 <div class="col-sm-auto ms-0 me-2 p-0">
-                    <label for="state` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + this.#addrStar + `State</span></label><br/>
+                    <label for="state` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + this.#addrStar + `State/Prov</span></label><br/>
                     <input class="form-control-sm" type="text" name="state` + suffix + `" id='state` + suffix + `' size="10" maxlength=16" />
                 </div>
                 <div class="col-sm-auto ms-0 me-2 p-0">
-                    <label for="zip` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + this.#addrStar + `Zip</span></label><br/>
+                    <label for="zip` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + this.#addrStar + `Zip/PC</span></label><br/>
                     <input class="form-control-sm" type="text" name="zip` + suffix + `" id='zip` + suffix + `' size="5" maxlength="10" />
                 </div>
                 <div class="col-sm-auto ms-0 me-0 p-0">
@@ -667,7 +667,7 @@ class ExhibitorInvoice {
             id = document.getElementById('state' + suffix);
             value = id.value;
             if (value == '') {
-                this.#invalidFields += label + 'State, ';
+                this.#invalidFields += label + 'State/Provence, ';
                 valid = false;
                 id.style.backgroundColor = 'var(--bs-warning)';
             } else {

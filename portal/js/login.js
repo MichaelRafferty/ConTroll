@@ -158,8 +158,8 @@ class Login {
                             {title: 'Phone', field: 'phone', headerWordWrap: true, headerFilter: true, tooltip: true},
                             {title: 'Address', field: 'address', headerWordWrap: true, headerFilter: true, tooltip: true},
                             {title: 'City', field: 'city', headerWordWrap: true, headerFilter: true, tooltip: true,},
-                            {title: 'State', field: 'state', headerWordWrap: true, headerFilter: true, tooltip: true,},
-                            {title: 'Zip', field: 'zip', headerWordWrap: true, headerFilter: true, tooltip: true,},
+                            {title: 'State/Prov', field: 'state', headerWordWrap: true, headerFilter: true, tooltip: true,},
+                            {title: 'Zip/Postal Code', field: 'zip', headerWordWrap: true, headerFilter: true, tooltip: true,},
                             {title: 'Created', field: 'creation_date', headerWordWrap: true, headerFilter: false, tooltip: true, headerSort: true,},
                             {title: 'Act', field: 'active', headerWordWrap: true, headerFilter: true, tooltip: false, width: 50},
                             {title: 'Ban', field: 'banned', headerWordWrap: true, headerFilter: true, tooltip: false, width: 50},
@@ -319,7 +319,7 @@ class Login {
         }
         // validation
         if (person.country == 'USA') {
-            message += "<br/>Note: If any of the address fields Address, City, State or Zip are used and the country is United States, " +
+            message += "<br/>Note: If any of the address fields Address, City, State/Prov or Zip/PC are used and the country is United States, " +
                 "then the Address, City, State, and Zip fields must all be entered and the state field must be a valid USPS two character state code.";
         }
 

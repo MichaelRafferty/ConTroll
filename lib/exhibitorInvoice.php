@@ -108,14 +108,14 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $testsit
                                        size='32' required tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
                             </div>
                             <div class='col-sm-auto ms-0 me-0 p-0 ps-2'>
-                                <label for='vendor_inv_state'> State: </label>
+                                <label for='vendor_inv_state'> State/Prov: </label>
                             </div>
                             <div class='col-sm-auto p-0 ms-0 me-0 ps-1'>
                                 <input class='form-control-sm' type='text' name='state'  id='vendor_inv_state' value="<?php echo $state; ?>"
                                        size='10' maxlength='16' required tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
                             </div>
                             <div class='col-sm-auto ms-0 me-0 p-0 ps-2'>
-                                <label for='vendor_inv_zip'> Zip: </label>
+                                <label for='vendor_inv_zip'> Zip/PC: </label>
                             </div>
                             <div class='col-sm-auto p-0 ms-0 me-0 ps-1 pb-2'>
                                 <input class='form-control-sm' type='text' name='zip' id='vendor_inv_zip' value="<?php echo $zip; ?>"
@@ -218,14 +218,14 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $testsit
                                             tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
                                  </div>
                                  <div class='col-sm-auto ps-0 pe-0'>
-                                     <label for='cc_state'>State:</label>
+                                     <label for='cc_state'>State/Prov:</label>
                                  </div>
                                  <div class='col-sm-auto'>
                                      <input type='text' id='cc_state' size=10 maxlength="16" required='required' name='cc_state' value="<?php echo $state; ?>"
                                             tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
                                  </div>
                                  <div class='col-sm-auto ps-0 pe-0'>
-                                     <label for='cc_zip'>Zip:</label>
+                                     <label for='cc_zip'>Zip/PC:</label>
                                  </div>
                                  <div class='col-sm-auto'>
                                      <input type='text' id='cc_zip' required='required' size=10 maxlength="10" name='cc_zip' value="<?php echo $zip; ?>"

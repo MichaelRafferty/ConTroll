@@ -748,7 +748,7 @@ EOS;
     $v += $rowHeight;
 
     $addr = $artist['city'] . ', ' . $artist['state'] . ' ' . $artist['zip'];
-    printXY($col1, $v + $dataOffset, 'City/State/Zip:');
+    printXY($col1, $v + $dataOffset, 'City/State-Prov/Zip-Postal Code');
     $maxY = $minRowHeight;
     $y = mprintXY($col2, $v + $mprintXYoffset, $col23w, $addr);
     if ($y > $maxY) $maxY = $y;
@@ -866,7 +866,7 @@ EOS;
             $v += $rowHeight;
 
             $addr = $artist['shipCity'] . ', ' . $artist['shipState'] . ' ' . $artist['shipZip'];
-            printXY($col1, $v + $dataOffset, 'City/State/Zip:');
+            printXY($col1, $v + $dataOffset, 'City/State-Prov/Zip-Postal Code');
             $maxY = $minRowHeight;
             $y = mprintXY($col2, $v + $mprintXYoffset, $col2w, $addr);
             if ($y > $maxY) $maxY = $y;
