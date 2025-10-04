@@ -63,5 +63,10 @@ The on-site registration desk will update the membership to the name on their ID
 If they do not, they will need to purchase a membership on-site at the on-site rates.</p>'
 where appName = 'exhibitor' and appPage = 'index' and appSection = 'invoice' and txtItem = 'termsVendor';
 
+/* to support two lines on the badge label, add in a badge name Line 2 (badgeNameL2) field. */
+ALTER TABLE perinfo ADD COLUMN badgeNameL2 varchar(32) DEFAULT '' AFTER badge_name;
+ALTER TABLE newperson ADD COLUMN badgeNameL2 varchar(32) DEFAULT '' AFTER badge_name;
+ALTER TABLE perinfoHistory ADD COLUMN badgeNameL2 varchar(32) DEFAULT '' AFTER badge_name;
+
 INSERT INTO patchLog(id, name) VALUES(54, 'More Custom Text Fields');
 

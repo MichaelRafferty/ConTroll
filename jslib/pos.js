@@ -19,6 +19,7 @@ class Pos {
         'legalName',
         'pronouns',
         'badge_name',
+        'badgeNameL2',
         'email_addr',
         'address_1',
         'address_2',
@@ -146,6 +147,7 @@ class Pos {
     #add_email2_field = null;
     #add_phone_field = null;
     #add_badgename_field = null;
+    #add_badgeNameL2_field = null;
     #add_header = null;
     #addnew_button = null;
     #addoverride_button = null;
@@ -205,6 +207,7 @@ class Pos {
         this.#add_email2_field = document.getElementById("email2");
         this.#add_phone_field = document.getElementById("phone");
         this.#add_badgename_field = document.getElementById("badgename");
+        this.#add_badgeNameL2_field = document.getElementById("badgeNameL2");
         this.#add_header = document.getElementById("add_header");
         this.#addnew_button = document.getElementById("addnew-btn");
         this.#addoverride_button = document.getElementById("addoverride-btn");
@@ -364,6 +367,7 @@ class Pos {
         this.#add_email2_field.value = cartrow.email_addr;
         this.#add_phone_field.value = cartrow.phone;
         this.#add_badgename_field.value = cartrow.badge_name;
+        this.#add_badgeNameL2_field.value = cartrow.badgeNameL2;
         // policies
         var policies = cartrow.policies;
         for (var row in policies) {
@@ -494,15 +498,6 @@ class Pos {
         return mem_index;
     }
 
-    // badgeNameDefault: build a default badge name if its empty
-    badgeNameDefault(badge_name, first_name, last_name) {
-        if (badge_name === undefined | badge_name === null || badge_name === '') {
-            var default_name = (first_name + ' ' + last_name).trim();
-            return '<i>' + default_name.replace(/ +/, ' ') + '</i>';
-        }
-        return badge_name;
-    }
-
     // show the full perinfo record as a hover in the table
     buildRecordHover(e, cell, onRendered) {
         var data = cell.getData();
@@ -519,7 +514,7 @@ class Pos {
         if (data.country != '' && data.country != 'USA') {
             hover_text += data.country + '<br/>';
         }
-        hover_text += 'Badge Name: ' + this.badgeNameDefault(data.badge_name, data.first_name, data.last_name) + '<br/>' +
+        hover_text += 'Badge Name: ' + badgeNameDefault(data.badge_name, data.badgeNameL2, data.first_name, data.last_name) + '<br/>' +
             'Email: ' + data.email_addr + '<br/>' + 'Phone: ' + data.phone + '<br/>';
         if (data.managedBy) {
             hover_text += 'Managed by: (' + data.managedBy + ') ' + data.mgrFullName + '</br>';
@@ -1324,7 +1319,7 @@ class Pos {
         </div>
         <div class="row">
             <div class="col-sm-3">Badge Name:</div>
-            <div class="col-sm-9">` + this.badgeNameDefault(data.badge_name, data.first_name, data.last_name) + `</div>
+            <div class="col-sm-9">` + badgeNameDefault(data.badge_name, data.badgeNameL2, data.first_name, data.last_name) + `</div>
         </div>
         <div class="row">
             <div class="col-sm-3">Name:</div>

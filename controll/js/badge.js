@@ -102,7 +102,7 @@ function loadWatchList(data) {
                 {field: "country", visible: false,},
                 {field: "city", visible: false,},
                 {field: "state", visible: false,},
-                {title: "Badge Name", field: "badge_name", headerFilter: true, headerWordWrap: true, tooltip: true,},
+                {title: "Badge Name", field: "badgeName", headerFilter: true, headerWordWrap: true, tooltip: true, formatter: "html", },
                 {title: "Zip", field: "zip", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 120, width: 120},
                 {title: "Email Address", field: "email_addr", headerFilter: true, headerWordWrap: true, tooltip: true,},
                 {title: "Memberships", field: "memberships", headerFilter: true, headerWordWrap: true, tooltip: true,
@@ -131,7 +131,7 @@ function watchBuildRecordHover(e, cell, onRendered) {
     if (data.country != '' && data.country != 'USA') {
         hover_text += data.country + '<br/>';
     }
-    hover_text += 'Badge Name: ' + badgeNameDefault(data.badge_name, data.first_name, data.last_name) + '<br/>' +
+    hover_text += 'Badge Name: ' + badgeNameDefault(data.badge_name, data.badgeNameL2, data.first_name, data.last_name) + '<br/>' +
         'Email: ' + data.email_addr + '<br/>' + 'Phone: ' + data.phone + '<br/>';
     if (data.managedBy) {
         hover_text += 'Managed by: (' + data.managedBy + ') ' + data.mgrFullName + '</br>';
@@ -143,15 +143,6 @@ function watchBuildRecordHover(e, cell, onRendered) {
         'Memberships: ' + data.memberships + '<br/>';
 
     return hover_text;
-}
-
-// badgeNameDefault: build a default badge name if its empty
-function badgeNameDefault(badge_name, first_name, last_name) {
-    if (badge_name === undefined | badge_name === null || badge_name === '') {
-        var default_name = (first_name + ' ' + last_name).trim();
-        return '<i>' + default_name.replace(/ +/, ' ') + '</i>';
-    }
-    return badge_name;
 }
 
 // tabulator formatter for the actions column, displays the update badge, remove, and edit person buttons
@@ -270,7 +261,7 @@ function loadSelectList(data) {
             {field: "country", visible: false,},
             {field: "city", visible: false,},
             {field: "state", visible: false,},
-            {title: "Badge Name", field: "badge_name", headerFilter: true, headerWordWrap: true, tooltip: true,},
+            {title: "Badge Name", field: "badgeName", headerFilter: true, headerWordWrap: true, tooltip: true, formatter: "html", },
             {title: "Zip", field: "zip", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 120, width: 120},
             {title: "Email Address", field: "email_addr", headerFilter: true, headerWordWrap: true, tooltip: true,},
             {title: "Memberships", field: "memberships", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 300, width: 300, formatter: "textarea", },

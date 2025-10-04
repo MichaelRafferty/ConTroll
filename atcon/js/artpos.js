@@ -408,7 +408,7 @@ function draw_person(receipts) {
         </div>
         <div class="row">
             <div class="col-sm-3">` + 'Badge Name:' + `</div>
-            <div class="col-sm-9">` + badge_name_default(currentPerson.badge_name, currentPerson.first_name, currentPerson.last_name) + `</div>
+            <div class="col-sm-9">` + badge_name_default(currentPerson.badge_name, currentPerson.badgeNameL2, currentPerson.first_name, currentPerson.last_name) + `</div>
         </div>
         <div class="row">
             <div class="col-sm-3">Name:</div>
@@ -471,15 +471,6 @@ function draw_person(receipts) {
 </div>
 `;
     id_div.innerHTML = html;
-}
-
-// badge_name_default: build a default badge name if its empty
-function badge_name_default(badge_name, first_name, last_name) {
-    if (badge_name === undefined | badge_name === null || badge_name === '') {
-        var default_name = (first_name + ' ' + last_name).trim();
-        return '<i>' + default_name.replace(/ +/, ' ') + '</i>';
-    }
-    return badge_name;
 }
 
 // termPrintReceipt - reprint a receipt on the CC Terminal

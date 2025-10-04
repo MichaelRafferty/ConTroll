@@ -100,15 +100,6 @@ function start_over(reset_all) {
     draw_list();
 }
 
-// badge_name_default: build a default badge name if its empty
-function badge_name_default(badge_name, first_name, last_name) {
-    if (badge_name === undefined | badge_name === null || badge_name === '') {
-        var default_name = (first_name + ' ' + last_name).trim();
-        return '<i>' + default_name.replace(/ +/, ' ') + '</i>';
-    }
-    return badge_name;
-}
-
 // show the full perinfo record as a hover in the table
 function build_record_hover(e, cell, onRendered) {
     var data = cell.getData();
