@@ -185,3 +185,22 @@ function pwEyeToggle(pwFieldId) {
         eyeField.classList.toggle("bi-eye");
     });
 }
+
+// single source for default badge name
+// badgeNameDefault: build a default badge name if its empty
+function badgeNameDefault(badge_name, badgeNameL2, first_name, last_name) {
+    let default_name = '';
+    if (badge_name === undefined || badge_name === null || badge_name === '') {
+        if (badgeNameL2 === undefined || badgeNameL2 === null || badgeNameL2 === '') {
+            default_name = (first_name + ' ' + last_name).trim();
+        } else {
+            default_name = (first_name + ' ' + last_name).trim() + '<br/>' + badgeNameL2.trim();
+        }
+        return '<i>' + default_name.replace(/ +/, ' ') + '</i>';
+    }
+    if (badgeNameL2 === undefined || badgeNameL2 === null || badgeNameL2 === '') {
+        return badge_name;
+    }
+    default_name = (badge_name + '<br/>' + badgeNameL2).trim();
+    return default_name;
+}

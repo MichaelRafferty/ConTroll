@@ -461,3 +461,23 @@ function eyepwField($id, $name, $width = 40, $placeholder = '', $tabIndex = -1) 
 EOS;
     return $html;
 }
+
+// badgeNameDefault: build a default badge name if its empty
+function badgeNameDefault($badge_name, $badgeNameL2, $first_name, $last_name) {
+    $default_name = '';
+    if ($badge_name === null || $badge_name == '') {
+        if ($badgeNameL2  === null || $badgeNameL2 === '') {
+            $default_name = trim("$first_name $last_name");
+        } else {
+            $default_name = trim("$first_name $last_name") . '<br/>' . trim($badgeNameL2);
+        }
+        return "<i>$default_name</i>";
+    }
+
+    if ($badgeNameL2  === null || $badgeNameL2 === '') {
+        return $badge_name;
+    }
+
+    $default_name = trim("$badge_name<br/>$badgeNameL2");
+    return $default_name;
+}
