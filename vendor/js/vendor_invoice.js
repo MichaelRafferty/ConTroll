@@ -226,19 +226,19 @@ function openInvoice(id) {
 </div>
 <div class="row">
     <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="fname_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + firstStar + `First Name</span></label><br/>
+        <label for="fname_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Preferred Name: ` + firstStar + `First</span></label><br/>
         <input class="form-control-sm" type="text" name="fname_i_` + mnum + `" id="fname_i_` + mnum + `" size="22" maxlength="32" tabindex=` + tabindex + `/>
     </div>`;
             tabindex += 2;
             html += `
     <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="mname_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Middle Name</span></label><br/>
+        <label for="mname_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Middle</span></label><br/>
         <input class="form-control-sm" type="text" name="mname_i_` + mnum + `" id="mname_i_` + mnum + `" size="8" maxlength="32" tabindex=` + tabindex + `/>
     </div>`;
             tabindex += 2;
             html += `
     <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="lname_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + allStar + `Last Name</span></label><br/>
+        <label for="lname_i_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + allStar + `Last</span></label><br/>
         <input class="form-control-sm" type="text" name="lname_i_` + mnum + `" id="lname_i_` + mnum + `" size="22" maxlength="32" tabindex=` + tabindex + `/>
     </div>`;
             tabindex += 2;
@@ -344,20 +344,20 @@ function openInvoice(id) {
 </div>
 <div class="row">
     <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="fname_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + firstStar + `First Name</span></label><br/>
+        <label for="fname_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Preferred Name: ` + firstStar + `First</span></label><br/>
         <input class="form-control-sm" type="text" name="fname_a_` + mnum + `" id="fname_a_` + mnum + `" size="22" maxlength="32" 
             onchange="updateCost(` + regionYearId + "," + mnum + `)" tabindex=` + tabindex + `/>
     </div>`;
             tabindex += 2;
             html += `
     <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="mname_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Middle Name</span></label><br/>
+        <label for="mname_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Middle</span></label><br/>
         <input class="form-control-sm" type="text" name="mname_a_` + mnum + `" id="mname_a_` + mnum + `" size="8" maxlength="32" tabindex=` + tabindex + `/>
     </div>`;
             tabindex += 2;
             html += `
     <div class="col-sm-auto ms-0 me-2 p-0">
-        <label for="lname_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + allStar + `Last Name</span></label><br/>
+        <label for="lname_a_` + mnum + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + allStar + `Last</span></label><br/>
         <input class="form-control-sm" type="text" name="lname_a_` + mnum + `" id="lname_a_` + mnum + `" size="22" maxlength="32" tabindex=` + tabindex + `/>
     </div>`;
             tabindex += 2;

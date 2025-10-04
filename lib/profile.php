@@ -49,21 +49,21 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
     <div class="row">
         <div class="col-sm-auto">
             <label for="<?php echo $idPrefix . "fname"; ?>" class="form-label-sm">
-                <span class="text-dark" style="font-size: 10pt;"><?php echo $firstStar; ?>First Name</span>
+                <span class="text-dark" style="font-size: 10pt;">Preferred Name: <?php echo $firstStar; ?>First</span>
             </label><br/>
             <input class="form-control-sm" type="text" name="fname" id='<?php echo $idPrefix . 'fname';?>' size="22" maxlength="32"
                    tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
         </div>
         <div class="col-sm-auto">
             <label for="<?php echo $idPrefix . 'mname'; ?>" class="form-label-sm">
-                <span class="text-dark" style="font-size: 10pt;">Middle Name</span>
+                <span class="text-dark" style="font-size: 10pt;">Middle</span>
             </label><br/>
             <input class="form-control-sm" type="text" name="mname" id='<?php echo $idPrefix . 'mname'; ?>' size="8" maxlength="32"
                    tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
         </div>
         <div class="col-sm-auto">
             <label for="<?php echo $idPrefix . 'lname'; ?>" class="form-label-sm">
-                <span class="text-dark" style="font-size: 10pt;"><?php echo $allStar; ?>Last Name</span>
+                <span class="text-dark" style="font-size: 10pt;"><?php echo $allStar; ?>Last</span>
             </label><br/>
             <input class="form-control-sm" type="text" name="lname" id='<?php echo $idPrefix . 'lname'; ?>' size="22" maxlength="32"
                    tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>

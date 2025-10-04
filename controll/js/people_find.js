@@ -847,7 +847,7 @@ class Find {
             columns: [
                 { title: "History Id", field: "historyId", headerSort: true, visible: false, },
                 { title: "Change Date", field: "update_date", headerSort: true, },
-                { title: "Upd By", field: "updatedBy", headerSort: true, formatter: findPerson.colorSet, headerSort: false, },
+                { title: "Upd By", field: "updatedBy", formatter: findPerson.colorSet, headerSort: false, },
                 { title: "Last Name", field: 'last_name', headerWordWrap: true, formatter: findPerson.colorSet, headerSort: false, },
                 { title: "First Name", field: 'first_name', headerWordWrap: true, formatter: findPerson.colorSet, headerSort: false, },
                 { title: "Middle Name", field: 'middle_name', headerWordWrap: true, formatter: findPerson.colorSet, headerSort: false, },
@@ -870,7 +870,7 @@ class Find {
                 { title: "Mgr P", field: 'managedBy', headerWordWrap: true, formatter: findPerson.colorSet, headerSort: false, },
                 { title: "Mgr N", field: 'managedByNew', headerWordWrap: true, formatter: findPerson.colorSet, headerSort: false, },
                 { title: "Mgr Reason", field: 'managedReason', headerWordWrap: true, formatter: findPerson.colorSet, headerSort: false, },
-                { title: "Last Verified", field: "lastVerified", headerSort: true, formatter: findPerson.colorSet, headerSort: false, },
+                { title: "Last Verified", field: "lastVerified", formatter: findPerson.colorSet, headerSort: false, },
             ],
         });
         this.#historyModal.show();
