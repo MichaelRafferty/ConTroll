@@ -64,9 +64,16 @@ If they do not, they will need to purchase a membership on-site at the on-site r
 where appName = 'exhibitor' and appPage = 'index' and appSection = 'invoice' and txtItem = 'termsVendor';
 
 /* to support two lines on the badge label, add in a badge name Line 2 (badgeNameL2) field. */
-ALTER TABLE perinfo ADD COLUMN badgeNameL2 varchar(32) DEFAULT '' AFTER badge_name;
-ALTER TABLE newperson ADD COLUMN badgeNameL2 varchar(32) DEFAULT '' AFTER badge_name;
+ALTER TABLE perinfo ADD COLUMN badgeNameL2 varchar(32) NOT NULL DEFAULT '' AFTER badge_name;
+ALTER TABLE newperson ADD COLUMN badgeNameL2 varchar(32) NOT NULL DEFAULT '' AFTER badge_name;
 ALTER TABLE perinfoHistory ADD COLUMN badgeNameL2 varchar(32) DEFAULT '' AFTER badge_name;
+
+ALTER TABLE perinfo ADD COLUMN currentAgeConId int DEFAULT NULL AFTER id;
+ALTER TABLE perinfo ADD COLUMN currentAgeType varchar(16) DEFAULT NULL AFTER currentAgeConId;
+ALTER TABLE newperson ADD COLUMN currentAgeConId int DEFAULT NULL AFTER id;
+ALTER TABLE newperson ADD COLUMN currentAgeType varchar(16) DEFAULT NULL AFTER currentAgeConId;
+ALTER TABLE perinfoHistory ADD COLUMN currentAgeConId int DEFAULT NULL AFTER id;
+ALTER TABLE perinfoHistory ADD COLUMN currentAgeType varchar(16) DEFAULT NULL AFTER currentAgeConId;
 
 UPDATE perinfo SET badgeNameL2 = regexp_replace(badge_name, '^.*~~(.*)$','$1')
 where badge_name like  '%~~%';
@@ -81,7 +88,8 @@ where badge_name like  '%~~%';
 DROP TRIGGER `perinfo_update`;
 DELIMITER ;;
 CREATE DEFINER=CURRENT_USER  TRIGGER `perinfo_update` BEFORE UPDATE ON `perinfo` FOR EACH ROW BEGIN
-    IF (OLD.id != NEW.id OR OLD.last_name != NEW.last_name OR OLD.first_name != NEW.first_name OR OLD.middle_name != NEW.middle_name
+    IF (OLD.id != NEW.id OR OLD.currentAgeConId != NEW.currentAgeConId OR OLD.currentAgeType != NEW.currentAgeType
+        OR OLD.last_name != NEW.last_name OR OLD.first_name != NEW.first_name OR OLD.middle_name != NEW.middle_name
         OR OLD.suffix != NEW.suffix OR OLD.legalName != NEW.legalName OR OLD.pronouns != NEW.pronouns
         OR OLD.email_addr != NEW.email_addr OR OLD.phone != NEW.phone OR OLD.badge_name != NEW.badge_name OR OLD.badgeNameL2 != NEW.badgeNameL2
         OR OLD.address != NEW.address OR OLD.addr_2 != NEW.addr_2 OR OLD.city != NEW.city OR OLD.state != NEW.state OR OLD.zip != NEW.zip
@@ -91,12 +99,14 @@ CREATE DEFINER=CURRENT_USER  TRIGGER `perinfo_update` BEFORE UPDATE ON `perinfo`
         OR OLD.managedBy != NEW.managedBy OR OLD.managedByNew != NEW.managedByNew OR OLD.updatedBy != NEW.updatedby
         OR OLD.managedReason != NEW.managedReason OR OLD.lastVerified != NEW.lastVerified)
     THEN
-        INSERT INTO perinfoHistory(id, last_name, first_name, middle_name, suffix, email_addr, phone,
+        INSERT INTO perinfoHistory(id, currentAgeConId, currentAgeType,
+            last_name, first_name, middle_name, suffix, email_addr, phone,
             badge_name, badgeNameL2, legalName, pronouns,
             address, addr_2, city, state, zip, country, banned, creation_date, update_date,
             change_notes, active, open_notes, admin_notes, old_perid, contact_ok, share_reg_ok,
             managedBy, managedByNew, managedReason, lastVerified, updatedBy)
-        VALUES (OLD.id, OLD.last_name, OLD.first_name, OLD.middle_name, OLD.suffix, OLD.email_addr, OLD.phone, OLD.badge_name,
+        VALUES (OLD.id, OLD.currentAgeConId, OLD.currentAgeType,
+                OLD.last_name, OLD.first_name, OLD.middle_name, OLD.suffix, OLD.email_addr, OLD.phone, OLD.badge_name,
                 OLD.badgeNameL2, OLD.legalName, OLD.pronouns,
                 OLD.address, OLD.addr_2, OLD.city, OLD.state, OLD.zip, OLD.country, OLD.banned, OLD.creation_date, OLD.update_date,
                 OLD.change_notes, OLD.active, OLD.open_notes, OLD.admin_notes, OLD.old_perid, OLD.contact_ok, OLD.share_reg_ok,
