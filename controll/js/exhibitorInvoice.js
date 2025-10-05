@@ -667,7 +667,7 @@ class ExhibitorInvoice {
             id = document.getElementById('state' + suffix);
             value = id.value;
             if (value == '') {
-                this.#invalidFields += label + 'State/Provence, ';
+                this.#invalidFields += label + 'State/Province, ';
                 valid = false;
                 id.style.backgroundColor = 'var(--bs-warning)';
             } else {
