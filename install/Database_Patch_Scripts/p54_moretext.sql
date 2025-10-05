@@ -75,6 +75,9 @@ ALTER TABLE newperson ADD COLUMN currentAgeType varchar(16) DEFAULT NULL AFTER c
 ALTER TABLE perinfoHistory ADD COLUMN currentAgeConId int DEFAULT NULL AFTER id;
 ALTER TABLE perinfoHistory ADD COLUMN currentAgeType varchar(16) DEFAULT NULL AFTER currentAgeConId;
 
+ALTER TABLE perinfo ADD FOREIGN KEY perinfo_ageList(currentageConId, currentAgeType) REFERENCES ageList(conid, ageType) ON UPDATE CASCADE;
+ALTER TABLE newperson ADD FOREIGN KEY nerperson_ageList(currentageConId, currentAgeType) REFERENCES ageList(conid, ageType) ON UPDATE CASCADE;
+
 UPDATE perinfo SET badgeNameL2 = regexp_replace(badge_name, '^.*~~(.*)$','$1')
 where badge_name like  '%~~%';
 UPDATE perinfo SET badge_name = regexp_replace(badge_name, '^(.*)~~.*$','$1')
