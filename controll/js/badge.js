@@ -396,6 +396,7 @@ function findDetailsSuccess(dataFound) {
     document.getElementById('f_email2').value = data.email_addr;
     document.getElementById('f_phone').value = data.phone;
     document.getElementById('f_badgename').value = data.badge_name;
+    document.getElementById('f_badgeNameL2').value = data.badgeNameL2;
     editPersonName.innerHTML = data.fullName + ' (' + data.id + ')';
     editPersonModal.show();
 }
@@ -431,6 +432,7 @@ function saveEdit() {
         emailAddr: email1,
         phone: document.getElementById('f_phone').value,
         badgeName: document.getElementById('f_badgename').value,
+        badgeNameL2: document.getElementById('f_badgeNameL2').value,
     };
 
     $.ajax({
@@ -512,6 +514,7 @@ function addClearForm() {
     document.getElementById('a_email2').value = '';
     document.getElementById('a_phone').value = '';
     document.getElementById('a_badgename').value = '';
+    document.getElementById('a_badgeNameL2').value = '';
 
     addPersonBtn.disabled = true;
     if (addMatchTable != null) {
@@ -544,6 +547,7 @@ function addCheckExists() {
         suffix: document.getElementById('a_suffix').value,
         pronouns: document.getElementById('a_pronouns').value,
         badgeName: document.getElementById('a_badgename').value,
+        badgeNameL2: document.getElementById('a_badgeNameL2').value,
         address: document.getElementById('a_addr').value,
         addr2: document.getElementById('a_addr2').value,
         city: document.getElementById('a_city').value,
@@ -599,7 +603,7 @@ function addCheckSuccess(dataFound) {
                 {title: "Manager", field: "manager", width: 200, headerSort: true, headerFilter: true,},
                 {title: "Full Name", field: "fullName", width: 300, headerSort: true, headerFilter: true, headerFilterFunc: fullNameHeaderFilter,
                     formatter: "textarea", },
-                {title: "Badge Name", field: "badge_name", width: 200, headerSort: true, headerFilter: true, },
+                {title: "Badge Name", field: "badgeName", width: 200, headerSort: true, headerFilter: true, formatter: "html", },
                 {title: "Full Address", field: "fullAddr", width: 400, headerSort: true, headerFilter: true, formatter: "textarea", },
                 {title: "Email", field: "email_addr", width: 250, headerSort: true, headerFilter: true,},
                 {title: "Phone", field: "phone", width: 150, headerSort: true, headerFilter: true,},
@@ -671,6 +675,7 @@ function saveAdd() {
         pronouns: document.getElementById('a_pronouns').value,
         legalName: '',
         badgeName: document.getElementById('a_badgename').value,
+        badgeNameL2: document.getElementById('a_badgeNameL2').value,
         address: document.getElementById('a_addr').value,
         addr2: document.getElementById('a_addr2').value,
         city: document.getElementById('a_city').value,
