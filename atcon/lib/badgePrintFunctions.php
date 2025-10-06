@@ -40,32 +40,12 @@ function init_file($printer)//:string {
         exit();
     }
 
-    $codepage = $printer['code'];
-    switch($codepage) {
-        case 'PS':
-            $atcon = get_conf('atcon');
-            if (array_key_exists('badgeps', $atcon)) {
-                $filename = $atcon['badgeps'];
-            } else {
-                $filename = dirname(__FILE__) . '/init.ps';
-            }
-            if (!copy($filename, $tempfile)) {
-                $response['error'] = 'Unable to copy badge ps header file';
-                $response['error_message'] = error_get_last();
-                //var_error_log($response);
-                ajaxSuccess($response);
-                exit();
-            }
-    }
     return $tempfile;
 }
 
 function write_badge($badge, $tempfile, $printer):void {
     $codepage = $printer['code'];
     switch ($codepage) {
-        case 'PS':
-            write_ps($badge, $tempfile);
-            break;
         case 'Dymo3xx':
             write_pdf($badge, $tempfile, 3);
             break;
@@ -119,9 +99,10 @@ function write_pdf($badge, $tempfile, $originType)//: void {
     }
 
     // Lines 1 and 2 - Badge Name
-    //build badge name
-    $bn = $badge['badge_name'] == '' ? $badge['full_name'] : $badge['badge_name'];
-    $lines = explode('~~', $bn, 2);
+    // if line2 is non blank, use it for line 2, if line 2 is blank, split line 1 as needed across line 1 and line 2
+    $bn = badgeNameDefault($badge['badge_name'], $badge['badgeNameL2'], $badge['first_name'], $badge['last_name']);
+    $bn = str_replace('<i>', '', $bn);
+    $lines = explode('<br/>', $bn);
     if (count($lines) > 1) {
         $line1 = $lines[0];
         $line2 = $lines[1];
@@ -137,24 +118,42 @@ function write_pdf($badge, $tempfile, $originType)//: void {
     pushFont('Roboto', 'B', 22);
     $maxWidth = 3.05;
     $lineWidth = $pdf->getStringWidth($line1);
-    if ($lineWidth > $maxWidth && $line2 != '') {
+    if ($lineWidth > $maxWidth) {
         // try a narrower font first
         popFont();
         pushFont('Roboto', 'SC', 22);
         $lineWidth = $pdf->getStringWidth($line1);
-        if ($lineWidth > $maxWidth) {
-            popFont();
-            pushFont('Roboto', 'C', 22);
-            $lineWidth = $pdf->getStringWidth($line1);
-        }
-        if ($lineWidth > $maxWidth) {
-            // restore original font
-            popFont();
-            pushFont('Roboto', 'B', 22);
-            // undo the split and let it split naturally
-            $line1 = str_replace('~~', ' ', $bn);
-            $line2 = '';
-        }
+    }
+    if ($lineWidth > $maxWidth) {
+        popFont();
+        pushFont('Roboto', 'C', 22);
+        $lineWidth = $pdf->getStringWidth($line1);
+    }
+    if ($lineWidth > $maxWidth) {
+        // now try a smaller font
+        popFont();
+        pushFont('Roboto', 'B', 20);
+        $lineWidth = $pdf->getStringWidth($line1);
+    }
+    if ($lineWidth > $maxWidth) {
+        // try a narrower font first
+        popFont();
+        pushFont('Roboto', 'SC', 20);
+        $lineWidth = $pdf->getStringWidth($line1);
+    }
+    if ($lineWidth > $maxWidth) {
+        popFont();
+        pushFont('Roboto', 'C', 20);
+        $lineWidth = $pdf->getStringWidth($line1);
+    }
+
+    if ($lineWidth > $maxWidth) {
+        // restore original font, and give up on line 1 / line 2 as is and just try to get it to fit
+        popFont();
+        pushFont('Roboto', 'B', 22);
+        // undo the split and let it split naturally
+        $line1 = str_replace('<br/>', ' ', $bn);
+        $line2 = '';
     }
     $maxLoop = 0;
     while ($lineWidth > $maxWidth && $maxLoop < 30) {
@@ -180,7 +179,7 @@ function write_pdf($badge, $tempfile, $originType)//: void {
     printXY($x - 6/72, $y, $line1);
     popFont();
 
-    // line 2: overflow of the badge name
+    // line 2: overflow of the badge name, or the line 2 contents
     $line2 = trim($line2);
     if ($line2 != '') {
         $y = $ymargin + 22/72;
@@ -199,7 +198,7 @@ function write_pdf($badge, $tempfile, $originType)//: void {
                 $lineWidth = $pdf->getStringWidth($line2);
             }
             if ($lineWidth > $maxWidth) {
-                //echo "font 17\n";
+                //echo "font 15\n";
                 popFont();
                 pushFont('Roboto', 'B', 15);
                 $lineWidth = $pdf->getStringWidth($line2);
@@ -300,98 +299,6 @@ function write_pdf($badge, $tempfile, $originType)//: void {
     fclose($temp);
     }
 
-function write_ps($badge, $tempfile)//: void {
-{
-    global $badgeTypes, $badgeFlags;
-
-    $temp = fopen($tempfile, "a");
-    if(!$temp) {
-        $response['error'] = "Unable to get open file";
-        $response['error_message'] = error_get_last();
-        ajaxSuccess($response);
-        exit();
-    }
-
-    //build badge name
-    if($badge['badge_name'] == "") {
-      $badge['badge_name'] = $badge['full_name'];
-    }
-
-    $badge_name = html_entity_decode($badge['badge_name'], ENT_QUOTES | ENT_HTML401);
-    $name = $badge_name;
-    $name2 = "";
-    $namelen = strlen($name);
-    if($namelen > 16) {
-        $len = strrpos(substr($badge_name,1,16), ' ');
-        if($len === false || $len === 0) { $len = 16; }
-        else { $len +=1; }
-        $name = substr($badge_name, 0, $len);
-        $name2 = substr($badge_name, $len, 20);
-    }
-
-    fwrite($temp, "16\n"
-        . "pageHeight 72 mul 22 sub\n"
-        . "2 copy moveto\n"
-        . "firstline setfont\n"
-        . "($name) show\n\n");
-
-    if($name2 != "") {
-        fwrite($temp, "16\n"
-        . "pageHeight 72 mul 40 sub\n"
-        . "2 copy moveto\n"
-        . "secondline setfont\n"
-        . "($name2) show\n\n");
-    }
-
-    //info line
-    $type='';
-    if($badge['category'] == 'test') { $type = 'test'; }
-    else { $type = $badgeTypes[$badge['category']]; }
-    $id = $badge['id'];
-
-    if(strtolower($badge['type'])=='oneday') {
-        $day = substr($badge['day'], 0, 3);
-        fwrite($temp, ""
-            . "16 4\n"
-            . "2 copy moveto\n"
-            . "firstline setfont\n"
-            . "($day) show\n\n");
-    }
-
-    fwrite($temp, "72 20\n"
-        . "2 copy moveto\n"
-        . "details setfont\n"
-        . "($type $id) show\n\n");
-
-    if(array_key_exists($badge['age'], $badgeFlags)) {
-        $flag = $badgeFlags[$badge['age']];
-        $flagLen = mb_strlen($flag);
-        $offset = ceil($flagLen / 2);
-        $wordoffset = floor($flagLen/2);
-        $start = 91 - 8*$offset;
-        $end = 91 + 8*$offset;
-        $word = $start + 4;
-        
-        fwrite($temp, "newpath\n"
-            . "$start 4 moveto\n"
-            . "$start 16 lineto\n"
-            . "$end 16 lineto\n"
-            . "$end 4 lineto\n"
-            . "closepath fill\n"
-            . "1 setgray\n"
-            . "$word 6\n"
-            . "2 copy moveto\n"
-            . "childFont setfont\n"
-            . "($flag) show\n\n"
-            . "0 setgray\n\n");
-
-    }
-
-    #fwrite($temp, "grestore\nshowpage\n%%EOF\n");
-    fwrite($temp, "\nshowpage\n");
-    fclose($temp);
-}
-
 // print_badge: printer contains array(4) of display name, server, queue name (printer), printer type
 function print_badge($printer, $tempfile)//: string|false
 {
@@ -399,7 +306,7 @@ function print_badge($printer, $tempfile)//: string|false
 
     $queue = $printer['queue'];
     $codepage = $printer['code'];
-    $suffix = $codepage = 'PS' ? 'ps' : 'pdf';
+    $suffix = 'pdf';
     $name = $printer['name'];
     $result_code = 0;
 
