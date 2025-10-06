@@ -23,7 +23,7 @@ if (!array_key_exists('id', $_POST)) {
 $id = $_POST['id'];
 
 $couponQ = <<<EOS
-SELECT C.*, P.last_name, P.first_name, P.badge_name
+SELECT C.*, P.last_name, P.first_name, P.badge_name, P.badgeNameL2
 FROM couponUsage C
 LEFT OUTER JOIN perinfo P ON (P.id = C.perid)
 WHERE C.couponId = ? AND C.paid IS NOT NULL;
@@ -38,6 +38,7 @@ if ($couponR == false) {
 }
 $couponUsage = array();
 while ($couponL = $couponR->fetch_assoc()) {
+    $couponL['badgename'] = badgeNameDefault($coupon['badge_name'], $coupon['badgeNameL2'], $coupon['first_name'], $coupon['last_name']);
     $couponUsage[] = $couponL;
 }
 
