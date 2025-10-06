@@ -445,20 +445,11 @@ function build_record_hover(e, cell, onRendered) {
     if (data['country'] != '' && data['country'] != 'USA') {
         hover_text += data['country'] + '<br/>';
     }
-    hover_text += 'Badge Name: ' + badge_name_default(data['badge_name'], data['first_name'], data['last_name']) + '<br/>' +
+    hover_text += 'Badge Name: ' + badgeNameDefault(data['badge_name'], data['badgeNameL2'], data['first_name'], data['last_name']) + '<br/>' +
         'Email: ' + data['email_addr'] + '<br/>' + 'Phone: ' + data['phone'] + '<br/>' +
         'Active:' + data['active'] + ' Contact?:' + data['contact_ok'] + ' Share?:' + data['share_reg_ok'] + '<br/>';
 
     return hover_text;
-}
-
-// badge_name_default: build a default badge name if its empty
-function badge_name_default(badge_name, first_name, last_name) {
-    if (badge_name === undefined | badge_name === null || badge_name === '') {
-        var default_name = (first_name + ' ' + last_name).trim();
-        return '<i>' + default_name.replace(/ +/, ' ') + '</i>';
-    }
-    return badge_name;
 }
 
 // tabulator formatter for the merge column for the find results, displays the "Select" to mark the membership merge

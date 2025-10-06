@@ -408,7 +408,7 @@ function draw_person(receipts) {
         </div>
         <div class="row">
             <div class="col-sm-3">` + 'Badge Name:' + `</div>
-            <div class="col-sm-9">` + badge_name_default(currentPerson.badge_name, currentPerson.badgeNameL2, currentPerson.first_name, currentPerson.last_name) + `</div>
+            <div class="col-sm-9">` + badgeNameDefault(currentPerson.badge_name, currentPerson.badgeNameL2, currentPerson.first_name, currentPerson.last_name) + `</div>
         </div>
         <div class="row">
             <div class="col-sm-3">Name:</div>

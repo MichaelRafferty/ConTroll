@@ -223,7 +223,7 @@ function build_record_hover(e, cell, onRendered) {
     if (data.country != '' && data.country != 'USA') {
         hover_text += data.country + '<br/>';
     }
-    hover_text += 'Badge Name: ' + badge_name_default(data.badge_name, data.first_name, data.last_name) + '<br/>' +
+    hover_text += 'Badge Name: ' + badgeNameDefault(data.badge_name, data.badgeNameL2, data.first_name, data.last_name) + '<br/>' +
         'Email: ' + data.email_addr + '<br/>' + 'Phone: ' + data.phone + '<br/>' +
         'Active:' + data.active + ' Contact?:' + data.contact_ok + ' Share?:' + data.share_reg_ok + '<br/>';
 

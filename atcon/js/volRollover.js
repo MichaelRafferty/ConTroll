@@ -113,7 +113,7 @@ function build_record_hover(e, cell, onRendered) {
     if (data['country'] != '' && data['country'] != 'USA') {
         hover_text += data['country'] + '<br/>';
     }
-    hover_text += 'Badge Name: ' + badge_name_default(data['badge_name'], data['badgeNameL2'], data['first_name'], data['last_name']) + '<br/>' +
+    hover_text += 'Badge Name: ' + badgeNameDefault(data['badge_name'], data['badgeNameL2'], data['first_name'], data['last_name']) + '<br/>' +
         'Email: ' + data['email_addr'] + '<br/>' + 'Phone: ' + data['phone'] + '<br/>' +
         'Active:' + data['active'] + ' Contact?:' + data['contact_ok'] + ' Share?:' + data['share_reg_ok'] + '<br/>' +
         'Membership: ' + data['label'] + '<br/>';
@@ -197,7 +197,7 @@ function draw_list_row(rownum) {
     rowhtml += `
     <div class="row mb-2">
         <div class="col-sm-3 p-0">Badge Name:</div>
-        <div class="col-sm-5 p-0">` + badge_name_default(row['badge_name'], row['badgeNameL2', row['first_name'], row['last_name']) + `</div>
+        <div class="col-sm-5 p-0">` + badgeNameDefault(row['badge_name'], row['badgeNameL2', row['first_name'], row['last_name']) + `</div>
     </div>`;
 
     return rowhtml;
@@ -254,7 +254,7 @@ function draw_record() {
         </div>
         <div class="row">
             <div class="col-sm-3">` + 'Badge Name:' + `</div>
-            <div class="col-sm-9">` + badge_name_default(data['badge_name'], data['badgeNameL2'], data['first_name'], data['last_name']) + `</div>
+            <div class="col-sm-9">` + badgeNameDefault(data['badge_name'], data['badgeNameL2'], data['first_name'], data['last_name']) + `</div>
         </div>
         <div class="row">
             <div class="col-sm-3">Name:</div>
