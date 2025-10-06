@@ -83,7 +83,7 @@ SELECT DISTINCT p.id AS perid, p.first_name, p.middle_name, p.last_name, p.suffi
             TRIM(REGEXP_REPLACE(CONCAT(p.last_name, ', ', p.first_name, ' ', p.middle_name, ' ', p.suffix), ' +', ' '))
         ELSE
             TRIM(REGEXP_REPLACE(CONCAT(p.first_name,' ', p.middle_name, ' ', p.suffix), ' +', ' '))
-        END AS fullName
+        END AS fullName,
     p.open_notes, r.id AS regid, m.label, rn.id AS roll_regid, mn.shortname,
     CASE
         WHEN m.memCategory is null THEN 'no membership'
