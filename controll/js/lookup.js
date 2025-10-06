@@ -76,7 +76,7 @@ function drawResults(data) {
             { title: "TID", field: "tid", hozAlign: "right",  headerSort: true, headerFilter: true },
             { title: "PID", field: "perid", width: 110, hozAlign: "right", headerSort: true, headerFilter: true, },
             { title: "Person", field: "fullName", headerSort: true, headerFilter: true, headerFilterFunc: fullNameHeaderFilter, },
-            { title: "Badge Name", field: "badge_name", headerSort: true, headerFilter: true },
+            { title: "Badge Name", field: "badgename", headerSort: true, headerFilter: true, formatter: 'html', },
             { title: "Email", field: "email_addr", headerSort: true, headerFilter: true },
             { title: "Mgr PID", field: "managerId", width: 110, hozAlign: "right", headerSort: true, headerFilter: true },
             { title: "Mgr Name", field: "managerName", headerSort: true, headerFilter: true },

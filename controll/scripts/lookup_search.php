@@ -32,7 +32,7 @@ $limit = 100;
 if (is_numeric($findPattern)) {
     // this is a perid/transaction match
     $mQ = <<<EOS
-SELECT p.id AS perid, p.email_addr, p.badge_name, p.first_name, p.middle_name, p.last_name,
+SELECT p.id AS perid, p.email_addr, p.badge_name, p.badgeNameL2, p.first_name, p.middle_name, p.last_name,
     TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
     IFNULL(r.complete_trans, r.create_trans) AS tid, 
     CASE 
@@ -50,7 +50,7 @@ LEFT OUTER JOIN transaction t2 ON (r.complete_trans = t2.id)
 LEFT OUTER JOIN perinfo pm ON (p.managedBy = pm.id)
 WHERE p.id = ?
 UNION 
-SELECT p.id AS perid, p.email_addr, p.badge_name, p.first_name, p.middle_name, p.last_name,
+SELECT p.id AS perid, p.email_addr, p.badge_name, p.badgeNameL2, p.first_name, p.middle_name, p.last_name,
     TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
     IFNULL(r.complete_trans, r.create_trans) AS tid, 
     CASE 
@@ -78,7 +78,7 @@ EOS;
     // does anyone match this pattern?
     $mQ = <<<EOS
 WITH per AS (
-    SELECT id, first_name, last_name, middle_name, suffix, legalName, badge_name, address, addr_2, email_addr,
+    SELECT id, first_name, last_name, middle_name, suffix, legalName, badge_name, badgeNameL2, address, addr_2, email_addr,
         TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), ' +', ' ')) AS fullName
     FROM perinfo
     WHERE $notMerge
@@ -88,6 +88,7 @@ WITH per AS (
     WHERE
         (LOWER(p.legalName) LIKE ?
         OR LOWER(p.badge_name) LIKE ?
+        OR LOWER(p.badgeNameL2) LIKE ?
         OR LOWER(p.address) LIKE ?
         OR LOWER(p.addr_2) LIKE ?
         OR LOWER(p.email_addr) LIKE ?
@@ -95,7 +96,7 @@ WITH per AS (
         OR LOWER(CONCAT(p.last_name, ' ', p.first_name)) LIKE ?
         OR LOWER(p.fullName) LIKE ?)
 )
-SELECT p.id AS perid, p.email_addr, p.badge_name, p.legalName, p.first_name, p.middle_name, p.last_name,
+SELECT p.id AS perid, p.email_addr, p.badge_name, p.badgeNameL2, p.legalName, p.first_name, p.middle_name, p.last_name,
     TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
     IFNULL(r.complete_trans, r.create_trans) AS tid, 
     CASE 
@@ -116,8 +117,8 @@ ORDER BY p.last_name, p.first_name, p.id
 LIMIT $limit;
 EOS;
 
-    $typestr = 'ssssssssii';
-    $valArray = array ($findPattern, $findPattern, $findPattern, $findPattern,
+    $typestr = 'sssssssssii';
+    $valArray = array ($findPattern, $findPattern, $findPattern, $findPattern, $findPattern,
                        $findPattern, $findPattern, $findPattern, $findPattern, $conid, $conid +1);
 
     $mR = dbSafeQuery($mQ, $typestr, $valArray);
@@ -130,6 +131,7 @@ if ($mR === false) {
 
 $matches= [];
 while ($match = $mR->fetch_assoc()) {
+    $match['badgename'] = badgeNameDefault($match['badge_name'], $match['badgeNameL2'], $match['first_name'], $match['last_name']);
     $matches[] = $match;
 }
 $mR->free();
