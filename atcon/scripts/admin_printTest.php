@@ -100,6 +100,7 @@ EOR;
         $badge = [];
         $badge['type'] = 'test';
         $badge['badge_name'] = 'Test Badge Name';
+        $badge['badgeNameL2'] = 'Test Badge Title';
         $badge['full_name'] = 'Test Full Name';
         $badge['category'] = 'test';
         $badge['id'] = '00000';
