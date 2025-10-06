@@ -91,10 +91,10 @@ class Coupon {
         "use strict";
 
         // build initial tabulator table
-        this.#couponArray = data['coupons'];
+        this.#couponArray = data.coupons;
         this.#couponData = new Array();
         for (var row of this.#couponArray) {
-            this.#couponData[row['id']] = row;
+            this.#couponData[row.id] = row;
         }
         this.draw();
     }
@@ -106,11 +106,11 @@ class Coupon {
             method: 'POST',
             data: 'type=all',
             success: function (data, textStatus, jhXHR) {
-                if (data['status'] == 'error')
-                    show_message(data['error'], 'error');
+                if (data.status == 'error')
+                    show_message(data.error, 'error');
                 else {
-                    if (data['message'])
-                        show_message(data['message'], 'success');
+                    if (data.message)
+                        show_message(data.message, 'success');
                     coupons.initData(data);
                 }
             },
@@ -214,30 +214,30 @@ class Coupon {
         // set initial values for edit
         this.#edit_form_updateBTN.innerHTML = "Update Coupon";
         this.#edit_coupon_title.innerHTML = "<strong>Edit Coupon</strong>";
-        this.#edit_coupon_preform.innerHTML = "Editing Coupon " + coupon['id'] + ": " + coupon['code'] + "(" + coupon['name'] + ")";
-        this.#edit_form_couponId.value = coupon['id'];
-        this.#edit_form_code.value = coupon['code'];
-        this.#edit_form_name.value = coupon['name'];
-        this.#edit_form_oneUse.value = coupon['oneUse'];
-        if (coupon['startDate'] != '1900-01-01 00:00:00')
-            this.#edit_form_startDate.value = coupon['startDate'];
+        this.#edit_coupon_preform.innerHTML = "Editing Coupon " + coupon.id + ": " + coupon.code + "(" + coupon.name + ")";
+        this.#edit_form_couponId.value = coupon.id;
+        this.#edit_form_code.value = coupon.code;
+        this.#edit_form_name.value = coupon.name;
+        this.#edit_form_oneUse.value = coupon.oneUse;
+        if (coupon.startDate != '1900-01-01 00:00:00')
+            this.#edit_form_startDate.value = coupon.startDate;
         else
             this.#edit_form_startDate.value = '';
-        if (coupon['endDate'] != '2100-12-31 00:00:00')
-            this.#edit_form_endDate.value = coupon['endDate'];
+        if (coupon.endDate != '2100-12-31 00:00:00')
+            this.#edit_form_endDate.value = coupon.endDate;
         else
             this.#edit_form_endDate.value = '';
-        this.#edit_form_couponType.value = coupon['couponType'];
-        this.#edit_form_discount.value = coupon['discount'];
-        this.#edit_form_memId.value = coupon['memId'];
-        this.#edit_form_minMemberships.value = coupon['minMemberships'];
-        this.#edit_form_maxMemberships.value = coupon['maxMemberships'];
-        this.#edit_form_limitMemberships.value = coupon['limitMemberships'];
-        this.#edit_form_minTransaction.value = coupon['minTransaction'];
-        this.#edit_form_maxTransaction.value = coupon['maxTransaction'];
-        this.#edit_form_maxRedemption.value = coupon['maxRedemption'];
+        this.#edit_form_couponType.value = coupon.couponType;
+        this.#edit_form_discount.value = coupon.discount;
+        this.#edit_form_memId.value = coupon.memId;
+        this.#edit_form_minMemberships.value = coupon.minMemberships;
+        this.#edit_form_maxMemberships.value = coupon.maxMemberships;
+        this.#edit_form_limitMemberships.value = coupon.limitMemberships;
+        this.#edit_form_minTransaction.value = coupon.minTransaction;
+        this.#edit_form_maxTransaction.value = coupon.maxTransaction;
+        this.#edit_form_maxRedemption.value = coupon.maxRedemption;
 
-        this.#edit_form_deleteBTN.hidden = coupon['redeemedCount'] > 0;
+        this.#edit_form_deleteBTN.hidden = coupon.redeemedCount > 0;
         
         this.#editModal.show();
     }
@@ -302,12 +302,12 @@ class Coupon {
             method: 'POST',
             data: data,
             success: function (data, textStatus, jhXHR) {
-                if (data['status'] == 'error') {
-                    show_message(data['error'], 'error');
+                if (data.status == 'error') {
+                    show_message(data.error, 'error');
                     coupons.HideEditModal();
                 } else {
-                    if (data['message'])
-                        show_message(data['message'], 'success');
+                    if (data.message)
+                        show_message(data.message, 'success');
                     coupons.initData(data);
                     coupons.HideEditModal();
                 }
@@ -347,11 +347,11 @@ class Coupon {
             method: 'POST',
             data: data,
             success: function (data, textStatus, jhXHR) {
-                if (data['status'] == 'error')
-                    show_message(data['error'], 'error');
+                if (data.status == 'error')
+                    show_message(data.error, 'error');
                 else {
-                    if (data['message'])
-                        show_message(data['message'], 'success');
+                    if (data.message)
+                        show_message(data.message, 'success');
                     coupons.drawUsed(data);
                 }
             },
@@ -377,11 +377,11 @@ class Coupon {
             method: 'POST',
             data: data,
             success: function (data, textStatus, jhXHR) {
-                if (data['status'] == 'error')
-                    show_message(['error'], 'error');
+                if (data.status == 'error')
+                    show_message(.error, 'error');
                 else {
-                    if (data['message'])
-                        show_message(data['message'], 'success');
+                    if (data.message)
+                        show_message(data.message, 'success');
                     coupons.drawKeys(data);
                 }
             },
@@ -396,11 +396,11 @@ class Coupon {
     drawUsed(data) {
         "use strict";
 
-        var usageData = data['used'];
+        var usageData = data.used;
         if (usageData.length <= 0)
             return;
 
-        var label = "Usage data for Coupon " + usageData[0]['CouponId'] + ": " + usageData[0]['code'] + "(" + usageData[0]['name'] + ")";
+        var label = "Usage data for Coupon " + usageData[0].CouponId + ": " + usageData[0].code + "(" + usageData[0].name + ")";
         this.#detailTable = new Tabulator('#detailTable', {
             movableRows: false,
             history: false,
@@ -432,11 +432,11 @@ class Coupon {
     drawKeys(data) {
         "use strict";
 
-        var keyData = data['keys'];
+        var keyData = data.keys;
         if (keyData.length <= 0)
             return;
 
-        var label = "Key data for Coupon " + keyData[0]['couponId'] + ": " + keyData[0]['code'] + "(" + keyData[0]['name'] + ")";
+        var label = "Key data for Coupon " + keyData[0].couponId + ": " + keyData[0].code + "(" + keyData[0].name + ")";
         this.#detailTable = new Tabulator('#detailTable', {
             movableRows: false,
             history: false,
@@ -479,57 +479,57 @@ class Coupon {
         var html = '';
         var label = 'non zero dollar';
 
-        if (coupon['couponType'] == '$mem' || coupon['couponType'] == '%mem') {
+        if (coupon.couponType == '$mem' || coupon.couponType == '%mem') {
             html += "<li>This coupon only applies to memberships, not add-ons</li>";
         }
-        if (coupon['couponType'] == '$off' || coupon['couponType'] == '%off') {
+        if (coupon.couponType == '$off' || coupon.couponType == '%off') {
             html += "<li>This coupon only applies to the cost of memberships in the cart, not add-ons</li>";
         }
-        if (coupon['couponType'] == 'price') {
-            label = coupon['shortname'];
-            html += "<li>This coupon applies a special price of " + Number(coupon['discount']).toFixed(2) + " to " +
+        if (coupon.couponType == 'price') {
+            label = coupon.shortname;
+            html += "<li>This coupon applies a special price of " + Number(coupon.discount).toFixed(2) + " to " +
                 label + " memberships in the cart.</li>";
         }
-        if (coupon['minMemberships']) {
-            if (coupon['minMemberships'] > 1)
-                html += '<li>You must buy at least ' + coupon['minMemberships'] + " " + label + " memberships</li>\n";
+        if (coupon.minMemberships) {
+            if (coupon.minMemberships > 1)
+                html += '<li>You must buy at least ' + coupon.minMemberships + " " + label + " memberships</li>\n";
         }
-        if (coupon['maxMemberships']) {
-            html += '<li>This coupon will only discount up to ' + coupon['maxMemberships'] + " " + label + " memberships</li>\n";
-        }
-
-        if (coupon['minTransaction']) {
-            html += '<li>Your pre-discount cart value must be at least ' + coupon['minTransaction'] + "</li>\n";
-        }
-        if (coupon['maxTransaction']) {
-            html += '<li>The discount will only apply to the first ' + coupon['maxTransaction'] + " of the cart</li>\n";
-        }
-        if (coupon['maxRedemption']) {
-            html += '<li>The coupon may only be used' + coupon['maxRedemption'] + " times</li>\n";
+        if (coupon.maxMemberships) {
+            html += '<li>This coupon will only discount up to ' + coupon.maxMemberships + " " + label + " memberships</li>\n";
         }
 
-        if (coupon['memId']) {
+        if (coupon.minTransaction) {
+            html += '<li>Your pre-discount cart value must be at least ' + coupon.minTransaction + "</li>\n";
+        }
+        if (coupon.maxTransaction) {
+            html += '<li>The discount will only apply to the first ' + coupon.maxTransaction + " of the cart</li>\n";
+        }
+        if (coupon.maxRedemption) {
+            html += '<li>The coupon may only be used' + coupon.maxRedemption + " times</li>\n";
+        }
+
+        if (coupon.memId) {
             html += '<li>Only valid on ';
             var plural = 's'
-            if (coupon['limitMemberships']) {
-                if (coupon['limitMemberships'] == 1) {
+            if (coupon.limitMemberships) {
+                if (coupon.limitMemberships == 1) {
                     html += 'one ';
                     plural = '';
                 } else {
-                    html += coupon['limitMemberships'] + ' ';
+                    html += coupon.limitMemberships + ' ';
                 }
             } else
                 html += ''
-            html += coupon['shortname'] + ' membership' + plural + "</li>\n";
+            html += coupon.shortname + ' membership' + plural + "</li>\n";
         }
 
-        return "Coupon Details for coupon code '" + coupon['code'] + "': " + coupon['name'] + "\n<ul>\n" + html + "</ul>\n";
+        return "Coupon Details for coupon code '" + coupon.code + "': " + coupon.name + "\n<ul>\n" + html + "</ul>\n";
     }
 
     // delete coupon - if used count == 0 then allow delete
     DeleteCoupon() {
         var coupon = URLparamsToArray($('#coupon_form').serialize());
-        if (coupon['couponId'] == '' || coupon['couponId'] == 0) {
+        if (coupon.couponId == '' || coupon.couponId == 0) {
             this.#editModal.hide();
             return; // no coupon to delete
         }
@@ -540,11 +540,11 @@ class Coupon {
             method: 'POST',
             data: coupon,
             success: function (data, textStatus, jhXHR) {
-                if (data['status'] == 'error')
-                    show_message(data['error'], 'error');
+                if (data.status == 'error')
+                    show_message(data.error, 'error');
                 else {
-                    if (data['message'])
-                        show_message(data['message'], 'success');
+                    if (data.message)
+                        show_message(data.message, 'success');
                     coupons.initData(data);
                 }
             },
