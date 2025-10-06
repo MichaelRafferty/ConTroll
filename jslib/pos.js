@@ -824,6 +824,7 @@ class Pos {
         this.#add_email2_field.value = "";
         this.#add_phone_field.value = "";
         this.#add_badgename_field.value = "";
+        this.#add_badgeNameL2_field.value = "";
         this.#add_country_field.value = 'USA';
         // clear the policies
         for (var pol in this.#policies) {
@@ -941,6 +942,7 @@ class Pos {
             this.#add_email2_field.value = "";
             this.#add_phone_field.value = "";
             this.#add_badgename_field.value = "";
+            this.#add_badgeNameL2_field.value = "";
             this.#add_index_field.value = "";
             this.#add_perid_field.value = "";
             this.#add_memIndex_field.value = "";
@@ -1112,7 +1114,7 @@ class Pos {
         var new_email = this.#add_email1_field.value.trim();
         var new_phone = this.#add_phone_field.value.trim();
         var new_badgename = this.#add_badgename_field.value.trim();
-        var new_badgenameL2 = this.#add_badgeNameL2_field.value.trim();
+        var new_badgeNameL2 = this.#add_badgeNameL2_field.value.trim();
         var new_fullname = (new_first + ' ' + new_middle + ' ' + new_last + ' ' + new_suffix).replace('  ', ' ').trim();
 
         this.#addOverride = override;
