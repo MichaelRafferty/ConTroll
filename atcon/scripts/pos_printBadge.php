@@ -49,9 +49,10 @@ if ($printer != null && $printer['name'] != 'None') {
     foreach ($params as $param) {
         $badge = [];
         $badge['type'] = $param['type'];
+        $badge['first_name'] = $param['first_name'];
+        $badge['last_name'] = $param['last_name'];
         $badge['badge_name'] = $param['badge_name'];
         $badge['badgeNameL2'] = $param['badgeNameL2'];
-        $badge['full_name'] = $param['full_name'];
         $badge['category'] = $param['category'];
         $badge['id'] = $param['badge_id'];
         $badge['day'] = $param['day'];

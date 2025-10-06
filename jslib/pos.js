@@ -888,6 +888,7 @@ class Pos {
         var new_email = this.#add_email1_field.value.trim();
         var new_phone = this.#add_phone_field.value.trim();
         var new_badgename = this.#add_badgename_field.value.trim();
+        var new_badgeNameL2 = this.#add_badgeNameL2_field.value.trim();
         var new_fullname = (new_first + ' ' + new_middle + ' ' + new_last + ' ' + new_suffix).replace('  ', ' ').trim();
 
         this.#addOverride = override;
@@ -902,6 +903,7 @@ class Pos {
             row.legalName = new_legalName;
             row.pronouns = new_pronouns;
             row.badge_name = new_badgename;
+            row.badgeNameL2 = new_badgeNameL2;
             row.address_1 = new_addr1;
             row.address_2 = new_addr2;
             row.city = new_city;
@@ -1064,6 +1066,7 @@ class Pos {
                 initialSort: [
                     {column: "fullName", dir: "asc"},
                     {column: "badge_name", dir: "asc"},
+                    {column: "badgeNameL2", dir: "asc"},
                 ],
                 columns: [
                     {field: "perid", visible: false,},
@@ -1074,7 +1077,7 @@ class Pos {
                     {field: "middle_name", visible: false,},
                     {field: "suffix", visible: false,},
                     {field: "legalName", visible: false,},
-                    {title: "Badge Name", field: "badge_name", headerFilter: true, headerWordWrap: true, tooltip: true,},
+                    {title: "Badge Name", field: "badgename", headerFilter: true, headerWordWrap: true, tooltip: true, formatter: 'html', },
                     {title: "Zip", field: "postal_code", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 70, width: 70},
                     {title: "Email Address", field: "email_addr", headerFilter: true, headerWordWrap: true, tooltip: true,},
                     {title: "Reg", field: "reg_label", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 120, width: 120,},
@@ -1109,6 +1112,7 @@ class Pos {
         var new_email = this.#add_email1_field.value.trim();
         var new_phone = this.#add_phone_field.value.trim();
         var new_badgename = this.#add_badgename_field.value.trim();
+        var new_badgenameL2 = this.#add_badgeNameL2_field.value.trim();
         var new_fullname = (new_first + ' ' + new_middle + ' ' + new_last + ' ' + new_suffix).replace('  ', ' ').trim();
 
         this.#addOverride = override;
@@ -1236,7 +1240,8 @@ class Pos {
 
         var row = {
             perid: this.#new_perid, first_name: new_first, middle_name: new_middle, last_name: new_last, suffix: new_suffix,
-            legalName: new_legalName, pronouns: new_pronouns, badge_name: new_badgename, fullName: new_fullname,
+            legalName: new_legalName, pronouns: new_pronouns, badge_name: new_badgename, badgeNameL2: new_badgeNameL2,
+            fullName: new_fullname,
             address_1: new_addr1, address_2: new_addr2, city: new_city, state: new_state, postal_code: new_postal_code,
             open_notes: '',
             country: new_country, email_addr: new_email, phone: new_phone, active: 'Y', banned: 'N', policies: rowPolicies
@@ -1833,7 +1838,7 @@ addUnpaid(tid) {
                     {field: "suffix", visible: false,},
                     {field: "legalName", visible: false,},
                     {field: "pronouns", visible: false,},
-                    {title: "Badge Name", field: "badge_name", headerFilter: true, headerWordWrap: true, tooltip: true,},
+                    {title: "Badge Name", field: "badgename", headerFilter: true, headerWordWrap: true, tooltip: true, formatter: 'html', },
                     {title: "Zip", field: "postal_code", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 70, width: 70},
                     {title: "Email Address", field: "email_addr", headerFilter: true, headerWordWrap: true, tooltip: true,},
                     {title: "Reg", field: "reg_label", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 120, width: 120,},

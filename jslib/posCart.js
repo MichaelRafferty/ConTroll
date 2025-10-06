@@ -443,6 +443,7 @@ class PosCart {
         cart_row.legalName = row.legalName;
         cart_row.pronouns = row.pronouns;
         cart_row.badge_name = row.badge_name;
+        cart_row.badgeNameL2 = row.badgeNameL2;
         cart_row.address_1 = row.address_1;
         cart_row.address_2 = row.address_2;
         cart_row.city = row.city;
@@ -1346,49 +1347,55 @@ class PosCart {
                 String(tabindex + 12) +'" value="' + row.badge_name + `"/>
         </div>
     </div>
+    <div class="row">
+        <div class="col-sm-auto ms-0 me-0 p-0">
+            <input type="text" name='c` + rownum + `-badgeNameL2' id='c` + rownum + `-badgeNameL2' size=32 maxlength="32" placeholder="Badgename Line 2" tabindex="` +
+                String(tabindex + 14) +'" value="' + row.badgeNameL2 + `"/>
+        </div>
+    </div>
      <div class="row">
         <div class="col-sm-auto ms-0 me-0 p-0">
             <input type="text" name='c` + rownum + `-pronouns' id='c` + rownum + `-pronouns' size=80 maxlength="128" placeholder="Pronouns" tabindex="` +
-                String(tabindex + 10) +  '" value="' + row.pronouns + `"/>
+                String(tabindex + 16) +  '" value="' + row.pronouns + `"/>
         </div>
     </div>
     <div class="row">
         <div class="col-sm-auto ms-0 me-2 p-0">
             <input type="text" name='c` + rownum + `-email_addr' id='c` + rownum + `-email_addr' size=64 maxlength="254" placeholder="Email Address" tabindex="` +
-                String(tabindex + 14) + '"  value="' + row.email_addr + '" style="background-color:' + colors.get('email_addr') + ';' + `"/>
+                String(tabindex + 18) + '"  value="' + row.email_addr + '" style="background-color:' + colors.get('email_addr') + ';' + `"/>
         </div>
          <div class="col-sm-auto ms-0 me-0 p-0">
             <input type="text" name='c` + rownum + `-phone' id='c` + rownum + `-phone' size=15 maxlength="15" placeholder="Phone Number" tabindex="` +
-            String(tabindex + 16) + '" value="' + row.phone + '" style="background-color:' + colors.get('phone') + ';' + `"/>
+            String(tabindex + 20) + '" value="' + row.phone + '" style="background-color:' + colors.get('phone') + ';' + `"/>
         </div>
     </div>
     <div class="row">
         <div class="col-sm-auto ms-0 me-0 p-0">
             <input type="text" name='c` + rownum + `-address_1' id='c` + rownum + `-address_1' size=64 maxlength="64" placeholder="Street Address" tabindex="` +
-                String(tabindex + 18) + '"  value="' + row.address_1 + '" style="background-color:' + colors.get('address_1') + ';' + `"/>
+                String(tabindex + 22) + '"  value="' + row.address_1 + '" style="background-color:' + colors.get('address_1') + ';' + `"/>
         </div>
     </div>
     <div class="row">
         <div class="col-sm-auto ms-0 me-0 p-0">
             <input type="text" name='c` + rownum + `-address_2' id='c` + rownum + `-address_2' size=64 maxlength="64" placeholder="2nd line of Address (if needed, such as company)" tabindex="` +
-                String(tabindex + 20) + '" value="' + row.address_2 + `"/>
+                String(tabindex + 24) + '" value="' + row.address_2 + `"/>
         </div>
     </div>
     <div class="row">
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <input type="text" name="c` + rownum + `-city" id='c` + rownum + `-city' size="22" maxlength="32" placeholder="City" tabindex="` + String(tabindex + 22) +
+            <input type="text" name="c` + rownum + `-city" id='c` + rownum + `-city' size="22" maxlength="32" placeholder="City" tabindex="` + String(tabindex + 26) +
                 '" value="' + row.city + '" style="background-color:' + colors.get('city') + ';' + `"/>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <input type="text" name="c` + rownum + `-state" id='c` + rownum + `-state' size="10" maxlength="16" placeholder="State/Prov" tabindex="` + String(tabindex + 24) +
+            <input type="text" name="c` + rownum + `-state" id='c` + rownum + `-state' size="10" maxlength="16" placeholder="State/Prov" tabindex="` + String(tabindex + 28) +
                 '" value="' + row.state + '" style="background-color:' + colors.get('state') + ';' + `"/>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <input type="text" name="c` + rownum + `-postal_code" id='c` + rownum + `-postal_code' size="10" maxlength="10" placeholder="Postal Code" tabindex="` + String(tabindex + 26) +
+            <input type="text" name="c` + rownum + `-postal_code" id='c` + rownum + `-postal_code' size="10" maxlength="10" placeholder="Postal Code" tabindex="` + String(tabindex +30) +
             '" value="' + row.postal_code + '" style="background-color:' + colors.get('postal_code') + ';' + `"/>
         </div>
         <div class="col-sm-auto ms-0 me-0 p-0">
-            <select name='c` + rownum + `-country' id='c` + rownum + `-country' tabindex="` + String(tabindex + 28) + `">
+            <select name='c` + rownum + `-country' id='c` + rownum + `-country' tabindex="` + String(tabindex + 32) + `">
                 ` + this.#country_select + `
             </select>
         </div>
@@ -1398,6 +1405,7 @@ class PosCart {
 
             // policies
             var policies = row.policies;
+            let i = 0;
             for (var polrow in policies) {
                 var policyName = policies[polrow].policy;
                 if (policyIndex[policyName] == undefined) // skip over inactive policies
@@ -1409,9 +1417,10 @@ class PosCart {
                     missingRequiredPolicies++;
                     color = "var(--bs-danger-bg-subtle)"
                 }
+                i = i + 1;
                 html += '<div class="col-sm-auto" style="background-color: ' + color + ';">' + policyName + ': ' +
                     '<input type="checkbox" name="c' + rownum + '-p_' + policyName + '" id="c' + rownum + '-p_' + policyName +
-                    '" tabindex="' + String(tabindex + 26) +
+                    '" tabindex="' + String(tabindex + 36 + i) +
                     '" value="Y"' + (policyResp == 'Y' ? ' checked' : ' ') + '/>\n</div>\n';
             }
 
@@ -1530,7 +1539,7 @@ class PosCart {
         <div class="col-sm-auto ms-0 me-2 p-0">            
             <span class="text-bg-success"> Membership: ` + mbrrow.label + `</span> (Times Printed: ` +
                                 mbrrow.printcount + `)<br/>
-              ` + crow.badge_name + '/' + (crow.first_name + ' ' + crow.last_name).trim() + `
+              ` + badgeNameDefault(crow.badge_name, crow.badgeNameL2, crow.first_name, crow.last_name) + '/' + (crow.first_name + ' ' + crow.last_name).trim() + `
         </div>
      </div>`;
                     if (new_print) {
@@ -1548,7 +1557,7 @@ class PosCart {
         <div class="col-sm-auto ms-0 me-2 p-0">            
             <span class="text-bg-success"> Membership: ` + mrow.label + `</span> (Times Printed: ` +
                     mrow.printcount + `)<br/>
-              ` + crow.badge_name + '/' + (crow.first_name + ' ' + crow.last_name).trim() + `
+              ` + badgeNameDefault(crow.badge_name, crow.badgeNameL2, crow.first_name, crow.last_name)  + '/' + (crow.first_name + ' ' + crow.last_name).trim() + `
         </div>
      </div>`;
                 if (new_print) {
@@ -1568,7 +1577,9 @@ class PosCart {
         var params = {};
         params.type = printrow.memType;
         params.badge_name = row.badge_name;
-        params.full_name = row.fullName;
+        params.badgeNameL2 = row.badgeNameL2;
+        params.first_name = row.first_name;
+        params.last_name = row.last_name;
         params.category = printrow.memCategory;
         params.badge_id = row.perid;
         params.day = dayFromLabel(printrow.label);
