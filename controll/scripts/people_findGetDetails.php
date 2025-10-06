@@ -98,7 +98,7 @@ if ($mR === false) {
 
 $managed= [];
 while ($row = $mR->fetch_assoc()) {
-    $row['badgeName'] = badgeNameDefault($row['badge_name'], $row['badgeNameL2'], $row['first_name'], $row['last_name']);
+    $row['badgename'] = badgeNameDefault($row['badge_name'], $row['badgeNameL2'], $row['first_name'], $row['last_name']);
     $managed[] = $row;
 }
 $mR->free();

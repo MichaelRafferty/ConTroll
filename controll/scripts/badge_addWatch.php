@@ -99,7 +99,7 @@ if ($watchR === false) {
 }
 $response['success'] = $newid . " added, " . $watchR->num_rows . " members now being watched";
 while($badge = $watchR->fetch_assoc()) {
-    $badge['badgeName'] = badgeNameDefault($badge['badge_name'], $badge['badgeNameL2'], $badge['first_name'], $badge['last_name']);
+    $badge['badgename'] = badgeNameDefault($badge['badge_name'], $badge['badgeNameL2'], $badge['first_name'], $badge['last_name']);
     $badges[] = $badge;
 }
 $watchR->free();

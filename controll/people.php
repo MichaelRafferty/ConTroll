@@ -277,7 +277,8 @@ $config_vars['inrerests'] = $interests;
                             </div>
                         </div>
                         <div class='col-sm-5 border border-dark ps-1 pe-1'>
-                            <input type='text' id='badgeName' name='badgeName' maxlength='32' size='32' placeholder='Defaults to First Last'/>
+                            <input type='text' id='badgeName' name='badgeName' maxlength='32' size='32' placeholder='Defaults to First Last'/><br/>
+                            <input type='text' id='badgeNameL2' name='badgeNameL2' maxlength='32' size='32' placeholder='Badge Line 2'/>
                         </div>
                         <div class='col-sm-3 border border-dark ps-0'>
                             <div class='container-fluid'>

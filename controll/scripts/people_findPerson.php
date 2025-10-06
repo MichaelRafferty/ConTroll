@@ -174,7 +174,7 @@ if ($mR === false) {
 $pids = [];
 $matches= [];
 while ($match = $mR->fetch_assoc()) {
-    $match['badgeName'] = badgeNameDefault($match['badge_name'], $match['badgeNameL2'], $match['first_name'], $match['last_name']);
+    $match['badgename'] = badgeNameDefault($match['badge_name'], $match['badgeNameL2'], $match['first_name'], $match['last_name']);
     $matches[] = $match;
     $pids[] = $match['id'];
 }

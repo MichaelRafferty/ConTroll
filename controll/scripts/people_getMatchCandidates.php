@@ -51,6 +51,7 @@ if ($nR === false || $nR->num_rows != 1) {
 
 $newperson = [];
 $newperson = $nR->fetch_assoc();
+$newperson['badgename'] = badgeNameDefault($newperson['badge_name'], $newperson['badgeNameL2'], $newperson['first_name'], $newperson['last_name']);
 $nR->free();
 
 $response['newperson'] = $newperson;
@@ -86,6 +87,7 @@ WITH lNew AS (
         LOWER(TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), ' +', ' '))) AS fullName,
         LOWER(TRIM(email_addr)) AS email_addr,
         LOWER(TRIM(badge_name)) AS badge_name,
+        LOWER(TRIM(badgeNameL2)) AS badgeNameL2,
         LOWER(TRIM(address)) AS address,
         LOWER(TRIM(addr_2)) AS addr_2,
         REPLACE(REPLACE(REPLACE(REPLACE(LOWER(TRIM(phone)), ')', ''), '(', ''), '-', ''), ' ', '') AS phone,
@@ -100,7 +102,8 @@ WITH lNew AS (
         first_name, SOUNDEX(first_name) AS sFirstName,
         last_name, SOUNDEX(last_name) AS sLastName,
         middle_name, SOUNDEX(middle_name) AS sMiddleName, fullName,
-        badge_name, SOUNDEX(middle_name) AS sBadgeName,
+        badge_name, SOUNDEX(badge_name) AS sBadgeName,
+        badgeNameL2, SOUNDEX(badgeNamel2) AS sBadgeNameL2,
         email_addr, SOUNDEX(email_addr) AS sEmailAddr,
         address, addr_2, phone, city, state, country
     FROM lNew
@@ -113,6 +116,7 @@ WITH lNew AS (
         LOWER(TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), ' +', ' '))) AS fullName,
         LOWER(TRIM(email_addr)) AS email_addr,
         LOWER(TRIM(badge_name)) AS badge_name,
+        LOWER(TRIM(badgeNameL2)) AS badgeNameL2,
         LOWER(TRIM(address)) AS address,
         LOWER(TRIM(addr_2)) AS addr_2,
         REPLACE(REPLACE(REPLACE(REPLACE(LOWER(TRIM(phone)), ')', ''), '(', ''), '-', ''), ' ', '') AS phone,
@@ -126,7 +130,8 @@ WITH lNew AS (
         first_name, SOUNDEX(first_name) AS sFirstName,
         last_name, SOUNDEX(last_name) AS sLastName,
         middle_name, SOUNDEX(middle_name) AS sMiddleName, fullName,
-        badge_name, SOUNDEX(middle_name) AS sBadgeName,
+        badge_name, SOUNDEX(badge_name) AS sBadgeName,
+        badgeNameL2, SOUNDEX(badgeNameL2) AS sBadgeNameL2,
         email_addr, SOUNDEX(email_addr) AS sEmailAddr,
         address, addr_2, phone, city, state, country
     FROM pOld
@@ -220,6 +225,7 @@ if ($mR === false) {
 $pids = [];
 $matches= [];
 while ($match = $mR->fetch_assoc()) {
+    $match['badgename'] = badgeNameDefault($match['badge_name'], $match['badgeNameL2'], $match['first_name'], $match['last_name']);
     $matches[] = $match;
     $pids[] = $match['id'];
 }

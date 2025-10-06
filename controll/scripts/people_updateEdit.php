@@ -48,6 +48,7 @@ $suffix = $_POST['suffix'] == null ? '' : trim($_POST['suffix']);
 $legalName = $_POST['legalName'] == null ? '' : trim($_POST['legalName']);
 $pronouns = $_POST['pronouns'] == null ? '' : trim($_POST['pronouns']);
 $badge_name = $_POST['badgeName'] == null ? '' : trim($_POST['badgeName']);
+$badgeNameL2 = $_POST['badgeNameL2'] == null ? '' : trim($_POST['badgeNameL2']);
 $address = $_POST['address'] == null ? '' : trim($_POST['address']);
 $addr_2 = $_POST['addr2'] == null ? '' : trim($_POST['addr2']);
 $city = $_POST['city'] == null ? '' : trim($_POST['city']);
@@ -91,15 +92,15 @@ EOS;
 
 $uP = <<<EOS
 UPDATE perinfo
-SET last_name = ?, first_name = ?, middle_name = ?, suffix = ?, email_addr = ?, phone = ?, badge_name = ?, legalName = ?, pronouns = ?,
+SET last_name = ?, first_name = ?, middle_name = ?, suffix = ?, email_addr = ?, phone = ?, badge_name = ?, badgeNameL2 = ?, legalName = ?, pronouns = ?,
     address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?, banned = ?,
     active = ?, open_notes = ?, admin_notes = ?, managedBy = ?, updatedBy = ?, 
     managedByNew = NULL, lastVerified = NULL, update_date = NOW(), change_notes = CONCAT(change_notes, '<br/>Updated by People Edit screen')
 WHERE id = ?;
 EOS;
 
-$typeStr = 'sssssssssssssssssssiii';
-$valArray = array($last_name, $first_name, $middle_name, $suffix, $email_addr, $phone, $badge_name, $legalName, $pronouns, $address, $addr_2,
+$typeStr = 'ssssssssssssssssssssiii';
+$valArray = array($last_name, $first_name, $middle_name, $suffix, $email_addr, $phone, $badge_name, $badgeNameL2, $legalName, $pronouns, $address, $addr_2,
     $city, $state, $zip, $country, $banned, $active, $open_notes, $admin_notes, $managedBy, $updatedBy, $perid);
 
 $upd = dbSafeCmd($uP, $typeStr, $valArray);
@@ -126,6 +127,56 @@ if ($interest_upd > 0) {
 
 //  4. manages
 // handled directly in the JS using people_unmanage.php and people_manage.php
+
+// 5. now return the updated record
+$mQ = <<<EOS
+WITH perids AS (
+    SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2, p.legalName, p.pronouns, 
+        p.address, p.addr_2, p.city, p.state, p.zip, p.country,  
+        p.creation_date, p.update_date, p.active, p.banned, p.open_notes, p.admin_notes,
+        p.managedBy, p.managedByNew, p.lastverified, p.managedreason,
+        REPLACE(REPLACE(REPLACE(REPLACE(LOWER(TRIM(IFNULL(p.phone, ''))), ')', ''), '(', ''), '-', ''), ' ', '') AS phoneCheck,
+        TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
+        TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.address, p.addr_2, p.city, p.state, p.zip, p.country), ' +', ' ')) AS fullAddr,
+        CASE
+            WHEN mp.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', mp.first_name, mp.middle_name, mp.last_name, mp.suffix), ' +', ' '))
+            ELSE ''
+        END AS manager,
+        CASE
+            WHEN mp.id IS NOT NULL THEN mp.id
+            ELSE NULL
+        END AS managerId,
+        GROUP_CONCAT(DISTINCT TRIM(CONCAT(CASE WHEN m.conid = ? THEN '' ELSE m.conid END, ' ', m.label)) ORDER BY m.id SEPARATOR ', ') AS memberships
+    FROM perinfo p
+    LEFT OUTER JOIN perinfo mp ON (p.managedBy = mp.id)
+    LEFT OUTER JOIN reg r ON (r.perid = p.id AND r.status IN ('paid', 'unpaid', 'plan'))
+    LEFT OUTER JOIN memList m ON (r.memId = m.id AND m.conid in (?, ?))
+    WHERE p.id = ?
+    GROUP BY p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2, p.legalName, p.pronouns, 
+        p.address, p.addr_2, p.city, p.state, p.zip, p.country, 
+        p.creation_date, p.update_date, p.active, p.banned, p.open_notes, p.admin_notes,
+        p.managedBy, p.managedByNew, p.lastverified, p.managedreason, phoneCheck, fullName, manager, managerId
+), his AS (
+    SELECT p.id, count(h.historyId) AS historyCount
+    FROM perids p
+    LEFT OUTER JOIN perinfoHistory h ON (h.id = p.id)
+    GROUP BY p.id
+)
+SELECT p.*, his.historyCount
+FROM perids p
+LEFT OUTER JOIN his ON (p.id = his.id);
+EOS;
+$typestr = 'iiii';
+$valArray = array($conid, $conid, $conid + 1, $perid);
+$updated = [];
+$mR = dbSafeQuery($mQ, $typestr, $valArray);
+while ($match = $mR->fetch_assoc()) {
+    $match['badgename'] = badgeNameDefault($match['badge_name'], $match['badgeNameL2'], $match['first_name'], $match['last_name']);
+    $updated[] = $match;
+}
+$mR->free();
+
+$response['updated'] = $updated;
 
 $response['success'] = $message;
 ajaxSuccess($response);

@@ -66,6 +66,7 @@ class Unmatched {
     #legalName = null;
     #pronouns = null;
     #badgeName = null;
+    #badgeNameL2 = null;
     #address = null;
     #addr2 = null;
     #city = null;
@@ -134,6 +135,7 @@ class Unmatched {
             this.#legalName = document.getElementById('legalName');
             this.#pronouns = document.getElementById('pronouns');
             this.#badgeName = document.getElementById('badgeName');
+            this.#badgeNameL2 = document.getElementById('badgeNameL2');
             this.#address = document.getElementById('address');
             this.#addr2 = document.getElementById('addr2');
             this.#city = document.getElementById('city');
@@ -228,6 +230,9 @@ class Unmatched {
                 {field: 'last_name', visible: false,},
                 {field: 'suffix', visible: false,},
                 {field: 'legalName', visible: false,},
+                {field: 'badgename', visible: false,},
+                {field: 'badge_name', visible: false,},
+                {field: 'badgeNameL2', visible: false,},
                 {field: 'pronouns', visible: false,},
                 {field: 'active', visible: false,},
                 {field: 'banned', visible: false,},
@@ -370,7 +375,7 @@ class Unmatched {
                 {title: "ID", field: "id", width: 80, headerHozAlign:"right", hozAlign: "right", headerSort: false, },
                 {title: "Full Name", field: "fullName", width: 250, formatter: "textarea", headerSort: false, },
                 {title: "Address", field: "fullAddr", width: 300, formatter: "textarea", headerSort: false, },
-                {title: "Badge Name", field: "badge_name", width: 150, headerSort: false, },
+                {title: "Badge Name", field: "badgename", width: 150, headerSort: false, formatter: 'html', },
                 {title: "Managed By", field: "manager", headerWordWrap: true, width: 150, headerSort: false, },
                 {title: "Email", field: "email_addr", width: 250, headerSort: false, },
                 {title: "Phone", field: "phone", width: 150, headerSort: false, },
@@ -382,6 +387,8 @@ class Unmatched {
                 {field: 'last_name', visible: false,},
                 {field: 'suffix', visible: false,},
                 {field: 'legalName', visible: false,},
+                {field: 'badge_name', visible: false,},
+                {field: 'badgeNameL2', visible: false,},
                 {field: 'pronouns', visible: false,},
                 {field: 'active', visible: false,},
                 {field: 'banned', visible: false,},
@@ -406,7 +413,7 @@ class Unmatched {
                 {title: "Full Name", field: "fullName", width: 250, headerSort: true, headerFilter: true, headerFilterFunc: fullNameHeaderFilter,
                     formatter: "textarea", },
                 {title: "Address", field: "fullAddr", width: 300, headerSort: true, headerFilter: true, formatter: "textarea", },
-                {title: "Badge Name", field: "badge_name", width: 150, headerFilter:true, headerSort: false},
+                {title: "Badge Name", field: "badgename", width: 150, headerFilter:true, headerSort: false, formatter: "html", },
                 {title: "Managed By", field: "manager", headerWordWrap: true, width: 150, headerSort: true, headerFilter: true, },
                 {title: "Email", field: "email_addr", width: 250, headerSort: true, headerFilter: true, },
                 {title: "Phone", field: "phone", width: 150, headerSort: true, headerFilter: true, },
@@ -418,6 +425,8 @@ class Unmatched {
                 {field: 'last_name', visible: false,},
                 {field: 'suffix', visible: false,},
                 {field: 'legalName', visible: false,},
+                {field: 'badge_name', visible: false,},
+                {field: 'badgeNameL2', visible: false,},
                 {field: 'pronouns', visible: false,},
                 {field: 'active', visible: false,},
                 {field: 'banned', visible: false,},
@@ -443,7 +452,7 @@ class Unmatched {
                 {title: "Full Name", field: "fullName", width: 250, headerSort: true, headerFilter: true, headerFilterFunc: fullNameHeaderFilter,
                     formatter: "textarea", },
                 {title: "Address", field: "fullAddr", width: 300, headerSort: true, headerFilter: true, formatter: "textarea", },
-                {title: "Badge Name", field: "badge_name", width: 150, headerFilter:true, headerSort: false},
+                {title: "Badge Name", field: "badgename", width: 150, headerFilter:true, headerSort: false, formatter: "html", },
                 {title: "Managed By", field: "manager", headerWordWrap: true, width: 150, headerSort: true, headerFilter: true, },
                 {title: "Email", field: "email_addr", width: 250, headerSort: true, headerFilter: true, },
                 {title: "Phone", field: "phone", width: 150, headerSort: true, headerFilter: true, },
@@ -455,6 +464,8 @@ class Unmatched {
                 {field: 'last_name', visible: false,},
                 {field: 'suffix', visible: false,},
                 {field: 'legalName', visible: false,},
+                {field: 'badge_name', visible: false,},
+                {field: 'badgeNameL2', visible: false,},
                 {field: 'pronouns', visible: false,},
                 {field: 'active', visible: false,},
                 {field: 'banned', visible: false,},
@@ -498,7 +509,7 @@ class Unmatched {
             this.#matchName.innerHTML = this.#matchPerson.fullName;
             this.#matchLegal.innerHTML = this.#matchPerson.legalName;
             this.#matchPronouns.innerHTML = this.#matchPerson.pronouns;
-            this.#matchBadge.innerHTML = this.#matchPerson.badge_name;
+            this.#matchBadge.innerHTML = this.#matchPerson.badgename;
             this.#matchAddress.innerHTML = this.#matchPerson.fullAddr;
             this.#matchEmail.innerHTML = this.#matchPerson.email_addr;
             this.#matchPhone.innerHTML = this.#matchPerson.phone;
@@ -525,7 +536,7 @@ class Unmatched {
         this.#newName.innerHTML = this.#newperson.fullName;
         this.#newLegal.innerHTML = this.#newperson.legalName;
         this.#newPronouns.innerHTML = this.#newperson.pronouns;
-        this.#newBadge.innerHTML = this.#newperson.badge_name;
+        this.#newBadge.innerHTML = this.#newperson.badgename;
         this.#newAddress.innerHTML = this.#newperson.fullAddr;
         this.#newEmail.innerHTML = this.#newperson.email_addr;
         this.#newPhone.innerHTML = this.#newperson.phone;
@@ -549,6 +560,7 @@ class Unmatched {
         this.#legalName.value = this.#newperson.legalName;
         this.#pronouns.value = this.#newperson.pronouns;
         this.#badgeName.value = this.#newperson.badge_name;
+        this.#badgeNameL2.value = this.#newperson.badgeNameL2;
         this.#address.value = this.#newperson.address;
         this.#addr2.value = this.#newperson.addr_2;
         this.#city.value = this.#newperson.city;
@@ -571,7 +583,7 @@ class Unmatched {
             this.#matchName.style.backgroundColor = this.#newperson.fullName != this.#matchPerson.fullName ? diffcolor : '';
             this.#matchLegal.style.backgroundColor = this.#newperson.legalName != this.#matchPerson.legalName ? diffcolor : '';
             this.#matchPronouns.style.backgroundColor = this.#newperson.pronouns != this.#matchPerson.pronouns ? diffcolor : '';
-            this.#matchBadge.style.backgroundColor = this.#newperson.badge_name != this.#matchPerson.badge_name ? diffcolor : '';
+            this.#matchBadge.style.backgroundColor = this.#newperson.badgename != this.#matchPerson.badgename ? diffcolor : '';
             this.#matchAddress.style.backgroundColor = this.#newperson.fullAddr != this.#matchPerson.fullAddr ? diffcolor : '';
             this.#matchEmail.style.backgroundColor = this.#newperson.email_addr != this.#matchPerson.email_addr ? diffcolor : '';
             this.#matchPhone.style.backgroundColor = this.#newperson.phone != this.#matchPerson.phone ? diffcolor : '';
@@ -599,6 +611,7 @@ class Unmatched {
             legalName: this.#legalName.value,
             pronouns: this.#pronouns.value,
             badgeName: this.#badgeName.value,
+            badgeNameL2: this.#badgeNameL2.value,
             address: this.#address.value,
             addr2: this.#addr2.value,
             city: this.#city.value,
@@ -797,10 +810,12 @@ class Unmatched {
 
             case 'matchBadge':
                 this.#badgeName.value = this.#matchPerson.badge_name;
+                this.#badgeNameL2.value = this.#matchPerson.badgeNameL2;
                 break;
 
             case 'newBadge':
                 this.#badgeName.value = this.#newperson.badge_name;
+                this.#badgeNameL2.value = this.#newperson.badgeNameL2;
                 break;
 
             case 'matchAddress':
@@ -880,6 +895,7 @@ class Unmatched {
                 this.#legalName.value = this.#matchPerson.legalName;
                 this.#pronouns.value = this.#matchPerson.pronouns;
                 this.#badgeName.value = this.#matchPerson.badge_name;
+                this.#badgeNameL2.value = this.#matchPerson.badgeNameL2;
                 this.#address.value = this.#matchPerson.address;
                 this.#addr2.value = this.#matchPerson.addr_2;
                 this.#city.value = this.#matchPerson.city;
