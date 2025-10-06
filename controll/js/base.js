@@ -15,6 +15,8 @@ function test(method, formData, resultDiv) {
     });
 }
 
+// Obsolete functions, delete once Club is rewritten
+//
 function hideBlock(block) {
     $(block + "Form").hide();
     $(block + "ShowLink").show();
@@ -204,6 +206,8 @@ function getForm(formObj, formUrl, succFunc, errFunc) {
         }
     });
 }
+
+// end obsolete functions
 
 // old style error message block
 //
