@@ -43,7 +43,7 @@ if (is_numeric($name_search)) {
     // this is perid
     //
     $searchSQL = <<<EOS
-SELECT DISTINCT p.id AS perid, p.first_name, p.middle_name, p.last_name, p.suffix, p.badge_name,
+SELECT DISTINCT p.id AS perid, p.first_name, p.middle_name, p.last_name, p.suffix, p.badge_name, p.badgeNameL2,
     p.address as address_1, p.addr_2 as address_2, p.city, p.state, p.zip as postal_code, p.country, p.email_addr, p.phone,
     p.share_reg_ok, p.contact_ok, p.active, p.banned, 
     CASE 
@@ -75,7 +75,7 @@ EOS;
     $name_search = '%' . preg_replace('/ +/', '%', $name_search) . '%';
     //web_error_log("match string: $name_search");
     $searchSQL = <<<EOS
-SELECT DISTINCT p.id AS perid, p.first_name, p.middle_name, p.last_name, p.suffix, p.badge_name,
+SELECT DISTINCT p.id AS perid, p.first_name, p.middle_name, p.last_name, p.suffix, p.badge_name, p.badgeNameL2,
     p.address as address_1, p.addr_2 as address_2, p.city, p.state, p.zip as postal_code, p.country, p.email_addr, p.phone,
     p.share_reg_ok, p.contact_ok, p.active, p.banned,
     CASE
@@ -97,11 +97,11 @@ JOIN memLabel m ON (r.memId = m.id)
 LEFT OUTER JOIN memLabel mn ON (rn.memId = mn.id)
 WHERE r.conid = ? AND (
     LOWER(TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name), ' +', ' '))) LIKE ? OR
-    LOWER(TRIM(p.badge_name) LIKE ? OR LOWER(TRIM(p.email_addr)) LIKE ?)
+    LOWER(TRIM(p.badge_name)) LIKE ? OR LOWER(TRIM(p.badgeNameL2)) LIKE ? OR LOWER(TRIM(p.email_addr)) LIKE ?)
 ORDER BY last_name, first_name
 LIMIT $limit;
 EOS;
-    $r = dbSafeQuery($searchSQL, 'iisss', array($conid + 1, $conid, $name_search, $name_search, $name_search));
+    $r = dbSafeQuery($searchSQL, 'iissss', array($conid + 1, $conid, $name_search, $name_search, $name_search, $name_search));
 
 }
 // now process the search results
@@ -113,6 +113,7 @@ while ($l = $r->fetch_assoc()) {
     if (!array_key_exists($l['perid'], $perids)) {
         $perids[$l['perid']] = $index;
         $l['index'] = $index;
+        $l['badgename'] = badgeNameDefault($l['badge_name'], $l['badgeNameL2'], $l['first_name'], $l['last_name']);
         $perinfo[] = $l;
     }
     $index++;

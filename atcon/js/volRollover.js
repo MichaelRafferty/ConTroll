@@ -113,7 +113,7 @@ function build_record_hover(e, cell, onRendered) {
     if (data['country'] != '' && data['country'] != 'USA') {
         hover_text += data['country'] + '<br/>';
     }
-    hover_text += 'Badge Name: ' + badge_name_default(data['badge_name'], data['first_name'], data['last_name']) + '<br/>' +
+    hover_text += 'Badge Name: ' + badge_name_default(data['badge_name'], data['badgeNameL2'], data['first_name'], data['last_name']) + '<br/>' +
         'Email: ' + data['email_addr'] + '<br/>' + 'Phone: ' + data['phone'] + '<br/>' +
         'Active:' + data['active'] + ' Contact?:' + data['contact_ok'] + ' Share?:' + data['share_reg_ok'] + '<br/>' +
         'Membership: ' + data['label'] + '<br/>';
@@ -197,7 +197,7 @@ function draw_list_row(rownum) {
     rowhtml += `
     <div class="row mb-2">
         <div class="col-sm-3 p-0">Badge Name:</div>
-        <div class="col-sm-5 p-0">` + badge_name_default(row['badge_name'], row['first_name'], row['last_name']) + `</div>
+        <div class="col-sm-5 p-0">` + badge_name_default(row['badge_name'], row['badgeNameL2', row['first_name'], row['last_name']) + `</div>
     </div>`;
 
     return rowhtml;
@@ -254,7 +254,7 @@ function draw_record() {
         </div>
         <div class="row">
             <div class="col-sm-3">` + 'Badge Name:' + `</div>
-            <div class="col-sm-9">` + badge_name_default(data['badge_name'], data['first_name'], data['last_name']) + `</div>
+            <div class="col-sm-9">` + badge_name_default(data['badge_name'], data['badgeNameL2'], data['first_name'], data['last_name']) + `</div>
         </div>
         <div class="row">
             <div class="col-sm-3">Name:</div>
@@ -385,7 +385,7 @@ function find_record() {
     });
 }
 
-// successful return from 2 AXAJ call - processes found records
+// successful return from 2 AJAX call - processes found records
 // unpaid: one record: put it in the cart and go to pay screen
 //      multiple records: show table of records with pay icons
 // normal:
@@ -414,7 +414,7 @@ function found_record(data) {
                 {field: "first_name", visible: false,},
                 {field: "middle_name", visible: false,},
                 {field: "suffix", visible: false,},
-                {title: "Badge Name", field: "badge_name", headerFilter: true, headerWordWrap: true, tooltip: true,},
+                {title: "Badge Name", field: "badgename", headerFilter: true, headerWordWrap: true, tooltip: true, formatter: 'html', },
                 {title: "Zip", field: "postal_code", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 70, width: 70},
                 {title: "Email Address", field: "email_addr", headerFilter: true, headerWordWrap: true, tooltip: true,},
                 {title: "Reg", field: "label", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 80, width: 80,},
