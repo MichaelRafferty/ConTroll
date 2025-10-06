@@ -1097,7 +1097,7 @@ class PosCart {
         rowhtml += `
     <div class="row">
         <div class="col-sm-3">Badge Name:</div>
-        <div class="col-sm-5">` + pos.badgeNameDefault(row.badge_name, row.badgeNameL2, row.first_name, row.last_name) + `</div>
+        <div class="col-sm-5">` + badgeNameDefault(row.badge_name, row.badgeNameL2, row.first_name, row.last_name) + `</div>
         <div class="col-sm-2 text-center">`;
         if (!this.#freezeCart && row.open_notes != null && row.open_notes.length > 0) {
             rowhtml += '<button type="button" class="btn btn-sm btn-info p-0" onclick="pos.showPerinfoNotes(' + row.index + ', \'cart\')">View' +
