@@ -44,12 +44,12 @@ window.onload = function initpage() {
         url: "scripts/volRollover_loadInitialData.php",
         data: postData,
         success: function (data, textstatus, jqxhr) {
-            if (data['error'] !== undefined) {
-                show_message(data['error'], 'error');
+            if (data.error !== undefined) {
+                show_message(data.error, 'error');
                 return;
             }
-            if (data['message'] !== undefined) {
-                show_message(data['message'], 'success');
+            if (data.message !== undefined) {
+                show_message(data.message, 'success');
             }
             loadInitialData(data);
         },
@@ -61,12 +61,12 @@ window.onload = function initpage() {
 function loadInitialData(data) {
     // map the memIds and labels for the pre-coded memberships.  Doing it now because it depends on what the datbase sends.
     // tabls
-    conlabel =  data['label'];
-    conid = data['conid'];
-    user_id = data['user_id']
-    rollover_memId = data['rollover_memId'];
-    rollover_label = data['rollover_label'];
-    rollover_shortname = data['rollover_shortname'];
+    conlabel =  data.label;
+    conid = data.conid;
+    user_id = data.user_id
+    rollover_memId = data.rollover_memId;
+    rollover_label = data.rollover_label;
+    rollover_shortname = data.rollover_shortname;
 
     // set up initial values
     result_perinfo = [];
@@ -104,19 +104,19 @@ function start_over(reset_all) {
 function build_record_hover(e, cell, onRendered) {
     var data = cell.getData();
     //console.log(data);
-    var hover_text = (data['first_name'] + ' ' + data['middle_name'] + ' ' + data['last_name']).trim() + '<br/>' +
-        data['address_1'] + '<br/>';
-    if (data['address_2'] != '') {
-        hover_text += data['address_2'] + '<br/>';
+    var hover_text = (data.first_name + ' ' + data.middle_name + ' ' + data.last_name).trim() + '<br/>' +
+        data.address_1 + '<br/>';
+    if (data.address_2 != '') {
+        hover_text += data.address_2 + '<br/>';
     }
-    hover_text += data['city'] + ', ' + data['state'] + ' ' + data['postal_code'] + '<br/>';
-    if (data['country'] != '' && data['country'] != 'USA') {
-        hover_text += data['country'] + '<br/>';
+    hover_text += data.city + ', ' + data.state + ' ' + data.postal_code + '<br/>';
+    if (data.country != '' && data.country != 'USA') {
+        hover_text += data.country + '<br/>';
     }
-    hover_text += 'Badge Name: ' + badgeNameDefault(data['badge_name'], data['badgeNameL2'], data['first_name'], data['last_name']) + '<br/>' +
-        'Email: ' + data['email_addr'] + '<br/>' + 'Phone: ' + data['phone'] + '<br/>' +
-        'Active:' + data['active'] + ' Contact?:' + data['contact_ok'] + ' Share?:' + data['share_reg_ok'] + '<br/>' +
-        'Membership: ' + data['label'] + '<br/>';
+    hover_text += 'Badge Name: ' + badgeNameDefault(data.badge_name, data.badgeNameL2, data.first_name, data.last_name) + '<br/>' +
+        'Email: ' + data.email_addr + '<br/>' + 'Phone: ' + data.phone + '<br/>' +
+        'Active:' + data.active + ' Contact?:' + data.contact_ok + ' Share?:' + data.share_reg_ok + '<br/>' +
+        'Membership: ' + data.label + '<br/>';
 
     return hover_text;
 }
@@ -125,11 +125,11 @@ function build_record_hover(e, cell, onRendered) {
 function rollover_member(index) {
     var rt = result_perinfo[index];
 
-    if (rt['banned'] == 'Y') {
-        alert("Please ask " + (result_perinfo[index]['first_name'] + ' ' + rt[index]['last_name']).trim() +" to talk to the Registration Administrator, you cannot roll them over at this time.")
+    if (rt.banned == 'Y') {
+        alert("Please ask " + (result_perinfo[index].first_name + ' ' + rt[index].last_name).trim() +" to talk to the Registration Administrator, you cannot roll them over at this time.")
         return;
     }
-    if (!(rt['roll_regid'] === undefined || rt['roll_regid'] === null)) {
+    if (!(rt.roll_regid === undefined || rt.roll_regid === null)) {
         show_message("This member already has a valid membership in the next convention", "error");
         return;
     }
@@ -148,12 +148,12 @@ function rollover_member(index) {
         url: "scripts/volRollover_rolloverMember.php",
         data: postData,
         success: function (data, textstatus, jqxhr) {
-            if (data['error'] !== undefined) {
-                show_message(data['error'], 'error');
+            if (data.error !== undefined) {
+                show_message(data.error, 'error');
                 return;
             }
-            if (data['message'] !== undefined) {
-                show_message(data['message'], 'success');
+            if (data.message !== undefined) {
+                show_message(data.message, 'success');
             }
             member_rolled_over(data);
         },
@@ -164,11 +164,11 @@ function rollover_member(index) {
 // member_rolled_over:
 //  database entry added, add to table
 function member_rolled_over(data) {
-    var index = data['index'];
+    var index = data.index;
 
-    result_perinfo[index]['roll_regid'] = data['member']['roll_regid'];
-    result_perinfo[index]['shortname'] = data['member']['shortname'];
-    result_perinfo[index]['roll_tid'] = data['member']['roll_tid'];
+    result_perinfo[index].roll_regid = data.member.roll_regid;
+    result_perinfo[index].shortname = data.member.shortname;
+    result_perinfo[index].roll_tid = data.member.roll_tid;
     list_perinfo.push(make_copy(result_perinfo[index]));
     if (find_result_table != null)
         find_result_table.replaceData(result_perinfo);
@@ -181,23 +181,23 @@ function member_rolled_over(data) {
 // format all of the memberships for one record in the cart
 function draw_list_row(rownum) {
     var row = list_perinfo[rownum];
-    var membername = (row['first_name'] + ' ' + row['middle_name'] + ' ' + row['last_name']).trim();
-    if (row['suffix'] != '') {
-        membername += ', ' + row['suffix'];
+    var membername = (row.first_name + ' ' + row.middle_name + ' ' + row.last_name).trim();
+    if (row.suffix != '') {
+        membername += ', ' + row.suffix;
     }
 
-    var perid = row['perid'];
+    var perid = row.perid;
     var rowhtml = `<div class="row">
         <div class="col-sm-8">Member: ` + membername + `</div>
-        <div class="col-sm-2 text-end">` + row['roll_tid'] + `</div>
-        <div class="col-sm-2 text-end">` + row['roll_regid'] + `</div>
+        <div class="col-sm-2 text-end">` + row.roll_tid + `</div>
+        <div class="col-sm-2 text-end">` + row.roll_regid + `</div>
     </div>`;
 
     // second row - badge name
     rowhtml += `
     <div class="row mb-2">
         <div class="col-sm-3 p-0">Badge Name:</div>
-        <div class="col-sm-5 p-0">` + badgeNameDefault(row['badge_name'], row['badgeNameL2', row['first_name'], row['last_name']) + `</div>
+        <div class="col-sm-5 p-0">` + badgeNameDefault(row.badge_name, row.badgeNameL2, row.first_name, row.last_name) + `</div>
     </div>`;
 
     return rowhtml;
@@ -233,20 +233,20 @@ function draw_record() {
         <div class="col-sm-3">`;
     html += `</div>
         <div class="col-sm-5">`;
-    if (data['roll_regid'] === undefined || data['roll_regid'] === null) {
-        if (data['banned'] == 'Y') {
+    if (data.roll_regid === undefined || data.roll_regid === null) {
+        if (data.banned == 'Y') {
             html += `
             <button class="btn btn-danger btn-sm" id="add_btn_1" onclick="rollover_member(0);">B</button>`;
-        } else if (data['memCategory'] == 'eligible') {
+        } else if (data.memCategory == 'eligible') {
             html += `
             <button class="btn btn-success btn-sm" id="add_btn_1" onclick="rollover_member(0);">Rollover</button>`;
         } else {
             html += `
-            <button class="btn btn-danger btn-sm disabled" id="add_btn_1" onclick="javascript:void(0)">Not Eliglble: ` + data['memCategory'] + `</button>`;
+            <button class="btn btn-danger btn-sm disabled" id="add_btn_1" onclick="javascript:void(0)">Not Eliglble: ` + data.memCategory + `</button>`;
         }
     } else {
         html += `
-            <i>` + data['shortname'] + '</i>';
+            <i>` + data.shortname + '</i>';
     }
 
     html += `
@@ -254,59 +254,59 @@ function draw_record() {
         </div>
         <div class="row">
             <div class="col-sm-3">` + 'Badge Name:' + `</div>
-            <div class="col-sm-9">` + badgeNameDefault(data['badge_name'], data['badgeNameL2'], data['first_name'], data['last_name']) + `</div>
+            <div class="col-sm-9">` + badgeNameDefault(data.badge_name, data.badgeNameL2, data.first_name, data.last_name) + `</div>
         </div>
         <div class="row">
             <div class="col-sm-3">Name:</div>
             <div class="col-sm-9">` +
-            data['first_name'] + ' ' + data['middle_name'] + ' ' + data['last_name'] + `
+            data.first_name + ' ' + data.middle_name + ' ' + data.last_name + `
             </div>
         </div>  
         <div class="row">
             <div class="col-sm-3">Address:</div>
-            <div class="col-sm-9">` + data['address_1'] + `</div>
+            <div class="col-sm-9">` + data.address_1 + `</div>
         </div>
 `;
-    if (data['address_2'] != '') {
+    if (data.address_2 != '') {
         html += `
     <div class="row">
         <div class="col-sm-3"></div>
-        <div class="col-sm-9">` + data['address_2'] + `</div>
+        <div class="col-sm-9">` + data.address_2 + `</div>
     </div>
 `;
     }
     html += `
     <div class="row">
        <div class="col-sm-3"></div>
-       <div class="col-sm-9">` + data['city'] + ', ' + data['state'] + ' ' + data['postal_code'] + `</div>
+       <div class="col-sm-9">` + data.city + ', ' + data.state + ' ' + data.postal_code + `</div>
     </div>
 `;
-    if (data['country'] != '' && data['country'] != 'USA') {
+    if (data.country != '' && data.country != 'USA') {
         html += `
     <div class="row">
        <div class="col-sm-3"></div>
-       <div class="col-sm-9">` + data['country'] + `</div>
+       <div class="col-sm-9">` + data.country + `</div>
     </div>
 `;
     }
     html += `
     <div class="row">
        <div class="col-sm-3">Email Address:</div>
-       <div class="col-sm-9">` + data['email_addr'] + `</div>
+       <div class="col-sm-9">` + data.email_addr + `</div>
     </div>
     <div class="row">
        <div class="col-sm-3">Phone::</div>
-       <div class="col-sm-9">` + data['phone'] + `</div>
+       <div class="col-sm-9">` + data.phone + `</div>
     </div>
     <div class="row">
        <div class="col-sm-3"></div>
-       <div class="col-sm-auto">Active: ` + data['active'] + `</div>
-       <div class="col-sm-auto">Contact OK: ` + data['contact_ok'] + `</div>
-       <div class="col-sm-auto">Share Reg: ` + data['share_reg_ok'] + `</div>
+       <div class="col-sm-auto">Active: ` + data.active + `</div>
+       <div class="col-sm-auto">Contact OK: ` + data.contact_ok + `</div>
+       <div class="col-sm-auto">Share Reg: ` + data.share_reg_ok + `</div>
     </div>
     <div class="row">
        <div class="col-sm-3">Membership Type:</div>
-       <div class="col-sm-9">` + data['label'] + `</div>
+       <div class="col-sm-9">` + data.label + `</div>
     </div>
 </div>
 `;
@@ -369,15 +369,15 @@ function find_record() {
         url: "scripts/volRollover_findRecord.php",
         data: postData,
         success: function (data, textstatus, jqxhr) {
-            if (data['error'] !== undefined) {
-                show_message(data['error'], 'error');
+            if (data.error !== undefined) {
+                show_message(data.error, 'error');
                 return;
             }
-            if (data['message'] !== undefined) {
-                show_message(data['message'], 'success');
+            if (data.message !== undefined) {
+                show_message(data.message, 'success');
             }
-            if (data['warn'] !== undefined) {
-                show_message(data['warn'], 'warn');
+            if (data.warn !== undefined) {
+                show_message(data.warn, 'warn');
             }
             found_record(data);
         },
@@ -392,9 +392,9 @@ function find_record() {
 //      single row: display record
 //      multiple rows: display table of records with add/trans buttons
 function found_record(data) {
-    var find_type = data['find_type'];
-    result_perinfo = data['perinfo'];
-    name_search = data['name_search'];
+    var find_type = data.find_type;
+    result_perinfo = data.perinfo;
+    name_search = data.name_search;
 
     // string search, returning more than one row show tabulator table
     if (isNaN(name_search) && result_perinfo.length > 1)  {

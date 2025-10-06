@@ -45,8 +45,8 @@ function test(method, formData, resultDiv) {
         data: formData,
         method: method,
         success: function(data, textStatus, jqXhr) {
-            if(data['error']) {
-                alert(data['error']);
+            if(data.error) {
+                alert(data.error);
             } else {
                 $(resultDiv).empty().append(JSON.stringify(data, null, 2));
             }
@@ -195,11 +195,11 @@ function base_changePrintersShow() {
         url: "scripts/base_showPrinterSelect.php",
         data: postData,
         success: function (data, textstatus, jqxhr) {
-            if (data['error'] !== undefined) {
-                show_message(data['error'], 'error');
+            if (data.error !== undefined) {
+                show_message(data.error, 'error');
                 return;
             }
-            base_changePrintersBody.innerHTML = data['selectList'];
+            base_changePrintersBody.innerHTML = data.selectList;
             var value = document.getElementById('currentBadgePrinter').innerHTML;
             if (value !== undefined && value.length > 10)
                 document.getElementById('badge_printer').value = value;
@@ -249,8 +249,8 @@ function base_changePrintersSubmit() {
         url: "scripts/base_printerSessionUpdate.php",
         data: postData,
         success: function (data, textstatus, jqxhr) {
-            if (data['error'] !== undefined) {
-                show_message(data['error'], 'error');
+            if (data.error !== undefined) {
+                show_message(data.error, 'error');
                 return;
             }
             if (typeof pos !== 'undefined' && pos !== null) {
@@ -266,15 +266,15 @@ function base_changePrintersSubmit() {
 // base_changePrinterDisplay
 //  data: receipt, generic, badge print strings
 function base_changePrinterDisplay(data) {
-    var html = 'Badge: ' + data['badge'] + '&nbsp; <button type="button" class="btn btn-sm btn-secondary pt-0 pb-0" onclick="base_changePrintersShow();">Chg</button><br/>' +
-    'Receipt: ' + data['receipt'] + '<br/>' +
-    'General: ' + data['generic'] + '<br/>' +
-    'Terminal: ' + data['terminal'];
+    var html = 'Badge: ' + data.badge + '&nbsp; <button type="button" class="btn btn-sm btn-secondary pt-0 pb-0" onclick="base_changePrintersShow();">Chg</button><br/>' +
+    'Receipt: ' + data.receipt + '<br/>' +
+    'General: ' + data.generic + '<br/>' +
+    'Terminal: ' + data.terminal;
 
     document.getElementById("page_head_printers").innerHTML = html;
     if (typeof current_tab !== 'undefined') {
-        badgePrinterAvailable = data['badge'] !== 'None';
-        receiptPrinterAvailable = data['receipt'] !== 'None';
+        badgePrinterAvailable = data.badge !== 'None';
+        receiptPrinterAvailable = data.receipt !== 'None';
         if (current_tab == print_tab) {
             print_shown();
         }
@@ -360,8 +360,8 @@ function base_managerOverrideSubmit() {
         url: "scripts/base_managerPasswordVerify.php",
         data: postData,
         success: function (data, textstatus, jqxhr) {
-            if (data['error'] !== undefined) {
-                base_password_modal_error_div.innerHTML = "Error: " + data['error'];
+            if (data.error !== undefined) {
+                base_password_modal_error_div.innerHTML = "Error: " + data.error;
                 return;
             }
             base_managerOverrideComplete(data);
@@ -371,7 +371,7 @@ function base_managerOverrideSubmit() {
 }
 
 function base_managerOverrideComplete(data) {
-    if (data['manager'] === true) {
+    if (data.manager === true) {
         baseManagerEnabled = true;
         // make navbar background warning (yellow)
         page_banner.classList.remove("bg-primary")

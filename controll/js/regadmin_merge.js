@@ -118,11 +118,11 @@ class mergesetup {
     findCandidates(data = null) {
         var clear_error = true;
         if (data) {
-            if (data['error']) {
-                show_message(data['error'], 'error');
+            if (data.error) {
+                show_message(data.error, 'error');
                 return;
-            } else if (data['success']) {
-                show_message(data['success'] + ': ' + data['status'], 'success');
+            } else if (data.success) {
+                show_message(data.success + ': ' + data.status, 'success');
                 clear_error = false;
             }
         }
@@ -165,7 +165,7 @@ class mergesetup {
         var btns = "";
         var data = cell.getData();
         var index = cell.getRow().getIndex();
-        var thisItem = data['id'];
+        var thisItem = data.id;
 
         btns += '<button class="btn btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" onclick="merge.makeRemain(' + thisItem + ')">Make Remain</button>';
         btns += '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" onclick="merge.makeMerge(' + thisItem + ')">Make Merge</button>';
@@ -177,12 +177,12 @@ class mergesetup {
     drawCandidates(data, textStatus, jhXHR) {
         console.log(data);
 
-        if (data['error']) {
-            showError(data['error'], textStatus, jhXHR);
+        if (data.error) {
+            showError(data.error, textStatus, jhXHR);
             return;
         }
-        var candidatekey = Object.keys(data['values'])[0];
-        var candidates = data['values'][candidatekey];
+        var candidatekey = Object.keys(data.values)[0];
+        var candidates = data.values[candidatekey];
 
         this.#mergeCandidatesTable = new Tabulator('#mergeCandidates', {
             maxHeight: "600px",
@@ -258,14 +258,14 @@ class mergesetup {
     drawCheck(data, textStatus, jhXHR) {
         console.log(data);
 
-        if (data['error']) {
-            show_message(data['error'], 'error');
+        if (data.error) {
+            show_message(data.error, 'error');
             return;
         }
 
-        var values = data['values'];
-        var mergeArr = values['merge'];
-        var remainArr = values['remain'];
+        var values = data.values;
+        var mergeArr = values.merge;
+        var remainArr = values.remain;
 
         var html = `
 <strong>Verify your merge request:</strong><br/>&nbsp;<br/>
@@ -346,15 +346,15 @@ class mergesetup {
             data: { name_search: name_search, },
             success: function (data, textstatus, jqxhr) {
                 $("button[name='mergeSearch']").attr("disabled", false);
-                if (data['error'] !== undefined) {
-                    show_message(data['error'], 'error', 'result_message_merge');
+                if (data.error !== undefined) {
+                    show_message(data.error, 'error', 'result_message_merge');
                     return;
                 }
-                if (data['message'] !== undefined) {
-                    show_message(data['message'], 'success', 'result_message_merge');
+                if (data.message !== undefined) {
+                    show_message(data.message, 'success', 'result_message_merge');
                 }
-                if (data['warn'] !== undefined) {
-                    show_message(data['warn'], 'warn', 'result_message_merge');
+                if (data.warn !== undefined) {
+                    show_message(data.warn, 'warn', 'result_message_merge');
                 }
                 merge_found(data);
             },
@@ -367,8 +367,8 @@ class mergesetup {
 
     // merge_found - display a list of potential merge recipients
     merge_found(data) {
-        var perinfo = data['perinfo'];
-        var name_search = data['name_search'];
+        var perinfo = data.perinfo;
+        var name_search = data.name_search;
         if (perinfo.length > 0) {
             this.#find_result_table = new Tabulator('#merge_search_results', {
                 maxHeight: "600px",
@@ -435,19 +435,19 @@ function selectPerson(perid) {
 function build_record_hover(e, cell, onRendered) {
     var data = cell.getData();
     //console.log(data);
-    var hover_text = 'Person id: ' + data['perid'] + '<br/>' +
-        (data['first_name'] + ' ' + data['middle_name'] + ' ' + data['last_name']).trim() + '<br/>' +
-        data['address_1'] + '<br/>';
-    if (data['address_2'] != '') {
-        hover_text += data['address_2'] + '<br/>';
+    var hover_text = 'Person id: ' + data.perid + '<br/>' +
+        (data.first_name + ' ' + data.middle_name + ' ' + data.last_name).trim() + '<br/>' +
+        data.address_1 + '<br/>';
+    if (data.address_2 != '') {
+        hover_text += data.address_2 + '<br/>';
     }
-    hover_text += data['city'] + ', ' + data['state'] + ' ' + data['postal_code'] + '<br/>';
-    if (data['country'] != '' && data['country'] != 'USA') {
-        hover_text += data['country'] + '<br/>';
+    hover_text += data.city + ', ' + data.state + ' ' + data.postal_code + '<br/>';
+    if (data.country != '' && data.country != 'USA') {
+        hover_text += data.country + '<br/>';
     }
-    hover_text += 'Badge Name: ' + badgeNameDefault(data['badge_name'], data['badgeNameL2'], data['first_name'], data['last_name']) + '<br/>' +
-        'Email: ' + data['email_addr'] + '<br/>' + 'Phone: ' + data['phone'] + '<br/>' +
-        'Active:' + data['active'] + ' Contact?:' + data['contact_ok'] + ' Share?:' + data['share_reg_ok'] + '<br/>';
+    hover_text += 'Badge Name: ' + badgeNameDefault(data.badge_name, data.badgeNameL2, data.first_name, data.last_name) + '<br/>' +
+        'Email: ' + data.email_addr + '<br/>' + 'Phone: ' + data.phone + '<br/>' +
+        'Active:' + data.active + ' Contact?:' + data.contact_ok + ' Share?:' + data.share_reg_ok + '<br/>';
 
     return hover_text;
 }

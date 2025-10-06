@@ -394,7 +394,7 @@ function draw_stats(data) {
 
     if (curRegListSearch == '') {
         category = new Tabulator('#category-table', {
-            data: data['categories'],
+            data: data.categories,
             layout: "fitDataTable",
             columns: [
                 {
@@ -410,7 +410,7 @@ function draw_stats(data) {
         catfilter = [];
 
         type = new Tabulator('#type-table', {
-            data: data['types'],
+            data: data.types,
             layout: "fitDataTable",
             columns: [
                 {
@@ -426,7 +426,7 @@ function draw_stats(data) {
         typefilter = [];
 
         age = new Tabulator('#age-table', {
-            data: data['ages'],
+            data: data.ages,
             layout: "fitDataTable",
             columns: [
                 {
@@ -442,7 +442,7 @@ function draw_stats(data) {
         agefilter = [];
 
         price = new Tabulator('#price-table', {
-            data: data['prices'],
+            data: data.prices,
             layout: "fitDataTable",
             columns: [
                 {
@@ -458,7 +458,7 @@ function draw_stats(data) {
         pricefilter = [];
 
         label = new Tabulator('#label-table', {
-            data: data['labels'],
+            data: data.labels,
             layout: "fitDataTable",
             columns: [
                 {
@@ -474,7 +474,7 @@ function draw_stats(data) {
         labelfilter = [];
 
         coupon = new Tabulator('#coupon-table', {
-            data: data['coupons'],
+            data: data.coupons,
             layout: "fitDataTable",
             columns: [
                 {
@@ -490,7 +490,7 @@ function draw_stats(data) {
         couponfilter = [];
 
         statusTable = new Tabulator('#status-table', {
-            data: data['statuses'],
+            data: data.statuses,
             layout: "fitDataTable",
             columns: [
                 {
@@ -510,11 +510,11 @@ function draw_stats(data) {
 // display actions as buttons in a cell for this membership
 function actionbuttons(cell, formatterParams, onRendered) {
     var data = cell.getData();
-    var perid = data['perid'];
-    var paid = data['paid'];
-    var ncount = data['ncount'];
-    var hcount = data['hcount'];
-    var complete_trans = data['complete_trans'];
+    var perid = data.perid;
+    var paid = data.paid;
+    var ncount = data.ncount;
+    var hcount = data.hcount;
+    var complete_trans = data.complete_trans;
     var index = cell.getRow().getIndex();
 
     var btns = "";
@@ -544,12 +544,12 @@ return btns;
 //// Receipt Start
 // display receipt: use the modal to show the receipt
 function displayReceipt(data) {
-    document.getElementById('receipt-div').innerHTML = data['receipt_html'];
-    document.getElementById('receipt-tables').innerHTML = data['receipt_tables'];
-    document.getElementById('receipt-text').innerHTML = data['receipt'];
-    recepitEmailAddress = data['payor_email'];
-    document.getElementById('emailReceipt').innerHTML = "Email Receipt to " + data['payor_name'] + ' at ' + recepitEmailAddress;
-    document.getElementById('receiptTitle').innerHTML = "Registration Receipt for " + data['payor_name'];
+    document.getElementById('receipt-div').innerHTML = data.receipt_html;
+    document.getElementById('receipt-tables').innerHTML = data.receipt_tables;
+    document.getElementById('receipt-text').innerHTML = data.receipt;
+    recepitEmailAddress = data.payor_email;
+    document.getElementById('emailReceipt').innerHTML = "Email Receipt to " + data.payor_name + ' at ' + recepitEmailAddress;
+    document.getElementById('receiptTitle').innerHTML = "Registration Receipt for " + data.payor_name;
     receiptModal.show();
 }
 
@@ -580,15 +580,15 @@ function receipt_email(addrchoice) {
         url: "scripts/emailReceipt.php",
         data: data,
         success: function (data, textstatus, jqxhr) {
-            if (data['error'] !== undefined) {
-                show_message(data['error'], 'error');
+            if (data.error !== undefined) {
+                show_message(data.error, 'error');
                 return;
             }
-            if (data['success'] !== undefined) {
-                show_message(data['success'], 'success');
+            if (data.success !== undefined) {
+                show_message(data.success, 'success');
             }
-            if (data['warn'] !== undefined) {
-                show_message(data['warn'], 'warn');
+            if (data.warn !== undefined) {
+                show_message(data.warn, 'warn');
             }
         },
         error: function (jqXHR, textStatus, errorThrown) {
@@ -608,18 +608,18 @@ function receipt(index) {
         url: "scripts/getReceipt.php",
         data: { transid },
         success: function (data, textstatus, jqxhr) {
-            if (data['error'] !== undefined) {
-                show_message(data['error'], 'error');
+            if (data.error !== undefined) {
+                show_message(data.error, 'error');
                 return;
             }
-            if (data['success'] !== undefined) {
-                show_message(data['success'], 'success');
+            if (data.success !== undefined) {
+                show_message(data.success, 'success');
             }
-            if (data['warn'] !== undefined) {
-                show_message(data['warn'], 'warn');
+            if (data.warn !== undefined) {
+                show_message(data.warn, 'warn');
             }
             displayReceipt(data);
-            if (data['success'] !== undefined)
+            if (data.success !== undefined)
                 show_message(data.success, 'success');
         },
         error: function (jqXHR, textStatus, errorThrown) {
@@ -638,18 +638,18 @@ function history(index) {
         url: "scripts/regadmin_getRegHistory.php",
         data: { regid: regid },
         success: function (data, textstatus, jqxhr) {
-            if (data['error'] !== undefined) {
-                show_message(data['error'], 'error');
+            if (data.error !== undefined) {
+                show_message(data.error, 'error');
                 return;
             }
-            if (data['success'] !== undefined) {
-                show_message(data['success'], 'success');
+            if (data.success !== undefined) {
+                show_message(data.success, 'success');
             }
-            if (data['warn'] !== undefined) {
-                show_message(data['warn'], 'warn');
+            if (data.warn !== undefined) {
+                show_message(data.warn, 'warn');
             }
             displayHistory(data);
-            if (data['success'] !== undefined)
+            if (data.success !== undefined)
                 show_message(data.success, 'success');
         },
         error: function (jqXHR, textStatus, errorThrown) {
@@ -679,11 +679,11 @@ function displayHistory(data) {
         "<div class='col-sm-1'>Status</div>\n" +
         "</div>\n";
     // format the current line
-    var current = data['history'][0];
+    var current = data.history[0];
     var color = '';
-    var prior = data['history'][0];
-    for (var i = 0; i < data['history'].length; i++) {
-        var current = data['history'][i];
+    var prior = data.history[0];
+    for (var i = 0; i < data.history.length; i++) {
+        var current = data.history[i];
         html += "<div class='row'>\n";
 
         // change date
@@ -741,7 +741,7 @@ function changeReg(index, clear = true) {
     currentIndex = index;
     var row = registrationtable.getRow(index);
     changeRowdata = row.getData();
-    var perid = changeRowdata['perid'];
+    var perid = changeRowdata.perid;
 
     if (perid == null || perid == '' || perid <= 0)
         return;
@@ -757,15 +757,15 @@ function changeReg(index, clear = true) {
         url: script,
         data: data,
         success: function (data, textstatus, jqxhr) {
-            if (data['error'] !== undefined) {
-                show_message(data['error'], 'error');
+            if (data.error !== undefined) {
+                show_message(data.error, 'error');
                 return;
             }
-            if (data['success'] !== undefined) {
-                show_message(data['success'], 'success');
+            if (data.success !== undefined) {
+                show_message(data.success, 'success');
             }
-            if (data['warn'] !== undefined) {
-                show_message(data['warn'], 'warn');
+            if (data.warn !== undefined) {
+                show_message(data.warn, 'warn');
                 return;
             }
             changeRegsData(data, changeRowdata);
@@ -862,10 +862,10 @@ function changeRegsData(data, rowdata) {
             <button class="btn btn-sm btn-warning me-4" onclick="changeRevoke(1);">Restore Selected</button>
             <button class="btn btn-sm btn-primary me-4" onclick="changeTransfer();">Transfer Selected</button>
 `;
-    if (config['oneoff'] == 0) {
+    if (config.oneoff == 0) {
         html += '<button class="btn btn-sm btn-primary me-4" onclick="changeRollover();">Rollover Selected</button>\n';
     }
-    if (config['finance'] == 1) {
+    if (config.finance == 1) {
         html += '<button class="btn btn-sm btn-primary" onclick="changeRefund();">Refund Selected</button>\n';
     }
     html += `
@@ -932,7 +932,7 @@ function changeRevoke(direction) {
         cancelList: changeList,
         direction: direction,
         action: 'cancel',
-        source: config['source'],
+        source: config.source,
     }
     var script= 'scripts/regadmin_cancelReg.php';
 
@@ -941,21 +941,21 @@ function changeRevoke(direction) {
         url: script,
         data: data,
         success: function (data, textstatus, jqxhr) {
-            if (data['error'] !== undefined) {
-                show_message(data['error'], 'error', 'changeMessageDiv');
+            if (data.error !== undefined) {
+                show_message(data.error, 'error', 'changeMessageDiv');
                 return;
             }
-            if (data['warn'] !== undefined) {
-                show_message(data['warn'], 'warn', 'changeMessageDiv');
+            if (data.warn !== undefined) {
+                show_message(data.warn, 'warn', 'changeMessageDiv');
                 return;
             }
             changeModal.hide();
             getData('r');
-            if (data['success'] !== undefined) {
-                show_message(data['success'], 'success', 'changeMessageDiv');
+            if (data.success !== undefined) {
+                show_message(data.success, 'success', 'changeMessageDiv');
             }
-            if (data['message'])
-                show_message(data['message'], 'success', 'changeMessageDiv');
+            if (data.message)
+                show_message(data.message, 'success', 'changeMessageDiv');
         },
         error: function (jqXHR, textStatus, errorThrown) {
             showError("ERROR in cancelReg: " + textStatus, jqXHR);
@@ -1039,15 +1039,15 @@ function changeTransferFind() {
         data: { name_search: name_search, },
         success: function (data, textstatus, jqxhr) {
             $("button[name='transferSearch']").attr("disabled", false);
-            if (data['error'] !== undefined) {
-                show_message(data['error'], 'error', 'changeMessageDiv');
+            if (data.error !== undefined) {
+                show_message(data.error, 'error', 'changeMessageDiv');
                 return;
             }
-            if (data['message'] !== undefined) {
-                show_message(data['message'], 'success', 'changeMessageDiv');
+            if (data.message !== undefined) {
+                show_message(data.message, 'success', 'changeMessageDiv');
             }
-            if (data['warn'] !== undefined) {
-                show_message(data['warn'], 'warn','changeMessageDiv');
+            if (data.warn !== undefined) {
+                show_message(data.warn, 'warn','changeMessageDiv');
             }
             changeTransferFound(data);
         },
@@ -1062,19 +1062,19 @@ function changeTransferFind() {
 function build_record_hover(e, cell, onRendered) {
     var data = cell.getData();
     //console.log(data);
-    var hover_text = 'Person id: ' + data['perid'] + '<br/>' +
-        (data['first_name'] + ' ' + data['middle_name'] + ' ' + data['last_name']).trim() + '<br/>' +
-        data['address_1'] + '<br/>';
-    if (data['address_2'] != '') {
-        hover_text += data['address_2'] + '<br/>';
+    var hover_text = 'Person id: ' + data.perid + '<br/>' +
+        (data.first_name + ' ' + data.middle_name + ' ' + data.last_name).trim() + '<br/>' +
+        data.address_1 + '<br/>';
+    if (data.address_2 != '') {
+        hover_text += data.address_2 + '<br/>';
     }
-    hover_text += data['city'] + ', ' + data['state'] + ' ' + data['postal_code'] + '<br/>';
-    if (data['country'] != '' && data['country'] != 'USA') {
-        hover_text += data['country'] + '<br/>';
+    hover_text += data.city + ', ' + data.state + ' ' + data.postal_code + '<br/>';
+    if (data.country != '' && data.country != 'USA') {
+        hover_text += data.country + '<br/>';
     }
-    hover_text += 'Badge Name: ' + badgeNameDefault(data['badge_name'], data['badgeNameL2'], data['first_name'], data['last_name']) + '<br/>' +
-        'Email: ' + data['email_addr'] + '<br/>' + 'Phone: ' + data['phone'] + '<br/>' +
-        'Active:' + data['active'] + ' Contact?:' + data['contact_ok'] + ' Share?:' + data['share_reg_ok'] + '<br/>';
+    hover_text += 'Badge Name: ' + badgeNameDefault(data.badge_name, data.badgeNameL2, data.first_name, data.last_name) + '<br/>' +
+        'Email: ' + data.email_addr + '<br/>' + 'Phone: ' + data.phone + '<br/>' +
+        'Active:' + data.active + ' Contact?:' + data.contact_ok + ' Share?:' + data.share_reg_ok + '<br/>';
 
     return hover_text;
 }
@@ -1100,8 +1100,8 @@ function addTransferIcon(cell, formatterParams, onRendered) { //plain text value
 
 // changeTransferFound - display a list of potential transfer recipients
 function changeTransferFound(data) {
-    var perinfo = data['perinfo'];
-    var name_search = data['name_search'];
+    var perinfo = data.perinfo;
+    var name_search = data.name_search;
     if (perinfo.length > 0) {
         find_result_table = new Tabulator('#transfer_search_results', {
             maxHeight: "600px",
@@ -1144,7 +1144,7 @@ function transferReg(to, banned) {
         from: changeRowdata.perid,
         to: to,
         transferList: changeList,
-        source: config['source'],
+        source: config.source,
     }
     $.ajax({
         url: script,
@@ -1297,7 +1297,7 @@ function changeRolloverExecute() {
     var data = {
         rolloverList: newIds,
         action: 'rollover',
-        source: config['source'],
+        source: config.source,
     }
     var script= 'scripts/regadmin_rolloverReg.php';
 
@@ -1306,15 +1306,15 @@ function changeRolloverExecute() {
         url: script,
         data: data,
         success: function (data, textstatus, jqxhr) {
-            if (data['error'] !== undefined) {
-                show_message(data['error'], 'error', 'changeMessageDiv');
+            if (data.error !== undefined) {
+                show_message(data.error, 'error', 'changeMessageDiv');
                 return;
             }
-            if (data['success'] !== undefined) {
-                show_message(data['success'], 'success', 'changeMessageDiv');
+            if (data.success !== undefined) {
+                show_message(data.success, 'success', 'changeMessageDiv');
             }
-            if (data['warn'] !== undefined) {
-                show_message(data['warn'], 'warn', 'changeMessageDiv');
+            if (data.warn !== undefined) {
+                show_message(data.warn, 'warn', 'changeMessageDiv');
                 return;
             }
             rolloverSelect.innerHTML = '';
@@ -1439,7 +1439,7 @@ function changeEditSave(override) {
         // now some simple validations
         var warnings = '';
         var numWarnings = 0;
-        if (config['finance'] == 1) {
+        if (config.finance == 1) {
             var balanceDue = Number(newPrice) - (Number(newPaid) + Number(newDiscount));
             if (newPrice != (Number(newPaid) + Number(newDiscount))) {
                 warnings += 'Price of ' + newPrice + ' does not equal the sum of Paid + Coupon Discount of ' +
@@ -1458,7 +1458,7 @@ function changeEditSave(override) {
             numWarnings++;
         }
 
-        if (config['finance'] == 1) {
+        if (config.finance == 1) {
             if (balanceDue > 0 && (newStatus == 'paid' || newStatus == 'upgraded')) {
                 warnings += 'There is a balance Due of ' + balanceDue + " and the record is paid/uograded, it needs to be 'unpaid'." +
                     " If you continue it will be set to unpaid.<br/>";
@@ -1491,7 +1491,7 @@ function changeEditSave(override) {
             couponDiscount: newDiscount,
             status: newStatus,
         },
-        source: config['source'],
+        source: config.source,
     };
     var script = 'scripts/regadmin_editReg.php';
     $.ajax({
@@ -1499,15 +1499,15 @@ function changeEditSave(override) {
         url: script,
         data: data,
         success: function (data, textstatus, jqxhr) {
-            if (data['error'] !== undefined) {
-                show_message(data['error'], 'error', 'changeMessageDiv');
+            if (data.error !== undefined) {
+                show_message(data.error, 'error', 'changeMessageDiv');
                 return;
             }
-            if (data['success'] !== undefined) {
-                show_message(data['success'], 'success', 'changeMessageDiv');
+            if (data.success !== undefined) {
+                show_message(data.success, 'success', 'changeMessageDiv');
             }
-            if (data['warn'] !== undefined) {
-                show_message(data['warn'], 'warn', 'changeMessageDiv');
+            if (data.warn !== undefined) {
+                show_message(data.warn, 'warn', 'changeMessageDiv');
                 return;
             }
             changeEditClose();
@@ -1628,13 +1628,13 @@ function reglistDownload(format) {
 
 // called from data load - draws the filter stats block and the registrations block
 function draw(data, textStatus, jqXHR) {
-    conid = Number(data['conid']);
+    conid = Number(data.conid);
     if (!data.hasOwnProperty('memLabels')) {
         show_message("Error in query", 'error');
         return;
     }
-    memLabels = data['memLabels'];
-    memLabelsNext = data['memLabelsNext'];
+    memLabels = data.memLabels;
+    memLabelsNext = data.memLabelsNext;
     memLabelsIdx = {};
     memLabelsNextIdx = {};
     for (i = 0; i < memLabels.length; i++) {

@@ -561,7 +561,7 @@ function buildNewYear() {
         method: 'POST',
         data: postdata,
         success: function (data, textStatus, jhXHR) {
-            window.location="/admin.php?msg=" + encodeURI(data['success']);
+            window.location="/admin.php?msg=" + encodeURI(data.success);
         },
         error: function (jqXHR, textStatus, errorThrown) {
             showError("ERROR in " + script + ": " + textStatus, jqXHR);
@@ -587,23 +587,23 @@ function loadInitialData(loadtype) {
         url: "scripts/admin_atconLoadData.php",
         data: postData,
         success: function(data, textstatus, jqxhr) {
-            if (data['message'] !== undefined) {
-                show_message(data['message'], 'success');
+            if (data.message !== undefined) {
+                show_message(data.message, 'success');
             }
-            if (data['userid'] !== undefined) {
-                userid = data['userid'];
+            if (data.userid !== undefined) {
+                userid = data.userid;
                 if (users == null) {
-                    users = new Users(data['users']);
+                    users = new Users(data.users);
                 } else {
-                    users.loadUsers(data['users']);
+                    users.loadUsers(data.users);
                     users.dirty = false;
                 }
             }
-            if (data['servers'] !== undefined) {
+            if (data.servers !== undefined) {
                 if (printers == null) {
-                    printers = new Printers(data['servers'], data['printers']);
+                    printers = new Printers(data.servers, data.printers);
                 } else {
-                    printers.loadPrinters(data['servers'], data['printers']);
+                    printers.loadPrinters(data.servers, data.printers);
                     printers.dirty = false;
                     printers.serverNameToDelete = null;
                 }
@@ -637,8 +637,8 @@ function localServersList() {
     var servers = printers.serverlist.getData();
     var distinctServers = new Array();
     for (var i = 0; i < servers.length; i++) {
-        if (servers[i]['local'] === true || Number(servers[i]['local']) === 1)
-            distinctServers[servers[i]['serverName']] = 1;
+        if (servers[i].local === true || Number(servers[i].local) === 1)
+            distinctServers[servers[i].serverName] = 1;
     }
     return Object.keys(distinctServers);
 }
