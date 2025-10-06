@@ -15,6 +15,7 @@ class Add {
     #legalName = null;
     #pronouns = null;
     #badgeName = null;
+    #badgeNameL2 = null;
     #address = null;
     #addr2 = null;
     #city = null;
@@ -46,6 +47,7 @@ class Add {
         this.#legalName = document.getElementById('a_legalName');
         this.#pronouns = document.getElementById('a_pronouns');
         this.#badgeName = document.getElementById('a_badgename');
+        this.#badgeNameL2 = document.getElementById('a_badgeNameL2');
         this.#address = document.getElementById('a_addr');
         this.#addr2 = document.getElementById('a_addr2');
         this.#city = document.getElementById('a_city');
@@ -82,6 +84,7 @@ class Add {
             legalName: this.#legalName.value,
             pronouns: this.#pronouns.value,
             badgeName: this.#badgeName.value,
+            badgeNameL2: this.#badgeNameL2.value,
             address: this.#address.value,
             addr2: this.#addr2.value,
             city: this.#city.value,
@@ -150,6 +153,8 @@ class Add {
                     {field: 'last_name', visible: false,},
                     {field: 'suffix', visible: false,},
                     {field: 'legalName', visible: false,},
+                    {field: 'badge_name', visible: false,},
+                    {field: 'badgeNameL2', visible: false,},
                     {field: 'pronouns', visible: false,},
                     {field: 'address', visible: false,},
                     {field: 'addr_2', visible: false,},
@@ -210,6 +215,7 @@ class Add {
             legalName: this.#legalName.value,
             pronouns: this.#pronouns.value,
             badgeName: this.#badgeName.value,
+            badgeNameL2: this.#badgeNameL2.value,
             address: this.#address.value,
             addr2: this.#addr2.value,
             city: this.#city.value,
@@ -274,6 +280,7 @@ class Add {
         this.#legalName.value = '';
         this.#pronouns.value = '';
         this.#badgeName.value = '';
+        this.#badgeNameL2.value = '';
         this.#address.value = '';
         this.#addr2.value = '';
         this.#city.value = '';
