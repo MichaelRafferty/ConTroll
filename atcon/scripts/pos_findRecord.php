@@ -46,6 +46,7 @@ $limit = 99999999;
 $fieldListP = <<<EOS
 SELECT DISTINCT p.id AS perid, TRIM(p.first_name) AS first_name, TRIM(p.middle_name) AS middle_name, TRIM(p.last_name) AS last_name,
     TRIM(p.suffix) AS suffix, TRIM(p.legalName) AS legalName, TRIM(p.pronouns) AS pronouns, TRIM(p.badge_name) AS badge_name, 
+    TRIM(p.badgeNameL2) AS badgeNameL2, 
     TRIM(p.address) AS address_1, TRIM(p.addr_2) AS address_2, TRIM(p.city) AS city, TRIM(p.state) AS state, TRIM(p.zip) AS postal_code, 
     TRIM(p.country) as country, TRIM(p.email_addr) AS email_addr, TRIM(p.phone) as phone, p.active, p.banned,
     TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
@@ -410,6 +411,7 @@ WITh p1 AS (
         (
             LOWER(p.legalName) LIKE ?
             OR LOWER(p.badge_name) LIKE ?
+            OR LOWER(p.badgeNameL2) LIKE ?
             OR LOWER(p.address) LIKE ?
             OR LOWER(p.addr_2) LIKE ?
             OR LOWER(p.email_addr) LIKE ?
@@ -474,24 +476,24 @@ WHERE mp.conid = ?
 ORDER BY perid, policy;
 EOS;
 
-    $rp = dbSafeQuery($searchSQLP, 'ssssssss',
-          array ($findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern));
+    $rp = dbSafeQuery($searchSQLP, 'sssssssss',
+          array ($findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern));
 
     if ($rp === false) {
         ajaxSuccess(array('error' => "Error in string person query for $findPattern"));
         return;
     }
 
-    $rm = dbSafeQuery($searchSQLM, 'ssssssssiii',
-          array ($findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern,
+    $rm = dbSafeQuery($searchSQLM, 'sssssssssiii',
+          array ($findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern,
                  $conid, $conid + 1, $conid));
     if ($rm === false) {
         ajaxSuccess(array('error' => "Error in string membership query for $findPattern ($conid)"));
         return;
     }
 
-    $rl = dbSafeQuery($searchSQLL, 'ssssssssi',
-          array ($findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern,
+    $rl = dbSafeQuery($searchSQLL, 'sssssssssi',
+          array ($findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $findPattern,
                  $conid));
     if ($rl === false) {
         ajaxSuccess(array('error' => "Error in string policy query for $findPattern ($conid)"));
@@ -507,6 +509,7 @@ $perids = [];
 $num_rows = $rp->num_rows;
 while ($l = $rp->fetch_assoc()) {
     $l['index'] = $index;
+    $l['badgename'] = badgeNameDefault($l['badge_name'], $l['badgeNameL2'], $l['first_name'], $l['last_name']);
     $l['memberships'] = [];
     $perinfo[] = $l;
     $perids[$l['perid']] = $index;

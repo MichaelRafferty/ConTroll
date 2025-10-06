@@ -50,6 +50,7 @@ if ($printer != null && $printer['name'] != 'None') {
         $badge = [];
         $badge['type'] = $param['type'];
         $badge['badge_name'] = $param['badge_name'];
+        $badge['badgeNameL2'] = $param['badgeNameL2'];
         $badge['full_name'] = $param['full_name'];
         $badge['category'] = $param['category'];
         $badge['id'] = $param['badge_id'];
@@ -58,15 +59,13 @@ if ($printer != null && $printer['name'] != 'None') {
         if (array_key_exists('regId', $param))
             $badge['regId'] = $param['regId'];
 
-        if ($badge['badge_name'] == '') {
-            $badge['badge_name'] = $badge['full_name'];
-        }
+        $bn = badgeNameDefault($badge['badge_name'], $badge['badgeNameL2'], '', '');
 
         if (($badge['type'] == 'one-day') || ($badge['type'] == 'oneday') || ($badge['type'] == 'oneDay')) {
             $file_1day = init_file($printer);
             write_badge($badge, $file_1day, $printer);
             $badgefile = print_badge($printer, $file_1day);
-            $response['message'] .= $badge['day'] . ' badge for ' . $badge['badge_name'] . ' printed.';
+            $response['message'] .= $badge['day'] . " badge for $bn printed.";
             if (mb_substr($printer['queue'], 0, 1) == '0') {
                 $response['message'] .= " <a href='$badgefile'>Badge</a>";
             }
@@ -75,7 +74,7 @@ if ($printer != null && $printer['name'] != 'None') {
             $file_full = init_file($printer);
             write_badge($badge, $file_full, $printer);
             $badgefile = print_badge($printer, $file_full);
-            $response['message'] .= "Full badge for " . $badge['badge_name'] . " printed.";
+            $response['message'] .= "Full badge for $bn printed.";
             if(mb_substr($printer['queue'],0,1)=='0') {
                 $response['message'] .= " <a href='$badgefile'>Badge</a>";
             }

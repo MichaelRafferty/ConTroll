@@ -43,7 +43,7 @@ if (is_numeric($name_search)) {
 // this is perid
 //
     $findPersonQ = <<<EOS
-SELECT DISTINCT id as perid, first_name, middle_name, last_name, suffix, badge_name, email_addr, phone, 
+SELECT DISTINCT id as perid, first_name, middle_name, last_name, suffix, badge_name, badgeNameL2, email_addr, phone, 
     CASE WHEN last_name != '' THEN
         TRIM(REGEXP_REPLACE(CONCAT(last_name, ', ', CONCAT_WS(' ', first_name, middle_name, suffix)), ' +', ' '))
     ELSE
@@ -63,7 +63,7 @@ EOS;
     $name_search = '%' . preg_replace('/ +/', '%', $name_search) . '%';
     web_error_log("match string: $name_search");
     $findPersonQ = <<<EOS
-SELECT DISTINCT p.id as perid, p.first_name, p.middle_name, p.last_name, p.suffix, p.badge_name, p.email_addr, p.phone,
+SELECT DISTINCT p.id as perid, p.first_name, p.middle_name, p.last_name, p.suffix, p.badge_name, p.badgeNameL2, p.email_addr, p.phone,
     CASE 
         WHEN IFNULL(p.last_name, '') != '' THEN
             TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.last_name, p.first_name, p.middle_name, p.suffix), ' +', ' '))
@@ -73,11 +73,11 @@ SELECT DISTINCT p.id as perid, p.first_name, p.middle_name, p.last_name, p.suffi
 FROM perinfo p
 WHERE 
      LOWER(TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name), ' +', ' '))) LIKE ? OR
-     LOWER(TRIM(p.badge_name) LIKE ? OR LOWER(TRIM(p.email_addr)) LIKE ?)
+     LOWER(TRIM(p.badge_name) LIKE ? OR LOWER(TRIM(p.badgeNameL2) LIKE ? OR LOWER(TRIM(p.email_addr)) LIKE ?)
 ORDER BY last_name, first_name LIMIT $limit;
 EOS;
     //web_error_log($findPersonQ);
-    $findPersonR = dbSafeQuery($findPersonQ, 'sss', array($name_search, $name_search, $name_search));
+    $findPersonR = dbSafeQuery($findPersonQ, 'ssss', array($name_search, $name_search, $name_search, $name_search));
 }
 
 $perinfo = [];
@@ -86,6 +86,7 @@ $perids = [];
 $num_rows = $findPersonR->num_rows;
 while ($l = $findPersonR->fetch_assoc()) {
     $l['index'] = $index;
+    $l['badgename'] = badgeNameDefault($l['badge_name'], $l['badgeNameL2'], $l['first_name'], $l['last_name']);
     $perinfo[] = $l;
     $perids[$l['perid']] = $index;
     $index++;
