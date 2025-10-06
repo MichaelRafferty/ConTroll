@@ -200,7 +200,7 @@ function add_found(data) {
                 {field: "first_name", visible: debug > 2,},
                 {field: "middle_name", visible: debug > 2,},
                 {field: "suffix", visible: debug > 2,},
-                {title: "Badge Name", field: "badge_name", width: 200, headerFilter: true, headerWordWrap: true, tooltip: true,},
+                {title: "Badge Name", field: "badgename", width: 200, headerFilter: true, headerWordWrap: true, tooltip: true, formatter: 'html',},
                 {title: "Zip", field: "postal_code", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 100, width: 100},
                 {title: "Email Address", field: "email_addr", width: 200, headerFilter: true, headerWordWrap: true, tooltip: true,},
                 {field: "index", visible: debug > 2,},
