@@ -161,18 +161,21 @@ EOS;
     if ($exhibitor != null) {
         $payorL = [ 'tablename' => 'exhibitor', 'id' => $exhibitor['id'], 'pid' => 'e-' . $exhibitor['id'], 'last_name' => $exhibitor['exhibitorName'],
             'first_name' => '', 'middle_name' => '', 'suffix' => '', 'email_addr' => $exhibitor['exhibitorEmail'], 'phone' => $exhibitor['exhibitorPhone'],
-            'badge_name' => $exhibitor['contactName'], 'address' => $exhibitor['addr'], 'addr_2' => $exhibitor['addr2'], 'city' => $exhibitor['city'],
+            'badge_name' => $exhibitor['contactName'], 'badgeNameL2' => '',
+            'address' => $exhibitor['addr'], 'addr_2' => $exhibitor['addr2'], 'city' => $exhibitor['city'],
             'state' => $exhibitor['state'], 'zip' => $exhibitor['state'], 'country' => $exhibitor['country'] ];
         $payor = null;
     } else  if ($transL['perid'] > 0) {
         $payorSQL = <<<EOS
-SELECT 'perinfo' AS tablename, id, CONCAT('p-', id) AS pid, last_name, first_name, middle_name, suffix, email_addr, phone, badge_name, address, addr_2, city, state, zip, state, country
+SELECT 'perinfo' AS tablename, id, CONCAT('p-', id) AS pid, last_name, first_name, middle_name, suffix, email_addr, phone, badge_name, badgeNameL2, 
+       address, addr_2, city, state, zip, state, country
 FROM perinfo WHERE id = ?;
 EOS;
         $payor = $transL['perid'];
     } else if ($transL['newperid']) {
         $payorSQL = <<<EOS
-SELECT 'newperson' AS tablename, id, CONCAT('n-', id) AS pid, last_name, first_name, middle_name, suffix, email_addr, phone, badge_name, address, addr_2, city, state, zip, state, country
+SELECT 'newperson' AS tablename, id, CONCAT('n-', id) AS pid, last_name, first_name, middle_name, suffix, email_addr, phone, badge_name, badgeNameL2,
+       address, addr_2, city, state, zip, state, country
 FROM newperson WHERE id = ?;
 EOS;
         $payor = $transL['newperid'];
@@ -210,6 +213,7 @@ SELECT DISTINCT CASE WHEN r.perid IS NOT NULL THEN CONCAT('p-', p.id) ELSE CONCA
     CASE WHEN r.perid IS NOT NULL THEN p.middle_name ELSE n.middle_name END AS middle_name,
     CASE WHEN r.perid IS NOT NULL THEN p.suffix ELSE n.suffix END AS suffix,
     CASE WHEN r.perid IS NOT NULL THEN p.badge_name ELSE n.badge_name END AS badge_name,
+    CASE WHEN r.perid IS NOT NULL THEN p.badgeNameL2 ELSE n.badgeNameL2 END AS badgeNameL2,
     CASE WHEN r.perid IS NOT NULL THEN p.email_addr ELSE n.email_addr END AS email_addr
 FROM reg r
 LEFT OUTER JOIN perinfo p ON (r.perid = p.id)
@@ -754,8 +758,13 @@ function reg_format_mbr($data, $person, $list, &$receipt, &$receipt_html, &$rece
         $name .= ' ' . trim($person['last_name']);
     if (mb_strlen($person['suffix']) > 0)
         $name .= ', ' . trim($person['suffix']);
-    if (mb_strlen($person['badge_name']) > 0)
-        $name .= ' (' . trim($person['badge_name']) . ')';
+    if (mb_strlen($person['badge_name']) > 0 || mb_strlen($person['badgeNameL2']) > 0) {
+        $bn = badgeNameDefault($person['badge_name'], $person['badgeNameL2'], $person['first_name'], $person['last_name']);
+        $bn = str_replace('<br/>', '/', $bn);
+        $bn = str_replace('<i>', '', $bn);
+        $bn = str_replace('</i>', '', $bn);
+        $name .= " ($bn)";
+    }
     $name = trim($name);
 
     $receipt .= "\nMember: $name\n";
