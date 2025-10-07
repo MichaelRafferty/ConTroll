@@ -76,22 +76,24 @@ $total_paid = 0;
 // loop over the perinfo array and add/update/delete the perinfo entries, and then the memberships under those perinfo entries
 
 $insPerinfoSQL = <<<EOS
-INSERT INTO perinfo(last_name,first_name,middle_name,suffix,legalName,pronouns,email_addr,phone,badge_name,address,addr_2,city,state,zip,country,
+INSERT INTO perinfo(last_name,first_name,middle_name,suffix,legalName,pronouns,email_addr,phone,
+                    badge_name,badgeNameL2, address,addr_2,city,state,zip,country,
                     open_notes,banned,active,contact_ok,creation_date,updatedBy)
-VALUES (IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),
-        IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),?,'N','Y','Y',now(),?);
+VALUES (IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),
+        IFNULL(?,''),IFNULL(?,''), IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),
+        ?,'N','Y','Y',now(),?);
 EOS;
-$insPDt = 'ssssssssssssssssi';
+$insPDt = 'sssssssssssssssssi';
 
 $updPerinfoSQL = <<<EOS
 UPDATE perinfo SET
     last_name=IFNULL(?,''),first_name=IFNULL(?,''),middle_name=IFNULL(?,''),suffix=IFNULL(?,''),legalName=IFNULL(?,''), pronouns=IFNULL(?,''),
-    email_addr=IFNULL(?,''),phone=IFNULL(?,''),badge_name=IFNULL(?,''),address=IFNULL(?,''),addr_2=IFNULL(?,''), city=IFNULL(?,''),
-    state=IFNULL(?,''),zip=IFNULL(?,''),country=IFNULL(?,''),
+    email_addr=IFNULL(?,''),phone=IFNULL(?,''),badge_name=IFNULL(?,''),badge_name=IFNULL(?,''),
+    address=IFNULL(?,''),addr_2=IFNULL(?,''), city=IFNULL(?,''),state=IFNULL(?,''),zip=IFNULL(?,''),country=IFNULL(?,''),
     open_notes=?,banned='N',update_date=NOW(),active='Y',updatedBy=?
 WHERE id = ?;
 EOS;
-$updPDt = 'ssssssssssssssssii';
+$updPDt = 'sssssssssssssssssii';
 
 $insRegSQL = <<<EOS
 INSERT INTO reg(conid,perid,price,couponDiscount,paid,create_user,create_trans,memId,coupon,create_date,status, complete_trans)
@@ -156,7 +158,7 @@ if ($master_perid < 0) {
     $cartrow = $cart_perinfo[0];
     $paramarray = array(
         $cartrow['last_name'],$cartrow['first_name'],$cartrow['middle_name'],$cartrow['suffix'],$cartrow['legalName'],$cartrow['pronouns'],
-        $cartrow['email_addr'],$cartrow['phone'],$cartrow['badge_name'],
+        $cartrow['email_addr'],$cartrow['phone'],$cartrow['badge_name'],$cartrow['badgeNameL2'],
         $cartrow['address_1'],$cartrow['address_2'],$cartrow['city'],$cartrow['state'],$cartrow['postal_code'],$cartrow['country'],
         $cartrow['open_notes'],$user_perid
     );
@@ -186,8 +188,8 @@ if ($master_transid === false) {
 }
 
 $policy_upd = 0;
-$checkNullFields = array('first_name', 'middle_name', 'last_name', 'suffix', 'legalName', 'pronouns', 'email_addr', 'phone', 'badge_name',
-    'address_1', 'address_2', 'city', 'state', 'postal_code', 'country');
+$checkNullFields = array('first_name', 'middle_name', 'last_name', 'suffix', 'legalName', 'pronouns', 'email_addr', 'phone',
+    'badge_name', 'badgeNameL2', 'address_1', 'address_2', 'city', 'state', 'postal_code', 'country');
 // loop over all perinfo records
 for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
     $cartrow = $cart_perinfo[$row];
@@ -217,7 +219,7 @@ for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
         // insert this row
         $paramarray = array(
             $cartrow['last_name'],$cartrow['first_name'],$cartrow['middle_name'],$cartrow['suffix'],$cartrow['legalName'],$cartrow['pronouns'],
-            $cartrow['email_addr'],$cartrow['phone'],$cartrow['badge_name'],
+            $cartrow['email_addr'],$cartrow['phone'],$cartrow['badge_name'],$cartrow['badgeNameL2'],
             $cartrow['address_1'],$cartrow['address_2'],$cartrow['city'],$cartrow['state'],$cartrow['postal_code'],$cartrow['country'],
             $open_notes,$user_perid
         );
@@ -234,7 +236,7 @@ for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
         // update the row
         $paramarray = array(
             $cartrow['last_name'],$cartrow['first_name'],$cartrow['middle_name'],$cartrow['suffix'],$cartrow['legalName'],$cartrow['pronouns'],
-            $cartrow['email_addr'],$cartrow['phone'],$cartrow['badge_name'],
+            $cartrow['email_addr'],$cartrow['phone'],$cartrow['badge_name'],$cartrow['badgeNameL2'],
             $cartrow['address_1'],$cartrow['address_2'],$cartrow['city'],$cartrow['state'],$cartrow['postal_code'],$cartrow['country'],$open_notes,
             $user_perid, $cartrow['perid']
         );
