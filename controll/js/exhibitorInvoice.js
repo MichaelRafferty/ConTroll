@@ -313,11 +313,11 @@ class ExhibitorInvoice {
                         '" size="22" maxlength="32"' + (doOnChange ? 'onchange="exhibitorInvoice.updateCost(' + this.#regionYearId + "," + mnum + ');"' : '') + `/>
                 </div>
                 <div class="col-sm-auto ms-0 me-2 p-0">
-                    <label for="mname` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Name</span></label><br/>
+                    <label for="mname` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Middle</span></label><br/>
                     <input class="form-control-sm" type="text" name="mname` + suffix + `" id="mname` + suffix + `" size="8" maxlength="32" />
                 </div>
                 <div class="col-sm-auto ms-0 me-2 p-0">
-                    <label for="lname` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + this.#allStar + `Name</span></label><br/>
+                    <label for="lname` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + this.#allStar + `Last</span></label><br/>
                     <input class="form-control-sm" type="text" name="lname` + suffix + `" id="lname` + suffix + `" size="22" maxlength="32" />
                 </div>
                 <div class="col-sm-auto ms-0 me-0 p-0">
@@ -382,9 +382,21 @@ class ExhibitorInvoice {
                     <label for="phone` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Phone</span></label><br/>
                     <input class="form-control-sm" type="text" name="phone` + suffix + `" id='phone` + suffix + `' size="18" maxlength="15" />
                 </div>
-                <div class="col-sm-auto ms-0 p-0">
-                    <label for="badgename` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Badge Name (optional)</span></label><br/>
-                    <input class="form-control-sm" type="text" name="badgename` + suffix + `" id='badgename` + suffix + `' size="35" maxlength="32"  placeholder='defaults to first and last name'/>
+            </div>
+            <div class="row">
+                <div class="col-sm-auto me-1 p-0">
+                    <label for="badgename` + suffix + `" class="form-label-sm">
+                        <span class="text-dark" style="font-size: 10pt;">Badge Name (optional)</span>
+                    </label><br/>
+                    <input class="form-control-sm" type="text" name="badgename` + suffix + `" id='badgename` + suffix + `'
+                        size="35" maxlength="32" placeholder='defaults to first and last name'/>
+                </div>
+                 <div class="col-sm-auto ms-1 p-0">
+                    <label for="badgeNameL2\` + suffix + \`" class="form-label-sm">
+                        <span class="text-dark" style="font-size: 10pt;">Badge Line 2 (optional)</span>
+                    </label><br/>
+                    <input class="form-control-sm" type="text" name="badgeNameL2\` + suffix + \`" id='badgeNameL2\` + suffix + \`'
+                        size="35" maxlength="32"/>
                 </div>
             </div>
         </div>

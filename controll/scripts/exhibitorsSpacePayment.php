@@ -415,7 +415,7 @@ SELECT R.id AS badge,
     NP.first_name AS fname, NP.middle_name AS mname, NP.last_name AS lname, NP.suffix AS suffix,
     NP.email_addr AS email,
     NP.address AS street, NP.city AS city, NP.state AS state, NP.zip AS zip, NP.country AS country,
-    NP.id as id, R.price AS price, M.memAge AS age, NP.badge_name AS badgename, NP.legalName, R.memId,
+    NP.id as id, R.price AS price, M.memAge AS age, NP.badge_name AS badgename, NP.badgeNameL2, NP.legalName, R.memId,
     M.label, M.label AS shortname, A.shortname AS ageshortname, M.memCategory, M.memType, M.glNum, R.perid, R.newperid, R.id AS regId
 FROM newperson NP
 JOIN reg R ON (R.newperid=NP.id)
@@ -838,6 +838,8 @@ WHERE
 		REGEXP_REPLACE(TRIM(LOWER(p.phone)), ' +', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
 		REGEXP_REPLACE(TRIM(LOWER(p.badge_name)), ' +', ' ')
+  	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.badgeNameL2)), ' +', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
 		REGEXP_REPLACE(TRIM(LOWER(p.address)), ' +', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
@@ -852,8 +854,8 @@ WHERE
 		REGEXP_REPLACE(TRIM(LOWER(p.country)), ' +', ' ');
 EOF;
     $value_arr = array($badge['fname'], $badge['mname'], $badge['lname'], $badge['suffix'], $badge['email'], $badge['phone'], $badge['badgename'],
-                $badge['addr'], $badge['addr2'], $badge['city'], $badge['state'], $badge['zip'], $badge['country']);
-    $res = dbSafeQuery($exactMsql, 'sssssssssssss', $value_arr);
+                $badge['badgeNameL2'], $badge['addr'], $badge['addr2'], $badge['city'], $badge['state'], $badge['zip'], $badge['country']);
+    $res = dbSafeQuery($exactMsql, 'ssssssssssssss', $value_arr);
     if ($res !== false) {
         if ($res->num_rows > 0) {
             $match = $res->fetch_assoc();
@@ -870,17 +872,18 @@ EOF;
         $legalName = trim($badge['fname']  . ($badge['mname'] == '' ? ' ' : ' ' . $badge['mname'] . ' ' ) . $badge['lname'] . ' ' . $badge['suffix']);
     }
 
-    $value_arr = array($badge['lname'], $badge['mname'], $badge['fname'], $badge['suffix'], $legalName, $badge['email'], $badge['phone'], $badge['badgename'],
+    $value_arr = array($badge['lname'], $badge['mname'], $badge['fname'], $badge['suffix'], $legalName, $badge['email'], $badge['phone'],
+        $badge['badgename'], $badge['badgeNameL2'],
         $badge['addr'], $badge['addr2'], $badge['city'], $badge['state'], $badge['zip'], $badge['country'], $badge['contact'], $badge['share'], $id);
 
     $insertQ = <<<EOS
-INSERT INTO newperson(last_name, middle_name, first_name, suffix, legalName, email_addr, phone, badge_name,
+INSERT INTO newperson(last_name, middle_name, first_name, suffix, legalName, email_addr, phone, badge_name, badgeNameL2,
                       address, addr_2, city, state, zip, country, contact_ok, share_reg_ok, perid)
     VALUES(IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''),
-     IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), ?, ?, ?);
+     IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), ?, ?, ?);
 EOS;
 
-    $newid = dbSafeInsert($insertQ, 'ssssssssssssssssi', $value_arr);
+    $newid = dbSafeInsert($insertQ, 'sssssssssssssssssi', $value_arr);
     $badge['error'] = '';
     if ($newid === false) {
         $badge['error'] .= 'Add of person of badge for ' . $badge['fname'] . ' ' . $badge['lname'] . " failed.\n";
