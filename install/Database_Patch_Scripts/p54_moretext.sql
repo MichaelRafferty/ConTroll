@@ -118,5 +118,11 @@ CREATE DEFINER=CURRENT_USER  TRIGGER `perinfo_update` BEFORE UPDATE ON `perinfo`
 END;;
 DELIMITER ;
 
+/* Remove PS from printer enum as with 2 line Badge Name we can no longer support it's limited fonts */
+
+ALTER TABLE printers MODIFY COLUMN
+    codePage enum('HPCL','Dymo4xx','Dymo3xx','Windows-1252','ASCII','7bit','8bit','UTF-8','UTF-16')
+        COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'Windows-1252';
+
 INSERT INTO patchLog(id, name) VALUES(54, 'More Custom Text Fields');
 
