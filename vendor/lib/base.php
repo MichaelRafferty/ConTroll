@@ -67,6 +67,7 @@ function exhibitor_page_init($title) {
     <script type='text/javascript' src="jslib/exhibitorProfile.js?v=$libJSversion"></script>
     <script type='text/javascript' src="jslib/exhibitorRequest.js?v=$libJSversion"></script>
     <script type='text/javascript' src="jslib/exhibitorReceipt.js?v=$libJSversion"></script>
+    <script type='text/javascript' src="jslib/exhibitorInvoiceCommon.js?v=$libJSversion"></script>
     <script type='text/javascript' src="js/vendor_invoice.js?v=$exhibitorJSversion"></script>
     <script type='text/javascript' src="js/tinymce/tinymce.min.js?v=$exhibitorJSversion"></script>
     <script type='text/javascript' src="js/auctionItemRegistration.js?v=$exhibitorJSversion"></script>

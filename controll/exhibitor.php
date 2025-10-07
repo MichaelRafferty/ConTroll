@@ -23,6 +23,19 @@ $conf = get_conf('con');
 
 $required = getConfValue('reg', 'required', 'addr');
 $testsite = getConfValue('vendor', 'test') == 1;
+$firstStar = '';
+$addrStar = '';
+$allStar = '';
+switch ($required) {
+    // cascading list of required fields, each case adds more so the breaks fall into the next section
+
+    case 'all':
+        $allStar = '<span class="text-danger">&bigstar;</span>';
+    case 'addr':
+        $addrStar = '<span class="text-danger">&bigstar;</span>';
+    case 'first':
+        $firstStar = '<span class="text-danger">&bigstar;</span>';
+}
 
 $scriptName = $_SERVER['SCRIPT_NAME'];
 if (array_key_exists('tab', $_REQUEST)) {
@@ -46,6 +59,7 @@ page_init($page,
                     'js/adminCustomText.js',
                     'jslib/exhibitorRequest.js',
                     'jslib/exhibitorReceipt.js',
+                    'jslib/exhibitorInvoiceCommon.js',
                     'js/tinymce/tinymce.min.js'
                    ),
               $need_login);
@@ -86,6 +100,9 @@ $config_vars['vendorsite'] = $vendor_conf['vendorsite'];
 $config_vars['debug'] = getConfValue('debug', 'controll_exhibitors', 0);
 $config_vars['conid'] = $conid;
 $config_vars['required'] = $required;
+$config_vars['allStar'] = $allStar;
+$config_vars['addrStar'] = $addrStar;
+$config_vars['firstStar'] = $firstStar;
 $config_vars['useUSPS'] = $useUSPS;
 $config_vars['initialTab'] = $initialTab;
 $config_vars['scriptName'] = $scriptName;
