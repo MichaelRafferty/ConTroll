@@ -848,7 +848,7 @@ EOF;
     $value_arr = array($badge['fname'], $badge['mname'], $badge['lname'], $badge['suffix'], $badge['email'], $badge['phone'],
                 $badge['badgename'], $badge['badgeNameL2'],
                 $badge['addr'], $badge['addr2'], $badge['city'], $badge['state'], $badge['zip'], $badge['country']);
-    $res = dbSafeQuery($exactMsql, 'sssssssssssssss', $value_arr);
+    $res = dbSafeQuery($exactMsql, 'ssssssssssssss', $value_arr);
     if ($res !== false) {
         if ($res->num_rows > 0) {
             $match = $res->fetch_assoc();
