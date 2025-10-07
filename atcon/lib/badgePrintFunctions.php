@@ -102,6 +102,7 @@ function write_pdf($badge, $tempfile, $originType)//: void {
     // if line2 is non blank, use it for line 2, if line 2 is blank, split line 1 as needed across line 1 and line 2
     $bn = badgeNameDefault($badge['badge_name'], $badge['badgeNameL2'], $badge['first_name'], $badge['last_name']);
     $bn = str_replace('<i>', '', $bn);
+    $bn = str_replace('</i>', '', $bn);
     $lines = explode('<br/>', $bn);
     if (count($lines) > 1) {
         $line1 = $lines[0];

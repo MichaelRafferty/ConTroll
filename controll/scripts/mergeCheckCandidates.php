@@ -39,7 +39,7 @@ $values = [];
 
 while ($checkL = $checkR->fetch_row()) {
     $bn = badgeNameDefault($checkL[6], $checkL[7], $checkL[2], $checkL[1]);
-    $checkL[14] = str_replace('<i>', '', str_replace('<br/>', '/', $bn));
+    $checkL[14] = str_replace('</i>', '', str_replace('<i>', '', str_replace('<br/>', '/', $bn)));
     if ($checkL[0] == $remain)
         $values['remain'] = $checkL;
 
