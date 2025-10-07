@@ -186,6 +186,8 @@ WHERE
 		REGEXP_REPLACE(TRIM(LOWER(p.phone)), ' +', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
 		REGEXP_REPLACE(TRIM(LOWER(p.badge_name)), ' +', ' ')
+    AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.badgeNameL2)), ' +', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
 		REGEXP_REPLACE(TRIM(LOWER(p.address)), ' +', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
@@ -207,6 +209,7 @@ EOF;
             trim($badge['email1']),
             trim($badge['phone']),
             trim($badge['badgename']),
+            trim($badge['badgeNameL2']),
             trim($badge['addr']),
             trim($badge['addr2']),
             trim($badge['city']),
@@ -215,7 +218,7 @@ EOF;
             $badge['country']
         );
 
-        $res = dbSafeQuery($exactMsql, 'sssssssssssss', $value_arr);
+        $res = dbSafeQuery($exactMsql, 'ssssssssssssss', $value_arr);
         if ($res !== false) {
             if ($res->num_rows > 0) {
                 $match = $res->fetch_assoc();
@@ -236,6 +239,7 @@ EOF;
             trim($badge['email1']),
             trim($badge['phone']),
             trim($badge['badgename']),
+            trim($badge['badgeNameL2']),
             trim($badge['addr']),
             trim($badge['addr2']),
             trim($badge['city']),
@@ -249,12 +253,12 @@ EOF;
 
         $insertQ = <<<EOS
 INSERT INTO newperson(last_name, middle_name, first_name, suffix, legalName, pronouns, email_addr, phone,
-    badge_name, address, addr_2, city, state, zip, country, contact_ok, share_reg_ok, perid)
+    badge_name, badgeNameL2, address, addr_2, city, state, zip, country, contact_ok, share_reg_ok, perid)
     VALUES(IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''),
-           IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''),  ?, ?, ?);
+           IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''),  ?, ?, ?);
 EOS;
 
-        $newid = dbSafeInsert($insertQ, 'sssssssssssssssssi', $value_arr);
+        $newid = dbSafeInsert($insertQ, 'ssssssssssssssssssi', $value_arr);
         $people[$count]['newperid'] = $newid;
         $people[$count]['perid'] = $id;
 
@@ -311,7 +315,7 @@ SELECT R.id AS badge, R.id AS regId,
     NP.first_name AS fname, NP.middle_name AS mname, NP.last_name AS lname, NP.suffix AS suffix, NP.legalName,
     NP.email_addr AS email,
     NP.address AS street, NP.city AS city, NP.state AS state, NP.zip AS zip, NP.country AS country,
-    NP.id as id, R.price AS price, R.couponDiscount as discount, M.memAge AS age, NP.badge_name AS badgename, R.memId, M.glNum,
+    NP.id as id, R.price AS price, R.couponDiscount as discount, M.memAge AS age, NP.badge_name AS badgename, NP.badgeNameL2, R.memId, M.glNum,
     M.label, M.memCategory, M.memType, M.taxable, M.ageShortName AS ageshortname, M.memAge, M.shortname
 FROM newperson NP
 JOIN reg R ON (R.newperid=NP.id)
