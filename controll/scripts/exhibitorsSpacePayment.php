@@ -223,11 +223,11 @@ $membership_fields = array('fname' => $required != '', 'mname' => false, 'lname'
                            'addr' => $required == 'addr' || $required == 'all', 'addr2' => false,
                            'city' => $required == 'addr' || $required == 'all', 'state' => $required == 'addr' || $required == 'all',
                            'zip' => $required == 'addr' || $required == 'all', 'country' => $required == 'addr' || $required == 'all',
-                           'email' => true, 'phone' => false, 'badgename' => false);
+                           'email' => true, 'phone' => false, 'badgename' => false, 'badgeNameL2' =>  false);
 $membership_names = array('fname' => 'First Name', 'mname' => 'Middle Name', 'lname' => 'Last Name', 'suffix' => 'Suffix', 'legalName' => 'Legal Name',
                           'addr' => 'Address Line 1', 'addr2' => 'Company/Address Line 2', 'city' => 'City', 'state' => 'State/Province',
                           'zip' => 'Zip Code/Postal Code', 'country' => 'Country',
-                          'email' => 'Email Address', 'phone' => 'Phone Number', 'badgename' => 'Badge Name');
+                          'email' => 'Email Address', 'phone' => 'Phone Number', 'badgename' => 'Badge Name', 'badgeNameL2' => 'Badge Line 2');
 
 $missing_msg = '';
 $valid = true;

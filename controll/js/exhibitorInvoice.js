@@ -392,10 +392,10 @@ class ExhibitorInvoice {
                         size="35" maxlength="32" placeholder='defaults to first and last name'/>
                 </div>
                  <div class="col-sm-auto ms-1 p-0">
-                    <label for="badgeNameL2\` + suffix + \`" class="form-label-sm">
+                    <label for="badgeNameL2` + suffix + `" class="form-label-sm">
                         <span class="text-dark" style="font-size: 10pt;">Badge Line 2 (optional)</span>
                     </label><br/>
-                    <input class="form-control-sm" type="text" name="badgeNameL2\` + suffix + \`" id='badgeNameL2\` + suffix + \`'
+                    <input class="form-control-sm" type="text" name="badgeNameL2` + suffix + `" id='badgeNameL2` + suffix + `'
                         size="35" maxlength="32"/>
                 </div>
             </div>
