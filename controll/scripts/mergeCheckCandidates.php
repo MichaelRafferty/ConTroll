@@ -29,7 +29,7 @@ $remain = $_POST['remain'];
 $merge = $_POST['merge'];
 
 $checkQ = <<<EOS
-SELECT id, last_name, first_name, middle_name, suffix, badge_name, email_addr, address, addr_2, city, state, zip, country
+SELECT id, last_name, first_name, middle_name, suffix, badge_name, badgeNameL2, email_addr, address, addr_2, city, state, zip, country
 FROM perinfo
 WHERE id IN (?,?); 
 EOS;
@@ -38,13 +38,14 @@ $checkR = dbSafeQuery($checkQ, 'ii', array($remain, $merge));
 $values = [];
 
 while ($checkL = $checkR->fetch_row()) {
+    $bn = badgeNameDefault($checkL[6], $checkL[7], $checkL[2], $checkL[1]);
+    $checkL[14] = str_replace('<i>', '', str_replace('<br/>', '/', $bn));
     if ($checkL[0] == $remain)
         $values['remain'] = $checkL;
 
     if ($checkL[0] == $merge)
         $values['merge'] = $checkL;
 }
-
 
 $response['values'] = $values;
 $error = '';
