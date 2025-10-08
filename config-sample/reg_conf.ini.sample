@@ -116,7 +116,7 @@ precon=0
 ;; ; none = supporess all custom text
 ;; customtext='production'
 
-;vendors: email address for generic vendor emails
+;vendor: email address for generic vendor emails
 vendor="dealers@???"
 ;artist: email address for generic artist emails
 artist="artists@???"
