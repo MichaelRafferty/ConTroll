@@ -30,11 +30,19 @@ CREATE TABLE `transaction` (
   `coupon` int DEFAULT NULL,
   `orderId` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `orderDate` datetime DEFAULT NULL,
+  `ccPaymentId` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `paymentStatus` varchar(32) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `checkoutId` varchar(32) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `lastUpdate` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `paymentInfo` varchar(4096) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `transaction_conid_fk` (`conid`),
   KEY `transaction_newperid_fk` (`newperid`),
   KEY `transaction_perid_fk` (`perid`),
-  KEY `transaction_userid_fk` (`userid`)
+  KEY `transaction_userid_fk` (`userid`),
+  KEY `trans_orderId` (`orderId`),
+  KEY `trans_paymentId` (`ccPaymentId`),
+  KEY `trans_checkoutId` (`checkoutId`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 

@@ -31,7 +31,7 @@ CREATE TABLE `payments` (
   `receipt_url` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `status` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `receipt_id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `paymentId` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `ccPaymentId` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `payments_transid_fk` (`transid`),
   KEY `payments_cashier_fk` (`cashier`)
