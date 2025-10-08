@@ -129,7 +129,7 @@ if ($cR == false || $cR->num_rows == 0) {
     exit();
 }
 $loginInfo = $cR->fetch_assoc();
-$loginInfo['badgename'] = $loginInfo($person['badge_name'], $loginInfo['badgeNameL2'], $loginInfo['first_name'], $loginInfo['last_name']);
+$loginInfo['badgename'] = badgeNameDefault($loginInfo['badge_name'], $loginInfo['badgeNameL2'], $loginInfo['first_name'], $loginInfo['last_name']);
 $cR->free();
 
 $waittime = 1; // hours

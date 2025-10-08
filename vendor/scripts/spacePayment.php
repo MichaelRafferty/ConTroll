@@ -207,10 +207,10 @@ $buyer['email'] = $_POST['cc_email'];
 $buyer['phone'] = $_POST['cc_phone'];
 
 $membership_fields = array('fname' => 1, 'mname' => 0, 'lname' => 1, 'suffix' => 0, 'legalName' => 0, 'addr' => 1, 'addr2' => 0, 'city' => 1, 'state' => 1, 'zip' => 1,
-    'country' => 1, 'email' => 1, 'phone' => 0, 'badgename' => 0, 'badgeNameL2' =>  false);
+    'country' => 1, 'email' => 1, 'phone' => 0, 'badge_name' => 0, 'badgeNameL2' =>  false);
 $membership_names = array('fname' => 'First Name', 'mname' => 'Middle Name', 'lname' => 'Last Name', 'legalName' => 'Legal Name', 'suffix' => 'Suffix',
     'addr' => 'Address Line 1', 'addr2' => 'Company/Address Line 2', 'city' => 'City', 'state' => 'State/Province', 'zip' => 'Zip Code/Postal Code',
-    'country' => 'Country', 'email' => 'Email Address', 'phone' => 'Phone Number', 'badgename' => 'Badge Name', 'badgeNameL2' => 'Badge Line 2');
+    'country' => 'Country', 'email' => 'Email Address', 'phone' => 'Phone Number', 'badge_name' => 'Badge Name', 'badgeNameL2' => 'Badge Line 2');
 
 if ($required == 'addr') {
     $membership_fields['lname'] = 0;
@@ -433,7 +433,7 @@ SELECT R.id AS badge,
     NP.first_name AS fname, NP.middle_name AS mname, NP.last_name AS lname, NP.suffix AS suffix,
     NP.email_addr AS email,
     NP.address AS street, NP.city AS city, NP.state AS state, NP.zip AS zip, NP.country AS country,
-    NP.id as id, R.price AS price, M.memAge AS age, NP.badge_name AS badgename, NP.badgeNameL2, NP.legalName, R.memId, M.memAge,
+    NP.id as id, R.price AS price, M.memAge AS age, NP.badge_name, NP.badgeNameL2, NP.legalName, R.memId, M.memAge,
     M.shortname, M.ageShortName AS ageshortname, M.taxable, M.memCategory, M.memType, M.glNum, R.perid, R.newperid, R.id AS regId
 FROM newperson NP
 JOIN reg R ON (R.newperid=NP.id)
@@ -846,7 +846,7 @@ WHERE
 		REGEXP_REPLACE(TRIM(LOWER(p.country)), ' +', ' ');
 EOF;
     $value_arr = array($badge['fname'], $badge['mname'], $badge['lname'], $badge['suffix'], $badge['email'], $badge['phone'],
-                $badge['badgename'], $badge['badgeNameL2'],
+                $badge['badge_name'], $badge['badgeNameL2'],
                 $badge['addr'], $badge['addr2'], $badge['city'], $badge['state'], $badge['zip'], $badge['country']);
     $res = dbSafeQuery($exactMsql, 'ssssssssssssss', $value_arr);
     if ($res !== false) {
@@ -866,7 +866,7 @@ EOF;
     }
 
     $value_arr = array($badge['lname'], $badge['mname'], $badge['fname'], $badge['suffix'], $legalName, $badge['email'], $badge['phone'],
-        $badge['badgename'], $badge['badgeNameL2'],
+        $badge['badge_name'], $badge['badgeNameL2'],
         $badge['addr'], $badge['addr2'], $badge['city'], $badge['state'], $badge['zip'], $badge['country'],
         $badge['contact'], $badge['share'], $id);
 

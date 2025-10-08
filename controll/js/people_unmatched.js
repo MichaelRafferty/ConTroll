@@ -610,7 +610,7 @@ class Unmatched {
             suffix: this.#suffix.value,
             legalName: this.#legalName.value,
             pronouns: this.#pronouns.value,
-            badgeName: this.#badgeName.value,
+            badge_name: this.#badgeName.value,
             badgeNameL2: this.#badgeNameL2.value,
             address: this.#address.value,
             addr2: this.#addr2.value,

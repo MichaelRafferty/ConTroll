@@ -208,7 +208,7 @@ EOF;
             trim($badge['suffix']),
             trim($badge['email1']),
             trim($badge['phone']),
-            trim($badge['badgename']),
+            trim($badge['badge_name']),
             trim($badge['badgeNameL2']),
             trim($badge['addr']),
             trim($badge['addr2']),
@@ -238,7 +238,7 @@ EOF;
             trim($badge['pronouns']),
             trim($badge['email1']),
             trim($badge['phone']),
-            trim($badge['badgename']),
+            trim($badge['badge_name']),
             trim($badge['badgeNameL2']),
             trim($badge['addr']),
             trim($badge['addr2']),
@@ -315,7 +315,7 @@ SELECT R.id AS badge, R.id AS regId,
     NP.first_name AS fname, NP.middle_name AS mname, NP.last_name AS lname, NP.suffix AS suffix, NP.legalName,
     NP.email_addr AS email,
     NP.address AS street, NP.city AS city, NP.state AS state, NP.zip AS zip, NP.country AS country,
-    NP.id as id, R.price AS price, R.couponDiscount as discount, M.memAge AS age, NP.badge_name AS badgename, NP.badgeNameL2, R.memId, M.glNum,
+    NP.id as id, R.price AS price, R.couponDiscount as discount, M.memAge AS age, NP.badge_name, NP.badgeNameL2, R.memId, M.glNum,
     M.label, M.memCategory, M.memType, M.taxable, M.ageShortName AS ageshortname, M.memAge, M.shortname
 FROM newperson NP
 JOIN reg R ON (R.newperid=NP.id)

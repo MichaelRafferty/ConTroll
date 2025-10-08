@@ -299,10 +299,10 @@ class ExhibitorInvoice {
             </div>
             <div class="row">
                 <div class="col-sm-auto me-1 p-0">
-                    <label for="badgename` + suffix + `" class="form-label-sm">
+                    <label for="badge_name` + suffix + `" class="form-label-sm">
                         <span class="text-dark" style="font-size: 10pt;">Badge Name (optional)</span>
                     </label><br/>
-                    <input class="form-control-sm" type="text" name="badgename` + suffix + `" id='badgename` + suffix + `'
+                    <input class="form-control-sm" type="text" name="badge_name` + suffix + `" id='badge_name` + suffix + `'
                         size="35" maxlength="32" placeholder='defaults to first and last name'/>
                 </div>
                  <div class="col-sm-auto ms-1 p-0">

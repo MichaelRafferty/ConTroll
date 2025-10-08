@@ -206,7 +206,7 @@ class Pos {
         this.#add_email1_field = document.getElementById("email1");
         this.#add_email2_field = document.getElementById("email2");
         this.#add_phone_field = document.getElementById("phone");
-        this.#add_badgename_field = document.getElementById("badgename");
+        this.#add_badgename_field = document.getElementById("badge_name");
         this.#add_badgeNameL2_field = document.getElementById("badgeNameL2");
         this.#add_header = document.getElementById("add_header");
         this.#addnew_button = document.getElementById("addnew-btn");
