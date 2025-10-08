@@ -77,6 +77,9 @@ if (validateAddressRegexpOK)
     validateEmailRegexp =  new RegExp("^((?:[a-z0-9!#$%&'*+\\-\\/=?^_`{|}~]|(?<=^|\\.)\"|\"(?=$|\\.|@)|(?<=\".*)[ .](?=.*\")|(?<!\\.)\\.){1,64})(@)((?:[a-z0-9.\\-])*(?:[a-z0-9])\\.(?:[a-z0-9]){2,})$", 'i');
 
 function validateAddress(addr) {
+    if (addr == '/r')   // allow refused value
+        return true;
+
    if (validateAddressRegexpOK)
        return validateEmailRegexp.test(String(addr).toLowerCase());
 
