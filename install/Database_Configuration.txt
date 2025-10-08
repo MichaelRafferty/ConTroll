@@ -1,4 +1,4 @@
-Reg System Database Tables
+Reg System Database Tables (obsolete - needs massive update)
 
 Configuration Tables:
     User/Admin Configuration:
