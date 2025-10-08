@@ -160,6 +160,10 @@ SELECT m.id, m.perid, m.conid, m.newperid, m.interested,
         ELSE n.badge_name
     END AS badge_name,
     CASE 
+        WHEN m.perid IS NOT NULL THEN p.badgeNameL2
+        ELSE n.badgeNameL2
+    END AS badgeNameL2,
+    CASE 
         WHEN m.perid IS NOT NULL THEN p.phone
         ELSE n.phone
     END AS phone,
@@ -239,7 +243,10 @@ This is the list of updates as of $runDate
 EOS;
     $csv = "lastName, firstName, fullName, badgeName, emailAddr, phone, interested\n";
     foreach ($notifyList as $row) {
-        $csvRow = array($row['last_name'], $row['first_name'], $row['fullName'], $row['badge_name'], $row['email_addr'], $row['phone'], $row['interested']);
+        $bn = $row['badge_name'];
+        if ($row['badgeNameL2'] != '')
+            $bn .= '/' . $row['badgeNameL2'];
+        $csvRow = array($row['last_name'], $row['first_name'], $row['fullName'], $bn, $row['email_addr'], $row['phone'], $row['interested']);
         $csv .= '"' . join('","', $csvRow) . '"' . PHP_EOL;
     }
 
@@ -321,6 +328,10 @@ SELECT m.perid, m.newperid,
         WHEN m.perid IS NOT NULL THEN p.badge_name
         ELSE n.badge_name
     END AS badge_name,
+     CASE 
+        WHEN m.perid IS NOT NULL THEN p.badgeNameL2
+        ELSE n.badgeNameL2
+    END AS badgeNameL2,
     CASE 
         WHEN m.perid IS NOT NULL THEN p.phone
         ELSE n.phone
