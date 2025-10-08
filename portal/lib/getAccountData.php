@@ -32,6 +32,11 @@ WITH trans AS (
             ELSE NULL
         END AS fname,
         CASE 
+            WHEN pn.id IS NOT NULL THEN pn.last_name
+            WHEN nn.id IS NOT NULL THEN nn.last_name
+            ELSE NULL
+        END AS lname,
+        CASE 
             WHEN pn.id IS NOT NULL THEN pn.managedBy
             WHEN nn.id IS NOT NULL THEN nn.managedBy
             ELSE NULL
@@ -46,6 +51,11 @@ WITH trans AS (
             WHEN nn.id IS NOT NULL THEN nn.badge_name
             ELSE NULL
         END AS badge_name,
+        CASE 
+            WHEN pn.id IS NOT NULL THEN pn.badgeNameL2
+            WHEN nn.id IS NOT NULL THEN nn.badgeNameL2
+            ELSE NULL
+        END AS badgeNameL2,
         CASE 
             WHEN pn.id IS NOT NULL THEN
                 TRIM(REGEXP_REPLACE(CONCAT(pn.first_name, ' ', pn.middle_name, ' ', pn.last_name, ' ', pn.suffix), ' +', ' '))
@@ -83,7 +93,8 @@ WITH trans AS (
         CASE WHEN r.complete_trans IS NULL THEN r.create_trans ELSE r.complete_trans END AS sortTrans,
         CASE WHEN tp.complete_date IS NULL THEN t.create_date ELSE tp.complete_date END AS transDate,
         m.label, m.memAge, m.memAge AS age, m.memType, m.memCategory,  m.startdate, m.enddate, m.online, m.taxable, 
-        m.ageShortName AS ageshortname, m.shortname, nn.first_name AS fname, nn.managedBy, nn.managedByNew, nn.badge_name, 
+        m.ageShortName AS ageshortname, m.shortname, nn.first_name AS fname, nn.managedBy, nn.managedByNew, nn.badge_name, nn.badgeNameL2,
+        nn.first_name, nn.last_name,
         TRIM(REGEXP_REPLACE(CONCAT(nn.first_name, ' ', nn.middle_name, ' ', nn.last_name, ' ', nn.suffix), ' +', ' ')) AS fullName, 
         nn.id as memberId, nn.email_addr, nn.phone,
         IFNULL(tp.perid, t.perid) AS transPerid,
@@ -110,11 +121,8 @@ WITH mems AS (
         m.ageShortName AS ageshortname, m.shortname, p.first_name AS fname, p.managedBy, p.managedByNew,
         CASE WHEN r.complete_trans IS NULL THEN r.create_trans ELSE r.complete_trans END AS sortTrans,
         CASE WHEN tp.complete_date IS NULL THEN t.create_date ELSE tp.complete_date END AS transDate,
-        CASE 
-            WHEN p.badge_name IS NULL OR p.badge_name = '' THEN 
-                TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.last_name) , ' +', ' ')) 
-            ELSE p.badge_name
-        END AS badge_name, p.id AS memberId, p.email_addr, p.phone,
+        p.badge_name, p.badgeNameL2,  p.first_name, p.last_name,
+        p.id AS memberId, p.email_addr, p.phone,
         TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
         IFNULL(tp.perid, t.perid) AS transPerid
     FROM transaction t
@@ -137,6 +145,10 @@ EOS;
             if ($membership['fullName'] == null) {
                 $membership['fullName'] = 'Name Redacted';
                 $membership['badge_name'] = 'Name Redacted';
+                $membership['badgeNameL2'] = 'Name Redacted';
+                $membership['badgename'] = 'Name Redacted';
+            } else {
+                $membership['badgename'] = badgeNameDefault($membership['badge_name'], $membership['badgeNameL2'], $membership['first_name'], $membership['last_name']);
             }
             $memberships[] = $membership;
         }

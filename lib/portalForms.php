@@ -354,10 +354,7 @@ function drawPersonRow($personId, $personType, $person, $memberships, $showInter
 
     $portal_conf = get_conf('portal');
 
-    $badge_name = $person['badge_name'];
-    if ($badge_name == '') {
-        $badge_name = '<i>' . TRIM($person['first_name'] . ' ' . $person['last_name']) . '</i>';
-    }
+    $badgename = $person['badgename'];
     $fn = '';
     if ($person['first_name'] != '') {
         $fn = $person['first_name'] . "'s ";
@@ -388,7 +385,7 @@ function drawPersonRow($personId, $personType, $person, $memberships, $showInter
     <div class="row mt-1">
         <div class='col-sm-1' style='text-align: right;'><?php echo $person['personType'] == 'n' ? 'Pending' : $person['id']; ?></div>
         <div class='col-sm-2'><strong><?php echo $person['fullName']; ?></strong></div>
-        <div class="col-sm-2"><?php echo $badge_name; ?></div>
+        <div class="col-sm-2"><?php echo $badgename; ?></div>
         <div class="col-sm-2"><?php echo $person['email_addr']; ?></div>
         <div class='col-sm-5 p-1'>
                 <button class='btn btn-sm btn-primary p-1' style='--bs-btn-font-size: 80%;'

@@ -26,6 +26,7 @@ class Membership {
     #email1Field = null;
     #phoneField = null;
     #badgenameField = null;
+    #badgeNameL2Field = null;
     #uspsDiv= null;
     #lastVerified = null;
 
@@ -132,7 +133,8 @@ class Membership {
         this.#countryField = document.getElementById("country");
         this.#email1Field = document.getElementById("email1");
         this.#phoneField = document.getElementById("phone");
-        this.#badgenameField = document.getElementById("badgename");
+        this.#badgenameField = document.getElementById("badge_name");
+        this.#badgeNameL2Field = document.getElementById("badgeNameL2");
         this.#uspsDiv = document.getElementById("uspsblock");
 
         this.#saveCartBtn = document.getElementById("saveCartBtn");

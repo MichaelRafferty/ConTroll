@@ -210,6 +210,10 @@ if ($otherPay == 0) { // this is a plan payment or badge purchase payment
                 continue;
             if ($mem['payThis'] != 1)
                 continue;
+            $bn = $mem['badgename'];
+            $bn = str_replace('<i>', '', $bn);
+            $bn = str_replace('</i>', '', $bn);
+            $bn = str_replace('<br/>', '', $bn);
             $badges[] = array('id' => $mem['create_trans'],
                               'create_date' => $mem['create_date'],
                               'regId' => $mem['regid'],
@@ -235,7 +239,7 @@ if ($otherPay == 0) { // this is a plan payment or badge purchase payment
                               'online' => $mem['online'],
                               'managedBy' => $mem['managedBy'],
                               'managedByNew' => $mem['managedByNew'],
-                              'badge_name' => $mem['badge_name'],
+                              'badge_name' => $bn,
                               'fullName' => $mem['fullName'],
                               'memberId' => $mem['memberId'],
                               'planId' => $mem['planId'],

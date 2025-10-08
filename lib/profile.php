@@ -90,9 +90,9 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
     <?php } ?>
     <div class='row'>
         <div class='col-sm-auto me-2'>
-            <label for='<?php echo $idPrefix . 'badgename'; ?>' class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>Badge Name (optional)
+            <label for='<?php echo $idPrefix . 'badge_name'; ?>' class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>Badge Name (optional)
                         </span></label><br/>
-            <input class='form-control-sm' type='text' name='badgename' id='<?php echo $idPrefix . 'badgename'; ?>' size='35' maxlength='32'
+            <input class='form-control-sm' type='text' name='badge_name' id='<?php echo $idPrefix . 'badge_name'; ?>' size='35' maxlength='32'
                    placeholder='defaults to first and last name' tabindex="<?php echo $tabindex; $tabindex += 10; ?>"/>
         </div>
         <div class='col-sm-auto'>

@@ -299,8 +299,8 @@ function getPersonInfo($conid) {
     if ($personType == 'p') {
         $pfield = 'perid';
         $personSQL = <<<EOS
-SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.pronouns,
-    p.address, p.addr_2, p.city, p.state, p.zip, p.country,
+SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2,
+       p.legalName, p.pronouns, p.address, p.addr_2, p.city, p.state, p.zip, p.country,
     p.banned, p.creation_date, p.update_date, p.change_notes, p.active, p.managedBy, p.lastVerified, 'p' AS personType,
     TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
     TRIM(REGEXP_REPLACE(CONCAT_WS(' ', pm.first_name, pm.middle_name, pm.last_name, pm.suffix), ' +', ' ')) AS managedByName
@@ -311,8 +311,8 @@ EOS;
     } else {
         $pfield = 'newperid';
         $personSQL = <<<EOS
-SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.pronouns,
-    p.address, p.addr_2, p.city, p.state, p.zip, p.country,
+SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2,
+       p.legalName, p.pronouns, p.address, p.addr_2, p.city, p.state, p.zip, p.country,
     'N' AS banned, p.createtime AS creation_date, 'Y' AS active, p.managedByNew, p.managedBy, p.lastVerified, 'n' AS personType,
     TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
     CASE
@@ -333,6 +333,7 @@ EOS;
         return false;
     }
     $info = $personR->fetch_assoc();
+    $info['badgename'] = badgeNameDefault($info['badge_name'], $info['badgeNameL2'], $info['first_name'], $info['last_name']);
     $personR->free();
     // not get the count of the number required policies answered no by this person
     $pQ = <<<EOS

@@ -43,6 +43,7 @@ class Portal {
     #email1Field = null;
     #phoneField = null;
     #badgenameField = null;
+    #badgenameL2Field = null;
     #uspsDiv= null;
     
     // change email modal
@@ -142,7 +143,8 @@ class Portal {
             this.#countryField = document.getElementById("country");
             this.#email1Field = document.getElementById("email1");
             this.#phoneField = document.getElementById("phone");
-            this.#badgenameField = document.getElementById("badgename");
+            this.#badgenameField = document.getElementById("badge_name");
+            this.#badgenameL2Field = document.getElementById("badgeNameL2");
             this.#uspsDiv = document.getElementById("uspsblock");
         }
 
@@ -400,6 +402,7 @@ class Portal {
         this.#email1Field.innerHTML = person.email_addr;
         this.#phoneField.value = person.phone;
         this.#badgenameField.value = person.badge_name;
+        this.#badgenameL2Field.value = person.badgeNameL2;
 
         this.#personSerializeStart = $("#editPerson").serialize();
 

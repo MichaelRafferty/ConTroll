@@ -36,6 +36,7 @@ class Login {
     #email1Field = null;
     #phoneField = null;
     #badgenameField = null;
+    #badgeNameL2Field = null;
     #contactField = null;
     #shareField = null;
     #uspsDiv= null;
@@ -75,7 +76,8 @@ class Login {
             this.#countryField = document.getElementById("country");
             this.#email1Field = document.getElementById("email1");
             this.#phoneField = document.getElementById("phone");
-            this.#badgenameField = document.getElementById("badgename");
+            this.#badgenameField = document.getElementById("badge_name");
+            this.#badgenameField = document.getElementById("badgeNameL2");
             this.#contactField = document.getElementById("contact");
             this.#shareField = document.getElementById("share");
             this.#uspsDiv = document.getElementById("uspsblock");
@@ -149,7 +151,8 @@ class Login {
                         paginationSize: 10,
                         paginationSizeSelector: [10, 25, 50, 100, true], // enable page size select with these options
                         columns: [
-                            // phone, badge_name, legalName, pronouns (not shown), address, addr_2, city, state, zip, country, creation_date, update_date,
+                            // phone, badge_name, badgeNameL2, legalName, pronouns (not shown), address, addr_2, city, state, zip, country, creation_date,
+                            // update_date,
                             // active,
                             // banned,
                             {title: 'T', field: 'tablename', headerWordWrap: true, headerFilter: true, width: 50,},

@@ -45,13 +45,15 @@ $email = $_POST['email'];
 
 // first check to see if this person exists
 $cQ = <<<EOS
-SELECT id, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, legalName, pronouns, address, addr_2, city, state, zip, country, 
+SELECT id, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, badgeNameL2, legalName, pronouns, address, addr_2, city, state, zip, 
+country, 
     managedBy, NULL AS managedByNew, lastVerified, 'p' AS personType,
     TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), ' +', ' ')) AS fullName
 FROM perinfo
 WHERE id=? AND email_addr = ? AND NOT (first_name = 'Merged' AND middle_name = 'into')
 UNION
-SELECT id, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, legalName, pronouns, address, addr_2, city, state, zip, country, 
+SELECT id, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, badgeNameL2, legalName, pronouns, address, addr_2, city, state, zip, 
+country, 
     managedBy, managedByNew, lastVerified, 'n' AS personType,
     TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), ' +', ' ')) AS fullName
 FROM newperson
@@ -65,6 +67,7 @@ if ($cR == false || $cR->num_rows == 0) {
 }
 
 $personInfo = $cR->fetch_assoc();
+$personInfo['badgename'] = badgeNameDefault($personInfo['badge_name'], $personInfo['badgeNameL2'], $personInfo['first_name'], $personInfo['last_name']);
 $cR->free();
 $acctType = $personInfo['personType'];
 
@@ -166,7 +169,8 @@ if ($loginType == 'p') {
 }
 
 $cQ = <<<EOS
-SELECT id, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, legalName, pronouns, address, addr_2, city, state, zip, country, 
+SELECT id, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, badgeNameL2, legalName, pronouns, address, addr_2, city, state, zip, 
+country, 
     managedBy, NULL AS managedByNew, lastVerified, 'p' AS personType,
     TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), ' +', ' ')) AS fullName
 FROM $table
@@ -178,6 +182,7 @@ if ($cR == false || $cR->num_rows == 0) {
     exit();
 }
 $loginInfo = $cR->fetch_assoc();
+$loginInfo['badgename'] = badgeNameDefault($loginInfo['badge_name'], $loginInfo['badgeNameL2'], $loginInfo['first_name'], $loginInfo['last_name']);
 $cR->free();
 
 $waittime = 8; // hours
