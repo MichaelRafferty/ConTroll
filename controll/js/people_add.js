@@ -143,7 +143,7 @@ class Add {
                     {title: "Manager", field: "manager", width: 150, headerSort: true, headerFilter: true,},
                     {title: "Full Name", field: "fullName", width: 250, headerSort: true, headerFilter: true, headerFilterFunc: fullNameHeaderFilter,
                         formatter: "textarea", },
-                    {title: "Badge Name", field: "badgename", width: 200, headerSort: true, headerFilter: true,},
+                    {title: "Badge Name", field: "badgename", width: 200, headerSort: true, headerFilter: true, formatter: 'html', },
                     {title: "Full Address", field: "fullAddr", width: 300, headerSort: true, headerFilter: true, formatter: "textarea", },
                     {title: "Email", field: "email_addr", width: 250, headerSort: true, headerFilter: true,},
                     {title: "Phone", field: "phone", width: 150, headerSort: true, headerFilter: true,},
