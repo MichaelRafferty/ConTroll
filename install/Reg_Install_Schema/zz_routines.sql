@@ -6,60 +6,88 @@
 
 
 --
--- Final view structure for view `couponMemberships`
+-- Final view structure for view vw_ExhibitorSpace
 --
 
-DROP VIEW IF EXISTS `couponMemberships`;
+DROP VIEW IF EXISTS vw_ExhibitorSpace;
 CREATE ALGORITHM=UNDEFINED 
 SQL SECURITY INVOKER
-VIEW `couponMemberships` AS select `r`.`id` AS `regId`,`r`.`conid` AS `conid`,`r`.`perid` AS `perid`,`r`.`price` AS `price`,`r`.`couponDiscount` AS `couponDiscount`,`r`.`paid` AS `paid`,`c`.`id` AS `couponId`,`c`.`code` AS `code`,`c`.`name` AS `name`,`c`.`couponType` AS `couponType`,`c`.`discount` AS `discount`,`c`.`oneUse` AS `oneUse`,`k`.`guid` AS `guid`,`k`.`useTS` AS `useTS` from ((`reg` `r` join `coupon` `c` on((`c`.`id` = `r`.`coupon`))) left join `couponKeys` `k` on((`k`.`usedBy` = `r`.`create_trans`))) ;
+VIEW vw_ExhibitorSpace AS
+    SELECT ert.portalType AS portalType,ert.requestApprovalRequired AS requestApprovalRequired,ert.purchaseApprovalRequired AS purchaseApprovalRequired,
+        ert.purchaseAreaTotals AS purchaseAreaTotals,ert.mailinAllowed AS mailInAllowed,er.name AS regionName,er.shortname AS regionShortName,
+        er.description AS regionDesc,er.sortorder AS regionSortOrder,ery.ownerName AS ownerName,ery.ownerEmail AS ownerEmail,ery.id AS regionYearId,
+        ery.includedMemId AS includedMemId,ery.additionalMemId AS additionalMemId,ery.totalUnitsAvailable AS totalUnitsAvailable,ery.conid AS yearId,
+        s.id AS id,Ey.conid AS conid,e.id AS exhibitorId,s.spaceId AS spaceId,es.shortname AS shortname,es.name AS name,
+        s.item_requested AS item_requested,s.time_requested AS time_requested,req.code AS requested_code,req.description AS requested_description,
+        req.units AS requested_units,req.price AS requested_price,req.sortorder AS requested_sort,
+        s.item_approved AS item_approved,s.time_approved AS time_approved,app.code AS approved_code,app.description AS approved_description,
+        app.units AS approved_units,app.price AS approved_price,app.sortorder AS approved_sort,
+        s.item_purchased AS item_purchased,s.time_purchased AS time_purchased,pur.code AS purchased_code,pur.description AS purchased_description,
+        pur.units AS purchased_units,pur.price AS purchased_price,pur.sortorder AS purchased_sort,
+        s.price AS price,s.paid AS paid,s.transid AS transid,s.membershipCredits AS membershipCredits
+    FROM exhibitors e
+    JOIN exhibitorYears Ey ON (e.id = Ey.exhibitorId)
+    JOIN exhibitorRegionYears Ery ON (Ery.exhibitorYearId = Ey.id)
+    LEFT JOIN exhibitorSpaces s ON (Ery.id = s.exhibitorRegionYear)
+    LEFT JOIN exhibitsSpacePrices req on (s.item_requested = req.id)
+    LEFT JOIN exhibitsSpacePrices app ON (s.item_approved = app.id)
+    LEFT JOIN exhibitsSpacePrices pur ON (s.item_purchased = pur.id)
+    LEFT JOIN exhibitsSpaces es ON (s.spaceId = es.id)
+    JOIN exhibitsRegionYears ery ON (es.exhibitsRegionYear = ery.id)
+    JOIN exhibitsRegions er ON (er.id = ery.exhibitsRegion)
+    JOIN exhibitsRegionTypes ert ON (ert.regionType = er.regionType) ;
 
 --
--- Final view structure for view `couponUsage`
+-- Final view structure for view couponMemberships
 --
 
-DROP VIEW IF EXISTS `couponUsage`;
+DROP VIEW IF EXISTS couponMemberships;
 CREATE ALGORITHM=UNDEFINED 
 SQL SECURITY INVOKER
-VIEW `couponUsage` AS select `t`.`conid` AS `conid`,`t`.`id` AS `transId`,`c`.`id` AS `CouponId`,`t`.`perid` AS `perid`,`t`.`price` AS `price`,`t`.`couponDiscountReg` AS `couponDiscountReg`,`t`.`couponDiscountCart` AS `couponDiscountCart`,(`t`.`couponDiscountReg` + `t`.`couponDiscountCart`) AS `couponDiscount`,`t`.`paid` AS `paid`,`c`.`code` AS `code`,`c`.`name` AS `name`,`c`.`couponType` AS `couponType`,`c`.`discount` AS `discount`,`c`.`oneUse` AS `oneUse`,`k`.`guid` AS `guid`,`k`.`useTS` AS `useTS` from ((`transaction` `t` join `coupon` `c` on((`c`.`id` = `t`.`coupon`))) left join `couponKeys` `k` on((`k`.`usedBy` = `t`.`id`))) ;
+VIEW couponMemberships AS
+    SELECT r.id AS regId,r.conid AS conid,r.perid AS perid,r.price AS price,r.couponDiscount AS couponDiscount,r.paid AS paid,c.id AS couponId,
+           c.code AS code,c.name AS name,c.couponType AS couponType,c.discount AS discount,c.oneUse AS oneUse,k.guid AS guid,k.useTS AS useTS
+    FROM reg r
+    JOIN coupon c ON (c.id = r.coupon)
+    LEFT JOIN couponKeys k ON (k.usedBy = r.create_trans) ;
 
 --
--- Final view structure for view `memLabel`
+-- Final view structure for view couponUsage
+--
+
+DROP VIEW IF EXISTS couponUsage;
+CREATE ALGORITHM=UNDEFINED 
+SQL SECURITY INVOKER
+VIEW couponUsage AS
+    SELECT t.conid AS conid,t.id AS transId,c.id AS CouponId,t.perid AS perid,t.price AS price,t.couponDiscountReg AS couponDiscountReg,
+           t.couponDiscountCart AS couponDiscountCart,(t.couponDiscountReg + t.couponDiscountCart) AS couponDiscount,t.paid AS paid,
+           c.code AS code,c.name AS name,c.couponType AS couponType,c.discount AS discount,c.oneUse AS oneUse,k.guid AS guid,k.useTS AS useTS
+    FROM transaction t
+    JOIN coupon c ON (c.id = t.coupon)
+    LEFT JOIN couponKeys k ON (k.usedBy = t.id) ;
+
+--
+-- Final view structure for view memLabel
 --
 
 DROP VIEW IF EXISTS memLabel;
-CREATE ALGORITHM=UNDEFINED
-    SQL SECURITY INVOKER
-    VIEW memLabel AS
-SELECT m.id AS id,m.conid AS conid,m.sort_order AS sort_order,
-       m.memCategory AS memCategory,m.memType AS memType,m.memAge AS memAge, a.shortname AS ageShortName,
-       m.label AS shortname,concat(m.label,' [',a.label,']') AS label,
-       m.notes AS notes,m.price AS price,m.startdate AS startdate,m.enddate AS enddate,
-       m.atcon AS atcon,m.online AS online,m.glNum AS glNum,m.glLabel AS glLabel,c.taxable AS taxable
-FROM memList m
-         JOIN ageList a ON m.memAge = a.ageType AND m.conid = a.conid
-         JOIN memCategories c on m.memCategory = c.memCategory;
-
---
--- Final view structure for view `vw_ExhibitorSpace`
---
-
-DROP VIEW IF EXISTS `vw_ExhibitorSpace`;
 CREATE ALGORITHM=UNDEFINED 
 SQL SECURITY INVOKER
-VIEW `vw_ExhibitorSpace` AS select `ert`.`portalType` AS `portalType`,`ert`.`requestApprovalRequired` AS `requestApprovalRequired`,`ert`.`purchaseApprovalRequired` AS `purchaseApprovalRequired`,`ert`.`purchaseAreaTotals` AS `purchaseAreaTotals`,`ert`.`mailinAllowed` AS `mailInAllowed`,`er`.`name` AS `regionName`,`er`.`shortname` AS `regionShortName`,`er`.`description` AS `regionDesc`,`er`.`sortorder` AS `regionSortOrder`,`ery`.`ownerName` AS `ownerName`,`ery`.`ownerEmail` AS `ownerEmail`,`ery`.`id` AS `regionYearId`,`ery`.`includedMemId` AS `includedMemId`,`ery`.`additionalMemId` AS `additionalMemId`,`ery`.`totalUnitsAvailable` AS `totalUnitsAvailable`,`ery`.`conid` AS `yearId`,`s`.`id` AS `id`,`Ey`.`conid` AS `conid`,`e`.`id` AS `exhibitorId`,`s`.`spaceId` AS `spaceId`,`es`.`shortname` AS `shortname`,`es`.`name` AS `name`,`s`.`item_requested` AS `item_requested`,`s`.`time_requested` AS `time_requested`,`req`.`code` AS `requested_code`,`req`.`description` AS `requested_description`,`req`.`units` AS `requested_units`,`req`.`price` AS `requested_price`,`req`.`sortorder` AS `requested_sort`,`s`.`item_approved` AS `item_approved`,`s`.`time_approved` AS `time_approved`,`app`.`code` AS `approved_code`,`app`.`description` AS `approved_description`,`app`.`units` AS `approved_units`,`app`.`price` AS `approved_price`,`app`.`sortorder` AS `approved_sort`,`s`.`item_purchased` AS `item_purchased`,`s`.`time_purchased` AS `time_purchased`,`pur`.`code` AS `purchased_code`,`pur`.`description` AS `purchased_description`,`pur`.`units` AS `purchased_units`,`pur`.`price` AS `purchased_price`,`pur`.`sortorder` AS `purchased_sort`,`s`.`price` AS `price`,`s`.`paid` AS `paid`,`s`.`transid` AS `transid`,`s`.`membershipCredits` AS `membershipCredits` from ((((((((((`exhibitors` `e` join `exhibitorYears` `Ey` on((`e`.`id` = `Ey`.`exhibitorId`))) join `exhibitorRegionYears` `Ery` on((`Ery`.`exhibitorYearId` = `Ey`.`id`))) left join `exhibitorSpaces` `s` on((`Ery`.`id` = `s`.`exhibitorRegionYear`))) left join `exhibitsSpacePrices` `req` on((`s`.`item_requested` = `req`.`id`))) left join `exhibitsSpacePrices` `app` on((`s`.`item_approved` = `app`.`id`))) left join `exhibitsSpacePrices` `pur` on((`s`.`item_purchased` = `pur`.`id`))) left join `exhibitsSpaces` `es` on((`s`.`spaceId` = `es`.`id`))) join `exhibitsRegionYears` `ery` on((`es`.`exhibitsRegionYear` = `ery`.`id`))) join `exhibitsRegions` `er` on((`er`.`id` = `ery`.`exhibitsRegion`))) join `exhibitsRegionTypes` `ert` on((`ert`.`regionType` = `er`.`regionType`))) ;
-
---
--- Dumping events for database 'reg'
---
+VIEW memLabel AS
+    SELECT m.id AS id,m.conid AS conid,m.sort_order AS sort_order,m.memCategory AS memCategory,m.memType AS memType,m.memAge AS memAge,
+           a.shortname AS ageShortName,m.label AS shortname,concat(m.label,' [',a.label,']') AS label,m.notes AS notes,m.price AS price,
+           m.startdate AS startdate,m.enddate AS enddate,m.atcon AS atcon,m.online AS online,m.glNum AS glNum,m.glLabel AS glLabel,
+           c.taxable AS taxable
+    FROM memList m
+    JOIN ageList a ON (m.memAge = a.ageType AND m.conid = a.conid)
+    JOIN memCategories c ON (m.memCategory = c.memCategory) ;
 
 --
 -- Dumping routines for database 'reg'
 --
-DROP FUNCTION IF EXISTS `uuid_v4s` ;
+DROP FUNCTION IF EXISTS uuid_v4s ;
 DELIMITER ;;
 CREATE FUNCTION uuid_v4s() RETURNS char(36) CHARSET utf8mb4 COLLATE utf8mb4_general_ci
-SQL SECURITY INVOKER
     NO SQL
     SQL SECURITY INVOKER
 BEGIN
@@ -83,11 +111,61 @@ BEGIN
     ));
 END ;;
 DELIMITER ;
-DROP PROCEDURE IF EXISTS `mergePerid` ;
+DROP PROCEDURE IF EXISTS deleteDupsIntPol ;
 DELIMITER ;;
-CREATE PROCEDURE `mergePerid`(IN userid INT, IN to_mergePID INT, IN to_survivePID INT, OUT statusmsg TEXT, OUT rollback_log TEXT)
+CREATE PROCEDURE deleteDupsIntPol()
 SQL SECURITY INVOKER
-    SQL SECURITY INVOKER
+BEGIN
+    DROP TABLE IF exists remainPolicy;
+
+    CREATE TEMPORARY TABLE remainPolicy AS
+    SELECT perid, conid, policy, MAX(IFNULL(updateDate, createDate)) AS matchDate, COUNT(*) dups
+    FROM memberPolicies
+    WHERE perid IS NOT NULL
+    GROUP BY perid, conid, policy HAVING COUNT(*) > 1;
+
+    DELETE memberPolicies
+    FROM memberPolicies
+    JOIN remainPolicy r ON (memberPolicies.perid = r.perid AND memberPolicies.conid = memberPolicies.conid AND memberPolicies.policy = r.policy)
+    WHERE r.perid IS NOT NULL AND IFNULL(memberPolicies.updateDate, memberPolicies.createDate) < r.matchDate;
+
+    DROP TABLE IF EXISTS remainPolicy;
+
+    DROP TABLE IF EXISTS remainInterest;
+
+    CREATE TEMPORARY TABLE remainInterest AS
+    SELECT perid, conid, interest, MAX(IFNULL(updateDate, createDate)) AS matchDate, COUNT(*) dups
+    FROM memberInterests
+    WHERE perid IS NOT NULL
+    GROUP BY perid, conid, interest HAVING COUNT(*) > 1;
+
+    DELETE memberInterests
+    FROM memberInterests
+    JOIN remainInterest r ON (memberInterests.perid = r.perid AND memberInterests.conid = memberInterests.conid AND memberInterests.interest = r.interest)
+    WHERE r.perid IS NOT NULL AND IFNULL(memberInterests.updateDate, memberInterests.createDate) < r.matchDate;
+
+    DROP TABLE IF EXISTS remainInterest;
+
+    DROP TABLE IF EXISTS remainConRoles;
+
+    CREATE TEMPORARY TABLE remainConRoles AS
+    SELECT perid, conid, conRole, MAX(IFNULL(updateDate, createDate)) AS matchDate, COUNT(*) dups
+    FROM memberConRoles
+    WHERE perid IS NOT NULL
+    GROUP BY perid, conid, conRole HAVING COUNT(*) > 1;
+
+    DELETE memberConRoles
+    FROM memberConRoles
+    JOIN remainConRoles r ON (memberConRoles.perid = r.perid AND memberConRoles.conid = memberConRoles.conid AND memberConRoles.conRole = r.conRole)
+    WHERE r.perid IS NOT NULL AND IFNULL(memberConRoles.updateDate, memberConRoles.createDate) < r.matchDate;
+
+    DROP TABLE IF EXISTS remainConRoles;
+END ;;
+DELIMITER ;
+DROP PROCEDURE IF EXISTS mergePerid ;
+DELIMITER ;;
+CREATE PROCEDURE mergePerid(IN userid INT, IN to_mergePID INT, IN to_survivePID INT, OUT statusmsg TEXT, OUT rollback_log TEXT)
+SQL SECURITY INVOKER
 BEGIN
     /* updates the database to change records with to_mergePID to to_survivePID to preserver referential integrity as it merges two perinfo records together
     /* tables with perinfo refs:
@@ -100,6 +178,7 @@ BEGIN
             exhibitors
             memberInterests
             memberPolicies
+            memberRoles
             newperson
             payorPlans
             payments
@@ -261,6 +340,19 @@ BEGIN
             SET rollback_stmts = CONCAT(rollback_stmts, stmt, CHAR(10));
         END IF;
 
+        /* memberConRoles */
+        SET stmt = (SELECT CONCAT('UPDATE memberConRoles SET perid = ', to_mergePID, ' WHERE ID IN (', group_concat(id SEPARATOR ','), ');')
+                    FROM memberConRoles
+                    WHERE perid = to_mergePID);
+
+        IF stmt is not null THEN
+            UPDATE memberConRoles SET perid = to_survivePID where perid = to_mergePID;
+            SET msg = CONCAT(msg, 'memberConRoles:  ', CONVERT(ROW_COUNT(), char), CHAR(10));
+
+            SET rollback_stmts = CONCAT(rollback_stmts, stmt, CHAR(10));
+        END IF;
+
+
         /* newperson */
         SET stmt = (SELECT CONCAT('UPDATE newperson SET perid = ', to_mergePID, ' WHERE ID IN (', group_concat(id SEPARATOR ','), ');')
                     FROM newperson
@@ -378,9 +470,55 @@ BEGIN
                                   REPLACE(rollback_stmts, '''', ''''''), '''', char(10)
                            ),
             first_name = 'Merged', middle_name = 'into', last_name = to_survivePID, email_addr = CONCAT('merged into ', to_survivePID),
-                contact_ok = 'N', active='N'
+            contact_ok = 'N', active='N'
         WHERE id = to_mergePID;
         SET msg = CONCAT(msg, 'perinfo: ', to_mergePID, ': ', CONVERT(ROW_COUNT(), char), CHAR(10));
+
+        /* keep only the most recent interests, policies, and conROles */
+        DROP TABLE IF EXISTS remainPolicy;
+
+        CREATE TEMPORARY TABLE remainPolicy AS
+        SELECT perid, conid, policy, MAX(IFNULL(updateDate, createDate)) AS matchDate, COUNT(*) dups
+        FROM memberPolicies
+        WHERE perid = to_survivePID
+        GROUP BY perid, conid, policy HAVING COUNT(*) > 1;
+
+        DELETE memberPolicies
+        FROM memberPolicies
+                 JOIN remainPolicy r ON (memberPolicies.perid = r.perid AND memberPolicies.conid = memberPolicies.conid AND memberPolicies.policy = r.policy)
+        WHERE r.perid IS NOT NULL AND IFNULL(memberPolicies.updateDate, memberPolicies.createDate) < r.matchDate;
+
+        DROP TABLE IF EXISTS remainPolicy;
+
+        DROP TABLE IF EXISTS remainInterest;
+
+        CREATE TEMPORARY TABLE remainInterest AS
+        SELECT perid, conid, interest, MAX(IFNULL(updateDate, createDate)) AS matchDate, COUNT(*) dups
+        FROM memberInterests
+        WHERE perid = to_survivePID
+        GROUP BY perid, conid, interest HAVING COUNT(*) > 1;
+
+        DELETE memberInterests
+        FROM memberInterests
+                 JOIN remainInterest r ON (memberInterests.perid = r.perid AND memberInterests.conid = memberInterests.conid AND memberInterests.interest = r.interest)
+        WHERE r.perid IS NOT NULL AND IFNULL(memberInterests.updateDate, memberInterests.createDate) < r.matchDate;
+
+        DROP TABLE IF EXISTS remainInterest;
+
+        DROP TABLE IF EXISTS remainConRoles;
+
+        CREATE TEMPORARY TABLE remainConRoles AS
+        SELECT perid, conid, conRole, MAX(IFNULL(updateDate, createDate)) AS matchDate, COUNT(*) dups
+        FROM memberConRoles
+        WHERE perid IS NOT NULL
+        GROUP BY perid, conid, conRole HAVING COUNT(*) > 1;
+
+        DELETE memberConRoles
+        FROM memberConRoles
+                 JOIN remainConRoles r ON (memberConRoles.perid = r.perid AND memberConRoles.conid = memberConRoles.conid AND memberConRoles.conRole = r.conRole)
+        WHERE r.perid IS NOT NULL AND IFNULL(memberConRoles.updateDate, memberConRoles.createDate) < r.matchDate;
+
+        DROP TABLE IF EXISTS remainConRoles;
 
         COMMIT;
 
@@ -392,11 +530,10 @@ BEGIN
 
 END ;;
 DELIMITER ;
-DROP PROCEDURE IF EXISTS `syncServerPrinters` ;
+DROP PROCEDURE IF EXISTS syncServerPrinters ;
 DELIMITER ;;
 CREATE PROCEDURE syncServerPrinters()
 SQL SECURITY INVOKER
-    SQL SECURITY INVOKER
 BEGIN
 
     UPDATE servers ls LEFT OUTER JOIN printservers.servers gs ON (gs.serverName = ls.serverName)
@@ -437,4 +574,4 @@ END ;;
 DELIMITER ;
 
 
--- Dump completed on 2025-07-16 15:57:17
+-- Dump completed on 2025-10-08 11:32:20
