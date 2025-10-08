@@ -97,7 +97,7 @@ SELECT R.conid, M.id, M.memCategory, M.shortname as label
     , count(DISTINCT R.perid) as c 
 FROM reg R
 JOIN memLabel M on M.id=R.memId
-WHERE R.conid=? and M.category in ('yearahead','rollover')
+WHERE R.conid=? and M.memCategory in ('yearahead','rollover')
 GROUP BY R.conid, M.id, M.memCategory, M.shortname
 order by M.id;
 EOF;
