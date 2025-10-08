@@ -88,7 +88,7 @@ $insPDt = 'sssssssssssssssssi';
 $updPerinfoSQL = <<<EOS
 UPDATE perinfo SET
     last_name=IFNULL(?,''),first_name=IFNULL(?,''),middle_name=IFNULL(?,''),suffix=IFNULL(?,''),legalName=IFNULL(?,''), pronouns=IFNULL(?,''),
-    email_addr=IFNULL(?,''),phone=IFNULL(?,''),badge_name=IFNULL(?,''),badge_name=IFNULL(?,''),
+    email_addr=IFNULL(?,''),phone=IFNULL(?,''),badge_name=IFNULL(?,''),badgeNameL2=IFNULL(?,''),
     address=IFNULL(?,''),addr_2=IFNULL(?,''), city=IFNULL(?,''),state=IFNULL(?,''),zip=IFNULL(?,''),country=IFNULL(?,''),
     open_notes=?,banned='N',update_date=NOW(),active='Y',updatedBy=?
 WHERE id = ?;
