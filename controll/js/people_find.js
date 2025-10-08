@@ -89,7 +89,7 @@ class Find {
             this.#suffix = document.getElementById('f_suffix');
             this.#legalName = document.getElementById('f_legalName');
             this.#pronouns = document.getElementById('f_pronouns');
-            this.#badgeName = document.getElementById('f_badgename');
+            this.#badgeName = document.getElementById('f_badge_name');
             this.#badgeNameL2 = document.getElementById('f_badgeNameL2');
             this.#address = document.getElementById('f_addr');
             this.#addr2 = document.getElementById('f_addr2');
