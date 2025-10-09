@@ -46,6 +46,8 @@ CREATE TABLE `reg` (
   KEY `reg_priorRegId_fk` (`priorRegId`),
   KEY `regStatus_idx` (`status`,`conid`,`perid`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+DROP TRIGGER IF EXISTS `reg_update`;
 DELIMITER ;;
 CREATE DEFINER=CURRENT_USER  TRIGGER `reg_update` BEFORE UPDATE ON `reg` FOR EACH ROW BEGIN
     IF (OLD.id != NEW.id OR OLD.conid != NEW.conid OR OLD.perid != NEW.perid OR OLD.newperid != NEW.newperid
