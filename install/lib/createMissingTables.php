@@ -62,11 +62,16 @@ function createMissingTables($options) : int {
             if (array_key_exists('c', $options)) {
                 $sql = file_get_contents('Reg_Install_Schema/' . $fname);
                 logEcho("Creating $table from $fname");
+                // remove delimiter statements, they are part of the front end and not the api
+                $sql = str_replace('DELIMITER ;;', '', $sql);
+                $sql = str_replace('DELIMITER ;', '', $sql);
                 dbMultiQuery($sql);
                 // skip over result sets
                 dbNextResult();
                 dbNextResult();
                 dbNextResult();
+                if (str_contains($sql, 'DROP TRIGGER IF EXISTS '))
+                    dbNextResult();
                 // PHP mysqli isn't returning a valid result from a DML multi-query, use select to verify it actually worked
                 $sql = <<<EOS
 SELECT TABLE_SCHEMA, TABLE_NAME, TABLE_TYPE
@@ -88,7 +93,18 @@ EOS;
     if ($errors == 0) {
         if (sizeof($dataLoads) > 0) {
             logEcho("Creating initial data values");
+            $dataLoads = asort($dataLoads);
             foreach ($dataLoads as $fname) {
+                if ($fname == 'data_zzTxt.sql') {
+                    // this is a special multi query
+                    $sql = file_get_contents('Reg_Install_Schema/' . $fname);
+                    dbMultiQuery($sql);
+                    // skip over result sets
+                    dbNextResult();
+                    dbNextResult();
+                    dbNextResult();
+                    continue;
+                }
                 $table = preg_replace('/^[^_]*_(.*)\.sql$/', '\1', $fname);
                 $checkSQLR = dbQuery("SELECT count(*) AS occurs FROM $table;");
                 if ($checkSQLR === false) {

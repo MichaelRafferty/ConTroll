@@ -43,7 +43,7 @@ EOS;
         logEcho("Person 2/User 2 exist", true);
     } else {
         // insert user 2, person record first
-        $newid = dbSafeInsert($insertPQ, 'issssssssi', array(2, 'Atcon', 'Internal', NULL, 'N', 'N', 'INTERNAL NOT FOR REGISTRATION USE', 'N', 'N'));
+        $newid = dbSafeInsert($insertPQ, 'issssssss', array(2, 'Atcon', 'Internal', NULL, 'N', 'N', 'INTERNAL NOT FOR REGISTRATION USE', 'N', 'N'));
         if ($newid === false) {
             logEcho("Unable to insert Person Info 2 for ATCON");
             $errors++;
@@ -70,7 +70,7 @@ EOS;
         logEcho('Person 3 exists', true);
     } else {
         // insert person 3
-        $newid = dbSafeInsert($insertPQ, 'issssssssi', array(3, 'Exhibitor', 'Internal', NULL, 'N', 'N', 'INTERNAL NOT FOR REGISTRATION USE', 'N', 'N'));
+        $newid = dbSafeInsert($insertPQ, 'issssssss', array(3, 'Exhibitor', 'Internal', NULL, 'N', 'N', 'INTERNAL NOT FOR REGISTRATION USE', 'N', 'N'));
         if ($newid === false) {
             logEcho('Unable to insert Person Info 3 for Exhibitor');
             $errors++;
@@ -90,7 +90,7 @@ EOS;
         logEcho('Person 4 exists', true);
     } else {
         // insert person 3
-        $newid = dbSafeInsert($insertPQ, 'issssssssi', array(4, 'Portal', 'Internal', NULL, 'N', 'N', 'INTERNAL NOT FOR REGISTRATION USE', 'N', 'N'));
+        $newid = dbSafeInsert($insertPQ, 'issssssss', array(4, 'Portal', 'Internal', NULL, 'N', 'N', 'INTERNAL NOT FOR REGISTRATION USE', 'N', 'N'));
         if ($newid === false) {
             logEcho('Unable to insert Person Info 4 for Portal');
             $errors++;
@@ -110,7 +110,7 @@ EOS;
         logEcho('Person 5 exists', true);
     } else {
         // insert person 3
-        $newid = dbSafeInsert($insertPQ, 'issssssssi', array(5, 'Mail-in', 'Registration', NULL, 'N', 'N', 'INTERNAL NOT FOR REGISTRATION USE', 'N', 'N'));
+        $newid = dbSafeInsert($insertPQ, 'issssssss', array(5, 'Mail-in', 'Registration', NULL, 'N', 'N', 'INTERNAL NOT FOR REGISTRATION USE', 'N', 'N'));
         if ($newid === false) {
             logEcho('Unable to insert Person Info 5 for Mail-in');
             $errors++;

@@ -6,6 +6,7 @@ require_once('lib/base.php');
 require_once('lib/validateConfigMYSQL.php');
 require_once('lib/validateConfigFile.php');
 require_once('lib/createMissingTables.php');
+require_once('lib/createMissingDirectories.php');
 require_once('lib/createMissingRecords.php');
 require_once('lib/checkTableDML.php');
 global $logFile;
