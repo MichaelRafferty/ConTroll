@@ -226,7 +226,7 @@ INSERT INTO newperson (transid, last_name, middle_name, first_name, suffix, emai
 VALUES (?, IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''),
     IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), ?, ?, 'creation', ?, NOW());
 EOS;
-            $typeStr = 'isssssssssssssssssiii';
+            $typeStr = 'issssssssssssssssiii';
             $valArray = array (
                 $transId,
                 trim($person['lname']),
