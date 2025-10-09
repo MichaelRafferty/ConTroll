@@ -17,12 +17,13 @@ $phpMajor = 8;
 $phpMinor = 2;
 
 // get command line options
-$options = getopt("cfhinopstv");
+$options = getopt("cdfhinopstv");
 
 if (array_key_exists('h', $options)) {
     echo <<<EOS
 InstallSetup options:
     -c  Allow creation of the database (schema) if it doesn't exist.
+    -d  Suppress creation of the non Git directories if they don't exist
     -f  Drop and re-apply foreign keys
     -h  Display this option list an exit.
     -i  Suppress phpinfo in logfile.
@@ -114,9 +115,20 @@ if (array_key_exists('n', $options)) {
     }
 }
 
+if (array_key_exists('d', $options)) {
+    logEcho('Skipping directoy creation due to -d option');
+} else {
+    $error = createMissingDirectories($options);
+    if ($error) {
+        echo 'Exiting due to errors creating all of the missing directories.' . PHP_EOL;
+        fclose($logFile);
+        exit($error);
+    }
+}
+
 $error = createMissingRecords($options);
 if ($error) {
-    echo 'Exiting due to errors creating missing records in the databas.' . PHP_EOL;
+    echo 'Exiting due to errors creating missing records in the database.' . PHP_EOL;
     fclose($logFile);
     exit($error);
 }

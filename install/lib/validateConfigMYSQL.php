@@ -99,7 +99,7 @@ EOS;
                     logEcho("Unable to load create schema config from Reg_Install_Schema/create_reg_schema.sql.");
                     $errors++;
                 } else {
-                    $create_sql = str_replace('"reg"', '"' . $dbName . '"', $create_sql);
+                    $create_sql = str_replace('`reg`', '`' . $dbName . '`', $create_sql);
                     logEcho("Creating Database $dbName");
                     logEcho($create_sql, true);
                     $num_rows = dbCmd($create_sql);

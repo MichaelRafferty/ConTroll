@@ -126,7 +126,7 @@ WHERE id = ?;
 EOS;
     $conidR = dbSafeQuery($checkCQ, 'i', array($conid));
     if ($conidR === false) {
-        logEcho('check if $conid exists in conlist, cannot continue');
+        logEcho('check if $conid exists in conlist failed, cannot continue');
         return(1);
     }
 
@@ -171,7 +171,7 @@ EOS;
         if ($num_rows == 0) {
             // insert user 1, Master User
             echo <<<EOS
-Peron 1 does not exist in the database.  Person one is the first administrator in the system.
+Person 1 does not exist in the database.  Person one is the first administrator in the system.
 It will be created with Admin privileges in reg_control and manager privileges in atcon.
 
 Please enter the email address for this administrator: 
@@ -211,16 +211,6 @@ EOS;
             }
             if ($last_name == '/') {
                 $last_name = '';
-            }
-
-            echo <<<EOS
-
-Please enter the ATCON login name for $email_addr: 
-EOS;
-            $login_name = trim(fgets(STDIN));
-            while ($login_name == '') {
-                echo PHP_EOL . 'The ATCON login name is required.' . PHP_EOL . "Please enter the ATCON login name for $email_addr: ";
-                $login_name = trim(fgets(STDIN));
             }
 
             echo <<<EOS
