@@ -401,8 +401,8 @@ class Find {
         this.#managerName.innerHTML = this.#editRow.manager ? this.#editRow.manager : '';
         this.#active.value = this.#editRow.active;
         this.#banned.value = this.#editRow.banned;
-        this.#openNotes.innerText = this.#editRow.open_notes ? this.#editRow.open_notes : '';
-        this.#adminNotes.innerText = this.#editRow.admin_notes ? this.#editRow.admin_notes : '';
+        this.#openNotes.value = this.#editRow.open_notes ? this.#editRow.open_notes : '';
+        this.#adminNotes.value = this.#editRow.admin_notes ? this.#editRow.admin_notes : '';
 
         // loop over the policies
         if (this.#memberPolicies && this.#memberPolicies.length > 0) {
