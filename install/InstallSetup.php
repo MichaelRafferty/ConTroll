@@ -31,7 +31,7 @@ InstallSetup options:
     -p  Drop and re-apply views, functions and procedures
     -s  Validate existing database schema
     -t  Create missing tables, functions, keys, procedures
-    -v  Suppress validating the config file
+    -v  Suppress validating the config files
 
 EOS;
     exit(0);
@@ -146,13 +146,13 @@ EOS;
     }
 
 } else {
-    logEcho("Inable to check database patch level because the file Reg_Install_Schema/AA_Patchlevel.txt is missing");
+    logEcho("Unable to check database patch level because the file Reg_Install_Schema/AA_Patchlevel.txt is missing");
 }
 
 if (array_key_exists('v', $options)) {
     logEcho('Skipping configuration file validation due to the -v option');
 } else {
-    $error = validateConfigFile($options);
+    $error = validateConfigFiles($options);
     if ($error) {
         echo 'Exiting due to errors in the config file.' . PHP_EOL;
         fclose($logFile);
