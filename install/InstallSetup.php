@@ -8,7 +8,6 @@ require_once('lib/validateConfigFile.php');
 require_once('lib/createMissingTables.php');
 require_once('lib/createMissingRecords.php');
 require_once('lib/checkTableDML.php');
-global $dbObject;
 global $logFile;
 global $options;
 // setup parameters
