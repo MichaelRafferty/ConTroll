@@ -63,7 +63,7 @@ function google_init($mode) {
   $state = $_SERVER['PHP_SELF'];
 
   $client = new Google\Client();
-  $client->setAuthConfigFile(getConfValue('google','json'));
+  $client->setAuthConfig(getConfValue('google','json'));
   $client->addScope('email');
   $client->setAccessType('offline');
   $client->setState($state);
