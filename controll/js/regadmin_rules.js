@@ -1354,7 +1354,7 @@ class rulesSetup {
         this.#editRuleNameDiv1.innerHTML = ruleDisplayName;
         this.#editRuleNameDiv2.innerHTML = ruleDisplayName;
         this.#editRuleNameDiv3.innerHTML = ruleDisplayName;
-        this.#ruleDescription.innerHTML = ruleDescription;
+        this.#ruleDescription.value = ruleDescription;
         this.#rName.value = ruleRow.name
         this.#rOptionName.value = (ruleRow.optionName == undefined || ruleRow.optionName == null)  ? '' : ruleRow.optionName;
         this.#rTypeList.innerHTML = (ruleRow.typeList == '' || ruleRow.typeList == undefined || ruleRow.typeList == null) ? "<i>None</i>" : ruleRow.typeList;

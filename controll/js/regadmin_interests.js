@@ -338,7 +338,7 @@ class interestsSetup {
         // build the modal contents
         this.#editInterestTitle.innerHTML = "Edit the " + interestName + " interest";
         this.#editInterestNameDiv.innerHTML = interestName;
-        this.#interestDescription.innerHTML = interestDescription;
+        this.#interestDescription.value = interestDescription;
         tinyMCE.activeEditor.setContent(interestDescription);
         this.#iName.value = interestRow.interest;
         this.#iNotify.value = interestRow.notifyList;

@@ -1047,8 +1047,8 @@ class Find {
         this.#emailAddr2.value = '';
         this.#phone.value = '';
         this.#managesName.innerText = '';
-        this.#openNotes.innerText = '';
-        this.#adminNotes.innerText = '';
+        this.#openNotes.value = '';
+        this.#adminNotes.value = '';
         this.#managesId.value = '';
         this.#addPersonBtn.disabled = true;
         clear_message('find_edit_message');

@@ -159,7 +159,7 @@ class PlansSetup {
         this.#planEditIndex = null;
         // clear the form
         document.getElementById('planName').value = null;
-        document.getElementById('planDescription').innerHTML = null;
+        document.getElementById('planDescription').value = null;
         this.#categoryList = null;
         this.#categoryListDiv.innerHTML = '<i>None</i>';
         this.#includeList.value = null;

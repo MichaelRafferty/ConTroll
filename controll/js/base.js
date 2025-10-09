@@ -389,7 +389,7 @@ function showEdit(classname, table, index, field, titlename, textitem, textOnly 
     editFieldNameDiv.innerHTML = field + ':';
     editIndexDiv.innerHTML = index;
     editClassDiv.innerHTML = classname;
-    editFieldArea.innerHTML = textitem;
+    editFieldArea.value = textitem;
     editTitleDiv.innerHTML = "Editing " + table + " " + titlename + "<br/>" + field;
     editTextOnly = textOnly;
 

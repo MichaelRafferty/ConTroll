@@ -410,8 +410,8 @@ class policySetup {
         this.#editPreviewTitle.innerHTML = "Edit/Preview the " + policyName + " policy";
         this.#previewPolicyName.innerHTML = policyName;
         this.#editPolicyNameDiv.innerHTML = policyName;
-        this.#policyPrompt.innerHTML = policyPrompt;
-        this.#policyDescription.innerHTML = policyDescription;
+        this.#policyPrompt.value = policyPrompt;
+        this.#policyDescription.value = policyDescription;
         this.#p_preview.checked = false;
         this.#l_preview.innerHTML = policyPrompt;
         this.#l_required.hidden = polictRequired != 'Y';
