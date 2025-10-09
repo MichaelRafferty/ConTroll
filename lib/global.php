@@ -30,7 +30,7 @@ function loadConfFile(): bool {
     $confFile = $path . '/reg_conf.ini';
     $secretFile = $path . '/reg_secret.ini';
     if (is_readable($adminFile)) {
-        $configData = parse_ini_file($path . '/reg_admin.ini', true);
+        $configData = parse_ini_file($adminFile, true);
         if ($configData === false)
             $configData = [];
     } else {
@@ -38,7 +38,7 @@ function loadConfFile(): bool {
     }
     // now merge/override in config file
     if (is_readable($confFile)) {
-        $db_conf = parse_ini_file($path . '/reg_conf.ini', true);
+        $db_conf = parse_ini_file($confFile, true);
         if ($db_conf !== false) {
             foreach ($db_conf as $section => $values) {
                 if (is_array($values)) {
@@ -53,7 +53,7 @@ function loadConfFile(): bool {
     }
     if (is_readable($secretFile)) {
         // now override secret file
-        $db_conf = parse_ini_file($path . '/reg_secret.ini', true);
+        $db_conf = parse_ini_file($secretFile, true);
         if ($db_conf !== false) {
             foreach ($db_conf as $section => $values) {
                 if (is_array($values)) {
