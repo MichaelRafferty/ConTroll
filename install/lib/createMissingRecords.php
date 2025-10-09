@@ -224,7 +224,7 @@ EOS;
             }
 
             // insert user 1 into perinfo
-            $newid = dbSafeInsert($insertPQ, 'issssssssi', array(1, $first_name, $last_name, $email_addr, 'N', 'Y', 'Initial Administrator', 'Y', 'Y', 1));
+            $newid = dbSafeInsert($insertPQ, 'issssssss', array(1, $first_name, $last_name, $email_addr, 'N', 'Y', 'Initial Administrator', 'Y', 'Y'));
             if ($newid === false) {
                 logEcho('Unable to insert Person Info 1 for administrator');
                 $errors++;
