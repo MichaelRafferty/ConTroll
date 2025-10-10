@@ -37,7 +37,7 @@ function validateConfigFiles($options) : int {
     $secretFile = $path . '/reg_secret.ini';
 
     $errors += validateConfigFile('secrets', $secretFile, $version >= 1.5, array('api','oauth','usps'));
-    $errors += validateConfigFile('admin', $adminFile, $version >= 1.5, array());
+    $errors += validateConfigFile('admin', $adminFile, $version >= 1.5, array('reg'));
 
     //TODO: the conf sample file is going to be converted to a parsable file for web usage, use that syntax to totally validate that file
     $errors += validateConfigFile('conf', $confFile, $version >= 1.5, array());
