@@ -23,15 +23,16 @@ $conConf = get_conf('con');
 $minCon = $conConf['minComp'];
 $maxLen = $conConf['compLen'];
 $conLen = $conConf['conLen'];
+$preConView = 1; //TODO maybe make this a config variable one day
 
 $debug_stats = getConfValue('debug', 'controll_stats', 0);
 if(isset($_GET['conid'])) {
     $conid=$_GET['conid'];
-    $con = dbSafeQuery('SELECT id, name, label, startdate, DATE_ADD(enddate, INTERVAL 1 DAY) as enddate FROM conlist WHERE id=?;', 'i', array($conid))->fetch_assoc();
+    $con = dbSafeQuery('SELECT id, name, label, startdate, DATE_SUB(startdate, INTERVAL ? DAY) as preconstart, DATE_ADD(enddate, INTERVAL 1 DAY) as enddate FROM conlist WHERE id=?;', 'ii', array($preConView, $conid))->fetch_assoc();
 } else {
     $con = get_con();
     $conid= $con['id'];
-    $con = dbSafeQuery('SELECT id, name, label, startdate, DATE_ADD(enddate, INTERVAL 1 DAY) as enddate FROM conlist WHERE id=?;', 'i', array($conid))->fetch_assoc();
+    $con = dbSafeQuery('SELECT id, name, label, startdate, DATE_SUB(startdate, INTERVAL ? DAY) as preconstart, DATE_ADD(enddate, INTERVAL 1 DAY) as enddate FROM conlist WHERE id=?;', 'ii', array($preConView, $conid))->fetch_assoc();
 }
 
 $addlwhere = '';
@@ -103,7 +104,8 @@ order by M.id;
 EOF;
         $yearaheadR = dbSafeQuery($yearaheadQ, 'i', array($conid+1));
         while($badgeType = $yearaheadR->fetch_assoc()) {
-            $badgeList['next year'][$badgeType['label']]=$badgeType['c'];
+            $badgeList['next year'][$badgeType['label']]['printed']=0;
+            $badgeList['next year'][$badgeType['label']]['total']=$badgeType['c'];
         }
 
 $currQ = "SELECT count(DISTINCT R.perid) as c FROM reg R WHERE R.conid=? and R.status='paid';";
@@ -119,7 +121,7 @@ FROM reg R
 WHERE R.conid=?
 GROUP BY R.conid, M.memType, M.label
 ORDER BY M.label;
-EOF;
+EOF; //TODO change this to use a bias query and add the bias in to the Printed Badges graph
         $totalR = dbSafeQuery($totalQ, 'i', array($conid));
         while($badgeType = $totalR->fetch_assoc()) {
             $badgeList[$badgeType['memType']][$badgeType['label']]=array(
@@ -167,10 +169,10 @@ SELECT COUNT(distinct P.cashier) AS cashier
 FROM transaction T
 LEFT OUTER JOIN payments P ON (P.transid=T.id and P.cashier IS NOT NULL)
 JOIN regActions H ON (H.tid=T.id)
-WHERE T.conid=? AND H.action IN ('attach', 'print')
-GROUP BY log_time;
+WHERE T.conid=? AND H.action IN ('attach', 'print') and H.logdate > ?
+GROUP BY log_time
 EOF;
-        $staffR = dbSafeQuery($staffQ, 'i', array($conid));
+        $staffR = dbSafeQuery($staffQ, 'is', array($conid, $con['preconstart']));
         $staffing = array();
         while($staff = $staffR->fetch_assoc()) {
             array_push($staffing, $staff);
