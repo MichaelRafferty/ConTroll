@@ -29,7 +29,9 @@ remindertext="May we include you in our annual reminder postcards and future mar
 endtext=
 regemail="registration2022@conname.org"
 regadminemail="registration2022@conname.org"
-regconfirmcc="registrationcc@conname.org"
+;;; regconfirmcc = optional address to get confirmations of the registration emails sent by ConTroll
+;regconfirmcc="registrationcc@conname.org"
+regconfirmcc=
 infoemail="info2022@conname.org"
 refundemail='info2022@conname.org'
 feedbackemail='info2022@conname.org'
@@ -74,8 +76,8 @@ logoalt="logo image alternate text"
 ;;; logotext = tagline HTML to display next to or below the logo, optional
 ;logotext="Tagline not alt=text"
 onsiteopen="3:00 PM"
-;;; noNewDays = how new must a new account be with no memberships to get warned when the "Send New Acct/No New Membership" email is sent
-noNewDays=180
+;;; noNewDays = how new must a new account be with no memberships to get warned when the "Send New Acct/No New Membership" email is sent, default 60
+noNewDays=
 
 [atcon]
 ;;; overrides
