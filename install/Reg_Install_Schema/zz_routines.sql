@@ -9,7 +9,7 @@
 -- Final view structure for view vw_ExhibitorSpace
 --
 
-DROP VIEW IF EXISTS vw_ExhibitorSpace;
+DROP VIEW IF EXISTS `vw_ExhibitorSpace`;
 CREATE ALGORITHM=UNDEFINED 
 SQL SECURITY INVOKER
 VIEW vw_ExhibitorSpace AS
@@ -41,7 +41,7 @@ VIEW vw_ExhibitorSpace AS
 -- Final view structure for view couponMemberships
 --
 
-DROP VIEW IF EXISTS couponMemberships;
+DROP VIEW IF EXISTS `couponMemberships`;
 CREATE ALGORITHM=UNDEFINED 
 SQL SECURITY INVOKER
 VIEW couponMemberships AS
@@ -55,7 +55,7 @@ VIEW couponMemberships AS
 -- Final view structure for view couponUsage
 --
 
-DROP VIEW IF EXISTS couponUsage;
+DROP VIEW IF EXISTS `couponUsage`;
 CREATE ALGORITHM=UNDEFINED 
 SQL SECURITY INVOKER
 VIEW couponUsage AS
@@ -70,7 +70,7 @@ VIEW couponUsage AS
 -- Final view structure for view memLabel
 --
 
-DROP VIEW IF EXISTS memLabel;
+DROP VIEW IF EXISTS `memLabel`;
 CREATE ALGORITHM=UNDEFINED 
 SQL SECURITY INVOKER
 VIEW memLabel AS
@@ -85,7 +85,7 @@ VIEW memLabel AS
 --
 -- Dumping routines for database 'reg'
 --
-DROP FUNCTION IF EXISTS uuid_v4s ;
+DROP FUNCTION IF EXISTS `uuid_v4s`;
 DELIMITER ;;
 CREATE FUNCTION uuid_v4s() RETURNS char(36) CHARSET utf8mb4 COLLATE utf8mb4_general_ci
     NO SQL
@@ -111,7 +111,7 @@ BEGIN
     ));
 END ;;
 DELIMITER ;
-DROP PROCEDURE IF EXISTS deleteDupsIntPol ;
+DROP PROCEDURE IF EXISTS `deleteDupsIntPol`;
 DELIMITER ;;
 CREATE PROCEDURE deleteDupsIntPol()
 SQL SECURITY INVOKER
@@ -162,7 +162,7 @@ BEGIN
     DROP TABLE IF EXISTS remainConRoles;
 END ;;
 DELIMITER ;
-DROP PROCEDURE IF EXISTS mergePerid ;
+DROP PROCEDURE IF EXISTS `mergePerid`;
 DELIMITER ;;
 CREATE PROCEDURE mergePerid(IN userid INT, IN to_mergePID INT, IN to_survivePID INT, OUT statusmsg TEXT, OUT rollback_log TEXT)
 SQL SECURITY INVOKER
@@ -530,7 +530,7 @@ BEGIN
 
 END ;;
 DELIMITER ;
-DROP PROCEDURE IF EXISTS syncServerPrinters ;
+DROP PROCEDURE IF EXISTS `syncServerPrinters`;
 DELIMITER ;;
 CREATE PROCEDURE syncServerPrinters()
 SQL SECURITY INVOKER
