@@ -56,7 +56,7 @@ if ($data['action'] == 'full' && !$testsite)
 
 $response['test'] = $test;
 
-$batchsize = getConfValue('email', 'batchsize', 10);
+$batchsize = getConfValue('email', 'batchsize', 50);
 $delay = getConfValue('email', 'delay', 1);
 
 if ($batchsize == 0  || $delay == 0)
