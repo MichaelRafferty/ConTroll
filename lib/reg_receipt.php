@@ -1,5 +1,5 @@
 <?php
-//  receipt.php - library of modules related building registration receipts
+//  reg_receipt.php - library of modules related building registration receipts
 
 // trans_receipt - given a transaction number build a receipt
 // This function returns all the data to make up a receipt and then calls 'reg_format_receipt' to actually format the receipt as plain text, HTML and email tables.
