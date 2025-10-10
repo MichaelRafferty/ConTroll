@@ -36,16 +36,16 @@ function validateConfigFiles($options) : int {
     $confFile = $path . '/reg_conf.ini';
     $secretFile = $path . '/reg_secret.ini';
 
-    $errors += validateConfigFile('secrets', $secretFile, $version >= 1.5);
-    $errors += validateConfigFile('admin', $adminFile, $version >= 1.5);
+    $errors += validateConfigFile('secrets', $secretFile, $version >= 1.5, array('api','oauth','usps'));
+    $errors += validateConfigFile('admin', $adminFile, $version >= 1.5, array());
 
     //TODO: the conf sample file is going to be converted to a parsable file for web usage, use that syntax to totally validate that file
-    $errors += validateConfigFile('conf', $confFile, $version >= 1.5);
+    $errors += validateConfigFile('conf', $confFile, $version >= 1.5, array());
 
     return $errors;
 }
 
-function validateConfigFile($section, $file, $req) {
+function validateConfigFile($section, $file, $req, $optional) {
     $errors = 0;
     if (!is_readable($file)) {
         logEcho("Unable to read the configuration $section file $file");
@@ -58,7 +58,7 @@ function validateConfigFile($section, $file, $req) {
         $data = parse_ini_file($file, true);
     }
 
-    // secrets must exist and be parsable
+    // file must exist and be parsable
     if ($data === false) {
         $errors++;
         logEcho("There is a parsing error in the $section file $file, validation of that file cannot continue");
@@ -73,17 +73,21 @@ function validateConfigFile($section, $file, $req) {
             return $errors;
         }
 
-        // check that all sections in the secret sample file are in the secret config file
+        // check that all sections in the sample file are in the config file
         $sections = array_keys($sampleData);
         foreach ($sections as $section) {
             if (!array_key_exists($section, $data)) {
-                $errors++;
-                logEcho("The required section $section is missing from $file");
+                if (!in_array($section, $optional)) {
+                    $errors++;
+                    logEcho("The required section $section is missing from $file");
+                } else {
+                    logEcho("The optional section $section is missing from $file", true);
+                }
             } else {
                 // check that all required values are present (non empty fields in the sample file)
-                foreach ($data[$section] as $key => $value) {
+                foreach ($sampleData[$section] as $key => $value) {
                     if ($value != '') {
-                        // this is a required field, make sure it's not empty in the secrets file
+                        // this is a required field, make sure it's not empty in the config file
                         if (!array_key_exists($key, $data[$section])) {
                             $errors++;
                             logEcho("The required field $key is missing from $file section $section");
@@ -92,6 +96,15 @@ function validateConfigFile($section, $file, $req) {
                             if ($cvalue == '' || $cvalue == null) {
                                 $errors++;
                                 logEcho("The required field $key cannot be empty in $file section $section");
+                            }
+                        }
+                    } else {
+                        if (!array_key_exists($key, $data[$section])) {
+                            logEcho("The optional field $key is not found in $file section $section", true);
+                        } else {
+                            $cvalue = $data[$section][$key];
+                            if ($cvalue == '' || $cvalue == null) {
+                                logEcho("The optional field $key is empty in $file section $section", true);
                             }
                         }
                     }
