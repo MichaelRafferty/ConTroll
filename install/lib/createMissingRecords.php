@@ -126,7 +126,7 @@ WHERE id = ?;
 EOS;
     $conidR = dbSafeQuery($checkCQ, 'i', array($conid));
     if ($conidR === false) {
-        logEcho('check if $conid exists in conlist failed, cannot continue');
+        logEcho("check if $conid exists in conlist failed, cannot continue");
         return(1);
     }
 
@@ -150,7 +150,7 @@ EOS;
             return(1);
         }
     } else {
-        logEcho('conlist entry for $conid exists', true);
+        logEcho("conlist entry for $conid exists", true);
     }
     $conidR->free();
 
