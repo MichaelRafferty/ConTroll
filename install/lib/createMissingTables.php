@@ -248,6 +248,7 @@ AND ROUTINE_NAME = ?;
 EOS;
                                 break;
                         }
+                        logEcho("Checking if $pt $item exists in " . $mysqlConf['db_name']);
                         $checkSQLR = dbSafeQuery($checkSQL, 'ss', array($mysqlConf['db_name'], $item));
                         if ($checkSQLR === false || $checkSQLR->num_rows <= 0) {
                             logEcho("Adding $pt $item");
@@ -259,6 +260,7 @@ EOS;
                         } else if (array_key_exists('p', $options)) { // replace view/proc/functions
                             logEcho("Drop/Replace $pt $item");
                             dbQuery("DROP $pt IF EXISTS `$item`;");
+                            logEcho("Adding $pt / $item");
                             $cR = dbQuery($sql);
                             if ($cR === false) {
                                 logEcho("You don't have sufficient permissions to add this $pt, Please seek help from a Database Administrator to create $item from zz_routines.sql");

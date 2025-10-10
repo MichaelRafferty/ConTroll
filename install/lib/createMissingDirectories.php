@@ -32,7 +32,7 @@ function createMissingDirectories($options) : int {
                 logEcho("Failed to create directory $path/$dir");
             }
         } else {
-            logEcho('Directory $dir exists at $path/dir', true);
+            logEcho("Directory $dir exists at $path/dir", true);
         }
     }
     if ($errors > 0)
