@@ -136,7 +136,7 @@ EOS;
         // zz_ are procs to create, views to create and foreign keys on tables
 
     if ($errors == 0) {
-        if (sizeof($procLoads) > 0 && false)  {
+        if (sizeof($procLoads) > 0)  {
             logEcho('Processing post creation scripts');
             foreach ($procLoads as $fname) {
                 if ($fname == 'zz_foreign_keys.sql') {
