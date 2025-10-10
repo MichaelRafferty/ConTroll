@@ -64,7 +64,7 @@ function validateConfigFile($section, $file, $req) {
         logEcho("There is a parsing error in the $section file $file, validation of that file cannot continue");
     } else {
         // verify the comnfiguration file against the sample configuration file
-        $sample = str_replace('/config/', 'config-sample', $file) . '-sample';
+        $sample = str_replace('/config/', '/config-sample/', $file) . '.sample';
         $sampleData = parse_ini_file($sample, true);
         if ($sampleData === false) {
             $errors++;
