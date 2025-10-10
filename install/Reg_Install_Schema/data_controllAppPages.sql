@@ -7,7 +7,7 @@
 --
 -- Dumping data for table `controllAppPages`
 --
-
+SET FOREIGN_KEY_CHECKS = 0;
 LOCK TABLES `controllAppPages` WRITE;
 ALTER TABLE `controllAppPages` DISABLE KEYS;
 INSERT INTO `controllAppPages` VALUES
@@ -22,3 +22,4 @@ INSERT INTO `controllAppPages` VALUES
 ('profile','all','Custom text related to the member profile');
 ALTER TABLE `controllAppPages` ENABLE KEYS;
 UNLOCK TABLES;
+SET FOREIGN_KEY_CHECKS = 1;

@@ -7,7 +7,7 @@
 --
 -- Dumping data for table `controllAppSections`
 --
-
+SET FOREIGN_KEY_CHECKS = 0;
 LOCK TABLES `controllAppSections` WRITE;
 ALTER TABLE `controllAppSections` DISABLE KEYS;
 INSERT INTO `controllAppSections` VALUES
@@ -42,3 +42,4 @@ INSERT INTO `controllAppSections` VALUES
 ('profile','all','policies','In profiles, policies section');
 ALTER TABLE `controllAppSections` ENABLE KEYS;
 UNLOCK TABLES;
+SET FOREIGN_KEY_CHECKS = 1;

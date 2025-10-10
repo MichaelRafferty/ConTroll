@@ -7,7 +7,7 @@
 --
 -- Dumping data for table `controllAppItems`
 --
-
+SET FOREIGN_KEY_CHECKS = 0;
 LOCK TABLES `controllAppItems` WRITE;
 ALTER TABLE `controllAppItems` DISABLE KEYS;
 INSERT INTO `controllAppItems` VALUES
@@ -177,3 +177,4 @@ INSERT INTO `controllAppItems` VALUES
 ('profile','all','policies','header','header before policies in edit profile');
 ALTER TABLE `controllAppItems` ENABLE KEYS;
 UNLOCK TABLES;
+SET FOREIGN_KEY_CHECKS = 1;

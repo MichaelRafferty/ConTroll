@@ -234,6 +234,11 @@ function dbNextResult() {
     return $dbObject->store_result();
 }
 
+function dbSkipNextResults() : void {
+    global $dbObject;
+    while ($dbObject->next_result()) {;}
+}
+
 // dbSafeInsert - using prepare safely perform an insert operation
 // returns the id of the created row
 // This should replace all database calls to dbInsert that use variable data in their SQL string

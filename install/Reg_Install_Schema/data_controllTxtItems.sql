@@ -7,7 +7,7 @@
 --
 -- Dumping data for table `controllTxtItems`
 --
-
+SET FOREIGN_KEY_CHECKS = 0;
 LOCK TABLES `controllTxtItems` WRITE;
 ALTER TABLE `controllTxtItems` DISABLE KEYS;
 INSERT INTO `controllTxtItems` VALUES
@@ -177,3 +177,4 @@ INSERT INTO `controllTxtItems` VALUES
 ('profile','all','policies','header','Controll-Default: This is profile-all-policies-header<br/>Custom HTML that can replaced with a custom value in the ConTroll Admin App under RegAdmin/Edit Custom Text.<br/>Default text display can be suppressed in the configuration file.');
 ALTER TABLE `controllTxtItems` ENABLE KEYS;
 UNLOCK TABLES;
+SET FOREIGN_KEY_CHECKS = 1;

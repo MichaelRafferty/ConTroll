@@ -67,11 +67,7 @@ function createMissingTables($options) : int {
                 $sql = str_replace('DELIMITER ;', '', $sql);
                 dbMultiQuery($sql);
                 // skip over result sets
-                dbNextResult();
-                dbNextResult();
-                dbNextResult();
-                if (str_contains($sql, 'DROP TRIGGER IF EXISTS '))
-                    dbNextResult();
+                dbSkipNextResults();
                 // PHP mysqli isn't returning a valid result from a DML multi-query, use select to verify it actually worked
                 $sql = <<<EOS
 SELECT TABLE_SCHEMA, TABLE_NAME, TABLE_TYPE
@@ -93,19 +89,18 @@ EOS;
     if ($errors == 0) {
         if (sizeof($dataLoads) > 0) {
             logEcho("Creating initial data values");
-            $dataLoads = asort($dataLoads);
+            asort($dataLoads);
             foreach ($dataLoads as $fname) {
                 if ($fname == 'data_zzTxt.sql') {
                     // this is a special multi query
                     $sql = file_get_contents('Reg_Install_Schema/' . $fname);
                     dbMultiQuery($sql);
                     // skip over result sets
-                    dbNextResult();
-                    dbNextResult();
-                    dbNextResult();
+                    dbSkipNextResults();
                     continue;
                 }
                 $table = preg_replace('/^[^_]*_(.*)\.sql$/', '\1', $fname);
+                logEcho("Checking if $table has data before loading $fname");
                 $checkSQLR = dbQuery("SELECT count(*) AS occurs FROM $table;");
                 if ($checkSQLR === false) {
                     logEcho("Error querying $table for rowcount");
@@ -120,20 +115,19 @@ EOS;
                 logEcho("Loading $table from $fname");
                 $set = dbMultiQuery($sql);
                 // skip over result sets
-                dbNextResult();
-                dbNextResult();
-                dbNextResult();
-                dbNextResult();
-                dbNextResult();
+                dbSkipNextResults();
+
                 $checkSQLR = dbQuery("SELECT count(*) AS occurs FROM $table;");
                 if ($checkSQLR === false) {
                     logEcho("Error querying $table for rowcount");
                     $errors++;
-                }
-                $rowcnt = $checkSQLR->fetch_row()[0];
-                if ($rowcnt <= 0) {
-                    logEcho("Error inserting data into $table");
-                    $errors++;
+                } else {
+                    $rowcnt = $checkSQLR->fetch_row()[0];
+                    if ($rowcnt <= 0) {
+                        logEcho("Error inserting data into $table");
+                        $errors++;
+                    } else
+                        logEcho("Inserted $rowcnt rows of data into $table");
                 }
             }
         }
@@ -142,7 +136,7 @@ EOS;
         // zz_ are procs to create, views to create and foreign keys on tables
 
     if ($errors == 0) {
-        if (sizeof($procLoads) > 0)  {
+        if (sizeof($procLoads) > 0 && false)  {
             logEcho('Processing post creation scripts');
             foreach ($procLoads as $fname) {
                 if ($fname == 'zz_foreign_keys.sql') {

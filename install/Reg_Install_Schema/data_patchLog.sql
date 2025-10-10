@@ -61,5 +61,5 @@ INSERT INTO `patchLog` VALUES
 (52,'marketingEmails','2025-10-08 16:16:53'),
 (53,'moreTerminal','2025-09-06 20:38:12'),
 (54,'More Custom Text Fields','2025-10-08 16:14:19');
-ALTER TABLE `patchLog` ENABLE KEYS
+ALTER TABLE `patchLog` ENABLE KEYS;
 UNLOCK TABLES;
