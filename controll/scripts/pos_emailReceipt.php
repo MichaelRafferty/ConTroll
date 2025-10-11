@@ -36,11 +36,7 @@ if ($ajax_request_action != 'printReceipt') {
     exit();
 }
 $con = get_conf('con');
-if (array_key_exists('currency', $con)) {
-    $currency = $con['currency'];
-} else {
-    $currency = 'USD';
-}
+$currency = getConfValue('con', 'currency', $con, 'USD');
 
 // printReceipt: print the text receipt "text", if printer name starts with 0, then just log the receipt
 $header = $_POST['header'];
@@ -133,11 +129,9 @@ foreach ($pmtrows as $pmtrow) {
     $receipt .= $line . "\n";
     $total_pmt += $pmtrow['amt'];
 }
-
-$endtext = "\n";
-if (array_key_exists('endtext', $con))
-    $endtext = $con['endtext'] . "\n";
-$receipt .= "         ----------\n" . sprintf("total%15s Total Amount Tendered", $dolfmt->formatCurrency($total_pmt, $currency)) . "\n$footer\n" . "\n" . $endtext . "\n\n\n";
+$endtext = getConfValue('con', 'endtext', '') . PHP_EOL;
+$receipt .= "         ----------\n" . sprintf("total%15s Total Amount Tendered", $dolfmt->formatCurrency($total_pmt, $currency)) .
+    "\n$footer\n" . "\n" . $endtext . "\n\n\n";
 
 if (!array_key_exists('email_addrs', $_POST)) {
     $response['error'] = "No email recipeints specified";
