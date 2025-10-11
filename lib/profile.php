@@ -4,11 +4,7 @@
 // drawEditPersonBlock - just output the block to edit the person
 function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $editEmail=false, $ageByDate = '',
                              $membershipTypes = [], $tabIndexStart = 100, $admin = false, $idPrefix = '', $free=false) {
-    $reg = get_conf('reg');
-    if ($editEmail)
-        $polConf = $reg;
-    else
-        $polConf = get_conf('portal');
+    $polConf = $editEmail ? 'reg' : 'portal';
     $required = getConfValue('reg', 'required', 'addr');
     $firstStar = '';
     $addrStar = '';
@@ -278,7 +274,7 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
         </div>
     </div>
     <?php
-    if ($admin == false && ((!array_key_exists('showConPolicy',$polConf)) || $polConf['showConPolicy'] == 1)) {
+    if ($admin == false && getConfValue($polConf, 'showConPolicy', 1) == 1) {
         ?>
         <div class='row'>
             <div class='col-sm-12'>
@@ -291,7 +287,7 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
         </div>
         <?php
     }
-    if ($admin == false && ((!array_key_exists('showVolunteerPolicy',$polConf)) || $polConf['showVolunteerPolicy'] == 1)) {
+    if ($admin == false && getConfValue($polConf,'showVolunteerPolicy', 1) == 1) {
         ?>
         <div class="row">
             <div class="col-sm-12">
