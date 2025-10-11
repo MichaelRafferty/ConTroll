@@ -356,13 +356,9 @@ if ($planRecast == 1) {
     }
 }
 
-$regconfirmcc = null;
-if (array_key_exists('regconfirmcc', $conf)) {
-    $regconfirmcc = trim($conf['regconfirmcc']);
-    if ($regconfirmcc == '')
-        $regconfirmcc = null;
-}
-$return_arr = send_email($conf['regadminemail'], trim($info['email_addr']), /* cc */ $regconfirmcc, $condata['label'] . ' Registration Portal Payment Receipt', $body, /* htmlbody */ null);
+$return_arr = send_email($conf['regadminemail'],
+    trim($info['email_addr']), /* cc */ getConfValue('con', 'regconfirmcc', null),
+    /* subject */ $condata['label'] . ' Registration Portal Payment Receipt', $body, /* htmlbody */ null);
 
 if (array_key_exists('error_code', $return_arr)) {
     $error_code = $return_arr['error_code'];

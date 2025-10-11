@@ -73,7 +73,6 @@ load_email_procs();
 
 $condata = get_con();
 $log = get_conf('log');
-$con = get_conf('con');
 $cc = get_conf('cc');
 $conid = $condata['id'];
 logInit($log['reg']);
@@ -492,13 +491,9 @@ else {
     $body = getNoChargeEmailBody($results, $totalDiscount);
 }
 
-$regconfirmcc = null;
-if (array_key_exists('regconfirmcc', $con)) {
-    $regconfirmcc = trim($con['regconfirmcc']);
-    if ($regconfirmcc == '')
-        $regconfirmcc = null;
-}
-$return_arr = send_email($con['regadminemail'], trim($purchaseform['cc_email']), /* cc */ $regconfirmcc, $condata['label']. " Online Registration Receipt",  $body, /* htmlbody */ null);
+$return_arr = send_email(getConfValue('con', 'regadminemail'),
+    trim($purchaseform['cc_email']), /* cc */ getConfValue('con', 'regconfirmcc', null),
+    /* subject */ $condata['label']. " Online Registration Receipt",  $body, /* htmlbody */ null);
 
 if (array_key_exists('error_code', $return_arr)) {
     $error_code = $return_arr['error_code'];
