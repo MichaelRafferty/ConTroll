@@ -113,7 +113,7 @@ Each etnry in the file that is online editable will contain the following prefix
       - `H` for hidden if not allowed to edit
       - `V` for visible but read/only
 - `;; P:placeholder`
-  - The placeholder value for the input tag that will be used to edit this field
+  - The placeholder value for the input tag that will be used to edit this field. 
 - `;; H:hint`
   - A hover hint for this parameter
   - A hint may span multiple lines in the file
@@ -128,6 +128,7 @@ Each etnry in the file that is online editable will contain the following prefix
     - `r:dir` = relative file path, a warning will be issued if this file is not readable starting in the *dir* directory 
 relative to the root of the installation. Note: dir is not allowed to be empty.
     - `a` = absolute file path from the root of of the file system.
+    - `l:list` = enumerated list of choices, separated by commas. First entry is the default one.
 A warning will be issued if this file is not readable.
     - `h` = URI, must be of the format:
       - https:
