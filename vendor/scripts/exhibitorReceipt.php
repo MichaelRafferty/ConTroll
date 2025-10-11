@@ -8,11 +8,7 @@ $returnAjaxErrors = true;
 $return500errors = true;
 
 $response = array('post' => $_POST, 'get' => $_GET);
-
-global $con;
-$con = get_con();
-$conid=$con['id'];
-
+$conid=getConfValue('con', 'id');
 $response['conid'] = $conid;
 
 if (!isSessionVar('id')) {

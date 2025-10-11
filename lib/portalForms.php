@@ -627,13 +627,7 @@ function draw_makePaymentModal() : void {
 //// payment plan items
 // drawPaymentPlans - show the status of the payment plans for this account
 function drawPaymentPlans($person, $paymentPlans) : void {
-    $con = get_conf('con');
-    if (array_key_exists('currency', $con)) {
-        $currency = $con['currency'];
-    } else {
-        $currency = 'USD';
-    }
-
+    $currency = getConfValue('con', 'currency', 'USD');
     $plans = $paymentPlans['plans'];
     $payorPlans = $paymentPlans['payorPlans'];
 

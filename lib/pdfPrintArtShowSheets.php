@@ -10,12 +10,7 @@ $pdf = null;
 function pdfPrintShopPriceSheets($regionYearId, $region, $response, $first = true, $last = true) {
     global $pdf;
 
-    $con = get_conf('con');
-    if (array_key_exists('currency', $con)) {
-        $currency = $con['currency'];
-    } else {
-        $currency = 'USD';
-    }
+    $currency = getConfValue('con', 'currency', 'USD');
 // local constants for the sheets
     $margin = 0.25;
     $numcols = 3;
@@ -231,12 +226,7 @@ EOS;
 function pdfPrintBidSheets($regionYearId, $region, $response, $first = true, $last = true) {
     global $pdf;
 
-    $con = get_conf('con');
-    if (array_key_exists('currency', $con)) {
-        $currency = $con['currency'];
-    } else {
-        $currency = 'USD';
-    }
+    $currency = getConfValue('con', 'currency', 'USD');
     // get parameters for sizing
     $con = get_con();
     $conname = $con['label'];
@@ -587,12 +577,7 @@ EOS;
 function pdfArtistControlSheet($regionYearId, $region, $response, $printContactInfo = false, $first=true, $last=true) {
     global $pdf;
 
-    $con = get_conf('con');
-    if (array_key_exists('currency', $con)) {
-        $currency = $con['currency'];
-    } else {
-        $currency = 'USD';
-    }
+    $currency = getConfValue('con', 'currency', 'USD');
     // local constants for the control sheet
     $margin = 0.25;
     $indent = 0.1;

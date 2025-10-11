@@ -10,12 +10,7 @@ $returnAjaxErrors = true;
 $return500errors = true;
 
 $response = array('post' => $_POST, 'get' => $_GET);
-
-global $con;
-$con = get_con();
-$conid=$con['id'];
-$conf = get_conf('con');
-
+$conid=getConfValue('con', 'id');
 $response['conid'] = $conid;
 load_email_procs();
 
@@ -36,7 +31,7 @@ $email = $_POST['email'];
 $receiptTxt = $_POST['text'];
 $receiptHTML = $_POST['tables'];
 
-$return_arr = send_email($conf['regadminemail'], $email, null, 'Receipt for Payment', $receiptTxt, $receiptHTML);
+$return_arr = send_email(getConfValue('con', 'regadminemail'), $email, null, 'Receipt for Payment', $receiptTxt, $receiptHTML);
 
 if (array_key_exists('error_code', $return_arr)) {
     $error_code = $return_arr['error_code'];

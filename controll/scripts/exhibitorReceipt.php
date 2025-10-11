@@ -17,11 +17,7 @@ if ($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
     ajaxSuccess($response);
     exit();
 }
-
-global $con;
-$con = get_con();
-$conid=$con['id'];
-
+$conid=getConfValue('con', 'id');
 $response['conid'] = $conid;
 
 if (!isset($_SESSION['id'])) {

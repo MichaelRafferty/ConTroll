@@ -50,11 +50,7 @@ if (isSessionVar('id') && isSessionVar('idType')) {
     exit();
 }
 
-if (array_key_exists('currency', $con)) {
-    $currency = $con['currency'];
-} else {
-    $currency = 'USD';
-}
+$currency = getConfValue('con', 'currency', 'USD');
 
 $transId = getSessionVar('transId');
 $initCoupon = getSessionVar('curCoupon');

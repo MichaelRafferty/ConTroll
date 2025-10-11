@@ -32,11 +32,7 @@ if (!check_atcon('artsales', $conid)) {
     exit();
 }
 
-if (array_key_exists('currency', $con)) {
-    $currency = $con['currency'];
-} else {
-    $currency = 'USD';
-}
+$currency = getConfValue('con', 'currency', 'USD');
 // printReceipt: print the text receipt "text", if printer name starts with 0, then just log the receipt
 $header = $_POST['header'];
 $person = $_POST['person'];

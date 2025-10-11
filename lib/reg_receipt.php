@@ -289,12 +289,7 @@ EOS;
 
 // reg_format_receipt - format a receipt in HTML and Text formats
 function reg_format_receipt($data) {
-    $con = get_conf('con');
-    if (array_key_exists('currency', $con)) {
-        $currency = $con['currency'];
-    } else {
-        $currency = 'USD';
-    }
+    $currency = getConfValue('con', 'currency', 'USD');
     $curLocale = locale_get_default();
     $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
     // ok, now there is all the data for the receipt
@@ -741,12 +736,7 @@ function sum_coupon_discount($id, $memberships) {
 
 // format a member block for the receipt
 function reg_format_mbr($data, $person, $list, &$receipt, &$receipt_html, &$receipt_tables) {
-    $con = get_conf('con');
-    if (array_key_exists('currency', $con)) {
-        $currency = $con['currency'];
-    } else {
-        $currency = 'USD';
-    }
+    $currency = getConfValue('con', 'currency', 'USD');
     $curLocale = locale_get_default();
     $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
     // first the name:

@@ -191,12 +191,7 @@ EOS;
 
 // space payment confirmation
 function payment($results) {
-    $con = get_conf('con');
-    if (array_key_exists('currency', $con)) {
-        $currency = $con['currency'];
-    } else {
-        $currency = 'USD';
-    }
+    $currency = getConfValue('con', 'currency', 'USD');
     $buyer = $results['buyer'];
     $vendor = $results['vendor'];
     $region = $results['region'];

@@ -13,8 +13,7 @@ $returnAjaxErrors = true;
 $return500errors = true;
 
 $method = 'manager';
-$con = get_conf('con');
-$conid = $con['id'];
+$conid = getConfValue('con', 'id');
 $ajax_request_action = '';
 if ($_POST && $_POST['ajax_request_action']) {
     $ajax_request_action = $_POST['ajax_request_action'];
@@ -28,12 +27,8 @@ if (!check_atcon($method, $conid)) {
     RenderErrorAjax($message_error);
     exit();
 }
+$currency = getConfValue('con', 'currency', 'USD');
 
-if (array_key_exists('currency', $con)) {
-    $currency = $con['currency'];
-} else {
-    $currency = 'USD';
-}
 
 // printTest: print a test page/badge to check printer format/issues
 // server: print server name

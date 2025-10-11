@@ -1,8 +1,8 @@
 <?php
 // draw the invoice screen for buying space in the vendor/artist portal
 function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $testsite, $cc, $portalName, $portalType) {
-    $con = get_conf('con');
-    $vendor_conf = get_conf('vendor');
+    $taxLabel = getConfValue('con', 'taxLabel');
+    $taxIdLabel = getConfValue('vendor', 'taxidlabel', 'Missing Sales Tax ID Label');
     if ($info == null) {
         $exhibitorName = '';
         $exhibitorEmail = '';
@@ -122,10 +122,10 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $testsit
                                        size='11' maxlength='11' required tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
                             </div>
                         </div>
-                         <?php if ($portalType == 'vendor' && array_key_exists('taxLabel', $con) && $con['taxLabel'] != '') { ?>
+                         <?php if ($portalType == 'vendor' && $taxLabel != '') { ?>
                         <div class="row">
                             <div class="col-sm-2">
-                                <label for="salesTaxId"><?php echo $vendor_conf['taxidlabel']; ?>:</label>
+                                <label for="salesTaxId"><?php echo $taxIdLabel; ?>:</label>
                             </div>
                             <div class="col-sm-10 p-0">
                                 <input class='form-control-sm' type='text' name='salesTaxId' size=32 maxlength="32"
@@ -357,12 +357,7 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $testsit
 
 // exhibitor_showInvoice -> show the current request and the change/cancel button
 function exhibitor_showInvoice($regionYearId, $regionName, $regionSpaces, $exhibitorSpaceList, $region, $info) {
-    $con = get_conf('con');
-    if (array_key_exists('currency', $con)) {
-        $currency = $con['currency'];
-    } else {
-        $currency = 'USD';
-    }
+    $currency = getConfValue('con', 'currency', 'USD');
     $curLocale = locale_get_default();
     $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
 
@@ -394,12 +389,7 @@ function exhibitor_showInvoice($regionYearId, $regionName, $regionSpaces, $exhib
 
 // draw the paid for status block
 function vendor_receipt($regionYearId, $regionName, $regionSpaces, $exhibitorSpaceList) {
-    $con = get_conf('con');
-    if (array_key_exists('currency', $con)) {
-        $currency = $con['currency'];
-    } else {
-        $currency = 'USD';
-    }
+    $currency = getConfValue('con', 'currency', 'USD');
     $curLocale = locale_get_default();
     $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
 

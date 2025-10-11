@@ -36,7 +36,7 @@ if ($ajax_request_action != 'printReceipt') {
     RenderErrorAjax('Invalid calling sequence.');
     exit();
 }
-$currency = getConfValue('con', 'currency', $con, 'USD');
+$currency = getConfValue('con', 'currency', 'USD');
 
 $response = array('post' => $_POST, 'get' => $_GET);
 // printReceipt: print the text receipt "text", if printer name starts with 0, then just log the receipt

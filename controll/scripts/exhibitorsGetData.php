@@ -17,17 +17,11 @@ if (!(array_key_exists('region', $_POST) && array_key_exists('regionId', $_POST)
     exit();
 }
 
-$con = get_con();
-$conid = $con['id'];
+$conid = getConfValue('con', 'id');
 $region = $_POST['region'];
 $regionId = $_POST['regionId'];
 
-$con = get_conf('con');
-if (array_key_exists('currency', $con)) {
-    $currency = $con['currency'];
-} else {
-    $currency = 'USD';
-}
+$currency = getConfValue('con', 'currency', 'USD');
 
 $exhibitorQ = <<<EOS
 SELECT e.id as exhibitorId, perid, exhibitorName, exhibitorEmail, exhibitorPhone, salesTaxId, website, description, password, publicity, 

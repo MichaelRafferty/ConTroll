@@ -20,12 +20,7 @@ $required = getConfValue('reg', 'required', 'addr');
 $cc = get_conf('cc');
 
 $response['conid'] = $conid;
-$con = get_conf('con');
-if (array_key_exists('currency', $con)) {
-    $currency = $con['currency'];
-} else {
-    $currency = 'USD';
-}
+$currency = getConfValue('con', 'currency', 'USD');
 
 $ccauth = get_conf('cc');
 load_cc_procs();

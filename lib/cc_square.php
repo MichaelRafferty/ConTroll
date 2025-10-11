@@ -106,20 +106,15 @@ use Square\Types\OrderLineItemDiscountScope;
 use Square\Types\OrderLineItemDiscountType;
 
 function cc_getCurrency($con) : string {
-    if (array_key_exists('currency', $con)) {
-        $cur = strtoupper($con['currency']);
-        $cur = strtoupper(substr($cur, 0, 1)) . substr($cur, 1);
-        $curT = Currency::from($cur);
-        if ($curT) {
-            $currency = $curT->value;
-        } else {
-            ajaxSuccess(array ('status' => 'error', 'data' => 'Error: Currency ' . $con['currency'] .
-                ' not yet supported in Square, seek assistance.'));
-            exit();
-        }
-    } else
-        $currency = Currency::Usd->value;
-
+    $cur = strtoupper(getConfValue('con', 'currency', 'USD'));
+    $curT = Currency::from($cur);
+    if ($curT) {
+        $currency = $curT->value;
+    } else {
+        ajaxSuccess(array ('status' => 'error', 'data' => 'Error: Currency ' . $con['currency'] .
+            ' not yet supported in Square, seek assistance.'));
+        exit();
+    }
     return $currency;
 }
 

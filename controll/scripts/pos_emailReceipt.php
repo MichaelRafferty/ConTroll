@@ -36,7 +36,7 @@ if ($ajax_request_action != 'printReceipt') {
     exit();
 }
 $con = get_conf('con');
-$currency = getConfValue('con', 'currency', $con, 'USD');
+$currency = getConfValue('con', 'currency', 'USD');
 
 // printReceipt: print the text receipt "text", if printer name starts with 0, then just log the receipt
 $header = $_POST['header'];

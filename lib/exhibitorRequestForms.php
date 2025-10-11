@@ -105,13 +105,8 @@ EOS;
 function exhibitor_showRequest($regionId, $regionName, $regionSpaces, $exhibitorSpaceList) {
     $curLocale = locale_get_default();
     $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
+    $currency = getConfValue('con', 'currency', 'USD');
 
-    $con = get_conf('con');
-    if (array_key_exists('currency', $con)) {
-        $currency = $con['currency'];
-    } else {
-        $currency = 'USD';
-    }
     echo "Request pending authorization for:<br/>\n";
     foreach ($exhibitorSpaceList as $key => $spaceItem) {
         // limit to spaces for this region
