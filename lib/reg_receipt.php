@@ -705,9 +705,8 @@ EOS;
         }
     }
 
-    $coninfo = get_conf('con');
-    if (array_key_exists('endtext', $coninfo)) {
-        $endtext = $coninfo['endtext'];
+    $endtext = getConfValue('con', 'endtext', '');
+    if ($endtext != '') {
         $receipt .=  "\n\n$endtext\n";
         $receipt_html .= <<<EOS
 <div class='row mt-4'>
