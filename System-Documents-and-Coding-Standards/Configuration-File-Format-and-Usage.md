@@ -91,9 +91,11 @@ contents of the configuration array from normal PHP code.
 # Usage of reg_conf.ini.sample to Drive Web Editing of the Configuration
 
 In the directory config-sample the sample file for reg_conf.ini serves double duty.
-It not only provides a context sample for the fields for creating the file from scratch, it also provides the parameters to drive the online editor for this 
-configuraiton.
+It not only provides a context sample for the fields for creating the file from scratch,
+it also provides the parameters to drive the online editor for this configuraiton.
 All of the key information is part of the comments in this file.
+Each directive starts with two semicolons followed by a space.
+All other lines in the file are ignored in this context.
 
 The online editor will **only** edit this subset of the configuration.
 
@@ -101,21 +103,22 @@ The online editor will **only** edit this subset of the configuration.
 
 Each etnry in the file that is online editable will contain the following prefix comments:
 
-- `;;R:permission-role,visibility`
-    - permission-role: The role required to edit this permission.
+- `;; N:name`
+    - The name of the parameter
+    - This entry starts a new parameter in the file and must be the first parameter for any entry
+    - The name and id of the related input field will be `S_section_P_parameterName`
+- `;; R:visibility,permission-role,...
+    - permission-role: A list of roles required to edit this permission, separated by commas.
     - visibility: If the user does not have the role, how is this row displayed:
       - `H` for hidden if not allowed to edit
       - `V` for visible but read/only
-- `;;N:name`
-  - The name of the parameter
-  - The name and id of the related input field will be `S_section_P_parameterName`
-- `;;P:placeholder`
+- `;; P:placeholder`
   - The placeholder value for the input tag that will be used to edit this field
-- `;;H:hint`
+- `;; H:hint`
   - A hover hint for this parameter
   - A hint may span multiple lines in the file
   - Continuation lines for the hint will start with `;H+`
-- `;;D:datatype`
+- `;; D:datatype`
   - The input data type for this field:
     - `iX` = integer, with at most X digits
     - `dX,Y` = decimal, with at most X places and Y to the right of the decimal point
@@ -130,7 +133,7 @@ A warning will be issued if this file is not readable.
       - https:
       - http:
       - mailto:
-- `;;B:action if blank`
+- `;; B:action if blank`
   - `M` = Mandatory, cannot be empty
   - `O` = Optional, Omit the line if it is blank
   - `E` = Optional, output the line with an empty (no) value (IE: `name=`)
