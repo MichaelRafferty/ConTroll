@@ -36,11 +36,7 @@ if ($ajax_request_action != 'printReceipt') {
     RenderErrorAjax('Invalid calling sequence.');
     exit();
 }
-if (array_key_exists('currency', $con)) {
-    $currency = $con['currency'];
-} else {
-    $currency = 'USD';
-}
+$currency = getConfValue('con', 'currency', $con, 'USD');
 
 $response = array('post' => $_POST, 'get' => $_GET);
 // printReceipt: print the text receipt "text", if printer name starts with 0, then just log the receipt
@@ -137,10 +133,9 @@ foreach ($pmtrows as $pmtrow) {
     $receipt .= $line . "\n";
     $total_pmt += $pmtrow['amt'];
 }
-$endtext = "\n";
-if (array_key_exists('endtext', $con))
-    $endtext = $con['endtext'] . "\n";
-$receipt .= "         ----------\n" . sprintf("total%15s Total Amount Tendered", $dolfmt->formatCurrency($total_pmt, $currency)) . "\n$footer\n" . "\n" . $endtext . "\n\n\n";
+$endtext = getConfValue('con', 'endtext', "") . PHP_EOL;
+$receipt .= "         ----------\n" . sprintf("total%15s Total Amount Tendered", $dolfmt->formatCurrency($total_pmt, $currency)) .
+    "\n$footer\n" . "\n" . $endtext . "\n\n\n";
 
 if ($receipt_type == 'print') {
     $printer = getSessionVar('receiptPrinter');
@@ -158,36 +153,35 @@ if ($receipt_type == 'print') {
 if ($receipt_type == 'email') {
     if (!array_key_exists('email_addrs', $_POST)) {
         $response['error'] = "No email recipeints specified";
-    }
-    else {
+    } else {
         load_email_procs();
         if (getConfValue('reg','test') == 1) {
             $emails = array ($con['regadminemail']);
-        }
-        else {
+        } else {
             $emails = $_POST['email_addrs'];
         }
         foreach ($emails as $email_addr) {
+            if ($email_addr == '/r')
+                continue;
             if (!filter_var($email_addr, FILTER_VALIDATE_EMAIL)) {
                 $response['error'] = "Unable to email receipt, email address of '$email_addr' is not in the valid format.";
+                continue;
             }
-            else { // valid email, send the email
-                $return_arr = send_email($con['regadminemail'], $email_addr, null, $header, $receipt, null);
-                if (array_key_exists('error_code', $return_arr)) {
-                    $error_code = $return_arr['error_code'];
-                }
-                else {
-                    $error_code = null;
-                }
-                if (array_key_exists('email_error', $return_arr)) {
-                    $response['error'] = 'Unable to send receipt email, error: ' . $return_arr['email_error'] . ', Code: $error_code';
-                }
-                else {
-                    if (array_key_exists('message', $response))
-                        $response['message'] .= "<br/>Receipt sent to $email_addr";
-                    else
-                        $response['message'] = "Receipt sent to $email_addr";
-                }
+
+            // valid email, send the email
+            $return_arr = send_email($con['regadminemail'], $email_addr, null, $header, $receipt, null);
+            if (array_key_exists('error_code', $return_arr)) {
+                $error_code = $return_arr['error_code'];
+            } else {
+                $error_code = null;
+            }
+            if (array_key_exists('email_error', $return_arr)) {
+                $response['error'] = 'Unable to send receipt email, error: ' . $return_arr['email_error'] . ', Code: $error_code';
+            } else {
+                if (array_key_exists('message', $response))
+                    $response['message'] .= "<br/>Receipt sent to $email_addr";
+                else
+                    $response['message'] = "Receipt sent to $email_addr";
             }
         }
     }
