@@ -14,8 +14,8 @@ function refundEmail_HTML($test, $email, $tid) {;
 
     $url = getConfValue('reg', 'server') . "/cancelation.php";
     $url2 = getConfValue('reg', 'server');
-    $regpage = $con['regpage'];
-    $homepage = $con['website'];
+    $regpage = getConfValue('con', 'regpage');
+    $homepage = getConfValue('con', 'website');
 
     $transQ = <<<EOS
 SELECT T.paid, M.label, M.memAge, P.first_name, P.last_name, P.badge_name, P.badgeNameL2, R.paid
@@ -160,7 +160,7 @@ function ComeBackCouponEmail_HTML($test, $expirationDate) {
     $schedulepage = $con['schedulepage'];
     $homepage = $con['website'];
     $policypage = $con['policy'];
-    $regpage = $con['regpage'];
+    $regpage = getConfValue('con', 'regpage');
     $feedbackemail = $con['feedbackemail'];
     $regsite = getConfValue('reg', 'server');
 
@@ -229,7 +229,7 @@ function ComeBackCouponEmail_TEXT($test, $expirationDate) {
     $schedulepage = $con['schedulepage'];
     $homepage = $con['website'];
     $policypage = $con['policy'];
-    $regpage = $con['regpage'];
+    $regpage = getConfValue('con', 'regpage');
     $feedbackemail = $con['feedbackemail'];
     $regsite = getConfValue('reg', 'server');
 
