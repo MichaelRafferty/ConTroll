@@ -228,8 +228,8 @@ function tabBar($page, $portal_conf, $info, $refresh = false) {
         if (isSessionVar('multiple')) {
             $page_list[] = ['name' => 'index', 'args' => 'switch=account', 'display' => 'Switch Account'];
         }
-        if (array_key_exists('helppage', $portal_conf)) {
-            $helppage = $portal_conf['helppage'];
+        $helppage = getConfValue('portal','helppage', 'help.pdf');
+        if (is_readable($helppage) || is_readable('../'. $helppage)) {
             $page_list[] = ['name' => $helppage, 'target' =>  '_blank', 'display' => 'Help'];
         }
     }
