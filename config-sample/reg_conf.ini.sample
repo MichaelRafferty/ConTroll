@@ -106,7 +106,7 @@ policytext="conname Policies"
 ;; H:+&nbsp;&nbsp;&nbsp;&nbsp;set to 0 if agree to policy is one of your ConTroll policies or 1 otherwise
 ;; D:a0,1
 ;; B:O
-; showConPolicy - shows the "CLick here for the #conname# Policies",
+; showConPolicy - shows the "Click here for the #conname# Policies",
 ;     set to 0 if agree to policy is one of your policies or 1 otherwise
 showConPolicy=1
 ;; N:showVolunteerPolicy
@@ -283,7 +283,7 @@ onedaycoupons=0 ; allow onedays for coupon usage
 [reg]
 ;;; overrides
 ;; N:customtext
-;; R:V,reg_admin
+;; R:V,reg_staff
 ;; H:Registration custom text setting, overrides the global setting if desired
 ;; H+:values:
 ;; H+:all = show all customtext, even the default messages
@@ -368,31 +368,65 @@ noNewDays=
 ;; H+:none = supporess all custom text
 ;; D:l:production,all,none
 ;; B:O
-;; ;;; customtext
-;; ; appears in each program section based on program name
-;; ; values:
-;; ; all = show all customtext, even the default messages
-;; ; production = suppress the 'default' placeholder messages (an alias for this is nodefault)
-;; ; none = supporess all custom text
-;; customtext='production'
+;;; customtext
+; appears in each program section based on program name
+; values:
+; all = show all customtext, even the default messages
+; production = suppress the 'default' placeholder messages (an alias for this is nodefault)
+; none = supporess all custom text
+; customtext='production'
 
 ;;; allow discounts?
+;; N:discount
+;; R:V,reg_admin
+;; H:Allow disount as a payment type in Atxon
+;; H+:values:
+;; H+:  manager - requires manager logged in
+;; H+:	active - manager override enabled
+;; H+:  any - any POS user can handle discount
+;; H+:  none - disable the discount type of payment
+;; D:l:active,manager,any,none
+;; B:O
 ; valid types are
 ; 	manager - requires manager logged in
 ;	active - manager override enabled
 ;	any - any POS user can handle discount
 ;	none - disable the discount type of payment
 discount=active
+;; N:allage
+;; R:H,reg_staff
+;; H:Which memberships to show in Atcon:
+;; H:+&nbsp;&nbsp;&nbsp;&nbsp;=0: act like portal and require age to show related memberships
+;; H:+&nbsp;&nbsp;&nbsp;&nbsp;=1: show all memberships, independent of age, if no membership in cart limits age
+;; D:a0,1
+;; B:O
 ;; allage - which badges to show
 ; values:
 ; allage=0 : act like portal, require age to show age related badges
 ; allage=1 : if no badge of an age, show badges of all ages, once an age badge is selected, auto set age
 allage=0
+;; N:inlineinventory
+;; R:H,art_control
+;; H:Allow for popup change to inventory status at time of checkout for Art Show Cashier
+;; H+:(Normal behavior is Art Inventory must have the art in the proper status for sale by Art Show Cashier)
+;; H:+&nbsp;&nbsp;&nbsp;&nbsp;=0: Art Show Cashier will sell as quicksale if no bids,
+;; H:+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or if 'restrict to inventory sale statuses and prices' for art not sold at quicksale
+;; H:+&nbsp;&nbsp;&nbsp;&nbsp;=1: Art Show Cashierwill use an intelligent  popup based on Region Year Room Status
+;; H:+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; for allowing what to sell and at what price
+;; D:a0,1
+;; B:O
 ;; inlineinventory - allow for modal change to inventory status at time of checkout for artpos (not require inventory update first)
 ; inlineinventory=0 : artpos will sell as quicksale if no bids, or if 'restrict to inventory sale statuses and prices' for art not sold at quicksale
 ; inlineinventory=1 : art pos will use an intelligent modal popup based on Region Year Room Status for allowing what to sell and price
 inlineinventory=1
-;; precon - allow use of atcon for pre-con sales
+;; N:precon
+;; R:H,reg_staff
+;; H:Allow use of atcon for pre-con sales
+;; H:+&nbsp;&nbsp;&nbsp;&nbsp;=0: Atcon only work correctly at con, precon simiulates the first day of the con
+;; H:+&nbsp;&nbsp;&nbsp;&nbsp;=1: Atcon works pre-con, follows the current date to check date range for precon sales
+;; D:a0,1
+;; B:O
+;; precon - Allow use of atcon for pre-con sales
 ; precon=0 - only work correctly at con, precon simiulates the first day of the con
 ; precon=1 - works pre-con, follows the date range for precon
 precon=0
@@ -400,7 +434,7 @@ precon=0
 [vendor]
 ;;; overrides
 ;; N:customtext
-;; R:V,reg_admin
+;; R:V,exhibitor
 ;; H:Exhibitor Portal custom text setting, overrides the global setting if desired
 ;; H+:values:
 ;; H+:all = show all customtext, even the default messages
@@ -408,88 +442,264 @@ precon=0
 ;; H+:none = supporess all custom text
 ;; D:l:production,all,none
 ;; B:O
-;; ;;; customtext
-;; ; appears in each program section based on program name
-;; ; values:
-;; ; all = show all customtext, even the default messages
-;; ; production = suppress the 'default' placeholder messages (an alias for this is nodefault)
-;; ; none = supporess all custom text
-;; customtext='production'
+;;; customtext
+; appears in each program section based on program name
+; values:
+; all = show all customtext, even the default messages
+; production = suppress the 'default' placeholder messages (an alias for this is nodefault)
+; none = supporess all custom text
+; customtext='production'
 
+;;; Exhibitor Portal Email Addresses
+;; N:vendor
+;; R:H,exhibitor
+;; P:Generic Vendor (dealers) staff email address, region independent
+;; H:The email address used to contact the vendor (dealers) staff for the convention. (Independent of region)
+;; D:e
+;; B:M
 ;vendor: email address for generic vendor emails
 vendor="dealers@???"
+;; N:artist
+;; R:H,exhibitor
+;; P:Generic Artist staff email address, region independent
+;; H:The email address used to contact the artist staff for the convention. (Independent of region)
+;; D:e
+;; B:M
 ;artist: email address for generic artist emails
+;;; Artist Portal items for inventory headers
 artist="artists@???"
-;; artist Item Registration Headers, if omitted, the defaults are used
+;;; artist Inventory Item Registration Headers, if omitted, the defaults are used
+;; N:artistItemAuctionTitle
+;; R:V,exhibitor
+;; P:Auction Section Title
+;; H:Title for the Auction Items Section
+;; D:s80
+;; B:O
 ;artistItemAuctionTitle="Art Auction Items"
+;; N:artistItemSalesTitle
+;; R:V,exhibitor
+;; P:Sales/Print Shop Section Title
+;; H:Title for the Sale Item/Print Shop Section
+;; D:s80
+;; B:O
 ;artistItemSalesTitle="Art Sales / Print Shop Items"
+;; N:artistItemNFSTitle
+;; R:V,exhibitor
+;; P:NFS/Display Only Section Title
+;; H:Title for the Not for Sale/Display Only Section
+;; H+:(Display a sample bid sheet to check fit of the title)
+;; D:s64
+;; B:O
 ;artistItemNFSTitle="Display Only / Not For Sale Items"
-; lines = number of bid lines, numbers are which of those are numbreed, Sep is to show seperation lines (vertical lines) in the bid rows (1=yes, 0=no)
+;;; bid sheet items
+; lines = number of bid lines, numbers are which of those are numbered, Sep is to show seperation lines (vertical lines) in the bid rows (1=yes, 0=no)
 ; NOTE: if barcode is used, 3x2 format is max BidSheetLines of 3, 2x2 is max of 7, and overall max is 22
 ;       if barcode is not used, 3x2 format is max BidSheetLines of 4, 2x2 is max of 8, and overall max is 23
+;; N:artistBidSheet
+;; R:V,exhibitor
+;; P:Bid Sheet Title Line
+;; H:Title for the Art Show Bid Sheets
+;; H+:(There is limited space and it must fit on one line. Display a sample bid sheet to check if your text fits propery)
+;; D:s64
+;; B:M
+artistBidSheet="Unconfigured Bid Sheet"
+;; N:artistBidSheetLines
+;; R:V,exhibitor
+;; P:Number of bid lines
+;; H:Number of bid lines on an auction bid sheet
+;; H+:With barcode: 3x2 format: 1-3, 2x2 format: 4-7, 1x2 format: 8-22
+;; H+:Without barcode: 3x2 format: 1-4, 2x2 format: 5-8, 1x2 format: 9-23
+;; H+:Format is determined by then numbrer of lines
+;; H+:Default is 4 if the line is omitted
+;; D:i2
+;; B:O
 artistBidSheetLines=4
+;; N:artistBidSheetNumbers
+;; R:V,exhibitor
+;; P:Number of bid lines that are numbered
+;; H:Number of numbered bid lines on an auction bid sheet (remainder are blank (unnumbered)
+;; H+:Default is 3 if the line is omitted
+;; D:i2
+;; B:O
 artistBidSheetNumbers=3
+;; N:artistBidSheetBidSep
+;; R:V,exhibitor
+;; H:Print the vertical separation bar in the bid sheet rows between bidder and bid amount
+;; H:+&nbsp;&nbsp;&nbsp;&nbsp;set to 0 to not print the separation line, 1 to print it
+;; D:a0,1
+;; B:O
 artistBidSheetBidSep=1
-;artistBidSheet and artistPriceTag are the titles to print on the bid sheets and print price tags
-;artistBidSheet=
-;artistPriceTag=
+;; N:artistBidSheetBarcode
+;; R:V,exhibitor
+;; H:Print the bar code at the bottom of the bid sheets
+;; H:+&nbsp;&nbsp;&nbsp;&nbsp;set to 0 to not print the barcode, 1 to to print it
+;; D:a0,1
+;; B:O
 ; bar codes: 0 = no barcode, 1 = show barcode, bar code is code128 and contains art item id,count (count = 1 for bid sheets and the "n" of qty for print shop)
 artistBidSheetBarcode = 1;
+;;; Art Show Price Tag Items
+;; N:artistPriceTag
+;; R:V,exhibitor
+;; P:Bid Sheet Title Line
+;; H:Title for the Art Show Fixed Sale Price Tags
+;; H+:(There is limited space and it must fit on one line. Display a sample bid sheet to check if your text fits propery)
+;; D:s64
+;; B:M
+artistPriceTag="Unconfigured Price Tag"
+;; N:artistPriceTagBarcode
+;; R:V,exhibitor
+;; H:Print the bar code at the bottom of the price tags
+;; H:+&nbsp;&nbsp;&nbsp;&nbsp;set to 0 to not print the barcode, 1 to to print it
+;; D:a0,1
+;; B:O
+; bar codes: 0 = no barcode, 1 = show barcode, bar code is code128 and contains art item id,count (count = 1 for bid sheets and the "n" of qty for print shop)
 artistPriceTagBarcode = 1;
-; artist bid sheets, artistBidSheetNumbers = number of bid lines, of which artistBidSheetNumbers are numbered if lines <=4, it will use up 2x3 Landscape, if >4 and less that X it will use 2x2 Portrait format, if > X it will use 2x1 portrait format
-artistBidSheetLines=4
-artistBidSheetNumbers=3
-; name for artist bid sheet header (independent of art area)
-artistBidSheet="Demo 2024 Art Show Bid Sheet"
-; name for artist print shop price tag header (independent of art area)
-artistPriceTag=""
-artsheets=false ; true/false show sheet print buttons
-artcontrol=false ; true/false show control sheet print button
+;;; general items
+;; N:artsheets
+;; R:V,exhibitor
+;; H:Show the print bid/price sheets buttons in the exhibior portal
+;; H:+&nbsp;&nbsp;&nbsp;&nbsp;set to 0 to not show the buttons, 1 to show them
+;; D:a0,1
+;; B:O
+artsheets=0 ; 0: do not show, 1 = whow show bid/price tag sheet print buttons
+;;; general items
+;; N:artcontrol
+;; R:V,exhibitor
+;; H:Show the control sheets print button in the exhibior portal
+;; H:+&nbsp;&nbsp;&nbsp;&nbsp;set to 0 to not show the button, 1 to show it
+;; D:a0,1
+;; B:O
+artcontrol=0 ; true/false show control sheet print button
 ;;; artcontrolsort = one of item or type (/item): default if missing: item
+;; N:artcontrolsort
+;; R:V,exhibitor
+;; H:How to sort the control sheet:
+;; H+:values:
+;; H+:item = short by item_id in one section
+;; H+:type = split into sections and sort by type, item_id
+;; D:l:type,item
+;; B:O
 ;;  if =item it is one group by item #,
 ;; if =type then the 3 types (print, sale, nfs) are listed separetely sorted by item id
-artcontrolsort=item
+artcontrolsort=type
 
 [portal]
+;; N:customtext
+;; R:V,reg_staff
+;; H:Registration Portal custom text setting, overrides the global setting if desired
+;; H+:values:
+;; H+:all = show all customtext, even the default messages
+;; H+:production = suppress the 'default' placeholder messages (an alias for this is nodefault)
+;; H+:none = supporess all custom text
+;; D:l:production,all,none
+;; B:O
 ;;; overrides
-;; ;;; customtext
-;; ; appears in each program section based on program name
-;; ; values:
-;; ; all = show all customtext, even the default messages
-;; ; production = suppress the 'default' placeholder messages (an alias for this is nodefault)
-;; ; none = supporess all custom text
-;; customtext='production'
+;;; customtext
+;;; appears in each program section based on program name
+; values:
+; all = show all customtext, even the default messages
+; production = suppress the 'default' placeholder messages (an alias for this is nodefault)
+; none = supporess all custom text
+; customtext='production'
 
-;; membership portal items
+;;; membership portal items
+
 ; history = 1 = show membership history menu item, 0 = suppress, missing/null = show
 ; the portal also has it's own logo variables as logoimage and logoalt
 logoimage=""
 logoalt=""
 ;;; enable registration history for prior years
+;; N:history
+;; R:H,reg_staff
+;; H:Enable the membership History menu button
+;; H:+&nbsp;&nbsp;&nbsp;&nbsp;set to 0 to disable (hide) the button, 1 to enable it (show)
+;; D:a0,1
+;; B:O
 history=1
-;; memberbadgencolor: hex string of the color of the membership "badges" on the portal home screen, to override the standard color scheme
-;;       note; standard color scheme has the buttons having a color that describe the membership type, the legend supports this color scheme
-;;           the override is a single color for all of the badges.  Presence of this line will auto suppress the legend.
-;; suppresslegend: if memberbasgecolor is not used, missing or 0 will show the legend, 1 will suppress the legend
+;;; memberbadgencolor: hex string of the color of the membership "badges" on the portal home screen, to override the standard color scheme
+;;; Art Show Price Tag Items
+;; N:memberbadgecolors
+;; R:V,exhibitor
+;; P:Color String in #000000 format
+;; H:Override the default membership badge color scheme, and make them all the color specified in this option.
+;; D:s7
+;; B:O
+;       note; standard color scheme has the buttons having a color that describe the membership type, the legend supports this color scheme
+;           the override is a single color for all of the badges.  Presence of this line will auto suppress the legend.
 ;memberbadgecolors="#000000"
+;; N:suppresslegend
+;; R:H,reg_staff
+;; H:Suppress the membership badge color legend
+;; H:+&nbsp;&nbsp;&nbsp;&nbsp;set to 1 to suppress (hide) the legend, 0 to enable it (show) (Note this is suppress now SHOW)
+;; D:a0,1
+;; B:O
+;; suppresslegend: if memberbasgecolor is not used, missing or 0 will show the legend, 1 will suppress the legend
 ;suppresslegend=0
+;; N:helppage
+;; R:V,exhibitor
+;; P:Relative path
+;; H:File name of the help page (pdf or php) releative to the portal web root
+;; H+: (relative to where portal's index.php file is contained)
+;; H+: The help menu item is hidden if this entry is missing or the file is not readable
+;; D:s256
+;; B:O
 ; helppage = path to the help page relative to the web root of the portal page
 ; helppage=
-; showConPolicy - shows the "CLick here for the #conname# Policies",
+
+;; N:showConPolicy
+;; R:H,reg_staff
+;; H:Shows the "Click here for the #conname# Policies",
+;; H:+&nbsp;&nbsp;&nbsp;&nbsp;set to 0 if agree to policy is one of your ConTroll policies or 1 otherwise
+;; D:a0,1
+;; B:O
+; showConPolicy - shows the "Click here for the #conname# Policies",
 ;     set to 0 if agree to policy is one of your policies or 1 otherwise
 showConPolicy=1
+;; N:showVolunteerPolicy
+;; R:H,reg_staff
+;; H:Shows the "#Conname# is entirely run by volunteers" line in the policy block,
+;; H:+&nbsp;&nbsp;&nbsp;&nbsp;set to 0 if volunteers is in your interest section, 1 otherwise
+;; D:a0,1
+;; B:O
+; showVolunteerPolicy - shows the "#Conname# is entirely run by volunteers" line in the policy block,
+;      set to 0 if volunteers is in your interest section, 1 otherwise
 ; showVolunteerPolicy - shows the "#Conname# is entirely run by volunteers" line in the policy block,
 ;      set to 0 if volunteers is in your interest section, 1 otherwise
 showVolunteerPolicy=1
 
 [controll]
+;; N:clubname
+;; R:V,club
+;; P:club name
+;; H:Club name for the club section.
+;; D:s32
+;; B:O
 clubname='Club Name'
+;; N:badgelistfilter
+;; R:V,reg_admin
+;; H:Positioning of the filter block on the reg-admin membership list
+;; H+:bottom = after list
+;; H+:top = before list
+;; D:l:bottom,top
+;; B:O
 ; badgelistfilter - where to put the filter elements on the badgelist page ("top", "bottom")
-badgelistfilter="top"
+badgelistfilter="bottom"
 
 [local]
 ;;; local parameters for the sendinterests.php send script
+;; N:csvto
+;; R:H,reg_admin
+;; P:email address to receive the overall interest file
+;; H:The email address to receive the overall interest file
+;; D:e
+;; B:O
 ;   cvsto = what email address to receive the overall VS file
-;   cvscc = what email address, if any gets CC on all emails sent my sendinterests.php
 ;csvto=
+;; N:csvcc
+;; R:H,reg_admin
+;; P:email address to receive CC of interests
+;; H:The email address to receive CC's of all emails sent about interests
+;; D:e
+;; B:O
+;   cvscc = what email address, if any gets CC on all emails sent my sendinterests.php
 ;csvcc=
