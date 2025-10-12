@@ -471,7 +471,11 @@ draw_passwordModal();
 draw_exhibitorRequestModal($portalType);
 draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $testsite, $cc, $portalName, $portalType);
 draw_exhibitorReceiptModal($portalType);
-draw_itemRegistrationModal($portalType, $vendor_conf['artsheets'], $vendor_conf['artcontrol']);
+$value = getConfValue('vendor', 'artsheets', 1);
+$showSheets = $value == '1' || $value == 'yes' || $value == 'true';
+$value = getConfValue('vendor', 'artcontrol', 1);
+$artControl = $value == '1' || $value == 'yes' || $value == 'true';
+draw_itemRegistrationModal($portalType, $showSheets, $artControl);
 ?>
     <!-- now for the top of the form -->
      <div class='container-fluid'>
