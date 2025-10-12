@@ -117,7 +117,7 @@ Each etnry in the file that is online editable will contain the following prefix
 - `;; H:hint`
   - A hover hint for this parameter
   - A hint may span multiple lines in the file
-  - Continuation lines for the hint will start with `;H+`
+  - Continuation lines for the hint will start with `;;H+`
 - `;; D:datatype`
   - The input data type for this field:
     - `iX` = integer, with at most X digits
