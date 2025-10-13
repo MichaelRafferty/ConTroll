@@ -107,8 +107,8 @@ Each etnry in the file that is online editable will contain the following prefix
     - The name of the parameter
     - This entry starts a new parameter in the file and must be the first parameter for any entry
     - The name and id of the related input field will be `S_section_P_parameterName`
-- `;; R:visibility,permission-role,...
-    - permission-role: A list of roles required to edit this permission, separated by commas.
+- `;; R:visibility,permission-role
+    - permission-role: Role required to edit this permission.
     - visibility: If the user does not have the role, how is this row displayed:
       - `H` for hidden if not allowed to edit
       - `V` for visible but read/only
