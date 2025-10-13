@@ -4,7 +4,8 @@
 //  options: the array returned by getoptions.
 function createMissingDirectories($options) : int {
     $directories = ['backups', 'config', 'cronlog', 'crons', 'reglogs', 'scripts',
-        'onlinereg/images', 'vendor/images', 'portal/images', 'controll/images' ];
+        'onlinereg/images', 'vendor/images', 'portal/images', 'controll/images',
+        'controll/reports/local_reports', 'controll/reports/local_groups'];
     $errors = 0;
 
     $path = __DIR__ . '/../config-sample';
