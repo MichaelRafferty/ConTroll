@@ -1,0 +1,932 @@
+<?php
+//  receipt.php - library of modules related building receipts
+
+// spaceReceiptGetTrans
+//      from space lists, given a exhibitorId and a regionYearId, return the transactions(s) for those spaces
+function spaceReceiptGetPaymentTrans($exhid, $regionYearId) : array {
+    $transactions = [];
+    // find the space records for a given exhibitor and a particular region for this year
+
+    $spaceQ = <<<EOS
+SELECT S.transid
+FROM exhibitorSpaces S
+JOIN exhibitorRegionYears R ON R.id = S.exhibitorRegionYear
+JOIN exhibitorYears Y ON Y.id = R.exhibitorYearId
+WHERE Y.exhibitorId = ? AND R.exhibitsRegionYearId = ? AND transid IS NOT NULL
+ORDER BY S.transid;
+EOS;
+    $spaceR = dbSafeQuery($spaceQ,'ii', array($exhid, $regionYearId));
+    if ($spaceR === false) {
+        return $transactions;
+    }
+    while ($transId =$spaceR->fetch_row()[0]) {
+        $transactions[] = $transId;
+    }
+    $spaceR->free();
+
+    return $transactions;
+}
+
+// from reg record, get transaction (complete preferred as that is payment)
+function regGetPaymentTrans($regid) : array {
+    $transactions = [];
+
+    $regQ = <<<EOS
+SELECT IFNULL(complete_trans, create_trans) as transid
+FROM reg
+WHERE id = ?;
+EOS;
+    $regR = dbSafeQuery($regQ,'i', array($regid));
+    if ($regR === false) {
+        return $transactions;
+    }
+    if ($regR->num_rows > 0) {
+        $transactions[] = $regR->fetch_row()[0];
+    }
+    $regR->free();
+
+    return $transactions;
+}
+
+// from payor plan, get transactions
+function payorPlanGetPaymentTrans($payorPlanId) : array {
+    $transactions = [];
+
+    // first the down payment
+    $planQ = <<<EOS
+SELECT createTransaction
+FROM payorPlans
+WHERE id = ? AND createTransaction IS NOT NULL
+EOS;
+    $planR = dbSafeQuery($planQ,'i', array($payorPlanId));
+    if ($planR === false) {
+        return $transactions;
+    }
+    if ($planR->num_rows > 0) {
+        $transactions[] =$planR->fetch_row()[0];
+    }
+    $planR->free();
+
+    $planQ = <<<EOS
+SELECT transactionId
+FROM payorPlanPayments
+WHERE payorPlanId = ? AND transactionId IS NOT NULL
+ORDER BY transactionId;
+EOS;
+
+    $planR = dbSafeQuery($planQ,'i', array($payorPlanId));
+    if ($planR === false) {
+        return $transactions;
+    }
+    while ($transId =$planR->fetch_row()[0]) {
+        $transactions[] = $transId;
+    }
+    $planR->free();
+
+    return $transactions;
+}
+
+// trans_receipt - given a transaction number build a receipt
+// This function returns all the data to make up a receipt and then calls 'reg_format_receipt' to actually format the receipt as plain text, HTML and email tables.
+function trans_receipt($transid) {
+    // find all the items attached to this transaction id for payment:
+    // possible items:
+    //      memberships (online reg, portal, controll/registration, atcon)
+    //      payment plan initial payment (portal)
+    //      payment plan payments (portal, eventually registration, finance)
+    //      space payments including fees (exhibitor portals, controll/exhibitors)
+    //      art payments (atcon/artpos)
+    // payment types to handle
+    //      credit
+    //      cash
+    //      check
+    //      coupon
+    //      discount
+    //      refund (future?)
+    //      other
+
+    // items gathered
+    $response = [];     // return associative array of all the data
+    $emails = [];       // people mentioned in the data
+    $payorL = [];       // payor of the transaction
+    $payments = [];     // payment records
+    $memberships = [];  // memberships
+    $plans = [];        // payment plans
+    $planPayments = []; // payment plan payments
+    $spaces = [];       // exhibitor spaces
+    $art = [];          // art sales
+
+    // get the transaction information
+    $transQ = <<<EOS
+SELECT t.*, DATE_FORMAT(create_date, '%W %M %e, %Y %h:%i:%s %p') as create_date_str,
+       DATE_FORMAT(complete_date, '%W %M %e, %Y %h:%i:%s %p') as complete_date_str,
+       c.name AS couponName, c.couponType, c.discount AS couponDiscount, c.code AS couponCode,
+    CASE 
+        WHEN p.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' '))
+        WHEN n.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', n.first_name, n.middle_name, n.last_name, n.suffix), ' +', ' '))
+        ELSE 'Unknown'
+    END AS fullName,
+    CASE 
+        WHEN p.id IS NOT NULL THEN p.badge_name
+        WHEN n.id IS NOT NULL THEN n.badge_name
+        ELSE ''
+    END AS badge_name,
+    CASE 
+        WHEN p.id IS NOT NULL THEN p.badgeNameL2
+        WHEN n.id IS NOT NULL THEN n.badgeNameL2
+        ELSE ''
+    END AS badgeNameL2,
+    CASE 
+        WHEN p.id IS NOT NULL THEN p.first_name
+        WHEN n.id IS NOT NULL THEN n.first_name
+        ELSE ''
+    END AS first_name,
+    CASE 
+        WHEN p.id IS NOT NULL THEN p.last_name
+        WHEN n.id IS NOT NULL THEN n.last_name
+        ELSE ''
+    END AS last_name,
+    CASE
+        WHEN p.id IS NOT NULL THEN p.email_addr
+        WHEN n.id IS NOT NULL THEN n.email_addr
+        ELSE ''
+    END AS email_addr,
+        CASE
+        WHEN p.id IS NOT NULL THEN p.address
+        WHEN n.id IS NOT NULL THEN n.address
+        ELSE ''
+    END AS address,
+    CASE
+        WHEN p.id IS NOT NULL THEN p.addr_2
+        WHEN n.id IS NOT NULL THEN n.addr_2
+        ELSE ''
+    END AS addr_2,
+    CASE
+        WHEN p.id IS NOT NULL THEN p.city
+        WHEN n.id IS NOT NULL THEN n.city
+        ELSE ''
+    END AS city,
+    CASE
+        WHEN p.id IS NOT NULL THEN p.state
+        WHEN n.id IS NOT NULL THEN n.state
+        ELSE ''
+    END AS state,
+    CASE
+        WHEN p.id IS NOT NULL THEN p.zip
+        WHEN n.id IS NOT NULL THEN n.zip
+        ELSE ''
+    END AS zip,
+    CASE
+        WHEN p.id IS NOT NULL THEN p.country
+        WHEN n.id IS NOT NULL THEN n.country
+        ELSE ''
+    END AS country,
+    CASE
+        WHEN p.id IS NOT NULL THEN 'perinfo'
+        WHEN n.id IS NOT NULL THEN 'newperson'
+        ELSE ''
+    END AS tablename
+FROM transaction t
+LEFT OUTER JOIN perinfo p ON p.id = t.perid
+LEFT OUTER JOIN newperson n ON n.id = t.newperid
+LEFT OUTER JOIN coupon c ON t.coupon = c.id
+WHERE t.id = ?;
+EOS;
+
+    $transR = dbSafeQuery($transQ, 'i', array($transid));
+    if ($transR === false || $transR->num_rows != 1) {
+        RenderErrorAjax('Transaction not found');
+        exit();
+    }
+
+    $transL = $transR->fetch_assoc();
+    $transL['badgename'] = badgeNameDefault($transL['badge_name'], $transL['badgeNameL2'], $transL['$first_name'], $transL['last_name']);
+
+    $conid = $transL['conid'];
+    $userid = $transL['userid'];
+    $type = $transL['type'];
+
+    $response['transid'] = $transid;
+    $response['type'] = $type;
+    $response['userid'] = $userid;
+    $response['transaction'] = $transL;
+
+    //// now the items that mention this transaction
+    //      payments
+    $payQ = <<<EOS
+SELECT *
+FROM payments
+WHERE transid = ?;
+EOS;
+    $payR = dbSafeQuery($payQ,'i', array($transid));
+    if ($payR === false) {
+        RenderErrorAjax('Payment query error');
+        exit();
+    }
+    while ($payR->fetch_assoc()) {
+        $payments[] = $payR;
+    }
+    $payR->free();
+    $response['payments'] = $transL;
+
+    //      memberships (online reg, portal, controll/registration, atcon)
+    $regQ = <<<EOS
+SELECT r.*, m.label, m.shortname, m.memCategory, m.memType, m.memAge, m.price AS fullprice, m.taxable, m.conid AS memConid,
+    c.name AS couponName, c.couponType, c.discount AS couponDiscount, c.code AS couponCode,
+    CASE 
+        WHEN p.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' '))
+        WHEN n.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', n.first_name, n.middle_name, n.last_name, n.suffix), ' +', ' '))
+        ELSE 'Unknown'
+    END AS fullName,
+    CASE 
+        WHEN p.id IS NOT NULL THEN p.badge_name
+        WHEN n.id IS NOT NULL THEN n.badge_name
+        ELSE ''
+    END AS badge_name,
+    CASE 
+        WHEN p.id IS NOT NULL THEN p.badgeNameL2
+        WHEN n.id IS NOT NULL THEN n.badgeNameL2
+        ELSE ''
+    END AS badgeNameL2,
+    CASE 
+        WHEN p.id IS NOT NULL THEN p.first_name
+        WHEN n.id IS NOT NULL THEN n.first_name
+        ELSE ''
+    END AS first_name,
+    CASE 
+        WHEN p.id IS NOT NULL THEN p.last_name
+        WHEN n.id IS NOT NULL THEN n.last_name
+        ELSE ''
+    END AS last_name,
+    CASE
+        WHEN p.id IS NOT NULL THEN p.email_addr
+        WHEN n.id IS NOT NULL THEN n.email_addr
+        ELSE ''
+    END AS email_addr,
+    CASE
+        WHEN p.id IS NOT NULL THEN p.address
+        WHEN n.id IS NOT NULL THEN n.address
+        ELSE ''
+    END AS address,
+    CASE
+        WHEN p.id IS NOT NULL THEN p.addr_2
+        WHEN n.id IS NOT NULL THEN n.addr_2
+        ELSE ''
+    END AS addr_2,
+    CASE
+        WHEN p.id IS NOT NULL THEN p.city
+        WHEN n.id IS NOT NULL THEN n.city
+        ELSE ''
+    END AS city,
+    CASE
+        WHEN p.id IS NOT NULL THEN p.state
+        WHEN n.id IS NOT NULL THEN n.state
+        ELSE ''
+    END AS state,
+    CASE
+        WHEN p.id IS NOT NULL THEN p.zip
+        WHEN n.id IS NOT NULL THEN n.zip
+        ELSE ''
+    END AS zip,
+    CASE
+        WHEN p.id IS NOT NULL THEN p.country
+        WHEN n.id IS NOT NULL THEN n.country
+        ELSE ''
+    END AS country,
+        CASE
+        WHEN p.id IS NOT NULL THEN 'perinfo'
+        WHEN n.id IS NOT NULL THEN 'newperson'
+        ELSE ''
+    END AS tablename
+FROM reg r
+JOIN memLabel m ON m.id = r.memId
+LEFT OUTER JOIN perinfo p ON p.id = r.perid
+LEFT OUTER JOIN newperson n ON n.id = r.newperid
+LEFT OUTER JOIN coupon c ON c.id = r.coupon
+WHERE r.complete_trans = ? OR r.create_trans = ?
+ORDER BY perid, newperid, id;
+EOS;
+    $regR = dbSafeQuery($regQ,'ii', array($transid, $transid));
+    if ($regR === false) {
+        RenderErrorAjax('Membership query error');
+        exit();
+    }
+    while ($regL = $regR->fetch_assoc()) {
+        $regL['badgename'] = badgeNameDefault($regL['badge_name'], $regL['badgeNameL2'], $regL['$first_name'], $regL['last_name']);
+        $memberships[] = $regL;
+    }
+    $regR->free();
+    $response['memberships'] = $memberships;
+
+    //      payment plan initial payment (portal)
+    //      payor plan perid/newperid = transaction perid/newperid, so name info not needed
+    $planQ = <<<EOS
+SELECT pp.*, p.name, p.description
+FROM payorPlans pp
+JOIN paymentPlans p ON p.id = pp.planId
+WHERE createTransaction = ?;
+EOS;
+
+    $planR = dbSafeQuery($planQ, 'i', array($transid));
+    if ($planR === false) {
+        RenderErrorAjax('Payment Plan query failed');
+        exit();
+    }
+    while ($planL = $planR->fetch_assoc()) {
+        $plans[] = $planL;
+    }
+    $planR->free();
+    $response['plans'] = $plans;
+
+    //      payment plan payments (portal, eventually registration, finance)
+    $planQ = <<<EOS
+SELECT *
+FROM payorPlanPayments 
+EOS;
+    $planR = dbSafeQuery($planQ, 'i', array($transid));
+    if ($planR === false) {
+        RenderErrorAjax('Payment Plan Payments query failed');
+        exit();
+    }
+    while ($planL = $planR->fetch_assoc()) {
+        $planPayments[] = $planL;
+    }
+    $planR->free();
+    $response['planPayments'] = $planPayments;
+
+    //      space payments including fees (exhibitor portals, controll/exhibitors)
+    $spaceQ = <<<EOS
+SELECT S.id, S.time_purchased, S.item_purchased, S.price, S.paid,  sp.code, sp.description, sp.units, sp.price AS spacePrice,
+       sp.includedMemberships, sp.additionalMemberships, s.name, s.description AS spaceDescription,
+       er.name AS regionName, er.description AS regionDescription, RY.exhibitorNumber, Y.exhibitorId,
+       CONCAT('e-', Y.exhibitorId) AS pid, E.exhibitorName AS last_name, '' AS first_name, E.exhibitorName AS fullName,
+       Y.contactName AS badge_name, E.exhibitorName AS badgeNameL2, E.exhibitorEmail AS email_addr, E.addr AS address,
+       E.addr2, E.city, E.state, E.zip, E.country, 'exhibitor' AS tablename
+FROM exhibitorSpaces S
+JOIN exhibitsSpacePrices sp ON sp.id = S.item_purchased
+JOIN exhibitsSpaces s ON s.id = S.spaceId
+JOIN exhibitsRegionYears ery ON ery.id = s.exhibitsRegionYear
+JOIN exhibitsRegions er ON er.id = ery.exhibitsRegion
+JOIN exhibitorRegionYears RY ON S.exhibitorRegionYear = RY.id
+JOIN exhibitorYears Y ON Y.id = RY.exhibitorYearId
+JOIN exhibitors E ON E.id = Y.exhibitorId
+EOS;
+    $spaceR = dbSafeQuery($spaceQ, 'i', array($transid));
+    if ($spaceR === false) {
+        RenderErrorAjax('Space query failed');
+        exit();
+    }
+    while ($spaceL = $spaceR->fetch_assoc()) {
+        $spaceL['badgename'] = badgeNameDefault($spaceL['badge_name'], $spaceL['badgeNameL2'], $spaceL['$first_name'], $spaceL['last_name']);
+        $spaces[] = $spaceL;
+    }
+    $spaceR->free();
+    $response['spaces'] = $spaces;
+    //      art sales (atcon/artpos)
+    $artQ = <<<EOS
+SELECT s.*, i.status AS itemStatus, i.bidder, i.title, i.type, i.material, i.item_key, RY.exhibitorNumber
+FROM artSales s
+JOIN artItems i ON i.id = s.artId
+JOIN exhibitorRegionYears RY ON i.exhibitorRegionYearId = RY.id
+WHERE s.transId = ?;
+EOS;
+    $artR = dbSafeQuery($artQ, 'i', array($transid));
+    if ($artR === false) {
+        RenderErrorAjax('Art query failed');
+        exit();
+    }
+    while ($artL = $artR->fetch_assoc()) {
+        $art[] = $artL;
+    }
+    $artR->free();
+    $response['art'] = $art;
+
+    // if the payor is unknown, it's a space payment, before there is a payor (membership[0] created), update the info in TransL
+    if ($transL['fullName'] == 'unknown' && count($spaces) > 0) {
+        $fields = ['pid','tablenname', 'fullName', 'last_name', 'first_name', 'badge_name', 'badgeNameL2',
+            'address', 'addr_2', 'city', 'state', 'zip', 'country'];
+        foreach ($fields as $field) {
+            $transL[$field] = $spaces[0][$field];
+        }
+        $response['transaction'] = $transL;
+    }
+
+    return reg_format_receipt($response);
+}
+
+// reg_format_receipt - format a receipt in HTML and Text formats
+function reg_format_receipt($data) {
+    $currency = getConfValue('con', 'currency', 'USD');
+    $curLocale = locale_get_default();
+    $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
+    // ok, now there is all the data for the receipt
+    // payor = who paid
+    // people = details about people mentioned in the memberships
+    // memberships = memberships purchased with expanded fields for memLabel
+    // payments = payments made
+    // coupons = coupons applied
+    // transactions = transactions involved
+
+    $response = $data;
+    $master_transaction = $data['transaction'];
+    // top lines of receipt - needs conlabel
+    $condata = get_con();
+    $conlabel = $condata['label'];
+    $receipt_date = $master_transaction['complete_date'] ? "Completed on " . $master_transaction['complete_date_str'] : "Created on " . $master_transaction['create_date_str'];
+    $title_payor_name = 'unknown';
+    $title_email = '';
+    // Receipt Title:
+    $receipt = "Receipt for payment to $conlabel\n$receipt_date\n";
+    $receipt_html = <<<EOS
+<div class="container-fluid border border-primary border-4">
+    <div class="row">
+        <div class="col-sm-12">
+            <h2>Receipt for payment to $conlabel</h2>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            $receipt_date
+        </div>
+    </div>
+EOS;
+    $receipt_tables = <<<EOS
+<table>
+<tr><td colspan="3"><h2>Receipt for payment to $conlabel</h2></td></tr>
+<tr><td colspan="3">$receipt_date</td></tr>
+EOS;
+
+    // Payor Info
+    $type = $data['type'];
+    $payor = $data['payor'];
+    $payor_name = $payor['first_name'];
+    if (mb_strlen($payor['middle_name']) > 0)
+        $payor_name .= ' ' . $payor['middle_name'];
+    if (mb_strlen($payor['last_name']) > 0)
+        $payor_name .= ' ' . $payor['last_name'];
+    if (mb_strlen($payor['suffix']) > 0)
+        $payor_name .= ', ' . $payor['suffix'];
+    $payor_name = trim($payor_name);
+    $master_tid = $master_transaction['id'];
+    if (array_key_exists('exhibitor', $data)) {
+        $title_payor_name = $data['exhibitor']['exhibitorName'];
+        $title_email = $data['exhibitor']['exhibitorEmail'];
+    } else {
+        $title_payor_name = $payor_name;
+        $title_email = $payor['email_addr'];
+    }
+
+    $response['payor_name'] = $title_payor_name;
+    $response['payor_email'] = $title_email;
+
+    switch ($type) {
+        case 'website':
+            $receipt .= "By: $title_payor_name, Via: Online Registration Website, Transaction: $master_tid\n";
+            $receipt_html .= <<<EOS
+    <div class="row">
+        <div class="col-sm-12">
+            By: $payor_name, Via: Online Registration Website, Transaction: $master_tid
+        </div>
+    </div>
+EOS;
+            $receipt_tables .= <<<EOS
+<tr><td colspan="3">By: $payor_name, Via: Online Registration Website, Transaction: $master_tid</td></tr>
+EOS;
+
+            break;
+        case 'regportal':
+            $receipt .= "By: $title_payor_name, Via: Registration Portal, Transaction: $master_tid\n";
+            $receipt_html .= <<<EOS
+    <div class="row">
+        <div class="col-sm-12">
+            By: $payor_name, Via: Registration Portal, Transaction: $master_tid
+        </div>
+    </div>
+EOS;
+            $receipt_tables .= <<<EOS
+<tr><td colspan="3">By: $payor_name, Via: Registration Portal, Transaction: $master_tid</td></tr>
+EOS;
+
+            break;
+        case 'vendor':
+        case 'artist':
+        case 'exhibitor':
+            $receipt .= "By: $title_payor_name, Via: $type portal, Transaction: $master_tid\n";
+            $receipt_html .= <<<EOS
+    <div class="row">
+        <div class="col-sm-12">
+            By: $title_payor_name, Via: $type portal, Transaction: $master_tid
+        </div>
+    </div>
+EOS;
+            $receipt_tables .= <<<EOS
+<tr><td colspan="3">By: $title_payor_name, Via: $type portal, Transaction: $master_tid</td></tr>
+EOS;
+
+            break;
+        case 'atcon':
+            $cashier = $master_transaction['userid'];
+            $receipt .= "By: $title_payor_name, Via: On-Site Registration, Cashier: $cashier, Transaction: $master_tid\n";
+            $receipt_html .= <<<EOS
+    <div class="row">
+        <div class="col-sm-12">
+            By: $title_payor_name, Via: On-Site Registration Cashier: $cashier, Transaction: $master_tid
+        </div>
+    </div>
+EOS;
+            break;
+        default: // reg_control receipts (registration, badgelist, people, etc.)
+            $cashier = $master_transaction['userid'];
+            $receipt .= "By: $title_payor_name, Via: Registration Staff Member: $cashier, Transaction: $master_tid\n";
+            $receipt_html .= <<<EOS
+    <div class="row">
+        <div class="col-sm-12">
+            By: $title_payor_name, Via: Registration Staff Member: $cashier, Transaction: $master_tid
+        </div>
+    </div>
+ EOS;
+            $receipt_tables .= <<<EOS
+<tr><td colspan="3">By: $title_payor_name, Via: Registration Staff Member: $cashier, Transaction: $master_tid</td></tr>
+EOS;
+            break;
+    }
+
+    $receipt .= "\nMemberships:\n";
+    $receipt_html .= <<<EOS
+    <div class='row mt-4'>
+        <div class='col-sm-12'>
+            <h3>Memberships:</h3>
+        </div>
+    </div>
+EOS;
+    $receipt_tables .= <<<EOS
+<tr><td colspan="3">&nbsp;</td> </tr>
+<tr><td colspan="3"><h3>Memberships:</h3></td></tr>
+EOS;
+
+    // first output the payor
+    $total = 0;
+    $payor_pid = $payor['pid'];
+    if (substr($payor_pid, 0, 1) != 'e') {
+        foreach ($data['memberships'] as $pid => $list) {
+            if ($payor_pid == $pid) {
+                $list = $data['memberships'][$payor_pid];
+                $subtotal = reg_format_mbr($data, $data['people'][$payor_pid], $list, $receipt, $receipt_html, $receipt_tables);
+                $total += $subtotal;
+            }
+        }
+    }
+
+    // now all but the payor
+    foreach ($data['memberships'] as $pid => $list) {
+        if ($payor_pid == $pid)
+        continue;
+
+        $subtotal = reg_format_mbr($data, $data['people'][$pid], $list, $receipt, $receipt_html, $receipt_tables);
+        $total += $subtotal;
+    }
+
+    // now exhibitor spaces if they exist
+    if (array_key_exists('exhibitor', $data)) {
+        $receipt .= "\nExhibitor Spaces:\n";
+        $receipt_html .= <<<EOS
+    <div class='row mt-4'>
+        <div class='col-sm-12'>
+            <h3>Exhibitor Spaces:</h3>
+        </div>
+    </div>
+EOS;
+        $receipt_tables .= <<<EOS
+<tr><td colspan="3">&nbsp;</td></tr>
+<tr><td colspan="3"><h3>Exhibitor Spaces:</h3></td></tr>
+EOS;
+        $exhibitor = $data['exhibitor'];
+        $region = $data['region'];
+        $exhibitor_sid = $exhibitor['id'];
+        $exhibitor_number = $exhibitor['exhibitorNumber'];
+        if ($exhibitor_number != null)
+            $exhibitor_sid = "$exhibitor_number ($exhibitor_sid)";
+        $exhibitor_name = $exhibitor['exhibitorName'];
+        $regionName = $region['name'];
+        $receipt_html .= <<<EOS
+    <div class="row">
+        <div class="col-sm-1">$exhibitor_sid</div>
+        <div class="col-sm-6"> $regionName for $exhibitor_name</div>
+    </div>
+EOS;
+        $receipt_tables .= "<tr><td>$exhibitor_sid</td><td>$regionName for $exhibitor_name</td><td></td></tr>\n";
+        $receipt .= "$exhibitor_sid: $regionName for $exhibitor_name\n";
+
+        foreach ($data['spaces'] as $space) {
+            $spaceDesc = $space['purchased_description'];
+            $spaceName = $space['name'];
+            $total += $space['purchased_price'];
+            $spacePrice = $dolfmt->formatCurrency((float) $space['purchased_price'], $currency);
+            $receipt_html .= <<<EOS
+    <div class="row">
+        <div class="col-sm-1"></div>
+        <div class="col-sm-6">$spaceDesc in $spaceName</div>
+        <div class="col-sm-2" style="text-align: right;">$spacePrice</div>
+    </div>
+EOS;
+            $receipt_tables .= "<tr><td></td><td>$spaceDesc in $spaceName</td><td>$spacePrice</td></tr>\n";
+            $receipt .= "     $spaceDesc in $spaceName: $spacePrice\n";
+        }
+
+        if ($region['mailinFee'] > 0 && $exhibitor['mailin'] == 'Y') {
+            $total += $region['mailinFee'];
+            $fee = $dolfmt->formatCurrency((float) $region['mailinFee'], $currency);
+            $receipt_html .= <<<EOS
+    <div class="row">
+        <div class="col-sm-1"></div>
+        <div class="col-sm-6">Mail-in Fee</div>
+        <div class="col-sm-2" style="text-align: right;">$fee</div>
+    </div>
+EOS;
+            $receipt_tables .= "<tr><td></td><td>Mail-in Fee</td><td>$fee</td></tr>\n";
+            $receipt .= "     Mail-in Fee: $fee\n";
+        }
+    }
+
+    // now the total due
+    $price = $dolfmt->formatCurrency((float) $total, $currency);
+    $receipt .= "\nTotal Due:: $price\n";
+    $receipt_html .= <<<EOS
+    <div class="row mt-2">
+        <div class="col-sm-7">Total Due:</div>
+        <div class="col-sm-2" style="text-align: right;">$price</div>
+    </div>
+EOS;
+    $receipt_tables .= <<<EOS
+<tr><td colspan="2">Total Due</td><td>$price</td></tr>
+EOS;
+
+    // now for the payments/coupon section
+
+    // if payments > 0, then output payments header
+    if (count($data['payments']) > 0) {
+        $receipt .= "\nPayments:\nType, Description/Code, Amount\n";
+        $receipt_html .= <<<EOS
+    <div class='row mt-2'>
+        <div class='col-sm-12'>
+            <h3>Payments:</h3>
+        </div>
+    </div>
+    <div class='row mt-1'>
+        <div class='col-sm-1'>Type</div>
+        <div class="col-sm-6">Description/Code</div>
+        <div class="col-sm-2" style="text-align: right;">Amount</div>
+    </div>
+EOS;
+    }
+    $receipt_tables .= <<<EOS
+<tr><td colspan="3">&nbsp;</td></tr>
+<tr><td colspan="3"><h3>Payments:</h3></td></tr>
+<tr><td>Type</td><td>Description/Code</td><td>Amount</td></tr>
+EOS;
+
+    $payment_total = 0;
+    // if only a coupon and no payments
+    if ( count($data['coupons']) > 0) {
+        $coupons = $data['coupons'];
+        $plural = count($coupons) > 1 ? 's' : '';
+        if (count($data['payments']) <= 0) {
+            $receipt .= "\nCoupon$plural Applied:\n";
+            $receipt_html .= <<<EOS
+    <div class='row mt-2'>
+        <div class='col-sm-12'>
+            <h3>Coupon$plural Applied:</h3>
+        </div>
+    </div>
+EOS;
+            $receipt_tables .= <<<EOS
+<tr><td colspan="3">&nbsp;</td></tr>
+<tr><td colspan="3"><h3>Coupon$plural Applied:</h3></td></tr>
+EOS;
+
+        }
+        foreach ($coupons as $coupon) {
+            $name = $coupon['name'];
+            $code = $coupon['code'];
+            $id = $coupon['id'];
+            $discount =  sum_coupon_discount($id, $data['memberships']);
+            $payment_total += $discount;
+            $discount = $dolfmt->formatCurrency((float) $discount, $currency);
+            $receipt .= "Coupon: $name ($code): $discount\n";
+            $receipt_html .= <<<EOS
+    <div class='row'>
+        <div class='col-sm-1'>Coupon</div>
+        <div class="col-sm-6">$name ($code)</div>
+        <div class="col-sm-2" style="text-align: right;">$discount</div>
+    </div>
+EOS;
+            $receipt_tables .= <<<EOS
+<tr><td>Coupon</td><td>$name ($code)</td><td>$discount</td></tr>
+EOS;
+        }
+    }
+
+    // now loop over the payments
+    foreach ($data['payments'] as $pmt) {
+        $type = $pmt['type'];
+        $desc = $pmt['description'];
+        $amt = $pmt['amount'];
+        $cc = $pmt['cc'];
+        if ($cc === null)
+            $cc = "";
+        else
+            $cc = mb_substr($cc, -4);
+        $aprvl = $pmt['cc_approval_code'];
+        if ($aprvl === null)
+            $aprvl = '';
+        else
+            $aprcl = trim($aprvl);
+        $url = $pmt['receipt_url'];
+
+        $payment_total += $amt;
+        $amt = $dolfmt->formatCurrency((float)$amt, $currency);
+
+        if ($aprvl != '' && $cc != '')
+            $aprvl = " (last 4: $cc, auth: $aprvl)";
+        else if ($cc != '')
+            $aprvl = ", last4: $cc";
+        else if ($aprvl != '')
+            $aprvl = " (auth: $aprvl)";
+
+        $url = $pmt['receipt_url'];
+        $receipt .= "$type, $desc$aprvl, $amt\n";
+        $receipt_html .= <<<EOS
+    <div class='row'>
+        <div class='col-sm-1'>$type</div>
+        <div class="col-sm-6">$desc$aprvl</div>
+        <div class="col-sm-2" style="text-align: right;">$amt</div>
+    </div>
+EOS;
+        $receipt_tables .= <<<EOS
+<tr><td>$type</td><td>$desc$aprvl</td><td>$amt</td></tr>
+EOS;
+
+        if ($url != null && $url != '') {
+            $receipt .= "     $url\n";
+            $receipt_html .= <<<EOS
+    <div class='row'>
+        <div class='col-sm-1'></div>
+        <div class="col-sm-auto">$url</div>
+    </div>
+EOS;
+            $receipt_tables .= <<<EOS
+<tr><td>&nbsp;</td><td colspan="2">$url</td></tr>
+EOS;
+        }
+    }
+
+    if ($payment_total > 0) {
+        $payment_total = $dolfmt->formatCurrency((float) $payment_total, $currency);
+        $receipt .= "\nTotal Payments: $payment_total\n";
+        $receipt_html .= <<<EOS
+    <div class='row'>
+        <div class='col-sm-7'>Total Payments</div>
+        <div class="col-sm-2" style="text-align: right;">$payment_total</div>
+    </div>
+EOS;
+        $receipt_tables .= <<<EOS
+<tr><td colspan="2">Total Payments</td><td>$payment_total</td></tr>
+EOS;
+    }
+
+    // now for the disclaimers at the bottom
+    // general disclaimer for all reg items
+    // Needs to be added
+
+    // exhibitor disclaimer
+    if (array_key_exists('exhibitor', $data)) {
+        loadCustomText('exhibitor', 'index', null, true);
+        $portalName = ucfirst($region['portalType']);
+        $disclaimer1 = returnCustomText('invoice/payDisclaimer', 'exhibitor/index/');
+        $disclaimer2 = returnCustomText('invoice/payDisclaimer' . $portalName,'exhibitor/index/');
+        if ($disclaimer1 != '' || $disclaimer2 != '') {
+            $textDisclaimer = $disclaimer1;
+            $htmlDisclaimer = $disclaimer1;
+            if ($disclaimer1 != '' && $disclaimer2 != '') {
+                $textDisclaimer .= PHP_EOL;
+                $htmlDisclaimer .= "<br/>\n";
+            }
+            $textDisclaimer .= $disclaimer2;
+            $htmlDisclaimer .= $disclaimer2;
+            $receipt .= "\n\n$textDisclaimer\n";
+            $receipt_html .= <<<EOS
+    <div class='row mt-4'>
+        <div class='col-sm-12'>
+           $htmlDisclaimer
+        </div>
+    </div>
+EOS;
+            $receipt_tables .= <<<EOS
+<tr><td colspan="3"><p>$textDisclaimer</p></td></tr>
+EOS;
+        }
+    }
+
+    $endtext = getConfValue('con', 'endtext', '');
+    if ($endtext != '') {
+        $receipt .=  "\n\n$endtext\n";
+        $receipt_html .= <<<EOS
+<div class='row mt-4'>
+        <div class='col-sm-12'>
+            <p>$endtext</p>
+        </div>
+    </div>
+EOS;
+        $receipt_tables .= <<<EOS
+<tr><td colspan="3"><p>$endtext</p></td></tr>
+EOS;
+    }
+
+    // all done now
+    $response['receipt'] = $receipt;
+    $response['receipt_html'] = $receipt_html;
+    $response['receipt_tables'] = $receipt_tables . "</table>\n";
+    return $response;
+}
+
+// loop over all the regs and sum to total usage of a coupon id
+function sum_coupon_discount($id, $memberships) {
+    $discount = 0;
+    foreach ($memberships as $pid => $list)  {
+        foreach ($list as $item) {
+            if ($item['coupon'] == $id)
+                $discount += $item['couponDiscount'];
+        }
+    }
+    return $discount;
+}
+
+// format a member block for the receipt
+function reg_format_mbr($data, $person, $list, &$receipt, &$receipt_html, &$receipt_tables) {
+    $currency = getConfValue('con', 'currency', 'USD');
+    $curLocale = locale_get_default();
+    $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
+    // first the name:
+    $name = trim($person['first_name']);
+    if (mb_strlen($person['middle_name']) > 0)
+        $name .= ' ' . trim($person['middle_name']);
+    if (mb_strlen($person['last_name']) > 0)
+        $name .= ' ' . trim($person['last_name']);
+    if (mb_strlen($person['suffix']) > 0)
+        $name .= ', ' . trim($person['suffix']);
+    if (mb_strlen($person['badge_name']) > 0 || mb_strlen($person['badgeNameL2']) > 0) {
+        $bn = badgeNameDefault($person['badge_name'], $person['badgeNameL2'], $person['first_name'], $person['last_name']);
+        $bn = str_replace('<br/>', '/', $bn);
+        $bn = str_replace('<i>', '', $bn);
+        $bn = str_replace('</i>', '', $bn);
+        $name .= " ($bn)";
+    }
+    $name = trim($name);
+
+    $receipt .= "\nMember: $name\n";
+    $receipt_html .= <<<EOS
+    <div class='row mt-1'>
+        <div class='col-sm-12'>
+            <h4><strong>Member:</strong> $name</h4>
+        </div>
+    </div>
+EOS;
+    $receipt_tables .= <<<EOS
+<tr><td colspan="3"><h4><strong>Member:</strong> $name</h4></td></tr>
+EOS;
+
+    $subtotal = 0;
+    // loop over their memberships
+    foreach ($list AS $row) {
+        $price = $dolfmt->formatCurrency((float) $row['price'], $currency);
+        $label = $row['label'];
+        $id = $row['id'];
+        $receipt .= "$id, $label: $price\n";
+        $receipt_html .= <<<EOS
+    <div class="row">
+        <div class="col-sm-1">$id</div>
+        <div class="col-sm-6">$label</div>
+        <div class="col-sm-2" style="text-align: right;">$price</div>
+    </div>
+EOS;
+        $receipt_tables .= <<<EOS
+<tr><td>$id</td><td>$label</td><td>$price</td></tr>
+EOS;
+
+        $subtotal += $row['price'];
+    }
+    $price = $dolfmt->formatCurrency((float) $subtotal, $currency);
+    $receipt .= "     Subtotal: $price\n";
+    $receipt_html .= <<<EOS
+    <div class="row">
+        <div class="col-sm-1"></div>
+        <div class="col-sm-6">Subtotal</div>
+        <div class="col-sm-2" style="text-align: right;">$price</div>
+    </div>
+EOS;
+    $receipt_tables .= <<<EOS
+<tr><td>&nbsp;</td><td>Subtotal</td><td>$price</td></tr>
+EOS;
+
+    return $subtotal;
+}
