@@ -360,7 +360,7 @@ SELECT S.id, S.time_purchased, S.item_purchased, S.price, S.paid,  sp.code, sp.d
        sp.includedMemberships, sp.additionalMemberships, s.name, s.description AS spaceDescription,
        er.name AS regionName, er.description AS regionDescription, RY.exhibitorNumber, Y.exhibitorId,
        CONCAT('e-', Y.exhibitorId) AS pid, E.exhibitorName AS last_name, '' AS first_name, E.exhibitorName AS fullName,
-       Y.contactName AS badge_name, E.exhibitorName AS badgeNameL2, E.exhibitorEmail AS email_addr, E.addr AS address,
+       Y.contactName AS badge_name, Y.mailin, ery.mailinFee, E.exhibitorName AS badgeNameL2, E.exhibitorEmail AS email_addr, E.addr AS address,
        E.addr2, E.city, E.state, E.zip, E.country, 'exhibitor' AS tablename
 FROM exhibitorSpaces S
 JOIN exhibitsSpacePrices sp ON sp.id = S.item_purchased
@@ -402,12 +402,17 @@ EOS;
     $response['art'] = $art;
 
     // if the payor is unknown, it's a space payment, before there is a payor (membership[0] created), update the info in TransL
-    if ($transL['fullName'] == 'unknown' && count($spaces) > 0) {
-        $fields = ['pid','tablenname', 'fullName', 'last_name', 'first_name', 'badge_name', 'badgeNameL2',
-            'address', 'addr_2', 'city', 'state', 'zip', 'country'];
-        foreach ($fields as $field) {
-            $transL[$field] = $spaces[0][$field];
+    if (count($spaces > 0)) {
+        if ($transL['fullName'] == 'unknown') {
+            $fields = ['pid', 'tablenname', 'fullName', 'last_name', 'first_name', 'badge_name', 'badgeNameL2',
+                'address', 'addr_2', 'city', 'state', 'zip', 'country'];
+            foreach ($fields as $field) {
+                $transL[$field] = $spaces[0][$field];
+            }
+
         }
+        $transL['mailinFee'] = $spaces[0]['mailinFee'];
+        $transL['mailin'] = $spaces[0]['mailin'];
         $response['transaction'] = $transL;
     }
 
