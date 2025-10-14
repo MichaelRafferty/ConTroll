@@ -109,7 +109,7 @@ function trans_receipt($transid) {
     //      refund (future?)
     //      other
 
-    //$transid = 4217;// test payor plan payment
+    //$transid = 4268 ;// test art item
     // items gathered
     $response = [];     // return associative array of all the data
     $emails = [];       // people mentioned in the data
@@ -418,10 +418,12 @@ EOS;
     $response['spaces'] = $spaces;
     //      art sales (atcon/artpos)
     $artQ = <<<EOS
-SELECT s.*, i.status AS itemStatus, i.bidder, i.title, i.type, i.material, i.item_key, RY.exhibitorNumber
+SELECT s.*, i.status AS itemStatus, i.bidder, i.title, i.type, i.material, i.item_key, RY.exhibitorNumber, IFNULL(E.artistName, E.exhibitorName) AS artist
 FROM artSales s
 JOIN artItems i ON i.id = s.artId
 JOIN exhibitorRegionYears RY ON i.exhibitorRegionYearId = RY.id
+JOIN exhibitorYears Y ON Y.id = RY.exhibitorYearId
+JOIN exhibitors E ON E.id = Y.exhibitorId
 WHERE s.transId = ?;
 EOS;
     $artR = dbSafeQuery($artQ, 'i', array($transid));
@@ -465,6 +467,9 @@ function reg_format_receipt($data) : array {
     $currency = getConfValue('con', 'currency', 'USD');
     $curLocale = locale_get_default();
     $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
+    $memberSubtotal = 0;
+    $artSubtotal = 0;
+    $spaceSubtotal = 0;
     // ok, now there is all the data for the receipt
     // payor = who paid
     // people = details about people mentioned in the memberships
@@ -802,7 +807,7 @@ EOS;
     <div class='row'>
         <div class='col-sm-3'>$spaceName</div>
         <div class='col-sm-6'>$spacePriceName</div>
-        <div class='col-sm-3'>$price</div>
+        <div class='col-sm-2' style="text-align: right;">$price</div>
     </div>
 EOS;
         $receipt_tables .= <<<EOS
@@ -818,8 +823,8 @@ EOS;
             $receipt_html .= <<<EOS
     <div class='row'>
         <div class='col-sm-2'>Mail In Fee</div>
-        <div class='col-sm-5'>$regionName</div>
-        <div class='col-sm-2'>$mailInFee</div>
+        <div class='col-sm-7'>$regionName</div>
+        <div class='col-sm-2' style="text-align: right;">$mailInFee</div>
     </div>
 EOS;
             $receipt_tables .= <<<EOS
@@ -829,16 +834,16 @@ EOS;
     }
     if ($spaceSubtotal > 0) {
         $subtotal = $dolfmt->formatCurrency((float)$spaceSubtotal, $currency);
-        $receipt .= "Space Subtotal: $spaceSubtotal\n";
+        $receipt .= "Space Subtotal: $subtotal\n";
         $receipt_html .= <<<EOS
     <div class='row'>
-        <div class='col-sm-3'>Space Subtotal</div>
-        <div class='col-sm-4'></div>
-        <div class='col-sm-2'>$subtotal</div>
+        <div class='col-sm-1'></div>
+        <div class='col-sm-8'>Space Subtotal</div>
+        <div class='col-sm-2' style="text-align: right;">$subtotal</div>
     </div>
 EOS;
         $receipt_tables .= <<<EOS
-<tr><td>Space Subtotal: </td><td></td><td>$spaceSubtotal</td></tr>
+<tr><td></td><td>Space Subtotal:</td><td>$subtotal</td></tr>
 EOS;
     }
 
@@ -880,18 +885,105 @@ EOS;
                 }
             }
         }
+        if ($memberSubtotal > 0) {
+            $subtotal = $dolfmt->formatCurrency((float)$memberSubtotal, $currency);
+            $receipt .= "Membership Subtotal: $subtotal\n";
+            $receipt_html .= <<<EOS
+    <div class='row'>
+        <div class='col-sm-1'></div>
+        <div class='col-sm-8'>Membership Subtotal</div>
+        <div class='col-sm-2' style="text-align: right;">$subtotal</div>
+    </div>
+EOS;
+            $receipt_tables .= <<<EOS
+<tr><td></td><td>Membership Subtotal:</td><td>$subtotal</td></tr>
+EOS;
+        }
     }
 
     // art sales
-    $artSubtotal = 0;
-
-    $total = $memberSubtotal + $spaceSubtotal = $artSubtotal;
+    if (count($data['art']) > 0) {
+        $receipt .= "\n\nArt Sales:\n";
+        $receipt_html .= <<<EOS
+    <div class='row mt-4'>
+        <div class='col-sm-12'>
+            <h2 class="size-h3">Art Sales:</h2>
+        </div>
+    </div>
+EOS;
+        $receipt_tables .= <<<EOS
+<tr><td colspan="3"><h2 class="size-h3">Art Sales:</h2></td></tr>
+EOS;
+        $needHeader = true;
+        foreach ($data['art'] as $art) {
+            if ($art['type'] == 'art') {
+                if ($needHeader) {
+                    $receipt .= "\n\nArt Auction Items:\nItem id    Title/Artist    Type/Amount";
+                    $receipt_html .= <<<EOS
+    <div class='row mt-2'>
+        <div class='col-sm-12'>
+            <h3 class="size-h4">Art Auction Items:</h3>
+        </div>
+    </div>
+     <div class='row'>
+        <div class='col-sm-1'>Item id</div>
+        <div class='col-sm-4'>Title</div>
+        <div class='col-sm-3'>Artist</div>
+        <div class='col-sm-1'>Type</div>
+        <div class='col-sm-2'  style="text-align: right;">Amount</div>
+    </div>
+EOS;
+                    $receipt_tables .= <<<EOS
+<tr><td colspan="3"><h3 class="size-h4">Art Auction Items:</h3></td></tr>
+<tr><td>Item Id</td><td>Title/Artist</td><td>Type/Amount</td></tr>
+EOS;
+                    $needHeader = false;
+                }
+                // now the actual row
+                $itemId = $art['exhibitorNumber'] . '-' . $art['item_key'];
+                $title = $art['title'];
+                $artist = $art['artist'];
+                $type = $art['status'] = 'Quicksale/Sold' ? 'QS' : 'BID';
+                $price = $art['amount'];
+                $artSubtotal += $price;
+                $pricefmt = $dolfmt->formatCurrency((float)$price, $currency);
+                $receipt .= "$itemId    $title/$artist    $type/$pricefmt\n";
+                $receipt_html .= <<<EOS
+    <div class='row'>
+        <div class='col-sm-1'>$itemId</div>
+        <div class='col-sm-4'>$title</div>
+        <div class='col-sm-3'>$artist</div>
+        <div class='col-sm-1'>$type</div>
+        <div class='col-sm-2' style="text-align: right;">$pricefmt</div>
+    </div>
+EOS;
+                $receipt_tables .= <<<EOS
+<tr><td>$itemId</td><td>$title/$artist</td><td>$type/$pricefmt</td></tr>
+EOS;
+            }
+        }
+        if ($artSubtotal > 0) {
+            $subtotal = $dolfmt->formatCurrency((float)$artSubtotal, $currency);
+            $receipt .= "Art Subtotal: $subtotal\n";
+            $receipt_html .= <<<EOS
+    <div class='row'>
+        <div class='col-sm-1'></div>
+        <div class='col-sm-8'>Art Subtotal</div>
+        <div class='col-sm-2' style="text-align: right;">$subtotal</div>
+    </div>
+EOS;
+            $receipt_tables .= <<<EOS
+<tr><td></td><td>Space Subtotal:</td><td>$subtotal</td></tr>
+EOS;
+        }
+    }
+    $total = $memberSubtotal + $spaceSubtotal + $artSubtotal;
     // now the total due
-    $price = $dolfmt->formatCurrency((float) $total, $currency);
+    $price = $dolfmt->formatCurrency((float)$total, $currency);
     $receipt .= "\nTotal Due: $price\n";
     $receipt_html .= <<<EOS
     <div class="row mt-2">
-        <div class="col-sm-7">Total Due:</div>
+        <div class="col-sm-9">Total Due:</div>
         <div class="col-sm-2" style="text-align: right;">$price</div>
     </div>
 EOS;
@@ -1126,7 +1218,7 @@ EOS;
     $receipt_html .= <<<EOS
     <div class="row">
         <div class="col-sm-1">$id</div>
-        <div class="col-sm-6">$label</div>
+        <div class="col-sm-8">$label</div>
         <div class="col-sm-2" style="text-align: right;">$pricefmt</div>
     </div>
 EOS;
