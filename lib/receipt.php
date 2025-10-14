@@ -1,4 +1,6 @@
 <?php
+    require_once("../../lib/paymentPlans.php");
+
 //  receipt.php - library of modules related building receipts
 
 // spaceGetPaymentTrans
@@ -89,7 +91,7 @@ EOS;
 }
 
 // trans_receipt - given a transaction number build a receipt
-// This function returns all the data to make up a receipt and then calls 'reg_format_receipt' to actually format the receipt as plain text, HTML and email tables.
+// Fetches all the data to make up a receipt and then calls 'reg_format_receipt' to actually format the receipt as plain text, HTML and email tables.
 function trans_receipt($transid) {
     // find all the items attached to this transaction id for payment:
     // possible items:
@@ -107,10 +109,10 @@ function trans_receipt($transid) {
     //      refund (future?)
     //      other
 
+    $transid = 4217;// test payor plan payment
     // items gathered
     $response = [];     // return associative array of all the data
     $emails = [];       // people mentioned in the data
-    $payorL = [];       // payor of the transaction
     $payments = [];     // payment records
     $memberships = [];  // memberships
     $plans = [];        // payment plans
@@ -122,8 +124,8 @@ function trans_receipt($transid) {
 
     // get the transaction information
     $transQ = <<<EOS
-SELECT t.*, DATE_FORMAT(create_date, '%W %M %e, %Y %h:%i:%s %p') as create_date_str,
-       DATE_FORMAT(complete_date, '%W %M %e, %Y %h:%i:%s %p') as complete_date_str,
+SELECT t.*, DATE_FORMAT(create_date, '%W, %M %e, %Y %h:%i:%s %p') as create_date_str,
+       DATE_FORMAT(complete_date, '%W, %M %e, %Y %h:%i:%s %p') as complete_date_str,
        c.name AS couponName, c.couponType, c.discount AS couponDiscount, c.code AS couponCode,
     CASE 
         WHEN p.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' '))
@@ -204,7 +206,8 @@ EOS;
     }
 
     $transL = $transR->fetch_assoc();
-    $transL['badgename'] = badgeNameDefault($transL['badge_name'], $transL['badgeNameL2'], $transL['$first_name'], $transL['last_name']);
+    $transL['badgename'] = badgeNameDefault($transL['badge_name'], $transL['badgeNameL2'], $transL['first_name'], $transL['last_name']);
+    $emails[] = $transL['email_addr'];
 
     $conid = $transL['conid'];
     $userid = $transL['userid'];
@@ -237,9 +240,16 @@ EOS;
     //      payment plan initial payment (portal)
     //      payor plan perid/newperid = transaction perid/newperid, so name info not needed
     $planQ = <<<EOS
-SELECT pp.*, p.name, p.description
+SELECT pp.*, p.name, p.description, DATE_FORMAT(pp.createDate, '%W, %M %e, %Y %h:%i:%s %p') as createDateStr,
+CASE
+    WHEN pI.id IS NOT NULL THEN pI.email_addr
+    WHEN nI.id IS NOT NULL THEN nI.email_addr
+    ELSE ''
+END AS email_addr
 FROM payorPlans pp
 JOIN paymentPlans p ON p.id = pp.planId
+LEFT OUTER JOIN perinfo pI ON pp.perid = pI.id
+LEFT OUTER JOIN newperson nI ON pp.newperid = nI.id
 WHERE createTransaction = ?;
 EOS;
 
@@ -251,16 +261,26 @@ EOS;
     while ($planL = $planR->fetch_assoc()) {
         $plans[] = $planL;
         $planId = $planL['id'];
+        $emails[] = $planL['email_addr'];
     }
     $planR->free();
     $response['plans'] = $plans;
 
     //      payment plan payments (portal, eventually registration, finance)
     $planQ = <<<EOS
-SELECT ppp.*, p.name, p.description, pp.createDate, pp.balanceDue, pp.id
+SELECT ppp.*, p.name, p.description, pp.createDate, pp.balanceDue, pp.id, pp.status, pp.payByDate, pp.planId, pp.daysBetween,
+       pp.minPayment,pp.initialAmt, pp.openingBalance, DATE_FORMAT(pp.createDate, '%W, %M %e, %Y %h:%i:%s %p') as createDateStr,
+    CASE
+        WHEN pI.id IS NOT NULL THEN pI.email_addr
+        WHEN nI.id IS NOT NULL THEN nI.email_addr
+        ELSE ''
+    END AS email_addr
 FROM payorPlanPayments ppp
 JOIN payorPlans pp ON pp.id = ppp.payorPlanId
 JOIN paymentPlans p ON p.id = pp.planId
+LEFT OUTER JOIN perinfo pI ON pp.perid = pI.id
+LEFT OUTER JOIN newperson nI ON pp.newperid = nI.id
+WHERE  ppp.transactionId = ?;
 EOS;
     $planR = dbSafeQuery($planQ, 'i', array($transid));
     if ($planR === false) {
@@ -270,6 +290,7 @@ EOS;
     while ($planL = $planR->fetch_assoc()) {
         $planPayments[] = $planL;
         $planId = $planL['id'];
+        $emails[] = $planL['email_addr'];
     }
     $planR->free();
     $response['planPayments'] = $planPayments;
@@ -357,8 +378,9 @@ EOS;
         exit();
     }
     while ($regL = $regR->fetch_assoc()) {
-        $regL['badgename'] = badgeNameDefault($regL['badge_name'], $regL['badgeNameL2'], $regL['$first_name'], $regL['last_name']);
+        $regL['badgename'] = badgeNameDefault($regL['badge_name'], $regL['badgeNameL2'], $regL['first_name'], $regL['last_name']);
         $memberships[] = $regL;
+        $emails[] = $regL['email_addr'];
     }
     $regR->free();
     $response['memberships'] = $memberships;
@@ -379,6 +401,7 @@ JOIN exhibitsRegions er ON er.id = ery.exhibitsRegion
 JOIN exhibitorRegionYears RY ON S.exhibitorRegionYear = RY.id
 JOIN exhibitorYears Y ON Y.id = RY.exhibitorYearId
 JOIN exhibitors E ON E.id = Y.exhibitorId
+WHERE S.transid = ?
 EOS;
     $spaceR = dbSafeQuery($spaceQ, 'i', array($transid));
     if ($spaceR === false) {
@@ -386,7 +409,7 @@ EOS;
         exit();
     }
     while ($spaceL = $spaceR->fetch_assoc()) {
-        $spaceL['badgename'] = badgeNameDefault($spaceL['badge_name'], $spaceL['badgeNameL2'], $spaceL['$first_name'], $spaceL['last_name']);
+        $spaceL['badgename'] = badgeNameDefault($spaceL['badge_name'], $spaceL['badgeNameL2'], $spaceL['first_name'], $spaceL['last_name']);
         $spaces[] = $spaceL;
     }
     $spaceR->free();
@@ -425,11 +448,18 @@ EOS;
         $response['transaction'] = $transL;
     }
 
+    $response['emails'] = array_unique($emails, SORT_STRING);
     return reg_format_receipt($response);
 }
 
 // reg_format_receipt - format a receipt in HTML and Text formats
-function reg_format_receipt($data) {
+// returns
+//      $response['receipt'] = $receipt;
+//      $response['receipt_html'] = $receipt_html;
+//      $response['receipt_tables'] = $receipt_tables
+// plus the calling $data as well
+//
+function reg_format_receipt($data) : array {
     $currency = getConfValue('con', 'currency', 'USD');
     $curLocale = locale_get_default();
     $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
@@ -447,15 +477,13 @@ function reg_format_receipt($data) {
     $condata = get_con();
     $conlabel = $condata['label'];
     $receipt_date = $master_transaction['complete_date'] ? "Completed on " . $master_transaction['complete_date_str'] : "Created on " . $master_transaction['create_date_str'];
-    $title_payor_name = 'unknown';
-    $title_email = '';
     // Receipt Title:
     $receipt = "Receipt for payment to $conlabel\n$receipt_date\n";
     $receipt_html = <<<EOS
 <div class="container-fluid border border-primary border-4">
     <div class="row">
         <div class="col-sm-12">
-            <h2>Receipt for payment to $conlabel</h2>
+            <h1 class="size-h2"><strong>Receipt for payment to $conlabel</strong></h1>
         </div>
     </div>
     <div class="row">
@@ -466,105 +494,216 @@ function reg_format_receipt($data) {
 EOS;
     $receipt_tables = <<<EOS
 <table>
-<tr><td colspan="3"><h2>Receipt for payment to $conlabel</h2></td></tr>
+<tr><td colspan="3"><h1 class="size-h2"><strong>Receipt for payment to $conlabel</strong></h1></td></tr>
 <tr><td colspan="3">$receipt_date</td></tr>
 EOS;
 
     // Payor Info
     $type = $data['type'];
-    $payor = $data['payor'];
-    $payor_name = $payor['first_name'];
-    if (mb_strlen($payor['middle_name']) > 0)
-        $payor_name .= ' ' . $payor['middle_name'];
-    if (mb_strlen($payor['last_name']) > 0)
-        $payor_name .= ' ' . $payor['last_name'];
-    if (mb_strlen($payor['suffix']) > 0)
-        $payor_name .= ', ' . $payor['suffix'];
-    $payor_name = trim($payor_name);
     $master_tid = $master_transaction['id'];
-    if (array_key_exists('exhibitor', $data)) {
-        $title_payor_name = $data['exhibitor']['exhibitorName'];
-        $title_email = $data['exhibitor']['exhibitorEmail'];
-    } else {
-        $title_payor_name = $payor_name;
-        $title_email = $payor['email_addr'];
-    }
+    $title_payor_name = $master_transaction['fullName'];
+    $title_payor_badge = strip_tags(str_replace('<br/>', '/', $master_transaction['badgename']));
+    $title_email = $master_transaction['email_addr'];
 
     $response['payor_name'] = $title_payor_name;
     $response['payor_email'] = $title_email;
 
     switch ($type) {
         case 'website':
-            $receipt .= "By: $title_payor_name, Via: Online Registration Website, Transaction: $master_tid\n";
+            $receipt .= "By: $title_payor_name ($title_payor_badge), Via: Online Registration Website, Transaction: $master_tid\n";
             $receipt_html .= <<<EOS
     <div class="row">
         <div class="col-sm-12">
-            By: $payor_name, Via: Online Registration Website, Transaction: $master_tid
+            By: $title_payor_name ($title_payor_badge), Via: Online Registration Website, Transaction: $master_tid
         </div>
     </div>
 EOS;
             $receipt_tables .= <<<EOS
-<tr><td colspan="3">By: $payor_name, Via: Online Registration Website, Transaction: $master_tid</td></tr>
+<tr><td colspan="3">By: $title_payor_name ($title_payor_badge), Via: Online Registration Website, Transaction: $master_tid</td></tr>
 EOS;
 
             break;
         case 'regportal':
-            $receipt .= "By: $title_payor_name, Via: Registration Portal, Transaction: $master_tid\n";
+            $receipt .= "By: $title_payor_name ($title_payor_badge), Via: Registration Portal, Transaction: $master_tid\n";
             $receipt_html .= <<<EOS
     <div class="row">
         <div class="col-sm-12">
-            By: $payor_name, Via: Registration Portal, Transaction: $master_tid
+            By: $title_payor_name ($title_payor_badge), Via: Registration Portal, Transaction: $master_tid
         </div>
     </div>
 EOS;
             $receipt_tables .= <<<EOS
-<tr><td colspan="3">By: $payor_name, Via: Registration Portal, Transaction: $master_tid</td></tr>
+<tr><td colspan="3">By: $title_payor_name ($title_payor_badge), Via: Registration Portal, Transaction: $master_tid</td></tr>
 EOS;
 
             break;
         case 'vendor':
         case 'artist':
         case 'exhibitor':
-            $receipt .= "By: $title_payor_name, Via: $type portal, Transaction: $master_tid\n";
+            $receipt .= "By: $title_payor_name ($title_payor_badge), Via: $type portal, Transaction: $master_tid\n";
             $receipt_html .= <<<EOS
     <div class="row">
         <div class="col-sm-12">
-            By: $title_payor_name, Via: $type portal, Transaction: $master_tid
+            By: $title_payor_name ($title_payor_badge), Via: $type portal, Transaction: $master_tid
         </div>
     </div>
 EOS;
             $receipt_tables .= <<<EOS
-<tr><td colspan="3">By: $title_payor_name, Via: $type portal, Transaction: $master_tid</td></tr>
+<tr><td colspan="3">By: $title_payor_name ($title_payor_badge), Via: $type portal, Transaction: $master_tid</td></tr>
 EOS;
 
             break;
         case 'atcon':
             $cashier = $master_transaction['userid'];
-            $receipt .= "By: $title_payor_name, Via: On-Site Registration, Cashier: $cashier, Transaction: $master_tid\n";
+            $receipt .= "By: $title_payor_name ($title_payor_badge), Via: On-Site Registration, Cashier: $cashier, Transaction: $master_tid\n";
             $receipt_html .= <<<EOS
     <div class="row">
         <div class="col-sm-12">
-            By: $title_payor_name, Via: On-Site Registration Cashier: $cashier, Transaction: $master_tid
+            By: $title_payor_name ($title_payor_badge), Via: On-Site Registration Cashier: $cashier, Transaction: $master_tid
         </div>
     </div>
+EOS;
+            $receipt_tables .= <<<EOS
+<tr><td colspan="3">By: $title_payor_name ($title_payor_badge), Via: On-Site Registration Cashier: $cashier, Transaction: $master_tid</td></tr>
 EOS;
             break;
         default: // reg_control receipts (registration, badgelist, people, etc.)
             $cashier = $master_transaction['userid'];
-            $receipt .= "By: $title_payor_name, Via: Registration Staff Member: $cashier, Transaction: $master_tid\n";
+            $receipt .= "By: $title_payor_name ($title_payor_badge), Via: Registration Staff Member: $cashier, Transaction: $master_tid\n";
             $receipt_html .= <<<EOS
     <div class="row">
         <div class="col-sm-12">
-            By: $title_payor_name, Via: Registration Staff Member: $cashier, Transaction: $master_tid
+            By: $title_payor_name ($title_payor_badge), Via: Registration Staff Member: $cashier, Transaction: $master_tid
         </div>
     </div>
  EOS;
             $receipt_tables .= <<<EOS
-<tr><td colspan="3">By: $title_payor_name, Via: Registration Staff Member: $cashier, Transaction: $master_tid</td></tr>
+<tr><td colspan="3">By: $title_payor_name ($title_payor_badge), Via: Registration Staff Member: $cashier, Transaction: $master_tid</td></tr>
 EOS;
             break;
     }
 
+    // Section: New Payment Plan
+    $plans = $data['plans'];
+    foreach ($plans as $plan) {
+        $planType = $plan['name'];
+        $createDate = $plan['createDateStr'];
+        $nonPlanAmount = $dolfmt->formatCurrency((float)$plan['nonPlanAmt'], $currency);
+        $planAmount = $dolfmt->formatCurrency((float)$plan['initialAmt'] - $plan['nonPlanAmt'], $currency);
+        $openingBalance = $dolfmt->formatCurrency((float)$plan['openingBalance'], $currency);
+        $downPayment = $dolfmt->formatCurrency((float)$plan['downPayment'], $currency);
+        $nm1 = $plan['numPayments'] - 1;
+        $paymentAmt = $dolfmt->formatCurrency((float)$plan['minPayment'], $currency);
+        $finalAmt = $dolfmt->formatCurrency((float)$plan['finalPayment'], $currency);
+        $payments = '';
+        if ($nm1 > 0) {
+            if ($nm1 == 1)
+                $payments .= "$nm1 payment of $paymentAmt plus ";
+            else
+                $payments .= "$nm1 payments of $paymentAmt plus ";
+        }
+        $payments .= "a final payment of $finalAmt";
+        $completeDate = $plan['payByDate'];
+        $receipt .= <<<EOS
+
+Down Payment on a new payment plan created $createDate:
+
+Plan type: $planType
+Amount of purchase not covered by the plan: $nonPlanAmount
+Amount of purchase covered by the plan: $planAmount
+Opening Balance: $openingBalance
+Down Payment: $downPayment
+Payments: $payments
+Must complete payments by: $completeDate
+EOS;
+        $receipt_html .= <<<EOS
+    <div class='row mt-4'>
+        <div class='col-sm-12'>
+            <h2 class="size-h3">Down Payment on a new payment plan created $createDate:</h2>
+        </div>
+    </div>
+    <div class='row'><div class='col-sm-12'>Plan type: $planType</div></div>
+    <div class='row'><div class='col-sm-12'>Amount of purchase not covered by the plan: $nonPlanAmount</div></div>
+    <div class='row'><div class='col-sm-12'>Amount of purchase covered by the plan: $planAmount</div></div>
+    <div class='row'><div class='col-sm-12'>Opening Balance: $openingBalance</div></div>
+    <div class='row'><div class='col-sm-12'>Down Payment: $downPayment</div></div>
+    <div class='row'><div class='col-sm-12'>Payments: $payments</div></div>
+    <div class='row'><div class='col-sm-12'>Must complete payments by: $completeDate</div></div>
+EOS;
+        $receipt_tables .= <<<EOS
+<tr><td colspan="3">&nbsp;</td></tr>
+<tr><td colspan="3"><h2 class="size-h3">Down Payment on a new payment plan created $createDate:</h2></td></tr>
+<tr><td colspan="3">Plan type: $planType</td></tr>
+<tr><td colspan="3">Amount of purchase not covered by the plan: $nonPlanAmount</td></tr>
+<tr><td colspan="3">Amount of purchase covered by the plan: $planAmount</td></tr>
+<tr><td colspan="3">Opening Balance: $openingBalance</td></tr>
+<tr><td colspan="3">Down Payment: $downPayment</td></tr>
+<tr><td colspan="3">Payments: $payments</td></tr>
+<tr><td colspan="3">Must complete payments by: $completeDate</td></tr>
+EOS;
+    }
+
+    // payment on a payment plan
+    $pp = $data['planPayments'];
+    foreach ($pp as $payment) {
+        // $data['numPmts'] = $numPmts;
+        //    $data['lastPayment'] = $lastPayment;
+        //    $data['lastPaidDate'] = $lastPaidDate;
+        //    $data['nextPayDueDate'] = $nextPayDueDate;
+        //    $data['nextPayDue'] = $nextPayDue;
+        //    $data['minAmt'] = $minAmt;
+        //    $data['minAmtNum'] = $minAmtNum;
+        //    $data['nextPayTimestamp'] = $nextPayTimestamp;
+        //    $data['daysPastDue'] = $dayPastDue;
+        //    $data['numPmtsPastDue'] = $numPmtsPastDue;
+        //    $data['dateCreated'] = $dateCreated;
+        //    $data['payByDate'] = $payByDate;
+        //    $data['balanceDue'] = $balanceDue;
+        //    $data['initialAmt'] = $initialAmt;
+        $d = computeNextPaymentDue($payment, null, $dolfmt, $currency);
+        $pmtNo = $payment['paymentNbr'];
+        $name = $payment['name'];
+        $createDate = $payment['createDateStr'];
+        $amt = $dolfmt->formatCurrency((float)$payment['amount'], $currency);
+        $curBal = $dolfmt->formatCurrency((float)$payment['balanceDue'], $currency);
+        $status = $payment['status'];
+        $nextDue = $d['nextPayDue'];
+        $openingBalance = $dolfmt->formatCurrency((float)$payment['openingBalance'], $currency);
+        $statusLine = $status == 'paid' ? 'Status: Paid' : "Next Payment Due: $nextDue";
+
+        $receipt .= <<<EOS
+
+Payment on a $name payment plan created $createDate:
+
+Payment: $pmtNo
+Opening Balance: $openingBalance
+Payment Amount: $amt
+Current Balance: $curBal
+$statusLine
+EOS;
+        $receipt_html .= <<<EOS
+<div class='row mt-4'>
+        <div class='col-sm-12'>
+            <h2 class="size-h3">Payment on a $name payment plan created $createDate:</h2>
+        </div>
+    </div>
+    <div class='row'><div class='col-sm-12'>Payment: $pmtNo</div></div>
+    <div class='row'><div class='col-sm-12'>Opening Balance: $openingBalance</div></div>
+    <div class='row'><div class='col-sm-12'>Payment Amount: $amt</div></div>
+    <div class='row'><div class='col-sm-12'>Current Balance: $curBal</div></div>
+    <div class='row'><div class='col-sm-12'>$statusLine</div></div>
+EOS;
+        $receipt_tables .= <<<EOS
+<tr><td colspan="3">&nbsp;</td></tr>
+<tr><td colspan="3"><h2 class="size-h3">ayment on a $name payment plan created $createDate:</h2></td></tr>
+<tr><td colspan="3">Opening Balance: $openingBalance</td></tr>
+<tr><td colspan="3">Payment Amount: $amt</td></tr>
+<tr><td colspan="3">Opening Balance: $openingBalance</td></tr>
+<tr><td colspan="3">Current Balance: $curBal</td></tr>
+<tr><td colspan="3">Opening Balance: $statusLine</td></tr>
+EOS;
+    }
+/*
     $receipt .= "\nMemberships:\n";
     $receipt_html .= <<<EOS
     <div class='row mt-4'>
@@ -855,7 +994,7 @@ EOS;
 <tr><td colspan="3"><p>$endtext</p></td></tr>
 EOS;
     }
-
+*/
     // all done now
     $response['receipt'] = $receipt;
     $response['receipt_html'] = $receipt_html;
