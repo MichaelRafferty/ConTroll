@@ -35,7 +35,7 @@ function regReceipt($regid) : array | null {
     $regQ = <<<EOS
 SELECT IFNULL(complete_trans, create_trans) as transid
 FROM reg
-WHERE id = ?;
+WHERE id = ? AND status IN ('paid', 'unpaid', 'plan')
 EOS;
     $regR = dbSafeQuery($regQ,'i', array($regid));
     if ($regR === false) {
@@ -231,11 +231,11 @@ EOS;
         RenderErrorAjax('Payment query error');
         exit();
     }
-    while ($payR->fetch_assoc()) {
-        $payments[] = $payR;
+    while ($payL = $payR->fetch_assoc()) {
+        $payments[] = $payL;
     }
     $payR->free();
-    $response['payments'] = $transL;
+    $response['payments'] = $payments;
 
     //      payment plan initial payment (portal)
     //      payor plan perid/newperid = transaction perid/newperid, so name info not needed
@@ -369,7 +369,7 @@ JOIN memLabel m ON m.id = r.memId
 LEFT OUTER JOIN perinfo p ON p.id = r.perid
 LEFT OUTER JOIN newperson n ON n.id = r.newperid
 LEFT OUTER JOIN coupon c ON c.id = r.coupon
-WHERE r.complete_trans = ? OR r.create_trans = ? OR r.planId = ?
+WHERE r.complete_trans = ? OR r.create_trans = ? OR r.planId = ? AND status IN ('paid', 'unpaid', 'plan')
 ORDER BY perid, newperid, id;
 EOS;
     $regR = dbSafeQuery($regQ,'iii', array($transid, $transid, $planId));
@@ -470,13 +470,6 @@ function reg_format_receipt($data) : array {
     $memberSubtotal = 0;
     $artSubtotal = 0;
     $spaceSubtotal = 0;
-    // ok, now there is all the data for the receipt
-    // payor = who paid
-    // people = details about people mentioned in the memberships
-    // memberships = memberships purchased with expanded fields for memLabel
-    // payments = payments made
-    // coupons = coupons applied
-    // transactions = transactions involved
 
     $response = $data;
     $master_transaction = $data['transaction'];
@@ -728,7 +721,7 @@ EOS;
                 $age = $membership['memAge'];
                 $receipt .= "\nMember: $nameLine, $age\n";
                 $receipt_html .= <<<EOS
-    <div class='row mt-4'>
+    <div class='row mt-2'>
         <div class='col-sm-12'>
             <h3 class="size-h4">Member $nameLine, $age</h3>
         </div>
@@ -851,12 +844,18 @@ EOS;
     if (count($data['planPayments']) == 0) {
         // if its not a payment on a plan, show the memberships here
         if (count($data['memberships']) > 0) {
-            $receipt .= "\nMemberships:\n";
+            $receipt .= "\nMemberships:\nRegID    Membership Name    Status    Price";
             $receipt_html .= <<<EOS
     <div class='row mt-4'>
         <div class='col-sm-12'>
             <h2 class="size-h3">Memberships:</h2>
         </div>
+    </div>
+ <div class='row'>
+        <div class='col-sm-1'>RegId</div>
+        <div class='col-sm-6'>Membership Name</div>
+        <div class='col-sm-2'>Status</div>
+        <div class='col-sm-2' style="text-align: right;">Price</div>
     </div>
 EOS;
             $receipt_tables .= <<<EOS
@@ -992,68 +991,47 @@ EOS;
 EOS;
 
     // now for the payments/coupon section
-/*
-    // if payments > 0, then output payments header
+
     if (count($data['payments']) > 0) {
         $receipt .= "\nPayments:\nType, Description/Code, Amount\n";
         $receipt_html .= <<<EOS
     <div class='row mt-2'>
         <div class='col-sm-12'>
-            <h3>Payments:</h3>
+            <h2 class="size-h3">Payments:</h2>
         </div>
     </div>
     <div class='row mt-1'>
         <div class='col-sm-1'>Type</div>
-        <div class="col-sm-6">Description/Code</div>
+        <div class="col-sm-8">Description/Code</div>
         <div class="col-sm-2" style="text-align: right;">Amount</div>
     </div>
 EOS;
     }
     $receipt_tables .= <<<EOS
 <tr><td colspan="3">&nbsp;</td></tr>
-<tr><td colspan="3"><h3>Payments:</h3></td></tr>
+<tr><td colspan="3"><h2 class="size-h3">Payments:</h2></td></tr>
 <tr><td>Type</td><td>Description/Code</td><td>Amount</td></tr>
 EOS;
 
-    $payment_total = 0;
-    // if only a coupon and no payments
-    if ( count($data['coupons']) > 0) {
-        $coupons = $data['coupons'];
-        $plural = count($coupons) > 1 ? 's' : '';
-        if (count($data['payments']) <= 0) {
-            $receipt .= "\nCoupon$plural Applied:\n";
-            $receipt_html .= <<<EOS
-    <div class='row mt-2'>
-        <div class='col-sm-12'>
-            <h3>Coupon$plural Applied:</h3>
-        </div>
-    </div>
-EOS;
-            $receipt_tables .= <<<EOS
-<tr><td colspan="3">&nbsp;</td></tr>
-<tr><td colspan="3"><h3>Coupon$plural Applied:</h3></td></tr>
-EOS;
-
-        }
-        foreach ($coupons as $coupon) {
-            $name = $coupon['name'];
-            $code = $coupon['code'];
-            $id = $coupon['id'];
-            $discount =  sum_coupon_discount($id, $data['memberships']);
-            $payment_total += $discount;
-            $discount = $dolfmt->formatCurrency((float) $discount, $currency);
-            $receipt .= "Coupon: $name ($code): $discount\n";
-            $receipt_html .= <<<EOS
+    $paymentTotal = 0;
+    // if only a coupon
+    if ($master_transaction['couponName'] != null) {
+        $couponName = $master_transaction['couponName'];
+        $couponCode = $master_transaction['couponCode'];
+        $couponDiscount = $master_transaction['couponDiscountCart'] + $master_transaction['couponReg'];
+        $couponDiscountFmt = $dolfmt->formatCurrency((float)$couponDiscount, $currency);
+        $receipt .= "Coupon    $couponName ($couponCode Applied    $couponDiscountFmt\n";
+        $receipt_html .= <<<EOS
+        $receipt_html .= <<<EOS
     <div class='row'>
-        <div class='col-sm-1'>Coupon</div>
-        <div class="col-sm-6">$name ($code)</div>
-        <div class="col-sm-2" style="text-align: right;">$discount</div>
+        <div class='col-sm-1'>Coupon/div>
+        <div class="col-sm-8">$couponName ($couponCode)</div>
+        <div class="col-sm-2" style="text-align: right;">$couponDiscountFmt</div>
     </div>
 EOS;
             $receipt_tables .= <<<EOS
-<tr><td>Coupon</td><td>$name ($code)</td><td>$discount</td></tr>
+<tr><td>Coupon</td><td>$couponName ($couponCode</td><td>$couponDiscountFmt</td></tr>
 EOS;
-        }
     }
 
     // now loop over the payments
@@ -1073,7 +1051,7 @@ EOS;
             $aprcl = trim($aprvl);
         $url = $pmt['receipt_url'];
 
-        $payment_total += $amt;
+        $paymentTotal += $amt;
         $amt = $dolfmt->formatCurrency((float)$amt, $currency);
 
         if ($aprvl != '' && $cc != '')
@@ -1088,7 +1066,7 @@ EOS;
         $receipt_html .= <<<EOS
     <div class='row'>
         <div class='col-sm-1'>$type</div>
-        <div class="col-sm-6">$desc$aprvl</div>
+        <div class="col-sm-8">$desc$aprvl</div>
         <div class="col-sm-2" style="text-align: right;">$amt</div>
     </div>
 EOS;
@@ -1110,20 +1088,20 @@ EOS;
         }
     }
 
-    if ($payment_total > 0) {
-        $payment_total = $dolfmt->formatCurrency((float) $payment_total, $currency);
-        $receipt .= "\nTotal Payments: $payment_total\n";
+    if ($paymentTotal > 0) {
+        $paymentTotalFmt = $dolfmt->formatCurrency((float) $paymentTotal, $currency);
+        $receipt .= "\nTotal Payments: $paymentTotalFmt\n";
         $receipt_html .= <<<EOS
     <div class='row'>
-        <div class='col-sm-7'>Total Payments</div>
-        <div class="col-sm-2" style="text-align: right;">$payment_total</div>
+        <div class='col-sm-9'>Total Payments</div>
+        <div class="col-sm-2" style="text-align: right;">$paymentTotalFmt</div>
     </div>
 EOS;
         $receipt_tables .= <<<EOS
-<tr><td colspan="2">Total Payments</td><td>$payment_total</td></tr>
+<tr><td colspan="2">Total Payments</td><td>$paymentTotalFmt</td></tr>
 EOS;
     }
-*/
+
     // now for the disclaimers at the bottom
     // general disclaimer for all reg items
     // Needs to be added
@@ -1199,7 +1177,7 @@ function reg_format_mbr($dolfmt, $currency, $membership, &$curNameLine, &$receip
         $age = $membership['memAge'];
         $receipt .= "\nMember: $nameLine, $age\n";
         $receipt_html .= <<<EOS
-    <div class='row mt-4'>
+    <div class='row mt-2'>
         <div class='col-sm-12'>
             <h3 class="size-h4">Member $nameLine, $age</h3>
         </div>
@@ -1213,17 +1191,23 @@ EOS;
     $id = $membership['id'];
     $label = $membership['label'];
     $price = $membership['price'];
+    $status = $membership['status'];
+    if ($status != 'paid') {
+        $due = $membership['price'] - ($membership['couponDiscount'] + $membership['paid']);
+        $status .= ", Cur Bal Due: " . $dolfmt->formatCurrency((float) $due, $currency);
+    }
     $pricefmt = $dolfmt->formatCurrency((float) $price, $currency);
-    $receipt .= "$id, $label: $price\n";
+    $receipt .= "$id, $label, $status, $price\n";
     $receipt_html .= <<<EOS
     <div class="row">
         <div class="col-sm-1">$id</div>
-        <div class="col-sm-8">$label</div>
+        <div class="col-sm-6">$label</div>
+        <div class="col-sm-2">$status</div>
         <div class="col-sm-2" style="text-align: right;">$pricefmt</div>
     </div>
 EOS;
     $receipt_tables .= <<<EOS
-<tr><td>$id</td><td>$label</td><td>$pricefmt</td></tr>
+<tr><td>$id</td><td>$label    $status</td><td>$pricefmt</td></tr>
 EOS;
     return $price;
 }
