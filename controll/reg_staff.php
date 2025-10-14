@@ -831,7 +831,7 @@ $config_vars['source'] = 'regstaff';
     </div>
 </div>
 </div>
-<div id='receipt' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Registration Receipt' aria-hidden='true' style='--bs-modal-width: 80%;'>
+<div id='receipt' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Registration Receipt' aria-hidden='true' style='--bs-modal-width: 90%;'>
     <div class='modal-dialog'>
         <div class='modal-content'>
             <div class='modal-header bg-primary text-bg-primary'>
