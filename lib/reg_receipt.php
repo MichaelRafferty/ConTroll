@@ -3,7 +3,7 @@
 
 // trans_receipt - given a transaction number build a receipt
 // This function returns all the data to make up a receipt and then calls 'reg_format_receipt' to actually format the receipt as plain text, HTML and email tables.
-function trans_receipt($transid, $exhId = null, $regionYearId=null)
+function obsolete_trans_receipt($transid, $exhId = null, $regionYearId=null)
 {
     $emails = [];
     $exhibitor = null;
@@ -288,7 +288,7 @@ EOS;
 }
 
 // reg_format_receipt - format a receipt in HTML and Text formats
-function reg_format_receipt($data) {
+function oboslete_reg_format_receipt($data) {
     $currency = getConfValue('con', 'currency', 'USD');
     $curLocale = locale_get_default();
     $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
@@ -444,7 +444,7 @@ EOS;
         foreach ($data['memberships'] as $pid => $list) {
             if ($payor_pid == $pid) {
                 $list = $data['memberships'][$payor_pid];
-                $subtotal = reg_format_mbr($data, $data['people'][$payor_pid], $list, $receipt, $receipt_html, $receipt_tables);
+                $subtotal = obsolete_reg_format_mbr($data, $data['people'][$payor_pid], $list, $receipt, $receipt_html, $receipt_tables);
                 $total += $subtotal;
             }
         }
@@ -455,7 +455,7 @@ EOS;
         if ($payor_pid == $pid)
         continue;
 
-        $subtotal = reg_format_mbr($data, $data['people'][$pid], $list, $receipt, $receipt_html, $receipt_tables);
+        $subtotal = obsolete_reg_format_mbr($data, $data['people'][$pid], $list, $receipt, $receipt_html, $receipt_tables);
         $total += $subtotal;
     }
 
@@ -582,7 +582,7 @@ EOS;
             $name = $coupon['name'];
             $code = $coupon['code'];
             $id = $coupon['id'];
-            $discount =  sum_coupon_discount($id, $data['memberships']);
+            $discount =  obsolete_sum_coupon_discount($id, $data['memberships']);
             $payment_total += $discount;
             $discount = $dolfmt->formatCurrency((float) $discount, $currency);
             $receipt .= "Coupon: $name ($code): $discount\n";
@@ -723,7 +723,7 @@ EOS;
 }
 
 // loop over all the regs and sum to total usage of a coupon id
-function sum_coupon_discount($id, $memberships) {
+function obsolete_sum_coupon_discount($id, $memberships) {
     $discount = 0;
     foreach ($memberships as $pid => $list)  {
         foreach ($list as $item) {
@@ -735,7 +735,7 @@ function sum_coupon_discount($id, $memberships) {
 }
 
 // format a member block for the receipt
-function reg_format_mbr($data, $person, $list, &$receipt, &$receipt_html, &$receipt_tables) {
+function obsolete_reg_format_mbr($data, $person, $list, &$receipt, &$receipt_html, &$receipt_tables) {
     $currency = getConfValue('con', 'currency', 'USD');
     $curLocale = locale_get_default();
     $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);

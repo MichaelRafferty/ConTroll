@@ -1,9 +1,9 @@
 <?php
 //  receipt.php - library of modules related building receipts
 
-// spaceReceiptGetTrans
+// spaceGetPaymentTrans
 //      from space lists, given a exhibitorId and a regionYearId, return the transactions(s) for those spaces
-function spaceReceiptGetPaymentTrans($exhid, $regionYearId) : array {
+function spaceGetPaymentTrans($exhid, $regionYearId) : array {
     $transactions = [];
     // find the space records for a given exhibitor and a particular region for this year
 
@@ -28,9 +28,8 @@ EOS;
 }
 
 // from reg record, get transaction (complete preferred as that is payment)
-function regGetPaymentTrans($regid) : array {
-    $transactions = [];
-
+function regReceipt($regid) : array | null {
+    $transId = null;
     $regQ = <<<EOS
 SELECT IFNULL(complete_trans, create_trans) as transid
 FROM reg
@@ -38,18 +37,21 @@ WHERE id = ?;
 EOS;
     $regR = dbSafeQuery($regQ,'i', array($regid));
     if ($regR === false) {
-        return $transactions;
+        return null;
     }
     if ($regR->num_rows > 0) {
-        $transactions[] = $regR->fetch_row()[0];
+        $transId = $regR->fetch_row()[0];
     }
     $regR->free();
 
-    return $transactions;
+    if ($transId != null)
+        return trans_receipt($transId);
+
+    return null;
 }
 
 // from payor plan, get transactions
-function payorPlanGetPaymentTrans($payorPlanId) : array {
+function payorPlanGetPaymentTrans($payorPlanId) : array  {
     $transactions = [];
 
     // first the down payment
@@ -115,6 +117,8 @@ function trans_receipt($transid) {
     $planPayments = []; // payment plan payments
     $spaces = [];       // exhibitor spaces
     $art = [];          // art sales
+
+    $planId = -1;       // placeholder to see if there is a plan for membership match
 
     // get the transaction information
     $transQ = <<<EOS
@@ -216,7 +220,8 @@ EOS;
     $payQ = <<<EOS
 SELECT *
 FROM payments
-WHERE transid = ?;
+WHERE transid = ?
+ORDER BY id;
 EOS;
     $payR = dbSafeQuery($payQ,'i', array($transid));
     if ($payR === false) {
@@ -228,6 +233,46 @@ EOS;
     }
     $payR->free();
     $response['payments'] = $transL;
+
+    //      payment plan initial payment (portal)
+    //      payor plan perid/newperid = transaction perid/newperid, so name info not needed
+    $planQ = <<<EOS
+SELECT pp.*, p.name, p.description
+FROM payorPlans pp
+JOIN paymentPlans p ON p.id = pp.planId
+WHERE createTransaction = ?;
+EOS;
+
+    $planR = dbSafeQuery($planQ, 'i', array($transid));
+    if ($planR === false) {
+        RenderErrorAjax('Payment Plan query failed');
+        exit();
+    }
+    while ($planL = $planR->fetch_assoc()) {
+        $plans[] = $planL;
+        $planId = $planL['id'];
+    }
+    $planR->free();
+    $response['plans'] = $plans;
+
+    //      payment plan payments (portal, eventually registration, finance)
+    $planQ = <<<EOS
+SELECT ppp.*, p.name, p.description, pp.createDate, pp.balanceDue, pp.id
+FROM payorPlanPayments ppp
+JOIN payorPlans pp ON pp.id = ppp.payorPlanId
+JOIN paymentPlans p ON p.id = pp.planId
+EOS;
+    $planR = dbSafeQuery($planQ, 'i', array($transid));
+    if ($planR === false) {
+        RenderErrorAjax('Payment Plan Payments query failed');
+        exit();
+    }
+    while ($planL = $planR->fetch_assoc()) {
+        $planPayments[] = $planL;
+        $planId = $planL['id'];
+    }
+    $planR->free();
+    $response['planPayments'] = $planPayments;
 
     //      memberships (online reg, portal, controll/registration, atcon)
     $regQ = <<<EOS
@@ -303,10 +348,10 @@ JOIN memLabel m ON m.id = r.memId
 LEFT OUTER JOIN perinfo p ON p.id = r.perid
 LEFT OUTER JOIN newperson n ON n.id = r.newperid
 LEFT OUTER JOIN coupon c ON c.id = r.coupon
-WHERE r.complete_trans = ? OR r.create_trans = ?
+WHERE r.complete_trans = ? OR r.create_trans = ? OR r.planId = ?
 ORDER BY perid, newperid, id;
 EOS;
-    $regR = dbSafeQuery($regQ,'ii', array($transid, $transid));
+    $regR = dbSafeQuery($regQ,'iii', array($transid, $transid, $planId));
     if ($regR === false) {
         RenderErrorAjax('Membership query error');
         exit();
@@ -317,42 +362,6 @@ EOS;
     }
     $regR->free();
     $response['memberships'] = $memberships;
-
-    //      payment plan initial payment (portal)
-    //      payor plan perid/newperid = transaction perid/newperid, so name info not needed
-    $planQ = <<<EOS
-SELECT pp.*, p.name, p.description
-FROM payorPlans pp
-JOIN paymentPlans p ON p.id = pp.planId
-WHERE createTransaction = ?;
-EOS;
-
-    $planR = dbSafeQuery($planQ, 'i', array($transid));
-    if ($planR === false) {
-        RenderErrorAjax('Payment Plan query failed');
-        exit();
-    }
-    while ($planL = $planR->fetch_assoc()) {
-        $plans[] = $planL;
-    }
-    $planR->free();
-    $response['plans'] = $plans;
-
-    //      payment plan payments (portal, eventually registration, finance)
-    $planQ = <<<EOS
-SELECT *
-FROM payorPlanPayments 
-EOS;
-    $planR = dbSafeQuery($planQ, 'i', array($transid));
-    if ($planR === false) {
-        RenderErrorAjax('Payment Plan Payments query failed');
-        exit();
-    }
-    while ($planL = $planR->fetch_assoc()) {
-        $planPayments[] = $planL;
-    }
-    $planR->free();
-    $response['planPayments'] = $planPayments;
 
     //      space payments including fees (exhibitor portals, controll/exhibitors)
     $spaceQ = <<<EOS

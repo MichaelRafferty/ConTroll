@@ -2,7 +2,6 @@
 require_once('../lib/base.php');
 require_once('../../lib/email__load_methods.php');
 require_once('../../lib/log.php');
-require_once('../../lib/reg_receipt.php');
 
 // use common global Ajax return functions
 global $returnAjaxErrors, $return500errors;
@@ -22,7 +21,7 @@ if(!isSessionVar('id')) {
 
 $exhId = getSessionVar('id');
 
-// which space purchased
+// do we have an email to end to?
 if (!array_key_exists('email', $_POST)) {
     ajaxError("invalid calling sequence");
     exit();
