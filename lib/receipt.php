@@ -402,7 +402,7 @@ EOS;
     $response['art'] = $art;
 
     // if the payor is unknown, it's a space payment, before there is a payor (membership[0] created), update the info in TransL
-    if (count($spaces > 0)) {
+    if (count($spaces) > 0) {
         if ($transL['fullName'] == 'unknown') {
             $fields = ['pid', 'tablenname', 'fullName', 'last_name', 'first_name', 'badge_name', 'badgeNameL2',
                 'address', 'addr_2', 'city', 'state', 'zip', 'country'];
