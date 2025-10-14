@@ -109,7 +109,7 @@ function trans_receipt($transid) {
     //      refund (future?)
     //      other
 
-    $transid = 4217;// test payor plan payment
+    //$transid = 4217;// test payor plan payment
     // items gathered
     $response = [];     // return associative array of all the data
     $emails = [];       // people mentioned in the data
@@ -389,15 +389,17 @@ EOS;
     $spaceQ = <<<EOS
 SELECT S.id, S.time_purchased, S.item_purchased, S.price, S.paid,  sp.code, sp.description, sp.units, sp.price AS spacePrice,
        sp.includedMemberships, sp.additionalMemberships, s.name, s.description AS spaceDescription,
-       er.name AS regionName, er.description AS regionDescription, RY.exhibitorNumber, Y.exhibitorId,
+       er.name AS regionName, er.description AS regionDescription, ert.portalType, RY.exhibitorNumber, Y.exhibitorId,
        CONCAT('e-', Y.exhibitorId) AS pid, E.exhibitorName AS last_name, '' AS first_name, E.exhibitorName AS fullName,
        Y.contactName AS badge_name, Y.mailin, ery.mailinFee, E.exhibitorName AS badgeNameL2, E.exhibitorEmail AS email_addr, E.addr AS address,
-       E.addr2, E.city, E.state, E.zip, E.country, 'exhibitor' AS tablename
+       E.addr2, E.city, E.state, E.zip, E.country, 'exhibitor' AS tablename,
+       E.artistName, E.exhibitorName
 FROM exhibitorSpaces S
 JOIN exhibitsSpacePrices sp ON sp.id = S.item_purchased
 JOIN exhibitsSpaces s ON s.id = S.spaceId
 JOIN exhibitsRegionYears ery ON ery.id = s.exhibitsRegionYear
 JOIN exhibitsRegions er ON er.id = ery.exhibitsRegion
+JOIN exhibitsRegionTypes ert ON ert.regionType = er.regionType
 JOIN exhibitorRegionYears RY ON S.exhibitorRegionYear = RY.id
 JOIN exhibitorYears Y ON Y.id = RY.exhibitorYearId
 JOIN exhibitors E ON E.id = Y.exhibitorId
@@ -584,8 +586,7 @@ EOS;
     }
 
     // Section: New Payment Plan
-    $plans = $data['plans'];
-    foreach ($plans as $plan) {
+    foreach ($data['plans'] as $plan) {
         $planType = $plan['name'];
         $createDate = $plan['createDateStr'];
         $nonPlanAmount = $dolfmt->formatCurrency((float)$plan['nonPlanAmt'], $currency);
@@ -644,8 +645,7 @@ EOS;
     }
 
     // payment on a payment plan
-    $pp = $data['planPayments'];
-    foreach ($pp as $payment) {
+    foreach ($data['planPayments'] as $payment) {
         // $data['numPmts'] = $numPmts;
         //    $data['lastPayment'] = $lastPayment;
         //    $data['lastPaidDate'] = $lastPaidDate;
@@ -682,7 +682,7 @@ Current Balance: $curBal
 $statusLine
 EOS;
         $receipt_html .= <<<EOS
-<div class='row mt-4'>
+    <div class='row mt-4'>
         <div class='col-sm-12'>
             <h2 class="size-h3">Payment on a $name payment plan created $createDate:</h2>
         </div>
@@ -695,115 +695,200 @@ EOS;
 EOS;
         $receipt_tables .= <<<EOS
 <tr><td colspan="3">&nbsp;</td></tr>
-<tr><td colspan="3"><h2 class="size-h3">ayment on a $name payment plan created $createDate:</h2></td></tr>
+<tr><td colspan="3"><h2 class="size-h3">Payment on a $name payment plan created $createDate:</h2></td></tr>
 <tr><td colspan="3">Opening Balance: $openingBalance</td></tr>
 <tr><td colspan="3">Payment Amount: $amt</td></tr>
 <tr><td colspan="3">Opening Balance: $openingBalance</td></tr>
 <tr><td colspan="3">Current Balance: $curBal</td></tr>
 <tr><td colspan="3">Opening Balance: $statusLine</td></tr>
 EOS;
-    }
-/*
-    $receipt .= "\nMemberships:\n";
-    $receipt_html .= <<<EOS
-    <div class='row mt-4'>
-        <div class='col-sm-12'>
-            <h3>Memberships:</h3>
-        </div>
-    </div>
-EOS;
-    $receipt_tables .= <<<EOS
-<tr><td colspan="3">&nbsp;</td> </tr>
-<tr><td colspan="3"><h3>Memberships:</h3></td></tr>
-EOS;
-
-    // first output the payor
-    $total = 0;
-    $payor_pid = $payor['pid'];
-    if (substr($payor_pid, 0, 1) != 'e') {
-        foreach ($data['memberships'] as $pid => $list) {
-            if ($payor_pid == $pid) {
-                $list = $data['memberships'][$payor_pid];
-                $subtotal = reg_format_mbr($data, $data['people'][$payor_pid], $list, $receipt, $receipt_html, $receipt_tables);
-                $total += $subtotal;
-            }
-        }
-    }
-
-    // now all but the payor
-    foreach ($data['memberships'] as $pid => $list) {
-        if ($payor_pid == $pid)
-        continue;
-
-        $subtotal = reg_format_mbr($data, $data['people'][$pid], $list, $receipt, $receipt_html, $receipt_tables);
-        $total += $subtotal;
-    }
-
-    // now exhibitor spaces if they exist
-    if (array_key_exists('exhibitor', $data)) {
-        $receipt .= "\nExhibitor Spaces:\n";
+        // now add memberships affected by this payment
+        $receipt .= "\nMemberships affected:\n";
         $receipt_html .= <<<EOS
     <div class='row mt-4'>
         <div class='col-sm-12'>
-            <h3>Exhibitor Spaces:</h3>
+            <h2 class="size-h3">Memberships affected:</h2>
         </div>
     </div>
 EOS;
         $receipt_tables .= <<<EOS
 <tr><td colspan="3">&nbsp;</td></tr>
-<tr><td colspan="3"><h3>Exhibitor Spaces:</h3></td></tr>
+<tr><td colspan="3"><h2 class="size-h3">Memberships affected:</h2></td></tr>
 EOS;
-        $exhibitor = $data['exhibitor'];
-        $region = $data['region'];
-        $exhibitor_sid = $exhibitor['id'];
-        $exhibitor_number = $exhibitor['exhibitorNumber'];
-        if ($exhibitor_number != null)
-            $exhibitor_sid = "$exhibitor_number ($exhibitor_sid)";
-        $exhibitor_name = $exhibitor['exhibitorName'];
-        $regionName = $region['name'];
-        $receipt_html .= <<<EOS
-    <div class="row">
-        <div class="col-sm-1">$exhibitor_sid</div>
-        <div class="col-sm-6"> $regionName for $exhibitor_name</div>
-    </div>
-EOS;
-        $receipt_tables .= "<tr><td>$exhibitor_sid</td><td>$regionName for $exhibitor_name</td><td></td></tr>\n";
-        $receipt .= "$exhibitor_sid: $regionName for $exhibitor_name\n";
 
-        foreach ($data['spaces'] as $space) {
-            $spaceDesc = $space['purchased_description'];
-            $spaceName = $space['name'];
-            $total += $space['purchased_price'];
-            $spacePrice = $dolfmt->formatCurrency((float) $space['purchased_price'], $currency);
-            $receipt_html .= <<<EOS
-    <div class="row">
-        <div class="col-sm-1"></div>
-        <div class="col-sm-6">$spaceDesc in $spaceName</div>
-        <div class="col-sm-2" style="text-align: right;">$spacePrice</div>
+        $curNameLine = '';
+        foreach ($data['memberships'] as $membership) {
+            $nameLine = $membership['fullName'] . ' (' . strip_tags(str_replace('<br/>', '/', $master_transaction['badgename'])) . ')';
+            if ($curNameLine != $nameLine) {
+                $age = $membership['memAge'];
+                $receipt .= "\nMember: $nameLine, $age\n";
+                $receipt_html .= <<<EOS
+    <div class='row mt-4'>
+        <div class='col-sm-12'>
+            <h3 class="size-h4">Member $nameLine, $age</h3>
+        </div>
     </div>
 EOS;
-            $receipt_tables .= "<tr><td></td><td>$spaceDesc in $spaceName</td><td>$spacePrice</td></tr>\n";
-            $receipt .= "     $spaceDesc in $spaceName: $spacePrice\n";
-        }
-
-        if ($region['mailinFee'] > 0 && $exhibitor['mailin'] == 'Y') {
-            $total += $region['mailinFee'];
-            $fee = $dolfmt->formatCurrency((float) $region['mailinFee'], $currency);
+                $receipt_tables .= <<<EOS
+<tr><td colspan="3"><h3 class="size-h4">Member $nameLine, $age</h3></td></tr>
+EOS;
+                $curNameLine = $nameLine;
+            }
+            $regid = $membership['id'];
+            $label = $membership['label'];
+            $status = $membership['status'];
+            switch ($status) {
+                case 'paid':
+                    $statusField = 'Paid';
+                    break;
+                case 'unpaid':
+                case 'plan':
+                    $bal = $membership['price'] - ($membership['paid'] + $membership['couponDiscount']);
+                    $statusField = "Balance due: " . $dolfmt->formatCurrency((float)$bal, $currency);
+                    break;
+                default:
+                    $statusField = '';
+            }
+            $receipt .= "$regid    $label    $statusField\n";
             $receipt_html .= <<<EOS
-    <div class="row">
-        <div class="col-sm-1"></div>
-        <div class="col-sm-6">Mail-in Fee</div>
-        <div class="col-sm-2" style="text-align: right;">$fee</div>
+    <div class='row'>
+        <div class='col-sm-1'>$regid</div>
+        <div class='col-sm-4'>$label</div>
+        <div class='col-sm-6'>$statusField</div>
     </div>
 EOS;
-            $receipt_tables .= "<tr><td></td><td>Mail-in Fee</td><td>$fee</td></tr>\n";
-            $receipt .= "     Mail-in Fee: $fee\n";
+            $receipt_tables .= <<<EOS
+<tr><td>$regid</td><td>$label</td><td>$statusField</td></tr>
+EOS;
         }
     }
 
+    // space purchases
+    $exhibitorId = -1;
+    $spaceSubtotal = 0;
+    foreach ($data['spaces'] as $space) {
+        if ($exhibitorId != $space['exhibitorId']) {
+            // new exhibitor, repeat the space info
+            $regionName = $space['regionName'];
+            $exhibitorName = $space['exhibitorName'];
+            $artistName = $space['artistName'];
+            if ($artistName != null && $artistName != '' && $artistName != $exhibitorName) {
+                $displayName = "$artistName/$exhibitorName";
+            } else {
+                $displayName = $exhibitorName;
+            }
+            $exhibitorId = $space['exhibitorId'];
+            $exhibitorNumber = $space['exhibitorNumber'];
+            // output the header
+            $receipt .= "\n\n$regionName spaces for $displayName, Exhibitor id $exhibitorId, $regionName number $exhibitorNumber\n";
+            $receipt_html .= <<<EOS
+    <div class='row mt-4'>
+        <div class='col-sm-12'>
+            <h2 class="size-h3">$regionName spaces for $displayName, Exhibitor id $exhibitorId, $regionName number $exhibitorNumber</h2>
+        </div>
+    </div>
+EOS;
+            $receipt_tables .= <<<EOS
+<tr><td colspan="3"><h2 class="size-h3">$regionName spaces for $displayName, Exhibitor id $exhibitorId, $regionName number $exhibitorNumber</h2></td></tr>
+EOS;
+        }
+        // now the actual row
+        $spaceName = $space['name'];
+        $spacePriceName = $space['description'];
+        $spaceSubtotal += (float) $space['price'];
+        $price = $dolfmt->formatCurrency((float)$space['price'], $currency);
+        $receipt .= "$spaceName    $spacePriceName    $price\n";
+        $receipt_html .= <<<EOS
+    <div class='row'>
+        <div class='col-sm-3'>$spaceName</div>
+        <div class='col-sm-6'>$spacePriceName</div>
+        <div class='col-sm-3'>$price</div>
+    </div>
+EOS;
+        $receipt_tables .= <<<EOS
+<tr><td>$spaceName</td><td>$spacePriceName</td><td>$price</td></tr>
+EOS;
+    }
+    if (array_key_exists('mailinFee', $master_transaction)) {
+        $mailInFee = $master_transaction['mailinFee'];
+        if ($mailInFee != null && $mailInFee > 0) {
+            $spaceSubtotal += (float) $mailInFee;
+            $mailInFee = $dolfmt->formatCurrency((float)$mailInFee, $currency);
+            $receipt .= "$mailInFee    $regionName    $mailInFee\n";
+            $receipt_html .= <<<EOS
+    <div class='row'>
+        <div class='col-sm-2'>Mail In Fee</div>
+        <div class='col-sm-5'>$regionName</div>
+        <div class='col-sm-2'>$mailInFee</div>
+    </div>
+EOS;
+            $receipt_tables .= <<<EOS
+<tr><td>Mail In Fee</td><td>$regionName</td><td>$mailInFee</td></tr>
+EOS;
+        }
+    }
+    if ($spaceSubtotal > 0) {
+        $subtotal = $dolfmt->formatCurrency((float)$spaceSubtotal, $currency);
+        $receipt .= "Space Subtotal: $spaceSubtotal\n";
+        $receipt_html .= <<<EOS
+    <div class='row'>
+        <div class='col-sm-3'>Space Subtotal</div>
+        <div class='col-sm-4'></div>
+        <div class='col-sm-2'>$subtotal</div>
+    </div>
+EOS;
+        $receipt_tables .= <<<EOS
+<tr><td>Space Subtotal: </td><td></td><td>$spaceSubtotal</td></tr>
+EOS;
+    }
+
+    // main membership area
+    if (count($data['planPayments']) == 0) {
+        // if its not a payment on a plan, show the memberships here
+        if (count($data['memberships']) > 0) {
+            $receipt .= "\nMemberships:\n";
+            $receipt_html .= <<<EOS
+    <div class='row mt-4'>
+        <div class='col-sm-12'>
+            <h2 class="size-h3">Memberships:</h2>
+        </div>
+    </div>
+EOS;
+            $receipt_tables .= <<<EOS
+<tr><td colspan="3">&nbsp;</td></tr>
+<tr><td colspan="3"><h2 class="size-h3">Memberships:</h2></td></tr>
+EOS;
+
+            // first output the payor
+            $memberSubtotal = 0;
+            $master_perid = $master_transaction['perid'];
+            $master_newperid = $master_transaction['newperid'];
+            $curNameLine = '';
+            foreach ($data['memberships'] as $membership) {
+                if (($membership['perid'] != null && $membership['perid'] == $master_perid) ||
+                    ($membership['newperid'] != null && $membership['newperid'] == $master_newperid)) {
+                    $memberSubtotal += reg_format_mbr($dolfmt, $currency, $membership, $curNameLine, $receipt, $receipt_html, $receipt_tables);
+                }
+            }
+
+            // now all but the payor
+            $curNameLine = '';
+            foreach ($data['memberships'] as $membership) {
+                if (!(($membership['perid'] != null && $membership['perid'] == $master_perid) ||
+                    ($membership['newperid'] != null && $membership['newperid'] == $master_newperid))) {
+                    $memberSubtotal += reg_format_mbr($dolfmt, $currency, $membership, $curNameLine, $receipt, $receipt_html, $receipt_tables);
+                }
+            }
+        }
+    }
+
+    // art sales
+    $artSubtotal = 0;
+
+    $total = $memberSubtotal + $spaceSubtotal = $artSubtotal;
     // now the total due
     $price = $dolfmt->formatCurrency((float) $total, $currency);
-    $receipt .= "\nTotal Due:: $price\n";
+    $receipt .= "\nTotal Due: $price\n";
     $receipt_html .= <<<EOS
     <div class="row mt-2">
         <div class="col-sm-7">Total Due:</div>
@@ -815,7 +900,7 @@ EOS;
 EOS;
 
     // now for the payments/coupon section
-
+/*
     // if payments > 0, then output payments header
     if (count($data['payments']) > 0) {
         $receipt .= "\nPayments:\nType, Description/Code, Amount\n";
@@ -946,15 +1031,15 @@ EOS;
 <tr><td colspan="2">Total Payments</td><td>$payment_total</td></tr>
 EOS;
     }
-
+*/
     // now for the disclaimers at the bottom
     // general disclaimer for all reg items
     // Needs to be added
 
     // exhibitor disclaimer
-    if (array_key_exists('exhibitor', $data)) {
+    if (count($data['spaces']) > 0) {
         loadCustomText('exhibitor', 'index', null, true);
-        $portalName = ucfirst($region['portalType']);
+        $portalName = ucfirst($data['spaces'][0]['portalType']);
         $disclaimer1 = returnCustomText('invoice/payDisclaimer', 'exhibitor/index/');
         $disclaimer2 = returnCustomText('invoice/payDisclaimer' . $portalName,'exhibitor/index/');
         if ($disclaimer1 != '' || $disclaimer2 != '') {
@@ -994,7 +1079,7 @@ EOS;
 <tr><td colspan="3"><p>$endtext</p></td></tr>
 EOS;
     }
-*/
+
     // all done now
     $response['receipt'] = $receipt;
     $response['receipt_html'] = $receipt_html;
@@ -1015,71 +1100,38 @@ function sum_coupon_discount($id, $memberships) {
 }
 
 // format a member block for the receipt
-function reg_format_mbr($data, $person, $list, &$receipt, &$receipt_html, &$receipt_tables) {
-    $currency = getConfValue('con', 'currency', 'USD');
-    $curLocale = locale_get_default();
-    $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
-    // first the name:
-    $name = trim($person['first_name']);
-    if (mb_strlen($person['middle_name']) > 0)
-        $name .= ' ' . trim($person['middle_name']);
-    if (mb_strlen($person['last_name']) > 0)
-        $name .= ' ' . trim($person['last_name']);
-    if (mb_strlen($person['suffix']) > 0)
-        $name .= ', ' . trim($person['suffix']);
-    if (mb_strlen($person['badge_name']) > 0 || mb_strlen($person['badgeNameL2']) > 0) {
-        $bn = badgeNameDefault($person['badge_name'], $person['badgeNameL2'], $person['first_name'], $person['last_name']);
-        $bn = str_replace('<br/>', '/', $bn);
-        $bn = str_replace('<i>', '', $bn);
-        $bn = str_replace('</i>', '', $bn);
-        $name .= " ($bn)";
-    }
-    $name = trim($name);
-
-    $receipt .= "\nMember: $name\n";
-    $receipt_html .= <<<EOS
-    <div class='row mt-1'>
+function reg_format_mbr($dolfmt, $currency, $membership, &$curNameLine, &$receipt, &$receipt_html, &$receipt_tables) {
+    // see if we need a header:
+    $nameLine = $membership['fullName'] . ' (' . strip_tags(str_replace('<br/>', '/', $membership['badgename'])) . ')';
+    if ($curNameLine != $nameLine) {
+        $age = $membership['memAge'];
+        $receipt .= "\nMember: $nameLine, $age\n";
+        $receipt_html .= <<<EOS
+    <div class='row mt-4'>
         <div class='col-sm-12'>
-            <h4><strong>Member:</strong> $name</h4>
+            <h3 class="size-h4">Member $nameLine, $age</h3>
         </div>
     </div>
 EOS;
-    $receipt_tables .= <<<EOS
-<tr><td colspan="3"><h4><strong>Member:</strong> $name</h4></td></tr>
+        $receipt_tables .= <<<EOS
+<tr><td colspan="3"><h3 class="size-h4">Member $nameLine, $age</h3></td></tr>
 EOS;
-
-    $subtotal = 0;
-    // loop over their memberships
-    foreach ($list AS $row) {
-        $price = $dolfmt->formatCurrency((float) $row['price'], $currency);
-        $label = $row['label'];
-        $id = $row['id'];
-        $receipt .= "$id, $label: $price\n";
-        $receipt_html .= <<<EOS
+        $curNameLine = $nameLine;
+    }
+    $id = $membership['id'];
+    $label = $membership['label'];
+    $price = $membership['price'];
+    $pricefmt = $dolfmt->formatCurrency((float) $price, $currency);
+    $receipt .= "$id, $label: $price\n";
+    $receipt_html .= <<<EOS
     <div class="row">
         <div class="col-sm-1">$id</div>
         <div class="col-sm-6">$label</div>
-        <div class="col-sm-2" style="text-align: right;">$price</div>
-    </div>
-EOS;
-        $receipt_tables .= <<<EOS
-<tr><td>$id</td><td>$label</td><td>$price</td></tr>
-EOS;
-
-        $subtotal += $row['price'];
-    }
-    $price = $dolfmt->formatCurrency((float) $subtotal, $currency);
-    $receipt .= "     Subtotal: $price\n";
-    $receipt_html .= <<<EOS
-    <div class="row">
-        <div class="col-sm-1"></div>
-        <div class="col-sm-6">Subtotal</div>
-        <div class="col-sm-2" style="text-align: right;">$price</div>
+        <div class="col-sm-2" style="text-align: right;">$pricefmt</div>
     </div>
 EOS;
     $receipt_tables .= <<<EOS
-<tr><td>&nbsp;</td><td>Subtotal</td><td>$price</td></tr>
+<tr><td>$id</td><td>$label</td><td>$pricefmt</td></tr>
 EOS;
-
-    return $subtotal;
+    return $price;
 }
