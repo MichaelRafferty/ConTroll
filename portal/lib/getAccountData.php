@@ -26,7 +26,7 @@ WITH trans AS (
         IFNULL(tp.complete_date, t.create_date) AS transDate,
         m.label, m.memAge, m.memAge AS age, m.memType, m.memCategory, m.startdate, m.enddate, m.online, 
         m.taxable, m.ageShortName AS ageshortname, m.shortname,
-         CASE 
+        CASE 
             WHEN pn.id IS NOT NULL THEN pn.first_name
             WHEN nn.id IS NOT NULL THEN nn.first_name
             ELSE NULL
@@ -36,6 +36,16 @@ WITH trans AS (
             WHEN nn.id IS NOT NULL THEN nn.last_name
             ELSE NULL
         END AS lname,
+        CASE 
+            WHEN pn.id IS NOT NULL THEN pn.first_name
+            WHEN nn.id IS NOT NULL THEN nn.first_name
+            ELSE NULL
+        END AS first_name,
+        CASE 
+            WHEN pn.id IS NOT NULL THEN pn.last_name
+            WHEN nn.id IS NOT NULL THEN nn.last_name
+            ELSE NULL
+        END AS last_name,
         CASE 
             WHEN pn.id IS NOT NULL THEN pn.managedBy
             WHEN nn.id IS NOT NULL THEN nn.managedBy
@@ -87,18 +97,18 @@ WITH trans AS (
     LEFT OUTER JOIN perinfo pn ON pn.id = r.perid AND (pn.managedBy = ? OR pn.id = ?)
     LEFT OUTER JOIN newperson nn ON nn.id = r.newperid
     WHERE (status $statusCheck OR (r.status = 'paid' AND r.complete_trans IS NULL)) AND (t.perid = ? OR tp.perid = ?) AND t.conid = ?
-    UNION
+    UNION    
     SELECT t.id, r.create_date, r.id AS regid, r.memId, r.conid, r.status, r.price, r.paid, r.complete_trans, 
         r.couponDiscount, r.perid, r.newperid,
-        CASE WHEN r.complete_trans IS NULL THEN r.create_trans ELSE r.complete_trans END AS sortTrans,
-        CASE WHEN tp.complete_date IS NULL THEN t.create_date ELSE tp.complete_date END AS transDate,
+        IFNULL(r.complete_trans, r.create_trans) AS sortTrans,
+        IFNULL(tp.complete_date, t.create_date) AS transDate,
         m.label, m.memAge, m.memAge AS age, m.memType, m.memCategory,  m.startdate, m.enddate, m.online, m.taxable, 
-        m.ageShortName AS ageshortname, m.shortname, nn.first_name AS fname, nn.managedBy, nn.managedByNew, nn.badge_name, nn.badgeNameL2,
-        nn.first_name, nn.last_name,
+        m.ageShortName AS ageshortname, m.shortname, nn.first_name AS fname, nn.last_name AS lname, nn.first_name, nn.last_name,
+        nn.managedBy, nn.managedByNew, nn.badge_name, nn.badgeNameL2,
         TRIM(REGEXP_REPLACE(CONCAT(nn.first_name, ' ', nn.middle_name, ' ', nn.last_name, ' ', nn.suffix), ' +', ' ')) AS fullName, 
         nn.id as memberId, nn.email_addr, nn.phone,
         IFNULL(tp.perid, t.perid) AS transPerid,
-        IFNULL(tp.newperid, t.newperid) AS transNewPerid
+        IFNULL(tp.newperid, t.newperid) AS transNewPerid 
     FROM trans t
     JOIN reg r ON t.id = r.create_trans
     LEFT OUTER JOIN trans tp ON tp.id = r.complete_trans
