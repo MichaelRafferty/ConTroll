@@ -1507,9 +1507,8 @@ class PosCart {
 
 // receiptHeader - retrieve receipt header info from cart[0]
     receiptHeader(user_id, pay_tid) {
-        var d = new Date();
         var payee = (this.#cartPerinfo[0].first_name + ' ' + this.#cartPerinfo[0].last_name).trim();
-        return "\nReceipt for payment to " + pos.getConlabel() + "\nat " + d.toLocaleString() + "\nBy: " + payee + ", Cashier: " + user_id + ", Transaction: " + pay_tid;
+        return "Receipt for payment to " + pos.getConlabel() + " By: " + payee + ", Cashier: " + user_id + ", Transaction: " + pay_tid;
     }
 
 // printList - html to display cart elements to print

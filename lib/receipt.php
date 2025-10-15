@@ -861,6 +861,7 @@ EOS;
             $receipt_tables .= <<<EOS
 <tr><td colspan="3">&nbsp;</td></tr>
 <tr><td colspan="3"><h2 class="size-h3">Memberships:</h2></td></tr>
+<tr><td>RegId</td><td>Membership Name/Status</td><td>Price</td></tr>
 EOS;
 
             // first output the payor
@@ -1207,7 +1208,7 @@ EOS;
     </div>
 EOS;
     $receipt_tables .= <<<EOS
-<tr><td>$id</td><td>$label    $status</td><td>$pricefmt</td></tr>
+<tr><td>$id</td><td>$label / $status</td><td>$pricefmt</td></tr>
 EOS;
     return $price;
 }

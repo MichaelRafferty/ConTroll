@@ -2592,17 +2592,15 @@ addUnpaid(tid) {
         this.#lastReceiptType = receipt_type;
         // header text
         var header_text = cart.receiptHeader(this.#user_id, this.#pay_tid);
-        // optional footer text
-        var footer_text = '';
         // server side will print the receipt
         var postData = {
             user_id: this.#user_id,
             ajax_request_action: 'printReceipt',
             header: header_text,
             payTid: this.#pay_tid,
-            prows: JSON.stringify(cart.getCartPerinfo()),
-            pmtrows: JSON.stringify(cart.getCartPmt()),
-            footer: footer_text,
+            //prows: JSON.stringify(cart.getCartPerinfo()),
+            //pmtrows: JSON.stringify(cart.getCartPmt()),
+            //footer: footer_text,
             receipt_type: receipt_type,
             email_addrs: this.#emailAddreesRecipients,
         };

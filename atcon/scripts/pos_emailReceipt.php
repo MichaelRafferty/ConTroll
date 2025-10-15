@@ -6,6 +6,7 @@
 
 require_once '../lib/base.php';
 require_once('../../lib/log.php');
+require_once('../../lib/receipt.php');
 require_once('../lib/badgePrintFunctions.php');
 require_once('../../lib/email__load_methods.php');
 
@@ -40,104 +41,17 @@ $currency = getConfValue('con', 'currency', 'USD');
 
 $response = array('post' => $_POST, 'get' => $_GET);
 // printReceipt: print the text receipt "text", if printer name starts with 0, then just log the receipt
-$header = $_POST['header'];
-$footer = $_POST['footer'];
 $payTid = $_POST['payTid'];
-try {
-    $prows = json_decode($_POST['prows'], true, 512, JSON_THROW_ON_ERROR);
-}
-catch (Exception $e) {
-    $msg = 'Caught exception on json_decode: ' . $e->getMessage() . PHP_EOL . 'JSON error: ' . json_last_error_msg() . PHP_EOL;
-    $response['error'] = $msg;
-    error_log($msg);
-    ajaxSuccess($response);
-    exit();
-}
-try {
-    $pmtrows = json_decode($_POST['pmtrows'], true, 512, JSON_THROW_ON_ERROR);
-}
-catch (Exception $e) {
-    $msg = 'Caught exception on json_decode: ' . $e->getMessage() . PHP_EOL . 'JSON error: ' . json_last_error_msg() . PHP_EOL;
-    $response['error'] = $msg;
-    error_log($msg);
-    ajaxSuccess($response);
-    exit();
-}
+$header = $_POST['header'];
+
 if (array_key_exists('receipt_type', $_POST))
     $receipt_type = $_POST['receipt_type'];
 else
     $receipt_type = 'print';
 
-$dolfmt = new NumberFormatter("", NumberFormatter::CURRENCY);
-
-// start with header
-$receipt = $header . "\n";
-// cart rows, only added to printout:
-$already_paid = 0;
-$total_due = 0;
-$taxPaid = 0;
-foreach ($pmtrows as $pmtrow) {
-    $type = $pmtrow['type'];
-    if ($type == 'prior')
-        continue;
-
-    $taxPaid += $pmtrow['taxAmt'];
-}
-
-foreach ($prows as $prow) {
-    $first = true;
-    $member_due = 0;
-    foreach ($prow['memberships'] as $mrow) {
-        if ($mrow['tid2'] != $payTid)
-            continue;
-        if ($first) {
-            $receipt .= "\nMember: " . trim($prow['fullName']) . "\n";
-            $first = false;
-        }
-        $receipt .= "   " . $mrow['label'] . ", " . $dolfmt->formatCurrency((float) $mrow['price'], $currency) .
-            " (" . $mrow['status'] . ")\n";
-        if (array_key_exists('prior_paid', $mrow))
-            $already_paid += $mrow['prior_paid'];
-        $member_due += $mrow['price'];
-    }
-    $member_due = round($member_due, 2);
-    $receipt .= "   Member Subtotal: " . $dolfmt->formatCurrency($member_due, $currency) . "\n";
-    $total_due += $member_due;
-}
-if ($taxPaid > 0) {
-    $receipt .= 'Pre-Tax Subtotal:  ' . $dolfmt->formatCurrency($total_due, $currency) . "\n";
-    $receipt .= 'Sales Tax:  ' . $dolfmt->formatCurrency($taxPaid, $currency) . "\n";
-    $total_due += $taxPaid;
-}
-$receipt .= "Total Due:   " . $dolfmt->formatCurrency((float) $total_due, $currency) . "\n\nPayment   Amount Description/Code\n";
-$total_pmt = 0;
-if ($already_paid > 0) {
-    $total_pmt += $already_paid;
-    $receipt .= sprintf("prior%15s Already Paid\n", $dolfmt->formatCurrency($already_paid, $currency));
-}
-
-foreach ($pmtrows as $pmtrow) {
-    $type = $pmtrow['type'];
-    if ($type == 'prior')
-        continue;
-
-    $amtlen = 20 - mb_strlen($type);
-
-    $line = sprintf("%s%" . $amtlen . "s %s", $type, $dolfmt->formatCurrency($pmtrow['amt'], $currency), $pmtrow['desc']);
-    if ($type == 'check') {
-        $line .= ' /' . $pmtrow['checkno'];
-    }
-    if ($type == 'credit') {
-        $line .= ' /' . $pmtrow['ccauth'];
-    }
-    $receipt .= $line . "\n";
-    $total_pmt += $pmtrow['amt'];
-}
-$endtext = getConfValue('con', 'endtext', "") . PHP_EOL;
-$receipt .= "         ----------\n" . sprintf("total%15s Total Amount Tendered", $dolfmt->formatCurrency($total_pmt, $currency)) .
-    "\n$footer\n" . "\n" . $endtext . "\n\n\n";
-
+$receipts = trans_receipt($payTid);
 if ($receipt_type == 'print') {
+    $receipt = $receipts['receipt'];
     $printer = getSessionVar('receiptPrinter');
     if ($printer != null && $printer['name'] != 'None') {
         $result_code = print_receipt($printer, $receipt);
@@ -169,7 +83,7 @@ if ($receipt_type == 'email') {
             }
 
             // valid email, send the email
-            $return_arr = send_email($con['regadminemail'], $email_addr, null, $header, $receipt, null);
+            $return_arr = send_email($con['regadminemail'], $email_addr, null, $header, $receipts['receipt'], $receipts['receipt_tables']);
             if (array_key_exists('error_code', $return_arr)) {
                 $error_code = $return_arr['error_code'];
             } else {
