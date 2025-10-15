@@ -4,6 +4,7 @@ require_once('../../lib/email__load_methods.php');
 require_once('../../lib/cc__load_methods.php');
 require_once('../../lib/exhibitorArtistInventoryEmail.php');
 require_once('../../lib/log.php');
+require_once('../../lib/receipt.php');
 require_once '../lib/email.php';
 
 // use common global Ajax return functions
