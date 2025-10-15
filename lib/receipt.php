@@ -211,7 +211,7 @@ EOS;
 
     $conid = $transL['conid'];
     $userid = $transL['userid'];
-    $type = $transL['type'];
+    $type = strtolower($transL['type']);
 
     $response['transid'] = $transid;
     $response['type'] = $type;
@@ -391,8 +391,9 @@ SELECT S.id, S.time_purchased, S.item_purchased, S.price, S.paid,  sp.code, sp.d
        sp.includedMemberships, sp.additionalMemberships, s.name, s.description AS spaceDescription,
        er.name AS regionName, er.description AS regionDescription, ert.portalType, RY.exhibitorNumber, Y.exhibitorId,
        CONCAT('e-', Y.exhibitorId) AS pid, E.exhibitorName AS last_name, '' AS first_name, E.exhibitorName AS fullName,
-       Y.contactName AS badge_name, Y.mailin, ery.mailinFee, E.exhibitorName AS badgeNameL2, E.exhibitorEmail AS email_addr, E.addr AS address,
-       E.addr2, E.city, E.state, E.zip, E.country, 'exhibitor' AS tablename,
+       Y.contactName AS badge_name, Y.mailin, ery.mailinFee, E.exhibitorName AS badgeNameL2, E.exhibitorEmail AS email_addr, E.addr
+        AS address,
+       E.addr2 AS addr_2, E.city, E.state, E.zip, E.country, 'exhibitor' AS tablename,
        E.artistName, E.exhibitorName
 FROM exhibitorSpaces S
 JOIN exhibitsSpacePrices sp ON sp.id = S.item_purchased
@@ -437,10 +438,10 @@ EOS;
     $artR->free();
     $response['art'] = $art;
 
-    // if the payor is unknown, it's a space payment, before there is a payor (membership[0] created), update the info in TransL
+    // if the payor is Unknown, it's a space payment, before there is a payor (membership[0] created), update the info in TransL
     if (count($spaces) > 0) {
-        if ($transL['fullName'] == 'unknown') {
-            $fields = ['pid', 'tablenname', 'fullName', 'last_name', 'first_name', 'badge_name', 'badgeNameL2',
+        if ($transL['fullName'] == 'Unknown') {
+            $fields = ['pid', 'tablename', 'fullName', 'last_name', 'first_name', 'badge_name', 'badgeNameL2', 'badgename',
                 'address', 'addr_2', 'city', 'state', 'zip', 'country'];
             foreach ($fields as $field) {
                 $transL[$field] = $spaces[0][$field];
