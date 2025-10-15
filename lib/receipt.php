@@ -21,8 +21,8 @@ EOS;
     if ($spaceR === false) {
         return $transactions;
     }
-    while ($transId =$spaceR->fetch_row()[0]) {
-        $transactions[] = $transId;
+    while ($transId = $spaceR->fetch_row()) {
+        $transactions[] = $transId[0];
     }
     $spaceR->free();
 
@@ -809,14 +809,14 @@ EOS;
     }
     if (array_key_exists('mailinFee', $master_transaction)) {
         $mailInFee = $master_transaction['mailinFee'];
-        if ($mailInFee != null && $mailInFee > 0) {
+        if ($mailInFee != null && $mailInFee > 0 && $master_transaction['mailin'] == 'Y') {
             $spaceSubtotal += (float) $mailInFee;
             $mailInFee = $dolfmt->formatCurrency((float)$mailInFee, $currency);
             $receipt .= "$mailInFee    $regionName    $mailInFee\n";
             $receipt_html .= <<<EOS
     <div class='row'>
-        <div class='col-sm-2'>Mail In Fee</div>
-        <div class='col-sm-7'>$regionName</div>
+        <div class='col-sm-3'>Mail In Fee</div>
+        <div class='col-sm-6'>$regionName</div>
         <div class='col-sm-2' style="text-align: right;">$mailInFee</div>
     </div>
 EOS;
