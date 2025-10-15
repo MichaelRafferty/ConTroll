@@ -169,20 +169,20 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
     if ($artSales == 1) {
         $needTaxes = true;
         if (array_key_exists('art', $results) && is_array($results['art']) && count($results['art']) > 0) {
-            foreach ($results['art'] as $art) {
-                if (!array_key_exists('paid', $art)) {
-                    $art['paid'] = 0;
+            foreach ($results['art'] as $artItem) {
+                if (!array_key_exists('paid', $artItem)) {
+                    $artItem['paid'] = 0;
                 }
-                $artId = $art['id'];
-                $artistName = $art['artistName'];
-                $artistNumber = $art['exhibitorNumber'];
-                $itemKey = $art['item_key'];
-                $title = $art['title'];
-                $type = $art['type'];
-                $priceType = $art['priceType'];
-                $quantity = $art['artSalesQuantity'];
-                $amount = $art['amount'];
-                $notesData = cc_artSalesNotes($art, $results['payorId'], $results['transid']);
+                $artId = $artItem['id'];
+                $artistName = $artItem['artistName'];
+                $artistNumber = $artItem['exhibitorNumber'];
+                $itemKey = $artItem['item_key'];
+                $title = $artItem['title'];
+                $type = $artItem['type'];
+                $priceType = $artItem['priceType'];
+                $quantity = $artItem['artSalesQuantity'];
+                $amount = $artItem['amount'];
+                $notesData = cc_artSalesNotes($artItem, $results['payorId'], $results['transid']);
 
                 $item = [
                     'uid' => 'art' . ($lineid + 1),
@@ -199,7 +199,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                     $item['taxUid'] = $taxLabel;
                 }
                 $orderLineItems[$lineid] = $item;
-                $orderValue += $art['amount'];
+                $orderValue += $artItem['amount'];
                 $lineid++;
             }
         } else {

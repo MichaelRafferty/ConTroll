@@ -463,7 +463,6 @@ function draw_person(receipts) {
             </button>
         </div>
         <div class="col-sm-9">` + receipt.transid + '/' + receipt.time + `</div>
-        </div>
     </div>
 `;
     }
@@ -1715,17 +1714,13 @@ function print_receipt(receipt_type) {
     var payee = (currentPerson.first_name + ' ' + currentPerson.last_name).trim();
 
     // header text
-    var header_text =  "\nReceipt for payment to " + conlabel + "\nat " + d.toLocaleString() + "\nBy: " + payee + ", Cashier: " + user_id + ", Transaction: " + pay_tid + "\n";
-    // optional footer text
-    var footer_text = '';
+    var header_text =  "Receipt for payment to " + conlabel + "By: " + payee + ", Cashier: " + user_id + ", Transaction: " + pay_tid + "\n";
     // server side will print the receipt
     var postData = {
         ajax_request_action: 'printReceipt',
         header: header_text,
         person: currentPerson,
-        arows: JSON.stringify(cart.getCartArt()),
-        pmtrows: JSON.stringify(cart.getCartPmt()),
-        footer: footer_text,
+        payTid: pay_tid,
         receipt_type: receipt_type,
         email_addrs: emailAddreesRecipients,
     };

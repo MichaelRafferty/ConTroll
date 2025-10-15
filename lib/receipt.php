@@ -962,6 +962,56 @@ EOS;
 EOS;
             }
         }
+
+        $needHeader = true;
+        foreach ($data['art'] as $art) {
+            if ($art['type'] == 'print') {
+                if ($needHeader) {
+                    $receipt .= "\n\nArt Sales/Print Shop Items:\nItem id    Title/Artist    Qty/Amount";
+                    $receipt_html .= <<<EOS
+    <div class='row mt-2'>
+        <div class='col-sm-12'>
+            <h3 class="size-h4">Art Sales/Print Shop Items:</h3>
+        </div>
+    </div>
+     <div class='row'>
+        <div class='col-sm-1'>Item id</div>
+        <div class='col-sm-4'>Title</div>
+        <div class='col-sm-3'>Artist</div>
+        <div class='col-sm-1' style="text-align: right;">Quantity</div>
+        <div class='col-sm-2' style="text-align: right;">Amount</div>
+    </div>
+EOS;
+                    $receipt_tables .= <<<EOS
+<tr><td colspan="3"><h3 class="size-h4">Art Auction Items:</h3></td></tr>
+<tr><td>Item Id</td><td>Title/Artist</td><td>Qty/Amount</td></tr>
+EOS;
+                    $needHeader = false;
+                }
+                // now the actual row
+                $itemId = $art['exhibitorNumber'] . '-' . $art['item_key'];
+                $title = $art['title'];
+                $artist = $art['artist'];
+                $qty = $art['quantity'];
+                $price = $art['amount'];
+                $artSubtotal += $price;
+                $pricefmt = $dolfmt->formatCurrency((float)$price, $currency);
+                $receipt .= "$itemId    $title/$artist    $qty/$pricefmt\n";
+                $receipt_html .= <<<EOS
+    <div class='row'>
+        <div class='col-sm-1'>$itemId</div>
+        <div class='col-sm-4'>$title</div>
+        <div class='col-sm-3'>$artist</div>
+        <div class='col-sm-1' style="text-align: right;">$qty</div>
+        <div class='col-sm-2' style="text-align: right;">$pricefmt</div>
+    </div>
+EOS;
+                $receipt_tables .= <<<EOS
+<tr><td>$itemId</td><td>$title/$artist</td><td>$qty/$pricefmt</td></tr>
+EOS;
+            }
+        }
+
         if ($artSubtotal > 0) {
             $subtotal = $dolfmt->formatCurrency((float)$artSubtotal, $currency);
             $receipt .= "Art Subtotal: $subtotal\n";
