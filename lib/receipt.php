@@ -756,7 +756,7 @@ EOS;
     </div>
 EOS;
             $receipt_tables .= <<<EOS
-<tr><td>$regid</td><td>$label</td><td>$statusField</td></tr>
+<tr><td>$regid</td><td>$label</td><td style="text-align: right;">$statusField</td></tr>
 EOS;
         }
     }
@@ -804,7 +804,7 @@ EOS;
     </div>
 EOS;
         $receipt_tables .= <<<EOS
-<tr><td>$spaceName</td><td>$spacePriceName</td><td>$price</td></tr>
+<tr><td>$spaceName</td><td>$spacePriceName</td><td style="text-align: right;">$price</td></tr>
 EOS;
     }
     if (array_key_exists('mailinFee', $master_transaction)) {
@@ -821,7 +821,7 @@ EOS;
     </div>
 EOS;
             $receipt_tables .= <<<EOS
-<tr><td>Mail In Fee</td><td>$regionName</td><td>$mailInFee</td></tr>
+<tr><td>Mail In Fee</td><td>$regionName</td><td style="text-align: right;">$mailInFee</td></tr>
 EOS;
         }
     }
@@ -836,7 +836,7 @@ EOS;
     </div>
 EOS;
         $receipt_tables .= <<<EOS
-<tr><td></td><td>Space Subtotal:</td><td>$subtotal</td></tr>
+<tr><td></td><td>Space Subtotal:</td><td style="text-align: right;">$subtotal</td></tr>
 EOS;
     }
 
@@ -861,7 +861,7 @@ EOS;
             $receipt_tables .= <<<EOS
 <tr><td colspan="3">&nbsp;</td></tr>
 <tr><td colspan="3"><h2 class="size-h3">Memberships:</h2></td></tr>
-<tr><td>RegId</td><td>Membership Name/Status</td><td>Price</td></tr>
+<tr><td>RegId</td><td>Membership Name/Status</td><td style="text-align: right;">Price</td></tr>
 EOS;
 
             // first output the payor
@@ -896,7 +896,7 @@ EOS;
     </div>
 EOS;
             $receipt_tables .= <<<EOS
-<tr><td></td><td>Membership Subtotal:</td><td>$subtotal</td></tr>
+<tr><td></td><td>Membership Subtotal:</td><td style="text-align: right;">$subtotal</td></tr>
 EOS;
         }
     }
@@ -935,7 +935,7 @@ EOS;
 EOS;
                     $receipt_tables .= <<<EOS
 <tr><td colspan="3"><h3 class="size-h4">Art Auction Items:</h3></td></tr>
-<tr><td>Item Id</td><td>Title/Artist</td><td>Type/Amount</td></tr>
+<tr><td>Item Id</td><td>Title/Artist</td><td style="text-align: right;">Type/Amount</td></tr>
 EOS;
                     $needHeader = false;
                 }
@@ -958,7 +958,7 @@ EOS;
     </div>
 EOS;
                 $receipt_tables .= <<<EOS
-<tr><td>$itemId</td><td>$title/$artist</td><td>$type/$pricefmt</td></tr>
+<tr><td>$itemId</td><td>$title/$artist</td><td style="text-align: right;">$type/$pricefmt</td></tr>
 EOS;
             }
         }
@@ -984,7 +984,7 @@ EOS;
 EOS;
                     $receipt_tables .= <<<EOS
 <tr><td colspan="3"><h3 class="size-h4">Art Auction Items:</h3></td></tr>
-<tr><td>Item Id</td><td>Title/Artist</td><td>Qty/Amount</td></tr>
+<tr><td>Item Id</td><td>Title/Artist</td><td style="text-align: right;">Qty/Amount</td></tr>
 EOS;
                     $needHeader = false;
                 }
@@ -1007,7 +1007,7 @@ EOS;
     </div>
 EOS;
                 $receipt_tables .= <<<EOS
-<tr><td>$itemId</td><td>$title/$artist</td><td>$qty/$pricefmt</td></tr>
+<tr><td>$itemId</td><td>$title/$artist</td><td style="text-align: right;">$qty/$pricefmt</td></tr>
 EOS;
             }
         }
@@ -1023,11 +1023,29 @@ EOS;
     </div>
 EOS;
             $receipt_tables .= <<<EOS
-<tr><td></td><td>Space Subtotal:</td><td>$subtotal</td></tr>
+<tr><td></td><td>Space Subtotal:</td><td style="text-align: right;">$subtotal</td></tr>
 EOS;
         }
     }
-    $total = $memberSubtotal + $spaceSubtotal + $artSubtotal;
+
+    // Sales tax
+    $tax = 0;
+    if ($master_transaction['tax'] > 0) {
+        $tax = $master_transaction['tax'];
+        $taxfmt = $dolfmt->formatCurrency((float)$tax, $currency);
+        $taxlabel = getConfValue('con', 'taxLabel', 'Sales Tax');
+        $receipt .= "\n$taxlabel: $price\n";
+        $receipt_html .= <<<EOS
+    <div class="row mt-2">
+        <div class="col-sm-9">$taxlabel:</div>
+        <div class="col-sm-2" style="text-align: right;">$taxfmt</div>
+    </div>
+EOS;
+        $receipt_tables .= <<<EOS
+<tr><td colspan="2">$taxlabel:</td><td style="text-align: right;">$price</td></tr>
+EOS;
+    }
+    $total = $memberSubtotal + $spaceSubtotal + $artSubtotal + $tax;
     // now the total due
     $price = $dolfmt->formatCurrency((float)$total, $currency);
     $receipt .= "\nTotal Due: $price\n";
@@ -1038,7 +1056,7 @@ EOS;
     </div>
 EOS;
     $receipt_tables .= <<<EOS
-<tr><td colspan="2">Total Due</td><td>$price</td></tr>
+<tr><td colspan="2">Total Due</td><td style="text-align: right;">$price</td></tr>
 EOS;
 
     // now for the payments/coupon section
@@ -1061,7 +1079,7 @@ EOS;
     $receipt_tables .= <<<EOS
 <tr><td colspan="3">&nbsp;</td></tr>
 <tr><td colspan="3"><h2 class="size-h3">Payments:</h2></td></tr>
-<tr><td>Type</td><td>Description/Code</td><td>Amount</td></tr>
+<tr><td>Type</td><td>Description/Code</td><td style="text-align: right;">Amount</td></tr>
 EOS;
 
     $paymentTotal = 0;
@@ -1081,7 +1099,7 @@ EOS;
     </div>
 EOS;
             $receipt_tables .= <<<EOS
-<tr><td>Coupon</td><td>$couponName ($couponCode</td><td>$couponDiscountFmt</td></tr>
+<tr><td>Coupon</td><td>$couponName ($couponCode</td><td style="text-align: right;">$couponDiscountFmt</td></tr>
 EOS;
     }
 
@@ -1099,8 +1117,7 @@ EOS;
         if ($aprvl === null)
             $aprvl = '';
         else
-            $aprcl = trim($aprvl);
-        $url = $pmt['receipt_url'];
+            $aprvl = trim($aprvl);
 
         $paymentTotal += $amt;
         $amt = $dolfmt->formatCurrency((float)$amt, $currency);
@@ -1122,7 +1139,7 @@ EOS;
     </div>
 EOS;
         $receipt_tables .= <<<EOS
-<tr><td>$type</td><td>$desc$aprvl</td><td>$amt</td></tr>
+<tr><td>$type</td><td>$desc$aprvl</td><td style="text-align: right;">$amt</td></tr>
 EOS;
 
         if ($url != null && $url != '') {
@@ -1130,11 +1147,11 @@ EOS;
             $receipt_html .= <<<EOS
     <div class='row'>
         <div class='col-sm-1'></div>
-        <div class="col-sm-auto">$url</div>
+        <div class="col-sm-auto"><a href="$url" target="_blank">$url</a></div>
     </div>
 EOS;
             $receipt_tables .= <<<EOS
-<tr><td>&nbsp;</td><td colspan="2">$url</td></tr>
+<tr><td>&nbsp;</td><td colspan="2"><a href="$url" target="_blank">$url</a></td></tr>
 EOS;
         }
     }
@@ -1149,7 +1166,7 @@ EOS;
     </div>
 EOS;
         $receipt_tables .= <<<EOS
-<tr><td colspan="2">Total Payments</td><td>$paymentTotalFmt</td></tr>
+<tr><td colspan="2">Total Payments</td><td style="text-align: right;">$paymentTotalFmt</td></tr>
 EOS;
     }
 
@@ -1258,7 +1275,7 @@ EOS;
     </div>
 EOS;
     $receipt_tables .= <<<EOS
-<tr><td>$id</td><td>$label / $status</td><td>$pricefmt</td></tr>
+<tr><td>$id</td><td>$label / $status</td><td style="text-align: right;">$pricefmt</td></tr>
 EOS;
     return $price;
 }
