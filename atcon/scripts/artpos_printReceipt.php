@@ -62,7 +62,7 @@ if ($receipt_type == 'print') {
 }
 if ($receipt_type == 'email') {
     if (!array_key_exists('email_addrs', $_POST)) {
-        $response['error'] = "No email recipeints specified";
+        $response['error'] = "No email recipients specified";
     } else {
         load_email_procs();
         if (array_key_exists('artist', $vendor_conf)) {
