@@ -378,7 +378,7 @@ class Coupon {
             data: data,
             success: function (data, textStatus, jhXHR) {
                 if (data.status == 'error')
-                    show_message(.error, 'error');
+                    show_message(data.error, 'error');
                 else {
                     if (data.message)
                         show_message(data.message, 'success');
