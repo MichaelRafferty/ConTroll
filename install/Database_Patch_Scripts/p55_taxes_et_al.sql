@@ -23,6 +23,8 @@ CREATE TABLE  taxList (
     description varchar(64) DEFAULT '',
     rate decimal(8,6) NOT NULL DEFAULT 0,
     active enum('N', 'Y') NOT NULL DEFAULT 'N',
+    glNum varchar(16) DEFAULT NULL,
+    glLabel varchar(64) DEFAULT NULL,
     lastUpdate timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     updatedBy int DEFAULT NULL,
     PRIMARY KEY (conid, taxField)
