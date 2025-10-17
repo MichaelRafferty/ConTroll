@@ -1177,7 +1177,7 @@ EOS;
 
     // exhibitor disclaimer
     if (count($data['spaces']) > 0) {
-        loadCustomText('exhibitor', 'index', null, true);
+        loadCustomText('exhibitor', 'index', getConfValue('vendor', 'customtext', 'production'), true);
         $portalName = ucfirst($data['spaces'][0]['portalType']);
         $disclaimer1 = returnCustomText('invoice/payDisclaimer', 'exhibitor/index/');
         $disclaimer2 = returnCustomText('invoice/payDisclaimer' . $portalName,'exhibitor/index/');

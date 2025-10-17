@@ -734,8 +734,7 @@ EOS;
     }
 }
 
-$filter = getConfValue('vendor', 'customtext', 'production');
-loadCustomText('exhibitor', 'index', $filter, false);
+loadCustomText('exhibitor', 'index', getConfValue('vendor', 'customtext', 'production'), false);
 $emails = payment($results);
 $return_arr = send_email($region['ownerEmail'], array($exhibitor['exhibitorEmail'], $buyer['email']), $region['ownerEmail'], $region['name'] . ' Payment', $emails[0], $emails[1]);
 
