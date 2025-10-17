@@ -1,6 +1,6 @@
 <?php
 // update changed exhibits setup data and then
-// retrieve exhibits setup data for admin tab exhibitss
+// retrieve exhibits setup data for admin tab exhibits
 require_once '../lib/base.php';
 
 // use common global Ajax return functions
