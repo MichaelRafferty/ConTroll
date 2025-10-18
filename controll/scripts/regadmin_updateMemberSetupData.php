@@ -95,7 +95,7 @@ EOS;
                     continue;
             }
             if (array_key_exists('agekey', $row)) { // if key is there, it's an update
-                $ageType = str_replace(' ', '-', $row['agekey']);
+                $ageType = str_replace(' ', '-', $row['ageType']);
                 $numrows = dbSafeCmd($updsql, 'ssssisi', array($ageType, $row['label'], $row['shortname'], $row['badgeFlag'], $row['sortorder'], $row['agekey'], $year));
                 $updated += $numrows;
             }
@@ -108,7 +108,7 @@ EOS;
                     continue;
             }
             if (!array_key_exists('agekey', $row)) { // if key is not there, its an insert
-                $ageType = str_replace(' ', '-', $row['agekey']);
+                $ageType = str_replace(' ', '-', $row['ageType']);
                 $numrows = dbSafeInsert($inssql, 'issssi', array($year, $ageType, $row['label'], $row['shortname'], $row['badgeFlag'], $row['sortorder']));
                 if ($numrows !== false)
                     $inserted++;
