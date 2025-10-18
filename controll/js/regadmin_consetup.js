@@ -96,6 +96,33 @@ class consetup {
         this.checkMemlistUndoRedo();
     };
 
+    setEditDataPrice(row, value) {
+        if (this.#editData.length <= row) {
+            this.#editData.push({id: 'new' + row });
+            document.getElementById('EMLTS' + row + '_ID').innerHTML = this.#editData[row].id;
+            this.#editData[row].conid = this.#conid;
+        }
+        this.#editData[row].price = value;
+    }
+
+    setEditDataStartDate(row, value) {
+        if (this.#editData.length <= row) {
+            this.#editData.push({id: 'new' + row });
+            document.getElementById('EMLTS' + row + '_ID').innerHTML = this.#editData[row].id;
+            this.#editData[row].conid = this.#conid;
+        }
+        this.#editData[row].startdate = value;
+    }
+
+    setEditDataEndDate(row, value) {
+        if (this.#editData.length <= row) {
+            this.#editData.push({id: 'new' + row});
+            document.getElementById('EMLTS' + row + '_ID').innerHTML = this.#editData[row].id;
+            this.#editData[row].conid = this.#conid;
+        }
+        this.#editData[row].enddate = value;
+    }
+
     draw(year, data, textStatus, jhXHR) {
         var _this = this;
         //console.log('in draw');
@@ -748,8 +775,11 @@ class consetup {
             if (document.getElementById('EMLTS' + index + '_Price').value != '') {
                 // has price, copy the data rows
                 if (index >= this.#editData.length) {
-                    this.#editData.push({id: 'new' + index });
+                    this.#editData.push({id: 'new' + index, conid: this.#conid });
                     document.getElementById('EMLTS' + index + '_ID').innerHTML = this.#editData[index].id;
+                    this.#editData[index].startdate = document.getElementById('EMLTS' + index + '_Start').value;
+                    this.#editData[index].enddate = document.getElementById('EMLTS' + index + '_End').value;
+                    this.#editData[index].price = document.getElementById('EMLTS' + index + '_Price').value;
                 }
                 this.#editData[index].memCategory = document.getElementById('memListCategorySelect').value;
                 this.#editData[index].memAge = document.getElementById('memListAgeSelect').value;
@@ -988,24 +1018,39 @@ function glLabelChange(masterRow) {
 function tsPriceChange(row) {
     if (row == editListMasterRow) {
         document.getElementById('editMemListPrice').value = document.getElementById('EMLTS' + row + '_Price').value;
-        memListModalDirty = true;
     }
+    // so align works need to update the date field in the table
+    memListModalDirty = true;
+    if (activeConSetup == 'next')
+        next.setEditDataPrice(row, document.getElementById('EMLTS' + row + '_Price').value);
+    else
+        current.setEditDataPrice(row, document.getElementById('EMLTS' + row + '_Price').value);
+    memListModalDirty = true;
 }
 
 // bottom section edited startdate, set top screen
 function tsStartChange(row) {
     if (row == editListMasterRow) {
         document.getElementById('editMemListStart').value = document.getElementById('EMLTS' + row + '_Start').value;
-        memListModalDirty = true;
     }
+    // so align works need to update the date field in the table
+    memListModalDirty = true;
+    if (activeConSetup == 'next')
+        next.setEditDataStartDate(row, document.getElementById('EMLTS' + row + '_Start').value);
+    else
+        current.setEditDataStartDate(row, document.getElementById('EMLTS' + row + '_Start').value);
 }
 
 // bottom section edited enddate, set top screen
 function tsEndChange(row) {
     if (row == editListMasterRow) {
         document.getElementById('editMemListEnd').value = document.getElementById('EMLTS' + row + '_End').value;
-        memListModalDirty = true;
     }
+    memListModalDirty = true;
+    if (activeConSetup == 'next')
+        next.setEditDataEndDate(row, document.getElementById('EMLTS' + row + '_End').value);
+    else
+        current.setEditDataEndDate(row, document.getElementById('EMLTS' + row + '_End').value);
 }
 
 // bottom section edited atcon, set top screen
