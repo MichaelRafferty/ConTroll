@@ -89,6 +89,7 @@ EOS;
                             echo "Google Check: " . date('c', $need_login['iat']) . "\n";
                             echo "Current Time: " . date('c') . "\n";
                             echo "Next Check: " . date('c', $need_login['exp']) . "\n";
+                            echo "PHP Version: " . phpversion() . "\n";
                             echo "$versionText";
                             echo "Database Patch Level: $patchLevel\n";
                             echo "Conid: $conid\n";
