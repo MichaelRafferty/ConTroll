@@ -121,7 +121,7 @@ class memsetup {
         this.current_conid = data['current_id'];
         this.next_conid = data['next_id'];
 
-        var html = `<h4><strong>Membership Setup Tables:</strong></h4>
+        var html = `<h4><strong>Membership Setup Tables:</strong> (All entries in the first column of each table should not contain blanks, use - or _ instead.)</h4>
 <div class="container-fluid">
 <div class="row">
 <div class="col-sm-auto p-2 border border-2 border-primary">
