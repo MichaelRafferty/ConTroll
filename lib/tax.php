@@ -10,7 +10,7 @@ function getTaxRates() : array {
 // get tax rates
     $taxRates = array();
     $QQ = <<<EOS
-SELECT taxField, rate, description
+SELECT taxField, rate, label
 FROM taxList
 WHERE active = 'Y' AND conid = ?
 ORDER BY taxField;

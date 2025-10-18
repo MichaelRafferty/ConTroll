@@ -72,10 +72,10 @@ if ($tablename != 'none') {
         } else if ($row['rate'] < 0 || $row['rate'] >= 100) {
             $error .= "For the entry $taxField The tax rate must be between 0 and 100.<br/>";
         }
-        if (!array_key_exists('description', $row)) {
-            $error .= "For the entry $taxField The tax description cannot be empty.<br/>";
+        if (!array_key_exists('label', $row)) {
+            $error .= "For the entry $taxField The tax receipt label cannot be empty.<br/>";
         } else {
-            $data[$index]['description'] = trim($row['description']);
+            $data[$index]['label'] = trim($row['label']);
         }
         if (!array_key_exists('glNum', $row))
             $data[$index]['glNum'] = null;
@@ -94,16 +94,16 @@ if ($tablename != 'none') {
     }
 
     $insupdsql = <<<EOS
-INSERT INTO taxList(conid, taxField, description, rate, active, glNum, glLabel, lastUpdate, updatedBy)
+INSERT INTO taxList(conid, taxField, label, rate, active, glNum, glLabel, lastUpdate, updatedBy)
 VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), ?)
-ON DUPLICATE KEY UPDATE description = ?, rate = ?, active = ?, glNum = ?, glLabel = ?, lastUpdate = NOW(), updatedBy = ?;
+ON DUPLICATE KEY UPDATE label = ?, rate = ?, active = ?, glNum = ?, glLabel = ?, lastUpdate = NOW(), updatedBy = ?;
 EOS;
 
     // now the updates, do the updates first in case we need to insert a new row with the same older key
     foreach ($data as $row) {
         $numrows = dbSafeCmd($insupdsql, 'issdsssisdsssi',
-            array ($conid, $row['taxField'], $row['description'], $row['rate'], $row['active'], $row['glNum'], $row['glLabel'], $user_perid,
-                $row['description'], $row['rate'], $row['active'], $row['glNum'], $row['glLabel'], $user_perid));
+            array ($conid, $row['taxField'], $row['label'], $row['rate'], $row['active'], $row['glNum'], $row['glLabel'], $user_perid,
+                $row['label'], $row['rate'], $row['active'], $row['glNum'], $row['glLabel'], $user_perid));
         $updated += $numrows;
     }
 
@@ -126,8 +126,8 @@ $yearcheckR->free();
 if (count($years) == 1 && array_key_exists($conid - 1, $years)) {
     // There is data from last year and not this year..., so insert the new year data.
     $ins = <<<EOS
-INSERT INTO taxList(conid, taxField, description, rate, active, glNum, glLabel, lastUpdate, updatedBy)
-SELECT ?, taxField, description, rate, active, glNum, glLabel, now(), ?
+INSERT INTO taxList(conid, taxField, label, rate, active, glNum, glLabel, lastUpdate, updatedBy)
+SELECT ?, taxField, label, rate, active, glNum, glLabel, now(), ?
 FROM taxList
 WHERE conid = ?;
 EOS;

@@ -19,14 +19,14 @@ ALTER TABLE transaction ADD COLUMN tax5 decimal(8,2) DEFAULT NULL COMMENT 'Addit
 DROP TABLE IF EXISTS taxList;
 CREATE TABLE  taxList (
     conid int NOT NULL,
-    taxField enum('tax1','tax2','tax3','tax4','tax5') NOT NULL,
-    description varchar(64) DEFAULT '',
-    rate decimal(8,6) NOT NULL DEFAULT 0,
-    active enum('N', 'Y') NOT NULL DEFAULT 'N',
-    glNum varchar(16) DEFAULT NULL,
-    glLabel varchar(64) DEFAULT NULL,
+    taxField enum('tax1','tax2','tax3','tax4','tax5') NOT NULL COMMENT 'Required name of field, not editable by users',
+    label varchar(64) DEFAULT '' COMMENT 'Receipt Label',
+    rate decimal(8,6) NOT NULL DEFAULT 0 COMMENT 'Tax Rate in percent',
+    active enum('N', 'Y') NOT NULL DEFAULT 'N' COMMENT 'Allows for tax law that disables a tax on a sunset date',
+    glNum varchar(16) DEFAULT NULL COMMENT 'General Ledger Account Number for Accounting',
+    glLabel varchar(64) DEFAULT NULL COMMENT 'General Ledger Account Name for Accounting (For reference, only glNum is used)',
     lastUpdate timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    updatedBy int DEFAULT NULL,
+    updatedBy int DEFAULT NULL COMMENT 'perid of signed in user that made change, null if done directly in SQL',
     PRIMARY KEY (conid, taxField)
 );
 

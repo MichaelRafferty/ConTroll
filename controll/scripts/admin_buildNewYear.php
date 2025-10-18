@@ -94,8 +94,8 @@ EOS;
     $checkTaxR->free();
     if ($taxCount == 0) {
         $taxInsQ = <<<EOS
-INSERT INTO taxList(conid, taxField,description, rate, active, lastUpdate, updatedBy)
-SELECT ?, taxField,description, rate, active, now(), NULL
+INSERT INTO taxList(conid, taxField, label, rate, active, lastUpdate, updatedBy)
+SELECT ?, taxField, label, rate, active, now(), NULL
 FROM taxList
 WHERE conid = ?;
 EOS;

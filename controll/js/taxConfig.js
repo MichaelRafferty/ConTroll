@@ -59,7 +59,7 @@ class taxConfig {
             columns: [
                 {title: "Con Id", field: "conid", headerSort:false },
                 {title: "taxField", field: "taxField", headerSort:false , },
-                {title: "Description", field: "description", width: 600, editor: 'input', editorParams: { elementAttributes: { maxlength: 64 }}, headerSort:false },
+                {title: "Receipt Label", field: "label", width: 600, editor: 'input', editorParams: { elementAttributes: { maxlength: 64 }}, headerSort:false },
                 {title: "Tax Rate (%)", field: "rate", editor: 'number', editorParams: { min: 0, max: 99 }, headerSort:false, },
                 {title: "Active", field: "active", editor: 'list', editorParams: { values: ['Y', 'N'], }, headerSort:false, },
                 {title: "GL Num", field: "glNum", headerSort: false, editor: "input", editorParams: {maxlength: "16"}, width: 120, },
