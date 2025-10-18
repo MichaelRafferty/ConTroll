@@ -33,5 +33,10 @@ CREATE TABLE  taxList (
 ALTER TABLE taxList ADD CONSTRAINT taxC_conid FOREIGN KEY(conid) REFERENCES conlist(id) ON UPDATE CASCADE;
 ALTER TABLE taxList ADD CONSTRAINT taxC_perinfo FOREIGN KEY(updatedBy) REFERENCES perinfo(id) ON UPDATE CASCADE;
 
+/* add new managed memCategory for membership holders that must be and remain managed */
+INSERT INTO memCategories (memCategory, notes, onlyOne, standAlone, variablePrice, taxable, sortorder, active, badgeLabel)
+VALUES ('managed', 'Req: disble disassociate in portal and added by manager in portal',
+        'Y', 'Y', 'N', 'N', 15,'Y', 'Attending');
+
 INSERT INTO patchLog(id, name) VALUES(xx, 'taxes et al');
 
