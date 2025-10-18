@@ -97,7 +97,7 @@ $config_vars['source'] = 'regstaff';
                         <div class='col-sm-8' id='editMemListAge'></div>
                     </div>
                     <div class='row mt-1'>
-                        <div class='col-sm-1'>Label:</div>
+                        <div class='col-sm-1'>Short Label:</div>
                         <div class='col-sm-8'>
                             <input type="text" name='editMemListLabel' id='editMemListLabel' placeholder="Short Label"
                                    onchange='memListModalDirty = true;' size="64" maxlength="64" />

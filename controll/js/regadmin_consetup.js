@@ -756,10 +756,14 @@ class consetup {
                 this.#editData[index].memType = document.getElementById('memListTypeSelect').value;
                 this.#editData[index].shortname = document.getElementById('editMemListLabel').value;
                 this.#editData[index].notes = document.getElementById('editMemListNotes').value;
+                this.#editData[index].atcon = document.getElementById('editMemListAtcon').value;
+                this.#editData[index].online = document.getElementById('editMemListOnline').value;
                 this.#editData[index].glNum = document.getElementById('editMemListGLNum').value;
                 this.#editData[index].glLabel = document.getElementById('editMemListGLLabel').value;
                 document.getElementById('EMLTS' + index + '_glNum').value = this.#editData[index].glNum;
                 document.getElementById('EMLTS' + index + '_glLabel').value = this.#editData[index].glLabel;
+                document.getElementById('EMLTS' + index + '_Atcon').value = this.#editData[index].atcon;
+                document.getElementById('EMLTS' + index + '_Online').value = this.#editData[index].online;
             }
         }
         show_message("Fields copied", 'success', 'result_message_editMemList');
@@ -784,6 +788,7 @@ class consetup {
                 if (index >= this.#editData.length) {
                     this.#editData.push({id: 'new' + index });
                     // new rows also get all the master row data
+                    this.#editData[index].conid = this.#conid;
                     this.#editData[index].memCategory = document.getElementById('memListCategorySelect').value;
                     this.#editData[index].memAge = document.getElementById('memListAgeSelect').value;
                     this.#editData[index].memType = document.getElementById('memListTypeSelect').value;
