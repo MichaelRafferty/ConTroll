@@ -4,12 +4,15 @@ ConTroll™ and the ConTroll Troll Logo are Copyright 2015-2025, Michael Raffert
 
 ## This README file is current as of Release 1.4.3 of the ConTroll Regitration System.
 
-ConTroll™ is designed as an all in one system to support registration for conventions.  It supports on-line, mail-in, and on-site registration.
+ConTroll™ is designed as an all-in-one system to support registration for conventions. It supports on-line, mail-in, and on-site registration.
 
 ConTroll™ is freely available for use under the GNU Affero General Public License, Version 3 (https://www.gnu.org/licenses/agpl-3.0.en.html). Local changes are allowed, but all changes to ConTroll™ must be freely offered to the ConTroll™ developers for potential integration into the system.
 
-ConTroll is a combination of PHP, Javascript, and custom templates.  It currently requires at least PHP 8.2 and uses add-ons using Composer, as well as CDNs 
-for tabulator and bootstrap.  Relevant versions are found in lib/jsVersions.php.
+To install controll on your server, see the install directory for System Requirements and the Setup Sequence.
+The Setup_Sequence.md file gives you a step by step guide to installing ConTroll on your server.
+
+ConTroll is a combination of PHP, Javascript, and custom templates. It currently requires at least PHP 8.2 and uses add-ons using Composer, as well as CDNs 
+for tabulator and bootstrap. Relevant versions are found in lib/jsVersions.php.
 
 ## Release Notes
 
@@ -23,12 +26,12 @@ As with all projects this is a work in progress, but the current items are in th
 
 The system is under active development by a team of developers and has functions currently in development to support:
 - Adding reports to the rewritten report subsystem
-- Making email message content editable using the custom text subsystem (mostly completed in 1.3)
+- Making email message content editable using the custom text subsystem (mostly completed in release 1.3)
 - Rewrite of the Registration Portal UI/UX with the learnings from the first release
+- Online editing of the non security sections of the configuration file
 
 Planned future additions:
 - Configurable Exhibitor Portals (not just artist and vendor)
-- Online editing of the non security sections of the configuration file
 - Reconfiguring the control menu structure and addition of more detailed role based permissions
 - Passkey support for the controll back end (extending the use in Registration Portal and Exhibitor Portals)
 
