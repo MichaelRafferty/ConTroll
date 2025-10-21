@@ -229,7 +229,7 @@ if ($info['managedByName'] == null) {
         foreach ($passKeys as $passkey) {
             $createDate = date_format(date_create($passkey['createDate']), 'Y-m-d');
             $lastUsed = '';
-            if ($passkey['lastUseTS'] != null) {
+            if (array_key_exists('lastUseTS', $passkey) && $passkey['lastUseTS'] != null) {
                 $lastUsed = date_format(date_create($passkey['lastUsedDate']), 'Y-m-d');
             }
         ?>
