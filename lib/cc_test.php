@@ -89,14 +89,8 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
     $nonPlanAmt = '';
     $balanceDue = '';
     $itemsBuilt = false;
-    $taxRate = 0;
-    $taxLabel = 'Unconfigured Sales Tax';
-    if (array_key_exists('taxRate', $con)) {
-        $taxRate = $con['taxRate'];
-    }
-    if (array_key_exists('taxLabel', $con)) {
-        $taxLabel = $con['taxLabel'];
-    }
+    // taxList is an array by tax field id of taxfield, rate and label, it includes the default value from the config file if the db table is empty
+    $hasTax = hasTaxRates();
     $needTaxes = false;
 
     // item rules:
@@ -167,7 +161,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
 
     // Art Sales
     if ($artSales == 1) {
-        $needTaxes = true;
+        $needTaxes = $hasTax;
         if (array_key_exists('art', $results) && is_array($results['art']) && count($results['art']) > 0) {
             foreach ($results['art'] as $artItem) {
                 if (!array_key_exists('paid', $artItem)) {
@@ -192,11 +186,9 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                     'metadata' => $notesData['metadata'],
                     'basePriceMoney' => round($amount * 100),
                 ];
-                if ($taxRate > 0) {
+                if ($hasTax) {
                     // create the Line Item tax record, if there is a tax rate, and the membership is taxable
-                    $needTaxes = true;
                     $item['taxable'] = 'Y';
-                    $item['taxUid'] = $taxLabel;
                 }
                 $orderLineItems[$lineid] = $item;
                 $orderValue += $artItem['amount'];
@@ -292,11 +284,10 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                     'basePriceMoney' => round($amount * 100),
                     'metadata' => $notesData['metadata'],
                 ];
-                if ($taxRate > 0 && array_key_exists('taxable', $badge) && $badge['taxable'] == 'Y') {
+                if ($hasTax > 0 && array_key_exists('taxable', $badge) && $badge['taxable'] == 'Y') {
                     // create the Line Item tax record, if there is a tax rate, and the membership is taxable
-                    $needTaxes = true;
+                    $needTaxes = $hasTax;
                     $item['taxable'] = 'Y';
-                    $item['taxUid'] = $taxLabel;
                 }
 
                 if (array_key_exists('newplan', $results) && $results['newplan'] == 1) {
@@ -443,8 +434,6 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
 
     if ($needTaxes) {
         $order['taxable'] = 'Y';
-        $order['name'] = $taxLabel;
-        $order['percentage'] = $taxRate;
     }
 
     // compute the fields the credit card company would compute
@@ -454,14 +443,18 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
     if ($needTaxes) {
         foreach ($orderLineItems as $item) {
             if (array_key_exists('taxable', $item)) {
-                $item['taxAmount'] = round($item['basePriceMoney'] * $order['percentage'] / 100);
-                $itemTaxTotal += $item['taxAmount'];
+                $item['taxAmount'] = computeTax($item['basePriceMoney']);
+                $itemTaxTotal += array_sum($item['taxAmount']);
                 $taxAbleBase += $item['basePriceMoney'];
             }
         }
-        $taxAmount = round($taxAbleBase * $order['percentage'] / 100);
+        $taxAmounts = computeTax($taxAbleBase);
+        $taxAmount = array_sum($taxAmounts);
         if ($taxAmount != $itemTaxTotal) { // fudge last item in list to make the pennies add up
+            $last = count($taxAmounts) - 1;
+            $item = $orderLineItems[$last];
             $item['taxAmount'] += $taxAmount - $itemTaxTotal;
+            $taxAmounts[$last] += $taxAmount - $itemTaxTotal;
         }
     }
 
@@ -473,7 +466,9 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
     $rtn['preTaxAmt'] = $orderValue;
     $rtn['discountAmt'] = $discountAmt / 100;
     $rtn['taxAmt'] = $taxAmount / 100;
-    $rtn['taxLabel'] = $taxLabel;
+    foreach ($taxAmounts as $key => $amt)
+        $rtnTaxes[$key] = $amt / 100;
+    $rtn['taxes'] = $rtnTaxes;
     $rtn['totalAmt'] = $orderValue + (($taxAmount - $discountAmt) / 100);
     // load into the main rtn the items pay order needs directly
     $rtn['orderId'] = 'O' . time();
@@ -610,6 +605,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     $rtn['paymentType'] = $paymentType;
     $rtn['preTaxAmt'] = $ccParams['preTaxAmt'];
     $rtn['taxAmt'] = $ccParams['taxAmt'];
+    $rtn['taxes'] = $ccParams['taxes'];
     $rtn['auth'] = $auth;
     $rtn['paymentId'] = $id;
     $rtn['last4'] = $last4;

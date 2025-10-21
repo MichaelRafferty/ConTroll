@@ -78,11 +78,11 @@ if ($tablename != 'none') {
         } else {
             $data[$index]['label'] = trim($row['label']);
         }
-        if (!array_key_exists('glNum', $row))
+        if (!array_key_exists('glNum', $row) || $row['glNum'] == null)
             $data[$index]['glNum'] = null;
         else
             $data[$index]['glNum'] = trim($row['glNum']);
-        if (!array_key_exists('glLabel', $row))
+        if (!array_key_exists('glLabel', $row) || $row['glLabel'] == null)
             $data[$index]['glLabel'] = null;
         else
             $data[$index]['glLabel'] = trim($row['glLabel']);

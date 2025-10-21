@@ -33,6 +33,66 @@ EOS;
     return $taxRates;
 }
 
+// are there non zero rates in taxList?
+function hasTaxRates() {
+    global $taxRates;
+
+    if ($taxRates == null) {
+        getTaxRates();
+    }
+    foreach ($taxRates as $tax) {
+        if ($tax['rate'] > 0)
+            return true;
+    }
+    return false;
+}
+
+// build payment and transaction update tax sections, unused fields default to null
+function buildTaxUpdate($taxes) : array {
+    global $taxRates;
+
+    if ($taxRates == null) {
+        getTaxRates();
+    }
+
+    $taxFields = array('tax1','tax2','tax3','tax4','tax5');
+    $valStr = 'ddddd';
+    $sqlStr = [];
+    $values = [];
+    foreach ($taxFields as $taxField) {
+        $sqlStr[] = "$taxField = ?";
+        if (array_key_exists($taxField, $taxRates)) {
+            $values[] = $taxes[$taxField];
+        } else {
+            $values[] = null;
+        }
+    }
+    return array(implode(',', $sqlStr), $valStr, $values);
+}
+
+// build payment and transaction insert sections
+function buildTaxInsert($taxes) : array {
+    global $taxRates;
+
+    if ($taxRates == null) {
+        getTaxRates();
+    }
+
+    $taxFields = array('tax1','tax2','tax3','tax4','tax5');
+    $valStr = 'ddddd';
+    $sqlStr = [];
+    $values = [];
+    foreach ($taxFields as $taxField) {
+        $sqlStr[] = "?";
+        if (array_key_exists($taxField, $taxRates)) {
+            $values[] = $taxes[$taxField];
+        } else {
+            $values[] = null;
+        }
+    }
+    return array(implode(',', $taxFields), implode(',', $sqlStr), $valStr, $values);
+}
+
 function getTaxConfig() : array {
     $conid = getConfValue('con', 'id');
     // get tax rate configuration info
@@ -46,7 +106,7 @@ ORDER BY taxField;
 EOS;
     $QR = dbSafeQuery($QQ, 'i', array($conid));
     while ($row = $QR->fetch_assoc()) {
-        $taxConfig[$row['taxField']] = $row;
+        $taxConfig[] = $row;
     }
     $QR->free();
 

@@ -23,7 +23,7 @@ function getEmailBody($transid, $totalDiscount) : string
 
     $ownerQ = <<<EOS
 SELECT NP.first_name, NP.last_name, P.receipt_id as payid, T.complete_date, T.couponDiscountCart, T.paid, T.price, T.tax, T.withtax,
-       P.receipt_url AS url, C.code, C.name
+       P.receipt_url AS url, C.code, C.name, T.tax1, T.tax2, T.tax3, T.tax4, T.tax5
 FROM transaction T
 JOIN newperson NP ON (NP.id=T.newperid)
 JOIN payments P ON (P.transid=T.id)
@@ -32,7 +32,7 @@ WHERE T.id=?
 ;
 EOS;
     $owner = dbSafeQuery($ownerQ, 'i', array($transid))->fetch_assoc();
-
+    $taxList = getTaxRates();
     $body = trim($owner['first_name'] . " " . $owner['last_name']) . ",\n\n";
     $body .= "Thank you for registering for " . $condata['label'] . "!\n\n";
 
@@ -50,19 +50,30 @@ EOS;
     }
 
     if ($owner['tax'] > 0) {
-        $body .= "The pre sales tax price for your order was " . $dolfmt->formatCurrency((float) $owner['price'], $currency) . "\n" .
-            "The sales tax for the taxable portion of this order was " . $dolfmt->formatCurrency((float) $owner['tax'], $currency) . "\n" .
+        $taxCode = "(Items with a T at the end of the price are taxable.)\n";
+        $body .= "The pre sales tax price for your order was " . $dolfmt->formatCurrency((float) $owner['price'], $currency) . "\n";
+        foreach ($taxList as $tax) {
+            if ($tax['rate'] > 0) {
+                $taxAmt = $owner[$tax['taxField']];
+                $label = $tax['label'];
+                $body .= "$label: " . $dolfmt->formatCurrency((float) $taxAmt, $currency) . "\n";
+            }
+        }
+        $body .= "Total tax for the taxable portion of this order was " . $dolfmt->formatCurrency((float) $owner['tax'], $currency) . "\n" .
             "For a total amount due of " . $dolfmt->formatCurrency((float) $owner['withtax'], $currency) . "\n\n";
-    }
+    } else
+        $taxcode = '';
+
     $body .= "Your card was charged " . $dolfmt->formatCurrency((float) $owner['paid'], $currency) . " for this transaction" .
-        "\n\nMemberships have been created for:\n\n";
+        "\n\nMemberships have been created for:\n$taxCode\n";
 
     $badgeQ = <<<EOS
-SELECT NP.first_name, NP.last_name, M.label
+SELECT NP.first_name, NP.last_name, M.label, C.taxable, R.price
 FROM transaction T
 JOIN reg R ON  (R.create_trans=T.id)
 JOIN newperson NP ON (NP.id = R.newperid)
 JOIN memLabel M ON (R.memID = M.id)
+JOIN memCategories C ON (M.memCategory = C.memCategory)
 WHERE T.id= ?
 EOS;
 
@@ -70,13 +81,14 @@ EOS;
 
     while ($badge = $badgeR->fetch_assoc()) {
         $body .= "     * " . $badge['first_name'] . " " . $badge['last_name']
-            . " (" . $badge['label'] . ")\n\n";
+            . " (" . $badge['label'] . ") for " . $dolfmt->formatCurrency((float) $badge['price'], $currency) .
+            ($badge['taxable'] == 'Y' ? ' T' : '') . "\n";
     }
 
     if ($owner['url'] != '') {
-        $body .= "Your credit card receipt is available at " . $owner['url'] . "\n\n";
+        $body .= "\nYour credit card receipt is available at " . $owner['url'] . "\n\n";
     } else {
-        $body .= "You will receive a separate email with credit card receipt details.\n\n";
+        $body .= "\nYou will receive a separate email with credit card receipt details.\n\n";
     }
 
     $body .= "Please contact " . $con['regemail'] . " with any questions and we look forward to seeing you at " . $condata['label'] . ".\n";

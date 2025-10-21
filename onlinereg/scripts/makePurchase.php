@@ -1,6 +1,7 @@
 <?php
 require_once('../lib/base.php');
 require_once("../../lib/log.php");
+require_once("../../lib/tax.php");
 require_once("../../lib/cc__load_methods.php");
 require_once("../../lib/purchase.php");
 require_once("../../lib/policies.php");
@@ -329,6 +330,8 @@ while ($row = $all_badgeR->fetch_assoc()) {
   $badgeResults[] = $row;
 }
 
+$taxList = getTaxRates();
+
 $custId = "onlinereg-$transId";
 $results = array(
     'custid' => $custId,
@@ -340,6 +343,7 @@ $results = array(
     'total' => $total,
     'coupon' => $coupon,
     'discount' => $totalDiscount,
+    'taxList' => $taxList,
 );
 
 //log requested badges
@@ -362,6 +366,7 @@ if ($total > 0) {
     $referenceId = $transId . '-' . 'pay-' . time();
     $preTaxAmt = $rtn['preTaxAmt'];
     $taxAmt = $rtn['taxAmt'];
+    $taxes = $rtn['taxes'];
     $withTax = $rtn['totalAmt'];
 
     $results = array(
@@ -376,16 +381,24 @@ if ($total > 0) {
         'preTaxAmt' => $preTaxAmt,
         'taxAmt' => $taxAmt,
         'total' => $withTax,
+        'taxList' => $taxList,
+        'taxes' => $taxes,
         'badges' => $badgeResults,
         );
 
-    $upT = <<<EOS
+    $typeStr = 'dddds';
+    $valArray = array($preTaxAmt, $taxAmt, $withTax, 0, $rtn['orderId']);
+    [$taxSql, $taxStr, $taxValues] = buildTaxUpdate($taxes);
+        $upT = <<<EOS
 UPDATE transaction
-SET price = ?, tax = ?, withTax = ?, couponDiscountCart = ?, orderId = ?, paymentStatus = 'ORDER', orderDate = now()
+SET price = ?, tax = ?, withTax = ?, couponDiscountCart = ?, orderId = ?, paymentStatus = 'ORDER', orderDate = now(), $taxSql
 WHERE id = ?;
 EOS;
+    $typeStr .= $taxStr . 'i';
+    $valArray = array_merge($valArray, $taxValues);
+    $valArray[] = $transId;
 
-    $rows_upd = dbSafeCmd($upT, 'ddddsi', array($preTaxAmt, $taxAmt, $withTax, 0, $rtn['orderId'], $transId));
+    $rows_upd = dbSafeCmd($upT, $typeStr, $valArray);
 
 // call the credit card processor to make the payment
     $ccrtn = cc_payOrder($results, $buyer, true);
@@ -402,9 +415,11 @@ EOS;
     for ($i = 0; $i < $num_fields; $i++) {
         $val[$i] = '?';
     }
-    $txnQ = 'INSERT INTO payments(time,' . implode(',', $ccrtn['txnfields']) . ') VALUES(current_time(),' . implode(',', $val) . ');';
-    $txnT = implode('', $ccrtn['tnxtypes']);
-    $txnid = dbSafeInsert($txnQ, $txnT, $ccrtn['tnxdata']);
+    [$taxFields, $taxSql, $taxStr, $taxValues] = buildTaxInsert($taxes);
+    $txnQ = 'INSERT INTO payments(time,' . implode(',', $ccrtn['txnfields']) . ',' . $taxFields . ")\n" .
+        'VALUES(current_time(),' . implode(',', $val) . ',' . $taxSql . ');';
+    $txnT = implode('', $ccrtn['tnxtypes']) . $taxStr;
+    $txnid = dbSafeInsert($txnQ, $txnT, array_merge($ccrtn['tnxdata'], $taxValues));
     $approved_amt = $ccrtn['amount'];
 } else {
     $approved_amt = 0;
@@ -423,7 +438,7 @@ EOS;
 }
 
 $txnUpdate = "UPDATE transaction SET ";
-if($approved_amt == $total) {
+if ($approved_amt == $withTax) {
     $txnUpdate .= "complete_date=current_timestamp(), ";
 }
 

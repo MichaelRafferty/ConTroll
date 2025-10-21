@@ -61,7 +61,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
         $custid = 't-' . $results['transid'];
     }
 
-    $orderLineitems = [];
+    $orderLineItems = [];
     $orderDiscounts = [];
     $lineid = 0;
     $orderValue = 0;
@@ -71,14 +71,8 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
     $nonPlanAmt = '';
     $balanceDue = '';
     $itemsBuilt = false;
-    $taxRate = 0;
-    $taxLabel = 'Unconfigured Sales Tax';
-    if (array_key_exists('taxRate', $con)) {
-        $taxRate = $con['taxRate'];
-    }
-    if (array_key_exists('taxLabel', $con)) {
-        $taxLabel = $con['taxLabel'];
-    }
+    // taxList is an array by tax field id of taxfield, rate and label, it includes the default value from the config file if the db table is empty
+    $hasTax = hasTaxRates();
     $needTaxes = false;
 
     // item rules:
@@ -137,14 +131,14 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
             'note' => $note,
             'basePriceMoney' => round($results['total'] * 100),
         ];
-        $orderLineitems[$lineid] = $item;
+        $orderLineItems[$lineid] = $item;
         $orderValue = $results['total'];
         $itemsBuilt = true;
     }
 
     // Art Sales placeholder
     if ($artSales == 1) {
-        $needTaxes = true;
+        $needTaxes = $hasTax;
         ajaxSuccess(array ('status' => 'error', 'data' => 'Error: Art Sales not implemented yet, get assistance.'));
         exit();
     }
@@ -192,13 +186,12 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                     'note' => $note,
                     'basePriceMoney' => round($amount * 100),
                 ];
-                if ($taxRate > 0 && array_key_exists('taxable', $badge) && $badge['taxable'] == 'Y') {
+                if ($hasTax && array_key_exists('taxable', $badge) && $badge['taxable'] == 'Y') {
+                    $needTaxes = $hasTax;
                     // create the Line Item tax record, if there is a tax rate, and the membership is taxable
-                    $needTaxes = true;
                     $item['taxable'] = 'Y';
-                    $item['taxUid'] = $taxLabel;
                 }
-                $orderLineitems[$lineid] = $item;
+                $orderLineItems[$lineid] = $item;
                 $orderValue += $badge['price'];
                 $lineid++;
             }
@@ -225,7 +218,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                     'note' => $note,
                     'basePriceMoney' => round($space['approved_price'] * 100),
                 ];
-                $orderLineitems[$lineid] = $item;
+                $orderLineItems[$lineid] = $item;
                 $orderValue += $space['approved_price'];
                 $lineid++;
             }
@@ -300,14 +293,12 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
         'referenceId' => $con['id'] . '-' . $results['transid'],
         'source' => $con['conname'] . '-' . $source,
         'customerId' => $con['id'] . '-' . $custid,
-        'lineItems' => $orderLineitems,
+        'lineItems' => $orderLineItems,
         'discounts' => $orderDiscounts,
     ];
 
     if ($needTaxes) {
         $order['taxable'] = 'Y';
-        $order['name'] = $taxLabel;
-        $order['percentage'] = $taxRate;
     }
 
     // compute the fields the credit card company would compute
@@ -315,16 +306,21 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
     $taxAbleBase = 0;
     $itemTaxTotal = 0;
     if ($needTaxes) {
-        foreach ($orderLineitems as $item) {
+        foreach ($orderLineItems as $item) {
             if (array_key_exists('taxable', $item)) {
-                $item['taxAmount'] = round($item['basePriceMoney'] * $order['percentage'] / 100);
+                $item['taxAmounts'] = computeTax($item['basePriceMoney']);
+                $item['taxAmount'] = array_sum($item['taxAmounts']);
                 $itemTaxTotal += $item['taxAmount'];
                 $taxAbleBase += $item['basePriceMoney'];
             }
         }
-        $taxAmount = round($taxAbleBase * $order['percentage'] / 100);
+        $taxAmounts = computeTax($taxAbleBase);
+        $taxAmount = array_sum($taxAmounts);
         if ($taxAmount != $itemTaxTotal) { // fudge last item in list to make the pennies add up
+            $last = count($taxAmounts) - 1;
+            $item = $orderLineItems[$last];
             $item['taxAmount'] += $taxAmount - $itemTaxTotal;
+            $taxAmounts[$last] += $taxAmount - $itemTaxTotal;
         }
     }
 
@@ -335,7 +331,9 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
     $rtn['preTaxAmt'] = $orderValue;
     $rtn['discountAmt'] = $discountAmt / 100;
     $rtn['taxAmt'] = $taxAmount / 100;
-    $rtn['taxLabel'] = $taxLabel;
+    foreach ($taxAmounts as $key => $amt)
+        $rtnTaxes[$key] = $amt / 100;
+    $rtn['taxes'] = $rtnTaxes;
     $rtn['totalAmt'] = $orderValue + (($taxAmount - $discountAmt) / 100);
     // load into the main rtn the items pay order needs directly
     $rtn['orderId'] = 'O' . time();
@@ -410,6 +408,7 @@ function cc_payOrder($results, $buyer, $useLogWrite = false) {
                 $results['totalAmt'], '00-00-00 00:00:00', $_POST['nonce'],'txn id','000000','txn_id', $loginPerid);
             $rtn['url'] = 'no test receipt';
             $rtn['rid'] = 'test';
+            $rtn['taxes'] = $results['taxes'];
             return $rtn;
         default:
             ajaxSuccess(array('status'=>'error','data'=>'bad CC number'));
