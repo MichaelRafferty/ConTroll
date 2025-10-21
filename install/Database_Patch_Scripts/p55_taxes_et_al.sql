@@ -38,5 +38,17 @@ INSERT INTO memCategories (memCategory, notes, onlyOne, standAlone, variablePric
 VALUES ('managed', 'Req: disble disassociate in portal and added by manager in portal',
         'Y', 'Y', 'N', 'N', 15,'Y', 'Attending');
 
+/* fix spelling transfered to transferred */
+ALTER TABLE reg MODIFY COLUMN status enum('unpaid','plan','paid','cancelled','refunded','transfered','transferred','upgraded','rolled-over') DEFAULT 'unpaid';
+ALTER TABLE regHistory MODIFY COLUMN status enum('unpaid','plan','paid','cancelled','refunded','transfered','transferred','upgraded','rolled-over')
+    DEFAULT 'unpaid';
+UPDATE reg SET status = 'transferred' WHERE status = 'transfered';
+UPDATE regHistory SET status = 'transferred' WHERE status = 'transfered';
+
+/* add donation as a reg status type, indicating it was cancelled and the money donated, not refunded */
+ALTER TABLE reg MODIFY COLUMN status enum('unpaid','plan','paid','cancelled','refunded','donated','transferred','upgraded','rolled-over') DEFAULT 'unpaid';
+ALTER TABLE regHistory MODIFY COLUMN status enum('unpaid','plan','paid','cancelled','refunded','donated','transferred','upgraded','rolled-over') DEFAULT
+    'unpaid';
+
 INSERT INTO patchLog(id, name) VALUES(xx, 'taxes et al');
 
