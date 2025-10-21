@@ -65,7 +65,7 @@ if ($inString == '') {
 
     $inString = substr($inString, 0, -1);
 
-$denyTransfer = ['rolled-over', 'cancelled','refunded', 'transfered'];
+$denyTransfer = ['rolled-over', 'cancelled','refunded', 'transferred'];
 
 $checkR = dbQuery("SELECT id, status FROM reg WHERE id IN ($inString);");
 if ($checkR->num_rows != count($transferList)) {
@@ -109,7 +109,7 @@ WHERE id = ?;
 EOS;
 $uQ = <<<EOS
 UPDATE reg
-SET status = 'transfered', change_date=CURRENT_TIMESTAMP(), updatedBy = ?
+SET status = 'transferred', change_date=CURRENT_TIMESTAMP(), updatedBy = ?
 WHERE id = ?;
 EOS;
 $iN = <<<EOS

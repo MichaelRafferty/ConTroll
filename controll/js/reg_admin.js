@@ -46,8 +46,8 @@ var reglistDiv = null;
 // changes items
 var changeMemberships = [];
 var changeList = [];
-var denyRevoke = ['rolled-over', 'cancelled','refunded', 'transfered'];
-var denyTransfer = ['rolled-over', 'cancelled','refunded', 'transfered'];
+var denyRevoke = ['rolled-over', 'cancelled','refunded', 'transferred'];
+var denyTransfer = ['rolled-over', 'cancelled','refunded', 'transferred'];
 var allowRolloverCategories = ['standard','freebie','upgrade','yearahead'];
 var currentIndex = null;
 var currentRow = null;
@@ -983,7 +983,7 @@ function changeTransfer() {
             continue;
 
         if (denyTransfer.indexOf(changeItem.status) != -1)  {
-            message += "Cannot transfer " + changeItem.id + " as status " + changeItem.status + " cannot be transfered<br/>";
+            message += "Cannot transfer " + changeItem.id + " as status " + changeItem.status + " cannot be transferred<br/>";
             continue;
         }
 
@@ -1374,7 +1374,7 @@ function changeEdit(badgeId) {
     }
     memOptionList += "</select>\n";
 
-    var statuses = ['unpaid','plan','paid','cancelled','refunded','transfered','upgraded','rolled-over'];
+    var statuses = ['unpaid','plan','paid','cancelled','refunded','transferred','upgraded','rolled-over'];
     var statusSelect = "<select id='newStatus'>\n";
     for (var i = 0; i < statuses.length; i++) {
         statusSelect += '<option value="' + statuses[i] + '"' + (currentRow.status == statuses[i] ? ' selected' : '') +

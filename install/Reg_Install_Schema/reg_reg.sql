@@ -32,7 +32,7 @@ CREATE TABLE `reg` (
   `coupon` int DEFAULT NULL,
   `planId` int DEFAULT NULL,
   `printable` enum('N','Y') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'N',
-  `status` enum('unpaid','plan','paid','cancelled','refunded','transfered','upgraded','rolled-over') COLLATE utf8mb4_general_ci DEFAULT 'unpaid',
+  `status` enum('unpaid','plan','paid','cancelled','refunded','donated','transferred','upgraded','rolled-over') COLLATE utf8mb4_general_ci DEFAULT 'unpaid',
   PRIMARY KEY (`id`),
   KEY `reg_perid_fk` (`perid`),
   KEY `reg_conid_fk` (`conid`),
