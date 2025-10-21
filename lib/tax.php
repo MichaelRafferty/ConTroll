@@ -21,6 +21,15 @@ EOS;
     }
     $QR->free();
 
+    if (count($taxRates) == 0) {
+        // default to the older configuration file based tax rates
+        $taxRate = getConfValue('con', 'taxRate', 0);
+        if ($taxRate > 0) {
+            $taxLabel = getConfValue('con', 'taxLabel');
+            $taxRates[] = array('taxField' => 'tax', 'rate' => $taxRate, 'label' => $taxLabel);
+        }
+    }
+
     return $taxRates;
 }
 
@@ -40,6 +49,16 @@ EOS;
         $taxConfig[$row['taxField']] = $row;
     }
     $QR->free();
+
+    if (count($taxConfig) == 0) {
+        // default to the older configuration file based tax rates
+        $taxRate = getConfValue('con', 'taxRate', 0);
+        if ($taxRate > 0) {
+            $taxLabel = getConfValue('con', 'taxLabel');
+            $taxConfig[] = array('conid' => $conid, 'taxField' => 'tax1', 'label' => $taxLabel, 'rate' => $taxRate,
+                'active' => 'Y', 'glNum' => null, 'lastUpdate' => null, 'updatedBy' => -1);
+        }
+    }
 
     return $taxConfig;
 }

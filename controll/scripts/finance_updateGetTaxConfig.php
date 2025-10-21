@@ -1,6 +1,7 @@
 <?php
 // update changed taxList configuration info and then returns the current listr
 require_once '../lib/base.php';
+require_once '../../lib/tax.php';
 
 // use common global Ajax return functions
 global $returnAjaxErrors, $return500errors;
@@ -134,20 +135,7 @@ EOS;
     $numRows=dbSafeCmd($ins, 'ii', array($conid, $user_perid, $conid - 1));
 }
 // now get the current list
-$getQ = <<<EOS
-SELECT *
-FROM taxList
-WHERE conid = ?
-ORDER BY taxField;
-EOS;
-
-$taxList = [];
-$getR = dbSafeQuery($getQ, 'i', array($conid));
-while ($taxL = $getR->fetch_assoc()) {
-    $taxList[] = $taxL;
-}
-$getR->free();
-
+$taxList = getTaxConfig();
 $response['taxList'] = $taxList;
 
 if ($hrtime) {

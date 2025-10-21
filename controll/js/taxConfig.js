@@ -51,9 +51,17 @@ class taxConfig {
 
     draw(data) {
         var _this = this;
+        // if this is from the config file, change updated by and set things to dirty
+        if (data.taxList.length == 1) {
+            if (Number(data.taxList[0].updatedBy) < 0) {
+                // from config
+                data.taxList[0].updatedBy = null;
+                this.dataChanged();
+            }
+        }
         // show initial tax Config table
         this.#taxTable = new Tabulator('#taxConfigTable', {
-            data: data['taxList'],
+            data: data.taxList,
             layout: "fitDataTable",
             index: "taxField",
             columns: [
