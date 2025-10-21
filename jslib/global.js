@@ -194,16 +194,15 @@ function pwEyeToggle(pwFieldId) {
 function badgeNameDefault(badge_name, badgeNameL2, first_name, last_name) {
     let default_name = '';
     if (badge_name === undefined || badge_name === null || badge_name === '') {
-        if (badgeNameL2 === undefined || badgeNameL2 === null || badgeNameL2 === '') {
-            default_name = (first_name + ' ' + last_name).trim();
-        } else {
-            default_name = (first_name + ' ' + last_name).trim() + '<br/>' + badgeNameL2.trim();
+        default_name = '<i>' + (first_name + ' ' + last_name).trim() + '</i>';
+        if (badgeNameL2 !== undefined && badgeNameL2 !== null && badgeNameL2.trim() !== '') {
+            default_name += '<br/>' + badgeNameL2.trim();
         }
-        return '<i>' + default_name.replace(/ +/, ' ') + '</i>';
+        return default_name.replace(/ +/, ' ');
     }
-    if (badgeNameL2 === undefined || badgeNameL2 === null || badgeNameL2 === '') {
-        return badge_name;
+    if (badgeNameL2 === undefined || badgeNameL2 === null || badgeNameL2.trim() === '') {
+        return badge_name.trim();
     }
-    default_name = (badge_name + '<br/>' + badgeNameL2).trim();
+    default_name = (badge_name.trim() + '<br/>' + badgeNameL2).trim();
     return default_name;
 }

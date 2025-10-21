@@ -466,12 +466,11 @@ EOS;
 function badgeNameDefault($badge_name, $badgeNameL2, $first_name, $last_name) {
     $default_name = '';
     if ($badge_name === null || $badge_name == '') {
-        if ($badgeNameL2  === null || $badgeNameL2 === '') {
-            $default_name = trim("$first_name $last_name");
-        } else {
-            $default_name = trim("$first_name $last_name") . '<br/>' . trim($badgeNameL2);
+        $default_name = '<i>' . trim("$first_name $last_name") . '</i>';
+        if ($badgeNameL2  !== null && trim($badgeNameL2) !== '') {
+            $default_name .= '<br/>' . trim($badgeNameL2);
         }
-        return "<i>$default_name</i>";
+        return $default_name;
     }
 
     if ($badgeNameL2  === null || $badgeNameL2 === '') {
