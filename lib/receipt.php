@@ -1,5 +1,6 @@
 <?php
     require_once("../../lib/paymentPlans.php");
+    require_once("../../lib/tax.php");
 
 //  receipt.php - library of modules related building receipts
 
@@ -91,7 +92,7 @@ EOS;
 }
 
 // trans_receipt - given a transaction number build a receipt
-// Fetches all the data to make up a receipt and then calls 'reg_format_receipt' to actually format the receipt as plain text, HTML and email tables.
+// Fetches all the data to make up a receipt and then calls 'regFormatReceipt' to actually format the receipt as plain text, HTML and email tables.
 function trans_receipt($transid) {
     // find all the items attached to this transaction id for payment:
     // possible items:
@@ -454,23 +455,24 @@ EOS;
     }
 
     $response['emails'] = array_unique($emails, SORT_STRING);
-    return reg_format_receipt($response);
+    return regFormatReceipt($response);
 }
 
-// reg_format_receipt - format a receipt in HTML and Text formats
+// regFormatReceipt - format a receipt in HTML and Text formats
 // returns
 //      $response['receipt'] = $receipt;
 //      $response['receipt_html'] = $receipt_html;
 //      $response['receipt_tables'] = $receipt_tables
 // plus the calling $data as well
 //
-function reg_format_receipt($data) : array {
+function regFormatReceipt($data) : array {
     $currency = getConfValue('con', 'currency', 'USD');
     $curLocale = locale_get_default();
     $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
     $memberSubtotal = 0;
     $artSubtotal = 0;
     $spaceSubtotal = 0;
+    $taxList = getTaxRates();   // All of the sales tax rows/labels
 
     $response = $data;
     $master_transaction = $data['transaction'];
@@ -1031,20 +1033,49 @@ EOS;
 
     // Sales tax
     $tax = 0;
+    $first = "mt-2";
+    $rows = 0;
     if ($master_transaction['tax'] > 0) {
-        $tax = $master_transaction['tax'];
-        $taxfmt = $dolfmt->formatCurrency((float)$tax, $currency);
-        $taxlabel = getConfValue('con', 'taxLabel', 'Sales Tax');
-        $receipt .= "\n$taxlabel: $price\n";
-        $receipt_html .= <<<EOS
-    <div class="row mt-2">
-        <div class="col-sm-9">$taxlabel:</div>
+        foreach ($taxList as $taxLine) {
+            if ($taxLine['rate'] > 0) {
+                $taxAmt = $master_transaction[$taxLine['taxField']];
+                if ($taxAmt === null)
+                    continue;
+                $taxLabel = $taxLine['label'];
+                $taxfmt = $dolfmt->formatCurrency((float)$taxAmt, $currency);
+                $receipt .= "\n$taxLabel: $taxfmt";
+                $receipt_html .= <<<EOS
+    <div class="row $first">
+        <div class="col-sm-9">$taxLabel:</div>
         <div class="col-sm-2" style="text-align: right;">$taxfmt</div>
     </div>
 EOS;
-        $receipt_tables .= <<<EOS
-<tr><td colspan="2">$taxlabel:</td><td style="text-align: right;">$price</td></tr>
+                $receipt_tables .= <<<EOS
+<tr><td colspan="2">$taxLabel:</td><td style="text-align: right;">$taxfmt</td></tr>
 EOS;
+                $first = '';
+                $rows++;
+            }
+        }
+        $tax = $master_transaction['tax'];
+        if ($rows == 0 && $tax > 0) {
+            $taxLabel = getConfValue('con', 'taxLabel', 'Sales Tax');
+        } else {
+            $taxLabel = "Total Sales Tax";
+        }
+        if ($rows > 1 || ($rows == 0 && $tax > 0)) {
+            $taxfmt = $dolfmt->formatCurrency((float)$tax, $currency);
+            $receipt .= "\n$taxLabel: $taxfmt\n";
+            $receipt_html .= <<<EOS
+    <div class="row mt-2">
+        <div class="col-sm-9">$taxLabel:</div>
+        <div class="col-sm-2" style="text-align: right;">$taxfmt</div>
+    </div>
+EOS;
+            $receipt_tables .= <<<EOS
+<tr><td colspan="2">$taxLabel:</td><td style="text-align: right;">$taxfmt</td></tr>
+EOS;
+        }
     }
     $total = $memberSubtotal + $spaceSubtotal + $artSubtotal + $tax;
     // now the total due
