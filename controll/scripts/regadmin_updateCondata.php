@@ -75,8 +75,8 @@ EOS;
         $first[$conid] = true;
         $first[$nextconid] = true;
         $sort_order = 10;
-        $yearahead_sortorder = 4000;
-        $rollover_sortorder = 5000;
+        $yearahead_sortorder = 10010;
+        $rollover_sortorder = 20010;
         foreach ($data as $index => $row ) {
             //$cidfound[$row['conid']] = true;
             if (array_key_exists('to_delete', $row) && $row['to_delete'] == 1 && array_key_exists('memlistkey', $row)) {
