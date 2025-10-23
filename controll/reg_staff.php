@@ -173,7 +173,14 @@ $config_vars['source'] = 'regstaff';
                         </div>
                     </div>
                     <div class='row mt-2'>
-                        <div class="col-sm-1" style='text-align: right;'>ID</div>
+                        <div class="col-sm-1">
+                            <div class="container-fluid">
+                                <div class="row">
+                                    <div class="col-sm-6" style='text-align: right;'>Sort</div>
+                                    <div class="col-sm-6" style='text-align: right;'>ID</div>
+                                </div>
+                            </div>
+                        </div>
                         <div class="col-sm-1" style='text-align: center;'>Price</div>
                         <div class="col-sm-2">Start Date</div>
                         <div class="col-sm-2">End Date</div>
@@ -187,7 +194,17 @@ $config_vars['source'] = 'regstaff';
         $bgColor = $i % 2 ? 'light-cyan' : '#e0e0e0';
 ?>
                     <div class='row mt-2' style="background-color: <?php echo $bgColor;?>">
-                        <div class='col-sm-1' id="EMLTS<?php echo $i;?>_ID" style="text-align: right;"></div>
+                        <div class='col-sm-1'>
+                            <div class='container-fluid'>
+                                <div class='row'>
+                                    <div class='col-sm-6' style='text-align: right;'>
+                                        <input type='number' class='no-spinners' inputmode='numeric' id='EMLTS<?php echo $i; ?>_Sort'
+                                               style='text-align: right; width: 3em;' min='0'/>
+                                    </div>
+                                    <div class='col-sm-6' id="EMLTS<?php echo $i; ?>_ID" style='text-align: right;'></div>
+                                </div>
+                            </div>
+                        </div>
                         <div class='col-sm-1'>
                             <input type='number' class='no-spinners' inputmode='numeric' id='EMLTS<?php echo $i;?>_Price'
                                    style="text-align: right; width: 6em;" min='0' onchange="tsPriceChange(<?php echo $i;?>)"/>

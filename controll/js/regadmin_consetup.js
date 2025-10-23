@@ -101,6 +101,13 @@ class consetup {
             this.#editData.push({id: 'new' + row });
             document.getElementById('EMLTS' + row + '_ID').innerHTML = this.#editData[row].id;
             this.#editData[row].conid = this.#conid;
+            this.#editData[row].sort_order = this.#editData[row - 1].sort_order + 1;
+            document.getElementById('EMLTS' + row + '_Sort').value = this.#editData[row].sort_order;
+            this.#editData[row].memCategory = document.getElementById('memListCategorySelect').value;
+            this.#editData[row].memAge = document.getElementById('memListAgeSelect').value;
+            this.#editData[row].memType = document.getElementById('memListTypeSelect').value;
+            this.#editData[row].shortname = document.getElementById('editMemListLabel').value;
+            this.#editData[row].notes = document.getElementById('editMemListNotes').value;
         }
         this.#editData[row].price = value;
     }
@@ -109,7 +116,14 @@ class consetup {
         if (this.#editData.length <= row) {
             this.#editData.push({id: 'new' + row });
             document.getElementById('EMLTS' + row + '_ID').innerHTML = this.#editData[row].id;
+            this.#editData[row].sort_order = this.#editData[row - 1].sort_order + 1;
+            document.getElementById('EMLTS' + row + '_Sort').value = this.#editData[row].sort_order;
             this.#editData[row].conid = this.#conid;
+            this.#editData[row].memCategory = document.getElementById('memListCategorySelect').value;
+            this.#editData[row].memAge = document.getElementById('memListAgeSelect').value;
+            this.#editData[row].memType = document.getElementById('memListTypeSelect').value;
+            this.#editData[row].shortname = document.getElementById('editMemListLabel').value;
+            this.#editData[row].notes = document.getElementById('editMemListNotes').value;
         }
         this.#editData[row].startdate = value;
     }
@@ -118,7 +132,14 @@ class consetup {
         if (this.#editData.length <= row) {
             this.#editData.push({id: 'new' + row});
             document.getElementById('EMLTS' + row + '_ID').innerHTML = this.#editData[row].id;
+            this.#editData[row].sort_order = this.#editData[row - 1].sort_order + 1;
+            document.getElementById('EMLTS' + row + '_Sort').value = this.#editData[row].sort_order;
             this.#editData[row].conid = this.#conid;
+            this.#editData[row].memCategory = document.getElementById('memListCategorySelect').value;
+            this.#editData[row].memAge = document.getElementById('memListAgeSelect').value;
+            this.#editData[row].memType = document.getElementById('memListTypeSelect').value;
+            this.#editData[row].shortname = document.getElementById('editMemListLabel').value;
+            this.#editData[row].notes = document.getElementById('editMemListNotes').value;
         }
         this.#editData[row].enddate = value;
     }
@@ -295,6 +316,9 @@ class consetup {
             paginationSize: 25,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             paginationElement: document.getElementById( this.#setup_type + 'PaginationDiv'),
+            initialSort:[
+                {column:"sort_order", dir:"asc"}, //sort by this first
+            ],
             columns: [
                 {rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false},
                 {
@@ -304,13 +328,13 @@ class consetup {
                     }
                 },
                 {title: "Edit", formatter: this.editbutton, formatterParams: {year: year}, hozAlign: "left", headerSort: false},
+                {title: "Sort", field: "sort_order", headerSort: true,sorter:"number"},
                 {
                     title: "ID", field: "id", width: 70, headerSort: true, headerHozAlign: "right", hozAlign: "right",
                     headerFilter: "input", headerFilterFunc: numberHeaderFilter,
                 },
                 {field: "memlistkey", visible: false,},
                 {title: "Con ID", field: "conid", width: 70, headerWordWrap: true, headerFilter: true, headerHozAlign: "right", hozAlign: "right",},
-                {title: "Sort", field: "sort_order", headerSort: false, visible: false},
                 {
                     title: "Category",
                     field: "memCategory",
@@ -392,6 +416,8 @@ class consetup {
     editbutton(cell, formatterParams, onRendered) {
         var index = cell.getRow().getIndex()
         var year = formatterParams.year;
+        if (isNaN(index))
+            index = "'" + index + "'";
         return '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
             ' onclick="' + year + '.editSeries(' + index + ');">Edit</button>';
     }
@@ -777,6 +803,8 @@ class consetup {
                 if (index >= this.#editData.length) {
                     this.#editData.push({id: 'new' + index, conid: this.#conid });
                     document.getElementById('EMLTS' + index + '_ID').innerHTML = this.#editData[index].id;
+                    this.#editData[row].sort_order = this.#editData[row - 1].sort_order + 1;
+                    document.getElementById('EMLTS' + row + '_Sort').value = this.#editData[row].sort_order;
                     this.#editData[index].startdate = document.getElementById('EMLTS' + index + '_Start').value;
                     this.#editData[index].enddate = document.getElementById('EMLTS' + index + '_End').value;
                     this.#editData[index].price = document.getElementById('EMLTS' + index + '_Price').value;
@@ -818,6 +846,8 @@ class consetup {
                 if (index >= this.#editData.length) {
                     this.#editData.push({id: 'new' + index });
                     // new rows also get all the master row data
+                    this.#editData[index].sort_order = this.#editData[index - 1].sort_order + 1;
+                    document.getElementById('EMLTS' + index + '_Sort').value = this.#editData[index].sort_order;
                     this.#editData[index].conid = this.#conid;
                     this.#editData[index].memCategory = document.getElementById('memListCategorySelect').value;
                     this.#editData[index].memAge = document.getElementById('memListAgeSelect').value;
@@ -828,6 +858,7 @@ class consetup {
                     this.#editData[index].glLabel = document.getElementById('editMemListGLLabel').value;
                     document.getElementById('EMLTS' + index + '_ID').innerHTML = this.#editData[index].id;
                 }
+                this.#editData[index].sort_order = document.getElementById('EMLTS' + row + '_Sort').value;
                 this.#editData[index].price = document.getElementById('EMLTS' + row + '_Price').value;
                 this.#editData[index].startdate = document.getElementById('EMLTS' + row + '_Start').value;
                 this.#editData[index].enddate = document.getElementById('EMLTS' + row + '_End').value;
@@ -880,6 +911,7 @@ class consetup {
         for (var index = 0; index < this.#editData.length; index++) {
             var row = this.#editData[index];
             document.getElementById('EMLTS' + index + '_ID').innerHTML = row.id;
+            document.getElementById('EMLTS' + index + '_Sort').value = row.sort_order;
             document.getElementById('EMLTS' + index + '_Price').value = row.price;
             document.getElementById('EMLTS' + index + '_Start').value = row.startdate;
             document.getElementById('EMLTS' + index + '_End').value = row.enddate;
@@ -892,6 +924,7 @@ class consetup {
         // clear the remaining bottom rows
         for (index = this.#editData.length; index < 10; index++) {
             document.getElementById('EMLTS' + index + '_ID').innerHTML = '';
+            document.getElementById('EMLTS' + index + '_Sort').value = '';
             document.getElementById('EMLTS' + index + '_Price').value = '';
             document.getElementById('EMLTS' + index + '_Start').value = '';
             document.getElementById('EMLTS' + index + '_End').value = '';
@@ -914,6 +947,7 @@ class consetup {
             var id = this.#editData[index].id;
             this.#memtable.getRow(id).getElement().style.backgroundColor = "#fff3cd";
         }
+        this.#memtable.setSort([{column:"sort_order", dir: "asc"}]);
         this.#memListModal.hide();
 
         // mark that we need to save the screen

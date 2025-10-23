@@ -94,13 +94,13 @@ EOS;
                 if (($roworder >= 0 && $roworder < 9000) || ($roworder == -99999)) {
                     if ($row['memCategory'] == 'rollover') {
                         $data[$index]['sort_order'] = $rollover_sortorder;
-                        $rollover_sortorder += 2;
+                        $rollover_sortorder += 10;
                     } else if ($row['memCategory'] == 'yearahead') {
                         $data[$index]['sort_order'] = $yearahead_sortorder;
-                        $yearahead_sortorder += 2;
+                        $yearahead_sortorder += 10;
                     } else {
                         $data[$index]['sort_order'] = $sort_order;
-                        $sort_order += 2;
+                        $sort_order += 10;
                     }
                 }
             }
@@ -137,7 +137,7 @@ EOS;
         foreach ($data as $row) {
             if (!array_key_exists('notes', $row))
                 $row['notes'] = null;
-            if ($row['id'] < 0) {
+            if (!is_numeric($row['id']) || $row['id'] < 0) {
                 $paramarray= array($row['conid'],$row['sort_order'],$row['memCategory'],
                     $row['memType'],$row['memAge'],$row['shortname'],$row['notes'],$row['price'],$row['startdate'],
                     $row['enddate'],$row['atcon'],$row['online'],$row['glNum'],$row['glLabel']);
