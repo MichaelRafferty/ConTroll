@@ -914,7 +914,7 @@ class Find {
             show_message("Email addresses do not match", 'error', 'find_edit_message');
             return
         }
-        if (validateAddress(email1) == false) {
+        if (email1 != '/r' && validateAddress(email1) == false) {
             show_message("Invalid Email Address", 'error', 'find_edit_message');
             return;
         }
@@ -949,6 +949,7 @@ class Find {
             country: this.#country.value,
             emailAddr: this.#emailAddr.value,
             emailAddr2: this.#emailAddr2.value,
+            email_addr: this.#emailAddr.value,
             phone: this.#phone.value,
             managerId: this.#managerId.value,
             managerName: this.#managerName.innerHTML,
