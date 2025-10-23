@@ -91,7 +91,7 @@ EOS;
                 } else {
                     $roworder = 10;
                 }
-                if (($roworder >= 0 && $roworder < 9000) || ($roworder == -99999)) {
+                if (($roworder >= 0 && $roworder < 30000) || ($roworder == -99999)) {
                     if ($row['memCategory'] == 'rollover') {
                         $data[$index]['sort_order'] = $rollover_sortorder;
                         $rollover_sortorder += 10;
