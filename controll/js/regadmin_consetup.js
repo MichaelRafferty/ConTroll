@@ -922,7 +922,7 @@ class consetup {
             if (a.price > b.price)
                 return 1;
 
-            return 0;
+            return a.sort_order - b.sort_order;
         });
 
         // fill in the bottom rows from the edit array
