@@ -583,6 +583,24 @@ class consetup {
     };
 
     memlist_rowMoved(row) {
+        // first change the sort order entry for this row, to be one more than the one before, or if first, one less than the one after
+        let sortValue = undefined;
+        let sortCell = undefined;
+        let copyRow = row.getPrevRow();
+        if (copyRow !== false) {
+            sortCell = copyRow.getCell('sort_order');
+            sortValue = sortCell.getValue() + 1;
+        } else {
+            copyRow = row.getNextRow();
+            if (copyRow !== false) {
+                sortCell = copyRow.getCell('sort_order');
+                sortValue = sortCell.getValue() - 1;
+            }
+        }
+        if (sortValue !== undefined) {
+            sortCell = row.getCell('sort_order');
+            sortCell.setValue(sortValue);
+        }
         this.#memlist_savebtn.innerHTML = "Save Changes*";
         this.#memlist_savebtn.disabled = false;
         this.#memlist_dirty = true;
