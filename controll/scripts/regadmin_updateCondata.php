@@ -23,6 +23,16 @@ $action=$_POST['ajax_request_action'];
 $tablename=$_POST['tablename'];
 try {
     $tabledata = json_decode($_POST['tabledata'], true, 512, JSON_THROW_ON_ERROR);
+    // now resort the table data rows on sort id column:
+    function cmp($a, $b) {
+        if (array_key_exists('sort_order', $a) && array_key_exists('sort_order', $b)) {
+            if ($a['sort_order'] == $b['sort_order'])
+                return 0;
+            return $a['sort_order'] < $b['sort_order'] ? -1 : 1;
+        }
+        return -1;
+    }
+    usort($tabledata, "cmp");
 } catch (Exception $e) {
     $msg = 'Caught exception on json_decode: ' . $e->getMessage() . PHP_EOL . 'JSON error: ' . json_last_error_msg() . PHP_EOL;
     $response['error'] = $msg;
