@@ -137,6 +137,31 @@ if (array_key_exists('planRecast', $_POST)) {
     $planRecast = 0;
 }
 
+// lets check if this person has been matched, if so, use the perid, not the newperid
+if ($loginType == 'n') {
+    $chkSQL = <<<EOS
+SELECT perid
+FROM newperson
+WHERE id = ?;
+EOS;
+    $chkR = dbSafeQuery($chkSQL, 'i', array($loginId));
+    if ($chkR !== false && $chkR->num_rows == 1) {
+        $perid = $chkR->fetch_row()[0];
+        if ($perid != null && $perid > 0) {
+            // update any regs without the perid to have them
+            $updSQL = <<<EOS
+UPDATE reg
+SET perid = ?
+WHERE newperid = ? AND perid IS NULL;
+EOS;
+            dbSafeCmd($updSQL, 'ii', array($perid, $loginId));
+            // switch to the perid based login
+            $loginId = $perid;
+            $loginType = 'p';
+        }
+    }
+}
+
 // all the records are in the database, so lets charge the credit card...
 
 $transId = getSessionVar('transId');
@@ -425,11 +450,29 @@ SET status = 'upgraded'
 WHERE conid = ? AND newperid = ? AND memId = ? AND status = 'paid';
 EOS;
 
-    $regU = 'UPDATE reg SET paid=paid + ?, couponDiscount = ?, complete_trans = ?, status = ?, planId = ? WHERE id=?;';
+    $regU = <<<EOS
+UPDATE reg 
+SET paid=paid + ?, couponDiscount = ?, complete_trans = ?, status = ?, planId = ? 
+WHERE id=?;
+EOS;
+
+    $regPerid = <<<EOS
+UPDATE reg r
+JOIN newperson n ON n.id = r.newperid
+SET r.perid = n.perid
+WHERE n.perid = ? AND r.perid IS NULL;
+EOS;
+
+    // compute total owed and if needed update perid in reg
     foreach ($badges as $badge) {
         if (array_key_exists('inPlan', $badge) && $badge['inPlan'] == ($planOnly ? true : false)) {
             $count++;
             $totalOwed += $badge['price'] - ($badge['paid'] + $badge['couponDiscount']);
+        }
+        if (array_key_exists('newperid', $badge) && $badge['newperid'] != null) {
+            if (!array_key_exists('perid', $badge) || $badge['perid'] == null) {
+                dbSafeCmd($regPerid, 'i', array($badge['newperid']));
+            }
         }
     }
     if ($totalOwed > 0) {
