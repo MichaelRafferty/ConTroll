@@ -879,7 +879,7 @@ class Pos {
         var new_last = this.#add_last_field.value.trim();
         var new_suffix = this.#add_suffix_field.value.trim();
         var new_legalName = this.#add_legalName_field.value.trim();
-        var new_pronouns = this.#pronouns_field.value.trim();
+        var new_pronouns = this.#add_pronouns_field.value.trim();
         var new_addr1 = this.#add_addr1_field.value.trim();
         var new_addr2 = this.#add_addr2_field.value.trim();
         var new_city = this.#add_city_field.value.trim();
