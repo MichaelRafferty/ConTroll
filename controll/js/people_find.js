@@ -36,7 +36,6 @@ class Find {
     #zip = null;
     #country = null;
     #emailAddr = null;
-    #emailAddr2 = null;
     #phone = null;
     #managerName = null;
     #managerId = null;
@@ -98,7 +97,6 @@ class Find {
             this.#zip = document.getElementById('f_zip');
             this.#country = document.getElementById('f_country');
             this.#emailAddr = document.getElementById('f_email1');
-            this.#emailAddr2 = document.getElementById('f_email2');
             this.#phone = document.getElementById('f_phone');
             this.#managerId = document.getElementById('f_managerId');
             this.#managerName = document.getElementById('f_managerName');
@@ -395,7 +393,6 @@ class Find {
         this.#zip.value = this.#editRow.zip;
         this.#country.value = this.#editRow.country;
         this.#emailAddr.value = this.#editRow.email_addr;
-        this.#emailAddr2.value = this.#editRow.email_addr;
         this.#phone.value = this.#editRow.phone;
         this.#managerId.value = this.#editRow.managerId;
         this.#managerName.innerHTML = this.#editRow.manager ? this.#editRow.manager : '';
@@ -909,11 +906,6 @@ class Find {
     saveEdit() {
         // validate the data, simple checks
         var email1 = this.#emailAddr.value;
-        var email2 = this.#emailAddr2.value;
-        if (email1 != email2) {
-            show_message("Email addresses do not match", 'error', 'find_edit_message');
-            return
-        }
         if (email1 != '/r' && validateAddress(email1) == false) {
             show_message("Invalid Email Address", 'error', 'find_edit_message');
             return;
@@ -948,7 +940,6 @@ class Find {
             zip: this.#zip.value,
             country: this.#country.value,
             emailAddr: this.#emailAddr.value,
-            emailAddr2: this.#emailAddr2.value,
             email_addr: this.#emailAddr.value,
             phone: this.#phone.value,
             managerId: this.#managerId.value,
@@ -1045,7 +1036,6 @@ class Find {
         this.#zip.value = '';
         this.#country.value = 'USA';
         this.#emailAddr.value = '';
-        this.#emailAddr2.value = '';
         this.#phone.value = '';
         this.#managesName.innerText = '';
         this.#openNotes.value = '';
