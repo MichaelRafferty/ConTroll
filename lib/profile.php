@@ -202,12 +202,14 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
             <input class='form-control-sm' type='email' name='email1' id='<?php echo $idPrefix . 'email1'; ?>' size='35' maxlength='254'
                    tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
         </div>
+<?php if (!$admin) { ?>
         <div class='col-sm-auto'>
             <label for='<?php echo $idPrefix . 'email2'; ?>' class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'><span
                             class='text-danger'>&bigstar;</span>Confirm Email</span></label><br/>
             <input class='form-control-sm' type='email' name='email2' id='<?php echo $idPrefix . 'email2'; ?>' size='35' maxlength='254'
                    tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
         </div>
+<?php } // admin ?>
     </div>
 <?php
         if ($membershipTypes != null) {
