@@ -400,18 +400,22 @@ EOS;
             // insert the new reg record into the cart
             $iQ = <<<EOS
 INSERT INTO reg(conid, perid, newperid, create_trans, complete_trans, price, status, create_user, memId)
-values (?, ?, ?, ?, ?, ?, ?, ?, ?);
+SELECT ?, IFNULL(p.id, n.perid) AS perid, n.id AS newperid, ?, ?, ?, ?, ?, m.id
+FROM memList m
+LEFT OUTER JOIN perinfo p ON p.id = ?
+LEFT OUTER JOIN newperson n ON n.id = ?
+WHERE m.id = ?;
 EOS;
-            $typeStr = 'iiiiidsii';
+            $typeStr = 'iiidsiiii';
             $valArray = array(
                 $cartRow['conid'],
-                $personType == 'p' ? $personId : null,
-                $personType == 'n' ? $personId : null,
                 $transId,
                 $cartRow['price'] > 0 ? null : $transId,
                 $cartRow['price'],
                 $cartRow['price'] > 0 ? 'unpaid' : 'paid',
                 $loginId,
+                $personType == 'p' ? $personId : -1,
+                $personType == 'n' ? $personId : -1,
                 $cartRow['memId']
             );
             $new_cartid = dbSafeInsert($iQ, $typeStr, $valArray);
