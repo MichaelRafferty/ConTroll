@@ -57,7 +57,8 @@ $config_vars['debug'] = getConfValue('debug', 'controll_people', 0);
 $config_vars['conid'] = $conid;
 $config_vars['useUSPS'] = $useUSPS;
 $config_vars['policies'] = $policies;
-$config_vars['inrerests'] = $interests;
+$config_vars['interests'] = $interests;
+$config_vars['required'] = getConfValue('reg','required', 'addr');;
 ?>
 <script type='text/javascript'>
     var config = <?php echo json_encode($config_vars); ?>;
