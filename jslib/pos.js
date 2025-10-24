@@ -144,7 +144,6 @@ class Pos {
     #add_postal_code_field = null;
     #add_country_field = null;
     #add_email1_field = null;
-    #add_email2_field = null;
     #add_phone_field = null;
     #add_badgename_field = null;
     #add_badgeNameL2_field = null;
@@ -204,7 +203,6 @@ class Pos {
         this.#add_postal_code_field = document.getElementById("zip");
         this.#add_country_field = document.getElementById("country");
         this.#add_email1_field = document.getElementById("email1");
-        this.#add_email2_field = document.getElementById("email2");
         this.#add_phone_field = document.getElementById("phone");
         this.#add_badgename_field = document.getElementById("badge_name");
         this.#add_badgeNameL2_field = document.getElementById("badgeNameL2");
@@ -364,7 +362,6 @@ class Pos {
         this.#add_postal_code_field.value = cartrow.postal_code;
         this.#add_country_field.value = cartrow.country;
         this.#add_email1_field.value = cartrow.email_addr;
-        this.#add_email2_field.value = cartrow.email_addr;
         this.#add_phone_field.value = cartrow.phone;
         this.#add_badgename_field.value = cartrow.badge_name;
         this.#add_badgeNameL2_field.value = cartrow.badgeNameL2;
@@ -821,7 +818,6 @@ class Pos {
         this.#add_postal_code_field.value = "";
         this.#add_country_field.value = "";
         this.#add_email1_field.value = "";
-        this.#add_email2_field.value = "";
         this.#add_phone_field.value = "";
         this.#add_badgename_field.value = "";
         this.#add_badgeNameL2_field.value = "";
@@ -847,7 +843,6 @@ class Pos {
         this.#add_state_field.style.backgroundColor = '';
         this.#add_postal_code_field.style.backgroundColor = '';
         this.#add_email1_field.style.backgroundColor = '';
-        this.#add_email2_field.style.backgroundColor = '';
         if (this.#add_results_table != null) {
             this.#add_results_table.destroy();
             this.#add_results_table = null;
@@ -871,6 +866,8 @@ class Pos {
 
     // add record from the add/edit screen to the cart.  If it's already in the cart, update the cart record.
     add_new(override = 0) {
+        clear_message();
+
         var edit_index = this.#add_index_field.value.trim();
         var edit_perid = this.#add_perid_field.value.trim();
         var new_memindex = this.#add_memIndex_field.value.trim();
@@ -893,6 +890,15 @@ class Pos {
         var new_fullname = (new_first + ' ' + new_middle + ' ' + new_last + ' ' + new_suffix).replace('  ', ' ').trim();
 
         this.#addOverride = override;
+
+        if (new_email == '') {
+            show_message("Email address is requird", 'error');
+            return;
+        }
+        if (new_email != '/r' && validateAddress(new_email) == false) {
+            show_message("Email address is invalid and not /r", 'error');
+            return;
+        }
 
         if (this.#add_mode == false && edit_index != '') { // update perinfo/meminfo and cart_perinfo and cart_memberships
             var row = {};
@@ -939,7 +945,6 @@ class Pos {
             this.#add_legalName_field.value = "";
             this.#add_pronouns_field.value = "";
             this.#add_email1_field.value = "";
-            this.#add_email2_field.value = "";
             this.#add_phone_field.value = "";
             this.#add_badgename_field.value = "";
             this.#add_badgeNameL2_field.value = "";
@@ -966,7 +971,6 @@ class Pos {
             this.#add_state_field.style.backgroundColor = '';
             this.#add_postal_code_field.style.backgroundColor = '';
             this.#add_email1_field.style.backgroundColor = '';
-            this.#add_email2_field.style.backgroundColor = '';
             if (this.#add_results_table != null) {
                 this.#add_results_table.destroy();
                 this.#add_results_table = null;
@@ -1186,10 +1190,8 @@ class Pos {
             if (new_email == '') {
                 missing_fields++;
                 this.#add_email1_field.style.backgroundColor = 'var(--bs-warning)';
-                this.#add_email2_field.style.backgroundColor = 'var(--bs-warning)';
             } else {
                 this.#add_email1_field.style.backgroundColor = '';
-                this.#add_email2_field.style.backgroundColor = '';
             }
         } else {
             this.#add_first_field.style.backgroundColor = '';
@@ -1199,7 +1201,6 @@ class Pos {
             this.#add_state_field.style.backgroundColor = '';
             this.#add_postal_code_field.style.backgroundColor = '';
             this.#add_email1_field.style.backgroundColor = '';
-            this.#add_email2_field.style.backgroundColor = '';
             this.#add_header.innerHTML = `
     <div class="col-sm-12 text-bg-primary mb-2">
         <div class="text-bg-primary m-2">
@@ -1253,7 +1254,6 @@ class Pos {
         this.#add_first_field.value = "";
         this.#add_middle_field.value = "";
         this.#add_email1_field.value = "";
-        this.#add_email2_field.value = "";
         this.#add_phone_field.value = "";
         this.#add_badgename_field.value = "";
         cart.add(row);
@@ -1921,10 +1921,11 @@ addUnpaid(tid) {
 
 // create the review data screen from the cart
     reviewUpdate() {
+        clear_message();
         cart.updateReviewData();
         this.reviewShown();
         if (this.#reviewMissingPolicies > 0 && this.#print_tab)
-            this.#print_tab.disabled =true;
+            this.#print_tab.disabled = true;
 
         if (this.#reviewMissingItens > 0) {
             setTimeout(reviewNoChanges, 100);
