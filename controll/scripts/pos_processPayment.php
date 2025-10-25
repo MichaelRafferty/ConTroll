@@ -348,11 +348,20 @@ EOS;
 
     // now the main payment
     if ($amt > 0) {
-        [$taxFields, $taxSql, $taxStr, $taxValues] = buildTaxInsert($taxes);
-        if ($taxFields != '')
-            $taxFields = ", $taxFields";
-        if ($taxSql != '')
-            $taxSql = ", $taxSql";
+        if ($taxAmt > 0) {
+            $oRtn = cc_fetchOrder('controll/pos_processPayment', $orderId, $useLogWrite = false);
+            $taxes = $oRtn['taxes'];
+            [$taxFields, $taxSql, $taxStr, $taxValues] = buildTaxInsert($taxes);
+            if ($taxFields != '')
+                $taxFields = ", $taxFields";
+            if ($taxSql != '')
+                $taxSql = ", $taxSql";
+        } else {
+            $taxFields = '';
+            $taxSql = '';
+            $taxStr = '';
+            $taxValues = [];
+        }
 
         $insPmtSQL = <<<EOS
 INSERT INTO payments(transid, type,category, description, source, pretax, tax, amount, time, cc_approval_code, cashier, 
@@ -363,12 +372,6 @@ EOS;
 
         $paramarray = array ($master_tid, $paymentType, $desc, $preTaxAmt, $taxAmt, $approved_amt, $auth, $user_perid,
             $last4, $nonceCode, $paymentId, $txTime, $receiptUrl, $receiptNumber, $user_perid, $status, $paymentId);
-
-        [$taxFields, $taxSql, $taxStr, $taxValues] = buildTaxInsert($taxes);
-        if ($taxFields != '')
-            $taxFields = ", $taxFields";
-        if ($taxSql != '')
-            $taxSql = ", $taxSql";
 
         $insPmtSQL = <<<EOS
 INSERT INTO payments(transid, type,category, description, source, pretax, tax, amount, time, cc_approval_code, cashier, 
