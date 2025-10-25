@@ -647,7 +647,8 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     $taxAmounts = $order->getTaxes();
     foreach ($taxAmounts as $tax)
         $uid = $tax->getUid();
-        $amt = $tax->getAmount()->getAmount();
+        $app = $tax->getAppliedMoney();
+        $amt = $app->getAmount();
         $rtnTaxes[$uid] = $amt / 100;
     $rtn['taxes'] = $rtnTaxes;
     $rtn['totalAmt'] = $order->getTotalMoney()->getAmount() / 100;
