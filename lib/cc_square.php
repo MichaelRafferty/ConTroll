@@ -441,6 +441,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 ]);
                 if ($hasTax && array_key_exists('taxable', $badge) && $badge['taxable'] == 'Y') {
                     // create the Line Item tax record, if there is a tax rate, and the membership is taxable
+                    $needTaxes = $hasTax;
                     $item->setAppliedTaxes(buildSquareAppliedTaxArray('badge', $lineid));
                 }
                 if (array_key_exists('newplan', $results) && $results['newplan'] == 1) {
