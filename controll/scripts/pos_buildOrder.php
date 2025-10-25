@@ -229,6 +229,7 @@ if ($drow != null) {
     $response['drow'] = $drow;
 }
 
+$taxes = $rtn['taxes'];
 [$taxSql, $taxStr, $taxValues] = buildTaxUpdate($taxes);
 $upT = <<<EOS
 UPDATE transaction
