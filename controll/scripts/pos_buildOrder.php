@@ -229,16 +229,21 @@ if ($drow != null) {
     $response['drow'] = $drow;
 }
 
+[$taxSql, $taxStr, $taxValues] = buildTaxUpdate($taxes);
 $upT = <<<EOS
 UPDATE transaction
-SET price = ?, tax = ?, withTax = ?, couponDiscountCart = ?, orderId = ?, paymentStatus = 'ORDER', orderDate = now()
+SET price = ?, tax = ?, withTax = ?, couponDiscountCart = ?, orderId = ?, paymentStatus = 'ORDER', orderDate = now(), $taxSql
 WHERE id = ?;
 EOS;
-
 $preTax = $rtn['preTaxAmt'];
 $taxAmt = $rtn['taxAmt'];
 $withTax = $rtn['totalAmt'];
-$rows_upd = dbSafeCmd($upT, 'ddddsi', array($preTax, $taxAmt, $withTax, 0, $rtn['orderId'], $transId));
+$valArray = array($preTax, $taxAmt, $withTax, 0, $rtn['orderId']);
+$typeStr = 'dddds' . $taxStr . 'i';
+$valArray = array_merge($valArray, $taxValues);
+$valArray[] = $transId;
+
+$rows_upd = dbSafeCmd($upT, $typeStr, $valArray);
 
 //$tnx_record = $rtn['tnx'];
 logWrite(array('con' => $con['label'], 'trans' => $transId, 'ccrtn' => $rtn));

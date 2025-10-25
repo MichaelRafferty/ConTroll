@@ -645,11 +645,12 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     $rtn['taxAmt'] = $order->getTotalTaxMoney()->getAmount() / 100;
     // build the return array of taxes applied to the order
     $taxAmounts = $order->getTaxes();
-    foreach ($taxAmounts as $tax)
+    foreach ($taxAmounts as $tax) {
         $uid = $tax->getUid();
         $app = $tax->getAppliedMoney();
         $amt = $app->getAmount();
         $rtnTaxes[$uid] = $amt / 100;
+    }
     $rtn['taxes'] = $rtnTaxes;
     $rtn['totalAmt'] = $order->getTotalMoney()->getAmount() / 100;
     // load into the main rtn the items pay order needs directly
@@ -748,10 +749,11 @@ function cc_fetchOrder($source, $orderId, $useLogWrite = false) : array {
     $rtn['taxAmount'] = $order->getTotalTaxMoney()->getAmount() / 100;
     // build the return array of taxes applied to the order
     $taxAmounts = $order->getTaxes();
-    foreach ($taxAmounts as $tax)
+    foreach ($taxAmounts as $tax) {
         $uid = $tax->getUid();
-    $amt = $tax->getAmount()->getAmount();
-    $rtnTaxes[$uid] = $amt / 100;
+        $amt = $tax->getAmount()->getAmount();
+        $rtnTaxes[$uid] = $amt / 100;
+    }
     $rtn['taxes'] = $rtnTaxes;
     $rtn['totalDiscountAmount'] = $order->getTotalDiscountMoney()->getAmount() / 100;
     $rtn['netAmountDue'] = $order->getNetAmountDueMoney()->getAmount() / 100;

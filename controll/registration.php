@@ -3,6 +3,7 @@ require_once 'lib/base.php';
 require_once '../lib/profile.php';
 require_once '../lib/portalForms.php';
 require_once '../lib/policies.php';
+require_once '../lib/tax.php';
 require_once('../lib/cc__load_methods.php');
 //initialize google session
 $need_login = google_init('page');
@@ -75,6 +76,7 @@ $config_vars['cashier'] = 1;
 $config_vars['multiOneDay'] = $multiOneDay;
 $config_vars['onedaycoupons'] = $onedaycoupons;
 $config_vars['source'] = 'registration';
+$config_vars['taxRates'] = getTaxRates();
 
 // form as laid out has no room for usps block, if we want it we need to reconsider how to do it here.
 //if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
