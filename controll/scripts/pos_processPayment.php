@@ -6,6 +6,7 @@
 
 require_once '../lib/base.php';
 require_once('../../lib/log.php');
+require_once('../../lib/tax.php');
 require_once('../../lib/cc__load_methods.php');
 
 $check_auth = google_init('ajax');
