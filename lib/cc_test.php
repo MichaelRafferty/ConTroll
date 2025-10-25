@@ -187,7 +187,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                     'basePriceMoney' => round($amount * 100),
                 ];
                 if ($hasTax) {
-                    // create the Line Item tax record, if there is a tax rate, and the membership is taxable
+                    // create the Line Item tax record, art sales are taxable
                     $item['taxable'] = 'Y';
                 }
                 $orderLineItems[$lineid] = $item;
@@ -284,7 +284,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                     'basePriceMoney' => round($amount * 100),
                     'metadata' => $notesData['metadata'],
                 ];
-                if ($hasTax > 0 && array_key_exists('taxable', $badge) && $badge['taxable'] == 'Y') {
+                if ($hasTax && array_key_exists('taxable', $badge) && $badge['taxable'] == 'Y') {
                     // create the Line Item tax record, if there is a tax rate, and the membership is taxable
                     $needTaxes = $hasTax;
                     $item['taxable'] = 'Y';
