@@ -245,9 +245,7 @@ EOS;
     $typestr = 'issdddsissssssiss' . $taxStr;
     $paramarray = array ($transId, $paymentType, $description, $preTaxAmt, $taxAmt, $approved_amt, $auth, $loginId,
         $last4, $nonceCode, $paymentId, $txTime, $receiptUrl, $receiptNumber, $loginId, $status, $paymentId);
-
-    $txnT = implode('', $rtn['tnxtypes']);
-    $txnid = dbSafeInsert($txnQ, $txnT, $rtn['tnxdata']);
+    $txnid = dbSafeInsert($txnQ, $typestr, array_merge($paramarray, $taxValues));
     $approved_amt = $rtn['amount'];
 } else {
     $approved_amt = 0;
