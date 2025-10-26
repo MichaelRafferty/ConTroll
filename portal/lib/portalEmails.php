@@ -60,9 +60,9 @@ function getEmailBody($transid, $owner, $memberships, $coupon, $planRec, $rid, $
             $body .= 'The pre sales tax price for your order was ' . $dolfmt->formatCurrency((float)$preTaxAmt, $currency) . "\n";
             foreach ($taxList as $tax) {
                 if ($tax['rate'] > 0) {
-                    $taxAmt = $taxes[$tax['taxField']];
+                    $stax = $taxes[$tax['taxField']];
                     $label = $tax['label'];
-                    $body .= "$label: " . $dolfmt->formatCurrency((float) $taxAmt, $currency) . "\n";
+                    $body .= "$label: " . $dolfmt->formatCurrency((float) $stax, $currency) . "\n";
                 }
             }
             $body .= 'Total tax for the taxable portion of this order was ' . $dolfmt->formatCurrency((float)$taxAmt, $currency) . "\n" .
