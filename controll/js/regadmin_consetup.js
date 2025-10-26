@@ -58,8 +58,6 @@ class consetup {
         if (id) {
             this.#memListModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
         }
-        this.#paginationDiv = document.getElementById( this.#setup_type + 'PaginationDiv');
-
     };
 
     // set undo / redo status for conlist (convention data)
@@ -306,6 +304,7 @@ class consetup {
         } else {
             memListData = data['memList'];
         }
+        this.#paginationDiv = document.getElementById( this.#setup_type + 'PaginationDiv');
         this.#paginationDiv.innerHTML = '';
         this.#paginationDiv.hidden = data['memlist'].length <= 25;
 
