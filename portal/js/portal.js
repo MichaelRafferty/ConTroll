@@ -93,7 +93,7 @@ class Portal {
     #otherPayAmt = 0;
     #otherPay = 0;
     #orderData = null;
-    #orderBadges = null;
+    #taxes = [];
     #disableButtonNames = null;
 
     // receipt fields
@@ -1245,12 +1245,24 @@ class Portal {
             html += `
             <div className="row mt-4">
                 <div className="col-sm-auto"><b>The Pre-Tax Amount Due is ` + Number(this.#orderData.rtn.preTaxAmt).toFixed(2) + `</b></div>
-            </div>
-            <div className="row mt-2">
-                <div className="col-sm-auto"><b>` + this.#orderData.rtn.taxLabel + ` is ` + Number(this.#orderData.rtn.taxAmt).toFixed(2) + `</b></div>
-                
-            </div>
-`;
+            </div>`;
+            this.#taxes = this.#orderData.rtn.taxes;
+            if (Object.keys(config.taxRates).length > 0) {
+                for (let tax in config.taxRates) {
+                    let rate = config.taxRates[tax];
+                    let amt = this.#taxes[tax];
+                    html += `
+    <div class="row mt-1">
+        <div class="col-sm-2 ms-0 me-2 p-0">` + rate.label + `:</div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0">$` + Number(amt).toFixed(2) + `</div>
+    </div>`;
+                }
+            }
+            html += `
+    <div class="row mt-1">
+        <div class="col-sm-2 ms-0 me-2 p-0">Total Sales Tax:</div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-tax-amt">$` + Number(this.#taxAmt).toFixed(2) + `</div>
+    </div>`;
         }
 
         if (plan == null) {

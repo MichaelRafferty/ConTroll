@@ -5,6 +5,7 @@ require_once('../lib/portalEmails.php');
 require_once('../../lib/paymentPlans.php');
 require_once('../../lib/purchase.php');
 require_once('../../lib/coupon.php');
+require_once('../../lib/tax.php');
 require_once('../../lib/log.php');
 require_once('../../lib/cc__load_methods.php');
 
@@ -300,12 +301,22 @@ if ($amount > 0) {
     $response['rtn'] = $rtn;
 
     // update the transaction with the order id
-    $updTrans = <<<EOS
+    $taxes = $rtn['taxes'];
+    [$taxSql, $taxStr, $taxValues] = buildTaxUpdate($taxes);
+    $upT = <<<EOS
 UPDATE transaction
-SET orderId = ?, paymentStatus = 'ORDER', tax = ?, withtax = ?, orderDate = now()
+SET price = ?, tax = ?, withTax = ?, couponDiscountCart = ?, orderId = ?, paymentStatus = 'ORDER', orderDate = now(), $taxSql
 WHERE id = ?;
 EOS;
-    $numUpd = dbSafeCmd($updTrans, 'sddi', array($rtn['orderId'], $rtn['taxAmt'], $rtn['totalAmt'], $transId));
+    $preTax = $rtn['preTaxAmt'];
+    $taxAmt = $rtn['taxAmt'];
+    $withTax = $rtn['totalAmt'];
+    $valArray = array($preTax, $taxAmt, $withTax, 0, $rtn['orderId']);
+    $typeStr = 'dddds' . $taxStr . 'i';
+    $valArray = array_merge($valArray, $taxValues);
+    $valArray[] = $transId;
+
+    $numUpd = dbSafeCmd($upT, $typeStr, $valArray);
 } else {
     $rtn = array();
 }

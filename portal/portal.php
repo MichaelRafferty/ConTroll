@@ -11,6 +11,7 @@ require_once("../lib/profile.php");
 require_once("../lib/policies.php");
 require_once("../lib/paymentPlans.php");
 require_once("../lib/coupon.php");
+require_once("../lib/tax.php");
 require_once('../lib/cc__load_methods.php');
 
 global $config_vars;
@@ -85,6 +86,7 @@ if (array_key_exists('onedaycoupons', $con)) {
     $onedaycoupons = 0;
 }
 $config_vars['onedaycoupons'] = $onedaycoupons;
+$config_vars['taxRates'] = getTaxRates();
 
 $cdn = getTabulatorIncludes();
 // default memberships to empty to handle the refresh case which never loads them.
