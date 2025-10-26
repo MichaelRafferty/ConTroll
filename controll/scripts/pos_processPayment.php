@@ -369,7 +369,7 @@ INSERT INTO payments(transid, type,category, description, source, pretax, tax, a
 VALUES (?,?,'reg',?,'cashier',?,?,?,now(),?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? $taxSql);
 EOS;
         $typestr = 'issdddsissssssiss' . $taxStr;
-        $paramarray = array ($master_tid, $paymentType, $desc, $preTaxAmt, $taxAmt, $approved_amt, $auth, $user_perid,
+        $paramarray = array ($master_tid, $paymentType, $description, $preTaxAmt, $taxAmt, $approved_amt, $auth, $user_perid,
             $last4, $nonceCode, $paymentId, $txTime, $receiptUrl, $receiptNumber, $user_perid, $status, $paymentId);
 
         $new_pid = dbSafeInsert($insPmtSQL, $typestr, array_merge( $paramarray, $taxValues));

@@ -176,35 +176,82 @@ if ($order != null) {
 } else
     $customerId = $conf['id'] . "-$loginType-$loginId";
 
-$results = array(
-    'source' => $source,
-    'nonce' => $nonce,
-    'totalAmt' => $amount,
-    'orderId' => $orderId,
-    'customerId' => $customerId,
-    'locationId' => $cc['location'],
-    'referenceId' => $referenceId,
-    'transid' => $transId,
-    'preTaxAmt' => $preTaxAmount,
-    'taxAmt' => $taxAmount,
-    'total' => $amount,
-);
+if ($totalAmountDue > 0) {
+    $results = array (
+        'source' => $source,
+        'nonce' => $nonce,
+        'totalAmt' => $amount,
+        'orderId' => $orderId,
+        'customerId' => $customerId,
+        'locationId' => $cc['location'],
+        'referenceId' => $referenceId,
+        'transid' => $transId,
+        'preTaxAmt' => $preTaxAmount,
+        'taxAmt' => $taxAmount,
+        'total' => $amount,
+    );
 
 // call the credit card processor to make the payment
 
-$rtn = cc_payOrder($results, $buyer, true);
+    $rtn = cc_payOrder($results, $buyer, true);
 
 //log payment
-logWrite(array('con' => $condata['name'], 'trans' => $transId, 'ccrtn' => $rtn));
-$num_fields = sizeof($rtn['txnfields']);
-$val = array();
-for ($i = 0; $i < $num_fields; $i++) {
-    $val[$i] = '?';
+    logWrite(array ('con' => $condata['name'], 'trans' => $transId, 'ccrtn' => $rtn));
+
+    $approved_amt = $rtn['amount'];
+    $type = $rtn['paymentType'];
+    $preTaxAmt = $rtn['preTaxAmt'];
+    $taxAmt = $rtn['taxAmt'];
+    $paymentId = $rtn['paymentId'];
+    $receiptUrl = $rtn['url'];
+    $receiptNumber = $rtn['rid'];
+    $paymentType = $rtn['paymentType'];
+    $auth = $rtn['auth'];
+    $payment = $rtn['payment'];
+    $last4 = $rtn['last4'];
+    $txTime = $rtn['txTime'];
+    $status = $rtn['status'];
+    $transId = $rtn['transId'];
+    $category = $rtn['category'];
+    $description = $rtn['description'];
+    $source = $rtn['source'];
+    $nonce = $rtn['nonce'];
+    if ($nonce == 'EXTERNAL')
+        $nonceCode = $results['externalType'];
+    else
+        $nonceCode = $nonce;
+
+// now the main payment
+    if ($taxAmt > 0) {
+        $taxes = $order['taxes'];
+        [$taxFields, $taxSql, $taxStr, $taxValues] = buildTaxInsert($taxes);
+        if ($taxFields != '')
+            $taxFields = ", $taxFields";
+        if ($taxSql != '')
+            $taxSql = ", $taxSql";
+    } else {
+        $taxFields = '';
+        $taxSql = '';
+        $taxStr = '';
+        $taxValues = [];
+    }
+
+    $txnQ = <<<EOS
+INSERT INTO payments(transid, type,category, description, source, pretax, tax, amount, time, cc_approval_code, cashier, 
+    cc, nonce, cc_txn_id, txn_time, receipt_url, receipt_id, userPerid, status, ccPaymentId $taxFields)
+VALUES (?,?,'reg',?,'cashier',?,?,?,now(),?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? $taxSql);
+EOS;
+    $typestr = 'issdddsissssssiss' . $taxStr;
+    $paramarray = array ($transId, $paymentType, $description, $preTaxAmt, $taxAmt, $approved_amt, $auth, $loginId,
+        $last4, $nonceCode, $paymentId, $txTime, $receiptUrl, $receiptNumber, $loginId, $status, $paymentId);
+
+    $txnT = implode('', $rtn['tnxtypes']);
+    $txnid = dbSafeInsert($txnQ, $txnT, $rtn['tnxdata']);
+    $approved_amt = $rtn['amount'];
+} else {
+    $approved_amt = 0;
+    $taxes = [];
 }
-$txnQ = 'INSERT INTO payments(time,' . implode(',', $rtn['txnfields']) . ') VALUES(current_time(),' . implode(',', $val) . ');';
-$txnT = implode('', $rtn['tnxtypes']);
-$txnid = dbSafeInsert($txnQ, $txnT, $rtn['tnxdata']);
-$approved_amt = $rtn['amount'];
 
 if ($webCouponDiscount > 0) {
     // Insert the payment record for the coupon
@@ -306,7 +353,7 @@ EOS;
 }
 
 $txnUpdate = 'UPDATE transaction SET ';
-if ($approved_amt == $totalAmountDue) {
+if (round($approved_amt,2) == round($totalAmountDue,2)) {
     $txnUpdate .= 'complete_date=current_timestamp(), ';
 }
 
@@ -331,7 +378,7 @@ if ($amount > 0 && $planPayment != 1) {
 }
 if ($totalAmountDue > 0) {
     $body = getEmailBody($transId, $info, $badges, $coupon, $planPayment == 1 ? $existingPlan : $planRec, $rtn['rid'], $rtn['url'],
-        $rtn['amount'], $rtn['preTaxAmt'], $rtn['taxAmt'], $planPayment );
+        $rtn['amount'], $rtn['preTaxAmt'], $rtn['taxAmt'], $taxes, $planPayment );
 
 } else {
     $body = getNoChargeEmailBody($results, $info, $badges);
