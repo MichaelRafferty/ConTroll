@@ -1261,7 +1261,7 @@ class Portal {
             html += `
     <div class="row mt-1">
         <div class="col-sm-2 ms-0 me-2 p-0">Total Sales Tax:</div>
-        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-tax-amt">$` + Number(this.#taxAmt).toFixed(2) + `</div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-tax-amt">$` + Number(this.#orderData.rtn.taxAmt).toFixed(2) + `</div>
     </div>`;
         }
 
