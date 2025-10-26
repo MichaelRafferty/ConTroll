@@ -1244,7 +1244,8 @@ class Portal {
         if (this.#orderData.rtn.taxAmt > 0) {
             html += `
             <div className="row mt-4">
-                <div className="col-sm-auto"><b>The Pre-Tax Amount Due is ` + Number(this.#orderData.rtn.preTaxAmt).toFixed(2) + `</b></div>
+                <div className="col-sm-2"><b>The Pre-Tax Amount Due is</b></div>
+                <div class=""+ Number(this.#orderData.rtn.preTaxAmt).toFixed(2) + `</b></div>
             </div>`;
             this.#taxes = this.#orderData.rtn.taxes;
             if (Object.keys(config.taxRates).length > 0) {
@@ -1253,15 +1254,15 @@ class Portal {
                     let amt = this.#taxes[tax];
                     html += `
     <div class="row mt-1">
-        <div class="col-sm-2 ms-0 me-2 p-0">` + rate.label + `:</div>
-        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0">$` + Number(amt).toFixed(2) + `</div>
+        <div class="col-sm-2">` + rate.label + `:</div>
+        <div class="col-sm-1" style="text-align: right;">$` + Number(amt).toFixed(2) + `</div>
     </div>`;
                 }
             }
             html += `
     <div class="row mt-1">
-        <div class="col-sm-2 ms-0 me-2 p-0">Total Sales Tax:</div>
-        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-tax-amt">$` + Number(this.#orderData.rtn.taxAmt).toFixed(2) + `</div>
+        <div class="col-sm-2">Total Sales Tax:</div>
+        <div class="col-sm-1" style="text-align: right;" id="pay-tax-amt">` + Number(this.#orderData.rtn.taxAmt).toFixed(2) + `</div>
     </div>`;
         }
 

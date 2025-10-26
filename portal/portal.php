@@ -52,7 +52,7 @@ if (isSessionVar('id') && isSessionVar('idType')) {
 }
 
 $currency = getConfValue('con', 'currency', 'USD');
-
+$locale = getLocale();
 $transId = getSessionVar('transId');
 $initCoupon = getSessionVar('curCoupon');
 $initCouponSerial = getSessionVar('curCouponSerial');
@@ -87,6 +87,8 @@ if (array_key_exists('onedaycoupons', $con)) {
 }
 $config_vars['onedaycoupons'] = $onedaycoupons;
 $config_vars['taxRates'] = getTaxRates();
+$config_vars['locale'] = $locale;
+$config_vars['currency'] = $currency;
 
 $cdn = getTabulatorIncludes();
 // default memberships to empty to handle the refresh case which never loads them.
@@ -101,7 +103,7 @@ if ($info === false) {
     portalPageFoot();
     exit();
 }
-$dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
+$dolfmt = new NumberFormatter($locale, NumberFormatter::CURRENCY);
 
 $hasWSFS = false;
 $hasNom =  false;
