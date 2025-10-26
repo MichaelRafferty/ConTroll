@@ -30,7 +30,6 @@ class consetup {
     #message_div = null;
     #setup_type = null;
     #setup_title = null;
-    #memListData = null;
     #catListData = null;
     #typeListData = null;
     #ageListData = null;
@@ -40,6 +39,7 @@ class consetup {
     #memListModal = null;
     #memListMasterRow = null;
     #editData = null;
+    #paginationDiv = null;
 
     constructor(setup_type) {
         this.#message_div = document.getElementById('test');
@@ -58,6 +58,8 @@ class consetup {
         if (id) {
             this.#memListModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
         }
+        this.#paginationDiv = document.getElementById( this.#setup_type + 'PaginationDiv');
+
     };
 
     // set undo / redo status for conlist (convention data)
@@ -304,7 +306,8 @@ class consetup {
         } else {
             memListData = data['memList'];
         }
-        document.getElementById(this.#setup_type + 'PaginationDiv').hidden = data['memlist'].length <= 25;
+        this.#paginationDiv.innerHTML = '';
+        this.#paginationDiv.hidden = data['memlist'].length <= 25;
 
         this.#memtable = new Tabulator('#' + this.#setup_type + '-memlist', {
             history: true,
@@ -315,7 +318,7 @@ class consetup {
             paginationAddRow: "table",
             paginationSize: 25,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
-            paginationElement: document.getElementById( this.#setup_type + 'PaginationDiv'),
+            paginationElement: this.#paginationDiv,
             initialSort:[
                 {column:"sort_order", dir:"asc"}, //sort by this first
             ],
