@@ -118,8 +118,19 @@ class Portal {
     #oldPolicies = null;
     #newPolicies = null;
 
+    // locale/currency
+    #currencyFmt = null;
+    #locale = null;
+
     constructor() {
-        var id;
+        let id;
+
+        this.#locale = config.locale;
+        this.#currencyFmt = new Intl.NumberFormat(this.#locale, {
+            style: 'currency',
+            currency: config.currency,
+        });
+
         id = document.getElementById("editPersonModal");
         if (id) {
             this.#editPersonModalElement = id;
@@ -1245,7 +1256,7 @@ class Portal {
             html += `
             <div className="row mt-4">
                 <div className="col-sm-2"><b>The Pre-Tax Amount Due is</b></div>
-                <div class=""+ Number(this.#orderData.rtn.preTaxAmt).toFixed(2) + `</b></div>
+                <div class="` + this.#currencyFmt.format(Number(this.#orderData.rtn.preTaxAmt).toFixed(2)) + `</b></div>
             </div>`;
             this.#taxes = this.#orderData.rtn.taxes;
             if (Object.keys(config.taxRates).length > 0) {
@@ -1255,14 +1266,15 @@ class Portal {
                     html += `
     <div class="row mt-1">
         <div class="col-sm-2">` + rate.label + `:</div>
-        <div class="col-sm-1" style="text-align: right;">$` + Number(amt).toFixed(2) + `</div>
+        <div class="col-sm-1" style="text-align: right;">` + this.#currencyFmt.format(Number(amt).toFixed(2)) + `</div>
     </div>`;
                 }
             }
             html += `
     <div class="row mt-1">
         <div class="col-sm-2">Total Sales Tax:</div>
-        <div class="col-sm-1" style="text-align: right;" id="pay-tax-amt">` + Number(this.#orderData.rtn.taxAmt).toFixed(2) + `</div>
+        <div class="col-sm-1" style="text-align: right;" id="pay-tax-amt">` +
+                this.#currencyFmt.format(Number(this.#orderData.rtn.taxAmt).toFixed(2)) + `</div>
     </div>`;
         }
 
