@@ -1254,9 +1254,9 @@ class Portal {
         this.#paymentAmount = Number(this.#orderData.rtn.totalAmt);
         if (this.#orderData.rtn.taxAmt > 0) {
             html += `
-            <div className="row mt-4">
-                <div className="col-sm-2"><b>The Pre-Tax Amount Due is</b></div>
-                <div class="` + this.#currencyFmt.format(Number(this.#orderData.rtn.preTaxAmt).toFixed(2)) + `</b></div>
+            <div class="row mt-4">
+                <div class="col-sm-3"><b>The Pre-Tax Amount Due is:</b></div>
+                <div class="col-sm-1" style="text-align: right;"><b>` + this.#currencyFmt.format(Number(this.#orderData.rtn.preTaxAmt).toFixed(2)) + `</b></div>
             </div>`;
             this.#taxes = this.#orderData.rtn.taxes;
             if (Object.keys(config.taxRates).length > 0) {
@@ -1265,14 +1265,14 @@ class Portal {
                     let amt = this.#taxes[tax];
                     html += `
     <div class="row mt-1">
-        <div class="col-sm-2">` + rate.label + `:</div>
+        <div class="col-sm-3">` + rate.label + `:</div>
         <div class="col-sm-1" style="text-align: right;">` + this.#currencyFmt.format(Number(amt).toFixed(2)) + `</div>
     </div>`;
                 }
             }
             html += `
     <div class="row mt-1">
-        <div class="col-sm-2">Total Sales Tax:</div>
+        <div class="col-sm-3">Total Sales Tax:</div>
         <div class="col-sm-1" style="text-align: right;" id="pay-tax-amt">` +
                 this.#currencyFmt.format(Number(this.#orderData.rtn.taxAmt).toFixed(2)) + `</div>
     </div>`;
@@ -1281,7 +1281,8 @@ class Portal {
         if (plan == null) {
             html += `
         <div class="row mt-2 mb-4">
-            <div class="col-sm-auto"><strong>You are paying the total amount, so the payment amount is ` + Number(this.#paymentAmount).toFixed(2) + `</strong></div>
+            <div class="col-sm-auto"><strong>You are paying the total amount, so the payment amount is ` +
+                this.#currencyFmt.format(Number(this.#paymentAmount).toFixed(2)) + `</strong></div>
          </div>
 `;
         } else if (!done) {
