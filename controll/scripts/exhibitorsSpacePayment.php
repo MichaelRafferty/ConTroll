@@ -6,6 +6,7 @@
 //     if payment type != offline credit card - create order and payment information in credit card syste,
 //     if payment succeeds, create/update all the elements in the database.
 require_once '../lib/base.php';
+require_once '../../lib/tax.php';
 require_once '../../lib/log.php';
 require_once('../../lib/cc__load_methods.php');
 
@@ -479,17 +480,25 @@ if ($prow != null && $prow['type'] != 'credit') {
     $orderRtn['totalPaid'] = 0;
     $response['orderRtn'] = $orderRtn;
     $orderId = $orderRtn['orderId'];
+    $order = $orderRtn['order'];
 
+    // update the transaction with the taxes and order id
+    $taxes = $orderRtn['taxes'];
+    [$taxSql, $taxStr, $taxValues] = buildTaxUpdate($taxes);
     $upT = <<<EOS
 UPDATE transaction
-SET price = ?, tax = ?, withTax = ?, couponDiscountCart = ?, orderId = ?, paymentStatus = 'ORDER', orderDate = now()
+SET price = ?, tax = ?, withTax = ?, couponDiscountCart = ?, orderId = ?, paymentStatus = 'ORDER', orderDate = now(), $taxSql
 WHERE id = ?;
 EOS;
-
     $preTaxAmt = $orderRtn['preTaxAmt'];
     $taxAmt = $orderRtn['taxAmt'];
     $withTax = $orderRtn['totalAmt'];
-    $rows_upd = dbSafeCmd($upT, 'ddddsi', array($preTaxAmt, $taxAmt, $withTax, 0, $orderRtn['orderId'], $transid));
+    $valArray = array($preTaxAmt, $taxAmt, $withTax, 0, $orderRtn['orderId']);
+    $typeStr = 'dddds' . $taxStr . 'i';
+    $valArray = array_merge($valArray, $taxValues);
+    $valArray[] = $transid;
+
+    $numUpd = dbSafeCmd($upT, $typeStr, $valArray);
 }
 
 if ($totprice > 0) {
@@ -550,6 +559,7 @@ if ($totprice > 0) {
             'price' => null,
             'badges' => null,
             'taxAmt' => $taxAmt,
+            'taxes' => $orderRtn['taxes'],
             'preTaxAmt' => $preTaxAmt,
             'total' => $totprice,
             'orderId' => $orderId,
@@ -598,17 +608,44 @@ if ($totprice > 0) {
 
 // extract the values needed for the payment
 if ($prow != null) {
-    $txnQ = <<<EOS
-INSERT INTO payments (transid, type, category, description, source, pretax, tax, amount, time, nonce, cc_approval_code, txn_time, userPerid, ccPaymentId)
-VALUES (?,?,?,?,?,?,?,?,NOW(),?,?,NOW(),?,?);
-EOS;
-    $typestr = 'issssdddssis';
     if ($paymentType == 'check') {
         $desc = 'Check No: ' . $_POST['pay-checkno'] . ', ' . $payDesc;
     } else {
         $desc = $payDesc;
     }
-    $values = array ($transid, $paymentType, 'vendor', $desc, $source, $totprice, 0, $totprice, 'admin', $ccAuth, $_SESSION['user_perid'], $paymentId);
+
+    // now the main payment
+    if ($taxAmt > 0) {
+        $taxes = $order['taxes'];
+        [$taxFields, $taxSql, $taxStr, $taxValues] = buildTaxInsert($taxes);
+        if ($taxFields != '')
+            $taxFields = ", $taxFields";
+        if ($taxSql != '')
+            $taxSql = ", $taxSql";
+    } else {
+        $taxFields = '';
+        $taxSql = '';
+        $taxStr = '';
+        $taxValues = [];
+    }
+    $txnQ = <<<EOS
+INSERT INTO payments(transid, type,category, description, source, pretax, tax, amount, time, cc_approval_code, cashier, 
+    cc, nonce, cc_txn_id, txn_time, receipt_url, receipt_id, userPerid, status, ccPaymentId $taxFields)
+VALUES (?,?,?,?,'cashier',?,?,?,now(),?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? $taxSql);
+EOS;
+    $typestr = 'isssdddsissssssiss' . $taxStr;
+    $paramarray = array ($transId, $paymentType, $category, $description, $preTaxAmt, $taxAmt, $approved_amt, $auth, null,
+        $last4, $nonceCode, $paymentId, $txTime, $receiptUrl, $receiptNumber, $buyer, $status, $paymentId);
+    $txnid = dbSafeInsert($txnQ, $typestr, array_merge($paramarray, $taxValues));
+    $approved_amt = $rtn['amount'];
+
+    $txnQ = <<<EOS
+INSERT INTO payments (transid, type, category, description, source, pretax, tax, amount, time, nonce, cc_approval_code, txn_time, userPerid, ccPaymentId)
+VALUES (?,?,?,?,?,?,?,?,NOW(),?,?,NOW(),?,?);
+EOS;
+    $typestr = 'issssdddssis';
+
+    $values = array ($transid, $paymentType, $category, $desc, $source, $totprice, 0, $totprice, 'admin', $ccAuth, $_SESSION['user_perid'], $paymentId);
 
     $txnid = dbSafeInsert($txnQ, $typestr, $values);
     if ($txnid == false) {
@@ -616,14 +653,16 @@ EOS;
     } else {
         $status_msg .= "Payment for " . $dolfmt->formatCurrency($totprice, 'USD') . " processed<br/>\n";
     }
+} else {
+    $approved_amt = $totprice;
+    $taxes = array ();
 }
-$approved_amt = $totprice;
 $results['approved_amt'] = $approved_amt;
 
 // update the other records with the payment information
 // Transaction
 $txnUpdate = 'UPDATE transaction SET ';
-if ($approved_amt == $totprice) {
+if (round($approved_amt,2) == round($totprice,2)) {
     $txnUpdate .= 'complete_date=current_timestamp(), ';
 }
 

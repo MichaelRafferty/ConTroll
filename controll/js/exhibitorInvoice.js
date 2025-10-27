@@ -492,6 +492,9 @@ class ExhibitorInvoice {
         formData.nonce= 'admin';
         formData.amtDue= this.#totalAmountDue;
         formData.prow = prow;
+        formData.exhibitorId = this.#exhibitorId;
+        formData.exhibitorYearId = this.#exhibitorYearId;
+
         if (this.#currentOrderId) {
             formData.cancelOrderId = this.#currentOrderId;
             this.#currentOrderId = null;

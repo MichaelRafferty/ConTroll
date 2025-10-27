@@ -497,6 +497,7 @@ if ($totprice > 0) {
         'transid' => $transId,
         'preTaxAmt' => $rtn['preTaxAmt'],
         'taxAmt' => $rtn['taxAmt'],
+        'taxes' => $rtn['taxes'],
         'vendorId' => $exhId,
         'salesTaxId' => $salesTaxId,
         'specialrequests' => $specialRequests,
