@@ -31,9 +31,19 @@ class Coupon {
 // coupon data
     #curCoupon = null;
 
+// currency
+    #locale = 'en-us';
+    #currencyFmt = null;
+
 // initialization
     constructor() {
         "use strict";
+
+        this.#locale = config.locale;
+        this.#currencyFmt = new Intl.NumberFormat(this.#locale, {
+            style: 'currency',
+            currency: config.currency,
+        });
 // lookup all DOM elements
 // ask to load mapping table
         this.#couponCode = document.getElementById("couponCode");
@@ -409,7 +419,9 @@ class Coupon {
         if (this.#curCoupon.couponType == '$mem' || this.#curCoupon.couponType == '%mem') {
             html += "<li>This coupon only applies to memberships, not add-ons</li>";
             if (this.#curCoupon.couponType == '$mem') {
-                html += "<li>This coupon provides a $" + Number(this.#curCoupon.discount).toFixed(2) + " discount on primary memberships.</li>";
+                html += "<li>This coupon provides a " +
+                    this.#currencyFmt(Number(this.#curCoupon.discount).toFixed(2)) +
+                    " discount on primary memberships.</li>";
             } else {
                 html += "<li>This coupon provides a " + String(this.#curCoupon.discount) + "% discount on primary memberships.</li>";
             }
@@ -417,15 +429,18 @@ class Coupon {
         if (this.#curCoupon.couponType == '$off' || this.#curCoupon.couponType == '%off') {
             html += "<li>This coupon only applies to the cost of memberships in the cart, not add-ons</li>";
             if (this.#curCoupon.couponType == '$off') {
-                html += "<li>This coupon provides a $" + Number(this.#curCoupon.discount).toFixed(2) + " discount off the total of primary memberships in the cart.</li>";
+                html += "<li>This coupon provides a " +
+                    this.#currencyFmt(Number(this.#curCoupon.discount).toFixed(2)) +
+                        " discount off the total of primary memberships in the cart.</li>";
             } else {
                 html += "<li>This coupon provides a " + String(this.#curCoupon.discount) + "% discount off the total of primary memberships in the cart.</li>";
             }
         }
         if (this.#curCoupon.couponType == 'price') {
             label = this.#curCoupon.shortname;
-            html += "<li>This coupon applies a special price of " + Number(this.#curCoupon.discount).toFixed(2) + " to " +
-                label + " memberships in the cart.</li>";
+            html += "<li>This coupon applies a special price of " +
+                this.#currencyFmt(Number(this.#curCoupon.discount).toFixed(2)) +
+                " to " + label + " memberships in the cart.</li>";
         }
         if (this.getMinMemberships() > 1) {
             html += '<li>You must buy at least ' + this.getMinMemberships() + " " + label + " memberships</li>\n";
