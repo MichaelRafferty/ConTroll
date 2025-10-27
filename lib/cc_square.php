@@ -227,7 +227,6 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     $taxRate = 0;
     // taxList is an array by tax field id of taxfield, rate and label, it includes the default value from the config file if the db table is empty
     $hasTax = hasTaxRates();
-    $taxArray =
     $needTaxes = false;
 
     // item rules:
