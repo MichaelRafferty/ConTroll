@@ -41,6 +41,13 @@ $con = get_conf('con');
 $conid = $con['id'];
 $ini = get_conf('reg');
 $cc = get_conf('cc');
+if (array_key_exists('location_controllreg', $cc)) {
+    $ccLocation = $cc['location_controllreg'];
+} else if (array_key_exists('location', $cc)) {
+    $ccLocation = $cc['location'];
+} else {
+    $ccLocation = 'Unknown';
+}
 load_cc_procs();
 logInit($log['reg']);
 
@@ -278,7 +285,7 @@ if ($amt > 0 || $discountAmt > 0) {
             'desc' => $desc,
             'source' => $source,
             'change' => $change,
-            'locationId' => $cc['location'],
+            'locationId' => $ccLocation,
         );
 
         //log requested badges

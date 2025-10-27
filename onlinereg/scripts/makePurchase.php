@@ -75,6 +75,14 @@ load_email_procs();
 $condata = get_con();
 $log = get_conf('log');
 $cc = get_conf('cc');
+$cc = get_conf('cc');
+if (array_key_exists('location_portal', $cc)) {
+    $ccLocation = $cc['location_portal'];
+} else if (array_key_exists('location', $cc)) {
+    $ccLocation = $cc['location'];
+} else {
+    $ccLocation = 'Unknown';
+}
 $conid = $condata['id'];
 logInit($log['reg']);
 $source = 'onlinereg';
@@ -351,7 +359,7 @@ logWrite(array('con'=>$condata['name'], 'trans'=>$transId, 'results'=>$results, 
 
 // end compute, create the order if there is something to pay
 if ($total > 0) {
-    $rtn = cc_buildOrder($results, true);
+    $rtn = cc_buildOrder($results, true, $ccLocation);
     if ($rtn == null) {
         // note there is no reason cc_buildOrder will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
         logWrite(array ('con' => $condata['name'], 'trans' => $transId, 'error' => 'Order unable to be created'));
@@ -375,7 +383,7 @@ if ($total > 0) {
         'totalAmt' => $withTax,
         'orderId' => $rtn['orderId'],
         'custid' => $custId,
-        'locationId' => $cc['location'],
+        'locationId' => $ccLocation,
         'referenceId' => $referenceId,
         'transid' => $transId,
         'preTaxAmt' => $preTaxAmt,

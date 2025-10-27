@@ -50,6 +50,14 @@ if (array_key_exists('portalType', $_POST))
 else
     $portalType = 'exhibits';
 
+if (array_key_exists('location_' . $portalType, $cc)) {
+    $ccLocation = $cc['location_' . $portalType];
+} else if (array_key_exists('location', $cc)) {
+    $ccLocation = $cc['location'];
+} else {
+    $ccLocation = 'Unknown';
+}
+
 $regionYearId = $_POST['regionYearId'];
 if (array_key_exists('salesTaxId', $_POST)) {
     $specialRequests = trim($_POST['requests']);
@@ -472,7 +480,7 @@ logWrite(array('Title' => 'Pre cc_makeOrder', 'con' => $conid, $portalName => $e
 
 // end compute, create the order if there is something to pay
 if ($totprice > 0) {
-    $rtn = cc_buildOrder($results, true);
+    $rtn = cc_buildOrder($results, true, $ccLocation);
     if ($rtn == null) {
         // note there is no reason cc_buildOrder will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
         logWrite(array ('con' => $condata['name'], 'trans' => $transId, 'error' => 'Order unable to be created'));
@@ -492,7 +500,7 @@ if ($totprice > 0) {
         'totalAmt' => $rtn['totalAmt'],
         'orderId' => $rtn['orderId'],
         'customerId' => $custId,
-        'locationId' => $cc['location'],
+        'locationId' => $ccLocation,
         'referenceId' => $referenceId,
         'transid' => $transId,
         'preTaxAmt' => $rtn['preTaxAmt'],

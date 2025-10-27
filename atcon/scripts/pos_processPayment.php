@@ -45,6 +45,18 @@ $con = get_conf('con');
 load_cc_procs();
 logInit(getConfValue('log', 'term'));
 
+$cc = get_conf('cc');
+$locationId = getSessionVar('terminal');
+if ($locationId) {
+    $locationId = $locationId['locationId'];
+} else if (array_key_exists('location_regpos', $cc)) {
+    $locationId = $cc['location_regpos'];
+} else if (array_key_exists('location', $cc)) {
+    $locationId = $cc['location'];
+} else {
+    $locationId = 'Unknown';
+}
+
 $conid = $con['id'];
 $upd_rows = 0;
 $cupd_rows = 0;
@@ -157,7 +169,7 @@ if ($new_payment['type'] == 'terminal') {
             term_cancelPayment($name, $termStatus['currentPayment'], true);
         }
         if ($termStatus['currentOrder'] != null && $termStatus['currentOrder'] != '$orderId') {
-            cc_cancelOrder('atcon', $orderId, true);
+            cc_cancelOrder('atcon', $orderId, true, $locationId);
         }
     } else {
         $status = $termStatus['status'];
@@ -324,12 +336,6 @@ if ($amt > 0 || $discountAmt > 0) {
             else
                 $desc = mb_substr($desc . '/' . $new_payment['desc'], 0, 64);
 
-            $locationId = getSessionVar('terminal');
-            if ($locationId) {
-                $locationId = $locationId['locationId'];
-            } else {
-                $locationId = getConfValue('cc', 'location');
-            }
             if ($taxAmt > 0) {
                 $oRtn = cc_fetchOrder('controll/pos_processPayment', $orderId, $useLogWrite = false);
                 $taxes = $oRtn['taxes'];

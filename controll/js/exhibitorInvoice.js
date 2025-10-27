@@ -492,6 +492,7 @@ class ExhibitorInvoice {
         formData.nonce= 'admin';
         formData.amtDue= this.#totalAmountDue;
         formData.prow = prow;
+        formData.portalType = portalType;
         formData.exhibitorId = this.#exhibitorId;
         formData.exhibitorYearId = this.#exhibitorYearId;
 

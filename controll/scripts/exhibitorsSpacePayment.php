@@ -1,5 +1,5 @@
 <?php
-// library AJAX Processor: exhibitorSpacePayments.php
+// library AJAX Processor: exhibitorsSpacePayment.php
 // ConTroll Registration System
 // Author: Syd Weinstein
 // process the payment of space and memberships from the exhibitor tab of controll
@@ -70,6 +70,16 @@ if (array_key_exists('portalType', $_POST))
     $portalType = $_POST['portalType'];
 else
     $portalType = 'exhibits';
+
+if (array_key_exists('location_controllexhibits', $cc)) {
+    $ccLocation = $cc['location_controllexhibits'];
+} else if (array_key_exists('location_' . $portalType, $cc)) {
+    $ccLocation = $cc['location_' . $portalType];
+} else if (array_key_exists('location', $cc)) {
+    $ccLocation = $cc['location'];
+} else {
+    $ccLocation = 'Unknown';
+}
 
 $regionYearId = $_POST['regionYearId'];
 $portalName = $_POST['portalName'];
@@ -468,9 +478,9 @@ if ($prow != null && $prow['type'] != 'credit') {
     load_cc_procs();
     // for cash/check/etc build the order so it can be recorded
     if ($cancelOrderId) // cancel the old order if it exists
-        cc_cancelOrder($results['source'], $cancelOrderId, true);
+        cc_cancelOrder($results['source'], $cancelOrderId, true, $ccLocation);
 
-    $orderRtn = cc_buildOrder($results, true);
+    $orderRtn = cc_buildOrder($results, true, $ccLocation);
     if ($orderRtn == null) {
         // note there is no reason cc_buildOrder will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
         logWrite(array ('con' => $con['label'], 'trans' => $transid, 'error' => 'Order unable to be created'));
@@ -569,7 +579,7 @@ if ($totprice > 0) {
             'desc' => $desc,
             'source' => $source,
             'change' => $change,
-            'locationId' => $cc['location'],
+            'locationId' => $ccLocation,
         );
 
         //log requested badges

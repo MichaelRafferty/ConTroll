@@ -166,8 +166,12 @@ logWrite(array('con'=>$con['label'], 'trans'=>$transId, 'results'=>$results, 're
 $locationId = getSessionVar('terminal');
 if ($locationId) {
     $locationId = $locationId['locationId'];
-} else {
+} else if (array_key_exists('location_regpos', $cc)) {
+    $locationId = $cc['location_regpos'];
+} else if (array_key_exists('location', $cc)) {
     $locationId = $cc['location'];
+} else {
+    $locationId = 'Unknown';
 }
 
 if ($cancelOrderId) // cancel the old order if it exists

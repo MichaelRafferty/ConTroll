@@ -55,6 +55,15 @@ if ($transId <= 0) {
     ajaxError('No current transaction in process');
 }
 
+$cc = get_conf('cc');
+if (array_key_exists('location_controllreg', $cc)) {
+    $ccLocation = $cc['location_controllreg'];
+} else if (array_key_exists('location', $cc)) {
+    $ccLocation = $cc['location'];
+} else {
+    $ccLocation = 'Unknown';
+}
+
 $discount = 0;
 if (array_key_exists('couponCode', $_POST) && $_POST['couponCode'] != '') {
     $result = load_coupon_data($_POST['couponCode']);
@@ -171,9 +180,9 @@ $response['amount'] = $amount;
 logWrite(array('con'=>$con['label'], 'trans'=>$transId, 'results'=>$results, 'request'=>$badges));
 
 if ($cancelOrderId) // cancel the old order if it exists
-    cc_cancelOrder($results['source'], $cancelOrderId, true);
+    cc_cancelOrder($results['source'], $cancelOrderId, true, $ccLocation);
 
-$rtn = cc_buildOrder($results, true);
+$rtn = cc_buildOrder($results, true, $ccLocation);
 if ($rtn == null) {
     // note there is no reason cc_buildOrder will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
     logWrite(array ('con' => $con['label'], 'trans' => $transId, 'error' => 'Order unable to be created'));

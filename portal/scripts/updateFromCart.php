@@ -19,6 +19,15 @@ $conf = get_conf('con');
 $log = get_conf('log');
 $portal_conf = get_conf('portal');
 
+$cc = get_conf('cc');
+if (array_key_exists('location_portal', $cc)) {
+    $ccLocation = $cc['location_portal'];
+} else if (array_key_exists('location', $cc)) {
+    $ccLocation = $cc['location'];
+} else {
+    $ccLocation = 'Unknown';
+}
+
 $response['conid'] = $conid;
 $response['logmessage'] = '';
 $response['message'] = '';
@@ -432,7 +441,7 @@ EOS;
     if ($updateTransPrice) {
         // we changed a reg for this transaction, cancel any pending order and recompute the price portion of the record
         if ($orderId != null) {
-            cc_cancelOrder('portal', $orderId);
+            cc_cancelOrder('portal', $orderId, true, $ccLocation);
             $orderId = null;
             $orderDate = null;
         }

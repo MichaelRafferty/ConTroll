@@ -298,7 +298,7 @@ $rows_upd += dbSafeCmd($upT, 'ddddi', array($totalAmountDue, $totalAmountDue, $t
 // end compute, create the order if there is something to pay
 if ($amount > 0) {
     if ($cancelOrderId) // cancel the old order if it exists
-        cc_cancelOrder($results['source'], $cancelOrderId, true);
+        cc_cancelOrder($results['source'], $cancelOrderId, true, $ccLocation);
 
     $rtn = cc_buildOrder($results, true, $ccLocation);
     if ($rtn == null) {

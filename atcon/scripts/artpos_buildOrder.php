@@ -133,15 +133,19 @@ $response['amount'] = $amount;
 
 logWrite(array('con'=>$con['label'], 'payorId'=>$payorId, 'results'=>$results, 'request'=>$art));
 
-if ($cancelOrderId) // cancel the old order if it exists
-    cc_cancelOrder($results['source'], $cancelOrderId, true);
-
 $locationId = getSessionVar('terminal');
 if ($locationId) {
     $locationId = $locationId['locationId'];
-} else {
+} else if (array_key_exists('location_artpos', $cc)) {
+    $locationId = $cc['location_artpos'];
+} else if (array_key_exists('location', $cc)) {
     $locationId = $cc['location'];
+} else {
+    $locationId = 'Unknown';
 }
+
+if ($cancelOrderId) // cancel the old order if it exists
+    cc_cancelOrder($results['source'], $cancelOrderId, true, $locationId);
 
 $rtn = cc_buildOrder($results, true, $locationId);
 if ($rtn == null) {

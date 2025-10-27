@@ -48,6 +48,17 @@ $cc = get_conf('cc');
 load_cc_procs();
 logInit($log['term']);
 
+$locationId = getSessionVar('terminal');
+if ($locationId) {
+    $locationId = $locationId['locationId'];
+} else if (array_key_exists('location_artpos', $cc)) {
+    $locationId = $cc['location_artpos'];
+} else if (array_key_exists('location', $cc)) {
+    $locationId = $cc['location'];
+} else {
+    $locationId = 'Unknown';
+}
+
 $conid = $con['id'];
 $upd_rows = 0;
 $cupd_rows = 0;
@@ -155,7 +166,7 @@ if ($new_payment['type'] == 'terminal') {
             term_cancelPayment($name, $termStatus['currentPayment'], true);
         }
         if ($termStatus['currentOrder'] != null && $termStatus['currentOrder'] != '$orderId') {
-            cc_cancelOrder('artsales', $orderId, true);
+            cc_cancelOrder('artsales', $orderId, true, $locationId);
         }
     } else {
         $status = $termStatus['status'];
@@ -262,12 +273,6 @@ if ($amt > 0) {
         else
             $desc = mb_substr($desc . '/' . $new_payment['desc'], 0, 64);
 
-        $locationId = getSessionVar('terminal');
-        if ($locationId) {
-            $locationId = $locationId['locationId'];
-        } else {
-            $locationId = $cc['location'];
-        }
         $ccParam = array (
             'transid' => $master_tid,
             'counts' => 0,
