@@ -10,6 +10,7 @@ require_once('../lib/exhibitorRequestForms.php');
 require_once('../lib/exhibitorReceiptForms.php');
 require_once("../lib/cc__load_methods.php");
 require_once('../lib/webauthn.php');
+require_once('../lib/tax.php');
 global $config_vars;
 
 $cc = get_conf('cc');
@@ -60,7 +61,8 @@ switch ($required) {
     case 'first':
         $firstStar = '<span class="text-danger">&bigstar;</span>';
 }
-
+$currency = getConfValue('con', 'currency', 'USD');
+$locale = getLocale();
 $config_vars = array();
 $config_vars['label'] = $con['label'];
 $config_vars['vemail'] = $vendor_conf[$portalType];
@@ -82,6 +84,10 @@ $config_vars['termsArtistOnsite'] = returnCustomText('invoice/termsArtistOnsite'
 $config_vars['termsExhibitor'] = returnCustomText('invoice/termsExhibitor');
 $config_vars['termsFan'] = returnCustomText('invoice/termsFan');
 $config_vars['termsVendor'] = returnCustomText('invoice/termsVendor');
+$config_vars['locale'] = $locale;
+$config_vars['currency'] = $currency;
+$config_vars['taxRates'] = getTaxRates();
+
 
 // load country select
 $countryOptions = '';

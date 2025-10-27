@@ -49,7 +49,8 @@ if (array_key_exists('onedaycoupons', $con)) {
 } else {
     $onedaycoupons = 0;
 }
-
+$currency = getConfValue('con', 'currency', 'USD');
+$locale = getLocale();
 $policies = getPolicies();
 $policyIndex = array();
 if ($policies != null) {
@@ -76,6 +77,8 @@ $config_vars['cashier'] = 1;
 $config_vars['multiOneDay'] = $multiOneDay;
 $config_vars['onedaycoupons'] = $onedaycoupons;
 $config_vars['source'] = 'registration';
+$config_vars['locale'] = $locale;
+$config_vars['currency'] = $currency;
 $config_vars['taxRates'] = getTaxRates();
 
 // form as laid out has no room for usps block, if we want it we need to reconsider how to do it here.
