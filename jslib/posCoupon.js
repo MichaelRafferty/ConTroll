@@ -19,9 +19,20 @@ class Coupon {
     #cartDiscount = 0;
     #memDiscount = 0;
 
+// currency
+    #locale = 'en-us';
+    #currencyFmt = null;
+
 // initialization
     constructor() {
         "use strict";
+
+        this.#locale = config.locale;
+        this.#currencyFmt = new Intl.NumberFormat(this.#locale, {
+            style: 'currency',
+            currency: config.currency,
+        });
+
         this.#couponActive = false;
     };
 
@@ -240,8 +251,9 @@ class Coupon {
         }
         if (this.#curCoupon.couponType == 'price') {
             label = this.#curCoupon.shortname;
-            html += "<li>This coupon applies a special price of " + Number(this.#curCoupon.discount).toFixed(2) + " to " +
-                label + " memberships in the cart.</li>";
+            html += "<li>This coupon applies a special price of " +
+                this.#currencyFmt(Number(this.#curCoupon.discount).toFixed(2)) +
+                " to " + label + " memberships in the cart.</li>";
         }
         if (this.getMinMemberships() > 1) {
             html += '<li>You must buy at least ' + this.getMinMemberships() + " " + label + " memberships</li>\n";

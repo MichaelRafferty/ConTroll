@@ -160,8 +160,18 @@ class Pos {
     // for matching/every functions
     #checkPerid = null;
 
+    // currency
+    #locale = 'en-us';
+    #currencyFmt = null;
+
 // initialization
     constructor(use) {
+        this.#locale = config.locale;
+        this.#currencyFmt = new Intl.NumberFormat(this.#locale, {
+            style: 'currency',
+            currency: config.currency,
+        });
+
         this.#use = use;
 
         if (config.hasOwnProperty('multiOneDay'))
@@ -2331,9 +2341,10 @@ class Pos {
                     if (nomodal == '') {
                         this.#cashChangeModal.show();
                         document.getElementById("CashChangeBody").innerHTML = "<div class='row mt-2'>\n<div class='col-sm-12'>" +
-                            "Customer owes $" + total_amount_due.toFixed(2) + ", and tendered $" + tendered_amt.toFixed(2) +
+                            "Customer owes " + this.#currencyFmt(total_amount_due.toFixed(2)) +
+                            ", and tendered " + this.#currencyFmt(tendered_amt.toFixed(2)) +
                             "</div>\n</div>\n<div class='row mt-2 mb-2'>\n<div class='col-sm-12'>" +
-                            "Confirm change give to customer of $" + (tendered_amt - total_amount_due).toFixed(2) +
+                            "Confirm change give to customer of " + this.#currencyFmt((tendered_amt - total_amount_due).toFixed(2)) +
                             "</div>\n</div>\n";
                         return;
                     }
@@ -2948,14 +2959,16 @@ class Pos {
             pay_html += `
     <div class="row mt-1">
         <div class="col-sm-2 ms-0 me-2 p-0">Order Total:</div>
-        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-pre-tax-amt">$` + Number(this.#preTaxAmt).toFixed(2) + `</div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-pre-tax-amt">` +
+                this.#currencyFmt(Number(this.#preTaxAmt).toFixed(2)) + `</div>
     </div>
 `;
             if (this.#managerDiscount > 0) {
                 pay_html += `
     <div class="row mt-2">
         <div class="col-sm-2 ms-0 me-2 p-0">Discount:</div>
-        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-prior-disc">$` + Number(this.#managerDiscount).toFixed(2) + `</div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-prior-disc">$` +
+                    this.#currencyFmt(Number(this.#managerDiscount).toFixed(2)) + `</div>
     </div>
 `;
             }
@@ -2964,11 +2977,13 @@ class Pos {
                 pay_html += `
     <div class="row mt-1">
         <div class="col-sm-2 ms-0 me-2 p-0">Coupon:</div>
-        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-coupon-disc">$` + (-Number(this.#couponDiscount)).toFixed(2) + `</div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-coupon-disc">` +
+                    this.#currencyFmt((-Number(this.#couponDiscount)).toFixed(2)) + `</div>
     </div>
        <div class="row mt-1">
         <div class="col-sm-2 ms-0 me-2 p-0">Pre-Tax:</div>
-        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-post-coupon">$` + Number(pretax).toFixed(2) + `</div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-post-coupon">` +
+                    this.#currencyFmt(Number(pretax).toFixed(2)) + `</div>
     </div>
 `;
             }
@@ -2979,19 +2994,22 @@ class Pos {
                     pay_html += `
     <div class="row mt-1">
         <div class="col-sm-2 ms-0 me-2 p-0">` + rate.label + `:</div>
-        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0">$` + Number(amt).toFixed(2) + `</div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0">` +
+                        this.#currencyFmt(Number(amt).toFixed(2)) + `</div>
     </div>`;
                 }
                 pay_html += `
     <div class="row mt-1">
         <div class="col-sm-2 ms-0 me-2 p-0">Total Sales Tax:</div>
-        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-tax-amt">$` + Number(this.#taxAmt).toFixed(2) + `</div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-tax-amt">` +
+                    this.#currencyFmt(Number(this.#taxAmt).toFixed(2)) + `</div>
     </div>`;
             }
             pay_html += `
     <div class="row mt-1">
         <div class="col-sm-2 ms-0 me-2 p-0">Amount Due:</div>
-        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-amt-due">$` + Number(total_amount_due).toFixed(2) + `</div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-amt-due">` +
+                this.#currencyFmt(Number(total_amount_due).toFixed(2)) + `</div>
     </div>
     <div class="row">
         <div class="col-sm-2 m-0 mt-2 me-2 mb-2 p-0">Payment Type:</div>

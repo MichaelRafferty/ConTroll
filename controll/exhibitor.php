@@ -4,6 +4,7 @@ require_once "../lib/exhibitorRegistrationForms.php";
 require_once "../lib/exhibitorRequestForms.php";
 require_once "../lib/exhibitorReceiptForms.php";
 require_once "../lib/exhibitorInvoice.php";
+require_once "../lib/tax.php";
 require_once "lib/exhibitsConfiguration.php";
 require_once "lib/exhibitorChooseExhibitor.php";
 
@@ -87,6 +88,8 @@ $useUSPS = false;
 if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
     $useUSPS = true;
 
+$currency = getConfValue('con', 'currency', 'USD');
+$locale = getLocale();
 $config_vars = array();
 $portalType = 'admin';
 $portalName = 'Exhibitor';
@@ -107,6 +110,9 @@ $config_vars['useUSPS'] = $useUSPS;
 $config_vars['initialTab'] = $initialTab;
 $config_vars['scriptName'] = $scriptName;
 $config_vars['regserver'] = getConfValue('reg', 'server');
+$config_vars['locale'] = $locale;
+$config_vars['currency'] = $currency;
+$config_vars['taxRates'] = getTaxRates();
 
 bs_tinymceModal();
 draw_registrationModal('admin', 'Admin', $conf, $countryOptions);
