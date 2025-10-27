@@ -227,7 +227,7 @@ class interestsSetup {
         this.#interestsTable.addRow({interest: 'new-row', notifyList: '', description: '', csv: 'N',
             active: 'Y', sortOrder: 99, uses: 0}, false).then(function (row) {
             _this.#interestsTable.setPage("last"); // adding new to last page always
-            row.getTable().setPage('last').then(function () {
+            row.getTable().setPageToRow(row).then(function () {
                 row.getCell("interest").getElement().style.backgroundColor = "#fff3cd";
                 row.getCell("notifyList").getElement().style.backgroundColor = "#fff3cd";
                 row.getCell("description").getElement().style.backgroundColor = "#fff3cd";

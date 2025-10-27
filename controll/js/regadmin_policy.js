@@ -256,7 +256,7 @@ class policySetup {
         this.#policyTable.clearFilter(true);
         this.#policyTable.addRow({policy: 'new-row', prompt: '', description: '', required: 'N', active: 'Y',
             defaultValue: 'Y', sortOrder: 99, uses: 0}, false).then(function (row) {
-            row.getTable().setPage('last').then(function() {
+            row.getTable().setPageToRow(row).then(function() {
                 row.getCell("policy").getElement().style.backgroundColor = "#fff3cd";
                 row.getCell("prompt").getElement().style.backgroundColor = "#fff3cd";
                 row.getCell("description").getElement().style.backgroundColor = "#fff3cd";

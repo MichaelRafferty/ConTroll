@@ -569,10 +569,10 @@ class consetup {
             price: 0,
             atcon: 'N',
             online: 'N',
-            sortorder: 199,
+            sortorder: 0,
             uses: 0
         }, false).then(function (row) {
-            row.getTable().setPage('last').then(function () {
+            row.getTable().setPageToRow(row).then(function () {
                 row.getCell("id").getElement().style.backgroundColor = "#fff3cd";
                 row.getCell("conid").getElement().style.backgroundColor = "#fff3cd";
                 row.getCell("shortname").getElement().style.backgroundColor = "#fff3cd";

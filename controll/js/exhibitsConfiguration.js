@@ -1048,7 +1048,7 @@ class exhibitssetup {
         this.#regionTypeTable.addRow({regionType: 'new-row', portalType: 'vendor', requestApprovalRequired: 'None', purchaseApprovalRequired: 'Y',
             purchaseAreaTotals: 'unique', inPersonMaxUnits: 0, mailinAllowed: 'N', mailinMaxUnits: 0, needW9: 'N', usesInventory: 'N',
             active: 'Y', sortorder: 99, uses: 0}, false).then(function (row) {
-            row.getTable().setPage('last').then(function () {
+            row.getTable().setPageToRow(row).then(function () {
                 row.getCell("regionType").getElement().style.backgroundColor = "#fff3cd";
                 row.getCell("portalType").getElement().style.backgroundColor = "#fff3cd";
                 row.getCell("requestApprovalRequired").getElement().style.backgroundColor = "#fff3cd";
@@ -1211,7 +1211,7 @@ class exhibitssetup {
         var _this = this;
         this.#regionsTable.clearFilter(true);
         this.#regionsTable.addRow({ sortorder: 99, uses: 0}, false).then(function (row) {
-            row.getTable().setPage('last').then(function() {
+            row.getTable().setPageToRow(row).then(function() {
                 row.getCell("shortname").getElement().style.backgroundColor = "#fff3cd";
                 _this.checkRegionsUndoRedo();
             });
@@ -1360,7 +1360,7 @@ class exhibitssetup {
         this.#regionYearsTable.clearFilter(true);
         this.#regionYearsTable.addRow({id: this.#insertID, conid: this.#conid, ownerName: 'new-row', sortorder: 99, uses: 0}, false).then(function (row) {
             _this.#regionYearsTable.setPage("last"); // adding new to last page always
-            row.getTable().setPage('last').then(function () {
+            row.getTable().setPageToRow(row).then(function () {
                 row.getCell("ownerName").getElement().style.backgroundColor = "#fff3cd";
                 _this.checkYearsUndoRedo();
             });
@@ -1519,7 +1519,7 @@ class exhibitssetup {
         this.#spacesTable.clearFilter(true);
         this.#spacesTable.addRow({shortname: 'new-row', sortorder: 99, uses: 0}, false).then(function (row) {
             _this.#spacesTable.setPage("last"); // adding new to last page always
-            row.getTable().setPage('last').then(function () {
+            row.getTable().setPageToRow(row).then(function () {
                 row.getCell("shortname").getElement().style.backgroundColor = "#fff3cd";
                 _this.checkSpacesUndoRedo();
             });
@@ -1669,7 +1669,7 @@ class exhibitssetup {
         this.#spacePricesTable.clearFilter(true);
         this.#spacePricesTable.addRow({code: 'new-row', sortorder: 99, requestable: 0, uses: 0, }, false).then(function (row) {
             _this.#spacePricesTable.setPage("last"); // adding new to last page always
-            row.getTable().setPage('last').then(function () {
+            row.getTable().setPageToRow(row).then(function () {
                 row.getCell("code").getElement().style.backgroundColor = "#fff3cd";
                 row.getCell("requestable").getElement().style.backgroundColor = "#fff3cd";
                 _this.checkSpacePricesUndoRedo();

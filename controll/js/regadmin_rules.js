@@ -862,7 +862,7 @@ class rulesSetup {
         this.#ruleStepsTable.addRow({
             name: this.#rName.value, uses: 0, origStep: this.#ruleStepAddStepNum, step: this.#ruleStepMaxStep, origName: this.#editRuleName
             }, false).then(function (row) {
-            row.getTable().setPage('last').then(function () {
+            row.getTable().setPageToRow(row).then(function () {
                 row.getCell("name").getElement().style.backgroundColor = "#fff3cd";
                 row.getCell("step").getElement().style.backgroundColor = "#fff3cd";
                 _this.checkStepsUndoRedo();
@@ -1266,7 +1266,7 @@ class rulesSetup {
         var _this = this;
         this.#ruleAddRowNum--;
         this.#rulesTable.addRow({name: 'new-row', uses: 0, origName: this.#ruleAddRowNum}, false).then(function (row) {
-            row.getTable().setPage('last').then(function () {
+            row.getTable().setPageToRow(row).then(function () {
                 row.getCell("name").getElement().style.backgroundColor = "#fff3cd";
                 _this.checkUndoRedo();
             });
