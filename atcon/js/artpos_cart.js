@@ -26,7 +26,7 @@ class artpos_cart {
     #cart_art_map = new map();
     #cart_pmt = [];
 
-// currenct
+// currency
     #locale = 'en-us';
     #currencyFmt = null;
 
