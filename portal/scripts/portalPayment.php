@@ -23,7 +23,6 @@ $conf = get_conf('con');
 $portal_conf = get_conf('portal');
 $ini = get_conf('reg');
 $log = get_conf('log');
-$ccauth = get_conf('cc');
 load_cc_procs();
 load_email_procs();
 logInit($log['reg']);
@@ -51,8 +50,15 @@ if ($resolveUpdates != null && array_key_exists('logout', $resolveUpdates) && $r
     ajaxSuccess($response);
     return;
 }
-
+// must use cc here, as getConfValue will look in global and that must not happen here
 $cc = get_conf('cc');
+if (array_key_exists('location_portal', $cc)) {
+    $ccLocation = $cc['location_portal'];
+} else if (array_key_exists('location', $cc)) {
+    $ccLocation = $cc['location'];
+} else {
+    $ccLocation = 'Unknown';
+}
 
 $loginId = getSessionVar('id');
 $loginType = getSessionVar('idType');
@@ -184,7 +190,7 @@ if ($totalAmountDue > 0) {
         'totalAmt' => $amount,
         'orderId' => $orderId,
         'customerId' => $customerId,
-        'locationId' => $cc['location'],
+        'locationId' => $ccLocation,
         'referenceId' => $referenceId,
         'transid' => $transId,
         'preTaxAmt' => $preTaxAmount,

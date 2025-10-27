@@ -22,7 +22,6 @@ $conf = get_conf('con');
 $portal_conf = get_conf('portal');
 $ini = get_conf('reg');
 $log = get_conf('log');
-$ccauth = get_conf('cc');
 load_cc_procs();
 logInit($log['reg']);
 
@@ -53,6 +52,16 @@ $response['resolveUpdates'] = $resolveUpdates;
 if ($resolveUpdates != null && array_key_exists('logout', $resolveUpdates) && $resolveUpdates['logout'] == 1) {
     ajaxSuccess($response);
     return;
+}
+
+// must use cc here, as getConfValue will look in global and that must not happen here
+$cc = get_conf('cc');
+if (array_key_exists('location_portal', $cc)) {
+    $ccLocation = $cc['location_portal'];
+} else if (array_key_exists('location', $cc)) {
+    $ccLocation = $cc['location'];
+} else {
+    $ccLocation = 'Unknown';
 }
 
 $loginId = getSessionVar('id');
@@ -291,7 +300,7 @@ if ($amount > 0) {
     if ($cancelOrderId) // cancel the old order if it exists
         cc_cancelOrder($results['source'], $cancelOrderId, true);
 
-    $rtn = cc_buildOrder($results, true);
+    $rtn = cc_buildOrder($results, true, $ccLocation);
     if ($rtn == null) {
         // note there is no reason cc_buildOrder will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
         logWrite(array ('con' => $condata['name'], 'trans' => $transId, 'error' => 'Order unable to be created'));

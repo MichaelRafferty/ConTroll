@@ -674,6 +674,7 @@ function cc_cancelOrder($source, $orderId, $useLogWrite = false, $locationId = n
     $cc = get_conf('cc');
     if ($locationId == null)
         $locationId = $cc['location'];
+
     $squareDebug = getConfValue('debug', 'square', 0);
 
     $order = new Order([

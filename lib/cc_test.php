@@ -28,7 +28,7 @@ EOS;
 }
 
 // build the order structure (fake in this case) to mirror the flow of cc_square
-function cc_buildOrder($results, $useLogWrite = false) : array {
+function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : array {
     $cc = get_conf('cc');
     $con = get_conf('con');
     $id = null;
@@ -418,13 +418,12 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
         }
     }
 
-    if (array_key_exists('location', $cc)) {
-        $location = $cc['location'];
-    } else {
-        $location = 'Unknown';
+    if ($locationId == null) {
+        $locationId = $cc['location'];
     }
+
     $order = [
-        'locationId' => $location,
+        'locationId' => $locationId,
         'referenceId' => $con['id'] . '-' . $results['transid'],
         'source' => $con['conname'] . '-' . $source,
         'customerId' => $con['id'] . '-' . $custid,
@@ -495,10 +494,11 @@ function cc_fetchOrder($source, $orderId, $useLogWrite = false) :  array | null 
 }
 
 // stub for cancel order
-function cc_cancelOrder($source, $orderId, $useLogWrite = false) : array {
+function cc_cancelOrder($source, $orderId, $useLogWrite = false, $locationId = null) : array {
     $rtn['order'] = $orderId;
     $rtn['state'] = 'CANCELED';
     $rtn['version'] = 2;
+    unset($_SESSION['ccTestOrder']);
     return $rtn;
 }
 
@@ -603,6 +603,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     $rtn['results'] = $ccParams;
     $rtn['url'] = 'no test receipt';
     $rtn['rid'] = 'test';
+    $rtn['locationId'] = $ccParams['locationId'];
     $rtn['payment'] = null;
     $rtn['paymentType'] = $paymentType;
     $rtn['preTaxAmt'] = $ccParams['preTaxAmt'];
@@ -627,8 +628,6 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
 // fetch an order to get its details
 function cc_getPayment($source, $paymentid, $useLogWrite = false) : array {
     $ccTestResults = $_SESSION['ccTestPayment'];
-
-    $cc = get_conf('cc');
 
     $payment = [
         'id' => 'testSystem',

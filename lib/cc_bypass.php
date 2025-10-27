@@ -22,7 +22,7 @@ EOS;
 }
 
 // build the order structure (fake in this case) to mirror the flow of cc_square
-function cc_buildOrder($results, $useLogWrite = false) : array {
+function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : array {
     $cc = get_conf('cc');
     $con = get_conf('con');
     $id = null;
@@ -283,13 +283,11 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
         }
     }
 
-    if (array_key_exists('location', $cc)) {
-        $location = $cc['location'];
-    } else {
-        $location = 'Unknown';
-    }
+    if ($locationId == null)
+        $locationId = $cc['location'];
+
     $order = [
-        'locationId' => $location,
+        'locationId' => $locationId,
         'referenceId' => $con['id'] . '-' . $results['transid'],
         'source' => $con['conname'] . '-' . $source,
         'customerId' => $con['id'] . '-' . $custid,
@@ -347,16 +345,22 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
     if (array_key_exists('nonce', $results))
         $rtn['exhibits'] = $results['nonce'];
 
+    $_SESSION['ccBypassOrder'] = $rtn;
     return $rtn;
 }
 
 // fetch an order to get its details (stub, bypass and test don't keep orders)
-function cc_fetchOrder($source, $orderId, $useLogWrite = false) :  null {
-    return null;
+function cc_fetchOrder($source, $orderId, $useLogWrite = false) :  array | null {
+    return $_SESSION['ccBypassOrder'];
 }
 
 // stub for cancel order
-function cc_cancelOrder($source, $orderId, $useLogWrite = false) : void {
+function cc_cancelOrder($source, $orderId, $useLogWrite = false, $locationId = null) : array {
+    $rtn['order'] = $orderId;
+    $rtn['state'] = 'CANCELED';
+    $rtn['version'] = 2;
+    unset($_SESSION['ccBypassOrder']);
+    return $rtn;
 }
 
 // enter a payment against an exist order: build the payment, submit it to square and process the resulting payment
@@ -409,9 +413,62 @@ function cc_payOrder($results, $buyer, $useLogWrite = false) {
             $rtn['url'] = 'no test receipt';
             $rtn['rid'] = 'test';
             $rtn['taxes'] = $results['taxes'];
+            $rtn['locationId'] = $results['locationId'];
+            $_SESSION['ccBypassPayment'] = $rtn;
             return $rtn;
         default:
             ajaxSuccess(array('status'=>'error','data'=>'bad CC number'));
             exit();
     }
 }
+
+    function cc_getPayment($source, $paymentid, $useLogWrite = false) : array {
+        $ccBypassResults = $_SESSION['ccBypassPayment'];
+
+        $payment = [
+            'id' => 'testSystem',
+            'created_at' => '2099-01-01 00:00:00',
+            'amount_money' => [
+                'amount' => $_SESSION['term_testAmt'],
+                'currency' => 'USD',
+            ],
+            'source_type' => 'CARD',
+            'status' => 'COMPLETED',
+            'card_details' => [
+                'status' => 'CAPTURED',
+                'card' => [
+                    'card_brand' => 'test',
+                    'last_4' => '1111',
+                    'exp_month' => '12',
+                    'exp_year' => '2099',
+                    'card_type' => 'TEST',
+                    'prepaid_type' => 'NOT_PREPAID',
+                    'bin' => '411111',
+                    'fingerprint' => 'line nonce',
+                ],
+                'entry_method' => 'TEST',
+                'cvv_status' => 'CVV_ACCCEPTED',
+                'avs_status' => 'AVS_ACCEPTED',
+                'auth_result_code' => 'test12',
+                'statement_description' => 'test statement',
+            ],
+            'location_id' => $ccBypassResults['locationId'],
+            'order_id' => $ccBypassResults['orderId'],
+            'total_money' => [
+                'amount' => $ccBypassResults['totalAmt'] * 100,
+                'currency' => 'USD',
+            ],
+            'approved_money' => [
+                'amount' => $_SESSION['term_testAmt'],
+                'currency' => 'USD',
+            ],
+            'application_details' => [
+                'square_product' => 'Controll Test Harness',
+                'application_id' => 'cc_test',
+            ],
+            'receipt_number' => 'test',
+            'receipt_url' => 'https://test.test/receipt/test',
+        ];
+
+        return $payment;
+    }

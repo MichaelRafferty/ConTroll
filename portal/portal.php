@@ -19,7 +19,6 @@ global $config_vars;
 $con = get_conf('con');
 $conid = $con['id'];
 $portal_conf = get_conf('portal');
-$cc = get_conf('cc');
 $condata = get_con();
 load_cc_procs();
 
