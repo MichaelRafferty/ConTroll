@@ -49,7 +49,7 @@ var total_amount_due = 0;
 var display_art_due = 0;
 var display_tax_due = 0;
 var display_amount_due = 0;
-var tax_label = 'Sales Tax';
+var taxes = [];
 var orderMsg = '';
 var payOverride = 0;
 var payPoll = 0;
@@ -80,6 +80,8 @@ var conlabel = null;
 var user_id = 0;
 var hasManager = false;
 var receiptPrinterAvailable = false;
+var locale = 'en-us';
+var currencyFmt = null;
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const statusCodes = {
@@ -100,6 +102,12 @@ const statusCodes = {
 // lookup all DOM elements
 // load mapping tables
 window.onload = function initpage() {
+    // current items
+    locale = config.locale;
+    currencyFmt = new Intl.NumberFormat(locale, {
+        style: 'currency',
+        currency: config.currency,
+    });
     // set up the constants for objects on the screen
 
     find_tab = document.getElementById("find-tab");
@@ -385,7 +393,7 @@ function buildOrderSuccess(data) {
     display_art_due = total_art_due;
     display_tax_due = total_tax_due;
     display_amount_due = total_amount_due;
-    taxLabel = data.rtn.taxLabel;
+    taxes = data.rtn.taxes;
     show_message("Order #" + pay_currentOrderId + " created.<br/>" + orderMsg);
     payShown();
 }
@@ -759,7 +767,8 @@ function drawItemDetails(item, full = false) {
     }
 
     if (item.type == 'print') {
-        html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Sale Price:</div><div class="col-sm-auto">$' + Number(item.sale_price).toFixed(2) + '</div></div>';
+        html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Sale Price:</div><div class="col-sm-auto">' +
+            currencyFmt.format(Number(item.sale_price).toFixed(2)) + '</div></div>';
 
         if (item.quantity <= 0) {
             html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + ' bg-warning">Quantity:</div><div class="col-sm-7 bg-warning">System shows all of this item is already sold, remaining quantity is 0.</div></div>';
@@ -773,15 +782,15 @@ function drawItemDetails(item, full = false) {
         switch (item.type) {
             case 'art':
                 html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Minimum Bid:</div>' +
-                    '<div class="col-sm-7">' + Number(item.min_price).toFixed(2) + '</div></div>';
+                    '<div class="col-sm-7">' + currencyFmt.format(Number(item.min_price).toFixed(2)) + '</div></div>';
                 if (item.bidder == null || item.bidder == '') {
                     html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Quick Sale Price:</div>' +
-                        '<div class="col-sm-7">' + Number(item.sale_price).toFixed(2) + '</div></div>';
+                        '<div class="col-sm-7">' + currencyFmt.format(Number(item.sale_price).toFixed(2)) + '</div></div>';
                 }
                 if (full) {
                     if (item.final_price != null && item.final_price > 0)
                         html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Final Price:</div>' +
-                            '<div class="col-sm-7">' + Number(item.final_price).toFixed(2) + '</div></div>';
+                            '<div class="col-sm-7">' + currencyFmt.format(Number(item.final_price).toFixed(2)) + '</div></div>';
                     if (item.bidder != null && item.bidder > 0)
                         html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Bidder:</div>' +
                             '<div class="col-sm-7">' + item.bidder + '</div></div>';
@@ -1297,7 +1306,8 @@ function addToCart(itemKey) {
         addItemToCart(item);
         if (artFoundItems.length > 1) {
             var row = artTable.getRow(inventoryCurrentIndex);
-            row.reformat();
+            if (row)
+                row.reformat();
         } else {
             add_found_div.innerHTML = "";
         }
@@ -1510,13 +1520,17 @@ function pay(nomodal, prow = null) {
             if (nomodal == '' && amtTendered > total_amount_due) {
                 cashChangeModal.show();
                 var tendered = Number(document.getElementById('pay-tendered').value);
-                document.getElementById("CashChangeBody").innerHTML = "Customer owes $" + total_amount_due.toFixed(2) + ", and tendered $" + amtTendered.toFixed(2) +
-                    "<br/>Confirm change given to customer of $" + (amtTendered - total_amount_due).toFixed(2);
+                document.getElementById("CashChangeBody").innerHTML = "Customer owes " +
+                    currencyFmt.format(total_amount_due.toFixed(2)) +
+                    ", and tendered " + currencyFmt.format(amtTendered.toFixed(2)) +
+                    "<br/>Confirm change given to customer of " +
+                    currencyFmt.format((amtTendered - total_amount_due).toFixed(2));
                 return;
             }
 
             if (amtTendered < total_amount_due) {
-                show_message("Cannot pay less than total amount due of " + total_amount_due.toFixed(2), "error");
+                show_message("Cannot pay less than total amount due of " +
+                    currencyFmt.format(total_amount_due.toFixed(2)), "error");
                 return;
             }
         }
@@ -1905,24 +1919,39 @@ function drawPay(readWrite = true) {
         <div class="col-sm-3 ms-0 me-0 p-0 text-end"><b>Balance Due</b></div>
     </div>        
 `;
-// if tax rate exists show tax items
-    if (config.taxRate > 0) {
+// if taxes exists show tax items
+    if (Object.keys(config.taxRates).length > 0) {
         payHtml += `
     <div class="row mt-1">
         <div class="col-sm-6 m-0 p-0">Art Total:</div>
-        <div class="col-sm-3 m-0 p-0 text-end" id="total-art-due">$` + Number(display_art_due).toFixed(2) + `</div>
-    </div>
-    <div class="row mt-2">
-        <div class="col-sm-6 m-0 p-0">` + config.taxLabel + ' ' + config.taxRate + ` % sales tax:</div>
-        <div class="col-sm-3 m-0 p-0 text-end" id="total-tax-due">$` + Number(display_tax_due).toFixed(2) + `</div>
-    </div>
-`;
+        <div class="col-sm-3 m-0 p-0 text-end" id="total-art-due">` +
+            currencyFmt.format(Number(display_art_due).toFixed(2)) + `
+        </div>
+    </div>`;
+
+        for (let tax in config.taxRates) {
+            let rate = config.taxRates[tax];
+            let amt = taxes[tax];
+            payHtml += `
+    <div class="row mt-1">
+        <div class="col-sm-6 m-0 p-0">` + rate.label + `:</div>
+        <div class="col-sm-3 col-sm-3 m-0 p-0 text-end">` + currencyFmt.format(Number(amt).toFixed(2)) + `</div>
+    </div>`;
+        }
+        payHtml += `
+    <div class="row mt-1">
+        <div class="col-sm-6 m-0 p-0">Total Sales Tax:</div>
+        <div class="col-sm-3 col-sm-3 m-0 p-0 text-end" id="pay-tax-amt">` +
+            currencyFmt.format(Number(total_tax_due).toFixed(2)) + `
+        </div>
+    </div>`;
     }
 
     payHtml += `
     <div class="row mt-1">
         <div class="col-sm-6 m-0 p-0">Amount Due:</div>
-        <div class="col-sm-3 m-0 p-0 text-end" id="total-amt-due">$` + Number(display_amount_due).toFixed(2) + `</div>
+        <div class="col-sm-3 m-0 p-0 text-end" id="total-amt-due">` +
+        currencyFmt.format(Number(display_amount_due).toFixed(2)) + `</div>
     </div>
     </div>
     <div id="pay-div-pay"></div>

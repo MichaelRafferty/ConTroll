@@ -598,7 +598,6 @@ EOS;
     }
 
     // now the main payment
-    // now the main payment
     if ($amt > 0) {
         if ($taxAmt > 0) {
             [$taxFields, $taxSql, $taxStr, $taxValues] = buildTaxInsert($taxes);

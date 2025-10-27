@@ -485,13 +485,13 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
     if (array_key_exists('nonce', $results))
         $rtn['exhibits'] = $results['nonce'];
 
-    $_SESSION['ccTestResults'] = $rtn;
+    $_SESSION['ccTestOrder'] = $rtn;
     return $rtn;
 }
 
 // fetch an order to get its details (stub, bypass and test don't keep orders)
-function cc_fetchOrder($source, $orderId, $useLogWrite = false) :  null {
-    return null;
+function cc_fetchOrder($source, $orderId, $useLogWrite = false) :  array | null {
+    return $_SESSION['ccTestOrder'];
 }
 
 // stub for cancel order
@@ -620,12 +620,13 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     $rtn['amount'] = $total;
     $rtn['nonce'] = $ccParams['nonce'];
     $rtn['change'] = $change;
+    $_SESSION['ccTestPayment'] = $rtn;
     return $rtn;
 	}
 
 // fetch an order to get its details
 function cc_getPayment($source, $paymentid, $useLogWrite = false) : array {
-    $ccTestResults = $_SESSION['ccTestResults'];
+    $ccTestResults = $_SESSION['ccTestPayment'];
 
     $cc = get_conf('cc');
 

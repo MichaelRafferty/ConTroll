@@ -26,8 +26,17 @@ class artpos_cart {
     #cart_art_map = new map();
     #cart_pmt = [];
 
+// currenct
+    #locale = 'en-us';
+    #currencyFmt = null;
+
 // initialization
     constructor() {
+        this.#locale = config.locale;
+        this.#currencyFmt = new Intl.NumberFormat(this.#locale, {
+            style: 'currency',
+            currency: config.currency,
+        });
 // lookup all DOM elements
 // ask to load mapping tables
         this.#cart_div = document.getElementById("cart");
@@ -409,8 +418,8 @@ class artpos_cart {
         }
         row.priceType = priceType;
         rowhtml += '<div class="row"><div class="col-sm-8 p-0 text-end">' + priceType + ' Price:</div>' +
-            '<div class="col-sm-2 text-end">$' + Number(row.display_price).toFixed(2) + '</div>' +
-            '<div class="col-sm-2 text-end">$' + Number(row.paid).toFixed(2) + '</div></div>';
+            '<div class="col-sm-2 text-end">' + this.#currencyFmt.format(Number(row.display_price).toFixed(2)) + '</div>' +
+            '<div class="col-sm-2 text-end">' + this.#currencyFmt.format(Number(row.paid).toFixed(2)) + '</div></div>';
 
         this.#total_price += Number(row.display_price);
         this.#total_paid += Number(row.paid);
@@ -451,9 +460,9 @@ class artpos_cart {
             html += `<div class="row">
     <div class="col-sm-4 p-0">` + ttype + `</div>
     <div class="col-sm-2 p-0">` + code + `</div>
-    <div class="col-sm-2 text-end">` + Number(pmt.pretax).toFixed(2) + `</div>
-    <div class="col-sm-2 text-end">` + Number(pmt.tax).toFixed(2) + `</div>
-    <div class="col-sm-2 text-end">` + Number(pmt.amt).toFixed(2) + `</div>
+    <div class="col-sm-2 text-end">` + this.#currencyFmt.format(Number(pmt.pretax).toFixed(2)) + `</div>
+    <div class="col-sm-2 text-end">` + this.#currencyFmt.format(Number(pmt.tax).toFixed(2)) + `</div>
+    <div class="col-sm-2 text-end">` + this.#currencyFmt.format(Number(pmt.amt).toFixed(2)) + `</div>
 </div>
 `;
         } else {
@@ -461,9 +470,9 @@ class artpos_cart {
     <div class="col-sm-2 p-0">` + ttype + `</div>
     <div class="col-sm-2 p-0">` + desc + `</div>
     <div class="col-sm-2 p-0">` + code + `</div>
-    <div class="col-sm-2 text-end">` + Number(pmt.pretax).toFixed(2) + `</div>
-    <div class="col-sm-2 text-end">` + Number(pmt.tax).toFixed(2) + `</div>
-    <div class="col-sm-2 text-end">` + Number(pmt.amt).toFixed(2) + `</div>
+    <div class="col-sm-2 text-end">` + this.#currencyFmt.format(Number(pmt.pretax).toFixed(2)) + `</div>
+    <div class="col-sm-2 text-end">` + this.#currencyFmt.format(Number(pmt.tax).toFixed(2)) + `</div>
+    <div class="col-sm-2 text-end">` + this.#currencyFmt.format(Number(pmt.amt).toFixed(2)) + `</div>
 </div>
 `;
         }
@@ -498,8 +507,8 @@ class artpos_cart {
         this.#total_paid = Number(this.#total_paid.toFixed(2));
         html += `<div class="row">
     <div class="col-sm-8 p-0 text-end">Total:</div>
-    <div class="col-sm-2 text-end">$` + Number(this.#total_price).toFixed(2) + `</div>
-    <div class="col-sm-2 text-end">$` + Number(this.#total_paid).toFixed(2) + `</div>
+    <div class="col-sm-2 text-end">` + this.#currencyFmt.format(Number(this.#total_price).toFixed(2)) + `</div>
+    <div class="col-sm-2 text-end">` + this.#currencyFmt.format(Number(this.#total_paid).toFixed(2)) + `</div>
 </div>
 `;
 
@@ -532,9 +541,9 @@ class artpos_cart {
     <div class="col-sm-6 p-0 text-end">Payment Total:</div>`;
             this.#total_pmt = Number(this.#total_pmt.toFixed(2));
             html += `
-    <div class="col-sm-2 text-end">$` + Number(this.#total_art).toFixed(2) + `</div>
-    <div class="col-sm-2 text-end">$` + Number(this.#total_tax).toFixed(2) + `</div>
-    <div class="col-sm-2 text-end">$` + Number(this.#total_pmt).toFixed(2) + `</div>
+    <div class="col-sm-2 text-end">` + this.#currencyFmt.format(Number(this.#total_art).toFixed(2)) + `</div>
+    <div class="col-sm-2 text-end"> + this.#currencyFmt.format(Number(this.#total_tax).toFixed(2)) + `</div>
+    <div class="col-sm-2 text-end">` + this.#currencyFmt.format(Number(this.#total_pmt).toFixed(2)) + `</div>
 </div>
 `;
         }
