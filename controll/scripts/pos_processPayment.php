@@ -317,15 +317,15 @@ if ($amt > 0 || $discountAmt > 0) {
 
     // now add the payment and process to which rows it applies
     $insPmtSQL = <<<EOS
-INSERT INTO payments(transid, type,category, description, source, pretax, tax, amount, time, cc_approval_code, cashier, 
+INSERT INTO payments(transid, type, category, description, source, pretax, tax, amount, time, cc_approval_code, cashier, 
     cc, nonce, cc_txn_id, txn_time, receipt_url, receipt_id, userPerid, status, ccPaymentId)
-VALUES (?,?,'reg',?,'cashier',?,?,?,now(),?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+VALUES (?,?,?,?,'cashier',?,?,?,now(),?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 EOS;
-    $typestr = 'issdddsissssssiss';
+    $typestr = 'isssdddsissssssiss';
 
     // coupon payment if it exist
     if ($couponPayment != null) {
-        $paramarray = array ($master_tid, 'coupon', $couponPayment['desc'], $couponPayment['amt'], 0, $couponPayment['amt'], null, $user_perid,
+        $paramarray = array ($master_tid, 'coupon', $category, $couponPayment['desc'], $couponPayment['amt'], 0, $couponPayment['amt'], null, $user_perid,
             null, null, null, null, null, null, $user_perid, 'APPLIED', null);
         $new_pid = dbSafeInsert($insPmtSQL, $typestr, $paramarray);
 
@@ -336,7 +336,7 @@ EOS;
     }
 
     if ($drow != null) {
-        $paramarray = array ($master_tid, 'discount', $drow['desc'], $drow['amt'], 0, $drow['amt'], null, $user_perid,
+        $paramarray = array ($master_tid, 'discount', $category, $drow['desc'], $drow['amt'], 0, $drow['amt'], null, $user_perid,
             null, null, null, null, null, null, $user_perid, 'APPLIED', null);
         $new_pid = dbSafeInsert($insPmtSQL, $typestr, $paramarray);
 
@@ -366,10 +366,10 @@ EOS;
         $insPmtSQL = <<<EOS
 INSERT INTO payments(transid, type,category, description, source, pretax, tax, amount, time, cc_approval_code, cashier, 
     cc, nonce, cc_txn_id, txn_time, receipt_url, receipt_id, userPerid, status, ccPaymentId $taxFields)
-VALUES (?,?,'reg',?,'cashier',?,?,?,now(),?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? $taxSql);
+VALUES (?,?,?,?,'cashier',?,?,?,now(),?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? $taxSql);
 EOS;
-        $typestr = 'issdddsissssssiss' . $taxStr;
-        $paramarray = array ($master_tid, $paymentType, $description, $preTaxAmt, $taxAmt, $approved_amt, $auth, $user_perid,
+        $typestr = 'isssdddsissssssiss' . $taxStr;
+        $paramarray = array ($master_tid, $paymentType, $category, $description, $preTaxAmt, $taxAmt, $approved_amt, $auth, $user_perid,
             $last4, $nonceCode, $paymentId, $txTime, $receiptUrl, $receiptNumber, $user_perid, $status, $paymentId);
 
         $new_pid = dbSafeInsert($insPmtSQL, $typestr, array_merge( $paramarray, $taxValues));

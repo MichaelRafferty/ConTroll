@@ -513,8 +513,7 @@ if ($totprice > 0) {
         'total' => $totprice,
     );
 
-    // update the transaction with the taxes
-    // update the transaction with the order id
+    // update the transaction with the taxes and order id
     $taxes = $rtn['taxes'];
     [$taxSql, $taxStr, $taxValues] = buildTaxUpdate($taxes);
     $upT = <<<EOS
@@ -586,10 +585,10 @@ EOS;
     $txnQ = <<<EOS
 INSERT INTO payments(transid, type,category, description, source, pretax, tax, amount, time, cc_approval_code, cashier, 
     cc, nonce, cc_txn_id, txn_time, receipt_url, receipt_id, userPerid, status, ccPaymentId $taxFields)
-VALUES (?,?,'reg',?,'cashier',?,?,?,now(),?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? $taxSql);
+VALUES (?,?,?,?,'cashier',?,?,?,now(),?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? $taxSql);
 EOS;
-    $typestr = 'issdddsissssssiss' . $taxStr;
-    $paramarray = array ($transId, $paymentType, $description, $preTaxAmt, $taxAmt, $approved_amt, $auth, null,
+    $typestr = 'isssdddsissssssiss' . $taxStr;
+    $paramarray = array ($transId, $paymentType, $category, $description, $preTaxAmt, $taxAmt, $approved_amt, $auth, null,
         $last4, $nonceCode, $paymentId, $txTime, $receiptUrl, $receiptNumber, $buyer, $status, $paymentId);
     $txnid = dbSafeInsert($txnQ, $typestr, array_merge($paramarray, $taxValues));
     $approved_amt = $ccrtn['amount'];
