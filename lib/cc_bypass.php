@@ -307,7 +307,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
     $itemTaxTotal = 0;
     if ($needTaxes) {
         foreach ($orderLineItems as $item) {
-            if (array_key_exists('taxable', $item)) {
+            if (array_key_exists('taxable', $item) && $item['taxable'] == 'Y') {
                 $item['taxAmounts'] = computeTax($item['basePriceMoney']);
                 $item['taxAmount'] = array_sum($item['taxAmounts']);
                 $itemTaxTotal += $item['taxAmount'];

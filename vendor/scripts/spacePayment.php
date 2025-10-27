@@ -483,6 +483,7 @@ if ($totprice > 0) {
         exit();
     }
     $response['orderRtn'] = $rtn;
+    $order = $rtn['order'];
     logWrite(array('status'=> 'order create', 'con' => $condata['name'], 'trans' => $transId, 'ccrtn' => $rtn));
     $referenceId = $transId . '-' . 'pay-' . time();
     $results = array(
@@ -512,13 +513,24 @@ if ($totprice > 0) {
         'total' => $totprice,
     );
 
+    // update the transaction with the taxes
     // update the transaction with the order id
-    $updTrans = <<<EOS
+    $taxes = $rtn['taxes'];
+    [$taxSql, $taxStr, $taxValues] = buildTaxUpdate($taxes);
+    $upT = <<<EOS
 UPDATE transaction
-SET orderId = ?, paymentStatus = 'ORDER', tax = ?, withtax = ?, orderDate = now()
+SET price = ?, tax = ?, withTax = ?, couponDiscountCart = ?, orderId = ?, paymentStatus = 'ORDER', orderDate = now(), $taxSql
 WHERE id = ?;
 EOS;
-    $numUpd = dbSafeCmd($updTrans, 'sddi', array($rtn['orderId'], $rtn['taxAmt'], $rtn['totalAmt'], $transId));
+    $preTax = $rtn['preTaxAmt'];
+    $taxAmt = $rtn['taxAmt'];
+    $withTax = $rtn['totalAmt'];
+    $valArray = array($preTax, $taxAmt, $withTax, 0, $rtn['orderId']);
+    $typeStr = 'dddds' . $taxStr . 'i';
+    $valArray = array_merge($valArray, $taxValues);
+    $valArray[] = $transId;
+
+    $numUpd = dbSafeCmd($upT, $typeStr, $valArray);
 
 // call the credit card processor to make the payment
     $ccrtn = cc_payOrder($results, $buyer, true);
@@ -532,19 +544,54 @@ EOS;
     }
 
     logWrite(array('con'=>$condata['name'], 'trans'=>$transId, 'ccrtn'=>$rtn));
-    $num_fields = sizeof($ccrtn['txnfields']);
-    $val = array();
-    for ($i = 0; $i < $num_fields; $i++) {
-        $val[$i] = '?';
-    }
-    $txnQ = 'INSERT INTO payments(time,' . implode(',', $ccrtn['txnfields']) . ') VALUES(current_time(),' . implode(',', $val) . ');';
-    $txnT = implode('', $ccrtn['tnxtypes']);
-    $txnid = dbSafeInsert($txnQ, $txnT, $ccrtn['tnxdata']);
-    if ($txnid == false) {
-        $error_msg .= "Insert of payment failed\n";
+
+    $approved_amt = $ccrtn['amount'];
+    $type = $ccrtn['paymentType'];
+    $preTaxAmt = $ccrtn['preTaxAmt'];
+    $taxAmt = $ccrtn['taxAmt'];
+    $paymentId = $ccrtn['paymentId'];
+    $receiptUrl = $ccrtn['url'];
+    $receiptNumber = $ccrtn['rid'];
+    $paymentType = $ccrtn['paymentType'];
+    $auth = $ccrtn['auth'];
+    $payment = $ccrtn['payment'];
+    $last4 = $ccrtn['last4'];
+    $txTime = $ccrtn['txTime'];
+    $status = $ccrtn['status'];
+    $transId = $ccrtn['transId'];
+    $category = $ccrtn['category'];
+    $description = $ccrtn['description'];
+    $source = $ccrtn['source'];
+    $nonce = $ccrtn['nonce'];
+    if ($nonce == 'EXTERNAL')
+        $nonceCode = $results['externalType'];
+    else
+        $nonceCode = $nonce;
+
+// now the main payment
+    if ($taxAmt > 0) {
+        $taxes = $order['taxes'];
+        [$taxFields, $taxSql, $taxStr, $taxValues] = buildTaxInsert($taxes);
+        if ($taxFields != '')
+            $taxFields = ", $taxFields";
+        if ($taxSql != '')
+            $taxSql = ", $taxSql";
     } else {
-        $status_msg .= 'Payment for ' . $dolfmt->formatCurrency($ccrtn['amount'], $currency) . " processed<br/>\n";
+        $taxFields = '';
+        $taxSql = '';
+        $taxStr = '';
+        $taxValues = [];
     }
+
+    $txnQ = <<<EOS
+INSERT INTO payments(transid, type,category, description, source, pretax, tax, amount, time, cc_approval_code, cashier, 
+    cc, nonce, cc_txn_id, txn_time, receipt_url, receipt_id, userPerid, status, ccPaymentId $taxFields)
+VALUES (?,?,'reg',?,'cashier',?,?,?,now(),?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? $taxSql);
+EOS;
+    $typestr = 'issdddsissssssiss' . $taxStr;
+    $paramarray = array ($transId, $paymentType, $description, $preTaxAmt, $taxAmt, $approved_amt, $auth, null,
+        $last4, $nonceCode, $paymentId, $txTime, $receiptUrl, $receiptNumber, $buyer, $status, $paymentId);
+    $txnid = dbSafeInsert($txnQ, $typestr, array_merge($paramarray, $taxValues));
     $approved_amt = $ccrtn['amount'];
 
     // update the transaction status with the payment details
@@ -553,10 +600,11 @@ UPDATE transaction
 SET ccPaymentId = ?, paymentStatus = ?
 WHERE id = ?;
 EOS;
-    $numUpd = dbSafeCmd($updTrans, 'ssi', array($ccrtn['paymentId'], $ccrtn['status'],  $transId));
+    $numUpd = dbSafeCmd($updTrans, 'ssi', array($ccrtn['paymentId'], $ccrtn['status'], $transId));
 } else {
     $approved_amt = 0;
     $ccrtn = array('url' => '');
+    $taxes = array();
 }
 
 logwrite(array('Title' => 'Post cc_pay_order', 'rtn' => $ccrtn));
@@ -565,7 +613,7 @@ $results['approved_amt'] = $approved_amt;
 // update the other records with the payment information
 // Transaction
 $txnUpdate = 'UPDATE transaction SET ';
-if ($approved_amt == $totprice) {
+if (round($approved_amt,2) == round($totprice,2)) {
     $txnUpdate .= 'complete_date=current_timestamp(), ';
 }
 

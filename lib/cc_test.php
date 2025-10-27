@@ -440,6 +440,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
     $taxAmount = 0;
     $taxAbleBase = 0;
     $itemTaxTotal = 0;
+    $taxAmounts = [];
     if ($needTaxes) {
         foreach ($orderLineItems as $item) {
             if (array_key_exists('taxable', $item)) {
@@ -466,6 +467,7 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
     $rtn['preTaxAmt'] = $orderValue;
     $rtn['discountAmt'] = $discountAmt / 100;
     $rtn['taxAmt'] = $taxAmount / 100;
+    $rtnTaxes = [];
     foreach ($taxAmounts as $key => $amt)
         $rtnTaxes[$key] = $amt / 100;
     $rtn['taxes'] = $rtnTaxes;
