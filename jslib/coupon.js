@@ -420,7 +420,7 @@ class Coupon {
             html += "<li>This coupon only applies to memberships, not add-ons</li>";
             if (this.#curCoupon.couponType == '$mem') {
                 html += "<li>This coupon provides a " +
-                    this.#currencyFmt(Number(this.#curCoupon.discount).toFixed(2)) +
+                    this.#currencyFmt.format(Number(this.#curCoupon.discount).toFixed(2)) +
                     " discount on primary memberships.</li>";
             } else {
                 html += "<li>This coupon provides a " + String(this.#curCoupon.discount) + "% discount on primary memberships.</li>";

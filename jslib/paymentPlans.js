@@ -564,17 +564,17 @@ class PaymentPlans {
 
         // update the screen
         downPaymentField.value = Number(down).toFixed(2);
-        balanceDueField.innerHTML = this.#currencyFmt(Number(balanceDue).toFixed(2));
-        dueTodayField.innerHTML = this.#currencyFmt(Number(dueToday).toFixed(2));
+        balanceDueField.innerHTML = this.#currencyFmt.format(Number(balanceDue).toFixed(2));
+        dueTodayField.innerHTML = this.#currencyFmt.format(Number(dueToday).toFixed(2));
         numPaymentsField.value = numPayments;
         daysBetweenField.value = days;
-        paymentAmtField.innerHTML = this.#currencyFmt(Number(paymentAmt).toFixed(2));
-        finalPaymentField.innerHTML = this.#currencyFmt(Number(finalPaymentAmt).toFixed(2));
+        paymentAmtField.innerHTML = this.#currencyFmt.format(Number(paymentAmt).toFixed(2));
+        finalPaymentField.innerHTML = this.#currencyFmt.format(Number(finalPaymentAmt).toFixed(2));
 
         this.#computedPlan.currentPayment = Number(this.#computedOrig.nonPlanAmt) + Number(down);
-        dueTodayField.innerHTML = this.#currencyFmt(this.#computedPlan.currentPayment.toFixed(2));
+        dueTodayField.innerHTML = this.#currencyFmt.format(this.#computedPlan.currentPayment.toFixed(2));
         this.#customizePlanSubmit.innerHTML = 'Create Plan and pay amount due today of ' +
-            this.#currencyFmt(this.#computedPlan.currentPayment.toFixed(2));
+            this.#currencyFmt.format(this.#computedPlan.currentPayment.toFixed(2));
         if (messageHTML != '')
             show_message(messageHTML, 'warn', 'customizePlanMessageDiv');
     }
@@ -653,7 +653,7 @@ class PaymentPlans {
     </div>
     <div class="row">
         <div class="col-sm-2" style='text-align: right;'>Balance Due:</div>
-        <div class="col-sm-1 ms-2" style='text-align: right;'>` + this.#currencyFmt(balanceDue.toFixed(2)) + `</div>
+        <div class="col-sm-1 ms-2" style='text-align: right;'>` + this.#currencyFmt.format(balanceDue.toFixed(2)) + `</div>
     </div>
     <div class="row">
         <div class="col-sm-2" style='text-align: right;'>Payment Amount:</div>
@@ -665,7 +665,7 @@ class PaymentPlans {
 `;
 
         this.#payPlanBody.innerHTML = html;
-        this.#payPlanSubmit.innerHTML = 'Make Plan Payment of ' + this.#currencyFmt(paymentAmt.toFixed(2));
+        this.#payPlanSubmit.innerHTML = 'Make Plan Payment of ' + this.#currencyFmt.format(paymentAmt.toFixed(2));
         this.#payPlanModal.show();
     }
 
@@ -679,12 +679,12 @@ class PaymentPlans {
         clear_message('payPlanMessageDiv');
 
         if (paymentAmt < this.#planPaymentMinPayment) {
-            show_message("Payment less than minimum allowed, set to " + this.#currencyFmt(this.#planPaymentMinPayment.toFixed(2)),
+            show_message("Payment less than minimum allowed, set to " + this.#currencyFmt.format(this.#planPaymentMinPayment.toFixed(2)),
                 'warn', 'payPlanMessageDiv');
             paymentAmt = this.#planPaymentMinPayment.toFixed(2);
             retVal = false;
         } else if (paymentAmt > this.#planPaymentBalanceDue) {
-            show_message("Payment greater than balance due, set to " + this.#currencyFmt(this.#planPaymentBalanceDue.toFixed(2)),
+            show_message("Payment greater than balance due, set to " + this.#currencyFmt.format(this.#planPaymentBalanceDue.toFixed(2)),
                 'warn', 'payPlanMessageDiv');
             paymentAmt = this.#planPaymentBalanceDue.toFixed(2);
             retVal = false;

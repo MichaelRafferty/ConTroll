@@ -623,7 +623,7 @@ class PosCart {
         <div class="col-sm-2"></div>
         <div class="col-sm-1" style='text-align: right;'><b>Total Due:</b></div>
         <div class="col-sm-1" style='text-align: right;'><b>` +
-                this.#currencyFmt(Number(totalDue).toFixed(2)) + `</b></div>
+                this.#currencyFmt.format(Number(totalDue).toFixed(2)) + `</b></div>
     </div>`
         }
         if (countMemberships == 0) {
@@ -1073,8 +1073,8 @@ class PosCart {
     <div class="row">
         <div class="col-sm-1 pe-0">` + col1 + `</div>
         <div class="col-sm-7 ps-1">` + label + `</div>
-        <div class="col-sm-2 text-end">` + this.#currencyFmt(Number(mrow.price).toFixed(2)) + `</div>
-        <div class="col-sm-2 text-end">` + this.#currencyFmt((Number(mrow.paid) + Number(mrow.couponDiscount)).toFixed(2)) + `</div>
+        <div class="col-sm-2 text-end">` + this.#currencyFmt.format(Number(mrow.price).toFixed(2)) + `</div>
+        <div class="col-sm-2 text-end">` + this.#currencyFmt.format((Number(mrow.paid) + Number(mrow.couponDiscount)).toFixed(2)) + `</div>
     </div>
 `;
             this.#totalPrice += Number(mrow.price);
@@ -1166,7 +1166,7 @@ class PosCart {
     <div class="col-sm-2 p-0">` + pmt.type + `</div>
     <div class="col-sm-6 p-0">` + pmt.desc + `</div>
     <div class="col-sm-2 p-0">` + code + `</div>
-    <div class="col-sm-2 text-end">` + this.#currencyFmt(Number(pmt.preTaxAmt).toFixed(2)) + `</div>
+    <div class="col-sm-2 text-end">` + this.#currencyFmt.format(Number(pmt.preTaxAmt).toFixed(2)) + `</div>
 </div>
 `;
     }
@@ -1201,8 +1201,8 @@ class PosCart {
 </div>
 <div class="row">
     <div class="col-sm-8 text-end">Total:</div>
-    <div class="col-sm-2 text-end">` + this.#currencyFmt(Number(this.#totalPrice).toFixed(2)) + `</div>
-    <div class="col-sm-2 text-end">` + this.#currencyFmt(Number(this.#totalPaid).toFixed(2)) + `</div>
+    <div class="col-sm-2 text-end">` + this.#currencyFmt.format(Number(this.#totalPrice).toFixed(2)) + `</div>
+    <div class="col-sm-2 text-end">` + this.#currencyFmt.format(Number(this.#totalPaid).toFixed(2)) + `</div>
 </div>
 `;
 
@@ -1247,7 +1247,7 @@ class PosCart {
     <div class="col-sm-8 p-0 text-end">Payment Total:</div>`;
             this.#totalPmt = Number(this.#totalPmt.toFixed(2));
             html += `
-    <div class="col-sm-4 text-end">` + this.#currencyFmt(Number(this.#totalPmt).toFixed(2)) + `</div>
+    <div class="col-sm-4 text-end">` + this.#currencyFmt.format(Number(this.#totalPmt).toFixed(2)) + `</div>
 </div>
 `;
         }
