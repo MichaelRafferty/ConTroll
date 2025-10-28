@@ -40,9 +40,15 @@ window.onload = function initpage() {
     }
     watchList = document.getElementById('watch-list');
     findNameField = document.getElementById('findName');
+    findNameField.addEventListener('keyup', findNameListener);
     selectList = document.getElementById('select-list');
     getWatchList();
 
+}
+
+function findNameListener(e) {
+    if (e.code === 'Enter')
+        findExisting();
 }
 
 // load/reload the watch list
@@ -194,6 +200,7 @@ function findExisting() {
         type: 'find',
         pattern: findName,
         excludeFree: 1,
+        excludeMerged: 1,
     };
     $.ajax({
         method: "POST",

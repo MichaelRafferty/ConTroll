@@ -36,9 +36,13 @@ if ($findPattern == NULL || $findPattern == '') {
 
 $excludeFree = '';
 $excludeJoin = '';
+$excludeMerge = '';
 if (array_key_exists('excludeFree', $_POST)) {
     $excludeJoin = " LEFT OUTER JOIN badgeList b ON (p.id = b.perid AND b.conid = ? AND b.user_perid = ?)";
     $excludeFree = " AND b.perid IS NULL";
+}
+if (array_key_exists('excludeMerged', $_POST)) {
+    $excludeMerge = " AND (NOT (p.first_name = 'Merged' AND p.middle_name = 'into')) AND p.banned = 'N'";
 }
 
 $con_conf = get_conf('con');
@@ -70,7 +74,7 @@ WITH perids AS (
     LEFT OUTER JOIN perinfo mp ON (p.managedBy = mp.id)
     LEFT OUTER JOIN reg r ON (r.perid = p.id AND r.status IN ('paid', 'unpaid', 'plan'))
     LEFT OUTER JOIN memList m ON (r.memId = m.id AND m.conid in (?, ?))
-    WHERE p.id = ? $excludeFree
+    WHERE p.id = ? $excludeFree $excludeMerge
     GROUP BY p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2, p.legalName, p.pronouns, 
         p.address, p.addr_2, p.city, p.state, p.zip, p.country, 
         p.creation_date, p.update_date, p.active, p.banned, p.open_notes, p.admin_notes,
@@ -124,7 +128,7 @@ $excludeJoin
 LEFT OUTER JOIN perinfo mp ON (p.managedBy = mp.id)
 LEFT OUTER JOIN reg r  ON (r.perid = p.id AND r.status IN ('paid', 'unpaid', 'plan'))
 LEFT OUTER JOIN memList m ON (r.memId = m.id AND m.conid in (?, ?))
-WHERE 1=1  $excludeFree $notMerge
+WHERE 1=1  $excludeFree $notMerge $excludeMerge
 GROUP BY p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2, p.legalName, p.pronouns, 
     p.address, p.addr_2, p.city, p.state, p.zip, p.country, p.banned, 
     p.creation_date, p.update_date, p.active, p.open_notes,
