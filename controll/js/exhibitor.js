@@ -797,7 +797,9 @@ class exhibitorsAdm {
                         {title: "Region", field: "name", headerSort: true, headerFilter: true },
                         {title: "id", field: "id", visible: false},
                         {title: "exhibitorId", field: "exhibitorId", visible: false},
-                        {title: "Name", field: "exhibitorName", width: 200, headerSort: true, headerFilter: true,},
+                        {title: "exhibitorName", field: "exhibitorName", visible: false},
+                        {title: "artistName", field: "artistName", visible: false},
+                        {title: "Name", field: "fullExhName", width: 200, headerSort: true, headerFilter: true,formatter: "html"},
                         {title: "Website", field: "website", headerSort: true, headerFilter: true,},
                         {title: "Email", field: "exhibitorEmail", headerSort: true, headerFilter: true,},
                         {title: "Approval", field: "approval", headerSort: true, headerFilter: 'list', headerFilterParams: {values: this.#approvalValues},},
@@ -838,8 +840,8 @@ class exhibitorsAdm {
                 {title: "Exhibitors:", columns: [
                         {title: "", formatter: this.exhButtons, hozAlign: "center", headerSort: false,},
                         {title: "Exh Id", field: "exhibitorId", visible: true, headerWordWrap: true, width: 75, },
-                        {title: "Name", field: "exhibitorName", width: 250, headerSort: true, headerFilter: true, tooltip: this.buildRecordHover,
-                            formatter: "textarea", },
+                        {title: "Name", field: "fullExhName", width: 250, headerSort: true, headerFilter: true, tooltip: this.buildRecordHover,
+                            formatter: "html", },
                         {title: "Email", field: "exhibitorEmail", headerSort: true, headerFilter: true, width: 250, },
                         {title: "Phone", field: "exhibitorPhone", width: 140, headerSort: true, headerFilter: true,},
                         {title: "Website", field: "website", headerSort: true, headerFilter: true, width: 250, },
@@ -857,6 +859,8 @@ class exhibitorsAdm {
                         {title: "City", field: "city", width: 140, headerSort: true, headerFilter: true, visible: false, },
                         {title: "State/Prov", field: "state", headerSort: true, headerFilter: true, visible: false,},
                         {title: "Contact Notes", field: "state",  headerFilter: true, formatter: "textarea", visible: false,},
+                        {title: "Exhibitor Name", field: "exhibitorName",  headerFilter: true, formatter: "textarea", visible: false,},
+                        {title: "Artist Name", field: "artistName",  headerFilter: true, formatter: "textarea", visible: false,},
                     ]
                 }
             ]
@@ -945,7 +949,7 @@ class exhibitorsAdm {
                     formatter:"tickCross", editorParams: { tristate: false, }, },
                 { title: "ID", field: 'id', headerSort: true, },
                 { title: "Exh Nbr", field: "exhibitorNumber", headerSort: true, headerWordWrap: true, width: 80, },
-                { title: "Exhibitor Name", field: "exhibitorName", headerSort: true, headerFilter: true, width: 300, },
+                { title: "Name", field: "fullExhName", headerSort: true, headerFilter: true, width: 300, formatter: 'html' },
                 { title: "Exhibitor Website", field: "website", headerSort: true, headerFilter: true, width: 200, },
                 { title: "Exhibitor Email", field: "exhibitorEmail", headerSort: true, headerFilter: true, width: 300, },
                 { title: "Contact Name", field: "contactName", headerSort: true, headerFilter: true, width: 300, },
