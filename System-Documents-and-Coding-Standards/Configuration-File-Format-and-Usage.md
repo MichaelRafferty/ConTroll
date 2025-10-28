@@ -129,7 +129,6 @@ Each etnry in the file that is online editable will contain the following prefix
 relative to the root of the installation. Note: dir is not allowed to be empty.
     - `a` = absolute file path from the root of of the file system.
     - `l:list` = enumerated list of choices, separated by commas. First entry is the default one.
-A warning will be issued if this file is not readable.
     - `h` = URI, must be of the format:
       - https:
       - http:

@@ -8,6 +8,7 @@ var message_div = null;
 var users = null;
 var printers = null;
 var userid = null;
+var configEditor = null;
 
 conid = null;
 // keys items
@@ -294,6 +295,10 @@ function settab(tabname) {
         printers.close();
         printers = null;
     }
+    if (configEditor) {
+        configEditor.close();
+        configEditor = null;
+    }
 
     // now open the relevant one, and create the class if needed
     switch (tabname) {
@@ -308,7 +313,9 @@ function settab(tabname) {
         case 'atconPrinters-pane':
             loadAtconPrinters();
             break;
-
+        case 'configEdit-pane':
+            loadConfigEditor();
+            break;
     }
 }
 
@@ -381,6 +388,42 @@ function openPrinters(data) {
         show_message(data.success, 'success');
     }
     printers = new Printers(data.servers, data.printers)
+}
+
+// configuration editor
+function loadConfigEditor() {
+    script = 'scripts/admin_configEditLoadData.php';
+    postData = {
+        load_type: 'conf'
+    }
+    clearError();
+    clear_message();
+    $.ajax({
+        url: script,
+        method: 'POST',
+        data: postData,
+        success: function (data, textStatus, jhXHR) {
+            if (data.error) {
+                show_message(data.error, 'error');
+                return;
+            }
+            if (data.warn) {
+                show_message(data.error, 'warn');
+                return;
+            }
+            openConfigEditor(data);
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            showError("ERROR in getMenu: " + textStatus, jqXHR);
+        },
+    });
+}
+
+function openConfigEditor(data) {
+    if (data.success) {
+        show_message(data.success, 'success');
+    }
+    configEditor = new ConfigEditor(data);
 }
 
 function cellChanged(cell) {
