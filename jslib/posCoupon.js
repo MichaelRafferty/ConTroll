@@ -252,7 +252,7 @@ class Coupon {
         if (this.#curCoupon.couponType == 'price') {
             label = this.#curCoupon.shortname;
             html += "<li>This coupon applies a special price of " +
-                this.#currencyFmt(Number(this.#curCoupon.discount).toFixed(2)) +
+                this.#currencyFmt.format(Number(this.#curCoupon.discount).toFixed(2)) +
                 " to " + label + " memberships in the cart.</li>";
         }
         if (this.getMinMemberships() > 1) {

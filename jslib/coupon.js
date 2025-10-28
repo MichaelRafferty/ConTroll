@@ -430,7 +430,7 @@ class Coupon {
             html += "<li>This coupon only applies to the cost of memberships in the cart, not add-ons</li>";
             if (this.#curCoupon.couponType == '$off') {
                 html += "<li>This coupon provides a " +
-                    this.#currencyFmt(Number(this.#curCoupon.discount).toFixed(2)) +
+                    this.#currencyFmt.format(Number(this.#curCoupon.discount).toFixed(2)) +
                         " discount off the total of primary memberships in the cart.</li>";
             } else {
                 html += "<li>This coupon provides a " + String(this.#curCoupon.discount) + "% discount off the total of primary memberships in the cart.</li>";
@@ -439,7 +439,7 @@ class Coupon {
         if (this.#curCoupon.couponType == 'price') {
             label = this.#curCoupon.shortname;
             html += "<li>This coupon applies a special price of " +
-                this.#currencyFmt(Number(this.#curCoupon.discount).toFixed(2)) +
+                this.#currencyFmt.format(Number(this.#curCoupon.discount).toFixed(2)) +
                 " to " + label + " memberships in the cart.</li>";
         }
         if (this.getMinMemberships() > 1) {
