@@ -248,6 +248,12 @@ EOS;
 
     case 'regionYears':
         if ($delete_keys != '') {
+            // if we have a delete key, it can't have an exhibits space entry, which means there are no exhibitorRegionYears entries with
+            //      the space items in them, so first delete all of the exhibitorRegionYears with these exhibitsRegionYears keys
+            $delsql = "DELETE FROM exhibitorRegionYears WHERE exhibitsRegionYearId IN ($delete_keys);";
+            web_error_log("Delete usage items = /$delsql/");
+            $deleted += dbCmd($delsql);
+            // now that the exhibitor region years are gone, the delete of the exhibits region years should be able to proceed
             $delsql = "DELETE FROM exhibitsRegionYears WHERE id IN ( $delete_keys );";
             web_error_log("Delete sql = /$delsql/");
             $deleted += dbCmd($delsql);
@@ -329,6 +335,12 @@ EOS;
 
     case 'exhibitsSpaces':
         if ($delete_keys != '') {
+            // if we have a delete key, it can't have an exhibits space price entry, which means there are no exhibitorSpaces entries with
+            //      the space prices items in them, so first delete all of the exhibitorSpaces with these exhibitsSpace keys
+            $delsql = "DELETE FROM exhibitorSpaces WHERE spaceId IN ($delete_keys);";
+            web_error_log("Delete usage items = /$delsql/");
+            $deleted += dbCmd($delsql);
+            // now that the exhibitor spaces are gone, the delete of the exhibits spaces should be able to proceed
             $delsql = "DELETE FROM exhibitsSpaces WHERE id IN ( $delete_keys );";
             web_error_log("Delete sql = /$delsql/");
             $deleted += dbCmd($delsql);
