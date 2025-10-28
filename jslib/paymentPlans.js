@@ -684,7 +684,7 @@ class PaymentPlans {
             paymentAmt = this.#planPaymentMinPayment.toFixed(2);
             retVal = false;
         } else if (paymentAmt > this.#planPaymentBalanceDue) {
-            show_message("Payment greater than balance due, set to " + this.#currencyFmt(this.#planPaymentBalanceDue.toFixed(2),
+            show_message("Payment greater than balance due, set to " + this.#currencyFmt(this.#planPaymentBalanceDue.toFixed(2)),
                 'warn', 'payPlanMessageDiv');
             paymentAmt = this.#planPaymentBalanceDue.toFixed(2);
             retVal = false;
