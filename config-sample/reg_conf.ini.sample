@@ -104,7 +104,7 @@ policytext="conname Policies"
 ;; R:H,reg_staff
 ;; H:Shows the "Click here for the #conname# Policies",
 ;; H+&nbsp;&nbsp;&nbsp;&nbsp;set to 0 if agree to policy is one of your ConTroll policies or 1 otherwise
-;; D:a0,1
+;; D:l:0,1
 ;; B:O
 ; showConPolicy - shows the "Click here for the #conname# Policies",
 ;     set to 0 if agree to policy is one of your policies or 1 otherwise
@@ -113,7 +113,7 @@ showConPolicy=1
 ;; R:H,reg_staff
 ;; H:Shows the "#Conname# is entirely run by volunteers" line in the policy block,
 ;; H+&nbsp;&nbsp;&nbsp;&nbsp;set to 0 if volunteers is in your interest section, 1 otherwise
-;; D:a0,1
+;; D:l:0,1
 ;; B:O
 ; showVolunteerPolicy - shows the "#Conname# is entirely run by volunteers" line in the policy block,
 ;      set to 0 if volunteers is in your interest section, 1 otherwise
@@ -262,21 +262,21 @@ rollover_eligible="'upgrade', 'rollover', 'freebie', 'standard', 'yearahead', 'd
 ;; N:oneoff
 ;; R:V,reg_admin
 ;; H:If this is a one time (one-off convention), 0=if this convention re-occurs every "year".
-;; D:a0,1
+;; D:l:0,1
 ;; B:M
 oneoff=0 ; 1 if this is a one year (one-off convention), 0=if this convention re-occurs every "year".
 ;; N:multioneday
 ;; R:H,reg_staff
 ;; H:Can one day memberships be purchased for more than one day of the convention
 ;; H+ =0 for only a single one day can be purchased, =1 if multiple different one day can be purchased
-;; D:a0,1
+;; D:l:0,1
 ;; B:M
 multioneday=1 ; =0 for only a single one day can be purchased, =1 if multiple different one day can be purchased
 ;; N:onedaycoupons
 ;; R:H,reg_staff
 ;; H:Can one day memberships be purchased with a coupon
 ;; H+ =0 no coupons apply to one days, =1 coupons can apply to one days
-;; D:a0,1
+;; D:l:0,1
 ;; B:M
 onedaycoupons=0 ; allow onedays for coupon usage
 
@@ -398,7 +398,7 @@ discount=active
 ;; H:Which memberships to show in Atcon:
 ;; H+&nbsp;&nbsp;&nbsp;&nbsp;=0: act like portal and require age to show related memberships
 ;; H+&nbsp;&nbsp;&nbsp;&nbsp;=1: show all memberships, independent of age, if no membership in cart limits age
-;; D:a0,1
+;; D:l:0,1
 ;; B:O
 ;;;; allage - which badges to show
 ; values:
@@ -413,7 +413,7 @@ allage=0
 ;; H+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or if 'restrict to inventory sale statuses and prices' for art not sold at quicksale
 ;; H+&nbsp;&nbsp;&nbsp;&nbsp;=1: Art Show Cashierwill use an intelligent  popup based on Region Year Room Status
 ;; H+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; for allowing what to sell and at what price
-;; D:a0,1
+;; D:l:0,1
 ;; B:O
 ;;;; inlineinventory - allow for modal change to inventory status at time of checkout for artpos (not require inventory update first)
 ; inlineinventory=0 : artpos will sell as quicksale if no bids, or if 'restrict to inventory sale statuses and prices' for art not sold at quicksale
@@ -424,7 +424,7 @@ inlineinventory=1
 ;; H:Allow use of atcon for pre-con sales
 ;; H+&nbsp;&nbsp;&nbsp;&nbsp;=0: Atcon only work correctly at con, precon simiulates the first day of the con
 ;; H+&nbsp;&nbsp;&nbsp;&nbsp;=1: Atcon works pre-con, follows the current date to check date range for precon sales
-;; D:a0,1
+;; D:l:0,1
 ;; B:O
 ;;;; precon - Allow use of atcon for pre-con sales
 ; precon=0 - only work correctly at con, precon simiulates the first day of the con
@@ -526,14 +526,14 @@ artistBidSheetNumbers=3
 ;; R:V,exhibitor
 ;; H:Print the vertical separation bar in the bid sheet rows between bidder and bid amount
 ;; H+&nbsp;&nbsp;&nbsp;&nbsp;set to 0 to not print the separation line, 1 to print it
-;; D:a0,1
+;; D:l:0,1
 ;; B:O
 artistBidSheetBidSep=1
 ;; N:artistBidSheetBarcode
 ;; R:V,exhibitor
 ;; H:Print the bar code at the bottom of the bid sheets
 ;; H+&nbsp;&nbsp;&nbsp;&nbsp;set to 0 to not print the barcode, 1 to to print it
-;; D:a0,1
+;; D:l:0,1
 ;; B:O
 ; bar codes: 0 = no barcode, 1 = show barcode, bar code is code128 and contains art item id,count (count = 1 for bid sheets and the "n" of qty for print shop)
 artistBidSheetBarcode = 1;
@@ -550,7 +550,7 @@ artistPriceTag="Unconfigured Price Tag"
 ;; R:V,exhibitor
 ;; H:Print the bar code at the bottom of the price tags
 ;; H+&nbsp;&nbsp;&nbsp;&nbsp;set to 0 to not print the barcode, 1 to to print it
-;; D:a0,1
+;; D:l:0,1
 ;; B:O
 ; bar codes: 0 = no barcode, 1 = show barcode, bar code is code128 and contains art item id,count (count = 1 for bid sheets and the "n" of qty for print shop)
 artistPriceTagBarcode = 1;
@@ -559,7 +559,7 @@ artistPriceTagBarcode = 1;
 ;; R:V,exhibitor
 ;; H:Show the print bid/price sheets buttons in the exhibior portal
 ;; H+&nbsp;&nbsp;&nbsp;&nbsp;set to 0 to not show the buttons, 1 to show them
-;; D:a0,1
+;; D:l:0,1
 ;; B:O
 artsheets=0 ; 0: do not show, 1 = whow show bid/price tag sheet print buttons
 ;;; general items
@@ -567,7 +567,7 @@ artsheets=0 ; 0: do not show, 1 = whow show bid/price tag sheet print buttons
 ;; R:V,exhibitor
 ;; H:Show the control sheets print button in the exhibior portal
 ;; H+&nbsp;&nbsp;&nbsp;&nbsp;set to 0 to not show the button, 1 to show it
-;; D:a0,1
+;; D:l:0,1
 ;; B:O
 artcontrol=0 ; true/false show control sheet print button
 ;;; artcontrolsort = one of item or type (/item): default if missing: item
@@ -613,7 +613,7 @@ logoalt=""
 ;; R:H,reg_staff
 ;; H:Enable the membership History menu button
 ;; H+&nbsp;&nbsp;&nbsp;&nbsp;set to 0 to disable (hide) the button, 1 to enable it (show)
-;; D:a0,1
+;; D:l:0,1
 ;; B:O
 history=1
 ;;; memberbadgencolor: hex string of the color of the membership "badges" on the portal home screen, to override the standard color scheme
@@ -631,7 +631,7 @@ history=1
 ;; R:H,reg_staff
 ;; H:Suppress the membership badge color legend
 ;; H+&nbsp;&nbsp;&nbsp;&nbsp;set to 1 to suppress (hide) the legend, 0 to enable it (show) (Note this is suppress now SHOW)
-;; D:a0,1
+;; D:l:0,1
 ;; B:O
 ;;;; suppresslegend: if memberbasgecolor is not used, missing or 0 will show the legend, 1 will suppress the legend
 ;suppresslegend=0
@@ -650,7 +650,7 @@ history=1
 ;; R:H,reg_staff
 ;; H:Shows the "Click here for the #conname# Policies",
 ;; H+&nbsp;&nbsp;&nbsp;&nbsp;set to 0 if agree to policy is one of your ConTroll policies or 1 otherwise
-;; D:a0,1
+;; D:l:0,1
 ;; B:O
 ; showConPolicy - shows the "Click here for the #conname# Policies",
 ;     set to 0 if agree to policy is one of your policies or 1 otherwise
@@ -659,7 +659,7 @@ showConPolicy=1
 ;; R:H,reg_staff
 ;; H:Shows the "#Conname# is entirely run by volunteers" line in the policy block,
 ;; H+&nbsp;&nbsp;&nbsp;&nbsp;set to 0 if volunteers is in your interest section, 1 otherwise
-;; D:a0,1
+;; D:l:0,1
 ;; B:O
 ; showVolunteerPolicy - shows the "#Conname# is entirely run by volunteers" line in the policy block,
 ;      set to 0 if volunteers is in your interest section, 1 otherwise

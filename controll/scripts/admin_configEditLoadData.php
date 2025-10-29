@@ -29,8 +29,10 @@ if (!array_key_exists('load_type', $_POST)) {
     exit();
 }
 
+$auths = getAuths($check_auth['sub']);
+
 $con=get_conf('con');
 $conid= $con['id'];
-$response = loadConfigEditor($perm);
+$response = loadConfigEditor($perm, $auths);
 
 ajaxSuccess($response);

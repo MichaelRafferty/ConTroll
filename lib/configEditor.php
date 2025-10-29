@@ -4,7 +4,7 @@
 // Author: Syd Weinstein
 // all common functions related to the configuration editor
 
-function loadConfigEditor($perm) : array {
+function loadConfigEditor($perm, $auths) : array {
     $configDir = '../config';
     $sampleDir = '../config-sample';
     if (!is_dir($configDir)) {
@@ -33,13 +33,13 @@ function loadConfigEditor($perm) : array {
         ajaxSuccess($response);
         exit();
     }
+    $response = array ();
 //  load the reg_conf.ini into a special array for return
     $current_config = parse_ini_file($filePath);
-    $response['current_config'] = $current_config;
+    $response['currentConfig'] = $current_config;
 
 // now load the configuration file
     $master = file($controlPath, FILE_IGNORE_NEW_LINES);
-    $response = array ();
     $control = [];
     $sections = [];
     $section = [];
@@ -82,7 +82,7 @@ function loadConfigEditor($perm) : array {
 
             case 'R': // role
                 $roleArr = explode(',', mb_substr($line, 5), 2);
-                $section['role'] = [ 'vis' => $roleArr[0], 'perm' => $roleArr[1] ];
+                $section['role'] = [ 'vis' => $roleArr[0], 'perm' => $roleArr[1], 'editable' => ($perm == 'admin' || in_array($roleArr[1], $auths)) ? 1 : 0 ];
                 break;
 
             case 'P': // placeholder
@@ -120,6 +120,7 @@ function loadConfigEditor($perm) : array {
         $control[$sectionName] = $config;
     }
     $response['perm'] = $perm;
+    $response['auths'] = $auths;
     $response['control'] = $control;
     $response['sections'] = $sections;
 
