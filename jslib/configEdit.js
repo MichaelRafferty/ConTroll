@@ -67,7 +67,7 @@ class ConfigEditor {
         let visibleEnd = visible ? '' : '</span>';
 
         // N: name
-        let html = "<div class='row mt-2'><div class='col-sm-auto'><h4>" + visibleStart + param.name + visibleEnd + "</h4></div></div>\n";
+        let html = "<div class='row mt-2'><div class='col-sm-auto'><h4><b>" + visibleStart + param.name + visibleEnd + "</h4></b></div></div>\n";
 
         // H: hint
         html += "<div class='row mt-1'><div class='col-sm-12'>"  + visibleStart + param.hint + visibleEnd + '</div></div>\n';
