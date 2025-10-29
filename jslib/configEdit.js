@@ -66,6 +66,9 @@ class ConfigEditor {
         let visibleStart = visible ? '' : '<span style="color: lightgrey;">';
         let visibleEnd = visible ? '' : '</span>';
 
+        if (!visible)
+            return;
+
         // N: name
         let html = "<div class='row mt-2'><div class='col-sm-auto'><h4><b>" + visibleStart + param.name + visibleEnd + "</h4></b></div></div>\n";
 

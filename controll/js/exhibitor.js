@@ -14,6 +14,7 @@ fulltabname = null;
 regionid = null;
 exhibitorsData = null;
 customText = null;
+configEditor = null;
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // globals for exhibits configuration
@@ -114,6 +115,7 @@ class exhibitorsAdm {
         this.#ownerTabs.overview = document.getElementById('overview-content');
         this.#ownerTabs.configuration = document.getElementById('configuration-pane');
         this.#ownerTabs.customtext = document.getElementById('customtext-pane');
+        this.#ownerTabs.configEdit = document.getElementById('configEdit-pane');
         this.#currentOwner = this.#ownerTabs.overview;
         this.#currentPane = 'overview';
         var ownerKeys = Object.keys(regionOwners);
@@ -191,6 +193,9 @@ class exhibitorsAdm {
         if (customText != null)
             customText.close();
 
+        if (configEditor != null)
+            configEditor.close();
+
         if (this.#currentRegion) {
             this.#currentRegion.hidden = true;
             this.#currentRegion = null;
@@ -212,6 +217,11 @@ class exhibitorsAdm {
             return;
         }
 
+        if (content == 'configEdit') {
+            this.loadConfigEditor();
+            return;
+        }
+
         if (this.#cacheDirty) {
             window.location.href = this.#scriptName + '?tab=' + content;
             return;
@@ -222,6 +232,44 @@ class exhibitorsAdm {
         var regionKey = Object.keys(regionsInOwner)[0];
         var region = regionsInOwner[regionKey];
         this.settabRegion(region.name.replaceAll(' ', '-') + '-pane');
+    }
+
+// configuration editor
+    loadConfigEditor() {
+        let script = 'scripts/admin_configEditLoadData.php';
+        let postData = {
+            load_type: 'conf',
+            perm: 'exhibitor'
+        }
+        let _this = this;
+        clearError();
+        clear_message();
+        $.ajax({
+            url: script,
+            method: 'POST',
+            data: postData,
+            success: function (data, textStatus, jhXHR) {
+                if (data.error) {
+                    show_message(data.error, 'error');
+                    return;
+                }
+                if (data.warn) {
+                    show_message(data.error, 'warn');
+                    return;
+                }
+                _this.openConfigEditor(data);
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showError("ERROR in getMenu: " + textStatus, jqXHR);
+            },
+        });
+    }
+
+    openConfigEditor(data) {
+        if (data.success) {
+            show_message(data.success, 'success');
+        }
+        configEditor = new ConfigEditor(data);
     }
 
     // second level - region

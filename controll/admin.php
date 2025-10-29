@@ -137,7 +137,11 @@ if (array_key_exists('msg', $_REQUEST)) {
         </li>
         <li class='nav-item' role='presentation'>
             <button class='nav-link' id='configEdit-tab' data-bs-toggle='pill' data-bs-target='#configEdit-pane' type='button' role='tab'
+                    aria-controls='nav-menu' aria-selected='false' onclick="se<li class='nav-item' role='presentation'>
+            <button class='nav-link' id='configEdit-tab' data-bs-toggle='pill' data-bs-target='#configEdit-pane' type='button' role='tab'
                     aria-controls='nav-menu' aria-selected='false' onclick="settab('configEdit-pane');">Configuration Editor
+            </button>
+        </li>ttab('configEdit-pane');">Configuration Editor
             </button>
         </li>
         <!-- future - oauth2 client key configuration for the server

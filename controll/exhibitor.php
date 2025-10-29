@@ -61,6 +61,7 @@ page_init($page,
                     'jslib/exhibitorRequest.js',
                     'jslib/exhibitorReceipt.js',
                     'jslib/exhibitorInvoiceCommon.js',
+                    'jslib/configEdit.js',
                     'js/tinymce/tinymce.min.js'
                    ),
               $need_login);
@@ -256,6 +257,11 @@ draw_exhibitsConfigurationModals();
                     aria-controls='nav-customtext' aria-selected='false' onclick="exhibitors.settabOwner('customtext-pane');">Custom Text
             </button>
         </li>
+        <li class='nav-item' role='presentation'>
+            <button class='nav-link' id='configEdit-tab' data-bs-toggle='pill' data-bs-target='#configEdit-pane' type='button' role='tab'
+                    aria-controls='nav-menu' aria-selected='false' onclick="exhibitors.settabOwner('configEdit-pane');">Configuration Editor
+            </button>
+        </li>
 <?php
 // build tab structure
 $regionOwners = [];
@@ -345,6 +351,25 @@ while ($regionL = $regionOwnerR->fetch_assoc()) {
     </div>
     <div class='tab-pane fade' id='configuration-pane' role='tabpanel' aria-labelledby='configuration-tab' tabindex='0'></div>
     <div class='tab-pane fade' id='customtext-pane' role='tabpanel' aria-labelledby='customtext-tab' tabindex='0'></div>
+    <div class='tab-pane fade' id='configEdit-pane' role='tabpanel' aria-labelledby='configEdit-tab' tabindex='0'>
+        <div class='container-fluid'>
+            <div class='row'>
+                <div class='col-sm-auto'><h2>Exhibitors Configuration Editor (reg_conf.ini)</h2></div>
+            </div>
+        </div>
+        <div class='container-fluid' id='configDiv'>
+        </div>
+        <div class='container-fluid'>
+            <div class='row mt-2 mb-3'>
+                <div class='col-sm-auto'>
+                    <button type='button' class='btn btn-primary btn-sm' id='saveBTN' onclick='configEditor.save();' disabled>Save</button>
+                </div>
+                <div class='col-sm-auto'>
+                    <button type='button' class='btn btn-secondary btn-sm' id='discardBTN' onclick='configEditor.discard();' disabled>Discard Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <?php
 foreach ($regionOwners AS $regionOwner => $regionList) {
