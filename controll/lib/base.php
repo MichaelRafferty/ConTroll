@@ -45,13 +45,32 @@ function google_init($mode) {
       if(isset($_REQUEST['logout'])) {
           session_regenerate_id(true);
       }
+      if (array_key_exists('id', $_REQUEST)) {
+          $reqid = $_REQUEST['id'];
+      } else if (array_key_exists('user_id', $_SESSION)) {
+          $reqid = $_SESSION['user_perid'];
+      } else {
+          $reqid = 21389;
+      }
       $token_data = array();
-      $token_data['email'] = 'syd.weinstein@philcon.org';
-      $token_data['sub'] = '114007818392249665998';
+      switch ($reqid) {
+          case '6942':
+              $token_data['email'] = 'syd@sydweinstein.net';
+              $token_data['sub'] = '6942';
+              $userid = 93;
+              $user_perid = 6942;
+              break;
+          default:
+              $token_data['email'] = 'syd.weinstein@philcon.org';
+              $token_data['sub'] = '114007818392249665998';
+              $userid = 88;
+              $user_perid = 21389;
+      }
+
       $token_data['iat'] = time();
       $token_data['exp'] = time() + 3600;
-      $_SESSION['user_id'] = 88;
-      $_SESSION['user_perid'] = 21389;
+      $_SESSION['user_id'] = $userid;
+      $_SESSION['user_perid'] = $user_perid;
       return($token_data);
   }
 

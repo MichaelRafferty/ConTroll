@@ -33,6 +33,7 @@ page_init($page,
                     'jslib/emailBulkSend.js',
                     'jslib/membershipRules.js',
                     'jslib/notes.js',
+                    'jslib/configEdit.js',
               ),
                     $need_login);
 
@@ -46,6 +47,8 @@ if ($controll != null && array_key_exists('badgelistfilter', $controll)) {
         $badgeListFilter = "top";
 } else
     $badgeListFilter = "top";
+$currency = getConfValue('con', 'currency', 'USD');
+$locale = getLocale();
 
 $conid = getConfValue('con', 'id', '-1');
 $multiOneDay = getConfValue('con', 'multioneday', '0');
@@ -59,6 +62,8 @@ $config_vars['userid'] = $_SESSION['user_perid'];
 $config_vars['finance'] = $finance ? 1 : 0;
 $config_vars['ae'] = $admin ? 1 : 0;
 $config_vars['source'] = 'regstaff';
+$config_vars['locale'] = $locale;
+$config_vars['currency'] = $currency;
 ?>
 <?php bs_tinymceModal();
 // edit memList entry modal
@@ -947,6 +952,11 @@ $config_vars['source'] = 'regstaff';
                 aria-controls='nav-merge' aria-selected='false' onclick="settab('merge-pane');">Merge People
         </button>
     </li>
+    <li class='nav-item' role='presentation'>
+        <button class='nav-link' id='configEdit-tab' data-bs-toggle='pill' data-bs-target='#configEdit-pane' type='button' role='tab'
+                aria-controls='nav-menu' aria-selected='false' onclick="settab('configEdit-pane');">Configuration Editor
+        </button>
+    </li>
 </ul>
 <div class='tab-content ms-2' id='regadmin-content'>
     <div class='tab-pane fade show active' id='registrationlist-pane' role='tabpanel' aria-labelledby='registrationlist-tab' tabindex='0'>
@@ -1042,6 +1052,25 @@ $config_vars['source'] = 'regstaff';
     <div class='tab-pane fade' id='policy-pane' role='tabpanel' aria-labelledby='policy-tab' tabindex='0'></div>
     <div class='tab-pane fade' id='interests-pane' role='tabpanel' aria-labelledby='interests-tab' tabindex='0'></div>
     <div class='tab-pane fade' id='rules-pane' role='tabpanel' aria-labelledby='rules-tab' tabindex='0'></div>
+    <div class='tab-pane fade' id='configEdit-pane' role='tabpanel' aria-labelledby='configEdit-tab' tabindex='0'>
+        <div class='container-fluid'>
+            <div class='row'>
+                <div class='col-sm-auto'><h2>Registration Administration Configuration Editor (reg_conf.ini)</h2></div>
+            </div>
+        </div>
+        <div class='container-fluid' id='configDiv'>
+        </div>
+        <div class='container-fluid'>
+            <div class='row mt-2 mb-3'>
+                <div class='col-sm-auto'>
+                    <button type='button' class='btn btn-primary btn-sm' id='saveBTN' onclick='configEditor.save();' disabled>Save</button>
+                </div>
+                <div class='col-sm-auto'>
+                    <button type='button' class='btn btn-secondary btn-sm' id='discardBTN' onclick='configEditor.discard();' disabled>Discard Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <div id='result_message' class='mt-4 p-2'></div>
 </div>
 <pre id='test'>

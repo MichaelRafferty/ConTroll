@@ -13,7 +13,12 @@ $returnAjaxErrors = true;
 $return500errors = true;
 
 $check_auth = google_init('ajax');
-$perm = 'admin';
+if (!array_key_exists('perm', $_POST)) {
+    $response['error'] = 'Parameter Error';
+    ajaxSuccess($response);
+    exit();
+}
+$perm = $_POST['perm'];
 
 $response = array ('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
 

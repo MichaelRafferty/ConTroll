@@ -394,7 +394,8 @@ function openPrinters(data) {
 function loadConfigEditor() {
     script = 'scripts/admin_configEditLoadData.php';
     postData = {
-        load_type: 'conf'
+        load_type: 'conf',
+        perm: 'admin'
     }
     clearError();
     clear_message();

@@ -7,6 +7,7 @@ customText = null;
 policy = null;
 interests = null;
 rules = null;
+configEditor = null;
 conid = null;
 editPreviewClass = null;
 memLabels = null;
@@ -1752,6 +1753,8 @@ function settab(tabname) {
         interests.close();
     if (rules != null)
         rules.close();
+    if (configEditor != null)
+        configEditor.close();;
     if (tabname != 'registrationlist-pane') {
         reglistDiv.hidden = true;
         if (registrationtable) {
@@ -1805,8 +1808,49 @@ function settab(tabname) {
                 rules = new rulesSetup();
             rules.open();
             break;
+        case 'configEdit-pane':
+            loadConfigEditor();
+            break;
     }
 }
+
+// configuration editor
+function loadConfigEditor() {
+    script = 'scripts/admin_configEditLoadData.php';
+    postData = {
+        load_type: 'conf',
+        perm: 'reg_staff'
+    }
+    clearError();
+    clear_message();
+    $.ajax({
+        url: script,
+        method: 'POST',
+        data: postData,
+        success: function (data, textStatus, jhXHR) {
+            if (data.error) {
+                show_message(data.error, 'error');
+                return;
+            }
+            if (data.warn) {
+                show_message(data.error, 'warn');
+                return;
+            }
+            openConfigEditor(data);
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            showError("ERROR in getMenu: " + textStatus, jqXHR);
+        },
+    });
+}
+
+function openConfigEditor(data) {
+    if (data.success) {
+        show_message(data.success, 'success');
+    }
+    configEditor = new ConfigEditor(data);
+}
+
 function cellChanged(cell) {
     dirty = true;
     cell.getElement().style.backgroundColor = "#fff3cd";
