@@ -43,6 +43,8 @@ function google_init($mode) {
   // bypass for testing on Development PC
   if (stripos(__DIR__, "/Users/syd/") !== false && $_SERVER['SERVER_ADDR'] == "127.0.0.1") {
       if(isset($_REQUEST['logout'])) {
+          unset($_SESSION['user_perid']);
+          unset($_SESSION['user_id']);
           session_regenerate_id(true);
       }
       if (array_key_exists('id', $_REQUEST)) {
