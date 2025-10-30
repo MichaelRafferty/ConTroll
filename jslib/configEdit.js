@@ -98,37 +98,42 @@ class ConfigEditor {
     // formatInput - for a single parameter, output the form field
     formatInput(sectionName, param, value) {
         let size = '';
-        let max=80;
+        let max= 80;
         let decimals = '';
         let html = '';
         let name = sectionName + '__' + param.name;
         let id = ' id="' + name + '" name="' + name + '"';
+        let modifier = param.datatype.modifier;
+        if (modifier == undefined || modifier == null)
+            modifier = '';
 
         if (value === undefined)
             value = '';
         switch (param.datatype.type) {
             case 'i': // integer number
+            case 'd': // decimal number
                 html = '<input type=number placeholder="' + param.placeholder + '" ' + id + ' value="' + value + '"';
-                if (param.datatype.modifier != '') {
-                    html += 'max="' + '9'.repeat(Number(param.datatype.modifier)) + '"';
+                if (modifier != '') {
+                    let digits = modifier.split(',', 1);
+                    html += ' max="' + '9'.repeat(Number(digits)) + '"';
                 }
                 html += ' onchange="configEditor.changed(' + "'" + name + "'" + ');">';
                 break;
 
-            case 'd': // decimal number
+
                 break;
 
             case 's': // string
             case 'r': // relative path name
             case 'a': // absolute path name
             case 'h': // URI (http/https/mailto
-                max = param.datatype.modifier != '' ?  Number(param.datatype.modifier) : 256;
+                max = modifier != '' ?  Number(modifier) : 256;
                 size = max > 75 ? 80 : (max + 5);
                 html = '<input type=text placeholder="' + param.placeholder + '" ' + id + ' value="' + value + '"' +
                     ' size="' + size + '" maxlength="' + max + '" onchange="configEditor.changed(' + "'" + name + "'" + ');"> (Max Length: ' + max + ')';
                 break;
             case 't': // textarea
-                size = param.datatype.modifier.split(',');
+                size = modifier.split(',');
                 if (size[0] < 50) size[0] = 50;
                 if (size[1] < 3) size[0] = 3;
                 html = '<textarea placeholder="' + param.placeholder + '" ' + id + ' cols="' + size[0] + '" rows="' + size[1] +
@@ -144,7 +149,7 @@ class ConfigEditor {
 
             case 'l': // list (option)
                 html = '<select ' + id + ' onchange="configEditor.changed(' + "'" + name + "'" + ');">\n';
-                let options = param.datatype.modifier.substring(1).split(',');
+                let options = modifier.substring(1).split(',');
                 for (let option of options) {
                     html += '<option value="' + option + '"' + (value == option ? ' selected' : '') + '>' + option + '</option>';
                 }
@@ -202,7 +207,7 @@ class ConfigEditor {
             let config = this.#control[sectionName];
             for (let paramName in config) {
                 let param = config[paramName];
-                errormsg += this.valiateParam(sectionName, param);
+                errormsg += this.validateParam(sectionName, param);
             }
         }
         if (errormsg != '') {
@@ -215,7 +220,112 @@ class ConfigEditor {
 
 // validateParam - validate a specific parameter according to its configuration
     validateParam(sectionName, param) {
-        return '';
+        let name = sectionName + '__' + param.name;
+        let field = undefined;
+        let errmsg = '';
+        if (this.#fieldList.hasOwnProperty(name)) {
+            field = this.#fieldList[name];
+        } else {
+            field = document.getElementById(name);
+            this.#fieldList[name] = field;
+        }
+
+        let value = field.value;
+        if (typeof value === "string")
+            value = value.trim();
+        if (value == undefined || value == null) {
+            value = '';
+        }
+        if (value == '') {
+            // empty string, check what to do if empty
+            if (param.blank == 'M') { // mandatory
+                errmsg = "Section " + sectionName + ", Parameter: " + param.name + " cannot be empty<br/>\n";
+                field.style.backgroundColor = "#ff8f8f";
+                return errmsg;
+            }
+            return '';
+        }
+
+        let modifier = param.datatype.modifier;
+        if (modifier == undefined || modifier == null)
+            modifier = '';
+
+        switch (param.datatype.type) {
+            case 'i': // integer number
+                value = Number(value);
+                if (!Number.isInteger(value)) {
+                    errmsg = " is not a valid integer";
+                    break;
+                }
+                if (modifier != '') {
+                    let digits = modifier.split(',', 1);
+                    if (Number(value) > Number('9'.repeat(Number(digits)))) {
+                        errmsg = "is too large";
+                    }
+                }
+                break;
+
+            case 'd': // decimal number
+                value = Number(value);
+                if (Number.isNaN(value)) {
+                    errmsg = "is not a valid number";
+                    break;
+                }
+                if (modifier != '') {
+                    let digits = modifier.split(',', 1);
+                    if (Number(value) > Number('9'.repeat(Number(digits)))) {
+                        errmsg = "is too large";
+                    }
+                }
+                break;
+
+            case 's': // string
+                if (value.length > Number(modifier)) {
+                    errmsg = "is too long";
+                }
+                break;
+
+            case 'r': // relative path name
+                if (value.substring(0,1) == '/') {
+                    errmsg = "is not a relative path, it cannot start with /";
+                    break;
+                }
+                break;
+
+            case 'a': // absolute path name
+                if (value.substring(0,1) != '/') {
+                    errmsg = "is not an absolute path, it must start with /";
+                    break;
+                }
+
+            case 'h': // URI (http/https/mailto
+                try {
+                    let URLobj = new URL(value);
+                } catch (error) {
+                    errmsg = "is not a valid URI";
+                }
+                break;
+
+            case 't': // textarea
+                // nothing to check right now
+                break;
+
+            case 'e': // email address
+                if (!validateAddress(value))
+                    errmsg = "is not a valid email address";
+                break;
+
+            case 'l': // list (option)
+                // nothing to check right now
+                break;
+        }
+
+
+        if (errmsg != '') {
+            errmsg = "Section " + sectionName + ", Parameter: " + param.name + " " + errmsg + "</br>";
+            field.style.backgroundColor = "#ffafaf";
+        }
+        return errmsg;
     }
 
 // close the tab
@@ -236,7 +346,7 @@ class ConfigEditor {
 
 // save the changes back
     save() {
-        if (!validateConfig())
+        if (!this.validateConfig())
             return false;
 
         console.log("save called");

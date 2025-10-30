@@ -306,7 +306,7 @@ onedaycoupons=0 ; allow onedays for coupon usage
 ;; H+addr = first, addr, city, st, zip, country, email
 ;; H+first = require only first name: first, country, email
 ;; D:l:all,addr,first
-;; B:M
+;; B:O
 ;;; required person field sets
 ;   all = require all fields: first, last, addr, city, st, zip, country, email
 ;   first = require only first name: first, country, email
