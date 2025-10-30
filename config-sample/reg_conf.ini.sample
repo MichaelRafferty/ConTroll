@@ -540,7 +540,7 @@ artistBidSheetBarcode = 1;
 ;;; Art Show Price Tag Items
 ;; N:artistPriceTag
 ;; R:V,exhibitor
-;; P:Bid Sheet Title Line
+;; P:Price Tag Title Line
 ;; H:Title for the Art Show Fixed Sale Price Tags
 ;; H+(There is limited space and it must fit on one line. Display a sample bid sheet to check if your text fits propery)
 ;; D:s64
