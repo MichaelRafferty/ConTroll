@@ -120,9 +120,6 @@ class ConfigEditor {
                 html += ' onchange="configEditor.changed(' + "'" + name + "'" + ');">';
                 break;
 
-
-                break;
-
             case 's': // string
             case 'r': // relative path name
             case 'a': // absolute path name
@@ -169,7 +166,7 @@ class ConfigEditor {
     changed(name) {
         let pos = name.split('__', 2);
         let section = pos[0];
-        let param = pos[1];
+        let paramName = pos[1];
         let field = null;
         if (this.#fieldList.hasOwnProperty(name)) {
             field = this.#fieldList[name];
@@ -178,7 +175,7 @@ class ConfigEditor {
             this.#fieldList[name] = field;
         }
 
-        let changed = this.#initialConfig[section][param] != field.value;
+        let changed = this.#initialConfig[section][paramName] != field.value;
         this.#fieldsChanged[name] = changed;
         field.style.backgroundColor = changed ?  "#fff3cd" : '';
 
@@ -212,16 +209,21 @@ class ConfigEditor {
         }
         if (errormsg != '') {
             show_message(errormsg, 'error')
-            return;
+            return false;
         }
         this.#saveBtn.disabled = false;
         this.#saveBtn.innerHTML = 'Save*';
+        return true;
     }
 
 // validateParam - validate a specific parameter according to its configuration
     validateParam(sectionName, param) {
         let name = sectionName + '__' + param.name;
         let field = undefined;
+
+        clear_message();
+        clearError();
+
         let errmsg = '';
         if (this.#fieldList.hasOwnProperty(name)) {
             field = this.#fieldList[name];
@@ -349,7 +351,68 @@ class ConfigEditor {
         if (!this.validateConfig())
             return false;
 
-        console.log("save called");
+        // create the list of changed values along with their initial values
+        let changes = this.needSave();  // see if we still need to save, after validation
+        if (changes == 0) {
+            show_message("No changes found, nothing to save", 'warn');
+            return false;
+        }
+
+        // disable the save button to avoid double clicks....
+        this.#saveBtn.disabled = true;
+        this.#saveBtn.innerHTML = 'Saving...';
+
+        let changedItems = [];
+        let names = Object.keys(this.#fieldsChanged);
+        for (let name of names) {
+            if (this.#fieldsChanged[name]) {
+                let pos = name.split('__', 2);
+                let section = pos[0];
+                let paramName = pos[1];
+
+                let item = { fieldName: name, section: section, param: paramName,
+                    initial: this.#initialConfig[section][paramName], new: this.#fieldList[name].value };
+                changedItems.push(item);
+            }
+        }
+
+        clearError();
+        clear_message();
+
+        let script = 'configEditSaveReloadChanges.php';
+        let data = {
+            task: 'update',
+            fields: JSON.stringify(changedItems),
+        }
+        $.ajax({
+            url: script,
+            method: 'POST',
+            data: data,
+            success: function (data, textStatus, jhXHR) {
+                if (data.error) {
+                    showError(data.error);
+                    this.#saveBtn.disabled = false;
+                    this.#saveBtn.innerHTML = 'Save*';
+                    return false;
+                }
+                this.#control = data.control;
+                this.#sections = data.sections;
+                this.#myPerm = data.perm;
+                this.#myAuths = data.auths;
+                this.#initialConfig = make_copy(data.currentConfig);
+                this.#currentConfig = make_copy(data.currentConfig);
+                drawConfig();
+                if (data.message)
+                    show_messgage(data.message, 'success');
+                return true;
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showError("ERROR in " + script + ": " + textStatus, jqXHR);
+                this.#saveBtn.disabled = false;
+                this.#saveBtn.innerHTML = 'Save*';
+                return false;
+            }
+        });
     }
 
 // discard the changes, reload the config
@@ -361,8 +424,8 @@ class ConfigEditor {
                 let field = this.#fieldList[name];
                 let pos = name.split('__', 2);
                 let section = pos[0];
-                let param = pos[1];
-                field.value = this.#initialConfig[section][param];
+                let paramName = pos[1];
+                field.value = this.#initialConfig[section][paramName];
                 field.style.backgroundColor = '';
                 this.#fieldsChanged[name] = false;
             }

@@ -247,7 +247,7 @@ class exhibitorsAdm {
 
 // configuration editor
     loadConfigEditor() {
-        let script = 'scripts/admin_configEditLoadData.php';
+        let script = 'scripts/configEditLoadData.php';
         let postData = {
             load_type: 'conf',
             perm: 'exhibitor'

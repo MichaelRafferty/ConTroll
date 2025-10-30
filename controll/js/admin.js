@@ -400,7 +400,7 @@ function openPrinters(data) {
 
 // configuration editor
 function loadConfigEditor() {
-    script = 'scripts/admin_configEditLoadData.php';
+    script = 'scripts/configEditLoadData.php';
     postData = {
         load_type: 'conf',
         perm: 'admin'

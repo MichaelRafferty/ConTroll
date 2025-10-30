@@ -1826,7 +1826,7 @@ function settab(tabname) {
 
 // configuration editor
 function loadConfigEditor() {
-    script = 'scripts/admin_configEditLoadData.php';
+    script = 'scripts/configEditLoadData.php';
     postData = {
         load_type: 'conf',
         perm: 'reg_staff'
