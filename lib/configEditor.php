@@ -136,6 +136,8 @@ function loadConfigEditor($perm, $auths) : array {
         $lineNo++;
         if (preg_match('/^\s*\[[^]]+]\s*$/', $line)) {
             if ($sectionName != '') {
+                if ($curFieldName != '')
+                    $config[$curFieldName] = $section;
                 $control[$sectionName] = $config;
             }
             $sectionName = preg_replace('/^\s*\[([^]]+)]\s*$/', '$1', $line);
@@ -254,6 +256,11 @@ function updateConfig($user_perid, $fields) : string {
     $updates = 0;
     foreach ($master as $line) {
         if (preg_match('/^\s*\[[^]]+]\s*$/', $line)) {
+            if ($needOutput) {
+                $status .= outputLine($fileHandle, $sectionName, $fieldName, $blank, $contents);
+                $needOutput = false;
+            }
+
             $sectionName = preg_replace('/^\s*\[([^]]+)]\s*$/', '$1', $line);
             fwrite($fileHandle, $line);
             if ($first) {
