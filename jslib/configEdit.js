@@ -404,6 +404,8 @@ class ConfigEditor {
                 drawConfig();
                 if (data.message)
                     show_messgage(data.message, 'success');
+                if (data.warn)
+                    show_messgage(data.warn, 'warn');
                 return true;
             },
             error: function (jqXHR, textStatus, errorThrown) {
