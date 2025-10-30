@@ -620,7 +620,7 @@ history=1
 ;;; Art Show Price Tag Items
 ;; N:memberbadgecolors
 ;; R:V,exhibitor
-;; P:Color String in #000000 format
+;; P:#000000 fmt
 ;; H:Override the default membership badge color scheme, and make them all the color specified in this option.
 ;; D:s7
 ;; B:O
