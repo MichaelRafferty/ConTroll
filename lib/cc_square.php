@@ -643,12 +643,15 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     $rtn['discountAmt'] = $order->getTotalDiscountMoney()->getAmount() / 100;
     $rtn['taxAmt'] = $order->getTotalTaxMoney()->getAmount() / 100;
     // build the return array of taxes applied to the order
-    $taxAmounts = $order->getTaxes();
-    foreach ($taxAmounts as $tax) {
-        $uid = $tax->getUid();
-        $app = $tax->getAppliedMoney();
-        $amt = $app->getAmount();
-        $rtnTaxes[$uid] = $amt / 100;
+    $rtnTaxes = [];
+    if ($needTaxes) {
+        $taxAmounts = $order->getTaxes();
+        foreach ($taxAmounts as $tax) {
+            $uid = $tax->getUid();
+            $app = $tax->getAppliedMoney();
+            $amt = $app->getAmount();
+            $rtnTaxes[$uid] = $amt / 100;
+        }
     }
     $rtn['taxes'] = $rtnTaxes;
     $rtn['totalAmt'] = $order->getTotalMoney()->getAmount() / 100;
