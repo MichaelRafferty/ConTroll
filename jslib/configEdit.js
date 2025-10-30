@@ -43,6 +43,7 @@ class ConfigEditor {
         this.drawConfig();
     }
 
+// drawConfig - loop over the sections and parameters and draw the configuration edit screen
     drawConfig() {
         let html = '';
         for (let section in this.#sections) {
@@ -57,6 +58,7 @@ class ConfigEditor {
         this.#configDiv.innerHTML = html;
     }
 
+// drawParam - Format a specific parameter in the configuration edit screen based on its datatype and options
     drawParam(sectionName, param) {
         // R: role
         let editable = param.role.editable == 1;
@@ -79,9 +81,9 @@ class ConfigEditor {
         html += "<div class='row mt-1'><div class='col-sm-2'>" + visibleStart + param.name + visibleEnd + "</div>";
         // the field, using P, and D
         if (editable) {
-            html += '<div class="col-sm-auto">' + this.formatInput(sectionName, param, this.#currentConfig[param.name]) + '</div>';
+            html += '<div class="col-sm-auto">' + this.formatInput(sectionName, param, this.#currentConfig[sectionName][param.name]) + '</div>';
         } else {
-            html += '<div class="col-sm-auto">' + visibleStart + this.#currentConfig[param.name] + visibleEnd + '</span></div>';
+            html += '<div class="col-sm-auto">' + visibleStart + this.#currentConfig[sectionName][param.name] + visibleEnd + '</span></div>';
         }
 
         //  P, H, D, B
@@ -91,19 +93,21 @@ class ConfigEditor {
         return html;
     }
 
+    // formatInput - for a single parameter, output the form field
     formatInput(sectionName, param, value) {
         let size = '';
         let max=80;
         let decimals = '';
         let html = '';
-        let id = ' id="' + sectionName + '_' + param.name + '" name="' + sectionName + '_' + param.name + '"';
+        let name = sectionName + '__' + param.name;
+        let id = ' id="' + name + '" name="' + name + '"';
         switch (param.datatype.type) {
             case 'i': // integer number
                 html = '<input type=number placeholder="' + param.placeholder + '" ' + id + ' value="' + value + '"';
                 if (param.datatype.modifier != '') {
                     html += 'max="' + '9'.repeat(Number(param.datatype.modifier)) + '"';
                 }
-                html += '>';
+                html += ' onchange="configEditor.changed(' + "'" + name + "'" + ');">';
                 break;
 
             case 'd': // decimal number
@@ -116,25 +120,25 @@ class ConfigEditor {
                 max = param.datatype.modifier != '' ?  Number(param.datatype.modifier) : 256;
                 size = max > 75 ? 80 : (max + 5);
                 html = '<input type=text placeholder="' + param.placeholder + '" ' + id + ' value="' + value + '"' +
-                    ' size="' + size + '" maxlength="' + max + '"> (Max Length: ' + max + ')';
+                    ' size="' + size + '" maxlength="' + max + '" onchange="configEditor.changed(' + "'" + name + "'" + ');"> (Max Length: ' + max + ')';
                 break;
             case 't': // textarea
                 size = param.datatype.modifier.split(',');
                 if (size[0] < 50) size[0] = 50;
                 if (size[1] < 3) size[0] = 3;
                 html = '<textarea placeholder="' + param.placeholder + '" ' + id + ' cols="' + size[0] + '" rows="' + size[1] +
-                    '">' + value + '</textarea>';
+                    '" onchange="configEditor.changed(' + "'" + name + "'" + ');">' + value + '</textarea>';
                 break;
 
             case 'e': // email address
                 max=256;
                 size=80;
                 html = '<input type=email placeholder="' + param.placeholder + '" ' + id + ' value="' + value + '"' +
-                    ' size="' + size + '" maxlength="' + max + '"> (Max Length: ' + max + ')';
+                    ' size="' + size + '" maxlength="' + max + '" onchange="configEditor.changed(' + "'" + name + "'" + ');"> (Max Length: ' + max + ')';
                 break;
 
             case 'l': // list (option)
-                html = '<select ' + id + '>\n';
+                html = '<select ' + id + ' onchange="configEditor.changed(' + "'" + name + "'" + ');">\n';
                 let options = param.datatype.modifier.substring(1).split(',');
                 for (let option of options) {
                     html += '<option value="' + option + '"' + (value == option ? ' selected' : '') + '>' + option + '</option>';
@@ -143,9 +147,41 @@ class ConfigEditor {
                 break;
 
             default: // who knows
-                html = '<input type=text placeholder="' + param.placeholder + '" ' + id + ' value="' + value + '" size="80"/>';
+                html = '<input type=text placeholder="' + param.placeholder + '" ' + id + ' value="' + value +
+                    '" size="80" onchange="configEditor.changed(' + "'" + name + "'" + ');"/>';
         }
         return html;
+    }
+
+    changed(name) {
+        let pos = name.split('__', 2);
+        let section = pos[0];
+        let param = pos[1];
+        let field = document.getElementById(name);
+
+        field.style.backgroundColor = this.#initialConfig[section][param] == field.value ? '' : "#fff3cd";
+    }
+
+    validateConfig() {
+        let errormsg = '';
+        for (let section in this.#sections) {
+            let sectionName = this.#sections[section];
+            let config = this.#control[sectionName];
+            for (let paramName in config) {
+                let param = config[paramName];
+                errormsg += this.valiateParam(sectionName, param);
+            }
+        }
+        if (errormsg != '') {
+            show_message(errormsg, 'error')
+            return;
+        }
+        this.#saveBtn.disabled = false;
+    }
+
+// validateParam - validate a specific parameter according to its configuration
+    validateParam(sectionName, param) {
+        return '';
     }
 
 // close the tab

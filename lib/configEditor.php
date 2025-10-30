@@ -35,7 +35,7 @@ function loadConfigEditor($perm, $auths) : array {
     }
     $response = array ();
 //  load the reg_conf.ini into a special array for return
-    $current_config = parse_ini_file($filePath);
+    $current_config = parse_ini_file($filePath, true);
     $response['currentConfig'] = $current_config;
 
 // now load the configuration file
