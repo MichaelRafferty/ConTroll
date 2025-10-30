@@ -28,17 +28,50 @@ if ($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
     exit();
 }
 
-if (!array_key_exists('load_type', $_POST)) {
+if (!array_key_exists('action', $_POST)) {
     $response['error'] = 'Parameter Error';
     ajaxSuccess($response);
     exit();
 }
 
-$auths = getAuths($check_auth['sub']);
+try {
+    $fields = json_decode($_POST['fields'], true, 512, JSON_THROW_ON_ERROR);
+} catch (Exception $e) {
+    $msg = 'Caught exception on json_decode: ' . $e->getMessage() . PHP_EOL . 'JSON error: ' . json_last_error_msg() . PHP_EOL;
+    $response['error'] = $msg;
+    error_log($msg);
+    ajaxSuccess($response);
+    exit();
+}
 
-$con=get_conf('con');
-$conid= $con['id'];
+$user_perid = $_SESSION['user_perid'];
 setConfigDirs();
-$response = loadConfigEditor($perm, $auths);
 
+// create a lock file on the reg_conf.ini
+$status = configLock($user_perid);
+if ($status != '') {
+    $response['error'] = $status;
+    error_log($status);
+    ajaxSuccess($response);
+    exit();
+}
+
+// now check that there is nothing different in the newer file
+$status = checkCurrent($fields);
+if ($status != '') {
+    $response['warn'] = $status;
+    error_log($status);
+    configUnlock($user_perid);
+    ajaxSuccess($response);
+    exit();
+}
+
+// ok, we now have no conflicts, write out the new file
+$status = updateConfig($fields);
+
+$auths = getAuths($check_auth['sub']);
+$response = loadConfigEditor($perm, $auths);
+$response['message'] = $status;
+
+configUnlock($user_perid);
 ajaxSuccess($response);

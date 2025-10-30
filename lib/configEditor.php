@@ -4,9 +4,18 @@
 // Author: Syd Weinstein
 // all common functions related to the configuration editor
 
-function loadConfigEditor($perm, $auths) : array {
+global $filePath, $controlPath, $configFile;
+
+// find the config directory based on our current directory, it may be up one or two more than where we are
+function setConfigDirs() : void {
+    global $filePath, $controlPath, $configFile;
+
     $configDir = '../config';
     $sampleDir = '../config-sample';
+    if (!is_dir($configDir)) {
+        $configDir = "../$configDir";
+        $sampleDir = "../$sampleDir";
+    }
     if (!is_dir($configDir)) {
         $configDir = "../$configDir";
         $sampleDir = "../$sampleDir";
@@ -16,8 +25,48 @@ function loadConfigEditor($perm, $auths) : array {
     $controlFile = 'reg_conf.ini.sample';
     $filePath = "$configDir/$configFile";
     $controlPath = "$sampleDir/$controlFile";
-// loadData:
+}
 
+function configLock($user_perid) : string {
+    global $filePath, $configFile;
+
+    $lockfile = "$filePath/$configFile" . ".lock";
+    $now = time();
+    if (is_readable($lockfile)) {
+        $lock = file($lockfile, FILE_IGNORE_NEW_LINES);
+        $lock = $lock[0];
+        [$file_perid, $file_time] = explode(',', $lock);
+        $age = 300 - ($now - $file_time);
+        if ($age > 0 && $file_perid != $user_perid) {
+            error_log("$lockfile locked at  $file_time by $file_perid, requested to lock by $user_perid");
+            $age = ($age / 60) + 1;
+            return "File is locked by $file_perid, please try again after $age minutes.";
+        }
+    }
+
+    // ok, there might be a lock, but we need to write a new one, it's expired, or is from us
+    $lock = "$user_perid,$now\n";
+    $fileHandle = fopen($lockfile, 'w');
+    fwrite($fileHandle, $lock);
+    flock($fileHandle, LOCK_EX);
+    return '';
+}
+
+// remove a lock file, we are done with it
+function configUnlock($user_perid) : void {
+    global $filePath, $configFile;
+
+    $lockfile = "$filePath/$configFile" . '.lock';
+    error_log("$lockfile unlocked by $user_perid");
+    unlink($lockfile);
+}
+
+// load all new data for the config editor
+function loadConfigEditor($perm, $auths) : array {
+    global $filePath, $controlPath, $configFile;
+
+    if ($controlPath)
+// loadData:
     if (!is_readable($filePath)) {
         $response['error'] = "Configuration file $configFile does not exist";
         ajaxSuccess($response);

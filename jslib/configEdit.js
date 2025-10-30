@@ -383,6 +383,7 @@ class ConfigEditor {
         let data = {
             task: 'update',
             fields: JSON.stringify(changedItems),
+            perm: this.#myPerm,
         }
         $.ajax({
             url: script,
