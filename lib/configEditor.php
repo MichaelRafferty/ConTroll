@@ -27,10 +27,11 @@ function setConfigDirs() : void {
     $controlPath = "$sampleDir/$controlFile";
 }
 
+// check if locked and if not, lock the config file to prevent two people writing to it at once
 function configLock($user_perid) : string {
     global $filePath, $configFile;
 
-    $lockfile = "$filePath/$configFile" . ".lock";
+    $lockfile = "$filePath" . ".lock";
     $now = time();
     if (is_readable($lockfile)) {
         $lock = file($lockfile, FILE_IGNORE_NEW_LINES);
@@ -47,8 +48,11 @@ function configLock($user_perid) : string {
     // ok, there might be a lock, but we need to write a new one, it's expired, or is from us
     $lock = "$user_perid,$now\n";
     $fileHandle = fopen($lockfile, 'w');
+    if ($fileHandle === false) {
+        return "Unable to open $lockfile, seek assistance.";
+    }
     fwrite($fileHandle, $lock);
-    flock($fileHandle, LOCK_EX);
+    fclose($fileHandle);
     return '';
 }
 
@@ -56,10 +60,41 @@ function configLock($user_perid) : string {
 function configUnlock($user_perid) : void {
     global $filePath, $configFile;
 
-    $lockfile = "$filePath/$configFile" . '.lock';
+    $lockfile = "$filePath" . '.lock';
     error_log("$lockfile unlocked by $user_perid");
-    unlink($lockfile);
+    $status = unlink($lockfile);
+    if ($status === false) {
+        error_log("Unable to delete $lockfile");
+    }
 }
+
+// check if the prior data has already been modified
+function checkCurrent($fields) : string {
+    global $filePath;
+
+    $warnmsg = '';
+    $existing = parse_ini_file($filePath, true);
+    foreach ($fields as $field) {
+        $initial = $field['initial'];
+        $ondisk = $existing[$field['section']][$field['param']];
+        if ($ondisk != $initial) {
+            // mismatch, generate the warning
+            $warnmsg .= "The field " . $field['section'] . "'" . $field['param'] ." has been updated from '$initial' to '$ondisk'<br/>\n";
+        }
+
+        //let item = { fieldName: name, section: section, param: paramName,
+        //                    initial: this.#initialConfig[section][paramName], new: this.#fieldList[name].value };
+    }
+
+    if ($warnmsg != '') {
+        $warnmsg = "The following fields were updated while you were editing:<br/>" . $warnmsg .
+            "Save off your changes, reload the editor an make them again taking into account the newer values.";
+    }
+    return $warnmsg;
+}
+
+// update the file with all of the data, both initial and new
+
 
 // load all new data for the config editor
 function loadConfigEditor($perm, $auths) : array {
@@ -174,4 +209,112 @@ function loadConfigEditor($perm, $auths) : array {
     $response['sections'] = $sections;
 
     return $response;
+}
+
+// update the configuration, return the number of fields updated
+function updateConfig($user_perid, $fields) : string {
+    global $filePath, $controlPath;
+    // first open a new file to make the overwrite atomic
+    $newfile = $filePath . ".new";
+    $fileHandle = fopen($newfile, 'w');
+    if ($fileHandle === false) {
+        $response['error'] = "Cannot open $newfile for writing the new configuration, seek assistance.";
+        ajaxSuccess($response);
+        exit();
+    }
+
+    $current_config = parse_ini_file($filePath, true);
+    if (!is_readable($controlPath)) {
+        $response['error'] = "Master control file does not exist";
+        ajaxSuccess($response);
+        exit();
+    }
+    $master = file($controlPath);
+    $status = '';
+
+    // first output  header lines
+    $header = ";;; reg_conf.ini\n" .
+        ";;;; updated by $user_perid on " . date('Y-m-d H:i:s') . "\n" .
+        "; this is the section of the config file the reg admin can edit.  It has text items and other options that if changed\n" .
+        "; will not break the system such that it requires major database work to recover it.\n\n";
+
+    if (fwrite($fileHandle, $header) === false)  {
+        $response['error'] = "Error writing header to $newfile, seek assistance.";
+        ajaxSuccess($response);
+        exit();
+    }
+
+    // loop over all the data in the control file
+    $sectionName='missing';
+    $needOutput = false;
+    $fieldName = 'missing';
+    $contents = '';
+    $blank = 'O';
+    $updates = 0;
+    foreach ($master as $line) {
+        if (preg_match('/^\s*\[[^]]+]\s*$/', $line)) {
+            $sectionName = preg_replace('/^\s*\[([^]]+)]\s*$/', '$1', $line);
+            fwrite($fileHandle, $line);
+            continue;
+        }
+        if (str_starts_with($line, ';; N:')) {
+            if ($needOutput) {
+                outputLine($fileHandle, $sectionName, $fieldName, $blank, $contents);
+            }
+            $fieldName = trim(mb_substr($line, 5));
+            if (array_key_exists($sectionName . '__' . $fieldName, $fields)) {
+                $contents = $fields[$sectionName . '__' . $fieldName]['new'];
+                $updates++;
+            } else {
+                $contents = '';
+                if (array_key_exists($sectionName, $current_config)) {
+                    $secConf = $current_config[$sectionName];
+                    if (array_key_exists($fieldName, $secConf)) {
+                        $contents = $secConf[$fieldName];
+                    }
+                }
+            }
+            $blank = 'O';
+            $needOutput = true;
+            continue;
+        }
+        if (str_starts_with($line, ';; B:')) {
+            $blank = trim(mb_substr($line, 5, 1));
+            if ($blank == '')
+                $blank = 'O';
+            continue;
+        }
+        if (str_starts_with($line, ';; '))
+            continue;
+
+        if (strlen($line) < 2 || str_starts_with($line, ';')) {
+            fwrite($fileHandle, $line);
+        }
+    }
+    // shell written out
+    if ($needOutput) {
+        outputLine($fileHandle, $sectionName, $fieldName, $blank, $contents);
+    }
+    fclose($fileHandle);
+
+    $status .= "$updates values updated";
+    return $status;
+}
+
+function outputLine($fileHandle, $sectionName, $fieldName, $blank, $contents) : void {
+    if ($contents != null && $contents != '') {
+        fwrite($fileHandle, $fieldName . '="' . str_replace('"', '\\"', $contents) . '"' . PHP_EOL);
+    } else {
+        switch ($blank) {
+            case 'M':
+                $status .= "Mandatory field $sectionName:$fieldName is empty<br/>\n";
+                break;
+            case 'E':
+                fwrite($fileHandle, $fieldName . "=\n");
+                break;
+            case 'B':
+                fwrite($fileHandle, $fieldName . '=""' . PHP_EOL);
+                break;
+        }
+    }
 }

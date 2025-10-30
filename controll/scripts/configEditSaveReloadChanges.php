@@ -2,7 +2,7 @@
 // ConTroll Registration System, Copyright 2015-2025, Michael Rafferty, Licensed under the GNU Affero General Public License, Version 3.
 // library AJAX Processor: configEditLoadData.php
 // Author: Syd Weinstein
-// load all objects needed at start of configuration editor
+// update the reg_conf.ini file from the changed fields and the master copies
 
 require_once('../lib/base.php');
 require_once('../../lib/configEditor.php');
@@ -13,12 +13,15 @@ $returnAjaxErrors = true;
 $return500errors = true;
 
 $check_auth = google_init('ajax');
+/*
 if (!array_key_exists('perm', $_POST)) {
     $response['error'] = 'Parameter Error';
     ajaxSuccess($response);
     exit();
 }
 $perm = $_POST['perm'];
+*/
+    $perm = 'admin';
 
 $response = array ('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
 
@@ -28,7 +31,7 @@ if ($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
     exit();
 }
 
-if (!array_key_exists('action', $_POST)) {
+if (!array_key_exists('task', $_POST)) {
     $response['error'] = 'Parameter Error';
     ajaxSuccess($response);
     exit();
@@ -67,9 +70,9 @@ if ($status != '') {
 }
 
 // ok, we now have no conflicts, write out the new file
-$status = updateConfig($fields);
-
 $auths = getAuths($check_auth['sub']);
+$status = updateConfig($user_perid, $fields);
+// now reload the initial due to the update
 $response = loadConfigEditor($perm, $auths);
 $response['message'] = $status;
 

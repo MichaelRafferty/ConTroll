@@ -372,19 +372,20 @@ class ConfigEditor {
 
                 let item = { fieldName: name, section: section, param: paramName,
                     initial: this.#initialConfig[section][paramName], new: this.#fieldList[name].value };
-                changedItems.push(item);
+                changedItems[name] = item;
             }
         }
 
         clearError();
         clear_message();
 
-        let script = 'configEditSaveReloadChanges.php';
+        let script = 'scripts/configEditSaveReloadChanges.php';
         let data = {
             task: 'update',
             fields: JSON.stringify(changedItems),
             perm: this.#myPerm,
         }
+        let _this = this;
         $.ajax({
             url: script,
             method: 'POST',
@@ -392,16 +393,16 @@ class ConfigEditor {
             success: function (data, textStatus, jhXHR) {
                 if (data.error) {
                     showError(data.error);
-                    this.#saveBtn.disabled = false;
-                    this.#saveBtn.innerHTML = 'Save*';
+                    _this.#saveBtn.disabled = false;
+                    _this.#saveBtn.innerHTML = 'Save*';
                     return false;
                 }
-                this.#control = data.control;
-                this.#sections = data.sections;
-                this.#myPerm = data.perm;
-                this.#myAuths = data.auths;
-                this.#initialConfig = make_copy(data.currentConfig);
-                this.#currentConfig = make_copy(data.currentConfig);
+                _this.#control = data.control;
+                _this.#sections = data.sections;
+                _this.#myPerm = data.perm;
+                _this.#myAuths = data.auths;
+                _this.#initialConfig = make_copy(data.currentConfig);
+                _this.#currentConfig = make_copy(data.currentConfig);
                 drawConfig();
                 if (data.message)
                     show_messgage(data.message, 'success');
@@ -411,8 +412,8 @@ class ConfigEditor {
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 showError("ERROR in " + script + ": " + textStatus, jqXHR);
-                this.#saveBtn.disabled = false;
-                this.#saveBtn.innerHTML = 'Save*';
+                _this.#saveBtn.disabled = false;
+                _this.#saveBtn.innerHTML = 'Save*';
                 return false;
             }
         });
