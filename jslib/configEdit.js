@@ -189,6 +189,7 @@ class ConfigEditor {
         }
 
         this.#saveBtn.disabled = changes == 0;
+        this.#saveBtn.innerHTML = changes == 0 ? 'Save' : 'Save*';
         this.#discardBtn.disabled = changes == 0;
 
         return changes;
@@ -209,6 +210,7 @@ class ConfigEditor {
             return;
         }
         this.#saveBtn.disabled = false;
+        this.#saveBtn.innerHTML = 'Save*';
     }
 
 // validateParam - validate a specific parameter according to its configuration
@@ -234,6 +236,9 @@ class ConfigEditor {
 
 // save the changes back
     save() {
+        if (!validateConfig())
+            return false;
+
         console.log("save called");
     }
 
@@ -254,6 +259,7 @@ class ConfigEditor {
         }
 
         this.#saveBtn.disabled = true;
+        this.#saveBtn.innerHTML = 'Save';
         this.#discardBtn.disabled = true;
     }
 }
