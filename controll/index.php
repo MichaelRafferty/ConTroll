@@ -91,6 +91,7 @@ EOS;
                             echo "Next Check: " . date('c', $need_login['exp']) . "\n";
                             echo "PHP Version: " . phpversion() . "\n";
                             echo "$versionText";
+                            echo "Config Update: " . getConfValue('global', 'version', 'unknown') . "\n";
                             echo "Database Patch Level: $patchLevel\n";
                             echo "Conid: $conid\n";
                         ?>

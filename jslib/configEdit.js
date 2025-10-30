@@ -362,7 +362,7 @@ class ConfigEditor {
         this.#saveBtn.disabled = true;
         this.#saveBtn.innerHTML = 'Saving...';
 
-        let changedItems = [];
+        let changedItems = {};
         let names = Object.keys(this.#fieldsChanged);
         for (let name of names) {
             if (this.#fieldsChanged[name]) {
@@ -403,11 +403,11 @@ class ConfigEditor {
                 _this.#myAuths = data.auths;
                 _this.#initialConfig = make_copy(data.currentConfig);
                 _this.#currentConfig = make_copy(data.currentConfig);
-                drawConfig();
+                _this.drawConfig();
                 if (data.message)
-                    show_messgage(data.message, 'success');
+                    show_message(data.message, 'success');
                 if (data.warn)
-                    show_messgage(data.warn, 'warn');
+                    show_message(data.warn, 'warn');
                 return true;
             },
             error: function (jqXHR, textStatus, errorThrown) {

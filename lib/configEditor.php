@@ -250,11 +250,16 @@ function updateConfig($user_perid, $fields) : string {
     $fieldName = 'missing';
     $contents = '';
     $blank = 'O';
+    $first=true;
     $updates = 0;
     foreach ($master as $line) {
         if (preg_match('/^\s*\[[^]]+]\s*$/', $line)) {
             $sectionName = preg_replace('/^\s*\[([^]]+)]\s*$/', '$1', $line);
             fwrite($fileHandle, $line);
+            if ($first) {
+                fwrite($fileHandle, "version=\"reg_conf.ini last updated by $user_perid on " . date('Y-m-d H:i:s') . '"' . PHP_EOL);
+                $first = false;
+            }
             continue;
         }
         if (str_starts_with($line, ';; N:')) {
