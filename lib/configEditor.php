@@ -264,7 +264,7 @@ function updateConfig($user_perid, $fields) : string {
         }
         if (str_starts_with($line, ';; N:')) {
             if ($needOutput) {
-                outputLine($fileHandle, $sectionName, $fieldName, $blank, $contents);
+                $status .= outputLine($fileHandle, $sectionName, $fieldName, $blank, $contents);
             }
             $fieldName = trim(mb_substr($line, 5));
             if (array_key_exists($sectionName . '__' . $fieldName, $fields)) {
@@ -298,21 +298,32 @@ function updateConfig($user_perid, $fields) : string {
     }
     // shell written out
     if ($needOutput) {
-        outputLine($fileHandle, $sectionName, $fieldName, $blank, $contents);
+        $status .= outputLine($fileHandle, $sectionName, $fieldName, $blank, $contents);
     }
     fclose($fileHandle);
 
+    // now move the existing file to .bak and the .new to the main name
+    $moveStatus = rename($filePath, $filePath . ".bak");
+    if ($moveStatus === false) {
+        $status .= "Cannot rename $filePath to $filePath.bak, seek assistance.<br/>";
+    } else {
+        $moveStatus = rename($filePath . ".new", $filePath);
+        if ($moveStatus === false) {
+            $status .= "Cannot rename $filePath.new to $filePath, seek assistance.<br/>";
+        }
+    }
     $status .= "$updates values updated";
     return $status;
 }
 
-function outputLine($fileHandle, $sectionName, $fieldName, $blank, $contents) : void {
+function outputLine($fileHandle, $sectionName, $fieldName, $blank, $contents) : string {
+    $status = '';
     if ($contents != null && $contents != '') {
         fwrite($fileHandle, $fieldName . '="' . str_replace('"', '\\"', $contents) . '"' . PHP_EOL);
     } else {
         switch ($blank) {
             case 'M':
-                $status .= "Mandatory field $sectionName:$fieldName is empty<br/>\n";
+                $status = "Mandatory field $sectionName:$fieldName is empty<br/>\n";
                 break;
             case 'E':
                 fwrite($fileHandle, $fieldName . "=\n");
@@ -322,4 +333,5 @@ function outputLine($fileHandle, $sectionName, $fieldName, $blank, $contents) : 
                 break;
         }
     }
+    return $status;
 }

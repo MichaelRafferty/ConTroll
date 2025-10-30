@@ -47,6 +47,8 @@ class ConfigEditor {
 
 // drawConfig - loop over the sections and parameters and draw the configuration edit screen
     drawConfig() {
+        this.#fieldList = [];
+        this.#fieldsChanged = [];
         let html = '';
         for (let section in this.#sections) {
             let sectionName = this.#sections[section];
