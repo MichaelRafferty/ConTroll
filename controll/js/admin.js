@@ -9,6 +9,7 @@ var users = null;
 var printers = null;
 var userid = null;
 var configEditor = null;
+var checkConfigReload = true;
 
 conid = null;
 // keys items
@@ -295,9 +296,13 @@ function settab(tabname) {
         printers.close();
         printers = null;
     }
-    if (configEditor) {
-        configEditor.close();
-        configEditor = null;
+    if (configEditor && checkConfigReload) {
+        if (configEditor.close()) {
+            checkConfigReload = true;
+            configEditor = null;
+        } else {
+            checkConfigReload = false;
+        }
     }
 
     // now open the relevant one, and create the class if needed
@@ -314,7 +319,10 @@ function settab(tabname) {
             loadAtconPrinters();
             break;
         case 'configEdit-pane':
-            loadConfigEditor();
+            if (configEditor == null) {
+                loadConfigEditor();
+            }
+            checkConfigReload = true;
             break;
     }
 }

@@ -8,6 +8,7 @@ policy = null;
 interests = null;
 rules = null;
 configEditor = null;
+checkConfigReload = true;
 conid = null;
 editPreviewClass = null;
 memLabels = null;
@@ -1753,8 +1754,14 @@ function settab(tabname) {
         interests.close();
     if (rules != null)
         rules.close();
-    if (configEditor != null)
-        configEditor.close();;
+    if (configEditor && checkConfigReload) {
+        if (configEditor.close()) {
+            checkConfigReload = true;
+            configEditor = null;
+        } else {
+            checkConfigReload = false;
+        }
+    }
     if (tabname != 'registrationlist-pane') {
         reglistDiv.hidden = true;
         if (registrationtable) {
@@ -1809,7 +1816,10 @@ function settab(tabname) {
             rules.open();
             break;
         case 'configEdit-pane':
-            loadConfigEditor();
+            if (configEditor == null) {
+                loadConfigEditor();
+            }
+            checkConfigReload = true;
             break;
     }
 }

@@ -10,6 +10,8 @@ class ConfigEditor {
     #saveBtn = null;
     #discardBtn = null;
     #configDiv = null;
+    #fieldList = [];
+    #fieldsChanged = [];
 
 //  Saved items
     #initialConfig = null;
@@ -157,9 +159,33 @@ class ConfigEditor {
         let pos = name.split('__', 2);
         let section = pos[0];
         let param = pos[1];
-        let field = document.getElementById(name);
+        let field = null;
+        if (this.#fieldList.hasOwnProperty(name)) {
+            field = this.#fieldList[name];
+        } else {
+            field = document.getElementById(name);
+            this.#fieldList[name] = field;
+        }
 
-        field.style.backgroundColor = this.#initialConfig[section][param] == field.value ? '' : "#fff3cd";
+        let changed = this.#initialConfig[section][param] != field.value;
+        this.#fieldsChanged[name] = changed;
+        field.style.backgroundColor = changed ?  "#fff3cd" : '';
+
+        this.needSave();
+    }
+
+    needSave() {
+        let names = Object.keys(this.#fieldsChanged);
+        let changes = 0;
+        for (let name of names) {
+            if (this.#fieldsChanged[name])
+                changes++;
+        }
+
+        this.#saveBtn.disabled = changes == 0;
+        this.#discardBtn.disabled = changes == 0;
+
+        return changes;
     }
 
     validateConfig() {
@@ -188,9 +214,18 @@ class ConfigEditor {
     close() {
         // check if dirty, and complain
         console.log("close called");
+        let changes = this.needSave();
+        if (changes > 0) {
+            if (!confirm('You have unsaved changes.  You asked to navigate away from this tab.  Click "OK" to discard the changes, or "Cancel" to keep them,' +
+                ' and then click the "Configuration Editor" tab to return to this screen')) {
+                return false;
+            }
+        }
+
 
         this.#saveBtn.disabled = true;
         this.#saveBtn.innerHTML = 'Save';
+        return true;
     }
 
 // save the changes back

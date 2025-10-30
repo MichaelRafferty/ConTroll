@@ -15,6 +15,8 @@ regionid = null;
 exhibitorsData = null;
 customText = null;
 configEditor = null;
+checkConfigReload = true;
+
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // globals for exhibits configuration
@@ -193,8 +195,14 @@ class exhibitorsAdm {
         if (customText != null)
             customText.close();
 
-        if (configEditor != null)
-            configEditor.close();
+        if (configEditor && checkConfigReload) {
+            if (configEditor.close()) {
+                checkConfigReload = true;
+                configEditor = null;
+            } else {
+                checkConfigReload = false;
+            }
+        }
 
         if (this.#currentRegion) {
             this.#currentRegion.hidden = true;
@@ -218,7 +226,10 @@ class exhibitorsAdm {
         }
 
         if (content == 'configEdit') {
-            this.loadConfigEditor();
+            if (configEditor == null) {
+                loadConfigEditor();
+            }
+            checkConfigReload = true;
             return;
         }
 
