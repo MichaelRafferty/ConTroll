@@ -371,9 +371,16 @@ class ConfigEditor {
                 let pos = name.split('__', 2);
                 let section = pos[0];
                 let paramName = pos[1];
+                let sec = this.#initialConfig[section];
+                let initial = '';
+                if (sec)
+                    initial = sec[paramName];
+                if (initial === undefined)
+                    initial = '';
+
 
                 let item = { fieldName: name, section: section, param: paramName,
-                    initial: this.#initialConfig[section][paramName], new: this.#fieldList[name].value };
+                    initial: initial, new: this.#fieldList[name].value };
                 changedItems[name] = item;
             }
         }
