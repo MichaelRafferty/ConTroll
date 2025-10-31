@@ -59,7 +59,15 @@ class ConfigEditor {
         this.#fieldsChanged = [];
         let first = true;
         let html = '';
-        for (let sectionName in this.#sections) {
+        let firstSections = ['global', 'con'];
+        let sortedSections = Object.keys(this.#sections).sort();
+        let index = sortedSections.indexOf('global');
+        sortedSections.splice(index, 1);
+        index = sortedSections.indexOf('con');
+        sortedSections.splice(index, 1);
+        sortedSections = firstSections.concat(sortedSections);
+        for (let sectionNum in sortedSections) {
+            let sectionName = sortedSections[sectionNum];
             let section = this.#sections[sectionName];
             let sectionTitle = section.title;
             if (!first) {
