@@ -1057,16 +1057,25 @@ $config_vars['currency'] = $currency;
             <div class='row'>
                 <div class='col-sm-auto'><h2>Registration Administration Configuration Editor (reg_conf.ini)</h2></div>
             </div>
+            <div class='row mt-2 mb-3'>
+                <div class='col-sm-auto'>
+                    <button type='button' class='btn btn-primary btn-sm' id='saveBTNt' onclick='configEditor.save();' disabled>Save</button>
+                </div>
+                <div class='col-sm-auto'>
+                    <button type='button' class='btn btn-secondary btn-sm' id='discardBTNt' onclick='configEditor.discard();' disabled>Discard
+                        Changes</button>
+                </div>
+            </div>
         </div>
         <div class='container-fluid' id='configDiv'>
         </div>
         <div class='container-fluid'>
             <div class='row mt-2 mb-3'>
                 <div class='col-sm-auto'>
-                    <button type='button' class='btn btn-primary btn-sm' id='saveBTN' onclick='configEditor.save();' disabled>Save</button>
+                    <button type='button' class='btn btn-primary btn-sm' id='saveBTNb' onclick='configEditor.save();' disabled>Save</button>
                 </div>
                 <div class='col-sm-auto'>
-                    <button type='button' class='btn btn-secondary btn-sm' id='discardBTN' onclick='configEditor.discard();' disabled>Discard Changes</button>
+                    <button type='button' class='btn btn-secondary btn-sm' id='discardBTNb' onclick='configEditor.discard();' disabled>Discard Changes</button>
                 </div>
             </div>
         </div>
