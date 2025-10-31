@@ -150,15 +150,6 @@ JOIN exhibitsRegionYears ery ON es.exhibitsRegionYear = ery.id AND eY.conid = er
 SET item_approved = ?, time_approved = NOW()
 WHERE eS.spaceId = ? and ery.id = ? AND eY.exhibitorId = ?;
 EOS;
-        $upQ2 = <<<EOS
-UPDATE exhibitorSpaces eS
-JOIN exhibitorRegionYears exRY ON eS.exhibitorRegionYear = exRY.id
-JOIN exhibitorYears eY ON exRY.exhibitorYearId = eY.id
-JOIN exhibitsSpaces es ON es.id = eS.spaceId
-JOIN exhibitsRegionYears ery ON es.exhibitsRegionYear = ery.id AND eY.conid = ery.conid
-SET item_requested = item_approved, time_requested = time_approved 
-WHERE eS.spaceId = ? and ery.id = ? and eY.exhibitorId = ? and item_requested is NULL;
-EOS;
         $upCanQ = <<<EOS
 UPDATE exhibitorSpaces eS
 JOIN exhibitorRegionYears exRY ON eS.exhibitorRegionYear = exRY.id
@@ -193,7 +184,6 @@ EOS;
             $spaceId = str_replace('exhbibitor_req_price_id_', '', $spaceId);
             if ($value > 0) {
                 $num_rows += dbSafeCmd($upQ, 'iiii', array($value, $spaceId, $regionYearId, $exhibitorId));
-                dbSafeCmd($upQ2, 'iii', array($spaceId, $regionYearId, $exhibitorId));
             } else {
                 $paramarray = array($spaceId, $regionYearId, $exhibitorId);
                 $typestr = 'iii';
