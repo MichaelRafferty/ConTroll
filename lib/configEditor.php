@@ -76,14 +76,17 @@ function checkCurrent($fields) : string {
     $existing = parse_ini_file($filePath, true);
     foreach ($fields as $field) {
         $initial = $field['initial'];
-        $ondisk = $existing[$field['section']][$field['param']];
-        if ($ondisk != $initial) {
-            // mismatch, generate the warning
-            $warnmsg .= "The field " . $field['section'] . "'" . $field['param'] ." has been updated from '$initial' to '$ondisk'<br/>\n";
-        }
+        if (array_key_exists($field['section'], $existing)) {
+            $sect = $existing[$field['section']];
+            if (array_key_exists($field['param'], $sect)) {
+                $ondisk = $sect[$field['param']];
+                if ($ondisk != $initial) {
 
-        //let item = { fieldName: name, section: section, param: paramName,
-        //                    initial: this.#initialConfig[section][paramName], new: this.#fieldList[name].value };
+                    // mismatch, generate the warning
+                    $warnmsg .= 'The field ' . $field['section'] . "'" . $field['param'] . " has been updated from '$initial' to '$ondisk'<br/>\n";
+                }
+            }
+        }
     }
 
     if ($warnmsg != '') {
