@@ -1,3 +1,4 @@
+;;;;; Global (available in all sections, Can be overridden in the individual sections)
 [global]
 ;; N:customtext
 ;; R:V,reg_admin
@@ -38,6 +39,7 @@ regpage="https://conname.org/registration/"
 ;   addr = first, addr, city, st, zip, country, email
 required="all"
 
+;;;;; Convention Wide Parameters
 [con]
 ;; N:label
 ;; R:V,reg_admin
@@ -62,6 +64,7 @@ org="The ConTroll Development Consortium"
 ;; D:s16
 ;; B:M
 orgabv="Club"
+;;;;; HR Policy Related Fields
 ;;; policy related fields
 ;; N:policy
 ;; R:H,reg_staff
@@ -135,6 +138,7 @@ remindertext="May we include you in our annual reminder postcards and future mar
 ;; B:O
 ; endtext = text to put at the bottom of the receipt.
 endtext=
+;;;;; HR Email Addresses
 ;;; Convention Email Addresses
 ;; N:volunteers
 ;; R:H,reg_staff
@@ -189,6 +193,8 @@ refundemail='info2022@conname.org'
 ;; D:e
 ;; B:M
 feedbackemail='info2022@conname.org'
+;;;;; HR Web Sites
+;;; Websites
 ;; N:website
 ;; R:H,reg_staff
 ;; P:Full URL of the convention website
@@ -222,7 +228,15 @@ schedulepage="https://schedule.conname.org"
 ;; B:M
 ; daily rates posted on the con's website on this web page
 dailywebsite="https://conname.org"
-;;; hotel related items
+;; N:survey_url
+;; R:H,reg_staff
+;; P:Full URL of the post convention survey
+;; H:If you are using a post convention survey, this is the URL to take that survey.  It can be a survey engine or a google form.
+;; D:h
+;; B:O
+survey_url="https://link-to-post-convention-survey"
+;;;;; HR Hotel Related Items
+;;; hotel related
 ;; N:hotelwebsite
 ;; R:H,reg_staff
 ;; P:Full URL of the page on your website
@@ -244,13 +258,8 @@ hotelname="Hotel Name"
 ;; D:s256
 ;; B:M
 hoteladdr="Hotel Address"
-;; N:survey_url
-;; R:H,reg_staff
-;; P:Full URL of the post convention survey
-;; H:If you are using a post convention survey, this is the URL to take that survey.  It can be a survey engine or a google form.
-;; D:h
-;; B:O
-survey_url="https://link-to-post-convention-survey"
+;;;;; HR Registration Options
+;;; Registration options
 ;; N:rollover_eligible
 ;; R:H,reg_staff
 ;; P:List of Membership Categories
@@ -280,6 +289,7 @@ multioneday=1 ; =0 for only a single one day can be purchased, =1 if multiple di
 ;; B:M
 onedaycoupons=0 ; allow onedays for coupon usage
 
+;;;;; On Line Registration (non Portal)
 [reg]
 ;;; overrides
 ;; N:customtext
@@ -313,6 +323,7 @@ onedaycoupons=0 ; allow onedays for coupon usage
 ;   addr = first, addr, city, st, zip, country, email
 ;required="all"
 
+;;;;; HR Registration Site Logo/Heading Related
 ;;; Registration site logo/heading related
 ;; N:logoimage
 ;; R:H,reg_staff
@@ -338,6 +349,8 @@ logoalt="logo image alternate text"
 ;; B:O
 ;;; logotext = tagline HTML to display next to or below the logo, optional
 ;logotext="Tagline not alt=text"
+;;;;; HR Online Reg Misc Fields
+;;; Online Reg misc fields
 ;; N:onsiteopen
 ;; R:H,reg_staff
 ;; P:Onsite Reg Open Time
@@ -357,6 +370,7 @@ onsiteopen="3:00 PM"
 ;;; noNewDays = how new must a new account be with no memberships to get warned when the "Send New Acct/No New Membership" email is sent, default 60
 noNewDays=
 
+;;;;; atcon: The At Convention/Fan Table/Party Registration System
 [atcon]
 ;;; overrides
 ;; N:customtext
@@ -376,6 +390,7 @@ noNewDays=
 ; none = supporess all custom text
 ; customtext='production'
 
+;;;;; HR ATCON options
 ;;; allow discounts?
 ;; N:discount
 ;; R:V,reg_admin
@@ -415,6 +430,16 @@ allage=0
 ;; H+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; for allowing what to sell and at what price
 ;; D:l:0,1
 ;; B:O
+;; N:posRegistrationSort
+;; R:H,reg_admin
+;; H:How to sort the registration items in Reg Cashier/Reg Checkin
+;; H+m.sort_order = Sort order from the memList in Current Convention Setup
+;; H+conid, mt.sortorder, m.label = Convention ID, then membership type sort order, then membership label (name)
+;; H+conid, m.label = Convention ID, then membership label (name)
+;; D:l:m.sort_order,conid/mt.sortorder/m.label,conid/m.label
+;; B:R
+; posRegistrationSort - where to put the filter elements on the badgelist page ("top", "bottom")
+posRegistrationSort="m.sort_order";
 ;;;; inlineinventory - allow for modal change to inventory status at time of checkout for artpos (not require inventory update first)
 ; inlineinventory=0 : artpos will sell as quicksale if no bids, or if 'restrict to inventory sale statuses and prices' for art not sold at quicksale
 ; inlineinventory=1 : art pos will use an intelligent modal popup based on Region Year Room Status for allowing what to sell and price
@@ -431,10 +456,11 @@ inlineinventory=1
 ; precon=1 - works pre-con, follows the date range for precon
 precon=0
 
+;;;;; Exhibitor Portals (Artist, Exhibitor, Fan, Vendor)
 [vendor]
 ;;; overrides
 ;; N:customtext
-;; R:V,exhibitor
+;; R:H,exhibitor
 ;; H:Exhibitor Portal custom text setting, overrides the global setting if desired
 ;; H+values:
 ;; H+all = show all customtext, even the default messages
@@ -450,7 +476,8 @@ precon=0
 ; none = supporess all custom text
 ; customtext='production'
 
-;;; Exhibitor Portal Email Addresses
+;;;;; Exhibitor Portals Email Addresses
+;;; Exhibitor Portals Email Addresses
 ;; N:vendor
 ;; R:H,exhibitor
 ;; P:Generic Vendor (dealers) staff email address, region independent
@@ -469,22 +496,24 @@ vendor="dealers@???"
 ;;; Artist Portal items for inventory headers
 artist="artists@???"
 ;;; artist Inventory Item Registration Headers, if omitted, the defaults are used
+;;;;; HR Art Show Options
+;;; Art show related
 ;; N:artistItemAuctionTitle
-;; R:V,exhibitor
+;; R:H,exhibitor
 ;; P:Auction Section Title
 ;; H:Title for the Auction Items Section
 ;; D:s80
 ;; B:O
 ;artistItemAuctionTitle="Art Auction Items"
 ;; N:artistItemSalesTitle
-;; R:V,exhibitor
+;; R:H,exhibitor
 ;; P:Sales/Print Shop Section Title
 ;; H:Title for the Sale Item/Print Shop Section
 ;; D:s80
 ;; B:O
 ;artistItemSalesTitle="Art Sales / Print Shop Items"
 ;; N:artistItemNFSTitle
-;; R:V,exhibitor
+;; R:H,exhibitor
 ;; P:NFS/Display Only Section Title
 ;; H:Title for the Not for Sale/Display Only Section
 ;; H+(Display a sample bid sheet to check fit of the title)
@@ -496,7 +525,7 @@ artist="artists@???"
 ; NOTE: if barcode is used, 3x2 format is max BidSheetLines of 3, 2x2 is max of 7, and overall max is 22
 ;       if barcode is not used, 3x2 format is max BidSheetLines of 4, 2x2 is max of 8, and overall max is 23
 ;; N:artistBidSheet
-;; R:V,exhibitor
+;; R:H,exhibitor
 ;; P:Bid Sheet Title Line
 ;; H:Title for the Art Show Bid Sheets
 ;; H+(There is limited space and it must fit on one line. Display a sample bid sheet to check if your text fits propery)
@@ -504,7 +533,7 @@ artist="artists@???"
 ;; B:M
 artistBidSheet="Unconfigured Bid Sheet"
 ;; N:artistBidSheetLines
-;; R:V,exhibitor
+;; R:H,exhibitor
 ;; P:Number of bid lines
 ;; H:Number of bid lines on an auction bid sheet
 ;; H+With barcode: 3x2 format: 1-3, 2x2 format: 4-7, 1x2 format: 8-22
@@ -515,7 +544,7 @@ artistBidSheet="Unconfigured Bid Sheet"
 ;; B:O
 artistBidSheetLines=4
 ;; N:artistBidSheetNumbers
-;; R:V,exhibitor
+;; R:H,exhibitor
 ;; P:Number of bid lines that are numbered
 ;; H:Number of numbered bid lines on an auction bid sheet (remainder are blank (unnumbered)
 ;; H+Default is 3 if the line is omitted
@@ -523,14 +552,14 @@ artistBidSheetLines=4
 ;; B:O
 artistBidSheetNumbers=3
 ;; N:artistBidSheetBidSep
-;; R:V,exhibitor
+;; R:H,exhibitor
 ;; H:Print the vertical separation bar in the bid sheet rows between bidder and bid amount
 ;; H+&nbsp;&nbsp;&nbsp;&nbsp;set to 0 to not print the separation line, 1 to print it
 ;; D:l:0,1
 ;; B:O
 artistBidSheetBidSep=1
 ;; N:artistBidSheetBarcode
-;; R:V,exhibitor
+;; R:H,exhibitor
 ;; H:Print the bar code at the bottom of the bid sheets
 ;; H+&nbsp;&nbsp;&nbsp;&nbsp;set to 0 to not print the barcode, 1 to to print it
 ;; D:l:0,1
@@ -539,7 +568,7 @@ artistBidSheetBidSep=1
 artistBidSheetBarcode = 1;
 ;;; Art Show Price Tag Items
 ;; N:artistPriceTag
-;; R:V,exhibitor
+;; R:H,exhibitor
 ;; P:Price Tag Title Line
 ;; H:Title for the Art Show Fixed Sale Price Tags
 ;; H+(There is limited space and it must fit on one line. Display a sample bid sheet to check if your text fits propery)
@@ -547,7 +576,7 @@ artistBidSheetBarcode = 1;
 ;; B:M
 artistPriceTag="Unconfigured Price Tag"
 ;; N:artistPriceTagBarcode
-;; R:V,exhibitor
+;; R:H,exhibitor
 ;; H:Print the bar code at the bottom of the price tags
 ;; H+&nbsp;&nbsp;&nbsp;&nbsp;set to 0 to not print the barcode, 1 to to print it
 ;; D:l:0,1
@@ -556,7 +585,7 @@ artistPriceTag="Unconfigured Price Tag"
 artistPriceTagBarcode = 1;
 ;;; general items
 ;; N:artsheets
-;; R:V,exhibitor
+;; R:H,exhibitor
 ;; H:Show the print bid/price sheets buttons in the exhibior portal
 ;; H+&nbsp;&nbsp;&nbsp;&nbsp;set to 0 to not show the buttons, 1 to show them
 ;; D:l:0,1
@@ -564,7 +593,7 @@ artistPriceTagBarcode = 1;
 artsheets=0 ; 0: do not show, 1 = whow show bid/price tag sheet print buttons
 ;;; general items
 ;; N:artcontrol
-;; R:V,exhibitor
+;; R:H,exhibitor
 ;; H:Show the control sheets print button in the exhibior portal
 ;; H+&nbsp;&nbsp;&nbsp;&nbsp;set to 0 to not show the button, 1 to show it
 ;; D:l:0,1
@@ -572,7 +601,7 @@ artsheets=0 ; 0: do not show, 1 = whow show bid/price tag sheet print buttons
 artcontrol=0 ; true/false show control sheet print button
 ;;; artcontrolsort = one of item or type (/item): default if missing: item
 ;; N:artcontrolsort
-;; R:V,exhibitor
+;; R:H,exhibitor
 ;; H:How to sort the control sheet:
 ;; H+values:
 ;; H+item = short by item_id in one section
@@ -583,6 +612,7 @@ artcontrol=0 ; true/false show control sheet print button
 ;;;; if =type then the 3 types (print, sale, nfs) are listed separetely sorted by item id
 artcontrolsort=type
 
+;;;;; Registration Portal
 [portal]
 ;; N:customtext
 ;; R:V,reg_staff
@@ -602,24 +632,39 @@ artcontrolsort=type
 ; none = supporess all custom text
 ; customtext='production'
 
-;;; membership portal items
-
-; history = 1 = show membership history menu item, 0 = suppress, missing/null = show
+;;;;; HR Membership Portal Image/Logo Related Optiopns
+;;; Membership Portal Images/Logo
 ; the portal also has it's own logo variables as logoimage and logoalt
+;; N:logoimage
+;; R:H,reg_staff
+;; P:Logo file name
+;; H:File name in the onlinereg/images directory that is the logo for the online reg site
+;; H+file formats: jpg, png
+;; D:s256
+;; B:O
 logoimage=""
+;; N:logoalt
+;; R:H,reg_staff
+;; P:Logo alternate text
+;; H:Alternate text describing the logo for screen readers
+;; D:s256
+;; B:O
 logoalt=""
-;;; enable registration history for prior years
+;;;;; HR Portal Options
+;;; Portal Options
 ;; N:history
 ;; R:H,reg_staff
 ;; H:Enable the membership History menu button
 ;; H+&nbsp;&nbsp;&nbsp;&nbsp;set to 0 to disable (hide) the button, 1 to enable it (show)
 ;; D:l:0,1
 ;; B:O
+;;; enable registration history for prior years
+; history = 1 = show membership history menu item, 0 = suppress, missing/null = show
 history=1
 ;;; memberbadgencolor: hex string of the color of the membership "badges" on the portal home screen, to override the standard color scheme
 ;;; Art Show Price Tag Items
 ;; N:memberbadgecolors
-;; R:V,exhibitor
+;; R:V,reg_staff
 ;; P:#000000 fmt
 ;; H:Override the default membership badge color scheme, and make them all the color specified in this option.
 ;; D:s7
@@ -636,7 +681,7 @@ history=1
 ;;;; suppresslegend: if memberbasgecolor is not used, missing or 0 will show the legend, 1 will suppress the legend
 ;suppresslegend=0
 ;; N:helppage
-;; R:V,exhibitor
+;; R:V,reg_staff
 ;; P:Relative path
 ;; H:File name of the help page (pdf or php) releative to the portal web root
 ;; H+ (relative to where portal's index.php file is contained)
@@ -645,7 +690,8 @@ history=1
 ;; B:O
 ; helppage = path to the help page relative to the web root of the portal page
 ; helppage=
-
+;;;;; HR Portal Policy Options
+;;; policy flags
 ;; N:showConPolicy
 ;; R:H,reg_staff
 ;; H:Shows the "Click here for the #conname# Policies",
@@ -667,16 +713,10 @@ showConPolicy=1
 ;      set to 0 if volunteers is in your interest section, 1 otherwise
 showVolunteerPolicy=1
 
+;;;;; ConTroll Back End System
 [controll]
-;; N:clubname
-;; R:V,club
-;; P:club name
-;; H:Club name for the club section.
-;; D:s32
-;; B:O
-clubname='Club Name'
 ;; N:badgelistfilter
-;; R:V,reg_admin
+;; R:H,reg_admin
 ;; H:Positioning of the filter block on the reg-admin membership list
 ;; H+bottom = after list
 ;; H+top = before list
@@ -684,7 +724,25 @@ clubname='Club Name'
 ;; B:O
 ; badgelistfilter - where to put the filter elements on the badgelist page ("top", "bottom")
 badgelistfilter="bottom"
+;; N:posRegistrationSort
+;; R:H,reg_admin
+;; H:How to sort the registration items in Registration
+;; H+m.sort_order = Sort order from the memList in Current Convention Setup
+;; H+conid, mt.sortorder, m.label = Convention ID, then membership type sort order, then membership label (name)
+;; H+conid, m.label = Convention ID, then membership label (name)
+;; D:l:m.sort_order,conid/mt.sortorder/m.label,conid/m.label
+;; B:R
+; posRegistrationSort - where to put the filter elements on the badgelist page ("top", "bottom")
+posRegistrationSort="m.sort_order";
+;; N:clubname
+;; R:H,club
+;; P:club name
+;; H:Club name for the club section.
+;; D:s32
+;; B:O
+clubname='Club Name'
 
+;;;;; Local Parameters for this Convention
 [local]
 ;;; local parameters for the sendinterests.php send script
 ;; N:csvto

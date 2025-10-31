@@ -7,8 +7,10 @@ class ConfigEditor {
     #currencyFmt = null;
 
 // DOM objects
-    #saveBtn = null;
-    #discardBtn = null;
+    #saveBtnT = null;
+    #saveBtnB = null;
+    #discardBtnT = null;
+    #discardBtnB = null;
     #configDiv = null;
     #fieldList = [];
     #fieldsChanged = [];
@@ -21,6 +23,10 @@ class ConfigEditor {
     #currentConfig = null;
     #control = [];
 
+// HR definition
+    #hr = "<hr style='height:4px;width:98%;margin:auto;margin-top:0px;margin-bottom:0px;color:#111111;background-color:#111111;'/>"
+    #hrs = "<hr style='height:6px;width:98%;margin:auto;margin-top:0px;margin-bottom:0px;color:#000000;background-color:#000000;'/>"
+
 // initialization
     constructor(data) {
         "use strict";
@@ -31,8 +37,10 @@ class ConfigEditor {
             currency: config.currency,
         });
 // lookup all DOM elements
-        this.#saveBtn = document.getElementById('saveBTN');
-        this.#discardBtn = document.getElementById('discardBTN');
+        this.#saveBtnT = document.getElementById('saveBTNt');
+        this.#saveBtnB = document.getElementById('saveBTNb');
+        this.#discardBtnT = document.getElementById('discardBTNt');
+        this.#discardBtnB = document.getElementById('discardBTNb');
         this.#configDiv = document.getElementById('configDiv');
 
         this.#control = data.control;
@@ -49,10 +57,19 @@ class ConfigEditor {
     drawConfig() {
         this.#fieldList = [];
         this.#fieldsChanged = [];
+        let first = true;
         let html = '';
-        for (let section in this.#sections) {
-            let sectionName = this.#sections[section];
-            html += "<div class='row mt-4'><div class='col-sm-1'></div><div class='col-sm-auto'><h3>Section: <b>[" + sectionName + "]</b></h3></div></div>\n";
+        for (let sectionName in this.#sections) {
+            let section = this.#sections[sectionName];
+            let sectionTitle = section.title;
+            if (!first) {
+                html += "<div class='row mt-2 mb-4'><div class='col-sm-12'>" + this.#hrs + "</div></div>\n" +
+                "<div class='row mb-4'><div class='col-sm'></div></div>\n";
+            }
+            first = false;
+            html += "<div class='row mt-4'><div class='col-sm-1'><h3><b>[" + sectionName + "]</b></h3></div>" +
+                "<div class='col-sm-auto'><h2><b>" + sectionTitle + "</b></h2></div>" +
+                "</div>\n";
             let config = this.#control[sectionName];
             for (let paramName in config) {
                 let param = config[paramName];
@@ -71,29 +88,32 @@ class ConfigEditor {
         //visible=false;
         let visibleStart = visible ? '' : '<span style="color: lightgrey;">';
         let visibleEnd = visible ? '' : '</span>';
+        let html = '';
 
         if (!visible)
             return;
 
+        // HR check
+        if (param.hasOwnProperty('hr')) {
+            html = "<div class='row mt-4 mb-4 align-items-center'>" +
+                    "<div class='col-sm-2'>" + this.#hr + "</div>" +
+                    "<div class='col-sm-auto'><h4><b>" + param.hr + "</b></hr></div>" +
+                    "<div class='col-sm'>" + this.#hr + "</div>" +
+                "</div>";
+        }
         // N: name
-        let html = "<div class='row mt-2'><div class='col-sm-auto'><h4><b>" + visibleStart + param.name + visibleEnd + "</h4></b></div></div>\n";
-
-        // H: hint
-        html += "<div class='row mt-1'><div class='col-sm-12'>"  + visibleStart + param.hint + visibleEnd + '</div></div>\n';
-
+        html += "<div class='row mt-4'><div class='col-sm-2'><h4><b>" + visibleStart + param.name + visibleEnd + "</h4></b></div>\n";
         // the field itself
-        html += "<div class='row mt-1'><div class='col-sm-2'>" + visibleStart + param.name + visibleEnd + "</div>";
-        // the field, using P, and D
         if (editable) {
-            html += '<div class="col-sm-auto">' + this.formatInput(sectionName, param, this.#currentConfig[sectionName][param.name]) + '</div>';
+            html += '<div class="col-sm-auto">' +
+                this.formatInput(sectionName, param, this.#currentConfig[sectionName][param.name]) + '</div></div>';
         } else {
-            html += '<div class="col-sm-auto">' + visibleStart + this.#currentConfig[sectionName][param.name] + visibleEnd + '</span></div>';
+            html += '<div class="col-sm-auto">' + visibleStart + this.#currentConfig[sectionName][param.name] +
+                visibleEnd + '</span></div></div>';
         }
 
-        //  P, H, D, B
-
-        html += "</div>\n";
-
+        // H: hint
+        html += "<div class='row mt-1'><div class='col-sm-1'></div><div class='col-sm-11'>"  + visibleStart + param.hint + visibleEnd + '</div></div>\n';
         return html;
     }
 
@@ -192,9 +212,12 @@ class ConfigEditor {
                 changes++;
         }
 
-        this.#saveBtn.disabled = changes == 0;
-        this.#saveBtn.innerHTML = changes == 0 ? 'Save' : 'Save*';
-        this.#discardBtn.disabled = changes == 0;
+        this.#saveBtnT.disabled = changes == 0;
+        this.#saveBtnT.innerHTML = changes == 0 ? 'Save' : 'Save*';
+        this.#saveBtnB.disabled = changes == 0;
+        this.#saveBtnB.innerHTML = changes == 0 ? 'Save' : 'Save*';
+        this.#discardBtnT.disabled = changes == 0;
+        this.#discardBtnB.disabled = changes == 0;
 
         return changes;
     }
@@ -213,8 +236,10 @@ class ConfigEditor {
             show_message(errormsg, 'error')
             return false;
         }
-        this.#saveBtn.disabled = false;
-        this.#saveBtn.innerHTML = 'Save*';
+        this.#saveBtnT.disabled = false;
+        this.#saveBtnT.innerHTML = 'Save*';
+        this.#saveBtnB.disabled = false;
+        this.#saveBtnB.innerHTML = 'Save*';
         return true;
     }
 
@@ -343,8 +368,10 @@ class ConfigEditor {
             }
         }
 
-        this.#saveBtn.disabled = true;
-        this.#saveBtn.innerHTML = 'Save';
+        this.#saveBtnT.disabled = true;
+        this.#saveBtnT.innerHTML = 'Save';
+        this.#saveBtnB.disabled = true;
+        this.#saveBtnB.innerHTML = 'Save';
         return true;
     }
 
@@ -361,8 +388,10 @@ class ConfigEditor {
         }
 
         // disable the save button to avoid double clicks....
-        this.#saveBtn.disabled = true;
-        this.#saveBtn.innerHTML = 'Saving...';
+        this.#saveBtnT.disabled = true;
+        this.#saveBtnT.innerHTML = 'Saving...';
+        this.#saveBtnB.disabled = true;
+        this.#saveBtnB.innerHTML = 'Saving...';
 
         let changedItems = {};
         let names = Object.keys(this.#fieldsChanged);
@@ -402,8 +431,10 @@ class ConfigEditor {
             success: function (data, textStatus, jhXHR) {
                 if (data.error) {
                     showError(data.error);
-                    _this.#saveBtn.disabled = false;
-                    _this.#saveBtn.innerHTML = 'Save*';
+                    _this.#saveBtnT.disabled = false;
+                    _this.#saveBtnT.innerHTML = 'Save*';
+                    _this.#saveBtnB.disabled = false;
+                    _this.#saveBtnB.innerHTML = 'Save*';
                     return false;
                 }
                 _this.#control = data.control;
@@ -421,8 +452,10 @@ class ConfigEditor {
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 showError("ERROR in " + script + ": " + textStatus, jqXHR);
-                _this.#saveBtn.disabled = false;
-                _this.#saveBtn.innerHTML = 'Save*';
+                _this.#saveBtnT.disabled = false;
+                _this.#saveBtnT.innerHTML = 'Save*';
+                _this.#saveBtnB.disabled = false;
+                _this.#saveBtnB.innerHTML = 'Save*';
                 return false;
             }
         });
@@ -444,8 +477,11 @@ class ConfigEditor {
             }
         }
 
-        this.#saveBtn.disabled = true;
-        this.#saveBtn.innerHTML = 'Save';
-        this.#discardBtn.disabled = true;
+        this.#saveBtnT.disabled = true;
+        this.#saveBtnT.innerHTML = 'Save';
+        this.#saveBtnB.disabled = true;
+        this.#saveBtnB.innerHTML = 'Save';
+        this.#discardBtnT.disabled = true;
+        this.#discardBtnB.disabled = true;
     }
 }

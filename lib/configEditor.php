@@ -129,6 +129,8 @@ function loadConfigEditor($perm, $auths) : array {
     $section = [];
     $config = [];
     $sectionName = '';
+    $sectionTitle = '';
+    $HRPrefix = '';
     $curFieldName = '';
 // parse the file
     $lineNo = 0;
@@ -141,10 +143,22 @@ function loadConfigEditor($perm, $auths) : array {
                 $control[$sectionName] = $config;
             }
             $sectionName = preg_replace('/^\s*\[([^]]+)]\s*$/', '$1', $line);
-            $sections[] = $sectionName;
+            $sections[$sectionName] = array('name' => $sectionName, 'title' => $sectionTitle);
             $config = [];
             $curFieldName = '';
             $section = [];
+            $HRPrefix = '';
+            $sectionTitle = '';
+            continue;
+        }
+
+        if (str_starts_with($line, ';;;;; ')) {
+            $item = mb_substr($line, 6);
+            if (str_starts_with($item, 'HR ')) {
+                $HRPrefix = mb_substr($item, 3);
+            } else {
+                $sectionTitle = $item;
+            }
             continue;
         }
 
@@ -164,6 +178,10 @@ function loadConfigEditor($perm, $auths) : array {
                 $section = [];
                 $curFieldName = mb_substr($line, 5);
                 $section['name'] = $curFieldName;
+                if ($HRPrefix != '') {
+                    $section['hr'] = $HRPrefix;
+                    $HRPrefix = '';
+                }
                 break;
 
             case 'R': // role
