@@ -656,7 +656,7 @@ class PosCart {
             if (age.ageType == 'all')
                 continue;
 
-            html += '<div class="col-sm-auto"><button id="ageBtn-' + age.ageType + '" class="btn btn-sm ' +
+            html += '<div class="col-sm-auto"><button id="ageBtn-' + age.ageType + '" class="btn btn-sm h-100 ' +
                 ((this.#currentAge == age.ageType || this.#memberAge == age.ageType) ? 'btn-primary' : color) + ' mt-1 mb-1" onclick="cart.ageSelect(' + "'" + age.ageType + "'" + ')">' +
                 age.label + ' (' + age.shortname + ')' +
                 '</button></div>' + "\n";
@@ -718,7 +718,7 @@ class PosCart {
                 if (memCategories[mem.memCategory].variablePrice != 'Y') {
                     memLabel += ' (' + mem.price + ')';
                 }
-                html += '<div class="col-sm-auto mt-1 mb-1"><button id="memBtn-' + mem.id + '" class="btn btn-sm btn-primary"' +
+                html += '<div class="col-sm-2 mt-1 mb-1 ms-0 me-0"><button id="memBtn-' + mem.id + '" class="btn btn-sm btn-primary w-100 h-100"' +
                     ' onclick="cart.regItemAdd(' + "'" + mem.id + "'" + ')">' +
                     (mem.conid != pos.getConid() ? mem.conid + ' ' : '') + memLabel + '</button></div>' + "\n";
             }
