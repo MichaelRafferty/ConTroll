@@ -1295,7 +1295,7 @@ class Pos {
         var prim = this.find_primary_membership(mem);
         var label = "No Primary Membership";
         if (prim != null) {
-            label = mem[prim].label;
+            label = mem[prim].printcount + ':' + mem[prim].label;
         }
         var html = `
 <div class="container-fluid">
