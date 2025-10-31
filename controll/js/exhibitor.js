@@ -227,7 +227,7 @@ class exhibitorsAdm {
 
         if (content == 'configEdit') {
             if (configEditor == null) {
-                loadConfigEditor();
+                this.loadConfigEditor();
             }
             checkConfigReload = true;
             return;
