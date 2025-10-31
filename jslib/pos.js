@@ -1058,7 +1058,8 @@ class Pos {
                 var row = this.#add_perinfo[rowindex];
                 var primmem = this.find_primary_membership(row.memberships);
                 if (primmem != null) {
-                    row.reg_label = row.memberships[primmem].label;
+                    let memRow = row.memberships[primmem];
+                    row.reg_label = memRow.printcount + ':' + memRow.label;
                     var tid = row.memberships[primmem].tid;
                     if (tid != '') {
                         this.#checkPerid = row.perid;
@@ -1813,7 +1814,8 @@ class Pos {
             mem = row.memberships;
             var primmem = this.find_primary_membership(mem);
             if (primmem != null) {
-                row.reg_label = mem[primmem].label;
+                let memRow = row.memberships[primmem];
+                row.reg_label = memRow.printcount + ':' + memRow.label;
                 tid = mem[primmem].tid;
                 if (tid != '') {
                     var other = false;
