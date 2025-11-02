@@ -5,6 +5,8 @@ class ConfigEditor {
 // privates
     #locale = 'en-US';
     #currencyFmt = null;
+    #tocLevel = 0;
+    #toc = '';
 
 // DOM objects
     #saveBtnT = null;
@@ -57,6 +59,7 @@ class ConfigEditor {
     drawConfig() {
         this.#fieldList = [];
         this.#fieldsChanged = [];
+        let toc = '';
         let first = true;
         let html = '';
         let firstSections = ['global', 'con'];
@@ -75,7 +78,20 @@ class ConfigEditor {
                 "<div class='row mb-4'><div class='col-sm'></div></div>\n";
             }
             first = false;
-            html += "<div class='row mt-4'><div class='col-sm-1'><h3><b>[" + sectionName + "]</b></h3></div>" +
+
+            if (this.#tocLevel == 2) {
+                this.#toc += '</ul>\n';
+                this.#tocLevel = 1;
+            }
+            if (this.#tocLevel == 0) {
+                this.#toc += '<ul>\n';
+            }
+
+            this.#toc += '<li><a href="#' + sectionName.replace(/ /g,'_') + '">' + sectionTitle + '</a></li>\n';
+            this.#tocLevel = 1;
+
+            html += "<div class='row mt-4'><div class='col-sm-1'><h3 id='" + sectionName.replace(/ /g, '_') +
+                "'><b>[" + sectionName + "]</b></h3></div>" +
                 "<div class='col-sm-auto'><h2><b>" + sectionTitle + "</b></h2></div>" +
                 "</div>\n";
             let config = this.#control[sectionName];
@@ -84,7 +100,16 @@ class ConfigEditor {
                 html += this.drawParam(sectionName, param);
             }
         }
-        this.#configDiv.innerHTML = html;
+        if (this.#tocLevel == 2) {
+            this.#toc += '</ul>\n';
+            this.#tocLevel = 1;
+        }
+        this.#toc += '</ul>\n';
+        this.#tocLevel = 0;
+        this.#configDiv.innerHTML = '<div class="row mt-4"><div class="col-sm-auto"><h2>*** Table of Contents***</h2></div>\n' +
+            '<div class="row"><div class="col-sm-12">' + this.#toc + '</div></div>\n' +
+            html;
+        this.#toc = '';
     }
 
 // drawParam - Format a specific parameter in the configuration edit screen based on its datatype and options
@@ -103,10 +128,15 @@ class ConfigEditor {
 
         // HR check
         if (param.hasOwnProperty('hr')) {
+            if (this.#tocLevel == 1) {
+                this.#toc += '<ul>\n';
+                this.#tocLevel = 2;
+            }
+            this.#toc += '<li><a href="#' + (sectionName + '_' + param.hr).replace(/ /g, '_') + '">' + param.hr + '</a></li>\n';
             html = "<div class='row mt-4 mb-4 align-items-center'>" +
                     "<div class='col-sm-2'>" + this.#hr + "</div>" +
-                    "<div class='col-sm-auto'><h4><b>" + param.hr + "</b></hr></div>" +
-                    "<div class='col-sm'>" + this.#hr + "</div>" +
+                    "<div class='col-sm-auto'><h4 id='" + (sectionName + '_' + param.hr).replace(/ /g, '_') +
+                "'><b>" + param.hr + "</b></hr></div>" + "<div class='col-sm'>" + this.#hr + "</div>" +
                 "</div>";
         }
         // N: name
