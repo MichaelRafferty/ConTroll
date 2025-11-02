@@ -234,10 +234,10 @@ class ConfigEditor {
         let errormsg = '';
         for (let section in this.#sections) {
             let sectionName = this.#sections[section];
-            let config = this.#control[sectionName];
+            let config = this.#control[sectionName.name];
             for (let paramName in config) {
                 let param = config[paramName];
-                errormsg += this.validateParam(sectionName, param);
+                errormsg += this.validateParam(sectionName.name, param);
             }
         }
         if (errormsg != '') {
@@ -437,16 +437,18 @@ class ConfigEditor {
             method: 'POST',
             data: data,
             success: function (data, textStatus, jhXHR) {
-                _this.#saveBtnT.disabled = false;
-                _this.#saveBtnT.innerHTML = 'Save';
-                _this.#saveBtnB.disabled = false;
-                _this.#saveBtnB.innerHTML = 'Save';
                 if (data.error) {
                     showError(data.error);
+                    _this.#saveBtnT.disabled = false;
+                    _this.#saveBtnB.disabled = false;
                     _this.#saveBtnT.innerHTML = 'Save*';
                     _this.#saveBtnB.innerHTML = 'Save*';
                     return false;
                 }
+                _this.#saveBtnT.disabled = true;
+                _this.#saveBtnT.innerHTML = 'Save';
+                _this.#saveBtnB.disabled = true;
+                _this.#saveBtnB.innerHTML = 'Save';
                 _this.#control = data.control;
                 _this.#sections = data.sections;
                 _this.#myPerm = data.perm;
