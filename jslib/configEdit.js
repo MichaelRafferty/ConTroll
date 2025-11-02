@@ -437,11 +437,13 @@ class ConfigEditor {
             method: 'POST',
             data: data,
             success: function (data, textStatus, jhXHR) {
+                _this.#saveBtnT.disabled = false;
+                _this.#saveBtnT.innerHTML = 'Save';
+                _this.#saveBtnB.disabled = false;
+                _this.#saveBtnB.innerHTML = 'Save';
                 if (data.error) {
                     showError(data.error);
-                    _this.#saveBtnT.disabled = false;
                     _this.#saveBtnT.innerHTML = 'Save*';
-                    _this.#saveBtnB.disabled = false;
                     _this.#saveBtnB.innerHTML = 'Save*';
                     return false;
                 }
