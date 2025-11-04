@@ -36,6 +36,7 @@ Section headers should be:
 - all lower case
 - mnemonic of what is in that section
 - be preceeded by  an empty (blank) line for readability
+- optionally preceeded by a label comment: ;;;;; descriptive lable for this section for web editing of the file
 
 ### Parameters
        param=value ; optional comment
@@ -103,6 +104,10 @@ The online editor will **only** edit this subset of the configuration.
 
 Each etnry in the file that is online editable will contain the following prefix comments:
 
+- `;;;;; HR grouping label`
+    - optional
+    - Will output a <HR> and the grouping label
+    - Used to group a set of parameters together because they have something in common
 - `;; N:name`
     - The name of the parameter
     - This entry starts a new parameter in the file and must be the first parameter for any entry
