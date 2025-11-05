@@ -1572,7 +1572,7 @@ function draw_registrations(data) {
                 headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter,  },
             { title: "PID", field: "perid", width: 80, hozAlign: "right",
                 headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter,  },
-            { title: "NPID", field: "newperson_id", width: 80, hozAlign: "right",
+            { title: "NPID", field: "newperson_id", width: 75, hozAlign: "right",
                 headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter,  },
             { title: "Mgr", field: "manager", width: 80, hozAlign: "right",
                 headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter,  },
@@ -1581,6 +1581,8 @@ function draw_registrations(data) {
             { title: "Badge Name", field: "badgename", headerSort: true, headerFilter: true, formatter: 'html', },
             { title: "Email", field: "email_addr", headerSort: true, headerFilter: true },
             { title: "Membership Type", field: "label", width: 300, headerSort: true, headerFilter: true, },
+            { title: "#p", field: "pcount", hozAlign: "right",
+                headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter,  },
             { title: "mId", field: "memId", hozAlign: "right",
                 headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter,  },
             { title: "Price", field: "price", hozAlign: "right",
@@ -1662,6 +1664,8 @@ function getData(style) {
         curRegListSearch = '';
 
     document.getElementById('regListSearch').style.backgroundColor = "";
+    clear_message();
+    clearError();
     $.ajax({
         url: "scripts/regadmin_getBadges.php",
         method: "POST",
