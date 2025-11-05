@@ -7,6 +7,7 @@
 --
 -- Dumping data for table `controllAppSections`
 --
+
 SET FOREIGN_KEY_CHECKS = 0;
 LOCK TABLES `controllAppSections` WRITE;
 ALTER TABLE `controllAppSections` DISABLE KEYS;
