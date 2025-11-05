@@ -122,6 +122,7 @@ foreach ($transferList as $from) {
     $newRegId = dbSafeInsert($nQ, 'iiiiiiii', array ($to_person, $from_person, $newtid, $newtid, $user_perid, $from, $user_perid, $from));
     $num_rows = dbSafeCmd($uQ, 'ii', array ($user_perid, $from));
     $notes = "Transfer membership $from from $from_person to $to_person by $user_perid";
+    $notesKey = dbSafeInsert($iN, 'siiis', array ($source, $user_perid, $newtid, $from, $notes));
     $notesKey = dbSafeInsert($iN, 'siiis', array ($source, $user_perid, $newtid, $newRegId, $notes));
 
     if ($num_rows === false) {
