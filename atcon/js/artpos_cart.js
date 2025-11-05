@@ -542,7 +542,7 @@ class artpos_cart {
             this.#total_pmt = Number(this.#total_pmt.toFixed(2));
             html += `
     <div class="col-sm-2 text-end">` + this.#currencyFmt.format(Number(this.#total_art).toFixed(2)) + `</div>
-    <div class="col-sm-2 text-end"> + this.#currencyFmt.format(Number(this.#total_tax).toFixed(2)) + `</div>
+    <div class="col-sm-2 text-end">` + this.#currencyFmt.format(Number(this.#total_tax).toFixed(2)) + `</div>
     <div class="col-sm-2 text-end">` + this.#currencyFmt.format(Number(this.#total_pmt).toFixed(2)) + `</div>
 </div>
 `;
