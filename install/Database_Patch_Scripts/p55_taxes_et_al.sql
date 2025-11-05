@@ -50,5 +50,5 @@ ALTER TABLE reg MODIFY COLUMN status enum('unpaid','plan','paid','cancelled','re
 ALTER TABLE regHistory MODIFY COLUMN status enum('unpaid','plan','paid','cancelled','refunded','donated','transferred','upgraded','rolled-over') DEFAULT
     'unpaid';
 
-INSERT INTO patchLog(id, name) VALUES(xx, 'taxes et al');
+INSERT INTO patchLog(id, name) VALUES(55, 'taxes et al');
 
