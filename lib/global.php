@@ -24,48 +24,66 @@ function loadConfFile(): bool {
         exit(1);
     }
 
-    // our config files are only two level
-    // load admin file
-    $adminFile = $path . '/reg_admin.ini';
     $confFile = $path . '/reg_conf.ini';
+    $adminFile = $path . '/reg_admin.ini';
     $secretFile = $path . '/reg_secret.ini';
-    if (is_readable($adminFile)) {
-        $configData = parse_ini_file($adminFile, true);
-        if ($configData === false)
-            $configData = [];
-    } else {
-        $configData = [];
+
+    // our config files are only two level
+
+    // first the web admins editable config file $confFile...
+    if (!is_readable($confFile)) {
+        echo "Unable to read the main configuration file, cannot continue, seek help\n";
+        exit(1);
     }
-    // now merge/override in config file
-    if (is_readable($confFile)) {
-        $db_conf = parse_ini_file($confFile, true);
-        if ($db_conf !== false) {
-            foreach ($db_conf as $section => $values) {
-                if (is_array($values)) {
-                    foreach ($values as $key => $value) {
-                        $configData[$section][$key] = $value;
-                    }
-                } else {
-                    $configData[$section] = $values;
-                }
+
+    $configData = parse_ini_file($confFile, true);
+    if ($configData === false) {
+        echo "There is a non correctable error in the main configuration file, cannot continue, seek help\n";
+        exit(1);
+    }
+
+
+    // now overwrite that any lines found in ini
+    if (!is_readable($adminFile)) {
+        echo "Unable to read the administrative configuration file, cannot continue, seek help\n";
+        exit(1);
+    }
+
+    $db_conf = parse_ini_file($adminFile, true);
+    if ($db_conf === false) {
+        echo "There is a non correctable error in the administrative configuration file, cannot continue, seek help\n";
+        exit(1);
+    }
+
+    // merge in the data, overwriting existing individual items
+    foreach ($db_conf as $section => $values) {
+        if (is_array($values)) {
+            foreach ($values as $key => $value) {
+                $configData[$section][$key] = $value;
             }
+        } else {
+            $configData[$section] = $values;
         }
     }
-    if (is_readable($secretFile)) {
-        // now override secret file
-        $db_conf = parse_ini_file($secretFile, true);
-        if ($db_conf !== false) {
-            foreach ($db_conf as $section => $values) {
-                if (is_array($values)) {
-                    foreach ($values as $key => $value) {
-                        $configData[$section][$key] = $value;
-                    }
-                } else {
-                    $configData[$section] = $values;
-                }
-            }
-        }
+
+    // now override the sections found in the secret file
+    if (!is_readable($secretFile)) {
+        echo "Unable to read the internal system configuration file, cannot continue, seek help\n";
+        exit(1);
     }
+
+
+    $db_conf = parse_ini_file($secretFile, true);
+    if ($db_conf === false) {
+        echo "There is a non correctable error in the internal system configuration file, cannot continue, seek help\n";
+        exit(1);
+    }
+
+    // override every section, replacing the entire section
+    foreach ($db_conf as $section => $values) {
+        $configData[$section] = $values;
+    }
+
     return true;
 }
 
