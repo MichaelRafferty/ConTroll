@@ -5,6 +5,7 @@ findPattern = null;
 
 // tabulator
 lookupTable = null;
+lookupdata = [];
 
 // debug meaning
 //  1 = console.logs
@@ -41,8 +42,9 @@ function findRegs() {
 
     // now call the script to return the memberships for this search
     var postData = {
-        pattern: searchPattern,
-        action: 'lookup'
+        name_search: searchPattern,
+        action: 'lookup',
+        find_type: 'lookup',
     }
     $.ajax({
         method: "POST",
@@ -63,13 +65,48 @@ function findRegs() {
 }
 
 function drawResults(data) {
+    let perdata = data.perinfo;
+    let membership = null;
+    lookupdata = [];
+    for (let i = 0; i < perdata.length; i++) {
+        let peritem = perdata[i];
+        let numMems = peritem.memberships.length
+        if (numMems == 0)
+            continue;
+        for (let j = 0; j < numMems; j++) {
+            membership = peritem.memberships[j];
+            let row = [];
+            row.tid = (membership.tid2 != null && membership.tid2 > 0) ? membership.tid2 : membership.tid;
+            row.perid = peritem.perid;
+            row.fullName = peritem.fullName;
+            row.badgename = peritem.badgename;
+            row.badge_name = peritem.badge_name;
+            row.badgeNameL2 = peritem.badgeNameL2;
+            row.email_addr = peritem.email_addr;
+            row.managerId = peritem.managedBy;
+            row.managerName = peritem.mgrFullName;
+            row.label = (isPrimary(membership.conid, membership.memType, membership.memCategory, membership.price) ?
+                (membership.printcount + ':') : '') + membership.label;
+            row.price = membership.price;
+            row.paid = membership.paid;
+            row.status = membership.status;
+            row.create_date = membership.create_date;
+            row.change_date = membership.change_date;
+            row.paidDate = membership.complete_date;
+            row.first_name = peritem.first_name;
+            row.middle_name = peritem.middle_name;
+            row.last_name = peritem.last_name;
+            row.suffix = peritem.suffix;
+            lookupdata.push(row);
+        }
+    }
     if (lookupTable) {
-        lookupTable.replaceData(data.matches);
+        lookupTable.replaceData(lookupdata);
         return;
     }
 
     lookupTable = new Tabulator('#lookupTable', {
-        data: data.matches,
+        data: lookupdata,
         layout: "fitDataTable",
         index: "perid",
         columns: [

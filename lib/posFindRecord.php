@@ -63,9 +63,10 @@ WHERE h.action = 'attach'
 GROUP BY h.regid
 )
 SELECT DISTINCT r1.perid, r1.id as regid, m.conid, r1.price, r1.paid, r1.paid AS priorPaid, r1.couponDiscount, r1.coupon,
-    r1.create_date, IFNULL(r1.create_trans, -1) as tid,IFNULL(r1.complete_trans, -1) as tid2,r1.memId, r1.planId, r1.status, IFNULL(pc.printcount, 0) AS 
-    printcount,
-    IFNULL(ac.attachcount, 0) AS attachcount, n.reg_notes, n.reg_notes_count, m.memCategory, m.memType, m.memAge, m.shortname, rs.tid as rstid,
+    r1.create_date, r1.change_date, IFNULL(r1.create_trans, -1) as tid,IFNULL(r1.complete_trans, -1) as tid2,
+    IFNULL(t2.complete_date, '') AS complete_date, r1.memId, r1.planId, r1.status, 
+    IFNULL(pc.printcount, 0) AS printcount, IFNULL(ac.attachcount, 0) AS attachcount,
+    n.reg_notes, n.reg_notes_count, m.memCategory, m.memType, m.memAge, m.shortname, rs.tid as rstid,
     CASE WHEN m.conid = ? THEN m.label ELSE concat(m.conid, ' ', m.label) END AS label, m.glNum, m.taxable, m.ageShortName
 EOS;
     $fieldListL = <<<EOS
@@ -157,6 +158,7 @@ JOIN memLabel m ON (r1.memId = m.id)
 LEFT OUTER JOIN printcount pc ON (r1.id = pc.regid)
 LEFT OUTER JOIN attachcount ac ON (r1.id = ac.regid)
 LEFT OUTER JOIN notes n ON (r1.id = n.regid)
+LEFT OUTER JOIN transaction t2 ON (r1.complete_trans = t2.id)
 WHERE (r1.conid = ? OR (r1.conid = ? AND m.memCategory in ('yearahead', 'rollover'))) AND r1.status IN ('unpaid', 'paid', 'plan')
 ORDER BY r1.perid, r1.create_date;
 EOS;
@@ -285,6 +287,7 @@ JOIN memLabel m ON (r1.memId = m.id)
 LEFT OUTER JOIN printcount pc ON (r1.id = pc.regid)
 LEFT OUTER JOIN attachcount ac ON (r1.id = ac.regid)
 LEFT OUTER JOIN notes n ON (r1.id = n.regid)
+LEFT OUTER JOIN transaction t2 ON (r1.complete_trans = t2.id)
 WHERE (r1.conid = ? OR (r1.conid = ? AND m.memCategory in ('yearahead', 'rollover'))) AND r1.status IN ('unpaid', 'paid', 'plan')
 AND r1.status IN ('unpaid', 'paid', 'plan')
 ORDER BY r1.perid, r1.create_date;
@@ -347,6 +350,7 @@ JOIN memLabel m ON (r1.memId = m.id)
 LEFT OUTER JOIN printcount pc ON (r1.id = pc.regid)
 LEFT OUTER JOIN attachcount ac ON (r1.id = ac.regid)
 LEFT OUTER JOIN notes n ON (r1.id = n.regid)
+LEFT OUTER JOIN transaction t2 ON (r1.complete_trans = t2.id)
 ORDER BY r1.perid, r1.create_date;
 EOS;
             //  now the policies for these perids
@@ -380,7 +384,7 @@ EOS;
 //
 // this is the string search portion as the field is alphanumeric
 //
-        $limit = 50; // only return 50 people's memberships
+        $limit = $find_type == 'lookup' ? 100 : 50; // only return a limited number of people's memberships
         $findPattern = '%' . strtolower(str_replace(' ', '%', $name_search)) . '%';
         // name match (same as in people lookup, to get a list of perids that match, then we can use that list for the managed by/manager set
         $nameMatchWith = <<<EOS
@@ -444,6 +448,7 @@ JOIN memLabel m ON (r1.memId = m.id)
 LEFT OUTER JOIN printcount pc ON (r1.id = pc.regid)
 LEFT OUTER JOIN attachcount ac ON (r1.id = ac.regid)
 LEFT OUTER JOIN notes n ON (r1.id = n.regid)
+LEFT OUTER JOIN transaction t2 ON (r1.complete_trans = t2.id)
 ORDER BY r1.perid, r1.create_date;
 EOS;
         //  now the policies for these perids
