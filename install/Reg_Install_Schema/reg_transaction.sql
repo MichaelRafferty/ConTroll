@@ -23,7 +23,12 @@ CREATE TABLE `transaction` (
   `couponDiscountReg` decimal(8,2) DEFAULT '0.00',
   `paid` decimal(8,2) DEFAULT NULL,
   `withtax` decimal(8,2) DEFAULT NULL,
-  `tax` decimal(8,2) DEFAULT NULL,
+  `tax` decimal(8,2) DEFAULT '0.00' COMMENT 'Sum of the tax fields, or the total tax if they are all null',
+  `tax1` decimal(8,2) DEFAULT NULL COMMENT 'Additional Tax field, defined config file or taxList table';
+  `tax2` decimal(8,2) DEFAULT NULL COMMENT 'Additional Tax field, defined in taxList table',
+  `tax3` decimal(8,2) DEFAULT NULL COMMENT 'Additional Tax field, defined in taxList table',
+  `tax4` decimal(8,2) DEFAULT NULL COMMENT 'Additional Tax field, defined in taxList table',
+  `tax5` decimal(8,2) DEFAULT NULL COMMENT 'Additional Tax field, defined in taxList table',
   `type` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `notes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
   `change_due` decimal(8,2) DEFAULT NULL,

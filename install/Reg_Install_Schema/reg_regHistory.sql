@@ -33,9 +33,7 @@ CREATE TABLE `regHistory` (
   `coupon` int DEFAULT NULL,
   `planId` int DEFAULT NULL,
   `printable` enum('N','Y') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `status` enum('unpaid','plan','paid','cancelled','refunded','donated','transferred','upgraded','rolled-over') CHARACTER SET utf8mb4 COLLATE
-      utf8mb4_general_ci
-      DEFAULT NULL,
+  `status` enum('unpaid','plan','paid','cancelled','refunded','donated','transferred','upgraded','rolled-over') COLLATE utf8mb4_general_ci DEFAULT 'unpaid',
   PRIMARY KEY (`historyId`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 

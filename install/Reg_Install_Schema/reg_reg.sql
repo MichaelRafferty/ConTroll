@@ -46,8 +46,6 @@ CREATE TABLE `reg` (
   KEY `reg_priorRegId_fk` (`priorRegId`),
   KEY `regStatus_idx` (`status`,`conid`,`perid`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
-DROP TRIGGER IF EXISTS `reg_update`;
 DELIMITER ;;
 CREATE DEFINER=CURRENT_USER  TRIGGER `reg_update` BEFORE UPDATE ON `reg` FOR EACH ROW BEGIN
     IF (OLD.id != NEW.id OR OLD.conid != NEW.conid OR OLD.perid != NEW.perid OR OLD.newperid != NEW.newperid
@@ -57,13 +55,13 @@ CREATE DEFINER=CURRENT_USER  TRIGGER `reg_update` BEFORE UPDATE ON `reg` FOR EAC
         OR OLD.complete_trans != NEW.complete_trans OR OLD.locked != NEW.locked OR OLD.create_user != NEW.create_user
         OR OLD.updatedBy != NEW.updatedBy OR OLD.memId != NEW.memId OR OLD.coupon != NEW.coupon
         OR OLD.planId != NEW.planId OR OLD.printable != NEW.printable OR OLD.status != NEW.status)
-    THEN
+    THEN    
         INSERT INTO regHistory(id, conid, perid, newperid, oldperid, create_date, change_date, pickup_date, price, couponDiscount,
                                paid, create_trans, complete_trans, locked, create_user, updatedBy, memId, coupon, planId, printable, status)
         VALUES (OLD.id, OLD.conid, OLD.perid, OLD.newperid, OLD.oldperid, OLD.create_date, OLD.change_date, OLD.pickup_date,
                 OLD.price, OLD.couponDiscount, OLD.paid, OLD.create_trans, OLD.complete_trans, OLD.locked, OLD.create_user,
                 OLD.updatedBy, OLD.memId, OLD.coupon, OLD.planId, OLD.printable, OLD.status);
-    END IF;
+    END IF;         
 END;;
 DELIMITER ;
 

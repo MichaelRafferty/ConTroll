@@ -1,4 +1,6 @@
 ALTER TABLE oauthRefreshTokens ADD CONSTRAINT `fk_refresh_token_access` FOREIGN KEY (`accessTokenId`) REFERENCES `oauthAccessTokens` (`id`) ON UPDATE CASCADE;
+ALTER TABLE taxList ADD CONSTRAINT `taxC_conid` FOREIGN KEY (`conid`) REFERENCES `conlist` (`id`) ON UPDATE CASCADE;
+ALTER TABLE taxList ADD CONSTRAINT `taxC_perinfo` FOREIGN KEY (`updatedBy`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 ALTER TABLE oauthAuthCodes ADD CONSTRAINT `fk_auth_codes_clients` FOREIGN KEY (`clientId`) REFERENCES `oauthClients` (`clientId`) ON UPDATE CASCADE;
 ALTER TABLE memberPolicies ADD CONSTRAINT `memberPolicies_ibfk_1` FOREIGN KEY (`updateBy`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 ALTER TABLE memberPolicies ADD CONSTRAINT `memberPolicies_ibfk_2` FOREIGN KEY (`perid`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;

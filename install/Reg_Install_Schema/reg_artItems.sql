@@ -37,7 +37,6 @@ CREATE TABLE `artItems` (
   KEY `artItemsHistory_updatedBy_fk` (`updatedBy`),
   KEY `artItems_fk_bidder` (`bidder`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-DROP TRIGGER IF EXISTS `artItems_update`;
 DELIMITER ;;
 CREATE DEFINER=CURRENT_USER  TRIGGER `artItems_update` BEFORE UPDATE ON `artItems` FOR EACH ROW BEGIN
 IF (OLD.id != NEW.id OR OLD.item_key != NEW.item_key OR OLD.title != NEW.title OR OLD.type != NEW.type OR OLD.status != NEW.status

@@ -6,39 +6,39 @@
 
 
 --
--- Final view structure for view vw_ExhibitorSpace
+-- Final view structure for view `vw_ExhibitorSpace`
 --
 
 DROP VIEW IF EXISTS `vw_ExhibitorSpace`;
 CREATE ALGORITHM=UNDEFINED 
 SQL SECURITY INVOKER
 VIEW vw_ExhibitorSpace AS
-    SELECT ert.portalType AS portalType,ert.requestApprovalRequired AS requestApprovalRequired,ert.purchaseApprovalRequired AS purchaseApprovalRequired,
-        ert.purchaseAreaTotals AS purchaseAreaTotals,ert.mailinAllowed AS mailInAllowed,er.name AS regionName,er.shortname AS regionShortName,
-        er.description AS regionDesc,er.sortorder AS regionSortOrder,ery.ownerName AS ownerName,ery.ownerEmail AS ownerEmail,ery.id AS regionYearId,
-        ery.includedMemId AS includedMemId,ery.additionalMemId AS additionalMemId,ery.totalUnitsAvailable AS totalUnitsAvailable,ery.conid AS yearId,
-        s.id AS id,Ey.conid AS conid,e.id AS exhibitorId,s.spaceId AS spaceId,es.shortname AS shortname,es.name AS name,
-        s.item_requested AS item_requested,s.time_requested AS time_requested,req.code AS requested_code,req.description AS requested_description,
-        req.units AS requested_units,req.price AS requested_price,req.sortorder AS requested_sort,
-        s.item_approved AS item_approved,s.time_approved AS time_approved,app.code AS approved_code,app.description AS approved_description,
-        app.units AS approved_units,app.price AS approved_price,app.sortorder AS approved_sort,
-        s.item_purchased AS item_purchased,s.time_purchased AS time_purchased,pur.code AS purchased_code,pur.description AS purchased_description,
-        pur.units AS purchased_units,pur.price AS purchased_price,pur.sortorder AS purchased_sort,
-        s.price AS price,s.paid AS paid,s.transid AS transid,s.membershipCredits AS membershipCredits
-    FROM exhibitors e
-    JOIN exhibitorYears Ey ON (e.id = Ey.exhibitorId)
-    JOIN exhibitorRegionYears Ery ON (Ery.exhibitorYearId = Ey.id)
-    LEFT JOIN exhibitorSpaces s ON (Ery.id = s.exhibitorRegionYear)
-    LEFT JOIN exhibitsSpacePrices req on (s.item_requested = req.id)
-    LEFT JOIN exhibitsSpacePrices app ON (s.item_approved = app.id)
-    LEFT JOIN exhibitsSpacePrices pur ON (s.item_purchased = pur.id)
-    LEFT JOIN exhibitsSpaces es ON (s.spaceId = es.id)
-    JOIN exhibitsRegionYears ery ON (es.exhibitsRegionYear = ery.id)
-    JOIN exhibitsRegions er ON (er.id = ery.exhibitsRegion)
-    JOIN exhibitsRegionTypes ert ON (ert.regionType = er.regionType) ;
+	SELECT ert.portalType AS portalType,ert.requestApprovalRequired AS requestApprovalRequired,ert.purchaseApprovalRequired AS purchaseApprovalRequired,
+	       ert.purchaseAreaTotals AS purchaseAreaTotals,ert.mailinAllowed AS mailInAllowed,er.name AS regionName,er.shortname AS regionShortName,
+	       er.description AS regionDesc,er.sortorder AS regionSortOrder,ery.ownerName AS ownerName,ery.ownerEmail AS ownerEmail,ery.id AS regionYearId,
+	       ery.includedMemId AS includedMemId,ery.additionalMemId AS additionalMemId,ery.totalUnitsAvailable AS totalUnitsAvailable,ery.conid AS yearId,
+	       s.id AS id,Ey.conid AS conid,e.id AS exhibitorId,s.spaceId AS spaceId,es.shortname AS shortname,es.name AS name,
+	       s.item_requested AS item_requested,s.time_requested AS time_requested,req.code AS requested_code,req.description AS requested_description,
+	       req.units AS requested_units,req.price AS requested_price,req.sortorder AS requested_sort,
+	       s.item_approved AS item_approved,s.time_approved AS time_approved,app.code AS approved_code,app.description AS approved_description,
+	       app.units AS approved_units,app.price AS approved_price,app.sortorder AS approved_sort,
+	       s.item_purchased AS item_purchased,s.time_purchased AS time_purchased,pur.code AS purchased_code,pur.description AS purchased_description,
+	       pur.units AS purchased_units,pur.price AS purchased_price,pur.sortorder AS purchased_sort,
+	       s.price AS price,s.paid AS paid,s.transid AS transid,s.membershipCredits AS membershipCredits
+	FROM exhibitors e
+    JOIN exhibitorYears Ey ON e.id = Ey.exhibitorId
+    JOIN exhibitorRegionYears Ery ON Ery.exhibitorYearId = Ey.id
+    LEFT JOIN exhibitorSpaces s ON Ery.id = s.exhibitorRegionYear
+    LEFT JOIN exhibitsSpacePrices req ON s.item_requested = req.id
+    LEFT JOIN exhibitsSpacePrices app ON s.item_approved = app.id
+    LEFT JOIN exhibitsSpacePrices pur ON s.item_purchased = pur.id
+    LEFT JOIN exhibitsSpaces es ON s.spaceId = es.id
+    JOIN exhibitsRegionYears ery ON es.exhibitsRegionYear = ery.id
+    JOIN exhibitsRegions er ON er.id = ery.exhibitsRegion
+    JOIN exhibitsRegionTypes ert ON ert.regionType = er.regionType;
 
 --
--- Final view structure for view couponMemberships
+-- Final view structure for view `couponMemberships`
 --
 
 DROP VIEW IF EXISTS `couponMemberships`;
@@ -48,14 +48,14 @@ VIEW couponMemberships AS
     SELECT r.id AS regId,r.conid AS conid,r.perid AS perid,r.price AS price,r.couponDiscount AS couponDiscount,r.paid AS paid,c.id AS couponId,
            c.code AS code,c.name AS name,c.couponType AS couponType,c.discount AS discount,c.oneUse AS oneUse,k.guid AS guid,k.useTS AS useTS
     FROM reg r
-    JOIN coupon c ON (c.id = r.coupon)
-    LEFT JOIN couponKeys k ON (k.usedBy = r.create_trans) ;
+    JOIN coupon c ON c.id = r.coupon
+    LEFT JOIN couponKeys k ON k.usedBy = r.create_trans;
 
 --
 -- Final view structure for view couponUsage
 --
 
-DROP VIEW IF EXISTS `couponUsage`;
+DROP VIEW IF EXISTS couponUsage;
 CREATE ALGORITHM=UNDEFINED 
 SQL SECURITY INVOKER
 VIEW couponUsage AS
@@ -63,14 +63,14 @@ VIEW couponUsage AS
            t.couponDiscountCart AS couponDiscountCart,(t.couponDiscountReg + t.couponDiscountCart) AS couponDiscount,t.paid AS paid,
            c.code AS code,c.name AS name,c.couponType AS couponType,c.discount AS discount,c.oneUse AS oneUse,k.guid AS guid,k.useTS AS useTS
     FROM transaction t
-    JOIN coupon c ON (c.id = t.coupon)
-    LEFT JOIN couponKeys k ON (k.usedBy = t.id) ;
+    JOIN coupon c ON c.id = t.coupon
+    LEFT JOIN couponKeys k ON k.usedBy = t.id;
 
 --
 -- Final view structure for view memLabel
 --
 
-DROP VIEW IF EXISTS `memLabel`;
+DROP VIEW IF EXISTS memLabel;
 CREATE ALGORITHM=UNDEFINED 
 SQL SECURITY INVOKER
 VIEW memLabel AS
@@ -79,8 +79,8 @@ VIEW memLabel AS
            m.startdate AS startdate,m.enddate AS enddate,m.atcon AS atcon,m.online AS online,m.glNum AS glNum,m.glLabel AS glLabel,
            c.taxable AS taxable
     FROM memList m
-    JOIN ageList a ON (m.memAge = a.ageType AND m.conid = a.conid)
-    JOIN memCategories c ON (m.memCategory = c.memCategory) ;
+    JOIN ageList a ON m.memAge = a.ageType AND m.conid = a.conid
+    JOIN memCategories c ON m.memCategory = c.memCategory;
 
 --
 -- Dumping routines for database 'reg'
@@ -113,8 +113,9 @@ END ;;
 DELIMITER ;
 DROP PROCEDURE IF EXISTS `deleteDupsIntPol`;
 DELIMITER ;;
-CREATE PROCEDURE deleteDupsIntPol()
+CREATE PROCEDURE `deleteDupsIntPol`()
 SQL SECURITY INVOKER
+    SQL SECURITY INVOKER
 BEGIN
     DROP TABLE IF exists remainPolicy;
 
@@ -164,8 +165,9 @@ END ;;
 DELIMITER ;
 DROP PROCEDURE IF EXISTS `mergePerid`;
 DELIMITER ;;
-CREATE PROCEDURE mergePerid(IN userid INT, IN to_mergePID INT, IN to_survivePID INT, OUT statusmsg TEXT, OUT rollback_log TEXT)
+CREATE PROCEDURE `mergePerid`(IN userid INT, IN to_mergePID INT, IN to_survivePID INT, OUT statusmsg TEXT, OUT rollback_log TEXT)
 SQL SECURITY INVOKER
+    SQL SECURITY INVOKER
 BEGIN
     /* updates the database to change records with to_mergePID to to_survivePID to preserver referential integrity as it merges two perinfo records together
     /* tables with perinfo refs:
@@ -534,6 +536,7 @@ DROP PROCEDURE IF EXISTS `syncServerPrinters`;
 DELIMITER ;;
 CREATE PROCEDURE syncServerPrinters()
 SQL SECURITY INVOKER
+    SQL SECURITY INVOKER
 BEGIN
 
     UPDATE servers ls LEFT OUTER JOIN printservers.servers gs ON (gs.serverName = ls.serverName)
@@ -574,4 +577,4 @@ END ;;
 DELIMITER ;
 
 
--- Dump completed on 2025-10-08 11:32:20
+-- Dump completed on 2025-11-05 13:40:39
