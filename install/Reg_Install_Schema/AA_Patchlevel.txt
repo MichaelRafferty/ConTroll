@@ -1,2 +1,2 @@
-Current=54
-Text=This schema is current as of Patch 54 (p50_moretext.sql)
+Current=55
+Text=This schema is current as of Patch 55 (p55_taxes_et_al.sql)
