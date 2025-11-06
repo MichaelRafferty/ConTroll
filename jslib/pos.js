@@ -2993,6 +2993,9 @@ class Pos {
                 for (let tax in config.taxRates) {
                     let rate = config.taxRates[tax];
                     let amt = this.#taxes[tax];
+                    if (amt == null)
+                        continue;
+
                     pay_html += `
     <div class="row mt-1">
         <div class="col-sm-2 ms-0 me-2 p-0">` + rate.label + `:</div>
@@ -3000,12 +3003,14 @@ class Pos {
                         this.#currencyFmt.format(Number(amt).toFixed(2)) + `</div>
     </div>`;
                 }
-                pay_html += `
+                if (this.#taxAmt > 0) {
+                    pay_html += `
     <div class="row mt-1">
         <div class="col-sm-2 ms-0 me-2 p-0">Total Sales Tax:</div>
         <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-tax-amt">` +
-                    this.#currencyFmt.format(Number(this.#taxAmt).toFixed(2)) + `</div>
+                        this.#currencyFmt.format(Number(this.#taxAmt).toFixed(2)) + `</div>
     </div>`;
+                }
             }
             pay_html += `
     <div class="row mt-1">
