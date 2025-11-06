@@ -32,6 +32,7 @@ class ExhibitorInvoice {
     #uspsDiv = null;
     #currentOrderId = null;
     #invalidFields = '';
+    #portalType = null;
 
 // constructor function - intializes dom objects and inital privates
     constructor() {
@@ -85,9 +86,9 @@ class ExhibitorInvoice {
         var portalName = 'ConTroll';
         var attendeeName = 'Exhibitor';
         var attendeeNameLC = 'Exhibitors';
-        var portalType = regionList.portalType
+        this.#portalType = regionList.portalType
         var exhibitorName = exhibitor_info.exhibitorName;
-        switch (portalType) {
+        switch (this.#portalType) {
             case 'artist':
                 portalName = 'Artist';
                 attendeeName = 'Artist';
@@ -492,7 +493,7 @@ class ExhibitorInvoice {
         formData.nonce= 'admin';
         formData.amtDue= this.#totalAmountDue;
         formData.prow = prow;
-        formData.portalType = portalType;
+        formData.portalType = this.#portalType;
         formData.exhibitorId = this.#exhibitorId;
         formData.exhibitorYearId = this.#exhibitorYearId;
 
