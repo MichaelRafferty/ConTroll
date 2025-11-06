@@ -1932,19 +1932,23 @@ function drawPay(readWrite = true) {
         for (let tax in config.taxRates) {
             let rate = config.taxRates[tax];
             let amt = taxes[tax];
+            if (amt == null)
+                continue;
             payHtml += `
     <div class="row mt-1">
         <div class="col-sm-6 m-0 p-0">` + rate.label + `:</div>
         <div class="col-sm-3 col-sm-3 m-0 p-0 text-end">` + currencyFmt.format(Number(amt).toFixed(2)) + `</div>
     </div>`;
         }
-        payHtml += `
+        if (total_tax_due > 0) {
+            payHtml += `
     <div class="row mt-1">
         <div class="col-sm-6 m-0 p-0">Total Sales Tax:</div>
         <div class="col-sm-3 col-sm-3 m-0 p-0 text-end" id="pay-tax-amt">` +
-            currencyFmt.format(Number(total_tax_due).toFixed(2)) + `
+                currencyFmt.format(Number(total_tax_due).toFixed(2)) + `
         </div>
     </div>`;
+        }
     }
 
     payHtml += `
