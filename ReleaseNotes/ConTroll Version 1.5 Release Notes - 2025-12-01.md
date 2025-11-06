@@ -106,6 +106,7 @@
 * Multiple tax rates
 * Web editable configuration file
 * Generic common receipt library
+* Add Sales Tax ID to details and enable edit of it in admin portal
 
 # Items in Progress, but not in 1.5
 
