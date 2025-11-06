@@ -44,6 +44,8 @@ if ($printer) {
         $badge['type'] = $param['type'];
         $badge['badge_name'] = $param['badge_name'];
         $badge['badgeNameL2'] = $param['badgeNameL2'];
+        $badge['first_name'] = '';
+        $badge['last_name'] = '';
         $badge['category'] = $param['category'];
         $badge['id'] = $param['badge_id'];
         $badge['day'] = $param['day'];
@@ -60,7 +62,7 @@ if ($printer) {
             $file_1day = init_file($printer);
             write_badge($badge, $file_1day, $printer);
             print_badge($printer, $file_1day);
-            $response['message'] .= $badge['day'] . ' badge for $bn printed<br/>';
+            $response['message'] .= $badge['day'] . " badge for $bn printed<br/>";
         }
     }
     ajaxSuccess($response);
