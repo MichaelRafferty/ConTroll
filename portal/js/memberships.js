@@ -397,6 +397,7 @@ class Membership {
             this.#email1Field.innerHTML = email_addr;
             this.#phoneField.value = this.#personInfo.phone;
             this.#badgenameField.value = this.#personInfo.badge_name;
+            this.#badgeNameL2Field.value = this.#personInfo.badgeNameL2;
             this.#auHeader.innerHTML = 'Purchase/Upgrade memberships or other items for ' + this.#personInfo.fullName;
             this.#epHeader.innerHTML = 'Verifying personal information for ' + this.#personInfo.fullName + ' (' + email_addr + ')';
             if (this.#personInfo.lastVerified != null) {
