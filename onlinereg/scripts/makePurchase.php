@@ -428,7 +428,7 @@ EOS;
         $taxFields = ", $taxFields";
     if ($taxSql != '')
         $taxSql = ", $taxSql";
-    $txnQ = 'INSERT INTO payments(time,' . implode(',', $ccrtn['txnfields']) . ',' . $taxFields . ")\n" .
+    $txnQ = 'INSERT INTO payments(time,' . implode(',', $ccrtn['txnfields']) . $taxFields . ")\n" .
         'VALUES(current_time(),' . implode(',', $val) . $taxSql . ');';
     $txnT = implode('', $ccrtn['tnxtypes']) . $taxStr;
     $txnid = dbSafeInsert($txnQ, $txnT, array_merge($ccrtn['tnxdata'], $taxValues));

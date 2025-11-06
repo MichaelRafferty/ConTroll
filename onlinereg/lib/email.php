@@ -62,7 +62,7 @@ EOS;
         $body .= "Total tax for the taxable portion of this order was " . $dolfmt->formatCurrency((float) $owner['tax'], $currency) . "\n" .
             "For a total amount due of " . $dolfmt->formatCurrency((float) $owner['withtax'], $currency) . "\n\n";
     } else
-        $taxcode = '';
+        $taxCode = '';
 
     $body .= "Your card was charged " . $dolfmt->formatCurrency((float) $owner['paid'], $currency) . " for this transaction" .
         "\n\nMemberships have been created for:\n$taxCode\n";
