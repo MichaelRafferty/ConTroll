@@ -237,7 +237,7 @@ foreach ($interests as $interestRow) {
     $emailText = <<<EOS
 To: $notifyAddrs
 
-You have been configured by $regadminemail to receive notifications of changea to the interest '$interest' by members.
+You have been configured by $regadminemail to receive notifications of changes to the interest '$interest' by members.
 This is the list of updates as of $runDate
 
 EOS;
