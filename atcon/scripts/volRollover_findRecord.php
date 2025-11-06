@@ -57,15 +57,15 @@ SELECT DISTINCT p.id AS perid, p.first_name, p.middle_name, p.last_name, p.suffi
         ELSE m.memCategory
     END AS memCategory
 FROM perinfo p
-JOIN reg r ON (r.perid = p.id)
-LEFT OUTER JOIN reg rn ON (rn.perid = p.id AND rn.conid = ?)
+JOIN reg r ON (r.perid = p.id AND r.conid = ?)
 JOIN memLabel m ON (r.memId = m.id)
+LEFT OUTER JOIN reg rn ON (rn.perid = p.id AND rn.conid = ?)
 LEFT OUTER JOIN memLabel mn ON (rn.memId = mn.id)
 WHERE p.id = ? AND r.conid = ?
 ORDER BY r.id;
 EOS;
     //web_error_log($searchSQLM);
-    $r = dbSafeQuery($searchSQL, 'iii', array($conid + 1, $name_search, $conid));
+    $r = dbSafeQuery($searchSQL, 'iiii', array($conid, $conid + 1, $name_search, $conid));
 } else {
 //
 // this is the string search portion as the field is alphanumeric
@@ -91,9 +91,8 @@ SELECT DISTINCT p.id AS perid, p.first_name, p.middle_name, p.last_name, p.suffi
         ELSE m.memCategory
     END AS memCategory
 FROM perinfo p
-JOIN reg r ON (r.perid = p.id)
+JOIN reg r ON (r.perid = p.id AND r.conid = ?)
 LEFT OUTER JOIN reg rn ON (rn.perid = p.id AND rn.conid = ?)
-JOIN memLabel m ON (r.memId = m.id)
 LEFT OUTER JOIN memLabel mn ON (rn.memId = mn.id)
 WHERE r.conid = ? AND (
     LOWER(TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name), ' +', ' '))) LIKE ? OR
@@ -101,22 +100,25 @@ WHERE r.conid = ? AND (
 ORDER BY last_name, first_name
 LIMIT $limit;
 EOS;
-    $r = dbSafeQuery($searchSQL, 'iissss', array($conid + 1, $conid, $name_search, $name_search, $name_search, $name_search));
+    $r = dbSafeQuery($searchSQL, 'iiissss', array($conid, $conid + 1, $conid, $name_search, $name_search, $name_search, $name_search));
 
 }
 // now process the search results
 $perinfo = [];
-$index = 0;
 $perids = [];
 $num_rows = $r->num_rows;
 while ($l = $r->fetch_assoc()) {
     if (!array_key_exists($l['perid'], $perids)) {
-        $perids[$l['perid']] = $index;
-        $l['index'] = $index;
+        $perids[$l['perid']] = count($perinfo);
         $l['badgename'] = badgeNameDefault($l['badge_name'], $l['badgeNameL2'], $l['first_name'], $l['last_name']);
         $perinfo[] = $l;
+    } else {
+        $row = $perids[$l['perid']];
+        $prow = $perinfo[$row];
+        if ($l['memCategory'] == 'eligible' && $prow['memCategory'] != 'eligible') {
+            $perinfo[$row] = $l;
+        }
     }
-    $index++;
 }
 $response['perinfo'] = $perinfo;
 if ($num_rows >= $limit) {
