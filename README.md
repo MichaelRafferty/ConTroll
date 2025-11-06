@@ -11,7 +11,7 @@ ConTroll™ is freely available for use under the GNU Affero General Public Lice
 To install controll on your server, see the install directory for System Requirements and the Setup Sequence.
 The Setup_Sequence.md file gives you a step by step guide to installing ConTroll on your server.
 
-ConTroll is a combination of PHP, Javascript, and custom templates. It currently requires at least PHP 8.2 and uses add-ons using Composer, as well as CDNs 
+ConTroll is a combination of PHP, Javascript, and custom templates. It currently requires PHP 8.3 and uses add-ons using Composer, as well as CDNs 
 for tabulator and bootstrap. Relevant versions are found in lib/jsVersions.php.
 
 ## Release Notes

@@ -3,7 +3,7 @@
 ConTroll is designed to run in a Linux environment using PHP and Mysql or Maria DB.
 
 ## System Software Requirements
-1. PHP 8.2 (May work just fine in 8.3, untested in 8.4)
+1. PHP 8.3 (untested in PHP 8.4)
     - Requires packages
       - cgi-fpm/cgi-fcgi as required by your web server (cgi-fpm preferred)
       - curl

@@ -5,6 +5,8 @@
 
 # Major Configuration Changes in 1.5:
 
+* **ConTroll now requires PHP 8.3 due to the dependencies of it's add-on's.**
+
 * New Database Patches   
   * 51: Art Show: Cleanup of Exhibitors tables, Addition of more configurable text for registration related emails
   * 52: More Custom Text: Cleans up dedup of policies and interests, Cleans up merging people, Addition of more configurable text for registration related 
