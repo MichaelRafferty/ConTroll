@@ -158,7 +158,7 @@ if ($info['managedByName'] == null) {
 // Members Managed
 ?>
     <div id="managed">
-        <div class='row mt-3'><h2 class="size-h4">Managed:</h2></div>
+        <div class='row mt-3'><h2 class="size-h4">Managing:</h2></div>
 <?php
             outputCustomText('main/managed');
 ?>
