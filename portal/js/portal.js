@@ -1263,19 +1263,23 @@ class Portal {
                 for (let tax in config.taxRates) {
                     let rate = config.taxRates[tax];
                     let amt = this.#taxes[tax];
-                    html += `
+                    if (amt != null) {
+                        html += `
     <div class="row mt-1">
         <div class="col-sm-3">` + rate.label + `:</div>
         <div class="col-sm-1" style="text-align: right;">` + this.#currencyFmt.format(Number(amt).toFixed(2)) + `</div>
     </div>`;
+                    }
                 }
             }
-            html += `
+            if (this.#orderData.rtn.taxAmt > 0) {
+                html += `
     <div class="row mt-1">
         <div class="col-sm-3">Total Sales Tax:</div>
         <div class="col-sm-1" style="text-align: right;" id="pay-tax-amt">` +
-                this.#currencyFmt.format(Number(this.#orderData.rtn.taxAmt).toFixed(2)) + `</div>
+                    this.#currencyFmt.format(Number(this.#orderData.rtn.taxAmt).toFixed(2)) + `</div>
     </div>`;
+            }
         }
 
         if (plan == null) {
