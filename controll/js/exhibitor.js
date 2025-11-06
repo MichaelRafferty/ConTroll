@@ -1134,79 +1134,82 @@ class exhibitorsAdm {
         var exhibitorPhone = blankIfNull(exhibitorData.exhibitorPhone).trim() == '' ? none :  exhibitorData.exhibitorPhone.trim();
         var exhibitorInfo = `
             <div class="row">
-                <div class="col-sm-2">Exhibitor Id/Number:</div>
-                <div class="col-sm-10 p-0 ms-0 me-0">` + exhibitorData.exhibitorId + '/' + exhibitorData.exhibitorNumber + `</div>
+                <div class="col-sm-4">Exhibitor Id/Number:</div>
+                <div class="col-sm-8 p-0 ms-0 me-0">` + exhibitorData.exhibitorId + '/' + exhibitorData.exhibitorNumber + `</div>
             </div>
             <div class="row">
-                <div class="col-sm-2">Business Name:</div>
-                <div class="col-sm-10 p-0 ms-0 me-0">` + exhibitorName + `</div>
+                <div class="col-sm-4">Business Name:</div>
+                <div class="col-sm-8 p-0 ms-0 me-0">` + exhibitorName + `</div>
             </div>
             <div class="row">
-                <div class="col-sm-2">Artist Name:</div>
-                <div class="col-sm-10 p-0 ms-0 me-0">` + artistName + `</div>
+                <div class="col-sm-4">Artist Name:</div>
+                <div class="col-sm-8 p-0 ms-0 me-0">` + artistName + `</div>
             </div>
             <div class='row'>
-                <div class='col-sm-2'>Business Email:</div>
-                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorData.exhibitorEmail + `</div>   
+                <div class='col-sm-4'>Business Email:</div>
+                <div class='col-sm-8 p-0 ms-0 me-0'>` + exhibitorData.exhibitorEmail + `</div>   
             </div>
             <div class='row'>
-                <div class='col-sm-2'>Business Phone:</div>
-                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorPhone + `</div>   
+                <div class='col-sm-4'>Business Phone:</div>
+                <div class='col-sm-8 p-0 ms-0 me-0'>` + exhibitorPhone + `</div>   
+            </div>
+                <div class='row'>
+                <div class='col-sm-4'>Sales Tax ID:</div>
+                <div class='col-sm-8 p-0 ms-0 me-0'>` + exhibitorData.salesTaxId + `</div>   
             </div>
             <div class='row'>
-                <div class='col-sm-2'>Website:</div>
-                <div class='col-sm-10 p-0 ms-0 me-0'>` +
+                <div class='col-sm-4'>Website:</div>
+                <div class='col-sm-8 p-0 ms-0 me-0'>` +
                     (weburl != '' ? '<a href="' + weburl + '" target="_blank">' : '') + website +
                     (weburl != '' ? '</a>' : '') + `</div>   
             </div>
             <div class='row'>
-                <div class='col-sm-2'>Desc.:</div>
-                <div class='col-sm-10 p-0 ms-0 me-0'>` + blankIfNull(exhibitorData.description).trim() + `</div>   
+                <div class='col-sm-4'>Desc.:</div>
+                <div class='col-sm-8 p-0 ms-0 me-0'>` + blankIfNull(exhibitorData.description).trim() + `</div>   
             </div>
 `;
 
         if (blankIfNull(exhibitorData.exhNotes).trim() != '')
             exhibitorInfo += `<div class='row'>
-                <div class='col-sm-2'>Exhibitor Notes:</div>
-                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorData.exhNotes.replace(/\n/g, '<br/>').trim() + `</div>
+                <div class='col-sm-4'>Exhibitor Notes:</div>
+                <div class='col-sm-8 p-0 ms-0 me-0'>` + exhibitorData.exhNotes.replace(/\n/g, '<br/>').trim() + `</div>
             </div>
 `;
 
         if (blankIfNull(exhibitorData.contactNotes).trim() != '')
             exhibitorInfo += `<div class='row'>
-                <div class='col-sm-2'>Contact Notes.:</div>
-                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorData.contactNotes.replace(/\n/g, '<br/>').trim() + `</div>
+                <div class='col-sm-4'>Contact Notes.:</div>
+                <div class='col-sm-8 p-0 ms-0 me-0'>` + exhibitorData.contactNotes.replace(/\n/g, '<br/>').trim() + `</div>
             </div>
 `;
 
         if (mailInAllowed == 'Y') {
             exhibitorInfo += `<div class="row">
-                <div class='col-sm-2'>Mail-In:</div>
-                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorData.mailin + `</div>   
+                <div class='col-sm-4'>Mail-In:</div>
+                <div class='col-sm-8 p-0 ms-0 me-0'>` + exhibitorData.mailin + `</div>   
             </div>
 `;
         }
         exhibitorInfo += `<div class='row'>
-                <div class='col-sm-2'>Address:</div>
-                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorData.addr.trim() + `</div>   
+                <div class='col-sm-4'>Address:</div>
+                <div class='col-sm-8 p-0 ms-0 me-0'>` + exhibitorData.addr.trim() + `</div>        
             </div>
 `;
         if (blankIfNull(exhibitorData.addr2).trim() != '') {
             exhibitorInfo += `<div class='row'>
-            <div class='row'>
-                <div class='col-sm-2'>&nbsp;</div>
-                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorData.addr2.trim() + `</div>   
+                <div class='col-sm-4'>&nbsp;</div>
+                <div class='col-sm-8 p-0 ms-0 me-0'>` + exhibitorData.addr2.trim() + `</div>   
             </div>
 `;
         }
 
         exhibitorInfo += `<div class='row'>
-                <div class='col-sm-2'>&nbsp;</div>
-                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorData.city + ', ' + exhibitorData.state + ' ' + exhibitorData.zip + `</div>   
+                <div class='col-sm-4'>&nbsp;</div>
+                <div class='col-sm-8 p-0 ms-0 me-0'>` + exhibitorData.city + ', ' + exhibitorData.state + ' ' + exhibitorData.zip + `</div>   
             </div>
              <div class='row'>
-                <div class='col-sm-2'>&nbsp;</div>
-                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorData.country + `</div>   
+                <div class='col-sm-4'>&nbsp;</div>
+                <div class='col-sm-8 p-0 ms-0 me-0'>` + exhibitorData.country + `</div>   
             </div>
 `;
         return exhibitorInfo;

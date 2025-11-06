@@ -142,8 +142,15 @@ draw_exhibitsConfigurationModals();
                     </div>
                     <div id='spaceDetailHTML'></div>
                     <div class='row mt-3'>
-                        <div class='col-sm-12'>
-                            <h4>Information about this Exhibitor</h4>
+                        <div class='col-sm-6 ms-0 me-0'>
+                            <div class='container-fluid'>
+                                <div class='row'>
+                                    <div class='col-sm-12 ms-0 me-0'>
+                                        <h4>Information about this Exhibitor</h4>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class='container-fluid' id='exhibitorInfoHTML'></div>
                         </div>
                     </div>
                     <div class="container-fluid" id='exhibitorInfoHTML'></div>
