@@ -52,6 +52,7 @@ EOS;
 
 function updateCustomText($tableData) {
     $updated = 0;
+    $needNullUpdate = 0;
     $updsql = <<<EOS
 UPDATE controllTxtItems
 SET contents = ?
@@ -61,12 +62,36 @@ EOS;
     foreach ($tableData as $row) {
         $contents = $row['contents'];
         if ($row['txtItem'] == 'text') {
-            // convert the contents to text
+            // convert the contents to text, first breaks in various forms change to newline.
+            $contents = str_replace('<br>', "\n", $contents);
+            $contents = str_replace('<br/>', "\n", $contents);
+            $contents = str_replace('<BR>', "\n", $contents);
+            $contents = str_replace('<BR/>', "\n", $contents);
+            $contents = strip_tags($contents);
+        }
 
+        // if the string contains the default string, clear it to null and let the update null script handle it.
+        if (str_contains($contents, 'Custom HTML that can replaced with a custom value in the ConTroll Admin App under RegAdmin/Edit Custom Text.')) {
+            $contents = null;
+            $needNullUpdate++;
         }
         $numrows = dbSafeCmd($updsql, 'sssss',
-                             array($row['contents'], $row['appName'], $row['appPage'], $row['appSection'], $row['txtItem']));
+                             array($contents, $row['appName'], $row['appPage'], $row['appSection'], $row['txtItem']));
         $updated += $numrows;
     }
+
+    if ($needNullUpdate > 0) {
+        $updsql = <<<EOS
+UPDATE controllTxtItems 
+SET contents = CONCAT('Controll-Default: This is ', appName, '-', appPage, '-', appSection, '-', txtItem,
+	'<br/>Custom HTML that can replaced with a custom value in the ConTroll Admin App under RegAdmin/Edit Custom Text.<br/>',
+	'Default text display can be suppressed in the configuration file.')
+WHERE contents IS NULL;
+EOS;
+
+        $numrows = dbCmd($updsql);
+        $updated -= $numrows;
+    }
+
     return $updated;
 }

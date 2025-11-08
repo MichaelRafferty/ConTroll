@@ -23,17 +23,17 @@
 [F006]
     name=Email
     sql=p.email_addr
-    title=Label
+    title=Email
     filter=true
-[F006]
+[F010]
     name=City
     sql=p.city
     title=City
-[F007]
+[F011]
     name=State
     sql=p.state
     title=State
-[F008]
+[F012]
     name=Zip
     sql=p.zip
     title="Postal Code"

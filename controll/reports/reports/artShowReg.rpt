@@ -47,6 +47,12 @@
     title="Items"
     align=right
     sort=false
+[F020]
+    name=name
+    sql="IFNULL(e.artistName, e.exhibitorName)"
+    title="Artist Name"
+    sort=false
+    filter=true
 [F021]
     name=email
     sql=e.exhibitorEmail

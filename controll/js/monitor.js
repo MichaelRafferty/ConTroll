@@ -93,7 +93,7 @@ function buildStaffing(data, con) {
    
     var cashLine = {'name': 'Cashier', x:[], y:[], mode:'lines',
         line: {
-            color: 'rgba(0, 128, 0, 1)',
+            color: 'rgba(0, 255, 0, 1)',
             size: 3,
         },
         showlegend: true,
@@ -112,9 +112,9 @@ function buildStaffing(data, con) {
 
     for(const arr in data) {
         dataline = data[arr];
-	if(dataline.time == null) { continue; }
+	if(dataline.log_time == null) { continue; }
 
-        var newtime = new Date(dataline.time);
+        var newtime = new Date(dataline.log_time);
         if(!lasttime) { lasttime = newtime; }
 
         var expectedtime = new Date(lasttime.getTime() + 15 * 60000);
@@ -134,8 +134,8 @@ function buildStaffing(data, con) {
             lasttime=newtime;
         }
 
-        cashLine.x.push(dataline.time);
-        checkLine.x.push(dataline.time);
+        cashLine.x.push(dataline.log_time);
+        checkLine.x.push(dataline.log_time);
         cashLine.y.push(dataline.cashier);
         checkLine.y.push(dataline.checkin);
     }
@@ -167,7 +167,7 @@ function buildThroughput(data, con) {
    
     var badgeLine = {'name': 'Badges', x:[], y:[], mode:'lines',
         line: {
-            color: 'rgba(128, 0, 128, 1)',
+            color: 'rgba(255, 0, 128, 1)',
             size: 3,
         },
         showlegend: true,
@@ -175,7 +175,7 @@ function buildThroughput(data, con) {
 
     var transLine = {'name': 'Transactions', x:[], y:[], mode:'lines',
         line: {
-            color: 'rgba(0, 0, 128, 1)',
+            color: 'rgba(0, 0, 255, 1)',
             size: 3,
         },
         showlegend: true,
@@ -484,12 +484,13 @@ function buildBreakdownLevel(label, ptr, data, lvl) {
   if(lvl == 2) {
     next = $(document.createElement('ul'));
     for (key in data) {
-      var leaf = $(document.createElement('li')).append(key + ": " + data[key]);
-      next.append(leaf);
+        var leaf = $(document.createElement('li')).append(key + ": " + data[key]['printed'] + " of " + data[key]['total']);
+        next.append(leaf);
 
-      acc += parseInt(data[key]);
+        acc['printed'] += parseInt(data[key]['printed']);
+        acc['total'] += parseInt(data[key]['total']);
     }
-    var sum = $(document.createElement('li')).append(label + ": " + acc);
+    var sum = $(document.createElement('li')).append(label + ": " + acc['printed'] + " of " + acc['total']);
     ptr.append(sum.append(next));
     return acc;
   } else {
@@ -497,12 +498,13 @@ function buildBreakdownLevel(label, ptr, data, lvl) {
       next = $(document.createElement('ul'));
       for (key in data) {
         var tot = parseInt(buildBreakdownLevel(key, next, data[key], lvl+1));
-        acc += parseInt(tot);
+          acc['printed'] += parseInt(tot['printed']);
+          acc['total'] += parseInt(tot['total']);
       }
-      var sum = $(document.createElement('li')).append(label + ": " + acc);
+      var sum = $(document.createElement('li')).append(label + ": " + acc['printed'] + " of " + acc['total']);
       ptr.append(sum.append(next));
     } else { 
-      acc = parseInt(buildBreakdownLevel(label, ptr, data[keys[0]], lvl+1));
+      acc = buildBreakdownLevel(label, ptr, data[keys[0]], lvl+1);
     }
     return acc;
   }

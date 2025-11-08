@@ -65,7 +65,7 @@ switch ($action) {
 
         // first update the types if they have been matched in the interim
         $cQ = <<<EOS
-SELECT perid
+SELECT perid, managedByNew, managedBy
 FROM newperson
 WHERE id = ?;
 EOS;
@@ -75,7 +75,13 @@ EOS;
                 echo "<div class='col-sm-auto'>Can no longer find that person.</div>\n";
                 break;
             }
-            $newId = $cR->fetch_row()[0];
+            $row = $cR->fetch_assoc();
+            if ($row['managedBy'] != null || $row['managedByNew'] != null) {
+                echo "<div class='col-sm-auto'>You are already managed, and cannot be managed by someone else. " .
+                        "You will need to disassociate yourself from your manager via the registration portal.</div>\n";
+                break;
+            }
+            $newId = $row['perid'];
             $cR->free();
             if ($newId != null) {
                 $acctId = $newId;
@@ -99,6 +105,25 @@ EOS;
         // ok, loginId and type are now updated
         $table = $acctType == 'p' ? 'perinfo' : 'newperson';
         $pfield = $loginType == 'p' ? 'managedBy' : 'managedByNew';
+        // check if this person is already managed
+        $cQ = <<<EOS
+SELECT managedBy, managedByNew
+FROM $table
+WHERE id = ?;
+EOS;
+        $cR = dbSafeQuery($cQ, 'i', array($loginId));
+        if ($cR == false || $cR->num_rows != 1) {
+            echo "<div class='col-sm-auto'>Can no longer find your entry to update it, seek assistance.</div>\n";
+            break;
+        }
+        $row = $cR->fetch_assoc();
+        $cR->free();
+        if ($row['managedBy'] != null || $row['managedByNew'] != null) {
+            echo "<div class='col-sm-auto'>You are already managed, and cannot be managed by someone else. " .
+                    "You will need to disassociate yourself from your manager via the registration portal.</div>\n";
+            break;
+        }
+
         $uQ = <<<EOS
 UPDATE $table
 SET $pfield = ?, managedReason = 'Client Response'

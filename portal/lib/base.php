@@ -219,7 +219,7 @@ function portalPageFoot() {
 function tabBar($page, $portal_conf, $info, $refresh = false) {
     $page_list = [];
     if (!$refresh) {
-        if (getConfValue('portal', 'history') == 1) {
+        if (getConfValue('portal', 'history') == 1 && getSessionVar('idType') == 'p') {
             $page_list[] = ['name' => 'membershipHistory', 'display' => 'Membership History'];
         }
         // always provide account settings.  The managed sections is for managers only, the identity section is for perinfo only.

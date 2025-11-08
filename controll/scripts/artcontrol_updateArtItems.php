@@ -61,9 +61,28 @@ foreach ($tabledata as $row) {
     } else {
         $location = trim($row['location']);
     }
-    if($row['min_price'] == '') {$row['min_price'] = null;}
+    if($row['min_price'] == '' || $row['min_price'] == 0) {$row['min_price'] = null;}
+    if($row['final_price'] == '' || $row['final_price'] == 0) {$row['final_price'] = null;}
     if($row['sale_price'] == '') {$row['sale_price'] = null;}
     if($row['notes'] == '') { $row['notes'] = null;}
+
+    // perform art type based must be null/equal items
+    switch($row['type']) {
+        case 'art':
+            $row['original_qty'] = 1;
+            $row['quantity'] = $row['status'] == 'Purchased/Released' ? 0 : 1;
+            break;
+        case 'print':
+            $row['bidder'] = null;
+            $row['final_price'] = null;
+            $row['min_price'] = $row['sale_price'];
+            break;
+        case 'nfs':
+            $row['bidder'] = null;
+            $row['final_price'] = null;
+            $row['min_price'] = $row['sale_price'];
+            break;
+    }
 
     if(($row['id'] < 0) && ($row['min_price']==null)) { $row['min_price']=$row['sale_price']; }
 
@@ -98,8 +117,56 @@ foreach ($tabledata as $row) {
 
 $response['status'] = "$updated items Updated $new items Inserted";
 
-if($new > 0) {
+// refetch the updated data with all changed fields and keys
+$artQ = <<<EOS
+SELECT I.id, I.exhibitorRegionYearId, I.item_key, I.title, I.type, I.status, I.location, I.quantity, I.original_qty, 
+       I.min_price, I.sale_price, I.final_price, I.bidder, I.material, I.notes, ey.id AS exhibitorYearId, ery.exhibitsRegionYearId,
+    ery.exhibitorNumber, ery.locations, e.exhibitorName, exR.name as exhibitRegionName,
+    concat(trim(p.first_name), ' ', trim(p.last_name)) as bidderName,
+    concat(trim(p.first_name), ' ', trim(p.last_name), ' (', I.bidder, ')') as bidderText,
+    concat(I.exhibitorRegionYearId, '_', I.item_key) as extendedKey
+FROM artItems I 
+    JOIN exhibitorRegionYears ery ON ery.id = I.exhibitorRegionYearId
+    JOIN exhibitorYears ey ON ey.id=ery.exhibitorYearId
+    JOIN exhibitors e ON e.id=ey.exhibitorId
+    JOIN exhibitsRegionYears exRY ON exRY.id=ery.exhibitsRegionYearId
+    JOIN exhibitsRegions exR on exR.id=exRY.exhibitsRegion
+    LEFT JOIN perinfo p ON p.id=I.bidder
+WHERE ey.conid=? and exRY.exhibitsRegion=?
+ORDER BY ery.exhibitorNumber, I.item_key;
+EOS;
 
+$artR = dbSafeQuery($artQ, 'ii', array($conid, $region));
+
+$items=array();
+
+while($artItem = $artR->fetch_assoc()) {
+    $items[] = $artItem;
 }
+$artR->free();
+
+$response['art'] = $items;
+
+$artistQ = <<<EOS
+SELECT DISTINCT e.exhibitorName, ery.id as exhibitorRegionYearId, ery.exhibitorNumber, ery.locations
+FROM exhibitorYears ey 
+    JOIN exhibitorRegionYears ery ON ery.exhibitorYearId = ey.id
+    JOIN exhibitors e ON ey.exhibitorId=e.id
+    JOIN exhibitsRegionYears exRY ON exRY.id=ery.exhibitsRegionYearId
+    JOIN exhibitorSpaces S ON S.exhibitorRegionYear=ery.id 
+WHERE ey.conid=? AND exRY.exhibitsRegion=? AND S.item_purchased IS NOT NULL
+    AND ery.exhibitorNumber IS NOT NULL
+ORDER BY e.exhibitorName;
+EOS;
+$artistR = dbSafeQuery($artistQ, 'ii', array($conid, $region));
+
+$artists=array();
+
+while($artist = $artistR->fetch_assoc()) {
+    $artists[] = $artist;
+}
+$artistR->free();
+
+$response['artists'] = $artists;
 
 ajaxSuccess($response);

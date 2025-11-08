@@ -38,6 +38,31 @@ $response['who'] = $who;
 $response['manager'] = $manager;
 $updatedBy = $_SESSION['user_perid'];
 
+// check that the person requested to manage this person is not managed themselves
+$chkQ = <<<EOS
+SELECT managedByNew, managedBy
+FROM perinfo
+WHERE id = ?;
+EOS;
+$chkR = dbSafeQuery($chkQ, 'i', array($manager));
+if ($chkR === false) {
+    $response['error'] = 'SQL Error in checking if manager is managed';
+    ajaxSuccess($response);
+    exit();
+}
+$managerData = $chkR->fetch_assoc();
+$chkR->free();
+if ($managerData['managedBy'] != null) {
+    $response['error'] = "Manager $manager is already managed by " . $managerData['managedBy'] . '<br/>Nothing updated.';
+    ajaxSuccess($response);
+    exit();
+}
+if ($managerData['managedByNew'] != null) {
+    $response['error'] = "Manager $manager is already managed by newperson" . $managerData['managedByNew'] . '<br/>Nothing updated.';
+    ajaxSuccess($response);
+    exit();
+}
+
 $uQ = <<<EOS
 UPDATE perinfo
 SET managedByNew = NULL, managedBy = ?, updatedBy = ?, managedReason = 'people assign'

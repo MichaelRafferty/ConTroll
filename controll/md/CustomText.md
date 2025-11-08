@@ -16,26 +16,26 @@ Custom Text is indexed by a four level system:
 Custom text is configurable by the system administator via the configuration file to one of three settings:
 * all: show all customtext, even the default messages. This setting lets you see where on the page all of the custom text blocks will appear.
 * production: suppress the 'default' placeholder messages (an alias for this is nodefault)
-* none: supporess all custom text
+* none: suppress all custom text
 
 ## Editing Custom Text
 A 'Custom Text' menu tab appears on each section of the back end that supports custom text.
-Each section only shows the applications avaialble for editing from that top level memu item.
+Each section only shows the applications available for editing from that top level menu item.
 
 * Admin can edit controll items
-* Registraiton Admin can edit atcon, onlinereg and portal 
+* Registration Admin can edit atcon, onlinereg and portal 
 * Exhibitors can edit exhibitor (note there are specific items for each portal type in this application)
 
-Custom Text is edited in the HTML tinyMCE editor. Any HTML tgs are acceptable within the limits
+Custom Text is edited in the HTML tinyMCE editor. Any HTML tags are acceptable within the limits
 of the configuration of the editor.
 
-However items of section 'email' will have all of the HTML tags converted back to plain 
-text for the plain text style email if there is no HTML and Text alternatives in the item.
+However, items of section 'email' will have all of the HTML tags converted back to plain 
+text for the plain text style email if there are no HTML and Text alternatives in the item.
 
 
 ## Variable Substitution within Custom Text Messages
 
-Custom Text supports two types of vsriable subsituion at present:
+Custom Text supports two types of variable subsituion at present:
 * `#section.element#` for items in the master configuration file
 * `[[variableName]]` for special items for that particular section of the system
 
@@ -48,7 +48,7 @@ The string after the equal sign of that element from the configuration file repl
 Variables that do not exist in the configuration are left unchanged in the ouput text.
 This substitution occurs as the text is output in the web site, and not when it is being configured in the controll back end.
 
-Please see your system administator for a list of configuration file variables. 
+Please see your system administrator for a list of configuration file variables. 
 There are many of them and these often deal with names, email addresses, urls and other data that
 will be changed from year to year.  The use of these variables provides for not having to re-edit
 the custom text every year for these elements.
@@ -83,7 +83,7 @@ are skipped for security reasons as they hold keys and other protected data
 ### Application Specific Variables
 
 Several sections of the code use specific variables for substitution in their custom text
-in addtiion to the configuration file variables.
+in addition to the configuration file variables.
 
 #### Exhibitor Emails:
 Items of section 'email' use the following specific variables:

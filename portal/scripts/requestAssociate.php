@@ -110,6 +110,29 @@ $cR->free();
 
 if ($numMatch > 0) {
     // this account holder controls this email address, directly attach it.
+    // first check if we are managed by someone
+    $manageTable = $loginType == 'p' ? 'perinfo' : 'newperson';
+
+    $chkQ = <<<EOS
+SELECT managedByNew, managedBy
+FROM $manageTable
+WHERE id = ?;
+EOS;
+    $chkR = dbSafeQuery($chkQ, 'i', array($loginId));
+    if ($chkR === false) {
+        $response['error'] = 'SQL Error in checking if you are managed by someone else';
+        ajaxSuccess($response);
+        exit();
+    }
+    $managerData = $chkR->fetch_assoc();
+    $chkR->free();
+    if ($managerData['managedBy'] != null || $managerData['managedByNew'] != null) {
+        $response['error'] = "You cannot request to manage someone else, you are already managed by " .
+            $managerData['managedBy'] != null ? $managerData['managedBy'] : $managerData['managedByNew'];
+        ajaxSuccess($response);
+        exit();
+    }
+
     if ($acctType == 'p') {
         $uQ = <<<EOS
 UPDATE perinfo

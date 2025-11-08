@@ -282,7 +282,6 @@ function remove_from_cart(index) {
 
 function add_to_cart(index, action) {
     var item = datatbl[index];
-    actionlist.push(create_action(action, item.id, null));
     if (config.debug > 0)
         $('#test').empty().append(action + '\n' + JSON.stringify(item, null, 2));
     else
@@ -320,13 +319,15 @@ function add_to_cart(index, action) {
         return;
     }
 
+    actionlist.push(create_action(action, item.id, null));
     item.action=action;
     draw_cart();
 }
 
-function changed_loc() { 
+function changed_loc(row) {
     locations_changed++; 
     location_change_button.hidden = (locations_changed == 0);
+    update_loc(row,undefined, true);
 }
 
 function draw_cart_row(rownum) {
@@ -346,7 +347,7 @@ function draw_cart_row(rownum) {
 `;
     var trailing_html = '</div></div>';
 
-    var location_select = '<select onchange="changed_loc();"'
+    var location_select = '<select onchange="changed_loc('+rownum+');"'
     if(item.need_location) { location_select += 'class="bg-warning" '; }
     location_select += 'id="loc_' + item.id + '">';
     if(item.location == "") {
@@ -640,7 +641,7 @@ function draw_cart() {
 
     //clear buttons
     startover_button.hidden = num_rows == 0;
-    inventory_update_button.hidden = !((num_rows > 0) & (need_count == 0) & (need_location == 0));
+    inventory_update_button.hidden = !((num_rows > 0) & (need_count == 0)); // & (need_location == 0));
     location_change_button.hidden = (locations_changed == 0);
 }
 
