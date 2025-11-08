@@ -24,8 +24,7 @@ $minCon = $conConf['minComp'];
 $maxLen = $conConf['compLen'];
 $conLen = $conConf['conLen'];
 
-$debug = get_conf('debug');
-if(!array_key_exists('controll_stats', $debug)) { $debug['controll_stats']=0;}
+$debug_stats = getConfValue('debug', 'controll_stats', 0);
 if(isset($_GET['conid'])) {
     $conid=$_GET['conid'];
     $con = dbSafeQuery('SELECT id, name, label, startdate, DATE_ADD(enddate, INTERVAL 1 DAY) as enddate FROM conlist WHERE id=?;', 'i', array($conid))->fetch_assoc();
@@ -99,7 +98,7 @@ SELECT R.conid, M.id, M.memCategory, M.shortname as label
 FROM reg R
 JOIN memLabel M on M.id=R.memId
 WHERE R.conid=? 
-GROUP BY R.conid, M.id
+GROUP BY R.conid, M.id, M.memCategory, M.shortname
 order by M.id;
 EOF;
         $yearaheadR = dbSafeQuery($yearaheadQ, 'i', array($conid+1));
@@ -112,9 +111,9 @@ $currR = dbSafeQuery($currQ, 'i', array($conid))->fetch_assoc();
 $con['paid_members'] = $currR['c'];
 
         $preregQ = <<<EOF
-SELECT R.conid, M.memCategory, M.shortname as label, count(DISTINCT R.perid) as c
+SELECT R.conid, M.memCategory, M.label , count(DISTINCT R.perid) as c
 FROM reg R
-JOIN memLabel M on M.id=R.memId
+JOIN memList M on M.id=R.memId
 LEFT OUTER JOIN regActions H ON H.regid=R.id and H.action='print'
 WHERE R.conid=? and H.action is null
 GROUP BY R.conid, M.label
@@ -126,9 +125,9 @@ EOF;
         }
 
         $atconQ = <<<EOF
-SELECT R.conid, M.memCategory, LOWER(M.memType) as memType, M.shortname as label, count(DISTINCT R.perid) as c
+SELECT R.conid, M.memCategory, LOWER(M.memType) as memType, M.label, count(DISTINCT R.perid) as c
 FROM reg R
-JOIN memLabel M on M.id=R.memId
+JOIN memList M on M.id=R.memId
 JOIN regActions H ON H.regid=R.id and H.action='print'
 WHERE R.conid=? 
 GROUP BY R.conid, M.label
@@ -179,7 +178,7 @@ SELECT COUNT(distinct P.cashier) AS cashier
 FROM transaction T
 LEFT OUTER JOIN payments P ON (P.transid=T.id and P.cashier IS NOT NULL)
 JOIN regActions H ON (H.tid=T.id)
-WHERE T.conid=?
+WHERE T.conid=? AND H.action IN ('attach', 'print')
 GROUP BY time;
 EOF;
         $staffR = dbSafeQuery($staffQ, 'i', array($conid));
@@ -216,7 +215,7 @@ ORDER BY R.conid;
 EOQ;
         $maxRegR = dbSafeQuery($maxRegQ, 'i', array($minCon));
         $response['maxReg'] = array();
-        if ($debug['controll_stats'] & 1) {  // make up 10 years of history data so there's something there.
+        if ($debug_stats & 1) {  // make up 10 years of history data so there's something there.
             for ($i = 10; $i > 0; $i--) {
                 $rand = random_int(5,50);
                 $rand2 = random_int(1,$rand-1);
@@ -246,7 +245,7 @@ EOQ;
             $lastDebugValue = 0;
             if ((!array_key_exists($preconR['conid'], $preconResponse)) || ($preconResponse[$preconR['conid']] === null))
             {$preconResponse[$preconR['conid']]=array();}
-            if($preconR['conid'] == $minCon && ($debug['controll_stats'] & 1)) {
+            if($preconR['conid'] == $minCon && ($debug_stats & 1)) {
                 for($i = 10 ; $i > 0; $i--) {
                     $rand = random_int(0,$preconR['cnt_all']*2);
                     if ($preconResponse[$minCon - $i*5] === null) {$preconResponse[$minCon - $i*5]=array();}

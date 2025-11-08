@@ -117,62 +117,62 @@ EOS;
         if ($artistName != null) {
             $exhibitorInsertQ = <<<EOS
 INSERT INTO exhibitors (artistName, exhibitorName, exhibitorEmail, exhibitorPhone, salesTaxId, website, description, password, need_new, 
-                     addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, publicity) 
-VALUES (?,?,?,?,?,?,?,?,0,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
+                     addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, publicity, notes) 
+VALUES (?,?,?,?,?,?,?,?,0,?,?,?,?,?,?,?,?,?,?,?,?,?,?, '');
 EOS;
             $typestr = 'sssssssssssssssssssssi';
             $paramarr = array (
-                trim($artistName),
-                trim($_POST['exhibitorName']),
-                trim($_POST['exhibitorEmail']),
-                trim($_POST['exhibitorPhone']),
-                $salesTaxId,
-                trim($_POST['website']),
-                $description,
-                password_hash(trim($_POST['password']), PASSWORD_DEFAULT),
-                trim($_POST['addr']),
-                trim($_POST['addr2']),
-                trim($_POST['city']),
-                trim($_POST['state']),
-                trim($_POST['zip']),
-                trim($_POST['country']),
-                $shipCompany,
-                $shipAddr,
-                $shipAddr2,
-                $shipCity,
-                $shipState,
-                $shipZip,
-                $shipCountry,
+                trim(ifnull($artistName,'')),
+                trim(ifnull($_POST['exhibitorName'], '')),
+                trim(ifnull($_POST['exhibitorEmail'], '')),
+                trim(ifnull($_POST['exhibitorPhone'], '')),
+                trim(ifnull($_POST['salesTaxId'], '')),
+                trim(ifnull($_POST['website'], '')),
+                trim(ifnull($_POST['description'], '')),
+                password_hash(trim(ifnull($_POST['password'], '')), PASSWORD_DEFAULT),
+                trim(ifnull($_POST['addr'], '')),
+                trim(ifnull($_POST['addr2'], '')),
+                trim(ifnull($_POST['city'], '')),
+                trim(ifnull($_POST['state'], '')),
+                trim(ifnull($_POST['zip'], '')),
+                trim(ifnull($_POST['country'], '')),
+                trim(ifnull($shipCompany, '')),
+                trim(ifnull($shipAddr, '')),
+                trim(ifnull($shipAddr2, '')),
+                trim(ifnull($shipCity, '')),
+                trim(ifnull($shipState, '')),
+                trim(ifnull($shipZip, '')),
+                trim(ifnull($shipCountry, '')),
                 $publicity
             );
         } else {
             $exhibitorInsertQ = <<<EOS
 INSERT INTO exhibitors (exhibitorName, exhibitorEmail, exhibitorPhone, salesTaxId, website, description, password, need_new, 
-                     addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, publicity) 
-VALUES (?,?,?,?,?,?,?,0,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
+                     addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, publicity, notes) 
+VALUES (?,?,?,?,?,?,?,0,?,?,?,?,?,?,?,?,?,?,?,?,?,?, '');
 EOS;
             $typestr = 'ssssssssssssssssssssi';
             $paramarr = array (
-                trim($_POST['exhibitorName']),
-                trim($_POST['exhibitorEmail']),
-                trim($_POST['exhibitorPhone']),
-                $salesTaxId,
-                trim($_POST['website']),
-                $description,
-                password_hash(trim($_POST['password']), PASSWORD_DEFAULT),
-                trim($_POST['addr']),
-                trim($_POST['addr2']),
-                trim($_POST['city']),
-                trim($_POST['state']),
-                trim($_POST['zip']),
-                trim($_POST['country']),
-                $shipCompany,
-                $shipAddr,
-                $shipAddr2,
-                $shipCity,
-                $shipState,
-                $shipZip,
-                $shipCountry,
+                trim(ifnull($_POST['exhibitorName'], '')),
+                trim(ifnull($_POST['exhibitorEmail'], '')),
+                trim(ifnull($_POST['exhibitorPhone'], '')),
+                trim(ifnull($_POST['salesTaxId'], '')),
+                trim(ifnull($_POST['website'], '')),
+                trim(ifnull($_POST['description'], '')),
+                password_hash(trim(ifnull($_POST['password'], '')), PASSWORD_DEFAULT),
+                trim(ifnull($_POST['addr'], '')),
+                trim(ifnull($_POST['addr2'], '')),
+                trim(ifnull($_POST['city'], '')),
+                trim(ifnull($_POST['state'], '')),
+                trim(ifnull($_POST['zip'], '')),
+                trim(ifnull($_POST['country'], '')),
+                trim(ifnull($shipCompany, '')),
+                trim(ifnull($shipAddr, '')),
+                trim(ifnull($shipAddr2, '')),
+                trim(ifnull($shipCity, '')),
+                trim(ifnull($shipState, '')),
+                trim(ifnull($shipZip, '')),
+                trim(ifnull($shipCountry, '')),
                 $publicity
             );
         }
@@ -233,26 +233,26 @@ SET artistName = ?, exhibitorName=?, exhibitorEmail=?, exhibitorPhone=?, salesTa
 WHERE id=?
 EOS;
             $updateArr = array (
-                $artistName,
-                trim($_POST['exhibitorName']),
-                trim($_POST['exhibitorEmail']),
-                trim($_POST['exhibitorPhone']),
-                $salesTaxId,
-                trim($_POST['website']),
-                $description,
-                trim($_POST['addr']),
-                trim($_POST['addr2']),
-                trim($_POST['city']),
-                trim($_POST['state']),
-                trim($_POST['zip']),
-                trim($_POST['country']),
-                $shipCompany,
-                $shipAddr,
-                $shipAddr2,
-                $shipCity,
-                $shipState,
-                $shipZip,
-                $shipCountry,
+                trim(ifnull($artistName, '')),
+                trim(ifnull($_POST['exhibitorName'], '')),
+                trim(ifnull($_POST['exhibitorEmail'], '')),
+                trim(ifnull($_POST['exhibitorPhone'], '')),
+                trim(ifnull($salesTaxId, '')),
+                trim(ifnull($_POST['website'], '')),
+                trim(ifnull($description, '')),
+                trim(ifnull($_POST['addr'], '')),
+                trim(ifnull($_POST['addr2'], '')),
+                trim(ifnull($_POST['city'], '')),
+                trim(ifnull($_POST['state'], '')),
+                trim(ifnull($_POST['zip'], '')),
+                trim(ifnull($_POST['country'], '')),
+                trim(ifnull($shipCompany, '')),
+                trim(ifnull($shipAddr, '')),
+                trim(ifnull($shipAddr2, '')),
+                trim(ifnull($shipCity, '')),
+                trim(ifnull($shipState, '')),
+                trim(ifnull($shipZip, '')),
+                trim(ifnull($shipCountry, '')),
                 $publicity,
                 $vendor
             );
@@ -265,27 +265,27 @@ SET exhibitorName=?, exhibitorEmail=?, exhibitorPhone=?, salesTaxId=?, website=?
 WHERE id=?
 EOS;
             $updateArr = array (
-                trim($_POST['exhibitorName']),
-                trim($_POST['exhibitorEmail']),
-                trim($_POST['exhibitorPhone']),
-                $salesTaxId,
-                trim($_POST['website']),
-                $description,
-                trim($_POST['addr']),
-                trim($_POST['addr2']),
-                trim($_POST['city']),
-                trim($_POST['state']),
-                trim($_POST['zip']),
-                trim($_POST['country']),
-                $shipCompany,
-                $shipAddr,
-                $shipAddr2,
-                $shipCity,
-                $shipState,
-                $shipZip,
-                $shipCountry,
+                trim(ifnull($_POST['exhibitorName'], '')),
+                trim(ifnull($_POST['exhibitorEmail'], '')),
+                trim(ifnull($_POST['exhibitorPhone'], '')),
+                trim(ifnull($salesTaxId, '')),
+                trim(ifnull($_POST['website'], '')),
+                trim(ifnull($description, '')),
+                trim(ifnull($_POST['addr'], '')),
+                trim(ifnull($_POST['addr2'], '')),
+                trim(ifnull($_POST['city'], '')),
+                trim(ifnull($_POST['state'], '')),
+                trim(ifnull($_POST['zip'], '')),
+                trim(ifnull($_POST['country'], '')),
+                trim(ifnull($shipCompany, '')),
+                trim(ifnull($shipAddr, '')),
+                trim(ifnull($shipAddr2, '')),
+                trim(ifnull($shipCity, '')),
+                trim(ifnull($shipState, '')),
+                trim(ifnull($shipZip, '')),
+                trim(ifnull($shipCountry, '')),
                 $publicity,
-                $vendor
+                $vendor,
             );
             $dt = 'sssssssssssssssssssii';
         }
@@ -298,9 +298,9 @@ SET contactName=?, contactEmail=?, contactPhone=?, mailin = ?, lastVerified = NO
 WHERE id=?
 EOS;
             $updateArr = array(
-                trim($_POST['contactName']),
-                trim($_POST['contactEmail']),
-                trim($_POST['contactPhone']),
+                trim(ifnull($_POST['contactName'],'')),
+                trim(ifnull($_POST['contactEmail'],'')),
+                trim(ifnull($_POST['contactPhone'],'')),
                 $mailin,
                 $vendorYear
             );

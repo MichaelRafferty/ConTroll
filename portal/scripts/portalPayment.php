@@ -20,7 +20,6 @@ $condata = get_con();
 $conid=$condata['id'];
 $conf = get_conf('con');
 $portal_conf = get_conf('portal');
-$debug = get_conf('debug');
 $ini = get_conf('reg');
 $log = get_conf('log');
 $ccauth = get_conf('cc');
@@ -312,12 +311,14 @@ if ($approved_amt == $totalAmountDue) {
     $txnUpdate .= 'complete_date=current_timestamp(), ';
 }
 
-$txnUpdate .= 'paid=?, couponDiscountCart = ?, coupon = ? WHERE id=?;';
+$txnUpdate .= 'paid=?, couponDiscountCart = ?, coupon = ?, ccPaymentId = ?, paymentStatus = ?
+WHERE id=?;';
 if ($webCouponDiscount > 0)
     $couponId = $coupon['id'];
 else
     $couponId = null;
-$txnU = dbSafeCmd($txnUpdate, 'ddii', array($approved_amt, $webCouponDiscount, $couponId, $transId));
+$txnU = dbSafeCmd($txnUpdate, 'ddissi',
+    array($approved_amt, $webCouponDiscount, $couponId, $rtn['paymentId'], $rtn['status'], $transId));
 
 $upgradedCnt = 0;
 if ($amount > 0 && $planPayment != 1) {
@@ -330,7 +331,9 @@ if ($amount > 0 && $planPayment != 1) {
     $rows_upd += allocateBalance($balance, $badges, $conid, $newPlanId, $transId, true);
 }
 if ($totalAmountDue > 0) {
-    $body = getEmailBody($transId, $info, $badges, $coupon, $planPayment == 1 ? $existingPlan : $planRec, $rtn['rid'], $rtn['url'], $amount, $planPayment);
+    $body = getEmailBody($transId, $info, $badges, $coupon, $planPayment == 1 ? $existingPlan : $planRec, $rtn['rid'], $rtn['url'],
+        $rtn['amount'], $rtn['preTaxAmt'], $rtn['taxAmt'], $planPayment );
+
 } else {
     $body = getNoChargeEmailBody($results, $info, $badges);
 }

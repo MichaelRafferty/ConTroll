@@ -116,18 +116,21 @@ function draw(data, textStatus, jqXHR) {
     itemSaveBtn.innerHTML = "Save Changes"
     itemSaveBtn.disabled = true;
 
-
+    document.getElementById('artControlPaginationDiv').innerHTML = '';
+    document.getElementById('artControlPaginationDiv').hidden = data['art'].length <= 50;
     itemTable = new Tabulator('#artItems_table', {
         mxHeight: "800px",
         history: true,
         data: data['art'],
         layout: 'fitDataTable',
-        pagination: true,
+        pagination: data['art'].length > 50,
+        paginationElement: document.getElementById('artControlPaginationDiv'),
         paginationSize: 50,
         paginationSizeSelector: [10, 25, 50, 100, true], // enable page size select with these options
         columns: [
             {title: 'Actions', hozAlign: "center", headerFilter: false, headerSort: false, formatter: addEditButton, responsive:0},
             {title: 'id', field: 'id', visible: false},
+            {title: 'exhibitorYearId', field: 'exhibitorYearId', visible: false},
             {title: 'locations', field: 'locations', visible: false},
             {title: 'Name', field: 'exhibitorName', headerSort: true, headerFilter: 'list', headerFilterParams: { values: data['artists'].map(function(a) { return a.exhibitorName;})}, },
             {title: 'Artist #', field: 'exhibitorNumber', headerWordWrap: true, headerSort: true, width: 60,
@@ -160,6 +163,7 @@ function draw(data, textStatus, jqXHR) {
     itemTable.on("cellEdited", cellChanged)
 
     itemTable_dirty = false;
+    document.getElementById('artControl-csv-div').hidden = false;
 
     artItemModal.setItemTable(itemTable);
 }
@@ -282,4 +286,38 @@ function saveItem() {
             }
         }
     });
+}
+
+// download buttons, save off the data file
+function download(format) {
+    if (itemTable == null)
+        return;
+
+    var filename = 'artitems';
+    var tabledata = JSON.stringify(itemTable.getData("active"));
+    var excludeList = [];
+    downloadFilePost(format, filename, tabledata, excludeList);
+}
+
+// print control sheets
+function pdfSheets(type, email) {
+    var regionYearId = '';
+    var itemData = itemTable.getData("active");
+    var ids = [];
+
+    if (itemData.length == 0) {
+        show_message("No Art Items in filtered table.", 'error');
+        return;
+    }
+
+    var regionYearId = itemData[0].exhibitsRegionYearId;
+    for (var i = 0; i < itemData.length; i++) {
+        if (!ids.includes(itemData[i].exhibitorYearId)) {
+            ids.push(itemData[i].exhibitorYearId);
+        }
+    }
+    var eyid = ids.join(',');
+
+    var script = "scripts/exhibitorsBidSheets.php?type=" + type + "&region=" + regionYearId + "&eyid=" + eyid + "&email=" + email;
+    window.open(script, "_blank")
 }

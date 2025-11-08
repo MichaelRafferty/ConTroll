@@ -34,10 +34,13 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
     $id = null;
 
     $loginPerid = getSessionVar('user_perid');
+    $loginNewperid = null;
     if ($loginPerid == null) {
         $userType = getSessionVar('idType');
         if ($userType == 'p')
             $loginPerid = getSessionVar('id');
+        else
+            $loginNewperid = getSessionVar('id');
     }
 
     // faking the cc order api steps
@@ -148,12 +151,13 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
             exit();
         }
 
-        $note = "Plan Id: $planId, Name: $planName, Perid: $loginPerid";
+        $notesData = cc_planNotes($ep, $results['transid']);
         $item = [
             'uid' => 'planPayment',
-            'name' => mb_substr('Plan Payment: ' . $note, 0, 128),
+            'name' => mb_substr('Plan Payment: ' . $planName, 0, 128),
             'quantity' => 1,
-            'note' => $note,
+            'note' => $notesData['note'],
+            'metadata' => $notesData['metadata'],
             'basePriceMoney' => round($results['total'] * 100),
         ];
         $orderLineItems[$lineid] = $item;
@@ -178,12 +182,14 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                 $priceType = $art['priceType'];
                 $quantity = $art['artSalesQuantity'];
                 $amount = $art['amount'];
+                $notesData = cc_artSalesNotes($art, $results['payorId'], $results['transid']);
 
                 $item = [
                     'uid' => 'art' . ($lineid + 1),
                     'name' => mb_substr($artistName, 0, 50) . ' / ' . mb_substr($title, 0, 70),
                     'quantity' => $quantity,
-                    'note' => $artId . ':' . $artistNumber . ',' . $itemKey . '; ' . $type . ',' . $priceType,
+                    'note' => $notesData['note'],
+                    'metadata' => $notesData['metadata'],
                     'basePriceMoney' => round($amount * 100),
                 ];
                 if ($taxRate > 0) {
@@ -267,21 +273,13 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                     $perid = 'tbd';
                 }
 
-                $note = $badge['memId'] . ',' . $id . ',' . $regid . ': memId, p/n id, regid';
-                if ($planName != '') {
-                    $note .= ($badge['inPlan'] ? (', Plan: ' . $planName) : ', NotInPlan');
-                }
-                if (array_key_exists('glNum', $badge) && $badge['glNum'] != '') {
-                    $note .= ', ' . $badge['glNum'];
-                }
-
+                $notesData = cc_regNotes($badge, $planName, $results['transid'], $results['custid'], $regid, $rowno);
                 if (array_key_exists('balDue', $badge)) {
                     $amount = $badge['balDue'];
                 } else {
                     $amount = $badge['price'] - $badge['paid'];
                 }
 
-                $metadata = array ('regid' => $regid, 'perid' => $perid, 'memid' => $badge['memId'], 'rowno' => $rowno);
                 $addMbr = str_contains(strtolower($badge['shortname']), 'membership') == false &&
                     ($badge['memType'] == 'full' || $badge['memType'] == 'oneday');
                 $itemName =  $badge['fname'] . ': ' . $badge['shortname'] .' ' . ($badge['ageshortname'] != 'All' ? $badge['ageshortname'] : '') .
@@ -290,9 +288,9 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                     'uid' => 'badge' . ($lineid + 1),
                     'name' => mb_substr($itemName, 0, 128),
                     'quantity' => 1,
-                    'note' => $note,
+                    'note' => $notesData['note'],
                     'basePriceMoney' => round($amount * 100),
-                    'metadata' => $metadata,
+                    'metadata' => $notesData['metadata'],
                 ];
                 if ($taxRate > 0 && array_key_exists('taxable', $badge) && $badge['taxable'] == 'Y') {
                     // create the Line Item tax record, if there is a tax rate, and the membership is taxable
@@ -364,17 +362,22 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                 } else {
                     $itemName .= $space['exhibitorName'];
                 }
-                $note = $space['id'] . ',' . $space['item_purchased'] . ',' . $space['exhibitorId'] . ',' . $space['exhibitorNumber'] .
-                    ',' . $space['includedMemberships'] . ': id, item, exhId, exhNum, includedMem';
-                if (array_key_exists('glNum', $space) && $space['glNum'] != '') {
-                    $note .= ', ' . $space['glNum'];
+                $incCount = 0;
+                $addCount = 0;
+                foreach ($results['badges'] as $badge) {
+                    if ($badge['memId'] == $space['includedMemId'])
+                        $incCount++;
+                    if ($badge['memId'] == $space['additionalMemId'])
+                        $addCount++;
                 }
+                $notesData = cc_spaceNotes($space, $results['transid'], $incCount, $addCount);
 
                 $item = [
                     'uid' => 'space-' . $spaceId,
                     'name' => mb_substr($itemName, 0, 128),
                     'quantity' => 1,
-                    'note' => $note,
+                    'note' => $notesData['note'],
+                    'metadata' => $notesData['metadata'],
                     'basePriceMoney' => round($space['approved_price'] * 100),
                 ];
                 $orderLineItems[$lineid] = $item;
@@ -390,14 +393,14 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                     continue;
                 $itemName = 'Mail-in Fee for ' . $fee['name'];
                 $itemPrice = $fee['amount'];
-                $note = 'Mail-in fee';
-                if (array_key_exists('glNum', $fee) && $fee['glNum'] != null && $fee['glNum'] != '')
-                    $note .= ", GL: " . $fee['glNum'];
+                $notesData = cc_mailFeeNotes($fee, $results['transid']);
+
                 $item = [
                     'uid' => 'region-' . $fee['name'],
                     'name' => mb_substr($itemName, 0, 128),
                     'quantity' => 1,
-                    'note' => mb_substr($note, 0, 128),
+                    'note' => $notesData['note'],
+                    'metadata' => $notesData['metadata'],
                     'basePriceMoney' => round($itemPrice * 100),
                 ];
                 $order_lineitems[$lineid] = $item;
@@ -410,11 +413,12 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
         if (array_key_exists('newplan', $results) && $results['newplan'] == 1) {
             // deferment is total of the items - total of the payment
             $deferment = $orderValue - $results['total'];
-            $note = "Name: $planName, ID: TBA, Non Plan Amt: $nonPlanAmt, Down Payment: $downPmt, Balance Due: $balanceDue, Perid: $loginPerid";
+            $notesData = cc_newPlanNotes($planName, 'TBA', $nonPlanAmt, $downPmt, $balanceDue, $loginPerid, $loginNewperid, $results['transid']);
             // this is the down payment on a payment plan
             $item = [
                 'uid' => 'planDeferment',
-                'name' => mb_substr('Payment Deferral Amount: ' . $note, 0, 128),
+                'name' => mb_substr('Payment Deferral Amount: ' . $notesData['note'], 0, 128),
+                'metadata' => $notesData['metadata'],
                 'type' => 'FixedAmount',
                 'amountMoney' => round($deferment * 100),
             ];
@@ -514,10 +518,13 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     }
 
     $loginPerid = getSessionVar('user_perid');
+    $loginNewperid = null;
     if ($loginPerid == null) {
         $userType = getSessionVar('idType');
         if ($userType == 'p')
             $loginPerid = getSessionVar('id');
+        else
+            $loginNewperid = getSessionVar('id');
     }
     // sanitize the email address to avoid empty and refused
     if ($buyer['email'] == '/r' || $buyer['email'] == null)
@@ -551,7 +558,9 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
                 exit();
             }
         } else {
-            if ($pNonce != '1') {
+            if ($pNonce == '')
+                $pNonce = 'cc_test';
+            else if ($pNonce != '1' && $pNonce != 'admin') {
                 if ($cleanupRegs)
                     cleanRegs($ccParams['badges'], $ccParams['transid']);
                 ajaxSuccess(array ('status' => 'error', 'data' => 'bad CC number'));
@@ -589,11 +598,11 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
 
     $rtn = array();
     $rtn['txnfields'] = array('transid','type','category','description','source','pretax', 'tax', 'amount',
-        'txn_time', 'cc','nonce','cc_txn_id','cc_approval_code','receipt_url','status','receipt_id', 'cashier');
+        'txn_time', 'cc','nonce','cc_txn_id','cc_approval_code','receipt_url','status','receipt_id', 'ccPaymentId', 'cashier');
     $rtn['tnxtypes'] = array('i', 's', 's', 's', 's', 'd', 'd', 'd',
-        's', 's', 's', 's', 's', 's', 's', 's', 'i');
+        's', 's', 's', 's', 's', 's', 's', 's', 's', 'i');
     $rtn['tnxdata'] = array($ccParams['transid'],$paymentType,$category,$desc,$source,$ccParams['preTaxAmt'], $ccParams['taxAmt'], $total,
-        $txtime,$last4,$ccParams['nonce'],$id,$auth,$receipt_url,$status,$receipt_number, $loginPerid);
+        $txtime,$last4,$ccParams['nonce'],$id,$auth,$receipt_url,$status,$receipt_number, $id, $loginPerid);
     $rtn['results'] = $ccParams;
     $rtn['url'] = 'no test receipt';
     $rtn['rid'] = 'test';

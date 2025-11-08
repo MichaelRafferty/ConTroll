@@ -12,13 +12,13 @@ if($check_auth == false) {
     ajaxSuccess(array('error' => "Authentication Failure"));
 }
 
-if(isset($_GET['artist'])) { 
-    $artist = $_GET['artist'];
+if(isset($_POST['artist'])) {
+    $artist = $_POST['artist'];
 } else {
     ajaxSuccess(array('error' => 'Need an Artist Number'));
 }
-if(isset($_GET['item'])) { 
-    $item = $_GET['item'];
+if (isset($_POST['item'])) {
+    $item = $_POST['item'];
 } else {
     $item = '';
 }
@@ -30,7 +30,7 @@ SELECT e.artistName, e.exhibitorName, eRY.exhibitorNumber, I.item_key, concat(eR
     I.title, I.type, I.status, I.location, I.quantity, I.original_qty, 
     concat(I.quantity, '/', I.original_qty) as qty,
     I.min_price, I.sale_price, I.final_price, I.bidder, I.conid, 
-    SUBSTRING(I.time_updated,6,11) as time_updated
+    SUBSTRING(I.time_updated,6,11) as time_updated, eRY.exhibitorYearId
 FROM artItems I
     JOIN exhibitorRegionYears eRY ON (eRY.id=I.exhibitorRegionYearId)
     JOIN exhibitorYears eY ON eY.id = eRY.exhibitorYearId
@@ -50,7 +50,9 @@ if($item == '') {
 
 $itemR = dbSafeQuery($itemQ, $itemI, $itemP);
 $itemArr = [];
+$exhibitorYearId = -1;
 while($newItem = $itemR->fetch_assoc()) {
+    $exhibitorYearId = $newItem['exhibitorYearId'];
     $longName = $newItem['exhibitorName'];
     $artistName = $newItem['artistName'];
     if ($artistName != null && $artistName != '' && $artistName != $longName ) {
@@ -60,6 +62,7 @@ while($newItem = $itemR->fetch_assoc()) {
     $itemArr[] = $newItem;
 }
 
+$response['exhibitorYearId'] = $exhibitorYearId;
 $response['items'] = $itemArr;
 
 ajaxSuccess($response);

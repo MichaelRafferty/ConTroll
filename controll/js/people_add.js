@@ -129,7 +129,7 @@ class Add {
                 data: this.#matched,
                 layout: "fitDataTable",
                 index: "id",
-                pagination: true,
+                pagination: this.#matched.length > 25,
                 paginationAddRow: "table",
                 paginationSize: 10,
                 paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options

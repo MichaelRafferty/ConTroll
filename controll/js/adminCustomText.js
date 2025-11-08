@@ -40,7 +40,8 @@ class customTextSetup {
         <div class="col-sm-12 p-0 m-0" id="customTextTableDiv"></div>
     </div>
     <div class="row mt-2">
-        <div class="col-sm-auto" id="types-buttons">
+        <div class="col-sm-auto p-1 ps-3 pe-3 tabulator-paginator" id="ctxPaginationDiv" style="background-color: #e5e5e5;"></div>
+        <div class="col-sm-auto p-1 ms-4" id="types-buttons">
             <button id="customText-undo" type="button" class="btn btn-secondary btn-sm" onclick="customText.undo(); return false;" disabled>Undo</button>
             <button id="customText-redo" type="button" class="btn btn-secondary btn-sm" onclick="customText.redo(); return false;" disabled>Redo</button>
             <button id="customText-save" type="button" class="btn btn-primary btn-sm"  onclick="customText.save(); return false;" disabled>Save Changes</button>
@@ -102,12 +103,15 @@ class customTextSetup {
         }
         this.#customText = data['customText'];
         this.#customTextDirty = false;
+        document.getElementById('ctxPaginationDiv').innerHTML = '';
+        document.getElementById('ctxPaginationDiv').hidden = this.#customText.length <= 25;
         this.#customTextTable = new Tabulator('#customTextTableDiv', {
             history: true,
             data: this.#customText,
             layout: "fitDataTable",
             index: 'rownum',
-            pagination: true,
+            pagination: this.#customText.length > 25,
+            paginationElement: document.getElementById('ctxPaginationDiv'),
             paginationAddRow:"table",
             paginationSize: 10,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
@@ -140,8 +144,11 @@ class customTextSetup {
     }
 
     toHTML(cell,  formatterParams, onRendered) {
-        var item = cell.getValue();
-        return item;
+        var text = cell.getValue();
+        var item = cell.getData().txtItem;
+        if (item == 'text')
+            text = text.replaceAll("\n", '<br/>');
+        return text;
     }
 
     editCustomText(index) {

@@ -20,7 +20,7 @@ require_once(__DIR__ . '/../../lib/cipher.php');
 require_once(__DIR__ . '/../../lib/jsVersions.php');
 
 db_connect();
-$appSessionPrefix = 'Ctrl/Vendor/';
+$appSessionPrefix = 'Ctrl/Exhibitor/';
 if (!session_start()) {
     session_regenerate_id(true);
     session_start();

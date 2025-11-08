@@ -27,7 +27,6 @@ if (!check_atcon($method, $conid)) {
 }
 
 $con = get_conf('con');
-$debug = get_conf('debug');
 $usps = get_conf('usps');
 $vendor = get_conf('vendor');
 $controll = get_conf('controll');
@@ -35,8 +34,8 @@ $atcon = get_conf('atcon');
 $condata = get_con();
 $conid = $con['id'];
 $conname = $con['conname'];
-if (array_key_exists('inlineInventory', $atcon))
-    $inlineInventory = $atcon['inlineInventory'];
+if (array_key_exists('inlineinventory', $atcon))
+    $inlineInventory = $atcon['inlineinventory'];
 else
     $inlineInventory = 1;
 
@@ -236,7 +235,7 @@ if (count($regionList) > 1) {
                     <button type="button" class="btn btn-primary btn-sm" id="pay_btn" onclick="gotoPay();" hidden>Pay Cart</button>
                     <button type='button' class='btn btn-primary btn-sm' id='release_btn' onclick='gotoRelease();' hidden>Release Artwork</button>
                     <button type="button" class="btn btn-warning btn-sm" id="startover_btn" onclick="startOver(1);" hidden>Start Over</button>
-                    <button type="button" class="btn btn-primary btn-sm" id="next_btn" onclick="startOver(1);" hidden>Next Customer</button>
+                    <button type="button" class="btn btn-primary btn-sm" id="next_btn" onclick="startOver(2);" hidden>Next Customer</button>
                 </div>
             </div>
         </div>       

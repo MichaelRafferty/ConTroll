@@ -36,21 +36,6 @@ var uspsDiv = null;
 var addToCartBtn = null;
 var countryField = null;
 
-
-// convert a form post string to an arrray
-// convert url parameters to associative array
-function URLparamsToArray(urlargs, doTrim = false) {
-    const params = new URLSearchParams(urlargs);
-    const result = {};
-    for (const [key, value] of params) {
-        if (doTrim)
-            result[key] = value.trim();
-        else
-            result[key] = value;
-    }
-    return result;
-}
-
 // process the form for validation and add to the badge array if valud
 function process(formRef) {
     var valid = true;
@@ -624,12 +609,6 @@ function togglePopup() {
     if (newBadge != null) {
         newBadge.show();
     }
-}
-
-// validate RFC-5311/2 addresses regexp pattern from https://regex101.com/r/3uvtNl/1, found by searching validate RFC-5311/2  addresses
-function validateAddress(addr) {
-    const regPattern = /^((?:[A-Za-z0-9!#$%&'*+\-\/=?^_`{|}~]|(?<=^|\.)"|"(?=$|\.|@)|(?<=".*)[ .](?=.*")|(?<!\.)\.){1,64})(@)((?:[A-Za-z0-9.\-])*(?:[A-Za-z0-9])\.(?:[A-Za-z0-9]){2,})$/gm;
-    return regPattern.test(String(addr).toLowerCase());
 }
 
 window.onload = function () {

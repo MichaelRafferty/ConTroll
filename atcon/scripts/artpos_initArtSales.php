@@ -35,6 +35,8 @@ if ($user_id != getSessionVar('user')) {
     exit();
 }
 
+$user_perid = $user_id;
+
 if ((!array_key_exists('pay_tid', $_POST)) || (!array_key_exists('perid', $_POST))) {
     RenderErrorAjax('Invalid parameters passed');
     exit();
@@ -71,6 +73,7 @@ catch (Exception $e) {
 
 if ($pay_tid == null || $pay_tid <= 0) {
     // create master transaction for this art sale
+    $tran_type = 'artpos/' . $user_perid;
     $insTransactionSQL = <<<EOS
 INSERT INTO transaction(conid,perid,userid,price,tax,withtax,paid,type,create_date)
 VALUES (?,?,?,0,0,0,0,'artpos',now());

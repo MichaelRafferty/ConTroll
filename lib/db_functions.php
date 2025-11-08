@@ -31,14 +31,19 @@ function web_error_log($string, $debug = '', $both = true): void
 // Function var_error_log()
 // $object = object to be dumped to the PHP error log
 // the object is walked and written to the PHP error log using var_dump and a redirect of the output buffer.
-function var_error_log($object = null): void
+function var_error_log($object = null, $forceErrorlog = false): void
 {
     global $logdest;
     ob_start();                    // start buffer capture
     var_dump($object);           // dump the values
     $contents = ob_get_contents(); // put the buffer into a variable
-    ob_end_clean();                // end capture
-    error_log($contents . "\n", 3, $logdest);        // log contents of the result of var_dump( $object )
+    ob_end_clean(); // end capture
+    if ($forceErrorlog) {
+        error_log($contents . "\n");        // log contents of the result of var_dump( $object )
+    } else {
+        error_log($contents . "\n", 3, $logdest);        // log contents of the result of var_dump( $object )
+    }
+
 }
 
 // Common function to log a mysql error

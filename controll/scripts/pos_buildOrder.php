@@ -26,7 +26,6 @@ $return500errors = true;
 
 $con = get_conf('con');
 $conid = $con['id'];
-$debug = get_conf('debug');
 $ini = get_conf('reg');
 $log = get_conf('log');
 load_cc_procs();
@@ -180,6 +179,7 @@ if ($rtn == null) {
     ajaxSuccess(array ('status' => 'error', 'error' => 'Order not built'));
     exit();
 }
+
 $rtn['totalPaid'] = $totalPaid;
 $response['rtn'] = $rtn;
 
@@ -230,14 +230,14 @@ if ($drow != null) {
 
 $upT = <<<EOS
 UPDATE transaction
-SET price = ?, tax = ?, withTax = ?, couponDiscountCart = ?
+SET price = ?, tax = ?, withTax = ?, couponDiscountCart = ?, orderId = ?, paymentStatus = 'ORDER', orderDate = now()
 WHERE id = ?;
 EOS;
 
 $preTax = $rtn['preTaxAmt'];
 $taxAmt = $rtn['taxAmt'];
 $withTax = $rtn['totalAmt'];
-$rows_upd = dbSafeCmd($upT, 'ddddi', array($preTax, $taxAmt, $withTax, 0, $transId));
+$rows_upd = dbSafeCmd($upT, 'ddddsi', array($preTax, $taxAmt, $withTax, 0, $rtn['orderId'], $transId));
 
 //$tnx_record = $rtn['tnx'];
 logWrite(array('con' => $con['label'], 'trans' => $transId, 'ccrtn' => $rtn));

@@ -75,8 +75,8 @@ EOS;
         $first[$conid] = true;
         $first[$nextconid] = true;
         $sort_order = 10;
-        $yearahead_sortorder = 400;
-        $rollover_sortorder = 500;
+        $yearahead_sortorder = 4000;
+        $rollover_sortorder = 5000;
         foreach ($data as $index => $row ) {
             //$cidfound[$row['conid']] = true;
             if (array_key_exists('to_delete', $row) && $row['to_delete'] == 1 && array_key_exists('memlistkey', $row)) {
@@ -91,7 +91,7 @@ EOS;
                 } else {
                     $roworder = 10;
                 }
-                if (($roworder >= 0 && $roworder < 900) || ($roworder == -99999)) {
+                if (($roworder >= 0 && $roworder < 9000) || ($roworder == -99999)) {
                     if ($row['memCategory'] == 'rollover') {
                         $data[$index]['sort_order'] = $rollover_sortorder;
                         $rollover_sortorder += 2;

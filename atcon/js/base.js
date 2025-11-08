@@ -200,6 +200,22 @@ function base_changePrintersShow() {
                 return;
             }
             base_changePrintersBody.innerHTML = data['selectList'];
+            var value = document.getElementById('currentBadgePrinter').innerHTML;
+            if (value !== undefined && value.length > 10)
+                document.getElementById('badge_printer').value = value;
+
+            value = document.getElementById('currentReceiptPrinter').innerHTML;
+            if (value !== undefined && value.length > 10)
+                document.getElementById('receipt_printer').value = value;
+
+            value = document.getElementById('currentGeneralPrinter').innerHTML;
+            if (value !== undefined && value.length > 10)
+                document.getElementById('generic_printer').value = value;
+
+            value = document.getElementById('currentCCTerminal').innerHTML;
+            if (value !== undefined && value.length > 10)
+                document.getElementById('square_terminal').value = value;
+
             base_changePrintersModal.show();
             clear_message();
         },
@@ -214,6 +230,10 @@ function base_changePrintersSubmit() {
     var receipt_prntr = document.getElementById("receipt_printer").value;
     var generic_prntr = document.getElementById("generic_printer").value;
     var square_term = document.getElementById("square_terminal").value;
+    document.getElementById('currentBadgePrinter').innerHTML = badge_prntr;
+    document.getElementById('currentReceiptPrinter').innerHTML = receipt_prntr;
+    document.getElementById('currentGeneralPrinter').innerHTML = generic_prntr;
+    document.getElementById('currentCCTerminal').innerHTML = square_term;
     base_changePrintersModal.hide();
 
     // load the printer select list

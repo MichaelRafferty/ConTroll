@@ -37,6 +37,7 @@ class exhibitorsAdm {
     #regionId = null;
     #regionYearId = null;
     #regionGroupId = '';
+    #regionName = '';
     #spaceDetailModal = null;
     #locationsModal = null;
     #locationsUsed = "";
@@ -304,6 +305,7 @@ class exhibitorsAdm {
         var region = regions[regionName];
         var groupid = 'data-' + region.id;
         this.#regionGroupId = groupid;
+        this.#regionName = regionName;
         html += "<ul class='nav nav-tabs mb-3' id='" + groupid + "-tab' role='tablist'>\n" +
             "<li class='nav-item' role='presentation'>\n" +
             "<button class='nav-link active' id='" + groupid + "-spaces-tab' data-bs-toggle='pill' data-bs-target='#" + groupid + "-spaces-pane' type='button' role='tab' aria-controls='nav-spaces'\n" +
@@ -401,13 +403,19 @@ class exhibitorsAdm {
             "    <div class='row'>\n" +
             "        <div class='col-sm-12' id='" + groupid + "-spaces-table-div'></div>\n" +
             "    </div>\n" +
-            "    <div class='row mt-2'>\n" +
-            "        <div class='col-sm-12'>\n" +
+            "    <div class='row mt-2 mb-3' id='" + groupid + "-spaces-csv-div'>\n"+
+            "       <div class='col-sm-auto p-1 ps-3 pe-3 tabulator-paginator' id='" + groupid + "-tabSpacesPaginationDiv'" +
+            "           style='background-color: #e5e5e5;'></div>\n" +
+            "       <div class='col-sm-auto p-1 ms-4'>\n" +
             "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='addExhibitorSpaceBtn' onClick=" + '"exhibitors.addNewSpace();">' +
-                            "Add New / Pay for Exhibitor Space to Existing Exhibitor</button>\n" +
+            "               Add New / Pay for Exhibitor Space to Existing Exhibitor</button>\n" +
             "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='addExhibitorBtn2' onClick=" + '"exhibitors.addNew();">' +
-                            "Add New Exhibitor</button>\n" +
-            "        </div>\n" +
+            "               Add New Exhibitor</button>\n" +
+            "           <button id='" + groupid + "-spaces-csv' type='button' class='btn btn-info btn-sm'" +
+            "               onclick='exhibitors.spacesDownload(\"csv\"); return false;'>Download CSV</button>\n" +
+            "           <button id='" + groupid + "-spaces-xlsx' type='button' class='btn btn-info btn-sm'" +
+            "               onclick='exhibitors.spacesDownload(\"xlsx\"); return false;'>Download Excel</button>\n" +
+            "       </div>\n" +
             "    </div>\n" +
             "</div></div>\n"
 
@@ -425,6 +433,16 @@ class exhibitorsAdm {
             "<div class='container-fluid'>\n" +
             "    <div class='row'>\n" +
             "        <div class='col-sm-12' id='" + groupid + "-app-table-div'></div>\n" +
+            "    </div>\n" +
+            "    <div class='row mt-2 mb-3' id='" + groupid + "-app-csv-div'>\n"+
+            "       <div class='col-sm-auto p-1 ps-3 pe-3 tabulator-paginator' id='" + groupid + "-tabAppPaginationDiv'" +
+            "           style='background-color: #e5e5e5;'></div>\n" +
+            "       <div class='col-sm-auto p-1 ms-4'>\n" +
+            "           <button id='" + groupid + "-app-csv' type='button' class='btn btn-info btn-sm'" +
+            "               onclick='exhibitors.appDownload(\"csv\"); return false;'>Download CSV</button>\n" +
+            "           <button id='" + groupid + "-app-xlsx' type='button' class='btn btn-info btn-sm'" +
+            "               onclick='exhibitors.appDownload(\"xlsx\"); return false;'>Download Excel</button>\n" +
+            "       </div>\n" +
             "    </div>\n" +
             "</div></div>\n"
 
@@ -444,9 +462,15 @@ class exhibitorsAdm {
             "        <div class='col-sm-12' id='" + groupid + "-exh-table-div'></div>\n" +
             "    </div>\n" +
             "    <div class='row mt-2'>\n" +
-            "        <div class='col-sm-12'>\n" +
+            "       <div class='col-sm-auto p-1 ps-3 pe-3 tabulator-paginator' id='" + groupid + "-tabExhPaginationDiv'" +
+            "           style='background-color: #e5e5e5;'></div>\n" +
+            "        <div class='col-sm-auto'>\n" +
             "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='addExhibitorBtn' onClick=" + '"exhibitors.addNew();"' + ">Add New Exhibitor</button>\n" +
-            "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='importExhibitorBtn' onClick=" + '"exhibitors.importPast();"' + ">Import Past Exhibitors</button>\n" +
+            "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='importExhibitorBtn' onClick=" + '"exhibitors.importPast();"' + ">Import Past Exhibitors</button>" +
+            "            <button id='" + groupid + "-exh-csv' type='button' class='btn btn-info btn-sm'" +
+            "               onclick='exhibitors.exhDownload(\"csv\"); return false;'>Download CSV</button>\n" +
+        "           <button id='" + groupid + "-exh-xlsx' type='button' class='btn btn-info btn-sm'" +
+        "               onclick='exhibitors.exhDownload(\"xlsx\"); return false;'>Download Excel</button>\n" +
             "        </div>\n" +
             "    </div>\n" +
             "</div></div>\n"
@@ -469,6 +493,7 @@ class exhibitorsAdm {
         var app = 0;
         var pur = 0;
         var inv = 0;
+        var transid = 0;
         var spaceSUMPurchased = '';
         var spaceSUMApproved = '';
         var spaceSUMRequested = '';
@@ -511,6 +536,7 @@ class exhibitorsAdm {
                     region.app = app;
                     region.pur = pur;
                     region.inv = inv;
+                    region.transid = transid;
                     region.requested = spaceSUMRequested;
                     region.approved = spaceSUMApproved;
                     region.purchased = spaceSUMPurchased;
@@ -522,6 +548,7 @@ class exhibitorsAdm {
                     app = 0;
                     pur = 0;
                     inv = 0;
+                    transid = 0;
                     spaceSUMPurchased = '';
                     spaceSUMApproved = '';
                     spaceSUMRequested = '';
@@ -529,10 +556,6 @@ class exhibitorsAdm {
                 currentExhibitor = newExhibitor;
                 spaceSUM = '';
                 spaceHTML = '<div class="container-fluid" style="width: 80%;">';
-                req += space.requested_units;
-                app += space.approved_units;
-                pur += space.purchased_units;
-                inv += space.invCount;
                 region = {
                     id: space.exhibitorId,
                     exhibitorNumber: space.exhibitorNumber,
@@ -548,15 +571,21 @@ class exhibitorsAdm {
                     exhibitorEmail: space.exhibitorEmail,
                     agentRequest: space.agentRequest,
                     agentName: space.agentName,
-                    transid: space.transid,
+                    transid: transid,
                     exhibitorYearId: space.exhibitorYearId,
                     locations: space.locations,
                     s1: space.b1,
                 };
             }
+            req += space.requested_units == null ? 0 : Number(space.requested_units);
+            app += space.approved_units == null ? 0 : Number(space.approved_units);
+            pur += space.purchased_units == null ? 0 : Number(space.purchased_units);
+            inv += space.invCount == null ? 0 : Number(space.invCount);
+            if (Number(space.transid) > 0 && transid == 0)
+                transid = Number(space.transid);
 
             // add the space data as a formatted region
-            if (space.requested_units > 0 || space.approved_units > 0 || space.purchased_units > 0) {
+            if (Number(space.requested_units) > 0 || Number(space.approved_units) > 0 || Number(space.purchased_units) > 0) {
                 // detail first
                 spaceHTML += '<div class="row">' +
                     '<div class="col-sm-12"><STRONG>' + space.spaceName + '</STRONG></div></div>';
@@ -588,16 +617,16 @@ class exhibitorsAdm {
                         '</div>';
                 }
                 // space summary stuff
-                if (space.purchased_units > 0) {
+                if (Number(space.purchased_units) > 0) {
                     spaceStage = 'Purchased';
                     spaceSUMPurchased += space.purchased_description + ' of ' + space.spaceName + "<br/>";
                 }
-                if (space.approved_units > 0) {
+                if (Number(space.approved_units) > 0) {
                     spaceSUMApproved += space.approved_description + ' of ' + space.spaceName + "<br/>";
                     if (spaceStage == '' || spaceStage == 'Requested')
                         spaceStage = 'Approved';
                 }
-                if (space.requested_units > 0) {
+                if (Number(space.requested_units) > 0) {
                     spaceSUMRequested += space.requested_description + ' of ' + space.spaceName + "<br/>";
                     if (spaceStage == '')
                         spaceStage = 'Requested';
@@ -645,6 +674,7 @@ class exhibitorsAdm {
             region.app = app;
             region.pur = pur;
             region.inv = inv;
+            region.transid = transid;
             region.requested = spaceSUMRequested;
             region.approved = spaceSUMApproved;
             region.purchased = spaceSUMPurchased;
@@ -655,6 +685,7 @@ class exhibitorsAdm {
             app = 0;
             pur = 0;
             inv = 0;
+            transid = 0;
             spaceSUMPurchased = '';
             spaceSUMApproved = '';
             spaceSUMRequested = '';
@@ -673,12 +704,15 @@ class exhibitorsAdm {
         }
         if (newTable) {
             var _this = this;
+            document.getElementById(groupid + '-tabSpacesPaginationDiv').innerHTML = '';
+            document.getElementById(groupid + '-tabSpacesPaginationDiv').hidden = regionsLocal.length <= 25;
             this.#spacesTable = new Tabulator('#' + groupid + '-spaces-table-div', {
                 data: regionsLocal,
                 layout: "fitDataTable",
                 index: 'id',
                 pagination: regionsLocal > 10,
                 paginationSize: 25,
+                paginationElement: document.getElementById(groupid + '-tabSpacesPaginationDiv'),
                 paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
                 columns: [
                     {title: "Actions", field: "s1", formatter: this.spaceButtons, maxWidth: 900, headerSort: false, },
@@ -724,14 +758,28 @@ class exhibitorsAdm {
         }
         return data;
     }
+    // download buttons for spaces table
+    // save off the data file
+    spacesDownload(format) {
+        if (this.#spacesTable == null)
+            return;
+
+        var filename = this.#regionName.replace(' ', '-') + '-spaces';
+        var tabledata = JSON.stringify(this.#spacesTable.getData("active"));
+        var excludeList = ['s1','space'];
+        downloadFilePost(format, filename, tabledata, excludeList);
+    }
 
     // drawApprovalsTable - now that the DOM is created, draw the actual table
     drawApprovalsTable(data, groupid) {
+        document.getElementById(groupid + '-tabAppPaginationDiv').innerHTML = '';
+        document.getElementById(groupid + '-tabAppPaginationDiv').hidden = data.approvals.length <= 25;
         this.#approvalsTable = new Tabulator('#' + groupid + '-app-table-div', {
             data: data.approvals,
             layout: "fitDataTable",
             pagination: data.approvals.length > 10,
             paginationSize: 25,
+            paginationElement: document.getElementById(groupid + '-tabAppPaginationDiv'),
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
                 {title: "Exhibitor Approval Requests Detail:", columns: [
@@ -757,15 +805,30 @@ class exhibitorsAdm {
         });
     }
 
+    // download buttons for approvals table
+    // save off the data file
+    appDownload(format) {
+        if (this.#approvalsTable == null)
+            return;
+
+        var filename = this.#regionName.replace(' ', '-') + '-apps';
+        var tabledata = JSON.stringify(this.#approvalsTable.getData("active"));
+        var excludeList = ['used','b1'];
+        downloadFilePost(format, filename, tabledata, excludeList);
+    }
+
     // drawExhibitorsTable
     // update the exhibitors div with the table of exhibitors
     drawExhibitorsTable(data, groupid) {
         exhibitorsData = data.exhibitors;
+        document.getElementById(groupid + '-tabExhPaginationDiv').innerHTML = '';
+        document.getElementById(groupid + '-tabExhPaginationDiv').hidden = data.exhibitors.length <= 25;
         this.#exhibitorsTable = new Tabulator('#' + groupid + '-exh-table-div', {
             data: data.exhibitors,
             index: "exhibitorId",
             layout: "fitDataTable",
             pagination: data.exhibitors > 10,
+            paginationElement: document.getElementById(groupid + '-tabExhPaginationDiv'),
             paginationSize: 25,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
@@ -795,6 +858,18 @@ class exhibitorsAdm {
                 }
             ]
         });
+    }
+
+    // download buttons for exhibitors table
+    // save off the data file
+    exhDownload(format) {
+        if (this.#exhibitorsTable == null)
+            return;
+
+        var filename = this.#regionName.replace(' ', '-') + '-exh';
+        var tabledata = JSON.stringify(this.#exhibitorsTable.getData("active"));
+        var excludeList = ['password','contactPassword','fullAddress','contact'];
+        downloadFilePost(format, filename, tabledata, excludeList);
     }
 
     // show the full vendor record as a hover in the table
@@ -1189,7 +1264,7 @@ class exhibitorsAdm {
         var agentRequest = data.agentRequest || '';
         var id = data.id;
         var buttons = '';
-        var approvalBtns = req > 0 && (pur < app || pur == 0);
+        var approvalBtns = req > 0 && pur == 0;
         var paidBtns = transid > 0;
         var invBtns = data.inv > 0;
         var agentBtns = agentRequest != '' && !agentRequest.startsWith('Processed: ');

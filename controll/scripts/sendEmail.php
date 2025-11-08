@@ -82,6 +82,22 @@ EOQ;
     $email_subject = "Reminder: You have unpaid memberships that will expire soon";
     break;
 
+case 'new':
+    $emailQ = <<<EOQ
+    SELECT p.first_name, p.email_addr AS email, p.id
+    FROM perinfo p
+    LEFT OUTER JOIN reg r ON p.id = r.perid
+    WHERE r.status IS NULL AND DATEDIFF(now(), p.creation_date) <= ? 
+    GROUP BY p.first_name, p.email_addr, p.id
+EOQ;
+    $typestr = 'i';
+    $paramarray = array (getConfValue('reg', 'noNewDays'));
+    $macroSubstitution = true;
+    $email_text = returnCustomText('noMembership/text');
+    $email_html = returnCustomText('noMembership/html');
+    $email_subject = 'Reminder: You created an account but have not purchased any memberships.';
+    break;
+
 case 'reminder':
     $emailQ = <<<EOQ
 SELECT DISTINCT P.email_addr AS email
@@ -99,25 +115,15 @@ EOQ;
     break;
 
 case 'marketing':
+    updateContactOK($conid);
+
     $priorcon = $conid - 1;
     $emailQ = <<<EOQ
-WITH policyyear AS (
-SELECT perid, max(conid) conid
-FROM memberPolicies
-WHERE perid IS NOT NULL
-GROUP BY perid
-), marketing AS (
-SELECT m.perid, m.response
-FROM policyyear y
-JOIN memberPolicies m ON (m.perid = y.perid AND m.policy = 'marketing')
-)
 SELECT DISTINCT p.email_addr AS email
 FROM perinfo p
 JOIN reg r ON (r.perid = p.id AND r.conid = ?)
 LEFT OUTER JOIN reg r2 ON (r2.perid = p.id and r2.conid = ?)
-LEFT OUTER JOIN marketing m ON m.perid = p.id
-WHERE p.email_addr LIKE '%@%' AND r.price > 0 AND r.status = 'paid' AND r2.perid IS NULL 
-AND ((m.perid IS NULL AND p.contact_ok='Y') OR (m.response = 'Y'))
+WHERE p.email_addr LIKE '%@%' AND r.price > 0 AND r.status = 'paid' AND r2.perid IS NULL AND p.contact_ok='Y'
 ORDER BY email;
 EOQ;
     $typestr = 'ii';
@@ -126,78 +132,84 @@ EOQ;
     $email_html = returnCustomText('marketing/html');
     $email_subject = "We miss you! Please come back to $conname";
     break;
-
+//TODO get a way for one use coupons to work in reg portal so I can reenable the coupon stuff
 case 'comeback':
-    $priorcon = $conid - 1;
-    $priorcon2 = $conid - 2;
-    $expires = date_add(date_create(), DateInterval::createFromDateString('30 day'));
-    $code='ComeBack' . date_format(date_create(), 'Md');
+    updateContactOK($conid);
 
-    // create the coupon now
-    // get the user id for createdby
-    $usergetQ = <<<EOS
+    $priorcon = $conid - 2;
+    $priorcon2 = $conid - 3;
+    $expires = date_add(date_create(), DateInterval::createFromDateString('30 day'));
+    /* no coupon for now
+$code='ComeBack' . date_format(date_create(), 'Md');
+
+// create the coupon now
+// get the user id for createdby
+$usergetQ = <<<EOS
 SELECT id
 FROM user
 WHERE email = ?;
 EOS;
-    // create the coupon for this comeback email
-    $couponCreate = <<<EOS
+// create the coupon for this comeback email
+$couponCreate = <<<EOS
 INSERT INTO coupon(conid, oneuse, code, name, startdate, enddate, coupontype, discount, createby)
 VALUES (?, 1, ?, ?, NOW(), DATE_ADD(NOW(), INTERVAL 30 DAY), '%mem', 10.00, ?);
 EOS;
 
-    $name='Come Back 10% Off Exp ' . date_format($expires, 'M d');
-    $couponTypestr = 'issi';
-    $couponParamArray = array($conid, $code, $name, $user_perid);
-    $couponid = dbSafeInsert($couponCreate, $couponTypestr, $couponParamArray);
-    if ($couponid === false) {
-        $response['error'] = 'Count not create coupon';
-        ajaxSuccess($response);
-        exit();
-    }
+$name='Come Back 10% Off Exp ' . date_format($expires, 'M d');
+$couponTypestr = 'issi';
+$couponParamArray = array($conid, $code, $name, $user_perid);
+$couponid = dbSafeInsert($couponCreate, $couponTypestr, $couponParamArray);
+if ($couponid === false) {
+    $response['error'] = 'Count not create coupon';
+    ajaxSuccess($response);
+    exit();
+}
 
-    // now create the coupon keys for this email
-    $couponKeysCreate = <<<EOS
-INSERT INTO couponKeys(couponId, guid, perid, notes, createBy) 
+// now create the coupon keys for this email
+$couponKeysCreate = <<<EOS
+INSERT INTO couponKeys(couponId, guid, perid, notes, createBy)
 WITH people AS (
 SELECT  p.email_addr as email, MIN(p.id) AS perid
-    FROM perinfo p
-    LEFT OUTER JOIN reg r1 ON (r1.perid = p.id and r1.conid = ?)
-    LEFT OUTER JOIN reg r2 ON (r2.perid = p.id and r2.conid = ?)
-    LEFT OUTER JOIN reg r3 ON (r3.perid = p.id and r3.conid = ?)
-    WHERE p.email_addr LIKE '%@%' AND p.contact_ok='Y' AND r1.id IS NULL AND r2.id IS NULL AND r3.id IS NULL
-    GROUP BY p.email_addr
+FROM perinfo p
+LEFT OUTER JOIN reg r1 ON (r1.perid = p.id and r1.conid = ?)
+LEFT OUTER JOIN reg r2 ON (r2.perid = p.id and r2.conid = ?)
+LEFT OUTER JOIN reg r3 ON (r3.perid = p.id and r3.conid = ?)
+WHERE p.email_addr LIKE '%@%' AND p.contact_ok='Y' AND r1.id IS NULL AND (r2.id IS NOT NULL OR r3.id IS NOT NULL)
+GROUP BY p.email_addr
 )
 SELECT ?, uuid_v4s(), people.perid, ?, ?
 FROM people;
 EOS;
-    $couponTypestr = 'iiiiis';
-    $note = 'Autogen: ' . $code;
-    $couponParamArray = array($conid, $priorcon, $priorcon2, $couponid, $note, $user_perid);
-    $num_keys = dbSafeCmd($couponKeysCreate, $couponTypestr, $couponParamArray);
-    if ($num_keys === false) {
-        $response['error'] = 'Count not create couponKeys';
-        ajaxSuccess($response);
-        exit();
-    }
+$couponTypestr = 'iiiiis';
+$note = 'Autogen: ' . $code;
+$couponParamArray = array($conid, $priorcon, $priorcon2, $couponid, $note, $user_perid);
+$num_keys = dbSafeCmd($couponKeysCreate, $couponTypestr, $couponParamArray);
+if ($num_keys === false) {
+    $response['error'] = 'Count not create couponKeys';
+    ajaxSuccess($response);
+    exit();
+}
+*/
     $emailQ = <<<EOQ
 WITH people AS (
     SELECT p.email_addr as email, MIN(p.id) AS perid
     FROM perinfo p
     LEFT OUTER JOIN reg r1 ON (r1.perid = p.id and r1.conid = ?)
     LEFT OUTER JOIN reg r2 ON (r2.perid = p.id and r2.conid = ?)
-        LEFT OUTER JOIN reg r3 ON (r3.perid = p.id and r3.conid = ?)
-    WHERE p.email_addr LIKE '%@%' AND p.contact_ok='Y' AND r1.id IS NULL AND r2.id IS NULL AND r3.id IS NULL
+    LEFT OUTER JOIN reg r3 ON (r3.perid = p.id and r3.conid = ?)
+    WHERE p.email_addr LIKE '%@%' AND p.contact_ok='Y' AND r1.id IS NULL AND (r2.id IS NOT NULL OR r3.id IS NOT NULL)
     GROUP BY p.email_addr
 )
-SELECT e.email, e.perid, p.first_name, p.last_name, k.guid
+SELECT e.email, e.perid, p.first_name, p.last_name/*, k.guid */
 FROM people e
 JOIN perinfo p ON (e.perid = p.id)
-JOIN couponKeys k ON (e.perid = k.perid AND k.couponId = ?)
+/*JOIN couponKeys k ON (e.perid = k.perid AND k.couponId = ?)*/
 ORDER BY e.email;
 EOQ;
-    $typestr = 'iiii';
-    $paramarray = array($conid, $priorcon, $priorcon2, $couponid);
+    //$typestr = 'iiii';
+    $typestr = 'iii';
+    //$paramarray = array($conid, $priorcon, $priorcon2, $couponid);
+    $paramarray = array($conid, $priorcon, $priorcon2);
     $email_text = ComeBackCouponEmail_TEXT($testsite, date_format($expires, 'M d, Y'));
     $email_html = ComeBackCouponEmail_HTML($testsite, date_format($expires, 'M d, Y'));
     $email_subject = "We miss you! Please come back to $conname";
@@ -205,6 +217,8 @@ EOQ;
     break;
 
 case 'survey':
+    updateContactOK($conid);
+
     $emailQ = <<<EOQ
 SELECT Distinct P.email_addr AS email
 FROM reg R 
@@ -213,9 +227,9 @@ JOIN reg R ON (R.id=H.regid)
 JOIN transaction T ON (T.id=H.tid)
 JOIN memLabel M ON (M.id=R.memId)
 JOIN perinfo P ON (R.perid = P.id)
-WHERE R.conid=? AND (H.action = 'attach')
+WHERE R.conid=? AND (H.action = 'print') AND P.contact_ok='Y'
 AND M.shortname not like '%cancel%' AND M.shortname not like '%Child%' AND M.shortname not like '% In Tow%'
-AND P.email_addr != ''
+AND P.email_addr LIKE '%@%'
 ORDER BY P.email_addr;
 EOQ;
     $typestr = 'i';
@@ -261,7 +275,7 @@ if ($test) {
 
 $response['emailText'] = $email_text;
 $response['emailHTML'] = $email_html;
-$response['emailFrom'] = $email;
+$response['emailFrom'] = $con['regadminemail'];
 $response['emailTo'] =  $email_array;
 $response['emailCC'] = null;
 $response['emailSubject'] = $con['label'] . ": $email_subject";
@@ -269,3 +283,15 @@ $response['emailType'] = $email_type;
 $response['macroSubstitution'] = $macroSubstitution;
 
 ajaxSuccess($response);
+
+function updateContactOK($conid) : void {
+    // updates the contact ok values in perinfo from this conId's values in policies 'marketing'.
+    // It expects the prior years were already loaded into 'Contact ok'
+    $sql = <<<EOS
+UPDATE perinfo p
+JOIN memberPolicies m ON (p.id = m.perid AND m.conid = ? AND m.policy = 'marketing')
+SET p.contact_ok = m.response
+WHERE p.contact_ok != m.response && p.active = 'Y' AND p.first_name != 'merged' AND p.last_name != 'into';
+EOS;
+    $rows = dbSafeCmd($sql, 'i', array($conid));
+}

@@ -143,7 +143,7 @@ $response['exhibitorRegionYear'] = $eryID;
 // now the space information for this regionYearId
 $spaceQ = <<<EOS
 SELECT e.*, esp.price as approved_price, esp.includedMemberships, esp.additionalMemberships, s.name, esp.description, ry.exhibitorNumber,
-       y.exhibitorId, ex.exhibitorName, ex.artistName, er.name AS regionName, esp.glNum, esp.glLabel
+       y.exhibitorId, ex.exhibitorName, ex.artistName, er.name AS regionName, esp.glNum, esp.glLabel, ery.includedMemId, ery.additionalMemId
 FROM exhibitorRegionYears ry
 JOIN exhibitorSpaces e ON (e.exhibitorRegionYear = ry.id)
 JOIN exhibitorYears y ON (y.id = ry.exhibitorYearId)
@@ -379,8 +379,9 @@ UPDATE exhibitors
 SET exhibitorName=?, exhibitorEmail=?, addr=?, addr2=?, city=?, state=?, zip=?, salesTaxId = ?
 WHERE id=?;
 EOS;
-    $exhibitorA = array(trim($_POST['name']), trim($_POST['email']), trim($_POST['addr']), trim($_POST['addr2']), trim($_POST['city']), trim($_POST['state']),
-        trim($_POST['zip']), $salesTaxId, $exhId);
+    $exhibitorA = array(trim(ifnull($_POST['name'],'')), trim(ifnull($_POST['email'],'')), trim(ifnull($_POST['addr'],'')),
+        trim(ifnull($_POST['addr2'],'')), trim(ifnull($_POST['city'],'')), trim(ifnull($_POST['state'],'')),
+        trim(ifnull($_POST['zip'],'')), trim(ifnull($salesTaxId,'')), $exhId);
     $num_rows = dbSafeCmd($updateV, 'ssssssssi',$exhibitorA);
     if ($num_rows == 1)
         $status_msg = "$portalName Profile Updated<br/>\n";
@@ -497,8 +498,8 @@ if ($totprice > 0) {
         'locationId' => $cc['location'],
         'referenceId' => $referenceId,
         'transid' => $transId,
-        'preTaxAmt' => $totprice,
-        'taxAmt' => 0,
+        'preTaxAmt' => $rtn['preTaxAmt'],
+        'taxAmt' => $rtn['taxAmt'],
         'vendorId' => $exhId,
         'salesTaxId' => $salesTaxId,
         'specialrequests' => $specialRequests,
@@ -514,6 +515,14 @@ if ($totprice > 0) {
         'formbadges' => $badges,
         'total' => $totprice,
     );
+
+    // update the transaction with the order id
+    $updTrans = <<<EOS
+UPDATE transaction
+SET orderId = ?, paymentStatus = 'ORDER', tax = ?, withtax = ?, orderDate = now()
+WHERE id = ?;
+EOS;
+    $numUpd = dbSafeCmd($updTrans, 'sddi', array($rtn['orderId'], $rtn['taxAmt'], $rtn['totalAmt'], $transId));
 
 // call the credit card processor to make the payment
     $ccrtn = cc_payOrder($results, $buyer, true);
@@ -541,6 +550,14 @@ if ($totprice > 0) {
         $status_msg .= 'Payment for ' . $dolfmt->formatCurrency($ccrtn['amount'], $currency) . " processed<br/>\n";
     }
     $approved_amt = $ccrtn['amount'];
+
+    // update the transaction status with the payment details
+    $updTrans = <<<EOS
+UPDATE transaction
+SET ccPaymentId = ?, paymentStatus = ?
+WHERE id = ?;
+EOS;
+    $numUpd = dbSafeCmd($updTrans, 'ssi', array($ccrtn['paymentId'], $ccrtn['status'],  $transId));
 } else {
     $approved_amt = 0;
     $ccrtn = array('url' => '');
@@ -799,32 +816,32 @@ function buildBadge($fields, $type, $index, $region, $conid, $transId, $portalNa
 SELECT id
 FROM perinfo p
 WHERE
-	REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.first_name)), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.middle_name)), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.last_name)), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.suffix)), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.email_addr)), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.phone)), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.badge_name)), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.address)), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.addr_2)), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.city)), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.state)), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.zip)), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.country)), '  *', ' ');
+	REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.first_name)), ' +', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.middle_name)), ' +', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.last_name)), ' +', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.suffix)), ' +', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.email_addr)), ' +', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.phone)), ' +', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.badge_name)), ' +', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.address)), ' +', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.addr_2)), ' +', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.city)), ' +', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.state)), ' +', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.zip)), ' +', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.country)), ' +', ' ');
 EOF;
     $value_arr = array($badge['fname'], $badge['mname'], $badge['lname'], $badge['suffix'], $badge['email'], $badge['phone'], $badge['badgename'],
                 $badge['addr'], $badge['addr2'], $badge['city'], $badge['state'], $badge['zip'], $badge['country']);

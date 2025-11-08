@@ -1,6 +1,6 @@
 <?php
+// ConTroll Registration System, Copyright 2015-2025, Michael Rafferty, Licensed under the GNU Affero General Public License, Version 3.
 // library AJAX Processor: admin_getTerminalCodes.php
-// Balticon Registration System
 // Author: Syd Weinsteinretrieve the details on a terminal after it's been paired
 
 require_once('../lib/base.php');

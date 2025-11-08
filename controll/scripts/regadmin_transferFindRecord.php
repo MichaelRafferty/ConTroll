@@ -46,7 +46,7 @@ WITH regcnt AS (
 )
 SELECT p.id AS perid, p.first_name, p.middle_name, p.last_name, p.suffix, p.badge_name, p.address as address_1, p.addr_2 as address_2,
     p.city, p.state, p.zip as postal_code, p.country, p.email_addr, p.phone, p.share_reg_ok, p.contact_ok, p.active, p.banned,
-    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), '  *', ' ')) AS fullName,
+    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
     r.regcnt, r.regs
 FROM regcnt r
 JOIN perinfo p ON (p.id = r.id)
@@ -74,7 +74,7 @@ WITH regcnt AS (
 )
 SELECT DISTINCT p.id AS perid, p.first_name, p.middle_name, p.last_name, p.suffix, p.badge_name, p.address as address_1, p.addr_2 as address_2,
     p.city, p.state, p.zip as postal_code, p.country, p.email_addr, p.phone, p.share_reg_ok, p.contact_ok, p.active, p.banned,
-    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), '  *', ' ')) AS fullName,
+    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
     r.regcnt, r.regs
 FROM regcnt r
 JOIN perinfo p ON (p.id = r.id)

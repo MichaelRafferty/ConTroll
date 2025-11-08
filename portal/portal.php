@@ -17,7 +17,6 @@ global $config_vars;
 $con = get_conf('con');
 $conid = $con['id'];
 $portal_conf = get_conf('portal');
-$debug = get_conf('debug');
 $cc = get_conf('cc');
 $condata = get_con();
 load_cc_procs();
@@ -61,7 +60,7 @@ $initCoupon = getSessionVar('curCoupon');
 $initCouponSerial = getSessionVar('curCouponSerial');
 $config_vars = array();
 $config_vars['label'] = $con['label'];
-$config_vars['debug'] = $debug['portal'];
+$config_vars['debug'] = getConfValue('debug', 'portal', 0);
 $config_vars['uri'] = $portal_conf['portalsite'];
 $config_vars['loadPlans'] = true;
 $config_vars['required'] = getConfValue('reg', 'required', 'addr');
@@ -180,8 +179,8 @@ SELECT r.status, r.memId, m.*, a.shortname AS ageShort, a.label AS ageLabel, a.a
         ELSE NULL
     END AS fname,
     CASE 
-        WHEN rp.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', rp.first_name, rp.middle_name, rp.last_name, rp.suffix), '  *', ' '))
-        WHEN rn.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', rn.first_name, rn.middle_name, rn.last_name, rn.suffix), '  *', ' '))
+        WHEN rp.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', rp.first_name, rp.middle_name, rp.last_name, rp.suffix), ' +', ' '))
+        WHEN rn.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', rn.first_name, rn.middle_name, rn.last_name, rn.suffix), ' +', ' '))
         ELSE NULL
     END AS fullName,
     CASE 
@@ -227,6 +226,20 @@ EOS;
     else
         $addlWSFS = explode(',', $addlWSFS);
 
+    $addlVirtual = getConfValue('portal', 'addlVirtual');
+    if ($addlVirtual == '')
+        $addlVirtual = [];
+    else
+        $addlVirtual = explode(',', $addlVirtual);
+
+        $noVirtual = getConfValue('portal', 'noVirtual');
+    if ($noVirtual == '')
+        $noVirtual = [];
+    else
+        $noVirtual = explode(',', $noVirtual);
+
+    $hasAddlVirtual = false;
+    $denyVirtual = false;
     if ($holderRegR !== false && $holderRegR->num_rows > 0) {
         while ($m = $holderRegR->fetch_assoc()) {
             // check if they have a WSFS rights membership (hasWSFS and hasNom)
@@ -250,11 +263,17 @@ EOS;
             if (($m['ageType'] == 'child' && !$allowChild) || $m['ageType'] == 'kit')
                 $numChild++;
 
+             // force additional virtual's from array
+             if (in_array($m['memId'], $addlVirtual) && $m['status'] == 'paid')
+                $hasAddlVirtual = true;
+
+             if (in_array($m['memId'], $noVirtual) && $m['status'] == 'paid')
+                $denyVirtual = true;
+
             if ($m['memType'] == 'donation') {
                 $label = $dolfmt->formatCurrency((float)$m['actPrice'], $currency) . ' ' . $m['label'];
                 $shortname = $dolfmt->formatCurrency((float)$m['actPrice'], $currency) . ' ' . $m['shortname'];
-            }
-            else {
+            }  else {
                 $label = $m['label'];
                 $shortname = $m['shortname'];
             }
@@ -320,7 +339,9 @@ EOS;
 
     if (!$hasWSFS)
         $hasMeeting = false;
-    $hasVirtual = $numPaidPrimary > 0 && $numChild == 0 && ((!$worldCon) || $hasWSFS);
+
+    $hasVirtual = ($numPaidPrimary > 0 && ($worldCon || $numChild == 0) && $denyVirtual == false) || $hasAddlVirtual;
+
 // get people managed by this account holder and their registrations
     if ($loginType == 'p') {
         $managedSQL = <<<EOS
@@ -329,7 +350,7 @@ WITH ppl AS (
         p.address, p.addr_2, p.city, p.state, p.zip, p.country,
         p.banned, p.creation_date, p.update_date, p.change_notes, p.active,
         p.managedBy, NULL AS managedByNew,
-        TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), '  *', ' ')) AS fullName,
+        TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
         r.conid, r.status, r.memId, r.create_date,
         r.price AS actPrice, IFNULL(r.paid, 0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,        
         m.memCategory, m.memType, m.memAge, m.shortname, m.label, m.startdate, m.enddate, m.online,
@@ -359,7 +380,7 @@ WITH ppl AS (
         p.address, p.addr_2, p.city, p.state, p.zip, p.country,
         'N' AS banned, NULL AS creation_date, NULL AS update_date, '' AS change_notes, 'Y' AS active,
         p.managedBy, p.managedByNew,
-        TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), '  *', ' ')) AS fullName,
+        TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
         r.conid, r.status, r.memId, r.create_date, 
         r.price AS actPrice, IFNULL(r.paid, 0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,
         m.memCategory, m.memType, m.memAge, m.shortname, m.label, m.startdate, m.enddate, m.online,
@@ -409,7 +430,7 @@ WITH ppl AS (
         p.address, p.addr_2, p.city, p.state, p.zip, p.country,
         p.banned, p.creation_date, p.update_date, p.change_notes, p.active,
         p.managedBy, NULL AS managedByNew,
-        TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), '  *', ' ')) AS fullName,
+        TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
         r.conid, r.status, r.memId, r.create_date, m.memCategory, m.memType, m.memAge, m.shortname, m.label,
         r.price AS actPrice, IFNULL(r.paid, 0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,
         m.startdate, m.enddate, m.online,
@@ -439,7 +460,7 @@ WITH ppl AS (
         p.address, p.addr_2, p.city, p.state, p.zip, p.country,
         'N' AS banned, NULL AS creation_date, NULL AS update_date, '' AS change_notes, 'Y' AS active,
         p.managedBy, p.managedByNew,
-        TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), '  *', ' ')) AS fullName,
+        TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
         r.conid, r.status, r.memId, r.create_date, m.memCategory, m.memType, m.memAge, m.shortname, m.label,
         r.price AS actPrice, IFNULL(r.paid, 0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,
         m.startdate, m.enddate, m.online,
@@ -605,13 +626,25 @@ portalPageInit('portal', $info,
         //'js/tinymce/tinymce.min.js',
         'jslib/paymentPlans.js',
         'jslib/coupon.js',
+        'jslib/passkey.js',
         'js/portal.js',
     ),
     false // refresh
 );
 if ($refresh) {
-    echo "refresh needed<br/>\n";
-    echo refreshSession();
+    if (getSessionVar('tokenType') == 'passkey') {
+        $config_vars['refresh'] = 'passkey';
+        portalPageFoot();
+?>
+<script type="text/javascript">
+    var config = <?php echo json_encode($config_vars); ?>;
+    show_message("Passkey session has expired, a refresh of your is being requested.", 'warn');
+</script>
+<?php
+    } else {
+        echo "refresh needed<br/>\n";
+        echo refreshSession();
+    }
     exit();
 }
 ?>

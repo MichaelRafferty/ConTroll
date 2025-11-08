@@ -7,7 +7,6 @@ global $config_vars;
 $con = get_conf('con');
 $conid = $con['id'];
 $portal_conf = get_conf('portal');
-$debug = get_conf('debug');
 $ini = get_conf('reg');
 $condata = get_con();
 
@@ -39,7 +38,7 @@ else
 
 $config_vars = array();
 $config_vars['label'] = $con['label'];
-$config_vars['debug'] = $debug['portal'];
+$config_vars['debug'] = getConfValue('debug', 'portal', 0);
 $config_vars['conid'] = $conid;
 $config_vars['uri'] = $portal_conf['portalsite'];
 $config_vars['regadminemail'] = $con['regadminemail'];
@@ -65,7 +64,7 @@ WITH ppl AS (
     SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.pronouns,
         p.address, p.addr_2, p.city, p.state, p.zip, p.country,
         p.banned, p.creation_date, p.update_date, p.change_notes, p.active, p.managedBy, NULL AS managedByNew, p.managedReason,
-        TRIM(REGEXP_REPLACE(CONCAT(p.first_name, ' ', p.middle_name, ' ', p.last_name, ' ', p.suffix), '  *', ' ')) AS fullName,
+        TRIM(REGEXP_REPLACE(CONCAT(p.first_name, ' ', p.middle_name, ' ', p.last_name, ' ', p.suffix), ' +', ' ')) AS fullName,
         'p' AS personType
         FROM perinfo p
         WHERE managedBy = ? OR p.id = ?
@@ -73,7 +72,7 @@ WITH ppl AS (
     SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.pronouns,
         p.address, p.addr_2, p.city, p.state, p.zip, p.country,
         'N' AS banned, NULL AS creation_date, NULL AS update_date, '' AS change_notes, 'Y' AS active, p.managedBy, p.managedByNew, p.managedReason,
-        TRIM(REGEXP_REPLACE(CONCAT(p.first_name, ' ', p.middle_name, ' ', p.last_name, ' ', p.suffix), '  *', ' ')) AS fullName,
+        TRIM(REGEXP_REPLACE(CONCAT(p.first_name, ' ', p.middle_name, ' ', p.last_name, ' ', p.suffix), ' +', ' ')) AS fullName,
         'n' AS personType
         FROM newperson p
         WHERE managedBy = ? AND p.id != ? AND p.perid IS NULL

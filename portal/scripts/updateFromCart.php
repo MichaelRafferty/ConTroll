@@ -145,36 +145,36 @@ if ($personId < 0) {
 SELECT id
 FROM perinfo p
 WHERE
-	REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.first_name)), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.middle_name)), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.last_name)), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.suffix)), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.email_addr)), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.phone)), '  *', ' ')
-    AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.badge_name)), '  *', ' ')
-    AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.legalName)), '  *', ' ')
-    AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.pronouns)), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.address)), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.addr_2)), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.city)), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.state)), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.zip)), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.country)), '  *', ' ');
+	REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.first_name)), ' +', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.middle_name)), ' +', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.last_name)), ' +', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.suffix)), ' +', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.email_addr)), ' +', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.phone)), ' +', ' ')
+    AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.badge_name)), ' +', ' ')
+    AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.legalName)), ' +', ' ')
+    AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.pronouns)), ' +', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.address)), ' +', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.addr_2)), ' +', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.city)), ' +', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.state)), ' +', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.zip)), ' +', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.country)), ' +', ' ');
 EOF;
         $value_arr = array (
             trim($person['fname']),

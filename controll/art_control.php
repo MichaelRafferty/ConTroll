@@ -40,12 +40,7 @@ $regions = array();
 while($region = $regionsR->fetch_assoc()) {
     $regions[] = $region;
 }
-$debug = get_conf('debug');
-
-if (array_key_exists('controll_art_control', $debug))
-    $debug_art_control=$debug['controll_art_control'];
-else
-    $debug_art_control = 0;
+$debug_art_control = getConfValue('debug', 'controll_art_control', 0);
 
 ?>
 <div id='parameters' <?php if (!($debug_art_control & 4)) echo 'hidden'; ?>>
@@ -54,11 +49,14 @@ else
 </div>
 <?php drawCreatePane(100); ?>
 <?php drawEditPane(200); ?>
-<div id="main">
+<div>
     <ul class='nav nav-tabs mb-3' id='region-tabs' role='tablist'>
         <li class='nav-item active' role='presentation'>
-            <button class='nav-link' id='overview-tab' data-bs-toggle='pill' type='button' role='tab' aria-controls='nav-overview' aria-selected='true' onclick="setRegion('overview',null)"> Overview </button>
-        
+            <button class='nav-link' id='overview-tab' data-bs-toggle='pill' type='button' role='tab'
+                    aria-controls='nav-overview' aria-selected='true' onclick="setRegion('overview',null)">
+                Overview
+            </button>
+        </li>
 <?php 
 $regionNum = 0;
 foreach ($regions as $region) {
@@ -68,27 +66,54 @@ foreach ($regions as $region) {
     if($regionNum++ == 0) { $ariaSelected = 'true'; }
 ?>
         <li class='nav-item' role='presentation'>
-            <button class='nav-link' id='<?php echo $name; ?>-tab' data-bs-toggle='pill' type='button' role='tab' aria-controls='nav-<?php echo $name; ?>' aria-selected='false' onclick="setRegion(<?php echo '\'' . $name . '\',' . $id; ?>)">
+            <button class='nav-link' id='<?php echo $name; ?>-tab' data-bs-toggle='pill' type='button' role='tab'
+                    aria-controls='nav-<?php echo $name; ?>' aria-selected='false' onclick="setRegion(<?php echo '\'' . $name . '\',' . $id; ?>)">
             <?php echo $name; ?>
             </button>
         </li>
 <?php } ?>
     </ul>
-    </div>
+</div>
     <div class="container-fluid">
-    <div class="row">
-        <div class="col-sm-auto p-0">
-            <div id='artItems_table'></div>
-            <div id="artItems_buttons">
+        <div class="row">
+            <div class="col-sm-12 p-0">
+                <div id='artItems_table'></div>
+            </div>
+        </div>
+        <div class='row mt-2 mb-3' id='artControl-csv-div' hidden>
+            <div class='col-sm-auto p-1 ps-3 pe-3 tabulator-paginator' id='artControlPaginationDiv' style='background-color: #e5e5e5;'></div>
+            <div class='col-sm-auto p-1 ms-4' id='artItems_buttons'>
                 <button id='item-undo' type='button' class='btn btn-secondary btn-sm' onclick="undoItem(); return false;" disabled>Undo</button>
                 <button id='item-redo' type='button' class='btn btn-secondary btn-sm' onclick="redoItem(); return false;" disabled>Redo</button>
                 <button id='item-addnew' type='button' class='btn btn-secondary btn-sm' onclick="addnewItem(); return false;" disabled>Add New</button>
                 <button id='item-save' type='button' class='btn btn-secondary btn-sm' onclick="saveItem(); return false;" disabled>Save</button>
             </div>
+            <div class='col-sm-auto p-1 ms-4' id='admin-buttons'>
+                <button id='artControl-csv' type='button' class='btn btn-info btn-sm' onclick='download("csv"); return false;'>Download CSV</button>
+                <button id='artControl-xlsx' type='button' class='btn btn-info btn-sm' onclick='download("xlsx"); return false;'>Download Excel</button>
+            </div>
+            <div class='col-sm-auto p-1 ms-4' id='sheets-buttons'>
+                <button id='artControl-bids' class='btn btn-secondary btn-sm me-1'
+                        onclick="pdfSheets('bidsheets', false); return false;">
+                    Bid Sheets
+                </button>
+                <button id='artControl-price' class='btn btn-secondary btn-sm me-1'
+                        onclick="pdfSheets('printshop', false); return false;">
+                    Price Tags
+                </button>
+                <button id='artControl-sheet' type='button' class='btn btn-secondary btn-sm me-1'
+                        onclick="pdfSheets('control', false); return false;">
+                    Control Sheets
+                </button>
+                <button id='artControl-sheetsEmail' type='button' class='btn btn-warning btn-sm'
+                        onclick="pdfSheets('control', true); return false;">
+                    Control Sheets w/Emails
+                </button>
+                <br/><strong>Note:</strong> Will display/print sheets for all artists filtered in the table above.
+            </div>
         </div>
     </div>
     <div id='result_message' class='mt-4 p-2'></div>
-</div>
 </div>
 <pre id='test'>
 </pre>

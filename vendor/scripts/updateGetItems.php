@@ -9,7 +9,6 @@ $return500errors = true;
 
 $con = get_conf('con');
 $conid = $con['id'];
-$debug = get_conf('debug');
 
 $condata = get_con();
 $in_session = false;
@@ -146,6 +145,9 @@ switch ($itemType) {
 
 // loop one - just check for errors
 foreach ($data as $index => $row) {
+    // ignore over rows
+    if (array_key_exists('id', $row) && ($row['id'] == -9999))
+        continue;
     // don't error check to-delete rows
     if (array_key_exists('to_delete', $row)) {
         if ($row['to_delete'] == 1) continue;
@@ -158,13 +160,17 @@ foreach ($data as $index => $row) {
 
     if (!array_key_exists('sale_price', $row) && ($itemType != 'art')) {
         $data_errors .= "Item: " . $row['item_key'] . ", $label is required<br/>";
-        $data_marks[] = [ 'item_key' => $row['item_key'], 'field' => 'sale_price' ];
+        $data_marks[] = ['item_key' => $row['item_key'], 'field' => 'sale_price'];
     }
 
     if (!array_key_exists('min_price', $row) && ($itemType == 'art')) {
-        $data_errors .= "Item: " . $row['item_key'] . ", Min Bid is required<br/>";
-        $data_marks[] = [ 'item_key' => $row['item_key'], 'field' => 'min_price' ];
-        continue; // art need min bid
+        $data_errors .= "Item: " . $row['item_key'] . ", Minimum Bid is required<br/>";
+        $data_marks[] = ['item_key' => $row['item_key'], 'field' => 'min_price'];
+        continue; // art need minimum bid
+    } else if ($itemType == 'art' && array_key_exists('min_price', $row) && ($row['min_price'] == null || $row['min_price'] == 0.00)) {
+        $data_errors .= 'Item: ' . $row['item_key'] . ', Minimum Bid is required and must be greater than zero<br/>';
+        $data_marks[] = ['item_key' => $row['item_key'], 'field' => 'min_price'];
+        continue; // art need minimum bid
     } else if ((!array_key_exists('min_price', $row)) && array_key_exists('sale_price', $row)) {
         $row['min_price'] = $row['sale_price'];
     }
@@ -175,6 +181,7 @@ foreach ($data as $index => $row) {
         $data_marks[] = [ 'item_key' => $row['item_key'], 'field' => 'sale_price' ];
     }
 }
+
 if ($data_errors != '') {
     $response['error'] = "$data_errors<br/>Please correct and re-save the section.";
     $response['marks'] = $data_marks;
@@ -184,8 +191,11 @@ if ($data_errors != '') {
 
 // second loop, actually do the inserts
 foreach ($data as $index => $row) {
+    if (array_key_exists('id', $row) && ($row['id'] == -9999))
+        continue;
     if (array_key_exists('to_delete', $row)) {
-        if ($row['to_delete'] == 1) continue;
+        if ($row['to_delete'] == 1)
+            continue;
     }
     $item_key = 0;
     if (array_key_exists('item_key', $row)) {

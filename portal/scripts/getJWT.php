@@ -55,7 +55,7 @@ $worldCon = getConfValue('portal', 'worldcon', '0');
 if ($loginType == 'p') {
     $piQ = <<<EOS
 SELECT p.id AS perid, n.id AS newperid, p.first_name, p.last_name, p.email_addr, p.badge_name,
-    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), '  *', ' ')) AS fullName
+    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName
 FROM perinfo p
 LEFT OUTER JOIN newperson n ON n.perid = p.id
 WHERE p.id = ?
@@ -64,7 +64,7 @@ EOS;
 } else {
     $piQ = <<<EOS
 SELECT NULL AS perid, id AS newperid, first_name, last_name, email_addr, badge_name,
-    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), '  *', ' ')) AS fullName
+    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), ' +', ' ')) AS fullName
 FROM newperson 
 WHERE id = ?;
 EOS;
@@ -165,7 +165,6 @@ if ($Virtual) {
     // if we got to this routine, virtual was alredy verified in portal, but we can just check for the attending part and skip the WSFS part here.
     $numPaidPrimary = 0;
     $numChild = 0;
-    $hasWSFS = false;
 
 // get the account holder's registrations
     $holderRegSQL = <<<EOS
@@ -210,8 +209,8 @@ SELECT r.status, r.memId, m.*, a.shortname AS ageShort, a.label AS ageLabel, a.a
         ELSE NULL
     END AS phone,
     CASE 
-        WHEN rp.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', rp.first_name, rp.middle_name, rp.last_name, rp.suffix), '  *', ' '))
-        WHEN rn.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', rn.first_name, rn.middle_name, rn.last_name, rn.suffix), '  *', ' '))
+        WHEN rp.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', rp.first_name, rp.middle_name, rp.last_name, rp.suffix), ' +', ' '))
+        WHEN rn.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', rn.first_name, rn.middle_name, rn.last_name, rn.suffix), ' +', ' '))
         ELSE NULL
     END AS fullName,
     CASE 
@@ -247,22 +246,32 @@ EOS;
     //			any type ‘virtual’ OR
     //			any type ‘oneday'
     $memberships = [];
-    $addlWSFS = getConfValue('portal', 'addlWSFS');
-    if ($addlWSFS == '')
-        $addlWSFS = [];
+
+    $addlVirtual = getConfValue('portal', 'addlVirtual');
+    if ($addlVirtual == '')
+        $addlVirtual = [];
     else
-        $addlWSFS = explode(',', $addlWSFS);
+        $addlVirtual = explode(',', $addlVirtual);
+
+    $noVirtual = getConfValue('portal', 'noVirtual');
+    if ($noVirtual == '')
+        $noVirtual = [];
+    else
+        $noVirtual = explode(',', $noVirtual);
 
     if ($holderRegR !== false && $holderRegR->num_rows > 0) {
+        $hasAddlVirtual = false;
+        $denyVirtual = false;
         while ($m = $holderRegR->fetch_assoc()) {
-            // check if they have a WSFS rights membership (hasWSFS and hasNom)
-            if (($m['memCategory'] == 'wsfs' || $m['memCategory'] == 'dealer' || in_array($m['memId'], $addlWSFS)) && $m['status'] == 'paid') {
-                $hasWSFS = true;
-            }
-
             // check age to prevent virtual
             if ($m['ageType'] == 'child' || $m['ageType'] == 'kit')
                 $numChild++;
+
+            if (in_array($m['memId'], $addlVirtual) && $m['status'] == 'paid')
+                $hasAddlVirtual = true;
+
+            if (in_array($m['memId'], $noVirtual) && $m['status'] == 'paid')
+                $denyVirtual = true;
 
             if (isPrimary($m, $conid) && $m['status'] == 'paid')
                 $numPaidPrimary++;
@@ -279,7 +288,7 @@ EOS;
         $holderRegR->free();
     }
 
-    $hasVirtual = ($numPaidPrimary > 0) && ((!$worldCon) || $hasWSFS) && ($worldCon || $numChild == 0);
+    $hasVirtual = ($numPaidPrimary > 0 && ($worldCon || $numChild == 0) && $denyVirtual == false) || $hasAddlVirtual;
     if ($hasVirtual) {
         if ($rights != '')
             $rights .= ',';

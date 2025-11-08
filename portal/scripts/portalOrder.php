@@ -19,7 +19,6 @@ $condata = get_con();
 $conid=$condata['id'];
 $conf = get_conf('con');
 $portal_conf = get_conf('portal');
-$debug = get_conf('debug');
 $ini = get_conf('reg');
 $log = get_conf('log');
 $ccauth = get_conf('cc');
@@ -295,6 +294,14 @@ if ($amount > 0) {
         exit();
     }
     $response['rtn'] = $rtn;
+
+    // update the transaction with the order id
+    $updTrans = <<<EOS
+UPDATE transaction
+SET orderId = ?, paymentStatus = 'ORDER', tax = ?, withtax = ?, orderDate = now()
+WHERE id = ?;
+EOS;
+    $numUpd = dbSafeCmd($updTrans, 'sddi', array($rtn['orderId'], $rtn['taxAmt'], $rtn['totalAmt'], $transId));
 } else {
     $rtn = array();
 }

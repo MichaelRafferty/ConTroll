@@ -172,32 +172,32 @@ foreach ($badges as $badge) {
 SELECT id
 FROM perinfo p
 WHERE
-    	REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.first_name)), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.middle_name)), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.last_name)), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.suffix)), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.email_addr)), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.phone)), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.badge_name)), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.address)), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.addr_2)), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.city)), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.state)), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.zip)), '  *', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), '  *', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.country)), '  *', ' ');
+    	REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.first_name)), ' +', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.middle_name)), ' +', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.last_name)), ' +', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.suffix)), ' +', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.email_addr)), ' +', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.phone)), ' +', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.badge_name)), ' +', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.address)), ' +', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.addr_2)), ' +', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.city)), ' +', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.state)), ' +', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.zip)), ' +', ' ')
+	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.country)), ' +', ' ');
 EOF;
         $value_arr = array(
             trim($badge['fname']),
@@ -357,20 +357,32 @@ if ($total > 0) {
     $buyer['phone'] = '';
     $buyer['country'] = '';
     $referenceId = $transId . '-' . 'pay-' . time();
+    $preTaxAmt = $rtn['preTaxAmt'];
+    $taxAmt = $rtn['taxAmt'];
+    $withTax = $rtn['totalAmt'];
+
     $results = array(
         'source' => $source,
         'nonce' => $nonce,
-        'totalAmt' => $rtn['totalAmt'],
+        'totalAmt' => $withTax,
         'orderId' => $rtn['orderId'],
         'custid' => $custId,
         'locationId' => $cc['location'],
         'referenceId' => $referenceId,
         'transid' => $transId,
-        'preTaxAmt' => $totalDue,
-        'taxAmt' => 0,
-        'total' => $totalDue,
+        'preTaxAmt' => $preTaxAmt,
+        'taxAmt' => $taxAmt,
+        'total' => $withTax,
         'badges' => $badgeResults,
         );
+
+    $upT = <<<EOS
+UPDATE transaction
+SET price = ?, tax = ?, withTax = ?, couponDiscountCart = ?, orderId = ?, paymentStatus = 'ORDER', orderDate = now()
+WHERE id = ?;
+EOS;
+
+    $rows_upd = dbSafeCmd($upT, 'ddddsi', array($preTaxAmt, $taxAmt, $withTax, 0, $rtn['orderId'], $transId));
 
 // call the credit card processor to make the payment
     $ccrtn = cc_payOrder($results, $buyer, true);
@@ -412,13 +424,15 @@ if($approved_amt == $total) {
     $txnUpdate .= "complete_date=current_timestamp(), ";
 }
 
-$txnUpdate .= "paid=?, couponDiscountCart = ?, coupon = ? WHERE id=?;";
+$txnUpdate .= "paid=?, couponDiscountCart = ?, coupon = ?, ccPaymentId = ?, paymentStatus = ? WHERE id=?;";
 if ($totalDiscount > 0)
     $couponId = $coupon['id'];
 else
     $couponId = null;
 
-$txnU = dbSafeCmd($txnUpdate, "ddii", array($approved_amt, $totalDiscount, $couponId, $transId) );
+
+$txnU = dbSafeCmd($txnUpdate, 'ddissi',
+    array($approved_amt, $totalDiscount, $couponId, $ccrtn['paymentId'], $ccrtn['status'], $transId));
 
 $regQ = "UPDATE reg SET paid=price-couponDiscount, complete_trans = ?, status = 'paid' WHERE create_trans=?;";
 dbSafeCmd($regQ, "ii", array($transId, $transId));

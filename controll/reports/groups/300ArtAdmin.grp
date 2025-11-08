@@ -27,8 +27,24 @@
 	template=artSales.rpt
 	auth=art_control
 	type=rpt
-	P001="prompt/~/conid/~/Convention ID: /~/Enter the convention ID"
-	P002="prompt/~/region/~/Exhibits Region Short Name: /~/Enter the region"
+	P001="prompt/~/conid/~/Convention ID: /~/Enter the convention ID/~/#con.id#"
+    P002="prompt/~/region/~/Exhibits Region Short Name: /~/Enter the region/~/%"
+[200ArtSalesByItem]
+    name='Artist Sales By Item'
+	description='Sales by Artist Per Item'
+	template=artSalesByItem.rpt
+	auth=art_control
+	type=rpt
+	P001="prompt/~/conid/~/Convention ID: /~/Enter the convention ID/~/#con.id#"
+    P002="prompt/~/region/~/Exhibits Region Short Name: /~/Enter the region/~/%"
+[250ArtSalesReceipts]
+    name='Artist Sale Receipts'
+	description='Receipts for all Sold Art Items'
+	template=artSalesReceipts.rpt
+	auth=art_control
+	type=rpt
+	P001="prompt/~/conid/~/Convention ID: /~/Enter the convention ID/~/#con.id#"
+	P002="prompt/~/region/~/Exhibits Region Short Name: /~/Enter the region/~/%"
 [300ArtCheckout]
 	name='Artist Checkout'
 	description='Checkhout Report Artshow'
@@ -36,3 +52,19 @@
 	auth=art_control
 	type=php
 	P001="prompt/~/artid/~/Check-out report for Artist ID: /~/Enter Artist's ID"
+[410ArtSalesReconcile]
+    name='Artist Sales Reconciliation'
+	description='Reconciliation of Art Items (Control Sheets) vs Art Sales (Square)'
+	template=artSalesReconcile.rpt
+	auth=art_control
+	type=rpt
+	P001="prompt/~/conid/~/Convention ID: /~/Enter the convention ID/~/#con.id#"
+	P002="prompt/~/region/~/Exhibits Region Short Name: /~/Enter the region/~/%"
+[400ArtSalesExceptions]
+    name='Artist Sales Reconciliation Exceptions'
+	description='Reconciliation of Art Items (Control Sheets) vs Art Sales (Square) (mismatches only)'
+	template=artSalesExceptions.rpt
+	auth=art_control
+	type=rpt
+	P001="prompt/~/conid/~/Convention ID: /~/Enter the convention ID/~/#con.id#"
+	P002="prompt/~/region/~/Exhibits Region Short Name: /~/Enter the region/~/%"

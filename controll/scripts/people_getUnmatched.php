@@ -27,9 +27,9 @@ EOS;
 
 $unQ = <<<EOS
 WITH mby AS (
-SELECT n.id, count(*) manages
+SELECT n.id, count(nm.id) manages
 FROM newperson n
-JOIN newperson nm ON nm.managedByNew = n.id
+LEFT OUTER JOIN newperson nm ON nm.managedByNew = n.id
 WHERE n.perid IS NULL
 GROUP BY n.id
 ), regs AS (
@@ -41,7 +41,7 @@ WHERE r.perid IS NULL AND n.perid IS NULL AND r.status IN ('paid', 'unpaid', 'pl
 GROUP BY n.id
 )
 SELECT n.*, mby.manages, r.numRegs, r.price, r.paid, r.regs,
-TRIM(REGEXP_REPLACE(CONCAT_WS(' ', n.first_name, n.middle_name, n.last_name, n.suffix), '  *', ' ')) AS fullName,
+TRIM(REGEXP_REPLACE(CONCAT_WS(' ', n.first_name, n.middle_name, n.last_name, n.suffix), ' +', ' ')) AS fullName,
 CASE     
 	WHEN mgrP.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', mgrP.first_name, mgrP.last_name))
     WHEN mgrN.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', mgrN.first_name, mgrN.last_name))
@@ -58,7 +58,7 @@ LEFT OUTER JOIN newperson mgrN ON n.managedByNew = mgrN.id
 LEFT OUTER JOIN perinfo mgrP ON n.managedBy = mgrP.id
 LEFT OUTER JOIN regs r ON n.id = r.id
 WHERE n.perid IS NULL
-ORDER BY mby.manages, manager, n.createtime
+ORDER BY mby.manages DESC, manager, n.createtime
 LIMIT $limit;
 EOS;
 

@@ -77,8 +77,9 @@ class policySetup {
                         'bold italic underline strikethrough removeformat | ' +
                         'visualchars nonbreaking charmap hr | ' +
                         'preview fullscreen ',
-                        'alignleft aligncenter alignright alignnone | outdent indent | numlist bullist checklist | forecolor backcolor | link image'
+                        'alignleft aligncenter alignright alignnone | outdent indent | numlist bullist checklist | forecolor backcolor | link unlink image'
                     ],
+                    link_default_target: '_blank',
                     content_style: 'body {font - family:Helvetica,Arial,sans-serif; font-size:14px }',
                     placeholder: 'Edit the policy prompt...',
                     auto_focus: 'editFieldArea',
@@ -96,8 +97,9 @@ class policySetup {
                         'bold italic underline strikethrough removeformat | ' +
                         'visualchars nonbreaking charmap hr | ' +
                         'preview fullscreen ',
-                        'alignleft aligncenter alignright alignnone | outdent indent | numlist bullist checklist | forecolor backcolor | link image'
+                        'alignleft aligncenter alignright alignnone | outdent indent | numlist bullist checklist | forecolor backcolor | link unlink image'
                     ],
+                    link_default_target: '_blank',
                     content_style: 'body {font - family:Helvetica,Arial,sans-serif; font-size:14px }',
                     placeholder: 'Edit the description here...',
                     auto_focus: 'editFieldArea',
@@ -184,7 +186,7 @@ class policySetup {
             data: this.#policies,
             layout: "fitDataTable",
             index: "policy",
-            pagination: true,
+            pagination: this.#policies.length > 25,
             paginationAddRow:"table",
             paginationSize: 10,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options

@@ -459,7 +459,7 @@ function drawPersonRow($personId, $personType, $person, $memberships, $showInter
                $compareId = '';
                $compareType = '';
            }
-           if ($compareId != $personId || $compareType != $personType) {
+           if (($compareId != $personId || $compareType != $personType) && $membership['actPrice'] >= 0) {
                $row3 = '<br/>Purchased by ' . $membership['purchaserName'];
                if ($membership['status'] == 'unpaid' || $membership['status'] == 'plan')
                    $paidByOthers += $membership['actPrice'] - ($membership['actPaid'] + $membership['actCouponDiscount']);

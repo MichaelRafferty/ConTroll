@@ -11,7 +11,6 @@ require_once("../lib/coupon.php");
 $cc = get_conf('cc');
 $con = get_conf('con');
 $reg_conf = get_conf('reg');
-$debug_conf = get_conf('debug');
 $usps = get_conf('usps');
 load_cc_procs();
 
@@ -21,11 +20,6 @@ $urlSerialNum = '';
 $serialHidden = 'hidden';
 $class = '';
 $testsite = getConfValue('reg', 'test') == 1;
-
-if (array_key_exists('onlinereg', $debug_conf))
-    $debug = $debug_conf['onlinereg'];
-else
-    $debug = 0;
 
 $useUSPS = false;
 if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
@@ -52,7 +46,8 @@ $config_vars = array();
 $config_vars['label'] = $con['label'];
 $config_vars['required'] = getConfValue('reg', 'required', 'addr');
 $config_vars['conid'] = $condata['id'];
-$config_vars['debug'] = $debug;
+$config_vars['debug'] = getConfValue('debug', 'onlinereg', 0);
+
 $config_vars['onedaycoupons'] = $onedaycoupons;
 
 $numCoupons = num_coupons();

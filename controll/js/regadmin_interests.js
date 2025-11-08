@@ -68,6 +68,7 @@ class interestsSetup {
                         'preview fullscreen ',
                         'alignleft aligncenter alignright alignnone | outdent indent | numlist bullist checklist | forecolor backcolor | link image'
                     ],
+                    link_default_target: '_blank',
                     content_style: 'body {font - family:Helvetica,Arial,sans-serif; font-size:14px }',
                     placeholder: 'Edit the interests prompt...',
                     auto_focus: 'editFieldArea',
@@ -157,7 +158,7 @@ class interestsSetup {
             data: this.#interests,
             layout: "fitDataTable",
             index: "interest",
-            pagination: true,
+            pagination: this.#interests.length > 25,
             paginationAddRow:"table",
             paginationSize: 10,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options

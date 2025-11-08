@@ -128,7 +128,7 @@ function runReport(name) {
     elRpt = document.getElementById(rptId);
     elRpt.classList.add('active');
     // draw the prompts
-    showPrompts(config.reportName, config.pageName, config.groupName, type,  template);
+    showPrompts(config.reportName, config.pageName, config.groupName, config.values.type,  config.values.template);
     // initialize the prompts
     var index = 0;
     for (var i = 0; i < prompts.length; i++) {
@@ -217,7 +217,8 @@ function drawReport(data) {
     if (data.hasOwnProperty('csvfile')) {
         html += `
     <div class="row">
-        <div class="col-sm-auto">
+        <div class="col-sm-auto p-1 ps-3 pe-3 tabulator-paginator" id="ReportsPaginationDiv" style="background-color: #e5e5e5;"></div>
+        <div class="col-sm-auto p-1 ms-4">
             <button type="button" class="btn btn-info btn-sm" onclick="downloadReport('csv'); return false;">Download CSV</button>
             <button type="button" class="btn btn-info btn-sm" onclick="downloadReport('xlsx'); return false;">Download Excel xlsx</button>
         </div>
@@ -230,14 +231,18 @@ function drawReport(data) {
         document.getElementById('reportTable').innerHTML = data.output;
     } else {
         // build tabulator specs
+        document.getElementById('ReportsPaginationDiv').hidden = data.data.length <= 25;
+
         params = {
             data: data.data,
             layout: "fitDataTable",
             pagination: data.data.length > 25,
             paginationSize: 25,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
+            paginationElement: document.getElementById('ReportsPaginationDiv'),
         };
         if (data.hasOwnProperty('groupby')) {
+            params.columnCalcs = "both";
             params.groupBy = data['groupby'];
         }
 
@@ -272,9 +277,21 @@ function drawReport(data) {
                 if (field.hasOwnProperty('precision')) {
                     column[calcPosition + 'CalcParams'] = {precision: field.precision};
                 }
+                if (field.hasOwnProperty('format')) {
+                    column[calcPosition + 'CalcFormatter'] = field.format;
+                    if (field.format == 'money') {
+                        column[calcPosition + 'CalcFormatterParams'] = { decimal: '.', thousand: ',', negative: true, precision: 2};
+                    }
+                }
             }
             if (field.hasOwnProperty('format')) {
                 column.formatter = field.format;
+                if (field.format == 'money') {
+                    column.formatterParams = { decimal: '.', thousand: ',', negative: true, precision: 2};
+                }
+                if (field.format == 'link') {
+                    column.formatterParams = { target: "_blank" };
+                    }
             }
             if (field.hasOwnProperty('visible')) {
                 if (field.visible == 'true' || field.visible === true)

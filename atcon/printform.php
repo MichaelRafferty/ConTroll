@@ -86,9 +86,9 @@ $dayQ->free();
 <div class='container-fluid mt-4'>
     <form method='POST' id='newBadge' name="newBadge" class='form-floating' action='javascript:void(0);'>
         <div class="row">
-            <div class="col-sm-4">
+            <div class="col-sm-6">
                 <div class='form-floating mb-3'>
-                    <input type='text' name='badge_name' id='badge_name' placeholder='Badge Name' maxlength=32 size=32 class='form-control' required/>
+                    <input type='text' name='badge_name' id='badge_name' placeholder='Badge Name' maxlength=56 size=40 class='form-control' required/>
                     <label for='badge_name'>Badge Name:</label>
                 </div>
             </div>
@@ -96,7 +96,7 @@ $dayQ->free();
         <div class='row'>
             <div class='col-sm-4'>
                 <div class='form-floating mb-3'>
-                    <input type='number' name='badge_id' id='badge_id' placeholder='Badge ID' min='1' max='999999' class='no-spinners form-control' required/>
+                    <input type='number' name='badge_id' id='badge_id' placeholder='Badge ID' min='1' max='99999999' class='no-spinners form-control' required/>
                     <label for='badge_id'>Badge ID:</label>
                 </div>
             </div>

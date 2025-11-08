@@ -1,0 +1,165 @@
+[report]
+	name="artSalesByItem"
+	auth=art_control
+	csvfile="artSalesByItem"
+	index=exhibitorNumber
+    totals=bottom
+    subtotals=artistName
+[F001]
+    name=artId
+	sql=a.artId
+	title="Art ID#"
+	align=right
+	width=60
+[F005]
+    name=artistId
+	sql="IFNULL(eRY.exhibitorNumber, e.id)"
+	title="Artist Number"
+	align=right
+	width=80
+	filter=true
+	sort=true
+[F006]
+    name=itemNum
+    sql=a.itemNum
+    title="Item #"
+    align=right
+    width=80
+    filter=true
+[F008]
+    name=artistName
+    sql="CASE WHEN IFNULL(e.artistName, '') = '' THEN e.exhibitorName ELSE e.artistName END"
+    title="Artist Name"
+    width= 200
+    filter=true
+    format=textarea
+[F010]
+    name=title
+    sql=a.title
+    title="Title"
+    filter=true
+    width=200
+    format=textarea
+[F012]
+    name=type
+    sql=a.type
+    title="Type"
+    filter=true
+[F013]
+    name=itemStatus
+    sql=a.status
+    title="Item Status"
+    filter=true
+    width=200
+[F015]
+    name=qtyDiff
+    sql="CASE WHEN l.salesCount IS NULL THEN NULL ELSE a.qtyDiff END"
+    title="Qty Diff"
+    align=right
+    width=80
+[F020]
+    name=numberSold
+    sql=l.salesCount
+    title="# Sold"
+    align=right
+    width=80
+[F022]
+    name=itemPrice
+    sql=a.itemPrice
+    title="Item Price"
+    align=right
+    width=120
+    format=money
+[F025]
+    name=purchasedBy
+    sql="GROUP_CONCAT(CASE WHEN a.type = 'art' THEN s.perid ELSE CONCAT_WS('', s.perid, ' (', s.quantity, ')') END SEPARATOR ',\n')"
+    title="Purchased By"
+    filter=true
+    width=140
+    align=right,
+    format=textarea
+[F030]
+    name=totalAmt
+    sql=l.amount
+    title="Total Amt"
+    align=right
+    width=120
+    format=money
+    calc=sum
+[F035]
+    name=totalPaid
+    sql=l.paid
+    title="Total Paid"
+    align=right
+    width=120
+    format=money
+    calc=sum
+[F040]
+    name="qTotal"
+    sql="CASE WHEN l.salesCount IS NULL THEN NULL ELSE a.qtyDiff * itemPrice END"
+    title="Qty Total"
+    align=right
+    width=120
+    format=money
+    calc=sum
+[C001]
+    name=art
+    select="SELECT a.id AS artId, a.item_key AS itemNum, a.title AS title, a.type AS type, a.exhibitorRegionYearId, a.status,
+    CASE WHEN a.type = 'art' THEN a.original_qty WHEN a.quantity <= a.original_qty THEN a.original_qty - a.quantity ELSE NULL END AS qtyDiff,
+    CASE WHEN a.type = 'art' THEN a.final_price ELSE a.sale_price END AS itemPrice"
+    tables="FROM artItems a"
+    where="WHERE a.type != 'nfs'"
+[C002]
+    name=sales
+    select="SELECT s.artId, SUM(s.amount) AS amount, SUM(s.paid) AS paid, SUM(s.quantity) AS salesCount, MAX(status) AS status"
+    tables="FROM artSales s"
+    where="GROUP BY s.artId"
+[T001]
+	name=exhibitors
+	alias=e
+[T002]
+	name=exhibitorYears
+	alias=eY
+	join="eY.exhibitorId=e.id"
+[T003]
+    name=exhibitorRegionYears
+    alias=eRY
+    join=" eRY.exhibitorYearId = eY.id"
+[T005]
+    name=exhibitsRegionYears
+    alias=xRY
+    join="xRY.id = eRY.exhibitsRegionYearId"
+[T006]
+    name=exhibitsRegions
+    alias=xR
+    join="xR.id=xRY.exhibitsRegion"
+[T010]
+    name=art
+    alias=a
+    join="eRY.id = a.exhibitorRegionYearId"
+[T011]
+    name=artSales
+    alias=s
+    join="a.artId = s.artId"
+    left=true
+[T012]
+    name=sales
+    alias=l
+    join="a.artId = l.artId"
+    left=true
+[P001]
+    type=prompt
+    item=conid
+    datatype=i
+[P002]
+    type=prompt
+    item=region
+    datatype=s
+[where]
+	W001="eY.conid = ? AND LOWER(xR.shortname) LIKE LOWER(?) AND a.type != 'nfs' AND (a.qtyDiff > 0 || s.amount IS NOT NULL)"
+	;W002="AND (a.itemPrice * a.qtyDiff) != l.paid"
+[group]
+    G001="a.artId,artistId,itemNum,e.artistName,e.exhibitorName,title,a.type,itemPrice,qtyDiff"
+    G002="l.status,s.status,l.salesCount,l.amount,l.paid"
+[sort]
+	S001="1,2"

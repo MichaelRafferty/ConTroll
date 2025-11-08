@@ -1,0 +1,52 @@
+[report]
+	name="DuplicateInterests"
+	auth=admin
+	csvfile="interestDuplicates"
+	totals=bottom
+[F001]
+    name=perid
+    sql="p.id"
+    title="Perid"
+    filter=true
+    sort=true
+    width=120
+    calc=unique
+    align=right
+[F002]
+	name=fullName
+	sql="TRIM(REGEXP_REPLACE(CONCAT(p.first_name,' ', p.middle_name, ' ', p.last_name, ' ', p.suffix), ' +', ' '))"
+	title="Full Name"
+	filter=fullname
+	sort=true
+	minWidth=300
+[F010]
+	name=conid
+	sql=i.conid
+	title="Con ID"
+	align=right
+	width=100
+[F012]
+	name=interest
+	sql=i.interest
+	title="Interest"
+	align=right
+	width=120
+[F014]
+	name=Dups
+	sql="count(*)"
+	title="Dups"
+	sort=true
+	width=80
+	format=number
+	filter=number
+[T001]
+	name=memberInterests
+	alias=i
+[T002]
+	name=perinfo
+	alias=p
+	join="p.id = i.perid"
+[group]
+    001="p.id, conid, fullName, interest having count(*) > 1"
+[sort]
+	001=p.id

@@ -60,18 +60,18 @@ async function createPasskeyRegistration(script, displayName, email, source) {
         url: script,
         data: data,
         success: function (data, textStatus, jqXhr) {
-            if (data['status'] == 'error') {
-                show_message(data['message'], 'error');
+            if (data.status == 'error') {
+                show_message(data.message, 'error');
                 return;
-            } else if (data['status'] == 'warn') {
-                show_message(data['message'], 'warn');
+            } else if (data.status == 'warn') {
+                show_message(data.message, 'warn');
             } else {
                 switch (data.source) {
                     case 'portal':
-                        window.location = '?messageFwd=' + encodeURI(data['message']);
+                        window.location = '?messageFwd=' + encodeURI(data.message);
                         return;
                 }
-                show_message(data['message'], 'success');
+                show_message(data.message, 'success');
                 return;
             }
         },
@@ -96,18 +96,18 @@ function deletePasskeyEntry(script, id, userName, source) {
         url: script,
         data: data,
         success: function (data, textStatus, jqXhr) {
-            if (data['status'] == 'error') {
-                show_message(data['message'], 'error');
+            if (data.status == 'error') {
+                show_message(data.message, 'error');
                 return;
-            } else if (data['status'] == 'warn') {
-                show_message(data['message'], 'warn');
+            } else if (data.status == 'warn') {
+                show_message(data.message, 'warn');
             } else {
                 switch (data.source) {
                     case 'portal':
-                        window.location = '?messageFwd=' + encodeURI(data['message']);
+                        window.location = '?messageFwd=' + encodeURI(data.message);
                         return;
                 }
-                show_message(data['message'], 'success');
+                show_message(data.message, 'success');
                 return;
             }
         },
@@ -171,25 +171,25 @@ async function passkeyRequest(script, successPage, source, enable) {
             if (enable)
                 enable.disabled = false;
 
-            if (data['status'] == 'error') {
-                show_message(data['message'], 'error');
+            if (data.status == 'error') {
+                show_message(data.message, 'error');
                 return;
-            } else if (data['status'] == 'warn') {
-                show_message(data['message'], 'warn');
+            } else if (data.status == 'warn') {
+                show_message(data.message, 'warn');
             } else {
                 switch (source) {
                     case 'portal':
-                        if (data['numMatch'] == 1)
-                            window.location = successPage + '?messageFwd=' + encodeURI(data['message']);
+                        if (data.numMatch == 1)
+                            window.location = successPage + '?messageFwd=' + encodeURI(data.message);
                         else
                             window.location = '?switch=account';
                         return;
 
                     case 'vendor':
-                        window.location = successPage + '?messageFwd=' + encodeURI(data['message']);
+                        window.location = successPage + '?messageFwd=' + encodeURI(data.message);
                         return;
                 }
-                show_message(data['message'], 'success');
+                show_message(data.message, 'success');
                 return;
             }
         },

@@ -22,7 +22,8 @@ function getEmailBody($transid, $totalDiscount) : string
         $rollovers = "";
 
     $ownerQ = <<<EOS
-SELECT NP.first_name, NP.last_name, P.receipt_id as payid, T.complete_date, T.couponDiscountCart, T.paid, P.receipt_url AS url, C.code, C.name
+SELECT NP.first_name, NP.last_name, P.receipt_id as payid, T.complete_date, T.couponDiscountCart, T.paid, T.price, T.tax, T.withtax,
+       P.receipt_url AS url, C.code, C.name
 FROM transaction T
 JOIN newperson NP ON (NP.id=T.newperid)
 JOIN payments P ON (P.transid=T.id)
@@ -48,6 +49,11 @@ EOS;
         $body .= "\n";
     }
 
+    if ($owner['tax'] > 0) {
+        $body .= "The pre sales tax price for your order was " . $dolfmt->formatCurrency((float) $owner['price'], $currency) . "\n" .
+            "The sales tax for the taxable portion of this order was " . $dolfmt->formatCurrency((float) $owner['tax'], $currency) . "\n" .
+            "For a total amount due of " . $dolfmt->formatCurrency((float) $owner['withtax'], $currency) . "\n\n";
+    }
     $body .= "Your card was charged " . $dolfmt->formatCurrency((float) $owner['paid'], $currency) . " for this transaction" .
         "\n\nMemberships have been created for:\n\n";
 

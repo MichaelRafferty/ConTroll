@@ -36,11 +36,7 @@ page_init($page,
               ),
                     $need_login);
 
-$con_conf = get_conf('con');
-if (array_key_exists('oneoff', $con_conf))
-    $oneoff = $con_conf['oneoff'];
-else
-    $oneoff = 0;
+$oneoff = getConfValue('con', 'oneoff', 0);
 if ($oneoff == null || $oneoff == '')
     $oneoff = 0;
 $controll = get_conf('controll');
@@ -51,22 +47,11 @@ if ($controll != null && array_key_exists('badgelistfilter', $controll)) {
 } else
     $badgeListFilter = "top";
 
-$conid = $con_conf['id'];
-$debug = get_conf('debug');
-
-if (array_key_exists('controll_regadmin', $debug))
-    $debug_regadmin=$debug['controll_regadmin'];
-else
-    $debug_regadmin = 0;
-
-if (array_key_exists('multioneday', $con_conf))
-    $multiOneDay =$con_conf['multioneday'];
-else
-    $multiOneDay = 0;
-
+$conid = getConfValue('con', 'id', '-1');
+$multiOneDay = getConfValue('con', 'multioneday', '0');
 $config_vars = array();
 $config_vars['pageName'] = 'regAdmin';
-$config_vars['debug'] = $debug_regadmin;
+$config_vars['debug'] = getConfValue('debug', 'controll_regadmin', 0);
 $config_vars['conid'] = $conid;
 $config_vars['multiOneDay'] = $multiOneDay;
 $config_vars['oneoff'] = $oneoff;
@@ -604,7 +589,7 @@ $config_vars['source'] = 'regstaff';
                                                 Not All (No reg can match all [and within group, and between groups])
                                             </option>
                                             <option value='limitAge'>
-                                                Limit Age (One reg must match any (like needany) but the age check is manadatory)
+                                                Limit Age (One reg must match any (like needany) but age check is manadatory)
                                             </option>
                                             <option value='currentAge'>
                                                 Current Age (Future, currently not used)
@@ -857,14 +842,16 @@ $config_vars['source'] = 'regstaff';
             </div>
             <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
                 <div id="receipt-div"></div>
-                <div id="regadminemail" hidden="true"><?php echo $con_conf['regadminemail'];?></div>
+                <div id="regadminemail" hidden="true"><?php echo getConfValue('con', 'regadminemail');?></div>
                 <div id="receipt-text" hidden="true"></div>
                 <div id="receipt-tables" hidden="true"></div>
             </div>
             <div class='modal-footer'>
                 <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Close</button>
                 <button class='btn btn-sm btn-primary' id='emailReceipt' onClick='receipt_email("payor")'>Email Receipt</button>
-                <button class='btn btn-sm btn-primary' id='emailReceiptReg' onClick='receipt_email("reg")'>Email Receipt to regadmin at <?php echo $con_conf['regadminemail'];?></button>
+                <button class='btn btn-sm btn-primary' id='emailReceiptReg' onClick='receipt_email("reg")'>Email Receipt to regadmin at <?php
+                        echo getConfValue('con', 'regadminemail');
+                ?></button>
             </div>
         </div>
     </div>
@@ -946,26 +933,40 @@ $config_vars['source'] = 'regstaff';
 </ul>
 <div class='tab-content ms-2' id='regadmin-content'>
     <div class='tab-pane fade show active' id='registrationlist-pane' role='tabpanel' aria-labelledby='registrationlist-tab' tabindex='0'>
-        <div class="container-fluid">
 <?php
     if ($badgeListFilter == "top")
         drawFilters();
 ?>
+    <div class='container-fluid'>
         <div class="row">
-            <div class="col-sm-auto p-0">
+            <div class="col-sm-1">Restrict To:</div>
+            <div class="col-sm-auto">
+                <input type="text" size="64" maxlength="256" placeholder="PERID, TID, or name/badge name/email search string"
+                       id="regListSearch" name="regListSearch"/>
+            </div>
+            <div class="col-sm-auto">
+                <button class='btn btn-primary mb-4 ms-4' onclick='getData("s");'>Search Registration List</button>
+                <button class='btn btn-warning mb-4 ms-4' onclick='getData("f");'>Load Full Registration List</button>
+            </div>
+        </div>
+        <div class='row'>
+            <div class="col-sm-12 p-0">
                 <div id="registration-table"></div>
             </div>
         </div>
-        <div class='row mt-2'  id="reglist-csv-div" hidden>
-            <div class='col-sm-auto' id='admin-buttons'>
-                <button id='reglist-csv' type='button' class='btn btn-info btn-sm' onclick='reglistDownload('csv'); return false;'>Download CSV</button>
-                <button id='reglist-xlsx' type='button' class='btn btn-info btn-sm' onclick='reglistDownload('xlsx'); return false;'>Download Excel</button>
+        <div class='row mt-2 mb-3' id='reglist-csv-div' hidden>
+            <div class="col-sm-auto p-1 ps-3 pe-3 tabulator-paginator" id="tabPaginationDiv" style="background-color: #e5e5e5;"></div>
+            <div class='col-sm-auto p-1 ms-4' id='admin-buttons'>
+                <button id='reglist-csv' type='button' class='btn btn-info btn-sm' onclick='reglistDownload("csv"); return false;'>Download CSV</button>
+                <button id='reglist-xlsx' type='button' class='btn btn-info btn-sm' onclick='reglistDownload("xlsx"); return false;'>Download Excel</button>
             </div>
         </div>
+    </div>
 <?php
     if ($badgeListFilter == 'bottom')
         drawFilters();
 ?>
+    <div class='container-fluid'>
         <div class="row">
             <div class="col-sm-auto p-2">
                 <button class="btn btn-primary btn-sm"
@@ -974,17 +975,23 @@ $config_vars['source'] = 'regstaff';
                 </button>
             </div>
             <div class="col-sm-auto p-2">
-                <button class="btn btn-primary btn-sm" onclick="window.location.href='reports/regReport.php';">Download Reg Report</button>
+                <button class="btn btn-primary btn-sm"
+                        onclick="window.location.href='reports.php?name=RegReport&P1=<?php echo $conid; ?>'">
+                    Download Reg Report
+                </button>
             </div>
             <?php if ($reg_admin) { ?>
             <div class='col-sm-auto p-2'>
                 <button class='btn btn-primary btn-sm' onclick="sendEmail('expire')">Send Expiring Reminder Email</button>
             </div>
+            <div class='col-sm-auto p-2'>
+                <button class='btn btn-primary btn-sm' onclick="sendEmail('new')">Send New Acct/No Membership Email</button>
+            </div>
             <div class="col-sm-auto p-2">
                 <button class="btn btn-primary btn-sm" onclick="sendEmail('marketing')">Send Marketing Email</button>
             </div>
             <div class='col-sm-auto p-2'>
-                <button class='btn btn-primary btn-sm' onclick="sendEmail('comeback')" disabled>Send Come Back Email</button>
+                <button class='btn btn-primary btn-sm' onclick="sendEmail('comeback')">Send Come Back Email</button>
             </div>
             <div class="col-sm-auto p-2">
                 <button class="btn btn-primary btn-sm" onclick="sendEmail('reminder')">Send Attendance Reminder Email</button>
@@ -1008,7 +1015,8 @@ $config_vars['source'] = 'regstaff';
             <?php } ?>
         </div>
     </div>
-    </div></div>
+    </div>
+</div>
     <div class='tab-pane fade' id='consetup-pane' role='tabpanel' aria-labelledby='consetup-tab' tabindex='0'></div>
     <div class='tab-pane fade' id='nextconsetup-pane' role='tabpanel' aria-labelledby='nextconsetup-tab' tabindex='0'></div>
     <div class='tab-pane fade' id='memconfig-pane' role='tabpanel' aria-labelledby='memconfig-tab' tabindex='0'></div>
@@ -1027,8 +1035,8 @@ page_foot($page);
 
 function drawFilters() {
 ?>
-<div class="container-fluid">
-    <div class="row mb-2">
+<div class="container-fluid" id="regListFilters">
+    <div class="row mb-2" hidden>
         <div class="col-sm-auto me-1 p-0">Click on a row to toggle filtering by that value</div>
         <div class="col-sm-auto me-1 p-0">
             <button class="btn btn-primary btn-sm" onclick="clearfilter();">Clear All Filters</button>
@@ -1057,5 +1065,6 @@ function drawFilters() {
             <div id='status-table'></div>
         </div>
     </div>
+</div>
     <?php
 }

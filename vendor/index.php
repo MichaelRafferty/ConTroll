@@ -15,7 +15,6 @@ $cc = get_conf('cc');
 $con = get_conf('con');
 $conid = $con['id'];
 $vendor_conf = get_conf('vendor');
-$debug = get_conf('debug');
 $usps = get_conf('usps');
 load_cc_procs();
 
@@ -68,7 +67,7 @@ $config_vars['portalType'] = $portalType;
 $config_vars['portalName'] = $portalName;
 $config_vars['artistsite'] = $vendor_conf['artistsite'];
 $config_vars['vendorsite'] = $vendor_conf['vendorsite'];
-$config_vars['debug'] = $debug['vendors'];
+$config_vars['debug'] = getConfValue('debug', 'vendors', 0);
 $config_vars['required'] = $required;
 $config_vars['useUSPS'] = $useUSPS;
 $config_vars['allStar'] = $allStar;
@@ -487,8 +486,47 @@ draw_itemRegistrationModal($portalType, $vendor_conf['artsheets'], $vendor_conf[
 <?php   }
 
     foreach ($region_list as $id => $region) {
+        // check if they already have paid space, if so, offer to show them the receipt
+        $paid = 0;
+        $requested = 0;
+        $approved = 0;
+        $timeRequested = null;
+        $regionSpaces = [];
+        $exhibitorSpaces = [];
+        $regionYearId = $region['id'];
+        $regionName = $region['name'];
+        $foundSpace = false;
+        if (array_key_exists($regionYearId, $space_list)) {
+            foreach ($space_list[$regionYearId] as $spaceId => $space) {
+                if ($space['exhibitsRegionYear'] != $region['id'])
+                    continue;
+
+                $regionSpaces[$space['id']] = $space;
+                $foundSpace = true;
+                if (array_key_exists($space['id'], $exhibitorSpaceList)) {
+                    $exhibitorSpace = $exhibitorSpaceList[$space['id']];
+
+
+                    if ($exhibitorSpace !== null) {
+                        $exhibitorSpaces[$space['id']] = $exhibitorSpace;
+                        if ($exhibitorSpace['item_requested'] != null) {
+                            $requested++;
+                            $timeRequested = $exhibitorSpace['time_requested'];
+                        }
+                        if ($exhibitorSpace['item_approved'] != null)
+                            $approved++;
+                        if ($exhibitorSpace['item_purchased'] != null)
+                            $paid++;
+                    }
+
+                }
+            }
+        }
+
         // let's see if where are authorized for this space
-        if ($region['mailInAllowed'] == 'N' && $info['mailin'] == 'Y')
+        if ($requested > 0 || $approved > 0 || $paid >0)
+            $permission = 'approved';
+        else  if ($region['mailInAllowed'] == 'N' && $info['mailin'] == 'Y')
             $permission='noMailIn';
         else if ($region['requestApprovalRequired'] != 'none') {
             if (array_key_exists($region['id'], $exhibitor_permlist)) {
@@ -543,43 +581,6 @@ draw_itemRegistrationModal($portalType, $vendor_conf['artsheets'], $vendor_conf[
                         break;
 
                     case 'approved': // permission isn't needed or you have been granted permission
-                        // check if they already have paid space, if so, offer to show them the receipt
-                        $paid = 0;
-                        $requested = 0;
-                        $approved = 0;
-                        $timeRequested = null;
-                        $regionSpaces = [];
-                        $exhibitorSpaces = [];
-                        $regionYearId = $region['id'];
-                        $regionName = $region['name'];
-                        $foundSpace = false;
-                        if (array_key_exists($regionYearId, $space_list)) {
-                            foreach ($space_list[$regionYearId] as $spaceId => $space) {
-                                if ($space['exhibitsRegionYear'] != $region['id'])
-                                    continue;
-
-                                $regionSpaces[$space['id']] = $space;
-                                $foundSpace = true;
-                                if (array_key_exists($space['id'], $exhibitorSpaceList)) {
-                                    $exhibitorSpace = $exhibitorSpaceList[$space['id']];
-
-
-                                    if ($exhibitorSpace !== null) {
-                                        $exhibitorSpaces[$space['id']] = $exhibitorSpace;
-                                        if ($exhibitorSpace['item_requested'] != null) {
-                                            $requested++;
-                                            $timeRequested = $exhibitorSpace['time_requested'];
-                                        }
-                                        if ($exhibitorSpace['item_approved'] != null)
-                                            $approved++;
-                                        if ($exhibitorSpace['item_purchased'] != null)
-                                            $paid++;
-                                    }
-
-                                }
-                            }
-                        }
-
                         if ($paid > 0) {
                             vendor_receipt($regionYearId, $regionName, $regionSpaces, $exhibitorSpaceList);
                             if ($portalType == 'artist') {

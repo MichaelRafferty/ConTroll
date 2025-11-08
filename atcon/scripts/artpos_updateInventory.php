@@ -22,8 +22,8 @@ if (!(check_atcon('artsales', $conid))) {
 }
 
 $atcon = get_conf('atcon');
-if (array_key_exists('inlineInventory', $atcon))
-    $inlineInventory = $atcon['inlineInventory'];
+if (array_key_exists('inlineinventory', $atcon))
+    $inlineInventory = $atcon['inlineinventory'];
 else
     $inlineInventory = 1;
 
