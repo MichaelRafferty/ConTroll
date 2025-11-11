@@ -728,20 +728,31 @@ class Pos {
         } else {
             var row;
             index = -index;
-            this.everyMembership(this.#result_perinfo, function (_this, mem) {
-                var prow = mem.pindex;
-                if (index == _this.#result_perinfo[prow].perid || index == _this.#result_perinfo[prow].managedBy || index == mem.tid || index == mem.tid2) {
-                    if (_this.#result_perinfo[prow].banned == 'Y') {
-                        alert("Please ask " + (_this.#result_perinfo[prow].first_name + ' ' + _this.#result_perinfo[prow].last_name).trim() +
+            for (let row = 0; row < this.#result_perinfo.length; row++) {
+                let prow = this.#result_perinfo[row];
+                // first check perid/managed by
+                let match = index == prow.perid || index == prow.managedBy;
+                // now check tid
+                if (!match && prow.memberships && prow.memberships.length > 0) {
+                    for (let mrow = 0; mrow < prow.memberships.length; mrow++) {
+                        let mem = prow.memberships[mrow];
+                        match = index == mem.tid || index == mem.tid2;
+                        if (match)
+                            break;
+                    }
+                }
+                if (match) {
+                    if (prow.banned == 'Y') {
+                        alert("Please ask " + (prow.first_name + ' ' + prow.last_name).trim() +
                             " to talk to the Registration Administrator, you cannot add them at this time.")
                         return 0;
                     }
-                    perid = _this.#result_perinfo[prow].perid;
+                    perid = prow.perid;
                     if (cart.notinCart(perid)) {
-                        cart.add(_this.#result_perinfo[prow], index == _this.#result_perinfo[prow].perid);
+                        cart.add(prow, index == prow.perid);
                     }
                 }
-            });
+            }
         }
 
         if (table == 'result') {
