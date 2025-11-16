@@ -108,7 +108,7 @@ function process(formRef) {
             $('#state').addClass('need');
         } else {
             if (formData.country == 'USA') {
-                if (formData.state.length != 2) {
+                if (formData.state.trim().length != 2) {
                     valid = false;
                     $('#state').addClass('need');
                 } else {

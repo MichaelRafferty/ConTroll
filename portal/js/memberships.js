@@ -687,7 +687,7 @@ class Membership {
                 $('#state').addClass('need');
             } else {
                 if (person.country == 'USA') {
-                    if (person.state.length != 2) {
+                    if (person.state.trim().length != 2) {
                         valid = false;
                         $('#state').addClass('need');
                     } else {
