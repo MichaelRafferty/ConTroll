@@ -858,7 +858,7 @@ class Find {
                 { title: "Pronouns", field: 'pronouns', formatter: findPerson.colorSet, headerSort: false, },
                 { title: "Phone", field: 'phone', formatter: findPerson.colorSet, headerSort: false, },
                 { title: "Email Address", field: 'email_addr', headerWordWrap: true, formatter: findPerson.colorSet, headerSort: false, },
-                { title: "Address", field: 'addr', formatter: findPerson.colorSet, headerSort: false, },
+                { title: "Address", field: 'address', formatter: findPerson.colorSet, headerSort: false, },
                 { title: "Addr 2", field: 'addr_2', formatter: findPerson.colorSet, headerSort: false, },
                 { title: "City", field: 'city', formatter: findPerson.colorSet, headerSort: false, },
                 { title: "State/Prov", field: 'state', formatter: findPerson.colorSet, headerSort: false, },
