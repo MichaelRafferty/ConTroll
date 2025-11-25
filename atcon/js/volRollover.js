@@ -319,22 +319,17 @@ function draw_record() {
 // filters for ones already in the cart, and statuses that should not be allowed to be added to the cart
 function addListIcon(cell, formatterParams, onRendered) { //plain text value
     var html = '';
-    var banned = cell.getRow().getData().banned;
-    var shortname = cell.getRow().getData().shortname;
-    var memCategory = cell.getRow().getData().memCategory;
-    if (banned == undefined) {
-        var tid = Number(cell.getRow().getData().tid);
-        html = '<button type="button" class="btn btn-sm btn-success p-0" onclick="add_unpaid(' + tid + ')">Pay</button > ';
-        return html;
-    }
+    var banned = cell.getData().banned;
+    var shortname = cell.getData().shortname;
+    var memCategory = cell.getData().memCategory;
     if (banned == 'Y') {
-        return '<button type="button" class="btn btn-sm btn-danger pt-0 pb-0" onclick="rollover_member(' +
-            cell.getRow().getData().index + ')">B</button>';
+        return '<button type="button" class="btn btn-sm btn-danger p-0 click="rollover_member(' +
+            cell.getData().index + ')">B</button>';
     } else if (memCategory != 'eligible') {
-        return '<button type="button" class="btn btn-sm btn-danger pt-0 pb-0 disabled" onclick="javascript:void(0)">Not Eligible (' + memCategory + ')</button>';
+        return '<button type="button" class="btn btn-sm btn-danger p-0 disabled" onclick="javascript:void(0)">Not Eligible<br/>(' + memCategory + ')</button>';
     } else if (shortname === undefined || shortname === null) {
         html = '<button type="button" class="btn btn-sm btn-success p-0" onclick="rollover_member(' +
-            cell.getRow().getData().index + ')">Rollover</button>';
+            cell.getData().index + ')">Rollover</button>';
         return html;
     }
     return shortname;
@@ -407,7 +402,7 @@ function found_record(data) {
                 {column: "fullName", dir: "asc"},
             ],
             columns: [
-                {title: "Perid", field: "perid", maxWidth: 60, headerSort: false, },
+                {title: "Perid", field: "perid", maxWidth: 100, headerSort: false, },
                 {field: "index", visible: false, },
                 {title: "Name", field: "fullName", headerFilter: true, headerWordWrap: true, tooltip: build_record_hover,},
                 {field: "last_name", visible: false,},
@@ -415,10 +410,10 @@ function found_record(data) {
                 {field: "middle_name", visible: false,},
                 {field: "suffix", visible: false,},
                 {title: "Badge Name", field: "badgename", headerFilter: true, headerWordWrap: true, tooltip: true, formatter: 'html', },
-                {title: "Zip", field: "postal_code", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 70, width: 70},
+                {title: "Zip", field: "postal_code", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 100, width: 100},
                 {title: "Email Address", field: "email_addr", headerFilter: true, headerWordWrap: true, tooltip: true,},
-                {title: "Reg", field: "label", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 80, width: 80,},
-                {title: "Rollover", width: 80, headerFilter: false, headerSort: false, formatter: addListIcon, formatterParams: {t:"result"},},
+                {title: "Reg", field: "label", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 100, width: 100,},
+                {title: "Rollover", width: 120, headerFilter: false, headerSort: false, formatter: addListIcon, formatterParams: {t:"result"},},
                 {field: "index", visible: false,},
             ],
         });

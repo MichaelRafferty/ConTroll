@@ -108,14 +108,17 @@ EOS;
 $perinfo = [];
 $perids = [];
 $num_rows = $r->num_rows;
+$index = 0;
 while ($l = $r->fetch_assoc()) {
     if (!array_key_exists($l['perid'], $perids)) {
         $perids[$l['perid']] = count($perinfo);
         $l['badgename'] = badgeNameDefault($l['badge_name'], $l['badgeNameL2'], $l['first_name'], $l['last_name']);
+        $l['index'] = $index++;
         $perinfo[] = $l;
     } else {
         $row = $perids[$l['perid']];
         $prow = $perinfo[$row];
+        $l['index'] = $index++;
         if ($l['memCategory'] == 'eligible' && $prow['memCategory'] != 'eligible') {
             $perinfo[$row] = $l;
         }
