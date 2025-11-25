@@ -92,6 +92,7 @@ SELECT DISTINCT p.id AS perid, p.first_name, p.middle_name, p.last_name, p.suffi
     END AS memCategory
 FROM perinfo p
 JOIN reg r ON (r.perid = p.id AND r.conid = ?)
+JOIN memLabel m ON (r.memId = m.id)
 LEFT OUTER JOIN reg rn ON (rn.perid = p.id AND rn.conid = ?)
 LEFT OUTER JOIN memLabel mn ON (rn.memId = mn.id)
 WHERE r.conid = ? AND (
