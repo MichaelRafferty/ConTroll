@@ -253,6 +253,10 @@ function draw_record() {
             </div>
         </div>
         <div class="row">
+            <div class="col-sm-3">` + 'Perid:' + `</div>
+            <div class="col-sm-9">` + data.perid + `</div>
+        </div>
+        <div class="row">
             <div class="col-sm-3">` + 'Badge Name:' + `</div>
             <div class="col-sm-9">` + badgeNameDefault(data.badge_name, data.badgeNameL2, data.first_name, data.last_name) + `</div>
         </div>
