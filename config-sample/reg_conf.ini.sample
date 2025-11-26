@@ -426,7 +426,7 @@ allage=0
 ;; H+(Normal behavior is Art Inventory must have the art in the proper status for sale by Art Show Cashier)
 ;; H+&nbsp;&nbsp;&nbsp;&nbsp;=0: Art Show Cashier will sell as quicksale if no bids,
 ;; H+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or if 'restrict to inventory sale statuses and prices' for art not sold at quicksale
-;; H+&nbsp;&nbsp;&nbsp;&nbsp;=1: Art Show Cashierwill use an intelligent  popup based on Region Year Room Status
+;; H+&nbsp;&nbsp;&nbsp;&nbsp;=1: Art Show Cashier will use an intelligent  popup based on Region Year Room Status
 ;; H+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; for allowing what to sell and at what price
 ;; D:l:0,1
 ;; B:O
