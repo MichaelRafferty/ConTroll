@@ -977,7 +977,7 @@ class Pos {
                 var policyName = this.#policies[pol].policy;
                 var policybox = document.getElementById('p_' + policyName);
                 if (policybox)
-                    policybox.checked = this.#policies[pol].policy.defaultValue == 'Y';
+                    policybox.checked = this.#policies[pol].defaultValue == 'Y';
             }
             this.#add_header.innerHTML = `
 <div class="col-sm-12 text-bg-primary mb-2">
@@ -1277,9 +1277,24 @@ class Pos {
 
         this.#add_first_field.value = "";
         this.#add_middle_field.value = "";
+        this.#add_suffix_field.value = "";
+        this.#add_legalName_field.value = "";
+        this.#add_pronouns_field.value = "";
         this.#add_email1_field.value = "";
         this.#add_phone_field.value = "";
         this.#add_badgename_field.value = "";
+        this.#add_badgeNameL2_field.value = "";
+        this.#add_index_field.value = "";
+        this.#add_perid_field.value = "";
+        this.#add_memIndex_field.value = "";
+        // clear the policies
+        for (var pol in this.#policies) {
+            var policyName = this.#policies[pol].policy;
+            var policybox = document.getElementById('p_' + policyName);
+            if (policybox)
+                policybox.checked = this.#policies[pol].defaultValue == 'Y';
+        }
+
         cart.add(row);
 
         if (this.#add_results_table != null) {
