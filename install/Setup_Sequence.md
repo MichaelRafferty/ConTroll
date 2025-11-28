@@ -23,9 +23,9 @@ The software and these instructions reside in the repository
        In either case use your repositories path in the statements below.
 
            cd {reg}
-           git clone git@{github.com:{repootoryPath} ConTroll
+           git clone https://github.com/MichaelRafferty/ConTroll.git
            cd {regtest}
-           git clone git@github.com:{repootoryPath} ConTroll
+           git https://github.com/MichaelRafferty/ConTroll.git
 
     3. copy the regfetch script to your bin directory
     
