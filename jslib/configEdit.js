@@ -142,12 +142,17 @@ class ConfigEditor {
         // N: name
         html += "<div class='row mt-4'><div class='col-sm-2'><h4><b>" + visibleStart + param.name + visibleEnd + "</h4></b></div>\n";
         // the field itself
+        let fieldValue = '';
+        if (this.#currentConfig.hasOwnProperty(sectionName)) {
+            if (this.#currentConfig[sectionName].hasOwnProperty(param.name)) {
+                fieldValue = this.#currentConfig[sectionName][param.name];
+            }
+        }
         if (editable) {
             html += '<div class="col-sm-auto">' +
-                this.formatInput(sectionName, param, this.#currentConfig[sectionName][param.name]) + '</div></div>';
+                this.formatInput(sectionName, param, fieldValue) + '</div></div>';
         } else {
-            html += '<div class="col-sm-auto">' + visibleStart + this.#currentConfig[sectionName][param.name] +
-                visibleEnd + '</span></div></div>';
+            html += '<div class="col-sm-auto">' + visibleStart + fieldValue + visibleEnd + '</span></div></div>';
         }
 
         // H: hint
