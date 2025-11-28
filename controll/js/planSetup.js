@@ -160,7 +160,7 @@ class PlansSetup {
         // clear the form
         document.getElementById('planName').value = null;
         document.getElementById('planDescription').value = null;
-        this.#categoryList = null;
+        this.#categoryList.value = null;
         this.#categoryListDiv.innerHTML = '<i>None</i>';
         this.#includeList.value = null;
         this.#includeListDiv.innerHTML = '<i>None</i>';
