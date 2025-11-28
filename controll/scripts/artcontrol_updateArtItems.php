@@ -45,13 +45,13 @@ $updateTypes = "issiisssssiisi";
 $updated = 0;
 $new = 0;
 $insertSQL = <<<EOS
-INSERT INTO artItems (item_key, location, min_price, original_qty, quantity, sale_price, status, title, type, material, 
+INSERT INTO artItems (item_key, conid, location, min_price, original_qty, quantity, sale_price, status, title, type, material, 
                       bidder, final_price, notes, exhibitorRegionYearId, updatedBy) VALUES
-    (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);                                                                                                            
+    (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);                                                                                                        
+        
 EOS;
 
-$insertTypes = "isiiiissssiisii";
-
+$insertTypes = "iisiiiissssiisii";
 
 foreach ($tabledata as $row) {
     if($row['final_price'] == '') {$row['final_price'] = null;}
@@ -86,7 +86,7 @@ foreach ($tabledata as $row) {
 
     if(($row['id'] < 0) && ($row['min_price']==null)) { $row['min_price']=$row['sale_price']; }
 
-    $paramarray = array($row['item_key'], $location, $row['min_price'], $row['original_qty'], $row['quantity'],
+    $paramarray = array($row['item_key'], $conid, $location, $row['min_price'], $row['original_qty'], $row['quantity'],
         $row['sale_price'], $row['status'] , $row['title'], $row['type'], $row['material'], $row['bidder'], $row['final_price'],
         $row['notes'],
         $row['id']);
