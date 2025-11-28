@@ -63,7 +63,7 @@ foreach ($tabledata as $row) {
     }
     if($row['min_price'] == '' || $row['min_price'] == 0) {$row['min_price'] = null;}
     if($row['final_price'] == '' || $row['final_price'] == 0) {$row['final_price'] = null;}
-    if($row['sale_price'] == '') {$row['sale_price'] = null;}
+    if($row['sale_price'] == '') {$row['sale_price'] = 0;}
     if($row['notes'] == '') { $row['notes'] = null;}
 
     // perform art type based must be null/equal items
