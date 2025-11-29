@@ -60,8 +60,8 @@ SELECT t.id, t.ccPaymentId, t.paymentStatus, t.checkoutId, t.create_date, t.comp
 FROM transaction t
 JOIN perinfo p ON t.perid = p.id
 LEFT OUTER JOIN payments y ON t.id = y.transid AND y.type NOT IN ('coupon', 'discount')
-WHERE t.conid = ? AND t.id = ? AND (t.checkoutId IS NOT NULL AND IFNULL(t.paymentStatus,'') NOT IN ('COMPLETED', 'CANCELED')) 
-   OR IFNULL(y.status,'') = 'APPROVED'
+WHERE t.conid = ? AND t.id = ? AND t.checkoutId IS NOT NULL AND 
+    (IFNULL(t.paymentStatus,'') NOT IN ('COMPLETED', 'CANCELED') OR IFNULL(y.status,'') = 'APPROVED')
 ORDER BY minutes DESC;
 EOS;
 
@@ -143,9 +143,9 @@ EOS;
                 $paymentInfo = array();
 
             if ($orderType == 'reg')
-                $message .= completeReg($issue['id'], $checkout, $order, $payment, $issue['paymentInfo']);
+                $message .= completeReg($issue['id'], $checkout, $order, $payment, $paymentInfo);
             else
-                $message .= completeArt($issue['id'], $checkout, $order, $payment, $issue['[paymentInfo']);
+                $message .= completeArt($issue['id'], $checkout, $order, $payment, $paymentInfo);
             break;
 
         default:
@@ -387,7 +387,225 @@ EOS;
     return $message;
 }
 
+// Actions needed to complete an item of source Reg Cashier
+function completeArt($master_tid, $checkout, $order, $payment, $paymentInfo) : string {
+    // check to see if the payment record exists, if so, update it, else and create it
+    $new_payment_desc = '';
+    $drow = null; // need $drow
+    $couponPayment = null; // new coupon payment
+    $couponDiscount = 0; // need coupon info
+    $coupon = null; // need coupon
+    $user_perid = getSessionVar('user');
+    $discountAmt = 0; // need discount amount
+    $message = '';
+    $paymentStatus = $payment['status'];
+    $paymentId = $payment['id'];
+    if ($paymentStatus == 'APPROVED' || $paymentStatus == 'PENDING') {
+        return "Payment is still in $paymentStatus state, try again later.";
+    }
 
-function completeArt($issueId, $checkout, $order, $payment, $paymentInfo) : string {
-    return 'In completeArt<br/>';
+    $updTranStatusSQL = <<<EOS
+UPDATE transaction
+SET paymentStatus = ?, ccPaymentId = ?
+WHERE id = ?;
+EOS;
+    // check to see if the payment was 'declined'
+    if ($paymentStatus != 'COMPLETED') {
+        // payment failed, mark transaction cancelled and return, it should not be stuck in approved state if declined
+        $updcnt = dbSafeCmd($updTranStatusSQL, 'ssi', array ('CANCELLED', null, $master_tid));
+        return "Payment status $paymentStatus, transaction marked CANCELLED";
+    }
+
+    // ok, the payment is complete, add the payment records if they are not there already
+    $pmtSQL = <<<EOS
+SELECT *
+FROM payments
+WHERE transId = ?;
+EOS;
+    $pmtResult = dbSafeQuery($pmtSQL, 'i', array($master_tid));
+    if ($pmtResult === false) {
+        $response['error'] = 'Query failed, seek assistance';
+        ajaxSuccess($response);
+        exit();
+    }
+    if ($pmtResult->num_rows == 0) {
+        $taxAmt = $order['total_tax_money']['amount'] / 100;
+        $taxes = $order['taxes'];
+        // payment doesn't exist, insert it and create
+        if ($taxAmt > 0) {
+            [$taxFields, $taxSql, $taxStr, $taxValues] = buildTaxInsert($taxes);
+            if ($taxFields != '')
+                $taxFields = ", $taxFields";
+            if ($taxSql != '')
+                $taxSql = ", $taxSql";
+        } else {
+            $taxFields = '';
+            $taxSql = '';
+            $taxStr = '';
+            $taxValues = [];
+        }
+
+        $insPmtSQL = <<<EOS
+INSERT INTO payments(transid, type,category, description, source, pretax, tax, amount, time, cc_approval_code, cashier,
+    cc, nonce, cc_txn_id, txn_time, receipt_url, receipt_id, userPerid, status, ccPaymentId $taxFields)
+VALUES (?,?,?,?,'cashier',?,?,?,now(),?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? $taxSql);
+EOS;
+        $typestr = 'isssdddsissssssiss' . $taxStr;
+        $amt = $payment['total_money']['amount'] / 100;
+        $preTaxAmt = $amt - $taxAmt;
+        $approved_amt = $payment['approved_money']['amount'] / 100;
+        $txTime = $payment['created_at'];
+        $receiptNumber = $payment['receipt_number'];
+        if (array_key_exists('receipt_url', $payment))
+            $receiptUrl = $payment['receipt_url'];
+        else
+            $receiptUrl = null;
+        $last4 = $payment['card_details']['card']['last_4'];
+        $id = $payment['id'];
+        $auth = $payment['card_details']['auth_result_code'];
+        $nonce = $payment['card_details']['card']['fingerprint'];
+        $status = $payment['status'];
+        switch ($payment['source_type']) {
+            case 'CARD':
+                $paymentType = 'credit';
+                break;
+            case 'BANK_ACCOUNT':
+                $paymentType = 'check';
+                break;
+            case 'CASH':
+                $paymentType = 'cash';
+                break;
+            default:
+                $paymentType = 'other';
+        }
+
+        if (is_array($paymentInfo)) {
+            // items from payment Info
+            if (array_key_exists('prow', $paymentInfo)) {
+                $new_payment_desc = $paymentInfo['prow']['desc'];
+            }
+            if (array_key_exists('drow', $paymentInfo)) {
+                $drow = $paymentInfo['drow'];
+            }
+            if (array_key_exists('discountAmt', $paymentInfo)) {
+                $discountAmt = $paymentInfo['discountAmt'];
+            }
+            if (array_key_exists('couponDiscount', $paymentInfo)) {
+                $couponDiscount = $paymentInfo['couponDiscount'];
+            }
+            if (array_key_exists('couponPayment', $paymentInfo)) {
+                $couponPayment = $paymentInfo['couponPayment'];
+            }
+            if (array_key_exists('coupon', $paymentInfo)) {
+                $coupon = $paymentInfo['coupon'];
+            }
+        }
+
+        $desc = $payment['application_details']['square_product'];
+        if ($desc == '')
+            $desc = $new_payment_desc;
+        else
+            $desc = mb_substr($desc . '/' . $new_payment_desc, 0, 64);
+
+        if ($nonce == 'EXTERNAL')
+            $nonceCode = $paymentType;
+        else
+            $nonceCode = $nonce;
+
+        $category = 'artsales';
+        $approved_amt = $payment['approved_money']['amount'] / 100;
+        $paymentId = $payment['id'];
+        $paymentType = $payment['paymentType'];
+        $paramarray = array ($master_tid, $paymentType, $category, $desc, $preTaxAmt, $taxAmt, $approved_amt, $auth, $user_perid,
+            $last4, $nonceCode, $paymentId, $txTime, $receiptUrl, $receiptNumber, $user_perid, $status, $paymentId);
+
+        $new_pid = dbSafeInsert($insPmtSQL, $typestr, array_merge($paramarray, $taxValues));
+        if ($new_pid === false) {
+            return 'Error adding payment to database';
+        }
+        $message .= '1 Payment added<br/>';
+    }
+    $pmtResult->free();
+
+    // mark transaction as it's updated status
+    $updcnt = dbSafeCmd($updTranStatusSQL, 'ssi', array ($paymentStatus, $paymentId, $master_tid));
+    $complete = true;
+
+    // update the art items and sales records
+    $updArtSalesSQL = <<<EOS
+UPDATE artSales
+SET paid = amount, transid = ?
+WHERE id = ?;
+EOS;
+    $atypestr = 'ii';
+
+    $updQuantitySQL = <<<EOS
+UPDATE artItems
+SET quantity = CASE WHEN quantity - ? < 0 THEN 0 ELSE quantity - ? END
+WHERE id = ?;
+EOS;
+    $uqstr = 'iii';
+
+    $updStatusSQL = <<<EOS
+UPDATE artItems
+SET status = ?, bidder = ?, final_price = ?
+WHERE id = ?;
+EOS;
+    $usstr = 'sidi';
+
+    $updArtSalesStatusSQL = <<<EOS
+UPDATE artSales
+SET status = ?
+WHERE id = ?;
+EOS;
+    $usrstr = 'si';
+    $upd_cart = 0;
+    $upd_rows = 0;
+    $orderLines = $order['line_items'];
+    foreach ($orderLines as $line) {
+        $quantity = $line['quantity'];
+        $meta = $line['metadata'];
+        $artId = $meta['artId'];
+        $artSalesId = $meta['artSalesId'];
+        $perId = $meta['perId'];
+        $type = $meta['type'];
+        $priceType = $meta['priceType'];
+        $paid = $line['gross_sales_money'];
+        $upd_rows += dbSafeCmd($updArtSalesSQL, $atypestr, array ($master_tid, $artSalesId));
+
+        // change status of items sold, decrease quantity of print items
+        $upd_cart += dbSafeCmd($updQuantitySQL, $uqstr, array ($quantity, $quantity, $artId));
+
+        if ($priceType == 'Quick Sale') {
+            $upd_cart += dbSafeCmd($updStatusSQL, $usstr, array ('Quicksale/Sold', $perId, $paid, $artId));
+            $upd_rows += dbSafeCmd($updArtSalesStatusSQL, $usrstr, array ('Quicksale/Sold', $artSalesId));
+        } else {
+            $upd_cart += dbSafeCmd($updStatusSQL, $usstr, array ('Purchased/Released', $perId, $paid, $artId));
+            $upd_rows += dbSafeCmd($updArtSalesStatusSQL, $usrstr, array ('Purchased/Released', $artSalesId));
+        }
+
+        if ($type == 'print') {
+            $upd_rows += dbSafeCmd($updArtSalesStatusSQL, $usrstr, array ('Purchased/Released', $artSalesId));
+        }
+    }
+
+    $updCompleteSQL = <<<EOS
+UPDATE transaction
+SET paid = ?
+WHERE id = ?;
+EOS;
+    $approved_amt = $payment['approved_money']['amount'] / 100;
+    $completed = dbSafeCmd($updCompleteSQL, 'di', array ($approved_amt, $master_tid));
+
+    $completed = 0;
+
+    // payment is in full, mark transaction complete
+    $updCompleteSQL = <<<EOS
+UPDATE transaction
+SET complete_date = NOW(), orderId = ?
+WHERE id = ?;
+EOS;
+    $completed = dbSafeCmd($updCompleteSQL, 'dsi', array ($order['id'], $master_tid));
+
+    return $message;
 }
