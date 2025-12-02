@@ -240,6 +240,12 @@ class ConfigEditor {
             this.#fieldList[name] = field;
         }
 
+        if (!this.#initialConfig.hasOwnProperty(section)) {
+            this.#initialConfig[section] = {};
+        }
+        if (!this.#initialConfig[section].hasOwnProperty(paramName)) {
+            this.#initialConfig[section][paramName] = null;
+        }
         let changed = this.#initialConfig[section][paramName] != field.value;
         this.#fieldsChanged[name] = changed;
         field.style.backgroundColor = changed ?  "#fff3cd" : '';
