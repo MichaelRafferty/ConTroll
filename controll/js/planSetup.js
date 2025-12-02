@@ -157,6 +157,7 @@ class PlansSetup {
         this.#planTitleDiv.innerHTML = 'Add New Payment Plan';
         this.#planHeadingDiv.innerHTML = 'Add New Payment Plan';
         this.#planEditIndex = null;
+        this.#editSelRow = [];
         // clear the form
         document.getElementById('planName').value = null;
         document.getElementById('planDescription').value = null;
@@ -218,7 +219,7 @@ class PlansSetup {
                 break;
 
             case 'include':
-                this.#editSelItem = 'includeList';
+                this.#editSelItem = 'memList';
                 this.#editSelValues = this.#includeList.value.split(',');
                 this.#editSelLabel.innerHTML = "<b>Select which Memberships apply to this payment plan:</b>"
                 this.#editSelField = this.#includeListDiv;
@@ -322,7 +323,7 @@ class PlansSetup {
     // retrieve the selected rows and set the field values
     applyEditSel() {
         // store all the fields back into the table row
-          var filter = '';
+        var filter = '';
         var rows = null;
         rows = this.#editSelTable.getRows();
         for (var row of rows) {
@@ -409,10 +410,10 @@ class PlansSetup {
             id: this.#planEditIndex,
             name: document.getElementById('planName').value,
             description: document.getElementById('planDescription').value,
-            categoryList: this.#categoryList.value,
-            includeList: this.#includeList.value,
+            catList: this.#categoryList.value,
+            memList: this.#includeList.value,
             excludeList: this.#excludeList.value,
-            cportalList: this.#portalList.value,
+            portalList: this.#portalList.value,
             downPercent: document.getElementById('downPaymentPercent').value,
             downAmt: document.getElementById('downPaymentAmount').value,
             minPayment: document.getElementById('minPayment').value,
