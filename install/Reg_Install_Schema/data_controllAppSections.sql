@@ -8,11 +8,14 @@
 -- Dumping data for table `controllAppSections`
 --
 
+SET FOREIGN_KEY_CHECKS = 0;
 LOCK TABLES `controllAppSections` WRITE;
 ALTER TABLE `controllAppSections` DISABLE KEYS;
 INSERT INTO `controllAppSections` VALUES
-('controll','emails','comeback','Comeback Email - Not bought insert into a few years'),
+('controll','emails','comeback','Comeback Email - Not bought a membership for a few years'),
+('controll','emails','expire','Expiring Unpaid Registration Email'),
 ('controll','emails','marketing','Marketing Email - Not bought this year, bought last year'),
+('controll','emails','noMembership','No Membership Email - Created Account - but put no memberships in cart'),
 ('controll','emails','reminder','Reminder Email - Reminder to attend - has membership'),
 ('exhibitor','index','email','exhibitor emails'),
 ('exhibitor','index','invoice','space invoice modal popup of the exhibitor portal'),
@@ -27,6 +30,7 @@ INSERT INTO `controllAppSections` VALUES
 ('portal','addUpgrade','interests','data entry forms related to interests'),
 ('portal','addUpgrade','main','main body of the addUpgrade page'),
 ('portal','addUpgrade','portalForms','data entry forms shared with the portal page'),
+('portal','all','footer','All portal pages, the footer text'),
 ('portal','index','loginItems','data entry for the login page'),
 ('portal','index','main','main body of the login page'),
 ('portal','index','portalForms','data entry forms shared with the portal page'),
@@ -34,6 +38,9 @@ INSERT INTO `controllAppSections` VALUES
 ('portal','portal','interests','data entry forms related to interests'),
 ('portal','portal','main','main body of the portal home page'),
 ('portal','portal','paymentPlamns','data entry forms related to payment plans'),
-('portal','portal','portalForm','data entry forms used by the portal page');
+('portal','portal','portalForm','data entry forms used by the portal page'),
+('profile','all','interests','In profiles, interests section'),
+('profile','all','policies','In profiles, policies section');
 ALTER TABLE `controllAppSections` ENABLE KEYS;
 UNLOCK TABLES;
+SET FOREIGN_KEY_CHECKS = 1;

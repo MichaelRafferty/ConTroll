@@ -62,11 +62,12 @@ function createMissingTables($options) : int {
             if (array_key_exists('c', $options)) {
                 $sql = file_get_contents('Reg_Install_Schema/' . $fname);
                 logEcho("Creating $table from $fname");
+                // remove delimiter statements, they are part of the front end and not the api
+                $sql = str_replace('DELIMITER ;;', '', $sql);
+                $sql = str_replace('DELIMITER ;', '', $sql);
                 dbMultiQuery($sql);
                 // skip over result sets
-                dbNextResult();
-                dbNextResult();
-                dbNextResult();
+                dbSkipNextResults();
                 // PHP mysqli isn't returning a valid result from a DML multi-query, use select to verify it actually worked
                 $sql = <<<EOS
 SELECT TABLE_SCHEMA, TABLE_NAME, TABLE_TYPE
@@ -88,8 +89,18 @@ EOS;
     if ($errors == 0) {
         if (sizeof($dataLoads) > 0) {
             logEcho("Creating initial data values");
+            asort($dataLoads);
             foreach ($dataLoads as $fname) {
+                if ($fname == 'data_zzTxt.sql') {
+                    // this is a special multi query
+                    $sql = file_get_contents('Reg_Install_Schema/' . $fname);
+                    dbMultiQuery($sql);
+                    // skip over result sets
+                    dbSkipNextResults();
+                    continue;
+                }
                 $table = preg_replace('/^[^_]*_(.*)\.sql$/', '\1', $fname);
+                logEcho("Checking if $table has data before loading $fname");
                 $checkSQLR = dbQuery("SELECT count(*) AS occurs FROM $table;");
                 if ($checkSQLR === false) {
                     logEcho("Error querying $table for rowcount");
@@ -104,20 +115,19 @@ EOS;
                 logEcho("Loading $table from $fname");
                 $set = dbMultiQuery($sql);
                 // skip over result sets
-                dbNextResult();
-                dbNextResult();
-                dbNextResult();
-                dbNextResult();
-                dbNextResult();
+                dbSkipNextResults();
+
                 $checkSQLR = dbQuery("SELECT count(*) AS occurs FROM $table;");
                 if ($checkSQLR === false) {
                     logEcho("Error querying $table for rowcount");
                     $errors++;
-                }
-                $rowcnt = $checkSQLR->fetch_row()[0];
-                if ($rowcnt <= 0) {
-                    logEcho("Error inserting data into $table");
-                    $errors++;
+                } else {
+                    $rowcnt = $checkSQLR->fetch_row()[0];
+                    if ($rowcnt <= 0) {
+                        logEcho("Error inserting data into $table");
+                        $errors++;
+                    } else
+                        logEcho("Inserted $rowcnt rows of data into $table");
                 }
             }
         }
@@ -238,6 +248,7 @@ AND ROUTINE_NAME = ?;
 EOS;
                                 break;
                         }
+                        logEcho("Checking if $pt $item exists in " . $mysqlConf['db_name']);
                         $checkSQLR = dbSafeQuery($checkSQL, 'ss', array($mysqlConf['db_name'], $item));
                         if ($checkSQLR === false || $checkSQLR->num_rows <= 0) {
                             logEcho("Adding $pt $item");
@@ -249,6 +260,7 @@ EOS;
                         } else if (array_key_exists('p', $options)) { // replace view/proc/functions
                             logEcho("Drop/Replace $pt $item");
                             dbQuery("DROP $pt IF EXISTS `$item`;");
+                            logEcho("Adding $pt / $item");
                             $cR = dbQuery($sql);
                             if ($cR === false) {
                                 logEcho("You don't have sufficient permissions to add this $pt, Please seek help from a Database Administrator to create $item from zz_routines.sql");

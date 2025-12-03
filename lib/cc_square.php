@@ -106,20 +106,15 @@ use Square\Types\OrderLineItemDiscountScope;
 use Square\Types\OrderLineItemDiscountType;
 
 function cc_getCurrency($con) : string {
-    if (array_key_exists('currency', $con)) {
-        $cur = strtoupper($con['currency']);
-        $cur = strtoupper(substr($cur, 0, 1)) . substr($cur, 1);
-        $curT = Currency::from($cur);
-        if ($curT) {
-            $currency = $curT->value;
-        } else {
-            ajaxSuccess(array ('status' => 'error', 'data' => 'Error: Currency ' . $con['currency'] .
-                ' not yet supported in Square, seek assistance.'));
-            exit();
-        }
-    } else
-        $currency = Currency::Usd->value;
-
+    $cur = strtoupper(getConfValue('con', 'currency', 'USD'));
+    $curT = Currency::from($cur);
+    if ($curT) {
+        $currency = $curT->value;
+    } else {
+        ajaxSuccess(array ('status' => 'error', 'data' => 'Error: Currency ' . $con['currency'] .
+            ' not yet supported in Square, seek assistance.'));
+        exit();
+    }
     return $currency;
 }
 
@@ -230,17 +225,8 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     $balanceDue = '';
     $itemsBuilt = false;
     $taxRate = 0;
-    $taxLabel = 'Unconfigured Sales Tax';
-    $taxuid = 'salestax';
-    if (array_key_exists('taxRate', $con)) {
-        $taxRate = $con['taxRate'];
-    }
-    if (array_key_exists('taxLabel', $con)) {
-        $taxLabel = $con['taxLabel'];
-    }
-    if (array_key_exists('taxuid', $con)) {
-        $taxuid = $con['taxuid'];
-    }
+    // taxList is an array by tax field id of taxfield, rate and label, it includes the default value from the config file if the db table is empty
+    $hasTax = hasTaxRates();
     $needTaxes = false;
 
     // item rules:
@@ -313,7 +299,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
 
     // Art Sales
     if ($artSales == 1) {
-        $needTaxes = true;
+        $needTaxes = $hasTax;
         if (array_key_exists('art', $results) && is_array($results['art']) && count($results['art']) > 0) {
             foreach ($results['art'] as $art) {
                 if (!array_key_exists('paid', $art)) {
@@ -342,13 +328,9 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                         'currency' => $currency,
                     ]),
                 ]);
-                if ($taxRate > 0) {
-                    // create the Line Item tax record, if there is a tax rate, and the membership is taxable
-                    $needTaxes = true;
-                    $item->setAppliedTaxes(array(new Square\Types\OrderLineItemAppliedTax([
-                        'uid' => 'art-tax-' . ($lineid + 1),
-                        'taxUid' => $taxuid,
-                    ])));
+                if ($hasTax) {
+                    // create the Line Item tax record, art sales are taxable
+                    $item->setAppliedTaxes(buildSquareAppliedTaxArray('art', $lineid));
                 }
                 $orderLineitems[$lineid] = $item;
                 $orderValue += $art['amount'];
@@ -456,13 +438,10 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                         'currency' => $currency,
                     ]),
                 ]);
-                if ($taxRate > 0 && array_key_exists('taxable', $badge) && $badge['taxable'] == 'Y') {
+                if ($hasTax && array_key_exists('taxable', $badge) && $badge['taxable'] == 'Y') {
                     // create the Line Item tax record, if there is a tax rate, and the membership is taxable
-                    $needTaxes = true;
-                    $item->setAppliedTaxes(array(new Square\Types\OrderLineItemAppliedTax([
-                        'uid' => 'badge-tax-' . ($lineid + 1),
-                        'taxUid' => $taxuid,
-                    ])));
+                    $needTaxes = $hasTax;
+                    $item->setAppliedTaxes(buildSquareAppliedTaxArray('badge', $lineid));
                 }
                 if (array_key_exists('newplan', $results) && $results['newplan'] == 1) {
                     if ($badge['inPlan'])
@@ -626,13 +605,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     ]);
 
     if ($needTaxes) {
-        $order->setTaxes(array(new Square\Types\OrderLineItemTax([
-            'uid' => $taxuid,
-            'name' => $taxLabel,
-            'type' => Square\Types\OrderLineItemTaxType::Additive->value,
-            'percentage' => $taxRate,
-            'scope' => Square\Types\OrderLineItemTaxScope::LineItem->value,
-        ])));
+        $order->setTaxes(buildSquareOrderTaxArray());
     }
 
     // build the order request from it's parts
@@ -669,7 +642,18 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     $rtn['preTaxAmt'] = $orderValue;
     $rtn['discountAmt'] = $order->getTotalDiscountMoney()->getAmount() / 100;
     $rtn['taxAmt'] = $order->getTotalTaxMoney()->getAmount() / 100;
-    $rtn['taxLabel'] = $taxLabel;
+    // build the return array of taxes applied to the order
+    $rtnTaxes = [];
+    if ($needTaxes) {
+        $taxAmounts = $order->getTaxes();
+        foreach ($taxAmounts as $tax) {
+            $uid = $tax->getUid();
+            $app = $tax->getAppliedMoney();
+            $amt = $app->getAmount();
+            $rtnTaxes[$uid] = $amt / 100;
+        }
+    }
+    $rtn['taxes'] = $rtnTaxes;
     $rtn['totalAmt'] = $order->getTotalMoney()->getAmount() / 100;
     // load into the main rtn the items pay order needs directly
     $rtn['orderId'] = $order->getId();
@@ -693,6 +677,7 @@ function cc_cancelOrder($source, $orderId, $useLogWrite = false, $locationId = n
     $cc = get_conf('cc');
     if ($locationId == null)
         $locationId = $cc['location'];
+
     $squareDebug = getConfValue('debug', 'square', 0);
 
     $order = new Order([
@@ -765,6 +750,15 @@ function cc_fetchOrder($source, $orderId, $useLogWrite = false) : array {
     $rtn = array();
     $rtn['totalAmountDue'] = $order->getTotalMoney()->getAmount() / 100;
     $rtn['taxAmount'] = $order->getTotalTaxMoney()->getAmount() / 100;
+    // build the return array of taxes applied to the order
+    $taxAmounts = $order->getTaxes();
+    foreach ($taxAmounts as $tax) {
+        $uid = $tax->getUid();
+        $app = $tax->getAppliedMoney();
+        $amt = $app->getAmount();
+        $rtnTaxes[$uid] = $amt / 100;
+    }
+    $rtn['taxes'] = $rtnTaxes;
     $rtn['totalDiscountAmount'] = $order->getTotalDiscountMoney()->getAmount() / 100;
     $rtn['netAmountDue'] = $order->getNetAmountDueMoney()->getAmount() / 100;
     $rtn['netAmount'] = $order->getNetAmounts()->getTotalMoney()->getAmount() / 100;

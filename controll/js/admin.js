@@ -8,6 +8,8 @@ var message_div = null;
 var users = null;
 var printers = null;
 var userid = null;
+var configEditor = null;
+var checkConfigReload = true;
 
 conid = null;
 // keys items
@@ -200,7 +202,7 @@ function add_found(data) {
                 {field: "first_name", visible: debug > 2,},
                 {field: "middle_name", visible: debug > 2,},
                 {field: "suffix", visible: debug > 2,},
-                {title: "Badge Name", field: "badge_name", width: 200, headerFilter: true, headerWordWrap: true, tooltip: true,},
+                {title: "Badge Name", field: "badgename", width: 200, headerFilter: true, headerWordWrap: true, tooltip: true, formatter: 'html',},
                 {title: "Zip", field: "postal_code", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 100, width: 100},
                 {title: "Email Address", field: "email_addr", width: 200, headerFilter: true, headerWordWrap: true, tooltip: true,},
                 {field: "index", visible: debug > 2,},
@@ -223,7 +225,7 @@ function build_record_hover(e, cell, onRendered) {
     if (data.country != '' && data.country != 'USA') {
         hover_text += data.country + '<br/>';
     }
-    hover_text += 'Badge Name: ' + badge_name_default(data.badge_name, data.first_name, data.last_name) + '<br/>' +
+    hover_text += 'Badge Name: ' + badgeNameDefault(data.badge_name, data.badgeNameL2, data.first_name, data.last_name) + '<br/>' +
         'Email: ' + data.email_addr + '<br/>' + 'Phone: ' + data.phone + '<br/>' +
         'Active:' + data.active + ' Contact?:' + data.contact_ok + ' Share?:' + data.share_reg_ok + '<br/>';
 
@@ -294,6 +296,14 @@ function settab(tabname) {
         printers.close();
         printers = null;
     }
+    if (configEditor && checkConfigReload) {
+        if (configEditor.close()) {
+            checkConfigReload = true;
+            configEditor = null;
+        } else {
+            checkConfigReload = false;
+        }
+    }
 
     // now open the relevant one, and create the class if needed
     switch (tabname) {
@@ -308,7 +318,12 @@ function settab(tabname) {
         case 'atconPrinters-pane':
             loadAtconPrinters();
             break;
-
+        case 'configEdit-pane':
+            if (configEditor == null) {
+                loadConfigEditor();
+            }
+            checkConfigReload = true;
+            break;
     }
 }
 
@@ -381,6 +396,43 @@ function openPrinters(data) {
         show_message(data.success, 'success');
     }
     printers = new Printers(data.servers, data.printers)
+}
+
+// configuration editor
+function loadConfigEditor() {
+    script = 'scripts/configEditLoadData.php';
+    postData = {
+        load_type: 'conf',
+        perm: 'admin'
+    }
+    clearError();
+    clear_message();
+    $.ajax({
+        url: script,
+        method: 'POST',
+        data: postData,
+        success: function (data, textStatus, jhXHR) {
+            if (data.error) {
+                show_message(data.error, 'error');
+                return;
+            }
+            if (data.warn) {
+                show_message(data.error, 'warn');
+                return;
+            }
+            openConfigEditor(data);
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            showError("ERROR in getMenu: " + textStatus, jqXHR);
+        },
+    });
+}
+
+function openConfigEditor(data) {
+    if (data.success) {
+        show_message(data.success, 'success');
+    }
+    configEditor = new ConfigEditor(data);
 }
 
 function cellChanged(cell) {
@@ -561,7 +613,7 @@ function buildNewYear() {
         method: 'POST',
         data: postdata,
         success: function (data, textStatus, jhXHR) {
-            window.location="/admin.php?msg=" + encodeURI(data['success']);
+            window.location="/admin.php?msg=" + encodeURI(data.success);
         },
         error: function (jqXHR, textStatus, errorThrown) {
             showError("ERROR in " + script + ": " + textStatus, jqXHR);
@@ -587,23 +639,23 @@ function loadInitialData(loadtype) {
         url: "scripts/admin_atconLoadData.php",
         data: postData,
         success: function(data, textstatus, jqxhr) {
-            if (data['message'] !== undefined) {
-                show_message(data['message'], 'success');
+            if (data.message !== undefined) {
+                show_message(data.message, 'success');
             }
-            if (data['userid'] !== undefined) {
-                userid = data['userid'];
+            if (data.userid !== undefined) {
+                userid = data.userid;
                 if (users == null) {
-                    users = new Users(data['users']);
+                    users = new Users(data.users);
                 } else {
-                    users.loadUsers(data['users']);
+                    users.loadUsers(data.users);
                     users.dirty = false;
                 }
             }
-            if (data['servers'] !== undefined) {
+            if (data.servers !== undefined) {
                 if (printers == null) {
-                    printers = new Printers(data['servers'], data['printers']);
+                    printers = new Printers(data.servers, data.printers);
                 } else {
-                    printers.loadPrinters(data['servers'], data['printers']);
+                    printers.loadPrinters(data.servers, data.printers);
                     printers.dirty = false;
                     printers.serverNameToDelete = null;
                 }
@@ -637,8 +689,8 @@ function localServersList() {
     var servers = printers.serverlist.getData();
     var distinctServers = new Array();
     for (var i = 0; i < servers.length; i++) {
-        if (servers[i]['local'] === true || Number(servers[i]['local']) === 1)
-            distinctServers[servers[i]['serverName']] = 1;
+        if (servers[i].local === true || Number(servers[i].local) === 1)
+            distinctServers[servers[i].serverName] = 1;
     }
     return Object.keys(distinctServers);
 }

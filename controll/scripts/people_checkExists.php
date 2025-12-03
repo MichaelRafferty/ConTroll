@@ -25,6 +25,7 @@ $suffix = array_key_exists('suffix', $_POST) ? trim(strtolower($_POST['suffix'])
 $legalName = array_key_exists('legalName', $_POST) ? trim(strtolower($_POST['legalName'])) : '';
 $pronouns = array_key_exists('pronouns', $_POST) ? trim(strtolower($_POST['pronouns'])) : '';
 $badgeName = array_key_exists('badgeName', $_POST) ? trim(strtolower($_POST['badgeName'])) : '';
+$badgeNameL2 = array_key_exists('badgeNameL2', $_POST) ? trim(strtolower($_POST['badgeNameL2'])) : '';
 $address = array_key_exists('address', $_POST) ? trim(strtolower($_POST['address'])) : '';
 $addr2 = array_key_exists('addr2', $_POST) ? trim(strtolower($_POST['addr2'])) : '';
 $city = array_key_exists('city', $_POST) ? trim(strtolower($_POST['city'])) : '';
@@ -41,7 +42,7 @@ $phoneCheck = str_replace('(', '',
 if ($emailAddr == '/r')
     $emailAddr = '';
 
-if ($firstName . $middleName .  $lastName .  $suffix .  $legalName .  $pronouns .  $badgeName .  $address .  $addr2 .
+if ($firstName . $middleName .  $lastName .  $suffix .  $legalName .  $pronouns .  $badgeName . $badgeNameL2 .  $address .  $addr2 .
     $city .  $state .  $zip . $emailAddr .  $phone == '') {
     $response['error'] = 'The form cannot be empty, you need something to match on beyond just country';
     ajaxSuccess($response);
@@ -50,7 +51,7 @@ if ($firstName . $middleName .  $lastName .  $suffix .  $legalName .  $pronouns 
 
 // does anyone match this person?
 $mQ = <<<EOS
-SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.pronouns, 
+SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2, p.legalName, p.pronouns, 
     p.address, p.addr_2, p.city, p.state, p.zip, p.country, p.banned, 
     p.creation_date, p.update_date, p.active, p.open_notes,
     p.managedBy, p.managedByNew, p.lastverified, p.managedreason,
@@ -118,6 +119,13 @@ if ($badgeName != '') {
     $typestr .= 'ss';
     $valueArr[] = $badgeName;
     $valueArr[] = '%' . $badgeName . '%';
+}
+if ($badgeNameL2 != '') {
+    $mQ .= $and . "(lower(p.badgeNamel2) = ? OR lower(p.badgeNameL2) like ?)\n";
+    $and = 'AND ';
+    $typestr .= 'ss';
+    $valueArr[] = $badgeNameL2;
+    $valueArr[] = '%' . $badgeNameL2 . '%';
 }
 if ($address != '') {
     $typestr .= 'ssss';
@@ -192,6 +200,7 @@ if ($mR === false) {
 $pids = [];
 $matches= [];
 while ($match = $mR->fetch_assoc()) {
+    $match['badgename'] = badgeNameDefault($match['badge_name'], $match['badgeNameL2'], $match['first_name'], $match['last_name']);
     $matches[] = $match;
     $pids[] = $match['id'];
 }

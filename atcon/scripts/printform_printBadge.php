@@ -43,21 +43,26 @@ if ($printer) {
         $badge = [];
         $badge['type'] = $param['type'];
         $badge['badge_name'] = $param['badge_name'];
+        $badge['badgeNameL2'] = $param['badgeNameL2'];
+        $badge['first_name'] = '';
+        $badge['last_name'] = '';
         $badge['category'] = $param['category'];
         $badge['id'] = $param['badge_id'];
         $badge['day'] = $param['day'];
         $badge['age'] = $param['age'];
 
+        $bn = badgeNameDefault($badge['badge_name'], $badge['badgeNameL2'], '', '');
+
         if ($badge['type'] == 'full') {
             $file_full = init_file($printer);
             write_badge($badge, $file_full, $printer);
             print_badge($printer, $file_full);
-            $response['message'] .= "Full badge for " . $badge['badge_name'] . " printed<br/>";
+            $response['message'] .= "Full badge for $bn printed<br/>";
         } else {
             $file_1day = init_file($printer);
             write_badge($badge, $file_1day, $printer);
             print_badge($printer, $file_1day);
-            $response['message'] .= $badge['day'] . ' badge for ' . $badge['badge_name'] . ' printed<br/>';
+            $response['message'] .= $badge['day'] . " badge for $bn printed<br/>";
         }
     }
     ajaxSuccess($response);

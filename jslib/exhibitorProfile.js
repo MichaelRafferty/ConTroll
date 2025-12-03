@@ -469,7 +469,7 @@ class ExhibitorProfile {
     // clear form - empty out all the fields in the form
     clearForm() {
         document.getElementById('exhibitorProfileForm').reset();
-        document.getElementById('description').innerHTML = '';
+        document.getElementById('description').value = '';
         if (tinyMCE.activeEditor)
             tinyMCE.activeEditor.setContent('');
     }

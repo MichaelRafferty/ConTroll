@@ -256,7 +256,7 @@ class policySetup {
         this.#policyTable.clearFilter(true);
         this.#policyTable.addRow({policy: 'new-row', prompt: '', description: '', required: 'N', active: 'Y',
             defaultValue: 'Y', sortOrder: 99, uses: 0}, false).then(function (row) {
-            row.getTable().setPage('last').then(function() {
+            row.getTable().setPageToRow(row).then(function() {
                 row.getCell("policy").getElement().style.backgroundColor = "#fff3cd";
                 row.getCell("prompt").getElement().style.backgroundColor = "#fff3cd";
                 row.getCell("description").getElement().style.backgroundColor = "#fff3cd";
@@ -410,8 +410,8 @@ class policySetup {
         this.#editPreviewTitle.innerHTML = "Edit/Preview the " + policyName + " policy";
         this.#previewPolicyName.innerHTML = policyName;
         this.#editPolicyNameDiv.innerHTML = policyName;
-        this.#policyPrompt.innerHTML = policyPrompt;
-        this.#policyDescription.innerHTML = policyDescription;
+        this.#policyPrompt.value = policyPrompt;
+        this.#policyDescription.value = policyDescription;
         this.#p_preview.checked = false;
         this.#l_preview.innerHTML = policyPrompt;
         this.#l_required.hidden = polictRequired != 'Y';

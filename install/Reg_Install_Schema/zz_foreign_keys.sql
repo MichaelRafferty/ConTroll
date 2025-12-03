@@ -1,4 +1,6 @@
 ALTER TABLE oauthRefreshTokens ADD CONSTRAINT `fk_refresh_token_access` FOREIGN KEY (`accessTokenId`) REFERENCES `oauthAccessTokens` (`id`) ON UPDATE CASCADE;
+ALTER TABLE taxList ADD CONSTRAINT `taxC_conid` FOREIGN KEY (`conid`) REFERENCES `conlist` (`id`) ON UPDATE CASCADE;
+ALTER TABLE taxList ADD CONSTRAINT `taxC_perinfo` FOREIGN KEY (`updatedBy`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 ALTER TABLE oauthAuthCodes ADD CONSTRAINT `fk_auth_codes_clients` FOREIGN KEY (`clientId`) REFERENCES `oauthClients` (`clientId`) ON UPDATE CASCADE;
 ALTER TABLE memberPolicies ADD CONSTRAINT `memberPolicies_ibfk_1` FOREIGN KEY (`updateBy`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 ALTER TABLE memberPolicies ADD CONSTRAINT `memberPolicies_ibfk_2` FOREIGN KEY (`perid`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
@@ -36,9 +38,12 @@ ALTER TABLE paymentPlans ADD CONSTRAINT `paymentPlans_ibfk_1` FOREIGN KEY (`upda
 ALTER TABLE controllAppItems ADD CONSTRAINT `controllAppItems_ibfk_1` FOREIGN KEY (`appName`, `appPage`, `appSection`) REFERENCES `controllAppSections` (`appName`, `appPage`, `appSection`) ON UPDATE CASCADE;
 ALTER TABLE memRuleSteps ADD CONSTRAINT `mrs_mr_fk` FOREIGN KEY (`conid`, `name`) REFERENCES `memRules` (`conid`, `name`) ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE siteSelectionTokens ADD CONSTRAINT `sst_perinfo_fk` FOREIGN KEY (`perid`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
+ALTER TABLE memberConRoles ADD CONSTRAINT `memberConRolesConRole_fk` FOREIGN KEY (`conRole`) REFERENCES `conRoles` (`conRole`) ON UPDATE CASCADE;
+ALTER TABLE memberConRoles ADD CONSTRAINT `memberConRolesPerinfo_fk` FOREIGN KEY (`perid`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 ALTER TABLE perinfo ADD CONSTRAINT `perinfo_ibfk_1` FOREIGN KEY (`managedBy`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 ALTER TABLE perinfo ADD CONSTRAINT `perinfo_ibfk_2` FOREIGN KEY (`updatedBy`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 ALTER TABLE perinfo ADD CONSTRAINT `perinfo_ibfk_3` FOREIGN KEY (`managedByNew`) REFERENCES `newperson` (`id`) ON UPDATE CASCADE;
+ALTER TABLE perinfo ADD CONSTRAINT `perinfo_ibfk_4` FOREIGN KEY (`currentAgeConId`, `currentAgeType`) REFERENCES `ageList` (`conid`, `ageType`) ON UPDATE CASCADE;
 ALTER TABLE ageList ADD CONSTRAINT `ageList_conid_fk` FOREIGN KEY (`conid`) REFERENCES `conlist` (`id`) ON UPDATE CASCADE;
 ALTER TABLE exhibitsRegions ADD CONSTRAINT `er_regiontype_fk` FOREIGN KEY (`regionType`) REFERENCES `exhibitsRegionTypes` (`regionType`) ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE exhibitors ADD CONSTRAINT `exhibitor_perid_fk` FOREIGN KEY (`perid`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
@@ -48,6 +53,7 @@ ALTER TABLE payorPlans ADD CONSTRAINT `pp_perid_fk` FOREIGN KEY (`perid`) REFERE
 ALTER TABLE payorPlans ADD CONSTRAINT `pp_planid_fk` FOREIGN KEY (`planId`) REFERENCES `paymentPlans` (`id`);
 ALTER TABLE newperson ADD CONSTRAINT `newperson_ibfk_1` FOREIGN KEY (`managedBy`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 ALTER TABLE newperson ADD CONSTRAINT `newperson_ibfk_2` FOREIGN KEY (`managedByNew`) REFERENCES `newperson` (`id`) ON UPDATE CASCADE;
+ALTER TABLE newperson ADD CONSTRAINT `newperson_ibfk_3` FOREIGN KEY (`currentAgeConId`, `currentAgeType`) REFERENCES `ageList` (`conid`, `ageType`) ON UPDATE CASCADE;
 ALTER TABLE newperson ADD CONSTRAINT `newperson_perid_fk` FOREIGN KEY (`perid`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 ALTER TABLE newperson ADD CONSTRAINT `newperson_transid_fk` FOREIGN KEY (`transid`) REFERENCES `transaction` (`id`) ON UPDATE CASCADE;
 ALTER TABLE controllAppSections ADD CONSTRAINT `controllAppSections_ibfk_1` FOREIGN KEY (`appName`, `appPage`) REFERENCES `controllAppPages` (`appName`, `appPage`) ON UPDATE CASCADE;

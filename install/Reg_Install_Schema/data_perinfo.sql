@@ -11,9 +11,9 @@
 LOCK TABLES `perinfo` WRITE;
 ALTER TABLE `perinfo` DISABLE KEYS;
 INSERT INTO `perinfo` VALUES
-(2,'Registration','At Con','','','','','','','','','','','','','','N','2023-04-19 16:23:41','2025-05-27 15:49:32',NULL,'N','INTERNAL NOT FOR REGISTRAITON USE',NULL,NULL,'N','N',NULL,NULL,NULL,NULL,''),
-(3,'Internal','Exhibitor','','','','','','','','','','','','','','N','2024-04-26 11:49:14','2025-05-27 15:49:32',NULL,'N','INTERNAL NOT FOR REGISTRAITON USE',NULL,NULL,'N','N',NULL,NULL,NULL,NULL,''),
-(4,'Internal','Portal','','','','','','','','','','','','','','N','2024-06-18 15:40:47','2025-05-27 15:49:32',NULL,'N','INTERNAL NOT FOR REGISTRAITON USE',NULL,NULL,'N','N',NULL,NULL,NULL,NULL,''),
-(5,'Registration','Mail In','','','','','','','','','','','','','','N','2025-03-18 17:33:59','2025-05-27 15:49:32',NULL,'N','INTERNAL NOT FOR REGISTRATION USE',NULL,NULL,'N','N',NULL,NULL,NULL,NULL,'');
+(2,NULL,NULL,'Registration','At Con','','','','','','','','','','','','','','','N','N','N','2023-04-19 16:23:41','2025-05-27 15:49:32',NULL,'N','INTERNAL NOT FOR REGISTRAITON USE',NULL,NULL,'N','N',NULL,NULL,NULL,NULL,''),
+(3,NULL,NULL,'Internal','Exhibitor','','','','','','','','','','','','','','','N','N','N','2024-04-26 11:49:14','2025-05-27 15:49:32',NULL,'N','INTERNAL NOT FOR REGISTRAITON USE',NULL,NULL,'N','N',NULL,NULL,NULL,NULL,''),
+(4,NULL,NULL,'Internal','Portal','','','','','','','','','','','','','','','N','N','N','2024-06-18 15:40:47','2025-05-27 15:49:32',NULL,'N','INTERNAL NOT FOR REGISTRAITON USE',NULL,NULL,'N','N',NULL,NULL,NULL,NULL,''),
+(5,NULL,NULL,'Registration','Mail In','','','','','','','','','','','','','','','N','N','N','2025-03-18 17:33:59','2025-05-27 15:49:32',NULL,'N','INTERNAL NOT FOR REGISTRATION USE',NULL,NULL,'N','N',NULL,NULL,NULL,NULL,'');
 ALTER TABLE `perinfo` ENABLE KEYS;
 UNLOCK TABLES;

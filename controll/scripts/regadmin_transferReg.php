@@ -65,7 +65,7 @@ if ($inString == '') {
 
     $inString = substr($inString, 0, -1);
 
-$denyTransfer = ['rolled-over', 'cancelled','refunded', 'transfered'];
+$denyTransfer = ['rolled-over', 'cancelled','refunded', 'transferred'];
 
 $checkR = dbQuery("SELECT id, status FROM reg WHERE id IN ($inString);");
 if ($checkR->num_rows != count($transferList)) {
@@ -109,7 +109,7 @@ WHERE id = ?;
 EOS;
 $uQ = <<<EOS
 UPDATE reg
-SET status = 'transfered', change_date=CURRENT_TIMESTAMP(), updatedBy = ?
+SET status = 'transferred', change_date=CURRENT_TIMESTAMP(), updatedBy = ?
 WHERE id = ?;
 EOS;
 $iN = <<<EOS
@@ -122,6 +122,7 @@ foreach ($transferList as $from) {
     $newRegId = dbSafeInsert($nQ, 'iiiiiiii', array ($to_person, $from_person, $newtid, $newtid, $user_perid, $from, $user_perid, $from));
     $num_rows = dbSafeCmd($uQ, 'ii', array ($user_perid, $from));
     $notes = "Transfer membership $from from $from_person to $to_person by $user_perid";
+    $notesKey = dbSafeInsert($iN, 'siiis', array ($source, $user_perid, $newtid, $from, $notes));
     $notesKey = dbSafeInsert($iN, 'siiis', array ($source, $user_perid, $newtid, $newRegId, $notes));
 
     if ($num_rows === false) {

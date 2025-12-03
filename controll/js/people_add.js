@@ -1,5 +1,3 @@
-//import { TabulatorFull as Tabulator } from 'tabulator-tables';
-// policy class - all edit membership policy functions
 class Add {
     #matchTable = null;
     #addPersonBtn = null;
@@ -15,6 +13,7 @@ class Add {
     #legalName = null;
     #pronouns = null;
     #badgeName = null;
+    #badgeNameL2 = null;
     #address = null;
     #addr2 = null;
     #city = null;
@@ -22,12 +21,12 @@ class Add {
     #zip = null;
     #country = null;
     #emailAddr = null;
-    #emailAddr2 = null;
     #phone = null;
     #policiesDiv = null;
     #managerDiv = null;
     #active = null;
     #banned = null;
+    #uspsDiv = null;
 
     #matched = null;
 
@@ -45,7 +44,8 @@ class Add {
         this.#suffix = document.getElementById('a_suffix');
         this.#legalName = document.getElementById('a_legalName');
         this.#pronouns = document.getElementById('a_pronouns');
-        this.#badgeName = document.getElementById('a_badgename');
+        this.#badgeName = document.getElementById('a_badge_name');
+        this.#badgeNameL2 = document.getElementById('a_badgeNameL2');
         this.#address = document.getElementById('a_addr');
         this.#addr2 = document.getElementById('a_addr2');
         this.#city = document.getElementById('a_city');
@@ -53,7 +53,6 @@ class Add {
         this.#zip = document.getElementById('a_zip');
         this.#country = document.getElementById('a_country');
         this.#emailAddr = document.getElementById('a_email1');
-        this.#emailAddr2 = document.getElementById('a_email2');
         this.#phone = document.getElementById('a_phone');
     }
 
@@ -64,13 +63,6 @@ class Add {
 
     // check if a close match for this person exists and display a table of matches.
     checkExists() {
-        var email1 = this.#emailAddr.value;
-        var email2 = this.#emailAddr2.value;
-        if (email1 != email2) {
-            show_message("Email addresses do not match", 'error');
-            return;
-        }
-
         clear_message();
         clearError();
         var postdata = {
@@ -82,6 +74,7 @@ class Add {
             legalName: this.#legalName.value,
             pronouns: this.#pronouns.value,
             badgeName: this.#badgeName.value,
+            badgeNameL2: this.#badgeNameL2.value,
             address: this.#address.value,
             addr2: this.#addr2.value,
             city: this.#city.value,
@@ -140,7 +133,7 @@ class Add {
                     {title: "Manager", field: "manager", width: 150, headerSort: true, headerFilter: true,},
                     {title: "Full Name", field: "fullName", width: 250, headerSort: true, headerFilter: true, headerFilterFunc: fullNameHeaderFilter,
                         formatter: "textarea", },
-                    {title: "Badge Name", field: "badgename", width: 200, headerSort: true, headerFilter: true,},
+                    {title: "Badge Name", field: "badgename", width: 200, headerSort: true, headerFilter: true, formatter: 'html', },
                     {title: "Full Address", field: "fullAddr", width: 300, headerSort: true, headerFilter: true, formatter: "textarea", },
                     {title: "Email", field: "email_addr", width: 250, headerSort: true, headerFilter: true,},
                     {title: "Phone", field: "phone", width: 150, headerSort: true, headerFilter: true,},
@@ -150,6 +143,8 @@ class Add {
                     {field: 'last_name', visible: false,},
                     {field: 'suffix', visible: false,},
                     {field: 'legalName', visible: false,},
+                    {field: 'badge_name', visible: false,},
+                    {field: 'badgeNameL2', visible: false,},
                     {field: 'pronouns', visible: false,},
                     {field: 'address', visible: false,},
                     {field: 'addr_2', visible: false,},
@@ -194,13 +189,6 @@ class Add {
 
     // addPerson - they decided it's a new person, add them
     addPerson() {
-        var email1 = this.#emailAddr.value;
-        var email2 = this.#emailAddr2.value;
-        if (email1 != email2) {
-            show_message("Email addresses do not match", 'error');
-            return;
-        }
-
         var postdata = {
             type: 'add',
             firstName: this.#firstName.value,
@@ -210,6 +198,7 @@ class Add {
             legalName: this.#legalName.value,
             pronouns: this.#pronouns.value,
             badgeName: this.#badgeName.value,
+            badgeNameL2: this.#badgeNameL2.value,
             address: this.#address.value,
             addr2: this.#addr2.value,
             city: this.#city.value,
@@ -222,6 +211,57 @@ class Add {
         };
         var script = 'scripts/people_addNewPerson.php';
         var _this = this;
+
+        // validate required fields first
+        let errmsg = '';
+        let required = config.required;
+        if (postdata.emailAddr == '')
+            errmsg += 'Email address is required<br/>';
+        else if (postdata.emailAddr != '/r' && validateAddress(postdata.emailAddr) == false)
+            errmsg += 'Email address is invalid<br/>';
+
+        if (required != '') {
+            if (postdata.firstName == '')
+                errmsg += 'First name is required<br/>';
+        }
+
+        if (required == 'all') {
+            if (postdata.lastName == '') {
+                errmsg += 'Last name is required<br/>';
+            }
+        }
+
+        /* disable required error for address to end of form
+        if (required == 'addr' || required == 'all') {
+            if (postdata.address == '') {
+                errmsg += 'Address (Line 1) is required<br/>';
+            }
+        }
+
+        if (required == 'addr' || required == 'all' ||
+            (postdata.country == 'USA' && this.#uspsDiv != null &&
+                (postdata.address != '' || postdata.city != '' || postdata.state != '' || postdata.zip != '')
+            )
+        ) {
+            if (postdata.city == '') {
+                errmsg += 'City is required<br/>';
+            }
+
+            if (postdata.state == '') {
+                errmsg += 'State is required<br/>';
+            }
+
+            if (postdata.zip == '') {
+                errmsg += 'Zip/Postal Code is required<br/>';
+            }
+        }
+         */
+
+        if (errmsg != '') {
+            show_message(errmsg, 'error');
+            return;
+        }
+
         $.ajax({
             url: script,
             method: 'POST',
@@ -253,7 +293,6 @@ class Add {
         }
         this.#firstName.value = '';
         this.#emailAddr.value = '';
-        this.#emailAddr2.value = '';
 
         // clear the policy fields
         this.#resetPolicies();
@@ -274,6 +313,7 @@ class Add {
         this.#legalName.value = '';
         this.#pronouns.value = '';
         this.#badgeName.value = '';
+        this.#badgeNameL2.value = '';
         this.#address.value = '';
         this.#addr2.value = '';
         this.#city.value = '';
@@ -281,7 +321,6 @@ class Add {
         this.#zip.value = '';
         this.#country.value = 'USA';
         this.#emailAddr.value = '';
-        this.#emailAddr2.value = '';
         this.#phone.value = '';
         this.#addPersonBtn.disabled = true;
         this.#resetPolicies();

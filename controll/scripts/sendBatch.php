@@ -33,7 +33,6 @@ if (!array_key_exists('data', $_POST)) {
 }
 
 $con = get_conf("con");
-$emailconf = get_conf("email");
 $conid=$con['id'];
 $conname = $con['conname'];
 $code='';
@@ -57,17 +56,8 @@ if ($data['action'] == 'full' && !$testsite)
 
 $response['test'] = $test;
 
-if (array_key_exists('batchsize', $emailconf)) {
-    $batchsize = $emailconf['batchsize'];
-} else {
-    $batchsize= 10;
-}
-
-if (array_key_exists('delay', $emailconf)) {
-    $delay = $emailconf['delay'];
-} else {
-    $delay= 1;
-}
+$batchsize = getConfValue('email', 'batchsize', 50);
+$delay = getConfValue('email', 'delay', 1);
 
 if ($batchsize == 0  || $delay == 0)
     $batchsize = 999999;

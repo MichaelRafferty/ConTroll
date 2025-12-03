@@ -78,12 +78,12 @@ $response['policies'] = $policies;
 
 // get the people managed
 $mQ = <<<EOS
-SELECT '' AS type, id, email_addr, badge_name, legalName, phone,
+SELECT '' AS type, id, email_addr, badge_name, badgeNameL2, legalName, phone, first_name, last_name,
     TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName
 FROM perinfo p
 WHERE managedBy = ?
 UNION
-SELECT 'n' AS type, id, email_addr, badge_name, legalName, phone,
+SELECT 'n' AS type, id, email_addr, badge_name, badgeNameL2, legalName, phone, first_name, last_name,
     TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName
 FROM newperson p
 WHERE managedBy = ? AND p.perid IS NULL
@@ -98,6 +98,7 @@ if ($mR === false) {
 
 $managed= [];
 while ($row = $mR->fetch_assoc()) {
+    $row['badgename'] = badgeNameDefault($row['badge_name'], $row['badgeNameL2'], $row['first_name'], $row['last_name']);
     $managed[] = $row;
 }
 $mR->free();

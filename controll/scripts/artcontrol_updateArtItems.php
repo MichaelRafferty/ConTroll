@@ -36,22 +36,28 @@ $response['tabledata'] = $tabledata;
 $updateSQL = <<<EOS
 UPDATE artItems
 SET item_key = ?, location = ?, min_price = ?, original_qty = ?, quantity = ?, sale_price = ?, status = ?, title = ?, 
-    type = ?, material = ?, bidder = ?, final_price = ?, notes = ?
+    type = ?, material = ?, bidder = ?, final_price = ?, notes = ?, updatedBy = ?
 WHERE id = ?
 EOS;
 
-$updateTypes = "issiisssssiisi";
+$updateTypes = "isdiidssssidsii";
 
 $updated = 0;
 $new = 0;
 $insertSQL = <<<EOS
-INSERT INTO artItems (item_key, location, min_price, original_qty, quantity, sale_price, status, title, type, material, 
+INSERT INTO artItems (item_key, conid, location, min_price, original_qty, quantity, sale_price, status, title, type, material, 
                       bidder, final_price, notes, exhibitorRegionYearId, updatedBy) VALUES
-    (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);                                                                                                            
+    (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);                                                                                                        
+        
 EOS;
 
-$insertTypes = "isiiiissssiisii";
+$insertTypes = 'iisdiidssssidsii';
 
+$maxQ = <<<EOS
+SELECT max(item_key) AS item_key
+FROM artItems
+WHERE exhibitorRegionYearId=?
+EOS;
 
 foreach ($tabledata as $row) {
     if($row['final_price'] == '') {$row['final_price'] = null;}
@@ -63,7 +69,7 @@ foreach ($tabledata as $row) {
     }
     if($row['min_price'] == '' || $row['min_price'] == 0) {$row['min_price'] = null;}
     if($row['final_price'] == '' || $row['final_price'] == 0) {$row['final_price'] = null;}
-    if($row['sale_price'] == '') {$row['sale_price'] = null;}
+    if($row['sale_price'] == '') {$row['sale_price'] = 0;}
     if($row['notes'] == '') { $row['notes'] = null;}
 
     // perform art type based must be null/equal items
@@ -84,33 +90,37 @@ foreach ($tabledata as $row) {
             break;
     }
 
-    if(($row['id'] < 0) && ($row['min_price']==null)) { $row['min_price']=$row['sale_price']; }
+    if (($row['id'] < 0) && ($row['min_price']==null)) {
+        $row['min_price']=$row['sale_price'];
+    }
 
-    $paramarray = array($row['item_key'], $location, $row['min_price'], $row['original_qty'], $row['quantity'],
-        $row['sale_price'], $row['status'] , $row['title'], $row['type'], $row['material'], $row['bidder'], $row['final_price'],
-        $row['notes'],
-        $row['id']);
+
     if($row['id'] > 0) {
+        $paramarray = array($row['item_key'], $location, $row['min_price'], $row['original_qty'], $row['quantity'],
+            $row['sale_price'], $row['status'] , $row['title'], $row['type'], $row['material'], $row['bidder'], $row['final_price'],
+            $row['notes'], $_SESSION['user_perid'], $row['id']);
+
         $updated += dbSafeCmd($updateSQL, $updateTypes, $paramarray);
     } else {
-        array_pop($paramarray);
-        $paramarray[] = $row['exhibitorRegionYearId'];
+        // for new rows assign the next item_key for this artist, if no rows for this artist, assign it 1.
+        $maxKey = 0;
+        $maxKeyR = dbSafeQuery($maxQ, 'i', array($row['exhibitorRegionYearId']));
+        if ($maxKeyR->num_rows > 0) {
+            $maxKey = $maxKeyR->fetch_array()[0];
+        }
 
-        $maxKey = array('item_key'=>0);
-        $maxKeyR = dbSafeQuery("SELECT max(item_key) as item_key FROM artItems WHERE exhibitorRegionYearId=? GROUP BY exhibitorRegionYearId", 'i', array($row['exhibitorRegionYearId']));
-        if($maxKeyR->num_rows > 0) { $maxKey = $maxKeyR->fetch_array(); }
+        if ($maxKey < $row['item_key'])
+            $maxKey = $row['item_key'];
+        else
+            $maxKey++;
 
-        if($row['item_key'] == 0) { $paramarray[0] = $maxKey['item_key']+1; }
-        elseif($row['item_key'] <= $maxKey['item_key']) {
-            $checkKeyR = dbSafeQuery("SELECT item_key FROM artItems WHERE exhibitorRegionYearId=? and item_key=?", 'ii',
-                array($row['exhibitorRegionYearId'], $row['item_key']));
-            if($checkKeyR->num_rows >0) { $paramarray[0] = $maxKey['item_key']+1; }
-            }
+        $paramarray = array($maxKey, $conid, $location, $row['min_price'], $row['original_qty'], $row['quantity'],
+            $row['sale_price'], $row['status'] , $row['title'], $row['type'], $row['material'], $row['bidder'], $row['final_price'],
+            $row['notes'], $row['exhibitorRegionYearId'], $_SESSION['user_perid']);
 
         $response['insert'] = $insertSQL;
         $response['insertArray'] = $paramarray;
-        $paramarray[]=$_SESSION['user_perid'];
-        $new_index = dbSafeInsert($insertSQL,$insertTypes,$paramarray);
+        $new_index = dbSafeInsert($insertSQL, $insertTypes, $paramarray);
         if($new_index > 0 ) { $new++; }
         }
     }

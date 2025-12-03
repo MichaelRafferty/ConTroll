@@ -8,7 +8,8 @@ $test_base = array(
     'age'       => 'adult',
     'type'      => 'full',
     'id'        => 'test',
-    'badge_name'     => 'Test Standard'
+    'badge_name'     => 'Test Standard',
+    'badgeNameL2' => 'L2 Name'
 );
 
 $test_standard = $test_base; $test_standard['category']='standard';

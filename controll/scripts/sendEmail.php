@@ -91,7 +91,7 @@ case 'new':
     GROUP BY p.first_name, p.email_addr, p.id
 EOQ;
     $typestr = 'i';
-    $paramarray = array (getConfValue('reg', 'noNewDays'));
+    $paramarray = array (getConfValue('reg', 'noNewDays', 60));
     $macroSubstitution = true;
     $email_text = returnCustomText('noMembership/text');
     $email_html = returnCustomText('noMembership/html');

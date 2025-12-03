@@ -2,7 +2,7 @@ Registration Status (membership status)
 
 Registration (reg) records are assigned a status, this is the meanings and flows of those status entries
 
-statis enum('unpaid','plan','paid','cancelled','refunded','transfered','upgraded','rolled-over') DEFAULT 'unpaid'
+statis enum('unpaid','plan','paid','cancelled','refunded','donated','transferred','upgraded','rolled-over') DEFAULT 'unpaid'
 
 NULL is not considered valid, but is currently not locked out.
 
@@ -21,6 +21,8 @@ cancelled: This registation can be in any stage of payment, but is now 'revoked'
 
 refunded: This registration entry has been refunded by the convention to the end user.  It is no longer valid.  It is can be shown to any
     one with access to this person's records
+
+donated: This registation has been cancelled and the amount paid donated to the organization and not refunded.
 
 transferred: Thiw regitration entry is no longer valid.  It is an audit marker for who paid for it, and a new membership has been created
     for the receiving user for that membership.

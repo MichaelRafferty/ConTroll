@@ -19,6 +19,7 @@ class Pos {
         'legalName',
         'pronouns',
         'badge_name',
+        'badgeNameL2',
         'email_addr',
         'address_1',
         'address_2',
@@ -45,7 +46,7 @@ class Pos {
     #pay_currentOrderId = null;
     #preTaxAmt = null;
     #taxAmt = null;
-    #taxLabel = '';
+    #taxes = '';
     #totalPaid = null;
     #payOverride = 0;
     #payPoll = 0;
@@ -143,9 +144,9 @@ class Pos {
     #add_postal_code_field = null;
     #add_country_field = null;
     #add_email1_field = null;
-    #add_email2_field = null;
     #add_phone_field = null;
     #add_badgename_field = null;
+    #add_badgeNameL2_field = null;
     #add_header = null;
     #addnew_button = null;
     #addoverride_button = null;
@@ -154,13 +155,23 @@ class Pos {
     #add_results_div = null;
     #add_mode = true;
     #addOverride = 0;
-    #uspsDiv= null;
+    #uspsDiv = null;
 
     // for matching/every functions
     #checkPerid = null;
 
+    // currency
+    #locale = 'en-us';
+    #currencyFmt = null;
+
 // initialization
     constructor(use) {
+        this.#locale = config.locale;
+        this.#currencyFmt = new Intl.NumberFormat(this.#locale, {
+            style: 'currency',
+            currency: config.currency,
+        });
+
         this.#use = use;
 
         if (config.hasOwnProperty('multiOneDay'))
@@ -202,9 +213,9 @@ class Pos {
         this.#add_postal_code_field = document.getElementById("zip");
         this.#add_country_field = document.getElementById("country");
         this.#add_email1_field = document.getElementById("email1");
-        this.#add_email2_field = document.getElementById("email2");
         this.#add_phone_field = document.getElementById("phone");
-        this.#add_badgename_field = document.getElementById("badgename");
+        this.#add_badgename_field = document.getElementById("badge_name");
+        this.#add_badgeNameL2_field = document.getElementById("badgeNameL2");
         this.#add_header = document.getElementById("add_header");
         this.#addnew_button = document.getElementById("addnew-btn");
         this.#addoverride_button = document.getElementById("addoverride-btn");
@@ -316,7 +327,7 @@ class Pos {
     }
 
     getManager() {
-        return this.#manager == 1  && baseManagerEnabled;
+        return this.#manager == 1 && baseManagerEnabled;
     }
 
     isMultiOneDay() {
@@ -361,9 +372,9 @@ class Pos {
         this.#add_postal_code_field.value = cartrow.postal_code;
         this.#add_country_field.value = cartrow.country;
         this.#add_email1_field.value = cartrow.email_addr;
-        this.#add_email2_field.value = cartrow.email_addr;
         this.#add_phone_field.value = cartrow.phone;
         this.#add_badgename_field.value = cartrow.badge_name;
+        this.#add_badgeNameL2_field.value = cartrow.badgeNameL2;
         // policies
         var policies = cartrow.policies;
         for (var row in policies) {
@@ -395,7 +406,7 @@ class Pos {
     loadInitialData(data) {
         // map the memIds and labels for the pre-coded memberships.  Doing it now because it depends on what the database sends.
         // tables
-        this.#conlabel =  data.label;
+        this.#conlabel = data.label;
         this.#conid = data.conid;
         this.#user_id = data.user_id
         this.#manager = data.Manager;
@@ -424,7 +435,7 @@ class Pos {
             baseManagerEnabled = false;
 
         // create the globals (vars) for membershipRules.js
-        memTypes= data.gmemTypes;
+        memTypes = data.gmemTypes;
         ageList = data.gageList;
         ageListIdx = data.gageListIdx;
         memCategories = data.gmemCategories;
@@ -494,15 +505,6 @@ class Pos {
         return mem_index;
     }
 
-    // badgeNameDefault: build a default badge name if its empty
-    badgeNameDefault(badge_name, first_name, last_name) {
-        if (badge_name === undefined | badge_name === null || badge_name === '') {
-            var default_name = (first_name + ' ' + last_name).trim();
-            return '<i>' + default_name.replace(/ +/, ' ') + '</i>';
-        }
-        return badge_name;
-    }
-
     // show the full perinfo record as a hover in the table
     buildRecordHover(e, cell, onRendered) {
         var data = cell.getData();
@@ -519,7 +521,7 @@ class Pos {
         if (data.country != '' && data.country != 'USA') {
             hover_text += data.country + '<br/>';
         }
-        hover_text += 'Badge Name: ' + this.badgeNameDefault(data.badge_name, data.first_name, data.last_name) + '<br/>' +
+        hover_text += 'Badge Name: ' + badgeNameDefault(data.badge_name, data.badgeNameL2, data.first_name, data.last_name) + '<br/>' +
             'Email: ' + data.email_addr + '<br/>' + 'Phone: ' + data.phone + '<br/>';
         if (data.managedBy) {
             hover_text += 'Managed by: (' + data.managedBy + ') ' + data.mgrFullName + '</br>';
@@ -726,20 +728,31 @@ class Pos {
         } else {
             var row;
             index = -index;
-            this.everyMembership(this.#result_perinfo, function(_this, mem) {
-                var prow = mem.pindex;
-                if (index == _this.#result_perinfo[prow].perid || index == _this.#result_perinfo[prow].managedBy || index ==  mem.tid || index == mem.tid2) {
-                    if (_this.#result_perinfo[prow].banned == 'Y') {
-                        alert("Please ask " + (_this.#result_perinfo[prow].first_name + ' ' + _this.#result_perinfo[prow].last_name).trim() +
+            for (let row = 0; row < this.#result_perinfo.length; row++) {
+                let prow = this.#result_perinfo[row];
+                // first check perid/managed by
+                let match = index == prow.perid || index == prow.managedBy;
+                // now check tid
+                if (!match && prow.memberships && prow.memberships.length > 0) {
+                    for (let mrow = 0; mrow < prow.memberships.length; mrow++) {
+                        let mem = prow.memberships[mrow];
+                        match = index == mem.tid || index == mem.tid2;
+                        if (match)
+                            break;
+                    }
+                }
+                if (match) {
+                    if (prow.banned == 'Y') {
+                        alert("Please ask " + (prow.first_name + ' ' + prow.last_name).trim() +
                             " to talk to the Registration Administrator, you cannot add them at this time.")
                         return 0;
                     }
-                    perid = _this.#result_perinfo[prow].perid;
+                    perid = prow.perid;
                     if (cart.notinCart(perid)) {
-                        cart.add(_this.#result_perinfo[prow], index == _this.#result_perinfo[prow].perid);
+                        cart.add(prow, index == prow.perid);
                     }
                 }
-            });
+            }
         }
 
         if (table == 'result') {
@@ -826,16 +839,16 @@ class Pos {
         this.#add_postal_code_field.value = "";
         this.#add_country_field.value = "";
         this.#add_email1_field.value = "";
-        this.#add_email2_field.value = "";
         this.#add_phone_field.value = "";
         this.#add_badgename_field.value = "";
+        this.#add_badgeNameL2_field.value = "";
         this.#add_country_field.value = 'USA';
         // clear the policies
         for (var pol in this.#policies) {
             var policyName = this.#policies[pol].policy;
             var policybox = document.getElementById('p_' + policyName);
             if (policybox)
-                policybox.checked =  this.#policies[pol].defaultValue == 'Y';
+                policybox.checked = this.#policies[pol].defaultValue == 'Y';
         }
 
         this.#add_header.innerHTML = `
@@ -851,7 +864,6 @@ class Pos {
         this.#add_state_field.style.backgroundColor = '';
         this.#add_postal_code_field.style.backgroundColor = '';
         this.#add_email1_field.style.backgroundColor = '';
-        this.#add_email2_field.style.backgroundColor = '';
         if (this.#add_results_table != null) {
             this.#add_results_table.destroy();
             this.#add_results_table = null;
@@ -875,6 +887,8 @@ class Pos {
 
     // add record from the add/edit screen to the cart.  If it's already in the cart, update the cart record.
     add_new(override = 0) {
+        clear_message();
+
         var edit_index = this.#add_index_field.value.trim();
         var edit_perid = this.#add_perid_field.value.trim();
         var new_memindex = this.#add_memIndex_field.value.trim();
@@ -883,7 +897,7 @@ class Pos {
         var new_last = this.#add_last_field.value.trim();
         var new_suffix = this.#add_suffix_field.value.trim();
         var new_legalName = this.#add_legalName_field.value.trim();
-        var new_pronouns = this.#add_legalName_field.value.trim();
+        var new_pronouns = this.#add_pronouns_field.value.trim();
         var new_addr1 = this.#add_addr1_field.value.trim();
         var new_addr2 = this.#add_addr2_field.value.trim();
         var new_city = this.#add_city_field.value.trim();
@@ -893,9 +907,19 @@ class Pos {
         var new_email = this.#add_email1_field.value.trim();
         var new_phone = this.#add_phone_field.value.trim();
         var new_badgename = this.#add_badgename_field.value.trim();
+        var new_badgeNameL2 = this.#add_badgeNameL2_field.value.trim();
         var new_fullname = (new_first + ' ' + new_middle + ' ' + new_last + ' ' + new_suffix).replace('  ', ' ').trim();
 
         this.#addOverride = override;
+
+        if (new_email == '') {
+            show_message("Email address is requird", 'error');
+            return;
+        }
+        if (new_email != '/r' && validateAddress(new_email) == false) {
+            show_message("Email address is invalid and not /r", 'error');
+            return;
+        }
 
         if (this.#add_mode == false && edit_index != '') { // update perinfo/meminfo and cart_perinfo and cart_memberships
             var row = {};
@@ -907,6 +931,7 @@ class Pos {
             row.legalName = new_legalName;
             row.pronouns = new_pronouns;
             row.badge_name = new_badgename;
+            row.badgeNameL2 = new_badgeNameL2;
             row.address_1 = new_addr1;
             row.address_2 = new_addr2;
             row.city = new_city;
@@ -930,7 +955,7 @@ class Pos {
                     row.policies[policyName].policy = policyName;
                 }
             }
-            
+
             cart.updateEntry(edit_index, row, this.#policies);
             this.#review_dirty = true;
 
@@ -941,9 +966,9 @@ class Pos {
             this.#add_legalName_field.value = "";
             this.#add_pronouns_field.value = "";
             this.#add_email1_field.value = "";
-            this.#add_email2_field.value = "";
             this.#add_phone_field.value = "";
             this.#add_badgename_field.value = "";
+            this.#add_badgeNameL2_field.value = "";
             this.#add_index_field.value = "";
             this.#add_perid_field.value = "";
             this.#add_memIndex_field.value = "";
@@ -952,7 +977,7 @@ class Pos {
                 var policyName = this.#policies[pol].policy;
                 var policybox = document.getElementById('p_' + policyName);
                 if (policybox)
-                    policybox.checked =  this.#policies[pol].policy.defaultValue == 'Y';
+                    policybox.checked = this.#policies[pol].defaultValue == 'Y';
             }
             this.#add_header.innerHTML = `
 <div class="col-sm-12 text-bg-primary mb-2">
@@ -967,7 +992,6 @@ class Pos {
             this.#add_state_field.style.backgroundColor = '';
             this.#add_postal_code_field.style.backgroundColor = '';
             this.#add_email1_field.style.backgroundColor = '';
-            this.#add_email2_field.style.backgroundColor = '';
             if (this.#add_results_table != null) {
                 this.#add_results_table.destroy();
                 this.#add_results_table = null;
@@ -1045,7 +1069,8 @@ class Pos {
                 var row = this.#add_perinfo[rowindex];
                 var primmem = this.find_primary_membership(row.memberships);
                 if (primmem != null) {
-                    row.reg_label = row.memberships[primmem].label;
+                    let memRow = row.memberships[primmem];
+                    row.reg_label = memRow.printcount + ':' + memRow.label;
                     var tid = row.memberships[primmem].tid;
                     if (tid != '') {
                         this.#checkPerid = row.perid;
@@ -1069,17 +1094,20 @@ class Pos {
                 initialSort: [
                     {column: "fullName", dir: "asc"},
                     {column: "badge_name", dir: "asc"},
+                    {column: "badgeNameL2", dir: "asc"},
                 ],
                 columns: [
                     {field: "perid", visible: false,},
-                    {title: "Name", field: "fullName", headerFilter: true, headerFilterFunc: fullNameHeaderFilter, headerWordWrap: true,
-                        tooltip: posbuildRecordHover, formatter: "textarea", },
+                    {
+                        title: "Name", field: "fullName", headerFilter: true, headerFilterFunc: fullNameHeaderFilter, headerWordWrap: true,
+                        tooltip: posbuildRecordHover, formatter: "textarea",
+                    },
                     {field: "last_name", visible: false,},
                     {field: "first_name", visible: false,},
                     {field: "middle_name", visible: false,},
                     {field: "suffix", visible: false,},
                     {field: "legalName", visible: false,},
-                    {title: "Badge Name", field: "badge_name", headerFilter: true, headerWordWrap: true, tooltip: true,},
+                    {title: "Badge Name", field: "badgename", headerFilter: true, headerWordWrap: true, tooltip: true, formatter: 'html',},
                     {title: "Zip", field: "postal_code", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 70, width: 70},
                     {title: "Email Address", field: "email_addr", headerFilter: true, headerWordWrap: true, tooltip: true,},
                     {title: "Reg", field: "reg_label", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 120, width: 120,},
@@ -1114,6 +1142,7 @@ class Pos {
         var new_email = this.#add_email1_field.value.trim();
         var new_phone = this.#add_phone_field.value.trim();
         var new_badgename = this.#add_badgename_field.value.trim();
+        var new_badgeNameL2 = this.#add_badgeNameL2_field.value.trim();
         var new_fullname = (new_first + ' ' + new_middle + ' ' + new_last + ' ' + new_suffix).replace('  ', ' ').trim();
 
         this.#addOverride = override;
@@ -1185,10 +1214,8 @@ class Pos {
             if (new_email == '') {
                 missing_fields++;
                 this.#add_email1_field.style.backgroundColor = 'var(--bs-warning)';
-                this.#add_email2_field.style.backgroundColor = 'var(--bs-warning)';
             } else {
                 this.#add_email1_field.style.backgroundColor = '';
-                this.#add_email2_field.style.backgroundColor = '';
             }
         } else {
             this.#add_first_field.style.backgroundColor = '';
@@ -1198,7 +1225,6 @@ class Pos {
             this.#add_state_field.style.backgroundColor = '';
             this.#add_postal_code_field.style.backgroundColor = '';
             this.#add_email1_field.style.backgroundColor = '';
-            this.#add_email2_field.style.backgroundColor = '';
             this.#add_header.innerHTML = `
     <div class="col-sm-12 text-bg-primary mb-2">
         <div class="text-bg-primary m-2">
@@ -1241,7 +1267,8 @@ class Pos {
 
         var row = {
             perid: this.#new_perid, first_name: new_first, middle_name: new_middle, last_name: new_last, suffix: new_suffix,
-            legalName: new_legalName, pronouns: new_pronouns, badge_name: new_badgename, fullName: new_fullname,
+            legalName: new_legalName, pronouns: new_pronouns, badge_name: new_badgename, badgeNameL2: new_badgeNameL2,
+            fullName: new_fullname,
             address_1: new_addr1, address_2: new_addr2, city: new_city, state: new_state, postal_code: new_postal_code,
             open_notes: '',
             country: new_country, email_addr: new_email, phone: new_phone, active: 'Y', banned: 'N', policies: rowPolicies
@@ -1250,10 +1277,24 @@ class Pos {
 
         this.#add_first_field.value = "";
         this.#add_middle_field.value = "";
+        this.#add_suffix_field.value = "";
+        this.#add_legalName_field.value = "";
+        this.#add_pronouns_field.value = "";
         this.#add_email1_field.value = "";
-        this.#add_email2_field.value = "";
         this.#add_phone_field.value = "";
         this.#add_badgename_field.value = "";
+        this.#add_badgeNameL2_field.value = "";
+        this.#add_index_field.value = "";
+        this.#add_perid_field.value = "";
+        this.#add_memIndex_field.value = "";
+        // clear the policies
+        for (var pol in this.#policies) {
+            var policyName = this.#policies[pol].policy;
+            var policybox = document.getElementById('p_' + policyName);
+            if (policybox)
+                policybox.checked = this.#policies[pol].defaultValue == 'Y';
+        }
+
         cart.add(row);
 
         if (this.#add_results_table != null) {
@@ -1280,7 +1321,7 @@ class Pos {
         var prim = this.find_primary_membership(mem);
         var label = "No Primary Membership";
         if (prim != null) {
-            label = mem[prim].label;
+            label = mem[prim].printcount + ':' + mem[prim].label;
         }
         var html = `
 <div class="container-fluid">
@@ -1324,7 +1365,7 @@ class Pos {
         </div>
         <div class="row">
             <div class="col-sm-3">Badge Name:</div>
-            <div class="col-sm-9">` + this.badgeNameDefault(data.badge_name, data.first_name, data.last_name) + `</div>
+            <div class="col-sm-9">` + badgeNameDefault(data.badge_name, data.badgeNameL2, data.first_name, data.last_name) + `</div>
         </div>
         <div class="row">
             <div class="col-sm-3">Name:</div>
@@ -1493,7 +1534,7 @@ class Pos {
         var note = null;
         var fullName = null;
 
-        if (!this.#manager  || !baseManagerEnabled)
+        if (!this.#manager || !baseManagerEnabled)
             return;
 
         this.#notesType = null;
@@ -1536,7 +1577,8 @@ class Pos {
     showRegNote(perid, index, count) {
         var bodyHTML = '<div class="row mb-2">\n<div class="col-sm-12">\n';
         var note = cart.getRegNote(perid, index);
-        var fullName = cart.getRegFullName(perid);``
+        var fullName = cart.getRegFullName(perid);
+        ``
         var label = cart.getRegLabel(perid, index);
         var newregnote = cart.getNewRegNote(perid, index);
 
@@ -1617,7 +1659,7 @@ class Pos {
 
     // select the row (tid) from the unpaid list and add it to the cart, switch to the payment tab (used by find unpaid)
     // marks it as a tid (not perid) add by inverting it.  (addToCart will deal with the inversion)
-addUnpaid(tid) {
+    addUnpaid(tid) {
         pos.addToCart(-Number(tid), 'result');
         // force a new transaction for the payment as the cashier is not the same as the check-in in this case.
         pos.addedPayableTransToCart();
@@ -1703,7 +1745,7 @@ addUnpaid(tid) {
             }
             var trantbl = [];
             // loop over unpaid memberships and finding distinct transactions (should this move to a second SQL query?)
-            this.everyMembership(this.#result_perinfo, function(_this, mem) {
+            this.everyMembership(this.#result_perinfo, function (_this, mem) {
                 tid = mem.tid;
                 if (!trantbl.includes(tid)) {
                     trantbl.push(tid);
@@ -1724,7 +1766,7 @@ addUnpaid(tid) {
             }
 
             // build the data table for tabulator
-            this.#unpaid_table  = [];
+            this.#unpaid_table = [];
             // multiple entries unpaid, display table to choose which one
             for (var trow in trantbl) {
                 tid = trantbl[trow];
@@ -1735,7 +1777,7 @@ addUnpaid(tid) {
                 var prowindex = 0;
                 var prow = null;
                 mperid = -1;
-                this.everyMembership(this.#result_perinfo, function(_this, mem) {
+                this.everyMembership(this.#result_perinfo, function (_this, mem) {
                     if (mem.tid == tid) {
                         prowindex = mem.pindex;
                         prow = _this.#result_perinfo[prowindex];
@@ -1747,7 +1789,7 @@ addUnpaid(tid) {
                             if (names != '') {
                                 names += '; ';
                             }
-                            names += prow.fullName+ '(' + prow.perid + ')';
+                            names += prow.fullName + '(' + prow.perid + ')';
                             mperid = mem.perid;
                         }
                     }
@@ -1785,7 +1827,7 @@ addUnpaid(tid) {
         var rowindex;
         var memberships;
 
-        memCount = this.everyMembership(this.#result_perinfo, function(_this, mem) {
+        memCount = this.everyMembership(this.#result_perinfo, function (_this, mem) {
             print_count += Number(mem.printcount);
             attach_count += Number(mem.attachcount);
             return 1;
@@ -1798,7 +1840,8 @@ addUnpaid(tid) {
             mem = row.memberships;
             var primmem = this.find_primary_membership(mem);
             if (primmem != null) {
-                row.reg_label = mem[primmem].label;
+                let memRow = row.memberships[primmem];
+                row.reg_label = memRow.printcount + ':' + memRow.label;
                 tid = mem[primmem].tid;
                 if (tid != '') {
                     var other = false;
@@ -1830,15 +1873,17 @@ addUnpaid(tid) {
                     {title: "Cart", width: 100, headerFilter: false, headerSort: false, formatter: _this.addCartIcon, formatterParams: {t: "result"},},
                     {title: "Per ID", field: "perid", headerWordWrap: true, width: 80, visible: false, hozAlign: 'right',},
                     {field: "index", visible: false,},
-                    {title: "Full Name", field: "fullName", headerFilter: true, headerFilterFunc: fullNameHeaderFilter, headerWordWrap: true,
-                        tooltip: posbuildRecordHover, formatter: "textarea", },
+                    {
+                        title: "Full Name", field: "fullName", headerFilter: true, headerFilterFunc: fullNameHeaderFilter, headerWordWrap: true,
+                        tooltip: posbuildRecordHover, formatter: "textarea",
+                    },
                     {field: "last_name", visible: false,},
                     {field: "first_name", visible: false,},
                     {field: "middle_name", visible: false,},
                     {field: "suffix", visible: false,},
                     {field: "legalName", visible: false,},
                     {field: "pronouns", visible: false,},
-                    {title: "Badge Name", field: "badge_name", headerFilter: true, headerWordWrap: true, tooltip: true,},
+                    {title: "Badge Name", field: "badgename", headerFilter: true, headerWordWrap: true, tooltip: true, formatter: 'html',},
                     {title: "Zip", field: "postal_code", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 70, width: 70},
                     {title: "Email Address", field: "email_addr", headerFilter: true, headerWordWrap: true, tooltip: true,},
                     {title: "Reg", field: "reg_label", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 120, width: 120,},
@@ -1919,10 +1964,11 @@ addUnpaid(tid) {
 
 // create the review data screen from the cart
     reviewUpdate() {
+        clear_message();
         cart.updateReviewData();
         this.reviewShown();
         if (this.#reviewMissingPolicies > 0 && this.#print_tab)
-            this.#print_tab.disabled =true;
+            this.#print_tab.disabled = true;
 
         if (this.#reviewMissingItens > 0) {
             setTimeout(reviewNoChanges, 100);
@@ -2112,7 +2158,7 @@ addUnpaid(tid) {
         this.#pay_currentOrderId = data.rtn.orderId;
         this.#preTaxAmt = data.rtn.preTaxAmt;
         this.#taxAmt = data.rtn.taxAmt;
-        this.#taxLabel = data.rtn.taxLabel;
+        this.#taxes = data.rtn.taxes;
         this.#totalPaid = data.rtn.totalPaid;
         show_message("Order #" + this.#pay_currentOrderId + " created.");
         bootstrap.Tab.getOrCreateInstance(this.#pay_tab).show();
@@ -2122,8 +2168,8 @@ addUnpaid(tid) {
         }
         if (data.hasOwnProperty('badges')) {
             // badges in return, update cart rows
-            for (var i = 0; i < data.badges.length; i++) {
-                var badge = data.badges[i];
+            for (let i = 0; i < data.badges.length; i++) {
+                let badge = data.badges[i];
                 cart.setCouponDisount(badge.perid, badge.regid, badge.paid, badge.coupon, badge.couponDiscount)
             }
         }
@@ -2176,7 +2222,7 @@ addUnpaid(tid) {
     }
 
 // overridePay - pay returned the terminal was unavailable, operator said to override it
-    overridePay(){
+    overridePay() {
         this.#payOverride = 1;
         this.pay('');
     }
@@ -2323,9 +2369,10 @@ addUnpaid(tid) {
                     if (nomodal == '') {
                         this.#cashChangeModal.show();
                         document.getElementById("CashChangeBody").innerHTML = "<div class='row mt-2'>\n<div class='col-sm-12'>" +
-                            "Customer owes $" + total_amount_due.toFixed(2) + ", and tendered $" + tendered_amt.toFixed(2) +
+                            "Customer owes " + this.#currencyFmt.format(total_amount_due.toFixed(2)) +
+                            ", and tendered " + this.#currencyFmt.format(tendered_amt.toFixed(2)) +
                             "</div>\n</div>\n<div class='row mt-2 mb-2'>\n<div class='col-sm-12'>" +
-                            "Confirm change give to customer of $" + (tendered_amt - total_amount_due).toFixed(2) +
+                            "Confirm change give to customer of " + this.#currencyFmt.format((tendered_amt - total_amount_due).toFixed(2)) +
                             "</div>\n</div>\n";
                         return;
                     }
@@ -2408,13 +2455,13 @@ addUnpaid(tid) {
             if (pt_discount) {
                 var eltenderedamt = document.getElementById('pay-discount');
                 var discount_amt = Number(eltenderedamt.value);
-                if (discount_amt <=  0 || discount_amt > total_amount_due) {
+                if (discount_amt <= 0 || discount_amt > total_amount_due) {
                     eltenderedamt.style.backgroundColor = 'var(--bs-warning)';
                     return;
                 }
                 this.#drow = {
                     index: cart.getPmtLength() + 1, amt: discount_amt, ccauth: ccauth, checkno: checkno, desc: eldesc.value, type: 'discount',
-                        preTaxAmt: discount_amt, taxAmt: 0
+                    preTaxAmt: discount_amt, taxAmt: 0
                 };
                 cart.addPmt(this.#drow, true);
                 this.#managerDiscount = discount_amt;
@@ -2531,7 +2578,7 @@ addUnpaid(tid) {
                 this.#payPoll = 0;
                 this.#payCurrentRequest = null;
                 this.#pay_button_pay.disabled = false;
-            }  else if (this.#payPoll == 1)
+            } else if (this.#payPoll == 1)
                 document.getElementById('pollRow').hidden = false;
             else
                 this.#pay_button_pay.disabled = false;
@@ -2590,17 +2637,15 @@ addUnpaid(tid) {
         this.#lastReceiptType = receipt_type;
         // header text
         var header_text = cart.receiptHeader(this.#user_id, this.#pay_tid);
-        // optional footer text
-        var footer_text = '';
         // server side will print the receipt
         var postData = {
             user_id: this.#user_id,
             ajax_request_action: 'printReceipt',
             header: header_text,
             payTid: this.#pay_tid,
-            prows: JSON.stringify(cart.getCartPerinfo()),
-            pmtrows: JSON.stringify(cart.getCartPmt()),
-            footer: footer_text,
+            //prows: JSON.stringify(cart.getCartPerinfo()),
+            //pmtrows: JSON.stringify(cart.getCartPmt()),
+            //footer: footer_text,
             receipt_type: receipt_type,
             email_addrs: this.#emailAddreesRecipients,
         };
@@ -2667,7 +2712,7 @@ addUnpaid(tid) {
             url: "scripts/pos_printBadge.php",
             data: postData,
             success: function (data, textstatus, jqxhr) {
-                if (data.constructor.name !== 'Object' ) {
+                if (data.constructor.name !== 'Object') {
                     show_message(data, 'error');
                     $("button[name='print_btn']").attr("disabled", false);
                     return;
@@ -2695,7 +2740,7 @@ addUnpaid(tid) {
             var printCount = badges[index]['printCount'];
             if (this.#printedObj.get(regId) == 0) {
                 this.#printedObj.set(regId, 1);
-                regs.push({ regid: regId, printcount: printCount + 1});
+                regs.push({regid: regId, printcount: printCount + 1});
             }
         }
         if (regs.length > 0) {
@@ -2724,6 +2769,7 @@ addUnpaid(tid) {
         this.printShown();
         show_message(data.message, 'success');
     }
+
 // tab shown events - state mapping for which tab is shown
     findShown() {
         this.#printActive = false;
@@ -2762,7 +2808,7 @@ addUnpaid(tid) {
             }
         } else {
             if (this.#emailAddreesRecipients.includes(email_address)) {
-                for (var index = 0; index < this.#emailAddreesRecipients.length; index++) {
+                for (let index = 0; index < this.#emailAddreesRecipients.length; index++) {
                     if (this.#emailAddreesRecipients[index] == email_address)
                         this.#emailAddreesRecipients.splice(index, 1);
                 }
@@ -2941,14 +2987,16 @@ addUnpaid(tid) {
             pay_html += `
     <div class="row mt-1">
         <div class="col-sm-2 ms-0 me-2 p-0">Order Total:</div>
-        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-pre-tax-amt">$` + Number(this.#preTaxAmt).toFixed(2) + `</div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-pre-tax-amt">` +
+                this.#currencyFmt.format(Number(this.#preTaxAmt).toFixed(2)) + `</div>
     </div>
 `;
             if (this.#managerDiscount > 0) {
                 pay_html += `
     <div class="row mt-2">
         <div class="col-sm-2 ms-0 me-2 p-0">Discount:</div>
-        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-prior-disc">$` + Number(this.#managerDiscount).toFixed(2) + `</div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-prior-disc">$` +
+                    this.#currencyFmt.format(Number(this.#managerDiscount).toFixed(2)) + `</div>
     </div>
 `;
             }
@@ -2957,22 +3005,44 @@ addUnpaid(tid) {
                 pay_html += `
     <div class="row mt-1">
         <div class="col-sm-2 ms-0 me-2 p-0">Coupon:</div>
-        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-coupon-disc">$` + (-Number(this.#couponDiscount)).toFixed(2) + `</div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-coupon-disc">` +
+                    this.#currencyFmt.format((-Number(this.#couponDiscount)).toFixed(2)) + `</div>
     </div>
        <div class="row mt-1">
         <div class="col-sm-2 ms-0 me-2 p-0">Pre-Tax:</div>
-        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-post-coupon">$` + Number(pretax).toFixed(2) + `</div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-post-coupon">` +
+                    this.#currencyFmt.format(Number(pretax).toFixed(2)) + `</div>
     </div>
 `;
             }
+            if (Object.keys(config.taxRates).length > 0) {
+                for (let tax in config.taxRates) {
+                    let rate = config.taxRates[tax];
+                    let amt = this.#taxes[tax];
+                    if (amt == null)
+                        continue;
+
+                    pay_html += `
+    <div class="row mt-1">
+        <div class="col-sm-2 ms-0 me-2 p-0">` + rate.label + `:</div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0">` +
+                        this.#currencyFmt.format(Number(amt).toFixed(2)) + `</div>
+    </div>`;
+                }
+                if (this.#taxAmt > 0) {
+                    pay_html += `
+    <div class="row mt-1">
+        <div class="col-sm-2 ms-0 me-2 p-0">Total Sales Tax:</div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-tax-amt">` +
+                        this.#currencyFmt.format(Number(this.#taxAmt).toFixed(2)) + `</div>
+    </div>`;
+                }
+            }
             pay_html += `
     <div class="row mt-1">
-        <div class="col-sm-2 ms-0 me-2 p-0">` + this.#taxLabel + `:</div>
-        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-tax-amt">$` + Number(this.#taxAmt).toFixed(2) + `</div>
-    </div>
-    <div class="row mt-1">
         <div class="col-sm-2 ms-0 me-2 p-0">Amount Due:</div>
-        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-amt-due">$` + Number(total_amount_due).toFixed(2) + `</div>
+        <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0" id="pay-amt-due">` +
+                this.#currencyFmt.format(Number(total_amount_due).toFixed(2)) + `</div>
     </div>
     <div class="row">
         <div class="col-sm-2 m-0 mt-2 me-2 mb-2 p-0">Payment Type:</div>
@@ -3059,7 +3129,7 @@ addUnpaid(tid) {
     <div class="row mb-2">
         <div class="col-sm-2 ms-0 me-2 p-0">Payor Email:</div>
         <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0"><input type="text" size="60" maxlength="254" name="pay-email" id="pay-email" value="` +
-            cart.getEmail(0) + `" placeholder="Enter payor's email address" /></div>
+                cart.getEmail(0) + `" placeholder="Enter payor's email address" /></div>
     </div>
     <div class="row">
         <div class="col-sm-2 ms-0 me-2 p-0">Payor Phone:</div>
@@ -3363,7 +3433,6 @@ addUnpaid(tid) {
         var memberships = current.memberships;
 
         if (memberships) {
-
             for (var i = 0; i < memberships.length; i++) {
                 if (memberships[i].perid != this.#checkPerid)
                     return false;

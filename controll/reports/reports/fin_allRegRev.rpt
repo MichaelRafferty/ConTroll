@@ -1,0 +1,56 @@
+[report]
+	name="allRegRev"
+	auth=finance
+	csvfile="allRegRevenue"
+	index=conid,label
+	totals=bottom
+    subtotals=conid
+[F001]
+    name=conid
+	sql="r.conid"
+	title="Con ID"
+	align=right
+	minWidth=80
+	filter=true
+[F002]
+    name=label
+    sql=m.label
+    title="Membership Label"
+    minWidth=200
+    filter=true
+[F003]
+    name=price
+    title="price"
+    align=right
+    sql="m.price"
+    format=money
+[F004]
+    name=num_mbrs
+    title="# Regs"
+    align=right
+    sql="COUNT(r.id)"
+    calc=sum
+[F005]
+    name=revenue
+    title="Revenue"
+    align=right
+    sql="m.price * count(r.id)"
+    format=money
+    calc=sum
+[T001]
+	name=reg
+	alias=r
+[T002]
+	name=memLabel
+	alias=m
+	join="m.id=r.memId"
+[P001]
+    type=prompt
+    item=conid
+    datatype=i
+[where]
+	001="r.conid >= ?"
+[group]
+    001="r.conid, m.label, m.price"
+[sort]
+	001="1,2"

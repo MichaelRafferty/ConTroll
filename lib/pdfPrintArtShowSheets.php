@@ -10,12 +10,7 @@ $pdf = null;
 function pdfPrintShopPriceSheets($regionYearId, $region, $response, $first = true, $last = true) {
     global $pdf;
 
-    $con = get_conf('con');
-    if (array_key_exists('currency', $con)) {
-        $currency = $con['currency'];
-    } else {
-        $currency = 'USD';
-    }
+    $currency = getConfValue('con', 'currency', 'USD');
 // local constants for the sheets
     $margin = 0.25;
     $numcols = 3;
@@ -58,19 +53,12 @@ EOS;
     $con = get_con();
     $conname = $con['label'];
 
-    $vendor = get_conf('vendor');
-    $title = $vendor['artistPriceTag'];
-    if ($title == null || $title == '') {
-        $title = "Unconfigured Print Price Tag";
-    }
+    $title = getConfValue('vendor', 'artistPriceTag', 'Unconfigured Print Price Tag');
 
-    $useBarCode = false;
-    if (array_key_exists('artistPriceTagBarcode', $vendor)) {
-        $value = strtolower($vendor['artistPriceTagBarcode']);
-        if ($value == '1' || $value == 'yes') {
-            $useBarCode = true;
-            $vsize += 0.25;
-        }
+    $value = strtolower(getConfValue('vendor', 'artistPriceTagBarcode', 0));
+    $useBarCode = $value == '1' || $value == 'yes' || $value == 'true';
+    if ($useBarCode) {
+        $vsize += 0.25;
     }
 
     // load data array
@@ -231,56 +219,31 @@ EOS;
 function pdfPrintBidSheets($regionYearId, $region, $response, $first = true, $last = true) {
     global $pdf;
 
-    $con = get_conf('con');
-    if (array_key_exists('currency', $con)) {
-        $currency = $con['currency'];
-    } else {
-        $currency = 'USD';
-    }
+    $currency = getConfValue('con', 'currency', 'USD');
     // get parameters for sizing
     $con = get_con();
     $conname = $con['label'];
 
-    $vendor = get_conf('vendor');
-    $title = null;
-    if (array_key_exists('artistBidSheet', $vendor))
-        $title = $vendor['artistBidSheet'];
-   
-    if ($title == null || $title == '') {
-        $title = 'Unconfigured Art Show Bid Sheets';
-    }
-
-    $useBarCode = false;
-    if (array_key_exists('artistBidSheetBarcode', $vendor)) {
-        $value = strtolower($vendor['artistBidSheetBarcode']);
-        if ($value == '1' || $value == 'yes') {
-            $useBarCode = true;
-        }
-    }
+    $title = getConfValue('vendor', 'artistBidSheet', 'Unconfigured Art Show Bid Sheet');
+    $value = strtolower(getConfValue('vendor', 'artistBidSheetBarcode', 0));
+    $useBarCode = $value == '1' || $value == 'yes' || $value == 'true';
     
-    $bidlines = null;
-    if (array_key_exists('artistBidSheetLines', $vendor))
-        $bidlines = $vendor['artistBidSheetLines'];
-    if ($bidlines == null || $bidlines == '' || !is_numeric($bidlines)) {
+    $bidlines = getConfValue('vendor', 'artistBidSheetLines', 4);
+    if ($bidlines == '' || !is_numeric($bidlines)) {
         $bidlines = 4;
     }
 
-    $numberedLines = null;
-    if (array_key_exists('artistBidSheetNumbers', $vendor))
-        $numberedLines = $vendor['artistBidSheetNumbers'];
-    if ($numberedLines == null || $numberedLines == '' || !is_numeric($numberedLines)) {
+    $numberedLines = getConfValue('vendor', 'artistBidSheetNumbers', 3);
+    if ($numberedLines == '' || !is_numeric($numberedLines)) {
         $numberedLines = 3;
     }
 
-    $bidSep = 0;
-    if (array_key_exists('artistBidSheetBidSep', $vendor))
-        $bidSep = $vendor['artistBidSheetBidSep'];
-
+    $bidSep = strtolower(getConfValue('vendor', 'artistBidSheetBidSep', 0));
     if ($bidSep == 'yes' || $bidSep == 'true')
         $bidSep = 1;
     else if ($bidSep == 'no' || $bidSep == 'false')
         $bidSep = 0;
-    else if ($bidSep == null || $bidSep == '' || !is_numeric($bidSep))
+    else if ($bidSep == '' || !is_numeric($bidSep))
         $bidSep = 0;
 
     $totalLines = $bidlines + ($useBarCode ? 1 : 0);
@@ -587,12 +550,7 @@ EOS;
 function pdfArtistControlSheet($regionYearId, $region, $response, $printContactInfo = false, $first=true, $last=true) {
     global $pdf;
 
-    $con = get_conf('con');
-    if (array_key_exists('currency', $con)) {
-        $currency = $con['currency'];
-    } else {
-        $currency = 'USD';
-    }
+    $currency = getConfValue('con', 'currency', 'USD');
     // local constants for the control sheet
     $margin = 0.25;
     $indent = 0.1;
@@ -748,7 +706,7 @@ EOS;
     $v += $rowHeight;
 
     $addr = $artist['city'] . ', ' . $artist['state'] . ' ' . $artist['zip'];
-    printXY($col1, $v + $dataOffset, 'City/State/Zip:');
+    printXY($col1, $v + $dataOffset, 'City/State-Prov/Zip-Postal Code');
     $maxY = $minRowHeight;
     $y = mprintXY($col2, $v + $mprintXYoffset, $col23w, $addr);
     if ($y > $maxY) $maxY = $y;
@@ -866,7 +824,7 @@ EOS;
             $v += $rowHeight;
 
             $addr = $artist['shipCity'] . ', ' . $artist['shipState'] . ' ' . $artist['shipZip'];
-            printXY($col1, $v + $dataOffset, 'City/State/Zip:');
+            printXY($col1, $v + $dataOffset, 'City/State-Prov/Zip-Postal Code');
             $maxY = $minRowHeight;
             $y = mprintXY($col2, $v + $mprintXYoffset, $col2w, $addr);
             if ($y > $maxY) $maxY = $y;

@@ -57,7 +57,8 @@ $config_vars['debug'] = getConfValue('debug', 'controll_people', 0);
 $config_vars['conid'] = $conid;
 $config_vars['useUSPS'] = $useUSPS;
 $config_vars['policies'] = $policies;
-$config_vars['inrerests'] = $interests;
+$config_vars['interests'] = $interests;
+$config_vars['required'] = getConfValue('reg','required', 'addr');;
 ?>
 <script type='text/javascript'>
     var config = <?php echo json_encode($config_vars); ?>;
@@ -277,7 +278,8 @@ $config_vars['inrerests'] = $interests;
                             </div>
                         </div>
                         <div class='col-sm-5 border border-dark ps-1 pe-1'>
-                            <input type='text' id='badgeName' name='badgeName' maxlength='32' size='32' placeholder='Defaults to First Last'/>
+                            <input type='text' id='badgeName' name='badgeName' maxlength='32' size='32' placeholder='Defaults to First Last'/><br/>
+                            <input type='text' id='badgeNameL2' name='badgeNameL2' maxlength='32' size='32' placeholder='Badge Line 2'/>
                         </div>
                         <div class='col-sm-3 border border-dark ps-0'>
                             <div class='container-fluid'>
@@ -312,7 +314,7 @@ $config_vars['inrerests'] = $interests;
                             <input type='text' id='address' name='address' maxlength='64' size='64' placeholder='Address'/>
                             <input type='text' id='addr2' name='addr2' maxlength='64' size='64' placeholder='Address Line 2 or Company'/>
                             <input type='text' id='city' name='city' maxlength='32' size='32' placeholder='City'/>
-                            <input type='text' id='state' name='state' maxlength='16' size='16' placeholder='State'/>
+                            <input type='text' id='state' name='state' maxlength='16' size='16' placeholder='State/Prov'/>
                             <input type='text' id='zip' name='zip' maxlength='10' size='10' placeholder='Postal Code'/>
 
                             <label for='country' class='form-label-sm'>

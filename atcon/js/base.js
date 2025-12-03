@@ -45,8 +45,8 @@ function test(method, formData, resultDiv) {
         data: formData,
         method: method,
         success: function(data, textStatus, jqXhr) {
-            if(data['error']) {
-                alert(data['error']);
+            if(data.error) {
+                alert(data.error);
             } else {
                 $(resultDiv).empty().append(JSON.stringify(data, null, 2));
             }
@@ -195,11 +195,11 @@ function base_changePrintersShow() {
         url: "scripts/base_showPrinterSelect.php",
         data: postData,
         success: function (data, textstatus, jqxhr) {
-            if (data['error'] !== undefined) {
-                show_message(data['error'], 'error');
+            if (data.error !== undefined) {
+                show_message(data.error, 'error');
                 return;
             }
-            base_changePrintersBody.innerHTML = data['selectList'];
+            base_changePrintersBody.innerHTML = data.selectList;
             var value = document.getElementById('currentBadgePrinter').innerHTML;
             if (value !== undefined && value.length > 10)
                 document.getElementById('badge_printer').value = value;
@@ -249,8 +249,8 @@ function base_changePrintersSubmit() {
         url: "scripts/base_printerSessionUpdate.php",
         data: postData,
         success: function (data, textstatus, jqxhr) {
-            if (data['error'] !== undefined) {
-                show_message(data['error'], 'error');
+            if (data.error !== undefined) {
+                show_message(data.error, 'error');
                 return;
             }
             if (typeof pos !== 'undefined' && pos !== null) {
@@ -266,15 +266,15 @@ function base_changePrintersSubmit() {
 // base_changePrinterDisplay
 //  data: receipt, generic, badge print strings
 function base_changePrinterDisplay(data) {
-    var html = 'Badge: ' + data['badge'] + '&nbsp; <button type="button" class="btn btn-sm btn-secondary pt-0 pb-0" onclick="base_changePrintersShow();">Chg</button><br/>' +
-    'Receipt: ' + data['receipt'] + '<br/>' +
-    'General: ' + data['generic'] + '<br/>' +
-    'Terminal: ' + data['terminal'];
+    var html = 'Badge: ' + data.badge + '&nbsp; <button type="button" class="btn btn-sm btn-secondary pt-0 pb-0" onclick="base_changePrintersShow();">Chg</button><br/>' +
+    'Receipt: ' + data.receipt + '<br/>' +
+    'General: ' + data.generic + '<br/>' +
+    'Terminal: ' + data.terminal;
 
     document.getElementById("page_head_printers").innerHTML = html;
     if (typeof current_tab !== 'undefined') {
-        badgePrinterAvailable = data['badge'] !== 'None';
-        receiptPrinterAvailable = data['receipt'] !== 'None';
+        badgePrinterAvailable = data.badge !== 'None';
+        receiptPrinterAvailable = data.receipt !== 'None';
         if (current_tab == print_tab) {
             print_shown();
         }
@@ -360,8 +360,8 @@ function base_managerOverrideSubmit() {
         url: "scripts/base_managerPasswordVerify.php",
         data: postData,
         success: function (data, textstatus, jqxhr) {
-            if (data['error'] !== undefined) {
-                base_password_modal_error_div.innerHTML = "Error: " + data['error'];
+            if (data.error !== undefined) {
+                base_password_modal_error_div.innerHTML = "Error: " + data.error;
                 return;
             }
             base_managerOverrideComplete(data);
@@ -371,7 +371,7 @@ function base_managerOverrideSubmit() {
 }
 
 function base_managerOverrideComplete(data) {
-    if (data['manager'] === true) {
+    if (data.manager === true) {
         baseManagerEnabled = true;
         // make navbar background warning (yellow)
         page_banner.classList.remove("bg-primary")
@@ -403,186 +403,4 @@ function base_managerOverrideComplete(data) {
         return;
     }
     base_managerPassword.style.backgroundColor = '';
-}
-
-// obsolete code, soon to be dropped from the file
-function hideBlock(block) {
-    $(block + "Form").hide();
-    $(block + "ShowLink").show();
-    $(block + "HideLink").hide();
-}
-
-function showBlock(block) {
-    $(block + "Form").show();
-    $(block + "ShowLink").hide();
-    $(block + "HideLink").show();
-}
-
-function addShowHide(block, id) {
-    var show = $(document.createElement("a"));
-    var hide = $(document.createElement("a"));
-    show.addClass('showlink');
-    hide.addClass('hidelink');
-    show.attr('id',id+"ShowLink");
-    hide.attr('id',id+"HideLink");
-    show.attr('href',"javascript:void(0)");
-    hide.attr('href',"javascript:void(0)");
-    show.click(function() {showBlock("#" + id);});
-    hide.click(function() {hideBlock("#" + id);});
-    show.append("(show)");
-    hide.append("(hide)");
-    block.append(" ").append(show).append(" ").append(hide);
-    var container = $(document.createElement("form"));
-    container.attr('id',id+"Form");
-    container.attr('name', id);
-    block.append(container);
-    show.click()
-    return container;
-}
-
-function displaySearchResults(data, callback) {
-    var resDiv = $("#searchResultHolder");
-    resDiv.empty();
-    if(data["error"]) { showError(data["error"]); return false;}
-    if(data["count"]) {
-        $("#resultCount").empty().html("(" + data["count"] + ")");
-    } else { $("#resultCount").empty().html("(0)"); }
-
-    for (var resultSet in data["results"]) {
-      if (data["results"][resultSet].length == 0) { continue; }
-      var setTitle = $(document.createElement("span"));
-      setTitle.addClass('blocktitle');
-      setTitle.append(resultSet);
-      resDiv.append(setTitle)
-      var resContainer = addShowHide(resDiv, resultSet);
-      var result;
-      for (result in data["results"][resultSet]) {
-        var user = data["results"][resultSet][result];
-        var userDiv = $(document.createElement("div"));
-
-        userDiv.attr('userid', user['id']);
-        userDiv.data('obj', data["results"][resultSet][result]);
-        userDiv.addClass('button').addClass('searchResult').addClass('half');
-        var flags = $(document.createElement("div"));
-        flags.addClass('right').addClass('half').addClass('notice');
-        userDiv.append(flags);
-        if(user['label']) { userDiv.append(user['label']+"<br/>"+"<hr/>"); }
-        if(user['full_name']) { userDiv.append(user['full_name']+"<br/>"); }
-            else { userDiv.append("***NO NAME***<br/>");}
-        if(user['badge_name']) { userDiv.append(user['badge_name']+"<br/>"); }
-        userDiv.append($(document.createElement("hr")));
-        if(user['address']) { userDiv.append(user['address']+"<br/>"); }
-            else { userDiv.append("***NO STREET ADDR***<br/>"); }
-        if(user['addr_2']) { userDiv.append(user['addr_2']+"<br/>"); }
-        if(user['locale']) { userDiv.append(user['locale']+"<br/>"); }
-            else { userDiv.append("***NO CITY/STATE/ZIP***<br/>"); }
-        userDiv.append($(document.createElement("hr")));
-        if(user['email_addr']) { userDiv.append(user['email_addr']+"<br/>"); }
-        if(user['phone']) { userDiv.append(user['phone']+"<br/>"); }
-        if(user['banned'] == 'Y') {
-            flags.append('banned<br/>');
-            userDiv.addClass('banned');
-        }
-        else if (user['active'] == 'N') {
-            flags.append('inactive<br/>');
-            userDiv.addClass('inactive');
-        }
-        resContainer.append(userDiv);
-        userDiv.click(function () {callback($(this).data('obj'));});
-      }
-    }
-
-}
-
-function submitForm(formObj, formUrl, succFunc, errFunc) {
-    var postData = $(formObj).serialize();
-    if(succFunc == null) {
-        succFunc = function(data, textStatus, jsXhr) {
-            $('#test').empty().append(JSON.stringify(data, null, 2));
-        }
-    }
-
-    $.ajax({
-      url: formUrl,
-      type: "POST",
-      data: postData,
-      success: succFunc,
-      error: function(JqXHR, textStatus, errorThrown) {
-        $('#test').empty().append(JSON.stringify(data, null, 2));
-      }
-   });
-}
-
-var tracker = [];
-function track(formName) {
-    tracker[formName] = {};
-    $(formName + " :input").each(function() {
-        tracker[formName][$(this).attr('name')] = false;
-        $(this).on("change", function () {
-            tracker[formName][$(this).attr('name')] = true;
-        });
-    });
-}
-
-function submitUpdateForm(formObj, formUrl, succFunc, errFunc) {
-    var postData = "id="+$(formObj + " :input[name=id]").val();
-    for(var key in tracker[formObj]) {
-      if(tracker[formObj][key]) {
-        if ($(formObj + " :input[name="+key+"]").attr('type')=='radio') {
-          postData += "&" + key + "=" + $(formObj +" :input[name=" + key + "]:checked").val();
-        } else if ($(formObj + " :input[name="+key+"]").attr('type')=='checkbox') {
-          postData += "&" + key + "=" + $(formObj +" :input[name=" + key + "])").attr('checked');
-        } else {
-          postData += "&" + key + "=" + $(formObj +" :input[name=" + key + "]").val();
-        }
-      }
-    }
-    if(succFunc == null) {
-      succFunc = function(data, textStatus, jqXHR) {
-        $('#test').empty().append(JSON.stringify(data));
-        }
-    }
-    $.ajax({
-      url: formUrl,
-      type: "POST",
-      data: postData,
-      success: succFunc,
-      error: function(JqXHR, textStatus, errorThrown) {
-        $('#test').empty().append(JSON.stringify(JqXHR));
-      }
-   });
-}
-
-function testValid(formObj) {
-  var errors = 0;
-
-  $(formObj + " :required").map(function() {
-    if(!$(this).val()) {
-      $(this).addClass('need');
-      errors++;
-    } else {
-      $(this).removeClass('need');
-    }
-  });
-
-  return (errors == 0);
-}
-
-function getForm(formObj, formUrl, succFunc, errFunc) {
-    var getData = $(formObj).serialize();
-    if(succFunc == null) {
-      succFunc = function(data, textStatus, jqXHR) {
-        $('#test').empty().append(JSON.stringify(data, null, 2));
-        }
-    }
-    $.ajax({
-      url: formUrl,
-      type: "GET",
-      data: getData,
-      success: succFunc,
-      error: function(JqXHR, textStatus, errorThrown) {
-        $('#test').empty().append(JSON.stringify(JqXHR, null, 2));
-        if(errFunc != null) { errFunc(); }
-      }
-    });
 }

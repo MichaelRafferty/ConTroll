@@ -32,6 +32,7 @@ class ExhibitorInvoice {
     #uspsDiv = null;
     #currentOrderId = null;
     #invalidFields = '';
+    #portalType = null;
 
 // constructor function - intializes dom objects and inital privates
     constructor() {
@@ -72,12 +73,10 @@ class ExhibitorInvoice {
     openInvoice(exhibitorInfo, regionYearId) {
         var regionName, html, mnum;
         var spacePriceName = '';
-        var priceIdx = 0;
 
         this.#regionYearId = regionYearId;
         this.#exhibitorId = exhibitorInfo.exhibitorId;
         this.#exhibitorYearId = exhibitorInfo.exhibitorYearId;
-        this.#totalSpacePrice = 0;
 
         if (config.debug & 1) {
             console.log("regionYearId: " + regionYearId);
@@ -87,9 +86,9 @@ class ExhibitorInvoice {
         var portalName = 'ConTroll';
         var attendeeName = 'Exhibitor';
         var attendeeNameLC = 'Exhibitors';
-        var portalType = regionList.portalType
+        this.#portalType = regionList.portalType
         var exhibitorName = exhibitor_info.exhibitorName;
-        switch (portalType) {
+        switch (this.#portalType) {
             case 'artist':
                 portalName = 'Artist';
                 attendeeName = 'Artist';
@@ -114,119 +113,35 @@ class ExhibitorInvoice {
         }
 
         regionName = regionList.name;
-
-        // refresh the items spaces purchased area
-        html = exhibitorName + " is approved for:<br/>\n";
-        var exSpaceKeys = Object.keys(exhibitor_spacelist);
-        this.#includedMemberships = 0;
-        this.#additionalMemberships = 0;
-        for (var exSpaceIdx in exSpaceKeys) {
-            if (region[exSpaceKeys[exSpaceIdx]]) { // space is in our region
-                var space = exhibitor_spacelist[exSpaceKeys[exSpaceIdx]];
-                var prices = region[exSpaceKeys[exSpaceIdx]].prices;
-                if (space.item_approved) {
-                    html += space.approved_description + " in " + regionName + " for $" + Number(space.approved_price).toFixed(2) + "<br/>";
-                    this.#totalSpacePrice += Number(space.approved_price);
-                    // find price item in prices
-                    for (priceIdx = 0; priceIdx < prices.length; priceIdx++) {
-                        if (prices[priceIdx].id == space.item_approved)
-                            break;
-                    }
-                    if (this.#includedMemberships < prices[priceIdx].includedMemberships) {
-                        spacePriceName = prices[priceIdx].description;
-                        this.#includedMemberships = prices[priceIdx].includedMemberships;
-                    }
-                    if (this.#additionalMemberships < prices[priceIdx].additionalMemberships) {
-                        spacePriceName = prices[priceIdx].description;
-                        this.#additionalMemberships = prices[priceIdx].additionalMemberships;
-                    }
-                }
-            }
-        }
-        if (regionList.mailinFee > 0 && this.#mailin == 'Y') {
-            html += "Mail in fee of $" + Number(regionList.mailinFee).toFixed(2) + "<br/>\n";
-            this.#totalSpacePrice += Number(regionList.mailinFee);
-        }
-        html += "____________________________<br/>\nTotal price for spaces $" + Number(this.#totalSpacePrice).toFixed(2) + "<br/>\n";
-
-        document.getElementById('vendor_inv_approved_for').innerHTML = html;
-
         // fill in the variable items
         document.getElementById("vendor_invoice_title").innerHTML = "<strong>Pay " + regionName + ' Invoice for ' + exhibitorName + '</strong>';
 
-        var spaces = this.#includedMemberships + this.#additionalMemberships;
-        // make the strings for the number of included additional memberships available to purchase
-        html = '<p>';
-        if (spaces == 0) { // no additional or included memberships
-            html += regionName + ' ' +  spacePriceName + ' spaces do not come with any memberships as part of the space purchase. ' +
-                ' Please purchase your attending memberships to the convention separately at ' +
-                '<a href="' + config.regserver + '">' + config.regserver + '</a>.';
-        } else if (this.#includedMemberships == 0) {
-            html += regionName + ' ' +  spacePriceName + ' spaces come with the option to purchase up to ' + this.#additionalMemberships +
-                ' membership' + (this.#additionalMemberships > 1 ? 's' : '') + ' at  the discounted price of $' +
-                Number(regionList.additionalMemPrice).toFixed(2) + '. ' +
-                'Purchase those memberships here. ' +
-                'Any additional memberships beyond those you purchase here need to be purchased separately at ' +
-                '<a href="' + config.regserver + '">' + config.regserver + '</a>.';
-        } else if (this.#additionalMemberships == 0) {
-            html += regionName + ' ' +  spacePriceName + ' spaces come with ' + this.#includedMemberships + ' membership' + (this.#includedMemberships > 1 ? 's' : '') +
-                ' as part of the space purchase. Please enter those memberships here. ' +
-                'Any additional memberships to the convention need to be purchased separately at ' +
-                '<a href="' + config.regserver + '">' + config.regserver + '</a>.';
-        } else {
-            html += regionName + ' ' +  spacePriceName + ' spaces come with ' + this.#includedMemberships + ' membership' + (this.#includedMemberships > 1 ? 's' : '') +
-                ' as part of the space purchase. In addition it comes with the right to purchase up to ' + this.#additionalMemberships +
-                ' membership' + (this.#additionalMemberships > 1 ? 's' : '') + ' at  the discounted price of $' +
-                Number(regionList.additionalMemPrice).toFixed(2) + '. ' +
-                'Use the included memberships first, and then add the additional memberships if desired. If you need more memberships beyond that they need to' +
-                ' be purchased separately at ' +
-                '<a href="' + config.regserver + '">' + config.regserver + '</a>.';
-        }
-        html += "</p>\n";
-        if (spaces == 0) {
-            html += "<input type='hidden' name='agreeNone' value='on'/>";
-        }
-        html += "<input type='hidden' name='exhibitorId' value='" + this.#exhibitorId + "'/>\n" +
-            "<input type='hidden' name='exhibitorYearId' value='"+ this.#exhibitorYearId + "'/>\n";
-        if (spaces > 0) {
-             if (portalType == 'artist' && this.#mailin == 'N') {
-                html += "<p>In addition, all non-mail-in artists need to declare an on-site agent. " +
-                    "This is the person that will be contacted if there are any issues with setup, operation, or teardown of your exhibit. " +
-                    "The agent needs a membership, and you can be the agent.</p>" +
-                    "<p><input type='radio' name='agent' id='agent_self' value='self' style='transform: scale(1.5);'>&nbsp;&nbsp;&nbsp;" +
-                    "I will be my own agent and my membership is not one of the ones below.<br/>" +
-                    "<input type='radio' name='agent' id='agent_first' value='first' style='transform: scale(1.5);'>&nbsp;&nbsp;&nbsp;" +
-                    "The first membership below is for myself or my agent<br/>";
+        // refresh the items spaces purchased area
+        var ret = drawExhitorTopBlocks('You', exhibitor_spacelist, region, regionList, this.#regionYearId,
+            'vendor_inv_approved_for', 'vendor_inv_included', 'vendor_inv_included_mbr',
+            false);
+        this.#includedMemberships = ret[0];
+        this.#additionalMemberships = ret[1];
+        spacePriceName = ret[2];
+        this.#totalSpacePrice = ret[3];
 
-                if (exhibitor_info.perid) {
-                    html += "<input type='radio' name='agent' id='agent_perid' value='p" + exhibitor_info.perid + "' style='transform: scale(1.5);'>&nbsp;&nbsp;&nbsp;Assign " +
-                        exhibitor_info.p_first_name + ' ' + exhibitor_info.p_last_name + ' as my agent.<br/>';
-                } else if (exhibitor_info.newperid) {
-                    html += "<input type='radio' name='agent' id='agent_newid' value='n" + exhibitor_info.newperid + "' style='transform:" +
-                        " scale(1.5);'>&nbsp;&nbsp;&nbsp;Assign " +
-                        exhibitor_info.n_first_name + ' ' + exhibitor_info.n_last_name + ' as my agent.<br/>';
-                }
-                html += "<input type='radio' name='agent' id='agent_request' value='request' style='transform: scale(1.5);'>&nbsp;&nbsp;&nbsp;Please assign my agent as per my request below.<br/>" +
-                    "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type='text' name='agent_request' placeholder='Enter your agent request here if needed' size='120'></p>"
-            }
-        }
-        document.getElementById('vendor_inv_included').innerHTML = html;
         this.#totalAmountDue = Number(this.#totalSpacePrice);
         this.#totalInvCost.innerHTML = Number(this.#totalSpacePrice).toFixed(2);
         document.getElementById('vendorSpacePrice').value = this.#totalSpacePrice;
         document.getElementById('vendor_inv_region_id').value = regionYearId;
 
-       this.#membershipCostdiv.hidden = (this.#includedMemberships == 0 && this.#additionalMemberships == 0);
+        this.#membershipCostdiv.hidden = (this.#includedMemberships == 0 && this.#additionalMemberships == 0);
 
         html = '';
+        /*
         // now build the included memberships
         if (this.#includedMemberships > 0 || this.#additionalMemberships > 0) {
             html += `
              <div class="row" style="width:100%;">
                 <div class="col-sm-12">
                     <p class="text-body">
-                        <b>Note:</b> Please provide your legal name that will match a valid form of ID. 
-                        Your legal name will not be publicly visible.  
+                        <b>Note:</b> Please provide the legal name that will match a valid form of ID.
+                        The legal name will not be publicly visible.
                         If you don't provide one, it will default to your First, Middle, Last Names and Suffix.
                     </p>
                     <p class="text-body">
@@ -292,13 +207,13 @@ class ExhibitorInvoice {
             document.getElementById('country_a_' + mnum).value = exhibitor_info.country;
             document.getElementById('email_a_' + mnum).value = exhibitor_info.exhibitorEmail;
             document.getElementById('phone_a_' + mnum).value = exhibitor_info.exhibitorPhone;
-        }
+        } */
         this.#exhibitorInvoiceModal.show();
         this.#updatePaymentDiv();
     }
 
 // draw a membership block
-    #drawMembershipBlock(label, mnum, suffix, country_options, doOnChange) {
+    #drawMembershipBlock(label, mnum, suffix, country_options, doOnChange = true, changeClass = '') {
         var html = `
 <div class="row mt-4">
     <div class="col-sm-auto p-0">` + label + ' Member ' + (mnum + 1) + `:</div>
@@ -308,16 +223,16 @@ class ExhibitorInvoice {
         <div class="container-fluid">
             <div class="row">
                 <div class="col-sm-auto ms-0 me-2 p-0">
-                    <label for="fname` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + this.#firstStar + `First Name</span></label><br/>
+                    <label for="fname` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Preferred Name: ` + this.#firstStar + `First</span></label><br/>
                     <input class="form-control-sm" type="text" name="fname` + suffix + `" id="fname` + suffix +
                         '" size="22" maxlength="32"' + (doOnChange ? 'onchange="exhibitorInvoice.updateCost(' + this.#regionYearId + "," + mnum + ');"' : '') + `/>
                 </div>
                 <div class="col-sm-auto ms-0 me-2 p-0">
-                    <label for="mname` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Middle Name</span></label><br/>
+                    <label for="mname` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Middle</span></label><br/>
                     <input class="form-control-sm" type="text" name="mname` + suffix + `" id="mname` + suffix + `" size="8" maxlength="32" />
                 </div>
                 <div class="col-sm-auto ms-0 me-2 p-0">
-                    <label for="lname` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + this.#allStar + `Last Name</span></label><br/>
+                    <label for="lname` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + this.#allStar + `Last</span></label><br/>
                     <input class="form-control-sm" type="text" name="lname` + suffix + `" id="lname` + suffix + `" size="22" maxlength="32" />
                 </div>
                 <div class="col-sm-auto ms-0 me-0 p-0">
@@ -352,11 +267,11 @@ class ExhibitorInvoice {
                     <input class="form-control-sm" type="text" name="city` + suffix + `" id='city` + suffix + `' size="22" maxlength="32" />
                 </div>
                 <div class="col-sm-auto ms-0 me-2 p-0">
-                    <label for="state` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + this.#addrStar + `State</span></label><br/>
+                    <label for="state` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + this.#addrStar + `State/Prov</span></label><br/>
                     <input class="form-control-sm" type="text" name="state` + suffix + `" id='state` + suffix + `' size="10" maxlength=16" />
                 </div>
                 <div class="col-sm-auto ms-0 me-2 p-0">
-                    <label for="zip` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + this.#addrStar + `Zip</span></label><br/>
+                    <label for="zip` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + this.#addrStar + `Zip/PC</span></label><br/>
                     <input class="form-control-sm" type="text" name="zip` + suffix + `" id='zip` + suffix + `' size="5" maxlength="10" />
                 </div>
                 <div class="col-sm-auto ms-0 me-0 p-0">
@@ -382,9 +297,21 @@ class ExhibitorInvoice {
                     <label for="phone` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Phone</span></label><br/>
                     <input class="form-control-sm" type="text" name="phone` + suffix + `" id='phone` + suffix + `' size="18" maxlength="15" />
                 </div>
-                <div class="col-sm-auto ms-0 p-0">
-                    <label for="badgename` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Badge Name (optional)</span></label><br/>
-                    <input class="form-control-sm" type="text" name="badgename` + suffix + `" id='badgename` + suffix + `' size="35" maxlength="32"  placeholder='defaults to first and last name'/>
+            </div>
+            <div class="row">
+                <div class="col-sm-auto me-1 p-0">
+                    <label for="badge_name` + suffix + `" class="form-label-sm">
+                        <span class="text-dark" style="font-size: 10pt;">Badge Name (optional)</span>
+                    </label><br/>
+                    <input class="form-control-sm" type="text" name="badge_name` + suffix + `" id='badge_name` + suffix + `'
+                        size="35" maxlength="32" placeholder='defaults to first and last name'/>
+                </div>
+                 <div class="col-sm-auto ms-1 p-0">
+                    <label for="badgeNameL2` + suffix + `" class="form-label-sm">
+                        <span class="text-dark" style="font-size: 10pt;">Badge Line 2 (optional)</span>
+                    </label><br/>
+                    <input class="form-control-sm" type="text" name="badgeNameL2` + suffix + `" id='badgeNameL2` + suffix + `'
+                        size="35" maxlength="32"/>
                 </div>
             </div>
         </div>
@@ -566,6 +493,10 @@ class ExhibitorInvoice {
         formData.nonce= 'admin';
         formData.amtDue= this.#totalAmountDue;
         formData.prow = prow;
+        formData.portalType = this.#portalType;
+        formData.exhibitorId = this.#exhibitorId;
+        formData.exhibitorYearId = this.#exhibitorYearId;
+
         if (this.#currentOrderId) {
             formData.cancelOrderId = this.#currentOrderId;
             this.#currentOrderId = null;
@@ -667,7 +598,7 @@ class ExhibitorInvoice {
             id = document.getElementById('state' + suffix);
             value = id.value;
             if (value == '') {
-                this.#invalidFields += label + 'State, ';
+                this.#invalidFields += label + 'State/Province, ';
                 valid = false;
                 id.style.backgroundColor = 'var(--bs-warning)';
             } else {

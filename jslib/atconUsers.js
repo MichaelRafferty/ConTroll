@@ -257,7 +257,7 @@ class Users {
                 {title: "perid", field: "id", headerSort: true, width: 150,},
                 {title: "First Name", field: "first_name", headerSort: true, headerFilter: true},
                 {title: "Last Name", field: "last_name", headerSort: true, headerFilter: true},
-                {title: "Badge Name", field: "badge_name", headerSort: true, headerFilter: true},
+                {title: "Badge Name", field: "badgename", headerSort: true, headerFilter: true, formatter: 'html',},
                 {title: "Email Address", field: "email_addr", headerSort: true, headerFilter: true},
                 {title: "Add", headerSort: false, hozAlign: "center", formatter: this.tabAddButton, minWidth: 50},
             ],

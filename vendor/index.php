@@ -10,12 +10,12 @@ require_once('../lib/exhibitorRequestForms.php');
 require_once('../lib/exhibitorReceiptForms.php');
 require_once("../lib/cc__load_methods.php");
 require_once('../lib/webauthn.php');
+require_once('../lib/tax.php');
 global $config_vars;
 
 $cc = get_conf('cc');
 $con = get_conf('con');
 $conid = $con['id'];
-$vendor_conf = get_conf('vendor');
 $usps = get_conf('usps');
 load_cc_procs();
 
@@ -60,14 +60,15 @@ switch ($required) {
     case 'first':
         $firstStar = '<span class="text-danger">&bigstar;</span>';
 }
-
+$currency = getConfValue('con', 'currency', 'USD');
+$locale = getLocale();
 $config_vars = array();
 $config_vars['label'] = $con['label'];
-$config_vars['vemail'] = $vendor_conf[$portalType];
+$config_vars['vemail'] = getConfValue('vendor', $portalType, getConfValue('regadminemail', 'con'));
 $config_vars['portalType'] = $portalType;
 $config_vars['portalName'] = $portalName;
-$config_vars['artistsite'] = $vendor_conf['artistsite'];
-$config_vars['vendorsite'] = $vendor_conf['vendorsite'];
+$config_vars['artistsite'] = getConfValue('vendor', 'artistsite');
+$config_vars['vendorsite'] = getConfValue('vendor', 'vendorsite');
 $config_vars['debug'] = getConfValue('debug', 'vendors', 0);
 $config_vars['required'] = $required;
 $config_vars['useUSPS'] = $useUSPS;
@@ -82,6 +83,10 @@ $config_vars['termsArtistOnsite'] = returnCustomText('invoice/termsArtistOnsite'
 $config_vars['termsExhibitor'] = returnCustomText('invoice/termsExhibitor');
 $config_vars['termsFan'] = returnCustomText('invoice/termsFan');
 $config_vars['termsVendor'] = returnCustomText('invoice/termsVendor');
+$config_vars['locale'] = $locale;
+$config_vars['currency'] = $currency;
+$config_vars['taxRates'] = getTaxRates();
+
 
 // load country select
 $countryOptions = '';
@@ -471,7 +476,11 @@ draw_passwordModal();
 draw_exhibitorRequestModal($portalType);
 draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $testsite, $cc, $portalName, $portalType);
 draw_exhibitorReceiptModal($portalType);
-draw_itemRegistrationModal($portalType, $vendor_conf['artsheets'], $vendor_conf['artcontrol']);
+$value = getConfValue('vendor', 'artsheets', 1);
+$showSheets = $value == '1' || $value == 'yes' || $value == 'true';
+$value = getConfValue('vendor', 'artcontrol', 1);
+$artControl = $value == '1' || $value == 'yes' || $value == 'true';
+draw_itemRegistrationModal($portalType, $showSheets, $artControl);
 ?>
     <!-- now for the top of the form -->
      <div class='container-fluid'>

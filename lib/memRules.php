@@ -45,8 +45,10 @@ function getRulesData($conid, $regadmin = false, $atcon = false) {
     }
 
     // variable sort orders
-    if ($regadmin || $atcon) {
-        $orderBy = 'conid, mt.sortorder, m.label';
+    if ($regadmin) {
+        $orderBy = str_replace('/', ', ', getConfValue('controll', 'posRegistrationSort', 'conid, mt.sortorder, m.label'));
+    } else if ($atcon) {
+        $orderBy = str_replace('/', ', ', getConfValue('atcon', 'posRegistrationSort', 'conid, mt.sortorder, m.label'));
     } else {
         $orderBy = 'm.sort_order';
     }

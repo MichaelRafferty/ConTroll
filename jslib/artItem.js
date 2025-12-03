@@ -387,7 +387,7 @@ setValuesFromData(artItemData) {
     this.type=typeList.getType(artItemData['type']);
     this.status=statusList.getStatus(artItemData['status']);
     this.location=artItemData['location'];
-    if (artItemData['locations'])
+    if (artItemData['locations'] && artItemData['locations'] != '')
         this.#locationList = artItemData['locations'].split(',');
     else
         this.#locationList = [];

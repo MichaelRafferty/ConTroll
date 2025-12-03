@@ -15,7 +15,7 @@ CREATE TABLE `exhibitorRegionYears` (
   `exhibitorYearId` int NOT NULL,
   `exhibitsRegionYearId` int NOT NULL,
   `exhibitorNumber` int DEFAULT NULL,
-  `locations` varchar(256) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `locations` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
   `agentPerid` int DEFAULT NULL,
   `agentNewperson` int DEFAULT NULL,
   `agentRequest` varchar(256) COLLATE utf8mb4_general_ci DEFAULT NULL,

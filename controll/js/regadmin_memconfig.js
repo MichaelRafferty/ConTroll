@@ -121,7 +121,7 @@ class memsetup {
         this.current_conid = data['current_id'];
         this.next_conid = data['next_id'];
 
-        var html = `<h4><strong>Membership Setup Tables:</strong></h4>
+        var html = `<h4><strong>Membership Setup Tables:</strong> (All entries in the first column of each table should not contain blanks, use - or _ instead.)</h4>
 <div class="container-fluid">
 <div class="row">
 <div class="col-sm-auto p-2 border border-2 border-primary">
@@ -507,7 +507,7 @@ class memsetup {
     addrowTypes() {
         var _this = this;
         this.#memtypetable.addRow({memType: 'new-row', active: 'Y', sortorder: 99, uses: 0, notes: '', required: 'N'}, false).then(function (row) {
-            row.getTable().setPage('last').then(function () {
+            row.getTable().setPageToRow(row).then(function () {
                 row.getCell("memType").getElement().style.backgroundColor = "#fff3cd";
                 row.getCell("active").getElement().style.backgroundColor = "#fff3cd";
                 _this.checkTypeUndoRedo();
@@ -616,7 +616,7 @@ class memsetup {
         this.#categorytable.addRow({memCategory: 'new-row', onlyOne: 'Y', standAlone: 'N', variablePrice: 'N', taxable: 'N',
                 badgeLabel: 'X', active: 'Y', sortorder: 99, uses: 0, regUses: 0, notes:'', required: 'N'},
             false).then(function (row) {
-            row.getTable().setPage('last').then(function () {
+            row.getTable().setPageToRow(row).then(function () {
                 row.getCell("memCategory").getElement().style.backgroundColor = "#fff3cd";
                 row.getCell("onlyOne").getElement().style.backgroundColor = "#fff3cd";
                 row.getCell("standAlone").getElement().style.backgroundColor = "#fff3cd";
@@ -729,7 +729,7 @@ class memsetup {
         var _this = this;
 
         this.#curagetable.addRow({conid: this.#current_conid, ageType: 'new-row', label: 'new-label', shortname: 'new-shortname', sortorder: 99, uses: 0}, false).then(function (row) {
-            row.getTable().setPage('last').then(function () {
+            row.getTable().setPageToRow(row).then(function () {
                 row.getCell("ageType").getElement().style.backgroundColor = "#fff3cd";
                 row.getCell("label").getElement().style.backgroundColor = "#fff3cd";
                 row.getCell("shortname").getElement().style.backgroundColor = "#fff3cd";
@@ -839,7 +839,7 @@ class memsetup {
         var _this = this;
 
         this.#nextagetable.addRow({conid: this.#next_conid, ageType: 'new-row', label: 'new-label', shortname: 'new-shortname', sortorder: 99, uses: 0}, false).then(function (row) {
-            row.getTable().setPage('last').then(function () {
+            row.getTable().setPageToRow(row).then(function () {
                 row.getCell("ageType").getElement().style.backgroundColor = "#fff3cd";
                 row.getCell("label").getElement().style.backgroundColor = "#fff3cd";
                 row.getCell("shortname").getElement().style.backgroundColor = "#fff3cd";

@@ -4,6 +4,7 @@ require_once "../lib/exhibitorRegistrationForms.php";
 require_once "../lib/exhibitorRequestForms.php";
 require_once "../lib/exhibitorReceiptForms.php";
 require_once "../lib/exhibitorInvoice.php";
+require_once "../lib/tax.php";
 require_once "lib/exhibitsConfiguration.php";
 require_once "lib/exhibitorChooseExhibitor.php";
 
@@ -23,6 +24,19 @@ $conf = get_conf('con');
 
 $required = getConfValue('reg', 'required', 'addr');
 $testsite = getConfValue('vendor', 'test') == 1;
+$firstStar = '';
+$addrStar = '';
+$allStar = '';
+switch ($required) {
+    // cascading list of required fields, each case adds more so the breaks fall into the next section
+
+    case 'all':
+        $allStar = '<span class="text-danger">&bigstar;</span>';
+    case 'addr':
+        $addrStar = '<span class="text-danger">&bigstar;</span>';
+    case 'first':
+        $firstStar = '<span class="text-danger">&bigstar;</span>';
+}
 
 $scriptName = $_SERVER['SCRIPT_NAME'];
 if (array_key_exists('tab', $_REQUEST)) {
@@ -46,6 +60,8 @@ page_init($page,
                     'js/adminCustomText.js',
                     'jslib/exhibitorRequest.js',
                     'jslib/exhibitorReceipt.js',
+                    'jslib/exhibitorInvoiceCommon.js',
+                    'jslib/configEdit.js',
                     'js/tinymce/tinymce.min.js'
                    ),
               $need_login);
@@ -73,6 +89,8 @@ $useUSPS = false;
 if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
     $useUSPS = true;
 
+$currency = getConfValue('con', 'currency', 'USD');
+$locale = getLocale();
 $config_vars = array();
 $portalType = 'admin';
 $portalName = 'Exhibitor';
@@ -86,10 +104,16 @@ $config_vars['vendorsite'] = $vendor_conf['vendorsite'];
 $config_vars['debug'] = getConfValue('debug', 'controll_exhibitors', 0);
 $config_vars['conid'] = $conid;
 $config_vars['required'] = $required;
+$config_vars['allStar'] = $allStar;
+$config_vars['addrStar'] = $addrStar;
+$config_vars['firstStar'] = $firstStar;
 $config_vars['useUSPS'] = $useUSPS;
 $config_vars['initialTab'] = $initialTab;
 $config_vars['scriptName'] = $scriptName;
 $config_vars['regserver'] = getConfValue('reg', 'server');
+$config_vars['locale'] = $locale;
+$config_vars['currency'] = $currency;
+$config_vars['taxRates'] = getTaxRates();
 
 bs_tinymceModal();
 draw_registrationModal('admin', 'Admin', $conf, $countryOptions);
@@ -118,8 +142,15 @@ draw_exhibitsConfigurationModals();
                     </div>
                     <div id='spaceDetailHTML'></div>
                     <div class='row mt-3'>
-                        <div class='col-sm-12'>
-                            <h4>Information about this Exhibitor</h4>
+                        <div class='col-sm-6 ms-0 me-0'>
+                            <div class='container-fluid'>
+                                <div class='row'>
+                                    <div class='col-sm-12 ms-0 me-0'>
+                                        <h4>Information about this Exhibitor</h4>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class='container-fluid' id='exhibitorInfoHTML'></div>
                         </div>
                     </div>
                     <div class="container-fluid" id='exhibitorInfoHTML'></div>
@@ -233,6 +264,11 @@ draw_exhibitsConfigurationModals();
                     aria-controls='nav-customtext' aria-selected='false' onclick="exhibitors.settabOwner('customtext-pane');">Custom Text
             </button>
         </li>
+        <li class='nav-item' role='presentation'>
+            <button class='nav-link' id='configEdit-tab' data-bs-toggle='pill' data-bs-target='#configEdit-pane' type='button' role='tab'
+                    aria-controls='nav-menu' aria-selected='false' onclick="exhibitors.settabOwner('configEdit-pane');">Configuration Editor
+            </button>
+        </li>
 <?php
 // build tab structure
 $regionOwners = [];
@@ -322,6 +358,34 @@ while ($regionL = $regionOwnerR->fetch_assoc()) {
     </div>
     <div class='tab-pane fade' id='configuration-pane' role='tabpanel' aria-labelledby='configuration-tab' tabindex='0'></div>
     <div class='tab-pane fade' id='customtext-pane' role='tabpanel' aria-labelledby='customtext-tab' tabindex='0'></div>
+    <div class='tab-pane fade' id='configEdit-pane' role='tabpanel' aria-labelledby='configEdit-tab' tabindex='0'>
+        <div class='container-fluid'>
+            <div class='row'>
+                <div class='col-sm-auto'><h2>Exhibitors Configuration Editor (reg_conf.ini)</h2></div>
+            </div>
+            <div class='row mt-2 mb-3'>
+                <div class='col-sm-auto'>
+                    <button type='button' class='btn btn-primary btn-sm' id='saveBTNt' onclick='configEditor.save();' disabled>Save</button>
+                </div>
+                <div class='col-sm-auto'>
+                    <button type='button' class='btn btn-secondary btn-sm' id='discardBTNt' onclick='configEditor.discard();' disabled>Discard
+                        Changes</button>
+                </div>
+            </div>
+        </div>
+        <div class='container-fluid' id='configDiv'>
+        </div>
+        <div class='container-fluid'>
+            <div class='row mt-2 mb-3'>
+                <div class='col-sm-auto'>
+                    <button type='button' class='btn btn-primary btn-sm' id='saveBTNb' onclick='configEditor.save();' disabled>Save</button>
+                </div>
+                <div class='col-sm-auto'>
+                    <button type='button' class='btn btn-secondary btn-sm' id='discardBTNb' onclick='configEditor.discard();' disabled>Discard Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <?php
 foreach ($regionOwners AS $regionOwner => $regionList) {

@@ -480,7 +480,7 @@ function old_buildGraph(data, staff, con) {
 function buildBreakdownLevel(label, ptr, data, lvl) {
   var keys = Object.keys(data);
   var next;
-  var acc = 0;
+  var acc = {printed: 0, total: 0};
   if(lvl == 2) {
     next = $(document.createElement('ul'));
     for (key in data) {

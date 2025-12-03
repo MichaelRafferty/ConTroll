@@ -15,6 +15,7 @@
 	template=artShowReg.rpt
 	auth=art_control
 	type=rpt
+	P001="prompt/~/filter/~/Filter by: (S[igned up], R[equested], A[pproved] or P[urchased]/~/P"
 [120ArtShowMailInUsage]
     name='Art Show Mail In Usage'
 	description='Art Show Mail In Registration for a convention year and region'

@@ -1,6 +1,7 @@
 <?php
 require_once('../lib/base.php');
 require_once("../../lib/log.php");
+require_once("../../lib/tax.php");
 require_once("../../lib/cc__load_methods.php");
 require_once("../../lib/purchase.php");
 require_once("../../lib/policies.php");
@@ -73,8 +74,15 @@ load_email_procs();
 
 $condata = get_con();
 $log = get_conf('log');
-$con = get_conf('con');
 $cc = get_conf('cc');
+$cc = get_conf('cc');
+if (array_key_exists('location_portal', $cc)) {
+    $ccLocation = $cc['location_portal'];
+} else if (array_key_exists('location', $cc)) {
+    $ccLocation = $cc['location'];
+} else {
+    $ccLocation = 'Unknown';
+}
 $conid = $condata['id'];
 logInit($log['reg']);
 $source = 'onlinereg';
@@ -186,6 +194,8 @@ WHERE
 		REGEXP_REPLACE(TRIM(LOWER(p.phone)), ' +', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
 		REGEXP_REPLACE(TRIM(LOWER(p.badge_name)), ' +', ' ')
+    AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.badgeNameL2)), ' +', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
 		REGEXP_REPLACE(TRIM(LOWER(p.address)), ' +', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
@@ -206,7 +216,8 @@ EOF;
             trim($badge['suffix']),
             trim($badge['email1']),
             trim($badge['phone']),
-            trim($badge['badgename']),
+            trim($badge['badge_name']),
+            trim($badge['badgeNameL2']),
             trim($badge['addr']),
             trim($badge['addr2']),
             trim($badge['city']),
@@ -215,7 +226,7 @@ EOF;
             $badge['country']
         );
 
-        $res = dbSafeQuery($exactMsql, 'sssssssssssss', $value_arr);
+        $res = dbSafeQuery($exactMsql, 'ssssssssssssss', $value_arr);
         if ($res !== false) {
             if ($res->num_rows > 0) {
                 $match = $res->fetch_assoc();
@@ -235,7 +246,8 @@ EOF;
             trim($badge['pronouns']),
             trim($badge['email1']),
             trim($badge['phone']),
-            trim($badge['badgename']),
+            trim($badge['badge_name']),
+            trim($badge['badgeNameL2']),
             trim($badge['addr']),
             trim($badge['addr2']),
             trim($badge['city']),
@@ -249,12 +261,12 @@ EOF;
 
         $insertQ = <<<EOS
 INSERT INTO newperson(last_name, middle_name, first_name, suffix, legalName, pronouns, email_addr, phone,
-    badge_name, address, addr_2, city, state, zip, country, contact_ok, share_reg_ok, perid)
+    badge_name, badgeNameL2, address, addr_2, city, state, zip, country, contact_ok, share_reg_ok, perid)
     VALUES(IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''),
-           IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''),  ?, ?, ?);
+           IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''),  ?, ?, ?);
 EOS;
 
-        $newid = dbSafeInsert($insertQ, 'sssssssssssssssssi', $value_arr);
+        $newid = dbSafeInsert($insertQ, 'ssssssssssssssssssi', $value_arr);
         $people[$count]['newperid'] = $newid;
         $people[$count]['perid'] = $id;
 
@@ -311,7 +323,7 @@ SELECT R.id AS badge, R.id AS regId,
     NP.first_name AS fname, NP.middle_name AS mname, NP.last_name AS lname, NP.suffix AS suffix, NP.legalName,
     NP.email_addr AS email,
     NP.address AS street, NP.city AS city, NP.state AS state, NP.zip AS zip, NP.country AS country,
-    NP.id as id, R.price AS price, R.couponDiscount as discount, M.memAge AS age, NP.badge_name AS badgename, R.memId, M.glNum,
+    NP.id as id, R.price AS price, R.couponDiscount as discount, M.memAge AS age, NP.badge_name, NP.badgeNameL2, R.memId, M.glNum,
     M.label, M.memCategory, M.memType, M.taxable, M.ageShortName AS ageshortname, M.memAge, M.shortname
 FROM newperson NP
 JOIN reg R ON (R.newperid=NP.id)
@@ -326,6 +338,8 @@ while ($row = $all_badgeR->fetch_assoc()) {
   $badgeResults[] = $row;
 }
 
+$taxList = getTaxRates();
+
 $custId = "onlinereg-$transId";
 $results = array(
     'custid' => $custId,
@@ -337,6 +351,7 @@ $results = array(
     'total' => $total,
     'coupon' => $coupon,
     'discount' => $totalDiscount,
+    'taxList' => $taxList,
 );
 
 //log requested badges
@@ -344,7 +359,7 @@ logWrite(array('con'=>$condata['name'], 'trans'=>$transId, 'results'=>$results, 
 
 // end compute, create the order if there is something to pay
 if ($total > 0) {
-    $rtn = cc_buildOrder($results, true);
+    $rtn = cc_buildOrder($results, true, $ccLocation);
     if ($rtn == null) {
         // note there is no reason cc_buildOrder will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
         logWrite(array ('con' => $condata['name'], 'trans' => $transId, 'error' => 'Order unable to be created'));
@@ -359,6 +374,7 @@ if ($total > 0) {
     $referenceId = $transId . '-' . 'pay-' . time();
     $preTaxAmt = $rtn['preTaxAmt'];
     $taxAmt = $rtn['taxAmt'];
+    $taxes = $rtn['taxes'];
     $withTax = $rtn['totalAmt'];
 
     $results = array(
@@ -367,22 +383,30 @@ if ($total > 0) {
         'totalAmt' => $withTax,
         'orderId' => $rtn['orderId'],
         'custid' => $custId,
-        'locationId' => $cc['location'],
+        'locationId' => $ccLocation,
         'referenceId' => $referenceId,
         'transid' => $transId,
         'preTaxAmt' => $preTaxAmt,
         'taxAmt' => $taxAmt,
         'total' => $withTax,
+        'taxList' => $taxList,
+        'taxes' => $taxes,
         'badges' => $badgeResults,
         );
 
-    $upT = <<<EOS
+    $typeStr = 'dddds';
+    $valArray = array($preTaxAmt, $taxAmt, $withTax, 0, $rtn['orderId']);
+    [$taxSql, $taxStr, $taxValues] = buildTaxUpdate($taxes);
+        $upT = <<<EOS
 UPDATE transaction
-SET price = ?, tax = ?, withTax = ?, couponDiscountCart = ?, orderId = ?, paymentStatus = 'ORDER', orderDate = now()
+SET price = ?, tax = ?, withTax = ?, couponDiscountCart = ?, orderId = ?, paymentStatus = 'ORDER', orderDate = now(), $taxSql
 WHERE id = ?;
 EOS;
+    $typeStr .= $taxStr . 'i';
+    $valArray = array_merge($valArray, $taxValues);
+    $valArray[] = $transId;
 
-    $rows_upd = dbSafeCmd($upT, 'ddddsi', array($preTaxAmt, $taxAmt, $withTax, 0, $rtn['orderId'], $transId));
+    $rows_upd = dbSafeCmd($upT, $typeStr, $valArray);
 
 // call the credit card processor to make the payment
     $ccrtn = cc_payOrder($results, $buyer, true);
@@ -399,9 +423,15 @@ EOS;
     for ($i = 0; $i < $num_fields; $i++) {
         $val[$i] = '?';
     }
-    $txnQ = 'INSERT INTO payments(time,' . implode(',', $ccrtn['txnfields']) . ') VALUES(current_time(),' . implode(',', $val) . ');';
-    $txnT = implode('', $ccrtn['tnxtypes']);
-    $txnid = dbSafeInsert($txnQ, $txnT, $ccrtn['tnxdata']);
+    [$taxFields, $taxSql, $taxStr, $taxValues] = buildTaxInsert($taxes);
+    if ($taxFields != '')
+        $taxFields = ", $taxFields";
+    if ($taxSql != '')
+        $taxSql = ", $taxSql";
+    $txnQ = 'INSERT INTO payments(time,' . implode(',', $ccrtn['txnfields']) . $taxFields . ")\n" .
+        'VALUES(current_time(),' . implode(',', $val) . $taxSql . ');';
+    $txnT = implode('', $ccrtn['tnxtypes']) . $taxStr;
+    $txnid = dbSafeInsert($txnQ, $txnT, array_merge($ccrtn['tnxdata'], $taxValues));
     $approved_amt = $ccrtn['amount'];
 } else {
     $approved_amt = 0;
@@ -420,7 +450,7 @@ EOS;
 }
 
 $txnUpdate = "UPDATE transaction SET ";
-if($approved_amt == $total) {
+if ($approved_amt == $withTax) {
     $txnUpdate .= "complete_date=current_timestamp(), ";
 }
 
@@ -488,13 +518,9 @@ else {
     $body = getNoChargeEmailBody($results, $totalDiscount);
 }
 
-$regconfirmcc = null;
-if (array_key_exists('regconfirmcc', $con)) {
-    $regconfirmcc = trim($con['regconfirmcc']);
-    if ($regconfirmcc == '')
-        $regconfirmcc = null;
-}
-$return_arr = send_email($con['regadminemail'], trim($purchaseform['cc_email']), /* cc */ $regconfirmcc, $condata['label']. " Online Registration Receipt",  $body, /* htmlbody */ null);
+$return_arr = send_email(getConfValue('con', 'regadminemail'),
+    trim($purchaseform['cc_email']), /* cc */ getConfValue('con', 'regconfirmcc', null),
+    /* subject */ $condata['label']. " Online Registration Receipt",  $body, /* htmlbody */ null);
 
 if (array_key_exists('error_code', $return_arr)) {
     $error_code = $return_arr['error_code'];

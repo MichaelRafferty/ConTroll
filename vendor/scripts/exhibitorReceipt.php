@@ -1,6 +1,6 @@
 <?php
 require_once('../lib/base.php');
-require_once('../../lib/reg_receipt.php');
+require_once('../../lib/receipt.php');
 
 // use common global Ajax return functions
 global $returnAjaxErrors, $return500errors;
@@ -8,11 +8,7 @@ $returnAjaxErrors = true;
 $return500errors = true;
 
 $response = array('post' => $_POST, 'get' => $_GET);
-
-global $con;
-$con = get_con();
-$conid=$con['id'];
-
+$conid=getConfValue('con', 'id');
 $response['conid'] = $conid;
 
 if (!isSessionVar('id')) {
@@ -31,5 +27,16 @@ if (!array_key_exists('regionYearId', $_POST)) {
 }
 $regionYearId = $_POST['regionYearId'];
 
-$response = trans_receipt(null, $exhId, $regionYearId);
+$response = null;
+$transactions = spaceGetPaymentTrans($exhId, $regionYearId);
+foreach ($transactions as $transaction) {
+    $data = trans_receipt($transaction);
+    if ($response == null)
+        $response = $data;
+    else {
+        $response['receipt'] .= "\n\n" . $data['receipt'];
+        $response['receipt_html'] .= "<br/>\n" . $data['receipt_html'];
+        $response['receipt_tables'] .= "\n\n" . $data['receipt_tables'];
+    }
+}
 ajaxSuccess($response);
