@@ -22,7 +22,7 @@ window.onload = function () {
     if (switchPortalbtn != null) {
         switchPortalbtn.innerHTML = 'Switch to ' + (config.portalName == 'Artist' ? 'Vendor' : 'Artist') + ' Portal';
         if ((config.portalName == 'Artist' && config.vendorsite == '') || (config.portalName == 'Vendor' && config.artistsite == ''))
-            switchPortalBtn.hidden = true;
+            switchPortalbtn.hidden = true;
     }
 
     exhibitorProfile = new ExhibitorProfile(config.debug);
