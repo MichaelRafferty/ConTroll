@@ -115,4 +115,4 @@
 [where]
 	W001="eY.conid = ? AND LOWER(xR.shortname) LIKE LOWER(?) AND IFNULL(a.status, '') NOT IN ('Purchased/Released', 'Checked Out', 'Not In Show')"
 [sort]
-	S001="1,2"
+	S001="fullName, a.perid"
