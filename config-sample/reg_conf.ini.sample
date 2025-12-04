@@ -1,191 +1,763 @@
+;;;;; Global (available in all sections, Can be overridden in the individual sections)
 [global]
+;; N:customtext
+;; R:V,reg_admin
+;; H:Global custom text setting, values:
+;; H+all = show all customtext, even the default messages
+;; H+production = suppress the 'default' placeholder messages (an alias for this is nodefault)
+;; H+none = supporess all custom text
+;; D:l:production,all,none
+;; B:O
 ;;; customtext - can override in each app section
-; appears in each program section based on program name
+; appears in each program section based on program name.
+; If omitted, production is the default.
 ; values:
 ; all = show all customtext, even the default messages
 ; production = suppress the 'default' placeholder messages (an alias for this is nodefault)
 ; none = supporess all custom text
 customtext='production'
-;; where on the convention website is the registration information page, not the reg server
-regpage='http://reg'
+;; N:regpage
+;; R:H,reg_staff
+;; P:Full URL of the page on your website
+;; H:Where on the convention website is the registration information page, not the ConTroll registration server.
+;; H+This page should describe the registration policies, prices and the use of the server.
+;; D:h
+;; B:M
+;;;; where on the convention website is the registration information page, not the reg server
+regpage="https://conname.org/registration/"
+;; N:required
+;; R:V,reg_admin
+;; H:Global setting for which profile fields are "required" and marked with a red star, values:
+;; H+all = all = require all fields: first, last, addr, city, st, zip, country, email
+;; H+addr = first, addr, city, st, zip, country, email
+;; H+first = require only first name: first, country, email
+;; D:l:all,addr,first
+;; B:M
 ; required person field sets
 ;   all = require all fields: first, last, addr, city, st, zip, country, email
 ;   first = require only first name: first, country, email
 ;   addr = first, addr, city, st, zip, country, email
 required="all"
 
+;;;;; Convention Wide Parameters
 [con]
+;; N:label
+;; R:V,reg_admin
+;; P:Con Name and ID
+;; H:Label for this years convention, used for banners and page headings
+;; H+Normally this is the convention name followed by the id (ordinal or four digit year)
+;; D:s40
+;; B:M
 label="ConTroll 2022"
+;; N:org
+;; R:V,reg_admin
+;; P:Convention Sponsoring Organization
+;; H:Full name of the organization that sponsors this convention.  It is used in emails.
+;; D:s256
+;; B:M
 org="The ConTroll Development Consortium"
+;; N:orgabv
+;; R:V,reg_admin
+;; P:org
+;; H:Short abbrevisation of the name of the organization that sponsors this convention.
+;; H+It is used to avoid saying the long name multiple times in a row in those emails.
+;; D:s16
+;; B:M
 orgabv="Club"
-volunteers="volunteers@conname.org"
+;;;;; HR Policy Related Fields
+;;; policy related fields
+;; N:policy
+;; R:H,reg_staff
+;; P:Full URL of policy webpage
+;; H:URL of the page on your website that specifies the convention policies.
+;; D:h
+;; B:M
 policy="https://conname.org/policies"
+;; N:regpolicy
+;; R:H,reg_staff
+;; P:Full URL of reg policy webpage
+;; H:URL of the page on your website that specifies the registration policies.
+;; H+If you put all the policies on the policy page, repeat the policy page here.
+;; D:h
+;; B:M
 regpolicy="https://conname.org/policies"
+;; N:privacypolicy
+;; R:H,reg_staff
+;; P:Full URL of privacy policy webpage
+;; H:URL of the page on your website that specifies the privacy policies.
+;; H+If you put all the policies on the policy page, repeat the policy page here.
+;; D:h
+;; B:M
 privacypolicy="https://www.conname.org/privacy-policy/"
+;; N:privacytext
+;; R:H,reg_staff
+;; P:Privacy Profile Text
+;; H:Text to display on the profile pages which when clicked links to the privacypolicy URL.
+;; D:s256
+;; B:M
 privacytext="See our privacy policy for how we use and share information"
+;; N:policytext
+;; R:H,reg_staff
+;; P:Policy Profile Text
+;; H:Text to display on the profile pages which when clicked links to the policy URL.
+;; D:s256
+;; B:M
 policytext="conname Policies"
-remindertext="May we include you in our annual reminder postcards and future marketing or survey emails?"
-; endtext = text to put at the bottom of the receipt.
-endtext=
-regemail="registration2022@conname.org"
-regadminemail="registration2022@conname.org"
-regconfirmcc="registrationcc@conname.org"
-infoemail="info2022@conname.org"
-refundemail='info2022@conname.org'
-feedbackemail='info2022@conname.org'
-website="https://conname.org"
-; regpage = the page on the con's website that explains the registation rules and process
-regpage="https://conname.org/registration/"
-schedulepage="https://schedule.conname.org"
-; daily rates posted on the con's website on this web page
-dailywebsite="https://conname.org"
-hotelwebsite="https://conname.org/hotel"
-hotelname="Hotel Name"
-hoteladdr="Hotel Address"
-survey_url="https://link-to-post-convention-survey"
-rollover_eligible="'upgrade', 'rollover', 'freebie', 'standard', 'yearahead', 'discount'"
-; showConPolicy - shows the "CLick here for the #conname# Policies",
+;; N:showConPolicy
+;; R:H,reg_staff
+;; H:Shows the "Click here for the #conname# Policies",
+;; H+&nbsp;&nbsp;&nbsp;&nbsp;set to 0 if agree to policy is one of your ConTroll policies or 1 otherwise
+;; D:l:0,1
+;; B:O
+; showConPolicy - shows the "Click here for the #conname# Policies",
 ;     set to 0 if agree to policy is one of your policies or 1 otherwise
 showConPolicy=1
+;; N:showVolunteerPolicy
+;; R:H,reg_staff
+;; H:Shows the "#Conname# is entirely run by volunteers" line in the policy block,
+;; H+&nbsp;&nbsp;&nbsp;&nbsp;set to 0 if volunteers is in your interest section, 1 otherwise
+;; D:l:0,1
+;; B:O
 ; showVolunteerPolicy - shows the "#Conname# is entirely run by volunteers" line in the policy block,
 ;      set to 0 if volunteers is in your interest section, 1 otherwise
 showVolunteerPolicy=1
+;; N:remindertext
+;; R:H,reg_staff
+;; P:Non Policy based Contact text
+;; H:Text to display on the profile pages when volunteer is not based is not based on a ConToll policy, but directly asked.
+;; H+Using the ConTroll policy is the preferred method going forward.
+;; H+Only used if showConPolicy=1
+;; D:s256
+;; B:O
+remindertext="May we include you in our annual reminder postcards and future marketing or survey emails?"
+;; N:endtext
+;; R:H,reg_staff
+;; P:text addition to the bottom of receipts
+;; H:Plain text to display on the bottom of receipts.
+;; D:t80,5
+;; B:O
+; endtext = text to put at the bottom of the receipt.
+endtext=
+;;;;; HR Email Addresses
+;;; Convention Email Addresses
+;; N:volunteers
+;; R:H,reg_staff
+;; P:Volunteer Admin Email Address
+;; H:The email address used to contact the volunteer coordinator/staff people for the convention.
+;; D:e
+;; B:M
+volunteers="volunteers@conname.org"
+;; N:regemail
+;; R:H,reg_staff
+;; P:Registration Staff Email Address
+;; H:The email address used to contact the registration staff people for the convention.
+;; D:e
+;; B:M
+regemail="registration2022@conname.org"
+;; N:regadminemail
+;; R:H,reg_staff
+;; P:Registration Administrator Email Address
+;; H:The email address used to contact the registration administrator for the convention.
+;; H+This can be the same address as regemail
+;; D:e
+;; B:M
+regadminemail="registration2022@conname.org"
+;; N:regconfirmcc
+;; R:H,reg_staff
+;; P:Registration Carbon Copy Email Address
+;; H:Optional address to get confirmations of the registration emails sent by ConTroll.
+;; H+Only one address can be specified, use a google group or email list if multiple people need to receive this CC.
+;; D:e
+;; B:O
+;;; regconfirmcc = optional address to get confirmations of the registration emails sent by ConTroll
+;regconfirmcc="registrationcc@conname.org"
+regconfirmcc=
+;; N:infoemail
+;; R:H,reg_staff
+;; P:Convention information request email
+;; H:The email address used to contact the convention for further information.
+;; D:e
+;; B:M
+infoemail="info2022@conname.org"
+;; N:refundemail
+;; R:H,reg_staff
+;; P:email address for refunds/refund policy
+;; H:The email address used to contact the convention for refunds and refund policy issues.
+;; D:e
+;; B:M
+refundemail='info2022@conname.org'
+;; N:feedbackemail
+;; R:H,reg_staff
+;; P:Convention feedback email
+;; H:The email address used to contact the convention with feedback
+;; D:e
+;; B:M
+feedbackemail='info2022@conname.org'
+;;;;; HR Web Sites
+;;; Websites
+;; N:website
+;; R:H,reg_staff
+;; P:Full URL of the convention website
+;; H:Convention website for this year
+;; D:h
+;; B:M
+website="https://conname.org"
+;; N:regpage
+;; R:H,reg_staff
+;; P:Full URL of the registration info website
+;; H:Where on the convention website is the registration information page, not the ConTroll registration server.
+;; H+This entry is just the override of the entry in the Global Section and can be omitted.
+;; D:h
+;; B:O
+; regpage = the page on the con's website that explains the registation rules and process
+regpage="https://conname.org/registration/"
+;; N:schedulepage
+;; R:H,reg_staff
+;; P:Full URL of the online page
+;; H:Full URL to the online schedule page for this convention, such as ConClair or Konopas driven.
+;; H+This is used in emails and is available in the customText email fields.  If you do not have one, do not use it
+;; H+in the custom text entries and leave it blank.
+;; D:h
+;; B:B
+schedulepage="https://schedule.conname.org"
+;; N:dailywebsite
+;; R:H,reg_staff
+;; P:Full URL of the page on your website
+;; H:Where on the convention website are the daily registration rates posted.
+;; D:h
+;; B:M
+; daily rates posted on the con's website on this web page
+dailywebsite="https://conname.org"
+;; N:survey_url
+;; R:H,reg_staff
+;; P:Full URL of the post convention survey
+;; H:If you are using a post convention survey, this is the URL to take that survey.  It can be a survey engine or a google form.
+;; D:h
+;; B:O
+survey_url="https://link-to-post-convention-survey"
+;;;;; HR Hotel Related Items
+;;; hotel related
+;; N:hotelwebsite
+;; R:H,reg_staff
+;; P:Full URL of the page on your website
+;; H:Where on the convention website is the hotel information page.
+;; D:h
+;; B:M
+hotelwebsite="https://conname.org/hotel"
+;; N:hotelname
+;; R:H,reg_staff
+;; P:Hotel Name
+;; H:Full name of the hotel, for use in emails and email custom text
+;; D:s256
+;; B:M
+hotelname="Hotel Name"
+;; N:hoteladdr
+;; R:H,reg_staff
+;; P:Hotel address
+;; H:Address of the hotel, for use in emails and email custom text, written to appear on a single line.
+;; D:s256
+;; B:M
+hoteladdr="Hotel Address"
+;;;;; HR Registration Options
+;;; Registration options
+;; N:rollover_eligible
+;; R:H,reg_staff
+;; P:List of Membership Categories
+;; H:Comma separated list of memberhip categories enclosed in single quotes
+;; H+example: 'upgrade', 'rollover', 'freebie', 'stfcustomandard', 'yearahead', 'discount'
+;; D:s256
+;; B:M
+rollover_eligible="'upgrade', 'rollover', 'freebie', 'standard', 'yearahead', 'discount'"
+;; N:oneoff
+;; R:V,reg_admin
+;; H:If this is a one time (one-off convention), 0=if this convention re-occurs every "year".
+;; D:l:0,1
+;; B:M
 oneoff=0 ; 1 if this is a one year (one-off convention), 0=if this convention re-occurs every "year".
+;; N:multioneday
+;; R:H,reg_staff
+;; H:Can one day memberships be purchased for more than one day of the convention
+;; H+ =0 for only a single one day can be purchased, =1 if multiple different one day can be purchased
+;; D:l:0,1
+;; B:M
 multioneday=1 ; =0 for only a single one day can be purchased, =1 if multiple different one day can be purchased
+;; N:onedaycoupons
+;; R:H,reg_staff
+;; H:Can one day memberships be purchased with a coupon
+;; H+ =0 no coupons apply to one days, =1 coupons can apply to one days
+;; D:l:0,1
+;; B:M
 onedaycoupons=0 ; allow onedays for coupon usage
 
+;;;;; On Line Registration (non Portal)
 [reg]
 ;;; overrides
-;; ;;; customtext
-;; ; appears in each program section based on program name
-;; ; values:
-;; ; all = show all customtext, even the default messages
-;; ; production = suppress the 'default' placeholder messages (an alias for this is nodefault)
-;; ; none = supporess all custom text
-;; customtext='production'
-;; ;;; required person field sets
-;; ;   all = require all fields: first, last, addr, city, st, zip, country, email
-;; ;   first = require only first name: first, country, email
-;; ;   addr = first, addr, city, st, zip, country, email
-;; required="all"
+;; N:customtext
+;; R:V,reg_staff
+;; H:Registration custom text setting, overrides the global setting if desired
+;; H+values:
+;; H+all = show all customtext, even the default messages
+;; H+production = suppress the 'default' placeholder messages (an alias for this is nodefault)
+;; H+none = supporess all custom text
+;; D:l:production,all,none
+;; B:O
+;customtext
+; appears in each program section based on program name
+; values:
+; all = show all customtext, even the default messages
+; production = suppress the 'default' placeholder messages (an alias for this is nodefault)
+; none = supporess all custom text
+; customtext='production'
+;; N:required
+;; R:V,reg_admin
+;; H:Registration override setting from global (if desired), for which profile fields are "required" and marked with a red star
+;; H+values:
+;; H+all = all = require all fields: first, last, addr, city, st, zip, country, email
+;; H+addr = first, addr, city, st, zip, country, email
+;; H+first = require only first name: first, country, email
+;; D:l:all,addr,first
+;; B:O
+;;; required person field sets
+;   all = require all fields: first, last, addr, city, st, zip, country, email
+;   first = require only first name: first, country, email
+;   addr = first, addr, city, st, zip, country, email
+;required="all"
 
+;;;;; HR Registration Site Logo/Heading Related
+;;; Registration site logo/heading related
+;; N:logoimage
+;; R:H,reg_staff
+;; P:Logo file name
+;; H:File name in the onlinereg/images directory that is the logo for the online reg site
+;; H+file formats: jpg, png
+;; D:s256
+;; B:O
 logoimage="conname2022.png"
+;; N:logoalt
+;; R:H,reg_staff
+;; P:Logo alternate text
+;; H:Alternate text describing the logo for screen readers
+;; D:s256
+;; B:O
 logoalt="logo image alternate text"
-logotext="Tagline not alt=text"
+;; N:logotext
+;; R:H,reg_staff
+;; P:Tagline HTML
+;; H:tagline HTML to display next to or below the logo, optional
+;; H+This is not the alt text for the logo for screen readers
+;; D:s256
+;; B:O
+;;; logotext = tagline HTML to display next to or below the logo, optional
+;logotext="Tagline not alt=text"
+;;;;; HR Online Reg Misc Fields
+;;; Online Reg misc fields
+;; N:onsiteopen
+;; R:H,reg_staff
+;; P:Onsite Reg Open Time
+;; H:What time is registration scheduled to be open on the first day of the convention.
+;; H+This currently is only used in online reg to say when you can buy one day regs onsite.
+;; D:s32
+;; B:O
 onsiteopen="3:00 PM"
-;;; noNewDays = how new must a new account be with no memberships to get warned when the "Send New Acct/No New Membership" email is sent
-noNewDays=180
+;; N:noNewDays
+;; R:H,reg_staff
+;; P:Number of days
+;; H:For the reminder that you have a new portal account with no memberships purchased,
+;; H+How many days old is the limit for reminding people with the no membership reminder email.
+;; H+Only accounts created with the last "noNewDays" are considered for the emails.
+;; D:i3
+;; B:O
+;;; noNewDays = how new must a new account be with no memberships to get warned when the "Send New Acct/No New Membership" email is sent, default 60
+noNewDays=
 
+;;;;; atcon: The At Convention/Fan Table/Party Registration System
 [atcon]
 ;;; overrides
-;; ;;; customtext
-;; ; appears in each program section based on program name
-;; ; values:
-;; ; all = show all customtext, even the default messages
-;; ; production = suppress the 'default' placeholder messages (an alias for this is nodefault)
-;; ; none = supporess all custom text
-;; customtext='production'
+;; N:customtext
+;; R:V,reg_admin
+;; H:Atcon custom text setting, overrides the global setting if desired
+;; H+values:
+;; H+all = show all customtext, even the default messages
+;; H+production = suppress the 'default' placeholder messages (an alias for this is nodefault)
+;; H+none = supporess all custom text
+;; D:l:production,all,none
+;; B:O
+;;; customtext
+; appears in each program section based on program name
+; values:
+; all = show all customtext, even the default messages
+; production = suppress the 'default' placeholder messages (an alias for this is nodefault)
+; none = supporess all custom text
+; customtext='production'
 
+;;;;; HR ATCON options
+;;; allow discounts?
+;; N:discount
+;; R:V,reg_admin
+;; H:Allow disount as a payment type in Atxon
+;; H+values:
+;; H+  manager - requires manager logged in
+;; H+	active - manager override enabled
+;; H+  any - any POS user can handle discount
+;; H+  none - disable the discount type of payment
+;; D:l:active,manager,any,none
+;; B:O
 ; valid types are
 ; 	manager - requires manager logged in
 ;	active - manager override enabled
 ;	any - any POS user can handle discount
 ;	none - disable the discount type of payment
 discount=active
-;; allage - which badges to show
+;; N:allage
+;; R:H,reg_staff
+;; H:Which memberships to show in Atcon:
+;; H+&nbsp;&nbsp;&nbsp;&nbsp;=0: act like portal and require age to show related memberships
+;; H+&nbsp;&nbsp;&nbsp;&nbsp;=1: show all memberships, independent of age, if no membership in cart limits age
+;; D:l:0,1
+;; B:O
+;;;; allage - which badges to show
 ; values:
 ; allage=0 : act like portal, require age to show age related badges
 ; allage=1 : if no badge of an age, show badges of all ages, once an age badge is selected, auto set age
 allage=0
-;; inlineinventory - allow for modal change to inventory status at time of checkout for artpos (not require inventory update first)
+;; N:inlineinventory
+;; R:H,art_control
+;; H:Allow for popup change to inventory status at time of checkout for Art Show Cashier
+;; H+(Normal behavior is Art Inventory must have the art in the proper status for sale by Art Show Cashier)
+;; H+&nbsp;&nbsp;&nbsp;&nbsp;=0: Art Show Cashier will sell as quicksale if no bids,
+;; H+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or if 'restrict to inventory sale statuses and prices' for art not sold at quicksale
+;; H+&nbsp;&nbsp;&nbsp;&nbsp;=1: Art Show Cashier will use an intelligent  popup based on Region Year Room Status
+;; H+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; for allowing what to sell and at what price
+;; D:l:0,1
+;; B:O
+;; N:posRegistrationSort
+;; R:H,reg_admin
+;; H:How to sort the registration items in Reg Cashier/Reg Checkin
+;; H+m.sort_order = Sort order from the memList in Current Convention Setup
+;; H+conid, mt.sortorder, m.label = Convention ID, then membership type sort order, then membership label (name)
+;; H+conid, m.label = Convention ID, then membership label (name)
+;; D:l:m.sort_order,conid/mt.sortorder/m.label,conid/m.label
+;; B:R
+; posRegistrationSort - where to put the filter elements on the badgelist page ("top", "bottom")
+posRegistrationSort="m.sort_order";
+;;;; inlineinventory - allow for modal change to inventory status at time of checkout for artpos (not require inventory update first)
 ; inlineinventory=0 : artpos will sell as quicksale if no bids, or if 'restrict to inventory sale statuses and prices' for art not sold at quicksale
 ; inlineinventory=1 : art pos will use an intelligent modal popup based on Region Year Room Status for allowing what to sell and price
 inlineinventory=1
-;; precon - allow use of atcon for pre-con sales
+;; N:precon
+;; R:H,reg_staff
+;; H:Allow use of atcon for pre-con sales
+;; H+&nbsp;&nbsp;&nbsp;&nbsp;=0: Atcon only work correctly at con, precon simiulates the first day of the con
+;; H+&nbsp;&nbsp;&nbsp;&nbsp;=1: Atcon works pre-con, follows the current date to check date range for precon sales
+;; D:l:0,1
+;; B:O
+;;;; precon - Allow use of atcon for pre-con sales
 ; precon=0 - only work correctly at con, precon simiulates the first day of the con
 ; precon=1 - works pre-con, follows the date range for precon
 precon=0
 
+;;;;; Exhibitor Portals (Artist, Exhibitor, Fan, Vendor)
 [vendor]
 ;;; overrides
-;; ;;; customtext
-;; ; appears in each program section based on program name
-;; ; values:
-;; ; all = show all customtext, even the default messages
-;; ; production = suppress the 'default' placeholder messages (an alias for this is nodefault)
-;; ; none = supporess all custom text
-;; customtext='production'
+;; N:customtext
+;; R:H,exhibitor
+;; H:Exhibitor Portal custom text setting, overrides the global setting if desired
+;; H+values:
+;; H+all = show all customtext, even the default messages
+;; H+production = suppress the 'default' placeholder messages (an alias for this is nodefault)
+;; H+none = supporess all custom text
+;; D:l:production,all,none
+;; B:O
+;;; customtext
+; appears in each program section based on program name
+; values:
+; all = show all customtext, even the default messages
+; production = suppress the 'default' placeholder messages (an alias for this is nodefault)
+; none = supporess all custom text
+; customtext='production'
 
-;vendors: email address for generic vendor emails
+;;;;; Exhibitor Portals Email Addresses
+;;; Exhibitor Portals Email Addresses
+;; N:vendor
+;; R:H,exhibitor
+;; P:Generic Vendor (dealers) staff email address, region independent
+;; H:The email address used to contact the vendor (dealers) staff for the convention. (Independent of region)
+;; D:e
+;; B:M
+;vendor: email address for generic vendor emails
 vendor="dealers@???"
+;; N:artist
+;; R:H,exhibitor
+;; P:Generic Artist staff email address, region independent
+;; H:The email address used to contact the artist staff for the convention. (Independent of region)
+;; D:e
+;; B:M
 ;artist: email address for generic artist emails
+;;; Artist Portal items for inventory headers
 artist="artists@???"
-;; artist Item Registration Headers, if omitted, the defaults are used
+;;; artist Inventory Item Registration Headers, if omitted, the defaults are used
+;;;;; HR Art Show Options
+;;; Art show related
+;; N:artistItemAuctionTitle
+;; R:H,exhibitor
+;; P:Auction Section Title
+;; H:Title for the Auction Items Section
+;; D:s80
+;; B:O
 ;artistItemAuctionTitle="Art Auction Items"
+;; N:artistItemSalesTitle
+;; R:H,exhibitor
+;; P:Sales/Print Shop Section Title
+;; H:Title for the Sale Item/Print Shop Section
+;; D:s80
+;; B:O
 ;artistItemSalesTitle="Art Sales / Print Shop Items"
+;; N:artistItemNFSTitle
+;; R:H,exhibitor
+;; P:NFS/Display Only Section Title
+;; H:Title for the Not for Sale/Display Only Section
+;; H+(Display a sample bid sheet to check fit of the title)
+;; D:s64
+;; B:O
 ;artistItemNFSTitle="Display Only / Not For Sale Items"
-; lines = number of bid lines, numbers are which of those are numbreed, Sep is to show seperation lines (vertical lines) in the bid rows (1=yes, 0=no)
+;;; bid sheet items
+; lines = number of bid lines, numbers are which of those are numbered, Sep is to show seperation lines (vertical lines) in the bid rows (1=yes, 0=no)
 ; NOTE: if barcode is used, 3x2 format is max BidSheetLines of 3, 2x2 is max of 7, and overall max is 22
 ;       if barcode is not used, 3x2 format is max BidSheetLines of 4, 2x2 is max of 8, and overall max is 23
+;; N:artistBidSheet
+;; R:H,exhibitor
+;; P:Bid Sheet Title Line
+;; H:Title for the Art Show Bid Sheets
+;; H+(There is limited space and it must fit on one line. Display a sample bid sheet to check if your text fits propery)
+;; D:s64
+;; B:M
+artistBidSheet="Unconfigured Bid Sheet"
+;; N:artistBidSheetLines
+;; R:H,exhibitor
+;; P:Number of bid lines
+;; H:Number of bid lines on an auction bid sheet
+;; H+With barcode: 3x2 format: 1-3, 2x2 format: 4-7, 1x2 format: 8-22
+;; H+Without barcode: 3x2 format: 1-4, 2x2 format: 5-8, 1x2 format: 9-23
+;; H+Format is determined by then numbrer of lines
+;; H+Default is 4 if the line is omitted
+;; D:i2
+;; B:O
 artistBidSheetLines=4
+;; N:artistBidSheetNumbers
+;; R:H,exhibitor
+;; P:Number of bid lines that are numbered
+;; H:Number of numbered bid lines on an auction bid sheet (remainder are blank (unnumbered)
+;; H+Default is 3 if the line is omitted
+;; D:i2
+;; B:O
 artistBidSheetNumbers=3
+;; N:artistBidSheetBidSep
+;; R:H,exhibitor
+;; H:Print the vertical separation bar in the bid sheet rows between bidder and bid amount
+;; H+&nbsp;&nbsp;&nbsp;&nbsp;set to 0 to not print the separation line, 1 to print it
+;; D:l:0,1
+;; B:O
 artistBidSheetBidSep=1
-;artistBidSheet and artistPriceTag are the titles to print on the bid sheets and print price tags
-;artistBidSheet=
-;artistPriceTag=
+;; N:artistBidSheetBarcode
+;; R:H,exhibitor
+;; H:Print the bar code at the bottom of the bid sheets
+;; H+&nbsp;&nbsp;&nbsp;&nbsp;set to 0 to not print the barcode, 1 to to print it
+;; D:l:0,1
+;; B:O
 ; bar codes: 0 = no barcode, 1 = show barcode, bar code is code128 and contains art item id,count (count = 1 for bid sheets and the "n" of qty for print shop)
 artistBidSheetBarcode = 1;
+;;; Art Show Price Tag Items
+;; N:artistPriceTag
+;; R:H,exhibitor
+;; P:Price Tag Title Line
+;; H:Title for the Art Show Fixed Sale Price Tags
+;; H+(There is limited space and it must fit on one line. Display a sample bid sheet to check if your text fits propery)
+;; D:s64
+;; B:M
+artistPriceTag="Unconfigured Price Tag"
+;; N:artistPriceTagBarcode
+;; R:H,exhibitor
+;; H:Print the bar code at the bottom of the price tags
+;; H+&nbsp;&nbsp;&nbsp;&nbsp;set to 0 to not print the barcode, 1 to to print it
+;; D:l:0,1
+;; B:O
+; bar codes: 0 = no barcode, 1 = show barcode, bar code is code128 and contains art item id,count (count = 1 for bid sheets and the "n" of qty for print shop)
 artistPriceTagBarcode = 1;
-; artist bid sheets, artistBidSheetNumbers = number of bid lines, of which artistBidSheetNumbers are numbered if lines <=4, it will use up 2x3 Landscape, if >4 and less that X it will use 2x2 Portrait format, if > X it will use 2x1 portrait format
-artistBidSheetLines=4
-artistBidSheetNumbers=3
-; name for artist bid sheet header (independent of art area)
-artistBidSheet="Demo 2024 Art Show Bid Sheet"
-; name for artist print shop price tag header (independent of art area)
-artistPriceTag=""
-artsheets=false ; true/false show sheet print buttons
-artcontrol=false ; true/false show control sheet print button
+;;; general items
+;; N:artsheets
+;; R:H,exhibitor
+;; H:Show the print bid/price sheets buttons in the exhibior portal
+;; H+&nbsp;&nbsp;&nbsp;&nbsp;set to 0 to not show the buttons, 1 to show them
+;; D:l:0,1
+;; B:O
+artsheets=0 ; 0: do not show, 1 = whow show bid/price tag sheet print buttons
+;;; general items
+;; N:artcontrol
+;; R:H,exhibitor
+;; H:Show the control sheets print button in the exhibior portal
+;; H+&nbsp;&nbsp;&nbsp;&nbsp;set to 0 to not show the button, 1 to show it
+;; D:l:0,1
+;; B:O
+artcontrol=0 ; true/false show control sheet print button
+;;; artcontrolsort = one of item or type (/item): default if missing: item
+;; N:artcontrolsort
+;; R:H,exhibitor
+;; H:How to sort the control sheet:
+;; H+values:
+;; H+item = short by item_id in one section
+;; H+type = split into sections and sort by type, item_id
+;; D:l:type,item
+;; B:O
+;;;;  if =item it is one group by item #,
+;;;; if =type then the 3 types (print, sale, nfs) are listed separetely sorted by item id
+artcontrolsort=type
 
+;;;;; Registration Portal
 [portal]
+;; N:customtext
+;; R:V,reg_staff
+;; H:Registration Portal custom text setting, overrides the global setting if desired
+;; H+values:
+;; H+all = show all customtext, even the default messages
+;; H+production = suppress the 'default' placeholder messages (an alias for this is nodefault)
+;; H+none = supporess all custom text
+;; D:l:production,all,none
+;; B:O
 ;;; overrides
-;; ;;; customtext
-;; ; appears in each program section based on program name
-;; ; values:
-;; ; all = show all customtext, even the default messages
-;; ; production = suppress the 'default' placeholder messages (an alias for this is nodefault)
-;; ; none = supporess all custom text
-;; customtext='production'
+;;; customtext
+;;; appears in each program section based on program name
+; values:
+; all = show all customtext, even the default messages
+; production = suppress the 'default' placeholder messages (an alias for this is nodefault)
+; none = supporess all custom text
+; customtext='production'
 
-;; membership portal items
-; history = 1 = show membership history menu item, 0 = suppress, missing/null = show
+;;;;; HR Membership Portal Image/Logo Related Optiopns
+;;; Membership Portal Images/Logo
 ; the portal also has it's own logo variables as logoimage and logoalt
+;; N:logoimage
+;; R:H,reg_staff
+;; P:Logo file name
+;; H:File name in the onlinereg/images directory that is the logo for the online reg site
+;; H+file formats: jpg, png
+;; D:s256
+;; B:O
 logoimage=""
+;; N:logoalt
+;; R:H,reg_staff
+;; P:Logo alternate text
+;; H:Alternate text describing the logo for screen readers
+;; D:s256
+;; B:O
 logoalt=""
+;;;;; HR Portal Options
+;;; Portal Options
+;; N:history
+;; R:H,reg_staff
+;; H:Enable the membership History menu button
+;; H+&nbsp;&nbsp;&nbsp;&nbsp;set to 0 to disable (hide) the button, 1 to enable it (show)
+;; D:l:0,1
+;; B:O
 ;;; enable registration history for prior years
+; history = 1 = show membership history menu item, 0 = suppress, missing/null = show
 history=1
-;; memberbadgencolor: hex string of the color of the membership "badges" on the portal home screen, to override the standard color scheme
-;;       note; standard color scheme has the buttons having a color that describe the membership type, the legend supports this color scheme
-;;           the override is a single color for all of the badges.  Presence of this line will auto suppress the legend.
-;; suppresslegend: if memberbasgecolor is not used, missing or 0 will show the legend, 1 will suppress the legend
+;;; memberbadgencolor: hex string of the color of the membership "badges" on the portal home screen, to override the standard color scheme
+;;; Art Show Price Tag Items
+;; N:memberbadgecolors
+;; R:V,reg_staff
+;; P:#000000 fmt
+;; H:Override the default membership badge color scheme, and make them all the color specified in this option.
+;; D:s7
+;; B:O
+;       note; standard color scheme has the buttons having a color that describe the membership type, the legend supports this color scheme
+;           the override is a single color for all of the badges.  Presence of this line will auto suppress the legend.
 ;memberbadgecolors="#000000"
+;; N:suppresslegend
+;; R:H,reg_staff
+;; H:Suppress the membership badge color legend
+;; H+&nbsp;&nbsp;&nbsp;&nbsp;set to 1 to suppress (hide) the legend, 0 to enable it (show) (Note this is suppress now SHOW)
+;; D:l:0,1
+;; B:O
+;;;; suppresslegend: if memberbasgecolor is not used, missing or 0 will show the legend, 1 will suppress the legend
 ;suppresslegend=0
+;; N:helppage
+;; R:V,reg_staff
+;; P:Relative path
+;; H:File name of the help page (pdf or php) releative to the portal web root
+;; H+ (relative to where portal's index.php file is contained)
+;; H+ The help menu item is hidden if this entry is missing or the file is not readable
+;; D:s256
+;; B:O
 ; helppage = path to the help page relative to the web root of the portal page
 ; helppage=
-; showConPolicy - shows the "CLick here for the #conname# Policies",
+;;;;; HR Portal Policy Options
+;;; policy flags
+;; N:showConPolicy
+;; R:H,reg_staff
+;; H:Shows the "Click here for the #conname# Policies",
+;; H+&nbsp;&nbsp;&nbsp;&nbsp;set to 0 if agree to policy is one of your ConTroll policies or 1 otherwise
+;; D:l:0,1
+;; B:O
+; showConPolicy - shows the "Click here for the #conname# Policies",
 ;     set to 0 if agree to policy is one of your policies or 1 otherwise
 showConPolicy=1
+;; N:showVolunteerPolicy
+;; R:H,reg_staff
+;; H:Shows the "#Conname# is entirely run by volunteers" line in the policy block,
+;; H+&nbsp;&nbsp;&nbsp;&nbsp;set to 0 if volunteers is in your interest section, 1 otherwise
+;; D:l:0,1
+;; B:O
+; showVolunteerPolicy - shows the "#Conname# is entirely run by volunteers" line in the policy block,
+;      set to 0 if volunteers is in your interest section, 1 otherwise
 ; showVolunteerPolicy - shows the "#Conname# is entirely run by volunteers" line in the policy block,
 ;      set to 0 if volunteers is in your interest section, 1 otherwise
 showVolunteerPolicy=1
 
+;;;;; ConTroll Back End System
 [controll]
-clubname='Club Name'
+;; N:badgelistfilter
+;; R:H,reg_admin
+;; H:Positioning of the filter block on the reg-admin membership list
+;; H+bottom = after list
+;; H+top = before list
+;; D:l:bottom,top
+;; B:O
 ; badgelistfilter - where to put the filter elements on the badgelist page ("top", "bottom")
-badgelistfilter="top"
+badgelistfilter="bottom"
+;; N:posRegistrationSort
+;; R:H,reg_admin
+;; H:How to sort the registration items in Registration
+;; H+m.sort_order = Sort order from the memList in Current Convention Setup
+;; H+conid, mt.sortorder, m.label = Convention ID, then membership type sort order, then membership label (name)
+;; H+conid, m.label = Convention ID, then membership label (name)
+;; D:l:m.sort_order,conid/mt.sortorder/m.label,conid/m.label
+;; B:R
+; posRegistrationSort - where to put the filter elements on the badgelist page ("top", "bottom")
+posRegistrationSort="m.sort_order";
+;; N:clubname
+;; R:H,club
+;; P:club name
+;; H:Club name for the club section.
+;; D:s32
+;; B:O
+clubname='Club Name'
 
+;;;;; Local Parameters for this Convention
 [local]
 ;;; local parameters for the sendinterests.php send script
+;; N:csvto
+;; R:H,reg_admin
+;; P:email address to receive the overall interest file
+;; H:The email address to receive the overall interest file
+;; D:e
+;; B:O
 ;   cvsto = what email address to receive the overall VS file
-;   cvscc = what email address, if any gets CC on all emails sent my sendinterests.php
 ;csvto=
+;; N:csvcc
+;; R:H,reg_admin
+;; P:email address to receive CC of interests
+;; H:The email address to receive CC's of all emails sent about interests
+;; D:e
+;; B:O
+;   cvscc = what email address, if any gets CC on all emails sent my sendinterests.php
 ;csvcc=

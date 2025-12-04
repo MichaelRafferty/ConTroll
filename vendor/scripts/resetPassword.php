@@ -10,13 +10,9 @@ $return500errors = true;
 
 $response = array('post' => $_POST, 'get' => $_GET);
 
-global $con;
-$con = get_con();
-$conid=$con['id'];
-$conf = get_conf('con');
-$vendor_conf = get_conf('vendor');
-
+$conid=getConfValue('con', 'id');
 $response['conid'] = $conid;
+$vendor_conf = get_conf('vendor');
 
 $login = "";
 if(($_SERVER['REQUEST_METHOD'] == "GET") and isset($_GET['login'])) { 
@@ -101,7 +97,8 @@ if ($num_rows != 1) {
         </p>';
 }
 
-$return_arr = send_email($conf['regadminemail'], $login, null, 'Password Reset Request', vendorReset($newpasswd, $dest, $portalName, $reply), null);
+$return_arr = send_email(getConfValue('con', 'regadminemail'), $login, null, 'Password Reset Request', vendorReset($newpasswd, $dest, $portalName, $reply),
+    null);
 
 if (array_key_exists('error_code', $return_arr)) {
     $error_code = $return_arr['error_code'];

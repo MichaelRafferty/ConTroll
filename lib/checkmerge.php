@@ -7,7 +7,7 @@ function checkmerge($remainPid = 0, $min_matches = 5) {
 
 // get the perinfo table for all (if = 0, or just the singe pid for != 0
     $perinfoQ = <<<EOS
-SELECT id, last_name, first_name, middle_name, suffix, badge_name, email_addr, address, addr_2, city, state, zip, country
+SELECT id, last_name, first_name, middle_name, suffix, badge_name, badgeNameL2, address, addr_2, city, state, zip, country
 FROM perinfo
 EOS;
 
@@ -23,6 +23,7 @@ EOS;
     $matches = [];
 
     while ($perinfoL = $perinfoR->fetch_assoc()) {
+        $perinfoL['badgename'] = badgeNameDefault($perinfoL['badge_name'], $perinfoL['badgeNameL2'], $perinfoL['first_name'], $perinfoL['last_name']);
         $perinfo[] = $perinfoL;
     }
 
@@ -34,8 +35,9 @@ EOS;
     }
 
     $allPerinfo = [];
-    $allPerinfoR = dbQuery("SELECT id, last_name, first_name, middle_name, suffix, badge_name, email_addr, address, addr_2, city, state, zip, country FROM perinfo;");
+    $allPerinfoR = dbQuery("SELECT id, last_name, first_name, middle_name, suffix, badge_name, badgeNameL2, email_addr, address, addr_2, city, state, zip, country FROM perinfo;");
     while ($allL = $allPerinfoR->fetch_assoc()) {
+        $allL['badgename'] = badgeNameDefault($allL['badge_name'], $allL['badgeNameL2'], $allL['first_name'], $allL['last_name']);
         $allPerinfo[] = $allL;
     }
 
@@ -73,10 +75,11 @@ EOS;
             $ids .= ', ' . substr($mkey, 1);
         }
         $ids .= ');';
-        $permatchR = dbQuery('SELECT id, last_name, first_name, middle_name, suffix, badge_name, email_addr, address, addr_2, city, state, zip, country FROM perinfo WHERE id IN ' . $ids);
+        $permatchR = dbQuery('SELECT id, last_name, first_name, middle_name, suffix, badge_name, badgeNameL2, email_addr, address, addr_2, city, state, zip, country FROM perinfo WHERE id IN ' . $ids);
         $values[$key] = [];
         while ($permatchL = $permatchR->fetch_assoc())
-            $values[$key][] = $permatchL;
+            $permatchL['badgename'] = badgeNameDefault($permatchL['badge_name'], $permatchL['badgeNameL2'], $permatchL['first_name'], $permatchL['last_name']);
+        $values[$key][] = $permatchL;
     }
 
     $response['values'] = $values;

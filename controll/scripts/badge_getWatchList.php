@@ -35,7 +35,7 @@ $response['id'] = $_SESSION['user_id'];
 $response['user_perid'] = $user_perid;
 
 $watchQ = <<<EOS
-SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.pronouns, 
+SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2, p.legalName, p.pronouns, 
     p.address, p.addr_2, p.city, p.state, p.zip, p.country, p.banned, 
     p.creation_date, p.update_date, p.active, p.banned, p.open_notes, p.admin_notes, p.lastverified,
     REPLACE(REPLACE(REPLACE(REPLACE(LOWER(TRIM(IFNULL(p.phone, ''))), ')', ''), '(', ''), '-', ''), ' ', '') AS phoneCheck,
@@ -65,6 +65,8 @@ if ($watchR === false) {
 }
 $response['success'] = $watchR->num_rows . " members being watched";
 while($badge = $watchR->fetch_assoc()) {
+    $badge['badgename'] = badgeNameDefault($badge['badge_name'], $badge['badgeNameL2'], $badge['first_name'], $badge['last_name']);
+
     $badges[] = $badge;
 }
 $watchR->free();

@@ -63,7 +63,8 @@ if (array_key_exists('memberships', $_POST)) {
 // get the record
 if ($getType == 'p') {
     $getPersonQ =  <<<EOS
-SELECT id, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, legalName, pronouns, address, addr_2, city, state, zip, country, 
+SELECT id, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, badgeNameL2, legalName, pronouns, address, addr_2, city, state, zip, 
+country, 
     managedBy, NULL AS managedByNew, lastVerified, 'p' AS personType,
     TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), ' +', ' ')) AS fullName
 FROM perinfo
@@ -71,7 +72,8 @@ WHERE id = ?;
 EOS;
 } else {
     $getPersonQ =  <<<EOS
-SELECT id, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, legalName, pronouns, address, addr_2, city, state, zip, country, 
+SELECT id, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, badgeNameL2, legalName, pronouns, address, addr_2, city, state, zip, 
+country, 
     managedBy, managedByNew, lastVerified, 'n' AS personType,
     TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), ' +', ' ')) AS fullName
 FROM newperson
@@ -85,6 +87,7 @@ if ($getPersonR == false || $getPersonR->num_rows != 1) {
     exit();
 }
 $person = $getPersonR->fetch_assoc();
+$person['badgename'] = badgeNameDefault($person['badge_name'], $person['badgeNameL2'], $person['first_name'], $person['last_name']);
 $getPersonR->free();
 
 if ($person['country'] == null || $person['country'] == '')

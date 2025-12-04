@@ -23,12 +23,12 @@ $response['conid'] = $conid;
 $response['perid'] = $perid;
 
 $bQ = <<<EOS
-SELECT 999999999 AS historyId, id, last_name, first_name, middle_name, suffix, email_addr, phone, badge_name, legalName, pronouns, 
+SELECT 999999999 AS historyId, id, last_name, first_name, middle_name, suffix, email_addr, phone, badge_name, badgeNameL2, legalName, pronouns, 
        address, addr_2, city, state, zip, country, banned, creation_date, update_date, change_notes, active, open_notes, admin_notes, 
        old_perid, contact_ok, share_reg_ok, managedBy, managedByNew, lastVerified, managedReason, updatedBy
 FROM perinfo
 WHERE id = ?
-UNION SELECT  historyId, id, last_name, first_name, middle_name, suffix, email_addr, phone, badge_name, legalName, pronouns, 
+UNION SELECT  historyId, id, last_name, first_name, middle_name, suffix, email_addr, phone, badge_name, badgeNameL2, legalName, pronouns, 
        address, addr_2, city, state, zip, country, banned, creation_date, update_date, change_notes, active, open_notes, admin_notes, 
        old_perid, contact_ok, share_reg_ok, managedBy, managedByNew, lastVerified, managedReason, updatedBy
 FROM perinfoHistory

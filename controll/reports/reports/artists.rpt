@@ -52,11 +52,16 @@
 [T003]
     name=exhibitorRegionYears
     alias=eRY
-    join=" eRY.exhibitorYearId = eY.id"
+    join="eRY.exhibitorYearId = eY.id"
+[T004]
+    name=exhibitorSpaces
+    alias=eS
+    join="eS.exhibitorRegionYear = eRY.id"
 [T010]
     name=art
     alias=i
     join="i.eRY = eRY.id"
+    left=true
 [C001]
     name=art
     select="SELECT eRY.id as eRY, I.conid, COUNT(*) AS items"
@@ -67,7 +72,7 @@
     item=conid
     datatype=i
 [where]
-	001="eY.conid >= ?"
+	001="eY.conid >= ? AND eS.item_purchased IS NOT NULL"
 [group]
     001="e.id, artistName, artistAddr, email"
 [sort]

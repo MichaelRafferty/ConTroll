@@ -11,6 +11,7 @@ require_once("../lib/profile.php");
 require_once("../lib/policies.php");
 require_once("../lib/paymentPlans.php");
 require_once("../lib/coupon.php");
+require_once("../lib/tax.php");
 require_once('../lib/cc__load_methods.php');
 
 global $config_vars;
@@ -18,7 +19,6 @@ global $config_vars;
 $con = get_conf('con');
 $conid = $con['id'];
 $portal_conf = get_conf('portal');
-$cc = get_conf('cc');
 $condata = get_con();
 load_cc_procs();
 
@@ -50,12 +50,8 @@ if (isSessionVar('id') && isSessionVar('idType')) {
     exit();
 }
 
-if (array_key_exists('currency', $con)) {
-    $currency = $con['currency'];
-} else {
-    $currency = 'USD';
-}
-
+$currency = getConfValue('con', 'currency', 'USD');
+$locale = getLocale();
 $transId = getSessionVar('transId');
 $initCoupon = getSessionVar('curCoupon');
 $initCouponSerial = getSessionVar('curCouponSerial');
@@ -89,6 +85,9 @@ if (array_key_exists('onedaycoupons', $con)) {
     $onedaycoupons = 0;
 }
 $config_vars['onedaycoupons'] = $onedaycoupons;
+$config_vars['taxRates'] = getTaxRates();
+$config_vars['locale'] = $locale;
+$config_vars['currency'] = $currency;
 
 $cdn = getTabulatorIncludes();
 // default memberships to empty to handle the refresh case which never loads them.
@@ -103,7 +102,7 @@ if ($info === false) {
     portalPageFoot();
     exit();
 }
-$dolfmt = new NumberFormatter('', NumberFormatter::CURRENCY);
+$dolfmt = new NumberFormatter($locale, NumberFormatter::CURRENCY);
 
 $hasWSFS = false;
 $hasNom =  false;
@@ -116,9 +115,8 @@ if ($hasPasskey == false) {
     $hasPasskey = hasPasskey($info['email_addr'], 'portal');
 }
 
-$allowPasskey = getConfValue('vendor', 'passkeyRpLevel', 'd') != 'd' && array_key_exists('HTTPS', $_SERVER) && (isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] ==
-                'on')) {
-
+$allowPasskey = getConfValue('vendor', 'passkeyRpLevel', 'd') != 'd' &&
+        array_key_exists('HTTPS', $_SERVER) && (isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == 'on');
 
 if (!$refresh) {
     $numPrimary = 0;
@@ -141,6 +139,18 @@ SELECT r.status, r.memId, m.*, a.shortname AS ageShort, a.label AS ageLabel, a.a
         WHEN pc.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pc.first_name, pc.last_name))
         ELSE TRIM(CONCAT_WS(' ', nc.first_name, nc.last_name))
     END AS purchaserName,
+    CASE
+        WHEN pp.id IS NOT NULL THEN pp.first_name
+        WHEN np.id IS NOT NULL THEN np.first_name
+        WHEN pc.id IS NOT NULL THEN pc.first_name
+        ELSE nc.first_name
+    END AS first_name,
+    CASE
+        WHEN pp.id IS NOT NULL THEN pp.last_name
+        WHEN np.id IS NOT NULL THEN np.last_name
+        WHEN pc.id IS NOT NULL THEN pc.last_name
+        ELSE nc.last_name
+    END AS last_name,
     CASE 
         WHEN rp.id IS NOT NULL THEN rp.managedBy
         WHEN rn.id IS NOT NULL THEN rn.managedBy
@@ -156,6 +166,11 @@ SELECT r.status, r.memId, m.*, a.shortname AS ageShort, a.label AS ageLabel, a.a
         WHEN rn.id IS NOT NULL THEN rn.badge_name
         ELSE NULL
     END AS badge_name,
+      CASE 
+        WHEN rp.id IS NOT NULL THEN rp.badgeNameL2
+        WHEN rn.id IS NOT NULL THEN rn.badgeNameL2
+        ELSE NULL
+    END AS badgeNameL2,
     CASE 
         WHEN rp.id IS NOT NULL THEN rp.email_addr
         WHEN rn.id IS NOT NULL THEN rn.email_addr
@@ -235,6 +250,7 @@ EOS;
     $denyVirtual = false;
     if ($holderRegR !== false && $holderRegR->num_rows > 0) {
         while ($m = $holderRegR->fetch_assoc()) {
+            $m['badgename'] = badgeNameDefault($m['badge_name'], $m['badgeNameL2'], $m['first_name'], $m['last_name']);
             // check if they have a WSFS rights membership (hasWSFS and hasNom)
             if (($m['memCategory'] == 'wsfs' || $m['memCategory'] == 'wsfsnom' || $m['memCategory'] == 'dealer'
                 || in_array($m['memId'], $addlWSFS)) && $m['status'] == 'paid') {
@@ -314,6 +330,8 @@ EOS;
                 $item['managedBy'] = $m['managedBy'];
                 $item['managedByNew'] = $m['managedByNew'];
                 $item['badge_name'] = $m['badge_name'];
+                $item['badgeNameL2'] = $m['badgeNameL2'];
+                $item['badgename'] = $m['badgename'];
                 $item['fullName'] = $m['fullName'];
                 $item['memberId'] = $m['memberId'];
                 $item['planId'] = $m['planId'];
@@ -339,8 +357,8 @@ EOS;
     if ($loginType == 'p') {
         $managedSQL = <<<EOS
 WITH ppl AS (
-    SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.pronouns,
-        p.address, p.addr_2, p.city, p.state, p.zip, p.country,
+    SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2,
+        p.legalName, p.pronouns, p.address, p.addr_2, p.city, p.state, p.zip, p.country,
         p.banned, p.creation_date, p.update_date, p.change_notes, p.active,
         p.managedBy, NULL AS managedByNew,
         TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
@@ -369,8 +387,8 @@ WITH ppl AS (
     LEFT OUTER JOIN newperson np ON tp.newperid = np.id
     WHERE p.managedBy = ? AND p.id != p.managedBy
     UNION
-    SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.pronouns,
-        p.address, p.addr_2, p.city, p.state, p.zip, p.country,
+    SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2,
+        p.legalName, p.pronouns, p.address, p.addr_2, p.city, p.state, p.zip, p.country,
         'N' AS banned, NULL AS creation_date, NULL AS update_date, '' AS change_notes, 'Y' AS active,
         p.managedBy, p.managedByNew,
         TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
@@ -419,8 +437,8 @@ EOS;
     } else {
         $managedSQL = <<<EOS
 WITH ppl AS (
-    SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.pronouns,
-        p.address, p.addr_2, p.city, p.state, p.zip, p.country,
+    SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2,
+        p.legalName, p.pronouns, p.address, p.addr_2, p.city, p.state, p.zip, p.country,
         p.banned, p.creation_date, p.update_date, p.change_notes, p.active,
         p.managedBy, NULL AS managedByNew,
         TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
@@ -449,8 +467,8 @@ WITH ppl AS (
     LEFT OUTER JOIN newperson np ON tp.newperid = np.id
     WHERE p.managedByNew = ? AND p.id != p.managedByNew
     UNION
-    SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.pronouns,
-        p.address, p.addr_2, p.city, p.state, p.zip, p.country,
+    SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2,
+        p.legalName, p.pronouns, p.address, p.addr_2, p.city, p.state, p.zip, p.country,
         'N' AS banned, NULL AS creation_date, NULL AS update_date, '' AS change_notes, 'Y' AS active,
         p.managedBy, p.managedByNew,
         TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
@@ -501,6 +519,7 @@ EOS;
     $managed = [];
     if ($managedByR !== false) {
         while ($p = $managedByR->fetch_assoc()) {
+            $p['badgename'] = badgeNameDefault($p['badge_name'], $p['badgeNameL2'], $p['first_name'], $p['last_name']);
             $managed[] = $p;
         }
         $managedByR->free();
@@ -570,8 +589,9 @@ foreach ($memberships as $key => $membership) {
     $label = ($membership['conid'] != $conid ? $membership['conid'] . ' ' : '') . $membership['label'];
     if ($membership['status'] == 'unpaid') {
         $totalUnpaid++;
-        $totalDue += round($membership['price'] - ($membership['paid'] + $membership['couponDiscount']), 2);
         $due = round($membership['price'] - ($membership['paid'] + $membership['couponDiscount']), 2);
+        $totalDue += $due;
+
         $status = 'Balance due: ' . $dolfmt->formatCurrency((float) $due, $currency);
 
         if ($membership['startdate'] > $now || $membership['enddate'] < $now || $membership['online'] == 'N') {
@@ -1017,7 +1037,7 @@ if (count($memberships) > 0) {
             <div class='col-sm-1'></div>
             <div class='col-sm-2'><?php echo $status; ?></div>
             <div class='col-sm-3'><?php echo $membership['displayLabel']; ?></div>
-            <div class="col-sm-6"><?php echo $membership['fullName'] . ' / ' . $membership['badge_name'];?></div>
+            <div class="col-sm-6"><?php echo $membership['fullName'] . ' / ' . $membership['badgename'];?></div>
         </div>
 <?php
     }

@@ -15,7 +15,7 @@ CREATE TABLE `printers` (
   `printerName` varchar(16) COLLATE utf8mb4_general_ci NOT NULL,
   `printerType` enum('generic','receipt','badge') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'generic',
   `active` int NOT NULL DEFAULT '0',
-  `codePage` enum('PS','HPCL','Dymo4xxPS','Dymo3xxPS','DymoSEL','Windows-1252','ASCII','7bit','8bit','UTF-8','UTF-16') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'Windows-1252',
+  `codePage` enum('HPCL','Dymo4xx','Dymo3xx','Windows-1252','ASCII','7bit','8bit','UTF-8','UTF-16') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'Windows-1252',
   PRIMARY KEY (`serverName`,`printerName`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 

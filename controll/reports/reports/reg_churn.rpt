@@ -1,0 +1,136 @@
+[report]
+	name="RegChurn"
+	auth=reg_admin
+	csvfile="RegChurn"
+    index=regid
+[F001]
+    name=Conid
+	sql=conid
+	title="Con Id"
+	align=right
+	minWidth=80
+[F002]
+    name=Paid
+    sql=paid
+    title="# Paid"
+[F003]
+    name=Ppaid
+    sql="ROUND(100 * paid / total, 1)"
+    title="% Paid"
+    aligh=right
+[F004]
+    name=Free
+    sql=free
+    title="# Free"
+[F005]
+    name=Pfree
+    sql="ROUND(100 * free / total, 1)"
+    title="% Free"
+    aligh=right
+[F006]
+    name=Total
+    sql=total
+    title=Total
+[F010]
+    name=new
+    sql='`new`'
+    title='New'
+    align=right
+[F011]
+    name=Pnew
+    sql="ROUND(100 * `new` / total, 1)"
+    title="% New"
+    aligh=right
+[F020]
+    name=prior
+    sql='prior'
+    title='Prior Year'
+    align=right
+[F021]
+    name=Pprior
+    sql="ROUND(100 * prior / total, 1)"
+    title="% Prior Year"
+    aligh=right
+[F030]
+    name=Last4
+    sql='last4'
+    title='Prior 4 Years'
+    align=right
+[F031]
+    name=Plast4
+    sql="ROUND(100 * last4 / total, 1)"
+    title="% Prior 4 Years"
+    aligh=right
+[F040]
+    name=Churn1
+    sql='total - next1'
+    title='1 Year Churn'
+    align=right
+[F041]
+    name=Pchurn1
+    sql="ROUND(100 * (total - next1) / total, 1)"
+    title="% 1 Year Churn"
+    aligh=right
+[F050]
+    name=Churn4
+    sql='total - next4'
+    title='4 Year Churn'
+    align=right
+[F051]
+    name=Pchurn4
+    sql="ROUND(100 * (total - next4) / total, 1)"
+    title="% 4 Year Churn"
+    aligh=right
+[T001]
+	name=nums
+	alias=n
+[C001]
+    name=regs
+    select="SELECT r.conid, r.perid, case when r.paid > 0 then 1 else 0 end as paid, case when r.paid = 0 then 1 else 0 end as free"
+    tables="FROM reg r JOIN memList m ON r.memId = m.id"
+    where="WHERE r.status = 'paid' AND m.memCategory IN ('standard', 'yearahead', 'artist', 'dealer','freebie')
+        AND r.conid + 15 > ?"
+[C002]
+    name=counts
+    select="SELECT conid, COUNT(*) AS total, sum(paid) as paid, sum(free) as free"
+    tables="FROM regs"
+    where="GROUP BY conid"
+[C002]
+    name=counts
+    select="SELECT conid, COUNT(*) AS total, sum(paid) as paid, sum(free) as free"
+    tables="FROM regs"
+    where="GROUP BY conid"
+[C003]
+    name=sums
+    select="SELECT r.conid,	COUNT(DISTINCT rn1.perid) AS next1, COUNT(DISTINCT rn5.perid) AS next4,
+        COUNT(DISTINCT rp.perid) AS prior, COUNT(DISTINCT rp5.perid) AS last4"
+    tables="FROM regs r
+        LEFT OUTER JOIN regs rn1 ON r.perid = rn1.perid AND r.conid + 1 = rn1.conid
+        LEFT OUTER JOIN regs rn5 ON r.perid = rn5.perid AND r.conid < rn5.conid AND r.conid > rn5.conid - 5
+        LEFT OUTER JOIN regs rp ON r.perid = rp.perid AND r.conid - 1 = rp.conid
+        LEFT OUTER JOIN regs rp5 ON r.perid = rp5.perid AND rp5.conid < r.conid AND rp5.conid > r.conid - 5"
+    where="WHERE r.conid + 10 > ? GROUP BY r.conid"
+[C004]
+    name=nums
+    select="SELECT c.conid, c.paid, c.free, c.total, (c.total - s.last4) AS `new`, s.next1, s.next4, s.prior, s.last4"
+    tables="FROM counts c JOIN sums s ON c.conid = s.conid"
+    where=""
+[P001]
+    type=config
+    section=con
+    item=id
+    datatype=i
+[P002]
+    type=config
+    section=con
+    item=id
+    datatype=i
+[P003]
+    type=config
+    section=con
+    item=id
+    datatype=i
+[where]
+    001="conid <= ?"
+[sort]
+	001="conid DESC"

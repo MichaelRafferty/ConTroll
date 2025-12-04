@@ -85,6 +85,24 @@ EOS;
     $message .= "Added conlist entry for $nextConid as $newId<br/>\n";
 }
 
+// build the taxList
+    $checkTaxQ = <<<EOS
+SELECT count(*) FROM taxList WHERE conid = ?;
+EOS;
+    $checkTaxR = dbSafeQuery($checkTaxQ, 'i', array($nextConid));
+    $taxCount = $checkTaxR->fetch_row()[0];
+    $checkTaxR->free();
+    if ($taxCount == 0) {
+        $taxInsQ = <<<EOS
+INSERT INTO taxList(conid, taxField, label, rate, active, lastUpdate, updatedBy)
+SELECT ?, taxField, label, rate, active, now(), NULL
+FROM taxList
+WHERE conid = ?;
+EOS;
+        $numRows = dbSafeCmd($taxInsQ, 'ii', array($nextConid, $conid));
+        $message .= "$numRows taxList entries inserted for $nextConid<br/>\n";
+    }
+
 // build the agelist if needed
 $checkAgeQ = <<<EOS
 SELECT count(*) FROM ageList WHERE conid = ?;

@@ -5,6 +5,7 @@
 // create payment record and send same to credit card provider
 
 require_once '../lib/base.php';
+require_once('../../lib/tax.php');
 require_once('../../lib/log.php');
 require_once('../../lib/cc__load_methods.php');
 require_once('../../lib/term__load_methods.php');
@@ -43,6 +44,18 @@ $source = 'atcon';
 $con = get_conf('con');
 load_cc_procs();
 logInit(getConfValue('log', 'term'));
+
+$cc = get_conf('cc');
+$locationId = getSessionVar('terminal');
+if ($locationId) {
+    $locationId = $locationId['locationId'];
+} else if (array_key_exists('location_regpos', $cc)) {
+    $locationId = $cc['location_regpos'];
+} else if (array_key_exists('location', $cc)) {
+    $locationId = $cc['location'];
+} else {
+    $locationId = 'Unknown';
+}
 
 $conid = $con['id'];
 $upd_rows = 0;
@@ -156,7 +169,7 @@ if ($new_payment['type'] == 'terminal') {
             term_cancelPayment($name, $termStatus['currentPayment'], true);
         }
         if ($termStatus['currentOrder'] != null && $termStatus['currentOrder'] != '$orderId') {
-            cc_cancelOrder('atcon', $orderId, true);
+            cc_cancelOrder('atcon', $orderId, true, $locationId);
         }
     } else {
         $status = $termStatus['status'];
@@ -232,6 +245,7 @@ if (array_key_exists('pay_tid_amt', $_POST)) {
 $buyer['email'] = $payor_email;
 $buyer['phone'] = $payor_phone;
 $buyer['country'] = $payor_country;
+$taxes = array();
 
 // see if we need to change the master transaction perid, only do this if the amount paid is = 0
 if ($pay_tid_amt == 0) {
@@ -322,11 +336,9 @@ if ($amt > 0 || $discountAmt > 0) {
             else
                 $desc = mb_substr($desc . '/' . $new_payment['desc'], 0, 64);
 
-            $locationId = getSessionVar('terminal');
-            if ($locationId) {
-                $locationId = $locationId['locationId'];
-            } else {
-                $locationId = getConfValue('cc', 'location');
+            if ($taxAmt > 0) {
+                $oRtn = cc_fetchOrder('controll/pos_processPayment', $orderId, $useLogWrite = false);
+                $taxes = $oRtn['taxes'];
             }
             $ccParam = array (
                 'transid' => $master_tid,
@@ -334,6 +346,7 @@ if ($amt > 0 || $discountAmt > 0) {
                 'price' => null,
                 'badges' => null,
                 'taxAmt' => $taxAmt,
+                'taxes' => $taxes,
                 'preTaxAmt' => $preTaxAmt,
                 'total' => $amt,
                 'orderId' => $orderId,
@@ -563,13 +576,13 @@ EOS;
     $insPmtSQL = <<<EOS
 INSERT INTO payments(transid, type,category, description, source, pretax, tax, amount, time, cc_approval_code, cashier, 
     cc, nonce, cc_txn_id, txn_time, receipt_url, receipt_id, userPerid, status, ccPaymentId)
-VALUES (?,?,'reg',?,'cashier',?,?,?,now(),?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+VALUES (?,?,?,?,'cashier',?,?,?,now(),?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 EOS;
-    $typestr = 'issdddsissssssiss';
+    $typestr = 'isssdddsissssssiss';
 
     // coupon payment if it exist
     if ($couponPayment != null) {
-        $paramarray = array ($master_tid, 'coupon', $couponPayment['desc'], $couponPayment['amt'], 0, $couponPayment['amt'], null, $user_perid,
+        $paramarray = array ($master_tid, 'coupon', $category, $couponPayment['desc'], $couponPayment['amt'], 0, $couponPayment['amt'], null, $user_perid,
             null, null, null, null, null, null, $user_perid, 'APPLIED', null);
         $new_pid = dbSafeInsert($insPmtSQL, $typestr, $paramarray);
 
@@ -580,7 +593,7 @@ EOS;
     }
 
     if ($drow != null) {
-        $paramarray = array ($master_tid, 'discount', $drow['desc'], $drow['amt'], 0, $drow['amt'], null, $user_perid,
+        $paramarray = array ($master_tid, 'discount', $category, $drow['desc'], $drow['amt'], 0, $drow['amt'], null, $user_perid,
             null, null, null, null, null, null, $user_perid, 'APPLIED', null);
         $new_pid = dbSafeInsert($insPmtSQL, $typestr, $paramarray);
 
@@ -592,10 +605,29 @@ EOS;
 
     // now the main payment
     if ($amt > 0) {
-        $paramarray = array ($master_tid, $paymentType, $desc, $preTaxAmt, $taxAmt, $approved_amt, $auth, $user_perid,
-            $last4, $nonceCode, $paymentId, $txTime, $receiptUrl, $receiptNumber, $user_perid, $status, $paymentId);
-        $new_pid = dbSafeInsert($insPmtSQL, $typestr, $paramarray);
+        if ($taxAmt > 0) {
+            [$taxFields, $taxSql, $taxStr, $taxValues] = buildTaxInsert($taxes);
+            if ($taxFields != '')
+                $taxFields = ", $taxFields";
+            if ($taxSql != '')
+                $taxSql = ", $taxSql";
+        } else {
+            $taxFields = '';
+            $taxSql = '';
+            $taxStr = '';
+            $taxValues = [];
+        }
 
+        $insPmtSQL = <<<EOS
+INSERT INTO payments(transid, type,category, description, source, pretax, tax, amount, time, cc_approval_code, cashier,
+    cc, nonce, cc_txn_id, txn_time, receipt_url, receipt_id, userPerid, status, ccPaymentId $taxFields)
+VALUES (?,?,?,?,'cashier',?,?,?,now(),?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? $taxSql);
+EOS;
+        $typestr = 'isssdddsissssssiss' . $taxStr;
+        $paramarray = array ($master_tid, $paymentType, $category, $description, $preTaxAmt, $taxAmt, $approved_amt, $auth, $user_perid,
+            $last4, $nonceCode, $paymentId, $txTime, $receiptUrl, $receiptNumber, $user_perid, $status, $paymentId);
+
+        $new_pid = dbSafeInsert($insPmtSQL, $typestr, array_merge( $paramarray, $taxValues));
         if ($new_pid === false) {
             ajaxError('Error adding payment to database');
             return;

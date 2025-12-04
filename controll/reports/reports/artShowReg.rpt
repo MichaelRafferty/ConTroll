@@ -47,6 +47,12 @@
     title="Items"
     align=right
     sort=false
+[F020]
+    name=name
+    sql="IFNULL(e.artistName, e.exhibitorName)"
+    title="Artist Name"
+    sort=false
+    filter=true
 [F021]
     name=email
     sql=e.exhibitorEmail
@@ -112,14 +118,21 @@
 [C002]
     name=requested
     select="SELECT eRY.id, MIN(time_requested) AS requested, SUM(xsp.units) AS units"
-    tables="FROM exhibitorSpaces s JOIN exhibitorRegionYears eRY ON eRY.id = s.exhibitorRegionYear JOIN exhibitorYears eY ON eRY.exhibitorYearId = eY.id LEFT OUTER JOIN exhibitsSpacePrices xsp ON s.item_requested = xsp.id"
+    tables="FROM exhibitorSpaces s JOIN exhibitorRegionYears eRY ON eRY.id = s.exhibitorRegionYear JOIN exhibitorYears eY ON eRY.exhibitorYearId = eY.id
+ LEFT OUTER JOIN exhibitsSpacePrices xsp ON s.item_requested = xsp.id"
     where="WHERE eY.conid = ? AND s.time_requested IS NOT NULL GROUP BY eRY.id"
 [C003]
      name=purchased
      select="SELECT eRY.id, SUM(xsp.units) AS units, GROUP_CONCAT(s.locations SEPARATOR ',') AS locs"
-     tables="FROM exhibitorSpaces s JOIN exhibitorRegionYears eRY ON eRY.id = s.exhibitorRegionYear JOIN exhibitorYears eY ON eRY.exhibitorYearId = eY.id LEFT
- OUTER JOIN exhibitsSpacePrices xsp ON s.item_purchased = xsp.id"
+     tables="FROM exhibitorSpaces s JOIN exhibitorRegionYears eRY ON eRY.id = s.exhibitorRegionYear JOIN exhibitorYears eY ON eRY.exhibitorYearId = eY.id
+  LEFT OUTER JOIN exhibitsSpacePrices xsp ON s.item_purchased = xsp.id"
      where="WHERE eY.conid = ? AND s.time_purchased IS NOT NULL GROUP BY eRY.id"
+[C004]
+      name=approved
+      select="SELECT eRY.id, SUM(xsp.units) AS units, GROUP_CONCAT(s.locations SEPARATOR ',') AS locs"
+      tables="FROM exhibitorSpaces s JOIN exhibitorRegionYears eRY ON eRY.id = s.exhibitorRegionYear JOIN exhibitorYears eY ON eRY.exhibitorYearId = eY.id
+   LEFT OUTER JOIN exhibitsSpacePrices xsp ON s.item_approved = xsp.id"
+      where="WHERE eY.conid = ? AND s.time_approved IS NOT NULL GROUP BY eRY.id"
 [T001]
     name=exhibitorRegionYears
     alias=eRY
@@ -158,6 +171,11 @@
     alias=p
     join="eRY.id = p.id"
     left=true
+[T033]
+    name=approved
+    alias=a
+    join="eRY.id = a.id"
+    left=true
 [P001]
     type=config
     section=con
@@ -178,7 +196,30 @@
     section=con
     item=id
     datatype=i
+[P005]
+    type=config
+    section=con
+    item=id
+    datatype=i
+[P006]
+    type=prompt
+    item=filter
+    datatype=s
+[P007]
+    type=prompt
+    item=filter
+    datatype=s
+[P008]
+    type=prompt
+    item=filter
+    datatype=s
+[P009]
+    type=prompt
+    item=filter
+    datatype=s
 [where]
 	001="eY.conid = ? AND xRT.portalType='artist' AND (IFNULL(r.units, 0) > 0 OR IFNULL(e.artistName, '') != '')"
+	002="AND ((UPPER(SUBSTRING(?, 1, 1)) = 'S') OR (UPPER(SUBSTRING(?, 1, 1)) = 'R' AND IFNULL(r.units, 0) > 0)"
+	003="OR (UPPER(SUBSTRING(?, 1, 1)) = 'A' AND IFNULL(a.units, 0) > 0) OR (UPPER(SUBSTRING(?, 1, 1)) = 'P' AND IFNULL(p.units, 0) >	0))"
 [sort]
 	001="xR.name, eRY.exhibitorNumber"

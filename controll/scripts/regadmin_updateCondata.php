@@ -23,6 +23,16 @@ $action=$_POST['ajax_request_action'];
 $tablename=$_POST['tablename'];
 try {
     $tabledata = json_decode($_POST['tabledata'], true, 512, JSON_THROW_ON_ERROR);
+    // now resort the table data rows on sort id column:
+    function cmp($a, $b) {
+        if (array_key_exists('sort_order', $a) && array_key_exists('sort_order', $b)) {
+            if ($a['sort_order'] == $b['sort_order'])
+                return 0;
+            return $a['sort_order'] < $b['sort_order'] ? -1 : 1;
+        }
+        return -1;
+    }
+    usort($tabledata, "cmp");
 } catch (Exception $e) {
     $msg = 'Caught exception on json_decode: ' . $e->getMessage() . PHP_EOL . 'JSON error: ' . json_last_error_msg() . PHP_EOL;
     $response['error'] = $msg;
@@ -75,8 +85,8 @@ EOS;
         $first[$conid] = true;
         $first[$nextconid] = true;
         $sort_order = 10;
-        $yearahead_sortorder = 4000;
-        $rollover_sortorder = 5000;
+        $yearahead_sortorder = 10010;
+        $rollover_sortorder = 20010;
         foreach ($data as $index => $row ) {
             //$cidfound[$row['conid']] = true;
             if (array_key_exists('to_delete', $row) && $row['to_delete'] == 1 && array_key_exists('memlistkey', $row)) {
@@ -91,16 +101,16 @@ EOS;
                 } else {
                     $roworder = 10;
                 }
-                if (($roworder >= 0 && $roworder < 9000) || ($roworder == -99999)) {
+                if (($roworder >= 0 && $roworder < 30000) || ($roworder == -99999)) {
                     if ($row['memCategory'] == 'rollover') {
                         $data[$index]['sort_order'] = $rollover_sortorder;
-                        $rollover_sortorder += 2;
+                        $rollover_sortorder += 10;
                     } else if ($row['memCategory'] == 'yearahead') {
                         $data[$index]['sort_order'] = $yearahead_sortorder;
-                        $yearahead_sortorder += 2;
+                        $yearahead_sortorder += 10;
                     } else {
                         $data[$index]['sort_order'] = $sort_order;
-                        $sort_order += 2;
+                        $sort_order += 10;
                     }
                 }
             }
@@ -137,7 +147,7 @@ EOS;
         foreach ($data as $row) {
             if (!array_key_exists('notes', $row))
                 $row['notes'] = null;
-            if ($row['id'] < 0) {
+            if (!is_numeric($row['id']) || $row['id'] < 0) {
                 $paramarray= array($row['conid'],$row['sort_order'],$row['memCategory'],
                     $row['memType'],$row['memAge'],$row['shortname'],$row['notes'],$row['price'],$row['startdate'],
                     $row['enddate'],$row['atcon'],$row['online'],$row['glNum'],$row['glLabel']);

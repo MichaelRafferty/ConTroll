@@ -82,7 +82,7 @@ while($badgeA = $badgeR->fetch_assoc()) {
             Name: <?php echo $_POST['name']; ?><br/>
             Address Line 1: <?php echo $_POST['addr1']; ?><br/>
             Address Line 2: <?php echo $_POST['addr2']; ?><br/>
-            City/State/Zip: <?php echo $_POST['city']; ?>
+            City/State-Prov/Zip-PC: <?php echo $_POST['city']; ?>
             <?php echo $_POST['state']; ?>
             <?php echo $_POST['zip']; ?><br/>
             <?php // for online implement the API refund and change message

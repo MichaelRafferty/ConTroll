@@ -43,6 +43,12 @@ WITH notes AS (
     JOIN regActions N on R.id = N.regId
     WHERE R.conid = ? AND N.action = 'notes' AND (R.perid = ? OR R.create_trans = ? OR R.complete_trans = ?)
     GROUP BY R.id
+), printed AS (
+    SELECT R.id, count(N.id) AS pcount
+    FROM reg R
+    JOIN regActions N on R.id = N.regId
+    WHERE R.conid = ? AND N.action = 'print' AND (R.perid = ? OR R.create_trans = ? OR R.complete_trans = ?)
+    GROUP BY R.id
 ), history AS (
     SELECT R.id, count(H.historyId) AS hcount
     FROM reg R
@@ -60,25 +66,27 @@ SELECT R.id AS badgeId, IFNULL(R.complete_trans, R.create_trans) AS display_tran
     CASE WHEN R.perid IS NULL THEN NP.middle_name ELSE P.middle_name END AS middle_name,
     CASE WHEN R.perid IS NULL THEN NP.last_name ELSE P.last_name END AS last_name,
     CASE WHEN R.perid IS NULL THEN NP.badge_name ELSE P.badge_name END AS badge_name,
+    CASE WHEN R.perid IS NULL THEN NP.badgeNameL2 ELSE P.badgeNameL2 END AS badgeNameL2,
     CASE WHEN R.perid IS NULL THEN NP.email_addr ELSE P.email_addr END AS email_addr,
     CASE WHEN R.perid IS NULL THEN NP.legalName ELSE P.legalName END AS legalName,
     CASE WHEN R.perid IS NULL THEN NP.pronouns ELSE P.pronouns END AS pronouns,
     CASE WHEN R.perid IS NULL THEN IFNULL(NP.managedBy, NP.managedByNew) ELSE IFNULL(P.managedBy, P.managedByNew) END AS manager,
     M.label, R.memId, R.price, R.couponDiscount, R.paid, R.coupon, R.status, R.create_date, R.change_date,
     M.memCategory AS category, M.memType AS type, M.memAge AS age, 
-    IFNULL(C.name, ' None ') as name, N.ncount, H.hcount
+    IFNULL(C.name, ' None ') as name, N.ncount, H.hcount, PR.pcount
 FROM reg R
 JOIN memLabel M ON (M.id=R.memId)
 LEFT OUTER JOIN perinfo P ON (P.id=R.perid)
 LEFT OUTER JOIN newperson NP ON (NP.id=R.newperid)
 LEFT OUTER JOIN coupon C on (C.id = R.coupon)
 LEFT OUTER JOIN notes N on N.id = R.id
+LEFT OUTER JOIN printed PR on PR.id = R.id
 LEFT OUTER JOIN history H on H.id = R.id
 WHERE R.conid=? AND (R.perid = ? OR R.create_trans = ? OR R.complete_trans = ? OR R.newperid = ?)
 ORDER BY R.create_date DESC;
 EOS;
-    $typeString = 'iiiiiiiiiiiii';
-    $params = array($conid, $search, $search, $search, $conid, $search, $search, $search, $conid, $search, $search, $search, $search);
+    $typeString = 'iiiiiiiiiiiiiiiii';
+    $params = array($conid, $search, $search, $search, $conid, $search, $search, $search, $conid, $search, $search, $search, $conid, $search, $search, $search, $search);
 } else {
     if ($search != '%')
         $search = '%' . str_replace(' ', '%', $search) . '%';
@@ -90,6 +98,12 @@ WITH notes AS (
     JOIN regActions N on R.id = N.regId
     WHERE R.conid = ? AND N.action = 'notes'
     GROUP BY R.id
+), printed AS (
+    SELECT R.id, count(N.id) AS pcount
+    FROM reg R
+    JOIN regActions N on R.id = N.regId
+    WHERE R.conid = ? AND N.action = 'print'
+    GROUP BY R.id
 ), history AS (
     SELECT R.id, count(H.historyId) AS hcount
     FROM reg R
@@ -98,11 +112,11 @@ WITH notes AS (
     GROUP BY R.id
 ), pfields AS (
     SELECT id AS perid, TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), ' +', ' ')) AS fullName,
-    IFNULL(managedBy, managedByNew) AS manager, first_name, middle_name, last_name, badge_name, email_addr, legalName, pronouns
+    IFNULL(managedBy, managedByNew) AS manager, first_name, middle_name, last_name, badge_name, badgeNameL2, email_addr, legalName, pronouns
     FROM perinfo
 ), nfields AS (
     SELECT id AS newperson_id, TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), ' +', ' ')) AS fullName,
-    IFNULL(managedBy, managedByNew) AS manager, first_name, middle_name, last_name, badge_name, email_addr, legalName, pronouns
+    IFNULL(managedBy, managedByNew) AS manager, first_name, middle_name, last_name, badge_name, badgeNameL2, email_addr, legalName, pronouns
     FROM newperson
 )
 SELECT R.id AS badgeId, IFNULL(R.complete_trans, R.create_trans) AS display_trans, R.create_trans, R.complete_trans, 
@@ -112,32 +126,37 @@ SELECT R.id AS badgeId, IFNULL(R.complete_trans, R.create_trans) AS display_tran
     CASE WHEN R.perid IS NULL THEN NP.middle_name ELSE P.middle_name END AS middle_name,
     CASE WHEN R.perid IS NULL THEN NP.last_name ELSE P.last_name END AS last_name,
     CASE WHEN R.perid IS NULL THEN NP.badge_name ELSE P.badge_name END AS badge_name,
+    CASE WHEN R.perid IS NULL THEN NP.badgeNameL2 ELSE P.badgeNameL2 END AS badgeNameL2,
     CASE WHEN R.perid IS NULL THEN NP.email_addr ELSE P.email_addr END AS email_addr,
     CASE WHEN R.perid IS NULL THEN NP.legalName ELSE P.legalName END AS legalName,
     CASE WHEN R.perid IS NULL THEN NP.pronouns ELSE P.pronouns END AS pronouns,
     CASE WHEN R.perid IS NULL THEN NP.manager ELSE P.manager END AS manager,
     M.label, R.memId, R.price, R.couponDiscount, R.paid, R.coupon, R.status, R.create_date, R.change_date,
     M.memCategory AS category, M.memType AS type, M.memAge AS age, 
-    IFNULL(C.name, ' None ') as name, N.ncount, H.hcount
+    IFNULL(C.name, ' None ') as name, N.ncount, H.hcount, PR.pcount
 FROM reg R
 JOIN memLabel M ON (M.id=R.memId)
-LEFT OUTER JOIN pfields P ON (P.perid=R.perid AND (P.fullname LIKE ? OR P.badge_name LIKE ? OR P.email_addr LIKE ? OR P.legalName LIKE ?))
-LEFT OUTER JOIN nfields NP ON (NP.newperson_id=R.newperid AND (NP.fullname LIKE ? OR NP.badge_name LIKE ? OR NP.email_addr LIKE ? OR NP.legalName LIKE ?))
+LEFT OUTER JOIN pfields P ON (P.perid=R.perid AND (P.fullname LIKE ? OR P.badge_name LIKE ? OR P.badgeNameL2 LIKE ?
+        OR P.email_addr LIKE ? OR P.legalName LIKE ?))
+LEFT OUTER JOIN nfields NP ON (NP.newperson_id=R.newperid AND (NP.fullname LIKE ? OR NP.badge_name LIKE ? OR NP.badgeNameL2 LIKE ?
+        OR NP.email_addr LIKE ? OR NP.legalName LIKE ?))
 LEFT OUTER JOIN coupon C on (C.id = R.coupon)
 LEFT OUTER JOIN notes N on N.id = R.id
+LEFT OUTER JOIN printed PR on PR.id = R.id
 LEFT OUTER JOIN history H on H.id = R.id
 WHERE R.conid=? AND (P.perid IS NOT NULL OR NP.newperson_id IS NOT NULL)
 ORDER BY R.create_date DESC;
 EOS;
-    $typeString = 'iissssssssi';
-    $params = array($conid, $conid, $search, $search, $search, $search, $search, $search, $search, $search, $conid);
+    $typeString = 'iiissssssssssi';
+    $params = array($conid, $conid, $conid, $search, $search, $search, $search, $search, $search, $search, $search, $search, $search, $conid);
 }
 
 $response['query'] = $badgeQ;
 $badges = [];
 $badgeA = dbSafeQuery($badgeQ, $typeString, $params);
 while($badge = $badgeA->fetch_assoc()) {
-    array_push($badges, $badge);
+    $badge['badgename'] = badgeNameDefault($badge['badge_name'], $badge['badgeNameL2'], $badge['first_name'], $badge['last_name']);
+    $badges[] = $badge;
 }
 
 $response['badges'] = $badges;

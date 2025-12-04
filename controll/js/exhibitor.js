@@ -14,6 +14,9 @@ fulltabname = null;
 regionid = null;
 exhibitorsData = null;
 customText = null;
+configEditor = null;
+checkConfigReload = true;
+
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // globals for exhibits configuration
@@ -114,6 +117,7 @@ class exhibitorsAdm {
         this.#ownerTabs.overview = document.getElementById('overview-content');
         this.#ownerTabs.configuration = document.getElementById('configuration-pane');
         this.#ownerTabs.customtext = document.getElementById('customtext-pane');
+        this.#ownerTabs.configEdit = document.getElementById('configEdit-pane');
         this.#currentOwner = this.#ownerTabs.overview;
         this.#currentPane = 'overview';
         var ownerKeys = Object.keys(regionOwners);
@@ -191,6 +195,15 @@ class exhibitorsAdm {
         if (customText != null)
             customText.close();
 
+        if (configEditor && checkConfigReload) {
+            if (configEditor.close()) {
+                checkConfigReload = true;
+                configEditor = null;
+            } else {
+                checkConfigReload = false;
+            }
+        }
+
         if (this.#currentRegion) {
             this.#currentRegion.hidden = true;
             this.#currentRegion = null;
@@ -212,6 +225,14 @@ class exhibitorsAdm {
             return;
         }
 
+        if (content == 'configEdit') {
+            if (configEditor == null) {
+                this.loadConfigEditor();
+            }
+            checkConfigReload = true;
+            return;
+        }
+
         if (this.#cacheDirty) {
             window.location.href = this.#scriptName + '?tab=' + content;
             return;
@@ -222,6 +243,44 @@ class exhibitorsAdm {
         var regionKey = Object.keys(regionsInOwner)[0];
         var region = regionsInOwner[regionKey];
         this.settabRegion(region.name.replaceAll(' ', '-') + '-pane');
+    }
+
+// configuration editor
+    loadConfigEditor() {
+        let script = 'scripts/configEditLoadData.php';
+        let postData = {
+            load_type: 'conf',
+            perm: 'exhibitor'
+        }
+        let _this = this;
+        clearError();
+        clear_message();
+        $.ajax({
+            url: script,
+            method: 'POST',
+            data: postData,
+            success: function (data, textStatus, jhXHR) {
+                if (data.error) {
+                    show_message(data.error, 'error');
+                    return;
+                }
+                if (data.warn) {
+                    show_message(data.error, 'warn');
+                    return;
+                }
+                _this.openConfigEditor(data);
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showError("ERROR in getMenu: " + textStatus, jqXHR);
+            },
+        });
+    }
+
+    openConfigEditor(data) {
+        if (data.success) {
+            show_message(data.success, 'success');
+        }
+        configEditor = new ConfigEditor(data);
     }
 
     // second level - region
@@ -566,6 +625,7 @@ class exhibitorsAdm {
                     regionYearId: space.exhibitsRegionYearId,
                     exhibitorId: space.exhibitorId,
                     exhibitorName: space.exhibitorName,
+                    fullExhName: space.fullExhName,
                     artistName: space.artistName,
                     website: space.website,
                     exhibitorEmail: space.exhibitorEmail,
@@ -730,7 +790,9 @@ class exhibitorsAdm {
                     {title: "inventory", field: "inv", visible: false},
                     {title: "locations", field: "locations", visible: false},
                     {title: "exhibitorId", field: "exhibitorId", visible: false},
-                    {title: "Name", field: "exhibitorName", width: 200, headerSort: true, headerFilter: true,},
+                    {title: "artistName", field: "artistName", visible: false},
+                    {title: "exhibitorName", field: "exhibitorName", visible: false},
+                    {title: "Name", field: "fullExhName", width: 200, headerSort: true, headerFilter: true, formatter: "html"},
                     {title: "Website", field: "website", width: 200, headerSort: true, headerFilter: true,},
                     {title: "Email", field: "exhibitorEmail", width: 200, headerSort: true, headerFilter: true,},
                     {title: "Stage", field: "stage", headerSort: true, formatter: this.stageColor,
@@ -794,7 +856,9 @@ class exhibitorsAdm {
                         {title: "Region", field: "name", headerSort: true, headerFilter: true },
                         {title: "id", field: "id", visible: false},
                         {title: "exhibitorId", field: "exhibitorId", visible: false},
-                        {title: "Name", field: "exhibitorName", width: 200, headerSort: true, headerFilter: true,},
+                        {title: "exhibitorName", field: "exhibitorName", visible: false},
+                        {title: "artistName", field: "artistName", visible: false},
+                        {title: "Name", field: "fullExhName", width: 200, headerSort: true, headerFilter: true,formatter: "html"},
                         {title: "Website", field: "website", headerSort: true, headerFilter: true,},
                         {title: "Email", field: "exhibitorEmail", headerSort: true, headerFilter: true,},
                         {title: "Approval", field: "approval", headerSort: true, headerFilter: 'list', headerFilterParams: {values: this.#approvalValues},},
@@ -835,8 +899,8 @@ class exhibitorsAdm {
                 {title: "Exhibitors:", columns: [
                         {title: "", formatter: this.exhButtons, hozAlign: "center", headerSort: false,},
                         {title: "Exh Id", field: "exhibitorId", visible: true, headerWordWrap: true, width: 75, },
-                        {title: "Name", field: "exhibitorName", width: 250, headerSort: true, headerFilter: true, tooltip: this.buildRecordHover,
-                            formatter: "textarea", },
+                        {title: "Name", field: "fullExhName", width: 250, headerSort: true, headerFilter: true, tooltip: this.buildRecordHover,
+                            formatter: "html", },
                         {title: "Email", field: "exhibitorEmail", headerSort: true, headerFilter: true, width: 250, },
                         {title: "Phone", field: "exhibitorPhone", width: 140, headerSort: true, headerFilter: true,},
                         {title: "Website", field: "website", headerSort: true, headerFilter: true, width: 250, },
@@ -852,8 +916,10 @@ class exhibitorsAdm {
                         {title: "Mail In", field: "mailin", visible: true, headerWordWrap: true, width: 75, },
                         {title: "Salex Tax ID", field: "salesTaxId", visible: true, headerWordWrap: true, width: 150, },
                         {title: "City", field: "city", width: 140, headerSort: true, headerFilter: true, visible: false, },
-                        {title: "State", field: "state", headerSort: true, headerFilter: true, visible: false,},
+                        {title: "State/Prov", field: "state", headerSort: true, headerFilter: true, visible: false,},
                         {title: "Contact Notes", field: "state",  headerFilter: true, formatter: "textarea", visible: false,},
+                        {title: "Exhibitor Name", field: "exhibitorName",  headerFilter: true, formatter: "textarea", visible: false,},
+                        {title: "Artist Name", field: "artistName",  headerFilter: true, formatter: "textarea", visible: false,},
                     ]
                 }
             ]
@@ -942,14 +1008,14 @@ class exhibitorsAdm {
                     formatter:"tickCross", editorParams: { tristate: false, }, },
                 { title: "ID", field: 'id', headerSort: true, },
                 { title: "Exh Nbr", field: "exhibitorNumber", headerSort: true, headerWordWrap: true, width: 80, },
-                { title: "Exhibitor Name", field: "exhibitorName", headerSort: true, headerFilter: true, width: 300, },
+                { title: "Name", field: "fullExhName", headerSort: true, headerFilter: true, width: 300, formatter: 'html' },
                 { title: "Exhibitor Website", field: "website", headerSort: true, headerFilter: true, width: 200, },
                 { title: "Exhibitor Email", field: "exhibitorEmail", headerSort: true, headerFilter: true, width: 300, },
                 { title: "Contact Name", field: "contactName", headerSort: true, headerFilter: true, width: 300, },
                 { title: "Contact Email", field: "contactEmail", headerSort: true, headerFilter: true, width: 300, },
                 { title: "City", field: "city", headerSort: true, headerFilter: true, width: 150 },
-                { title: "State", field: "state", headerSort: true, headerFilter: true, width: 60 },
-                { title: "Zip", field: "zip", headerSort: true, headerFilter: true, width: 120 },
+                { title: "St", field: "state", headerSort: true, headerFilter: true, width: 65 },
+                { title: "Zip/PC", field: "zip", headerSort: true, headerFilter: true, width: 120 },
         ]});
         this.#importTable.on("rowClick", function(e, row){
             var cell = row.getCell('import');
@@ -1068,79 +1134,82 @@ class exhibitorsAdm {
         var exhibitorPhone = blankIfNull(exhibitorData.exhibitorPhone).trim() == '' ? none :  exhibitorData.exhibitorPhone.trim();
         var exhibitorInfo = `
             <div class="row">
-                <div class="col-sm-2">Exhibitor Id/Number:</div>
-                <div class="col-sm-10 p-0 ms-0 me-0">` + exhibitorData.exhibitorId + '/' + exhibitorData.exhibitorNumber + `</div>
+                <div class="col-sm-4">Exhibitor Id/Number:</div>
+                <div class="col-sm-8 p-0 ms-0 me-0">` + exhibitorData.exhibitorId + '/' + exhibitorData.exhibitorNumber + `</div>
             </div>
             <div class="row">
-                <div class="col-sm-2">Business Name:</div>
-                <div class="col-sm-10 p-0 ms-0 me-0">` + exhibitorName + `</div>
+                <div class="col-sm-4">Business Name:</div>
+                <div class="col-sm-8 p-0 ms-0 me-0">` + exhibitorName + `</div>
             </div>
             <div class="row">
-                <div class="col-sm-2">Artist Name:</div>
-                <div class="col-sm-10 p-0 ms-0 me-0">` + artistName + `</div>
+                <div class="col-sm-4">Artist Name:</div>
+                <div class="col-sm-8 p-0 ms-0 me-0">` + artistName + `</div>
             </div>
             <div class='row'>
-                <div class='col-sm-2'>Business Email:</div>
-                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorData.exhibitorEmail + `</div>   
+                <div class='col-sm-4'>Business Email:</div>
+                <div class='col-sm-8 p-0 ms-0 me-0'>` + exhibitorData.exhibitorEmail + `</div>   
             </div>
             <div class='row'>
-                <div class='col-sm-2'>Business Phone:</div>
-                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorPhone + `</div>   
+                <div class='col-sm-4'>Business Phone:</div>
+                <div class='col-sm-8 p-0 ms-0 me-0'>` + exhibitorPhone + `</div>   
+            </div>
+                <div class='row'>
+                <div class='col-sm-4'>Sales Tax ID:</div>
+                <div class='col-sm-8 p-0 ms-0 me-0'>` + exhibitorData.salesTaxId + `</div>   
             </div>
             <div class='row'>
-                <div class='col-sm-2'>Website:</div>
-                <div class='col-sm-10 p-0 ms-0 me-0'>` +
+                <div class='col-sm-4'>Website:</div>
+                <div class='col-sm-8 p-0 ms-0 me-0'>` +
                     (weburl != '' ? '<a href="' + weburl + '" target="_blank">' : '') + website +
                     (weburl != '' ? '</a>' : '') + `</div>   
             </div>
             <div class='row'>
-                <div class='col-sm-2'>Desc.:</div>
-                <div class='col-sm-10 p-0 ms-0 me-0'>` + blankIfNull(exhibitorData.description).trim() + `</div>   
+                <div class='col-sm-4'>Desc.:</div>
+                <div class='col-sm-8 p-0 ms-0 me-0'>` + blankIfNull(exhibitorData.description).trim() + `</div>   
             </div>
 `;
 
         if (blankIfNull(exhibitorData.exhNotes).trim() != '')
             exhibitorInfo += `<div class='row'>
-                <div class='col-sm-2'>Exhibitor Notes:</div>
-                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorData.exhNotes.replace(/\n/g, '<br/>').trim() + `</div>
+                <div class='col-sm-4'>Exhibitor Notes:</div>
+                <div class='col-sm-8 p-0 ms-0 me-0'>` + exhibitorData.exhNotes.replace(/\n/g, '<br/>').trim() + `</div>
             </div>
 `;
 
         if (blankIfNull(exhibitorData.contactNotes).trim() != '')
             exhibitorInfo += `<div class='row'>
-                <div class='col-sm-2'>Contact Notes.:</div>
-                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorData.contactNotes.replace(/\n/g, '<br/>').trim() + `</div>
+                <div class='col-sm-4'>Contact Notes.:</div>
+                <div class='col-sm-8 p-0 ms-0 me-0'>` + exhibitorData.contactNotes.replace(/\n/g, '<br/>').trim() + `</div>
             </div>
 `;
 
         if (mailInAllowed == 'Y') {
             exhibitorInfo += `<div class="row">
-                <div class='col-sm-2'>Mail-In:</div>
-                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorData.mailin + `</div>   
+                <div class='col-sm-4'>Mail-In:</div>
+                <div class='col-sm-8 p-0 ms-0 me-0'>` + exhibitorData.mailin + `</div>   
             </div>
 `;
         }
         exhibitorInfo += `<div class='row'>
-                <div class='col-sm-2'>Address:</div>
-                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorData.addr.trim() + `</div>   
+                <div class='col-sm-4'>Address:</div>
+                <div class='col-sm-8 p-0 ms-0 me-0'>` + exhibitorData.addr.trim() + `</div>        
             </div>
 `;
         if (blankIfNull(exhibitorData.addr2).trim() != '') {
             exhibitorInfo += `<div class='row'>
-            <div class='row'>
-                <div class='col-sm-2'>&nbsp;</div>
-                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorData.addr2.trim() + `</div>   
+                <div class='col-sm-4'>&nbsp;</div>
+                <div class='col-sm-8 p-0 ms-0 me-0'>` + exhibitorData.addr2.trim() + `</div>   
             </div>
 `;
         }
 
         exhibitorInfo += `<div class='row'>
-                <div class='col-sm-2'>&nbsp;</div>
-                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorData.city + ', ' + exhibitorData.state + ' ' + exhibitorData.zip + `</div>   
+                <div class='col-sm-4'>&nbsp;</div>
+                <div class='col-sm-8 p-0 ms-0 me-0'>` + exhibitorData.city + ', ' + exhibitorData.state + ' ' + exhibitorData.zip + `</div>   
             </div>
              <div class='row'>
-                <div class='col-sm-2'>&nbsp;</div>
-                <div class='col-sm-10 p-0 ms-0 me-0'>` + exhibitorData.country + `</div>   
+                <div class='col-sm-4'>&nbsp;</div>
+                <div class='col-sm-8 p-0 ms-0 me-0'>` + exhibitorData.country + `</div>   
             </div>
 `;
         return exhibitorInfo;
@@ -1639,8 +1708,8 @@ class exhibitorsAdm {
                 {title: "Email", field: "exhibitorEmail", headerFilter: true, visible: true, width: 200, },
                 {title: "Website", field: "website", headerFilter: true, visible: true, width: 200, },
                 {title: "City", field: "city", visible: true, headerFilter: true, width: 200, },
-                {title: "State", field: "state", visible: true, headerFilter: true, width: 100, },
-                {title: "Zip", field: "zip", visible: true, headerFilter: true, width: 100, },
+                {title: "St/Prov", field: "state", visible: true, headerFilter: true, width: 100, },
+                {title: "Zip/PC", field: "zip", visible: true, headerFilter: true, width: 100, },
         ]});
     }
 

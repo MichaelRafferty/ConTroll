@@ -28,13 +28,6 @@
         exit();
     }
 
-    if (array_key_exists('currency', $con)) {
-        $currency = $con['currency'];
-    }
-    else {
-        $currency = 'USD';
-    }
-
     $info = getPersonInfo($conid);
 
     portalPageInit('help', $info,

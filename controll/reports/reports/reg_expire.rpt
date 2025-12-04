@@ -19,27 +19,32 @@
     title="Full Name"
     minWidth=300
 [F006]
+    name=Email
+    sql=p.email_addr
+    title=Email
+    filter=true
+[F010]
     name=Label
     sql=m.label
     title=Label
     filter=true
-[F007]
+[F011]
     name=price
     sql=r.price
     title=Price
     filter=number
     align=right
-[F008]
+[F012]
     name=createdBy
     sql=r.create_user
     title="Created by"
     align=right
     minWidth=80
-[F009]
+[F013]
     name=createDate
     sql=r.create_date
     title="Create Date"
-[F011]
+[F014]
     name=source
     sql=t.type
     title=Source

@@ -81,6 +81,7 @@ if ($unmatchedCnt > 0) {
     }
 
     while ($unL = $unR->fetch_assoc()) {
+        $unL['badgename'] = badgeNameDefault($unL['badge_name'], $unL['badgeNameL2'], $unL['first_name'], $unL['last_name']);
         $unmatched[] = $unL;
     }
     $unR->free();

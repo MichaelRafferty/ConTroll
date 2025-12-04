@@ -67,9 +67,19 @@ class PosCart {
 // Constants
     #isDueStatuses = [ 'unpaid', 'plan', 'in-cart' ];
 
+// currency
+    #locale = 'en-us';
+    #currencyFmt = null;
+
 // initialization
     constructor() {
         var id;
+
+        this.#locale = config.locale;
+        this.#currencyFmt = new Intl.NumberFormat(this.#locale, {
+            style: 'currency',
+            currency: config.currency,
+        });
 // lookup all DOM elements
 // ask to load mapping tables
         this.#cartDiv = document.getElementById("cart");
@@ -443,6 +453,7 @@ class PosCart {
         cart_row.legalName = row.legalName;
         cart_row.pronouns = row.pronouns;
         cart_row.badge_name = row.badge_name;
+        cart_row.badgeNameL2 = row.badgeNameL2;
         cart_row.address_1 = row.address_1;
         cart_row.address_2 = row.address_2;
         cart_row.city = row.city;
@@ -611,7 +622,8 @@ class PosCart {
     <div class="row">
         <div class="col-sm-2"></div>
         <div class="col-sm-1" style='text-align: right;'><b>Total Due:</b></div>
-        <div class="col-sm-1" style='text-align: right;'><b>$` + Number(totalDue).toFixed(2)+ `</b></div>
+        <div class="col-sm-1" style='text-align: right;'><b>` +
+                this.#currencyFmt.format(Number(totalDue).toFixed(2)) + `</b></div>
     </div>`
         }
         if (countMemberships == 0) {
@@ -644,7 +656,7 @@ class PosCart {
             if (age.ageType == 'all')
                 continue;
 
-            html += '<div class="col-sm-auto"><button id="ageBtn-' + age.ageType + '" class="btn btn-sm ' +
+            html += '<div class="col-sm-auto"><button id="ageBtn-' + age.ageType + '" class="btn btn-sm h-100 ' +
                 ((this.#currentAge == age.ageType || this.#memberAge == age.ageType) ? 'btn-primary' : color) + ' mt-1 mb-1" onclick="cart.ageSelect(' + "'" + age.ageType + "'" + ')">' +
                 age.label + ' (' + age.shortname + ')' +
                 '</button></div>' + "\n";
@@ -706,7 +718,7 @@ class PosCart {
                 if (memCategories[mem.memCategory].variablePrice != 'Y') {
                     memLabel += ' (' + mem.price + ')';
                 }
-                html += '<div class="col-sm-auto mt-1 mb-1"><button id="memBtn-' + mem.id + '" class="btn btn-sm btn-primary"' +
+                html += '<div class="col-sm-2 mt-1 mb-1 ms-0 me-0"><button id="memBtn-' + mem.id + '" class="btn btn-sm btn-primary w-100 h-100"' +
                     ' onclick="cart.regItemAdd(' + "'" + mem.id + "'" + ')">' +
                     (mem.conid != pos.getConid() ? mem.conid + ' ' : '') + memLabel + '</button></div>' + "\n";
             }
@@ -1061,8 +1073,8 @@ class PosCart {
     <div class="row">
         <div class="col-sm-1 pe-0">` + col1 + `</div>
         <div class="col-sm-7 ps-1">` + label + `</div>
-        <div class="col-sm-2 text-end">` + Number(mrow.price).toFixed(2) + `</div>
-        <div class="col-sm-2 text-end">` + (Number(mrow.paid) + Number(mrow.couponDiscount)).toFixed(2) + `</div>
+        <div class="col-sm-2 text-end">` + this.#currencyFmt.format(Number(mrow.price).toFixed(2)) + `</div>
+        <div class="col-sm-2 text-end">` + this.#currencyFmt.format((Number(mrow.paid) + Number(mrow.couponDiscount)).toFixed(2)) + `</div>
     </div>
 `;
             this.#totalPrice += Number(mrow.price);
@@ -1097,7 +1109,7 @@ class PosCart {
         rowhtml += `
     <div class="row">
         <div class="col-sm-3">Badge Name:</div>
-        <div class="col-sm-5">` + pos.badgeNameDefault(row.badge_name, row.first_name, row.last_name) + `</div>
+        <div class="col-sm-5">` + badgeNameDefault(row.badge_name, row.badgeNameL2, row.first_name, row.last_name) + `</div>
         <div class="col-sm-2 text-center">`;
         if (!this.#freezeCart && row.open_notes != null && row.open_notes.length > 0) {
             rowhtml += '<button type="button" class="btn btn-sm btn-info p-0" onclick="pos.showPerinfoNotes(' + row.index + ', \'cart\')">View' +
@@ -1154,7 +1166,7 @@ class PosCart {
     <div class="col-sm-2 p-0">` + pmt.type + `</div>
     <div class="col-sm-6 p-0">` + pmt.desc + `</div>
     <div class="col-sm-2 p-0">` + code + `</div>
-    <div class="col-sm-2 text-end">` + Number(pmt.preTaxAmt).toFixed(2) + `</div>
+    <div class="col-sm-2 text-end">` + this.#currencyFmt.format(Number(pmt.preTaxAmt).toFixed(2)) + `</div>
 </div>
 `;
     }
@@ -1189,8 +1201,8 @@ class PosCart {
 </div>
 <div class="row">
     <div class="col-sm-8 text-end">Total:</div>
-    <div class="col-sm-2 text-end">$` + Number(this.#totalPrice).toFixed(2) + `</div>
-    <div class="col-sm-2 text-end">$` + Number(this.#totalPaid).toFixed(2) + `</div>
+    <div class="col-sm-2 text-end">` + this.#currencyFmt.format(Number(this.#totalPrice).toFixed(2)) + `</div>
+    <div class="col-sm-2 text-end">` + this.#currencyFmt.format(Number(this.#totalPaid).toFixed(2)) + `</div>
 </div>
 `;
 
@@ -1235,7 +1247,7 @@ class PosCart {
     <div class="col-sm-8 p-0 text-end">Payment Total:</div>`;
             this.#totalPmt = Number(this.#totalPmt.toFixed(2));
             html += `
-    <div class="col-sm-4 text-end">$` + Number(this.#totalPmt).toFixed(2) + `</div>
+    <div class="col-sm-4 text-end">` + this.#currencyFmt.format(Number(this.#totalPmt).toFixed(2)) + `</div>
 </div>
 `;
         }
@@ -1346,49 +1358,55 @@ class PosCart {
                 String(tabindex + 12) +'" value="' + row.badge_name + `"/>
         </div>
     </div>
+    <div class="row">
+        <div class="col-sm-auto ms-0 me-0 p-0">
+            <input type="text" name='c` + rownum + `-badgeNameL2' id='c` + rownum + `-badgeNameL2' size=32 maxlength="32" placeholder="Badgename Line 2" tabindex="` +
+                String(tabindex + 14) +'" value="' + row.badgeNameL2 + `"/>
+        </div>
+    </div>
      <div class="row">
         <div class="col-sm-auto ms-0 me-0 p-0">
             <input type="text" name='c` + rownum + `-pronouns' id='c` + rownum + `-pronouns' size=80 maxlength="128" placeholder="Pronouns" tabindex="` +
-                String(tabindex + 10) +  '" value="' + row.pronouns + `"/>
+                String(tabindex + 16) +  '" value="' + row.pronouns + `"/>
         </div>
     </div>
     <div class="row">
         <div class="col-sm-auto ms-0 me-2 p-0">
             <input type="text" name='c` + rownum + `-email_addr' id='c` + rownum + `-email_addr' size=64 maxlength="254" placeholder="Email Address" tabindex="` +
-                String(tabindex + 14) + '"  value="' + row.email_addr + '" style="background-color:' + colors.get('email_addr') + ';' + `"/>
+                String(tabindex + 18) + '"  value="' + row.email_addr + '" style="background-color:' + colors.get('email_addr') + ';' + `"/>
         </div>
          <div class="col-sm-auto ms-0 me-0 p-0">
             <input type="text" name='c` + rownum + `-phone' id='c` + rownum + `-phone' size=15 maxlength="15" placeholder="Phone Number" tabindex="` +
-            String(tabindex + 16) + '" value="' + row.phone + '" style="background-color:' + colors.get('phone') + ';' + `"/>
+            String(tabindex + 20) + '" value="' + row.phone + '" style="background-color:' + colors.get('phone') + ';' + `"/>
         </div>
     </div>
     <div class="row">
         <div class="col-sm-auto ms-0 me-0 p-0">
             <input type="text" name='c` + rownum + `-address_1' id='c` + rownum + `-address_1' size=64 maxlength="64" placeholder="Street Address" tabindex="` +
-                String(tabindex + 18) + '"  value="' + row.address_1 + '" style="background-color:' + colors.get('address_1') + ';' + `"/>
+                String(tabindex + 22) + '"  value="' + row.address_1 + '" style="background-color:' + colors.get('address_1') + ';' + `"/>
         </div>
     </div>
     <div class="row">
         <div class="col-sm-auto ms-0 me-0 p-0">
             <input type="text" name='c` + rownum + `-address_2' id='c` + rownum + `-address_2' size=64 maxlength="64" placeholder="2nd line of Address (if needed, such as company)" tabindex="` +
-                String(tabindex + 20) + '" value="' + row.address_2 + `"/>
+                String(tabindex + 24) + '" value="' + row.address_2 + `"/>
         </div>
     </div>
     <div class="row">
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <input type="text" name="c` + rownum + `-city" id='c` + rownum + `-city' size="22" maxlength="32" placeholder="City" tabindex="` + String(tabindex + 22) +
+            <input type="text" name="c` + rownum + `-city" id='c` + rownum + `-city' size="22" maxlength="32" placeholder="City" tabindex="` + String(tabindex + 26) +
                 '" value="' + row.city + '" style="background-color:' + colors.get('city') + ';' + `"/>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <input type="text" name="c` + rownum + `-state" id='c` + rownum + `-state' size="10" maxlength="16" placeholder="State" tabindex="` + String(tabindex + 24) +
+            <input type="text" name="c` + rownum + `-state" id='c` + rownum + `-state' size="10" maxlength="16" placeholder="State/Prov" tabindex="` + String(tabindex + 28) +
                 '" value="' + row.state + '" style="background-color:' + colors.get('state') + ';' + `"/>
         </div>
         <div class="col-sm-auto ms-0 me-2 p-0">
-            <input type="text" name="c` + rownum + `-postal_code" id='c` + rownum + `-postal_code' size="10" maxlength="10" placeholder="Postal Code" tabindex="` + String(tabindex + 26) +
+            <input type="text" name="c` + rownum + `-postal_code" id='c` + rownum + `-postal_code' size="10" maxlength="10" placeholder="Postal Code" tabindex="` + String(tabindex +30) +
             '" value="' + row.postal_code + '" style="background-color:' + colors.get('postal_code') + ';' + `"/>
         </div>
         <div class="col-sm-auto ms-0 me-0 p-0">
-            <select name='c` + rownum + `-country' id='c` + rownum + `-country' tabindex="` + String(tabindex + 28) + `">
+            <select name='c` + rownum + `-country' id='c` + rownum + `-country' tabindex="` + String(tabindex + 32) + `">
                 ` + this.#country_select + `
             </select>
         </div>
@@ -1398,6 +1416,7 @@ class PosCart {
 
             // policies
             var policies = row.policies;
+            let i = 0;
             for (var polrow in policies) {
                 var policyName = policies[polrow].policy;
                 if (policyIndex[policyName] == undefined) // skip over inactive policies
@@ -1409,9 +1428,10 @@ class PosCart {
                     missingRequiredPolicies++;
                     color = "var(--bs-danger-bg-subtle)"
                 }
+                i = i + 1;
                 html += '<div class="col-sm-auto" style="background-color: ' + color + ';">' + policyName + ': ' +
                     '<input type="checkbox" name="c' + rownum + '-p_' + policyName + '" id="c' + rownum + '-p_' + policyName +
-                    '" tabindex="' + String(tabindex + 26) +
+                    '" tabindex="' + String(tabindex + 36 + i) +
                     '" value="Y"' + (policyResp == 'Y' ? ' checked' : ' ') + '/>\n</div>\n';
             }
 
@@ -1498,9 +1518,8 @@ class PosCart {
 
 // receiptHeader - retrieve receipt header info from cart[0]
     receiptHeader(user_id, pay_tid) {
-        var d = new Date();
         var payee = (this.#cartPerinfo[0].first_name + ' ' + this.#cartPerinfo[0].last_name).trim();
-        return "\nReceipt for payment to " + pos.getConlabel() + "\nat " + d.toLocaleString() + "\nBy: " + payee + ", Cashier: " + user_id + ", Transaction: " + pay_tid;
+        return "Receipt for payment to " + pos.getConlabel() + " By: " + payee + ", Cashier: " + user_id + ", Transaction: " + pay_tid;
     }
 
 // printList - html to display cart elements to print
@@ -1530,7 +1549,7 @@ class PosCart {
         <div class="col-sm-auto ms-0 me-2 p-0">            
             <span class="text-bg-success"> Membership: ` + mbrrow.label + `</span> (Times Printed: ` +
                                 mbrrow.printcount + `)<br/>
-              ` + crow.badge_name + '/' + (crow.first_name + ' ' + crow.last_name).trim() + `
+              ` + badgeNameDefault(crow.badge_name, crow.badgeNameL2, crow.first_name, crow.last_name) + '/' + (crow.first_name + ' ' + crow.last_name).trim() + `
         </div>
      </div>`;
                     if (new_print) {
@@ -1548,7 +1567,7 @@ class PosCart {
         <div class="col-sm-auto ms-0 me-2 p-0">            
             <span class="text-bg-success"> Membership: ` + mrow.label + `</span> (Times Printed: ` +
                     mrow.printcount + `)<br/>
-              ` + crow.badge_name + '/' + (crow.first_name + ' ' + crow.last_name).trim() + `
+              ` + badgeNameDefault(crow.badge_name, crow.badgeNameL2, crow.first_name, crow.last_name)  + '/' + (crow.first_name + ' ' + crow.last_name).trim() + `
         </div>
      </div>`;
                 if (new_print) {
@@ -1568,7 +1587,9 @@ class PosCart {
         var params = {};
         params.type = printrow.memType;
         params.badge_name = row.badge_name;
-        params.full_name = row.fullName;
+        params.badgeNameL2 = row.badgeNameL2;
+        params.first_name = row.first_name;
+        params.last_name = row.last_name;
         params.category = printrow.memCategory;
         params.badge_id = row.perid;
         params.day = dayFromLabel(printrow.label);

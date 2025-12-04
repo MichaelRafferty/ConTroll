@@ -3,7 +3,7 @@
 require_once('../lib/global.php');
 require_once('../lib/db_functions.php');
 require_once('../lib/paymentPlans.php');
-require_once(_'../lib/email__load_methods.php');
+require_once('../lib/email__load_methods.php');
 
 loadConfFile();
 db_connect();
@@ -14,11 +14,7 @@ $conid = $con['id'];
 $label = $con['label'];
 $regadminemail = $con['regadminemail'];
 $portalSite = $portal['portalsite'];
-if (array_key_exists('currency', $con)) {
-    $currency = $con['currency'];
-} else {
-    $currency = 'USD';
-}
+$currency = getConfValue('con', 'currency', 'USD');
 
 // parameters -
 // -c ccAddress - CC all emails to this address

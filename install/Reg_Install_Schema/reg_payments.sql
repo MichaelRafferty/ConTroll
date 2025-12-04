@@ -18,8 +18,13 @@ CREATE TABLE `payments` (
   `description` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `source` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `pretax` decimal(8,2) DEFAULT NULL,
-  `tax` decimal(8,2) DEFAULT '0.00',
+  `tax` decimal(8,2) DEFAULT '0.00' COMMENT 'Sum of the tax fields, or the total tax if they are all null',
   `amount` decimal(8,2) DEFAULT NULL,
+  `tax1` decimal(8,2) DEFAULT NULL COMMENT 'Additional Tax field, defined config file or taxList table';
+  `tax2` decimal(8,2) DEFAULT NULL COMMENT 'Additional Tax field, defined in taxList table',
+  `tax3` decimal(8,2) DEFAULT NULL COMMENT 'Additional Tax field, defined in taxList table',
+  `tax4` decimal(8,2) DEFAULT NULL COMMENT 'Additional Tax field, defined in taxList table',
+  `tax5` decimal(8,2) DEFAULT NULL COMMENT 'Additional Tax field, defined in taxList table',
   `time` datetime DEFAULT NULL,
   `cc` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `nonce` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -31,7 +36,7 @@ CREATE TABLE `payments` (
   `receipt_url` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `status` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `receipt_id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `paymentId` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `ccPaymentId` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `payments_transid_fk` (`transid`),
   KEY `payments_cashier_fk` (`cashier`)

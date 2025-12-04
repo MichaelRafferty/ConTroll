@@ -39,8 +39,7 @@ function exhibitor_page_init($title) {
     $jquijs=$cdn['jquijs'];
     $jquicss=$cdn['jquicss'];
 
-    $filter = getConfValue('vendor', 'customtext', 'production');
-    loadCustomText('exhibitor', basename($_SERVER['PHP_SELF'], '.php'), $filter);
+    loadCustomText('exhibitor', basename($_SERVER['PHP_SELF'], '.php'), getConfValue('vendor', 'customtext', 'production'));
 
     echo <<<EOF
 <!DOCTYPE html>
@@ -67,6 +66,7 @@ function exhibitor_page_init($title) {
     <script type='text/javascript' src="jslib/exhibitorProfile.js?v=$libJSversion"></script>
     <script type='text/javascript' src="jslib/exhibitorRequest.js?v=$libJSversion"></script>
     <script type='text/javascript' src="jslib/exhibitorReceipt.js?v=$libJSversion"></script>
+    <script type='text/javascript' src="jslib/exhibitorInvoiceCommon.js?v=$libJSversion"></script>
     <script type='text/javascript' src="js/vendor_invoice.js?v=$exhibitorJSversion"></script>
     <script type='text/javascript' src="js/tinymce/tinymce.min.js?v=$exhibitorJSversion"></script>
     <script type='text/javascript' src="js/auctionItemRegistration.js?v=$exhibitorJSversion"></script>

@@ -290,10 +290,10 @@ EOS;
     $passKeys = [];
     $passKeyR = dbSafeQuery($passkeyQ, 'ss', array($userId, $rpId));
     if ($passKeyR !== false) {
-        while ($p = $passKeysR->fetch_assoc()) {
+        while ($p = $passKeyR->fetch_assoc()) {
             $passKeys[] = $p;
         }
-        $passKeysR->free();
+        $passKeyR->free();
     }
 
     return $passKeys;

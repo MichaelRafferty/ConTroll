@@ -5,6 +5,7 @@
 // create art sales order from cart for payment processing
 
 require_once '../lib/base.php';
+require_once('../../lib/tax.php');
 require_once('../../lib/log.php');
 require_once('../../lib/cc__load_methods.php');
 
@@ -93,36 +94,6 @@ $totalAmountDue = 0;
 $totalPaid = 0;
 $art = [];
 
-// weird validation login to confirm from old processPayment
-// $art = (float) $new_payment['pretax'];
-//// validate that the payment amount is not too large
-//$total_due = 0;
-//foreach ($cart_art as $cart_row) {
-//    if ($cart_row['display_price'] == '')
-//        $cart_row['display_price'] = 0;
-//
-//    if ($cart_row['purQuantity'] != $cart_row['artSalesQuantity'] && $cart_row['type'] == 'print') {
-//        $cart_row['artSalesQuantity'] = $cart_row['purQuantity'];
-//        $cart_row['amount'] = $cart_row['display_price'];
-//        $cart_row['updSales'] = true;
-//        }
-//    else {
-//        $cart_row['updSales'] = false;
-//    }
-//
-//    if ($cart_row['amount'] == null || $cart_row['amount'] == '')
-//        $cart_row['amount'] = $cart_row['display_price'];
-//
-//    if ($cart_row['paid'] == null ||$cart_row['paid'] == '')
-//        $cart_row['paid'] = 0;
-//    $total_due += $cart_row['amount'] - $cart_row['paid'];
-//}
-//
-//if (round($art,2) > round($total_due,2)) {
-//    ajaxError('invalid payment amount passed exceeds total' . " art: $art total: $total_due");
-//    return;
-//}
-
 foreach ($cart_art as $row) {
     $price = $row['amount'];
     $paid = $row['paid'];
@@ -162,15 +133,19 @@ $response['amount'] = $amount;
 
 logWrite(array('con'=>$con['label'], 'payorId'=>$payorId, 'results'=>$results, 'request'=>$art));
 
-if ($cancelOrderId) // cancel the old order if it exists
-    cc_cancelOrder($results['source'], $cancelOrderId, true);
-
 $locationId = getSessionVar('terminal');
 if ($locationId) {
     $locationId = $locationId['locationId'];
-} else {
+} else if (array_key_exists('location_artpos', $cc)) {
+    $locationId = $cc['location_artpos'];
+} else if (array_key_exists('location', $cc)) {
     $locationId = $cc['location'];
+} else {
+    $locationId = 'Unknown';
 }
+
+if ($cancelOrderId) // cancel the old order if it exists
+    cc_cancelOrder($results['source'], $cancelOrderId, true, $locationId);
 
 $rtn = cc_buildOrder($results, true, $locationId);
 if ($rtn == null) {
@@ -181,20 +156,24 @@ if ($rtn == null) {
 }
 $rtn['totalPaid'] = $totalPaid;
 
+$taxes = $rtn['taxes'];
+[$taxSql, $taxStr, $taxValues] = buildTaxUpdate($taxes);
 $upT = <<<EOS
 UPDATE transaction
-SET price = ?, tax = ?, withTax = ?, couponDiscountCart = ?, orderId = ?, paymentStatus = 'ORDER', orderDate = now()
+SET price = ?, tax = ?, withTax = ?, couponDiscountCart = ?, orderId = ?, paymentStatus = 'ORDER', orderDate = now(), $taxSql
 WHERE id = ?;
 EOS;
-
 $preTax = $rtn['preTaxAmt'];
 $taxAmt = $rtn['taxAmt'];
 $withTax = $rtn['totalAmt'];
-$rows_upd = dbSafeCmd($upT, 'ddddsi', array($preTax, $taxAmt, $withTax, 0, $rtn['orderId'], $transId));
+$valArray = array($preTax, $taxAmt, $withTax, 0, $rtn['orderId']);
+$typeStr = 'dddds' . $taxStr . 'i';
+$valArray = array_merge($valArray, $taxValues);
+$valArray[] = $transId;
+
+$rows_upd = dbSafeCmd($upT, $typeStr, $valArray);
 
 $response['rtn'] = $rtn;
-
-//$tnx_record = $rtn['tnx'];
 logWrite(array('con' => $con['label'], 'payorId' => $payorId, 'ccrtn' => $rtn));
 ajaxSuccess($response);
 return;

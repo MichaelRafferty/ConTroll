@@ -1,6 +1,7 @@
 <?php
 // Registration  Portal - accountSettings.php - maintain the list of mananged members and the account identities email addresses
 require_once("lib/base.php");
+require_once("../lib/webauthn.php");
 
 global $config_vars;
 
@@ -49,7 +50,7 @@ if ($info === false) {
 $config_vars['email'] = $info['email_addr'];
 $config_vars['firstName'] = $info['first_name'];
 $config_vars['lastName'] = $info['last_name'];
-$config_vars['badgeName'] = $info['badge_name'];
+$config_vars['badgeName'] = $info['badgename'];
 
 // get people managed by this account
 // get people managed by this account holder
@@ -58,16 +59,16 @@ if ($info['managedByName'] == null) {
     if ($personType == 'p') {
         $managedSQL = <<<EOS
 WITH ppl AS (
-    SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.pronouns,
-        p.address, p.addr_2, p.city, p.state, p.zip, p.country,
+    SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2,
+        p.legalName, p.pronouns, p.address, p.addr_2, p.city, p.state, p.zip, p.country,
         p.banned, p.creation_date, p.update_date, p.change_notes, p.active, p.managedBy, NULL AS managedByNew, p.managedReason,
         TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
         'p' AS personType
         FROM perinfo p
         WHERE managedBy = ? AND p.id != p.managedBy
     UNION
-    SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.pronouns,
-        p.address, p.addr_2, p.city, p.state, p.zip, p.country,
+    SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2,
+        p.legalName, p.pronouns, p.address, p.addr_2, p.city, p.state, p.zip, p.country,
         'N' AS banned, NULL AS creation_date, NULL AS update_date, '' AS change_notes, 'Y' AS active, p.managedBy, p.managedByNew, p.managedReason,
         TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
         'n' AS personType
@@ -82,8 +83,8 @@ EOS;
     }
     else {
         $managedSQL = <<<EOS
-SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.pronouns,
-       p.address, p.addr_2, p.city, p.state, p.zip, p.country,
+SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2,
+       p.legalName, p.pronouns, p.address, p.addr_2, p.city, p.state, p.zip, p.country,
        'N' AS banned, NULL AS creation_date, NULL AS update_date, '' AS change_notes, 'Y' AS active, p.managedBy, NULL AS managedByNew,
        TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
        managedReason, 'n' AS personType
@@ -96,6 +97,7 @@ EOS;
 
     if ($managedByR !== false) {
         while ($p = $managedByR->fetch_assoc()) {
+            $p['badgename'] = badgeNameDefault($p['badge_name'], $p['badgeNameL2'], $p['first_name'], $p['last_name']);
             $key = $p['personType'] . $p['id'];
             $managed[$key] = $p;
         }
@@ -120,7 +122,7 @@ if ($identitiesR !== false) {
 }
 
 if (getConfValue('portal', 'passkeyRpLevel', 'd') != 'd') {
-    $passKeys = getPasskey($info['email_addr'], 'portal')
+    $passKeys = getPasskey($info['email_addr'], 'portal');
 }
 
 // if we get here, we are logged in and it's a purely new person or we manage the person to be processed
@@ -156,7 +158,7 @@ if ($info['managedByName'] == null) {
 // Members Managed
 ?>
     <div id="managed">
-        <div class='row mt-3'><h2 class="size-h4">Managed:</h2></div>
+        <div class='row mt-3'><h2 class="size-h4">Managing:</h2></div>
 <?php
             outputCustomText('main/managed');
 ?>
@@ -227,7 +229,7 @@ if ($info['managedByName'] == null) {
         foreach ($passKeys as $passkey) {
             $createDate = date_format(date_create($passkey['createDate']), 'Y-m-d');
             $lastUsed = '';
-            if ($passkey['lastUseTS'] != null) {
+            if (array_key_exists('lastUseTS', $passkey) && $passkey['lastUseTS'] != null) {
                 $lastUsed = date_format(date_create($passkey['lastUsedDate']), 'Y-m-d');
             }
         ?>

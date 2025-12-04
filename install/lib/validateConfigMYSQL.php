@@ -3,15 +3,15 @@
 // validate MYSQL portion of config file
 //  options: the array returned by getoptions.
 function validateConfigMYSQL($options) : int {
-    logEcho("Validating [mysql] section of reg_conf.ini");
+    logEcho("Validating [mysql] section of reg_secret.ini");
     $mysqlConf = get_conf('mysql');
     if ($mysqlConf === null || $mysqlConf === false) {
-        logEcho("Error: [mysql] section of reg_conf.ini is missing, cannot continue");
+        logEcho("Error: [mysql] section of reg_secret.ini is missing, cannot continue");
         return 1;
     }
 
     if (sizeof($mysqlConf) < 1) {
-        logEcho("Error: [mysql] section of reg_conf.ini is empty, cannot continue");
+        logEcho("Error: [mysql] section of reg_secret.ini is empty, cannot continue");
     }
 
     // required contents of [mysql]
@@ -69,7 +69,7 @@ EOS;
         if (db_connect(true)) {
             logEcho('Connected to database server');
         } else {
-            logEcho('Unable to connect to database, check reg_conf.ini[mysql] connecton parameters');
+            logEcho('Unable to connect to database, check reg_secret.ini[mysql] connecton parameters');
             $errors++;
         }
 
@@ -99,7 +99,7 @@ EOS;
                     logEcho("Unable to load create schema config from Reg_Install_Schema/create_reg_schema.sql.");
                     $errors++;
                 } else {
-                    $create_sql = str_replace('"reg"', '"' . $dbName . '"', $create_sql);
+                    $create_sql = str_replace('`reg`', '`' . $dbName . '`', $create_sql);
                     logEcho("Creating Database $dbName");
                     logEcho($create_sql, true);
                     $num_rows = dbCmd($create_sql);
@@ -151,8 +151,8 @@ EOS;
         }
     }
 
-    logEcho('Completed validating [mysql] section of reg_conf.ini');
+    logEcho('Completed validating [mysql] section of reg_secret.ini');
     if ($errors > 0)
-        logEcho("Errors in [mysql] section of reg_conf.ini, cannot continue");
+        logEcho("Errors in [mysql] section of reg_secret.ini, cannot continue");
     return $errors;
 }

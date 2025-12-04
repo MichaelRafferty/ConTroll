@@ -26,12 +26,12 @@ $con = get_conf('con');
 $conid = $con['id'];
 
 $iP = <<<EOS
-INSERT INTO perinfo(last_name, first_name, middle_name, suffix, email_addr, phone, badge_name,
+INSERT INTO perinfo(last_name, first_name, middle_name, suffix, email_addr, phone, badge_name, badgeNameL2,
     legalName, pronouns, address, addr_2, city, state, zip, country,
     banned, active, updatedBy)
-VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'N', 'Y',?);
+VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'N', 'Y',?);
 EOS;
-$typestr = 'sssssssssssssssi';
+$typestr = 'ssssssssssssssssi';
 
 // built insert array
 $values = [
@@ -42,6 +42,7 @@ $values = [
     $_POST['emailAddr'] == null ? '' : $_POST['emailAddr'],
     $_POST['phone'] == null ? '' : $_POST['phone'],
     $_POST['badgeName'] == null ? '' : $_POST['badgeName'],
+    $_POST['badgeNameL2'] == null ? '' : $_POST['badgeNameL2'],
     $_POST['legalName'] == null ? '' : $_POST['legalName'],
     $_POST['pronouns'] == null ? '' : $_POST['pronouns'],
     $_POST['address'] == null ? '' : $_POST['address'],

@@ -1,5 +1,5 @@
 # controll
-## ContRoll™ Registration Admin, Configuration and Control Website
+## ContRoll™ Registration Admin, Configuration and Control Back End
 
 One top level file per menu item in the ConTroll™ Administration Site (listed in the default display (sort) order)
 
@@ -15,9 +15,11 @@ One top level file per menu item in the ConTroll™ Administration Site (listed 
 
 **Registraion**: registraion.php - mail in registration (similar to atcon, but no date limitations)
 
+**Reg Lookup**: lookup.php - read only lookup of registrations for this year, not a full list, but query.
+
 **Free Badges**: badge.php - add/manage and track those people a user is interested in assigning a comp membership and then assign them one if needed
 
-**Coupon**: coupon.php - Configure/Manage coupons
+**Finance**: finance.php - Sales Tax config, Payment Plans, Coupons
 
 **Exhibitors**: exhibitor.php - Exhibits configuation and Exhibitor Management
 

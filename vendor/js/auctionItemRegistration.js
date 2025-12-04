@@ -627,6 +627,7 @@ class AuctionItemRegistration {
         this.#artItemTable.on("cellEdited", cellChanged);
         this.#artSaveBtn.innerHTML='Save Changes';
         this.#artSaveBtn.disbled=true;
+        document.getElementById('print_bidsheet').hidden = data.art.length == 0;
     }
 
     drawPrintItemTable(data) {
@@ -669,6 +670,7 @@ class AuctionItemRegistration {
 
         this.#printSaveBtn.innerHTML='Save Changes';
         this.#printSaveBtn.disbled=true;
+        document.getElementById('print_printshop').hidden = data.print.length == 0;
     }
 
     drawNfsItemTable(data) {
