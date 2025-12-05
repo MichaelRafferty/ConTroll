@@ -11,7 +11,6 @@ require_once('../lib/exhibitorReceiptForms.php');
 require_once("../lib/cc__load_methods.php");
 require_once('../lib/webauthn.php');
 require_once('../lib/tax.php');
-global $config_vars;
 
 $cc = get_conf('cc');
 $con = get_conf('con');

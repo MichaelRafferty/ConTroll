@@ -26,7 +26,7 @@ if (!session_start()) {
     session_start();
 }
 
-function exhibitor_page_init($title) {
+function exhibitor_page_init($title, $limited = false) {
     global $portalJSVersion, $libJSversion, $controllJSversion, $globalJSversion, $atJSversion, $exhibitorJSversion;
 
     $cdn = getTabulatorIncludes();
@@ -51,17 +51,28 @@ function exhibitor_page_init($title) {
     <title>$title</title>
     <link rel='icon' type='image/x-icon' href='/images/favicon.ico'>
     <link href='css/style.css' rel='stylesheet' type='text/css' />
-    <link href='$jquicss' rel='stylesheet' type='text/css' /> 
-    <link href='$tabcss' rel='stylesheet'>
+    <link href='$jquicss' rel='stylesheet' type='text/css' />
+EOF;
+    if ($limited == false ) {
+        echo "<link href='$tabcss' rel='stylesheet'>\n";
+}
+    echo <<<EOF
     <link href='$bs5css' rel='stylesheet'>
     <link href='csslib/bootstrap-icons.css' rel='stylesheet' type='text/css' />
     <script src='$bs5js'></script>
     <script type='text/javascript' src='$jqjs''></script>
     <script type='text/javascript' src='$jquijs'></script>
-    <script type="text/javascript" src="$tabjs"></script>
+EOF;
+    if ($limited == false) {
+        echo "<script type='text/javascript' src='$tabjs'></script>\n";
+    }
+    echo <<<EOF
     <script type='text/javascript' src="jslib/global.js?v=$globalJSversion"></script>
     <script type='text/javascript' src="js/base.js?v=$exhibitorJSversion"></script>
     <script type='text/javascript' src="js/vendor.js?v=$exhibitorJSversion"></script>
+EOF;
+    if ($limited == false) {
+        echo <<<EOF
     <script type='text/javascript' src="jslib/passkey.js?v=$libJSversion"></script>
     <script type='text/javascript' src="jslib/exhibitorProfile.js?v=$libJSversion"></script>
     <script type='text/javascript' src="jslib/exhibitorRequest.js?v=$libJSversion"></script>
@@ -70,6 +81,9 @@ function exhibitor_page_init($title) {
     <script type='text/javascript' src="js/vendor_invoice.js?v=$exhibitorJSversion"></script>
     <script type='text/javascript' src="js/tinymce/tinymce.min.js?v=$exhibitorJSversion"></script>
     <script type='text/javascript' src="js/auctionItemRegistration.js?v=$exhibitorJSversion"></script>
+EOF;
+    }
+    echo <<<EOF
 </head>
 EOF;
 }

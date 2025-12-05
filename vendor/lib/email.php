@@ -2,13 +2,11 @@
 // vendor approval, request, payment emails
 
 // Psssword reset
-function vendorReset($passwd, $dest, $portalName, $reply) {
-    $conf = get_conf('con');
-    $body = "The password to you " . $conf['conname'] . " " . $portalName . " Portal account has been reset.\nThe new password is:\n\n\t$passwd\n\n" .
-        "Please login to the " . $conf['conname'] . " " . $portalName . " Portal site at " . $dest .
-        " to change your password.\n\n" .
-        "If you continue to have problems please contact " . $reply . ".\n\nThank you for your interest in " . $conf['conname'] . ".\n";
-
+function vendorReset($token, $email, $portalName, $reply) {
+    $conName = getConfValue('con', 'conName');
+    $body = "You have requested a password reset for $conName's $portalName\n\n" .
+        "Please use this link to reset all passwords for $email.\n\n$token\n\n" .
+        "If you continue to have problems please contact " . $reply . ".\n\nThank you for your interest in $conName.\n";
 return $body;
 }
 
