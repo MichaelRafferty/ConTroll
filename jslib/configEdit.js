@@ -116,15 +116,13 @@ class ConfigEditor {
     drawParam(sectionName, param) {
         // R: role
         let editable = param.role.editable == 1;
-        //editable=false;
         let visible = param.role.vis == 'V' || editable;
-        //visible=false;
+        if (!visible)
+            return '';
+
         let visibleStart = visible ? '' : '<span style="color: lightgrey;">';
         let visibleEnd = visible ? '' : '</span>';
         let html = '';
-
-        if (!visible)
-            return;
 
         // HR check
         if (param.hasOwnProperty('hr')) {
