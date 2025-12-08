@@ -306,7 +306,13 @@ class ConfigEditor {
             this.#fieldList[name] = field;
         }
 
-        let value = field.value;
+        let value = '';
+        if (field == undefined) {
+            console.log('No field for parameter' + name);
+            console.log(param);
+        } else {
+            value = field.value;
+        }
         if (typeof value === "string")
             value = value.trim();
         if (value == undefined || value == null) {
