@@ -208,12 +208,21 @@ class ConfigEditor {
                 break;
 
             case 'l': // list (option)
+                let inheritFound = false;
                 html = '<select ' + id + ' onchange="configEditor.changed(' + "'" + name + "'" + ');">\n';
                 let options = modifier.substring(1).split(',');
                 for (let option of options) {
-                    html += '<option value="' + option + '"' + (value == option ? ' selected' : '') + '>' + option + '</option>';
+                    let optItem = option.split('~');
+                    let optname = optItem[0];
+                    let optvalue= optname;
+                    if (optItem.length > 1)
+                        optvalue = optItem[1];
+                    if (optname.startsWith('-'))
+                        inheritFound = true;
+
+                    html += '<option value="' + optvalue + '"' + (value == optvalue.trim() ? ' selected' : '') + '>' + optname + '</option>';
                 }
-                if (value == '') {
+                if (value == '' && !inheritFound) {
                     html += '<option value="" selected>--</option>\n';
                 }
                 html += '</select>';
