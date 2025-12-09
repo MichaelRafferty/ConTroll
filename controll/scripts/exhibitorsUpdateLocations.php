@@ -52,12 +52,16 @@ if ($locationR !== false) {
     }
 }
 if (strlen($locationsUsed) > 1) {
-    $locationsUsed = substr($locationsUsed, 1);
-    $locationsUsed = explode(',', $locationsUsed);
-    for ($i = 0; $i < count($locationsUsed); $i++) {
-        $locationsUsed[$i] = trim($locationsUsed[$i]);
+    $locs = substr($locationsUsed, 1);
+    $locs = explode(',', $locs);
+    for ($i = 0; $i < count($locs); $i++) {
+        $locs[$i] = trim($locs[$i]);
     }
-    natsort($locationsUsed);
+    natsort($locs);
+    $locationsUsed = [];
+    // php just changed the array next pointers, internally, to get the array back as index 0 ... index n, you need to copy it over
+    foreach ($locs as $loc)
+        $locationsUsed[] = $loc;
 }
 $response['locationsUsed'] = $locationsUsed;
 ajaxSuccess($response);
