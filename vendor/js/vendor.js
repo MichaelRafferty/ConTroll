@@ -86,7 +86,8 @@ function changePassword() {
                 else {
                     let msg = data.status;
                     let url =
-                    msg += '<br/>Click <a href="' + location.protocol + '//' + location.host + '">here</a> to login using your new password';
+                    msg += '<br/><span style="background-color: white; color: black;">Click <a href="' +
+                        location.protocol + '//' + location.host + '">here</a> to login using your new password.&nbsp;</span>';
                     show_message(msg, 'success', message_block);
                 }
             }
