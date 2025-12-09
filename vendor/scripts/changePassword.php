@@ -28,7 +28,7 @@ if(isSessionVar('id')) {
     }
 } else {
     $response['status']='error';
-    $response['message']='Authentication Failure';
+    $response['message']='No valid password reset link found, please get a new reset password link.';
     ajaxSuccess($response);
     exit();
 }
