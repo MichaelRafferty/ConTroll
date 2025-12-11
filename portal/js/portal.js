@@ -44,6 +44,9 @@ class Portal {
     #phoneField = null;
     #badgenameField = null;
     #badgenameL2Field = null;
+    #ageField = null;
+    #ageDiv = null;
+    #ageText = null;
     #uspsDiv= null;
     
     // change email modal
@@ -156,6 +159,9 @@ class Portal {
             this.#phoneField = document.getElementById("phone");
             this.#badgenameField = document.getElementById("badge_name");
             this.#badgenameL2Field = document.getElementById("badgeNameL2");
+            this.#ageField = document.getElementById("age");
+            this.#ageText = document.getElementById("agetext");
+            this.#ageDiv = document.getElementById("agediv");
             this.#uspsDiv = document.getElementById("uspsblock");
         }
 
@@ -352,7 +358,7 @@ class Portal {
             loginType: config.idType,
             getId: id,
             getType: type,
-            memberships: 'N'
+            memberships: 'Y'
         }
         var script = 'scripts/getPersonInfo.php';
         $.ajax({
@@ -381,13 +387,14 @@ class Portal {
     // got the person, update the modal contents
     editPersonGetSuccess(data) {
         // ok, it's legal to edit this person, now populate the fields
-        var person = data.person;
-        var post = data.post;
+        let person = data.person;
+        let post = data.post;
+        let memberships = data.memberships;
         if (data.policies)
             this.#oldPolicies = data.policies;
 
         this.#fullName = person.fullName;
-        this.#editPersonTitle.innerHTML = '<strong>Editing: ' + this.#fullName + '</strong>';
+        this.#editPersonTitle.innerHTML = '<strong>Editing: ' + this.#fullName + '</strong>' + "&nbsp;&nbsp;&nbsp;(" + person.id + ")";
         if (this.#uspsDiv && person.country == 'USA') {
             this.#editPersonSubmitBtn.innerHTML = 'Validate Address and Update ' + this.#fullName;
         } else {
@@ -417,11 +424,31 @@ class Portal {
 
         this.#personSerializeStart = $("#editPerson").serialize();
 
+        // set age from memberships, find if any of them are primary
+        let currentAge = '';
+        for (let i = 0; i < memberships.length; i++) {
+            let m = memberships[i];
+            if (isPrimary(m.conid, m.memType, m.memCategory, m.price)) {
+                currentAge = m.memAge;
+                // find the age string for this entry
+                for (let a = 0; a < ageList.length; a++) {
+                    let ageItem = ageList[a];
+                    if (ageItem.conid == config.conid && ageItem.ageType == m.memAge) {
+                        this.#ageText.innerHTML = '<b>'+ ageItem.shortname + ' [' + ageItem.label + ']</b>';
+                    }
+                }
+            }
+        }
+        this.#ageField.value = currentAge;
+        this.#ageDiv.hidden = currentAge == '';
+        this.#ageField.hidden = currentAge != '';
+        this.#ageText.hidden = currentAge == '';
+
         // policies
         if (this.#oldPolicies) {
-            for (var row in this.#oldPolicies) {
-                var policy = this.#oldPolicies[row];
-                var id = document.getElementById('p_' + policy.policy);
+            for (let row in this.#oldPolicies) {
+                let policy = this.#oldPolicies[row];
+                let id = document.getElementById('p_' + policy.policy);
                 if (id) {
                     if (policy.response) {
                         id.checked = policy.response == 'Y';
@@ -433,7 +460,7 @@ class Portal {
         }
 
         this.#editPersonModal.show();
-        var focusField = this.#fnameField;
+        let focusField = this.#fnameField;
         setTimeout(() => { focusField.focus({focusVisible: true}); }, 600);
     }
 

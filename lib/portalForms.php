@@ -42,7 +42,7 @@ function drawVerifyPersonInfo($policies) : void {
 }
 
 // draw_editPerson - draw the verify/update form for the Person
-function draw_editPersonModal($source, $policies) : void {
+function draw_editPersonModal($source, $policies, $ageList, $ageByDate) : void {
     $usps = get_conf('usps');
     $useUSPS = false;
     if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
@@ -69,7 +69,7 @@ function draw_editPersonModal($source, $policies) : void {
                             <input type='hidden' name='id' id='epPersonId'/>
                             <input type='hidden' name='type' id='epPersonType'/>
 <?php
-    drawEditPersonBlock($con, $useUSPS, $policies, $source, true);
+    drawEditPersonBlock($con, $useUSPS, $policies, $source, true, false, $ageByDate, [], $ageList);
 ?>
                         </form>
                         <div class='row'>

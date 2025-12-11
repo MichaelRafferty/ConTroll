@@ -151,47 +151,47 @@ SELECT r.status, r.memId, m.*, a.shortname AS ageShort, a.label AS ageLabel, a.a
         WHEN pc.id IS NOT NULL THEN pc.last_name
         ELSE nc.last_name
     END AS last_name,
-    CASE 
+    CASE
         WHEN rp.id IS NOT NULL THEN rp.managedBy
         WHEN rn.id IS NOT NULL THEN rn.managedBy
         ELSE NULL
     END AS managedBy,
-    CASE 
+    CASE
         WHEN rp.id IS NOT NULL THEN rp.managedByNew
         WHEN rn.id IS NOT NULL THEN rn.managedByNew
         ELSE NULL
     END AS managedByNew,
-    CASE 
+    CASE
         WHEN rp.id IS NOT NULL THEN rp.badge_name
         WHEN rn.id IS NOT NULL THEN rn.badge_name
         ELSE NULL
     END AS badge_name,
-      CASE 
+      CASE
         WHEN rp.id IS NOT NULL THEN rp.badgeNameL2
         WHEN rn.id IS NOT NULL THEN rn.badgeNameL2
         ELSE NULL
     END AS badgeNameL2,
-    CASE 
+    CASE
         WHEN rp.id IS NOT NULL THEN rp.email_addr
         WHEN rn.id IS NOT NULL THEN rn.email_addr
         ELSE NULL
     END AS email_addr,
-    CASE 
+    CASE
         WHEN rp.id IS NOT NULL THEN rp.phone
         WHEN rn.id IS NOT NULL THEN rn.phone
         ELSE NULL
     END AS phone,
-    CASE 
+    CASE
         WHEN rp.id IS NOT NULL THEN rp.first_name
         WHEN rn.id IS NOT NULL THEN rn.first_name
         ELSE NULL
     END AS fname,
-    CASE 
+    CASE
         WHEN rp.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', rp.first_name, rp.middle_name, rp.last_name, rp.suffix), ' +', ' '))
         WHEN rn.id IS NOT NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', rn.first_name, rn.middle_name, rn.last_name, rn.suffix), ' +', ' '))
         ELSE NULL
     END AS fullName,
-    CASE 
+    CASE
         WHEN rp.id IS NOT NULL THEN rp.id
         WHEN rn.id IS NOT NULL THEN rn.id
         ELSE NULL
@@ -359,11 +359,11 @@ EOS;
 WITH ppl AS (
     SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2,
         p.legalName, p.pronouns, p.address, p.addr_2, p.city, p.state, p.zip, p.country,
-        p.banned, p.creation_date, p.update_date, p.change_notes, p.active,
+        p.banned, p.creation_date, p.update_date, p.change_notes, p.active, p.currentAgeConid, p.currentAgeType,
         p.managedBy, NULL AS managedByNew,
         TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
         r.conid, r.status, r.memId, r.create_date,
-        r.price AS actPrice, IFNULL(r.paid, 0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,        
+        r.price AS actPrice, IFNULL(r.paid, 0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,
         m.memCategory, m.memType, m.memAge, m.shortname, m.label, m.startdate, m.enddate, m.online,
         a.shortname AS ageShort, a.label AS ageLabel, 'p' AS personType, m.taxable, m.ageShortName,
         nc.id AS createNewperid, np.id AS completeNewperid, pc.id AS createPerid, pp.id AS completePerid,
@@ -389,10 +389,10 @@ WITH ppl AS (
     UNION
     SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2,
         p.legalName, p.pronouns, p.address, p.addr_2, p.city, p.state, p.zip, p.country,
-        'N' AS banned, NULL AS creation_date, NULL AS update_date, '' AS change_notes, 'Y' AS active,
+        'N' AS banned, NULL AS creation_date, NULL AS update_date, '' AS change_notes, 'Y' AS active, p.currentAgeConid, p.currentAgeType,
         p.managedBy, p.managedByNew,
         TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
-        r.conid, r.status, r.memId, r.create_date, 
+        r.conid, r.status, r.memId, r.create_date,
         r.price AS actPrice, IFNULL(r.paid, 0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,
         m.memCategory, m.memType, m.memAge, m.shortname, m.label, m.startdate, m.enddate, m.online,
         a.shortname AS ageShort, a.label AS ageLabel, 'n' AS personType, m.taxable, m.ageShortName,
@@ -423,7 +423,7 @@ WITH ppl AS (
     SELECT uppl.id, uppl.personType, IFNULL(count(*), 0) AS requiredMissing
     FROM uppl
     JOIN policies pl
-    LEFT OUTER JOIN memberPolicies m ON m.policy = pl.policy AND m.conid = ? AND 
+    LEFT OUTER JOIN memberPolicies m ON m.policy = pl.policy AND m.conid = ? AND
         ((uppl.id = IFNULL(m.perid, -1) AND uppl.personType = 'p') OR (uppl.id = IFNULL(m.newperid, -1) AND uppl.personType = 'n'))
     WHERE pl.ACTIVE = 'Y'  AND pl.required = 'Y' AND IFNULL(m.response, 'N') = 'N'
     GROUP BY uppl.id, uppl.personType
@@ -439,7 +439,7 @@ EOS;
 WITH ppl AS (
     SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2,
         p.legalName, p.pronouns, p.address, p.addr_2, p.city, p.state, p.zip, p.country,
-        p.banned, p.creation_date, p.update_date, p.change_notes, p.active,
+        p.banned, p.creation_date, p.update_date, p.change_notes, p.active, p.currentAgeConid, p.currentAgeType,
         p.managedBy, NULL AS managedByNew,
         TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
         r.conid, r.status, r.memId, r.create_date, m.memCategory, m.memType, m.memAge, m.shortname, m.label,
@@ -469,7 +469,7 @@ WITH ppl AS (
     UNION
     SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2,
         p.legalName, p.pronouns, p.address, p.addr_2, p.city, p.state, p.zip, p.country,
-        'N' AS banned, NULL AS creation_date, NULL AS update_date, '' AS change_notes, 'Y' AS active,
+        'N' AS banned, NULL AS creation_date, NULL AS update_date, '' AS change_notes, 'Y' AS active, p.currentAgeConid, p.currentAgeType,
         p.managedBy, p.managedByNew,
         TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
         r.conid, r.status, r.memId, r.create_date, m.memCategory, m.memType, m.memAge, m.shortname, m.label,
@@ -485,7 +485,7 @@ WITH ppl AS (
         END AS purchaserName,
         IFNULL(tp.perid, t.perid) AS transPerid,
         IFNULL(tp.newperid, t.newperid) AS transNewPerid
-    FROM newperson p    
+    FROM newperson p
     LEFT OUTER JOIN reg r ON p.id = r.newperid AND r.conid >= ? AND status IN  ('unpaid', 'paid', 'plan', 'upgraded')
     LEFT OUTER JOIN memLabel m ON m.id = r.memId
     LEFT OUTER JOIN ageList a ON m.memAge = a.ageType AND r.conid = a.conid
@@ -503,7 +503,7 @@ WITH ppl AS (
     SELECT uppl.id, uppl.personType, IFNULL(count(*), 0) AS requiredMissing
     FROM uppl
     JOIN policies pl
-    LEFT OUTER JOIN memberPolicies m ON m.policy = pl.policy AND m.conid = ? AND 
+    LEFT OUTER JOIN memberPolicies m ON m.policy = pl.policy AND m.conid = ? AND
         ((uppl.id = IFNULL(m.perid, -1) AND uppl.personType = 'p') OR (uppl.id = IFNULL(m.newperid, -1) AND uppl.personType = 'n'))
     WHERE pl.ACTIVE = 'Y'  AND pl.required = 'Y' AND IFNULL(m.response, 'N') = 'N'
     GROUP BY uppl.id, uppl.personType
@@ -530,6 +530,7 @@ EOS;
 // get the information for the interest  and policies blocks
     $interests = getInterests();
     $policies = getPolicies();
+    $ageList = getAgeList($conid);
 // Does this person have interests, if none in the system force them to go to the interests modal
     $config_vars['needInterests'] = 0;
     if ($interests != null && count($interests) > 0) {
@@ -669,10 +670,12 @@ if ($refresh) {
     var paidOtherMembership = <?php echo json_encode($paidOtherMembership); ?>;
     var numCoupons = <?php echo $numCoupons; ?>;
     var policies = <?php echo json_encode($policies); ?>;
+    var ageList = <?php echo json_encode($ageList); ?>;
+    var ageByDate = <?php echo '"' . $condata['startdate'] . '"'; ?>;
 </script>
 <?php
 // draw all the modals for this screen
-draw_editPersonModal('portal', $policies);
+draw_editPersonModal('portal', $policies, $ageList, $condata['startdate']);
 if ($interests != null && count($interests) > 0) {
     draw_editInterestsModal($interests);
 }

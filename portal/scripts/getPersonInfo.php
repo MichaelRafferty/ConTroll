@@ -63,18 +63,18 @@ if (array_key_exists('memberships', $_POST)) {
 // get the record
 if ($getType == 'p') {
     $getPersonQ =  <<<EOS
-SELECT id, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, badgeNameL2, legalName, pronouns, address, addr_2, city, state, zip, 
-country, 
-    managedBy, NULL AS managedByNew, lastVerified, 'p' AS personType,
+SELECT id, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, badgeNameL2, legalName, pronouns, 
+    address, addr_2, city, state, zip, country, 
+    managedBy, NULL AS managedByNew, lastVerified, 'p' AS personType, currentAgeConid, currentAgeType,
     TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), ' +', ' ')) AS fullName
 FROM perinfo
 WHERE id = ?;
 EOS;
 } else {
     $getPersonQ =  <<<EOS
-SELECT id, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, badgeNameL2, legalName, pronouns, address, addr_2, city, state, zip, 
-country, 
-    managedBy, managedByNew, lastVerified, 'n' AS personType,
+SELECT id, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, badgeNameL2, legalName, pronouns, 
+    address, addr_2, city, state, zip, country, 
+    managedBy, managedByNew, lastVerified, 'n' AS personType, currentAgeConid, currentAgeType,
     TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), ' +', ' ')) AS fullName
 FROM newperson
 WHERE id = ?;
@@ -161,7 +161,7 @@ SELECT r.id, r.create_date, r.memId, r.conid, r.status, r.price, IFNULL(r.paid, 
 FROM reg r
 JOIN memList m ON m.id = r.memId
 WHERE r.$rfield = ? AND r.conid IN (?, ?) AND status IN ('unpaid', 'paid', 'plan', 'upgraded')
-ORDER BY r.create_date;
+ORDER BY r.create_date, r.id;
 EOS;
     $mR = dbSafeQuery($mQ, 'iii', array($person['id'], $conid, $conid + 1));
     if ($mR !== false) {
@@ -192,7 +192,7 @@ JOIN memList m ON m.id = r.memId
 JOIN newperson n ON n.id = r.newperid
 LEFT OUTER JOIN perinfo pm ON n.managedBy = pm.id
 WHERE r.conid IN (?, ?) AND (pm.id = ?) AND n.perid IS NULL
-ORDER BY create_date;
+ORDER BY create_date, id;
 EOS;
         $mR = dbSafeQuery($mQ, 'iiiiiii', array ($conid, $conid + 1, $loginId, $loginId, $conid, $conid + 1, $loginId));
     } else {
