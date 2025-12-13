@@ -1,4 +1,8 @@
 <?php
+// ConTroll Registration System, Copyright 2015-2025, Michael Rafferty, Licensed under the GNU Affero General Public License, Version 3.
+// library AJAX Processor: resetPassword.php
+// Author: Syd Weinstein
+// check if a reset password token can be sent, and if so, create and send the token to the email posted
 require_once('../lib/base.php');
 require_once('../../lib/email__load_methods.php');
 require_once '../lib/email.php';
@@ -15,90 +19,91 @@ $response['conid'] = $conid;
 $vendor_conf = get_conf('vendor');
 
 $login = "";
-if(($_SERVER['REQUEST_METHOD'] == "GET") and isset($_GET['login'])) { 
-    $login = strtolower($_GET['login']);
-}
-else if(($_SERVER['REQUEST_METHOD'] == "POST") and isset($_POST['login'])) { 
+if(($_SERVER['REQUEST_METHOD'] == "POST") and isset($_POST['login'])) {
     $login = strtolower($_POST['login']);
 } 
 
 if($login == "") {
-    ajaxError('No Email Provided');
+    $response['status'] = 'error';
+    $response['error'] = 'No email provided';
+    ajaxSuccess($response);
     exit();
 }
 
 $response = array('email' => $login);
 
-$str = str_shuffle(
-'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#%^&*()-{}|_'
-.
-'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#%^&*()-{}|_'
-);
-
-$infoQ = "SELECT id, exhibitorEmail, need_new FROM exhibitors WHERE exhibitorEmail = ?;";
-$infoR = dbSafeQuery($infoQ, 's', array($login));
-$infot = '';
-if ($infoR->num_rows != 1) {
-    $infoQ = <<<EOS
-SELECT id, contactEmail, need_new
-FROM exhibitorYears
-WHERE contactEmail = ? AND conid = ?;
+$infoQ = <<<EOS
+SELECT id, email, action, source_ip, createdTS, useCnt, useIP, useTS
+FROM portalTokenLinks
+WHERE email = ? AND action = 'password' AND useCnt = 0;
 EOS;
-    $infoR = dbSafeQuery($infoQ, 'si', array($login, $conid));
-    if ($infoR->num_rows == 1)
-        $infot = 'c';
-} else {
-    $infot = 'e';
-}
-
-// should we tell them they goofed on the email?  this allows for phishing for email addresses of vendors and artists
-if ($infoR->num_rows != 1) {
+$infoR = dbSafeQuery($infoQ, 's', array($login));
+if ($infoR === false) {
     $response['status'] = 'error';
-    $response['error'] = 'No user found with that email';
+    $response['error'] = 'Reset password query error, seek assistance';
     ajaxSuccess($response);
     exit();
 }
 
-$len = rand(10,16);
-$start = rand(0,strlen($str)-$len);
-$newpasswd = substr($str, $start, $len);
-$hash = password_hash($newpasswd, PASSWORD_DEFAULT);
+// check to see if there is a unused request
+$req = null;
+while ($infoL = $infoR->fetch_assoc()) {
+    $req = $infoL;
+    break;
+}
+$infoR->free();
 
+if ($req != null) {
+    // there is an outstanding unused request that is less than one hour old, tell the user to wait and try again
+    $create = strtotime($req['createdTS']);
+    $now = time();
+    $diff = round((31 + ($now - $create)) / 60, 0);
+    if ($diff < 60) {
+        $remaining = 60 - $diff;
+        $response['status'] = 'error';
+        $response['error'] = "There is an outstanding reset request for $login, please wait $remaining minutes before trying a new reset request";
+        ajaxSuccess($response);
+        exit();
+    }
+}
+
+// create the token here
+$insQ = <<<EOS
+INSERT INTO portalTokenLinks(email, action, source_ip)
+VALUES(?, 'password', ?);
+EOS;
+$insid = dbSafeInsert($insQ, 'ss', array($login, $_SERVER['REMOTE_ADDR']));
+if ($insid === false) {
+    web_error_log('Error inserting tracking ID for email link');
+    $response['status'] = 'error';
+    $response['error'] = 'Error inserting tracking ID for email link, seek assistance';
+    ajaxSuccess($response);
+    exit();
+}
+
+$parms = array();
+$parms['email'] = $login;       // address to reset passwords
+$parms['type'] = 'password-reset';  // verify type
+$parms['ts'] = time();          // when requested for timeout check
+$parms['lid'] = $insid;         // id in portalTokenLinks table
+$string = json_encode($parms);  // convert object to json for making a string out of it, which is encrypted in the next line
+$string = encryptCipher($string, true);
 
 // build email here
 $portalType = $_POST['type'];
 $portalName = $_POST['name'];
 $reply = $vendor_conf[$portalType];
 $dest = $vendor_conf[$portalType . 'site'];
-
-$info = $infoR->fetch_assoc();
-if($info['need_new']) {
-    $response['status'] = 'error';
-    $response['error'] = 'A password reset email has previously been sent.  If you are still having problems logging into your account please contact ' . $reply . ' for assistance.';
-    ajaxSuccess($response);
-    exit();
-}
-
-if ($infot == 'e') {
-    $updateQ = "UPDATE exhibitors SET need_new=1, password=? where id=?;";
-} else if ($infot == 'c') {
-    $updateQ = "UPDATE exhibitorYears SET need_new=1, contactPassword=? where id=?";
-}
+$token = $dest. "/passwordReset.php?vid=$string";     // convert to link for emailing
+$textBody = vendorReset($token, $login, $portalName, $reply);
 $email = "no send attempt or a failure";
 load_email_procs();
-$num_rows = dbSafeCmd($updateQ, 'si', array($hash, $info['id']));
-if ($num_rows != 1) {
-    $response['status'] = 'error';
-    $response['error'] = "Database update error";
-} else {
-    $response['status'] = 'success';
-    $response['message'] = '<p>A password reset email has been sent to ' . $login . ' please change your password as soon as you login.<br/>' .
-        'Please check your spam folder, but if you did not receive an email, or have any other problems, please contact ' . $reply . ' for assistance.
-        </p>';
-}
+$response['status'] = 'success';
+$response['message'] = '<p>A password reset email has been sent to ' . $login . '. This email is only valid for a single use within the next hour.<br/>' .
+    'Please check your spam folder, but if you did not receive an email, or have any other problems, please contact ' . $reply . ' for assistance.
+    </p>';
 
-$return_arr = send_email(getConfValue('con', 'regadminemail'), $login, null, 'Password Reset Request', vendorReset($newpasswd, $dest, $portalName, $reply),
-    null);
+$return_arr = send_email(getConfValue('con', 'regadminemail'), $login, null, "$portalName Password Reset Request", $textBody, null);
 
 if (array_key_exists('error_code', $return_arr)) {
     $error_code = $return_arr['error_code'];

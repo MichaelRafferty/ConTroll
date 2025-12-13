@@ -84,6 +84,6 @@
     item=region
     datatype=s
 [where]
-	001="eRY.exhibitorNumber IS NOT NULL AND eY.conid = ? AND LOWER(xR.shortname) LIKE LOWER(?)"
+	001="eRY.exhibitorNumber IS NOT NULL AND eY.conid = ? AND LOWER(xR.shortname) LIKE LOWER(?) AND (a.total > 0 OR p.total > 0)"
 [sort]
 	001="1"

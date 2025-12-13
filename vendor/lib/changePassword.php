@@ -12,21 +12,38 @@ function drawChangePassword($title, $width, $drawbutton, $info = null, $pwtype =
     </div>
 EOH;
         }
-    $oldPwHTML = eyepwField('oldPw', 'oldPassword', 40, 'current or temp password', 1);
-    $newPwHTML = eyepwField('newPw', 'password', 40, 'minimum of 8 characters', 2);
-    $newPw2HTML = eyepwField('newPw2', 'password2', 40, 're-enter the new password', 3);
-    $html .= <<<EOH
-    <div class='container-fluid'>
-        <form id='changepw' action='javascript:void(0)'>
+    $oldPwHTML = eyepwField('oldPw', 'oldPassword', 40, 'current or temporary password', 1);
+    if ($pwtype == null || $pwtype != 'a') {
+        $o = <<<EOS
         <div class='row'>
             <div class='col-sm-$width'>
-                <label for='oldPw'>Old or Temp Password:</label>
+                <label for='oldPw'>Old or Temporary Password:</label>
             </div>
             <div class='col-sm-8'>
                 $oldPwHTML
             </div>
         </div>
-        <div class='row'>
+EOS;
+    } else {
+        $login = $info['login'];
+        $admin = $info['admin'];
+        $o = <<<EOS
+        <div class='row mb-4'>
+            <div class='col-sm-12'>
+                This page will reset your password for all accounts using the login email $login.<br/>
+                If you have any questions please contact $admin.
+            </div>
+        </div>
+EOS;
+
+    }
+    $newPwHTML = eyepwField('newPw', 'password', 40, 'minimum of 8 characters', 2);
+    $newPw2HTML = eyepwField('newPw2', 'password2', 40, 're-enter the new password', 3);
+    $html .= <<<EOH
+    <div class='container-fluid'>
+        <form id='changepw' action='javascript:void(0)'>
+        $o
+        <div class='row mt-1'>
             <div class='col-sm-$width'>
                 <label for='newPw'>New Password:</label>
             </div>
@@ -34,7 +51,7 @@ EOH;
                $newPwHTML
             </div>
         </div>
-        <div class='row'>
+        <div class='row mt-1'>
             <div class='col-sm-$width'>
                 <label for='newPw2'>Re-enter New Password:</label>
             </div>

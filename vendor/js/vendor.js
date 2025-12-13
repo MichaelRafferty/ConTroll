@@ -22,36 +22,37 @@ window.onload = function () {
     if (switchPortalbtn != null) {
         switchPortalbtn.innerHTML = 'Switch to ' + (config.portalName == 'Artist' ? 'Vendor' : 'Artist') + ' Portal';
         if ((config.portalName == 'Artist' && config.vendorsite == '') || (config.portalName == 'Vendor' && config.artistsite == ''))
-            switchPortalBtn.hidden = true;
+            switchPortalbtn.hidden = true;
     }
 
-    exhibitorProfile = new ExhibitorProfile(config.debug);
-    exhibitorRequestOnLoad();
-    auctionItemRegistrationOnLoad()
-    vendorInvoiceOnLoad()
-    exhibitorReceiptOnLoad();
-    if (typeof exhibitor_info !== 'undefined') {
-        if (exhibitor_info.DaysSinceLastVerified > 180) {
-            exhibitorProfile.profileModalOpen('review');
+    if (document.getElementById('profile')) {
+        exhibitorProfile = new ExhibitorProfile(config.debug);
+        exhibitorRequestOnLoad();
+        auctionItemRegistrationOnLoad()
+        vendorInvoiceOnLoad()
+        exhibitorReceiptOnLoad();
+        if (typeof exhibitor_info !== 'undefined') {
+            if (exhibitor_info.DaysSinceLastVerified > 180) {
+                exhibitorProfile.profileModalOpen('review');
+            }
         }
-    }
 
-    // login
-    pwEyeToggle('si_password');
-    // change password
-    pwEyeToggle('oldPw');
+        // login
+        pwEyeToggle('si_password');
+        // change password
+        pwEyeToggle('oldPw');
+        // signup
+        pwEyeToggle('pw1');
+        pwEyeToggle('pw2');
+        pwEyeToggle('cpw1');
+        pwEyeToggle('cpw2');
+    }
     pwEyeToggle('newPw');
     pwEyeToggle('newPw2');
-    // signup
-    pwEyeToggle('pw1');
-    pwEyeToggle('pw2');
-    pwEyeToggle('cpw1');
-    pwEyeToggle('cpw2');
-
 }
 
 // execute the change password request
-function changePassword(field) {
+function changePassword() {
     var pw = document.getElementById('newPw').value;
     if (pw.length < 8) {
         show_message("New is too short.  It must be at least 8 characters.", 'warn', 'cp_result_message');
@@ -69,17 +70,26 @@ function changePassword(field) {
         param += '&pwType=' + pwtype;
     }
     console.log(param);
+    let message_block = pwtype == 'a' ? 'result_message' : 'cp_result_message';
     $.ajax({
         url: 'scripts/changePassword.php',
         data: param,
         method: 'POST',
         success: function(data, textstatus, jqXHR) {
             if(data.status == 'error') {
-                show_message(data.message, 'error', 'cp_result_message');
+                show_message(data.message, 'error', message_block);
             } else {
                 if (config.debug & 1)
                     console.log(data);
-                location.reload();
+                if (pwtype != 'a')
+                    location.reload();
+                else {
+                    let msg = data.status;
+                    let url =
+                    msg += '<br/><span style="background-color: white; color: black;">Click <a href="' +
+                        location.protocol + '//' + location.host + '">here</a> to login using your new password.&nbsp;</span>';
+                    show_message(msg, 'success', message_block);
+                }
             }
         }
     });
@@ -87,7 +97,20 @@ function changePassword(field) {
 
 // request a reset password link via email
 function resetPassword() {
-    var email = prompt('What is your login email?');
+    var email = prompt('What is your login email?\nA password reset link will be sent to that email address.');
+    if (email == null)
+        return;
+
+    if (email == '') {
+        show_message("No email address was entered, a reset link has not been sent.", 'error');
+        return;
+    }
+
+    if (!validateAddress(email)) {
+        show_message("'" + email + "' is not a valid email address.", 'error');
+        return;
+    }
+
     $.ajax({
         method: 'POST',
         url: 'scripts/resetPassword.php',

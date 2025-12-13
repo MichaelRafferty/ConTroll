@@ -63,9 +63,9 @@ $response['items'] = $items;
 $response['itemCount'] = $itemR->num_rows;
 $itemR->free();
 
-// now get the max item count for this region
+// now get the max item count for this region along with name, email and quicksale info
 $maxQ = <<<EOS
-SELECT IFNULL(ert.maxInventory, 999999) AS maxInventory, ery.ownerName, ery.ownerEmail, er.name
+SELECT IFNULL(ert.maxInventory, 999999) AS maxInventory, ery.ownerName, ery.ownerEmail, er.name, ert.allowQuickSale
 FROM exhibitsRegionYears ery
 JOIN exhibitsRegions er ON er.id = ery.exhibitsRegion
 JOIN exhibitsRegionTypes ert ON ert.regionType = er.regionType
@@ -74,7 +74,7 @@ EOS;
 
 $maxR = dbSafeQuery($maxQ, 'i', array($region));
 if ($maxR === false || $maxR->num_rows != 1) {
-    $response['error'] = 'Cannot retrieve max inventory limit, seek assistance';
+    $response['error'] = 'Cannot retrieve max inventory limit or quick sale option, seek assistance';
 }
 
 $response['inv'] = $maxR->fetch_assoc();
