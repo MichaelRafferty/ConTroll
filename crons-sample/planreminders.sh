@@ -1,4 +1,4 @@
-PHPPATH=/var/nfph-opt/alt/php81/usr/bin
+PHPPATH=/var/nfph-opt/alt/php83/usr/bin
 PATH=$PHPPATH:$PATH:$HOME/.local/bin:$HOME/bin
 TZ='America/Los_Angeles'
 
