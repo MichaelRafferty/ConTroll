@@ -433,9 +433,9 @@ class Portal {
         let currentAge = '';
         for (let i = 0; i < memberships.length; i++) {
             let m = memberships[i];
-            if (isPrimary(m.conid, m.memType, m.memCategory, m.price)) {
+            if (m.memAge != 'all' && isPrimary(m.conid, m.memType, m.memCategory, m.price)) {
                 currentAge = m.memAge;
-                let ageItem = ageListIdx['currentAge'];
+                let ageItem = ageListIdx[currentAge];
                 if (ageItem.conid == config.conid && ageItem.ageType == m.memAge) {
                     this.#ageText.innerHTML = '<b>'+ ageItem.shortname + ' [' + ageItem.label + ']</b>';
                 }
@@ -443,7 +443,7 @@ class Portal {
         }
         if (currentAge != '')
             this.#ageField.value = currentAge;
-        else if (ageListIdx[person.currentAgeType].verify == 'N')
+        else if (person.currentAgeType != null && ageListIdx[person.currentAgeType].verify == 'N')
             this.#ageField.value = person.currentAgeType;
         else
             this.#ageField.value = '';
