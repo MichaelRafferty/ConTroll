@@ -300,7 +300,7 @@ function getPersonInfo($conid) {
         $pfield = 'perid';
         $personSQL = <<<EOS
 SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2,
-       p.legalName, p.pronouns, p.address, p.addr_2, p.city, p.state, p.zip, p.country,
+       p.legalName, p.pronouns, p.address, p.addr_2, p.city, p.state, p.zip, p.country, p.currentAgeConid, p.currentAgeType,
     p.banned, p.creation_date, p.update_date, p.change_notes, p.active, p.managedBy, p.lastVerified, 'p' AS personType,
     TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
     TRIM(REGEXP_REPLACE(CONCAT_WS(' ', pm.first_name, pm.middle_name, pm.last_name, pm.suffix), ' +', ' ')) AS managedByName
@@ -312,7 +312,7 @@ EOS;
         $pfield = 'newperid';
         $personSQL = <<<EOS
 SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2,
-       p.legalName, p.pronouns, p.address, p.addr_2, p.city, p.state, p.zip, p.country,
+       p.legalName, p.pronouns, p.address, p.addr_2, p.city, p.state, p.zip, p.country, p.currentAgeConid, p.currentAgeType,
     'N' AS banned, p.createtime AS creation_date, 'Y' AS active, p.managedByNew, p.managedBy, p.lastVerified, 'n' AS personType,
     TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
     CASE

@@ -530,7 +530,7 @@ EOS;
 // get the information for the interest  and policies blocks
     $interests = getInterests();
     $policies = getPolicies();
-    $ageList = getAgeList($conid);
+    [$ageList, $ageListIdx] = getAgeList($conid);
 // Does this person have interests, if none in the system force them to go to the interests modal
     $config_vars['needInterests'] = 0;
     if ($interests != null && count($interests) > 0) {
@@ -671,11 +671,12 @@ if ($refresh) {
     var numCoupons = <?php echo $numCoupons; ?>;
     var policies = <?php echo json_encode($policies); ?>;
     var ageList = <?php echo json_encode($ageList); ?>;
+    var ageListIdx = <?php echo json_encode($ageListIdx); ?>;
     var ageByDate = <?php echo '"' . $condata['startdate'] . '"'; ?>;
 </script>
 <?php
 // draw all the modals for this screen
-draw_editPersonModal('portal', $policies, $ageList, $condata['startdate']);
+draw_editPersonModal('portal', $policies, $ageListIdx, $condata['startdate']);
 if ($interests != null && count($interests) > 0) {
     draw_editInterestsModal($interests);
 }
@@ -772,7 +773,7 @@ if ($totalDue > 0 || $activePaymentPlans) {
 </div>
 <?php
 $totalMemberships = count($holderMembership);
-$paidByOthers = drawPersonRow($loginId, $loginType, $info, $holderMembership, $interests != null && count($interests) > 0, false, $now);
+$paidByOthers = drawPersonRow($loginId, $loginType, $info, $conid, $ageListIdx, $holderMembership, $interests != null && count($interests) > 0, false, $now);
 
 $managedMembershipList = '';
 $currentId = -1;
@@ -798,7 +799,7 @@ if ($info['managedByName'] == null && count($managed) > 0) {
         if ($currentId != $m['id']) {
             if ($currentId > 0) {
                 $totalMemberships += count($curMB);
-                drawPersonRow($loginId, $loginType, $curPT, $curMB, $interests != null && count($interests) > 0, $hrshow, $now);
+                drawPersonRow($loginId, $loginType, $curPT, $conid, $ageListIdx, $curMB, $interests != null && count($interests) > 0, $hrshow, $now);
                 $hrshow = true;
             }
             $curPT = $m;
@@ -827,7 +828,7 @@ if ($info['managedByName'] == null && count($managed) > 0) {
 }
 if ($currentId > 0) { // if there are any at all
     $totalMemberships += count($curMB);
-    drawPersonRow($loginId, $loginType, $curPT, $curMB, $interests != null && count($interests) > 0, true, $now);
+    drawPersonRow($loginId, $loginType, $curPT, $conid, $ageListIdx, $curMB, $interests != null && count($interests) > 0, true, $now);
 }
 // only draw the legend if someone has membership
 if ($totalMemberships > 0)

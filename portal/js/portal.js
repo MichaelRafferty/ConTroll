@@ -187,7 +187,7 @@ class Portal {
                 });
             }
         }
-        
+
         id = document.getElementById("editInterestModal");
         if (id) {
             this.#editInterestsModalElement = id;
@@ -233,17 +233,6 @@ class Portal {
         this.#purchasedShowUnpaid = document.getElementById('btn-showUnpaid');
         this.#purchasedHideAll = document.getElementById('btn-hideAll');
 
-        /*  // Default to unpaid
-        if (this.#purchasedShowUnpaid) {
-            if (this.#purchasedShowUnpaid.disabled == true)
-                this.showUnpaid();
-        } else if (this.#purchasedShowAll) {
-            if (this.#purchasedShowAll.disabled == true)
-                this.showAll();
-            else
-                this.hideAll();
-        } */
-
         // default to All
         if (this.#purchasedShowAll) {
             if (this.#purchasedShowAll.disabled == true)
@@ -264,17 +253,32 @@ class Portal {
         const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
         const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
 
-        // do any people need to have their profiles edited to handle missing policies
-        $('.need-policies').each(function(i, obj) {
+        // do any people need to have their profiles edited to handle missing ages or age verification
+        $('.need-age').each(function (i, obj) {
             if (modalCalled)
                 return;
+
             var dataset = obj.dataset;
             var id = dataset.id;
             var type = dataset.type;
-            show_message('Required Policies are not accepted', "error", 'epMessageDiv');
             _this.editPerson(id, type);
+            show_message('Age needs to be verified', "error", 'epMessageDiv');
             modalCalled = true;
         });
+
+        // do any people need to have their policies updated for missing policies
+        if (!modalCalled) {
+            $('.need-policies').each(function (i, obj) {
+                if (modalCalled)
+                    return;
+                var dataset = obj.dataset;
+                var id = dataset.id;
+                var type = dataset.type;
+                _this.editPerson(id, type);
+                show_message('Required Policies are not accepted', "error", 'epMessageDiv');
+                modalCalled = true;
+            });
+        }
 
         if (config.needInterests == 1) {
             if (modalCalled)
@@ -350,6 +354,7 @@ class Portal {
         $('#city').removeClass('need');
         $('#state').removeClass('need');
         $('#zip').removeClass('need');
+        $('#age').removeClass('need');
 
         this.#currentPerson = id;
         this.#currentPersonType = type;
@@ -430,16 +435,19 @@ class Portal {
             let m = memberships[i];
             if (isPrimary(m.conid, m.memType, m.memCategory, m.price)) {
                 currentAge = m.memAge;
-                // find the age string for this entry
-                for (let a = 0; a < ageList.length; a++) {
-                    let ageItem = ageList[a];
-                    if (ageItem.conid == config.conid && ageItem.ageType == m.memAge) {
-                        this.#ageText.innerHTML = '<b>'+ ageItem.shortname + ' [' + ageItem.label + ']</b>';
-                    }
+                let ageItem = ageListIdx['currentAge'];
+                if (ageItem.conid == config.conid && ageItem.ageType == m.memAge) {
+                    this.#ageText.innerHTML = '<b>'+ ageItem.shortname + ' [' + ageItem.label + ']</b>';
                 }
             }
         }
-        this.#ageField.value = currentAge;
+        if (currentAge != '')
+            this.#ageField.value = currentAge;
+        else if (ageListIdx[person.currentAgeType].verify == 'N')
+            this.#ageField.value = person.currentAgeType;
+        else
+            this.#ageField.value = '';
+
         this.#ageDiv.hidden = currentAge == '';
         this.#ageField.hidden = currentAge != '';
         this.#ageText.hidden = currentAge == '';

@@ -348,7 +348,7 @@ EOS;
 <?php
 }
 // drawManagedRow: draw the memberships and buttons for a managed person or yourself
-function drawPersonRow($personId, $personType, $person, $memberships, $showInterests, $showHR, $now) : float {
+function drawPersonRow($personId, $personType, $person, $conid, $ageList, $memberships, $showInterests, $showHR, $now) : float {
     global $membershipButtonColors;
     $paidByOthers = 0;
 
@@ -367,6 +367,10 @@ function drawPersonRow($personId, $personType, $person, $memberships, $showInter
     } else {
         $profileClass = 'btn-warning need-policies';
     }
+    if ($person['currentAgeType'] == null || $person['currentAgeType'] == '' ||
+            ($person['currentAgeConid'] != $conid && $ageList[$person['currentAgeType']]['verify'] == 'Y'))
+        $profileClass .= ' need-age';
+
     if ($showHR) {
 ?>
     <div class='row'>

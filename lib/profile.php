@@ -174,13 +174,14 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
         <div class='col-sm-auto'>
             <label for="<?php echo $idPrefix . 'age'; ?>" class='form-label-sm'>
                 <span class='text-dark' style='font-size: 10pt;'><?php echo $firstStar; ?>Age as of <?php echo $ageByDate; ?></span></label><br/>
-            <div class="mt-1">            <select name='age' id='<?php echo $idPrefix . 'age'; ?>' tabindex="<?php echo $tabindex; $tabindex += 10;?>">
-                <option value="">--Select Age Bracket--</option>
-                <?php
-                    foreach ($ageList as $age) {
-                        echo '<option value="' . escape_quotes($age['ageType']) . '">' . $age['shortname'] . ' ['.$age['label'] . ']</option>';
-                    }
-                ?>
+            <div class="mt-1">
+                <select name='age' id='<?php echo $idPrefix . 'age'; ?>' tabindex="<?php echo $tabindex; $tabindex += 10;?>">
+                    <option value="">--Select Age Bracket--</option>
+                    <?php
+                        foreach ($ageList as $age) {
+                            echo '<option value="' . escape_quotes($age['ageType']) . '">' . $age['shortname'] . ' ['.$age['label'] . ']</option>';
+                        }
+                    ?>
             </select>
             </div>
             <div class='mt-1' id='<?php echo $idPrefix . 'agetext'; ?>'><strong>Current age unknown</strong></div>
@@ -332,6 +333,7 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
 
 function getAgeList($conid) {
     $ageList = [];
+    $ageListIdx = [];
     $ageQ = <<<EOS
 SELECT *
 FROM ageList
@@ -346,8 +348,9 @@ EOS;
         if ($age['ageType'] == 'all')
             continue;
         $ageList[] = $age;
+        $ageListIdx[$age['ageType']] = $age;
     }
 
     $ageR->free();
-    return $ageList;
+    return (array($ageList, $ageListIdx));
 }
