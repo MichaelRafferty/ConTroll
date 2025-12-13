@@ -198,55 +198,51 @@ class memsetup {
 
         this.#memtype_dirty = false;
 
-        if (this.#memtypetable != null) {
-            this.#memtypetable.off("dataChanged");
-            this.#memtypetable.off("rowMoved")
-            this.#memtypetable.off("cellEdited");
-            this.#memtypetable.destroy();
-        }
-
-        this.#memtypetable = null;
         // memtype table
-        this.#memtypetable = new Tabulator('#types-div', {
-            maxHeight: "600px",
-            movableRows: true,
-            history: true,
-            data: data['memtypes'],
-            layout: "fitDataTable",
-            columns: [
-                { rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false },
-                { field: "memtypekey", visible: false },
-                {
-                    title: "Type", field: "memType", headerSort: true, width: 150, editable: reqEditable,
-                    editor: "input", editorParams: { elementAttributes: { maxlength: "16" } }, validator: [ "unique", "required" ]
-                },
-                {
-                    title: "Notes", field: "notes", headerSort: true, width: 350, editable: reqEditable,
-                    editor: "input", editorParams: { elementAttributes: { maxlength: "1024" } },
-                },
-                {
-                    title: "Active", field: "active", headerSort: true,  editable: true,
-                    editor: "list", editorParams: { values: ["Y", "N"], }, validator: "required"
-                },
-                { title: "Sort Order", field: "sortorder", headerSort: true, visible: false },
-                {
-                    title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
-                    cellClick: function (e, cell) {
-                        deleterow(e, cell.getRow());
-                    }
-                },
-                { field: "required", visible: false, },
-                { field: "to_delete", visible: false, },
-            ]
-        });
+        if (this.#memtypetable != null) {
+            this.#memtypetable.replaceData(data['memtypes']);
+        } else {
+            this.#memtypetable = new Tabulator('#types-div', {
+                maxHeight: "600px",
+                movableRows: true,
+                history: true,
+                data: data['memtypes'],
+                layout: "fitDataTable",
+                columns: [
+                    {rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false},
+                    {field: "memtypekey", visible: false},
+                    {
+                        title: "Type", field: "memType", headerSort: true, width: 150, editable: reqEditable,
+                        editor: "input", editorParams: {elementAttributes: {maxlength: "16"}}, validator: ["unique", "required"]
+                    },
+                    {
+                        title: "Notes", field: "notes", headerSort: true, width: 350, editable: reqEditable,
+                        editor: "input", editorParams: {elementAttributes: {maxlength: "1024"}},
+                    },
+                    {
+                        title: "Active", field: "active", headerSort: true, editable: true,
+                        editor: "list", editorParams: {values: ["Y", "N"],}, validator: "required"
+                    },
+                    {title: "Sort Order", field: "sortorder", headerSort: true, visible: false},
+                    {
+                        title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
+                        cellClick: function (e, cell) {
+                            deleterow(e, cell.getRow());
+                        }
+                    },
+                    {field: "required", visible: false,},
+                    {field: "to_delete", visible: false,},
+                ]
+            });
 
-        this.#memtypetable.on("dataChanged", function (data) {
-            _this.memtype_dataChanged(data);
-        });
-        this.#memtypetable.on("rowMoved", function (row) {
-            _this.memtype_rowMoved(row)
-        });
-        this.#memtypetable.on("cellEdited", cellChanged);
+            this.#memtypetable.on("dataChanged", function (data) {
+                _this.memtype_dataChanged(data);
+            });
+            this.#memtypetable.on("rowMoved", function (row) {
+                _this.memtype_rowMoved(row)
+            });
+            this.#memtypetable.on("cellEdited", cellChanged);
+        }
     };
 
     draw_memcat(data, textStatus, jhXHR) {
@@ -254,124 +250,151 @@ class memsetup {
 
         this.#category_dirty = false;
 
-        if (this.#categorytable != null) {
-            this.#categorytable.off("dataChanged");
-            this.#categorytable.off("rowMoved")
-            this.#categorytable.off("cellEdited");
-            this.#categorytable.destroy();
-        }
-
-        this.#categorytable = null;
         // category table
-        this.#categorytable = new Tabulator('#cat-div', {
-            maxHeight: "600px",
-            history: true,
-            movableRows: true,
-            data: data['categories'],
-            layout: "fitDataTable",
-            columns: [
-                { rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false },
-                { field: "memcatkey", visible: false },
-                {
-                    title: "Category", field: "memCategory", width: 150, headerSort: true, editable: reqEditable,
-                    editor: "input", editorParams: { elementAttributes: { maxlength: "16" } }, validator: [ "unique", "required" ]
-                },
-                {
-                    title: "Notes", field: "notes", headerSort: true, width: 350, editable: reqEditable,
-                    editor: "input", editorParams: { elementAttributes: { maxlength: "1024" } },
-                },
-                {
-                    title: "Only One", field: "onlyOne", headerWordWrap: true, headerSort: true, editable: adminEditable,
-                    editor: "list", editorParams: { values: ["Y", "N"], }, width: 70, validator: "required" },
-                {
-                    title: "Stand Alone", field: "standAlone", headerWordWrap: true, headerSort: true, editable: adminEditable,
-                    editor: "list", editorParams: { values: ["Y", "N"], }, width: 75, validator: "required" },
-                {
-                    title: "Var. Price", field: "variablePrice", headerWordWrap: true, headerSort: true, editable: adminEditable,
-                    editor: "list", editorParams: { values: ["Y", "N"], }, width: 70, validator: "required"
-                },
-                {
-                    title: "Tax", field: "taxable", headerWordWrap: true, headerSort: true, editable: adminEditable,
-                    editor: "list", editorParams: { values: ["Y", "N"], }, width: 70, validator: "required"
-                },
-                {
-                    title: "Badge Label", field: "badgeLabel", width: 150, headerSort: true, editable: true,
-                    editor: "input", editorParams: { elementAttributes: { maxlength: "16" } }, validator: "required"
-                },
-                {
-                    title: "Active", field: "active", headerSort: true, editable: actEditable,
-                    editor: "list", editorParams: { values: ["Y", "N"], }, validator: "required"
-                },
-                { title: "Sort Order", field: "sortorder", headerSort: true, visible: false },
-                {
-                    title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
-                    cellClick: function (e, cell) {
-                        deleterow(e, cell.getRow());
-                    }
-                },
-                { title: "Reg Uses", field: 'regUses', visible: config['debug'] > 0, },
-                { title: "Uses", field: 'uses', visible: config['debug'] > 0, },
-                { field: "required", visible: false, },
-                { field: "to_delete", visible: false, },
-            ],
-        });
+        if (this.#categorytable != null) {
+            this.#categorytable.replaceData(data['categories']);
+        } else {
+            this.#categorytable = new Tabulator('#cat-div', {
+                maxHeight: "600px",
+                history: true,
+                movableRows: true,
+                data: data['categories'],
+                layout: "fitDataTable",
+                columns: [
+                    {rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false},
+                    {field: "memcatkey", visible: false},
+                    {
+                        title: "Category", field: "memCategory", width: 150, headerSort: true, editable: reqEditable,
+                        editor: "input", editorParams: {elementAttributes: {maxlength: "16"}}, validator: ["unique", "required"]
+                    },
+                    {
+                        title: "Notes", field: "notes", headerSort: true, width: 350, editable: reqEditable,
+                        editor: "input", editorParams: {elementAttributes: {maxlength: "1024"}},
+                    },
+                    {
+                        title: "Only One", field: "onlyOne", headerWordWrap: true, headerSort: true, editable: adminEditable,
+                        editor: "list", editorParams: {values: ["Y", "N"],}, width: 70, validator: "required"
+                    },
+                    {
+                        title: "Stand Alone", field: "standAlone", headerWordWrap: true, headerSort: true, editable: adminEditable,
+                        editor: "list", editorParams: {values: ["Y", "N"],}, width: 75, validator: "required"
+                    },
+                    {
+                        title: "Var. Price", field: "variablePrice", headerWordWrap: true, headerSort: true, editable: adminEditable,
+                        editor: "list", editorParams: {values: ["Y", "N"],}, width: 70, validator: "required"
+                    },
+                    {
+                        title: "Tax", field: "taxable", headerWordWrap: true, headerSort: true, editable: adminEditable,
+                        editor: "list", editorParams: {values: ["Y", "N"],}, width: 70, validator: "required"
+                    },
+                    {
+                        title: "Badge Label", field: "badgeLabel", width: 150, headerSort: true, editable: true,
+                        editor: "input", editorParams: {elementAttributes: {maxlength: "16"}}, validator: "required"
+                    },
+                    {
+                        title: "Active", field: "active", headerSort: true, editable: actEditable,
+                        editor: "list", editorParams: {values: ["Y", "N"],}, validator: "required"
+                    },
+                    {title: "Sort Order", field: "sortorder", headerSort: true, visible: false},
+                    {
+                        title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
+                        cellClick: function (e, cell) {
+                            deleterow(e, cell.getRow());
+                        }
+                    },
+                    {title: "Reg Uses", field: 'regUses', visible: config['debug'] > 0,},
+                    {title: "Uses", field: 'uses', visible: config['debug'] > 0,},
+                    {field: "required", visible: false,},
+                    {field: "to_delete", visible: false,},
+                ],
+            });
 
-        this.#categorytable.on("dataChanged", function (data) {
-            _this.category_dataChanged(data);
-        });
-        this.#categorytable.on("rowMoved", function (row) {
-            _this.category_rowMoved(row)
-        });
-        this.#categorytable.on("cellEdited", cellChanged);
-
+            this.#categorytable.on("dataChanged", function (data) {
+                _this.category_dataChanged(data);
+            });
+            this.#categorytable.on("rowMoved", function (row) {
+                _this.category_rowMoved(row)
+            });
+            this.#categorytable.on("cellEdited", cellChanged);
+        }
     }
 
     draw_curage(data, textStatus, jhXHR) {
         var _this = this;
 
         this.#curage_dirty = false;
-
-        if (this.#curagetable != null) {
-            this.#curagetable.off("dataChanged");
-            this.#curagetable.off("rowMoved")
-            this.#curagetable.off("cellEdited");
-            this.#curagetable.destroy();
-        }
-
-        this.#curagetable = null;
         // current agelist table
-        this.#curagetable = new Tabulator('#curage-div', {
-            maxHeight: "400px",
-            history: true,
-            movableRows: true,
-            data: data['current_agelist'],
-            layout: "fitDataTable",
-            columns: [
-                { rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false },
-                { field: "agekey", visible: false },
-                { title: "ConID", field: "conid", visible: false },
-                { title: "Age Type", field: "ageType", width: 140, headerSort: true, editor: "input", editorParams: { elementAttributes: { maxlength: "16" } }, validator: "required" },
-                { title: "Label", field: "label", headerSort: false, width: 200, editor: "input", editorParams: { elementAttributes: { maxlength: "64" } }, validator: "required" },
-                { title: "shortname", field: "shortname", headerSort: false, width: 140, editor: "input", editorParams: { elementAttributes: { maxlength: "16" } }, validator: "required" },
-                { title: "Badge Flag", field: "badgeFlag", headerSort: true, width: 140, editor: "input", editorParams: { elementAttributes: { maxlength: "16" } }, },
-                { title: "Sort Order", field: "sortorder", headerSort: true, visible: false },
-                {
-                    title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
-                    cellClick: function (e, cell) {
-                        deleterow(e, cell.getRow());
-                    }
-                },
-                { field: "to_delete", visible: false, }
-            ],
-        });
+        if (this.#curagetable != null) {
+            this.#curagetable.replaceData(data['current_agelist']);
+        } else {
+            this.#curagetable = new Tabulator('#curage-div', {
+                maxHeight: "400px",
+                history: true,
+                movableRows: true,
+                data: data['current_agelist'],
+                layout: "fitDataTable",
+                columns: [
+                    {rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false},
+                    {field: "agekey", visible: false},
+                    {title: "ConID", field: "conid", visible: false},
+                    {
+                        title: "Age Type",
+                        field: "ageType",
+                        width: 140,
+                        headerSort: true,
+                        editor: "input",
+                        editorParams: {elementAttributes: {maxlength: "16"}},
+                        validator: "required"
+                    },
+                    {
+                        title: "Label",
+                        field: "label",
+                        headerSort: false,
+                        width: 200,
+                        editor: "input",
+                        editorParams: {elementAttributes: {maxlength: "64"}},
+                        validator: "required"
+                    },
+                    {
+                        title: "shortname",
+                        field: "shortname",
+                        headerSort: false,
+                        width: 140,
+                        editor: "input",
+                        editorParams: {elementAttributes: {maxlength: "16"}},
+                        validator: "required"
+                    },
+                    {
+                        title: "Verify Annually", field: "verify", headerWordWrap: true, headerSort: true, editable: adminEditable,
+                        editor: "list", editorParams: {values: ["Y", "N"],}, width: 100, validator: "required"
+                    },
+                    {
+                        title: "Badge Flag",
+                        field: "badgeFlag",
+                        headerSort: true,
+                        width: 140,
+                        editor: "input",
+                        editorParams: {elementAttributes: {maxlength: "16"}},
+                    },
+                    {title: "Sort Order", field: "sortorder", headerSort: true, visible: false},
+                    {
+                        title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
+                        cellClick: function (e, cell) {
+                            deleterow(e, cell.getRow());
+                        }
+                    },
+                    {field: "to_delete", visible: false,}
+                ],
+            });
 
-        this.#curagetable.on("dataChanged", function (data) {
-            _this.curage_dataChanged(data);
-        });
-        this.#curagetable.on("rowMoved", function (row) {
-            _this.curage_rowMoved(row)
-        });
-        this.#curagetable.on("cellEdited", cellChanged);
+            this.#curagetable.on("dataChanged", function (data) {
+                _this.curage_dataChanged(data);
+            });
+            this.#curagetable.on("rowMoved", function (row) {
+                _this.curage_rowMoved(row)
+            });
+            this.#curagetable.on("cellEdited", cellChanged);
+        }
     }
 
     draw_nextage(data, textStatus, jhXHR) {
@@ -380,46 +403,59 @@ class memsetup {
         this.#nextage_dirty = false;
 
         if (this.#nextagetable != null) {
-            this.#nextagetable.off("dataChanged");
-            this.#nextagetable.off("rowMoved")
-            this.#nextagetable.off("cellEdited");
-            this.#nextagetable.destroy();
+            this.#nextagetable.replaceData(data['next_agelist']);
+        } else {
+            this.#nextagetable = new Tabulator('#nextage-div', {
+                maxHeight: "400px",
+                history: true,
+                movableRows: true,
+                data: data['next_agelist'],
+                layout: "fitDataTable",
+                columns: [
+                    {rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false},
+                    {field: "agekey", visible: false},
+                    {title: "ConID", field: "conid", visible: false},
+                    {title: "Age Type", field: "ageType", width: 140, headerSort: true, editor: "input", editorParams: {elementAttributes: {maxlength: "16"}}},
+                    {title: "Label", field: "label", headerSort: false, width: 200, editor: "input", editorParams: {elementAttributes: {maxlength: "64"}}},
+                    {
+                        title: "shortname",
+                        field: "shortname",
+                        headerSort: false,
+                        width: 140,
+                        editor: "input",
+                        editorParams: {elementAttributes: {maxlength: "16"}}
+                    },
+                    {
+                        title: "Verify Annually", field: "verify", headerWordWrap: true, headerSort: true, editable: adminEditable,
+                        editor: "list", editorParams: {values: ["Y", "N"],}, width: 100, validator: "required"
+                    },
+                    {
+                        title: "Badge Flag",
+                        field: "badgeFlag",
+                        headerSort: true,
+                        width: 140,
+                        editor: "input",
+                        editorParams: {elementAttributes: {maxlength: "16"}},
+                    },
+                    {title: "Sort Order", field: "sortorder", headerSort: true, visible: false},
+                    {
+                        title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
+                        cellClick: function (e, cell) {
+                            deleterow(e, cell.getRow());
+                        }
+                    },
+                    {field: "to_delete", visible: false,}
+                ],
+            });
+
+            this.#nextagetable.on("dataChanged", function (data) {
+                _this.nextage_dataChanged(data);
+            });
+            this.#nextagetable.on("rowMoved", function (row) {
+                _this.nextage_rowMoved(row)
+            });
+            this.#nextagetable.on("cellEdited", cellChanged);
         }
-
-        this.#nextagetable = null;
-        // next  agelist table
-        this.#nextagetable = new Tabulator('#nextage-div', {
-            maxHeight: "400px",
-            history: true,
-            movableRows: true,
-            data: data['next_agelist'],
-            layout: "fitDataTable",
-            columns: [
-                { rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false },
-                { field: "agekey", visible: false },
-                { title: "ConID", field: "conid", visible: false },
-                { title: "Age Type", field: "ageType", width: 140, headerSort: true, editor: "input", editorParams: { elementAttributes: { maxlength: "16" } } },
-                { title: "Label", field: "label", headerSort: false, width: 200, editor: "input", editorParams: { elementAttributes: { maxlength: "64" } } },
-                { title: "shortname", field: "shortname", headerSort: false, width: 140, editor: "input", editorParams: { elementAttributes: { maxlength: "16" } } },
-                { title: "Badge Flag", field: "badgeFlag", headerSort: true, width: 140, editor: "input", editorParams: { elementAttributes: { maxlength: "16" } }, },
-                { title: "Sort Order", field: "sortorder", headerSort: true, visible: false },
-                {
-                    title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
-                    cellClick: function (e, cell) {
-                        deleterow(e, cell.getRow());
-                    }
-                },
-                { field: "to_delete", visible: false, }
-            ],
-        });
-
-        this.#nextagetable.on("dataChanged", function (data) {
-            _this.nextage_dataChanged(data);
-        });
-        this.#nextagetable.on("rowMoved", function (row) {
-            _this.nextage_rowMoved(row)
-        });
-        this.#nextagetable.on("cellEdited", cellChanged);
     }
 
     open() {
