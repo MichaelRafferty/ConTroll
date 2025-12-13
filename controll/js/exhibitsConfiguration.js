@@ -601,10 +601,6 @@ class exhibitssetup {
             movableRows: true,
             data: this.#regionType,
             layout: "fitDataTable",
-            pagination: this.#regionType.length > 10,
-            paginationAddRow:"table",
-            paginationSize: 10,
-            paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
                 {rowHandle: true, formatter: "handle", frozen: true, width: 40, headerSort: false},
                 { title: "&bigstar;Region Type", field: "regionType", width: 200, headerSort: true, headerWordWrap: true, validator: "required",
@@ -626,6 +622,8 @@ class exhibitssetup {
                 { title: "&bigstar;Uses Inventory Mgmt", field: "usesInventory", headerSort: false, width: 90, headerWordWrap: true, validator: "required",
                     editor: "list", editorParams: { values: ['Y', 'N'] }, },
                 { title: "Max Inv Items", field: "maxInventory", width: 70, headerSort: false, headerWordWrap: true, editor: "number" },
+                { title: "&bigstar;Allow Quick Sale", field: "allowQuickSale", headerSort: false, width: 90, headerWordWrap: true, validator: "required",
+                    editor: "list", editorParams: { values: ['Y', 'N'] }, },
                 { title: "&bigstar;Active", field: "active", headerSort: true, width: 120, validator: "required",
                     editor: "list", editorParams: { values: ['Y', 'N'] }, },
                 { title: "Sort Order", field: "sortorder", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 80,},
@@ -1045,10 +1043,10 @@ class exhibitssetup {
     // add row to types table and scroll to that new row
     addrowTypes() {
         var _this = this;
-        this.#regionTypeTable.addRow({regionType: 'new-row', portalType: 'vendor', requestApprovalRequired: 'None', purchaseApprovalRequired: 'Y',
-            purchaseAreaTotals: 'unique', inPersonMaxUnits: 0, mailinAllowed: 'N', mailinMaxUnits: 0, needW9: 'N', usesInventory: 'N',
+        this.#regionTypeTable.addRow({regionType: 'new-row', portalType: 'vendor', requestApprovalRequired: 'None',
+            purchaseApprovalRequired: 'Y', purchaseAreaTotals: 'unique', inPersonMaxUnits: 0, mailinAllowed: 'N', mailinMaxUnits: 0,
+            needW9: 'N', usesInventory: 'N', allowQuickSale: 'Y', maxInventory: 75,
             active: 'Y', sortorder: 99, uses: 0}, false).then(function (row) {
-            row.getTable().setPageToRow(row).then(function () {
                 row.getCell("regionType").getElement().style.backgroundColor = "#fff3cd";
                 row.getCell("portalType").getElement().style.backgroundColor = "#fff3cd";
                 row.getCell("requestApprovalRequired").getElement().style.backgroundColor = "#fff3cd";
@@ -1059,10 +1057,12 @@ class exhibitssetup {
                 row.getCell("mailinMaxUnits").getElement().style.backgroundColor = "#fff3cd";
                 row.getCell("needW9").getElement().style.backgroundColor = "#fff3cd";
                 row.getCell("usesInventory").getElement().style.backgroundColor = "#fff3cd";
+                row.getCell("maxInventory").getElement().style.backgroundColor = "#fff3cd";
+                row.getCell("allowQuickSale").getElement().style.backgroundColor = "#fff3cd";
                 row.getCell("active").getElement().style.backgroundColor = "#fff3cd";
                 _this.checkTypesUndoRedo();
-            });
-        });
+            }
+        );
     }
 
     // set undo / redo status for exhibits type buttons

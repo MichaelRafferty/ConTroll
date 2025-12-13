@@ -112,7 +112,7 @@ function init_locations() {
 
 function addInventoryIcon(cell, formatterParams, onRendered) {
     var html = '';
-    var item_status = cell.getRow().getData().status;
+    var item_status = cell.getData().status;
     var btnClass = 'btn btn-sm p-0';
     var btnStyle = 'style="--bs-btn-font-size: 75%;"';
 
@@ -121,7 +121,7 @@ function addInventoryIcon(cell, formatterParams, onRendered) {
         case 'Not In Show':
         case 'Checked Out':
         case 'Purchased/Released':
-            html += '<button type="button" class="btn btn-sm btn-danger pt-0 pb-0"' + btnStyle + '">N/A</button>';
+            html += '<button type="button" class="btn btn-sm btn-danger '+btnClass+' ps-2 pe-2"' + btnStyle + '">N/A</button>';
             // no inventory action, gone
             break;
         case 'Sold Bid Sheet':
@@ -131,37 +131,42 @@ function addInventoryIcon(cell, formatterParams, onRendered) {
         case 'Quicksale/Sold':
             //inventory
             if(mode == 'artinventory') {
-                html += '<button type="button" class="'+btnClass+' btn-primary" '+btnStyle+' onclick="add_to_cart(' + cell.getRow().getData().index + ',\'Inventory\')">Inv</button> ';
+                html += '<button type="button" class="ps-2 pe-2 '+btnClass+' btn-primary" '+btnStyle+' onclick="add_to_cart(' + cell.getData().index + ',\'Inventory\')">Inv</button> ';
             }
             //manager can release
             if(manager) {
-                html += '<button type="button" class="'+btnClass+' btn-secondary" '+btnStyle+' onclick="add_to_cart(' + cell.getRow().getData().index + ',\'Release\')">Release</button> ';
+                html += '<button type="button" class="ps-1 pe-1 '+btnClass+' btn-secondary" '+btnStyle+' onclick="add_to_cart(' + cell.getData().index + ',\'Release\')">Release</button> ';
             }
             break;
         case 'To Auction':
         case 'BID':
             //inventory only
             if(mode == 'artinventory') {
-                html += '<button type="button" class="'+btnClass+' btn-primary" '+btnStyle+' onclick="add_to_cart(' + cell.getRow().getData().index + ',\'Inventory\')">Inv</button> ';
+                html += '<button type="button" class=" ps-2 pe-2 '+btnClass+' btn-primary" '+btnStyle+' onclick="add_to_cart(' + cell.getData().index + ',\'Inventory\')">Inv</button> ';
             }
             break;
         case 'Checked In':
         case 'NFS':
             // inventory or check out
             if(mode == 'artinventory') {
-                html += '<button type="button" class="'+btnClass+' btn-primary" '+btnStyle+' onclick="add_to_cart(' + cell.getRow().getData().index + ',\'Inventory\')">Inv</button> ';
-                html += '<button type="button" class="'+btnClass+' btn-secondary" '+btnStyle+' onclick="add_to_cart(' + cell.getRow().getData().index + ',\'Check Out\')">Out</button> ';
+                html += '<button type="button" class="ps-2 pe-2 '+btnClass+' btn-primary" '+btnStyle+' onclick="add_to_cart(' + cell.getData().index + ',\'Inventory\')">Inv</button> ';
+                html += '<button type="button" class="ps-2 pe-2 '+btnClass+' btn-secondary" '+btnStyle+' onclick="add_to_cart(' + cell.getData().index + ',\'Check Out\')">Out</button> ';
             }
             // manager can remove from show
             if(manager) {
-                html += '<button type="button" class="'+btnClass+' btn-warning" '+btnStyle+' onclick="add_to_cart(' + cell.getRow().getData().index + ',\'remove\')">Remove</button> ';
+                let m = '';
+                if(mode == 'artinventory') {
+                    html += '<br/>';
+                    m = ' mt-2 ';
+                }
+                html += '<button type="button" class="ps-2 pe-2 '+ m + btnClass+' btn-warning" '+btnStyle+' onclick="add_to_cart(' + cell.getData().index + ',\'remove\')">Remove</button> ';
             }
             break;
         case 'Removed from Show':
         case 'Entered':
         default:
             // must check in
-            html += '<button type="button" class="'+btnClass+' btn-primary" '+btnStyle+' onclick="add_to_cart(' + cell.getRow().getData().index + ',\'Check In\')">In</button> ';
+            html += '<button type="button" class="ps-2 pe-2 '+btnClass+' btn-primary" '+btnStyle+' onclick="add_to_cart(' + cell.getData().index + ',\'Check In\')">In</button> ';
     }
     return html;
 }
@@ -343,7 +348,7 @@ function draw_cart_row(rownum) {
     var action_html = `
     </div>
     <div class="col-sm-4">
-        <button type="button" class="` + btnClass +` btn-secondary" `+btnStyle+` onclick="remove_from_cart(`+rownum+`)">Remove</button><br/>
+        <button type="button" class="ps-2 pe-2 ` + btnClass +` btn-secondary" `+btnStyle+` onclick="remove_from_cart(`+rownum+`)">Remove</button><br/>
 `;
     var trailing_html = '</div></div>';
 
@@ -375,9 +380,9 @@ function draw_cart_row(rownum) {
                 action_html += '<br/>';
                 if(show_location) {
                   if(item.need_location) {
-                    action_html += `<button class="`+btnClass+` btn-primary" `+btnStyle+` type="button" id="` + item.id + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
+                    action_html += `<button class="`+btnClass+` btn-primary ps-2 pe-2 " `+btnStyle+` type="button" id="` + item.id + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
                   } else {
-                    action_html += `<button class="`+btnClass+` btn-info" `+btnStyle+` type="button" id="` + item.id + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
+                    action_html += `<button class="`+btnClass+` btn-info ps-2 pe-2 " `+btnStyle+` type="button" id="` + item.id + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
                   }
                 }
                 action_html += '<br/>';
@@ -390,14 +395,14 @@ function draw_cart_row(rownum) {
             action_html += '<br/>';
             if(show_location) {
               if(item.need_location) {
-                action_html += `<button class="`+btnClass+` btn-primary" `+btnStyle+` type="button" id="` + item.id + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
+                action_html += `<button class="`+btnClass+` btn-primary ps-2 pe-2 " `+btnStyle+` type="button" id="` + item.id + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
               } else {
-                action_html += `<button class="`+btnClass+` btn-info" `+btnStyle+` type="button" id="` + item.id + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
+                action_html += `<button class="`+btnClass+` btn-info ps-2 pe-2 " `+btnStyle+` type="button" id="` + item.id + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
               }
             }
             action_html += '<br/>';
             if(item.status == 'BID') {
-                action_html += `<button class="`+btnClass+` btn-success" `+btnStyle+` type="button" id="` + item.id + `"_to_bidsheet" onclick="update_bid(`+rownum+`,false,true);">To Bid Sheet</button><br/>`;
+                action_html += `<button class="`+btnClass+` btn-success ps-2 pe-2 " `+btnStyle+` type="button" id="` + item.id + `"_to_bidsheet" onclick="update_bid(`+rownum+`,false,true);">To Bid Sheet</button><br/>`;
             } else {
                 action_html += '<br/>'; 
             }
@@ -426,15 +431,15 @@ function draw_cart_row(rownum) {
                     + `' value="` + bidder + `" style="width: 7em"></input> @ $`
                     + `<input type='number' min=`+min_price+` id='bid_` + item.id
                     + `' value="` + final_price + `" style="width: 7em"></input><br/>`;
-                action_html += `<button class="`+btnClass+` btn-success" `+btnStyle+` type="button" id="` + item.id + `"_at_auction" onclick="update_bid(`+rownum+`,false,true);">Sold At Auction</button><br/>`;
+                action_html += `<button class="`+btnClass+` btn-success ps-2 pe-2 " `+btnStyle+` type="button" id="` + item.id + `"_at_auction" onclick="update_bid(`+rownum+`,false,true);">Sold At Auction</button><br/>`;
             } else {
                 html += 'Bid ';
                 html += `<input type='number' min=0 id='bidder_` + item.id
                     + `' value="` + bidder + `" style="width: 7em"></input> @ $`
                     + `<input type='number' min=`+min_price+` id='bid_` + item.id
                     + `' value="` + final_price + `" style="width: 7em"></input><br/>`
-                action_html += `<button class="`+btnClass+` btn-primary" `+btnStyle+` type="button" id="` + item.id + `"_update_bid" onclick="update_bid(`+rownum+`);">Bid</button>`;
-                action_html += `<button class="`+btnClass+` btn-secondary" `+btnStyle+` type="button" id="` + item.id + `"_to_auction" onclick="update_bid(`+rownum+`,true);">To Auction</button>`;
+                action_html += `<button class="`+btnClass+` btn-primary ps-2 pe-2 " `+btnStyle+` type="button" id="` + item.id + `"_update_bid" onclick="update_bid(`+rownum+`);">Bid</button>`;
+                action_html += `<button class="`+btnClass+` btn-secondary ms-2 ps-2 pe-2 " `+btnStyle+` type="button" id="` + item.id + `"_to_auction" onclick="update_bid(`+rownum+`,true);">To Auction</button>`;
             }
             action_html += "<br/>"
             break;
@@ -452,14 +457,14 @@ function draw_cart_row(rownum) {
             action_html += '<br/>';
             if(show_location) {
               if(item.need_location) {
-                action_html += `<button class="`+btnClass+` btn-primary" `+btnStyle+` type="button" id="` + item.id + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
+                action_html += `<button class="`+btnClass+` btn-primary ps-2 pe-2 " `+btnStyle+` type="button" id="` + item.id + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
                 } else {
-                action_html += `<button class="`+btnClass+` btn-info" `+btnStyle+` type="button" id="` + item.id + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
+                action_html += `<button class="`+btnClass+` btn-info ps-2 pe-2 " `+btnStyle+` type="button" id="` + item.id + `"_update_loc" onclick="update_loc(`+rownum+`);">Update Loc</button>`;
               }
             }
             action_html += '<br/>';
             if(item.need_count) {
-                action_html += `<button class="`+btnClass+` btn-primary" `+btnStyle+` type="button" id="` + item.id + `"_confirm_count" onclick="confirm_count(`+rownum+`);">Confirm Qty</button>`;
+                action_html += `<button class="`+btnClass+` btn-primary ps-2 pe-2 " `+btnStyle+` type="button" id="` + item.id + `"_confirm_count" onclick="confirm_count(`+rownum+`);">Confirm Qty</button>`;
             }
             action_html += '<br/>';
             break;

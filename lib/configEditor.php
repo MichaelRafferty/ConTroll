@@ -346,6 +346,7 @@ function updateConfig($user_perid, $fields) : string {
 
 function outputLine($fileHandle, $sectionName, $fieldName, $blank, $contents) : string {
     $status = '';
+    $contents=trim($contents);
     if ($contents != null && $contents != '') {
         fwrite($fileHandle, $fieldName . '="' . str_replace('"', '\\"', $contents) . '"' . PHP_EOL);
     } else {

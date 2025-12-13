@@ -10,6 +10,7 @@ class AuctionItemRegistration {
     #region = 0;
     #numItems = null;
     #maxItems = null;
+    #allowQuickSale = true;
     #ownerName = '';
     #ownerEmail = '';
     #regionName = '';
@@ -100,6 +101,7 @@ class AuctionItemRegistration {
         this.#ownerName = data.inv.ownerName;
         this.#ownerEmail = data.inv.ownerEmail;
         this.#regionName = data.inv.name;
+        this.#allowQuickSale = data.inv.allowQuickSale == 'Y';
         this.#numItems = data.itemCount;
         if (this.#maxItems == 0)
             this.#maxItems = 999999;
@@ -605,7 +607,7 @@ class AuctionItemRegistration {
                 {title: "Minimim Bid", field: "min_price", headerWordWrap: true, width: 100, hozAlign: "right",
                     editor: 'number', editable:artItemEditCheck, editorParams: {min: 1}, formatter: "money",
                     formatterParams: {decimal: '.', thousand: ',', symbol: '$', negativeSign: true}, },
-                {title: "Quick Sale", field: "sale_price", headerWordWrap: true, width: 100, hozAlign: "right",
+                {title: "Quick Sale", field: "sale_price", headerWordWrap: true, width: 100, hozAlign: "right", visible: this.#allowQuickSale,
                     editor: 'number', editable:artItemEditCheck, editorParams: {min: 1}, formatter: "money",
                     formatterParams: {decimal: '.', thousand: ',', symbol: '$', negativeSign: true}, },
                 {title: "Status", field: "status", width: 200, },

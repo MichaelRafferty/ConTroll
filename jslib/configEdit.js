@@ -116,15 +116,13 @@ class ConfigEditor {
     drawParam(sectionName, param) {
         // R: role
         let editable = param.role.editable == 1;
-        //editable=false;
         let visible = param.role.vis == 'V' || editable;
-        //visible=false;
+        if (!visible)
+            return '';
+
         let visibleStart = visible ? '' : '<span style="color: lightgrey;">';
         let visibleEnd = visible ? '' : '</span>';
         let html = '';
-
-        if (!visible)
-            return;
 
         // HR check
         if (param.hasOwnProperty('hr')) {
@@ -210,12 +208,21 @@ class ConfigEditor {
                 break;
 
             case 'l': // list (option)
+                let inheritFound = false;
                 html = '<select ' + id + ' onchange="configEditor.changed(' + "'" + name + "'" + ');">\n';
                 let options = modifier.substring(1).split(',');
                 for (let option of options) {
-                    html += '<option value="' + option + '"' + (value == option ? ' selected' : '') + '>' + option + '</option>';
+                    let optItem = option.split('~');
+                    let optname = optItem[0];
+                    let optvalue= optname;
+                    if (optItem.length > 1)
+                        optvalue = optItem[1];
+                    if (optname.startsWith('-'))
+                        inheritFound = true;
+
+                    html += '<option value="' + optvalue + '"' + (value == optvalue.trim() ? ' selected' : '') + '>' + optname + '</option>';
                 }
-                if (value == '') {
+                if (value == '' && !inheritFound) {
                     html += '<option value="" selected>--</option>\n';
                 }
                 html += '</select>';
@@ -308,7 +315,13 @@ class ConfigEditor {
             this.#fieldList[name] = field;
         }
 
-        let value = field.value;
+        let value = '';
+        if (field == undefined) {
+            console.log('No field for parameter' + name);
+            console.log(param);
+        } else {
+            value = field.value;
+        }
         if (typeof value === "string")
             value = value.trim();
         if (value == undefined || value == null) {

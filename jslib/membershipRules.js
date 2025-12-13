@@ -56,7 +56,7 @@ class MembershipRules {
             if (mbrRow.memType == 'full' && mbrRow.toDelete != true) {
                 if (mbrRow.conid == conid)
                     this.#numFull++;
-                else
+                else if (mbrRow.conid == conid + 1)
                     this.#numFullYearAhead++;
             }
 
@@ -133,11 +133,11 @@ class MembershipRules {
                 }
                 return false; // only one full membership is allowed, unless it's an upgrade category one, let the fixed rules filter that issue
             }
-            if (mem.memType == 'full' && this.#numFullYearAhead > 0 && mem.conid != this.#conid) {
+            if (mem.memType == 'full' && this.#numFullYearAhead > 0 && mem.conid == this.#conid + 1) {
                 if (this.#debug & 8) {
-                    console.log("testMembership Implicit: return false-only one full membership for next year is allowed");
+                    console.log("testMembership Implicit: return false-only one yearahead membership for next year is allowed");
                 }
-                return false; // only one full membership for next year is allowed
+                return false; // only one full yearahead membership for next year is allowed
             }
 
             // 2. if full, no one-day, if one-day, no full
@@ -174,7 +174,7 @@ class MembershipRules {
                     //      memType == Oneday AND multiOneDay = 1 (qllow multiple  different one days), check if this one already exists exactly
                     if (mem.memType != 'oneday' || this.#multiOneDay == 0) {  // this is the first two cases
                         item = this.findCatInCart(mem.memCategory, this.#memberships);
-                        if (item != null && item != mem) { // for delete/remove, are we searching for ourselves, if so, it's allowed
+                        if (item != null && item != mem && item.conid == mem.conid) { // for delete/remove, are we searching for ourselves, if so, it's allowed
                             if (this.#debug & 8) {
                                 console.log("testMembership Implicit: return false-only one allowed and one of this memCategory is in the list already");
                             }

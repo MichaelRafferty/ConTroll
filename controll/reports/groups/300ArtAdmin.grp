@@ -30,6 +30,14 @@
 	template=artInventory.rpt
 	auth=art_control
 	type=rpt
+[170UnpickedupArt]
+    name='Unpicked Up Art'
+	description='Bid/Sold art items that have not yet been picked up or paid for'
+	template=artUnpickedUp.rpt
+	auth=art_control
+	type=rpt
+	P001="prompt/~/conid/~/Convention ID: /~/Enter the convention ID/~/#con.id#"
+    P002="prompt/~/region/~/Exhibits Region Short Name: /~/Enter the region/~/%"
 [200ArtSales]
     name='Artist Sales'
 	description='Total Sales by Artist'
@@ -38,7 +46,7 @@
 	type=rpt
 	P001="prompt/~/conid/~/Convention ID: /~/Enter the convention ID/~/#con.id#"
     P002="prompt/~/region/~/Exhibits Region Short Name: /~/Enter the region/~/%"
-[200ArtSalesByItem]
+[210ArtSalesByItem]
     name='Artist Sales By Item'
 	description='Sales by Artist Per Item'
 	template=artSalesByItem.rpt

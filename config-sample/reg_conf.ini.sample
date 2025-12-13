@@ -207,6 +207,7 @@ website="https://conname.org"
 ;; P:Full URL of the registration info website
 ;; H:Where on the convention website is the registration information page, not the ConTroll registration server.
 ;; H+This entry is just the override of the entry in the Global Section and can be omitted.
+;; H+Set it to blank to inherit the default entry in the Global Section.
 ;; D:h
 ;; B:O
 ; regpage = the page on the con's website that explains the registation rules and process
@@ -299,7 +300,7 @@ onedaycoupons=0 ; allow onedays for coupon usage
 ;; H+all = show all customtext, even the default messages
 ;; H+production = suppress the 'default' placeholder messages (an alias for this is nodefault)
 ;; H+none = supporess all custom text
-;; D:l:production,all,none
+;; D:l:-inherit from global-~ ,production,all,none
 ;; B:O
 ;customtext
 ; appears in each program section based on program name
@@ -315,7 +316,7 @@ onedaycoupons=0 ; allow onedays for coupon usage
 ;; H+all = all = require all fields: first, last, addr, city, st, zip, country, email
 ;; H+addr = first, addr, city, st, zip, country, email
 ;; H+first = require only first name: first, country, email
-;; D:l:all,addr,first
+;; D:l:-inherit from global-~,all,addr,first
 ;; B:O
 ;;; required person field sets
 ;   all = require all fields: first, last, addr, city, st, zip, country, email
@@ -380,7 +381,7 @@ noNewDays=
 ;; H+all = show all customtext, even the default messages
 ;; H+production = suppress the 'default' placeholder messages (an alias for this is nodefault)
 ;; H+none = supporess all custom text
-;; D:l:production,all,none
+;; D:l:-inherit from global-~ ,production,all,none
 ;; B:O
 ;;; customtext
 ; appears in each program section based on program name
@@ -466,7 +467,7 @@ precon=0
 ;; H+all = show all customtext, even the default messages
 ;; H+production = suppress the 'default' placeholder messages (an alias for this is nodefault)
 ;; H+none = supporess all custom text
-;; D:l:production,all,none
+;; D:l:-inherit from global-~ ,production,all,none
 ;; B:O
 ;;; customtext
 ; appears in each program section based on program name
@@ -621,7 +622,7 @@ artcontrolsort=type
 ;; H+all = show all customtext, even the default messages
 ;; H+production = suppress the 'default' placeholder messages (an alias for this is nodefault)
 ;; H+none = supporess all custom text
-;; D:l:production,all,none
+;; D:l:-inherit from global-~ ,production,all,none
 ;; B:O
 ;;; overrides
 ;;; customtext
