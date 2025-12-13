@@ -684,6 +684,14 @@ class Portal {
             }
         }
 
+        // age is always required
+        if (person.age === undefined || person.age == '') {
+            valid = false;
+            $('#age').addClass('need');
+        } else {
+            $('#age').removeClass('need');
+        }
+
         // now verify required policies
         if (policies) {
             this.#newPolicies = URLparamsToArray($('#editPolicies').serialize());
