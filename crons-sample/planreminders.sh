@@ -1,6 +1,6 @@
 PHPPATH=/var/nfph-opt/alt/php83/usr/bin
 PATH=$PHPPATH:$PATH:$HOME/.local/bin:$HOME/bin
-TZ='America/Los_Angeles'
+TZ='America/New_York'
 
 export PATH TZ
 
