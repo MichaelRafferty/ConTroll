@@ -252,12 +252,13 @@ function build_table(tableData) {
 }
 
 function find_item(action) {
+    console.log(action);
     var artist = artist_field.value;
 
     var script = 'scripts/artInventory_getItem.php';
 
     $.ajax({
-        data: { artist: artist },
+        data: { artist: artist, region: region, action: action },
         method: "POST",
         url: script,
         success: function(data, textStatus, jqXhr) {
