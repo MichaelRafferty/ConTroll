@@ -619,7 +619,7 @@ class exhibitssetup {
                 { title: "Mail-in Max Units", field: "mailinMaxUnits", headerSort: true, width: 100, headerWordWrap: true, editor: "input" },
                 { title: "&bigstar;Need W9", field: "needW9", headerSort: false, width: 80, headerWordWrap: true, validator: "required",
                     editor: "list", editorParams: { values: ['Y', 'N'] }, },
-                { title: "&bigstar;Uses Inventory Mgmt", field: "usesInventory", headerSort: false, width: 90, headerWordWrap: true, validator: "required",
+                { title: "&bigstar;Uses Inventory Mgmt", field: "usesInventory", headerSort: false, width: 100, headerWordWrap: true, validator: "required",
                     editor: "list", editorParams: { values: ['Y', 'N'] }, },
                 { title: "Max Inv Items", field: "maxInventory", width: 70, headerSort: false, headerWordWrap: true, editor: "number" },
                 { title: "&bigstar;Allow Quick Sale", field: "allowQuickSale", headerSort: false, width: 90, headerWordWrap: true, validator: "required",
