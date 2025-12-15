@@ -2,6 +2,7 @@
 require_once('../lib/base.php');
 require_once('../../lib/log.php');
 require_once('../../lib/policies.php');
+require_once('../../lib/interests.php');
 
 // use common global Ajax return functions
 global $returnAjaxErrors, $return500errors;
@@ -53,13 +54,14 @@ $response['personId'] = $loginId;
 
 // insert into newPerson
 $iQ = <<<EOS
-insert into newperson (last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, badgeNameL2, legalName, pronouns, address, addr_2, city, 
-state, zip,
-                       country, updatedBy, lastVerified)
+insert into newperson (last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, badgeNameL2,
+    legalName, pronouns, address, addr_2, city, state, zip,  country,
+    currentAgeType, currentAgeConId, updatedBy, lastVerified)
 values (IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), 
-        IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), ?, NOW());
+        IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''),
+        ?, ?, ?, NOW());
 EOS;
-$typeStr = 'ssssssssssssssssi';
+$typeStr = 'sssssssssssssssssii';
 $valArray = array(
     trim($person['lname']),
     trim($person['mname']),
@@ -77,6 +79,8 @@ $valArray = array(
     trim($person['state']),
     trim($person['zip']),
     trim($person['country']),
+    $person['age'],
+    $conid,
     $loginId
 );
 $personId = dbSafeInsert($iQ, $typeStr, $valArray);
@@ -91,11 +95,14 @@ $response['newPersonId'] = $personId;
 $policy_upd =  updateMemberPolicies($conid, $personId, 'n', $personId, 'n');
 $policy_msg = "<br/>$policy_upd policy responses updated";
 
+$interest_upd = updateMemberInterests($conid, $personId, 'n', $personId, 'n');
+$interest_msg = "<br/>$interest_upd interest responses updated";
+
 $response['message'] = "New person successfully added";
 setSessionVar("id", $personId);
 setSessionVar("idType", 'n');
 logWrite(array('con'=>$con['name'], 'action' => 'Create new person on login', 'person' => array('n', $personId), 'newperson' => $person,
-               'PolicyUpd' => $policy_msg));
+               'PolicyUpd' => $policy_msg, 'InterestUpd' => $interest_msg));
 
 if ($validationType == 'token') {
     $updSQL = <<<EOS

@@ -7,6 +7,7 @@ require_once("lib/sessionManagement.php");
 require_once('../lib/portalForms.php');
 require_once("../lib/profile.php");
 require_once("../lib/policies.php");
+require_once("../lib/interests.php");
 require_once("../lib/googleOauth2.php");
 
 global $config_vars;
@@ -18,6 +19,8 @@ $condata = get_con();
 
 $config_vars = array();
 $config_vars['label'] = $con['label'];
+$config_vars['conid'] = $conid;
+$config_vars['startdate'] = $condata['startdate'];
 $config_vars['debug'] = getConfValue('debug', 'portal', 0);
 $config_vars['uri'] = $portal_conf['portalsite'];
 $config_vars['required'] = getConfValue('reg', 'required', 'addr');
@@ -231,7 +234,7 @@ if (isSessionVar('id')) {
             } else {
                 if (array_key_exists('id', $match) && $loginId != $match['id']) {
                     // this is a switch account request
-                    if (array_key_exists('banned', $match) && $match['banned'] != 'N') {
+                    if (array_key_exists('banned', $match) && ($match['banned'] != 'N' || $match['deceased'] == 'Y')) {
                         header('location:portal.php?type=e&messageFwd=' .
                                urlencode("There is an issue with that account, please contact registration at " .
                                          $con['regadminemail'] . ' for assistance.'));

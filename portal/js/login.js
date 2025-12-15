@@ -39,6 +39,9 @@ class Login {
     #badgeNameL2Field = null;
     #contactField = null;
     #shareField = null;
+    #ageField = null;
+    #ageDiv = null;
+    #ageText = null;
     #uspsDiv= null;
     #sendLinkBtn = null;
     #tokenEmailDiv = null
@@ -78,6 +81,9 @@ class Login {
             this.#phoneField = document.getElementById("phone");
             this.#badgenameField = document.getElementById("badge_name");
             this.#badgenameField = document.getElementById("badgeNameL2");
+            this.#ageField = document.getElementById("age");
+            this.#ageText = document.getElementById("agetext");
+            this.#ageDiv = document.getElementById("agediv");
             this.#contactField = document.getElementById("contact");
             this.#shareField = document.getElementById("share");
             this.#uspsDiv = document.getElementById("uspsblock");
@@ -279,6 +285,18 @@ class Login {
         this.#email1Field.innerHTML = email;
         this.#email = email;
         this.#validationType = validationType;
+        // now clear the input fields
+        $('#fname').removeClass('need');
+        $('#lname').removeClass('need');
+        $('#addr').removeClass('need');
+        $('#city').removeClass('need');
+        $('#state').removeClass('need');
+        $('#zip').removeClass('need');
+        $('#age').removeClass('need');
+        this.#ageField.value = '';
+        this.#ageDiv.hidden = true;
+        this.#ageField.hidden = false;
+        this.#ageText.hidden = true;
 
         if (this.#uspsDiv) {
             this.#editPersonSubmitBtn.innerHTML = 'Validate Address and Create Portal Account for ' + email;
@@ -389,6 +407,14 @@ class Login {
             } else {
                 $('#zip').removeClass('need');
             }
+        }
+
+        // age is always required
+        if (person.age === undefined || person.age == '') {
+            valid = false;
+            $('#age').addClass('need');
+        } else {
+            $('#age').removeClass('need');
         }
 
         // now verify required policies
@@ -548,6 +574,7 @@ class Login {
         var data = {
             person: person,
             newPolicies: JSON.stringify(URLparamsToArray($('#editPolicies').serialize())),
+            newInterests: JSON.stringify(URLparamsToArray($('#editInterests').serialize())),
             currentPerson: -12345,
             currentPersonType: 'n',
             source: 'login',

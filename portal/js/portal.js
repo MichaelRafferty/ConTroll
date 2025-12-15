@@ -407,7 +407,8 @@ class Portal {
         }
 
         // now fill in the fields
-        this.#epHeaderDiv.innerHTML = '<strong>Editing: ' + this.#fullName + ' (' + person.email_addr + ')</strong>';
+        let email = person.email_addr != '' ? person.email_addr : '<i>No Email Address Provided</i>';
+        this.#epHeaderDiv.innerHTML = '<strong>Editing: ' + this.#fullName + ' (' + email + ')</strong>';
         this.#epPersonIdField.value = post.getId;
         this.#epPersonTypeField.value = post.getType;
         this.#fnameField.value = person.first_name;

@@ -73,9 +73,13 @@ function updateMemberInterests($conid, $personId, $personType, $loginId, $loginT
     }
 
     $newInterests = json_decode($_POST['newInterests'], true);
-    $existingInterests = json_decode($_POST['existingInterests'], true);
-    if ($existingInterests == null)
-        $existingInterests = array ();
+    if (array_key_exists('existingInterests', $_POST)) {
+        $existingInterests = json_decode($_POST['existingInterests'], true);
+        if ($existingInterests == null)
+            $existingInterests = array ();
+    }
+    else
+        $existingInterests = array();
 
 // find the differences in the interests to update the record
 

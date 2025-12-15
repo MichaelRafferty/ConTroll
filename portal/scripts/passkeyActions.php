@@ -40,7 +40,7 @@ switch ($action) {
         // try emulating their method
         $createArgs = json_encode(createWebauthnArgs($userIdHex, $email, $_REQUEST['displayName'], $source));
         header('Content-Type: application/json');
-        print $createArgs;
+        prearint $createArgs;
         exit();
 
     case 'save':
@@ -123,7 +123,7 @@ EOS;
                 $matchQ = <<<EOS
 SELECT 'p' AS idType, id, email_addr
 FROM perinfo
-WHERE email_addr = ? AND banned = 'N'
+WHERE email_addr = ? AND banned = 'N' AND deceased = 'N'
 UNION SELECT 'n' AS idType, id, email_addr
 FROM newperson
 WHERE email_addr = ? AND perid IS NULL

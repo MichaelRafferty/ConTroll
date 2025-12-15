@@ -42,7 +42,7 @@ function drawVerifyPersonInfo($policies) : void {
 }
 
 // draw_editPerson - draw the verify/update form for the Person
-function draw_editPersonModal($source, $policies, $ageList, $ageByDate) : void {
+function draw_editPersonModal($source, $policies, $ageList, $ageByDate, $interests = null) : void {
     $usps = get_conf('usps');
     $useUSPS = false;
     if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
@@ -70,8 +70,20 @@ function draw_editPersonModal($source, $policies, $ageList, $ageByDate) : void {
                             <input type='hidden' name='type' id='epPersonType'/>
 <?php
     drawEditPersonBlock($con, $useUSPS, $policies, $source, true, false, $ageByDate, [], $ageList);
-?>
+    if ($interests) { ?>
                         </form>
+                        <div class='row'>
+                        <div class='col-sm-12'>
+                            <hr/>
+                        </div>
+                    </div>
+<?php
+        drawVerifyInterestsBlock($interests, false);
+    } else {
+        echo "</form>\n";
+    }
+?>
+
                         <div class='row'>
                             <div class="col-sm-12" id='epMessageDiv'></div>
                         </div>
@@ -89,13 +101,15 @@ function draw_editPersonModal($source, $policies, $ageList, $ageByDate) : void {
 
 //// step 3 - Interests
 // drawVerifyInterestsBLock - non modal version of validate interests
-function drawVerifyInterestsBlock($interests) : void {
+function drawVerifyInterestsBlock($interests, $buttons=true) : void {
     ?>
     <form id='editInterests' class='form-floating' action='javascript:void(0);'>
         <?php
         drawInterestList($interests);
         ?>
     </form>
+    <?php
+    if ($buttons) { ?>
     <div class="row mt-3">
         <div class='col-sm-auto'>
             <button class='btn btn-sm btn-secondary' onclick='membership.gotoStep(2, true);'>Return to Personal Information Verification</button>
@@ -105,6 +119,7 @@ function drawVerifyInterestsBlock($interests) : void {
         </div>
     </div>
     <?php
+    }
 }
 
 //// step 4 memberships
