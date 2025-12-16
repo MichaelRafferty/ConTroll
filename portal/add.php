@@ -150,6 +150,9 @@ drawVerifyPersonInfo($policies, $condata['startdate'], $ageList);
         ?>
         <div class='row'>
             <div class='col-sm-auto mt-3'>
+                <button class='btn btn-sm btn-secondary' id='cancelAdd' onclick='add.cancelAdd();'>Cancel Adding the New Person</button>
+            </div>
+            <div class='col-sm-auto mt-3'>
                 <button class='btn btn-sm btn-primary' id='addNewPerson' onclick='add.addPerson();'>Add New Person to Your Account</button>
             </div>
         </div>

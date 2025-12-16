@@ -47,7 +47,7 @@ class Add {
     #verifyPersonDiv = null;
     #getNewMembershipDiv = null;
     #currentStep = 1;
-    #leaveBeforeChanges = true;
+    #leaveBeforeChanges = false;
     #newEmail = null;
     #newEmailField = null;
     #debug = 0;
@@ -332,14 +332,10 @@ class Add {
             this.#uspsDiv.innerHTML = '';
             this.#uspsDiv.classList.remove('border', 'border-4', 'border-dark', 'rounded');
         }
-    }
+     }
 
     // goto profile: switch from email to profile
     gotoProfile() {
-        var nowD = new Date();
-        var now = nowD.getTime();
-        var dif = (now - this.#lastVerified);
-
         clear_message();
 
         // stop listening for enter key for new email address
@@ -348,9 +344,12 @@ class Add {
         // switch visible sections
         this.#emailDiv.hidden = true;
         this.#verifyPersonDiv.hidden = false;
-        clear_message();
         let focusField = this.#fnameField;
         setTimeout(() => { focusField.focus({focusVisible: true}); }, 600);
+        window.addEventListener('beforeunload', event => {
+            add.confirmExit(event);
+        });
+        this.#leaveBeforeChanges = true;
     }
 
     // verifyAddress - verify with USPS if defined or go to step 3
@@ -582,17 +581,27 @@ class Add {
         this.verifyAddress(0);
     }
 
+    // cancel add - cancel the add without doing an are you sure...
+    cancelAdd() {
+        this.#leaveBeforeChanges = false;
+        window.location="portal.php";
+    }
+
+    // add the new person to the account, and if successful ask if they want to add memberships
+    addPerson() {
+         console.log("add person called");
+    }
+
     // if they haven't used the save/return button, ask if they want to leave
     confirmExit(event) {
         if (this.#leaveBeforeChanges) {
-            var buttonName = 'missing'
             event.preventDefault(); // if the browser lets us set our own variable
-            if (!confirm("You are leaving without saving any changes you have made.\nPlease go through all four steps and use the " +
-                buttonName + " button.\nDo you wish to leave anyway discarding any potential changes?")) {
+            if (!confirm("You are leaving without saving any changes you have made.\n" +
+                "If you wish to save your new person, use the 'Add New Person to Your Account button.\n" +
+                "Do you wish to leave anyway discarding any potential changes?")) {
                 return false;
             }
         }
-
         return true;
     }
 }

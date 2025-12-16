@@ -606,7 +606,7 @@ class Membership {
 
         window.addEventListener('beforeunload', event => {
             membership.confirmExit(event);
-        })
+        });
 
         this.gotoStep(2, false);
     }
