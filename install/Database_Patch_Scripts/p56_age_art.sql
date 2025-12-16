@@ -49,10 +49,12 @@ ALTER TABLE `artItemsHistory` MODIFY COLUMN `status`
  * portal custom text changes for rewrite
  */
 INSERT INTO controllAppPages(appName,appPage,pageDescription)
-VALUES ('portal', 'add', 'Add New Member to a Portal Account or add new portal account');
+VALUES ('portal', 'add', 'Add New Member to a Portal Account'),
+VALUES ('portal', 'cart', 'Purchase Memberships/Items for a Portal Account');
 
-INSERT INTO controllAppSections(appName,appPage,appSection,sectionDescription)
-VALUES ('portal', 'index', 'profile', 'Profile section of add new account on login');
+INSERT INTO controllAppSections(appName,appPage,appSection,sectionDescription) VALUES
+('portal', 'index', 'profile', 'Profile section of add new account on login'),
+('portal', 'add', 'email', 'Profile section of add new account email');
 
 INSERT INTO controllAppItems(appName,appPage,AppSection,txtItem, txtItemDescription)
 VALUES ('portal', 'index', 'profile', 'email', 'Create new account profile before email address entry');
@@ -88,6 +90,11 @@ WHERE td.appName = 'portal' AND td.appPage = 'index' AND td.appSection = 'profil
 
 DELETE FROM controllTxtItems WHERE appName = 'portal' AND appPage = 'addUpgrade' AND appSection = 'main' AND txtItem = 'step0';
 DELETE FROM controllAppItems WHERE appName = 'portal' AND appPage = 'addUpgrade' AND appSection = 'main' AND txtItem = 'step0';
+
+UPDATE controllAppSections SET appPage = 'cart' where appPage = 'addUpgrade';
+
+DELETE FROM controllTxtItems where appPage = 'cart' and txtItem in ('step1', 'step2', 'step3');
+DELETE FROM controllAppItems where appPage = 'cart' and txtItem in ('step1', 'step2', 'step3');
 
 INSERT INTO patchLog(id, name) VALUES(xx, 'art, portal, et al');
 

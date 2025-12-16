@@ -750,7 +750,7 @@ if ($totalDue > 0 || $activePaymentPlans) {
     if ($info['managedByName'] == null) {
 ?>
                 <button class='btn btn-primary mx-2 p-1 h-100' type='button'
-                        onclick="window.location='<?php echo $portal_conf['portalsite']; ?>/addUpgrade.php';">
+                        onclick="window.location='<?php echo $portal_conf['portalsite']; ?>/add.php';">
                     Add Another Person and<br/>Create a New Membership for Them
                 </button>
                 <?php echo $VirtualButton;

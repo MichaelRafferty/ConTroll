@@ -1,24 +1,5 @@
 <?php
 // portalForms:  Forms used by the portal for person and membership work
-
-//// Step 1 - Age Bracket
-// drawGetAgeBracket - age bracket selection for filtering memberships
-function drawGetAgeBracket($updateName, $condata) : void {
-    $readableStartDate = date_format(date_create($condata['startdate']), 'l M j, Y');
-    ?>
-    <div class="row mt-2">
-        <div class="col-sm-12">
-            <h3 class='text-primary'>Please verify the age of <?php echo $updateName; ?> as of <?php echo $readableStartDate; ?></h3>
-        </div>
-    </div>
-    <div class="row mt-1" id="ageButtons"></div>
-    <div class="row mt-2">
-        <div id="ageBracketMsg" class="col-sm-12">Please click on the proper age bracket above to continue to the next step.</div>
-    </div>
-    <?php
-}
-
-//// Step 2 - Person
 // drawVerifyPersonInfo - non modal version of validate person information
 function drawVerifyPersonInfo($policies) : void {
     $usps = get_conf('usps');
@@ -30,14 +11,6 @@ function drawVerifyPersonInfo($policies) : void {
 <?php
     drawEditPersonBlock($con, $useUSPS, $policies, 'membership');
 ?>
-    <div class="row mt-3">
-        <div class='col-sm-auto'>
-            <button class='btn btn-sm btn-secondary' id='ageListVerBtn' onclick='membership.gotoStep(1, true);'>Return to Age Verification</button>
-        </div>
-        <div class="col-sm-auto">
-            <button class="btn btn-sm btn-primary" onclick="membership.verifyAddress();">Verify Address and move to next step</button>
-        </div>
-    </div>
 <?php
 }
 
@@ -98,31 +71,17 @@ function draw_editPersonModal($source, $policies, $ageList, $ageByDate, $interes
     </div>
 <?php
 }
-
-//// step 3 - Interests
-// drawVerifyInterestsBLock - non modal version of validate interests
-function drawVerifyInterestsBlock($interests, $buttons=true) : void {
-    ?>
+// drawVerifyInterestsBlock - non modal version of validate interests
+function drawVerifyInterestsBlock($interests) : void {
+?>
     <form id='editInterests' class='form-floating' action='javascript:void(0);'>
         <?php
         drawInterestList($interests);
         ?>
     </form>
-    <?php
-    if ($buttons) { ?>
-    <div class="row mt-3">
-        <div class='col-sm-auto'>
-            <button class='btn btn-sm btn-secondary' onclick='membership.gotoStep(2, true);'>Return to Personal Information Verification</button>
-        </div>
-        <div class="col-sm-auto">
-            <button class="btn btn-sm btn-primary" onclick="membership.saveInterests();">Save Interests and move to next step</button>
-        </div>
-    </div>
-    <?php
-    }
+<?php
 }
 
-//// step 4 memberships
 // drawGetNewMemberships - membership selection
 function drawGetNewMemberships() : void {
     ?>

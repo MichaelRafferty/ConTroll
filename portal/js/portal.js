@@ -902,14 +902,14 @@ class Portal {
     }
 
     addMembership(id, type) {
-        var addForm = '<form id="AddUpgrade" action="addUpgrade.php" method="POST">\
-            <input type="hidden" name="upgradeId" value="' + id + '">\
-            <input type="hidden" name="upgradeType" value="' + type + '">\
-            <input type="hidden" name="action" value="upgrade">\
+        var addForm = '<form id="addMembership" action="cart.php" method="POST">\
+            <input type="hidden" name="cartId" value="' + id + '">\
+            <input type="hidden" name="cartType" value="' + type + '">\
+            <input type="hidden" name="action" value="buy">\
             </form>';
         $('body').append(addForm);
-        $('#AddUpgrade').submit();
-        $('#AddUpgrade').remove();
+        $('#addMembership').submit();
+        $('#addMembership').remove();
     }
 
     // interests - edit interests for a person
