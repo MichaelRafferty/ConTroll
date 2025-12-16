@@ -1,7 +1,7 @@
 <?php
 // portalForms:  Forms used by the portal for person and membership work
 // drawVerifyPersonInfo - non modal version of validate person information
-function drawVerifyPersonInfo($policies) : void {
+function drawVerifyPersonInfo($policies, $ageByDate, $ageList) : void {
     $usps = get_conf('usps');
     $useUSPS = false;
     if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
@@ -9,7 +9,7 @@ function drawVerifyPersonInfo($policies) : void {
     $con = get_conf('con');
 ?>
 <?php
-    drawEditPersonBlock($con, $useUSPS, $policies, 'membership');
+    drawEditPersonBlock($con, $useUSPS, $policies, 'add', false, false, $ageByDate, [], $ageList)
 ?>
 <?php
 }

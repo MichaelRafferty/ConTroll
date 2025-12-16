@@ -91,6 +91,7 @@ portalPageInit('add', $info,
     var config = <?php echo json_encode($config_vars); ?>;
     var ageList = <?php echo json_encode($ageList); ?>;
     var ageListIdx = <?php echo json_encode($ageListIdx); ?>;
+    var ageByDate = <?php echo '"' . $condata['startdate'] . '"'; ?>;
     var policies = <?php echo json_encode($policies); ?>;
     var interests = <?php echo json_encode($interests); ?>;
     var emailsManaged = <?php echo json_encode($emails); ?>;
@@ -116,8 +117,8 @@ $person = null;
             </div>
         </div>
         <div class="row">
-            <div class="col-sm-auto">Enter the email address for this new person</div>
-            <div class="col-sm-auto"><input type="text" size="64", maxlength="254" id="newEmailAddr", name="newEmailAddr"></div>
+            <div class="col-sm-auto"><label for="newEmailAddr">Enter the email address for this new person</label></div>
+            <div class="col-sm-auto"><input type="text" size="64" maxlength="254" id="newEmailAddr" name="newEmailAddr"></div>
             <div class="col-sm-auto">
                 <button class="btn btn-sm btn-primary" type="button" onclick="add.checkNewEmail(0);">Check Email Address</button>
             </div>
@@ -138,7 +139,7 @@ $person = null;
         <form id='addUpgradeForm' class='form-floating' action='javascript:void(0);'>
 <?php
 outputCustomText('main/step2');
-drawVerifyPersonInfo($policies);
+drawVerifyPersonInfo($policies, $condata['startdate'], $ageList);
 ?>
             <hr/>
         </form>

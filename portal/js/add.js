@@ -54,7 +54,6 @@ class Add {
 
     // Interests items
     #interestDiv = null;
-    #oldInterests = null;
     #newInterests = null;
 
     // policy Items
@@ -97,14 +96,12 @@ class Add {
         this.#ageDiv = document.getElementById("agediv");
         this.#uspsDiv = document.getElementById("uspsblock");
 
-        if (config.action != 'new') {
-            this.#addUpdateType = config.upgradeType;
-            this.#addUpdateId = config.upgradeId;
-            this.getPersonInfo(this.#addUpdateId, this.#addUpdateType, true, false, 1);
-        } else {
-            this.getPersonInfo(config.id, config.idType, true, true, 0);
+        this.#ageDiv.hidden = true;
+        this.#ageField.hidden = false;
+        this.#ageText.hidden = true;
+
+        this.getPersonInfo(config.id, config.idType);
         }
-    }
 
 // add new person functions
 // check new email: check if this email exists
@@ -214,7 +211,7 @@ class Add {
                 </div>
             </div>
             <div class="row">
-                <div class="col-sm-auto"> Should we send them an email asking if you may manage their account?</div>
+                <div class="col-sm-auto"> Should we email them asking if you may manage their account?</div>
                 <div class="col-sm-auto">
                     <button class="btn btn-primary btn-sm" id="sendManageRequestBTN"
                         onclick="add.sendManageEmail('` + email + "'," + accountId + `);">Yes</button>
@@ -266,7 +263,7 @@ class Add {
 
 // membership add/update functions
     // getPersonInfo
-    getPersonInfo(id, type, ageButtons, newFlag, nextStep) {
+    getPersonInfo(id, type) {
         if (id == null) {
             return;
         }
@@ -276,10 +273,9 @@ class Add {
             loginType: config.idType,
             getId: id,
             getType: type,
-            newFlag: newFlag ? 1 : 0,
-            memberships: newFlag ? 'A' : 'B',
-            ageButtons: ageButtons,
-            interests: 'Y',
+            newFlag: 1,
+            memberships: 'N',
+            interests: 'N',
         }
         var script = 'scripts/getPersonInfo.php';
         $.ajax({
@@ -295,7 +291,7 @@ class Add {
                 } else {
                     if (config.debug & 1)
                         console.log(data);
-                    add.getPersonInfoSuccess(data, ageButtons, newFlag, nextStep);
+                    add.getPersonInfoSuccess(data);
                 }
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -306,83 +302,24 @@ class Add {
     }
 
     // got the person, update the modal contents
-    getPersonInfoSuccess(data, ageButtons, newFlag, nextStep) {
+    getPersonInfoSuccess(data) {
         // ok, it's legal to edit this person, now populate the fields
         this.#personInfo = data.person;
 
-        if (data.interests) {
-            this.#oldInterests = data.interests;
-        }
-        if (data.policies) {
-            this.#oldPolicies = data.policies;
-    }
-
         // now fill in the fields
-        if (newFlag) {
-            this.#fnameField.value = '';
-            this.#mnameField.value = '';
-            this.#suffixField.value = '';
-            this.#legalNameField.value = '';
-            this.#pronounsField.value = '';
-            this.#email1Field.innerHTML = '';
-            this.#phoneField.value = '';
-            this.#badgenameField.value = '';
-            this.#personInfo.personType = 'n';
-            this.#personInfo.id = '-1';
-            this.#lastVerified = 0;
-        } else {
-            // person fields
-            var email_addr = this.#personInfo.email_addr;
-            if (this.#newEmail != null)
-                email_addr = this.#newEmail;
-            this.#fnameField.value = this.#personInfo.first_name;
-            this.#mnameField.value = this.#personInfo.middle_name;
-            this.#suffixField.value = this.#personInfo.suffix;
-            this.#legalNameField.value = this.#personInfo.legalName;
-            this.#pronounsField.value = this.#personInfo.pronouns;
-            this.#email1Field.innerHTML = email_addr;
-            this.#phoneField.value = this.#personInfo.phone;
-            this.#badgenameField.value = this.#personInfo.badge_name;
-            this.#badgeNameL2Field.value = this.#personInfo.badgeNameL2;
-            this.#auHeader.innerHTML = 'Purchase/Upgrade memberships or other items for ' + this.#personInfo.fullName;
-            this.#epHeader.innerHTML = 'Verifying personal information for ' + this.#personInfo.fullName + ' (' + email_addr + ')';
-            if (this.#personInfo.lastVerified != null) {
-                var lvd = new Date(this.#personInfo.lastVerified);
-                this.#lastVerified = lvd.getTime();
-            } else {
-                this.#lastVerified = 0;
-            }
 
-            // policies
-            if (this.#oldPolicies) {
-                for (var row in this.#oldPolicies) {
-                    var policy = this.#oldPolicies[row];
-                    var id = document.getElementById('p_' + policy.policy);
-                    if (id) {
-                        if (policy.response) {
-                            id.checked = policy.response == 'Y';
-                        } else {
-                            id.checked = policy.defaultValue == 'Y';
-                        }
-                    }
-                }
-            }
+        this.#fnameField.value = '';
+        this.#mnameField.value = '';
+        this.#suffixField.value = '';
+        this.#legalNameField.value = '';
+        this.#pronounsField.value = '';
+        this.#email1Field.innerHTML = '';
+        this.#phoneField.value = '';
+        this.#badgenameField.value = '';
+        this.#personInfo.personType = 'n';
+        this.#personInfo.id = '-1';
+        this.#lastVerified = 0;
 
-            // interests
-            if (this.#oldInterests) {
-                for (var row in this.#oldInterests) {
-                    var interests = this.#oldInterests[row];
-                    var id = document.getElementById('i_' + interests.interest);
-                    if (id) {
-                        if (interests.interested) {
-                            id.checked = interests.interested == 'Y';
-                        } else {
-                            id.checked = false;
-                        }
-                    }
-                }
-            }
-        }
         this.#newInterests =  URLparamsToArray($('#editInterests').serialize());
         this.#lnameField.value = this.#personInfo.last_name;
         this.#addrField.value = this.#personInfo.address;
