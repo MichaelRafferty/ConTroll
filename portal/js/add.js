@@ -148,7 +148,7 @@ class Add {
             email: newEmail,
             action: 'exist',
         }
-        var script='scripts/checkExistance.php';
+        let script='scripts/checkExistance.php';
         $.ajax({
             method: 'POST',
             url: script,
@@ -441,6 +441,14 @@ class Add {
             }
         }
 
+        // age is always required
+        if (person.age === undefined || person.age == '') {
+            valid = false;
+            $('#age').addClass('need');
+        } else {
+            $('#age').removeClass('need');
+        }
+
         // now verify required policies
         if (policies) {
             this.#newPolicies = URLparamsToArray($('#editPolicies').serialize());
@@ -469,7 +477,7 @@ class Add {
 
         // Check USPS for standardized address
         if (this.#uspsDiv != null && person.country == 'USA' && person.city != '' && person.state != '/r' && validateUSPS == 0) {
-            var script = "scripts/uspsCheck.php";
+            let script = "scripts/uspsCheck.php";
             $.ajax({
                 url: script,
                 data: person,
@@ -483,13 +491,53 @@ class Add {
                     return true;
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
-                    showAjaxError(jqXHR, textStatus, errorThrown, 'epMessageDiv');
+                    showAjaxError(jqXHR, textStatus, errorThrown);
                     return false;
                 },
             })
             return false;
         }
 
+        // ok, save off the profile
+        clear_message();
+        let data = {
+            person: URLparamsToArray($('#addUpgradeForm').serialize()),
+            newPolicies: JSON.stringify(URLparamsToArray($('#editPolicies').serialize())),
+            newInterests: JSON.stringify(URLparamsToArray($('#editInterests').serialize())),
+            currentPerson: config.id,
+            currentPersonType: config.idType,
+            source: 'add',
+        }
+        if (config.debug & 1)
+            console.log(data);
+
+        let script = 'scripts/createNewperson.php';
+        $.ajax({
+            method: 'POST',
+            url: script,
+            data: data,
+            success: function (data, textStatus, jqXhr) {
+                add.addNewpersonSuccess(data);
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showAjaxError(jqXHR, textStatus, errorThrown);
+                return false;
+            },
+        });
+    }
+
+    addNewpersonSuccess(data){
+        if (data.status == 'error') {
+            show_message(data.message, 'error');
+        } else {
+            if (config.debug & 1)
+                console.log(data);
+            show_message(data.message);
+            if (data.newPersonId > 0) {
+                this.#leaveBeforeChanges = false;
+                window.location = "portal.php";
+            }
+        }
         return true;
     }
 
@@ -589,7 +637,7 @@ class Add {
 
     // add the new person to the account, and if successful ask if they want to add memberships
     addPerson() {
-         console.log("add person called");
+        this.verifyAddress(0);
     }
 
     // if they haven't used the save/return button, ask if they want to leave

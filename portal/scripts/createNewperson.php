@@ -35,13 +35,20 @@ if (array_key_exists('validation', $_POST) && array_key_exists('valEmail', $_POS
     $validationEmail = '';
 }
 
-if (!array_key_exists('source', $_POST) || $_POST['source'] != 'login' || $currentPerson != -12345) {
+if (!array_key_exists('source', $_POST) || ($_POST['source'] != 'login' && $_POST['source'] != 'add') || ($currentPerson != -12345 && $currentPerson < 1)) {
     ajaxSuccess(array('status'=>'error', 'message'=>'Parameter error - get assistance'));
     exit();
 }
 
+$managedBy = null;
+$managedByNew = null;
 if ($currentPerson != -12345) {
     $loginId = getSessionVar('id');
+    $loginType = getSessionVar('idType');
+    if ($loginType == 'n')
+        $managedByNew = $loginId;
+    else
+        $managedBy = $loginId;
 } else {
     $loginId = 4;
 }
@@ -56,12 +63,12 @@ $response['personId'] = $loginId;
 $iQ = <<<EOS
 insert into newperson (last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, badgeNameL2,
     legalName, pronouns, address, addr_2, city, state, zip,  country,
-    currentAgeType, currentAgeConId, updatedBy, lastVerified)
+    currentAgeType, currentAgeConId, managedBy, managedByNew, updatedBy, lastVerified)
 values (IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), 
         IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''),
-        ?, ?, ?, NOW());
+        ?, ?, ?, ?, ?, NOW());
 EOS;
-$typeStr = 'sssssssssssssssssii';
+$typeStr = 'sssssssssssssssssiiii';
 $valArray = array(
     trim($person['lname']),
     trim($person['mname']),
@@ -81,6 +88,8 @@ $valArray = array(
     trim($person['country']),
     $person['age'],
     $conid,
+    $managedBy,
+    $managedByNew,
     $loginId
 );
 $personId = dbSafeInsert($iQ, $typeStr, $valArray);
@@ -99,8 +108,10 @@ $interest_upd = updateMemberInterests($conid, $personId, 'n', $personId, 'n');
 $interest_msg = "<br/>$interest_upd interest responses updated";
 
 $response['message'] = "New person successfully added";
-setSessionVar("id", $personId);
-setSessionVar("idType", 'n');
+if ($loginId < 5) {
+    setSessionVar("id", $personId);
+    setSessionVar("idType", 'n');
+}
 logWrite(array('con'=>$con['name'], 'action' => 'Create new person on login', 'person' => array('n', $personId), 'newperson' => $person,
                'PolicyUpd' => $policy_msg, 'InterestUpd' => $interest_msg));
 
