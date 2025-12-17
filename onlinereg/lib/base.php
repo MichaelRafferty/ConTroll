@@ -49,6 +49,7 @@ function ol_page_init($title, $js = '') {
     <script type='text/javascript' src="$jquijs"></script>
     <script type='text/javascript' src="jslib/global.js?v=$globalJSversion"></script>
     <script type='text/javascript' src="jslib/coupon.js?v=$libJSversion"></script>
+    <script type='text/javascript' src="jslib/profile.js?v=$libJSversion"></script>
     <script type='text/javascript' src="javascript/store.js?v=$onlineregJSversion"></script>
 EOF;
     if ($js != '') {

@@ -188,7 +188,7 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
         </div>
         <div class="row mt-2" id='<?php echo $idPrefix . 'agediv'; ?>'>
             <div class="col-sm-12"><p>
-                Your age bracked is locked to the memberships you have in your account for this convention year.
+                Your age bracket is locked to the memberships you have in your account for this convention year.
                 You will need to delete any unpaid memberships in this age bracket to change your bracket.
                 If you have any paid or plan memberships in this age bracket, contact Registration at
                 <a href="mailto:<?php echo escape_quotes($con['regemail']); ?>"><?php echo $con['regemail']; ?></a> for assistance.</p>

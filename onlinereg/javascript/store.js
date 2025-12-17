@@ -32,108 +32,22 @@ var chargeCart = null;
 // usps related fields
 var formDataSave= null;
 var uspsAddress = null;
-var uspsDiv = null;
+var hasUSPS = false;
 var addToCartBtn = null;
 var countryField = null;
+
+var profile = null;
 
 // process the form for validation and add to the badge array if valud
 function process(formRef) {
     var valid = true;
-    var formData = URLparamsToArray($(formRef).serialize(), true);
+    var formData = URLparamsToArray($('#' + formRef).serialize(), true);
     var policyData = URLparamsToArray($('#editPolicies').serialize(), true);
-    var message = "Please correct the items highlighted in red and validate again.";
     var required = config.required;
 
     clear_message('addMessageDiv');
-    // validation
-    // emails must not be blank and must match
-    if (formData.email1 == '' || formData.email2 == '' || formData.email1 != formData.email2) {
-        $('#email1').addClass('need');
-        $('#email2').addClass('need');
-        valid = false;
-    } else if (!validateAddress(formData.email1)) {
-        $('#email1').addClass('need');
-        $('#email2').addClass('need');
-        valid = false;
-    } else {
-        $('#email1').removeClass('need');
-        $('#email2').removeClass('need');
-    }
-
-    if (formData.country == 'USA') {
-        message += "<br/>Note: If any of the address fields Address, City, State/Prov or Zip/PC are used and the country is United States, " +
-            "then the Address, City, State, and Zip fields must all be entered and the state field must be a valid USPS two character state code.";
-    }
-    // validation
-    if (required != '') {
-        // first name is required
-        if (formData.fname == '') {
-            valid = false;
-            $('#fname').addClass('need');
-        } else {
-            $('#fname').removeClass('need');
-        }
-    }
-
-    if (required == 'all') {
-        // last name is required
-        if (formData.lname == '') {
-            valid = false;
-            $('#lname').addClass('need');
-        } else {
-            $('#lname').removeClass('need');
-
-        }
-    }
-
-    if (required == 'addr' || required == 'all' || formData.addr != '' || formData.city != '' || formData.state != '' || formData.zip != '') {
-        // address 1 is required, address 2 is optional
-        if (formData.addr == '') {
-            valid = false;
-            $('#addr').addClass('need');
-        } else {
-            $('#addr').removeClass('need');
-        }
-
-        // city/state/zip required
-        if (formData.city == '') {
-            valid = false;
-            $('#city').addClass('need');
-        } else {
-            $('#city').removeClass('need');
-        }
-
-        if (formData.state == '') {
-            valid = false;
-            $('#state').addClass('need');
-        } else {
-            if (formData.country == 'USA') {
-                if (formData.state.trim().length != 2) {
-                    valid = false;
-                    $('#state').addClass('need');
-                } else {
-                    $('#state').removeClass('need');
-                }
-            } else {
-                $('#state').removeClass('need');
-            }
-        }
-
-        if (formData.zip == '') {
-            valid = false;
-            $('#zip').addClass('need');
-        } else {
-            $('#zip').removeClass('need');
-        }
-    }
-
-    // a membership type is required
-    if (formData.memId == '') {
-        valid = false;
-        $('#memId').addClass('need');
-    } else {
-        $('#memId').removeClass('need');
-    }
+    var message = profile.validate(formRef);
+    valid = message == '';
 
     if (badges.memTypeCount[formData.memId] == null)
         badges.memTypeCount[formData.memId] = 0;
@@ -149,22 +63,6 @@ function process(formRef) {
         }
     }
 
-    for (var row in policies) {
-        var policy = policies[row];
-        if (policy.required == 'Y') {
-            var field = '#l_' + policy.policy;
-            if (typeof policyData['p_' + policy.policy] === 'undefined') {
-                if (config.debug > 0)
-                    console.log("required policy " + policy.policy + ' is not checked');
-                message += '<br/>You cannot continue until you agree to the ' + policy.policy + ' policy.';
-                $(field).addClass('need');
-                valid = false;
-            } else {
-                $(field).removeClass('need');
-            }
-        }
-    }
-
     // don't continue to process if any are missing
     if (!valid) {
         show_message(message, "error", 'addMessageDiv');
@@ -172,7 +70,7 @@ function process(formRef) {
     }
 
     // Check USPS for standardized address
-    if (uspsDiv != null && formData.country == 'USA' && formData.city != '' && formData.state != '/r') {
+    if (hasUSPS && profile.country == 'USA' && profile.city != '' && profile.city != '/r' && profile.state != '/r') {
         formDataSave = formData;
         uspsAddress = null;
         $.ajax({
@@ -271,18 +169,12 @@ function useMyAddress() {
 
 function redoAddress() {
     uspsDiv.innerHTML = '';
-    process("#newBadgeForm");
+    process("newBadgeForm");
 }
 
 function addMembership(formData) {
     // clear for next use: first name, middle name, last name, suffix (entire name field set), and the badgename.  To make virtual easier, clear the email addresses.
-    $('#fname').val('');
-    $('#mname').val('');
-    $('#lname').val('');
-    $('#suffix').val('');
-    $('#email1').val('');
-    $('#email2').val('');
-    $('#badgename').val('');
+    profile.clearNext();
 
     // build name and legal name
     var name = formData.fname + " " + formData.mname + " " + formData.lname + " " + formData.suffix;
@@ -297,11 +189,7 @@ function addMembership(formData) {
 
     repriceCart();
   
-    var badgename = formData.badgename;
-    if (formData.badgename=='') {
-        badgename = (formData.fname+" "+formData.lname).trim();
-    }
-
+    var badgename = badgeNameDefault(formData.badge_name, formData.badgeNameL2, formData.fname, formData.lname);
     // add this person to the "who is paying" "person" list
     var option = $(document.createElement('option'))
         .append(name)
@@ -340,7 +228,7 @@ function addMembership(formData) {
     }
 
     var age_color = 'text-white';
-    if (age_text != 'adult' && age_text != 'military' && age_text != 'child' && age_text != 'youth' && age_text != 'kit' && age_text != 'student')
+    if (age_text != 'adult' && age_text != 'child' && age_text != 'youth' && age_text != 'kit')
         age_color = 'text-black';
     var re = /\-+/g;
     labeldivtext = labeldivtext.replace(re, '-<br/>');
@@ -620,6 +508,9 @@ window.onload = function () {
     var new_badge = document.getElementById('newBadge');
     if (new_badge != null) {
         newBadge = new bootstrap.Modal(new_badge, { focus: true, backdrop: 'static' });
+        profile = new Profile();
+        profile.hideAgeText(true);
+        profile.hideAgeDiv(true);
     }
 
     uspsDiv = document.getElementById("uspsblock");

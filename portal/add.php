@@ -133,9 +133,9 @@ $person = null;
     </div>
 
 <?php
-    // step 2 - enter/verify the information for this persom
+    // enter/verify the information for this persom
 ?>
-    <div id='verifyPersonDiv'>
+    <div id='verifyPersonDiv'  class="p-3" style="background-color: lightcyan;">
         <form id='addUpgradeForm' class='form-floating' action='javascript:void(0);'>
 <?php
 outputCustomText('main/step2');
@@ -148,6 +148,8 @@ drawVerifyPersonInfo($policies, $condata['startdate'], $ageList);
             drawVerifyInterestsBlock($interests);
         }
         ?>
+    </div>
+    <div id='verifyPersonBtn'>
         <div class='row'>
             <div class='col-sm-auto mt-3'>
                 <button class='btn btn-sm btn-secondary' id='cancelAdd' onclick='add.cancelAdd();'>Cancel Adding the New Person</button>
@@ -157,6 +159,7 @@ drawVerifyPersonInfo($policies, $condata['startdate'], $ageList);
             </div>
         </div>
     </div>
+
     <?php
 // ending wrapup section php (currently none)
 ?>

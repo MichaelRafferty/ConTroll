@@ -73,8 +73,17 @@ else {
         }
     }
 }
+$conid = $con['id'];
 $policies = getPolicies();
 $interests = getInterests();
+[$ageList, $ageListIdx] = getAgeList($conid);
+$startdate = new DateTime($condata['startdate']);
+$enddate = new DateTime($condata['enddate']);
+$daterange = $startdate->format('F j-') . $enddate->format('j, Y');
+$altstring = $con['org'] . '. ' . $condata['label'] . ' . ' . $daterange;
+$onsitesale = $startdate->format('l, F j');
+$ageByDate = $startdate->format('F j, Y');
+
 $membershiptypes = array();
 $priceQ = <<<EOS
 SELECT id, label, shortname, sort_order, price, memAge, memCategory, memType
@@ -94,13 +103,11 @@ $js = "var mtypes = " . json_encode($membershiptypes) . ';' . PHP_EOL .
     "var numCoupons = " . $numCoupons . ";" . PHP_EOL .
     "var policies = " . json_encode($policies) . ';' .PHP_EOL .
     "var interests = " . json_encode($interests) . ';' . PHP_EOL .
-    "var config = " . json_encode($config_vars) . ';' . PHP_EOL;
-$startdate = new DateTime($condata['startdate']);
-$enddate = new DateTime($condata['enddate']);
-$daterange = $startdate->format("F j-") . $enddate->format("j, Y");
-$ageByDate = $startdate->format("F j, Y");
-$altstring = $con['org'] . '. ' . $condata['label'] . ' . ' . $daterange;
-$onsitesale = $startdate->format("l, F j");
+    "var config = " . json_encode($config_vars) . ';' . PHP_EOL .
+    "var ageList = " . json_encode($ageList) . ';' . PHP_EOL .
+    "var ageListIdx = " . json_encode($ageListIdx) . ';' . PHP_EOL .
+    'var ageByDate = "' . $condata['startdate'] . '";' . PHP_EOL .
+    "var membershipTypes = " . json_encode($membershiptypes) . ";" . PHP_EOL;
 
 // overall header HTML and main body
   ol_page_init($condata['label'] . ' Online Registration', $js);
@@ -203,7 +210,8 @@ $onsitesale = $startdate->format("l, F j");
                         <form id='newBadgeForm' action='javascript:void(0);' class="form-floating">
 <?php
     drawEditPersonBlock($con, $useUSPS, $policies, $class, /* modal */ true,
-        /* editEmail */ true, $ageByDate, $membershiptypes, /* tabIndexStart  */ 100);
+        /* editEmail */ true, $ageByDate, $membershiptypes, $ageListIdx, /* tabIndexStart  */ 100);
+
     if ($interests != null && count($interests) > 0) {
 ?>
         <div class='row'>
@@ -217,7 +225,7 @@ $onsitesale = $startdate->format("l, F j");
 ?>                            <div class="row mt-4">
                                 <div class="col-sm-12">
                                     <button type="button" id="addToCartBtn" class="btn btn-sm btn-primary me-1"
-                                            onclick="process('#newBadgeForm');" tabindex="980">Add Membership To Cart</button>
+                                            onclick="process('newBadgeForm');" tabindex="980">Add Membership To Cart</button>
                                     <button type="button" class="btn btn-sm btn-primary ms-1 me-1"
                                             onclick='newBadgeModalClose();' tabindex="985">Review and Pay</button>
                                     <button type="reset" class="btn btn-sm btn-secondary ms-1"
@@ -225,7 +233,7 @@ $onsitesale = $startdate->format("l, F j");
                                 </div>
                             </div>
                         </form>
-                         <div class="row">
+                         <div class="row mt-1">
                              <div class="col-sm-12" id="addMessageDiv"></div>
                          </div>
                     </div>
