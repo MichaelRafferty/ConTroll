@@ -33,7 +33,6 @@ var chargeCart = null;
 var formDataSave= null;
 var formData= null;
 var uspsAddress = null;
-var hasUSPS = false;
 var addToCartBtn = null;
 var countryField = null;
 
@@ -70,7 +69,7 @@ function process(formRef) {
     }
 
     // Check USPS for standardized address
-    if (hasUSPS && profile.country == 'USA' && profile.city != '' && profile.city != '/r' && profile.state != '/r') {
+    if (profile.hasUSPSDiv() && profile.country() == 'USA' && profile.city() != '' && profile.city() != '/r' && profile.state() != '/r') {
         formDataSave = formData;
         uspsAddress = null;
         $.ajax({
