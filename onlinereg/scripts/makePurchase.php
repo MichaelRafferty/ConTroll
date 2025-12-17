@@ -15,7 +15,16 @@ if (!isset($_POST) || !isset($_POST['badges'])) {
 }
 
 // input parameters
-$badgestruct = $_POST['badges'];
+try {
+    $badgestruct = json_decode($_POST['badges'], true, 512, JSON_THROW_ON_ERROR);
+} catch (Exception $e) {
+    $msg = 'Caught exception on json_decode: ' . $e->getMessage() . PHP_EOL . 'JSON error: ' . json_last_error_msg() . PHP_EOL;
+    $response['error'] = $msg;
+    error_log($msg);
+    ajaxSuccess($response);
+    exit();
+}
+
 if (array_key_exists('couponCode', $_POST)) {
     $couponCode = $_POST['couponCode'];
     if ($couponCode == '')
@@ -33,11 +42,6 @@ else {
 }
 $nonce = $_POST['nonce'];
 $purchaseform = $_POST['purchaseform'];
-if (array_key_exists('policyInterestForm', $_POST))
-    $policyInterestForm = $_POST['policyInterestForm'];
-else
-    $policyInterestForm = [];
-
 $badges = $badgestruct['badges'];
 $webtotal = $badgestruct['total'];
 $couponDiscount = null;
@@ -138,6 +142,23 @@ if ($coupon != null) {
 }
 
 // now process the people and the memberships to add them to the tables
+$npInsertQ = <<<EOS
+INSERT INTO newperson(last_name, middle_name, first_name, suffix, legalName, pronouns, email_addr, phone,
+    badge_name, badgeNameL2, address, addr_2, city, state, zip, country, contact_ok, share_reg_ok)
+    VALUES(IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''),
+           IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''),  ?, ?);
+EOS;
+
+$intInsertQ = <<<EOS
+INSERT INTO memberInterests(conid, newperid, interest, interested)
+VALUES(?, ?, ?, ?);
+EOS;
+
+$polInsertQ = <<<EOS
+INSERT INTO memberPolicies(conid, newperid, policy, response)
+VALUES(?, ?, ?, ?);
+EOS;
+
 $count = 0;
 foreach ($badges as $badge) {
     if (!isset($badge) || !isset($badge['memId'])) {
@@ -173,70 +194,6 @@ foreach ($badges as $badge) {
             $badge['phone'] = $phone;
         }
 
-// see if there is an exact match
-
-// now resolve exact matches
-        $exactMsql = <<<EOF
-SELECT id
-FROM perinfo p
-WHERE
-    	REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.first_name)), ' +', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.middle_name)), ' +', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.last_name)), ' +', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.suffix)), ' +', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.email_addr)), ' +', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.phone)), ' +', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.badge_name)), ' +', ' ')
-    AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.badgeNameL2)), ' +', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.address)), ' +', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.addr_2)), ' +', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.city)), ' +', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.state)), ' +', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.zip)), ' +', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.country)), ' +', ' ');
-EOF;
-        $value_arr = array(
-            trim($badge['fname']),
-            trim($badge['mname']),
-            trim($badge['lname']),
-            trim($badge['suffix']),
-            trim($badge['email1']),
-            trim($badge['phone']),
-            trim($badge['badge_name']),
-            trim($badge['badgeNameL2']),
-            trim($badge['addr']),
-            trim($badge['addr2']),
-            trim($badge['city']),
-            trim($badge['state']),
-            trim($badge['zip']),
-            $badge['country']
-        );
-
-        $res = dbSafeQuery($exactMsql, 'ssssssssssssss', $value_arr);
-        if ($res !== false) {
-            if ($res->num_rows > 0) {
-                $match = $res->fetch_assoc();
-                $id = $match['id'];
-            } else {
-                $id = null;
-            }
-        } else {
-            $id = null;
-        }
         $value_arr = array(
             trim($badge['lname']),
             trim($badge['mname']),
@@ -255,40 +212,41 @@ EOF;
             trim($badge['zip']),
             $badge['country'],
             array_key_exists('contact', $badge) ? $badge['contact'] : 'Y',
-            array_key_exists('share', $badge) ? $badge['share'] :'Y',
-            $id
+            array_key_exists('share', $badge) ? $badge['share'] :'Y'
         );
 
-        $insertQ = <<<EOS
-INSERT INTO newperson(last_name, middle_name, first_name, suffix, legalName, pronouns, email_addr, phone,
-    badge_name, badgeNameL2, address, addr_2, city, state, zip, country, contact_ok, share_reg_ok, perid)
-    VALUES(IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''),
-           IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''),  ?, ?, ?);
-EOS;
-
-        $newid = dbSafeInsert($insertQ, 'ssssssssssssssssssi', $value_arr);
+        $newid = dbSafeInsert($npInsertQ, 'ssssssssssssssssss', $value_arr);
         $people[$count]['newperid'] = $newid;
-        $people[$count]['perid'] = $id;
 
         $newid_list .= "id='$newid' OR ";
-
         $count++;
     } else {
         ajaxSuccess(array('status' => 'error', 'badges' => $badges, 'error' => "Error: invalid badge age category"));
         exit();
     }
+
+    // now do policies and interests
+    $policies = $badge['policyInterest'];
+    foreach ($policies as $key => $resp) {
+        if (str_starts_with($key, 'p_')) {
+            $key = substr($key, 2);
+            $polid = dbSafeInsert($polInsertQ, 'iiss', array($conid, $newid, $key, 'Y'));
+        } else {
+            $intid = dbSafeInsert($intInsertQ, 'iiss', array($conid, $newid, $key, 'Y'));
+        }
+    }
 }
 
 $transQ = <<<EOS
-INSERT INTO transaction(newperid, perid, price, couponDiscountReg, couponDiscountCart, type, conid, coupon)
-    VALUES(?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO transaction(newperid, price, couponDiscountReg, couponDiscountCart, type, conid, coupon)
+    VALUES(?, ?, ?, ?, ?, ?, ?);
 EOS;
 if ($coupon == null)
     $cid = null;
 else
     $cid = $coupon['id'];
 
-$transId= dbSafeInsert($transQ, "iidddsii", array($people[0]['newperid'], $id, $preDiscount, $totalDiscount, 0, 'website', $condata['id'], $cid));
+$transId= dbSafeInsert($transQ, "idddsii", array($people[0]['newperid'], $preDiscount, $totalDiscount, 0, 'website', $conid, $cid));
 
 $newid_list .= "transid='$transId'";
 
@@ -297,16 +255,15 @@ $person_update = "UPDATE newperson SET transid='$transId' WHERE $newid_list;";
 dbQuery($person_update);
 
 $badgeQ = <<<EOS
-INSERT INTO reg(conid, newperid, perid, create_trans, status, price, couponDiscount, coupon, memID)
-VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO reg(conid, newperid, create_trans, status, price, couponDiscount, coupon, memID)
+VALUES(?, ?, ?, ?, ?, ?, ?, ?);
 EOS;
-$badge_types = "iiiisddii";
+$badge_types = "iiisddii";
 
 foreach($people as $person) {
     $badge_data = array(
-      $condata['id'],
+      $conid,
       $person['newperid'],
-      $person['perid'],
       $transId,
       $person['price'] > 0 ? 'unpaid' : 'paid',
       $person['price'],
@@ -471,44 +428,6 @@ dbSafeCmd($regQ, "ii", array($transId, $transId));
 if ($coupon !== null && $coupon['keyId'] !== null) {
     $cupQ = 'UPDATE couponKeys SET usedBy = ?, useTS = current_timestamp WHERE id = ?';
     dbSafeCmd($cupQ, 'ii', array($transId, $coupon['keyId']));
-}
-
-// insert policies
-$policies = getPolicies();
-$iQ = <<<EOS
-INSERT INTO memberPolicies(conid, newperid, policy, response)
-VALUES (?,?,?,?);
-EOS;
-
-if ($policies != null) {
-    $policy_upd = 0;
-    foreach ($policies as $policy) {
-        $policyName = $policy['policy'];
-        $newVal = array_key_exists('p_' . $policyName, $policyInterestForm) ? 'Y' : 'N';
-        $ins_key = dbSafeInsert($iQ, 'iiss', array($conid, $newid, $policyName, $newVal));
-        if ($ins_key !== false) {
-            $policy_upd++;
-        }
-    }
-}
-
-// insert interests
-$insInterest = <<<EOS
-INSERT INTO memberInterests(newperid, conid, interest, interested)
-VALUES (?, ?, ?, ?);
-EOS;
-
-$rows_upd = 0;
-$interests = getInterests();
-if ($interests != null) {
-    foreach ($interests as $interest) {
-        $interestName = $interest['interest'];
-        $newVal = array_key_exists($interestName, $policyInterestForm) ? 'Y' : 'N';
-        // row doesn't exist in existing interests
-        $newkey = dbSafeInsert($insInterest, 'iiss', array ($newid, $conid, $interestName, $newVal));
-        if ($newkey !== false && $newkey > 0)
-            $rows_upd++;
-    }
 }
 
 if ($total > 0) {

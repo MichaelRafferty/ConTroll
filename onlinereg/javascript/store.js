@@ -31,6 +31,7 @@ var chargeCart = null;
 
 // usps related fields
 var formDataSave= null;
+var formData= null;
 var uspsAddress = null;
 var hasUSPS = false;
 var addToCartBtn = null;
@@ -40,10 +41,9 @@ var profile = null;
 
 // process the form for validation and add to the badge array if valud
 function process(formRef) {
-    var valid = true;
-    var formData = URLparamsToArray($('#' + formRef).serialize(), true);
-    var policyData = URLparamsToArray($('#editPolicies').serialize(), true);
-    var required = config.required;
+    let valid = true;
+    formData = URLparamsToArray($('#' + formRef).serialize(), true);
+    formData.policyInterest = URLparamsToArray($('#editPolicies').serialize(), true);
 
     clear_message('addMessageDiv');
     var message = profile.validate(formRef);
@@ -327,10 +327,9 @@ function makePurchase(token, label) {
         return false;        
     }
     var data = {
-        badges: badges,
+        badges: JSON.stringify(badges),
         nonce: token,
         purchaseform: URLparamsToArray($('#purchaseForm').serialize()),
-        policyInterestForm: URLparamsToArray($('#editPolicies').serialize()),
         couponCode: coupon.getCouponCode(),
         couponSerial: coupon.getCouponSerial(),
         couponSubtotal: couponSubtotal,
@@ -352,6 +351,7 @@ function makePurchase(token, label) {
 
 function newBadgeModalOpen() {
     if (newBadge != null) {
+        profile.clearNext();
         newBadge.show();
     }
 }
