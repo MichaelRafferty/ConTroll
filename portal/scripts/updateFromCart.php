@@ -3,8 +3,6 @@
 
 require_once('../lib/base.php');
 require_once('../../lib/log.php');
-require_once('../../lib/policies.php');
-require_once('../../lib/interests.php');
 
 // use common global Ajax return functions
 global $returnAjaxErrors, $return500errors;
@@ -68,8 +66,6 @@ $orderDate = null;
 $orderIdFetched = false;
 
 $action = $_POST['action'];
-$newEmail = $_POST['newEmail'];
-
 logInit($log['reg']);
 try {
     $person = json_decode($_POST['person'], true, 512, JSON_THROW_ON_ERROR);
@@ -100,28 +96,6 @@ catch (Exception $e) {
     ajaxSuccess($response);
     exit();
 }
-try {
-    $oldInterests = json_decode($_POST['oldInterests'], true, 512, JSON_THROW_ON_ERROR);
-}
-catch (Exception $e) {
-    $msg = 'Caught exception on json_decode: ' . $e->getMessage() . PHP_EOL . 'JSON error: ' . json_last_error_msg() . PHP_EOL;
-    $response['status'] = 'error';
-    $response['message'] = $msg;
-    error_log($msg);
-    ajaxSuccess($response);
-    exit();
-}
-try {
-    $newInterests = json_decode($_POST['newInterests'], true, 512, JSON_THROW_ON_ERROR);
-}
-catch (Exception $e) {
-    $msg = 'Caught exception on json_decode: ' . $e->getMessage() . PHP_EOL . 'JSON error: ' . json_last_error_msg() . PHP_EOL;
-    $response['status'] = 'error';
-    $response['message'] = $msg;
-    error_log($msg);
-    ajaxSuccess($response);
-    exit();
-}
 
 if (array_key_exists('personType', $person)) {
     $personType = $person['personType'];
@@ -132,219 +106,21 @@ if (array_key_exists('personType', $person)) {
     }
     $existingPerson = true;
 } else {
-    $personId = -1;
-    $personType = 'n';
-    $existingPerson = false;
+    $msg = 'Missing field in person data, seek assistance.';
+    $response['status'] = 'error';
+    $response['message'] = $msg;
+    error_log($msg);
+    ajaxSuccess($response);
+    exit();
 }
-$newPerid = null;
-
-// first update the person so we can build a transaction and memberships
-$matchId = null;
-if ($personId < 0) {
-    if (array_key_exists('fname', $person)) {
-        if ($transId == null) {
-            $transId = getNewTransaction($conid, $loginType == 'p' ? $loginId : null, $loginType == 'n' ? $loginId : null);
-            // new transaction, force everything to null, but show we have the orderId and date.
-            $orderIdFetched = true;
-        }
-
-        // the exact match check for this new person will prevent adding newperson for existing people
-        // see if there is an exact match
-        $exactMsql = <<<EOF
-SELECT id, managedBy
-FROM perinfo p
-WHERE
-	REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.first_name)), ' +', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.middle_name)), ' +', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.last_name)), ' +', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.suffix)), ' +', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.email_addr)), ' +', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.phone)), ' +', ' ')
-    AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.badge_name)), ' +', ' ')
-    AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.badgeNameL2)), ' +', ' ')
-    AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.legalName)), ' +', ' ')
-    AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.pronouns)), ' +', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.address)), ' +', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.addr_2)), ' +', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.city)), ' +', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.state)), ' +', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.zip)), ' +', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.country)), ' +', ' ');
-EOF;
-        $value_arr = array (
-            trim($person['fname']),
-            trim($person['mname']),
-            trim($person['lname']),
-            trim($person['suffix']),
-            trim($newEmail),
-            trim($person['phone']),
-            trim($person['badge_name']),
-            trim($person['badgeNameL2']),
-            trim($person['legalName']),
-            trim($person['pronouns']),
-            trim($person['addr']),
-            trim($person['addr2']),
-            trim($person['city']),
-            trim($person['state']),
-            trim($person['zip']),
-            trim($person['country']),
-        );
-        $res = dbSafeQuery($exactMsql, 'ssssssssssssssss', $value_arr);
-        if ($res !== false) {
-            if ($res->num_rows > 0) {
-                $match = $res->fetch_assoc();
-                if ($match['managedBy'] == null) { // not already managed by someone else
-                    $matchId = $match['id'];
-                    $personType = 'p';
-                    $personId = $matchId;
-
-                    // now update the perid to set the managed by flag
-                    $updPQ = <<<EOS
-UPDATE perinfo
-SET managedBy = ?, managedReason = 'Exact Match'
-WHERE id = ?;
-EOS;
-                    $upd = dbSafeCmd($updPQ, 'ii', array ($loginId, $matchId));
-                    logWrite(array ('con' => $con['name'], 'trans' => $transId, 'action' => 'Exact Match for management', 'person' => $person, 'managedBy' => $loginId));
-                }
-            }
-        }
-
-        if ($matchId == null) {
-            // no match found
-            // insert into newPerson
-            $iQ = <<<EOS
-INSERT INTO newperson (transid, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, badgeNameL2, legalName, pronouns, 
-                       address, addr_2, city, state, zip, country, managedBy, managedByNew, managedReason, updatedBy, lastVerified)
-VALUES (?, IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''),
-    IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), ?, ?, 'creation', ?, NOW());
-EOS;
-            $typeStr = 'issssssssssssssssiii';
-            $valArray = array (
-                $transId,
-                trim($person['lname']),
-                trim($person['mname']),
-                trim($person['fname']),
-                trim($person['suffix']),
-                trim($newEmail),
-                trim($person['phone']),
-                trim($person['badge_name']),
-                trim($person['badgeNameL2']),
-                trim($person['legalName']),
-                trim($person['pronouns']),
-                trim($person['addr']),
-                trim($person['addr2']),
-                trim($person['city']),
-                trim($person['state']),
-                trim($person['zip']),
-                trim($person['country']),
-                $loginType == 'p' ? $loginId : null,
-                $loginType == 'n' ? $loginId : null,
-                $loginId
-            );
-            $personId = dbSafeInsert($iQ, $typeStr, $valArray);
-            if ($personId === false || $personId < 0) {
-                $response['status'] = 'error';
-                $response['message'] = 'Error inserting the new person into the database. Seek assistance';
-                ajaxSuccess($response);
-            }
-            $response['newPersonId'] = $personId;
-            $response['logmessage'] .= "New person with Temporary ID $personId added" . PHP_EOL;
-            $newPerid = $personId;
-            $personType = 'n';
-            logWrite(array ('con' => $con['name'], 'trans' => $transId, 'action' => 'New managed person created', 'person' => $person, 'managedBy' => $loginId));
-        }
-    } else {
-        $response['status'] = 'error';
-        $response['message'] = 'Error no person information passed. Seek assistance';
-        ajaxError($response);
-        exit();
-    }
+if ($personId <= 0) {
+    $msg = 'Improper person data, seek assistance.';
+    $response['status'] = 'error';
+    $response['message'] = $msg;
+    error_log($msg);
+    ajaxSuccess($response);
+    exit();
 }
-
-// newPerid is set above when it inserts the person as a new person, if it's null, it means it exists already
-if ($newPerid == null) {
-    // update the record
-    if ($personType == 'p') {
-        $updPersonQ = <<<EOS
-UPDATE perinfo
-SET last_name = ?, middle_name = ?, first_name = ?, suffix = ?, phone = ?, badge_name = ?, badgeNameL2 = ?, legalName = ?, pronouns = ?,
-    address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?, updatedBy = ?, lastVerified = NOW()
-WHERE id = ?;
-EOS;
-    } else {
-        $updPersonQ = <<<EOS
-UPDATE newperson
-SET last_name = ?, middle_name = ?, first_name = ?, suffix = ?, phone = ?, badge_name = ?, badgeNameL2 = ?, legalName = ?, pronouns = ?,
-    address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?, updatedBy = ?, lastVerified = NOW()
-WHERE id = ?;
-EOS;
-    }
-    // there are two possible items here for passing the data, from the database, which means no changes were passed in,
-    // for from the form which means a correction was passed.  If fname exists, it's from the form, handle that.
-    // if first_name, its from the database, so do not update the database.
-    if (array_key_exists('fname', $person)) {
-        $fields = ['lname', 'mname', 'fname', 'suffix', 'phone', 'badge_name', 'badgeNameL2', 'legalName', 'pronouns', 'addr', 'addr2', 'city',
-                   'state', 'zip', 'country'];
-        foreach ($fields as $field) {
-            if ((!array_key_exists($field, $person)) || $person[$field] == null) {
-                if ($field == 'fname') {
-                    // log the *** out of this issue, lets see whats going on
-                    logWrite(array ('title' > 'Missing field error trap', 'get' => $_GET, 'post' => $_POST, 'session' => getAllSessionVars(),
-                                    'response' => $response));
-                }
-                $person[$field] = '';
-            }
-        }
-        $value_arr = array (
-            trim($person['lname']),
-            trim($person['mname']),
-            trim($person['fname']),
-            trim($person['suffix']),
-            trim($person['phone']),
-            trim($person['badge_name']),
-            trim($person['badgeNameL2']),
-            trim($person['legalName']),
-            trim($person['pronouns']),
-            trim($person['addr']),
-            trim($person['addr2']),
-            trim($person['city']),
-            trim($person['state']),
-            trim($person['zip']),
-            trim($person['country']),
-            $loginId,
-            $personId
-        );
-
-        $rows_upd = dbSafeCmd($updPersonQ, 'sssssssssssssssii', $value_arr);
-        if ($rows_upd === false) {
-            ajaxSuccess(array ('status' => 'error', 'message' => 'Error updating person'));
-            exit();
-        }
-        $response['person_rows_upd'] = $rows_upd;
-        $response['status'] = 'success';
-        $response['logmessage'] .= $rows_upd == 0 ? "No changes" : "$rows_upd person updated" . PHP_EOL;
-    } else {
-        $response['logmessage'] .= 'No person passed, no update to person information' . PHP_EOL;
-    }
-}
-
 
 // now fetch the order information from the transaction if necessary
 if ($transId != null && !$orderIdFetched) {
@@ -461,79 +237,6 @@ EOS;
     logWrite(array('con'=>$con['name'], 'trans'=>$transId, 'action' => 'cart updated', 'cart' => $cart, 'updatedBy' => $loginId));
 }
 
-$newInterests = json_decode($_POST['newInterests'], true);
-if ($existingPerson) {
-    $existingInterests = json_decode($_POST['oldInterests'], true);
-    if ($existingInterests == null)
-        $existingInterests = array();
-} else {
-    $existingInterests = array();
-}
-
-
-// find the differences in the interests to update the record
-
-if ($personType == 'p') {
-    $pfield = 'perid';
-} else if ($personType == 'n') {
-    $pfield = 'newperid';
-}
-$updInterest = <<<EOS
-UPDATE memberInterests
-SET interested = ?, updateBy = ?, updateDate = NOW()
-WHERE id = ?;
-EOS;
-$insInterest = <<<EOS
-INSERT INTO memberInterests($pfield, conid, interest, interested, updateBy)
-VALUES (?, ?, ?, ?, ?);
-EOS;
-
-$int_upd = 0;
-$interests = getInterests();
-if ($interests != null) {
-    foreach ($interests as $interest) {
-        $interestName = $interest['interest'];
-        $newVal = array_key_exists($interestName, $newInterests) ? 'Y' : 'N';
-        if (array_key_exists($interestName, $existingInterests)) {
-            // this is an update, there is a record already in the memberInterests table for this interest.
-            $existing = $existingInterests[$interestName];
-            if (array_key_exists('interested', $existing)) {
-                $oldVal = $existing['interested'];
-            }
-            else {
-                $oldVal = '';
-            }
-            // only update if changed
-            if ($newVal != $oldVal) {
-                $upd = 0;
-                if ($existing['id'] != null) {
-                    $upd = dbSafeCmd($updInterest, 'sii', array ($newVal, $loginId, $existing['id']));
-                }
-                if ($upd === false || $upd === 0) {
-                    $newkey = dbSafeInsert($insInterest, 'iissi', array ($personId, $conid, $interestName, $newVal, $loginId));
-                    if ($newkey !== false && $newkey > 0)
-                        $int_upd++;
-                }
-                else {
-                    $int_upd++;
-                }
-            }
-        }
-        else {
-            // row doesn't exist in existing interests
-            $newkey = dbSafeInsert($insInterest, 'iissi', array ($personId, $conid, $interestName, $newVal, $loginId));
-            if ($newkey !== false && $newkey > 0)
-                $int_upd++;
-        }
-    }
-}
-logWrite(array('con'=>$con['name'], 'trans'=>$transId, 'action' => 'Interests added/updated', 'interests' => $existingInterests,
-               'person' => array($personType, $personId), 'updatedBy' => $loginId));
-
-$response['int_upd'] = $int_upd;
-
-$response['logmessage'] .= ($int_upd == 0 ? 'No Interests changed' : "$int_upd  Interests updated") . PHP_EOL;
-
 if ($voidTransId) {
     // check to see if the price in the transaction = the paid for the transaction
     $cQ = <<<EOS
@@ -560,8 +263,6 @@ EOS;
         }
     }
 }
-
-$policy_upd = updateMemberPolicies($conid, $personId, $personType, $loginId, $loginType);
 
 if ($response['message'] == '') {
     $response['status'] = 'success';

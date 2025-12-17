@@ -96,5 +96,8 @@ UPDATE controllAppSections SET appPage = 'cart' where appPage = 'addUpgrade';
 DELETE FROM controllTxtItems where appPage = 'cart' and txtItem in ('step1', 'step2', 'step3');
 DELETE FROM controllAppItems where appPage = 'cart' and txtItem in ('step1', 'step2', 'step3');
 
+UPDATE controllAppItems SET txtItem = 'memberships' WHERE appName = 'portal' AND appPage = 'cart' AND appSection = 'main' AND txtItem = 'step4';
+UPDATE controllAppItems SET txtItem = 'cart' WHERE appName = 'portal' AND appPage = 'cart' AND appSection = 'main' AND txtItem = 'step4bottom';
+
 INSERT INTO patchLog(id, name) VALUES(xx, 'art, portal, et al');
 

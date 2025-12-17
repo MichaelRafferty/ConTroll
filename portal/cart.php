@@ -2,9 +2,6 @@
 // Registration  Portal - addUpgrade.php - add new person and membership(s) or just upgrade the memberships for an existing person you manage
 require_once("lib/base.php");
 require_once("../lib/portalForms.php");
-require_once("../lib/interests.php");
-require_once("../lib/profile.php");
-require_once("../lib/policies.php");
 require_once("../lib/memRules.php");
 
 global $config_vars;
@@ -38,6 +35,11 @@ if (array_key_exists('oneoff', $con))
 else
     $oneoff = 0;
 
+if (!(array_key_exists('cartId', $_POST) && array_key_exists('cartType', $_POST) && array_key_exists('action', $_POST))) {
+    header('location:' . $portal_conf['portalsite'] . 'messageFwd = "Invalid call to add to cart, seek assistance"');
+    exit();
+}
+
 $config_vars = array();
 $config_vars['label'] = $con['label'];
 $config_vars['debug'] = getConfValue('debug', 'portal', 0);
@@ -46,94 +48,13 @@ $config_vars['uri'] = $portal_conf['portalsite'];
 $config_vars['regadminemail'] = $con['regadminemail'];
 $config_vars['id'] = $loginId;
 $config_vars['idType'] = $loginType;
+$config_vars['cartId'] = $_POST['cartId'];
+$config_vars['cartType'] = $_POST['cartType'];
 $config_vars['personEmail'] = getSessionVar('email');
 $config_vars['required'] = getConfValue('reg', 'required', 'addr');
 $config_vars['multiOneDay'] = $multiOneDay;
 $config_vars['oneoff'] = $oneoff;
 $cdn = getTabulatorIncludes();
-
-if ($loginType == 'n') {
-    $mfield  = 'managedByNew';
-} else {
-    $mfield = 'managedBy';
-}
-// we need the list of people we are managing so we can check for matching email addresses and allow them
-$emQ = <<<EOS
-SELECT LOWER(email_addr) AS email_addr, 
-    TRIM(REGEXP_REPLACE(CONCAT(first_name, ' ', middle_name, ' ', last_name, ' ', suffix), ' +', ' ')) AS fullName
-FROM newperson
-WHERE $mfield = ?
-UNION SELECT LOWER(email_addr) AS email_addr,
-    TRIM(REGEXP_REPLACE(CONCAT(first_name, ' ', middle_name, ' ', last_name, ' ', suffix), ' +', ' ')) AS fullName   
-FROM perinfo
-WHERE $mfield = ?;
-EOS;
-$emails = [];
-$emR = dbSafeQuery($emQ, 'ii', array($loginId, $loginId));
-if ($emR !== false) {
-    while ($emL = $emR->fetch_assoc()) {
-        $emails[$emL['email_addr']] = $emL['fullName'];
-    }
-    $emR->free();
-}
-$emails[getSessionVar('email')] = 'Yourself';
-
-// are we add new or upgrade existing
-$action = 'new';
-if (array_key_exists('action', $_POST)) {
-    $action = $_POST['action'];
-}
-// if upgrade, get parameters, if none found change to new
-$upgradeType = '';
-$upgradeId = -9999999;
-if ($action == 'upgrade' && array_key_exists('upgradeType', $_POST)) {
-    $upgradeType = $_POST['upgradeType'];
-    $config_vars['upgradeType'] = $upgradeType;
-} else {
-    $action = 'new';
-}
-if ($action == 'upgrade' && array_key_exists('upgradeId', $_POST)) {
-    $upgradeId = $_POST['upgradeId'];
-    $config_vars['upgradeId'] = $upgradeId;
-} else {
-    $action = 'new';
-}
-$config_vars['action'] = $action;
-
-$updateName = 'this new person';
-if ($action == 'upgrade') {
-    // check if we alredy manage this person
-    if ($upgradeType == 'n' && $loginType == 'n') {
-        // both are newperson, field table is newperson and field is manangedByNew to find the managed by id
-        $table = 'newperson';
-        $field = 'managedByNew';
-    } else if ($upgradeType == 'n') {
-        $table = 'newperson';
-        $field = 'managedBy'; // manager already exists
-    } else {
-        $table = 'perinfo';
-        $field = 'managedBy';
-    }
-        $checkQ = <<<EOS
-SELECT IFNULL($field, -1) AS mid, id, TRIM(REGEXP_REPLACE(CONCAT(first_name, ' ', middle_name, ' ', last_name, ' ', suffix), ' +', ' ')) AS fullName
-FROM $table
-WHERE id = ?;
-EOS;
-    $checkR = dbSafeQuery($checkQ, 'i', array($upgradeId));
-    if ($checkR === false || $checkR->num_rows != 1) {
-        header('location:' . $portal_conf['portalsite'] . '?messageFwd=' . urlencode("Person is not found, seek assistance") . '&type=e');
-        exit();
-    }
-    $checkL = $checkR->fetch_assoc();
-    if ($loginId != $checkL['id'] && $loginId != $checkL['mid']) {
-        header('location:' . $portal_conf['portalsite'] . '?messageFwd=' . urlencode('You no longer manage this person') . '&type=e');
-        exit();
-    }
-    $updateName = $checkL['fullName'];
-}
-// get the information for the policies and interest blocks
-$interests = getInterests();
-$policies = getPolicies();
 
 // build info array about the account holder
 $info = getPersonInfo($conid);
@@ -156,9 +77,11 @@ portalPageInit('addUpgrade', $info,
         //'js/tinymce/tinymce.min.js',
         'js/portal.js',
         'jslib/membershipRules.js',
-        'js/memberships.js',
+        'js/cart.js',
     ),
 );
+    // get the info for the current person
+    $person = getPersonInfo($conid, $_POST['cartType'], $_POST['cartId']);
 ?>
 <script type='text/javascript'>
     var config = <?php echo json_encode($config_vars); ?>;
@@ -169,104 +92,26 @@ portalPageInit('addUpgrade', $info,
     var memList = <?php echo json_encode($ruleData['memList']); ?>;
     var memListIdx = <?php echo json_encode($ruleData['memListIdx']); ?>;
     var memRules = <?php echo json_encode($ruleData['memRules']); ?>;
-    var policies = <?php echo json_encode($policies); ?>;
-    var emailsManaged = <?php echo json_encode($emails); ?>;
+    var person = <?php echo json_encode($person); ?>;
 </script>
 <?php
-// get the info for the current person or set it all to NULL
-$person = null;
+
 $memberships = null;
+outputCustomText('main/top');
 // draw the skeleton
-drawVariablePriceModal('membership');
+drawVariablePriceModal('cart');
+$ageName = $ruleData['ageListIdx'][$person['currentAgeType']]['shortname'] . ' [' . $ruleData['ageListIdx'][$person['currentAgeType']]['label'] . ']';
 ?>
     <div class="row mt-3">
         <div class="col-sm-12">
-            <h1 class="size-h2" id="auHeader">Creating a new person in your account and buy them memberships</h1>
+            <h1 class="size-h2" id="auHeader">
+                Add/Edit Memberships and Purchases to Your Cart for
+                <?php echo $person['fullName'] . ' (' . $ageName . ')'; ?>
+            </h1>
         </div>
     </div>
 <?php
-// for new additions, step 0 is get the email address and check if it exists
-// step 0
-?>
-    <div id="emailDiv">
-        <div class='row'>
-            <div class='col-sm-12'>
-                <h2 class='size-h3 text-primary'>Check if this new person is already in the system</h2>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-sm-auto">Enter the email address for this new person</div>
-            <div class="col-sm-auto"><input type="text" size="64", maxlength="254" id="newEmailAddr", name="newEmailAddr"></div>
-            <div class="col-sm-auto"><button class="btn btn-sm btn-primary" type="button" onclick="membership.checkNewEmail(0);">Check Email
-                    Address</button></div>
-        </div>
-        <div class="row mt-2" id="verifyMe" hidden>
-            <div class='col-sm-auto'>This is an email address you manage, do you wish to create the new person with this same email address?</div>
-            <div class="col-sm-auto">
-                <button class="btn btn-sm btn-primary" type='button' onclick="membership.checkNewEmail(1);">Yes, Use the same email address</button>
-            </div>
-        </div>
-        <?php outputCustomText('main/step0');?>
-    </div>
-
-<?php
-// step 1 - get their current age bracket (should we store this in perinfo?)
-?>
-    <div id="ageBracketDiv">
-        <div class="row">
-            <div class='col-sm-12'>
-                <h3 class="size-h3">Age Verification</h3>
-            </div>
-        </div>
-        <?php
-        outputCustomText('main/step1');
-        drawGetAgeBracket($updateName, $condata);
-        ?>
-        <hr/>
-    </div>
-<?php
-    // step 2 - enter/verify the information for this persom
-?>
-<form id='addUpgradeForm' class='form-floating' action='javascript:void(0);'>
-    <div id="verifyPersonDiv">
-        <div class="row">
-            <div class="col-sm-12">
-                <h2 class="size-h3">Verify Personal Information</h2>
-            </div>
-        </div>
-<?php
-outputCustomText('main/step2');
-drawVerifyPersonInfo($policies);
-?>
-        <hr/>
-    </div>
-</form>
-<?php
-// step 3 - enter/verify the interests for this persom
-?>
-    <div id="verifyInterestDiv">
-        <div class="row">
-            <div class="col-sm-12">
-                <h2 class="size-h3">Verify Interests</h2>
-            </div>
-        </div>
-        <?php
-        if ($interests != null && count($interests) > 0) {
-            outputCustomText('main/step3');
-            drawVerifyInterestsBlock($interests);
-        }
-        ?>
-        <hr/>
-    </div>
-    <?php
-    if ($interests == null || count($interests) == 0) {
-        $step3num = 2;
-        $step4num = 3;
-    } else {
-        $step3num = 3;
-        $step4num = 4;
-    }
-// step 4 - draw the placeholder for memberships they can buy and add the memberships in the javascript
+// draw the placeholder for memberships they can buy and add the memberships in the javascript
 ?>
     <div id="getNewMembershipDiv">
         <div class='row'>
@@ -275,14 +120,13 @@ drawVerifyPersonInfo($policies);
             </div>
         </div>
 <?php
-    outputCustomText('main/step4');
+    outputCustomText('main/memberships');
     drawGetNewMemberships();
-    outputCustomText('main/step4bottom');
 ?>
         <hr/>
     </div>
 <?php
-// Only show the cart on step 4, draw the placeholder for the cart and add the current cart info in the javascript
+    outputCustomText('main/cart');
 ?>
     <div id="cartDiv">
         <div class='row'>
@@ -291,21 +135,14 @@ drawVerifyPersonInfo($policies);
             </div>
         </div>
         <div id='cartContentsDiv'></div>
-        <div class='row' id='step4submit'>
-
-<?php if ($step3num == 3) { ?>
-            <div class='col-sm-auto  mt-3'>
-                <button class='btn btn-sm btn-secondary' onclick='membership.gotoStep(3, true);'>Return to Interest Verification</button>
-            </div>
-<?php } ?>
+        <div class='row' id='cartSubmit'>
             <div class='col-sm-auto mt-3'>
-                <button class='btn btn-sm btn-secondary' onclick='membership.gotoStep(2, true);'>Return to Personal Information Verification</button>
+                <button class='btn btn-sm btn-secondary' id='discardCartBtn' onclick='cart.discardCart();'>
+                    Discard Changes to the Cart and Return to the Home Page
+                </button>
             </div>
             <div class='col-sm-auto mt-3'>
-                <button class='btn btn-sm btn-secondary' id='returnAgeListBTN' onclick='membership.gotoStep(1, true);'>Return to Age Verification</button>
-            </div>
-            <div class='col-sm-auto mt-3'>
-                <button class='btn btn-sm btn-primary' id='saveCartBtn' onclick='membership.saveCart();'>Return to the home page</button>
+                <button class='btn btn-sm btn-primary' id='saveCartBtn' onclick='cart.saveCart();'>Save Cart and Return to the Home Page</button>
             </div>
         </div>
         <hr/>
