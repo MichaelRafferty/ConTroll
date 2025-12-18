@@ -4,6 +4,8 @@
 // drawEditPersonBlock - just output the block to edit the person
 function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $editEmail=false, $ageByDate = '',
                              $membershipTypes = [], $ageList = [], $tabIndexStart = 100, $admin = false, $idPrefix = '', $free=false) {
+    if ($class != '')
+        $class .= '.';
     $polConf = $editEmail ? 'reg' : 'portal';
     $required = getConfValue('reg', 'required', 'addr');
     $firstStar = '<span class="text-danger">&bigstar;</span>';
@@ -128,7 +130,7 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
             <label for='<?php echo $idPrefix . 'country'; ?>' class='form-label-sm'>
                 <span class='text-dark' style='font-size: 10pt;'>Country</span>
             </label><br/>
-            <select name='country' id='<?php echo $idPrefix . 'country'; ?>' onchange="<?php echo $class; ?>.countryChange();"
+            <select name='country' id='<?php echo $idPrefix . 'country'; ?>' onchange="<?php echo $class; ?>countryChange();"
                     tabindex="<?php echo $tabindex; $tabindex += 10;?>">
                 <?php
                     $fh = fopen(__DIR__ . '/../lib/countryCodes.csv', 'r');

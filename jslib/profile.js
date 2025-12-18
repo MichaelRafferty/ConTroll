@@ -27,7 +27,15 @@ class Profile {
 
 // online reg - membership filtering
     #memIdField = null;
-    
+
+// USPS fields
+    #formData = null;
+    #formDataSave = null;
+    #messageDiv = null;
+    #addCallback = null;
+    #redoCallback = null;
+    #uspsAddress = null;
+
 // initialization
     constructor(prefix = '') {
         
@@ -162,18 +170,23 @@ class Profile {
         this.#ageField.hidden = hide;
     }
 
-    validate(formname) {
-        //process(formRef) {
-        let valid = true;
+    validate(person, messageDiv, addCallback, redoCallback, message = '') {
+        this.#messageDiv = messageDiv;
+        this.#addCallback = addCallback;
+        this.#redoCallback = redoCallback;
+        let valid = message == '';
         let required = config.required;
-        let message = "Please correct the items highlighted in red and validate again.";
+        this.#uspsAddress = null;
 
         // trim trailing blanks
-        let person = URLparamsToArray($('#' + formname).serialize());
         let keys = Object.keys(person);
         for (let i = 0; i < keys.length; i++) {
-            person[keys[i]] = person[keys[i]].trim();
+            if (keys[i] != 'policyInterest')
+                person[keys[i]] = person[keys[i]].trim();
         }
+
+        this.#formData = person;
+        this.#formDataSave = person;
 
         if (person.country == 'USA') {
             message += "<br/>Note: If any of the address fields Address, City, State/Prov or Zip/PC are used and the country is United States, " +
@@ -275,14 +288,11 @@ class Profile {
         // now verify required policies
         if (policies) {
             this.#newPolicies = URLparamsToArray($('#editPolicies').serialize());
-            //console.log("New Policies:");
-            //console.log(this.#newPolicies);
-            for (var row in policies) {
-                var policy = policies[row];
+            for (let row in policies) {
+                let policy = policies[row];
                 if (policy.required == 'Y') {
-                    var field = '#l_' + policy.policy;
+                    let field = '#l_' + policy.policy;
                     if (typeof this.#newPolicies['p_' + policy.policy] === 'undefined') {
-                        //console.log("required policy " + policy.policy + ' is not checked');
                         message += '<br/>You cannot continue until you agree to the ' + policy.policy + ' policy.';
                         $(field).addClass('need');
                         valid = false;
@@ -295,10 +305,95 @@ class Profile {
 
         // don't continue to process if any are missing
         if (!valid) {
-            return message;
+            show_message("Please correct the items highlighted in red and validate again.<br/>" + message, 'error', messageDiv);
+            return false;
         }
 
-        return '';
+        // Check USPS for standardized address
+        if (this.#uspsDiv != null && this.#countryField.value == 'USA' && this.#cityField.value != '' && this.#cityField.value != '/r' &&
+            this.#stateField.value != '/r') {
+            let _this = this;
+            $.ajax({
+                url: "scripts/uspsCheck.php",
+                data: this.#formData,
+                method: 'POST',
+                success: function (data, textstatus, jqxhr) {
+                    if (data.status == 'error') {
+                        show_message(data.message, 'error', messageDiv);
+                        return false;
+                    }
+                    profile.showValidatedAddress(data);
+                },
+                error: function (jqXHR, textstatus, errorThrown) {
+                    show_message("ERROR! " + textStatus + ' ' + errorThrown + '<br/>Seek Assistance.', 'error', messageDiv);
+                },
+            });
+            return false;
+        }
+        return true;
+    }
+
+    // usps functions
+    showValidatedAddress(data) {
+        let html = '';
+        clear_message(this.#messageDiv);
+        if (data.error) {
+            let errormsg = data.error;
+            if (errormsg.substring(0, 5) == '400: ') {
+                errormsg = errormsg.substring(5);
+            }
+            html = "<h4>USPS Returned an error<br/>validating the address</h4>" +
+                "<pre>" + errormsg + "</pre>\n";
+        } else {
+            this.#uspsAddress = data.address;
+            html = "<h4>USPS Returned: " + this.#uspsAddress.valid + "</h4>";
+            if (data.status == 'error') {
+                html += "<p>USPS uspsAddress Validation Failed: " + data.error + "</p>";
+            } else {
+                // ok, we got a valid uspsAddress, show the block
+                html += "<pre>" + this.#uspsAddress.address + "\n";
+                if (this.#uspsAddress.address2)
+                    html += this.#uspsAddress.address2 + "\n";
+                html += this.#uspsAddress.city + ', ' + this.#uspsAddress.state + ' ' + this.#uspsAddress.zip + "</pre>\n";
+            }
+            if (this.#uspsAddress.valid == 'Valid')
+                html += '<button class="btn btn-sm btn-primary m-1 mb-2" onclick="profile.useUSPS();">Add to cart using USPS Validated Address</button>'
+        }
+        html += '<button class="btn btn-sm btn-secondary m-1 mb-2 " onclick="profile.useMyAddress();">Add to cart using Address as Entered</button><br/>' +
+            '<button class="btn btn-sm btn-secondary m-1 mt-2" onclick="profile.redoAddress();">I fixed the address, validate it again.</button>';
+
+        this.#uspsDiv.innerHTML = html;
+        this.#uspsDiv.scrollIntoView({behavior: 'instant', block: 'center'});
+    }
+
+    useUSPS() {
+        this.#formData = this.#formDataSave;
+        this.#formData.addr = this.#uspsAddress.address;
+        if (this.#uspsAddress.address2)
+            this.#formData.addr2 = this.#uspsAddress.address2;
+        else
+            this.#formData.addr2 = '';
+        this.#formData.city = this.#uspsAddress.city;
+        this.#formData.state = this.#uspsAddress.state;
+        this.#formData.zip = this.#uspsAddress.zip;
+
+        this.#addrField.value = this.#formData.addr;
+        this.#addr2Field.value = this.#formData.addr2;
+        this.#cityField.value = this.#formData.city;
+        this.#stateField.value = this.#formData.state;
+        this.#zipField.value = this.#formData.zip;
+        this.#uspsDiv.innerHTML = '';
+        this.#addCallback(this.#formData);
+    }
+
+    useMyAddress() {
+        this.#uspsDiv.innerHTML = '';
+        this.#addCallback(this.#formDataSave);
+    }
+
+    redoAddress() {
+        this.#uspsDiv.innerHTML = '';
+        this.#redoCallback("newBadgeForm");
     }
 
     // clearnext - clear the fields for another membership to be added
@@ -329,17 +424,13 @@ class Profile {
 
     // ageChanged - filter memList for age change
     ageChanged() {
-        console.log("in ageChanged");
         if (this.#memIdField == null)
             return;
 
         let age = this.#ageField.value;
-        console.log("age = " + age);
         let first = true;
         for (let i = 0; i < membershipTypes.length; i++) {
             let mtype = membershipTypes[i];
-            console.log(mtype);
-            console.log(!(mtype.memAge == age || mtype.memAge == 'all'));
             let display = (mtype.memAge == age || mtype.memAge == 'all');
             if (first && display) {
                 first = false;

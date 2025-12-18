@@ -30,150 +30,55 @@ var noChargeCart = null;
 var chargeCart = null;
 
 // usps related fields
-var formDataSave= null;
-var formData= null;
-var uspsAddress = null;
 var addToCartBtn = null;
-var countryField = null;
 
 var profile = null;
 
 // process the form for validation and add to the badge array if valud
 function process(formRef) {
-    let valid = true;
     formData = URLparamsToArray($('#' + formRef).serialize(), true);
     formData.policyInterest = URLparamsToArray($('#editPolicies').serialize(), true);
 
     clear_message('addMessageDiv');
-    var message = profile.validate(formRef);
-    valid = message == '';
-
-    if (badges.memTypeCount[formData.memId] == null)
-        badges.memTypeCount[formData.memId] = 0;
-
+    let message = '';
     // check if there are too many limited memberships in the cart
     if (coupon.getMemGroup() == formData.memId) {
-        var cur = badges.memTypeCount[formData.memId];
-        var lim = coupon.getLimitMemberships();
+        let cur = badges.memTypeCount[formData.memId];
+        let lim = coupon.getLimitMemberships();
         if (badges.memTypeCount[formData.memId] >= coupon.getLimitMemberships()) {
             $message += "<br/>You already have the maximum number of memberships of this membership type in your cart based on the coupon applied. " +
                 "You must choose a different membership type.";
             valid = false;
         }
     }
-
-    // don't continue to process if any are missing
-    if (!valid) {
-        show_message(message, "error", 'addMessageDiv');
+    if (!profile.validate(formData, 'addMessageDiv', addMembership, redoAddress, message))
         return false;
-    }
 
-    // Check USPS for standardized address
-    if (profile.hasUSPSDiv() && profile.country() == 'USA' && profile.city() != '' && profile.city() != '/r' && profile.state() != '/r') {
-        formDataSave = formData;
-        uspsAddress = null;
-        $.ajax({
-            url: "scripts/uspsCheck.php",
-            data: formData,
-            method: 'POST',
-            success: addressSuccess,
-            error: addressError
-        });
-    } else {
-        addMembership(formData);
-    }
+    addMembership(formData);
+    return true;
 }
 
 // countryChange - if USPS and USA, then change button
 function countryChange() {
-    if (uspsDiv == null)
+    if (!profile.hasUSPSDiv())
         return;
 
     clear_message('addMessageDiv');
-    var country = countryField.value;
-    if (country == 'USA') {
+    if (profile.country() == 'USA') {
         addToCartBtn.innerHTML = 'Validate Address To Add Membership To Cart';
     } else {
         addToCartBtn.innerHTML = 'Add Membership To Cart';
     }
 }
-function addressError(JqXHR, textStatus, errorThrown) {
-    alert("ERROR! " + textStatus + ' ' + errorThrown);
-}
-
-function addressSuccess(data, textStatus, jqXHR) {
-    if (data.status == 'error') {
-        show_message(data.message, 'error', 'addMessageDiv');
-        return false;
-    }
-    showValidatedAddress(data);
-}
-
-function showValidatedAddress(data) {
-    var html = '';
-    clear_message('addMessageDiv');
-    if (data.error) {
-        var errormsg = data.error;
-        if (errormsg.substring(0, 5) == '400: ') {
-            errormsg = errormsg.substring(5);
-        }
-        html = "<h4>USPS Returned an error<br/>validating the address</h4>" +
-            "<pre>" + errormsg + "</pre>\n";
-    } else {
-        uspsAddress = data.address;
-        html = "<h4>USPS Returned: " + uspsAddress.valid + "</h4>";
-        if (data.status == 'error') {
-            html += "<p>USPS uspsAddress Validation Failed: " + data.error + "</p>";
-        } else {
-            // ok, we got a valid uspsAddress, show the block
-            html += "<pre>" + uspsAddress.address + "\n";
-            if (uspsAddress.address2)
-                html += uspsAddress.address2 + "\n";
-            html += uspsAddress.city + ', ' + uspsAddress.state + ' ' + uspsAddress.zip + "</pre>\n";
-        }
-        if (uspsAddress.valid == 'Valid')
-            html += '<button class="btn btn-sm btn-primary m-1 mb-2" onclick="useUSPS();">Add to cart using USPS Validated Address</button>'
-    }
-    html += '<button class="btn btn-sm btn-secondary m-1 mb-2 " onclick="useMyAddress();">Add to cart using Address as Entered</button><br/>' +
-        '<button class="btn btn-sm btn-secondary m-1 mt-2" onclick="redoAddress();">I fixed the address, validate it again.</button>';
-
-    uspsDiv.innerHTML = html;
-    uspsDiv.scrollIntoView({behavior: 'instant', block: 'center'});
-}
-
-function useUSPS() {
-    var formData = formDataSave;
-    formData.addr = uspsAddress.address;
-    if (uspsAddress.address2)
-        formData.addr2 = uspsAddress.address2;
-    else
-        formData.addr2 = '';
-    formData.city = uspsAddress.city;
-    formData.state = uspsAddress.state;
-    formData.zip = uspsAddress.zip;
-
-    document.getElementById('addr').value = formData.addr;
-    document.getElementById('addr2').value = formData.addr2;
-    document.getElementById('city').value = formData.city;
-    document.getElementById('state').value = formData.state;
-    document.getElementById('zip').value = formData.zip;
-    uspsDiv.innerHTML = '';
-    addMembership(formData);
-}
-
-function useMyAddress() {
-    uspsDiv.innerHTML = '';
-    addMembership(formDataSave);
-}
 
 function redoAddress() {
-    uspsDiv.innerHTML = '';
     process("newBadgeForm");
 }
 
 function addMembership(formData) {
     // clear for next use: first name, middle name, last name, suffix (entire name field set), and the badgename.  To make virtual easier, clear the email addresses.
     profile.clearNext();
+    clear_message('addMessageDiv');
 
     // build name and legal name
     var name = formData.fname + " " + formData.mname + " " + formData.lname + " " + formData.suffix;
@@ -183,6 +88,8 @@ function addMembership(formData) {
     }
 
     badges.count +=  1;
+    if (badges.memTypeCount[formData.memId] == null)
+        badges.memTypeCount[formData.memId] = 0;
     badges.memTypeCount[formData.memId] += 1;
     badges.badges.push(formData);
 
@@ -512,16 +419,13 @@ window.onload = function () {
         profile.hideAgeDiv(true);
     }
 
-    uspsDiv = document.getElementById("uspsblock");
     addToCartBtn = document.getElementById("addToCartBtn");
     emptyCart = document.getElementById("emptyCart");
     noChargeCart = document.getElementById("noChargeCart");
     chargeCart = document.getElementById("chargeCart");
-    countryField = document.getElementById("country");
 
-    if (uspsDiv) {
-        var country = countryField.value;
-        if (country == 'USA')
+    if (profile.hasUSPSDiv()) {
+        if (profile.country() == 'USA')
             addToCartBtn.innerHTML = 'Validate Address To Add Membership To Cart';
     }
 
