@@ -3,6 +3,7 @@
 function draw_login($config_vars, $result_message = '', $result_color = '', $why = 'continue to the portal') : void {
     $con = get_conf('con');
     $policies = getPolicies();
+    $interests = getInterests();
     ?>
  <!-- signin form (at body level) -->
     <div id='signin'>
@@ -105,6 +106,7 @@ function draw_login($config_vars, $result_message = '', $result_color = '', $why
     <script type='text/javascript'>
         var config = <?php echo json_encode($config_vars); ?>;
         var policies = <?php echo json_encode($policies); ?>;
+        var interests = <?php echo json_encode($interests); ?>;
     </script>
 </html>
 <?php

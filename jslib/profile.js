@@ -24,6 +24,7 @@ class Profile {
     #ageText = null;
     #uspsDiv= null;
     #newPolicies = null;
+    #email1Input = true;
 
 // online reg - membership filtering
     #memIdField = null;
@@ -35,9 +36,11 @@ class Profile {
     #addCallback = null;
     #redoCallback = null;
     #uspsAddress = null;
+    #source = '';
 
 // initialization
-    constructor(prefix = '') {
+    constructor(prefix = '', source = '') {
+        this.#source = source;
         
 // lookup all DOM elements
         this.#fnameField = document.getElementById(prefix + "fname");
@@ -120,13 +123,15 @@ class Profile {
     }
 
     email() {
-        return this.#email1Field.value;
+        if (this.#email1Input)
+            return this.#email1Field.value;
+        return this.#email1Field.innerHTML;
     }
 
     email2() {
         if (this.#email2Field)
             return this.#email2Field.value;
-        return this.#email1Field.value;
+        return this.email();
     }
 
     phone() {
@@ -154,19 +159,24 @@ class Profile {
         console.log("setall called");
     }
 
+    setEmailFixed(email) {
+        this.#email1Input = false;
+        this.#email1Field.innerHTML = email;
+    }
+
     setAgeText(text) {
         this.ageTextField.innerHTML = text;
     }
 
-    hideAgeDiv(hide) {
+    hideAgeDiv(hide = true) {
         this.#ageDiv.hidden = hide;
     }
 
-    hideAgeText(hide) {
+    hideAgeText(hide = true) {
         this.#ageText.hidden = hide;
     }
 
-    hideAgeField(hide) {
+    hideAgeField(hide = true) {
         this.#ageField.hidden = hide;
     }
 
@@ -312,10 +322,12 @@ class Profile {
         // Check USPS for standardized address
         if (this.#uspsDiv != null && this.#countryField.value == 'USA' && this.#cityField.value != '' && this.#cityField.value != '/r' &&
             this.#stateField.value != '/r') {
+            let data = this.#formData;
+            data.source = 'login';
             let _this = this;
             $.ajax({
                 url: "scripts/uspsCheck.php",
-                data: this.#formData,
+                data: data,
                 method: 'POST',
                 success: function (data, textstatus, jqxhr) {
                     if (data.status == 'error') {
@@ -401,13 +413,23 @@ class Profile {
         this.#fnameField.value = '';
         this.#mnameField.value = '';
         this.#suffixField.value = '';
-        this.#email1Field.value = '';
-        this.#email2Field.value = '';
+        if (this.#email1Input)
+            this.#email1Field.value = '';
+        if (this.email2Field)
+            this.#email2Field.value = '';
         this.#legalNameField.value = '';
         this.#pronounsField.value = '';
         this.#badgenameField.value = '';
         this.#badgenameL2Field.value = '';
         this.#ageField.value = '';
+
+        this.#fnameField.classList.remove('need');
+        this.#lnameField.classList.remove('need');
+        this.#addrField.classList.remove('need');
+        this.#cityField.classList.remove('need');
+        this.#stateField.classList.remove('need');
+        this.#zipField.classList.remove('need');
+        this.#ageField.classList.remove('need');
 
         // reset the policies and interests
         for (let row in policies) {

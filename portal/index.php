@@ -24,6 +24,7 @@ $config_vars['startdate'] = $condata['startdate'];
 $config_vars['debug'] = getConfValue('debug', 'portal', 0);
 $config_vars['uri'] = $portal_conf['portalsite'];
 $config_vars['required'] = getConfValue('reg', 'required', 'addr');
+
 $loginId = null;
 $loginType = null;
 $purpose = "From here you can create and manage your membership account.";
