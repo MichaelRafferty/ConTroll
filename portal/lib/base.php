@@ -107,7 +107,7 @@ function portalPageInit($page, $info, $css, $js, $refresh = false) {
             <script type='text/javascript' src='<?php echo $includes['jqjs']; ?>'></script>
             <script type='text/javascript' src='<?php echo $includes['jquijs']; ?>'></script>
             <script type='text/javascript' src="jslib/global.js?v=<?php echo $globalJSversion;?>"></script>
-            <script type='text/javascript' src="jslib/profile.js?v=$globalJSversion"></script>
+            <script type='text/javascript' src="jslib/profile.js?v=<?php echo $globalJSversion;?>"></script>
 
             <script type='text/javascript' src="js/base.js?v=<?php echo $portalJSVersion;?>"></script>
             <?php

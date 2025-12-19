@@ -1,6 +1,7 @@
 // addUpdate javascript, also requires base.js
 
 var add = null;
+var profile = null;
 
 // initial setup
 window.onload = function () {
@@ -11,95 +12,33 @@ class Add {
     // current person info
     #epHeader = null;
     #personInfo = [];
-    #fnameField = null;
-    #mnameField = null;
-    #lnameField = null;
-    #suffixField = null;
-    #legalNameField = null;
-    #pronounsField = null;
-    #addrField = null;
-    #addr2Field = null;
-    #cityField = null;
-    #stateField = null;
-    #zipField = null;
-    #countryField = null;
-    #email1Field = null;
-    #phoneField = null;
-    #badgenameField = null;
-    #badgeNameL2Field = null;
-    #ageField = null;
-
-    #uspsDiv= null;
-    #lastVerified = null;
-
-    // this person info
-    #addUpdateId = null;
-    #addUpdateType = null;
-    #uspsAddress = null;
-
-    // age items
-    #ageDiv = null;
-    #ageText = null;
 
     // flow items
-    #auHeader = null
     #emailDiv = null;
     #verifyPersonDiv = null;
-    #getNewMembershipDiv = null;
-    #currentStep = 1;
     #leaveBeforeChanges = false;
     #newEmail = null;
     #newEmailField = null;
     #debug = 0;
-
-    // Interests items
-    #interestDiv = null;
-    #newInterests = null;
-
-    // policy Items
-    #oldPolicies = null;
-    #newPolicies = null;
+    #addNewPersonBtn = null;
 
     constructor() {
         if (config.debug)
             this.#debug = config.debug;
 
-        this.#auHeader = document.getElementById("auHeader");
+        profile = new Profile('', 'login');
+
         // set up div elements
+        this.#addNewPersonBtn = document.getElementById("addNewPerson");
         this.#emailDiv = document.getElementById("emailDiv");
         this.#newEmailField = document.getElementById("newEmailAddr");
         this.#newEmailField.addEventListener('keyup', addNewEmailListener);
         this.#verifyPersonDiv = document.getElementById("verifyPersonDiv");
-        this.#interestDiv = document.getElementById("verifyInterestDiv");
 
+        this.#addNewPersonBtn.hidden = true;
         this.#verifyPersonDiv.hidden = true;
 
         this.#epHeader = document.getElementById("epHeader");
-        this.#fnameField = document.getElementById("fname");
-        this.#mnameField = document.getElementById("mname");
-        this.#lnameField = document.getElementById("lname");
-        this.#suffixField = document.getElementById("suffix");
-        this.#legalNameField = document.getElementById("legalName");
-        this.#pronounsField = document.getElementById("pronouns");
-        this.#addrField = document.getElementById("addr");
-        this.#addr2Field = document.getElementById("addr2");
-        this.#cityField = document.getElementById("city");
-        this.#stateField = document.getElementById("state");
-        this.#zipField = document.getElementById("zip");
-        this.#countryField = document.getElementById("country");
-        this.#email1Field = document.getElementById("email1");
-        this.#phoneField = document.getElementById("phone");
-        this.#badgenameField = document.getElementById("badge_name");
-        this.#badgeNameL2Field = document.getElementById("badgeNameL2");
-        this.#ageField = document.getElementById("age");
-        this.#ageText = document.getElementById("agetext");
-        this.#ageDiv = document.getElementById("agediv");
-        this.#uspsDiv = document.getElementById("uspsblock");
-
-        this.#ageDiv.hidden = true;
-        this.#ageField.hidden = false;
-        this.#ageText.hidden = true;
-
         this.getPersonInfo(config.id, config.idType);
         }
 
@@ -137,7 +76,7 @@ class Add {
         clear_message();
         $('#newEmailAddr').removeClass('need');
         if (newEmail.toLowerCase() == config.personEmail.toLowerCase()) {
-            this.#email1Field.innerHTML = newEmail;
+            profile.setEmailFixed(newEmail);
             this.#newEmail = newEmail;
             this.gotoProfile();
             return;
@@ -182,7 +121,7 @@ class Add {
         var accountId = data.accountId;
 
         if (countFound == 0 || (countFound == managedByMe)) {
-            this.#email1Field.innerHTML = email;
+            profile.setEmailFixed(email);
             this.#newEmail = email;
             this.gotoProfile();
             return;
@@ -261,7 +200,7 @@ class Add {
         });
     }
 
-// membership add/update functions
+// membership add functions
     // getPersonInfo
     getPersonInfo(id, type) {
         if (id == null) {
@@ -304,34 +243,17 @@ class Add {
     // got the person, update the modal contents
     getPersonInfoSuccess(data) {
         // ok, it's legal to edit this person, now populate the fields
-        this.#personInfo = data.person;
+        let person = data.person;
+        profile.clearNext();
 
-        // now fill in the fields
-
-        this.#fnameField.value = '';
-        this.#mnameField.value = '';
-        this.#suffixField.value = '';
-        this.#legalNameField.value = '';
-        this.#pronounsField.value = '';
-        this.#email1Field.innerHTML = '';
-        this.#phoneField.value = '';
-        this.#badgenameField.value = '';
-        this.#personInfo.personType = 'n';
-        this.#personInfo.id = '-1';
-        this.#lastVerified = 0;
-
-        this.#newInterests =  URLparamsToArray($('#editInterests').serialize());
-        this.#lnameField.value = this.#personInfo.last_name;
-        this.#addrField.value = this.#personInfo.address;
-        this.#addr2Field.value = this.#personInfo.addr_2;
-        this.#cityField.value = this.#personInfo.city;
-        this.#stateField.value = this.#personInfo.state;
-        this.#zipField.value = this.#personInfo.zip;
-        this.#countryField.value = this.#personInfo.country;
-        if (this.#uspsDiv != null) {
-            this.#uspsDiv.innerHTML = '';
-            this.#uspsDiv.classList.remove('border', 'border-4', 'border-dark', 'rounded');
-        }
+        // now pre-fill in the inherited fields fields
+        profile.setLname(person.last_name);
+        profile.setAddr(person.address);
+        profile.setAddr2(person.addr_2);
+        profile.setCity(person.city);
+        profile.setState(person.state);
+        profile.setZip(person.zip);
+        profile.setCountry(person.country);
      }
 
     // goto profile: switch from email to profile
@@ -344,164 +266,33 @@ class Add {
         // switch visible sections
         this.#emailDiv.hidden = true;
         this.#verifyPersonDiv.hidden = false;
-        let focusField = this.#fnameField;
-        setTimeout(() => { focusField.focus({focusVisible: true}); }, 600);
+        this.#addNewPersonBtn.hidden = false;
+        profile.setFocus('fname');
         window.addEventListener('beforeunload', event => {
             add.confirmExit(event);
         });
         this.#leaveBeforeChanges = true;
     }
 
-    // verifyAddress - verify with USPS if defined or go to step 3
-    // validateUSPS = 0 for do USPS validation, 1 = validate form, but not USPS, 2 = skip all validation
-    verifyAddress(validateUSPS = 0) {
+    // addPersonSubmit - calidate and add the person;
+    addPersonSubmit() {
         clear_message();
-        var valid = true;
-        var required = config.required;
-        var message = "Please correct the items highlighted in red and validate again.<br/>";
-        var person = URLparamsToArray($('#addUpgradeForm').serialize());
-        var keys = Object.keys(person);
-        for (var i = 0; i < keys.length; i++) {
-            person[keys[i]] = person[keys[i]].trim();
-        }
-        this.#personInfo = person;
-        if (config.upgradeType) {
-            this.#personInfo.personType = config.upgradeType;
-            this.#personInfo.id = config.upgradeId;
-        }
+        let person = URLparamsToArray($('#addUpgradeForm').serialize());
 
-        // validation
-        if (person.country == 'USA') {
-            message += "<br/>Note: If any of the address fields Address, City, State/Prov or Zip/PC are used and the country is United States, " +
-                "then the Address, City, State, and Zip fields must all be entered and the state field must be a valid USPS two character state code.";
-        }
-
-        if (required != '') {
-            // first name is required
-            if (person.fname == '') {
-                valid = false;
-                $('#fname').addClass('need');
-            } else {
-                $('#fname').removeClass('need');
-            }
-        }
-
-        if (required == 'all') {
-            // last name is required
-            if (person.lname == '') {
-                valid = false;
-                $('#lname').addClass('need');
-            } else {
-                $('#lname').removeClass('need');
-            }
-        }
-
-        if (required == 'addr' || required == 'all' ||
-            (person.country == 'USA' && this.#uspsDiv != null &&
-                (person.addr != '' || person.city != '' || person.state != '' || person.zip != '')
-            )
-        ) {
-            // address 1 is required, address 2 is optional
-            if (person.addr == '') {
-                valid = false;
-                $('#addr').addClass('need');
-            } else {
-                $('#addr').removeClass('need');
-            }
-
-            // city/state/zip required
-            if (person.city == '') {
-                valid = false;
-                $('#city').addClass('need');
-            } else {
-                $('#city').removeClass('need');
-            }
-
-            if (person.state == '') {
-                valid = false;
-                $('#state').addClass('need');
-            } else {
-                if (person.country == 'USA') {
-                    if (person.state.trim().length != 2) {
-                        valid = false;
-                        $('#state').addClass('need');
-                    } else {
-                        $('#state').removeClass('need');
-                    }
-                } else {
-                    $('#state').removeClass('need');
-                }
-            }
-
-            if (person.zip == '') {
-                valid = false;
-                $('#zip').addClass('need');
-            } else {
-                $('#zip').removeClass('need');
-            }
-        }
-
-        // age is always required
-        if (person.age === undefined || person.age == '') {
-            valid = false;
-            $('#age').addClass('need');
-        } else {
-            $('#age').removeClass('need');
-        }
-
-        // now verify required policies
-        if (policies) {
-            this.#newPolicies = URLparamsToArray($('#editPolicies').serialize());
-            console.log("New Policies:");
-            console.log(this.#newPolicies);
-            for (var row in policies) {
-                var policy = policies[row];
-                if (policy.required == 'Y') {
-                    var field = '#l_' + policy.policy;
-                    if (typeof this.#newPolicies['p_' + policy.policy] === 'undefined') {
-                        console.log("required policy " + policy.policy + ' is not checked');
-                        message += '<br/>You cannot continue until you agree to the ' + policy.policy + ' policy.';
-                        $(field).addClass('need');
-                        valid = false;
-                    } else {
-                        $(field).removeClass('need');
-                    }
-                }
-            }
-        }
-        // don't continue to process if any are missing
-        if (!valid) {
-            show_message(message, "error");
+        // validate the form
+        if (!profile.validate(person, null, addPerson, redoAddress))
             return false;
+
+        this.addPerson(profile.getFormData());
+        return true;
         }
 
-        // Check USPS for standardized address
-        if (this.#uspsDiv != null && person.country == 'USA' && person.city != '' && person.state != '/r' && validateUSPS == 0) {
-            let script = "scripts/uspsCheck.php";
-            $.ajax({
-                url: script,
-                data: person,
-                method: 'POST',
-                success: function (data, textStatus, jqXhr) {
-                    if (data.status == 'error') {
-                        show_message(data.message, 'error');
-                        return false;
-                    }
-                    add.showValidatedAddress(data);
-                    return true;
-                },
-                error: function (jqXHR, textStatus, errorThrown) {
-                    showAjaxError(jqXHR, textStatus, errorThrown);
-                    return false;
-                },
-            })
-            return false;
-        }
-
-        // ok, save off the profile
+    // ok, add the person to the account
+    addPerson(person){
         clear_message();
         let data = {
-            person: URLparamsToArray($('#addUpgradeForm').serialize()),
+            //person: URLparamsToArray($('#addUpgradeForm').serialize()),
+            person: person,
             newPolicies: JSON.stringify(URLparamsToArray($('#editPolicies').serialize())),
             newInterests: JSON.stringify(URLparamsToArray($('#editInterests').serialize())),
             currentPerson: config.id,
@@ -535,109 +326,22 @@ class Add {
             show_message(data.message);
             if (data.newPersonId > 0) {
                 this.#leaveBeforeChanges = false;
-                window.location = "portal.php";
+                let fullname = (profile.fname() + ' ' + profile.lname()).trim();
+                let url = window.location.protocol + '//' + window.location.hostname + '/cart.php';
+                if (confirm('Press OK to purchase memberships now for ' + fullname + '.  Otherwise you will be taken to the portal home page')) {
+                    window.location.href=url;
+                    return;
+                }
+                window.location = "/portal.php";
             }
         }
         return true;
-    }
-
-    showValidatedAddress(data) {
-        var html = '';
-        clear_message();
-        if (data.error) {
-            var errormsg = data.error;
-            if (errormsg.substring(0, 5) == '400: ') {
-                errormsg = errormsg.substring(5);
-            }
-            html = "<h4>USPS Returned an error<br/>validating the address</h4>" +
-                "<div class='bg-danger text-white'><pre>" + errormsg + "</pre></div>\n";
-        } else {
-            this.#uspsAddress = data.address;
-            if (this.#uspsAddress.address2 == undefined)
-                this.#uspsAddress.address2 = '';
-
-            html = '';
-            if (this.#uspsAddress.valid != 'Valid') {
-                html += "<div class='p-2 bg-danger text-white'>";
-            }
-            html += "<h4>USPS Returned: " + this.#uspsAddress.valid + "</h4>";
-            // ok, we got a valid uspsAddress, if it doesn't match, show the block
-            if ((this.#personInfo.addr == this.#uspsAddress.address || this.#personInfo.address == this.#uspsAddress.address) &&
-                (this.#personInfo.addr2 == this.#uspsAddress.address2 || this.#personInfo.addr_2 == this.#uspsAddress.address2) &&
-                this.#personInfo.city == this.#uspsAddress.city && this.#personInfo.state == this.#uspsAddress.state &&
-                this.#personInfo.zip == this.#uspsAddress.zip) {
-                this.useMyAddress();
-                return;
-            }
-
-            html += "<pre>" + this.#uspsAddress.address + "\n";
-            if (this.#uspsAddress.address2)
-                html += this.#uspsAddress.address2 + "\n";
-            html += this.#uspsAddress.city + ', ' + this.#uspsAddress.state + ' ' + this.#uspsAddress.zip + "</pre>\n";
-
-            if (this.#uspsAddress.valid == 'Valid')
-                html += '<button class="btn btn-sm btn-primary m-1 mb-2" onclick="add.useUSPS();">Update using the USPS validated address</button>'
-            else
-                html += "<p>Please check/verify the address you entered on the left.</p></div>";
-        }
-        html += '<button class="btn btn-sm btn-secondary m-1 mb-2 " onclick="add.useMyAddress();">Update using the address as entered</button><br/>' +
-            '<button class="btn btn-sm btn-secondary m-1 mt-2" onclick="add.redoAddress();">I fixed the address, validate it again</button>';
-
-        if (this.#uspsDiv != null) {
-            this.#uspsDiv.innerHTML = html;
-            this.#uspsDiv.classList.add('border', 'border-4', 'border-dark', 'rounded');
-            this.#uspsDiv.scrollIntoView({behavior: 'instant', block: 'center'});
-        }
-    }
-
-    // usps address post functions
-    useUSPS() {
-        this.#personInfo.addr = this.#uspsAddress.address;
-        if (this.#uspsAddress.address2)
-            this.#personInfo.addr2 = this.#uspsAddress.address2;
-        else
-            this.#personInfo.addr2 = '';
-        this.#personInfo.city = this.#uspsAddress.city;
-        this.#personInfo.state = this.#uspsAddress.state;
-        this.#personInfo.zip = this.#uspsAddress.zip;
-
-        this.#addrField.value = this.#personInfo.addr;
-        this.#addr2Field.value = this.#personInfo.addr2;
-        this.#cityField.value = this.#personInfo.city;
-        this.#stateField.value = this.#personInfo.state;
-        this.#zipField.value = this.#personInfo.zip;
-        if (this.#uspsDiv != null) {
-            this.#uspsDiv.innerHTML = '';
-            this.#uspsDiv.classList.remove('border', 'border-4', 'border-dark', 'rounded');
-        }
-        this.verifyAddress(1);
-    }
-
-    useMyAddress() {
-        if (this.#uspsDiv != null) {
-            this.#uspsDiv.innerHTML = '';
-            this.#uspsDiv.classList.remove('border', 'border-4', 'border-dark', 'rounded');
-        }
-        this.verifyAddress(1);
-    }
-
-    redoAddress() {
-        if (this.#uspsDiv != null) {
-            this.#uspsDiv.innerHTML = '';
-            this.#uspsDiv.classList.remove('border', 'border-4', 'border-dark', 'rounded');
-        }
-        this.verifyAddress(0);
     }
 
     // cancel add - cancel the add without doing an are you sure...
     cancelAdd() {
         this.#leaveBeforeChanges = false;
         window.location="portal.php";
-    }
-
-    // add the new person to the account, and if successful ask if they want to add memberships
-    addPerson() {
-        this.verifyAddress(0);
     }
 
     // if they haven't used the save/return button, ask if they want to leave
@@ -657,4 +361,12 @@ class Add {
 function addNewEmailListener(event) {
     if (event.code === 'Enter')
         add.checkNewEmail(0);
+}
+
+function addPerson(data) {
+    add.addPerson(data);
+}
+
+function redoAddress() {
+    add.addPersonSubmit();
 }

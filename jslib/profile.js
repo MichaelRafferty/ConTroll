@@ -150,13 +150,37 @@ class Profile {
         return this.#ageField.value;
     }
 
+    getFormData() {
+        return this.#formData;
+    }
+
     hasUSPSDiv() {
         return this.#uspsDiv != null;
     }
 
-    // set functions
-    setall(person) {
-        console.log("setall called");
+    // set functions - pre-populate the form
+    setLname(last_name) {
+        this.#lnameField.value = last_name;
+    }
+
+    setAddr(address) {
+        this.#addrField.value = address;
+    }
+    setAddr2(addr_2) {
+        this.#addr2Field.value = addr_2;
+    }
+
+    setCity(city) {
+        this.#cityField.value = city;
+    }
+    setState(state) {
+        this.#stateField.value = state;
+    }
+    setZip(zip) {
+        this.#zipField.value = zip;
+    }
+    setCountry(country) {
+        this.#countryField.value = country;
     }
 
     setEmailFixed(email) {
@@ -166,6 +190,17 @@ class Profile {
 
     setAgeText(text) {
         this.ageTextField.innerHTML = text;
+    }
+
+    setFocus(field) {
+        let focusField = this.#fnameField;
+        switch (field) {
+            case 'lname':
+            case 'last_name':
+                focusField = this.#lnameField;
+                break;
+        }
+        setTimeout(() => { focusField.focus({focusVisible: true}); }, 600);
     }
 
     hideAgeDiv(hide = true) {

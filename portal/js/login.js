@@ -255,6 +255,7 @@ class Login {
         }
 
         this.#editPersonModal.show();
+        profile.setFocus('fname');
     }
 
     // copied from portal.js (consider how to make one copy)
@@ -280,7 +281,7 @@ class Login {
         if (!profile.validate(person, 'epMessageDiv', addPerson, redoAddress, ''))
             return false;
 
-        this.addPerson(person);
+        this.addPerson(profile.getFormData());
         return true;
     }
 
