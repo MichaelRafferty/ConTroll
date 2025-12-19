@@ -324,6 +324,12 @@ class Login {
             show_message(data.message);
             this.#editPersonModal.hide();
             if (data.newPersonId > 0) {
+                let fullname = (profile.fname() + ' ' + profile.lname()).trim();
+                let url = window.location.protocol + '//' + window.location.hostname + '/cart.php';
+                if (confirm('Press OK to purchase memberships now for ' + fullname + '.  Otherwise you will be taken to the portal home page')) {
+                    window.location.href=url;
+                    return;
+                }
                 window.location.reload();
             }
         }

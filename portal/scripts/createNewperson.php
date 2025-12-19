@@ -112,6 +112,8 @@ if ($loginId < 5) {
     setSessionVar("id", $personId);
     setSessionVar("idType", 'n');
 }
+setSessionVar("cartId", $personId);
+setSessionVar('cartType', 'n');
 logWrite(array('con'=>$con['name'], 'action' => 'Create new person on login', 'person' => array('n', $personId), 'newperson' => $person,
                'PolicyUpd' => $policy_msg, 'InterestUpd' => $interest_msg));
 

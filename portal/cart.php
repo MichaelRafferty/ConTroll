@@ -35,9 +35,22 @@ if (array_key_exists('oneoff', $con))
 else
     $oneoff = 0;
 
+$cartId = null;
 if (!(array_key_exists('cartId', $_POST) && array_key_exists('cartType', $_POST) && array_key_exists('action', $_POST))) {
-    header('location:' . $portal_conf['portalsite'] . '?messageFwd = "Invalid call to add to cart, seek assistance"');
-    exit();
+    if (isSessionVar('cartId') && isSessionVar('cartType')) {
+        $cartId = getSessionVar('cartId');
+        $cartType = getSessionVar('cartType');
+    } else {
+        header('location:' . $portal_conf['portalsite'] . '?messageFwd = "Invalid call to add to cart, seek assistance"');
+        exit();
+    }
+}
+
+unsetSessionVar('cartId');
+unsetSessionVar('cartType');
+if ($cartId == null) {
+    $cartId = $_POST['cartId'];
+    $cartType = $_POST['cartType'];
 }
 
 $config_vars = array();
@@ -48,8 +61,8 @@ $config_vars['uri'] = $portal_conf['portalsite'];
 $config_vars['regadminemail'] = $con['regadminemail'];
 $config_vars['id'] = $loginId;
 $config_vars['idType'] = $loginType;
-$config_vars['cartId'] = $_POST['cartId'];
-$config_vars['cartType'] = $_POST['cartType'];
+$config_vars['cartId'] = $cartId;
+$config_vars['cartType'] = $cartType;
 $config_vars['personEmail'] = getSessionVar('email');
 $config_vars['required'] = getConfValue('reg', 'required', 'addr');
 $config_vars['multiOneDay'] = $multiOneDay;
@@ -81,7 +94,7 @@ portalPageInit('addUpgrade', $info,
     ),
 );
     // get the info for the current person
-    $person = getPersonInfo($conid, $_POST['cartType'], $_POST['cartId']);
+    $person = getPersonInfo($conid, $cartType, $cartId);
 ?>
 <script type='text/javascript'>
     var config = <?php echo json_encode($config_vars); ?>;
