@@ -54,7 +54,7 @@ ol_page_init($condata['label'] . ' Registration Complete');
         <?php
   }
 
-  if($transid==0 or !isset($owner['complete_date']) or ($owner['complete_date'] == null)) {
+  if($transid==0 || !isset($owner['complete_date']) or ($owner['complete_date'] == null)) {
         ?>
         <p>
             Somehow you managed to get here without information on your purchase.

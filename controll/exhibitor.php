@@ -12,7 +12,7 @@ require_once "lib/exhibitorChooseExhibitor.php";
 $need_login = google_init("page");
 
 $page = "exhibitor";
-if(!$need_login or !checkAuth($need_login['sub'], $page)) {
+if(!$need_login || !checkAuth($need_login['sub'], $page)) {
     bounce_page("index.php");
 }
 

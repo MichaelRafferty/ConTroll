@@ -3,7 +3,7 @@ require_once(__DIR__ . "/../../lib/db_functions.php");
 require_once(__DIR__ . "/../../lib/global.php");
 $ini = get_conf('reg');
 if ($ini['https'] <> 0) {     
-    if(!isset($_SERVER['HTTPS']) or $_SERVER["HTTPS"] != "on") {
+    if(!isset($_SERVER['HTTPS']) || $_SERVER["HTTPS"] != "on") {
         header("HTTP/1.1 301 Moved Permanently");
         header("Location: https://" . $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"]);
         exit();
@@ -55,7 +55,7 @@ if(($ini['suspended'] != 1) or ($ini['close'] != 1)) {
     <p>This page handles the cancelation of convention memberships purchased at the prior convention and via online registration or mail-in. If you're
         looking for information on refunds for the Art Show, Artist Alley, or Dealer Room please email <a href='mailto:<?php echo $con['refundemail']; ?>'><?php echo $con['refundemail']; ?></a>.</p>
     <?php
-    if(!isset($_GET) or !isset($_GET['email']) or !isset($_GET['tid'])) {
+    if(!isset($_GET) || !isset($_GET['email']) || !isset($_GET['tid'])) {
       ?><p>Please provide the transaction id from your receipt or the email from registration</p>
       <form>
         Email: <input type='text' name='email'/><br/>

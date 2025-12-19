@@ -5,7 +5,7 @@ require_once "../lib/artItem.php";
 $need_login = google_init("page");
 
 $page = "art_control";
-if(!$need_login or !checkAuth($need_login['sub'], $page)) {
+if(!$need_login || !checkAuth($need_login['sub'], $page)) {
     bounce_page("index.php");
 }
 

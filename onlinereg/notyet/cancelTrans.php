@@ -4,7 +4,7 @@ require_once(__DIR__ . "/../../lib/db_functions.php");
 require_once(__DIR__ . "/../../lib/log.php");
 $ini = get_conf('reg');
 if ($ini['https'] <> 0) {     
-    if(!isset($_SERVER['HTTPS']) or $_SERVER["HTTPS"] != "on") {
+    if(!isset($_SERVER['HTTPS']) || $_SERVER["HTTPS"] != "on") {
         header("HTTP/1.1 301 Moved Permanently");
         header("Location: https://" . $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"]);
         exit();
