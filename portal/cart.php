@@ -36,7 +36,7 @@ else
     $oneoff = 0;
 
 if (!(array_key_exists('cartId', $_POST) && array_key_exists('cartType', $_POST) && array_key_exists('action', $_POST))) {
-    header('location:' . $portal_conf['portalsite'] . 'messageFwd = "Invalid call to add to cart, seek assistance"');
+    header('location:' . $portal_conf['portalsite'] . '?messageFwd = "Invalid call to add to cart, seek assistance"');
     exit();
 }
 
