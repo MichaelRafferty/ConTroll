@@ -229,6 +229,7 @@ function makePurchase(token, label) {
         alert("You don't have any memberships to buy, please add some memberships");
         if (newBadge != null) {
             newBadge.show();
+            profile.setFocus('fname');
         }
         return false;        
     }
@@ -259,6 +260,7 @@ function newBadgeModalOpen() {
     if (newBadge != null) {
         profile.clearNext();
         newBadge.show();
+        profile.setFocus('fname');
     }
 }
 
@@ -402,6 +404,7 @@ function togglePopup() {
     }
     if (newBadge != null) {
         newBadge.show();
+        profile.setFocus('fname');
     }
 }
 
@@ -449,8 +452,10 @@ window.onload = function () {
 
         repriceCart();
 
-        if (coupon.couponError() == false)
+        if (coupon.couponError() == false) {
             newBadge.show();
+            profile.setFocus('fname');
+        }
     }
 
 }
