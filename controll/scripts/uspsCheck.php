@@ -42,6 +42,13 @@ else
 $validated = getUSPSNormalizedAddress($address, $address2, $city, $state, $zip);
 $response['usps'] = $validated;
 
+if ($validated == null) {
+    $response['success'] = true;
+    $response['address'] = null;
+    ajaxSuccess($response);
+    exit();
+}
+
 if (!is_array($validated)) {
     $response['error'] = $validated;
     ajaxSuccess($response);

@@ -186,10 +186,55 @@ class Profile {
     setEmailFixed(email) {
         this.#email1Input = false;
         this.#email1Field.innerHTML = email;
+        return email;
     }
 
     setAgeText(text) {
         this.ageTextField.innerHTML = text;
+        this.#ageText.hidden = false;
+        this.#ageDiv.hidden = false;
+        this.#ageField.hidden = true;
+    }
+
+    setAge(age) {
+        this.#ageField.value = age;
+    }
+
+    setAll(first_name, middle_name, last_name, suffix, legalName, pronouns, address, addr_2, city, state, zip, country, phone,
+           badge_name, badgeNameL2, age) {
+        this.#fnameField.value = first_name;
+        this.#mnameField.value = middle_name;
+        this.#lnameField.value = last_name;
+        this.#suffixField.value = suffix;
+        this.#legalNameField.value = legalName;
+        this.#pronounsField.value = pronouns;
+        this.#addrField.value = address;
+        this.#addr2Field.value = addr_2;
+        this.#cityField.value = city;
+        this.#stateField.value = state;
+        this.#zipField.value = zip;
+        this.#countryField.value = country;
+        this.#phoneField.value = phone;
+        this.#badgenameField.value = badge_name;
+        this.#badgenameL2Field.value = badgeNameL2;
+        this.#ageField.value = age;
+    }
+
+    setPolicies(old) {
+        // policies
+        if (old) {
+            for (let row in old) {
+                let policy = old[row];
+                let id = document.getElementById('p_' + policy.policy);
+                if (id) {
+                    if (policy.response) {
+                        id.checked = policy.response == 'Y';
+                    } else {
+                        id.checked = policy.defaultValue == 'Y';
+                    }
+                }
+            }
+        }
     }
 
     setFocus(field) {
@@ -367,8 +412,14 @@ class Profile {
                 success: function (data, textstatus, jqxhr) {
                     if (data.status == 'error') {
                         show_message(data.message, 'error', messageDiv);
-                        return false;
+                        return;
                     }
+
+                    if (data.usps == null) {
+                        profile.useMyAddress();
+                        return;
+                    }
+
                     profile.showValidatedAddress(data);
                 },
                 error: function (jqXHR, textstatus, errorThrown) {
@@ -467,15 +518,19 @@ class Profile {
         this.#ageField.classList.remove('need');
 
         // reset the policies and interests
-        for (let row in policies) {
-            let policy = policies[row];
-            let field = '#p_' + policy.policy;
-            $(field).prop('checked', policy.defaultValue == 'Y');
+        if (typeof policies !== 'undefined') {
+            for (let row in policies) {
+                let policy = policies[row];
+                let field = '#p_' + policy.policy;
+                $(field).prop('checked', policy.defaultValue == 'Y');
+            }
         }
-        for (let row in interests) {
-            let interest = interests[row];
-            let field = '#i_' + interest.interest;
-            $(field).prop('checked', false);
+        if (typeof interests !== 'undefined') {
+            for (let row in interests) {
+                let interest = interests[row];
+                let field = '#i_' + interest.interest;
+                $(field).prop('checked', false);
+            }
         }
     }
 

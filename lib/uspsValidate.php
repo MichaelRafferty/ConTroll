@@ -8,11 +8,12 @@ $uspsKey = null;
 $validstate = ['AA','AE','AL','AK','AP','AS','AZ','AR','CA','CO','CT','DE','DC','FM','FL','GA','GU','HI','ID','IL','IN','IA','KS','KY','LA',
                'ME','MH','MD','MA','MI','MN','MS','MO','MP','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PW','PA','PR','RI',
                'SC','SD','TN','TX','UT','VT','VI','VA','WA','WV','WI','WY'];
+$uspsDisabled = false;
 
 loadConfFile();
 
 function getUSPSV3Token() {
-    global $uspsAPIToken, $uspsAuthorization, $uspsKey;
+    global $uspsAPIToken, $uspsAuthorization, $uspsKey, $uspsDisabled;
 
     $usps = get_conf('usps');
     $key = $usps['clientId'];
@@ -34,8 +35,9 @@ function getUSPSV3Token() {
     curl_close($tokenCURL);
 
     if ($response == false) {
-        ajaxSuccess(array('status'=>'error', 'message'=>'unable to get token'));
-        exit();
+        error_log("unable to get USPSV3token");
+        $uspsDisabled = true;
+        return;
     }
 
     $uspsAPIToken = $response['access_token'];
@@ -44,7 +46,7 @@ function getUSPSV3Token() {
 }
 
 function getUSPSNormalizedAddress($address, $address2, $city, $state, $zip) {
-    global $uspsAPIToken, $uspsKey, $uspsAuthorization, $validstate;
+    global $uspsAPIToken, $uspsKey, $uspsAuthorization, $uspsDisabled, $validstate;
     
     if ($state == null || strlen($state) != 2) {
         ajaxSuccess(array ('status' => 'error', 'message' => 'State must be 2 character USPS State code'));
@@ -115,6 +117,9 @@ function getUSPSNormalizedAddress($address, $address2, $city, $state, $zip) {
     
     if ($uspsAPIToken == null)
         $uspsAPIToken = getUSPSV3Token();
+
+    if ($uspsDisabled)
+        return null;
     
     $valCURL = curl_init();
     curl_setopt($valCURL, CURLOPT_URL, 'https://api.usps.com/addresses/v3/address?' . http_build_query($validate));
@@ -134,7 +139,7 @@ function getUSPSNormalizedAddress($address, $address2, $city, $state, $zip) {
 
 
 function getUSPSZipCode($address, $address2, $city, $state) {
-    global $uspsAPIToken, $uspsKey, $uspsAuthorization, $validstate;
+    global $uspsAPIToken, $uspsKey, $uspsAuthorization, $uspsDisabled, $validstate;
 
     if ($state == null || strlen($state) != 2) {
         ajaxSuccess(array ('status' => 'error', 'message' => 'State must be 2 character USPS State code'));
@@ -161,6 +166,9 @@ function getUSPSZipCode($address, $address2, $city, $state) {
 
     if ($uspsAPIToken == null)
         $uspsAPIToken = getUSPSV3Token();
+
+    if ($uspsDisabled)
+        return null;
 
     $zipCURL = curl_init();
     curl_setopt($zipCURL, CURLOPT_URL, 'https://api.usps.com/addresses/v3/zipcode?' . http_build_query($query));
