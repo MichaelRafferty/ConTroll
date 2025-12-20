@@ -12,8 +12,7 @@ class Cart {
     #personInfo = [];
 
     // age items
-    #currentAge = null; // age selected but set in a membership item in the 'cart'
-    #memberAge = null; // age in a membership item in the cart
+    #currentAge = null; // age of the person from perinfo/newperson
 
     // membership items
     #memberships = null;
@@ -46,6 +45,7 @@ class Cart {
     constructor() {
         if (config.debug)
             this.#debug = config.debug;
+        this.#currentAge = person.currentAgeType;
         this.#memberships = person.memberships;
         this.#allMemberships = person.allMemberships;
 
@@ -70,7 +70,7 @@ class Cart {
     buildMembershipButtons() {
         // now loop over memList and build each button
         var html = '';
-        var rules = new MembershipRules(config.conid, this.#memberAge != null ? this.#memberAge : this.#currentAge, this.#memberships, this.#allMemberships);
+        var rules = new MembershipRules(config.conid, this.#currentAge, this.#memberships, this.#allMemberships);
 
         for (var row in memList) {
             var mem = memList[row];
@@ -283,7 +283,7 @@ class Cart {
         // check if anything else in the cart depends on this membership
         // trial the delete
         mbr.toDelete = true;
-        var rules = new MembershipRules(config.conid, this.#memberAge != null ? this.#memberAge : this.#currentAge, this.#memberships, this.#allMemberships);
+        var rules = new MembershipRules(config.conid, this.#currentAge, this.#memberships, this.#allMemberships);
         for (var nrow in this.#memberships) {
             if (row == nrow)    // skip checking ourselves
                 continue;
@@ -330,7 +330,7 @@ class Cart {
         // check if anything else in the cart depends on this membership
         // trial the delete
         mbr.toDelete = true;
-        var rules = new MembershipRules(config.conid, this.#memberAge != null ? this.#memberAge : this.#currentAge, this.#memberships, this.#allMemberships);
+        var rules = new MembershipRules(config.conid, this.#currentAge, this.#memberships, this.#allMemberships);
         for (var nrow in this.#memberships) {
             if (row == nrow)    // skip checking ourselves
                 continue;
@@ -364,7 +364,7 @@ class Cart {
             return
         }
 
-        var rules = new MembershipRules(config.conid, this.#memberAge != null ? this.#memberAge : this.#currentAge, this.#memberships, this.#allMemberships);
+        var rules = new MembershipRules(config.conid, this.#currentAge, this.#memberships, this.#allMemberships);
         if (rules.testMembership(mbr, false) == false) {
             show_message("You cannot restore " + mbr.label + " because it requires some other deleted membership. Look at your memberships marked 'Restore'" +
                 " and restore its prerequesite", "warn");
