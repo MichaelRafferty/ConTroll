@@ -76,8 +76,7 @@ class Add {
         clear_message();
         $('#newEmailAddr').removeClass('need');
         if (newEmail.toLowerCase() == config.personEmail.toLowerCase()) {
-            profile.setEmailFixed(newEmail);
-            this.#newEmail = newEmail;
+            this.#newEmail = profile.setEmailFixed(newEmail);
             this.gotoProfile();
             return;
         }
@@ -121,8 +120,7 @@ class Add {
         var accountId = data.accountId;
 
         if (countFound == 0 || (countFound == managedByMe)) {
-            profile.setEmailFixed(email);
-            this.#newEmail = email;
+            this.#newEmail = profile.setEmailFixed(email);
             this.gotoProfile();
             return;
         } else if (managedByOther > 0) {
@@ -297,6 +295,8 @@ class Add {
             newInterests: JSON.stringify(URLparamsToArray($('#editInterests').serialize())),
             currentPerson: config.id,
             currentPersonType: config.idType,
+            validation: '',
+            valEmail: this.#newEmail,
             source: 'add',
         }
         if (config.debug & 1)

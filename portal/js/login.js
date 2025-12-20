@@ -240,8 +240,7 @@ class Login {
         this.#editPersonSubmitBtn.setAttribute("onclick", 'login.editPersonSubmit()');
         //this.#countryField.setAttribute("onchange", 'login.countryChange()');
         this.#epHeaderDiv.innerHTML = "Personal Information for " + email;
-        profile.setEmailFixed(email);
-        this.#email = email;
+        this.#email = profile.setEmailFixed(email);
         this.#validationType = validationType;
         // now clear the input fields
         profile.clearNext();

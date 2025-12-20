@@ -669,8 +669,14 @@ class ExhibitorInvoice {
                     show_message(data.message, 'error', 'inv_result_message');
                     return false;
                 }
+
+                if (data.usps == null) {
+                    exhibitorInvoice.useMyAddress();
+                    return;
+                }
+
                 exhibitorInvoice.showValidatedAddress(data);
-                return true;
+                return;
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 showAjaxError(jqXHR, textStatus, errorThrown, 'inv_result_message');
