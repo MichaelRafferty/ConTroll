@@ -58,19 +58,19 @@ if ($matchPerid && $matchPerid > 0) {
 }
 
 $iP = <<<EOS
-INSERT INTO perinfo(last_name, first_name, middle_name, suffix, email_addr, phone, badge_name,
+INSERT INTO perinfo(last_name, first_name, middle_name, suffix, email_addr, currentAgeType, phone, badge_name, badgenameL2,
     legalName, pronouns, address, addr_2, city, state, zip, country,
     banned, active, managedBy, managedReason, change_notes, updatedBy)
-VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
+VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
 EOS;
 $uP = <<<EOS
 UPDATE perinfo
-SET last_name = ?, first_name = ?, middle_name = ?, suffix = ?, email_addr = ?, phone = ?, badge_name = ?, 
+SET last_name = ?, first_name = ?, middle_name = ?, suffix = ?, email_addr = ?, currentAgeType = ?, phone = ?, badge_name = ?, badgeNameL2 = ?,
     legalName = ?, pronouns = ?, address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?,
 	banned = ?, active = ?, managedBy = ?, managedReason = ?, change_notes = ?, updatedBy = ?
 WHERE id = ?;
 EOS;
-$typestr = 'sssssssssssssssssissi';
+$typestr = 'sssssssssssssssssssissi';
 
 // built insert/update array
 $values = [
@@ -79,8 +79,10 @@ $values = [
     $_POST['middleName'] == null ? '' : $_POST['middleName'],
     $_POST['suffix'] == null ? '' : $_POST['suffix'],
     $_POST['emailAddr'] == null ? '' : $_POST['emailAddr'],
+    $_POST['age'] == null ? '' : $_POST['age'],
     $_POST['phone'] == null ? '' : $_POST['phone'],
-    $_POST['badgeName'] == null ? '' : $_POST['badgeName'],
+    $_POST['badge_name'] == null ? '' : $_POST['badge_name'],
+    $_POST['badgeNameL2'] == null ? '' : $_POST['badgeNameL2'],
     $_POST['legalName'] == null ? '' : $_POST['legalName'],
     $_POST['pronouns'] == null ? '' : $_POST['pronouns'],
     $_POST['address'] == null ? '' : $_POST['address'],
@@ -93,7 +95,7 @@ $values = [
     $_POST['active'] == null ? '' : $_POST['active']
 ];
 $managedBy = null;
-// add mnager and reason
+// add manager and reason
 switch ($_POST['managerAction']) {
     case 'ACC':
         $managedBy = $_POST['managerId'];

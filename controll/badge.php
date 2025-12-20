@@ -37,6 +37,7 @@ while($free = $freeR->fetch_assoc()) {
     $freeMems[] = $free;
 }
 $freeR->free();
+[$ageList, $ageListIdx] = getAgeList($conid);
 
 $cdn = getTabulatorIncludes();
 page_init($page,
@@ -71,6 +72,8 @@ $config_vars['useUSPS'] = $useUSPS;
     var config = <?php echo json_encode($config_vars); ?>;
     var freeMems = <?php echo json_encode($freeMems, JSON_FORCE_OBJECT | JSON_HEX_QUOT); ?>;
     var freeSelect = <?php echo json_encode($freeSelect, JSON_FORCE_OBJECT | JSON_HEX_QUOT); ?>;
+    var ageList = <?php echo json_encode($ageList); ?>;
+    var ageListIdx = <?php echo json_encode($ageListIdx); ?>;
 </script>
 <div id='edit-person' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Edit Person'
      aria-hidden='true' style='--bs-modal-width: 98%;'>
@@ -88,7 +91,8 @@ $config_vars['useUSPS'] = $useUSPS;
                         <div class='col-sm-12'><h2 class='size=h3'>Profile</h2></div>
                     </div>
                     <?php
-                        drawEditPersonBlock($conid, $useUSPS, null, 'find', true, true, '', array (), 200, true, 'f_', true);
+                        drawEditPersonBlock($conf, $useUSPS, null, 'find', true, true, '', array (), $ageListIdx,
+                                200, true, 'f_', true);
                     ?>
                 </div>
                 <div id='find_edit_message' class='mt-4 p-2'></div>
@@ -116,7 +120,8 @@ $config_vars['useUSPS'] = $useUSPS;
                         <div class='col-sm-12'><h2 class='size=h3'>Profile</h2></div>
                     </div>
                     <?php
-                        drawEditPersonBlock($conid, $useUSPS, null, 'add', true, true, '', array (), 1000, true, 'a_', true);
+                        drawEditPersonBlock($conf, $useUSPS, null, 'add', true, true, '', array (), $ageListIdx,
+                                1000, true, 'a_', true);
                     ?>
                     <div class='row mt-2'>
                         <div class='col-sm-12' id='addMatchTable'></div>

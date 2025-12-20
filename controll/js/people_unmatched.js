@@ -42,6 +42,7 @@ class Unmatched {
     #matchBadge = null;
     #matchAddress = null;
     #matchEmail = null;
+    #matchAge = null;
     #matchPhone = null;
     #matchPolicies = null;
     #matchFlags = null;
@@ -54,6 +55,7 @@ class Unmatched {
     #newBadge = null;
     #newAddress = null;
     #newEmail = null;
+    #newAge = null;
     #newPhone = null;
     #newPolicies = null;
     #newFlags = null;
@@ -73,6 +75,7 @@ class Unmatched {
     #state = null;
     #zip = null;
     #country = null;
+    #age = null;
     #emailAddr = null;
     #phone = null;
     #policiesDiv = null;
@@ -111,6 +114,7 @@ class Unmatched {
             this.#matchBadge = document.getElementById('matchBadge');
             this.#matchAddress = document.getElementById('matchAddress');
             this.#matchEmail = document.getElementById('matchEmail');
+            this.#matchAge = document.getElementById('matchAge');
             this.#matchPhone = document.getElementById('matchPhone');
             this.#matchPolicies = document.getElementById('matchPolicies');
             this.#matchFlags = document.getElementById('matchFlags');
@@ -123,6 +127,7 @@ class Unmatched {
             this.#newBadge = document.getElementById('newBadge');
             this.#newAddress = document.getElementById('newAddress');
             this.#newEmail = document.getElementById('newEmail');
+            this.#newAge = document.getElementById('newAge');
             this.#newPhone = document.getElementById('newPhone');
             this.#newPolicies = document.getElementById('newPolicies');
             this.#newFlags = document.getElementById('newFlags');
@@ -143,6 +148,7 @@ class Unmatched {
             this.#zip = document.getElementById('zip');
             this.#country = document.getElementById('country');
             this.#emailAddr = document.getElementById('emailAddr');
+            this.#age = document.getElementById('age');
             this.#phone = document.getElementById('phone');
             this.#policiesDiv = document.getElementById('policiesDiv');
             this.#managerDiv = document.getElementById('managerDiv');
@@ -220,6 +226,7 @@ class Unmatched {
                 {title: "Full Name", field: "fullName", width: 300, headerSort: true, headerFilter: true, headerFilterFunc: fullNameHeaderFilter,
                     formatter: "textarea" },
                 {title: "Email", field: "email_addr", width: 280, headerSort: true, headerFilter: true, },
+                {title: "Age", field: "currentAgeType", width: 100, headerSort: true, headerFilter: true, },
                 {title: "Date Created", field: "createtime", width: 180, headerSort: true, headerFilter: true, },
                 {title: "Num Regs", field: "numRegs", width: 50, headerWordWrap: true, headerHozAlign:"right", hozAlign: "right", headerSort: false},
                 {title: "Registrations", field: "regs", minWidth: 400, headerWordWrap: true, headerSort: false, formatter: "textarea", },
@@ -378,6 +385,7 @@ class Unmatched {
                 {title: "Badge Name", field: "badgename", width: 150, headerSort: false, formatter: 'html', },
                 {title: "Managed By", field: "manager", headerWordWrap: true, width: 150, headerSort: false, },
                 {title: "Email", field: "email_addr", width: 250, headerSort: false, },
+                {title: "Age", field: "currentAgeType", width: 100, headerSort: true, headerFilter: true, },
                 {title: "Phone", field: "phone", width: 150, headerSort: false, },
                 {title: "Date Created", field: "createtime", width: 180, headerSort: false, },
                 {title: "Registrations", field: "regs", width: 200, formatter:"textarea", headerSort: false, },
@@ -416,6 +424,7 @@ class Unmatched {
                 {title: "Badge Name", field: "badgename", width: 150, headerFilter:true, headerSort: false, formatter: "html", },
                 {title: "Managed By", field: "manager", headerWordWrap: true, width: 150, headerSort: true, headerFilter: true, },
                 {title: "Email", field: "email_addr", width: 250, headerSort: true, headerFilter: true, },
+                {title: "Age", field: "currentAgeType", width: 100, headerSort: true, headerFilter: true, },
                 {title: "Phone", field: "phone", width: 150, headerSort: true, headerFilter: true, },
                 {title: "Date Created", field: "creation_date", width: 180, headerSort: true, headerFilter: true, },
                 {title: "Registrations", field: "regs", width: 200, },
@@ -455,6 +464,7 @@ class Unmatched {
                 {title: "Badge Name", field: "badgename", width: 150, headerFilter:true, headerSort: false, formatter: "html", },
                 {title: "Managed By", field: "manager", headerWordWrap: true, width: 150, headerSort: true, headerFilter: true, },
                 {title: "Email", field: "email_addr", width: 250, headerSort: true, headerFilter: true, },
+                {title: "Age", field: "currentAgeType", width: 100, headerSort: true, headerFilter: true, },
                 {title: "Phone", field: "phone", width: 150, headerSort: true, headerFilter: true, },
                 {title: "Date Created", field: "creation_date", width: 180, headerSort: true, headerFilter: true, },
                 {title: "Registrations", field: "regs", width: 200, formatter: "textarea" },
@@ -512,6 +522,7 @@ class Unmatched {
             this.#matchBadge.innerHTML = this.#matchPerson.badgename;
             this.#matchAddress.innerHTML = this.#matchPerson.fullAddr;
             this.#matchEmail.innerHTML = this.#matchPerson.email_addr;
+            this.#matchAge.innerHTML = this.#matchPerson.currentAgeType;
             this.#matchPhone.innerHTML = this.#matchPerson.phone;
             this.#matchFlags.innerHTML = 'Active: ' + this.#matchPerson.active + ', Banned: ' + this.#matchPerson.banned;
             if (this.#matchPerson.managerId) {
@@ -539,6 +550,7 @@ class Unmatched {
         this.#newBadge.innerHTML = this.#newperson.badgename;
         this.#newAddress.innerHTML = this.#newperson.fullAddr;
         this.#newEmail.innerHTML = this.#newperson.email_addr;
+        this.#newAge.innerHTML = this.#newperson.currentAgeType;
         this.#newPhone.innerHTML = this.#newperson.phone;
         this.#newFlags.innerHTML = 'Active: ' + this.#newperson.active + ', Banned: ' + this.#newperson.banned;
         if (this.#newperson.managerId) {
@@ -568,6 +580,7 @@ class Unmatched {
         this.#zip.value = this.#newperson.zip;
         this.#country.value = this.#newperson.country;
         this.#emailAddr.value = this.#newperson.email_addr;
+        this.#age.value = this.#newperson.currentAgeType;
         this.#phone.value = this.#newperson.phone;
         this.#active.value = this.#newperson.active == 'N' ? 'N' : 'Y';  // default to Y
         this.#banned.value = this.#newperson.banned == 'Y' ? 'Y' : 'N';  // default to N
@@ -586,6 +599,7 @@ class Unmatched {
             this.#matchBadge.style.backgroundColor = this.#newperson.badgename != this.#matchPerson.badgename ? diffcolor : '';
             this.#matchAddress.style.backgroundColor = this.#newperson.fullAddr != this.#matchPerson.fullAddr ? diffcolor : '';
             this.#matchEmail.style.backgroundColor = this.#newperson.email_addr != this.#matchPerson.email_addr ? diffcolor : '';
+            this.#matchAge.style.backgroundColor = this.#newperson.currentAgeType != this.#matchPerson.currentAgeType ? diffcolor : '';
             this.#matchPhone.style.backgroundColor = this.#newperson.phone != this.#matchPerson.phone ? diffcolor : '';
             this.#matchPolicies.style.backgroundColor = this.#newperson.policies != this.#matchPerson.policies ? diffcolor : '';
             this.#matchFlags.style.backgroundColor = this.#newperson.flags != this.#matchPerson.flags ? diffcolor : '';
@@ -619,6 +633,7 @@ class Unmatched {
             zip: this.#zip.value,
             country: this.#country.value,
             emailAddr: this.#emailAddr.value,
+            age: this.#age.value,
             phone: this.#phone.value,
             active: this.#active.value,
             banned: this.#banned.value,
@@ -730,6 +745,7 @@ class Unmatched {
             this.#matchBadge.innerHTML = '';
             this.#matchAddress.innerHTML = '';
             this.#matchEmail.innerHTML = '';
+            this.#matchAge.innerHTML = '';
             this.#matchPhone.innerHTML = '';
             this.#matchPolicies.innerHTML = '';
             this.#matchFlags.innerHTML = '';
@@ -741,6 +757,7 @@ class Unmatched {
             this.#matchBadge.style.backgroundColor = '';
             this.#matchAddress.style.backgroundColor = '';
             this.#matchEmail.style.backgroundColor = '';
+            this.#matchAge.style.backgroundColor = '';
             this.#matchPhone.style.backgroundColor = '';
             this.#matchPolicies.style.backgroundColor = '';
             this.#matchFlags.style.backgroundColor = '';
@@ -754,6 +771,7 @@ class Unmatched {
             this.#newBadge.innerHTML = '';
             this.#newAddress.innerHTML = '';
             this.#newEmail.innerHTML = '';
+            this.#newAge.innerHTML = '';
             this.#newPhone.innerHTML = '';
             this.#newPolicies.innerHTML = '';
             this.#newFlags.innerHTML = '';
@@ -765,6 +783,7 @@ class Unmatched {
             this.#newBadge.style.backgroundColor = '';
             this.#newAddress.style.backgroundColor = '';
             this.#newEmail.style.backgroundColor = '';
+            this.#newAge.style.backgroundColor = '';
             this.#newPhone.style.backgroundColor = '';
             this.#newPolicies.style.backgroundColor = '';
             this.#newFlags.style.backgroundColor = '';
@@ -844,6 +863,14 @@ class Unmatched {
                 this.#emailAddr.value = this.#newperson.email_addr;
                 break;
 
+            case 'matchAge':
+                this.#age.value = this.#matchPerson.currentAgeType;
+                break;
+
+            case 'newAge':
+                this.#age.value = this.#newperson.currentAgeType;
+                break;
+
             case 'matchPhone':
                 this.#phone.value = this.#matchPerson.phone;
                 break;
@@ -903,6 +930,7 @@ class Unmatched {
                 this.#zip.value = this.#matchPerson.zip;
                 this.#country.value = this.#matchPerson.country;
                 this.#emailAddr.value = this.#matchPerson.email_addr;
+                this.#age.value = this.#matchPerson.currentAgeType;
                 this.#phone.value = this.#matchPerson.phone;
                 mpol = null;
                 if (this.#matchType == 'p')
@@ -925,6 +953,7 @@ class Unmatched {
                 this.#legalName.value = this.#newperson.legalName;
                 this.#pronouns.value = this.#newperson.pronouns;
                 this.#badgeName.value = this.#newperson.badge_name;
+                this.#badgeNameL2.value = this.#newperson.badgeNameL2;
                 this.#address.value = this.#newperson.address;
                 this.#addr2.value = this.#newperson.addr_2;
                 this.#city.value = this.#newperson.city;
@@ -932,6 +961,7 @@ class Unmatched {
                 this.#zip.value = this.#newperson.zip;
                 this.#country.value = this.#newperson.country;
                 this.#emailAddr.value = this.#newperson.email_addr;
+                this.#age.value = this.#newperson.currentAgeType;
                 this.#phone.value = this.#newperson.phone;
                 for (policy in this.#newpersonPolicies) {
                     document.getElementById('p_' + policy).checked = this.#newpersonPolicies[policy] == 'Y';

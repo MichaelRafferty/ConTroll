@@ -47,6 +47,7 @@ $conid = $con_conf['id'];
 $usps = get_conf('usps');
 $policies = getPolicies();
 $interests = getInterests();
+[$ageList, $ageListIdx] = getAgeList($conid);
 
 $useUSPS = false;
 if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
@@ -62,7 +63,9 @@ $config_vars['required'] = getConfValue('reg','required', 'addr');;
 ?>
 <script type='text/javascript'>
     var config = <?php echo json_encode($config_vars); ?>;
-    var policies = <?php echo json_encode($policies, JSON_FORCE_OBJECT | JSON_HEX_QUOT); ?>
+    var policies = <?php echo json_encode($policies, JSON_FORCE_OBJECT | JSON_HEX_QUOT); ?>;
+    var ageList = <?php echo json_encode($ageList); ?>;
+    var ageListIdx = <?php echo json_encode($ageListIdx); ?>;
 </script>
 <?php 
     //bs_tinymceModal();
@@ -377,6 +380,38 @@ $config_vars['required'] = getConfValue('reg','required', 'addr');;
                         </div>
                     </div>
                     <div class='row'>
+                        <div class='col-sm-1 border border-dark ps-1 pe-1'>Current Age</div>
+                        <div class='col-sm-3 border border-dark pe-0'>
+                            <div class='container-fluid'>
+                                <div class='row justify-content-between'>
+                                    <div class='col-sm-auto ms-0 me-0 ps-0 pe-0' id='matchAge'></div>
+                                    <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
+                                        <button class='btn btn-sm btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
+                                                type='button' onclick="unmatchedPeople.copy('matchAge')">
+                                            &gt;&gt;
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class='col-sm-5 border border-dark ps-1 pe-1'>
+                            <input type='text' id='age' name='age' maxlength='254' size='68' placeholder='Current Age'/>
+                        </div>
+                        <div class='col-sm-3 border border-dark ps-0'>
+                            <div class='container-fluid'>
+                                <div class='row'>
+                                    <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
+                                        <button class='btn btn-sm btn-light pt-0 pb-0 mt-0 mb-0 me-2 justify-content-end'
+                                                type='button' onclick="unmatchedPeople.copy('newAge')">
+                                            &lt;&lt;
+                                        </button>
+                                    </div>
+                                    <div class='col-sm-auto ms-0 me-0 ps-0 pe-0' id='newAge'></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class='row'>
                         <div class='col-sm-1 border border-dark ps-1 pe-1'>Phone</div>
                         <div class='col-sm-3 border border-dark pe-0'>
                             <div class='container-fluid'>
@@ -544,7 +579,8 @@ $config_vars['required'] = getConfValue('reg','required', 'addr');;
                         <div class="col-sm-12"><h2 class="size=h3">Profile/Policies</h2></div>
                     </div>
 <?php
-drawEditPersonBlock($conid, $useUSPS, $policies, 'find', true, true, '', array(), 200, true, 'f_');
+drawEditPersonBlock($con_conf, $useUSPS, $policies, 'find', true, true, '', array(), $ageListIdx,
+        200, true, 'f_');
 drawInterestList($interests, true);
 ?>
                     <div class='row mt-3' id="managerHdr">
@@ -720,7 +756,8 @@ drawInterestList($interests, true);
                 <div class='col-sm-12' id='addH1Div'><H1 class='h3'><b>Add Person</b></H1></div>
             </div>
 <?php
-    drawEditPersonBlock($con_conf, true, $policies, 'addPerson', false, true, '', null, 100, true, 'a_');
+    drawEditPersonBlock($con_conf, true, $policies, 'addPerson', false, true, '',
+            null, $ageListIdx, 100, true, 'a_');
 ?>
         <div class="row mt-2">
             <div class="col-sm-auto">
