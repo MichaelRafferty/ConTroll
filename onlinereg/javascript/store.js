@@ -416,46 +416,44 @@ window.onload = function () {
 
     var new_badge = document.getElementById('newBadge');
     if (new_badge != null) {
-        newBadge = new bootstrap.Modal(new_badge, { focus: true, backdrop: 'static' });
+        newBadge = new bootstrap.Modal(new_badge, {focus: true, backdrop: 'static'});
+        addToCartBtn = document.getElementById("addToCartBtn");
+        emptyCart = document.getElementById("emptyCart");
+        noChargeCart = document.getElementById("noChargeCart");
+        chargeCart = document.getElementById("chargeCart");
+
         profile = new Profile();
         profile.hideAgeText(true);
         profile.hideAgeDiv(true);
-    }
-
-    addToCartBtn = document.getElementById("addToCartBtn");
-    emptyCart = document.getElementById("emptyCart");
-    noChargeCart = document.getElementById("noChargeCart");
-    chargeCart = document.getElementById("chargeCart");
-
-    if (profile.hasUSPSDiv()) {
-        if (profile.country() == 'USA')
-            addToCartBtn.innerHTML = 'Validate Address To Add Membership To Cart';
-    }
-
-    coupon = new Coupon();
-    memSummaryDiv = document.getElementById('memSummaryDiv');
-    totalCostDiv = document.getElementById('totalCostDiv');
-    subTotalColDiv = document.getElementById('subTotalColDiv');
-    couponDiscountDiv = document.getElementById('couponDiscountDiv');
-
-    if (typeof mtypes != 'undefined' && mtypes != null) { //v we got here from index (purchase a badge, not some other page)
-        for (var row in mtypes) {
-            var mbrType = mtypes[row];
-            var memId = mbrType.id;
-            prices[memId] = Number(mbrType.price);
-            badges.memTypeCount[memId] = 0;
-            shortnames[memId] = mbrType.shortname.replace(',','<br/>');
-            mbrType.primary = !(mbrType.price == 0 || (mbrType.memCategory != 'standard' && mbrType.memCategory != 'virtual'));
-            mbrType.discount = 0;
-            mbrType.discountable = false;
+        if (profile.hasUSPSDiv()) {
+            if (profile.country() == 'USA')
+                addToCartBtn.innerHTML = 'Validate Address To Add Membership To Cart';
         }
 
-        repriceCart();
+        coupon = new Coupon();
+        memSummaryDiv = document.getElementById('memSummaryDiv');
+        totalCostDiv = document.getElementById('totalCostDiv');
+        subTotalColDiv = document.getElementById('subTotalColDiv');
+        couponDiscountDiv = document.getElementById('couponDiscountDiv');
 
-        if (coupon.couponError() == false) {
-            newBadge.show();
-            profile.setFocus('fname');
+        if (typeof mtypes != 'undefined' && mtypes != null) { //v we got here from index (purchase a badge, not some other page)
+            for (var row in mtypes) {
+                var mbrType = mtypes[row];
+                var memId = mbrType.id;
+                prices[memId] = Number(mbrType.price);
+                badges.memTypeCount[memId] = 0;
+                shortnames[memId] = mbrType.shortname.replace(',', '<br/>');
+                mbrType.primary = !(mbrType.price == 0 || (mbrType.memCategory != 'standard' && mbrType.memCategory != 'virtual'));
+                mbrType.discount = 0;
+                mbrType.discountable = false;
+            }
+
+            repriceCart();
+
+            if (coupon.couponError() == false) {
+                newBadge.show();
+                profile.setFocus('fname');
+            }
         }
     }
-
 }
