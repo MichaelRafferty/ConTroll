@@ -769,6 +769,7 @@ if ($totalDue > 0 || $activePaymentPlans) {
     <div class="col-sm-2"><b>Person</b></div>
     <div class="col-sm-2"><b>Badge Name</b></div>
     <div class="col-sm-2"><b>Email Address</b></div>
+    <div class="col-sm-1"><b>Current Age</b></div>
     <div class="col-sm-1"><b>Actions</b></div>
 </div>
 <?php
