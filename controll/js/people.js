@@ -71,5 +71,8 @@ function peopleAddPerson() {
     bootstrap.Tab.getOrCreateInstance(add_tab).show();
     if (addPerson == null)
         addPerson = new Add(config['debug']);
+    if (profile =! null)
+        profile = null;
+    profile = new Profile('a_', 'people');
     addPerson.open();
 }

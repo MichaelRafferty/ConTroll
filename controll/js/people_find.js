@@ -128,13 +128,8 @@ class Find {
             this.#managerLookupFind.hidden = true;
             this.#managesLookupFind.hidden = true;
             this.#addManages.hidden = true;
-            var rows = [];
-            rows.push(row);
-            var data = {};
-            data.matches = rows;
-            this.#directEdit = id;
-            this.findSuccess(data);
-            setTimeout(add_editPerson, 100);
+            this.#findPattern.value = id;
+            this.find();
             return;
         }
         this.#findPattern.focus();
@@ -246,14 +241,12 @@ class Find {
 
         this.#addPersonBtn.disabled = false;
     }
-/*
+
     // addperson button - go to add person
     addPerson() {
         this.close();
         peopleAddPerson();
     }
-
- */
 
     // format action buttons
     actionButtons(cell, formatterParams, onRendered) {
