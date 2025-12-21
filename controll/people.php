@@ -38,6 +38,7 @@ page_init($page,
                     'js/people_unmatched.js',
                     'js/people_add.js',
                     'js/people_find.js',
+                    'jslib/profile.js',
               ),
                     $need_login);
 
@@ -48,6 +49,9 @@ $usps = get_conf('usps');
 $policies = getPolicies();
 $interests = getInterests();
 [$ageList, $ageListIdx] = getAgeList($conid);
+$condata = get_con();
+$startdate = new DateTime($condata['startdate']);
+$ageByDate = $startdate->format('F j, Y');
 
 $useUSPS = false;
 if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
@@ -395,7 +399,14 @@ $config_vars['required'] = getConfValue('reg','required', 'addr');;
                             </div>
                         </div>
                         <div class='col-sm-5 border border-dark ps-1 pe-1'>
-                            <input type='text' id='age' name='age' maxlength='254' size='68' placeholder='Current Age'/>
+                            <select id='age'>
+                                <option value=''>--Select Age Bracket--</option>
+                                <?php
+                                    foreach ($ageList as $age) {
+                                        echo '<option value="' . escape_quotes($age['ageType']) . '">' . $age['shortname'] . ' [' . $age['label'] . ']</option>';
+                                    }
+                                ?>
+                            </select>
                         </div>
                         <div class='col-sm-3 border border-dark ps-0'>
                             <div class='container-fluid'>
@@ -579,8 +590,8 @@ $config_vars['required'] = getConfValue('reg','required', 'addr');;
                         <div class="col-sm-12"><h2 class="size=h3">Profile/Policies</h2></div>
                     </div>
 <?php
-drawEditPersonBlock($con_conf, $useUSPS, $policies, 'find', true, true, '', array(), $ageListIdx,
-        200, true, 'f_');
+drawEditPersonBlock($con_conf, $useUSPS, $policies, 'find', true, true, $ageByDate,
+        array(), $ageListIdx,200, true, 'f_');
 drawInterestList($interests, true);
 ?>
                     <div class='row mt-3' id="managerHdr">
@@ -756,7 +767,7 @@ drawInterestList($interests, true);
                 <div class='col-sm-12' id='addH1Div'><H1 class='h3'><b>Add Person</b></H1></div>
             </div>
 <?php
-    drawEditPersonBlock($con_conf, true, $policies, 'addPerson', false, true, '',
+    drawEditPersonBlock($con_conf, true, $policies, 'addPerson', false, true,$ageByDate,
             null, $ageListIdx, 100, true, 'a_');
 ?>
         <div class="row mt-2">

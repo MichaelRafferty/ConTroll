@@ -37,10 +37,12 @@ class Profile {
     #redoCallback = null;
     #uspsAddress = null;
     #source = '';
+    #prefix = '';
 
 // initialization
     constructor(prefix = '', source = '') {
         this.#source = source;
+        this.#prefix = prefix;
         
 // lookup all DOM elements
         this.#fnameField = document.getElementById(prefix + "fname");
@@ -225,7 +227,7 @@ class Profile {
         if (old) {
             for (let row in old) {
                 let policy = old[row];
-                let id = document.getElementById('p_' + policy.policy);
+                let id = document.getElementById('p_' + this.#prefix + policy.policy);
                 if (id) {
                     if (policy.response) {
                         id.checked = policy.response == 'Y';
@@ -377,12 +379,12 @@ class Profile {
 
         // now verify required policies
         if (policies) {
-            this.#newPolicies = URLparamsToArray($('#editPolicies').serialize());
+            this.#newPolicies = URLparamsToArray($('#' + this.#prefix + 'editPolicies').serialize());
             for (let row in policies) {
                 let policy = policies[row];
                 if (policy.required == 'Y') {
                     let field = '#l_' + policy.policy;
-                    if (typeof this.#newPolicies['p_' + policy.policy] === 'undefined') {
+                    if (typeof this.#newPolicies['p_' + this.#prefix + policy.policy] === 'undefined') {
                         message += '<br/>You cannot continue until you agree to the ' + policy.policy + ' policy.';
                         $(field).addClass('need');
                         valid = false;
@@ -521,7 +523,7 @@ class Profile {
         if (typeof policies !== 'undefined') {
             for (let row in policies) {
                 let policy = policies[row];
-                let field = '#p_' + policy.policy;
+                let field = '#p_' + this.#prefix + policy.policy;
                 $(field).prop('checked', policy.defaultValue == 'Y');
             }
         }

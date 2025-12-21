@@ -17,6 +17,8 @@ load_cc_procs();
 $con_conf = get_conf('con');
 $conid = $con_conf['id'];
 $condata = get_con();
+$startdate = new DateTime($condata['startdate']);
+$ageByDate = $startdate->format('F j, Y');
 
 $cdn = getTabulatorIncludes();
 page_init($page,
@@ -187,8 +189,8 @@ if (!$controll['useportal']) {
                              <input type="hidden" name="perinfo-perid" id="perinfo-perid" />
                              <input type="hidden" name="membership-index" id="membership-index" />
 <?php
-drawEditPersonBlock($con, $useUSPS, $policies, 'registration', false, true, '', array(), $ageListIdx,
-        200, true, '');
+drawEditPersonBlock($con, $useUSPS, $policies, 'registration', false, true, $ageByDate,
+        array(), $ageListIdx, 200, true, '');
 ?>
                             <div class="row">
                                 <div class="col-sm-12 ms-0 me-0" id="add_results">

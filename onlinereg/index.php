@@ -209,8 +209,8 @@ $js = "var mtypes = " . json_encode($membershiptypes) . ';' . PHP_EOL .
                         <h3 class="text-primary">New Convention Memberships</h3>
                         <form id='newBadgeForm' action='javascript:void(0);' class="form-floating">
 <?php
-    drawEditPersonBlock($con, $useUSPS, $policies, $class, /* modal */ true,
-        /* editEmail */ true, $ageByDate, $membershiptypes, $ageListIdx, /* tabIndexStart  */ 100);
+    drawEditPersonBlock($con, $useUSPS, $policies, $class, /* modal */ true, /* editEmail */ true, $ageByDate,
+            $membershiptypes, $ageListIdx, /* tabIndexStart  */ 100);
 
     if ($interests != null && count($interests) > 0) {
 ?>

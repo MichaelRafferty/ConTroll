@@ -20,6 +20,8 @@ $atcon = get_conf('atcon');
 $condata = get_con();
 $conid = $con['id'];
 $conname = $con['conname'];
+$startdate = new DateTime($condata['startdate']);
+$ageByDate = $startdate->format('F j, Y');
 $tab = 'checkin';
 $mode = 'checkin';
 $method='data_entry';
@@ -204,8 +206,8 @@ page_init($page, $tab,
                                 <input type='hidden' name='perinfo-perid' id='perinfo-perid'/>
                                 <input type='hidden' name='membership-index' id='membership-index'/>
                                 <?php
-                                    drawEditPersonBlock($con, $useUSPS, $policies, 'registration', false, true, '', array (),
-                                            $ageListIdx, 200, true, '');
+                                    drawEditPersonBlock($con, $useUSPS, $policies, 'registration', false, true, $ageByDate,
+                                            array(), $ageListIdx, 200, true, '');
                                 ?>
                                 <div class="row">
                                     <div class="col-sm-12 ms-0 me-0" id="add_results">

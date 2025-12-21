@@ -15,6 +15,9 @@ $conf = get_conf('con');
 $google = get_conf('google');
 $usps = get_conf('usps');
 $url = $google['redirect_base'];
+$condata = get_con();
+$startdate = new DateTime($condata['startdate']);
+$ageByDate = $startdate->format('F j, Y');
 
 if(!$need_login or !checkAuth($need_login['sub'], $page)) {
     bounce_page("index.php");
@@ -91,8 +94,8 @@ $config_vars['useUSPS'] = $useUSPS;
                         <div class='col-sm-12'><h2 class='size=h3'>Profile</h2></div>
                     </div>
                     <?php
-                        drawEditPersonBlock($conf, $useUSPS, null, 'find', true, true, '', array (), $ageListIdx,
-                                200, true, 'f_', true);
+                        drawEditPersonBlock($conf, $useUSPS, null, 'find', true, true, $ageByDate,
+                                array (), $ageListIdx,200, true, 'f_', true);
                     ?>
                 </div>
                 <div id='find_edit_message' class='mt-4 p-2'></div>
@@ -120,8 +123,8 @@ $config_vars['useUSPS'] = $useUSPS;
                         <div class='col-sm-12'><h2 class='size=h3'>Profile</h2></div>
                     </div>
                     <?php
-                        drawEditPersonBlock($conf, $useUSPS, null, 'add', true, true, '', array (), $ageListIdx,
-                                1000, true, 'a_', true);
+                        drawEditPersonBlock($conf, $useUSPS, null, 'add', true, true, $ageByDate,
+                                array (), $ageListIdx,1000, true, 'a_', true);
                     ?>
                     <div class='row mt-2'>
                         <div class='col-sm-12' id='addMatchTable'></div>
