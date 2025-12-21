@@ -633,7 +633,7 @@ class Unmatched {
             zip: this.#zip.value,
             country: this.#country.value,
             emailAddr: this.#emailAddr.value,
-            age: this.#age.value,
+            age: this.#age.value == '' ? null : this.#age.value,
             phone: this.#phone.value,
             active: this.#active.value,
             banned: this.#banned.value,
@@ -771,7 +771,7 @@ class Unmatched {
             this.#newBadge.innerHTML = '';
             this.#newAddress.innerHTML = '';
             this.#newEmail.innerHTML = '';
-            this.#newAge.innerHTML = '';
+            this.#newAge.value = '';
             this.#newPhone.innerHTML = '';
             this.#newPolicies.innerHTML = '';
             this.#newFlags.innerHTML = '';
