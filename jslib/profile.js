@@ -185,14 +185,20 @@ class Profile {
         this.#countryField.value = country;
     }
 
+    setEmail(email) {
+        this.#email1Field.value = email;
+        if (this.#email2Field)
+            this.#email2Field.value = email;
+    }
+
     setEmailFixed(email) {
         this.#email1Input = false;
         this.#email1Field.innerHTML = email;
         return email;
     }
 
-    setAgeText(text) {
-        this.ageTextField.innerHTML = text;
+    setAgeText(text, addon='') {
+        this.#ageText.innerHTML = text + (addon != '' ? '<br/>' + addon : '');
         this.#ageText.hidden = false;
         this.#ageDiv.hidden = false;
         this.#ageField.hidden = true;
@@ -534,6 +540,28 @@ class Profile {
                 $(field).prop('checked', false);
             }
         }
+    }
+
+    // clear the entire profile form for a new load to edit
+    clearForm() {
+        this.clearNext();
+
+        this.#lnameField.value = '';
+        this.#addrField.value = '';
+        this.#addr2Field.value = '';
+        this.#cityField.value = '';
+        this.#stateField.value = '';
+        this.#zipField.value = '';
+        this.#countryField.value = 'USA';
+        this.#phoneField.value = '';
+        this.#lnameField.classList.remove('need');
+        this.#addrField.classList.remove('need');
+        this.#addr2Field.classList.remove('need');
+        this.#cityField.classList.remove('need');
+        this.#stateField.classList.remove('need');
+        this.#zipField.classList.remove('need');
+        this.#countryField.classList.remove('need');
+        this.#phoneField.classList.remove('need');
     }
 
     // ageChanged - filter memList for age change

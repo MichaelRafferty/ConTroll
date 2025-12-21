@@ -1,12 +1,13 @@
 // globals for the people tabs
 
 // tab classes
-unmatchedPeople = null;
-findPerson = null;
-addPerson = null;
-add_tab = null;
-find_tab = null;
-unmatched_tab = null;
+var unmatchedPeople = null;
+var findPerson = null;
+var addPerson = null;
+var add_tab = null;
+var find_tab = null;
+var unmatched_tab = null;
+var profile = null;
 // debug meaning
 //  1 = console.logs
 //  2 = show hidden table fields
@@ -37,11 +38,17 @@ function settab(tabname) {
             unmatchedPeople.open();
             break;
         case 'findedit-pane':
+            if (profile =! null)
+                profile = null;
+            profile = new Profile('f_', 'people');
             if (findPerson == null)
                 findPerson = new Find(config['debug']);
             findPerson.open();
             break;
         case 'add-pane':
+            if (profile =! null)
+                profile = null;
+            profile = new Profile('a_', 'people');
             if (addPerson == null)
                 addPerson = new Add(config['debug']);
             addPerson.open();

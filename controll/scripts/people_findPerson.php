@@ -56,7 +56,7 @@ WITH perids AS (
     SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2, p.legalName, p.pronouns, 
         p.address, p.addr_2, p.city, p.state, p.zip, p.country,  
         p.creation_date, p.update_date, p.active, p.banned, p.open_notes, p.admin_notes,
-        p.managedBy, p.managedByNew, p.lastverified, p.managedreason,
+        p.managedBy, p.managedByNew, p.lastverified, p.managedreason, p.currentAgeType, p.currentAgeConid,
         REPLACE(REPLACE(REPLACE(REPLACE(LOWER(TRIM(IFNULL(p.phone, ''))), ')', ''), '(', ''), '-', ''), ' ', '') AS phoneCheck,
         TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
         TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.address, p.addr_2, p.city, p.state, p.zip, p.country), ' +', ' ')) AS fullAddr,
@@ -84,10 +84,18 @@ WITH perids AS (
     FROM perids p
     LEFT OUTER JOIN perinfoHistory h ON (h.id = p.id)
     GROUP BY p.id
+), memAge AS (
+    SELECT p.id, MAX(m.memAge) AS memAgeType
+    FROM perids p
+    LEFT OUTER JOIN reg r on p.id = r.perid
+    LEFT OUTER JOIN memList m on r.memId = m.id
+    WHERE m.memAge != 'all'
+    GROUP BY p.id
 )
-SELECT p.*, his.historyCount
+SELECT p.*, his.historyCount, m.memAgeType, CONCAT_WS('<BR>', p.currentAgeType, m.memAgeType) AS displayAgeType
 FROM perids p
-LEFT OUTER JOIN his ON (p.id = his.id);
+LEFT OUTER JOIN his ON p.id = his.id
+LEFT OUTER JOIN memAge m ON p.id = m.id
 EOS;
     if ($excludeJoin != '') {
         $typestr = 'iiiiii';
@@ -110,7 +118,7 @@ WITH per AS (
 SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2, p.legalName, p.pronouns, 
     p.address, p.addr_2, p.city, p.state, p.zip, p.country,
     p.creation_date, p.update_date,  p.active, p.banned, p.open_notes, p.admin_notes,
-    p.managedBy, p.managedByNew, p.lastverified, p.managedreason,
+    p.managedBy, p.managedByNew, p.lastverified, p.managedreason, p.currentAgeType, p.currentAgeConid,
     REPLACE(REPLACE(REPLACE(REPLACE(LOWER(TRIM(p.phone)), ')', ''), '(', ''), '-', ''), ' ', '') AS phoneCheck,
     TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
     TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.address, p.addr_2, p.city, p.state, p.zip, p.country), ' +', ' ')) AS fullAddr,
@@ -152,10 +160,18 @@ GROUP BY p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr,
     FROM perids p
     LEFT OUTER JOIN perinfoHistory h ON (h.id = p.id)
     GROUP BY p.id
+), memAge AS (
+    SELECT p.id, MAX(m.memAge) AS memAgeType
+    FROM perids p
+    LEFT OUTER JOIN reg r on p.id = r.perid
+    LEFT OUTER JOIN memList m on r.memId = m.id
+    WHERE m.memAge != 'all'
+    GROUP BY p.id
 )
-SELECT p.*, his.historyCount
+SELECT p.*, his.historyCount, m.memAgeType, CONCAT_WS('<BR>', p.currentAgeType, m.memAgeType) AS displayAgeType
 FROM perids p
-LEFT OUTER JOIN his ON (p.id = his.id)
+LEFT OUTER JOIN his ON p.id = his.id
+LEFT OUTER JOIN memAge m on p.id = m.id
 LIMIT $limit;
 EOS;
     if ($excludeJoin != '') {

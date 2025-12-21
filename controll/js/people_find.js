@@ -21,22 +21,7 @@ class Find {
     #findPersonBTN = null;
 
     // edit person fields
-    #firstName = null;
-    #middleName = null;
-    #lastName = null;
-    #suffix = null;
-    #legalName = null;
-    #pronouns = null;
-    #badgeName = null;
-    #badgeNameL2 = null;
-    #address = null;
-    #addr2 = null;
-    #city = null;
-    #state = null;
-    #zip = null;
-    #country = null;
-    #emailAddr = null;
-    #phone = null;
+    #origAge = '';
     #managerName = null;
     #managerId = null;
     #active = null;
@@ -65,6 +50,7 @@ class Find {
     #matched = null;
     #editRow = null;
     #historyTable = null;
+    #prefix = 'f_'; // find's prefix for fields in edit
 
     // globals before open
     constructor(debug) {
@@ -82,22 +68,6 @@ class Find {
         if (id) {
             this.#editModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
             this.#editTitle = document.getElementById('editTitle');
-            this.#firstName = document.getElementById('f_fname');
-            this.#middleName = document.getElementById('f_mname');
-            this.#lastName = document.getElementById('f_lname');
-            this.#suffix = document.getElementById('f_suffix');
-            this.#legalName = document.getElementById('f_legalName');
-            this.#pronouns = document.getElementById('f_pronouns');
-            this.#badgeName = document.getElementById('f_badge_name');
-            this.#badgeNameL2 = document.getElementById('f_badgeNameL2');
-            this.#address = document.getElementById('f_addr');
-            this.#addr2 = document.getElementById('f_addr2');
-            this.#city = document.getElementById('f_city');
-            this.#state = document.getElementById('f_state');
-            this.#zip = document.getElementById('f_zip');
-            this.#country = document.getElementById('f_country');
-            this.#emailAddr = document.getElementById('f_email1');
-            this.#phone = document.getElementById('f_phone');
             this.#managerId = document.getElementById('f_managerId');
             this.#managerName = document.getElementById('f_managerName');
             this.#active = document.getElementById('f_active');
@@ -113,7 +83,7 @@ class Find {
             this.#managesLookupFind = document.getElementById('managesLookupFind');
             this.#newManagesLookup = document.getElementById('newManagesLookup');
             this.#addManages = document.getElementById('addManages');
-            this.#managesId = document.getElementById('f_managesId');
+            this.#managesId = document.getElementById(this.#prefix + 'managesId');
             this.#managesName = document.getElementById('managesName');
         }
         var id  = document.getElementById('person-history');
@@ -251,6 +221,7 @@ class Find {
                 {title: "Full Address", field: "fullAddr", width: 350, headerSort: true, headerFilter: true, formatter: "textarea", },
                 {title: "Email", field: "email_addr", width: 250, headerSort: true, headerFilter: true, },
                 {title: "Phone", field: "phone", width: 150, headerSort: true, headerFilter: true, },
+                {title: "Current Age/Mem Age", field: "displayAgeType", width: 100, headerSort: true, headerFilter: true, headerWordWrap: true, formatter: 'html', },
                 {title: "Memberships", field: "memberships", minWidth: 300, headerSort: true, headerFilter: true, formatter: "textarea", },
                 {field: "creation_date", visible: false },
                 {field: 'first_name', visible: false,},
@@ -265,6 +236,7 @@ class Find {
                 {field: 'state', visible: false,},
                 {field: 'zip', visible: false,},
                 {field: 'country', visible: false,},
+                {field: 'currentAgeType', visible: false,},
                 {field: 'active', visible: false,},
                 {field: 'banned', visible: false,},
                 {title: "Admin Notes", headerWordWrap: true, field: 'admin_notes', visible: false, },
@@ -274,12 +246,14 @@ class Find {
 
         this.#addPersonBtn.disabled = false;
     }
-
+/*
     // addperson button - go to add person
     addPerson() {
         this.close();
         peopleAddPerson();
     }
+
+ */
 
     // format action buttons
     actionButtons(cell, formatterParams, onRendered) {
@@ -378,28 +352,32 @@ class Find {
         this.#managed = data['managed'];
         // populate the form
         this.#editPersonName.innerHTML = this.#editRow.fullName + ' (' + this.#editRow.id + ')';
-        this.#firstName.value = this.#editRow.first_name;
-        this.#middleName.value = this.#editRow.middle_name;
-        this.#lastName.value = this.#editRow.last_name;
-        this.#suffix.value = this.#editRow.suffix;
-        this.#legalName.value = this.#editRow.legalName;
-        this.#pronouns.value = this.#editRow.pronouns;
-        this.#badgeName.value = this.#editRow.badge_name;
-        this.#badgeNameL2.value = this.#editRow.badgeNameL2;
-        this.#address.value = this.#editRow.address;
-        this.#addr2.value = this.#editRow.addr_2;
-        this.#city.value = this.#editRow.city;
-        this.#state.value = this.#editRow.state;
-        this.#zip.value = this.#editRow.zip;
-        this.#country.value = this.#editRow.country;
-        this.#emailAddr.value = this.#editRow.email_addr;
-        this.#phone.value = this.#editRow.phone;
+        profile.setAll(this.#editRow.first_name, this.#editRow.middle_name, this.#editRow.last_name, this.#editRow.suffix, this.#editRow.legalName,
+            this.#editRow.pronouns, this.#editRow.address, this.#editRow.addr_2, this.#editRow.city, this.#editRow.state, this.#editRow.zip,
+            this.#editRow.country, this.#editRow.phone, this.#editRow.badge_name, this.#editRow.badgeNameL2,
+            this.#editRow.currentAgeType == null ? '' : this.#editRow.currentAgeType)
+
+
+        profile.setEmail(this.#editRow.email_addr);
+        this.#origAge = profile.age();
         this.#managerId.value = this.#editRow.managerId;
         this.#managerName.innerHTML = this.#editRow.manager ? this.#editRow.manager : '';
         this.#active.value = this.#editRow.active;
         this.#banned.value = this.#editRow.banned;
         this.#openNotes.value = this.#editRow.open_notes ? this.#editRow.open_notes : '';
         this.#adminNotes.value = this.#editRow.admin_notes ? this.#editRow.admin_notes : '';
+
+        // update rest of age items to match age
+        if (profile.age() == '') {
+            profile.hideAgeText(true);
+            profile.hideAgeDiv(true);
+        } else {
+            profile.setAgeText(this.#editRow.displayAgeType);
+            let ages = this.#editRow.displayAgeType.toLowerCase().split('<br>');
+            profile.hideAgeText(ages.length < 2 || ages[0] == ages[1])
+            profile.hideAgeField(false);
+            profile.hideAgeDiv(true);
+        }
 
         // loop over the policies
         if (this.#memberPolicies && this.#memberPolicies.length > 0) {
@@ -587,6 +565,7 @@ class Find {
                 {title: "Full Address", field: "fullAddr", width: 350, headerSort: true, headerFilter: true, formatter: "textarea",  },
                 {title: "Email", field: "email_addr", width: 250, headerSort: true, headerFilter: true, },
                 {title: "Phone", field: "phone", width: 150, headerSort: true, headerFilter: true, },
+                {title: "Current Age/Mem Age", field: "displayAgeType", width: 100, headerSort: true, headerFilter: true, headerWordWrap: true, formatter: 'html', },
                 {title: "Memberships", field: "memberships", minWidth: 300, headerSort: true, headerFilter: true, formatter: "textarea", },
                 {field: "creation_date", visible: false },
                 {field: 'first_name', visible: false,},
@@ -693,6 +672,7 @@ class Find {
                 {title: "Full Address", field: "fullAddr", width: 350, headerSort: true, headerFilter: true, formatter: "textarea", },
                 {title: "Email", field: "email_addr", width: 250, headerSort: true, headerFilter: true, },
                 {title: "Phone", field: "phone", width: 150, headerSort: true, headerFilter: true, },
+                {title: "Current Age/Mem Age", field: "displayAgeType", width: 100, headerSort: true, headerFilter: true, headerWordWrap: true, formatter: 'html', },
                 {title: "Memberships", field: "memberships", minWidth: 300, headerSort: true, headerFilter: true, formatter: "textarea", },
                 {field: "creation_date", visible: false },
                 {field: 'first_name', visible: false,},
@@ -856,6 +836,7 @@ class Find {
                 { title: "Badge Name", field: 'badge_name', headerWordWrap: true, formatter: findPerson.colorSet, headerSort: false, },
                 { title: "Badge Line 2", field: 'badgeNameL2', headerWordWrap: true, formatter: findPerson.colorSet, headerSort: false, },
                 { title: "Pronouns", field: 'pronouns', formatter: findPerson.colorSet, headerSort: false, },
+                { title: "Current Age/Mem Age", field: 'curentAgeType', formatter: findPerson.colorSet, headerSort: false, headerWordWrap: true, },
                 { title: "Phone", field: 'phone', formatter: findPerson.colorSet, headerSort: false, },
                 { title: "Email Address", field: 'email_addr', headerWordWrap: true, formatter: findPerson.colorSet, headerSort: false, },
                 { title: "Address", field: 'address', formatter: findPerson.colorSet, headerSort: false, },
@@ -905,7 +886,7 @@ class Find {
     // saveEdit - save the edited data back to the database
     saveEdit() {
         // validate the data, simple checks
-        var email1 = this.#emailAddr.value;
+        var email1 = profile.email();
         if (email1 != '/r' && validateAddress(email1) == false) {
             show_message("Invalid Email Address", 'error', 'find_edit_message');
             return;
@@ -925,23 +906,23 @@ class Find {
         var postdata = {
             action: 'saveedit',
             perid: this.#editRow.id,
-            firstName: this.#firstName.value,
-            middleName: this.#middleName.value,
-            lastName: this.#lastName.value,
-            suffix: this.#suffix.value,
-            legalName: this.#legalName.value,
-            pronouns: this.#pronouns.value,
-            badgeName: this.#badgeName.value,
-            badgeNameL2: this.#badgeNameL2.value,
-            address: this.#address.value,
-            addr2: this.#addr2.value,
-            city: this.#city.value,
-            state: this.#state.value,
-            zip: this.#zip.value,
-            country: this.#country.value,
-            emailAddr: this.#emailAddr.value,
-            email_addr: this.#emailAddr.value,
-            phone: this.#phone.value,
+            firstName: profile.fname(),
+            middleName: profile.mname(),
+            lastName: profile.lname(),
+            suffix: profile.suffix(),
+            legalName: profile.legalName(),
+            pronouns: profile.pronouns(),
+            badgeName: profile.badgename(),
+            badgeNameL2: profile.badgenameL2(),
+            address: profile.addr(),
+            addr2: profile.addr2(),
+            city: profile.city(),
+            state: profile.state(),
+            zip: profile.zip(),
+            country: profile.country(),
+            emailAddr: profile.email(),
+            email_addr: profile.email(),
+            phone: profile.phone(),
             managerId: this.#managerId.value,
             managerName: this.#managerName.innerHTML,
             active: this.#active.value,
@@ -949,6 +930,8 @@ class Find {
             openNotes: this.#openNotes.value,
             adminNotes: this.#adminNotes.value,
             oldPolicies: JSON.stringify(this.#memberPolicies),
+            currentAgeType: profile.age() == '' ? null : profile.age(),
+            origAgeType: this.#origAge,
             existingInterests: JSON.stringify(this.#memberInterests),
         };
         // now the policies
@@ -979,7 +962,7 @@ class Find {
         postdata['newInterests'] = JSON.stringify(newInterests);
 
         // manager
-        postdata['managerId'] = document.getElementById('f_managerId').value;
+        postdata['managerId'] = document.getElementById(this.#prefix + 'managerId').value;
         // manages
         postdata['managed'] = this.#managed;
 
@@ -1021,22 +1004,7 @@ class Find {
 
     // empty the form, and other parts for starting over
     clearForm() {
-        this.#firstName.value = '';
-        this.#middleName.value = '';
-        this.#lastName.value = '';
-        this.#suffix.value = '';
-        this.#legalName.value = '';
-        this.#pronouns.value = '';
-        this.#badgeName.value = '';
-        this.#badgeNameL2.value = '';
-        this.#address.value = '';
-        this.#addr2.value = '';
-        this.#city.value = '';
-        this.#state.value = '';
-        this.#zip.value = '';
-        this.#country.value = 'USA';
-        this.#emailAddr.value = '';
-        this.#phone.value = '';
+        profile.clearForm();
         this.#managesName.innerText = '';
         this.#openNotes.value = '';
         this.#adminNotes.value = '';
