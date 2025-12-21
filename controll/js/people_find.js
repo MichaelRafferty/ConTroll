@@ -46,6 +46,7 @@ class Find {
     #managesLookupTable = null;
     #managesLookupRows = null
     #managesName = null;
+    #updateOverrideBTN = null;
 
     #matched = null;
     #editRow = null;
@@ -85,6 +86,8 @@ class Find {
             this.#addManages = document.getElementById('addManages');
             this.#managesId = document.getElementById(this.#prefix + 'managesId');
             this.#managesName = document.getElementById('managesName');
+            this.#updateOverrideBTN = document.getElementById('updateExistingOverride');
+            this.#updateOverrideBTN.disabled = true;
         }
         var id  = document.getElementById('person-history');
         if (id) {
@@ -879,9 +882,10 @@ class Find {
     // saveEdit - save the edited data back to the database
     saveEdit() {
         // validate the data, simple checks
-        var email1 = profile.email();
-        if (email1 != '/r' && validateAddress(email1) == false) {
-            show_message("Invalid Email Address", 'error', 'find_edit_message');
+
+        let person = URLparamsToArray($('#f_editPerson').serialize());
+        if (!profile.validate(person, 'find_edit_message', saveEdit2, saveEdit)) {
+            this.#updateOverrideBTN.disabled = false;
             return;
         }
 
@@ -890,7 +894,11 @@ class Find {
                 'error', 'find_edit_message');
             return;
         }
+        this.saveEdit2();
+        return;
+    }
 
+    saveEdit2() {
         // first we need the perid we are editing, this.#editRow has the row
         var script = 'scripts/people_updateEdit.php';
 
@@ -1003,6 +1011,7 @@ class Find {
         this.#adminNotes.value = '';
         this.#managesId.value = '';
         this.#addPersonBtn.disabled = true;
+        this.#updateOverrideBTN.disabled = true;
         clear_message('find_edit_message');
         clear_message();
         clearError();
@@ -1050,4 +1059,12 @@ function managesLookupListener(e) {
 
 function add_editPerson() {
     findPerson.directEdit();
+}
+
+function saveEdit() {
+    findPerson.saveEdit();
+}
+
+function saveEdit2() {
+    findPerson.saveEdit2();
 }

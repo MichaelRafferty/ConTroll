@@ -1,27 +1,12 @@
 class Add {
     #matchTable = null;
     #addPersonBtn = null;
+    #addPersonOverrideBTN = null;
 
     #debug = 0;
     #debugVisible = false;
 
     // add fields matches
-    #firstName = null;
-    #middleName = null;
-    #lastName = null;
-    #suffix = null;
-    #legalName = null;
-    #pronouns = null;
-    #badgeName = null;
-    #badgeNameL2 = null;
-    #address = null;
-    #addr2 = null;
-    #city = null;
-    #state = null;
-    #zip = null;
-    #country = null;
-    #emailAddr = null;
-    #phone = null;
     #policiesDiv = null;
     #managerDiv = null;
     #active = null;
@@ -30,6 +15,8 @@ class Add {
 
     #matched = null;
 
+    #prefix = 'a_'; // add's prefix for fields in edit
+
     // globals before open
     constructor(debug) {
         this.#debug = debug;
@@ -37,28 +24,14 @@ class Add {
             this.#debugVisible = true;
         }
         this.#addPersonBtn = document.getElementById('addPersonBTN');
-
-        this.#firstName = document.getElementById('a_fname');
-        this.#middleName = document.getElementById('a_mname');
-        this.#lastName = document.getElementById('a_lname');
-        this.#suffix = document.getElementById('a_suffix');
-        this.#legalName = document.getElementById('a_legalName');
-        this.#pronouns = document.getElementById('a_pronouns');
-        this.#badgeName = document.getElementById('a_badge_name');
-        this.#badgeNameL2 = document.getElementById('a_badgeNameL2');
-        this.#address = document.getElementById('a_addr');
-        this.#addr2 = document.getElementById('a_addr2');
-        this.#city = document.getElementById('a_city');
-        this.#state = document.getElementById('a_state');
-        this.#zip = document.getElementById('a_zip');
-        this.#country = document.getElementById('a_country');
-        this.#emailAddr = document.getElementById('a_email1');
-        this.#phone = document.getElementById('a_phone');
+        this.#addPersonOverrideBTN = document.getElementById('addPersonOverrideBTN');
     }
 
     // called on open of the add window
     open(msg = null) {
         this.clearForm();
+        profile.hideAgeDiv(true);
+        profile.hideAgeText(true);
     }
 
     // check if a close match for this person exists and display a table of matches.
@@ -67,22 +40,23 @@ class Add {
         clearError();
         var postdata = {
             type: 'check',
-            firstName: this.#firstName.value,
-            middleName: this.#middleName.value,
-            lastName: this.#lastName.value,
-            suffix: this.#suffix.value,
-            legalName: this.#legalName.value,
-            pronouns: this.#pronouns.value,
-            badgeName: this.#badgeName.value,
-            badgeNameL2: this.#badgeNameL2.value,
-            address: this.#address.value,
-            addr2: this.#addr2.value,
-            city: this.#city.value,
-            state: this.#state.value,
-            zip: this.#zip.value,
-            country: this.#country.value,
-            emailAddr: this.#emailAddr.value,
-            phone: this.#phone.value,
+            firstName: profile.fname(),
+            middleName: profile.mname(),
+            lastName: profile.lname(),
+            suffix: profile.suffix(),
+            legalName: profile.legalName(),
+            pronouns: profile.pronouns(),
+            badgeName: profile.badgename(),
+            badgeNameL2: profile.badgenameL2(),
+            address: profile.addr(),
+            addr2: profile.addr2(),
+            city: profile.city(),
+            state: profile.state(),
+            zip: profile.zip(),
+            country: profile.country(),
+            emailAddr: profile.email(),
+            email_addr: profile.email(),
+            phone: profile.phone(),
         };
         var script = 'scripts/people_checkExists.php';
         var _this = this;
@@ -137,6 +111,7 @@ class Add {
                     {title: "Full Address", field: "fullAddr", width: 300, headerSort: true, headerFilter: true, formatter: "textarea", },
                     {title: "Email", field: "email_addr", width: 250, headerSort: true, headerFilter: true,},
                     {title: "Phone", field: "phone", width: 150, headerSort: true, headerFilter: true,},
+                    {title: "Current Age", field: "currentAgeType", width: 100, headerSort: true, headerFilter: true, headerWordWrap: true, },
                     {title: "Date Created", field: "creation_date", width: 180, headerSort: true, headerFilter: true,},
                     {field: 'first_name', visible: false,},
                     {field: 'middle_name', visible: false,},
@@ -154,6 +129,8 @@ class Add {
                     {field: 'country', visible: false,},
                     {field: 'active', visible: false,},
                     {field: 'banned', visible: false,},
+                    {title: "Admin Notes", headerWordWrap: true, field: 'admin_notes', visible: false, },
+                    {title: "Open Notes", headerWordWrap: true,field: 'open_notes', visible: false, },
                 ],
             });
         } else {
@@ -183,84 +160,55 @@ class Add {
             this.#matchTable = null;
         }
         this.#addPersonBtn.disabled = true;
+        this.#addPersonOverrideBTN.disabled = true;
         this.close();
         peopleEditPerson(index, row);
     }
 
     // addPerson - they decided it's a new person, add them
     addPerson() {
+        if (this.#matchTable != null) {
+            this.#matchTable.destroy();
+            this.#matchTable = null;
+        }
+        clear_message();
+        clearError();
+
+        let person = URLparamsToArray($('#a_editPerson').serialize());
+        if (!profile.validate(person, null, addNewPerson2, addNewPerson)) {
+            this.#addPersonOverrideBTN.disabled = false;
+            return;
+        }
+
+        this.addPerson2();
+        return;
+    }
+
+    addPerson2() {
         var postdata = {
             type: 'add',
-            firstName: this.#firstName.value,
-            middleName: this.#middleName.value,
-            lastName: this.#lastName.value,
-            suffix: this.#suffix.value,
-            legalName: this.#legalName.value,
-            pronouns: this.#pronouns.value,
-            badgeName: this.#badgeName.value,
-            badgeNameL2: this.#badgeNameL2.value,
-            address: this.#address.value,
-            addr2: this.#addr2.value,
-            city: this.#city.value,
-            state: this.#state.value,
-            zip: this.#zip.value,
-            country: this.#country.value,
-            emailAddr: this.#emailAddr.value,
-            phone: this.#phone.value,
+            firstName: profile.fname(),
+            middleName: profile.mname(),
+            lastName: profile.lname(),
+            suffix: profile.suffix(),
+            legalName: profile.legalName(),
+            pronouns: profile.pronouns(),
+            badgeName: profile.badgename(),
+            badgeNameL2: profile.badgenameL2(),
+            address: profile.addr(),
+            addr2: profile.addr2(),
+            city: profile.city(),
+            state: profile.state(),
+            zip: profile.zip(),
+            country: profile.country(),
+            emailAddr: profile.email(),
+            email_addr: profile.email(),
+            phone: profile.phone(),
+            currentAgeType: profile.age() == '' ? null : profile.age(),
             newPolicies: JSON.stringify(URLparamsToArray($('#a_editPolicies').serialize())),
         };
         var script = 'scripts/people_addNewPerson.php';
         var _this = this;
-
-        // validate required fields first
-        let errmsg = '';
-        let required = config.required;
-        if (postdata.emailAddr == '')
-            errmsg += 'Email address is required<br/>';
-        else if (postdata.emailAddr != '/r' && validateAddress(postdata.emailAddr) == false)
-            errmsg += 'Email address is invalid<br/>';
-
-        if (required != '') {
-            if (postdata.firstName == '')
-                errmsg += 'First name is required<br/>';
-        }
-
-        if (required == 'all') {
-            if (postdata.lastName == '') {
-                errmsg += 'Last name is required<br/>';
-            }
-        }
-
-        /* disable required error for address to end of form
-        if (required == 'addr' || required == 'all') {
-            if (postdata.address == '') {
-                errmsg += 'Address (Line 1) is required<br/>';
-            }
-        }
-
-        if (required == 'addr' || required == 'all' ||
-            (postdata.country == 'USA' && this.#uspsDiv != null &&
-                (postdata.address != '' || postdata.city != '' || postdata.state != '' || postdata.zip != '')
-            )
-        ) {
-            if (postdata.city == '') {
-                errmsg += 'City is required<br/>';
-            }
-
-            if (postdata.state == '') {
-                errmsg += 'State is required<br/>';
-            }
-
-            if (postdata.zip == '') {
-                errmsg += 'Zip/Postal Code is required<br/>';
-            }
-        }
-         */
-
-        if (errmsg != '') {
-            show_message(errmsg, 'error');
-            return;
-        }
 
         $.ajax({
             url: script,
@@ -291,58 +239,25 @@ class Add {
         if (data['success']) {
             show_message(data['success'], 'success');
         }
-        this.#firstName.value = '';
-        this.#emailAddr.value = '';
-
-        // clear the policy fields
-        this.#resetPolicies();
+       profile.clearNext();
 
         if (this.#matchTable != null) {
             this.#matchTable.destroy();
             this.#matchTable = null;
         }
         this.#addPersonBtn.disabled = true;
+        this.#addPersonOverrideBTN.disabled = true;
     }
 
     // empty the form, and other parts for starting over
     clearForm() {
-        this.#firstName.value = '';
-        this.#middleName.value = '';
-        this.#lastName.value = '';
-        this.#suffix.value = '';
-        this.#legalName.value = '';
-        this.#pronouns.value = '';
-        this.#badgeName.value = '';
-        this.#badgeNameL2.value = '';
-        this.#address.value = '';
-        this.#addr2.value = '';
-        this.#city.value = '';
-        this.#state.value = '';
-        this.#zip.value = '';
-        this.#country.value = 'USA';
-        this.#emailAddr.value = '';
-        this.#phone.value = '';
-        this.#addPersonBtn.disabled = true;
-        this.#resetPolicies();
+        profile.clearForm();
         if (this.#matchTable != null) {
             this.#matchTable.destroy();
             this.#matchTable = null;
         }
         clear_message();
         clearError();
-    }
-
-    // reset the policies to defaults
-    #resetPolicies() {
-        var index = 0;
-        if (policies && policies.length > 0) {
-            var keys = Object.keys(policies);
-            for (index = 0; index < keys.length; index++) {
-                var policy = policies[keys[index]];
-                var policyField = 'p_a_' + policy.policy;
-                document.getElementById(policyField).checked = policy.defaultValue == 'Y';
-            }
-        }
     }
 
     // on close of the pane, clean up the items
@@ -354,4 +269,12 @@ class Add {
     countryChange() {
         console.log("TODO: add country Change/USPS check");
     }
+}
+
+function addNewPerson() {
+    addPerson.addPerson();
+}
+
+function addNewPerson2() {
+    addPerson.addPerson2();
 }

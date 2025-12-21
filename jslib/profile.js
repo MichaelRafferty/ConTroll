@@ -452,6 +452,18 @@ class Profile {
                 "<pre>" + errormsg + "</pre>\n";
         } else {
             this.#uspsAddress = data.address;
+            let addr2 = ''
+            if (this.#uspsAddress.addr2)
+                addr2 = this.#uspsAddress.addr2.trim();
+
+            if (this.#uspsAddress.address.trim() == this.#addrField.value.trim() &&
+                addr2.trim() == this.#addr2Field.value.trim() &&
+                this.#uspsAddress.city.trim() == this.#cityField.value.trim() &&
+                this.#uspsAddress.state.trim() == this.#stateField.value.trim() &&
+                this.#uspsAddress.zip.trim() == this.#zipField.value.trim()) {
+                this.useMyAddress();
+                return;
+            }
             html = "<h4>USPS Returned: " + this.#uspsAddress.valid + "</h4>";
             if (data.status == 'error') {
                 html += "<p>USPS uspsAddress Validation Failed: " + data.error + "</p>";

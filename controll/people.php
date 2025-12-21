@@ -586,6 +586,7 @@ $config_vars['required'] = getConfValue('reg','required', 'addr');;
             </div>
             <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
                 <div class='container-fluid'>
+                    <form id='f_editPerson' class='form-floating' action='javascript:void(0);'>
                     <div class="row mt-2">
                         <div class="col-sm-12"><h2 class="size=h3">Profile/Policies</h2></div>
                     </div>
@@ -594,6 +595,7 @@ drawEditPersonBlock($con_conf, $useUSPS, $policies, 'find', true, true, $ageByDa
         array(), $ageListIdx,200, true, 'f_');
 drawInterestList($interests, true);
 ?>
+                    </form>
                     <div class='row mt-3' id="managerHdr">
                         <div class='col-sm-auto'><h2 class='size=h3'>Manager (Disassociate manager and save before adding people managed by this person)
                             </h2></div>
@@ -685,6 +687,9 @@ drawInterestList($interests, true);
             <div class='modal-footer'>
                 <button class='btn btn-sm btn-secondary' type='button' data-bs-dismiss='modal'>Cancel</button>
                 <button class='btn btn-sm btn-primary' type='button' id='updateExisting' onClick='findPerson.saveEdit()'>Update Existing Person</button>
+                <button class='btn btn-sm btn-warning' type='button' id='updateExistingOverride' onClick='findPerson.saveEdit2()'>
+                    Overrride Validation Checks and Update Existing Person
+                </button>
             </div>
             <div id='find_edit_message' class='mt-4 p-2'></div>
         </div>
@@ -763,18 +768,25 @@ drawInterestList($interests, true);
     </div>
     <div class='tab-pane fade' id='add-pane' role='tabpanel' aria-labelledby='add-tab' tabindex='0'>
         <div class='container-fluid'>
+            <div class="p-3" style="background-color: lightcyan;">
             <div class='row mt-2'>
                 <div class='col-sm-12' id='addH1Div'><H1 class='h3'><b>Add Person</b></H1></div>
             </div>
+            <form id='a_editPerson' class='form-floating' action='javascript:void(0);'>
 <?php
     drawEditPersonBlock($con_conf, true, $policies, 'addPerson', false, true,$ageByDate,
             null, $ageListIdx, 100, true, 'a_');
 ?>
+            </form>
+            </div>
         <div class="row mt-2">
             <div class="col-sm-auto">
                 <button class="btn btn-sm btn-primary" type='button' onclick="addPerson.checkExists();">Check If Already Exists</button>
                 <button class="btn btn-sm btn-secondary" type='button' onclick="addPerson.clearForm();">Clear Add Person Form</button>
                 <button class="btn btn-sm btn-secondary" type='button' id="addPersonBTN" onclick="addPerson.addPerson();" disabled>Add New Person</button>
+                <button class="btn btn-sm btn-warning" type='button' id="addPersonOverrideBTN" onclick="addPerson.addPerson2();" disabled>
+                    Overrride Validation Checks and Add New Person
+                </button>
             </div>
         </div>
         <div class='row mt-2'>

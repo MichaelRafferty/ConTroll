@@ -63,6 +63,7 @@ function peopleEditPerson(index, row) {
     bootstrap.Tab.getOrCreateInstance(find_tab).show();
     if (findPerson == null)
         findPerson = new Find(config['debug']);
+    findPerson.close();
     findPerson.open(null, index, row);
 }
 
@@ -73,6 +74,7 @@ function peopleAddPerson() {
         addPerson = new Add(config['debug']);
     if (profile =! null)
         profile = null;
+    addPerson.close();
     profile = new Profile('a_', 'people');
     addPerson.open();
 }

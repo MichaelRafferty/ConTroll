@@ -197,7 +197,7 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
             </div>
         </div>
     </div>
-    <?php if ($useUSPS) echo '</div></div><div class="col-sm-4" id="uspsblock"></div></div>' . PHP_EOL; ?>
+    <?php if ($useUSPS) echo '</div></div><div class="col-sm-4" id="' . $idPrefix . 'uspsblock"></div></div>' . PHP_EOL; ?>
 <?php
     if ($admin == false) {
 ?>

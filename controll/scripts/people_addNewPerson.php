@@ -25,13 +25,21 @@ $updatedBy = $_SESSION['user_perid'];
 $con = get_conf('con');
 $conid = $con['id'];
 
+if ($_POST['currentAgeType'] == '') {
+    $currentAgeType = null;
+    $currentAgeConid = null;
+} else {
+    $currentAgeType = $_POST['currentAgeType'];
+    $currentAgeConid = $conid;
+}
+
 $iP = <<<EOS
 INSERT INTO perinfo(last_name, first_name, middle_name, suffix, email_addr, phone, badge_name, badgeNameL2,
-    legalName, pronouns, address, addr_2, city, state, zip, country,
+    legalName, pronouns, address, addr_2, city, state, zip, country, currentAgeConId, currentAgeType,
     banned, active, updatedBy)
-VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'N', 'Y',?);
+VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'N', 'Y',?);
 EOS;
-$typestr = 'ssssssssssssssssi';
+$typestr = 'sssssssssssssissssi';
 
 // built insert array
 $values = [
@@ -51,6 +59,8 @@ $values = [
     $_POST['state'] == null ? '' : $_POST['state'],
     $_POST['zip'] == null ? '' : $_POST['zip'],
     $_POST['country'] == null ? '' : $_POST['country'],
+    $currentAgeConid,
+    $currentAgeType,
 ];
 $values[] = $updatedBy;
 
