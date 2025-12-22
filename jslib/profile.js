@@ -389,7 +389,7 @@ class Profile {
             for (let row in policies) {
                 let policy = policies[row];
                 if (policy.required == 'Y') {
-                    let field = '#l_' + policy.policy;
+                    let field = '#l_' + this.#prefix + policy.policy;
                     if (typeof this.#newPolicies['p_' + this.#prefix + policy.policy] === 'undefined') {
                         message += '<br/>You cannot continue until you agree to the ' + policy.policy + ' policy.';
                         $(field).addClass('need');
