@@ -781,8 +781,8 @@ drawInterestList($interests, true);
             </div>
         <div class="row mt-2">
             <div class="col-sm-auto">
+                <button class='btn btn-sm btn-secondary' type='button' onclick='addPerson.clearForm();'>Clear Add Person Form</button>
                 <button class="btn btn-sm btn-primary" type='button' onclick="addPerson.checkExists();">Check If Already Exists</button>
-                <button class="btn btn-sm btn-secondary" type='button' onclick="addPerson.clearForm();">Clear Add Person Form</button>
                 <button class="btn btn-sm btn-secondary" type='button' id="addPersonBTN" onclick="addPerson.addPerson();" disabled>Add New Person</button>
                 <button class="btn btn-sm btn-warning" type='button' id="addPersonOverrideBTN" onclick="addPerson.addPerson2();" disabled>
                     Overrride Validation Checks and Add New Person
