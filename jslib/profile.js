@@ -99,7 +99,10 @@ class Profile {
     }
 
     legalName() {
-        return this.#legalNameField.value;
+        if (this.#legalNameField)
+            return this.#legalNameField.value;
+
+        return '';
     }
 
     pronouns() {
@@ -220,7 +223,8 @@ class Profile {
         this.#mnameField.value = middle_name;
         this.#lnameField.value = last_name;
         this.#suffixField.value = suffix;
-        this.#legalNameField.value = legalName;
+        if (this.#legalNameField)
+            this.#legalNameField.value = legalName;
         this.#pronounsField.value = pronouns;
         this.#addrField.value = address;
         this.#addr2Field.value = addr_2;
@@ -533,7 +537,8 @@ class Profile {
             this.#email1Field.value = '';
         if (this.email2Field)
             this.#email2Field.value = '';
-        this.#legalNameField.value = '';
+        if (this.#legalNameField)
+            this.#legalNameField.value = '';
         this.#pronounsField.value = '';
         this.#badgenameField.value = '';
         this.#badgenameL2Field.value = '';

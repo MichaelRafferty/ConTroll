@@ -1,6 +1,7 @@
 // badge Javascript - Free Badges (comps)
 addPerson = null;
 findPerson = null;
+profile = null;
 matchList = null;
 
 // edit
@@ -14,6 +15,7 @@ editCurrentPerid = null;
 addPersonModal = null;
 addMatchTable = null;
 addPersonBTN = null;
+addPersonOverrideBTN = null;
 
 // watchlist
 watchList = null;
@@ -37,13 +39,13 @@ window.onload = function initpage() {
     if (id) {
         addPersonModal = new bootstrap.Modal(id);
         addPersonBtn = document.getElementById('addPersonBTN');
+        addPersonOverrideBTN = document.getElementById('addPersonOverrideBTN');
     }
     watchList = document.getElementById('watch-list');
     findNameField = document.getElementById('findName');
     findNameField.addEventListener('keyup', findNameListener);
     selectList = document.getElementById('select-list');
     getWatchList();
-
 }
 
 function findNameListener(e) {
@@ -358,7 +360,7 @@ function editPerson(perid) {
         type: 'details',
         perid: perid,
     };
-    var script = 'scripts/people_findGetDetails.php';
+    var script = 'scripts/badge_getDetails.php';
     clear_message();
     clearError();
     $.ajax({
@@ -387,59 +389,63 @@ function findDetailsSuccess(dataFound) {
         return;
     }
 
-    var data = watchTable.getRow(editCurrentPerid).getData();
-    document.getElementById('f_fname').value = data.first_name;
-    document.getElementById('f_mname').value = data.middle_name;
-    document.getElementById('f_lname').value = data.last_name;
-    document.getElementById('f_suffix').value = data.suffix;
-    document.getElementById('f_pronouns').value = data.pronouns;
-    document.getElementById('f_addr').value = data.address;
-    document.getElementById('f_addr2').value = data.addr_2;
-    document.getElementById('f_country').value = data.country;
-    document.getElementById('f_city').value = data.city;
-    document.getElementById('f_state').value = data.state;
-    document.getElementById('f_zip').value = data.zip;
-    document.getElementById('f_email1').value = data.email_addr;
-    document.getElementById('f_email2').value = data.email_addr;
-    document.getElementById('f_phone').value = data.phone;
-    document.getElementById('f_badgename').value = data.badge_name;
-    document.getElementById('f_badgeNameL2').value = data.badgeNameL2;
-    editPersonName.innerHTML = data.fullName + ' (' + data.id + ')';
+    var person = dataFound.person;
+    if (profile)
+        profile = null;
+    profile = new Profile('f_', source = 'badge', 'alert');
+    profile.setAll(person.first_name, person.middle_name, person.last_name, person.suffix, person.legalName, person.pronouns,
+        person.address, person.addr_2, person.city, person.state, person.zip, person.country,
+        person.phone, person.badge_name, person.badgeNameL2, person.currentAgeType == null ? '' : person.currentAgeType);
+    profile.setEmail(person.email_addr);
+    if (person.memAgeType != null && person.currentAgeConid == config.conid) {
+        let ageItem = ageListIdx[person.memAgeType];
+        profile.setAgeText('<b>'+ ageItem.shortname + ' [' + ageItem.label + ']</b>');
+    } else {
+        profile.hideAgeDiv(true);
+        profile.hideAgeField(false);
+        profile.hideAgeText(true);
+    }
+    editPersonName.innerHTML = person.fullName + ' (' + person.id + ')';
     editPersonModal.show();
 }
 
 function saveEdit() {
-    var email1 = document.getElementById('f_email1').value;
-    var email2 = document.getElementById('f_email2').value;
+    clear_message('add_message');
+    clearError();
 
-    if (email1 != email2) {
-        show_message("Email addresses do not match.", 'warn');
-        return false;
+    let person = URLparamsToArray($('#f_editPerson').serialize());
+    if (!profile.validate(person, 'add_message', saveEdit2, saveEdit)) {
+        addPersonOverrideBTN.disabled = false;
+        return;
     }
 
-    if (!validateAddress(email1)) {
-        show_message("Invalid Email address: " + email1, 'warn');
-        return false;
-    }
+    this.saveEdit2();
+    return;
+}
 
+function saveEdit2() {
     var postData = {
         action: 'updatePerinfo',
         perid: editCurrentPerid,
-        firstName: document.getElementById('f_fname').value,
-        middleName: document.getElementById('f_mname').value,
-        lastName: document.getElementById('f_lname').value,
-        suffix: document.getElementById('f_suffix').value,
-        pronouns: document.getElementById('f_pronouns').value,
-        address: document.getElementById('f_addr').value,
-        addr2: document.getElementById('f_addr2').value,
-        country: document.getElementById('f_country').value,
-        city: document.getElementById('f_city').value,
-        state: document.getElementById('f_state').value,
-        zip: document.getElementById('f_zip').value,
-        emailAddr: email1,
-        phone: document.getElementById('f_phone').value,
-        badgeName: document.getElementById('f_badgename').value,
-        badgeNameL2: document.getElementById('f_badgeNameL2').value,
+        firstName: profile.fname(),
+        middleName: profile.mname(),
+        lastName: profile.lname(),
+        suffix: profile.suffix(),
+        legalName: profile.legalName(),
+        pronouns: profile.pronouns(),
+        badgeName: profile.badgename(),
+        badgeNameL2: profile.badgenameL2(),
+        address: profile.addr(),
+        addr2: profile.addr2(),
+        city: profile.city(),
+        state: profile.state(),
+        zip: profile.zip(),
+        country: profile.country(),
+        emailAddr: profile.email(),
+        email_addr: profile.email(),
+        phone: profile.phone(),
+        currentAgeType: profile.age() == '' ? null : profile.age(),
+        newPolicies: JSON.stringify(URLparamsToArray($('#a_editPolicies').serialize())),
     };
 
     $.ajax({
@@ -500,30 +506,18 @@ function updateBadge(perid) {
 
 // add new person items
 function addNew() {
+    if (profile)
+        profile = null;
+    profile = new Profile('a_', source = 'badge', 'alert');
     addClearForm();
     addPersonModal.show();
 }
 
 // clear the add form
 function addClearForm() {
-    document.getElementById('a_fname').value = '';
-    document.getElementById('a_mname').value = '';
-    document.getElementById('a_lname').value = '';
-    document.getElementById('a_suffix').value = '';
-    document.getElementById('a_pronouns').value = '';
-    document.getElementById('a_addr').value = '';
-    document.getElementById('a_addr2').value = '';
-    document.getElementById('a_country').value = 'USA';
-    document.getElementById('a_city').value = '';
-    document.getElementById('a_state').value = '';
-    document.getElementById('a_zip').value = '';
-    document.getElementById('a_email1').value = '';
-    document.getElementById('a_email2').value = '';
-    document.getElementById('a_phone').value = '';
-    document.getElementById('a_badgename').value = '';
-    document.getElementById('a_badgeNameL2').value = '';
-
+    profile.clearForm();
     addPersonBtn.disabled = true;
+    addPersonOverrideBTN.disabled = true;
     if (addMatchTable != null) {
         addMatchTable.destroy();
         addMatchTable = null;
@@ -533,36 +527,27 @@ function addClearForm() {
 // check if the person on the form exists
 // check if a close match for this person exists and display a table of matches.
 function addCheckExists() {
-    var email1 = document.getElementById('a_email1').value;
-    var email2 = document.getElementById('a_email2').value;
-    if (email1 == '') {
-        show_message("Email addresses cannot be empty, use /r if refused", 'error', 'add_message');
-        return;
-    }
-    if (email1 != email2 && email1 != '/r') {
-        show_message("Email addresses do not match", 'error', 'add_message');
-        return;
-    }
-
     clear_message('add_message');
     clearError();
     var postdata = {
         type: 'check',
-        firstName: document.getElementById('a_fname').value,
-        middleName: document.getElementById('a_mname').value,
-        lastName: document.getElementById('a_lname').value,
-        suffix: document.getElementById('a_suffix').value,
-        pronouns: document.getElementById('a_pronouns').value,
-        badgeName: document.getElementById('a_badgename').value,
-        badgeNameL2: document.getElementById('a_badgeNameL2').value,
-        address: document.getElementById('a_addr').value,
-        addr2: document.getElementById('a_addr2').value,
-        city: document.getElementById('a_city').value,
-        state: document.getElementById('a_state').value,
-        zip: document.getElementById('a_zip').value,
-        country: document.getElementById('a_country').value,
-        emailAddr: email1,
-        phone: document.getElementById('a_phone').value,
+        firstName: profile.fname(),
+        middleName: profile.mname(),
+        lastName: profile.lname(),
+        suffix: profile.suffix(),
+        pronouns: profile.pronouns(),
+        legalName: profile.legalName(),
+        badgeName: profile.badgename(),
+        badgeNameL2: profile.badgenameL2(),
+        address: profile.addr(),
+        addr2: profile.addr2(),
+        city: profile.city(),
+        state: profile.state(),
+        zip: profile.zip(),
+        country: profile.country(),
+        emailAddr: profile.email(),
+        phone: profile.phone(),
+        currentAgeType: profile.age() == '' ? null : profile.age(),
     };
     var script = 'scripts/people_checkExists.php';
     $.ajax({
@@ -636,6 +621,7 @@ function addCheckSuccess(dataFound) {
         }
     }
     addPersonBtn.disabled = false;
+    addPersonOverrideBTN.disabled = true;
 }
 
 // select button: chose this person instead of adding a new one
@@ -655,6 +641,7 @@ function addSelectPerson(index) {
         addMatchTable = null;
     }
     addPersonBtn.disabled = true;
+    addPersonOverrideBTN.disabled = true;
     addPersonModal.hide();
     clear_message('add_message')
     addToList(row.id);
@@ -662,35 +649,39 @@ function addSelectPerson(index) {
 
 // saveAdd - we have checked if they exist, now actually add them and then add them to the watch list
 function saveAdd() {
-    var email1 = document.getElementById('a_email1').value;
-    var email2 = document.getElementById('a_email2').value;
-    if (email1 == '') {
-        show_message("Email addresses cannot be empty, use /r if refused", 'error', 'add_message');
-        return;
-    }
-    if (email1 != email2 && email1 != '/r') {
-        show_message("Email addresses do not match", 'error', 'add_message');
+    clear_message('add_message');
+    clearError();
+
+    let person = URLparamsToArray($('#a_editPerson').serialize());
+    if (!profile.validate(person, 'add_message', saveAdd2, saveAdd)) {
+        addPersonOverrideBTN.disabled = false;
         return;
     }
 
+    this.addPerson2();
+    return;
+}
+
+function saveAdd2() {
     var postdata = {
         type: 'add',
-        firstName: document.getElementById('a_fname').value,
-        middleName: document.getElementById('a_mname').value,
-        lastName: document.getElementById('a_lname').value,
-        suffix: document.getElementById('a_suffix').value,
-        pronouns: document.getElementById('a_pronouns').value,
-        legalName: '',
-        badgeName: document.getElementById('a_badgename').value,
-        badgeNameL2: document.getElementById('a_badgeNameL2').value,
-        address: document.getElementById('a_addr').value,
-        addr2: document.getElementById('a_addr2').value,
-        city: document.getElementById('a_city').value,
-        state: document.getElementById('a_state').value,
-        zip: document.getElementById('a_zip').value,
-        country: document.getElementById('a_country').value,
-        emailAddr: email1,
-        phone: document.getElementById('a_phone').value,
+        firstName: profile.fname(),
+        middleName: profile.mname(),
+        lastName: profile.lname(),
+        suffix: profile.suffix(),
+        pronouns: profile.pronouns(),
+        legalName: profile.legalName(),
+        badgeName: profile.badgename(),
+        badgeNameL2: profile.badgenameL2(),
+        address: profile.addr(),
+        addr2: profile.addr2(),
+        city: profile.city(),
+        state: profile.state(),
+        zip: profile.zip(),
+        country: profile.country(),
+        emailAddr: profile.email(),
+        phone: profile.phone(),
+        currentAgeType: profile.age() == '' ? null : profile.age(),
     };
 
     var script = 'scripts/people_addNewPerson.php';
@@ -724,6 +715,7 @@ function addSuccess(data) {
     }
 
     addPersonBtn.disabled = true;
+    addPersonOverrideBTN.disabled = true;
     addPersonModal.hide();
     clear_message('add_message')
     addToList(data.perid);

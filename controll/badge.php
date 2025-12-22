@@ -47,9 +47,8 @@ page_init($page,
     /* css */ array('css/base.css', $cdn['tabcss'], $cdn['tabbs5']
                    ),
     /* js  */ array($cdn['tabjs'],
+                    'jslib/profile.js',
                     'js/badge.js',
-                    'js/people_add.js',
-                    'js/people_find.js'
                    ),
               $need_login);
 
@@ -137,7 +136,7 @@ $config_vars['useUSPS'] = $useUSPS;
                 <button class='btn btn-sm btn-secondary' type='button' data-bs-dismiss='modal'>Cancel</button>
                 <button class='btn btn-sm btn-primary' type='button' onclick='addCheckExists();'>Check If Already Exists</button>
                 <button class='btn btn-sm btn-secondary' type='button' id='addPersonBTN' onclick='saveAdd();' disabled>Add New Person
-                <button class='btn btn-sm btn-warning' type='button' id='updateExistingOverride' onClick='saveAdd2()'>
+                <button class='btn btn-sm btn-warning' type='button' id='addPersonOverrideBTN' onClick='saveAdd2()'>
                     Overrride Validation Checks and Add New Person
                 </button>
             </div>
