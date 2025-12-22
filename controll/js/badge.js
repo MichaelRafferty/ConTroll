@@ -3,6 +3,8 @@ addPerson = null;
 findPerson = null;
 profile = null;
 matchList = null;
+policies = null;
+interests = null;
 
 // edit
 editPersonModal = null;
@@ -392,7 +394,7 @@ function findDetailsSuccess(dataFound) {
     var person = dataFound.person;
     if (profile)
         profile = null;
-    profile = new Profile('f_', source = 'badge', 'alert');
+    profile = new Profile('f_', source = 'badge', 'warncolor');
     profile.setAll(person.first_name, person.middle_name, person.last_name, person.suffix, person.legalName, person.pronouns,
         person.address, person.addr_2, person.city, person.state, person.zip, person.country,
         person.phone, person.badge_name, person.badgeNameL2, person.currentAgeType == null ? '' : person.currentAgeType);
@@ -508,13 +510,18 @@ function updateBadge(perid) {
 function addNew() {
     if (profile)
         profile = null;
-    profile = new Profile('a_', source = 'badge', 'alert');
+    profile = new Profile('a_', source = 'badge', 'warncolor');
     addClearForm();
+    profile.hideAgeField(false);
+    profile.hideAgeDiv(true);
+    profile.hideAgeText(true);
     addPersonModal.show();
 }
 
 // clear the add form
 function addClearForm() {
+    clear_message('add_message');
+    clearError();
     profile.clearForm();
     addPersonBtn.disabled = true;
     addPersonOverrideBTN.disabled = true;
@@ -651,6 +658,10 @@ function addSelectPerson(index) {
 function saveAdd() {
     clear_message('add_message');
     clearError();
+    if (addMatchTable != null) {
+        addMatchTable.destroy();
+        addMatchTable = null;
+    }
 
     let person = URLparamsToArray($('#a_editPerson').serialize());
     if (!profile.validate(person, 'add_message', saveAdd2, saveAdd)) {
@@ -658,7 +669,7 @@ function saveAdd() {
         return;
     }
 
-    this.addPerson2();
+    this.saveAdd2();
     return;
 }
 

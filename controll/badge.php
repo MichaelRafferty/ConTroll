@@ -89,6 +89,7 @@ $config_vars['useUSPS'] = $useUSPS;
             </div>
             <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
                 <div class='container-fluid'>
+                    <form id='f_editPerson' class='form-floating' action='javascript:void(0);'>
                     <div class='row mt-2'>
                         <div class='col-sm-12'><h2 class='size=h3'>Profile</h2></div>
                     </div>
@@ -96,6 +97,7 @@ $config_vars['useUSPS'] = $useUSPS;
                         drawEditPersonBlock($conf, $useUSPS, null, 'find', true, true, $ageByDate,
                                 array (), $ageListIdx,200, true, 'f_', true);
                     ?>
+                    </form>
                 </div>
                 <div id='find_edit_message' class='mt-4 p-2'></div>
             </div>
@@ -118,6 +120,7 @@ $config_vars['useUSPS'] = $useUSPS;
             </div>
             <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
                 <div class='container-fluid'>
+                    <form id='a_editPerson' class='form-floating' action='javascript:void(0);'>
                     <div class='row mt-2'>
                         <div class='col-sm-12'><h2 class='size=h3'>Profile</h2></div>
                     </div>
@@ -125,6 +128,7 @@ $config_vars['useUSPS'] = $useUSPS;
                         drawEditPersonBlock($conf, $useUSPS, null, 'add', true, true, $ageByDate,
                                 array (), $ageListIdx,1000, true, 'a_', true);
                     ?>
+                    </form>
                     <div class='row mt-2'>
                         <div class='col-sm-12' id='addMatchTable'></div>
                     </div>

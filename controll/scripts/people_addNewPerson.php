@@ -39,7 +39,7 @@ INSERT INTO perinfo(last_name, first_name, middle_name, suffix, email_addr, phon
     banned, active, updatedBy)
 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'N', 'Y',?);
 EOS;
-$typestr = 'sssssssssssssissssi';
+$typestr = 'ssssssssssssssssisi';
 
 // built insert array
 $values = [
