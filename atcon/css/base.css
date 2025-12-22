@@ -63,6 +63,10 @@ span.req, .warn {
     color: red;
 }
 
+.warncolor {
+    background-color: #FFE190;;
+}
+
 /* tabulator pagination styling */
 button.tabulator-page {
     background: hsla(0,0%,100%,.2);

@@ -38,12 +38,18 @@ class Profile {
     #uspsAddress = null;
     #source = '';
     #prefix = '';
+    #alert = 'need';
+    #alertName = 'red'
+    #alertType = 'error'
 
 // initialization
-    constructor(prefix = '', source = '') {
+    constructor(prefix = '', source = '', alert= 'need') {
         this.#source = source;
         this.#prefix = prefix;
-        
+        this.#alert = alert;
+        this.#alertName = alert == 'need' ? 'red' : 'yellow';
+        this.#alertType = alert == 'need' ? 'error' : 'warn';
+
 // lookup all DOM elements
         this.#fnameField = document.getElementById(prefix + "fname");
         this.#mnameField = document.getElementById(prefix + "mname");
@@ -295,28 +301,28 @@ class Profile {
             // first name is required
             if (person.fname == '') {
                 valid = false;
-                this.#fnameField.classList.add('need');
+                this.#fnameField.classList.add(this.#alert);
             } else {
-                this.#fnameField.classList.remove('need');
+                this.#fnameField.classList.remove(this.#alert);
             }
         }
 
         if (this.#email1Field)
-            this.#email1Field.classList.remove('need');
+            this.#email1Field.classList.remove(this.#alert);
         if (this.#email2Field)
-            this.#email2Field.classList.remove('need');
+            this.#email2Field.classList.remove(this.#alert);
         if (this.#email1Field != null && this.email() != '/r') {
             if (this.email() != this.email2()) {
                 message += "The two email addresses do not match<br/>";
                 valid = false;
-                this.#email1Field.classList.add('need');
+                this.#email1Field.classList.add(this.#alert);
                 if (this.#email2Field)
-                    this.#email2Field.classList.add('need');
+                    this.#email2Field.classList.add(this.#alert);
             } else if (!validateAddress(this.email())) {
                 message += "The email address is not a valid email address<br/>";
-                this.#email1Field.classList.add('need');
+                this.#email1Field.classList.add(this.#alert);
                 if (this.#email2Field)
-                    this.#email2Field.classList.add('need');
+                    this.#email2Field.classList.add(this.#alert);
             }
         }
 
@@ -324,9 +330,9 @@ class Profile {
             // last name is required
             if (person.lname == '') {
                 valid = false;
-                this.#lnameField.classList.add('need');
+                this.#lnameField.classList.add(this.#alert);
             } else {
-                this.#lnameField.classList.remove('need');
+                this.#lnameField.classList.remove(this.#alert);
             }
         }
 
@@ -338,49 +344,49 @@ class Profile {
             // address 1 is required, address 2 is optional
             if (person.addr == '') {
                 valid = false;
-                this.#addrField.classList.add('need');
+                this.#addrField.classList.add(this.#alert);
             } else {
-                this.#addrField.classList.remove('need');
+                this.#addrField.classList.remove(this.#alert);
             }
 
             // city/state/zip required
             if (person.city == '') {
                 valid = false;
-                this.#cityField.classList.add('need');
+                this.#cityField.classList.add(this.#alert);
             } else {
-                this.#cityField.classList.remove('need');
+                this.#cityField.classList.remove(this.#alert);
             }
 
             if (person.state == '') {
                 valid = false;
-                this.#stateField.classList.add('need');
+                this.#stateField.classList.add(this.#alert);
             } else {
                 if (person.country == 'USA') {
                     if (person.state.trim().length != 2) {
                         valid = false;
-                        this.#stateField.classList.add('need');
+                        this.#stateField.classList.add(this.#alert);
                     } else {
-                        this.#stateField.classList.remove('need');
+                        this.#stateField.classList.remove(this.#alert);
                     }
                 } else {
-                    this.#stateField.classList.remove('need');
+                    this.#stateField.classList.remove(this.#alert);
                 }
             }
 
             if (person.zip == '') {
                 valid = false;
-                this.#zipField.classList.add('need');
+                this.#zipField.classList.add(this.#alert);
             } else {
-                this.#zipField.classList.remove('need');
+                this.#zipField.classList.remove(this.#alert);
             }
         }
 
         // age is always required
         if (person.age === undefined || person.age == '') {
             valid = false;
-            this.#ageField.classList.add('need');
+            this.#ageField.classList.add(this.#alert);
         } else {
-            this.#ageField.classList.remove('need');
+            this.#ageField.classList.remove(this.#alert);
         }
 
         // now verify required policies
@@ -391,11 +397,14 @@ class Profile {
                 if (policy.required == 'Y') {
                     let field = '#l_' + this.#prefix + policy.policy;
                     if (typeof this.#newPolicies['p_' + this.#prefix + policy.policy] === 'undefined') {
-                        message += '<br/>You cannot continue until you agree to the ' + policy.policy + ' policy.';
-                        $(field).addClass('need');
+                        if (this.#alertType == 'warn')
+                            message += '<br/>The required policy, ' + policy.policy + ', is not checked.';
+                        else
+                            message += '<br/>You cannot continue until you agree to the ' + policy.policy + ' policy.';
+                        $(field).addClass(this.#alert);
                         valid = false;
                     } else {
-                        $(field).removeClass('need');
+                        $(field).removeClass(this.#alert);
                     }
                 }
             }
@@ -403,7 +412,8 @@ class Profile {
 
         // don't continue to process if any are missing
         if (!valid) {
-            show_message("Please correct the items highlighted in red and validate again.<br/>" + message, 'error', messageDiv);
+            show_message("Please correct the items highlighted in " + this.#alertName + " and validate again.<br/>" + message,
+                this.#alertType, messageDiv);
             return false;
         }
 
@@ -529,13 +539,13 @@ class Profile {
         this.#badgenameL2Field.value = '';
         this.#ageField.value = '';
 
-        this.#fnameField.classList.remove('need');
-        this.#lnameField.classList.remove('need');
-        this.#addrField.classList.remove('need');
-        this.#cityField.classList.remove('need');
-        this.#stateField.classList.remove('need');
-        this.#zipField.classList.remove('need');
-        this.#ageField.classList.remove('need');
+        this.#fnameField.classList.remove(this.#alert);
+        this.#lnameField.classList.remove(this.#alert);
+        this.#addrField.classList.remove(this.#alert);
+        this.#cityField.classList.remove(this.#alert);
+        this.#stateField.classList.remove(this.#alert);
+        this.#zipField.classList.remove(this.#alert);
+        this.#ageField.classList.remove(this.#alert);
 
         // reset the policies and interests
         if (typeof policies !== 'undefined') {
@@ -566,14 +576,14 @@ class Profile {
         this.#zipField.value = '';
         this.#countryField.value = 'USA';
         this.#phoneField.value = '';
-        this.#lnameField.classList.remove('need');
-        this.#addrField.classList.remove('need');
-        this.#addr2Field.classList.remove('need');
-        this.#cityField.classList.remove('need');
-        this.#stateField.classList.remove('need');
-        this.#zipField.classList.remove('need');
-        this.#countryField.classList.remove('need');
-        this.#phoneField.classList.remove('need');
+        this.#lnameField.classList.remove(this.#alert);
+        this.#addrField.classList.remove(this.#alert);
+        this.#addr2Field.classList.remove(this.#alert);
+        this.#cityField.classList.remove(this.#alert);
+        this.#stateField.classList.remove(this.#alert);
+        this.#zipField.classList.remove(this.#alert);
+        this.#countryField.classList.remove(this.#alert);
+        this.#phoneField.classList.remove(this.#alert);
     }
 
     // ageChanged - filter memList for age change

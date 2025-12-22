@@ -40,7 +40,7 @@ function settab(tabname) {
         case 'findedit-pane':
             if (profile =! null)
                 profile = null;
-            profile = new Profile('f_', 'people');
+            profile = new Profile('f_', 'people', 'warncolor');
             if (findPerson == null)
                 findPerson = new Find(config['debug']);
             findPerson.open();
@@ -48,7 +48,7 @@ function settab(tabname) {
         case 'add-pane':
             if (profile =! null)
                 profile = null;
-            profile = new Profile('a_', 'people');
+            profile = new Profile('a_', 'people', 'warncolor');
             if (addPerson == null)
                 addPerson = new Add(config['debug']);
             addPerson.open();
@@ -75,6 +75,6 @@ function peopleAddPerson() {
     if (profile =! null)
         profile = null;
     addPerson.close();
-    profile = new Profile('a_', 'people');
+    profile = new Profile('a_', 'people', 'warncolor');
     addPerson.open();
 }

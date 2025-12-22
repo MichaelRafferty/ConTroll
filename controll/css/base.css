@@ -45,6 +45,10 @@ h1.title {
     background-color: #fef;
 }
 
+.warncolor {
+    background-color: #FFE190;;
+}
+
 .warn {
     color: red
 }
