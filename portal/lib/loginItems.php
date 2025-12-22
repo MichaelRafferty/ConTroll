@@ -202,6 +202,7 @@ function chooseAccountFromEmail($email, $id, $linkid, $passedMatch, $validationT
         $policies = getPolicies();
         $interests = getInterests();
         [$ageList, $ageListIdx] = getAgeList($config_vars['conid']);
+        draw_addMembershipsConfirmModal();
         draw_editPersonModal('login', $policies, $ageListIdx, $config_vars['startdate'], $interests);
         // ask to create new account
 ?>

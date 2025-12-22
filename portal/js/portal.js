@@ -56,7 +56,6 @@ class Portal {
     #interests = null;
     #interestsSerializeStart = null;
 
-
     // order/payment fields
     #payBalanceBTN = null;
     #paymentDueModal = null;
@@ -100,7 +99,6 @@ class Portal {
 
     // policy Items
     #oldPolicies = null;
-    #newPolicies = null;
 
     // locale/currency
     #currencyFmt = null;

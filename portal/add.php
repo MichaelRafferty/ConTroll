@@ -99,6 +99,7 @@ portalPageInit('add', $info,
 <?php
 // get the info for the current person or set it all to NULL
 $person = null;
+draw_addMembershipsConfirmModal();
 // draw the skeleton
 ?>
     <div class="row mt-3">

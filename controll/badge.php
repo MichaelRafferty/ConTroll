@@ -133,10 +133,13 @@ $config_vars['useUSPS'] = $useUSPS;
                 <div id='add_message' class='mt-4 p-2'></div>
             </div>
             <div class='modal-footer'>
+                <button class='btn btn-sm btn-secondary' type='button' onclick='addClearForm();'>Clear Add Person Form</button>
                 <button class='btn btn-sm btn-secondary' type='button' data-bs-dismiss='modal'>Cancel</button>
                 <button class='btn btn-sm btn-primary' type='button' onclick='addCheckExists();'>Check If Already Exists</button>
-                <button class='btn btn-sm btn-secondary' type='button' onclick='addClearForm();'>Clear Add Person Form</button>
                 <button class='btn btn-sm btn-secondary' type='button' id='addPersonBTN' onclick='saveAdd();' disabled>Add New Person
+                <button class='btn btn-sm btn-warning' type='button' id='updateExistingOverride' onClick='saveAdd2()'>
+                    Overrride Validation Checks and Add New Person
+                </button>
             </div>
         </div>
     </div>

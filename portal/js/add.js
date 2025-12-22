@@ -11,7 +11,6 @@ window.onload = function () {
 class Add {
     // current person info
     #epHeader = null;
-    #personInfo = [];
 
     // flow items
     #emailDiv = null;
@@ -21,6 +20,9 @@ class Add {
     #newEmailField = null;
     #debug = 0;
     #addNewPersonBtn = null;
+    #portalAddConfirmModal = null;
+    #portalAddConfirmTitle = null;
+    #addConfirmDiv = null;
 
     constructor() {
         if (config.debug)
@@ -37,6 +39,13 @@ class Add {
 
         this.#addNewPersonBtn.hidden = true;
         this.#verifyPersonDiv.hidden = true;
+
+        let id = document.getElementById("portalAddConfirm");
+        if (id) {
+            this.#portalAddConfirmModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
+            this.#portalAddConfirmTitle = document.getElementById('addConfirmTitle');
+            this.#addConfirmDiv = document.getElementById('addConfirm-div');
+        }
 
         this.#epHeader = document.getElementById("epHeader");
         this.getPersonInfo(config.id, config.idType);
@@ -327,12 +336,9 @@ class Add {
             if (data.newPersonId > 0) {
                 this.#leaveBeforeChanges = false;
                 let fullname = (profile.fname() + ' ' + profile.lname()).trim();
-                let url = window.location.protocol + '//' + window.location.hostname + '/cart.php';
-                if (confirm('Press OK to purchase memberships now for ' + fullname + '.  Otherwise you will be taken to the portal home page')) {
-                    window.location.href=url;
-                    return;
-                }
-                window.location = "/portal.php";
+                this.#addConfirmDiv.innerHTML = 'Purchase memberships now for ' + fullname + '?<br/>&nbsp;<br/>Otherwise you will be taken to the portal' +
+                    ' home page.';
+                this.#portalAddConfirmModal.show();
             }
         }
         return true;
@@ -369,4 +375,12 @@ function addPerson(data) {
 
 function redoAddress() {
     add.addPersonSubmit();
+}
+
+function addConfirmResponse(answer) {
+    if (answer) {
+        let url = window.location.protocol + '//' + window.location.hostname + '/cart.php';
+        window.location.href=url;
+    } else
+        window.location = "/portal.php";
 }

@@ -22,20 +22,21 @@ class Login {
     #epHeaderDiv = null;
     #epPersonIdField = null;
     #epPersonTypeField = null;
+
+    #portalAddConfirmModal = null;
+    #portalAddConfirmTitle = null;
+    #addConfirmDiv = null;
     #sendLinkBtn = null;
     #tokenEmailDiv = null
     #tokenEmail = null;
     #devEmail = null;
-    #newPolicies = null;
 
     #email = null;
     #validationType = null;
-    #personSave = null;
-    #uspsAddress = null;
 
     constructor() {
         this.#matchTable = null;
-        var id;
+        let id;
         id = document.getElementById("editPersonModal");
         if (id) {
             this.#editPersonModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
@@ -45,6 +46,13 @@ class Login {
             this.#epPersonIdField = document.getElementById("epPersonId");
             this.#epPersonTypeField = document.getElementById("epPersonType");
             profile = new Profile('', 'login');
+        }
+
+        id = document.getElementById("portalAddConfirm");
+        if (id) {
+            this.#portalAddConfirmModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
+            this.#portalAddConfirmTitle = document.getElementById('addConfirmTitle');
+            this.#addConfirmDiv = document.getElementById('addConfirm-div');
         }
 
         this.#loginWithPasskeyBtn = document.getElementById("loginPasskeyBtn");
@@ -325,12 +333,9 @@ class Login {
             this.#editPersonModal.hide();
             if (data.newPersonId > 0) {
                 let fullname = (profile.fname() + ' ' + profile.lname()).trim();
-                let url = window.location.protocol + '//' + window.location.hostname + '/cart.php';
-                if (confirm('Press OK to purchase memberships now for ' + fullname + '.  Otherwise you will be taken to the portal home page')) {
-                    window.location.href=url;
-                    return;
-                }
-                window.location.reload();
+                this.#addConfirmDiv.innerHTML = 'Purchase memberships now for ' + fullname + '?<br/>&nbsp;<br/>Otherwise you will be taken to the portal' +
+                    ' home page.';
+                this.#portalAddConfirmModal.show();
             }
         }
     }
@@ -349,4 +354,12 @@ function addPerson(data) {
 
 function redoAddress() {
     login.editPersonSubmit();
+}
+
+function addConfirmResponse(answer) {
+    if (answer) {
+        let url = window.location.protocol + '//' + window.location.hostname + '/cart.php';
+        window.location.href=url;
+    } else
+        window.location.reload();
 }

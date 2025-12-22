@@ -702,3 +702,32 @@ function draw_recieptModal() : void {
 </div>
 <?php
 }
+
+
+// draw_receiptModal - modal to display a receipt
+    function draw_addMembershipsConfirmModal() : void {
+        ?>
+        <div id='portalAddConfirm' class='modal modal-lg fade' tabindex='-1' aria-labelledby='Registration Add Memberships Now' aria-hidden='true'
+             style='--bs-modal-width:
+    80%;'>
+            <div class='modal-dialog'>
+                <div class='modal-content'>
+                    <div class='modal-header bg-primary text-bg-primary'>
+                        <div class='modal-title'>
+                            <strong id='addConfirmTitle'>Registration Portal - Add Memberships/Purchases Now?</strong>
+                        </div>
+                    </div>
+                    <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                        <div class="row p-3">
+                            <div class="col-sm-12" id='addConfirm-div'></div>
+                        </div>
+                    </div>
+                    <div class='modal-footer'>
+                        <button class='btn btn-sm btn-secondary' onClick="addConfirmResponse(false)">Not Now</button>
+                        <button class='btn btn-sm btn-primary' id='addConfirmBtn' onClick='addConfirmResponse(true)'>Purchase Memberships</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php
+    }
