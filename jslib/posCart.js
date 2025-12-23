@@ -54,6 +54,7 @@ class PosCart {
     #review_required_first = ['first_name', 'email_addr', 'address_1', 'city', 'state', 'postal_code'];
     #review_required_fields = this.#review_required_all;
     #review_prompt_fields = [ 'phone' ];
+    #age_select = document.getElementById('age').innerHTML;
     #country_select = document.getElementById('country').innerHTML;
 
 // Pay items
@@ -547,7 +548,7 @@ class PosCart {
 
         // set the current age type
         this.#memberAge = null;
-        if (cart_row.memberAgeType && cart_row.memberAgeType != '') {
+        if (cart_row.memberAgeType && cart_row.memberAgeType != '' && row.memberAgeType != 'all') {
             this.#memberAge = cart_row.memberAgeType;
             this.#currentAge = cart_row.memberAgeType;
         } else if (cart_row.currentAgeConId == config.conid)
@@ -872,7 +873,7 @@ class PosCart {
             this.#memberships = [];
         this.#memberships.push(make_copy(newMembership));
         this.newIDKey--;
-        if (this.#memberAge == null)
+        if (this.#memberAge == null && newMembership.memAge != 'all')
             this.#memberAge = newMembership.memAge;
         this.#cartChanges++;
         this.redrawRegItems();
@@ -1353,6 +1354,19 @@ class PosCart {
         <div class="col-sm-auto ms-0 me-0 p-0">
             <input type="text" name='c` + rownum + `-badgeNameL2' id='c` + rownum + `-badgeNameL2' size=32 maxlength="32" placeholder="Badgename Line 2" tabindex="` +
                 String(tabindex + 14) +'" value="' + row.badgeNameL2 + `"/>
+        </div>
+        <div class="col-sm-auto ms-0 me-0 p-0 ps-2">
+`;
+            if (row.memberAgeType && row.memberAgeType != '' && row.memberAgeType != 'all') {
+                let ageItem = ageListIdx[row.memberAgeType];
+                html += 'Member Age: ' + ageItem.shortname + ' [' + ageItem.label + ']';
+            } else {
+                html += `<select name='c` + rownum + `-age' id='c` + rownum + `-age' tabIndex="` + String(tabindex + 15) + `">
+                    ` + this.#age_select + `
+                </select>
+                `;
+            }
+            html += `
         </div>
     </div>
      <div class="row">
