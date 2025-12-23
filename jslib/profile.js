@@ -22,6 +22,7 @@ class Profile {
     #ageField = null;
     #ageDiv = null;
     #ageText = null;
+    #memberAge = '';
     #uspsDiv= null;
     #newPolicies = null;
     #email1Input = true;
@@ -217,6 +218,10 @@ class Profile {
         this.#ageField.value = age;
     }
 
+    setMemberAge(age) {
+        this.#memberAge = age;
+    }
+
     setAll(first_name, middle_name, last_name, suffix, legalName, pronouns, address, addr_2, city, state, zip, country, phone,
            badge_name, badgeNameL2, age) {
         this.#fnameField.value = first_name;
@@ -390,7 +395,12 @@ class Profile {
             valid = false;
             this.#ageField.classList.add(this.#alert);
         } else {
-            this.#ageField.classList.remove(this.#alert);
+            if (this.#memberAge != '' && person.age != '' && person.age != this.#memberAge) {
+                message += '<br/>Memerships have age ' + this.#memberAge + ' which does not match current age of ' + person.age + '.';
+                this.#ageField.classList.add(this.#alert);
+                valid = false;
+            } else
+                this.#ageField.classList.remove(this.#alert);
         }
 
         // now verify required policies
@@ -543,6 +553,7 @@ class Profile {
         this.#badgenameField.value = '';
         this.#badgenameL2Field.value = '';
         this.#ageField.value = '';
+        this.#memberAge = '';
 
         this.#fnameField.classList.remove(this.#alert);
         this.#lnameField.classList.remove(this.#alert);

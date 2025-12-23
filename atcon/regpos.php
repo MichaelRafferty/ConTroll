@@ -119,6 +119,7 @@ page_init($page, $tab,
     /* css */ array($cdn['tabcss'], $cdn['tabbs5']),
     /* js  */ array( ///$cdn['luxon'],
                     $cdn['tabjs'],
+                    'jslib/profile.js',
                     'jslib/posCart.js',
                     'jslib/posCoupon.js',
                     'jslib/pos.js',
@@ -219,7 +220,7 @@ page_init($page, $tab,
                                                 onclick="pos.add_new();">Add to Cart
                                         </button>
                                         <button type='button' class='btn btn-primary btn-sm' id='addoverride-btn' name='override_btn' hidden
-                                                onclick='pos.addNewToCart(1);'>Add to Cart Overriding Missing Fields
+                                                onclick='pos.addNewToCart2();'>Add to Cart Overriding Missing Fields
                                         </button>
                                         <button type="button" class="btn btn-secondary btn-sm" id="clearadd-btn" onclick="pos.clearAdd();">
                                             Clear Add Person Form
@@ -289,7 +290,6 @@ page_init($page, $tab,
                 </div>
                 <div class='modal-body' id='AddEditBody' style='padding: 4px; background-color: lightcyan;'>
                     <?php
-                        drawGetAgeBracket('<span id="addEditFullName">Fullname</span>', $condata);
                         drawGetNewMemberships()
                     ?>
                     <div class='row'>

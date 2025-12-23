@@ -1,5 +1,6 @@
 // objects
 var pos = null;
+var profile = null;
 var cart = null;
 var coupon = null;
 var ageList = null;
@@ -19,6 +20,7 @@ window.onload = function initpage() {
     // set up the constants for objects on the screen
 
     pos = new Pos('r');
+    profile = new Profile('', 'registration', 'warncolor');
 }
 
 // search result_membership functions

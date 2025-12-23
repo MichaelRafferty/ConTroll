@@ -27,6 +27,7 @@ page_init($page,
     /* js  */ array(//$cdn['luxon'],
         $cdn['tabjs'],
         'js/registration.js',
+        'jslib/profile.js',
         'jslib/posCart.js',
         'jslib/posCoupon.js',
         'jslib/pos.js',
@@ -91,7 +92,7 @@ $config_vars['taxRates'] = getTaxRates();
 ?>
 <script type='text/javascript'>
     var config = <?php echo json_encode($config_vars); ?>;
-    var allPolicies = <?php echo json_encode($policies); ?>;
+    var policies = <?php echo json_encode($policies); ?>;
     var policyIndex = <?php echo json_encode($policyIndex); ?>;
     var ageList = <?php echo json_encode($ageList); ?>;
     var ageListIdx = <?php echo json_encode($ageListIdx); ?>;
@@ -200,8 +201,8 @@ drawEditPersonBlock($con, $useUSPS, $policies, 'registration', false, true, $age
                                 <div class="col-sm-12 mt-3">
                                     <button type="button" class="btn btn-primary btn-sm" id="addnew-btn" name="add_btn"
                                             onclick="pos.add_new();">Add to Cart</button>
-                                    <button type='button' class='btn btn-primary btn-sm' id='addoverride-btn' name='override_btn' hidden
-                                            onclick='pos.addNewToCart(1);'>Add to Cart Overriding Missing Fields</button>
+                                    <button type='button' class='btn btn-warning btn-sm' id='addoverride-btn' name='override_btn' hidden
+                                            onclick='pos.addNewToCart2();'>Add/Update Cart Overriding Missing Fields</button>
                                     <button type="button" class="btn btn-secondary btn-sm" id="clearadd-btn" onclick="pos.clearAdd();">
                                         Clear Add Person Form
                                     </button>
@@ -278,7 +279,6 @@ drawEditPersonBlock($con, $useUSPS, $policies, 'registration', false, true, $age
                 </div>
                 <div class='modal-body' id='AddEditBody' style='padding: 4px; background-color: lightcyan;'>
 <?php
-    drawGetAgeBracket('<span id="addEditFullName">Fullname</span>', $condata);
     drawGetNewMemberships()
 ?>
                     <div class='row'>

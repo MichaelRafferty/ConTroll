@@ -170,7 +170,7 @@ $ret = load_coupon_list();
 $response['num_coupons'] = $ret[0];
 $response['couponList'] = $ret[1];
 
-// membership rules, policies, configuration items
+// membership rules, configuration items
 $ruleData = getRulesData($conid, true, false);
 
 $response['gageList'] = $ruleData['ageList'];
@@ -180,7 +180,6 @@ $response['gmemCategories'] = $ruleData['memCategories'];
 $response['gmemList'] = $ruleData['memList'];
 $response['gmemListIdx'] = $ruleData['memListIdx'];
 $response['gmemRules'] = $ruleData['memRules'];
-$response['policies'] = getPolicies();
 $response['debug'] = getConfValue('debug', 'controll_registration', 0);
 $config_vars['required'] = getConfValue('reg', 'required', 'addr');
 $response['useUSPS'] = $useUSPS;
