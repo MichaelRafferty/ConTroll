@@ -548,7 +548,7 @@ class PosCart {
 
         // set the current age type
         this.#memberAge = null;
-        if (cart_row.memberAgeType && cart_row.memberAgeType != '' && row.memberAgeType != 'all') {
+        if (cart_row.memberAgeType && cart_row.memberAgeType != '' && cart_row.memberAgeType != 'all') {
             this.#memberAge = cart_row.memberAgeType;
             this.#currentAge = cart_row.memberAgeType;
         } else if (cart_row.currentAgeConId == config.conid)
@@ -761,6 +761,7 @@ class PosCart {
 
 
         this.#cartChanges++;
+        pos.setReviewDirty();
         this.redrawRegItems(this.#currentPerIdx);
         this.buildRegItemButtons();
     }
@@ -876,6 +877,7 @@ class PosCart {
         if (this.#memberAge == null && newMembership.memAge != 'all')
             this.#memberAge = newMembership.memAge;
         this.#cartChanges++;
+        pos.setReviewDirty();
         this.redrawRegItems();
         this.buildRegItemButtons();
     }

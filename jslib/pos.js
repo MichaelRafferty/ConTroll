@@ -11,20 +11,13 @@ class Pos {
 
     // review items
     #review_div = null;
-    #reviewMissingItens = 0;
+    #reviewMissingItems = 0;
     #reviewMissingPolicies = 0;
     #review_dirty = false;
     #review_editable_fields = [
-        'first_name', 'middle_name', 'last_name', 'suffix',
-        'legalName',
-        'pronouns',
-        'badge_name',
-        'badgeNameL2',
-        'email_addr',
-        'address_1',
-        'address_2',
-        'city', 'state', 'postal_code', 'country',
-        'phone'
+        'first_name', 'middle_name', 'last_name', 'suffix', 'legalName', 'pronouns', 'badge_name', 'badgeNameL2', 'email_addr',
+        'address_1', 'address_2', 'city', 'state', 'postal_code', 'country', 'phone',
+        'currentAgeType', 'currentAgeConid', 'memberAgeType'
     ];
 
     // pay items
@@ -250,7 +243,7 @@ class Pos {
     }
 
     setMissingItems(num) {
-        this.#reviewMissingItens = num;
+        this.#reviewMissingItems = num;
     }
 
     setMissingPolicies(num) {
@@ -1775,7 +1768,7 @@ class Pos {
         if (this.#reviewMissingPolicies > 0 && this.#print_tab)
             this.#print_tab.disabled = true;
 
-        if (this.#reviewMissingItens > 0) {
+        if (this.#reviewMissingItems > 0) {
             setTimeout(reviewNoChanges, 100);
         } else {
             this.reviewNoChanges();
@@ -1801,8 +1794,8 @@ class Pos {
 // if everything is put up next customer
     reviewNoChanges() {
         // first check to see if any required fields still exist
-        if (this.#reviewMissingItens > 0) {
-            if (!confirm("Proceed ignoring check for " + this.#reviewMissingItens.toString() + " missing data items (shown in yellow)?")) {
+        if (this.#reviewMissingItems > 0) {
+            if (!confirm("Proceed ignoring check for " + this.#reviewMissingItems.toString() + " missing data items (shown in yellow)?")) {
                 return false; // confirm answered no, return not safe to discard
             }
         }
