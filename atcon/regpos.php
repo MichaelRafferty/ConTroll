@@ -25,16 +25,12 @@ $ageByDate = $startdate->format('F j, Y');
 $tab = 'checkin';
 $mode = 'checkin';
 $method='data_entry';
-if (array_key_exists('allage', $atcon)) {
-    $allAgeFirst = $atcon['allage'];
+
+if (array_key_exists('onedaycoupons', $con)) {
+    $onedaycoupons = $con['onedaycoupons'];
 } else {
-    $allAgeFirst = 0;
+    $onedaycoupons = 0;
 }
-    if (array_key_exists('onedaycoupons', $con)) {
-        $onedaycoupons = $con['onedaycoupons'];
-    } else {
-        $onedaycoupons = 0;
-    }
 
 if (isset($_GET['mode'])) {
     if ($_GET['mode'] == 'cashier') {
@@ -91,7 +87,6 @@ $config_vars['useportal'] = $controll['useportal'];
 $config_vars['cashier'] = $method == 'cashier' ? 1 : 0;
 $config_vars['cashierAllowed'] = check_atcon('cashier', $conid) ? 1 : 0;
 $config_vars['multiOneDay'] = $multiOneDay;
-$config_vars['allAgeFirst'] = $allAgeFirst;
 $config_vars['posType'] = 'a';
 if (array_key_exists('creditoffline', $atcon)) {
     $config_vars['creditoffline'] = $atcon['creditoffline'];
@@ -290,7 +285,7 @@ page_init($page, $tab,
                 </div>
                 <div class='modal-body' id='AddEditBody' style='padding: 4px; background-color: lightcyan;'>
                     <?php
-                        drawGetNewMemberships()
+                        drawGetNewMemberships('<span id="addEditFullName">Fullname</span>');
                     ?>
                     <div class='row'>
                         <div class='col-sm-12'>

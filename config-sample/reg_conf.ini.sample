@@ -409,18 +409,6 @@ noNewDays=
 ;	any - any POS user can handle discount
 ;	none - disable the discount type of payment
 discount=active
-;; N:allage
-;; R:H,reg_staff
-;; H:Which memberships to show in Atcon:
-;; H+&nbsp;&nbsp;&nbsp;&nbsp;=0: act like portal and require age to show related memberships
-;; H+&nbsp;&nbsp;&nbsp;&nbsp;=1: show all memberships, independent of age, if no membership in cart limits age
-;; D:l:0,1
-;; B:O
-;;;; allage - which badges to show
-; values:
-; allage=0 : act like portal, require age to show age related badges
-; allage=1 : if no badge of an age, show badges of all ages, once an age badge is selected, auto set age
-allage=0
 ;; N:inlineinventory
 ;; R:H,art_control
 ;; H:Allow for popup change to inventory status at time of checkout for Art Show Cashier

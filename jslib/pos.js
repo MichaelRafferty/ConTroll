@@ -82,12 +82,6 @@ class Pos {
     #multiOneDay = 0;
 
     // filter criteria
-    #filt_excat = null; // array of exclude category
-    #filt_cat = null;  // array of categories to include
-    #filt_age = null;  // array of ages to include
-    #filt_type = null; // array of types to include
-    #filt_conid = null; // array of conid's to include
-    #filt_shortname_regexp = null; // regexp item;
     #startdate = null; // from load init data, start date of convention
     #enddate = null;  // from load init data, ending date of convention (inclusive)
 
@@ -120,9 +114,7 @@ class Pos {
     #pattern_field = null;
     #find_result_table = null;
     #number_search = null;
-    #memLabel = null;
     #find_unpaid_button = null;
-    #find_perid = null;
     #name_search = '';
 
 // add/edit person fields
@@ -154,6 +146,7 @@ class Pos {
         });
 
         this.#use = use;
+        let _this = this;
 
         if (config.hasOwnProperty('multiOneDay'))
             this.#multiOneDay = config.multiOneDay;
@@ -228,7 +221,6 @@ class Pos {
             ajax_request_action: 'loadInitialData',
             nopay: config.cashier == 0,
         };
-        let _this = this;
         $.ajax({
             method: "POST",
             url: "scripts/pos_loadInitialData.php",
@@ -347,7 +339,7 @@ class Pos {
                 profile.hideAgeDiv(true);
             } else
                 profile.setAgeText("<b>" +
-                    ageListIdx[cartrow.currentAgeType].shortname + ' [' + ageListIdx[cartrow.currentAgeType].label + ']</b>');
+                    ageListIdx[cartrow.memberAgeType].shortname + ' [' + ageListIdx[cartrow.memberAgeType].label + ']</b>');
         }
 
         // policies
@@ -421,7 +413,6 @@ class Pos {
 
         // build memListMap from memList
         this.#memListMap = new map();
-        let row = null;
         let index = 0;
         while (index < this.#memList.length) {
             this.#memListMap.set(this.#memList[index].id, index);
@@ -698,7 +689,6 @@ class Pos {
                 cart.add(rt[index]);
             }
         } else {
-            let row;
             index = -index;
             for (let row = 0; row < this.#result_perinfo.length; row++) {
                 let prow = this.#result_perinfo[row];
@@ -1311,9 +1301,9 @@ class Pos {
 
 // display the note popup with the requested notes
     showPerinfoNotes(index, where) {
-        let note = null;
-        let fullName = null;
-        this.#notesType = null;
+        let note = '';
+        let fullName = '';
+        this.#notesType = '';
 
         if (where == 'cart') {
             note = cart.getPerinfoNote(index);
@@ -1638,12 +1628,11 @@ class Pos {
         // sum print and attach counts
         let print_count = 0;
         let attach_count = 0;
-        let memCount = 0;
         let regtids = [];
         let rowindex;
         let memberships;
 
-        memCount = this.everyMembership(this.#result_perinfo, function (_this, mem) {
+        let memCount = this.everyMembership(this.#result_perinfo, function (_this, mem) {
             print_count += Number(mem.printcount);
             attach_count += Number(mem.attachcount);
             return 1;
@@ -2124,6 +2113,7 @@ class Pos {
         let checkno = null;
         let desc = null;
         let ptype = null;
+        let crow = null;
         let total_amount_due = Number(this.#preTaxAmt) + Number(this.#taxAmt) - (Number(this.#couponDiscount) + Number(this.#managerDiscount));
         let pt_cash = document.getElementById('pt-cash').checked;
         let pt_check = document.getElementById('pt-check').checked;
@@ -2295,7 +2285,6 @@ class Pos {
             }
 
             if (tendered_amt > 0) {
-                let crow = null;
                 let change = 0;
                 if (tendered_amt > total_amount_due) {
                     change = tendered_amt - total_amount_due;
@@ -3044,7 +3033,6 @@ class Pos {
                 cart_perinfo: JSON.stringify(cart.getCartPerinfo()),
             };
 
-            let _this = this;
             clear_message();
             $.ajax({
                 method: "POST",
@@ -3146,7 +3134,6 @@ class Pos {
             user_id: this.#user_id,
         }
 
-        let _this = this;
         clear_message();
         $.ajax({
             method: "POST",
@@ -3275,6 +3262,7 @@ class Pos {
     }
 
     onExit() {
+        let _this = this;
         // if they have a terminal action in process, as if they want to leave install of 'poll' for it's status
         if (this.#payPoll == 1) {
             let currentOrder = this.#pay_currentOrderId;
@@ -3286,7 +3274,6 @@ class Pos {
                 requestId: this.#payCurrentRequest,
                 user_id: this.#user_id,
             };
-            let _this = this;
             clear_message();
             $.ajax({
                 method: "POST",

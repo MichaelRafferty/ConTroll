@@ -33,11 +33,8 @@ class PosCart {
     #addEditTitle = null;
     #addEditFullName = null;
     #addEditPerid = null;
-    #ageButtonsDiv = null;
     #membershipButtonsDiv = null;
     #memberAge = null;
-    #memberAgeLabel = null;
-    #ageBracketMsg = null;
     #currentAge = null;
     #currentPerid = null;
     #currentPerIdx = null;
@@ -45,7 +42,6 @@ class PosCart {
     #allMemberships = [];
     #cartContentsDiv = null;
     #cartChanges = 0;
-    #rebuildAgeButtons = false;
     #newIDKey = -1;
     #newMembershipSave = null;
     #amountField = null;
@@ -95,8 +91,6 @@ class PosCart {
             this.#addEditBody = document.getElementById('addEditBody');
             this.#addEditTitle = document.getElementById('addEditTitle');
             this.#addEditFullName = document.getElementById('addEditFullName');
-            this.#ageButtonsDiv = document.getElementById('ageButtons');
-            this.#ageBracketMsg = document.getElementById('ageBracketMsg');
             this.#membershipButtonsDiv = document.getElementById('membershipButtons');
             this.#cartContentsDiv = document.getElementById('cartContentsDiv');
         }
@@ -376,6 +370,8 @@ class PosCart {
         let pindex = this.#cartPerinfo.length;
         p.memberAgeType = this.#getAge(p);
         // force reverify if not this year and age is of type verify
+        if (p.currentAgeType == null || p.currentAgeType == undefined)
+            p.currentAgeType = '';
         if (p.currentAgeConid != config.conid && p.currentAgeType != '') {
             let ageItem = ageListIdx[p.currentAgeType];
             if (ageItem.verify == 'Y') {
@@ -548,6 +544,25 @@ class PosCart {
 // use the memRules engine to add/edit the memberships for this person
     addEditMemberships(index) {
         let cart_row = this.#cartPerinfo[index];
+
+        // set the current age type
+        this.#memberAge = null;
+        if (cart_row.memberAgeType && cart_row.memberAgeType != '') {
+            this.#memberAge = cart_row.memberAgeType;
+            this.#currentAge = cart_row.memberAgeType;
+        } else if (cart_row.currentAgeConId == config.conid)
+            this.#currentAge = cart_row.currentAgeType;
+        else if (cart_row.currentAgeType && cart_row.currentAgeType != '') {
+            let ageItem = ageListIdx[p.currentAgeType];
+            if (ageItem.verify == 'Y') {
+                this.currentAge = null;
+            } else {
+                this.#currentAge = cart_row.currentAgeType;
+                this.#cartPerinfo[index].currentAgeConId = config.conid;
+            }
+        } else
+            this.#currentAge = null;
+
         this.#addEditPerid = cart_row.perid;
         if (this.#addEditModal) {
             this.#addEditFullName.innerHTML = cart_row.fullName;
@@ -561,15 +576,6 @@ class PosCart {
                 }
                 cart.pushAllMembership(mem);
             });
-            this.buildAgeButtons();
-            this.#rebuildAgeButtons = false;
-            if (this.#currentAge != null) {
-                this.#ageBracketMsg.innerHTML = "To change the age, you need to remove any membership that is specific to that age from the cart."
-            } else if (config.allAgeFirst == 1) {
-                this.#ageBracketMsg.innerHTML = "Select a membership below, or an age above to set the age and filter the memberships available."
-            } else {
-                this.#ageBracketMsg.innerHTML = "Select an age above to set the age and filter the memberships available."
-            }
             this.buildRegItemButtons();
             this.redrawRegItems(index);
             this.#currentPerid = cart_row.perid;
@@ -584,6 +590,12 @@ class PosCart {
 // saveMembershipChange: save the changes to the perid's memberships back to the cart perinfo record
     saveMembershipChange() {
         this.#cartPerinfo[this.#currentPerIdx].memberships = make_copy(this.#memberships);
+
+        if (this.#cartPerinfo[this.#currentPerIdx].currentAgeType && this.#cartPerinfo[this.#currentPerIdx].currentAgeType == '')
+            this.#cartPerinfo[this.#currentPerIdx].currentAgeType = this.#currentAge;
+        if (this.#memberships.length > 0 && this.#cartPerinfo[this.#currentPerIdx].currentAgeType != '')
+            this.#cartPerinfo[this.#currentPerIdx].currentAgeConid = config.conid;
+        this.#cartPerinfo[this.#currentPerIdx].memberAgeType = this.#memberAge;
         this.#memberships = [];
         this.#allMemberships = [];
         this.#currentPerIdx = null;
@@ -603,6 +615,7 @@ class PosCart {
                 <div class="col-sm-1" style='text-align: right;'><b>Status</b></div>
                 <div class="col-sm-1" style='text-align: right;'><b>Price</b></div>
                 <div class="col-sm-1" style='text-align: right;'><b>Paid</b></div>
+                <div class="col-sm-4"><b>Membership</b></div>
                 <div class="col-sm-4"><b>Membership</b></div>
             </div>
 `;
@@ -662,61 +675,6 @@ class PosCart {
         this.#cartContentsDiv.innerHTML = html;
     }
 
-// age buttons
-    buildAgeButtons() {
-        this.#currentAge = null;
-        this.#memberAge = null;
-        // first check if there is a current age;
-        for (let row in this.#memberships) {
-            let mbr = this.#memberships[row];
-            if (mbr.memAge != 'all') {
-                this.#memberAge = mbr.memAge;
-                this.#memberAgeLabel = ageListIdx[this.#memberAge].label;
-                if (this.#currentAge == null)
-                    this.#currentAge = this.#memberAge
-                break;
-            }
-        }
-
-        let color = this.#memberAge != null ? 'btn-warning' : (this.#currentAge != null ? 'btn-secondary' : 'btn-primary');
-        // now loop over age list and build each button
-        let html = '';
-        for (let row in ageList) {
-            let age = ageList[row];
-            if (age.ageType == 'all')
-                continue;
-
-            html += '<div class="col-sm-auto"><button id="ageBtn-' + age.ageType + '" class="btn btn-sm h-100 ' +
-                ((this.#currentAge == age.ageType || this.#memberAge == age.ageType) ? 'btn-primary' : color) + ' mt-1 mb-1" onclick="cart.ageSelect(' + "'" + age.ageType + "'" + ')">' +
-                age.label + ' (' + age.shortname + ')' +
-                '</button></div>' + "\n";
-        }
-        this.#ageButtonsDiv.innerHTML = html;
-    }
-
-    // ageSelect - redo all the age buttons on selecting one of them, then move on to the next page
-    ageSelect(ageType) {
-        if (this.#memberAge != null && ageType != this.#memberAge) {
-            show_message("You already have a membership of the age '" + this.#memberAgeLabel, "warn", 'aeMessageDiv');
-            return;
-        }
-
-        this.#currentAge = ageType;
-        let color = this.#memberAge != null ? 'btn-warning' : (this.#currentAge != null ? 'btn-secondary' : 'btn-primary');
-        for (let row in ageList) {
-            let age = ageList[row];
-            if (age.ageType == 'all')
-                continue;
-            let btn = document.getElementById('ageBtn-' + age.ageType);
-            btn.classList.remove('btn-primary');
-            btn.classList.remove('btn-secondary');
-            btn.classList.remove('btn-warning');
-            btn.classList.add((this.#currentAge == age.ageType || this.#memberAge == age.ageType) ? 'btn-primary' : color);
-        }
-        // new age selected, redraw membership buttons
-        this.buildRegItemButtons();
-    }
-
     // membership buttons
     buildRegItemButtons() {
         // loop over memList and build each button
@@ -727,7 +685,7 @@ class PosCart {
             atcon = config.posType == 'a';
         }
 
-        let noAgeFilter = config.allAgeFirst == 1 && this.#currentAge == null;
+        let noAgeFilter = this.#currentAge == null;
         for (let row in memList) {
             let mem = memList[row];
 
@@ -839,12 +797,6 @@ class PosCart {
         if (memrow == null)
             return;
 
-        // set age if age is null
-        if (this.#currentAge == null) {
-            this.#ageBracketMsg.innerHTML = "To change the age, you need to remove any membership that is specific to that age from the cart."
-            this.#rebuildAgeButtons = true;
-        }
-
         let now = new Date();
         let newMembership = {};
         newMembership.id = this.#newIDKey;
@@ -920,11 +872,9 @@ class PosCart {
             this.#memberships = [];
         this.#memberships.push(make_copy(newMembership));
         this.newIDKey--;
+        if (this.#memberAge == null)
+            this.#memberAge = newMembership.memAge;
         this.#cartChanges++;
-        if (this.#rebuildAgeButtons) {
-            this.buildAgeButtons();
-            this.#rebuildAgeButtons = false;
-        }
         this.redrawRegItems();
         this.buildRegItemButtons();
     }
@@ -962,7 +912,15 @@ class PosCart {
 
         this.#memberships.splice(row, 1);
         this.#cartChanges--;
-        this.buildAgeButtons();
+        // recompute memberAge and currentAge
+        this.#memberAge = null;
+        for (let i = 0; i < this.#memberships.length; i++) {
+            let row = this.#memberships[i];
+            if (row.memAge != 'all') {
+                this.#memberAge = row.memAge;
+                break;
+            }
+        }
         this.redrawRegItems();
         this.buildRegItemButtons();
     }

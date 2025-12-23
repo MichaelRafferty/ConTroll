@@ -134,7 +134,7 @@ $ageName = $ruleData['ageListIdx'][$person['currentAgeType']]['shortname'] . ' [
         </div>
 <?php
     outputCustomText('main/memberships');
-    drawGetNewMemberships();
+    drawGetNewMemberships(null);
 ?>
         <hr/>
     </div>

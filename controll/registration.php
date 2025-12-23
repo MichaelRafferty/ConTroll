@@ -279,7 +279,7 @@ drawEditPersonBlock($con, $useUSPS, $policies, 'registration', false, true, $age
                 </div>
                 <div class='modal-body' id='AddEditBody' style='padding: 4px; background-color: lightcyan;'>
 <?php
-    drawGetNewMemberships()
+    drawGetNewMemberships('<span id="addEditFullName">Fullname</span>')
 ?>
                     <div class='row'>
                         <div class='col-sm-12'>
