@@ -18,6 +18,8 @@ $vendor = get_conf('vendor');
 $controll = get_conf('controll');
 $atcon = get_conf('atcon');
 $condata = get_con();
+$startdate = new DateTime($condata['startdate']);
+$ageByDate = $startdate->format('F j, Y');
 $conid = $con['id'];
 $conname = $con['conname'];
 $startdate = new DateTime($condata['startdate']);
@@ -72,7 +74,6 @@ if ($policies != null) {
         $policyIndex[$policies[$index]['policy']] = $index;
     }
 }
-[$ageList, $ageListIdx] = getAgeList($conid);
 $useUSPS = false;
 $currency = getConfValue('con', 'currency', 'USD');
 $locale = getLocale();
@@ -121,10 +122,13 @@ page_init($page, $tab,
                     'jslib/membershipRules.js', 'js/regpos.js'),
             $config_vars
     );
+[$ageList, $ageListIdx] = getAgeList($conid);
 ?>
 <script type='text/javascript'>
-    var allPolicies = <?php echo json_encode($policies); ?>;
+    var policies = <?php echo json_encode($policies); ?>;
     var policyIndex = <?php echo json_encode($policyIndex); ?>;
+    var ageList = <?php echo json_encode($ageList); ?>;
+    var ageListIdx = <?php echo json_encode($ageListIdx); ?>;
 </script>
 <div id="pos" class="container-fluid">
     <div class="row mt-2">
@@ -215,7 +219,7 @@ page_init($page, $tab,
                                                 onclick="pos.add_new();">Add to Cart
                                         </button>
                                         <button type='button' class='btn btn-primary btn-sm' id='addoverride-btn' name='override_btn' hidden
-                                                onclick='pos.addNewToCart2();'>Add to Cart Overriding Missing Fields
+                                                onclick='pos.addNewToCart2();'>Add/Update Cart Overriding Missing Fields
                                         </button>
                                         <button type="button" class="btn btn-secondary btn-sm" id="clearadd-btn" onclick="pos.clearAdd();">
                                             Clear Add Person Form

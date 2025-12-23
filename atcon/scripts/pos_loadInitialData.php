@@ -8,7 +8,6 @@ require_once '../lib/base.php';
 require_once('../../lib/cc__load_methods.php');
 require_once('../../lib/coupon.php');
 require_once '../../lib/memRules.php';
-require_once '../../lib/policies.php';
 
 // use common global Ajax return functions
 global $returnAjaxErrors, $return500errors;
@@ -164,7 +163,7 @@ $ret = load_coupon_list();
 $response['num_coupons'] = $ret[0];
 $response['couponList'] = $ret[1];
 
-// membership rules, policies, configuration items
+// membership rules, configuration items
 $ruleData = getRulesData($conid, false, true);
 
 $response['gageList'] = $ruleData['ageList'];
@@ -174,7 +173,6 @@ $response['gmemCategories'] = $ruleData['memCategories'];
 $response['gmemList'] = $ruleData['memList'];
 $response['gmemListIdx'] = $ruleData['memListIdx'];
 $response['gmemRules'] = $ruleData['memRules'];
-$response['policies'] = getPolicies();
 $response['debug'] = getConfValue('debug','atcon', 0);;
 $response['required'] = getConfValue('reg', 'required', 'addr');
 $response['useUSPS'] = $useUSPS;

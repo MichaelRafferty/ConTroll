@@ -8,7 +8,6 @@ require_once '../lib/base.php';
 require_once('../../lib/cc__load_methods.php');
 require_once('../../lib/coupon.php');
 require_once '../../lib/memRules.php';
-require_once '../../lib/policies.php';
 
 $check_auth = google_init('ajax');
 $perm = 'registration';
