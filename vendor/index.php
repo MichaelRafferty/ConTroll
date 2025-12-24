@@ -10,6 +10,7 @@ require_once('../lib/exhibitorRequestForms.php');
 require_once('../lib/exhibitorReceiptForms.php');
 require_once("../lib/cc__load_methods.php");
 require_once('../lib/webauthn.php');
+require_once('../lib/profile.php');
 require_once('../lib/tax.php');
 
 $cc = get_conf('cc');
@@ -63,6 +64,7 @@ $currency = getConfValue('con', 'currency', 'USD');
 $locale = getLocale();
 $config_vars = array();
 $config_vars['label'] = $con['label'];
+$config_vars['conid'] = $conid;
 $config_vars['vemail'] = getConfValue('vendor', $portalType, getConfValue('regadminemail', 'con'));
 $config_vars['portalType'] = $portalType;
 $config_vars['portalName'] = $portalName;
@@ -85,7 +87,8 @@ $config_vars['termsVendor'] = returnCustomText('invoice/termsVendor');
 $config_vars['locale'] = $locale;
 $config_vars['currency'] = $currency;
 $config_vars['taxRates'] = getTaxRates();
-
+$startdate = new DateTime($condata['startdate']);
+$config_vars['ageByDate'] = $startdate->format('F j, Y');
 
 // load country select
 $countryOptions = '';
@@ -457,6 +460,12 @@ while ($space = $exhibitorSR->fetch_assoc()) {
     $exhibitorSpaceList[$space['spaceId']] = $space;
 }
 $exhibitorSR->free();
+
+[$ageList, $ageListIdx] = getAgeList($config_vars['conid']);
+$ageOptions = '<option value="">--Select Age Bracket--</option>' . PHP_EOL;
+foreach ($ageList as $age) {
+    $ageOptions .= '<option value="' . escape_quotes($age['ageType']) . '">' . $age['shortname'] . ' ['.$age['label'] . ']</option>' . PHP_EOL;
+}
 ?>
 <script type='text/javascript'>
     var config = <?php echo json_encode($config_vars); ?>;
@@ -468,6 +477,9 @@ $exhibitorSR->free();
     var regions = <?php echo json_encode($regions); ?>;
     var spaces = <?php echo json_encode($spaces); ?>;
     var country_options = <?php echo json_encode($countryOptions); ?>;
+    var ageList = <?php echo json_encode($ageList); ?>;
+    var ageListIdx = <?php echo json_encode($ageListIdx); ?>;
+    var ageOptions = <?php echo json_encode($ageOptions); ?>;
     </script>
 <?php
 draw_registrationModal($portalType, $portalName, $con, $countryOptions);

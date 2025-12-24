@@ -1,6 +1,9 @@
 // Common items related to building the vendor invoice page for exhibtor tab of controll and exhibitors portals
 // draw approved for section
 
+var inclProfiles = [];
+var addlProfiles = [];
+
 function drawExhitorTopBlocks(name, exhibitor_spacelist, region, regionList, regionYearId,
                               approved, included, members, doTerms = true) {
     var includedMemberships = 0;
@@ -184,7 +187,7 @@ function drawExhitorTopBlocks(name, exhibitor_spacelist, region, regionList, reg
             "<input type='hidden' name='includedMemberships' value='" + String(includedMemberships) + "'></div></div>";
         for (mnum = 0; mnum < includedMemberships; mnum++) {
             // name fields including legal name
-            html += drawExhibitorMembershipBlock('Included', mnum, '_i_' + mnum, country_options, regionYearId, tabindex, false,
+            html += drawExhibitorMembershipBlock('Included', mnum, 'i_' + mnum + '_', country_options, regionYearId, tabindex, false,
                 doTerms ? '' : 'exhibitorInvoice.');
             tabindex += 100;
         }
@@ -198,7 +201,7 @@ function drawExhitorTopBlocks(name, exhibitor_spacelist, region, regionList, reg
             "<input type='hidden' name='additionalMemberships' value='" + String(additionalMemberships) + "'></div></div>";
         for (mnum = 0; mnum < additionalMemberships; mnum++) {
             // name fields includeing legal name
-            html += drawExhibitorMembershipBlock('Additional', mnum, '_a_' + mnum, country_options, regionYearId, tabindex, true,
+            html += drawExhibitorMembershipBlock('Additional', mnum, 'a_' + mnum + '_', country_options, regionYearId, tabindex, true,
                 doTerms ? '' : 'exhibitorInvoice.');
             tabindex += 100;
         }
@@ -207,29 +210,23 @@ function drawExhitorTopBlocks(name, exhibitor_spacelist, region, regionList, reg
     document.getElementById(members).innerHTML = html;
     // fill in default information for the values of the addresses
     for (mnum = 0; mnum < includedMemberships; mnum++) {
-        document.getElementById('addr_i_' + mnum).value = exhibitor_info.addr;
-        document.getElementById('addr2_i_' + mnum).value = exhibitor_info.addr2;
-        document.getElementById('city_i_' + mnum).value = exhibitor_info.city;
-        document.getElementById('state_i_' + mnum).value = exhibitor_info.state;
-        document.getElementById('zip_i_' + mnum).value = exhibitor_info.zip;
-        document.getElementById('country_i_' + mnum).value = exhibitor_info.country;
-        document.getElementById('email_i_' + mnum).value = exhibitor_info.exhibitorEmail;
-        document.getElementById('phone_i_' + mnum).value = exhibitor_info.exhibitorPhone;
+        inclProfiles[mnum] = new Profile('i_' + mnum + '_', config.portalName);
+        inclProfiles[mnum].setAll('', '', '', '', '', '', exhibitor_info.addr, exhibitor_info.addr2, exhibitor_info.city,
+                exhibitor_info.state, exhibitor_info.zip, exhibitor_info.country, exhibitor_info.exhibitorPhone,
+                '', '', 'age');
+        inclProfiles[mnum].setEmail(exhibitor_info.exhibitorEmail);
     }
     for (mnum = 0; mnum < additionalMemberships; mnum++) {
-        document.getElementById('addr_a_' + mnum).value = exhibitor_info.addr;
-        document.getElementById('addr2_a_' + mnum).value = exhibitor_info.addr2;
-        document.getElementById('city_a_' + mnum).value = exhibitor_info.city;
-        document.getElementById('state_a_' + mnum).value = exhibitor_info.state;
-        document.getElementById('zip_a_' + mnum).value = exhibitor_info.zip;
-        document.getElementById('country_a_' + mnum).value = exhibitor_info.country;
-        document.getElementById('email_a_' + mnum).value = exhibitor_info.exhibitorEmail;
-        document.getElementById('phone_a_' + mnum).value = exhibitor_info.exhibitorPhone;
+        addlProfiles[mnum] = new Profile('a_' + mnum + '_', config.portalName);
+        addlProfiles[mnum].setAll('', '', '', '', '', '', exhibitor_info.addr, exhibitor_info.addr2, exhibitor_info.city,
+            exhibitor_info.state, exhibitor_info.zip, exhibitor_info.country, exhibitor_info.exhibitorPhone,
+            '', '', 'age');
+        addlProfiles[mnum].setEmail(exhibitor_info.exhibitorEmail);
     }
     return [includedMemberships, additionalMemberships, spacePriceName, totalSpacePrice];
 }
 
-function drawExhibitorMembershipBlock(label, mnum, suffix, country_options, regionYearId, tabindex, doOnChange, className = '') {
+function drawExhibitorMembershipBlock(label, mnum, prefix, country_options, regionYearId, tabindex, doOnChange, className = '') {
     var reqFirstStar = config['firstStar'];
     var reqAddrStar = config['addrStar'];
     var reqAllStar = config['allStar'];
@@ -243,32 +240,32 @@ function drawExhibitorMembershipBlock(label, mnum, suffix, country_options, regi
         <div class="container-fluid">
             <div class="row">
                 <div class="col-sm-auto ms-0 me-2 p-0">
-                    <label for="fname` + suffix + `" class="form-label-sm">
+                    <label for="` + prefix + `fname" class="form-label-sm">
                     <span class="text-dark" style="font-size: 10pt;">Preferred Name: ` + reqFirstStar + `First</span>
                     </label><br/>
-                    <input class="form-control-sm" type="text" name="fname` + suffix + `" id="fname` + suffix + '" size="22" maxlength="32"' +
+                    <input class="form-control-sm" type="text" name="` + prefix + 'fname" id="' + prefix + 'fname" size="22" maxlength="32"' +
         (doOnChange ? 'onchange="' + className + 'updateCost(' + regionYearId + "," + mnum + ');"' : '') + ' tabindex=' + tabindex + `/>
                 </div>`;
     tabindex += 2;
     html += `
                 <div class="col-sm-auto ms-0 me-2 p-0">
-                    <label for="mname` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Middle</span></label><br/>
-                    <input class="form-control-sm" type="text" name="mname` + suffix + `" id="mname` + suffix + '" size="8" maxlength="32"' +
+                    <label for="` + prefix + `mname" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Middle</span></label><br/>
+                    <input class="form-control-sm" type="text" name="` + prefix + 'mname" id="' + prefix + 'mname" size="8" maxlength="32"' +
                         ' tabindex=' + tabindex + `/>
                 </div>`;
     tabindex += 2;
     html += `
                 <div class="col-sm-auto ms-0 me-2 p-0">
-                    <label for="lname` + suffix + '" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">' + reqAllStar +
-                        `Last</span></label><br/>
-                    <input class="form-control-sm" type="text" name="lname` + suffix + `" id="lname` + suffix + '" size="22" maxlength="32"' +
+                    <label for="lname` + 'lname" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">' +
+                        reqAllStar + `Last</span></label><br/>
+                    <input class="form-control-sm" type="text" name="` + prefix + 'lname" id="' + prefix + 'lname" size="22" maxlength="32"' +
                         ' tabindex=' + tabindex + `/>
                 </div>`;
     tabindex += 2;
     html += `
                 <div class="col-sm-auto ms-0 me-0 p-0">
-                    <label for="suffix` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Suffix</span></label><br/>
-                    <input class="form-control-sm" type="text" name="suffix` + suffix + '" id="suffix' + suffix + '" size="4" maxlength="4"' +
+                    <label for="` + prefix + `suffix" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Suffix</span></label><br/>
+                    <input class="form-control-sm" type="text" name="` + prefix + 'suffix" id="' + prefix + 'suffix" size="4" maxlength="4"' +
                         ' tabindex=' + tabindex + `/>
                     </div>`;
     tabindex += 2;
@@ -276,11 +273,11 @@ function drawExhibitorMembershipBlock(label, mnum, suffix, country_options, regi
             </div>
             <div class='row'>
                 <div class='col-sm-12 ms-0 me-0 p-0'>
-                    <label for="legalName` + suffix + `" class='form-label-sm'>
+                    <label for="` + prefix + `legalName" class='form-label-sm'>
                         <span class='text-dark' style='font-size: 10pt;'>
                             Legal Name: for checking against your ID. It will only be visible to Registration Staff.
                         </span></label><br/>
-                    <input class='form-control-sm' type='text' name="legalName` + suffix + `" id=legalName` + suffix + '" size="64" maxlength="64"' +
+                    <input class='form-control-sm' type='text' name="` + prefix + 'legalName" id="' + prefix + 'legalName" size="64" maxlength="64"' +
                         ' placeholder="Defaults to First Name Middle Name Last Name, Suffix"' + ' tabindex=' + tabindex + `/>
                 </div>
             </div>
@@ -290,8 +287,9 @@ function drawExhibitorMembershipBlock(label, mnum, suffix, country_options, regi
     html += `
             <div class="row">
                 <div class="col-sm-12 ms-0 me-0 p-0">
-                    <label for="addr` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + reqAddrStar + `Address</span></label><br/>
-                    <input class="form-control-sm" type="text" name='addr` + suffix + `' id="addr` + suffix + '" size="64" maxlength="64"' +
+                    <label for="` + prefix + `addr" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` +
+                        reqAddrStar + `Address</span></label><br/>
+                    <input class="form-control-sm" type="text" name="` + prefix + 'addr" id="' + prefix + 'addr" size="64" maxlength="64"' +
                         ' tabindex=' + tabindex + `/>
                 </div>
             </div>`;
@@ -299,8 +297,8 @@ function drawExhibitorMembershipBlock(label, mnum, suffix, country_options, regi
     html += `
             <div class="row">
                 <div class="col-sm-12 ms-0 me-0 p-0">
-                    <label for="addr2` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Company/2nd Address line</span></label><br/>
-                    <input class="form-control-sm" type="text" name='addr2` + suffix + `' id="addr2` + suffix + '" size="64" maxlength="64"' +
+                    <label for="` + prefix + `addr2" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Company/2nd Address line</span></label><br/>
+                    <input class="form-control-sm" type="text" name="` + prefix + 'addr2" id="' + prefix + 'addr2" size="64" maxlength="64"' +
                         ' tabindex=' + tabindex + `/>
                 </div>
             </div>`;
@@ -308,29 +306,32 @@ function drawExhibitorMembershipBlock(label, mnum, suffix, country_options, regi
     html += `
             <div class="row">
                 <div class="col-sm-auto ms-0 me-2 p-0">
-                    <label for="city` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + reqAddrStar + `City</span></label><br/>
-                    <input class="form-control-sm" type="text" name="city` + suffix + `" id="city` + suffix + '" size="22" maxlength="32"' +
+                    <label for="` + prefix + `city" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` +
+                        reqAddrStar + `City</span></label><br/>
+                    <input class="form-control-sm" type="text" name="` + prefix + 'city" id="' + prefix + 'city" size="22" maxlength="32"' +
                         ' tabindex=' + tabindex + `/>
                 </div>`;
     tabindex += 2;
     html += `
                 <div class="col-sm-auto ms-0 me-2 p-0">
-                    <label for="state` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + reqAddrStar + `State/Prov</span></label><br/>
-                    <input class="form-control-sm" type="text" name="state` + suffix + `" id="state` + suffix + '" size="10" maxlength="16"' +
+                    <label for="` + prefix + `state" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` +
+                        reqAddrStar + `State/Prov</span></label><br/>
+                    <input class="form-control-sm" type="text" name="` + prefix + 'state" id="' + prefix + 'state" size="10" maxlength="16"' +
                         ' tabindex=' + tabindex + `/>
                 </div>`;
     tabindex += 2;
     html += `
                 <div class="col-sm-auto ms-0 me-2 p-0">
-                    <label for="zip` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + reqAddrStar + `Zip/PC</span></label><br/>
-                    <input class="form-control-sm" type="text" name="zip` + suffix + `" id="zip` + suffix + '" size="5" maxlength="10"' +
+                    <label for="` + prefix + `zip" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` +
+                        reqAddrStar + `Zip/PC</span></label><br/>
+                    <input class="form-control-sm" type="text" name="` + prefix + 'zip" id="' + prefix + 'zip" size="5" maxlength="10"' +
                         ' tabindex=' + tabindex + `/>
                 </div>`;
     tabindex += 2;
     html += `
                 <div class="col-sm-auto ms-0 me-0 p-0">
-                    <label for="country` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Country</span></label><br/>
-                    <select class="form-control-sm" name="country` + suffix + `" id="country` + suffix + '" tabindex = ' + tabindex + `>
+                    <label for="` + prefix + `country" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Country</span></label><br/>
+                    <select class="form-control-sm" name="` + prefix + 'country" id="' + prefix + 'country" tabindex = ' + tabindex + `>
             ` + country_options + `
                     </select>
                 </div>
@@ -339,45 +340,55 @@ function drawExhibitorMembershipBlock(label, mnum, suffix, country_options, regi
     html += `
         </div>
     </div>
-    <div class="col-sm-4" id="uspsBlock` + suffix + `"></div>
+    <div class="col-sm-4" id="` + prefix + `uspsBlock"></div>
 </div>
 <div class="row">
     <div class="col-sm-12">
         <div class="container-fluid">
             <div class="row">
                 <div class="col-sm-auto ms-0 me-2 p-0">
-                    <label for="email` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + reqFirstStar + `Email</span></label><br/>
-                    <input class="form-control-sm" type="email" name="email` + suffix + `" id="email` + suffix + '" size="35" maxlength="254"' +
+                    <label for="` + prefix + `email" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` +
+                        reqFirstStar + `Email</span></label><br/>
+                    <input class="form-control-sm" type="email" name="` + prefix + 'email1" id="' + prefix + 'email1" size="35" maxlength="254"' +
                         ' tabindex=' + tabindex + `/>
                 </div>`;
     tabindex += 2;
     html += `
                 <div class="col-sm-auto ms-0 me-2 p-0">
-                    <label for="phone` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Phone</span></label><br/>
-                    <input class="form-control-sm" type="text" name="phone` + suffix + `" id="phone` + suffix + '" size="18" maxlength="15"' +
+                    <label for="` + prefix + `phone" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Phone</span></label><br/>
+                    <input class="form-control-sm" type="text" name="` + prefix + 'phone" id="' + prefix + 'phone" size="18" maxlength="15"' +
                      ' tabindex=' + tabindex + `/>
+                </div>`;
+    tabindex += 2;
+    html += `
+                <div class="col-sm-auto ms-0 me-2 p-0">
+                    <label for="` + prefix + `age" class="form-label-sm ps-2">
+                        <span class="text-dark" style="font-size: 10pt;">Age as of ` + config.ageByDate + `</span>
+                    </label>
+                    <br/>
+                    <select class="form-control-sm" name="` + prefix + 'age" id="' + prefix + 'age" tabindex=' + tabindex + `/>
+                        ` + ageOptions + `
+                    </select>
                 </div>`;
     tabindex += 2;
     html += `
             </div>
             <div class="row">
                 <div class="col-sm-auto me-1 p-0">
-                    <label for="badge_name` + suffix + `" class="form-label-sm">
+                    <label for="` + prefix + `badge_name" class="form-label-sm">
                         <span class="text-dark" style="font-size: 10pt;">Badge Name (optional)</span>
                     </label><br/>
-                    <input class="form-control-sm" type="text" name="badge_name` + suffix + `" id='badge_name` + suffix + `'
-                        size="35" maxlength="32" placeholder='defaults to first and last name'` +
-                        ' tabindex=' + tabindex + `/>
+                    <input class="form-control-sm" type="text" name="` + prefix + 'badge_name" id="' + prefix + 'badge_name" ' +
+                        'size="35" maxlength="32" placeholder="defaults to first and last name" tabindex=' + tabindex + `/>
                 </div>`;
     tabindex += 2;
     html += `
                  <div class="col-sm-auto ms-1 p-0">
-                    <label for="badgeNameL2` + suffix + `" class="form-label-sm">
+                    <label for="` + prefix + `badgeNameL2" " class="form-label-sm">
                         <span class="text-dark" style="font-size: 10pt;">Badge Line 2 (optional)</span>
                     </label><br/>
-                    <input class="form-control-sm" type="text" name="badgeNameL2` + suffix + `" id='badgeNameL2` + suffix + `'
-                        size="35" maxlength="32"` +
-                        ' tabindex=' + tabindex + `/>
+                    <input class="form-control-sm" type="text" name="` + prefix + 'badgeNameL2" id="' + prefix + 'badgeNameL2" ' +
+                        'size="35" maxlength="32" tabindex=' + tabindex + `/>
                 </div>`;
     tabindex += 2;
     html += `

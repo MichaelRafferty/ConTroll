@@ -74,6 +74,7 @@ EOF;
     if ($limited == false) {
         echo <<<EOF
     <script type='text/javascript' src="jslib/passkey.js?v=$libJSversion"></script>
+    <script type='text/javascript' src="jslib/profile.js?v=$libJSversion"></script>
     <script type='text/javascript' src="jslib/exhibitorProfile.js?v=$libJSversion"></script>
     <script type='text/javascript' src="jslib/exhibitorRequest.js?v=$libJSversion"></script>
     <script type='text/javascript' src="jslib/exhibitorReceipt.js?v=$libJSversion"></script>

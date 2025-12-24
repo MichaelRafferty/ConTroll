@@ -230,7 +230,8 @@ class Profile {
         this.#suffixField.value = suffix;
         if (this.#legalNameField)
             this.#legalNameField.value = legalName;
-        this.#pronounsField.value = pronouns;
+        if (this.#pronounsField)
+            this.#pronounsField.value = pronouns;
         this.#addrField.value = address;
         this.#addr2Field.value = addr_2;
         this.#cityField.value = city;
