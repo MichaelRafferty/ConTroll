@@ -340,7 +340,7 @@ function repriceCart() {
             cartDiscountable = true;
         // reset total for below
         couponSubtotal = Number(total);
-        subTotalColDiv.innerHTML = '$' + Number(total).toFixed(2);
+        subTotalColDiv.innerHTML = currencyFmt.format(Number(total).toFixed(2));
     }
 
     // now compute discountable totals
@@ -388,8 +388,8 @@ function repriceCart() {
         total -= cartDiscount;
     }
     couponDiscount = Number(couponDiscounts);
-    couponDiscountDiv.innerHTML = "$" + Number(couponDiscounts).toFixed(2) + html;
-    totalCostDiv.innerHTML = "$" + Number(total).toFixed(2) + html;
+    couponDiscountDiv.innerHTML = currencyFmt.format(Number(couponDiscounts).toFixed(2)) + html;
+    totalCostDiv.innerHTML = currencyFmt.format(Number(total).toFixed(2)) + html;
 
     // now set the proper div for the payment
     emptyCart.hidden =  primaryMemberships > 0;

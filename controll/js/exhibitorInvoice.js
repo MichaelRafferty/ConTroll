@@ -7,7 +7,7 @@ class ExhibitorInvoice {
     #exhibitorYearId = null;
     #membershipCostdiv = null;
     #mailin = null;
-    #additional_cost = [];
+    #additionalCost = [];
     #elcheckno = null;
     #elCcauth = null;
     #econfirm = null;
@@ -28,7 +28,12 @@ class ExhibitorInvoice {
     #firstStar = '';
     #addrStar = '';
     #allStar = '';
-    #currentSuffix = null;
+    #currentPrefix = null;
+    #currentType = null;
+    #currentOrdinal = null;
+    #formValid = false;
+    #validateMessage = '';
+    #payRow = null;
     #uspsDiv = null;
     #currentOrderId = null;
     #invalidFields = '';
@@ -66,12 +71,12 @@ class ExhibitorInvoice {
             this.#payButton.disabled = !(document.getElementById('pt-cash').checked ||
                 document.getElementById('pt-check').checked || document.getElementById('pt-credit').checked)
             this.#paymentDiv.hidden = false;
+            this.#payRow = null;
         }
     }
 
 // openInvoice: display the vendor invoice (and registration items)
     openInvoice(exhibitorInfo, regionYearId) {
-        var regionName, html, mnum;
         var spacePriceName = '';
 
         this.#regionYearId = regionYearId;
@@ -112,9 +117,8 @@ class ExhibitorInvoice {
             console.log(region);
         }
 
-        regionName = regionList.name;
         // fill in the variable items
-        document.getElementById("vendor_invoice_title").innerHTML = "<strong>Pay " + regionName + ' Invoice for ' + exhibitorName + '</strong>';
+        document.getElementById("vendor_invoice_title").innerHTML = "<strong>Pay " + regionList.name + ' Invoice for ' + exhibitorName + '</strong>';
 
         // refresh the items spaces purchased area
         var ret = drawExhitorTopBlocks('You', exhibitor_spacelist, region, regionList, this.#regionYearId,
@@ -132,118 +136,8 @@ class ExhibitorInvoice {
 
         this.#membershipCostdiv.hidden = (this.#includedMemberships == 0 && this.#additionalMemberships == 0);
 
-        html = '';
         this.#exhibitorInvoiceModal.show();
         this.#updatePaymentDiv();
-    }
-
-// draw a membership block
-    #drawMembershipBlock(label, mnum, suffix, country_options, doOnChange = true, changeClass = '') {
-        var html = `
-<div class="row mt-4">
-    <div class="col-sm-auto p-0">` + label + ' Member ' + (mnum + 1) + `:</div>
-</div>
-<div class="row">
-    <div class="col-sm-8">
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-sm-auto ms-0 me-2 p-0">
-                    <label for="fname` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Preferred Name: ` + this.#firstStar + `First</span></label><br/>
-                    <input class="form-control-sm" type="text" name="fname` + suffix + `" id="fname` + suffix +
-                        '" size="22" maxlength="32"' + (doOnChange ? 'onchange="exhibitorInvoice.updateCost(' + this.#regionYearId + "," + mnum + ');"' : '') + `/>
-                </div>
-                <div class="col-sm-auto ms-0 me-2 p-0">
-                    <label for="mname` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Middle</span></label><br/>
-                    <input class="form-control-sm" type="text" name="mname` + suffix + `" id="mname` + suffix + `" size="8" maxlength="32" />
-                </div>
-                <div class="col-sm-auto ms-0 me-2 p-0">
-                    <label for="lname` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + this.#allStar + `Last</span></label><br/>
-                    <input class="form-control-sm" type="text" name="lname` + suffix + `" id="lname` + suffix + `" size="22" maxlength="32" />
-                </div>
-                <div class="col-sm-auto ms-0 me-0 p-0">
-                    <label for="suffix` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Suffix</span></label><br/>
-                    <input class="form-control-sm" type="text" name="suffix` + suffix + `" id='suffix` + suffix + `' size="4" maxlength="4" />
-                </div>
-            </div>
-            <div class='row'>
-                <div class='col-sm-12 ms-0 me-0 p-0'>
-                    <label for="legalName` + suffix + `" class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>Legal Name: for checking against your ID. It will only be visible to Registration Staff.</label><br/>
-                    <input class='form-control-sm' type='text' name="legalName` + suffix + `" id=legalName` + suffix + `" size=64 maxlength='64' placeholder='Defaults to First Name Middle Name Last Name, Suffix'/>
-                </div>
-            </div>
-`;
-                // address fields
-                html += `
-            <div class="row">
-                <div class="col-sm-12 ms-0 me-0 p-0">
-\                    <label for="addr` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + this.#addrStar + `Address</span></label><br/>
-                    <input class="form-control-sm" type="text" name='addr` + suffix + `' id='addr` + suffix + `' size=64 maxlength="64" />
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-sm-12 ms-0 me-0 p-0">
-                    <label for="addr2` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Company/2nd Address line</span></label><br/>
-                    <input class="form-control-sm" type="text" name='addr2` + suffix + `' id='addr2` + suffix + `' size=64 maxlength="64" '/>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-sm-auto ms-0 me-2 p-0">
-                    <label for="city` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + this.#addrStar + `City</span></label><br/>
-                    <input class="form-control-sm" type="text" name="city` + suffix + `" id='city` + suffix + `' size="22" maxlength="32" />
-                </div>
-                <div class="col-sm-auto ms-0 me-2 p-0">
-                    <label for="state` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + this.#addrStar + `State/Prov</span></label><br/>
-                    <input class="form-control-sm" type="text" name="state` + suffix + `" id='state` + suffix + `' size="10" maxlength=16" />
-                </div>
-                <div class="col-sm-auto ms-0 me-2 p-0">
-                    <label for="zip` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + this.#addrStar + `Zip/PC</span></label><br/>
-                    <input class="form-control-sm" type="text" name="zip` + suffix + `" id='zip` + suffix + `' size="5" maxlength="10" />
-                </div>
-                <div class="col-sm-auto ms-0 me-0 p-0">
-                    <label for="country` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Country</span></label><br/>
-                    <select class="form-control-sm" name="country` + suffix + `" id='country` + suffix + `' >
-            ` + country_options + `
-                    </select>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-sm-4" id="uspsBlock` + suffix + `"></div>
-</div>
-<div class="row">
-    <div class="col-sm-12">
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-sm-auto ms-0 me-2 p-0">
-                    <label for="email` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">` + this.#firstStar + `Email</span></label><br/>
-                    <input class="form-control-sm" type="email" name="email` + suffix + `" id='email` + suffix + `' size="35" maxlength="254" />
-                </div>
-                <div class="col-sm-auto ms-0 me-2 p-0">
-                    <label for="phone` + suffix + `" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;">Phone</span></label><br/>
-                    <input class="form-control-sm" type="text" name="phone` + suffix + `" id='phone` + suffix + `' size="18" maxlength="15" />
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-sm-auto me-1 p-0">
-                    <label for="badge_name` + suffix + `" class="form-label-sm">
-                        <span class="text-dark" style="font-size: 10pt;">Badge Name (optional)</span>
-                    </label><br/>
-                    <input class="form-control-sm" type="text" name="badge_name` + suffix + `" id='badge_name` + suffix + `'
-                        size="35" maxlength="32" placeholder='defaults to first and last name'/>
-                </div>
-                 <div class="col-sm-auto ms-1 p-0">
-                    <label for="badgeNameL2` + suffix + `" class="form-label-sm">
-                        <span class="text-dark" style="font-size: 10pt;">Badge Line 2 (optional)</span>
-                    </label><br/>
-                    <input class="form-control-sm" type="text" name="badgeNameL2` + suffix + `" id='badgeNameL2` + suffix + `'
-                        size="35" maxlength="32"/>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-`;
-    return html;
     }
 
 // update invoice for the Cost of Memberships and total Cost when an additional member is started
@@ -251,9 +145,9 @@ class ExhibitorInvoice {
         var regionList = region_list[regionYearId];
         var fname = document.getElementById('fname_a_' + item).value;
         this.#totalAmountDue = 0;
-        this.#additional_cost[item] = fname == '' ? 0 : Number(regionList.additionalMemPrice);
-        for (var num in this.#additional_cost) {
-            this.#totalAmountDue += this.#additional_cost[num];
+        this.#additionalCost[item] = fname == '' ? 0 : Number(regionList.additionalMemPrice);
+        for (var num in this.#additionalCost) {
+            this.#totalAmountDue += this.#additionalCost[num];
         }
         if (config.debug & 1)
             console.log('Pre this.#totalSpacePrice: ' + String(this.#totalAmountDue));
@@ -289,13 +183,12 @@ class ExhibitorInvoice {
         var pt_cash = document.getElementById('pt-cash').checked;
         var pt_check = document.getElementById('pt-check').checked;
         var pt_credit = document.getElementById('pt-credit').checked;
-        var valid = true;
-        var mnum = 0;
-        this.#invalidFields = '';
+        this.#formValid = true;
+        this.#validateMessage = '';
 
         clear_message('inv_result_message');
 
-        if (prow == null && this.#totalAmountDue > 0) {
+        if (this.#payRow == null && this.#totalAmountDue > 0) {
             // validate the payment entry: It must be >0 and <= amount due
             //      a payment type must be specified
             //      for check: the check number is required
@@ -305,12 +198,12 @@ class ExhibitorInvoice {
             if (pay_amt > 0 && pay_amt > this.#totalAmountDue) {
                 this.#payAmt.style.backgroundColor = 'var(--bs-warning)';
                 this.#invalidFields += "Amount Paid, ";
-                valid = false;
+                this.#formValid = false;
             }
-            if (valid && pay_amt <= 0 && this.#totalAmountDue > 0) {
+            if (this.#formValid && pay_amt <= 0 && this.#totalAmountDue > 0) {
                 this.#payAmt.style.backgroundColor = 'var(--bs-warning)';
                 this.#invalidFields += "Amount Paid, ";
-                valid = false;
+                this.#formValid = false;
             }
 
             this.#payAmt.style.backgroundColor = '';
@@ -323,7 +216,8 @@ class ExhibitorInvoice {
                 if (checkno == null || checkno == '') {
                     this.#invalidFields += 'Check Number, ';
                     this.#payCheckno.style.backgroundColor = 'var(--bs-warning)';
-                    valid = false;
+                    this.#validateMessage += '<br/>For payment type check, the check number field is required.';
+                    this.#formValid = false;
                 } else {
                     this.#payCheckno.style.backgroundColor = '';
                 }
@@ -336,7 +230,8 @@ class ExhibitorInvoice {
                 if (ccauth == null || ccauth == '') {
                     this.#invalidFields += 'CC Auth Code, '
                     this.#payCcauth.style.backgroundColor = 'var(--bs-warning)';
-                    valid = false;
+                    this.#validateMessage += '<br/>For payment type credit, the autherization code field is required.';
+                    this.#formValid = false;
                 } else {
                     this.#payCcauth.style.backgroundColor = '';
                 }
@@ -350,65 +245,74 @@ class ExhibitorInvoice {
             if (!checked) {
                 this.#paymentTypeDiv.style.backgroundColor = 'var(--bs-warning)';
                 this.#invalidFields += "Payment Type, ";
-                valid = false;
+                this.#validateMessage += '<br/>You must select a payment type.';
+                this.#formValid = false;
             }
 
-            // now validate the membership fields
-            for (mnum = 0; mnum < this.#includedMemberships; mnum++) {
-                this.#currentSuffix = '_i_' + mnum;
-                if (document.getElementById('fname' + this.#currentSuffix).value != '' ||
-                    document.getElementById('lname' + this.#currentSuffix).value != '') {
-                    if (!this.#checkValid(this.#currentSuffix, 'Included #' + (mnum + 1)))
-                        valid = false;
-                }
-            }
-            for (mnum = 0; mnum < this.#additionalMemberships; mnum++) {
-                this.#currentSuffix = '_a_' + mnum;
-                if (document.getElementById('fname' + this.#currentSuffix).value != '' ||
-                    document.getElementById('lname' + this.#currentSuffix).value != '') {
-                    if (!this.#checkValid(this.#currentSuffix,  'Additional #' + (mnum + 1)))
-                        valid = false;
+            if (this.#formValid) {
+                if (pay_amt > 0) {
+                    this.#payRow = {
+                        index: 2, amt: pay_amt, ccauth: ccauth, checkno: checkno, desc: this.#payDescription.value, type: ptype, nonce: 'offline',
+                    };
                 }
             }
 
-            if (!valid) {
-                if (this.#invalidFields != '') {
-                    this.#invalidFields = '<br/>' + this.#invalidFields.substring(0, this.#invalidFields.length - 2);
+            this.#currentOrdinal = 0;
+            this.#currentType = 'i';
+            this.#payValidate();
+        }
+        
+        // now validate the membership fields
+        payValidate() {
+            if (this.#currentType == 'i') {
+                while (this.#currentOrdinal < this.#includedMemberships) {
+                    this.#currentPrefix = '_i_' + this.#currentOrdinal;
+                    if (document.getElementById(this.#currentPrefix + 'fname').value != '' ||
+                        document.getElementById(this.#currentPrefix + 'lname').value != '') {
+                        // build data to call profile validate
+                        let person = ???;
+
+                        let message = profile.validate(person, 'inv_result_message', payValidate, payValidate, '', true);
+                        if (message != '') {
+                            this.#formValid = false;
+                            this.#validateMessage += message;
+                        }
+                    }
+                    this.#currentOrdinal++;
                 }
+                this.#currentType = 'a'
+                this.#currentOrdinal = 0;
+            }
+
+            while (this.#currentOrdinal < this.#includedMemberships) {
+                this.#currentPrefix = '_i_' + this.#currentOrdinal;
+                if (document.getElementById(this.#currentPrefix + 'fname').value != '' ||
+                    document.getElementById(this.#currentPrefix + 'lname').value != '') {
+                    // build data to call profile validate
+                    let person = ???;
+
+                    let message = profile.validate(person, 'inv_result_message', payValidate, payValidate, '', true);
+                    if (message != '') {
+                        this.#formValid = false;
+                        this.#validateMessage += message;
+                    }
+                }
+                this.#currentOrdinal++;
+            }
+
+
+            if (!this.#formValid) {
                 show_message('Please correct the items marked in yellow to process the payment.' + this.#invalidFields +
                     '<br/>For fields in the membership area that are required and not available, use /r to indicate not available.',
                     'warn', 'inv_result_message')
                 return;
             }
 
-            // fields are now validated, apply USPS validation to each item?
-            if (config.useUSPS) {
-                // now validate the membership fields
-                for (mnum = 0; mnum < this.#includedMemberships; mnum++) {
-                    this.#currentSuffix = '_i_' + mnum;
-                    if (document.getElementById('fname' + this.#currentSuffix).value != '' ||
-                        document.getElementById('lname' + this.#currentSuffix).value != '') {
-                        if (this.#checkMembershipUSPS(this.#currentSuffix))
-                            return;
-                    }
-                }
-                for (mnum = 0; mnum < this.#additionalMemberships; mnum++) {
-                    this.#currentSuffix = '_a_' + mnum;
-                    if (document.getElementById('fname' + this.#currentSuffix).value != '' ||
-                        document.getElementById('lname' + this.#currentSuffix).value != '') {
-                        if (this.#checkMembershipUSPS(this.#currentSuffix))
-                            return;
-                    }
-                }
-            }
-
-            if (pay_amt > 0) {
-                var prow = {
-                    index: 2, amt: pay_amt, ccauth: ccauth, checkno: checkno, desc: this.#payDescription.value, type: ptype, nonce: 'offline',
-                };
-            }
+            processPay();
         }
+        
         // process payment
+        processPay() {
 
         this.#payButton.disabled = true;
         var formArr = $('#vendor_invoice_form').serializeArray();
@@ -417,7 +321,7 @@ class ExhibitorInvoice {
             formData[formArr[index].name] = formArr[index].value;
         formData.nonce= 'admin';
         formData.amtDue= this.#totalAmountDue;
-        formData.prow = prow;
+        formData.prow = this.#payRow;
         formData.portalType = this.#portalType;
         formData.exhibitorId = this.#exhibitorId;
         formData.exhibitorYearId = this.#exhibitorYearId;
@@ -471,219 +375,6 @@ class ExhibitorInvoice {
             show_message('There was an unexpected error, please email ' + config.vemail + ' to let us know.  Thank you.', 'error', 'inv_result_message');
             this.#payButton.disabled = false;
         }
-    }
-
-    // check if value is non blank
-    #checkNonBlank(id) {
-        if (id.value == '') {
-            id.style.backgroundColor = 'var(--bs-warning)';
-            return false;
-        }
-        id.style.backgroundColor = '';
-        return true;
-    }
-
-    // check the additional membership section for valid entries
-    #checkValid(suffix, label = '') {
-        var id = null;
-        var value = null;
-        var country = null;
-        var valid = true;
-        if (label != '')
-            label += ': ';
-
-        // if first name or last name is set, do the check, else it's not in use, skip it
-
-        if (config.required != '') {
-            if (!this.#checkNonBlank(document.getElementById('fname' + suffix))) {
-                this.#invalidFields += label + 'First Name, ';
-                valid = false;
-            }
-        }
-
-        if (config.required == 'all') {
-            if (!this.#checkNonBlank(document.getElementById('lname' + suffix))) {
-                this.#invalidFields += label + 'Last Name, ';
-                valid = false;
-            }
-        }
-
-        if (config.required == 'all' || config.required == 'addr') {
-            if (!this.#checkNonBlank(document.getElementById('addr' + suffix))) {
-                this.#invalidFields += label + 'Address, ';
-                valid = false;
-            }
-
-            if (!this.#checkNonBlank(document.getElementById('city' + suffix))) {
-                this.#invalidFields += label + 'City, ';
-                valid = false;
-            }
-
-            country = document.getElementById('state' + suffix).value;
-            id = document.getElementById('state' + suffix);
-            value = id.value;
-            if (value == '') {
-                this.#invalidFields += label + 'State/Province, ';
-                valid = false;
-                id.style.backgroundColor = 'var(--bs-warning)';
-            } else {
-                if (country == 'USA') {
-                    if (value.length != 2) {
-                        this.#invalidFields += label + 'State, ';
-                        valid = false;
-                        id.style.backgroundColor = 'var(--bs-warning)';
-                    } else {
-                        id.style.backgroundColor = '';
-                    }
-                } else {
-                    id.style.backgroundColor = '';
-                }
-            }
-
-            if (!this.#checkNonBlank(document.getElementById('zip' + suffix))) {
-                this.#invalidFields += label + 'Zip/Postal Code, ';
-                valid = false;
-            }
-        }
-
-        id = document.getElementById('email' + suffix);
-        value = id.value;
-        if (value != '/r' && !emailRegex.test(value)) {
-            this.#invalidFields += label + 'Email, ';
-            valid = false;
-            id.style.backgroundColor = 'var(--bs-warning)';
-        } else {
-            id.style.backgroundColor = '';
-        }
-
-        return valid;
-    }
-
-    // do USPS for a membership
-    #checkMembershipUSPS(suffix) {
-        if (this.#uspsChecked[suffix])  // don't check it twice if we get all the way through the check on it.
-            return false;
-
-        var country = document.getElementById('country' + suffix);
-        var state = document.getElementById('state' + suffix).value;
-        if (country.value != 'USA' && state.value != '/r') {
-            this.#uspsChecked[suffix] = true;
-            return false;
-        }
-
-        // get address fields
-        var addr = document.getElementById('addr' + suffix).value;
-        var addr2 = document.getElementById('addr2' + suffix).value;
-        var city = document.getElementById('city' + suffix).value;
-        var zip = document.getElementById('zip' + suffix).value;
-
-        var script = "scripts/uspsCheck.php";
-        var data = {
-            addr: addr,
-            addr2: addr2,
-            city: city,
-            state: state,
-            zip: zip,
-        };
-        $.ajax({
-            url: script,
-            data: data,
-            method: 'POST',
-            success: function (data, textStatus, jqXhr) {
-                if (data.status == 'error') {
-                    show_message(data.message, 'error', 'inv_result_message');
-                    return false;
-                }
-
-                if (data.usps == null) {
-                    exhibitorInvoice.useMyAddress();
-                    return;
-                }
-
-                exhibitorInvoice.showValidatedAddress(data);
-                return;
-            },
-            error: function (jqXHR, textStatus, errorThrown) {
-                showAjaxError(jqXHR, textStatus, errorThrown, 'inv_result_message');
-                return false;
-            },
-        })
-        return true;
-    }
-
-    // display the usps result
-    showValidatedAddress(data) {
-        var html = '';
-        clear_message('inv_result_message');
-        if (data.error) {
-            var errormsg = data.error;
-            if (errormsg.substring(0, 5) == '400: ') {
-                errormsg = errormsg.substring(5);
-            }
-            html = "<h4>USPS Returned an error<br/>validating the address</h4>" +
-                "<pre>" + errormsg + "</pre>\n";
-        } else {
-            this.#uspsAddress = data.address;
-            if (this.#uspsAddress.address2 == undefined)
-                this.#uspsAddress.address2 = '';
-
-            html = "<h4>USPS Returned: " + this.#uspsAddress.valid + "</h4>";
-            // ok, we got a valid uspsAddress, if it doesn't match, show the block
-            var orig = data.post;
-            if (orig.addr == this.#uspsAddress.address && orig.addr2 == this.#uspsAddress.address2 &&
-                orig.city == this.#uspsAddress.city && orig.state == this.#uspsAddress.state &&
-                orig.zip == this.#uspsAddress.zip) {
-                this.useMyAddress();
-                return;
-            }
-
-            html += "<pre>" + this.#uspsAddress.address + "\n";
-            if (this.#uspsAddress.address2)
-                html += this.#uspsAddress.address2 + "\n";
-            html += this.#uspsAddress.city + ', ' + this.#uspsAddress.state + ' ' + this.#uspsAddress.zip + "</pre>\n";
-
-            if (this.#uspsAddress.valid == 'Valid')
-                html += '<button class="btn btn-sm btn-primary m-1 mb-2" onclick="exhibitorInvoice.useUSPS();">' +
-                    'Update using the USPS validated address' +
-                    '</button>'
-        }
-        html += '<button class="btn btn-sm btn-secondary m-1 mb-2 " onclick="exhibitorInvoice.useMyAddress();">' +
-            'Update using the address as Entered' +
-            '</button><br/>' +
-            '<button class="btn btn-sm btn-secondary m-1 mt-2" onclick="exhibitorInvoice.redoAddress();">' +
-            'I fixed the address, validate it again' +
-            '</button>';
-
-        this.#uspsDiv = document.getElementById('uspsBlock' + this.#currentSuffix);
-        this.#uspsDiv.innerHTML = html;
-        this.#uspsDiv.scrollIntoView({behavior: 'instant', block: 'center'});
-    }
-
-// address update functions
-    // usps address post functions
-    useUSPS() {
-        document.getElementById('addr' + this.#currentSuffix).value = this.#uspsAddress.address;
-        var a2 = document.getElementById('addr2' + this.#currentSuffix);
-        if (this.#uspsAddress.address2)
-            a2.value = this.#uspsAddress.address2;
-        else
-            a2.value = '';
-        document.getElementById('city' + this.#currentSuffix).value = this.#uspsAddress.city;
-        document.getElementById('state' + this.#currentSuffix).value = this.#uspsAddress.state;
-        document.getElementById('zip' + this.#currentSuffix).value = this.#uspsAddress.zip;
-        this.#uspsDiv.innerHTML = '';
-        this.pay();
-    }
-
-    useMyAddress() {
-        this.#uspsDiv.innerHTML = '';
-        this.#uspsChecked[this.#currentSuffix] = true;
-        this.pay();
-    }
-
-    redoAddress() {
-        this.#uspsDiv.innerHTML = '';
-        this.pay();
     }
 
 // Create a receipt and email it

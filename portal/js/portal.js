@@ -1398,9 +1398,9 @@ class Portal {
     // coupon related items
     couponDiscountUpdate(couponAmounts) {
         this.#preCouponAmountDue = Number(couponAmounts.totalDue);
-        this.#subTotalColDiv.innerHTML = '$' + Number(couponAmounts.totalDue).toFixed(2);
+        this.#subTotalColDiv.innerHTML = currencyFmt.format(Number(couponAmounts.totalDue).toFixed(2));
         this.#couponDiscount = Number(couponAmounts.discount);
-        this.#couponDiscountDiv.innerHTML = '$' + Number(couponAmounts.discount).toFixed(2);
+        this.#couponDiscountDiv.innerHTML = currencyFmt.format(Number(couponAmounts.discount).toFixed(2));
         this.#totalAmountDue = Number(couponAmounts.totalDue - couponAmounts.discount);
         $('span[name="totalDueAmountSpan"]').html('$&nbsp;' + this.#totalAmountDue.toFixed(2));
 

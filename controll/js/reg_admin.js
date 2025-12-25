@@ -1255,8 +1255,8 @@ function changeRollover() {
         "    <option value='auto'>Auto: Auto Select New Registration for this row</option>\n";
     for (var i = 0; i < memListSelect.length; i++) {
         optionList += '   <option value="' + memListSelect[i].id + '">' + memListSelect[i].id + ':' + memListSelect[i].memAge + '-' +
-            memListSelect[i].memType + '-' + memListSelect[i].memCategory + ' $' + memListSelect[i].price + ' ' +
-            memListSelect[i].shortname + "</option>\n";
+            memListSelect[i].memType + '-' + memListSelect[i].memCategory + ' ' +
+            currencyFmt.format(Number(memListSelect[i].price).toFixed(2)) + ' ' + memListSelect[i].shortname + "</option>\n";
     }
     optionList += "</select>\n";
     var html = ''
@@ -1361,8 +1361,8 @@ function changeEdit(badgeId) {
         var memItem = memLabels[i];
         if (ageList[memItem.memAge]) {
             memOptionList += '   <option value="' + memItem.id + '"' + (currentRow.memId == memItem.id ? ' selected' : '') + '>' +
-            memItem.id + ':' + memItem.memAge + '-' + memItem.memType + '-' + memItem.memCategory + ' $' + memItem.price + ' ' +
-            memItem.shortname + "</option>\n";
+            memItem.id + ':' + memItem.memAge + '-' + memItem.memType + '-' + memItem.memCategory + ' ' +
+                currencyFmt.format(Number(memItem.price).toFixed(2)) + ' ' + memItem.shortname + "</option>\n";
         }
     }
     // now the rest of them
@@ -1370,8 +1370,8 @@ function changeEdit(badgeId) {
         var memItem = memLabels[i];
         if (!ageList[memItem.memAge]) {
             memOptionList += '   <option value="' + memItem.id + '"' + (currentRow.memId == memItem.id ? ' selected' : '') +'>' +
-            memItem.id + ':' + memItem.memAge + '-' + memItem.memType + '-' + memItem.memCategory + ' $' + memItem.price + ' ' +
-            memItem.shortname + "</option>\n";
+            memItem.id + ':' + memItem.memAge + '-' + memItem.memType + '-' + memItem.memCategory + ' ' +
+                currencyFmt.format(Number(memItem.price).toFixed(2)) + ' ' + memItem.shortname + "</option>\n";
         }
     }
     memOptionList += "</select>\n";

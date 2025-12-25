@@ -197,7 +197,7 @@ function build_record_hover(e, cell, onRendered) {
     hover_text += data.title.trim() + '<br/>';
     hover_text += data.status.trim() + ' @ ' + data.location + '<br/>';
     if((data.status == 'BID') || (data.status == 'To Auction')) { 
-        hover_text += 'by ' + data.bidder + ' @ $' + data.final_price + '<br/>';
+        hover_text += 'by ' + data.bidder + ' @ ' + currencyFmt.format(Number(data.final_price).toFixed(2)) + '<br/>';
     }
     hover_text += 'updated: ' + data.time_updated + '<br/>';
 

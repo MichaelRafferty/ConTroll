@@ -22,7 +22,8 @@ function drawExhitorTopBlocks(name, exhibitor_spacelist, region, regionList, reg
             var space = exhibitor_spacelist[exSpaceKeys[exSpaceIdx]];
             var prices = region[exSpaceKeys[exSpaceIdx]].prices;
             if (space.item_approved) {
-                html += space.approved_description + " in " + regionName + " for $" + Number(space.approved_price).toFixed(2) + "<br/>";
+                html += space.approved_description + " in " + regionName + " for " +
+                    currencyFmt.format(Number(space.approved_price).toFixed(2)) + "<br/>";
                 totalSpacePrice += Number(space.approved_price);
                 // find price item in prices
                 for (priceIdx = 0; priceIdx < prices.length; priceIdx++) {
@@ -41,10 +42,12 @@ function drawExhitorTopBlocks(name, exhibitor_spacelist, region, regionList, reg
         }
     }
     if (regionList['mailinFee'] > 0 && exhibitor_info['mailin'] == 'Y') {
-        html += "Mail in fee of $" + Number(regionList['mailinFee']).toFixed(2) + "<br/>\n";
+        html += "Mail in fee of " +
+            currencyFmt.format(Number(regionList['mailinFee']).toFixed(2))+ "<br/>\n";
         totalSpacePrice += Number(regionList['mailinFee']);
     }
-    html += "____________________________<br/>\nTotal price for spaces $" + Number(totalSpacePrice).toFixed(2)+ "<br/>&nbsp;<br/>\n";
+    html += "____________________________<br/>\nTotal price for spaces " +
+        currencyFmt.format(Number(totalSpacePrice).toFixed(2)) + "<br/>&nbsp;<br/>\n";
     document.getElementById(approved).innerHTML = html;
 
     var spaces = includedMemberships + additionalMemberships;
@@ -55,9 +58,9 @@ function drawExhitorTopBlocks(name, exhibitor_spacelist, region, regionList, reg
             ' Please purchase your attending memberships to the convention separately at ' +
             '<a href="' + config['regserver'] + '">' + config['regserver'] + '</a>.';
     } else if (includedMemberships == 0) {
-        html += regionName + ' ' +  spacePriceName + ' spaces come with the option to purchase up to ' + additionalMemberships +
-            ' membership' + (additionalMemberships > 1 ? 's' : '') + ' at  the discounted price of $' +
-            Number(regionList.additionalMemPrice).toFixed(2) + '. ' +
+        html += regionName + ' ' +  spacePriceName + ' spaces come with the option to purchase up to ' + additionalMemberships  +
+            ' membership' + (additionalMemberships > 1 ? 's' : '') + ' at  the discounted price of ' +
+            currencyFmt.format(Number(regionList.additionalMemPrice).toFixed(2)) + '. ' +
             'Purchase those memberships here. ' +
             'Any additional memberships beyond those you purchase here need to be purchased separately at ' +
             '<a href="' + config['regserver'] + '">' + config['regserver'] + '</a>.';
@@ -69,8 +72,8 @@ function drawExhitorTopBlocks(name, exhibitor_spacelist, region, regionList, reg
     } else {
         html += regionName + ' ' +  spacePriceName + ' spaces come with ' + includedMemberships + ' membership' + (includedMemberships > 1 ? 's' : '') +
             ' as part of the space purchase. In addition it comes with the right to purchase up to ' + additionalMemberships +
-            ' membership' + (additionalMemberships > 1 ? 's' : '') + ' at  the discounted price of $' +
-            Number(regionList.additionalMemPrice).toFixed(2) + '. ' +
+            ' membership' + (additionalMemberships > 1 ? 's' : '') + ' at  the discounted price of ' +
+            currencyFmt.format(Number(regionList.additionalMemPrice).toFixed(2)) + '. ' +
             'Use the included memberships first, and then add the additional memberships if desired. If you need more memberships beyond that they need to' +
             ' be purchased separately at ' +
             '<a href="' + config['regserver'] + '">' + config['regserver'] + '</a>.';

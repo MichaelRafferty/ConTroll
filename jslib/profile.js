@@ -284,7 +284,7 @@ class Profile {
         this.#ageField.hidden = hide;
     }
 
-    validate(person, messageDiv, addCallback, redoCallback, message = '') {
+    validate(person, messageDiv, addCallback, redoCallback, message = '', multiUse = false) {
         this.#messageDiv = messageDiv;
         this.#addCallback = addCallback;
         this.#redoCallback = redoCallback;

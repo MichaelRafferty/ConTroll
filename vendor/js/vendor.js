@@ -3,17 +3,21 @@
 var change_password = null;
 var changePasswordTitleDiv = null;
 var purchase_label = 'purchase';
-var additional_cost = {};
 var switchPortalbtn = null;
 var newPasskeyBtn = null;
-exhibitorProfile = null;
-si_password = null;
+var exhibitorProfile = null;
+var si_password = null;
+var currencyFmt = null;
 
 // initial setup
 window.onload = function () {
     id = document.getElementById('changePassword');
     if (id != null) {
         change_password = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
+        currencyFmt = new Intl.NumberFormat(locale, {
+            style: 'currency',
+            currency: config.currency,
+        });
     }
 
     newPasskeyBtn = document.getElementById('newPasskeyBtn');
