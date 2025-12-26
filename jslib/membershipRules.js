@@ -126,8 +126,8 @@ class MembershipRules {
 
         if (skipImplicit == false) {
             // first the implicit rules:
-            // 1. Only one 'full' is allowed
-            if (mem.memType == 'full' && mem.memCategory != 'upgrade' && this.#numFull > 0 && mem.conid == this.#conid) {
+            // 1. Only one 'full' is allowed, and no fulls if there is a one day
+            if (mem.memType == 'full' && mem.memCategory != 'upgrade' && (this.#numFull > 0 || this.#numOneDay > 0) && mem.conid == this.#conid) {
                 if (this.#debug & 8) {
                     console.log("testMembership Implicit: return false-only one full membership is allowed, unless it's an upgrade category one");
                 }
