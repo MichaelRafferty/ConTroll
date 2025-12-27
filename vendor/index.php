@@ -10,6 +10,7 @@ require_once('../lib/exhibitorRequestForms.php');
 require_once('../lib/exhibitorReceiptForms.php');
 require_once("../lib/cc__load_methods.php");
 require_once('../lib/webauthn.php');
+require_once('../lib/policies.php');
 require_once('../lib/profile.php');
 require_once('../lib/tax.php');
 
@@ -466,6 +467,7 @@ $ageOptions = '<option value="">--Select Age Bracket--</option>' . PHP_EOL;
 foreach ($ageList as $age) {
     $ageOptions .= '<option value="' . escape_quotes($age['ageType']) . '">' . $age['shortname'] . ' ['.$age['label'] . ']</option>' . PHP_EOL;
 }
+$policies = getPolicies();
 ?>
 <script type='text/javascript'>
     var config = <?php echo json_encode($config_vars); ?>;
@@ -480,6 +482,7 @@ foreach ($ageList as $age) {
     var ageList = <?php echo json_encode($ageList); ?>;
     var ageListIdx = <?php echo json_encode($ageListIdx); ?>;
     var ageOptions = <?php echo json_encode($ageOptions); ?>;
+    var policies = <?php echo json_encode($policies); ?>;
     </script>
 <?php
 draw_registrationModal($portalType, $portalName, $con, $countryOptions);

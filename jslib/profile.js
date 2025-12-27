@@ -292,6 +292,27 @@ class Profile {
         let required = config.required;
         this.#uspsAddress = null;
 
+        if (person == null) {
+            person = {
+                fname: this.fname(),
+                mname: this.mname(),
+                lname: this.lname(),
+                suffix: this.suffix(),
+                leganName: this.legalName(),
+                addr: this.addr(),
+                addr2: this.addr2(),
+                city: this.city(),
+                state: this.state(),
+                zip: this.zip(),
+                country: this.country(),
+                email1: this.email(),
+                phone: this.phone(),
+                age: this.age(),
+                badge_name: this.badgename(),
+                badgeNameL2: this.badgenameL2(),
+            }
+        }
+
         // trim trailing blanks
         let keys = Object.keys(person);
         for (let i = 0; i < keys.length; i++) {
@@ -427,6 +448,9 @@ class Profile {
 
         // don't continue to process if any are missing
         if (!valid) {
+            if (multiUse)
+                return message;
+
             show_message("Please correct the items highlighted in " + this.#alertName + " and validate again.<br/>" + message,
                 this.#alertType, messageDiv);
             return false;
@@ -459,8 +483,12 @@ class Profile {
                     show_message("ERROR! " + textStatus + ' ' + errorThrown + '<br/>Seek Assistance.', 'error', messageDiv);
                 },
             });
+            if (multiUse)
+                return message;
             return false;
         }
+        if (multiUse)
+            return '';
         return true;
     }
 

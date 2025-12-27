@@ -8,13 +8,14 @@ var newPasskeyBtn = null;
 var exhibitorProfile = null;
 var si_password = null;
 var currencyFmt = null;
+var vendorInvoice = null;
 
 // initial setup
 window.onload = function () {
     id = document.getElementById('changePassword');
     if (id != null) {
         change_password = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
-        currencyFmt = new Intl.NumberFormat(locale, {
+        currencyFmt = new Intl.NumberFormat(config.locale, {
             style: 'currency',
             currency: config.currency,
         });
@@ -33,7 +34,6 @@ window.onload = function () {
         exhibitorProfile = new ExhibitorProfile(config.debug);
         exhibitorRequestOnLoad();
         auctionItemRegistrationOnLoad()
-        vendorInvoiceOnLoad()
         exhibitorReceiptOnLoad();
         if (typeof exhibitor_info !== 'undefined') {
             if (exhibitor_info.DaysSinceLastVerified > 180) {
@@ -204,4 +204,20 @@ function newPasskey() {
 // delete passkey - clicked the delete button
 function deletePasskey(id) {
     deletePasskeyEntry('scripts/passkeyActions.php', id, config.email, 'vendor');
+}
+
+// open vendor invoice to be paid
+function openInvoice(id) {
+    if (vendorInvoice == null)
+        vendorInvoice = new VendorInvoice();
+
+    vendorInvoice.openInvoice(id);
+}
+
+// make the purchase
+function makePurchase(token, label) {
+    if (vendorInvoice == null)
+        return;
+
+    vendorInvoice.makePurchase(token, label);
 }

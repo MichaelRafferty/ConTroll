@@ -25,6 +25,9 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $testsit
         $contactEmail = escape_quotes($info['contactEmail']);
     }
     $tabindex = 250;
+    $currency = getConfValue('con', 'currency', 'USD');
+    $curLocale = locale_get_default();
+    $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
     ?>
     <!-- invoice -->
     <div id='vendor_invoice' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Vendor Invoice' aria-hidden='true' style='--bs-modal-width: 90%;'>
@@ -163,14 +166,14 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $testsit
                                     Cost for Memberships:
                                 </div>
                                 <div class="col-sm-10 p-0">
-                                    $<span id='vendor_inv_mbr_cost'>0</span>
+                                    <span id='vendor_inv_mbr_cost'><?php echo $dolfmt->formatCurrency(0.00, $currency) ;?></span>
                                 </div>
                             </div>
                             <hr/>
                         </div>
                         <div class="row">
                             <div class="col-sm-auto">
-                                Total: $<span id='vendor_inv_cost'></span>
+                                Total: <span id='vendor_inv_cost'></span>
                             </div>
                         </div>
                         <div class='container-fluid' id='paymentDiv'>

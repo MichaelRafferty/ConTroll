@@ -216,14 +216,14 @@ function drawExhitorTopBlocks(name, exhibitor_spacelist, region, regionList, reg
         inclProfiles[mnum] = new Profile('i_' + mnum + '_', config.portalName);
         inclProfiles[mnum].setAll('', '', '', '', '', '', exhibitor_info.addr, exhibitor_info.addr2, exhibitor_info.city,
                 exhibitor_info.state, exhibitor_info.zip, exhibitor_info.country, exhibitor_info.exhibitorPhone,
-                '', '', 'age');
+                '', '', '');
         inclProfiles[mnum].setEmail(exhibitor_info.exhibitorEmail);
     }
     for (mnum = 0; mnum < additionalMemberships; mnum++) {
         addlProfiles[mnum] = new Profile('a_' + mnum + '_', config.portalName);
         addlProfiles[mnum].setAll('', '', '', '', '', '', exhibitor_info.addr, exhibitor_info.addr2, exhibitor_info.city,
             exhibitor_info.state, exhibitor_info.zip, exhibitor_info.country, exhibitor_info.exhibitorPhone,
-            '', '', 'age');
+            '', '', '');
         addlProfiles[mnum].setEmail(exhibitor_info.exhibitorEmail);
     }
     return [includedMemberships, additionalMemberships, spacePriceName, totalSpacePrice];

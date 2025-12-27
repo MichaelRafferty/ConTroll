@@ -23,18 +23,12 @@ class ExhibitorInvoice {
     #paymentDiv = null;
     #includedMemberships = 0;
     #additionalMemberships = 0;
-    #uspsChecked = [];
-    #uspsAddress = null;
-    #firstStar = '';
-    #addrStar = '';
-    #allStar = '';
     #currentPrefix = null;
     #currentType = null;
     #currentOrdinal = null;
     #formValid = false;
     #validateMessage = '';
     #payRow = null;
-    #uspsDiv = null;
     #currentOrderId = null;
     #invalidFields = '';
     #portalType = null;
@@ -143,7 +137,7 @@ class ExhibitorInvoice {
 // update invoice for the Cost of Memberships and total Cost when an additional member is started
     updateCost(regionYearId, item) {
         var regionList = region_list[regionYearId];
-        var fname = document.getElementById('fname_a_' + item).value;
+        var fname = document.getElementById('a_' + item + '_fname).value;
         this.#totalAmountDue = 0;
         this.#additionalCost[item] = fname == '' ? 0 : Number(regionList.additionalMemPrice);
         for (var num in this.#additionalCost) {
@@ -256,42 +250,21 @@ class ExhibitorInvoice {
                     };
                 }
             }
-
-            this.#currentOrdinal = 0;
-            this.#currentType = 'i';
-            this.#payValidate();
         }
+
+        this.#currentOrdinal = 0;
+        this.#currentType = 'i';
+        this.#payValidate();
+    }
         
-        // now validate the membership fields
-        payValidate() {
-            if (this.#currentType == 'i') {
-                while (this.#currentOrdinal < this.#includedMemberships) {
-                    this.#currentPrefix = '_i_' + this.#currentOrdinal;
-                    if (document.getElementById(this.#currentPrefix + 'fname').value != '' ||
-                        document.getElementById(this.#currentPrefix + 'lname').value != '') {
-                        // build data to call profile validate
-                        let person = ???;
-
-                        let message = profile.validate(person, 'inv_result_message', payValidate, payValidate, '', true);
-                        if (message != '') {
-                            this.#formValid = false;
-                            this.#validateMessage += message;
-                        }
-                    }
-                    this.#currentOrdinal++;
-                }
-                this.#currentType = 'a'
-                this.#currentOrdinal = 0;
-            }
-
+    // now validate the membership fields
+    payValidate() {
+        if (this.#currentType == 'i') {
             while (this.#currentOrdinal < this.#includedMemberships) {
-                this.#currentPrefix = '_i_' + this.#currentOrdinal;
+                this.#currentPrefix = 'i_' + this.#currentOrdinal + '_';
                 if (document.getElementById(this.#currentPrefix + 'fname').value != '' ||
                     document.getElementById(this.#currentPrefix + 'lname').value != '') {
-                    // build data to call profile validate
-                    let person = ???;
-
-                    let message = profile.validate(person, 'inv_result_message', payValidate, payValidate, '', true);
+                    let message = inclProfiles[this.#currentOrdinal].validate(null, 'inv_result_message', payValidate, payValidate, '', true);
                     if (message != '') {
                         this.#formValid = false;
                         this.#validateMessage += message;
@@ -299,21 +272,36 @@ class ExhibitorInvoice {
                 }
                 this.#currentOrdinal++;
             }
-
-
-            if (!this.#formValid) {
-                show_message('Please correct the items marked in yellow to process the payment.' + this.#invalidFields +
-                    '<br/>For fields in the membership area that are required and not available, use /r to indicate not available.',
-                    'warn', 'inv_result_message')
-                return;
-            }
-
-            processPay();
+            this.#currentType = 'a'
+            this.#currentOrdinal = 0;
         }
-        
-        // process payment
-        processPay() {
 
+        while (this.#currentOrdinal < this.#additionalMemberships) {
+            this.#currentPrefix = 'a_' + this.#currentOrdinal + '_';
+            if (document.getElementById(this.#currentPrefix + 'fname').value != '' ||
+                document.getElementById(this.#currentPrefix + 'lname').value != '') {
+                let message = addlProfiles[this.#currentOrdinal].validate(null, 'inv_result_message', payValidate, payValidate, '', true);
+                if (message != '') {
+                    this.#formValid = false;
+                    this.#validateMessage += message;
+                }
+            }
+            this.#currentOrdinal++;
+        }
+
+
+        if (!this.#formValid) {
+            show_message('Please correct the items marked in yellow to process the payment.' + this.#invalidFields +
+                '<br/>For fields in the membership area that are required and not available, use /r to indicate not available.',
+                'warn', 'inv_result_message')
+            return;
+        }
+
+        this.#processPay();
+    }
+
+    // process payment
+    processPay() {
         this.#payButton.disabled = true;
         var formArr = $('#vendor_invoice_form').serializeArray();
         var formData = {};
@@ -424,4 +412,8 @@ exhibitorInvoice = null;
 // init
 function exhibitorInvoiceOnLoad() {
     exhibitorInvoice = new ExhibitorInvoice();
+}
+
+function payValidate() {
+    this.exhibitorInvoice.payValidate();
 }

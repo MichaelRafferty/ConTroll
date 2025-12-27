@@ -2,23 +2,30 @@
  *  exhibitor portals - invoice processing
  */
 
-class Vendor_invoice {
+class VendorInvoice {
     // Items related to building and paying the vendor invoice
-    #vendorVnvoice = null;
+    #vendorInvoice = null;
     #regionYearId = null;
-    #membershipCostdiv = null;
+    #membershipCostDiv = null;
     #regionName = '';
     #includedMemberships = 0;
     #additionalMemberships = 0;
     #additionalCost = [];
     #totalSpacePrice = 0;
+    #currentPrefix = null;
+    #currentType = null;
+    #currentOrdinal = null;
+    #formValid = false;
+    #validateMessage = '';
+    #token = null;
+    #purchaseLabel = null;
 
     constructor() {
         let id = document.getElementById('vendor_invoice');
         if (id != null) {
-            this.#vendorVnvoice = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
+            this.#vendorInvoice = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
         }
-        this.#membershipCostdiv = document.getElementById("membershipCost");
+        this.#membershipCostDiv = document.getElementById("membershipCost");
     }
 
     // openInvoice: display the vendor invoice (and registration items)
@@ -32,30 +39,8 @@ class Vendor_invoice {
         this.#regionYearId = id;
         if (config['debug'] & 1)
             console.log("regionYearId: " + this.#regionYearId);
-        let region = exhibits_spaces[regionYearId];
-
-        let regionList = region_list[regionYearId];
-        /*
-        var portalName = 'Exhibitor';
-        var attendeeName = 'Exhibitor';
-        var attendeeNameLC = 'Exhibitors';
-        var portalType = regionList.portalType
-        switch (portalType) {
-            case 'artist':
-                portalName = 'Artist';
-                attendeeName = 'Artist';
-                attendeeNameLC = 'artist';
-                break;
-            case 'vendor':
-                portalName = 'Vendor';
-                attendeeName = 'Vendor';
-                attendeeNameLC = 'vendor';
-                break;
-        }
-
-        var mailin = exhibitor_info['mailin'];
-
-         */
+        let region = exhibits_spaces[this.#regionYearId];
+        let regionList = region_list[this.#regionYearId];
         if (config['debug'] & 1) {
             console.log("regionList");
             console.log(regionList);
@@ -71,7 +56,7 @@ class Vendor_invoice {
         document.getElementById("vendor_invoice_title").innerHTML = "<strong>Pay " + this.#regionName + ' Invoice</strong>';
 
         // refresh the items spaces purchased area
-        var ret = drawExhitorTopBlocks('You', exhibitor_spacelist, region, regionList, regionYearId,
+        var ret = drawExhitorTopBlocks('You', exhibitor_spacelist, region, regionList, this.#regionYearId,
             'vendor_inv_approved_for', 'vendor_inv_included', 'vendor_inv_included_mbr');
         this.#includedMemberships = ret[0];
         this.#additionalMemberships = ret[1];
@@ -81,8 +66,8 @@ class Vendor_invoice {
         document.getElementById('vendorSpacePrice').value = this.#totalSpacePrice;
         document.getElementById('vendor_inv_region_id').value = this.#regionYearId;
 
-        membershipCostdiv.hidden = (this.#includedMemberships == 0 && this.#additionalMemberships == 0);
-        vendor_invoice.show();
+        this.#membershipCostDiv.hidden = (this.#includedMemberships == 0 && this.#additionalMemberships == 0);
+        this.#vendorInvoice.show();
         setTimeout(() => {
             document.getElementById('agreeNone').focus({focusVisible: true});
         }, 600);
@@ -92,7 +77,7 @@ class Vendor_invoice {
     updateCost(regionYearId, item) {
         let regionList = region_list[regionYearId];
         let price = Number(regionList.additionalMemPrice);
-        let fname = document.getElementById('fname_a_' + item).value;
+        let fname = document.getElementById('a_' + item + '_fname').value;
         let cost = 0;
         this.#additionalCost[item] = fname == '' ? 0 : Number(regionList.additionalMemPrice);
         for (var num in this.#additionalCost) {
@@ -109,20 +94,94 @@ class Vendor_invoice {
 
     // submit the invoice for payment processing
     makePurchase(token, label) {
-        if (label && label != '') {
-            purchase_label = label;
-        }
-        if (!token)
-            token = 'test';
+        this.#token = token;
+        this.#purchaseLabel = label;
+        this.#currentOrdinal = 0;
+        this.#currentType = 'i';
+        this.payValidate();
+    }
 
-        if (token == 'test_ccnum') {  // this is the test form
-            token = document.getElementById(token).value;
+
+    payValidate() {
+        clear_message('inv_result_message');
+        this.#validateMessage = '';
+        if (this.#currentType == 'i') {
+            while (this.#currentOrdinal < this.#includedMemberships) {
+                this.#currentPrefix = 'i_' + this.#currentOrdinal + '_';
+                if (document.getElementById(this.#currentPrefix + 'fname').value != '' ||
+                    document.getElementById(this.#currentPrefix + 'lname').value != '') {
+                    let message = inclProfiles[this.#currentOrdinal].validate(null, 'inv_result_message', payValidate, payValidate, '', true);
+                    if (message != '') {
+                        this.#formValid = false;
+                        this.#validateMessage += '<br/>&nbsp;<br/>For included member ' +  (this.#currentOrdinal + 1) + message;
+                    }
+                }
+                this.#currentOrdinal++;
+            }
+            this.#currentType = 'a'
+            this.#currentOrdinal = 0;
         }
 
-        let submitId = document.getElementById(purchase_label);
+        while (this.#currentOrdinal < this.#additionalMemberships) {
+            this.#currentPrefix = 'a_' + this.#currentOrdinal + '_';
+            if (document.getElementById(this.#currentPrefix + 'fname').value != '' ||
+                document.getElementById(this.#currentPrefix + 'lname').value != '') {
+                let message = addlProfiles[this.#currentOrdinal].validate(null, 'inv_result_message', payValidate, payValidate, '', true);
+                if (message != '') {
+                    this.#formValid = false;
+                    this.#validateMessage += '<br/>&nbsp;<br/>For additional member ' +  (this.#currentOrdinal + 1) + message;
+                }
+            }
+            this.#currentOrdinal++;
+        }
+
+        let cc_fields = {
+            cc_fname: 'First Name',
+            cc_lname: 'Last Name',
+            cc_street: 'Street Address',
+            cc_city: 'City',
+            cc_state: 'State/Province',
+            cc_zip: 'Zip Code / Postal Code',
+            cc_phone: 'Phone Number',
+        };
+        let ccKeys = Object.keys(cc_fields);
+
+        for (let index = 0; index < ccKeys.length; index++) {
+            let field = document.getElementById(ccKeys[index]);
+            let value = field.value;
+            if (value == undefined || value == '') {
+                let name = cc_fields[ccKeys[index]];
+                this.#validateMessage += '<br/>The credit cart payment information field ' + name + ' is required and cannot be empty';
+                this.#formValid = false;
+                field.classList.add('need');
+            } else {
+                field.classList.remove('need');
+            }
+        }
+
+        if (!this.#formValid) {
+            show_message('Please correct the items marked in red to process the payment.' + this.#validateMessage, 'error', 'inv_result_message')
+            return;
+        }
+
+        this.processPay();
+    }
+
+    processPay() {
+        if (this.#purchaseLabel && this.#purchaseLabel != '') {
+            this.#purchaseLabel = 'unknown';
+        }
+        if (!this.#token)
+            this.#token = 'test';
+
+        if (this.#token == 'test_ccnum') {  // this is the test form
+            this.#token = document.getElementById(this.#token).value;
+        }
+
+        let submitId = document.getElementById(this.#purchaseLabel);
         submitId.disabled = true;
         let formData = $('#vendor_invoice_form').serialize()
-        formData += "&nonce=" + token;
+        formData += "&nonce=" + this.#token;
         clear_message('inv_result_message');
         $.ajax({
             url: 'scripts/spacePayment.php',
@@ -133,14 +192,14 @@ class Vendor_invoice {
                     console.log(data);
                 if (data['error']) {
                     show_message(data['error'], 'error', 'inv_result_message');
-                    let submitId = document.getElementById(purchase_label);
+                    let submitId = document.getElementById(this.#purchaseLabel);
                     submitId.disabled = false;
                 } else if (data['status'] == 'error') {
                     show_message(data['data'], 'error', 'inv_result_message');
-                    let submitId = document.getElementById(purchase_label);
+                    let submitId = document.getElementById(this.#purchaseLabel);
                     submitId.disabled = false;
                 } else if (data['status'] == 'success') {
-                    vendor_invoice.hide();
+                    this.#vendorInvoice.hide();
                     show_message(data['message'] + "<p>Welcome to " + config['label'] + " Exhibitor Space. You may contact " + config['vemail'] +
                         " with any questions.  One of our coordinators will be in touch to help you get setup.</p>");
                     if (data['exhibitor_spacelist']) {
@@ -149,7 +208,7 @@ class Vendor_invoice {
                     updatePaidStatusBlock();
                 } else {
                     show_message('There was an unexpected error, please email ' + config['vemail'] + ' to let us know.  Thank you.', 'error', 'inv_result_message');
-                    let submitId = document.getElementById(purchase_label);
+                    let submitId = document.getElementById(this.#purchaseLabel);
                     submitId.disabled = false;
                 }
             }
@@ -191,4 +250,18 @@ class Vendor_invoice {
         blockdiv.innerHTML = '<div class="col-sm-auto p-0">You have purchased:<br/>' + spaceStatus + "</div>";
 
     }
+}
+
+function updateCost(regionYearId, item) {
+    if (vendorInvoice == null)
+        return;
+
+    vendorInvoice.updateCost(regionYearId, item);
+}
+
+function payValidate() {
+    if (vendorInvoice == null)
+        return;
+
+    vendorInvoice.payValidate();
 }
