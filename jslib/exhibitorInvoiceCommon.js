@@ -13,7 +13,7 @@ function drawExhitorTopBlocks(name, exhibitor_spacelist, region, regionList, reg
     var regionName = regionList.name;
     var portalType = regionList.portalType
     var mailin = exhibitor_info['mailin'];
-    var tabindex = 100;
+    var tabindex = 10;
 
     var html = "You are approved for:<br/>\n";
     var exSpaceKeys = Object.keys(exhibitor_spacelist);
@@ -129,35 +129,45 @@ function drawExhitorTopBlocks(name, exhibitor_spacelist, region, regionList, reg
             html += "<p>In addition, all non-mail-in artists need to declare an on-site agent. " +
                 "This is the person that will be contacted if there are any issues with setup, operation, or teardown of your exhibit. " +
                 "The agent needs a membership, and you can be the agent.</p>" +
-                "<p><input type='radio' name='agent' id='agent_self' value='self' style='transform: scale(1.5);' tabindex=" + tabindex + ">" +
+                "<p><label for='agent_self'><span name='agent'>" +
+                "<input type='radio' name='agent' id='agent_self' value='self' style='transform: scale(1.5);' tabindex=" + tabindex + ">" +
                 "&nbsp;&nbsp;&nbsp;I will be my" +
-                " own agent and my membership is not one of the ones below.<br/>" +
+                " own agent and my membership is not one of the ones below.</span></label><br/>" +
+                "<label for='agent_first'><span name='agent'>" +
                 "<input type='radio' name='agent' id='agent_first' value='first' style='transform: scale(1.5);' tabindex=" + (tabindex + 2) + ">" +
-                "&nbsp;&nbsp;&nbsp;The first membership below is for myself or my agent.<br/>";
+                "&nbsp;&nbsp;&nbsp;The first membership below is for myself or my agent.</span></label><br/>";
             tabindex += 4;
 
             if (doTerms) {
                 var ry = exhibitor_regionyears[regionYearId];
             }
             if (doTerms && ry['perid']) {
-                html += "<input type='radio' name='agent' id='agent_perid' value='p" + ry['perid'] + "' style='transform: scale(1.5);'" +
-                    " tabindex=" + tabindex + ">&nbsp;&nbsp;&nbsp;Assign " + ry['p_first_name'] + ' ' + ry['p_last_name'] + ' as my agent.<br/>';
+                html += "<label for='agent_perid'><span name='agent'>" +
+                    "<input type='radio' name='agent' id='agent_perid' value='p" + ry['perid'] + "' style='transform: scale(1.5);'" +
+                    " tabindex=" + tabindex + ">&nbsp;&nbsp;&nbsp;Assign " + ry['p_first_name'] + ' ' + ry['p_last_name'] + ' as my agent.' +
+                    '</span></label><br/>';
             } else if (doTerms && ry['newperid']) {
-                html += "<input type='radio' name='agent' id='agent_newid' value='n" + ry['newperid'] + "' style='transform: scale(1.5);'" +
-                    " tabindex=" + tabindex + 2 + ">&nbsp;&nbsp;&nbsp;Assign " + ry['n_first_name'] + ' ' + ry['n_last_name'] + ' as my agent.<br/>';
+                html += "<label for='agent_newid'><span name='agent'>" +
+                    "<input type='radio' name='agent' id='agent_newid' value='n" + ry['newperid'] + "' style='transform: scale(1.5);'" +
+                    " tabindex=" + tabindex + 2 + ">&nbsp;&nbsp;&nbsp;Assign " + ry['n_first_name'] + ' ' + ry['n_last_name'] + ' as my agent.' +
+                    '</span></label><br/>';
             } else if (exhibitor_info['perid']) {
-                html += "<input type='radio' name='agent' id='agent_perid' value='p" + exhibitor_info['perid'] + "' style='transform: scale(1.5);'>&nbsp;&nbsp;&nbsp;Assign " +
-                    exhibitor_info['p_first_name'] + ' ' + exhibitor_info['p_last_name'] + ' as my agent.<br/>';
+                html += "<label for='agent_perid'><span name='agent'>" +
+                    "<input type='radio' name='agent' id='agent_perid' value='p" + exhibitor_info['perid'] + "' style='transform: scale(1.5);'>" +
+                    "&nbsp;&nbsp;&nbsp;Assign " + exhibitor_info['p_first_name'] + ' ' + exhibitor_info['p_last_name'] + ' as my agent.' +
+                    '</span></label><br/>';
             } else if (exhibitor_info['newperid']) {
-                html += "<input type='radio' name='agent' id='agent_newid' value='n" + exhibitor_info['newperid'] + "' style='transform: scale(1.5);'" +
+                html += "<label for='agent_newid'><span name='agent'>" +
+                    "<input type='radio' name='agent' id='agent_newid' value='n" + exhibitor_info['newperid'] + "' style='transform: scale(1.5);'" +
                     " tabindex=" + tabindex  + 2 + ">&nbsp;&nbsp;&nbsp;Assign " + exhibitor_info['n_first_name'] + ' ' + exhibitor_info['n_last_name'] +
-                    ' as my agent.<br/>';
+                    ' as my agent.</span></label><br/>';
             }
             tabindex += 10;
-            html += "<input type='radio' name='agent' id='agent_request' value='request' style='transform: scale(1.5);'" +
-                " tabindex=" + tabindex + ">&nbsp;&nbsp;&nbsp;Please assign my agent as per my request below.<br/>" +
+            html += "<label for='agent_request'><span name='agent'>" +
+                "<input type='radio' name='agent' id='agent_request' value='request' style='transform: scale(1.5);'" +
+                " tabindex=" + tabindex + ">&nbsp;&nbsp;&nbsp;Please assign my agent as per my request below.</span></label><br/>" +
                 "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" +
-                "<input type='text' name='agent_request' placeholder='Enter your agent request here if needed' size='120' tabindex=" + (tabindex + 2) +"></p>"
+                "<input type='text' name='agent_request' id='agent_request_text' placeholder='Enter your agent request here if needed' size='120' tabindex=" + (tabindex + 2) +"></p>"
             tabindex += 4;
         }
     }
@@ -182,7 +192,7 @@ function drawExhitorTopBlocks(name, exhibitor_spacelist, region, regionList, reg
             </div>
 `;
     }
-    tabinxdex = 200;
+    tabindex = 200;
     if (includedMemberships > 0) {
         html += "<input type='hidden' name='incl_mem_count' value='" + includedMemberships + "'>\n" +
             "<div class='container-fluid'>\n" +
@@ -343,7 +353,7 @@ function drawExhibitorMembershipBlock(label, mnum, prefix, country_options, regi
     html += `
         </div>
     </div>
-    <div class="col-sm-4" id="` + prefix + `uspsBlock"></div>
+    <div class="col-sm-4" id="` + prefix + `uspsblock"></div>
 </div>
 <div class="row">
     <div class="col-sm-12">
@@ -423,7 +433,8 @@ function drawExhibitorMembershipBlock(label, mnum, prefix, country_options, regi
     <div class='col-sm-12'>
     <p class='text-body'>
         <label>
-            <input type="checkbox" ` + checked + ' name="' + prefix + name + '" id="' + prefix + name + '" value="Y" tabindex="' + tabindex + `">
+            <input type="checkbox" ` + checked + ' name="' + prefix + 'p_' + name + '" id="' + prefix + 'p_' + name +
+                '" value="Y" tabindex="' + tabindex + `">
             <span id="l_` + prefix + name + '" name="l_' + prefix + name + '">' + prompt + `</span>
         </label>
 `;

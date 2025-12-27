@@ -71,6 +71,12 @@ class VendorInvoice {
         setTimeout(() => {
             document.getElementById('agreeNone').focus({focusVisible: true});
         }, 600);
+        $('#vendor_invoice_form input[type=text]').off('keypress');
+        $('#vendor_invoice_form input[type=text]').on('keypress', function (event) {
+            if (event.key == 'Enter') {
+                event.preventDefault();
+            }
+        });
     }
 
     // update invoice for the Cost of Memberships and total Cost when an additional member is started
@@ -98,6 +104,7 @@ class VendorInvoice {
         this.#purchaseLabel = label;
         this.#currentOrdinal = 0;
         this.#currentType = 'i';
+        this.#formValid = true;
         this.payValidate();
     }
 
@@ -105,6 +112,8 @@ class VendorInvoice {
     payValidate() {
         clear_message('inv_result_message');
         this.#validateMessage = '';
+        let numInclUsed = 0;
+        let numAddlUsed = 0;
         if (this.#currentType == 'i') {
             while (this.#currentOrdinal < this.#includedMemberships) {
                 this.#currentPrefix = 'i_' + this.#currentOrdinal + '_';
@@ -115,6 +124,7 @@ class VendorInvoice {
                         this.#formValid = false;
                         this.#validateMessage += '<br/>&nbsp;<br/>For included member ' +  (this.#currentOrdinal + 1) + message;
                     }
+                    numInclUsed++;
                 }
                 this.#currentOrdinal++;
             }
@@ -131,8 +141,51 @@ class VendorInvoice {
                     this.#formValid = false;
                     this.#validateMessage += '<br/>&nbsp;<br/>For additional member ' +  (this.#currentOrdinal + 1) + message;
                 }
+                numAddlUsed++;
             }
             this.#currentOrdinal++;
+        }
+
+        if (!this.#formValid)
+            this.#validateMessage += '<br/>&nbsp;';
+
+        if (this.#includedMemberships > 0 && numAddlUsed > 0 && numInclUsed == 0) {
+            this.#validateMessage += '<br>You must use all the included memberships before using any of the additional memberships.<br/>&nbsp;';
+            this.#formValid = false;
+        }
+
+        if (document.getElementById('agent_self')) {
+            // validate that an agent is selected
+            let agents = document.getElementsByName('agent');
+            let selAgent = document.querySelector('input[name="agent"]:checked');
+            let agentValue = '';
+            if (selAgent)
+                agentValue = selAgent.value;
+            if (agentValue == '') {
+                this.#validateMessage += '<br/>You must chose an on-site agent.';
+                this.#formValid = false;
+                for (let index = 0; index < agents.length; index++) {
+                    agents[index].classList.add('need');
+                }
+            } else {
+                for (let index = 0; index < agents.length; index++)
+                    agents[index].classList.remove('need');
+            }
+
+            let arRequest = document.getElementById('agent_request_text');
+            if (agentValue == 'request') {
+                let arText = arRequest.value;
+                if (arText == '') {
+                    this.#validateMessage += '<br/>You checked that you are making a special request for your agent, but the request field is blank.' +
+                        ' Please fill in your agent request.';
+                    this.#formValid = false;
+                    arRequest.classList.add('need');
+                } else {
+                    arRequest.classList.remove('need');
+                }
+            } else {
+                arRequest.classList.remove('need');
+            }
         }
 
         let cc_fields = {
@@ -168,7 +221,7 @@ class VendorInvoice {
     }
 
     processPay() {
-        if (this.#purchaseLabel && this.#purchaseLabel != '') {
+        if (!this.#purchaseLabel || this.#purchaseLabel == '') {
             this.#purchaseLabel = 'unknown';
         }
         if (!this.#token)
@@ -183,6 +236,8 @@ class VendorInvoice {
         let formData = $('#vendor_invoice_form').serialize()
         formData += "&nonce=" + this.#token;
         clear_message('inv_result_message');
+        let purchaseLabel = this.#purchaseLabel;
+        let hideElement = this.#vendorInvoice;
         $.ajax({
             url: 'scripts/spacePayment.php',
             method: 'POST',
@@ -192,14 +247,14 @@ class VendorInvoice {
                     console.log(data);
                 if (data['error']) {
                     show_message(data['error'], 'error', 'inv_result_message');
-                    let submitId = document.getElementById(this.#purchaseLabel);
+                    let submitId = document.getElementById(purchaseLabel);
                     submitId.disabled = false;
                 } else if (data['status'] == 'error') {
                     show_message(data['data'], 'error', 'inv_result_message');
-                    let submitId = document.getElementById(this.#purchaseLabel);
+                    let submitId = document.getElementById(purchaseLabel);
                     submitId.disabled = false;
                 } else if (data['status'] == 'success') {
-                    this.#vendorInvoice.hide();
+                    hideElement.hide();
                     show_message(data['message'] + "<p>Welcome to " + config['label'] + " Exhibitor Space. You may contact " + config['vemail'] +
                         " with any questions.  One of our coordinators will be in touch to help you get setup.</p>");
                     if (data['exhibitor_spacelist']) {
@@ -208,7 +263,7 @@ class VendorInvoice {
                     updatePaidStatusBlock();
                 } else {
                     show_message('There was an unexpected error, please email ' + config['vemail'] + ' to let us know.  Thank you.', 'error', 'inv_result_message');
-                    let submitId = document.getElementById(this.#purchaseLabel);
+                    let submitId = document.getElementById(purchaseLabel);
                     submitId.disabled = false;
                 }
             }

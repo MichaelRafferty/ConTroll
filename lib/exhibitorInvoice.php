@@ -24,7 +24,7 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $testsit
         $salesTaxId = escape_quotes($info['salesTaxId']);
         $contactEmail = escape_quotes($info['contactEmail']);
     }
-    $tabindex = 250;
+    $tabindex = 50;
     $currency = getConfValue('con', 'currency', 'USD');
     $curLocale = locale_get_default();
     $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);

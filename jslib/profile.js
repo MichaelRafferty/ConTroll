@@ -24,7 +24,6 @@ class Profile {
     #ageText = null;
     #memberAge = '';
     #uspsDiv= null;
-    #newPolicies = null;
     #email1Input = true;
 
 // online reg - membership filtering
@@ -323,10 +322,6 @@ class Profile {
         this.#formData = person;
         this.#formDataSave = person;
 
-        if (person.country == 'USA') {
-            message += "<br/>Note: If any of the address fields Address, City, State/Prov or Zip/PC are used and the country is United States, " +
-                "then the Address, City, State, and Zip fields must all be entered and the state field must be a valid USPS two character state code.";
-        }
         // validation
         if (required != '') {
             // first name is required
@@ -426,13 +421,12 @@ class Profile {
         }
 
         // now verify required policies
-        if (policies) {
-            this.#newPolicies = URLparamsToArray($('#' + this.#prefix + 'editPolicies').serialize());
+        if (policies) {;
             for (let row in policies) {
                 let policy = policies[row];
                 if (policy.required == 'Y') {
                     let field = '#l_' + this.#prefix + policy.policy;
-                    if (typeof this.#newPolicies['p_' + this.#prefix + policy.policy] === 'undefined') {
+                    if (!document.getElementById(this.#prefix + 'p_' + policy.policy).checked) {
                         if (this.#alertType == 'warn')
                             message += '<br/>The required policy, ' + policy.policy + ', is not checked.';
                         else
@@ -448,11 +442,17 @@ class Profile {
 
         // don't continue to process if any are missing
         if (!valid) {
+            if (person.country == 'USA') {
+                message += "<br/>Note: If any of the address fields Address, City, State/Prov or Zip/PC are used and the country is United States, " +
+                    "then the Address, City, State, and Zip fields must all be entered and the state field must be a valid USPS two character state code.";
+            }
+
             if (multiUse)
                 return message;
 
             show_message("Please correct the items highlighted in " + this.#alertName + " and validate again.<br/>" + message,
                 this.#alertType, messageDiv);
+
             return false;
         }
 
