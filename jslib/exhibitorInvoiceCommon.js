@@ -400,5 +400,60 @@ function drawExhibitorMembershipBlock(label, mnum, prefix, country_options, regi
     </div>
 </div>
 `;
+    if (policies == null || policies.length == 0)
+        return html;
+
+    if (policyHeader && policyHeader != '') {
+        html += '<div class="row">\n<div class="col-sm-auto">' + policyHeader + "</div>\n</div>\n";
+    }
+    for (let index = 0; index < policies.length; index++) {
+        let policy = policies[index];
+        let prompt = policy['prompt'];
+        let name = policy['policy'];
+        let description = policy['description'];
+        if (prompt.match(/<a href/))
+            prompt = prompt.replace(/(<a href=[^>]*)/g, '$1 tabindex="' + (tabindex + 1) + '"');
+        if (description.match(/<a href/))
+            description = description.replace(/(<a href=[^>]*)/g, '$1 tabindex="' + (tabindex + 3) + '"');
+        if (policy.required == 'Y')
+            prompt = "<span class='text-danger'>&bigstar;</span>" + prompt;
+        let checked = policy.defaultValue == 'Y' ? 'checked' : '';
+        html += `
+ <div class='row'>
+    <div class='col-sm-12'>
+    <p class='text-body'>
+        <label>
+            <input type="checkbox" ` + checked + ' name="' + prefix + name + '" id="' + prefix + name + '" value="Y" tabindex="' + tabindex + `">
+            <span id="l_` + prefix + name + '" name="l_' + prefix + name + '">' + prompt + `</span>
+        </label>
+`;
+        if (description != '') {
+            html += `
+        <span class="small">
+            <a href="javascript:void(0)" onClick='$("#` + prefix + name + `Tip").toggle();'>
+                <img src="/lib/infoicon.png"  alt="click this info icon for more information" style="max-height: 25px;"
+                    tabindex="` + (tabindex + 2) + `"/>
+            </a>
+        </span>
+    </p>
+    <div id="` + prefix + name + `Tip" class="padded highlight" style="display:none">
+        <p class="text-body">` + description + `
+        <span class="small">
+            <a href="javascript:void(0)" onClick='$("#` + prefix + name + `Tip").toggle()'>
+                <img src="/lib/closeicon.png" alt="click this close icon to close the more information window" style="max-height: 25px;"
+                     tabindex="` + (tabindex + 3) + `"/>
+                </a>
+            </span>
+        </p>
+    </div>
+    `;
+        }
+    tabindex += 5;
+    }
+
+    if (policyFooter && policyFooter != '') {
+        html += '<div class="row">\n<div class="col-sm-auto">' + policyFooter + "</div>\n</div>\n";
+    }
+
     return html;
 }

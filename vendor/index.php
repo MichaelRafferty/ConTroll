@@ -468,6 +468,15 @@ foreach ($ageList as $age) {
     $ageOptions .= '<option value="' . escape_quotes($age['ageType']) . '">' . $age['shortname'] . ' ['.$age['label'] . ']</option>' . PHP_EOL;
 }
 $policies = getPolicies();
+if ($policies != null && count($policies) > 0) {
+    loadCustomText('exhibitor', 'profile', getConfValue('vendor', 'customtext', 'production'), true);
+    $header = returnCustomText('policies/header', 'exhibitor/profile/');
+    $footer = returnCustomText('policies/footer', 'exhibitor/profile/');
+    foreach ($policies as $index => $policy) {
+        $policies[$index]['prompt'] = replaceVariables($policy['prompt']);
+        $policies[$index]['description'] = replaceVariables($policy['description']);
+    }
+}
 ?>
 <script type='text/javascript'>
     var config = <?php echo json_encode($config_vars); ?>;
@@ -483,6 +492,8 @@ $policies = getPolicies();
     var ageListIdx = <?php echo json_encode($ageListIdx); ?>;
     var ageOptions = <?php echo json_encode($ageOptions); ?>;
     var policies = <?php echo json_encode($policies); ?>;
+    var policyHeader = <?php echo json_encode($header); ?>;
+    var policyFooter = <?php echo json_encode($footer); ?>;
     </script>
 <?php
 draw_registrationModal($portalType, $portalName, $con, $countryOptions);
