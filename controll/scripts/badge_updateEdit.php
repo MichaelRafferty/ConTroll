@@ -48,17 +48,24 @@ $country = $_POST['country'] == null ? '' : trim($_POST['country']);
 $email_addr = $_POST['emailAddr'] == null ? '' : trim($_POST['emailAddr']);
 $phone = $_POST['phone'] == null ? '' : trim($_POST['phone']);
 
+$age = $_POST['currentAgeType'];
+if ($age == '') {
+    $currentAgeConid = null;
+    $age = null;
+} else
+    $currentAgeConid = $conid;
+
 $uP = <<<EOS
 UPDATE perinfo
 SET last_name = ?, first_name = ?, middle_name = ?, suffix = ?, email_addr = ?, phone = ?, badge_name = ?, badgeNameL2 = ?, pronouns = ?,
-    address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?, updatedBy = ?, 
+    address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?, updatedBy = ?, currentAgeType = ?, currentAgeConId = ?,
     lastVerified = NULL, update_date = NOW(), change_notes = CONCAT(change_notes, '<br/>Updated by Free Badge Edit screen')
 WHERE id = ?;
 EOS;
 
-$typeStr = 'sssssssssssssssii';
+$typeStr = 'sssssssssssssssisii';
 $valArray = array($last_name, $first_name, $middle_name, $suffix, $email_addr, $phone, $badge_name, $badgeNameL2, $pronouns, $address, $addr_2,
-    $city, $state, $zip, $country, $updatedBy, $perid);
+    $city, $state, $zip, $country, $updatedBy, $age, $currentAgeConid, $perid);
 
 $upd = dbSafeCmd($uP, $typeStr, $valArray);
 if ($upd === false) {
