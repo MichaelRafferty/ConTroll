@@ -494,7 +494,7 @@ if ($policies != null && count($policies) > 0) {
     var policies = <?php echo json_encode($policies); ?>;
     var policyHeader = <?php echo json_encode($header); ?>;
     var policyFooter = <?php echo json_encode($footer); ?>;
-    </script>
+</script>
 <?php
 draw_registrationModal($portalType, $portalName, $con, $countryOptions);
 draw_passwordModal();
