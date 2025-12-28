@@ -461,7 +461,7 @@ class Profile {
             this.#stateField.value != '/r') {
             let data = this.#formData;
             data.source = 'login';
-            let _this = this;
+            data.prefix = this.#prefix;
             $.ajax({
                 url: "scripts/uspsCheck.php",
                 data: data,
@@ -479,12 +479,12 @@ class Profile {
 
                     profile.showValidatedAddress(data);
                 },
-                error: function (jqXHR, textstatus, errorThrown) {
+                error: function (jqXHR, textStatus, errorThrown) {
                     show_message("ERROR! " + textStatus + ' ' + errorThrown + '<br/>Seek Assistance.', 'error', messageDiv);
                 },
             });
             if (multiUse)
-                return message;
+                return 'stop';
             return false;
         }
         if (multiUse)

@@ -9,6 +9,7 @@ var exhibitorProfile = null;
 var si_password = null;
 var currencyFmt = null;
 var vendorInvoice = null;
+var profile = null;
 
 // initial setup
 window.onload = function () {

@@ -108,6 +108,11 @@ class VendorInvoice {
         this.payValidate();
     }
 
+    incrPayValidate() {
+        // skip over the current one, it passed
+        this.#currentOrdinal++;
+        this.payValidate();
+    }
 
     payValidate() {
         clear_message('inv_result_message');
@@ -119,7 +124,10 @@ class VendorInvoice {
                 this.#currentPrefix = 'i_' + this.#currentOrdinal + '_';
                 if (document.getElementById(this.#currentPrefix + 'fname').value != '' ||
                     document.getElementById(this.#currentPrefix + 'lname').value != '') {
-                    let message = inclProfiles[this.#currentOrdinal].validate(null, 'inv_result_message', payValidate, payValidate, '', true);
+                    profile = inclProfiles[this.#currentOrdinal];
+                    let message = profile.validate(null, 'inv_result_message', incrPayValidate, payValidate, '', true);
+                    if (message == 'stop') // usps is doing it's work, don't proceed
+                        return;
                     if (message != '') {
                         this.#formValid = false;
                         this.#validateMessage += '<br/>&nbsp;<br/>For included member ' +  (this.#currentOrdinal + 1) + message;
@@ -136,7 +144,11 @@ class VendorInvoice {
             this.#currentPrefix = 'a_' + this.#currentOrdinal + '_';
             if (document.getElementById(this.#currentPrefix + 'fname').value != '' ||
                 document.getElementById(this.#currentPrefix + 'lname').value != '') {
-                let message = addlProfiles[this.#currentOrdinal].validate(null, 'inv_result_message', payValidate, payValidate, '', true);
+                profile = addlProfiles[this.#currentOrdinal];
+                let message = profile.validate(null, 'inv_result_message', incrPayValidate, payValidate, '', true);
+                if (message == 'stop') // usps is doing it's work, don't proceed
+                    return;
+
                 if (message != '') {
                     this.#formValid = false;
                     this.#validateMessage += '<br/>&nbsp;<br/>For additional member ' +  (this.#currentOrdinal + 1) + message;
@@ -319,4 +331,18 @@ function payValidate() {
         return;
 
     vendorInvoice.payValidate();
+}
+
+function incrPayValidate() {
+    if (vendorInvoice == null)
+        return;
+
+    vendorInvoice.incrPayValidate();
+}
+
+function updatePaidStatusBlock() {
+    if (vendorInvoice == null)
+        return;
+
+    vendorInvoice.updatePaidStatusBlock();
 }

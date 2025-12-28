@@ -59,7 +59,7 @@ if (array_key_exists('location_' . $portalType, $cc)) {
 }
 
 $regionYearId = $_POST['regionYearId'];
-if (array_key_exists('salesTaxId', $_POST)) {
+if (array_key_exists('requests', $_POST)) {
     $specialRequests = trim($_POST['requests']);
     if ($specialRequests == '')
         $specialRequests = null;
@@ -857,7 +857,6 @@ function buildBadge($fields, $type, $index, $region, $conid, $transId, $portalNa
     foreach ($fields as $field => $required) {
         $badge[$field] = trim($_POST[$prefix . $field]);
     }
-    $badge['age'] = 'all';
     $badge['price'] = $memprice;
     $badge['memId'] = $memid;
     $badge['label'] = $label;
