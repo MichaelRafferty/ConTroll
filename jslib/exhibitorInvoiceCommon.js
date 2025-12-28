@@ -435,7 +435,7 @@ function drawExhibitorMembershipBlock(label, mnum, prefix, country_options, regi
         <label>
             <input type="checkbox" ` + checked + ' name="' + prefix + 'p_' + name + '" id="' + prefix + 'p_' + name +
                 '" value="Y" tabindex="' + tabindex + `">
-            <span id="l_` + prefix + name + '" name="l_' + prefix + name + '">' + prompt + `</span>
+            <span id="` + prefix + 'l_' + name + '" name="' + prefix + 'l_' + name + '">' + prompt + `</span>
         </label>
 `;
         if (description != '') {

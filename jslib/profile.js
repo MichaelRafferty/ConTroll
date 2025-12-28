@@ -425,16 +425,16 @@ class Profile {
             for (let row in policies) {
                 let policy = policies[row];
                 if (policy.required == 'Y') {
-                    let field = '#l_' + this.#prefix + policy.policy;
+                    let field = document.getElementById(this.#prefix + 'l_' + policy.policy);
                     if (!document.getElementById(this.#prefix + 'p_' + policy.policy).checked) {
                         if (this.#alertType == 'warn')
                             message += '<br/>The required policy, ' + policy.policy + ', is not checked.';
                         else
                             message += '<br/>You cannot continue until you agree to the ' + policy.policy + ' policy.';
-                        $(field).addClass(this.#alert);
+                        field.classList.add(this.#alert);
                         valid = false;
                     } else {
-                        $(field).removeClass(this.#alert);
+                        field.classList.remove(this.#alert);
                     }
                 }
             }
@@ -583,6 +583,9 @@ class Profile {
         this.#badgenameL2Field.value = '';
         this.#ageField.value = '';
         this.#memberAge = '';
+        this.#ageText.hidden = true;
+        this.#ageDiv.hidden = true;
+        this.#ageField.hidden = false;
 
         this.#fnameField.classList.remove(this.#alert);
         this.#lnameField.classList.remove(this.#alert);
@@ -596,7 +599,7 @@ class Profile {
         if (typeof policies !== 'undefined') {
             for (let row in policies) {
                 let policy = policies[row];
-                let field = '#p_' + this.#prefix + policy.policy;
+                let field = '#' + this.#prefix + 'p_' + policy.policy;
                 $(field).prop('checked', policy.defaultValue == 'Y');
             }
         }

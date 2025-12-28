@@ -384,7 +384,7 @@ class Find {
                 if (response === null || response === undefined) {
                     response = policy.defaultValue;
                 }
-                document.getElementById('p_f_' + policy.policy).checked = response == 'Y';
+                document.getElementById('f_p_' + policy.policy).checked = response == 'Y';
             }
         }
 
@@ -942,7 +942,7 @@ class Find {
             var newPolicies = {};
             for (i = 0; i < keys.length; i++) {
                 var policy = this.#memberPolicies[keys[i]];
-                if (document.getElementById('p_f_' + policy.policy).checked) {
+                if (document.getElementById('f_p_' + policy.policy).checked) {
                     newPolicies['p_' + policy.policy] = 'Y';
                 }
             }

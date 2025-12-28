@@ -66,9 +66,9 @@ function drawPoliciesBlock($policies, $tabIndexStart, $idPrefix = '') {
     <div class='col-sm-12'>
         <p class='text-body'>
             <label>
-                <input type='checkbox' <?php echo $checked; ?> name='p_<?php echo $idPrefix . $name;?>' id='p_<?php echo $idPrefix . $name;?>' value='Y'
-                       tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
-                <span id="l_<?php echo $idPrefix . $name;?>" name="l_<?php echo $idPrefix . $name;?>"><?php echo $prompt; ?></span>
+                <input type='checkbox' <?php echo $checked; ?> name='<?php echo $idPrefix . 'p_' . $name;?>'
+                       id='<?php echo $idPrefix . 'p_' .$name;?>' value='Y' tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
+                <span id="<?php echo $idPrefix . 'l_' . $name;?>" name="<?php echo $idPrefix . 'l_' . $name;?>"><?php echo $prompt; ?></span>
             </label>
             <?php if ($description != '') { ?>
             <span class="small"><a href='javascript:void(0)' onClick='$("#<?php echo $idPrefix . $name;?>Tip").toggle()'>
@@ -158,7 +158,7 @@ EOS;
     $oldPolicies = array();
     if (is_array($oldPoliciesArr)) {
         foreach ($oldPoliciesArr as $oldPolicy) {
-            $oldPolicies['p_' . $oldPolicy['policy']] = $oldPolicy;
+            $oldPolicies[$prefix . 'p_' . $oldPolicy['policy']] = $oldPolicy;
         }
     }
 
@@ -169,8 +169,8 @@ EOS;
             $oldId = null;
             $new = '';
             $defaultValue = $policy['defaultValue'];
-            if (array_key_exists('p_' . $policy['policy'], $oldPolicies)) {
-                $old = $oldPolicies['p_' . $policy['policy']];
+            if (array_key_exists($prefix . 'p_' . $policy['policy'], $oldPolicies)) {
+                $old = $oldPolicies[$prefix .'p_' . $policy['policy']];
                 if (array_key_exists('response', $old)) {
                     $oldResponse = $old['response'];
                     if ($oldResponse == null)
@@ -180,8 +180,8 @@ EOS;
                     $oldId = $old['id'];
                 }
             }
-            if (array_key_exists('p_' . $prefix . $policy['policy'], $newPolicies))
-                $new = $newPolicies['p_' . $prefix . $policy['policy']];
+            if (array_key_exists($prefix . 'p_' . $policy['policy'], $newPolicies))
+                $new = $newPolicies[$prefix . 'p_' . $policy['policy']];
             else
                 $new = 'N'; // unchecked are 'N', and the array only returns checked ones.
 
