@@ -421,7 +421,7 @@ class Profile {
         }
 
         // now verify required policies
-        if (policies) {;
+        if (policies) {
             for (let row in policies) {
                 let policy = policies[row];
                 if (policy.required == 'Y') {
