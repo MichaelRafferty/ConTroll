@@ -608,7 +608,6 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     $rtn['paymentType'] = $paymentType;
     $rtn['preTaxAmt'] = $ccParams['preTaxAmt'];
     $rtn['taxAmt'] = $ccParams['taxAmt'];
-    $rtn['taxes'] = $ccParams['taxes'];
     $rtn['auth'] = $auth;
     $rtn['paymentId'] = $id;
     $rtn['last4'] = $last4;
