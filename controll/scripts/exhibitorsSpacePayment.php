@@ -868,72 +868,32 @@ function buildBadge($fields, $type, $index, $region, $conid, $transid, $portalNa
     $badge['glNum'] = $glNum;
     $badge['index'] = $index + 1;
 
-// now resolve exact matches in perinfo
-    $exactMsql = <<<EOF
-SELECT id
-FROM perinfo p
-WHERE
-	REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.first_name)), ' +', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.middle_name)), ' +', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.last_name)), ' +', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.suffix)), ' +', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.email_addr)), ' +', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.phone)), ' +', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.badge_name)), ' +', ' ')
-  	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.badgeNameL2)), ' +', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.address)), ' +', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.addr_2)), ' +', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.city)), ' +', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.state)), ' +', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.zip)), ' +', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.country)), ' +', ' ');
-EOF;
-    $value_arr = array($badge['fname'], $badge['mname'], $badge['lname'], $badge['suffix'], $badge['email'], $badge['phone'],
-        $badge['badge_name'], $badge['badgeNameL2'],
-        $badge['addr'], $badge['addr2'], $badge['city'], $badge['state'], $badge['zip'], $badge['country']);
-    $res = dbSafeQuery($exactMsql, 'ssssssssssssss', $value_arr);
-    if ($res !== false) {
-        if ($res->num_rows > 0) {
-            $match = $res->fetch_assoc();
-            $id = $match['id'];
-        } else {
-            $id = null;
-        }
-    } else {
-        $id = null;
-    }
-    $badge['perid'] = $id;
     $legalName = $badge['legalName'];
     if ($legalName == null || $legalName == '') {
         $legalName = trim($badge['fname']  . ($badge['mname'] == '' ? ' ' : ' ' . $badge['mname'] . ' ' ) . $badge['lname'] . ' ' . $badge['suffix']);
     }
 
+    if ($badge['currentAgeType'] == null || $badge['currentAgeType'] == '') {
+        $currentAgeType = $badge['currentAgeType'];
+        $currentAgeConid = $conid;
+    } else {
+        $currentAgeType = null;
+        $currentAgeConid = null;
+    }
+
     $value_arr = array($badge['lname'], $badge['mname'], $badge['fname'], $badge['suffix'], $legalName, $badge['email'], $badge['phone'],
         $badge['badge_name'], $badge['badgeNameL2'],
-        $badge['addr'], $badge['addr2'], $badge['city'], $badge['state'], $badge['zip'], $badge['country'], $badge['contact'], $badge['share'], $id);
+        $badge['addr'], $badge['addr2'], $badge['city'], $badge['state'], $badge['zip'], $badge['country'], $badge['contact'], $badge['share'],
+        $currentAgeType, $currentAgeConid);
 
     $insertQ = <<<EOS
 INSERT INTO newperson(last_name, middle_name, first_name, suffix, legalName, email_addr, phone, badge_name, badgeNameL2,
-                      address, addr_2, city, state, zip, country, contact_ok, share_reg_ok, perid)
+                      address, addr_2, city, state, zip, country, contact_ok, share_reg_ok, currentAgeType, currentAgeConid)
     VALUES(IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''),
-     IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), ?, ?, ?);
+     IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), ?, ?, ?, ?);
 EOS;
 
-    $newid = dbSafeInsert($insertQ, 'sssssssssssssssssi', $value_arr);
+    $newid = dbSafeInsert($insertQ, 'ssssssssssssssssssi', $value_arr);
     $badge['error'] = '';
     if ($newid === false) {
         $badge['error'] .= 'Add of person of badge for ' . $badge['fname'] . ' ' . $badge['lname'] . " failed.\n";
@@ -943,11 +903,11 @@ EOS;
     // if no tranasction yet, insert one
     if ($transid == null) {
         $transQ = <<<EOS
-INSERT INTO transaction(newperid, perid, price, tax, withtax, type, conid)
-    VALUES(?, ?, ?, ?, ?, ?, ?);
+INSERT INTO transaction(newperid,  price, tax, withtax, type, conid)
+    VALUES(?, ?, ?, ?, ?, ?);
 EOS;
 
-        $transid = dbSafeInsert($transQ, 'iidddsi', array($newid, $id, $region['price'], 0, $region['price'], $portalName, $conid));
+        $transid = dbSafeInsert($transQ, 'idddsi', array($newid, $region['price'], 0, $region['price'], $portalName, $conid));
         if ($transid === false) {
             $badge['error'] .= 'Add of transaction for ' . $badge['fname'] . ' ' . $badge['lname'] . " failed.\n";
         }
@@ -963,13 +923,12 @@ EOS;
     dbSafeCmd("UPDATE newperson SET transid=? WHERE id = ?;", 'ii', array($badge['transid'], $badge['newperid']));
 
     $badgeQ = <<<EOS
-INSERT INTO reg(conid, newperid, perid, create_trans, price, status, memID)
-VALUES(?, ?, ?, ?, ?, ?, ?);
+INSERT INTO reg(conid, newperid, create_trans, price, status, memID)
+VALUES(?, ?, ?, ?, ?, ?);
 EOS;
-    $badgeId = dbSafeInsert($badgeQ,  'iiiidsi', array(
+    $badgeId = dbSafeInsert($badgeQ,  'iiidsi', array(
             $conid,
             $badge['newperid'],
-            $badge['perid'],
             $transid,
             $badge['price'],
             $badge['price'] > 0 ? 'unpaid' : 'paid',

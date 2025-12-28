@@ -330,11 +330,17 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $testsit
                                 </div>
                             </div>
                         </div>
-                        <div class='row mt-3'>
+                        <div class='row mt-3 pb-2'>
                             <div class='col-sm-2 ms-0 me-2 p-0'>&nbsp;</div>
                             <div class='col-sm-auto ms-0 me-2 p-0'>
                                 <button class='btn btn-primary btn-sm' type='button' id='pay-btn-pay' disabled
                                         onclick="exhibitorInvoice.pay();" tabindex="<?php echo $tabindex; $tabindex += 2;?>">Confirm Pay</button>
+                            </div>
+                            <div class='col-sm-auto ms-0 me-2 p-0'>
+                                <button class='btn btn-warning btn-sm' type='button' id='pay-override-pay' hidden disabled
+                                        onclick='exhibitorInvoice.processPay();' tabindex="<?php echo $tabindex;
+                                    $tabindex += 2; ?>">Overide Validation and Pay
+                                </button>
                             </div>
                             <div class='col-sm-auto ms-0 me-2 p-0'>
                                 <button class='btn btn-primary btn-sm' type='button' id='pay-btn-ercpt'

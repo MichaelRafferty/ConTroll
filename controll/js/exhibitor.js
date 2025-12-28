@@ -16,6 +16,9 @@ exhibitorsData = null;
 customText = null;
 configEditor = null;
 checkConfigReload = true;
+var currencyFmt = null;
+var vendorInvoice = null;
+var profile = null;
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -82,6 +85,10 @@ class exhibitorsAdm {
         this.#conid = conid;
         this.#message_div = document.getElementById('test');
         this.#result_message_div = document.getElementById('result_message');
+        currencyFmt = new Intl.NumberFormat(config.locale, {
+            style: 'currency',
+            currency: config.currency,
+        });
 
         if (this.#debug & 1) {
             console.log("Debug = " + debug);

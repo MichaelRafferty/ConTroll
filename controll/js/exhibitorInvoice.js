@@ -4,6 +4,7 @@ class ExhibitorInvoice {
     #totalSpacePrice = 0;
     #regionYearId = null;
     #exhibitorId = null;
+    #exhibitorName = '';
     #exhibitorYearId = null;
     #membershipCostdiv = null;
     #mailin = null;
@@ -14,6 +15,7 @@ class ExhibitorInvoice {
     #payCheckno = null;
     #payCcauth = null;
     #payButton = null;
+    #overrideButton = null;
     #payAmt = null;
     #totalInvCost = null;
     #totalMembershipCost = null;
@@ -47,6 +49,7 @@ class ExhibitorInvoice {
         this.#payCcauth = document.getElementById('pay-ccauth');
         this.#payDescription = document.getElementById('pay-desc');
         this.#payButton = document.getElementById('pay-btn-pay');
+        this.#overrideButton = document.getElementById('pay-override-pay');
         this.#payAmt = document.getElementById('pay-amt');
         this.#totalInvCost = document.getElementById('vendor_inv_cost');
         this.#totalMembershipCost = document.getElementById('vendor_inv_mbr_cost');
@@ -54,6 +57,8 @@ class ExhibitorInvoice {
         this.#paymentDiv = document.getElementById('paymentDiv');
 
         this.#totalAmountDue = 0;
+        //this.#overrideButton.hidden = true;
+        this.#overrideButton.disabled = true;
     }
 
 // update showing the pay button and the payment fields
@@ -85,16 +90,15 @@ class ExhibitorInvoice {
         var portalName = 'ConTroll';
         var attendeeName = 'Exhibitor';
         var attendeeNameLC = 'Exhibitors';
-        this.#portalType = regionList.portalType
-        var exhibitorName = exhibitor_info.exhibitorName;
+        this.#portalType = regionList.portalType;
+        this.#exhibitorName = exhibitor_info.exhibitorName;
         switch (this.#portalType) {
             case 'artist':
                 portalName = 'Artist';
                 attendeeName = 'Artist';
                 attendeeNameLC = 'artist';
-                exhibitorName = exhibitor_info.artistName;
-                if (exhibitorName == null || exhibitorName == '') {
-                    exhibitorName = exhibitor_info.exhibitorName;
+                if (exhibitor_info.artistName != null && exhibitor_info.artistName != '') {
+                    this.#exhibitorName = exhibitor_info.artistName;
                 }
                 break;
             case 'vendor':
@@ -117,7 +121,7 @@ class ExhibitorInvoice {
         // refresh the items spaces purchased area
         var ret = drawExhitorTopBlocks('You', exhibitor_spacelist, region, regionList, this.#regionYearId,
             'vendor_inv_approved_for', 'vendor_inv_included', 'vendor_inv_included_mbr',
-            false);
+            false, 'warncolor');
         this.#includedMemberships = ret[0];
         this.#additionalMemberships = ret[1];
         spacePriceName = ret[2];
@@ -137,7 +141,7 @@ class ExhibitorInvoice {
 // update invoice for the Cost of Memberships and total Cost when an additional member is started
     updateCost(regionYearId, item) {
         var regionList = region_list[regionYearId];
-        var fname = document.getElementById('a_' + item + '_fname).value;
+        var fname = document.getElementById('a_' + item + '_fname').value;
         this.#totalAmountDue = 0;
         this.#additionalCost[item] = fname == '' ? 0 : Number(regionList.additionalMemPrice);
         for (var num in this.#additionalCost) {
@@ -254,20 +258,57 @@ class ExhibitorInvoice {
 
         this.#currentOrdinal = 0;
         this.#currentType = 'i';
-        this.#payValidate();
+        this.payValidate();
     }
         
     // now validate the membership fields
     payValidate() {
+        if (document.getElementById('agent_self')) {
+            // validate that an agent is selected
+            let agents = document.getElementsByName('agent');
+            let selAgent = document.querySelector('input[name="agent"]:checked');
+            let agentValue = '';
+            if (selAgent)
+                agentValue = selAgent.value;
+            if (agentValue == '') {
+                this.#validateMessage += '<br/>You must chose an on-site agent.';
+                this.#formValid = false;
+                for (let index = 0; index < agents.length; index++) {
+                    agents[index].classList.add('warncolor');
+                }
+            } else {
+                for (let index = 0; index < agents.length; index++)
+                    agents[index].classList.remove('warncolor');
+            }
+
+            let arRequest = document.getElementById('agent_request_text');
+            if (agentValue == 'request') {
+                let arText = arRequest.value;
+                if (arText == '') {
+                    this.#validateMessage += '<br/>You checked that you are making a special request for your agent, but the request field is blank.' +
+                        ' Please fill in your agent request.';
+                    this.#formValid = false;
+                    arRequest.classList.add('warncolor');
+                } else {
+                    arRequest.classList.remove('warncolor');
+                }
+            } else {
+                arRequest.classList.remove('warncolor');
+            }
+        }
+
         if (this.#currentType == 'i') {
             while (this.#currentOrdinal < this.#includedMemberships) {
                 this.#currentPrefix = 'i_' + this.#currentOrdinal + '_';
                 if (document.getElementById(this.#currentPrefix + 'fname').value != '' ||
                     document.getElementById(this.#currentPrefix + 'lname').value != '') {
-                    let message = inclProfiles[this.#currentOrdinal].validate(null, 'inv_result_message', payValidate, payValidate, '', true);
+                    profile = inclProfiles[this.#currentOrdinal];
+                    let message = inclProfiles[this.#currentOrdinal].validate(null, 'inv_result_message', incrPayValidate, payValidate, '', true);
+                    if (message == 'stop') // usps is doing it's work, don't proceed
+                        return;
                     if (message != '') {
                         this.#formValid = false;
-                        this.#validateMessage += message;
+                        this.#validateMessage += '<br/>&nbsp;<br/>For included member ' +  (this.#currentOrdinal + 1) + message;
                     }
                 }
                 this.#currentOrdinal++;
@@ -280,29 +321,40 @@ class ExhibitorInvoice {
             this.#currentPrefix = 'a_' + this.#currentOrdinal + '_';
             if (document.getElementById(this.#currentPrefix + 'fname').value != '' ||
                 document.getElementById(this.#currentPrefix + 'lname').value != '') {
-                let message = addlProfiles[this.#currentOrdinal].validate(null, 'inv_result_message', payValidate, payValidate, '', true);
+                profile = addlProfiles[this.#currentOrdinal];
+                let message = addlProfiles[this.#currentOrdinal].validate(null, 'inv_result_message', incrPayValidate, payValidate, '', true);
+                if (message == 'stop') // usps is doing it's work, don't proceed
+                    return;
                 if (message != '') {
                     this.#formValid = false;
-                    this.#validateMessage += message;
+                    this.#validateMessage += '<br/>&nbsp;<br/>For additional member ' +  (this.#currentOrdinal + 1) + message;
                 }
             }
             this.#currentOrdinal++;
         }
 
-
         if (!this.#formValid) {
             show_message('Please correct the items marked in yellow to process the payment.' + this.#invalidFields +
                 '<br/>For fields in the membership area that are required and not available, use /r to indicate not available.',
                 'warn', 'inv_result_message')
+            this.#overrideButton.hidden = false;
+            this.#overrideButton.disabled = false;
             return;
         }
 
-        this.#processPay();
+        this.processPay();
+    }
+
+    incrPayValidate() {
+        // skip over the current one, it passed
+        this.#currentOrdinal++;
+        this.payValidate();
     }
 
     // process payment
     processPay() {
         this.#payButton.disabled = true;
+        this.#overrideButton.disabled = true;
         var formArr = $('#vendor_invoice_form').serializeArray();
         var formData = {};
         for (var index = 0; index <formArr.length; index++)
@@ -348,9 +400,11 @@ class ExhibitorInvoice {
         if (data.error) {
             show_message(data.error, 'error', 'inv_result_message');
             this.#payButton.disabled = false;
+            this.#overrideButton.disabled = false;
         } else if (data.status == 'error') {
             show_message(data.data, 'error', 'inv_result_message');
             this.#payButton.disabled = false;
+            this.#overrideButton.disabled = false;
         } else if (data.status == 'success') {
             this.#exhibitorInvoiceModal.hide();
             show_message(data.message + "Payment for space recorded.");
@@ -362,6 +416,7 @@ class ExhibitorInvoice {
         } else {
             show_message('There was an unexpected error, please email ' + config.vemail + ' to let us know.  Thank you.', 'error', 'inv_result_message');
             this.#payButton.disabled = false;
+            this.#overrideButton.disabled = false;
         }
     }
 
@@ -415,5 +470,15 @@ function exhibitorInvoiceOnLoad() {
 }
 
 function payValidate() {
-    this.exhibitorInvoice.payValidate();
+    if (exhibitorInvoice == null)
+        return;
+
+    exhibitorInvoice.payValidate();
+}
+
+function incrPayValidate() {
+    if (exhibitorInvoice == null)
+        return;
+
+    exhibitorInvoice.incrPayValidate();
 }

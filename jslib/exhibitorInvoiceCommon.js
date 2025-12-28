@@ -5,7 +5,7 @@ var inclProfiles = [];
 var addlProfiles = [];
 
 function drawExhitorTopBlocks(name, exhibitor_spacelist, region, regionList, regionYearId,
-                              approved, included, members, doTerms = true) {
+                              approved, included, members, doTerms = true, warnType = 'need') {
     var includedMemberships = 0;
     var additionalMemberships = 0;
     var spacePriceName
@@ -223,14 +223,14 @@ function drawExhitorTopBlocks(name, exhibitor_spacelist, region, regionList, reg
     document.getElementById(members).innerHTML = html;
     // fill in default information for the values of the addresses
     for (mnum = 0; mnum < includedMemberships; mnum++) {
-        inclProfiles[mnum] = new Profile('i_' + mnum + '_', config.portalName);
+        inclProfiles[mnum] = new Profile('i_' + mnum + '_', config.portalName, warnType);
         inclProfiles[mnum].setAll('', '', '', '', '', '', exhibitor_info.addr, exhibitor_info.addr2, exhibitor_info.city,
                 exhibitor_info.state, exhibitor_info.zip, exhibitor_info.country, exhibitor_info.exhibitorPhone,
                 '', '', '');
         inclProfiles[mnum].setEmail(exhibitor_info.exhibitorEmail);
     }
     for (mnum = 0; mnum < additionalMemberships; mnum++) {
-        addlProfiles[mnum] = new Profile('a_' + mnum + '_', config.portalName);
+        addlProfiles[mnum] = new Profile('a_' + mnum + '_', config.portalName, warnType);
         addlProfiles[mnum].setAll('', '', '', '', '', '', exhibitor_info.addr, exhibitor_info.addr2, exhibitor_info.city,
             exhibitor_info.state, exhibitor_info.zip, exhibitor_info.country, exhibitor_info.exhibitorPhone,
             '', '', '');
