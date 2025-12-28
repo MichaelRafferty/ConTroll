@@ -330,9 +330,10 @@ class Pos {
                     ageListIdx[cartrow.memberAgeType].shortname + ' [' + ageListIdx[cartrow.memberAgeType].label + ']</b></span>');
                 profile.hideAgeField(false);
                 profile.hideAgeDiv(true);
-            } else
+            } else if (cartrow.memberAgeType && cartrow.memberAgeType != '') {
                 profile.setAgeText("<b>" +
                     ageListIdx[cartrow.memberAgeType].shortname + ' [' + ageListIdx[cartrow.memberAgeType].label + ']</b>');
+            }
         }
 
         // policies
@@ -786,8 +787,11 @@ class Pos {
         for (let pol in policies) {
             let policyName = policies[pol].policy;
             let policybox = document.getElementById('p_' + policyName);
-            if (policybox)
+            if (policybox) {
                 policybox.checked = policies[pol].defaultValue == 'Y';
+            }
+            let field = document.getElementById('l_' + policyName);
+            field.classList.remove('warncolor');
         }
 
         this.#add_header.innerHTML = `
@@ -835,6 +839,7 @@ class Pos {
     }
 
     add_new2() {
+        clear_message();
         let edit_index = this.#add_index_field.value.trim();
         let edit_perid = this.#add_perid_field.value.trim();
         let new_memindex = this.#add_memIndex_field.value.trim();
@@ -2107,6 +2112,7 @@ class Pos {
         let desc = null;
         let ptype = null;
         let crow = null;
+        let cprow = null;
         let total_amount_due = Number(this.#preTaxAmt) + Number(this.#taxAmt) - (Number(this.#couponDiscount) + Number(this.#managerDiscount));
         let pt_cash = document.getElementById('pt-cash').checked;
         let pt_check = document.getElementById('pt-check').checked;
@@ -2293,7 +2299,7 @@ class Pos {
             let payor = Number(document.getElementById('pay-emailsel').value);
             let country = '';
             let couponCode = coupon.getCouponCode();
-            let cprow = cart.getCouponPmt();
+            cprow = cart.getCouponPmt();
 
             if (payor >= 0 && email == cart.getEmail(payor)) {
                 payorPerid = cart.getPerid(payor);

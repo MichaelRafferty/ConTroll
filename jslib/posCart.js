@@ -554,7 +554,7 @@ class PosCart {
         } else if (cart_row.currentAgeConId == config.conid)
             this.#currentAge = cart_row.currentAgeType;
         else if (cart_row.currentAgeType && cart_row.currentAgeType != '') {
-            let ageItem = ageListIdx[p.currentAgeType];
+            let ageItem = ageListIdx[cart_row.currentAgeType];
             if (ageItem.verify == 'Y') {
                 this.currentAge = null;
             } else {
@@ -592,8 +592,9 @@ class PosCart {
     saveMembershipChange() {
         this.#cartPerinfo[this.#currentPerIdx].memberships = make_copy(this.#memberships);
 
-        if (this.#cartPerinfo[this.#currentPerIdx].currentAgeType && this.#cartPerinfo[this.#currentPerIdx].currentAgeType == '')
-            this.#cartPerinfo[this.#currentPerIdx].currentAgeType = this.#currentAge;
+        if ((!this.#cartPerinfo[this.#currentPerIdx].currentAgeType) || this.#cartPerinfo[this.#currentPerIdx].currentAgeType == '') {
+            this.#cartPerinfo[this.#currentPerIdx].currentAgeType = this.#memberAge;
+        }
         if (this.#memberships.length > 0 && this.#cartPerinfo[this.#currentPerIdx].currentAgeType != '')
             this.#cartPerinfo[this.#currentPerIdx].currentAgeConid = config.conid;
         this.#cartPerinfo[this.#currentPerIdx].memberAgeType = this.#memberAge;
