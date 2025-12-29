@@ -73,7 +73,6 @@ EOF;
 function portalPageInit($page, $info, $css, $js, $refresh = false) {
     global $portalJSVersion, $libJSversion, $controllJSversion, $globalJSversion, $atJSversion, $exhibitorJSversion;
 
-
     $con = get_conf('con');
     $label = $con['label'];
     $ini = get_conf('reg');
@@ -222,6 +221,8 @@ function portalPageFoot() {
 function tabBar($page, $portal_conf, $info, $refresh = false) {
     $page_list = [];
     if (!$refresh) {
+        // always provide payment history, for now (do we suppress it if there is no payment history?)
+        $page_list[] = ['name' => 'paymentHistory', 'display' => 'Payment History'];
         if (getConfValue('portal', 'history') == 1 && getSessionVar('idType') == 'p') {
             $page_list[] = ['name' => 'membershipHistory', 'display' => 'Membership History'];
         }
@@ -295,8 +296,7 @@ function isWebRequest() {
 
 // getPersonInfo - retrieve the data for the logged in person
 // build info array about the account holder or the person passed
-
-function getPersonInfo($conid, $personType = null, $personId = null) {
+function getPersonInfo($conid, $personType = null, $personId = null, $minimal = false) {
     if ($personType == null || $personId == null) {
         $personType = getSessionVar('idType');
         $personId = getSessionVar('id');
@@ -347,33 +347,35 @@ EOS;
     $info = $personR->fetch_assoc();
     $info['badgename'] = badgeNameDefault($info['badge_name'], $info['badgeNameL2'], $info['first_name'], $info['last_name']);
     $personR->free();
-    // not get the count of the number required policies answered no by this person
-    $pQ = <<<EOS
+
+    if (!$minimal) {
+    // now get the count of the number required policies answered no by this person
+        $pQ = <<<EOS
 SELECT IFNULL(count(*), 0) AS requiredMissing
 FROM policies p
 LEFT OUTER JOIN memberPolicies m ON (m.policy = p.policy AND m.conid = ? AND IFNULL(m.$pfield, -1) = ?)
 WHERE p.ACTIVE = 'Y'  AND p.required = 'Y' AND IFNULL(m.response, 'N') = 'N';
 EOS;
-    $pR = dbSafeQuery($pQ, 'ii', array($conid, $personId));
-    $missingPolicies = 0;
-    if ($pR !== false) {
-        while ($pL = $pR->fetch_assoc()) {
-            $missingPolicies += intval($pL['requiredMissing']);
+        $pR = dbSafeQuery($pQ, 'ii', array($conid, $personId));
+        $missingPolicies = 0;
+        if ($pR !== false) {
+            while ($pL = $pR->fetch_assoc()) {
+                $missingPolicies += intval($pL['requiredMissing']);
+            }
+            $pR->free();
         }
-        $pR->free();
-    }
-    $info['missingPolicies'] = $missingPolicies;
+        $info['missingPolicies'] = $missingPolicies;
 
-    if ($getMemberships) {
-        // memberships of both Y and A types
-        // now if asked for interests or  memberships, get them as well
-        if ($personType == 'p') {
-            $rfield = 'perid';
-        } else {
-            $rfield = 'newperid';
-        }
-       $memberships = [];
-       $mQ = <<<EOS
+        if ($getMemberships) {
+            // memberships of both Y and A types
+            // now if asked for interests or  memberships, get them as well
+            if ($personType == 'p') {
+                $rfield = 'perid';
+            } else {
+                $rfield = 'newperid';
+            }
+           $memberships = [];
+           $mQ = <<<EOS
 SELECT r.id, r.create_date, r.memId, r.conid, r.status, r.price, IFNULL(r.paid, 0.00) AS paid, r.couponDiscount, r.perid, r.newperid,
        m.label, m.memType, m.memCategory, m.memAge, m.startdate, m.enddate, m.online
 FROM reg r
@@ -381,17 +383,17 @@ JOIN memList m ON m.id = r.memId
 WHERE r.$rfield = ? AND r.conid IN (?, ?) AND status IN ('unpaid', 'paid', 'plan', 'upgraded')
 ORDER BY r.create_date, r.id;
 EOS;
-       $mR = dbSafeQuery($mQ, 'iii', array($personId, $conid, $conid + 1));
-       if ($mR !== false) {
-           while ($row = $mR->fetch_assoc()) {
-               $memberships[] = $row;
+           $mR = dbSafeQuery($mQ, 'iii', array($personId, $conid, $conid + 1));
+           if ($mR !== false) {
+               while ($row = $mR->fetch_assoc()) {
+                   $memberships[] = $row;
+               }
+               $mR->free();
            }
-           $mR->free();
-       }
-       $info['memberships'] = $memberships;
-       $allMemberships = [];
-       if ($personType == 'p') {
-           $mQ = <<<EOS
+           $info['memberships'] = $memberships;
+           $allMemberships = [];
+           if ($personType == 'p') {
+               $mQ = <<<EOS
 SELECT r.id, r.perid, r.newperid, r.create_date, r.memId, r.conid, r.status, r.price, IFNULL(r.paid, 0.00) AS paid, r.couponDiscount,
        m.label, m.memType, m.memCategory, m.memAge
 FROM reg r
@@ -409,9 +411,9 @@ LEFT OUTER JOIN perinfo pm ON n.managedBy = pm.id
 WHERE r.conid IN (?, ?) AND (pm.id = ?) AND n.perid IS NULL
 ORDER BY create_date, id;
 EOS;
-           $mR = dbSafeQuery($mQ, 'iiiiiii', array ($conid, $conid + 1, $pmId, $pmId, $conid, $conid + 1, $pmId));
-       } else {
-           $mQ = <<<EOS
+               $mR = dbSafeQuery($mQ, 'iiiiiii', array ($conid, $conid + 1, $pmId, $pmId, $conid, $conid + 1, $pmId));
+           } else {
+               $mQ = <<<EOS
 SELECT r.id, r.create_date, r.memId, r.conid, r.status, r.price, IFNULL(r.paid, 0.00) AS paid, r.couponDiscount, r.perid, r.newperid,
        m.label, m.memType, m.memCategory, m.memAge
 FROM reg r
@@ -421,14 +423,15 @@ LEFT OUTER JOIN newperson nm ON n.managedByNew = nm.id
 WHERE r.conid IN (?, ?) AND (nm.id = ? OR n.id = ?) AND n.perid IS NULL
 ORDER BY create_date;
 EOS;
-           $mR = dbSafeQuery($mQ, 'iiii', array ($conid, $conid + 1, $pmId, $pmId));
-       }
-       if ($mR !== false) {
-           while ($row = $mR->fetch_assoc()) {
-               $allMemberships[] = $row;
+               $mR = dbSafeQuery($mQ, 'iiii', array ($conid, $conid + 1, $pmId, $pmId));
            }
-       }
-    $info['allMemberships'] = $allMemberships;
+           if ($mR !== false) {
+               while ($row = $mR->fetch_assoc()) {
+                   $allMemberships[] = $row;
+               }
+           }
+        $info['allMemberships'] = $allMemberships;
+        }
     }
     return $info;
 }

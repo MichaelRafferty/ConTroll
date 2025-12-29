@@ -11,6 +11,12 @@ $conid = $con['id'];
 $portal_conf = get_conf('portal');
 $condata = get_con();
 
+if (getConfValue('portal', 'suspended') == 1) {
+    // the portal is now closed, redirect the user back as a logout and let them get the closed screen
+    header('location:' . $portal_conf['portalsite'] . '?logout');
+    exit();
+}
+
 if (isSessionVar('id') && isSessionVar('idType')) {
     // check for being resolved/baned
     $resolveUpdates = isResolvedBanned();
@@ -70,7 +76,7 @@ $config_vars['oneoff'] = $oneoff;
 $cdn = getTabulatorIncludes();
 
 // build info array about the account holder
-$info = getPersonInfo($conid);
+$info = getPersonInfo($conid, null, null, true);
 if ($info === false) {
     echo 'Invalid Login, seek assistance';
     portalPageFoot();

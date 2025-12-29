@@ -15,6 +15,10 @@ span.req, .warn {
   color: red;
 }
 
+span.warncolor {
+  background-color: #FFE190;;
+}
+
 .hidden { 
   display: none;
   }

@@ -49,7 +49,7 @@ $config_vars['end'] = $end;
 $cdn = getTabulatorIncludes();
 
 // build info array about the account holder
-$info = getPersonInfo($conid);
+$info = getPersonInfo($conid, null, null, true);
 if ($info === false) {
     echo 'Invalid Login, seek assistance';
     portalPageFoot();

@@ -611,7 +611,7 @@ function draw_makePaymentModal() : void {
 
 //// payment plan items
 // drawPaymentPlans - show the status of the payment plans for this account
-function drawPaymentPlans($person, $paymentPlans) : void {
+function drawPaymentPlans($person, $paymentPlans, $activeOnly = false) : void {
     $currency = getConfValue('con', 'currency', 'USD');
     $plans = $paymentPlans['plans'];
     $payorPlans = $paymentPlans['payorPlans'];
@@ -634,6 +634,8 @@ function drawPaymentPlans($person, $paymentPlans) : void {
 <?php
     $now = time();
     foreach ($payorPlans as $payorPlan) {
+        if ($activeOnly && $payorPlan['status'] != 'active')
+            continue;
         $planid = $payorPlan['planId'];
         $plan = $plans[$planid];
         $nextPayColor = '';
@@ -649,13 +651,22 @@ function drawPaymentPlans($person, $paymentPlans) : void {
             $id = $payorPlan['id'];
             if ($nextPayTimestamp < $now) { // past due
                 $nextPayColor = ' bg-danger text-white';
-                $col1 = "<button class='btn btn-sm btn-danger pt-0 pb-0' onclick='paymentPlans.payPlan($id);'>Make Past Due Pmt</button>";
+                if ($activeOnly)
+                    $col1 = "<button class='btn btn-sm btn-danger pt-0 pb-0' onclick='paymentPlans.payPlan($id);'>Make Past Due Pmt</button>";
+                else
+                    $col1 = '<span class="warncolor">Past due</span>';
                 $minAmt = $data['minAmt'];
             } else if ($nextPayTimestamp < $now + 7 * 24 * 3600) { // are we within 7 days of a payment
                 $nextPayColor = ' bg-warning';
-                $col1 = "<button class='btn btn-sm btn-primary pt-0 pb-0' onclick='paymentPlans.payPlan($id);'>Make Pmt</button>";
+                 if ($activeOnly)
+                     $col1 = "<button class='btn btn-sm btn-primary pt-0 pb-0' onclick='paymentPlans.payPlan($id);'>Make Pmt</button>";
+                 else
+                     $col1 = 'Payment Due</span>';
             } else {
-                $col1 = "<button class='btn btn-sm btn-secondary pt-0 pb-0' onclick='paymentPlans.payPlan($id);'>Make Pmt</button>";
+                if ($activeOnly)
+                    $col1 = "<button class='btn btn-sm btn-secondary pt-0 pb-0' onclick='paymentPlans.payPlan($id);'>Make Pmt</button>";
+                else
+                    $col1 = "Current";
             }
         }
         $dateCreated = date_format(date_create($payorPlan['createDate']), 'Y-m-d');

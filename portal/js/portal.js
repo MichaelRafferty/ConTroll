@@ -245,6 +245,13 @@ class Portal {
                 return;
             _this.editInterests(config.id, config.idType);
         }
+
+        if (config.hasOwnProperty('paymentFocus')) {
+            if (config.paymentFocus != '') {
+                this.setFocus(config.paymentFocus);
+                config.paymentFocus = '';
+            }
+        }
     }
 
     // set  / get functions
