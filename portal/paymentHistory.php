@@ -424,7 +424,7 @@ if (count($memberships) > 0) {
 }
 if ($noPayments) {
 ?>
-    <div class='row'>
+    <div class='row mt-4'>
         <div class='col-sm-12 align-center'>
             <h1 class="h3">You have not made any payments yet.</h1>
         </div>
