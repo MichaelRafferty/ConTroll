@@ -166,9 +166,11 @@ portalPageInit('paymentHistory', $info,
 </script>
 <?php
 draw_recieptModal();
+$noPayments = true;
 
 $totalDueFormatted = '';
 if ($totalDue > 0 || $activePaymentPlans) {
+    $noPayments = false;
     if ($totalDue > 0) {
         $totalDueFormatted = 'Total due: ' . $dolfmt->formatCurrency((float)$totalDue, $currency);
     } else {
@@ -207,6 +209,7 @@ if ($totalDue > 0 || count($payorPlan) > 0) {
 }
 
 if (count($memberships) > 0) {
+    $noPayments = false;
     if ($totalUnpaid > 0) {
         $showAll = 'disabled';
         $showUnpaid = 'disabled';
@@ -415,11 +418,23 @@ if (count($memberships) > 0) {
         </div>
     </div>
 <?php
+            }
         }
     }
 }
+if ($noPayments) {
+?>
+    <div class='row'>
+        <div class='col-sm-12 p-0 m-0 align-center'>
+            You have not made any payments yet.
+        </div>
+    </div>
+<?php
+} else {
 ?>
 </div>
+<div class="container-fluid">
 <?php
-portalPageFoot();
 }
+portalPageFoot();
+
