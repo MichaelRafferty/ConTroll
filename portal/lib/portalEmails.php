@@ -68,7 +68,7 @@ function getEmailBody($transid, $owner, $memberships, $coupon, $planRec, $rid, $
             $body .= 'Total tax for the taxable portion of this order was ' . $dolfmt->formatCurrency((float)$taxAmt, $currency) . "\n" .
                 'For a total amount due of ' . $dolfmt->formatCurrency((float)$amount, $currency) . "\n\n";
         } else
-            $taxcode = '';
+            $taxCode = '';
 
         $body .= "Your card was charged " . $dolfmt->formatCurrency((float)$amount, $currency) . " for this transaction\n\n";
 

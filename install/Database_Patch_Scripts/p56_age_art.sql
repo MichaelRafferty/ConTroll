@@ -48,9 +48,9 @@ ALTER TABLE `artItemsHistory` MODIFY COLUMN `status`
 /*
  * portal custom text changes for rewrite
  */
-INSERT INTO controllAppPages(appName,appPage,pageDescription)
-VALUES ('portal', 'add', 'Add New Member to a Portal Account'),
-VALUES ('portal', 'cart', 'Purchase Memberships/Items for a Portal Account');
+INSERT INTO controllAppPages(appName,appPage,pageDescription) VALUES
+('portal', 'add', 'Add New Member to a Portal Account'),
+('portal', 'cart', 'Purchase Memberships/Items for a Portal Account');
 
 INSERT INTO controllAppSections(appName,appPage,appSection,sectionDescription) VALUES
 ('portal', 'index', 'profile', 'Profile section of add new account on login'),

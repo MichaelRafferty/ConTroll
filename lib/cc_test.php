@@ -466,10 +466,12 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     $rtn['preTaxAmt'] = $orderValue;
     $rtn['discountAmt'] = $discountAmt / 100;
     $rtn['taxAmt'] = $taxAmount / 100;
+    $rtn['taxAmount'] = $taxAmount / 100;
     $rtnTaxes = [];
     foreach ($taxAmounts as $key => $amt)
         $rtnTaxes[$key] = $amt / 100;
     $rtn['taxes'] = $rtnTaxes;
+    $rtn['totalAmountDue'] = $orderValue + (($taxAmount - $discountAmt) / 100);
     $rtn['totalAmt'] = $orderValue + (($taxAmount - $discountAmt) / 100);
     // load into the main rtn the items pay order needs directly
     $rtn['orderId'] = 'O' . time();
@@ -484,6 +486,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     if (array_key_exists('nonce', $results))
         $rtn['exhibits'] = $results['nonce'];
 
+    unset($_SESSION['ccTestOrder']);
     $_SESSION['ccTestOrder'] = $rtn;
     return $rtn;
 }
