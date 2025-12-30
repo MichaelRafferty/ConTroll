@@ -25,7 +25,7 @@ EOS;
 
 //drawInterestList - draw the inner block for interest editing
 function drawInterestList($interests, $modal = false, $tabIndexStart = 800) {
-    if ($interests == null) // null? no interests, nothing to draw
+    if ($interests == null || count($interests) == 0) // null? no interests, nothing to draw
         return;
     $tabindex = $tabIndexStart;
     loadCustomText('profile', 'all', getConfValue('portal', 'customtext', 'production'), true);
@@ -62,6 +62,50 @@ function drawInterestList($interests, $modal = false, $tabIndexStart = 800) {
         </div>
     </div>
 <?php
+    }
+}
+
+// drawInterestsDisplay: draw a read-only (display only) version of the policies and answers
+function drawInterestsDisplay($interests, $personInterests, $id) {
+    if ($interests == null || count($interests) == 0) // null? no interests, nothing to draw
+        return;
+    loadCustomText('profile', 'all', getConfValue('portal', 'customtext', 'production'), true);
+    $header = returnCustomText('interests/header', 'profile/all/');
+    $footer = returnCustomText('interests/footer', 'profile/all/');
+    if ($header != '') {
+        ?>
+        <div class='row'>
+            <div class='col-sm-auto'>
+                <?php  echo $header . PHP_EOL; ?>
+            </div>
+        </div>
+        <?php
+    }
+    foreach ($interests as $interest) {
+        $name = $interest['interest'];
+        $description = replaceVariables($interest['description']);
+        if (array_key_exists($name,$personInterests) && $personInterests[$name] == 'Y')
+            $box = '&#9745;';
+        else
+            $box = '&#9634;';
+        ?>
+        <div class='row'>
+            <div class='col-sm-12'>
+                <p class='text-body'>
+                    <?php echo "$box: $description"; ?></span>
+                </p>
+            </div>
+        </div>
+        <?php
+    }
+    if ($footer != '') {
+        ?>
+        <div class='row'>
+            <div class='col-sm-auto'>
+                <?php  echo $footer . PHP_EOL; ?>
+            </div>
+        </div>
+        <?php
     }
 }
 

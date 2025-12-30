@@ -348,6 +348,38 @@ EOS;
     $info['badgename'] = badgeNameDefault($info['badge_name'], $info['badgeNameL2'], $info['first_name'], $info['last_name']);
     $personR->free();
 
+    // get the policies
+    $pQ = <<<EOS
+SELECT policy, response
+FROM memberPolicies
+WHERE conid = ? AND $pfield = ?;
+EOS;
+    $pR = dbSafeQuery($pQ,'ii', array($conid, $personId));
+    $pResp = [];
+    if ($pR !== false) {
+        while ($pL = $pR->fetch_assoc()) {
+            $pResp[$pL['policy']] = $pL['response'];
+        }
+        $pR->free();
+    }
+    $info['policies'] =  $pResp;
+
+        // get the interests
+    $pQ = <<<EOS
+SELECT interest, interested
+FROM memberInterests
+WHERE conid = ? AND $pfield = ?;
+EOS;
+    $pR = dbSafeQuery($pQ,'ii', array($conid, $personId));
+    $pResp = [];
+    if ($pR !== false) {
+        while ($pL = $pR->fetch_assoc()) {
+            $pResp[$pL['interest']] = $pL['interested'];
+        }
+        $pR->free();
+    }
+    $info['interests'] =  $pResp;
+
     if (!$minimal) {
     // now get the count of the number required policies answered no by this person
         $pQ = <<<EOS

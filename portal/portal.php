@@ -20,6 +20,8 @@ $con = get_conf('con');
 $conid = $con['id'];
 $portal_conf = get_conf('portal');
 $condata = get_con();
+$startdate = new DateTime($condata['startdate']);
+$ageByDate = $startdate->format('F j, Y');
 load_cc_procs();
 
 if (getConfValue('portal', 'suspended') == 1) {
@@ -630,7 +632,7 @@ if ($virtualURL != '') {
             'data-bs-title="Add and pay for ' . ($worldCon ? "a WSFS and " : "") . 'an attending or virtual membership to be able to attend the virtual convention.">';
         }
 
-    $VirtualButton .= "<button class='btn btn-primary p-1 mx-2 h-100' type='button' " .
+    $VirtualButton .= "<button class='btn btn-primary p-1 w-100 h-100' type='button' " .
         ($hasVirtual ? 'onclick="portal.virtual();"' : ' disabled') . ">$VirtualButtonTxt</button>";
     if (!$hasVirtual)
         $VirtualButton .= '</span>';
@@ -678,7 +680,7 @@ if ($refresh) {
     var policies = <?php echo json_encode($policies); ?>;
     var ageList = <?php echo json_encode($ageList); ?>;
     var ageListIdx = <?php echo json_encode($ageListIdx); ?>;
-    var ageByDate = <?php echo '"' . $condata['startdate'] . '"'; ?>;
+    var ageByDate = <?php echo '"' . $ageByDate . '"'; ?>;
 </script>
 <?php
 // draw all the modals for this screen
@@ -695,93 +697,133 @@ if (count($paymentPlans) > 0) {
     draw_customizePlanModal('portal');
     draw_payPlanModal('portal');
 }
+
+// draw the top of page banner
+// Line 1: Virtual, Name/mem number, worldcon buttons
+$fullName = $info['fullName'];
+$id = $info['id'];
+$type = $info['personType'];
+$email = $info['email_addr'];
+$label = $type ==  'p' ? 'Membership Number' : 'Temp Membership Number';
+$infoArgs = json_encode(array('id' => $info['id'] , 'type' => $info['personType'], 'fullName' => $info['fullName'],
+        'first_name' => $info['first_name'], 'last_name' => $info['last_name'], 'email_addr' => $info['email_addr']));
+$infoArgs = str_replace('"', '\\u0022', $infoArgs);
+$infoArgs = str_replace("'", '\\u0027', $infoArgs);
+echo <<<EOS
+<div class="container-fluid p-0 m-0">
+    <div class="row mt-4 mb-2">
+        <div class="col-sm-1">$VirtualButton</div>
+        <div class="col-sm-5">
+            <span class="h1"><b>$fullName</b></span>
+            <br/>
+            <span class="h3">$label: $id</span>
+        </div>
+        <div class="col-sm-6">
+EOS;
+if ($NomNomURL != '' || $BusinessMeetingURL != '' || $SiteSelectionURL != '')
+    drawWSFSButtons($NomNomURL != '', $BusinessMeetingURL != '', $SiteSelectionURL != '', $hasWSFS, $hasNom, $hasMeeting, $siteSelection, $loginId, $loginType, $info);
+echo <<<EOS
+        </div>
+    </div>
+EOS;
+
+// line 2 -change email
+echo <<<EOS
+    <div class="row">
+        <div class="col-sm-1">
+            <button class='btn btn-sm btn-primary p-1 w-100 h-100' data-id="$id" data-type="$type" onclick="portal.changeEmail('$infoArgs');">
+                Change Email
+            </button>
+        </div>
+        <div class="col-sm-auto">
+            <span class="h4">Email Address: $email</span>
+        </div>
+        <div class="col-sm-4">
+            <p><strong>Note:</strong> Your email address is entered at the start of creating the account or edited using the "Change Email" button.</p>
+        </div>
+EOS;
+if (true || !$hasPasskey && getConfValue('portal', 'passkeyRpLevel', 'd') != 'd' &&
+        array_key_exists('HTTPS', $_SERVER) && (isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == 'on')) {
+    $portalSite = $portal_conf['portalsite'];
+echo <<<EOS
+        <div class="col-sm-auto">
+            <button class='btn btn-primary p-1 h-100' type='button' onclick="window.location='$portalSite/accountSettings.php?passkey=create';">
+                <img src='lib/passkey.png'>Create Passkey
+            </button>
+        </div>
+EOS;
+}
+echo "</div>\n"; // end row 2
+
+// line 2a (managed disassociate)
 // if this person is managed, print a banner and let them disassociate from the manager.
 if ($info['managedByName'] != null) {
-?>
-    <div class='row mt-2 mb-2' id="managedByDiv">
-        <div class='col-sm-auto'><h2 class='size-h3'>Your record is managed by <?php echo $info['managedByName']; ?>:</h2></div>
-        <div class='col-sm-auto'><button class="btn btn-warning p-1 h-100" onclick="portal.disassociate();">Dissociate from <?php echo $info['managedByName'];
-        ?></button></div>
-<?php if ($VirtualButton != '') { ?>
-        <div class='col-sm-auto'><?php echo $VirtualButton; ?></div>
-<?php } ?>
+    $managedByName= $info['managedByName'];
+echo <<<EOS
+    <div class='row mt-4 mb-2' id='managedByDiv'>
+        <div class='col-sm-auto'><span class=h3'>Your record is managed by $managedByName</span></div>
+        <div class='col-sm-auto'>
+            <button class="btn btn-warning p-1 h-100" onclick="portal.disassociate();">Dissociate from $managedByName</button>
+        </div>
     </div>
-<?php
-    if ($NomNomURL != '' || $BusinessMeetingURL != '' || $SiteSelectionURL != '')
-        drawWSFSButtons($NomNomURL != '', $BusinessMeetingURL != '', $SiteSelectionURL != '', $hasWSFS, $hasNom, $hasMeeting, $siteSelection, $loginId, $loginType, $info);
+EOS;
 }
+
+// line 3 payament info
 $totalDueFormatted = '';
 if ($totalDue > 0 || $activePaymentPlans > 0) {
     if ($totalDue > 0) {
         $totalDueFormatted = 'Total due: ' . $dolfmt->formatCurrency((float)$totalDue, $currency);
     } else {
-        $totalDueFormatted = "You have an active payment plan, check to see if it needs paying: ";
+        $totalDueFormatted = "You have an active payment plan, check to see if it needs paying";
     }
     if (count($paymentPlans) > 0) {
-        $payHtml = " $totalDueFormatted   " .
-            '<button class="btn btn-sm btn-primary pt-1 pb-1 ms-1 me-2" onclick="portal.setFocus(\'paymentDiv\');"' .
-            $disablePay . '>Go to Payment Section</button>';
+        $payHtml = '<button class="btn btn-sm btn-primary p-1 w-100 h-100" onclick="portal.setFocus(\'paymentDiv\');"' .
+            $disablePay . '>Check Plan</button>';
     } else {
-        $payHtml = " $totalDueFormatted   " .
-            '<button class="btn btn-sm btn-primary pt-1 pb-1 ms-1 me-2" name="payBalanceBTNs" onclick="portal.payBalance(' . $totalDue . ', true);"' .
-            $disablePay . '>Pay Total Amount Due</button>';
+        $payHtml = '<button class="btn btn-sm btn-primary p-1 w-100 h-100" name="payBalanceBTNs" onclick="portal.payBalance(' . $totalDue . ', true);"' .
+            $disablePay . '>Make Payment</button>';
     }
-?>
+echo <<<EOS
     <div class='row mt-4'>
-        <div class='col-sm-12'>
-            <h1 class='size-h3'><?php echo $payHtml;?></h1>
+        <div class="col-sm-2">$payHtml</div>
+        <div class='col-sm-auto'>
+            <span class='h3'>$totalDueFormatted</span>
         </div>
     </div>
-    <div class='row'>
+EOS;
+}
+// HR - then line 4 - People you manage (if you are not managed by someone else)
+echo <<<EOS
+    <div class='row mt-2 mb-2'>
         <div class='col-sm-12 p-0 m-0 align-center'>
             <hr style='height:4px;width:98%;margin:auto;margin-top:0px;margin-bottom:0px;color:#333333;background-color:#333333;'/>
         </div>
     </div>
-<?php
-}
-?>
-<div class='row mt-2'>
-    <div class='col-sm-12 d-flex align-items-center mb-2'>
-        <h2 class="size-h3 mb-0">This account's information:</h2>
-<?php
-    if (!$hasPasskey && getConfValue('portal', 'passkeyRpLevel', 'd') != 'd' &&
-        array_key_exists('HTTPS', $_SERVER) && (isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == 'on')) {
-?>
-        <button class='btn btn-primary mx-2 p-1 h-100' type='button'
-                        onclick="window.location='<?php echo $portal_conf['portalsite']; ?>/accountSettings.php?passkey=create';">
-                    <img src='lib/passkey.png'>Create Passkey
-                </button>
-<?php
-    }
-    if ($info['managedByName'] == null) {
-?>
-                <button class='btn btn-primary mx-2 p-1 h-100' type='button'
-                        onclick="window.location='<?php echo $portal_conf['portalsite']; ?>/add.php';">
+EOS;
+
+// if we are not managed, we can be a manager, so use the tab structure
+// first - do the add another person line
+if ($info['managedByName'] == null) {
+    echo <<<EOS
+    <div class="row mb-2">
+        <div class="col-sm-2">
+            <button class='btn btn-primary p-1 h-100' type='button' onclick="window.location='$portalSite/add.php';">
                     Add Another Person and<br/>Create a New Membership for Them
-                </button>
-                <?php echo $VirtualButton;
-    }
-?>
+            </button>
+        </div>
+        <div class='col-sm-auto'>
+            <span class='h3'>People You Manage</span>
+        </div>
     </div>
-</div>
-<?php
-    if ($info['managedByName'] == null && ($NomNomURL != '' || $BusinessMeetingURL != '' || $SiteSelectionURL != ''))
-        drawWSFSButtons($NomNomURL != '', $BusinessMeetingURL != '', $SiteSelectionURL != '', $hasWSFS, $hasNom, $hasMeeting, $siteSelection, $loginId, $loginType, $info);
-
+EOS;
     outputCustomText('main/people');
-?>
-<div class="row mt-2">
-    <div class="col-sm-1" style='text-align: right;'><b>ID</b></div>
-    <div class="col-sm-2"><b>Person</b></div>
-    <div class="col-sm-2"><b>Badge Name</b></div>
-    <div class="col-sm-2"><b>Email Address</b></div>
-    <div class="col-sm-1"><b>Current Age</b></div>
-    <div class="col-sm-1"><b>Actions</b></div>
-</div>
-<?php
+    echo "Tab Structure Here<br/>";
+}
 $totalMemberships = count($holderMembership);
-$paidByOthers = drawPersonRow($loginId, $loginType, $info, $conid, $ageListIdx, $holderMembership, $interests != null && count($interests) > 0, false, $now);
-
+$paidByOthers = drawPersonTab($loginId, $loginType, $info, $conid, $ageListIdx, $holderMembership,
+        $policies, $interests, $now, $ageByDate);
+/*
 $managedMembershipList = '';
 $currentId = -1;
 $curMB = [];
@@ -801,45 +843,43 @@ if ($info['managedByName'] == null && count($managed) > 0) {
     </div>
 </div>
 <?php
-    $hrshow = false;
-    foreach ($managed as $m) {
-        if ($currentId != $m['id']) {
-            if ($currentId > 0) {
-                $totalMemberships += count($curMB);
-                drawPersonRow($loginId, $loginType, $curPT, $conid, $ageListIdx, $curMB, $interests != null && count($interests) > 0, $hrshow, $now);
-                $hrshow = true;
-            }
-            $curPT = $m;
-            $currentId = $m['id'];
-            $currentId = $m['id'];
-            $curMB = [];
+$hrshow = false;
+foreach ($managed as $m) {
+    if ($currentId != $m['id']) {
+        if ($currentId > 0) {
+            $totalMemberships += count($curMB);
+            $paidByOthers = drawPersonRow($loginId, $loginType, $curPT, $conid, $ageListIdx, $curMB, $interests != null && count($interests) > 0, $hrshow,
+                    $now);
+            $hrshow = true;
         }
-        if ($m['memId'] != null) {
-            if ($m['memType'] == 'donation') {
-                $label = $dolfmt->formatCurrency((float) $m['actPrice'], $currency) . ' ' . $m['label'];
-                $shortname = $dolfmt->formatCurrency((float) $m['actPrice'], $currency) . ' ' . $m['shortname'];
-            } else {
-                $label = $m['label'];
-                $shortname = $m['shortname'];
-            }
-            $curMB[] = array('label' => ($m['conid'] != $conid ? $m['conid'] . ' ' : '') . $label, 'status' => $m['status'],
-                'memAge' => $m['memAge'], 'type' => $m['memType'], 'category' => $m['memCategory'],
-                'shortname' => ($m['conid'] != $conid ? $m['conid'] . ' ' : '') . $shortname, 'ageShort' => $m['ageShort'], 'ageLabel' => $m['ageLabel'],
-                'createNewperid' => $m['createNewperid'], 'completeNewperid' => $m['completeNewperid'],
-                'createPerid' => $m['createPerid'], 'completePerid' => $m['completePerid'], 'purchaserName' => $m['purchaserName'],
-                'startdate' => $m['startdate'], 'enddate' => $m['enddate'], 'online' => $m['online'],
-                'actPrice' => $m['actPrice'], 'actPaid' => $m['actPaid'], 'actCouponDiscount' => $m['actCouponDiscount'],
-            );
+        $curPT = $m;
+        $currentId = $m['id'];
+        $currentId = $m['id'];
+        $curMB = [];
+    }
+    if ($m['memId'] != null) {
+        if ($m['memType'] == 'donation') {
+            $label = $dolfmt->formatCurrency((float) $m['actPrice'], $currency) . ' ' . $m['label'];
+            $shortname = $dolfmt->formatCurrency((float) $m['actPrice'], $currency) . ' ' . $m['shortname'];
+        } else {
+            $label = $m['label'];
+            $shortname = $m['shortname'];
         }
+        $curMB[] = array('label' => ($m['conid'] != $conid ? $m['conid'] . ' ' : '') . $label, 'status' => $m['status'],
+            'memAge' => $m['memAge'], 'type' => $m['memType'], 'category' => $m['memCategory'],
+            'shortname' => ($m['conid'] != $conid ? $m['conid'] . ' ' : '') . $shortname, 'ageShort' => $m['ageShort'], 'ageLabel' => $m['ageLabel'],
+            'createNewperid' => $m['createNewperid'], 'completeNewperid' => $m['completeNewperid'],
+            'createPerid' => $m['createPerid'], 'completePerid' => $m['completePerid'], 'purchaserName' => $m['purchaserName'],
+            'startdate' => $m['startdate'], 'enddate' => $m['enddate'], 'online' => $m['online'],
+            'actPrice' => $m['actPrice'], 'actPaid' => $m['actPaid'], 'actCouponDiscount' => $m['actCouponDiscount'],
+        );
     }
 }
 if ($currentId > 0) { // if there are any at all
     $totalMemberships += count($curMB);
     drawPersonRow($loginId, $loginType, $curPT, $conid, $ageListIdx, $curMB, $interests != null && count($interests) > 0, true, $now);
 }
-// only draw the legend if someone has membership
-if ($totalMemberships > 0)
-    drawPortalLegend();
+*/
 
 // create a div and bg color it to separate it logically from the other parts
 if ($totalDue > 0 || count($payorPlan) > 0 || $paidByOthers > 0) {
