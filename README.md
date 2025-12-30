@@ -2,7 +2,7 @@
 ![Control Troll Logo](onlinereg/lib/ConTroll.png)\
 ConTroll™ and the ConTroll Troll Logo are Copyright 2015-2026, Michael Rafferty
 
-## This README file is current as of Release 1.4.3 of the ConTroll Regitration System.
+## This README file is current as of Release 1.6 of the ConTroll Regitration System.
 
 ConTroll™ is designed as an all-in-one system to support registration for conventions. It supports on-line, mail-in, and on-site registration.
 
@@ -26,9 +26,11 @@ As with all projects this is a work in progress, but the current items are in th
 
 The system is under active development by a team of developers and has functions currently in development to support:
 - Adding reports to the rewritten report subsystem
-- Making email message content editable using the custom text subsystem (mostly completed in release 1.3)
 - Rewrite of the Registration Portal UI/UX with the learnings from the first release
-- Online editing of the non security sections of the configuration file
+  - Already completed
+    - Main portal page redesign
+    - Move of age to the profile
+    - System wide common profile editor
 
 Planned future additions:
 - Configurable Exhibitor Portals (not just artist and vendor)
@@ -53,6 +55,7 @@ Planned future additions:
       - Main Menu Tab Ordering
       - Atcon Users and Roles
       - Atcon Printer Setup
+      - Configuration Editor (full reg_conf.ini contents)
     - Membership Graphs
     - People - manage information about people in the database
       - Resolve Conflicts
@@ -71,9 +74,10 @@ Planned future additions:
       - Interests: For people to express interest and get referred
       - Membership Rules: Which memberships require special rules to be available for purchase
       - Merge People: Combine two people into one surviving record
+      - Configuration Editor (for those with reg-admin rights)
     - Attendence Graphs
-    - Coupon Management: membership, cart and one use coupons supported
     - Finance
+      - Sales Tax Configuration
       - Payment Plan Configuration
       - Payment Plan Management (Payors)
       - Coupon Management
@@ -85,6 +89,7 @@ Planned future additions:
         - Spaces (sections of an area)
         - Pricing (pricing options within a space)
       - Custom Text
+      - Configuration Editor (for those with exhibits rights)
       - Exhibitor Mangement (by Region Owner)
         - Exhibitor Information (Add/Edit)
         - Approval Requests (for regions that require approval to ask for space)
@@ -102,7 +107,9 @@ Planned future additions:
 - portal
   - Login page/functions  (Supports mail tokens, Google/Facebook and potentially other "login with") and passkeys
   - Portal - main home page, see/pay for memberships
-  - addUpdate - add/update information/memberships
+  - paymentHistory - moved from main page
+  - add - add new accounts
+  - cart - add new memberships
   - accountSettings - alternate identities (emails), passkeys, and people you manage
   - Membership History - current and prior years registrations
   - respond - back end respond to authorization requests
