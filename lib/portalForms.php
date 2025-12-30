@@ -481,7 +481,7 @@ EOS;
            }
            $expired = $membership['status'] == 'unpaid' && ($membership['actPaid'] + $membership['actCouponDiscount']) > 0 &&
                 ($membership['startdate'] > $now || $membership['enddate'] < $now || $membership['online'] == 'N');
-           $shortname = $membership['shortname'] . '(' . $memPersonId . ')';
+           $shortname = $membership['shortname'];
            $status = $membership['status'];
            if ($expired) {
                $expiredPrefix = '<span class="text-danger">Expired: ';
