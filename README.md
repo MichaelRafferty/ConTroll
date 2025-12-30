@@ -1,6 +1,6 @@
 # ConTroll™  Registration for Conventions
 ![Control Troll Logo](onlinereg/lib/ConTroll.png)\
-ConTroll™ and the ConTroll Troll Logo are Copyright 2015-2025, Michael Rafferty
+ConTroll™ and the ConTroll Troll Logo are Copyright 2015-2026, Michael Rafferty
 
 ## This README file is current as of Release 1.4.3 of the ConTroll Regitration System.
 

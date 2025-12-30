@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025, Michael Rafferty
+ * Copyright (c) 2025-2026, Michael Rafferty
  * ConTroll™ is freely available for use under the GNU Affero General Public License, Version 3. See the ConTroll™ ReadMe file.
  */
 

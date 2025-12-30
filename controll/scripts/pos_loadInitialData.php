@@ -1,5 +1,5 @@
 <?php
-// ConTroll Registration System, Copyright 2015-2025, Michael Rafferty, Licensed under the GNU Affero General Public License, Version 3.
+// ConTroll Registration System, Copyright 2015-2026, Michael Rafferty, Licensed under the GNU Affero General Public License, Version 3.
 // library AJAX Processor: pos_loadInitialData.php
 // Author: Syd Weinstein
 // Retrieve load the mapping tables and session information into the javascript side of the registration tab
