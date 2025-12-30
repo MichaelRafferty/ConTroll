@@ -548,6 +548,7 @@ EOS;
             else {
                 $mp = [];
                 $mp['p'] = $p;
+                $mp['person'] = getPersonInfo($conid, $p['personType'], $p['id']);
                 $mp['memAge'] = '';
                 $mp['primary'] = null;
             }
@@ -952,10 +953,10 @@ EOS;
 
 <div class='tab-content ms-2' id='portal-content'>
 <!---- Start of managee: $mFullName -->
-    <div class='tab-pane fade show active' id='$mid-pane' role='tabpanel' aria-labelledby='$mid-tab' tabindex='0'>
+    <div class='tab-pane fade' id='$mid-pane' role='tabpanel' aria-labelledby='$mid-tab' tabindex='0'>
         <div class="container-fluid">
 EOS;
-        drawPersonTab($p['id'], $p['personType'], $p, $conid, $ageListIdx, $managed, $policies, $interests, $now, $ageByDate);
+        drawPersonTab($p['id'], $p['personType'], $m['person'], $conid, $ageListIdx, $managed, $policies, $interests, $now, $ageByDate);
 
         // ending that managee
         echo <<<EOS
