@@ -969,63 +969,6 @@ EOS;
     // end of the block
     echo "</div>\n";
 }
-/*
-$managedMembershipList = '';
-$currentId = -1;
-$curMB = [];
-// now for the people managed by this account holder
-if ($info['managedByName'] == null && count($managed) > 0) {
-?>
-<div class='row'>
-    <div class='col-sm-12 ms-0 me-0 align-center'>
-        <hr style='height:4px;width:95%;margin:auto;margin-top:18px;margin-bottom:10px;color:#333333;background-color:#333333;'/>
-    </div>
-</div>
-<div class='row mt-2'>
-    <div class='col-sm-12'>
-        <h1 class='size-h3'>
-            <?php echo 'People managed by ' . $info['first_name'] . ' (' . $info['email_addr'] . '):'; ?>
-        </h1>
-    </div>
-</div>
-<?php
-$hrshow = false;
-foreach ($managed as $m) {
-    if ($currentId != $m['id']) {
-        if ($currentId > 0) {
-            $totalMemberships += count($curMB);
-            $paidByOthers = drawPersonRow($loginId, $loginType, $curPT, $conid, $ageListIdx, $curMB, $interests != null && count($interests) > 0, $hrshow,
-                    $now);
-            $hrshow = true;
-        }
-        $curPT = $m;
-        $currentId = $m['id'];
-        $currentId = $m['id'];
-        $curMB = [];
-    }
-    if ($m['memId'] != null) {
-        if ($m['memType'] == 'donation') {
-            $label = $dolfmt->formatCurrency((float) $m['actPrice'], $currency) . ' ' . $m['label'];
-            $shortname = $dolfmt->formatCurrency((float) $m['actPrice'], $currency) . ' ' . $m['shortname'];
-        } else {
-            $label = $m['label'];
-            $shortname = $m['shortname'];
-        }
-        $curMB[] = array('label' => ($m['conid'] != $conid ? $m['conid'] . ' ' : '') . $label, 'status' => $m['status'],
-            'memAge' => $m['memAge'], 'type' => $m['memType'], 'category' => $m['memCategory'],
-            'shortname' => ($m['conid'] != $conid ? $m['conid'] . ' ' : '') . $shortname, 'ageShort' => $m['ageShort'], 'ageLabel' => $m['ageLabel'],
-            'createNewperid' => $m['createNewperid'], 'completeNewperid' => $m['completeNewperid'],
-            'createPerid' => $m['createPerid'], 'completePerid' => $m['completePerid'], 'purchaserName' => $m['purchaserName'],
-            'startdate' => $m['startdate'], 'enddate' => $m['enddate'], 'online' => $m['online'],
-            'actPrice' => $m['actPrice'], 'actPaid' => $m['actPaid'], 'actCouponDiscount' => $m['actCouponDiscount'],
-        );
-    }
-}
-if ($currentId > 0) { // if there are any at all
-    $totalMemberships += count($curMB);
-    drawPersonRow($loginId, $loginType, $curPT, $conid, $ageListIdx, $curMB, $interests != null && count($interests) > 0, true, $now);
-}
-*/
 
 // create a div and bg color it to separate it logically from the other parts
 if ($totalDue > 0 || count($payorPlan) > 0 || $paidByOthers > 0) {
