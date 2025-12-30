@@ -189,20 +189,6 @@ class Portal {
             this.#receiptTitle = document.getElementById('portalReceiptTitle');
         }
 
-        this.#purchasedShowAll = document.getElementById('btn-showAll');
-        this.#purchasedShowUnpaid = document.getElementById('btn-showUnpaid');
-        this.#purchasedHideAll = document.getElementById('btn-hideAll');
-
-        // default to All
-        if (this.#purchasedShowAll) {
-            if (this.#purchasedShowAll.disabled == true)
-                this.showAll();
-        } else if (this.purchasedShowUnpaid) {
-            if (this.#purchasedShowUnpaid.disabled == true)
-                this.showUnpaid();
-            else
-                this.hideAll();
-        }
 
         this.#subTotalColDiv = document.getElementById('subTotalColDiv');
         this.#couponDiscountDiv = document.getElementById('couponDiscountDiv');
@@ -252,6 +238,9 @@ class Portal {
                 config.paymentFocus = '';
             }
         }
+
+        if (hid)
+            this.settab(hid);
     }
 
     // set  / get functions
@@ -1486,6 +1475,33 @@ class Portal {
     // login with passkey - ask for a confirm and return either retry or go to portal
     loginWithPasskey() {
         passkeyRequest('scripts/passkeyActions.php', 'portal.php', 'portal');
+    }
+
+    // set portal page tab
+    settab(tabname) {
+        // console.log("switching to " + tabname);
+        for (let i = 0; i < tabs.length; i++) {
+            // console.log("remove active from " + tabs[i] + '-tab');
+            let el = document.getElementById(tabs[i] + '-tab');
+            // console.log('before tab: ' + el.classList);
+            let left = 1;
+            let right = 1;
+            if (i == 0) left = 2;
+            if (i == tabs.length - 1) right = 2;
+            el.style="border-bottom: 4px solid #0000FF; border-right: " + right + "px solid #808080;" +
+                " border-left: " + left + "px solid #808080;" +
+                " background-color: #E8E8E8; border-radius: 0px;";
+            // console.log('after tab: ' + el.classList);
+
+            //el = document.getElementById(tabs[i] + '-pane');
+            //// console.log('before pane: ' + el.classList);
+            //el.classList.remove("active");
+            //// console.log('after pane: ' + el.classList);
+        }
+
+        document.getElementById(tabname + '-tab').style=
+            "border-width: 4px 4px; border-color: var(--bs-primary); border-radius: 20px 20px 0px 0px; border-bottom: 0px;";
+        //document.getElementById(tabname + '-pane').classList.add("active");
     }
 }
 

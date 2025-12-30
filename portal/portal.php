@@ -224,6 +224,9 @@ EOS;
     $holderRegR = dbSafeQuery($holderRegSQL, 'iii', array ($conid, $loginType == 'p' ? $loginId : -1, $loginType == 'n' ? $loginId : -1));
     $holderMembership = [];
     $paidOtherMembership = [];
+    $holderMemberAge = '';
+    $holderPrimary = null;
+
     // determine business meeting, site selection and wsfs
     // wsfs is any WSFS membership except nomination only
     // nom = any wsfs membership
@@ -260,6 +263,12 @@ EOS;
     if ($holderRegR !== false && $holderRegR->num_rows > 0) {
         while ($m = $holderRegR->fetch_assoc()) {
             $m['badgename'] = badgeNameDefault($m['badge_name'], $m['badgeNameL2'], $m['first_name'], $m['last_name']);
+            // set member age and primary membership (newest primary)
+            if (isPrimary($m, $conid))
+                $holderPrimary = $m;
+            if ($holderMemberAge == '' && $m['memAge'] != 'all')
+                $holderMemberAge = $m['memAge'];
+
             // check if they have a WSFS rights membership (hasWSFS and hasNom)
             if (($m['memCategory'] == 'wsfs' || $m['memCategory'] == 'wsfsnom' || $m['memCategory'] == 'dealer'
                 || in_array($m['memId'], $addlWSFS)) && $m['status'] == 'paid') {
@@ -371,7 +380,7 @@ WITH ppl AS (
         p.banned, p.creation_date, p.update_date, p.change_notes, p.active, p.currentAgeConid, p.currentAgeType,
         p.managedBy, NULL AS managedByNew,
         TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
-        r.conid, r.status, r.memId, r.create_date,
+        r.conid, r.status, r.memId, r.create_date,  r.perid AS regPerid, r.newperid AS regNewperid,
         r.price AS actPrice, IFNULL(r.paid, 0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,
         m.memCategory, m.memType, m.memAge, m.shortname, m.label, m.startdate, m.enddate, m.online,
         a.shortname AS ageShort, a.label AS ageLabel, 'p' AS personType, m.taxable, m.ageShortName,
@@ -401,7 +410,7 @@ WITH ppl AS (
         'N' AS banned, NULL AS creation_date, NULL AS update_date, '' AS change_notes, 'Y' AS active, p.currentAgeConid, p.currentAgeType,
         p.managedBy, p.managedByNew,
         TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
-        r.conid, r.status, r.memId, r.create_date,
+        r.conid, r.status, r.memId, r.create_date, r.perid AS regPerid, r.newperid AS regNewperid,
         r.price AS actPrice, IFNULL(r.paid, 0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,
         m.memCategory, m.memType, m.memAge, m.shortname, m.label, m.startdate, m.enddate, m.online,
         a.shortname AS ageShort, a.label AS ageLabel, 'n' AS personType, m.taxable, m.ageShortName,
@@ -526,10 +535,30 @@ EOS;
     }
 
     $managed = [];
+    $managedPeople = [];
     if ($managedByR !== false) {
         while ($p = $managedByR->fetch_assoc()) {
             $p['badgename'] = badgeNameDefault($p['badge_name'], $p['badgeNameL2'], $p['first_name'], $p['last_name']);
             $managed[] = $p;
+
+            // set the managed people array
+            $mId = $p['personType'] . $p['id'];
+            if (array_key_exists($mId, $managedPeople))
+                $mp = $managedPeople[$mId];
+            else {
+                $mp = [];
+                $mp['p'] = $p;
+                $mp['memAge'] = '';
+                $mp['primary'] = null;
+            }
+
+            if ($mp['memAge'] == '' && $p['memAge'] != 'all')
+                $mp['memAge'] = $p['memAge'];
+
+            if (isPrimary($p, $conid))
+                $mp['primary'] = $p;
+
+            $managedPeople[$mId] = $mp;
         }
         $managedByR->free();
     }
@@ -705,6 +734,23 @@ $id = $info['id'];
 $type = $info['personType'];
 $email = $info['email_addr'];
 $label = $type ==  'p' ? 'Membership Number' : 'Temp Membership Number';
+$ageType = $info['currentAgeType'];
+// find memberAge and primary membership, only output agetype if no membership
+if ($ageType == '') {
+    if ($holderMemberAge != '')
+        $ageLabel = '<i>' . $ageListIdx[$holderMemberAge]['shortname'] . ' [' . $ageListIdx[$holderMemberAge]['label'] . ']' . '</i>';
+    else
+        $ageLabel = 'Not Yet Entered';
+} else {
+    $ageLabel = 'Age: ' . $ageListIdx[$ageType]['shortname'] . ' [' . $ageListIdx[$ageType]['label'] . ']';
+}
+if ($holderPrimary) {
+    $holderPrimaryMembership = $holderPrimary['label'];
+    $holderPrimaryStatus = '(' . $holderPrimary['status'] . ')';
+} else {
+    $holderPrimaryMembership = $ageLabel;
+    $holderPrimaryStatus = '&nbsp;';
+}
 $infoArgs = json_encode(array('id' => $info['id'] , 'type' => $info['personType'], 'fullName' => $info['fullName'],
         'first_name' => $info['first_name'], 'last_name' => $info['last_name'], 'email_addr' => $info['email_addr']));
 $infoArgs = str_replace('"', '\\u0022', $infoArgs);
@@ -806,7 +852,7 @@ EOS;
 // first - do the add another person line
 if ($info['managedByName'] == null) {
     echo <<<EOS
-    <div class="row mb-2">
+    <div class="row mb-1">
         <div class="col-sm-2">
             <button class='btn btn-primary p-1 h-100' type='button' onclick="window.location='$portalSite/add.php';">
                     Add Another Person and<br/>Create a New Membership for Them
@@ -818,11 +864,110 @@ if ($info['managedByName'] == null) {
     </div>
 EOS;
     outputCustomText('main/people');
-    echo "Tab Structure Here<br/>";
+    // start tab structure for people choice
+    $hid = $type . $id;
+    $tabs = "'$hid'";
+    echo <<<EOS
+<ul class='nav nav-tabs mb-3 ms-3' id='people-tab' role='tablist'>
+    <li class='nav-item mt-2' role='presentation'>
+        <button class='nav-link active ps-4 pe-4' id='$hid-tab' data-bs-toggle='pill' data-bs-target='#$hid-pane' type='button'
+                role='tab' aria-controls='nav-alexia' aria-selected='true'
+                style="border-width: 4px 4px; border-color: var(--bs-primary); border-radius: 20px 20px 0px 0px; border-bottom: 0px;"
+                onclick="portal.settab('$hid');"><b>$fullName</b><br/>$holderPrimaryMembership<br/>$holderPrimaryStatus
+        </button>
+    </li>
+EOS;
+// loop over managed
+    foreach ($managedPeople as $m) {
+        $p = $m['p'];
+        $mid = $p['personType'] . $p['id'];
+        $tabs .= ",'$mid'";
+        $mFullName = $p['fullName'];
+        $mPrimary = $m['primary'];
+        $mAge = $m['memAge'];
+        $mAgeType = $p['currentAgeType'];
+// find memberAge and primary membership, only output agetype if no membership
+        if ($mAgeType == '') {
+            if ($mAge != '')
+                $mAgeLabel = '<i>' . $ageListIdx[$mAge]['shortname'] . ' [' . $ageListIdx[$mAge]['label'] . ']' . '</i>';
+            else
+                $mAgeLabel = 'Not Yet Entered';
+        } else {
+            $mAgeLabel = 'Age: ' . $ageListIdx[$mAgeType]['shortname'] . ' [' . $ageListIdx[$mAgeType]['label'] . ']';
+        }
+        if ($mPrimary) {
+            $mPrimaryMembership = $mPrimary['label'];
+            $mPrimaryStatus = '(' . $mPrimary['status'] . ')';
+        } else {
+            $mPrimaryMembership = $mAgeLabel;
+            $mPrimaryStatus = '&nbsp;';
+        }
+        echo <<<EOS
+<li class='nav-item mt-2' role='presentation'>
+        <button class='nav-link ps-4 pe-4' id='$mid-tab' data-bs-toggle='pill' data-bs-target='#$mid-pane' type='button'
+                role='tab' aria-controls='nav-alexia' aria-selected='false'
+                style="border-width: 4px 4px; border-color: var(--bs-primary); border-radius: 20px 20px 0px 0px; border-bottom: 0px;"
+                onclick="portal.settab('$mid');"><b>$mFullName</b><br/>$mPrimaryMembership<br/>$mPrimaryStatus
+        </button>
+    </li>
+EOS;
+    }
+
+// output the end of the tabs and the start of the holder
+    echo <<<EOS
+</ul>
+<script type='text/javascript'>
+        var tabs=[$tabs];
+        var hid = "$hid";
+</script>
+
+    <div class='row mt-2 mb-2'>
+        <div class='col-sm-12 p-0 m-0 align-center'>
+            <hr style='height:4px;width:98%;margin:auto;margin-top:0px;margin-bottom:0px;color:var(--bs-primary);background-color:var(--bs-primary);'/>
+        </div>
+    </div>
+<div class='tab-content ms-2' id='portal-content'>
+<!---- Start of holder: $fullName -->
+    <div class='tab-pane fade show active' id='$hid-pane' role='tabpanel' aria-labelledby='$hid-tab' tabindex='0'>
+        <div class="container-fluid">
+EOS;
+
 }
 $totalMemberships = count($holderMembership);
-$paidByOthers = drawPersonTab($loginId, $loginType, $info, $conid, $ageListIdx, $holderMembership,
-        $policies, $interests, $now, $ageByDate);
+$paidByOthers = drawPersonTab($loginId, $loginType, $info, $conid, $ageListIdx, $holderMembership, $policies, $interests, $now, $ageByDate);
+
+if ($info['managedByName'] == null) {
+    // ending of the holder part
+    echo <<<EOS
+        </div>
+    </div>
+EOS;
+
+    foreach ($managedPeople as $m) {
+        $p = $m['p'];
+        $mFullName = $p['fullName'];
+
+        $mid = $p['personType'] . $p['id'];
+        echo <<<EOS
+
+<div class='tab-content ms-2' id='portal-content'>
+<!---- Start of managee: $mFullName -->
+    <div class='tab-pane fade show active' id='$mid-pane' role='tabpanel' aria-labelledby='$mid-tab' tabindex='0'>
+        <div class="container-fluid">
+EOS;
+        drawPersonTab($p['id'], $p['personType'], $p, $conid, $ageListIdx, $managed, $policies, $interests, $now, $ageByDate);
+
+        // ending that managee
+        echo <<<EOS
+        </div>
+    </div>
+EOS;
+    }
+
+
+    // end of the block
+    echo "</div>\n";
+}
 /*
 $managedMembershipList = '';
 $currentId = -1;

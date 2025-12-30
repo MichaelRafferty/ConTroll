@@ -21,11 +21,30 @@ WITH trans AS (
 	WHERE perid = ?
 ), mems AS (
     SELECT t.id, r.create_date, r.id as regid, r.memId, r.conid, r.status, r.price, r.paid, r.complete_trans,
-     r.couponDiscount, r.perid, r.newperid,
+        r.couponDiscount, r.perid, r.newperid, r.create_trans, r.planId,      
+        r.price AS actPrice, IFNULL(r.paid, 0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,
+        r.perid AS regPerid, r.newperid AS regNewperid,
         IFNULL(r.complete_trans, r.create_trans) AS sortTrans,
         IFNULL(tp.complete_date, t.create_date) AS transDate,
-        m.label, m.memAge, m.memAge AS age, m.memType, m.memCategory, m.startdate, m.enddate, m.online, 
-        m.taxable, m.ageShortName AS ageshortname, m.shortname,
+        nc.id AS createNewperid, np.id AS completeNewperid, pc.id AS createPerid, pp.id AS completePerid,   
+        m.label, m.memAge, m.memAge AS age, m.memType, m.memCategory,  m.startdate, m.enddate, m.online, m.taxable, 
+        m.shortname, a.shortname AS ageShort, a.label AS ageLabel, a.ageType, a.shortname AS ageshortname,
+        CASE
+            WHEN pp.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pp.first_name, pp.last_name))
+            WHEN np.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', np.first_name, np.last_name))
+            WHEN pc.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pc.first_name, pc.last_name))
+            ELSE TRIM(CONCAT_WS(' ', nc.first_name, nc.last_name))
+        END AS purchaserName,
+        CASE 
+            WHEN pn.id IS NOT NULL THEN pn.id
+            WHEN nn.id IS NOT NULL THEN nn.id
+            ELSE NULL
+        END AS personId,
+        CASE 
+            WHEN pn.id IS NOT NULL THEN 'p'
+            WHEN nn.id IS NOT NULL THEN 'n'
+            ELSE NULL
+        END AS personType,
         CASE 
             WHEN pn.id IS NOT NULL THEN pn.first_name
             WHEN nn.id IS NOT NULL THEN nn.first_name
@@ -89,21 +108,37 @@ WITH trans AS (
             ELSE NULL
         END AS phone, 
         IFNULL(tp.perid, t.perid) AS transPerid,
-        IFNULL(tp.newperid, t.newperid) AS transNewPerid
+        IFNULL(tp.newperid, t.newperid) AS transNewPerid  
     FROM trans t
     JOIN reg r ON t.id = r.create_trans
     LEFT OUTER JOIN trans tp ON tp.id = r.complete_trans
     JOIN memLabel m ON m.id = r.memId
     LEFT OUTER JOIN perinfo pn ON pn.id = r.perid AND (pn.managedBy = ? OR pn.id = ?)
     LEFT OUTER JOIN newperson nn ON nn.id = r.newperid
+    LEFT OUTER JOIN perinfo pc ON t.perid = pc.id
+    LEFT OUTER JOIN newperson nc ON t.newperid = nc.id
+    LEFT OUTER JOIN perinfo pp ON tp.perid = pp.id
+    LEFT OUTER JOIN newperson np ON tp.newperid = np.id
+    JOIN ageList a ON m.memAge = a.ageType AND r.conid = a.conid
     WHERE (status $statusCheck OR (r.status = 'paid' AND r.complete_trans IS NULL)) AND (t.perid = ? OR tp.perid = ?) AND t.conid = ?
     UNION    
-    SELECT t.id, r.create_date, r.id AS regid, r.memId, r.conid, r.status, r.price, r.paid, r.complete_trans, 
-        r.couponDiscount, r.perid, r.newperid,
+    SELECT t.id, r.create_date, r.id as regid, r.memId, r.conid, r.status, r.price, r.paid, r.complete_trans,
+        r.couponDiscount, r.perid, r.newperid, r.create_trans, r.planId,      
+        r.price AS actPrice, IFNULL(r.paid, 0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,
+        r.perid AS regPerid, r.newperid AS regNewperid,
         IFNULL(r.complete_trans, r.create_trans) AS sortTrans,
         IFNULL(tp.complete_date, t.create_date) AS transDate,
+        nc.id AS createNewperid, np.id AS completeNewperid, pc.id AS createPerid, pp.id AS completePerid,    
         m.label, m.memAge, m.memAge AS age, m.memType, m.memCategory,  m.startdate, m.enddate, m.online, m.taxable, 
-        m.ageShortName AS ageshortname, m.shortname, nn.first_name AS fname, nn.last_name AS lname, nn.first_name, nn.last_name,
+        m.shortname, a.shortname AS ageShort, a.label AS ageLabel, a.ageType, a.shortname AS ageshortname,
+        CASE
+            WHEN pp.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pp.first_name, pp.last_name))
+            WHEN np.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', np.first_name, np.last_name))
+            WHEN pc.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pc.first_name, pc.last_name))
+            ELSE TRIM(CONCAT_WS(' ', nc.first_name, nc.last_name))
+        END AS purchaserName,
+        nn.id AS personId, 'n' AS personType,
+        nn.first_name AS fname, nn.last_name AS lname, nn.first_name, nn.last_name,
         nn.managedBy, nn.managedByNew, nn.badge_name, nn.badgeNameL2,
         TRIM(REGEXP_REPLACE(CONCAT(nn.first_name, ' ', nn.middle_name, ' ', nn.last_name, ' ', nn.suffix), ' +', ' ')) AS fullName, 
         nn.id as memberId, nn.email_addr, nn.phone,
@@ -112,8 +147,13 @@ WITH trans AS (
     FROM trans t
     JOIN reg r ON t.id = r.create_trans
     LEFT OUTER JOIN trans tp ON tp.id = r.complete_trans
+    LEFT OUTER JOIN perinfo pc ON t.perid = pc.id
+    LEFT OUTER JOIN newperson nc ON t.newperid = nc.id
+    LEFT OUTER JOIN newperson np ON tp.newperid = np.id
+    LEFT OUTER JOIN perinfo pp ON tp.perid = pp.id
     JOIN memLabel m ON m.id = r.memId
     JOIN newperson nn ON nn.id = r.newperid
+    JOIN ageList a ON m.memAge = a.ageType AND r.conid = a.conid
     WHERE (status $statusCheck OR (r.status = 'paid' AND r.complete_trans IS NULL)) AND (t.perid = ? OR tp.perid = ?) AND t.conid = ? and nn.perid is null
 )
 SELECT DISTINCT *

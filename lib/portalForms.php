@@ -378,6 +378,7 @@ EOS;
     $country = $person['country'];
     $phone = $person['phone'];
     $email = $person['email_addr'];
+    $label = $personType ==  'p' ? 'Membership Number' : 'Temp Membership Number';
 
     // Purchases block
     echo <<<EOS
@@ -393,89 +394,117 @@ EOS;
     outputCustomText('tab/top');
 
 // now the membership block
-     if ($memberships != null && count($memberships) > 0) {
-            echo "<div class='row mt-3'>\n";
-            foreach ($memberships as $membership) {
-                $disabled = '';
-                if (array_key_exists('memberbadgecolors', $portal_conf)) {
-                    $type = 'black';
+
+    $first = true;
+    if ($memberships != null && count($memberships) > 0) {
+        foreach ($memberships as $membership) {
+            $memPersonId = $personType . $personId;
+            if (array_key_exists('regNewperid', $membership)) {
+                $memPersonId = 'n' . $membership['regNewperid'];
+                if ($personType == 'n' && $membership['regNewperid'] != $personId)
+                    continue;
+            }
+            if (array_key_exists('regPerid', $membership)) {
+                $memPersonId = 'p' . $membership['regPerid'];
+                if ($personType == 'p' && $membership['regPerid'] != $personId)
+                    continue;
+            }
+            if ($first) {
+                echo "<div class='row mt-3'>\n";
+                $first = false;
+            }
+            $disabled = '';
+            if (array_key_exists('memberbadgecolors', $portal_conf)) {
+                $type = 'black';
+            } else {
+                $type = 'other';
+
+                if (array_key_exists('type', $membership)) {
+                    $memType = $membership['type'];
+                    $memCategory = $membership['category'];
+                    $memAge = $membership['memAge'];
                 } else {
-                    $type = 'other';
-
-                    if ($membership['type'] == 'wsfs')
-                        $type = 'wsfs';
-                    else if ($membership['category'] == 'yearahead')
-                        $type = 'yearahead';
-                    else if ($membership['memAge'] == 'child' || $membership['memAge'] == 'kit')
-                        $type = 'minor';
-                    else if ($membership['type'] == 'oneday')
-                        $type = 'oneday';
-                    else if ($membership['type'] == 'virtual')
-                        $type = 'virtual';
-                    else if ($membership['type'] == 'full')
-                        $type = 'full';
-                    else if ($membership['category'] == 'addon' || $membership['category'] == 'add-on'|| $membership['category'] == 'donation')
-                        $type = 'addon';
+                    $memType = $membership['memType'];
+                    $memCategory = $membership['memCategory'];
+                    $memAge = $membership['memAge'];
                 }
 
-                $borderColor = $membershipButtonColors[$type]['color'];
-                $borderStyle = $membershipButtonColors[$type]['style'];
+                if ($memType == 'wsfs')
+                    $type = 'wsfs';
+                else if ($memCategory == 'yearahead')
+                    $type = 'yearahead';
+                else if ($memAge == 'child' || $memAge == 'kit')
+                    $type = 'minor';
+                else if ($memType == 'oneday')
+                    $type = 'oneday';
+                else if ($memType == 'virtual')
+                    $type = 'virtual';
+                else if ($memType == 'full')
+                    $type = 'full';
+                else if ($memCategory == 'addon' || $memCategory == 'add-on'|| $memCategory == 'donation')
+                    $type = 'addon';
+            }
 
-               if ($membership['status'] == 'upgraded')
-                    $disabled = ' disabled';
+            $borderColor = $membershipButtonColors[$type]['color'];
+            $borderStyle = $membershipButtonColors[$type]['style'];
 
-               if ($membership['completePerid'] != null) {
-                   $compareId = $membership['completePerid'];
-                   $compareType = 'p';
-               } else if ($membership['completeNewperid'] != null) {
-                   $compareId = $membership['completeNewperid'];
-                   $compareType = 'n';
-               } else if ($membership['createPerid'] != null) {
-                   $compareId = $membership['createPerid'];
-                   $compareType = 'p';
-               } else if ($membership['createNewperid'] != null) {
-                   $compareId = $membership['createNewperid'];
-                   $compareType = 'n';
-               } else {
-                   $compareId = '';
-                   $compareType = '';
-               }
-               if (($compareId != $personId || $compareType != $personType) && $membership['actPrice'] >= 0) {
-                   $row3 = '<br/>Purchased by ' . $membership['purchaserName'];
-                   if ($membership['status'] == 'unpaid' || $membership['status'] == 'plan')
-                       $paidByOthers += $membership['actPrice'] - ($membership['actPaid'] + $membership['actCouponDiscount']);
-               } else {
-                   $row3 = '';
-               }
-               if ($membership['memAge'] == 'all') {
-                   $ageRow =  '';
-               } else {
-                   $ageRow = '<br/><b>' . $membership['ageShort'] . '</b> (' . $membership['ageLabel'] . ')';
-               }
-               $expired = $membership['status'] == 'unpaid' && ($membership['actPaid'] + $membership['actCouponDiscount']) > 0 &&
-                    ($membership['startdate'] > $now || $membership['enddate'] < $now || $membership['online'] == 'N');
-               $shortname = $membership['shortname'];
-               $status = $membership['status'];
-               if ($expired) {
-                   $expiredPrefix = '<span class="text-danger">Expired: ';
-                   $expiredSuffix = '</span>';
-               } else {
-                   $expiredPrefix = '';
-                   $expiredSuffix = '';
-               }
-                echo <<<EOS
-        <div class="col-sm-3  ps-1 pe-1 m-0">
-            <button class="btn btn-light border border-5 p-1 m-0 mt-1 mb-1 $borderColor w-100" 
-                style="pointer-events:none; $borderStyle;" $disabled tabindex="-1"><b>$expiredPrefix$shortname</b> ($status)
-                $ageRow
-                $row3
-            </button>
-        </div>
-        EOS;
-                }
+           if ($membership['status'] == 'upgraded')
+                $disabled = ' disabled';
+
+           if ($membership['completePerid'] != null) {
+               $compareId = $membership['completePerid'];
+               $compareType = 'p';
+           } else if ($membership['completeNewperid'] != null) {
+               $compareId = $membership['completeNewperid'];
+               $compareType = 'n';
+           } else if ($membership['createPerid'] != null) {
+               $compareId = $membership['createPerid'];
+               $compareType = 'p';
+           } else if ($membership['createNewperid'] != null) {
+               $compareId = $membership['createNewperid'];
+               $compareType = 'n';
+           } else {
+               $compareId = '';
+               $compareType = '';
+           }
+           if (($compareId != $personId || $compareType != $personType) && $membership['actPrice'] >= 0) {
+               $row3 = '<br/>Purchased by ' . $membership['purchaserName'];
+               if ($membership['status'] == 'unpaid' || $membership['status'] == 'plan')
+                   $paidByOthers += $membership['actPrice'] - ($membership['actPaid'] + $membership['actCouponDiscount']);
+           } else {
+               $row3 = '';
+           }
+           if ($memAge == 'all') {
+               $ageRow =  '';
+           } else {
+               $ageRow = '<br/><b>' . $membership['ageShort'] . '</b> (' . $membership['ageLabel'] . ')';
+           }
+           $expired = $membership['status'] == 'unpaid' && ($membership['actPaid'] + $membership['actCouponDiscount']) > 0 &&
+                ($membership['startdate'] > $now || $membership['enddate'] < $now || $membership['online'] == 'N');
+           $shortname = $membership['shortname'] . '(' . $memPersonId . ')';
+           $status = $membership['status'];
+           if ($expired) {
+               $expiredPrefix = '<span class="text-danger">Expired: ';
+               $expiredSuffix = '</span>';
+           } else {
+               $expiredPrefix = '';
+               $expiredSuffix = '';
+           }
+            echo <<<EOS
+    <div class="col-sm-3  ps-1 pe-1 m-0">
+        <button class="btn btn-light border border-5 p-1 m-0 mt-1 mb-1 $borderColor w-100" 
+            style="pointer-events:none; $borderStyle;" $disabled tabindex="-1"><b>$expiredPrefix$shortname</b> ($status)
+            $ageRow
+            $row3
+        </button>
+    </div>
+    EOS;
+            }
+        if ($first == false) {
             echo "</div>\n";
             drawPortalLegend();
         }
+    }
 
     // now for this person's profile
     $privacyLink = getConfValue('con', "privacypolicy", '');
@@ -509,6 +538,10 @@ EOS;
 // draw non editable profile
     echo <<<EOS
 <div class='row mt-2'>
+    <div class="col-sm-2">$label:</div>
+    <div class="col-sm-auto"><b>$id</b></div>
+</div>
+<div class='row mt'>
     <div class="col-sm-2">Name:</div>
     <div class="col-sm-auto"><b>$fullName</b></div>
 </div>
