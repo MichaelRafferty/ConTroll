@@ -1235,8 +1235,11 @@ class rulesSetup {
 
     // set all/clear all sections in table based on direction
     setRuleSel(level, direction) {
-        var rows = this.#editRuleSelTable.getRows();
-        for (var row of rows) {
+        let rows = this.#editRuleSelTable.getRows();
+        for (let row of rows) {
+            if (row.getPosition() === false)
+                continue;
+
             row.getCell(rules.getselIndex()).getElement().style.backgroundColor = direction ? "#C0FFC0" : "";
         }
     }
@@ -1246,15 +1249,15 @@ class rulesSetup {
         if (this.#debug > 0) console.log('enter applyRuleSel(' + level + ')');
         // store all the fields back into the table row
         if (level == 's' && this.#editRuleStepItem) {
-            var row = this.#ruleStepsTable.getRow(this.#editRuleStepItem);
-            var rowdata = row.getData();
+            let row = this.#ruleStepsTable.getRow(this.#editRuleStepItem);
+            let rowdata = row.getData();
             if (this.#debug > 0) console.log(row.getData());
         }
 
-        var filter = '';
-        var rows = null;
+        let filter = '';
+        let rows = null;
         rows = this.#editRuleSelTable.getRows();
-        for (var row of rows) {
+        for (let row of rows) {
             if (row.getCell(rules.getselIndex()).getElement().style.backgroundColor != '') {
                 filter += ',' + row.getCell(rules.getselIndex()).getValue();
             }
@@ -1279,8 +1282,8 @@ class rulesSetup {
         if (level == 's' && this.#debug > 0) {
             console.log('exit applyRuleSel(' + level + ')');
             // final values in the step
-            row = this.#ruleStepsTable.getRow(this.#editRuleStepItem);
-            rowdata = row.getData();
+            let row = this.#ruleStepsTable.getRow(this.#editRuleStepItem);
+            let rowdata = row.getData();
             console.log(row.getData());
         }
     }
