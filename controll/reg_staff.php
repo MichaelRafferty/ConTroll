@@ -528,10 +528,14 @@ $config_vars['currency'] = $currency;
                         <div class="col-sm-12 m-0 p-0" id="ruleStepDiv"></div>
                     </div>
                     <div class='row mt-2'>
-                        <div class='col-sm-auto' id='steps-buttons'>
+                        <div class='col-sm-8' id='steps-buttons'>
                             <button id='steps-undo' type='button' class='btn btn-secondary btn-sm' onclick='rules.undoSteps(); return false;' disabled>Undo</button>
                             <button id='steps-redo' type='button' class='btn btn-secondary btn-sm' onclick='rules.redoSteps(); return false;' disabled>Redo</button>
                             <button id='steps-addrow' type='button' class='btn btn-secondary btn-sm' onclick='rules.addrowSteps(); return false;'>Add New</button>
+                        </div>
+                        <div class='col-sm-4 text-end' id='steps-buttons'>
+                            <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
+                            <button class='btn btn-sm btn-primary' id='editRuleSaveBtnTop' onClick='rules.editRuleSave()'>Save Changes</button>
                         </div>
                     </div>
                     <div class='row mt-2'>
@@ -551,7 +555,7 @@ $config_vars['currency'] = $currency;
             </div>
             <div class='modal-footer'>
                 <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
-                <button class='btn btn-sm btn-primary' id='editRuleSaveBtn' onClick='rules.editRuleSave()'>Save Changes</button>
+                <button class='btn btn-sm btn-primary' id='editRuleSaveBtnBottom' onClick='rules.editRuleSave()'>Save Changes</button>
             </div>
         </div>
     </div>
@@ -575,12 +579,9 @@ $config_vars['currency'] = $currency;
                         <div class='col-sm-6'>
                             <div class='container-fluid' id='editRuleStepFieldDiv'>
                                 <div class='row'>
-                                    <div class='col-sm-2'>
-                                        <label for='sName'>Rule Name:</label>
+                                    <div class='col-sm-2'>Rule Name:
                                     </div>
-                                    <div class='col-sm-10'>
-                                        <input type='text' id='sName' name='sName' size='20' maxlength='16' placeholder='step name'/>
-                                    </div>
+                                    <div class='col-sm-10' id='sName' name="sName"></div>
                                 </div>
                                 <div class='row mt-1'>
                                     <div class='col-sm-2'>
@@ -588,7 +589,7 @@ $config_vars['currency'] = $currency;
                                     </div>
                                     <div class='col-sm-10'>
                                         <input type='number' class='no-spinners' inputmode='numeric' id='sStep' name='sStem'
-                                               size='10' min="1" max="999" placeholder='Step #'/>
+                                               size='10' min="1" max="999" placeholder='Step #' onchange="rules.ruleStepOnChange();"/>
                                     </div>
                                 </div>
                                 <div class='row mt-1'>
@@ -596,7 +597,7 @@ $config_vars['currency'] = $currency;
                                         <label for='sRuleType'>Rule Type:</label>
                                     </div>
                                     <div class='col-sm-10'>
-                                        <select id='sRuleType' name='sRuleType'>
+                                        <select id='sRuleType' name='sRuleType' onchange='rules.ruleStepOnChange();'>
                                             <option value="">--Select Rule Type--</option>
                                             <option value="needAny">
                                                 Need Any (One reg must match any [or within group, and between groups])
@@ -623,7 +624,7 @@ $config_vars['currency'] = $currency;
                                     <div class='col-sm-2'>
                                         <label for='sApplyTo'>Apply To:</label>
                                     </div>
-                                    <div class='col-sm-10'>
+                                    <div class='col-sm-10' onchange='rules.ruleStepOnChange();'>
                                         <select id='sApplyTo' name='sApplyTo'>
                                             <option value=''>--Select Apply To--</option>
                                             <option value='person'>Person</option>
@@ -687,6 +688,12 @@ $config_vars['currency'] = $currency;
                         </div>
                     </div>
                     <div class='row mt-2'>
+                        <div class='col-sm-12 text-end'>
+                            <button class='btn btn-sm btn-secondary' onClick='rules.editRuleStepSave(false);'>Cancel</button>
+                            <button class='btn btn-sm btn-primary' id='editRuleStepSaveBtnTop' onClick='rules.editRuleStepSave(true);'>Save Changes</button>
+                        </div>
+                    </div>
+                    <div class='row mt-2'>
                         <div class='col-sm-12'><h4>Memberships used by the this step</h4></div>
                     </div>
                     <div class='row mt-2'>
@@ -697,7 +704,7 @@ $config_vars['currency'] = $currency;
             </div>
             <div class='modal-footer'>
                 <button class='btn btn-sm btn-secondary' onClick='rules.editRuleStepSave(false);'>Cancel</button>
-                <button class='btn btn-sm btn-primary' id='editRuleSaveBtn' onClick='rules.editRuleStepSave(true);'>Save Changes</button>
+                <button class='btn btn-sm btn-primary' id='editRuleStepSaveBtnBottom' onClick='rules.editRuleStepSave(true);'>Save Changes</button>
             </div>
         </div>
     </div>
