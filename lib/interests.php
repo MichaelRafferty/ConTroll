@@ -74,7 +74,7 @@ function drawInterestsDisplay($interests, $personInterests, $id) {
     $footer = returnCustomText('interests/footer', 'profile/all/');
     if ($header != '') {
         ?>
-        <div class='row'>
+        <div class='row mt-2'>
             <div class='col-sm-auto'>
                 <?php  echo $header . PHP_EOL; ?>
             </div>
