@@ -888,7 +888,7 @@ class rulesSetup {
                 row.getCell("step").getElement().style.backgroundColor = "#fff3cd";
             });
         this.#ruleStepMaxStep++;
-        this.editStep('ruleItems', this.#editRuleName);
+        this.editStep('ruleItems', this.#ruleStepAddStepNum);
         this.checkStepsUndoRedo();
     }
 
