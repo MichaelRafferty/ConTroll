@@ -477,7 +477,7 @@ EOS;
            if ($memAge == 'all') {
                $ageRow =  '';
            } else {
-               $ageRow = '<br/><b>' . $membership['ageShort'] . '</b> (' . $membership['ageLabel'] . ')';
+               $ageRow = '<br/><b>' . $membership['ageShort'] . '</b> [' . $membership['ageLabel'] . ']';
            }
            $expired = $membership['status'] == 'unpaid' && ($membership['actPaid'] + $membership['actCouponDiscount']) > 0 &&
                 ($membership['startdate'] > $now || $membership['enddate'] < $now || $membership['online'] == 'N');
