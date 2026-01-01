@@ -21,7 +21,7 @@ function draw_login($config_vars, $result_message = '', $result_color = '', $why
                     </button>
                 </div>
                 <div class='col-sm-auto'>
-                    Don't have one?<br/>Create a passkey AFTER LOGINING IN another way and skip the password next time.
+                    Don't have one?<br/>Create a passkey AFTER LOGGING IN another way and skip the password next time.
                 </div>
             </div>
             <?php } ?>
