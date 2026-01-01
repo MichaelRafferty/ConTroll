@@ -106,8 +106,9 @@ if (array_key_exists('payorPlans', $paymentPlansData)) {
 }
 if (array_key_exists('plans', $paymentPlansData)) {
     $paymentPlans = $paymentPlansData['plans'];
-} else
+} else {
     $paymentPlans = [];
+}
 
 // get valid coupons
 $numCoupons = num_coupons();
@@ -169,79 +170,64 @@ draw_recieptModal();
 $noPayments = true;
 
 $totalDueFormatted = '';
-if ($totalDue > 0 || $activePaymentPlans) {
+if ($totalDue > 0) {
     $noPayments = false;
-    if ($totalDue > 0) {
-        $totalDueFormatted = 'Total due: ' . $dolfmt->formatCurrency((float)$totalDue, $currency);
-    } else {
-        $totalDueFormatted = "You have an active payment plan, check to see if it needs paying: ";
-    }
-    $payHtml = " $totalDueFormatted   " .
-        '<button class="btn btn-sm btn-primary pt-1 pb-1 ms-1 me-2" name="payBalanceBTNs" onclick="paymentHistory.gotoPayment();"' .
-        $disablePay . '>Make a Payment</button>';
+    $totalDueFormatted = 'Total due: ' . $dolfmt->formatCurrency((float)$totalDue, $currency);
+    $payHtml = <<<EOS
+    $totalDueFormatted <button class="btn btn-sm btn-primary pt-1 pb-1 ms-1 me-2" name="payBalanceBTNs" onclick="paymentHistory.gotoPayment();" $disablePay>
+            Make a Payment
+        </button>
+EOS;
+} else {
+    $payHtml = '';
+}
 
-    if ($activePaymentPlans > 0) {
-        ?>
-        <div class='row mt-5'>
-            <div class='col-sm-12'><h1 class="size-h3">Payment Plans for this account:</h1></div>
-        </div>
-        <?php
-        outputCustomText('main/plan');
-        drawPaymentPlans($info, $paymentPlansData, false);
-    }
-?>
-<div class='container-fluid p-0 m-0' id='paymentHistorySection'>
-    <div class='row mt-4'>
-        <div class='col-sm-12'>
-            <h1 class='size-h3'><?php echo $payHtml;?></h1>
-        </div>
+if ($activePaymentPlans > 0) {
+    ?>
+    <div class='row mt-5'>
+        <div class='col-sm-12'><h1 class="size-h3">Payment Plans for this account:</h1></div>
     </div>
-    <div class='row'>
+    <?php
+    outputCustomText('main/plan');
+    drawPaymentPlans($info, $paymentPlansData, false);
+?>
+    <div class='row mt-4'>
         <div class='col-sm-12 p-0 m-0 align-center'>
             <hr style='height:4px;width:98%;margin:auto;margin-top:0px;margin-bottom:0px;color:#333333;background-color:#333333;'/>
         </div>
     </div>
 <?php
-if ($totalDue > 0 || count($payorPlan) > 0) {
-?>
-    </div>
-<?php
 }
-
+?>
+<div class='container-fluid p-0 m-0' id='paymentHistorySection'>
+<?php
 if (count($memberships) > 0) {
     $noPayments = false;
     if ($totalUnpaid > 0) {
         $showAll = 'disabled';
         $showUnpaid = 'disabled';
-        $hideAll = 'disabled';
-    }
-    else {
+    } else {
         $showAll = 'disabled';
         $showUnpaid = 'hidden';
-        $hideAll = 'disabled';
     }
 ?>
     <div class='row mt-4'>
         <div class='col-sm-auto'>
             <h1 class="size-h3">
                 Purchased by this account: <?php echo $payHtml; ?>
-                <div class="btn-group" data-toggle="buttons">
+                <div class="btn-group ms-2" data-toggle="buttons">
                 <button class="btn btn-sm btn-info text-white me-0 ps-3" style="border-top-left-radius: 20px; border-bottom-left-radius: 20px;" id="btn-showAll"
                         type="button" onclick="paymentHistory.showAll();"
                     <?php echo $showAll;?>><b>Show All</b></button>
 <?php
     if ($totalUnpaid > 0) {
 ?>
-                <button class="btn btn-sm btn-info text-white m-0" id="btn-showUnpaid"
+                <button class="btn btn-sm btn-info text-white m-0" style='border-top-right-radius: 20px; border-bottom-right-radius: 20px;' id="btn-showUnpaid"
                         type="button" onclick="paymentHistory.showUnpaid();"
-                    <?php echo $showUnpaid; ?>><b>Show Unpaid</b></button>
+                    <?php echo $showUnpaid; ?>><b>Show Unpaid Only</b></button>
 <?php
     }
 ?>
-                <button class="btn btn-sm btn-info text-white ms-0 pe-3" id="btn-hideAll" style='border-top-right-radius: 20px; border-bottom-right-radius:
-                20px;'
-                        type="button"  onclick="paymentHistory.hideAll();"
-                    <?php echo $hideAll;?>><b>Hide All</b></button>
                 </div>
             </h1>
         </div>
@@ -418,7 +404,6 @@ if (count($memberships) > 0) {
         </div>
     </div>
 <?php
-            }
         }
     }
 }

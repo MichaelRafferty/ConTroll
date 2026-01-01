@@ -770,40 +770,36 @@ function drawPaymentPlans($person, $paymentPlans, $activeOnly = false) : void {
 <?php
     $now = time();
     foreach ($payorPlans as $payorPlan) {
-        if ($activeOnly && $payorPlan['status'] != 'active')
-            continue;
+        $id = $payorPlan['id'];
         $planid = $payorPlan['planId'];
         $plan = $plans[$planid];
-        $nextPayColor = '';
-        $data = computeNextPaymentDue($payorPlan, $plans, $dolfmt, $currency);
-        if ($payorPlan['status'] != 'active') {
-            $nextPayDue = '';
-            $minAmt = '';
-            $col1 = $payorPlan['status'];
+
+        if ($activeOnly) {
+            if ($payorPlan['status'] != 'active')
+                continue;
+            $onclick = "paymentPlans.payPlan($id);";
         } else {
+            $onclick = "paymentHistory.gotoPayment();";
+        }
+
+        if ($payorPlan['status'] == 'active') {
+            $nextPayColor = '';
+            $data = computeNextPaymentDue($payorPlan, $plans, $dolfmt, $currency);
             $nextPayDue = $data['nextPayDue'];
             $minAmt = $data['minAmt'];
             $nextPayTimestamp = $data['nextPayTimestamp'];
-            $id = $payorPlan['id'];
             if ($nextPayTimestamp < $now) { // past due
                 $nextPayColor = ' bg-danger text-white';
-                if ($activeOnly)
-                    $col1 = "<button class='btn btn-sm btn-danger pt-0 pb-0' onclick='paymentPlans.payPlan($id);'>Make Past Due Pmt</button>";
-                else
-                    $col1 = '<span class="warncolor">Past due</span>';
+                $col1 = "<button class='btn btn-sm btn-danger pt-0 pb-0' onclick='paymentPlans.payPlan($id);'>Make Past Due Pmt</button>";
                 $minAmt = $data['minAmt'];
             } else if ($nextPayTimestamp < $now + 7 * 24 * 3600) { // are we within 7 days of a payment
                 $nextPayColor = ' bg-warning';
-                 if ($activeOnly)
-                     $col1 = "<button class='btn btn-sm btn-primary pt-0 pb-0' onclick='paymentPlans.payPlan($id);'>Make Pmt</button>";
-                 else
-                     $col1 = 'Payment Due</span>';
+                $col1 = "<button class='btn btn-sm btn-primary pt-0 pb-0' onclick='$onclick'>Make Pmt</button>";
             } else {
-                if ($activeOnly)
-                    $col1 = "<button class='btn btn-sm btn-secondary pt-0 pb-0' onclick='paymentPlans.payPlan($id);'>Make Pmt</button>";
-                else
-                    $col1 = "Current";
+                $col1 = "<button class='btn btn-sm btn-secondary pt-0 pb-0' onclick='$onclick'>Make Pmt</button>";
             }
+        } else {
+            $col1 = $payorPlan['status'];
         }
         $dateCreated = date_format(date_create($payorPlan['createDate']), 'Y-m-d');
         $payByDate = date_format(date_create($plan['payByDate']), 'Y-m-d');
