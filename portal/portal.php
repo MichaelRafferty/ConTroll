@@ -739,19 +739,14 @@ $ageType = $info['currentAgeType'];
 // find memberAge and primary membership, only output agetype if no membership
 if ($ageType == '') {
     if ($holderMemberAge != '')
-        $ageLabel = '<i>' . $ageListIdx[$holderMemberAge]['shortname'] . ' [' . $ageListIdx[$holderMemberAge]['label'] . ']' . '</i>';
+        $holderAgeLabel = ' <i>' . $ageListIdx[$holderMemberAge]['shortname'] . ' [' . $ageListIdx[$holderMemberAge]['label'] . ']' . '</i>';
     else
-        $ageLabel = 'Not Yet Entered';
+        $holderAgeLabel = ' Age Not Yet Entered';
 } else {
-    $ageLabel = 'Age: ' . $ageListIdx[$ageType]['shortname'] . ' [' . $ageListIdx[$ageType]['label'] . ']';
+    $holderAgeLabel = ' ' . $ageListIdx[$ageType]['shortname'] . ' [' . $ageListIdx[$ageType]['label'] . ']';
 }
-if ($holderPrimary) {
-    $holderPrimaryMembership = $holderPrimary['label'];
-    $holderPrimaryStatus = '(' . $holderPrimary['status'] . ')';
-} else {
-    $holderPrimaryMembership = $ageLabel;
-    $holderPrimaryStatus = '&nbsp;';
-}
+
+$holderPrimaryMembership = $holderPrimary ? ('<b>' . $holderPrimary['shortname'] . '</b> (' . $holderPrimary['status'] . ')') : '&nbsp;';
 $infoArgs = json_encode(array('id' => $info['id'] , 'type' => $info['personType'], 'fullName' => $info['fullName'],
         'first_name' => $info['first_name'], 'last_name' => $info['last_name'], 'email_addr' => $info['email_addr']));
 $infoArgs = str_replace('"', '\\u0022', $infoArgs);
@@ -874,7 +869,7 @@ EOS;
         <button class='nav-link active ps-4 pe-4' id='$hid-tab' data-bs-toggle='pill' data-bs-target='#$hid-pane' type='button'
                 role='tab' aria-controls='nav-alexia' aria-selected='true'
                 style="border-width: 4px 4px; border-color: var(--bs-primary); border-radius: 20px 20px 0px 0px; border-bottom: 0px;"
-                onclick="portal.settab('$hid');"><b>$fullName</b><br/>$holderPrimaryMembership<br/>$holderPrimaryStatus
+                onclick="portal.settab('$hid');"><b>$fullName</b>$holderAgeLabel<br/>$holderPrimaryMembership
         </button>
     </li>
 EOS;
@@ -890,25 +885,19 @@ EOS;
 // find memberAge and primary membership, only output agetype if no membership
         if ($mAgeType == '') {
             if ($mAge != '')
-                $mAgeLabel = '<i>' . $ageListIdx[$mAge]['shortname'] . ' [' . $ageListIdx[$mAge]['label'] . ']' . '</i>';
+                $mAgeLabel = ' <i>' . $ageListIdx[$mAge]['shortname'] . ' [' . $ageListIdx[$mAge]['label'] . ']' . '</i>';
             else
-                $mAgeLabel = 'Not Yet Entered';
+                $mAgeLabel = 'Age Not Yet Entered';
         } else {
-            $mAgeLabel = 'Age: ' . $ageListIdx[$mAgeType]['shortname'] . ' [' . $ageListIdx[$mAgeType]['label'] . ']';
+            $mAgeLabel = ' ' . $ageListIdx[$mAgeType]['shortname'] . ' [' . $ageListIdx[$mAgeType]['label'] . ']';
         }
-        if ($mPrimary) {
-            $mPrimaryMembership = $mPrimary['label'];
-            $mPrimaryStatus = '(' . $mPrimary['status'] . ')';
-        } else {
-            $mPrimaryMembership = $mAgeLabel;
-            $mPrimaryStatus = '&nbsp;';
-        }
+        $mPrimaryMembership = $mPrimary ? ('<b>' . $mPrimary['shortname'] . '</b> (' . $mPrimary['status'] . ')') : '&nbsp;';
         echo <<<EOS
 <li class='nav-item mt-2' role='presentation'>
         <button class='nav-link ps-4 pe-4' id='$mid-tab' data-bs-toggle='pill' data-bs-target='#$mid-pane' type='button'
                 role='tab' aria-controls='nav-alexia' aria-selected='false'
                 style="border-width: 4px 4px; border-color: var(--bs-primary); border-radius: 20px 20px 0px 0px; border-bottom: 0px;"
-                onclick="portal.settab('$mid');"><b>$mFullName</b><br/>$mPrimaryMembership<br/>$mPrimaryStatus
+                onclick="portal.settab('$mid');"><b>$mFullName</b>$mAgeLabel<br/>$mPrimaryMembership
         </button>
     </li>
 EOS;

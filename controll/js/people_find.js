@@ -219,7 +219,7 @@ class Find {
                 {title: "Full Address", field: "fullAddr", width: 350, headerSort: true, headerFilter: true, formatter: "textarea", },
                 {title: "Email", field: "email_addr", width: 250, headerSort: true, headerFilter: true, },
                 {title: "Phone", field: "phone", width: 150, headerSort: true, headerFilter: true, },
-                {title: "Current Age/Mem Age", field: "displayAgeType", width: 100, headerSort: true, headerFilter: true, headerWordWrap: true, formatter: 'html', },
+                {title: "Current Age / Mem Age", field: "displayAgeType", width: 105, headerSort: true, headerFilter: true, headerWordWrap: true, formatter: 'html', },
                 {title: "Memberships", field: "memberships", minWidth: 300, headerSort: true, headerFilter: true, formatter: "textarea", },
                 {field: "creation_date", visible: false },
                 {field: 'first_name', visible: false,},
