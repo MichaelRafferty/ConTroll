@@ -582,8 +582,8 @@ EOS;
 
     // now the policy block
     if ($policies && count($policies) > 0) {
+        // add some space before the policies
         echo <<<EOS
-// add some space before the policies
 <div class='row'>
     <div class="com-sm-auto">&nbsp;</div>
 </div>
