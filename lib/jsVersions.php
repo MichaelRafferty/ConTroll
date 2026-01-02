@@ -24,4 +24,4 @@ $controllJSversion = '1.5.0d';
 $globalJSversion = '1.5.0b';
 $atJSversion = '1.5.0b';
 $exhibitorJSversion = '1.5.0b';
-$onlineregJSversion = '1.5.0b';
+$onlineregJSversion = '1.5.0c';
