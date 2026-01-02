@@ -147,7 +147,7 @@ WITH memAge AS (
     SELECT r.perid, MAX(m.memAge) AS memAgeType
     FROM reg r
     LEFT OUTER JOIN memList m on r.memId = m.id
-    WHERE m.memAge != 'all' AND r.perid = ?
+    WHERE m.memAge != 'all' AND r.perid = ? AND r.conid = ?
     GROUP BY r.perid
 )
 SELECT p.id, p.email_addr, p.phone, CONCAT_WS('<BR>', p.currentAgeType, ma.memAgeType) AS displayAgeType, p.creation_date, 
@@ -178,7 +178,7 @@ GROUP BY p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr,
     p.managedBy, p.managedByNew, p.lastverified, p.managedreason, phoneCheck, fullName, manager, managerId,
     ma.memAgeType, p.currentAgeType
 EOS;
-$updRowR = dbSafeQuery($updRowSQL, 'iiiii', array($perid, $conid,  $conid, $conid + 1, $perid));
+$updRowR = dbSafeQuery($updRowSQL, 'iiiiii', array($perid, $conid, $conid,  $conid, $conid + 1, $perid));
 if ($updRowR === false) {
     $response['warn'] = 'Error retrieving updated row';
 } else {

@@ -33,7 +33,7 @@ $mQ = <<<EOS
 WITH memAge AS (
     SELECT p.id, MAX(m.memAge) AS memAgeType
     FROM perinfo p
-    LEFT OUTER JOIN reg r on p.id = r.perid
+    LEFT OUTER JOIN reg r on p.id = r.perid AND r.conid = ?
     LEFT OUTER JOIN memList m on r.memId = m.id
     WHERE m.memAge != 'all'
     GROUP BY p.id
@@ -46,7 +46,7 @@ LEFT OUTER JOIN memAge map ON p.id = map.id
 WHERE p.id = ?
 EOS;
 
-$mR = dbSafeQuery($mQ, 'i', array($perid));
+$mR = dbSafeQuery($mQ, 'ii', array($conid, $perid));
 if ($mR === false) {
     $response['error'] = 'Select managed by failed';
     ajaxSuccess($response);
