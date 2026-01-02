@@ -601,6 +601,7 @@ class Profile {
                 let policy = policies[row];
                 let field = '#' + this.#prefix + 'p_' + policy.policy;
                 $(field).prop('checked', policy.defaultValue == 'Y');
+                $(field).removeClass(this.#alert);
             }
         }
         if (typeof interests !== 'undefined') {
