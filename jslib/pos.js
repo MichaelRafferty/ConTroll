@@ -8,6 +8,7 @@ class Pos {
     #add_edit_initial_state = "";
     #add_edit_current_state = "";
     #add_edit_prior_tab = null;
+    #add_edit_find_len = 999;
 
     // review items
     #review_div = null;
@@ -824,6 +825,7 @@ class Pos {
 
     // add record from the add/edit screen to the cart.  If it's already in the cart, update the cart record.
     add_new() {
+        this.#add_edit_find_len = 999;
         clear_message();
 
         // validate the data, simple checks
@@ -949,10 +951,12 @@ class Pos {
         if (this.#add_results_table != null) {
             this.#add_results_table.destroy();
             this.#add_results_table = null;
+        }
+        if (this.#add_edit_find_len == 0) {
+            this.#add_edit_find_len = 999;
             pos.addNewToCart();
             return;
         }
-
         clear_message();
         let name_search = (new_first + ' ' + new_last).toLowerCase().trim();
         if (name_search == null || name_search == '') {
@@ -999,6 +1003,7 @@ class Pos {
         let rowindex;
         // see if they already exist (if add to cart)
         this.#add_perinfo = data.perinfo;
+        this.#add_edit_find_len = this.#add_perinfo.length;
 
         if (this.#add_perinfo.length > 0) {
             // find primary membership for each add_perinfo record
@@ -1058,11 +1063,13 @@ class Pos {
             this.#add_edit_initial_state = $("#add-edit-form").serialize();
             $("button[name='find_btn']").attr("disabled", false);
             return;
+        } else {
+            this.add_new2();
         }
     }
 
     addNewToCart() {
-        let person = URLparamsToArray($('#editPerson').serialize());
+        let person = URLparamsToArray($('#add-edit-form').serialize());
         this.#addoverride_button.hidden = true;
 
         //  build the policy array

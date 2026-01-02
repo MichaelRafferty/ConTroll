@@ -315,12 +315,14 @@ class PosCart {
 
     // return the age based on memberships in the cart row
     #getAge(p) {
-        let memberships = p.memberships;
-        for (let i = 0; i < memberships.length; i++) {
-            let mbr = memberships[i];
-            if (mbr.memAge == 'all')
-                continue;
-            return mbr.memAge;
+        if (p.memberships) {
+            let memberships = p.memberships;
+            for (let i = 0; i < memberships.length; i++) {
+                let mbr = memberships[i];
+                if (mbr.memAge == 'all')
+                    continue;
+                return mbr.memAge;
+            }
         }
         return '';
     }
