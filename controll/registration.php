@@ -258,8 +258,7 @@ drawEditPersonBlock($con, $useUSPS, $policies, 'registration', false, true, $age
                     </div>
                 </div>
                 <div class='modal-footer'>
-                    <button type='button' id="close_note_button" class='btn btn-primary'
-                            onclick="pos.saveNote();">
+                    <button type='button' id="close_note_button" class='btn btn-primary' onclick="pos.saveNote();">
                         Close
                     </button>
                 </div>

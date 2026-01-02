@@ -90,6 +90,7 @@ function drawGetNewMemberships($fullName) : void {
         <div class='col-sm-12'>
             <h3 class='text-primary'>Add/Edit Memberships and other Purchases for <?php echo $fullName; ?></h3>
         </div>
+    </div>
 <?php } ?>
     <div class='row mt-1' id='membershipButtons'></div>
     <div class="row mt-2">
