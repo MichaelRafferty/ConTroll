@@ -25,11 +25,26 @@ LEFT OUTER JOIN payments P ON (P.transid=T.id)
 WHERE T.id=?;
 EOS;
 
+$currency = getConfValue('con', 'currency', 'USD');
+$onedaycoupons = getConfValue('con', 'onedaycoupons', 0);
+
+$locale = getLocale();
+$config_vars = array();
+$config_vars['label'] = $con['label'];
+$config_vars['required'] = getConfValue('reg', 'required', 'addr');
+$config_vars['conid'] = $condata['id'];
+$config_vars['debug'] = getConfValue('debug', 'onlinereg', 0);
+$config_vars['locale'] = $locale;
+$config_vars['currency'] = $currency;
+$config_vars['onedaycoupons'] = $onedaycoupons;
+
 $owner = dbSafeQuery($ownerQ, 'i', array($transid))->fetch_assoc();
 if ($owner == null) {
     $owner = array('first_name' => '', 'last_name' => '');
 }
-ol_page_init($condata['label'] . ' Registration Complete');
+
+$js = 'var config = ' . json_encode($config_vars) . ';' . PHP_EOL;
+ol_page_init($condata['label'] . ' Registration Complete', $js);
 ?>
 <body>
     <div class="container-fluid">
