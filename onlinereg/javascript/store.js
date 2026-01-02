@@ -34,6 +34,12 @@ var addToCartBtn = null;
 
 var profile = null;
 
+// formatting items
+// locale/currency
+var currencyFmt = null;
+var locale = null;
+
+
 // process the form for validation and add to the badge array if valud
 function process(formRef) {
     formData = URLparamsToArray($('#' + formRef).serialize(), true);
@@ -409,6 +415,13 @@ function togglePopup() {
 }
 
 window.onload = function () {
+// formatting items
+    locale = config.locale;
+    currencyFmt = new Intl.NumberFormat(locale, {
+        style: 'currency',
+        currency: config.currency,
+    });
+
     var badge_modal = document.getElementById('anotherBadge');
     if (badge_modal != null) {
         anotherBadge = new bootstrap.Modal(badge_modal, { focus: true, backdrop: 'static' });
