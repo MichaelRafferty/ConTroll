@@ -87,7 +87,7 @@ WITH perids AS (
 ), memAge AS (
     SELECT p.id, MAX(m.memAge) AS memAgeType
     FROM perids p
-    LEFT OUTER JOIN reg r on p.id = r.perid
+    LEFT OUTER JOIN reg r on p.id = r.perid AND r.conid = ?
     LEFT OUTER JOIN memList m on r.memId = m.id
     WHERE m.memAge != 'all'
     GROUP BY p.id
@@ -98,11 +98,11 @@ LEFT OUTER JOIN his ON p.id = his.id
 LEFT OUTER JOIN memAge m ON p.id = m.id
 EOS;
     if ($excludeJoin != '') {
-        $typestr = 'iiiiii';
-        $valArray = array($conid, $conid, $user_perid, $conid, $conid + 1, $findPattern);
+        $typestr = 'iiiiiii';
+        $valArray = array($conid, $conid, $user_perid, $conid, $conid + 1, $findPattern, $conid);
     } else {
-        $typestr = 'iiii';
-        $valArray = array($conid, $conid, $conid + 1, $findPattern);
+        $typestr = 'iiiii';
+        $valArray = array($conid, $conid, $conid + 1, $findPattern, $conid);
     }
     $mR = dbSafeQuery($mQ, $typestr, $valArray);
 } else {
@@ -163,7 +163,7 @@ GROUP BY p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr,
 ), memAge AS (
     SELECT p.id, MAX(m.memAge) AS memAgeType
     FROM perids p
-    LEFT OUTER JOIN reg r on p.id = r.perid
+    LEFT OUTER JOIN reg r on p.id = r.perid AND r.conid = ?
     LEFT OUTER JOIN memList m on r.memId = m.id
     WHERE m.memAge != 'all'
     GROUP BY p.id
@@ -175,13 +175,13 @@ LEFT OUTER JOIN memAge m on p.id = m.id
 LIMIT $limit;
 EOS;
     if ($excludeJoin != '') {
-        $typestr = 'iiiiisssssssss';
+        $typestr = 'iiiiisssssssssi';
         $valArray = array ($conid, $conid, $user_perid, $conid, $conid + 1, $findPattern, $findPattern, $findPattern, $findPattern,
-                           $findPattern, $findPattern, $findPattern, $findPattern, $findPattern);
+                           $findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $conid);
     } else {
-        $typestr = 'iiisssssssss';
+        $typestr = 'iiisssssssssi';
         $valArray = array ($conid, $conid, $conid + 1, $findPattern, $findPattern, $findPattern, $findPattern,
-                           $findPattern, $findPattern, $findPattern,$findPattern,  $findPattern);
+                           $findPattern, $findPattern, $findPattern,$findPattern,  $findPattern, $conid);
     }
     $mR = dbSafeQuery($mQ, $typestr, $valArray);
 }
