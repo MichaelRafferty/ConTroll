@@ -120,11 +120,12 @@ function drawPoliciesDisplay($policies, $personPolicies, $id) {
     foreach ($policies as $policy) {
         $name = $policy['policy'];
         $prompt = replaceVariables($policy['prompt']);
+        $required = $policy['required'];
         $description = replaceVariables($policy['description']);
         if (array_key_exists($name,$personPolicies) && $personPolicies[$name] == 'Y')
-            $box = '&#9745;';
+            $box = '✅';
         else
-            $box = '&#9634;';
+            $box = $required == 'Y' ? '❌' : '✖' ;
         ?>
         <div class='row'>
             <div class='col-sm-12'>
