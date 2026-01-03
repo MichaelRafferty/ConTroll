@@ -816,22 +816,16 @@ echo <<<EOS
 EOS;
 }
 
-// line 3 payament info
+// line 3/3a payment info
 $totalDueFormatted = '';
-if ($totalDue > 0 || $activePaymentPlans > 0) {
-    if ($totalDue > 0) {
-        $totalDueFormatted = 'Total due: ' . $dolfmt->formatCurrency((float)$totalDue, $currency);
-    } else {
-        $totalDueFormatted = "You have an active payment plan, check to see if it needs paying";
-    }
-    if (count($paymentPlans) > 0) {
-        $payHtml = '<button class="btn btn-sm btn-primary p-1 w-100 h-100" onclick="portal.setFocus(\'paymentDiv\');"' .
-            $disablePay . '>Check Plan</button>';
-    } else {
-        $payHtml = '<button class="btn btn-sm btn-primary p-1 w-100 h-100" name="payBalanceBTNs" onclick="portal.payBalance(' . $totalDue . ', true);"' .
+if ($totalDue > 0) {
+    $totalDueFormatted = 'Total ';
+    if ($activePaymentPlans > 0)
+        $totalDueFormatted .= 'non plan ';
+    $totalDueFormatted .= 'due: ' . $dolfmt->formatCurrency((float)$totalDue, $currency);
+    $payHtml = '<button class="btn btn-sm btn-primary p-1 w-100 h-100" name="payBalanceBTNs" onclick="portal.payBalance(' . $totalDue . ', true);"' .
             $disablePay . '>Make Payment</button>';
-    }
-echo <<<EOS
+    echo <<<EOS
     <div class='row mt-4'>
         <div class="col-sm-2">$payHtml</div>
         <div class='col-sm-auto'>
@@ -840,6 +834,21 @@ echo <<<EOS
     </div>
 EOS;
 }
+
+if ($activePaymentPlans > 0) {
+    $totalDueFormatted = "You have an active payment plan, check to see if it needs paying";
+    $payHtml = '<button class="btn btn-sm btn-primary p-1 w-100 h-100" onclick="portal.setFocus(\'paymentDiv\');"' .
+            $disablePay . '>Check Plan</button>';
+    echo <<<EOS
+    <div class='row mt-4'>
+        <div class="col-sm-2">$payHtml</div>
+        <div class='col-sm-auto'>
+            <span class='h3'>$totalDueFormatted</span>
+        </div>
+    </div>
+EOS;
+}
+
 // HR - then line 4 - People you manage (if you are not managed by someone else)
 echo <<<EOS
     <div class='row mt-2 mb-2'>
@@ -932,8 +941,8 @@ EOS;
 
 } else {
     echo <<<EOS
-    <script type='text/javascript'>
-        var hid = 0;
+<script type='text/javascript'>
+    var hid = 0;
 </script>
 EOS;
 }
@@ -945,6 +954,7 @@ if ($info['managedByName'] == null) {
     echo <<<EOS
         </div>
     </div>
+</div>
 EOS;
 
     foreach ($managedPeople as $m) {
@@ -965,6 +975,7 @@ EOS;
         echo <<<EOS
         </div>
     </div>
+</div>
 EOS;
     }
 
@@ -1010,7 +1021,7 @@ if ($paidByOthers > 0) {
         $disablePay . '>Optionally Pay All or Part</button>';
 ?>
     <div class='row mt-5'>
-        <div class='col-sm-12'><h1 class='size-h3'>Memberships Purchased by Others for You Total: <?php echo $otherDueFormatted; ?></h1></div>
+        <div class='col-sm-12'><h1 class='size-h3'>Memberships purchased by others for you total: <?php echo $otherDueFormatted; ?></h1></div>
     </div>
 
 <?php
