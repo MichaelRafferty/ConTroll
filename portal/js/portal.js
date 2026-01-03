@@ -1479,6 +1479,9 @@ class Portal {
 
     // set portal page tab
     settab(tabname) {
+        if (hid == 0)
+            return;
+
         // console.log("switching to " + tabname);
         for (let i = 0; i < tabs.length; i++) {
             // console.log("remove active from " + tabs[i] + '-tab');

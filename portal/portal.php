@@ -930,6 +930,12 @@ EOS;
         <div class="container-fluid">
 EOS;
 
+} else {
+    echo <<<EOS
+    <script type='text/javascript'>
+        var hid = 0;
+</script>
+EOS;
 }
 $totalMemberships = count($holderMembership);
 $paidByOthers = drawPersonTab($loginId, $loginType, $info, $conid, $ageListIdx, $holderMembership, $policies, $interests, $now, $ageByDate);
