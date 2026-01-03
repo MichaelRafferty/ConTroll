@@ -152,6 +152,14 @@ drawVerifyPersonInfo($policies, $condata['startdate'], $ageList);
         </form>
         <?php
         if ($interests != null && count($interests) > 0) {
+            echo <<<EOS
+        <div class=row mt-1 mb-1">
+            <div class="col-sm-auto">
+                <span class="h3">Additional Interests or Needs</span>
+            </div>
+        </div>  
+EOS;
+
             drawVerifyInterestsBlock($interests);
         }
         ?>
