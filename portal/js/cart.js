@@ -394,8 +394,7 @@ class Cart {
         var _this = this;
         if (this.#cartChanges == 0) {
             // go back to the home page
-            this.#leaveBeforeChanges = false;
-            window.location = "portal.php?messageFwdmessageFwd=" + encodeURI("No Changes");
+            this.saveCartComplete([]);
             return;
         }
         this.#saveCartBtn.disabled = true;
