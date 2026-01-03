@@ -44,6 +44,7 @@ var find_result_table = null;
 var testdiv = null;
 var conid = 0;
 var reglistDiv = null;
+var currencyFmt = null;
 
 // changes items
 var changeMemberships = [];
@@ -90,6 +91,10 @@ var notes = null;
 
 // initialization at DOM complete
 window.onload = function initpage() {
+    currencyFmt = new Intl.NumberFormat(config.locale, {
+        style: 'currency',
+        currency: config.currency,
+    });
     id = document.getElementById('changeModal');
     if (id != null) {
         changeModal = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
