@@ -91,11 +91,16 @@ $config_vars['taxRates'] = getTaxRates();
 $config_vars['locale'] = $locale;
 $config_vars['currency'] = $currency;
 
+$tab = '';
 if (array_key_exists('payment', $_REQUEST)) {
     $paymentPassed = $_REQUEST['payment'];
     if ($paymentPassed == '1') {
         $config_vars['paymentFocus'] = 'paymentDiv';
     }
+} else if (array_key_exists('tab', $_REQUEST)) {
+    $tab = $_REQUEST['tab'];
+    if ($tab != '')
+        $config_vars['tab'] = $tab;
 }
 
 $cdn = getTabulatorIncludes();
@@ -784,9 +789,9 @@ echo <<<EOS
             <p><strong>Note:</strong> Your email address is entered at the start of creating the account or edited using the "Change Email" button.</p>
         </div>
 EOS;
+$portalSite = $portal_conf['portalsite'];
 if (!$hasPasskey && getConfValue('portal', 'passkeyRpLevel', 'd') != 'd' &&
         array_key_exists('HTTPS', $_SERVER) && (isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == 'on')) {
-    $portalSite = $portal_conf['portalsite'];
 echo <<<EOS
         <div class="col-sm-auto">
             <button class='btn btn-primary p-1 h-100' type='button' onclick="window.location='$portalSite/accountSettings.php?passkey=create';">
@@ -862,6 +867,9 @@ EOS;
     outputCustomText('main/people');
     // start tab structure for people choice
     $hid = $type . $id;
+    if ($tab == '')
+        $tab = $hid;
+
     $tabs = "'$hid'";
     echo <<<EOS
 <ul class='nav nav-tabs mb-3 ms-3' id='people-tab' role='tablist'>
@@ -908,7 +916,7 @@ EOS;
 </ul>
 <script type='text/javascript'>
         var tabs=[$tabs];
-        var hid = "$hid";
+        var hid = "$tab";
 </script>
 
     <div class='row mt-2 mb-2'>

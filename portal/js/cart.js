@@ -438,11 +438,11 @@ class Cart {
     saveCartComplete(data) {
         // once saved, return home
         this.#leaveBeforeChanges = false;
-        var location = "portal.php";
+        var location = "portal.php?tab=" + config.tab;
         if (data.message) {
-            window.location = location + '?messageFwd=' + encodeURI(data.message);
+            window.location = location + '&messageFwd=' + encodeURI(data.message);
         } else {
-            window.location = location+ '?messageFwd=' + encodeURI("No Changes");
+            window.location = location+ '&messageFwd=' + encodeURI("No Changes");
         }
         return;
     }

@@ -73,6 +73,7 @@ $config_vars['personEmail'] = getSessionVar('email');
 $config_vars['required'] = getConfValue('reg', 'required', 'addr');
 $config_vars['multiOneDay'] = $multiOneDay;
 $config_vars['oneoff'] = $oneoff;
+$config_vars['tab'] = $cartType . $cartId;
 $cdn = getTabulatorIncludes();
 
 // build info array about the account holder
