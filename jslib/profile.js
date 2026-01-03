@@ -28,6 +28,7 @@ class Profile {
 
 // online reg - membership filtering
     #memIdField = null;
+    #ageasofLabel = null;
 
 // USPS fields
     #formData = null;
@@ -73,12 +74,7 @@ class Profile {
         this.#ageDiv = document.getElementById(prefix + "agediv");
         this.#uspsDiv = document.getElementById(prefix + "uspsblock");
         this.#memIdField = document.getElementById('memId');
-
-        if (this.#memIdField) {
-            this.#ageField.onchange=function() {
-                profile.ageChanged();
-            }
-        }
+        this.#ageasofLabel = document.getElementById('ageasofLabel');
     }
 
     // get functions
@@ -283,6 +279,10 @@ class Profile {
         this.#ageField.hidden = hide;
     }
 
+    hideAgeAsOfLabel(hide = true) {
+        this.#ageasofLabel.hidden = hide;
+    }
+
     validate(person, messageDiv, addCallback, redoCallback, message = '', multiUse = false) {
         this.#messageDiv = messageDiv;
         this.#addCallback = addCallback;
@@ -291,6 +291,18 @@ class Profile {
         let required = config.required;
         this.#uspsAddress = null;
 
+        if (this.#memIdField) {
+            if (this.#memIdField.value != '') {
+                let memId = this.#memIdField.value;
+                for (let i = 0; i < membershipTypes.length; i++) {
+                    let mtype = membershipTypes[i];
+                    if (mtype.id == memId) {
+                        this.#ageField.value = mtype.memAge;
+                        break;
+                    }
+                }
+            }
+        }
         if (person == null) {
             person = {
                 fname: this.fname(),
@@ -634,23 +646,5 @@ class Profile {
         this.#zipField.classList.remove(this.#alert);
         this.#countryField.classList.remove(this.#alert);
         this.#phoneField.classList.remove(this.#alert);
-    }
-
-    // ageChanged - filter memList for age change
-    ageChanged() {
-        if (this.#memIdField == null)
-            return;
-
-        let age = this.#ageField.value;
-        let first = true;
-        for (let i = 0; i < membershipTypes.length; i++) {
-            let mtype = membershipTypes[i];
-            let display = (mtype.memAge == age || mtype.memAge == 'all');
-            if (first && display) {
-                first = false;
-                this.#memIdField.value = mtype.id;
-            }
-            this.#memIdField.options[i].style.display = (mtype.memAge == age || mtype.memAge == 'all') ? '' : 'none';
-        }
     }
 }

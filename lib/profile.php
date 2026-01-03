@@ -175,7 +175,8 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
         </div>
         <div class='col-sm-auto'>
             <label for="<?php echo $idPrefix . 'age'; ?>" class='form-label-sm'>
-                <span class='text-dark' style='font-size: 10pt;'><?php echo $firstStar; ?>Age as of <?php echo $ageByDate; ?></span></label><br/>
+                <span id="ageasofLabel" class='text-dark' style='font-size: 10pt;'><?php echo $firstStar; ?>Age as of <?php echo $ageByDate;
+                ?></span></label><br/>
             <div class="mt-1">
                 <select name='age' id='<?php echo $idPrefix . 'age'; ?>' tabindex="<?php echo $tabindex; $tabindex += 10;?>">
                     <option value="">--Select Age Bracket--</option>

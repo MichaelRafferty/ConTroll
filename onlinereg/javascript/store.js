@@ -438,6 +438,8 @@ window.onload = function () {
         profile = new Profile();
         profile.hideAgeText(true);
         profile.hideAgeDiv(true);
+        profile.hideAgeField(hide = true);
+        profile.hideAgeAsOfLabel(hide = true);
         if (profile.hasUSPSDiv()) {
             if (profile.country() == 'USA')
                 addToCartBtn.innerHTML = 'Validate Address To Add Membership To Cart';
