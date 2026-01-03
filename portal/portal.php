@@ -784,7 +784,7 @@ echo <<<EOS
             <p><strong>Note:</strong> Your email address is entered at the start of creating the account or edited using the "Change Email" button.</p>
         </div>
 EOS;
-if (true || !$hasPasskey && getConfValue('portal', 'passkeyRpLevel', 'd') != 'd' &&
+if (!$hasPasskey && getConfValue('portal', 'passkeyRpLevel', 'd') != 'd' &&
         array_key_exists('HTTPS', $_SERVER) && (isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == 'on')) {
     $portalSite = $portal_conf['portalsite'];
 echo <<<EOS
