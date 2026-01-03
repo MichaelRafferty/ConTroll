@@ -77,7 +77,7 @@ $config_vars['tab'] = $cartType . $cartId;
 $cdn = getTabulatorIncludes();
 
 // build info array about the account holder
-$info = getPersonInfo($conid, null, null, true);
+$info = getPersonInfo($conid, $loginType, $loginId);
 if ($info === false) {
     echo 'Invalid Login, seek assistance';
     portalPageFoot();
@@ -101,7 +101,12 @@ portalPageInit('addUpgrade', $info,
     ),
 );
     // get the info for the current person
-    $person = getPersonInfo($conid, $cartType, $cartId);
+    if ($cartType == $loginType && $cartId == $loginId) {
+        $person = $info;
+    } else {
+        $person = getPersonInfo($conid, $cartType, $cartId);
+        $person['allMemberships'] = $info['allMemberships'];
+    }
 ?>
 <script type='text/javascript'>
     var config = <?php echo json_encode($config_vars); ?>;
@@ -116,7 +121,6 @@ portalPageInit('addUpgrade', $info,
 </script>
 <?php
 
-$memberships = null;
 outputCustomText('main/top');
 // draw the skeleton
 drawVariablePriceModal('cart');

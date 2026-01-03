@@ -468,8 +468,12 @@ EOS;
                $compareId = '';
                $compareType = '';
            }
+            $status = $membership['status'];
            if (($compareId != $personId || $compareType != $personType) && $membership['actPrice'] >= 0) {
-               $row3 = '<br/>Purchased by ' . $membership['purchaserName'];
+               if ($status == 'unpaid')
+                   $row3 = '<br/>Added by ' . $membership['purchaserName'];
+               else
+                   $row3 = '<br/>Purchased by ' . $membership['purchaserName'];
                if ($membership['status'] == 'unpaid' || $membership['status'] == 'plan')
                    $paidByOthers += $membership['actPrice'] - ($membership['actPaid'] + $membership['actCouponDiscount']);
            } else {
@@ -483,7 +487,6 @@ EOS;
            $expired = $membership['status'] == 'unpaid' && ($membership['actPaid'] + $membership['actCouponDiscount']) > 0 &&
                 ($membership['startdate'] > $now || $membership['enddate'] < $now || $membership['online'] == 'N');
            $shortname = $membership['shortname'];
-           $status = $membership['status'];
            if ($expired) {
                $expiredPrefix = '<span class="text-danger">Expired: ';
                $expiredSuffix = '</span>';
