@@ -1483,7 +1483,6 @@ class Portal {
         for (let i = 0; i < tabs.length; i++) {
             // console.log("remove active from " + tabs[i] + '-tab');
             let el = document.getElementById(tabs[i] + '-tab');
-            // console.log('before tab: ' + el.classList);
             let left = 1;
             let right = 1;
             if (i == 0) left = 2;
@@ -1491,17 +1490,14 @@ class Portal {
             el.style="border-bottom: 4px solid #0000FF; border-right: " + right + "px solid #808080;" +
                 " border-left: " + left + "px solid #808080;" +
                 " background-color: #E8E8E8; border-radius: 0px;";
-            // console.log('after tab: ' + el.classList);
 
-            //el = document.getElementById(tabs[i] + '-pane');
-            //// console.log('before pane: ' + el.classList);
-            //el.classList.remove("active");
-            //// console.log('after pane: ' + el.classList);
+            el = document.getElementById(tabs[i] + '-pane');
+            el.classList.remove("active", "show");
         }
 
         document.getElementById(tabname + '-tab').style=
             "border-width: 4px 4px; border-color: var(--bs-primary); border-radius: 20px 20px 0px 0px; border-bottom: 0px;";
-        //document.getElementById(tabname + '-pane').classList.add("active");
+        document.getElementById(tabname + '-pane').classList.add("active", "show");
     }
 }
 
