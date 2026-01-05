@@ -47,6 +47,7 @@ class Find {
     #managesLookupRows = null
     #managesName = null;
     #updateOverrideBTN = null;
+    #memAgeType = null;
 
     #matched = null;
     #editRow = null;
@@ -307,6 +308,7 @@ class Find {
     // editPerson - call up this person to edit
     editPerson(index) {
         this.#editRow = this.#findTable.getRow(index).getData();
+        this.#memAgeType = this.#editRow.memAgeType == '' ? null : this.#editRow.memAgeType
 
         var postdata = {
             type: 'details',
@@ -364,13 +366,13 @@ class Find {
         this.#adminNotes.value = this.#editRow.admin_notes ? this.#editRow.admin_notes : '';
 
         // update rest of age items to match age
-        if (profile.age() == '') {
+        if (profile.age() == '' && this.#memAgeType == null) {
             profile.hideAgeText(true);
             profile.hideAgeDiv(true);
         } else {
-            profile.setAgeText(this.#editRow.displayAgeType);
+            profile.setAgeText('<span style="color: red;"><b>A membership has an age type of ' + this.#memAgeType + "</b></span>");
             let ages = this.#editRow.displayAgeType.toLowerCase().split('<br>');
-            profile.hideAgeText(ages.length < 2 || ages[0] == ages[1])
+            profile.hideAgeText(false)
             profile.hideAgeField(false);
             profile.hideAgeDiv(true);
         }
@@ -931,7 +933,7 @@ class Find {
             openNotes: this.#openNotes.value,
             adminNotes: this.#adminNotes.value,
             oldPolicies: JSON.stringify(this.#memberPolicies),
-            currentAgeType: profile.age() == '' ? null : profile.age(),
+            currentAgeType: profile.age() == '' ? this.#memAgeType : profile.age(),
             origAgeType: this.#origAge,
             existingInterests: JSON.stringify(this.#memberInterests),
         };
@@ -997,6 +999,7 @@ class Find {
         this.#findTable.updateData(data.updated);
 
         this.clearForm();
+        this.#memAgeType = null;
         this.#editModal.hide();
         if (data.success) {
             show_message(data.success, 'success');

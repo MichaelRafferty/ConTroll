@@ -150,10 +150,7 @@ WITH memAge AS (
     WHERE m.memAge != 'all' AND r.perid = ? AND r.conid = ?
     GROUP BY r.perid
 )
-SELECT p.id, p.email_addr, p.phone, CONCAT_WS('<BR>', p.currentAgeType, ma.memAgeType) AS displayAgeType, p.creation_date, 
-    p.first_name, p.middle_name, p.last_name, p.suffix, p.legalName, p.pronouns, p.badge_name, p.badgeNameL2,
-    p.address, p.addr_2, p.city, p.state, p.zip, p.country,
-    p.currentAgeType, p.active, p.banned, p.admin_notes, p.open_notes,
+SELECT p.*, ma.memAgeType,
     REPLACE(REPLACE(REPLACE(REPLACE(LOWER(TRIM(IFNULL(p.phone, ''))), ')', ''), '(', ''), '-', ''), ' ', '') AS phoneCheck,
     TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
     TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.address, p.addr_2, p.city, p.state, p.zip, p.country), ' +', ' ')) AS fullAddr,
@@ -184,6 +181,15 @@ if ($updRowR === false) {
 } else {
     $updRow = $updRowR->fetch_assoc();
     $updRow['badgename'] = badgeNameDefault($updRow['badge_name'], $updRow['badgeNameL2'], $updRow['first_name'], $updRow['last_name']);
+    if ($updRow['currentAgeType'] == null || $updRow['currentAgeType'] == '') {
+        if ($updRow['memAgeType'] == '')
+            $updRow['displayAgeType'] = '';
+        else
+            $updRow['displayAgeType'] = '<i><b>' . $updRow['memAgeType'] . '</b></i>';
+    } else if ($updRow['memAgeType'] == '' || $updRow['memAgeType'] == $updRow['currentAgeType'])
+        $updRow['displayAgeType'] = $updRow['currentAgeType'];
+    else
+        $updRow['displayAgeType'] = '<span style="color: red;"><b>' . $updRow['currentAgeType'] . '<br/>' . $updRow['memAgeType'] . '</b></span>';
     $updRowR->free();
     $response['updated'] = array($updRow);
 }

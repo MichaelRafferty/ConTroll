@@ -30,6 +30,7 @@ function settab(tabname) {
     if (addPerson != null)
         addPerson.close();
 
+    clear_message();
     // now open the relevant one, and create the class if needed
     switch (tabname) {
         case 'unmatched-pane':

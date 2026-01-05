@@ -92,7 +92,7 @@ WITH perids AS (
     WHERE m.memAge != 'all'
     GROUP BY p.id
 )
-SELECT p.*, his.historyCount, m.memAgeType, CONCAT_WS('<BR>', p.currentAgeType, m.memAgeType) AS displayAgeType
+SELECT p.*, his.historyCount, IFNULL(m.memAgeType, '') AS memAgeType
 FROM perids p
 LEFT OUTER JOIN his ON p.id = his.id
 LEFT OUTER JOIN memAge m ON p.id = m.id
@@ -168,7 +168,7 @@ GROUP BY p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr,
     WHERE m.memAge != 'all'
     GROUP BY p.id
 )
-SELECT p.*, his.historyCount, m.memAgeType, CONCAT_WS('<BR>', p.currentAgeType, m.memAgeType) AS displayAgeType
+SELECT p.*, his.historyCount, IFNULL(m.memAgeType, '') AS memAgeType
 FROM perids p
 LEFT OUTER JOIN his ON p.id = his.id
 LEFT OUTER JOIN memAge m on p.id = m.id
@@ -195,6 +195,15 @@ $pids = [];
 $matches= [];
 while ($match = $mR->fetch_assoc()) {
     $match['badgename'] = badgeNameDefault($match['badge_name'], $match['badgeNameL2'], $match['first_name'], $match['last_name']);
+    if ($match['currentAgeType'] == null || $match['currentAgeType'] == '') {
+        if ($match['memAgeType'] == '')
+            $match['displayAgeType'] = '';
+        else
+            $match['displayAgeType'] = '<i><b>' . $match['memAgeType'] . '</b></i>';
+    } else if ($match['memAgeType'] == '' || $match['memAgeType'] == $match['currentAgeType'])
+        $match['displayAgeType'] = $match['currentAgeType'];
+    else
+        $match['displayAgeType'] = '<span style="color: red;"><b>' . $match['currentAgeType'] . '<br/>' . $match['memAgeType'] . '</b></span>';
     $matches[] = $match;
     $pids[] = $match['id'];
 }
