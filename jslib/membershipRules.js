@@ -391,7 +391,7 @@ class MembershipRules {
                     }
                     if (step.ageList != null && step.ageList != '') {
                         ageCheck = step.ageListArray.indexOf(mbr.memAge.toString()) != -1 ||
-                            (step.ageListArray.indexOf(mbr.currentAgeType.toString()) != -1 && config.conid == mbr.currentAgeConid)
+                            (step.ageListArray.indexOf(mbr.currentAgeType.toString()) != -1 && config.conid == mbr.currentAgeConId)
                     }
                     stepPass = typeCheck && memCheck && ageCheck && ageCheck;
                     //console.log('mbr:');

@@ -90,7 +90,7 @@ UPDATE perinfo SET
     last_name=IFNULL(?,''),first_name=IFNULL(?,''),middle_name=IFNULL(?,''),suffix=IFNULL(?,''),legalName=IFNULL(?,''), pronouns=IFNULL(?,''),
     email_addr=IFNULL(?,''),phone=IFNULL(?,''),badge_name=IFNULL(?,''),badgeNameL2=IFNULL(?,''),
     address=IFNULL(?,''),addr_2=IFNULL(?,''), city=IFNULL(?,''),state=IFNULL(?,''),zip=IFNULL(?,''),country=IFNULL(?,''),
-    open_notes=?,banned='N',update_date=NOW(),active='Y',currentAgeType=?, currentAgeConid=?,updatedBy=?
+    open_notes=?,banned='N',update_date=NOW(),active='Y',currentAgeType=?, currentAgeConId=?,updatedBy=?
 WHERE id = ?;
 EOS;
 $updPDt = 'ssssssssssssssssssiii';
@@ -158,16 +158,16 @@ if ($master_perid < 0) {
     $cartrow = $cart_perinfo[0];
     if (array_key_exists('currentAgeType', $cartrow) && $cartrow['currentAgeType'] != '') {
         $currentAgeType = $cartrow['currentAgeType'];
-        $currentAgeConid = $conid;
+        $currentAgeConId = $conid;
     } else {
         $currentAgeType = null;
-        $currentAgeConid = null;
+        $currentAgeConId = null;
     }
     $paramarray = array(
         $cartrow['last_name'],$cartrow['first_name'],$cartrow['middle_name'],$cartrow['suffix'],$cartrow['legalName'],$cartrow['pronouns'],
         $cartrow['email_addr'],$cartrow['phone'],$cartrow['badge_name'],$cartrow['badgeNameL2'],
         $cartrow['address_1'],$cartrow['address_2'],$cartrow['city'],$cartrow['state'],$cartrow['postal_code'],$cartrow['country'],
-        $cartrow['open_notes'],$currentAgeType, $currentAgeConid,$user_perid
+        $cartrow['open_notes'],$currentAgeType, $currentAgeConId,$user_perid
     );
 
     $new_perid = dbSafeInsert($insPerinfoSQL, $insPDt, $paramarray);
@@ -223,10 +223,10 @@ for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
     $cartrow['phone'] = trim(removeLROveride($cartrow['phone']));
     if (array_key_exists('currentAgeType', $cartrow) && $cartrow['currentAgeType'] != '') {
         $currentAgeType = $cartrow['currentAgeType'];
-        $currentAgeConid = $conid;
+        $currentAgeConId = $conid;
     } else {
         $currentAgeType = null;
-        $currentAgeConid = null;
+        $currentAgeConId = null;
     }
 
     if ($cartrow['perid'] <= 0) {
@@ -235,7 +235,7 @@ for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
             $cartrow['last_name'],$cartrow['first_name'],$cartrow['middle_name'],$cartrow['suffix'],$cartrow['legalName'],$cartrow['pronouns'],
             $cartrow['email_addr'],$cartrow['phone'],$cartrow['badge_name'],$cartrow['badgeNameL2'],
             $cartrow['address_1'],$cartrow['address_2'],$cartrow['city'],$cartrow['state'],$cartrow['postal_code'],$cartrow['country'],
-            $open_notes,$currentAgeType, $currentAgeConid,$user_perid
+            $open_notes,$currentAgeType, $currentAgeConId,$user_perid
         );
 
         $new_perid = dbSafeInsert($insPerinfoSQL, $insPDt, $paramarray);
@@ -252,7 +252,7 @@ for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
             $cartrow['last_name'],$cartrow['first_name'],$cartrow['middle_name'],$cartrow['suffix'],$cartrow['legalName'],$cartrow['pronouns'],
             $cartrow['email_addr'],$cartrow['phone'],$cartrow['badge_name'],$cartrow['badgeNameL2'],
             $cartrow['address_1'],$cartrow['address_2'],$cartrow['city'],$cartrow['state'],$cartrow['postal_code'],$cartrow['country'],
-            $open_notes,$currentAgeType, $currentAgeConid, $user_perid, $cartrow['perid']
+            $open_notes,$currentAgeType, $currentAgeConId, $user_perid, $cartrow['perid']
         );
         $per_upd += dbSafeCmd($updPerinfoSQL, $updPDt, $paramarray);
     }

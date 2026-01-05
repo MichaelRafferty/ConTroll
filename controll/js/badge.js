@@ -399,7 +399,7 @@ function findDetailsSuccess(dataFound) {
         person.address, person.addr_2, person.city, person.state, person.zip, person.country,
         person.phone, person.badge_name, person.badgeNameL2, person.currentAgeType == null ? '' : person.currentAgeType);
     profile.setEmail(person.email_addr);
-    if (person.memAgeType != null && person.currentAgeConid == config.conid) {
+    if (person.memAgeType != null && person.currentAgeConId == config.conid) {
         let ageItem = ageListIdx[person.memAgeType];
         profile.setAgeText('<b>'+ ageItem.shortname + ' [' + ageItem.label + ']</b>');
     } else {

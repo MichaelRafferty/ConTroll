@@ -313,7 +313,7 @@ function getPersonInfo($conid, $personType = null, $personId = null, $minimal = 
         $personSQL = <<<EOS
 SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2,
     p.legalName, p.pronouns, p.address, p.addr_2, p.city, p.state, p.zip, p.country,
-    IFNULL(p.currentAgeConid, -1) AS currentAgeConid, IFNULL(p.currentAgeType, '') AS currentAgeType,
+    IFNULL(p.currentAgeConId, -1) AS currentAgeConId, IFNULL(p.currentAgeType, '') AS currentAgeType,
     p.banned, p.creation_date, p.update_date, p.change_notes, p.active, p.managedBy, p.lastVerified, 'p' AS personType,
     TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
     TRIM(REGEXP_REPLACE(CONCAT_WS(' ', pm.first_name, pm.middle_name, pm.last_name, pm.suffix), ' +', ' ')) AS managedByName
@@ -326,7 +326,7 @@ EOS;
         $personSQL = <<<EOS
 SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2,
     p.legalName, p.pronouns, p.address, p.addr_2, p.city, p.state, p.zip, p.country,
-    IFNULL(p.currentAgeConid, -1) AS currentAgeConid, IFNULL(p.currentAgeType, '') AS currentAgeType,
+    IFNULL(p.currentAgeConId, -1) AS currentAgeConId, IFNULL(p.currentAgeType, '') AS currentAgeType,
     'N' AS banned, p.createtime AS creation_date, 'Y' AS active, p.managedByNew, p.managedBy, p.lastVerified, 'n' AS personType,
     TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
     CASE
@@ -414,7 +414,7 @@ EOS;
            $mQ = <<<EOS
 SELECT r.id, r.create_date, r.memId, r.conid, r.status, r.price, IFNULL(r.paid, 0.00) AS paid, r.couponDiscount, r.perid, r.newperid,
        m.label, m.memType, m.memCategory, m.memAge, m.startdate, m.enddate, m.online,
-       IFNULL(p.currentAgeConid, -1) AS currentAgeConid, IFNULL(p.currentAgeType, '') AS currentAgeType
+       IFNULL(p.currentAgeConId, -1) AS currentAgeConId, IFNULL(p.currentAgeType, '') AS currentAgeType
 FROM reg r
 JOIN memList m ON m.id = r.memId
 JOIN $ptable p ON p.id = r.$rfield
@@ -434,7 +434,7 @@ EOS;
                $mQ = <<<EOS
 SELECT r.id, r.perid, r.newperid, r.create_date, r.memId, r.conid, r.status, r.price, IFNULL(r.paid, 0.00) AS paid, r.couponDiscount,
        m.label, m.memType, m.memCategory, m.memAge, m.startdate, m.enddate, m.online, 
-       IFNULL(p.currentAgeConid, -1) AS currentAgeConid, IFNULL(p.currentAgeType, '') AS currentAgeType
+       IFNULL(p.currentAgeConId, -1) AS currentAgeConId, IFNULL(p.currentAgeType, '') AS currentAgeType
 FROM reg r
 JOIN memList m ON m.id = r.memId
 JOIN perinfo p ON p.id = r.perid
@@ -443,7 +443,7 @@ WHERE r.conid IN (?, ?) AND (pm.id = ? OR p.id = ?)
 UNION
 SELECT r.id, r.perid, r.newperid, r.create_date, r.memId, r.conid, r.status, r.price, IFNULL(r.paid, 0.00) AS paid, r.couponDiscount,
        m.label, m.memType, m.memCategory, m.memAge, m.startdate, m.enddate, m.online,
-       IFNULL(n.currentAgeConid, -1) AS currentAgeConid, IFNULL(n.currentAgeType, '') AS currentAgeType
+       IFNULL(n.currentAgeConId, -1) AS currentAgeConId, IFNULL(n.currentAgeType, '') AS currentAgeType
 FROM reg r
 JOIN memList m ON m.id = r.memId
 JOIN newperson n ON n.id = r.newperid
@@ -456,7 +456,7 @@ EOS;
                $mQ = <<<EOS
 SELECT r.id, r.create_date, r.memId, r.conid, r.status, r.price, IFNULL(r.paid, 0.00) AS paid, r.couponDiscount, r.perid, r.newperid,
        m.label, m.memType, m.memCategory, m.memAge, m.startdate, m.enddate, m.online,
-       IFNULL(n.currentAgeConid, -1) AS currentAgeConid, IFNULL(n.currentAgeType, '') AS currentAgeType
+       IFNULL(n.currentAgeConId, -1) AS currentAgeConId, IFNULL(n.currentAgeType, '') AS currentAgeType
 FROM reg r
 JOIN memList m ON m.id = r.memId
 JOIN newperson n ON n.id = r.newperid

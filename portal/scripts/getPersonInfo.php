@@ -65,7 +65,7 @@ if ($getType == 'p') {
     $getPersonQ =  <<<EOS
 SELECT id, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, badgeNameL2, legalName, pronouns, 
     address, addr_2, city, state, zip, country, 
-    managedBy, NULL AS managedByNew, lastVerified, 'p' AS personType, currentAgeConid, currentAgeType,
+    managedBy, NULL AS managedByNew, lastVerified, 'p' AS personType, currentAgeConId, currentAgeType,
     TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), ' +', ' ')) AS fullName
 FROM perinfo
 WHERE id = ?;
@@ -74,7 +74,7 @@ EOS;
     $getPersonQ =  <<<EOS
 SELECT id, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, badgeNameL2, legalName, pronouns, 
     address, addr_2, city, state, zip, country, 
-    managedBy, managedByNew, lastVerified, 'n' AS personType, currentAgeConid, currentAgeType,
+    managedBy, managedByNew, lastVerified, 'n' AS personType, currentAgeConId, currentAgeType,
     TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), ' +', ' ')) AS fullName
 FROM newperson
 WHERE id = ?;

@@ -27,10 +27,10 @@ $conid = $con['id'];
 
 if ($_POST['currentAgeType'] == '') {
     $currentAgeType = null;
-    $currentAgeConid = null;
+    $currentAgeConId = null;
 } else {
     $currentAgeType = $_POST['currentAgeType'];
-    $currentAgeConid = $conid;
+    $currentAgeConId = $conid;
 }
 
 $iP = <<<EOS
@@ -59,7 +59,7 @@ $values = [
     $_POST['state'] == null ? '' : $_POST['state'],
     $_POST['zip'] == null ? '' : $_POST['zip'],
     $_POST['country'] == null ? '' : $_POST['country'],
-    $currentAgeConid,
+    $currentAgeConId,
     $currentAgeType,
 ];
 $values[] = $updatedBy;

@@ -86,7 +86,7 @@ if ($info === false) {
 $personAges = [];
 // compute all id's and ages
 foreach ($info['allMemberships'] as $membership) {
-    if ($membership['currentAgeType'] == '' || $membership['currentAgeConid'] != $conid)
+    if ($membership['currentAgeType'] == '' || $membership['currentAgeConId'] != $conid)
         continue;
 
     $ageType = $membership['currentAgeType'];

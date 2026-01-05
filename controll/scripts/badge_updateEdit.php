@@ -50,10 +50,10 @@ $phone = $_POST['phone'] == null ? '' : trim($_POST['phone']);
 
 $age = $_POST['currentAgeType'];
 if ($age == '') {
-    $currentAgeConid = null;
+    $currentAgeConId = null;
     $age = null;
 } else
-    $currentAgeConid = $conid;
+    $currentAgeConId = $conid;
 
 $uP = <<<EOS
 UPDATE perinfo
@@ -65,7 +65,7 @@ EOS;
 
 $typeStr = 'sssssssssssssssisii';
 $valArray = array($last_name, $first_name, $middle_name, $suffix, $email_addr, $phone, $badge_name, $badgeNameL2, $pronouns, $address, $addr_2,
-    $city, $state, $zip, $country, $updatedBy, $age, $currentAgeConid, $perid);
+    $city, $state, $zip, $country, $updatedBy, $age, $currentAgeConId, $perid);
 
 $upd = dbSafeCmd($uP, $typeStr, $valArray);
 if ($upd === false) {

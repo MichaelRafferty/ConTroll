@@ -375,7 +375,7 @@ class PosCart {
         // force reverify if not this year and age is of type verify
         if (p.currentAgeType == null || p.currentAgeType == undefined)
             p.currentAgeType = '';
-        if (p.currentAgeConid != config.conid && p.currentAgeType != '') {
+        if (p.currentAgeConId != config.conid && p.currentAgeType != '') {
             let ageItem = ageListIdx[p.currentAgeType];
             if (ageItem.verify == 'Y') {
                 p.currentAgeType = '';
@@ -490,7 +490,7 @@ class PosCart {
         cart_row.phone = row.phone;
         cart_row.fullName = row.fullName;
         cart_row.currentAgeType = row.currentAgeType;
-        cart_row.currentAgeConid = row.currentAgeConid;
+        cart_row.currentAgeConId = row.currentAgeConId;
         cart_row.active = 'Y';
 
         // policies - first check if the row has any, then update the row with the policies
@@ -573,7 +573,9 @@ class PosCart {
             this.#allMemberships = [];
 
             // build the current values of the memberships
-            pos.everyMembership(this.#cartPerinfo, function(_this, mem) {
+            pos.everyMembership(this.#cartPerinfo, function(_this, mem, perinfo) {
+                mem.currentAgeConId = perinfo.currentAgeConId;
+                mem.currentAgeType = perinfo.currentAgeType;
                 if (cart_row.perid == mem.perid ) {
                     cart.pushMembership(mem);
                 }
@@ -598,7 +600,7 @@ class PosCart {
             this.#cartPerinfo[this.#currentPerIdx].currentAgeType = this.#memberAge;
         }
         if (this.#memberships.length > 0 && this.#cartPerinfo[this.#currentPerIdx].currentAgeType != '')
-            this.#cartPerinfo[this.#currentPerIdx].currentAgeConid = config.conid;
+            this.#cartPerinfo[this.#currentPerIdx].currentAgeConId = config.conid;
         this.#cartPerinfo[this.#currentPerIdx].memberAgeType = this.#memberAge;
         this.#memberships = [];
         this.#allMemberships = [];

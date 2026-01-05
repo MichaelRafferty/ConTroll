@@ -357,7 +357,7 @@ EOS;
         $profileClass = 'btn-warning need-policies';
     }
     if ($person['currentAgeType'] == null || $person['currentAgeType'] == '' ||
-            ($person['currentAgeConid'] != $conid && $ageList[$person['currentAgeType']]['verify'] == 'Y'))
+            ($person['currentAgeConId'] != $conid && $ageList[$person['currentAgeType']]['verify'] == 'Y'))
         $profileClass .= ' need-age';
 
     $personArgs = json_encode(array('id' => $person['id'] , 'type' => $person['personType'], 'fullName' => $person['fullName'],

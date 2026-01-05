@@ -736,6 +736,7 @@ drawInterestList($interests, true);
             <div class="row mt-2">
                 <div class="col-sm-12" id="unmatchedH1Div"><H1 class="h3"><b>Unmatched New People: <span id="unmatchedCount">0</span></b></H1></div>
             </div>
+            <div class='row' id='unmatchedSpecific'></div>
             <div class="row mt-2">
                 <div class="col-sm-12" id="unmatchedTable" name="unmatchedTable"></div>
             </div>

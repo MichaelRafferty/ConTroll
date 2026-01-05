@@ -8,6 +8,7 @@ class Unmatched {
     #unmatchedCount = null;
     #unmatchedH1 = null;
     #unmatched = null
+    #unmatchedSpecificDiv = null;
 
     #debug = 0;
     #debugVisible = false;
@@ -95,6 +96,7 @@ class Unmatched {
         this.#unmatchedPane = document.getElementById('unmatched-pane');
         this.#unmatchedH1 = document.getElementById('unmatchedH1Div');
         this.#unmatchedCountSpan = document.getElementById('unmatchedCount');
+        this.#unmatchedSpecificDiv = document.getElementById('unmatchedSpecific');
 
         var id = document.getElementById('match-candidates');
         if (id) {
@@ -162,6 +164,15 @@ class Unmatched {
         }
     };
 
+    // called on find person to match
+    findSpecific() {
+        // set up to close the modal and delete the items
+        $('#match-candidates').on('hide.bs.modal', function () {
+            unmatchedPeople.mclose();
+        });
+        this.open();
+    }
+
     // called on open of the unmatched window
     open(msg = null) {
         var _this = this;
@@ -169,6 +180,12 @@ class Unmatched {
         var postdata = {
             ajax_request_action: 'unmatched',
         };
+        let search = document.getElementById('unmatched_pattern');
+        if (search) {
+            let searchPattern = search.value;
+            if (searchPattern != '')
+                postdata.searchPattern = searchPattern;
+        }
         clear_message();
         clearError();
         $.ajax({
@@ -205,6 +222,21 @@ class Unmatched {
         this.#unmatched = data['unmatched'];
         this.#unmatchedCount = data['numUnmatched'];
         this.#unmatchedCountSpan.innerHTML = this.#unmatchedCount;
+        if (this.#unmatchedCount > 50)
+            this.#unmatchedSpecificDiv.innerHTML = `
+        <div class="col-sm-auto"><b>Not all matches were returned.</b> Search for: </div>
+        <div class="col-sm-auto">
+            <input type="text" id="unmatched_pattern" name="unmatched_pattern" maxlength="80" size="80" 
+                placeholder="Name/Portion of (Name, Address, Email, Badgename, Legal Name) or New Person ID">
+        </div>   
+        <div class="col-sm-auto">
+            <button class="btn btn-sm btn-primary" type="button" id="findSpecificBtn" onclick="unmatchedPeople.findSpecific();">
+                Find Person to Match
+            </button>        
+        </div>
+`;
+        else
+            this.#unmatchedSpecificDiv.innerHTML = '';
         var pagination = false;
         if (this.#unmatched)
             pagination = this.#unmatched.length > 100;

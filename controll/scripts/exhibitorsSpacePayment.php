@@ -875,20 +875,20 @@ function buildBadge($fields, $type, $index, $region, $conid, $transid, $portalNa
 
     if ($badge['currentAgeType'] == null || $badge['currentAgeType'] == '') {
         $currentAgeType = $badge['currentAgeType'];
-        $currentAgeConid = $conid;
+        $currentAgeConId = $conid;
     } else {
         $currentAgeType = null;
-        $currentAgeConid = null;
+        $currentAgeConId = null;
     }
 
     $value_arr = array($badge['lname'], $badge['mname'], $badge['fname'], $badge['suffix'], $legalName, $badge['email'], $badge['phone'],
         $badge['badge_name'], $badge['badgeNameL2'],
         $badge['addr'], $badge['addr2'], $badge['city'], $badge['state'], $badge['zip'], $badge['country'], $badge['contact'], $badge['share'],
-        $currentAgeType, $currentAgeConid);
+        $currentAgeType, $currentAgeConId);
 
     $insertQ = <<<EOS
 INSERT INTO newperson(last_name, middle_name, first_name, suffix, legalName, email_addr, phone, badge_name, badgeNameL2,
-                      address, addr_2, city, state, zip, country, contact_ok, share_reg_ok, currentAgeType, currentAgeConid)
+                      address, addr_2, city, state, zip, country, contact_ok, share_reg_ok, currentAgeType, currentAgeConId)
     VALUES(IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''),
      IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), ?, ?, ?, ?);
 EOS;

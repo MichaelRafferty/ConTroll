@@ -375,7 +375,7 @@ class Portal {
         if (currentAge != '')
             profile.setAge(currentAge);
         else if (person.currentAgeType != null &&
-            (ageListIdx[person.currentAgeType].verify == 'N' || person.currentAgeConid == config.conid) &&
+            (ageListIdx[person.currentAgeType].verify == 'N' || person.currentAgeConId == config.conid) &&
             !this.#needAge) {
             profile.setAge(person.currentAgeType);
             profile.hideAgeText(true);

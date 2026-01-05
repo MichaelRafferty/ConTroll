@@ -93,7 +93,7 @@ EOS;
 }
 
 if ($origAgeType != $currentAgeType) {
-    $ageSQL = ' currentAgeConid = ?, currentAgeType = ?,';
+    $ageSQL = ' currentAgeConId = ?, currentAgeType = ?,';
     $typeStr = 'is';
     $valArray = array(($currentAgeType == '' ? null : $conid), $currentAgeType);
 } else {

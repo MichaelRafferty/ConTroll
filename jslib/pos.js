@@ -18,7 +18,7 @@ class Pos {
     #review_editable_fields = [
         'first_name', 'middle_name', 'last_name', 'suffix', 'legalName', 'pronouns', 'badge_name', 'badgeNameL2', 'email_addr',
         'address_1', 'address_2', 'city', 'state', 'postal_code', 'country', 'phone',
-        'currentAgeType', 'currentAgeConid', 'memberAgeType'
+        'currentAgeType', 'currentAgeConId', 'memberAgeType'
     ];
 
     // pay items
@@ -356,7 +356,7 @@ class Pos {
             let memberships = perinfo[pmrowindex].memberships;
             if (memberships) {
                 for (let rowindex in memberships) {
-                    rtn += fcn(this, memberships[rowindex]);
+                    rtn += fcn(this, memberships[rowindex], perinfo[pmrowindex]);
                 }
             }
         }
@@ -895,7 +895,7 @@ class Pos {
             row.fullName = new_fullname;
             row.active = 'Y';
             row.currentAgeType = new_age;
-            row.currentAgeConid = config.conid;
+            row.currentAgeConId = config.conid;
             row.dirty = true;
 
             for (let pol in policies) {
@@ -1556,7 +1556,7 @@ class Pos {
             }
             let trantbl = [];
             // loop over unpaid memberships and finding distinct transactions (should this move to a second SQL query?)
-            this.everyMembership(this.#result_perinfo, function (_this, mem) {
+            this.everyMembership(this.#result_perinfo, function (_this, mem, perinfo) {
                 tid = mem.tid;
                 if (!trantbl.includes(tid)) {
                     trantbl.push(tid);
@@ -1588,7 +1588,7 @@ class Pos {
                 let prowindex = 0;
                 let prow = null;
                 mperid = -1;
-                this.everyMembership(this.#result_perinfo, function (_this, mem) {
+                this.everyMembership(this.#result_perinfo, function (_this, mem, perinfo) {
                     if (mem.tid == tid) {
                         prowindex = mem.pindex;
                         prow = _this.#result_perinfo[prowindex];
@@ -1637,7 +1637,7 @@ class Pos {
         let rowindex;
         let memberships;
 
-        let memCount = this.everyMembership(this.#result_perinfo, function (_this, mem) {
+        let memCount = this.everyMembership(this.#result_perinfo, function (_this, mem, perinfo) {
             print_count += Number(mem.printcount);
             attach_count += Number(mem.attachcount);
             return 1;
