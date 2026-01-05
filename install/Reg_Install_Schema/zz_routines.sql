@@ -55,7 +55,7 @@ VIEW couponMemberships AS
 -- Final view structure for view couponUsage
 --
 
-DROP VIEW IF EXISTS couponUsage;
+DROP VIEW IF EXISTS `couponUsage`;
 CREATE ALGORITHM=UNDEFINED 
 SQL SECURITY INVOKER
 VIEW couponUsage AS
@@ -70,7 +70,7 @@ VIEW couponUsage AS
 -- Final view structure for view memLabel
 --
 
-DROP VIEW IF EXISTS memLabel;
+DROP VIEW IF EXISTS `memLabel`;
 CREATE ALGORITHM=UNDEFINED 
 SQL SECURITY INVOKER
 VIEW memLabel AS

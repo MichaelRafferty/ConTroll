@@ -24,7 +24,7 @@ CREATE TABLE `transaction` (
   `paid` decimal(8,2) DEFAULT NULL,
   `withtax` decimal(8,2) DEFAULT NULL,
   `tax` decimal(8,2) DEFAULT '0.00' COMMENT 'Sum of the tax fields, or the total tax if they are all null',
-  `tax1` decimal(8,2) DEFAULT NULL COMMENT 'Additional Tax field, defined config file or taxList table';
+  `tax1` decimal(8,2) DEFAULT NULL COMMENT 'Additional Tax field, defined config file or taxList table',
   `tax2` decimal(8,2) DEFAULT NULL COMMENT 'Additional Tax field, defined in taxList table',
   `tax3` decimal(8,2) DEFAULT NULL COMMENT 'Additional Tax field, defined in taxList table',
   `tax4` decimal(8,2) DEFAULT NULL COMMENT 'Additional Tax field, defined in taxList table',

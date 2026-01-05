@@ -20,7 +20,7 @@ CREATE TABLE `payments` (
   `pretax` decimal(8,2) DEFAULT NULL,
   `tax` decimal(8,2) DEFAULT '0.00' COMMENT 'Sum of the tax fields, or the total tax if they are all null',
   `amount` decimal(8,2) DEFAULT NULL,
-  `tax1` decimal(8,2) DEFAULT NULL COMMENT 'Additional Tax field, defined config file or taxList table';
+  `tax1` decimal(8,2) DEFAULT NULL COMMENT 'Additional Tax field, defined config file or taxList table',
   `tax2` decimal(8,2) DEFAULT NULL COMMENT 'Additional Tax field, defined in taxList table',
   `tax3` decimal(8,2) DEFAULT NULL COMMENT 'Additional Tax field, defined in taxList table',
   `tax4` decimal(8,2) DEFAULT NULL COMMENT 'Additional Tax field, defined in taxList table',

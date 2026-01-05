@@ -132,22 +132,29 @@ EOS;
 
     if ($conidR->num_rows == 0) {
         logecho("Creating initial conlist entry for $conid, it will need to be edited in reg_control/admin");
-        $insertConlistQ = <<<EOS
+        $conname = getConfValue('con', 'conname', 'Missing');
+        if (strlen($conname) > 10) {
+            $newconname = substr($conname, 0, 10);
+            logecho("conname too long truncted from $conname to $newconname");
+            $conname = $newconname;
+        } else {
+            $insertConlistQ = <<<EOS
 INSERT INTO conlist(id, name, label, open, startdate, enddate)
 VALUES(?, ?, ?, ?, ?, ?);
 EOS;
-        $params = array(
-            $conid,
-            getConfValue('con', 'conname', 'Missing-') . $conid,
-            getConfValue('con', 'label', 'Missing Label'),
-            'Y',
-            '1900-01-01',
-            '2099-12-31'
-        );
-        $newid = dbSafeInsert($insertConlistQ, 'isssss', $params);
-        if ($newid === false) {
-            logecho("Error inserting initial conlist entry for $conid, cannot continue");
-            return(1);
+            $params = array (
+                $conid,
+                $conname,
+                getConfValue('con', 'label', 'Missing Label'),
+                'Y',
+                '1900-01-01',
+                '2099-12-31'
+            );
+            $newid = dbSafeInsert($insertConlistQ, 'isssss', $params);
+            if ($newid === false) {
+                logecho("Error inserting initial conlist entry for $conid, cannot continue");
+                return (1);
+            }
         }
     } else {
         logEcho("conlist entry for $conid exists", true);
