@@ -497,7 +497,23 @@ class Pos {
         }
 
         hover_text += '<br/>' +
-            'Membership: ' + data.reg_label + '<br/>';
+            'Membership: ' + data.reg_label;
+
+        // age
+        let curAge = '';
+        if (data.currentAgeType && data.currentAgeType != '')
+            curAge = ageListIdx[data.currentAgeType].shortname + ' [' + ageListIdx[data.currentAgeType].label + '] as of ' + data.currentAgeConId;
+
+        if (curAge == '') {
+            if (data.memAge && data.memAge != 'all')
+                curAge = '<i>' + ageListIdx[data.memAge].shortname + ' [' + ageListIdx[data.memAge].label + '] as of ' + config.conid + '</i>';
+        }
+
+        if (curAge == '')
+            curAge = 'Not Yet Assigned';
+
+        hover_text += '<br/>' +
+            'Current Age: ' + curAge + '<br/>';
 
         return hover_text;
     }
@@ -1026,6 +1042,21 @@ class Pos {
                     row.reg_label = 'No Primary Membership';
                     row.reg_tid = '';
                 }
+
+                // age
+                let curAge = '';
+                if (row.currentAgeType && row.currentAgeType != '')
+                    curAge = ageListIdx[row.currentAgeType].shortname + ' [' + ageListIdx[row.currentAgeType].label + '] as of ' + row.currentAgeConId;
+
+                if (curAge == '' && primmem != null) {
+                    let memRow = row.memberships[primmem];
+                    if (memRow.memAge && memRow.memAge != 'all')
+                        curAge = '<i>' + ageListIdx[memRow.memAge].shortname + ' [' + ageListIdx[memRow.memAge].label + '] as of ' + config.conid + '</i>';
+                }
+
+                if (curAge == '')
+                    curAge = 'Not Yet Assigned';
+                row.curAge = curAge;
             }
             // table
             let _this = this;
@@ -1129,12 +1160,28 @@ class Pos {
 // drawRecord: findRecord found rows from search.  Display them in the non table format used by transaction and perid search, or a single row match for string.
     drawRecord(row, first) {
         let data = this.#result_perinfo[row];
+
+        // membership
         let mem = data.memberships;
         let prim = this.find_primary_membership(mem);
         let label = "No Primary Membership";
         if (prim != null) {
             label = mem[prim].printcount + ':' + mem[prim].label;
         }
+
+        // age
+        let curAge = '';
+        if (data.currentAgeType && data.currentAgeType != '')
+            curAge = ageListIdx[data.currentAgeType].shortname + ' [' + ageListIdx[data.currentAgeType].label + '] as of ' + data.currentAgeConId;
+
+        if (curAge == '' && prim != null) {
+            if (mem[prim].memAge && mem[prim].memAge != 'all')
+                curAge = '<i>' + ageListIdx[mem[prim].memAge].shortname + ' [' + ageListIdx[mem[prim].memAge].label + '] as of ' + config.conid + '</i>';
+        }
+
+        if (curAge == '')
+            curAge = 'Not Yet Assigned';
+
         let html = `
 <div class="container-fluid">
     <div class="row mt-2">
@@ -1241,6 +1288,10 @@ class Pos {
     <div class="row">
        <div class="col-sm-3">Membership Type:</div>
        <div class="col-sm-9">` + label + `</div>
+    </div>
+    <div class="row">
+       <div class="col-sm-3">Current Age:</div>
+       <div class="col-sm-9">` + curAge + `</div>
     </div>
 </div>
 `;
@@ -1666,6 +1717,21 @@ class Pos {
                 row.reg_label = 'No Primary Membership';
                 row.reg_tid = '';
             }
+
+            // age
+            let curAge = '';
+            if (row.currentAgeType && row.currentAgeType != '')
+                curAge = ageListIdx[row.currentAgeType].shortname + ' [' + ageListIdx[row.currentAgeType].label + '] as of ' + row.currentAgeConId;
+
+            if (curAge == '' && primmem != null) {
+                let memRow = row.memberships[primmem];
+                if (memRow.memAge && memRow.memAge != 'all')
+                    curAge = '<i>' + ageListIdx[memRow.memAge].shortname + ' [' + ageListIdx[memRow.memAge].label + '] as of ' + config.conid + '</i>';
+            }
+
+            if (curAge == '')
+                curAge = 'Not Yet Assigned';
+            row.curAge = curAge;
         }
 
         // string search, returning more than one row show tabulator table

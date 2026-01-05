@@ -219,7 +219,7 @@ page_init($page, $tab,
                                         <button type='button' class='btn btn-primary btn-sm' id='addoverride-btn' name='override_btn' hidden
                                                 onclick='pos.add_new2();'>Add/Update Cart Overriding Missing Fields
                                         </button>
-                                        <button type="button" class="btn btn-secondary btn-sm" id="clearadd-btn" onclick="pos.clearAdd();">
+                                        <button type="button" class="btn btn-secondary btn-sm" id="clearadd-btn" onclick="pos.clearAdd(1);">
                                             Clear Add Person Form
                                         </button>
                                     </div>
