@@ -112,7 +112,7 @@ $config_vars['required'] = getConfValue('reg','required', 'addr');;
                     </div>
                     <div class='row mt-1'>
                         <div class='col-sm-auto text-bg-secondary'>
-                            Additional Query:
+                            Search For Additional Possible Matches:
                         </div>
                         <div class='col-sm-auto text-bg-secondary'>
                             <input type='text' size='80' id='matchAdditionalQuery' name='matchAdditionalQuery' , placeholder='Name/PID/email'/>

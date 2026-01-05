@@ -392,7 +392,7 @@ class Unmatched {
 
     // showCandidates - open the modal to display the candidates for this match
     showCandidates(data) {
-        console.log(data);
+        //console.log(data);
         if (data['error']) {
             show_message(data['error'], 'error');
             return;
@@ -405,12 +405,24 @@ class Unmatched {
         newpeople.push(this.#newperson);
         this.#candidatesTitleName.innerHTML = this.#newperson.fullName;
         this.#candidatesName.innerHTML = this.#newperson.fullName;
+        if (this.#newpersonTable) {
+            this.#newpersonTable.destroy();
+            this.#newpersonTable = null;
+        }
+        if (this.#candidateTable) {
+            this.#candidateTable.destroy();
+            this.#candidateTable = null;
+        }
+        if (this.#additionalTable) {
+            this.#additionalTable.destroy();
+            this.#additionalTable = null;
+        }
         this.#newpersonTable = new Tabulator('#newpersonTable', {
             data: newpeople,
             layout: "fitDataTable",
             index: "id",
             columns: [
-                {title: "Select", width: 100, formatter: this.selectButton, formatterParams: {table: 'n'}, headerSort: false },
+                {title: "", width: 100, headerSort: false },
                 {title: "ID", field: "id", width: 80, headerHozAlign:"right", hozAlign: "right", headerSort: false, },
                 {title: "Full Name", field: "fullName", width: 250, formatter: "textarea", headerSort: false, },
                 {title: "Address", field: "fullAddr", width: 300, formatter: "textarea", headerSort: false, },
@@ -519,11 +531,16 @@ class Unmatched {
         this.#updateExisting.disabled = true;
         this.#createNew.disabled = true;
         // set the delete item disable flag based on paid mand manages from parent screen
-        console.log("this.#matchRowData");
-        console.log(this.#matchRowData);
+        //console.log("this.#matchRowData");
+        //console.log(this.#matchRowData);
         this.#deleteNew.disabled = !((this.#matchRowData.manages == '' || this.#matchRowData.manages == null || this.#matchRowData.manages == 0)
             && (this.#matchRowData.paid == null || Number(this.#matchRowData.paid) == 0));
         this.#matchCandidatesModal.show();
+        let newPersonId = this.#newperson.id;
+        setTimeout(function() {
+            unmatchedPeople.selectPerson('n',  newPersonId);
+        }, 500); // Adjust timeout as needed
+
         show_message(data['success'], 'success', 'result_message_candidate');
     }
 

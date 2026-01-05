@@ -213,6 +213,7 @@ FROM perinfo p
 JOIN spids ON p.id = spids.id
 LEFT OUTER JOIN regs r ON r.id = p.id
 LEFT OUTER JOIN perinfo m ON p.managedBy = m.id
+WHERE (NOT (p.first_name = 'Merged' AND p.middle_name = 'into')) AND p.banned = 'N'
 ORDER BY spids.priority DESC, p.last_name, p.first_name;
 EOS;
 
