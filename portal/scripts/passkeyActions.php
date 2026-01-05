@@ -40,7 +40,7 @@ switch ($action) {
         // try emulating their method
         $createArgs = json_encode(createWebauthnArgs($userIdHex, $email, $_REQUEST['displayName'], $source));
         header('Content-Type: application/json');
-        prearint $createArgs;
+        print $createArgs;
         exit();
 
     case 'save':
