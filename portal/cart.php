@@ -83,6 +83,20 @@ if ($info === false) {
     portalPageFoot();
     exit();
 }
+$personAges = [];
+// compute all id's and ages
+foreach ($info['allMemberships' as $membership) {
+    if ($membership['currentAgeType'] == '' || $membership['currentAgeConid'] != $conid)
+        continue;
+
+    $ageType = $membership['currentAgeType'];
+    if (array_key_exists($ageType, $personAges))
+        $count = $personAges[$ageType] + 1;
+    else
+        $count = 1;
+
+    $personAges[$membership['currentAgeType']] = $count;
+}
 
 // get the data for the rules usage
 $ruleData = getRulesData($conid);
@@ -100,13 +114,14 @@ portalPageInit('addUpgrade', $info,
         'js/cart.js',
     ),
 );
-    // get the info for the current person
-    if ($cartType == $loginType && $cartId == $loginId) {
-        $person = $info;
-    } else {
-        $person = getPersonInfo($conid, $cartType, $cartId);
-        $person['allMemberships'] = $info['allMemberships'];
-    }
+// get the info for the current person
+if ($cartType == $loginType && $cartId == $loginId) {
+    $person = $info;
+} else {
+    $person = getPersonInfo($conid, $cartType, $cartId);
+    $person['allMemberships'] = $info['allMemberships'];
+}
+$person['Ages'] = $personAges;
 ?>
 <script type='text/javascript'>
     var config = <?php echo json_encode($config_vars); ?>;

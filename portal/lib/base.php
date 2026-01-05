@@ -403,15 +403,18 @@ EOS;
             // now if asked for interests or  memberships, get them as well
             if ($personType == 'p') {
                 $rfield = 'perid';
+                $ptable = 'perinfo';
             } else {
                 $rfield = 'newperid';
+                $ptable = 'newperson';
             }
            $memberships = [];
            $mQ = <<<EOS
 SELECT r.id, r.create_date, r.memId, r.conid, r.status, r.price, IFNULL(r.paid, 0.00) AS paid, r.couponDiscount, r.perid, r.newperid,
-       m.label, m.memType, m.memCategory, m.memAge, m.startdate, m.enddate, m.online
+       m.label, m.memType, m.memCategory, m.memAge, m.startdate, m.enddate, m.online, p.currentAgeConid, p.currentAgeType
 FROM reg r
 JOIN memList m ON m.id = r.memId
+JOIN $ptable p ON p.id = r.$rfield
 WHERE r.$rfield = ? AND r.conid IN (?, ?) AND status IN ('unpaid', 'paid', 'plan', 'upgraded')
 ORDER BY r.create_date, r.id;
 EOS;
