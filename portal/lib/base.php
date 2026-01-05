@@ -430,7 +430,7 @@ EOS;
            if ($personType == 'p') {
                $mQ = <<<EOS
 SELECT r.id, r.perid, r.newperid, r.create_date, r.memId, r.conid, r.status, r.price, IFNULL(r.paid, 0.00) AS paid, r.couponDiscount,
-       m.label, m.memType, m.memCategory, m.memAge
+       m.label, m.memType, m.memCategory, m.memAge, m.startdate, m.enddate, m.online, p.currentAgeConid, p.currentAgeType
 FROM reg r
 JOIN memList m ON m.id = r.memId
 JOIN perinfo p ON p.id = r.perid
@@ -438,7 +438,7 @@ LEFT OUTER JOIN perinfo pm ON p.managedBy = pm.id
 WHERE r.conid IN (?, ?) AND (pm.id = ? OR p.id = ?)
 UNION
 SELECT r.id, r.perid, r.newperid, r.create_date, r.memId, r.conid, r.status, r.price, IFNULL(r.paid, 0.00) AS paid, r.couponDiscount,
-       m.label, m.memType, m.memCategory, m.memAge
+       m.label, m.memType, m.memCategory, m.memAge, m.startdate, m.enddate, m.online, n.currentAgeConid, n.currentAgeType
 FROM reg r
 JOIN memList m ON m.id = r.memId
 JOIN newperson n ON n.id = r.newperid
@@ -450,7 +450,7 @@ EOS;
            } else {
                $mQ = <<<EOS
 SELECT r.id, r.create_date, r.memId, r.conid, r.status, r.price, IFNULL(r.paid, 0.00) AS paid, r.couponDiscount, r.perid, r.newperid,
-       m.label, m.memType, m.memCategory, m.memAge
+       m.label, m.memType, m.memCategory, m.memAge, m.startdate, m.enddate, m.online, n.currentAgeConid, n.currentAgeType
 FROM reg r
 JOIN memList m ON m.id = r.memId
 JOIN newperson n ON n.id = r.newperid
