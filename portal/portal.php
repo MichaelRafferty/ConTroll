@@ -408,7 +408,8 @@ WITH ppl AS (
     LEFT OUTER JOIN newperson nc ON t.newperid = nc.id
     LEFT OUTER JOIN perinfo pp ON tp.perid = pp.id
     LEFT OUTER JOIN newperson np ON tp.newperid = np.id
-    WHERE p.managedBy = ? AND p.id != p.managedBy
+    WHERE p.managedBy = ? AND p.id != p.managedBy AND (NOT (p.first_name = 'Merged' AND p.last_name = 'into'))
+
     UNION
     SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2,
         p.legalName, p.pronouns, p.address, p.addr_2, p.city, p.state, p.zip, p.country,
@@ -488,7 +489,7 @@ WITH ppl AS (
     LEFT OUTER JOIN newperson nc ON t.newperid = nc.id
     LEFT OUTER JOIN perinfo pp ON tp.perid = pp.id
     LEFT OUTER JOIN newperson np ON tp.newperid = np.id
-    WHERE p.managedByNew = ? AND p.id != p.managedByNew
+    WHERE p.managedByNew = ? AND p.id != p.managedByNew AND (NOT (p.first_name = 'Merged' AND p.last_name = 'into'))
     UNION
     SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2,
         p.legalName, p.pronouns, p.address, p.addr_2, p.city, p.state, p.zip, p.country,

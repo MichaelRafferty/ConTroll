@@ -419,6 +419,7 @@ FROM reg r
 JOIN memList m ON m.id = r.memId
 JOIN $ptable p ON p.id = r.$rfield
 WHERE r.$rfield = ? AND r.conid IN (?, ?) AND status IN ('unpaid', 'paid', 'plan', 'upgraded')
+    AND (NOT (p.first_name = 'Merged' AND p.last_name = 'into'))
 ORDER BY r.create_date, r.id;
 EOS;
            $mR = dbSafeQuery($mQ, 'iii', array($personId, $conid, $conid + 1));
@@ -439,7 +440,7 @@ FROM reg r
 JOIN memList m ON m.id = r.memId
 JOIN perinfo p ON p.id = r.perid
 LEFT OUTER JOIN perinfo pm ON p.managedBy = pm.id
-WHERE r.conid IN (?, ?) AND (pm.id = ? OR p.id = ?)
+WHERE r.conid IN (?, ?) AND (pm.id = ? OR p.id = ?) AND (NOT (p.first_name = 'Merged' AND p.last_name = 'into'))
 UNION
 SELECT r.id, r.perid, r.newperid, r.create_date, r.memId, r.conid, r.status, r.price, IFNULL(r.paid, 0.00) AS paid, r.couponDiscount,
        m.label, m.memType, m.memCategory, m.memAge, m.startdate, m.enddate, m.online,
