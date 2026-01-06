@@ -19,7 +19,7 @@ if ((!array_key_exists('ajax_request_action', $_POST)) || $_POST['ajax_request_a
     exit();
 }
 
-$user_perid = $_SESSION['user_perid'];
+$user_perid = getSessionVar('user_perid');
 $findPattern = $_POST['additionalStr'];
 if ($findPattern == NULL || $findPattern == '') {
     $response['error'] = 'The search pattern cannot be empty.';

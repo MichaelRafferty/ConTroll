@@ -47,7 +47,12 @@ try {
     exit();
 }
 
-$user_perid = $_SESSION['user_perid'];
+$user_perid = getSessionVar('user_perid');
+if (!$user_perid) {
+    ajaxError('Invalid credentials passed');
+    return;
+}
+
 setConfigDirs();
 
 // create a lock file on the reg_conf.ini

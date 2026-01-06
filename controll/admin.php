@@ -9,9 +9,8 @@ if(!$need_login or !checkAuth($need_login['sub'], $page)) {
     bounce_page("index.php");
 }
 
-if (array_key_exists('user_id', $_SESSION)) {
-    $user_id = $_SESSION['user_id'];
-} else {
+$user_id = getSessionVar('user_id');
+if ($user_id == null) {
     bounce_page('index.php');
     return;
 }

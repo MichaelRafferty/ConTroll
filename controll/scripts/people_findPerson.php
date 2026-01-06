@@ -26,7 +26,7 @@ else {
     exit();
 }
 
-$user_perid = $_SESSION['user_perid'];
+$user_perid = getSessionVar('user_perid');
 $findPattern = $_POST['pattern'];
 if ($findPattern == NULL || $findPattern == '') {
     $response['error'] = 'The search pattern cannot be empty.';

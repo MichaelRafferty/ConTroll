@@ -20,7 +20,7 @@ if (!(array_key_exists('perid', $_POST)) && array_key_exists('action', $_POST)) 
 
 $action = $_POST['action'];
 $perid = $_POST['perid'];
-$updatedBy = $_SESSION['user_perid'];
+$updatedBy = getSessionVar('user_perid');
 if ($action != 'updatePerinfo' || $perid == null || is_numeric($perid) == false || $perid <= 0) {
     $response['error'] = 'Parameter Error';
     ajaxSuccess($response);

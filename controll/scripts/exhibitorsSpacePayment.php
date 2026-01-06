@@ -655,7 +655,8 @@ VALUES (?,?,?,?,?,?,?,?,NOW(),?,?,NOW(),?,?);
 EOS;
     $typestr = 'issssdddssis';
 
-    $values = array ($transid, $paymentType, $category, $desc, $source, $totprice, 0, $totprice, 'admin', $ccAuth, $_SESSION['user_perid'], $paymentId);
+    $values = array ($transid, $paymentType, $category, $desc, $source, $totprice, 0, $totprice, 'admin', $ccAuth,
+        getSessionVar('user_perid'), $paymentId);
 
     $txnid = dbSafeInsert($txnQ, $typestr, $values);
     if ($txnid == false) {

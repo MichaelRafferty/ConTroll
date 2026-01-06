@@ -230,7 +230,7 @@ if ($change) {
   $changeLog .= 'updatedBy, ';
   $query .= 'updatedBy=?';
   $types .= 'i';
-  $values[] = $_SESSION['user_perid'];
+  $values[] = getSessionVar('user_perid');
 }
 
 if($change) {

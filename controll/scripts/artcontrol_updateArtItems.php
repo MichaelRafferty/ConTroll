@@ -98,7 +98,7 @@ foreach ($tabledata as $row) {
     if($row['id'] > 0) {
         $paramarray = array($row['item_key'], $location, $row['min_price'], $row['original_qty'], $row['quantity'],
             $row['sale_price'], $row['status'] , $row['title'], $row['type'], $row['material'], $row['bidder'], $row['final_price'],
-            $row['notes'], $_SESSION['user_perid'], $row['id']);
+            $row['notes'], getSessionVar('user_perid'), $row['id']);
 
         $updated += dbSafeCmd($updateSQL, $updateTypes, $paramarray);
     } else {
@@ -116,7 +116,7 @@ foreach ($tabledata as $row) {
 
         $paramarray = array($maxKey, $conid, $location, $row['min_price'], $row['original_qty'], $row['quantity'],
             $row['sale_price'], $row['status'] , $row['title'], $row['type'], $row['material'], $row['bidder'], $row['final_price'],
-            $row['notes'], $row['exhibitorRegionYearId'], $_SESSION['user_perid']);
+            $row['notes'], $row['exhibitorRegionYearId'], getSessionVar('user_perid');
 
         $response['insert'] = $insertSQL;
         $response['insertArray'] = $paramarray;

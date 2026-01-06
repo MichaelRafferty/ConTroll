@@ -29,8 +29,8 @@ if ($action != 'updateMembership') {
     exit();
 }
 
-$user_perid = $_SESSION['user_perid'];
-$response['id'] = $_SESSION['user_id'];
+$user_perid = getSessionVar('user_perid');
+$response['id'] = getSessionVar('user_id');
 $response['user_perid'] = $user_perid;
 
 $perid = $_POST['perid'];

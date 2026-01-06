@@ -16,7 +16,7 @@ if($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
     exit();
 }
 
-if (!array_key_exists('user_id', $_SESSION)) {
+if (!isSessionVar('user_id')) {
     ajaxError('Invalid credentials passed');
     return;
 }

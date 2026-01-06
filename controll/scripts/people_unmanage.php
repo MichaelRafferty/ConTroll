@@ -41,7 +41,7 @@ if (!is_numeric($id)) {
 $response['who'] = $who;
 $response['id'] = $id;
 $response['table'] = $table;
-$updatedBy = $_SESSION['user_perid'];
+$updatedBy = getSessionVar('user_perid');
 
 $uQ = <<<EOS
 UPDATE $table

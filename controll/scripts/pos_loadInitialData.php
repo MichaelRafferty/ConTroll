@@ -51,9 +51,9 @@ load_cc_procs();
 $response['label'] = $con['label'];
 $response['conid'] = $conid;
 $response['discount'] = $atcon['discount'];
-$response['badgePrinter'] = false; //$_SESSION['badgePrinter'][0] != 'None';
-$response['receiptPrinter'] = false; //$_SESSION['receiptPrinter'][0] != 'None';
-$response['user_id'] = $_SESSION['user_id'];
+$response['badgePrinter'] = false; //getSessionVar('badgePrinter')[0] != 'None';
+$response['receiptPrinter'] = false; //getSessionVar('receiptPrinter')[0] != 'None';
+$response['user_id'] = getSessionVar('user_perid');
 $response['cc_html'] = draw_cc_html($cc);
 // do as if statement such that it can check for both database error and no rows returned
 $Manager = checkAuth($check_auth['sub'], 'reg_admin');
@@ -182,6 +182,6 @@ $response['gmemRules'] = $ruleData['memRules'];
 $response['debug'] = getConfValue('debug', 'controll_registration', 0);
 $config_vars['required'] = getConfValue('reg', 'required', 'addr');
 $response['useUSPS'] = $useUSPS;
-$response['userId'] = $_SESSION['user_perid'];
+$response['userId'] = getSessionVar('user_perid');
 
 ajaxSuccess($response);

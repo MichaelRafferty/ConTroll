@@ -31,7 +31,7 @@ if ($type == 'e') {
     $response['error'] = 'Parameter Error';
     ajaxSuccess($response);
 }
-$updatedBy = $_SESSION['user_perid'];
+$updatedBy = getSessionVar('user_perid');
 
 $con = get_conf('con');
 $portal_conf = get_conf('portal');

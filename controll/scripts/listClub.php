@@ -16,7 +16,7 @@ if($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
 $perid = $_POST['perid'];
 $con = get_con();
 $conid = $con['id'];
-$user_perid = $_SESSION['user_perid'];
+$user_perid = getSessionVar('user_perid');
 
 function check_memType($type, $year) {
   $date = Date("Y");

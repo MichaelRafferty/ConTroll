@@ -1,7 +1,8 @@
 <?php
 require_once(__DIR__ . '/../../lib/global.php');
 ## Pull INI for variables
-global $monthLengths, $oneYearInterval;
+global $monthLengths, $oneYearInterval, $appSessionPrefix;
+
 //              XXX, Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec
 $monthLengths = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 $oneYearInterval = date_interval_create_from_date_string('1 year');
@@ -24,6 +25,7 @@ require_once(__DIR__ . "/../../lib/cipher.php");
 require_once(__DIR__ . '/../../lib/jsVersions.php');
 require_once(__DIR__ . "/../../lib/ajax_functions.php");
 db_connect();
+$appSessionPrefix = 'Ctrl/ConTroll/';
 if (!session_start()) {
     session_regenerate_id(true);
     session_start();
@@ -40,134 +42,138 @@ function bounce_page($new_page) {
  * return current status of google session
  */
 function google_init($mode) {
-  // bypass for testing on Development PC
-  if (stripos(__DIR__, "/Users/syd/") !== false && $_SERVER['SERVER_ADDR'] == "127.0.0.1") {
-      if(isset($_REQUEST['logout'])) {
-          unset($_SESSION['user_perid']);
-          unset($_SESSION['user_id']);
-          session_regenerate_id(true);
-      }
-      if (array_key_exists('id', $_REQUEST)) {
-          $reqid = $_REQUEST['id'];
-      } else if (array_key_exists('user_id', $_SESSION)) {
-          $reqid = $_SESSION['user_perid'];
-      } else {
-          $reqid = 21389;
-      }
-      $token_data = array();
-      switch ($reqid) {
-          case '6942':
-              $token_data['email'] = 'syd@sydweinstein.net';
-              $token_data['sub'] = '6942';
-              $userid = 93;
-              $user_perid = 6942;
-              break;
-          default:
-              $token_data['email'] = 'syd.weinstein@philcon.org';
-              $token_data['sub'] = '114007818392249665998';
-              $userid = 88;
-              $user_perid = 21389;
-      }
+    // bypass for testing on Development PC
+    $homeDir = getConfValue('Ccontroll', 'internalHome', 'not-a-valid-path');
+    if (stripos(__DIR__, $homeDir) !== false && $_SERVER['SERVER_ADDR'] == "127.0.0.1") {
+        if (isset($_REQUEST['logout'])) {
+            clearSession('user_perid');
+            session_regenerate_id(true);
+        }
+        if (array_key_exists('id', $_REQUEST)) {
+            $reqid = 'internalU' . $_REQUEST['id'];
+        } else if (isSessionVar('user_id')) {
+            $reqid = 'internalU' . getSessionVar('user_perid');
+        } else {
+            $reqid = 'internalUser';
+        }
+        $tokenValue = getSessionVar($reqid);
+        if ($tokenValue == null)
+            $tokenValue = getSessionVar('internalUser');
+        if (!$tokenValue) {
+            echo "Invalid calling sequence\n";
+            exit(1);
+        }
 
-      $token_data['iat'] = time();
-      $token_data['exp'] = time() + 3600;
-      $_SESSION['user_id'] = $userid;
-      $_SESSION['user_perid'] = $user_perid;
-      return($token_data);
-  }
+        [$token_data['email'], $token_data['sub'], $userid, $user_perid] = = explode(',', $tokenValue);
+        $token_data['iat'] = time();
+        $token_data['exp'] = time() + 3600;
+        setSessionVar('user_id', $userid);
+        setSessionVar('user_perid', $user_perid);
+        return ($token_data);
+    }  // end bypass
 
-  // end bypass
+    // set redirect URI to current page -- maybe make this better later.
+    $redirect_base = "https://" . $_SERVER['HTTP_HOST'];
+    $redirect_uri = $redirect_base . "/index.php";
+    $state = $_SERVER['PHP_SELF'];
 
-  // set redirect URI to current page -- maybe make this better later.
-  $redirect_base = "https://" . $_SERVER['HTTP_HOST'];
-  $redirect_uri = $redirect_base . "/index.php";
-  $state = $_SERVER['PHP_SELF'];
+    $client = new Google\Client();
+    $client->setAuthConfig(getConfValue('google', 'json'));
+    $client->addScope('email');
+    $client->setAccessType('offline');
+    $client->setState($state);
+    $client->setRedirectUri($redirect_uri);
+    //$client->setApprovalPrompt('force');
 
-  $client = new Google\Client();
-  $client->setAuthConfig(getConfValue('google','json'));
-  $client->addScope('email');
-  $client->setAccessType('offline');
-  $client->setState($state);
-  $client->setRedirectUri($redirect_uri);
-  //$client->setApprovalPrompt('force');
-
-  //unset id_token if logging out.
-  if(isset($_REQUEST['logout'])) {
-      web_error_log("logout", "google");
-      unset($_SESSION['access_token']);
-      $client->revokeToken();
-      $client->setPrompt('select_account');
-      $client->setState('logout');
-      $auth_url = $client->createAuthUrl();
-      session_regenerate_id(true);
-      header('Location: ' . filter_var($auth_url, FILTER_SANITIZE_URL));
-      exit();
-  }
+    //unset id_token if logging out.
+    if (isset($_REQUEST['logout'])) {
+        web_error_log("logout", "google");
+        unsetSessionVar('access_token');
+        $client->revokeToken();
+        $client->setPrompt('select_account');
+        $client->setState('logout');
+        $auth_url = $client->createAuthUrl();
+        session_regenerate_id(true);
+        header('Location: ' . filter_var($auth_url, FILTER_SANITIZE_URL));
+        exit();
+    }
 
     //handle code responses
     if (array_key_exists('code', $_GET)) { // need to handle other auth responses
         $code = $_GET['code'];
         $decode_count = 0;
-        while(substr($code, 1,1) == '%') {
+        while (substr($code, 1, 1) == '%') {
             $code = urldecode($code);
-            if($decode_count > 3) { break; } else {$decode_count++;}
+            if ($decode_count > 3) {
+                break;
+            } else {
+                $decode_count++;
+            }
         }
-        if($decode_count > 0) { web_error_log("decode called $decode_count times" . substr($code, 1, 1)); }
+        if ($decode_count > 0) {
+            web_error_log("decode called $decode_count times" . substr($code, 1, 1));
+        }
         $client->authenticate($code);
         $token = $client->getAccessToken();
         $state = "";
-        if(array_key_exists('state', $_GET)) {
+        if (array_key_exists('state', $_GET)) {
             // if I want to do anything with state, this is the place
-            $state = $_GET['state']; 
+            $state = $_GET['state'];
         } else {
             $state = "N/A";
         }
         web_error_log("WITH google token: state='$state'", "google");
         // store in the session also
-        $_SESSION['access_token'] = $token;
+        setSessionVar('access_token', $token);
 
-        if(!$token) {
+        if (!$token) {
             var_dump($token);
             exit();
-            }
+        }
         // redirect back to the example
         // this is probably where to use state...
-        header('Location: ' . filter_var($redirect_uri, FILTER_SANITIZE_URL)); exit();
-    }
-
-  if(isset($_SESSION['access_token']) && $_SESSION['access_token']) {
-    $client->setAccessToken($_SESSION['access_token']);
-    web_error_log("with access token", "google");
-  } else { //if(!array_key_exists('code', $_GET)) {
-    $client->setState($state);
-    $client->setRedirectUri($redirect_uri);
-    if(array_key_exists('user_email', $_SESSION) && ($_SESSION['user_email'])) { $client->setLoginHint($_SESSION['user_email']); }
-    $auth_url = $client->createAuthUrl();
-    if($mode=='page') {
-      header('Location: ' . filter_var($auth_url, FILTER_SANITIZE_URL));
-      if(array_key_exists('logout', $_REQUEST)) {
-        web_error_log("weird logout", "google");
+        header('Location: ' . filter_var($redirect_uri, FILTER_SANITIZE_URL));
         exit();
-      }
-      web_error_log("Page WITHOUT access token from: " . $_SERVER['PHP_SELF'], "google");
-    exit();
-    } else { 
-      web_error_log("AJAX WITHOUT access token from: " . $_SERVER['PHP_SELF'], "google");
-      return false; 
     }
-  }
+
+    if (isSessionVar('access_token')) {
+        $client->setAccessToken(getSessionVar('access_token');
+        web_error_log("with access token", "google");
+    } else { //if(!array_key_exists('code', $_GET)) {
+        $client->setState($state);
+        $client->setRedirectUri($redirect_uri);
+        if (isSessionVar('user_email')) {
+            $client->setLoginHint(getSessionVar('user_email'));
+        }
+        $auth_url = $client->createAuthUrl();
+        if ($mode == 'page') {
+            header('Location: ' . filter_var($auth_url, FILTER_SANITIZE_URL));
+            if (array_key_exists('logout', $_REQUEST)) {
+                web_error_log("weird logout", "google");
+                exit();
+            }
+            web_error_log("Page WITHOUT access token from: " . $_SERVER['PHP_SELF'], "google");
+            exit();
+        } else {
+            web_error_log("AJAX WITHOUT access token from: " . $_SERVER['PHP_SELF'], "google");
+            return false;
+        }
+    }
 
 
-    if($token_data = $client->verifyIdToken()) {
+    if ($token_data = $client->verifyIdToken()) {
         web_error_log("verified token for: " . $token_data['email'], "google");
-        return($token_data);
+        return ($token_data);
     } else {
         web_error_log("UNVERIFIED token from: " . $_SERVER['PHP_SELF'], "google");
-        unset($_SESSION['access_token']);
-        if($mode=='page') {
-          $auth_url = $client->createAuthUrl();
-          header('Location: ' . filter_var($auth_url, FILTER_SANITIZE_URL)); exit();
-        } else { return false; }
+        unsetSessionVar('access_token');
+        if ($mode == 'page') {
+            $auth_url = $client->createAuthUrl();
+            header('Location: ' . filter_var($auth_url, FILTER_SANITIZE_URL));
+            exit();
+        } else {
+            return false;
+        }
     }
 }
 

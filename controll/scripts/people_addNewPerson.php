@@ -20,7 +20,7 @@ if (!(array_key_exists('type', $_POST)) && array_key_exists('add', $_POST)) {
 }
 
 $type = $_POST['type'];
-$updatedBy = $_SESSION['user_perid'];
+$updatedBy = getSessionVar('user_perid');
 
 $con = get_conf('con');
 $conid = $con['id'];

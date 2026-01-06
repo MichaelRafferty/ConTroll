@@ -24,7 +24,7 @@ if (!array_key_exists('couponId', $_POST)) {
 
 $con = get_conf('con');
 $conid = $con['id'];
-$user_perid = $_SESSION['user_perid'];
+$user_perid = getSessionVar('user_perid');
 
 // check for required fields
 $paramarray = array($user_perid);

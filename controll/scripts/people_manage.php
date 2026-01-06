@@ -36,7 +36,7 @@ if ($who == $manager) {
 
 $response['who'] = $who;
 $response['manager'] = $manager;
-$updatedBy = $_SESSION['user_perid'];
+$updatedBy = getSessionVar('user_perid');
 
 // check that the person requested to manage this person is not managed themselves
 $chkQ = <<<EOS

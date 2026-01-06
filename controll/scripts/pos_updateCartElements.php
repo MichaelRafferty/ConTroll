@@ -35,11 +35,11 @@ if ($ajax_request_action != 'updateCartElements') {
 }
 
 $user_id = $_POST['user_id'];
-if ($user_id != $_SESSION['user_id']) {
+if ($user_id != getSessionVar('user_id')) {
     ajaxError("Invalid credentials passed");
     return;
 }
-$user_perid = $_SESSION['user_perid'];
+$user_perid = getSessionVar('user_perid');
 
 if (!array_key_exists('source', $_POST)) {
     $message_error = 'Source Missing';

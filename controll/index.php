@@ -24,12 +24,9 @@ if($need_login == false) {
         $oneoff = 0;
     # create the user session variable
     $user_email = $need_login['email'];
-    if (!(array_key_exists('user_email', $_SESSION) && $user_email == $_SESSION['user_email']
-        && array_key_exists('user_id', $_SESSION) && $_SESSION['user_id'] != null
-        && array_key_exists('user_perid', $_SESSION) && $_SESSION['user_perid'] != null
-        && array_key_exists('remote_addr', $_SESSION) && $_SESSION['remote_addr'] == $_SERVER['REMOTE_ADDR']
-    )) {
-        $_SESSION['user_email'] = $user_email;
+    if (!(getSessionVar('user_email') == $user_email && getSessionVar('user_id') != null &&
+            getSessionVar('user_perid') != null && getSessionVar('remote_addr') == $_SERVER['REMOTE_ADDR'])) {
+        setSessionVar('user_email', $user_email);
         $perid = 'not found';
         $userid = 'not found';
         // get the user id for database tracking
@@ -46,9 +43,9 @@ EOS;
                 $perid = $userL['perid'];
             }
         }
-        $_SESSION['user_id'] = $userid;
-        $_SESSION['user_perid'] = $perid;
-        $_SESSION['remote_addr'] = $_SERVER['REMOTE_ADDR'];
+        setSessionVar('user_id', $userid);
+        setSessionVar('user_perid', $perid);
+        setSessionVar('remote_addr', $_SERVER['REMOTE_ADDR']);
         web_error_log("ConTroll Admin login by $user_email($userid:$perid) from " . $_SERVER['REMOTE_ADDR']);
     }
     // get the version string, and the current DB patch level
@@ -81,10 +78,10 @@ EOS;
                 <div class="col-sm-auto mt-4 mb-0">
                     <pre><?php //var_export($need_login);
                             //echo var_export($need_login);
-                            //echo var_export($_SESSION['id_token_token']);
+                            //echo var_export(getSessionVar('id_token_token');
                             echo "Email: " . $need_login['email'] . "\n";
-                            echo "User id: " . $_SESSION['user_id'] . "\n";
-                            echo "User perid: " . $_SESSION['user_perid'] . "\n";
+                            echo "User id: " . getSessionVar('user_id') . "\n";
+                            echo "User perid: " . getSessionVar('user_perid') . "\n";
                             echo "Sub: " . $need_login['sub'] . "\n";
                             echo "Google Check: " . date('c', $need_login['iat']) . "\n";
                             echo "Current Time: " . date('c') . "\n";

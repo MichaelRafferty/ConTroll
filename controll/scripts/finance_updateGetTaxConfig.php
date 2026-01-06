@@ -19,10 +19,8 @@ if ($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
     exit();
 }
 
-if (array_key_exists('user_perid', $_SESSION)) {
-    $user_perid = $_SESSION['user_perid'];
-}
-else {
+$user_perid = getSessionVar('user_perid');
+if (!$user_perid) {{
     ajaxError('Invalid credentials passed');
     return;
 }

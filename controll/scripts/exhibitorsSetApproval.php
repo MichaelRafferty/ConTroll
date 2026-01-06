@@ -37,7 +37,7 @@ UPDATE exhibitorRegionYears
 SET approval = ?, updateDate = NOW(), updateBy = ?
 WHERE id = ?;
 EOS;
-    $num_rows = dbSafeCmd($upQ, 'sii', array($approvalValue, $_SESSION['user_perid'], $approvalId));
+    $num_rows = dbSafeCmd($upQ, 'sii', array($approvalValue, getSessionVar('user_perid'), $approvalId));
     if ($num_rows == 1) {
         $response['status'] = 'success';
         $response['message'] = "Approval changed to $approvalValue";

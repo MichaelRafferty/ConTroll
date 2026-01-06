@@ -20,7 +20,7 @@ if ($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
 $conid=getConfValue('con', 'id');
 $response['conid'] = $conid;
 
-if (!isset($_SESSION['id'])) {
+if (!isSessionVar('id')) {
     // get exhibitor id from post data
     if (!isset($_POST['exhibitorId'])) {
         ajaxError('invalid calling sequence');
@@ -28,7 +28,7 @@ if (!isset($_SESSION['id'])) {
     }
     $exhId = $_POST['exhibitorId'];
 } else {
-    $exhId = $_SESSION['id'];
+    $exhId = getSessionVar('id');
 }
 
 // which space purchased
