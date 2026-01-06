@@ -2930,13 +2930,13 @@ class Pos {
             <input type="radio" id="pt-terminal" name="payment_type" value="terminal" onchange='pos.setPayType("terminal");'/>
             <label for="pt-terminal">Credit Card Terminal&nbsp;&nbsp;&nbsp;</label>
 `;
-            } else if (!config.hasOwnProperty('creditonline') || config.creditonline == 1) {
+            } else if (config.hasOwnProperty('creditonline') && config.creditonline == 1) {
                 pay_html += `
             <input type="radio" id="pt-online" name="payment_type" value="credit" onchange='pos.setPayType("online");'/>
             <label for="pt-online">Online Credit Card&nbsp;&nbsp;&nbsp;</label>
 `;
             }
-            if (!config.hasOwnProperty('creditoffline') || config.creditoffline == 1) {
+            if (config.hasOwnProperty('creditoffline') && config.creditoffline == 1) {
                 pay_html += `
             <input type="radio" id="pt-credit" name="payment_type" value="credit" onchange='pos.setPayType("credit");'/>
             <label for="pt-credit">Offline Credit Card&nbsp;&nbsp;&nbsp;</label>
