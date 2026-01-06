@@ -43,7 +43,7 @@ function bounce_page($new_page) {
  */
 function google_init($mode) {
     // bypass for testing on Development PC
-    $homeDir = getConfValue('Ccontroll', 'internalHome', 'not-a-valid-path');
+    $homeDir = getConfValue('controll', 'internalHome', 'not-a-valid-path');
     if (stripos(__DIR__, $homeDir) !== false && $_SERVER['SERVER_ADDR'] == "127.0.0.1") {
         if (isset($_REQUEST['logout'])) {
             clearSession('user_perid');
@@ -58,13 +58,13 @@ function google_init($mode) {
         }
         $tokenValue = getSessionVar($reqid);
         if ($tokenValue == null)
-            $tokenValue = getSessionVar('internalUser');
+            $tokenValue = getConfValue('controll', 'internalUser');
         if (!$tokenValue) {
             echo "Invalid calling sequence\n";
             exit(1);
         }
 
-        [$token_data['email'], $token_data['sub'], $userid, $user_perid] = = explode(',', $tokenValue);
+        [$token_data['email'], $token_data['sub'], $userid, $user_perid] = explode(',', $tokenValue);
         $token_data['iat'] = time();
         $token_data['exp'] = time() + 3600;
         setSessionVar('user_id', $userid);
@@ -137,7 +137,7 @@ function google_init($mode) {
     }
 
     if (isSessionVar('access_token')) {
-        $client->setAccessToken(getSessionVar('access_token');
+        $client->setAccessToken(getSessionVar('access_token'));
         web_error_log("with access token", "google");
     } else { //if(!array_key_exists('code', $_GET)) {
         $client->setState($state);
