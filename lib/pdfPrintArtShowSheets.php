@@ -37,13 +37,14 @@ EOS;
     $itemR = dbSafeQuery($itemSQL, 'ii', array($regionYearId, $region));
     if ($itemR === false) {
         $response['error'] = "Error retrieving art items for print show, please seek assistance";
-        echo "Error retrieving art items for print show, please seek assistance\n";
+        echo "<h1>Error retrieving art items for print show, please seek assistance</h1>\n";
         return $response;
     }
     if ($itemR->num_rows == 0) {
         if ($first == $last) {
             $response['num_rows'] = $itemR->num_rows;
             $response['status'] = 'No art found requiring price tags';
+            echo "<h1>No art found requiring price tags</h1>\n";
         }
         $itemR->free();
         return $response;
@@ -293,6 +294,8 @@ EOS;
     if ($itemR === false) {
         $response['error'] = 'Error retrieving art items for bid sheets, please seek assistance';
         echo "Error retrieving art items for bid sheets, please seek assistance\n";
+        echo "<h1>Error retrieving art items for bid sheets, please seek assistance</h1>\n";
+
         return $response;
     }
     if ($itemR->num_rows == 0) {
@@ -300,6 +303,7 @@ EOS;
         if ($first == $last) {
             $response['num_rows'] = $itemR->num_rows;
             $response['status'] = 'No art found requiring bid sheets';
+            echo "<h1>No art found requiring bid sheets</h1>\n";
         }
         $itemR->free();
         return $response;
@@ -575,7 +579,7 @@ EOS;
     $artistR = dbSafeQuery($artistQ, 'ii', array($regionYearId, $region));
     if ($artistR === false || $artistR->num_rows == 0) {
         $response['error'] = 'Error retrieving Artist information for control sheet, please seek assistance';
-        echo "Error retrieving Artist information for control sheet, please seek assistance\n";
+        echo "<h1>Error retrieving Artist information for control sheet, please seek assistance</h1\n";
         return $response;
     }
 
@@ -872,7 +876,7 @@ EOS;
     $itemR = dbSafeQuery($itemSQL, 'ii', array($regionYearId, $region));
     if ($itemR === false) {
         $response['error'] = 'Error retrieving art items for control sheet, please seek assistance';
-        echo "Error retrieving art items for control sheet, please seek assistance\n";
+        echo "<h1>Error retrieving art items for control sheet, please seek assistance</h1>\n";
         return $response;
     }
     if ($itemR->num_rows == 0) {
