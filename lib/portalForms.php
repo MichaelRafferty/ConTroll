@@ -485,7 +485,7 @@ EOS;
                $ageRow = '<br/><b>' . $membership['ageShort'] . '</b> [' . $membership['ageLabel'] . ']';
            }
            $expired = $membership['status'] == 'unpaid' && ($membership['actPaid'] + $membership['actCouponDiscount']) > 0 &&
-                ($membership['startdate'] > $now || $membership['enddate'] < $now || $membership['online'] == 'N');
+                ($membership['startdate'] > $now || $membership['enddate'] < $now);
            $shortname = $membership['shortname'];
            if ($expired) {
                $expiredPrefix = '<span class="text-danger">Expired: ';
@@ -497,7 +497,7 @@ EOS;
             echo <<<EOS
     <div class="col-sm-3  ps-1 pe-1 m-0">
         <button class="btn btn-light border border-5 p-1 m-0 mt-1 mb-1 $borderColor w-100" 
-            style="pointer-events:none; $borderStyle;" $disabled tabindex="-1"><b>$expiredPrefix$shortname</b> ($status)
+            style="pointer-events:none; $borderStyle;" $disabled tabindex="-1"><b>$expiredPrefix$shortname</b>$expiredSuffix ($status)
             $ageRow
             $row3
         </button>

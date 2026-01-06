@@ -129,7 +129,7 @@ class Cart {
             if (membershipRec.status == 'unpaid' && membershipRec.paid == 0) {
                 var sd = new Date(membershipRec.startdate);
                 var ed = new Date(membershipRec.enddate);
-                if (membershipRec.online == 'N' || sd.getTime() > now.getTime() || ed.getTime() < now.getTime()) {
+                if (sd.getTime() > now.getTime() || ed.getTime() < now.getTime()) {
                     expired = true;
                     label = "<span class='text-danger'><b>Expired: </b>" + label + "</span>";
                 }

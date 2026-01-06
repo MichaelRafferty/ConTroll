@@ -639,7 +639,7 @@ foreach ($memberships as $key => $membership) {
 
         $status = 'Balance due: ' . $dolfmt->formatCurrency((float) $due, $currency);
 
-        if ($membership['startdate'] > $now || $membership['enddate'] < $now || $membership['online'] == 'N') {
+        if ($membership['startdate'] > $now || $membership['enddate'] < $now) {
             $label = "<span class='text-danger'><b>Expired: </b>$label</span>";
             $numExpired++;
         }
