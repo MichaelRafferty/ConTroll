@@ -117,8 +117,8 @@ class rulesSetup {
 
     // globals before open
     constructor() {
-        this.#debug =  Number(config.debug);
-        this.#conid =  Number(config.conid);
+        this.#debug = Number(config.debug);
+        this.#conid = Number(config.conid);
         if (this.#debug & 2) {
             this.#debugVisible = true;
         }
