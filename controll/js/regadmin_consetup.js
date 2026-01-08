@@ -5,6 +5,8 @@ var editListMasterRow = null;
 var memListModalDirty = false;
 
 class consetup {
+    #debug = 0;
+    #debugVisible = false;
     #active = false;
     #contable = null;
     #memtable = null;
@@ -40,8 +42,21 @@ class consetup {
     #memListMasterRow = null;
     #editData = null;
     #paginationDiv = null;
+    // edit bundle items
+    #memListBundleContains = null;
+    #memListBundleTable = null;
+    #selValues = null;
+    #editMemListBundleDiv = null;
+    #nonBundleList = [];
 
     constructor(setup_type) {
+        this.#debug = Number(config.debug);
+        this.#conid = Number(config.conid);
+        if (this.#debug & 2) {
+            this.#debugVisible = true;
+        }
+        config.debug = this.#debug;
+        config.conid = this.#conid;
         this.#message_div = document.getElementById('test');
         if (setup_type == 'current' || setup_type == 'c') {
             this.#conlist_pane = document.getElementById('consetup-pane');
@@ -58,6 +73,9 @@ class consetup {
         if (id) {
             this.#memListModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
         }
+        this.#memListBundleContains = document.getElementById('editMemListBundleContains');
+        this.#editMemListBundleDiv = document.getElementById('editMemListBundleDiv');
+        this.#editMemListBundleDiv.hidden = true;
     };
 
     // set undo / redo status for conlist (convention data)
@@ -255,8 +273,7 @@ class consetup {
     };
 
     draw_memlist(year, data, textStatus, jhXHR) {
-        var _this = this;
-        var index = 0;
+        let _this = this;
 
         // save off the select list data
         this.#catListData = data['memCats'];
@@ -265,19 +282,19 @@ class consetup {
 
         // build the select lists
         this.#catListSelect = "<select name='memListCategorySelect' id='memListCategorySelect' onchange='memListModalDirty = true;'>";
-        for (index = 0; index < this.#catListData.length; index++) {
+        for (let index = 0; index < this.#catListData.length; index++) {
             var cat = this.#catListData[index];
             this.#catListSelect += "\n<option value='" + cat + "'>" + cat + "</option>";
         }
         this.#ageListSelect += "\n</select>";
         this.#ageListSelect = "<select name='memListAgeSelect' id='memListAgeSelect' onchange='memListModalDirty = true;'>";
-        for (index = 0; index < this.#ageListData.length; index++) {
+        for (let index = 0; index < this.#ageListData.length; index++) {
             var age = this.#ageListData[index];
             this.#ageListSelect += "\n<option value='" + age + "'>" + age + "</option>";
         }
         this.#typeListSelect += "\n</select>";
         this.#typeListSelect = "<select name='memListTypeSelect' id='memListTypeSelect' onchange='memListModalDirty = true;'>";
-        for (index = 0; index < this.#typeListData.length; index++) {
+        for (let index = 0; index < this.#typeListData.length; index++) {
             var type = this.#typeListData[index];
             this.#typeListSelect += "\n<option value='" + type + "'>" + type + "</option>";
         }
@@ -813,7 +830,119 @@ class consetup {
             'sort_order',
         ];
         downloadFilePost(format, filename, tabledata, null, fieldList);
-    };
+    }
+
+    // items for editing the bundle contains items
+    // closeBundleSel - close the tablle
+
+    closeBundleSel() {
+        if (this.#memListBundleTable) {
+            this.#memListBundleTable.destroy();
+            this.#memListBundleTable = null;
+        }
+
+        this.#editMemListBundleDiv.hidden = true;
+    }
+    // editBundleContains - select the mem id's for this bundle
+    editBundleContains() {
+        this.closeBundleSel();
+
+        // fill the non bundle list data from current data
+        let curMemList = this.#memtable.getRows();
+        this.#nonBundleList = [];
+        for (let row of curMemList) {
+            let rowdata = row.getData();
+            if (rowdata.label.substring(0, 8) != 'Bundle: ')
+                this.#nonBundleList.push(rowdata);
+        }
+
+        let set = this.#memListBundleContains.innerHTML;
+        if (set != null)
+            this.#selValues = set.split(',');
+        else
+            this.#selValues = [];
+        this.#editMemListBundleDiv.hidden = false;
+
+        this.#memListBundleTable = new Tabulator('#editMemlistBundleTable', {
+            data: this.#nonBundleList,
+            layout: "fitDataTable",
+            index: "id",
+            pagination: this.#nonBundleList.length > 25,
+            paginationAddRow:"table",
+            paginationSize: 25,
+            paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
+            columns: [
+                {title: "ID", field: "id", width: 70, headerHozAlign:"right", hozAlign: "right",
+                    headerFilter: "input", headerFilterFunc:numberHeaderFilter,
+                },
+                {title: "ConId", field: "conid", width: 70, headerWordWrap: true, headerHozAlign:"right", hozAlign: "right",  headerFilter: true, },
+                {title: "Cat", field: "memCategory", width: 90, headerFilter: 'list', headerFilterParams: { values: this.#catListData }, },
+                {title: "Type", field: "memType", width: 90, headerFilter: 'list', headerFilterParams: { values: this.#typeListData },  },
+                {title: "Age", field: "memAge", width: 90, headerFilter: 'list', headerFilterParams: { values: this.#ageListData },  },
+                {title: "Label", field: "label", width: 250, headerFilter: true, },
+                {title: "Price", field: "price", width: 80, headerFilter: true, headerHozAlign:"right", hozAlign: "right", },
+                {title: "Notes", field: "notes", width: 200, headerFilter: true,  formatter: "textarea", },
+                {title: "Start Date", field: "startDate", width: 200, visible: this.#debugVisible, headerFilter: true,  },
+                {title: "End Date", field: "endDate", width: 200, visible: this.#debugVisible, headerFilter: true, },
+            ],
+        });
+        this.#memListBundleTable.on("cellClick", clickedSelection)
+        setTimeout(setInitialSel, 100);
+    }
+
+    // table functions
+    // setInitialSel - set the initial selected items based on the current values
+    setInitialSel() {
+        var rows = this.#memListBundleTable.getRows();
+        for (let row of rows) {
+            let index = row.getCell('id').getValue().toString();
+            if (this.#selValues.includes(index)) {
+                row.getCell('id').getElement().style.backgroundColor = "#C0FFC0";
+            }
+        }
+    }
+
+    // toggle the selection color of the clicked cell
+    clickedSelection(e, cell) {
+        var filtercell = cell.getRow().getCell('id');
+        var value = filtercell.getValue();
+        if (filtercell.getElement().style.backgroundColor) {
+            filtercell.getElement().style.backgroundColor = "";
+        } else {
+            filtercell.getElement().style.backgroundColor = "#C0FFC0";
+        }
+    }
+
+    // set all/clear all sections in table based on direction
+    setBundleSel(direction) {
+        let rows = this.#memListBundleTable.getRows();
+        for (let row of rows) {
+            if (row.getPosition() === false)
+                continue;
+
+            row.getCell('id').getElement().style.backgroundColor = direction ? "#C0FFC0" : "";
+        }
+    }
+
+    // retrieve the selected rows and set the field values
+    applyBundleSel() {
+        // store all the fields back into the field
+
+        let val = '';
+        let rows = this.#memListBundleTable.getRows();
+        for (let row of rows) {
+            if (row.getCell('id').getElement().style.backgroundColor != '') {
+                val += ',' + row.getCell('id').getValue();
+            }
+        }
+        if (val != '')
+            val = val.substring(1);
+
+        this.#memListBundleContains.value = val;
+        this.closeBundleSel();
+        memListModalDirty = true;
+    }
+
 
     // copy the fixed fields from the upper Edit block to the lower time series rows
     copyMemListChanges() {
@@ -1024,6 +1153,50 @@ function editMemListCancel() {
         return next.editMemListCancel();
 
     return current.editMemListCancel();
+}
+
+// top section request to edit bundle contains field with select list
+function editBundleContains() {
+    if (activeConSetup == 'next')
+        next.editBundleContains();
+    else
+        current.editBundleContains();
+}
+
+function setInitialSel() {
+    if (activeConSetup == 'next')
+        next.setInitialSel();
+    else
+        current.setInitialSel();
+}
+
+function clickedSelection(e, cell) {
+    if (activeConSetup == 'next')
+        next.clickedSelection(e, cell);
+    else
+        current.clickedSelection(e, cell);
+}
+
+// top section bundle button actions
+function closeBundleSel() {
+    if (activeConSetup == 'next')
+        next.closeBundleSel();
+    else
+        current.closeBundleSel();
+}
+
+function setBundleSel(direction) {
+    if (activeConSetup == 'next')
+        next.setBundleSel(direction);
+    else
+        current.setBundleSel(direction);
+}
+
+function applyBundleSel() {
+    if (activeConSetup == 'next')
+        next.applyBundleSel();
+    else
+        current.applyBundleSel();
 }
 
 // top section edited price, set bottom screen

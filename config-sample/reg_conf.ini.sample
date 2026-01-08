@@ -289,6 +289,16 @@ multioneday=1 ; =0 for only a single one day can be purchased, =1 if multiple di
 ;; D:l:0,1
 ;; B:M
 onedaycoupons=0 ; allow onedays for coupon usage
+;; N:bundlememberships
+;; R:H,reg_staff
+;; H:Enable Bundle Memberships
+;; H+ =0 Bundles are disabled, no membership labels are checked for Bundle: and processed into individual membership on saving the cart
+;; H+ =1 Bundles are enabled.  If a membership label starts with 'Bundle: ' then the memberships is split into the individual parts
+;; H+    on saving it to the cart.
+;; H+ Bundles follow normal membership rules, both implicit rules and those specificed in the membership rules configuration.
+;; D:l:0,1
+;; B:M
+bundlememberships=0 ; allow onedays for coupon usage
 
 ;;;;; On Line Registration (non Portal)
 [reg]
