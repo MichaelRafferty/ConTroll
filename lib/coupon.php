@@ -108,7 +108,7 @@ SELECT id, label, shortname,
 FROM memLabel
 WHERE
     conid=? 
-    AND ((online = 'Y' AND startdate <= current_timestamp() AND enddate > current_timestamp()) OR (id = ?))
+    AND ((startdate <= current_timestamp() AND enddate > current_timestamp()) OR (id = ?))
 ORDER BY sort_order, price DESC
 ;
 EOS;

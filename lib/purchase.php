@@ -25,7 +25,6 @@ SELECT m.id, m.label, m.shortname, m.price, m.memCategory, m.memType, m.memAge, 
 FROM memLabel m
 WHERE
     (m.conid=? OR m.conid=?)
-    AND m.online = 'Y'
     AND startdate <= CURRENT_TIMESTAMP()
     AND enddate > CURRENT_TIMESTAMP()
 ;
