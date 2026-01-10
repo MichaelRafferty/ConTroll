@@ -323,7 +323,7 @@ class consetup {
             show_message("Nothing defined yet", 'warn')
             memListData = new Array();
         } else {
-            memListData = data['memList'];
+            memListData = data['memlist'];
         }
         this.#paginationDiv = document.getElementById( this.#setup_type + 'PaginationDiv');
         this.#paginationDiv.innerHTML = '';
@@ -1019,6 +1019,13 @@ class consetup {
         memListModalDirty = true;
     }
 
+    // placeholder for updating the contents of the entire bundle set for all time series
+    tsBundleContentsChanged(id) {
+        if (id == editListMasterRow)
+            this.#memListBundleContains.value = document.getElementById('EMLTS' + id + '_contains').value;
+        memListModalDirty = true;
+    }
+
 
     // copy the fixed fields from the upper Edit block to the lower time series rows
     copyMemListChanges() {
@@ -1197,8 +1204,31 @@ class consetup {
     editMemListSave() {
         if (this.#memListBundleContains) {
             // check if bundle is Yes
+            let valid = true;
+            let message = '';
             if (document.getElementById('editMemListBundle').value == 'Y') {
-                // rebuild the bundle letiables: note, label
+                // validate the bundle contents for each row in the table
+                for (let i = 0; i < 10; i++) {
+                    let contains = document.getElementById('EMLTS' + i + '_contains').value;
+                    if (contains != '') {
+                        let containsList = contains.split(',');
+                        for (let c = 0; c < containsList.length; c++) {
+                            // validate that this element is a memlistid in the table
+                            let id = containsList[c];
+                            let row = this.#memtable.getRow(id);
+                            if (row === false) {
+                                valid = false;
+                                let memId = document.getElementById('EMLTS' + i + '_ID').innerHTML;
+                                message += 'For bundle ID ' + memId + ', bundle item ' + id + ' does not exist in the memList.<br/>';
+                            }
+                        }
+                    }
+                }
+                if (!valid) {
+                    show_message(message, 'error', 'result_message_editMemList');
+                    return;
+                }
+                // rebuild the bundle values: note, label
                 let notes = document.getElementById('editMemListNotes');
                 let note = document.getElementById('editMemListBundleContains').value + '/' + notes.value;
                 notes.value = note;
@@ -1322,9 +1352,16 @@ function bundleChanged() {
 
 function bundleContentsChanged() {
     if (activeConSetup == 'next')
-        next.setBundleSelbundleContentsChanged();
+        next.bundleContentsChanged();
     else
         current.bundleContentsChanged();
+}
+
+function tsBundleContentsChanged(id) {
+    if (activeConSetup == 'next')
+        next.tsBundleContentsChanged(id);
+    else
+        current.tsBundleContentsChanged(id);
 }
 
 function applyBundleSel() {

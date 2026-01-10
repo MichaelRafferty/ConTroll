@@ -163,7 +163,7 @@ $config_vars['currency'] = $currency;
                                     </div>
                                     <div class='col-sm-7'>
                                         <input type='text' name='editMemListBundleContains' id='editMemListBundleContains' placeholder='List of IDs in bundle'
-                                               onchange='bundlContentsChanged();' size='64' maxlength='256'/>
+                                               onchange='bundleContentsChanged();' size='64' maxlength='256'/>
                                     </div>
                                 </div>
                             <?php } ?>
@@ -310,7 +310,7 @@ $config_vars['currency'] = $currency;
                         </div>
                         <div class='col-sm-auto'>
                             <input type='text' name='editMemListBundleContains' id='EMLTS<?php echo $i;?>_contains' placeholder='List of IDs in bundle'
-                                   size='64' maxlength='256'/>
+                                   onchange=tsBundleContentsChanged(<?php echo $i;?>) size='64' maxlength='256'/>
                         </div>
                     </div>
         <?php }
