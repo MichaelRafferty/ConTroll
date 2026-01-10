@@ -45,6 +45,7 @@ class consetup {
     // edit bundle items
     #memListBundleContains = null;
     #memListBundleTable = null;
+    #memListPrice = null;
     #selValues = null;
     #editMemListBundleDiv = null;
     #nonBundleList = [];
@@ -75,6 +76,7 @@ class consetup {
             this.#memListModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
         }
         this.#memListBundleContains = document.getElementById('editMemListBundleContains');
+        this.#memListPrice = document.getElementById('editMemListPrice');
         this.#editMemListBundleDiv = document.getElementById('editMemListBundleDiv');
         this.#editMemListBundleDiv.hidden = true;
         $('div[name="TScontains"]').hide();
@@ -966,24 +968,37 @@ class consetup {
         // store all the fields back into the field
 
         let val = '';
+        let price = 0;
         let rows = this.#memListBundleTable.getRows();
         for (let row of rows) {
             if (row.getCell('id').getElement().style.backgroundColor != '') {
-                val += ',' + row.getCell('id').getValue();
+                let rowData = row.getData();
+                val += ',' + rowData.id;
+                price += Number(rowData.price);
             }
         }
         if (val != '')
             val = val.substring(1);
 
+        price = price.toFixed(2);
+
         document.getElementById(this.#containsField).value = val;
         if (this.#containsField == 'editMemListBundleContains') {
-            let idField = 'EMLTS' + editListMasterRow + '_contains';
+            this.#memListPrice.value = price;
+            let idField = 'EMLTS' + editListMasterRow + '_Price';
+            document.getElementById(idField).value = price;
+            idField = 'EMLTS' + editListMasterRow + '_contains';
             document.getElementById(idField).value = val;
+
         } else {
-            let idField = this.#containsField.replace('_contains', '_ID');
+            let idField = this.#containsField.replace('_contains', '_Price');
+            document.getElementById(idField).value = price;
+            idField = this.#containsField.replace('_contains', '_ID');
             let id = document.getElementById(idField).innerHTML;
-            if (id == this.#memListMasterRow)
+            if (id == this.#memListMasterRow) {
                 this.#memListBundleContains.value = val;
+                this.#memListPrice.value = price;
+            }
         }
         this.closeBundleSel();
         this.bundleContentsChanged();
