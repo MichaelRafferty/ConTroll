@@ -206,3 +206,15 @@ function badgeNameDefault(badge_name, badgeNameL2, first_name, last_name) {
     default_name = (badge_name.trim() + '<br/>' + badgeNameL2).trim();
     return default_name;
 }
+
+// cconvert arbitary js date string to database date format (YYYY-MM-DD HH:MM:SS)
+function toDBdate(datestr) {
+    jsDate = new Date(datestr);
+    let newdate = String(jsDate.getFullYear()) + '-' +
+        String(jsDate.getMonth() + 1).padStart(2, '0') + '-' +
+        String(jsDate.getDate()).padStart(2, '0') + ' ' +
+        String(jsDate.getHours()).padStart(2, '0') + ':' +
+        String(jsDate.getMinutes()).padStart(2, '0') + ':' +
+        String(jsDate.getSeconds()).padStart(2, '0');
+    return newdate;
+}
