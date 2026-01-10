@@ -498,6 +498,8 @@ class consetup {
             document.getElementById('editMemListBundle').value = bundle ? 'Y' : 'N';
             if (bundle)
                 $('div[name="TScontains"]').show();
+            else
+                $('div[name="TScontains"]').hide();
         }
 
         this.reSortTimeSeries(false);
