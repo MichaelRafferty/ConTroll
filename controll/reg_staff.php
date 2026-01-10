@@ -150,7 +150,7 @@ $config_vars['currency'] = $currency;
                                 <div class='row mt-1'>
                                     <div class='col-sm-2'>Bundle:</div>
                                     <div class='col-sm-10'>
-                                        <select name='editMemListBundle' id='editMemListBundle' onchange='memListModalDirty = true;'>
+                                        <select name='editMemListBundle' id='editMemListBundle' onchange='bundleChanged();'>
                                             <option value='N'>No</option>
                                             <option value='Y'>Yes</option>
                                         </select>
@@ -159,11 +159,11 @@ $config_vars['currency'] = $currency;
                                 <div class='row mt-1'>
                                     <div class='col-sm-2'>Contains:</div>
                                     <div class="col-sm-auto">
-                                        <button class='btn btn-sm btn-primary' type='button' onclick="editBundleContains();">Select Contents</button>
+                                        <button class='btn btn-sm btn-primary' type='button' onclick="editBundleContains('editMemListBundleContains');">Select Contents</button>
                                     </div>
                                     <div class='col-sm-7'>
                                         <input type='text' name='editMemListBundleContains' id='editMemListBundleContains' placeholder='List of IDs in bundle'
-                                               onchange='memListModalDirty = true;' size='64' maxlength='256'/>
+                                               onchange='bundlContentsChanged();' size='64' maxlength='256'/>
                                     </div>
                                 </div>
                             <?php } ?>
@@ -299,6 +299,21 @@ $config_vars['currency'] = $currency;
                         </div>
                     </div>
 <?php
+        if (getConfValue('con', 'bundlememberships', 0) == 1) { ?>
+                    <div class='row mt-2' name='TScontains' style="background-color: <?php echo $bgColor;?>">
+                        <div class="col-sm-2"></div>
+                        <div class='col-sm-auto'>Contains:</div>
+                        <div class='col-sm-auto'>
+                            <button class='btn btn-sm btn-primary' type='button' onclick="editBundleContains('EMLTS<?php echo $i;?>_contains');">
+                                Select This Rows Contents Only
+                            </button>
+                        </div>
+                        <div class='col-sm-auto'>
+                            <input type='text' name='editMemListBundleContains' id='EMLTS<?php echo $i;?>_contains' placeholder='List of IDs in bundle'
+                                   size='64' maxlength='256'/>
+                        </div>
+                    </div>
+        <?php }
     }
 ?>
                 </div>
