@@ -78,7 +78,8 @@ class consetup {
         this.#memListBundleContains = document.getElementById('editMemListBundleContains');
         this.#memListPrice = document.getElementById('editMemListPrice');
         this.#editMemListBundleDiv = document.getElementById('editMemListBundleDiv');
-        this.#editMemListBundleDiv.hidden = true;
+        if (this.#editMemListBundleDiv)
+            this.#editMemListBundleDiv.hidden = true;
         $('div[name="TScontains"]').hide();
     };
 
@@ -118,51 +119,35 @@ class consetup {
         this.checkMemlistUndoRedo();
     };
 
+    defaultNewRowValues(row, except) {
+        this.#editData.push({id: 'new' + row });
+        document.getElementById('EMLTS' + row + '_ID').innerHTML = this.#editData[row].id;
+        this.#editData[row].conid = this.#conid;
+        this.#editData[row].sort_order = this.#editData[row - 1].sort_order + 1;
+        document.getElementById('EMLTS' + row + '_Sort').value = this.#editData[row].sort_order;
+        this.#editData[row].memCategory = document.getElementById('memListCategorySelect').value;
+        this.#editData[row].memAge = document.getElementById('memListAgeSelect').value;
+        this.#editData[row].memType = document.getElementById('memListTypeSelect').value;
+        this.#editData[row].shortname = document.getElementById('editMemListLabel').value;
+        this.#editData[row].notes = document.getElementById('editMemListNotes').value;
+        this.#editData[row].uses = 0;
+    }
+
     setEditDataPrice(row, value) {
-        if (this.#editData.length <= row) {
-            this.#editData.push({id: 'new' + row });
-            document.getElementById('EMLTS' + row + '_ID').innerHTML = this.#editData[row].id;
-            this.#editData[row].conid = this.#conid;
-            this.#editData[row].sort_order = this.#editData[row - 1].sort_order + 1;
-            document.getElementById('EMLTS' + row + '_Sort').value = this.#editData[row].sort_order;
-            this.#editData[row].memCategory = document.getElementById('memListCategorySelect').value;
-            this.#editData[row].memAge = document.getElementById('memListAgeSelect').value;
-            this.#editData[row].memType = document.getElementById('memListTypeSelect').value;
-            this.#editData[row].shortname = document.getElementById('editMemListLabel').value;
-            this.#editData[row].notes = document.getElementById('editMemListNotes').value;
-        }
+        if (this.#editData.length <= row)
+            this.defaultNewRowValues(row, 'price');
         this.#editData[row].price = value;
     }
 
     setEditDataStartDate(row, value) {
-        if (this.#editData.length <= row) {
-            this.#editData.push({id: 'new' + row });
-            document.getElementById('EMLTS' + row + '_ID').innerHTML = this.#editData[row].id;
-            this.#editData[row].sort_order = this.#editData[row - 1].sort_order + 1;
-            document.getElementById('EMLTS' + row + '_Sort').value = this.#editData[row].sort_order;
-            this.#editData[row].conid = this.#conid;
-            this.#editData[row].memCategory = document.getElementById('memListCategorySelect').value;
-            this.#editData[row].memAge = document.getElementById('memListAgeSelect').value;
-            this.#editData[row].memType = document.getElementById('memListTypeSelect').value;
-            this.#editData[row].shortname = document.getElementById('editMemListLabel').value;
-            this.#editData[row].notes = document.getElementById('editMemListNotes').value;
-        }
+        if (this.#editData.length <= row)
+            this.defaultNewRowValues(row, 'startdate');
         this.#editData[row].startdate = value;
     }
 
     setEditDataEndDate(row, value) {
-        if (this.#editData.length <= row) {
-            this.#editData.push({id: 'new' + row});
-            document.getElementById('EMLTS' + row + '_ID').innerHTML = this.#editData[row].id;
-            this.#editData[row].sort_order = this.#editData[row - 1].sort_order + 1;
-            document.getElementById('EMLTS' + row + '_Sort').value = this.#editData[row].sort_order;
-            this.#editData[row].conid = this.#conid;
-            this.#editData[row].memCategory = document.getElementById('memListCategorySelect').value;
-            this.#editData[row].memAge = document.getElementById('memListAgeSelect').value;
-            this.#editData[row].memType = document.getElementById('memListTypeSelect').value;
-            this.#editData[row].shortname = document.getElementById('editMemListLabel').value;
-            this.#editData[row].notes = document.getElementById('editMemListNotes').value;
-        }
+        if (this.#editData.length <= row)
+            this.defaultNewRowValues(row, 'enddate');
         this.#editData[row].enddate = value;
     }
 
@@ -476,7 +461,7 @@ class consetup {
         this.#memListModal.show();
 
         let bundle = false;
-        let label = rowData.label;
+        let label = rowData.shortname;
         let notes = rowData.notes;
         let bundleList = '';
         if (this.#memListBundleContains && label != undefined) {
@@ -769,16 +754,46 @@ class consetup {
     }
 
     saveMemList() {
+        let message = '';
+        let valid = true;
         if (this.#memtable != null) {
             let invalids = this.#memtable.validate();
             if (invalids !== true) {
-                console.log(invalids);
-                show_message("MemList Table does not pass validation, please check for empty cells or cells in red", 'error');
-                return false;
+                message += "MemList Table does not pass validation, please check for empty cells or cells in red</br>";
+                valid = false;
+            }
+
+            let tabledata = this.#memtable.getData();
+            // validate any bundles
+            for (let row of tabledata) {
+                let label =  row.shortname;
+                let notes = row.notes;
+                if (label.substring(0, 8) == 'Bundle: ') {
+                    let indexMark = notes.indexOf('/');
+                    if (indexMark < 0) {
+                        valid = false;
+                        message += "Bundle " + row.id +
+                            " is missing the bundle list on the front of the notes line, use the Edit button to correct the bundle.<br/>";
+                        continue;
+                    }
+                    let containsList = notes.substring(0,indexMark).split(',');
+                    for (let bundleItem of containsList) {
+                        let bundleRow = this.#memtable.getRow(bundleItem);
+                        if (bundleRow === false) {
+                            valid = false;
+                            message += 'For bundle ID ' + row.id + ', bundle item ' + bundleItem +
+                                ' does not exist in the memList, use the Edit button to correct the bundle.<br/>';
+                        }
+                    }
+                }
+            }
+
+            if (!valid) {
+                show_message(message, 'error');
+                return;
             }
 
             let script = "scripts/regadmin_updateCondata.php";
-            let tabledata = this.#memtable.getData();
             let keys = Object.keys(tabledata);
             let yearaheadWarning = '';
             for (let i = 0; i < keys.length; i++) {
@@ -1030,13 +1045,15 @@ class consetup {
     // copy the fixed fields from the upper Edit block to the lower time series rows
     copyMemListChanges() {
         for (let index = 0; index < 10; index++) {
-            if (document.getElementById('EMLTS' + index + '_Price').value != '') {
+            if (document.getElementById('EMLTS' + index + '_Price').value != '' ||
+                document.getElementById('EMLTS' + index + '_Start').value != '' ||
+                document.getElementById('EMLTS' + index + '_End').value != '') {
                 // has price, copy the data rows
                 if (index >= this.#editData.length) {
                     this.#editData.push({id: 'new' + index, conid: this.#conid });
                     document.getElementById('EMLTS' + index + '_ID').innerHTML = this.#editData[index].id;
-                    this.#editData[row].sort_order = this.#editData[row - 1].sort_order + 1;
-                    document.getElementById('EMLTS' + row + '_Sort').value = this.#editData[row].sort_order;
+                    this.#editData[index].sort_order = this.#editData[index - 1].sort_order + 1;
+                    document.getElementById('EMLTS' + index + '_Sort').value = this.#editData[index].sort_order;
                     this.#editData[index].startdate = document.getElementById('EMLTS' + index + '_Start').value;
                     this.#editData[index].enddate = document.getElementById('EMLTS' + index + '_End').value;
                     this.#editData[index].price = document.getElementById('EMLTS' + index + '_Price').value;
@@ -1072,28 +1089,49 @@ class consetup {
     // save the time series data back to the edit data array
     saveTimeSeries() {
         let index = 0;
+        let bundle =  document.getElementById('editMemListBundle').value == 'Y';
+        let notes = document.getElementById('editMemListNotes').value;
+        let mark = notes.indexOf('/');
+        if (mark > 0)
+            notes = notes.substring(mark + 1);
+        let orignotes = notes;
+        let shortname = document.getElementById('editMemListLabel').value;
+        if (bundle) {
+            if (shortname.substring(0, 8) != 'Bundle: ')
+                shortname = 'Bundle: ' + shortname;
+        }
         for (let row = 0; row < 10; row++) {
-            if (document.getElementById('EMLTS' + row + '_Price').value != '') {
-                // has non empty price, copy the data rows
+            if (document.getElementById('EMLTS' + row + '_Price').value != '' ||
+                document.getElementById('EMLTS' + row + '_Start').value != '' ||
+                document.getElementById('EMLTS' + row + '_End').value != '') {
+                // has non empty price or dates, copy the data rows
                 if (index >= this.#editData.length) {
-                    this.#editData.push({id: 'new' + index });
-                    // new rows also get all the master row data
-                    this.#editData[index].sort_order = this.#editData[index - 1].sort_order + 1;
-                    document.getElementById('EMLTS' + index + '_Sort').value = this.#editData[index].sort_order;
-                    this.#editData[index].conid = this.#conid;
-                    this.#editData[index].memCategory = document.getElementById('memListCategorySelect').value;
-                    this.#editData[index].memAge = document.getElementById('memListAgeSelect').value;
-                    this.#editData[index].memType = document.getElementById('memListTypeSelect').value;
-                    this.#editData[index].shortname = document.getElementById('editMemListLabel').value;
-                    this.#editData[index].notes = document.getElementById('editMemListNotes').value;
+                    this.defaultNewRowValues(row, '');
+                    this.#editData[index].shortname = shortname;
                     this.#editData[index].glNum = document.getElementById('editMemListGLNum').value;
                     this.#editData[index].glLabel = document.getElementById('editMemListGLLabel').value;
-                    document.getElementById('EMLTS' + index + '_ID').innerHTML = this.#editData[index].id;
+                }
+                if (bundle) {
+                    let contains = document.getElementById('EMLTS' + row + '_contains').value;
+                    if (contains == undefined || contains == '') {
+                        contains = this.computeBundleList(document.getElementById('editMemListBundleContains').value,
+                            document.getElementById('EMLTS' + row + '_Start').value,
+                            document.getElementById('EMLTS' + row + '_End').value);
+                        document.getElementById('EMLTS' + row + '_contains').value = contains[0];
+                        document.getElementById('EMLTS' + row + '_Price').value = contains[1];
+                    }
+                    notes = document.getElementById('EMLTS' + row + '_contains').value + '/' + orignotes;
+                } else {
+                    if (document.getElementById('EMLTS' + row + '_Price').value == '')
+                        document.getElementById(editMemListPrice).value;
+                    notes = orignotes;
                 }
                 this.#editData[index].sort_order = document.getElementById('EMLTS' + row + '_Sort').value;
                 this.#editData[index].price = document.getElementById('EMLTS' + row + '_Price').value;
                 this.#editData[index].startdate = document.getElementById('EMLTS' + row + '_Start').value;
                 this.#editData[index].enddate = document.getElementById('EMLTS' + row + '_End').value;
+                this.#editData[index].shortname = shortname;
+                this.#editData[index].notes = notes;
                 this.#editData[index].atcon = document.getElementById('EMLTS' + row + '_Atcon').value;
                 this.#editData[index].online = document.getElementById('EMLTS' + row + '_Online').value;
                 this.#editData[index].glNum = document.getElementById('EMLTS' + row + '_glNum').value;
@@ -1124,14 +1162,14 @@ class consetup {
             if (a.enddate < b.enddate)
                 return -1;
 
-            if (a.price < b.price)
-                return -1;
-
             if (a.startdate > b.startdate)
                 return 1;
 
             if (a.enddate > b.enddate)
                 return 1;
+
+            if (a.price < b.price)
+                return -1;
 
             if (a.price > b.price)
                 return 1;
@@ -1153,17 +1191,22 @@ class consetup {
             let label = row.label;
             let notes = row.notes;
             let rowBundleList = '';
+            let price = row.price;
 
             if (bundle) {
                 // prep the fields for the bundle
                 let sep = notes.indexOf('/');
                 if (sep > 0) {
                     rowBundleList = notes.substring(0, sep);
-                    notes = notes.substring(sep);
+                    notes = notes.substring(sep + 1);
                 } else {
-                    rowBundleList = bundleList
+                    let contains = this.computeBundleList(bundleList, row.startdate, row.enddate);
+                    rowBundleList = contains[0];
+                    price = contains[1];
+
                 }
                 document.getElementById('EMLTS' + index + '_contains').value = rowBundleList;
+                document.getElementById('EMLTS' + index + '_Price').value = price;
             }
 
             if (this.#memListMasterRow == row.id) {
@@ -1198,6 +1241,57 @@ class consetup {
         }
 
         clear_message('result_message_editMemList');
+    }
+
+    // compute a new bundle list for this row from the start and end dates
+    computeBundleList(bundleList, startdate, enddate) {
+        let newBundleList = '';
+        let oldList = bundleList.split(',');
+        let memTableData = null;
+        let price = 0;
+
+        if (startdate.indexOf('T') >= 0)
+            startdate = toDBdate(startdate);
+        if (enddate.indexOf('T') >= 0)
+            enddate = toDBdate(enddate);
+        for (let id of oldList) {
+            let memRow = this.#memtable.getRow(id).getData();
+            if (memRow.startdate <= startdate && memRow.enddate >= enddate && memRow.shortname.substring(0, 8) != 'Bundle: ') {
+                newBundleList += ',' + id;
+                price += Number(memRow.price);
+            } else {
+                // now look for new matches as if the dates changed
+                if (memTableData == null)
+                    memTableData = this.#memtable.getData();
+                let foundRow = null;
+                for (let row of memTableData) {
+                    // check for a new match in category, type, age, label, as well as date range
+                    if (row.memCategory != memRow.memCategory)
+                        continue;
+                    if (row.memType != memRow.memType)
+                        continue;
+                    if (row.memAge != memRow.memAge)
+                        continue;
+                    if (row.startdate > startdate || row.enddate < enddate)
+                        continue;
+
+                    if (row.shortname.substring(0, 8) == 'Bundle: ')
+                        continue;
+
+                    foundRow = row;
+                    break;
+                }
+                if (foundRow != null) {
+                    newBundleList += ',' + foundRow.id;
+                    price += Number(foundRow.price);
+                }
+            }
+        }
+
+        if (newBundleList != '')
+            newBundleList = newBundleList.substring(1);
+
+        return [newBundleList, price];
     }
 
     // save the modal data back to the table and close the modal
@@ -1254,6 +1348,7 @@ class consetup {
         this.#memlist_savebtn.innerHTML = "Save Changes*";
         this.#memlist_savebtn.disabled = false;
         this.#memlist_dirty = true;
+        this.checkMemlistUndoRedo()
     }
 
     // cancel check dirty flag
@@ -1379,13 +1474,13 @@ function priceChange(masterRow) {
 
 // top section edited startdate, set bottom screen
 function startdateChange(masterRow) {
-    document.getElementById('EMLTS' + masterRow + '_Start').value = document.getElementById('editMemListStart').value;
+    document.getElementById('EMLTS' + masterRow + '_Start').value = toDBdate(document.getElementById('editMemListStart').value);
     memListModalDirty = true;
 }
 
 // top section edited enddate, set bottom screen
 function enddateChange(masterRow) {
-    document.getElementById('EMLTS' + masterRow + '_End').value = document.getElementById('editMemListEnd').value;
+    document.getElementById('EMLTS' + masterRow + '_End').value = toDBdate(document.getElementById('editMemListEnd').value);
     memListModalDirty = true;
 }
 
