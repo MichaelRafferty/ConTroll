@@ -57,3 +57,11 @@ span.warncolor {
 .size-h6 {
   font-size: 1.0rem;
 }
+
+.tab-pane {
+  display: none;
+}
+
+.tab-pane.active {
+  display: block;
+}

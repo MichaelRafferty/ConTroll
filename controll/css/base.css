@@ -91,3 +91,11 @@ div.tabulator-paginator {
 select.tabulator-page-size {
     padding-left: 8px;
 }
+/* tabulator tab pane hiding issues*/
+.tab-pane {
+    display: none;
+}
+
+.tab-pane.active {
+    display: block;
+}
