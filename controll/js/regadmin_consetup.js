@@ -1130,8 +1130,8 @@ class consetup {
                 }
                 this.#editData[index].sort_order = document.getElementById('EMLTS' + row + '_Sort').value;
                 this.#editData[index].price = document.getElementById('EMLTS' + row + '_Price').value;
-                this.#editData[index].startdate = document.getElementById('EMLTS' + row + '_Start').value;
-                this.#editData[index].enddate = document.getElementById('EMLTS' + row + '_End').value;
+                this.#editData[index].startdate = toDBdate(document.getElementById('EMLTS' + row + '_Start').value);
+                this.#editData[index].enddate = toDBdate(document.getElementById('EMLTS' + row + '_End').value);
                 this.#editData[index].shortname = shortname;
                 this.#editData[index].notes = notes;
                 this.#editData[index].atcon = document.getElementById('EMLTS' + row + '_Atcon').value;
