@@ -182,6 +182,7 @@ EOS;
             if ($transId == null) {
                 $transId = getNewTransaction($conid, $loginType == 'p' ? $loginId : null, $loginType == 'n' ? $loginId : null);
             }
+
             // insert the new reg record into the cart
             $iQ = <<<EOS
 INSERT INTO reg(conid, perid, newperid, create_trans, complete_trans, price, status, create_user, memId)
@@ -192,25 +193,80 @@ LEFT OUTER JOIN newperson n ON n.id = ?
 WHERE m.id = ?;
 EOS;
             $typeStr = 'iiidsiiii';
-            $valArray = array(
-                $cartRow['conid'],
-                $transId,
-                $cartRow['price'] > 0 ? null : $transId,
-                $cartRow['price'],
-                $cartRow['price'] > 0 ? 'unpaid' : 'paid',
-                $loginId,
-                $personType == 'p' ? $personId : -1,
-                $personType == 'n' ? $personId : -1,
-                $cartRow['memId']
-            );
-            $new_cartid = dbSafeInsert($iQ, $typeStr, $valArray);
-            if ($new_cartid === false || $new_cartid < 0) {
-                $response['message'] .= "<br/>Error adding membership " . $cartRow['id'] . " continuing with the remaining transactions.";
+            // check if this is a bundle, if so loop over the bundle items
+            if (str_starts_with($cartRow['label'], 'Bundle: ')) {
+                // get the notes to find the contents of the bundle
+                $nQ = <<<EOS
+SELECT notes
+FROM memList
+WHERE id = ?;
+EOS;
+                $nR = dbSafeQuery($nQ, 'i', array($cartRow['memId']));
+                if ($nR === false || $nR->num_rows != 1) {
+                    $response['message'] .= '<br/>Error adding membership ' . $cartRow['id'] . ' unable to find bundle information, seek assistance.';
+                    $response['status'] = 'error';
+                    ajaxSuccess($response);
+                    exit();
+                }
+                $bundle = $nR->fetch_row()[0];
+                $nR->free();
+                $nQ = <<<EOS
+SELECT id, conid, price
+FROM memList
+WHERE id = ?;
+EOS;
+
+                $bundle = explode(',', substr($bundle, 0, strpos($bundle, '/')));
+                foreach ($bundle as $reg) {
+                    $nR = dbSafeQuery($nQ, 'i', array($reg));
+                    if ($nR === false || $nR->num_rows != 1) {
+                        $response['message'] .= "<br/>Error adding bundle membership $reg, continuing with the remaining transactions.";
+                        continue;
+                    }
+                    $nL = $nR->fetch_assoc();
+                    $nR->free();
+                    $valArray = array (
+                        $nL['conid'],
+                        $transId,
+                        $nL['price'] > 0 ? null : $transId,
+                        $nL['price'],
+                        $nL['price'] > 0 ? 'unpaid' : 'paid',
+                        $loginId,
+                        $personType == 'p' ? $personId : -1,
+                        $personType == 'n' ? $personId : -1,
+                        $nL['id']
+                    );
+                    $new_cartid = dbSafeInsert($iQ, $typeStr, $valArray);
+                    if ($new_cartid === false || $new_cartid < 0) {
+                        $response['message'] .= '<br/>Error adding bundle membership ' . $nL['id'] . ', continuing with the remaining transactions.';
+                    } else {
+                        $num_ins++;
+                        $updateTransPrice = true;
+                        if ($nL['price'] == 0)
+                            $voidTransId = true;
+                    }
+                }
             } else {
-                $num_ins++;
-                $updateTransPrice = true;
-                if ($cartRow['price'] == 0)
-                    $voidTransId = true;
+                $valArray = array (
+                    $cartRow['conid'],
+                    $transId,
+                    $cartRow['price'] > 0 ? null : $transId,
+                    $cartRow['price'],
+                    $cartRow['price'] > 0 ? 'unpaid' : 'paid',
+                    $loginId,
+                    $personType == 'p' ? $personId : -1,
+                    $personType == 'n' ? $personId : -1,
+                    $cartRow['memId']
+                );
+                $new_cartid = dbSafeInsert($iQ, $typeStr, $valArray);
+                if ($new_cartid === false || $new_cartid < 0) {
+                    $response['message'] .= "<br/>Error adding membership " . $cartRow['id'] . ", continuing with the remaining transactions.";
+                } else {
+                    $num_ins++;
+                    $updateTransPrice = true;
+                    if ($cartRow['price'] == 0)
+                        $voidTransId = true;
+                }
             }
         }
     }
