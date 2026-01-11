@@ -62,3 +62,9 @@ function findMembership(id) {
     }
     return null; // not found
 }
+
+function makePurchase(token, label) {
+    console.log(token);
+    console.log(label);
+    pos.onlineCCEntered(token, label);
+}

@@ -54,6 +54,7 @@ else
     $response['terminal'] = false;
 $response['user_id'] = getSessionVar('user');
 $response['Manager'] = check_atcon('manager', $conid);
+$response['cc_html'] = draw_cc_html($cc,'--','body');
 
 // get the start and end dates, and adjust for the memLabels based on the real dates versus today.
 $condatesSQL = <<<EOS

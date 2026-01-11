@@ -46,6 +46,8 @@ class Pos {
     #payPoll = 0;
     #payCurrentRequest = null;
     #payForcePayShown = false;
+    #ccOnlineStarted = false;
+    #ccNonce = null;
 
     // Data Items
     #unpaid_table = [];
@@ -598,6 +600,9 @@ class Pos {
         if (!inConTroll && baseManagerEnabled) {
             base_toggleManager();
         }
+        // clear the credit card stuff
+        this.#ccNonce = null;
+        this.#ccOnlineStarted = false;
         // clear the coupon
         coupon = null;
         coupon = new Coupon();
@@ -2050,6 +2055,8 @@ class Pos {
             }
         }
         cart.drawCart();
+        this.#ccNonce = null;
+        this.#ccOnlineStarted = false;
     }
 
 // gotoPrint switch to the print tab
@@ -2095,6 +2102,26 @@ class Pos {
         if (ptype != 'discount') {
             document.getElementById('pay-discount').value = null;
         }
+        if (ptype == 'online') {
+            if (this.#ccOnlineStarted == false) {
+                document.getElementById('card-button').innerHTML = 'Get Token'
+                console.log('calling startCC');
+                startCC();
+                console.log('startCC returned');
+                this.#ccOnlineStarted = true;
+            }
+        }
+    }
+
+    onlineCCEntered(token, label) {
+        if (label != '') {
+            this.#purchase_label = label;
+        }
+        if (token == 'test_ccnum') {  // this is the test form
+            token = document.getElementById(token).value;
+        }
+        this.#ccNonce = token;
+        this.#pay_button_pay.disabled = false;
     }
 
 // overridePay - pay returned the terminal was unavailable, operator said to override it
@@ -2310,11 +2337,12 @@ class Pos {
 
             if (pt_online) {
                 ptype = 'online';
-                if (nonce == null) {
+                if (this.#ccNonce == null) {
                     alert("Credit Card Processing Error: Unable to obtain nonce token");
                     $('#' + this.#purchase_label).removeAttr("disabled");
                     return;
                 }
+                nonce = this.#ccNonce;
                 checked = true;
             }
 
@@ -3063,19 +3091,6 @@ class Pos {
                 this.#receeiptEmailAddresses_div.innerHTML = '';
         }
         cart.showStartOver();
-    }
-
-// process online credit card payment
-    makePurchase(token, label) {
-        if (label != '') {
-            this.#purchase_label = label;
-        }
-        if (token == 'test_ccnum') {  // this is the test form
-            token = document.getElementById(token).value;
-        }
-
-        $('#' + this.#purchase_label).attr("disabled", "disabled");
-        this.pay('', null, token);
     }
 
 // printint

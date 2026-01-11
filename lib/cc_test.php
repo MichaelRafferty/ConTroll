@@ -15,8 +15,10 @@ require_once("global.php");
 //      $postal_code = postal code to default for form, optional
 //
 
-function draw_cc_html($cc, $postal_code = "--") : string {
-    $html = <<<EOS
+function draw_cc_html($cc, $postal_code = "--", $type='all') : string {
+    $html = '';
+    if ($type != 'js') {
+        $html .= <<<EOS
 <p>This is a test site, it doesn't really take credit cards</p>
 Scenario: <select name='ccnum' id="test_ccnum">
 	<option value=1>1 - Success</option>
@@ -24,6 +26,7 @@ Scenario: <select name='ccnum' id="test_ccnum">
 </select>
 <input type="submit" id="purchase" onclick="makePurchase('test_ccnum', 'purchase')" value="Purchase">
 EOS;
+    }
     return $html;
 }
 

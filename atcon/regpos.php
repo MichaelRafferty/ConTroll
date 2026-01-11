@@ -5,6 +5,7 @@ require_once '../lib/profile.php';
 require_once '../lib/portalForms.php';
 require_once '../lib/policies.php';
 require_once '../lib/tax.php';
+require_once '../lib/cc__load_methods.php';
 
 // if not logged in, send back to the index page to log in
 if (!isSessionVar('user')) {
@@ -120,6 +121,13 @@ page_init($page, $tab,
                     'jslib/membershipRules.js', 'js/regpos.js'),
             $config_vars
     );
+if (array_key_exists('creditonline', $atcon)) {
+    if ($atcon['creditonline'] == 1) {
+        $cc = get_conf('cc');
+        load_cc_procs();
+        echo draw_cc_html($cc, '--', 'js');
+    }
+}
 [$ageList, $ageListIdx] = getAgeList($conid);
 ?>
 <script type='text/javascript'>
