@@ -51,7 +51,7 @@ function google_init($mode) {
         }
         if (array_key_exists('id', $_REQUEST)) {
             $reqid = 'internalU' . $_REQUEST['id'];
-        } else if (isSessionVar('user_id')) {
+        } else if (isSessionVar('user_perid')) {
             $reqid = 'internalU' . getSessionVar('user_perid');
         } else {
             $reqid = 'internalUser';

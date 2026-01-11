@@ -66,10 +66,10 @@ $cupd_rows = 0;
 //  pay_tid_amt: this.#pay_tid_amt,
 
 $user_id = $_POST['user_id'];
-if ($user_id != getSessionVar('user_id')) {
+$user_perid = getSessionVar('user_perid');
+if ($user_id != $user_perid) {
     ajaxError('Invalid credentials passed');
 }
-$user_perid = getSessionVar('user_perid');
 
 $master_tid = $_POST['pay_tid'];
 if ($master_tid <= 0) {
