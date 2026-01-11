@@ -264,13 +264,84 @@ for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
     for ($mrow = 0; $mrow < sizeof($memberships); $mrow++) {
         $mbr = $memberships[$mrow];
         if ((!array_key_exists('perid', $mbr)) || $mbr['perid'] <= 0) {
-            $mgr['perid'] = $cartrow['perid'];
+            $mbr['perid'] = $cartrow['perid'];
         }
         if (!array_key_exists('coupon', $mbr) || $mbr['coupon'] == '')
             $mbr['coupon'] = null;
         if (!array_key_exists('couponDiscount', $mbr))
             $mbr['couponDiscount'] = 0;
 
+        // is this row a bundle to de-compose
+        if (str_starts_with($mbr['label'], 'Bundle: ')) {
+            $newMemberships = $memberships;
+            // get the underlying mem record
+            $bQ = <<<EOS
+SELECT notes
+FROM memList
+WHERE id = ?;
+EOS;
+            $bR = dbSafeQuery($bQ, 'i', array($mbr['memId']));
+            if ($bR === false || $bR->num_rows != 1) {
+                $response['message'] .= '<br/>Error adding membership ' . $mbr['id'] . ' unable to find bundle information, seek assistance.';
+                $response['status'] = 'error';
+                ajaxSuccess($response);
+                exit();
+            }
+            $bundle = $bR->fetch_row()[0];
+            $bR->free();
+            $bQ = <<<EOS
+SELECT id, conid, price, label, memCategory, memType, memAge
+FROM memList
+WHERE id = ?;
+EOS;
+            $bundle = explode(',', substr($bundle, 0, strpos($bundle, '/')));
+            $numSplit = 0;
+            $mbrPerid = $mbr['perid'];
+            foreach ($bundle as $reg) {
+                $bR = dbSafeQuery($bQ, 'i', array ($reg));
+                if ($bR === false || $bR->num_rows != 1) {
+                    $response['message'] .= "<br/>Error adding bundle membership $reg, continuing with the remaining transactions.";
+                    continue;
+                }
+                $bL = $bR->fetch_assoc();
+                $bR->free();
+
+                if ($numSplit == 0) {
+                    $mbr['conid'] = $bL['conid'];
+                    $mbr['memId'] = $bL['id'];
+                    $mbr['price'] = $bL['price'];
+                    $mbr['label'] = $bL['label'];
+                    $mbr['memCategory'] = $bL['memCategory'];
+                    $mbr['memType'] = $bL['memType'];
+                    $mbr['memAge'] = $bL['memAge'];
+                    $mbr['paid'] = 0;
+                    $mbr['couponDiscount'] = 0;
+                    $mbr['coupon'] = null;
+                    $mbr['perid'] = $mbrPerid;
+                    $newMemberships[$mrow] = $mbr;
+                } else {
+                    $nmbr = $mbr;
+                    $nmbr['conid'] = $bL['conid'];
+                    $nmbr['memId'] = $bL['id'];
+                    $nmbr['price'] = $bL['price'];
+                    $nmbr['label'] = $bL['label'];
+                    $nmbr['memCategory'] = $bL['memCategory'];
+                    $nmbr['memType'] = $bL['memType'];
+                    $nmbr['memAge'] = $bL['memAge'];
+                    $nmbr['paid'] = 0;
+                    $nmbr['couponDiscount'] = 0;
+                    $nmbr['coupon'] = null;
+                    $nmbr['perid'] = $mbrPerid;
+                    $nmbr['regid'] = -1;
+                    array_splice($newMemberships, $mrow + $numSplit, 0, array($nmbr));
+                    // since array numbers are not kept, reorder the array
+                }
+                $numSplit++;
+            }
+            $memberships = [];
+            foreach ($newMemberships as $nmbr)
+                $memberships[] = $nmbr;
+        }
         // if this row persists
         if (!array_key_exists('toDelete', $mbr)) {
             if ($mbr['price'] == '')
