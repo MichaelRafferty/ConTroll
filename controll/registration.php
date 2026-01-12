@@ -83,6 +83,12 @@ $config_vars['source'] = 'registration';
 $config_vars['locale'] = $locale;
 $config_vars['currency'] = $currency;
 $config_vars['taxRates'] = getTaxRates();
+if (array_key_exists('creditoffline', $controll)) {
+    $config_vars['creditoffline'] = $controll['creditoffline'];
+}
+if (array_key_exists('creditonline', $controll)) {
+    $config_vars['creditonline'] = $controll['creditonline'];
+}
 
 if (array_key_exists('creditonline', $controll)) {
     if ($controll['creditonline'] == 1) {
