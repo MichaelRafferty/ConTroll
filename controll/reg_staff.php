@@ -10,7 +10,7 @@ if(!$need_login or !checkAuth($need_login['sub'], $page)) {
 }
 
 $finance = checkAuth($need_login['sub'], 'finance');
-$reg_admin = checkAuth($need_login['sub'], 'reg_admin');
+$regAdmin = checkAuth($need_login['sub'], 'reg_admin');
 $admin = checkAuth($need_login['sub'], 'admin');
 
 $cdn = getTabulatorIncludes();
@@ -983,7 +983,7 @@ $config_vars['currency'] = $currency;
                 role='tab' aria-controls='nav-registrationlist' aria-selected='true' onclick="settab('registrationlist-pane');">Registration List
         </button>
     </li>
-    <?php if ($reg_admin) { ?>
+    <?php if ($regAdmin) { ?>
     <li class='nav-item' role='presentation'>
         <button class='nav-link' id='consetup-tab' data-bs-toggle='pill' data-bs-target='#consetup-pane' type='button' role='tab'
                 aria-controls='nav-consetup' aria-selected='false' onclick="settab('consetup-pane');">Current Convention Setup
@@ -1017,7 +1017,7 @@ $config_vars['currency'] = $currency;
                 aria-controls='nav-interests' aria-selected='false' onclick="settab('interests-pane');">Interests
         </button>
     </li>
-    <?php if ($reg_admin) { ?>
+    <?php if ($regAdmin) { ?>
     <li class='nav-item' role='presentation'>
         <button class='nav-link' id='rules-tab' data-bs-toggle='pill' data-bs-target='#rules-pane' type='button' role='tab'
                 aria-controls='nav-rules' aria-selected='false' onclick="settab('rules-pane');">Membership Rules
@@ -1084,7 +1084,7 @@ $config_vars['currency'] = $currency;
                     Download Reg Report
                 </button>
             </div>
-            <?php if ($reg_admin) { ?>
+            <?php if ($regAdmin) { ?>
             <div class='col-sm-auto p-2'>
                 <button class='btn btn-primary btn-sm' onclick="sendEmail('expire')">Send Expiring Reminder Email</button>
             </div>

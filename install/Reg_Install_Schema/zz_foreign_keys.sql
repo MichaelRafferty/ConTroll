@@ -31,7 +31,7 @@ ALTER TABLE reg ADD CONSTRAINT `reg_memId_fk` FOREIGN KEY (`memId`) REFERENCES `
 ALTER TABLE reg ADD CONSTRAINT `reg_newperid_fk` FOREIGN KEY (`newperid`) REFERENCES `newperson` (`id`) ON UPDATE CASCADE;
 ALTER TABLE reg ADD CONSTRAINT `reg_perid_fk` FOREIGN KEY (`perid`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 ALTER TABLE reg ADD CONSTRAINT `reg_planid_fk` FOREIGN KEY (`planId`) REFERENCES `payorPlans` (`id`) ON UPDATE CASCADE;
-ALTER TABLE user ADD CONSTRAINT `fk_user_perid` FOREIGN KEY (`perid`) REFERENCES `perinfo` (`id`);
+ALTER TABLE user ADD CONSTRAINT `fk_user_perid` FOREIGN KEY (`perid`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 ALTER TABLE payments ADD CONSTRAINT `payments_cashier_fk` FOREIGN KEY (`cashier`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
 ALTER TABLE payments ADD CONSTRAINT `payments_transid_fk` FOREIGN KEY (`transid`) REFERENCES `transaction` (`id`) ON UPDATE CASCADE;
 ALTER TABLE paymentPlans ADD CONSTRAINT `paymentPlans_ibfk_1` FOREIGN KEY (`updateBy`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;

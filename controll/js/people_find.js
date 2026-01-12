@@ -48,6 +48,8 @@ class Find {
     #managesName = null;
     #updateOverrideBTN = null;
     #memAgeType = null;
+    #renumberExisting = null;
+    #renumberNew = null;
 
     #matched = null;
     #editRow = null;
@@ -89,6 +91,8 @@ class Find {
             this.#managesName = document.getElementById('managesName');
             this.#updateOverrideBTN = document.getElementById('updateExistingOverride');
             this.#updateOverrideBTN.disabled = true;
+            this.#renumberExisting = document.getElementById('renumberExistingPerid');
+            this.#renumberNew = document.getElementById('f_renumberNewPerid');
         }
         var id  = document.getElementById('person-history');
         if (id) {
@@ -399,6 +403,11 @@ class Find {
             }
         }
 
+        // if renumber exists, set the current perid
+        if (this.#renumberExisting) {
+            this.#renumberExisting.innerHTML = data.post.perid;
+            this.#renumberNew.value = '';
+        }
         this.#managerHdr.hidden = true;
         this.#managerRow.hidden = true;
         this.#managesLookupFind.hidden = true;
@@ -964,6 +973,9 @@ class Find {
         }
         postdata['newInterests'] = JSON.stringify(newInterests);
 
+        if (this.#renumberNew)
+            postdata['renumberNew'] = this.#renumberNew.value;
+
         // manager
         postdata['managerId'] = document.getElementById(this.#prefix + 'managerId').value;
         // manages
@@ -996,7 +1008,13 @@ class Find {
         }
 
         // update the underlying row in the table
-        this.#findTable.updateData(data.updated);
+        if (data.hasOwnProperty('newPerid')) {
+            this.#findTable.updateOrAddData(data.updated);
+            this.#findTable.deleteRow(this.#editRow.id);
+            this.#editRow.id = data.newPerId;
+        } else {
+            this.#findTable.updateData(data.updated);
+        }
 
         this.clearForm();
         this.#memAgeType = null;
@@ -1013,6 +1031,8 @@ class Find {
         this.#openNotes.value = '';
         this.#adminNotes.value = '';
         this.#managesId.value = '';
+        if (this.#renumberNew)
+            this.#renumberNew.value = '';
         this.#addPersonBtn.disabled = true;
         this.#updateOverrideBTN.disabled = true;
         clear_message('find_edit_message');

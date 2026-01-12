@@ -99,5 +99,9 @@ DELETE FROM controllAppItems where appPage = 'cart' and txtItem in ('step1', 'st
 UPDATE controllAppItems SET txtItem = 'memberships' WHERE appName = 'portal' AND appPage = 'cart' AND appSection = 'main' AND txtItem = 'step4';
 UPDATE controllAppItems SET txtItem = 'cart' WHERE appName = 'portal' AND appPage = 'cart' AND appSection = 'main' AND txtItem = 'step4bottom';
 
+
+ALTER TABLE user DROP CONSTRAINT `fk_user_perid`;
+ALTER TABLE user ADD CONSTRAINT `fk_user_perid` FOREIGN KEY (`perid`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
+
 INSERT INTO patchLog(id, name) VALUES(xx, 'art, portal, et al');
 

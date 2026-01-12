@@ -25,6 +25,7 @@ if(!$need_login or !checkAuth($need_login['sub'], $page)) {
     bounce_page('index.php');
 }
 
+$regAdmin = checkAuth($need_login['sub'], 'reg_admin');
 $cdn = getTabulatorIncludes();
 page_init($page,
     /* css */ array($cdn['tabcss'],
@@ -596,6 +597,20 @@ drawEditPersonBlock($con_conf, $useUSPS, $policies, 'find', true, true, $ageByDa
 drawInterestList($interests, true);
 ?>
                     </form>
+<?php if ($regAdmin) { ?>
+                    <div class='row mt-3' id='renumberHdr'>
+                        <div class='col-sm-auto'><h2 class='size=h3'>Renumber This Person (change their perid)</h2></div>
+                    </div>
+                    <div class='row mt-2' id='reunmberRow'>
+                        <div class='col-sm-auto'>
+                            Existing Perid: <span id="renumberExistingPerid"></span></div>
+                        <div class="col-sm-auto ps-3"><label for="f_renumberNewPerid">Renumbered Perid: </label></div>
+                        <div class='col-sm-auto'>
+                            <input type='number' class='no-spinners' inputmode='numeric' id='f_renumberNewPerid' name='f_renumberNew'>
+                        </div>
+                        <div class='col-sm-auto'><i>Leave blank (empty) to not change the perid</i></div>
+                    </div>
+<?php } ?>
                     <div class='row mt-3' id="managerHdr">
                         <div class='col-sm-auto'><h2 class='size=h3'>Manager (Disassociate manager and save before adding people managed by this person)
                             </h2></div>

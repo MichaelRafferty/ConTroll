@@ -138,8 +138,32 @@ if ($interest_upd > 0) {
     $message .= "<br/>$interest_upd interest responses updated";
 }
 
-//  4. manages
-// handled directly in the JS using people_unmanage.php and people_manage.php
+// 4. Manages is handled directly in the JS using people_unmanage.php and people_manage.php
+
+// 5. renumber (must be last)
+if (array_key_exists('renumberNew', $_POST)) {
+    $renumberNew = $_POST['renumberNew'];
+    if ($renumberNew != null && $renumberNew != '' && $renumberNew != $perid) {
+        // prevent renumbering into restricted ranges of ConTroll Specific
+        if ($renumberNew <= 10) {
+            $message .= "<br/>Cannot renumber a person to a restricted range (10 or less), skipping renumber to $renumberNew";
+        } else {
+            $renQ = <<<EOS
+UPDATE perinfo
+SET id = ?
+WHERE id = ?;
+EOS;
+            $numChanged = dbSafeCmd($renQ, 'ii', array($renumberNew, $perid));
+            if ($numChanged > 0) {
+                $message .= "<br/>$perid renumbered to $renumberNew";
+                $perid = $renumberNew;
+                $response['newPerid'] = $renumberNew;
+            } else {
+                $message .= "<br/>Unable to renumber $perid renumbered to $renumberNew, see logs.";
+            }
+        }
+    }
+}
 
 // 5. now return the updated record
 $updRowSQL = <<<EOS
