@@ -54,7 +54,7 @@ $response['discount'] = $atcon['discount'];
 $response['badgePrinter'] = false; //getSessionVar('badgePrinter')[0] != 'None';
 $response['receiptPrinter'] = false; //getSessionVar('receiptPrinter')[0] != 'None';
 $response['user_id'] = getSessionVar('user_perid');
-$response['cc_html'] = draw_cc_html($cc);
+$response['cc_html'] = draw_cc_html($cc,'--','body');
 // do as if statement such that it can check for both database error and no rows returned
 $Manager = checkAuth($check_auth['sub'], 'reg_admin');
 if ($Manager !== false && sizeof($Manager) > 0)

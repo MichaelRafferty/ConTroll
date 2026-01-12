@@ -169,10 +169,9 @@ badgeBarcode=0
 ;   creditoffline = using your own credit card terminals that do not talk to ConTroll and entering the amount and the approval code manually
 ;   creditonline = using the same method of credit card entry as used in Onlinereg/portal, where the credit card details are typed in manually.
 ;   terminals are controlled by which terminal the user has chosen at login or via 'Change Printers'.;
-;       Warning: creditonline is not yet implemented in atcon, but is coming soon
 ; 1 = allowed, 0 = disabled
 creditoffline=0
-creditonline=1
+creditonline=0
 
 ;;; The exhibitor portal [vendor] section is so named for historical reasons when only dealers rooms were supported.
 ;   It contains items related to use of the exhibitor portals (e.g. artist, exhibitor, fan table, and vendor (dealer).
@@ -251,6 +250,12 @@ oauthhrs=8
 ; useportal - does this installation use the portal, 1 = yes, 0 = no
 useportal=1
 hrtime=0    ; on critical routines, a call to hrtime to report intervals has been added, enable this feature
+;;; Which "Non Terminal" payment methods are supported in controll registratiomn.  By default cash and check are always supported.
+;   creditoffline = using your own credit card terminals that do not talk to ConTroll and entering the amount and the approval code manually
+;   creditonline = using the same method of credit card entry as used in Onlinereg/portal, where the credit card details are typed in manually.
+; 1 = allowed, 0 = disabled
+creditoffline=0
+creditonline=0
 
 ;;; The local parameters [local] section sets options used by the local scripts for this convention
 [local]

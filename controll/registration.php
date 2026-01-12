@@ -12,7 +12,6 @@ $page = 'registration';
 if (!$need_login or !checkAuth($need_login['sub'], $page)) {
     bounce_page('index.php');
 }
-load_cc_procs();
 
 $con_conf = get_conf('con');
 $conid = $con_conf['id'];
@@ -85,6 +84,13 @@ $config_vars['locale'] = $locale;
 $config_vars['currency'] = $currency;
 $config_vars['taxRates'] = getTaxRates();
 
+if (array_key_exists('creditonline', $controll)) {
+    if ($controll['creditonline'] == 1) {
+        $cc = get_conf('cc');
+        load_cc_procs();
+        echo draw_cc_html($cc, '--', 'js');
+    }
+}
 // form as laid out has no room for usps block, if we want it we need to reconsider how to do it here.
 //if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
 //    $useUSPS = true;
