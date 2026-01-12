@@ -483,33 +483,6 @@ function sql_safe($string)
     return $dbObject->escape_string($string);
 }
 
-// obsolete function register, lets delete it and see if we still need it
-/*
-function register($email, $sub, $name)
-{
-    global $dbObject;
-
-    if (is_null($dbObject)) {
-        return false;
-    }
-    $email = $dbObject->escape_string($email);
-    $sub = $dbObject->escape_string($sub);
-    $name = $dbObject->escape_string($name);
-    $query = "INSERT INTO user (email, google_sub, name, new) values ('$email', '$sub', '$name', 'Y');";
-    $res = $dbObject->query($query);
-    $id = $dbObject->insert_id;
-    if ($res && $id > 0) {
-        return $id;
-    }
-    if ($dbObject->errno) {
-        echo "<p>Query Error (" . $dbObject->errno . ") " . $dbObject->error . "</p>";
-        echo "<p>$query</p>";
-        return false;
-    }
-    return $res;
-}
-*/
-
 function getPages($sub)#: array|bool
 {
     $res = [];
