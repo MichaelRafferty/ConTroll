@@ -1,11 +1,11 @@
 <?php
 require_once "lib/base.php";
-//initialize google session
-$need_login = google_init("page");
+require_once 'lib/sessionAuth.php';
 
-$page = "club";
-if(!$need_login or !checkAuth($need_login['sub'], $page)) {
-    bounce_page("index.php");
+$page = 'club';
+$authToken = new authToken('web');
+if (!$authToken->isLoggedIn() || !$authToken->checkAuth($page)) {
+    bounce_page('index.php');
 }
 
 page_init($page,
@@ -17,13 +17,22 @@ page_init($page,
                     'js/people.js',
                     'js/club.js'
                    ),
-              $need_login);
+              $authToken);
 
 $con = get_conf("con");
 $conid = $con['id'];
 
+$config_vars = array();
+$config_vars['pageName'] = $page;
+$config_vars['label'] = $con['label'];
+$config_vars['vemail'] = $con['regadminemail'];
+$config_vars['debug'] = getConfValue('debug', 'controll_club', 0);
+$config_vars['conid'] = $conid;
+$config_vars['tokenStatus'] = $authToken->checkToken();
 ?>
-<script>
+<script type='text/javascript'>
+var config = <?php echo json_encode($config_vars); ?>;
+
 $(function() {
     $('#editDialog').dialog({
         autoOpen: false,

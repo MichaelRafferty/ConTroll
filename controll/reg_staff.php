@@ -1,17 +1,17 @@
 <?php
 require_once "lib/base.php";
 require_once "../lib/notes.php";
-//initialize google session
-$need_login = google_init("page");
+require_once 'lib/sessionAuth.php';
 
-$page = "reg_staff";
-if(!$need_login or !checkAuth($need_login['sub'], $page)) {
-    bounce_page("index.php");
+$page = 'reg_staff';
+$authToken = new authToken('web');
+if (!$authToken->isLoggedIn() || !$authToken->checkAuth($page)) {
+    bounce_page('index.php');
 }
 
-$finance = checkAuth($need_login['sub'], 'finance');
-$regAdmin = checkAuth($need_login['sub'], 'reg_admin');
-$admin = checkAuth($need_login['sub'], 'admin');
+$finance = $authToken->checkAuth('finance');
+$regAdmin = $authToken->checkAuth('reg_admin');
+$admin = $authToken->checkAuth('admin');
 
 $cdn = getTabulatorIncludes();
 page_init($page,
@@ -35,7 +35,7 @@ page_init($page,
                     'jslib/notes.js',
                     'jslib/configEdit.js',
               ),
-                    $need_login);
+                    $authToken);
 
 $oneoff = getConfValue('con', 'oneoff', 0);
 if ($oneoff == null || $oneoff == '')
@@ -64,6 +64,7 @@ $config_vars['ae'] = $admin ? 1 : 0;
 $config_vars['source'] = 'regstaff';
 $config_vars['locale'] = $locale;
 $config_vars['currency'] = $currency;
+$config_vars['tokenStatus'] = $authToken->checkToken();
 ?>
 <?php bs_tinymceModal();
 // edit memList entry modal

@@ -2,13 +2,12 @@
 require_once "lib/base.php";
 require_once "../lib/paymentPlans.php";
 require_once "../lib/tax.php";
+require_once 'lib/sessionAuth.php';
 
-//initialize google session
-$need_login = google_init("page");
-
-$page = "finance";
-if(!$need_login or !checkAuth($need_login['sub'], $page)) {
-    bounce_page("index.php");
+$page = 'finance';
+$authToken = new authToken('web');
+if (!$authToken->isLoggedIn() || !$authToken->checkAuth($page)) {
+    bounce_page('index.php');
 }
 
 $con = get_con();
@@ -30,8 +29,7 @@ page_init($page,
                     'js/payors.js',
                     'js/coupon.js',
                    ),
-              $need_login);
-
+              $authToken);
 
 $config_vars = array();
 $config_vars['pageName'] = 'finance';
@@ -39,6 +37,7 @@ $config_vars['label'] = $con['label'];
 $config_vars['vemail'] = $conConf['regadminemail'];
 $config_vars['debug'] = getConfValue('debug', 'controll_finance', 0);
 $config_vars['conid'] = $conid;
+$config_vars['tokenStatus'] = $authToken->checkToken();
 $paymentPlans = getPlanConfig();
 // finance needs membership list (not counting free items) and category list
 $memCategories = [];

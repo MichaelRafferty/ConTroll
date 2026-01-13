@@ -2,11 +2,13 @@
 require_once "lib/base.php";
 //require_once '../lib/policies.php';
 require_once '../lib/profile.php';
+require_once 'lib/sessionAuth.php';
 
-//initialize google session
-$need_login = google_init("page");
-
-$page = "badge";
+$page = 'badge';
+$authToken = new authToken('web');
+if (!$authToken->isLoggedIn() || !$authToken->checkAuth($page)) {
+    bounce_page('index.php');
+}
 
 $con = get_con();
 $conid = $con['id'];
@@ -18,10 +20,6 @@ $url = $google['redirect_base'];
 $condata = get_con();
 $startdate = new DateTime($condata['startdate']);
 $ageByDate = $startdate->format('F j, Y');
-
-if(!$need_login or !checkAuth($need_login['sub'], $page)) {
-    bounce_page("index.php");
-}
 
 // Get list of freebie badge types for pulldown
 $freeSQL = <<<EOS
@@ -50,7 +48,7 @@ page_init($page,
                     'jslib/profile.js',
                     'js/badge.js',
                    ),
-              $need_login);
+              $authToken);
 
 
     $freeSelect = "<option disabled='disabled' selected='true' value='-1'> -- select an option --</option>\\n";
@@ -69,6 +67,7 @@ $config_vars['debug'] = getConfValue('debug', 'controll_freebadge', 0);;
 $config_vars['conid'] = $conid;
 $config_vars['required'] = getConfValue('reg', 'required', 'addr');
 $config_vars['useUSPS'] = $useUSPS;
+$config_vars['tokenStatus'] = $authToken->checkToken();
 ?>
 <script type='text/javascript'>
     var config = <?php echo json_encode($config_vars); ?>;

@@ -17,15 +17,15 @@ require_once 'lib/base.php';
 require_once '../lib/policies.php';
 require_once '../lib/profile.php';
 require_once '../lib/interests.php';
-//initialize google session
-$need_login = google_init('page');
+require_once 'lib/sessionAuth.php';
 
 $page = 'people';
-if(!$need_login or !checkAuth($need_login['sub'], $page)) {
+$authToken = new authToken('web');
+if (!$authToken->isLoggedIn() || !$authToken->checkAuth($page)) {
     bounce_page('index.php');
 }
 
-$regAdmin = checkAuth($need_login['sub'], 'reg_admin');
+$regAdmin = $authToken->checkAuth('reg_admin');
 $cdn = getTabulatorIncludes();
 page_init($page,
     /* css */ array($cdn['tabcss'],
@@ -41,7 +41,7 @@ page_init($page,
                     'js/people_find.js',
                     'jslib/profile.js',
               ),
-                    $need_login);
+                    $authToken);
 
 $con_conf = get_conf('con');
 $controll = get_conf('controll');
@@ -64,7 +64,8 @@ $config_vars['conid'] = $conid;
 $config_vars['useUSPS'] = $useUSPS;
 $config_vars['policies'] = $policies;
 $config_vars['interests'] = $interests;
-$config_vars['required'] = getConfValue('reg','required', 'addr');;
+$config_vars['required'] = getConfValue('reg','required', 'addr');
+$config_vars['tokenStatus'] = $authToken->checkToken();
 ?>
 <script type='text/javascript'>
     var config = <?php echo json_encode($config_vars); ?>;

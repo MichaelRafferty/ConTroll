@@ -1,10 +1,12 @@
 <?php
 require_once "lib/base.php";
+require_once 'lib/sessionAuth.php';
 
-//initialize google session
-$need_login = google_init("page");
-
-$page = "lookup";
+$page = 'lookup';
+$authToken = new authToken('web');
+if (!$authToken->isLoggedIn() || !$authToken->checkAuth($page)) {
+    bounce_page('index.php');
+}
 
 $con = get_con();
 $conid = $con['id'];
@@ -14,10 +16,6 @@ $google = get_conf('google');
 $reg_conf = get_conf('reg');
 $url = $google['redirect_base'];
 
-if(!$need_login or !checkAuth($need_login['sub'], $page)) {
-    bounce_page("index.php");
-}
-
 $cdn = getTabulatorIncludes();
 page_init($page,
     /* css */ array('css/base.css', $cdn['tabcss'], $cdn['tabbs5']
@@ -25,13 +23,14 @@ page_init($page,
     /* js  */ array($cdn['tabjs'],
                     'js/lookup.js',
                    ),
-              $need_login);
+              $authToken);
 
 $config_vars = array();
 $config_vars['label'] = $con['label'];
 $config_vars['regadminemail'] = $conf['regadminemail'];
 $config_vars['debug'] = getConfValue('debug', 'controll_lookup', 0);
 $config_vars['conid'] = $conid;
+$config_vars['tokenStatus'] = $authToken->checkToken();
 ?>
 <script type='text/javascript'>
     var config = <?php echo json_encode($config_vars); ?>;

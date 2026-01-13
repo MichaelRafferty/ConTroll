@@ -5,11 +5,11 @@ require_once '../lib/portalForms.php';
 require_once '../lib/policies.php';
 require_once '../lib/tax.php';
 require_once('../lib/cc__load_methods.php');
-//initialize google session
-$need_login = google_init('page');
+require_once 'lib/sessionAuth.php';
 
 $page = 'registration';
-if (!$need_login or !checkAuth($need_login['sub'], $page)) {
+$authToken = new authToken('web');
+if (!$authToken->isLoggedIn() || !$authToken->checkAuth($page)) {
     bounce_page('index.php');
 }
 
@@ -32,7 +32,7 @@ page_init($page,
         'jslib/pos.js',
         'jslib/membershipRules.js',
     ),
-    $need_login);
+    $authToken);
 
 $con = get_conf('con');
 $usps = get_conf('usps');
@@ -83,6 +83,7 @@ $config_vars['source'] = 'registration';
 $config_vars['locale'] = $locale;
 $config_vars['currency'] = $currency;
 $config_vars['taxRates'] = getTaxRates();
+$config_vars['tokenStatus'] = $authToken->checkToken();
 if (array_key_exists('creditoffline', $controll)) {
     $config_vars['creditoffline'] = $controll['creditoffline'];
 }

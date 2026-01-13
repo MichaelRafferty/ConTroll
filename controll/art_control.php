@@ -1,12 +1,12 @@
 <?php
 require_once "lib/base.php";
 require_once "../lib/artItem.php";
-//initialize google session
-$need_login = google_init("page");
+require_once 'lib/sessionAuth.php';
 
-$page = "art_control";
-if(!$need_login || !checkAuth($need_login['sub'], $page)) {
-    bounce_page("index.php");
+$page = 'art_control';
+$authToken = new authToken('web');
+if (!$authToken->isLoggedIn() || !$authToken->checkAuth($page)) {
+    bounce_page('index.php');
 }
 
 $cdn = getTabulatorIncludes();
@@ -20,12 +20,19 @@ page_init($page,
         'js/art_control.js',
         'jslib/artItem.js'
     ),
-    $need_login);
+    $authToken);
 
 $con = get_con();
 $conid = $con['id'];
-
 $conf = get_conf('con');
+$debug_art_control = getConfValue('debug', 'controll_art_control', 0);
+$config_vars = array();
+$config_vars['pageName'] = $page;
+$config_vars['label'] = $con['label'];
+$config_vars['vemail'] = $conf['regadminemail'];
+$config_vars['debug'] = $debug_art_control;
+$config_vars['conid'] = $conid;
+$config_vars['tokenStatus'] = $authToken->checkToken();
 
 $regionsQ = <<<EOS
 SELECT eR.id, eR.shortname
@@ -40,9 +47,11 @@ $regions = array();
 while($region = $regionsR->fetch_assoc()) {
     $regions[] = $region;
 }
-$debug_art_control = getConfValue('debug', 'controll_art_control', 0);
 
 ?>
+<script type='text/javascript'>
+    var config = <?php echo json_encode($config_vars); ?>;
+</script>
 <div id='parameters' <?php if (!($debug_art_control & 4)) echo 'hidden'; ?>>
     <div id="debug"><?php echo $debug_art_control; ?></div>
     <div id="conid"><?php echo $conid; ?></div>

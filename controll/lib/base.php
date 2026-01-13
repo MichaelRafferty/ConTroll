@@ -31,11 +31,12 @@ if (!session_start()) {
     session_start();
 }
 
-/*
 function bounce_page($new_page) {
     $url = getConfValue('google','redirect_base') . "/$new_page";
     header("Location: $url");
 }
+
+/*
 
 /*
  * google_init()
@@ -406,7 +407,7 @@ function Render500ErrorAjax($message_error) : void
 }
 
 // draw a bs5 modal popup for editing a field in tinymce
-function bs_tinymceModal() : string {
+function bs_tinymceModal() : void {
     $html = <<<EOS
     <div id='tinymce-modal' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Edit field in TinyMCE' aria-hidden='true' style='--bs-modal-width: 80%;'>
     <div class='modal-dialog'>

@@ -9,13 +9,12 @@ require_once "../lib/policies.php";
 require_once "../lib/tax.php";
 require_once "lib/exhibitsConfiguration.php";
 require_once "lib/exhibitorChooseExhibitor.php";
+require_once 'lib/sessionAuth.php';
 
-//initialize google session
-$need_login = google_init("page");
-
-$page = "exhibitor";
-if(!$need_login || !checkAuth($need_login['sub'], $page)) {
-    bounce_page("index.php");
+$page = 'exhibitor';
+$authToken = new authToken('web');
+if (!$authToken->isLoggedIn() || !$authToken->checkAuth($page)) {
+    bounce_page('index.php');
 }
 
 $con = get_con();
@@ -67,7 +66,7 @@ page_init($page,
                     'jslib/profile.js',
                     'js/tinymce/tinymce.min.js'
                    ),
-              $need_login);
+              $authToken);
 
 // to build tabs get the list of vendor types
 $regionOwnerQ = <<<EOS
@@ -132,6 +131,7 @@ $config_vars['regserver'] = getConfValue('reg', 'server');
 $config_vars['locale'] = $locale;
 $config_vars['currency'] = $currency;
 $config_vars['taxRates'] = getTaxRates();
+$config_vars['tokenStatus'] = $authToken->checkToken();
 
 bs_tinymceModal();
 draw_registrationModal('admin', 'Admin', $conf, $countryOptions);
