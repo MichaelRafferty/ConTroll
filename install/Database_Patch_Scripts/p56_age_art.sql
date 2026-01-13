@@ -99,9 +99,11 @@ DELETE FROM controllAppItems where appPage = 'cart' and txtItem in ('step1', 'st
 UPDATE controllAppItems SET txtItem = 'memberships' WHERE appName = 'portal' AND appPage = 'cart' AND appSection = 'main' AND txtItem = 'step4';
 UPDATE controllAppItems SET txtItem = 'cart' WHERE appName = 'portal' AND appPage = 'cart' AND appSection = 'main' AND txtItem = 'step4bottom';
 
-
 ALTER TABLE user DROP CONSTRAINT `fk_user_perid`;
 ALTER TABLE user ADD CONSTRAINT `fk_user_perid` FOREIGN KEY (`perid`) REFERENCES `perinfo` (`id`) ON UPDATE CASCADE;
+
+/* for passkeys userid, extend google_sub to 64 chars to hold passkey userid */
+ALTER TABLE user MODIFY COLUMN google_sub varchar(64) NOT NULL;
 
 INSERT INTO patchLog(id, name) VALUES(xx, 'art, portal, et al');
 
