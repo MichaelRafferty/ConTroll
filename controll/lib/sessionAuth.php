@@ -38,6 +38,8 @@ class AuthToken
         $this->expSecs = getConfValue('controll', 'tokenExpireHrs', 8) * 3600;
         $this->authExpSecs = getConfValue('controll', 'authExpireHrs', 0.25)  * 3600;
         $this->refreshGrace = getConfValue('controll', 'expiregrace', 1) * 3600;
+        if ($this->refreshGrace > ($this->expSecs / 2))
+            $this->refreshGrace = $this->expSecs / 2;
     }
 
     // get functions
@@ -87,7 +89,11 @@ class AuthToken
     }
 
     function isLoggedIn() : bool {
-        return $this->authToken != null;
+        if ($this->authToken == null)
+            return false;
+
+        $status = $this->checkToken();
+        return $status != 'expired';
     }
 
     function getRefresh() : int {
@@ -185,6 +191,7 @@ EOS;
             }
         }
 
+        $type = $this->authToken != null ? 'login' : 'refresh';
         $now = time();
         $this->authToken = [];
         $this->authToken['webExpire'] = $now + $this->expSecs;
@@ -197,6 +204,9 @@ EOS;
         $this->authToken['source'] = $source;
         $this->authToken['authId'] = $user['google_sub'];
         setSessionVar('authToken', $this->authToken);
+        if ($this->debug)
+            web_error_log("ConTroll Admin $source $type by " . $user['email'] . '(' . $user['id'] . ':' . $user['perid'] .
+                " from " . $_SERVER['REMOTE_ADDR']);
         return true;
     }
 

@@ -1,20 +1,15 @@
 <?php
 require_once "lib/base.php";
 require_once "lib/sets.php";
-//initialize google session
-$need_login = google_init("page");
+require_once 'lib/sessionAuth.php';
 
-$page = "admin";
-if(!$need_login or !checkAuth($need_login['sub'], $page)) {
-    bounce_page("index.php");
-}
-
-$user_id = getSessionVar('user_id');
-if ($user_id == null) {
+$page = 'admin';
+$authToken = new authToken('web');
+if (!$authToken->isLoggedIn() || !$authToken->checkAuth($page)) {
     bounce_page('index.php');
-    return;
 }
 
+$user_id = $authToken->getUserId();
 $cdn = getTabulatorIncludes();
 page_init($page,
     /* css */ array($cdn['tabcss'],
@@ -29,7 +24,7 @@ page_init($page,
                     'jslib/atconUsers.js',
                     'jslib/configEdit.js',
                    ),
-              $need_login);
+              $authToken);
 $con = get_conf("con");
 $conid=$con['id'];
 $buildNext = array_key_exists('buildNext', $_REQUEST);
@@ -41,6 +36,7 @@ $config_vars['conid'] = $conid;
 $config_vars['buildNext'] = $buildNext ? 1 : 0;
 $config_vars['locale'] = $locale;
 $config_vars['currency'] = $currency;
+$config_vars['tokenStatus'] = $authToken->checkToken();
 if (array_key_exists('msg', $_REQUEST)) {
     $config_vars['msg'] = $_REQUEST['msg'];
 }

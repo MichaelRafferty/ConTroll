@@ -27,6 +27,11 @@ if (array_key_exists('oauth2', $_REQUEST) && $_REQUEST['oauth2'] == 'google') {
     }
 }
 
+if ($tokenState == 'refresh') {
+    echo "force refresh due to $tokenState\n\n";
+    exit();
+}
+
 page_init($page,
     /*css*/ array('css/base.css'),
     /*js*/  array(
@@ -35,7 +40,7 @@ page_init($page,
         ),
     $authToken);
 
-if ($tokenState == 'none') {
+if ($tokenState == 'none' || $tokenState == 'expired') {
 ?>
     <div id='main'>
         <div class='container-fluid'>
