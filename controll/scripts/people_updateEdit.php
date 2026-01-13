@@ -148,12 +148,119 @@ if (array_key_exists('renumberNew', $_POST)) {
         if ($renumberNew <= 10) {
             $message .= "<br/>Cannot renumber a person to a restricted range (10 or less), skipping renumber to $renumberNew";
         } else {
+            // the following tables require special actions to renumber (maria db and mysql cannot update two fields in the same record on a cascase)
+            //  art items if the bidder and clerk both match the id being updated
+            //  coupon - if the creator and the updater both match the id being updated
+            //  couponKeys - if the creater and the user both match the id being updated
+            //  exhibitorRegionYears - if the agent and the person updated match the id being updated
+            //  memberpolicies - if the updater and the perid match the id being updated (likely)
+            //  perinfo - if the managedBy and the updatedBy match the id being updated (likely)
+            //  transaction - if the clerk and the person paying match the id being updated
+
+            // build a controlling table
+            $tableName = 'pidClash' . hrtime()[1];
+            $create = <<<EOS
+CREATE TEMPORARY TABLE $tableName (
+tablename varchar(32) NOT NULL,
+fieldname varchar(64) NOT NULL,
+keyValue int NOT NULL
+);
+EOS;
+            $numRows = dbCmd($create);
+            if ($numRows === false) {
+                $message .= "<br/>Unable to create temporary table for renumber of perid, renumber skipped";
+                $response['error'] = $message;
+                ajaxSuccess($response);
+                return;
+            }
+
+            // load potential matching rows
+            $insert = <<<EOS
+INSERT INTO $tableName(tablename, fieldname, keyvalue)
+SELECT 'artItems', 'updatedBy', id FROM artItems WHERE updatedBy = ?
+UNION
+SELECT 'coupon', 'updateBy', id FROM coupon WHERE updateBy = ?
+UNION
+SELECT 'couponKeys', 'createBy', id FROM couponKeys WHERE createBy = ?
+UNION
+SELECT 'exhibitorRegionYears', 'updateBy', id FROM exhibitorRegionYears WHERE updateBy = ?
+UNION
+SELECT 'perinfo', 'updatedBy', id FROM perinfo WHERE updatedBy = ?
+UNION
+SELECT 'perinfo', 'managedBy', id FROM perinfo WHERE managedBy = ?
+UNION
+SELECT 'transaction', 'userid', id FROM transaction WHERE userid = ?;
+EOS;
+            $numRows = dbSafeCmd($insert, 'iiiiiii', array($perid, $perid, $perid, $perid, $perid, $perid, $perid));
+            if ($numRows === false) {
+                $message .= "<br/>Unable to insert rows into temporary table for renumber of perid, renumber skipped";
+                $response['error'] = $message;
+                ajaxSuccess($response);
+                return;
+            }
+            // update those rows to NULL to unlock the foreign key constraint
+            // first get the tables with rows to change
+            $process = <<<EOS
+SELECT tablename, fieldname, count(*)
+FROM $tableName
+GROUP BY tablename, fieldname;
+EOS;
+            $processR = dbQuery($process);
+            $processList = [];
+            while ($table = $processR->fetch_assoc())
+                $processList[] = $table;
+            $processR->free();
+
+            if (count($processList) > 0) {
+                foreach ($processList as $table) {
+                    $name = $table['tablename'];
+                    $field = $table['fieldname'];
+                    $upQ = <<<EOS
+UPDATE $name
+JOIN $tableName ON tablename = ? AND $name.id = keyValue
+SET $field = 5
+WHERE id = $tableName.keyValue;
+EOS;
+                    $numUpd = dbSafeCmd($upQ, 's', array($name));
+                    if ($numUpd === false) {
+                        $message .= "<br/>Unable to prepare table $name";
+                        $response['error'] = $message;
+                        ajaxSuccess($response);
+                        return;
+                    }
+                }
+            }
+
+            // update the main id
             $renQ = <<<EOS
 UPDATE perinfo
 SET id = ?
 WHERE id = ?;
 EOS;
             $numChanged = dbSafeCmd($renQ, 'ii', array($renumberNew, $perid));
+
+            // now set them to the new value if the id changed or back to the old one if it didn't
+            $setValue = $numChanged > 0 ? $renumberNew : $perid;
+            if (count($processList) > 0) {
+                foreach ($processList as $table) {
+                    $name = $table['tablename'];
+                    $field = $table['fieldname'];
+                    $upQ = <<<EOS
+UPDATE $name
+JOIN $tableName ON tablename = ? AND $name.id = keyValue
+SET $field = ?
+WHERE id = $tableName.keyValue;
+EOS;
+                    $numUpd = dbSafeCmd($upQ, 'si', array($name, $setValue));
+                    if ($numUpd === false) {
+                        $message .= "<br/>Unable to restore table $name";
+                        $response['error'] = $message;
+                        ajaxSuccess($response);
+                        return;
+                    }
+                }
+            }
+
             if ($numChanged > 0) {
                 $message .= "<br/>$perid renumbered to $renumberNew";
                 $perid = $renumberNew;
