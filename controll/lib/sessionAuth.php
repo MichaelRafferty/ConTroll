@@ -22,8 +22,9 @@ class AuthToken
     private $expSecs;
     private $authExpSecs;
     private $refreshGrace;
+    private $use;
 
-    function __construct() {
+    function __construct($use) {
         if (!isSessionVar('authToken'))
             $this->authToken = null;
         else {
@@ -33,20 +34,87 @@ class AuthToken
                 $this->authToken['authExpire'] = time();
             }
         }
+        $this->use = $use;
         $this->expSecs = getConfValue('controll', 'tokenExpireHrs', 8) * 3600;
         $this->authExpSecs = getConfValue('controll', 'authExpireHrs', 0.25)  * 3600;
         $this->refreshGrace = getConfValue('controll', 'expiregrace', 1) * 3600;
     }
 
+    // get functions
+    function getSource() : string {
+        if (!$this->authToken)
+            return "Not Logged In";
+
+        return $this->authToken['source'];
+    }
+
+    function getEmail(): string {
+        if (!$this->authToken)
+            return 'Not Logged In';
+
+        return $this->authToken['userEmail'];
+    }
+
+    function getUserId(): string {
+        if (!$this->authToken)
+            return 'Not Logged In';
+
+        return $this->authToken['userId'];
+    }
+
+    function getPerid(): string {
+        if (!$this->authToken)
+            return 'Not Logged In';
+
+        return $this->authToken['userPerid'];
+    }
+
+    function getAuthId(): string {
+        if (!$this->authToken)
+            return 'Not Logged In';
+
+        return $this->authToken['authId'];
+    }
+
+    function getExpire() : int {
+        if (!$this->authToken)
+            return -1;
+
+        if ($this->use == 'web')
+            return $this->authToken['webExpire'];
+
+        return $this->authToken['scriptExpire'];
+    }
+
+    function isLoggedIn() : bool {
+        return $this->authToken != null;
+    }
+
+    function getRefresh() : int {
+        if (!$this->authToken)
+            return -1;
+
+        if ($this->use == 'web')
+            return $this->authToken['webExpire'] - $this->refreshGrace;
+
+        return $this->authToken['scriptExpire'] - $this->refreshGrace;
+    }
+
+    // deleteToken - delete the token (logoff)
+    function deleteToken() : void {
+        unsetSessionVar('authToken');
+        $this->authToken = null;
+    }
+
     // checkToken - check token for validity and refresh
-    function checkToken($use): string {
+    function checkToken(): string {
         $refreshNeeded = false;
 
         if ($this->authToken == null)
             return 'none';
 
         $now = time();
-        if ($use == 'web') {
+        if ($this->use == 'web') {
             if ($now > $this->authToken['webExpire'])
                 return 'expired';
 
@@ -71,11 +139,11 @@ class AuthToken
 
     function buildToken($source, $authId, $email) : bool {
         switch ($source) {
+            case 'internal':
             case 'google':
                 $uQ = <<<EOS
 SELECT *
-FROM
-user
+FROM user
 WHERE google_sub = ? OR email = ?
 ORDER BY google_sub DESC;
 EOS;
@@ -146,8 +214,8 @@ EOS;
         if ($authR === false)
             return [];
         $auths = [];
-        while ($authName = $authR->fetch_row()[0]) {
-            $auths[] = $authName;
+        while ($authName = $authR->fetch_row()) {
+            $auths[] = $authName[0];
         }
         $authR->free();
         return $auths;
@@ -155,6 +223,9 @@ EOS;
 
     // checkAuth - check if the user has a particular auth
     function checkAuth($authName): bool {
+        if ($this->authToken == null)
+            return false;
+
         return in_array($authName, $this->authToken['auths']);
     }
 }

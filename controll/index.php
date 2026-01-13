@@ -1,18 +1,93 @@
 <?php
 require_once "lib/base.php";
-//initialize google session
-$need_login = google_init("page");
+require_once "lib/sessionAuth.php";
 
 $page = "Home";
+$authToken = new authToken('web');
+$tokenState = $authToken->checkToken();
+
+//unset id_token if logging out.
+if (isset($_REQUEST['logout'])) {
+    web_error_log('logout', 'controll');
+    $authToken->deleteToken();
+    session_regenerate_id(true);
+    header('Location: index.php');
+    exit();
+}
+
+if (array_key_exists('oauth2', $_REQUEST) && $_REQUEST['oauth2'] == 'google') {
+    $homeDir = getConfValue('controll', 'internalHome', 'not-a-valid-path');
+    if (stripos(__DIR__, $homeDir) !== false && $_SERVER['SERVER_ADDR'] == '127.0.0.1' && array_key_exists('id', $_REQUEST)) {
+        $id = $_REQUEST['id'];
+        // we are internal, force a login for sub $id
+        $authToken->buildToken('internal', $id, 'noemail');
+        $tokenState = $authToken->checkToken();
+    } else {
+        // this is a real login with google... start / continue the process
+    }
+}
+
 page_init($page,
     /*css*/ array('css/base.css'),
-    /*js*/  null,
-            $need_login);
+    /*js*/  array(
+            'jslib/passkey.js',
+            'js/login.js'
+        ),
+    $authToken);
 
-if($need_login == false) {
+if ($tokenState == 'none') {
 ?>
-    <div id='main'>You haven't Logged in</div>
-    <?php
+    <div id='main'>
+        <div class='container-fluid'>
+            <div class='row mt-2 mb-4'>
+                <div class="col-sm-auto"><span class="h3"><b>You haven't Logged in:</b></span></div>
+            </div>
+<?php
+    if (array_key_exists('HTTPS', $_SERVER) && (isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == 'on')) {
+        if (getConfValue('controll', 'passkeyRpLevel') != 'd') {
+?>
+            <div class='row mb-2 align-items-center'>
+                <div class='col-sm-auto'>
+                    <button class='btn btn-sm btn-primary' id='loginPasskeyBtn' onclick='login.loginWithPasskey();'>
+                        <img src='lib/passkey.png' width='25'>Login with Passkey
+                    </button>
+                </div>
+                <div class='col-sm-auto'>
+                    Don't have one?<br/>Create a passkey AFTER LOGGING IN with Google.
+                </div>
+            </div>
+<?php
+        }
+?>
+            <div class='row mb-2'>
+                <div class='col-sm-auto'>
+                    <button class='btn btn-sm btn-primary' onclick='login.loginWithGoogle();'>Login with Google</button>
+                </div>
+            </div>
+        <?php
+} else {
+        $homeDir = getConfValue('controll', 'internalHome', 'not-a-valid-path');
+        if (stripos(__DIR__, $homeDir) !== false && $_SERVER['SERVER_ADDR'] == '127.0.0.1') {
+            for ($i = 1; $i < 99; $i++) {
+                $internal = getConfValue('controll', 'internalUser' . $i);
+                if ($internal == null)
+                    break;
+
+                [$ie, $isub,$iid,$iperid] = explode(',', $internal);
+?>
+            <div class='row mb-2'>
+                <div class='col-sm-auto'>
+                    <button class='btn btn-sm btn-primary' onclick='login.loginWithGoogle(<?php echo $isub;?>);'>Login as <?php echo "$ie ($iperid)";
+                    ?></button>
+                </div>
+            </div>
+<?php
+            }
+        }
+?>
+        </div>
+<?php
+    }
 } else {
     $con = get_conf('con');
     $conid = $con['id'];
@@ -23,31 +98,9 @@ if($need_login == false) {
     if ($oneoff == null || $oneoff == '')
         $oneoff = 0;
     # create the user session variable
-    $user_email = $need_login['email'];
-    if (!(getSessionVar('user_email') == $user_email && getSessionVar('user_id') != null &&
-            getSessionVar('user_perid') != null && getSessionVar('remote_addr') == $_SERVER['REMOTE_ADDR'])) {
-        setSessionVar('user_email', $user_email);
-        $perid = 'not found';
-        $userid = 'not found';
-        // get the user id for database tracking
-        $usergetQ = <<<EOS
-SELECT id, perid
-FROM user
-WHERE email = ?;
-EOS;
-        $usergetR = dbSafeQuery($usergetQ, 's', array($user_email));
-        if ($usergetR !== false) {
-            $userL = $usergetR->fetch_assoc();
-            if ($userL) {
-                $userid = $userL['id'];
-                $perid = $userL['perid'];
-            }
-        }
-        setSessionVar('user_id', $userid);
-        setSessionVar('user_perid', $perid);
-        setSessionVar('remote_addr', $_SERVER['REMOTE_ADDR']);
-        web_error_log("ConTroll Admin login by $user_email($userid:$perid) from " . $_SERVER['REMOTE_ADDR']);
-    }
+    $user_email = $authToken->getEmail();
+    $user_perid = $authToken->getPerid();
+    $user_id = $authToken->getUserId();
     // get the version string, and the current DB patch level
     $versionFile = '../version.txt';
     if (is_readable($versionFile)) {
@@ -59,33 +112,52 @@ EOS;
     if ($patchLevel === null || $patchLevel === false || $patchLevel < 0) {
         $patchLevel = "unavailable";
     }
+    $source = $authToken->getSource();
     ?>
     <div id='main'>
         <div class="container-fluid">
-            <div class="row">
+            <div class="row mt-2">
                 <div class="col-sm-auto">
-                    You successfully Logged in.
+                    <span class="h4">You successfully Logged in.</span>
                 </div>
             </div>
-            <div class="row">
+            <div class="row mt-2">
                 <div class="col-sm-auto">
                     If you need more access please email the appropriate person with the email and sub value listed below.<br/>
-                    If your user id or user perid below is blank, not all functions will work correctly for you,
-                    also email the appropriate person to have your user id or user perid is updated.
                 </div>
             </div>
+<?php
+    if ($source == 'google') {
+        $allowPasskey = getConfValue('vendor', 'passkeyRpLevel', 'd') != 'd' &&
+                array_key_exists('HTTPS', $_SERVER) && (isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == 'on');
+        if ($allowPasskey) {
+            ?>
+            <div class='row mt-4'>
+                <div class='col-sm-2'>
+                    <button class='btn btn-sm btn-primary' id='newPasskey' onclick='login.newPasskey();'>
+                        <img src='lib/passkey.png'>Add New Passkey
+                    </button>
+                </div>
+                <!---
+                <div class='col-sm-auto'><label for='userDisplayName'>Display Name:</label></div>
+                <div class='col-sm-auto'><input type='text' id='userDisplayName' name='userDisplayName' size=64 maxlength=255/></div>
+                -->
+            </div>
+            <?php
+        }
+    }
+?>
             <div class="row">
                 <div class="col-sm-auto mt-4 mb-0">
-                    <pre><?php //var_export($need_login);
-                            //echo var_export($need_login);
-                            //echo var_export(getSessionVar('id_token_token');
-                            echo "Email: " . $need_login['email'] . "\n";
-                            echo "User id: " . getSessionVar('user_id') . "\n";
-                            echo "User perid: " . getSessionVar('user_perid') . "\n";
-                            echo "Sub: " . $need_login['sub'] . "\n";
-                            echo "Google Check: " . date('c', $need_login['iat']) . "\n";
-                            echo "Current Time: " . date('c') . "\n";
-                            echo "Next Check: " . date('c', $need_login['exp']) . "\n";
+                    <pre><?php
+                            echo "Email: $user_email\n";
+                            echo "User id: $user_id\n";
+                            echo "User perid: $user_perid\n";
+                            echo "Source: $source\n";
+                            echo "Sub: " . $authToken->getAuthId() . "\n";
+                            echo 'Current Time: ' . date('c') . "\n";
+                            echo "Token Expires: " . date('c', $authToken->getExpire()) . "\n";
+                            echo "Next Refresh: " . date('c', $authToken->getRefresh()) . "\n";
                             echo "PHP Version: " . phpversion() . "\n";
                             echo "$versionText";
                             echo "Config Update: " . getConfValue('global', 'version', 'unknown') . "\n";
@@ -96,7 +168,7 @@ EOS;
                 </div>
             </div>
 <?php
-    if ($oneoff == 0 && checkAuth($need_login['sub'], "admin")) {
+    if ($oneoff == 0 && $authToken->checkAuth("admin")) {
         // check if next year exists, and if not, put up button to create it
         $nyR = dbSafeQuery("SELECT COUNT(*) FROM conlist WHERE id = ?;", 'i', array($conid + 1));
         $nyF = $nyR->fetch_row()[0];

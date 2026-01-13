@@ -31,6 +31,7 @@ if (!session_start()) {
     session_start();
 }
 
+/*
 function bounce_page($new_page) {
     $url = getConfValue('google','redirect_base') . "/$new_page";
     header("Location: $url");
@@ -40,7 +41,7 @@ function bounce_page($new_page) {
  * google_init()
  * takes $mode reflecting "ajax" or "page" mode (do we redirect or not)
  * return current status of google session
- */
+ * /
 function google_init($mode) {
     // bypass for testing on Development PC
     $homeDir = getConfValue('controll', 'internalHome', 'not-a-valid-path');
@@ -176,20 +177,15 @@ function google_init($mode) {
         }
     }
 }
+*/
 
-function isWebRequest()
-{
-return isset($_SERVER['HTTP_USER_AGENT']);
+function isWebRequest() : bool {
+    return isset($_SERVER['HTTP_USER_AGENT']);
 }
 
-function page_init($title, $css, $js, $auth) {
+function page_init($title, $css, $js, $authToken) : void {
     global $portalJSVersion, $libJSversion, $controllJSversion, $globalJSversion, $atJSversion, $exhibitorJSversion;
 
-    // auth gets the token in need_login
-    if (is_array($auth) && array_key_exists('email', $auth)) {
-        newUser($auth['email'], array_key_exists('sub', $auth) ? $auth['sub'] : '');
-    }
-    
     $cdn = getTabulatorIncludes();
     $tabbs5=$cdn['tabbs5'];
     $tabcss=$cdn['tabcss'];
@@ -242,12 +238,12 @@ EOF;
 </head>
 <body>
     <?php
-    page_head($title, $auth);
-    con_info($auth);
-    tab_bar($auth, $title);
+    page_head($title, $authToken);
+    con_info($authToken);
+    tab_bar($authToken, $title);
 }
 
-function page_head($title, $auth) {
+function page_head($title, $authToken) : void {
     $displayQ = <<<EOS
 SELECT display
 FROM auth
@@ -271,12 +267,13 @@ EOS;
                     <?php echo getConfValue('con', 'conname');?> ConTroll <?php echo $display; ?> page
                 </h1>
             </div>
+            <?php if ($authToken->isLoggedIn()) { ?>
             <div class="col-sm-3">
-                <button class="btn" id="login" style="background-color: #ccc; float: right;" onclick="window.location.href='<?php echo $auth ==
-                null ? "index.php?logout" : "?logout"; ?>'">
-                    <?php echo $auth == null ? "Login" : "Logout " . $auth['email']; ?>
+                <button class="btn" id="login" style="background-color: #ccc; float: right;" onclick="window.location.href='index.php?logout';">
+                    Logout <?php echo $authToken->getEmail(); ?>
                 </button>
-            </div>         
+            </div>
+            <?php } ?>
         </div>
     <?php if (getConfValue('reg','test') == 1) { ?>
 
@@ -287,11 +284,11 @@ EOS;
 <?php
 }
 
-function con_info($auth) {
+function con_info($authToken) : void {
     $unlockCount = 0;
     $badgeCount = 0;
-    if(is_array($auth) && checkAuth(array_key_exists('sub', $auth) ? $auth['sub'] : null, 'overview')) {
-        $con = get_con();
+    $con = get_con();
+    if($authToken->checkAuth('overview')) {
         $cQ = <<<EOS
 SELECT status, count(*) AS num
 FROM reg
@@ -316,15 +313,34 @@ EOS;
         </div>
     <?php } else { ?>
         <div class="row" id='regInfo'>
-            <div class="col-sm-auto">Please log in for convention information.</div>
+            <div class="col-sm-auto">
+                <span>Con:
+                    <span class='blocktitle'> <?php echo $con['label']; ?> </span>
+                    <small>Please log in for convention information.</small>
+            </div>
         </div>
     <?php
     }
 }
 
-function tab_bar($auth, $page) {
-    if (is_array($auth) && array_key_exists('sub', $auth)) {
-        $page_list = getPages($auth['sub']);
+function tab_bar($authToken, $page) : void {
+    $id = $authToken->getAuthId();
+    if ($id != 'Not Logged In') {
+        $page_list = [];
+        $sql = <<<EOS
+SELECT DISTINCT A.id, A.name, A.display, A.sortOrder
+FROM user U
+JOIN user_auth UA ON (U.id = UA.user_id)
+JOIN auth A ON (A.id = UA.auth_id)
+WHERE U.google_sub = ? AND A.page='Y'
+ORDER BY A.sortOrder;
+EOS;
+        $pQ = dbSafeQuery($sql, 's', array($id));
+        if ($pQ !== false) {
+            while ($new_auth = $pQ->fetch_assoc()) {
+                $page_list[] = $new_auth;
+            }
+        }
     } else {
         $page_list = array();
     }
@@ -358,7 +374,7 @@ function tab_bar($auth, $page) {
     <?php
 }
 
-function page_foot($title = "") {
+function page_foot($title = "") : void {
     ?>
     </div>
     <div class="container-fluid">
@@ -372,7 +388,7 @@ function page_foot($title = "") {
 }
 
 // reg_ uses the atcon ajax renders
-function RenderErrorAjax($message_error)
+function RenderErrorAjax($message_error) : void
 {
     global $return500errors;
     if (isset($return500errors) && $return500errors) {
@@ -382,7 +398,7 @@ function RenderErrorAjax($message_error)
     }
 }
 
-function Render500ErrorAjax($message_error)
+function Render500ErrorAjax($message_error) : void
 {
     // pages which know how to handle 500 errors are expected to format the error message appropriately.
     header($_SERVER['SERVER_PROTOCOL'] . ' 500 Internal Server Error', true, 500);
@@ -390,7 +406,7 @@ function Render500ErrorAjax($message_error)
 }
 
 // draw a bs5 modal popup for editing a field in tinymce
-function bs_tinymceModal() {
+function bs_tinymceModal() : string {
     $html = <<<EOS
     <div id='tinymce-modal' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Edit field in TinyMCE' aria-hidden='true' style='--bs-modal-width: 80%;'>
     <div class='modal-dialog'>
@@ -427,7 +443,7 @@ EOS;
     echo $html;
 }
 
-function startEndDateTimeToNextYear($datestr) {
+function startEndDateTimeToNextYear($datestr) : string {
     global $monthLengths, $oneYearInterval;
 
     $date = date_create($datestr);
@@ -456,31 +472,31 @@ function startEndDateTimeToNextYear($datestr) {
     return "$nYear-$month-$day $time";
 }
 
-    function startEndDateToNextYear($datestr) {
-        global $monthLengths, $oneYearInterval;
+function startEndDateToNextYear($datestr) : string {
+    global $monthLengths, $oneYearInterval;
 
-        $date = date_create($datestr);
-        [$day, $month, $year, $dow, $leapYear] = explode(',', date_format($date, 'd,m,Y,w,L'));
-        $nextYear = date_add($date, $oneYearInterval);
-        [$nYear, $nyDow, $nyLeapYear] = explode(',', date_format($nextYear, 'Y,w,L'));
+    $date = date_create($datestr);
+    [$day, $month, $year, $dow, $leapYear] = explode(',', date_format($date, 'd,m,Y,w,L'));
+    $nextYear = date_add($date, $oneYearInterval);
+    [$nYear, $nyDow, $nyLeapYear] = explode(',', date_format($nextYear, 'Y,w,L'));
 
-        // rules;
-        //  add one year
-        //      if last day of month stop there
-        //      else make same day of week
-        //
-        $lastDay = $monthLengths[$month + 0];
-        if ($month == 2 && $leapYear == 1) {
-            $lastDay++;
-        }
-        if ($day != 1) {
-            if ($day == $lastDay && $month == 2) {
-                $day = $monthLengths[2] + $nyLeapYear;
-            }
-            else if ($day != $lastDay) {
-                $day += $dow - $nyDow;
-            }
-        }
-
-        return "$nYear-$month-$day";
+    // rules;
+    //  add one year
+    //      if last day of month stop there
+    //      else make same day of week
+    //
+    $lastDay = $monthLengths[$month + 0];
+    if ($month == 2 && $leapYear == 1) {
+        $lastDay++;
     }
+    if ($day != 1) {
+        if ($day == $lastDay && $month == 2) {
+            $day = $monthLengths[2] + $nyLeapYear;
+        }
+        else if ($day != $lastDay) {
+            $day += $dow - $nyDow;
+        }
+    }
+
+    return "$nYear-$month-$day";
+}

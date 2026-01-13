@@ -406,7 +406,7 @@ function dbQuery($query)
 // dbInsert - insert a row into the database and return the new key field
 // NOTE: All inserts built dynamically should use ? notation and use dbSafeInsert instead
 //
-function dbInsert($query)#: int|bool
+function dbInsert($query) : int|bool
 {
     global $dbObject;
     if (!is_null($dbObject)) {
@@ -476,28 +476,7 @@ function sql_safe($string)
     return $dbObject->escape_string($string);
 }
 
-function getPages($sub)#: array|bool
-{
-    $res = [];
-    $sql = <<<EOS
-SELECT DISTINCT A.id, A.name, A.display, A.sortOrder
-FROM user U
-JOIN user_auth UA ON (U.id = UA.user_id)
-JOIN auth A ON (A.id = UA.auth_id)
-WHERE U.google_sub = ? AND A.page='Y'
-ORDER BY A.sortOrder;
-EOS;
-    $auths = dbSafeQuery($sql, 's', [$sub]);
-    if (!$auths) {
-        return false;
-    }
-    while ($new_auth = $auths->fetch_assoc()) {
-        $res[] = $new_auth;
-    }
-    return $res;
-}
-
-function getAuths($sub)#: array|bool
+function getAuths($sub) : array|bool
 {
     $res = [];
     $sql = <<<EOS
@@ -518,7 +497,7 @@ EOS;
     return $res;
 }
 
-function checkAuth($sub, $name)#: array|bool
+function checkAuth($sub, $name) : array|bool
 {
     if (!isset($sub) || !$sub) {
         return false;
