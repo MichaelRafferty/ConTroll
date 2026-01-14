@@ -151,8 +151,7 @@ EOS;
                 $matchR->free();
 
                 $authToken = new authToken('web');
-                if (isSessionVar('authToken') && $authToken->getSource() == 'passkey' &&
-                    $authToken->getAuthId() == $passkey['userId'] && $authToken->getEmail() == $passkey['userName']) {
+                if (isSessionVar('authToken') && $authToken->getSource() == 'passkey' && $authToken->getEmail() == $passkey['userName']) {
                     $authToken->refreshExpire();
                 } else {
                     $authToken->buildToken('passkey', $passkey['userId'], $passkey['userName']);
