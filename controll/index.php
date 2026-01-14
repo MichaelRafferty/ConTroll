@@ -26,7 +26,7 @@ if (array_key_exists('oauth2', $_REQUEST) && $_REQUEST['oauth2'] == 'google') {
     } else {
         // this is a real login with google... start / continue the process
         $oauth = getSessionVar('oauth');
-        clearSession();
+        clearSession('oauth2');
         if ($oauth != null) setSessionVar('oauth', $oauth);
         setSessionVar('oauth2', $_REQUEST['oauth2']);
         setSessionVar('oauth2pass', 'setup');
@@ -88,6 +88,7 @@ if ($oauth2pass != null && $oauth2pass != 'token') {
         header('location:' . getConfValue('controll', 'controllsite') . '?autoclose=1');
         exit();
     } else {
+        clearSession();
         if ($authToken->buildToken($source, $sub, $email)) {
             header('location:' . getConfValue('controll', 'controllsite'));
             exit();
@@ -296,23 +297,44 @@ if ($tokenState == 'none' || $tokenState == 'expired') {
                 </div>
             </div>
 <?php
+    $allowPasskey = getConfValue('vendor', 'passkeyRpLevel', 'd') != 'd' &&
+                    array_key_exists('HTTPS', $_SERVER) && (isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == 'on');
+    if ($allowPasskey) {
+        $pQ = <<<EOS
+SELECT id
+FROM passkeys
+WHERE source = 'controll' AND userName = ?;
+EOS;
+        $pR = dbSafeQuery($pQ, 's', array($authToken->getEmail()));
+        if ($pR !== false && $pR->num_rows > 0) {
+            $keyId = $pR->fetch_row()[0];
+            $pR->free();
+        } else
+            $keyId = -1;
+    }
     if ($source == 'google') {
-        $allowPasskey = getConfValue('vendor', 'passkeyRpLevel', 'd') != 'd' &&
-                array_key_exists('HTTPS', $_SERVER) && (isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == 'on');
         if ($allowPasskey) {
-            ?>
+            if ($keyId > 0) {
+?>
+  <div class='row mt-4'>
+                <div class='col-sm-2'>
+                    <button class='btn btn-sm btn-primary' id='newPasskey' onclick='login.deletePasskey(<?php echo $keyId; ?>);'>
+                        <img src='lib/passkey.png'>Delete Existing Passkey
+                    </button>
+                </div>
+            </div>
+<?php
+            } else {
+?>
             <div class='row mt-4'>
                 <div class='col-sm-2'>
                     <button class='btn btn-sm btn-primary' id='newPasskey' onclick='login.newPasskey();'>
                         <img src='lib/passkey.png'>Add New Passkey
                     </button>
                 </div>
-                <!---
-                <div class='col-sm-auto'><label for='userDisplayName'>Display Name:</label></div>
-                <div class='col-sm-auto'><input type='text' id='userDisplayName' name='userDisplayName' size=64 maxlength=255/></div>
-                -->
             </div>
             <?php
+            }
         }
     }
 ?>
