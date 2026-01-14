@@ -45,6 +45,7 @@ class Payors {
                     show_message(data['error'], 'error');
                     return false;
                 }
+                checkRefresh(data);
                 _this.#payorPlans = data['payorPlans'];
                 payors.draw();
                 show_message(data['success'], 'success');

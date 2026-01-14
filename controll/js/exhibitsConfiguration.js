@@ -278,6 +278,7 @@ class exhibitssetup {
                     showError(data.error);
                     return false;
                 }
+                checkRefresh(data);
                 _this.draw(data);
                 _this.settab('regionTypes-pane');
                 if (data.success)
@@ -1127,6 +1128,7 @@ class exhibitssetup {
                 method: 'POST',
                 data: postdata,
                 success: function (data, textStatus, jhXHR) {
+                    checkRefresh(data);
                     _this.saveTypesComplete(data, textStatus, jhXHR);
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
@@ -1280,6 +1282,7 @@ class exhibitssetup {
                 method: 'POST',
                 data: postdata,
                 success: function (data, textStatus, jhXHR) {
+                    checkRefresh(data);
                     _this.saveRegionsComplete(data, textStatus, jhXHR);
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
@@ -1429,6 +1432,7 @@ class exhibitssetup {
                 method: 'POST',
                 data: postdata,
                 success: function (data, textStatus, jhXHR) {
+                    checkRefresh(data);
                     _this.saveYearsComplete(data, textStatus, jhXHR);
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
@@ -1588,6 +1592,7 @@ class exhibitssetup {
                 method: 'POST',
                 data: postdata,
                 success: function (data, textStatus, jhXHR) {
+                    checkRefresh(data);
                     _this.saveSpacesComplete(data, textStatus, jhXHR);
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
@@ -1739,6 +1744,7 @@ class exhibitssetup {
                 method: 'POST',
                 data: postdata,
                 success: function (data, textStatus, jhXHR) {
+                    checkRefresh(data);
                     _this.saveSpacePricesComplete(data, textStatus, jhXHR);
                 },
                 error: function (jqXHR, textStatus, errorThrown) {

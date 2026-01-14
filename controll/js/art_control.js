@@ -71,6 +71,7 @@ function getData() {
             if('error' in data) {
                 showError("ERROR in getArt: " + data.error);
             }
+            checkRefresh(data);
             artists=data.artists;
             var artistList = document.getElementById('artItemCreateExhibitor')
 
@@ -297,6 +298,7 @@ function saveItem() {
                 itemSaveBtn.disabled = false;
             } else {
                 //console.log(data);
+                checkRefresh(data);
                 show_message(data.message, 'success');
                 draw(data);
             }
@@ -351,6 +353,7 @@ function fetchArtItemHistory(index) {
                 show_message(data['error'], 'error');
                 return;
             }
+            checkRefresh(data);
             if (data['success'] !== undefined) {
                 show_message(data['success'], 'success');
             }

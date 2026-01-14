@@ -171,6 +171,7 @@ function getRpt(reportName, prefix, fileName, type, template) {
         method: 'POST',
         data: postdata,
         success: function (data, textStatus, jhXHR) {
+            checkRefresh(data);
             drawReport(data);
         },
         error: function (jqXHR, textStatus, errorThrown) {

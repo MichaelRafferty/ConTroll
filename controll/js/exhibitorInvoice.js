@@ -376,6 +376,7 @@ class ExhibitorInvoice {
             method: 'POST',
             data: formData,
             success: function(data, textStatus, jqXhr) {
+                checkRefresh(data);
                 exhibitorInvoice.paySuccess(data);
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -443,6 +444,7 @@ class ExhibitorInvoice {
             url: "scripts/reg_emailReceipt.php",
             data: postData,
             success: function (data, textstatus, jqxhr) {
+                checkRefresh(data);
                 clear_message();
                 if (typeof data == "string") {
                     show_message(data,  'error');

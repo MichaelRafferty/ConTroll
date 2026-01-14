@@ -275,6 +275,7 @@ class exhibitorsAdm {
                     show_message(data.error, 'warn');
                     return;
                 }
+                checkRefresh(data);
                 _this.openConfigEditor(data);
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -336,6 +337,7 @@ class exhibitorsAdm {
             method: "POST",
             data: { region: tabname, regionId: regionid },
             success: function (data, textstatus, jqXHR) {
+                checkRefresh(data);
                 exhibitors.draw(data, message);
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -984,6 +986,7 @@ class exhibitorsAdm {
             method: "POST",
             data: { portalType: 'admin', portalName: 'Admin' },
             success: function (data, textstatus, jqXHR) {
+                checkRefresh(data);
                 exhibitors.importDataSuccess(data);
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -1044,6 +1047,7 @@ class exhibitorsAdm {
             method: "POST",
             data: { past: JSON.stringify(data) },
             success: function (data, textstatus, jqXHR) {
+                checkRefresh(data);
                 exhibitors.importSuccess(data);
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -1303,8 +1307,8 @@ class exhibitorsAdm {
             url: 'scripts/exhibitorsUpdateLocations.php',
             method: "POST",
             data: { 'exhibitorRegionYearId': exhibitorRegionYearId, exhibitsRegionYearId: regionYearId, locations: locations },
-
             success: function (data, textStatus, jqXhr) {
+                checkRefresh(data);
                 exhibitors.locationsUpdateSuccess(data);
             },
             error: showAjaxError
@@ -1485,6 +1489,7 @@ class exhibitorsAdm {
             success: function (data, textStatus, jqXhr) {
                 if(data.error != undefined) { console.log(data.error); }
                 alert(data.password);
+                checkRefresh(data);
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 showError("ERROR in emailReceipt: " + textStatus, jqXHR);
@@ -1503,6 +1508,7 @@ class exhibitorsAdm {
             data: { 'exhibitorYearId': exhibitorYearId, type: 'contact' },
             success: function (data, textStatus, jqXhr) {
                 if(data.error != undefined) { console.log(data.error); }
+                checkRefresh(data);
                 alert(data.password);
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -1521,6 +1527,7 @@ class exhibitorsAdm {
             method: "POST",
             data: { approvalData: approvalData, approvalValue: value },
             success: function (data, textstatus, jqXHR) {
+                checkRefresh(data);
                 exhibitors.approvalChangeSuccess(data);
                 },
             error: showAjaxError
@@ -1587,6 +1594,7 @@ class exhibitorsAdm {
             method: "POST",
             data: { exhibitorData: exhibitorData, approvalType: 'req' },
             success: function (data, textstatus, jqXHR) {
+                checkRefresh(data);
                 exhibitors.spaceApprovalSuccess(data);
             },
             error: showAjaxError
@@ -1618,6 +1626,7 @@ class exhibitorsAdm {
             method: "POST",
             data: { regionId: exhibitorData.regionId, exhibitorId: exhibitorData.exhibitorId },
             success: function (data, textstatus, jqXHR) {
+                checkRefresh(data);
                 exhibitors.spaceAppDataSuccess(data);
             },
             error: showAjaxError
@@ -1679,6 +1688,7 @@ class exhibitorsAdm {
             data: data,
             method: "POST",
             success: function (data, textstatus, jqXHR) {
+                checkRefresh(data);
                 exhibitors.getListSuccess(data);
             },
             error: showAjaxError
@@ -1756,6 +1766,7 @@ class exhibitorsAdm {
             data: data,
             method: "POST",
             success: function (data, textstatus, jqXHR) {
+                checkRefresh(data);
                 exhibitors.getAddPaySpaceSuccess(data);
             },
             error: showAjaxError
