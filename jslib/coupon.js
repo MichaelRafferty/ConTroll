@@ -291,6 +291,7 @@ class Coupon {
     }
 
     VC_ajax_success(data, textStatus, jqXHR) {
+        checkRefresh(data);
         coupon.vc_success(data)
     }
     vc_success(data) {

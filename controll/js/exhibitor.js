@@ -1803,6 +1803,7 @@ exhibitors = null;
 
 // hook to public class function for exhibitor draw
 function updateExhibitorDataDraw(data, textStatus, jqXHR) {
+    checkRefresh(data);
     exhibitors.redraw(data);
 }
 

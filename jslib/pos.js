@@ -226,6 +226,7 @@ class Pos {
                     show_message(data.error, 'error');
                     return;
                 }
+                checkRefresh(data);
                 if (data.message !== undefined) {
                     show_message(data.message, 'success');
                 }
@@ -577,6 +578,7 @@ class Pos {
                     if (data.message !== undefined) {
                         show_message(data.message, 'success');
                     }
+                    checkRefresh(data);
                     _this.startOver(reset_all);
                     _this.#pay_currentOrderId = null;
                 },
@@ -633,6 +635,7 @@ class Pos {
                     if (data.message !== undefined) {
                         show_message(data.message, 'success');
                     }
+                    checkRefresh(data);
                 },
                 error: function (jqXHR, textstatus, errorThrown) {
                     $("button[name='find_btn']").attr("disabled", false);
@@ -1009,6 +1012,7 @@ class Pos {
                 if (data.warn !== undefined) {
                     show_message(data.warn, 'warn');
                 }
+                checkRefresh(data);
                 _this.addFound(data);
                 $("button[name='find_btn']").attr("disabled", false);
             },
@@ -1508,6 +1512,7 @@ class Pos {
                             if (data.warn !== undefined) {
                                 show_message(data.warn, 'warn');
                             }
+                            checkRefresh(data);
                         },
                         error: function (jqXHR, textstatus, errorThrown) {
                             document.getElementById('close_note_button').disabled = false;
@@ -1575,6 +1580,7 @@ class Pos {
                 if (data.warn !== undefined) {
                     show_message(data.warn, 'warn');
                 }
+                checkRefresh(data);
                 _this.foundRecord(data);
                 $("button[name='find_btn']").attr("disabled", false);
             },
@@ -1911,6 +1917,7 @@ class Pos {
                 if (data.warn !== undefined) {
                     show_message(data.warn, 'warn');
                 }
+                checkRefresh(data);
                 _this.reviewedUpdateCart(data);
             },
             error: showAjaxError,
@@ -2026,6 +2033,7 @@ class Pos {
                     show_message(data.data, 'error');
                 } else
                     stop = false;
+                checkRefresh(data);
                 if (!stop)
                     _this.buildOrderSuccess(data);
             },
@@ -2151,6 +2159,7 @@ class Pos {
             url: "scripts/pos_cancelPayment.php",
             data: postData,
             success: function (data, textstatus, jqxhr) {
+                checkRefresh(data);
                 _this.cancelSuccess(data);
             },
             error: function (jqXHR, textstatus, errorThrown) {
@@ -2448,6 +2457,7 @@ class Pos {
             url: "scripts/pos_processPayment.php",
             data: postData,
             success: function (data, textstatus, jqxhr) {
+                checkRefresh(data);
                 _this.paySuccess(data);
             },
             error: function (jqXHR, textstatus, errorThrown) {
@@ -2568,6 +2578,7 @@ class Pos {
             url: "scripts/pos_emailReceipt.php",
             data: postData,
             success: function (data, textstatus, jqxhr) {
+                checkRefresh(data);
                 if (typeof data == "string") {
                     show_message(data, 'error');
                 } else if (data.error !== undefined) {
@@ -2617,6 +2628,7 @@ class Pos {
             url: "scripts/pos_printBadge.php",
             data: postData,
             success: function (data, textstatus, jqxhr) {
+                checkRefresh(data);
                 if (data.constructor.name !== 'Object') {
                     show_message(data, 'error');
                     $("button[name='print_btn']").attr("disabled", false);
@@ -2666,6 +2678,7 @@ class Pos {
                         show_message(data.error, 'error');
                         return;
                     }
+                    checkRefresh(data);
                 },
                 error: showAjaxError,
             });
@@ -3148,6 +3161,7 @@ class Pos {
                     if (data.message !== undefined) {
                         show_message(data.message, 'success');
                     }
+                    checkRefresh(data);
                     pos.showPrintArea(data);
                 },
                 error: showAjaxError,
@@ -3249,6 +3263,7 @@ class Pos {
                 if (data.message !== undefined) {
                     show_message(data.message, 'success');
                 }
+                checkRefresh(data);
             },
             error: showAjaxError,
         });
@@ -3389,6 +3404,7 @@ class Pos {
                     if (data.message !== undefined) {
                         show_message(data.message, 'success');
                     }
+                    checkRefresh(data);
                     if (currentOrder && currentOrder != '') {
                         let postData = {
                             ajax_request_action: 'cancelOrder',
@@ -3404,6 +3420,7 @@ class Pos {
                                     show_message(data.error, 'error');
                                     return;
                                 }
+                                checkRefresh(data);
                                 if (data.warn !== undefined) {
                                     show_message(data.warn, 'warn');
                                     if (data.hasOwnProperty('paid') && data.paid == 1) {
@@ -3451,6 +3468,7 @@ class Pos {
                         show_message(data.error, 'error');
                         return;
                     }
+                    checkRefresh(data);
                     if (data.warn !== undefined) {
                         show_message(data.warn, 'warn');
                         return;

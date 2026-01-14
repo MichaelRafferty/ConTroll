@@ -483,7 +483,7 @@ class Profile {
                         show_message(data.message, 'error', messageDiv);
                         return;
                     }
-
+                    checkRefresh(data);
                     if (data.usps == null) {
                         profile.useMyAddress();
                         return;

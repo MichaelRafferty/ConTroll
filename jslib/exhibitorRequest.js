@@ -291,6 +291,7 @@ class ExhibitorRequest {
                     show_message(data.error, 'error', 'sr_message_div');
                     return;
                 }
+                checkRefresh(data);
                 if (data.hasOwnProperty('exhibitor_spacelist') && cancel > 2) {
                     exhibitor_spacelist = data.exhibitor_spacelist;
                     _this.updateRequestStatusBlock(regionYearId);

@@ -499,6 +499,7 @@ class ConfigEditor {
                     _this.#saveBtnB.innerHTML = 'Save*';
                     return false;
                 }
+                checkRefresh(data);
                 _this.#saveBtnT.disabled = true;
                 _this.#saveBtnT.innerHTML = 'Save';
                 _this.#saveBtnB.disabled = true;

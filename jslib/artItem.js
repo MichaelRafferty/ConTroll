@@ -320,6 +320,7 @@ setIsChanged(value,fieldName) {
                         show_message(data.error, 'error', 'ai_result_message');
                         return;
                     }
+                    checkRefresh(data);
                     if (data.warning != undefined) {
                         show_message(data.warning, 'warn', 'ai_result_message');
                         return;
