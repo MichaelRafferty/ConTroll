@@ -138,7 +138,7 @@ class AuthToken
             if ($now > $this->authToken['scriptExpire'])
                 return 'expired';
 
-            $refreshNeeded = ($now + $this->refreshGrace) > $this->authToken['scriptExpire'];
+            $refreshNeeded = ($now + $this->refreshGrace) > $this->authToken['webExpire'];
         }
 
         // we have a valid login token, check if the auths need reload
