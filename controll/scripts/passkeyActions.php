@@ -29,7 +29,7 @@ $email = $_REQUEST['email'];
 $source = $_REQUEST['source'];
 $response['source'] = $source;
 if ($action != 'request' && $action != 'check') {
-    $loginEmail = getSessionVar('email');
+    $loginEmail = $authToken->getEmail();
     $response['email'] = $loginEmail;
 
     if ($email != $loginEmail) {
