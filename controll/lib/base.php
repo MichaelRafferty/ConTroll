@@ -338,7 +338,7 @@ function tab_bar($authToken, $page) : void {
     else
         $id = $authToken->getAuthId();
 
-    if ($id != 'Not Logged In' && $id = 'Refresh') {
+    if ($id != 'Not Logged In' && $id != 'Refresh') {
         $page_list = [];
         $sql = <<<EOS
 SELECT DISTINCT A.id, A.name, A.display, A.sortOrder

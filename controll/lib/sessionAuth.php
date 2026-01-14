@@ -36,7 +36,7 @@ class AuthToken
             }
         }
         $this->use = $use;
-        $debug = getConfValue('debug', 'controll_admin', 0);
+        $this->debug = getConfValue('debug', 'controll_auth', 0);
         $this->expSecs = getConfValue('controll', 'tokenExpireHrs', 8) * 3600;
         $this->authExpSecs = getConfValue('controll', 'authExpireHrs', 0.25)  * 3600;
         $this->refreshGrace = getConfValue('controll', 'expiregrace', 1) * 3600;
@@ -228,8 +228,8 @@ EOS;
             $this->authToken['authExpire'] = $now + $this->authExpSecs;
             setSessionVar('authToken', $this->authToken);
             if ($this->debug)
-                web_error_log("ConTroll Admin $source refresh by " . $this->authToken.$this->getEmail() .
-                    '(' . $this->authToken.getUserId() . ':' . $this->authToken.$this->getPerid() .
+                web_error_log("ConTroll Admin $source refresh by " . $this->getEmail() .
+                    '(' . $this->getUserId() . ':' . $this->getPerid() .
                     ' from ' . $_SERVER['REMOTE_ADDR']);
             return true;
         }
