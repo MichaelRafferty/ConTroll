@@ -5,22 +5,29 @@
 // Retrieve update open notes field in perinfo record
 
 require_once '../lib/base.php';
-
-$check_auth = google_init('ajax');
-$perm = 'registration';
-
-$response = array('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
-
-if ($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
-    RenderErrorAjax('Authentication Failed');
-    exit();
-}
+require_once('../../lib/log.php');
+require_once('../../lib/term__load_methods.php');
 
 // use common global Ajax return functions
 global $returnAjaxErrors, $return500errors;
 $returnAjaxErrors = true;
 $return500errors = true;
 
+$con = get_conf('con');
+$conid = $con['id'];
+
+if (!(check_atcon('cashier', $conid) || check_atcon('data_entry', $conid))) {
+    $message_error = 'No permission.';
+    RenderErrorAjax($message_error);
+    exit();
+}
+
+$user_id = $_POST['user_id'];
+if ($user_id != getSessionVar('user')) {
+    ajaxError('Invalid credentials passed');
+}
+
+$response = array('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
 
 $con = get_conf('con');
 $conid = $con['id'];

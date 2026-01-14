@@ -8,21 +8,22 @@ require_once '../lib/base.php';
 require_once('../../lib/log.php');
 require_once('../../lib/tax.php');
 require_once('../../lib/cc__load_methods.php');
-
-$check_auth = google_init('ajax');
-$perm = 'registration';
-
-$response = array('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
-
-if ($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
-    RenderErrorAjax('Authentication Failed');
-    exit();
-}
+require_once '../lib/sessionAuth.php';
 
 // use common global Ajax return functions
 global $returnAjaxErrors, $return500errors;
 $returnAjaxErrors = true;
 $return500errors = true;
+
+$perm = 'registration';
+$response = array ('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
+$authToken = new authToken('script');
+$response['tokenStatus'] = $authToken->checkToken();
+if (!$authToken->isLoggedIn() || !$authToken->checkAuth($perm)) {
+    $response['error'] = 'Authentication Failed';
+    ajaxSuccess($response);
+    exit();
+}
 
 $ajax_request_action = '';
 if ($_POST && $_POST['ajax_request_action']) {
@@ -66,7 +67,7 @@ $cupd_rows = 0;
 //  pay_tid_amt: this.#pay_tid_amt,
 
 $user_id = $_POST['user_id'];
-$user_perid = getSessionVar('user_perid');
+$user_perid = $authToken->getPerid();
 if ($user_id != $user_perid) {
     ajaxError('Invalid credentials passed');
 }

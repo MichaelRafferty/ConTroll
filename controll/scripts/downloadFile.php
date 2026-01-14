@@ -2,14 +2,19 @@
 // downloadCSV - take an associative array passed in and a file name, and output that
 require_once "../lib/base.php";
 require_once "../../lib/outputFile.php";
+require_once '../lib/sessionAuth.php';
 
-$check_auth = google_init("ajax");
-$perm = "gen_rpts";
+// use common global Ajax return functions
+global $returnAjaxErrors, $return500errors;
+$returnAjaxErrors = true;
+$return500errors = true;
 
-$response = array("perm"=>$perm);
-
-if($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
-    $response['error'] = "Authentication Failed";
+$perm = 'gen_rpts';
+$response = array ('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
+$authToken = new authToken('script');
+$response['tokenStatus'] = $authToken->checkToken();
+if (!$authToken->isLoggedIn() || !$authToken->checkAuth($perm)) {
+    $response['error'] = 'Authentication Failed';
     ajaxSuccess($response);
     exit();
 }

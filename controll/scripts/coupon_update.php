@@ -1,16 +1,19 @@
 <?php
 require_once "../lib/base.php";
 require_once '../lib/getCouponData.php';
+require_once '../lib/sessionAuth.php';
 
-$check_auth = google_init("ajax");
-$user_email = $check_auth['email'];
-$perm = "finance";
+// use common global Ajax return functions
+global $returnAjaxErrors, $return500errors;
+$returnAjaxErrors = true;
+$return500errors = true;
 
-$response = array("post" => $_POST, "get" => $_GET, "perm"=>$perm);
-
-if($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
-    $response['status'] = 'error';
-    $response['error'] = "Authentication Failed";
+$perm = 'finance';
+$response = array ('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
+$authToken = new authToken('script');
+$response['tokenStatus'] = $authToken->checkToken();
+if (!$authToken->isLoggedIn() || !$authToken->checkAuth($perm)) {
+    $response['error'] = 'Authentication Failed';
     ajaxSuccess($response);
     exit();
 }
@@ -24,7 +27,7 @@ if (!array_key_exists('couponId', $_POST)) {
 
 $con = get_conf('con');
 $conid = $con['id'];
-$user_perid = getSessionVar('user_perid');
+$user_perid = $authToken->getPerid();
 
 // check for required fields
 $paramarray = array($user_perid);

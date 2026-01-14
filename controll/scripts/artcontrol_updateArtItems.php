@@ -1,15 +1,18 @@
 <?php
-
 require_once "../lib/base.php";
+require_once '../lib/sessionAuth.php';
 
-$check_auth = google_init("ajax");
-$perm = "art_control";
+// use common global Ajax return functions
+global $returnAjaxErrors, $return500errors;
+$returnAjaxErrors = true;
+$return500errors = true;
 
-$response = array("post" => $_POST, "get" => $_GET, "perm"=>$perm);
-
-
-if($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
-    $response['error'] = "Authentication Failed";
+$perm = 'art_control';
+$response = array ('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
+$authToken = new authToken('script');
+$response['tokenStatus'] = $authToken->checkToken();
+if (!$authToken->isLoggedIn() || !$authToken->checkAuth($perm)) {
+    $response['error'] = 'Authentication Failed';
     ajaxSuccess($response);
     exit();
 }
@@ -98,7 +101,7 @@ foreach ($tabledata as $row) {
     if($row['id'] > 0) {
         $paramarray = array($row['item_key'], $location, $row['min_price'], $row['original_qty'], $row['quantity'],
             $row['sale_price'], $row['status'] , $row['title'], $row['type'], $row['material'], $row['bidder'], $row['final_price'],
-            $row['notes'], getSessionVar('user_perid'), $row['id']);
+            $row['notes'], $authToken->getPerid(), $row['id']);
 
         $updated += dbSafeCmd($updateSQL, $updateTypes, $paramarray);
     } else {
@@ -116,7 +119,7 @@ foreach ($tabledata as $row) {
 
         $paramarray = array($maxKey, $conid, $location, $row['min_price'], $row['original_qty'], $row['quantity'],
             $row['sale_price'], $row['status'] , $row['title'], $row['type'], $row['material'], $row['bidder'], $row['final_price'],
-            $row['notes'], $row['exhibitorRegionYearId'], getSessionVar('user_perid');
+            $row['notes'], $row['exhibitorRegionYearId'], $authToken->getPerid();
 
         $response['insert'] = $insertSQL;
         $response['insertArray'] = $paramarray;

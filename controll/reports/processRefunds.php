@@ -2,14 +2,22 @@
 // hardcode: This entire routine is hardcoded to the Balticon CC vendor, and is not portable to Square, and needs to be rewritten calling some function in the credit card processing .php file to make it portable
 require_once "../lib/base.php";
 require_once(__DIR__ . "/../../../lib/log.php");
+require_once '../lib/sessionAuth.php';
 
-$need_login = google_init("page");
-$page = "reg_admin";
+// use common global Ajax return functions
+global $returnAjaxErrors, $return500errors;
+$returnAjaxErrors = true;
+$return500errors = true;
 
-if(!$need_login or !checkAuth($need_login['sub'], $page)) {
-    bounce_page("index.php");
+$perm = 'reg_admin';
+$response = array ('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
+$authToken = new authToken('script');
+$response['tokenStatus'] = $authToken->checkToken();
+if (!$authToken->isLoggedIn() || !$authToken->checkAuth($perm)) {
+    $response['error'] = 'Authentication Failed';
+    ajaxSuccess($response);
+    exit();
 }
-
 
 $con = get_conf("con");
 $conid=$con['id'];

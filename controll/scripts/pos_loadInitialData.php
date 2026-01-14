@@ -8,21 +8,22 @@ require_once '../lib/base.php';
 require_once('../../lib/cc__load_methods.php');
 require_once('../../lib/coupon.php');
 require_once '../../lib/memRules.php';
-
-$check_auth = google_init('ajax');
-$perm = 'registration';
-
-$response = array('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
-
-if ($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
-    RenderErrorAjax('Authentication Failed');
-    exit();
-}
+require_once '../lib/sessionAuth.php';
 
 // use common global Ajax return functions
 global $returnAjaxErrors, $return500errors;
 $returnAjaxErrors = true;
 $return500errors = true;
+
+$perm = 'registration';
+$response = array ('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
+$authToken = new authToken('script');
+$response['tokenStatus'] = $authToken->checkToken();
+if (!$authToken->isLoggedIn() || !$authToken->checkAuth($perm)) {
+    $response['error'] = 'Authentication Failed';
+    ajaxSuccess($response);
+    exit();
+}
 
 $con = get_conf('con');
 $atcon = get_conf('atcon');
@@ -53,10 +54,10 @@ $response['conid'] = $conid;
 $response['discount'] = $atcon['discount'];
 $response['badgePrinter'] = false; //getSessionVar('badgePrinter')[0] != 'None';
 $response['receiptPrinter'] = false; //getSessionVar('receiptPrinter')[0] != 'None';
-$response['user_id'] = getSessionVar('user_perid');
+$response['user_id'] = $authToken->getPerid();
 $response['cc_html'] = draw_cc_html($cc,'--','body');
 // do as if statement such that it can check for both database error and no rows returned
-$Manager = checkAuth($check_auth['sub'], 'reg_admin');
+$Manager = $authToken->checkAuth('reg_admin');
 if ($Manager !== false && sizeof($Manager) > 0)
     $Manager = 1;
 else
@@ -182,6 +183,6 @@ $response['gmemRules'] = $ruleData['memRules'];
 $response['debug'] = getConfValue('debug', 'controll_registration', 0);
 $config_vars['required'] = getConfValue('reg', 'required', 'addr');
 $response['useUSPS'] = $useUSPS;
-$response['userId'] = getSessionVar('user_perid');
+$response['userId'] = $authToken->getPerid();
 
 ajaxSuccess($response);

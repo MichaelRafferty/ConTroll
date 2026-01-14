@@ -1,7 +1,25 @@
 <?php
 require_once "../../lib/phpReports.php";
+require_once '../lib/sessionAuth.php';
 
-$response = loadReportInfo();
+// use common global Ajax return functions
+global $returnAjaxErrors, $return500errors;
+$returnAjaxErrors = true;
+$return500errors = true;
+
+$perm = 'gen_rpts';
+$response = array ('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
+$authToken = new authToken('script');
+$response['tokenStatus'] = $authToken->checkToken();
+if (!$authToken->isLoggedIn() || !$authToken->checkAuth($perm)) {
+    $response['error'] = 'Authentication Failed';
+    ajaxSuccess($response);
+    exit();
+}
+$response = loadReportInfo($authToken);
+$response['post'] = $_POST;
+$response['get'] = $_GET;
+$response['tokenStatus'] = $authToken->checkToken();
 $postVars = $response['postVars'];
 $conid = $response['conid'];
 

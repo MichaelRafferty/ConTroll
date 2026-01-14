@@ -31,7 +31,7 @@ if (!isset($_POST) || !isset($_POST['old']) || !isset($_POST['id'])|| !isset($_P
     exit();
 }
 
-$finance = checkAuth($check_auth['sub'], 'finance');
+$finance = $authToken->checkAuth('finance');
 
 $con = get_conf('con');
 $conid = $con['id'];

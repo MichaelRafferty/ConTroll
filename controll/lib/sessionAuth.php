@@ -14,7 +14,7 @@ class AuthToken
     //      userId - from user table
     //      userPerid - similarly from user table
     //      userEmail - email address from user table
-    //      source - google, or passkey
+    //      source - google, or passke
     //      authId - google: sub, passkey: key from passkey table
     //      auths - array of auth strings authorized for this user
 

@@ -3,14 +3,19 @@
 require_once "../lib/base.php";
 require_once "../../lib/pivotArray.php";
 require_once "../../lib/log.php";
+require_once '../lib/sessionAuth.php';
 
-$check_auth = google_init("ajax");
-$perm = "gen_rpts";
+// use common global Ajax return functions
+global $returnAjaxErrors, $return500errors;
+$returnAjaxErrors = true;
+$return500errors = true;
 
-$response = array("perm"=>$perm);
-
-if($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
-    $response['error'] = "Authentication Failed";
+$perm = 'gen_rpts';
+$response = array ('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
+$authToken = new authToken('script');
+$response['tokenStatus'] = $authToken->checkToken();
+if (!$authToken->isLoggedIn() || !$authToken->checkAuth($perm)) {
+    $response['error'] = 'Authentication Failed';
     ajaxSuccess($response);
     exit();
 }
@@ -35,7 +40,7 @@ $response["reportName"] = $reportName;
 $response["prefix"] = $prefix;
 $response["report"] = $report;
 
-if (!checkAuth($check_auth['sub'], $hdrAuth)) {
+if (!$authToken->checkAuth($hdrAuth)) {
     $response['error'] = 'You do not have permission to access this report group';
     ajaxSuccess($response);
     exit();
@@ -55,7 +60,7 @@ if (array_key_exists('index', $reportHdr))
 if (array_key_exists('csvfile', $reportHdr))
     $response['csvfile'] = $reportHdr['csvfile'];
 if ($reportAuth != $hdrAuth) {
-    if (!checkAuth($check_auth['sub'], $reportAuth)) {
+    if (!$authToken->checkAuth($reportAuth)) {
         $response['error'] = 'You do not have permission to access this specific report';
         ajaxSuccess($response);
         exit();
@@ -246,7 +251,7 @@ if (array_key_exists('pivotFields', $reportHdr)) {
     if (array_key_exists('pivotRowName', $reportHdr))
         $rowLabel = $reportHdr['pivotRowName'];
     $newData = pivotArray($data, $keyfields, $rowLabel);
-    $response['data'] = $newData;;
+    $response['data'] = $newData;
     $response['pivoted'] = 1;
     $response['fields'] = $pivotArr;
 } else {
