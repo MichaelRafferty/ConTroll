@@ -193,6 +193,7 @@ class Unmatched {
             method: 'POST',
             data: postdata,
             success: function (data, textStatus, jhXHR) {
+                checkRefresh(data);
                 _this.draw(data, msg);
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -339,6 +340,7 @@ class Unmatched {
             method: 'POST',
             data: postdata,
             success: function (data, textStatus, jhXHR) {
+                checkRefresh(data);
                 _this.showCandidates(data);
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -373,10 +375,11 @@ class Unmatched {
                     show_message(data['error'], 'error', 'result_message_candidate');
                     return false;
                 }
-                if (data['error']) {
+                if (data['warn']) {
                     show_message(data['warn'], 'warn', 'result_message_candidate');
                     return false;
                 }
+                checkRefresh(data);
                 _this.#matchCandidatesModal.hide();
                 _this.clearEditBlock('a');
                 _this.open(data['success']);
@@ -709,6 +712,7 @@ class Unmatched {
             method: 'POST',
             data: postdata,
             success: function (data, textStatus, jhXHR) {
+                checkRefresh(data);
                 data.priorUpdateExistingDisabled = priorUpdateExistingDisabled;
                 data.priorCreateNewDisabled = priorCreateNewDisabled;
                 _this.updateSuccess(data);
@@ -1052,6 +1056,7 @@ class Unmatched {
             method: 'POST',
             data: postdata,
             success: function (data, textStatus, jhXHR) {
+                checkRefresh(data);
                 _this.updateAdditional(data);
             },
             error: function (jqXHR, textStatus, errorThrown) {

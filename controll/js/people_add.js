@@ -65,6 +65,7 @@ class Add {
             method: 'POST',
             data: postdata,
             success: function (data, textStatus, jhXHR) {
+                checkRefresh(data);
                 _this.checkSuccess(data);
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -215,6 +216,7 @@ class Add {
             method: 'POST',
             data: postdata,
             success: function (data, textStatus, jhXHR) {
+                checkRefresh(data);
                 _this.addSuccess(data);
             },
             error: function (jqXHR, textStatus, errorThrown) {

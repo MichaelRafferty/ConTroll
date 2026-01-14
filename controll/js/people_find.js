@@ -177,6 +177,7 @@ class Find {
             method: 'POST',
             data: postdata,
             success: function (data, textStatus, jhXHR) {
+                checkRefresh(data);
                 _this.#findPersonBTN.disabled = false;
                 _this.findSuccess(data);
             },
@@ -328,6 +329,7 @@ class Find {
             method: 'POST',
             data: postdata,
             success: function (data, textStatus, jhXHR) {
+                checkRefresh(data);
                 _this.findDetailsSuccess(data);
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -468,6 +470,7 @@ class Find {
             method: 'POST',
             data: postdata,
             success: function (data, textStatus, jhXHR) {
+                checkRefresh(data);
                 _this.unmanageSuccess(data);
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -531,6 +534,7 @@ class Find {
             method: 'POST',
             data: postdata,
             success: function (data, textStatus, jhXHR) {
+                checkRefresh(data);
                 _this.lookupManagerSuccess(data);
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -638,6 +642,7 @@ class Find {
             method: 'POST',
             data: postdata,
             success: function (data, textStatus, jhXHR) {
+                checkRefresh(data);
                 _this.lookupManagesSuccess(data);
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -743,6 +748,7 @@ class Find {
             method: 'POST',
             data: postdata,
             success: function (data, textStatus, jhXHR) {
+                checkRefresh(data);
                 _this.addManageeSuccess(data);
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -785,6 +791,7 @@ class Find {
             method: 'POST',
             data: postdata,
             success: function (data, textStatus, jhXHR) {
+                checkRefresh(data);
                 _this.personHistorySuccess(data);
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -987,6 +994,7 @@ class Find {
             method: 'POST',
             data: postdata,
             success: function (data, textStatus, jhXHR) {
+                checkRefresh(data);
                 _this.saveEditSuccess(data);
             },
             error: function (jqXHR, textStatus, errorThrown) {
