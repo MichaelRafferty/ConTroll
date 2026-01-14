@@ -228,7 +228,13 @@ if ($tokenState == 'none' || $tokenState == 'expired') {
         $patchLevel = "unavailable";
     }
     $source = $authToken->getSource();
+    $config_vars['email'] = $authToken->getEmail();
+    $config_vars['source'] = $authToken->getSource();
+    $config_vars['name'] = $authToken->getName();
     ?>
+    <script type='text/javascript'>
+        var config = <?php echo json_encode($config_vars); ?>;
+    </script>
     <div id='main'>
         <div class="container-fluid">
             <div class="row mt-2">
@@ -320,10 +326,7 @@ function drawErrorPage($who, $error) {
     $page = "Home";
     page_init($page,
             /*css*/ array('css/base.css'),
-            /*js*/  array(
-                    'jslib/passkey.js',
-                    'js/login.js'
-            ),
+            /*js*/  array(),
             null);
     echo <<<EOS
 <div class="container-fluid">
