@@ -200,7 +200,7 @@ EOS;
             }
         }
 
-        $type = $this->authToken != null ? 'login' : 'refresh';
+        $type = $this->authToken == null ? 'login' : 'refresh';
         $now = time();
         $this->authToken = [];
         $this->authToken['webExpire'] = $now + $this->expSecs;
