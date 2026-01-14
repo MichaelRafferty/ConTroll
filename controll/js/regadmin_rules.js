@@ -294,6 +294,7 @@ class rulesSetup {
             method: 'POST',
             data: postdata,
             success: function (data, textStatus, jhXHR) {
+                checkRefresh(data);
                 _this.draw(data, textStatus, jhXHR);
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -1605,6 +1606,7 @@ class rulesSetup {
             method: 'POST',
             data: data,
             success: function (data, textStatus, jhXHR) {
+                checkRefresh(data);
                 _this.saveSuccess(data);
             },
             error: function (jqXHR, textStatus, errorThrown) {

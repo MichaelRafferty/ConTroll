@@ -466,6 +466,7 @@ class memsetup {
             method: 'POST',
             data: { type: 'all', },
             success: function (data, textStatus, jhXHR) {
+                checkRefresh(data);
                 _this.draw(data, textStatus, jhXHR);
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -576,6 +577,7 @@ class memsetup {
             method: 'POST',
             data: { type: 'memType', },
             success: function (data, textStatus, jhXHR) {
+                checkRefresh(data);
                 _this.draw_memtype(data, textStatus, jhXHR);
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -612,6 +614,7 @@ class memsetup {
                 method: 'POST',
                 data: postdata,
                 success: function (data, textStatus, jhXHR) {
+                    checkRefresh(data);
                     _this.saveTypesComplete(data, textStatus, jhXHR);
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
@@ -690,6 +693,7 @@ class memsetup {
             method: 'POST',
             data: { type: 'memCat', },
             success: function (data, textStatus, jhXHR) {
+                checkRefresh(data);
                 _this.draw_memcat(data, textStatus, jhXHR);
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -726,6 +730,7 @@ class memsetup {
                 method: 'POST',
                 data: postdata,
                 success: function (data, textStatus, jhXHR) {
+                    checkRefresh(data);
                     _this.saveCatComplete(data, textStatus, jhXHR);
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
@@ -800,6 +805,7 @@ class memsetup {
             method: 'POST',
             data: { type: 'curage', },
             success: function (data, textStatus, jhXHR) {
+                checkRefresh(data);
                 _this.draw_curage(data, textStatus, jhXHR);
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -837,6 +843,7 @@ class memsetup {
                 method: 'POST',
                 data: postdata,
                 success: function (data, textStatus, jhXHR) {
+                    checkRefresh(data);
                     _this.saveCurAgeComplete(data, textStatus, jhXHR);
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
@@ -909,6 +916,7 @@ class memsetup {
             url: script,
             method: 'POST',
             data: { type: 'nextage', },
+            checkRefresh(data);
             success: function (data, textStatus, jhXHR) {
                 _this.draw_nextage(data, textStatus, jhXHR);
             },
@@ -947,6 +955,7 @@ class memsetup {
                 method: 'POST',
                 data: postdata,
                 success: function (data, textStatus, jhXHR) {
+                    checkRefresh(data);
                     _this.saveNextAgeComplete(data, textStatus, jhXHR);
                 },
                 error: function (jqXHR, textStatus, errorThrown) {

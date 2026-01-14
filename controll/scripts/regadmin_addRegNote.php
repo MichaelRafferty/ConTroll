@@ -1,18 +1,23 @@
 <?php
 require_once "../lib/base.php";
+require_once '../lib/sessionAuth.php';
 
-$check_auth = google_init("ajax");
-$perm = "reg_staff";
+// use common global Ajax return functions
+global $returnAjaxErrors, $return500errors;
+$returnAjaxErrors = true;
+$return500errors = true;
 
-$response = array("post" => $_POST, "get" => $_GET, "perm"=>$perm);
-
-if ($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
-    $response['error'] = "Authentication Failed";
+$perm = 'reg_staff';
+$response = array ('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
+$authToken = new authToken('script');
+$response['tokenStatus'] = $authToken->checkToken();
+if (!$authToken->isLoggedIn() || !$authToken->checkAuth($perm)) {
+    $response['error'] = 'Authentication Failed';
     ajaxSuccess($response);
     exit();
 }
 
-$user_perid = getSessionVar('user_perid');
+$user_perid = $authToken->getPerid();
 if (!$user_perid) {
     ajaxError('Invalid credentials passed');
     return;

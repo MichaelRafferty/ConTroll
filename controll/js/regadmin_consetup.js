@@ -512,6 +512,7 @@ class consetup {
             method: 'GET',
             data: 'year=' + this.#setup_type + '&type=all',
             success: function (data, textStatus, jhXHR) {
+                checkRefresh(data);
                 if (data['year'] == 'current') {
                     current.draw('current', data, textStatus, jhXHR);
                 } else {
@@ -662,6 +663,7 @@ class consetup {
                     show_message(data['error'], 'error');
                     return false;
                 }
+                checkRefresh(data);
                 if (data['year'] == 'current') {
                     current.draw_conlist(data['year'], data, textStatus, jhXHR);
                 } else {
@@ -714,6 +716,7 @@ class consetup {
                     } else {
                         show_message(data['success'], 'success');
                     }
+                    checkRefresh(data);
                     if (data['year'] == 'current') {
                         current.saveConlistComplete(data, textStatus, jhXHR);
                     } else {
@@ -742,6 +745,7 @@ class consetup {
             method: 'GET',
             data: 'year=' + this.#setup_type + '&type=memlist',
             success: function (data, textStatus, jhXHR) {
+                checkRefresh(data);
                 if (data['year'] == 'current') {
                     current.draw_memlist(data['year'], data, textStatus, jhXHR);
                 } else {
@@ -842,7 +846,7 @@ class consetup {
                     } else {
                         show_message(data['success'], 'success');
                     }
-
+                    checkRefresh(data);
                     if (data['year'] == 'current') {
                         current.saveMemListComplete(data, textStatus, jhXHR);
                     } else {

@@ -591,6 +591,7 @@ function receipt_email(addrchoice) {
                 show_message(data.error, 'error');
                 return;
             }
+            checkRefresh(data);
             if (data.success !== undefined) {
                 show_message(data.success, 'success');
             }
@@ -619,6 +620,7 @@ function receipt(index) {
                 show_message(data.error, 'error');
                 return;
             }
+            checkRefresh(data);
             if (data.success !== undefined) {
                 show_message(data.success, 'success');
             }
@@ -649,6 +651,7 @@ function history(index) {
                 show_message(data.error, 'error');
                 return;
             }
+            checkRefresh(data);
             if (data.success !== undefined) {
                 show_message(data.success, 'success');
             }
@@ -768,6 +771,7 @@ function changeReg(index, clear = true) {
                 show_message(data.error, 'error');
                 return;
             }
+            checkRefresh(data);
             if (data.success !== undefined) {
                 show_message(data.success, 'success');
             }
@@ -952,6 +956,7 @@ function changeRevoke(direction) {
                 show_message(data.error, 'error', 'changeMessageDiv');
                 return;
             }
+            checkRefresh(data);
             if (data.warn !== undefined) {
                 show_message(data.warn, 'warn', 'changeMessageDiv');
                 return;
@@ -1050,6 +1055,7 @@ function changeTransferFind() {
                 show_message(data.error, 'error', 'changeMessageDiv');
                 return;
             }
+            checkRefresh(data);
             if (data.message !== undefined) {
                 show_message(data.message, 'success', 'changeMessageDiv');
             }
@@ -1167,8 +1173,10 @@ function transferReg(to, banned) {
                 show_message(data.error, 'error', 'changeMessageDiv');
             } else if (data.warning) {
                 changeModal.hide();
+                checkRefresh(data);
                 show_message(data.warning, 'warn', 'changeMessageDiv');
             } else {
+                checkRefresh(data);
                 transferSearchDiv.hidden = true;
                 transferNameSearchField.value = '';
                 transferFromNameDiv.innerHTML = '';
@@ -1317,6 +1325,7 @@ function changeRolloverExecute() {
                 show_message(data.error, 'error', 'changeMessageDiv');
                 return;
             }
+            checkRefresh(data);
             if (data.success !== undefined) {
                 show_message(data.success, 'success', 'changeMessageDiv');
             }
@@ -1510,6 +1519,7 @@ function changeEditSave(override) {
                 show_message(data.error, 'error', 'changeMessageDiv');
                 return;
             }
+            checkRefresh(data);
             if (data.success !== undefined) {
                 show_message(data.success, 'success', 'changeMessageDiv');
             }
@@ -1680,6 +1690,7 @@ function getData(style) {
                 show_message(data.error, 'error');
                 return;
             }
+            checkRefresh(data);
             if (data.success !== undefined) {
                 show_message(data.success, 'success');
             }
@@ -1713,6 +1724,7 @@ function sendCancel() {
         data: { 'action': action, 'tid': tid },
         method: "POST",
         success: function (data, textStatus, jqXHR) {
+            checkRefresh(data);
             if (data.error) {
                 $('#test').empty().append(JSON.stringify(data));
                 alert(data.error);
@@ -1851,6 +1863,7 @@ function loadConfigEditor() {
                 show_message(data.error, 'error');
                 return;
             }
+            checkRefresh(data);
             if (data.warn) {
                 show_message(data.error, 'warn');
                 return;

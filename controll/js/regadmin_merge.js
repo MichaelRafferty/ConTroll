@@ -151,6 +151,7 @@ class mergesetup {
             method: 'POST',
             data: data,
             success: function (data, textStatus, jhXHR) {
+                checkRefresh(data);
                 merge.drawCandidates(data, textStatus, jhXHR);
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -245,6 +246,7 @@ class mergesetup {
             method: 'POST',
             data: data,
             success: function (data, textStatus, jhXHR) {
+                checkRefresh(data);
                 merge.drawCheck(data, textStatus, jhXHR);
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -295,6 +297,7 @@ class mergesetup {
             method: 'POST',
             data: data,
             success: function (data, textStatus, jhXHR) {
+                checkRefresh(data);
                 merge.findCandidates(data);
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -350,6 +353,7 @@ class mergesetup {
                     show_message(data.error, 'error', 'result_message_merge');
                     return;
                 }
+                checkRefresh(data);
                 if (data.message !== undefined) {
                     show_message(data.message, 'success', 'result_message_merge');
                 }
