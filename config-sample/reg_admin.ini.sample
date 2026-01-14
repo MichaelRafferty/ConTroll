@@ -255,6 +255,15 @@ hrtime=0    ; on critical routines, a call to hrtime to report intervals has bee
 controllsite="http://controll/"
 ;;; redirect_base: page for the login with to redirect back to for Oauth login support
 redirect_base="http://controll/index.php"
+;;; token timeouts
+; tokenExpireHrs - number of hours before login token becomes invalid
+tokenExpireHrs=8
+; authExpireHrs - number of hours before the role permissions are re-fetched.
+;       This reduces database overhead at the expense of lag on permission changes
+authExpireHrs=0.25
+; expireGrace - how many hour before expire does the system auto-refresh the token if you take an action.
+;       cannot be more than 1/2 of tokenExpireHours
+expireGrace=2
 ;;; Which "Non Terminal" payment methods are supported in controll registratiomn.  By default cash and check are always supported.
 ;   creditoffline = using your own credit card terminals that do not talk to ConTroll and entering the amount and the approval code manually
 ;   creditonline = using the same method of credit card entry as used in Onlinereg/portal, where the credit card details are typed in manually.
