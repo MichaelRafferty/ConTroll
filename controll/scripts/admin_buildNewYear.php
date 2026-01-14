@@ -20,7 +20,7 @@ $return500errors = true;
 $perm = 'admin';
 $response = array ('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
 $authToken = new authToken('script');
-$response['token'] = $authToken->checkToken();
+$response['tokenStatus'] = $authToken->checkToken();
 if (!$authToken->isLoggedIn() || !$authToken->checkAuth($perm)) {
     $response['error'] = 'Authentication Failed';
     ajaxSuccess($response);

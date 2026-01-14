@@ -70,8 +70,7 @@ window.onload = function initpage() {
         buildNewYear();
     }
 
-    if (config.hasOwnProperty('tokenStatus') && config.tokenStatus != 'valid')
-        refreshToken('admin', config.tokenStatus);
+    checkRefresh(config);
 }
 
 window.onbeforeunload = function() {
@@ -100,6 +99,7 @@ function clearPermissions(userid) {
         data: formdata+"&action=clear",
         success: function (data, textStatus, jhXHR) {
             $('#test').append(JSON.stringify(data, null, 2));
+            checkRefresh(data);
             location.reload();
         }
     });
@@ -116,6 +116,7 @@ function updatePermissions(userid) {
         data: formdata+"&action=update",
         success: function (data, textStatus, jhXHR) {
             $('#test').append(JSON.stringify(data, null, 2));
+            checkRefresh(data);
             location.reload();
         }
     });
@@ -175,6 +176,7 @@ function add_find() {
             if (data.warn !== undefined) {
                 show_message(data.warn, 'warn', 'result_message_user');
             }
+            checkRefresh(data);
             add_found(data);
         },
         error: function (jqXHR, textStatus, errorThrown) {
@@ -273,6 +275,7 @@ function selectUser(perid) {
                 add_modal.hide();
                 return false;
             }
+            checkRefresh(data);
             location.reload();
         },
         error: function (jqXHR, textStatus, errorThrown) {
@@ -347,6 +350,7 @@ function loadAtconUsers() {
                 show_message(data.error, 'error');
                 return;
             }
+            checkRefresh(data);
             if (data.warn) {
                 show_message(data.error, 'warn');
                 return;
@@ -382,6 +386,7 @@ function loadAtconPrinters() {
                 show_message(data.error, 'error');
                 return;
             }
+            checkRefresh(data);
             if (data.warn) {
                 show_message(data.error, 'warn');
                 return;
@@ -419,6 +424,7 @@ function loadConfigEditor() {
                 show_message(data.error, 'error');
                 return;
             }
+            checkRefresh(data);
             if (data.warn) {
                 show_message(data.error, 'warn');
                 return;
@@ -471,6 +477,7 @@ function getMenu() {
         method: 'POST',
         data: postData,
         success: function (data, textStatus, jhXHR) {
+            checkRefresh(data);
             openMenu(data);
         },
         error: function (jqXHR, textStatus, errorThrown) {
@@ -571,8 +578,9 @@ function saveMenu() {
         method: 'POST',
         data: postdata,
         success: function (data, textStatus, jhXHR) {
-           clearMenuTable(data);
-           openMenu(data);
+            checkRefresh(data);
+            clearMenuTable(data);
+            openMenu(data);
         },
         error: function (jqXHR, textStatus, errorThrown) {
             showError("ERROR in " + script + ": " + textStatus, jqXHR);
@@ -616,6 +624,7 @@ function buildNewYear() {
         method: 'POST',
         data: postdata,
         success: function (data, textStatus, jhXHR) {
+            checkRefresh(data);
             window.location="/admin.php?msg=" + encodeURI(data.success);
         },
         error: function (jqXHR, textStatus, errorThrown) {
@@ -642,6 +651,7 @@ function loadInitialData(loadtype) {
         url: "scripts/admin_atconLoadData.php",
         data: postData,
         success: function(data, textstatus, jqxhr) {
+            checkRefresh(data);
             if (data.message !== undefined) {
                 show_message(data.message, 'success');
             }

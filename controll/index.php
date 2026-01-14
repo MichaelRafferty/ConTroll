@@ -27,7 +27,7 @@ if (array_key_exists('oauth2', $_REQUEST) && $_REQUEST['oauth2'] == 'google') {
     }
 }
 
-if ($tokenState == 'refresh') {
+if ($tokenState == 'refresh' || array_key_exists('refresh', $_REQUEST)) {
     echo "force refresh due to $tokenState\n\n";
     exit();
 }

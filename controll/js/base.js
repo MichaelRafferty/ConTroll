@@ -1,12 +1,12 @@
 globalCustomTextEditorInit = false;
 
 // new functions for token items
-function refreshToken(where, status) {
-    console.log("refresh token called from " + where + ' with ' + status);
-
-    window.open('/index.php?refresh');
+function checkRefresh(data) {
+    if (data.hasOwnProperty('tokenStatus') && data.tokenStatus == 'refresh'){
+        console.log("refresh token called with " + data.tokenStatus);
+        window.open('/index.php?refresh', '_blank');
+    }
 }
-
 
 function test(method, formData, resultDiv) {
     $.ajax({
