@@ -178,7 +178,7 @@ EOS;
 SELECT u.*
 FROM passkeys p
 JOIN user u ON u.email = p.username OR u.google_sub = p.userId
-WHERE p.relyingParty = ? AND p.userName- = ? AND p.userId = ?
+WHERE p.relyingParty = ? AND p.userName = ? AND p.userId = ?
 ORDER BY google_sub DESC;
 EOS;
                 $typestr = 'sss';
