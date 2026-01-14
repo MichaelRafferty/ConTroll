@@ -69,6 +69,9 @@ window.onload = function initpage() {
         console.log("Requested to build " + (Number(conid) + 1) + " setup");
         buildNewYear();
     }
+
+    if (config.hasOwnProperty('tokenStatus') && config.tokenStatus != 'valid')
+        refreshToken('admin', config.tokenStatus);
 }
 
 window.onbeforeunload = function() {

@@ -100,7 +100,7 @@ function checkCurrent($fields) : string {
 
 
 // load all new data for the config editor
-function loadConfigEditor($perm, $auths) : array {
+function loadConfigEditor($perm, $authToken) : array {
     global $filePath, $controlPath, $configFile;
 
     if ($controlPath)
@@ -189,7 +189,8 @@ function loadConfigEditor($perm, $auths) : array {
 
             case 'R': // role
                 $roleArr = explode(',', mb_substr($line, 5), 2);
-                $section['role'] = [ 'vis' => $roleArr[0], 'perm' => $roleArr[1], 'editable' => ($perm == 'admin' || in_array($roleArr[1], $auths)) ? 1 : 0 ];
+                $section['role'] = [ 'vis' => $roleArr[0], 'perm' => $roleArr[1], 'editable' => ($perm == 'admin' || $authToken->checkAuth($roleArr[1])) ? 1
+                    : 0 ];
                 break;
 
             case 'P': // placeholder
@@ -227,7 +228,7 @@ function loadConfigEditor($perm, $auths) : array {
         $control[$sectionName] = $config;
     }
     $response['perm'] = $perm;
-    $response['auths'] = $auths;
+    $response['auths'] = $authToken->getAuths();
     $response['control'] = $control;
     $response['sections'] = $sections;
 

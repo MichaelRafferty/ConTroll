@@ -1,5 +1,13 @@
 globalCustomTextEditorInit = false;
 
+// new functions for token items
+function refreshToken(where, status) {
+    console.log("refresh token called from " + where + ' with ' + status);
+
+    window.open('/index.php?refresh');
+}
+
+
 function test(method, formData, resultDiv) {
     $.ajax({
         url: "scripts/authEcho.php",

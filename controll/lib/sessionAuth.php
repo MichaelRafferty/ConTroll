@@ -88,6 +88,13 @@ class AuthToken
         return $this->authToken['scriptExpire'];
     }
 
+    function getAuths() : array {
+        if (!$this->authToken)
+            return [];
+
+        return $this->authToken['auths'];
+    }
+
     function isLoggedIn() : bool {
         if ($this->authToken == null)
             return false;
