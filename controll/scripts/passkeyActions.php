@@ -151,7 +151,7 @@ EOS;
                 $matchR->free();
 
                 $authToken = $authToken = new authToken('web');
-                $authToken->buildToken('passkey', 'xxx', $passkey['userName']);
+                $authToken->buildToken('passkey', $passkey['userId'], $passkey['userName']);
             }
         }
         break;
