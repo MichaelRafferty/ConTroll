@@ -12,8 +12,9 @@ $return500errors = true;
 $perm = 'overview';
 $response = array ('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
 $authToken = new authToken('script');
+$action = $_REQUEST['action'];
 $response['tokenStatus'] = $authToken->checkToken();
-if (!$authToken->isLoggedIn() || !$authToken->checkAuth($perm)) {
+if ($action != 'request' && $action != 'check' && (!$authToken->isLoggedIn() || !$authToken->checkAuth($perm))) {
     $response['error'] = 'Authentication Failed';
     ajaxSuccess($response);
     exit();
@@ -129,19 +130,18 @@ EOS;
                 $passkey = $data['passkey'];
                 // create the session, we are logged in....
                 // first get the items that match
+
+
+
                 $matchQ = <<<EOS
-SELECT 'p' AS idType, id, email_addr
-FROM perinfo
-WHERE email_addr = ? AND banned = 'N' AND deceased = 'N'
-UNION SELECT 'n' AS idType, id, email_addr
-FROM newperson
-WHERE email_addr = ? AND perid IS NULL
-ORDER BY 1 DESC, 2 ASC;
+SELECT *
+FROM user
+WHERE email = ?;
 EOS;
-                $matchR = dbSafeQuery($matchQ, 'ss', array($passkey['userName'], $passkey['userName']));
+                $matchR = dbSafeQuery($matchQ, 's', array ($passkey['userName']));
                 if ($matchR === false || $matchR->num_rows == 0) {
                     $response['status'] = 'error';
-                    $response['message'] = 'No membership portal accounts found for that passkey';
+                    $response['message'] = 'No controll user accounts found for that passkey';
                     break;
                 }
 
@@ -150,19 +150,8 @@ EOS;
                 $response['numMatch'] = $numMatch;
                 $matchR->free();
 
-                $hrs = getConfValue('portal', 'emailhrs', 24);
-                unsetSessionVar('transId');    // just in case it is hanging around, clear this
-                unsetSessionVar('totalDue');   // just in case it is hanging around, clear this
-                setSessionVar('id', $firstMatch['id']);
-                setSessionVar('idType', $firstMatch['idType']);
-                setSessionVar('idSource', 'passkey');
-                setSessionVar('tokenType', 'passkey');
-                setSessionVar('email', $passkey['userName']);
-                setSessionVar('tokenExpiration', time() + ($hrs * 3600));
-
-                if ($numMatch > 1) {
-                    setSessionVar('multiple', strtolower($passkey['userName']));
-                }
+                $authToken = $authToken = new authToken('web');
+                $authToken->buildToken('controll', 'xxx', $passkey['userName']);
             }
         }
         break;

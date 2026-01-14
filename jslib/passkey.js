@@ -188,6 +188,10 @@ async function passkeyRequest(script, successPage, source, enable) {
                     case 'vendor':
                         window.location = successPage + '?messageFwd=' + encodeURI(data.message);
                         return;
+
+                    case 'controll':
+                        window.location = successPage + '?messageFwd=' + encodeURI(data.message);
+                        return;
                 }
                 show_message(data.message, 'success');
                 return;
