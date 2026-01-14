@@ -1,6 +1,7 @@
 <?php
 require_once "lib/base.php";
 require_once "lib/sessionAuth.php";
+require_once('../lib/googleOauth2.php');
 
 $page = "Home";
 $authToken = new authToken('web');
@@ -24,7 +25,70 @@ if (array_key_exists('oauth2', $_REQUEST) && $_REQUEST['oauth2'] == 'google') {
         $tokenState = $authToken->checkToken();
     } else {
         // this is a real login with google... start / continue the process
+        $oauth = getSessionVar('oauth');
+        clearSession();
+        if ($oauth != null) setSessionVar('oauth', $oauth);
+        setSessionVar('oauth2', $_REQUEST['oauth2']);
+        setSessionVar('oauth2pass', 'setup');
     }
+}
+
+$oauth2pass = getSessionVar('oauth2pass');
+if ($oauth2pass != null && $oauth2pass != 'token') {
+    // is this session validation taking too long?
+    $oauth2timeout = getSessionVar('oauth2timeout');
+    if ($oauth2timeout == null) {  // no timeout set one
+        $oauth2timeout = time() + 2 * 60;
+        setSessionVar('oauth2timeout', $oauth2timeout);
+    }
+    if (time() > $oauth2timeout) {
+        clearSession('oauth2'); // end the validation loop
+        web_error_log("Oauth2 Timeout");
+        header('location:' . getConfValue('controll', 'controllsite'));
+        exit();
+    } else {
+        // ok, we are in the process of an oauth2 sequence, continue it until returns the token
+        $redirectURI = getConfValue('controll', 'redirect_base');
+        if ($redirectURI == '')
+            $redirectURI = null;
+        $oauthParams = null;
+        switch (getSessionVar('oauth2')) {
+            case 'google':
+                $oauthParams = googleAuth($redirectURI);
+                if (isset($oauthParams['error'])) {
+                    web_error_log("Google oauth2 error: " . $oauthParams['error']);
+                    clearSession('oauth2');
+                    drawErrorPage('Google Login Issue: ', $oauthParams['error']);
+                    exit();
+                }
+        }
+        if ($oauthParams == null) {
+            // an error occured with login by google
+            $source = getSessionVar('oauth2');
+            web_error_log("oauth2 error occurred, no params from $source");
+            drawErrorPage("$source login issue: ","An error occured with the login with $source");
+            clearSession('oauth2');
+            exit();
+        }
+        if (!isset($oauthParams['email'])) {
+            $source = getSessionVar('oauth2');
+            web_error_log("no oauth2 email returned from $source");
+            drawErrorPage("$source login not found:", "$source did not return a matching email address for this account");
+            clearSession('oauth2');
+            exit();
+        }
+    }
+
+    $email = strtolower($oauthParams['email']);
+    $source = getSessionVar('oauth2');
+    $sub = $oauthParams['subscriberId'];
+    // build a login with that email and put it in the session
+    if ($authToken->buildToken($source, $sub, $email)) {
+        header('location:' . getConfValue('controll', 'controllsite'));
+        exit();
+    }
+    web_error_log("failed login, no match");
+    exit();
 }
 
 if ($tokenState == 'refresh' || array_key_exists('refresh', $_REQUEST)) {
@@ -251,3 +315,32 @@ if ($tokenState == 'none' || $tokenState == 'expired') {
 }
 
 page_foot($page);
+
+function drawErrorPage($who, $error) {
+    $page = "Home";
+    page_init($page,
+            /*css*/ array('css/base.css'),
+            /*js*/  array(
+                    'jslib/passkey.js',
+                    'js/login.js'
+            ),
+            null);
+    echo <<<EOS
+<div class="container-fluid">
+    <div class="row mt-4">
+        <div class="col-sm-auto"><span class="h2">An error occured trying to log you in</span></div>
+    </div>
+    <div class="row mt-2">
+        <div class="col-sm-auto"><b>$who</b></div>
+        <div class="col-sm-auto">$error</div>
+    </div>
+    <div class="row mt-4">
+        <div class="col-sm-auto">If this keeps happening, please seek assistance</div>
+    </div>
+    <div class="row mt-4">
+        <div class="col-sm-auto"><button class='btn btn-sm btn-primary' onclick='location.reload();'>Click to Log in Again</button></div>
+    </div>
+</div>
+EOS;
+    page_foot($page);
+}

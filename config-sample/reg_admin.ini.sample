@@ -251,6 +251,10 @@ oauthhrs=8
 ; useportal - does this installation use the portal, 1 = yes, 0 = no
 useportal=1
 hrtime=0    ; on critical routines, a call to hrtime to report intervals has been added, enable this feature
+;;; controllsite: url to the controll back end.
+controllsite="http://controll/"
+;;; redirect_base: page for the login with to redirect back to for Oauth login support
+redirect_base="http://controll/index.php"
 ;;; Which "Non Terminal" payment methods are supported in controll registratiomn.  By default cash and check are always supported.
 ;   creditoffline = using your own credit card terminals that do not talk to ConTroll and entering the amount and the approval code manually
 ;   creditonline = using the same method of credit card entry as used in Onlinereg/portal, where the credit card details are typed in manually.
