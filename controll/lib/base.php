@@ -268,7 +268,7 @@ EOS;
                     <?php echo getConfValue('con', 'conname');?> ConTroll <?php echo $display; ?> page
                 </h1>
             </div>
-            <?php if ($authToken->isLoggedIn()) { ?>
+            <?php if ($authToken != null && $authToken->isLoggedIn()) { ?>
             <div class="col-sm-3">
                 <button class="btn" id="login" style="background-color: #ccc; float: right;" onclick="window.location.href='index.php?logout';">
                     Logout <?php echo $authToken->getEmail(); ?>
@@ -289,7 +289,7 @@ function con_info($authToken) : void {
     $unlockCount = 0;
     $badgeCount = 0;
     $con = get_con();
-    if($authToken->checkAuth('overview')) {
+    if($authToken != null && $authToken->checkAuth('overview')) {
         $cQ = <<<EOS
 SELECT status, count(*) AS num
 FROM reg
@@ -312,6 +312,14 @@ EOS;
                 </span>
             </div>       
         </div>
+    <?php } else if ($authToken == null) { ?>
+        <div class="row" id='regInfo'>
+            <div class="col-sm-auto">
+                <span>Con:
+                    <span class='blocktitle'> <?php echo $con['label']; ?> </span>
+                    <span class="h3 ms-4">Your login is about to expire and will be refreshed.</span>
+            </div>
+        </div>
     <?php } else { ?>
         <div class="row" id='regInfo'>
             <div class="col-sm-auto">
@@ -325,8 +333,12 @@ EOS;
 }
 
 function tab_bar($authToken, $page) : void {
-    $id = $authToken->getAuthId();
-    if ($id != 'Not Logged In') {
+    if ($authToken == null)
+        $id = 'Refresh';
+    else
+        $id = $authToken->getAuthId();
+
+    if ($id != 'Not Logged In' && $id = 'Refresh') {
         $page_list = [];
         $sql = <<<EOS
 SELECT DISTINCT A.id, A.name, A.display, A.sortOrder

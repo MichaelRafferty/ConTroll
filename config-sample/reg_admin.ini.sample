@@ -94,6 +94,7 @@ conLen="3"
 api=0 ; to enable api inteface debug statements (currently bitmask from 1-31) (1=enable, 0=disable)
 atcon=0 ; to enable atcon debug statements (currently bitmask from 1-31) (1=enable, 0=disable)
 controll_admin=0 ; to enable controll admin tab debug statement (currently bitmask from 1-31) (1=enable, 0=disable)
+controll_auth=0 ; to enable controll authentication token debug statement (currently bitmask from 1-31) (1=enable, 0=disable)
 controll_exhibitors=0 ; to enable controll exhibitors tab debug statement (currently bitmask from 1-31) (1=enable, 0=disable)
 controll_regadmin=0 ; to enable controll reg_admin tab debug statement (currently bitmask from 1-31) (1=enable, 0=disable)
 controll_registration=0 ; to enable controll registration tab debug statement (currently bitmask from 1-31) (1=enable, 0=disable)

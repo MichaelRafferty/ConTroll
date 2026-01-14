@@ -23,6 +23,7 @@ class AuthToken
     private $authExpSecs;
     private $refreshGrace;
     private $use;
+    private $debug;
 
     function __construct($use) {
         if (!isSessionVar('authToken'))
@@ -35,6 +36,7 @@ class AuthToken
             }
         }
         $this->use = $use;
+        $debug = getConfValue('debug', 'controll_admin', 0);
         $this->expSecs = getConfValue('controll', 'tokenExpireHrs', 8) * 3600;
         $this->authExpSecs = getConfValue('controll', 'authExpireHrs', 0.25)  * 3600;
         $this->refreshGrace = getConfValue('controll', 'expiregrace', 1) * 3600;
@@ -215,6 +217,23 @@ EOS;
             web_error_log("ConTroll Admin $source $type by " . $user['email'] . '(' . $user['id'] . ':' . $user['perid'] .
                 " from " . $_SERVER['REMOTE_ADDR']);
         return true;
+    }
+
+    function refreshInternal() : bool {
+        $source = $this->getSource();
+        if ($source == 'internal') {
+            $now = time();
+            $this->authToken['webExpire'] = $now + $this->expSecs;
+            $this->authToken['scriptExpire'] = $now + ($this->expSecs * 1.5);
+            $this->authToken['authExpire'] = $now + $this->authExpSecs;
+            setSessionVar('authToken', $this->authToken);
+            if ($this->debug)
+                web_error_log("ConTroll Admin $source refresh by " . $this->authToken.$this->getEmail() .
+                    '(' . $this->authToken.getUserId() . ':' . $this->authToken.$this->getPerid() .
+                    ' from ' . $_SERVER['REMOTE_ADDR']);
+            return true;
+        }
+        return false;
     }
 
     // loadAuth - load the auths array for a userId

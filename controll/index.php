@@ -28,7 +28,53 @@ if (array_key_exists('oauth2', $_REQUEST) && $_REQUEST['oauth2'] == 'google') {
 }
 
 if ($tokenState == 'refresh' || array_key_exists('refresh', $_REQUEST)) {
-    echo "force refresh due to $tokenState\n\n";
+    page_init($page,
+            /*css*/ array('css/base.css'),
+            /*js*/  array(
+                    'jslib/passkey.js',
+                    'js/login.js'
+            ),
+            null);
+
+    // now process the re-authentication
+    switch ($authToken->getSource()) {
+        case 'internal':
+            $homeDir = getConfValue('controll', 'internalHome', 'not-a-valid-path');
+            if (stripos(__DIR__, $homeDir) !== false && $_SERVER['SERVER_ADDR'] == '127.0.0.1') {
+                if ($authToken->refreshInternal()) {
+                    echo <<<EOS
+    <div class="row mt-4" xmlns="http://www.w3.org/1999/html">
+        <div class="col-sm-12">
+            <span class="h4"><b>Internal Type Login Refreshed: window will close in two seconds.</b></span>
+        </div>
+    </div>
+<script type='text/javascript'>
+setTimeout(() => { window.close(); }, 2000);
+</script>
+EOS;
+
+                }
+            }
+            break;
+        case 'passkey':
+            break;
+        case 'google':
+            break;
+        default:
+            echo <<<EOS
+    <div class="row mt-4">
+        <div class="col-sm-12">
+            <p>Something seems to have gone wrong.  Please click the login button below to re-login.</p>
+        </div>
+    </div>
+    <div class="row mt-2">
+        <div class="col-sm-auto"><button class='btn btn-sm btn-primary' onclick='window.reload();'>Click to Log in Again</button></div>
+    </div>
+EOS;
+            $authToken->deleteToken();
+            session_regenerate_id(true);
+            break;
+    }
     exit();
 }
 
