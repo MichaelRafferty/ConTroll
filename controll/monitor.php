@@ -14,8 +14,6 @@ page_init($page,
                 'css/base.css'
             ),
     /*js*/  array(
-                'js/d3.js','js/lodash.min.js',
-
                 'https://cdn.plot.ly/plotly-2.35.2.min.js',
                 'js/monitor.js'
             ),
