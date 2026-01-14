@@ -73,6 +73,7 @@ function getWatchList() {
             if (data.message !== undefined) {
                 show_message(data.message, 'success');
             }
+            checkRefresh(data);
             loadWatchList(data);
         },
         error: showAjaxError,
@@ -218,6 +219,7 @@ function findExisting() {
             if (data.success !== undefined) {
                 show_message(data.success, 'success');
             }
+            checkRefresh(data);
             loadSelectList(data);
         },
         error: showAjaxError,
@@ -314,6 +316,7 @@ function addToList(perid) {
                 show_message(data.error, 'error');
                 return;
             }
+            checkRefresh(data);
             if (data.success !== undefined) {
                 show_message(data.success, 'success');
             }
@@ -347,6 +350,7 @@ function removeFromList(perid) {
             if (data.success !== undefined) {
                 show_message(data.success, 'success');
             }
+            checkRefresh(data);
             loadWatchList(data);
         },
         error: showAjaxError,
@@ -370,6 +374,7 @@ function editPerson(perid) {
         method: 'POST',
         data: postdata,
         success: function (data, textStatus, jhXHR) {
+            checkRefresh(data);
             findDetailsSuccess(data);
         },
         error: function (jqXHR, textStatus, errorThrown) {
@@ -462,6 +467,7 @@ function saveEdit2() {
             if (data.success !== undefined) {
                 show_message(data.success, 'success');
             }
+            checkRefresh(data);
             editPersonModal.hide();
             getWatchList();
         },
@@ -500,6 +506,7 @@ function updateBadge(perid) {
             if (data.success !== undefined) {
                 show_message(data.success, 'success');
             }
+            checkRefresh(data);
             getWatchList();
         },
         error: showAjaxError,
@@ -562,6 +569,7 @@ function addCheckExists() {
         method: 'POST',
         data: postdata,
         success: function (data, textStatus, jhXHR) {
+            checkRefresh(data);
             addCheckSuccess(data);
         },
         error: function (jqXHR, textStatus, errorThrown) {
@@ -701,6 +709,7 @@ function saveAdd2() {
         method: 'POST',
         data: postdata,
         success: function (data, textStatus, jhXHR) {
+            checkRefresh(data);
             addSuccess(data);
         },
         error: function (jqXHR, textStatus, errorThrown) {
