@@ -82,10 +82,16 @@ if ($oauth2pass != null && $oauth2pass != 'token') {
     $email = strtolower($oauthParams['email']);
     $source = getSessionVar('oauth2');
     $sub = $oauthParams['subscriberId'];
-    // build a login with that email and put it in the session
-    if ($authToken->buildToken($source, $sub, $email)) {
-        header('location:' . getConfValue('controll', 'controllsite'));
+    // build/refresh a login with that email and put it in the session
+    if (isSessionVar('authToken') && $authToken->getSource() == $source && $authToken->getEmail() == $email) {
+        $authToken->refreshExpire();
+        header('location:' . getConfValue('controll', 'controllsite') . '?autoclose=1');
         exit();
+    } else {
+        if ($authToken->buildToken($source, $sub, $email)) {
+            header('location:' . getConfValue('controll', 'controllsite'));
+            exit();
+        }
     }
     web_error_log("failed login, no match");
     exit();
@@ -133,6 +139,16 @@ EOS;
 
             break;
         case 'google':
+            echo <<<EOS
+<div class="row mt-4">
+        <div class="col-sm-12">
+            <span class="h4"><b>Your session is going to expire soon, please revalidate your session by logging in with google gain.</b></span>
+        </div>
+    </div>
+<script type='text/javascript'>
+setTimeout(() => { login.loginWithGoogle(); }, 2000);
+</script>
+EOS;
             break;
         default:
             echo <<<EOS
