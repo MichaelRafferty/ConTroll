@@ -63,7 +63,7 @@ class AuthToken
         if (!$this->authToken)
             return 'Not Logged In';
 
-        return $this->authToken['name'];
+        return $this->authToken['userName'];
     }
 
     function getUserId(): string {
@@ -215,7 +215,8 @@ EOS;
         $this->authToken['authExpire'] = $now + $this->authExpSecs;
         $this->authToken['userId'] = $user['id'];
         $this->authToken['userPerid'] = $user['perid'];
-        $this->authToken['name'] = $user['name'];
+        $this->authToken['userEmail'] = $user['email'];
+        $this->authToken['userName'] = $user['name'];
         $this->authToken['auths'] = $this->loadAuth($this->authToken['userId']);
         $this->authToken['source'] = $source;
         $this->authToken['authId'] = $user['google_sub'];
