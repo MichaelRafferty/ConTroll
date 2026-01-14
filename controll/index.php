@@ -105,9 +105,9 @@ if ($tokenState == 'refresh' || array_key_exists('refresh', $_REQUEST)) {
         case 'internal':
             $homeDir = getConfValue('controll', 'internalHome', 'not-a-valid-path');
             if (stripos(__DIR__, $homeDir) !== false && $_SERVER['SERVER_ADDR'] == '127.0.0.1') {
-                if ($authToken->refreshInternal()) {
+                if ($authToken->refreshExpire()) {
                     echo <<<EOS
-    <div class="row mt-4" xmlns="http://www.w3.org/1999/html">
+    <div class="row mt-4">
         <div class="col-sm-12">
             <span class="h4"><b>Internal Type Login Refreshed: window will close in two seconds.</b></span>
         </div>
@@ -116,11 +116,21 @@ if ($tokenState == 'refresh' || array_key_exists('refresh', $_REQUEST)) {
 setTimeout(() => { window.close(); }, 2000);
 </script>
 EOS;
-
                 }
             }
             break;
         case 'passkey':
+            echo <<<EOS
+<div class="row mt-4">
+        <div class="col-sm-12">
+            <span class="h4"><b>Your session is going to expire soon, please revalidate your session by logging in with your passkey again.</b></span>
+        </div>
+    </div>
+<script type='text/javascript'>
+setTimeout(() => { login.loginWithPasskey(); }, 1000);
+</script>
+EOS;
+
             break;
         case 'google':
             break;
@@ -139,6 +149,28 @@ EOS;
             session_regenerate_id(true);
             break;
     }
+    exit();
+}
+
+if (array_key_exists('autoclose', $_REQUEST) && $_REQUEST['autoclose'] == 1 && $authToken->getRefreshCount() > 0) {
+    $source = $authToken->getSource();
+    page_init($page,
+            /*css*/ array ('css/base.css'),
+            /*js*/ array (
+                    'jslib/passkey.js',
+                    'js/login.js'
+            ),
+            null);
+    echo <<<EOS
+    <div class="row mt-4">
+        <div class="col-sm-12">
+            <span class="h4"><b>$source Type Login Refreshed: window will close in two seconds.</b></span>
+        </div>
+    </div>
+<script type='text/javascript'>
+setTimeout(() => { window.close(); }, 2000);
+</script>
+EOS;
     exit();
 }
 

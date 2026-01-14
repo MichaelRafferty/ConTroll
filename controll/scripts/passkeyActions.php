@@ -150,8 +150,13 @@ EOS;
                 $response['numMatch'] = $numMatch;
                 $matchR->free();
 
-                $authToken = $authToken = new authToken('web');
-                $authToken->buildToken('passkey', $passkey['userId'], $passkey['userName']);
+                $authToken = new authToken('web');
+                if (isSessionVar('authToken') && $authToken->getSource() == 'passkey' &&
+                    $authToken->getAuthId() == $passkey['userId'] && $authToken->getEmail() == $passkey['userName']) {
+                    $authToken->refreshExpire();
+                } else {
+                    $authToken->buildToken('passkey', $passkey['userId'], $passkey['userName']);
+                }
             }
         }
         break;

@@ -104,6 +104,13 @@ class AuthToken
         return $this->authToken['auths'];
     }
 
+    function getRefreshCount() : int {
+        if (!$this->authToken)
+            return -1;
+
+        return $this->authToken['refreshCount'];
+    }
+
     function isLoggedIn() : bool {
         if ($this->authToken == null)
             return false;
@@ -220,6 +227,7 @@ EOS;
         $this->authToken['auths'] = $this->loadAuth($this->authToken['userId']);
         $this->authToken['source'] = $source;
         $this->authToken['authId'] = $user['google_sub'];
+        $this->authToken['refreshCount'] = 0;
         setSessionVar('authToken', $this->authToken);
         if ($this->debug)
             web_error_log("ConTroll Admin $source $type by " . $user['email'] . '(' . $user['id'] . ':' . $user['perid'] .
@@ -227,21 +235,18 @@ EOS;
         return true;
     }
 
-    function refreshInternal() : bool {
-        $source = $this->getSource();
-        if ($source == 'internal') {
-            $now = time();
-            $this->authToken['webExpire'] = $now + $this->expSecs;
-            $this->authToken['scriptExpire'] = $now + ($this->expSecs * 1.5);
-            $this->authToken['authExpire'] = $now + $this->authExpSecs;
-            setSessionVar('authToken', $this->authToken);
-            if ($this->debug)
-                web_error_log("ConTroll Admin $source refresh by " . $this->getEmail() .
-                    '(' . $this->getUserId() . ':' . $this->getPerid() .
-                    ' from ' . $_SERVER['REMOTE_ADDR']);
-            return true;
-        }
-        return false;
+    function refreshExpire() : bool {
+        $now = time();
+        $this->authToken['webExpire'] = $now + $this->expSecs;
+        $this->authToken['scriptExpire'] = $now + ($this->expSecs * 1.5);
+        $this->authToken['authExpire'] = $now + $this->authExpSecs;
+        $this->authToken['refreshCount']++;
+        setSessionVar('authToken', $this->authToken);
+        if ($this->debug)
+            web_error_log("ConTroll Admin $source refresh by " . $this->getEmail() .
+                '(' . $this->getUserId() . ':' . $this->getPerid() .
+                ' from ' . $_SERVER['REMOTE_ADDR']);
+        return true;
     }
 
     // loadAuth - load the auths array for a userId

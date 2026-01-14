@@ -190,7 +190,7 @@ async function passkeyRequest(script, successPage, source, enable) {
                         return;
 
                     case 'controll':
-                        window.location = successPage + '?messageFwd=' + encodeURI(data.message);
+                        window.location = successPage + '?autoclose=1&messageFwd=' + encodeURI(data.message);
                         return;
                 }
                 show_message(data.message, 'success');
