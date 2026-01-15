@@ -31,11 +31,12 @@ The system is under active development by a team of developers and has functions
     - Main portal page redesign
     - Move of age to the profile
     - System wide common profile editor
+    - Bundle Memberships
+    - New Login and Authentication Token system for the controll back end with passkey support.
 
 Planned future additions:
 - Configurable Exhibitor Portals (not just artist and vendor)
 - Reconfiguring the control menu structure and addition of more detailed role based permissions
-- Passkey support for the controll back end (extending the use in Registration Portal and Exhibitor Portals)
 
 ## Registration Tools in this Repository:
 
@@ -99,7 +100,7 @@ Planned future additions:
       - Both ConTroll administered reports and Local report additions
       - Support for both PHP and report processor (text template) based configurable reports
       - Assigning permission rights to access specific reports
-  - In controll, but still in old format (functions, but not updated)
+  - In controll, but still in old format (functions, but not yet updated)
     - Club Management
 - onlinereg
   - buy memberships in a single web page without login or history
