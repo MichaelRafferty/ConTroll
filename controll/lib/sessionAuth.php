@@ -132,6 +132,7 @@ class AuthToken
     // deleteToken - delete the token (logoff)
     function deleteToken() : void {
         unsetSessionVar('authToken');
+        unsetSessionVar('user_perid');
         $this->authToken = null;
     }
 
