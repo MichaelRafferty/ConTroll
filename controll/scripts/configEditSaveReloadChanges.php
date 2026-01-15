@@ -45,7 +45,7 @@ try {
     exit();
 }
 
-$user_perid = getSessionVar('user_perid');
+$user_perid = $authToken->getPerid();
 if (!$user_perid) {
     ajaxError('Invalid credentials passed');
     return;

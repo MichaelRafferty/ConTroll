@@ -20,7 +20,7 @@ if (!$authToken->isLoggedIn() || !$authToken->checkAuth($perm)) {
 $perid = $_POST['perid'];
 $con = get_con();
 $conid = $con['id'];
-$user_perid = getSessionVar('user_perid');
+$user_perid = $authToken->getPerid();
 
 function check_memType($type, $year) {
   $date = Date("Y");
