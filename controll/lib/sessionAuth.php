@@ -243,6 +243,7 @@ EOS;
         $this->authToken['scriptExpire'] = $now + ($this->expSecs * 1.5);
         $this->authToken['authExpire'] = $now + $this->authExpSecs;
         $this->authToken['refreshCount']++;
+        $source = $this->getSource();
         setSessionVar('authToken', $this->authToken);
         if ($this->debug)
             web_error_log("ConTroll Admin $source refresh by " . $this->getEmail() .
