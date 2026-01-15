@@ -210,7 +210,7 @@ EOS;
 // utility functions added by ConTroll
 // getrplevel - compute the required rplevel based on the config
 function getRpLevel($source) : int {
-    $rpLevel = getConfValue($source, 'passkeyRpLevel', '2');
+    $rpLevel = getConfValue($source, 'passkeyRpLevel', '3');
     // HOST: return actual level
     if ($rpLevel == 'h') {
         $server = $_SERVER['SERVER_NAME'];
@@ -225,12 +225,7 @@ function getRpLevel($source) : int {
         return 9999;
     }
 
-    // else set min based on test in global (not source)
-    if (getConfValue('global', 'test', 0) == 1) {
-        $rpLevel = $rpLevel < 3 ? 3 : $rpLevel;
-    } else {
-        $rpLevel = $rpLevel < 2 ? 2 : $rpLevel;
-    }
+    $rpLevel = $rpLevel < 3 ? 3 : $rpLevel;
     return $rpLevel;
 }
 
