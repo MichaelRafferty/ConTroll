@@ -57,11 +57,7 @@ $response['receiptPrinter'] = false; //getSessionVar('receiptPrinter')[0] != 'No
 $response['user_id'] = $authToken->getPerid();
 $response['cc_html'] = draw_cc_html($cc,'--','body');
 // do as if statement such that it can check for both database error and no rows returned
-$Manager = $authToken->checkAuth('reg_admin');
-if ($Manager !== false && sizeof($Manager) > 0)
-    $Manager = 1;
-else
-    $Manager= 0;
+$Manager = $authToken->checkAuth('reg_admin') ? 1 : 0;
 $response['Manager'] = $Manager;
 // get the start and end dates, and adjust for the memLabels based on the real dates versus today.
 $condatesSQL = <<<EOS
