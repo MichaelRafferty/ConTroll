@@ -229,6 +229,8 @@ EOS;
         $this->authToken['authId'] = $user['google_sub'];
         $this->authToken['refreshCount'] = 0;
         setSessionVar('authToken', $this->authToken);
+        // credit card processing still needs user_perid in session and cannot deal with getting an authtoken, as it app agnostic
+        setSessionVar('user_perid', $user['perid']);
         if ($this->debug)
             web_error_log("ConTroll Admin $source $type by " . $user['email'] . '(' . $user['id'] . ':' . $user['perid'] .
                 " from " . $_SERVER['REMOTE_ADDR'], 'controll_auth', true);
