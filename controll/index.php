@@ -228,6 +228,7 @@ if ($tokenState == 'none' || $tokenState == 'expired') {
                     <button class='btn btn-sm btn-primary' onclick='login.loginWithGoogle();'>Login with Google</button>
                 </div>
             </div>
+        </div>
         <?php
 } else {
         $homeDir = getConfValue('controll', 'internalHome', 'not-a-valid-path');
@@ -253,6 +254,7 @@ if ($tokenState == 'none' || $tokenState == 'expired') {
 <?php
     }
 } else {
+    // start of logged in section to show the information about you and your token
     $con = get_conf('con');
     $conid = $con['id'];
     if (array_key_exists('oneoff', $con))
