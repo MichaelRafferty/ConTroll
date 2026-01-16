@@ -295,7 +295,7 @@ function updateContactOK($conid) : void {
 UPDATE perinfo p
 JOIN memberPolicies m ON (p.id = m.perid AND m.conid = ? AND m.policy = 'marketing')
 SET p.contact_ok = m.response
-WHERE p.contact_ok != m.response && p.active = 'Y' AND p.first_name != 'merged' AND p.last_name != 'into';
+WHERE p.contact_ok != m.response AND p.active = 'Y' AND p.first_name != 'merged' AND p.last_name != 'into';
 EOS;
     $rows = dbSafeCmd($sql, 'i', array($conid));
 }
