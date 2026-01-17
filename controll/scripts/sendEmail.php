@@ -289,11 +289,15 @@ $response['macroSubstitution'] = $macroSubstitution;
 ajaxSuccess($response);
 
 function updateContactOK($conid) : void {
-    // updates the contact ok values in perinfo from this conId's values in policies 'marketing'.
-    // It expects the prior years were already loaded into 'Contact ok'
+
     $sql = <<<EOS
 UPDATE perinfo p
-JOIN memberPolicies m ON (p.id = m.perid AND m.conid = ? AND m.policy = 'marketing')
+JOIN (
+SELECT perid, max(conid) AS conid
+FROM memberPolicies where policy = 'marketing'
+GROUP by perid
+) n ON p.id = n.perid
+JOIN memberPolicies m ON  m.perid = p.id AND m.conid = n.conid AND m.policy = 'marketing'
 SET p.contact_ok = m.response
 WHERE p.contact_ok != m.response AND p.active = 'Y' AND p.first_name != 'merged' AND p.last_name != 'into';
 EOS;
