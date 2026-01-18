@@ -157,6 +157,13 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                                         <input class='form-control-sm' type='text' name='artistName' id='artistName' maxlength='128' size='50'
                                                required placeholder='Artist Name' tabindex="<?php echo $tabIndex; $tabIndex += 2;?>"/>
                                     </div>
+                                     <div class='col-sm-auto p-0 ms-4 me-0'>
+                                         <button class='btn btn-sm btn-primary' type='button' id="copyArtistName"
+                                                 tabindex="<?php echo $tabIndex; $tabIndex += 2;?>"
+                                                 onclick='exhibitorProfile.copyArtistNametoBusinessName()'>
+                                             Copy <?php echo $portalName; ?> Name to Business Name
+                                         </button>
+                                     </div>
                                 </div>
                             <?php } ?>
                             <div class='row mt-1'>
@@ -166,7 +173,9 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                                 <div class="col-sm-auto p-0 ms-0 me-0">
                                     <input class="form-control-sm" type='text' name='exhibitorName' id="exhibitorName"
                                        maxlength="64" size="50" tabindex="<?php echo $tabIndex; $tabIndex += 2;?>" required
-                                       placeholder="<?php echo $portalType == 'artist' ? 'Company or Artist Name' : 'Vendor, Dealer or Store name';?>"/><br/>
+                                       placeholder="<?php echo $portalType == 'artist' ? 'Company or Artist Name' : 'Vendor, Dealer or Store name';?>"/>
+                                </div>
+                                <div class='col-sm-auto p-0 ms-4 me-0'>
                                     <span class="small">This is the name that we will register your space under.</span>
                                 </div>
                             </div>
@@ -635,7 +644,7 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                 <div class='row mt-2'>
                                     <div class='col-sm-2'></div>
                                     <div class='col-sm-auto p-0 ms-0 me-0'><h1 class="h4">Business Information</h1></div>
-                                    <?php if ($portalType == 'artist' || $portalType == 'admin') { ?>
+                                    <?php if ($portalType == 'artist') { ?>
                                         <div class='col-sm-auto p-0 ms-4 me-0'>
                                             <button class='btn btn-sm btn-primary' type='button' id="copyArtistName"
                                                     tabindex="<?php echo $tabIndex; $tabIndex += 2;?>"
