@@ -779,6 +779,7 @@ function cc_fetchOrder($source, $orderId, $useLogWrite = false) : array {
     $rtn['taxAmount'] = $order->getTotalTaxMoney()->getAmount() / 100;
     // build the return array of taxes applied to the order
     $taxAmounts = $order->getTaxes();
+    $rtnTaxes = [];
     foreach ($taxAmounts as $tax) {
         $uid = $tax->getUid();
         $app = $tax->getAppliedMoney();
