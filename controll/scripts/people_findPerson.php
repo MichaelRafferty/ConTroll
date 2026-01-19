@@ -73,7 +73,8 @@ WITH perids AS (
             WHEN mp.id IS NOT NULL THEN mp.id
             ELSE NULL
         END AS managerId,
-        GROUP_CONCAT(DISTINCT TRIM(CONCAT(CASE WHEN m.conid = ? THEN '' ELSE m.conid END, ' ', m.label)) ORDER BY m.id SEPARATOR ', ') AS memberships
+        GROUP_CONCAT(DISTINCT TRIM(CONCAT(CASE WHEN m.conid = ? THEN '' ELSE m.conid END, ' ', m.label)) ORDER BY m.id SEPARATOR ', ') AS memberships,
+        COUNT(m.memCategory = 'managed') AS hasManagedReg
     FROM perinfo p
     $excludeJoin
     LEFT OUTER JOIN perinfo mp ON (p.managedBy = mp.id)

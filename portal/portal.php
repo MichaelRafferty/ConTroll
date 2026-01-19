@@ -265,6 +265,7 @@ EOS;
 
     $hasAddlVirtual = false;
     $denyVirtual = false;
+    $holderManaged = false;
     if ($holderRegR !== false && $holderRegR->num_rows > 0) {
         while ($m = $holderRegR->fetch_assoc()) {
             $m['badgename'] = badgeNameDefault($m['badge_name'], $m['badgeNameL2'], $m['first_name'], $m['last_name']);
@@ -273,6 +274,8 @@ EOS;
                 $holderPrimary = $m;
             if ($holderMemberAge == '' && $m['memAge'] != 'all')
                 $holderMemberAge = $m['memAge'];
+            if ($m['memCategory'] == 'managed')
+                $holderManaged = true;
 
             // check if they have a WSFS rights membership (hasWSFS and hasNom)
             if (($m['memCategory'] == 'wsfs' || $m['memCategory'] == 'wsfsnom' || $m['memCategory'] == 'dealer'
@@ -804,17 +807,22 @@ EOS;
 echo "</div>\n"; // end row 2
 
 // line 2a (managed disassociate)
-// if this person is managed, print a banner and let them disassociate from the manager.
+// if this person is managed, print a banner and let them disassociate from the manager if they do not have any membership of type managed
 if ($info['managedByName'] != null) {
     $managedByName= $info['managedByName'];
+
 echo <<<EOS
     <div class='row mt-4 mb-2' id='managedByDiv'>
         <div class='col-sm-auto'><span class=h3'>Your record is managed by $managedByName</span></div>
+EOS;
+    if (!$holderManaged) {
+        echo <<<EOS
         <div class='col-sm-auto'>
             <button class="btn btn-warning p-1 h-100" onclick="portal.disassociate();">Dissociate from $managedByName</button>
         </div>
-    </div>
 EOS;
+    }
+    echo "    </div>\n";
 }
 
 // line 3/3a payment info

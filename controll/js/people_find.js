@@ -35,6 +35,8 @@ class Find {
     #managesRow = null;
     #managerHdr = null;
     #managerRow = null;
+    #managerRowTxt = null;
+    #managerRowCol = null;
     #addManages = null;
     #managesId = null;
     #managerLookupRows = null
@@ -82,6 +84,8 @@ class Find {
             this.#managesRow = document.getElementById('managesRow');
             this.#managerHdr = document.getElementById('managerHdr');
             this.#managerRow = document.getElementById('managerRow');
+            this.#managerRowTxt = document.getElementById('managerRowTxt');
+            this.#managerRowCol = document.getElementById('managerRowCol');
             this.#managerLookupFind = document.getElementById('managerLookupFind');
             this.#newManagerLookup = document.getElementById('newManagerLookup');
             this.#managesLookupFind = document.getElementById('managesLookupFind');
@@ -243,6 +247,7 @@ class Find {
                 {field: 'currentAgeType', visible: false,},
                 {field: 'active', visible: false,},
                 {field: 'banned', visible: false,},
+                {field: 'hasManagedReg', visible: false,},
                 {title: "Admin Notes", headerWordWrap: true, field: 'admin_notes', visible: false, },
                 {title: "Open Notes", headerWordWrap: true,field: 'open_notes', visible: false, },
             ],
@@ -439,9 +444,19 @@ class Find {
         }
         if (this.#managed.length == 0) {
             this.#managerHdr.hidden = false;
-            this.#managerRow.hidden = false;
-            this.#managerId.value = this.#editRow.managerId;
-            this.#managerName.innerHTML = this.#editRow.manager;
+            if (this.#editRow.hasManagedReg > 0) {
+                this.#managerRow.hidden = true;
+                this.#managerRowTxt.hidden = false;
+                this.#managerRowCol.innerHTML = "Managed by " +  this.#editRow.manager + " (" + this.#editRow.managerId +
+                    ") and has a managed membership, cannot dissociate.";
+            } else {
+                this.#managerRowTxt.hidden = true;
+                this.#managerRow.hidden = true;
+                this.#managerRowCol.innerHTML = 'Placeholder';
+                this.#managerId.value = this.#editRow.managerId;
+                this.#managerName.innerHTML = this.#editRow.manager;
+            }
+
         }
 
         if (data.success) {

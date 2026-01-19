@@ -612,13 +612,16 @@ drawInterestList($interests, true);
                         <div class='col-sm-auto'><i>Leave blank (empty) to not change the perid</i></div>
                     </div>
 <?php } ?>
-                    <div class='row mt-3' id="managerHdr">
+                    <div class="row mt-3" id="managerHdr">
                         <div class='col-sm-auto'><h2 class='size=h3'>Manager (Disassociate manager and save before adding people managed by this person)
                             </h2></div>
                     </div>
+                    <div class="row mt-2" id="managerRowTxt">
+                        <div class="col-sm-auto" id="managerRowCol">Managed By Text Placeholder</div>
+                    </div>
                     <div class="row mt-2" id="managerRow">
-                        <div class="col-sm-auto"><button class="btn btn-sm btn-warning" type="button" onclick="findPerson.disassociate();
-">Disassociate</button></div>
+                        <div class="col-sm-auto"><button class="btn btn-sm btn-warning" type="button"
+                             onclick="findPerson.disassociate();">Disassociate</button></div>
                         <div class="col-sm-auto"><input type="number" class='no-spinners' inputmode='numeric' id="f_managerId" name="f_managerId"></div>
                         <div class='col-sm-auto'>
                             <button class='btn btn-sm btn-secondary' type='button' onclick='findPerson.findManager();'>Find New Manager</button>
