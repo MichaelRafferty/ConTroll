@@ -241,6 +241,7 @@ if ($totalAmountDue > 0) {
         $taxSql = '';
         $taxStr = '';
         $taxValues = [];
+        $taxes = [];
     }
 
     $txnQ = <<<EOS
