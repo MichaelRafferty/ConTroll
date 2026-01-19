@@ -916,8 +916,8 @@ class memsetup {
             url: script,
             method: 'POST',
             data: { type: 'nextage', },
-            checkRefresh(data);
             success: function (data, textStatus, jhXHR) {
+                checkRefresh(data);
                 _this.draw_nextage(data, textStatus, jhXHR);
             },
             error: function (jqXHR, textStatus, errorThrown) {
