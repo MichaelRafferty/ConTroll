@@ -418,7 +418,8 @@ class PosCart {
         this.#cartPerinfo[pindex].index = pindex;
         this.#cartPerinfoMap.set(this.#cartPerinfo[pindex].perid, pindex);
         let mrows = p.memberships;
-        for (let mrownum in mrows) {
+        this.#cartPerinfo[pindex].memberships = make_copy(mrows);
+        for (let mrownum = 0; mrownum < mrows.length; mrownum++) {
             this.#cartPerinfo[pindex].memberships[mrownum].index = mrownum;
             this.#cartPerinfo[pindex].memberships[mrownum].pindex = pindex;
             if (mrows[mrownum].couponDiscount === undefined) {
@@ -567,10 +568,30 @@ class PosCart {
             this.#currentAge = null;
 
         this.#addEditPerid = cart_row.perid;
+        let managedByLogin = false;
+        let loginPrimary = false;
         if (this.#addEditModal) {
             this.#addEditFullName.innerHTML = cart_row.fullName;
             this.#memberships = [];
             this.#allMemberships = [];
+            let matchId = this.#cartPerinfo[index].perid;
+            let matchMan = this.#cartPerinfo[index].managedBy;
+
+            if (matchMan != null) {
+                for (let index = 0; index < this.#cartPerinfo.length; index++) {
+                    let entry = this.#cartPerinfo[index];
+                    if (entry.perid != matchId && entry.perid == matchMan) {
+                        managedByLogin = true;
+                        for (let mindex = 0; mindex < entry.memberships.length; mindex++) {
+                            let mbrship = entry.memberships[mindex];
+                            if (isPrimary(mbrship.conid, mbrship.memType, mbrship.memCategory, mbrship.memPrice))
+                                loginPrimary = true;
+                        }
+                    }
+                }
+            }
+            config.loginPrimary = loginPrimary;
+            config.managedByLogin = managedByLogin;
 
             // build the current values of the memberships
             pos.everyMembership(this.#cartPerinfo, function(_this, mem, perinfo) {
