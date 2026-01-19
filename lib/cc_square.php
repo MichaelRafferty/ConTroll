@@ -780,11 +780,13 @@ function cc_fetchOrder($source, $orderId, $useLogWrite = false) : array {
     // build the return array of taxes applied to the order
     $taxAmounts = $order->getTaxes();
     $rtnTaxes = [];
-    foreach ($taxAmounts as $tax) {
-        $uid = $tax->getUid();
-        $app = $tax->getAppliedMoney();
-        $amt = $app->getAmount();
-        $rtnTaxes[$uid] = $amt / 100;
+    if (is_array($taxAmounts)) { // there have to be taxes to do this loop
+        foreach ($taxAmounts as $tax) {
+            $uid = $tax->getUid();
+            $app = $tax->getAppliedMoney();
+            $amt = $app->getAmount();
+            $rtnTaxes[$uid] = $amt / 100;
+        }
     }
     $rtn['taxes'] = $rtnTaxes;
     $rtn['totalDiscountAmount'] = $order->getTotalDiscountMoney()->getAmount() / 100;
