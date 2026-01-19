@@ -83,6 +83,23 @@ if ($info === false) {
     portalPageFoot();
     exit();
 }
+
+$managedByLogin = false;
+$loginPrimary = false;
+if ($cartId != $loginId || $cartType != $loginType) {
+    $cartInfo = getPersonInfo($conid, $cartType, $cartId, true);
+    if ($loginType == 'p') {
+        $managedByLogin = $loginId == $cartInfo['managedBy'];
+    } else {
+        $managedByLogin = $loginId == $cartInfo['managedByNew'];
+    }
+    foreach ($info['memberships'] as $membership) {
+        if (isPrimary($membership, $conid))
+            $loginPrimary = true;
+    }
+}
+$config_vars['loginPrimary'] = $loginPrimary;
+$config_vars['managedByLogin'] = $managedByLogin;
 $personAges = [];
 // compute all id's and ages
 foreach ($info['allMemberships'] as $membership) {

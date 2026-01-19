@@ -164,9 +164,10 @@ class MembershipRules {
                 return false; // no virtual if memType full in cart
             }
 
-            // memCategory rule on duplicate- if onlyOne and it is in the cart, don't allow it again
+            // memCategory rules
             var memCat = memCategories[mem.memCategory];
             if (memCat != null) {
+                // duplicate - if onlyOne and it is in the cart, don't allow it again
                 if (memCat.onlyOne == 'Y') {
                     // for onlyOne there are three cases
                     //      memType != OneDay - do check
@@ -189,6 +190,12 @@ class MembershipRules {
                             return false; // only one allowed and one of this memId is in the list already
                         }
                     }
+                }
+                // managed - if managed, this person must be managed, and their manager must have an attending full
+                if (mem.memCategory == 'managed') {
+                    // check that this person is managed
+                    if (!(config.loginPrimary && config.managedByLogin))
+                        return false;
                 }
             }
         }
