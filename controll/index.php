@@ -6,12 +6,19 @@ require_once('../lib/googleOauth2.php');
 $page = "Home";
 $authToken = new authToken('web');
 $tokenState = $authToken->checkToken();
+if ($tokenState == 'expired') {
+    // expired tokens are not to be 'refreshed', but to be deleted and start from scratch, this is the same as a login
+    $authToken->deleteToken();
+    session_regenerate_id(true);
+    $tokenState = 'none';
+}
 
 //unset id_token if logging out.
 if (isset($_REQUEST['logout'])) {
     web_error_log('logout', 'controll');
     $authToken->deleteToken();
     session_regenerate_id(true);
+    // refresh the page to take the logout string off the URL
     header('Location: index.php');
     exit();
 }
