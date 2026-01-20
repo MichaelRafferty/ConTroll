@@ -689,6 +689,17 @@ history=1
 ;; B:O
 ; helppage = path to the help page relative to the web root of the portal page
 ; helppage=
+;; N:ageRestriction
+;; R:V,reg_staff
+;; P:Comma separated list of Age Types
+;; H:A comma separated list of "Age Types" that are prevented from logging in to the registration portal.
+;; H+ This will prevent them from accessing things like the virtual convention.
+;; H+ If this is omitted everyone can log into the registation portal.
+;; D:s256
+;; B:O
+; ageRestriction = comma separated list of "Age Types" not allowed to log into the portal.
+; ageRestriction=
+
 ;;;;; HR Portal Policy Options
 ;;; policy flags
 ;; N:showConPolicy
