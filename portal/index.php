@@ -433,6 +433,35 @@ EOS;
     draw_login($config_vars, null, null, $why);
     exit();
 }
+
+// if there is an ageRestriction, get the age of the person logging in and check if its in the list.
+$ageRestriction = getConfValue('portal', 'ageRestriction', '');
+if ($ageRestriction != '') {
+    if ($loginType == 'p') {
+        $table = 'perinfo';
+    } else {
+        $table = 'newperson';
+    }
+    $aQ = <<<EOS
+SELECT currentAgeType
+FROM $table
+WHERE id = ?;
+EOS;
+    $aR = dbSafeQuery($aQ, 'i', array ($loginId));
+    if ($aR !== false && $aR->num_rows == 1) {
+        $age = ',' . $aR->fetch_row()[0] . ',';
+        $aR->free();
+        $ageRestriction = ',' . $ageRestriction . ',';
+        if (stripos($ageRestriction, $age) !== false) {
+            // one of the restricted ages
+            outputCustomText('main/notloggedin');
+            draw_login($config_vars, null, null, 'the portal using the managers account.<br/>' .
+                    'This user is restricted from logging into the Registration Portal due to their age.<br/>'.
+                    '&nbsp;<br/>Login to the portal with the managers account');
+            exit();
+        }
+    }
+}
 ?>
     <script type='text/javascript'>
         window.location = "<?php echo $portal_conf['portalsite'] . '/portal.php' ?>";
