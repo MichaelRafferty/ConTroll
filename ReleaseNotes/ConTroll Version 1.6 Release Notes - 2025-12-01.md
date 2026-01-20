@@ -1,9 +1,9 @@
-# ConTroll Version 1.6 Release Notes
+# ConTroll Version 2.0 Release Notes
 
-## Version 1.6: Start of Portal UX Rewrite
-### Release Date: TBD (may be renumber 2.0)
+## Version 2.0: Start of Portal UX Rewrite
+### Release Date: TBD
 
-# Major Configuration Changes in 1.6:
+# Major Configuration Changes in 2.0:
 
 * New Database Patches
   * 56: Age/Art: Items related to the actual move of age into the profile, rename of some of the art items statuses, 
@@ -16,6 +16,8 @@
       * passkeyRpLevel=    Minimum is now 3, not 2
     * [reg]
       * registrationpage= no longer used
+    * [portal]
+      * ageRestriction=   comma separated list of Age Types than are precluded from logging into the Registration Portal
     * [controll]
       * controllsite=     URL to controll backend site 
       * redirect_base=     URL for oauth login redirect
@@ -45,6 +47,8 @@
 * Point of sale:
   * Changes for bundles
   * Changes for Age in Profile
+* Enforcement of Managed status for those with memberships of category managed
+* Restriction of assigning a managed membership to a non managed person
 
 ## Portal:
 * Rewrite of the entire home page User Experience
@@ -52,12 +56,17 @@
   * Display of a single persons current profile and interests "below the fold"
 * Simplification of the "Make Purchase" User Experience
 * Moving Payment History to its own page (menu item)
+* Restriction of access by configurable Age Types
+* Enforcement of Managed status for those with memberships of category managed
+* Restriction of assigning a managed membership to a non managed person
 
 ## Atcon:
 
 * Point of Sale
   * Changes for bundles
   * Changes for Age in Profile
+  * Enforcement of Managed status for those with memberships of category managed
+  * Restriction of assigning a managed membership to a non managed person
 
 ## Exhibitor (Vendor Portals)
 
@@ -85,7 +94,8 @@
 * Make profile validation a common Javascript library
 * Move Age into perinfo (code support)
 * Add profile age to limit age rules in membership rules execution
+* New Category Managed
 
-# Items in Progress, but not in 1.6
+# Items in Progress, but not in 2.0
 
 * Redesign of the cart in the portal
