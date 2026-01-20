@@ -2,7 +2,7 @@
 ![Control Troll Logo](onlinereg/lib/ConTroll.png)\
 ConTroll™ and the ConTroll Troll Logo are Copyright 2015-2026, Michael Rafferty
 
-## This README file is current as of Release 1.6 of the ConTroll Regitration System.
+## This README file is current as of Release 2.0 of the ConTroll Regitration System.
 
 ConTroll™ is designed as an all-in-one system to support registration for conventions. It supports on-line, mail-in, and on-site registration.
 
@@ -20,7 +20,12 @@ Release notes can be found in the ReleaseNotes directory.
 
 ## System Documentation and Coding Standards
 
-As with all projects this is a work in progress, but the current items are in the System-Documents-and-Coding-Standards directory
+As with all projects this is a work in progress, but the current items are in the System-Documents-and-Coding-Standards directory.
+
+## User Documentation Samples
+
+Several sample user documents, including ones written by the ConTroll developers for use in writing documents for your specific convention can be found in 
+the UserDoc-Samples directory. Feel free to copy those to the UserDoc directory to make your own customized versions.
 
 ## Development
 
@@ -108,7 +113,7 @@ Planned future additions:
 - portal
   - Login page/functions  (Supports mail tokens, Google/Facebook and potentially other "login with") and passkeys
   - Portal - main home page, see/pay for memberships
-  - paymentHistory - moved from main page
+  - paymentHistory - shows payments for this account for this convention year.
   - add - add new accounts
   - cart - add new memberships
   - accountSettings - alternate identities (emails), passkeys, and people you manage
