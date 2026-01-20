@@ -45,6 +45,7 @@ var testdiv = null;
 var conid = 0;
 var reglistDiv = null;
 var currencyFmt = null;
+var limitConid = null;
 
 // changes items
 var changeMemberships = [];
@@ -525,7 +526,7 @@ function actionbuttons(cell, formatterParams, onRendered) {
     var index = cell.getRow().getIndex();
 
     var btns = "";
-    if (perid > 0) {
+    if (limitConid >= (conid - 2) && limitConid < (conid + 1) && perid > 0) {
         btns += '<button class="btn btn-secondary me-1" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
             ' onclick="changeReg(' + index + ')">Chgs</button>';
     }
@@ -749,9 +750,9 @@ function changeReg(index, clear = true) {
         clear_message('changeMessageDiv');
 
     currentIndex = index;
-    var row = registrationtable.getRow(index);
+    let row = registrationtable.getRow(index);
     changeRowdata = row.getData();
-    var perid = changeRowdata.perid;
+    let perid = changeRowdata.perid;
 
     if (perid == null || perid == '' || perid <= 0)
         return;
@@ -759,6 +760,7 @@ function changeReg(index, clear = true) {
     // get all the regs for this perid for this con to decide what changes to make
     var data = {
         perid: perid,
+        limitConid: limitConid,
         action: 'regregs',
     };
     var script = 'scripts/regadmin_getRegs.php';
@@ -789,7 +791,7 @@ function changeReg(index, clear = true) {
 
 // return from the ajax call to fetch the regs for this perid, display the list of registrations
 function changeRegsData(data, rowdata) {
-    var html = '';
+    let html = '';
 
     //console.log(data);
     //console.log(rowdata);
@@ -798,6 +800,8 @@ function changeRegsData(data, rowdata) {
     // and options
 
     changeMemberships = data.memberships;
+    let enableEdit = limitConid >= (conid - 1) && limitConid < (conid + 1);
+    let disableChanges = (limitConid < conid) ? ' disabled' : '';
 
     html += `
     <div class="row mt-4 mb-2">
@@ -834,8 +838,8 @@ function changeRegsData(data, rowdata) {
         <div class="col-sm-1 text-primary" style="text-align: right;">` + rowdata.couponDiscount + `</div>
         <div class="col-sm-1 text-primary">` + rowdata.status + `</div>
         <div class="col-sm-2">
-            <button class="btn btn-sm btn-secondary" onclick="changeEdit(` + rowdata.badgeId + `)";>Edit</button>
-            <button class="btn btn-sm btn-secondary" onclick="showRegNotes(` + rowdata.badgeId + `, false)";>Add Note</button>
+            <button class="btn btn-sm btn-secondary" onclick="changeEdit(` + rowdata.badgeId + ');"' + disableChanges + `>Edit</button>
+            <button class="btn btn-sm btn-secondary" onclick="showRegNotes(` + rowdata.badgeId + `, false);">Add Note</button>
         </div>
     </div>
 `;
@@ -860,8 +864,8 @@ function changeRegsData(data, rowdata) {
         <div class="col-sm-1" style="text-align: right;">` + membership.couponDiscount + `</div>
         <div class="col-sm-1">` + membership.status + `</div>
         <div class="col-sm-2">
-            <button class="btn btn-sm btn-secondary" onclick="changeEdit(` + membership.id + `)";>Edit</button>
-            <button class="btn btn-sm btn-secondary" onclick="addNote(` + membership.id + `)";>Add Note</button>
+            <button class="btn btn-sm btn-secondary" onclick="changeEdit(` + membership.id + ');"' + disableChanges +`>Edit</button>
+            <button class="btn btn-sm btn-secondary" onclick="addNote(` + membership.id + `);">Add Note</button>
         </div>
     </div>
 `;
@@ -869,15 +873,15 @@ function changeRegsData(data, rowdata) {
     html += `
     <div class="row mt-2 mb-2">
         <div class="col-sm-12" style="text-align: center;">
-            <button class="btn btn-sm btn-primary" onclick="changeRevoke(0);">Revoke Selected</button>
-            <button class="btn btn-sm btn-warning me-4" onclick="changeRevoke(1);">Restore Selected</button>
-            <button class="btn btn-sm btn-primary me-4" onclick="changeTransfer();">Transfer Selected</button>
+            <button class="btn btn-sm btn-primary" onclick="changeRevoke(0);"` + disableChanges + `>Revoke Selected</button>
+            <button class="btn btn-sm btn-warning me-4" onclick="changeRevoke(1);"` + disableChanges + `>Restore Selected</button>
+            <button class="btn btn-sm btn-primary me-4" onclick="changeTransfer();"` + disableChanges + `>Transfer Selected</button>
 `;
     if (config.oneoff == 0) {
         html += '<button class="btn btn-sm btn-primary me-4" onclick="changeRollover();">Rollover Selected</button>\n';
     }
     if (config.finance == 1) {
-        html += '<button class="btn btn-sm btn-primary" onclick="changeRefund();">Refund Selected</button>\n';
+        html += '<button class="btn btn-sm btn-primary" onclick="changeRefund();"' + disableChanges + '>Refund Selected</button>\n';
     }
     html += `
         </div>
@@ -1648,6 +1652,7 @@ function reglistDownload(format) {
 // called from data load - draws the filter stats block and the registrations block
 function draw(data, textStatus, jqXHR) {
     conid = Number(data.conid);
+    limitConid = Number(data.limitConid);
     if (!data.hasOwnProperty('memLabels')) {
         show_message("Error in query", 'error');
         return;
@@ -1681,10 +1686,16 @@ function getData(style) {
     document.getElementById('regListSearch').style.backgroundColor = "";
     clear_message();
     clearError();
+    limitConid = document.getElementById('limitConid').value;
     $.ajax({
         url: "scripts/regadmin_getBadges.php",
         method: "POST",
-        data:   { style: style, action: 'badges', search: curRegListSearch },
+        data:   {
+            style: style,
+            action: 'badges',
+            search: curRegListSearch,
+            limitConid: limitConid,
+        },
         success: function (data, textStatus, jqXHR) {
             if (data.error !== undefined) {
                 show_message(data.error, 'error');
@@ -1758,6 +1769,7 @@ function sendEmail(type) {
 }
 
 function settab(tabname) {
+    clear_message();
     // close all of them
     if (current != null)
         current.close();
@@ -1789,13 +1801,15 @@ function settab(tabname) {
             registrationtable.destroy();
             registrationtable = null;
         }
+        document.getElementById('limitConid').value = conid;
     }
 
     // now open the relevant one, and create the class if needed
     switch (tabname) {
-        //case 'registrationlist-pane':
+        case 'registrationlist-pane':
+            document.getElementById('limitConid').value = conid;
             //getData();
-            //break;
+            break;
         case 'consetup-pane':
             if (current == null)
                 current = new consetup('current');

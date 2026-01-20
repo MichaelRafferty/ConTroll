@@ -751,6 +751,14 @@ posRegistrationSort="m.sort_order";
 ;; D:s32
 ;; B:O
 clubname='Club Name'
+;; N:viewPriorLimit
+;; R:H,reg_admin
+;; P:Min Prior Conid
+;; H:Minimum Conid for viewing prior data in the back end.  This feature is new and will be added to more places over time.
+;; H+Note: full edit, where applicable is valid for current conId and current conId + 1.  Partial for conId-1. View only for all others.
+;; D:i6
+;; B:O
+viewPriorLimit=
 
 ;;;;; Local Parameters for this Convention
 [local]

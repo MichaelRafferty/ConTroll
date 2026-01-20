@@ -27,6 +27,16 @@ $conid = $con['id'];
 $perid = $_POST['perid'];
 $response['conid'] = $conid;
 $response['perid'] = $perid;
+if (array_key_exists('limitConid', $_POST)) {
+    $limitConid = $_POST['limitConid'];
+    if ($limitConid > ($conid + 1))
+        $limitConid = $conid + 1;
+    if ($limitConid < $conid - 20)
+        $limitConid = $conid;
+} else {
+    $limitConid = $conid;
+}
+$response['limitConid'] = $limitConid;
 
 $bQ = <<<EOS
 SELECT r.*, m.label
@@ -34,7 +44,7 @@ FROM reg r
 JOIN memLabel m ON r.memId = m.id
 WHERE r.perid = ? AND r.conid = ?;
 EOS;
-$bR = dbSafeQuery($bQ, 'ii', array($perid, $conid));
+$bR = dbSafeQuery($bQ, 'ii', array($perid, $limitConid));
 if ($bR === false) {
     $response['error'] = 'Database error retrieving memberships';
     ajaxSuccess($response);

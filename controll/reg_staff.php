@@ -1041,13 +1041,25 @@ $config_vars['tokenStatus'] = $authToken->checkToken();
 <?php
     if ($badgeListFilter == "top")
         drawFilters();
+    $viewPrior = getConfValue('controll', 'viewPriorLimit', $conid)
 ?>
     <div class='container-fluid'>
         <div class="row">
-            <div class="col-sm-1">Restrict To:</div>
+            <div class="col-sm-1"><label for="regListSearch">Restrict To:</label></div>
             <div class="col-sm-auto">
-                <input type="text" size="64" maxlength="256" placeholder="PERID, TID, or name/badge name/email search string"
+                <input type="text" size="48" maxlength="256" placeholder="PERID, TID, or name/badge name/email search string"
                        id="regListSearch" name="regListSearch"/>
+            </div>
+            <div class="col-sm-auto"><label for="limitConid">Convention Year:</label></div>
+            <div class="col-sm-auto">
+                <select id="limitConid" name="limitConid">
+<?php
+    for ($year = $viewPrior; $year <= $conid + 1; $year++) {
+        $selected = $year == $conid ? ' selected' : '';
+        echo "<option value='$year'$selected>$year</option>";
+    }
+?>
+                </select>
             </div>
             <div class="col-sm-auto">
                 <button class='btn btn-primary mb-4 ms-4' onclick='getData("s");'>Search Registration List</button>

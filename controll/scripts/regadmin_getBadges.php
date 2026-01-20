@@ -30,6 +30,16 @@ $response['conid'] = $conid;
 $style = $_POST['style'];
 $action = $_POST['action'];
 $search = $_POST['search'];
+if (array_key_exists('limitConid', $_POST)) {
+    $limitConid = $_POST['limitConid'];
+    if ($limitConid > ($conid + 1))
+        $limitConid = $conid + 1;
+    if ($limitConid < $conid - 20)
+        $limitConid = $conid;
+} else {
+    $limitConid = $conid;
+}
+$response['limitConid'] = $limitConid;
 
 if ($action != 'badges') {
     $response['error'] = 'Calling Sequence Error';
@@ -91,7 +101,8 @@ WHERE R.conid=? AND (R.perid = ? OR R.create_trans = ? OR R.complete_trans = ? O
 ORDER BY R.create_date DESC;
 EOS;
     $typeString = 'iiiiiiiiiiiiiiiii';
-    $params = array($conid, $search, $search, $search, $conid, $search, $search, $search, $conid, $search, $search, $search, $conid, $search, $search, $search, $search);
+    $params = array($limitConid, $search, $search, $search, $limitConid, $search, $search, $search, $limitConid, $search, $search, $search,
+        $limitConid, $search, $search, $search, $search);
 } else {
     if ($search != '%')
         $search = '%' . str_replace(' ', '%', $search) . '%';
@@ -153,7 +164,8 @@ WHERE R.conid=? AND (P.perid IS NOT NULL OR NP.newperson_id IS NOT NULL)
 ORDER BY R.create_date DESC;
 EOS;
     $typeString = 'iiissssssssssi';
-    $params = array($conid, $conid, $conid, $search, $search, $search, $search, $search, $search, $search, $search, $search, $search, $conid);
+    $params = array($limitConid, $limitConid, $limitConid, $search, $search, $search, $search, $search, $search, $search, $search, $search,
+        $search, $limitConid);
 }
 
 $response['query'] = $badgeQ;
@@ -186,7 +198,7 @@ ORDER BY memCategory;
 EOS;
 
     $categories = [];
-    $catA = dbSafeQuery($catQ, 'i', array ($conid));
+    $catA = dbSafeQuery($catQ, 'i', array ($limitConid));
     while ($cat = $catA->fetch_assoc()) {
         array_push($categories, $cat);
     }
@@ -211,7 +223,7 @@ ORDER BY memType;
 EOS;
 
     $types = [];
-    $typeA = dbSafeQuery($typeQ, 'i', array ($conid));
+    $typeA = dbSafeQuery($typeQ, 'i', array ($limitConid));
     while ($type = $typeA->fetch_assoc()) {
         array_push($types, $type);
     }
@@ -236,7 +248,7 @@ ORDER BY label;
 EOS;
 
     $labels = [];
-    $labelA = dbSafeQuery($labelQ, 'i', array ($conid));
+    $labelA = dbSafeQuery($labelQ, 'i', array ($limitConid));
     while ($label = $labelA->fetch_assoc()) {
         array_push($labels, $label);
     }
@@ -261,7 +273,7 @@ ORDER BY memAge;
 EOS;
 
     $ages = [];
-    $ageA = dbSafeQuery($ageQ, 'i', array ($conid));
+    $ageA = dbSafeQuery($ageQ, 'i', array ($limitConid));
     while ($age = $ageA->fetch_assoc()) {
         array_push($ages, $age);
     }
@@ -285,7 +297,7 @@ ORDER BY price;
 EOS;
 
     $prices = [];
-    $priceA = dbSafeQuery($priceQ, 'i', array ($conid));
+    $priceA = dbSafeQuery($priceQ, 'i', array ($limitConid));
     while ($price = $priceA->fetch_assoc()) {
         array_push($prices, $price);
     }
@@ -310,7 +322,7 @@ ORDER BY name;
 EOS;
 
     $coupons = [];
-    $couponA = dbSafeQuery($couponQ, 'i', array ($conid));
+    $couponA = dbSafeQuery($couponQ, 'i', array ($limitConid));
     while ($coupon = $couponA->fetch_assoc()) {
         array_push($coupons, $coupon);
     }
@@ -334,7 +346,7 @@ ORDER BY name;
 EOS;
 
     $statuses = [];
-    $statusA = dbSafeQuery($statusQ, 'i', array ($conid));
+    $statusA = dbSafeQuery($statusQ, 'i', array ($limitConid));
     while ($status = $statusA->fetch_assoc()) {
         $statuses[] = $status;
     }
@@ -347,7 +359,7 @@ FROM memLabel
 WHERE conid = ?;
 EOS;
 $memLabels = [];
-$memLabelA = dbSafeQuery($memLabelQ, 'i', array ($conid));
+$memLabelA = dbSafeQuery($memLabelQ, 'i', array ($limitConid));
 while ($memLabel = $memLabelA->fetch_assoc()) {
     $memLabels[] = $memLabel;
 }
