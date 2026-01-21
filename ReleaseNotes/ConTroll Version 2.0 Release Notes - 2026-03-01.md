@@ -95,6 +95,8 @@
 * Move Age into perinfo (code support)
 * Add profile age to limit age rules in membership rules execution
 * New Category Managed
+* Exhibitors pay should also trigger the payment emails
+* In Exhibitor New Region Check Short Name is not in use
 
 # Items in Progress, but not in 2.0
 
