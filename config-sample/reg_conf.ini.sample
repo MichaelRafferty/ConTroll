@@ -537,7 +537,7 @@ artistBidSheet="Unconfigured Bid Sheet"
 ;; H:Number of bid lines on an auction bid sheet
 ;; H+With barcode: 3x2 format: 1-3, 2x2 format: 4-7, 1x2 format: 8-22
 ;; H+Without barcode: 3x2 format: 1-4, 2x2 format: 5-8, 1x2 format: 9-23
-;; H+Format is determined by then numbrer of lines
+;; H+Format is determined by then number of lines
 ;; H+Default is 4 if the line is omitted
 ;; D:i2
 ;; B:O

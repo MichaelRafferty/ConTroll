@@ -55,7 +55,7 @@ Both the files in the system wide groups directory and the files in the local gr
   * template: file name of the report template
   * auth: auth token to see this report line (may be different than the group auth value to further restrict reports within this submenu)
   * type: php (outputs page contents)  or rpt (run sql, make table)
-  * Pnnn: Prompt list for pre-execution prompts for a report. The overall string needs to be in quotes.  The three digit numbrer in the prompt name is the 
+  * Pnnn: Prompt list for pre-execution prompts for a report. The overall string needs to be in quotes.  The three digit number in the prompt name is the 
     display order of the prompt fields.
     * /~/ separated list of strings, no quotes around the strings
        * type: prompt, constant 

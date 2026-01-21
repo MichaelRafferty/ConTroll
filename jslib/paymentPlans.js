@@ -534,7 +534,7 @@ class PaymentPlans {
                 var newNumPayments = Math.ceil(diff / days);
                 if (newNumPayments < numPayments) {
                     numPayments = newNumPayments;
-                    messageHTML += "The days between payments exceeds the pay by date, adjusting the numbrer of payments</br>";
+                    messageHTML += "The days between payments exceeds the pay by date, adjusting the number of payments</br>";
                 }
                 if (numPayments > this.#computedOrig.maxPayments) {
                     numPayments = this.#computedOrig.maxPayments;

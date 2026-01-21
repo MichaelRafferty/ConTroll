@@ -8,6 +8,9 @@
 require_once '../lib/base.php';
 require_once '../../lib/tax.php';
 require_once '../../lib/log.php';
+require_once '../../lib/receipt.php';
+require_once('../../lib/exhibitorArtistInventoryEmail.php');
+require_once('../../lib/email__load_methods.php');
 require_once('../../lib/cc__load_methods.php');
 require_once '../lib/sessionAuth.php';
 
@@ -225,6 +228,7 @@ if ($spacePrice != $spacePriceComputed || $includedMembershipsComputed != $inclu
 $buyer['email'] = $exhibitor['exhibitorEmail'];
 $buyer['phone'] = $exhibitor['exhibitorPhone'];
 $buyer['country'] = $exhibitor['country'];
+$buyer['name'] = $exhibitor['exhibitorName'];
 
 $region['includedMemberships'] = $includedMembershipsComputed;
 $region['additionalMemberships'] = $additionalMembershipsComputed;
@@ -328,7 +332,7 @@ for ($num = 0; $num < $additionalMembershipsMax; $num++) {
         } else {
             $val = '';
         }
-        if ($val != '' && ($field == 'fname' || $field == 'lname')) {
+        if ($val != '' && ($field == 'fnme' || $field == 'lname')) {
             $nonefound = false;
         } else {
             if ($required) {
@@ -389,7 +393,7 @@ $badges = array();
 $transid = null;
 for ($i = 0; $i < count($includedMembershipStatus); $i++) {
     if ($includedMembershipStatus[$i]) {
-        $badge = buildBadge($membership_fields, 'i', $i, $region, $conid, $transid, $portalName);
+        $badge = buildBadge($authToken, $membership_fields, 'i', $i, $region, $conid, $transid, $portalName);
         $transid = $badge['transid'];
         $status_msg .= $badge['status'];
         $error_msg .= $badge['error'];
@@ -398,7 +402,7 @@ for ($i = 0; $i < count($includedMembershipStatus); $i++) {
 }
 for ($i = 0; $i < count($additionalMembershipStatus); $i++) {
     if ($additionalMembershipStatus[$i]) {
-        $badge = buildBadge($membership_fields, 'a', $i, $region, $conid, $transid, $portalName);
+        $badge = buildBadge($authToken, $membership_fields, 'a', $i, $region, $conid, $transid, $portalName);
         $transid = $badge['transid'];
         $badges[] = $badge;
         $status_msg .= $badge['status'];
@@ -408,12 +412,12 @@ for ($i = 0; $i < count($additionalMembershipStatus); $i++) {
 if ($transid === null) {
     // no tranasction yet, because no badges
     $transQ = <<<EOS
-INSERT INTO transaction(price, type, conid, notes)
-    VALUES(?, ?, ?, ?);
+INSERT INTO transaction(price, type, conid, notes, userid)
+    VALUES(?, ?, ?, ?, ?);
 EOS;
 
     $notes = "exhibitorId: $exhId, exhibitorYearId: $eyID, exhibitsRegionYearId: $regionYearId, portal: $portalName, exhibitorName: " . $exhibitor['exhibitorName'];
-    $transid = dbSafeInsert($transQ, 'dsis', array($totprice, $portalName, $conid, $notes));
+    $transid = dbSafeInsert($transQ, 'dsisi', array($totprice, $portalName, $conid, $notes, $authToken->getPerid()));
     if ($transid === false) {
         $status_msg .= "Add of transaction for $portalName " . $_POST['name'] . " failed.<br/>\n";
     }
@@ -637,26 +641,27 @@ if ($prow != null) {
         $taxStr = '';
         $taxValues = [];
     }
-    $txnQ = <<<EOS
+    if ($paymentType == 'credit') {
+        $txnQ = <<<EOS
 INSERT INTO payments(transid, type,category, description, source, pretax, tax, amount, time, cc_approval_code, cashier, 
     cc, nonce, cc_txn_id, txn_time, receipt_url, receipt_id, userPerid, status, ccPaymentId $taxFields)
 VALUES (?,?,?,?,'cashier',?,?,?,now(),?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? $taxSql);
 EOS;
-    $typestr = 'isssdddsissssssiss' . $taxStr;
-    $paramarray = array ($transId, $paymentType, $category, $description, $preTaxAmt, $taxAmt, $approved_amt, $auth, null,
-        $last4, $nonceCode, $paymentId, $txTime, $receiptUrl, $receiptNumber, $buyer, $status, $paymentId);
-    $txnid = dbSafeInsert($txnQ, $typestr, array_merge($paramarray, $taxValues));
-    $approved_amt = $rtn['amount'];
-
-    $txnQ = <<<EOS
+        $typestr = 'isssdddsissssssiss' . $taxStr;
+        $paramarray = array ($transId, $paymentType, $category, $description, $preTaxAmt, $taxAmt, $approved_amt, $auth, null,
+            $last4, $nonceCode, $paymentId, $txTime, $receiptUrl, $receiptNumber, $buyer, $status, $paymentId);
+        $txnid = dbSafeInsert($txnQ, $typestr, array_merge($paramarray, $taxValues));
+        $approved_amt = $rtn['amount'];
+    } else {
+        $txnQ = <<<EOS
 INSERT INTO payments (transid, type, category, description, source, pretax, tax, amount, time, nonce, cc_approval_code, txn_time, userPerid, ccPaymentId)
 VALUES (?,?,?,?,?,?,?,?,NOW(),?,?,NOW(),?,?);
 EOS;
-    $typestr = 'issssdddssis';
-
-    $values = array ($transid, $paymentType, $category, $desc, $source, $totprice, 0, $totprice, 'admin', $ccAuth,
-        $authToken->getPerid(), $paymentId);
-
+        $typestr = 'issssdddssis';
+        $values = array ($transid, $paymentType, $category, $desc, $source, $totprice, 0, $totprice, 'admin', $ccAuth,
+            $authToken->getPerid(), $paymentId);
+        $approved_amt = $totprice;
+    }
     $txnid = dbSafeInsert($txnQ, $typestr, $values);
     if ($txnid == false) {
         $error_msg .= "Insert of payment failed\n";
@@ -834,6 +839,41 @@ EOS;
     }
 }
 
+// send the payment emails
+load_email_procs();
+// receipt only if the amount was > 0.
+if ($approved_amt > 0) {
+    loadCustomText('exhibitor', 'index', getConfValue('vendor', 'customtext', 'production'), false);
+    $emails = paymentConfirm($results);
+    $return_arr = send_email($region['ownerEmail'], array($exhibitor['exhibitorEmail'], $buyer['email']), $region['ownerEmail'], $region['name'] . ' Payment', $emails[0], $emails[1]);
+
+    if (array_key_exists('error_code', $return_arr)) {
+        $error_code = $return_arr['error_code'];
+    } else {
+        $error_code = null;
+    }
+
+    if (array_key_exists('email_error', $return_arr))
+        $error_msg .= $return_arr['email_error'];
+    else
+        $status_msg .= "Payment Receipt Sent<br/>\n";
+
+}
+
+// artist inventory request
+$return_arr = emailArtistInventoryReq($eryID, 'Payment');
+
+if (array_key_exists('error_code', $return_arr)) {
+    $error_code = $return_arr['error_code'];
+} else {
+    $error_code = null;
+}
+
+if (array_key_exists('email_error', $return_arr))
+    $error_msg .= $return_arr['email_error'];
+else
+    $status_msg .= "Inventory Entry Request Sent<br/>\n";
+
 ajaxSuccess(array(
     'status' => $error_msg != '' ? 'error' : 'success',
     'error' => $error_msg,
@@ -843,7 +883,7 @@ ajaxSuccess(array(
 return;
 
 // build the badge structure and insert the person into newperson, trans, reg after checking for exact match
-function buildBadge($fields, $type, $index, $region, $conid, $transid, $portalName) {
+function buildBadge($authToken, $fields, $type, $index, $region, $conid, $transid, $portalName) {
     $badge = array();
     $suffix = '_' . $type . '_' . $index;
     if ($type == 'i') {
@@ -903,11 +943,12 @@ EOS;
     // if no tranasction yet, insert one
     if ($transid == null) {
         $transQ = <<<EOS
-INSERT INTO transaction(newperid,  price, tax, withtax, type, conid)
-    VALUES(?, ?, ?, ?, ?, ?);
+INSERT INTO transaction(newperid,  price, tax, withtax, type, conid, userid)
+    VALUES(?, ?, ?, ?, ?, ?, ?);
 EOS;
 
-        $transid = dbSafeInsert($transQ, 'idddsi', array($newid, $region['price'], 0, $region['price'], $portalName, $conid));
+        $transid = dbSafeInsert($transQ, 'idddsii', array($newid, $region['price'], 0, $region['price'], $portalName,
+            $conid, $authToken->getPerid()));
         if ($transid === false) {
             $badge['error'] .= 'Add of transaction for ' . $badge['fname'] . ' ' . $badge['lname'] . " failed.\n";
         }
@@ -944,4 +985,31 @@ EOS;
     }
 
     return $badge;
+}
+
+// space payment confirmation
+function paymentConfirm($results) {
+    $receipts = trans_receipt($results['transid']);
+
+    $currency = getConfValue('con', 'currency', 'USD');
+    $buyer = $results['buyer'];
+    $region = $results['region'];
+
+    $label = getConfValue('con', 'label', 'Unknown Convention');
+    $curLocale = locale_get_default();
+    $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
+
+    // plain text version
+    $body = 'Dear ' . $buyer['name'] . ":\n\n" .
+        'Here is your receipt for payment of ' . $dolfmt->formatCurrency($results['approved_amt'], $currency) . ' for ' . $label .
+        ' ' . $region['name'] . "\n\n" . $receipts['receipt'] . "\n\n" .
+        'If you have any questions please contact the ' . $region['name'] . ' staff at ' . $region['ownerEmail'] . ".\n\nThank you\n";
+
+    // html version
+    $bodyHtml = '<p>Dear ' . $buyer['name'] . ":</p>\n" .
+        '<p>Here is your receipt for payment of ' . $dolfmt->formatCurrency($results['approved_amt'], $currency) . ' for ' . $label .
+        ' ' . $region['name'] . "</p>\n" . $receipts['receipt_tables'] .
+        '<p>If you have any questions please contact the ' . $region['name'] . ' staff at ' . $region['ownerEmail'] . ".</p>\n<p>Thank you</p>\n";
+
+    return array ($body, $bodyHtml);
 }

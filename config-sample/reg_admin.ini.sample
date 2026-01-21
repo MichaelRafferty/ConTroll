@@ -82,7 +82,7 @@ currency="USD"
 ;;; Trend Graph Limits
 ; minComp: how far back to run the membership by year comparision graph, by id
 minComp="2021"
-; compLen: maximum numbrer of days to show on the membership growth by day graph
+; compLen: maximum number of days to show on the membership growth by day graph
 compLen="365"
 ;;; conLen: how many days long is the convention
 conLen="3"

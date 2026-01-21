@@ -50,7 +50,7 @@ This workflow is used by the login with email address option in the 'index' page
    4. Proceed to "Validation Complete"
 7. If not loggerd in already
    1. Check to see if the link exists in the database, if not found or link email does not match the database email, declare invalid, ask user to request a new one and exit.
-   2. if the link has been used an excessive numbrer of times (currently 100 hard coded), inform the user that the link has been used and ask them to 
+   2. if the link has been used an excessive number of times (currently 100 hard coded), inform the user that the link has been used and ask them to 
       request a new one and exit
    3. Update the database link usage count
    4. create the token in the session
