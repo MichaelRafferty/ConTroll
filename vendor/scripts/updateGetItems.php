@@ -148,9 +148,25 @@ foreach ($data as $index => $row) {
     // ignore over rows
     if (array_key_exists('id', $row) && ($row['id'] == -9999))
         continue;
+
+    // ignore empty rows
+    $skip = true;
+    if (array_key_exists('title', $row) && $row['title'] != '')
+        $skip = false;
+    if (array_key_exists('material', $row) && $row['material'] != '')
+        $skip = false;
+    if (array_key_exists('min_price', $row) && $row['min_price'] != '')
+        $skip = false;
+    if (array_key_exists('sale_price', $row) && $row['sale_price'] != '')
+        $skip = false;
+
+    if ($skip)
+        continue;
+
     // don't error check to-delete rows
     if (array_key_exists('to_delete', $row)) {
-        if ($row['to_delete'] == 1) continue;
+        if ($row['to_delete'] == 1)
+            continue;
     }
 
     if ($itemType == 'art' && (!array_key_exists('sale_price', $row) || $row['sale_price'] == null || $row['sale_price'] == '')) {
@@ -202,6 +218,21 @@ foreach ($data as $index => $row) {
         if ($row['to_delete'] == 1)
             continue;
     }
+
+    // ignore empty rows
+    $skip = true;
+    if (array_key_exists('title', $row) && $row['title'] != '')
+        $skip = false;
+    if (array_key_exists('material', $row) && $row['material'] != '')
+        $skip = false;
+    if (array_key_exists('min_price', $row) && $row['min_price'] != '')
+        $skip = false;
+    if (array_key_exists('sale_price', $row) && $row['sale_price'] != '')
+        $skip = false;
+
+    if ($skip)
+        continue;
+
     $item_key = 0;
     if (array_key_exists('item_key', $row)) {
         $item_key = $row['item_key'];
