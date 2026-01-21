@@ -273,7 +273,7 @@ for ($num = 0; $num < $includedMembershipsMax; $num++) {
         } else {
             $val = '';
         }
-        if ($val != '') {
+        if ($val != '' && ($field == 'fname' || $field == 'lname')) {
             $nonefound = false;
         } else {
             if ($required) {
@@ -328,7 +328,7 @@ for ($num = 0; $num < $additionalMembershipsMax; $num++) {
         } else {
             $val = '';
         }
-        if ($val != '') {
+        if ($val != '' && ($field == 'fname' || $field == 'lname')) {
             $nonefound = false;
         } else {
             if ($required) {
