@@ -105,5 +105,10 @@ ALTER TABLE user ADD CONSTRAINT `fk_user_perid` FOREIGN KEY (`perid`) REFERENCES
 /* for passkeys userid, extend google_sub to 64 chars to hold passkey userid */
 ALTER TABLE user MODIFY COLUMN google_sub varchar(64) NOT NULL;
 
+/* fix typo in custom text */
+UPDATE controllTxtItems SET contents = REPLACE(contents, 'Numbrer', 'Number') WHERE contents like '%Numbrer%';
+UPDATE controllTxtItems SET contents = REPLACE(contents, '<span class="s1">Dear [</span><span class="s1">[',
+    '<span class="s1">Dear [[') WHERE contents LIKE '%[</span><span class="s1">%';
+
 INSERT INTO patchLog(id, name) VALUES(xx, 'art, portal, et al');
 
