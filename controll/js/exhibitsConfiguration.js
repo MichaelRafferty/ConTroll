@@ -267,7 +267,7 @@ class exhibitssetup {
         // get initial data
         clear_message();
         clearError();
-        var _this = this;
+        let _this = this;
         var script = "scripts/exhibitsUpdateGetData.php";
         $.ajax({
             url: script,
@@ -573,7 +573,7 @@ class exhibitssetup {
 
     // draw regionTypes table
     drawRegionTypes(data) {
-        var _this = this;
+        let _this = this;
 
         if (this.#regionTypeTable != null) {
             this.#regionTypeTable.off("dataChanged");
@@ -646,7 +646,7 @@ class exhibitssetup {
 
     // draw regions table
     drawRegions(data) {
-        var _this = this;
+        let _this = this;
 
         if (this.#regionsTable != null) {
             this.#regionsTable.off("dataChanged");
@@ -719,7 +719,7 @@ class exhibitssetup {
 
     // draw regionYears table
     drawRegionYears(data) {
-        var _this = this;
+        let _this = this;
 
         if (this.#regionYearsTable != null) {
             this.#regionYearsTable.off("dataChanged");
@@ -820,7 +820,7 @@ class exhibitssetup {
 
     // draw spaces table
     drawSpaces(data) {
-        var _this = this;
+        let _this = this;
 
         if (this.#spacesTable != null) {
             this.#spacesTable.off("dataChanged");
@@ -911,7 +911,7 @@ class exhibitssetup {
     
     // draw spacePrices table
     drawSpacePrices(data) {
-        var _this = this;
+        let _this = this;
 
         if (this.#spacePricesTable != null) {
             this.#spacePricesTable.off("dataChanged");
@@ -1043,7 +1043,7 @@ class exhibitssetup {
 
     // add row to types table and scroll to that new row
     addrowTypes() {
-        var _this = this;
+        let _this = this;
         this.#regionTypeTable.addRow({regionType: 'new-row', portalType: 'vendor', requestApprovalRequired: 'None',
             purchaseApprovalRequired: 'Y', purchaseAreaTotals: 'unique', inPersonMaxUnits: 0, mailinAllowed: 'N', mailinMaxUnits: 0,
             needW9: 'N', usesInventory: 'N', allowQuickSale: 'Y', maxInventory: 75,
@@ -1075,7 +1075,7 @@ class exhibitssetup {
     }
 
     saveTypesComplete(data, textStatus, jhXHR) {
-        var _this = this;
+        let _this = this;
 
         if ('error' in data) {
             if (data.error != '' && this.#debug)
@@ -1101,7 +1101,7 @@ class exhibitssetup {
 
     saveTypes() {
         if (this.#regionsTable != null) {
-            var _this = this;
+            let _this = this;
 
             var invalids = this.#regionTypeTable.validate();
             if (invalids !== true) {
@@ -1210,7 +1210,7 @@ class exhibitssetup {
 
     // add row to Regions table and scroll to that new row
     addrowRegions() {
-        var _this = this;
+        let _this = this;
         this.#regionsTable.clearFilter(true);
         this.#regionsTable.addRow({ sortorder: 99, uses: 0}, false).then(function (row) {
             row.getTable().setPageToRow(row).then(function() {
@@ -1229,7 +1229,7 @@ class exhibitssetup {
     }
 
     saveRegionsComplete(data, textStatus, jhXHR) {
-        var _this = this;
+        let _this = this;
 
         if ('error' in data) {
             if (this.#debug)
@@ -1255,7 +1255,7 @@ class exhibitssetup {
 
     saveRegions() {
         if (this.#regionsTable != null) {
-            var _this = this;
+            let _this = this;
 
             var invalids = this.#regionsTable.validate();
             if (invalids !== true) {
@@ -1263,6 +1263,27 @@ class exhibitssetup {
                 show_message("Regions Table does not pass validation, please check for empty cells or cells outlined in red", 'error');
                 return false;
             }
+            let regionData = this.#regionsTable.getData();
+            // check for duplicate short names
+            let dupfound = false;
+            let shortNames = [];
+            let dupRegions = '';
+            for (let i = 0; i < regionData.length; i++) {
+                let region = regionData[i];
+                if (shortNames.hasOwnProperty(region.shortname)) {
+                    dupfound = true;
+                    dupRegions += ',' + region.shortname;
+                }
+                shortNames[region.shortname] = 1;
+            }
+
+            if (dupfound) {
+                show_message("Regions table cannot have more than one row with the same short name." +
+                    " The following short names are used on more than one row:<br/>" +
+                    dupRegions.substring(1), 'error');
+                return false;
+            }
+
             this.#regionsavebtn.innerHTML = "Saving...";
             this.#regionsavebtn.disabled = true;
 
@@ -1271,7 +1292,7 @@ class exhibitssetup {
             clear_message();
             clearError();
             var postdata = {
-                tabledata: JSON.stringify(this.#regionsTable.getData()),
+                tabledata: JSON.stringify(regionData),
                 tablename: "regions",
                 gettype: "regions,years",
                 indexcol: "regionKey"
@@ -1358,7 +1379,7 @@ class exhibitssetup {
 
     // add row to Years table and scroll to that new row
     addrowYears() {
-        var _this = this;
+        let _this = this;
         this.#insertID--;
         this.#regionYearsTable.clearFilter(true);
         this.#regionYearsTable.addRow({id: this.#insertID, conid: this.#conid, ownerName: 'new-row', sortorder: 99, uses: 0}, false).then(function (row) {
@@ -1379,7 +1400,7 @@ class exhibitssetup {
     }
 
     saveYearsComplete(data, textStatus, jhXHR) {
-        var _this = this;
+        let _this = this;
 
         if ('error' in data) {
             if (data.error != '' && this.#debug)
@@ -1405,7 +1426,7 @@ class exhibitssetup {
 
     saveYears() {
         if (this.#regionsTable != null) {
-            var _this = this;
+            let _this = this;
 
             var invalids = this.#regionYearsTable.validate();
             if (invalids !== true) {
@@ -1519,7 +1540,7 @@ class exhibitssetup {
 
     // add row to Spaces table and scroll to that new row
     addrowSpaces() {
-        var _this = this;
+        let _this = this;
         this.#spacesTable.clearFilter(true);
         this.#spacesTable.addRow({shortname: 'new-row', sortorder: 99, uses: 0}, false).then(function (row) {
             _this.#spacesTable.setPage("last"); // adding new to last page always
@@ -1539,7 +1560,7 @@ class exhibitssetup {
     }
 
     saveSpacesComplete(data, textStatus, jhXHR) {
-        var _this = this;
+        let _this = this;
 
         if ('error' in data) {
             if (data.error != '' && this.#debug)
@@ -1565,7 +1586,7 @@ class exhibitssetup {
 
     saveSpaces() {
         if (this.#spacesTable != null) {
-            var _this = this;
+            let _this = this;
 
             var invalids = this.#spacesTable.validate();
             if (invalids !== true) {
@@ -1670,7 +1691,7 @@ class exhibitssetup {
 
     // add row to Spaces table and scroll to that new row
     addrowSpacePrices() {
-        var _this = this;
+        let _this = this;
         this.#spacePricesTable.clearFilter(true);
         this.#spacePricesTable.addRow({code: 'new-row', sortorder: 99, requestable: 0, uses: 0, }, false).then(function (row) {
             _this.#spacePricesTable.setPage("last"); // adding new to last page always
@@ -1691,7 +1712,7 @@ class exhibitssetup {
     }
 
     saveSpacePricesComplete(data, textStatus, jhXHR) {
-        var _this = this;
+        let _this = this;
 
         if ('error' in data) {
             if (data.error != '' && this.#debug)
@@ -1717,7 +1738,7 @@ class exhibitssetup {
 
     saveSpacePrices() {
         if (this.#spacePricesTable != null) {
-            var _this = this;
+            let _this = this;
 
             var invalids = this.#spacePricesTable.validate();
             if (invalids !== true) {
