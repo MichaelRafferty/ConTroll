@@ -298,7 +298,7 @@ onedaycoupons=0 ; allow onedays for coupon usage
 ;; H+ Bundles follow normal membership rules, both implicit rules and those specificed in the membership rules configuration.
 ;; D:l:0,1
 ;; B:M
-bundlememberships=0 ; allow onedays for coupon usage
+bundlememberships=0 ; allow bundle memberships
 
 ;;;;; On Line Registration (non Portal)
 [reg]

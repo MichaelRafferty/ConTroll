@@ -277,6 +277,20 @@ function updateConfig($user_perid, $fields) : string {
     $first=true;
     $updates = 0;
     foreach ($master as $line) {
+        if (str_starts_with($line, ';;;;; ')) {
+            if ($needOutput) {
+                $status .= outputLine($fileHandle, $sectionName, $fieldName, $blank, $contents);
+                $needOutput = false;
+            }
+            continue;
+        }
+        if (preg_match('/^\s*$/', $line)) {
+            if ($needOutput) {
+                $status .= outputLine($fileHandle, $sectionName, $fieldName, $blank, $contents);
+                $needOutput = false;
+            }
+            // no continue statement here on purpose
+        }
         if (preg_match('/^\s*\[[^]]+]\s*$/', $line)) {
             if ($needOutput) {
                 $status .= outputLine($fileHandle, $sectionName, $fieldName, $blank, $contents);
