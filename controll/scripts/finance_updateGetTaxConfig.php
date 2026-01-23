@@ -20,7 +20,7 @@ if (!$authToken->isLoggedIn() || !$authToken->checkAuth($perm)) {
 }
 
 $user_perid = $authToken->getPerid();
-if (!$user_perid) {{
+if (!$user_perid) {
     ajaxError('Invalid credentials passed');
     return;
 }
