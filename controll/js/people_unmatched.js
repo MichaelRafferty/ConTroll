@@ -666,7 +666,7 @@ class Unmatched {
     // update the database with the new match
     saveMatch(type) {
         // get all of the edited values, the existing id and the new id
-        var postdata = {
+        let postdata = {
             type: type,
             newperid: this.#newperson.id,
             perid: (type == 'e' && this.#matchPerson) ? this.#matchPerson.id : null,
@@ -701,11 +701,13 @@ class Unmatched {
         clear_message('result_message_candidate');
         clear_message();
         clearError();
-        var _this = this;
-        var priorUpdateExistingDisabled = this.#updateExisting.disabled;
-        var priorCreateNewDisabled = this.#createNew.disabled;
+        let _this = this;
+        let priorUpdateExistingDisabled = this.#updateExisting.disabled;
+        let priorCreateNewDisabled = this.#createNew.disabled;
+        let priorDeleteNewDisabled = this.#deleteNew.disabled;
         this.#updateExisting.disabled = true;
         this.#createNew.disabled = true;
+        this.#deleteNew.disabled = true;
 
         $.ajax({
             url: script,
@@ -715,6 +717,7 @@ class Unmatched {
                 checkRefresh(data);
                 data.priorUpdateExistingDisabled = priorUpdateExistingDisabled;
                 data.priorCreateNewDisabled = priorCreateNewDisabled;
+                data.priorDeleteNewDisabled = priorDeleteNewDisabled;
                 _this.updateSuccess(data);
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -722,6 +725,7 @@ class Unmatched {
                 show_message("ERROR in " + script + ": " + jqXHR.responseText, 'error', 'result_message_candidate');
                 this.#updateExisting.disabled = priorUpdateExistingDisabled;
                 this.#createNew.disabled = priorCreateNewDisabled;
+                this.#deleteNew.disabled = priorDeleteNewDisabled;
                 return false;
             }
         });
@@ -733,12 +737,14 @@ class Unmatched {
             show_message(data['error'], 'error', 'result_message_candidate');
             this.#updateExisting.disabled = data.priorUpdateExistingDisabled;
             this.#createNew.disabled = data.priorCreateNewDisabled;
+            this.#deleteNew.disabled = data.priorDeleteNewDisabled;
             return;
         }
         if (data['warn']) {
             show_message(data['warn'], 'warn', 'result_message_candidate');
             this.#updateExisting.disabled = data.priorUpdateExistingDisabled;
             this.#createNew.disabled = data.priorCreateNewDisabled;
+            this.#deleteNew.disabled = data.priorDeleteNewDisabled;
             return;
         }
 
