@@ -306,7 +306,8 @@ class consetup {
         this.#memtable = null;
         if (data['memlist'] == null) {
             show_message("Nothing defined yet", 'warn')
-            memListData = new Array();
+            memListData = [];
+            data['memlist'] = [];
         } else {
             memListData = data['memlist'];
         }
