@@ -161,6 +161,28 @@ EOS;
     }
     $conidR->free();
 
+    // check to see if the all age exists for the default conid
+    $checkAQ = <<<EOS
+SELECT count(*)
+FROM ageList
+WHERE ageType = 'all';
+EOS;
+    $ageR = dbQuery($checkAQ);
+    if ($ageR === false) {
+        logEcho("check if all age entry exists in ageList failed, cannot continue");
+        return(1);
+    }
+    $ageCount = $ageR->fetchRow()[0];
+    if ($ageCount == 0) {
+        // add the all age items
+        $ageAllIns = <<<EOS
+INSERT INTO ageList(conid, ageType, label, shortname, sortorder, badgeFlag, verify)
+VALUES (?, 'all', 'All Ages', 'All', ?, '', 'N');
+EOS;
+        $ins = dbSafeInsert($ageAllIns, 'ii', array($conid, 10));
+        $ins = dbSafeInsert($ageAllIns, 'ii', array($conid + 1, 20));
+    }
+
     // check if any admins exist in the system
     $checkR = dbQuery($checkAdminQ);
     if ($checkR === false || $checkR->num_rows == 0) {
