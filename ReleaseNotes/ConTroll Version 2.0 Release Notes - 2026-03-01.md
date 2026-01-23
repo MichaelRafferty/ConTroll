@@ -79,24 +79,27 @@
 
 # Wrike Items Closed:
 
-* Exhibitor Portal Password Reset
-* Art Show Sold Report
-* Quick Sale Configuration Options
-* Make buttons in Art Inventory in Atcon easier to click
-* Added ability for PDF output pages to show error and status messages
-* Rules editing bugs
-* Renumber Perid (Ability to move Current GoH's into reserved range)
-* Added Bundle Memberships
-* Add online credit card ability to atcon and mail in reg using the "square WEB SDK"
-* Add region support to Art Inventory
-* New common token library for controll back end
-* Portal home page redesign
-* Make profile validation a common Javascript library
-* Move Age into perinfo (code support)
-* Add profile age to limit age rules in membership rules execution
-* New Category Managed
+* Change how exhibitor portal password resets work
+* Create Art Show Sold Report
+* Make quick sale options
+* Pad in and Out buttons to make them easier to click
+* PDF output pages cannot show status messages, shows blank screen
+* rules editing bugs
+* Ability to move Current GoHs into reserved range (renumber Perid)
+* Add "Bundle: " memberships
+* Add to atcon online credit card ability using the "square WEB SDK" for the credit card information
+* Add to vendor portal checking the policy items for memberships added that way as an option
+* add year select with limited functions to reglist
+* Art Inventory find doesn't handle regions, the tab is there but it isn't passed in
+* Create new common token library and use it to replace what is in Controll's google_init
 * Exhibitors pay should also trigger the payment emails
+* Implement Portal Redesign in PHP
 * In Exhibitor New Region Check Short Name is not in use
+* Make Portal Validation a common JS Library
+* Move Age to Perinfo
+* New Category Managed
+* now that age is in perinfo, rules needs to look at people ages, not just membership ages
+* Payment Page redesign
 
 # Items in Progress, but not in 2.0
 
