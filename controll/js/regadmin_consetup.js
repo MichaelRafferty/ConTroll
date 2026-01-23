@@ -267,7 +267,10 @@ class consetup {
         // save off the select list data
         this.#catListData = data['memCats'];
         this.#typeListData = data['memTypes'];
-        this.#ageListData = data['ageTypes'];
+        if (data['ageTypes'] && Array.isArray(data['ageTypes']))
+            this.#ageListData = data['ageTypes'];
+        else
+            this.#ageListData = [];
 
         // build the select lists
         this.#catListSelect = "<select name='memListCategorySelect' id='memListCategorySelect' onchange='memListModalDirty = true;'>";
