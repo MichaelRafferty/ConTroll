@@ -487,5 +487,5 @@ DELIMITER ;
 
 UPDATE perinfo SET managedBy = NULL, managedByNew = NULL where first_name = 'Merged' and middle_name = 'into';
 
-INSERT INTO patchLog(id, name) VALUES(xx, 'art, portal, et al');
+INSERT INTO patchLog(id, name) VALUES(56, 'art, portal, et al');
 
