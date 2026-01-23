@@ -377,7 +377,7 @@ class Find {
         this.#adminNotes.value = this.#editRow.admin_notes ? this.#editRow.admin_notes : '';
 
         // update rest of age items to match age
-        if (profile.age() == '' && this.#memAgeType == null) {
+        if (this.#memAgeType == null) {
             profile.hideAgeText(true);
             profile.hideAgeDiv(true);
         } else {
