@@ -1,6 +1,7 @@
 <?php
 require_once "lib/base.php";
 require_once "../lib/paymentPlans.php";
+require_once "../lib/tax.php";
 
 //initialize google session
 $need_login = google_init("page");
@@ -23,6 +24,7 @@ page_init($page,
                     //$cdn['luxon'],
                     $cdn['tabjs'],
                     'js/tinymce/tinymce.min.js',
+                    'js/taxConfig.js',
                     'js/finance.js',
                     'js/planSetup.js',
                     'js/payors.js',
@@ -551,6 +553,12 @@ EOS;
             </button>
         </li>
         <li class='nav-item' role='presentation'>
+            <button class='nav-link' id='taxConfig-tab' data-bs-toggle='pill' data-bs-target='#taxConfig-pane' type='button' role='tab'
+                    aria-controls='nav-configuration' aria-selected='false' onclick="finance.setFinanceTab('taxConfig-pane');">
+                Sales Tax Configuration
+            </button>
+        </li>
+        <li class='nav-item' role='presentation'>
             <button class='nav-link' id='paymentPlans-tab' data-bs-toggle='pill' data-bs-target='#paymentPlans-pane' type='button' role='tab'
                     aria-controls='nav-configuration' aria-selected='false' onclick="finance.setFinanceTab('paymentPlans-pane');">
                 Payment Plan Configuration
@@ -589,10 +597,29 @@ EOS;
                 <div class="col-sm-12">
                     <p>The Finance tab handles functions related to money:</p>
                     <ol>
-                        <li>Payment Plan Configuration</li>
-                        <li>Payor Plans</li>
-                        <li>Refunds</li>
+                        <li>Sales Tax Configuration - set tax rates for this convention year</li>
+                        <li>Payment Plan Configuration - Set up payment plans for this convention year</li>
+                        <li>Payor Plans - Display/(future)Change payor plans</li>
+                        <li>Refunds - Process Refunds (future)</li>
                     </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class='tab-pane fade' id='taxConfig-pane' role='tabpanel' aria-labelledby='taxConfig-tab' tabindex='0' hidden>
+        <div class='container-fluid'>
+            <div class='row mt-2'>
+                <div class='col-sm-12' id='taxConfigDiv'><H1 class='h3'><b>Sales Tax Configuration:</b></H1></div>
+            </div>
+            <div class='row mt-2'>
+                <div class='col-sm-12' id='taxConfigTable'></div>
+            </div>
+            <div class='row mt-2'>
+                <div class='col-sm-auto'>
+                    <button class='btn btn-sm btn-secondary' id='taxAddNewBtn' onclick='tax.addNew();'>Add New</button>
+                </div>
+                <div class='col-sm-auto'>
+                    <button class='btn btn-sm btn-primary' id='taxSaveBtn' onclick='tax.save();' disabled>Save Changes</button>
                 </div>
             </div>
         </div>
@@ -644,6 +671,7 @@ EOS;
             <div class='row mt-2'>
                 <div class='col-sm-auto p-0 m-0' id='detailTable'></div>
             </div>
+        </div>
     </div>
     <div id='result_message' class='mt-4 p-2'></div>
     <pre id='test'></pre>

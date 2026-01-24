@@ -30,7 +30,6 @@ class consetup {
     #message_div = null;
     #setup_type = null;
     #setup_title = null;
-    #memListData = null;
     #catListData = null;
     #typeListData = null;
     #ageListData = null;
@@ -40,6 +39,7 @@ class consetup {
     #memListModal = null;
     #memListMasterRow = null;
     #editData = null;
+    #paginationDiv = null;
 
     constructor(setup_type) {
         this.#message_div = document.getElementById('test');
@@ -95,6 +95,54 @@ class consetup {
         }
         this.checkMemlistUndoRedo();
     };
+
+    setEditDataPrice(row, value) {
+        if (this.#editData.length <= row) {
+            this.#editData.push({id: 'new' + row });
+            document.getElementById('EMLTS' + row + '_ID').innerHTML = this.#editData[row].id;
+            this.#editData[row].conid = this.#conid;
+            this.#editData[row].sort_order = this.#editData[row - 1].sort_order + 1;
+            document.getElementById('EMLTS' + row + '_Sort').value = this.#editData[row].sort_order;
+            this.#editData[row].memCategory = document.getElementById('memListCategorySelect').value;
+            this.#editData[row].memAge = document.getElementById('memListAgeSelect').value;
+            this.#editData[row].memType = document.getElementById('memListTypeSelect').value;
+            this.#editData[row].shortname = document.getElementById('editMemListLabel').value;
+            this.#editData[row].notes = document.getElementById('editMemListNotes').value;
+        }
+        this.#editData[row].price = value;
+    }
+
+    setEditDataStartDate(row, value) {
+        if (this.#editData.length <= row) {
+            this.#editData.push({id: 'new' + row });
+            document.getElementById('EMLTS' + row + '_ID').innerHTML = this.#editData[row].id;
+            this.#editData[row].sort_order = this.#editData[row - 1].sort_order + 1;
+            document.getElementById('EMLTS' + row + '_Sort').value = this.#editData[row].sort_order;
+            this.#editData[row].conid = this.#conid;
+            this.#editData[row].memCategory = document.getElementById('memListCategorySelect').value;
+            this.#editData[row].memAge = document.getElementById('memListAgeSelect').value;
+            this.#editData[row].memType = document.getElementById('memListTypeSelect').value;
+            this.#editData[row].shortname = document.getElementById('editMemListLabel').value;
+            this.#editData[row].notes = document.getElementById('editMemListNotes').value;
+        }
+        this.#editData[row].startdate = value;
+    }
+
+    setEditDataEndDate(row, value) {
+        if (this.#editData.length <= row) {
+            this.#editData.push({id: 'new' + row});
+            document.getElementById('EMLTS' + row + '_ID').innerHTML = this.#editData[row].id;
+            this.#editData[row].sort_order = this.#editData[row - 1].sort_order + 1;
+            document.getElementById('EMLTS' + row + '_Sort').value = this.#editData[row].sort_order;
+            this.#editData[row].conid = this.#conid;
+            this.#editData[row].memCategory = document.getElementById('memListCategorySelect').value;
+            this.#editData[row].memAge = document.getElementById('memListAgeSelect').value;
+            this.#editData[row].memType = document.getElementById('memListTypeSelect').value;
+            this.#editData[row].shortname = document.getElementById('editMemListLabel').value;
+            this.#editData[row].notes = document.getElementById('editMemListNotes').value;
+        }
+        this.#editData[row].enddate = value;
+    }
 
     draw(year, data, textStatus, jhXHR) {
         var _this = this;
@@ -256,7 +304,9 @@ class consetup {
         } else {
             memListData = data['memList'];
         }
-        document.getElementById(this.#setup_type + 'PaginationDiv').hidden = data['memlist'].length <= 25;
+        this.#paginationDiv = document.getElementById( this.#setup_type + 'PaginationDiv');
+        this.#paginationDiv.innerHTML = '';
+        this.#paginationDiv.hidden = data['memlist'].length <= 25;
 
         this.#memtable = new Tabulator('#' + this.#setup_type + '-memlist', {
             history: true,
@@ -267,7 +317,10 @@ class consetup {
             paginationAddRow: "table",
             paginationSize: 25,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
-            paginationElement: document.getElementById( this.#setup_type + 'PaginationDiv'),
+            paginationElement: this.#paginationDiv,
+            initialSort:[
+                {column:"sort_order", dir:"asc"}, //sort by this first
+            ],
             columns: [
                 {rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false},
                 {
@@ -277,13 +330,13 @@ class consetup {
                     }
                 },
                 {title: "Edit", formatter: this.editbutton, formatterParams: {year: year}, hozAlign: "left", headerSort: false},
+                {title: "Sort", field: "sort_order", headerSort: true,sorter:"number"},
                 {
                     title: "ID", field: "id", width: 70, headerSort: true, headerHozAlign: "right", hozAlign: "right",
                     headerFilter: "input", headerFilterFunc: numberHeaderFilter,
                 },
                 {field: "memlistkey", visible: false,},
                 {title: "Con ID", field: "conid", width: 70, headerWordWrap: true, headerFilter: true, headerHozAlign: "right", hozAlign: "right",},
-                {title: "Sort", field: "sort_order", headerSort: false, visible: false},
                 {
                     title: "Category",
                     field: "memCategory",
@@ -365,6 +418,8 @@ class consetup {
     editbutton(cell, formatterParams, onRendered) {
         var index = cell.getRow().getIndex()
         var year = formatterParams.year;
+        if (isNaN(index))
+            index = "'" + index + "'";
         return '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
             ' onclick="' + year + '.editSeries(' + index + ');">Edit</button>';
     }
@@ -514,10 +569,10 @@ class consetup {
             price: 0,
             atcon: 'N',
             online: 'N',
-            sortorder: 199,
+            sortorder: 0,
             uses: 0
         }, false).then(function (row) {
-            row.getTable().setPage('last').then(function () {
+            row.getTable().setPageToRow(row).then(function () {
                 row.getCell("id").getElement().style.backgroundColor = "#fff3cd";
                 row.getCell("conid").getElement().style.backgroundColor = "#fff3cd";
                 row.getCell("shortname").getElement().style.backgroundColor = "#fff3cd";
@@ -530,6 +585,24 @@ class consetup {
     };
 
     memlist_rowMoved(row) {
+        // first change the sort order entry for this row, to be one more than the one before, or if first, one less than the one after
+        let sortValue = undefined;
+        let sortCell = undefined;
+        let copyRow = row.getPrevRow();
+        if (copyRow !== false) {
+            sortCell = copyRow.getCell('sort_order');
+            sortValue = sortCell.getValue() + 1;
+        } else {
+            copyRow = row.getNextRow();
+            if (copyRow !== false) {
+                sortCell = copyRow.getCell('sort_order');
+                sortValue = sortCell.getValue() - 1;
+            }
+        }
+        if (sortValue !== undefined) {
+            sortCell = row.getCell('sort_order');
+            sortCell.setValue(sortValue);
+        }
         this.#memlist_savebtn.innerHTML = "Save Changes*";
         this.#memlist_savebtn.disabled = false;
         this.#memlist_dirty = true;
@@ -748,18 +821,27 @@ class consetup {
             if (document.getElementById('EMLTS' + index + '_Price').value != '') {
                 // has price, copy the data rows
                 if (index >= this.#editData.length) {
-                    this.#editData.push({id: 'new' + index });
+                    this.#editData.push({id: 'new' + index, conid: this.#conid });
                     document.getElementById('EMLTS' + index + '_ID').innerHTML = this.#editData[index].id;
+                    this.#editData[row].sort_order = this.#editData[row - 1].sort_order + 1;
+                    document.getElementById('EMLTS' + row + '_Sort').value = this.#editData[row].sort_order;
+                    this.#editData[index].startdate = document.getElementById('EMLTS' + index + '_Start').value;
+                    this.#editData[index].enddate = document.getElementById('EMLTS' + index + '_End').value;
+                    this.#editData[index].price = document.getElementById('EMLTS' + index + '_Price').value;
                 }
                 this.#editData[index].memCategory = document.getElementById('memListCategorySelect').value;
                 this.#editData[index].memAge = document.getElementById('memListAgeSelect').value;
                 this.#editData[index].memType = document.getElementById('memListTypeSelect').value;
                 this.#editData[index].shortname = document.getElementById('editMemListLabel').value;
                 this.#editData[index].notes = document.getElementById('editMemListNotes').value;
+                this.#editData[index].atcon = document.getElementById('editMemListAtcon').value;
+                this.#editData[index].online = document.getElementById('editMemListOnline').value;
                 this.#editData[index].glNum = document.getElementById('editMemListGLNum').value;
                 this.#editData[index].glLabel = document.getElementById('editMemListGLLabel').value;
                 document.getElementById('EMLTS' + index + '_glNum').value = this.#editData[index].glNum;
                 document.getElementById('EMLTS' + index + '_glLabel').value = this.#editData[index].glLabel;
+                document.getElementById('EMLTS' + index + '_Atcon').value = this.#editData[index].atcon;
+                document.getElementById('EMLTS' + index + '_Online').value = this.#editData[index].online;
             }
         }
         show_message("Fields copied", 'success', 'result_message_editMemList');
@@ -784,6 +866,9 @@ class consetup {
                 if (index >= this.#editData.length) {
                     this.#editData.push({id: 'new' + index });
                     // new rows also get all the master row data
+                    this.#editData[index].sort_order = this.#editData[index - 1].sort_order + 1;
+                    document.getElementById('EMLTS' + index + '_Sort').value = this.#editData[index].sort_order;
+                    this.#editData[index].conid = this.#conid;
                     this.#editData[index].memCategory = document.getElementById('memListCategorySelect').value;
                     this.#editData[index].memAge = document.getElementById('memListAgeSelect').value;
                     this.#editData[index].memType = document.getElementById('memListTypeSelect').value;
@@ -793,6 +878,7 @@ class consetup {
                     this.#editData[index].glLabel = document.getElementById('editMemListGLLabel').value;
                     document.getElementById('EMLTS' + index + '_ID').innerHTML = this.#editData[index].id;
                 }
+                this.#editData[index].sort_order = document.getElementById('EMLTS' + row + '_Sort').value;
                 this.#editData[index].price = document.getElementById('EMLTS' + row + '_Price').value;
                 this.#editData[index].startdate = document.getElementById('EMLTS' + row + '_Start').value;
                 this.#editData[index].enddate = document.getElementById('EMLTS' + row + '_End').value;
@@ -838,13 +924,14 @@ class consetup {
             if (a.price > b.price)
                 return 1;
 
-            return 0;
+            return a.sort_order - b.sort_order;
         });
 
         // fill in the bottom rows from the edit array
         for (var index = 0; index < this.#editData.length; index++) {
             var row = this.#editData[index];
             document.getElementById('EMLTS' + index + '_ID').innerHTML = row.id;
+            document.getElementById('EMLTS' + index + '_Sort').value = row.sort_order;
             document.getElementById('EMLTS' + index + '_Price').value = row.price;
             document.getElementById('EMLTS' + index + '_Start').value = row.startdate;
             document.getElementById('EMLTS' + index + '_End').value = row.enddate;
@@ -857,6 +944,7 @@ class consetup {
         // clear the remaining bottom rows
         for (index = this.#editData.length; index < 10; index++) {
             document.getElementById('EMLTS' + index + '_ID').innerHTML = '';
+            document.getElementById('EMLTS' + index + '_Sort').value = '';
             document.getElementById('EMLTS' + index + '_Price').value = '';
             document.getElementById('EMLTS' + index + '_Start').value = '';
             document.getElementById('EMLTS' + index + '_End').value = '';
@@ -879,6 +967,7 @@ class consetup {
             var id = this.#editData[index].id;
             this.#memtable.getRow(id).getElement().style.backgroundColor = "#fff3cd";
         }
+        this.#memtable.setSort([{column:"sort_order", dir: "asc"}]);
         this.#memListModal.hide();
 
         // mark that we need to save the screen
@@ -983,24 +1072,39 @@ function glLabelChange(masterRow) {
 function tsPriceChange(row) {
     if (row == editListMasterRow) {
         document.getElementById('editMemListPrice').value = document.getElementById('EMLTS' + row + '_Price').value;
-        memListModalDirty = true;
     }
+    // so align works need to update the date field in the table
+    memListModalDirty = true;
+    if (activeConSetup == 'next')
+        next.setEditDataPrice(row, document.getElementById('EMLTS' + row + '_Price').value);
+    else
+        current.setEditDataPrice(row, document.getElementById('EMLTS' + row + '_Price').value);
+    memListModalDirty = true;
 }
 
 // bottom section edited startdate, set top screen
 function tsStartChange(row) {
     if (row == editListMasterRow) {
         document.getElementById('editMemListStart').value = document.getElementById('EMLTS' + row + '_Start').value;
-        memListModalDirty = true;
     }
+    // so align works need to update the date field in the table
+    memListModalDirty = true;
+    if (activeConSetup == 'next')
+        next.setEditDataStartDate(row, document.getElementById('EMLTS' + row + '_Start').value);
+    else
+        current.setEditDataStartDate(row, document.getElementById('EMLTS' + row + '_Start').value);
 }
 
 // bottom section edited enddate, set top screen
 function tsEndChange(row) {
     if (row == editListMasterRow) {
         document.getElementById('editMemListEnd').value = document.getElementById('EMLTS' + row + '_End').value;
-        memListModalDirty = true;
     }
+    memListModalDirty = true;
+    if (activeConSetup == 'next')
+        next.setEditDataEndDate(row, document.getElementById('EMLTS' + row + '_End').value);
+    else
+        current.setEditDataEndDate(row, document.getElementById('EMLTS' + row + '_End').value);
 }
 
 // bottom section edited atcon, set top screen

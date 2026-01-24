@@ -11,11 +11,7 @@ $return500errors = true;
 $response = array('post' => $_POST, 'get' => $_GET);
 
 $vendor = getSessionVar('id');
-
-global $con;
-$con = get_con();
-$conid=$con['id'];
-
+$conid=getConfValue('con', 'id');
 $response['conid'] = $conid;
 
 // validate that the items passed are the VendorSpace id and the VendorSpacePrice id

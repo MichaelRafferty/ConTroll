@@ -49,6 +49,7 @@ $debug_art_control = getConfValue('debug', 'controll_art_control', 0);
 </div>
 <?php drawCreatePane(100); ?>
 <?php drawEditPane(200); ?>
+<?php drawHistoryPane(300); ?>
 <div>
     <ul class='nav nav-tabs mb-3' id='region-tabs' role='tablist'>
         <li class='nav-item active' role='presentation'>
@@ -167,4 +168,28 @@ function drawCreatePane($tabIndex=100)
         </div>
     </div>
 <?php
+}
+
+function drawHistoryPane($tabIndex=100)
+{?>
+<!-- artItem History Modal -->
+<div id='artItemHistoryPane' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Art Item History' aria-hidden='true' style='--bs-modal-width: 96%;'>
+    <div class='modal-dialog'>
+        <div class='modal-content'>
+            <div class='modal-header bg-primary text-bg-primary'>
+                <div class='modal-title'>
+                    <strong id='artItemHistoryTitle'>Art Item History</strong>
+                </div>
+                <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+            </div>
+            <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                <div class='container-fluid' id='artItemHistory-div'></div>
+            </div>
+            <div class='modal-footer'>
+                <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+    <?php
 }

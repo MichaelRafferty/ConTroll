@@ -1,6 +1,6 @@
 <?php
 // update changed exhibits setup data and then
-// retrieve exhibits setup data for admin tab exhibitss
+// retrieve exhibits setup data for admin tab exhibits
 require_once '../lib/base.php';
 
 // use common global Ajax return functions
@@ -109,6 +109,9 @@ switch ($tablename) {
             if ((!array_key_exists('usesInventory', $row)) || $row['usesInventory'] == null || trim($row['usesInventory']) == '') {
                 $error .= 'The region type with Region Type ' . $row['regionType'] . ' is missing the Uses Inventory Mgmt field, that field is required<br/>';
             }
+            if ((!array_key_exists('allowQuickSale', $row)) || $row['allowQuickSale'] == null || trim($row['allowQuickSale']) == '') {
+                $error .= 'The region type with Region Type ' . $row['regionType'] . ' is missing the Allow Quick Sale field, that field is required<br/>';
+            }
             if ((!array_key_exists('maxInventory', $row)) || $row['maxInventory'] < 0 || $row['maxInventory'] > 999999) {
                 $error .= 'The region type with Region Type ' . $row['regionType'] . ', the maximum number of art inventory pieces is out of range.<br/>';
             }
@@ -116,6 +119,7 @@ switch ($tablename) {
         if ($error != '') {
             $error .= 'Correct the missing data and save again.';
             $response['error'] = $error;
+            $response['messsage'] = $error;
             ajaxSuccess($response);
             exit();
         }
@@ -127,13 +131,13 @@ switch ($tablename) {
         }
         $inssql = <<<EOS
 INSERT INTO exhibitsRegionTypes(regionType, portalType, requestApprovalRequired, purchaseApprovalRequired, purchaseAreaTotals, 
-                                inPersonMaxUnits, mailinAllowed, mailinMaxUnits, needW9, usesInventory, maxInventory, sortorder, active)
-VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?);
+                                inPersonMaxUnits, mailinAllowed, mailinMaxUnits, needW9, usesInventory, maxInventory, allowQuickSale, sortorder, active)
+VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?);
 EOS;
         $updsql = <<<EOS
 UPDATE exhibitsRegionTypes
 SET regionType = ?, portalType = ?, requestApprovalRequired = ?, purchaseApprovalRequired = ?, purchaseAreaTotals = ?, 
-    inPersonMaxUnits = ?, mailinAllowed = ?, mailinMaxUnits = ?, needW9 = ?, usesInventory = ?, maxInventory = ?,
+    inPersonMaxUnits = ?, mailinAllowed = ?, mailinMaxUnits = ?, needW9 = ?, usesInventory = ?, maxInventory = ?, allowQuickSale = ?,
     sortorder = ?, active = ?
 WHERE regionType = ?;
 EOS;
@@ -155,9 +159,9 @@ EOS;
                 } else {
                     $mailinMaxUnits = null;
                 }
-                $numrows = dbSafeCmd($updsql, 'sssssisissiiss', array($row['regionType'], $row['portalType'], $row['requestApprovalRequired'], $row['purchaseApprovalRequired'],
+                $numrows = dbSafeCmd($updsql, 'sssssisissisiss', array($row['regionType'], $row['portalType'], $row['requestApprovalRequired'], $row['purchaseApprovalRequired'],
                     $row['purchaseAreaTotals'], $inPersonMaxUnits, $row['mailinAllowed'], $mailinMaxUnits, $row['needW9'], $row['usesInventory'], $row['maxInventory'],
-                    $row['sortorder'], $row['active'],$row[$keyfield]));
+                     $row['allowQuickSale'], $row['sortorder'], $row['active'],$row[$keyfield]));
                 $updated += $numrows;
             }
         }
@@ -179,9 +183,10 @@ EOS;
                 } else {
                     $mailinMaxUnits = null;
                 }
-                $numrows = dbSafeInsert($inssql, 'sssssisissiis', array($row['regionType'], $row['portalType'], $row['requestApprovalRequired'],
+
+                $numrows = dbSafeInsert($inssql, 'sssssisissisis', array($row['regionType'], $row['portalType'], $row['requestApprovalRequired'],
                     $row['purchaseApprovalRequired'], $row['purchaseAreaTotals'], $inPersonMaxUnits, $row['mailinAllowed'], $mailinMaxUnits,
-                    $row['needW9'], $row['usesInventory'], $row['maxInventory'],$row['sortorder'], $row['active']));
+                    $row['needW9'], $row['usesInventory'], $row['maxInventory'],$row['allowQuickSale'], $row['sortorder'], $row['active']));
                 if ($numrows !== false)
                     $inserted++;
             }
@@ -248,6 +253,12 @@ EOS;
 
     case 'regionYears':
         if ($delete_keys != '') {
+            // if we have a delete key, it can't have an exhibits space entry, which means there are no exhibitorRegionYears entries with
+            //      the space items in them, so first delete all of the exhibitorRegionYears with these exhibitsRegionYears keys
+            $delsql = "DELETE FROM exhibitorRegionYears WHERE exhibitsRegionYearId IN ($delete_keys);";
+            web_error_log("Delete usage items = /$delsql/");
+            $deleted += dbCmd($delsql);
+            // now that the exhibitor region years are gone, the delete of the exhibits region years should be able to proceed
             $delsql = "DELETE FROM exhibitsRegionYears WHERE id IN ( $delete_keys );";
             web_error_log("Delete sql = /$delsql/");
             $deleted += dbCmd($delsql);
@@ -329,6 +340,12 @@ EOS;
 
     case 'exhibitsSpaces':
         if ($delete_keys != '') {
+            // if we have a delete key, it can't have an exhibits space price entry, which means there are no exhibitorSpaces entries with
+            //      the space prices items in them, so first delete all of the exhibitorSpaces with these exhibitsSpace keys
+            $delsql = "DELETE FROM exhibitorSpaces WHERE spaceId IN ($delete_keys);";
+            web_error_log("Delete usage items = /$delsql/");
+            $deleted += dbCmd($delsql);
+            // now that the exhibitor spaces are gone, the delete of the exhibits spaces should be able to proceed
             $delsql = "DELETE FROM exhibitsSpaces WHERE id IN ( $delete_keys );";
             web_error_log("Delete sql = /$delsql/");
             $deleted += dbCmd($delsql);

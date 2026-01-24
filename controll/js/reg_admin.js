@@ -7,6 +7,8 @@ customText = null;
 policy = null;
 interests = null;
 rules = null;
+configEditor = null;
+checkConfigReload = true;
 conid = null;
 editPreviewClass = null;
 memLabels = null;
@@ -46,8 +48,8 @@ var reglistDiv = null;
 // changes items
 var changeMemberships = [];
 var changeList = [];
-var denyRevoke = ['rolled-over', 'cancelled','refunded', 'transfered'];
-var denyTransfer = ['rolled-over', 'cancelled','refunded', 'transfered'];
+var denyRevoke = ['rolled-over', 'cancelled','refunded', 'transferred'];
+var denyTransfer = ['rolled-over', 'cancelled','refunded', 'transferred'];
 var allowRolloverCategories = ['standard','freebie','upgrade','yearahead'];
 var currentIndex = null;
 var currentRow = null;
@@ -394,7 +396,7 @@ function draw_stats(data) {
 
     if (curRegListSearch == '') {
         category = new Tabulator('#category-table', {
-            data: data['categories'],
+            data: data.categories,
             layout: "fitDataTable",
             columns: [
                 {
@@ -410,7 +412,7 @@ function draw_stats(data) {
         catfilter = [];
 
         type = new Tabulator('#type-table', {
-            data: data['types'],
+            data: data.types,
             layout: "fitDataTable",
             columns: [
                 {
@@ -426,7 +428,7 @@ function draw_stats(data) {
         typefilter = [];
 
         age = new Tabulator('#age-table', {
-            data: data['ages'],
+            data: data.ages,
             layout: "fitDataTable",
             columns: [
                 {
@@ -442,7 +444,7 @@ function draw_stats(data) {
         agefilter = [];
 
         price = new Tabulator('#price-table', {
-            data: data['prices'],
+            data: data.prices,
             layout: "fitDataTable",
             columns: [
                 {
@@ -458,7 +460,7 @@ function draw_stats(data) {
         pricefilter = [];
 
         label = new Tabulator('#label-table', {
-            data: data['labels'],
+            data: data.labels,
             layout: "fitDataTable",
             columns: [
                 {
@@ -474,7 +476,7 @@ function draw_stats(data) {
         labelfilter = [];
 
         coupon = new Tabulator('#coupon-table', {
-            data: data['coupons'],
+            data: data.coupons,
             layout: "fitDataTable",
             columns: [
                 {
@@ -490,7 +492,7 @@ function draw_stats(data) {
         couponfilter = [];
 
         statusTable = new Tabulator('#status-table', {
-            data: data['statuses'],
+            data: data.statuses,
             layout: "fitDataTable",
             columns: [
                 {
@@ -510,11 +512,11 @@ function draw_stats(data) {
 // display actions as buttons in a cell for this membership
 function actionbuttons(cell, formatterParams, onRendered) {
     var data = cell.getData();
-    var perid = data['perid'];
-    var paid = data['paid'];
-    var ncount = data['ncount'];
-    var hcount = data['hcount'];
-    var complete_trans = data['complete_trans'];
+    var perid = data.perid;
+    var paid = data.paid;
+    var ncount = data.ncount;
+    var hcount = data.hcount;
+    var complete_trans = data.complete_trans;
     var index = cell.getRow().getIndex();
 
     var btns = "";
@@ -544,12 +546,12 @@ return btns;
 //// Receipt Start
 // display receipt: use the modal to show the receipt
 function displayReceipt(data) {
-    document.getElementById('receipt-div').innerHTML = data['receipt_html'];
-    document.getElementById('receipt-tables').innerHTML = data['receipt_tables'];
-    document.getElementById('receipt-text').innerHTML = data['receipt'];
-    recepitEmailAddress = data['payor_email'];
-    document.getElementById('emailReceipt').innerHTML = "Email Receipt to " + data['payor_name'] + ' at ' + recepitEmailAddress;
-    document.getElementById('receiptTitle').innerHTML = "Registration Receipt for " + data['payor_name'];
+    document.getElementById('receipt-div').innerHTML = data.receipt_html;
+    document.getElementById('receipt-tables').innerHTML = data.receipt_tables;
+    document.getElementById('receipt-text').innerHTML = data.receipt;
+    recepitEmailAddress = data.payor_email;
+    document.getElementById('emailReceipt').innerHTML = "Email Receipt to " + data.payor_name + ' at ' + recepitEmailAddress;
+    document.getElementById('receiptTitle').innerHTML = "Registration Receipt for " + data.payor_name;
     receiptModal.show();
 }
 
@@ -580,15 +582,15 @@ function receipt_email(addrchoice) {
         url: "scripts/emailReceipt.php",
         data: data,
         success: function (data, textstatus, jqxhr) {
-            if (data['error'] !== undefined) {
-                show_message(data['error'], 'error');
+            if (data.error !== undefined) {
+                show_message(data.error, 'error');
                 return;
             }
-            if (data['success'] !== undefined) {
-                show_message(data['success'], 'success');
+            if (data.success !== undefined) {
+                show_message(data.success, 'success');
             }
-            if (data['warn'] !== undefined) {
-                show_message(data['warn'], 'warn');
+            if (data.warn !== undefined) {
+                show_message(data.warn, 'warn');
             }
         },
         error: function (jqXHR, textStatus, errorThrown) {
@@ -608,18 +610,18 @@ function receipt(index) {
         url: "scripts/getReceipt.php",
         data: { transid },
         success: function (data, textstatus, jqxhr) {
-            if (data['error'] !== undefined) {
-                show_message(data['error'], 'error');
+            if (data.error !== undefined) {
+                show_message(data.error, 'error');
                 return;
             }
-            if (data['success'] !== undefined) {
-                show_message(data['success'], 'success');
+            if (data.success !== undefined) {
+                show_message(data.success, 'success');
             }
-            if (data['warn'] !== undefined) {
-                show_message(data['warn'], 'warn');
+            if (data.warn !== undefined) {
+                show_message(data.warn, 'warn');
             }
             displayReceipt(data);
-            if (data['success'] !== undefined)
+            if (data.success !== undefined)
                 show_message(data.success, 'success');
         },
         error: function (jqXHR, textStatus, errorThrown) {
@@ -638,18 +640,18 @@ function history(index) {
         url: "scripts/regadmin_getRegHistory.php",
         data: { regid: regid },
         success: function (data, textstatus, jqxhr) {
-            if (data['error'] !== undefined) {
-                show_message(data['error'], 'error');
+            if (data.error !== undefined) {
+                show_message(data.error, 'error');
                 return;
             }
-            if (data['success'] !== undefined) {
-                show_message(data['success'], 'success');
+            if (data.success !== undefined) {
+                show_message(data.success, 'success');
             }
-            if (data['warn'] !== undefined) {
-                show_message(data['warn'], 'warn');
+            if (data.warn !== undefined) {
+                show_message(data.warn, 'warn');
             }
             displayHistory(data);
-            if (data['success'] !== undefined)
+            if (data.success !== undefined)
                 show_message(data.success, 'success');
         },
         error: function (jqXHR, textStatus, errorThrown) {
@@ -679,11 +681,11 @@ function displayHistory(data) {
         "<div class='col-sm-1'>Status</div>\n" +
         "</div>\n";
     // format the current line
-    var current = data['history'][0];
+    var current = data.history[0];
     var color = '';
-    var prior = data['history'][0];
-    for (var i = 0; i < data['history'].length; i++) {
-        var current = data['history'][i];
+    var prior = data.history[0];
+    for (var i = 0; i < data.history.length; i++) {
+        var current = data.history[i];
         html += "<div class='row'>\n";
 
         // change date
@@ -741,7 +743,7 @@ function changeReg(index, clear = true) {
     currentIndex = index;
     var row = registrationtable.getRow(index);
     changeRowdata = row.getData();
-    var perid = changeRowdata['perid'];
+    var perid = changeRowdata.perid;
 
     if (perid == null || perid == '' || perid <= 0)
         return;
@@ -757,15 +759,15 @@ function changeReg(index, clear = true) {
         url: script,
         data: data,
         success: function (data, textstatus, jqxhr) {
-            if (data['error'] !== undefined) {
-                show_message(data['error'], 'error');
+            if (data.error !== undefined) {
+                show_message(data.error, 'error');
                 return;
             }
-            if (data['success'] !== undefined) {
-                show_message(data['success'], 'success');
+            if (data.success !== undefined) {
+                show_message(data.success, 'success');
             }
-            if (data['warn'] !== undefined) {
-                show_message(data['warn'], 'warn');
+            if (data.warn !== undefined) {
+                show_message(data.warn, 'warn');
                 return;
             }
             changeRegsData(data, changeRowdata);
@@ -862,10 +864,10 @@ function changeRegsData(data, rowdata) {
             <button class="btn btn-sm btn-warning me-4" onclick="changeRevoke(1);">Restore Selected</button>
             <button class="btn btn-sm btn-primary me-4" onclick="changeTransfer();">Transfer Selected</button>
 `;
-    if (config['oneoff'] == 0) {
+    if (config.oneoff == 0) {
         html += '<button class="btn btn-sm btn-primary me-4" onclick="changeRollover();">Rollover Selected</button>\n';
     }
-    if (config['finance'] == 1) {
+    if (config.finance == 1) {
         html += '<button class="btn btn-sm btn-primary" onclick="changeRefund();">Refund Selected</button>\n';
     }
     html += `
@@ -932,7 +934,7 @@ function changeRevoke(direction) {
         cancelList: changeList,
         direction: direction,
         action: 'cancel',
-        source: config['source'],
+        source: config.source,
     }
     var script= 'scripts/regadmin_cancelReg.php';
 
@@ -941,21 +943,21 @@ function changeRevoke(direction) {
         url: script,
         data: data,
         success: function (data, textstatus, jqxhr) {
-            if (data['error'] !== undefined) {
-                show_message(data['error'], 'error', 'changeMessageDiv');
+            if (data.error !== undefined) {
+                show_message(data.error, 'error', 'changeMessageDiv');
                 return;
             }
-            if (data['warn'] !== undefined) {
-                show_message(data['warn'], 'warn', 'changeMessageDiv');
+            if (data.warn !== undefined) {
+                show_message(data.warn, 'warn', 'changeMessageDiv');
                 return;
             }
             changeModal.hide();
             getData('r');
-            if (data['success'] !== undefined) {
-                show_message(data['success'], 'success', 'changeMessageDiv');
+            if (data.success !== undefined) {
+                show_message(data.success, 'success', 'changeMessageDiv');
             }
-            if (data['message'])
-                show_message(data['message'], 'success', 'changeMessageDiv');
+            if (data.message)
+                show_message(data.message, 'success', 'changeMessageDiv');
         },
         error: function (jqXHR, textStatus, errorThrown) {
             showError("ERROR in cancelReg: " + textStatus, jqXHR);
@@ -983,7 +985,7 @@ function changeTransfer() {
             continue;
 
         if (denyTransfer.indexOf(changeItem.status) != -1)  {
-            message += "Cannot transfer " + changeItem.id + " as status " + changeItem.status + " cannot be transfered<br/>";
+            message += "Cannot transfer " + changeItem.id + " as status " + changeItem.status + " cannot be transferred<br/>";
             continue;
         }
 
@@ -1039,15 +1041,15 @@ function changeTransferFind() {
         data: { name_search: name_search, },
         success: function (data, textstatus, jqxhr) {
             $("button[name='transferSearch']").attr("disabled", false);
-            if (data['error'] !== undefined) {
-                show_message(data['error'], 'error', 'changeMessageDiv');
+            if (data.error !== undefined) {
+                show_message(data.error, 'error', 'changeMessageDiv');
                 return;
             }
-            if (data['message'] !== undefined) {
-                show_message(data['message'], 'success', 'changeMessageDiv');
+            if (data.message !== undefined) {
+                show_message(data.message, 'success', 'changeMessageDiv');
             }
-            if (data['warn'] !== undefined) {
-                show_message(data['warn'], 'warn','changeMessageDiv');
+            if (data.warn !== undefined) {
+                show_message(data.warn, 'warn','changeMessageDiv');
             }
             changeTransferFound(data);
         },
@@ -1058,32 +1060,23 @@ function changeTransferFind() {
     });
 }
 
-// badge_name_default: build a default badge name if its empty
-function badge_name_default(badge_name, first_name, last_name) {
-    if (badge_name === undefined | badge_name === null || badge_name === '') {
-        var default_name = (first_name + ' ' + last_name).trim();
-        return '<i>' + default_name.replace(/ +/, ' ') + '</i>';
-    }
-    return badge_name;
-}
-
 // show the full perinfo record as a hover in the table
 function build_record_hover(e, cell, onRendered) {
     var data = cell.getData();
     //console.log(data);
-    var hover_text = 'Person id: ' + data['perid'] + '<br/>' +
-        (data['first_name'] + ' ' + data['middle_name'] + ' ' + data['last_name']).trim() + '<br/>' +
-        data['address_1'] + '<br/>';
-    if (data['address_2'] != '') {
-        hover_text += data['address_2'] + '<br/>';
+    var hover_text = 'Person id: ' + data.perid + '<br/>' +
+        (data.first_name + ' ' + data.middle_name + ' ' + data.last_name).trim() + '<br/>' +
+        data.address_1 + '<br/>';
+    if (data.address_2 != '') {
+        hover_text += data.address_2 + '<br/>';
     }
-    hover_text += data['city'] + ', ' + data['state'] + ' ' + data['postal_code'] + '<br/>';
-    if (data['country'] != '' && data['country'] != 'USA') {
-        hover_text += data['country'] + '<br/>';
+    hover_text += data.city + ', ' + data.state + ' ' + data.postal_code + '<br/>';
+    if (data.country != '' && data.country != 'USA') {
+        hover_text += data.country + '<br/>';
     }
-    hover_text += 'Badge Name: ' + badge_name_default(data['badge_name'], data['first_name'], data['last_name']) + '<br/>' +
-        'Email: ' + data['email_addr'] + '<br/>' + 'Phone: ' + data['phone'] + '<br/>' +
-        'Active:' + data['active'] + ' Contact?:' + data['contact_ok'] + ' Share?:' + data['share_reg_ok'] + '<br/>';
+    hover_text += 'Badge Name: ' + badgeNameDefault(data.badge_name, data.badgeNameL2, data.first_name, data.last_name) + '<br/>' +
+        'Email: ' + data.email_addr + '<br/>' + 'Phone: ' + data.phone + '<br/>' +
+        'Active:' + data.active + ' Contact?:' + data.contact_ok + ' Share?:' + data.share_reg_ok + '<br/>';
 
     return hover_text;
 }
@@ -1109,8 +1102,8 @@ function addTransferIcon(cell, formatterParams, onRendered) { //plain text value
 
 // changeTransferFound - display a list of potential transfer recipients
 function changeTransferFound(data) {
-    var perinfo = data['perinfo'];
-    var name_search = data['name_search'];
+    var perinfo = data.perinfo;
+    var name_search = data.name_search;
     if (perinfo.length > 0) {
         find_result_table = new Tabulator('#transfer_search_results', {
             maxHeight: "600px",
@@ -1129,7 +1122,7 @@ function changeTransferFound(data) {
                 {field: "first_name", visible: false,},
                 {field: "middle_name", visible: false,},
                 {field: "suffix", visible: false,},
-                {title: "Badge Name", field: "badge_name", width: 200, headerFilter: true, headerWordWrap: true, tooltip: true,},
+                {title: "Badge Name", field: "badgename", width: 200, headerFilter: true, headerWordWrap: true, tooltip: true, formatter: 'html', },
                 {title: "Zip", field: "postal_code", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 100, width: 100},
                 {title: "Email Address", field: "email_addr", width: 200, headerFilter: true, headerWordWrap: true, tooltip: true,},
                 {title: "Current Registrations", field: "regs", headerFilter: true, headerWordWrap: true, tooltip: true,},
@@ -1153,7 +1146,7 @@ function transferReg(to, banned) {
         from: changeRowdata.perid,
         to: to,
         transferList: changeList,
-        source: config['source'],
+        source: config.source,
     }
     $.ajax({
         url: script,
@@ -1306,7 +1299,7 @@ function changeRolloverExecute() {
     var data = {
         rolloverList: newIds,
         action: 'rollover',
-        source: config['source'],
+        source: config.source,
     }
     var script= 'scripts/regadmin_rolloverReg.php';
 
@@ -1315,15 +1308,15 @@ function changeRolloverExecute() {
         url: script,
         data: data,
         success: function (data, textstatus, jqxhr) {
-            if (data['error'] !== undefined) {
-                show_message(data['error'], 'error', 'changeMessageDiv');
+            if (data.error !== undefined) {
+                show_message(data.error, 'error', 'changeMessageDiv');
                 return;
             }
-            if (data['success'] !== undefined) {
-                show_message(data['success'], 'success', 'changeMessageDiv');
+            if (data.success !== undefined) {
+                show_message(data.success, 'success', 'changeMessageDiv');
             }
-            if (data['warn'] !== undefined) {
-                show_message(data['warn'], 'warn', 'changeMessageDiv');
+            if (data.warn !== undefined) {
+                show_message(data.warn, 'warn', 'changeMessageDiv');
                 return;
             }
             rolloverSelect.innerHTML = '';
@@ -1383,7 +1376,7 @@ function changeEdit(badgeId) {
     }
     memOptionList += "</select>\n";
 
-    var statuses = ['unpaid','plan','paid','cancelled','refunded','transfered','upgraded','rolled-over'];
+    var statuses = ['unpaid','plan','paid','cancelled','refunded','transferred','upgraded','rolled-over'];
     var statusSelect = "<select id='newStatus'>\n";
     for (var i = 0; i < statuses.length; i++) {
         statusSelect += '<option value="' + statuses[i] + '"' + (currentRow.status == statuses[i] ? ' selected' : '') +
@@ -1448,7 +1441,7 @@ function changeEditSave(override) {
         // now some simple validations
         var warnings = '';
         var numWarnings = 0;
-        if (config['finance'] == 1) {
+        if (config.finance == 1) {
             var balanceDue = Number(newPrice) - (Number(newPaid) + Number(newDiscount));
             if (newPrice != (Number(newPaid) + Number(newDiscount))) {
                 warnings += 'Price of ' + newPrice + ' does not equal the sum of Paid + Coupon Discount of ' +
@@ -1467,7 +1460,7 @@ function changeEditSave(override) {
             numWarnings++;
         }
 
-        if (config['finance'] == 1) {
+        if (config.finance == 1) {
             if (balanceDue > 0 && (newStatus == 'paid' || newStatus == 'upgraded')) {
                 warnings += 'There is a balance Due of ' + balanceDue + " and the record is paid/uograded, it needs to be 'unpaid'." +
                     " If you continue it will be set to unpaid.<br/>";
@@ -1500,7 +1493,7 @@ function changeEditSave(override) {
             couponDiscount: newDiscount,
             status: newStatus,
         },
-        source: config['source'],
+        source: config.source,
     };
     var script = 'scripts/regadmin_editReg.php';
     $.ajax({
@@ -1508,15 +1501,15 @@ function changeEditSave(override) {
         url: script,
         data: data,
         success: function (data, textstatus, jqxhr) {
-            if (data['error'] !== undefined) {
-                show_message(data['error'], 'error', 'changeMessageDiv');
+            if (data.error !== undefined) {
+                show_message(data.error, 'error', 'changeMessageDiv');
                 return;
             }
-            if (data['success'] !== undefined) {
-                show_message(data['success'], 'success', 'changeMessageDiv');
+            if (data.success !== undefined) {
+                show_message(data.success, 'success', 'changeMessageDiv');
             }
-            if (data['warn'] !== undefined) {
-                show_message(data['warn'], 'warn', 'changeMessageDiv');
+            if (data.warn !== undefined) {
+                show_message(data.warn, 'warn', 'changeMessageDiv');
                 return;
             }
             changeEditClose();
@@ -1579,15 +1572,17 @@ function draw_registrations(data) {
                 headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter,  },
             { title: "PID", field: "perid", width: 80, hozAlign: "right",
                 headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter,  },
-            { title: "NPID", field: "newperson_id", width: 80, hozAlign: "right",
+            { title: "NPID", field: "newperson_id", width: 75, hozAlign: "right",
                 headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter,  },
             { title: "Mgr", field: "manager", width: 80, hozAlign: "right",
                 headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter,  },
             { title: "Full Name", field: "fullName", headerSort: true,
                 headerFilter: true, headerFilterFunc: fullNameHeaderFilter, },
-            { title: "Badge Name", field: "badge_name", headerSort: true, headerFilter: true },
+            { title: "Badge Name", field: "badgename", headerSort: true, headerFilter: true, formatter: 'html', },
             { title: "Email", field: "email_addr", headerSort: true, headerFilter: true },
             { title: "Membership Type", field: "label", width: 300, headerSort: true, headerFilter: true, },
+            { title: "#p", field: "pcount", hozAlign: "right",
+                headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter,  },
             { title: "mId", field: "memId", hozAlign: "right",
                 headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter,  },
             { title: "Price", field: "price", hozAlign: "right",
@@ -1637,13 +1632,13 @@ function reglistDownload(format) {
 
 // called from data load - draws the filter stats block and the registrations block
 function draw(data, textStatus, jqXHR) {
-    conid = Number(data['conid']);
+    conid = Number(data.conid);
     if (!data.hasOwnProperty('memLabels')) {
         show_message("Error in query", 'error');
         return;
     }
-    memLabels = data['memLabels'];
-    memLabelsNext = data['memLabelsNext'];
+    memLabels = data.memLabels;
+    memLabelsNext = data.memLabelsNext;
     memLabelsIdx = {};
     memLabelsNextIdx = {};
     for (i = 0; i < memLabels.length; i++) {
@@ -1669,6 +1664,8 @@ function getData(style) {
         curRegListSearch = '';
 
     document.getElementById('regListSearch').style.backgroundColor = "";
+    clear_message();
+    clearError();
     $.ajax({
         url: "scripts/regadmin_getBadges.php",
         method: "POST",
@@ -1761,6 +1758,14 @@ function settab(tabname) {
         interests.close();
     if (rules != null)
         rules.close();
+    if (configEditor && checkConfigReload) {
+        if (configEditor.close()) {
+            checkConfigReload = true;
+            configEditor = null;
+        } else {
+            checkConfigReload = false;
+        }
+    }
     if (tabname != 'registrationlist-pane') {
         reglistDiv.hidden = true;
         if (registrationtable) {
@@ -1814,8 +1819,52 @@ function settab(tabname) {
                 rules = new rulesSetup();
             rules.open();
             break;
+        case 'configEdit-pane':
+            if (configEditor == null) {
+                loadConfigEditor();
+            }
+            checkConfigReload = true;
+            break;
     }
 }
+
+// configuration editor
+function loadConfigEditor() {
+    script = 'scripts/configEditLoadData.php';
+    postData = {
+        load_type: 'conf',
+        perm: 'reg_staff'
+    }
+    clearError();
+    clear_message();
+    $.ajax({
+        url: script,
+        method: 'POST',
+        data: postData,
+        success: function (data, textStatus, jhXHR) {
+            if (data.error) {
+                show_message(data.error, 'error');
+                return;
+            }
+            if (data.warn) {
+                show_message(data.error, 'warn');
+                return;
+            }
+            openConfigEditor(data);
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            showError("ERROR in getMenu: " + textStatus, jqXHR);
+        },
+    });
+}
+
+function openConfigEditor(data) {
+    if (data.success) {
+        show_message(data.success, 'success');
+    }
+    configEditor = new ConfigEditor(data);
+}
+
 function cellChanged(cell) {
     dirty = true;
     cell.getElement().style.backgroundColor = "#fff3cd";

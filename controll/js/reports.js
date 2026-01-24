@@ -263,7 +263,7 @@ function drawReport(data) {
             if (field.hasOwnProperty('name'))
                 column.field = field.name;
             if (field.hasOwnProperty('sort'))
-                column.headerSort = true;
+                column.headerSort = field.sort > 0;
             if (field.hasOwnProperty('width'))
                 column.width = field.width;
             if (field.hasOwnProperty('minWidth'))

@@ -14,11 +14,11 @@ function refundEmail_HTML($test, $email, $tid) {;
 
     $url = getConfValue('reg', 'server') . "/cancelation.php";
     $url2 = getConfValue('reg', 'server');
-    $regpage = $con['regpage'];
-    $homepage = $con['website'];
+    $regpage = getConfValue('con', 'regpage');
+    $homepage = getConfValue('con', 'website');
 
     $transQ = <<<EOS
-SELECT T.paid, M.label, M.memAge, P.first_name, P.last_name, P.badge_name, R.paid
+SELECT T.paid, M.label, M.memAge, P.first_name, P.last_name, P.badge_name, P.badgeNameL2, R.paid
 FROM transaction AS T
 JOIN reg R ON (R.create_trans=T.id)
 JOIN perinfo P ON (P.id=R.perid)
@@ -32,8 +32,10 @@ EOS;
     $names = "<ul>\n";
     while ($trans = $transR->fetch_assoc()) {
         $names .= "\t<li>" . $trans['first_name'] . " " . $trans['last_name'];
-        if ($trans['badge_name'] != '') {
-            $names .= " (" . $trans['badge_name'] . ")";
+        if ($trans['badge_name'] != '' || $trans['badgeNameL2'] != '') {
+            $bn = badgeNameDefault($trans['badge_name'], $trans['badgeNameL2'], $trans['first_name'], $trans['last_name']);
+            $bn = str_replace('<br/>', '/', $bn);
+            $names .= " ($bn)";
         }
         $names .= "</li>\n";
     }
@@ -91,7 +93,7 @@ function refundEmail_TEXT($test, $email, $tid) {
     $url = getConfValue('reg', 'server') . '/cancelation.php';
 
     $transQ = <<<EOS
-SELECT T.paid, M.label, M.memAge, P.first_name, P.last_name, P.badge_name, R.paid
+SELECT T.paid, M.label, M.memAge, P.first_name, P.last_name, P.badge_name, P.badgeNameL2, R.paid
 FROM transaction T
 JOIN reg R ON (R.create_trans=T.id)
 JOIN perinfo P ON (P.id=R.perid)
@@ -104,7 +106,11 @@ EOS;
 
     $names = "";
     while ($trans = $transR->fetch_assoc()) {
-        $names .= $trans['first_name'] . " " . $trans['last_name'] . " (" . $trans['badge_name'] . ")\n";
+        $bn = badgeNameDefault($trans['badge_name'], $trans['badgeNameL2'], $trans['first_name'], $trans['last_name']);
+        $bn = str_replace('<br/>', '/', $bn);
+        $bn = str_replace('<i>', '', $bn);
+        $bn = str_replace('</i>', '', $bn);
+        $names .= $trans['first_name'] . " " . $trans['last_name'] . " ($bn)\n";
     }
 
     $text = <<<EOT
@@ -154,7 +160,7 @@ function ComeBackCouponEmail_HTML($test, $expirationDate) {
     $schedulepage = $con['schedulepage'];
     $homepage = $con['website'];
     $policypage = $con['policy'];
-    $regpage = $con['regpage'];
+    $regpage = getConfValue('con', 'regpage');
     $feedbackemail = $con['feedbackemail'];
     $regsite = getConfValue('reg', 'server');
 
@@ -223,7 +229,7 @@ function ComeBackCouponEmail_TEXT($test, $expirationDate) {
     $schedulepage = $con['schedulepage'];
     $homepage = $con['website'];
     $policypage = $con['policy'];
-    $regpage = $con['regpage'];
+    $regpage = getConfValue('con', 'regpage');
     $feedbackemail = $con['feedbackemail'];
     $regsite = getConfValue('reg', 'server');
 

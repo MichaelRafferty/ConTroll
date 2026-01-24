@@ -28,8 +28,7 @@ function drawInterestList($interests, $modal = false, $tabIndexStart = 800) {
     if ($interests == null) // null? no interests, nothing to draw
         return;
     $tabindex = $tabIndexStart;
-    $filter = getConfValue('portal', 'customtext', 'production');
-    loadCustomText('profile', 'all', $filter, true);
+    loadCustomText('profile', 'all', getConfValue('portal', 'customtext', 'production'), true);
     $header = returnCustomText('interests/header', 'profile/all/');
     $footer = returnCustomText('interests/footer', 'profile/all/');
     if ($header != '') {

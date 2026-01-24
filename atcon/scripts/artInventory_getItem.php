@@ -30,7 +30,7 @@ SELECT e.artistName, e.exhibitorName, eRY.exhibitorNumber, I.item_key, concat(eR
     I.title, I.type, I.status, I.location, I.quantity, I.original_qty, 
     concat(I.quantity, '/', I.original_qty) as qty,
     I.min_price, I.sale_price, I.final_price, I.bidder, I.conid, 
-    SUBSTRING(I.time_updated,6,11) as time_updated, eRY.exhibitorYearId
+    SUBSTRING(I.time_updated,6,11) as time_updated, eRY.exhibitorYearId, eY.exhibitorId
 FROM artItems I
     JOIN exhibitorRegionYears eRY ON (eRY.id=I.exhibitorRegionYearId)
     JOIN exhibitorYears eY ON eY.id = eRY.exhibitorYearId

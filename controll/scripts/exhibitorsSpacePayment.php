@@ -1,11 +1,12 @@
 <?php
-// library AJAX Processor: exhibitorSpacePayments.php
+// library AJAX Processor: exhibitorsSpacePayment.php
 // ConTroll Registration System
 // Author: Syd Weinstein
 // process the payment of space and memberships from the exhibitor tab of controll
 //     if payment type != offline credit card - create order and payment information in credit card syste,
 //     if payment succeeds, create/update all the elements in the database.
 require_once '../lib/base.php';
+require_once '../../lib/tax.php';
 require_once '../../lib/log.php';
 require_once('../../lib/cc__load_methods.php');
 
@@ -69,6 +70,16 @@ if (array_key_exists('portalType', $_POST))
     $portalType = $_POST['portalType'];
 else
     $portalType = 'exhibits';
+
+if (array_key_exists('location_controllexhibits', $cc)) {
+    $ccLocation = $cc['location_controllexhibits'];
+} else if (array_key_exists('location_' . $portalType, $cc)) {
+    $ccLocation = $cc['location_' . $portalType];
+} else if (array_key_exists('location', $cc)) {
+    $ccLocation = $cc['location'];
+} else {
+    $ccLocation = 'Unknown';
+}
 
 $regionYearId = $_POST['regionYearId'];
 $portalName = $_POST['portalName'];
@@ -223,11 +234,11 @@ $membership_fields = array('fname' => $required != '', 'mname' => false, 'lname'
                            'addr' => $required == 'addr' || $required == 'all', 'addr2' => false,
                            'city' => $required == 'addr' || $required == 'all', 'state' => $required == 'addr' || $required == 'all',
                            'zip' => $required == 'addr' || $required == 'all', 'country' => $required == 'addr' || $required == 'all',
-                           'email' => true, 'phone' => false, 'badgename' => false);
+                           'email' => true, 'phone' => false, 'badge_name' => false, 'badgeNameL2' =>  false);
 $membership_names = array('fname' => 'First Name', 'mname' => 'Middle Name', 'lname' => 'Last Name', 'suffix' => 'Suffix', 'legalName' => 'Legal Name',
-                          'addr' => 'Address Line 1', 'addr2' => 'Company/Address Line 2', 'city' => 'City', 'state' => 'State',
+                          'addr' => 'Address Line 1', 'addr2' => 'Company/Address Line 2', 'city' => 'City', 'state' => 'State/Province',
                           'zip' => 'Zip Code/Postal Code', 'country' => 'Country',
-                          'email' => 'Email Address', 'phone' => 'Phone Number', 'badgename' => 'Badge Name');
+                          'email' => 'Email Address', 'phone' => 'Phone Number', 'badge_name' => 'Badge Name', 'badgeNameL2' => 'Badge Line 2');
 
 $missing_msg = '';
 $valid = true;
@@ -415,7 +426,7 @@ SELECT R.id AS badge,
     NP.first_name AS fname, NP.middle_name AS mname, NP.last_name AS lname, NP.suffix AS suffix,
     NP.email_addr AS email,
     NP.address AS street, NP.city AS city, NP.state AS state, NP.zip AS zip, NP.country AS country,
-    NP.id as id, R.price AS price, M.memAge AS age, NP.badge_name AS badgename, NP.legalName, R.memId,
+    NP.id as id, R.price AS price, M.memAge AS age, NP.badge_name, NP.badgeNameL2, NP.legalName, R.memId,
     M.label, M.label AS shortname, A.shortname AS ageshortname, M.memCategory, M.memType, M.glNum, R.perid, R.newperid, R.id AS regId
 FROM newperson NP
 JOIN reg R ON (R.newperid=NP.id)
@@ -467,9 +478,9 @@ if ($prow != null && $prow['type'] != 'credit') {
     load_cc_procs();
     // for cash/check/etc build the order so it can be recorded
     if ($cancelOrderId) // cancel the old order if it exists
-        cc_cancelOrder($results['source'], $cancelOrderId, true);
+        cc_cancelOrder($results['source'], $cancelOrderId, true, $ccLocation);
 
-    $orderRtn = cc_buildOrder($results, true);
+    $orderRtn = cc_buildOrder($results, true, $ccLocation);
     if ($orderRtn == null) {
         // note there is no reason cc_buildOrder will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
         logWrite(array ('con' => $con['label'], 'trans' => $transid, 'error' => 'Order unable to be created'));
@@ -479,17 +490,25 @@ if ($prow != null && $prow['type'] != 'credit') {
     $orderRtn['totalPaid'] = 0;
     $response['orderRtn'] = $orderRtn;
     $orderId = $orderRtn['orderId'];
+    $order = $orderRtn['order'];
 
+    // update the transaction with the taxes and order id
+    $taxes = $orderRtn['taxes'];
+    [$taxSql, $taxStr, $taxValues] = buildTaxUpdate($taxes);
     $upT = <<<EOS
 UPDATE transaction
-SET price = ?, tax = ?, withTax = ?, couponDiscountCart = ?, orderId = ?, paymentStatus = 'ORDER', orderDate = now()
+SET price = ?, tax = ?, withTax = ?, couponDiscountCart = ?, orderId = ?, paymentStatus = 'ORDER', orderDate = now(), $taxSql
 WHERE id = ?;
 EOS;
-
     $preTaxAmt = $orderRtn['preTaxAmt'];
     $taxAmt = $orderRtn['taxAmt'];
     $withTax = $orderRtn['totalAmt'];
-    $rows_upd = dbSafeCmd($upT, 'ddddsi', array($preTaxAmt, $taxAmt, $withTax, 0, $orderRtn['orderId'], $transid));
+    $valArray = array($preTaxAmt, $taxAmt, $withTax, 0, $orderRtn['orderId']);
+    $typeStr = 'dddds' . $taxStr . 'i';
+    $valArray = array_merge($valArray, $taxValues);
+    $valArray[] = $transid;
+
+    $numUpd = dbSafeCmd($upT, $typeStr, $valArray);
 }
 
 if ($totprice > 0) {
@@ -550,6 +569,7 @@ if ($totprice > 0) {
             'price' => null,
             'badges' => null,
             'taxAmt' => $taxAmt,
+            'taxes' => $orderRtn['taxes'],
             'preTaxAmt' => $preTaxAmt,
             'total' => $totprice,
             'orderId' => $orderId,
@@ -559,7 +579,7 @@ if ($totprice > 0) {
             'desc' => $desc,
             'source' => $source,
             'change' => $change,
-            'locationId' => $cc['location'],
+            'locationId' => $ccLocation,
         );
 
         //log requested badges
@@ -598,17 +618,44 @@ if ($totprice > 0) {
 
 // extract the values needed for the payment
 if ($prow != null) {
-    $txnQ = <<<EOS
-INSERT INTO payments (transid, type, category, description, source, pretax, tax, amount, time, nonce, cc_approval_code, txn_time, userPerid, ccPaymentId)
-VALUES (?,?,?,?,?,?,?,?,NOW(),?,?,NOW(),?,?);
-EOS;
-    $typestr = 'issssdddssis';
     if ($paymentType == 'check') {
         $desc = 'Check No: ' . $_POST['pay-checkno'] . ', ' . $payDesc;
     } else {
         $desc = $payDesc;
     }
-    $values = array ($transid, $paymentType, 'vendor', $desc, $source, $totprice, 0, $totprice, 'admin', $ccAuth, $_SESSION['user_perid'], $paymentId);
+
+    // now the main payment
+    if ($taxAmt > 0) {
+        $taxes = $order['taxes'];
+        [$taxFields, $taxSql, $taxStr, $taxValues] = buildTaxInsert($taxes);
+        if ($taxFields != '')
+            $taxFields = ", $taxFields";
+        if ($taxSql != '')
+            $taxSql = ", $taxSql";
+    } else {
+        $taxFields = '';
+        $taxSql = '';
+        $taxStr = '';
+        $taxValues = [];
+    }
+    $txnQ = <<<EOS
+INSERT INTO payments(transid, type,category, description, source, pretax, tax, amount, time, cc_approval_code, cashier, 
+    cc, nonce, cc_txn_id, txn_time, receipt_url, receipt_id, userPerid, status, ccPaymentId $taxFields)
+VALUES (?,?,?,?,'cashier',?,?,?,now(),?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? $taxSql);
+EOS;
+    $typestr = 'isssdddsissssssiss' . $taxStr;
+    $paramarray = array ($transId, $paymentType, $category, $description, $preTaxAmt, $taxAmt, $approved_amt, $auth, null,
+        $last4, $nonceCode, $paymentId, $txTime, $receiptUrl, $receiptNumber, $buyer, $status, $paymentId);
+    $txnid = dbSafeInsert($txnQ, $typestr, array_merge($paramarray, $taxValues));
+    $approved_amt = $rtn['amount'];
+
+    $txnQ = <<<EOS
+INSERT INTO payments (transid, type, category, description, source, pretax, tax, amount, time, nonce, cc_approval_code, txn_time, userPerid, ccPaymentId)
+VALUES (?,?,?,?,?,?,?,?,NOW(),?,?,NOW(),?,?);
+EOS;
+    $typestr = 'issssdddssis';
+
+    $values = array ($transid, $paymentType, $category, $desc, $source, $totprice, 0, $totprice, 'admin', $ccAuth, $_SESSION['user_perid'], $paymentId);
 
     $txnid = dbSafeInsert($txnQ, $typestr, $values);
     if ($txnid == false) {
@@ -616,14 +663,16 @@ EOS;
     } else {
         $status_msg .= "Payment for " . $dolfmt->formatCurrency($totprice, 'USD') . " processed<br/>\n";
     }
+} else {
+    $approved_amt = $totprice;
+    $taxes = array ();
 }
-$approved_amt = $totprice;
 $results['approved_amt'] = $approved_amt;
 
 // update the other records with the payment information
 // Transaction
 $txnUpdate = 'UPDATE transaction SET ';
-if ($approved_amt == $totprice) {
+if (round($approved_amt,2) == round($totprice,2)) {
     $txnUpdate .= 'complete_date=current_timestamp(), ';
 }
 
@@ -838,6 +887,8 @@ WHERE
 		REGEXP_REPLACE(TRIM(LOWER(p.phone)), ' +', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
 		REGEXP_REPLACE(TRIM(LOWER(p.badge_name)), ' +', ' ')
+  	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.badgeNameL2)), ' +', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
 		REGEXP_REPLACE(TRIM(LOWER(p.address)), ' +', ' ')
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
@@ -851,9 +902,10 @@ WHERE
 	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
 		REGEXP_REPLACE(TRIM(LOWER(p.country)), ' +', ' ');
 EOF;
-    $value_arr = array($badge['fname'], $badge['mname'], $badge['lname'], $badge['suffix'], $badge['email'], $badge['phone'], $badge['badgename'],
-                $badge['addr'], $badge['addr2'], $badge['city'], $badge['state'], $badge['zip'], $badge['country']);
-    $res = dbSafeQuery($exactMsql, 'sssssssssssss', $value_arr);
+    $value_arr = array($badge['fname'], $badge['mname'], $badge['lname'], $badge['suffix'], $badge['email'], $badge['phone'],
+        $badge['badge_name'], $badge['badgeNameL2'],
+        $badge['addr'], $badge['addr2'], $badge['city'], $badge['state'], $badge['zip'], $badge['country']);
+    $res = dbSafeQuery($exactMsql, 'ssssssssssssss', $value_arr);
     if ($res !== false) {
         if ($res->num_rows > 0) {
             $match = $res->fetch_assoc();
@@ -870,17 +922,18 @@ EOF;
         $legalName = trim($badge['fname']  . ($badge['mname'] == '' ? ' ' : ' ' . $badge['mname'] . ' ' ) . $badge['lname'] . ' ' . $badge['suffix']);
     }
 
-    $value_arr = array($badge['lname'], $badge['mname'], $badge['fname'], $badge['suffix'], $legalName, $badge['email'], $badge['phone'], $badge['badgename'],
+    $value_arr = array($badge['lname'], $badge['mname'], $badge['fname'], $badge['suffix'], $legalName, $badge['email'], $badge['phone'],
+        $badge['badge_name'], $badge['badgeNameL2'],
         $badge['addr'], $badge['addr2'], $badge['city'], $badge['state'], $badge['zip'], $badge['country'], $badge['contact'], $badge['share'], $id);
 
     $insertQ = <<<EOS
-INSERT INTO newperson(last_name, middle_name, first_name, suffix, legalName, email_addr, phone, badge_name,
+INSERT INTO newperson(last_name, middle_name, first_name, suffix, legalName, email_addr, phone, badge_name, badgeNameL2,
                       address, addr_2, city, state, zip, country, contact_ok, share_reg_ok, perid)
     VALUES(IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''),
-     IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), ?, ?, ?);
+     IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), ?, ?, ?);
 EOS;
 
-    $newid = dbSafeInsert($insertQ, 'ssssssssssssssssi', $value_arr);
+    $newid = dbSafeInsert($insertQ, 'sssssssssssssssssi', $value_arr);
     $badge['error'] = '';
     if ($newid === false) {
         $badge['error'] .= 'Add of person of badge for ' . $badge['fname'] . ' ' . $badge['lname'] . " failed.\n";

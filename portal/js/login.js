@@ -36,6 +36,7 @@ class Login {
     #email1Field = null;
     #phoneField = null;
     #badgenameField = null;
+    #badgeNameL2Field = null;
     #contactField = null;
     #shareField = null;
     #uspsDiv= null;
@@ -75,7 +76,8 @@ class Login {
             this.#countryField = document.getElementById("country");
             this.#email1Field = document.getElementById("email1");
             this.#phoneField = document.getElementById("phone");
-            this.#badgenameField = document.getElementById("badgename");
+            this.#badgenameField = document.getElementById("badge_name");
+            this.#badgenameField = document.getElementById("badgeNameL2");
             this.#contactField = document.getElementById("contact");
             this.#shareField = document.getElementById("share");
             this.#uspsDiv = document.getElementById("uspsblock");
@@ -149,7 +151,8 @@ class Login {
                         paginationSize: 10,
                         paginationSizeSelector: [10, 25, 50, 100, true], // enable page size select with these options
                         columns: [
-                            // phone, badge_name, legalName, pronouns (not shown), address, addr_2, city, state, zip, country, creation_date, update_date,
+                            // phone, badge_name, badgeNameL2, legalName, pronouns (not shown), address, addr_2, city, state, zip, country, creation_date,
+                            // update_date,
                             // active,
                             // banned,
                             {title: 'T', field: 'tablename', headerWordWrap: true, headerFilter: true, width: 50,},
@@ -158,8 +161,8 @@ class Login {
                             {title: 'Phone', field: 'phone', headerWordWrap: true, headerFilter: true, tooltip: true},
                             {title: 'Address', field: 'address', headerWordWrap: true, headerFilter: true, tooltip: true},
                             {title: 'City', field: 'city', headerWordWrap: true, headerFilter: true, tooltip: true,},
-                            {title: 'State', field: 'state', headerWordWrap: true, headerFilter: true, tooltip: true,},
-                            {title: 'Zip', field: 'zip', headerWordWrap: true, headerFilter: true, tooltip: true,},
+                            {title: 'State/Prov', field: 'state', headerWordWrap: true, headerFilter: true, tooltip: true,},
+                            {title: 'Zip/Postal Code', field: 'zip', headerWordWrap: true, headerFilter: true, tooltip: true,},
                             {title: 'Created', field: 'creation_date', headerWordWrap: true, headerFilter: false, tooltip: true, headerSort: true,},
                             {title: 'Act', field: 'active', headerWordWrap: true, headerFilter: true, tooltip: false, width: 50},
                             {title: 'Ban', field: 'banned', headerWordWrap: true, headerFilter: true, tooltip: false, width: 50},
@@ -319,7 +322,7 @@ class Login {
         }
         // validation
         if (person.country == 'USA') {
-            message += "<br/>Note: If any of the address fields Address, City, State or Zip are used and the country is United States, " +
+            message += "<br/>Note: If any of the address fields Address, City, State/Prov or Zip/PC are used and the country is United States, " +
                 "then the Address, City, State, and Zip fields must all be entered and the state field must be a valid USPS two character state code.";
         }
 
@@ -369,7 +372,7 @@ class Login {
                 $('#state').addClass('need');
             } else {
                 if (person.country == 'USA') {
-                    if (person.state.length != 2) {
+                    if (person.state.trim().length != 2) {
                         valid = false;
                         $('#state').addClass('need');
                     } else {

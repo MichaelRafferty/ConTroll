@@ -41,18 +41,8 @@ function createWebauthnArgs($userId, $userName, $userDisplayName, $source) {
     $userDisplayName = filter_var($userDisplayName, FILTER_SANITIZE_SPECIAL_CHARS);
     $requireResidentKey = true;
     $userVerification = 'required';
-    $rpLevel = getConfValue('global', 'passkeyRpLevel', '2');
-    $server = $_SERVER['SERVER_NAME'];
-    if ($server == null || trim($server) == '')
-        $server = 'unknown';
-    $serverArr = explode('.', $server);
-    $elements = count($serverArr);
-    if ($elements >= $rpLevel) {
-        // take right most rpLevel elements of the server name
-        $rpId = implode('.', array_slice($serverArr, -$rpLevel));
-    } else {
-        $rpId = $server;
-    }
+    $rpLevel = getRpLevel($source);
+    $rpId = getRpId($rpLevel);
     $crossPlatformAttachment = null;
 
     $formats = ['android-key', 'android-safetynet', 'apple', 'fido-u2f', 'packed', 'tpm', 'none' ];
@@ -60,7 +50,12 @@ function createWebauthnArgs($userId, $userName, $userDisplayName, $source) {
 
     // new Instance of the server library.
     // make sure that $rpId is the domain name.
-    $name = getConfValue('global', 'conname', 'ConTroll') . ' ConTroll';
+    $name = getConfValue('con', 'conname', 'ConTroll');
+    if ($rpLevel > 2)
+        $name .= " $source";
+    else
+        $name .= ' ConTroll';
+
     $WebAuthn = new lbuchs\WebAuthn\WebAuthn($name, $rpId, $formats);
     $createArgs = $WebAuthn->getCreateArgs(\hex2bin($userId), $userName, $userDisplayName, 60*4,
         $requireResidentKey, $userVerification, $crossPlatformAttachment, $excludeCredentialIds);
@@ -139,18 +134,8 @@ EOS;
 function getWebauthnArgs($source) {
     $requireResidentKey = true;
     $userVerification = 'required';
-    $rpLevel = getConfValue('global', 'passkeyRpLevel', '2');
-    $server = $_SERVER['SERVER_NAME'];
-    if ($server == null || trim($server) == '')
-        $server = 'unknown';
-    $serverArr = explode('.', $server);
-    $elements = count($serverArr);
-    if ($elements >= $rpLevel) {
-        // take right most rpLevel elements of the server name
-        $rpId = implode('.', array_slice($serverArr, -$rpLevel));
-    } else {
-        $rpId = $server;
-    }
+    $rpLevel = getRPLevel($source);
+    $rpId = getRpId($rpLevel);
     $crossPlatformAttachment = null;
 
     $formats = ['android-key', 'android-safetynet', 'apple', 'fido-u2f', 'packed', 'tpm', 'none'];
@@ -220,4 +205,96 @@ EOS;
 
     clearSession('passkey');
     return array('status' => 'success', 'message' => 'Authentication successful', 'passkey' => $passkey);
+}
+
+// utility functions added by ConTroll
+// getrplevel - compute the required rplevel based on the config
+function getRpLevel($source) : int {
+    $rpLevel = getConfValue($source, 'passkeyRpLevel', '2');
+    // HOST: return actual level
+    if ($rpLevel == 'h') {
+        $server = $_SERVER['SERVER_NAME'];
+        if ($server == null || trim($server) == '')
+            $server = 'unknown';
+        $rpLevel = count(explode('.', $server));
+        return $rpLevel;
+    }
+
+    // disabled: return marker
+    if ($rpLevel == 'd') {
+        return 9999;
+    }
+
+    // else set min based on test in global (not source)
+    if (getConfValue('global', 'test', 0) == 1) {
+        $rpLevel = $rpLevel < 3 ? 3 : $rpLevel;
+    } else {
+        $rpLevel = $rpLevel < 2 ? 2 : $rpLevel;
+    }
+    return $rpLevel;
+}
+
+// get rpid
+function getRpId($rpLevel) : string {
+    $server = $_SERVER['SERVER_NAME'];
+    if ($server == null || trim($server) == '')
+        $server = 'unknown';
+    $serverArr = explode('.', $server);
+    $elements = count($serverArr);
+    if ($elements >= $rpLevel) {
+        // take right most rpLevel elements of the server name
+        $rpId = implode('.', array_slice($serverArr, -$rpLevel));
+    } else {
+        $rpId = $server;
+    }
+    return $rpId;
+}
+
+// has passkeys - return if the database has a passkey for this user for this rpid
+function hasPasskey($userId, $source) : bool {
+    // check for a potential passkey
+    $rpLevel = getRpLevel($source);
+    if ($rpLevel == 9999)
+        return false;   // force false for 'd' passkey level
+
+    $rpId = getRpId($rpLevel);
+    $passkeyQ = <<<EOS
+SELECT count(*)
+FROM passkeys
+WHERE userName = ? AND relyingParty = ?;
+EOS;
+    $passKeyR = dbSafeQuery($passkeyQ, 'ss', array($userId, $rpId));
+    if ($passKeyR !== false) {
+        $numKeys = $passKeyR->fetch_row()[0];
+        $passKeyR->free();
+        return $numKeys > 0;
+    }
+
+    return false;  // query failed
+}
+
+// get passkeys - return if the database has a passkey for this user for this rpid
+function getPasskey($userId, $source) : array {
+    // check for a potential passkey
+    $rpLevel = getRpLevel($source);
+    if ($rpLevel == 9999)
+        return false;   // force false for 'd' passkey level
+
+    $rpId = getRpId($rpLevel);
+    $passkeyQ = <<<EOS
+SELECT *
+FROM passkeys
+WHERE userName = ? AND relyingParty = ?
+ORDER BY createDate;
+EOS;
+    $passKeys = [];
+    $passKeyR = dbSafeQuery($passkeyQ, 'ss', array($userId, $rpId));
+    if ($passKeyR !== false) {
+        while ($p = $passKeyR->fetch_assoc()) {
+            $passKeys[] = $p;
+        }
+        $passKeyR->free();
+    }
+
+    return $passKeys;
 }

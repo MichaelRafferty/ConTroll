@@ -7,7 +7,7 @@ function getLoginMatch($email, $id = null, $validationType = null) {
 // check if it's a numeric response
     if (is_numeric($email)) {
         $regcountQ = <<<EOS
-SELECT id, last_name, first_name, middle_name, suffix, email_addr, phone, badge_name, legalName, pronouns,
+SELECT id, last_name, first_name, middle_name, suffix, email_addr, phone, badge_name, badgeNameL2, legalName, pronouns,
        address, addr_2, city, state, zip, country, creation_date, update_date, active, banned,
     CASE 
         WHEN last_name != '' THEN TRIM(REGEXP_REPLACE(CONCAT(last_name, ', ', CONCAT_WS(' ', first_name, middle_name, suffix)), ' +', ' ')) 
@@ -21,7 +21,7 @@ EOS;
     } else if ($id != NULL) {
 // first get the perid items
         $regcountQ = <<<EOS
-SELECT id, last_name, first_name, middle_name, suffix, email_addr, phone, badge_name, legalName, pronouns,
+SELECT id, last_name, first_name, middle_name, suffix, email_addr, phone, badge_name, badgeNameL2, legalName, pronouns,
        address, addr_2, city, state, zip, country, creation_date, update_date, active, banned,
     CASE 
         WHEN last_name != '' THEN TRIM(REGEXP_REPLACE(CONCAT(last_name, ', ', CONCAT_WS(' ', first_name, middle_name, suffix)), ' +', ' ')) 
@@ -34,7 +34,7 @@ EOS;
         $regcountR = dbSafeQuery($regcountQ, 'si', array($email, $id));
     } else {
         $regcountQ = <<<EOS
-SELECT DISTINCT id, last_name, first_name, middle_name, suffix, email_addr, phone, badge_name, legalName, pronouns,
+SELECT DISTINCT id, last_name, first_name, middle_name, suffix, email_addr, phone, badge_name, badgeNameL2, legalName, pronouns,
        address, addr_2, city, state, zip, country, creation_date, update_date, active, banned,
     CASE 
         WHEN last_name != '' THEN TRIM(REGEXP_REPLACE(CONCAT(last_name, ', ', CONCAT_WS(' ', first_name, middle_name, suffix)), ' +', ' ')) 
@@ -53,6 +53,7 @@ EOS;
     $matches = [];
     $count = $regcountR->num_rows;
     while ($person = $regcountR->fetch_assoc()) {
+        $person['badgename'] = badgeNameDefault($person['badge_name'], $person['badgeNameL2'], $person['first_name'], $person['last_name']);
         $matches[] = $person;
     }
     $regcountR->free();
@@ -60,7 +61,7 @@ EOS;
 // now add in the newperson records
     if (is_numeric($email)) {
         $regcountQ = <<<EOS
-SELECT n.id, n.last_name, n.first_name, n.middle_name, n.suffix, n.email_addr, n.phone, n.badge_name, n.legalName, n.pronouns,
+SELECT n.id, n.last_name, n.first_name, n.middle_name, n.suffix, n.email_addr, n.phone, n.badge_name, n.badgeNameL2, n.legalName, n.pronouns,
        n.address, n.addr_2, n.city, n.state, n.zip, n.country, createtime AS creation_date, 'Y' AS active, 'N' AS banned,
     CASE 
         WHEN n.last_name != '' THEN TRIM(REGEXP_REPLACE(CONCAT(n.last_name, ', ', CONCAT_WS(' ', n.first_name, n.middle_name, n.suffix)), ' +', ' ')) 
@@ -74,7 +75,7 @@ EOS;
         $regcountR = dbSafeQuery($regcountQ, 'i', array($email));
     } else if ($id != NULL) {
         $regcountQ = <<<EOS
-SELECT n.id, n.last_name, n.first_name, n.middle_name, n.suffix, n.email_addr, n.phone, n.badge_name, n.legalName, n.pronouns,
+SELECT n.id, n.last_name, n.first_name, n.middle_name, n.suffix, n.email_addr, n.phone, n.badge_name, n.badgeNameL2, n.legalName, n.pronouns,
        n.address, n.addr_2, n.city, n.state, n.zip, n.country, n.createtime AS creation_date, 'Y' AS active, 'N' AS banned,
     CASE 
         WHEN n.last_name != '' THEN TRIM(REGEXP_REPLACE(CONCAT(n.last_name, ', ', CONCAT_WS(' ', n.first_name, n.middle_name, n.suffix)), ' +', ' ')) 
@@ -88,7 +89,7 @@ EOS;
         $regcountR = dbSafeQuery($regcountQ, 'si', array($email, $id));
     } else {
         $regcountQ = <<<EOS
-SELECT DISTINCT n.id, n.last_name, n.first_name, n.middle_name, n.suffix, n.email_addr, n.phone, n.badge_name, n.legalName, n.pronouns,
+SELECT DISTINCT n.id, n.last_name, n.first_name, n.middle_name, n.suffix, n.email_addr, n.phone, n.badge_name, n.badgeNameL2, n.legalName, n.pronouns,
        n.address, n.addr_2, n.city, n.state, n.zip, n.country, createtime AS creation_date, 'Y' AS active, 'N' AS banned,
     CASE 
         WHEN n.last_name != '' THEN TRIM(REGEXP_REPLACE(CONCAT(n.last_name, ', ', CONCAT_WS(' ', n.first_name, n.middle_name, n.suffix)), ' +', ' ')) 
@@ -109,6 +110,7 @@ EOS;
     $count += $regcountR->num_rows;
     $response['count'] = $count;
     while ($person = $regcountR->fetch_assoc()) {
+        $person['badgename'] = badgeNameDefault($person['badge_name'], $person['badgeNameL2'], $person['first_name'], $person['last_name']);
         $matches[] = $person;
     }
     $regcountR->free();
@@ -117,7 +119,7 @@ EOS;
     // if the provider is known, we search for that provider, else we search for email as the provider.
     if (isSessionVar('oauth2')) {
         $regcountQ = <<<EOS
-SELECT DISTINCT id, last_name, first_name, middle_name, suffix, p.email_addr, phone, badge_name, legalName, pronouns,
+SELECT DISTINCT id, last_name, first_name, middle_name, suffix, p.email_addr, phone, badge_name, badgeNameL2, legalName, pronouns,
        address, addr_2, city, state, zip, country, creation_date, update_date, active, banned,
     CASE 
         WHEN last_name != '' THEN TRIM(REGEXP_REPLACE(CONCAT(last_name, ', ', CONCAT_WS(' ', first_name, middle_name, suffix)), ' +', ' ')) 
@@ -138,6 +140,7 @@ EOS;
         $count += $regcountR->num_rows;
         $response['count'] = $count;
         while ($person = $regcountR->fetch_assoc()) {
+            $person['badgename'] = badgeNameDefault($person['badge_name'], $person['badgeNameL2'], $person['first_name'], $person['last_name']);
             $matches[] = $person;
         }
         $regcountR->free();
@@ -145,7 +148,7 @@ EOS;
 
     if ($validationType != null && ($validationType == 'token' || $validationType == 'switch')) {
         $regcountQ = <<<EOS
-SELECT DISTINCT id, last_name, first_name, middle_name, suffix, p.email_addr, phone, badge_name, legalName, pronouns,
+SELECT DISTINCT id, last_name, first_name, middle_name, suffix, p.email_addr, phone, badge_name, badgeNameL2, legalName, pronouns,
        address, addr_2, city, state, zip, country, creation_date, update_date, active, banned,
     CASE 
         WHEN last_name != '' THEN TRIM(REGEXP_REPLACE(CONCAT(last_name, ', ', CONCAT_WS(' ', first_name, middle_name, suffix)), ' +', ' ')) 
@@ -165,6 +168,7 @@ EOS;
         $count += $regcountR->num_rows;
         $response['count'] = $count;
         while ($person = $regcountR->fetch_assoc()) {
+            $person['badgename'] = badgeNameDefault($person['badge_name'], $person['badgeNameL2'], $person['first_name'], $person['last_name']);
             $matches[] = $person;
         }
         $regcountR->free();

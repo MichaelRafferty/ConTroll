@@ -1,0 +1,11 @@
+[group]
+	name="Finance"
+	description="Finance Reports"
+	auth=finance
+[100AllRegRev]
+    name='All Reg Revenue'
+	description='Regiatration Revenue by Convention ID and Membership Label'
+	template=fin_allRegRev.rpt
+	auth=finance
+	type=rpt
+	P001="prompt/~/conid/~/Earliest Convention ID: /~/Enter the first convention ID/~/#con.id#"

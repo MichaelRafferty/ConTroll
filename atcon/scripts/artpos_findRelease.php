@@ -35,7 +35,7 @@ $perid = $_POST['perid'];
 $response['perid'] = $perid;
 
 $findPersonQ = <<<EOS
-SELECT p.id, first_name, middle_name, last_name, suffix, badge_name, email_addr, address, addr_2, city, state, zip, country, phone
+SELECT p.id, first_name, middle_name, last_name, suffix, badge_name, badgeNameL2, email_addr, address, addr_2, city, state, zip, country, phone
 FROM perinfo p
 WHERE p.id=?;
 EOS;
@@ -46,7 +46,9 @@ if ($personR->num_rows == 0) {
     $response['status'] = "error";
     $response['error'] = "No Person Found";
 } else if ($personR->num_rows == 1) {
-    $response['person'] = $personR->fetch_assoc();
+    $person = $personR->fetch_assoc();
+    $person['badgename'] = badgeNameDefault($person['badge_name'], $person['badgeNameL2'], $person['first_name'], $person['last_name']);
+    $response['person'] = $person;
     $response['status'] = 'success';
     // now find any art for which is final and they are the high bidder
     $findArtQ = <<<EOS

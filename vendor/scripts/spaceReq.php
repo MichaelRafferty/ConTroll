@@ -9,18 +9,9 @@ $returnAjaxErrors = true;
 $return500errors = true;
 
 $response = array('post' => $_POST, 'get' => $_GET);
-
 $vendor = getSessionVar('id');
-
-global $con;
-$con = get_con();
-$conid=$con['id'];
-$conf = get_conf('con');
-if (array_key_exists('currency', $con)) {
-    $currency = $conf['currency'];
-} else {
-    $currency = 'USD';
-}
+$conid=getConfValue('con', 'id');
+$currency = getConfValue('con', 'currency', 'USD');
 $curLocale = locale_get_default();
 $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
 

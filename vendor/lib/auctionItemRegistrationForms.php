@@ -6,29 +6,10 @@ function draw_itemRegistrationModal($portalType = '', $showsheets=false, $showco
         return;
     }
 
-    $vendor = get_conf('vendor');
-    $auctionTitle = null;
-    $salesTitle = null;
-    $nfsTitle = null;
 
-    if (array_key_exists('artistItemAuctionTitle', $vendor))
-        $auctionTitle = $vendor['artistItemAuctionTitle'];
-
-    if ($auctionTitle == null || $auctionTitle == '')
-        $auctionTitle = 'Art Auction Items';
-
-    if (array_key_exists('artistItemSalesTitle', $vendor))
-        $salesTitle = $vendor['artistItemSalesTitle'];
-
-    if ($salesTitle == null || $salesTitle == '')
-        $salesTitle = 'Art Sales / Print Shop Items';
-
-    if (array_key_exists('artistItemNFSTitle', $vendor))
-        $nfsTitle = $vendor['artistItemNFSTitle'];
-
-    if ($nfsTitle == null || $nfsTitle == '')
-        $nfsTitle = 'Display Only / Not For Sale Items';
-
+    $auctionTitle = getConfValue('vendor', 'artistItemAuctionTitle', 'Art Auction Items');
+    $salesTitle = getConfValue('vendor', 'artistItemSalesTitle', 'Art Sales / Print Shop Items');
+    $nfsTitle = getConfValue('vendor', 'artistItemNFSTitle', 'Display Only / Not For Sale Items');
 ?>
     <div id='item_registration' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Register Items' aria-hidden='true' style='--bs-modal-width: 96%;'>
         <div class='modal-dialog'>

@@ -29,10 +29,11 @@ WITH maxcid AS (
     FROM exhibitorYears
     GROUP BY exhibitorId
 )
-SELECT e.id, e.perid, e.newperid, e.exhibitorName, e.exhibitorEmail, e.exhibitorPhone, e.website, e.publicity,
+SELECT e.id, e.perid, e.newperid, e.exhibitorName, e.artistName, e.exhibitorEmail, e.exhibitorPhone, e.website, e.publicity,
     e.addr, e.addr2, e.city, e.state, e.zip, e.country, IFNULL(e.notes, '') AS exhNotes,
     e.shipCompany, e.shipAddr, e.shipAddr2, e.shipCity, e.shipState, e.shipZip, e.shipCountry, e.archived,
-    ey.id as eyId, ey.conid, ey.exhibitorId, ey.contactName, ey.contactEmail, ey.contactPhone, ey.mailin, 0 as import
+    ey.id as eyId, ey.conid, ey.exhibitorId, ey.contactName, ey.contactEmail, ey.contactPhone, ey.mailin, 0 as import,
+    CASE WHEN IFNULL(e.artistName, '') = '' THEN e.exhibitorName ELSE CONCAT_WS('<BR/>', e.exhibitorName, e.artistName) END AS fullExhName
 FROM exhibitors e
 LEFT OUTER JOIN maxcid ON e.id = maxcid.exhibitorId
 LEFT OUTER JOIN exhibitorYears ey ON e.id = ey.exhibitorId AND maxcid.maxConid = ey.conid

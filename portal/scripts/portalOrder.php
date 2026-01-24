@@ -5,6 +5,7 @@ require_once('../lib/portalEmails.php');
 require_once('../../lib/paymentPlans.php');
 require_once('../../lib/purchase.php');
 require_once('../../lib/coupon.php');
+require_once('../../lib/tax.php');
 require_once('../../lib/log.php');
 require_once('../../lib/cc__load_methods.php');
 
@@ -21,7 +22,6 @@ $conf = get_conf('con');
 $portal_conf = get_conf('portal');
 $ini = get_conf('reg');
 $log = get_conf('log');
-$ccauth = get_conf('cc');
 load_cc_procs();
 logInit($log['reg']);
 
@@ -52,6 +52,16 @@ $response['resolveUpdates'] = $resolveUpdates;
 if ($resolveUpdates != null && array_key_exists('logout', $resolveUpdates) && $resolveUpdates['logout'] == 1) {
     ajaxSuccess($response);
     return;
+}
+
+// must use cc here, as getConfValue will look in global and that must not happen here
+$cc = get_conf('cc');
+if (array_key_exists('location_portal', $cc)) {
+    $ccLocation = $cc['location_portal'];
+} else if (array_key_exists('location', $cc)) {
+    $ccLocation = $cc['location'];
+} else {
+    $ccLocation = 'Unknown';
 }
 
 $loginId = getSessionVar('id');
@@ -210,6 +220,10 @@ if ($otherPay == 0) { // this is a plan payment or badge purchase payment
                 continue;
             if ($mem['payThis'] != 1)
                 continue;
+            $bn = $mem['badgename'];
+            $bn = str_replace('<i>', '', $bn);
+            $bn = str_replace('</i>', '', $bn);
+            $bn = str_replace('<br/>', '', $bn);
             $badges[] = array('id' => $mem['create_trans'],
                               'create_date' => $mem['create_date'],
                               'regId' => $mem['regid'],
@@ -235,7 +249,7 @@ if ($otherPay == 0) { // this is a plan payment or badge purchase payment
                               'online' => $mem['online'],
                               'managedBy' => $mem['managedBy'],
                               'managedByNew' => $mem['managedByNew'],
-                              'badge_name' => $mem['badge_name'],
+                              'badge_name' => $bn,
                               'fullName' => $mem['fullName'],
                               'memberId' => $mem['memberId'],
                               'planId' => $mem['planId'],
@@ -284,9 +298,9 @@ $rows_upd += dbSafeCmd($upT, 'ddddi', array($totalAmountDue, $totalAmountDue, $t
 // end compute, create the order if there is something to pay
 if ($amount > 0) {
     if ($cancelOrderId) // cancel the old order if it exists
-        cc_cancelOrder($results['source'], $cancelOrderId, true);
+        cc_cancelOrder($results['source'], $cancelOrderId, true, $ccLocation);
 
-    $rtn = cc_buildOrder($results, true);
+    $rtn = cc_buildOrder($results, true, $ccLocation);
     if ($rtn == null) {
         // note there is no reason cc_buildOrder will return null, it calls ajax returns directly and doesn't come back here on issues, but this is just in case
         logWrite(array ('con' => $condata['name'], 'trans' => $transId, 'error' => 'Order unable to be created'));
@@ -296,12 +310,22 @@ if ($amount > 0) {
     $response['rtn'] = $rtn;
 
     // update the transaction with the order id
-    $updTrans = <<<EOS
+    $taxes = $rtn['taxes'];
+    [$taxSql, $taxStr, $taxValues] = buildTaxUpdate($taxes);
+    $upT = <<<EOS
 UPDATE transaction
-SET orderId = ?, paymentStatus = 'ORDER', tax = ?, withtax = ?, orderDate = now()
+SET price = ?, tax = ?, withTax = ?, couponDiscountCart = ?, orderId = ?, paymentStatus = 'ORDER', orderDate = now(), $taxSql
 WHERE id = ?;
 EOS;
-    $numUpd = dbSafeCmd($updTrans, 'sddi', array($rtn['orderId'], $rtn['taxAmt'], $rtn['totalAmt'], $transId));
+    $preTax = $rtn['preTaxAmt'];
+    $taxAmt = $rtn['taxAmt'];
+    $withTax = $rtn['totalAmt'];
+    $valArray = array($preTax, $taxAmt, $withTax, 0, $rtn['orderId']);
+    $typeStr = 'dddds' . $taxStr . 'i';
+    $valArray = array_merge($valArray, $taxValues);
+    $valArray[] = $transId;
+
+    $numUpd = dbSafeCmd($upT, $typeStr, $valArray);
 } else {
     $rtn = array();
 }

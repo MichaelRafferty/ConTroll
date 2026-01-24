@@ -33,6 +33,7 @@ page_init($page,
                     'jslib/emailBulkSend.js',
                     'jslib/membershipRules.js',
                     'jslib/notes.js',
+                    'jslib/configEdit.js',
               ),
                     $need_login);
 
@@ -46,6 +47,8 @@ if ($controll != null && array_key_exists('badgelistfilter', $controll)) {
         $badgeListFilter = "top";
 } else
     $badgeListFilter = "top";
+$currency = getConfValue('con', 'currency', 'USD');
+$locale = getLocale();
 
 $conid = getConfValue('con', 'id', '-1');
 $multiOneDay = getConfValue('con', 'multioneday', '0');
@@ -59,6 +62,8 @@ $config_vars['userid'] = $_SESSION['user_perid'];
 $config_vars['finance'] = $finance ? 1 : 0;
 $config_vars['ae'] = $admin ? 1 : 0;
 $config_vars['source'] = 'regstaff';
+$config_vars['locale'] = $locale;
+$config_vars['currency'] = $currency;
 ?>
 <?php bs_tinymceModal();
 // edit memList entry modal
@@ -97,7 +102,7 @@ $config_vars['source'] = 'regstaff';
                         <div class='col-sm-8' id='editMemListAge'></div>
                     </div>
                     <div class='row mt-1'>
-                        <div class='col-sm-1'>Label:</div>
+                        <div class='col-sm-1'>Short Label:</div>
                         <div class='col-sm-8'>
                             <input type="text" name='editMemListLabel' id='editMemListLabel' placeholder="Short Label"
                                    onchange='memListModalDirty = true;' size="64" maxlength="64" />
@@ -173,7 +178,14 @@ $config_vars['source'] = 'regstaff';
                         </div>
                     </div>
                     <div class='row mt-2'>
-                        <div class="col-sm-1" style='text-align: right;'>ID</div>
+                        <div class="col-sm-1">
+                            <div class="container-fluid">
+                                <div class="row">
+                                    <div class="col-sm-6" style='text-align: right;'>Sort</div>
+                                    <div class="col-sm-6" style='text-align: right;'>ID</div>
+                                </div>
+                            </div>
+                        </div>
                         <div class="col-sm-1" style='text-align: center;'>Price</div>
                         <div class="col-sm-2">Start Date</div>
                         <div class="col-sm-2">End Date</div>
@@ -187,7 +199,17 @@ $config_vars['source'] = 'regstaff';
         $bgColor = $i % 2 ? 'light-cyan' : '#e0e0e0';
 ?>
                     <div class='row mt-2' style="background-color: <?php echo $bgColor;?>">
-                        <div class='col-sm-1' id="EMLTS<?php echo $i;?>_ID" style="text-align: right;"></div>
+                        <div class='col-sm-1'>
+                            <div class='container-fluid'>
+                                <div class='row'>
+                                    <div class='col-sm-6' style='text-align: right;'>
+                                        <input type='number' class='no-spinners' inputmode='numeric' id='EMLTS<?php echo $i; ?>_Sort'
+                                               style='text-align: right; width: 3em;' min='0'/>
+                                    </div>
+                                    <div class='col-sm-6' id="EMLTS<?php echo $i; ?>_ID" style='text-align: right;'></div>
+                                </div>
+                            </div>
+                        </div>
                         <div class='col-sm-1'>
                             <input type='number' class='no-spinners' inputmode='numeric' id='EMLTS<?php echo $i;?>_Price'
                                    style="text-align: right; width: 6em;" min='0' onchange="tsPriceChange(<?php echo $i;?>)"/>
@@ -831,7 +853,7 @@ $config_vars['source'] = 'regstaff';
     </div>
 </div>
 </div>
-<div id='receipt' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Registration Receipt' aria-hidden='true' style='--bs-modal-width: 80%;'>
+<div id='receipt' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Registration Receipt' aria-hidden='true' style='--bs-modal-width: 90%;'>
     <div class='modal-dialog'>
         <div class='modal-content'>
             <div class='modal-header bg-primary text-bg-primary'>
@@ -930,6 +952,11 @@ $config_vars['source'] = 'regstaff';
                 aria-controls='nav-merge' aria-selected='false' onclick="settab('merge-pane');">Merge People
         </button>
     </li>
+    <li class='nav-item' role='presentation'>
+        <button class='nav-link' id='configEdit-tab' data-bs-toggle='pill' data-bs-target='#configEdit-pane' type='button' role='tab'
+                aria-controls='nav-menu' aria-selected='false' onclick="settab('configEdit-pane');">Configuration Editor
+        </button>
+    </li>
 </ul>
 <div class='tab-content ms-2' id='regadmin-content'>
     <div class='tab-pane fade show active' id='registrationlist-pane' role='tabpanel' aria-labelledby='registrationlist-tab' tabindex='0'>
@@ -1025,6 +1052,34 @@ $config_vars['source'] = 'regstaff';
     <div class='tab-pane fade' id='policy-pane' role='tabpanel' aria-labelledby='policy-tab' tabindex='0'></div>
     <div class='tab-pane fade' id='interests-pane' role='tabpanel' aria-labelledby='interests-tab' tabindex='0'></div>
     <div class='tab-pane fade' id='rules-pane' role='tabpanel' aria-labelledby='rules-tab' tabindex='0'></div>
+    <div class='tab-pane fade' id='configEdit-pane' role='tabpanel' aria-labelledby='configEdit-tab' tabindex='0'>
+        <div class='container-fluid'>
+            <div class='row'>
+                <div class='col-sm-auto'><h2>Registration Administration Configuration Editor (reg_conf.ini)</h2></div>
+            </div>
+            <div class='row mt-2 mb-3'>
+                <div class='col-sm-auto'>
+                    <button type='button' class='btn btn-primary btn-sm' id='saveBTNt' onclick='configEditor.save();' disabled>Save</button>
+                </div>
+                <div class='col-sm-auto'>
+                    <button type='button' class='btn btn-secondary btn-sm' id='discardBTNt' onclick='configEditor.discard();' disabled>Discard
+                        Changes</button>
+                </div>
+            </div>
+        </div>
+        <div class='container-fluid' id='configDiv'>
+        </div>
+        <div class='container-fluid'>
+            <div class='row mt-2 mb-3'>
+                <div class='col-sm-auto'>
+                    <button type='button' class='btn btn-primary btn-sm' id='saveBTNb' onclick='configEditor.save();' disabled>Save</button>
+                </div>
+                <div class='col-sm-auto'>
+                    <button type='button' class='btn btn-secondary btn-sm' id='discardBTNb' onclick='configEditor.discard();' disabled>Discard Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <div id='result_message' class='mt-4 p-2'></div>
 </div>
 <pre id='test'>

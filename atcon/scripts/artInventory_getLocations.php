@@ -45,7 +45,10 @@ while($loc = $locR->fetch_assoc()) {
 
 foreach($locations as $key => $value) {
     natsort($value);
-    $locations[$key] = $value;
+    $locs = [];
+    foreach ($value as $loc)
+        $locs[] = $loc;
+    $locations[$key] = $locs;
 }
 
 $response['locations'] = $locations;

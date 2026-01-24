@@ -4,6 +4,7 @@ require_once "lib/base.php";
 require_once '../lib/profile.php';
 require_once '../lib/portalForms.php';
 require_once '../lib/policies.php';
+require_once '../lib/tax.php';
 
 // if not logged in, send back to the index page to log in
 if (!isSessionVar('user')) {
@@ -74,6 +75,8 @@ if ($policies != null) {
     }
 }
 $useUSPS = false;
+$currency = getConfValue('con', 'currency', 'USD');
+$locale = getLocale();
 $config_vars = array();
 $config_vars['label'] = $con['label'];
 $config_vars['mode'] = $mode;
@@ -98,7 +101,9 @@ if (isset($_GET['tid'])) {
 }
 $config_vars['onedaycoupons'] = $onedaycoupons;
 $config_vars['source'] = 'regpos';
-
+$config_vars['taxRates'] = getTaxRates();
+$config_vars['locale'] = $locale;
+$config_vars['currency'] = $currency;
 
 $useUSPS = false;
 

@@ -6,9 +6,9 @@ require_once('lib/base.php');
 require_once('lib/validateConfigMYSQL.php');
 require_once('lib/validateConfigFile.php');
 require_once('lib/createMissingTables.php');
+require_once('lib/createMissingDirectories.php');
 require_once('lib/createMissingRecords.php');
 require_once('lib/checkTableDML.php');
-global $dbObject;
 global $logFile;
 global $options;
 // setup parameters
@@ -18,12 +18,13 @@ $phpMajor = 8;
 $phpMinor = 2;
 
 // get command line options
-$options = getopt("cfhinopstv");
+$options = getopt("cdfhinopstv");
 
 if (array_key_exists('h', $options)) {
     echo <<<EOS
 InstallSetup options:
     -c  Allow creation of the database (schema) if it doesn't exist.
+    -d  Suppress creation of the non Git directories if they don't exist
     -f  Drop and re-apply foreign keys
     -h  Display this option list an exit.
     -i  Suppress phpinfo in logfile.
@@ -32,7 +33,7 @@ InstallSetup options:
     -p  Drop and re-apply views, functions and procedures
     -s  Validate existing database schema
     -t  Create missing tables, functions, keys, procedures
-    -v  Suppress validating the config file
+    -v  Suppress validating the config files
 
 EOS;
     exit(0);
@@ -115,9 +116,20 @@ if (array_key_exists('n', $options)) {
     }
 }
 
+if (array_key_exists('d', $options)) {
+    logEcho('Skipping directoy creation due to -d option');
+} else {
+    $error = createMissingDirectories($options);
+    if ($error) {
+        echo 'Exiting due to errors creating all of the missing directories.' . PHP_EOL;
+        fclose($logFile);
+        exit($error);
+    }
+}
+
 $error = createMissingRecords($options);
 if ($error) {
-    echo 'Exiting due to errors creating missing records in the databas.' . PHP_EOL;
+    echo 'Exiting due to errors creating missing records in the database.' . PHP_EOL;
     fclose($logFile);
     exit($error);
 }
@@ -147,13 +159,13 @@ EOS;
     }
 
 } else {
-    logEcho("Inable to check database patch level because the file Reg_Install_Schema/AA_Patchlevel.txt is missing");
+    logEcho("Unable to check database patch level because the file Reg_Install_Schema/AA_Patchlevel.txt is missing");
 }
 
 if (array_key_exists('v', $options)) {
     logEcho('Skipping configuration file validation due to the -v option');
 } else {
-    $error = validateConfigFile($options);
+    $error = validateConfigFiles($options);
     if ($error) {
         echo 'Exiting due to errors in the config file.' . PHP_EOL;
         fclose($logFile);

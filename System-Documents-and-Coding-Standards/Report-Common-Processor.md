@@ -45,11 +45,11 @@ The sort order of these file names determines the tab order on the page.
 Both the files in the system wide groups directory and the files in the local groups directory are sorted into one set of tabs.
 
 ### Lines in a group configuration file:
-* [group] (global items)
+* **[group]** (global items)
   * name: tab name (title)
   * description: longer description for the items under this tab.  This is a single line of text, can include simple HTML, but cannot include newlines.
   * auth: auth token needed to see this tab
-* [report short name]  (this grouping repeats for every report in the menu, and starts with a 3 digit sort order for the order of the menu
+* **[report short name]**  (this grouping repeats for every report in the menu, and starts with a 3 digit sort order for the order of the menu
   * name: Name of the report
   * description: longer description for this report
   * template: file name of the report template
@@ -87,25 +87,35 @@ Both the files in the system wide groups directory and the files in the local gr
 
 A report consists of a specific report to display as a tabulator table with a download button.
 
-TODO: create a way to print these outside of the full web page with decorations.
+**TODO**: create a way to print these outside of the full web page with decorations.
 
 This configuration file must be parsable by the parse_ini_file function with sections in brackets and fields as name=value.
 
 ### Lines in a report configuration file:
-* [report] (global items)
+* **[report]** (global items)
   * name: Name of the report - used as a H1 before the report output
   * auth: auth token to execute this report (must match the auth token in the group's report section.)
   * index: index field name
   * csvfile: default file name for the csv download
   * totals: position of the overall totals (top/bottom)
   * subtotals: (field list to do a group by and subtotal, if calc fields exist
-* [Cnumber] (the number is the sort order of the CTE in the sql, number should be 3 digits with leading zeros) (CTE is Common Table Expression and uses the 
+  * pivotFields: comma separated list of fields to make the new keys of the pivoted columns
+    * Note: If this field is included the table is pivoted after the select phase and before the report writing phase
+    * Pivoted reports use the [Fnumber] fields for database selects prior to pivot and [Rnumber] for the rotated columns.
+  * pivotRowName: name assigned to the first field (identifier) of the pivoted rows
+    * Note: this field is only valid if pivbotFields is present and non empty.  If missing it defaults to "rowName"
+
+
+* **[Cnumber]** (the number is the sort order of the CTE in the sql, number should be 3 digits with leading zeros) (CTE is Common Table Expression and uses the 
   with subquery notation in the SQL)
   * name: CTE name
   * select: sql of the CTE condensed into a single line
   * tables: from/join clauses of the CTE in a single line
   * where: where clause of the CTE in a single line
-* [Fnumber] (the number is the sort order of the field in the table as it is displayed, number should be 3 digits with leading zeros)
+
+
+* **[Fnumber]** (the number is the sort order of the field in the table as it is displayed, number should be 3 digits with leading zeros). Note: the fields for 
+  Tabulator are ignored for pivoted reports.
   * name: name of the column (field name in the AS clause in SQL and in tabulator
   * sql: sql select code for the column as a single line including all case statements
   * title: column title in Tabulator
@@ -126,23 +136,56 @@ This configuration file must be parsable by the parse_ini_file function with sec
   * width: optional width in pixels (see width in Tabulator)
   * minWidth: optional minimum width in pixels (see minWidth in Tabulator)
   * visible: true (default) or false (see visible in Tabulator)
-* [Tnumber] (the number is the order of the tables in the join, with 0 being the "FROM" table, number should be 3 digits with leading zeros)
+
+
+* **[Rnumber]** (the number is the sort order of the field in the table as it is displayed, number should be 3 digits with leading zeros). Note: These are the 
+  fields for Tabulator in pivoted reports.
+    * name: name of the column (field name as rotated in the SQL return)
+    * title: column title in Tabulator
+    * align: right (uses hozAlign in Tabulator))
+    * calc: type (sum,avg,min,max,count,unique) (see topCalc and bottomCalc in tabulator)
+    * precision: integer (number of decimal points, only used if calc exists for the field, optional, default is 0) (see topCalcParameters and
+      bottomCalcParameters in Tabulator)
+    * filter: header filter type (defaults to false), true, textarea, fullName, number (see headerFilter in Tabulator)
+        * true: use text input style
+        * textarea: use a text area instead of text for the input style
+        * fullname: use ConTroll's custom fullName filter that searches (and requires) the invisible fields first_name, middle_name and last_name
+        * number: use ConTroll's custom numeric filter that supports <, <=, >, >=, and = comparisions in the filter field, such as >0.
+    * format: tabulatorFormatter (html,textarea,link) (see formatter in Tabulator)
+        * the default format if omitted is 'text'
+        * html: display the contents as HTML
+        * link: display the contents as a clickable link
+    * sort: header sort (true/false) (see headerSort in Tabulator)
+    * width: optional width in pixels (see width in Tabulator)
+    * minWidth: optional minimum width in pixels (see minWidth in Tabulator)
+    * visible: true (default) or false (see visible in Tabulator)
+
+
+* **[Tnumber]** (the number is the order of the tables in the join, with 0 being the "FROM" table, number should be 3 digits with leading zeros)
   * name: table name
   * alias: table alias
   * join: join clause
   * left: true to use left outer join versus normal join
-* [Pnumber] (the number is the order of the parameters in the sql)
+
+
+* **[Pnumber]** (the number is the order of the parameters in the sql)
   * type: config, post (config is from reg_conf.ini, post is from the prompt/const parameters)
   * section: config section (if config)
   * item: config item (if config) or input field if prompt
   * datatype: sql datatype: s,i,d (string, integer, floating point decimal)
-* [where]: sql where clause (broken into lines for readability)
+
+
+* **[where]**: sql where clause (broken into lines for readability)
   * W001: line 1 of where clause
   * W002: line 2 of where clause… (repeat as needed for readability)
-* [group]: sql group by clause (broken into lines for readability)
+
+
+* **[group]**: sql group by clause (broken into lines for readability)
   * G001: line 1 of group by clause
   * G002: line 2 of group by clause… (repeat as needed for readability)
-* [sort]: sql order by clause (broken into lines for readability)
+
+
+* **[sort]**: sql order by clause (broken into lines for readability)
   * S001: sql order by clause
   * S002: sql order by clause continued for readability
 

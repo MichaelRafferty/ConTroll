@@ -52,6 +52,7 @@ class exhibitssetup {
     // global items
     #memList = null;
     #memListArr = {};
+    #memListArrIncl = {};
     #message_div = null;
     #result_message_div = null;
     #exhibits_pane = null;
@@ -367,19 +368,22 @@ class exhibitssetup {
                 }
                 document.getElementById('eryExhibitsRegion').innerHTML = optionList;
 
-                keys = Object.keys(this.#memListArr);
                 // included memberships
                 optionList = '';
-                for (index = 0; index < keys.length; index++) {
-                    key = keys[index];
+                var optionListIncl = '';
+                for (index = 0; index < this.#memList.length; index++) {
+                    key = this.#memList[index].id;
                     value = this.#memListArr[key];
+                    if (Number(this.#memList[index].price) == 0) {
+                        optionListIncl += '\n<option value="' + key + '">' + value + '</option>';
+                    }
                     optionList += '\n<option value="' + key + '">' + value + '</option>';
                 }
                 var defSel = '';
                 if (row.includedMemId == undefined || row.includedMemId <= 0) {
                     var defSel = '<option value="-1">Select a type</option>';
                 }
-                document.getElementById('eryIncludedMemId').innerHTML = defSel + optionList;
+                document.getElementById('eryIncludedMemId').innerHTML = defSel + optionListIncl;
 
                 defSel = '';
                 if (row.additionalMemId == undefined || row.additionalMemId <= 0) {
@@ -521,8 +525,12 @@ class exhibitssetup {
         if (data.memList) {
             this.#memList = data.memList;
             this.#memListArr = {};
+            this.#memListArrIncl = {};
             this.#memList.forEach(m => {
                 this.#memListArr[m.id] = m.label + ':' + m.price.toString() + ' (' + m.id + ')';
+                if (Number(m.price) == 0) {
+                    this.#memListArrIncl[m.id] = m.label + ':' + m.price.toString() + ' (' + m.id + ')';
+                }
             });
 
             if (this.#debug & 1) {
@@ -593,10 +601,6 @@ class exhibitssetup {
             movableRows: true,
             data: this.#regionType,
             layout: "fitDataTable",
-            pagination: this.#regionType.length > 10,
-            paginationAddRow:"table",
-            paginationSize: 10,
-            paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
                 {rowHandle: true, formatter: "handle", frozen: true, width: 40, headerSort: false},
                 { title: "&bigstar;Region Type", field: "regionType", width: 200, headerSort: true, headerWordWrap: true, validator: "required",
@@ -618,6 +622,8 @@ class exhibitssetup {
                 { title: "&bigstar;Uses Inventory Mgmt", field: "usesInventory", headerSort: false, width: 90, headerWordWrap: true, validator: "required",
                     editor: "list", editorParams: { values: ['Y', 'N'] }, },
                 { title: "Max Inv Items", field: "maxInventory", width: 70, headerSort: false, headerWordWrap: true, editor: "number" },
+                { title: "&bigstar;Allow Quick Sale", field: "allowQuickSale", headerSort: false, width: 90, headerWordWrap: true, validator: "required",
+                    editor: "list", editorParams: { values: ['Y', 'N'] }, },
                 { title: "&bigstar;Active", field: "active", headerSort: true, width: 120, validator: "required",
                     editor: "list", editorParams: { values: ['Y', 'N'] }, },
                 { title: "Sort Order", field: "sortorder", visible: this.#debugVisible, headerFilter: false, headerWordWrap: true, width: 80,},
@@ -778,7 +784,7 @@ class exhibitssetup {
                     editor: "input", editorParams: {elementAttributes: {maxlength: "64"}}, validator: "required"
                 },
                 { title: '&bigstar;Included', field: "includedMemId", width: 230, headerSort: false, validator: "required",
-                    editor: "list", formatter:"lookup", formatterParams: this.#memListArr, editorParams: { values: this.#memListArr },
+                    editor: "list", formatter:"lookup", formatterParams: this.#memListArrIncl, editorParams: { values: this.#memListArrIncl },
                 },
                 { title: '&bigstar;Additional', field: "additionalMemId", width: 230, headerSort: false, validator: "required",
                     editor: "list", formatter:"lookup", formatterParams: this.#memListArr, editorParams: { values: this.#memListArr  }
@@ -1037,10 +1043,10 @@ class exhibitssetup {
     // add row to types table and scroll to that new row
     addrowTypes() {
         var _this = this;
-        this.#regionTypeTable.addRow({regionType: 'new-row', portalType: 'vendor', requestApprovalRequired: 'None', purchaseApprovalRequired: 'Y',
-            purchaseAreaTotals: 'unique', inPersonMaxUnits: 0, mailinAllowed: 'N', mailinMaxUnits: 0, needW9: 'N', usesInventory: 'N',
+        this.#regionTypeTable.addRow({regionType: 'new-row', portalType: 'vendor', requestApprovalRequired: 'None',
+            purchaseApprovalRequired: 'Y', purchaseAreaTotals: 'unique', inPersonMaxUnits: 0, mailinAllowed: 'N', mailinMaxUnits: 0,
+            needW9: 'N', usesInventory: 'N', allowQuickSale: 'Y', maxInventory: 75,
             active: 'Y', sortorder: 99, uses: 0}, false).then(function (row) {
-            row.getTable().setPage('last').then(function () {
                 row.getCell("regionType").getElement().style.backgroundColor = "#fff3cd";
                 row.getCell("portalType").getElement().style.backgroundColor = "#fff3cd";
                 row.getCell("requestApprovalRequired").getElement().style.backgroundColor = "#fff3cd";
@@ -1051,10 +1057,12 @@ class exhibitssetup {
                 row.getCell("mailinMaxUnits").getElement().style.backgroundColor = "#fff3cd";
                 row.getCell("needW9").getElement().style.backgroundColor = "#fff3cd";
                 row.getCell("usesInventory").getElement().style.backgroundColor = "#fff3cd";
+                row.getCell("maxInventory").getElement().style.backgroundColor = "#fff3cd";
+                row.getCell("allowQuickSale").getElement().style.backgroundColor = "#fff3cd";
                 row.getCell("active").getElement().style.backgroundColor = "#fff3cd";
                 _this.checkTypesUndoRedo();
-            });
-        });
+            }
+        );
     }
 
     // set undo / redo status for exhibits type buttons
@@ -1203,7 +1211,7 @@ class exhibitssetup {
         var _this = this;
         this.#regionsTable.clearFilter(true);
         this.#regionsTable.addRow({ sortorder: 99, uses: 0}, false).then(function (row) {
-            row.getTable().setPage('last').then(function() {
+            row.getTable().setPageToRow(row).then(function() {
                 row.getCell("shortname").getElement().style.backgroundColor = "#fff3cd";
                 _this.checkRegionsUndoRedo();
             });
@@ -1352,7 +1360,7 @@ class exhibitssetup {
         this.#regionYearsTable.clearFilter(true);
         this.#regionYearsTable.addRow({id: this.#insertID, conid: this.#conid, ownerName: 'new-row', sortorder: 99, uses: 0}, false).then(function (row) {
             _this.#regionYearsTable.setPage("last"); // adding new to last page always
-            row.getTable().setPage('last').then(function () {
+            row.getTable().setPageToRow(row).then(function () {
                 row.getCell("ownerName").getElement().style.backgroundColor = "#fff3cd";
                 _this.checkYearsUndoRedo();
             });
@@ -1511,7 +1519,7 @@ class exhibitssetup {
         this.#spacesTable.clearFilter(true);
         this.#spacesTable.addRow({shortname: 'new-row', sortorder: 99, uses: 0}, false).then(function (row) {
             _this.#spacesTable.setPage("last"); // adding new to last page always
-            row.getTable().setPage('last').then(function () {
+            row.getTable().setPageToRow(row).then(function () {
                 row.getCell("shortname").getElement().style.backgroundColor = "#fff3cd";
                 _this.checkSpacesUndoRedo();
             });
@@ -1661,7 +1669,7 @@ class exhibitssetup {
         this.#spacePricesTable.clearFilter(true);
         this.#spacePricesTable.addRow({code: 'new-row', sortorder: 99, requestable: 0, uses: 0, }, false).then(function (row) {
             _this.#spacePricesTable.setPage("last"); // adding new to last page always
-            row.getTable().setPage('last').then(function () {
+            row.getTable().setPageToRow(row).then(function () {
                 row.getCell("code").getElement().style.backgroundColor = "#fff3cd";
                 row.getCell("requestable").getElement().style.backgroundColor = "#fff3cd";
                 _this.checkSpacePricesUndoRedo();

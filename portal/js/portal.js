@@ -43,6 +43,7 @@ class Portal {
     #email1Field = null;
     #phoneField = null;
     #badgenameField = null;
+    #badgenameL2Field = null;
     #uspsDiv= null;
     
     // change email modal
@@ -92,7 +93,7 @@ class Portal {
     #otherPayAmt = 0;
     #otherPay = 0;
     #orderData = null;
-    #orderBadges = null;
+    #taxes = [];
     #disableButtonNames = null;
 
     // receipt fields
@@ -117,8 +118,19 @@ class Portal {
     #oldPolicies = null;
     #newPolicies = null;
 
+    // locale/currency
+    #currencyFmt = null;
+    #locale = null;
+
     constructor() {
-        var id;
+        let id;
+
+        this.#locale = config.locale;
+        this.#currencyFmt = new Intl.NumberFormat(this.#locale, {
+            style: 'currency',
+            currency: config.currency,
+        });
+
         id = document.getElementById("editPersonModal");
         if (id) {
             this.#editPersonModalElement = id;
@@ -142,7 +154,8 @@ class Portal {
             this.#countryField = document.getElementById("country");
             this.#email1Field = document.getElementById("email1");
             this.#phoneField = document.getElementById("phone");
-            this.#badgenameField = document.getElementById("badgename");
+            this.#badgenameField = document.getElementById("badge_name");
+            this.#badgenameL2Field = document.getElementById("badgeNameL2");
             this.#uspsDiv = document.getElementById("uspsblock");
         }
 
@@ -400,6 +413,7 @@ class Portal {
         this.#email1Field.innerHTML = person.email_addr;
         this.#phoneField.value = person.phone;
         this.#badgenameField.value = person.badge_name;
+        this.#badgenameL2Field.value = person.badgeNameL2;
 
         this.#personSerializeStart = $("#editPerson").serialize();
 
@@ -574,7 +588,7 @@ class Portal {
         }
 
         if (person.country == 'USA') {
-            message += "<br/>Note: If any of the address fields Address, City, State or Zip are used and the country is United States, " +
+            message += "<br/>Note: If any of the address fields Address, City, State/Prov or Zip/PC are used and the country is United States, " +
                 "then the Address, City, State, and Zip fields must all be entered and the state field must be a valid USPS two character state code.";
         }
         // validation
@@ -624,7 +638,7 @@ class Portal {
                 $('#state').addClass('need');
             } else {
                 if (person.country == 'USA') {
-                    if (person.state.length != 2) {
+                    if (person.state.trim().length != 2) {
                         valid = false;
                         $('#state').addClass('need');
                     } else {
@@ -1240,20 +1254,39 @@ class Portal {
         this.#paymentAmount = Number(this.#orderData.rtn.totalAmt);
         if (this.#orderData.rtn.taxAmt > 0) {
             html += `
-            <div className="row mt-4">
-                <div className="col-sm-auto"><b>The Pre-Tax Amount Due is ` + Number(this.#orderData.rtn.preTaxAmt).toFixed(2) + `</b></div>
-            </div>
-            <div className="row mt-2">
-                <div className="col-sm-auto"><b>` + this.#orderData.rtn.taxLabel + ` is ` + Number(this.#orderData.rtn.taxAmt).toFixed(2) + `</b></div>
-                
-            </div>
-`;
+            <div class="row mt-4">
+                <div class="col-sm-3"><b>The Pre-Tax Amount Due is:</b></div>
+                <div class="col-sm-1" style="text-align: right;"><b>` + this.#currencyFmt.format(Number(this.#orderData.rtn.preTaxAmt).toFixed(2)) + `</b></div>
+            </div>`;
+            this.#taxes = this.#orderData.rtn.taxes;
+            if (Object.keys(config.taxRates).length > 0) {
+                for (let tax in config.taxRates) {
+                    let rate = config.taxRates[tax];
+                    let amt = this.#taxes[tax];
+                    if (amt != null) {
+                        html += `
+    <div class="row mt-1">
+        <div class="col-sm-3">` + rate.label + `:</div>
+        <div class="col-sm-1" style="text-align: right;">` + this.#currencyFmt.format(Number(amt).toFixed(2)) + `</div>
+    </div>`;
+                    }
+                }
+            }
+            if (this.#orderData.rtn.taxAmt > 0) {
+                html += `
+    <div class="row mt-1">
+        <div class="col-sm-3">Total Sales Tax:</div>
+        <div class="col-sm-1" style="text-align: right;" id="pay-tax-amt">` +
+                    this.#currencyFmt.format(Number(this.#orderData.rtn.taxAmt).toFixed(2)) + `</div>
+    </div>`;
+            }
         }
 
         if (plan == null) {
             html += `
         <div class="row mt-2 mb-4">
-            <div class="col-sm-auto"><strong>You are paying the total amount, so the payment amount is ` + Number(this.#paymentAmount).toFixed(2) + `</strong></div>
+            <div class="col-sm-auto"><strong>You are paying the total amount, so the payment amount is ` +
+                this.#currencyFmt.format(Number(this.#paymentAmount).toFixed(2)) + `</strong></div>
          </div>
 `;
         } else if (!done) {

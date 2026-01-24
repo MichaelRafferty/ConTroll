@@ -23,8 +23,8 @@ $conid=$con['id'];
 
 $query = <<<EOQ
 SELECT DISTINCT P.id, concat_ws(' ', P.first_name, P.middle_name, P.last_name) as full_name,
-    P.address, P.addr_2, concat_ws(' ', P.city, P.state, P.zip) as locale, P.legalName,
-    P.badge_name, P.email_addr, P.phone, P.active, P.banned, M.label
+    P.address, P.addr_2, concat_ws(' ', P.city, P.state, P.zip) as locale, P.legalName, P.first_name, P.last_name,
+    P.badge_name, P.badgeNameL2, P.email_addr, P.phone, P.active, P.banned, M.label
 FROM perinfo as P
 LEFT OUTER JOIN reg R ON (R.perid = P.id AND R.conid = ?)
 LEFT OUTER JOIN memLabel M ON (R.memId = M.id)
@@ -48,6 +48,7 @@ if(!$res) {
 }
 $results = array('active' => array(), 'inactive' => array());
 while ($row = $res->fetch_assoc()) {
+    $row['badgename'] = badgeNameDefault($row['badge_name'], $row['badgeNameL2'], $row['first_name'], $row['last_name']);
     if($row['active'] == 'Y') {
         array_push($results['active'], $row);
     } else {

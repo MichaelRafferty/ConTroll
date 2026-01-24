@@ -9,12 +9,12 @@ require_once("../lib/exhibitorRegistrationForms.php");
 require_once('../lib/exhibitorRequestForms.php');
 require_once('../lib/exhibitorReceiptForms.php');
 require_once("../lib/cc__load_methods.php");
-global $config_vars;
+require_once('../lib/webauthn.php');
+require_once('../lib/tax.php');
 
 $cc = get_conf('cc');
 $con = get_conf('con');
 $conid = $con['id'];
-$vendor_conf = get_conf('vendor');
 $usps = get_conf('usps');
 load_cc_procs();
 
@@ -59,14 +59,15 @@ switch ($required) {
     case 'first':
         $firstStar = '<span class="text-danger">&bigstar;</span>';
 }
-
+$currency = getConfValue('con', 'currency', 'USD');
+$locale = getLocale();
 $config_vars = array();
 $config_vars['label'] = $con['label'];
-$config_vars['vemail'] = $vendor_conf[$portalType];
+$config_vars['vemail'] = getConfValue('vendor', $portalType, getConfValue('regadminemail', 'con'));
 $config_vars['portalType'] = $portalType;
 $config_vars['portalName'] = $portalName;
-$config_vars['artistsite'] = $vendor_conf['artistsite'];
-$config_vars['vendorsite'] = $vendor_conf['vendorsite'];
+$config_vars['artistsite'] = getConfValue('vendor', 'artistsite');
+$config_vars['vendorsite'] = getConfValue('vendor', 'vendorsite');
 $config_vars['debug'] = getConfValue('debug', 'vendors', 0);
 $config_vars['required'] = $required;
 $config_vars['useUSPS'] = $useUSPS;
@@ -76,6 +77,15 @@ $config_vars['firstStar'] = $firstStar;
 $config_vars['regserver'] = getConfValue('reg','server');
 
 exhibitor_page_init($condata['label'] . " $portalName Registration");
+$config_vars['termsArtistMailin'] = returnCustomText('invoice/termsArtistMailin');
+$config_vars['termsArtistOnsite'] = returnCustomText('invoice/termsArtistOnsite');
+$config_vars['termsExhibitor'] = returnCustomText('invoice/termsExhibitor');
+$config_vars['termsFan'] = returnCustomText('invoice/termsFan');
+$config_vars['termsVendor'] = returnCustomText('invoice/termsVendor');
+$config_vars['locale'] = $locale;
+$config_vars['currency'] = $currency;
+$config_vars['taxRates'] = getTaxRates();
+
 
 // load country select
 $countryOptions = '';
@@ -267,6 +277,7 @@ EOS;
     $exhibitor = $match['id'];
     setSessionVar('id', $exhibitor);
     setSessionVar('login_type', $match['loginType']);
+    setSessionVar('loginEmail', $login);
     $in_session = true;
     session_regenerate_id(true);
 
@@ -391,6 +402,10 @@ if ($info['cNeedNew']) {
 
 $infoR->free();
 
+$config_vars['exhibitorName'] = $info['exhibitorName'];
+$config_vars['artistName'] = $info['artistName'];
+$config_vars['email'] = getSessionVar('loginEmail');
+
 // load the country codes for the option pulldown
 $fh = fopen(__DIR__ . '/../lib/countryCodes.csv', 'r');
 $countryOptions = '';
@@ -398,7 +413,15 @@ while(($data = fgetcsv($fh, 1000, ',', '"'))!=false) {
     $countryOptions .=  "<option value='".$data[1]."'>".$data[0]."</option>\n";
 }
 fclose($fh);
+// load the passkey count for this exhibitor to see if we need to display create passkey
+$tokenType = getSessionVar('tokenType');
+$hasPasskey = $tokenType == 'passkey';
+if ($hasPasskey == false) {
+    $hasPasskey = hasPasskey($info['exhibitorEmail'], 'vendor') || hasPasskey($info['contactEmail'], 'vendor');
+}
 
+$allowPasskey = getConfValue('vendor', 'passkeyRpLevel', 'd') != 'd' &&
+        array_key_exists('HTTPS', $_SERVER) && (isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == 'on');
 
 $config_vars['loginType'] = getSessionVar('login_type');
 
@@ -452,7 +475,11 @@ draw_passwordModal();
 draw_exhibitorRequestModal($portalType);
 draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $testsite, $cc, $portalName, $portalType);
 draw_exhibitorReceiptModal($portalType);
-draw_itemRegistrationModal($portalType, $vendor_conf['artsheets'], $vendor_conf['artcontrol']);
+$value = getConfValue('vendor', 'artsheets', 1);
+$showSheets = $value == '1' || $value == 'yes' || $value == 'true';
+$value = getConfValue('vendor', 'artcontrol', 1);
+$artControl = $value == '1' || $value == 'yes' || $value == 'true';
+draw_itemRegistrationModal($portalType, $showSheets, $artControl);
 ?>
     <!-- now for the top of the form -->
      <div class='container-fluid'>
@@ -464,10 +491,15 @@ draw_itemRegistrationModal($portalType, $vendor_conf['artsheets'], $vendor_conf[
          <?php outputCustomText('main/top' . $portalName); ?>
         <div class="row p-1">
             <div class="col-sm-auto p-0">
-                <button class="btn btn-secondary m-1" onclick="exhibitorProfile.profileModalOpen('update');">View/Change your profile</button>
-                <button class='btn btn-secondary m-1' onclick='changePasswordOpen();'>Change your password</button>
-                <button class='btn btn-secondary m-1' id='switchPortalbtn' onclick='switchPortal();'>Switch to XXX Portal</button>
-                <button class="btn btn-secondary m-1" onclick="window.location='?logout';">Logout</button>
+                <button class="btn btn-secondary m-1 h-100" onclick="exhibitorProfile.profileModalOpen('update');">View/Change your profile</button>
+                <?php if ($allowPasskey && !$hasPasskey) { ?>
+                    <button class='btn btn-primary mx-2 p-1 h-100' id='newPasskeyBtn' type='button' onclick='newPasskey();'>
+                        <img src='lib/passkey.png'>Create Passkey
+                    </button>
+                <?php } ?>
+                <button class='btn btn-secondary m-1 h-100' onclick='changePasswordOpen();'>Change your password</button>
+                <button class='btn btn-secondary m-1 h-100' id='switchPortalbtn' onclick='switchPortal();'>Switch to XXX Portal</button>
+                <button class="btn btn-secondary m-1 h-100" onclick="window.location='?logout';">Logout</button>
             </div>
         </div>
          <?php outputCustomText('main/beforeSpaces'); outputCustomText('main/spaces' . $portalName); ?>

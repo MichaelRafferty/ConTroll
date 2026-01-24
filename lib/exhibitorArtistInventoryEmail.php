@@ -18,7 +18,7 @@ function emailArtistInventoryReq($regionYearId, $type): bool|array {
     $vendor = get_conf("vendor");
 
     // load the custom text fields
-    loadCustomText('exhibitor', 'index',null, true);
+    loadCustomText('exhibitor', 'index', getConfValue('vendor', 'customtext', 'production'), true);
 
     $artistOnSiteInventoryText = returnCustomText('email/onsiteInvText');
     $artistOnSiteInventoryHTML = returnCustomText('email/onsiteInvHTML');
@@ -68,7 +68,8 @@ EOS;
 
     $subject = ($type == 'Reminder' ? "Reminder to P" : "P") . "lease enter your art items for " . $con['conname'] . ' ' . $artL['name'];
 
-    $return_arr = send_email($artL['ownerEmail'], $artL['exhibitorEmail'], $artL['contactEmail'], $subject, $emails[0], $emails[1]);
+    $return_arr = send_email($artL['ownerEmail'], $artL['exhibitorEmail'], array($artL['contactEmail'], $artL['ownerEmail']),
+        $subject, $emails[0], $emails[1]);
 
     if (array_key_exists('error_code', $return_arr)) {
         $error_code = $return_arr['error_code'];

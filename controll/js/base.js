@@ -6,8 +6,8 @@ function test(method, formData, resultDiv) {
         data: formData,
         method: method,
         success: function (data, textStatus, jqXhr) {
-            if (data['error']) {
-                alert(data['error']);
+            if (data.error) {
+                alert(data.error);
             } else {
                 $(resultDiv).empty().append(JSON.stringify(data, null, 2));
             }
@@ -15,6 +15,8 @@ function test(method, formData, resultDiv) {
     });
 }
 
+// Obsolete functions, delete once Club is rewritten
+//
 function hideBlock(block) {
     $(block + "Form").hide();
     $(block + "ShowLink").show();
@@ -74,34 +76,34 @@ function displaySearchResults(data, callback) {
             var user = data["results"][resultSet][result];
             var userDiv = $(document.createElement("div"));
 
-            userDiv.attr('userid', user['id']);
+            userDiv.attr('userid', user.id);
             userDiv.data('obj', data["results"][resultSet][result]);
             userDiv.addClass('button').addClass('searchResult').addClass('half');
             flags = $(document.createElement("div"));
             flags.addClass('right').addClass('half').addClass('notice');
             userDiv.append(flags);
-            if (user['label']) { userDiv.append(user['label'] + "<br/>" + "<hr/>"); }
-            if (user['full_name']) { userDiv.append(user['full_name'] + "<br/>"); }
+            if (user.label) { userDiv.append(user.label + "<br/>" + "<hr/>"); }
+            if (user.full_name) { userDiv.append(user.full_name + "<br/>"); }
             else { userDiv.append("***NO NAME***<br/>"); }
-            if (user['legalName']) { userDiv.append(user['legalName'] + "<br/>"); }
-            if (user['badge_name']) { userDiv.append(user['badge_name'] + "<br/>"); }
+            if (user.legalName) { userDiv.append(user.legalName + "<br/>"); }
+            if (user.badge_name) { userDiv.append(user.badge_name + "<br/>"); }
             userDiv.append($(document.createElement("hr")));
-            if (user['address']) { userDiv.append(user['address'] + "<br/>"); }
+            if (user.address) { userDiv.append(user.address + "<br/>"); }
             else { userDiv.append("***NO STREET ADDR***<br/>"); }
-            if (user['addr_2']) { userDiv.append(user['addr_2'] + "<br/>"); }
-            if (user['locale']) { userDiv.append(user['locale'] + "<br/>"); }
+            if (user.addr_2) { userDiv.append(user.addr_2 + "<br/>"); }
+            if (user.locale) { userDiv.append(user.locale + "<br/>"); }
             else { userDiv.append("***NO CITY/STATE/ZIP***<br/>"); }
             userDiv.append($(document.createElement("hr")));
-            if (user['email_addr']) { userDiv.append(user['email_addr'] + "<br/>"); }
-            if (user['phone']) { userDiv.append(user['phone'] + "<br/>"); }
-            if (user['banned'] == 'Y') {
+            if (user.email_addr) { userDiv.append(user.email_addr + "<br/>"); }
+            if (user.phone) { userDiv.append(user.phone + "<br/>"); }
+            if (user.banned == 'Y') {
                 flags.append('banned<br/>');
                 userDiv.addClass('banned');
             }
-            else if (user['label']) {
+            else if (user.label) {
                 userDiv.addClass('hasMembership');
             }
-            else if (user['active'] == 'N') {
+            else if (user.active == 'N') {
                 flags.append('inactive<br/>');
                 userDiv.addClass('inactive');
             }
@@ -204,6 +206,8 @@ function getForm(formObj, formUrl, succFunc, errFunc) {
         }
     });
 }
+
+// end obsolete functions
 
 // old style error message block
 //
@@ -385,7 +389,7 @@ function showEdit(classname, table, index, field, titlename, textitem, textOnly 
     editFieldNameDiv.innerHTML = field + ':';
     editIndexDiv.innerHTML = index;
     editClassDiv.innerHTML = classname;
-    editFieldArea.innerHTML = textitem;
+    editFieldArea.value = textitem;
     editTitleDiv.innerHTML = "Editing " + table + " " + titlename + "<br/>" + field;
     editTextOnly = textOnly;
 

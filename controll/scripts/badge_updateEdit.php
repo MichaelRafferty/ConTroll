@@ -38,6 +38,7 @@ $middle_name = $_POST['middleName'] == null ? '' : trim($_POST['middleName']);
 $suffix = $_POST['suffix'] == null ? '' : trim($_POST['suffix']);
 $pronouns = $_POST['pronouns'] == null ? '' : trim($_POST['pronouns']);
 $badge_name = $_POST['badgeName'] == null ? '' : trim($_POST['badgeName']);
+$badgeNameL2 = $_POST['badgeNameL2'] == null ? '' : trim($_POST['badgeNameL2']);
 $address = $_POST['address'] == null ? '' : trim($_POST['address']);
 $addr_2 = $_POST['addr2'] == null ? '' : trim($_POST['addr2']);
 $city = $_POST['city'] == null ? '' : trim($_POST['city']);
@@ -49,14 +50,14 @@ $phone = $_POST['phone'] == null ? '' : trim($_POST['phone']);
 
 $uP = <<<EOS
 UPDATE perinfo
-SET last_name = ?, first_name = ?, middle_name = ?, suffix = ?, email_addr = ?, phone = ?, badge_name = ?, pronouns = ?,
+SET last_name = ?, first_name = ?, middle_name = ?, suffix = ?, email_addr = ?, phone = ?, badge_name = ?, badgeNameL2 = ?, pronouns = ?,
     address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?, updatedBy = ?, 
     lastVerified = NULL, update_date = NOW(), change_notes = CONCAT(change_notes, '<br/>Updated by Free Badge Edit screen')
 WHERE id = ?;
 EOS;
 
-$typeStr = 'ssssssssssssssii';
-$valArray = array($last_name, $first_name, $middle_name, $suffix, $email_addr, $phone, $badge_name, $pronouns, $address, $addr_2,
+$typeStr = 'sssssssssssssssii';
+$valArray = array($last_name, $first_name, $middle_name, $suffix, $email_addr, $phone, $badge_name, $badgeNameL2, $pronouns, $address, $addr_2,
     $city, $state, $zip, $country, $updatedBy, $perid);
 
 $upd = dbSafeCmd($uP, $typeStr, $valArray);

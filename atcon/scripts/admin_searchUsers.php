@@ -41,7 +41,7 @@ $response['message'] = 'ok';
 
 if (is_numeric($search_string)) {
     $searchSql = <<<EOS
-SELECT p.id, first_name, last_name, badge_name, email_addr
+SELECT p.id, first_name, last_name, badge_name, badgeNameL2, email_addr
 FROM perinfo p
 LEFT OUTER JOIN atcon_user a ON (a.perid = p.id and a.conid = ?)
 WHERE a.id is NULL AND p.id = ?
@@ -50,17 +50,17 @@ EOS;
     $params = [$conid, $search_string];
 } else {
     $searchSql = <<<EOS
-SELECT p.id, first_name, last_name, badge_name, email_addr
+SELECT p.id, first_name, last_name, badge_name, badgeNameL2, email_addr
 FROM perinfo p
 LEFT OUTER JOIN atcon_user a ON (a.perid = p.id and a.conid = ?)
 WHERE a.id is NULL AND
     LOWER(TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name), ' +', ' '))) LIKE ? OR
-    LOWER(TRIM(p.badge_name) LIKE ? OR LOWER(TRIM(p.email_addr)) LIKE ?)
+    LOWER(TRIM(p.badge_name)) LIKE ? OR LOWER(TRIM(p.badgeNameL2)) LIKE ? OR LOWER(TRIM(p.email_addr)) LIKE ?
 ORDER BY first_name, last_name;
 EOS;
     $search_string = '%' . str_replace(' ', '%', $search_string) . '%';
-    $typestr = 'isss';
-    $params = [$conid, $search_string, $search_string, $search_string];
+    $typestr = 'issss';
+    $params = [$conid, $search_string, $search_string, $search_string, $search_string];
 }
 
 $res = dbSafeQuery($searchSql, $typestr, $params);
@@ -73,6 +73,7 @@ if (!$res) {
 }
 $results = [];
 while ($row = $res->fetch_assoc()) {
+    $row['badgename'] = badgeNameDefault($row['badge_name'], $row['badgeNameL2'], $row['first_name'], $row['last_name']);
     $results[] = $row;
 }
 $res->free();

@@ -95,7 +95,8 @@ EOS;
                     continue;
             }
             if (array_key_exists('agekey', $row)) { // if key is there, it's an update
-                $numrows = dbSafeCmd($updsql, 'ssssisi', array($row['ageType'], $row['label'], $row['shortname'], $row['badgeFlag'], $row['sortorder'], $row['agekey'], $year));
+                $ageType = str_replace(' ', '-', $row['ageType']);
+                $numrows = dbSafeCmd($updsql, 'ssssisi', array($ageType, $row['label'], $row['shortname'], $row['badgeFlag'], $row['sortorder'], $row['agekey'], $year));
                 $updated += $numrows;
             }
         }
@@ -107,7 +108,8 @@ EOS;
                     continue;
             }
             if (!array_key_exists('agekey', $row)) { // if key is not there, its an insert
-                $numrows = dbSafeInsert($inssql, 'issssi', array($year, $row['ageType'], $row['label'], $row['shortname'], $row['badgeFlag'], $row['sortorder']));
+                $ageType = str_replace(' ', '-', $row['ageType']);
+                $numrows = dbSafeInsert($inssql, 'issssi', array($year, $ageType, $row['label'], $row['shortname'], $row['badgeFlag'], $row['sortorder']));
                 if ($numrows !== false)
                     $inserted++;
             }
@@ -138,7 +140,8 @@ EOS;
             }
 
             if (array_key_exists('memtypekey', $row)) { // if key is there, it's an update
-                $numrows = dbSafeCmd($updsql, 'sssis', array($row['memType'], $row['notes'], $row['active'], $row['sortorder'], $row['memtypekey']));
+                $memType = str_replace(' ', '-', $row['memType']);
+                $numrows = dbSafeCmd($updsql, 'sssis', array($memType, $row['notes'], $row['active'], $row['sortorder'], $row['memtypekey']));
                 $updated += $numrows;
             }
         }
@@ -150,7 +153,8 @@ EOS;
             }
 
             if (!array_key_exists('memtypekey', $row)) { // if key is not there, its an insert
-                $numrows = dbSafeInsert($inssql, 'sssi', array($row['memType'],  $row['notes'], $row['active'], $row['sortorder']));
+                $memType = str_replace(' ', '-', $row['memType']);
+                $numrows = dbSafeInsert($inssql, 'sssi', array($memType,  $row['notes'], $row['active'], $row['sortorder']));
                 if ($numrows !== false)
                     $inserted++;
             }
@@ -181,7 +185,8 @@ EOS;
             }
 
             if (array_key_exists('memcatkey', $row)) { // if key is there, it's an update
-                $numrows = dbSafeCmd($updsql, 'ssssssssis', array($row['memCategory'], $row['onlyOne'], $row['standAlone'], $row['variablePrice'],
+                $memCat = str_replace(' ', '-', $row['memCategory']);
+                $numrows = dbSafeCmd($updsql, 'ssssssssis', array($memCat, $row['onlyOne'], $row['standAlone'], $row['variablePrice'],
                     $row['taxable'], $row['badgeLabel'],  $row['notes'], $row['active'], $row['sortorder'], $row['memcatkey']));
                 $updated += $numrows;
             }
@@ -195,7 +200,8 @@ EOS;
             }
 
             if (!array_key_exists('memcatkey', $row)) { // if key is not there, its an insert
-                $numrows = dbSafeInsert($inssql, 'ssssssssi', array($row['memCategory'], $row['onlyOne'], $row['standAlone'], $row['variablePrice'],
+                $memCat = str_replace(' ', '-', $row['memCategory']);
+                $numrows = dbSafeInsert($inssql, 'ssssssssi', array($memCat, $row['onlyOne'], $row['standAlone'], $row['variablePrice'],
                    $row['taxable'], $row['badgeLabel'],  $row['notes'], $row['active'], $row['sortorder']));
                 if ($numrows !== false)
                     $inserted++;

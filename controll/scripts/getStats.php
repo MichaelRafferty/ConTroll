@@ -23,15 +23,16 @@ $conConf = get_conf('con');
 $minCon = $conConf['minComp'];
 $maxLen = $conConf['compLen'];
 $conLen = $conConf['conLen'];
+$preConView = 1; //TODO maybe make this a config variable one day
 
 $debug_stats = getConfValue('debug', 'controll_stats', 0);
 if(isset($_GET['conid'])) {
     $conid=$_GET['conid'];
-    $con = dbSafeQuery('SELECT id, name, label, startdate, DATE_ADD(enddate, INTERVAL 1 DAY) as enddate FROM conlist WHERE id=?;', 'i', array($conid))->fetch_assoc();
+    $con = dbSafeQuery('SELECT id, name, label, startdate, DATE_SUB(startdate, INTERVAL ? DAY) as preconstart, DATE_ADD(enddate, INTERVAL 1 DAY) as enddate FROM conlist WHERE id=?;', 'ii', array($preConView, $conid))->fetch_assoc();
 } else {
     $con = get_con();
     $conid= $con['id'];
-    $con = dbSafeQuery('SELECT id, name, label, startdate, DATE_ADD(enddate, INTERVAL 1 DAY) as enddate FROM conlist WHERE id=?;', 'i', array($conid))->fetch_assoc();
+    $con = dbSafeQuery('SELECT id, name, label, startdate, DATE_SUB(startdate, INTERVAL ? DAY) as preconstart, DATE_ADD(enddate, INTERVAL 1 DAY) as enddate FROM conlist WHERE id=?;', 'ii', array($preConView, $conid))->fetch_assoc();
 }
 
 $addlwhere = '';
@@ -97,47 +98,37 @@ SELECT R.conid, M.id, M.memCategory, M.shortname as label
     , count(DISTINCT R.perid) as c 
 FROM reg R
 JOIN memLabel M on M.id=R.memId
-WHERE R.conid=? 
+WHERE R.conid=? and M.memCategory in ('yearahead','rollover')
 GROUP BY R.conid, M.id, M.memCategory, M.shortname
 order by M.id;
 EOF;
         $yearaheadR = dbSafeQuery($yearaheadQ, 'i', array($conid+1));
         while($badgeType = $yearaheadR->fetch_assoc()) {
-            $badgeList['next year'][$badgeType['label']]=$badgeType['c'];
+            $badgeList['next year'][$badgeType['label']]['printed']=0;
+            $badgeList['next year'][$badgeType['label']]['total']=$badgeType['c'];
         }
 
 $currQ = "SELECT count(DISTINCT R.perid) as c FROM reg R WHERE R.conid=? and R.status='paid';";
 $currR = dbSafeQuery($currQ, 'i', array($conid))->fetch_assoc();
 $con['paid_members'] = $currR['c'];
 
-        $preregQ = <<<EOF
-SELECT R.conid, M.memCategory, M.label , count(DISTINCT R.perid) as c
+        $totalQ = <<<EOF
+SELECT R.conid, COUNT(DISTINCT R.perid) as total,
+        COUNT(DISTINCT CASE WHEN H.action='print' THEN R.perid END) as printed,         LOWER(M.memType) as memType, M.label
 FROM reg R
-JOIN memList M on M.id=R.memId
-LEFT OUTER JOIN regActions H ON H.regid=R.id and H.action='print'
-WHERE R.conid=? and H.action is null
-GROUP BY R.conid, M.label
-order by M.label;
-EOF;
-        $preregR = dbSafeQuery($preregQ, 'i', array($conid));
-        while($badgeType = $preregR->fetch_assoc()) {
-            $badgeList['unprinted'][$badgeType['label']]=$badgeType['c'];
+        JOIN memList M on M.id=R.memId
+    LEFT OUTER JOIN regActions H on H.regid=R.id
+WHERE R.conid=?
+GROUP BY R.conid, M.memType, M.label
+ORDER BY M.label;
+EOF; //TODO change this to use a bias query and add the bias in to the Printed Badges graph
+        $totalR = dbSafeQuery($totalQ, 'i', array($conid));
+        while($badgeType = $totalR->fetch_assoc()) {
+            $badgeList[$badgeType['memType']][$badgeType['label']]=array(
+                'printed'=>$badgeType['printed'],
+                'total'=>$badgeType['total']);
         }
 
-        $atconQ = <<<EOF
-SELECT R.conid, M.memCategory, LOWER(M.memType) as memType, M.label, count(DISTINCT R.perid) as c
-FROM reg R
-JOIN memList M on M.id=R.memId
-JOIN regActions H ON H.regid=R.id and H.action='print'
-WHERE R.conid=? 
-GROUP BY R.conid, M.label
-order by M.label;
-EOF;
-
-        $atconR = dbSafeQuery($atconQ, 'i', array($conid));
-        while($badgeType = $atconR->fetch_assoc()) {
-            $badgeList[$badgeType['memType']][$badgeType['label']]=$badgeType['c'];
-        }
 
         $acc = array('full'=>0, 'oneday'=>0);
         $track = array();
@@ -173,15 +164,15 @@ EOF;
 	$max_staff = 0;
         $staffQ = <<<EOF
 SELECT COUNT(distinct P.cashier) AS cashier
-    , COUNT(distinct T.userid) AS checkin
-    , FROM_UNIXTIME(FLOOR(UNIX_TIMESTAMP(P.time)/900)*900) AS time
+    , COUNT(distinct H.userid) AS checkin
+    , FROM_UNIXTIME(FLOOR(UNIX_TIMESTAMP(H.logdate)/900)*900) AS log_time
 FROM transaction T
 LEFT OUTER JOIN payments P ON (P.transid=T.id and P.cashier IS NOT NULL)
 JOIN regActions H ON (H.tid=T.id)
-WHERE T.conid=? AND H.action IN ('attach', 'print')
-GROUP BY time;
+WHERE T.conid=? AND H.action IN ('attach', 'print') and H.logdate > ?
+GROUP BY log_time
 EOF;
-        $staffR = dbSafeQuery($staffQ, 'i', array($conid));
+        $staffR = dbSafeQuery($staffQ, 'is', array($conid, $con['preconstart']));
         $staffing = array();
         while($staff = $staffR->fetch_assoc()) {
             array_push($staffing, $staff);

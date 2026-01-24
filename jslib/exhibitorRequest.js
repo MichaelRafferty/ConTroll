@@ -13,8 +13,18 @@ class ExhibitorRequest {
     #unitLimit = 0;
     #unitsRequested = 0;
 
+// currency
+    #locale = 'en-us';
+    #currencyFmt = null;
+
 // init
     constructor() {
+        this.#locale = config.locale;
+        this.#currencyFmt = new Intl.NumberFormat(this.#locale, {
+            style: 'currency',
+            currency: config.currency,
+        });
+
         var id = document.getElementById('exhibitor_req');
         if (id != null) {
             this.#exhibitor_request = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
@@ -146,7 +156,8 @@ class ExhibitorRequest {
                         units = ' (' + String(price.units) + ' unit' + (price.units > 1 ? 's' : '') + ')';
                     }
 
-                    options += "<option value='" + price.id + sel + price.description + ' for ' + Number(price.price).toFixed(2) + units + "</option>\n";
+                    options += "<option value='" + price.id + sel + price.description + ' for ' +
+                        this.#currencyFmt.format(Number(price.price).toFixed(2)) + units + "</option>\n";
                     hasRequestable = true;
                 }
             }
@@ -331,7 +342,8 @@ class ExhibitorRequest {
                 var space = exhibitor_spacelist[exSpaceKeys[exSpaceIdx]];
                 if (space.item_requested) {
                     var timeRequested = new Date(space.time_requested)
-                    spaceStatus += space.requested_description + " in " + regionName + " for $" + Number(space.requested_price).toFixed(2) +
+                    spaceStatus += space.requested_description + " in " + regionName + " for " +
+                        this.#currencyFmt.format(Number(space.requested_price).toFixed(2)) +
                         " at " + timeRequested + "<br/>";
                 }
             }

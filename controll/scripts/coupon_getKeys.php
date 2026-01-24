@@ -25,8 +25,8 @@ $id = $_POST['id'];
 
 $couponQ = <<<EOS
 SELECT C.code, C.name, K.*, 
-    PC.first_name, PC.last_name, PC.badge_name,
-    PU.id AS used_perid, PU.first_name AS u_first_name, PU.last_name AS u_last_name, PU.badge_name AS u_badge_name
+    PC.first_name, PC.last_name, PC.badge_name, PC.badgeNameL2,
+    PU.id AS used_perid, PU.first_name AS u_first_name, PU.last_name AS u_last_name, PU.badge_name AS u_badge_name, PU.badgeNameL2 AS u_badgeNameL2
 FROM coupon C
 JOIN couponKeys K ON (K.couponId = C.id)
 LEFT OUTER JOIN perinfo PC ON (PC.id = K.perid)
@@ -44,6 +44,8 @@ if ($couponR == false) {
 }
 $couponKeys = array();
 while ($couponL = $couponR->fetch_assoc()) {
+    $couponL['badgename'] =  badgeNameDefault($couponL['badge_name'], $couponL['badgeNameL2'], $couponL['first_name'], $couponL['last_name']);
+    $couponL['u_badgename'] = badgeNameDefault($couponL['u_badge_name'], $couponL['u_badgeNameL2'], $couponL['u_first_name'], $couponL['u_last_name']);
     $couponKeys[] = $couponL;
 }
 

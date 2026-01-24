@@ -28,7 +28,7 @@ EOS;
 }
 
 // build the order structure (fake in this case) to mirror the flow of cc_square
-function cc_buildOrder($results, $useLogWrite = false) : array {
+function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : array {
     $cc = get_conf('cc');
     $con = get_conf('con');
     $id = null;
@@ -89,14 +89,8 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
     $nonPlanAmt = '';
     $balanceDue = '';
     $itemsBuilt = false;
-    $taxRate = 0;
-    $taxLabel = 'Unconfigured Sales Tax';
-    if (array_key_exists('taxRate', $con)) {
-        $taxRate = $con['taxRate'];
-    }
-    if (array_key_exists('taxLabel', $con)) {
-        $taxLabel = $con['taxLabel'];
-    }
+    // taxList is an array by tax field id of taxfield, rate and label, it includes the default value from the config file if the db table is empty
+    $hasTax = hasTaxRates();
     $needTaxes = false;
 
     // item rules:
@@ -167,22 +161,22 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
 
     // Art Sales
     if ($artSales == 1) {
-        $needTaxes = true;
+        $needTaxes = $hasTax;
         if (array_key_exists('art', $results) && is_array($results['art']) && count($results['art']) > 0) {
-            foreach ($results['art'] as $art) {
-                if (!array_key_exists('paid', $art)) {
-                    $art['paid'] = 0;
+            foreach ($results['art'] as $artItem) {
+                if (!array_key_exists('paid', $artItem)) {
+                    $artItem['paid'] = 0;
                 }
-                $artId = $art['id'];
-                $artistName = $art['artistName'];
-                $artistNumber = $art['exhibitorNumber'];
-                $itemKey = $art['item_key'];
-                $title = $art['title'];
-                $type = $art['type'];
-                $priceType = $art['priceType'];
-                $quantity = $art['artSalesQuantity'];
-                $amount = $art['amount'];
-                $notesData = cc_artSalesNotes($art, $results['payorId'], $results['transid']);
+                $artId = $artItem['id'];
+                $artistName = $artItem['artistName'];
+                $artistNumber = $artItem['exhibitorNumber'];
+                $itemKey = $artItem['item_key'];
+                $title = $artItem['title'];
+                $type = $artItem['type'];
+                $priceType = $artItem['priceType'];
+                $quantity = $artItem['artSalesQuantity'];
+                $amount = $artItem['amount'];
+                $notesData = cc_artSalesNotes($artItem, $results['payorId'], $results['transid']);
 
                 $item = [
                     'uid' => 'art' . ($lineid + 1),
@@ -192,14 +186,12 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                     'metadata' => $notesData['metadata'],
                     'basePriceMoney' => round($amount * 100),
                 ];
-                if ($taxRate > 0) {
-                    // create the Line Item tax record, if there is a tax rate, and the membership is taxable
-                    $needTaxes = true;
+                if ($hasTax) {
+                    // create the Line Item tax record, art sales are taxable
                     $item['taxable'] = 'Y';
-                    $item['taxUid'] = $taxLabel;
                 }
                 $orderLineItems[$lineid] = $item;
-                $orderValue += $art['amount'];
+                $orderValue += $artItem['amount'];
                 $lineid++;
             }
         } else {
@@ -292,11 +284,10 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
                     'basePriceMoney' => round($amount * 100),
                     'metadata' => $notesData['metadata'],
                 ];
-                if ($taxRate > 0 && array_key_exists('taxable', $badge) && $badge['taxable'] == 'Y') {
+                if ($hasTax && array_key_exists('taxable', $badge) && $badge['taxable'] == 'Y') {
                     // create the Line Item tax record, if there is a tax rate, and the membership is taxable
-                    $needTaxes = true;
+                    $needTaxes = $hasTax;
                     $item['taxable'] = 'Y';
-                    $item['taxUid'] = $taxLabel;
                 }
 
                 if (array_key_exists('newplan', $results) && $results['newplan'] == 1) {
@@ -427,13 +418,12 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
         }
     }
 
-    if (array_key_exists('location', $cc)) {
-        $location = $cc['location'];
-    } else {
-        $location = 'Unknown';
+    if ($locationId == null) {
+        $locationId = $cc['location'];
     }
+
     $order = [
-        'locationId' => $location,
+        'locationId' => $locationId,
         'referenceId' => $con['id'] . '-' . $results['transid'],
         'source' => $con['conname'] . '-' . $source,
         'customerId' => $con['id'] . '-' . $custid,
@@ -443,25 +433,28 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
 
     if ($needTaxes) {
         $order['taxable'] = 'Y';
-        $order['name'] = $taxLabel;
-        $order['percentage'] = $taxRate;
     }
 
     // compute the fields the credit card company would compute
     $taxAmount = 0;
     $taxAbleBase = 0;
     $itemTaxTotal = 0;
+    $taxAmounts = [];
     if ($needTaxes) {
         foreach ($orderLineItems as $item) {
             if (array_key_exists('taxable', $item)) {
-                $item['taxAmount'] = round($item['basePriceMoney'] * $order['percentage'] / 100);
-                $itemTaxTotal += $item['taxAmount'];
+                $item['taxAmount'] = computeTax($item['basePriceMoney']);
+                $itemTaxTotal += array_sum($item['taxAmount']);
                 $taxAbleBase += $item['basePriceMoney'];
             }
         }
-        $taxAmount = round($taxAbleBase * $order['percentage'] / 100);
+        $taxAmounts = computeTax($taxAbleBase);
+        $taxAmount = array_sum($taxAmounts);
         if ($taxAmount != $itemTaxTotal) { // fudge last item in list to make the pennies add up
+            $last = count($taxAmounts) - 1;
+            $item = $orderLineItems[$last];
             $item['taxAmount'] += $taxAmount - $itemTaxTotal;
+            $taxAmounts[$last] += $taxAmount - $itemTaxTotal;
         }
     }
 
@@ -473,7 +466,10 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
     $rtn['preTaxAmt'] = $orderValue;
     $rtn['discountAmt'] = $discountAmt / 100;
     $rtn['taxAmt'] = $taxAmount / 100;
-    $rtn['taxLabel'] = $taxLabel;
+    $rtnTaxes = [];
+    foreach ($taxAmounts as $key => $amt)
+        $rtnTaxes[$key] = $amt / 100;
+    $rtn['taxes'] = $rtnTaxes;
     $rtn['totalAmt'] = $orderValue + (($taxAmount - $discountAmt) / 100);
     // load into the main rtn the items pay order needs directly
     $rtn['orderId'] = 'O' . time();
@@ -488,20 +484,21 @@ function cc_buildOrder($results, $useLogWrite = false) : array {
     if (array_key_exists('nonce', $results))
         $rtn['exhibits'] = $results['nonce'];
 
-    $_SESSION['ccTestResults'] = $rtn;
+    $_SESSION['ccTestOrder'] = $rtn;
     return $rtn;
 }
 
 // fetch an order to get its details (stub, bypass and test don't keep orders)
-function cc_fetchOrder($source, $orderId, $useLogWrite = false) :  null {
-    return null;
+function cc_fetchOrder($source, $orderId, $useLogWrite = false) :  array | null {
+    return $_SESSION['ccTestOrder'];
 }
 
 // stub for cancel order
-function cc_cancelOrder($source, $orderId, $useLogWrite = false) : array {
+function cc_cancelOrder($source, $orderId, $useLogWrite = false, $locationId = null) : array {
     $rtn['order'] = $orderId;
     $rtn['state'] = 'CANCELED';
     $rtn['version'] = 2;
+    unset($_SESSION['ccTestOrder']);
     return $rtn;
 }
 
@@ -606,10 +603,12 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     $rtn['results'] = $ccParams;
     $rtn['url'] = 'no test receipt';
     $rtn['rid'] = 'test';
+    $rtn['locationId'] = $ccParams['locationId'];
     $rtn['payment'] = null;
     $rtn['paymentType'] = $paymentType;
     $rtn['preTaxAmt'] = $ccParams['preTaxAmt'];
     $rtn['taxAmt'] = $ccParams['taxAmt'];
+    $rtn['taxes'] = $ccParams['taxes'];
     $rtn['auth'] = $auth;
     $rtn['paymentId'] = $id;
     $rtn['last4'] = $last4;
@@ -622,14 +621,13 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     $rtn['amount'] = $total;
     $rtn['nonce'] = $ccParams['nonce'];
     $rtn['change'] = $change;
+    $_SESSION['ccTestPayment'] = $rtn;
     return $rtn;
 	}
 
 // fetch an order to get its details
 function cc_getPayment($source, $paymentid, $useLogWrite = false) : array {
-    $ccTestResults = $_SESSION['ccTestResults'];
-
-    $cc = get_conf('cc');
+    $ccTestResults = $_SESSION['ccTestPayment'];
 
     $payment = [
         'id' => 'testSystem',

@@ -153,6 +153,11 @@ foreach ($data as $index => $row) {
         if ($row['to_delete'] == 1) continue;
     }
 
+    if ($itemType == 'art' && (!array_key_exists('sale_price', $row) || $row['sale_price'] == null || $row['sale_price'] == '')) {
+        $data[$index]['sale_price'] = 0;
+        $row['sale_price'] = 0;
+        }
+
     if (!array_key_exists('title', $row)) {
         $data_errors .= 'Item: ' . $row['item_key'] . ", Title is required<br/>";
         $data_marks[] = ['item_key' => $row['item_key'], 'field' => 'title'];

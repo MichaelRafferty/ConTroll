@@ -36,9 +36,13 @@ if ($findPattern == NULL || $findPattern == '') {
 
 $excludeFree = '';
 $excludeJoin = '';
+$excludeMerge = '';
 if (array_key_exists('excludeFree', $_POST)) {
     $excludeJoin = " LEFT OUTER JOIN badgeList b ON (p.id = b.perid AND b.conid = ? AND b.user_perid = ?)";
     $excludeFree = " AND b.perid IS NULL";
+}
+if (array_key_exists('excludeMerged', $_POST)) {
+    $excludeMerge = " AND (NOT (p.first_name = 'Merged' AND p.middle_name = 'into')) AND p.banned = 'N'";
 }
 
 $con_conf = get_conf('con');
@@ -49,7 +53,7 @@ if (is_numeric($findPattern)) {
     // this is a perid match
     $mQ = <<<EOS
 WITH perids AS (
-    SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.pronouns, 
+    SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2, p.legalName, p.pronouns, 
         p.address, p.addr_2, p.city, p.state, p.zip, p.country,  
         p.creation_date, p.update_date, p.active, p.banned, p.open_notes, p.admin_notes,
         p.managedBy, p.managedByNew, p.lastverified, p.managedreason,
@@ -70,8 +74,8 @@ WITH perids AS (
     LEFT OUTER JOIN perinfo mp ON (p.managedBy = mp.id)
     LEFT OUTER JOIN reg r ON (r.perid = p.id AND r.status IN ('paid', 'unpaid', 'plan'))
     LEFT OUTER JOIN memList m ON (r.memId = m.id AND m.conid in (?, ?))
-    WHERE p.id = ? $excludeFree
-    GROUP BY p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.pronouns, 
+    WHERE p.id = ? $excludeFree $excludeMerge
+    GROUP BY p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2, p.legalName, p.pronouns, 
         p.address, p.addr_2, p.city, p.state, p.zip, p.country, 
         p.creation_date, p.update_date, p.active, p.banned, p.open_notes, p.admin_notes,
         p.managedBy, p.managedByNew, p.lastverified, p.managedreason, phoneCheck, fullName, manager, managerId
@@ -103,7 +107,7 @@ EOS;
     // does anyone match this pattern?
     $mQ = <<<EOS
 WITH per AS (
-SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.pronouns, 
+SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2, p.legalName, p.pronouns, 
     p.address, p.addr_2, p.city, p.state, p.zip, p.country,
     p.creation_date, p.update_date,  p.active, p.banned, p.open_notes, p.admin_notes,
     p.managedBy, p.managedByNew, p.lastverified, p.managedreason,
@@ -124,8 +128,8 @@ $excludeJoin
 LEFT OUTER JOIN perinfo mp ON (p.managedBy = mp.id)
 LEFT OUTER JOIN reg r  ON (r.perid = p.id AND r.status IN ('paid', 'unpaid', 'plan'))
 LEFT OUTER JOIN memList m ON (r.memId = m.id AND m.conid in (?, ?))
-WHERE 1=1  $excludeFree $notMerge
-GROUP BY p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.pronouns, 
+WHERE 1=1  $excludeFree $notMerge $excludeMerge
+GROUP BY p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2, p.legalName, p.pronouns, 
     p.address, p.addr_2, p.city, p.state, p.zip, p.country, p.banned, 
     p.creation_date, p.update_date, p.active, p.open_notes,
     p.managedBy, p.managedByNew, p.lastverified, p.managedreason, phoneCheck, fullName, manager, managerId
@@ -135,6 +139,7 @@ GROUP BY p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr,
     WHERE
         (LOWER(p.legalName) LIKE ?
         OR LOWER(p.badge_name) LIKE ?
+        OR LOWER(p.badgeNameL2) LIKE ?
         OR LOWER(p.address) LIKE ?
         OR LOWER(p.addr_2) LIKE ?
         OR LOWER(p.email_addr) LIKE ?
@@ -154,13 +159,13 @@ LEFT OUTER JOIN his ON (p.id = his.id)
 LIMIT $limit;
 EOS;
     if ($excludeJoin != '') {
-        $typestr = 'iiiiissssssss';
+        $typestr = 'iiiiisssssssss';
         $valArray = array ($conid, $conid, $user_perid, $conid, $conid + 1, $findPattern, $findPattern, $findPattern, $findPattern,
-                           $findPattern, $findPattern, $findPattern, $findPattern);
+                           $findPattern, $findPattern, $findPattern, $findPattern, $findPattern);
     } else {
-        $typestr = 'iiissssssss';
+        $typestr = 'iiisssssssss';
         $valArray = array ($conid, $conid, $conid + 1, $findPattern, $findPattern, $findPattern, $findPattern,
-                           $findPattern, $findPattern, $findPattern, $findPattern);
+                           $findPattern, $findPattern, $findPattern,$findPattern,  $findPattern);
     }
     $mR = dbSafeQuery($mQ, $typestr, $valArray);
 }
@@ -173,6 +178,7 @@ if ($mR === false) {
 $pids = [];
 $matches= [];
 while ($match = $mR->fetch_assoc()) {
+    $match['badgename'] = badgeNameDefault($match['badge_name'], $match['badgeNameL2'], $match['first_name'], $match['last_name']);
     $matches[] = $match;
     $pids[] = $match['id'];
 }

@@ -157,10 +157,11 @@ class PlansSetup {
         this.#planTitleDiv.innerHTML = 'Add New Payment Plan';
         this.#planHeadingDiv.innerHTML = 'Add New Payment Plan';
         this.#planEditIndex = null;
+        this.#editSelRow = [];
         // clear the form
         document.getElementById('planName').value = null;
-        document.getElementById('planDescription').innerHTML = null;
-        this.#categoryList = null;
+        document.getElementById('planDescription').value = null;
+        this.#categoryList.value = null;
         this.#categoryListDiv.innerHTML = '<i>None</i>';
         this.#includeList.value = null;
         this.#includeListDiv.innerHTML = '<i>None</i>';
@@ -195,7 +196,7 @@ class PlansSetup {
         this.#editSelButtons.hidden = true;
         this.#editSelLabel.innerHTML = '';
         var data = null;
-        this.#editSelIndex = 'id;'
+        this.#editSelIndex = 'id';
 
         switch (type) {
             case 'category':
@@ -218,7 +219,7 @@ class PlansSetup {
                 break;
 
             case 'include':
-                this.#editSelItem = 'includeList';
+                this.#editSelItem = 'memList';
                 this.#editSelValues = this.#includeList.value.split(',');
                 this.#editSelLabel.innerHTML = "<b>Select which Memberships apply to this payment plan:</b>"
                 this.#editSelField = this.#includeListDiv;
@@ -227,7 +228,7 @@ class PlansSetup {
                 this.#editSelTable = new Tabulator('#editSelTable', {
                     data: memLabels,
                     layout: "fitDataTable",
-                    index: "id",
+                    index: this.#editSelIndex,
                     pagination: memLabels.length > 25,
                     paginationSize: 9999,
                     paginationAddRow:"table",
@@ -250,7 +251,7 @@ class PlansSetup {
                 this.#editSelTable = new Tabulator('#editSelTable', {
                     data: memLabels,
                     layout: "fitDataTable",
-                    index: "id",
+                    index: this.#editSelIndex,
                     pagination: memLabels.length > 25,
                     paginationAddRow:"table",
                     paginationSize: 9999,
@@ -269,11 +270,12 @@ class PlansSetup {
                 this.#editSelLabel.innerHTML = "<b>Select which Memberships portals will have access to this payment plan:</b>"
                 this.#editSelField = this.#portalListDiv;
                 this.#editSelHidden = this.#portalList;
+                this.#editSelIndex = 'portal';
                 data = memLabels;
                 this.#editSelTable = new Tabulator('#editSelTable', {
                     data: this.#portals,
                     layout: "fitDataTable",
-                    index: "portal",
+                    index: this.#editSelIndex,
                     columns: [
                         {title: "Portal", field: "portal", width: 200, headerSort: true },
                     ],
@@ -321,7 +323,7 @@ class PlansSetup {
     // retrieve the selected rows and set the field values
     applyEditSel() {
         // store all the fields back into the table row
-          var filter = '';
+        var filter = '';
         var rows = null;
         rows = this.#editSelTable.getRows();
         for (var row of rows) {
@@ -356,48 +358,48 @@ class PlansSetup {
 
     editPlan(index) {
         this.#planEditIndex = index;
-        var row = this.#plansTable.getRow(index).getData();
+        this.#editSelRow = this.#plansTable.getRow(index).getData();
         // first copy all the fields to the fields in the form
-        document.getElementById('planName').value = row.name;
-        document.getElementById('planDescription').value = row.description;
-        this.#categoryList.value = row.catList;
-        if (row.catList == null || row.catList == '') {
+        document.getElementById('planName').value = this.#editSelRow.name;
+        document.getElementById('planDescription').value = this.#editSelRow.description;
+        this.#categoryList.value = this.#editSelRow.catList;
+        if (this.#editSelRow.catList == null || this.#editSelRow.catList == '') {
             this.#categoryListDiv.innerHTML = '<i>None</i>';
         } else {
-            this.#categoryListDiv.innerHTML = row.catList.replace(/,/g, '<br/>');
+            this.#categoryListDiv.innerHTML = this.#editSelRow.catList.replace(/,/g, '<br/>');
         }
-        this.#includeList.value = row.memList;
-        if (row.memList == null || row.memList == '') {
+        this.#includeList.value = this.#editSelRow.memList;
+        if (this.#editSelRow.memList == null || this.#editSelRow.memList == '') {
             this.#includeListDiv.innerHTML = '<i>None</i>';
         } else {
-            this.#includeListDiv.innerHTML = row.memList.replace(/,/g, '<br/>');
+            this.#includeListDiv.innerHTML = this.#editSelRow.memList.replace(/,/g, '<br/>');
         }
-        this.#excludeList.value = row.excludeList;
-        if (row.excludeList == null || row.excludeList == '') {
+        this.#excludeList.value = this.#editSelRow.excludeList;
+        if (this.#editSelRow.excludeList == null || this.#editSelRow.excludeList == '') {
             this.#excludeListDiv.innerHTML = '<i>None</i>';
         } else {
-            this.#excludeListDiv.innerHTML = row.excludeList.replace(/,/g, '<br/>');
+            this.#excludeListDiv.innerHTML = this.#editSelRow.excludeList.replace(/,/g, '<br/>');
         }
-        this.#portalList.value = row.portalList;
-        if (row.portalList == null || row.portalList == '') {
+        this.#portalList.value = this.#editSelRow.portalList;
+        if (this.#editSelRow.portalList == null || this.#editSelRow.portalList == '') {
             this.#portalListDiv.innerHTML = '<i>None</i>';
         } else {
-            this.#portalListDiv.innerHTML = row.portalList.replace(/,/g, '<br/>');
+            this.#portalListDiv.innerHTML = this.#editSelRow.portalList.replace(/,/g, '<br/>');
         }
-        document.getElementById('downPaymentPercent').value = row.downPercent;
-        document.getElementById('downPaymentAmount').value = row.downAmt;
-        document.getElementById('minPayment').value = row.minPayment;
-        document.getElementById('maxNumPayments').value = row.numPaymentMax;
-        document.getElementById('payByDate').value = row.payByDate;
-        document.getElementById('paymentType').value = row.payType;
-        document.getElementById('modifyPlan').value = row.modify;
-        document.getElementById('reminders').value = row.reminders;
-        document.getElementById('downPaymentIncludes').value = row.downIncludeNonPlan;
-        document.getElementById('lastPartial').value = row.lastPaymentPartial;
-        document.getElementById('active').value = row.active;
+        document.getElementById('downPaymentPercent').value = this.#editSelRow.downPercent;
+        document.getElementById('downPaymentAmount').value = this.#editSelRow.downAmt;
+        document.getElementById('minPayment').value = this.#editSelRow.minPayment;
+        document.getElementById('maxNumPayments').value = this.#editSelRow.numPaymentMax;
+        document.getElementById('payByDate').value = this.#editSelRow.payByDate;
+        document.getElementById('paymentType').value = this.#editSelRow.payType;
+        document.getElementById('modifyPlan').value = this.#editSelRow.modify;
+        document.getElementById('reminders').value = this.#editSelRow.reminders;
+        document.getElementById('downPaymentIncludes').value = this.#editSelRow.downIncludeNonPlan;
+        document.getElementById('lastPartial').value = this.#editSelRow.lastPaymentPartial;
+        document.getElementById('active').value = this.#editSelRow.active;
 
-        this.#planTitleDiv.innerHTML = 'Edit Payment Plan: ' + row.name;
-        this.#planHeadingDiv.innerHTML = 'Edit Payment Plan: '  + row.name;
+        this.#planTitleDiv.innerHTML = 'Edit Payment Plan: ' + this.#editSelRow.name;
+        this.#planHeadingDiv.innerHTML = 'Edit Payment Plan: '  + this.#editSelRow.name;
         this.#planAddEditModal.show();
         this.#planSaveBTN.innerHTML = 'Save Changes Back to Prior Screen';
     }
@@ -408,10 +410,10 @@ class PlansSetup {
             id: this.#planEditIndex,
             name: document.getElementById('planName').value,
             description: document.getElementById('planDescription').value,
-            categoryList: this.#categoryList.value,
-            includeList: this.#includeList.value,
+            catList: this.#categoryList.value,
+            memList: this.#includeList.value,
             excludeList: this.#excludeList.value,
-            cportalList: this.#portalList.value,
+            portalList: this.#portalList.value,
             downPercent: document.getElementById('downPaymentPercent').value,
             downAmt: document.getElementById('downPaymentAmount').value,
             minPayment: document.getElementById('minPayment').value,

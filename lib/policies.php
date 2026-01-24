@@ -29,8 +29,7 @@ function drawPoliciesBlock($policies, $tabIndexStart, $idPrefix = '') {
     if ($policies === null || count($policies) == 0) {
         return;
     }
-    $filter = getConfValue('portal', 'customtext', 'production');
-    loadCustomText('profile', 'all', $filter, true);
+    loadCustomText('profile', 'all', getConfValue('portal', 'customtext', 'production'), true);
     $header = returnCustomText('policies/header', 'profile/all/');
     $footer = returnCustomText('policies/footer', 'profile/all/');
     if ($header != '') {

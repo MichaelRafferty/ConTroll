@@ -77,6 +77,9 @@ if (validateAddressRegexpOK)
     validateEmailRegexp =  new RegExp("^((?:[a-z0-9!#$%&'*+\\-\\/=?^_`{|}~]|(?<=^|\\.)\"|\"(?=$|\\.|@)|(?<=\".*)[ .](?=.*\")|(?<!\\.)\\.){1,64})(@)((?:[a-z0-9.\\-])*(?:[a-z0-9])\\.(?:[a-z0-9]){2,})$", 'i');
 
 function validateAddress(addr) {
+    if (addr == '/r')   // allow refused value
+        return true;
+
    if (validateAddressRegexpOK)
        return validateEmailRegexp.test(String(addr).toLowerCase());
 
@@ -184,4 +187,22 @@ function pwEyeToggle(pwFieldId) {
         pwField.setAttribute('type', type);
         eyeField.classList.toggle("bi-eye");
     });
+}
+
+// single source for default badge name
+// badgeNameDefault: build a default badge name if its empty
+function badgeNameDefault(badge_name, badgeNameL2, first_name, last_name) {
+    let default_name = '';
+    if (badge_name === undefined || badge_name === null || badge_name === '') {
+        default_name = '<i>' + (first_name + ' ' + last_name).trim() + '</i>';
+        if (badgeNameL2 !== undefined && badgeNameL2 !== null && badgeNameL2.trim() !== '') {
+            default_name += '<br/>' + badgeNameL2.trim();
+        }
+        return default_name.replace(/ +/, ' ');
+    }
+    if (badgeNameL2 === undefined || badgeNameL2 === null || badgeNameL2.trim() === '') {
+        return badge_name.trim();
+    }
+    default_name = (badge_name.trim() + '<br/>' + badgeNameL2).trim();
+    return default_name;
 }

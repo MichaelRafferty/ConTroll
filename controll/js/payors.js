@@ -128,7 +128,7 @@ class Payors {
         var row = this.#payorsTable.getRow(index).getData();
         // first copy all the fields to the fields in the form
         document.getElementById('planName').value = row.name;
-        document.getElementById('planDescription').innerHTML = row.description;
+        document.getElementById('planDescription').value = row.description;
         this.#categoryList.value = row.catList;
         if (row.catList == null || row.catList == '') {
             this.#categoryListDiv.innerHTML = '<i>None</i>';
@@ -176,7 +176,7 @@ class Payors {
         var newRow = {
             id: this.#planEditIndex,
             name: document.getElementById('planName').value,
-            description: document.getElementById('planDescription').innerHTML,
+            description: document.getElementById('planDescription').value,
             categoryList: this.#categoryList.value,
             includeList: this.#includeList.value,
             excludeList: this.#excludeList.value,

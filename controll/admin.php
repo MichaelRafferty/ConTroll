@@ -28,15 +28,20 @@ page_init($page,
                     'js/admin.js',
                     'jslib/atconPrinters.js',
                     'jslib/atconUsers.js',
+                    'jslib/configEdit.js',
                    ),
               $need_login);
 $con = get_conf("con");
 $conid=$con['id'];
 $buildNext = array_key_exists('buildNext', $_REQUEST);
+$currency = getConfValue('con', 'currency', 'USD');
+$locale = getLocale();
 
 $config_vars['debug'] = getConfValue('debug', 'controll_admin', 0);
 $config_vars['conid'] = $conid;
 $config_vars['buildNext'] = $buildNext ? 1 : 0;
+$config_vars['locale'] = $locale;
+$config_vars['currency'] = $currency;
 if (array_key_exists('msg', $_REQUEST)) {
     $config_vars['msg'] = $_REQUEST['msg'];
 }
@@ -128,6 +133,11 @@ if (array_key_exists('msg', $_REQUEST)) {
         <li class='nav-item' role='presentation'>
             <button class='nav-link' id='atconPrinters-tab' data-bs-toggle='pill' data-bs-target='#atconPrinters-pane' type='button' role='tab'
                     aria-controls='nav-menu' aria-selected='false' onclick="settab('atconPrinters-pane');">Atcon Printers
+            </button>
+        </li>
+        <li class='nav-item' role='presentation'>
+            <button class='nav-link' id='configEdit-tab' data-bs-toggle='pill' data-bs-target='#configEdit-pane' type='button' role='tab'
+                    aria-controls='nav-menu' aria-selected='false' onclick="settab('configEdit-pane');">Configuration Editor
             </button>
         </li>
         <!-- future - oauth2 client key configuration for the server
@@ -328,6 +338,35 @@ if (array_key_exists('msg', $_REQUEST)) {
                         <button type='button' class='btn btn-secondary btn-sm' id='printers_undo_btn' onclick='printers.undo_printer();' disabled>Undo</button>
                         <button type='button' class='btn btn-secondary btn-sm' id='printers_redo_btn' onclick='printers.redo_printer();' disabled>Redo</button>
                         <button type='button' class='btn btn-primary btn-sm' id='printers_save_btn' onclick='printers.save();' disabled>Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class='tab-pane fade' id='configEdit-pane' role='tabpanel' aria-labelledby='configEdit-tab' tabindex='0'>
+            <div class='container-fluid'>
+                <div class='row'>
+                    <div class='col-sm-auto'><h2>Admin Configuration Editor (reg_conf.ini)</h2></div>
+                </div>
+                <div class='row mt-2 mb-3'>
+                    <div class='col-sm-auto'>
+                        <button type='button' class='btn btn-primary btn-sm' id='saveBTNt' onclick='configEditor.save();' disabled>Save</button>
+                    </div>
+                    <div class='col-sm-auto'>
+                        <button type='button' class='btn btn-secondary btn-sm' id='discardBTNt' onclick='configEditor.discard();' disabled>Discard
+                            Changes</button>
+                    </div>
+                </div>
+            </div>
+            <div class='container-fluid' id="configDiv">
+            </div>
+            <div class='container-fluid'>
+                <div class='row mt-2 mb-3'>
+                    <div class='col-sm-auto'>
+                        <button type='button' class='btn btn-primary btn-sm' id='saveBTNb' onclick='configEditor.save();' disabled>Save</button>
+                    </div>
+                    <div class='col-sm-auto'>
+                        <button type='button' class='btn btn-secondary btn-sm' id='discardBTNb' onclick='configEditor.discard();' disabled>Discard
+                            Changes</button>
                     </div>
                 </div>
             </div>

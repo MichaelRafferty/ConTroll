@@ -8,13 +8,18 @@
 -- Dumping data for table `controllAppItems`
 --
 
+SET FOREIGN_KEY_CHECKS = 0;
 LOCK TABLES `controllAppItems` WRITE;
 ALTER TABLE `controllAppItems` DISABLE KEYS;
 INSERT INTO `controllAppItems` VALUES
 ('controll','emails','comeback','html','Custom Text for the html comeback email - not registered insert into past few years'),
 ('controll','emails','comeback','text','Custom Text for the plain text comeback email - not registered insert into past few years'),
+('controll','emails','expire','html','Custom Text for the html expiring unpaid reg email'),
+('controll','emails','expire','text','Custom Text for the plain text expiring unpaid reg email'),
 ('controll','emails','marketing','html','Custom Text for the html marketing email - not registered this year'),
 ('controll','emails','marketing','text','Custom Text for the plain text marketing email - not registered this year'),
+('controll','emails','noMembership','html','Custom Text for the html Np membership created reminder email'),
+('controll','emails','noMembership','text','Custom Text for the plain text No membership created reminder email'),
 ('controll','emails','reminder','html','Custom Text for the html attendence reminder email'),
 ('controll','emails','reminder','text','Custom Text for the plain text attendence reminder email'),
 ('exhibitor','index','email','mailinInvHTML','Mail In Artist Inventory HTML Email'),
@@ -48,6 +53,11 @@ INSERT INTO `controllAppItems` VALUES
 ('exhibitor','index','invoice','payDisclaimerFan','The payment disclaimer popup-fan portal'),
 ('exhibitor','index','invoice','payDisclaimerVendor','The payment disclaimer popup-vendor portal'),
 ('exhibitor','index','invoice','taxIdExtra','After tax id of the modal invoice popup-exhibitor portals'),
+('exhibitor','index','invoice','termsArtistMailin','Custom Text for the plain text email for mailin artist invoice terms'),
+('exhibitor','index','invoice','termsArtistOnsite','Custom Text for the plain text email for onsite artist invoice terms'),
+('exhibitor','index','invoice','termsExhibitor','Custom Text for the plain text email for exhibitor invoice terms'),
+('exhibitor','index','invoice','termsFan','Custom Text for the plain text email for fan invoice terms'),
+('exhibitor','index','invoice','termsVendor','Custom Text for the plain text email for vendor invoice terms'),
 ('exhibitor','index','invoice','top','The top of the modal invoice popup-all portals'),
 ('exhibitor','index','invoice','topArtist','The top custom text of the modal invoice popup-artist portal'),
 ('exhibitor','index','invoice','topExhibitor','The top custom text of the modal invoice popup-exhibitor portals'),
@@ -86,14 +96,20 @@ INSERT INTO `controllAppItems` VALUES
 ('exhibitor','index','profile','busFan','After the Business Information header of the modal profile popup-fan portals'),
 ('exhibitor','index','profile','busVendor','After the Business Information header of the modal profile popup-vendor portals'),
 ('exhibitor','index','profile','contact','After the Primary Contact of the modal profile popup-all portals'),
+('exhibitor','index','profile','descArtist','Before the description field insert into the artist profile'),
+('exhibitor','index','profile','descExhibitor','Before the description field insert into the exhibitor profile'),
+('exhibitor','index','profile','descFan','Before the description field insert into the fan profile'),
+('exhibitor','index','profile','descVendor','Before the description field insert into the vendor profile'),
 ('exhibitor','index','profile','shipping','After the Shipping Address of the modal profile popup-artist portals'),
 ('exhibitor','index','profile','top','The top of the modal profile popup-all portals'),
 ('exhibitor','index','profile','topArtist','The top custom text of the modal profile popup-artist portal'),
 ('exhibitor','index','profile','topExhibitor','The top custom text of the modal profile popup-exhibitor portals'),
 ('exhibitor','index','profile','topFan','The top custom text of the modal profile popup-fan portals'),
 ('exhibitor','index','profile','topVendor','The top custom text of the modal profile popup-vendor portals'),
-('exhibitor','index','profile','webArtist','After the website field in the modal profile popup-artist portal'),
-('exhibitor','index','profile','webVendor','After the website field in the modal profile popup-vendor portal'),
+('exhibitor','index','profile','webArtist','Before the website field insert into the artist profile'),
+('exhibitor','index','profile','webExhibitor','Before the website field insert into the exhibitor profile'),
+('exhibitor','index','profile','webFan','Before the website field insert into the fan profile'),
+('exhibitor','index','profile','webVendor','Before the website field insert into the vendor profile'),
 ('exhibitor','index','receipt','bottom','The bottom of the receipt - all portals'),
 ('exhibitor','index','receipt','top','The top of the receipt - all portals'),
 ('exhibitor','index','request','bottom','The bottom of the modal space request popup-all portals'),
@@ -142,6 +158,7 @@ INSERT INTO `controllAppItems` VALUES
 ('portal','addUpgrade','main','step4','Just after the Step 4 header'),
 ('portal','addUpgrade','main','step4bottom','Just brelow step 4 (cart) and ahead of the HR (rule line)'),
 ('portal','addUpgrade','main','top','The top of the page/section'),
+('portal','all','footer','difficulties','footer line: for any difficulties'),
 ('portal','index','main','bottom','The bottom of the page/section'),
 ('portal','index','main','multiple','Juat after the this email has multiple membership accounts'),
 ('portal','index','main','notloggedin','Text to show if not logged in and not returned from auth link for no account'),
@@ -154,6 +171,11 @@ INSERT INTO `controllAppItems` VALUES
 ('portal','portal','main','plan','Just after the plan header'),
 ('portal','portal','main','purchased','Just aqfter the purchased header'),
 ('portal','portal','main','purchOthers','Custom Text for You have unpaid purchases for you by others section'),
-('portal','portal','main','top','The top of the page/section');
+('portal','portal','main','top','The top of the page/section'),
+('profile','all','interests','footer','footer after interests in edit profile'),
+('profile','all','interests','header','header before interests in edit profile'),
+('profile','all','policies','footer','footer after policies in edit profile'),
+('profile','all','policies','header','header before policies in edit profile');
 ALTER TABLE `controllAppItems` ENABLE KEYS;
 UNLOCK TABLES;
+SET FOREIGN_KEY_CHECKS = 1;

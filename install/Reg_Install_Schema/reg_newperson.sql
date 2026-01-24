@@ -12,6 +12,8 @@
 DROP TABLE IF EXISTS `newperson`;
 CREATE TABLE `newperson` (
   `id` int NOT NULL AUTO_INCREMENT,
+  `currentAgeConId` int DEFAULT NULL,
+  `currentAgeType` varchar(16) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `perid` int DEFAULT NULL,
   `last_name` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
   `middle_name` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
@@ -20,6 +22,7 @@ CREATE TABLE `newperson` (
   `email_addr` varchar(254) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
   `phone` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
   `badge_name` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
+  `badgeNameL2` varchar(32) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
   `legalName` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
   `pronouns` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
   `address` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
@@ -41,7 +44,8 @@ CREATE TABLE `newperson` (
   KEY `newperson_transid_fk` (`transid`),
   KEY `newperson_perid_fk` (`perid`),
   KEY `np_managedBy_fk` (`managedBy`),
-  KEY `np_managedByNew_fk` (`managedByNew`)
+  KEY `np_managedByNew_fk` (`managedByNew`),
+  KEY `nerperson_ageList` (`currentAgeConId`,`currentAgeType`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 

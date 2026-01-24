@@ -54,7 +54,7 @@ $worldCon = getConfValue('portal', 'worldcon', '0');
 // Ok, we need the payload now, lets start with the main info
 if ($loginType == 'p') {
     $piQ = <<<EOS
-SELECT p.id AS perid, n.id AS newperid, p.first_name, p.last_name, p.email_addr, p.badge_name,
+SELECT p.id AS perid, n.id AS newperid, p.first_name, p.last_name, p.email_addr, p.badge_name, p.badgeNameL2,
     TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName
 FROM perinfo p
 LEFT OUTER JOIN newperson n ON n.perid = p.id
@@ -63,7 +63,7 @@ ORDER BY n.id DESC;
 EOS;
 } else {
     $piQ = <<<EOS
-SELECT NULL AS perid, id AS newperid, first_name, last_name, email_addr, badge_name,
+SELECT NULL AS perid, id AS newperid, first_name, last_name, email_addr, badge_name, badgeNameL2,
     TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), ' +', ' ')) AS fullName
 FROM newperson 
 WHERE id = ?;
@@ -88,6 +88,8 @@ $payload['last_name'] = $pi['last_name'];
 $payload['fullName'] = $pi['fullName'];
 if ($Virtual) {
     $payload['badgeName'] = $pi['badge_name'];
+    if ($pi['badgeNameL2'] != '')
+        $payload['badgeName'] .= '/' . $pi['badgeNameL2'];
 }
 // set expiration time to 4 hours, and a fake restype of fullRights
 $payload['exp'] = time() + 4 * 3600;
@@ -198,6 +200,11 @@ SELECT r.status, r.memId, m.*, a.shortname AS ageShort, a.label AS ageLabel, a.a
         WHEN rn.id IS NOT NULL THEN rn.badge_name
         ELSE NULL
     END AS badge_name,
+    CASE 
+        WHEN rp.id IS NOT NULL THEN rp.badgeNameL2
+        WHEN rn.id IS NOT NULL THEN rn.badgeNameL2
+        ELSE NULL
+    END AS badgeNameL2,
     CASE 
         WHEN rp.id IS NOT NULL THEN rp.email_addr
         WHEN rn.id IS NOT NULL THEN rn.email_addr

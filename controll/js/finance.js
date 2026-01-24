@@ -6,6 +6,7 @@ const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 finance = null;
 plans = null;
 payors = null;
+tax = null;
 
 // finance class - functions for finance page including payment plans and money related transactions
 class Finance {
@@ -27,6 +28,7 @@ class Finance {
         this.#result_message_div = document.getElementById('result_message');
 
         this.#financeTabs['overview'] = document.getElementById('overview-content');
+        this.#financeTabs['taxConfig'] = document.getElementById('taxConfig-pane');
         this.#financeTabs['paymentPlans'] = document.getElementById('paymentPlans-pane');
         this.#financeTabs['payorPlans'] = document.getElementById('payorPlans-pane');
         this.#financeTabs['coupon'] = document.getElementById('coupon-pane');
@@ -54,25 +56,34 @@ class Finance {
         }
         this.#financeTabs[content].hidden = false;
         this.#currentPane = this.#financeTabs[content];
-        if (content != 'paymentPlans') {
-            if (plans) {
-                plans.close();
-                plans = null;
-            }
-            if (payors) {
-                payors.close();
-                payors = null;
-            }
-            if (coupons) {
-                coupons.close();
-                coupons = null;
-            }
+        if (plans) {
+            plans.close();
+            plans = null;
+        }
+        if (payors) {
+            payors.close();
+            payors = null;
+        }
+        if (coupons) {
+            coupons.close();
+            coupons = null;
+        }
+        if (tax) {
+            tax.close();
+            tax = null;
         }
 
         this.#currentPane.hidden = false;
 
         if (content == 'overview')
             return;
+
+        if (content == 'taxConfig') {
+            if (tax == null)
+                tax = new taxConfig(config['conid'], config['debug']);
+            tax.open();
+            return;
+        }
 
         if (content == 'paymentPlans') {
             if (plans == null)

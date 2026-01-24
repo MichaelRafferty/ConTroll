@@ -18,7 +18,7 @@ header('Content-Disposition: attachment; filename="clubMember.csv"');
 $year = date("Y")-5;
 
 $query = "SELECT P.first_name, P.middle_name, P.last_name, P.address"
-        . ", P.city, P.state, P.zip, P.phone, P.email_addr, P.badge_name"
+        . ", P.city, P.state, P.zip, P.phone, P.email_addr, CONCAT_WS('/', P.badge_name, P.badgeNameL2)"
         . ", B.type, B.year"
     . " FROM club as B JOIN perinfo as P ON P.id=B.perid"
     . " WHERE type in ('eternal', 'life', 'child')"

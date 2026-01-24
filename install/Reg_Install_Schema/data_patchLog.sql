@@ -50,12 +50,17 @@ INSERT INTO `patchLog` VALUES
 (41,'index and exhibitor website custom text','2025-01-25 18:47:19'),
 (42,'Post 1.1 Release Cleanup','2025-03-14 02:04:01'),
 (43,'General Reports','2025-03-14 02:04:20'),
-(44,'Payment Cleanup','2025-05-08 02:04:20'),
-(45,'Square Terminals','2025-05-08 02:04:20'),
+(44,'Payment Cleanup','2025-07-16 20:19:38'),
+(45,'Square Terminals','2025-07-16 20:19:38'),
 (46,'Post Balticon Cleanup','2025-05-31 21:10:12'),
 (47,'Marketing Customization','2025-06-10 02:52:12'),
-(48, 'artshow-siteselection','2025-06-10 02:52:12'),
+(48,'artshow-siteselection','2025-07-16 20:21:35'),
 (49,'artinventory','2025-06-25 01:23:09'),
-(50,'passkeys','2025-07-16 19:52:30');
+(50,'passkeys','2025-07-16 19:52:30'),
+(51,'artshowItems','2025-10-08 16:16:53'),
+(52,'marketingEmails','2025-10-08 16:16:53'),
+(53,'moreTerminal','2025-09-06 20:38:12'),
+(54,'More Custom Text Fields','2025-10-08 16:14:19'),
+(55,'taxes et al','2025-11-05 18:37:15');
 ALTER TABLE `patchLog` ENABLE KEYS;
 UNLOCK TABLES;

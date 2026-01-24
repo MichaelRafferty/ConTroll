@@ -1,6 +1,7 @@
 <?php
 
 require_once "lib/base.php";
+require_once "../lib/tax.php";
 
 if (!isSessionVar('user')) {
     header("Location: /index.php");
@@ -51,6 +52,8 @@ if (array_key_exists('taxLabel', $con)) {
     $taxLabel = '';
     $taxUid = '';
 }
+$currency = getConfValue('con', 'currency', 'USD');
+$locale = getLocale();
 
 $regionQ = <<<EOS
 SELECT xR.shortname AS regionName, xRY.roomStatus
@@ -102,6 +105,9 @@ if (isSessionVar('terminal'))
     $config_vars['terminal'] = getSessionVar('terminal')['name'] != 'None' ? 1 : 0;
 else
     $config_vars['terminal'] = 0;
+$config_vars['taxRates'] = getTaxRates();
+$config_vars['locale'] = $locale;
+$config_vars['currency'] = $currency;
 
 $cdn = getTabulatorIncludes();
 page_init($page, $tab,

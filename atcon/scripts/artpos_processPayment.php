@@ -5,6 +5,7 @@
 // create payment record for art sales and send same to credit card provider
 
 require_once '../lib/base.php';
+require_once('../../lib/tax.php');
 require_once('../../lib/log.php');
 require_once('../../lib/cc__load_methods.php');
 require_once('../../lib/term__load_methods.php');
@@ -46,6 +47,17 @@ $ini = get_conf('reg');
 $cc = get_conf('cc');
 load_cc_procs();
 logInit($log['term']);
+
+$locationId = getSessionVar('terminal');
+if ($locationId) {
+    $locationId = $locationId['locationId'];
+} else if (array_key_exists('location_artpos', $cc)) {
+    $locationId = $cc['location_artpos'];
+} else if (array_key_exists('location', $cc)) {
+    $locationId = $cc['location'];
+} else {
+    $locationId = 'Unknown';
+}
 
 $conid = $con['id'];
 $upd_rows = 0;
@@ -131,6 +143,14 @@ if (array_key_exists('poll', $_POST)) {
     $poll = 0;
 }
 
+// get the order information for the taxes portion
+if ($taxAmt > 0) {
+    $order = cc_fetchOrder($source, $orderId);
+    $taxes = $order['taxes'];
+} else {
+    $taxes = array();
+}
+
 // we need an available terminal, so get the latest status
     $name = 'None';
 if ($new_payment['type'] == 'terminal') {
@@ -146,7 +166,7 @@ if ($new_payment['type'] == 'terminal') {
             term_cancelPayment($name, $termStatus['currentPayment'], true);
         }
         if ($termStatus['currentOrder'] != null && $termStatus['currentOrder'] != '$orderId') {
-            cc_cancelOrder('artsales', $orderId, true);
+            cc_cancelOrder('artsales', $orderId, true, $locationId);
         }
     } else {
         $status = $termStatus['status'];
@@ -253,18 +273,13 @@ if ($amt > 0) {
         else
             $desc = mb_substr($desc . '/' . $new_payment['desc'], 0, 64);
 
-        $locationId = getSessionVar('terminal');
-        if ($locationId) {
-            $locationId = $locationId['locationId'];
-        } else {
-            $locationId = $cc['location'];
-        }
         $ccParam = array (
             'transid' => $master_tid,
             'counts' => 0,
             'price' => null,
             'art' => $cart_art,
             'taxAmt' => $taxAmt,
+            'taxes' => $taxes,
             'preTaxAmt' => $preTaxAmt,
             'total' => $amt,
             'orderId' => $orderId,
@@ -488,15 +503,29 @@ EOS;
     $updcnt = dbSafeCmd($updTranStatusSQL, 'ssi', array($status, $paymentId, $master_tid));
 
     // now add the payment and process to which rows it applies
+    if ($taxAmt > 0) {
+        [$taxFields, $taxSql, $taxStr, $taxValues] = buildTaxInsert($taxes);
+        if ($taxFields != '')
+            $taxFields = ", $taxFields";
+        if ($taxSql != '')
+            $taxSql = ", $taxSql";
+    } else {
+        $taxFields = '';
+        $taxSql = '';
+        $taxStr = '';
+        $taxValues = [];
+    }
+
     $insPmtSQL = <<<EOS
-INSERT INTO payments(transid, type,category, description, source, pretax, tax, amount, time, cc_approval_code, cashier, 
-    cc, nonce, cc_txn_id, txn_time, receipt_url, receipt_id, userPerid, status, ccPaymentId)
-VALUES (?,?,'artshow',?,'cashier',?,?,?,now(),?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO payments(transid, type,category, description, source, pretax, tax, amount, time, cc_approval_code, cashier,
+    cc, nonce, cc_txn_id, txn_time, receipt_url, receipt_id, userPerid, status, ccPaymentId $taxFields)
+VALUES (?,?,?,?,'cashier',?,?,?,now(),?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? $taxSql);
 EOS;
-    $typestr = 'issdddsissssssiss';
-    $paramarray = array ($master_tid, $paymentType, $desc, $preTaxAmt, $taxAmt, $approved_amt, $auth, $user_perid,
+    $typestr = 'isssdddsissssssiss' . $taxStr;
+    $paramarray = array ($master_tid, $paymentType, $category, $description, $preTaxAmt, $taxAmt, $approved_amt, $auth, $user_perid,
         $last4, $nonceCode, $paymentId, $txTime, $receiptUrl, $receiptNumber, $user_perid, $status, $paymentId);
-    $new_pid = dbSafeInsert($insPmtSQL, $typestr, $paramarray);
+
+    $new_pid = dbSafeInsert($insPmtSQL, $typestr, array_merge( $paramarray, $taxValues));
 
     if ($new_pid === false) {
         ajaxError('Error adding payment to database');

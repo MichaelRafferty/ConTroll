@@ -4,11 +4,7 @@
 // drawEditPersonBlock - just output the block to edit the person
 function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $editEmail=false, $ageByDate = '',
                              $membershipTypes = [], $tabIndexStart = 100, $admin = false, $idPrefix = '', $free=false) {
-    $reg = get_conf('reg');
-    if ($editEmail)
-        $polConf = $reg;
-    else
-        $polConf = get_conf('portal');
+    $polConf = $editEmail ? 'reg' : 'portal';
     $required = getConfValue('reg', 'required', 'addr');
     $firstStar = '';
     $addrStar = '';
@@ -49,21 +45,21 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
     <div class="row">
         <div class="col-sm-auto">
             <label for="<?php echo $idPrefix . "fname"; ?>" class="form-label-sm">
-                <span class="text-dark" style="font-size: 10pt;"><?php echo $firstStar; ?>First Name</span>
+                <span class="text-dark" style="font-size: 10pt;">Preferred Name: <?php echo $firstStar; ?>First</span>
             </label><br/>
             <input class="form-control-sm" type="text" name="fname" id='<?php echo $idPrefix . 'fname';?>' size="22" maxlength="32"
                    tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
         </div>
         <div class="col-sm-auto">
             <label for="<?php echo $idPrefix . 'mname'; ?>" class="form-label-sm">
-                <span class="text-dark" style="font-size: 10pt;">Middle Name</span>
+                <span class="text-dark" style="font-size: 10pt;">Middle</span>
             </label><br/>
             <input class="form-control-sm" type="text" name="mname" id='<?php echo $idPrefix . 'mname'; ?>' size="8" maxlength="32"
                    tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
         </div>
         <div class="col-sm-auto">
             <label for="<?php echo $idPrefix . 'lname'; ?>" class="form-label-sm">
-                <span class="text-dark" style="font-size: 10pt;"><?php echo $allStar; ?>Last Name</span>
+                <span class="text-dark" style="font-size: 10pt;"><?php echo $allStar; ?>Last</span>
             </label><br/>
             <input class="form-control-sm" type="text" name="lname" id='<?php echo $idPrefix . 'lname'; ?>' size="22" maxlength="32"
                    tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
@@ -90,11 +86,16 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
     <?php } ?>
     <div class='row'>
         <div class='col-sm-auto me-2'>
-            <label for='<?php echo $idPrefix . 'badgename'; ?>' class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>Badge Name (optional)
+            <label for='<?php echo $idPrefix . 'badge_name'; ?>' class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>Badge Name (optional)
                         </span></label><br/>
-            <input class='form-control-sm' type='text' name='badgename' id='<?php echo $idPrefix . 'badgename'; ?>' size='35' maxlength='32'
-                   placeholder='defaults to first and last name' tabindex="<?php echo $tabindex;
-            $tabindex += 10; ?>"/>
+            <input class='form-control-sm' type='text' name='badge_name' id='<?php echo $idPrefix . 'badge_name'; ?>' size='35' maxlength='32'
+                   placeholder='defaults to first and last name' tabindex="<?php echo $tabindex; $tabindex += 10; ?>"/>
+        </div>
+        <div class='col-sm-auto'>
+            <label for='<?php echo $idPrefix . 'badgeNameL2'; ?>' class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>Badge Line 2 (optional)
+                        </span></label><br/>
+            <input class='form-control-sm' type='text' name='badgeNameL2' id='<?php echo $idPrefix . 'badgeNameL2'; ?>' size='35' maxlength='32'
+                   placeholder='if empty badge name can use both lines' tabindex="<?php echo $tabindex; $tabindex += 10; ?>"/>
         </div>
     </div>
     <div class='row'>
@@ -151,9 +152,10 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
         </div>
         <div class="col-sm-auto">
             <label for="<?php echo $idPrefix . 'state'; ?>" class="form-label-sm">
-                <span class="text-dark" style="font-size: 10pt;"><?php echo $addrStar; ?>State: U.S./CAN 2-letter abv.</span>
+                <span class="text-dark" style="font-size: 10pt;"><?php echo $addrStar; ?>State/Province</span>
             </label><br/>
-            <input class="form-control-sm" type="text" name="state" id='<?php echo $idPrefix . 'state'; ?>' size="16" maxlength="16"
+            <input class="form-control-sm" type="text" name="state" id='<?php echo $idPrefix . 'state'; ?>' size="18" maxlength="16"
+                   placeholder="US/CAN 2-letter abv."
                    tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
         </div>
         <div class="col-sm-auto">
@@ -200,12 +202,14 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
             <input class='form-control-sm' type='email' name='email1' id='<?php echo $idPrefix . 'email1'; ?>' size='35' maxlength='254'
                    tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
         </div>
+<?php if (!$admin) { ?>
         <div class='col-sm-auto'>
             <label for='<?php echo $idPrefix . 'email2'; ?>' class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'><span
                             class='text-danger'>&bigstar;</span>Confirm Email</span></label><br/>
             <input class='form-control-sm' type='email' name='email2' id='<?php echo $idPrefix . 'email2'; ?>' size='35' maxlength='254'
                    tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
         </div>
+<?php } // admin ?>
     </div>
 <?php
         if ($membershipTypes != null) {
@@ -272,7 +276,7 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
         </div>
     </div>
     <?php
-    if ($admin == false && ((!array_key_exists('showConPolicy',$polConf)) || $polConf['showConPolicy'] == 1)) {
+    if ($admin == false && getConfValue($polConf, 'showConPolicy', 1) == 1) {
         ?>
         <div class='row'>
             <div class='col-sm-12'>
@@ -285,7 +289,7 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
         </div>
         <?php
     }
-    if ($admin == false && ((!array_key_exists('showVolunteerPolicy',$polConf)) || $polConf['showVolunteerPolicy'] == 1)) {
+    if ($admin == false && getConfValue($polConf,'showVolunteerPolicy', 1) == 1) {
         ?>
         <div class="row">
             <div class="col-sm-12">

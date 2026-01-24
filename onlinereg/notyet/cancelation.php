@@ -33,7 +33,7 @@ $includes = getTabulatorIncludes();
 </head>
 <body style='padding: 5px'>
     <div class="container-fluid">
-        <img class="img-fluid" src="images/<?php echo $ini['logoimage']; ?>" alt="<?php echo $altstring ;?>"/>
+        <img class="img-fluid" src="images/<?php echo $ini['logoimage']; ?>" alt="<?php echo $ini['logoalt'] ;?>"/>
     </div>
 <h1><?php echo $condata['label']; ?> Registration Cancelation Page</h1>
 <?php
@@ -157,7 +157,8 @@ if(($ini['suspended'] != 1) or ($ini['close'] != 1)) {
         Address:<br/>
             <input type='text' name='addr1' size=40 placeholder='Address Line 1'/><br/>
             <input type='text' name='addr2' size=40 placeholder='Address Line 2'/><br/>
-            <input type='text' name='city' placeholder='City / State / Zip'/> <input type='text' size=10 name='state'/> <input type='text' size=5 name='zip'/><br/>
+            <input type='text' name='city' placeholder='City / State-Prov / Zip-PC'/> <input type='text' size=10 name='state'/> <input type='text' size=5
+                                                                                                                                name='zip'/><br/>
         <p>The information provided here will only be used to process your request.  Your request will be processed as staff is available.  All requests are due by June 15th, 2020.  We hope to have all rollovers, refunds, and donations processed by the end of the summer.  Please remember that Balticon is a 100% volunteer run organization, and we thank you in advance for your patience.  </p>
         <br/>
         <input type='submit'><input type='reset'>

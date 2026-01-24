@@ -13,7 +13,7 @@ DROP TABLE IF EXISTS `atcon_auth`;
 CREATE TABLE `atcon_auth` (
   `id` int NOT NULL AUTO_INCREMENT,
   `authuser` int NOT NULL,
-  `auth` enum('data_entry','cashier','manager','artinventory','artsales','artshow','vol_roll') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `auth` enum('data_entry','cashier','manager','artinventory','artsales','vol_roll') COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `atcon_authuser_fk` (`authuser`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

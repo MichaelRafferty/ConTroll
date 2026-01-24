@@ -43,13 +43,13 @@ EOS;
         logEcho("Person 2/User 2 exist", true);
     } else {
         // insert user 2, person record first
-        $newid = dbSafeInsert($insertPQ, 'issssssssi', array(2, 'Atcon', 'Internal', NULL, 'N', 'N', 'INTERNAL NOT FOR REGISTRATION USE', 'N', 'N'));
+        $newid = dbSafeInsert($insertPQ, 'issssssss', array(2, 'Atcon', 'Internal', '/r', 'N', 'N', 'INTERNAL NOT FOR REGISTRATION USE', 'N', 'N'));
         if ($newid === false) {
             logEcho("Unable to insert Person Info 2 for ATCON");
             $errors++;
         } else {
             // user record for 2, note, no user_auth records for this user
-            $newid = dbSafeInsert($insertUQ, 'iissss', array(2, 2, NULL, 'not a sub', 'atcon', 'N'));
+            $newid = dbSafeInsert($insertUQ, 'iissss', array(2, 2, '/r', 'not a sub', 'atcon', 'N'));
             if ($newid === false) {
                 logEcho('Unable to insert user 2 for ATCON');
                 $errors++;
@@ -70,7 +70,7 @@ EOS;
         logEcho('Person 3 exists', true);
     } else {
         // insert person 3
-        $newid = dbSafeInsert($insertPQ, 'issssssssi', array(3, 'Exhibitor', 'Internal', NULL, 'N', 'N', 'INTERNAL NOT FOR REGISTRATION USE', 'N', 'N'));
+        $newid = dbSafeInsert($insertPQ, 'issssssss', array(3, 'Exhibitor', 'Internal', '/r', 'N', 'N', 'INTERNAL NOT FOR REGISTRATION USE', 'N', 'N'));
         if ($newid === false) {
             logEcho('Unable to insert Person Info 3 for Exhibitor');
             $errors++;
@@ -90,7 +90,7 @@ EOS;
         logEcho('Person 4 exists', true);
     } else {
         // insert person 3
-        $newid = dbSafeInsert($insertPQ, 'issssssssi', array(4, 'Portal', 'Internal', NULL, 'N', 'N', 'INTERNAL NOT FOR REGISTRATION USE', 'N', 'N'));
+        $newid = dbSafeInsert($insertPQ, 'issssssss', array(4, 'Portal', 'Internal', '/r', 'N', 'N', 'INTERNAL NOT FOR REGISTRATION USE', 'N', 'N'));
         if ($newid === false) {
             logEcho('Unable to insert Person Info 4 for Portal');
             $errors++;
@@ -110,7 +110,7 @@ EOS;
         logEcho('Person 5 exists', true);
     } else {
         // insert person 3
-        $newid = dbSafeInsert($insertPQ, 'issssssssi', array(5, 'Mail-in', 'Registration', NULL, 'N', 'N', 'INTERNAL NOT FOR REGISTRATION USE', 'N', 'N'));
+        $newid = dbSafeInsert($insertPQ, 'issssssss', array(5, 'Mail-in', 'Registration', '/r', 'N', 'N', 'INTERNAL NOT FOR REGISTRATION USE', 'N', 'N'));
         if ($newid === false) {
             logEcho('Unable to insert Person Info 5 for Mail-in');
             $errors++;
@@ -126,7 +126,7 @@ WHERE id = ?;
 EOS;
     $conidR = dbSafeQuery($checkCQ, 'i', array($conid));
     if ($conidR === false) {
-        logEcho('check if $conid exists in conlist, cannot continue');
+        logEcho("check if $conid exists in conlist failed, cannot continue");
         return(1);
     }
 
@@ -150,7 +150,7 @@ EOS;
             return(1);
         }
     } else {
-        logEcho('conlist entry for $conid exists', true);
+        logEcho("conlist entry for $conid exists", true);
     }
     $conidR->free();
 
@@ -171,7 +171,7 @@ EOS;
         if ($num_rows == 0) {
             // insert user 1, Master User
             echo <<<EOS
-Peron 1 does not exist in the database.  Person one is the first administrator in the system.
+Person 1 does not exist in the database.  Person one is the first administrator in the system.
 It will be created with Admin privileges in reg_control and manager privileges in atcon.
 
 Please enter the email address for this administrator: 
@@ -215,16 +215,6 @@ EOS;
 
             echo <<<EOS
 
-Please enter the ATCON login name for $email_addr: 
-EOS;
-            $login_name = trim(fgets(STDIN));
-            while ($login_name == '') {
-                echo PHP_EOL . 'The ATCON login name is required.' . PHP_EOL . "Please enter the ATCON login name for $email_addr: ";
-                $login_name = trim(fgets(STDIN));
-            }
-
-            echo <<<EOS
-
 Please enter the ATCON password for $email_addr: 
 EOS;
             $atcon_password = trim(fgets(STDIN));
@@ -234,7 +224,7 @@ EOS;
             }
 
             // insert user 1 into perinfo
-            $newid = dbSafeInsert($insertPQ, 'issssssssi', array(1, $first_name, $last_name, $email_addr, 'N', 'Y', 'Initial Administrator', 'Y', 'Y', 1));
+            $newid = dbSafeInsert($insertPQ, 'issssssss', array(1, $first_name, $last_name, $email_addr, 'N', 'Y', 'Initial Administrator', 'Y', 'Y'));
             if ($newid === false) {
                 logEcho('Unable to insert Person Info 1 for administrator');
                 $errors++;

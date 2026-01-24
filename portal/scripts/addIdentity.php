@@ -116,7 +116,8 @@ EOS;
 }
 
 $cQ = <<<EOS
-SELECT id, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, legalName, pronouns, address, addr_2, city, state, zip, country, 
+SELECT id, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, badgeNameL2, legalName, pronouns, address, addr_2, city, state, zip, 
+country, 
     managedBy, NULL AS managedByNew, lastVerified, 'p' AS personType,
     TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), ' +', ' ')) AS fullName
 FROM perinfo
@@ -128,6 +129,7 @@ if ($cR == false || $cR->num_rows == 0) {
     exit();
 }
 $loginInfo = $cR->fetch_assoc();
+$loginInfo['badgename'] = badgeNameDefault($loginInfo['badge_name'], $loginInfo['badgeNameL2'], $loginInfo['first_name'], $loginInfo['last_name']);
 $cR->free();
 
 $waittime = 1; // hours

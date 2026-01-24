@@ -5,6 +5,7 @@ var changePasswordTitleDiv = null;
 var purchase_label = 'purchase';
 var additional_cost = {};
 var switchPortalbtn = null;
+var newPasskeyBtn = null;
 exhibitorProfile = null;
 si_password = null;
 
@@ -15,38 +16,43 @@ window.onload = function () {
         change_password = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
     }
 
+    newPasskeyBtn = document.getElementById('newPasskeyBtn');
+
     switchPortalbtn = document.getElementById('switchPortalbtn');
     if (switchPortalbtn != null) {
-        switchPortalbtn.innerHTML = 'Switch to ' + (config['portalName'] == 'Artist' ? 'Vendor' : 'Artist') + ' Portal';
+        switchPortalbtn.innerHTML = 'Switch to ' + (config.portalName == 'Artist' ? 'Vendor' : 'Artist') + ' Portal';
+        if ((config.portalName == 'Artist' && config.vendorsite == '') || (config.portalName == 'Vendor' && config.artistsite == ''))
+            switchPortalbtn.hidden = true;
     }
 
-    exhibitorProfile = new ExhibitorProfile(config['debug']);
-    exhibitorRequestOnLoad();
-    auctionItemRegistrationOnLoad()
-    vendorInvoiceOnLoad()
-    exhibitorReceiptOnLoad();
-    if (typeof exhibitor_info !== 'undefined') {
-        if (exhibitor_info['DaysSinceLastVerified'] > 180) {
-            exhibitorProfile.profileModalOpen('review');
+    if (document.getElementById('profile')) {
+        exhibitorProfile = new ExhibitorProfile(config.debug);
+        exhibitorRequestOnLoad();
+        auctionItemRegistrationOnLoad()
+        vendorInvoiceOnLoad()
+        exhibitorReceiptOnLoad();
+        if (typeof exhibitor_info !== 'undefined') {
+            if (exhibitor_info.DaysSinceLastVerified > 180) {
+                exhibitorProfile.profileModalOpen('review');
+            }
         }
-    }
 
-    // login
-    pwEyeToggle('si_password');
-    // change password
-    pwEyeToggle('oldPw');
+        // login
+        pwEyeToggle('si_password');
+        // change password
+        pwEyeToggle('oldPw');
+        // signup
+        pwEyeToggle('pw1');
+        pwEyeToggle('pw2');
+        pwEyeToggle('cpw1');
+        pwEyeToggle('cpw2');
+    }
     pwEyeToggle('newPw');
     pwEyeToggle('newPw2');
-    // signup
-    pwEyeToggle('pw1');
-    pwEyeToggle('pw2');
-    pwEyeToggle('cpw1');
-    pwEyeToggle('cpw2');
-
 }
 
 // execute the change password request
-function changePassword(field) {
+function changePassword() {
     var pw = document.getElementById('newPw').value;
     if (pw.length < 8) {
         show_message("New is too short.  It must be at least 8 characters.", 'warn', 'cp_result_message');
@@ -59,22 +65,31 @@ function changePassword(field) {
     clear_message('cp_result_message');
     var param = $('#changepw').serialize();
     if (typeof pwtype === 'undefined') {
-        param += '&pwType=' + config['loginType'];
+        param += '&pwType=' + config.loginType;
     } else {
         param += '&pwType=' + pwtype;
     }
     console.log(param);
+    let message_block = pwtype == 'a' ? 'result_message' : 'cp_result_message';
     $.ajax({
         url: 'scripts/changePassword.php',
         data: param,
         method: 'POST',
         success: function(data, textstatus, jqXHR) {
-            if(data['status'] == 'error') {
-                show_message(data['message'], 'error', 'cp_result_message');
+            if(data.status == 'error') {
+                show_message(data.message, 'error', message_block);
             } else {
-                if (config['debug'] & 1)
+                if (config.debug & 1)
                     console.log(data);
-                location.reload();
+                if (pwtype != 'a')
+                    location.reload();
+                else {
+                    let msg = data.status;
+                    let url =
+                    msg += '<br/><span style="background-color: white; color: black;">Click <a href="' +
+                        location.protocol + '//' + location.host + '">here</a> to login using your new password.&nbsp;</span>';
+                    show_message(msg, 'success', message_block);
+                }
             }
         }
     });
@@ -82,18 +97,31 @@ function changePassword(field) {
 
 // request a reset password link via email
 function resetPassword() {
-    var email = prompt('What is your login email?');
+    var email = prompt('What is your login email?\nA password reset link will be sent to that email address.');
+    if (email == null)
+        return;
+
+    if (email == '') {
+        show_message("No email address was entered, a reset link has not been sent.", 'error');
+        return;
+    }
+
+    if (!validateAddress(email)) {
+        show_message("'" + email + "' is not a valid email address.", 'error');
+        return;
+    }
+
     $.ajax({
         method: 'POST',
         url: 'scripts/resetPassword.php',
-        data: {'login' : email, 'type': config['portalType'], 'name': config['portalName']},
+        data: {'login' : email, 'type': config.portalType, 'name': config.portalName},
         success: function(data, textStatus, jqXhr) {
-            if(data['error']) {
-                show_message(data['error'], 'error');
+            if(data.error) {
+                show_message(data.error, 'error');
             } else {
-                if (config['debug'] & 1)
+                if (config.debug & 1)
                     console.log(data);
-                show_message(data['message'], 'success');
+                show_message(data.message, 'success');
             }
         }
     });
@@ -104,25 +132,25 @@ function changePasswordOpen() {
     if (changePasswordTitleDiv == null)
         changePasswordTitleDiv = document.getElementById('changePasswordTitle');
 
-    if (config['loginType'] == 'c')
-        changePasswordTitleDiv.innerHTML = "Change " + config['portalName'] + " Portal Contact Password";
+    if (config.loginType == 'c')
+        changePasswordTitleDiv.innerHTML = "Change " + config.portalName + " Portal Contact Password";
     else
-        changePasswordTitleDiv.innerHTML = "Change " + config['portalName'] + " Portal Account Password";
+        changePasswordTitleDiv.innerHTML = "Change " + config.portalName + " Portal Account Password";
 
     change_password.show();
 }
 
 // change to the other portal
 function switchPortal() {
-    window.location = "/switchPortal.php?site=" + encodeURIComponent(config['portalName'] == 'Artist' ? config['vendorsite'] : config['artistsite']);
+    window.location = "/switchPortal.php?site=" + encodeURIComponent(config.portalName == 'Artist' ? config.vendorsite : config.artistsite);
 }
 
 // request permission to apply for space in a region that requires 'permission' to apply
 function requestPermission(id, tag) {
     var data = {
         'regionYearId': id,
-        'type': config['portalType'],
-        'name': config['portalName'],
+        'type': config.portalType,
+        'name': config.portalName,
         'tag' : tag
     }
     $.ajax({
@@ -130,14 +158,14 @@ function requestPermission(id, tag) {
         url: 'scripts/requestPermission.php',
         data: data,
         success: function(data, textStatus, jqXhr) {
-            if(data['error']) {
-                show_message(data['error'], 'error');
+            if(data.error) {
+                show_message(data.error, 'error');
             } else {
-                if (config['debug'] & 1)
+                if (config.debug & 1)
                     console.log(data);
                 // now redraw that section of the screen to show permission requested
-                document.getElementById(tag).innerHTML = data['block'];
-                show_message(data['message'], 'success');
+                document.getElementById(tag).innerHTML = data.block;
+                show_message(data.message, 'success');
             }
         }
     });
@@ -152,3 +180,24 @@ function loginWithPasskey() {
     passkeyRequest('scripts/passkeyActions.php', 'index.php', 'vendor', document.getElementById('loginPasskeyBtn'));
 }
 
+// newPasskey - request generate passkey on device and store same in database
+function newPasskey() {
+    if (newPasskeyBtn)
+        newPasskeyBtn.disabled = true;
+
+    var displayName = config.exhibitorName;
+
+    if (displayName.length == 0) {
+        displayName = config.artistName;
+    }
+
+    createPasskeyRegistration('scripts/passkeyActions.php', displayName.trim(), config.email, 'vendor');
+    if (newPasskeyBtn)
+        newPasskeyBtn.disabled = false;
+    return;
+}
+
+// delete passkey - clicked the delete button
+function deletePasskey(id) {
+    deletePasskeyEntry('scripts/passkeyActions.php', id, config.email, 'vendor');
+}

@@ -94,6 +94,15 @@ $dayQ->free();
             </div>
         </div>
         <div class='row'>
+            <div class='col-sm-5'>
+                <div class='form-floating mb-3'>
+                    <input type='text' name='badgeNameL2' id='badge_name' placeholder='Badge Line 2 (optional)' maxlength=32 size=36 class='form-control'
+                           required/>
+                    <label for='badge_name'>Badge Line 2: (optional)</label>
+                </div>
+            </div>
+        </div>
+        <div class='row'>
             <div class='col-sm-4'>
                 <div class='form-floating mb-3'>
                     <input type='number' name='badge_id' id='badge_id' placeholder='Badge ID' min='1' max='99999999' class='no-spinners form-control' required/>

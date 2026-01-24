@@ -26,6 +26,7 @@ class Membership {
     #email1Field = null;
     #phoneField = null;
     #badgenameField = null;
+    #badgeNameL2Field = null;
     #uspsDiv= null;
     #lastVerified = null;
 
@@ -132,7 +133,8 @@ class Membership {
         this.#countryField = document.getElementById("country");
         this.#email1Field = document.getElementById("email1");
         this.#phoneField = document.getElementById("phone");
-        this.#badgenameField = document.getElementById("badgename");
+        this.#badgenameField = document.getElementById("badge_name");
+        this.#badgeNameL2Field = document.getElementById("badgeNameL2");
         this.#uspsDiv = document.getElementById("uspsblock");
 
         this.#saveCartBtn = document.getElementById("saveCartBtn");
@@ -395,6 +397,7 @@ class Membership {
             this.#email1Field.innerHTML = email_addr;
             this.#phoneField.value = this.#personInfo.phone;
             this.#badgenameField.value = this.#personInfo.badge_name;
+            this.#badgeNameL2Field.value = this.#personInfo.badgeNameL2;
             this.#auHeader.innerHTML = 'Purchase/Upgrade memberships or other items for ' + this.#personInfo.fullName;
             this.#epHeader.innerHTML = 'Verifying personal information for ' + this.#personInfo.fullName + ' (' + email_addr + ')';
             if (this.#personInfo.lastVerified != null) {
@@ -483,7 +486,7 @@ class Membership {
             var age = ageList[row];
             if (age.ageType == 'all')
                 continue;
-            html += '<div class="col-sm-auto"><button id="ageBtn-' + age.ageType + '" class="btn btn-sm ' +
+            html += '<div class="col-sm-auto"><button id="ageBtn-' + age.ageType + '" class="btn btn-sm h-100 ' +
                 ((this.#currentAge == age.ageType || this.#memberAge == age.ageType) ? 'btn-primary' : color) + ' mt-1 mb-1" onclick="membership.ageSelect(' + "'" + age.ageType + "'" + ')">' +
                 age.label + ' (' + age.shortname + ')' +
                 '</button></div>' + "\n";
@@ -516,7 +519,7 @@ class Membership {
                 if (memCategories[mem.memCategory].variablePrice != 'Y') {
                     memLabel += ' (' + mem.price + ')';
                 }
-                html += '<div class="col-sm-auto mt-1 mb-1"><button id="memBtn-' + mem.id + '" class="btn btn-sm btn-primary"' +
+                html += '<div class="col-sm-2 mt-1 mb-1"><button id="memBtn-' + mem.id + '" class="btn btn-sm btn-primary h-100 w-100"' +
                     ' onclick="membership.membershipAdd(' + "'" + mem.id + "'" + ')">' +
                     (mem.conid != config.conid ? mem.conid + ' ' : '') + memLabel + '</button></div>' + "\n";
                 }
@@ -634,7 +637,7 @@ class Membership {
 
         // validation
         if (person.country == 'USA') {
-            message += "<br/>Note: If any of the address fields Address, City, State or Zip are used and the country is United States, " +
+            message += "<br/>Note: If any of the address fields Address, City, State/Prov or Zip/PC are used and the country is United States, " +
                 "then the Address, City, State, and Zip fields must all be entered and the state field must be a valid USPS two character state code.";
         }
 
@@ -684,7 +687,7 @@ class Membership {
                 $('#state').addClass('need');
             } else {
                 if (person.country == 'USA') {
-                    if (person.state.length != 2) {
+                    if (person.state.trim().length != 2) {
                         valid = false;
                         $('#state').addClass('need');
                     } else {

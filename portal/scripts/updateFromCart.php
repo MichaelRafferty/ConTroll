@@ -19,6 +19,15 @@ $conf = get_conf('con');
 $log = get_conf('log');
 $portal_conf = get_conf('portal');
 
+$cc = get_conf('cc');
+if (array_key_exists('location_portal', $cc)) {
+    $ccLocation = $cc['location_portal'];
+} else if (array_key_exists('location', $cc)) {
+    $ccLocation = $cc['location'];
+} else {
+    $ccLocation = 'Unknown';
+}
+
 $response['conid'] = $conid;
 $response['logmessage'] = '';
 $response['message'] = '';
@@ -142,7 +151,7 @@ if ($personId < 0) {
         // the exact match check for this new person will prevent adding newperson for existing people
         // see if there is an exact match
         $exactMsql = <<<EOF
-SELECT id
+SELECT id, managedBy
 FROM perinfo p
 WHERE
 	REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
@@ -159,6 +168,8 @@ WHERE
 		REGEXP_REPLACE(TRIM(LOWER(p.phone)), ' +', ' ')
     AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
 		REGEXP_REPLACE(TRIM(LOWER(p.badge_name)), ' +', ' ')
+    AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
+		REGEXP_REPLACE(TRIM(LOWER(p.badgeNameL2)), ' +', ' ')
     AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
 		REGEXP_REPLACE(TRIM(LOWER(p.legalName)), ' +', ' ')
     AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
@@ -183,7 +194,8 @@ EOF;
             trim($person['suffix']),
             trim($newEmail),
             trim($person['phone']),
-            trim($person['badgename']),
+            trim($person['badge_name']),
+            trim($person['badgeNameL2']),
             trim($person['legalName']),
             trim($person['pronouns']),
             trim($person['addr']),
@@ -193,22 +205,24 @@ EOF;
             trim($person['zip']),
             trim($person['country']),
         );
-        $res = dbSafeQuery($exactMsql, 'sssssssssssssss', $value_arr);
+        $res = dbSafeQuery($exactMsql, 'ssssssssssssssss', $value_arr);
         if ($res !== false) {
             if ($res->num_rows > 0) {
                 $match = $res->fetch_assoc();
-                $matchId = $match['id'];
-                $personType = 'p';
-                $personId = $matchId;
+                if ($match['managedBy'] == null) { // not already managed by someone else
+                    $matchId = $match['id'];
+                    $personType = 'p';
+                    $personId = $matchId;
 
-                // now update the perid to set the managed by flag
-                $updPQ = <<<EOS
+                    // now update the perid to set the managed by flag
+                    $updPQ = <<<EOS
 UPDATE perinfo
 SET managedBy = ?, managedReason = 'Exact Match'
 WHERE id = ?;
 EOS;
-                $upd = dbSafeCmd($updPQ, 'ii', array ($loginId, $matchId));
-                logWrite(array ('con' => $con['name'], 'trans' => $transId, 'action' => 'Exact Match for management', 'person' => $person, 'managedBy' => $loginId));
+                    $upd = dbSafeCmd($updPQ, 'ii', array ($loginId, $matchId));
+                    logWrite(array ('con' => $con['name'], 'trans' => $transId, 'action' => 'Exact Match for management', 'person' => $person, 'managedBy' => $loginId));
+                }
             }
         }
 
@@ -216,12 +230,12 @@ EOS;
             // no match found
             // insert into newPerson
             $iQ = <<<EOS
-INSERT INTO newperson (transid, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, legalName, pronouns, 
+INSERT INTO newperson (transid, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, badgeNameL2, legalName, pronouns, 
                        address, addr_2, city, state, zip, country, managedBy, managedByNew, managedReason, updatedBy, lastVerified)
 VALUES (?, IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''),
-    IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), ?, ?, 'creation', ?, NOW());
+    IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), ?, ?, 'creation', ?, NOW());
 EOS;
-            $typeStr = 'isssssssssssssssiii';
+            $typeStr = 'issssssssssssssssiii';
             $valArray = array (
                 $transId,
                 trim($person['lname']),
@@ -230,7 +244,8 @@ EOS;
                 trim($person['suffix']),
                 trim($newEmail),
                 trim($person['phone']),
-                trim($person['badgename']),
+                trim($person['badge_name']),
+                trim($person['badgeNameL2']),
                 trim($person['legalName']),
                 trim($person['pronouns']),
                 trim($person['addr']),
@@ -269,14 +284,14 @@ if ($newPerid == null) {
     if ($personType == 'p') {
         $updPersonQ = <<<EOS
 UPDATE perinfo
-SET last_name = ?, middle_name = ?, first_name = ?, suffix = ?, phone = ?, badge_name = ?, legalName = ?, pronouns = ?,
+SET last_name = ?, middle_name = ?, first_name = ?, suffix = ?, phone = ?, badge_name = ?, badgeNameL2 = ?, legalName = ?, pronouns = ?,
     address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?, updatedBy = ?, lastVerified = NOW()
 WHERE id = ?;
 EOS;
     } else {
         $updPersonQ = <<<EOS
 UPDATE newperson
-SET last_name = ?, middle_name = ?, first_name = ?, suffix = ?, phone = ?, badge_name = ?, legalName = ?, pronouns = ?,
+SET last_name = ?, middle_name = ?, first_name = ?, suffix = ?, phone = ?, badge_name = ?, badgeNameL2 = ?, legalName = ?, pronouns = ?,
     address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?, updatedBy = ?, lastVerified = NOW()
 WHERE id = ?;
 EOS;
@@ -285,7 +300,7 @@ EOS;
     // for from the form which means a correction was passed.  If fname exists, it's from the form, handle that.
     // if first_name, its from the database, so do not update the database.
     if (array_key_exists('fname', $person)) {
-        $fields = ['lname', 'mname', 'fname', 'suffix', 'phone', 'badgename', 'legalName', 'pronouns', 'addr', 'addr2', 'city',
+        $fields = ['lname', 'mname', 'fname', 'suffix', 'phone', 'badge_name', 'badgeNameL2', 'legalName', 'pronouns', 'addr', 'addr2', 'city',
                    'state', 'zip', 'country'];
         foreach ($fields as $field) {
             if ((!array_key_exists($field, $person)) || $person[$field] == null) {
@@ -303,7 +318,8 @@ EOS;
             trim($person['fname']),
             trim($person['suffix']),
             trim($person['phone']),
-            trim($person['badgename']),
+            trim($person['badge_name']),
+            trim($person['badgeNameL2']),
             trim($person['legalName']),
             trim($person['pronouns']),
             trim($person['addr']),
@@ -316,7 +332,7 @@ EOS;
             $personId
         );
 
-        $rows_upd = dbSafeCmd($updPersonQ, 'ssssssssssssssii', $value_arr);
+        $rows_upd = dbSafeCmd($updPersonQ, 'sssssssssssssssii', $value_arr);
         if ($rows_upd === false) {
             ajaxSuccess(array ('status' => 'error', 'message' => 'Error updating person'));
             exit();
@@ -393,18 +409,22 @@ EOS;
             // insert the new reg record into the cart
             $iQ = <<<EOS
 INSERT INTO reg(conid, perid, newperid, create_trans, complete_trans, price, status, create_user, memId)
-values (?, ?, ?, ?, ?, ?, ?, ?, ?);
+SELECT ?, IFNULL(p.id, n.perid) AS perid, n.id AS newperid, ?, ?, ?, ?, ?, m.id
+FROM memList m
+LEFT OUTER JOIN perinfo p ON p.id = ?
+LEFT OUTER JOIN newperson n ON n.id = ?
+WHERE m.id = ?;
 EOS;
-            $typeStr = 'iiiiidsii';
+            $typeStr = 'iiidsiiii';
             $valArray = array(
                 $cartRow['conid'],
-                $personType == 'p' ? $personId : null,
-                $personType == 'n' ? $personId : null,
                 $transId,
                 $cartRow['price'] > 0 ? null : $transId,
                 $cartRow['price'],
                 $cartRow['price'] > 0 ? 'unpaid' : 'paid',
                 $loginId,
+                $personType == 'p' ? $personId : -1,
+                $personType == 'n' ? $personId : -1,
                 $cartRow['memId']
             );
             $new_cartid = dbSafeInsert($iQ, $typeStr, $valArray);
@@ -421,7 +441,7 @@ EOS;
     if ($updateTransPrice) {
         // we changed a reg for this transaction, cancel any pending order and recompute the price portion of the record
         if ($orderId != null) {
-            cc_cancelOrder('portal', $orderId);
+            cc_cancelOrder('portal', $orderId, true, $ccLocation);
             $orderId = null;
             $orderDate = null;
         }

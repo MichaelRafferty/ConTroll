@@ -52,7 +52,7 @@ catch (Exception $e) {
 }
 
 if (sizeof($art) <= 0) {
-    ajaxError('No art to release');
+    ajaxError('No quicksales to release');
     return;
 }
 

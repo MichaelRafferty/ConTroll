@@ -6,6 +6,7 @@ require_once('../../lib/paymentPlans.php');
 require_once('../../lib/purchase.php');
 require_once('../../lib/coupon.php');
 require_once('../../lib/log.php');
+require_once('../../lib/tax.php');
 require_once('../../lib/cc__load_methods.php');
 require_once('../../lib/email__load_methods.php');
 
@@ -22,7 +23,6 @@ $conf = get_conf('con');
 $portal_conf = get_conf('portal');
 $ini = get_conf('reg');
 $log = get_conf('log');
-$ccauth = get_conf('cc');
 load_cc_procs();
 load_email_procs();
 logInit($log['reg']);
@@ -50,8 +50,15 @@ if ($resolveUpdates != null && array_key_exists('logout', $resolveUpdates) && $r
     ajaxSuccess($response);
     return;
 }
-
+// must use cc here, as getConfValue will look in global and that must not happen here
 $cc = get_conf('cc');
+if (array_key_exists('location_portal', $cc)) {
+    $ccLocation = $cc['location_portal'];
+} else if (array_key_exists('location', $cc)) {
+    $ccLocation = $cc['location'];
+} else {
+    $ccLocation = 'Unknown';
+}
 
 $loginId = getSessionVar('id');
 $loginType = getSessionVar('idType');
@@ -138,7 +145,6 @@ if (array_key_exists('planRecast', $_POST)) {
 }
 
 // all the records are in the database, so lets charge the credit card...
-
 $transId = getSessionVar('transId');
 if ($transId == null) {
     $transId = getNewTransaction($conid, $loginType == 'p' ? $loginId : null, $loginType == 'n' ? $loginId : null);
@@ -177,35 +183,80 @@ if ($order != null) {
 } else
     $customerId = $conf['id'] . "-$loginType-$loginId";
 
-$results = array(
-    'source' => $source,
-    'nonce' => $nonce,
-    'totalAmt' => $amount,
-    'orderId' => $orderId,
-    'customerId' => $customerId,
-    'locationId' => $cc['location'],
-    'referenceId' => $referenceId,
-    'transid' => $transId,
-    'preTaxAmt' => $preTaxAmount,
-    'taxAmt' => $taxAmount,
-    'total' => $amount,
-);
+if ($totalAmountDue > 0) {
+    $results = array (
+        'source' => $source,
+        'nonce' => $nonce,
+        'totalAmt' => $amount,
+        'orderId' => $orderId,
+        'customerId' => $customerId,
+        'locationId' => $ccLocation,
+        'referenceId' => $referenceId,
+        'transid' => $transId,
+        'preTaxAmt' => $preTaxAmount,
+        'taxAmt' => $taxAmount,
+        'total' => $amount,
+    );
 
 // call the credit card processor to make the payment
 
-$rtn = cc_payOrder($results, $buyer, true);
+    $rtn = cc_payOrder($results, $buyer, true);
 
 //log payment
-logWrite(array('con' => $condata['name'], 'trans' => $transId, 'ccrtn' => $rtn));
-$num_fields = sizeof($rtn['txnfields']);
-$val = array();
-for ($i = 0; $i < $num_fields; $i++) {
-    $val[$i] = '?';
+    logWrite(array ('con' => $condata['name'], 'trans' => $transId, 'ccrtn' => $rtn));
+
+    $approved_amt = $rtn['amount'];
+    $type = $rtn['paymentType'];
+    $preTaxAmt = $rtn['preTaxAmt'];
+    $taxAmt = $rtn['taxAmt'];
+    $paymentId = $rtn['paymentId'];
+    $receiptUrl = $rtn['url'];
+    $receiptNumber = $rtn['rid'];
+    $paymentType = $rtn['paymentType'];
+    $auth = $rtn['auth'];
+    $payment = $rtn['payment'];
+    $last4 = $rtn['last4'];
+    $txTime = $rtn['txTime'];
+    $status = $rtn['status'];
+    $transId = $rtn['transId'];
+    $category = $rtn['category'];
+    $description = $rtn['description'];
+    $source = $rtn['source'];
+    $nonce = $rtn['nonce'];
+    if ($nonce == 'EXTERNAL')
+        $nonceCode = $results['externalType'];
+    else
+        $nonceCode = $nonce;
+
+// now the main payment
+    if ($taxAmt > 0) {
+        $taxes = $order['taxes'];
+        [$taxFields, $taxSql, $taxStr, $taxValues] = buildTaxInsert($taxes);
+        if ($taxFields != '')
+            $taxFields = ", $taxFields";
+        if ($taxSql != '')
+            $taxSql = ", $taxSql";
+    } else {
+        $taxFields = '';
+        $taxSql = '';
+        $taxStr = '';
+        $taxValues = [];
+    }
+
+    $txnQ = <<<EOS
+INSERT INTO payments(transid, type,category, description, source, pretax, tax, amount, time, cc_approval_code, cashier, 
+    cc, nonce, cc_txn_id, txn_time, receipt_url, receipt_id, userPerid, status, ccPaymentId $taxFields)
+VALUES (?,?,'reg',?,'cashier',?,?,?,now(),?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? $taxSql);
+EOS;
+    $typestr = 'issdddsissssssiss' . $taxStr;
+    $paramarray = array ($transId, $paymentType, $description, $preTaxAmt, $taxAmt, $approved_amt, $auth, $loginId,
+        $last4, $nonceCode, $paymentId, $txTime, $receiptUrl, $receiptNumber, $loginId, $status, $paymentId);
+    $txnid = dbSafeInsert($txnQ, $typestr, array_merge($paramarray, $taxValues));
+    $approved_amt = $rtn['amount'];
+} else {
+    $approved_amt = 0;
+    $taxes = [];
 }
-$txnQ = 'INSERT INTO payments(time,' . implode(',', $rtn['txnfields']) . ') VALUES(current_time(),' . implode(',', $val) . ');';
-$txnT = implode('', $rtn['tnxtypes']);
-$txnid = dbSafeInsert($txnQ, $txnT, $rtn['tnxdata']);
-$approved_amt = $rtn['amount'];
 
 if ($webCouponDiscount > 0) {
     // Insert the payment record for the coupon
@@ -307,7 +358,7 @@ EOS;
 }
 
 $txnUpdate = 'UPDATE transaction SET ';
-if ($approved_amt == $totalAmountDue) {
+if (round($approved_amt,2) == round($totalAmountDue,2)) {
     $txnUpdate .= 'complete_date=current_timestamp(), ';
 }
 
@@ -332,7 +383,7 @@ if ($amount > 0 && $planPayment != 1) {
 }
 if ($totalAmountDue > 0) {
     $body = getEmailBody($transId, $info, $badges, $coupon, $planPayment == 1 ? $existingPlan : $planRec, $rtn['rid'], $rtn['url'],
-        $rtn['amount'], $rtn['preTaxAmt'], $rtn['taxAmt'], $planPayment );
+        $rtn['amount'], $rtn['preTaxAmt'], $rtn['taxAmt'], $taxes, $planPayment );
 
 } else {
     $body = getNoChargeEmailBody($results, $info, $badges);
@@ -356,13 +407,9 @@ if ($planRecast == 1) {
     }
 }
 
-$regconfirmcc = null;
-if (array_key_exists('regconfirmcc', $conf)) {
-    $regconfirmcc = trim($conf['regconfirmcc']);
-    if ($regconfirmcc == '')
-        $regconfirmcc = null;
-}
-$return_arr = send_email($conf['regadminemail'], trim($info['email_addr']), /* cc */ $regconfirmcc, $condata['label'] . ' Registration Portal Payment Receipt', $body, /* htmlbody */ null);
+$return_arr = send_email($conf['regadminemail'],
+    trim($info['email_addr']), /* cc */ getConfValue('con', 'regconfirmcc', null),
+    /* subject */ $condata['label'] . ' Registration Portal Payment Receipt', $body, /* htmlbody */ null);
 
 if (array_key_exists('error_code', $return_arr)) {
     $error_code = $return_arr['error_code'];
@@ -429,11 +476,29 @@ SET status = 'upgraded'
 WHERE conid = ? AND newperid = ? AND memId = ? AND status = 'paid';
 EOS;
 
-    $regU = 'UPDATE reg SET paid=paid + ?, couponDiscount = ?, complete_trans = ?, status = ?, planId = ? WHERE id=?;';
+    $regU = <<<EOS
+UPDATE reg 
+SET paid=paid + ?, couponDiscount = ?, complete_trans = ?, status = ?, planId = ? 
+WHERE id=?;
+EOS;
+
+    $regPerid = <<<EOS
+UPDATE reg r
+JOIN newperson n ON n.id = r.newperid
+SET r.perid = n.perid
+WHERE n.perid = ? AND r.perid IS NULL;
+EOS;
+
+    // compute total owed and if needed update perid in reg
     foreach ($badges as $badge) {
         if (array_key_exists('inPlan', $badge) && $badge['inPlan'] == ($planOnly ? true : false)) {
             $count++;
             $totalOwed += $badge['price'] - ($badge['paid'] + $badge['couponDiscount']);
+        }
+        if (array_key_exists('newperid', $badge) && $badge['newperid'] != null) {
+            if (!array_key_exists('perid', $badge) || $badge['perid'] == null) {
+                dbSafeCmd($regPerid, 'i', array($badge['newperid']));
+            }
         }
     }
     if ($totalOwed > 0) {

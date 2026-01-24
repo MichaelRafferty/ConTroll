@@ -44,12 +44,12 @@ window.onload = function initpage() {
         url: "scripts/volRollover_loadInitialData.php",
         data: postData,
         success: function (data, textstatus, jqxhr) {
-            if (data['error'] !== undefined) {
-                show_message(data['error'], 'error');
+            if (data.error !== undefined) {
+                show_message(data.error, 'error');
                 return;
             }
-            if (data['message'] !== undefined) {
-                show_message(data['message'], 'success');
+            if (data.message !== undefined) {
+                show_message(data.message, 'success');
             }
             loadInitialData(data);
         },
@@ -61,12 +61,12 @@ window.onload = function initpage() {
 function loadInitialData(data) {
     // map the memIds and labels for the pre-coded memberships.  Doing it now because it depends on what the datbase sends.
     // tabls
-    conlabel =  data['label'];
-    conid = data['conid'];
-    user_id = data['user_id']
-    rollover_memId = data['rollover_memId'];
-    rollover_label = data['rollover_label'];
-    rollover_shortname = data['rollover_shortname'];
+    conlabel =  data.label;
+    conid = data.conid;
+    user_id = data.user_id
+    rollover_memId = data.rollover_memId;
+    rollover_label = data.rollover_label;
+    rollover_shortname = data.rollover_shortname;
 
     // set up initial values
     result_perinfo = [];
@@ -100,32 +100,23 @@ function start_over(reset_all) {
     draw_list();
 }
 
-// badge_name_default: build a default badge name if its empty
-function badge_name_default(badge_name, first_name, last_name) {
-    if (badge_name === undefined | badge_name === null || badge_name === '') {
-        var default_name = (first_name + ' ' + last_name).trim();
-        return '<i>' + default_name.replace(/ +/, ' ') + '</i>';
-    }
-    return badge_name;
-}
-
 // show the full perinfo record as a hover in the table
 function build_record_hover(e, cell, onRendered) {
     var data = cell.getData();
     //console.log(data);
-    var hover_text = (data['first_name'] + ' ' + data['middle_name'] + ' ' + data['last_name']).trim() + '<br/>' +
-        data['address_1'] + '<br/>';
-    if (data['address_2'] != '') {
-        hover_text += data['address_2'] + '<br/>';
+    var hover_text = (data.first_name + ' ' + data.middle_name + ' ' + data.last_name).trim() + '<br/>' +
+        data.address_1 + '<br/>';
+    if (data.address_2 != '') {
+        hover_text += data.address_2 + '<br/>';
     }
-    hover_text += data['city'] + ', ' + data['state'] + ' ' + data['postal_code'] + '<br/>';
-    if (data['country'] != '' && data['country'] != 'USA') {
-        hover_text += data['country'] + '<br/>';
+    hover_text += data.city + ', ' + data.state + ' ' + data.postal_code + '<br/>';
+    if (data.country != '' && data.country != 'USA') {
+        hover_text += data.country + '<br/>';
     }
-    hover_text += 'Badge Name: ' + badge_name_default(data['badge_name'], data['first_name'], data['last_name']) + '<br/>' +
-        'Email: ' + data['email_addr'] + '<br/>' + 'Phone: ' + data['phone'] + '<br/>' +
-        'Active:' + data['active'] + ' Contact?:' + data['contact_ok'] + ' Share?:' + data['share_reg_ok'] + '<br/>' +
-        'Membership: ' + data['label'] + '<br/>';
+    hover_text += 'Badge Name: ' + badgeNameDefault(data.badge_name, data.badgeNameL2, data.first_name, data.last_name) + '<br/>' +
+        'Email: ' + data.email_addr + '<br/>' + 'Phone: ' + data.phone + '<br/>' +
+        'Active:' + data.active + ' Contact?:' + data.contact_ok + ' Share?:' + data.share_reg_ok + '<br/>' +
+        'Membership: ' + data.label + '<br/>';
 
     return hover_text;
 }
@@ -134,11 +125,11 @@ function build_record_hover(e, cell, onRendered) {
 function rollover_member(index) {
     var rt = result_perinfo[index];
 
-    if (rt['banned'] == 'Y') {
-        alert("Please ask " + (result_perinfo[index]['first_name'] + ' ' + rt[index]['last_name']).trim() +" to talk to the Registration Administrator, you cannot roll them over at this time.")
+    if (rt.banned == 'Y') {
+        alert("Please ask " + (result_perinfo[index].first_name + ' ' + rt[index].last_name).trim() +" to talk to the Registration Administrator, you cannot roll them over at this time.")
         return;
     }
-    if (!(rt['roll_regid'] === undefined || rt['roll_regid'] === null)) {
+    if (!(rt.roll_regid === undefined || rt.roll_regid === null)) {
         show_message("This member already has a valid membership in the next convention", "error");
         return;
     }
@@ -157,12 +148,12 @@ function rollover_member(index) {
         url: "scripts/volRollover_rolloverMember.php",
         data: postData,
         success: function (data, textstatus, jqxhr) {
-            if (data['error'] !== undefined) {
-                show_message(data['error'], 'error');
+            if (data.error !== undefined) {
+                show_message(data.error, 'error');
                 return;
             }
-            if (data['message'] !== undefined) {
-                show_message(data['message'], 'success');
+            if (data.message !== undefined) {
+                show_message(data.message, 'success');
             }
             member_rolled_over(data);
         },
@@ -173,11 +164,11 @@ function rollover_member(index) {
 // member_rolled_over:
 //  database entry added, add to table
 function member_rolled_over(data) {
-    var index = data['index'];
+    var index = data.index;
 
-    result_perinfo[index]['roll_regid'] = data['member']['roll_regid'];
-    result_perinfo[index]['shortname'] = data['member']['shortname'];
-    result_perinfo[index]['roll_tid'] = data['member']['roll_tid'];
+    result_perinfo[index].roll_regid = data.member.roll_regid;
+    result_perinfo[index].shortname = data.member.shortname;
+    result_perinfo[index].roll_tid = data.member.roll_tid;
     list_perinfo.push(make_copy(result_perinfo[index]));
     if (find_result_table != null)
         find_result_table.replaceData(result_perinfo);
@@ -190,23 +181,23 @@ function member_rolled_over(data) {
 // format all of the memberships for one record in the cart
 function draw_list_row(rownum) {
     var row = list_perinfo[rownum];
-    var membername = (row['first_name'] + ' ' + row['middle_name'] + ' ' + row['last_name']).trim();
-    if (row['suffix'] != '') {
-        membername += ', ' + row['suffix'];
+    var membername = (row.first_name + ' ' + row.middle_name + ' ' + row.last_name).trim();
+    if (row.suffix != '') {
+        membername += ', ' + row.suffix;
     }
 
-    var perid = row['perid'];
+    var perid = row.perid;
     var rowhtml = `<div class="row">
         <div class="col-sm-8">Member: ` + membername + `</div>
-        <div class="col-sm-2 text-end">` + row['roll_tid'] + `</div>
-        <div class="col-sm-2 text-end">` + row['roll_regid'] + `</div>
+        <div class="col-sm-2 text-end">` + row.roll_tid + `</div>
+        <div class="col-sm-2 text-end">` + row.roll_regid + `</div>
     </div>`;
 
     // second row - badge name
     rowhtml += `
     <div class="row mb-2">
         <div class="col-sm-3 p-0">Badge Name:</div>
-        <div class="col-sm-5 p-0">` + badge_name_default(row['badge_name'], row['first_name'], row['last_name']) + `</div>
+        <div class="col-sm-5 p-0">` + badgeNameDefault(row.badge_name, row.badgeNameL2, row.first_name, row.last_name) + `</div>
     </div>`;
 
     return rowhtml;
@@ -242,80 +233,84 @@ function draw_record() {
         <div class="col-sm-3">`;
     html += `</div>
         <div class="col-sm-5">`;
-    if (data['roll_regid'] === undefined || data['roll_regid'] === null) {
-        if (data['banned'] == 'Y') {
+    if (data.roll_regid === undefined || data.roll_regid === null) {
+        if (data.banned == 'Y') {
             html += `
             <button class="btn btn-danger btn-sm" id="add_btn_1" onclick="rollover_member(0);">B</button>`;
-        } else if (data['memCategory'] == 'eligible') {
+        } else if (data.memCategory == 'eligible') {
             html += `
             <button class="btn btn-success btn-sm" id="add_btn_1" onclick="rollover_member(0);">Rollover</button>`;
         } else {
             html += `
-            <button class="btn btn-danger btn-sm disabled" id="add_btn_1" onclick="javascript:void(0)">Not Eliglble: ` + data['memCategory'] + `</button>`;
+            <button class="btn btn-danger btn-sm disabled" id="add_btn_1" onclick="javascript:void(0)">Not Eliglble: ` + data.memCategory + `</button>`;
         }
     } else {
         html += `
-            <i>` + data['shortname'] + '</i>';
+            <i>` + data.shortname + '</i>';
     }
 
     html += `
             </div>
         </div>
         <div class="row">
+            <div class="col-sm-3">` + 'Perid:' + `</div>
+            <div class="col-sm-9">` + data.perid + `</div>
+        </div>
+        <div class="row">
             <div class="col-sm-3">` + 'Badge Name:' + `</div>
-            <div class="col-sm-9">` + badge_name_default(data['badge_name'], data['first_name'], data['last_name']) + `</div>
+            <div class="col-sm-9">` + badgeNameDefault(data.badge_name, data.badgeNameL2, data.first_name, data.last_name) + `</div>
         </div>
         <div class="row">
             <div class="col-sm-3">Name:</div>
             <div class="col-sm-9">` +
-            data['first_name'] + ' ' + data['middle_name'] + ' ' + data['last_name'] + `
+            data.first_name + ' ' + data.middle_name + ' ' + data.last_name + `
             </div>
         </div>  
         <div class="row">
             <div class="col-sm-3">Address:</div>
-            <div class="col-sm-9">` + data['address_1'] + `</div>
+            <div class="col-sm-9">` + data.address_1 + `</div>
         </div>
 `;
-    if (data['address_2'] != '') {
+    if (data.address_2 != '') {
         html += `
     <div class="row">
         <div class="col-sm-3"></div>
-        <div class="col-sm-9">` + data['address_2'] + `</div>
+        <div class="col-sm-9">` + data.address_2 + `</div>
     </div>
 `;
     }
     html += `
     <div class="row">
        <div class="col-sm-3"></div>
-       <div class="col-sm-9">` + data['city'] + ', ' + data['state'] + ' ' + data['postal_code'] + `</div>
+       <div class="col-sm-9">` + data.city + ', ' + data.state + ' ' + data.postal_code + `</div>
     </div>
 `;
-    if (data['country'] != '' && data['country'] != 'USA') {
+    if (data.country != '' && data.country != 'USA') {
         html += `
     <div class="row">
        <div class="col-sm-3"></div>
-       <div class="col-sm-9">` + data['country'] + `</div>
+       <div class="col-sm-9">` + data.country + `</div>
     </div>
 `;
     }
     html += `
     <div class="row">
        <div class="col-sm-3">Email Address:</div>
-       <div class="col-sm-9">` + data['email_addr'] + `</div>
+       <div class="col-sm-9">` + data.email_addr + `</div>
     </div>
     <div class="row">
        <div class="col-sm-3">Phone::</div>
-       <div class="col-sm-9">` + data['phone'] + `</div>
+       <div class="col-sm-9">` + data.phone + `</div>
     </div>
     <div class="row">
        <div class="col-sm-3"></div>
-       <div class="col-sm-auto">Active: ` + data['active'] + `</div>
-       <div class="col-sm-auto">Contact OK: ` + data['contact_ok'] + `</div>
-       <div class="col-sm-auto">Share Reg: ` + data['share_reg_ok'] + `</div>
+       <div class="col-sm-auto">Active: ` + data.active + `</div>
+       <div class="col-sm-auto">Contact OK: ` + data.contact_ok + `</div>
+       <div class="col-sm-auto">Share Reg: ` + data.share_reg_ok + `</div>
     </div>
     <div class="row">
        <div class="col-sm-3">Membership Type:</div>
-       <div class="col-sm-9">` + data['label'] + `</div>
+       <div class="col-sm-9">` + data.label + `</div>
     </div>
 </div>
 `;
@@ -328,22 +323,17 @@ function draw_record() {
 // filters for ones already in the cart, and statuses that should not be allowed to be added to the cart
 function addListIcon(cell, formatterParams, onRendered) { //plain text value
     var html = '';
-    var banned = cell.getRow().getData().banned;
-    var shortname = cell.getRow().getData().shortname;
-    var memCategory = cell.getRow().getData().memCategory;
-    if (banned == undefined) {
-        var tid = Number(cell.getRow().getData().tid);
-        html = '<button type="button" class="btn btn-sm btn-success p-0" onclick="add_unpaid(' + tid + ')">Pay</button > ';
-        return html;
-    }
+    var banned = cell.getData().banned;
+    var shortname = cell.getData().shortname;
+    var memCategory = cell.getData().memCategory;
     if (banned == 'Y') {
-        return '<button type="button" class="btn btn-sm btn-danger pt-0 pb-0" onclick="rollover_member(' +
-            cell.getRow().getData().index + ')">B</button>';
+        return '<button type="button" class="btn btn-sm btn-danger p-0 click="rollover_member(' +
+            cell.getData().index + ')">B</button>';
     } else if (memCategory != 'eligible') {
-        return '<button type="button" class="btn btn-sm btn-danger pt-0 pb-0 disabled" onclick="javascript:void(0)">Not Eligible (' + memCategory + ')</button>';
+        return '<button type="button" class="btn btn-sm btn-danger p-0 disabled" onclick="javascript:void(0)">Not Eligible<br/>(' + memCategory + ')</button>';
     } else if (shortname === undefined || shortname === null) {
         html = '<button type="button" class="btn btn-sm btn-success p-0" onclick="rollover_member(' +
-            cell.getRow().getData().index + ')">Rollover</button>';
+            cell.getData().index + ')">Rollover</button>';
         return html;
     }
     return shortname;
@@ -378,15 +368,15 @@ function find_record() {
         url: "scripts/volRollover_findRecord.php",
         data: postData,
         success: function (data, textstatus, jqxhr) {
-            if (data['error'] !== undefined) {
-                show_message(data['error'], 'error');
+            if (data.error !== undefined) {
+                show_message(data.error, 'error');
                 return;
             }
-            if (data['message'] !== undefined) {
-                show_message(data['message'], 'success');
+            if (data.message !== undefined) {
+                show_message(data.message, 'success');
             }
-            if (data['warn'] !== undefined) {
-                show_message(data['warn'], 'warn');
+            if (data.warn !== undefined) {
+                show_message(data.warn, 'warn');
             }
             found_record(data);
         },
@@ -394,16 +384,16 @@ function find_record() {
     });
 }
 
-// successful return from 2 AXAJ call - processes found records
+// successful return from 2 AJAX call - processes found records
 // unpaid: one record: put it in the cart and go to pay screen
 //      multiple records: show table of records with pay icons
 // normal:
 //      single row: display record
 //      multiple rows: display table of records with add/trans buttons
 function found_record(data) {
-    var find_type = data['find_type'];
-    result_perinfo = data['perinfo'];
-    name_search = data['name_search'];
+    var find_type = data.find_type;
+    result_perinfo = data.perinfo;
+    name_search = data.name_search;
 
     // string search, returning more than one row show tabulator table
     if (isNaN(name_search) && result_perinfo.length > 1)  {
@@ -416,18 +406,18 @@ function found_record(data) {
                 {column: "fullName", dir: "asc"},
             ],
             columns: [
-                {title: "Perid", field: "perid", maxWidth: 60, headerSort: false, },
+                {title: "Perid", field: "perid", maxWidth: 100, headerSort: false, },
                 {field: "index", visible: false, },
                 {title: "Name", field: "fullName", headerFilter: true, headerWordWrap: true, tooltip: build_record_hover,},
                 {field: "last_name", visible: false,},
                 {field: "first_name", visible: false,},
                 {field: "middle_name", visible: false,},
                 {field: "suffix", visible: false,},
-                {title: "Badge Name", field: "badge_name", headerFilter: true, headerWordWrap: true, tooltip: true,},
-                {title: "Zip", field: "postal_code", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 70, width: 70},
+                {title: "Badge Name", field: "badgename", headerFilter: true, headerWordWrap: true, tooltip: true, formatter: 'html', },
+                {title: "Zip", field: "postal_code", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 100, width: 100},
                 {title: "Email Address", field: "email_addr", headerFilter: true, headerWordWrap: true, tooltip: true,},
-                {title: "Reg", field: "label", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 80, width: 80,},
-                {title: "Rollover", width: 80, headerFilter: false, headerSort: false, formatter: addListIcon, formatterParams: {t:"result"},},
+                {title: "Reg", field: "label", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 100, width: 100,},
+                {title: "Rollover", width: 120, headerFilter: false, headerSort: false, formatter: addListIcon, formatterParams: {t:"result"},},
                 {field: "index", visible: false,},
             ],
         });

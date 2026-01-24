@@ -28,7 +28,17 @@ class PaymentPlans {
     #computedPlan = null;
     #computedOrig = null;
 
+// currency
+    #locale = 'en-us';
+    #currencyFmt = null;
+
     constructor() {
+        this.#locale = config.locale;
+        this.#currencyFmt = new Intl.NumberFormat(this.#locale, {
+            style: 'currency',
+            currency: config.currency,
+        });
+
         this.#matchingPlans = {};
         var id = document.getElementById('customizePlanModal');
         if (id) {
@@ -95,7 +105,7 @@ class PaymentPlans {
                     } else {
                         nonPlanAmt += Number(mem.price) - Number(mem.paid);
                         notInPlanItems += '<br/>' + mem.fullName + ', ' + mem.label + ', ' +
-                            (Number(mem.price) - (Number(mem.paid) + Number(mem.couponDiscount))).toFixed(2);
+                            this.#currencyFmt.format((Number(mem.price) - (Number(mem.paid) + Number(mem.couponDiscount))).toFixed(2));
                     }
                 }
             }
@@ -251,15 +261,15 @@ class PaymentPlans {
             }
             html += `
         </div>
-        <div class="col-sm-1" style='text-align: right;'>` + match.nonPlanAmt.toFixed(2) + `</div>
-        <div class="col-sm-1" style='text-align: right;'>` + match.planAmt.toFixed(2) + `</div>
-        <div class="col-sm-1" style='text-align: right;'>` + match.downPayment.toFixed(2) + `</div>
-        <div class="col-sm-1" style='text-align: right;'>` + match.dueToday.toFixed(2) + `</div>
-        <div class="col-sm-1" style='text-align: right;'>` + match.balanceDue.toFixed(2) + `</div>
+        <div class="col-sm-1" style='text-align: right;'>` + this.#currencyFmt.format(match.nonPlanAmt.toFixed(2)) + `</div>
+        <div class="col-sm-1" style='text-align: right;'>` + this.#currencyFmt.format(match.planAmt.toFixed(2)) + `</div>
+        <div class="col-sm-1" style='text-align: right;'>` + this.#currencyFmt.format(match.downPayment.toFixed(2)) + `</div>
+        <div class="col-sm-1" style='text-align: right;'>` + this.#currencyFmt.format(match.dueToday.toFixed(2)) + `</div>
+        <div class="col-sm-1" style='text-align: right;'>` + this.#currencyFmt.format(match.balanceDue.toFixed(2)) + `</div>
         <div class="col-sm-1" style='text-align: right;'>` + match.maxPayments + `</div>
         <div class="col-sm-1" style='text-align: right;'>` + match.daysBetween + `</div>
-        <div class="col-sm-1" style='text-align: right;'>` + match.paymentAmt.toFixed(2) + `</div>
-        <div class="col-sm-1" style='text-align: right;'>` + match.finalPaymentAmt.toFixed(2) + `</div>
+        <div class="col-sm-1" style='text-align: right;'>` + this.#currencyFmt.format(match.paymentAmt.toFixed(2)) + `</div>
+        <div class="col-sm-1" style='text-align: right;'>` + this.#currencyFmt.format(match.finalPaymentAmt.toFixed(2)) + `</div>
         <div class="col-sm-1">` + plan.payByDate + `</div>
     </div>
     <div class="row` + (match.notInPlanItems != '' ? '' : ' mb-3') + `">
@@ -357,15 +367,15 @@ class PaymentPlans {
     </div>
     <form id="customizePlanForm" class='form-floating' action='javascript:void(0);'>
     <div class="row">
-        <div class="col-sm-1" style='text-align: right;'>` + match.nonPlanAmt.toFixed(2) + `</div>
-        <div class="col-sm-1" style='text-align: right;'>` + match.planAmt.toFixed(2) + `</div>
+        <div class="col-sm-1" style='text-align: right;'>` + this.#currencyFmt.format(match.nonPlanAmt.toFixed(2)) + `</div>
+        <div class="col-sm-1" style='text-align: right;'>` + this.#currencyFmt.format(match.planAmt.toFixed(2)) + `</div>
         <div class="col-sm-1" style='text-align: right;'>
             <input type="number" class='no-spinners' inputmode="numeric" id="downPayment" name="downPayment" style="width: 8em;" placeholder="down payment" ` +
             'min="' + match.downPayment.toFixed(2) + '" max="' + match.planAmt.toFixed(2) + '" value="' + match.downPayment.toFixed(2) +
             `" onchange="paymentPlans.recompute('p');"/>
         </div>
-        <div class="col-sm-1" style='text-align: right;' id="dueToday">` + match.dueToday.toFixed(2) + `</div>
-        <div class="col-sm-1" style='text-align: right;' id="balanceDue">` + match.balanceDue.toFixed(2) + `</div>
+        <div class="col-sm-1" style='text-align: right;' id="dueToday">` + this.#currencyFmt.format(match.dueToday.toFixed(2)) + `</div>
+        <div class="col-sm-1" style='text-align: right;' id="balanceDue">` + this.#currencyFmt.format(match.balanceDue.toFixed(2)) + `</div>
         <div class="col-sm-1" style='text-align: right;'>`;
         if (match.maxPayments > 1) {
             html += `<input type="number" class='no-spinners' inputmode="numeric" id="numPayments" name="numPayments" style="width: 3em;" placeholder="max pmts" ` +
@@ -378,13 +388,13 @@ class PaymentPlans {
             <input type="number" class='no-spinners' inputmode="numeric" id="daysBetween" name="daysBetween" style="width: 3em;" placeholder="days" ` +
             'min="7" max="' + match.daysBetween + '" value="' + match.daysBetween + `" onchange="paymentPlans.recompute('d');"/>
         </div>
-        <div class="col-sm-1" style='text-align: right;' id="paymentAmt">` + match.paymentAmt.toFixed(2) + `</div>
-        <div class="col-sm-1" style='text-align: right;' id="finalPaymentAmt">` + match.finalPaymentAmt.toFixed(2) + `</div>
+        <div class="col-sm-1" style='text-align: right;' id="paymentAmt">` + this.#currencyFmt.format(match.paymentAmt.toFixed(2)) + `</div>
+        <div class="col-sm-1" style='text-align: right;' id="finalPaymentAmt">` + this.#currencyFmt.format(match.finalPaymentAmt.toFixed(2)) + `</div>
         <div class="col-sm-1">` + plan.payByDate + `</div>
     </div>
     <div class="row">
         <div class="col-sm-2"></div>
-        <div class="col-sm-1" style='text-align: right;'>Min: ` + this.#computedOrig.downPayment.toFixed(2) + `</div>
+        <div class="col-sm-1" style='text-align: right;'>Min: ` + this.#currencyFmt.format(this.#computedOrig.downPayment.toFixed(2)) + `</div>
         <div class="col-sm-2"></div>
         <div class="col-sm-1" style='text-align: right;'>`;
         if (match.maxPayments > 1) {
@@ -452,11 +462,13 @@ class PaymentPlans {
                 // validate range
                 if (down < this.#computedOrig.downPayment) {
                     down = this.#computedOrig.downPayment;
-                    messageHTML += "Adjusted down payment to not be lower than " + Number(this.#computedOrig.downPayment).toFixed(2) + "<br/>";
+                    messageHTML += "Adjusted down payment to not be lower than " +
+                        this.#currencyFmt.format(Number(this.#computedOrig.downPayment).toFixed(2)) + "<br/>";
                 }
                 if (down > (this.#computedOrig.planAmt - plan.minPayment)) { // force at least one payment of the minimum payment amount
                     down = this.#computedOrig.planAmt - plan.minPayment;
-                    messageHTML += "Down payment adjusted to allow for one payment greater than the plan minimum payment of " + Number(plan.minPayment).toFixed(2) + "<br/>";
+                    messageHTML += "Down payment adjusted to allow for one payment greater than the plan minimum payment of " +
+                        this.#currencyFmt.format(Number(plan.minPayment).toFixed(2)) + "<br/>";
                 }
                 // recompute balance due
                 balanceDue = this.#computedPlan.planAmt - down;
@@ -552,16 +564,17 @@ class PaymentPlans {
 
         // update the screen
         downPaymentField.value = Number(down).toFixed(2);
-        balanceDueField.innerHTML = Number(balanceDue).toFixed(2);
-        dueTodayField.innerHTML = Number(dueToday).toFixed(2);
+        balanceDueField.innerHTML = this.#currencyFmt.format(Number(balanceDue).toFixed(2));
+        dueTodayField.innerHTML = this.#currencyFmt.format(Number(dueToday).toFixed(2));
         numPaymentsField.value = numPayments;
         daysBetweenField.value = days;
-        paymentAmtField.innerHTML = Number(paymentAmt).toFixed(2);
-        finalPaymentField.innerHTML = Number(finalPaymentAmt).toFixed(2);
+        paymentAmtField.innerHTML = this.#currencyFmt.format(Number(paymentAmt).toFixed(2));
+        finalPaymentField.innerHTML = this.#currencyFmt.format(Number(finalPaymentAmt).toFixed(2));
 
         this.#computedPlan.currentPayment = Number(this.#computedOrig.nonPlanAmt) + Number(down);
-        dueTodayField.innerHTML = this.#computedPlan.currentPayment.toFixed(2);
-        this.#customizePlanSubmit.innerHTML = 'Create Plan and pay amount due today of ' + this.#computedPlan.currentPayment.toFixed(2);
+        dueTodayField.innerHTML = this.#currencyFmt.format(this.#computedPlan.currentPayment.toFixed(2));
+        this.#customizePlanSubmit.innerHTML = 'Create Plan and pay amount due today of ' +
+            this.#currencyFmt.format(this.#computedPlan.currentPayment.toFixed(2));
         if (messageHTML != '')
             show_message(messageHTML, 'warn', 'customizePlanMessageDiv');
     }
@@ -640,7 +653,7 @@ class PaymentPlans {
     </div>
     <div class="row">
         <div class="col-sm-2" style='text-align: right;'>Balance Due:</div>
-        <div class="col-sm-1 ms-2" style='text-align: right;'>` + balanceDue.toFixed(2) + `</div>
+        <div class="col-sm-1 ms-2" style='text-align: right;'>` + this.#currencyFmt.format(balanceDue.toFixed(2)) + `</div>
     </div>
     <div class="row">
         <div class="col-sm-2" style='text-align: right;'>Payment Amount:</div>
@@ -652,7 +665,7 @@ class PaymentPlans {
 `;
 
         this.#payPlanBody.innerHTML = html;
-        this.#payPlanSubmit.innerHTML = 'Make Plan Payment of ' + paymentAmt.toFixed(2);
+        this.#payPlanSubmit.innerHTML = 'Make Plan Payment of ' + this.#currencyFmt.format(paymentAmt.toFixed(2));
         this.#payPlanModal.show();
     }
 
@@ -666,11 +679,13 @@ class PaymentPlans {
         clear_message('payPlanMessageDiv');
 
         if (paymentAmt < this.#planPaymentMinPayment) {
-            show_message("Payment less than minimum allowed, set to " + this.#planPaymentMinPayment.toFixed(2), 'warn', 'payPlanMessageDiv');
+            show_message("Payment less than minimum allowed, set to " + this.#currencyFmt.format(this.#planPaymentMinPayment.toFixed(2)),
+                'warn', 'payPlanMessageDiv');
             paymentAmt = this.#planPaymentMinPayment.toFixed(2);
             retVal = false;
         } else if (paymentAmt > this.#planPaymentBalanceDue) {
-            show_message("Payment greater than balance due, set to " + this.#planPaymentBalanceDue.toFixed(2), 'warn', 'payPlanMessageDiv');
+            show_message("Payment greater than balance due, set to " + this.#currencyFmt.format(this.#planPaymentBalanceDue.toFixed(2)),
+                'warn', 'payPlanMessageDiv');
             paymentAmt = this.#planPaymentBalanceDue.toFixed(2);
             retVal = false;
         }

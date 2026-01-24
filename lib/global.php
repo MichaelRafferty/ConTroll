@@ -24,48 +24,66 @@ function loadConfFile(): bool {
         exit(1);
     }
 
-    // our config files are only two level
-    // load admin file
-    $adminFile = $path . '/reg_admin.ini';
     $confFile = $path . '/reg_conf.ini';
+    $adminFile = $path . '/reg_admin.ini';
     $secretFile = $path . '/reg_secret.ini';
-    if (is_readable($adminFile)) {
-        $configData = parse_ini_file($path . '/reg_admin.ini', true);
-        if ($configData === false)
-            $configData = [];
-    } else {
-        $configData = [];
+
+    // our config files are only two level
+
+    // first the web admins editable config file $confFile...
+    if (!is_readable($confFile)) {
+        echo "Unable to read the main configuration file, cannot continue, seek help\n";
+        exit(1);
     }
-    // now merge/override in config file
-    if (is_readable($confFile)) {
-        $db_conf = parse_ini_file($path . '/reg_conf.ini', true);
-        if ($db_conf !== false) {
-            foreach ($db_conf as $section => $values) {
-                if (is_array($values)) {
-                    foreach ($values as $key => $value) {
-                        $configData[$section][$key] = $value;
-                    }
-                } else {
-                    $configData[$section] = $values;
-                }
+
+    $configData = parse_ini_file($confFile, true);
+    if ($configData === false) {
+        echo "There is a non correctable error in the main configuration file, cannot continue, seek help\n";
+        exit(1);
+    }
+
+
+    // now overwrite that any lines found in ini
+    if (!is_readable($adminFile)) {
+        echo "Unable to read the administrative configuration file, cannot continue, seek help\n";
+        exit(1);
+    }
+
+    $db_conf = parse_ini_file($adminFile, true);
+    if ($db_conf === false) {
+        echo "There is a non correctable error in the administrative configuration file, cannot continue, seek help\n";
+        exit(1);
+    }
+
+    // merge in the data, overwriting existing individual items
+    foreach ($db_conf as $section => $values) {
+        if (is_array($values)) {
+            foreach ($values as $key => $value) {
+                $configData[$section][$key] = $value;
             }
+        } else {
+            $configData[$section] = $values;
         }
     }
-    if (is_readable($secretFile)) {
-        // now override secret file
-        $db_conf = parse_ini_file($path . '/reg_secret.ini', true);
-        if ($db_conf !== false) {
-            foreach ($db_conf as $section => $values) {
-                if (is_array($values)) {
-                    foreach ($values as $key => $value) {
-                        $configData[$section][$key] = $value;
-                    }
-                } else {
-                    $configData[$section] = $values;
-                }
-            }
-        }
+
+    // now override the sections found in the secret file
+    if (!is_readable($secretFile)) {
+        echo "Unable to read the internal system configuration file, cannot continue, seek help\n";
+        exit(1);
     }
+
+
+    $db_conf = parse_ini_file($secretFile, true);
+    if ($db_conf === false) {
+        echo "There is a non correctable error in the internal system configuration file, cannot continue, seek help\n";
+        exit(1);
+    }
+
+    // override every section, replacing the entire section
+    foreach ($db_conf as $section => $values) {
+        $configData[$section] = $values;
+    }
+
     return true;
 }
 
@@ -460,4 +478,108 @@ function eyepwField($id, $name, $width = 40, $placeholder = '', $tabIndex = -1) 
 <i class='bi bi-eye-slash' id='toggle_$id' style="margin-left: -30px;"></i>
 EOS;
     return $html;
+}
+
+// badgeNameDefault: build a default badge name if its empty
+function badgeNameDefault($badge_name, $badgeNameL2, $first_name, $last_name) {
+    $default_name = '';
+    if ($badge_name === null || $badge_name == '') {
+        $default_name = '<i>' . trim("$first_name $last_name") . '</i>';
+        if ($badgeNameL2  !== null && trim($badgeNameL2) !== '') {
+            $default_name .= '<br/>' . trim($badgeNameL2);
+        }
+        return $default_name;
+    }
+
+    if ($badgeNameL2  === null || $badgeNameL2 === '') {
+        return $badge_name;
+    }
+
+    $default_name = trim("$badge_name<br/>$badgeNameL2");
+    return $default_name;
+}
+
+// get acceptable locales
+
+    class HttpAcceptLanguageHeaderLocaleDetector
+    {
+        const HTTP_ACCEPT_LANGUAGE_HEADER_KEY = 'HTTP_ACCEPT_LANGUAGE';
+
+        public static function detect() {
+            $httpAcceptLanguageHeader = static::getHttpAcceptLanguageHeader();
+            if ($httpAcceptLanguageHeader == null) {
+                return [];
+            }
+            $locales = static::getWeightedLocales($httpAcceptLanguageHeader);
+            $sortedLocales = static::sortLocalesByWeight($locales);
+            return array_map(function ($weightedLocale) {
+                return $weightedLocale['locale'];
+            }, $sortedLocales);
+        }
+
+        private static function getHttpAcceptLanguageHeader() {
+            if (isset($_SERVER[static::HTTP_ACCEPT_LANGUAGE_HEADER_KEY])) {
+                return trim($_SERVER['HTTP_ACCEPT_LANGUAGE']);
+            } else {
+                return null;
+            }
+        }
+
+        private static function getWeightedLocales($httpAcceptLanguageHeader) {
+            if (strlen($httpAcceptLanguageHeader) == 0) {
+                return [];
+            }
+            $weightedLocales = [];
+            // We break up the string 'en-CA,ar-EG;q=0.5' along the commas,
+            // and iterate over the resulting array of individual locales. Once
+            // we're done, $weightedLocales should look like
+            // [['locale' => 'en-CA', 'q' => 1.0], ['locale' => 'ar-EG', 'q' => 0.5]]
+            foreach (explode(',', $httpAcceptLanguageHeader) as $locale) {
+                // separate the locale key ("ar-EG") from its weight ("q=0.5")
+                $localeParts = explode(';', $locale);
+                $weightedLocale = ['locale' => $localeParts[0]];
+                if (count($localeParts) == 2) {
+                    // explicit weight e.g. 'q=0.5'
+                    $weightParts = explode('=', $localeParts[1]);
+                    // grab the '0.5' bit and parse it to a float
+                    $weightedLocale['q'] = floatval($weightParts[1]);
+                } else {
+                    // no weight given in string, ie. implicit weight of 'q=1.0'
+                    $weightedLocale['q'] = 1.0;
+                }
+                $weightedLocales[] = $weightedLocale;
+            }
+            return $weightedLocales;
+        }
+
+        /**
+         * Sort by high to low `q` value
+         */
+        private static function sortLocalesByWeight($locales) {
+            usort($locales, function ($a, $b) {
+                // usort will cast float values that we return here into integers,
+                // which can mess up our sorting. So instead of subtracting the `q`,
+                // values and returning the difference, we compare the `q` values and
+                // explicitly return integer values.
+                if ($a['q'] == $b['q']) {
+                    return 0;
+                }
+                if ($a['q'] > $b['q']) {
+                    return -1;
+                }
+                return 1;
+            });
+            return $locales;
+        }
+    }
+
+function getLocale() {
+    $locales = HttpAcceptLanguageHeaderLocaleDetector::detect();
+    // for now just return first one, later, use a list of locales we support to return the first valid one.
+    if (is_array($locales) && count($locales) > 0) {
+        $locale = $locales[0];
+    } else {
+        $locale = 'en-US'; // default to en-US
+    }
+    return $locale;
 }

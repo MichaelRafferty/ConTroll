@@ -42,11 +42,15 @@ if (array_key_exists('onedaycoupons', $con)) {
     $onedaycoupons = 0;
 }
 
+$currency = getConfValue('con', 'currency', 'USD');
+$locale = getLocale();
 $config_vars = array();
 $config_vars['label'] = $con['label'];
 $config_vars['required'] = getConfValue('reg', 'required', 'addr');
 $config_vars['conid'] = $condata['id'];
 $config_vars['debug'] = getConfValue('debug', 'onlinereg', 0);
+$config_vars['locale'] = $locale;
+$config_vars['currency'] = $currency;
 
 $config_vars['onedaycoupons'] = $onedaycoupons;
 

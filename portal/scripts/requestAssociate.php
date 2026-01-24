@@ -45,13 +45,15 @@ $email = $_POST['email'];
 
 // first check to see if this person exists
 $cQ = <<<EOS
-SELECT id, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, legalName, pronouns, address, addr_2, city, state, zip, country, 
+SELECT id, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, badgeNameL2, legalName, pronouns, address, addr_2, city, state, zip, 
+country, 
     managedBy, NULL AS managedByNew, lastVerified, 'p' AS personType,
     TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), ' +', ' ')) AS fullName
 FROM perinfo
 WHERE id=? AND email_addr = ? AND NOT (first_name = 'Merged' AND middle_name = 'into')
 UNION
-SELECT id, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, legalName, pronouns, address, addr_2, city, state, zip, country, 
+SELECT id, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, badgeNameL2, legalName, pronouns, address, addr_2, city, state, zip, 
+country, 
     managedBy, managedByNew, lastVerified, 'n' AS personType,
     TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), ' +', ' ')) AS fullName
 FROM newperson
@@ -65,6 +67,7 @@ if ($cR == false || $cR->num_rows == 0) {
 }
 
 $personInfo = $cR->fetch_assoc();
+$personInfo['badgename'] = badgeNameDefault($personInfo['badge_name'], $personInfo['badgeNameL2'], $personInfo['first_name'], $personInfo['last_name']);
 $cR->free();
 $acctType = $personInfo['personType'];
 
@@ -110,6 +113,29 @@ $cR->free();
 
 if ($numMatch > 0) {
     // this account holder controls this email address, directly attach it.
+    // first check if we are managed by someone
+    $manageTable = $loginType == 'p' ? 'perinfo' : 'newperson';
+
+    $chkQ = <<<EOS
+SELECT managedByNew, managedBy
+FROM $manageTable
+WHERE id = ?;
+EOS;
+    $chkR = dbSafeQuery($chkQ, 'i', array($loginId));
+    if ($chkR === false) {
+        $response['error'] = 'SQL Error in checking if you are managed by someone else';
+        ajaxSuccess($response);
+        exit();
+    }
+    $managerData = $chkR->fetch_assoc();
+    $chkR->free();
+    if ($managerData['managedBy'] != null || $managerData['managedByNew'] != null) {
+        $response['error'] = "You cannot request to manage someone else, you are already managed by " .
+            $managerData['managedBy'] != null ? $managerData['managedBy'] : $managerData['managedByNew'];
+        ajaxSuccess($response);
+        exit();
+    }
+
     if ($acctType == 'p') {
         $uQ = <<<EOS
 UPDATE perinfo
@@ -143,7 +169,8 @@ if ($loginType == 'p') {
 }
 
 $cQ = <<<EOS
-SELECT id, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, legalName, pronouns, address, addr_2, city, state, zip, country, 
+SELECT id, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, badgeNameL2, legalName, pronouns, address, addr_2, city, state, zip, 
+country, 
     managedBy, NULL AS managedByNew, lastVerified, 'p' AS personType,
     TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), ' +', ' ')) AS fullName
 FROM $table
@@ -155,6 +182,7 @@ if ($cR == false || $cR->num_rows == 0) {
     exit();
 }
 $loginInfo = $cR->fetch_assoc();
+$loginInfo['badgename'] = badgeNameDefault($loginInfo['badge_name'], $loginInfo['badgeNameL2'], $loginInfo['first_name'], $loginInfo['last_name']);
 $cR->free();
 
 $waittime = 8; // hours

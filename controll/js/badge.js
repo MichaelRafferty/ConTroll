@@ -40,9 +40,15 @@ window.onload = function initpage() {
     }
     watchList = document.getElementById('watch-list');
     findNameField = document.getElementById('findName');
+    findNameField.addEventListener('keyup', findNameListener);
     selectList = document.getElementById('select-list');
     getWatchList();
 
+}
+
+function findNameListener(e) {
+    if (e.code === 'Enter')
+        findExisting();
 }
 
 // load/reload the watch list
@@ -102,7 +108,7 @@ function loadWatchList(data) {
                 {field: "country", visible: false,},
                 {field: "city", visible: false,},
                 {field: "state", visible: false,},
-                {title: "Badge Name", field: "badge_name", headerFilter: true, headerWordWrap: true, tooltip: true,},
+                {title: "Badge Name", field: "badgename", headerFilter: true, headerWordWrap: true, tooltip: true, formatter: "html", },
                 {title: "Zip", field: "zip", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 120, width: 120},
                 {title: "Email Address", field: "email_addr", headerFilter: true, headerWordWrap: true, tooltip: true,},
                 {title: "Memberships", field: "memberships", headerFilter: true, headerWordWrap: true, tooltip: true,
@@ -131,7 +137,7 @@ function watchBuildRecordHover(e, cell, onRendered) {
     if (data.country != '' && data.country != 'USA') {
         hover_text += data.country + '<br/>';
     }
-    hover_text += 'Badge Name: ' + badgeNameDefault(data.badge_name, data.first_name, data.last_name) + '<br/>' +
+    hover_text += 'Badge Name: ' + badgeNameDefault(data.badge_name, data.badgeNameL2, data.first_name, data.last_name) + '<br/>' +
         'Email: ' + data.email_addr + '<br/>' + 'Phone: ' + data.phone + '<br/>';
     if (data.managedBy) {
         hover_text += 'Managed by: (' + data.managedBy + ') ' + data.mgrFullName + '</br>';
@@ -143,15 +149,6 @@ function watchBuildRecordHover(e, cell, onRendered) {
         'Memberships: ' + data.memberships + '<br/>';
 
     return hover_text;
-}
-
-// badgeNameDefault: build a default badge name if its empty
-function badgeNameDefault(badge_name, first_name, last_name) {
-    if (badge_name === undefined | badge_name === null || badge_name === '') {
-        var default_name = (first_name + ' ' + last_name).trim();
-        return '<i>' + default_name.replace(/ +/, ' ') + '</i>';
-    }
-    return badge_name;
 }
 
 // tabulator formatter for the actions column, displays the update badge, remove, and edit person buttons
@@ -203,6 +200,7 @@ function findExisting() {
         type: 'find',
         pattern: findName,
         excludeFree: 1,
+        excludeMerged: 1,
     };
     $.ajax({
         method: "POST",
@@ -270,7 +268,7 @@ function loadSelectList(data) {
             {field: "country", visible: false,},
             {field: "city", visible: false,},
             {field: "state", visible: false,},
-            {title: "Badge Name", field: "badge_name", headerFilter: true, headerWordWrap: true, tooltip: true,},
+            {title: "Badge Name", field: "badgename", headerFilter: true, headerWordWrap: true, tooltip: true, formatter: "html", },
             {title: "Zip", field: "zip", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 120, width: 120},
             {title: "Email Address", field: "email_addr", headerFilter: true, headerWordWrap: true, tooltip: true,},
             {title: "Memberships", field: "memberships", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 300, width: 300, formatter: "textarea", },
@@ -405,6 +403,7 @@ function findDetailsSuccess(dataFound) {
     document.getElementById('f_email2').value = data.email_addr;
     document.getElementById('f_phone').value = data.phone;
     document.getElementById('f_badgename').value = data.badge_name;
+    document.getElementById('f_badgeNameL2').value = data.badgeNameL2;
     editPersonName.innerHTML = data.fullName + ' (' + data.id + ')';
     editPersonModal.show();
 }
@@ -440,6 +439,7 @@ function saveEdit() {
         emailAddr: email1,
         phone: document.getElementById('f_phone').value,
         badgeName: document.getElementById('f_badgename').value,
+        badgeNameL2: document.getElementById('f_badgeNameL2').value,
     };
 
     $.ajax({
@@ -521,6 +521,7 @@ function addClearForm() {
     document.getElementById('a_email2').value = '';
     document.getElementById('a_phone').value = '';
     document.getElementById('a_badgename').value = '';
+    document.getElementById('a_badgeNameL2').value = '';
 
     addPersonBtn.disabled = true;
     if (addMatchTable != null) {
@@ -553,6 +554,7 @@ function addCheckExists() {
         suffix: document.getElementById('a_suffix').value,
         pronouns: document.getElementById('a_pronouns').value,
         badgeName: document.getElementById('a_badgename').value,
+        badgeNameL2: document.getElementById('a_badgeNameL2').value,
         address: document.getElementById('a_addr').value,
         addr2: document.getElementById('a_addr2').value,
         city: document.getElementById('a_city').value,
@@ -608,7 +610,7 @@ function addCheckSuccess(dataFound) {
                 {title: "Manager", field: "manager", width: 200, headerSort: true, headerFilter: true,},
                 {title: "Full Name", field: "fullName", width: 300, headerSort: true, headerFilter: true, headerFilterFunc: fullNameHeaderFilter,
                     formatter: "textarea", },
-                {title: "Badge Name", field: "badge_name", width: 200, headerSort: true, headerFilter: true, },
+                {title: "Badge Name", field: "badgename", width: 200, headerSort: true, headerFilter: true, formatter: "html", },
                 {title: "Full Address", field: "fullAddr", width: 400, headerSort: true, headerFilter: true, formatter: "textarea", },
                 {title: "Email", field: "email_addr", width: 250, headerSort: true, headerFilter: true,},
                 {title: "Phone", field: "phone", width: 150, headerSort: true, headerFilter: true,},
@@ -680,6 +682,7 @@ function saveAdd() {
         pronouns: document.getElementById('a_pronouns').value,
         legalName: '',
         badgeName: document.getElementById('a_badgename').value,
+        badgeNameL2: document.getElementById('a_badgeNameL2').value,
         address: document.getElementById('a_addr').value,
         addr2: document.getElementById('a_addr2').value,
         city: document.getElementById('a_city').value,
