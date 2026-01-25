@@ -25,6 +25,8 @@
         * tokenExpireHrs=   number of hours before login token becomes invalid, default 8 (can be fractional)
         * authExpireHrs=   number of hours before the role permissions are re-fetched, default 0.25 
         * expireGrace=   how many hour before expire does the system auto-refresh the token
+      * New log file: logins, tracks controll and atcon logins
+        * priorRolloverYears=     Number of prior years to allow "Rollovers" in Registration List Edits (default 2)
 
   * reg_secret.ini:
     * new comments about SQL_MODE and path (client path)

@@ -125,6 +125,7 @@ vendors=0 ; to enable vendor and artist admin tab debug statement (currently bit
 artshow='/...PathtoLogDirectory.../artshowReg'
 cancel='/...PathtoLogDirectory.../cancel'
 controll='/...PathtoLogDirectory.../controll'
+logins='/...PathtoLogDirectory.../logins'
 db='/...PathtoLogDirectory.../db'
 reg='/...PathtoLogDirectory.../onlineReg'
 term='/...PathtoLogDirectory.../term'
@@ -270,6 +271,8 @@ expireGrace=2
 ; 1 = allowed, 0 = disabled
 creditoffline=0
 creditonline=0
+;;; number of prior years to allow rollover
+priorRolloverYears=2
 
 ;;; The local parameters [local] section sets options used by the local scripts for this convention
 [local]

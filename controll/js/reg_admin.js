@@ -527,7 +527,7 @@ function actionbuttons(cell, formatterParams, onRendered) {
     var index = cell.getRow().getIndex();
 
     var btns = "";
-    if (limitConid >= (conid - 2) && limitConid < (conid + 1) && perid > 0) {
+    if (limitConid >= (conid - config.rolloverYears) && limitConid < (conid + 1) && perid > 0) {
         btns += '<button class="btn btn-secondary me-1" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
             ' onclick="changeReg(' + index + ')">Chgs</button>';
     }
@@ -1222,7 +1222,7 @@ function changeRollover() {
             continue;
 
         // check statuses, only allow paid / upraded
-        if (changeItem.status != 'paid' && status != 'upgraded') {
+        if (changeItem.status != 'paid' && changeItem.status != 'upgraded') {
             message += "Cannot change " + changeItem.id + " as status " + changeItem.status + " cannot be rolled over, it must be paid.<br/>";
             continue;
         }
