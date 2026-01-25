@@ -283,7 +283,7 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $testsit
                             </div>
                             <div class='row'>
                                 <div class='col-sm-12'>
-                                    <?php echo draw_cc_html($cc, '--', 2); ?>
+                                    <?php echo draw_cc_html($cc, '--', 'all'); ?>
                                     <input type='reset'/>
                                 </div>
                             </div>
