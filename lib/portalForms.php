@@ -484,7 +484,7 @@ EOS;
            } else {
                $ageRow = '<br/><b>' . $membership['ageShort'] . '</b> [' . $membership['ageLabel'] . ']';
            }
-           $expired = $membership['status'] == 'unpaid' && ($membership['actPaid'] + $membership['actCouponDiscount']) > 0 &&
+           $expired = $membership['status'] == 'unpaid' && ($membership['actPaid'] + $membership['actCouponDiscount']) == 0 &&
                 ($membership['startdate'] > $now || $membership['enddate'] < $now);
            $shortname = $membership['shortname'];
            if ($expired) {
