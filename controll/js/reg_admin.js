@@ -96,6 +96,7 @@ window.onload = function initpage() {
         style: 'currency',
         currency: config.currency,
     });
+    conid = config.conid;
     id = document.getElementById('changeModal');
     if (id != null) {
         changeModal = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
@@ -1651,7 +1652,6 @@ function reglistDownload(format) {
 
 // called from data load - draws the filter stats block and the registrations block
 function draw(data, textStatus, jqXHR) {
-    conid = Number(data.conid);
     limitConid = Number(data.limitConid);
     if (!data.hasOwnProperty('memLabels')) {
         show_message("Error in query", 'error');
