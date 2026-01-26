@@ -23,7 +23,7 @@ class AuthToken
     private $authExpSecs;
     private $refreshGrace;
     private $use;
-    private $debug;
+    private $sessionLogFile;
 
     function __construct($use) {
         if (!isSessionVar('authToken'))
@@ -36,12 +36,12 @@ class AuthToken
             }
         }
         $this->use = $use;
-        $this->debug = getConfValue('debug', 'controll_auth', 0);
         $this->expSecs = getConfValue('controll', 'tokenExpireHrs', 8) * 3600;
         $this->authExpSecs = getConfValue('controll', 'authExpireHrs', 0.25)  * 3600;
         $this->refreshGrace = getConfValue('controll', 'expiregrace', 1) * 3600;
         if ($this->refreshGrace > ($this->expSecs / 2))
             $this->refreshGrace = $this->expSecs / 2;
+        $this->sessionLogFile = getConfValue('log', 'logins');
     }
 
     // get functions
@@ -232,9 +232,15 @@ EOS;
         setSessionVar('authToken', $this->authToken);
         // credit card processing still needs user_perid in session and cannot deal with getting an authtoken, as it app agnostic
         setSessionVar('user_perid', $user['perid']);
-        if ($this->debug)
-            web_error_log("ConTroll Admin $source $type by " . $user['email'] . '(' . $user['id'] . ':' . $user['perid'] .
-                " from " . $_SERVER['REMOTE_ADDR'], 'controll_auth', true);
+        $source = $this->getSource();
+        $sesPerid = getSessionVar('user_perid');
+        if (!$sesPerid)
+            $sesPerid = '(no login)';
+        setSessionVar('authToken', $this->authToken);
+        $logMsg = "ConTroll Admin $source $type by perid:$sesPerid, userid:" . $this->getUserId()
+            . ', token perid:' . $this->getPerid() . ', email:' . $this->getEmail() . ', name:' . $this->getName()
+            . ' from ' . $_SERVER['REMOTE_ADDR'];
+        $this->logSession($logMsg);
         return true;
     }
 
@@ -245,11 +251,14 @@ EOS;
         $this->authToken['authExpire'] = $now + $this->authExpSecs;
         $this->authToken['refreshCount']++;
         $source = $this->getSource();
+        $sesPerid = getSessionVar('user_perid');
+        if (!$sesPerid)
+            $sesPerid = '(no login)';
         setSessionVar('authToken', $this->authToken);
-        if ($this->debug)
-            web_error_log("ConTroll Admin $source refresh by " . $this->getEmail() .
-                '(' . $this->getUserId() . ':' . $this->getPerid() .
-                ' from ' . $_SERVER['REMOTE_ADDR']);
+        $logMsg = "ConTroll Admin $source refresh by perid:$sesPerid, userid:" . $this->getUserId()
+        . ', token perid:' . $this->getPerid() . ', email:' . $this->getEmail() . ', name:' . $this->getName()
+        . ' from ' . $_SERVER['REMOTE_ADDR'];
+        $this->logSession($logMsg);
         return true;
     }
 
@@ -280,5 +289,25 @@ EOS;
             return false;
 
         return in_array($authName, $this->authToken['auths']);
+    }
+
+    // log session actions
+    function logSession($logMsg) {
+        // if no log file specified, revert to web_error_log
+        if (!$this->sessionLogFile) {
+            web_error_log($logMsg, 'controll_auth', false);
+            return;
+        }
+
+        // if file cannot be opened, revert to web_error_log
+        $fh = fopen($this->sessionLogFile, 'a');
+        if ($fh === false) {
+            web_error_log($logMsg, 'controll_auth', false);
+            return;
+        }
+
+        $now = date('Y/m/d H:i:s');
+        fprintf($fh, "%s: %s\n", $now, $logMsg);
+        fclose($fh);
     }
 }

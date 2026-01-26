@@ -15,7 +15,12 @@ if ($tokenState == 'expired') {
 
 //unset id_token if logging out.
 if (isset($_REQUEST['logout'])) {
-    web_error_log('logout', 'controll');
+    $sesPerid = getSessionVar('user_perid');
+    if (!$sesPerid)
+        $sesPerid = '(no login)';
+    $authToken->logSession("ConTroll Admin " . $authToken->getSource() . " logout of perid:$sesPerid, userid:" . $authToken->getUserId()
+            . ', token perid:' . $authToken->getPerid() . ", email:" . $authToken->getEmail() . ', name:' . $authToken->getName()
+            . ' from ' . $_SERVER['REMOTE_ADDR']);
     $authToken->deleteToken();
     session_regenerate_id(true);
     // refresh the page to take the logout string off the URL
