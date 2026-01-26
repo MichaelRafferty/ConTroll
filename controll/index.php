@@ -139,6 +139,7 @@ EOS;
             }
             break;
         case 'passkey':
+            $email = $authToken->getEmail();
             echo <<<EOS
 <div class="row mt-4">
         <div class="col-sm-12">
@@ -146,7 +147,7 @@ EOS;
         </div>
     </div>
 <script type='text/javascript'>
-setTimeout(() => { login.loginWithPasskey(); }, 1000);
+setTimeout(() => { login.loginWithPasskey($email); }, 1000);
 </script>
 EOS;
 

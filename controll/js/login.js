@@ -20,11 +20,11 @@ class Login {
 
 // login functions
     // login with passkey - ask for a confirm and return either retry or go to portal
-    loginWithPasskey() {
+    loginWithPasskey(email = null) {
         if (this.#loginWithPasskeyBtn)
             this.#loginWithPasskeyBtn.disabled = true;
 
-        passkeyRequest('scripts/passkeyActions.php', 'index.php', 'controll', this.#loginWithPasskeyBtn);
+        passkeyRequest('scripts/passkeyActions.php', 'index.php', 'controll', this.#loginWithPasskeyBtn, email);
     }
 
     // loginWithToken: show email for token

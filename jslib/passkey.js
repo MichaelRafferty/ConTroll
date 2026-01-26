@@ -118,14 +118,14 @@ function deletePasskeyEntry(script, id, userName, source) {
     });
 }
 
-async function passkeyRequest(script, successPage, source, enable) {
+async function passkeyRequest(script, successPage, source, enable, email = 'NA') {
     if (!window.fetch || !navigator.credentials || !navigator.credentials.create) {
         show_message('Your browser does not support passkeys.', 'error');
         return;
     }
 
     var params = "displayName=NA" +
-        "&email=NA" +
+        "&email=" + email +
         "&source=" + encodeURIComponent(source) +
         "&action=request";
 
