@@ -417,15 +417,19 @@ class PosCart {
         }
         this.#cartPerinfo[pindex].index = pindex;
         this.#cartPerinfoMap.set(this.#cartPerinfo[pindex].perid, pindex);
-        let mrows = p.memberships;
-        this.#cartPerinfo[pindex].memberships = make_copy(mrows);
-        for (let mrownum = 0; mrownum < mrows.length; mrownum++) {
-            this.#cartPerinfo[pindex].memberships[mrownum].index = mrownum;
-            this.#cartPerinfo[pindex].memberships[mrownum].pindex = pindex;
-            if (mrows[mrownum].couponDiscount === undefined) {
-                this.#cartPerinfo[pindex].memberships[mrownum].couponDiscount = 0.00;
-                this.#cartPerinfo[pindex].memberships[mrownum].coupon = null;
+        if (p.memberships) {
+            let mrows = p.memberships;
+            this.#cartPerinfo[pindex].memberships = make_copy(mrows);
+            for (let mrownum = 0; mrownum < mrows.length; mrownum++) {
+                this.#cartPerinfo[pindex].memberships[mrownum].index = mrownum;
+                this.#cartPerinfo[pindex].memberships[mrownum].pindex = pindex;
+                if (mrows[mrownum].couponDiscount === undefined) {
+                    this.#cartPerinfo[pindex].memberships[mrownum].couponDiscount = 0.00;
+                    this.#cartPerinfo[pindex].memberships[mrownum].coupon = null;
+                }
             }
+        } else {
+            this.#cartPerinfo[pindex].memberships = [];
         }
         // default any missing policies
         for (let policynum in policies) {

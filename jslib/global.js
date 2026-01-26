@@ -120,6 +120,9 @@ function URLparamsToArray(urlargs, doTrim = false) {
 // make_copy(associative array)
 // javascript passes by reference, can't slice an associative array, so you need to do a horrible JSON kludge
 function make_copy(arr) {
+    if (arr === undefined || arr === null)
+        return arr;
+
     return JSON.parse(JSON.stringify(arr));  // horrible way to make an independent copy of an associative array
 }
 

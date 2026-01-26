@@ -975,6 +975,9 @@ class Pos {
         if (this.#add_results_table != null) {
             this.#add_results_table.destroy();
             this.#add_results_table = null;
+            this.#add_edit_find_len = 999;
+            pos.addNewToCart();
+            return;
         }
         if (this.#add_edit_find_len == 0) {
             this.#add_edit_find_len = 999;
