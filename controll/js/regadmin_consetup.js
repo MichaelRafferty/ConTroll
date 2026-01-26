@@ -905,15 +905,31 @@ class consetup {
     }
 
     // editBundleContains - select the mem id's for this bundle
-    editBundleContains(field) {
+    editBundleContains(field, startField, endField) {
         this.closeBundleSel();
         this.#containsField = field;
         // fill the non bundle list data from current data
         let curMemList = this.#memtable.getRows();
         this.#nonBundleList = [];
+        // convert the ISO datetimes to database format, for string compare
+        let date = new Date(document.getElementById(startField).value);
+        let startDate = date.getFullYear()
+            + '-' + ("00" + (date.getMonth() + 1)).slice(-2)
+            + "-" + ("00" + date.getDate()).slice(-2)
+            +  " " + ("00" + date.getHours()).slice(-2)
+            + ":" + ("00" + date.getMinutes()).slice(-2)
+            + ":" + ("00" + date.getSeconds()).slice(-2);
+        date = new Date(document.getElementById(endField).value);
+        let endDate =  date.getFullYear()
+            + '-' + ("00" + (date.getMonth() + 1)).slice(-2)
+            + "-" + ("00" + date.getDate()).slice(-2)
+            +  " " + ("00" + date.getHours()).slice(-2)
+            + ":" + ("00" + date.getMinutes()).slice(-2)
+            + ":" + ("00" + date.getSeconds()).slice(-2);
         for (let row of curMemList) {
             let rowdata = row.getData();
-            if (rowdata.label.substring(0, 8) != 'Bundle: ')
+            // if it's a bundle, and the periods overlap (mem start <= bund end and mem end > bundle start
+            if (rowdata.label.substring(0, 8) != 'Bundle: ' && rowdata.startdate < endDate && rowdata.enddate > startDate)
                 this.#nonBundleList.push(rowdata);
         }
 
@@ -1412,11 +1428,11 @@ function editMemListCancel() {
 }
 
 // top section request to edit bundle contains field with select list
-function editBundleContains(field) {
+function editBundleContains(field, startField, endField) {
     if (activeConSetup == 'next')
-        next.editBundleContains(field);
+        next.editBundleContains(field, startField, endField);
     else
-        current.editBundleContains(field);
+        current.editBundleContains(field, startField, endField);
 }
 
 function setInitialSel() {

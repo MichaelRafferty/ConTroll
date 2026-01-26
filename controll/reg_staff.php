@@ -161,7 +161,10 @@ $config_vars['rolloverYears'] = getConfValue('controll', 'priorRolloverYears', 2
                                 <div class='row mt-1'>
                                     <div class='col-sm-2'>Contains:</div>
                                     <div class="col-sm-auto">
-                                        <button class='btn btn-sm btn-primary' type='button' onclick="editBundleContains('editMemListBundleContains');">Select Contents</button>
+                                        <button class='btn btn-sm btn-primary' type='button'
+                                                onclick="editBundleContains('editMemListBundleContains', 'editMemListStart', 'editMemListEnd');">
+                                            Select Contents
+                                        </button>
                                     </div>
                                     <div class='col-sm-7'>
                                         <input type='text' name='editMemListBundleContains' id='editMemListBundleContains' placeholder='List of IDs in bundle'
@@ -306,9 +309,10 @@ $config_vars['rolloverYears'] = getConfValue('controll', 'priorRolloverYears', 2
                         <div class="col-sm-2"></div>
                         <div class='col-sm-auto'>Contains:</div>
                         <div class='col-sm-auto'>
-                            <button class='btn btn-sm btn-primary' type='button' onclick="editBundleContains('EMLTS<?php echo $i;?>_contains');">
-                                Select This Rows Contents Only
-                            </button>
+                            <button class='btn btn-sm btn-primary' type='button'
+                                    onclick="editBundleContains(<?php
+                                        echo "'EMLTS" . $i . "_contains', 'EMLTS" . $i . "_Start', 'EMLTS" . $i . "_End');";
+                                    ?>">Select This Rows Contents Only</button>
                         </div>
                         <div class='col-sm-auto'>
                             <input type='text' name='editMemListBundleContains' id='EMLTS<?php echo $i;?>_contains' placeholder='List of IDs in bundle'
