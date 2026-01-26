@@ -2112,7 +2112,7 @@ class Pos {
         }
         if (ptype == 'online') {
             if (this.#ccOnlineStarted == false) {
-                document.getElementById('card-button').innerHTML = 'Validate Credit Card'
+                document.getElementById('card-button').innerHTML = 'Validate Credit Card';
                 console.log('calling startCC');
                 startCC();
                 console.log('startCC returned');
