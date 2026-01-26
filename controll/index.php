@@ -147,7 +147,7 @@ EOS;
         </div>
     </div>
 <script type='text/javascript'>
-setTimeout(() => { login.loginWithPasskey($email); }, 1000);
+setTimeout(() => { login.loginWithPasskey("$email"); }, 1000);
 </script>
 EOS;
 
