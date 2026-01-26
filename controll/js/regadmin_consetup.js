@@ -50,6 +50,8 @@ class consetup {
     #editMemListBundleDiv = null;
     #nonBundleList = [];
     #containsField = null;
+    #rowStartDate = '';
+    #rowEndDate = '';
 
     constructor(setup_type) {
         this.#debug = Number(config.debug);
@@ -913,14 +915,14 @@ class consetup {
         this.#nonBundleList = [];
         // convert the ISO datetimes to database format, for string compare
         let date = new Date(document.getElementById(startField).value);
-        let startDate = date.getFullYear()
+        this.#rowStartDate = date.getFullYear()
             + '-' + ("00" + (date.getMonth() + 1)).slice(-2)
             + "-" + ("00" + date.getDate()).slice(-2)
             +  " " + ("00" + date.getHours()).slice(-2)
             + ":" + ("00" + date.getMinutes()).slice(-2)
             + ":" + ("00" + date.getSeconds()).slice(-2);
         date = new Date(document.getElementById(endField).value);
-        let endDate =  date.getFullYear()
+        this.#rowEndDate =  date.getFullYear()
             + '-' + ("00" + (date.getMonth() + 1)).slice(-2)
             + "-" + ("00" + date.getDate()).slice(-2)
             +  " " + ("00" + date.getHours()).slice(-2)
@@ -929,7 +931,7 @@ class consetup {
         for (let row of curMemList) {
             let rowdata = row.getData();
             // if it's a bundle, and the periods overlap (mem start <= bund end and mem end > bundle start
-            if (rowdata.label.substring(0, 8) != 'Bundle: ' && rowdata.startdate < endDate && rowdata.enddate > startDate)
+            if (rowdata.label.substring(0, 8) != 'Bundle: ' && rowdata.startdate < this.#rowEndDate && rowdata.enddate > this.#rowStartDate)
                 this.#nonBundleList.push(rowdata);
         }
 
@@ -1007,23 +1009,39 @@ class consetup {
     // retrieve the selected rows and set the field values
     applyBundleSel() {
         // store all the fields back into the field
-
+        let warning = '';
         let val = '';
         let price = 0;
         let rows = this.#memListBundleTable.getRows();
         for (let row of rows) {
             if (row.getCell('id').getElement().style.backgroundColor != '') {
                 let rowData = row.getData();
+                if (rowData.startdate > this.#rowStartDate) {
+                    warning += '<br/>Bundle start date (' + this.#rowStartDate + ') starts before the bundle element ' + rowData.id + "'s start date (" +
+                        rowData.startdate + ')';
+                }
+                if (rowData.enddate < this.#rowEndDate) {
+                    warning += '<br/>Bundle end date (' + this.#rowEndDate + ') ends after the bundle element ' + rowData.id + "'s end date (" +
+                        rowData.enddate + ')';
+                }
                 val += ',' + rowData.id;
                 price += Number(rowData.price);
             }
+        }
+
+        let containsField =  document.getElementById(this.#containsField);
+        if (warning.length > 0) {
+            show_message("Warning: Bundle Date Mismatch Issues" + warning, 'warn', 'result_message_editMemList');
+            containsField.style.backgroundColor = 'var(--bs-warning)';
+        } else {
+            containsField.style.backgroundColor = '';
         }
         if (val != '')
             val = val.substring(1);
 
         price = price.toFixed(2);
 
-        document.getElementById(this.#containsField).value = val;
+        containsField.value = val;
         if (this.#containsField == 'editMemListBundleContains') {
             this.#memListPrice.value = price;
             let idField = 'EMLTS' + editListMasterRow + '_Price';
