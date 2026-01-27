@@ -1132,7 +1132,7 @@ class Pos {
             legalName: person.legalName, pronouns: person.pronouns, badge_name: person.badgename, badgeNameL2: person.badgenameL2,
             fullName: getFullName(person),
             address_1: person.addr1, address_2: person.addr2, city: person.city, state: person.state, postal_code: person.zip,
-            open_notes: '', currentAgeType: person.age, personAgeConid: config.conid,
+            open_notes: '', currentAgeType: person.age, currentAgeConid: config.conid,
             country: person.country, email_addr: person.email1, phone: person.phone, active: 'Y', banned: 'N', policies: rowPolicies
         };
         this.#new_perid--;
