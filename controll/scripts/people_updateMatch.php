@@ -63,7 +63,7 @@ if ($matchPerid && $matchPerid > 0) {
 }
 
 $iP = <<<EOS
-INSERT INTO perinfo(last_name, first_name, middle_name, suffix, email_addr, currentAgeType, currentAgeConid, phone, badge_name, badgenameL2,
+INSERT INTO perinfo(last_name, first_name, middle_name, suffix, email_addr, currentAgeType, currentAgeConId, phone, badge_name, badgenameL2,
     legalName, pronouns, address, addr_2, city, state, zip, country,
     banned, active, managedBy, managedReason, change_notes, updatedBy)
 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
