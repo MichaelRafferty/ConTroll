@@ -859,7 +859,6 @@ class Pos {
             this.#addoverride_button.hidden = false;
             return;
         }
-
         this.add_new2();
         return;
     }
@@ -886,7 +885,7 @@ class Pos {
         let new_badgename = profile.badgename().trim();
         let new_badgeNameL2 = profile.badgenameL2().trim();
         let new_age = profile.age();
-        let new_fullname = (new_first + ' ' + new_middle + ' ' + new_last + ' ' + new_suffix).replace(/ +/g, ' ').trim();
+        let new_fullname = getFullName(profile.getFormData(), true);
 
         if (new_email == '') {
             show_message("Email address is requird", 'error');
@@ -1131,7 +1130,7 @@ class Pos {
         let row = {
             perid: this.#new_perid, first_name: person.fname, middle_name: person.mname, last_name: person.lname, suffix: person.suffix,
             legalName: person.legalName, pronouns: person.pronouns, badge_name: person.badgename, badgeNameL2: person.badgenameL2,
-            fullName: person.fullname,
+            fullName: getFullName(person),
             address_1: person.addr1, address_2: person.addr2, city: person.city, state: person.state, postal_code: person.zip,
             open_notes: '', currentAgeType: person.age, personAgeConid: config.conid,
             country: person.country, email_addr: person.email1, phone: person.phone, active: 'Y', banned: 'N', policies: rowPolicies

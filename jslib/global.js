@@ -160,7 +160,40 @@ function isPrimary(memConid, memType, memCategory, memPrice, usage = 'all') {
 
     // we got this far, all the 'falses; are called out, so it must be true
     return true;
+}
 
+// return or build the fullname field for a person record (used by the add functions)
+function getFullName(person, buildNew = false) {
+    if (!buildNew) {
+        if (person.hasOwnProperty('fullName')) // allow both spellings
+            return person.fullName;
+
+        if (person.hasOwnProperty('fullname'))
+            return person.fullname;
+    }
+
+    // ok, not in the structure or buildNew was specified, build it from the parts
+    let fullName = '';
+    if (person.hasOwnProperty('first_name'))
+        fullName = person.first_name;
+    else if (person.hasOwnProperty('fname'))
+        fullName = person.fname;
+
+    if (person.hasOwnProperty('middle_name'))
+        fullName += ' ' + person.middle_name;
+    else if (person.hasOwnProperty('mname'))
+        fullName += ' ' + person.mname;
+
+    if (person.hasOwnProperty('last_name'))
+        fullName += ' ' + person.last_name;
+    else if (person.hasOwnProperty('lname'))
+        fullName += ' ' + person.lname;
+
+    if (person.hasOwnProperty('suffix'))
+        fullName += ' ' + person.suffix;
+
+    fullName = fullName.replace(/ +/g, ' ').trim();
+    return fullName;
 }
 
 // try to open new window/tab with fallback to using same window
