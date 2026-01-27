@@ -563,7 +563,7 @@ class PosCart {
         else if (cart_row.currentAgeType && cart_row.currentAgeType != '') {
             let ageItem = ageListIdx[cart_row.currentAgeType];
             if (ageItem.verify == 'Y') {
-                this.currentAge = null;
+                this.#currentAge = null;
             } else {
                 this.#currentAge = cart_row.currentAgeType;
                 this.#cartPerinfo[index].currentAgeConId = config.conid;
