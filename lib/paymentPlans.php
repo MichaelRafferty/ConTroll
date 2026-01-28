@@ -38,15 +38,16 @@ EOS;
         } else {
             $pfield = 'newperid';
         }
+        $conid = getConfValue('con', 'id');
 
         // the plans for this payor
         $QQ = <<<EOS
 SELECT pp.*, p.name
 FROM payorPlans pp
 JOIN paymentPlans p on (pp.planId = p.id)
-WHERE $pfield = ?;
+WHERE $pfield = ? AND pp.conid = ?;
 EOS;
-        $QR = dbSafeQuery($QQ, 'i', array($accountId));
+        $QR = dbSafeQuery($QQ, 'ii', array($accountId, $conid));
         $payorPlans = array();
         while ($row = $QR->fetch_assoc()) {
             $payorPlans[$row['id']] = $row;
@@ -59,13 +60,13 @@ SELECT pp.*, t.perid AS transactionPerid
 FROM payorPlanPayments pp
 JOIN payorPlans p ON p.id = pp.payorPlanId
 JOIN transaction t ON t.id = pp.transactionId
-WHERE p.$pfield = ?
+WHERE p.$pfield = ? AND p.conid = ?
 ORDER BY payorPlanId, PaymentNbr;
 EOS;
 
         $currentPlan = null;
         $currentPayments = array();
-        $QR = dbSafeQuery($QQ, 'i', array($accountId));
+        $QR = dbSafeQuery($QQ, 'ii', array($accountId, $conid));
         $numPayorPayments = 0;
         while ($row = $QR->fetch_assoc()) {
             if ($currentPlan != $row['payorPlanId']) {
