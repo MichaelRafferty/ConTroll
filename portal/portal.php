@@ -23,6 +23,7 @@ $condata = get_con();
 $startdate = new DateTime($condata['startdate']);
 $ageByDate = $startdate->format('F j, Y');
 load_cc_procs();
+$now = date_format(date_create('now'), 'Y-m-d H:i:s');
 
 if (getConfValue('portal', 'suspended') == 1) {
     // the portal is now closed, redirect the user back as a logout and let them get the closed screen
@@ -145,7 +146,7 @@ SELECT r.status, r.memId, m.*, a.shortname AS ageShort, a.label AS ageLabel, a.a
        IFNULL(r.complete_trans, r.create_trans) AS sortTrans,
        IFNULL(tp.complete_date, t.create_date) AS transDate,
        IFNULL(tp.perid, t.perid) AS transPerid,
-       IFNULL(tp.newperid, t.newperid) AS transNewPerid,
+       IFNULL(tp.newperid, t.newperid) AS transNewPerid, t.type AS transactionType,
        nc.id AS createNewperid, np.id AS completeNewperid, pc.id AS createPerid, pp.id AS completePerid,
     CASE
         WHEN pp.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pp.first_name, pp.last_name))
@@ -269,9 +270,6 @@ EOS;
     if ($holderRegR !== false && $holderRegR->num_rows > 0) {
         while ($m = $holderRegR->fetch_assoc()) {
             $m['badgename'] = badgeNameDefault($m['badge_name'], $m['badgeNameL2'], $m['first_name'], $m['last_name']);
-            // set member age and primary membership (newest primary)
-            if (isPrimary($m, $conid))
-                $holderPrimary = $m;
             if ($holderMemberAge == '' && $m['memAge'] != 'all')
                 $holderMemberAge = $m['memAge'];
             if ($m['memCategory'] == 'managed')
@@ -323,7 +321,14 @@ EOS;
                 'transPerid' => $m['transPerid'], 'transNewPerid' => $m['transNewPerid'], 'taxable' => $m['taxable'],
                 'fname' => $m['fname'], 'ageshortname' => $m['ageshortname'],
             );
+            if ($m['startdate'] > $now || $m['enddate'] < $now) {
+                $m['expired'] = 1;
+                $item['expired'] = 1;
+            }
             $holderMembership[] = $item;
+            // set member age and primary membership (newest primary)
+            if (isPrimary($m, $conid))
+                $holderPrimary = $m;
             if ($item['completePerid'] != NULL) {
                 $compareId = $item['completePerid'];
                 $compareType = 'p';
@@ -400,7 +405,7 @@ WITH ppl AS (
             ELSE TRIM(CONCAT_WS(' ', nc.first_name, nc.last_name))
         END AS purchaserName,
         IFNULL(tp.perid, t.perid) AS transPerid,
-        IFNULL(tp.newperid, t.newperid) AS transNewPerid
+        IFNULL(tp.newperid, t.newperid) AS transNewPerid, t.type AS transactionType
     FROM perinfo p
     LEFT OUTER JOIN reg r ON p.id = r.perid AND r.conid >= ? AND status IN  ('unpaid', 'paid', 'plan', 'upgraded')
     LEFT OUTER JOIN memLabel m ON m.id = r.memId
@@ -412,7 +417,6 @@ WITH ppl AS (
     LEFT OUTER JOIN perinfo pp ON tp.perid = pp.id
     LEFT OUTER JOIN newperson np ON tp.newperid = np.id
     WHERE p.managedBy = ? AND p.id != p.managedBy AND (NOT (p.first_name = 'Merged' AND p.last_name = 'into'))
-
     UNION
     SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2,
         p.legalName, p.pronouns, p.address, p.addr_2, p.city, p.state, p.zip, p.country,
@@ -431,7 +435,7 @@ WITH ppl AS (
             ELSE TRIM(CONCAT_WS(' ', nc.first_name, nc.last_name))
         END AS purchaserName,
         IFNULL(tp.perid, t.perid) AS transPerid,
-        IFNULL(tp.newperid, t.newperid) AS transNewPerid
+        IFNULL(tp.newperid, t.newperid) AS transNewPerid, t.type AS transactionType
     FROM newperson p
     LEFT OUTER JOIN reg r ON p.id = r.newperid AND r.conid >= ? AND status IN  ('unpaid', 'paid', 'plan', 'upgraded')
     LEFT OUTER JOIN memLabel m ON m.id = r.memId
@@ -481,7 +485,7 @@ WITH ppl AS (
             ELSE TRIM(CONCAT_WS(' ', nc.first_name, nc.last_name))
         END AS purchaserName,
         IFNULL(tp.perid, t.perid) AS transPerid,
-        IFNULL(tp.newperid, t.newperid) AS transNewPerid
+        IFNULL(tp.newperid, t.newperid) AS transNewPerid, t.type AS transactionType
     FROM perinfo p
     LEFT OUTER JOIN reg r ON p.id = r.perid AND r.conid >= ? AND status IN  ('unpaid', 'paid', 'plan', 'upgraded')
     LEFT OUTER JOIN memLabel m ON m.id = r.memId
@@ -511,7 +515,7 @@ WITH ppl AS (
             ELSE TRIM(CONCAT_WS(' ', nc.first_name, nc.last_name))
         END AS purchaserName,
         IFNULL(tp.perid, t.perid) AS transPerid,
-        IFNULL(tp.newperid, t.newperid) AS transNewPerid
+        IFNULL(tp.newperid, t.newperid) AS transNewPerid, t.type AS transactionType
     FROM newperson p
     LEFT OUTER JOIN reg r ON p.id = r.newperid AND r.conid >= ? AND status IN  ('unpaid', 'paid', 'plan', 'upgraded')
     LEFT OUTER JOIN memLabel m ON m.id = r.memId
@@ -565,8 +569,12 @@ EOS;
             if ($mp['memAge'] == '' && $p['memAge'] != 'all')
                 $mp['memAge'] = $p['memAge'];
 
-            if (isPrimary($p, $conid))
+            if (isPrimary($p, $conid)) {
+                if ($p['startdate'] > $now || $p['enddate'] < $now) {
+                    $p['expired'] = 1;
+                }
                 $mp['primary'] = $p;
+            }
 
             $managedPeople[$mId] = $mp;
         }
@@ -624,8 +632,6 @@ if (array_key_exists('plans', $paymentPlansData)) {
 // get valid coupons
 $numCoupons = num_coupons();
 
-$now = date_format(date_create('now'), 'Y-m-d H:i:s');
-
 // compute total due so we can display it up top as well...
 $totalDue = 0;
 $totalUnpaid = 0;
@@ -644,6 +650,7 @@ foreach ($memberships as $key => $membership) {
 
         if ($membership['startdate'] > $now || $membership['enddate'] < $now) {
             $label = "<span class='text-danger'><b>Expired: </b>$label</span>";
+            $membership['expired'] = 1;
             $numExpired++;
         }
     }
@@ -754,8 +761,15 @@ if ($ageType == '') {
 } else {
     $holderAgeLabel = ' ' . $ageListIdx[$ageType]['shortname'] . ' [' . $ageListIdx[$ageType]['label'] . ']';
 }
-
-$holderPrimaryMembership = $holderPrimary ? ('<b>' . $holderPrimary['shortname'] . '</b> (' . $holderPrimary['status'] . ')') : '&nbsp;';
+// check if the holder primary is expired and make suitable setting for it...
+if ($holderPrimary) {
+    $holderPrimaryMembership = '<b>' . $holderPrimary['shortname'] . '</b> (' . $holderPrimary['status'] . ')';
+    if (array_key_exists('expired', $holderPrimary) && $holderPrimary['expired'] == 1) {
+        $holderPrimaryMembership = "<span class='warn'>$holderPrimaryMembership</span>";
+    }
+} else {
+    $holderPrimaryMembership = '&nbsp;';
+    }
 $infoArgs = json_encode(array('id' => $info['id'] , 'type' => $info['personType'], 'fullName' => $info['fullName'],
         'first_name' => $info['first_name'], 'last_name' => $info['last_name'], 'email_addr' => $info['email_addr']));
 $infoArgs = str_replace('"', '\\u0022', $infoArgs);
@@ -918,6 +932,9 @@ EOS;
             $mAgeLabel = ' ' . $ageListIdx[$mAgeType]['shortname'] . ' [' . $ageListIdx[$mAgeType]['label'] . ']';
         }
         $mPrimaryMembership = $mPrimary ? ('<b>' . $mPrimary['shortname'] . '</b> (' . $mPrimary['status'] . ')') : '&nbsp;';
+        if (is_array($mPrimary) && array_key_exists('expired', $mPrimary) && $mPrimary['expired'] == 1) {
+            $mPrimaryMembership = "<span class='warn'>$mPrimaryMembership</span>";
+        }
         echo <<<EOS
 <li class='nav-item mt-2' role='presentation'>
         <button class='nav-link ps-4 pe-4' id='$mid-tab' data-bs-toggle='pill' data-bs-target='#$mid-pane' type='button'
