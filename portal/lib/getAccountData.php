@@ -35,7 +35,7 @@ WITH trans AS (
             WHEN pc.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pc.first_name, pc.last_name))
             ELSE TRIM(CONCAT_WS(' ', nc.first_name, nc.last_name))
         END AS purchaserName,
-        CASE 
+        CASE
             WHEN pn.id IS NOT NULL THEN pn.id
             WHEN nn.id IS NOT NULL THEN nn.id
             ELSE NULL
