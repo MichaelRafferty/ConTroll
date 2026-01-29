@@ -329,9 +329,11 @@ EOS;
 <?php
 }
 // drawPersonTab: draw memberships and profile for a managed person or yourself
-function drawPersonTab($personId, $personType, $person, $conid, $ageList, $memberships, $policies, $interests, $now, $ageByDate) : float {
+function drawPersonTab($personId, $personType, $person, $conid, $ageList, $memberships, $policies, $interests, $now, $ageByDate, $manager) : array {
     global $membershipButtonColors;
-    $paidByOthers = 0;
+    $unpaidByOthers = 0;
+    $unpaidByMe = 0;
+    $unpaidByManager = 0;
     $portal_conf = get_conf('portal');
 
     $hr = <<<EOS
@@ -468,15 +470,22 @@ EOS;
                $compareId = '';
                $compareType = '';
            }
-            $status = $membership['status'];
+           $status = $membership['status'];
            if (($compareId != $personId || $compareType != $personType) && $membership['actPrice'] >= 0) {
                if ($status == 'unpaid')
                    $row3 = '<br/>Added by ' . $membership['purchaserName'];
                else
                    $row3 = '<br/>Purchased by ' . $membership['purchaserName'];
-               if ($membership['status'] == 'unpaid' || $membership['status'] == 'plan')
-                   $paidByOthers += $membership['actPrice'] - ($membership['actPaid'] + $membership['actCouponDiscount']);
+               if ($membership['status'] == 'unpaid' || $membership['status'] == 'plan') {
+                   if ($manager && $compareId == $manager['id'] && $compareType == $manager['personType'])
+                       $unpaidByManager += $membership['actPrice'] - ($membership['actPaid'] + $membership['actCouponDiscount']);
+                   else
+                       $unpaidByOthers += $membership['actPrice'] - ($membership['actPaid'] + $membership['actCouponDiscount']);
+               }
            } else {
+               if ($membership['actPrice'] >= 0 && ($membership['status'] == 'unpaid' || $membership['status'] == 'plan')) {
+                   $unpaidByMe += $membership['actPrice'] - ($membership['actPaid'] + $membership['actCouponDiscount']);
+               }
                $row3 = '';
            }
            if ($memAge == 'all') {
@@ -608,7 +617,7 @@ EOS;
         drawInterestsDisplay($interests, $person['interests'], $id);
     }
 
-    return $paidByOthers;
+    return [$unpaidByOthers, $unpaidByMe, $unpaidByManager];
 }
 
 // draw_editInterests on portal screen - draw the update interests form for the person

@@ -107,6 +107,7 @@ if (array_key_exists('payment', $_REQUEST)) {
 $cdn = getTabulatorIncludes();
 // default memberships to empty to handle the refresh case which never loads them.
 $memberships = [];
+$manager = false;
 
 // this section is for 'in-session' management
 // build info array about the account holder
@@ -822,7 +823,8 @@ echo "</div>\n"; // end row 2
 
 // line 2a (managed disassociate)
 // if this person is managed, print a banner and let them disassociate from the manager if they do not have any membership of type managed
-if ($info['managedByName'] != null) {
+$manager = $info['managedByName'] == null;
+if (!$manager) {
     $managedByName= $info['managedByName'];
 
 echo <<<EOS
@@ -845,7 +847,7 @@ if ($totalDue > 0) {
     $totalDueFormatted = 'Total ';
     if ($activePaymentPlans > 0)
         $totalDueFormatted .= 'non plan ';
-    $totalDueFormatted .= 'due: ' . $dolfmt->formatCurrency((float)$totalDue, $currency);
+    $totalDueFormatted .= 'due: ' . $dolfmt->formatCurrency((float)$totalDue, $currency) . ' for items purchased by you';
     $payHtml = '<button class="btn btn-sm btn-primary p-1 w-100 h-100" name="payBalanceBTNs" onclick="portal.payBalance(' . $totalDue . ', true);"' .
             $disablePay . '>Make Payment</button>';
     echo <<<EOS
@@ -973,7 +975,8 @@ EOS;
 EOS;
 }
 $totalMemberships = count($holderMembership);
-$paidByOthers = drawPersonTab($loginId, $loginType, $info, $conid, $ageListIdx, $holderMembership, $policies, $interests, $now, $ageByDate);
+[$unpaidByOthers, $unpaidByMe, $unpaidByManager] = drawPersonTab($loginId, $loginType, $info, $conid, $ageListIdx, $holderMembership,
+        $policies, $interests, $now, $ageByDate,null);
 
 if ($info['managedByName'] == null) {
     // ending of the holder part
@@ -995,8 +998,9 @@ EOS;
     <div class='tab-pane fade' id='$mid-pane' role='tabpanel' aria-labelledby='$mid-tab' tabindex='0'>
         <div class="container-fluid">
 EOS;
-        drawPersonTab($p['id'], $p['personType'], $m['person'], $conid, $ageListIdx, $managed, $policies, $interests, $now, $ageByDate);
-
+        $unpaids = drawPersonTab($p['id'], $p['personType'], $m['person'], $conid, $ageListIdx, $managed, $policies, $interests, $now, $ageByDate, $info);
+        $unpaidByOthers += $unpaids[1];
+        $unpaidByMe += $unpaids[0] + $unpaids[2];
         // ending that managee
         echo <<<EOS
         </div>
@@ -1011,48 +1015,59 @@ EOS;
 }
 
 // create a div and bg color it to separate it logically from the other parts
-if ($totalDue > 0 || count($payorPlan) > 0 || $paidByOthers > 0) {
+if ($unpaidByMe > 0 || count($payorPlan) > 0 || $unpaidByOthers > 0) {
 ?>
     <div class='container-fluid p-0 m-0' id="paymentSectionDiv" style="background-color: #F0F0FF;">
 <?php
 }
 
-$payHtml = '';
-$totalDueFormatted = '';
-if ($totalDue > 0) {
-    $totalDueFormatted = '&nbsp;&nbsp;Total due:' . $dolfmt->formatCurrency((float) $totalDue, $currency);
-    $payHtml = " $totalDueFormatted   " .
-        '<button class="btn btn-sm btn-primary pt-1 pb-1 ms-1 me-2" name="payBalanceBTNs" onclick="portal.payBalance(' . $totalDue . ', true);"' .
-        $disablePay . '>Pay Total Amount Due</button>';
-    setSessionVar('totalDue', $totalDue); // used for validation in payment side
-    if ($numCoupons > 0) {
-        $payHtml .= ' <button class="btn btn-primary btn-sm pt-1 pb-1 ms-0 me-2" id="addCouponButton" onclick="coupon.ModalOpen(1)">Add Coupon</button>';
-    }
-}
-
-    if ($activePaymentPlans > 0) {
-        ?>
-        <div class='row mt-5'>
-            <div class='col-sm-12'><h1 class="size-h3">Payment Plans for this account:</h1></div>
+if ($activePaymentPlans > 0) {
+    ?>
+    <div class='row mt-5'>
+        <div class='col-sm-12'><h1 class="size-h3">Payment Plans for this account:</h1></div>
     </div>
-<?php
+    <?php
     outputCustomText('main/plan');
     drawPaymentPlans($info, $paymentPlansData, true);
 }
-if ($paidByOthers > 0) {
+$totalDueFormatted = '';
+if ($manager) {
+    $forYou = ', for you and people you manage,';
+    $othersForYou = $forYou;
+} else {
+    $forYou = '';
+    $othersForYou = ', for you,';
+}
+if ($unpaidByMe > 0) {
+    $totalDueFormatted = "Purchased by you$forYou total: " . $dolfmt->formatCurrency((float) $unpaidByMe, $currency);
+    $payHtml = " $totalDueFormatted   " .
+        '<button class="btn btn-sm btn-primary pt-1 pb-1 ms-1 me-2" name="payBalanceBTNs" onclick="portal.payBalance(' . $totalDue . ', true);"' .
+        $disablePay . '>Pay Total Amount Due</button>';
+    setSessionVar('totalDue', $unpaidByMe); // used for validation in payment side
+    if ($numCoupons > 0) {
+        $payHtml .= ' <button class="btn btn-primary btn-sm pt-1 pb-1 ms-0 me-2" id="addCouponButton" onclick="coupon.ModalOpen(1)">Add Coupon</button>';
+    }
+    echo <<<EOS
+    <div class='row mt-2'>
+        <div clss="col-sm-auto"><h1 class='size-h3'>$payHtml</h1></div>
+    </div>
+EOS;
+}
+
+if ($unpaidByOthers > 0) {
     // compute a list of mem id's, and the total amount due
     OutputCustomText('main/purchOthers');
-    $otherDueFormatted = '<span id="otherDueAmountSpan">' . $dolfmt->formatCurrency((float) $paidByOthers, $currency) . '</span>' .
-        '&nbsp;&nbsp;<button class="btn btn-sm btn-primary pt-1 pb-1 ms-1 me-2" onclick="portal.payOther(' . $paidByOthers . ');"' .
+    $otherDueFormatted = '<span id="otherDueAmountSpan">' . $dolfmt->formatCurrency((float) $unpaidByOthers, $currency) . '</span>' .
+        '&nbsp;&nbsp;<button class="btn btn-sm btn-primary pt-1 pb-1 ms-1 me-2" onclick="portal.payOther(' . $unpaidByOthers . ');"' .
         $disablePay . '>Optionally Pay All or Part</button>';
 ?>
-    <div class='row mt-5'>
-        <div class='col-sm-12'><h1 class='size-h3'>Memberships purchased by others for you total: <?php echo $otherDueFormatted; ?></h1></div>
+    <div class='row mt-2'>
+        <div class='col-sm-12'><h1 class='size-h3'>Purchased by others<?php echo $othersForYou; ?> total: <?php echo $otherDueFormatted; ?></h1></div>
     </div>
 
 <?php
 }
-if ($totalDue > 0 || count($payorPlan) > 0 || $paidByOthers > 0 ) {
+if ($unpaidByMe > 0 || count($payorPlan) > 0 || $unpaidByOthers > 0 ) {
 ?>
     </div>
 <?php
