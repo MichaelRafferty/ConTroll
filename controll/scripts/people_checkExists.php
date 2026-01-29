@@ -86,99 +86,85 @@ $typestr = '';
 $valueArr = [];
 if ($firstName != '') {
     $firstName2ch = mb_substr($firstName, 0, 2);
-    $mQ .= $and . "(lower(p.first_name) = ? OR lower(p.first_name) like ? OR SOUNDEX(p.first_name) = SOUNDEX(?))\n";
+    $mQ .= $and . "(lower(p.first_name) like ? OR SOUNDEX(p.first_name) = SOUNDEX(?))\n";
     $and = 'AND ';
-    $typestr .= 'sss';
-    $valueArr[] = $firstName;
+    $typestr .= 'ss';
     $valueArr[] = $firstName2ch . '%';
     $valueArr[] = $firstName;
 }
 if ($middleName != '') {
     $middleName2ch = mb_substr($middleName, 0, 2);
-    $mQ .= $and . "(lower(p.middle_name) = ? OR lower(p.middle_name) like ? OR SOUNDEX(p.middle_name) = SOUNDEX(?))\n";
+    $mQ .= $and . "(lower(p.middle_name) like ? OR SOUNDEX(p.middle_name) = SOUNDEX(?))\n";
     $and = 'AND ';
-    $typestr .= 'sss';
-    $valueArr[] = $middleName;
+    $typestr .= 'ss';
     $valueArr[] = $middleName2ch . '%';
     $valueArr[] = $middleName;
 }
 if ($lastName != '') {
     $lastName4ch = mb_substr($lastName, 0, 4);
-    $mQ .= $and . "(lower(p.last_name) = ? OR lower(p.last_name) like ? OR SOUNDEX(p.last_name) = SOUNDEX(?))\n";
+    $mQ .= $and . "(lower(p.last_name) like ? OR SOUNDEX(p.last_name) = SOUNDEX(?))\n";
     $and = 'AND ';
-    $typestr .= 'sss';
-    $valueArr[] = $lastName;
+    $typestr .= 'ss';
     $valueArr[] = $lastName4ch . '%';
     $valueArr[] = $lastName;
 }
 if ($legalName != '') {
-    $mQ .= $and . "(lower(p.legalName) = ? OR lower(p.legalName) like ?)\n";
+    $mQ .= $and . "lower(p.legalName) like ?\n";
     $and = 'AND ';
-    $typestr .= 'ss';
-    $valueArr[] = $legalName;
+    $typestr .= 's';
     $valueArr[] = '%' . $legalName . '%';
 }
 if ($badgeName != '') {
-    $mQ .= $and . "(lower(p.badge_name) = ? OR lower(p.badge_name) like ?)\n";
+    $mQ .= $and . "lower(p.badge_name) like ?\n";
     $and = 'AND ';
-    $typestr .= 'ss';
-    $valueArr[] = $badgeName;
+    $typestr .= 's';
     $valueArr[] = '%' . $badgeName . '%';
 }
 if ($badgeNameL2 != '') {
-    $mQ .= $and . "(lower(p.badgeNamel2) = ? OR lower(p.badgeNameL2) like ?)\n";
+    $mQ .= $and . "lower(p.badgeNameL2) like ?\n";
     $and = 'AND ';
-    $typestr .= 'ss';
-    $valueArr[] = $badgeNameL2;
+    $typestr .= 's';
     $valueArr[] = '%' . $badgeNameL2 . '%';
 }
 if ($address != '') {
     $typestr .= 'ssss';
-    $valueArr[] = $address;
     $valueArr[] = '%' . $address . '%';
-    $valueArr[] = $address;
     $valueArr[] = '%' . $address . '%';
-    $mQ .= $and . "(lower(p.address) = ? OR lower(p.address) like ? OR lower(p.addr_2) = ? OR lower(p.addr_2) like ?)";
+    $mQ .= $and . "(lower(p.address) like ? OR lower(p.addr_2) like ?)";
 }
 if ($addr2 != '') {
-    $typestr .= 'ssss';
-    $valueArr[] = $addr2;
+    $typestr .= 'ss';
     $valueArr[] = '%' . $addr2 . '%';
-    $valueArr[] = $addr2;
     $valueArr[] = '%' . $addr2 . '%';
-    $mQ .= $and . '(lower(p.address) = ? OR lower(p.address) like ? OR lower(p.addr_2) = ? OR lower(p.addr_2) like ?)';
+    $mQ .= $and . '(lower(p.address) like ? OR lower(p.addr_2) like ?)';
 }
 
 if ($city != '') {
-    $mQ .= $and . "(lower(p.city) = ? OR lower(p.city) like ?)\n";
+    $mQ .= $and . "lower(p.city) like ?\n";
     $and = 'AND ';
-    $typestr .= 'ss';
-    $valueArr[] = $city;
+    $typestr .= 's';
     $valueArr[] = '%' . $city . '%';
 }
 
 if ($state != '') {
-    $mQ .= $and . "(lower(p.state) = ? OR lower(p.state) like ?)\n";
+    $mQ .= $and . "lower(p.state) like ?\n";
     $and = 'AND ';
-    $typestr .= 'ss';
-    $valueArr[] = $state;
+    $typestr .= 's';
     $valueArr[] = '%' . $state . '%';
 }
 
 if ($zip != '') {
     $zipch = str_replace(' ', '', str_replace('-', '', $zip));
-    $mQ .= $and . "REPLACE(REPLACE(' ', '', lower(p.zip)), '-', '') = ? OR REPLACE(REPLACE(' ', '', lower(p.zip)), '-', '') like ?\n";
+    $mQ .= $and . "REPLACE(REPLACE(lower(p.zip), ' ', ''), '-', '') like ?\n";
     $and = 'AND ';
-    $typestr .= 'ss';
-    $valueArr[] = $zipch;
+    $typestr .= 's';
     $valueArr[] = '%' . $zipch . '%';
 }
 
 if ($emailAddr != '') {
-    $mQ .= $and . "(lower(p.email_addr) = ? OR lower(p.email_addr) like ?)\n";
+    $mQ .= $and . "lower(p.email_addr) like ?\n";
     $and = 'AND ';
-    $typestr .= 'ss';
-    $valueArr[] = $emailAddr;
+    $typestr .= 's';
     $valueArr[] = '%' . $emailAddr . '%';
 }
 
@@ -186,11 +172,9 @@ if ($phone != '') {
     $phonech = str_replace('(', '', str_replace(')', '', str_replace('-', '',
                  str_replace(' ', '', $phone))));
 
-    $mQ .= $and . "(REPLACE(REPLACE(REPLACE(REPLACE(LOWER(TRIM(IFNULL(p.phone, ''))), ')', ''), '(', ''), '-', ''), ' ', '') = ? OR
-                    REPLACE(REPLACE(REPLACE(REPLACE(LOWER(TRIM(IFNULL(p.phone, ''))), ')', ''), '(', ''), '-', ''), ' ', '') like ?)\n";
+    $mQ .= $and . "REPLACE(REPLACE(REPLACE(REPLACE(LOWER(TRIM(IFNULL(p.phone, ''))), ')', ''), '(', ''), '-', ''), ' ', '') like ?\n";
     $and = 'AND ';
-    $typestr .= 'ss';
-    $valueArr[] = $phonech;
+    $typestr .= 's';
     $valueArr[] = '%' . $phonech . '%';
 }
 $mQ .= ";\n";
