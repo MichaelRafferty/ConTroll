@@ -810,29 +810,32 @@ class Portal {
         clear_message('makePayMessageDiv');
         var html = `
         <div class="row mt-3">
-            <div class="col-sm-1" style="text-align: right">Pay</div>
-            <div class="col-sm-5">Membership</div>
-            <div class="col-sm-1" style="text-align: right">Price</div>
-            <div class="col-sm-1" style="text-align: right">Already Paid</div>
-            <div class="col-sm-1" style="text-align: right">Balance Due</div>        
+            <div class="col-sm-1" style="text-align: right"><b>Pay</b></div>
+            <div class="col-sm-3"><b>Person</b></div>
+            <div class="col-sm-3"><b>Membership</b></div>
+            <div class="col-sm-1" style="text-align: right"><b>Price</b></div>
+            <div class="col-sm-1" style="text-align: right"><b>Already Paid</b></div>
+            <div class="col-sm-1" style="text-align: right"><b>Balance Due</b></div>        
         </div>`;
 
         // build a list of memberships to pay with check boxes
         this.#partialPayAmt = 0;
         this.#otherPayAmt = Number(totalDue);
-        for (var i = 0; i < paidOtherMembership.length; i++) {
-            var mem = paidOtherMembership[i];
-            var price =  Number(mem.actPrice).toFixed(2);
-            var paid =  Number(Number(mem.actPaid) + Number(mem.actCouponDiscount)).toFixed(2);
-            var bal = Number(Number(mem.actPrice) - (Number(mem.actPaid) + Number(mem.actCouponDiscount))).toFixed(2);
+        for (let i = 0; i < paidOtherMembership.length; i++) {
+            let mem = paidOtherMembership[i];
+            let fullName = mem.fullName;
+            let price =  this.#currencyFmt.format(Number(mem.actPrice).toFixed(2));
+            let paid =  this.#currencyFmt.format(Number(Number(mem.actPaid) + Number(mem.actCouponDiscount)).toFixed(2))
+            let bal = Number(Number(mem.actPrice) - (Number(mem.actPaid) + Number(mem.actCouponDiscount))).toFixed(2);
             html += `
         <div class="row">
             <div class="col-sm-1" style="text-align: right"><input type="checkbox" id="other-` +
-                mem.id + '" name="other-' + mem.id + '" onChange="portal.payOtherToggle(' + mem.id + ',' + bal + `);"></div>
-            <div class="col-sm-5"><label for="other-` + mem.id + `">` + mem.label + `</label></div>
+                mem.regid + '" name="other-' + mem.regid + '" onChange="portal.payOtherToggle(' + mem.regid + ',' + bal + `);"></div>
+            <div class="col-sm-3">` + fullName + `</div>
+            <div class="col-sm-3"><label for="other-` + mem.regid + `">` + mem.label + `</label></div>
             <div class="col-sm-1" style="text-align: right">` + price + `</div>
             <div class="col-sm-1" style="text-align: right">` + paid + `</div>
-            <div class="col-sm-1" style="text-align: right">` + bal + `</div>
+            <div class="col-sm-1" style="text-align: right">` + this.#currencyFmt.format(bal) + `</div>
         </div>
 `;
         }
@@ -844,14 +847,15 @@ class Portal {
         </button></div>
         <div class="col-sm-auto">
             <b>The total amout due for selected memberships purchased by others totaling
-                <span id="partialPayDue">` + Number(this.#partialPayAmt).toFixed(2) + `</span></b>
+                <span id="partialPayDue">` + this.#currencyFmt.format(Number(this.#partialPayAmt).toFixed(2)) + `</span></b>
         </div>
     </div>
     <div class="row mt-1 mb-3">
         <div class="col-sm-2" style="text-align: right"><button class="btn btn-sm btn-primary pt-0 pb-0"
             onClick="portal.makeOrder(null, 1);">Pay All</button></div>
         <div class="col-sm-auto">
-            <b>The total amout due for all memberships purchased by others is ` + Number(totalDue).toFixed(2) + `</b>
+            <b>The total amout due for all memberships purchased by others is ` +
+                this.#currencyFmt.format(Number(totalDue).toFixed(2)) + `</b>
         </div>
     </div>
 `;
@@ -1048,7 +1052,7 @@ class Portal {
                 paidOtherMembership[i]['payThis'] = 1;
                 amount +=  Number(paidOtherMembership[i].actPrice) - (Number(paidOtherMembership[i].actPaid) + Number(paidOtherMembership[i].actCouponDiscount));
             } else {
-                var checked = document.getElementById('other-' + paidOtherMembership[i]['id']).checked;
+                var checked = document.getElementById('other-' + paidOtherMembership[i]['regid']).checked;
                 paidOtherMembership[i]['payThis'] = checked ? 1 : 0;
                 if (checked)
                     amount +=  Number(paidOtherMembership[i].actPrice) - (Number(paidOtherMembership[i].actPaid) + Number(paidOtherMembership[i].actCouponDiscount));

@@ -311,68 +311,74 @@ EOS;
                 $label = $m['label'];
                 $shortname = $m['shortname'];
             }
-            $item = array ('label' => ($m['conid'] != $conid ? $m['conid'] . ' ' : '') . $label, 'status' => $m['status'],
-                'memAge' => $m['memAge'], 'type' => $m['memType'], 'category' => $m['memCategory'],
-                'shortname' => ($m['conid'] != $conid ? $m['conid'] . ' ' : '') . $shortname, 'ageShort' => $m['ageShort'], 'ageLabel' => $m['ageLabel'],
-                'createNewperid' => $m['createNewperid'], 'completeNewperid' => $m['completeNewperid'],
-                'createPerid' => $m['createPerid'], 'completePerid' => $m['completePerid'], 'purchaserName' => $m['purchaserName'],
-                'startdate' => $m['startdate'], 'enddate' => $m['enddate'], 'online' => $m['online'],
-                'actPrice' => $m['actPrice'], 'actPaid' => $m['actPaid'], 'actCouponDiscount' => $m['actCouponDiscount'],
-                'email_addr' => $m['email_addr'], 'phone' => $m['phone'],
-                'transPerid' => $m['transPerid'], 'transNewPerid' => $m['transNewPerid'], 'taxable' => $m['taxable'],
-                'fname' => $m['fname'], 'ageshortname' => $m['ageshortname'],
-            );
-            if ($m['startdate'] > $now || $m['enddate'] < $now) {
+            if ($m['startdate'] > $now || $m['enddate'] < $now)
                 $m['expired'] = 1;
-                $item['expired'] = 1;
-            }
-            $holderMembership[] = $item;
-            // set member age and primary membership (newest primary)
-            if (isPrimary($m, $conid))
-                $holderPrimary = $m;
-            if ($item['completePerid'] != NULL) {
-                $compareId = $item['completePerid'];
-                $compareType = 'p';
-            } else if ($item['completeNewperid'] != NULL) {
-                $compareId = $item['completeNewperid'];
-                $compareType = 'n';
-            } else if ($item['createPerid'] != NULL) {
-                $compareId = $item['createPerid'];
-                $compareType = 'p';
-            } else if ($item['createNewperid'] != NULL) {
-                $compareId = $item['createNewperid'];
-                $compareType = 'n';
-            } else {
-                $compareId = '';
-                $compareType = '';
-            }
-            if ($compareId != $loginId || $compareType != $loginType) {
-                $item['create_date'] = $m['create_date'];
-                $item['create_trans'] = $m['create_trans'];
-                $item['complete_trans'] = $m['complete_trans'];
-                $item['regid'] = $m['regid'];
-                $item['memId'] = $m['memId'];
-                $item['conid'] = $m['conid'];
-                $item['regPerid'] = $m['regPerid'];
-                $item['regNewperid'] = $m['regNewperid'];
-                $item['sortTrans'] = $m['sortTrans'];
-                $item['transDate'] = $m['transDate'];
-                $item['age'] = $m['memAge'];
-                $item['online'] = $m['online'];
-                $item['managedBy'] = $m['managedBy'];
-                $item['managedByNew'] = $m['managedByNew'];
-                $item['badge_name'] = $m['badge_name'];
-                $item['badgeNameL2'] = $m['badgeNameL2'];
-                $item['badgename'] = $m['badgename'];
-                $item['fullName'] = $m['fullName'];
-                $item['memberId'] = $m['memberId'];
-                $item['planId'] = $m['planId'];
-                $paidOtherMembership[] = $item;
-            }
-            if (isPrimary($m, $conid)) {
-                $numPrimary++;
-                if ($m['status'] == 'paid')
-                    $numPaidPrimary++;
+
+            if ($m['regid'] != null) {
+                $item = array ('label' => ($m['conid'] != $conid ? $m['conid'] . ' ' : '') . $label, 'status' => $m['status'],
+                        'memAge' => $m['memAge'], 'type' => $m['memType'], 'category' => $m['memCategory'],
+                        'shortname' => ($m['conid'] != $conid ? $m['conid'] . ' ' : '') . $shortname,
+                        'ageShort' => $m['ageShort'], 'ageLabel' => $m['ageLabel'],
+                        'createNewperid' => $m['createNewperid'], 'completeNewperid' => $m['completeNewperid'],
+                        'createPerid' => $m['createPerid'], 'completePerid' => $m['completePerid'], 'purchaserName' => $m['purchaserName'],
+                        'startdate' => $m['startdate'], 'enddate' => $m['enddate'], 'online' => $m['online'],
+                        'actPrice' => $m['actPrice'], 'actPaid' => $m['actPaid'], 'actCouponDiscount' => $m['actCouponDiscount'],
+                        'email_addr' => $m['email_addr'], 'phone' => $m['phone'],
+                        'transPerid' => $m['transPerid'], 'transNewPerid' => $m['transNewPerid'], 'taxable' => $m['taxable'],
+                        'fname' => $m['fname'], 'ageshortname' => $m['ageshortname'],
+                );
+
+                if (array_key_exists('expired', $m))
+                    $item['expired'] = $m['expired'];
+
+                $holderMembership[] = $item;
+                // set member age and primary membership (newest primary)
+                if (isPrimary($m, $conid))
+                    $holderPrimary = $m;
+                if ($item['completePerid'] != null) {
+                    $compareId = $item['completePerid'];
+                    $compareType = 'p';
+                } else if ($item['completeNewperid'] != null) {
+                    $compareId = $item['completeNewperid'];
+                    $compareType = 'n';
+                } else if ($item['createPerid'] != null) {
+                    $compareId = $item['createPerid'];
+                    $compareType = 'p';
+                } else if ($item['createNewperid'] != null) {
+                    $compareId = $item['createNewperid'];
+                    $compareType = 'n';
+                } else {
+                    $compareId = '';
+                    $compareType = '';
+                }
+                if ($compareId != $loginId || $compareType != $loginType) {
+                    $item['create_date'] = $m['create_date'];
+                    $item['create_trans'] = $m['create_trans'];
+                    $item['complete_trans'] = $m['complete_trans'];
+                    $item['regid'] = $m['regid'];
+                    $item['memId'] = $m['memId'];
+                    $item['conid'] = $m['conid'];
+                    $item['regPerid'] = $m['regPerid'];
+                    $item['regNewperid'] = $m['regNewperid'];
+                    $item['sortTrans'] = $m['sortTrans'];
+                    $item['transDate'] = $m['transDate'];
+                    $item['age'] = $m['memAge'];
+                    $item['online'] = $m['online'];
+                    $item['managedBy'] = $m['managedBy'];
+                    $item['managedByNew'] = $m['managedByNew'];
+                    $item['badge_name'] = $m['badge_name'];
+                    $item['badgeNameL2'] = $m['badgeNameL2'];
+                    $item['badgename'] = $m['badgename'];
+                    $item['fullName'] = $m['fullName'];
+                    $item['memberId'] = $m['memberId'];
+                    $item['planId'] = $m['planId'];
+                    $paidOtherMembership[] = $item;
+                }
+                if (isPrimary($m, $conid)) {
+                    $numPrimary++;
+                    if ($m['status'] == 'paid')
+                        $numPaidPrimary++;
+                }
             }
         }
         $holderRegR->free();
@@ -394,8 +400,10 @@ WITH ppl AS (
         p.banned, p.creation_date, p.update_date, p.change_notes, p.active, p.currentAgeConId, p.currentAgeType,
         p.managedBy, NULL AS managedByNew,
         TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
-        r.conid, r.status, r.memId, r.create_date,  r.perid AS regPerid, r.newperid AS regNewperid,
+        r.conid, r.status, r.memId, r.create_date, r.id AS regid, r.perid AS regPerid, r.newperid AS regNewperid, r.planId,
         r.price AS actPrice, IFNULL(r.paid, 0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,
+        r.create_trans, r.complete_trans,
+        IFNULL(r.complete_trans, r.create_trans) AS sortTrans, IFNULL(tp.complete_date, t.create_date) AS transDate,
         m.memCategory, m.memType, m.memAge, m.shortname, m.label, m.startdate, m.enddate, m.online,
         a.shortname AS ageShort, a.label AS ageLabel, 'p' AS personType, m.taxable, m.ageShortName,
         nc.id AS createNewperid, np.id AS completeNewperid, pc.id AS createPerid, pp.id AS completePerid,
@@ -404,7 +412,7 @@ WITH ppl AS (
             WHEN np.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', np.first_name, np.last_name))
             WHEN pc.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pc.first_name, pc.last_name))
             ELSE TRIM(CONCAT_WS(' ', nc.first_name, nc.last_name))
-        END AS purchaserName,
+        END AS purchaserName, r.id AS memberId,
         IFNULL(tp.perid, t.perid) AS transPerid,
         IFNULL(tp.newperid, t.newperid) AS transNewPerid, t.type AS transactionType
     FROM perinfo p
@@ -424,8 +432,10 @@ WITH ppl AS (
         'N' AS banned, NULL AS creation_date, NULL AS update_date, '' AS change_notes, 'Y' AS active, p.currentAgeConId, p.currentAgeType,
         p.managedBy, p.managedByNew,
         TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
-        r.conid, r.status, r.memId, r.create_date, r.perid AS regPerid, r.newperid AS regNewperid,
+        r.conid, r.status, r.memId, r.create_date, r.id AS regid, r.perid AS regPerid, r.newperid AS regNewperid, r.planId,
         r.price AS actPrice, IFNULL(r.paid, 0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,
+        r.create_trans, r.complete_trans,
+        IFNULL(r.complete_trans, r.create_trans) AS sortTrans, IFNULL(tp.complete_date, t.create_date) AS transDate,
         m.memCategory, m.memType, m.memAge, m.shortname, m.label, m.startdate, m.enddate, m.online,
         a.shortname AS ageShort, a.label AS ageLabel, 'n' AS personType, m.taxable, m.ageShortName,
         nc.id AS createNewperid, np.id AS completeNewperid, pc.id AS createPerid, pp.id AS completePerid,
@@ -434,7 +444,7 @@ WITH ppl AS (
             WHEN np.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', np.first_name, np.last_name))
             WHEN pc.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pc.first_name, pc.last_name))
             ELSE TRIM(CONCAT_WS(' ', nc.first_name, nc.last_name))
-        END AS purchaserName,
+        END AS purchaserName, r.id AS memberId,
         IFNULL(tp.perid, t.perid) AS transPerid,
         IFNULL(tp.newperid, t.newperid) AS transNewPerid, t.type AS transactionType
     FROM newperson p
@@ -474,8 +484,10 @@ WITH ppl AS (
         p.banned, p.creation_date, p.update_date, p.change_notes, p.active, p.currentAgeConId, p.currentAgeType,
         p.managedBy, NULL AS managedByNew,
         TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
-        r.conid, r.status, r.memId, r.create_date, m.memCategory, m.memType, m.memAge, m.shortname, m.label,
+        r.conid, r.status, r.memId, r.create_date, r.id AS regid, m.memCategory, m.memType, m.memAge, m.shortname, m.label,
         r.price AS actPrice, IFNULL(r.paid, 0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,
+        r.create_trans, r.complete_trans,
+        IFNULL(r.complete_trans, r.create_trans) AS sortTrans, IFNULL(tp.complete_date, t.create_date) AS transDate,
         m.startdate, m.enddate, m.online,
         a.shortname AS ageShort, a.label AS ageLabel, 'p' AS personType, m.taxable, m.ageShortName,
         nc.id AS createNewperid, np.id AS completeNewperid, pc.id AS createPerid, pp.id AS completePerid,
@@ -484,7 +496,7 @@ WITH ppl AS (
             WHEN np.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', np.first_name, np.last_name))
             WHEN pc.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pc.first_name, pc.last_name))
             ELSE TRIM(CONCAT_WS(' ', nc.first_name, nc.last_name))
-        END AS purchaserName,
+        END AS purchaserName, r.id AS memberId,
         IFNULL(tp.perid, t.perid) AS transPerid,
         IFNULL(tp.newperid, t.newperid) AS transNewPerid, t.type AS transactionType
     FROM perinfo p
@@ -504,8 +516,10 @@ WITH ppl AS (
         'N' AS banned, NULL AS creation_date, NULL AS update_date, '' AS change_notes, 'Y' AS active, p.currentAgeConId, p.currentAgeType,
         p.managedBy, p.managedByNew,
         TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
-        r.conid, r.status, r.memId, r.create_date, m.memCategory, m.memType, m.memAge, m.shortname, m.label,
+        r.conid, r.status, r.memId, r.create_date, r.id AS regid, m.memCategory, m.memType, m.memAge, m.shortname, m.label,
         r.price AS actPrice, IFNULL(r.paid, 0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,
+        r.create_trans, r.complete_trans,
+        IFNULL(r.complete_trans, r.create_trans) AS sortTrans, IFNULL(tp.complete_date, t.create_date) AS transDate,
         m.startdate, m.enddate, m.online,
         a.shortname AS ageShort, a.label AS ageLabel, 'n' AS personType, m.taxable, m.ageShortName,
         nc.id AS createNewperid, np.id AS completeNewperid, pc.id AS createPerid, pp.id AS completePerid,
@@ -514,7 +528,7 @@ WITH ppl AS (
             WHEN np.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', np.first_name, np.last_name))
             WHEN pc.id IS NOT NULL THEN TRIM(CONCAT_WS(' ', pc.first_name, pc.last_name))
             ELSE TRIM(CONCAT_WS(' ', nc.first_name, nc.last_name))
-        END AS purchaserName,
+        END AS purchaserName, r.id AS memberId,
         IFNULL(tp.perid, t.perid) AS transPerid,
         IFNULL(tp.newperid, t.newperid) AS transNewPerid, t.type AS transactionType
     FROM newperson p
@@ -578,6 +592,63 @@ EOS;
             }
 
             $managedPeople[$mId] = $mp;
+
+            if ($p['completePerid'] != NULL) {
+                $compareId = $p['completePerid'];
+                $compareType = 'p';
+            } else if ($p['completeNewperid'] != NULL) {
+                $compareId = $p['completeNewperid'];
+                $compareType = 'n';
+            } else if ($p['createPerid'] != NULL) {
+                $compareId = $p['createPerid'];
+                $compareType = 'p';
+            } else if ($p['createNewperid'] != NULL) {
+                $compareId = $p['createNewperid'];
+                $compareType = 'n';
+            } else {
+                $compareId = '';
+                $compareType = '';
+            }
+
+            if (($compareId != $loginId || $compareType != $loginType) && $p['regid'] != null) {
+                $item = array ('label' => ($p['conid'] != $conid ? $p['conid'] . ' ' : '') . $label, 'status' => $p['status'],
+                        'memAge' => $p['memAge'], 'type' => $p['memType'], 'category' => $p['memCategory'],
+                        'shortname' => ($p['conid'] != $conid ? $p['conid'] . ' ' : '') . $shortname,
+                        'ageShort' => $p['ageShort'], 'ageLabel' => $p['ageLabel'],
+                        'createNewperid' => $p['createNewperid'], 'completeNewperid' => $p['completeNewperid'],
+                        'createPerid' => $p['createPerid'], 'completePerid' => $p['completePerid'], 'purchaserName' => $p['purchaserName'],
+                        'startdate' => $p['startdate'], 'enddate' => $p['enddate'], 'online' => $p['online'],
+                        'actPrice' => $p['actPrice'], 'actPaid' => $p['actPaid'], 'actCouponDiscount' => $p['actCouponDiscount'],
+                        'email_addr' => $p['email_addr'], 'phone' => $p['phone'],
+                        'transPerid' => $p['transPerid'], 'transNewPerid' => $p['transNewPerid'], 'taxable' => $p['taxable'],
+                        'fname' => $p['first_name'], 'ageshortname' => $p['ageShortName'],
+                );
+
+                if (array_key_exists('expired', $p))
+                    $item['expired'] = $p['expired'];
+
+                $item['create_date'] = $p['create_date'];
+                $item['create_trans'] = $p['create_trans'];
+                $item['complete_trans'] = $p['complete_trans'];
+                $item['regid'] = $p['regid'];
+                $item['memId'] = $p['memId'];
+                $item['conid'] = $p['conid'];
+                $item['regPerid'] = $p['regPerid'];
+                $item['regNewperid'] = $p['regNewperid'];
+                $item['sortTrans'] = $p['sortTrans'];
+                $item['transDate'] = $p['transDate'];
+                $item['age'] = $p['memAge'];
+                $item['online'] = $p['online'];
+                $item['managedBy'] = $p['managedBy'];
+                $item['managedByNew'] = $p['managedByNew'];
+                $item['badge_name'] = $p['badge_name'];
+                $item['badgeNameL2'] = $p['badgeNameL2'];
+                $item['badgename'] = $p['badgename'];
+                $item['fullName'] = $p['fullName'];
+                $item['memberId'] = $p['memberId'];
+                $item['planId'] = $p['planId'];
+                $paidOtherMembership[] = $item;
+            }
         }
         $managedByR->free();
     }
