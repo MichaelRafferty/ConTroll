@@ -1129,7 +1129,7 @@ class Pos {
 
         let row = {
             perid: this.#new_perid, first_name: person.fname, middle_name: person.mname, last_name: person.lname, suffix: person.suffix,
-            legalName: person.legalName, pronouns: person.pronouns, badge_name: person.badgename, badgeNameL2: person.badgenameL2,
+            legalName: person.legalName, pronouns: person.pronouns, badge_name: person.badge_name, badgeNameL2: person.badgeNameL2,
             fullName: getFullName(person),
             address_1: person.addr1, address_2: person.addr2, city: person.city, state: person.state, postal_code: person.zip,
             open_notes: '', currentAgeType: person.age, currentAgeConId: config.conid,
