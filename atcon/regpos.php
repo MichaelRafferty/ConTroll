@@ -224,7 +224,7 @@ if (array_key_exists('creditonline', $atcon)) {
                                         <button type="button" class="btn btn-primary btn-sm" id="addnew-btn" name="add_btn"
                                                 onclick="pos.add_new();">Add to Cart
                                         </button>
-                                        <button type='button' class='btn btn-primary btn-sm' id='addoverride-btn' name='override_btn' hidden
+                                        <button type='button' class='btn btn-warning btn-sm' id='addoverride-btn' name='override_btn' hidden
                                                 onclick='pos.add_new2();'>Add/Update Cart Overriding Missing Fields
                                         </button>
                                         <button type="button" class="btn btn-secondary btn-sm" id="clearadd-btn" onclick="pos.clearAdd(1);">
