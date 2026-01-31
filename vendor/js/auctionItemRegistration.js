@@ -67,6 +67,9 @@ class AuctionItemRegistration {
         }
         clear_message('ir_message_div');
         this.#closeAnyway = false;
+        let btn = document.getElementById('importPriorBtn');
+        if (btn)
+            btn.hidden = this.#numItems > 0;
         this.#item_registration.hide();
     }
 
@@ -148,7 +151,12 @@ class AuctionItemRegistration {
             this.#nfsItemTable.destroy();
             this.#nfsItemTable = null;
         }
-        this.#item_registration.hide();
+
+        let btn = document.getElementById('importPriorBtn');
+        if (btn)
+            btn.hidden = this.#numItems > 0;
+
+        this.#item_registration.hide();addoverride-btn
     };
 
     dataChangedArt(data=null) {
@@ -715,6 +723,33 @@ class AuctionItemRegistration {
         this.#nfsSaveBtn.innerHTML='Save Changes';
         this.#nfsSaveBtn.disbled=true;
     }
+
+    import(region) {
+
+        clear_message('ir_message_div');
+        this.#region = region;
+        var _this = this;
+        var script = "scripts/getItems.php"
+        clear_message();
+        $.ajax({
+            url: script,
+            method: 'POST',
+            data: {gettype: 'import', region: region},
+            success: function (data, textSatus, jhXHR) {
+                if (data['error']) {
+                    show_message(data['error'], 'error');
+                    return false;
+                }
+                console.log(data);
+                _this.drawImport(data);
+
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                show_message("ERROR in " + script + ": " + textStatus, 'error');
+                return false;
+            }
+        });
+    };
 
 }
 

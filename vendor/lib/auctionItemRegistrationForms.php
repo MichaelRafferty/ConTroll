@@ -115,3 +115,7 @@ function draw_itemRegistrationModal($portalType = '', $showsheets=false, $showco
 function itemRegistrationOpenBtn($region) {
     echo "<button class='btn btn-primary m-1' onclick='auctionItemRegistration.open($region);'>Open Item Registration</button>";
 }
+
+function itemRegistrationImportBtn($region) {
+    echo "<button id='importPriorBtn' class='btn btn-primary m-1' onclick='auctionItemRegistration.import($region);'>Import Unsold Prior Art Items</button>";
+}

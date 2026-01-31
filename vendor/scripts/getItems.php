@@ -47,6 +47,30 @@ switch($getType) {
         $itemL .= 's';
         $itemA[] = $getType;
         break;
+    case 'import':
+        $itemQ = <<<EOS
+WITH eid AS (
+    SELECT exhibitorId
+    FROM exhibitorYears
+    WHERE id = ?
+)
+SELECT exry.id, i.*
+FROM exhibitorYears exy
+JOIN exhibitorRegionYears exry ON exy.id = exry.exhibitorYearId
+JOIN artItems i ON i.exhibitorRegionYearId = exry.id
+JOIN eid
+LEFT OUTER JOIN artSales s ON i.id = s.artId
+WHERE exy.exhibitorId = eid.exhibitorId AND s.id IS NULL AND i.type = 'art'
+UNION
+SELECT exry.id, i.*
+FROM exhibitorYears exy
+JOIN exhibitorRegionYears exry ON exy.id = exry.exhibitorYearId
+JOIN artItems i ON i.exhibitorRegionYearId = exry.id
+JOIN eid
+WHERE exy.exhibitorId = eid.exhibitorId  AND i.type = 'print' AND i.quantity > 0;
+EOS;
+        $itemL = 'i';
+        $itemA = array($region);
     default:
         break;
 }
