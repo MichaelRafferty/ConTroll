@@ -76,6 +76,7 @@ ORDER BY type, title;
 EOS;
         $itemL = 'i';
         $itemA = array($region);
+        break;
     default:
         break;
 }
