@@ -497,6 +497,7 @@ if ($policies != null && count($policies) > 0) {
 </script>
 <?php
 draw_registrationModal($portalType, $portalName, $con, $countryOptions);
+draw_itemImportModal($portalType);
 draw_passwordModal();
 draw_exhibitorRequestModal($portalType);
 draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $testsite, $cc, $portalName, $portalType);

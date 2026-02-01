@@ -69,7 +69,7 @@ WITH eid AS (
     JOIN eid
     WHERE exy.exhibitorId = eid.exhibitorId  AND i.type = 'print' AND i.quantity > 0
 )
-SELECT type, title, material, MIN(quantity), MAX(min_price), MAX(sale_price)
+SELECT type, title, material, MIN(quantity) AS quantity, MAX(min_price) AS min_price, MAX(sale_price) AS sale_price
 FROM old
 GROUP BY type, title, material
 ORDER BY type, title;
@@ -83,10 +83,19 @@ EOS;
 
 $itemR = dbSafeQuery($itemQ, $itemL, $itemA);
 
-$items = array('art' => array(), 'print' => array(), 'nfs' => array());
+if ($getType != 'import')
+    $items = array('art' => array(), 'print' => array(), 'nfs' => array());
+else
+    $items = array();
 
 while ($item = $itemR->fetch_assoc()) {
-    $items[$item['type']][] = $item;
+    if ($getType != 'import')
+        $items[$item['type']][] = $item;
+    else {
+        $item['itemNum'] = count($items) + 1;
+        $item['import'] = 'No';
+        $items[] = $item;
+    }
 }
 
 $response['items'] = $items;

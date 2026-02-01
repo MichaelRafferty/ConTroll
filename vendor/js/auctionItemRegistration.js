@@ -16,6 +16,7 @@ class AuctionItemRegistration {
     #regionName = '';
     #addItemIndex = 1;
 
+    // auction section
     #artItemTable = null;
     #artItemsDirty = false;
     #artSaveBtn = null;
@@ -23,6 +24,7 @@ class AuctionItemRegistration {
     #artRedoBtn = null;
     #artAddBtn = null;
 
+    // print section
     #printItemTable = null;
     #printItemsDirty = false;
     #printSaveBtn = null;
@@ -30,6 +32,7 @@ class AuctionItemRegistration {
     #printRedoBtn = null;
     #printAddBtn = null;
 
+    // not for sale section
     #nfsItemTable = null;
     #nfsItemsDirty = false;
     #nfsSaveBtn = null;
@@ -37,13 +40,24 @@ class AuctionItemRegistration {
     #nfsRedoBtn = null;
     #nfsAddBtn = null;
 
+    // import modal
+    #importModal = null;
+    #itemImportBtn = null;
+    #importTableDiv = null;
+    #importTable = null;
     #debug = 0;
     #debugVisible = false;
 
 // init
     constructor(debug=0) {
         this.#debug = debug;
-        var id = document.getElementById('item_registration');
+        let id = document.getElementById('item_import');
+        if (id != null) {
+            this.#importModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
+            this.#itemImportBtn = document.getElementById('import_items_btn');
+            this.#importTableDiv = document.getElementById('importTable');
+        }
+        id = document.getElementById('item_registration');
         if (id != null) {
             this.#item_registration = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
             this.#item_registration_btn = document.getElementById('item_registration_btn');
@@ -750,6 +764,44 @@ class AuctionItemRegistration {
             }
         });
     };
+
+    // draw the import items modal
+    drawImport(data) {
+        clear_message();
+        clear_message('ii_message_div');
+        if (this.#importTable) {
+            this.#importTable.replaceData(data.items);
+        } else {
+            this.#importTable = new Tabulator('#importTable', {
+                maxHeight: "800px",
+                data: data.items,
+                index: 'itemNum',
+                layout: 'fitColumns', // Note: fitDataTable caused it to not honor the window width and create scoll bar, unsure why
+                pagination: data.items.length > 25,
+                paginationSize: 25,
+                paginationSizeSelector: [10, 25, 50, true], //enable page size select element with these options
+                columns: [
+                    {title: 'Item Num', field: 'itemNum', width: 100, visible: false },
+                    {title: 'Import', field: 'import', width: 80, editor: "tickCross",
+                        editorParams: { tridtate: false, trueValue: 'Yes', falseValue: 'No', indeterminateValue: 'No' }, },
+                    {title: 'Type', field: 'type', width: 100 },
+                    {title: 'Title', field: 'title', minWidth: 600, editor: 'input', editorParams: { elementAttributes: { maxlength: "64"} } },
+                    {title: "Material", field: "material", minWidth: 300, editor: 'input', editorParams: { elementAttributes: { maxlength: "32"} } },
+                    {title: "Minimim Bid<br/>(for art only)", field: "min_price", headerWordWrap: true, width: 100, hozAlign: "right",
+                        editor: 'number', editorParams: {min: 1}, formatter: "money",
+                        //formatterParams: {decimal: '.', thousand: ',', symbol: '$', negativeSign: true},
+                    },
+                    {title: "Quick Sale/<br/>Sale Price", field: "sale_price", headerWordWrap: true, width: 100, hozAlign: "right",
+                        editor: 'number', editorParams: {min: 1}, formatter: "money",
+                        //formatterParams: {decimal: '.', thousand: ',', symbol: '$', negativeSign: true},
+                    },
+                    {title: "Quantity", field: "quantity", headerWordWrap: true, width: 100, hozAlign: "right",
+                        editor: 'number', editorParams: {min: 1}, },
+                ],
+            });
+        }
+        this.#importModal.show();
+    }
 
 }
 
