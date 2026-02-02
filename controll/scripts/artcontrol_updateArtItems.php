@@ -23,6 +23,23 @@ $conid= $con['id'];
 $region = $_POST['region'];
 $tabledata = null;
 $response['region'] = $region;
+if (array_key_exists('conYear', $_POST)) {
+    $conYear = $_POST['conYear'];
+} else {
+    $conYear = $conid;
+}
+
+$minConYear = getConfValue('controll', 'viewPriorLimit', $conid);
+if ($conYear < $minConYear)
+    $conYear = $minConYear;
+$minEdit = getConfValue('controll', 'artEditYear', $conid);
+$response['editable'] = $conYear >= $minEdit;
+
+if ($conYear < $minEdit) {
+    $response['error'] = "You do not have permission to edit the con id $conYear";
+    ajaxSuccess($response);
+    exit();
+}
 
 try {
     $tabledata = json_decode($_POST['tabledata'], true, 512, JSON_THROW_ON_ERROR);
@@ -117,9 +134,9 @@ foreach ($tabledata as $row) {
         else
             $maxKey++;
 
-        $paramarray = array($maxKey, $conid, $location, $row['min_price'], $row['original_qty'], $row['quantity'],
+        $paramarray = array($maxKey, $conYear, $location, $row['min_price'], $row['original_qty'], $row['quantity'],
             $row['sale_price'], $row['status'] , $row['title'], $row['type'], $row['material'], $row['bidder'], $row['final_price'],
-            $row['notes'], $row['exhibitorRegionYearId'], $authToken->getPerid();
+            $row['notes'], $row['exhibitorRegionYearId'], $authToken->getPerid());
 
         $response['insert'] = $insertSQL;
         $response['insertArray'] = $paramarray;
@@ -131,9 +148,19 @@ foreach ($tabledata as $row) {
 $response['status'] = "$updated items Updated $new items Inserted";
 
 // refetch the updated data with all changed fields and keys
-$artQ = <<<EOS
+    $artQ = <<<EOS
+WITH historyCount AS (
+    SELECT H.id, count(*) AS historyCount
+    FROM artItemsHistory H
+    JOIN exhibitorRegionYears ery ON ery.id = H.exhibitorRegionYearId
+    JOIN exhibitorYears ey ON ey.id=ery.exhibitorYearId
+    JOIN exhibitsRegionYears exRY ON exRY.id=ery.exhibitsRegionYearId
+    WHERE ey.conid=? and exRY.exhibitsRegion=?
+    GROUP BY H.id
+)
 SELECT I.id, I.exhibitorRegionYearId, I.item_key, I.title, I.type, I.status, I.location, I.quantity, I.original_qty, 
-       I.min_price, I.sale_price, I.final_price, I.bidder, I.material, I.notes, ey.id AS exhibitorYearId, ery.exhibitsRegionYearId,
+    I.min_price, I.sale_price, I.final_price, I.bidder, I.material, I.notes, I.conid, h.historyCount,
+    ey.id AS exhibitorYearId, ery.exhibitsRegionYearId,
     ery.exhibitorNumber, ery.locations, e.exhibitorName, exR.name as exhibitRegionName,
     concat(trim(p.first_name), ' ', trim(p.last_name)) as bidderName,
     concat(trim(p.first_name), ' ', trim(p.last_name), ' (', I.bidder, ')') as bidderText,
@@ -145,12 +172,12 @@ FROM artItems I
     JOIN exhibitsRegionYears exRY ON exRY.id=ery.exhibitsRegionYearId
     JOIN exhibitsRegions exR on exR.id=exRY.exhibitsRegion
     LEFT JOIN perinfo p ON p.id=I.bidder
+    LEFT JOIN historyCount h on h.id = I.id
 WHERE ey.conid=? and exRY.exhibitsRegion=?
 ORDER BY ery.exhibitorNumber, I.item_key;
 EOS;
 
-$artR = dbSafeQuery($artQ, 'ii', array($conid, $region));
-
+$artR = dbSafeQuery($artQ, 'iiii', array($conYear, $region, $conYear, $region));
 $items=array();
 
 while($artItem = $artR->fetch_assoc()) {
@@ -171,7 +198,7 @@ WHERE ey.conid=? AND exRY.exhibitsRegion=? AND S.item_purchased IS NOT NULL
     AND ery.exhibitorNumber IS NOT NULL
 ORDER BY e.exhibitorName;
 EOS;
-$artistR = dbSafeQuery($artistQ, 'ii', array($conid, $region));
+$artistR = dbSafeQuery($artistQ, 'ii', array($conYear, $region));
 
 $artists=array();
 

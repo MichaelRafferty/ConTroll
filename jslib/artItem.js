@@ -354,8 +354,8 @@ setValuesForNew(exhibitor, number, type) {
     this.type=typeList.getType(type);
     this.status=statusList.getDefault();
     this.location='';
-    if (exhibitor['locations'])
-        this.#locationList = exhibitor['locations'].split(',');
+    if (exhibitor.locations)
+        this.#locationList = exhibitor.locations.split(',');
     else
         this.#locationList = [];
     this.quantity = 1;
@@ -380,30 +380,35 @@ setValuesForNew(exhibitor, number, type) {
     }
 
 setValuesFromData(artItemData) {
-    this.id = artItemData['id'];
-    this.artistNumber = artItemData['exhibitorNumber'];
-    this.itemNumber = artItemData['item_key'];
-    this.title=artItemData['title'];
-    this.material=artItemData['material'];
-    this.type=typeList.getType(artItemData['type']);
-    this.status=statusList.getStatus(artItemData['status']);
-    this.location=artItemData['location'];
-    if (artItemData['locations'] && artItemData['locations'] != '')
-        this.#locationList = artItemData['locations'].split(',');
+    this.id = artItemData.id;
+    if (artItemData.hasOwnProperty('conid')) {
+        document.getElementById('artItemConYear').innerHTML = artItemData.conid;
+    } else {
+        document.getElementById('artItemConYear').innerHTML = config.conid;
+    }
+    this.artistNumber = artItemData.exhibitorNumber;
+    this.itemNumber = artItemData.item_key;
+    this.title=artItemData.title;
+    this.material=artItemData.material;
+    this.type=typeList.getType(artItemData.type);
+    this.status=statusList.getStatus(artItemData.status);
+    this.location=artItemData.location;
+    if (artItemData.locations && artItemData.locations != '')
+        this.#locationList = artItemData.locations.split(',');
     else
         this.#locationList = [];
-    this.quantity = artItemData['quantity'];
-    this.original_qty = artItemData['original_qty'];
-    this.min_price = artItemData['min_price'];
-    this.sale_price = artItemData['sale_price'];
-    this.final_price = artItemData['final_price'];
-    this.#bidder = artItemData['bidder'];
-    this.bidderName = artItemData['bidderName'];
-    this.#exhibitorRegionYearId = artItemData['exhibitorRegionYearId'];
-    this.exhibitorName = artItemData['exhibitorName'];
-    this.#exhibitRegionYearId = artItemData['exhibitRegionYearId'];
-    this.regionYearName = artItemData['exhibitRegionName'];
-    this.itemNotes = artItemData['notes'];
+    this.quantity = artItemData.quantity;
+    this.original_qty = artItemData.original_qty;
+    this.min_price = artItemData.min_price;
+    this.sale_price = artItemData.sale_price;
+    this.final_price = artItemData.final_price;
+    this.#bidder = artItemData.bidder;
+    this.bidderName = artItemData.bidderName;
+    this.#exhibitorRegionYearId = artItemData.exhibitorRegionYearId;
+    this.exhibitorName = artItemData.exhibitorName;
+    this.#exhibitRegionYearId = artItemData.exhibitRegionYearId;
+    this.regionYearName = artItemData.exhibitRegionName;
+    this.itemNotes = artItemData.notes;
 
     if(this.type === false) {
         show_message('invalid item type', 'warn', 'ai_result_message'); //TODO append if possible

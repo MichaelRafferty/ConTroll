@@ -1,4 +1,5 @@
 ;;;;; Global (available in all sections, Can be overridden in the individual sections)
+;;;;; Global (available in all sections, Can be overridden in the individual sections)
 [global]
 ;; N:customtext
 ;; R:V,reg_admin
@@ -759,6 +760,14 @@ clubname='Club Name'
 ;; D:i6
 ;; B:O
 viewPriorLimit=
+;; N:artEditYear
+;; R:H,finance
+;; P:Min Edit Conid
+;; H:Minimum Conid for editing art show item and sales data in Art Control.
+;; H+Note: only years >= viewPriorLimit will be availabel to see/edit
+;; D:i6
+;; B:O
+artEditYear=
 
 ;;;;; Local Parameters for this Convention
 [local]
