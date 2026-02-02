@@ -47,6 +47,26 @@ $regions = array();
 while($region = $regionsR->fetch_assoc()) {
     $regions[] = $region;
 }
+    $regionsR->free();
+
+// now get all the convention years with art data
+$yearQ = <<<EOS
+SELECT DISTINCT conid
+FROM artItems
+ORDER BY conid DESC;
+EOS;
+$yearR = dbQuery($yearQ);
+$years = array();
+while($year = $yearR->fetch_assoc()) {
+    $years[] = $year['conid'];
+}
+$yearR->free();
+
+// build the year select
+$yearSelect = '';
+foreach ($years as $year) {
+    $yearSelect .= "<option value=$year>$year</option>\n";
+}
 
 ?>
 <script type='text/javascript'>
@@ -85,6 +105,16 @@ foreach ($regions as $region) {
     </ul>
 </div>
     <div class="container-fluid">
+        <div class='row mb-2'>
+            <div class='col-sm-auto'>
+                Select Convention Year:
+            </div>
+            <div class='col-sm-auto'>
+                <select id="conYear" name="conYear", onchange="getData();">
+                    <?php echo $yearSelect; ?>
+                </select>
+            </div>
+        </div>
         <div class="row">
             <div class="col-sm-12 p-0">
                 <div id='artItems_table'></div>
