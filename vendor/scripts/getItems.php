@@ -93,7 +93,7 @@ while ($item = $itemR->fetch_assoc()) {
         $items[$item['type']][] = $item;
     else {
         $item['itemNum'] = count($items) + 1;
-        $item['import'] = 'No';
+        $item['import'] = 0;
         $items[] = $item;
     }
 }
