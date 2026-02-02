@@ -87,7 +87,7 @@ class AuctionItemRegistration {
         this.#item_registration.hide();
     }
 
-    open(region) {
+    open(region, art=null) {
         clear_message('ir_message_div');
         this.#region = region;
         var _this = this;
@@ -102,8 +102,9 @@ class AuctionItemRegistration {
                     show_message(data['error'], 'error');
                     return false;
                 }
-                console.log(data);
-                _this.draw(data);
+                if (art)
+                    data.items = art;
+                _this.draw(data, art);
 
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -113,7 +114,7 @@ class AuctionItemRegistration {
         });
     };
 
-    draw(data) {
+    draw(data, art = null) {
         this.#maxItems = data.inv.maxInventory;
         this.#ownerName = data.inv.ownerName;
         this.#ownerEmail = data.inv.ownerEmail;
@@ -137,9 +138,9 @@ class AuctionItemRegistration {
         this.#nfsUndoBtn = document.getElementById('nfs-undo');
         this.#nfsRedoBtn = document.getElementById('nfs-redo');
         this.#nfsAddBtn = document.getElementById('nfs-addrow');
-        this.drawArtItemTable(data['items']);
-        this.drawPrintItemTable(data['items']);
-        this.drawNfsItemTable(data['items']);
+        this.drawArtItemTable(data['items'], art);
+        this.drawPrintItemTable(data['items'], art);
+        this.drawNfsItemTable(data['items'], art);
 
         this.validateLoadLimit(false);
         this.#item_registration.show();
@@ -608,7 +609,7 @@ class AuctionItemRegistration {
         this.validateLoadLimit(true,  'nfs', data['items']['nfs']);
     }
 
-    drawArtItemTable(data) {
+    drawArtItemTable(data, art = null) {
         var _this = this;
         var tableSpecs = {
             maxHeight: "400px",
@@ -649,12 +650,17 @@ class AuctionItemRegistration {
             _this.dataChangedArt(data);
         });
         this.#artItemTable.on("cellEdited", cellChanged);
-        this.#artSaveBtn.innerHTML='Save Changes';
-        this.#artSaveBtn.disbled=true;
+        if (art != null && art.hasOwnProperty('art') && art.art.length > 0) {
+            this.#artSaveBtn.innerHTML = 'Save Changes*';
+            this.#artSaveBtn.disabled = false;
+        } else {
+            this.#artSaveBtn.innerHTML = 'Save Changes';
+            this.#artSaveBtn.disabled = true;
+        }
         document.getElementById('print_bidsheet').hidden = data.art.length == 0;
     }
 
-    drawPrintItemTable(data) {
+    drawPrintItemTable(data, art = null) {
         var _this = this;
         var tableSpecs = {
             maxHeight: "400px",
@@ -691,13 +697,17 @@ class AuctionItemRegistration {
             _this.dataChangedPrint(data);
         });
         this.#printItemTable.on("cellEdited", cellChanged);
-
-        this.#printSaveBtn.innerHTML='Save Changes';
-        this.#printSaveBtn.disbled=true;
+        if (art != null && art.hasOwnProperty('print') && art.print.length > 0) {
+            this.#printSaveBtn.innerHTML = 'Save Changes*';
+            this.#printSaveBtn.disabled = false;
+        } else {
+            this.#printSaveBtn.innerHTML = 'Save Changes';
+            this.#printSaveBtn.disabled = true;
+        }
         document.getElementById('print_printshop').hidden = data.print.length == 0;
     }
 
-    drawNfsItemTable(data) {
+    drawNfsItemTable(data, art = null) {
         var _this = this;
         var tableSpecs = {
             maxHeight: "400px",
@@ -734,12 +744,16 @@ class AuctionItemRegistration {
         });
         this.#nfsItemTable.on("cellEdited", cellChanged);
 
-        this.#nfsSaveBtn.innerHTML='Save Changes';
-        this.#nfsSaveBtn.disbled=true;
+        if (art != null && art.hasOwnProperty('nfs') && art.nfs.length > 0) {
+            this.#nfsSaveBtn.innerHTML = 'Save Changes*';
+            this.#nfsSaveBtn.disabled = false;
+        } else {
+            this.#nfsSaveBtn.innerHTML = 'Save Changes';
+            this.#nfsSaveBtn.disabled = true;
+        }
     }
 
     import(region) {
-
         clear_message('ir_message_div');
         this.#region = region;
         var _this = this;
@@ -754,7 +768,6 @@ class AuctionItemRegistration {
                     show_message(data['error'], 'error');
                     return false;
                 }
-                console.log(data);
                 _this.drawImport(data);
 
             },
@@ -782,8 +795,8 @@ class AuctionItemRegistration {
                 paginationSizeSelector: [10, 25, 50, true], //enable page size select element with these options
                 columns: [
                     {title: 'Item Num', field: 'itemNum', width: 100, visible: false },
-                    {title: 'Import', field: 'import', width: 80, editor: "tickCross",
-                        editorParams: { tridtate: false, trueValue: 'Yes', falseValue: 'No', indeterminateValue: 'No' }, },
+                    {title: 'Import', field: 'import', width: 80, headerSort: false,
+                        formatter: "tickCross", cellClick: auctionItemRegistration.invertSelect, },
                     {title: 'Type', field: 'type', width: 100 },
                     {title: 'Title', field: 'title', minWidth: 600, editor: 'input', editorParams: { elementAttributes: { maxlength: "64"} } },
                     {title: "Material", field: "material", minWidth: 300, editor: 'input', editorParams: { elementAttributes: { maxlength: "32"} } },
@@ -799,10 +812,68 @@ class AuctionItemRegistration {
                         editor: 'number', editorParams: {min: 1}, },
                 ],
             });
+            this.#importTable.on("cellEdited", cellChanged);
         }
         this.#importModal.show();
     }
 
+    // import the ones with ticks into a data array for draw
+    importSelected() {
+        let art = {};
+        art['print'] = [];
+        art['art'] = [];
+        art['nfs'] = [];
+        let rows = this.#importTable.getData();
+        let itemKey = 1;
+        for (let i = 0; i < rows.length; i++) {
+            let row = rows[i];
+            if (row.import === false || row.import == 0)
+                continue;
+
+            let newRow = {};
+            newRow.id = -(i+1);
+            newRow.item_key = itemKey++;
+            newRow.type = row.type;
+            newRow.title = row.title;
+            newRow.material = row.material;
+            newRow.original_qty = row.quantity;
+            newRow.quantity = row.quantity;
+            newRow.min_price = row.min_price;
+            newRow.sale_price = row.sale_price;
+            newRow.status = 'Entered';
+            newRow.uses = 0;
+
+            art[row.type].push(newRow);
+        }
+        this.#importModal.hide();
+        this.open(this.#region, art);
+    }
+
+    // change tick to cross and back for import column.
+    invertSelect(e,cell) {
+        'use strict';
+
+        var value = cell.getValue();
+        if (value === undefined) {
+            value = false;
+        }
+        if (value === 0 || Number(value) === 0)
+            value = false;
+        else if (value === "1" || Number(value) > 0)
+            value = true;
+
+        cell.setValue(!value, true);
+    }
+
+    // close the import modal screen
+    closeImportModal() {
+        if (this.#importTable) {
+            this.#importTable.off("cellEdited");
+            this.#importTable.destroy();
+            this.#importTable = null;
+        }
+        this.#importModal.hide();
+    }
 }
 
 auctionItemRegistration = null;
