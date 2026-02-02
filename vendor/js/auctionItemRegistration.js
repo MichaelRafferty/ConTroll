@@ -16,6 +16,7 @@ class AuctionItemRegistration {
     #regionName = '';
     #addItemIndex = 1;
 
+    // auction section
     #artItemTable = null;
     #artItemsDirty = false;
     #artSaveBtn = null;
@@ -23,6 +24,7 @@ class AuctionItemRegistration {
     #artRedoBtn = null;
     #artAddBtn = null;
 
+    // print section
     #printItemTable = null;
     #printItemsDirty = false;
     #printSaveBtn = null;
@@ -30,6 +32,7 @@ class AuctionItemRegistration {
     #printRedoBtn = null;
     #printAddBtn = null;
 
+    // not for sale section
     #nfsItemTable = null;
     #nfsItemsDirty = false;
     #nfsSaveBtn = null;
@@ -37,13 +40,24 @@ class AuctionItemRegistration {
     #nfsRedoBtn = null;
     #nfsAddBtn = null;
 
+    // import modal
+    #importModal = null;
+    #itemImportBtn = null;
+    #importTableDiv = null;
+    #importTable = null;
     #debug = 0;
     #debugVisible = false;
 
 // init
     constructor(debug=0) {
         this.#debug = debug;
-        var id = document.getElementById('item_registration');
+        let id = document.getElementById('item_import');
+        if (id != null) {
+            this.#importModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
+            this.#itemImportBtn = document.getElementById('import_items_btn');
+            this.#importTableDiv = document.getElementById('importTable');
+        }
+        id = document.getElementById('item_registration');
         if (id != null) {
             this.#item_registration = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
             this.#item_registration_btn = document.getElementById('item_registration_btn');
@@ -67,10 +81,13 @@ class AuctionItemRegistration {
         }
         clear_message('ir_message_div');
         this.#closeAnyway = false;
+        let btn = document.getElementById('importPriorBtn');
+        if (btn)
+            btn.hidden = this.#numItems > 0;
         this.#item_registration.hide();
     }
 
-    open(region) {
+    open(region, art=null) {
         clear_message('ir_message_div');
         this.#region = region;
         var _this = this;
@@ -85,8 +102,9 @@ class AuctionItemRegistration {
                     show_message(data['error'], 'error');
                     return false;
                 }
-                console.log(data);
-                _this.draw(data);
+                if (art)
+                    data.items = art;
+                _this.draw(data, art);
 
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -96,7 +114,7 @@ class AuctionItemRegistration {
         });
     };
 
-    draw(data) {
+    draw(data, art = null) {
         this.#maxItems = data.inv.maxInventory;
         this.#ownerName = data.inv.ownerName;
         this.#ownerEmail = data.inv.ownerEmail;
@@ -120,9 +138,9 @@ class AuctionItemRegistration {
         this.#nfsUndoBtn = document.getElementById('nfs-undo');
         this.#nfsRedoBtn = document.getElementById('nfs-redo');
         this.#nfsAddBtn = document.getElementById('nfs-addrow');
-        this.drawArtItemTable(data['items']);
-        this.drawPrintItemTable(data['items']);
-        this.drawNfsItemTable(data['items']);
+        this.drawArtItemTable(data['items'], art);
+        this.drawPrintItemTable(data['items'], art);
+        this.drawNfsItemTable(data['items'], art);
 
         this.validateLoadLimit(false);
         this.#item_registration.show();
@@ -148,7 +166,12 @@ class AuctionItemRegistration {
             this.#nfsItemTable.destroy();
             this.#nfsItemTable = null;
         }
-        this.#item_registration.hide();
+
+        let btn = document.getElementById('importPriorBtn');
+        if (btn)
+            btn.hidden = this.#numItems > 0;
+
+        this.#item_registration.hide();addoverride-btn
     };
 
     dataChangedArt(data=null) {
@@ -586,7 +609,7 @@ class AuctionItemRegistration {
         this.validateLoadLimit(true,  'nfs', data['items']['nfs']);
     }
 
-    drawArtItemTable(data) {
+    drawArtItemTable(data, art = null) {
         var _this = this;
         var tableSpecs = {
             maxHeight: "400px",
@@ -627,12 +650,17 @@ class AuctionItemRegistration {
             _this.dataChangedArt(data);
         });
         this.#artItemTable.on("cellEdited", cellChanged);
-        this.#artSaveBtn.innerHTML='Save Changes';
-        this.#artSaveBtn.disbled=true;
+        if (art != null && art.hasOwnProperty('art') && art.art.length > 0) {
+            this.#artSaveBtn.innerHTML = 'Save Changes*';
+            this.#artSaveBtn.disabled = false;
+        } else {
+            this.#artSaveBtn.innerHTML = 'Save Changes';
+            this.#artSaveBtn.disabled = true;
+        }
         document.getElementById('print_bidsheet').hidden = data.art.length == 0;
     }
 
-    drawPrintItemTable(data) {
+    drawPrintItemTable(data, art = null) {
         var _this = this;
         var tableSpecs = {
             maxHeight: "400px",
@@ -669,13 +697,17 @@ class AuctionItemRegistration {
             _this.dataChangedPrint(data);
         });
         this.#printItemTable.on("cellEdited", cellChanged);
-
-        this.#printSaveBtn.innerHTML='Save Changes';
-        this.#printSaveBtn.disbled=true;
+        if (art != null && art.hasOwnProperty('print') && art.print.length > 0) {
+            this.#printSaveBtn.innerHTML = 'Save Changes*';
+            this.#printSaveBtn.disabled = false;
+        } else {
+            this.#printSaveBtn.innerHTML = 'Save Changes';
+            this.#printSaveBtn.disabled = true;
+        }
         document.getElementById('print_printshop').hidden = data.print.length == 0;
     }
 
-    drawNfsItemTable(data) {
+    drawNfsItemTable(data, art = null) {
         var _this = this;
         var tableSpecs = {
             maxHeight: "400px",
@@ -712,10 +744,136 @@ class AuctionItemRegistration {
         });
         this.#nfsItemTable.on("cellEdited", cellChanged);
 
-        this.#nfsSaveBtn.innerHTML='Save Changes';
-        this.#nfsSaveBtn.disbled=true;
+        if (art != null && art.hasOwnProperty('nfs') && art.nfs.length > 0) {
+            this.#nfsSaveBtn.innerHTML = 'Save Changes*';
+            this.#nfsSaveBtn.disabled = false;
+        } else {
+            this.#nfsSaveBtn.innerHTML = 'Save Changes';
+            this.#nfsSaveBtn.disabled = true;
+        }
     }
 
+    import(region) {
+        clear_message('ir_message_div');
+        this.#region = region;
+        var _this = this;
+        var script = "scripts/getItems.php"
+        clear_message();
+        $.ajax({
+            url: script,
+            method: 'POST',
+            data: {gettype: 'import', region: region},
+            success: function (data, textSatus, jhXHR) {
+                if (data['error']) {
+                    show_message(data['error'], 'error');
+                    return false;
+                }
+                _this.drawImport(data);
+
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                show_message("ERROR in " + script + ": " + textStatus, 'error');
+                return false;
+            }
+        });
+    };
+
+    // draw the import items modal
+    drawImport(data) {
+        clear_message();
+        clear_message('ii_message_div');
+        if (this.#importTable) {
+            this.#importTable.replaceData(data.items);
+        } else {
+            this.#importTable = new Tabulator('#importTable', {
+                maxHeight: "800px",
+                data: data.items,
+                index: 'itemNum',
+                layout: 'fitColumns', // Note: fitDataTable caused it to not honor the window width and create scoll bar, unsure why
+                pagination: data.items.length > 25,
+                paginationSize: 25,
+                paginationSizeSelector: [10, 25, 50, true], //enable page size select element with these options
+                columns: [
+                    {title: 'Item Num', field: 'itemNum', width: 100, visible: false },
+                    {title: 'Import', field: 'import', width: 80, headerSort: false,
+                        formatter: "tickCross", cellClick: auctionItemRegistration.invertSelect, },
+                    {title: 'Type', field: 'type', width: 100 },
+                    {title: 'Title', field: 'title', minWidth: 600, editor: 'input', editorParams: { elementAttributes: { maxlength: "64"} } },
+                    {title: "Material", field: "material", minWidth: 300, editor: 'input', editorParams: { elementAttributes: { maxlength: "32"} } },
+                    {title: "Minimim Bid<br/>(for art only)", field: "min_price", headerWordWrap: true, width: 100, hozAlign: "right",
+                        editor: 'number', editorParams: {min: 1}, formatter: "money",
+                        //formatterParams: {decimal: '.', thousand: ',', symbol: '$', negativeSign: true},
+                    },
+                    {title: "Quick Sale/<br/>Sale Price", field: "sale_price", headerWordWrap: true, width: 100, hozAlign: "right",
+                        editor: 'number', editorParams: {min: 1}, formatter: "money",
+                        //formatterParams: {decimal: '.', thousand: ',', symbol: '$', negativeSign: true},
+                    },
+                    {title: "Quantity", field: "quantity", headerWordWrap: true, width: 100, hozAlign: "right",
+                        editor: 'number', editorParams: {min: 1}, },
+                ],
+            });
+            this.#importTable.on("cellEdited", cellChanged);
+        }
+        this.#importModal.show();
+    }
+
+    // import the ones with ticks into a data array for draw
+    importSelected() {
+        let art = {};
+        art['print'] = [];
+        art['art'] = [];
+        art['nfs'] = [];
+        let rows = this.#importTable.getData();
+        let itemKey = 1;
+        for (let i = 0; i < rows.length; i++) {
+            let row = rows[i];
+            if (row.import === false || row.import == 0)
+                continue;
+
+            let newRow = {};
+            newRow.id = -(i+1);
+            newRow.item_key = itemKey++;
+            newRow.type = row.type;
+            newRow.title = row.title;
+            newRow.material = row.material;
+            newRow.original_qty = row.quantity;
+            newRow.quantity = row.quantity;
+            newRow.min_price = row.min_price;
+            newRow.sale_price = row.sale_price;
+            newRow.status = 'Entered';
+            newRow.uses = 0;
+
+            art[row.type].push(newRow);
+        }
+        this.#importModal.hide();
+        this.open(this.#region, art);
+    }
+
+    // change tick to cross and back for import column.
+    invertSelect(e,cell) {
+        'use strict';
+
+        var value = cell.getValue();
+        if (value === undefined) {
+            value = false;
+        }
+        if (value === 0 || Number(value) === 0)
+            value = false;
+        else if (value === "1" || Number(value) > 0)
+            value = true;
+
+        cell.setValue(!value, true);
+    }
+
+    // close the import modal screen
+    closeImportModal() {
+        if (this.#importTable) {
+            this.#importTable.off("cellEdited");
+            this.#importTable.destroy();
+            this.#importTable = null;
+        }
+        this.#importModal.hide();
+    }
 }
 
 auctionItemRegistration = null;

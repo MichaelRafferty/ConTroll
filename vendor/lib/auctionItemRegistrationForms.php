@@ -115,3 +115,61 @@ function draw_itemRegistrationModal($portalType = '', $showsheets=false, $showco
 function itemRegistrationOpenBtn($region) {
     echo "<button class='btn btn-primary m-1' onclick='auctionItemRegistration.open($region);'>Open Item Registration</button>";
 }
+
+function itemRegistrationImportBtn($region) {
+    echo "<button id='importPriorBtn' class='btn btn-primary m-1' onclick='auctionItemRegistration.import($region);'>Import Unsold Prior Art Items</button>";
+}
+
+    //draw the item registration modal
+function draw_itemImportModal($portalType = '') {
+    if($portalType != 'artist') {
+        return;
+    }
+?>
+<div id='item_import' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Import Past Items' aria-hidden='true' style='--bs-modal-width: 96%;'>
+    <div class='modal-dialog'>
+        <div class='modal-content'>
+            <div class='modal-header bg-primary text-bg-primary'>
+                <div class='modal-title' id='item_import_title'>
+                    <strong>Import Past Unsold Items</strong>
+                </div>
+                <button type='button' class='btn-close' onclick="auctionItemRegistration.closeImportModal(); return false;" aria-label='Close'></button>
+            </div>
+            <div class='modal-body' stype='padding: 4px; background-color: lightcyan;'>
+                <div class='container-fluid'>
+                    <div class="row">
+                        <div class="col-sm-auto">
+                            <h1 class="h2">Select the items from prior conventions to import for this years inventory</h1>
+                        </div>
+                    </div>
+                    <div class='row'>
+                        <div class='col-sm-12'>
+                            <?php outputCustomText('import/top');?>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-12" id="importTable">
+                        </div>
+                    </div>
+                    <div class='row'>
+                        <div class='col-sm-12'>
+                            <?php outputCustomText('items/bottom');?>
+                        </div>
+                    </div>
+                    <div class='row mt-2' id='ii_message_div'></div>
+                </div>
+            </div>
+            <div class='modal-footer'>
+                <button id='import_items_btn' type='button' class='btn btn-primary btn-sm'
+                        onclick='auctionItemRegistration.importSelected();'>Import Selected Items
+                </button>
+                <button type='button' class='btn btn-primary btn-sm' onclick='auctionItemRegistration.closeImportModal(); return false;'>
+                    Close Item Import
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<?php
+}

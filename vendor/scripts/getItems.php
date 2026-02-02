@@ -47,16 +47,55 @@ switch($getType) {
         $itemL .= 's';
         $itemA[] = $getType;
         break;
+    case 'import':
+        $itemQ = <<<EOS
+WITH eid AS (
+    SELECT exhibitorId
+    FROM exhibitorYears
+    WHERE id = ?
+), old AS (
+    SELECT i.title, i.type, i.material, i.quantity, i.min_price, i.sale_price 
+    FROM exhibitorYears exy
+    JOIN exhibitorRegionYears exry ON exy.id = exry.exhibitorYearId
+    JOIN artItems i ON i.exhibitorRegionYearId = exry.id
+    JOIN eid
+    LEFT OUTER JOIN artSales s ON i.id = s.artId
+    WHERE exy.exhibitorId = eid.exhibitorId AND s.id IS NULL AND i.type = 'art'
+    UNION
+    SELECT i.title, i.type, i.material, i.quantity, i.min_price, i.sale_price 
+    FROM exhibitorYears exy
+    JOIN exhibitorRegionYears exry ON exy.id = exry.exhibitorYearId
+    JOIN artItems i ON i.exhibitorRegionYearId = exry.id
+    JOIN eid
+    WHERE exy.exhibitorId = eid.exhibitorId  AND i.type = 'print' AND i.quantity > 0
+)
+SELECT type, title, material, MIN(quantity) AS quantity, MAX(min_price) AS min_price, MAX(sale_price) AS sale_price
+FROM old
+GROUP BY type, title, material
+ORDER BY type, title;
+EOS;
+        $itemL = 'i';
+        $itemA = array($region);
+        break;
     default:
         break;
 }
 
 $itemR = dbSafeQuery($itemQ, $itemL, $itemA);
 
-$items = array('art' => array(), 'print' => array(), 'nfs' => array());
+if ($getType != 'import')
+    $items = array('art' => array(), 'print' => array(), 'nfs' => array());
+else
+    $items = array();
 
 while ($item = $itemR->fetch_assoc()) {
-    $items[$item['type']][] = $item;
+    if ($getType != 'import')
+        $items[$item['type']][] = $item;
+    else {
+        $item['itemNum'] = count($items) + 1;
+        $item['import'] = 0;
+        $items[] = $item;
+    }
 }
 
 $response['items'] = $items;

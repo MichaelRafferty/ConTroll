@@ -497,6 +497,7 @@ if ($policies != null && count($policies) > 0) {
 </script>
 <?php
 draw_registrationModal($portalType, $portalName, $con, $countryOptions);
+draw_itemImportModal($portalType);
 draw_passwordModal();
 draw_exhibitorRequestModal($portalType);
 draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $testsite, $cc, $portalName, $portalType);
@@ -642,6 +643,22 @@ draw_itemRegistrationModal($portalType, $showSheets, $artControl);
                         if ($paid > 0) {
                             vendor_receipt($regionYearId, $regionName, $regionSpaces, $exhibitorSpaceList);
                             if ($portalType == 'artist') {
+                                // check to see if there are any art items, if not, offer to import prior items if there are any
+                                $chkQ = <<<EOS
+SELECT COUNT(*)
+FROM artItems i
+JOIN exhibitorRegionYears eRY on eRY.id=i.exhibitorRegionYearId
+WHERE eRY.exhibitorYearId=? and eRY.exhibitsRegionYearId = ?; 
+EOS;
+
+                                $chR = dbSafeQuery($chkQ, 'ii', array (getSessionVar('eyID'), $regionYearId));
+                                if ($chR !== false) {
+                                    $numArtItems = $chR->fetch_row()[0];
+                                    $chR->free();
+                                    if ($numArtItems == 0) {
+                                        itemRegistrationImportBtn($regionYearId);
+                                    }
+                                }
                                 itemRegistrationOpenBtn($regionYearId);
                             }
                         }
