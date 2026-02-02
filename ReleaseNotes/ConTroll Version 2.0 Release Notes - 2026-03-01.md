@@ -33,6 +33,8 @@
   
   * reg_conf.ini  
     * bundlememberships=  enable/disable flag for bundle memberships
+    * viewPriorLimit=   Minimum conid for viewing prior data
+    * artEditYear=    Mimimum conid for allowing edit of art show data in Art Control
     
 * New Scripts: None
 
@@ -51,6 +53,8 @@
   * Changes for Age in Profile
 * Enforcement of Managed status for those with memberships of category managed
 * Restriction of assigning a managed membership to a non managed person
+* Reg List screen can show prior and future years and edit some of them
+* Art Control can show prior years and edit some of them
 
 ## Portal:
 * Rewrite of the entire home page User Experience
