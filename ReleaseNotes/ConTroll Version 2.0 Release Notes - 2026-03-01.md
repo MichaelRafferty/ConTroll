@@ -106,6 +106,7 @@
 * New Category Managed
 * now that age is in perinfo, rules needs to look at people ages, not just membership ages
 * Payment Page redesign
+* add abbility for art control to see prior con
 
 # Items in Progress, but not in 2.0
 
