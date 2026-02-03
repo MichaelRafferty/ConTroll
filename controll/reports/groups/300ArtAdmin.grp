@@ -68,7 +68,8 @@
 	template=artCheckout.php
 	auth=art_control
 	type=php
-	P001="prompt/~/artid/~/Check-out report for Artist ID: /~/Enter Artist's ID"
+	P001="prompt/~/conid/~/Convention ID: /~/Enter the convention ID/~/#con.id#"
+	P002="prompt/~/artid/~/Check-out report for Artist ID: /~/Enter Artist's ID"
 [410ArtSalesReconcile]
     name='Artist Sales Reconciliation'
 	description='Reconciliation of Art Items (Control Sheets) vs Art Sales (Square)'

@@ -172,6 +172,14 @@ function getRpt(reportName, prefix, fileName, type, template) {
         data: postdata,
         success: function (data, textStatus, jhXHR) {
             checkRefresh(data);
+            if (data.error) {
+                show_message(data.error, 'error');
+                return;
+            }
+            if (data.status && data.status == 'error') {
+                show_message(data.message, 'error');
+                return;
+            }
             drawReport(data);
         },
         error: function (jqXHR, textStatus, errorThrown) {
