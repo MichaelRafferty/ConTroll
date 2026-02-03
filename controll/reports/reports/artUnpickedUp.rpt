@@ -113,6 +113,7 @@
     item=region
     datatype=s
 [where]
-	W001="eY.conid = ? AND LOWER(xR.shortname) LIKE LOWER(?) AND IFNULL(a.status, '') NOT IN ('Purchased/Released', 'Checked Out', 'Not In Show')"
+	W001="eY.conid = ? AND LOWER(xR.shortname) LIKE LOWER(?) AND IFNULL(a.status, '') NOT IN ('Entered', 'Withdrawn','Purchased/Released', 'Checked Out', 'Not
+	In Show')"
 [sort]
 	S001="fullName, a.perid"
