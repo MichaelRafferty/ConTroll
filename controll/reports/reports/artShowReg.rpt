@@ -177,9 +177,8 @@
     join="eRY.id = a.id"
     left=true
 [P001]
-    type=config
-    section=con
-    item=id
+    type=prompt
+    item=conid
     datatype=i
 [P002]
     type=config
