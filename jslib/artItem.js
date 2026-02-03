@@ -327,7 +327,7 @@ setIsChanged(value,fieldName) {
                     }
                     // valid return
                     _this.#isChanged=true;
-                    _this.#changedFields.value = fieldName;
+                    _this.#changedFields[value] = fieldName;
                     _this.#bidderNameField.innerHTML = data.name;
                     _this.#bidderValid = true;
                 },

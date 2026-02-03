@@ -51,6 +51,18 @@
     align=right
     width=120
     format=money
+[F023]
+    name=bidder
+    sql="a.bidder"
+    title="Bidder"
+    filter=true
+    width=140
+    align=right,
+[F024]
+    name=bidderFullName
+    sql="TRIM(REGEXP_REPLACE(CONCAT_WS(' ', bp.first_name, bp.middle_name, bp.last_name, bp.suffix), ' +', ' '))"
+    title="Bidder Full Name"
+    minWidth=300
 [F025]
     name=purchasedBy
     sql="a.perid"
@@ -61,7 +73,7 @@
 [F026]
     name=fullName
     sql="TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' '))"
-    title="Full Name"
+    title="Sold To Full Name"
     minWidth=300
 [F030]
     name=totalAmt
@@ -73,7 +85,7 @@
 [C001]
     name=art
     select="SELECT a.id AS artId, a.item_key AS itemNum, a.title, a.type, a.exhibitorRegionYearId, a.status, a.final_price AS itemPrice,
-    s.amount, s.paid, s.perid"
+    a.bidder, s.amount, s.paid, s.perid"
     tables="FROM artItems a LEFT OUTER JOIN artSales s ON s.artId = a.id"
     where="WHERE a.type = 'art'"
 [T001]
@@ -103,6 +115,11 @@
     name=perinfo
     alias=p
     join="a.perid = p.id"
+    left=true
+[T016]
+    name=perinfo
+    alias=bp
+    join="a.bidder = bp.id"
     left=true
 [P001]
     type=prompt
