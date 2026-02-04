@@ -73,9 +73,10 @@ conname="ConTroll"
 ;;; Sales Tax Payment Items
 ; This is the sales tax rate in percent, the invoice label for the tax, and the credit card uid.
 ;   The uid is used by Square and must be the same as the tax id with any space or other non alphanumeric characters replaced by a '-'. (dash)
-taxRate=6
-taxLabel="NJ Sales Tax"
-taxuid="NJ-Sales-Tax"
+;   these fields are for historical purposes only, the tax table now superceeds this
+;taxRate=6
+;taxLabel="NJ Sales Tax"
+;taxuid="NJ-Sales-Tax"
 ;;; currency: the currency codes are the ones used by PHP to format currency.
 ;       This is the 3-letter ISO 4217 currency code indicating the currency to use.  See https://datahub.io/core/currency-codes
 currency="USD"
