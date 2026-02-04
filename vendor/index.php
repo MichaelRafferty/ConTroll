@@ -655,9 +655,7 @@ EOS;
                                 if ($chR !== false) {
                                     $numArtItems = $chR->fetch_row()[0];
                                     $chR->free();
-                                    if ($numArtItems == 0) {
-                                        itemRegistrationImportBtn($regionYearId);
-                                    }
+                                    itemRegistrationImportBtn($regionYearId);
                                 }
                                 itemRegistrationOpenBtn($regionYearId);
                             }
