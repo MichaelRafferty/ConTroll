@@ -130,6 +130,7 @@ EOS;
         return(1);
     }
 
+    $numConids = $conidR->num_rows;
     if ($conidR->num_rows == 0) {
         logecho("Creating initial conlist entry for $conid, it will need to be edited in reg_control/admin");
         $conname = getConfValue('con', 'conname', 'Missing');
@@ -180,7 +181,8 @@ INSERT INTO ageList(conid, ageType, label, shortname, sortorder, badgeFlag, veri
 VALUES (?, 'all', 'All Ages', 'All', ?, '', 'N');
 EOS;
         $ins = dbSafeInsert($ageAllIns, 'ii', array($conid, 10));
-        $ins = dbSafeInsert($ageAllIns, 'ii', array($conid + 1, 20));
+        if ($numConids > 1)
+            $ins = dbSafeInsert($ageAllIns, 'ii', array($conid + 1, 20));
     }
 
     // check if any admins exist in the system
