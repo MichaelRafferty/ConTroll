@@ -262,7 +262,7 @@ EOS;
             } else {
                 logEcho("Created person 1 as $email_addr");
                 // user record for 1
-                $num_rows = dbSafeInsert($insertUQ, 'iissss', array(1, 1, $email_addr, NULL, trim($first_name . ' ' . $last_name), 'N'));
+                $num_rows = dbSafeInsert($insertUQ, 'iissss', array(1, 1, $email_addr, '', trim($first_name . ' ' . $last_name), 'N'));
                 if ($num_rows != 1) {
                     logEcho('Unable to insert user 1 for administrator');
                     $errors++;
