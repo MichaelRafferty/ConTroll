@@ -1,5 +1,9 @@
 /* Auction Item Registration related functions
  */
+var artPagination = false;
+var nfsPagination = false;
+var printPagination = false;
+
 class AuctionItemRegistration {
 
 // items related to artists, or other exhibitors registering items
@@ -23,6 +27,7 @@ class AuctionItemRegistration {
     #artUndoBtn = null;
     #artRedoBtn = null;
     #artAddBtn = null;
+    #newArt = null;
 
     // print section
     #printItemTable = null;
@@ -31,6 +36,8 @@ class AuctionItemRegistration {
     #printUndoBtn = null;
     #printRedoBtn = null;
     #printAddBtn = null;
+    #newPrintRow = null;
+    #newPrint = null;
 
     // not for sale section
     #nfsItemTable = null;
@@ -39,6 +46,8 @@ class AuctionItemRegistration {
     #nfsUndoBtn = null;
     #nfsRedoBtn = null;
     #nfsAddBtn = null;
+    #newNfsRow = null;
+    #newNfs = null;
 
     // import modal
     #importModal = null;
@@ -67,9 +76,8 @@ class AuctionItemRegistration {
         }
     };
 
-
     printSheets(type) {
-        var script = "scripts/bidsheets.php?type=" + type + "&region=" + this.#region;
+        let script = "scripts/bidsheets.php?type=" + type + "&region=" + this.#region;
         window.open(script, "_blank")
     }
 
@@ -81,17 +89,14 @@ class AuctionItemRegistration {
         }
         clear_message('ir_message_div');
         this.#closeAnyway = false;
-        let btn = document.getElementById('importPriorBtn');
-        if (btn)
-            btn.hidden = this.#numItems > 0;
         this.#item_registration.hide();
     }
 
-    open(region, art=null) {
+    open(region, art= null, print = null, nfs = null) {
         clear_message('ir_message_div');
         this.#region = region;
-        var _this = this;
-        var script = "scripts/getItems.php"
+        let _this = this;
+        let script = "scripts/getItems.php"
         clear_message();
         $.ajax({
             url: script,
@@ -102,9 +107,7 @@ class AuctionItemRegistration {
                     show_message(data['error'], 'error');
                     return false;
                 }
-                if (art)
-                    data.items = art;
-                _this.draw(data, art);
+                _this.draw(data, art, print, nfs);
 
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -114,7 +117,7 @@ class AuctionItemRegistration {
         });
     };
 
-    draw(data, art = null) {
+    draw(data, art = null, print = null, nfs = null) {
         this.#maxItems = data.inv.maxInventory;
         this.#ownerName = data.inv.ownerName;
         this.#ownerEmail = data.inv.ownerEmail;
@@ -139,8 +142,8 @@ class AuctionItemRegistration {
         this.#nfsRedoBtn = document.getElementById('nfs-redo');
         this.#nfsAddBtn = document.getElementById('nfs-addrow');
         this.drawArtItemTable(data['items'], art);
-        this.drawPrintItemTable(data['items'], art);
-        this.drawNfsItemTable(data['items'], art);
+        this.drawPrintItemTable(data['items'], print);
+        this.drawNfsItemTable(data['items'], nfs);
 
         this.validateLoadLimit(false);
         this.#item_registration.show();
@@ -167,10 +170,6 @@ class AuctionItemRegistration {
             this.#nfsItemTable = null;
         }
 
-        let btn = document.getElementById('importPriorBtn');
-        if (btn)
-            btn.hidden = this.#numItems > 0;
-
         this.#item_registration.hide();addoverride-btn
     };
 
@@ -188,7 +187,7 @@ class AuctionItemRegistration {
         this.checkArtUndoRedo();
     };
     checkArtUndoRedo() {
-        var undosize = this.#artItemTable.getHistoryUndoSize();
+        let undosize = this.#artItemTable.getHistoryUndoSize();
         this.#artUndoBtn.disabled = undosize <= 0;
         this.#artRedoBtn.disabled = this.#artItemTable.getHistoryRedoSize() <= 0;
         return undosize;
@@ -260,7 +259,7 @@ class AuctionItemRegistration {
 
         }
         if (this.#numItems >= this.#maxItems) {
-            var limitWord = this.#numItems == this.#maxItems ? 'at' : 'beyond';
+            let limitWord = this.#numItems == this.#maxItems ? 'at' : 'beyond';
             show_message("Warning: You are " + limitWord + " the limit of " + this.#maxItems + " inventory items for " + this.#regionName +
                 ",<br/>You will not be allowed to add more until you delete some and save your changes to get below the limit.<br/><br/>" +
                 "If you have any questions about the limit, please reach out to " + this.#ownerName + " at " + this.#ownerEmail,
@@ -289,34 +288,44 @@ class AuctionItemRegistration {
         return {item_key: 'New' + this.#addItemIndex.toString()};
     }
 
-    addrowArt() {
+    addrowArt(art = null) {
         if (this.validateMaxLimit('Art Auction')) {
-            var _this = this;
-            var itemKey = 'new' + this.#addItemIndex.toString();
+            let itemKey = 'new' + this.#addItemIndex.toString();
             this.#addItemIndex++;
-            this.#artItemTable.addRow({item_key: itemKey}, false).then(function (row) {
-                row.pageTo().then(function () {
-                    row.getCell("item_key").getElement().style.backgroundColor = "#fff3cd";
-                    _this.checkArtUndoRedo();
-                });
+            let newRow = {item_key: itemKey, status: 'Entered' };
+            if (art != null) {
+                newRow.title = art.title;
+                newRow.material = art.material;
+                newRow.min_price = art.min_price
+                newRow.sale_price = art.sale_price;
+            }
+            this.#artItemTable.addRow(newRow, false).then(function (row) {
+                auctionItemRegistration.checkArtUndoRedo();
+                if (artPagination) {
+                    row.pageTo().then(function () {
+                        row.getElement().style.backgroundColor = "#fff3cd";
+                    });
+                } else {
+                    row.getElement().style.backgroundColor = "#fff3cd";
+                }
             });
         }
     };
 
     saveArt() {
-        var type = 'art';
+        let type = 'art';
         if(this.#artItemTable != null) {
-            var _this = this;
+            let _this = this;
 
-            var invalids; // TODO validation
+            let invalids; // TODO validation
             this.#artSaveBtn.innerHTML = "Saving...";
             this.#artSaveBtn.disabled = true;
 
-            var script = "scripts/updateGetItems.php";
+            let script = "scripts/updateGetItems.php";
 
             clear_message();
             clear_message('ir_message_div');
-            var postdata = {
+            let postdata = {
                 region: this.#region,
                 itemType: type,
                 tabledata: JSON.stringify(this.#artItemTable.getData())
@@ -360,9 +369,9 @@ class AuctionItemRegistration {
     }
 
     markRows(table, marks) {
-        for(var index = 0; index < marks.length; index++) {
-            var mark = marks[index];
-            var row = table.getRow(mark.item_key);
+        for(let index = 0; index < marks.length; index++) {
+            let mark = marks[index];
+            let row = table.getRow(mark.item_key);
             row.getCell(mark.field).getElement().style.backgroundColor = "#ffc0c0";
         }
     }
@@ -383,7 +392,7 @@ class AuctionItemRegistration {
         this.checkPrintUndoRedo();
     };
     checkPrintUndoRedo() {
-        var undosize = this.#printItemTable.getHistoryUndoSize();
+        let undosize = this.#printItemTable.getHistoryUndoSize();
         this.#printUndoBtn.disabled = undosize <= 0;
         this.#printRedoBtn.disabled = this.#printItemTable.getHistoryRedoSize() <= 0;
         return undosize;
@@ -411,33 +420,45 @@ class AuctionItemRegistration {
             }
         }
     };
-    addrowPrint() {
+    addrowPrint(print = null) {
         if (this.validateMaxLimit('Print Shop')) {
-            var _this = this;
-            var itemKey = 'new' + this.#addItemIndex.toString();
+            let itemKey = 'new' + this.#addItemIndex.toString();
             this.#addItemIndex++;
-            this.#printItemTable.addRow({item_key: itemKey}, false).then(function (row) {
-                row.pageTo().then(function () {
-                    row.getCell("item_key").getElement().style.backgroundColor = "#fff3cd";
-                    _this.checkPrintUndoRedo();
-                });
+            let newRow = {item_key: itemKey, status: 'Entered' };
+            if (print != null) {
+                newRow.title = print.title;
+                newRow.material = print.material;
+                newRow.min_price = print.min_price
+                newRow.sale_price = print.sale_price;
+                newRow.original_qty = print.original_qty;
+            }
+            this.#printItemTable.addRow(newRow, false).then(function (row) {
+                auctionItemRegistration.checkPrintUndoRedo();
+                if (printPagination) {
+                    row.pageTo().then(function () {
+                        row.getElement().style.backgroundColor = "#fff3cd";
+                    });
+                } else {
+                    row.getElement().style.backgroundColor = "#fff3cd";
+                }
             });
         }
     };
-    savePrint() {
-        var type = 'print';
-        if(this.#artItemTable != null) {
-            var _this = this;
 
-            var invalids; // TODO validation
+    savePrint() {
+        let type = 'print';
+        if(this.#artItemTable != null) {
+            let _this = this;
+
+            let invalids; // TODO validation
             this.#printSaveBtn.innerHTML = "Saving...";
             this.#printSaveBtn.disabled = true;
 
-            var script = "scripts/updateGetItems.php";
+            let script = "scripts/updateGetItems.php";
 
             clear_message();
             clear_message('ir_message_div');
-            var postdata = {
+            let postdata = {
                 region: this.#region,
                 itemType: type,
                 tabledata: JSON.stringify(this.#printItemTable.getData())
@@ -503,7 +524,7 @@ class AuctionItemRegistration {
         this.checkNfsUndoRedo();
     };
     checkNfsUndoRedo() {
-        var undosize = this.#nfsItemTable.getHistoryUndoSize();
+        let undosize = this.#nfsItemTable.getHistoryUndoSize();
         this.#nfsUndoBtn.disabled = undosize <= 0;
         this.#nfsRedoBtn.disabled = this.#nfsItemTable.getHistoryRedoSize() <= 0;
         return undosize;
@@ -531,33 +552,45 @@ class AuctionItemRegistration {
             }
         }
     };
-    addrowNfs() {
+
+    addrowNfs(nfs = null) {
         if (this.validateMaxLimit('Display/Not For Sale')) {
-            var _this = this;
-            var itemKey = 'new' + this.#addItemIndex.toString();
+            let itemKey = 'new' + this.#addItemIndex.toString();
             this.#addItemIndex++;
-            this.#nfsItemTable.addRow({item_key: itemKey}, false).then(function (row) {
-                row.pageTo().then(function () {
-                    row.getCell("item_key").getElement().style.backgroundColor = "#fff3cd";
-                    _this.checkNfsUndoRedo();
-                });
+            let newRow = {item_key: itemKey, status: 'Entered' };
+            if (nfs != null) {
+                newRow.title = nfs.title;
+                newRow.material = nfs.material;
+                newRow.min_price = nfs.min_price
+                newRow.sale_price = nfs.sale_price;
+            }
+            this.#nfsItemTable.addRow(newRow, false).then(function (row) {
+                auctionItemRegistration.checkNfsUndoRedo();
+                if (nfsPagination) {
+                    row.pageTo().then(function () {
+                        row.getElement().style.backgroundColor = "#fff3cd";
+                    });
+                } else {
+                    row.getElement().style.backgroundColor = "#fff3cd";
+                }
             });
         }
     };
-    saveNfs() {
-        var type = 'nfs';
-        if(this.#artItemTable != null) {
-            var _this = this;
 
-            var invalids; // TODO validation
+    saveNfs() {
+        let type = 'nfs';
+        if(this.#artItemTable != null) {
+            let _this = this;
+
+            let invalids; // TODO validation
             this.#nfsSaveBtn.innerHTML = "Saving...";
             this.#nfsSaveBtn.disabled = true;
 
-            var script = "scripts/updateGetItems.php";
+            let script = "scripts/updateGetItems.php";
 
             clear_message();
             clear_message('ir_message_div');
-            var postdata = {
+            let postdata = {
                 region: this.#region,
                 itemType: type,
                 tabledata: JSON.stringify(this.#nfsItemTable.getData())
@@ -610,13 +643,14 @@ class AuctionItemRegistration {
     }
 
     drawArtItemTable(data, art = null) {
-        var _this = this;
-        var tableSpecs = {
+        let _this = this;
+        artPagination = data.art.length > 25;
+        let tableSpecs = {
             maxHeight: "400px",
             history: true,
             data: data.art,
             layout: 'fitDataFill', // Note: fitDataTable caused it to not honor the window width and create scoll bar, unsure why
-            pagination: data.art.length > 25,
+            pagination: artPagination,
             index: 'item_key',
             paginationAddRow: "table",
             paginationSize: 10,
@@ -624,17 +658,38 @@ class AuctionItemRegistration {
             columns: [
                 {title: 'id', field: 'id', visible: false},
                 {title: '#', field: 'item_key', width: 60, hozAlign: "right"},
-                {title: 'Title', field: 'title', width: 600, editor: 'input', editable:artItemEditCheck, editorParams: { elementAttributes: { maxlength:
-                 "64"} } },
-                {title: "Material", field: "material", width: 300, editor: 'input', editable:artItemEditCheck, editorParams: { elementAttributes: { maxlength: "32"} } },
-                {title: "Minimim Bid", field: "min_price", headerWordWrap: true, width: 100, hozAlign: "right",
-                    editor: 'number', editable:artItemEditCheck, editorParams: {min: 1}, formatter: "money",
-                    formatterParams: {decimal: '.', thousand: ',', symbol: '$', negativeSign: true}, },
-                {title: "Quick Sale", field: "sale_price", headerWordWrap: true, width: 100, hozAlign: "right", visible: this.#allowQuickSale,
-                    editor: 'number', editable:artItemEditCheck, editorParams: {min: 1}, formatter: "money",
-                    formatterParams: {decimal: '.', thousand: ',', symbol: '$', negativeSign: true}, },
-                {title: "Status", field: "status", width: 200, },
-                {title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false, cellClick: function (e, cell) { deleterow(e, cell.getRow());}},
+                {
+                    title: 'Title', field: 'title', width: 600, editor: 'input', editable: artItemEditCheck, editorParams: {
+                        elementAttributes: {
+                            maxlength:
+                                "64"
+                        }
+                    }
+                },
+                {
+                    title: "Material",
+                    field: "material",
+                    width: 300,
+                    editor: 'input',
+                    editable: artItemEditCheck,
+                    editorParams: {elementAttributes: {maxlength: "32"}}
+                },
+                {
+                    title: "Minimim Bid", field: "min_price", headerWordWrap: true, width: 100, hozAlign: "right",
+                    editor: 'number', editable: artItemEditCheck, editorParams: {min: 1}, formatter: "money",
+                    formatterParams: {decimal: '.', thousand: ',', symbol: '$', negativeSign: true},
+                },
+                {
+                    title: "Quick Sale", field: "sale_price", headerWordWrap: true, width: 100, hozAlign: "right", visible: this.#allowQuickSale,
+                    editor: 'number', editable: artItemEditCheck, editorParams: {min: 1}, formatter: "money",
+                    formatterParams: {decimal: '.', thousand: ',', symbol: '$', negativeSign: true},
+                },
+                {title: "Status", field: "status", width: 200,},
+                {
+                    title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false, cellClick: function (e, cell) {
+                        deleterow(e, cell.getRow());
+                    }
+                },
                 {title: "To Del", field: "to_delete", visible: this.#debugVisible},
             ]
         };
@@ -650,24 +705,43 @@ class AuctionItemRegistration {
             _this.dataChangedArt(data);
         });
         this.#artItemTable.on("cellEdited", cellChanged);
-        if (art != null && art.hasOwnProperty('art') && art.art.length > 0) {
+
+        // now if imported items are passed, add them to the section
+        if (art != null && art.length > 0) {
             this.#artSaveBtn.innerHTML = 'Save Changes*';
             this.#artSaveBtn.disabled = false;
+            this.#newArt = art;
+            this.#artItemTable.on("tableBuilt", addArt);
         } else {
             this.#artSaveBtn.innerHTML = 'Save Changes';
             this.#artSaveBtn.disabled = true;
         }
+
         document.getElementById('print_bidsheet').hidden = data.art.length == 0;
     }
 
-    drawPrintItemTable(data, art = null) {
-        var _this = this;
-        var tableSpecs = {
+    addArt() {
+        this.#artItemTable.off("tableBuilt");
+        if (this.#newArt == null)
+            return;
+
+        for (let i = 0; i < this.#newArt.length; i++) {
+            let row = this.#newArt[i];
+            this.addrowArt(row);
+        }
+
+        this.#newArt = null;
+    }
+
+    drawPrintItemTable(data, print = null) {
+        let _this = this;
+        printPagination = data.print.length > 25;
+        let tableSpecs = {
             maxHeight: "400px",
             history: true,
             data: data.print,
             layout: 'fitData', // Note: fitDataTable caused it to not honor the window width and create scoll bar, unsure why
-            pagination: data.print.length > 25,
+            pagination: printPagination,
             paginationAddRow:"table",
             paginationSize: 10,
             paginationSizeSelector: [5, 10, 25, 50, true], //enable page size select element with these options
@@ -697,9 +771,12 @@ class AuctionItemRegistration {
             _this.dataChangedPrint(data);
         });
         this.#printItemTable.on("cellEdited", cellChanged);
-        if (art != null && art.hasOwnProperty('print') && art.print.length > 0) {
+        // now if imported items are passed, add them to the section
+        if (print != null && print.length > 0) {
             this.#printSaveBtn.innerHTML = 'Save Changes*';
             this.#printSaveBtn.disabled = false;
+            this.#newPrint = print;
+            this.#printItemTable.on("tableBuilt", addPrint);
         } else {
             this.#printSaveBtn.innerHTML = 'Save Changes';
             this.#printSaveBtn.disabled = true;
@@ -707,14 +784,28 @@ class AuctionItemRegistration {
         document.getElementById('print_printshop').hidden = data.print.length == 0;
     }
 
-    drawNfsItemTable(data, art = null) {
-        var _this = this;
-        var tableSpecs = {
+    addPrint() {
+        this.#printItemTable.off("tableBuilt");
+        if (this.#newPrint == null)
+            return;
+
+        for (let i = 0; i < this.#newPrint.length; i++) {
+            let row = this.#newPrint[i];
+            this.addrowPrint(row);
+        }
+
+        this.#newPrint = null;
+    }
+
+    drawNfsItemTable(data, nfs = null) {
+        let _this = this;
+        nfsPagination = data.nfs.length > 25;
+        let tableSpecs = {
             maxHeight: "400px",
             history: true,
             data: data.nfs,
             layout: 'fitData', // Note: fitDataTable caused it to not honor the window width and create scoll bar, unsure why
-            pagination: data.nfs.length > 25,
+            pagination: nfsPagination,
             paginationAddRow:"table",
             paginationSize: 10,
             paginationSizeSelector: [5, 10, 25, 50, true], //enable page size select element with these options
@@ -744,20 +835,36 @@ class AuctionItemRegistration {
         });
         this.#nfsItemTable.on("cellEdited", cellChanged);
 
-        if (art != null && art.hasOwnProperty('nfs') && art.nfs.length > 0) {
+        // now if imported items are passed, add them to the section
+        if (nfs != null && nfs.length > 0) {
             this.#nfsSaveBtn.innerHTML = 'Save Changes*';
             this.#nfsSaveBtn.disabled = false;
+            this.#newNfs = nfs;
+            this.#nfsItemTable.on("tableBuilt", addNfs);
         } else {
             this.#nfsSaveBtn.innerHTML = 'Save Changes';
             this.#nfsSaveBtn.disabled = true;
         }
     }
 
+    addNfs() {
+        this.#nfsItemTable.off("tableBuilt");
+        if (this.#newNfs == null)
+            return;
+
+        for (let i = 0; i < this.#newNfs.length; i++) {
+            let row = this.#newNfs[i];
+            this.addrowNfs(row);
+        }
+
+        this.#newNfs = null;
+    }
+
     import(region) {
         clear_message('ir_message_div');
         this.#region = region;
-        var _this = this;
-        var script = "scripts/getItems.php"
+        let _this = this;
+        let script = "scripts/getItems.php"
         clear_message();
         $.ajax({
             url: script,
@@ -820,9 +927,9 @@ class AuctionItemRegistration {
     // import the ones with ticks into a data array for draw
     importSelected() {
         let art = {};
-        art['print'] = [];
-        art['art'] = [];
-        art['nfs'] = [];
+        art.print = [];
+        art.art = [];
+        art.nfs = [];
         let rows = this.#importTable.getData();
         let itemKey = 1;
         for (let i = 0; i < rows.length; i++) {
@@ -846,14 +953,14 @@ class AuctionItemRegistration {
             art[row.type].push(newRow);
         }
         this.#importModal.hide();
-        this.open(this.#region, art);
+        this.open(this.#region, art.art, art.print, art.nfs);
     }
 
     // change tick to cross and back for import column.
     invertSelect(e,cell) {
         'use strict';
 
-        var value = cell.getValue();
+        let value = cell.getValue();
         if (value === undefined) {
             value = false;
         }
@@ -888,14 +995,14 @@ function cellChanged(cell) {
 }
 
 function deleteicon(cell, formattParams, onRendered) {
-    var value = cell.getValue();
+    let value = cell.getValue();
     if (value == 0 || value == null)
         return "&#x1F5D1;";
     return value;
 }
 
 function deleterow(e, row) {
-    var count = row.getCell("uses").getValue();
+    let count = row.getCell("uses").getValue();
     if (count == null) {
         row.delete();
         return;
@@ -907,10 +1014,28 @@ function deleterow(e, row) {
 }
 
 function artItemEditCheck(cell) {
-    var data = cell.getRow().getData();
+    let data = cell.getRow().getData();
     if (data.status == null)
         return true;
     if (data.status != 'Entered')
         return false;
     return true;
+}
+
+function addArt() {
+    setTimeout(function() {
+        auctionItemRegistration.addArt();
+        }, 500);
+}
+
+function addPrint() {
+    setTimeout(function() {
+        auctionItemRegistration.addPrint();
+    }, 500);
+}
+
+function addNfs() {
+    setTimeout(function() {
+        auctionItemRegistration.addNfs();
+    }, 500);
 }
