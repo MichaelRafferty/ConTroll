@@ -172,7 +172,7 @@ EOS;
         logEcho("check if all age entry exists in ageList failed, cannot continue");
         return(1);
     }
-    $ageCount = $ageR->fetchRow()[0];
+    $ageCount = $ageR->fetch_row()[0];
     if ($ageCount == 0) {
         // add the all age items
         $ageAllIns = <<<EOS
