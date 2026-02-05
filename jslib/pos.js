@@ -861,8 +861,12 @@ class Pos {
         this.#add_edit_current_state = "";
         this.#addoverride_button.hidden = true;
         this.#addnew_button.innerHTML = "Add to Cart";
-        if (this.#managerDiv)
-            this.#managerDiv.hidden = true;
+        if (this.#managerDiv) {
+            let opts = cart.getManagerSelect();
+            this.#managerDiv.hidden = opts.length == 0;
+            if (opts.length > 0)
+                this.#managerSelect.innerHTML = opts;
+        }
 
         if (reset_all > 0)
             clear_message();
@@ -971,6 +975,12 @@ class Pos {
 
             // clear the fields that should not be preserved between adds.  Allowing a second person to be added using most of the same data as default.
             profile.clearNext();
+            if (this.#managerDiv) {
+                let opts = cart.getManagerSelect();
+                this.#managerDiv.hidden = opts.length == 0;
+                if (opts.length > 0)
+                    this.#managerSelect.innerHTML = opts;
+            }
             this.#add_index_field.value = "";
             this.#add_perid_field.value = "";
             this.#add_memIndex_field.value = "";
@@ -1164,7 +1174,7 @@ class Pos {
             perid: this.#new_perid, first_name: person.fname, middle_name: person.mname, last_name: person.lname, suffix: person.suffix,
             legalName: person.legalName, pronouns: person.pronouns, badge_name: person.badge_name, badgeNameL2: person.badgeNameL2,
             fullName: getFullName(person),
-            address_1: person.addr1, address_2: person.addr2, city: person.city, state: person.state, postal_code: person.zip,
+            address_1: person.addr , address_2: person.addr2, city: person.city, state: person.state, postal_code: person.zip,
             open_notes: '', currentAgeType: person.age, currentAgeConId: config.conid,
             country: person.country, email_addr: person.email1, phone: person.phone, active: 'Y', banned: 'N', policies: rowPolicies
         };
@@ -1190,6 +1200,12 @@ class Pos {
         }
 
         cart.add(row);
+        if (this.#managerDiv) {
+            let opts = cart.getManagerSelect();
+            this.#managerDiv.hidden = opts.length == 0;
+            if (opts.length > 0)
+                this.#managerSelect.innerHTML = opts;
+        }
 
         if (this.#add_results_table != null) {
             this.#add_results_table.destroy();

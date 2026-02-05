@@ -270,7 +270,7 @@ class PosCart {
         let optionList = "";
         for (let rownum in this.#cartPerinfo) {
             let prow = this.#cartPerinfo[rownum];
-            if (prow.managedBy === null || prow.managedBy === 0) {
+            if (prow.hasOwnProperty('managedBy') == false || prow.managedBy === null || prow.managedBy === 0) {
                 // this is a potential manager
                 optionList += "<option value=" + prow.perid + ">" + prow.fullName + ' (' + prow.perid + ")</option>\n";
             }
