@@ -125,6 +125,8 @@ class Pos {
     #add_results_div = null;
     #add_mode = true;
     #uspsDiv = null;
+    #managerSelect = null;
+    #managerDiv = false;
 
     // for matching/every functions
     #checkPerid = null;
@@ -177,6 +179,10 @@ class Pos {
         this.#add_results_div = document.getElementById("add_results");
         this.#add_edit_initial_state = $("#add-edit-form").serialize();
         this.#uspsDiv = document.getElementById("uspsblock");
+        this.#managerSelect = document.getElementById("cartManager");
+        this.#managerDiv = document.getElementById("managerDiv");
+        if (this.#managerDiv)
+            this.#managerDiv.hidden = true;
 
         // review items
         this.#review_div = document.getElementById('review-div');
@@ -323,6 +329,24 @@ class Pos {
             cartrow.phone, cartrow.badge_name, cartrow.badgeNameL2, cartrow.currentAgeType);
 
         profile.setEmail(cartrow.email_addr);
+
+        if (cartrow.perid > 0) {
+            this.#managerSelect.innerHTML = '';
+            this.#managerDiv.hidden = true;
+        } else {
+            let selectList = cart.getManagerSelect();
+            if (selectList.length > 0) {
+                this.#managerSelect.innerHTML = selectList;
+                this.#managerDiv.hidden = false;
+                if (cartrow.managedBy == null || cartrow.managedBy == '' || cart.notinCart(cartrow.managedBy))
+                    this.#managerSelect.value = '';
+                else
+                    this.#managerSelect.value = cartrow.managedBy;
+            } else {
+                this.#managerDiv.hidden = true;
+                this.#managerSelect.innerHTML = null;
+            }
+        }
 
         // set age info
         if (cartrow.memberAgeType != '') {
@@ -837,6 +861,9 @@ class Pos {
         this.#add_edit_current_state = "";
         this.#addoverride_button.hidden = true;
         this.#addnew_button.innerHTML = "Add to Cart";
+        if (this.#managerDiv)
+            this.#managerDiv.hidden = true;
+
         if (reset_all > 0)
             clear_message();
         if (this.#clearadd_button.innerHTML.trim() != 'Clear Add Person Form') {
@@ -920,6 +947,12 @@ class Pos {
             row.currentAgeType = new_age;
             row.currentAgeConId = config.conid;
             row.dirty = true;
+
+            if (this.#managerSelect) {
+                let managedBy = this.#managerSelect.value;
+                if (managedBy != null & managedBy != '')
+                    row.managedBy = managedBy;
+            }
 
             for (let pol in policies) {
                 let policyName = policies[pol].policy;
@@ -1135,6 +1168,13 @@ class Pos {
             open_notes: '', currentAgeType: person.age, currentAgeConId: config.conid,
             country: person.country, email_addr: person.email1, phone: person.phone, active: 'Y', banned: 'N', policies: rowPolicies
         };
+
+        if (this.#managerSelect) {
+            let managedBy = this.#managerSelect.value;
+            if (managedBy != null & managedBy != '')
+                row.managedBy = managedBy;
+        }
+
         this.#new_perid--;
 
         profile.clearNext();
@@ -2706,6 +2746,15 @@ class Pos {
         cart.clearInReview();
         cart.unfreeze();
         cart.drawCart();
+        if (this.#add_mode) {
+            let selectList = cart.getManagerSelect();
+            if (selectList.length > 0) {
+                this.#managerSelect.innerHTML = selectList;
+                this.#managerDiv.hidden = false;
+            } else {
+                this.#managerDiv.hidden = true;
+            }
+        }
     }
 
     reviewShown() {

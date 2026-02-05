@@ -3,7 +3,7 @@
 
 // drawEditPersonBlock - just output the block to edit the person
 function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $editEmail=false, $ageByDate = '',
-                             $membershipTypes = [], $ageList = [], $tabIndexStart = 100, $admin = false, $idPrefix = '', $free=false) {
+     $membershipTypes = [], $ageList = [], $tabIndexStart = 100, $admin = false, $idPrefix = '', $free=false, $enableManager=false) {
     if ($class != '')
         $class .= '.';
     $polConf = $editEmail ? 'reg' : 'portal';
@@ -185,7 +185,7 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
                             echo '<option value="' . escape_quotes($age['ageType']) . '">' . $age['shortname'] . ' ['.$age['label'] . ']</option>';
                         }
                     ?>
-            </select>
+                </select>
             </div>
             <div class='mt-1' id='<?php echo $idPrefix . 'agetext'; ?>'><strong>Current age unknown</strong></div>
         </div>
@@ -233,20 +233,37 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
             <input class='form-control-sm' type='email' name='email2' id='<?php echo $idPrefix . 'email2'; ?>' size='35' maxlength='254'
                    tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
         </div>
-<?php } // admin ?>
+<?php
+    } // end not admin
+    if ($enableManager) {
+?>
+        <div class='col-sm-auto' id="<?php echo $idPrefix . 'managerDiv'; ?>">
+            <label for='<?php echo $idPrefix . 'cartManager'; ?>' class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>
+                    Manager
+            </label><br/>
+            <div class='mt-1'>
+                <select name='manager' id='<?php echo $idPrefix . 'cartManager'; ?>' tabindex="<?php echo $tabindex;
+                    $tabindex += 10; ?>">
+                    <option value=''>Unmanaged</option>
+                </select>
+            </div>
+        </div>
+<?php
+    } // end manager
+?>
     </div>
 <?php
-        if ($membershipTypes != null) {
-            $yearahead = false;
-            foreach ($membershipTypes as $type) {
-                if ($type['memCategory'] == 'yearahead') {
-                    $yearahead = true;
-                    $nyConData = get_con($con['id']  + 1);
-                    $startdateYA = new DateTime($nyConData['startdate']);
-                    $agebydateYA = $startdateYA->format('F j, Y');
-                    break;
-                    }
+    if ($membershipTypes != null) {
+        $yearahead = false;
+        foreach ($membershipTypes as $type) {
+            if ($type['memCategory'] == 'yearahead') {
+                $yearahead = true;
+                $nyConData = get_con($con['id']  + 1);
+                $startdateYA = new DateTime($nyConData['startdate']);
+                $agebydateYA = $startdateYA->format('F j, Y');
+                break;
                 }
+            }
 ?>
     <div class='row'>
         <div class='col-sm-12'>
