@@ -265,6 +265,22 @@ class PosCart {
         return mem.new_reg_note;
     }
 
+    // managerSelect options - return select array of potential managers in cart
+    getManagerSelect() {
+        let optionList = "";
+        for (let rownum in this.#cartPerinfo) {
+            let prow = this.#cartPerinfo[rownum];
+            if (prow.hasOwnProperty('managedBy') == false || prow.managedBy === null || prow.managedBy === 0) {
+                // this is a potential manager
+                optionList += "<option value=" + prow.perid + ">" + prow.fullName + ' (' + prow.perid + ")</option>\n";
+            }
+        }
+        if (optionList.length > 0) {
+            optionList = "<option value=''>Unmanaged</option>\n" + optionList;
+        }
+        return optionList;
+    }
+
     setRegNote(perid, index, note) {
         let pindex = this.#cartPerinfoMap.get(perid);
         this.#cartPerinfo[pindex].memberships[index].new_reg_note = note;
@@ -497,6 +513,15 @@ class PosCart {
         cart_row.currentAgeType = row.currentAgeType;
         cart_row.currentAgeConId = row.currentAgeConId;
         cart_row.active = 'Y';
+        if (row.hasOwnProperty('managedBy')) {
+            let managedBy = row.managedBy;
+            if (managedBy == '' || managedBy == null)
+               delete cart_row.managedBy;
+            else
+                cart_row.managedBy = managedBy;
+        } else {
+            delete cart_row.managedBy;
+        }
 
         // policies - first check if the row has any, then update the row with the policies
         if (!cart_row.hasOwnProperty('policies')) {

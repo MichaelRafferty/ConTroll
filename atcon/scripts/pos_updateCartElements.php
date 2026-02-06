@@ -75,12 +75,12 @@ $total_paid = 0;
 $insPerinfoSQL = <<<EOS
 INSERT INTO perinfo(last_name,first_name,middle_name,suffix,legalName,pronouns,email_addr,phone,badge_name,badgeNameL2,
                     address,addr_2,city,state,zip,country,
-                    open_notes,banned,active,contact_ok,creation_date, currentAgeType, currentAgeConId, updatedBy)
+                    open_notes,banned,active,contact_ok,creation_date, currentAgeType, currentAgeConId, managedBy, updatedBy)
 VALUES (IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),
         IFNULL(?,''), IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),
-        ?,'N','Y','Y',now(), ?, ?, ?);
+        ?,'N','Y','Y',now(), ?, ?, ?, ?);
 EOS;
-$insPDt = 'ssssssssssssssssssii';
+$insPDt = 'ssssssssssssssssssiii';
 
 $updPerinfoSQL = <<<EOS
 UPDATE perinfo SET
@@ -161,18 +161,39 @@ if ($master_perid < 0) {
         $currentAgeType = null;
         $currentAgeConId = null;
     }
+    if (array_key_exists('managedBy', $cartrow)) {
+        $managedBy = $cartrow['managedBy'];
+        if ($managedBy == '' || !is_numeric($managedBy))
+            $managedBy = null;
+        if ($managedBy < 0) {
+            // find new person managing this in the cart.
+            for ($i = 0; $i < sizeof($cart_perinfo); $i++) {
+                $mgrRow = $cart_perinfo[$i];
+                if (array_key_exists('tempperid', $mgrRow) && $managedBy == $mgrRow['tempperid']) {
+                    $managedBy = $mgrRow['perid'];
+                    break;
+                }
+            }
+            if ($managedBy < 0) // not found
+                $managedBy = null;
+        }
+    } else {
+        $managedBy = null;
+    }
 
     $paramarray = array(
         $cartrow['last_name'],$cartrow['first_name'],$cartrow['middle_name'],$cartrow['suffix'],$cartrow['legalName'],$cartrow['pronouns'],
         $cartrow['email_addr'],$cartrow['phone'],$cartrow['badge_name'],$cartrow['badgeNameL2'],
         $cartrow['address_1'],$cartrow['address_2'],$cartrow['city'],$cartrow['state'],$cartrow['postal_code'],$cartrow['country'],
-        $cartrow['open_notes'],$currentAgeType,$currentAgeConId,$user_perid
+        $cartrow['open_notes'],$currentAgeType,$currentAgeConId,$managedBy, $user_perid
     );
 
     $new_perid = dbSafeInsert($insPerinfoSQL, $insPDt, $paramarray);
     if ($new_perid === false) {
         $error_message .= "Insert of master person failed<BR/>";
     } else {
+        $cart_perinfo[0]['tempperid'] = $cartrow['perid'];
+        $cartrow['tempperid'] = $cartrow['perid'];
         $cart_perinfo[0]['perid'] = $new_perid;
         $cartrow['perid'] = $new_perid;
         $per_ins++;
@@ -229,6 +250,25 @@ for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
         $currentAgeType = null;
         $currentAgeConId = null;
     }
+    if (array_key_exists('managedBy', $cartrow)) {
+        $managedBy = $cartrow['managedBy'];
+        if ($managedBy == '' || !is_numeric($managedBy))
+            $managedBy = null;
+        if ($managedBy < 0) {
+            // find new person managing this in the cart.
+            for ($i = 0; $i < sizeof($cart_perinfo); $i++) {
+                $mgrRow = $cart_perinfo[$i];
+                if (array_key_exists('tempperid', $mgrRow) && $managedBy == $mgrRow['tempperid']) {
+                    $managedBy = $mgrRow['perid'];
+                    break;
+                }
+            }
+            if ($managedBy < 0) // not found
+                $managedBy = null;
+        }
+    } else {
+        $managedBy = null;
+    }
 
     if ($cartrow['perid'] <= 0) {
         // insert this row
@@ -236,13 +276,15 @@ for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
             $cartrow['last_name'],$cartrow['first_name'],$cartrow['middle_name'],$cartrow['suffix'],$cartrow['legalName'],$cartrow['pronouns'],
             $cartrow['email_addr'],$cartrow['phone'],$cartrow['badge_name'],$cartrow['badgeNameL2'],
             $cartrow['address_1'],$cartrow['address_2'],$cartrow['city'],$cartrow['state'],$cartrow['postal_code'],$cartrow['country'],
-            $open_notes,$currentAgeType,$currentAgeConId,$user_perid
+            $open_notes,$currentAgeType,$currentAgeConId,$managedBy, $user_perid
         );
 
         $new_perid = dbSafeInsert($insPerinfoSQL, $insPDt, $paramarray);
         if ($new_perid === false) {
             $error_message .= "Insert of person $row failed<BR/>";
         } else {
+            $cart_perinfo[$row]['tempperid'] = $cartrow['perid'];
+            $cartrow['tempperid'] = $cartrow['perid'];
             $cart_perinfo[$row]['perid'] = $new_perid;
             $cartrow['perid'] = $new_perid;
             $per_ins++;

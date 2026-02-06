@@ -213,7 +213,7 @@ if (array_key_exists('creditonline', $atcon)) {
                                 <input type='hidden' name='membership-index' id='membership-index'/>
                                 <?php
                                     drawEditPersonBlock($con, $useUSPS, $policies, 'registration', false, true, $ageByDate,
-                                            array(), $ageListIdx, 200, true, '');
+                                            array(), $ageListIdx, 200, true, '', false, true);
                                 ?>
                                 <div class="row">
                                     <div class="col-sm-12 ms-0 me-0" id="add_results">
