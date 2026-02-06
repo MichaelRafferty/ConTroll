@@ -391,9 +391,12 @@ $status_msg = '';
 $error_msg = '';
 $badges = array();
 $transid = null;
+$managedByNew = null
 for ($i = 0; $i < count($includedMembershipStatus); $i++) {
     if ($includedMembershipStatus[$i]) {
-        $badge = buildBadge($authToken, $membership_fields, 'i', $i, $region, $conid, $transid, $portalName);
+        $badge = buildBadge($authToken, $membership_fields, 'i', $i, $region, $conid, $transid, $portalName, $managedByNew);
+        if ($managedByNew == null)
+            $managedByNew = $badge['newperid'];
         $transid = $badge['transid'];
         $status_msg .= $badge['status'];
         $error_msg .= $badge['error'];
@@ -402,7 +405,9 @@ for ($i = 0; $i < count($includedMembershipStatus); $i++) {
 }
 for ($i = 0; $i < count($additionalMembershipStatus); $i++) {
     if ($additionalMembershipStatus[$i]) {
-        $badge = buildBadge($authToken, $membership_fields, 'a', $i, $region, $conid, $transid, $portalName);
+        $badge = buildBadge($authToken, $membership_fields, 'a', $i, $region, $conid, $transid, $portalName, $managedByNew);
+        if ($managedByNew == null)
+            $managedByNew = $badge['newperid'];
         $transid = $badge['transid'];
         $badges[] = $badge;
         $status_msg .= $badge['status'];
@@ -883,7 +888,7 @@ ajaxSuccess(array(
 return;
 
 // build the badge structure and insert the person into newperson, trans, reg after checking for exact match
-function buildBadge($authToken, $fields, $type, $index, $region, $conid, $transid, $portalName) {
+function buildBadge($authToken, $fields, $type, $index, $region, $conid, $transid, $portalName, $managedByNew) {
     $badge = array();
     $suffix = '_' . $type . '_' . $index;
     if ($type == 'i') {
@@ -924,16 +929,16 @@ function buildBadge($authToken, $fields, $type, $index, $region, $conid, $transi
     $value_arr = array($badge['lname'], $badge['mname'], $badge['fname'], $badge['suffix'], $legalName, $badge['email'], $badge['phone'],
         $badge['badge_name'], $badge['badgeNameL2'],
         $badge['addr'], $badge['addr2'], $badge['city'], $badge['state'], $badge['zip'], $badge['country'], $badge['contact'], $badge['share'],
-        $currentAgeType, $currentAgeConId);
+        $currentAgeType, $currentAgeConId, $managedByNew);
 
     $insertQ = <<<EOS
 INSERT INTO newperson(last_name, middle_name, first_name, suffix, legalName, email_addr, phone, badge_name, badgeNameL2,
-                      address, addr_2, city, state, zip, country, contact_ok, share_reg_ok, currentAgeType, currentAgeConId)
+                      address, addr_2, city, state, zip, country, contact_ok, share_reg_ok, currentAgeType, currentAgeConId, managedByNew)
     VALUES(IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''),
-     IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), ?, ?, ?, ?);
+     IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), ?, ?, ?, ?, ?);
 EOS;
 
-    $newid = dbSafeInsert($insertQ, 'ssssssssssssssssssi', $value_arr);
+    $newid = dbSafeInsert($insertQ, 'ssssssssssssssssssii', $value_arr);
     $badge['error'] = '';
     if ($newid === false) {
         $badge['error'] .= 'Add of person of badge for ' . $badge['fname'] . ' ' . $badge['lname'] . " failed.\n";
