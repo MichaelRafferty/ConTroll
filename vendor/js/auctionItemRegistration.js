@@ -8,6 +8,7 @@ class AuctionItemRegistration {
 
 // items related to artists, or other exhibitors registering items
     #item_registration = null;
+    #item_registration_title = null
     #item_registration_btn = null;
     #closeAnyway = false;
 
@@ -70,14 +71,19 @@ class AuctionItemRegistration {
         if (id != null) {
             this.#item_registration = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
             this.#item_registration_btn = document.getElementById('item_registration_btn');
+            this.#item_registration_title = document.getElementById('item_registration_title');
         }
         if (this.#debug & 1) {
             this.#debugVisible = true;
         }
     };
 
-    printSheets(type) {
-        let script = "scripts/bidsheets.php?type=" + type + "&region=" + this.#region;
+    printSheets(type, region = null, conid = null) {
+        if (region == null)
+            region = this.#region;
+        let script = "scripts/bidsheets.php?type=" + type + "&region=" + region;
+        if (conid != null)
+            script += '&conid=' + conid;
         window.open(script, "_blank")
     }
 
@@ -146,6 +152,7 @@ class AuctionItemRegistration {
         this.drawNfsItemTable(data['items'], nfs);
 
         this.validateLoadLimit(false);
+        this.#item_registration_title.innerHTML = '<strong>' + this.#regionName + ' Item Registration</strong>';
         this.#item_registration.show();
     };
 

@@ -586,7 +586,8 @@ EOS;
     $artist = $artistR->fetch_assoc();
     $artistR->free();
 
-    $con = get_con();
+    $conid = $artist['conid'];
+    $con = get_con($conid);
     $conname = $con['label'];
 
     // determine which parts of the second block we need

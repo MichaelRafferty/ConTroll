@@ -14,7 +14,7 @@ CREATE TABLE `payments` (
   `id` int NOT NULL AUTO_INCREMENT,
   `transid` int DEFAULT NULL,
   `type` enum('credit','cash','check','discount','refund','other','coupon') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `category` enum('reg','atcon','artshow','artist','fan','vendor','exhibits','other') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `category` enum('reg','atcon','artshow','artsales','artist','fan','vendor','exhibits','other') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `description` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `source` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `pretax` decimal(8,2) DEFAULT NULL,
