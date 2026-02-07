@@ -17,6 +17,7 @@ require_once('../lib/tax.php');
 $cc = get_conf('cc');
 $con = get_conf('con');
 $conid = $con['id'];
+$minConid = getConfValue('controll', 'viewPriorLimit', $conid - 1);
 $usps = get_conf('usps');
 load_cc_procs();
 
@@ -544,6 +545,14 @@ draw_itemRegistrationModal($portalType, $showSheets, $artControl);
         </div>
 <?php   }
 
+    $pastItemsQ = <<<EOS
+SELECT conid, count(*) AS itemCount
+FROM artItems
+WHERE conid >= ? AND conid < ?
+GROUP BY conid
+HAVING count(*) > 0
+ORDER BY conid DESC;
+EOS;
     foreach ($region_list as $id => $region) {
         // check if they already have paid space, if so, offer to show them the receipt
         $paid = 0;
@@ -555,6 +564,17 @@ draw_itemRegistrationModal($portalType, $showSheets, $artControl);
         $regionYearId = $region['id'];
         $regionName = $region['name'];
         $foundSpace = false;
+
+        // see if they have past conid's with artItems
+        $pastItemR = dbSafeQuery($pastItemsQ, 'ii', array($minConid, $conid));
+        $pastYears = [];
+        if ($pastItemR !== false) {
+            while ($pastItem = $pastItemR->fetch_row()) {
+                $pastYears[] = $pastItem[0];
+            }
+            $pastItemR->free();
+        }
+
         if (array_key_exists($regionYearId, $space_list)) {
             foreach ($space_list[$regionYearId] as $spaceId => $space) {
                 if ($space['exhibitsRegionYear'] != $region['id'])
@@ -657,7 +677,7 @@ EOS;
                                     $chR->free();
                                     itemRegistrationImportBtn($regionYearId);
                                 }
-                                itemRegistrationOpenBtn($regionYearId);
+                                itemRegistrationOpenBtn($conid, $regionYearId);
                             }
                         }
                         else if ($approved > 0)
@@ -674,7 +694,26 @@ EOS;
         ?>
             </div>
         </div>
-        <?php } ?>
+<?php
+        if (count($pastYears) > 0) {
+            echo <<<EOS
+        <div class="row mt-1">
+EOS;
+            foreach ($pastYears as $year) {
+                echo <<<EOS
+            <div class="col-sm-auto p-1">
+                <button class='btn btn-primary m-1' onclick="auctionItemRegistration.printSheets('control', $regionYearId, $year); return false;">Print Control Sheet 
+                for $year</button>
+            </div>
+EOS;
+            }
+            echo <<<EOS
+        </div>
+EOS;
+        }
+        echo "bottom buttons<br/>\n";
+    }
+?>
          <?php outputCustomText('main/bottom'); outputCustomText('main/bottom' . $portalName); ?>
     </div>
      <div class='container-fluid'>
