@@ -78,7 +78,8 @@
 
 * Support of the common Profile Editor
 * New Password Reset system
-* Artists can now import prior unsold art to current year
+* Artists can now import selected prior unsold art to current year
+* Artists can print controll sheets from recent prior years
 
 ## Global Changes
 
@@ -107,8 +108,9 @@
 * New Category Managed
 * now that age is in perinfo, rules needs to look at people ages, not just membership ages
 * Payment Page redesign
-* add abbility for art control to see prior con
-* add ability for artists to import unsold items to this years art inventory
+* Add abbility for art control to see prior con
+* Add ability for artists to import unsold items to this years art inventory
+* Add ability for artists to print control sheets from prior years
 
 # Items in Progress, but not in 2.0
 
