@@ -127,12 +127,13 @@ EOS;
         $recQ = <<<EOS
 SELECT DISTINCT t.perid, p.transid, p.ccPaymentId, p.time
 FROM artSales s
+JOIN artItems a ON s.artid = a.id
 JOIN transaction t ON t.id = s.transid
 JOIN payments p ON t.id = p.transid
-WHERE s.perid = ?;
+WHERE s.perid = ? AND a.conid = ?;
 EOS;
         $receipts = [];
-        $recR = dbSafeQuery($recQ, 'i', array($perid));
+        $recR = dbSafeQuery($recQ, 'ii', array($perid, $conid));
         if ($recR !== false) {
             while ($recL = $recR->fetch_assoc()) {
                 $receipts[] = $recL;
