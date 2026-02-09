@@ -91,6 +91,8 @@ $config_vars['taxUid'] = $taxUid;
 $config_vars['source'] = 'artpos';
 $config_vars['roomStatus'] = $roomStatus;
 $config_vars['inlineInventory'] = $inlineInventory;
+$config_vars['useBarcode'] =
+        (getConfValue('vendor', 'artistBidSheetBarcode', 0) == 1 || getConfValue('vendor', 'artistPriceTagBarcode', 0) == 1) ? 1 : 0;
 if (array_key_exists('creditoffline', $atcon)) {
     $config_vars['creditoffline'] = $atcon['creditoffline'];
 } else {
