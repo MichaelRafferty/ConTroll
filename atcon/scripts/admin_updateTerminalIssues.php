@@ -605,7 +605,7 @@ UPDATE transaction
 SET complete_date = NOW(), orderId = ?
 WHERE id = ?;
 EOS;
-    $completed = dbSafeCmd($updCompleteSQL, 'dsi', array ($order['id'], $master_tid));
+    $completed = dbSafeCmd($updCompleteSQL, 'si', array ($order['id'], $master_tid));
 
     return $message;
 }
