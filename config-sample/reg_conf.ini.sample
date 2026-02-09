@@ -1,5 +1,4 @@
 ;;;;; Global (available in all sections, Can be overridden in the individual sections)
-;;;;; Global (available in all sections, Can be overridden in the individual sections)
 [global]
 ;; N:customtext
 ;; R:V,reg_admin
@@ -39,6 +38,14 @@ regpage="https://conname.org/registration/"
 ;   first = require only first name: first, country, email
 ;   addr = first, addr, city, st, zip, country, email
 required="all"
+;; N:viewPriorLimit
+;; R:H,reg_admin
+;; P:Min Prior Conid
+;; H:Minimum Conid for viewing prior data.
+;; H+Note: In some places, full edit, where applicable is valid for current conId and current conId + 1.  Partial for conId-1. View only for all others.
+;; D:i6
+;; B:O
+viewPriorLimit=
 
 ;;;;; Convention Wide Parameters
 [con]
@@ -475,6 +482,14 @@ precon=0
 ; production = suppress the 'default' placeholder messages (an alias for this is nodefault)
 ; none = supporess all custom text
 ; customtext='production'
+;; N:viewPriorLimit
+;; R:H,exhibitor
+;; P:Min Prior Conid
+;; H:Minimum Conid for viewing and importing prior data.
+;; H+In the exhibitor portals, all prior data is view only.
+;; D:i6
+;; B:O
+viewPriorLimit=
 
 ;;;;; Exhibitor Portals Email Addresses
 ;;; Exhibitor Portals Email Addresses
