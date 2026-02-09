@@ -1342,10 +1342,14 @@ function addItemToCart(item) {
 
     cart.add(item);
     setTimeout(function() {
-        if (config.useBarcode == 1)
-            itemCode_field.focus();
-        else
+        if (config.useBarcode == 1) {
+            itemCode_field.value = '';
             artistNumber_field.focus();
+        } else {
+            artistNumber_field.value = '';
+            pieceNumber_field.value = '';
+            unitNumber_field.value = '';
+        }
     }, 500);
 }
 
