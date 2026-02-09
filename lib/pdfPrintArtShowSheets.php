@@ -761,7 +761,9 @@ EOS;
         popFont();
         $v += 0.3;
 
-        $col2 = $h + 2.0 + 3 * $pt;
+        $col1 = $h + $pt;
+        $col2 = $h + 3.0 + 3 * $pt;
+        $col1w = 3.0 - 4 * $pt;
         $col2w = 6.0 - 4 * $pt;
 
         if ($showContact) {
@@ -771,8 +773,8 @@ EOS;
             $y = mprintXY($col2, $v + $mprintXYoffset, $col2w, $artist['contactName']);
             if ($y > $maxY) $maxY = $y;
             $rowHeight = $leading + $maxY - $v;
-            $pdf->Rect($h, $v, 2.0, $rowHeight);
-            $pdf->Rect($h + 2.0, $v, 4.0, $rowHeight);
+            $pdf->Rect($h, $v, 3.0, $rowHeight);
+            $pdf->Rect($h + 3.0, $v, 4.0, $rowHeight);
             $v += $rowHeight;
 
             printXY($col1, $v + $dataOffset, 'Phone:');
@@ -780,8 +782,8 @@ EOS;
             $y = mprintXY($col2, $v + $mprintXYoffset, $col2w, $artist['contactPhone']);
             if ($y > $maxY) $maxY = $y;
             $rowHeight = $leading + $maxY - $v;
-            $pdf->Rect($h, $v, 2.0, $rowHeight);
-            $pdf->Rect($h + 2.0, $v, 4.0, $rowHeight);
+            $pdf->Rect($h, $v, 3.0, $rowHeight);
+            $pdf->Rect($h + 3.0, $v, 4.0, $rowHeight);
             $v += $rowHeight;
 
             printXY($col1, $v + $dataOffset, 'Email:');
@@ -789,8 +791,8 @@ EOS;
             $y = mprintXY($col2, $v + $mprintXYoffset, $col2w, $artist['contactEmail']);
             if ($y > $maxY) $maxY = $y;
             $rowHeight = $leading + $maxY - $v;
-            $pdf->Rect($h, $v, 2.0, $rowHeight);
-            $pdf->Rect($h + 2.0, $v, 4.0, $rowHeight);
+            $pdf->Rect($h, $v, 3.0, $rowHeight);
+            $pdf->Rect($h + 3.0, $v, 4.0, $rowHeight);
             $v += $rowHeight;
         }
 
@@ -802,8 +804,8 @@ EOS;
             $y = mprintXY($col2, $v + $mprintXYoffset, $col2w, "Ship to:");
             if ($y > $maxY) $maxY = $y;
             $rowHeight = $leading + $maxY - $v;
-            $pdf->Rect($h, $v, 2.0, $rowHeight);
-            $pdf->Rect($h + 2.0, $v, 4.0, $rowHeight);
+            $pdf->Rect($h, $v, 3.0, $rowHeight);
+            $pdf->Rect($h + 3.0, $v, 4.0, $rowHeight);
             $v += $rowHeight;
 
             printXY($col1, $v + $dataOffset, 'Company:');
@@ -811,8 +813,8 @@ EOS;
             $y = mprintXY($col2, $v + $mprintXYoffset, $col2w, $artist['shipCompany']);
             if ($y > $maxY) $maxY = $y;
             $rowHeight = $leading + $maxY - $v;
-            $pdf->Rect($h, $v, 2.0, $rowHeight);
-            $pdf->Rect($h + 2.0, $v, 4.0, $rowHeight);
+            $pdf->Rect($h, $v, 3.0, $rowHeight);
+            $pdf->Rect($h + 3.0, $v, 4.0, $rowHeight);
             $v += $rowHeight;
 
             $addr = $artist['shipAddr'];
@@ -824,8 +826,8 @@ EOS;
             $y = mprintXY($col2, $v + $mprintXYoffset, $col2w, $addr);
             if ($y > $maxY) $maxY = $y;
             $rowHeight = $leading + $maxY - $v;
-            $pdf->Rect($h, $v, 2.0, $rowHeight);
-            $pdf->Rect($h + 2.0, $v, 4.0, $rowHeight);
+            $pdf->Rect($h, $v, 3.0, $rowHeight);
+            $pdf->Rect($h + 3.0, $v, 4.0, $rowHeight);
             $v += $rowHeight;
 
             $addr = $artist['shipCity'] . ', ' . $artist['shipState'] . ' ' . $artist['shipZip'];
@@ -834,8 +836,8 @@ EOS;
             $y = mprintXY($col2, $v + $mprintXYoffset, $col2w, $addr);
             if ($y > $maxY) $maxY = $y;
             $rowHeight = $leading + $maxY - $v;
-            $pdf->Rect($h, $v, 2.0, $rowHeight);
-            $pdf->Rect($h + 2.0, $v, 4.0, $rowHeight);
+            $pdf->Rect($h, $v, 3.0, $rowHeight);
+            $pdf->Rect($h + 3.0, $v, 4.0, $rowHeight);
             $v += $rowHeight;
 
             printXY($col1, $v + $dataOffset, 'Country:');
@@ -843,8 +845,8 @@ EOS;
             $y = mprintXY($col2, $v + $mprintXYoffset, $col2w, $artist['shipCountry']);
             if ($y > $maxY) $maxY = $y;
             $rowHeight = $leading + $maxY - $v;
-            $pdf->Rect($h, $v, 2.0, $rowHeight);
-            $pdf->Rect($h + 2.0, $v, 4.0, $rowHeight);
+            $pdf->Rect($h, $v, 3.0, $rowHeight);
+            $pdf->Rect($h + 3.0, $v, 4.0, $rowHeight);
             $v += $rowHeight;
         }
     }
