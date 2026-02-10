@@ -559,6 +559,7 @@ UPDATE artSales
 SET status = ?
 WHERE id = ?;
 EOS;
+
     $usrstr = 'si';
     $upd_cart = 0;
     $upd_rows = 0;
@@ -575,13 +576,15 @@ EOS;
         $upd_rows += dbSafeCmd($updArtSalesSQL, $atypestr, array ($master_tid, $artSalesId));
 
         // change status of items sold, decrease quantity of print items
-        $upd_cart += dbSafeCmd($updQuantitySQL, $uqstr, array ($quantity, $quantity, $artId));
+        if ($type == 'print')
+            $upd_cart += dbSafeCmd($updQuantitySQL, $uqstr, array ($quantity, $quantity, $artId));
 
         if ($priceType == 'Quick Sale') {
             $upd_cart += dbSafeCmd($updStatusSQL, $usstr, array ('Quicksale/Sold', $perId, $paid, $artId));
             $upd_rows += dbSafeCmd($updArtSalesStatusSQL, $usrstr, array ('Quicksale/Sold', $artSalesId));
         } else {
-            $upd_cart += dbSafeCmd($updStatusSQL, $usstr, array ('Purchased/Released', $perId, $paid, $artId));
+            if ($type == 'art')
+                $upd_cart += dbSafeCmd($updStatusSQL, $usstr, array ('Purchased/Released', $perId, $paid, $artId));
             $upd_rows += dbSafeCmd($updArtSalesStatusSQL, $usrstr, array ('Purchased/Released', $artSalesId));
         }
 
