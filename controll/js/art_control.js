@@ -413,7 +413,7 @@ function displayArtItemHistory(data) {
     html += `<div class='row'>
         <div class='col-sm-2'>Change Date</div>
         <div class='col-sm-4'>Title</div>
-        <div class='col-sm-8'>Material</div>
+        <div class='col-sm-4'>Material</div>
         <div class='col-sm-2'>Status</div>
     </div>
     <div class='row'>
@@ -472,9 +472,11 @@ function displayArtItemHistory(data) {
         color = prior.updatedBy != current.updatedBy ? ' style="background-color: #ffcdcd;"' : '';
         html += "<div class='col-sm-1'" + color + ">" + current.updatedBy + "</div>\n</div>\n";
         // notes
-        color = prior.notes != current.notes ? ' style="background-color: #ffcdcd;"' : '';
-        html += "<div class='row'>\n<div class='col-sm-1'></div>\n<div class='col-sm-11'" + color + ">" + current.notes + "</div>\n";
-        html += "</div>\n";
+        if (prior.notes != null || current.notes != null) {
+            color = prior.notes != current.notes ? ' style="background-color: #ffcdcd;"' : '';
+            html += "<div class='row'>\n<div class='col-sm-1'></div>\n<div class='col-sm-11'" + color + ">" + current.notes + "</div>\n";
+            html += "</div>\n";
+        }
         prior = current;
     }
 
