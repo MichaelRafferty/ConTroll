@@ -1,0 +1,197 @@
+[report]
+	name="regRevTrend"
+	auth=finance
+	csvfile="regRevenueTrend"
+	index=label
+	totals=bottom
+[F001]
+    name=Cat
+	sql=cat
+	title="P/F"
+	minWidth=80
+	filter=true
+[F006]
+    name=label
+    sql=label
+    title="Membership Label"
+    minWidth=200
+    filter=true
+[F010]
+    name=y1count
+    title="Y1 Count"
+    width=80
+    align=right
+    sql=c1count
+    calc=sum
+[F012]
+    name=y1avg
+    title="Y1 Avg Price"
+    width=85
+    align=right
+    sql=c1avg
+    format=money
+[F014]
+    name=y1rev
+    title="Y1 Revenue"
+    width=120
+    align=right
+    sql=c1rev
+    format=money
+    calc=sum
+[F020]
+    name=y2count
+    title="Y2 Count"
+    width=80
+    align=right
+    sql=c1count
+    calc=sum
+[F022]
+    name=y2avg
+    title="Y2 Avg Price"
+    width=85
+    align=right
+    sql=c2avg
+    format=money
+[F024]
+    name=y2rev
+    title="Y2 Revenue"
+    width=120
+    align=right
+    sql=c2rev
+    format=money
+    calc=sum
+[F030]
+    name=y3count
+    title="Y3 Count"
+    width=80
+    align=right
+    sql=c1count
+    calc=sum
+[F032]
+    name=y3avg
+    title="Y3 Avg Price"
+    width=85
+    align=right
+    sql=c3avg
+    format=money
+[F034]
+    name=y3rev
+    title="Y3 Revenue"
+    width=120
+    align=right
+    sql=c3rev
+    format=money
+    calc=sum
+[F040]
+    name=y4count
+    title="Y4 Count"
+    width=80
+    align=right
+    sql=c4count
+    calc=sum
+[F042]
+    name=y4avg
+    title="Y4 Avg Price"
+    width=85
+    align=right
+    sql=c4avg
+    format=money
+[F044]
+    name=y4rev
+    title="Y4 Revenue"
+    width=120
+    align=right
+    sql=c4rev
+    format=money
+    calc=sum
+[F050]
+    name=y5count
+    title="Y5 Count"
+    width=80
+    align=right
+    sql=c5count
+    calc=sum
+[F052]
+    name=y5avg
+    title="Y5 Avg Price"
+    width=85
+    align=right
+    sql=c5avg
+    format=money
+[F054]
+    name=y5rev
+    title="Y5 Revenue"
+    width=120
+    align=right
+    sql=c5rev
+    format=money
+    calc=sum
+[T001]
+	name=allrows
+	alias=a
+[C001]
+    name=data
+    select="SELECT label, r.conid, count(*) as Count, ROUND(AVG(paid), 2) AS Average, ROUND(SUM(paid),2) AS Revenue"
+    tables="FROM reg r JOIN memList m ON r.memid = m.id"
+    where="WHERE (r.price = 0 OR r.paid > 0) AND r.conid BETWEEN ? - 4 AND ? GROUP BY r.conid, label"
+[C002]
+    name=labels
+    select="SELECT DISTINCT label"
+    tables="FROM data"
+    where=""
+[C003]
+    name=wide
+    select="SELECT l.label, MAX(c1.conid) AS c1conid, IFNULL(SUM(c1.Count),0) AS c1count, IFNULL(AVG(c1.Average), 0) AS c1avg, IFNULL(SUM(c1.Revenue), 0) AS
+    c1rev,
+MAX(c2.conid) AS c2conid, IFNULL(SUM(c2.Count),0) AS c2count, IFNULL(AVG(c2.Average), 0) AS c2avg, IFNULL(SUM(c2.Revenue), 0) AS c2rev,
+MAX(c3.conid) AS c3conid, IFNULL(SUM(c3.Count),0) AS c3count, IFNULL(AVG(c3.Average), 0) AS c3avg, IFNULL(SUM(c3.Revenue), 0) AS c3rev,
+MAX(c4.conid) AS c4conid, IFNULL(SUM(c4.Count),0) AS c4count, IFNULL(AVG(c4.Average), 0) AS c4avg, IFNULL(SUM(c4.Revenue), 0) AS c4rev,
+MAX(c5.conid) AS c5conid, IFNULL(SUM(c5.Count),0) AS c5count, IFNULL(AVG(c5.Average), 0) AS c5avg, IFNULL(SUM(c5.Revenue), 0) AS c5rev
+FROM labels l
+LEFT OUTER JOIN data c1 on l.label = c1.label AND c1.conid = ?
+LEFT OUTER JOIN data c2 on l.label = c2.label AND c2.conid = ? - 1
+LEFT OUTER JOIN data c3 on l.label = c3.label AND c3.conid = ? - 2
+LEFT OUTER JOIN data c4 on l.label = c4.label AND c4.conid = ? - 3
+LEFT OUTER JOIN data c5 on l.label = c5.label AND c5.conid = ? - 4"
+    where="GROUP BY l.label"
+    tables=""
+[C004]
+    name=allrows
+    select="SELECT 'Paid' AS Cat, wide.* FROM wide
+WHERE c1avg != 0 OR c2avg != 0 OR c3avg != 0 OR c4avg != 0 OR c5avg != 0
+UNION
+SELECT 'Free' AS Cat, wide.* FROM wide
+WHERE c1avg = 0 AND c2avg = 0 AND c3avg = 0 AND c4avg = 0 AND c5avg = 0
+ORDER BY Cat DESC, c2rev desc, label"
+    where=""
+    tables=""
+[P001]
+    type=prompt
+    item=conid
+    datatype=i
+[P002]
+    type=prompt
+    item=conid
+    datatype=i
+[P003]
+    type=prompt
+    item=conid
+    datatype=i
+[P004]
+    type=prompt
+    item=conid
+    datatype=i
+[P005]
+    type=prompt
+    item=conid
+    datatype=i
+[P006]
+    type=prompt
+    item=conid
+    datatype=i
+[P007]
+    type=prompt
+    item=conid
+    datatype=i
+[sort]
+	001="Cat desc, C2Rev Desc, label"

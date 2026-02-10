@@ -9,3 +9,10 @@
 	auth=finance
 	type=rpt
 	P001="prompt/~/conid/~/Earliest Convention ID: /~/Enter the first convention ID/~/#con.id#"
+[200TrendRegRev]
+    name='Reg Revenue 5 Year Trend'
+	description='5 Year Trend of Regiatration Revenue By Membership Label'
+	template=fin_regRevTrend.rpt
+	auth=finance
+	type=rpt
+	P001="prompt/~/conid/~/Most Recent Convention ID: /~/Enter the most recent convention ID/~/#con.id#"
