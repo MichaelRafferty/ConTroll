@@ -43,7 +43,7 @@
     title="Y2 Count"
     width=80
     align=right
-    sql=c1count
+    sql=c2count
     calc=sum
 [F022]
     name=y2avg
@@ -65,7 +65,7 @@
     title="Y3 Count"
     width=80
     align=right
-    sql=c1count
+    sql=c3count
     calc=sum
 [F032]
     name=y3avg
