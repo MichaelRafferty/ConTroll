@@ -575,9 +575,8 @@ EOS;
         $paid = $line['gross_sales_money'];
         $upd_rows += dbSafeCmd($updArtSalesSQL, $atypestr, array ($master_tid, $artSalesId));
 
-        // change status of items sold, decrease quantity of print items
-        if ($type == 'print')
-            $upd_cart += dbSafeCmd($updQuantitySQL, $uqstr, array ($quantity, $quantity, $artId));
+        // change status of items sold, decrease quantity of art and  print items
+        $upd_cart += dbSafeCmd($updQuantitySQL, $uqstr, array ($quantity, $quantity, $artId));
 
         if ($priceType == 'Quick Sale') {
             $upd_cart += dbSafeCmd($updStatusSQL, $usstr, array ('Quicksale/Sold', $perId, $paid, $artId));
