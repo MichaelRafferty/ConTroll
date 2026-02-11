@@ -22,11 +22,6 @@
     align=right
     sql=t.id
     width=80
-[F010]
-    name=sqrTransId
-    title="Square Trans ID"
-    sql=p.cc_txn_id
-    filter=true
 [F015]
     name=sqrPmtId
     title="Square Payment ID"
