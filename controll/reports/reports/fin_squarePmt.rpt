@@ -108,10 +108,12 @@ END"
 	name=perinfo
 	alias=pp
 	join="t.perid=pp.id"
+	left=true
 [T004]
 	name=newperson
 	alias=n
 	join="n.id=t.newperid"
+	left=true
 [P001]
     type=prompt
     item=conid
