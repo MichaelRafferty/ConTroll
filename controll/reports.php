@@ -170,6 +170,28 @@ EOS;
                     $default = $prompt[4];
                     if (preg_match('/^#.+#$/', $default)) {
                         $prompt[4] = replaceConfigTokens($default);
+                    } else {
+                        switch (strtolower($default)) {
+                            case 'today':
+                                $prompt[4] = date_format(date_create(), "Y-m-d");
+                                break;
+                            case 'yesterday':
+                                $date = date_create();
+                                $date = date_add($date, date_interval_create_from_date_string('-1 day'));
+                                $prompt[4] = date_format($date, 'Y-m-d');
+                                break;
+                            case 'thismonth':
+                                $prompt[4] = date_format(date_create(), 'Y-m-01');
+                                break;
+                            case 'lastmonth':
+                                $date = date_create();
+                                $date = date_add($date, date_interval_create_from_date_string('-1 month'));
+                                $prompt[4] = date_format($date, 'Y-m-01');
+                                break;
+                            case 'now':
+                                $prompt[4] = date_format(date_create(), 'Y-m-d H:i:s');
+                                break;
+                        }
                     }
                 }
                 $prompts[] = $prompt;

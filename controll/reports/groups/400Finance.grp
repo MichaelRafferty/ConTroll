@@ -16,3 +16,12 @@
 	auth=finance
 	type=rpt
 	P001="prompt/~/conid/~/Most Recent Convention ID: /~/Enter the most recent convention ID/~/#con.id#"
+[300SquarePayments]
+    name='Square Payments'
+	description='All Payments submitted to Square for a date range. Note: Dates assume 00:00:00 if the time string is omitted'
+	template=fin_squarePmt.rpt
+	auth=finance
+	type=rpt
+	P001="prompt/~/conid/~/Most Recent Convention ID: /~/Enter the most recent convention ID/~/#con.id#"
+	P002="prompt/~/startDate/~/Start Date/Time: /~/YYYY-MM-DD HH:MM:SS format, Earliest Date to fetch/~/yesterday"
+	P003="prompt/~/endDate/~/Ending Date/Time: /~/YYYY-MM-DD HH:MM:SS, Latest Date to fetch/~/now"

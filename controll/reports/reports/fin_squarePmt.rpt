@@ -1,0 +1,130 @@
+[report]
+	name=squarePmts
+	auth=finance
+	csvfile=squarePmts
+	index=cctnxid
+	totals=bottom
+[F001]
+    name=payTime
+	sql=p.time
+	title="Date/Time"
+	minWidth=120
+	filter=true
+[F002]
+    name=conid
+    sql=t.conid
+    title="Con ID"
+    minWidth=80
+    filter=true
+[F003]
+    name=tid
+    title="Trans ID"
+    align=right
+    sql=t.id
+    minWidth=80
+[F010]
+    name=sqrTransId
+    title="Square Trans ID"
+    sql=p.cc_txn_id
+    filter=true
+[F015]
+    name=sqrPmtId
+    title="Square Payment ID"
+    sql=p.ccPaymentId
+    filter=true
+[F020]
+    name=payType
+    title="Payment Type"
+    sql=p.type
+    filter=true
+[F023]
+    name=payCategory
+    title="Payment Category"
+    sql=p.category
+    filter=true
+[F026]
+    name=paySource
+    title="Payment Source"
+    sql=p.source
+    filter=true
+[F030]
+    name=pretax
+    title="Pre Tax"
+    sql=p.pretax
+    format=money
+    align=right
+[F032]
+    name=tax
+    title="Tax"
+    sql=p.tax
+    format=money
+    align=right
+[F034]
+     name=amount
+     title="Amount"
+     sql=p.amount
+     format=money
+     align=right
+[F050]
+    name=perid
+    title="Perid"
+    sql=t.perid
+    align=right
+    minWidth=80
+    filter=true
+[F052]
+    name=newperid
+    title="New Perid"
+    sql=t.newperid
+    align=right
+    minWidth=80
+    filter=true
+[F054]
+    name=fullName
+    title="Full Name"
+    sql="CASE
+    WHEN pp.id IS NULL THEN TRIM(REGEXP_REPLACE(CONCAT_WS(' ', n.first_name, n.middle_name, n.last_name, n.suffix), ' +', ' '))
+    ELSE TRIM(REGEXP_REPLACE(CONCAT_WS(' ', pp.first_name, pp.middle_name, pp.last_name, pp.suffix), ' +', ' '))
+END"
+    filter=true
+[F056]
+    name=emailAddr
+    title="Email Address"
+    sql="IFNULL(pp.email_addr, n.email_addr)"
+    filter=true
+[F080]
+    name=receiptURL
+    title="Receipt URL"
+    sql=p.receipt_url
+    format=link
+[T001]
+	name=payments
+	alias=p
+[T002]
+	name=transaction
+	alias=t
+	join="t.id=p.transid"
+[T003]
+	name=perinfo
+	alias=pp
+	join="t.perid=pp.id"
+[T004]
+	name=newperson
+	alias=n
+	join="n.id=t.newperid"
+[P001]
+    type=prompt
+    item=conid
+    datatype=i
+[P002]
+    type=prompt
+    item=startDate
+    datatype=s
+[P003]
+    type=prompt
+    item=endDate
+    datatype=s
+[where]
+	001="t.conid = ? AND p.time BETWEEN ? AND ?"
+[sort]
+	001="p.time"
