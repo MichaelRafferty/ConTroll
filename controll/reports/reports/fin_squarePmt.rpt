@@ -14,14 +14,14 @@
     name=conid
     sql=t.conid
     title="Con ID"
-    minWidth=80
+    width=80
     filter=true
 [F003]
     name=tid
     title="Trans ID"
     align=right
     sql=t.id
-    minWidth=80
+    width=80
 [F010]
     name=sqrTransId
     title="Square Trans ID"
@@ -37,16 +37,19 @@
     title="Payment Type"
     sql=p.type
     filter=true
+    width=100
 [F023]
     name=payCategory
     title="Payment Category"
     sql=p.category
     filter=true
+    width=100
 [F026]
     name=paySource
     title="Payment Source"
     sql=p.source
     filter=true
+    width=100
 [F030]
     name=pretax
     title="Pre Tax"
@@ -59,25 +62,27 @@
     sql=p.tax
     format=money
     align=right
+    width=80
 [F034]
      name=amount
      title="Amount"
      sql=p.amount
      format=money
      align=right
+     width=80
 [F050]
     name=perid
     title="Perid"
     sql=t.perid
     align=right
-    minWidth=80
+    width=80
     filter=true
 [F052]
     name=newperid
     title="New Perid"
     sql=t.newperid
     align=right
-    minWidth=80
+    width=80
     filter=true
 [F054]
     name=fullName
