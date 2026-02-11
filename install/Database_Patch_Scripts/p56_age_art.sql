@@ -487,7 +487,7 @@ DELIMITER ;
 
 UPDATE perinfo SET managedBy = NULL, managedByNew = NULL where first_name = 'Merged' and middle_name = 'into';
 
-// the code added atcon as a category a while ago but the database is out of sync
+-- the code added atcon as a category a while ago but the database is out of sync
 ALTER TABLE payments MODIFY COLUMN category enum('reg','atcon','artshow','artsales','artist','fan','vendor','exhibits','other') DEFAULT NULL;
 
 INSERT INTO patchLog(id, name) VALUES(56, 'art, portal, et al');
