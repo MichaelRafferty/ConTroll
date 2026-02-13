@@ -127,7 +127,7 @@ if ($badgeNameL2 != '') {
     $valueArr[] = '%' . $badgeNameL2 . '%';
 }
 if ($address != '') {
-    $typestr .= 'ssss';
+    $typestr .= 'ss';
     $valueArr[] = '%' . $address . '%';
     $valueArr[] = '%' . $address . '%';
     $mQ .= $and . "(lower(p.address) like ? OR lower(p.addr_2) like ?)";
