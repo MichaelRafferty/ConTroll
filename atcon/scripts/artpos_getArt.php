@@ -62,12 +62,7 @@ $response['unitNumber'] = $unitNumber;
 $response['itemId'] = $itemId;
 $response['findType'] = $findType;
 $response['region'] = $region;
-
-$atcon = get_conf('atcon');
-if (array_key_exists('inlineinventory', $atcon))
-    $inlineInventory = $atcon['inlineinventory'];
-else
-    $inlineInventory = 1;
+$inlineInventory = getConfValue('atcon', 'inlineinventory', 0);
 
 if ($inlineInventory != 1) {
     $statusExclude = "AND A.status NOT IN ('Entered','Not In Show')";

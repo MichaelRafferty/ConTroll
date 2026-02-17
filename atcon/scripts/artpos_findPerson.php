@@ -45,7 +45,7 @@ if (is_numeric($name_search)) {
 //
 // this is perid
 //
-    $inlineInventory = getConfValue('atcon', 'inlineinventory', 1);
+    $inlineInventory = getConfValue('atcon', 'inlineinventory', 0);
     $allowBid = $inlineInventory == 1 ? ", 'BID'" : '';
     $findPersonQ = <<<EOS
 SELECT p.id, first_name, middle_name, last_name, suffix, badge_name, badgeNameL2, email_addr, address, addr_2, city, state, zip, country, phone
