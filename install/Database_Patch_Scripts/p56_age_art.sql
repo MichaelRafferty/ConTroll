@@ -114,7 +114,7 @@ UPDATE controllTxtItems SET contents = REPLACE(contents, '<span class="s1">Dear 
  *  fix mergepid to set manager fields to null
  */
 
-DROP PROCEDURE IF EXISTS `mergePerid` ;
+DROP PROCEDURE IF EXISTS `mergePerid`;
 DELIMITER ;;
 CREATE PROCEDURE `mergePerid`(IN userid INT, IN to_mergePID INT, IN to_survivePID INT, OUT statusmsg TEXT, OUT rollback_log TEXT)
     SQL SECURITY INVOKER
@@ -122,6 +122,7 @@ BEGIN
     /* updates the database to change records with to_mergePID to to_survivePID to preserver referential integrity as it merges two perinfo records together
     /* tables with perinfo refs:
 
+            artItems
             artSales
             atcon_user
             badgeList
@@ -196,6 +197,18 @@ BEGIN
             END IF;
         END IF;
 
+        /* artItems */
+        SET stmt = (SELECT CONCAT('UPDATE artItemss SET bidder = ', to_mergePID, ' WHERE ID IN (', group_concat(id SEPARATOR ','), ');')
+                    FROM artItems
+                    WHERE bidder = to_mergePID);
+
+        IF stmt is not null THEN
+            UPDATE artItems SET bidder = to_survivePID where bidder = to_mergePID;
+            SET msg = CONCAT(msg, 'ArtItems:  ', CONVERT(ROW_COUNT(), char), CHAR(10));
+
+            SET rollback_stmts = CONCAT(rollback_stmts, stmt, CHAR(10));
+        END IF;
+
         /* artSales */
         SET stmt = (SELECT CONCAT('UPDATE artSales SET perid = ', to_mergePID, ' WHERE ID IN (', group_concat(id SEPARATOR ','), ');')
                     FROM artSales
@@ -203,7 +216,7 @@ BEGIN
 
         IF stmt is not null THEN
             UPDATE artSales SET perid = to_survivePID where perid = to_mergePID;
-            SET msg = CONCAT(msg, 'artist:  ', CONVERT(ROW_COUNT(), char), CHAR(10));
+            SET msg = CONCAT(msg, 'artSales:  ', CONVERT(ROW_COUNT(), char), CHAR(10));
 
             SET rollback_stmts = CONCAT(rollback_stmts, stmt, CHAR(10));
         END IF;
@@ -484,6 +497,12 @@ BEGIN
 
 END ;;
 DELIMITER ;
+
+/* now fix past bidders in artItems */
+UPDATE artItems
+JOIN perinfo p ON p.id = artItems.bidder
+SET bidder = p.last_name
+WHERE p.first_name = 'Merged' AND p.middle_name = 'into';
 
 UPDATE perinfo SET managedBy = NULL, managedByNew = NULL where first_name = 'Merged' and middle_name = 'into';
 

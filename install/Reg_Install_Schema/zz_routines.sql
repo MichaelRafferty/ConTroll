@@ -168,6 +168,7 @@ BEGIN
     /* updates the database to change records with to_mergePID to to_survivePID to preserver referential integrity as it merges two perinfo records together
     /* tables with perinfo refs:
 
+            artItems
             artSales
             atcon_user
             badgeList
@@ -242,6 +243,18 @@ BEGIN
             END IF;
         END IF;
 
+        /* artItems */
+        SET stmt = (SELECT CONCAT('UPDATE artItemss SET bidder = ', to_mergePID, ' WHERE ID IN (', group_concat(id SEPARATOR ','), ');')
+                    FROM artItems
+                    WHERE bidder = to_mergePID);
+
+        IF stmt is not null THEN
+            UPDATE artItems SET bidder = to_survivePID where bidder = to_mergePID;
+            SET msg = CONCAT(msg, 'ArtItems:  ', CONVERT(ROW_COUNT(), char), CHAR(10));
+
+            SET rollback_stmts = CONCAT(rollback_stmts, stmt, CHAR(10));
+        END IF;
+
         /* artSales */
         SET stmt = (SELECT CONCAT('UPDATE artSales SET perid = ', to_mergePID, ' WHERE ID IN (', group_concat(id SEPARATOR ','), ');')
                     FROM artSales
@@ -249,7 +262,7 @@ BEGIN
 
         IF stmt is not null THEN
             UPDATE artSales SET perid = to_survivePID where perid = to_mergePID;
-            SET msg = CONCAT(msg, 'artist:  ', CONVERT(ROW_COUNT(), char), CHAR(10));
+            SET msg = CONCAT(msg, 'artSales:  ', CONVERT(ROW_COUNT(), char), CHAR(10));
 
             SET rollback_stmts = CONCAT(rollback_stmts, stmt, CHAR(10));
         END IF;
