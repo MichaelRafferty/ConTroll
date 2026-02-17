@@ -241,7 +241,7 @@ resetEditPane() {
         this.#final_priceField.value = null;
     }
 
-    if (this.#typeField == artItemTypes.PRINT) {
+    if (this.type == artItemTypes.PRINT) {
         this.#quantityField.value = this.quantity;
         this.#quantityField.setAttribute('max',this.original_qty);
         this.#original_qtyField.value = this.original_qty;
