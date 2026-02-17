@@ -2,6 +2,7 @@
 function getEmailBody($transid, $owner, $memberships, $coupon, $planRec, $rid, $url, $amount, $preTaxAmt, $taxAmt, $taxes, $planPayment = 0): string {
     $condata = get_con();
     $con = get_conf('con');
+    $conid = $con['id'];
     $testsite = getConfValue('portal', 'test') == 1;
 
     $currency = getConfValue('con', 'currency', 'USD');
@@ -76,8 +77,9 @@ function getEmailBody($transid, $owner, $memberships, $coupon, $planRec, $rid, $
             $body .= "The following memberships were involved in this payment:\n$taxCode\n";
 
             foreach ($memberships as $membership) {
+                $label = $membership['conid'] == $conid ? $membership['label'] : ("$conid " . $membership['label']);
                 // portalPayment sets the modified flag to true on all regs changed by this payment, and false to all the others.
-                $body .= '     * ' . $membership['fullName'] . ' (' . $membership['label'] . ") for " .
+                $body .= '     * ' . $membership['fullName'] . " ($label) for " .
                     $dolfmt->formatCurrency((float) $membership['price'], $currency) .  ($membership['taxable'] == 'Y' ? ' T' : '');
 
                 $due = $membership['price'] - ($membership['paid'] + $membership['couponDiscount']);
@@ -115,6 +117,7 @@ function getNoChargeEmailBody($transid, $owner, $memberships): string {
     $condata = get_con();
     $testsite = getConfValue('portal', 'test') == 1;
     $con = get_conf('con');
+    $conid = $con['id'];
 
     if (array_key_exists('oneoff', $con)) {
         $oneoff = $con['oneoff'];
@@ -151,7 +154,8 @@ function getNoChargeEmailBody($transid, $owner, $memberships): string {
         if ($membership['modified'] == true) {
             if (array_key_exists($membership['fullName'], $fullnames))
                 continue;
-            $body .= '     * ' . $membership['fullName'] . ' (' . $membership['label'] . ")\n\n";
+            $label = $membership['conid'] == $conid ? $membership['label'] : ("$conid " . $membership['label']);
+            $body .= '     * ' . $membership['fullName'] . " ($label)\n\n";
 
             $fullnames[$membership['fullName']] = 1;
         }
