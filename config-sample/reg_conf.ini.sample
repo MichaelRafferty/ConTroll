@@ -437,6 +437,9 @@ discount=active
 ;; H+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; for allowing what to sell and at what price
 ;; D:l:0,1
 ;; B:O
+; inlineinventory=0 : artpos will sell as quicksale if no bids, or if 'restrict to inventory sale statuses and prices' for art not sold at quicksale
+; inlineinventory=1 : art pos will use an intelligent modal popup based on Region Year Room Status for allowing what to sell and price
+inlineinventory=0
 ;; N:posRegistrationSort
 ;; R:H,reg_admin
 ;; H:How to sort the registration items in Reg Cashier/Reg Checkin
@@ -447,10 +450,6 @@ discount=active
 ;; B:R
 ; posRegistrationSort - where to put the filter elements on the badgelist page ("top", "bottom")
 posRegistrationSort="m.sort_order";
-;;;; inlineinventory - allow for modal change to inventory status at time of checkout for artpos (not require inventory update first)
-; inlineinventory=0 : artpos will sell as quicksale if no bids, or if 'restrict to inventory sale statuses and prices' for art not sold at quicksale
-; inlineinventory=1 : art pos will use an intelligent modal popup based on Region Year Room Status for allowing what to sell and price
-inlineinventory=1
 ;; N:precon
 ;; R:H,reg_staff
 ;; H:Allow use of atcon for pre-con sales
