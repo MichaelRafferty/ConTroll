@@ -26,7 +26,7 @@ if (!check_atcon('artsales', $conid)) {
 }
 
 // load stats
-$inlineInventory = getConfValue('atcon', 'inlineinventory', 1);
+$inlineInventory = getConfValue('atcon', 'inlineinventory', 0);
 $allowBid = $inlineInventory == 1 ? '' : " AND a.status != 'BID'";
 $activeQ = <<<EOS
 SELECT a.bidder AS perid, TRIM(CONCAT_WS(' ', p.first_name, p.last_name)) AS name, COUNT(*) AS items

@@ -837,7 +837,7 @@ if ($ageType == '') {
 if ($holderPrimary) {
     $holderPrimaryMembership = '<b>' . $holderPrimary['shortname'] . '</b> (' . $holderPrimary['status'] . ')';
     if (array_key_exists('expired', $holderPrimary) && $holderPrimary['expired'] == 1) {
-        $holderPrimaryMembership = "<span class='warn'>$holderPrimaryMembership</span>";
+        $holderPrimaryMembership = "<span class='warn'>Expired: $holderPrimaryMembership</span>";
     }
 } else {
     $holderPrimaryMembership = '&nbsp;';

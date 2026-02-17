@@ -21,11 +21,7 @@ if (!(check_atcon('artsales', $conid))) {
     exit();
 }
 
-$atcon = get_conf('atcon');
-if (array_key_exists('inlineinventory', $atcon))
-    $inlineInventory = $atcon['inlineinventory'];
-else
-    $inlineInventory = 1;
+$inlineInventory = getConfValue('atcon', 'inlineinventory', 0);
 
 if ($inlineInventory != 1) {
     $message_error = 'No inventory permission.';
