@@ -114,7 +114,7 @@ UPDATE controllTxtItems SET contents = REPLACE(contents, '<span class="s1">Dear 
  *  fix mergepid to set manager fields to null
  */
 
-DROP PROCEDURE IF EXISTS `mergePerid` ;
+DROP PROCEDURE IF EXISTS `mergePerid`;
 DELIMITER ;;
 CREATE PROCEDURE `mergePerid`(IN userid INT, IN to_mergePID INT, IN to_survivePID INT, OUT statusmsg TEXT, OUT rollback_log TEXT)
     SQL SECURITY INVOKER
@@ -122,6 +122,7 @@ BEGIN
     /* updates the database to change records with to_mergePID to to_survivePID to preserver referential integrity as it merges two perinfo records together
     /* tables with perinfo refs:
 
+            artItems
             artSales
             atcon_user
             badgeList
@@ -196,6 +197,18 @@ BEGIN
             END IF;
         END IF;
 
+        /* artItems */
+        SET stmt = (SELECT CONCAT('UPDATE artItemss SET bidder = ', to_mergePID, ' WHERE ID IN (', group_concat(id SEPARATOR ','), ');')
+                    FROM artItems
+                    WHERE bidder = to_mergePID);
+
+        IF stmt is not null THEN
+            UPDATE artItems SET bidder = to_survivePID where bidder = to_mergePID;
+            SET msg = CONCAT(msg, 'ArtItems:  ', CONVERT(ROW_COUNT(), char), CHAR(10));
+
+            SET rollback_stmts = CONCAT(rollback_stmts, stmt, CHAR(10));
+        END IF;
+
         /* artSales */
         SET stmt = (SELECT CONCAT('UPDATE artSales SET perid = ', to_mergePID, ' WHERE ID IN (', group_concat(id SEPARATOR ','), ');')
                     FROM artSales
@@ -203,7 +216,7 @@ BEGIN
 
         IF stmt is not null THEN
             UPDATE artSales SET perid = to_survivePID where perid = to_mergePID;
-            SET msg = CONCAT(msg, 'artist:  ', CONVERT(ROW_COUNT(), char), CHAR(10));
+            SET msg = CONCAT(msg, 'artSales:  ', CONVERT(ROW_COUNT(), char), CHAR(10));
 
             SET rollback_stmts = CONCAT(rollback_stmts, stmt, CHAR(10));
         END IF;
@@ -485,10 +498,35 @@ BEGIN
 END ;;
 DELIMITER ;
 
+/* now fix past bidders in artItems */
+UPDATE artItems
+JOIN perinfo p ON p.id = artItems.bidder
+SET bidder = p.last_name
+WHERE p.first_name = 'Merged' AND p.middle_name = 'into';
+
 UPDATE perinfo SET managedBy = NULL, managedByNew = NULL where first_name = 'Merged' and middle_name = 'into';
 
 -- the code added atcon as a category a while ago but the database is out of sync
 ALTER TABLE payments MODIFY COLUMN category enum('reg','atcon','artshow','artsales','artist','fan','vendor','exhibits','other') DEFAULT NULL;
+
+/* Fix trigger for artItemsHitory to not trigger if just updated by was changed */
+DROP TRIGGER IF EXISTS artItems_update;
+DELIMITER ;;
+CREATE DEFINER=CURRENT_USER  TRIGGER `artItems_update` BEFORE UPDATE ON `artItems` FOR EACH ROW BEGIN
+    IF (OLD.id != NEW.id OR OLD.item_key != NEW.item_key OR OLD.title != NEW.title OR OLD.type != NEW.type OR OLD.status != NEW.status
+        OR OLD.location != NEW.location OR OLD.quantity != NEW.quantity OR OLD.original_qty != NEW.original_qty
+        OR OLD.min_price != NEW.min_price OR OLD.sale_price != NEW.sale_price OR OLD.final_price != NEW.final_price
+        OR OLD.bidder != NEW.bidder OR OLD.conid != NEW.conid OR OLD.artshow != NEW.artshow
+        OR OLD.material != NEW.material OR OLD.exhibitorRegionYearId != NEW.exhibitorRegionYearId
+        OR OLD.notes != NEW.notes)
+    THEN
+        INSERT INTO artItemsHistory(id, item_key, title, type, status, location, quantity, original_qty, min_price, sale_price,
+                                    final_price, bidder, conid, artshow, time_updated, updatedBy, material, exhibitorRegionYearId, notes)
+        VALUES (OLD.id, OLD.item_key, OLD.title, OLD.type, OLD.status, OLD.location, OLD.quantity, OLD.original_qty, OLD.min_price, OLD.sale_price,
+                OLD.final_price, OLD.bidder, OLD.conid, OLD.artshow, OLD.time_updated, OLD.updatedBy, OLD.material, OLD.exhibitorRegionYearId, OLD.notes);
+    END IF;
+END;;
+DELIMITER ;
 
 INSERT INTO patchLog(id, name) VALUES(56, 'art, portal, et al');
 
