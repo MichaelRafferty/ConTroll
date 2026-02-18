@@ -463,7 +463,7 @@ EOS;
             $receiptUrl = null;
         $last4 = $payment['card_details']['card']['last_4'];
         $id = $payment['id'];
-        if (array_key_exists('card_details'), $payment) {
+        if (array_key_exists('card_details', $payment)) {
             if (array_key_exists('auth_result_code', $payment['card_details']))
                 $auth = $payment['card_details']['auth_result_code'];
             else
