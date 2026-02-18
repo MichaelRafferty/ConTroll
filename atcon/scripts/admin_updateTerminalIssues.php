@@ -345,13 +345,13 @@ EOS;
         $gross = $line['gross_sales_money']['amount'] / 100;
         $note = $line['note'];
         $note = substr($note, 0, strpos($note, ':'));
-        $regid = explode(',', $note)[2];
-
-        // update the database
-        //$message .= "\$upd_rows += dbSafeCmd($updRegSql, 'disdii', array($gross, $master_tid, 'paid', $applied_disc, $coupon, $regid));<br/>";
-        $upd_rows += dbSafeCmd($updRegSql, 'disdii', array($paid, $master_tid, 'paid', $applied_disc, $coupon, $regid));
+        if (is_array($note) && count($note) > 2) {
+            $regid = explode(',', $note)[2];
+            // update the database
+            //$message .= "\$upd_rows += dbSafeCmd($updRegSql, 'disdii', array($gross, $master_tid, 'paid', $applied_disc, $coupon, $regid));<br/>";
+            $upd_rows += dbSafeCmd($updRegSql, 'disdii', array ($paid, $master_tid, 'paid', $applied_disc, $coupon, $regid));
         }
-
+    }
 
 // if coupon is specified, mark transaction as having a coupon
     if ($coupon || $discountAmt > 0) {
