@@ -1654,7 +1654,12 @@ class PosCart {
         params.category = printrow.memCategory;
         params.badge_id = row.perid;
         params.day = dayFromLabel(printrow.label);
-        params.age = printrow.memAge;
+        if (printrow.memAge != 'all')
+            params.age = printrow.memAge;
+        else if (row.currentAgeType)
+            params.age = row.currentAgeType;
+        else
+            params.age = 'all';
         params.regId = printrow.regid;
         params.printCount = printrow.printcount;
         return params;

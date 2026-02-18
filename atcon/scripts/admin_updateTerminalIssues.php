@@ -345,13 +345,13 @@ EOS;
         $gross = $line['gross_sales_money']['amount'] / 100;
         $note = $line['note'];
         $note = substr($note, 0, strpos($note, ':'));
-        $regid = explode(',', $note)[2];
-
-        // update the database
-        //$message .= "\$upd_rows += dbSafeCmd($updRegSql, 'disdii', array($gross, $master_tid, 'paid', $applied_disc, $coupon, $regid));<br/>";
-        $upd_rows += dbSafeCmd($updRegSql, 'disdii', array($paid, $master_tid, 'paid', $applied_disc, $coupon, $regid));
+        if (is_array($note) && count($note) > 2) {
+            $regid = explode(',', $note)[2];
+            // update the database
+            //$message .= "\$upd_rows += dbSafeCmd($updRegSql, 'disdii', array($gross, $master_tid, 'paid', $applied_disc, $coupon, $regid));<br/>";
+            $upd_rows += dbSafeCmd($updRegSql, 'disdii', array ($paid, $master_tid, 'paid', $applied_disc, $coupon, $regid));
         }
-
+    }
 
 // if coupon is specified, mark transaction as having a coupon
     if ($coupon || $discountAmt > 0) {
@@ -463,8 +463,17 @@ EOS;
             $receiptUrl = null;
         $last4 = $payment['card_details']['card']['last_4'];
         $id = $payment['id'];
-        $auth = $payment['card_details']['auth_result_code'];
-        $nonce = $payment['card_details']['card']['fingerprint'];
+        if (array_key_exists('card_details', $payment)) {
+            if (array_key_exists('auth_result_code', $payment['card_details']))
+                $auth = $payment['card_details']['auth_result_code'];
+            else
+                $auth = null;
+
+            if (array_key_exists('fingerprint', $payment['card_details']))
+                $nonce = $payment['card_details']['card']['fingerprint'];
+            else
+                $nonce = null;
+        }
         $status = $payment['status'];
         switch ($payment['source_type']) {
             case 'CARD':
