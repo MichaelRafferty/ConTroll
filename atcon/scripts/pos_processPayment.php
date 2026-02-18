@@ -442,8 +442,18 @@ EOS;
             $last4 = $payment['card_details']['card']['last_4'];
             $id = $payment['id'];
             $location_id = $payment['location_id'];
-            $auth = $payment['card_details']['auth_result_code'];
-            $nonce = $payment['card_details']['card']['fingerprint'];
+            if (array_key_exists(''))
+            if (array_key_exists('card_details')) {
+                if (array_key_exists('auth_result_code', $payment['card_details']))
+                    $auth = $payment['card_details']['auth_result_code'];
+                else
+                    $auth = null;
+
+                if (array_key_exists('fingerprint', $payment['card_details']))
+                    $nonce = $payment['card_details']['card']['fingerprint'];
+                else
+                    $nonce = null;
+            }
             $status = $payment['status'];
             switch ($payment['source_type']) {
                 case 'CARD':
