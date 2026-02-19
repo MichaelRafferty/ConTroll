@@ -1461,8 +1461,8 @@ function changeEditSave(override) {
         var warnings = '';
         var numWarnings = 0;
         if (config.finance == 1) {
-            var balanceDue = Number(newPrice) - (Number(newPaid) + Number(newDiscount));
-            if (newPrice != (Number(newPaid) + Number(newDiscount))) {
+            var balanceDue = +Number(Number(newPrice) - (Number(newPaid) + Number(newDiscount))).toFixed(2);
+            if (newPrice != +Number(Number(newPaid) + Number(newDiscount)).toFixed(2)) {
                 warnings += 'Price of ' + newPrice + ' does not equal the sum of Paid + Coupon Discount of ' +
                     (Number(newPaid) + Number(newDiscount)) + '<br/>';
                 numWarnings++;
