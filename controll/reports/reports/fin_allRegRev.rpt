@@ -48,8 +48,12 @@
     type=prompt
     item=conid
     datatype=i
+[P002]
+    type=prompt
+    item=conid
+    datatype=i
 [where]
-	001="r.conid >= ?"
+	001="r.conid = ? OR ((r.conid - 1) = ? AND m.memCategory = 'yearahead')"
 [group]
     001="r.conid, m.label, m.price"
 [sort]
