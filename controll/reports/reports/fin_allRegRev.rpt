@@ -14,7 +14,7 @@
 	filter=true
 [F002]
     name=label
-    sql=m.label
+    sql="CASE WHEN m.memCategory = 'yearahead' THEN CONCAT('Year-Ahead ', label) ELSE label END"
     title="Membership Label"
     minWidth=200
     filter=true
@@ -53,8 +53,9 @@
     item=conid
     datatype=i
 [where]
-	001="(r.conid = ? OR ((r.conid - 1) = ?) AND m.memCategory = 'yearahead') AND (r.price = 0 OR r.paid > 0) AND r.status IN ('paid', 'unpaid', 'plan')"
+	001="((r.conid = ? AND m.memCategory != 'yearahead') OR ((r.conid - 1) = ?) AND m.memCategory = 'yearahead')"
+	002="AND (r.price = 0 OR r.paid > 0) AND r.status IN ('paid', 'unpaid', 'plan')"
 [group]
-    001="r.conid, m.label, r.price"
+    001="r.conid, m.label, m.memCategory, r.price"
 [sort]
 	001="1,2,3"

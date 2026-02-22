@@ -184,11 +184,11 @@
 [C020]
     name=wide
     select="SELECT l.label,
-MAX(c1.conid) AS c1conid, IFNULL(SUM(c1.Count),0) AS c1count, IFNULL(AVG(c1.Average), 0) AS c1avg, IFNULL(SUM(c1.Revenue), 0) AS c1rev,
-MAX(c2.conid) AS c2conid, IFNULL(SUM(c2.Count),0) AS c2count, IFNULL(AVG(c2.Average), 0) AS c2avg, IFNULL(SUM(c2.Revenue), 0) AS c2rev,
-MAX(c3.conid) AS c3conid, IFNULL(SUM(c3.Count),0) AS c3count, IFNULL(AVG(c3.Average), 0) AS c3avg, IFNULL(SUM(c3.Revenue), 0) AS c3rev,
-MAX(c4.conid) AS c4conid, IFNULL(SUM(c4.Count),0) AS c4count, IFNULL(AVG(c4.Average), 0) AS c4avg, IFNULL(SUM(c4.Revenue), 0) AS c4rev,
-MAX(c5.conid) AS c5conid, IFNULL(SUM(c5.Count),0) AS c5count, IFNULL(AVG(c5.Average), 0) AS c5avg, IFNULL(SUM(c5.Revenue), 0) AS c5rev
+MAX(c1.conid) AS c1conid, IFNULL(SUM(c1.Count),0) AS c1count, ROUND(IFNULL(AVG(c1.Average), 0), 2) AS c1avg, IFNULL(SUM(c1.Revenue), 0) AS c1rev,
+MAX(c2.conid) AS c2conid, IFNULL(SUM(c2.Count),0) AS c2count, ROUND(IFNULL(AVG(c2.Average), 0), 2) AS c2avg, IFNULL(SUM(c2.Revenue), 0) AS c2rev,
+MAX(c3.conid) AS c3conid, IFNULL(SUM(c3.Count),0) AS c3count, ROUND(IFNULL(AVG(c3.Average), 0), 2) AS c3avg, IFNULL(SUM(c3.Revenue), 0) AS c3rev,
+MAX(c4.conid) AS c4conid, IFNULL(SUM(c4.Count),0) AS c4count, ROUND(IFNULL(AVG(c4.Average), 0), 2) AS c4avg, IFNULL(SUM(c4.Revenue), 0) AS c4rev,
+MAX(c5.conid) AS c5conid, IFNULL(SUM(c5.Count),0) AS c5count, ROUND(IFNULL(AVG(c5.Average), 0), 2) AS c5avg, IFNULL(SUM(c5.Revenue), 0) AS c5rev
 FROM labels l
 LEFT OUTER JOIN data c1 on l.label = c1.label AND c1.conid = ?
 LEFT OUTER JOIN data c2 on l.label = c2.label AND c2.conid = ? - 1
