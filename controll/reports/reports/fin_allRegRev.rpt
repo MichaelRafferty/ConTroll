@@ -22,7 +22,7 @@
     name=price
     title="price"
     align=right
-    sql="m.price"
+    sql="r.price"
     format=money
 [F004]
     name=num_mbrs
@@ -34,7 +34,7 @@
     name=revenue
     title="Revenue"
     align=right
-    sql="m.price * count(r.id)"
+    sql="r.price * count(r.id)"
     format=money
     calc=sum
 [T001]
@@ -53,8 +53,8 @@
     item=conid
     datatype=i
 [where]
-	001="r.conid = ? OR ((r.conid - 1) = ? AND m.memCategory = 'yearahead')"
+	001="(r.conid = ? OR ((r.conid - 1) = ?) AND m.memCategory = 'yearahead') AND (r.price = 0 OR r.paid > 0) AND r.status IN ('paid', 'unpaid', 'plan')"
 [group]
-    001="r.conid, m.label, m.price"
+    001="r.conid, m.label, r.price"
 [sort]
-	001="1,2"
+	001="1,2,3"
