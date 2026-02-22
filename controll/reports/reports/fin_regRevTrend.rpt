@@ -183,8 +183,8 @@
     where=""
 [C020]
     name=wide
-    select="SELECT l.label, MAX(c1.conid) AS c1conid, IFNULL(SUM(c1.Count),0) AS c1count, IFNULL(AVG(c1.Average), 0) AS c1avg, IFNULL(SUM(c1.Revenue), 0) AS
-    c1rev,
+    select="SELECT l.label,
+MAX(c1.conid) AS c1conid, IFNULL(SUM(c1.Count),0) AS c1count, IFNULL(AVG(c1.Average), 0) AS c1avg, IFNULL(SUM(c1.Revenue), 0) AS c1rev,
 MAX(c2.conid) AS c2conid, IFNULL(SUM(c2.Count),0) AS c2count, IFNULL(AVG(c2.Average), 0) AS c2avg, IFNULL(SUM(c2.Revenue), 0) AS c2rev,
 MAX(c3.conid) AS c3conid, IFNULL(SUM(c3.Count),0) AS c3count, IFNULL(AVG(c3.Average), 0) AS c3avg, IFNULL(SUM(c3.Revenue), 0) AS c3rev,
 MAX(c4.conid) AS c4conid, IFNULL(SUM(c4.Count),0) AS c4count, IFNULL(AVG(c4.Average), 0) AS c4avg, IFNULL(SUM(c4.Revenue), 0) AS c4rev,
@@ -203,8 +203,7 @@ LEFT OUTER JOIN data c5 on l.label = c5.label AND c5.conid = ? - 4"
 WHERE c1avg != 0 OR c2avg != 0 OR c3avg != 0 OR c4avg != 0 OR c5avg != 0
 UNION
 SELECT 'Free' AS Cat, wide.* FROM wide
-WHERE c1avg = 0 AND c2avg = 0 AND c3avg = 0 AND c4avg = 0 AND c5avg = 0
-ORDER BY Cat DESC, c2rev desc, label"
+WHERE c1avg = 0 AND c2avg = 0 AND c3avg = 0 AND c4avg = 0 AND c5avg = 0"
     where=""
     tables=""
 [P001]
