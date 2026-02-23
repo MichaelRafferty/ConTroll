@@ -1269,14 +1269,14 @@ function changeRollover() {
     }
 
     // build the select list
-    var optionList = "    <option value=''>Do Not Create New Registration for this row</option>\n" +
-        "    <option value='auto'>Auto: Auto Select New Registration for this row</option>\n";
+    var optionList =  "    <option value='auto'>Auto: Auto Select New Registration for this row</option>\n";
+
     for (var i = 0; i < memListSelect.length; i++) {
         optionList += '   <option value="' + memListSelect[i].id + '">' + memListSelect[i].id + ':' + memListSelect[i].memAge + '-' +
             memListSelect[i].memType + '-' + memListSelect[i].memCategory + ' ' +
             currencyFmt.format(Number(memListSelect[i].price).toFixed(2)) + ' ' + memListSelect[i].shortname + "</option>\n";
     }
-    optionList += "</select>\n";
+    optionList += "    <option value=''>Do Not Create New Registration for this row</option>\n</select>\n";
     var html = ''
     for (var i = 0; i < changeList.length; i++) {
         var item = changeList[i];
