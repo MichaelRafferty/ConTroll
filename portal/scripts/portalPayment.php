@@ -250,7 +250,7 @@ INSERT INTO payments(transid, type,category, description, source, pretax, tax, a
 VALUES (?,?,'reg',?,'cashier',?,?,?,now(),?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? $taxSql);
 EOS;
     $typestr = 'issdddsissssssiss' . $taxStr;
-    $cashier = $loginType = 'p' ? $loginId : null;
+    $cashier = $loginType == 'p' ? $loginId : null;
     $paramarray = array ($transId, $paymentType, $description, $preTaxAmt, $taxAmt, $approved_amt, $auth, $cashier,
         $last4, $nonceCode, $paymentId, $txTime, $receiptUrl, $receiptNumber, $loginId, $status, $paymentId);
     $txnid = dbSafeInsert($txnQ, $typestr, array_merge($paramarray, $taxValues));
