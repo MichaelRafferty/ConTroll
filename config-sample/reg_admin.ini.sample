@@ -73,16 +73,17 @@ conname="ConTroll"
 ;;; Sales Tax Payment Items
 ; This is the sales tax rate in percent, the invoice label for the tax, and the credit card uid.
 ;   The uid is used by Square and must be the same as the tax id with any space or other non alphanumeric characters replaced by a '-'. (dash)
-taxRate=6
-taxLabel="NJ Sales Tax"
-taxuid="NJ-Sales-Tax"
+;   these fields are for historical purposes only, the tax table now superceeds this
+;taxRate=6
+;taxLabel="NJ Sales Tax"
+;taxuid="NJ-Sales-Tax"
 ;;; currency: the currency codes are the ones used by PHP to format currency.
 ;       This is the 3-letter ISO 4217 currency code indicating the currency to use.  See https://datahub.io/core/currency-codes
 currency="USD"
 ;;; Trend Graph Limits
 ; minComp: how far back to run the membership by year comparision graph, by id
 minComp="2021"
-; compLen: maximum numbrer of days to show on the membership growth by day graph
+; compLen: maximum number of days to show on the membership growth by day graph
 compLen="365"
 ;;; conLen: how many days long is the convention
 conLen="3"
@@ -94,6 +95,7 @@ conLen="3"
 api=0 ; to enable api inteface debug statements (currently bitmask from 1-31) (1=enable, 0=disable)
 atcon=0 ; to enable atcon debug statements (currently bitmask from 1-31) (1=enable, 0=disable)
 controll_admin=0 ; to enable controll admin tab debug statement (currently bitmask from 1-31) (1=enable, 0=disable)
+controll_auth=0 ; to enable controll authentication token debug statement (currently bitmask from 1-31) (1=enable, 0=disable)
 controll_exhibitors=0 ; to enable controll exhibitors tab debug statement (currently bitmask from 1-31) (1=enable, 0=disable)
 controll_regadmin=0 ; to enable controll reg_admin tab debug statement (currently bitmask from 1-31) (1=enable, 0=disable)
 controll_registration=0 ; to enable controll registration tab debug statement (currently bitmask from 1-31) (1=enable, 0=disable)
@@ -125,6 +127,7 @@ artshow='/...PathtoLogDirectory.../artshowReg'
 cancel='/...PathtoLogDirectory.../cancel'
 controll='/...PathtoLogDirectory.../controll'
 db='/...PathtoLogDirectory.../db'
+logins='/...PathtoLogDirectory.../logins'
 reg='/...PathtoLogDirectory.../onlineReg'
 term='/...PathtoLogDirectory.../term'
 vendors='/...PathtoLogDirectory.../vendors'
@@ -169,10 +172,9 @@ badgeBarcode=0
 ;   creditoffline = using your own credit card terminals that do not talk to ConTroll and entering the amount and the approval code manually
 ;   creditonline = using the same method of credit card entry as used in Onlinereg/portal, where the credit card details are typed in manually.
 ;   terminals are controlled by which terminal the user has chosen at login or via 'Change Printers'.;
-;       Warning: creditonline is not yet implemented in atcon, but is coming soon
 ; 1 = allowed, 0 = disabled
 creditoffline=0
-creditonline=1
+creditonline=0
 
 ;;; The exhibitor portal [vendor] section is so named for historical reasons when only dealers rooms were supported.
 ;   It contains items related to use of the exhibitor portals (e.g. artist, exhibitor, fan table, and vendor (dealer).
@@ -251,6 +253,27 @@ oauthhrs=8
 ; useportal - does this installation use the portal, 1 = yes, 0 = no
 useportal=1
 hrtime=0    ; on critical routines, a call to hrtime to report intervals has been added, enable this feature
+;;; controllsite: url to the controll back end.
+controllsite="http://controll/"
+;;; redirect_base: page for the login with to redirect back to for Oauth login support
+redirect_base="http://controll/index.php"
+;;; token timeouts
+; tokenExpireHrs - number of hours before login token becomes invalid
+tokenExpireHrs=8
+; authExpireHrs - number of hours before the role permissions are re-fetched.
+;       This reduces database overhead at the expense of lag on permission changes
+authExpireHrs=0.25
+; expireGrace - how many hour before expire does the system auto-refresh the token if you take an action.
+;       cannot be more than 1/2 of tokenExpireHours
+expireGrace=2
+;;; Which "Non Terminal" payment methods are supported in controll registratiomn.  By default cash and check are always supported.
+;   creditoffline = using your own credit card terminals that do not talk to ConTroll and entering the amount and the approval code manually
+;   creditonline = using the same method of credit card entry as used in Onlinereg/portal, where the credit card details are typed in manually.
+; 1 = allowed, 0 = disabled
+creditoffline=0
+creditonline=0
+;;; number of prior years to allow rollover
+priorRolloverYears=2
 
 ;;; The local parameters [local] section sets options used by the local scripts for this convention
 [local]

@@ -1,5 +1,5 @@
 <?php
-// ConTroll Registration System, Copyright 2015-2025, Michael Rafferty, Licensed under the GNU Affero General Public License, Version 3.
+// ConTroll Registration System, Copyright 2015-2026, Michael Rafferty, Licensed under the GNU Affero General Public License, Version 3.
 // library AJAX Processor: pos_updatePrintcount.php
 // Author: Syd Weinstein
 // Retrieve perinfo and reg records for the Find and Add tabs

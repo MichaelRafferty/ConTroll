@@ -10,14 +10,19 @@
 
 require_once "../lib/base.php";
 require_once '../lib/exhibitorsCheckOrBuild.php';
+require_once '../lib/sessionAuth.php';
 
-$check_auth = google_init("ajax");
-$perm = "admin";
+// use common global Ajax return functions
+global $returnAjaxErrors, $return500errors;
+$returnAjaxErrors = true;
+$return500errors = true;
 
-$response = array("post" => $_POST, "get" => $_GET, "perm"=>$perm);
-
-if($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
-    $response['error'] = "Authentication Failed";
+$perm = 'admin';
+$response = array ('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
+$authToken = new authToken('script');
+$response['tokenStatus'] = $authToken->checkToken();
+if (!$authToken->isLoggedIn() || !$authToken->checkAuth($perm)) {
+    $response['error'] = 'Authentication Failed';
     ajaxSuccess($response);
     exit();
 }
@@ -112,8 +117,8 @@ $ageCount = $checkAgeR->fetch_row()[0];
 $checkAgeR->free();
 if ($ageCount == 0) {
     $ageInsQ = <<<EOS
-INSERT INTO ageList(conid, ageType, label, shortname, sortorder, badgeFlag)
-SELECT ?, ageType, label, shortname, sortorder, badgeFlag
+INSERT INTO ageList(conid, ageType, label, shortname, sortorder, badgeFlag, verify)
+SELECT ?, ageType, label, shortname, sortorder, badgeFlag, verify
 FROM ageList
 WHERE conid = ?;
 EOS;

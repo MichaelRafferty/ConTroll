@@ -1,12 +1,18 @@
 <?php
 require_once "../lib/base.php";
-$check_auth = google_init("ajax");
-$perm = "people";
+require_once '../lib/sessionAuth.php';
 
-$response = array("post" => $_POST, "get" => $_GET, "perm"=>$perm);
+// use common global Ajax return functions
+global $returnAjaxErrors, $return500errors;
+$returnAjaxErrors = true;
+$return500errors = true;
 
-if($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
-    $response['error'] = "Authentication Failed";
+$perm = 'people';
+$response = array ('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
+$authToken = new authToken('script');
+$response['tokenStatus'] = $authToken->checkToken();
+if (!$authToken->isLoggedIn() || !$authToken->checkAuth($perm)) {
+    $response['error'] = 'Authentication Failed';
     ajaxSuccess($response);
     exit();
 }
@@ -36,7 +42,7 @@ if ($who == $manager) {
 
 $response['who'] = $who;
 $response['manager'] = $manager;
-$updatedBy = $_SESSION['user_perid'];
+$updatedBy = $authToken->getPerid();
 
 // check that the person requested to manage this person is not managed themselves
 $chkQ = <<<EOS

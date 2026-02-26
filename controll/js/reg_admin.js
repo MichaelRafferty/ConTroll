@@ -44,6 +44,8 @@ var find_result_table = null;
 var testdiv = null;
 var conid = 0;
 var reglistDiv = null;
+var currencyFmt = null;
+var limitConid = null;
 
 // changes items
 var changeMemberships = [];
@@ -90,6 +92,11 @@ var notes = null;
 
 // initialization at DOM complete
 window.onload = function initpage() {
+    currencyFmt = new Intl.NumberFormat(config.locale, {
+        style: 'currency',
+        currency: config.currency,
+    });
+    conid = config.conid;
     id = document.getElementById('changeModal');
     if (id != null) {
         changeModal = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
@@ -520,7 +527,7 @@ function actionbuttons(cell, formatterParams, onRendered) {
     var index = cell.getRow().getIndex();
 
     var btns = "";
-    if (perid > 0) {
+    if (limitConid >= (conid - config.rolloverYears) && limitConid < (conid + 1) && perid > 0) {
         btns += '<button class="btn btn-secondary me-1" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
             ' onclick="changeReg(' + index + ')">Chgs</button>';
     }
@@ -586,6 +593,7 @@ function receipt_email(addrchoice) {
                 show_message(data.error, 'error');
                 return;
             }
+            checkRefresh(data);
             if (data.success !== undefined) {
                 show_message(data.success, 'success');
             }
@@ -614,6 +622,7 @@ function receipt(index) {
                 show_message(data.error, 'error');
                 return;
             }
+            checkRefresh(data);
             if (data.success !== undefined) {
                 show_message(data.success, 'success');
             }
@@ -644,6 +653,7 @@ function history(index) {
                 show_message(data.error, 'error');
                 return;
             }
+            checkRefresh(data);
             if (data.success !== undefined) {
                 show_message(data.success, 'success');
             }
@@ -741,9 +751,9 @@ function changeReg(index, clear = true) {
         clear_message('changeMessageDiv');
 
     currentIndex = index;
-    var row = registrationtable.getRow(index);
+    let row = registrationtable.getRow(index);
     changeRowdata = row.getData();
-    var perid = changeRowdata.perid;
+    let perid = changeRowdata.perid;
 
     if (perid == null || perid == '' || perid <= 0)
         return;
@@ -751,6 +761,7 @@ function changeReg(index, clear = true) {
     // get all the regs for this perid for this con to decide what changes to make
     var data = {
         perid: perid,
+        limitConid: limitConid,
         action: 'regregs',
     };
     var script = 'scripts/regadmin_getRegs.php';
@@ -763,6 +774,7 @@ function changeReg(index, clear = true) {
                 show_message(data.error, 'error');
                 return;
             }
+            checkRefresh(data);
             if (data.success !== undefined) {
                 show_message(data.success, 'success');
             }
@@ -780,7 +792,7 @@ function changeReg(index, clear = true) {
 
 // return from the ajax call to fetch the regs for this perid, display the list of registrations
 function changeRegsData(data, rowdata) {
-    var html = '';
+    let html = '';
 
     //console.log(data);
     //console.log(rowdata);
@@ -789,6 +801,8 @@ function changeRegsData(data, rowdata) {
     // and options
 
     changeMemberships = data.memberships;
+    let enableEdit = limitConid >= (conid - 1) && limitConid < (conid + 1);
+    let disableChanges = (limitConid < conid) ? ' disabled' : '';
 
     html += `
     <div class="row mt-4 mb-2">
@@ -825,8 +839,8 @@ function changeRegsData(data, rowdata) {
         <div class="col-sm-1 text-primary" style="text-align: right;">` + rowdata.couponDiscount + `</div>
         <div class="col-sm-1 text-primary">` + rowdata.status + `</div>
         <div class="col-sm-2">
-            <button class="btn btn-sm btn-secondary" onclick="changeEdit(` + rowdata.badgeId + `)";>Edit</button>
-            <button class="btn btn-sm btn-secondary" onclick="showRegNotes(` + rowdata.badgeId + `, false)";>Add Note</button>
+            <button class="btn btn-sm btn-secondary" onclick="changeEdit(` + rowdata.badgeId + ');"' + disableChanges + `>Edit</button>
+            <button class="btn btn-sm btn-secondary" onclick="showRegNotes(` + rowdata.badgeId + `, false);">Add Note</button>
         </div>
     </div>
 `;
@@ -851,8 +865,8 @@ function changeRegsData(data, rowdata) {
         <div class="col-sm-1" style="text-align: right;">` + membership.couponDiscount + `</div>
         <div class="col-sm-1">` + membership.status + `</div>
         <div class="col-sm-2">
-            <button class="btn btn-sm btn-secondary" onclick="changeEdit(` + membership.id + `)";>Edit</button>
-            <button class="btn btn-sm btn-secondary" onclick="addNote(` + membership.id + `)";>Add Note</button>
+            <button class="btn btn-sm btn-secondary" onclick="changeEdit(` + membership.id + ');"' + disableChanges +`>Edit</button>
+            <button class="btn btn-sm btn-secondary" onclick="addNote(` + membership.id + `);">Add Note</button>
         </div>
     </div>
 `;
@@ -860,15 +874,15 @@ function changeRegsData(data, rowdata) {
     html += `
     <div class="row mt-2 mb-2">
         <div class="col-sm-12" style="text-align: center;">
-            <button class="btn btn-sm btn-primary" onclick="changeRevoke(0);">Revoke Selected</button>
-            <button class="btn btn-sm btn-warning me-4" onclick="changeRevoke(1);">Restore Selected</button>
-            <button class="btn btn-sm btn-primary me-4" onclick="changeTransfer();">Transfer Selected</button>
+            <button class="btn btn-sm btn-primary" onclick="changeRevoke(0);"` + disableChanges + `>Revoke Selected</button>
+            <button class="btn btn-sm btn-warning me-4" onclick="changeRevoke(1);"` + disableChanges + `>Restore Selected</button>
+            <button class="btn btn-sm btn-primary me-4" onclick="changeTransfer();"` + disableChanges + `>Transfer Selected</button>
 `;
     if (config.oneoff == 0) {
         html += '<button class="btn btn-sm btn-primary me-4" onclick="changeRollover();">Rollover Selected</button>\n';
     }
     if (config.finance == 1) {
-        html += '<button class="btn btn-sm btn-primary" onclick="changeRefund();">Refund Selected</button>\n';
+        html += '<button class="btn btn-sm btn-primary" onclick="changeRefund();"' + disableChanges + '>Refund Selected</button>\n';
     }
     html += `
         </div>
@@ -947,6 +961,7 @@ function changeRevoke(direction) {
                 show_message(data.error, 'error', 'changeMessageDiv');
                 return;
             }
+            checkRefresh(data);
             if (data.warn !== undefined) {
                 show_message(data.warn, 'warn', 'changeMessageDiv');
                 return;
@@ -1045,6 +1060,7 @@ function changeTransferFind() {
                 show_message(data.error, 'error', 'changeMessageDiv');
                 return;
             }
+            checkRefresh(data);
             if (data.message !== undefined) {
                 show_message(data.message, 'success', 'changeMessageDiv');
             }
@@ -1162,8 +1178,10 @@ function transferReg(to, banned) {
                 show_message(data.error, 'error', 'changeMessageDiv');
             } else if (data.warning) {
                 changeModal.hide();
+                checkRefresh(data);
                 show_message(data.warning, 'warn', 'changeMessageDiv');
             } else {
+                checkRefresh(data);
                 transferSearchDiv.hidden = true;
                 transferNameSearchField.value = '';
                 transferFromNameDiv.innerHTML = '';
@@ -1204,7 +1222,7 @@ function changeRollover() {
             continue;
 
         // check statuses, only allow paid / upraded
-        if (changeItem.status != 'paid' && status != 'upgraded') {
+        if (changeItem.status != 'paid' && changeItem.status != 'upgraded') {
             message += "Cannot change " + changeItem.id + " as status " + changeItem.status + " cannot be rolled over, it must be paid.<br/>";
             continue;
         }
@@ -1251,14 +1269,14 @@ function changeRollover() {
     }
 
     // build the select list
-    var optionList = "    <option value=''>Do Not Create New Registration for this row</option>\n" +
-        "    <option value='auto'>Auto: Auto Select New Registration for this row</option>\n";
+    var optionList =  "    <option value='auto'>Auto: Auto Select New Registration for this row</option>\n";
+
     for (var i = 0; i < memListSelect.length; i++) {
         optionList += '   <option value="' + memListSelect[i].id + '">' + memListSelect[i].id + ':' + memListSelect[i].memAge + '-' +
-            memListSelect[i].memType + '-' + memListSelect[i].memCategory + ' $' + memListSelect[i].price + ' ' +
-            memListSelect[i].shortname + "</option>\n";
+            memListSelect[i].memType + '-' + memListSelect[i].memCategory + ' ' +
+            currencyFmt.format(Number(memListSelect[i].price).toFixed(2)) + ' ' + memListSelect[i].shortname + "</option>\n";
     }
-    optionList += "</select>\n";
+    optionList += "    <option value=''>Do Not Create New Registration for this row</option>\n</select>\n";
     var html = ''
     for (var i = 0; i < changeList.length; i++) {
         var item = changeList[i];
@@ -1312,6 +1330,7 @@ function changeRolloverExecute() {
                 show_message(data.error, 'error', 'changeMessageDiv');
                 return;
             }
+            checkRefresh(data);
             if (data.success !== undefined) {
                 show_message(data.success, 'success', 'changeMessageDiv');
             }
@@ -1361,8 +1380,8 @@ function changeEdit(badgeId) {
         var memItem = memLabels[i];
         if (ageList[memItem.memAge]) {
             memOptionList += '   <option value="' + memItem.id + '"' + (currentRow.memId == memItem.id ? ' selected' : '') + '>' +
-            memItem.id + ':' + memItem.memAge + '-' + memItem.memType + '-' + memItem.memCategory + ' $' + memItem.price + ' ' +
-            memItem.shortname + "</option>\n";
+            memItem.id + ':' + memItem.memAge + '-' + memItem.memType + '-' + memItem.memCategory + ' ' +
+                currencyFmt.format(Number(memItem.price).toFixed(2)) + ' ' + memItem.shortname + "</option>\n";
         }
     }
     // now the rest of them
@@ -1370,8 +1389,8 @@ function changeEdit(badgeId) {
         var memItem = memLabels[i];
         if (!ageList[memItem.memAge]) {
             memOptionList += '   <option value="' + memItem.id + '"' + (currentRow.memId == memItem.id ? ' selected' : '') +'>' +
-            memItem.id + ':' + memItem.memAge + '-' + memItem.memType + '-' + memItem.memCategory + ' $' + memItem.price + ' ' +
-            memItem.shortname + "</option>\n";
+            memItem.id + ':' + memItem.memAge + '-' + memItem.memType + '-' + memItem.memCategory + ' ' +
+                currencyFmt.format(Number(memItem.price).toFixed(2)) + ' ' + memItem.shortname + "</option>\n";
         }
     }
     memOptionList += "</select>\n";
@@ -1442,8 +1461,8 @@ function changeEditSave(override) {
         var warnings = '';
         var numWarnings = 0;
         if (config.finance == 1) {
-            var balanceDue = Number(newPrice) - (Number(newPaid) + Number(newDiscount));
-            if (newPrice != (Number(newPaid) + Number(newDiscount))) {
+            var balanceDue = +Number(Number(newPrice) - (Number(newPaid) + Number(newDiscount))).toFixed(2);
+            if (newPrice != +Number(Number(newPaid) + Number(newDiscount)).toFixed(2)) {
                 warnings += 'Price of ' + newPrice + ' does not equal the sum of Paid + Coupon Discount of ' +
                     (Number(newPaid) + Number(newDiscount)) + '<br/>';
                 numWarnings++;
@@ -1505,6 +1524,7 @@ function changeEditSave(override) {
                 show_message(data.error, 'error', 'changeMessageDiv');
                 return;
             }
+            checkRefresh(data);
             if (data.success !== undefined) {
                 show_message(data.success, 'success', 'changeMessageDiv');
             }
@@ -1632,7 +1652,7 @@ function reglistDownload(format) {
 
 // called from data load - draws the filter stats block and the registrations block
 function draw(data, textStatus, jqXHR) {
-    conid = Number(data.conid);
+    limitConid = Number(data.limitConid);
     if (!data.hasOwnProperty('memLabels')) {
         show_message("Error in query", 'error');
         return;
@@ -1666,15 +1686,22 @@ function getData(style) {
     document.getElementById('regListSearch').style.backgroundColor = "";
     clear_message();
     clearError();
+    limitConid = document.getElementById('limitConid').value;
     $.ajax({
         url: "scripts/regadmin_getBadges.php",
         method: "POST",
-        data:   { style: style, action: 'badges', search: curRegListSearch },
+        data:   {
+            style: style,
+            action: 'badges',
+            search: curRegListSearch,
+            limitConid: limitConid,
+        },
         success: function (data, textStatus, jqXHR) {
             if (data.error !== undefined) {
                 show_message(data.error, 'error');
                 return;
             }
+            checkRefresh(data);
             if (data.success !== undefined) {
                 show_message(data.success, 'success');
             }
@@ -1708,6 +1735,7 @@ function sendCancel() {
         data: { 'action': action, 'tid': tid },
         method: "POST",
         success: function (data, textStatus, jqXHR) {
+            checkRefresh(data);
             if (data.error) {
                 $('#test').empty().append(JSON.stringify(data));
                 alert(data.error);
@@ -1741,6 +1769,7 @@ function sendEmail(type) {
 }
 
 function settab(tabname) {
+    clear_message();
     // close all of them
     if (current != null)
         current.close();
@@ -1772,13 +1801,15 @@ function settab(tabname) {
             registrationtable.destroy();
             registrationtable = null;
         }
+        document.getElementById('limitConid').value = conid;
     }
 
     // now open the relevant one, and create the class if needed
     switch (tabname) {
-        //case 'registrationlist-pane':
+        case 'registrationlist-pane':
+            document.getElementById('limitConid').value = conid;
             //getData();
-            //break;
+            break;
         case 'consetup-pane':
             if (current == null)
                 current = new consetup('current');
@@ -1846,6 +1877,7 @@ function loadConfigEditor() {
                 show_message(data.error, 'error');
                 return;
             }
+            checkRefresh(data);
             if (data.warn) {
                 show_message(data.error, 'warn');
                 return;

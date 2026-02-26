@@ -1,13 +1,18 @@
 <?php
 require_once "../lib/base.php";
+require_once '../lib/sessionAuth.php';
 
-$check_auth = google_init("ajax");
-$perm = "search";
+// use common global Ajax return functions
+global $returnAjaxErrors, $return500errors;
+$returnAjaxErrors = true;
+$return500errors = true;
 
-$response = array("post" => $_POST, "get" => $_GET, "perm"=>$perm);
-
-if($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
-    $response['error'] = "Authentication Failed";
+$perm = 'people';
+$response = array ('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
+$authToken = new authToken('script');
+$response['tokenStatus'] = $authToken->checkToken();
+if (!$authToken->isLoggedIn() || !$authToken->checkAuth($perm)) {
+    $response['error'] = 'Authentication Failed';
     ajaxSuccess($response);
     exit();
 }
@@ -26,7 +31,7 @@ else {
     exit();
 }
 
-$user_perid = $_SESSION['user_perid'];
+$user_perid = $authToken->getPerid();
 $findPattern = $_POST['pattern'];
 if ($findPattern == NULL || $findPattern == '') {
     $response['error'] = 'The search pattern cannot be empty.';
@@ -56,7 +61,7 @@ WITH perids AS (
     SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2, p.legalName, p.pronouns, 
         p.address, p.addr_2, p.city, p.state, p.zip, p.country,  
         p.creation_date, p.update_date, p.active, p.banned, p.open_notes, p.admin_notes,
-        p.managedBy, p.managedByNew, p.lastverified, p.managedreason,
+        p.managedBy, p.managedByNew, p.lastverified, p.managedreason, p.currentAgeType, p.currentAgeConId,
         REPLACE(REPLACE(REPLACE(REPLACE(LOWER(TRIM(IFNULL(p.phone, ''))), ')', ''), '(', ''), '-', ''), ' ', '') AS phoneCheck,
         TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
         TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.address, p.addr_2, p.city, p.state, p.zip, p.country), ' +', ' ')) AS fullAddr,
@@ -68,7 +73,8 @@ WITH perids AS (
             WHEN mp.id IS NOT NULL THEN mp.id
             ELSE NULL
         END AS managerId,
-        GROUP_CONCAT(DISTINCT TRIM(CONCAT(CASE WHEN m.conid = ? THEN '' ELSE m.conid END, ' ', m.label)) ORDER BY m.id SEPARATOR ', ') AS memberships
+        GROUP_CONCAT(DISTINCT TRIM(CONCAT(CASE WHEN m.conid = ? THEN '' ELSE m.conid END, ' ', m.label)) ORDER BY m.id SEPARATOR ', ') AS memberships,
+        COUNT(m.memCategory = 'managed') AS hasManagedReg
     FROM perinfo p
     $excludeJoin
     LEFT OUTER JOIN perinfo mp ON (p.managedBy = mp.id)
@@ -84,17 +90,25 @@ WITH perids AS (
     FROM perids p
     LEFT OUTER JOIN perinfoHistory h ON (h.id = p.id)
     GROUP BY p.id
+), memAge AS (
+    SELECT p.id, MAX(m.memAge) AS memAgeType
+    FROM perids p
+    LEFT OUTER JOIN reg r on p.id = r.perid AND r.conid = ?
+    LEFT OUTER JOIN memList m on r.memId = m.id
+    WHERE m.memAge != 'all'
+    GROUP BY p.id
 )
-SELECT p.*, his.historyCount
+SELECT p.*, his.historyCount, IFNULL(m.memAgeType, '') AS memAgeType
 FROM perids p
-LEFT OUTER JOIN his ON (p.id = his.id);
+LEFT OUTER JOIN his ON p.id = his.id
+LEFT OUTER JOIN memAge m ON p.id = m.id
 EOS;
     if ($excludeJoin != '') {
-        $typestr = 'iiiiii';
-        $valArray = array($conid, $conid, $user_perid, $conid, $conid + 1, $findPattern);
+        $typestr = 'iiiiiii';
+        $valArray = array($conid, $conid, $user_perid, $conid, $conid + 1, $findPattern, $conid);
     } else {
-        $typestr = 'iiii';
-        $valArray = array($conid, $conid, $conid + 1, $findPattern);
+        $typestr = 'iiiii';
+        $valArray = array($conid, $conid, $conid + 1, $findPattern, $conid);
     }
     $mR = dbSafeQuery($mQ, $typestr, $valArray);
 } else {
@@ -110,7 +124,7 @@ WITH per AS (
 SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2, p.legalName, p.pronouns, 
     p.address, p.addr_2, p.city, p.state, p.zip, p.country,
     p.creation_date, p.update_date,  p.active, p.banned, p.open_notes, p.admin_notes,
-    p.managedBy, p.managedByNew, p.lastverified, p.managedreason,
+    p.managedBy, p.managedByNew, p.lastverified, p.managedreason, p.currentAgeType, p.currentAgeConId,
     REPLACE(REPLACE(REPLACE(REPLACE(LOWER(TRIM(p.phone)), ')', ''), '(', ''), '-', ''), ' ', '') AS phoneCheck,
     TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
     TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.address, p.addr_2, p.city, p.state, p.zip, p.country), ' +', ' ')) AS fullAddr,
@@ -152,20 +166,28 @@ GROUP BY p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr,
     FROM perids p
     LEFT OUTER JOIN perinfoHistory h ON (h.id = p.id)
     GROUP BY p.id
+), memAge AS (
+    SELECT p.id, MAX(m.memAge) AS memAgeType
+    FROM perids p
+    LEFT OUTER JOIN reg r on p.id = r.perid AND r.conid = ?
+    LEFT OUTER JOIN memList m on r.memId = m.id
+    WHERE m.memAge != 'all'
+    GROUP BY p.id
 )
-SELECT p.*, his.historyCount
+SELECT p.*, his.historyCount, IFNULL(m.memAgeType, '') AS memAgeType
 FROM perids p
-LEFT OUTER JOIN his ON (p.id = his.id)
+LEFT OUTER JOIN his ON p.id = his.id
+LEFT OUTER JOIN memAge m on p.id = m.id
 LIMIT $limit;
 EOS;
     if ($excludeJoin != '') {
-        $typestr = 'iiiiisssssssss';
+        $typestr = 'iiiiisssssssssi';
         $valArray = array ($conid, $conid, $user_perid, $conid, $conid + 1, $findPattern, $findPattern, $findPattern, $findPattern,
-                           $findPattern, $findPattern, $findPattern, $findPattern, $findPattern);
+                           $findPattern, $findPattern, $findPattern, $findPattern, $findPattern, $conid);
     } else {
-        $typestr = 'iiisssssssss';
+        $typestr = 'iiisssssssssi';
         $valArray = array ($conid, $conid, $conid + 1, $findPattern, $findPattern, $findPattern, $findPattern,
-                           $findPattern, $findPattern, $findPattern,$findPattern,  $findPattern);
+                           $findPattern, $findPattern, $findPattern,$findPattern,  $findPattern, $conid);
     }
     $mR = dbSafeQuery($mQ, $typestr, $valArray);
 }
@@ -179,6 +201,15 @@ $pids = [];
 $matches= [];
 while ($match = $mR->fetch_assoc()) {
     $match['badgename'] = badgeNameDefault($match['badge_name'], $match['badgeNameL2'], $match['first_name'], $match['last_name']);
+    if ($match['currentAgeType'] == null || $match['currentAgeType'] == '') {
+        if ($match['memAgeType'] == '')
+            $match['displayAgeType'] = '';
+        else
+            $match['displayAgeType'] = '<i><b>' . $match['memAgeType'] . '</b></i>';
+    } else if ($match['memAgeType'] == '' || $match['memAgeType'] == $match['currentAgeType'])
+        $match['displayAgeType'] = $match['currentAgeType'];
+    else
+        $match['displayAgeType'] = '<span style="color: red;"><b>' . $match['currentAgeType'] . '<br/>' . $match['memAgeType'] . '</b></span>';
     $matches[] = $match;
     $pids[] = $match['id'];
 }

@@ -49,6 +49,7 @@ class ExhibitorReceipt {
                     show_message(data['error'], 'error', 'receipt_message_div');
                     return;
                 }
+                checkRefresh(data);
                 if (data['success'] !== undefined) {
                     show_message(data['success'], 'success', receipt_message_div);
                 }
@@ -97,6 +98,7 @@ class ExhibitorReceipt {
                         show_message(data['error'], 'error', 'receipt_message_div');
                         return;
                     }
+                    checkRefresh(data);
                     if (data['success'] !== undefined) {
                         show_message(data['success'], 'success', 'receipt_message_div');
                     }

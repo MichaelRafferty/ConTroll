@@ -59,7 +59,7 @@ if (array_key_exists('location_' . $portalType, $cc)) {
 }
 
 $regionYearId = $_POST['regionYearId'];
-if (array_key_exists('salesTaxId', $_POST)) {
+if (array_key_exists('requests', $_POST)) {
     $specialRequests = trim($_POST['requests']);
     if ($specialRequests == '')
         $specialRequests = null;
@@ -210,11 +210,13 @@ $buyer['country'] = $_POST['cc_country'];
 $buyer['email'] = $_POST['cc_email'];
 $buyer['phone'] = $_POST['cc_phone'];
 
-$membership_fields = array('fname' => 1, 'mname' => 0, 'lname' => 1, 'suffix' => 0, 'legalName' => 0, 'addr' => 1, 'addr2' => 0, 'city' => 1, 'state' => 1, 'zip' => 1,
-    'country' => 1, 'email' => 1, 'phone' => 0, 'badge_name' => 0, 'badgeNameL2' =>  false);
+$membership_fields = array('fname' => 1, 'mname' => 0, 'lname' => 1, 'suffix' => 0, 'legalName' => 0,
+    'addr' => 1, 'addr2' => 0, 'city' => 1, 'state' => 1, 'zip' => 1, 'country' => 1,
+    'email1' => 1, 'phone' => 0, 'badge_name' => 0, 'badgeNameL2' =>  0, 'age' => 1);
 $membership_names = array('fname' => 'First Name', 'mname' => 'Middle Name', 'lname' => 'Last Name', 'legalName' => 'Legal Name', 'suffix' => 'Suffix',
     'addr' => 'Address Line 1', 'addr2' => 'Company/Address Line 2', 'city' => 'City', 'state' => 'State/Province', 'zip' => 'Zip Code/Postal Code',
-    'country' => 'Country', 'email' => 'Email Address', 'phone' => 'Phone Number', 'badge_name' => 'Badge Name', 'badgeNameL2' => 'Badge Line 2');
+    'country' => 'Country', 'email1' => 'Email Address', 'phone' => 'Phone Number', 'badge_name' => 'Badge Name', 'badgeNameL2' => 'Badge Line 2',
+    'age' => 'Age');
 
 if ($required == 'addr') {
     $membership_fields['lname'] = 0;
@@ -233,6 +235,8 @@ $allrequired = true;
 $notfound = array();
 // validate credit card fields
 foreach($membership_fields as $field => $required) {
+    if ($field = 'email1')
+        $field = 'email'; // cc uses email, profile uses email1.
     $postfield = 'cc_' . $field;
     if (array_key_exists($postfield, $_POST)) {
         $val = trim($_POST[$postfield]);
@@ -264,13 +268,13 @@ for ($num = 0; $num < $includedMembershipsMax; $num++) {
         if ($field == 'country')
             continue; // it's a pulldown, so it's always found and messes up required checks.
 
-        $postfield = $field . '_i_' . $num;
+        $postfield = 'i_' . $num . '_' . $field;
         if (array_key_exists($postfield, $_POST)) {
             $val = trim($_POST[$postfield]);
         } else {
             $val = '';
         }
-        if ($val != '') {
+        if ($val != '' && ($field == 'fname' || $field == 'lname')) {
             $nonefound = false;
         } else {
             if ($required) {
@@ -278,7 +282,7 @@ for ($num = 0; $num < $includedMembershipsMax; $num++) {
                 $allrequired = false;
             }
         }
-        if ($field == 'email') {
+        if ($field == 'email1') {
             // add to email addresses
             if ($nonefound == false && $val != '')
                 $email_addresses[$postfield] = "Included Membership $num Email";
@@ -308,13 +312,13 @@ for ($num = 0; $num < $additionalMembershipsMax; $num++) {
         if ($field == 'country')
             continue; // it's a pulldown, so it's always found and messes up required checks.
 
-        $postfield = $field . '_a_' . $num;
+        $postfield = 'a_' . $num . '_' . $field;
         if (array_key_exists($postfield, $_POST)) {
             $val = trim($_POST[$postfield]);
         } else {
             $val = '';
         }
-        if ($val != '') {
+        if ($val != '' && ($field == 'fname' || $field == 'lname')) {
             $nonefound = false;
         } else {
             if ($required) {
@@ -369,6 +373,9 @@ if (!$valid) {
     ajaxSuccess($response);
     return;
 }
+
+
+// ok, it's valid, process the updates to the database and the payments
 $region['totprice'] = $totprice;
 $region['price'] = $spacePrice;
 $status_msg = '';
@@ -399,9 +406,12 @@ EOS;
 $error_msg = '';
 $badges = array();
 $transId = null;
+$managedByNew = null;
 for ($i = 0; $i < count($includedMembershipStatus); $i++) {
     if ($includedMembershipStatus[$i]) {
-        $badge = buildBadge($membership_fields, 'i', $i, $region, $conid, $transId, $portalName);
+        $badge = buildBadge($membership_fields, 'i', $i, $region, $conid, $transId, $portalName, $managedByNew);
+        if ($managedByNew == null)
+            $managedByNew = $badge['newperid'];
         $transId = $badge['transid'];
         $status_msg .= $badge['status'];
         $error_msg .= $badge['error'];
@@ -410,8 +420,10 @@ for ($i = 0; $i < count($includedMembershipStatus); $i++) {
 }
 for ($i = 0; $i < count($additionalMembershipStatus); $i++) {
     if ($additionalMembershipStatus[$i]) {
-        $badge = buildBadge($membership_fields, 'a', $i, $region, $conid, $transId, $portalName);
-        $transId = $badge['transid'];
+        $badge = buildBadge($membership_fields, 'a', $i, $region, $conid, $transId, $portalName, $managedByNew);
+        if ($managedByNew == null)
+            $managedByNew = $badge['newperid'];
+            $transId = $badge['transid'];
         $badges[] = $badge;
         $status_msg .= $badge['status'];
         $error_msg .= $badge['error'];
@@ -682,10 +694,8 @@ if ($exMailin == 'N') {
     $agentRequest = null;
     if ($agent == 'first') {
         if (count($badges) > 0) {
-            $perid = $badges[0]['perid'];
             $newperid = $badges[0]['newperid'];
         } else {
-            $perid = $exhibitor['perid'];
             $newperid = $exhibitor['newperid'];
         }
     } else if ($agent == 'self') {
@@ -834,9 +844,9 @@ ajaxSuccess(array(
 return;
 
 // build the badge structure and insert the person into newperson, trans, reg after checking for exact match
-function buildBadge($fields, $type, $index, $region, $conid, $transId, $portalName) {
+function buildBadge($fields, $type, $index, $region, $conid, $transId, $portalName, $managedByNew) {
     $badge = array();
-    $suffix = '_' . $type . '_' . $index;
+    $prefix = $type . '_' . $index . '_';
     if ($type == 'i') {
         $memid = $region['includedMemId'];
         $memprice = $region['includedPrice'];
@@ -850,9 +860,8 @@ function buildBadge($fields, $type, $index, $region, $conid, $transId, $portalNa
     }
 
     foreach ($fields as $field => $required) {
-        $badge[$field] = trim($_POST[$field . $suffix]);
+        $badge[$field] = trim($_POST[$prefix . $field]);
     }
-    $badge['age'] = 'all';
     $badge['price'] = $memprice;
     $badge['memId'] = $memid;
     $badge['label'] = $label;
@@ -862,73 +871,24 @@ function buildBadge($fields, $type, $index, $region, $conid, $transId, $portalNa
     $badge['glNum'] = $glNum;
     $badge['index'] = $index + 1;
 
-// now resolve exact matches in perinfo
-    $exactMsql = <<<EOF
-SELECT id
-FROM perinfo p
-WHERE
-	REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.first_name)), ' +', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.middle_name)), ' +', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.last_name)), ' +', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.suffix)), ' +', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.email_addr)), ' +', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.phone)), ' +', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.badge_name)), ' +', ' ')
-  	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.badgeNamel2)), ' +', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.address)), ' +', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.addr_2)), ' +', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.city)), ' +', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.state)), ' +', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.zip)), ' +', ' ')
-	AND REGEXP_REPLACE(TRIM(LOWER(IFNULL(?,''))), ' +', ' ') =
-		REGEXP_REPLACE(TRIM(LOWER(p.country)), ' +', ' ');
-EOF;
-    $value_arr = array($badge['fname'], $badge['mname'], $badge['lname'], $badge['suffix'], $badge['email'], $badge['phone'],
-                $badge['badge_name'], $badge['badgeNameL2'],
-                $badge['addr'], $badge['addr2'], $badge['city'], $badge['state'], $badge['zip'], $badge['country']);
-    $res = dbSafeQuery($exactMsql, 'ssssssssssssss', $value_arr);
-    if ($res !== false) {
-        if ($res->num_rows > 0) {
-            $match = $res->fetch_assoc();
-            $id = $match['id'];
-        } else {
-            $id = null;
-        }
-    } else {
-        $id = null;
-    }
-    $badge['perid'] = $id;
     $legalName = $badge['legalName'];
     if ($legalName == null || $legalName == '') {
         $legalName = trim($badge['fname']  . ($badge['mname'] == '' ? ' ' : ' ' . $badge['mname'] . ' ' ) . $badge['lname'] . ' ' . $badge['suffix']);
     }
 
-    $value_arr = array($badge['lname'], $badge['mname'], $badge['fname'], $badge['suffix'], $legalName, $badge['email'], $badge['phone'],
+    $value_arr = array($badge['lname'], $badge['mname'], $badge['fname'], $badge['suffix'], $legalName, $badge['email1'], $badge['phone'],
         $badge['badge_name'], $badge['badgeNameL2'],
         $badge['addr'], $badge['addr2'], $badge['city'], $badge['state'], $badge['zip'], $badge['country'],
-        $badge['contact'], $badge['share'], $id);
+        $badge['contact'], $badge['share'], $badge['age'], $conid, $managedByNew);
 
     $insertQ = <<<EOS
 INSERT INTO newperson(last_name, middle_name, first_name, suffix, legalName, email_addr, phone, badge_name, badgeNameL2,
-                      address, addr_2, city, state, zip, country, contact_ok, share_reg_ok, perid)
+                      address, addr_2, city, state, zip, country, contact_ok, share_reg_ok, currentAgeType, currentAgeConId, managedByNew)
     VALUES(IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''),
-           IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), ?, ?, ?);
+           IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), IFNULL(?, ''), ?, ?, ?, ?, ?);
 EOS;
 
-    $newid = dbSafeInsert($insertQ, 'sssssssssssssssssi', $value_arr);
+    $newid = dbSafeInsert($insertQ, 'ssssssssssssssssssii', $value_arr);
     $badge['error'] = '';
     if ($newid === false) {
         $badge['error'] .= 'Add of person of badge for ' . $badge['fname'] . ' ' . $badge['lname'] . " failed.\n";
@@ -938,11 +898,11 @@ EOS;
     // if no tranasction yet, insert one
     if ($transId == null) {
         $transQ = <<<EOS
-INSERT INTO transaction(newperid, perid, price, type, conid)
-    VALUES(?, ?, ?, ?, ?);
+INSERT INTO transaction(newperid, price, type, conid)
+    VALUES(?, ?, ?, ?);
 EOS;
 
-        $transId = dbSafeInsert($transQ, 'iidsi', array($newid, $id, $region['price'], $portalName, $conid));
+        $transId = dbSafeInsert($transQ, 'idsi', array($newid, $region['price'], $portalName, $conid));
         if ($transId === false) {
             $badge['error'] .= 'Add of transaction for ' . $badge['fname'] . ' ' . $badge['lname'] . " failed.\n";
         }
@@ -951,13 +911,12 @@ EOS;
     dbSafeCmd("UPDATE newperson SET transid=? WHERE id = ?;", 'ii', array($badge['transid'], $badge['newperid']));
 
     $badgeQ = <<<EOS
-INSERT INTO reg(conid, newperid, perid, create_trans, price, status, memID)
-VALUES(?, ?, ?, ?, ?, ?, ?);
+INSERT INTO reg(conid, newperid, create_trans, price, status, memID)
+VALUES(?, ?, ?, ?, ?, ?);
 EOS;
-    $badgeId = dbSafeInsert($badgeQ,  'iiiidsi', array(
+    $badgeId = dbSafeInsert($badgeQ,  'iiidsi', array(
             $conid,
             $badge['newperid'],
-            $badge['perid'],
             $transId,
             $badge['price'],
             $badge['price'] > 0 ? 'unpaid' : 'paid',
@@ -1022,7 +981,7 @@ EOS;
         $numDel = dbSafeCmd($delReg, 'i', array ($regId));
     }
 
-    // now the new perid
+    // now the newperid
     foreach ($badges as $badge) {
         if (array_key_exists('id', $badge)) {
             $newPerid = $badge['id'];

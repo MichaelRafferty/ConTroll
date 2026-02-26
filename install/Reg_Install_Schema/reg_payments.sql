@@ -1,4 +1,4 @@
--- MySQL dump 10.13  Distrib 8.0.42, for macos15 (arm64)
+-- MySQL dump 10.13  Distrib 8.0.44, for macos15 (arm64)
 --
 -- Host: localhost    Database: reg
 -- ------------------------------------------------------
@@ -14,13 +14,13 @@ CREATE TABLE `payments` (
   `id` int NOT NULL AUTO_INCREMENT,
   `transid` int DEFAULT NULL,
   `type` enum('credit','cash','check','discount','refund','other','coupon') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `category` enum('reg','artshow','artist','fan','vendor','exhibits','other') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `category` enum('reg','atcon','artshow','artsales','artist','fan','vendor','exhibits','other') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `description` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `source` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `pretax` decimal(8,2) DEFAULT NULL,
   `tax` decimal(8,2) DEFAULT '0.00' COMMENT 'Sum of the tax fields, or the total tax if they are all null',
   `amount` decimal(8,2) DEFAULT NULL,
-  `tax1` decimal(8,2) DEFAULT NULL COMMENT 'Additional Tax field, defined config file or taxList table';
+  `tax1` decimal(8,2) DEFAULT NULL COMMENT 'Additional Tax field, defined config file or taxList table',
   `tax2` decimal(8,2) DEFAULT NULL COMMENT 'Additional Tax field, defined in taxList table',
   `tax3` decimal(8,2) DEFAULT NULL COMMENT 'Additional Tax field, defined in taxList table',
   `tax4` decimal(8,2) DEFAULT NULL COMMENT 'Additional Tax field, defined in taxList table',

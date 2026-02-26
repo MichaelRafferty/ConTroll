@@ -1,5 +1,5 @@
 <?php
-// ConTroll Registration System, Copyright 2015-2025, Michael Rafferty, Licensed under the GNU Affero General Public License, Version 3.
+// ConTroll Registration System, Copyright 2015-2026, Michael Rafferty, Licensed under the GNU Affero General Public License, Version 3.
 // library AJAX Processor: configEditor.php
 // Author: Syd Weinstein
 // all common functions related to the configuration editor
@@ -100,7 +100,7 @@ function checkCurrent($fields) : string {
 
 
 // load all new data for the config editor
-function loadConfigEditor($perm, $auths) : array {
+function loadConfigEditor($perm, $authToken) : array {
     global $filePath, $controlPath, $configFile;
 
     if ($controlPath)
@@ -189,7 +189,8 @@ function loadConfigEditor($perm, $auths) : array {
 
             case 'R': // role
                 $roleArr = explode(',', mb_substr($line, 5), 2);
-                $section['role'] = [ 'vis' => $roleArr[0], 'perm' => $roleArr[1], 'editable' => ($perm == 'admin' || in_array($roleArr[1], $auths)) ? 1 : 0 ];
+                $section['role'] = [ 'vis' => $roleArr[0], 'perm' => $roleArr[1], 'editable' => ($perm == 'admin' || $authToken->checkAuth($roleArr[1])) ? 1
+                    : 0 ];
                 break;
 
             case 'P': // placeholder
@@ -227,7 +228,7 @@ function loadConfigEditor($perm, $auths) : array {
         $control[$sectionName] = $config;
     }
     $response['perm'] = $perm;
-    $response['auths'] = $auths;
+    $response['auths'] = $authToken->getAuths();
     $response['control'] = $control;
     $response['sections'] = $sections;
 
@@ -276,6 +277,20 @@ function updateConfig($user_perid, $fields) : string {
     $first=true;
     $updates = 0;
     foreach ($master as $line) {
+        if (str_starts_with($line, ';;;;; ')) {
+            if ($needOutput) {
+                $status .= outputLine($fileHandle, $sectionName, $fieldName, $blank, $contents);
+                $needOutput = false;
+            }
+            continue;
+        }
+        if (preg_match('/^\s*$/', $line)) {
+            if ($needOutput) {
+                $status .= outputLine($fileHandle, $sectionName, $fieldName, $blank, $contents);
+                $needOutput = false;
+            }
+            // no continue statement here on purpose
+        }
         if (preg_match('/^\s*\[[^]]+]\s*$/', $line)) {
             if ($needOutput) {
                 $status .= outputLine($fileHandle, $sectionName, $fieldName, $blank, $contents);

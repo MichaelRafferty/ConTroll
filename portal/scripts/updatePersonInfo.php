@@ -62,14 +62,16 @@ if ($currentPersonType == 'p') {
     $updPersonQ =  <<<EOS
 UPDATE perinfo
 SET last_name = ?, middle_name = ?, first_name = ?, suffix = ?, phone = ?, badge_name = ?, badgeNameL2 = ?, legalName = ?, pronouns = ?,
-    address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?, updatedBy = ?, lastVerified = NOW()
+    address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?, 
+    currentAgeType = ?, currentAgeConId = ?, updatedBy = ?, lastVerified = NOW()
 WHERE id = ?;
 EOS;
 } else {
     $updPersonQ =  <<<EOS
 UPDATE newperson
 SET last_name = ?, middle_name = ?, first_name = ?, suffix = ?, phone = ?, badge_name = ?, badgeNameL2 = ?, legalName = ?, pronouns = ?,
-    address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?, updatedBy = ?, lastVerified = NOW()
+    address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?, 
+    currentAgeType = ?, currentAgeConId = ?, updatedBy = ?, lastVerified = NOW()
 WHERE id = ?;
 EOS;
 }
@@ -78,6 +80,15 @@ $fields = ['lname', 'mname', 'fname', 'suffix', 'phone', 'badge_name', 'badgeNam
 foreach ($fields as $field) {
     if ($person[$field] == null)
         $person[$field] = '';
+}
+
+$ageType = null;
+$ageConid = null;
+if (array_key_exists('age', $person)) {
+    if ($person['age'] != null && trim($person['age']) != '') {
+        $ageType = trim($person['age']);
+        $ageConid = $conid;
+    }
 }
 
 // temporary diagnostic, why are the other fields found and country is not found sometimes. (Rarely)
@@ -103,11 +114,13 @@ $value_arr = array(
     $person['state'] == null ? '' : trim($person['state']),
     $person['zip'] == null ? '' : trim($person['zip']),
     $person['country'] == null ? '' : trim($person['country']),
+    $ageType,
+    $ageConid,
     $personId,
     $currentPerson,
 );
 
-$rows_upd = dbSafeCmd($updPersonQ, 'sssssssssssssssii', $value_arr);
+$rows_upd = dbSafeCmd($updPersonQ, 'ssssssssssssssssiii', $value_arr);
 if ($rows_upd === false) {
     ajaxSuccess(array('status'=>'error', 'message'=>'Error updating person'));
     exit();

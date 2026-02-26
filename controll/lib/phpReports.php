@@ -2,7 +2,7 @@
 require_once "base.php";
 // library functions to make php reports in the reports processor easier to run
 
-function loadReportInfo(): array
+function loadReportInfo($authToken): array
 {
     if ((!array_key_exists('postVars', $_POST)) || (!array_key_exists('report', $_POST)) || (!array_key_exists('group', $_POST))
         || (!array_key_exists('prefix', $_POST)) || $_POST['action'] != 'fetch') {
@@ -18,11 +18,8 @@ function loadReportInfo(): array
     $hdrAuth = $groupParams['group']['auth'];
     $report = $groupParams[$reportName];
     $reportAuth = $report['auth'];
-
-    $check_auth = google_init('ajax');
     $response = array ('perm' => $reportAuth);
-
-    if ($check_auth == false || !checkAuth($check_auth['sub'], $reportAuth) || !checkAuth($check_auth['sub'], $hdrAuth)) {
+    if ($authToken->checkAuth($reportAuth) == false || $authToken->checkAuth($hdrAuth) == false) {
         $response['error'] = 'Authentication Failed';
         ajaxSuccess($response);
         exit();

@@ -78,6 +78,7 @@ class customTextSetup {
             method: 'POST',
             data: postdata,
             success: function (data, textStatus, jhXHR) {
+                checkRefresh(data);
                 _this.draw(data, textStatus, jhXHR);
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -245,6 +246,7 @@ class customTextSetup {
                 method: 'POST',
                 data: postdata,
                 success: function (data, textStatus, jhXHR) {
+                    checkRefresh(data);
                     _this.saveSuccess(data);
                 },
                 error: function (jqXHR, textStatus, errorThrown) {

@@ -10,11 +10,14 @@ require_once('../lib/exhibitorRequestForms.php');
 require_once('../lib/exhibitorReceiptForms.php');
 require_once("../lib/cc__load_methods.php");
 require_once('../lib/webauthn.php');
+require_once('../lib/policies.php');
+require_once('../lib/profile.php');
 require_once('../lib/tax.php');
 
 $cc = get_conf('cc');
 $con = get_conf('con');
 $conid = $con['id'];
+$minConid = getConfValue('controll', 'viewPriorLimit', $conid - 1);
 $usps = get_conf('usps');
 load_cc_procs();
 
@@ -63,6 +66,7 @@ $currency = getConfValue('con', 'currency', 'USD');
 $locale = getLocale();
 $config_vars = array();
 $config_vars['label'] = $con['label'];
+$config_vars['conid'] = $conid;
 $config_vars['vemail'] = getConfValue('vendor', $portalType, getConfValue('regadminemail', 'con'));
 $config_vars['portalType'] = $portalType;
 $config_vars['portalName'] = $portalName;
@@ -85,7 +89,8 @@ $config_vars['termsVendor'] = returnCustomText('invoice/termsVendor');
 $config_vars['locale'] = $locale;
 $config_vars['currency'] = $currency;
 $config_vars['taxRates'] = getTaxRates();
-
+$startdate = new DateTime($condata['startdate']);
+$config_vars['ageByDate'] = $startdate->format('F j, Y');
 
 // load country select
 $countryOptions = '';
@@ -457,6 +462,22 @@ while ($space = $exhibitorSR->fetch_assoc()) {
     $exhibitorSpaceList[$space['spaceId']] = $space;
 }
 $exhibitorSR->free();
+
+[$ageList, $ageListIdx] = getAgeList($config_vars['conid']);
+$ageOptions = '<option value="">--Select Age Bracket--</option>' . PHP_EOL;
+foreach ($ageList as $age) {
+    $ageOptions .= '<option value="' . escape_quotes($age['ageType']) . '">' . $age['shortname'] . ' ['.$age['label'] . ']</option>' . PHP_EOL;
+}
+$policies = getPolicies();
+if ($policies != null && count($policies) > 0) {
+    loadCustomText('exhibitor', 'profile', getConfValue('vendor', 'customtext', 'production'), true);
+    $header = returnCustomText('policies/header', 'exhibitor/profile/');
+    $footer = returnCustomText('policies/footer', 'exhibitor/profile/');
+    foreach ($policies as $index => $policy) {
+        $policies[$index]['prompt'] = replaceVariables($policy['prompt']);
+        $policies[$index]['description'] = replaceVariables($policy['description']);
+    }
+}
 ?>
 <script type='text/javascript'>
     var config = <?php echo json_encode($config_vars); ?>;
@@ -468,9 +489,16 @@ $exhibitorSR->free();
     var regions = <?php echo json_encode($regions); ?>;
     var spaces = <?php echo json_encode($spaces); ?>;
     var country_options = <?php echo json_encode($countryOptions); ?>;
-    </script>
+    var ageList = <?php echo json_encode($ageList); ?>;
+    var ageListIdx = <?php echo json_encode($ageListIdx); ?>;
+    var ageOptions = <?php echo json_encode($ageOptions); ?>;
+    var policies = <?php echo json_encode($policies); ?>;
+    var policyHeader = <?php echo json_encode($header); ?>;
+    var policyFooter = <?php echo json_encode($footer); ?>;
+</script>
 <?php
 draw_registrationModal($portalType, $portalName, $con, $countryOptions);
+draw_itemImportModal($portalType);
 draw_passwordModal();
 draw_exhibitorRequestModal($portalType);
 draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $testsite, $cc, $portalName, $portalType);
@@ -517,6 +545,14 @@ draw_itemRegistrationModal($portalType, $showSheets, $artControl);
         </div>
 <?php   }
 
+    $pastItemsQ = <<<EOS
+SELECT conid, count(*) AS itemCount
+FROM artItems
+WHERE conid >= ? AND conid < ?
+GROUP BY conid
+HAVING count(*) > 0
+ORDER BY conid DESC;
+EOS;
     foreach ($region_list as $id => $region) {
         // check if they already have paid space, if so, offer to show them the receipt
         $paid = 0;
@@ -528,6 +564,17 @@ draw_itemRegistrationModal($portalType, $showSheets, $artControl);
         $regionYearId = $region['id'];
         $regionName = $region['name'];
         $foundSpace = false;
+
+        // see if they have past conid's with artItems
+        $pastItemR = dbSafeQuery($pastItemsQ, 'ii', array($minConid, $conid));
+        $pastYears = [];
+        if ($pastItemR !== false) {
+            while ($pastItem = $pastItemR->fetch_row()) {
+                $pastYears[] = $pastItem[0];
+            }
+            $pastItemR->free();
+        }
+
         if (array_key_exists($regionYearId, $space_list)) {
             foreach ($space_list[$regionYearId] as $spaceId => $space) {
                 if ($space['exhibitsRegionYear'] != $region['id'])
@@ -616,7 +663,21 @@ draw_itemRegistrationModal($portalType, $showSheets, $artControl);
                         if ($paid > 0) {
                             vendor_receipt($regionYearId, $regionName, $regionSpaces, $exhibitorSpaceList);
                             if ($portalType == 'artist') {
-                                itemRegistrationOpenBtn($regionYearId);
+                                // check to see if there are any art items, if not, offer to import prior items if there are any
+                                $chkQ = <<<EOS
+SELECT COUNT(*)
+FROM artItems i
+JOIN exhibitorRegionYears eRY on eRY.id=i.exhibitorRegionYearId
+WHERE eRY.exhibitorYearId=? and eRY.exhibitsRegionYearId = ?; 
+EOS;
+
+                                $chR = dbSafeQuery($chkQ, 'ii', array (getSessionVar('eyID'), $regionYearId));
+                                if ($chR !== false) {
+                                    $numArtItems = $chR->fetch_row()[0];
+                                    $chR->free();
+                                    itemRegistrationImportBtn($regionYearId);
+                                }
+                                itemRegistrationOpenBtn($conid, $regionYearId);
                             }
                         }
                         else if ($approved > 0)
@@ -633,7 +694,26 @@ draw_itemRegistrationModal($portalType, $showSheets, $artControl);
         ?>
             </div>
         </div>
-        <?php } ?>
+<?php
+        if (count($pastYears) > 0) {
+            echo <<<EOS
+        <div class="row mt-1">
+EOS;
+            foreach ($pastYears as $year) {
+                echo <<<EOS
+            <div class="col-sm-auto p-1">
+                <button class='btn btn-primary m-1' onclick="auctionItemRegistration.printSheets('control', $regionYearId, $year); return false;">Print Control Sheet 
+                for $year</button>
+            </div>
+EOS;
+            }
+            echo <<<EOS
+        </div>
+EOS;
+        }
+        echo "bottom buttons<br/>\n";
+    }
+?>
          <?php outputCustomText('main/bottom'); outputCustomText('main/bottom' . $portalName); ?>
     </div>
      <div class='container-fluid'>

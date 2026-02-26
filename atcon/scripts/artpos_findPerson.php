@@ -45,7 +45,7 @@ if (is_numeric($name_search)) {
 //
 // this is perid
 //
-    $inlineInventory = getConfValue('atcon', 'inlineinventory', 1);
+    $inlineInventory = getConfValue('atcon', 'inlineinventory', 0);
     $allowBid = $inlineInventory == 1 ? ", 'BID'" : '';
     $findPersonQ = <<<EOS
 SELECT p.id, first_name, middle_name, last_name, suffix, badge_name, badgeNameL2, email_addr, address, addr_2, city, state, zip, country, phone
@@ -127,12 +127,13 @@ EOS;
         $recQ = <<<EOS
 SELECT DISTINCT t.perid, p.transid, p.ccPaymentId, p.time
 FROM artSales s
+JOIN artItems a ON s.artid = a.id
 JOIN transaction t ON t.id = s.transid
 JOIN payments p ON t.id = p.transid
-WHERE s.perid = ?;
+WHERE s.perid = ? AND a.conid = ?;
 EOS;
         $receipts = [];
-        $recR = dbSafeQuery($recQ, 'i', array($perid));
+        $recR = dbSafeQuery($recQ, 'ii', array($perid, $conid));
         if ($recR !== false) {
             while ($recL = $recR->fetch_assoc()) {
                 $receipts[] = $recL;

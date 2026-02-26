@@ -274,6 +274,7 @@ class ExhibitorProfile {
             data: $('#exhibitorProfileForm').serialize(),
             method: 'POST',
             success: function (data, textstatus, jqXHR) {
+                checkRefresh(data);
                 exhibitorProfile.submitProfileSuccess(data);
             },
             error: showAjaxError

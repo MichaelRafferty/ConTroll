@@ -4,16 +4,17 @@ require_once "../lib/exhibitorRegistrationForms.php";
 require_once "../lib/exhibitorRequestForms.php";
 require_once "../lib/exhibitorReceiptForms.php";
 require_once "../lib/exhibitorInvoice.php";
+require_once "../lib/profile.php";
+require_once "../lib/policies.php";
 require_once "../lib/tax.php";
 require_once "lib/exhibitsConfiguration.php";
 require_once "lib/exhibitorChooseExhibitor.php";
+require_once 'lib/sessionAuth.php';
 
-//initialize google session
-$need_login = google_init("page");
-
-$page = "exhibitor";
-if(!$need_login or !checkAuth($need_login['sub'], $page)) {
-    bounce_page("index.php");
+$page = 'exhibitor';
+$authToken = new authToken('web');
+if (!$authToken->isLoggedIn() || !$authToken->checkAuth($page)) {
+    bounce_page('index.php');
 }
 
 $con = get_con();
@@ -62,9 +63,10 @@ page_init($page,
                     'jslib/exhibitorReceipt.js',
                     'jslib/exhibitorInvoiceCommon.js',
                     'jslib/configEdit.js',
+                    'jslib/profile.js',
                     'js/tinymce/tinymce.min.js'
                    ),
-              $need_login);
+              $authToken);
 
 // to build tabs get the list of vendor types
 $regionOwnerQ = <<<EOS
@@ -94,6 +96,21 @@ $locale = getLocale();
 $config_vars = array();
 $portalType = 'admin';
 $portalName = 'Exhibitor';
+[$ageList, $ageListIdx] = getAgeList($conid);
+$ageOptions = '<option value="">--Select Age Bracket--</option>' . PHP_EOL;
+foreach ($ageList as $age) {
+$ageOptions .= '<option value="' . escape_quotes($age['ageType']) . '">' . $age['shortname'] . ' ['.$age['label'] . ']</option>' . PHP_EOL;
+}
+$policies = getPolicies();
+if ($policies != null && count($policies) > 0) {
+    loadCustomText('exhibitor', 'profile', getConfValue('vendor', 'customtext', 'production'), true);
+    $header = returnCustomText('policies/header', 'exhibitor/profile/');
+    $footer = returnCustomText('policies/footer', 'exhibitor/profile/');
+    foreach ($policies as $index => $policy) {
+        $policies[$index]['prompt'] = replaceVariables($policy['prompt']);
+        $policies[$index]['description'] = replaceVariables($policy['description']);
+    }
+}
 $config_vars['pageName'] = 'exhibitor';
 $config_vars['label'] = $con['label'];
 $config_vars['vemail'] = $conf['regadminemail'];
@@ -114,6 +131,7 @@ $config_vars['regserver'] = getConfValue('reg', 'server');
 $config_vars['locale'] = $locale;
 $config_vars['currency'] = $currency;
 $config_vars['taxRates'] = getTaxRates();
+$config_vars['tokenStatus'] = $authToken->checkToken();
 
 bs_tinymceModal();
 draw_registrationModal('admin', 'Admin', $conf, $countryOptions);
@@ -304,6 +322,12 @@ while ($regionL = $regionOwnerR->fetch_assoc()) {
     var regions = <?php echo json_encode($regions); ?>;
     var regionTabNames = <?php echo json_encode($regionTabNames); ?>;
     var regionOwnersTabNames = <?php echo json_encode($regionOwnersTabNames); ?>;
+    var ageList = <?php echo json_encode($ageList); ?>;
+    var ageListIdx = <?php echo json_encode($ageListIdx); ?>;
+    var ageOptions = <?php echo json_encode($ageOptions); ?>;
+    var policies = <?php echo json_encode($policies); ?>;
+    var policyHeader = <?php echo json_encode($header); ?>;
+    var policyFooter = <?php echo json_encode($footer); ?>;
 </script>
     <div class='tab-content ms-2' id='overview-content'>
         <div class='container-fluid'>

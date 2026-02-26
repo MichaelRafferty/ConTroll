@@ -1,15 +1,18 @@
 <?php
 require_once "../lib/base.php";
+require_once '../lib/sessionAuth.php';
 
-$check_auth = google_init("ajax");
-$perm = "reg_admin";
+// use common global Ajax return functions
+global $returnAjaxErrors, $return500errors;
+$returnAjaxErrors = true;
+$return500errors = true;
 
-$response = array("post" => $_POST, "get" => $_GET, "perm"=>$perm);
-
-
-if($check_auth == false || (!checkAuth($check_auth['sub'], $perm) &&
-                            !checkAuth($check_auth['sub'], 'atcon'))) {
-    $response['error'] = "Authentication Failed";
+$perm = 'reg_admin';
+$response = array ('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
+$authToken = new authToken('script');
+$response['tokenStatus'] = $authToken->checkToken();
+if (!$authToken->isLoggedIn() || (!$authToken->checkAuth($perm) && !$authToken->checkAuth('atcon'))) {
+    $response['error'] = 'Authentication Failed';
     ajaxSuccess($response);
     exit();
 }
@@ -79,12 +82,12 @@ switch ($action) {
             $deleted += dbSafeCmd($delsql, 'i', array($year));
         }
         $inssql = <<<EOS
-INSERT INTO ageList(conid, ageType, label, shortname, badgeFlag, sortorder)
-VALUES(?,?,?,?,?,?);
+INSERT INTO ageList(conid, ageType, label, shortname, badgeFlag, verify, sortorder)
+VALUES(?,?,?,?,?,?,?);
 EOS;
         $updsql = <<<EOS
 UPDATE ageList
-SET ageType = ?, label = ?, shortname = ?, badgeFlag = ?, sortorder = ?
+SET ageType = ?, label = ?, shortname = ?, badgeFlag = ?, verify = ?, sortorder = ?
 WHERE ageType = ? and conid = ?;
 EOS;
 
@@ -96,7 +99,8 @@ EOS;
             }
             if (array_key_exists('agekey', $row)) { // if key is there, it's an update
                 $ageType = str_replace(' ', '-', $row['ageType']);
-                $numrows = dbSafeCmd($updsql, 'ssssisi', array($ageType, $row['label'], $row['shortname'], $row['badgeFlag'], $row['sortorder'], $row['agekey'], $year));
+                $numrows = dbSafeCmd($updsql, 'sssssisi', array($ageType, $row['label'], $row['shortname'], $row['badgeFlag'],
+                    $row['verify'], $row['sortorder'], $row['agekey'], $year));
                 $updated += $numrows;
             }
         }
@@ -109,7 +113,8 @@ EOS;
             }
             if (!array_key_exists('agekey', $row)) { // if key is not there, its an insert
                 $ageType = str_replace(' ', '-', $row['ageType']);
-                $numrows = dbSafeInsert($inssql, 'issssi', array($year, $ageType, $row['label'], $row['shortname'], $row['badgeFlag'], $row['sortorder']));
+                $numrows = dbSafeInsert($inssql, 'isssssi', array($year, $ageType, $row['label'], $row['shortname'], $row['badgeFlag'],
+                    $row['verify'], $row['sortorder']));
                 if ($numrows !== false)
                     $inserted++;
             }

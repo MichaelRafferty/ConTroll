@@ -241,7 +241,7 @@ resetEditPane() {
         this.#final_priceField.value = null;
     }
 
-    if (this.#typeField == artItemTypes.PRINT) {
+    if (this.type == artItemTypes.PRINT) {
         this.#quantityField.value = this.quantity;
         this.#quantityField.setAttribute('max',this.original_qty);
         this.#original_qtyField.value = this.original_qty;
@@ -320,13 +320,14 @@ setIsChanged(value,fieldName) {
                         show_message(data.error, 'error', 'ai_result_message');
                         return;
                     }
+                    checkRefresh(data);
                     if (data.warning != undefined) {
                         show_message(data.warning, 'warn', 'ai_result_message');
                         return;
                     }
                     // valid return
                     _this.#isChanged=true;
-                    _this.#changedFields.value = fieldName;
+                    _this.#changedFields[value] = fieldName;
                     _this.#bidderNameField.innerHTML = data.name;
                     _this.#bidderValid = true;
                 },
@@ -353,8 +354,8 @@ setValuesForNew(exhibitor, number, type) {
     this.type=typeList.getType(type);
     this.status=statusList.getDefault();
     this.location='';
-    if (exhibitor['locations'])
-        this.#locationList = exhibitor['locations'].split(',');
+    if (exhibitor.locations)
+        this.#locationList = exhibitor.locations.split(',');
     else
         this.#locationList = [];
     this.quantity = 1;
@@ -379,30 +380,35 @@ setValuesForNew(exhibitor, number, type) {
     }
 
 setValuesFromData(artItemData) {
-    this.id = artItemData['id'];
-    this.artistNumber = artItemData['exhibitorNumber'];
-    this.itemNumber = artItemData['item_key'];
-    this.title=artItemData['title'];
-    this.material=artItemData['material'];
-    this.type=typeList.getType(artItemData['type']);
-    this.status=statusList.getStatus(artItemData['status']);
-    this.location=artItemData['location'];
-    if (artItemData['locations'] && artItemData['locations'] != '')
-        this.#locationList = artItemData['locations'].split(',');
+    this.id = artItemData.id;
+    if (artItemData.hasOwnProperty('conid')) {
+        document.getElementById('artItemConYear').innerHTML = artItemData.conid;
+    } else {
+        document.getElementById('artItemConYear').innerHTML = config.conid;
+    }
+    this.artistNumber = artItemData.exhibitorNumber;
+    this.itemNumber = artItemData.item_key;
+    this.title=artItemData.title;
+    this.material=artItemData.material;
+    this.type=typeList.getType(artItemData.type);
+    this.status=statusList.getStatus(artItemData.status);
+    this.location=artItemData.location;
+    if (artItemData.locations && artItemData.locations != '')
+        this.#locationList = artItemData.locations.split(',');
     else
         this.#locationList = [];
-    this.quantity = artItemData['quantity'];
-    this.original_qty = artItemData['original_qty'];
-    this.min_price = artItemData['min_price'];
-    this.sale_price = artItemData['sale_price'];
-    this.final_price = artItemData['final_price'];
-    this.#bidder = artItemData['bidder'];
-    this.bidderName = artItemData['bidderName'];
-    this.#exhibitorRegionYearId = artItemData['exhibitorRegionYearId'];
-    this.exhibitorName = artItemData['exhibitorName'];
-    this.#exhibitRegionYearId = artItemData['exhibitRegionYearId'];
-    this.regionYearName = artItemData['exhibitRegionName'];
-    this.itemNotes = artItemData['notes'];
+    this.quantity = artItemData.quantity;
+    this.original_qty = artItemData.original_qty;
+    this.min_price = artItemData.min_price;
+    this.sale_price = artItemData.sale_price;
+    this.final_price = artItemData.final_price;
+    this.#bidder = artItemData.bidder;
+    this.bidderName = artItemData.bidderName;
+    this.#exhibitorRegionYearId = artItemData.exhibitorRegionYearId;
+    this.exhibitorName = artItemData.exhibitorName;
+    this.#exhibitRegionYearId = artItemData.exhibitRegionYearId;
+    this.regionYearName = artItemData.exhibitRegionName;
+    this.itemNotes = artItemData.notes;
 
     if(this.type === false) {
         show_message('invalid item type', 'warn', 'ai_result_message'); //TODO append if possible

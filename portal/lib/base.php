@@ -7,7 +7,7 @@ if (loadConfFile())
     $include_path_additions = PATH_SEPARATOR . getConfValue('client', 'path', '.') . '/../Composer';
 
 if (getConfValue('reg', 'https') <> 0) {
-    if (!isset($_SERVER['HTTPS']) or $_SERVER['HTTPS'] != 'on') {
+    if (!isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] != 'on') {
         header('HTTP/1.1 301 Moved Permanently');
         header('Location: https://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI']);
         exit();
@@ -62,6 +62,7 @@ function index_page_init($title) {
     <script type='text/javascript' src='$jquijs'></script>
     <script type="text/javascript" src="$tabjs"></script>
     <script type="text/javascript" src="jslib/global.js?v=$globalJSversion"></script>
+    <script type="text/javascript" src="jslib/profile.js?v=$globalJSversion"></script>
     <script type="text/javascript" src="jslib/passkey.js?v=$globalJSversion"></script>
     <script type='text/javascript' src="js/base.js?v=$portalJSVersion"></script>
     <script type='text/javascript' src="js/login.js?v=$portalJSVersion"></script>
@@ -71,7 +72,6 @@ EOF;
 
 function portalPageInit($page, $info, $css, $js, $refresh = false) {
     global $portalJSVersion, $libJSversion, $controllJSversion, $globalJSversion, $atJSversion, $exhibitorJSversion;
-
 
     $con = get_conf('con');
     $label = $con['label'];
@@ -106,6 +106,8 @@ function portalPageInit($page, $info, $css, $js, $refresh = false) {
             <script type='text/javascript' src='<?php echo $includes['jqjs']; ?>'></script>
             <script type='text/javascript' src='<?php echo $includes['jquijs']; ?>'></script>
             <script type='text/javascript' src="jslib/global.js?v=<?php echo $globalJSversion;?>"></script>
+            <script type='text/javascript' src="jslib/profile.js?v=<?php echo $globalJSversion;?>"></script>
+
             <script type='text/javascript' src="js/base.js?v=<?php echo $portalJSVersion;?>"></script>
             <?php
 
@@ -219,6 +221,8 @@ function portalPageFoot() {
 function tabBar($page, $portal_conf, $info, $refresh = false) {
     $page_list = [];
     if (!$refresh) {
+        // always provide payment history, for now (do we suppress it if there is no payment history?)
+        $page_list[] = ['name' => 'paymentHistory', 'display' => 'Payment History'];
         if (getConfValue('portal', 'history') == 1 && getSessionVar('idType') == 'p') {
             $page_list[] = ['name' => 'membershipHistory', 'display' => 'Membership History'];
         }
@@ -291,16 +295,25 @@ function isWebRequest() {
 }
 
 // getPersonInfo - retrieve the data for the logged in person
-    // build info array about the account holder
-
-function getPersonInfo($conid) {
-    $personType = getSessionVar('idType');
-    $personId = getSessionVar('id');
+// build info array about the account holder or the person passed
+function getPersonInfo($conid, $personType = null, $personId = null, $minimal = false) {
+    if ($personType == null || $personId == null) {
+        $personType = getSessionVar('idType');
+        $personId = getSessionVar('id');
+        $pmId = $personId;
+        $pmType = $personType;
+        $getMemberships = false;
+    } else {
+        $pmType = getSessionVar('idType');
+        $pmId = getSessionVar('id');
+        $getMemberships = true;
+    }
     if ($personType == 'p') {
         $pfield = 'perid';
         $personSQL = <<<EOS
 SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2,
-       p.legalName, p.pronouns, p.address, p.addr_2, p.city, p.state, p.zip, p.country,
+    p.legalName, p.pronouns, p.address, p.addr_2, p.city, p.state, p.zip, p.country,
+    IFNULL(p.currentAgeConId, -1) AS currentAgeConId, IFNULL(p.currentAgeType, '') AS currentAgeType,
     p.banned, p.creation_date, p.update_date, p.change_notes, p.active, p.managedBy, p.lastVerified, 'p' AS personType,
     TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
     TRIM(REGEXP_REPLACE(CONCAT_WS(' ', pm.first_name, pm.middle_name, pm.last_name, pm.suffix), ' +', ' ')) AS managedByName
@@ -312,7 +325,8 @@ EOS;
         $pfield = 'newperid';
         $personSQL = <<<EOS
 SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2,
-       p.legalName, p.pronouns, p.address, p.addr_2, p.city, p.state, p.zip, p.country,
+    p.legalName, p.pronouns, p.address, p.addr_2, p.city, p.state, p.zip, p.country,
+    IFNULL(p.currentAgeConId, -1) AS currentAgeConId, IFNULL(p.currentAgeType, '') AS currentAgeType,
     'N' AS banned, p.createtime AS creation_date, 'Y' AS active, p.managedByNew, p.managedBy, p.lastVerified, 'n' AS personType,
     TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
     CASE
@@ -335,22 +349,132 @@ EOS;
     $info = $personR->fetch_assoc();
     $info['badgename'] = badgeNameDefault($info['badge_name'], $info['badgeNameL2'], $info['first_name'], $info['last_name']);
     $personR->free();
-    // not get the count of the number required policies answered no by this person
+
+    // get the policies
     $pQ = <<<EOS
+SELECT policy, response
+FROM memberPolicies
+WHERE conid = ? AND $pfield = ?;
+EOS;
+    $pR = dbSafeQuery($pQ,'ii', array($conid, $personId));
+    $pResp = [];
+    if ($pR !== false) {
+        while ($pL = $pR->fetch_assoc()) {
+            $pResp[$pL['policy']] = $pL['response'];
+        }
+        $pR->free();
+    }
+    $info['policies'] =  $pResp;
+
+        // get the interests
+    $pQ = <<<EOS
+SELECT interest, interested
+FROM memberInterests
+WHERE conid = ? AND $pfield = ?;
+EOS;
+    $pR = dbSafeQuery($pQ,'ii', array($conid, $personId));
+    $pResp = [];
+    if ($pR !== false) {
+        while ($pL = $pR->fetch_assoc()) {
+            $pResp[$pL['interest']] = $pL['interested'];
+        }
+        $pR->free();
+    }
+    $info['interests'] =  $pResp;
+
+    if (!$minimal) {
+    // now get the count of the number required policies answered no by this person
+        $pQ = <<<EOS
 SELECT IFNULL(count(*), 0) AS requiredMissing
 FROM policies p
 LEFT OUTER JOIN memberPolicies m ON (m.policy = p.policy AND m.conid = ? AND IFNULL(m.$pfield, -1) = ?)
 WHERE p.ACTIVE = 'Y'  AND p.required = 'Y' AND IFNULL(m.response, 'N') = 'N';
 EOS;
-    $pR = dbSafeQuery($pQ, 'ii', array($conid, $personId));
-    $missingPolicies = 0;
-    if ($pR !== false) {
-        while ($pL = $pR->fetch_assoc()) {
-            $missingPolicies += intval($pL['requiredMissing']);
+        $pR = dbSafeQuery($pQ, 'ii', array($conid, $personId));
+        $missingPolicies = 0;
+        if ($pR !== false) {
+            while ($pL = $pR->fetch_assoc()) {
+                $missingPolicies += intval($pL['requiredMissing']);
+            }
+            $pR->free();
         }
-        $pR->free();
+        $info['missingPolicies'] = $missingPolicies;
+
+        if ($getMemberships) {
+            // memberships of both Y and A types
+            // now if asked for interests or  memberships, get them as well
+            if ($personType == 'p') {
+                $rfield = 'perid';
+                $ptable = 'perinfo';
+            } else {
+                $rfield = 'newperid';
+                $ptable = 'newperson';
+            }
+           $memberships = [];
+           $mQ = <<<EOS
+SELECT r.id, r.create_date, r.memId, r.conid, r.status, r.price, IFNULL(r.paid, 0.00) AS paid, r.couponDiscount, r.perid, r.newperid,
+       m.label, m.memType, m.memCategory, m.memAge, m.startdate, m.enddate, m.online,
+       IFNULL(p.currentAgeConId, -1) AS currentAgeConId, IFNULL(p.currentAgeType, '') AS currentAgeType
+FROM reg r
+JOIN memList m ON m.id = r.memId
+JOIN $ptable p ON p.id = r.$rfield
+WHERE r.$rfield = ? AND r.conid IN (?, ?) AND status IN ('unpaid', 'paid', 'plan', 'upgraded')
+    AND (NOT (p.first_name = 'Merged' AND p.last_name = 'into'))
+ORDER BY r.create_date, r.id;
+EOS;
+           $mR = dbSafeQuery($mQ, 'iii', array($personId, $conid, $conid + 1));
+           if ($mR !== false) {
+               while ($row = $mR->fetch_assoc()) {
+                   $memberships[] = $row;
+               }
+               $mR->free();
+           }
+           $info['memberships'] = $memberships;
+           $allMemberships = [];
+           if ($personType == 'p') {
+               $mQ = <<<EOS
+SELECT r.id, r.perid, r.newperid, r.create_date, r.memId, r.conid, r.status, r.price, IFNULL(r.paid, 0.00) AS paid, r.couponDiscount,
+       m.label, m.memType, m.memCategory, m.memAge, m.startdate, m.enddate, m.online, 
+       IFNULL(p.currentAgeConId, -1) AS currentAgeConId, IFNULL(p.currentAgeType, '') AS currentAgeType
+FROM reg r
+JOIN memList m ON m.id = r.memId
+JOIN perinfo p ON p.id = r.perid
+LEFT OUTER JOIN perinfo pm ON p.managedBy = pm.id
+WHERE r.conid IN (?, ?) AND (pm.id = ? OR p.id = ?) AND (NOT (p.first_name = 'Merged' AND p.last_name = 'into'))
+UNION
+SELECT r.id, r.perid, r.newperid, r.create_date, r.memId, r.conid, r.status, r.price, IFNULL(r.paid, 0.00) AS paid, r.couponDiscount,
+       m.label, m.memType, m.memCategory, m.memAge, m.startdate, m.enddate, m.online,
+       IFNULL(n.currentAgeConId, -1) AS currentAgeConId, IFNULL(n.currentAgeType, '') AS currentAgeType
+FROM reg r
+JOIN memList m ON m.id = r.memId
+JOIN newperson n ON n.id = r.newperid
+LEFT OUTER JOIN perinfo pm ON n.managedBy = pm.id
+WHERE r.conid IN (?, ?) AND (pm.id = ?) AND n.perid IS NULL
+ORDER BY create_date, id;
+EOS;
+               $mR = dbSafeQuery($mQ, 'iiiiiii', array ($conid, $conid + 1, $pmId, $pmId, $conid, $conid + 1, $pmId));
+           } else {
+               $mQ = <<<EOS
+SELECT r.id, r.create_date, r.memId, r.conid, r.status, r.price, IFNULL(r.paid, 0.00) AS paid, r.couponDiscount, r.perid, r.newperid,
+       m.label, m.memType, m.memCategory, m.memAge, m.startdate, m.enddate, m.online,
+       IFNULL(n.currentAgeConId, -1) AS currentAgeConId, IFNULL(n.currentAgeType, '') AS currentAgeType
+FROM reg r
+JOIN memList m ON m.id = r.memId
+JOIN newperson n ON n.id = r.newperid
+LEFT OUTER JOIN newperson nm ON n.managedByNew = nm.id
+WHERE r.conid IN (?, ?) AND (nm.id = ? OR n.id = ?) AND n.perid IS NULL
+ORDER BY create_date;
+EOS;
+               $mR = dbSafeQuery($mQ, 'iiii', array ($conid, $conid + 1, $pmId, $pmId));
+           }
+           if ($mR !== false) {
+               while ($row = $mR->fetch_assoc()) {
+                   $allMemberships[] = $row;
+               }
+           }
+        $info['allMemberships'] = $allMemberships;
+        }
     }
-    $info['missingPolicies'] = $missingPolicies;
     return $info;
 }
 

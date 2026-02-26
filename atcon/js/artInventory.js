@@ -113,6 +113,7 @@ function init_locations() {
 function addInventoryIcon(cell, formatterParams, onRendered) {
     var html = '';
     var item_status = cell.getData().status;
+    var isDisabled = cell.getData().inCart;
     var btnClass = 'btn btn-sm p-0';
     var btnStyle = 'style="--bs-btn-font-size: 75%;"';
 
@@ -121,7 +122,7 @@ function addInventoryIcon(cell, formatterParams, onRendered) {
         case 'Not In Show':
         case 'Checked Out':
         case 'Purchased/Released':
-            html += '<button type="button" class="btn btn-sm btn-danger '+btnClass+' ps-2 pe-2"' + btnStyle + '">N/A</button>';
+            html += '<button disabled type="button" class="btn btn-sm btn-danger '+btnClass+' ps-2 pe-2"' + btnStyle + '">N/A</button>';
             // no inventory action, gone
             break;
         case 'Sold Bid Sheet':
@@ -131,42 +132,61 @@ function addInventoryIcon(cell, formatterParams, onRendered) {
         case 'Quicksale/Sold':
             //inventory
             if(mode == 'artinventory') {
-                html += '<button type="button" class="ps-2 pe-2 '+btnClass+' btn-primary" '+btnStyle+' onclick="add_to_cart(' + cell.getData().index + ',\'Inventory\')">Inv</button> ';
+                if(isDisabled) {
+                    html += '<button disabled type="button" class="ps-2 pe-2 '+btnClass+' btn-primary" '+btnStyle+' onclick="add_to_cart(' + cell.getData().index + ',\'Inventory\')">Inv</button> ';
+                } else {
+                    html += '<button type="button" class="ps-2 pe-2 '+btnClass+' btn-primary" '+btnStyle+' onclick="add_to_cart(' + cell.getData().index + ',\'Inventory\')">Inv</button> ';
+                }
             }
             //manager can release
             if(manager) {
-                html += '<button type="button" class="ps-1 pe-1 '+btnClass+' btn-secondary" '+btnStyle+' onclick="add_to_cart(' + cell.getData().index + ',\'Release\')">Release</button> ';
+                if(isDisabled) {
+                    html += '<button disabled type="button" class="ps-1 pe-1 ' + btnClass + ' btn-secondary" ' + btnStyle + ' onclick="add_to_cart(' + cell.getData().index + ',\'Release\')">Release</button> ';
+                } else {
+                    html += '<button type="button" class="ps-1 pe-1 '+btnClass+' btn-secondary" '+btnStyle+' onclick="add_to_cart(' + cell.getData().index + ',\'Release\')">Release</button> ';
+                }
             }
             break;
         case 'To Auction':
         case 'BID':
             //inventory only
             if(mode == 'artinventory') {
-                html += '<button type="button" class=" ps-2 pe-2 '+btnClass+' btn-primary" '+btnStyle+' onclick="add_to_cart(' + cell.getData().index + ',\'Inventory\')">Inv</button> ';
+                if(isDisabled) {
+                    html += '<button disabled type="button" class=" ps-2 pe-2 '+btnClass+' btn-primary" '+btnStyle+' onclick="add_to_cart(' + cell.getData().index + ',\'Inventory\')">Inv</button> ';
+                } else {
+                    html += '<button type="button" class=" ps-2 pe-2 '+btnClass+' btn-primary" '+btnStyle+' onclick="add_to_cart(' + cell.getData().index + ',\'Inventory\')">Inv</button> ';
+                }
             }
             break;
         case 'Checked In':
         case 'NFS':
             // inventory or check out
             if(mode == 'artinventory') {
-                html += '<button type="button" class="ps-2 pe-2 '+btnClass+' btn-primary" '+btnStyle+' onclick="add_to_cart(' + cell.getData().index + ',\'Inventory\')">Inv</button> ';
-                html += '<button type="button" class="ps-2 pe-2 '+btnClass+' btn-secondary" '+btnStyle+' onclick="add_to_cart(' + cell.getData().index + ',\'Check Out\')">Out</button> ';
-            }
-            // manager can remove from show
-            if(manager) {
-                let m = '';
-                if(mode == 'artinventory') {
-                    html += '<br/>';
-                    m = ' mt-2 ';
+                if(isDisabled) {
+                    html += '<button disabled type="button" class="ps-2 pe-2 '+btnClass+' btn-primary" '+btnStyle+' onclick="add_to_cart(' + cell.getData().index + ',\'Inventory\')">Inv</button> ';
+                    html += '<button disabled type="button" class="ps-2 pe-2 '+btnClass+' btn-secondary" '+btnStyle+' onclick="add_to_cart(' + cell.getData().index + ',\'Check Out\')">Out</button> ';
+                } else {
+                    html += '<button type="button" class="ps-2 pe-2 ' + btnClass + ' btn-primary" ' + btnStyle + ' onclick="add_to_cart(' + cell.getData().index + ',\'Inventory\')">Inv</button> ';
+                    html += '<button type="button" class="ps-2 pe-2 ' + btnClass + ' btn-secondary" ' + btnStyle + ' onclick="add_to_cart(' + cell.getData().index + ',\'Check Out\')">Out</button> ';
                 }
-                html += '<button type="button" class="ps-2 pe-2 '+ m + btnClass+' btn-warning" '+btnStyle+' onclick="add_to_cart(' + cell.getData().index + ',\'remove\')">Remove</button> ';
+            }
+        case 'Entered':
+            if(isDisabled) {
+                html += '<button disabled type="button" class="ps-2 pe-2 ' + btnClass + ' btn-primary" ' + btnStyle + ' onclick="add_to_cart(' + cell.getData().index + ',\'Check In\')">In</button> ';
+                html += '<button disabled type="button" class="ps-2 pe-2 ' + btnClass + ' btn-primary" ' + btnStyle + ' onclick="add_to_cart(' + cell.getData().index + ',\'Withdraw\')">Withdraw</button> ';
+            } else {
+                html += '<button type="button" class="ps-2 pe-2 '+btnClass+' btn-primary" '+btnStyle+' onclick="add_to_cart(' + cell.getData().index + ',\'Check In\')">In</button> ';
+                html += '<button type="button" class="ps-2 pe-2 '+btnClass+' btn-primary" '+btnStyle+' onclick="add_to_cart(' + cell.getData().index + ',\'Withdraw\')">Withdraw</button> ';
             }
             break;
         case 'Removed from Show':
-        case 'Entered':
         default:
             // must check in
-            html += '<button type="button" class="ps-2 pe-2 '+btnClass+' btn-primary" '+btnStyle+' onclick="add_to_cart(' + cell.getData().index + ',\'Check In\')">In</button> ';
+            if(isDisabled) {
+                html += '<button disabled type="button" class="ps-2 pe-2 ' + btnClass + ' btn-primary" ' + btnStyle + ' onclick="add_to_cart(' + cell.getData().index + ',\'Check In\')">In</button> ';
+            } else {
+                html += '<button type="button" class="ps-2 pe-2 '+btnClass+' btn-primary" '+btnStyle+' onclick="add_to_cart(' + cell.getData().index + ',\'Check In\')">In</button> ';
+            }
     }
     return html;
 }
@@ -177,7 +197,7 @@ function build_record_hover(e, cell, onRendered) {
     hover_text += data.title.trim() + '<br/>';
     hover_text += data.status.trim() + ' @ ' + data.location + '<br/>';
     if((data.status == 'BID') || (data.status == 'To Auction')) { 
-        hover_text += 'by ' + data.bidder + ' @ $' + data.final_price + '<br/>';
+        hover_text += 'by ' + data.bidder + ' @ ' + currencyFmt.format(Number(data.final_price).toFixed(2)) + '<br/>';
     }
     hover_text += 'updated: ' + data.time_updated + '<br/>';
 
@@ -232,12 +252,13 @@ function build_table(tableData) {
 }
 
 function find_item(action) {
+    console.log(action);
     var artist = artist_field.value;
 
     var script = 'scripts/artInventory_getItem.php';
 
     $.ajax({
-        data: { artist: artist },
+        data: { artist: artist, region: region, action: action },
         method: "POST",
         url: script,
         success: function(data, textStatus, jqXhr) {
@@ -255,6 +276,7 @@ function find_item(action) {
 function remove_from_cart(index) {
     var key = cart_items[index]
     var item = cart[index];
+    find_result_table.getRow(item.id).update({inCart:false});
 
     if(item.need_count) { need_count--; }
     if(item.need_location) { need_location--; }
@@ -282,11 +304,13 @@ function remove_from_cart(index) {
 
     cart.splice(index, 1);
     cart_items.splice(index, 1);
+    find_result_table.getRow(item.id).reformat();
     draw_cart();
 }
 
 function add_to_cart(index, action) {
     var item = datatbl[index];
+    find_result_table.getRow(item.id).update({inCart:true});
     if (config.debug > 0)
         $('#test').empty().append(action + '\n' + JSON.stringify(item, null, 2));
     else
@@ -309,6 +333,7 @@ function add_to_cart(index, action) {
             need_count++;
         }
         break;
+    case 'Withdraw':
     case 'Release':
         break;
     default:
@@ -326,6 +351,7 @@ function add_to_cart(index, action) {
 
     actionlist.push(create_action(action, item.id, null));
     item.action=action;
+    find_result_table.getRow(item.id).reformat();
     draw_cart();
 }
 
@@ -367,7 +393,7 @@ function draw_cart_row(rownum) {
     }
     location_select += '</select>';
     var show_location = true;
-    if((item.action == 'Check Out') || (item.action=='Remove')){
+    if((item.action == 'Check Out')){
         show_location = false;
         need_location = false;
     }

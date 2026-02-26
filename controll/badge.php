@@ -2,11 +2,13 @@
 require_once "lib/base.php";
 //require_once '../lib/policies.php';
 require_once '../lib/profile.php';
+require_once 'lib/sessionAuth.php';
 
-//initialize google session
-$need_login = google_init("page");
-
-$page = "badge";
+$page = 'badge';
+$authToken = new authToken('web');
+if (!$authToken->isLoggedIn() || !$authToken->checkAuth($page)) {
+    bounce_page('index.php');
+}
 
 $con = get_con();
 $conid = $con['id'];
@@ -15,10 +17,9 @@ $conf = get_conf('con');
 $google = get_conf('google');
 $usps = get_conf('usps');
 $url = $google['redirect_base'];
-
-if(!$need_login or !checkAuth($need_login['sub'], $page)) {
-    bounce_page("index.php");
-}
+$condata = get_con();
+$startdate = new DateTime($condata['startdate']);
+$ageByDate = $startdate->format('F j, Y');
 
 // Get list of freebie badge types for pulldown
 $freeSQL = <<<EOS
@@ -37,17 +38,17 @@ while($free = $freeR->fetch_assoc()) {
     $freeMems[] = $free;
 }
 $freeR->free();
+[$ageList, $ageListIdx] = getAgeList($conid);
 
 $cdn = getTabulatorIncludes();
 page_init($page,
     /* css */ array('css/base.css', $cdn['tabcss'], $cdn['tabbs5']
                    ),
     /* js  */ array($cdn['tabjs'],
+                    'jslib/profile.js',
                     'js/badge.js',
-                    'js/people_add.js',
-                    'js/people_find.js'
                    ),
-              $need_login);
+              $authToken);
 
 
     $freeSelect = "<option disabled='disabled' selected='true' value='-1'> -- select an option --</option>\\n";
@@ -66,11 +67,14 @@ $config_vars['debug'] = getConfValue('debug', 'controll_freebadge', 0);;
 $config_vars['conid'] = $conid;
 $config_vars['required'] = getConfValue('reg', 'required', 'addr');
 $config_vars['useUSPS'] = $useUSPS;
+$config_vars['tokenStatus'] = $authToken->checkToken();
 ?>
 <script type='text/javascript'>
     var config = <?php echo json_encode($config_vars); ?>;
     var freeMems = <?php echo json_encode($freeMems, JSON_FORCE_OBJECT | JSON_HEX_QUOT); ?>;
     var freeSelect = <?php echo json_encode($freeSelect, JSON_FORCE_OBJECT | JSON_HEX_QUOT); ?>;
+    var ageList = <?php echo json_encode($ageList); ?>;
+    var ageListIdx = <?php echo json_encode($ageListIdx); ?>;
 </script>
 <div id='edit-person' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Edit Person'
      aria-hidden='true' style='--bs-modal-width: 98%;'>
@@ -84,12 +88,15 @@ $config_vars['useUSPS'] = $useUSPS;
             </div>
             <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
                 <div class='container-fluid'>
+                    <form id='f_editPerson' class='form-floating' action='javascript:void(0);'>
                     <div class='row mt-2'>
                         <div class='col-sm-12'><h2 class='size=h3'>Profile</h2></div>
                     </div>
                     <?php
-                        drawEditPersonBlock($conid, $useUSPS, null, 'find', true, true, '', array (), 200, true, 'f_', true);
+                        drawEditPersonBlock($conf, $useUSPS, null, 'find', true, true, $ageByDate,
+                                array (), $ageListIdx,200, true, 'f_', true);
                     ?>
+                    </form>
                 </div>
                 <div id='find_edit_message' class='mt-4 p-2'></div>
             </div>
@@ -112,12 +119,15 @@ $config_vars['useUSPS'] = $useUSPS;
             </div>
             <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
                 <div class='container-fluid'>
+                    <form id='a_editPerson' class='form-floating' action='javascript:void(0);'>
                     <div class='row mt-2'>
                         <div class='col-sm-12'><h2 class='size=h3'>Profile</h2></div>
                     </div>
                     <?php
-                        drawEditPersonBlock($conid, $useUSPS, null, 'add', true, true, '', array (), 1000, true, 'a_', true);
+                        drawEditPersonBlock($conf, $useUSPS, null, 'add', true, true, $ageByDate,
+                                array (), $ageListIdx,1000, true, 'a_', true);
                     ?>
+                    </form>
                     <div class='row mt-2'>
                         <div class='col-sm-12' id='addMatchTable'></div>
                     </div>
@@ -125,10 +135,13 @@ $config_vars['useUSPS'] = $useUSPS;
                 <div id='add_message' class='mt-4 p-2'></div>
             </div>
             <div class='modal-footer'>
+                <button class='btn btn-sm btn-secondary' type='button' onclick='addClearForm();'>Clear Add Person Form</button>
                 <button class='btn btn-sm btn-secondary' type='button' data-bs-dismiss='modal'>Cancel</button>
                 <button class='btn btn-sm btn-primary' type='button' onclick='addCheckExists();'>Check If Already Exists</button>
-                <button class='btn btn-sm btn-secondary' type='button' onclick='addClearForm();'>Clear Add Person Form</button>
                 <button class='btn btn-sm btn-secondary' type='button' id='addPersonBTN' onclick='saveAdd();' disabled>Add New Person
+                <button class='btn btn-sm btn-warning' type='button' id='addPersonOverrideBTN' onClick='saveAdd2()'>
+                    Overrride Validation Checks and Add New Person
+                </button>
             </div>
         </div>
     </div>

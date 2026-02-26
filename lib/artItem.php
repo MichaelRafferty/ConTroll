@@ -1,9 +1,6 @@
 <?php
 function drawEditPane($tabIndex=100)
 {
-    /* div
-    TODO: Tab Index
-    */
     ?>
     <!-- artItem modal -->
     <div id='artItemEditPane' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Art Item Editor'
@@ -22,6 +19,7 @@ function drawEditPane($tabIndex=100)
                                     Exhibitor:
                                     <span id="artItemExhibitor"></span>
                                     (<span id="artItemArtistNumber"></span>)
+                                    for Con ID: <span id='artItemConYear'></span>
                                 </div>
                             </div>
                             <div class="row mb-2">
@@ -33,13 +31,13 @@ function drawEditPane($tabIndex=100)
                             <div class="row mb-2">
                                 <div class="col-sm-auto">
                                     Item Number:
-                                    <span id="artItemItemNumber"></span> <!--TODO change to input tabIndex++ -->
+                                    <span id="artItemItemNumber"></span>
                                 </div>
                             </div>
                             <div class="row mb-2">
                                 <div class="col-sm-auto">
                                     Type:
-                                    <span id="artItemType"></span> <!--TODO change to select tabindex++ -->
+                                    <span id="artItemType"></span>
                                 </div>
                             </div>
                             <div class="row mb-2">

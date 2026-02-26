@@ -14,7 +14,7 @@
 	filter=true
 [F002]
     name=label
-    sql=m.label
+    sql="CASE WHEN m.memCategory = 'yearahead' THEN CONCAT('Year-Ahead ', label) ELSE label END"
     title="Membership Label"
     minWidth=200
     filter=true
@@ -22,7 +22,7 @@
     name=price
     title="price"
     align=right
-    sql="m.price"
+    sql="r.price"
     format=money
 [F004]
     name=num_mbrs
@@ -34,7 +34,7 @@
     name=revenue
     title="Revenue"
     align=right
-    sql="m.price * count(r.id)"
+    sql="r.price * count(r.id)"
     format=money
     calc=sum
 [T001]
@@ -48,9 +48,14 @@
     type=prompt
     item=conid
     datatype=i
+[P002]
+    type=prompt
+    item=conid
+    datatype=i
 [where]
-	001="r.conid >= ?"
+	001="((r.conid = ? AND m.memCategory != 'yearahead') OR ((r.conid - 1) = ?) AND m.memCategory = 'yearahead')"
+	002="AND (r.price = 0 OR r.paid > 0) AND r.status IN ('paid', 'unpaid', 'plan')"
 [group]
-    001="r.conid, m.label, m.price"
+    001="r.conid, m.label, m.memCategory, r.price"
 [sort]
-	001="1,2"
+	001="1,2,3"

@@ -10,8 +10,21 @@ if(isset($_GET) && isset($_GET['lname']) && isset($_GET['fname'])) {
   $lname = $_GET['lname'];
   $fname = $_GET['fname'];
 }
+$currency = getConfValue('con', 'currency', 'USD');
+$onedaycoupons = getConfValue('con', 'onedaycoupons', 0);
 
-ol_page_init($condata['label'] . ' Registration Check');
+$locale = getLocale();
+$config_vars = array();
+$config_vars['label'] = $con['label'];
+$config_vars['required'] = getConfValue('reg', 'required', 'addr');
+$config_vars['conid'] = $condata['id'];
+$config_vars['debug'] = getConfValue('debug', 'onlinereg', 0);
+$config_vars['locale'] = $locale;
+$config_vars['currency'] = $currency;
+$config_vars['onedaycoupons'] = $onedaycoupons;
+$js = 'var config = ' . json_encode($config_vars) . ';' . PHP_EOL;
+
+ol_page_init($condata['label'] . ' Registration Check', $js);
 ?>
 <body>
     <h1>

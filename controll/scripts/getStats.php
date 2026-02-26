@@ -1,13 +1,18 @@
 <?php
 require_once "../lib/base.php";
+require_once '../lib/sessionAuth.php';
 
-$check_auth = google_init("ajax");
-$perm = "overview";
+// use common global Ajax return functions
+global $returnAjaxErrors, $return500errors;
+$returnAjaxErrors = true;
+$return500errors = true;
 
-$response = array("post" => $_POST, "get" => $_GET, "perm"=>$perm);
-
-if($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
-    $response['error'] = "Authentication Failed";
+$perm = 'overview';
+$response = array ('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
+$authToken = new authToken('script');
+$response['tokenStatus'] = $authToken->checkToken();
+if (!$authToken->isLoggedIn() || !$authToken->checkAuth($perm)) {
+    $response['error'] = 'Authentication Failed';
     ajaxSuccess($response);
     exit();
 }
@@ -133,16 +138,14 @@ EOF; //TODO change this to use a bias query and add the bias in to the Printed B
         $acc = array('full'=>0, 'oneday'=>0);
         $track = array();
         $graphQ = <<<EOF
-SELECT COUNT(DISTINCT regid) as badge, COUNT(DISTINCT tid) as trans
-    , conid, LOWER(memType) as type, time
-FROM (SELECT DISTINCT H.regid, H.tid, R.conid, M.memType
-, FROM_UNIXTIME(FLOOR(UNIX_TIMESTAMP(min(T.complete_date))/900)*900) AS time
+SELECT COUNT(DISTINCT regid) as badge, COUNT(DISTINCT tid) as trans, conid, LOWER(memType) as type, time
+FROM (SELECT DISTINCT H.regid, H.tid, R.conid, M.memType, FROM_UNIXTIME(FLOOR(UNIX_TIMESTAMP(min(T.complete_date))/900)*900) AS time
 FROM regActions H
 JOIN reg R ON (R.id=H.regid)
 JOIN transaction T ON (T.id=H.tid)
 JOIN memLabel M ON (M.id=R.memId)
 WHERE R.conid=? AND H.action = 'print'
-GROUP BY R.perid, R.conid, M.memType
+GROUP BY R.perid, R.conid, M.memType, H.regid, H.tid
 ORDER By time, M.memType) s
 GROUP BY time, conid, memType
 ORDER BY time, memType;

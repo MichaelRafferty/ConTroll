@@ -1,5 +1,5 @@
 <?php
-// ConTroll Registration System, Copyright 2015-2025, Michael Rafferty, Licensed under the GNU Affero General Public License, Version 3.
+// ConTroll Registration System, Copyright 2015-2026, Michael Rafferty, Licensed under the GNU Affero General Public License, Version 3.
 // library AJAX Processor: pos_loadInitialData.php
 // Author: Syd Weinstein
 // Retrieve load the mapping tables and session information into the javascript side of the registration tab
@@ -8,22 +8,22 @@ require_once '../lib/base.php';
 require_once('../../lib/cc__load_methods.php');
 require_once('../../lib/coupon.php');
 require_once '../../lib/memRules.php';
-require_once '../../lib/policies.php';
-
-$check_auth = google_init('ajax');
-$perm = 'registration';
-
-$response = array('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
-
-if ($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
-    RenderErrorAjax('Authentication Failed');
-    exit();
-}
+require_once '../lib/sessionAuth.php';
 
 // use common global Ajax return functions
 global $returnAjaxErrors, $return500errors;
 $returnAjaxErrors = true;
 $return500errors = true;
+
+$perm = 'registration';
+$response = array ('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
+$authToken = new authToken('script');
+$response['tokenStatus'] = $authToken->checkToken();
+if (!$authToken->isLoggedIn() || !$authToken->checkAuth($perm)) {
+    $response['error'] = 'Authentication Failed';
+    ajaxSuccess($response);
+    exit();
+}
 
 $con = get_conf('con');
 $atcon = get_conf('atcon');
@@ -52,17 +52,12 @@ load_cc_procs();
 $response['label'] = $con['label'];
 $response['conid'] = $conid;
 $response['discount'] = $atcon['discount'];
-$response['badgePrinter'] = false; //$_SESSION['badgePrinter'][0] != 'None';
-$response['receiptPrinter'] = false; //$_SESSION['receiptPrinter'][0] != 'None';
-$response['user_id'] = $_SESSION['user_id'];
-$response['cc_html'] = draw_cc_html($cc);
+$response['badgePrinter'] = false; //getSessionVar('badgePrinter')[0] != 'None';
+$response['receiptPrinter'] = false; //getSessionVar('receiptPrinter')[0] != 'None';
+$response['user_id'] = $authToken->getPerid();
+$response['cc_html'] = draw_cc_html($cc,'--','body');
 // do as if statement such that it can check for both database error and no rows returned
-$Manager = checkAuth($check_auth['sub'], 'reg_admin');
-if ($Manager !== false && sizeof($Manager) > 0)
-    $Manager = 1;
-else
-    $Manager= 0;
-$response['Manager'] = $Manager;
+$response['Manager'] = $authToken->checkAuth('reg_admin') ? 1 : 0;
 // get the start and end dates, and adjust for the memLabels based on the real dates versus today.
 $condatesSQL = <<<EOS
 SELECT startdate, enddate
@@ -170,7 +165,7 @@ $ret = load_coupon_list();
 $response['num_coupons'] = $ret[0];
 $response['couponList'] = $ret[1];
 
-// membership rules, policies, configuration items
+// membership rules, configuration items
 $ruleData = getRulesData($conid, true, false);
 
 $response['gageList'] = $ruleData['ageList'];
@@ -180,10 +175,9 @@ $response['gmemCategories'] = $ruleData['memCategories'];
 $response['gmemList'] = $ruleData['memList'];
 $response['gmemListIdx'] = $ruleData['memListIdx'];
 $response['gmemRules'] = $ruleData['memRules'];
-$response['policies'] = getPolicies();
 $response['debug'] = getConfValue('debug', 'controll_registration', 0);
 $config_vars['required'] = getConfValue('reg', 'required', 'addr');
 $response['useUSPS'] = $useUSPS;
-$response['userId'] = $_SESSION['user_perid'];
+$response['userId'] = $authToken->getPerid();
 
 ajaxSuccess($response);

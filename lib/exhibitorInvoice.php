@@ -24,7 +24,10 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $testsit
         $salesTaxId = escape_quotes($info['salesTaxId']);
         $contactEmail = escape_quotes($info['contactEmail']);
     }
-    $tabindex = 250;
+    $tabindex = 50;
+    $currency = getConfValue('con', 'currency', 'USD');
+    $curLocale = locale_get_default();
+    $dolfmt = new NumberFormatter($curLocale == 'en_US_POSIX' ? 'en-us' : $curLocale, NumberFormatter::CURRENCY);
     ?>
     <!-- invoice -->
     <div id='vendor_invoice' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Vendor Invoice' aria-hidden='true' style='--bs-modal-width: 90%;'>
@@ -163,14 +166,14 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $testsit
                                     Cost for Memberships:
                                 </div>
                                 <div class="col-sm-10 p-0">
-                                    $<span id='vendor_inv_mbr_cost'>0</span>
+                                    <span id='vendor_inv_mbr_cost'><?php echo $dolfmt->formatCurrency(0.00, $currency) ;?></span>
                                 </div>
                             </div>
                             <hr/>
                         </div>
                         <div class="row">
                             <div class="col-sm-auto">
-                                Total: $<span id='vendor_inv_cost'></span>
+                                Total: <span id='vendor_inv_cost'></span>
                             </div>
                         </div>
                         <div class='container-fluid' id='paymentDiv'>
@@ -280,7 +283,7 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $testsit
                             </div>
                             <div class='row'>
                                 <div class='col-sm-12'>
-                                    <?php echo draw_cc_html($cc, '--', 2); ?>
+                                    <?php echo draw_cc_html($cc, '--', 'all'); ?>
                                     <input type='reset'/>
                                 </div>
                             </div>
@@ -327,11 +330,17 @@ function draw_exhibitorInvoiceModal($exhibitor, $info, $countryOptions, $testsit
                                 </div>
                             </div>
                         </div>
-                        <div class='row mt-3'>
+                        <div class='row mt-3 pb-2'>
                             <div class='col-sm-2 ms-0 me-2 p-0'>&nbsp;</div>
                             <div class='col-sm-auto ms-0 me-2 p-0'>
                                 <button class='btn btn-primary btn-sm' type='button' id='pay-btn-pay' disabled
                                         onclick="exhibitorInvoice.pay();" tabindex="<?php echo $tabindex; $tabindex += 2;?>">Confirm Pay</button>
+                            </div>
+                            <div class='col-sm-auto ms-0 me-2 p-0'>
+                                <button class='btn btn-warning btn-sm' type='button' id='pay-override-pay' hidden disabled
+                                        onclick='exhibitorInvoice.processPay();' tabindex="<?php echo $tabindex;
+                                    $tabindex += 2; ?>">Overide Validation and Pay
+                                </button>
                             </div>
                             <div class='col-sm-auto ms-0 me-2 p-0'>
                                 <button class='btn btn-primary btn-sm' type='button' id='pay-btn-ercpt'

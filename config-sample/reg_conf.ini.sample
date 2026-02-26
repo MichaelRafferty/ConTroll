@@ -38,6 +38,14 @@ regpage="https://conname.org/registration/"
 ;   first = require only first name: first, country, email
 ;   addr = first, addr, city, st, zip, country, email
 required="all"
+;; N:viewPriorLimit
+;; R:H,reg_admin
+;; P:Min Prior Conid
+;; H:Minimum Conid for viewing prior data.
+;; H+Note: In some places, full edit, where applicable is valid for current conId and current conId + 1.  Partial for conId-1. View only for all others.
+;; D:i6
+;; B:O
+viewPriorLimit=
 
 ;;;;; Convention Wide Parameters
 [con]
@@ -289,6 +297,16 @@ multioneday=1 ; =0 for only a single one day can be purchased, =1 if multiple di
 ;; D:l:0,1
 ;; B:M
 onedaycoupons=0 ; allow onedays for coupon usage
+;; N:bundlememberships
+;; R:H,reg_staff
+;; H:Enable Bundle Memberships
+;; H+ =0 Bundles are disabled, no membership labels are checked for Bundle: and processed into individual membership on saving the cart
+;; H+ =1 Bundles are enabled.  If a membership label starts with 'Bundle: ' then the memberships is split into the individual parts
+;; H+    on saving it to the cart.
+;; H+ Bundles follow normal membership rules, both implicit rules and those specificed in the membership rules configuration.
+;; D:l:0,1
+;; B:M
+bundlememberships=0 ; allow bundle memberships
 
 ;;;;; On Line Registration (non Portal)
 [reg]
@@ -409,18 +427,6 @@ noNewDays=
 ;	any - any POS user can handle discount
 ;	none - disable the discount type of payment
 discount=active
-;; N:allage
-;; R:H,reg_staff
-;; H:Which memberships to show in Atcon:
-;; H+&nbsp;&nbsp;&nbsp;&nbsp;=0: act like portal and require age to show related memberships
-;; H+&nbsp;&nbsp;&nbsp;&nbsp;=1: show all memberships, independent of age, if no membership in cart limits age
-;; D:l:0,1
-;; B:O
-;;;; allage - which badges to show
-; values:
-; allage=0 : act like portal, require age to show age related badges
-; allage=1 : if no badge of an age, show badges of all ages, once an age badge is selected, auto set age
-allage=0
 ;; N:inlineinventory
 ;; R:H,art_control
 ;; H:Allow for popup change to inventory status at time of checkout for Art Show Cashier
@@ -431,6 +437,9 @@ allage=0
 ;; H+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; for allowing what to sell and at what price
 ;; D:l:0,1
 ;; B:O
+; inlineinventory=0 : artpos will sell as quicksale if no bids, or if 'restrict to inventory sale statuses and prices' for art not sold at quicksale
+; inlineinventory=1 : art pos will use an intelligent modal popup based on Region Year Room Status for allowing what to sell and price
+inlineinventory=0
 ;; N:posRegistrationSort
 ;; R:H,reg_admin
 ;; H:How to sort the registration items in Reg Cashier/Reg Checkin
@@ -441,10 +450,6 @@ allage=0
 ;; B:R
 ; posRegistrationSort - where to put the filter elements on the badgelist page ("top", "bottom")
 posRegistrationSort="m.sort_order";
-;;;; inlineinventory - allow for modal change to inventory status at time of checkout for artpos (not require inventory update first)
-; inlineinventory=0 : artpos will sell as quicksale if no bids, or if 'restrict to inventory sale statuses and prices' for art not sold at quicksale
-; inlineinventory=1 : art pos will use an intelligent modal popup based on Region Year Room Status for allowing what to sell and price
-inlineinventory=1
 ;; N:precon
 ;; R:H,reg_staff
 ;; H:Allow use of atcon for pre-con sales
@@ -476,6 +481,14 @@ precon=0
 ; production = suppress the 'default' placeholder messages (an alias for this is nodefault)
 ; none = supporess all custom text
 ; customtext='production'
+;; N:viewPriorLimit
+;; R:H,exhibitor
+;; P:Min Prior Conid
+;; H:Minimum Conid for viewing and importing prior data.
+;; H+In the exhibitor portals, all prior data is view only.
+;; D:i6
+;; B:O
+viewPriorLimit=
 
 ;;;;; Exhibitor Portals Email Addresses
 ;;; Exhibitor Portals Email Addresses
@@ -539,7 +552,7 @@ artistBidSheet="Unconfigured Bid Sheet"
 ;; H:Number of bid lines on an auction bid sheet
 ;; H+With barcode: 3x2 format: 1-3, 2x2 format: 4-7, 1x2 format: 8-22
 ;; H+Without barcode: 3x2 format: 1-4, 2x2 format: 5-8, 1x2 format: 9-23
-;; H+Format is determined by then numbrer of lines
+;; H+Format is determined by then number of lines
 ;; H+Default is 4 if the line is omitted
 ;; D:i2
 ;; B:O
@@ -691,6 +704,17 @@ history=1
 ;; B:O
 ; helppage = path to the help page relative to the web root of the portal page
 ; helppage=
+;; N:ageRestriction
+;; R:V,reg_staff
+;; P:Comma separated list of Age Types
+;; H:A comma separated list of "Age Types" that are prevented from logging in to the registration portal.
+;; H+ This will prevent them from accessing things like the virtual convention.
+;; H+ If this is omitted everyone can log into the registation portal.
+;; D:s256
+;; B:O
+; ageRestriction = comma separated list of "Age Types" not allowed to log into the portal.
+; ageRestriction=
+
 ;;;;; HR Portal Policy Options
 ;;; policy flags
 ;; N:showConPolicy
@@ -742,6 +766,22 @@ posRegistrationSort="m.sort_order";
 ;; D:s32
 ;; B:O
 clubname='Club Name'
+;; N:viewPriorLimit
+;; R:H,reg_admin
+;; P:Min Prior Conid
+;; H:Minimum Conid for viewing prior data in the back end.  This feature is new and will be added to more places over time.
+;; H+Note: full edit, where applicable is valid for current conId and current conId + 1.  Partial for conId-1. View only for all others.
+;; D:i6
+;; B:O
+viewPriorLimit=
+;; N:artEditYear
+;; R:H,finance
+;; P:Min Edit Conid
+;; H:Minimum Conid for editing art show item and sales data in Art Control.
+;; H+Note: only years >= viewPriorLimit will be availabel to see/edit
+;; D:i6
+;; B:O
+artEditYear=
 
 ;;;;; Local Parameters for this Convention
 [local]

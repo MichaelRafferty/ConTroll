@@ -2,24 +2,28 @@
 require_once "../lib/base.php";
 require_once "../../lib/global.php";
 require_once "../lib/email.php";
+require_once '../lib/sessionAuth.php';
 
-$check_auth = google_init("ajax");
-$user_email = $check_auth['email'];
-$perm = "admin";
+// use common global Ajax return functions
+global $returnAjaxErrors, $return500errors;
+$returnAjaxErrors = true;
+$return500errors = true;
 
-$response = array("post" => $_POST, "get" => $_GET, "perm"=>$perm, "status" => 'error');
-
-if($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
-    $response['error'] = "Authentication Failed";
+$perm = 'admin';
+$response = array ('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
+$authToken = new authToken('script');
+$response['tokenStatus'] = $authToken->checkToken();
+if (!$authToken->isLoggedIn() || !$authToken->checkAuth($perm)) {
+    $response['error'] = 'Authentication Failed';
     ajaxSuccess($response);
     exit();
 }
-
-if (!array_key_exists('user_id', $_SESSION)) {
+$user_email = $authToken->checkAuth('email');
+$user_perid = $authToken->getPerid();
+if (!$user_perid) {
     ajaxError('Invalid credentials passed');
     return;
 }
-$user_perid = $_SESSION['user_perid'];
 
 $test = true;
 $email = null;
@@ -285,13 +289,17 @@ $response['macroSubstitution'] = $macroSubstitution;
 ajaxSuccess($response);
 
 function updateContactOK($conid) : void {
-    // updates the contact ok values in perinfo from this conId's values in policies 'marketing'.
-    // It expects the prior years were already loaded into 'Contact ok'
+
     $sql = <<<EOS
 UPDATE perinfo p
-JOIN memberPolicies m ON (p.id = m.perid AND m.conid = ? AND m.policy = 'marketing')
+JOIN (
+SELECT perid, max(conid) AS conid
+FROM memberPolicies where policy = 'marketing'
+GROUP by perid
+) n ON p.id = n.perid
+JOIN memberPolicies m ON  m.perid = p.id AND m.conid = n.conid AND m.policy = 'marketing'
 SET p.contact_ok = m.response
-WHERE p.contact_ok != m.response && p.active = 'Y' AND p.first_name != 'merged' AND p.last_name != 'into';
+WHERE p.contact_ok != m.response AND p.active = 'Y' AND p.first_name != 'merged' AND p.last_name != 'into';
 EOS;
     $rows = dbSafeCmd($sql, 'i', array($conid));
 }

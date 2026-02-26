@@ -6,6 +6,10 @@ ConTroll uses Bootstrap 5 and Tabulator 6 for Javascript Display
 Variable Naming Rules
     While ConTroll has lots of legacy code, going forward variables should be in lowerCamelCase.
 
+Class Naming Rules
+    To avoid name space conflicts class names should be in FirstCaps and the instance of that class be in lowerCamelCase names might
+    or might not match the ClassName as appropriate/desired.
+
 Associated array coding rules (objects)
     Associative arrays are declared as {}
     Referencing elements of such an array uses .notation for fixed names: reg.memId

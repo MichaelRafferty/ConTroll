@@ -1,16 +1,22 @@
 <?php
 require_once "../lib/base.php";
+require_once '../lib/sessionAuth.php';
 
-$check_auth = google_init('ajax');
+// use common global Ajax return functions
+global $returnAjaxErrors, $return500errors;
+$returnAjaxErrors = true;
+$return500errors = true;
+
 $perm = 'art_control';
-
 $response = array ('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
-
-if ($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
+$authToken = new authToken('script');
+$response['tokenStatus'] = $authToken->checkToken();
+if (!$authToken->isLoggedIn() || !$authToken->checkAuth($perm)) {
     $response['error'] = 'Authentication Failed';
     ajaxSuccess($response);
     exit();
 }
+
 if (!array_key_exists('action', $_POST) || $_POST['action'] != 'fetchHistory') {
     $response['error'] = 'Invalid Calling Sequence';
     ajaxSuccess($response);

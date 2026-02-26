@@ -5,6 +5,7 @@ var itemTable = null;
 var itemSaveBtn = null;
 var itemUndoBtn = null;
 var itemRedoBtn = null;
+var itemAddnewBtn = null;
 
 var itemTable_dirty = false;
 var artItemModal = null;
@@ -15,6 +16,7 @@ var historyRow = null;
 var historyDiv = null;
 
 var artists = null;
+var editable = false;
 
 var priceregexp = 'regex:^([0-9]+([.][0-9]*)?|[.][0-9]+)$';
 
@@ -23,14 +25,19 @@ var testdiv = null;
 $(document).ready(function() {
     testdiv = document.getElementById('test');
     artItemModal = artItemModalOnLoad(itemTable);
+    //set buttons
+    itemSaveBtn = document.getElementById("item-save");
+    itemUndoBtn = document.getElementById("item-undo");
+    itemRedoBtn = document.getElementById("item-redo");
+    itemAddnewBtn = document.getElementById("item-addnew");
 
     setRegion('overview', null);
 
-    var createPaneId = document.getElementById('artItemCreatePane');
+    let createPaneId = document.getElementById('artItemCreatePane');
     if(createPaneId != null) {
         createPaneModal = new bootstrap.Modal(createPaneId, {focus: true, backdrop: 'static'});
     }
-    var historyPaneId = document.getElementById('artItemHistoryPane');
+    let historyPaneId = document.getElementById('artItemHistoryPane');
     if(historyPaneId != null) {
         historyPaneModal = new bootstrap.Modal(historyPaneId, {focus: true, backdrop: 'static'});
         artItemHistoryTitle = document.getElementById('artItemHistoryTitle');
@@ -41,7 +48,7 @@ $(document).ready(function() {
 function setRegion(name, id) {
     region = id;
 
-    if(regionTab!=null) {
+    if (regionTab!=null) {
         regionTab.classList.remove('active');
         regionTab.setAttribute('aria-selected', 'false');
     }
@@ -51,31 +58,36 @@ function setRegion(name, id) {
     regionElem.setAttribute('aria-selected', 'true');
     regionTab=regionElem;
 
-    if(region != null) {
+    if (region != null) {
         getData();
         document.getElementById('item-addnew').disabled=false;
-    }
-    else { 
+    } else {
         document.getElementById('artItems_table').innerHTML="<p>This is an Overview tab, please select one of the regions above to see the items in that region</p>";
         document.getElementById('item-addnew').disabled=true;
     }
 }
 
 function getData() {
-    var script = "scripts/artcontrol_getArtItems.php";
+    let script = "scripts/artcontrol_getArtItems.php";
+    let conYear = document.getElementById('conYear').value;
+    let data = {
+        region: region,
+        conYear: conYear,
+    };
     $.ajax({
-        method: "GET",
+        method: "POST",
         url: script,
-        data: 'region=' + region,
+        data: data,
         success: function (data, textStatus, jqXHR) {
             if('error' in data) {
                 showError("ERROR in getArt: " + data.error);
             }
+            checkRefresh(data);
             artists=data.artists;
-            var artistList = document.getElementById('artItemCreateExhibitor')
+            let artistList = document.getElementById('artItemCreateExhibitor')
 
             for(artist in artists) {
-                var opt = document.createElement('option')
+                let opt = document.createElement('option')
                 opt.value = artist;
                 opt.innerHTML=artists[artist].exhibitorName+' ('+artists[artist].exhibitorNumber+')';
                 artistList.appendChild(opt);
@@ -90,13 +102,13 @@ function getData() {
 }
 
 function findDuplicates(data) {
-    var extendedKey = {};
-    var errorString = "";
+    let extendedKey = {};
+    let errorString = "";
     for (const index in data) {
-        var item = data[index];
-        var key = item.item_key;
-        var exhNum = item.exhibitorNumber;
-        var extKey = exhNum + '_' + key;
+        let item = data[index];
+        let key = item.item_key;
+        let exhNum = item.exhibitorNumber;
+        let extKey = exhNum + '_' + key;
         if(extendedKey[extKey]) {
             extendedKey[extKey]++;
             errorString += exhNum + " has " + extendedKey[extKey] + " items with item # " + key;
@@ -109,68 +121,85 @@ function findDuplicates(data) {
 }
 
 function draw(data, textStatus, jqXHR) {
-    //set buttons
-    itemSaveBtn = document.getElementById("item-save");
-    itemUndoBtn = document.getElementById("item-undo");
-    itemRedoBtn = document.getElementById("item-redo");
-
-    if(itemTable != null) {
-        itemTable.off("dataChanged");
-        itemTable.off("cellEdited");
-        itemTable.destroy();
-    }
-
     itemTable_dirty = false;
     itemUndoBtn.disabled = true;
     itemRedoBtn.disabled = true;
     itemSaveBtn.innerHTML = "Save Changes"
     itemSaveBtn.disabled = true;
+    itemAddnewBtn.disabled = data.editable == false;
+    editable = data.editable;
 
     document.getElementById('artControlPaginationDiv').innerHTML = '';
     document.getElementById('artControlPaginationDiv').hidden = data.art.length <= 50;
-    itemTable = new Tabulator('#artItems_table', {
-        mxHeight: "800px",
-        history: true,
-        data: data.art,
-        layout: 'fitDataTable',
-        pagination: data.art.length > 50,
-        paginationElement: document.getElementById('artControlPaginationDiv'),
-        paginationSize: 50,
-        paginationSizeSelector: [10, 25, 50, 100, true], // enable page size select with these options
-        columns: [
-            {title: 'Actions', headerFilter: false, headerSort: false, formatter: addEditButton, responsive:0},
-            {title: 'id', field: 'id', visible: false},
-            {title: 'exhibitorYearId', field: 'exhibitorYearId', visible: false},
-            {title: 'locations', field: 'locations', visible: false},
-            {title: 'Name', field: 'exhibitorName', headerSort: true, headerFilter: 'list', headerFilterParams: { values: data.artists.map(function(a) { return a.exhibitorName;})}, },
-            {title: 'Artist #', field: 'exhibitorNumber', headerWordWrap: true, headerSort: true, width: 60,
-                headerFilter: 'list', headerFilterParams: { values: data.artists.map(function(a) { return a.exhibitorNumber;}).sort()},
-                hozAlign: "right",
-            },
-            {title: 'Item #', field: 'item_key', headerSort: true, headerFilter: true, headerWordWrap: true, width: 60, hozAlign: "right",},
-            {title: 'Type', field: 'type', headerSort: true, headerFilter: 'list', headerFilterParams: { values: ['art', 'print', 'nfs']}, width: 75, },
-            {title: 'Title', field: 'title', headerSort: true, headerFilter: true,},
-            {title: 'Material', field: 'material', headerSort: true, headerFilter: true,},
-            {title: 'Min Bid or Ins.', field: 'min_price', headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter,
-                headerWordWrap: true, width: 100, formatter: "money", hozAlign: "right", },
-            {title: 'Q. Sale or Print', field: 'sale_price', headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter,
-                headerWordWrap: true, width: 100, formatter: "money", hozAlign: "right", },
-            {title: 'Orig Qty', field: 'original_qty', headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter,
-                headerWordWrap: true, width: 70, hozAlign: "right", },
-            {title: 'Current Qty', field: 'quantity', headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter,
-                headerWordWrap: true, width: 70, hozAlign: "right", },
-            {title: 'Status', field: 'status', headerSort: true, headerFilter:'list', headerFilterParams: { values: statusList.getStatuses() } },
-            {title: 'Location', field: 'location', headerSort: true, headerFilter: true, },
-            {title: 'BidderNum', field: 'bidder', visible: false, },
-            {title: 'Bidder', field: 'bidderText', headerSort: true, headerFilter:true, },
-            {title: 'Final Price', field: 'final_price', headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter,
-                headerWordWrap: true, width: 100, formatter: "money", hozAlign: "right", },
-            {title: 'Notes', field: 'notes', formatter: "textarea", }
-        ]
-    });
+    if(itemTable != null) {
+        itemTable.replaceData(data.art);
+    } else {
+        itemTable = new Tabulator('#artItems_table', {
+            mxHeight: "800px",
+            history: true,
+            data: data.art,
+            layout: 'fitDataTable',
+            pagination: data.art.length > 50,
+            paginationElement: document.getElementById('artControlPaginationDiv'),
+            paginationSize: 50,
+            paginationSizeSelector: [10, 25, 50, 100, true], // enable page size select with these options
+            columns: [
+                {title: 'Actions', headerFilter: false, headerSort: false, formatter: addEditButton, responsive: 0},
+                {title: 'id', field: 'id', visible: false},
+                {title: 'conid', field: 'conid', visible: false},
+                {title: 'exhibitorYearId', field: 'exhibitorYearId', visible: false},
+                {title: 'locations', field: 'locations', visible: false},
+                {
+                    title: 'Name', field: 'exhibitorName', headerSort: true, headerFilter: 'list', headerFilterParams: {
+                        values: data.artists.map(function (a) {
+                            return a.exhibitorName;
+                        })
+                    },
+                },
+                {
+                    title: 'Artist #', field: 'exhibitorNumber', headerWordWrap: true, headerSort: true, width: 60,
+                    headerFilter: 'list', headerFilterParams: {
+                        values: data.artists.map(function (a) {
+                            return a.exhibitorNumber;
+                        }).sort()
+                    },
+                    hozAlign: "right",
+                },
+                {title: 'Item #', field: 'item_key', headerSort: true, headerFilter: true, headerWordWrap: true, width: 60, hozAlign: "right",},
+                {title: 'Type', field: 'type', headerSort: true, headerFilter: 'list', headerFilterParams: {values: ['art', 'print', 'nfs']}, width: 75,},
+                {title: 'Title', field: 'title', headerSort: true, headerFilter: true,},
+                {title: 'Material', field: 'material', headerSort: true, headerFilter: true,},
+                {
+                    title: 'Min Bid or Ins.', field: 'min_price', headerSort: true, headerFilter: true, headerFilterFunc: numberHeaderFilter,
+                    headerWordWrap: true, width: 100, formatter: "money", hozAlign: "right",
+                },
+                {
+                    title: 'Q. Sale or Print', field: 'sale_price', headerSort: true, headerFilter: true, headerFilterFunc: numberHeaderFilter,
+                    headerWordWrap: true, width: 100, formatter: "money", hozAlign: "right",
+                },
+                {
+                    title: 'Orig Qty', field: 'original_qty', headerSort: true, headerFilter: true, headerFilterFunc: numberHeaderFilter,
+                    headerWordWrap: true, width: 70, hozAlign: "right",
+                },
+                {
+                    title: 'Current Qty', field: 'quantity', headerSort: true, headerFilter: true, headerFilterFunc: numberHeaderFilter,
+                    headerWordWrap: true, width: 70, hozAlign: "right",
+                },
+                {title: 'Status', field: 'status', headerSort: true, headerFilter: 'list', headerFilterParams: {values: statusList.getStatuses()}},
+                {title: 'Location', field: 'location', headerSort: true, headerFilter: true,},
+                {title: 'BidderNum', field: 'bidder', visible: false,},
+                {title: 'Bidder', field: 'bidderText', headerSort: true, headerFilter: true,},
+                {
+                    title: 'Final Price', field: 'final_price', headerSort: true, headerFilter: true, headerFilterFunc: numberHeaderFilter,
+                    headerWordWrap: true, width: 100, formatter: "money", hozAlign: "right",
+                },
+                {title: 'Notes', field: 'notes', formatter: "textarea",}
+            ]
+        });
 
-    itemTable.on("dataChanged", itemTable_dataChanged);
-    itemTable.on("cellEdited", cellChanged)
+        itemTable.on("dataChanged", itemTable_dataChanged);
+        itemTable.on("cellEdited", cellChanged)
+    }
 
     itemTable_dirty = false;
     document.getElementById('artControl-csv-div').hidden = false;
@@ -179,14 +208,16 @@ function draw(data, textStatus, jqXHR) {
 }
 
 function addEditButton(cell, formatterParams, onRendered) {
-    var html = '';
-    var index = cell.getRow().getIndex();
-    var row = cell.getRow().getData();
-    var btnClass = 'btn btn-sm p-0 ms-1 me-1';
-    var btnStyle = 'style="--bs-btn-font-size: 75%;"';
+    let html = '';
+    let index = cell.getRow().getIndex();
+    let row = cell.getRow().getData();
+    let btnClass = 'btn btn-sm p-0 ms-1 me-1';
+    let btnStyle = 'style="--bs-btn-font-size: 75%;"';
 
-    html += '<button type="button" class="'+btnClass+' btn-primary" '+btnStyle+' ' +
-        'onclick="artItemModal.fetchArtItem(' + index + ',editReturn)">Edit item</button>';
+    if (editable) {
+        html += '<button type="button" class="' + btnClass + ' btn-primary" ' + btnStyle + ' ' +
+            'onclick="artItemModal.fetchArtItem(' + index + ',editReturn)">Edit item</button>';
+    }
 
     if (row.historyCount > 0) {
         html += '<button type="button" class="'+btnClass+' btn-secondary" '+btnStyle+' ' +
@@ -240,7 +271,7 @@ function redoItem () {
 }
 
 function checkItemUndoRedo() {
-    var undosize = itemTable.getHistoryUndoSize();
+    let undosize = itemTable.getHistoryUndoSize();
     itemUndoBtn.disabled = undosize <= 0;
     itemRedoBtn.disabled = itemTable.getHistoryRedoSize() <= 0;
     return undosize;
@@ -252,9 +283,9 @@ function addnewItem() {
 }
 
 function createNewItem() {
-    var artist = document.getElementById('artItemCreateExhibitor').value;
-    var itemNumber = document.getElementById('artItemCreateNumber').value;
-    var type = document.getElementById('artItemCreateType').value;
+    let artist = document.getElementById('artItemCreateExhibitor').value;
+    let itemNumber = document.getElementById('artItemCreateNumber').value;
+    let type = document.getElementById('artItemCreateType').value;
     artItemModal.setValuesForNew(artists[artist], itemNumber, type);
     artItemModal.resetEditPane();
     artItemModal.openEditPane();
@@ -262,14 +293,14 @@ function createNewItem() {
 
 function saveItem() {
     if(itemTable != null) {
-        var invalids = itemTable.validate();
+        let invalids = itemTable.validate();
         if (!invalids === true) {
             console.log(invalids);
             alert("Item table does not pass validation, please check for empty cells or cells in red");
             return false;
         }
 
-        var duplicates = findDuplicates(itemTable.getData());
+        let duplicates = findDuplicates(itemTable.getData());
         if(duplicates != "") {
             alert(duplicates);
             return false;
@@ -280,9 +311,10 @@ function saveItem() {
     itemSaveBtn.disabled = true;
 
     script = "scripts/artcontrol_updateArtItems.php"
-    var postdata = {
+    let postdata = {
         tabledata: JSON.stringify(itemTable.getData()),
         indexcol: "id",
+        conYear: document.getElementById('conYear').value,
         region: region
     }
 
@@ -297,6 +329,7 @@ function saveItem() {
                 itemSaveBtn.disabled = false;
             } else {
                 //console.log(data);
+                checkRefresh(data);
                 show_message(data.message, 'success');
                 draw(data);
             }
@@ -309,32 +342,32 @@ function download(format) {
     if (itemTable == null)
         return;
 
-    var filename = 'artitems';
-    var tabledata = JSON.stringify(itemTable.getData("active"));
-    var excludeList = [];
+    let filename = 'artitems';
+    let tabledata = JSON.stringify(itemTable.getData("active"));
+    let excludeList = [];
     downloadFilePost(format, filename, tabledata, excludeList);
 }
 
 // print control sheets
 function pdfSheets(type, email) {
-    var regionYearId = '';
-    var itemData = itemTable.getData("active");
-    var ids = [];
+    let regionYearId = '';
+    let itemData = itemTable.getData("active");
+    let ids = [];
 
     if (itemData.length == 0) {
         show_message("No Art Items in filtered table.", 'error');
         return;
     }
 
-    var regionYearId = itemData[0].exhibitsRegionYearId;
-    for (var i = 0; i < itemData.length; i++) {
+    regionYearId = itemData[0].exhibitsRegionYearId;
+    for (let i = 0; i < itemData.length; i++) {
         if (!ids.includes(itemData[i].exhibitorYearId)) {
             ids.push(itemData[i].exhibitorYearId);
         }
     }
-    var eyid = ids.join(',');
+    let eyid = ids.join(',');
 
-    var script = "scripts/exhibitorsBidSheets.php?type=" + type + "&region=" + regionYearId + "&eyid=" + eyid + "&email=" + email;
+    let script = "scripts/exhibitorsBidSheets.php?type=" + type + "&region=" + regionYearId + "&eyid=" + eyid + "&email=" + email;
     window.open(script, "_blank")
 }
 
@@ -351,6 +384,7 @@ function fetchArtItemHistory(index) {
                 show_message(data['error'], 'error');
                 return;
             }
+            checkRefresh(data);
             if (data['success'] !== undefined) {
                 show_message(data['success'], 'success');
             }
@@ -370,16 +404,16 @@ function fetchArtItemHistory(index) {
 // historyId, id, item_key, title, type, status, location, quantity, original_qty, min_price, sale_price, final_price,
 //              bidder, conid, artshow, time_updated, updatedBy, material, exhibitorRegionYearId, notes, historyDate
 function displayArtItemHistory(data) {
-    var  title = "Art Item Change History for " + historyRow.exhibitorNumber + '-' + historyRow.item_key;
+    let  title = "Art Item Change History for " + historyRow.exhibitorNumber + '-' + historyRow.item_key;
     title += "<br/>Name:  " + historyRow.exhibitorName + ' - ' + historyRow.type + ": " + historyRow.title;
     artItemHistoryTitle.innerHTML = title;
     // build the history display
-    var html = '<div class="row"><div class="col-sm-12"><h1 class="h3">' + title + '</h1></div></div>';
+    let html = '<div class="row"><div class="col-sm-12"><h1 class="h3">' + title + '</h1></div></div>';
     // format the heading line
     html += `<div class='row'>
         <div class='col-sm-2'>Change Date</div>
         <div class='col-sm-4'>Title</div>
-        <div class='col-sm-8'>Material</div>
+        <div class='col-sm-4'>Material</div>
         <div class='col-sm-2'>Status</div>
     </div>
     <div class='row'>
@@ -397,11 +431,11 @@ function displayArtItemHistory(data) {
         <div class='col-sm-11'>Notes</div>
     </div>\n`;
     // format the current line
-    var current = data['history'][0];
-    var color = '';
-    var prior = data['history'][0];
-    for (var i = 0; i < data['history'].length; i++) {
-        var current = data['history'][i];
+    let current = data['history'][0];
+    let color = '';
+    let prior = data['history'][0];
+    for (let i = 0; i < data['history'].length; i++) {
+        let current = data['history'][i];
         html += "<div class='row mt-2'>\n";
 
         // change date
@@ -438,9 +472,11 @@ function displayArtItemHistory(data) {
         color = prior.updatedBy != current.updatedBy ? ' style="background-color: #ffcdcd;"' : '';
         html += "<div class='col-sm-1'" + color + ">" + current.updatedBy + "</div>\n</div>\n";
         // notes
-        color = prior.notes != current.notes ? ' style="background-color: #ffcdcd;"' : '';
-        html += "<div class='row'>\n<div class='col-sm-1'></div>\n<div class='col-sm-11'" + color + ">" + current.notes + "</div>\n";
-        html += "</div>\n";
+        if (prior.notes != null || current.notes != null) {
+            color = prior.notes != current.notes ? ' style="background-color: #ffcdcd;"' : '';
+            html += "<div class='row'>\n<div class='col-sm-1'></div>\n<div class='col-sm-11'" + color + ">" + current.notes + "</div>\n";
+            html += "</div>\n";
+        }
         prior = current;
     }
 

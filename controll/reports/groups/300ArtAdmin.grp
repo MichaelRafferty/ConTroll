@@ -11,11 +11,12 @@
 	P001="prompt/~/conid/~/Earliest Convention ID: /~/Enter the first convention ID"
 [110ArtShowReg]
     name='Art Show Registration'
-	description='Art Show Registration by Region Name for the current convention'
+	description='Art Show Registration by Region Name for the specified convention year'
 	template=artShowReg.rpt
 	auth=art_control
 	type=rpt
-	P001="prompt/~/filter/~/Filter by: (S[igned up], R[equested], A[pproved] or P[urchased]/~/P"
+	P001="prompt/~/conid/~/Convention ID: /~/Enter the convention ID/~/#con.id#"
+	P002="prompt/~/filter/~/Filter by: (S[igned up], R[equested], A[pproved] or P[urchased]/~/P"
 [120ArtShowMailInUsage]
     name='Art Show Mail In Usage'
 	description='Art Show Mail In Registration for a convention year and region'
@@ -68,7 +69,8 @@
 	template=artCheckout.php
 	auth=art_control
 	type=php
-	P001="prompt/~/artid/~/Check-out report for Artist ID: /~/Enter Artist's ID"
+	P001="prompt/~/conid/~/Convention ID: /~/Enter the convention ID/~/#con.id#"
+	P002="prompt/~/artid/~/Check-out report for Artist ID: /~/Enter Artist's ID"
 [410ArtSalesReconcile]
     name='Artist Sales Reconciliation'
 	description='Reconciliation of Art Items (Control Sheets) vs Art Sales (Square)'

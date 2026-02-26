@@ -1,18 +1,23 @@
 <?php
-// ConTroll Registration System, Copyright 2015-2025, Michael Rafferty, Licensed under the GNU Affero General Public License, Version 3.
+// ConTroll Registration System, Copyright 2015-2026, Michael Rafferty, Licensed under the GNU Affero General Public License, Version 3.
 // library AJAX Processor: reg_updatePerinfoNote.php
 // Author: Syd Weinstein
 // Retrieve update open notes field in perinfo record
-
 require_once '../lib/base.php';
+require_once '../lib/sessionAuth.php';
 
-$check_auth = google_init('ajax');
+// use common global Ajax return functions
+global $returnAjaxErrors, $return500errors;
+$returnAjaxErrors = true;
+$return500errors = true;
+
 $perm = 'registration';
-
-$response = array('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
-
-if ($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
-    RenderErrorAjax('Authentication Failed');
+$response = array ('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
+$authToken = new authToken('script');
+$response['tokenStatus'] = $authToken->checkToken();
+if (!$authToken->isLoggedIn() || !$authToken->checkAuth($perm)) {
+    $response['error'] = 'Authentication Failed';
+    ajaxSuccess($response);
     exit();
 }
 
@@ -34,15 +39,14 @@ if ($ajax_request_action != 'updatePerinfoNote') {
 }
 
 $user_id = $_POST['user_id'];
-if ($user_id != $_SESSION['user_id']) {
+$user_perid = $authToken->getPerid();
+if ($user_id != $user_perid) {
     ajaxError('Invalid credentials passed');
     return;
 }
 
-$user_perid = $_SESSION['user_perid'];
-
 // at present ony a manager can update a perinfo note
-if (!checkAuth($check_auth['sub'], 'reg_admin')) {
+if (!$authToken->checkAuth('reg_admin')) {
     $message_error = 'No permission.';
     RenderErrorAjax($message_error);
     exit();
@@ -66,7 +70,6 @@ if ($perid <= 0) {
     ajaxError('Invalid person to update');
     return;
 }
-$response = [];
 
 $updSQL = <<<EOS
 UPDATE perinfo

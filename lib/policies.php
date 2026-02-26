@@ -66,9 +66,9 @@ function drawPoliciesBlock($policies, $tabIndexStart, $idPrefix = '') {
     <div class='col-sm-12'>
         <p class='text-body'>
             <label>
-                <input type='checkbox' <?php echo $checked; ?> name='p_<?php echo $idPrefix . $name;?>' id='p_<?php echo $idPrefix . $name;?>' value='Y'
-                       tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
-                <span id="l_<?php echo $idPrefix . $name;?>" name="l_<?php echo $idPrefix . $name;?>"><?php echo $prompt; ?></span>
+                <input type='checkbox' <?php echo $checked; ?> name='<?php echo $idPrefix . 'p_' . $name;?>'
+                       id='<?php echo $idPrefix . 'p_' .$name;?>' value='Y' tabindex="<?php echo $tabindex; $tabindex += 2;?>"/>
+                <span id="<?php echo $idPrefix . 'l_' . $name;?>" name="<?php echo $idPrefix . 'l_' . $name;?>"><?php echo $prompt; ?></span>
             </label>
             <?php if ($description != '') { ?>
             <span class="small"><a href='javascript:void(0)' onClick='$("#<?php echo $idPrefix . $name;?>Tip").toggle()'>
@@ -94,6 +94,66 @@ function drawPoliciesBlock($policies, $tabIndexStart, $idPrefix = '') {
         <div class='row'>
             <div class='col-sm-auto'>
                 <?php  echo $footer . PHP_EOL; ?>
+            </div>
+        </div>
+        <?php
+    }
+}
+
+// drawPoliciesDisplay: draw a read-only (display only) version of the policies and answers
+function drawPoliciesDisplay($policies, $personPolicies, $id) {
+    if ($policies === null || count($policies) == 0) {
+        return;
+    }
+    loadCustomText('profile', 'all', getConfValue('portal', 'customtext', 'production'), true);
+    $header = returnCustomText('policies/header', 'profile/all/');
+    $footer = returnCustomText('policies/footer', 'profile/all/');
+    if ($header != '') {
+        ?>
+        <div class='row'>
+            <div class='col-sm-auto'>
+                <?php echo $header . PHP_EOL; ?>
+            </div>
+        </div>
+        <?php
+    }
+    foreach ($policies as $policy) {
+        $name = $policy['policy'];
+        $prompt = replaceVariables($policy['prompt']);
+        $required = $policy['required'];
+        $description = replaceVariables($policy['description']);
+        if (array_key_exists($name,$personPolicies) && $personPolicies[$name] == 'Y')
+            $box = '✅';
+        else
+            $box = $required == 'Y' ? '❌' : '✖' ;
+        ?>
+        <div class='row'>
+            <div class='col-sm-12'>
+                <p class='text-body'>
+                    <?php echo "$box: $prompt"; ?></span>
+                    <?php if ($description != '') { ?>
+                    <span class="small"><a href='javascript:void(0)' onClick='$("#<?php echo $id . '_' . $name; ?>Tip").toggle()'>
+                    <img src="/lib/infoicon.png" alt="click this info icon for more information" style="max-height: 25px;"/>
+                        </a>
+                    </span>
+                </p>
+                <div id='<?php echo  $id . '_' . $name; ?>Tip' class='padded highlight' style='display:none'>
+                    <p class='text-body'><?php echo $description; ?>
+                        <span class='small'><a href='javascript:void(0)' onClick='$("#<?php echo $id . '_' . $name; ?>Tip").toggle()'>
+                      <img src='/lib/closeicon.png' alt='click this close icon to close the more information window' style='max-height: 25px;'/>
+                    </a></span>
+                    </p>
+                </div>
+                <?php } ?>
+            </div>
+        </div>
+        <?php
+    }
+    if ($footer != '') {
+        ?>
+        <div class='row'>
+            <div class='col-sm-auto'>
+                <?php echo $footer . PHP_EOL; ?>
             </div>
         </div>
         <?php
@@ -158,7 +218,7 @@ EOS;
     $oldPolicies = array();
     if (is_array($oldPoliciesArr)) {
         foreach ($oldPoliciesArr as $oldPolicy) {
-            $oldPolicies['p_' . $oldPolicy['policy']] = $oldPolicy;
+            $oldPolicies[$prefix . 'p_' . $oldPolicy['policy']] = $oldPolicy;
         }
     }
 
@@ -169,8 +229,8 @@ EOS;
             $oldId = null;
             $new = '';
             $defaultValue = $policy['defaultValue'];
-            if (array_key_exists('p_' . $policy['policy'], $oldPolicies)) {
-                $old = $oldPolicies['p_' . $policy['policy']];
+            if (array_key_exists($prefix . 'p_' . $policy['policy'], $oldPolicies)) {
+                $old = $oldPolicies[$prefix .'p_' . $policy['policy']];
                 if (array_key_exists('response', $old)) {
                     $oldResponse = $old['response'];
                     if ($oldResponse == null)
@@ -180,8 +240,8 @@ EOS;
                     $oldId = $old['id'];
                 }
             }
-            if (array_key_exists('p_' . $prefix . $policy['policy'], $newPolicies))
-                $new = $newPolicies['p_' . $prefix . $policy['policy']];
+            if (array_key_exists($prefix . 'p_' . $policy['policy'], $newPolicies))
+                $new = $newPolicies[$prefix . 'p_' . $policy['policy']];
             else
                 $new = 'N'; // unchecked are 'N', and the array only returns checked ones.
 

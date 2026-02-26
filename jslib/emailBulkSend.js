@@ -53,6 +53,7 @@ class EmailBulkSend {
             data: dataobj,
             method: 'POST',
             success: function (data, textstatus, jqxhr) {
+                checkRefresh(data);
                 _this.showList(data);
             },
             error: showAjaxError
@@ -153,6 +154,7 @@ class EmailBulkSend {
             data: { data: dataJSON },
             method: 'POST',
             success: function (data, textstatus, jqxhr) {
+                checkRefresh(data);
                 _this.finishBatch(data);
             },
             error: showAjaxError

@@ -28,7 +28,7 @@
         exit();
     }
 
-    $info = getPersonInfo($conid);
+    $info = getPersonInfo($conid, null, null, true);
 
     portalPageInit('help', $info,
         /* css */ array(

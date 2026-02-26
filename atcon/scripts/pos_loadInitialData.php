@@ -1,5 +1,5 @@
 <?php
-// ConTroll Registration System, Copyright 2015-2025, Michael Rafferty, Licensed under the GNU Affero General Public License, Version 3.
+// ConTroll Registration System, Copyright 2015-2026, Michael Rafferty, Licensed under the GNU Affero General Public License, Version 3.
 // library AJAX Processor: pos_loadInitialData.php
 // Author: Syd Weinstein
 // Retrieve load the mapping tables and session information into the javascript side of the registration tab
@@ -8,7 +8,6 @@ require_once '../lib/base.php';
 require_once('../../lib/cc__load_methods.php');
 require_once('../../lib/coupon.php');
 require_once '../../lib/memRules.php';
-require_once '../../lib/policies.php';
 
 // use common global Ajax return functions
 global $returnAjaxErrors, $return500errors;
@@ -54,7 +53,8 @@ if (isSessionVar('terminal'))
 else
     $response['terminal'] = false;
 $response['user_id'] = getSessionVar('user');
-$response['Manager'] = check_atcon('manager', $conid);
+$response['Manager'] = check_atcon('manager', $conid) ? 1 : 0;
+$response['cc_html'] = draw_cc_html($cc,'--','body');
 
 // get the start and end dates, and adjust for the memLabels based on the real dates versus today.
 $condatesSQL = <<<EOS
@@ -164,7 +164,7 @@ $ret = load_coupon_list();
 $response['num_coupons'] = $ret[0];
 $response['couponList'] = $ret[1];
 
-// membership rules, policies, configuration items
+// membership rules, configuration items
 $ruleData = getRulesData($conid, false, true);
 
 $response['gageList'] = $ruleData['ageList'];
@@ -174,7 +174,6 @@ $response['gmemCategories'] = $ruleData['memCategories'];
 $response['gmemList'] = $ruleData['memList'];
 $response['gmemListIdx'] = $ruleData['memListIdx'];
 $response['gmemRules'] = $ruleData['memRules'];
-$response['policies'] = getPolicies();
 $response['debug'] = getConfValue('debug','atcon', 0);;
 $response['required'] = getConfValue('reg', 'required', 'addr');
 $response['useUSPS'] = $useUSPS;

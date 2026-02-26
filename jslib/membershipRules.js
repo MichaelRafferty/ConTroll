@@ -126,8 +126,8 @@ class MembershipRules {
 
         if (skipImplicit == false) {
             // first the implicit rules:
-            // 1. Only one 'full' is allowed
-            if (mem.memType == 'full' && mem.memCategory != 'upgrade' && this.#numFull > 0 && mem.conid == this.#conid) {
+            // 1. Only one 'full' is allowed, and no fulls if there is a one day
+            if (mem.memType == 'full' && mem.memCategory != 'upgrade' && (this.#numFull > 0 || this.#numOneDay > 0) && mem.conid == this.#conid) {
                 if (this.#debug & 8) {
                     console.log("testMembership Implicit: return false-only one full membership is allowed, unless it's an upgrade category one");
                 }
@@ -164,9 +164,10 @@ class MembershipRules {
                 return false; // no virtual if memType full in cart
             }
 
-            // memCategory rule on duplicate- if onlyOne and it is in the cart, don't allow it again
+            // memCategory rules
             var memCat = memCategories[mem.memCategory];
             if (memCat != null) {
+                // duplicate - if onlyOne and it is in the cart, don't allow it again
                 if (memCat.onlyOne == 'Y') {
                     // for onlyOne there are three cases
                     //      memType != OneDay - do check
@@ -189,6 +190,12 @@ class MembershipRules {
                             return false; // only one allowed and one of this memId is in the list already
                         }
                     }
+                }
+                // managed - if managed, this person must be managed, and their manager must have an attending full
+                if (mem.memCategory == 'managed') {
+                    // check that this person is managed
+                    if (!(config.loginPrimary && config.managedByLogin))
+                        return false;
                 }
             }
         }
@@ -390,7 +397,8 @@ class MembershipRules {
                         memCheck = step.memListArray.indexOf(mbr.memId.toString()) != -1;
                     }
                     if (step.ageList != null && step.ageList != '') {
-                        ageCheck = step.ageListArray.indexOf(mbr.memAge.toString()) != -1;
+                        ageCheck = step.ageListArray.indexOf(mbr.memAge.toString()) != -1 ||
+                            (step.ageListArray.indexOf(mbr.currentAgeType.toString()) != -1 && config.conid == mbr.currentAgeConId)
                     }
                     stepPass = typeCheck && memCheck && ageCheck && ageCheck;
                     //console.log('mbr:');

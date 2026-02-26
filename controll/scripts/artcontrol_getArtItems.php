@@ -1,14 +1,18 @@
 <?php
 require_once "../lib/base.php";
+require_once '../lib/sessionAuth.php';
 
-$check_auth = google_init("ajax");
-$perm = "art_control";
+// use common global Ajax return functions
+global $returnAjaxErrors, $return500errors;
+$returnAjaxErrors = true;
+$return500errors = true;
 
-$response = array("post" => $_POST, "get" => $_GET, "perm"=>$perm);
-
-
-if($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
-    $response['error'] = "Authentication Failed";
+$perm = 'art_control';
+$response = array ('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
+$authToken = new authToken('script');
+$response['tokenStatus'] = $authToken->checkToken();
+if (!$authToken->isLoggedIn() || !$authToken->checkAuth($perm)) {
+    $response['error'] = 'Authentication Failed';
     ajaxSuccess($response);
     exit();
 }
@@ -19,8 +23,22 @@ $con=get_con();
 $conid=$con['id'];
 
 $region = null;
-if(array_key_exists('region', $_GET)) {$region = $_GET['region']; }
-else { ajaxError('No Data'); } 
+if (array_key_exists('region', $_POST)) {
+    $region = $_POST['region'];
+} else {
+    ajaxError('No Data');
+}
+
+if (array_key_exists('conYear', $_POST)) {
+    $conYear = $_POST['conYear'];
+} else {
+    $conYear = $conid;
+}
+$minConYear = getConfValue('controll', 'viewPriorLimit', $conid);
+if ($conYear < $minConYear)
+    $conYear = $minConYear;
+$minEdit = getConfValue('controll', 'artEditYear', $conid);
+$response['editable'] = $conYear >= $minEdit;
 
 $artQ = <<<EOS
 WITH historyCount AS (
@@ -33,7 +51,7 @@ WITH historyCount AS (
     GROUP BY H.id
 )
 SELECT I.id, I.exhibitorRegionYearId, I.item_key, I.title, I.type, I.status, I.location, I.quantity, I.original_qty, 
-    I.min_price, I.sale_price, I.final_price, I.bidder, I.material, I.notes, h.historyCount,
+    I.min_price, I.sale_price, I.final_price, I.bidder, I.material, I.notes, I.conid, h.historyCount,
     ey.id AS exhibitorYearId, ery.exhibitsRegionYearId,
     ery.exhibitorNumber, ery.locations, e.exhibitorName, exR.name as exhibitRegionName,
     concat(trim(p.first_name), ' ', trim(p.last_name)) as bidderName,
@@ -51,7 +69,7 @@ WHERE ey.conid=? and exRY.exhibitsRegion=?
 ORDER BY ery.exhibitorNumber, I.item_key;
 EOS;
 
-$artR = dbSafeQuery($artQ, 'iiii', array($conid, $region,$conid, $region));
+$artR = dbSafeQuery($artQ, 'iiii', array($conYear, $region, $conYear, $region));
 
 $items=array();
 
@@ -73,7 +91,7 @@ WHERE ey.conid=? AND exRY.exhibitsRegion=? AND S.item_purchased IS NOT NULL
     AND ery.exhibitorNumber IS NOT NULL
 ORDER BY e.exhibitorName;
 EOS;
-    $artistR = dbSafeQuery($artistQ, 'ii', array($conid, $region));
+    $artistR = dbSafeQuery($artistQ, 'ii', array($conYear, $region));
 
 $artists=array();
 

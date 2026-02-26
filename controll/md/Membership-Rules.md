@@ -41,8 +41,9 @@ validating if a memList entry can be removed or deleted from the cart such that 
 3. if the cart has a full, memType virtual is not allowed
    1. If the cart already has a full membership, this memList entry is denied.
 
-4. Enforce the Only One flag in the memCategory entry
-   1. if the memCategory entry has OnlyOne set to 'Y', and there already is an item in the cart with this memCategory, this memList entry is denied.
+4. Enforce the memCategory based implicit rules
+   1. If the memCategory entry has OnlyOne set to 'Y', and there already is an item in the cart with this memCategory, this memList entry is denied.
+   2. If the memCategory is 'managed' make sure the logged in person is the manager (portal) or that the manager is in the cart (POS)
 
 ### Explicit Rules;  The system then loops over all of the rules.
 First a rule is checked based on the criteria for matching in the memRules table. (a Boolean AND across all of the matching criteria)
@@ -82,15 +83,16 @@ Just like the memRule itself, the step uses the same matching criteria.
 this step is considered passed for not any, or failed for need any.
 2. If step memCatgory list is not empty and the cart does not have an entry with a memCategory in the step memCategory list,
  this step is considered passed for not any, or failed for need any.
-3. If step memAge list is not empty and the cart does not have an entry with a memåAge in the step memAge list,
+3. If step memAge list is not empty and the cart does not have an entry with a memAge in the step memAge list,
 this step is considered passed for not any, or failed for need any.
 4. If step memId list is not empty and the cart does not have an entry with a memId in the step memId list,
 this step is considered passed for not any, or failed for need any.
+5. For Limit Age, the age of the person in the cart, if no membership with an age is in the cart is considered for the age limit test.
 ##### For need all/not all:
 1. If step memType list is not empty and the cart does not have any entries with a memType in the step memType list,
 2. If step memCatgory list is not empty and the cart does not have any entries with a memCategory in the step memCategory list,
 this step is considered passed for not all, or failed for need all.
-3. If step memAge list is not empty and the cart does not have any entries with a memåAge in the step memAge list,
+3. If step memAge list is not empty and the cart does not have any entries with a memAge in the step memAge list,
 this step is considered passed for not all, or failed for need all.
 4. If step memId list is not empty and the cart does not have any entries with a memId in the step memId list,
 this step is considered passed for not all, or failed for need all.

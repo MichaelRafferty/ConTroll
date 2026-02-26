@@ -12,6 +12,10 @@ span.req, .warn {
     color: red;
 }
 
+select.need {
+    background-color: rgba(255,0,0,0.3);
+}
+
 h3 { 
   text-align: center;
   color: #73f;

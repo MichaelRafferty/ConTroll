@@ -1,26 +1,7 @@
 <?php
 // portalForms:  Forms used by the portal for person and membership work
-
-//// Step 1 - Age Bracket
-// drawGetAgeBracket - age bracket selection for filtering memberships
-function drawGetAgeBracket($updateName, $condata) : void {
-    $readableStartDate = date_format(date_create($condata['startdate']), 'l M j, Y');
-    ?>
-    <div class="row mt-2">
-        <div class="col-sm-12">
-            <h3 class='text-primary'>Please verify the age of <?php echo $updateName; ?> as of <?php echo $readableStartDate; ?></h3>
-        </div>
-    </div>
-    <div class="row mt-1" id="ageButtons"></div>
-    <div class="row mt-2">
-        <div id="ageBracketMsg" class="col-sm-12">Please click on the proper age bracket above to continue to the next step.</div>
-    </div>
-    <?php
-}
-
-//// Step 2 - Person
 // drawVerifyPersonInfo - non modal version of validate person information
-function drawVerifyPersonInfo($policies) : void {
+function drawVerifyPersonInfo($policies, $ageByDate, $ageList) : void {
     $usps = get_conf('usps');
     $useUSPS = false;
     if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
@@ -28,21 +9,13 @@ function drawVerifyPersonInfo($policies) : void {
     $con = get_conf('con');
 ?>
 <?php
-    drawEditPersonBlock($con, $useUSPS, $policies, 'membership');
+    drawEditPersonBlock($con, $useUSPS, $policies, 'add', false, false, $ageByDate, [], $ageList)
 ?>
-    <div class="row mt-3">
-        <div class='col-sm-auto'>
-            <button class='btn btn-sm btn-secondary' id='ageListVerBtn' onclick='membership.gotoStep(1, true);'>Return to Age Verification</button>
-        </div>
-        <div class="col-sm-auto">
-            <button class="btn btn-sm btn-primary" onclick="membership.verifyAddress();">Verify Address and move to next step</button>
-        </div>
-    </div>
 <?php
 }
 
 // draw_editPerson - draw the verify/update form for the Person
-function draw_editPersonModal($source, $policies) : void {
+function draw_editPersonModal($source, $policies, $ageList, $ageByDate, $interests = null) : void {
     $usps = get_conf('usps');
     $useUSPS = false;
     if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
@@ -69,9 +42,21 @@ function draw_editPersonModal($source, $policies) : void {
                             <input type='hidden' name='id' id='epPersonId'/>
                             <input type='hidden' name='type' id='epPersonType'/>
 <?php
-    drawEditPersonBlock($con, $useUSPS, $policies, $source, true);
-?>
+    drawEditPersonBlock($con, $useUSPS, $policies, $source, true, false, $ageByDate, [], $ageList);
+    if ($interests) { ?>
                         </form>
+                        <div class='row'>
+                        <div class='col-sm-12'>
+                            <hr/>
+                        </div>
+                    </div>
+<?php
+        drawVerifyInterestsBlock($interests, false);
+    } else {
+        echo "</form>\n";
+    }
+?>
+
                         <div class='row'>
                             <div class="col-sm-12" id='epMessageDiv'></div>
                         </div>
@@ -86,31 +71,27 @@ function draw_editPersonModal($source, $policies) : void {
     </div>
 <?php
 }
-
-//// step 3 - Interests
-// drawVerifyInterestsBLock - non modal version of validate interests
+// drawVerifyInterestsBlock - non modal version of validate interests
 function drawVerifyInterestsBlock($interests) : void {
-    ?>
+?>
     <form id='editInterests' class='form-floating' action='javascript:void(0);'>
         <?php
         drawInterestList($interests);
         ?>
     </form>
-    <div class="row mt-3">
-        <div class='col-sm-auto'>
-            <button class='btn btn-sm btn-secondary' onclick='membership.gotoStep(2, true);'>Return to Personal Information Verification</button>
-        </div>
-        <div class="col-sm-auto">
-            <button class="btn btn-sm btn-primary" onclick="membership.saveInterests();">Save Interests and move to next step</button>
-        </div>
-    </div>
-    <?php
+<?php
 }
 
-//// step 4 memberships
 // drawGetNewMemberships - membership selection
-function drawGetNewMemberships() : void {
-    ?>
+function drawGetNewMemberships($fullName) : void {
+    if ($fullName) {
+?>
+    <div class='row mt-2'>
+        <div class='col-sm-12'>
+            <h3 class='text-primary'>Add/Edit Memberships and other Purchases for <?php echo $fullName; ?></h3>
+        </div>
+    </div>
+<?php } ?>
     <div class='row mt-1' id='membershipButtons'></div>
     <div class="row mt-2">
         <div class="col-sm-12">
@@ -347,12 +328,22 @@ EOS;
     </div>
 <?php
 }
-// drawManagedRow: draw the memberships and buttons for a managed person or yourself
-function drawPersonRow($personId, $personType, $person, $memberships, $showInterests, $showHR, $now) : float {
+// drawPersonTab: draw memberships and profile for a managed person or yourself
+function drawPersonTab($personId, $personType, $person, $conid, $ageList, $memberships, $policies, $interests, $now, $ageByDate, $manager) : array {
     global $membershipButtonColors;
-    $paidByOthers = 0;
-
+    $unpaidByOthers = 0;
+    $unpaidByMe = 0;
+    $unpaidByManager = 0;
     $portal_conf = get_conf('portal');
+
+    $hr = <<<EOS
+<div class="row mt-2">
+        <div class='col-sm-12 ms-0 me-0 align-center'>
+            <hr style='height:4px;width:95%;margin:auto;margin-top:18px;margin-bottom:10px;color:#333333;background-color:#333333;'/>
+        </div>
+    </div>
+EOS;
+
 
     $badgename = $person['badgename'];
     $fn = '';
@@ -367,70 +358,93 @@ function drawPersonRow($personId, $personType, $person, $memberships, $showInter
     } else {
         $profileClass = 'btn-warning need-policies';
     }
-    if ($showHR) {
-?>
-    <div class='row'>
-        <div class='col-sm-12 ms-0 me-0 align-center'>
-            <hr style='height:4px;width:95%;margin:auto;margin-top:18px;margin-bottom:10px;color:#333333;background-color:#333333;'/>
-        </div>
-    </div>
-<?php
-    }
+    if ($person['currentAgeType'] == null || $person['currentAgeType'] == '' ||
+            ($person['currentAgeConId'] != $conid && $ageList[$person['currentAgeType']]['verify'] == 'Y'))
+        $profileClass .= ' need-age';
+
     $personArgs = json_encode(array('id' => $person['id'] , 'type' => $person['personType'], 'fullName' => $person['fullName'],
                                 'first_name' => $person['first_name'], 'last_name' => $person['last_name'],
                                 'email_addr' => $person['email_addr']));
     $personArgs = str_replace('"', '\\u0022', $personArgs);
     $personArgs = str_replace("'", '\\u0027', $personArgs);
-    ?>
+    $id = $person['id'];
+    $personType = $person['personType'];
+    $fullName = $person['fullName'];
+    $ageType = $person['currentAgeType'];
+    $ageLabel = $ageType == '' ? 'unknown' : ($ageList[$ageType]['shortname'] . ' [' . $ageList[$ageType]['label'] . ']');
+    $legalName = $person['legalName'];
+    $pronouns = $person['pronouns'];
+    $fullAddress = $person['address'];
+    if ($person['addr_2'] != '')
+        $fullAddress .= '<br/>' . $person['addr_2'];
+    $fullAddress .= '<br/>' . $person['city'] . ', ' . $person['state'] . ' ' . $person['zip'];
+    $country = $person['country'];
+    $phone = $person['phone'];
+    $email = $person['email_addr'];
+    $label = $personType ==  'p' ? 'Membership Number' : 'Temp Membership Number';
+
+    // Purchases block
+    echo <<<EOS
     <div class="row mt-1">
-        <div class='col-sm-1' style='text-align: right;'><?php echo $person['personType'] == 'n' ? 'Pending' : $person['id']; ?></div>
-        <div class='col-sm-2'><strong><?php echo $person['fullName']; ?></strong></div>
-        <div class="col-sm-2"><?php echo $badgename; ?></div>
-        <div class="col-sm-2"><?php echo $person['email_addr']; ?></div>
-        <div class='col-sm-5 p-1'>
-                <button class='btn btn-sm btn-primary p-1' style='--bs-btn-font-size: 80%;'
-                data-id="<?php echo $person['id']?>" data-type="<?php echo $person['personType']; ?>"
-                onclick="portal.changeEmail('<?php echo $personArgs; ?>');">
-                Change <?php echo $fn; ?>Email
-            </button>
-            <button class='btn btn-sm <?php echo $profileClass; ?> p-1' style='--bs-btn-font-size: 80%;'
-                data-id="<?php echo $person['id']?>" data-type="<?php echo $person['personType']; ?>"
-                onclick="portal.editPerson(<?php echo $person['id'] . ",'" . $person['personType'] . "'"; ?>);">
-                Edit <?php echo $fn; ?>Profile
-            </button>
-<?php if ($showInterests) { ?>
-            <button class='btn btn-sm, btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="portal.editInterests(<?php echo $person['id'] . ",'" . $person['personType'] . "'"; ?>);">
-                Edit <?php echo $fn; ?>Interests
-            </button>
-<?php } ?>
-            <button class='btn btn-sm btn-primary p-1' style='--bs-btn-font-size: 80%;' onclick="portal.addMembership(<?php echo $person['id'] . ",'" . $person['personType'] . "'"; ?>);">
-                Add To/Edit Cart
-            </button>
+        <div class="col-sm-2">
+            <button class='btn btn-sm btn-primary p-1 h-100 w-100'  onclick="portal.addMembership($id, '$personType');">Make Purchase</button>
         </div>
-    </div>
-    <?php
+        <div class="col-sm-auto">
+            <span class="h2">$fn Purchases</span>
+        </div>
+    </div>        
+EOS;
+    outputCustomText('tab/top');
+
+// now the membership block
+
+    $first = true;
     if ($memberships != null && count($memberships) > 0) {
-        echo "<div class='row'>\n";
         foreach ($memberships as $membership) {
+            $memPersonId = $personType . $personId;
+            if (array_key_exists('regNewperid', $membership)) {
+                $memPersonId = 'n' . $membership['regNewperid'];
+                if ($personType == 'n' && $membership['regNewperid'] != $personId)
+                    continue;
+            }
+            if (array_key_exists('regPerid', $membership)) {
+                $memPersonId = 'p' . $membership['regPerid'];
+                if ($personType == 'p' && $membership['regPerid'] != $personId)
+                    continue;
+            }
+            if ($first) {
+                echo "<div class='row mt-3'>\n";
+                $first = false;
+            }
             $disabled = '';
             if (array_key_exists('memberbadgecolors', $portal_conf)) {
                 $type = 'black';
             } else {
                 $type = 'other';
 
-                if ($membership['type'] == 'wsfs')
+                if (array_key_exists('type', $membership)) {
+                    $memType = $membership['type'];
+                    $memCategory = $membership['category'];
+                    $memAge = $membership['memAge'];
+                } else {
+                    $memType = $membership['memType'];
+                    $memCategory = $membership['memCategory'];
+                    $memAge = $membership['memAge'];
+                }
+
+                if ($memType == 'wsfs')
                     $type = 'wsfs';
-                else if ($membership['category'] == 'yearahead')
+                else if ($memCategory == 'yearahead')
                     $type = 'yearahead';
-                else if ($membership['memAge'] == 'child' || $membership['memAge'] == 'kit')
+                else if ($memAge == 'child' || $memAge == 'kit')
                     $type = 'minor';
-                else if ($membership['type'] == 'oneday')
+                else if ($memType == 'oneday')
                     $type = 'oneday';
-                else if ($membership['type'] == 'virtual')
+                else if ($memType == 'virtual')
                     $type = 'virtual';
-                else if ($membership['type'] == 'full')
+                else if ($memType == 'full')
                     $type = 'full';
-                else if ($membership['category'] == 'addon' || $membership['category'] == 'add-on'|| $membership['category'] == 'donation')
+                else if ($memCategory == 'addon' || $memCategory == 'add-on'|| $memCategory == 'donation')
                     $type = 'addon';
             }
 
@@ -440,50 +454,170 @@ function drawPersonRow($personId, $personType, $person, $memberships, $showInter
            if ($membership['status'] == 'upgraded')
                 $disabled = ' disabled';
 
-           if ($membership['completePerid'] != NULL) {
+           if ($membership['completePerid'] != null) {
                $compareId = $membership['completePerid'];
                $compareType = 'p';
-           } else if ($membership['completeNewperid'] != NULL) {
+           } else if ($membership['completeNewperid'] != null) {
                $compareId = $membership['completeNewperid'];
                $compareType = 'n';
-           } else if ($membership['createPerid'] != NULL) {
+           } else if ($membership['createPerid'] != null) {
                $compareId = $membership['createPerid'];
                $compareType = 'p';
-           } else if ($membership['createNewperid'] != NULL) {
+           } else if ($membership['createNewperid'] != null) {
                $compareId = $membership['createNewperid'];
                $compareType = 'n';
            } else {
                $compareId = '';
                $compareType = '';
            }
+           $status = $membership['status'];
            if (($compareId != $personId || $compareType != $personType) && $membership['actPrice'] >= 0) {
-               $row3 = '<br/>Purchased by ' . $membership['purchaserName'];
-               if ($membership['status'] == 'unpaid' || $membership['status'] == 'plan')
-                   $paidByOthers += $membership['actPrice'] - ($membership['actPaid'] + $membership['actCouponDiscount']);
+               if ($status == 'unpaid')
+                   $row3 = '<br/>Added by ' . $membership['purchaserName'];
+               else
+                   $row3 = '<br/>Purchased by ' . $membership['purchaserName'];
+               if ($membership['status'] == 'unpaid' || $membership['status'] == 'plan') {
+                   if ($manager && $compareId == $manager['id'] && $compareType == $manager['personType'])
+                       $unpaidByManager += $membership['actPrice'] - ($membership['actPaid'] + $membership['actCouponDiscount']);
+                   else
+                       $unpaidByOthers += $membership['actPrice'] - ($membership['actPaid'] + $membership['actCouponDiscount']);
+               }
            } else {
+               if ($membership['actPrice'] >= 0 && ($membership['status'] == 'unpaid' || $membership['status'] == 'plan')) {
+                   $unpaidByMe += $membership['actPrice'] - ($membership['actPaid'] + $membership['actCouponDiscount']);
+               }
                $row3 = '';
            }
-           if ($membership['memAge'] == 'all') {
+           if ($memAge == 'all') {
                $ageRow =  '';
            } else {
-               $ageRow = '<br/><b>' . $membership['ageShort'] . '</b> (' . $membership['ageLabel'] . ')';
+               $ageRow = '<br/><b>' . $membership['ageShort'] . '</b> [' . $membership['ageLabel'] . ']';
            }
-           $expired = $membership['status'] == 'unpaid' && ($membership['actPaid'] + $membership['actCouponDiscount']) > 0 &&
-                ($membership['startdate'] > $now || $membership['enddate'] < $now || $membership['online'] == 'N');
-           ?>
-        <div class="col-sm-3 ps-1 pe-1 m-0"><button class="btn btn-light border border-5 mt-1 <?php echo $borderColor; ?>"
-            style="width: 100%; pointer-events:none; <?php echo $borderStyle; ?>" <?php echo $disabled; ?> tabindex="-1"><b><?php
-                if ($expired)
-                    echo '<span class="text-danger">Expired: ';
-                echo $membership['shortname'] . "</b> (" . $membership['status']. ")";
-                if ($expired)
-                    echo '</span>';
-                echo $ageRow . $row3; ?></button></div>
-<?php
+           $expired = $membership['status'] == 'unpaid' && ($membership['actPaid'] + $membership['actCouponDiscount']) == 0 &&
+                ($membership['startdate'] > $now || $membership['enddate'] < $now);
+           $shortname = $membership['shortname'];
+           if ($expired) {
+               $expiredPrefix = '<span class="text-danger">Expired: ';
+               $expiredSuffix = '</span>';
+           } else {
+               $expiredPrefix = '';
+               $expiredSuffix = '';
+           }
+            echo <<<EOS
+    <div class="col-sm-3  ps-1 pe-1 m-0">
+        <button class="btn btn-light border border-5 p-1 m-0 mt-1 mb-1 $borderColor w-100" 
+            style="pointer-events:none; $borderStyle;" $disabled tabindex="-1"><b>$expiredPrefix$shortname</b>$expiredSuffix ($status)
+            $ageRow
+            $row3
+        </button>
+    </div>
+    EOS;
+            }
+        if ($first == false) {
+            echo "</div>\n";
+            drawPortalLegend();
         }
-        echo "</div>\n";
     }
-    return $paidByOthers;
+
+    // now for this person's profile
+    $privacyLink = getConfValue('con', "privacypolicy", '');
+    $privacyText = getConfValue('con', 'privacytext', '');
+    echo <<<EOS
+$hr
+<div class="row mt-1">
+    <div class="col-sm-2">
+        <button class='btn btn-sm $profileClass p-1' data-id="$id" data-type="$personType" onclick="portal.editPerson($id, '$personType');">
+            Edit $fn Profile
+        </button>
+    </div>
+    <div class="col-sm-auto">
+        <span class="h4">Age category of $fullName as of $ageByDate: $ageLabel</span>
+    </div>
+</div>
+EOS;
+    if ($privacyLink != '' && $privacyText == '')
+        $privacyText = 'See our privacy policy for how we use and share information';
+    if ($privacyLink != '') {
+        echo <<<EOS
+<div class="row mt-1">
+    <div class="col-sm-2"></div>
+    <div class="col-sm-10">
+            (<a href="$privacyLink" target="_blank">$privacyText</a>).
+    </div>
+</div>
+EOS;
+    }
+
+// draw non editable profile
+    echo <<<EOS
+<div class='row mt-2'>
+    <div class="col-sm-2">$label:</div>
+    <div class="col-sm-auto"><b>$id</b></div>
+</div>
+<div class='row mt'>
+    <div class="col-sm-2">Name:</div>
+    <div class="col-sm-auto"><b>$fullName</b></div>
+</div>
+<div class='row'>
+    <div class="col-sm-2">Legal Name:</div>
+    <div class="col-sm-auto"><b>$legalName</b></div>
+</div>
+<div class='row'>
+    <div class="col-sm-2">Badge Name:</div>
+    <div class="col-sm-auto"><b>$badgename</b></div>
+</div>
+<div class='row'>
+    <div class="col-sm-2">Pronouns:</div>
+    <div class="col-sm-auto"><b>$pronouns</b></div>
+</div>
+<div class='row'>
+    <div class="col-sm-2">Address::</div>
+    <div class="col-sm-auto"><b>$fullAddress</b></div>
+</div>
+<div class='row'>
+    <div class="col-sm-2">Country:</div>
+    <div class="col-sm-auto"><b>$country</b></div>
+</div>
+<div class='row'>
+    <div class="col-sm-2">Phone:</div>
+    <div class="col-sm-auto"><b>$phone</b></div>
+</div>
+<div class='row'>
+    <div class="col-sm-2">
+        <button class='btn btn-sm $profileClass p-1' data-id="$id" data-type="$personType" onclick="portal.changeEmail('$personArgs');">  
+            Change $fn Email
+        </button>
+    </div>
+    <div class="col-sm-auto"><b>$email</b></div>
+</div>
+EOS;
+
+    // now the policy block
+    if ($policies && count($policies) > 0) {
+        // add some space before the policies
+        echo <<<EOS
+<div class='row'>
+    <div class="com-sm-auto">&nbsp;</div>
+</div>
+EOS;
+
+        drawPoliciesDisplay($policies, $person['policies'], $id);
+    }
+    // now the interest block
+    if ($interests && count($interests) > 0) {
+        echo <<<EOS
+$hr
+<div class='row mt-1'>
+    <div class="col-sm-2">
+        <button class='btn btn-sm, btn-primary p-1' onclick="portal.editInterests($id, '$personType');">Edit $fn Interests</button>
+    </div>
+    <div class="col-sm-auto"><span class="h3">Additional Interests or Needs</span></div>
+</div>
+EOS;
+        drawInterestsDisplay($interests, $person['interests'], $id);
+    }
+
+    return [$unpaidByOthers, $unpaidByMe, $unpaidByManager];
 }
 
 // draw_editInterests on portal screen - draw the update interests form for the person
@@ -626,7 +760,7 @@ function draw_makePaymentModal() : void {
 
 //// payment plan items
 // drawPaymentPlans - show the status of the payment plans for this account
-function drawPaymentPlans($person, $paymentPlans) : void {
+function drawPaymentPlans($person, $paymentPlans, $activeOnly = false) : void {
     $currency = getConfValue('con', 'currency', 'USD');
     $plans = $paymentPlans['plans'];
     $payorPlans = $paymentPlans['payorPlans'];
@@ -649,29 +783,36 @@ function drawPaymentPlans($person, $paymentPlans) : void {
 <?php
     $now = time();
     foreach ($payorPlans as $payorPlan) {
+        $id = $payorPlan['id'];
         $planid = $payorPlan['planId'];
         $plan = $plans[$planid];
-        $nextPayColor = '';
-        $data = computeNextPaymentDue($payorPlan, $plans, $dolfmt, $currency);
-        if ($payorPlan['status'] != 'active') {
-            $nextPayDue = '';
-            $minAmt = '';
-            $col1 = $payorPlan['status'];
+
+        if ($activeOnly) {
+            if ($payorPlan['status'] != 'active')
+                continue;
+            $onclick = "paymentPlans.payPlan($id);";
         } else {
+            $onclick = "paymentHistory.gotoPayment();";
+        }
+
+        if ($payorPlan['status'] == 'active') {
+            $nextPayColor = '';
+            $data = computeNextPaymentDue($payorPlan, $plans, $dolfmt, $currency);
             $nextPayDue = $data['nextPayDue'];
             $minAmt = $data['minAmt'];
             $nextPayTimestamp = $data['nextPayTimestamp'];
-            $id = $payorPlan['id'];
             if ($nextPayTimestamp < $now) { // past due
                 $nextPayColor = ' bg-danger text-white';
                 $col1 = "<button class='btn btn-sm btn-danger pt-0 pb-0' onclick='paymentPlans.payPlan($id);'>Make Past Due Pmt</button>";
                 $minAmt = $data['minAmt'];
             } else if ($nextPayTimestamp < $now + 7 * 24 * 3600) { // are we within 7 days of a payment
                 $nextPayColor = ' bg-warning';
-                $col1 = "<button class='btn btn-sm btn-primary pt-0 pb-0' onclick='paymentPlans.payPlan($id);'>Make Pmt</button>";
+                $col1 = "<button class='btn btn-sm btn-primary pt-0 pb-0' onclick='$onclick'>Make Pmt</button>";
             } else {
-                $col1 = "<button class='btn btn-sm btn-secondary pt-0 pb-0' onclick='paymentPlans.payPlan($id);'>Make Pmt</button>";
+                $col1 = "<button class='btn btn-sm btn-secondary pt-0 pb-0' onclick='$onclick'>Make Pmt</button>";
             }
+        } else {
+            $col1 = $payorPlan['status'];
         }
         $dateCreated = date_format(date_create($payorPlan['createDate']), 'Y-m-d');
         $payByDate = date_format(date_create($plan['payByDate']), 'Y-m-d');
@@ -723,3 +864,32 @@ function draw_recieptModal() : void {
 </div>
 <?php
 }
+
+
+// draw_receiptModal - modal to display a receipt
+    function draw_addMembershipsConfirmModal() : void {
+        ?>
+        <div id='portalAddConfirm' class='modal modal-lg fade' tabindex='-1' aria-labelledby='Registration Add Memberships Now' aria-hidden='true'
+             style='--bs-modal-width:
+    80%;'>
+            <div class='modal-dialog'>
+                <div class='modal-content'>
+                    <div class='modal-header bg-primary text-bg-primary'>
+                        <div class='modal-title'>
+                            <strong id='addConfirmTitle'>Registration Portal - Add Memberships/Purchases Now?</strong>
+                        </div>
+                    </div>
+                    <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                        <div class="row p-3">
+                            <div class="col-sm-12" id='addConfirm-div'></div>
+                        </div>
+                    </div>
+                    <div class='modal-footer'>
+                        <button class='btn btn-sm btn-secondary' onClick="addConfirmResponse(false)">Not Now</button>
+                        <button class='btn btn-sm btn-primary' id='addConfirmBtn' onClick='addConfirmResponse(true)'>Purchase Memberships</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php
+    }

@@ -192,9 +192,15 @@ EOS;
             $externalPower = null;
         }
 
-        if ($wifi) {
-            $wifiActive = $wifi['wifi_details']['active'] ? true : false;
-            $wifiSSID = $wifi['wifi_details']['ssid'];
+        if ($wifi && array_key_exists('wifi_details', $wifi)) {
+            if (array_key_exists('active', $wifi['wifi_details']))
+                $wifiActive = $wifi['wifi_details']['active'] ? true : false;
+            else
+                $wifiActive = false;
+            if (array_key_exists('ssid', $wifi['wifi_details']))
+                $wifiSSID = $wifi['wifi_details']['ssid'];
+            else
+                $wifiSSID = null;
             if (array_key_exists('signal_strength', $wifi['wifi_details']))
                 $signalStrength = $wifi['wifi_details']['signal_strength']['value'];
             else

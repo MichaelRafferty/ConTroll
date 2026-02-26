@@ -39,6 +39,7 @@ class taxConfig {
                     show_message(data['error'], 'error');
                     return false;
                 }
+                checkRefresh(data);
                 tax.draw(data);
                 show_message(data['success'], 'success');
             },
@@ -157,6 +158,7 @@ class taxConfig {
                         _this.#taxSaveBTN.innerHTML = "Save Changes*";
                         return false;
                     }
+                    checkRefresh(data);
                     tax.close();
                     tax.draw(data);
                     show_message(data['success'], 'success');

@@ -15,7 +15,7 @@ require_once("global.php");
 //      $postal_code = postal code to default for form, optional
 //
 
-function draw_cc_html($cc, $postal_code = "--") : string {
+function draw_cc_html($cc, $postal_code = "--", $type='all') : string {
     $sdk = $cc['webpaysdk'];
     $appid = $cc['appid'];
     $location = $cc['location'];
@@ -24,10 +24,12 @@ function draw_cc_html($cc, $postal_code = "--") : string {
         $postalCode = "'postalCode': '$postal_code',\n";
     }
 
-    $html = <<<EOS
+    $html = '';
+    if ($type != 'body') {
+        $html .= <<<EOS
 <script src="$sdk"></script>
 <!-- Configure the Web Payments SDK and Card payment method -->
-  <script type="text/javascript">
+ <script type="text/javascript">
       ;
       var payments = null;
     
@@ -73,7 +75,24 @@ function draw_cc_html($cc, $postal_code = "--") : string {
           const cardButton = document.getElementById('card-button');
           cardButton.addEventListener('click', eventHandler);
       }
-
+EOS;
+    }
+    if ($type == 'js') {
+        $html .= <<<EOS
+    
+    function startCC() {
+        if (!window.Square) {
+            throw new Error('Square.js failed to load properly');
+        }    
+          
+      startCCPay();
+      } 
+            
+EOS;
+    }
+    if ($type == 'all') {
+        $html .= <<<EOS
+      
       document.addEventListener('DOMContentLoaded', async function () {
          if (!window.Square) {
             throw new Error('Square.js failed to load properly');
@@ -81,12 +100,20 @@ function draw_cc_html($cc, $postal_code = "--") : string {
           
           startCCPay();
       });
-  </script>
-    <form id="payment-form">
-        <div class="container-fluid overflow-hidden" id="card-container"></div>
-        <button id="card-button" type="button">Purchase</button>
-    </form>
 EOS;
+    }
+    if ($type == 'all' || $type == 'js') {
+        $html .= "</script>\n";
+    }
+
+    if ($type != 'js') {
+        $html .= <<<EOS
+<form id = "payment-form">
+    <div class="container-fluid overflow-hidden" id = "card-container"></div>
+    <button id = "card-button" type = "button"> Purchase</button>
+</form>
+EOS;
+        }
     return $html;
 };
 
@@ -752,11 +779,14 @@ function cc_fetchOrder($source, $orderId, $useLogWrite = false) : array {
     $rtn['taxAmount'] = $order->getTotalTaxMoney()->getAmount() / 100;
     // build the return array of taxes applied to the order
     $taxAmounts = $order->getTaxes();
-    foreach ($taxAmounts as $tax) {
-        $uid = $tax->getUid();
-        $app = $tax->getAppliedMoney();
-        $amt = $app->getAmount();
-        $rtnTaxes[$uid] = $amt / 100;
+    $rtnTaxes = [];
+    if (is_array($taxAmounts)) { // there have to be taxes to do this loop
+        foreach ($taxAmounts as $tax) {
+            $uid = $tax->getUid();
+            $app = $tax->getAppliedMoney();
+            $amt = $app->getAmount();
+            $rtnTaxes[$uid] = $amt / 100;
+        }
     }
     $rtn['taxes'] = $rtnTaxes;
     $rtn['totalDiscountAmount'] = $order->getTotalDiscountMoney()->getAmount() / 100;

@@ -5,18 +5,19 @@ require_once '../lib/portalForms.php';
 require_once '../lib/policies.php';
 require_once '../lib/tax.php';
 require_once('../lib/cc__load_methods.php');
-//initialize google session
-$need_login = google_init('page');
+require_once 'lib/sessionAuth.php';
 
 $page = 'registration';
-if (!$need_login or !checkAuth($need_login['sub'], $page)) {
+$authToken = new authToken('web');
+if (!$authToken->isLoggedIn() || !$authToken->checkAuth($page)) {
     bounce_page('index.php');
 }
-load_cc_procs();
 
 $con_conf = get_conf('con');
 $conid = $con_conf['id'];
 $condata = get_con();
+$startdate = new DateTime($condata['startdate']);
+$ageByDate = $startdate->format('F j, Y');
 
 $cdn = getTabulatorIncludes();
 page_init($page,
@@ -25,12 +26,13 @@ page_init($page,
     /* js  */ array(//$cdn['luxon'],
         $cdn['tabjs'],
         'js/registration.js',
+        'jslib/profile.js',
         'jslib/posCart.js',
         'jslib/posCoupon.js',
         'jslib/pos.js',
         'jslib/membershipRules.js',
     ),
-    $need_login);
+    $authToken);
 
 $con = get_conf('con');
 $usps = get_conf('usps');
@@ -58,6 +60,7 @@ if ($policies != null) {
         $policyIndex[$policies[$index]['policy']] = $index;
     }
 }
+[$ageList, $ageListIdx] = getAgeList($conid);
 
 if (array_key_exists('useportal', $controll)) {
     $usePortal = $controll['useportal'];
@@ -80,7 +83,21 @@ $config_vars['source'] = 'registration';
 $config_vars['locale'] = $locale;
 $config_vars['currency'] = $currency;
 $config_vars['taxRates'] = getTaxRates();
+$config_vars['tokenStatus'] = $authToken->checkToken();
+if (array_key_exists('creditoffline', $controll)) {
+    $config_vars['creditoffline'] = $controll['creditoffline'];
+}
+if (array_key_exists('creditonline', $controll)) {
+    $config_vars['creditonline'] = $controll['creditonline'];
+}
 
+if (array_key_exists('creditonline', $controll)) {
+    if ($controll['creditonline'] == 1) {
+        $cc = get_conf('cc');
+        load_cc_procs();
+        echo draw_cc_html($cc, '--', 'js');
+    }
+}
 // form as laid out has no room for usps block, if we want it we need to reconsider how to do it here.
 //if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
 //    $useUSPS = true;
@@ -88,8 +105,10 @@ $config_vars['taxRates'] = getTaxRates();
 ?>
 <script type='text/javascript'>
     var config = <?php echo json_encode($config_vars); ?>;
-    var allPolicies = <?php echo json_encode($policies); ?>;
+    var policies = <?php echo json_encode($policies); ?>;
     var policyIndex = <?php echo json_encode($policyIndex); ?>;
+    var ageList = <?php echo json_encode($ageList); ?>;
+    var ageListIdx = <?php echo json_encode($ageListIdx); ?>;
 </script>
 <div id="pos" class="container-fluid">
     <div class="row mt-2">
@@ -184,7 +203,8 @@ if (!$controll['useportal']) {
                              <input type="hidden" name="perinfo-perid" id="perinfo-perid" />
                              <input type="hidden" name="membership-index" id="membership-index" />
 <?php
-drawEditPersonBlock($conid, $useUSPS, $policies, 'registration', false, true, '', array(), 200, true, '');
+drawEditPersonBlock($con, $useUSPS, $policies, 'registration', false, true, $ageByDate,
+        array(), $ageListIdx, 200, true, '');
 ?>
                             <div class="row">
                                 <div class="col-sm-12 ms-0 me-0" id="add_results">
@@ -194,9 +214,9 @@ drawEditPersonBlock($conid, $useUSPS, $policies, 'registration', false, true, ''
                                 <div class="col-sm-12 mt-3">
                                     <button type="button" class="btn btn-primary btn-sm" id="addnew-btn" name="add_btn"
                                             onclick="pos.add_new();">Add to Cart</button>
-                                    <button type='button' class='btn btn-primary btn-sm' id='addoverride-btn' name='override_btn' hidden
-                                            onclick='pos.addNewToCart(1);'>Add to Cart Overriding Missing Fields</button>
-                                    <button type="button" class="btn btn-secondary btn-sm" id="clearadd-btn" onclick="pos.clearAdd();">
+                                    <button type='button' class='btn btn-warning btn-sm' id='addoverride-btn' name='override_btn' hidden
+                                            onclick='pos.add_new2();'>Add/Update Cart Overriding Missing Fields</button>
+                                    <button type="button" class="btn btn-secondary btn-sm" id="clearadd-btn" onclick="pos.clearAdd(1);">
                                         Clear Add Person Form
                                     </button>
                                 </div>
@@ -251,8 +271,7 @@ drawEditPersonBlock($conid, $useUSPS, $policies, 'registration', false, true, ''
                     </div>
                 </div>
                 <div class='modal-footer'>
-                    <button type='button' id="close_note_button" class='btn btn-primary'
-                            onclick="pos.saveNote();">
+                    <button type='button' id="close_note_button" class='btn btn-primary' onclick="pos.saveNote();">
                         Close
                     </button>
                 </div>
@@ -272,8 +291,7 @@ drawEditPersonBlock($conid, $useUSPS, $policies, 'registration', false, true, ''
                 </div>
                 <div class='modal-body' id='AddEditBody' style='padding: 4px; background-color: lightcyan;'>
 <?php
-    drawGetAgeBracket('<span id="addEditFullName">Fullname</span>', $condata);
-    drawGetNewMemberships()
+    drawGetNewMemberships('<span id="addEditFullName">Fullname</span>')
 ?>
                     <div class='row'>
                         <div class='col-sm-12'>

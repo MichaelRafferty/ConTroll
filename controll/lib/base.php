@@ -1,7 +1,8 @@
 <?php
 require_once(__DIR__ . '/../../lib/global.php');
 ## Pull INI for variables
-global $monthLengths, $oneYearInterval;
+global $monthLengths, $oneYearInterval, $appSessionPrefix;
+
 //              XXX, Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec
 $monthLengths = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 $oneYearInterval = date_interval_create_from_date_string('1 year');
@@ -10,7 +11,7 @@ if (loadConfFile())
     $include_path_additions = PATH_SEPARATOR . getConfValue('client', 'path', '.') . '/../Composer';
 
 if (getConfValue('reg', 'https') <> 0) {
-    if(!isset($_SERVER['HTTPS']) or $_SERVER["HTTPS"] != "on") {
+    if(!isset($_SERVER['HTTPS']) || $_SERVER["HTTPS"] != "on") {
         header("HTTP/1.1 301 Moved Permanently");
         header("Location: https://" . $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"]);
         exit();
@@ -24,6 +25,7 @@ require_once(__DIR__ . "/../../lib/cipher.php");
 require_once(__DIR__ . '/../../lib/jsVersions.php');
 require_once(__DIR__ . "/../../lib/ajax_functions.php");
 db_connect();
+$appSessionPrefix = 'Ctrl/ConTroll/';
 if (!session_start()) {
     session_regenerate_id(true);
     session_start();
@@ -34,156 +36,13 @@ function bounce_page($new_page) {
     header("Location: $url");
 }
 
-/*
- * google_init()
- * takes $mode reflecting "ajax" or "page" mode (do we redirect or not)
- * return current status of google session
- */
-function google_init($mode) {
-  // bypass for testing on Development PC
-  if (stripos(__DIR__, "/Users/syd/") !== false && $_SERVER['SERVER_ADDR'] == "127.0.0.1") {
-      if(isset($_REQUEST['logout'])) {
-          unset($_SESSION['user_perid']);
-          unset($_SESSION['user_id']);
-          session_regenerate_id(true);
-      }
-      if (array_key_exists('id', $_REQUEST)) {
-          $reqid = $_REQUEST['id'];
-      } else if (array_key_exists('user_id', $_SESSION)) {
-          $reqid = $_SESSION['user_perid'];
-      } else {
-          $reqid = 21389;
-      }
-      $token_data = array();
-      switch ($reqid) {
-          case '6942':
-              $token_data['email'] = 'syd@sydweinstein.net';
-              $token_data['sub'] = '6942';
-              $userid = 93;
-              $user_perid = 6942;
-              break;
-          default:
-              $token_data['email'] = 'syd.weinstein@philcon.org';
-              $token_data['sub'] = '114007818392249665998';
-              $userid = 88;
-              $user_perid = 21389;
-      }
-
-      $token_data['iat'] = time();
-      $token_data['exp'] = time() + 3600;
-      $_SESSION['user_id'] = $userid;
-      $_SESSION['user_perid'] = $user_perid;
-      return($token_data);
-  }
-
-  // end bypass
-
-  // set redirect URI to current page -- maybe make this better later.
-  $redirect_base = "https://" . $_SERVER['HTTP_HOST'];
-  $redirect_uri = $redirect_base . "/index.php";
-  $state = $_SERVER['PHP_SELF'];
-
-  $client = new Google\Client();
-  $client->setAuthConfig(getConfValue('google','json'));
-  $client->addScope('email');
-  $client->setAccessType('offline');
-  $client->setState($state);
-  $client->setRedirectUri($redirect_uri);
-  //$client->setApprovalPrompt('force');
-
-  //unset id_token if logging out.
-  if(isset($_REQUEST['logout'])) {
-      web_error_log("logout", "google");
-      unset($_SESSION['access_token']);
-      $client->revokeToken();
-      $client->setPrompt('select_account');
-      $client->setState('logout');
-      $auth_url = $client->createAuthUrl();
-      session_regenerate_id(true);
-      header('Location: ' . filter_var($auth_url, FILTER_SANITIZE_URL));
-      exit();
-  }
-
-    //handle code responses
-    if (array_key_exists('code', $_GET)) { // need to handle other auth responses
-        $code = $_GET['code'];
-        $decode_count = 0;
-        while(substr($code, 1,1) == '%') {
-            $code = urldecode($code);
-            if($decode_count > 3) { break; } else {$decode_count++;}
-        }
-        if($decode_count > 0) { web_error_log("decode called $decode_count times" . substr($code, 1, 1)); }
-        $client->authenticate($code);
-        $token = $client->getAccessToken();
-        $state = "";
-        if(array_key_exists('state', $_GET)) {
-            // if I want to do anything with state, this is the place
-            $state = $_GET['state']; 
-        } else {
-            $state = "N/A";
-        }
-        web_error_log("WITH google token: state='$state'", "google");
-        // store in the session also
-        $_SESSION['access_token'] = $token;
-
-        if(!$token) {
-            var_dump($token);
-            exit();
-            }
-        // redirect back to the example
-        // this is probably where to use state...
-        header('Location: ' . filter_var($redirect_uri, FILTER_SANITIZE_URL)); exit();
-    }
-
-  if(isset($_SESSION['access_token']) && $_SESSION['access_token']) {
-    $client->setAccessToken($_SESSION['access_token']);
-    web_error_log("with access token", "google");
-  } else { //if(!array_key_exists('code', $_GET)) {
-    $client->setState($state);
-    $client->setRedirectUri($redirect_uri);
-    if(array_key_exists('user_email', $_SESSION) && ($_SESSION['user_email'])) { $client->setLoginHint($_SESSION['user_email']); }
-    $auth_url = $client->createAuthUrl();
-    if($mode=='page') {
-      header('Location: ' . filter_var($auth_url, FILTER_SANITIZE_URL));
-      if(array_key_exists('logout', $_REQUEST)) {
-        web_error_log("weird logout", "google");
-        exit();
-      }
-      web_error_log("Page WITHOUT access token from: " . $_SERVER['PHP_SELF'], "google");
-    exit();
-    } else { 
-      web_error_log("AJAX WITHOUT access token from: " . $_SERVER['PHP_SELF'], "google");
-      return false; 
-    }
-  }
-
-
-    if($token_data = $client->verifyIdToken()) {
-        web_error_log("verified token for: " . $token_data['email'], "google");
-        return($token_data);
-    } else {
-        web_error_log("UNVERIFIED token from: " . $_SERVER['PHP_SELF'], "google");
-        unset($_SESSION['access_token']);
-        if($mode=='page') {
-          $auth_url = $client->createAuthUrl();
-          header('Location: ' . filter_var($auth_url, FILTER_SANITIZE_URL)); exit();
-        } else { return false; }
-    }
+function isWebRequest() : bool {
+    return isset($_SERVER['HTTP_USER_AGENT']);
 }
 
-function isWebRequest()
-{
-return isset($_SERVER['HTTP_USER_AGENT']);
-}
-
-function page_init($title, $css, $js, $auth) {
+function page_init($title, $css, $js, $authToken) : void {
     global $portalJSVersion, $libJSversion, $controllJSversion, $globalJSversion, $atJSversion, $exhibitorJSversion;
 
-    // auth gets the token in need_login
-    if (is_array($auth) && array_key_exists('email', $auth)) {
-        newUser($auth['email'], array_key_exists('sub', $auth) ? $auth['sub'] : '');
-    }
-    
     $cdn = getTabulatorIncludes();
     $tabbs5=$cdn['tabbs5'];
     $tabcss=$cdn['tabcss'];
@@ -236,12 +95,12 @@ EOF;
 </head>
 <body>
     <?php
-    page_head($title, $auth);
-    con_info($auth);
-    tab_bar($auth, $title);
+    page_head($title, $authToken);
+    con_info($authToken);
+    tab_bar($authToken, $title);
 }
 
-function page_head($title, $auth) {
+function page_head($title, $authToken) : void {
     $displayQ = <<<EOS
 SELECT display
 FROM auth
@@ -265,12 +124,13 @@ EOS;
                     <?php echo getConfValue('con', 'conname');?> ConTroll <?php echo $display; ?> page
                 </h1>
             </div>
+            <?php if ($authToken != null && $authToken->isLoggedIn()) { ?>
             <div class="col-sm-3">
-                <button class="btn" id="login" style="background-color: #ccc; float: right;" onclick="window.location.href='<?php echo $auth ==
-                null ? "index.php?logout" : "?logout"; ?>'">
-                    <?php echo $auth == null ? "Login" : "Logout " . $auth['email']; ?>
+                <button class="btn" id="login" style="background-color: #ccc; float: right;" onclick="window.location.href='index.php?logout';">
+                    Logout <?php echo $authToken->getEmail(); ?>
                 </button>
-            </div>         
+            </div>
+            <?php } ?>
         </div>
     <?php if (getConfValue('reg','test') == 1) { ?>
 
@@ -281,11 +141,11 @@ EOS;
 <?php
 }
 
-function con_info($auth) {
+function con_info($authToken) : void {
     $unlockCount = 0;
     $badgeCount = 0;
-    if(is_array($auth) && checkAuth(array_key_exists('sub', $auth) ? $auth['sub'] : null, 'overview')) {
-        $con = get_con();
+    $con = get_con();
+    if($authToken != null && $authToken->checkAuth('overview')) {
         $cQ = <<<EOS
 SELECT status, count(*) AS num
 FROM reg
@@ -308,17 +168,48 @@ EOS;
                 </span>
             </div>       
         </div>
+    <?php } else if ($authToken == null) { ?>
+        <div class="row" id='regInfo'>
+            <div class="col-sm-auto">
+                <span>Con:
+                    <span class='blocktitle'> <?php echo $con['label']; ?> </span>
+                    <span class="h3 ms-4">Your login is about to expire and will be refreshed.</span>
+            </div>
+        </div>
     <?php } else { ?>
         <div class="row" id='regInfo'>
-            <div class="col-sm-auto">Please log in for convention information.</div>
+            <div class="col-sm-auto">
+                <span>Con:
+                    <span class='blocktitle'> <?php echo $con['label']; ?> </span>
+                    <small>Please log in for convention information.</small>
+            </div>
         </div>
     <?php
     }
 }
 
-function tab_bar($auth, $page) {
-    if (is_array($auth) && array_key_exists('sub', $auth)) {
-        $page_list = getPages($auth['sub']);
+function tab_bar($authToken, $page) : void {
+    if ($authToken == null)
+        $id = 'Refresh';
+    else
+        $id = $authToken->getAuthId();
+
+    if ($id != 'Not Logged In' && $id != 'Refresh') {
+        $page_list = [];
+        $sql = <<<EOS
+SELECT DISTINCT A.id, A.name, A.display, A.sortOrder
+FROM user U
+JOIN user_auth UA ON (U.id = UA.user_id)
+JOIN auth A ON (A.id = UA.auth_id)
+WHERE U.google_sub = ? AND A.page='Y'
+ORDER BY A.sortOrder;
+EOS;
+        $pQ = dbSafeQuery($sql, 's', array($id));
+        if ($pQ !== false) {
+            while ($new_auth = $pQ->fetch_assoc()) {
+                $page_list[] = $new_auth;
+            }
+        }
     } else {
         $page_list = array();
     }
@@ -352,7 +243,7 @@ function tab_bar($auth, $page) {
     <?php
 }
 
-function page_foot($title = "") {
+function page_foot($title = "") : void {
     ?>
     </div>
     <div class="container-fluid">
@@ -366,7 +257,7 @@ function page_foot($title = "") {
 }
 
 // reg_ uses the atcon ajax renders
-function RenderErrorAjax($message_error)
+function RenderErrorAjax($message_error) : void
 {
     global $return500errors;
     if (isset($return500errors) && $return500errors) {
@@ -376,7 +267,7 @@ function RenderErrorAjax($message_error)
     }
 }
 
-function Render500ErrorAjax($message_error)
+function Render500ErrorAjax($message_error) : void
 {
     // pages which know how to handle 500 errors are expected to format the error message appropriately.
     header($_SERVER['SERVER_PROTOCOL'] . ' 500 Internal Server Error', true, 500);
@@ -384,7 +275,7 @@ function Render500ErrorAjax($message_error)
 }
 
 // draw a bs5 modal popup for editing a field in tinymce
-function bs_tinymceModal() {
+function bs_tinymceModal() : void {
     $html = <<<EOS
     <div id='tinymce-modal' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Edit field in TinyMCE' aria-hidden='true' style='--bs-modal-width: 80%;'>
     <div class='modal-dialog'>
@@ -421,7 +312,7 @@ EOS;
     echo $html;
 }
 
-function startEndDateTimeToNextYear($datestr) {
+function startEndDateTimeToNextYear($datestr) : string {
     global $monthLengths, $oneYearInterval;
 
     $date = date_create($datestr);
@@ -450,31 +341,31 @@ function startEndDateTimeToNextYear($datestr) {
     return "$nYear-$month-$day $time";
 }
 
-    function startEndDateToNextYear($datestr) {
-        global $monthLengths, $oneYearInterval;
+function startEndDateToNextYear($datestr) : string {
+    global $monthLengths, $oneYearInterval;
 
-        $date = date_create($datestr);
-        [$day, $month, $year, $dow, $leapYear] = explode(',', date_format($date, 'd,m,Y,w,L'));
-        $nextYear = date_add($date, $oneYearInterval);
-        [$nYear, $nyDow, $nyLeapYear] = explode(',', date_format($nextYear, 'Y,w,L'));
+    $date = date_create($datestr);
+    [$day, $month, $year, $dow, $leapYear] = explode(',', date_format($date, 'd,m,Y,w,L'));
+    $nextYear = date_add($date, $oneYearInterval);
+    [$nYear, $nyDow, $nyLeapYear] = explode(',', date_format($nextYear, 'Y,w,L'));
 
-        // rules;
-        //  add one year
-        //      if last day of month stop there
-        //      else make same day of week
-        //
-        $lastDay = $monthLengths[$month + 0];
-        if ($month == 2 && $leapYear == 1) {
-            $lastDay++;
-        }
-        if ($day != 1) {
-            if ($day == $lastDay && $month == 2) {
-                $day = $monthLengths[2] + $nyLeapYear;
-            }
-            else if ($day != $lastDay) {
-                $day += $dow - $nyDow;
-            }
-        }
-
-        return "$nYear-$month-$day";
+    // rules;
+    //  add one year
+    //      if last day of month stop there
+    //      else make same day of week
+    //
+    $lastDay = $monthLengths[$month + 0];
+    if ($month == 2 && $leapYear == 1) {
+        $lastDay++;
     }
+    if ($day != 1) {
+        if ($day == $lastDay && $month == 2) {
+            $day = $monthLengths[2] + $nyLeapYear;
+        }
+        else if ($day != $lastDay) {
+            $day += $dow - $nyDow;
+        }
+    }
+
+    return "$nYear-$month-$day";
+}

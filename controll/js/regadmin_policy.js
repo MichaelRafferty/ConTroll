@@ -154,6 +154,7 @@ class policySetup {
             method: 'POST',
             data: postdata,
             success: function (data, textStatus, jhXHR) {
+                checkRefresh(data);
                 _this.draw(data, textStatus, jhXHR);
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -382,6 +383,7 @@ class policySetup {
                         _this.#policySaveBtn.disabled = false;
                         return false;
                     }
+                    checkRefresh(data);
                     policy.close();
                     policy.open();
                     show_message(data['success'], 'success');

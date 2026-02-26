@@ -1,13 +1,18 @@
 <?php
 require_once "../lib/base.php";
+require_once '../lib/sessionAuth.php';
 
-$check_auth = google_init("ajax");
-$perm = "people";
+// use common global Ajax return functions
+global $returnAjaxErrors, $return500errors;
+$returnAjaxErrors = true;
+$return500errors = true;
 
-$response = array("post" => $_POST, "get" => $_GET, "perm"=>$perm);
-
-if($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
-    $response['error'] = "Authentication Failed";
+$perm = 'people';
+$response = array ('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
+$authToken = new authToken('script');
+$response['tokenStatus'] = $authToken->checkToken();
+if (!$authToken->isLoggedIn() || !$authToken->checkAuth($perm)) {
+    $response['error'] = 'Authentication Failed';
     ajaxSuccess($response);
     exit();
 }
@@ -25,6 +30,30 @@ FROM newperson n
 WHERE perid IS NULL;
 EOS;
 
+$searchPattern = '';
+$cte = '';
+$cteJoin = '';
+if (array_key_exists('searchPattern', $_POST) && $_POST['searchPattern'] != '') {
+    $searchPattern = '%' . $_POST['searchPattern'] . '%';
+    $cte = <<<EOS
+), ids AS (
+    SELECT id AS matchId
+    FROM newperson
+    WHERE
+        (LOWER(legalName) LIKE ?
+        OR LOWER(badge_name) LIKE ?
+        OR LOWER(badgeNameL2) LIKE ?
+        OR LOWER(address) LIKE ?
+        OR LOWER(addr_2) LIKE ?
+        OR LOWER(email_addr) LIKE ?
+        OR LOWER(CONCAT(first_name, ' ', last_name)) LIKE ?
+        OR LOWER(CONCAT(last_name, ' ', first_name)) LIKE ?
+        OR LOWER(TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), ' +', ' '))) LIKE ?)
+    ORDER BY last_name, first_name, id
+EOS;
+    $cteJoin = 'JOIN ids ON ids.matchId = n.id';
+}
+
 $unQ = <<<EOS
 WITH mby AS (
 SELECT n.id, count(nm.id) manages
@@ -39,6 +68,7 @@ JOIN reg r ON r.newperid = n.id
 JOIN memList m ON r.memId = m.id
 WHERE r.perid IS NULL AND n.perid IS NULL AND r.status IN ('paid', 'unpaid', 'plan', 'upgraded')
 GROUP BY n.id
+$cte
 )
 SELECT n.*, mby.manages, r.numRegs, r.price, r.paid, r.regs,
 TRIM(REGEXP_REPLACE(CONCAT_WS(' ', n.first_name, n.middle_name, n.last_name, n.suffix), ' +', ' ')) AS fullName,
@@ -53,6 +83,7 @@ CASE
     ELSE null
 END AS managerType, IFNULL(n.managedBy, n.managedByNew) AS managerId
 FROM newperson n
+$cteJoin
 LEFT OUTER JOIN mby ON mby.id = n.id
 LEFT OUTER JOIN newperson mgrN ON n.managedByNew = mgrN.id
 LEFT OUTER JOIN perinfo mgrP ON n.managedBy = mgrP.id
@@ -63,7 +94,7 @@ LIMIT $limit;
 EOS;
 
 $ctR = dbQuery($ctQ);
-if ($ctQ === false) {
+if ($ctR === false) {
     $response['error'] = 'Count unmatched failed';
     ajaxSuccess($response);
 }
@@ -73,8 +104,12 @@ $ctR->free();
 $unmatched = [];
 
 if ($unmatchedCnt > 0) {
+    if ($cte == '')
+        $unR = dbQuery($unQ);
+    else
+        $unR = dbSafeQuery($unQ,'sssssssss', array($searchPattern, $searchPattern, $searchPattern, $searchPattern, $searchPattern,
+            $searchPattern, $searchPattern, $searchPattern, $searchPattern));
 
-    $unR = dbQuery($unQ);
     if ($unR === false) {
         $response['error'] = 'Select unmatched failed';
         ajaxSuccess($response);

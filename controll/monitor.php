@@ -1,11 +1,11 @@
 <?php
 require_once "lib/base.php";
-//initialize google session
-$need_login = google_init("page");
+require_once 'lib/sessionAuth.php';
 
-$page = "monitor";
-if(!$need_login or !checkAuth($need_login['sub'], $page)) {
-    bounce_page("index.php");
+$page = 'monitor';
+$authToken = new authToken('web');
+if (!$authToken->isLoggedIn() || !$authToken->checkAuth($page)) {
+    bounce_page('index.php');
 }
 
 page_init($page,
@@ -14,12 +14,10 @@ page_init($page,
                 'css/base.css'
             ),
     /*js*/  array(
-                'js/d3.js','js/lodash.min.js',
-
                 'https://cdn.plot.ly/plotly-2.35.2.min.js',
                 'js/monitor.js'
             ),
-            $need_login);
+            $authToken);
 
 $con = get_conf("con");
 $conid=$con['id'];
@@ -29,6 +27,7 @@ $config_vars['debug'] = getConfValue('debug', 'controll_stats', 0);
 $config_vars['conid'] = $conid;
 $config_vars['minComp'] = $con['minComp'];
 $config_vars['compLen'] = $con['compLen'];
+$config_vars['tokenStatus'] = $authToken->checkToken();
 ?>
 <script type='text/javascript'>
     var config = <?php echo json_encode($config_vars); ?>;

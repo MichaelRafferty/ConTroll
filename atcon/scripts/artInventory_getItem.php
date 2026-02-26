@@ -10,12 +10,20 @@ $perm='artinventory';
 $check_auth = check_atcon($perm, $conid);
 if($check_auth == false) { 
     ajaxSuccess(array('error' => "Authentication Failure"));
+    exit();
 }
 
 if(isset($_POST['artist'])) {
     $artist = $_POST['artist'];
 } else {
     ajaxSuccess(array('error' => 'Need an Artist Number'));
+    exit();
+}
+if(isset($_POST['region'])) {
+    $region = $_POST['region'];
+} else {
+    ajaxSuccess(array('error' => 'Need an Region'));
+    exit();
 }
 if (isset($_POST['item'])) {
     $item = $_POST['item'];
@@ -35,10 +43,12 @@ FROM artItems I
     JOIN exhibitorRegionYears eRY ON (eRY.id=I.exhibitorRegionYearId)
     JOIN exhibitorYears eY ON eY.id = eRY.exhibitorYearId
     JOIN exhibitors e ON e.id=eY.exhibitorId
-WHERE eRY.exhibitorNumber=? AND eY.conid=?
+    JOIN exhibitsRegionYears xRY ON (xRY.id=eRY.exhibitsRegionYearId)
+    JOIN exhibitsRegions xR on (xR.id=xRY.exhibitsRegion)
+WHERE eRY.exhibitorNumber=? AND eY.conid=? AND xR.shortname=?
 EOS;
-$itemI = 'ii';
-$itemP = array($artist, $conid);
+$itemI = 'iis';
+$itemP = array($artist, $conid, $region);
 
 if($item == '') {
     $itemQ .= ";";

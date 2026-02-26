@@ -33,11 +33,8 @@ class PosCart {
     #addEditTitle = null;
     #addEditFullName = null;
     #addEditPerid = null;
-    #ageButtonsDiv = null;
     #membershipButtonsDiv = null;
     #memberAge = null;
-    #memberAgeLabel = null;
-    #ageBracketMsg = null;
     #currentAge = null;
     #currentPerid = null;
     #currentPerIdx = null;
@@ -45,7 +42,6 @@ class PosCart {
     #allMemberships = [];
     #cartContentsDiv = null;
     #cartChanges = 0;
-    #rebuildAgeButtons = false;
     #newIDKey = -1;
     #newMembershipSave = null;
     #amountField = null;
@@ -58,6 +54,7 @@ class PosCart {
     #review_required_first = ['first_name', 'email_addr', 'address_1', 'city', 'state', 'postal_code'];
     #review_required_fields = this.#review_required_all;
     #review_prompt_fields = [ 'phone' ];
+    #age_select = document.getElementById('age').innerHTML;
     #country_select = document.getElementById('country').innerHTML;
 
 // Pay items
@@ -73,7 +70,7 @@ class PosCart {
 
 // initialization
     constructor() {
-        var id;
+        let id;
 
         this.#locale = config.locale;
         this.#currencyFmt = new Intl.NumberFormat(this.#locale, {
@@ -95,8 +92,6 @@ class PosCart {
             this.#addEditBody = document.getElementById('addEditBody');
             this.#addEditTitle = document.getElementById('addEditTitle');
             this.#addEditFullName = document.getElementById('addEditFullName');
-            this.#ageButtonsDiv = document.getElementById('ageButtons');
-            this.#ageBracketMsg = document.getElementById('ageBracketMsg');
             this.#membershipButtonsDiv = document.getElementById('membershipButtons');
             this.#cartContentsDiv = document.getElementById('cartContentsDiv');
         }
@@ -189,8 +184,8 @@ class PosCart {
     }
 
     getCouponPmt() {
-        for (var rownum in this.#cartPmt) {
-            var prow = this.#cartPmt[rownum];
+        for (let rownum in this.#cartPmt) {
+            let prow = this.#cartPmt[rownum];
             if (prow.type == 'coupon')
                 return make_copy(prow);
         }
@@ -245,42 +240,58 @@ class PosCart {
     }
 
     getRegFullName(perid) {
-        var index = this.#cartPerinfoMap.get(perid);
+        let index = this.#cartPerinfoMap.get(perid);
         return this.#cartPerinfo[index].fullName;
     }
 
     getRegLabel(perid, index) {
-        var pindex = this.#cartPerinfoMap.get(perid);
-        var perinfo = this.#cartPerinfo[pindex];
-        var mem = perinfo.memberships[index];
+        let pindex = this.#cartPerinfoMap.get(perid);
+        let perinfo = this.#cartPerinfo[pindex];
+        let mem = perinfo.memberships[index];
         return mem.label;
     }
 
     getRegNote(perid, index) {
-        var pindex = this.#cartPerinfoMap.get(perid);
-        var perinfo = this.#cartPerinfo[pindex];
-        var mem = perinfo.memberships[index];
+        let pindex = this.#cartPerinfoMap.get(perid);
+        let perinfo = this.#cartPerinfo[pindex];
+        let mem = perinfo.memberships[index];
         return mem.reg_notes;
     }
 
     getNewRegNote(perid, index) {
-        var pindex = this.#cartPerinfoMap.get(perid);
-        var perinfo = this.#cartPerinfo[pindex];
-        var mem = perinfo.memberships[index];
+        let pindex = this.#cartPerinfoMap.get(perid);
+        let perinfo = this.#cartPerinfo[pindex];
+        let mem = perinfo.memberships[index];
         return mem.new_reg_note;
     }
 
+    // managerSelect options - return select array of potential managers in cart
+    getManagerSelect() {
+        let optionList = "";
+        for (let rownum in this.#cartPerinfo) {
+            let prow = this.#cartPerinfo[rownum];
+            if (prow.hasOwnProperty('managedBy') == false || prow.managedBy === null || prow.managedBy === 0) {
+                // this is a potential manager
+                optionList += "<option value=" + prow.perid + ">" + prow.fullName + ' (' + prow.perid + ")</option>\n";
+            }
+        }
+        if (optionList.length > 0) {
+            optionList = "<option value=''>Unmanaged</option>\n" + optionList;
+        }
+        return optionList;
+    }
+
     setRegNote(perid, index, note) {
-        var pindex = this.#cartPerinfoMap.get(perid);
+        let pindex = this.#cartPerinfoMap.get(perid);
         this.#cartPerinfo[pindex].memberships[index].new_reg_note = note;
         this.#cartPerinfo[pindex].dirty = true;
         this.drawCart();
     }
 
     setCouponDisount(perid, regid, paid, couponId, discount) {
-        var pindex = this.#cartPerinfoMap.get(perid);
-        var mem =  this.#cartPerinfo[pindex].memberships;
-        for (var i = 0; i < mem.length; i++) {
+        let pindex = this.#cartPerinfoMap.get(perid);
+        let mem =  this.#cartPerinfo[pindex].memberships;
+        for (let i = 0; i < mem.length; i++) {
             if (mem[i].regid == regid) {
                 this.#cartPerinfo[pindex].memberships[i].paid = paid;
                 this.#cartPerinfo[pindex].memberships[i].couponDiscount = discount;
@@ -318,11 +329,25 @@ class PosCart {
         return make_copy(this.#cartPmt);
     }
 
+    // return the age based on memberships in the cart row
+    #getAge(p) {
+        if (p.memberships) {
+            let memberships = p.memberships;
+            for (let i = 0; i < memberships.length; i++) {
+                let mbr = memberships[i];
+                if (mbr.memAge == 'all')
+                    continue;
+                return mbr.memAge;
+            }
+        }
+        return '';
+    }
+
     allowAddCouponToCart() {
         this.#anyUnpaid = false;
         if (coupon.isCouponActive())
             return true;
-        var numCoupons = pos.everyMembership(this.#cartPerinfo, function(_this, mem) {
+        let numCoupons = pos.everyMembership(this.#cartPerinfo, function(_this, mem) {
             if (isPrimary(mem.conid, mem.memType, mem.memCategory, mem.price, 'coupon') && mem.status != 'paid')
                 cart.setAnyUnpaid();
             if (mem.coupon)
@@ -360,16 +385,33 @@ class PosCart {
 
     // add search result_perinfo record to the cart
     add(p, first=false) {
-        var i;
-        var pindex = this.#cartPerinfo.length;
+        let i;
+        let pindex = this.#cartPerinfo.length;
+        p.memberAgeType = this.#getAge(p);
+        // force reverify if not this year and age is of type verify
+        if (p.currentAgeType == null || p.currentAgeType == undefined)
+            p.currentAgeType = '';
+        if (p.currentAgeConId != config.conid && p.currentAgeType != '') {
+            let ageItem = ageListIdx[p.currentAgeType];
+            if (ageItem.verify == 'Y') {
+                p.currentAgeType = '';
+                pos.setReviewDirty();
+            }
+        }
+        // if no age, default to membership age type if any
+        if (p.currentAgeType == '' && p.memberAgeType != '') {
+            p.currentAgeType = p.memberAgeType;
+            p.currentAgeConId = config.conid;
+            pos.setReviewDirty();
+        }
         if (first) {
             this.#cartPerinfo.unshift(make_copy(p));
             // need to renumber the existing cart
             for (pindex = 1; i < this.#cartPerinfo.length; pindex++) {
                 this.#cartPerinfo[pindex].index = i;
                 this.#cartPerinfoMap.set(this.#cartPerinfo[pindex].perid, pindex);
-                var mrows = this.#cartPerinfo[pindex].memberships;
-                for (var mrownum in mrows) {
+                let mrows = this.#cartPerinfo[pindex].memberships;
+                for (let mrownum in mrows) {
                     this.#cartPerinfo[pindex].memberships[mrownum].index = mrownum;
                     this.#cartPerinfo[pindex].memberships[mrownum].pindex = pindex;
                 }
@@ -378,7 +420,7 @@ class PosCart {
         }
         else {
             // see if this person is the manager of anyone in the cart
-            var added = false;
+            let added = false;
             for (i = 0; i < this.#cartPerinfo.length; i++) {
                 if (this.#cartPerinfo[i].managedBy == p.perid) {
                     this.#cartPerinfo.unshift(make_copy(p));
@@ -391,18 +433,23 @@ class PosCart {
         }
         this.#cartPerinfo[pindex].index = pindex;
         this.#cartPerinfoMap.set(this.#cartPerinfo[pindex].perid, pindex);
-        var mrows = p.memberships;
-        for (var mrownum in mrows) {
-            this.#cartPerinfo[pindex].memberships[mrownum].index = mrownum;
-            this.#cartPerinfo[pindex].memberships[mrownum].pindex = pindex;
-            if (mrows[mrownum].couponDiscount === undefined) {
-                this.#cartPerinfo[pindex].memberships[mrownum].couponDiscount = 0.00;
-                this.#cartPerinfo[pindex].memberships[mrownum].coupon = null;
+        if (p.memberships) {
+            let mrows = p.memberships;
+            this.#cartPerinfo[pindex].memberships = make_copy(mrows);
+            for (let mrownum = 0; mrownum < mrows.length; mrownum++) {
+                this.#cartPerinfo[pindex].memberships[mrownum].index = mrownum;
+                this.#cartPerinfo[pindex].memberships[mrownum].pindex = pindex;
+                if (mrows[mrownum].couponDiscount === undefined) {
+                    this.#cartPerinfo[pindex].memberships[mrownum].couponDiscount = 0.00;
+                    this.#cartPerinfo[pindex].memberships[mrownum].coupon = null;
+                }
             }
+        } else {
+            this.#cartPerinfo[pindex].memberships = [];
         }
         // default any missing policies
-        for (var policynum in allPolicies) {
-            var p = allPolicies[policynum];
+        for (let policynum in policies) {
+            let p = policies[policynum];
             if (!this.#cartPerinfo[pindex].hasOwnProperty('policies')) {
                 this.#cartPerinfo[pindex].policies = {};
             }
@@ -425,7 +472,7 @@ class PosCart {
         if (!pos.confirmDiscardAddEdit(false))
             return;
 
-        var index = this.#cartPerinfoMap.get(perid);
+        let index = this.#cartPerinfoMap.get(perid);
         if (!this.confirmDiscardCartEntry(index, false))
             return;
 
@@ -436,15 +483,15 @@ class PosCart {
 
     // get into the add/edit fields the requested cart entry
     getAddEditFields(perid) {
-        var cartrow = this.#cartPerinfo[this.#cartPerinfoMap.get(perid)];
+        let cartrow = this.#cartPerinfo[this.#cartPerinfoMap.get(perid)];
 
         // set perinfo values
         pos.editFromCartRow(cartrow);
     }
 
     // update the cart entry from the add/edit field row
-    updateEntry(edit_index, row, policies) {
-        var cart_row = this.#cartPerinfo[edit_index];
+    updateEntry(edit_index, row) {
+        let cart_row = this.#cartPerinfo[edit_index];
 
         cart_row.first_name = row.first_name;
         cart_row.middle_name = row.middle_name;
@@ -462,14 +509,26 @@ class PosCart {
         cart_row.country = row.country;
         cart_row.email_addr = row.email_addr;
         cart_row.phone = row.phone;
+        cart_row.fullName = row.fullName;
+        cart_row.currentAgeType = row.currentAgeType;
+        cart_row.currentAgeConId = row.currentAgeConId;
         cart_row.active = 'Y';
+        if (row.hasOwnProperty('managedBy')) {
+            let managedBy = row.managedBy;
+            if (managedBy == '' || managedBy == null)
+               delete cart_row.managedBy;
+            else
+                cart_row.managedBy = managedBy;
+        } else {
+            delete cart_row.managedBy;
+        }
 
         // policies - first check if the row has any, then update the row with the policies
         if (!cart_row.hasOwnProperty('policies')) {
             cart_row.policies = {};
         }
-        for (var pol in policies) {
-            var policyName = policies[pol].policy;
+        for (let pol in policies) {
+            let policyName = policies[pol].policy;
 
             if (!cart_row.policies.hasOwnProperty(policyName)) {
                 cart_row.policies[policyName] = {};
@@ -489,11 +548,11 @@ class PosCart {
             return true;
         }
 
-        var dirty = false;
+        let dirty = false;
         if (index >= 0) {
             dirty = this.#cartPerinfo[index].dirty === true;
         } else {
-            for (var row in this.#cartPerinfo) {
+            for (let row in this.#cartPerinfo) {
                 dirty ||= this.#cartPerinfo[row].dirty === true;
             }
         }
@@ -504,7 +563,7 @@ class PosCart {
         if (silent)
             return false;
 
-        var msg = "Discard updated cart items?";
+        let msg = "Discard updated cart items?";
         if (index >= 0)
             msg = "Discard updated cart items for " + (this.#cartPerinfo[index].first_name + ' ' + this.#cartPerinfo[index].last_name).trim();
 
@@ -517,29 +576,61 @@ class PosCart {
 
 // use the memRules engine to add/edit the memberships for this person
     addEditMemberships(index) {
-        var cart_row = this.#cartPerinfo[index];
+        let cart_row = this.#cartPerinfo[index];
+
+        // set the current age type
+        this.#memberAge = null;
+        if (cart_row.memberAgeType && cart_row.memberAgeType != '' && cart_row.memberAgeType != 'all') {
+            this.#memberAge = cart_row.memberAgeType;
+            this.#currentAge = cart_row.memberAgeType;
+        } else if (cart_row.currentAgeConId == config.conid)
+            this.#currentAge = cart_row.currentAgeType;
+        else if (cart_row.currentAgeType && cart_row.currentAgeType != '') {
+            let ageItem = ageListIdx[cart_row.currentAgeType];
+            if (ageItem.verify == 'Y') {
+                this.#currentAge = null;
+            } else {
+                this.#currentAge = cart_row.currentAgeType;
+                this.#cartPerinfo[index].currentAgeConId = config.conid;
+            }
+        } else
+            this.#currentAge = null;
+
         this.#addEditPerid = cart_row.perid;
+        let managedByLogin = false;
+        let loginPrimary = false;
         if (this.#addEditModal) {
             this.#addEditFullName.innerHTML = cart_row.fullName;
             this.#memberships = [];
             this.#allMemberships = [];
+            let matchId = this.#cartPerinfo[index].perid;
+            let matchMan = this.#cartPerinfo[index].managedBy;
+
+            if (matchMan != null) {
+                for (let index = 0; index < this.#cartPerinfo.length; index++) {
+                    let entry = this.#cartPerinfo[index];
+                    if (entry.perid != matchId && entry.perid == matchMan) {
+                        managedByLogin = true;
+                        for (let mindex = 0; mindex < entry.memberships.length; mindex++) {
+                            let mbrship = entry.memberships[mindex];
+                            if (isPrimary(mbrship.conid, mbrship.memType, mbrship.memCategory, mbrship.memPrice))
+                                loginPrimary = true;
+                        }
+                    }
+                }
+            }
+            config.loginPrimary = loginPrimary;
+            config.managedByLogin = managedByLogin;
 
             // build the current values of the memberships
-            pos.everyMembership(this.#cartPerinfo, function(_this, mem) {
+            pos.everyMembership(this.#cartPerinfo, function(_this, mem, perinfo) {
+                mem.currentAgeConId = perinfo.currentAgeConId;
+                mem.currentAgeType = perinfo.currentAgeType;
                 if (cart_row.perid == mem.perid ) {
                     cart.pushMembership(mem);
                 }
                 cart.pushAllMembership(mem);
             });
-            this.buildAgeButtons();
-            this.#rebuildAgeButtons = false;
-            if (this.#currentAge != null) {
-                this.#ageBracketMsg.innerHTML = "To change the age, you need to remove any membership that is specific to that age from the cart."
-            } else if (config.allAgeFirst == 1) {
-                this.#ageBracketMsg.innerHTML = "Select a membership below, or an age above to set the age and filter the memberships available."
-            } else {
-                this.#ageBracketMsg.innerHTML = "Select an age above to set the age and filter the memberships available."
-            }
             this.buildRegItemButtons();
             this.redrawRegItems(index);
             this.#currentPerid = cart_row.perid;
@@ -554,6 +645,13 @@ class PosCart {
 // saveMembershipChange: save the changes to the perid's memberships back to the cart perinfo record
     saveMembershipChange() {
         this.#cartPerinfo[this.#currentPerIdx].memberships = make_copy(this.#memberships);
+
+        if ((!this.#cartPerinfo[this.#currentPerIdx].currentAgeType) || this.#cartPerinfo[this.#currentPerIdx].currentAgeType == '') {
+            this.#cartPerinfo[this.#currentPerIdx].currentAgeType = this.#memberAge;
+        }
+        if (this.#memberships.length > 0 && this.#cartPerinfo[this.#currentPerIdx].currentAgeType != '')
+            this.#cartPerinfo[this.#currentPerIdx].currentAgeConId = config.conid;
+        this.#cartPerinfo[this.#currentPerIdx].memberAgeType = this.#memberAge;
         this.#memberships = [];
         this.#allMemberships = [];
         this.#currentPerIdx = null;
@@ -564,30 +662,31 @@ class PosCart {
 
 // Redraw Reg Items - redraw the items for this person
     redrawRegItems(index) {
-        var totalDue = 0;
-        var countMemberships = 0;
-        var unpaidMemberships = 0;
-        var html = `
+        let totalDue = 0;
+        let countMemberships = 0;
+        let unpaidMemberships = 0;
+        let html = `
             <div class="row">
                 <div class="col-sm-2"><b>Actions</b></div>
                 <div class="col-sm-1" style='text-align: right;'><b>Status</b></div>
                 <div class="col-sm-1" style='text-align: right;'><b>Price</b></div>
                 <div class="col-sm-1" style='text-align: right;'><b>Paid</b></div>
                 <div class="col-sm-4"><b>Membership</b></div>
+                <div class="col-sm-4"><b>Membership</b></div>
             </div>
 `;
-        var col1 = '';
-        for (var row in this.#memberships) {
-            var membershipRec = this.#memberships[row];
+        let col1 = '';
+        for (let row in this.#memberships) {
+            let membershipRec = this.#memberships[row];
             countMemberships++;
-            var amount_due = Number(membershipRec.price) - (Number(membershipRec.paid) + Number(membershipRec.couponDiscount));
-            var label = (membershipRec.conid != config.conid ? membershipRec.conid + ' ' : '') + membershipRec.label +
+            let amount_due = Number(membershipRec.price) - (Number(membershipRec.paid) + Number(membershipRec.couponDiscount));
+            let label = (membershipRec.conid != config.conid ? membershipRec.conid + ' ' : '') + membershipRec.label +
                 (membershipRec.memAge != 'all' ? (' ' + ageListIdx[membershipRec.memAge].label) : '');
             if ((!membershipRec.toDelete) && membershipRec.status.includes(this.#isDueStatuses))
                 totalDue += amount_due;
 
-            var strike = false
-            var btncolor = 'btn-secondary';
+            let strike = false
+            let btncolor = 'btn-secondary';
             col1 = membershipRec.create_date;
             if (membershipRec.toDelete) {
                 strike = true;
@@ -632,74 +731,19 @@ class PosCart {
         this.#cartContentsDiv.innerHTML = html;
     }
 
-// age buttons
-    buildAgeButtons() {
-        this.#currentAge = null;
-        this.#memberAge = null;
-        // first check if there is a current age;
-        for (var row in this.#memberships) {
-            var mbr = this.#memberships[row];
-            if (mbr.memAge != 'all') {
-                this.#memberAge = mbr.memAge;
-                this.#memberAgeLabel = ageListIdx[this.#memberAge].label;
-                if (this.#currentAge == null)
-                    this.#currentAge = this.#memberAge
-                break;
-            }
-        }
-
-        var color = this.#memberAge != null ? 'btn-warning' : (this.#currentAge != null ? 'btn-secondary' : 'btn-primary');
-        // now loop over age list and build each button
-        var html = '';
-        for (row in ageList) {
-            var age = ageList[row];
-            if (age.ageType == 'all')
-                continue;
-
-            html += '<div class="col-sm-auto"><button id="ageBtn-' + age.ageType + '" class="btn btn-sm h-100 ' +
-                ((this.#currentAge == age.ageType || this.#memberAge == age.ageType) ? 'btn-primary' : color) + ' mt-1 mb-1" onclick="cart.ageSelect(' + "'" + age.ageType + "'" + ')">' +
-                age.label + ' (' + age.shortname + ')' +
-                '</button></div>' + "\n";
-        }
-        this.#ageButtonsDiv.innerHTML = html;
-    }
-
-    // ageSelect - redo all the age buttons on selecting one of them, then move on to the next page
-    ageSelect(ageType) {
-        if (this.#memberAge != null && ageType != this.#memberAge) {
-            show_message("You already have a membership of the age '" + this.#memberAgeLabel, "warn", 'aeMessageDiv');
-            return;
-        }
-
-        this.#currentAge = ageType;
-        var color = this.#memberAge != null ? 'btn-warning' : (this.#currentAge != null ? 'btn-secondary' : 'btn-primary');
-        for (var row in ageList) {
-            var age = ageList[row];
-            if (age.ageType == 'all')
-                continue;
-            var btn = document.getElementById('ageBtn-' + age.ageType);
-            btn.classList.remove('btn-primary');
-            btn.classList.remove('btn-secondary');
-            btn.classList.remove('btn-warning');
-            btn.classList.add((this.#currentAge == age.ageType || this.#memberAge == age.ageType) ? 'btn-primary' : color);
-        }
-        // new age selected, redraw membership buttons
-        this.buildRegItemButtons();
-    }
-
     // membership buttons
     buildRegItemButtons() {
         // loop over memList and build each button
-        var html = '';
-        var rules = new MembershipRules(pos.getConid(), this.#memberAge != null ? this.#memberAge : this.#currentAge, this.#memberships, this.#allMemberships);
-        var atcon = false;
+        let html = '';
+        let rules = new MembershipRules(pos.getConid(), this.#memberAge != null ? this.#memberAge : this.#currentAge, this.#memberships, this.#allMemberships);
+        let atcon = false;
         if (config.hasOwnProperty('posType')) {
             atcon = config.posType == 'a';
         }
 
-        var noAgeFilter = config.allAgeFirst == 1 && this.#currentAge == null;
-        for (var row in memList) {
-            var mem = memList[row];
+        let noAgeFilter = this.#currentAge == null;
+        for (let row in memList) {
+            let mem = memList[row];
 
             // if atcon, skip items without atcon = 'Y'
             if (atcon && mem.atcon != 'Y')
@@ -714,7 +758,7 @@ class PosCart {
 
             // apply age filter from age select
             if (noAgeFilter || mem.memAge == 'all' || mem.memAge == this.#currentAge) {
-                var memLabel = mem.label;
+                let memLabel = mem.label;
                 if (memCategories[mem.memCategory].variablePrice != 'Y') {
                     memLabel += ' (' + mem.price + ')';
                 }
@@ -734,7 +778,7 @@ class PosCart {
             return;
         }
 
-        var mbr = this.#memberships[row];
+        let mbr = this.#memberships[row];
         if (mbr.status != 'unpaid' && !pos.getManager()) {
             show_message("Cannot remove that registration item, only unpaid items can be deleted.", "warn", 'aeMessageDiv');
             return
@@ -753,11 +797,11 @@ class PosCart {
         // check if anything else in the cart depends on this membership
         // trial the delete
         mbr.toDelete = true;
-        var rules = new MembershipRules(config.conid, this.#memberAge != null ? this.#memberAge : this.#currentAge, this.#memberships, this.#allMemberships);
-        for (var nrow in this.#memberships) {
+        let rules = new MembershipRules(config.conid, this.#memberAge != null ? this.#memberAge : this.#currentAge, this.#memberships, this.#allMemberships);
+        for (let nrow in this.#memberships) {
             if (row == nrow)    // skip checking ourselves
                 continue;
-            var nmbr = this.#memberships[nrow];
+            let nmbr = this.#memberships[nrow];
             if (nmbr.toDelete)
                 continue;
             nmbr.toDelete = true;
@@ -772,6 +816,7 @@ class PosCart {
 
 
         this.#cartChanges++;
+        pos.setReviewDirty();
         this.redrawRegItems(this.#currentPerIdx);
         this.buildRegItemButtons();
     }
@@ -784,13 +829,13 @@ class PosCart {
             return;
         }
 
-        var mbr = this.#memberships[row];
+        let mbr = this.#memberships[row];
         if (!mbr.toDelete) {
             show_message("Cannot restore this membership, it is not marked deleted.", "warn", 'aeMessageDiv');
             return
         }
 
-        var rules = new MembershipRules(config.conid, this.#memberAge != null ? this.#memberAge : this.#currentAge, this.#memberships, this.#allMemberships);
+        let rules = new MembershipRules(config.conid, this.#memberAge != null ? this.#memberAge : this.#currentAge, this.#memberships, this.#allMemberships);
         if (rules.testMembership(mbr, false) == false) {
             show_message("You cannot restore " + mbr.label + " because it requires some other deleted membership. Look at your memberships marked 'Restore'" +
                 " and restore its prerequesite", "warn", 'aeMessageDiv');
@@ -805,18 +850,12 @@ class PosCart {
     // add to cart
     regItemAdd(id) {
         clear_message('aeMessageDiv');
-        var memrow = findMembership(id);
+        let memrow = findMembership(id);
         if (memrow == null)
             return;
 
-        // set age if age is null
-        if (this.#currentAge == null) {
-            this.#ageBracketMsg.innerHTML = "To change the age, you need to remove any membership that is specific to that age from the cart."
-            this.#rebuildAgeButtons = true;
-        }
-
-        var now = new Date();
-        var newMembership = {};
+        let now = new Date();
+        let newMembership = {};
         newMembership.id = this.#newIDKey;
         newMembership.create_date = now.getFullYear() + '-' + ('0' + (now.getMonth() + 1)).slice(-2) + '-' + ('0' + now.getDate()).slice(-2) + ' ' +
             ('0' + now.getHours()).slice(-2) + ':' + ('0' + now.getMinutes()).slice(-2) + ':' + ('0' + now.getSeconds()).slice(-2);
@@ -833,9 +872,9 @@ class PosCart {
         newMembership.memType = memrow.memType;
         newMembership.memAge = memrow.memAge;
         newMembership.perid =  this.#addEditPerid;
-        var memCat = memCategories[memrow.memCategory];
+        let memCat = memCategories[memrow.memCategory];
         if (memCat.variablePrice == 'Y') {
-            var mem = memListIdx[newMembership.memId];
+            let mem = memListIdx[newMembership.memId];
             // update the modal with the item
             this.#vpBody.innerHTML = `
     <div class="row">
@@ -852,7 +891,7 @@ class PosCart {
             this.#amountField.addEventListener('keyup', cart.amountEventListener);
             newMembership.minPrice = mem.price;
             this.#newMembershipSave = newMembership;
-            var amountField = this.#amountField;
+            let amountField = this.#amountField;
             setTimeout(() => { amountField.focus({focusVisible: true}); }, 600);
             return;
         }
@@ -871,9 +910,9 @@ class PosCart {
 
     // vpsubmit - handle return from modal popup
     vpSubmit() {
-        var priceField = document.getElementById('vpPrice');
-        var price = Number(priceField.value).toFixed(2);
-        var newMembership = this.#newMembershipSave;
+        let priceField = document.getElementById('vpPrice');
+        let price = Number(priceField.value).toFixed(2);
+        let newMembership = this.#newMembershipSave;
         if (Number(price) < Number(newMembership.minPrice)) {
             show_message("Your " + newMembership.label + " cannot be less than " + newMembership.minPrice, 'warn', 'vpMessageDiv');
             return;
@@ -890,11 +929,10 @@ class PosCart {
             this.#memberships = [];
         this.#memberships.push(make_copy(newMembership));
         this.newIDKey--;
+        if (this.#memberAge == null && newMembership.memAge != 'all')
+            this.#memberAge = newMembership.memAge;
         this.#cartChanges++;
-        if (this.#rebuildAgeButtons) {
-            this.buildAgeButtons();
-            this.#rebuildAgeButtons = false;
-        }
+        pos.setReviewDirty();
         this.redrawRegItems();
         this.buildRegItemButtons();
     }
@@ -907,7 +945,7 @@ class PosCart {
             return;
         }
 
-        var mbr = this.#memberships[row];
+        let mbr = this.#memberships[row];
         if (mbr.status != 'in-cart') {
             show_message("Cannot remove that item, only in-cart items can be removed.", "warn", 'aeMessageDiv');
             return
@@ -916,11 +954,11 @@ class PosCart {
         // check if anything else in the cart depends on this membership
         // trial the delete
         mbr.toDelete = true;
-        var rules = new MembershipRules(config.conid, this.#memberAge != null ? this.#memberAge : this.#currentAge, this.#memberships, this.#allMemberships);
-        for (var nrow in this.#memberships) {
+        let rules = new MembershipRules(config.conid, this.#memberAge != null ? this.#memberAge : this.#currentAge, this.#memberships, this.#allMemberships);
+        for (let nrow in this.#memberships) {
             if (row == nrow)    // skip checking ourselves
                 continue;
-            var nmbr = this.#memberships[nrow];
+            let nmbr = this.#memberships[nrow];
             if (nmbr.toDelete)
                 continue;
             if (rules.testMembership(nmbr, true) == false) {
@@ -932,7 +970,15 @@ class PosCart {
 
         this.#memberships.splice(row, 1);
         this.#cartChanges--;
-        this.buildAgeButtons();
+        // recompute memberAge and currentAge
+        this.#memberAge = null;
+        for (let i = 0; i < this.#memberships.length; i++) {
+            let row = this.#memberships[i];
+            if (row.memAge != 'all') {
+                this.#memberAge = row.memAge;
+                break;
+            }
+        }
         this.redrawRegItems();
         this.buildRegItemButtons();
     }
@@ -973,12 +1019,12 @@ class PosCart {
 // for shortcut reasons indices are used to allow usage of the filter functions built into javascript
 // this rebuilds the index and perinfo cross-reference maps.  It needs to be called whenever the number of items in cart is changed.
     cartRenumber() {
-        var index;
+        let index;
         this.#cartPerinfoMap = new map();
         for (index = 0; index < this.#cartPerinfo.length; index++) {
             this.#cartPerinfo[index].index = index;
             this.#cartPerinfoMap.set(this.#cartPerinfo[index].perid, index);
-            for (var rownum in this.#cartPerinfo[index].memberships) {
+            for (let rownum in this.#cartPerinfo[index].memberships) {
                 this.#cartPerinfo[index].memberships[rownum].index = rownum;
                 this.#cartPerinfo[index].memberships[rownum].pindex = index;
             }
@@ -988,9 +1034,9 @@ class PosCart {
     // Clear the coupon matching couponId from all rows in the cart
     clearCoupon(couponId) {
         // clear the discount from the membership rows from the cart element
-        for (var cartRow in this.#cartPerinfo) {
-            for (var rownum in this.#cartPerinfo[cartRow].memberships ) {
-                var mrow = this.#cartPerinfo[cartRow].memberships[rownum];
+        for (let cartRow in this.#cartPerinfo) {
+            for (let rownum in this.#cartPerinfo[cartRow].memberships ) {
+                let mrow = this.#cartPerinfo[cartRow].memberships[rownum];
                 if (mrow.coupon == couponId && (mrow.status == 'unpaid' || mrow.status == 'plan')) {
                     this.#cartPerinfo[cartRow].memberships[rownum].coupon = null;
                     this.#cartPerinfo[cartRow].memberships[rownum].couponDiscount = 0;
@@ -998,42 +1044,42 @@ class PosCart {
             }
         }
         // remove the discount coupon from the payment
-        var delrows = [];
-        for (rownum in this.#cartPmt) {
-            var prow = this.#cartPmt[rownum];
+        let delrows = [];
+        for (let rownum in this.#cartPmt) {
+            let prow = this.#cartPmt[rownum];
             if (prow.type == 'coupon') {
                 delrows.push(rownum);
             }
         }
         // now delete the matching rows (in reverse order)
         delrows = delrows.reverse();
-        for (rownum in delrows)
+        for (let rownum in delrows)
             this.#cartPmt.splice(delrows[rownum], 1);
     }
 
 // format all of the memberships for one record in the cart
     #drawCartRow(rownum) {
-        var row = this.#cartPerinfo[rownum];
-        var mrow;
-        var rowlabel;
-        var membership_found = false;
-        var membership_html = '';
-        var col1 = '';
-        var perid = row.perid;
-        var btncolor = null;
+        let row = this.#cartPerinfo[rownum];
+        let mrow;
+        let rowlabel;
+        let membership_found = false;
+        let membership_html = '';
+        let col1 = '';
+        let perid = row.perid;
+        let btncolor = null;
         // now loop over the memberships in the order retrieved
-        var pindex = this.#cartPerinfoMap.get(perid);
-        var mrows = this.#cartPerinfo[pindex].memberships;
-        for (var mrownum in mrows) {
+        let pindex = this.#cartPerinfoMap.get(perid);
+        let mrows = this.#cartPerinfo[pindex].memberships;
+        for (let mrownum in mrows) {
             mrow = mrows[mrownum];
             if (mrow.toDelete !== undefined)
                 continue;
 
-            var row_shown = true;
-            var category = mrow.memCategory;
+            let row_shown = true;
+            let category = mrow.memCategory;
             if (category == 'yearahead' && mrow.conid == pos.getConid())
                 category = 'standard'; // last years yearahead is this year's standard
-            var memType = mrow.memType;
+            let memType = mrow.memType;
 
             // col1 - status
             switch (mrow.status) {
@@ -1051,16 +1097,16 @@ class PosCart {
                     col1 = mrow.status.substring(0, 3);
             }
 
-            var label = mrow.label;
+            let label = mrow.label;
             if (!this.#freezeCart) {
-                var notes_count = 0;
+                let notes_count = 0;
                 if (mrow.reg_notes_count !== undefined && mrow.reg_notes_count !== null) {
                     notes_count = Number(mrow.reg_notes_count);
                 }
                 btncolor = 'btn-info';
                 if (mrow.new_reg_note !== undefined && mrow.new_reg_note !== '')
                     btncolor = 'btn-warning';
-                var btntext = 'Add Note';
+                let btntext = 'Add Note';
                 if (notes_count > 0) {
                     btntext = 'Notes:' + notes_count.toString();
                 }
@@ -1090,16 +1136,19 @@ class PosCart {
             }
         }
         // first row - member name, remove button
-        var rowhtml = '<div class="row mt-1">';
+        let rowhtml = '<div class="row mt-1">';
         if (membership_found) {
             rowhtml += '<div class="col-sm-8 text-bg-success">Member: (' + perid + ') ';
         } else {
             rowhtml += '<div class="col-sm-8 text-bg-info">Non Member: (' + perid + ') ';
         }
         rowhtml += row.fullName + '</div>';
+        let editColor = (row.currentAgeType != '' && row.memberAgeType != '' && row.currentAgeType != row.memberAgeType) ?
+            'btn-warning' : 'btn-secondary';
         if (!this.#freezeCart) {
             rowhtml += `
-        <div class="col-sm-2 text-center"><button type="button" class="btn btn-sm btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="pos.editFromCart(` + perid + `)">Edit</button></div>
+        <div class="col-sm-2 text-center"><button type="button" class="btn btn-sm ` + editColor +
+                ` pt-0 pb-0 ps-1 pe-1" onclick="pos.editFromCart(` + perid + `)">Edit</button></div>
         <div class="col-sm-2 text-center"><button type="button" class="btn btn-sm btn-secondary pt-0 pb-0 ps-1 pe-1" onclick="pos.removeFromCart(` + perid + `)">Remove</button></div>
 `;
         }
@@ -1132,7 +1181,7 @@ class PosCart {
             rowhtml += `
     <div class="row">
         <div class="col-sm-auto"><button type="button" class="btn btn-sm btn-primary" onclick="cart.addEditMemberships(` +
-                row.index + `);">Add/Edit Memberships</button>
+                row.index + ');" ' + (editColor == 'btn-warning' ? 'disabled' : '') + `>Add/Edit Memberships</button>
         </div>
     </div>
     `;
@@ -1155,8 +1204,8 @@ class PosCart {
     #drawCartPmtRow(prow) {
         //   index: cart_pmt.length, amt: pay_amt, ccauth: ccauth, checkno: checkno, desc: eldesc.value, type: ptype,
 
-        var pmt = this.#cartPmt[prow];
-        var code = '';
+        let pmt = this.#cartPmt[prow];
+        let code = '';
         if (pmt.type == 'check') {
             code = pmt.checkno;
         } else if (pmt.type == 'credit') {
@@ -1177,10 +1226,10 @@ class PosCart {
         this.#totalPrice = 0;
         this.#totalPaid = 0;
         this.#totalCouponUnpaid = 0;
-        var num_rows = 0;
+        let num_rows = 0;
         this.#membershipRows = 0;
         this.#needMembershipRows = 0;
-        var html = `
+        let html = `
 <div class="container-fluid">
 <div class="row">
     <div class="col-sm-8 text-bg-primary">Member</div>
@@ -1189,7 +1238,7 @@ class PosCart {
 </div>
 `;
         this.#unpaidRows = 0;
-        for (var rownum in this.#cartPerinfo) {
+        for (let rownum in this.#cartPerinfo) {
             num_rows++;
             html += this.#drawCartRow(rownum);
         }
@@ -1208,7 +1257,7 @@ class PosCart {
 
         if (this.#priorPayments == null && this.#cartPmt.length == 0 && this.#totalPaid > 0) {
             // add in the pre paid amount as a prior payment
-            var prow = {
+            let prow = {
                 amt: this.#totalPaid,
                 preTaxAmt: this.#totalPaid,
                 type: 'prior',
@@ -1218,9 +1267,9 @@ class PosCart {
             this.#cartPmt.push(prow);
         }
         // loop over the cartPmt row and recompute the prior paid row added to the cart has a prior payment.
-        var totalPayments = 0;
-        var priorIndex = 0;
-        for (var i = 0; i < this.#cartPmt.length; i++) {
+        let totalPayments = 0;
+        let priorIndex = 0;
+        for (let i = 0; i < this.#cartPmt.length; i++) {
             totalPayments += Number(this.#cartPmt[i].preTaxAmt);
             if (this.#cartPmt[i].type == 'prior')
                 priorIndex = i;
@@ -1239,7 +1288,7 @@ class PosCart {
 </div>
 `;
             this.#totalPmt = 0;
-            for (var prow in this.#cartPmt) {
+            for (let prow in this.#cartPmt) {
                 html += this.#drawCartPmtRow(prow);
                 this.#totalPmt += Number(this.#cartPmt[prow].preTaxAmt);
             }
@@ -1252,8 +1301,8 @@ class PosCart {
 `;
         }
         if (this.#needMembershipRows > 0) {
-            var person = this.#needMembershipRows > 1 ? " people" : " person";
-            var need = this.#needMembershipRows > 1 ? "need memberships" : "needs a membership";
+            let person = this.#needMembershipRows > 1 ? " people" : " person";
+            let need = this.#needMembershipRows > 1 ? "need memberships" : "needs a membership";
             html += `<div class="row mt-3">
     <div class="col-sm-12">Cannot proceed to "Review" because ` + this.#needMembershipRows + person + " still " + need +
                 `.  Use "Add/Edit" button to add memberships for them or "Remove" button to take them out of the cart.
@@ -1281,19 +1330,19 @@ class PosCart {
     buildReviewData() {
         pos.setMissingItems(0);
         pos.setMissingPolicies(0);
-        var html = `
+        let html = `
 <div id='reviewBody' class="container-fluid form-floating">
   <form id='reviewForm' action='javascript: return false; ' class="form-floating">
 `;
-        var rownum = null;
-        var row;
-        var colors = new map();
-        var fieldno;
-        var mrow;
-        var field;
-        var tabindex = 0;
-        var reviewMissingItems = 0;
-        var missingRequiredPolicies = 0;
+        let rownum = null;
+        let row;
+        let colors = new map();
+        let fieldno;
+        let mrow;
+        let field;
+        let tabindex = 0;
+        let reviewMissingItems = 0;
+        let missingRequiredPolicies = 0;
         for (rownum in this.#cartPerinfo) {
             tabindex += 100;
             row = this.#cartPerinfo[rownum];
@@ -1363,6 +1412,19 @@ class PosCart {
             <input type="text" name='c` + rownum + `-badgeNameL2' id='c` + rownum + `-badgeNameL2' size=32 maxlength="32" placeholder="Badgename Line 2" tabindex="` +
                 String(tabindex + 14) +'" value="' + row.badgeNameL2 + `"/>
         </div>
+        <div class="col-sm-auto ms-0 me-0 p-0 ps-2">
+`;
+            if (row.memberAgeType && row.memberAgeType != '' && row.memberAgeType != 'all') {
+                let ageItem = ageListIdx[row.memberAgeType];
+                html += 'Member Age: ' + ageItem.shortname + ' [' + ageItem.label + ']';
+            } else {
+                html += `<select name='c` + rownum + `-age' id='c` + rownum + `-age' tabIndex="` + String(tabindex + 15) + `">
+                    ` + this.#age_select + `
+                </select>
+                `;
+            }
+            html += `
+        </div>
     </div>
      <div class="row">
         <div class="col-sm-auto ms-0 me-0 p-0">
@@ -1415,16 +1477,15 @@ class PosCart {
 `;
 
             // policies
-            var policies = row.policies;
             let i = 0;
-            for (var polrow in policies) {
-                var policyName = policies[polrow].policy;
+            for (let polrow in row.policies) {
+                let policyName = row.policies[polrow].policy;
                 if (policyIndex[policyName] == undefined) // skip over inactive policies
                     continue;
 
-                var policyResp = policies[polrow].response;
-                var color = '';
-                if (config.mode != 'admin' && allPolicies[policyIndex[policyName]].required == 'Y' && policyResp == 'N') {
+                let policyResp = row.policies[polrow].response;
+                let color = '';
+                if (config.mode != 'admin' && policies[policyIndex[policyName]].required == 'Y' && policyResp == 'N') {
                     missingRequiredPolicies++;
                     color = "var(--bs-danger-bg-subtle)"
                 }
@@ -1460,13 +1521,13 @@ class PosCart {
 // update the cart from the review block
     updateReviewData() {
         // loop over cart looking for changes in data table
-        var rownum = null;
-        var el;
-        var field;
-        var fieldno
+        let rownum = null;
+        let el;
+        let field;
+        let fieldno
         for (rownum in this.#cartPerinfo) {
             // update all the fields on the review page
-            var review_editable_fields = pos.getReviewEditableFields();
+            let review_editable_fields = pos.getReviewEditableFields();
             for (fieldno in review_editable_fields) {
                 field = review_editable_fields[fieldno];
                 el = document.getElementById('c' + rownum + '-' + field);
@@ -1479,10 +1540,10 @@ class PosCart {
                 }
             }
             // update all the policy values
-            var policies = this.#cartPerinfo[rownum].policies;
-            for (var polrow in policies) {
-                var policyName = policies[polrow].policy;
-                var policyResp = policies[polrow].response;
+            let rowPolicies = this.#cartPerinfo[rownum].policies;
+            for (let polrow in rowPolicies) {
+                let policyName = rowPolicies[polrow].policy;
+                let policyResp = rowPolicies[polrow].response;
                 el = document.getElementById('c' + rownum + '-p_' + policyName);
                 if (el) {
                     if (policyResp != (el.checked ? 'Y' : 'N')) {
@@ -1504,9 +1565,9 @@ class PosCart {
 
     // update selected element in the country pulldown from the review data screen to the cart
     setCountrySelect() {
-        var rownum;
-        var row;
-        var selid;
+        let rownum;
+        let row;
+        let selid;
 
         for (rownum in this.#cartPerinfo) {
             row = this.#cartPerinfo[rownum];
@@ -1518,16 +1579,16 @@ class PosCart {
 
 // receiptHeader - retrieve receipt header info from cart[0]
     receiptHeader(user_id, pay_tid) {
-        var payee = (this.#cartPerinfo[0].first_name + ' ' + this.#cartPerinfo[0].last_name).trim();
+        let payee = (this.#cartPerinfo[0].first_name + ' ' + this.#cartPerinfo[0].last_name).trim();
         return "Receipt for payment to " + pos.getConlabel() + " By: " + payee + ", Cashier: " + user_id + ", Transaction: " + pay_tid;
     }
 
 // printList - html to display cart elements to print
     printList(new_print, printed_obj) {
-        var rownum;
-        var crow;
-        var mrow;
-        var print_html = '';
+        let rownum;
+        let crow;
+        let mrow;
+        let print_html = '';
 
         for (rownum in this.#cartPerinfo) {
             crow = this.#cartPerinfo[rownum];
@@ -1538,8 +1599,8 @@ class PosCart {
             // if one day, and multi, find all one days, else just select this one
             if (pos.isMultiOneDay() && mrow.memType == 'oneday') {
                 // this row is a one day, find all the memberships that are type one day
-                for (var row in crow.memberships) {
-                    var mbrrow = crow.memberships[row];
+                for (let row in crow.memberships) {
+                    let mbrrow = crow.memberships[row];
                     print_html += `
     <div class="row">
         <div class="col-sm-2 ms-0 me-2 p-0">
@@ -1581,10 +1642,10 @@ class PosCart {
 
 // getBadge = return the cart portions of the parameters for a badge print, that will be added to by the calling routine
     getBadge(cindex, mindex) {
-        var row = this.#cartPerinfo[cindex];
-        var printrow = row.memberships[mindex];
+        let row = this.#cartPerinfo[cindex];
+        let printrow = row.memberships[mindex];
 
-        var params = {};
+        let params = {};
         params.type = printrow.memType;
         params.badge_name = row.badge_name;
         params.badgeNameL2 = row.badgeNameL2;
@@ -1593,7 +1654,12 @@ class PosCart {
         params.category = printrow.memCategory;
         params.badge_id = row.perid;
         params.day = dayFromLabel(printrow.label);
-        params.age = printrow.memAge;
+        if (printrow.memAge != 'all')
+            params.age = printrow.memAge;
+        else if (row.currentAgeType)
+            params.age = row.currentAgeType;
+        else
+            params.age = 'all';
         params.regId = printrow.regid;
         params.printCount = printrow.printcount;
         return params;

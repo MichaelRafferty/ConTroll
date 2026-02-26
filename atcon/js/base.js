@@ -404,3 +404,8 @@ function base_managerOverrideComplete(data) {
     }
     base_managerPassword.style.backgroundColor = '';
 }
+
+// new functions for token items
+function checkRefresh(data) {
+    // empty function for common js files for controll and atcon
+}

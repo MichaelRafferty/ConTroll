@@ -1,13 +1,18 @@
 <?php
 require_once "../lib/base.php";
+require_once '../lib/sessionAuth.php';
 
-$check_auth = google_init("ajax");
-$perm = "people";
+// use common global Ajax return functions
+global $returnAjaxErrors, $return500errors;
+$returnAjaxErrors = true;
+$return500errors = true;
 
-$response = array("post" => $_POST, "get" => $_GET, "perm"=>$perm);
-
-if($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
-    $response['error'] = "Authentication Failed";
+$perm = 'badge';
+$response = array ('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
+$authToken = new authToken('script');
+$response['tokenStatus'] = $authToken->checkToken();
+if (!$authToken->isLoggedIn() || !$authToken->checkAuth($perm)) {
+    $response['error'] = 'Authentication Failed';
     ajaxSuccess($response);
     exit();
 }
@@ -20,7 +25,7 @@ if (!(array_key_exists('perid', $_POST)) && array_key_exists('action', $_POST)) 
 
 $action = $_POST['action'];
 $perid = $_POST['perid'];
-$updatedBy = $_SESSION['user_perid'];
+$updatedBy = $authToken->getPerid();
 if ($action != 'updatePerinfo' || $perid == null || is_numeric($perid) == false || $perid <= 0) {
     $response['error'] = 'Parameter Error';
     ajaxSuccess($response);
@@ -48,17 +53,24 @@ $country = $_POST['country'] == null ? '' : trim($_POST['country']);
 $email_addr = $_POST['emailAddr'] == null ? '' : trim($_POST['emailAddr']);
 $phone = $_POST['phone'] == null ? '' : trim($_POST['phone']);
 
+$age = $_POST['currentAgeType'];
+if ($age == '') {
+    $currentAgeConId = null;
+    $age = null;
+} else
+    $currentAgeConId = $conid;
+
 $uP = <<<EOS
 UPDATE perinfo
 SET last_name = ?, first_name = ?, middle_name = ?, suffix = ?, email_addr = ?, phone = ?, badge_name = ?, badgeNameL2 = ?, pronouns = ?,
-    address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?, updatedBy = ?, 
+    address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?, updatedBy = ?, currentAgeType = ?, currentAgeConId = ?,
     lastVerified = NULL, update_date = NOW(), change_notes = CONCAT(change_notes, '<br/>Updated by Free Badge Edit screen')
 WHERE id = ?;
 EOS;
 
-$typeStr = 'sssssssssssssssii';
+$typeStr = 'sssssssssssssssisii';
 $valArray = array($last_name, $first_name, $middle_name, $suffix, $email_addr, $phone, $badge_name, $badgeNameL2, $pronouns, $address, $addr_2,
-    $city, $state, $zip, $country, $updatedBy, $perid);
+    $city, $state, $zip, $country, $updatedBy, $age, $currentAgeConId, $perid);
 
 $upd = dbSafeCmd($uP, $typeStr, $valArray);
 if ($upd === false) {

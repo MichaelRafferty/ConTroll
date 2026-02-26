@@ -209,6 +209,17 @@ EOS;
             $checkInR = dbSafeCmd($checkInQ, 'iii', array($item[1], $conid, $item[0]));
             $log .= " changed $checkInR";
             break;
+        case 'Withdraw':
+            $checkInQ = <<<EOS
+UPDATE artItems I 
+JOIN exhibitorRegionYears eRY on eRY.id=I.exhibitorRegionYearId
+    JOIN exhibitorYears eY on eY.id=eRY.exhibitorYearId
+SET status='Withdrawn' 
+WHERE I.item_key=? and eY.conid=? and eRY.exhibitorNumber=?;
+EOS;
+            $checkInR = dbSafeCmd($checkInQ, 'iii', array($item[1], $conid, $item[0]));
+            $log .= " changed $checkInR";
+            break;
         default:
             $log .= " => Unknown Action";
     }
