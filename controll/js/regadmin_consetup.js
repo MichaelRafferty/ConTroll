@@ -3,6 +3,7 @@
 var activeConSetup = 'none';
 var editListMasterRow = null;
 var memListModalDirty = false;
+var tinyMCEInit = false;
 
 class consetup {
     #debug = 0;
@@ -374,11 +375,12 @@ class consetup {
                     headerFilterParams: {values: data['ageTypes'],},
                 },
                 {
-                    title: "Label", field: "shortname", minWidth: 300,
+                    title: "Label", field: "shortname", width: 200,
                     tooltip: function (e, cell, onRendered) {
                         return cell.getRow().getCell("label").getValue();
                     },
                     editor: "input", editorParams: {elementAttributes: {maxlength: "64"}},
+                    formatter: "textarea",
                     headerFilter: true
                 },
                 {title: "Label", field: "label", visible: false},
@@ -398,19 +400,26 @@ class consetup {
                     headerFilter: true, headerFilterParams: {values: ["Y", "N"],}
                 },
                 {
-                    title: "Notes", field: "notes", minWidth: 300,
+                    title: "Notes", field: "notes", width: 200,
                     editor: "input", editorParams: {elementAttributes: {maxlength: "1024"}},
                     headerFilter: true,
+                    formatter: "textarea",
                 },
                 {
-                    title: "GL Num", field: "glNum", minWidth: 120, headerWordWrap: true,
+                    title: "Cart Desc", field: "cartDesc", width: 300,
+                    headerFilter: true,
+                    formatter: "html",
+                },
+                {
+                    title: "GL Num", field: "glNum", width: 120, headerWordWrap: true,
                     editor: "input", editorParams: {elementAttributes: {maxlength: "16"}},
                     headerFilter: true
                 },
                 {
-                    title: "GL Label", field: "glLabel", minWidth: 200, headerWordWrap: true,
+                    title: "GL Label", field: "glLabel", width: 200, headerWordWrap: true,
                     editor: "input", editorParams: {elementAttributes: {maxlength: "64"}},
-                    headerFilter: true
+                    headerFilter: true,
+                    formatter: "textarea",
                 },
                 {field: "to_delete", visible: false,},
             ],
@@ -496,6 +505,8 @@ class consetup {
         document.getElementById('editMemListEnd').value = rowData.enddate;
 
         document.getElementById('editMemListNotes').value = notes;
+        let cartDesc = rowData.cartDesc == null ? '' : rowData.cartDesc;
+        document.getElementById('editMemListCartDesc').innerHTML = cartDesc.trim();
         document.getElementById('editMemListGLNum').value = rowData.glNum;
         document.getElementById('editMemListGLLabel').value = rowData.glLabel;
 
@@ -509,6 +520,39 @@ class consetup {
         }
 
         this.reSortTimeSeries(false);
+
+        // set up to edit the cart description
+        if (tinyMCEInit) {
+            // update the text block
+            tinyMCE.get("editMemListCartDesc").focus();
+            tinyMCE.get("editMemListCartDesc").load();
+        } else {
+            tinyMCE.init({
+                selector: 'textarea#editMemListCartDesc',
+                height: 400,
+                min_height: 400,
+                menubar: false,
+                license_key: 'gpl',
+                plugins: 'advlist lists image link charmap fullscreen help nonbreaking preview searchreplace',
+                toolbar: [
+                    'help undo redo searchreplace copy cut paste pastetext | fontsizeinput styles h1 h2 h3 h4 h5 h6 | ' +
+                    'bold italic underline strikethrough removeformat | ' +
+                    'visualchars nonbreaking charmap hr | ' +
+                    'preview fullscreen ',
+                    'alignleft aligncenter alignright alignnone | outdent indent | numlist bullist checklist | forecolor backcolor | link image'
+                ],
+                link_target_list: [
+                    {title: 'None', value: ''},
+                    {title: 'Same page', value: '_self'},
+                    {title: 'New page', value: '_blank'},
+                ],
+                link_default_target: '_blank',
+                content_style: 'body {font - family:Helvetica,Arial,sans-serif; font-size:14px }',
+                placeholder: 'Edit the cart item description here...',
+                auto_focus: 'editMemListCartDesc'
+            });
+            tinyMCEInit = true;
+        }
     }
 
     open() {
@@ -1088,6 +1132,7 @@ class consetup {
 
     // copy the fixed fields from the upper Edit block to the lower time series rows
     copyMemListChanges() {
+        tinymce.triggerSave();
         for (let index = 0; index < 10; index++) {
             if (document.getElementById('EMLTS' + index + '_Price').value != '' ||
                 document.getElementById('EMLTS' + index + '_Start').value != '' ||
@@ -1107,6 +1152,7 @@ class consetup {
                 this.#editData[index].memType = document.getElementById('memListTypeSelect').value;
                 this.#editData[index].shortname = document.getElementById('editMemListLabel').value;
                 this.#editData[index].notes = document.getElementById('editMemListNotes').value;
+                this.#editData[index].cartDesc = document.getElementById('editMemListCartDesc').innerHTML;
                 this.#editData[index].atcon = document.getElementById('editMemListAtcon').value;
                 this.#editData[index].online = document.getElementById('editMemListOnline').value;
                 this.#editData[index].glNum = document.getElementById('editMemListGLNum').value;
@@ -1190,6 +1236,7 @@ class consetup {
         this.#editData[index].memType = document.getElementById('memListTypeSelect').value;
         this.#editData[index].shortname = document.getElementById('editMemListLabel').value;
         this.#editData[index].notes = document.getElementById('editMemListNotes').value;
+        this.#editData[index].cartDesc = document.getElementById('editMemListCartDesc').innerHTML;
         this.#editData[index].glNum = document.getElementById('editMemListGLNum').value;
         this.#editData[index].glLabel = document.getElementById('editMemListGLLabel').value;
     }

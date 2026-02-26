@@ -71,6 +71,7 @@ SELECT m.id, m.id AS memlistkey,
     m.memAge,
     m.shortname,
     m.label,
+    m.cartDesc,
     m.notes,
     m.price,
     m.startdate,
@@ -83,8 +84,8 @@ SELECT m.id, m.id AS memlistkey,
 FROM memLabel m
 LEFT OUTER JOIN reg r ON (r.memId = m.id)
 WHERE ((m.conid = ? and m.memCategory != 'yearahead') OR (m.conid = ? AND m.memCategory in ('rollover', 'yearahead')))
-GROUP BY m.id, m.conid,m.sort_order,m.memCategory,m.memType,m.memAge,m.shortname,m.label,m.price,m.startdate,m.enddate,m.atcon,m.online,
-         m.glNum,m.glLabel
+GROUP BY m.id, m.conid,m.sort_order,m.memCategory,m.memType,m.memAge,m.shortname,m.label,m.cartDesc,
+         m.price,m.startdate,m.enddate,m.atcon,m.online,m.glNum,m.glLabel
 ORDER BY m.conid, m.sort_order, m.memCategory, m.memType, m.memAge, m.startdate;
 EOS;
     $result = dbSafeQuery($memSQL, 'ii', array($id, $id+1));

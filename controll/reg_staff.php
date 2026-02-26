@@ -114,6 +114,14 @@ $config_vars['rolloverYears'] = getConfValue('controll', 'priorRolloverYears', 2
                                     </div>
                                 </div>
                                 <div class='row mt-1'>
+                                    <div class='col-sm-2'>Cart Description:</div>
+                                    <div class='col-sm-10'>
+                                        <textarea name='editMemListCartDesc' id='editMemListCartDesc' placeholder='Cart Description'
+                                                  cols='80' rows='5' onchange='memListModalDirty = true;'>
+                                        </textarea>
+                                    </div>
+                                </div>
+                                <div class='row mt-1'>
                                     <div class='col-sm-2'>Price:</div>
                                     <div class='col-sm-10'>
                                         <input type='number' class='no-spinners' inputmode='numeric' id='editMemListPrice' name="editMemListPrice" min="0"
