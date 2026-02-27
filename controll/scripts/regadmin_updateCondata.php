@@ -137,25 +137,32 @@ EOS;
         }
 
         $addSQL = <<<EOS
-INSERT INTO memList(conid,sort_order,memCategory,memType,memAge,label,notes,price,startdate,enddate,atcon,online,glNum,glLabel)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?);
+INSERT INTO memList(conid,sort_order,memCategory,memType,memAge,label,notes,cartDesc,price,startdate,enddate,atcon,online,glNum,glLabel)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 EOS;
-        $addtypes = 'iissssssssssss';
+        $addtypes = 'iisssssssssssss';
         $updSQL = <<<EOS
 UPDATE memList
-SET sort_order = ?,memCategory = ?,memType = ?,memAge = ?,label = ?,notes = ?,price = ?,startdate = ?,enddate = ?,atcon = ?,online = ?,
-    glNum = ?, glLabel = ?
+SET sort_order = ?,memCategory = ?,memType = ?,memAge = ?,label = ?,notes = ?, cartDesc = ?, price = ?,startdate = ?,enddate = ?,
+    atcon = ?,online = ?, glNum = ?, glLabel = ?
 WHERE id = ?
 EOS;
-        $updtypes = 'issssssssssssi';
+        $updtypes = 'isssssssssssssi';
 
         foreach ($data as $row) {
             if (!array_key_exists('notes', $row))
                 $row['notes'] = null;
+            if (!array_key_exists('cartDesc', $row))
+                $row['cartDesc'] = null;
+            else if ($row['cartDesc'] != null) {
+                $row['cartDesc'] = trim($row['cartDesc']);
+                if ($row['cartDesc'] == '')
+                    $row['cartDesc'] = null;
+            }
             if (!is_numeric($row['id']) || $row['id'] < 0) {
                 $paramarray= array($row['conid'],$row['sort_order'],$row['memCategory'],
-                    $row['memType'],$row['memAge'],$row['shortname'],$row['notes'],$row['price'],$row['startdate'],
-                    $row['enddate'],$row['atcon'],$row['online'],$row['glNum'],$row['glLabel']);
+                    $row['memType'],$row['memAge'],$row['shortname'],$row['notes'],$row['cartDesc'],$row['price'],
+                    $row['startdate'],$row['enddate'],$row['atcon'],$row['online'],$row['glNum'],$row['glLabel']);
                 //web_error_log("add row: /$addSQL/, types '$addtypes', values:");
                 //var_error_log($paramarray);
                 $newid = dbSafeInsert($addSQL, $addtypes, $paramarray);
@@ -163,8 +170,8 @@ EOS;
                     $inserted++;
             } else {
                 $paramarray = array($row['sort_order'],$row['memCategory'],
-                    $row['memType'],$row['memAge'],$row['shortname'],$row['notes'],$row['price'],$row['startdate'],
-                    $row['enddate'],$row['atcon'],$row['online'],$row['glNum'],$row['glLabel'],$row['id']);
+                    $row['memType'],$row['memAge'],$row['shortname'],$row['notes'],$row['cartDesc'],$row['price'],
+                    $row['startdate'],$row['enddate'],$row['atcon'],$row['online'],$row['glNum'],$row['glLabel'],$row['id']);
                 //web_error_log("update row: /$updSQL/, types = '$updtypes', values:");
                 //var_error_log($paramarray);
                 $updated += dbSafeCmd($updSQL, $updtypes, $paramarray);

@@ -1132,7 +1132,7 @@ class consetup {
 
     // copy the fixed fields from the upper Edit block to the lower time series rows
     copyMemListChanges() {
-        tinymce.triggerSave();
+        let cartDesc = tinyMCE.get('editMemListCartDesc').getContent();
         for (let index = 0; index < 10; index++) {
             if (document.getElementById('EMLTS' + index + '_Price').value != '' ||
                 document.getElementById('EMLTS' + index + '_Start').value != '' ||
@@ -1152,7 +1152,7 @@ class consetup {
                 this.#editData[index].memType = document.getElementById('memListTypeSelect').value;
                 this.#editData[index].shortname = document.getElementById('editMemListLabel').value;
                 this.#editData[index].notes = document.getElementById('editMemListNotes').value;
-                this.#editData[index].cartDesc = document.getElementById('editMemListCartDesc').innerHTML;
+                this.#editData[index].cartDesc = cartDesc;
                 this.#editData[index].atcon = document.getElementById('editMemListAtcon').value;
                 this.#editData[index].online = document.getElementById('editMemListOnline').value;
                 this.#editData[index].glNum = document.getElementById('editMemListGLNum').value;
@@ -1236,7 +1236,7 @@ class consetup {
         this.#editData[index].memType = document.getElementById('memListTypeSelect').value;
         this.#editData[index].shortname = document.getElementById('editMemListLabel').value;
         this.#editData[index].notes = document.getElementById('editMemListNotes').value;
-        this.#editData[index].cartDesc = document.getElementById('editMemListCartDesc').innerHTML;
+        this.#editData[index].cartDesc = tinyMCE.get('editMemListCartDesc').getContent();
         this.#editData[index].glNum = document.getElementById('editMemListGLNum').value;
         this.#editData[index].glLabel = document.getElementById('editMemListGLLabel').value;
     }
