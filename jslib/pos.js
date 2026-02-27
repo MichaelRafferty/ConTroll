@@ -2781,7 +2781,7 @@ class Pos {
         this.#review_div.innerHTML = cart.buildReviewData();
         cart.setInReview();
         cart.freeze();
-        cart.setCountrySelect();
+        cart.setReviewedSelect();
     }
 
     toggleRecipientEmail(row) {

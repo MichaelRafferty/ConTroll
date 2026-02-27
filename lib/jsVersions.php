@@ -21,7 +21,7 @@ global $portalJSVersion, $libJSversion, $controllJSversion, $globalJSversion, $a
 $portalJSVersion = '2.0.1';
 $libJSversion = '2.0.0';
 $controllJSversion = '2.0.1';
-$globalJSversion = '2.0.0';
+$globalJSversion = '2.0.1';
 $atJSversion = '2.0.0';
 $exhibitorJSversion = '2.0.0';
 $onlineregJSversion = '2.0.0';
