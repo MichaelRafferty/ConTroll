@@ -26,6 +26,7 @@ class Portal {
     #editPersonModalElement = null;
     #editPersonTitle = null;
     #editPersonSubmitBtn = null;
+    #editPersonOverrideBtn = null;
     #epHeaderDiv = null;
     #epPersonIdField = null;
     #epPersonTypeField = null;
@@ -120,6 +121,7 @@ class Portal {
             this.#editPersonModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
             this.#editPersonTitle = document.getElementById('editPersonTitle');
             this.#editPersonSubmitBtn = document.getElementById('editPersonSubmitBtn');
+            this.#editPersonOverrideBtn = document.getElementById('editPersonOverrideBtn');
             this.#epHeaderDiv = document.getElementById("epHeader");
             this.#epPersonIdField = document.getElementById("epPersonId");
             this.#epPersonTypeField = document.getElementById("epPersonType");
@@ -192,7 +194,7 @@ class Portal {
 
         this.#subTotalColDiv = document.getElementById('subTotalColDiv');
         this.#couponDiscountDiv = document.getElementById('couponDiscountDiv');
-        var _this = this;
+        let _this = this;
         var modalCalled = false;
 
         // enable all tooltips
@@ -204,9 +206,9 @@ class Portal {
             if (modalCalled)
                 return;
 
-            var dataset = obj.dataset;
-            var id = dataset.id;
-            var type = dataset.type;
+            let dataset = obj.dataset;
+            let id = dataset.id;
+            let type = dataset.type;
             _this.editPerson(id, type, true);
             show_message('Age needs to be verified', "error", 'epMessageDiv');
             modalCalled = true;
@@ -217,12 +219,15 @@ class Portal {
             $('.need-policies').each(function (i, obj) {
                 if (modalCalled)
                     return;
-                var dataset = obj.dataset;
-                var id = dataset.id;
-                var type = dataset.type;
-                _this.editPerson(id, type);
-                show_message('Required Policies are not accepted', "error", 'epMessageDiv');
-                modalCalled = true;
+                let dataset = obj.dataset;
+                let id = dataset.id;
+                let type = dataset.type;
+                let pid = type + id.toString();
+                if ((!alreadyChecked.hasOwnProperty(pid)) || alreadyChecked[pid] == 0) {
+                    _this.editPerson(id, type);
+                    show_message('Required Policies are not accepted', "warn", 'epMessageDiv');
+                    modalCalled = true;
+                }
             });
         }
 
@@ -230,6 +235,7 @@ class Portal {
             if (modalCalled)
                 return;
             _this.editInterests(config.id, config.idType);
+            modalCalled = true;
         }
 
         if (config.hasOwnProperty('paymentFocus')) {
@@ -253,12 +259,12 @@ class Portal {
 
     // disassociate: remove the managed by link for this logged in person
     disassociate() {
-        var data = {
+        let data = {
             'managedBy': 'disassociate',
             loginId: config.id,
             loginType: config.idType,
         }
-        var script = 'scripts/processDisassociate.php';
+        let script = 'scripts/processDisassociate.php';
         $.ajax({
             method: 'POST',
             url: script,
@@ -272,7 +278,7 @@ class Portal {
                 } else {
                     if (config.debug & 1)
                         console.log(data);
-                    var divElement = document.getElementById('managedByDiv');
+                    let divElement = document.getElementById('managedByDiv');
                     if (divElement)
                         divElement.style.display = 'none';
                     show_message("You have been disassociated from that manager.");
@@ -300,14 +306,14 @@ class Portal {
 
         this.#currentPerson = id;
         this.#currentPersonType = type;
-        var data = {
+        let data = {
             loginId: config.id,
             loginType: config.idType,
             getId: id,
             getType: type,
             memberships: 'Y'
         }
-        var script = 'scripts/getPersonInfo.php';
+        let script = 'scripts/getPersonInfo.php';
         $.ajax({
             method: 'POST',
             url: script,
@@ -394,7 +400,7 @@ class Portal {
 
     // called on the close buttons for the modal, confirm close with changes pending
     checkEditPersonClose() {
-        var beforeClose = $("#editPerson").serialize();
+        let beforeClose = $("#editPerson").serialize();
         if (beforeClose != this.#personSerializeStart) {
             if (!confirm("There are unsaved changes to the Edit Person Form.\nClick OK to close the form and discard the changes."))
                 return false;
@@ -413,7 +419,7 @@ class Portal {
         clear_message('ceMessageDiv');
         this.#changeEmailNewEmailAddr.value = '';
 
-        var personData = null;
+        let personData = null;
         try {
             personData = JSON.parse(personJson);
         } catch (error) {
@@ -430,7 +436,7 @@ class Portal {
 
         this.#changeEmailSubmitBtn.disabled = true;
         this.#changeEmailModal.show();
-        var focusField = this.#changeEmailNewEmailAddr;
+        let focusField = this.#changeEmailNewEmailAddr;
         setTimeout(() => { focusField.focus({focusVisible: true}); }, 600);
     }
 
@@ -440,13 +446,13 @@ class Portal {
             this.#changeEmailSubmitBtn.disabled = true;
             return;
         }
-        var email = this.#changeEmailNewEmailAddr.value;
+        let email = this.#changeEmailNewEmailAddr.value;
         if (email == null || email == "") {
             this.#changeEmailSubmitBtn.disabled = true;
             return;
         }
 
-        var valid = validateAddress(email);
+        let valid = validateAddress(email);
         this.#changeEmailSubmitBtn.disabled = !valid;
         if (autoCall == 1)
             return;
@@ -462,7 +468,7 @@ class Portal {
     // checkNewEmail - make sure the email address is valid, and the check if it's allowed for changing
     checkNewEmail() {
         // validate the email address
-        var email = this.#changeEmailNewEmailAddr.value;
+        let email = this.#changeEmailNewEmailAddr.value;
         if (!validateAddress(email)) {
             show_message("Please enter a valid email address", 'warn');
             this.#changeEmailSubmitBtn.disabled = true;
@@ -470,7 +476,7 @@ class Portal {
         }
 
         // ok valid email address, check if it's a legal one for us to use
-        var data = {
+        let data = {
             loginId: config.id,
             loginType: config.idType,
             email: email, // new email address
@@ -478,7 +484,7 @@ class Portal {
             currentPersonType: this.#currentPersonType,
             action: 'validate'
         };
-        var script = 'scripts/changeEmail.php';
+        let script = 'scripts/changeEmail.php';
         $.ajax({
             url: script,
             data: data,
@@ -528,11 +534,17 @@ class Portal {
     }
         // now submit the updates to the person
 
-    editPersonSubmit() {
+    editPersonSubmit(override) {
         clear_message();
-        var person = URLparamsToArray($('#editPerson').serialize());
-        if (!profile.validate(person, 'epMessageDiv', addPerson, redoAddress, ''))
-            return;
+        let person = URLparamsToArray($('#editPerson').serialize());
+        let rtn = profile.validate(person, 'epMessageDiv', addPerson, redoAddress, '', false, override);
+        if (rtn === false)
+            return false;
+
+        if (rtn === 'override' && !override) {
+            this.#editPersonOverrideBtn.hidden = false;
+            return false;
+        }
 
         this.updatePerson(profile.getFormData());
         return true;
@@ -540,7 +552,7 @@ class Portal {
 
     // update the account
     updatePerson(person) {
-        var data = {
+        let data = {
             loginId: config.id,
             loginType: config.idType,
             person: person,
@@ -553,7 +565,7 @@ class Portal {
         if (config.debug & 1)
             console.log(data);
 
-        var script = 'scripts/updatePersonInfo.php';
+        let script = 'scripts/updatePersonInfo.php';
         $.ajax({
             method: 'POST',
             url: script,
@@ -584,7 +596,7 @@ class Portal {
     }
 
     addMembership(id, type) {
-        var addForm = '<form id="addMembership" action="cart.php" method="POST">\
+        let addForm = '<form id="addMembership" action="cart.php" method="POST">\
             <input type="hidden" name="cartId" value="' + id + '">\
             <input type="hidden" name="cartType" value="' + type + '">\
             <input type="hidden" name="action" value="buy">\
@@ -605,7 +617,7 @@ class Portal {
 
         this.#currentPerson = id;
         this.#currentPersonType = type;
-        var data = {
+        let data = {
             loginId: config.id,
             loginType: config.idType,
             getId: id,
@@ -613,7 +625,7 @@ class Portal {
             memberships: 'N',
             interests: 'Y'
         }
-        var script = 'scripts/getPersonInfo.php';
+        let script = 'scripts/getPersonInfo.php';
         $.ajax({
             method: 'POST',
             url: script,
@@ -640,8 +652,8 @@ class Portal {
     // got the person, update the modal contents
     editInterestsGetSuccess(data) {
         // ok, it's legal to edit this person, now populate the fields
-        var person = data.person;
-        var post = data.post;
+        let person = data.person;
+        let post = data.post;
         this.#interests = data.interests;
 
         this.#fullName = person.fullName ;
@@ -652,9 +664,9 @@ class Portal {
         this.#eiPersonIdField.value = post.getId;
         this.#eiPersonTypeField.value = post.getType;
 
-        for (var row in this.#interests) {
-            var interest = this.#interests[row];
-            var id = document.getElementById('i_' + interest.interest);
+        for (let row in this.#interests) {
+            let interest = this.#interests[row];
+            let id = document.getElementById('i_' + interest.interest);
             id.checked = interest.interested == 'Y';
         }
 
@@ -665,7 +677,7 @@ class Portal {
 
     // called on the close buttons for the modal, confirm close with changes pending
     checkEditInterestsClose() {
-        var beforeClose = $("#editInterests").serialize();
+        let beforeClose = $("#editInterests").serialize();
         if (beforeClose != this.#interestsSerializeStart) {
             if (!confirm("There are unsaved changes to the Edit Interests Form.\nClick OK to close the form and discard the changes."))
                 return false;
@@ -675,7 +687,7 @@ class Portal {
     // editInterestsSubmit - save back the interests
     editInterestSubmit() {
         clear_message();
-        var data = {
+        let data = {
             loginId: config.id,
             loginType: config.idType,
             existingInterests: JSON.stringify(this.#interests),
@@ -686,7 +698,7 @@ class Portal {
         if (config.debug & 1)
             console.log(data);
 
-        var script = 'scripts/updateInterests.php';
+        let script = 'scripts/updateInterests.php';
         $.ajax({
             method: 'POST',
             url: script,
@@ -754,8 +766,8 @@ class Portal {
         clear_message('payDueMessageDiv');
         clear_message('makePayMessageDiv');
         this.#otherPay = 0;
-        var html = '';
-        var plans = paymentPlans.isMatchingPlans();
+        let html = '';
+        let plans = paymentPlans.isMatchingPlans();
 
         if (this.#totalAmountDue == null) {
             this.#totalAmountDue = totalDue;
@@ -808,7 +820,7 @@ class Portal {
         clear_message();
         clear_message('payDueMessageDiv');
         clear_message('makePayMessageDiv');
-        var html = `
+        let html = `
         <div class="row mt-3">
             <div class="col-sm-1" style="text-align: right"><b>Pay</b></div>
             <div class="col-sm-3"><b>Person</b></div>
@@ -865,7 +877,7 @@ class Portal {
     }
 
     payOtherToggle(id, bal) {
-        var element = document.getElementById('other-' + id);
+        let element = document.getElementById('other-' + id);
         if (element.checked) {
             this.#partialPayAmt += Number(bal);
         } else {
@@ -894,23 +906,23 @@ class Portal {
             this.#paymentAmount = plan.currentPayment;
             this.#totalAmountDue = plan.currentPayment;
         }
-        var cancelOrderId = null;
+        let cancelOrderId = null;
         if (this.#orderData && this.#orderData.rtn && this.#orderData.rtn.orderId)
             cancelOrderId = this.#orderData.rtn.orderId;
 
-        var newplan = false;
+        let newplan = false;
         if (this.#paymentPlan != null)
             if (this.#paymentPlan.new)
                 newplan = true;
 
         // disable the button that called us
-        var enableButtonNames = null;
+        let enableButtonNames = null;
         if (this.#disableButtonNames) {
             enableButtonNames = this.#disableButtonNames;
         }
         $('[name="' + this.#disableButtonNames + '"]').prop('disabled', true);
         // transaction comes from session, person paying come from session, we will compute what was paid
-        var data = {
+        let data = {
             loginId: config.id,
             loginType: config.idType,
             action: 'portalOrder',
@@ -953,8 +965,8 @@ class Portal {
 
     // make payment
     makePayment(plan) {
-        var html = '';
-        var done = false;
+        let html = '';
+        let done = false;
         if (plan == null) {
             this.#paymentPlan = null;
             if (this.#otherPay == 1) {
@@ -1046,13 +1058,13 @@ class Portal {
     // makeOtherOrder - pay some or all of the 'paid by other items due', mark the records and return to makeOrder
     makeOtherOrder(type) {
         // mark which ones to pay
-        var amount = 0;
-        for (var i = 0; i < paidOtherMembership.length; i++) {
+        let amount = 0;
+        for (let i = 0; i < paidOtherMembership.length; i++) {
             if (type == 'full') {
                 paidOtherMembership[i]['payThis'] = 1;
                 amount +=  Number(paidOtherMembership[i].actPrice) - (Number(paidOtherMembership[i].actPaid) + Number(paidOtherMembership[i].actCouponDiscount));
             } else {
-                var checked = document.getElementById('other-' + paidOtherMembership[i]['regid']).checked;
+                let checked = document.getElementById('other-' + paidOtherMembership[i]['regid']).checked;
                 paidOtherMembership[i]['payThis'] = checked ? 1 : 0;
                 if (checked)
                     amount +=  Number(paidOtherMembership[i].actPrice) - (Number(paidOtherMembership[i].actPaid) + Number(paidOtherMembership[i].actCouponDiscount));
@@ -1069,38 +1081,38 @@ class Portal {
         }
 
         // our form
-        var id = document.getElementById("purchase");
+        let id = document.getElementById("purchase");
         if (id)
             id.disabled = true;
         // squares form
-        var ids = document.getElementById("card-button");
+        let ids = document.getElementById("card-button");
         if (ids)
             ids.disabled = true;
 
-        var newplan = false;
+        let newplan = false;
         if (this.#paymentPlan != null)
             if (this.#paymentPlan.new)
                 newplan = true;
 
-        var totalAmountDue = this.#otherPay == 1 ? this.#paymentAmount : this.#totalAmountDue;
-        var taxAmount = 0
-        var preTaxAmount = totalAmountDue;
+        let totalAmountDue = this.#otherPay == 1 ? this.#paymentAmount : this.#totalAmountDue;
+        let taxAmount = 0
+        let preTaxAmount = totalAmountDue;
         if (this.#existingPlan == null && this.#orderData && this.#orderData.rtn) {
             preTaxAmount = this.#orderData.rtn.preTaxAmt;
             taxAmount = this.#orderData.rtn.taxAmt;
         }
 
-        var orderId = '';
+        let orderId = '';
         if (this.#orderData && this.#orderData.rtn && this.#orderData.rtn.orderId) {
             orderId = this.#orderData.rtn.orderId;
         }
 
-        var badges = [];
+        let badges = [];
         if (this.#orderData && this.#orderData.rtn && this.#orderData.rtn.results && this.#orderData.rtn.results.badges)
             badges = this.#orderData.rtn.results.badges;
 
         // transaction comes from session, person paying come from session, we will compute what was paid
-        var data = {
+        let data = {
             loginId: config.id,
             loginType: config.idType,
             action: 'portalPayment',
@@ -1149,7 +1161,7 @@ class Portal {
         console.log(data);
         if (data.status == 'error') {
             // our form
-            var id = document.getElementById("purchase");
+            let id = document.getElementById("purchase");
             if (id)
                 id.disabled = false;
             // squares form
@@ -1178,7 +1190,7 @@ class Portal {
         if (data.message)
             window.location = this.#portalPage + '?messageFwd=' + encodeURI(data.message);
         else {
-            var message = 'Payment succeeded, ' + data.rows_upd + ' memberships and other items updated';
+            let message = 'Payment succeeded, ' + data.rows_upd + ' memberships and other items updated';
             window.location = this.#portalPage + '?messageFwd=' + encodeURI(message);
         }
     }
@@ -1187,8 +1199,8 @@ class Portal {
     transReceipt(transId) {
         this.#receiptEmailAddress = null;
         clear_message();
-        var script = 'scripts/getReceipt.php';
-        var data = {
+        let script = 'scripts/getReceipt.php';
+        let data = {
             loginId: config.id,
             loginType: config.idType,
             action: 'portalReceipt',
@@ -1221,7 +1233,7 @@ class Portal {
         }
 
         clear_message();
-        var receipt = data.receipt;
+        let receipt = data.receipt;
         this.#receiptDiv.innerHTML = receipt.receipt_html;
         this.#receiptTables.innerHTML = receipt.receipt_tables;
         this.#receiptText.innerHTML = receipt.receipt;
@@ -1232,14 +1244,14 @@ class Portal {
     }
 
     emailReceipt(addrchoice) {
-        var success='';
+        let success='';
         if (this.#receiptEmailAddress == null)
             return;
 
         if (success == '')
             success = this.#receiptEmailBtn.innerHTML.replace("Email Receipt to", "Receipt sent to");
 
-        var data = {
+        let data = {
             loginId: config.id,
             loginType: config.idType,
             email: this.#receiptEmailAddress,
@@ -1249,7 +1261,7 @@ class Portal {
             subject: this.#receiptTitle.innerHTML,
             success: success,
         };
-        var _this = this;
+        let _this = this;
         $.ajax({
             method: "POST",
             url: "scripts/emailReceipt.php",
@@ -1280,7 +1292,7 @@ class Portal {
         $('div[name="t-unpaid"]').show();
         $('div[name="t-plan"]').show();
 
-        var color = false;
+        let color = false;
         $("div[name^='t-']").each(function() {
             if (color)
                 $(this).addClass('bg-light')
@@ -1323,7 +1335,7 @@ class Portal {
         $('div[name="t-unpaid"]').show();
         $('div[name="t-plan"]').show();
 
-        var color = false;
+        let color = false;
         $("div[name^='t-']").each(function() {
             if ($(this).css("display") != "none") {
                 if (color)
@@ -1425,24 +1437,24 @@ class Portal {
     }
 
     vote() {
-        var rights = { NomNom: 1};
+        let rights = { NomNom: 1};
         this.getJWT(rights, config.nomnomURL);
     }
 
     virtual() {
-        var rights = { Virtual: 1};
+        let rights = { Virtual: 1};
         this.getJWT(rights, config.virtualURL);
     }
 
     // voting, virtual, etc. - get jwt strings
     getJWT(rights, url) {
-        var data = {
+        let data = {
             loginId: config.id,
             loginType: config.idType,
             rights: rights,
         }
         clear_message();
-        var script = 'scripts/getJWT.php';
+        let script = 'scripts/getJWT.php';
         $.ajax({
             method: 'POST',
             url: script,

@@ -283,11 +283,12 @@ class Profile {
         this.#ageasofLabel.hidden = hide;
     }
 
-    validate(person, messageDiv, addCallback, redoCallback, message = '', multiUse = false) {
+    validate(person, messageDiv, addCallback, redoCallback, message = '', multiUse = false, override = false) {
         this.#messageDiv = messageDiv;
         this.#addCallback = addCallback;
         this.#redoCallback = redoCallback;
         let valid = message == '';
+        let overrideAllowed = false;
         let required = config.required;
         this.#uspsAddress = null;
 
@@ -439,12 +440,14 @@ class Profile {
                 if (policy.required == 'Y') {
                     let field = document.getElementById(this.#prefix + 'l_' + policy.policy);
                     if (!document.getElementById(this.#prefix + 'p_' + policy.policy).checked) {
-                        if (this.#alertType == 'warn')
+                        if (this.#alertType == 'warn' || multiUse) {
                             message += '<br/>The required policy, ' + policy.policy + ', is not checked.';
-                        else
-                            message += '<br/>You cannot continue until you agree to the ' + policy.policy + ' policy.';
-                        field.classList.add(this.#alert);
-                        valid = false;
+                            valid = false;
+                        } else {
+                            message += '<br/>You cannot purchase memberships until you agree to the ' + policy.policy + ' policy.';
+                            overrideAllowed = true;
+                        }
+                        field.classList.add('warncolor');
                     } else {
                         field.classList.remove(this.#alert);
                     }
@@ -466,6 +469,11 @@ class Profile {
                 this.#alertType, messageDiv);
 
             return false;
+        }
+
+        if (overrideAllowed) {
+            if (!override)
+                return 'override';
         }
 
         // Check USPS for standardized address

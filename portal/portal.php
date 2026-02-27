@@ -118,6 +118,8 @@ if ($info === false) {
     portalPageFoot();
     exit();
 }
+$mpId = $info['personType'] . $info['id'];
+$missingPolicies[$mpId] = $info['missingPolicies'];
 $dolfmt = new NumberFormatter($locale, NumberFormatter::CURRENCY);
 
 $hasWSFS = false;
@@ -138,6 +140,10 @@ if (!$refresh) {
     $numPrimary = 0;
     $numPaidPrimary = 0;
     $numChild = 0;
+    if (isSessionVar('portalProfileChecked'))
+        $portalProfileChecked = getSessionVar('portalProfileChecked');
+    else
+        $portalProfileChecked = [];
 // get the account holder's registrations
     $holderRegSQL = <<<EOS
 SELECT r.status, r.memId, m.*, a.shortname AS ageShort, a.label AS ageLabel, a.ageType, a.shortname AS ageshortname,
@@ -571,6 +577,7 @@ EOS;
 
             // set the managed people array
             $mId = $p['personType'] . $p['id'];
+            $missingPolicies[$mId] = $p['missingPolicies'];
             if (array_key_exists($mId, $managedPeople))
                 $mp = $managedPeople[$mId];
             else {
@@ -799,6 +806,8 @@ if ($refresh) {
     var ageList = <?php echo json_encode($ageList); ?>;
     var ageListIdx = <?php echo json_encode($ageListIdx); ?>;
     var ageByDate = <?php echo '"' . $ageByDate . '"'; ?>;
+    var missingPolicies = <?php echo json_encode($missingPolicies); ?>;
+    var alreadyChecked = <?php echo json_encode($portalProfileChecked); ?>;
 </script>
 <?php
 // draw all the modals for this screen

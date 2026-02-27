@@ -64,7 +64,11 @@ function draw_editPersonModal($source, $policies, $ageList, $ageByDate, $interes
                 </div>
                 <div class='modal-footer'>
                     <button class='btn btn-sm btn-secondary' onclick='<?php echo $closeClick; ?>;' tabindex='10001'>Cancel</button>
-                    <button class='btn btn-sm btn-primary' id='editPersonSubmitBtn' onClick="portal.editPersonSubmit()" tabindex='10002'>Update Person</button>
+                    <button class='btn btn-sm btn-primary' id='editPersonSubmitBtn' onClick="portal.editPersonSubmit(false)" tabindex='10002'>Update
+                        Person</button>
+                    <button class='btn btn-sm btn-warning' id='editPersonOverrideBtn' onClick="portal.editPersonSubmit(true)" tabindex='10003' hidden>
+                        Override Warnings and Update Person
+                    </button>
                 </div>
             </div>
         </div>
@@ -384,10 +388,20 @@ EOS;
     $label = $personType ==  'p' ? 'Membership Number' : 'Temp Membership Number';
 
     // Purchases block
+    $mpbDisabled = '';
+    $mpbSuffix = '';
+    if ($person['missingPolicies'] > 0) {
+        $mpbDisabled = ' disabled';
+        $mpbSuffix = '<br/><span style="color: red;"><b>Missing Policies</b></span>';
+    }
+
+    $mpbId = 'mpBtn' . $personType . $id;
     echo <<<EOS
     <div class="row mt-1">
         <div class="col-sm-2">
-            <button class='btn btn-sm btn-primary p-1 h-100 w-100'  onclick="portal.addMembership($id, '$personType');">Make Purchase</button>
+            <button class='btn btn-sm btn-primary p-1 h-100 w-100' id="$mpbId" onclick="portal.addMembership($id, '$personType');"$mpbDisabled>
+            Make Purchase$mpbSuffix
+            </button>
         </div>
         <div class="col-sm-auto">
             <span class="h2">$fn Purchases</span>

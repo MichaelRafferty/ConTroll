@@ -134,6 +134,14 @@ if ($policy_upd > 0) {
     $message .= "<br/>$policy_upd policy responses updated";
 }
 
+if (isSessionVar('portalProfileChecked')) {
+    $portalProfileChecked = getSessionVar('portalProfileChecked');
+}
+
+$id = $currentPersonType . $currentPerson;
+$portalProfileChecked[$id] = 1;
+setSessionVar('portalProfileChecked', $portalProfileChecked);
+
 $response['rows_upd'] = $rows_upd;
 $response['status'] = 'success';
 $response['logmessage'] = $message;
