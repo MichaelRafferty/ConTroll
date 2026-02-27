@@ -59,6 +59,8 @@ if ($cartId == null) {
     $cartType = $_POST['cartType'];
 }
 
+$currency = getConfValue('con', 'currency', 'USD');
+$locale = getLocale();
 $config_vars = array();
 $config_vars['label'] = $con['label'];
 $config_vars['debug'] = getConfValue('debug', 'portal', 0);
@@ -74,6 +76,8 @@ $config_vars['required'] = getConfValue('reg', 'required', 'addr');
 $config_vars['multiOneDay'] = $multiOneDay;
 $config_vars['oneoff'] = $oneoff;
 $config_vars['tab'] = $cartType . $cartId;
+$config_vars['locale'] = $locale;
+$config_vars['currency'] = $currency;
 $cdn = getTabulatorIncludes();
 
 // build info array about the account holder

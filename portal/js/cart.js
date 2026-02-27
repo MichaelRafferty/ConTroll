@@ -42,9 +42,20 @@ class Cart {
     #vpModal = null;
     #vpBody = null;
 
+    // locale/currency
+    #currencyFmt = null;
+    #locale = null;
+
     constructor() {
         if (config.debug)
             this.#debug = config.debug;
+
+        this.#locale = config.locale;
+        this.#currencyFmt = new Intl.NumberFormat(this.#locale, {
+            style: 'currency',
+            currency: config.currency,
+        });
+
         this.#currentAge = person.currentAgeType;
         this.#memberships = person.memberships;
         this.#allMemberships = person.allMemberships;
@@ -102,7 +113,7 @@ class Cart {
                 continue;
 
             let memLabel = mem.label;
-            let price = mem.price;
+            let price = this.#currencyFmt.format(Number(mem.price).toFixed(2));
             if  (memCategories[mem.memCategory].variablePrice == 'Y')
                 price = 'Min ' + price;
             if (hasDesc) {
@@ -298,7 +309,7 @@ class Cart {
         this.#newMembershipSave = null;
         newMembership.price = price;
         this.membershipAddFinal(newMembership);
-        this,this.#vpModal.hide();
+        this.#vpModal.hide();
     }
 
     // finish membership add
