@@ -69,25 +69,71 @@ class Cart {
 
     buildMembershipButtons() {
         // now loop over memList and build each button
-        var html = '';
-        var rules = new MembershipRules(config.conid, this.#currentAge, this.#memberships, this.#allMemberships);
+        let html = '';
+        let rules = new MembershipRules(config.conid, this.#currentAge, this.#memberships, this.#allMemberships);
+        let hasDesc = false;
 
-        for (var row in memList) {
-            var mem = memList[row];
-            // apply implitict rules and membershipRules against memList entry
+        for (let row in memList) {
+            if (memList[row].cartDesc != null && memList[row].cartDesc.length > 0) {
+                hasDesc = true;
+                break;
+            }
+        }
+
+        if (hasDesc) {
+            html = `
+<div class="row" style="background-color: lightgray;">
+    <div class="col-sm-1 border border-2 border-dark"><b>Add To Cart</b></div>
+    <div class="col-sm-1 border border-2 border-dark text-end"><b>Price</b></div>
+    <div class="col-sm-3 border border-2 border-dark"><b>Item Name</b></div>
+    <div class="col-sm-7 border border-2 border-dark"><b>Description</b></div>
+</div>
+    `;
+        }
+        let rowColor = true;
+        for (let row in memList) {
+            let mem = memList[row];
+            // apply implicit rules and membershipRules against memList entry
             if (!rules.testMembership(mem))
                 continue;
 
             // apply age filter from age select
-            if (mem.memAge == 'all' || mem.memAge == this.#currentAge) {
-                var memLabel = mem.label;
+            if (mem.memAge != 'all' && mem.memAge != this.#currentAge)
+                continue;
+
+            let memLabel = mem.label;
+            let price = mem.price;
+            if  (memCategories[mem.memCategory].variablePrice == 'Y')
+                price = 'Min ' + price;
+            if (hasDesc) {
+                let cartDesc = '';
+                if (mem.cartDesc != null && mem.cartDesc.length > 0)
+                    cartDesc = mem.cartDesc;
+                rowColor = !rowColor
+                html += `
+<div class="row mt-1">
+    <div class="col-sm-1"><button id="memBtn-' + mem.id + '" class="btn btn-sm btn-primary h-100 w-100"` +
+        ' onclick="cart.membershipAdd(' + "'" + mem.id + "'" + `)">Add</button>
+    </div> 
+    <div class="col-sm-1 border border-2 border-dark text-end" style="background-color: ` + (rowColor ? "AliceBlue" : "Cornsilk") + `;">` +
+        price +
+    `</div>
+    <div class="col-sm-3 border border-2 border-dark" style="background-color: ` + (rowColor ? "AliceBlue" : "Cornsilk") + `;">` +
+        memLabel +
+    `</div>
+    <div class="col-sm-7 border border-2 border-dark" style="background-color: ` + (rowColor ? "AliceBlue" : "Cornsilk") + `;">` +
+        cartDesc +
+    `</div>
+</div>
+`;
+            } else {
                 if (memCategories[mem.memCategory].variablePrice != 'Y') {
                     memLabel += ' (' + mem.price + ')';
-                }
                 html += '<div class="col-sm-2 mt-1 mb-1"><button id="memBtn-' + mem.id + '" class="btn btn-sm btn-primary h-100 w-100"' +
                     ' onclick="cart.membershipAdd(' + "'" + mem.id + "'" + ')">' +
                     (mem.conid != config.conid ? mem.conid + ' ' : '') + memLabel + '</button></div>' + "\n";
-                }
+                }           
+            }
         }
         this.#membershipButtonsDiv.innerHTML = html;
     }
