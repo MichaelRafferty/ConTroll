@@ -203,7 +203,7 @@ if (!$controll['useportal']) {
                              <input type="hidden" name="perinfo-perid" id="perinfo-perid" />
                              <input type="hidden" name="membership-index" id="membership-index" />
 <?php
-drawEditPersonBlock($con, $useUSPS, $policies, 'registration', false, true, $ageByDate,
+drawEditPersonBlock($con, $useUSPS, $policies, '', false, true, $ageByDate,
         array(), $ageListIdx, 200, true, '');
 ?>
                             <div class="row">
