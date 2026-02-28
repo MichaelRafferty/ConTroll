@@ -330,7 +330,7 @@ class Pos {
 
         profile.setEmail(cartrow.email_addr);
 
-        if (cartrow.perid > 0) {
+        if (cartrow.perid > 0 && this.#managerDiv) {
             this.#managerSelect.innerHTML = '';
             this.#managerDiv.hidden = true;
         } else {
@@ -2762,7 +2762,7 @@ class Pos {
         cart.clearInReview();
         cart.unfreeze();
         cart.drawCart();
-        if (this.#add_mode) {
+        if (this.#add_mode && this.#managerDiv) {
             let selectList = cart.getManagerSelect();
             if (selectList.length > 0) {
                 this.#managerSelect.innerHTML = selectList;
