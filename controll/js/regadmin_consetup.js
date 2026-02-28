@@ -1167,6 +1167,21 @@ class consetup {
         //console.log(this.#editData);
     }
 
+    // copy the cart description field from the upper Edit block to the lower time series rows
+    copyCartDesc() {
+        let cartDesc = tinyMCE.get('editMemListCartDesc').getContent();
+        for (let index = 0; index < 10; index++) {
+            if (document.getElementById('EMLTS' + index + '_Price').value != '' ||
+                document.getElementById('EMLTS' + index + '_Start').value != '' ||
+                document.getElementById('EMLTS' + index + '_End').value != '') {
+                // has price, copy the description
+                this.#editData[index].cartDesc = cartDesc;
+            }
+        }
+        show_message("Cart Description copied", 'success', 'result_message_editMemList');
+        //console.log(this.#editData);
+    }
+
     // sequence the end dates for the time series
     resetEndDates() {
         for (let index = 0; index < this.#editData.length - 1; index++) {
@@ -1470,6 +1485,14 @@ function copyMemListChanges() {
 
     return current.copyMemListChanges();
 }
+
+function copyCartDesc() {
+    if (activeConSetup == 'next')
+        return next.copyCartDesc();
+
+    return current.copyCartDesc();
+}
+
 
 function resetEndDates() {
     if (activeConSetup == 'next')

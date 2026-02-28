@@ -123,9 +123,12 @@ $config_vars['rolloverYears'] = getConfValue('controll', 'priorRolloverYears', 2
                                 </div>
                                 <div class='row mt-1'>
                                     <div class='col-sm-2'>Price:</div>
-                                    <div class='col-sm-10'>
-                                        <input type='number' class='no-spinners' inputmode='numeric' id='editMemListPrice' name="editMemListPrice" min="0"
+                                    <div class='col-sm-3'>
+                                        <input type='number' class='no-spinners' inputmode='numeric' id='editMemListPrice' name='editMemListPrice' min='0'
                                                style='text-align: right; width: 6em;' onchange='priceChange(editListMasterRow)'/>
+                                    </div>
+                                    <div class='col-sm-7 text-end'>
+                                        <button class='btn btn-sm btn-primary' onclick='copyCartDesc();'>Copy only Cart Description to Time Series Rows</button>
                                     </div>
                                 </div>
                                 <div class='row mt-1'>
