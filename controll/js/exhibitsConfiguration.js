@@ -606,17 +606,17 @@ class exhibitssetup {
                 {rowHandle: true, formatter: "handle", frozen: true, width: 40, headerSort: false},
                 { title: "&bigstar;Region Type", field: "regionType", width: 200, headerSort: true, headerWordWrap: true, validator: "required",
                     editor: "input", editorParams: {maxlength: "16"} },
-                { title: "&bigstar;Portal Type", field: "portalType", width: 100, headerSort: true, headerWordWrap: true, editor: "list", editorParams: {
-                    values: ['vendor', 'artist']}, validator: "required" },
-                { title: "&bigstar;Request Approval Required", field: "requestApprovalRequired", headerSort: true, width: 120, headerWordWrap: true, editor: "list", editorParams: {
-                    values: ['None', 'Once', 'Annual']}, validator: "required" },
-                { title: "&bigstar;Purchase Approval Required", field: "purchaseApprovalRequired", headerSort: true, width: 120, headerWordWrap: true, editor: "list", editorParams: {
-                    values: ['Y', 'N'] }, validator: "required" },
-                { title: "&bigstar;Purchase Area Totals", field: "purchaseAreaTotals", headerSort: true, width: 140, headerWordWrap: true, editor: "list", editorParams: {
-                    values: ['unique', 'combined'] }, validator: "required" },
+                { title: "&bigstar;Portal Type", field: "portalType", width: 100, headerSort: true, headerWordWrap: true,
+                    editor: "list", editorParams: { values: ['vendor', 'artist']}, validator: "required" },
+                { title: "&bigstar;Request Approval Required", field: "requestApprovalRequired", headerSort: true, width: 120, headerWordWrap: true,
+                    editor: "list", editorParams: { values: ['None', 'Once', 'Annual']}, validator: "required" },
+                { title: "&bigstar;Purchase Approval Required", field: "purchaseApprovalRequired", headerSort: true, width: 120, headerWordWrap: true,
+                    editor: "list", editorParams: { values: ['Y', 'N'] }, validator: "required" },
+                { title: "&bigstar;Purchase Area Totals", field: "purchaseAreaTotals", headerSort: true, width: 140, headerWordWrap: true,
+                    editor: "list", editorParams: { values: ['unique', 'combined'] }, validator: "required" },
                 { title: "Inperson Max Units", field: "inPersonMaxUnits", headerSort: true, width: 100, headerWordWrap: true, editor: "input" },
-                { title: "&bigstar;Mail-in Allowed", field: "mailinAllowed", headerSort: true, width: 100, headerWordWrap: true, editor: "list", editorParams: {
-                    values: ['Y', 'N'] }, validator: "required" },
+                { title: "&bigstar;Mail-in Allowed", field: "mailinAllowed", headerSort: true, width: 100, headerWordWrap: true,
+                    editor: "list", editorParams: { values: ['Y', 'N'] }, validator: "required" },
                 { title: "Mail-in Max Units", field: "mailinMaxUnits", headerSort: true, width: 100, headerWordWrap: true, editor: "input" },
                 { title: "&bigstar;Need W9", field: "needW9", headerSort: false, width: 80, headerWordWrap: true, validator: "required",
                     editor: "list", editorParams: { values: ['Y', 'N'] }, },
@@ -785,10 +785,10 @@ class exhibitssetup {
                     editor: "input", editorParams: {elementAttributes: {maxlength: "64"}}, validator: "required"
                 },
                 { title: '&bigstar;Included', field: "includedMemId", width: 230, headerSort: false, validator: "required",
-                    editor: "list", formatter:"lookup", formatterParams: this.#memListArrIncl, editorParams: { values: this.#memListArrIncl },
+                    editor: "list",  editorParams: { values: this.#memListArrIncl }, formatter:"lookup", formatterParams: this.#memListArrIncl,
                 },
                 { title: '&bigstar;Additional', field: "additionalMemId", width: 230, headerSort: false, validator: "required",
-                    editor: "list", formatter:"lookup", formatterParams: this.#memListArr, editorParams: { values: this.#memListArr  }
+                    editor: "list",  editorParams: { values: this.#memListArr  }, formatter:"lookup", formatterParams: this.#memListArr,
                 },
                 {title: 'Total Units Avail', field: "totalUnitsAvailable", width: 70, hozAlign: "right", headerWordWrap: true, headerSort: false,
                     editor: "input", editorParams: {maxlength: "10"}},
@@ -943,7 +943,7 @@ class exhibitssetup {
                 {
                     title: "&bigstar;Exhibits Space", field: "spaceId", width: 200, headerSort: true, headerWordWrap: true,
                     headerFilter: true, headerFilterParams: {values: this.#spacesListArr}, validator: "required",
-                    editor: "list", formatter: "lookup", formatterParams: this.#spacesListArr, editorParams: {values: this.#spacesListArr}
+                    editor: "list", editorParams: {values: this.#spacesListArr}, formatter: "lookup", formatterParams: this.#spacesListArr,
                 },
                 {
                     title: "&bigstar;Code", field: "code", headerSort: true, headerFilter: true, width: 140,
