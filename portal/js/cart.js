@@ -175,7 +175,7 @@ class Cart {
         this.#unpaidMemberships = 0;
         var html = `
             <div class="row">
-                <div class="col-sm-2"><b>Remove</b></div>
+                <div class="col-sm-1"><b>Remove</b></div>
                 <div class="col-sm-1" style='text-align: right;'><b>Status</b></div>
                 <div class="col-sm-1" style='text-align: right;'><b>Price</b></div>
                 <div class="col-sm-4"><b>Membership</b></div>
@@ -216,10 +216,10 @@ class Cart {
             }
             html += `
     <div class="row">
-        <div class="col-sm-2">` + col1 + `</div>
+        <div class="col-sm-1">` + col1 + `</div>
         <div class="col-sm-1" style='text-align: right;'>` + membershipRec.status + `</div>
         <div class="col-sm-1" style='text-align: right;'>` + membershipRec.price + `</div>
-        <div class="col-sm-8">` + label + `
+        <div class="col-sm-9">` + label + `
         </div>
     </div>
 `;
@@ -235,9 +235,9 @@ class Cart {
         </div>
     </div>
     <div class="row">
-        <div class="col-sm-2"></div>
+        <div class="col-sm-1"></div>
         <div class="col-sm-1" style='text-align: right;'><b>Total Due:</b></div>
-        <div class="col-sm-1" style='text-align: right;'><b>$` + Number(this.#totalDue).toFixed(2)+ `</b></div>
+        <div class="col-sm-1" style='text-align: right;'><b>` + this.#currencyFmt.format(Number(this.#totalDue).toFixed(2))+ `</b></div>
     </div>`
         }
         if (this.#countMemberships == 0) {
