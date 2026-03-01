@@ -245,7 +245,7 @@ if ($tokenState == 'none' || $tokenState == 'expired') {
         <?php
 } else {
         $homeDir = getConfValue('controll', 'internalHome', 'not-a-valid-path');
-        if (stripos(__DIR__, $homeDir) !== false && $_SERVER['SERVER_ADDR'] == '127.0.0.1') {
+        if (stripos(__DIR__, $homeDir) !== false && ($_SERVER['SERVER_ADDR'] == '127.0.0.1') || ($_SERVER['SERVER_ADDR'] == '::1')) {
             for ($i = 1; $i < 99; $i++) {
                 $internal = getConfValue('controll', 'internalUser' . $i);
                 if ($internal == null)
