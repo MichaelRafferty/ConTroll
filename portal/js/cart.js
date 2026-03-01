@@ -94,13 +94,11 @@ class Cart {
         if (hasDesc) {
             html = `
 <div class="row">
-    <div class="col-sm-2" style="font-size: 130%; font-weight: bold; background-color: lightgray;">
-        Add To Cart
-    </div>
-    <div class="col-sm-1 text-end" style="font-size: 130%; font-weight: bold; background-color: lightgray;">
+    <div class="col-sm-1" style="font-size: 130%; font-weight: bold; background-color: lightgray;"></div>
+    <div class="col-sm-1 text-center" style="font-size: 130%; font-weight: bold; background-color: lightgray;">
         Price
     </div>
-    <div class="col-sm-9" style="font-size: 130%; font-weight: bold; background-color: lightgray;">
+    <div class="col-sm-10" style="font-size: 130%; font-weight: bold; background-color: lightgray;">
         Item Name/Description
     </div>
 </div>
@@ -120,7 +118,7 @@ class Cart {
             let memLabel = mem.label;
             let price = this.#currencyFmt.format(Number(mem.price).toFixed(2));
             if  (memCategories[mem.memCategory].variablePrice == 'Y')
-                price = 'Min ' + price;
+                price = '';
             if (hasDesc) {
                 let cartDesc = '';
                 if (mem.cartDesc != null && mem.cartDesc.length > 0)
@@ -133,10 +131,10 @@ class Cart {
             Add
         </button>
     </div> 
-    <div class="col-sm-2 text-end" style="font-size: 130%; font-weight: bold; background-color: ` +
+    <div class="col-sm-1 text-end" style="font-size: 130%; font-weight: bold; background-color: ` +
         (rowColor ? "#ffffff" : "#efefef") + `;">` + price +
     `</div>
-    <div class="col-sm-9" style="font-size: 130%; font-weight: bold; background-color: ` +
+    <div class="col-sm-10" style="font-size: 130%; font-weight: bold; background-color: ` +
         (rowColor ? "#ffffff" : "#efefef") + `;">` + memLabel +
     `</div>
 </div>
@@ -144,8 +142,8 @@ class Cart {
                 if (cartDesc && cartDesc != '') {
                     html += `
 <div class="row">
-    <div class="col-sm-3" style="background-color: ` + (rowColor ? "#ffffff" : "#efefef") + `;"></div>
-    <div class="col-sm-9 border-top border-2 border-dark" style="background-color: ` + (rowColor ? "#ffffff" : "#efefef") + `;">` +
+    <div class="col-sm-2" style="background-color: ` + (rowColor ? "#ffffff" : "#efefef") + `;"></div>
+    <div class="col-sm-10 border-top border-2 border-dark" style="background-color: ` + (rowColor ? "#ffffff" : "#efefef") + `;">` +
                         cartDesc +
                         `</div>
 </div>
