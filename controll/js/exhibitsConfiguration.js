@@ -776,7 +776,7 @@ class exhibitssetup {
                 },
                 {title: "&bigstar;Room Status", field: "roomStatus", width:100, headerSort: true, headerFilter: true, headerWordWrap: true,
                     editor: "list", editorParams: {values: this.#regionYearRoomStatuses}, validator: "required",
-                    formatter: "lookup", formatterParams: {values: this.#regionYearRoomStatuses, }
+                    formatter: "lookup", formatterParams: this.#regionYearRoomStatuses,
                 },
                 {title: "&bigstar;Owner Name", field: "ownerName", headerSort: true, headerFilter: true, width: 200, formatter: "textarea",
                     editor: "input", editorParams: {elementAttributes: {maxlength: "64"}}, validator: "required"
