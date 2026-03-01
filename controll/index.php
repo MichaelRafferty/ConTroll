@@ -30,7 +30,8 @@ if (isset($_REQUEST['logout'])) {
 
 if (array_key_exists('oauth2', $_REQUEST) && $_REQUEST['oauth2'] == 'google') {
     $homeDir = getConfValue('controll', 'internalHome', 'not-a-valid-path');
-    if (stripos(__DIR__, $homeDir) !== false && $_SERVER['SERVER_ADDR'] == '127.0.0.1' && array_key_exists('id', $_REQUEST)) {
+    if (stripos(__DIR__, $homeDir) !== false && (($_SERVER['SERVER_ADDR'] == '127.0.0.1') || ($_SERVER['SERVER_ADDR'] == '::1'))
+            && array_key_exists('id', $_REQUEST)) {
         $id = $_REQUEST['id'];
         // we are internal, force a login for sub $id
         $authToken->buildToken('internal', $id, 'noemail');
@@ -123,7 +124,7 @@ if ($tokenState == 'refresh' || array_key_exists('refresh', $_REQUEST)) {
     switch ($authToken->getSource()) {
         case 'internal':
             $homeDir = getConfValue('controll', 'internalHome', 'not-a-valid-path');
-            if (stripos(__DIR__, $homeDir) !== false && $_SERVER['SERVER_ADDR'] == '127.0.0.1') {
+            if (stripos(__DIR__, $homeDir) !== false && (($_SERVER['SERVER_ADDR'] == '127.0.0.1') || ($_SERVER['SERVER_ADDR'] == '::1'))) {
                 if ($authToken->refreshExpire()) {
                     echo <<<EOS
     <div class="row mt-4">
@@ -245,7 +246,7 @@ if ($tokenState == 'none' || $tokenState == 'expired') {
         <?php
 } else {
         $homeDir = getConfValue('controll', 'internalHome', 'not-a-valid-path');
-        if (stripos(__DIR__, $homeDir) !== false && ($_SERVER['SERVER_ADDR'] == '127.0.0.1') || ($_SERVER['SERVER_ADDR'] == '::1')) {
+        if (stripos(__DIR__, $homeDir) !== false && (($_SERVER['SERVER_ADDR'] == '127.0.0.1') || ($_SERVER['SERVER_ADDR'] == '::1'))) {
             for ($i = 1; $i < 99; $i++) {
                 $internal = getConfValue('controll', 'internalUser' . $i);
                 if ($internal == null)
