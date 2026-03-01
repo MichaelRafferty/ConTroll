@@ -317,7 +317,7 @@ EOS;
                 $label = $m['label'];
                 $shortname = $m['shortname'];
             }
-            if ($m['startdate'] > $now || $m['enddate'] < $now)
+            if ($m['status'] == 'unpaid' && ($m['startdate'] > $now || $m['enddate'] < $now))
                 $m['expired'] = 1;
 
             if ($m['regid'] != null) {
@@ -592,7 +592,7 @@ EOS;
                 $mp['memAge'] = $p['memAge'];
 
             if (isPrimary($p, $conid)) {
-                if ($p['startdate'] > $now || $p['enddate'] < $now) {
+                if ($p['status'] == 'unpaid' && ($p['startdate'] > $now || $p['enddate'] < $now)) {
                     $p['expired'] = 1;
                 }
                 $mp['primary'] = $p;
