@@ -53,6 +53,9 @@ $interests = getInterests();
 $condata = get_con();
 $startdate = new DateTime($condata['startdate']);
 $ageByDate = $startdate->format('F j, Y');
+$defaultCountry = strtoupper(getConfValue('con', 'defaultCountry', 'USA'));
+$countryOptions = loadCountryOptions($defaultCountry);
+$config_vars['defaultCountry'] = $defaultCountry;
 
 $useUSPS = false;
 if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
@@ -331,11 +334,7 @@ $config_vars['tokenStatus'] = $authToken->checkToken();
                             </label><br/>
                             <select name='country' id='country'>
                                 <?php
-                                    $fh = fopen(__DIR__ . '/../lib/countryCodes.csv', 'r');
-                                    while (($data = fgetcsv($fh, 1000, ',', '"')) != false) {
-                                        echo '<option value="' . escape_quotes($data[1]) . '">' . $data[0] . '</option>';
-                                    }
-                                    fclose($fh);
+                                   echo $countryOptions;
                                 ?>
                             </select>
                         </div>
@@ -593,7 +592,7 @@ $config_vars['tokenStatus'] = $authToken->checkToken();
                         <div class="col-sm-12"><h2 class="size=h3">Profile/Policies</h2></div>
                     </div>
 <?php
-drawEditPersonBlock($con_conf, $useUSPS, $policies, 'find', true, true, $ageByDate,
+drawEditPersonBlock($con_conf, $countryOptions, $useUSPS, $policies, 'find', true, true, $ageByDate,
         array(), $ageListIdx,200, true, 'f_');
 drawInterestList($interests, true);
 ?>
@@ -794,7 +793,7 @@ drawInterestList($interests, true);
             </div>
             <form id='a_editPerson' class='form-floating' action='javascript:void(0);'>
 <?php
-    drawEditPersonBlock($con_conf, true, $policies, 'addPerson', false, true,$ageByDate,
+    drawEditPersonBlock($con_conf, $countryOptions,true, $policies, 'addPerson', false, true,$ageByDate,
             null, $ageListIdx, 100, true, 'a_');
 ?>
             </form>

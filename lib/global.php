@@ -585,12 +585,14 @@ function getLocale() {
 }
 
 // load country code file from the library and default to the country in the config
-function loadCountryOptions() {
+function loadCountryOptions($defaultCode = null) {
     $optionList = '';
-    $defaultCode = strtoupper(getConfValue('con', 'defaultCountry', 'AUS'));
+    if ($defaultCode === null)
+        $defaultCode = strtoupper(getConfValue('con', 'defaultCountry', 'USA'));
+
     $fh = fopen(__DIR__ . '/../lib/countryCodes.csv', 'r');
     while (($data = fgetcsv($fh, 1000, ',', '"')) != false) {
-        $selected = $data[1] == $defaultCode ? ' SELECTED' : '';
+        $selected = $data[1] == $defaultCode ? ' selected' : '';
         $optionList .= "<option value='" . $data[1] . "'" . $selected . ">" . $data[0] . "</option>\n";
     }
     fclose($fh);

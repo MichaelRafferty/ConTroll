@@ -68,6 +68,9 @@ $config_vars['conid'] = $conid;
 $config_vars['required'] = getConfValue('reg', 'required', 'addr');
 $config_vars['useUSPS'] = $useUSPS;
 $config_vars['tokenStatus'] = $authToken->checkToken();
+$defaultCountry = strtoupper(getConfValue('con', 'defaultCountry', 'USA'));
+$countryOptions = loadCountryOptions($defaultCountry);
+$config_vars['defaultCountry'] = $defaultCountry;
 ?>
 <script type='text/javascript'>
     var config = <?php echo json_encode($config_vars); ?>;
@@ -93,7 +96,7 @@ $config_vars['tokenStatus'] = $authToken->checkToken();
                         <div class='col-sm-12'><h2 class='size=h3'>Profile</h2></div>
                     </div>
                     <?php
-                        drawEditPersonBlock($conf, $useUSPS, null, 'find', true, true, $ageByDate,
+                        drawEditPersonBlock($conf, $countryOptions, $useUSPS, null, 'find', true, true, $ageByDate,
                                 array (), $ageListIdx,200, true, 'f_', true);
                     ?>
                     </form>
@@ -124,7 +127,7 @@ $config_vars['tokenStatus'] = $authToken->checkToken();
                         <div class='col-sm-12'><h2 class='size=h3'>Profile</h2></div>
                     </div>
                     <?php
-                        drawEditPersonBlock($conf, $useUSPS, null, 'add', true, true, $ageByDate,
+                        drawEditPersonBlock($conf, $countryOptions, $useUSPS, null, 'add', true, true, $ageByDate,
                                 array (), $ageListIdx,1000, true, 'a_', true);
                     ?>
                     </form>

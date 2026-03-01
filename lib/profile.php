@@ -2,7 +2,7 @@
 // profile - anything to do with the PHP side of editing your name/address/... profile
 
 // drawEditPersonBlock - just output the block to edit the person
-function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $editEmail=false, $ageByDate = '',
+function drawEditPersonBlock($con, $countryOptions, $useUSPS, $policies, $class, $modal=false, $editEmail=false, $ageByDate = '',
      $membershipTypes = [], $ageList = [], $tabIndexStart = 100, $admin = false, $idPrefix = '', $free=false, $enableManager=false) {
     if ($class != '')
         $class .= '.';
@@ -133,11 +133,7 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
             <select name='country' id='<?php echo $idPrefix . 'country'; ?>' onchange="<?php echo $class; ?>countryChange();"
                     tabindex="<?php echo $tabindex; $tabindex += 10;?>">
                 <?php
-                    $fh = fopen(__DIR__ . '/../lib/countryCodes.csv', 'r');
-                    while (($data = fgetcsv($fh, 1000, ',', '"')) != false) {
-                        echo '<option value="' . escape_quotes($data[1]) . '">' . $data[0] . '</option>';
-                    }
-                    fclose($fh);
+                    echo $countryOptions;
                 ?>
             </select>
         </div>

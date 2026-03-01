@@ -351,28 +351,20 @@ class consetup {
                 {field: "memlistkey", visible: false,},
                 {title: "Con ID", field: "conid", width: 70, headerWordWrap: true, headerFilter: true, headerHozAlign: "right", hozAlign: "right",},
                 {
-                    title: "Category",
-                    field: "memCategory",
-                    editor: "list",
-                    editorParams: {values: data['memCats'],},
-                    headerFilter: true,
-                    headerFilterParams: {values: data['memCats']}
+                    title: "Category", field: "memCategory",
+                    editor: "list", editorParams: {values: data['memCats'],},
+                    headerFilter: true, headerFilterParams: {values: data['memCats']}
                 },
                 {
-                    title: "Type",
-                    field: "memType",
-                    editor: "list",
-                    editorParams: {values: data['memTypes'],},
+                    title: "Type", field: "memType",
+                    editor: "list",  editorParams: {values: data['memTypes'],},
                     headerFilter: true,
                     headerFilterParams: {values: data['memTypes'],}
                 },
                 {
-                    title: "Age",
-                    field: "memAge",
-                    editor: "list",
-                    editorParams: {values: data['ageTypes'],},
-                    headerFilter: true,
-                    headerFilterParams: {values: data['ageTypes'],},
+                    title: "Age", field: "memAge",
+                    editor: "list", editorParams: {values: data['ageTypes'],},
+                    headerFilter: true, headerFilterParams: {values: data['ageTypes'],},
                 },
                 {
                     title: "Label", field: "shortname", width: 200,

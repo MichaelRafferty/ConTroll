@@ -51,6 +51,9 @@ $config_vars['conid'] = $condata['id'];
 $config_vars['debug'] = getConfValue('debug', 'onlinereg', 0);
 $config_vars['locale'] = $locale;
 $config_vars['currency'] = $currency;
+$defaultCountry = strtoupper(getConfValue('con', 'defaultCountry', 'USA'));
+$countryOptions = loadCountryOptions($defaultCountry);
+$config_vars['defaultCountry'] = $defaultCountry;
 
 $config_vars['onedaycoupons'] = $onedaycoupons;
 
@@ -209,7 +212,7 @@ $js = "var mtypes = " . json_encode($membershiptypes) . ';' . PHP_EOL .
                         <h3 class="text-primary">New Convention Memberships</h3>
                         <form id='newBadgeForm' action='javascript:void(0);' class="form-floating">
 <?php
-    drawEditPersonBlock($con, $useUSPS, $policies, $class, /* modal */ true, /* editEmail */ true, $ageByDate,
+    drawEditPersonBlock($con, $countryOptions, $useUSPS, $policies, $class, /* modal */ true, /* editEmail */ true, $ageByDate,
             $membershiptypes, $ageListIdx, /* tabIndexStart  */ 100);
 
     if ($interests != null && count($interests) > 0) {

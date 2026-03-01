@@ -637,6 +637,9 @@ class Profile {
     // clear the entire profile form for a new load to edit
     clearForm() {
         this.clearNext();
+        let defaultCountry = 'USA';
+        if (config.hasOwnProperty('defaultCountry'))
+            defaultCountry = config['defaultCountry'];
 
         this.#lnameField.value = '';
         this.#addrField.value = '';
@@ -644,7 +647,7 @@ class Profile {
         this.#cityField.value = '';
         this.#stateField.value = '';
         this.#zipField.value = '';
-        this.#countryField.value = 'USA';
+        this.#countryField.value = defaultCountry;
         this.#phoneField.value = '';
         this.#lnameField.classList.remove(this.#alert);
         this.#addrField.classList.remove(this.#alert);

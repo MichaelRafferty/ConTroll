@@ -93,12 +93,9 @@ $startdate = new DateTime($condata['startdate']);
 $config_vars['ageByDate'] = $startdate->format('F j, Y');
 
 // load country select
-$countryOptions = '';
-$fh = fopen(__DIR__ . '/../lib/countryCodes.csv', 'r');
-while(($data = fgetcsv($fh, 1000, ',', '"'))!=false) {
-  $countryOptions .= '<option value="' . escape_quotes($data[1]) . '">' .$data[0] . '</option>' . PHP_EOL;
-}
-fclose($fh);
+$defaultCountry = strtoupper(getConfValue('con', 'defaultCountry', 'USA'));
+$countryOptions = loadCountryOptions($defaultCountry);
+$config_vars['defaultCountry'] = $defaultCountry;
 ?>
 
 <body id="vendorPortalBody">
@@ -411,13 +408,6 @@ $config_vars['exhibitorName'] = $info['exhibitorName'];
 $config_vars['artistName'] = $info['artistName'];
 $config_vars['email'] = getSessionVar('loginEmail');
 
-// load the country codes for the option pulldown
-$fh = fopen(__DIR__ . '/../lib/countryCodes.csv', 'r');
-$countryOptions = '';
-while(($data = fgetcsv($fh, 1000, ',', '"'))!=false) {
-    $countryOptions .=  "<option value='".$data[1]."'>".$data[0]."</option>\n";
-}
-fclose($fh);
 // load the passkey count for this exhibitor to see if we need to display create passkey
 $tokenType = getSessionVar('tokenType');
 $hasPasskey = $tokenType == 'passkey';

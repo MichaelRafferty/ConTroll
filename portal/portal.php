@@ -811,7 +811,7 @@ if ($refresh) {
 </script>
 <?php
 // draw all the modals for this screen
-draw_editPersonModal('portal', $policies, $ageListIdx, $condata['startdate']);
+draw_editPersonModal('portal', $policies, $ageListIdx, $condata['startdate'], $countryOptions);
 if ($interests != null && count($interests) > 0) {
     draw_editInterestsModal($interests);
 }

@@ -102,6 +102,9 @@ $config_vars['source'] = 'regpos';
 $config_vars['taxRates'] = getTaxRates();
 $config_vars['locale'] = $locale;
 $config_vars['currency'] = $currency;
+$defaultCountry = strtoupper(getConfValue('con', 'defaultCountry', 'USA'));
+$countryOptions = loadCountryOptions($defaultCountry);
+$config_vars['defaultCountry'] = $defaultCountry;
 
 $useUSPS = false;
 
@@ -212,7 +215,7 @@ if (array_key_exists('creditonline', $atcon)) {
                                 <input type='hidden' name='perinfo-perid' id='perinfo-perid'/>
                                 <input type='hidden' name='membership-index' id='membership-index'/>
                                 <?php
-                                    drawEditPersonBlock($con, $useUSPS, $policies, 'registration', false, true, $ageByDate,
+                                    drawEditPersonBlock($con, $countryOptions, $useUSPS, $policies, 'registration', false, true, $ageByDate,
                                             array(), $ageListIdx, 200, true, '', false, true);
                                 ?>
                                 <div class="row">

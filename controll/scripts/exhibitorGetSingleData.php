@@ -118,14 +118,8 @@ $info = $infoR->fetch_assoc();
 $infoR->free();
 
 // load the country codes for the option pulldown
-$fh = fopen(__DIR__ . '/../../lib/countryCodes.csv', 'r');
-$countryOptions = '';
-while(($data = fgetcsv($fh, 1000, ',', '"'))!=false) {
-    $countryOptions .=  "<option value='".$data[1]."'>".$data[0]."</option>\n";
-}
-fclose($fh);
-
-
+$defaultCountry = strtoupper(getConfValue('con', 'defaultCountry', 'USA'));
+$countryOptions = loadCountryOptions($defaultCountry)
 $vendorPQ = <<<EOS
 SELECT exRY.*, ery.id AS exhibitsRegionYearId
 FROM exhibitorRegionYears exRY
@@ -166,5 +160,6 @@ $response['exhibitor_perm'] = $vendor_perm;
 $response['regions'] = $regions;
 $response['spaces'] = $spaces;
 $response['country_options'] = $countryOptions;
+$response['defaultCountry'] = $defaultCountry;
 
 ajaxSuccess($response);

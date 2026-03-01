@@ -24,6 +24,9 @@ $config_vars['startdate'] = $condata['startdate'];
 $config_vars['debug'] = getConfValue('debug', 'portal', 0);
 $config_vars['uri'] = $portal_conf['portalsite'];
 $config_vars['required'] = getConfValue('reg', 'required', 'addr');
+$defaultCountry = strtoupper(getConfValue('con', 'defaultCountry', 'USA'));
+$countryOptions = loadCountryOptions($defaultCountry);
+$config_vars['defaultCountry'] = $defaultCountry;
 
 $loginId = null;
 $loginType = null;
@@ -69,7 +72,7 @@ $why = "continue to the Portal";
             " has requested that you validate yourself.  Please log into the Portal to perform that validation.</strong>";
         $why = "perform the authentication for " . $request['app'];
         if (isSessionVar('id')) {
-            chooseAccountFromEmail(getSessionVar('email'), null, null, null, 'logged-in');
+            chooseAccountFromEmail(getSessionVar('email'), null, null, null, 'logged-in', $countryOptions);
         }
     }
     // END OF FUTURE FOR Controll Oauth validation request */
@@ -202,7 +205,7 @@ $why = "continue to the Portal";
 
             draw_indexPageTop($condata, $purpose);
             // not a refresh, choose the account from the email
-            $account = chooseAccountFromEmail($email, null, null, null, getSessionVar('oauth2'));
+            $account = chooseAccountFromEmail($email, null, null, null, getSessionVar('oauth2'), $countryOptions);
             if ($account == null || !is_numeric($account)) {
                 if ($account == null) {
                     $account = "Error looking up data for $email";
@@ -404,7 +407,7 @@ EOS;
     setSessionVar('tokenType', $tokenType);
 
     // now choose the account from the email
-    $account = chooseAccountFromEmail($email, $id, $linkid, $match, $validationType);
+    $account = chooseAccountFromEmail($email, $id, $linkid, $match, $validationType, $countryOptions);
     if ($account == null || !is_numeric($account)) {
         if ($account == null) {
             $account = "Error looking up data for $email";
@@ -416,7 +419,7 @@ EOS;
     }
     exit();
 } else if ($loginId != null && isSessionVar('multiple') && isset($_REQUEST['switch']) && $_REQUEST['switch'] == 'account') {
-    $account = chooseAccountFromEmail(getSessionVar('multiple'), null,null, null, 'switch');
+    $account = chooseAccountFromEmail(getSessionVar('multiple'), null,null, null, 'switch', $countryOptions);
     if ($account == null || !is_numeric($account)) {
         if ($account == null) {
             $account = "Error looking up data for $email";

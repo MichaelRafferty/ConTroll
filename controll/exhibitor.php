@@ -80,13 +80,8 @@ EOS;
 $regionOwnerR = dbSafeQuery($regionOwnerQ, 'i',array($conid));
 
 // load country select
-$countryOptions = '';
-$fh = fopen(__DIR__ . '/../lib/countryCodes.csv', 'r');
-while(($data = fgetcsv($fh, 1000, ',', '"'))!=false) {
-    $countryOptions .= '<option value="' . escape_quotes($data[1]) . '">' .$data[0] . '</option>' . PHP_EOL;
-}
-fclose($fh);
-
+$defaultCountry = strtoupper(getConfValue('con', 'defaultCountry', 'USA'));
+$countryOptions = loadCountryOptions($defaultCountry);
 $useUSPS = false;
 if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
     $useUSPS = true;
@@ -132,6 +127,7 @@ $config_vars['locale'] = $locale;
 $config_vars['currency'] = $currency;
 $config_vars['taxRates'] = getTaxRates();
 $config_vars['tokenStatus'] = $authToken->checkToken();
+$config_vars['defaultCountry'] = $defaultCountry;
 
 bs_tinymceModal();
 draw_registrationModal('admin', 'Admin', $conf, $countryOptions);

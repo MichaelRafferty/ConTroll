@@ -1,7 +1,7 @@
 <?php
 // portalForms:  Forms used by the portal for person and membership work
 // drawVerifyPersonInfo - non modal version of validate person information
-function drawVerifyPersonInfo($policies, $ageByDate, $ageList) : void {
+function drawVerifyPersonInfo($policies, $ageByDate, $ageList, $countryOptions) : void {
     $usps = get_conf('usps');
     $useUSPS = false;
     if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
@@ -9,13 +9,13 @@ function drawVerifyPersonInfo($policies, $ageByDate, $ageList) : void {
     $con = get_conf('con');
 ?>
 <?php
-    drawEditPersonBlock($con, $useUSPS, $policies, 'add', false, false, $ageByDate, [], $ageList)
+    drawEditPersonBlock($con, $countryOptions, $useUSPS, $policies, 'add', false, false, $ageByDate, [], $ageList)
 ?>
 <?php
 }
 
 // draw_editPerson - draw the verify/update form for the Person
-function draw_editPersonModal($source, $policies, $ageList, $ageByDate, $interests = null) : void {
+function draw_editPersonModal($source, $policies, $ageList, $ageByDate, $countryOptions, $interests = null) : void {
     $usps = get_conf('usps');
     $useUSPS = false;
     if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
@@ -42,7 +42,7 @@ function draw_editPersonModal($source, $policies, $ageList, $ageByDate, $interes
                             <input type='hidden' name='id' id='epPersonId'/>
                             <input type='hidden' name='type' id='epPersonType'/>
 <?php
-    drawEditPersonBlock($con, $useUSPS, $policies, $source, true, false, $ageByDate, [], $ageList);
+    drawEditPersonBlock($con, $countryOptions, $useUSPS, $policies, $source, true, false, $ageByDate, [], $ageList);
     if ($interests) { ?>
                         </form>
                         <div class='row'>
