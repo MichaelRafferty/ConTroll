@@ -232,7 +232,7 @@ LEFT OUTER JOIN newperson rn ON r.newperid = rn.id
 WHERE
     status IN  ('unpaid', 'paid', 'plan', 'upgraded') AND
     r.conid >= ? AND (r.perid = ? OR r.newperid = ?)
-ORDER BY create_date;
+ORDER BY m.sort_order, create_date;
 EOS;
     $holderRegR = dbSafeQuery($holderRegSQL, 'iii', array ($conid, $loginType == 'p' ? $loginId : -1, $loginType == 'n' ? $loginId : -1));
     $holderMembership = [];
@@ -563,7 +563,7 @@ WITH ppl AS (
 SELECT ppl.*, IFNULL(missPol.requiredMissing, 0) AS missingPolicies
 FROM ppl
 LEFT OUTER JOIN missPol ON ppl.id = missPol.id
-ORDER BY personType DESC, id ASC, create_date;
+ORDER BY personType DESC, id ASC, m.sort_order, create_date;
 EOS;
         $managedByR = dbSafeQuery($managedSQL, 'iiiiii', array ($conid, $loginId, $conid, $loginId, $loginId, $conid));
     }
