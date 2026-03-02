@@ -854,6 +854,14 @@ class Unmatched {
     copy(source) {
         var policy = ''
         var mpol = null;
+        clear_message('result_message_candidate');
+
+        if (source.startsWith('match')) {
+           if (this.#matchPerson == null) {
+               show_message("No matched person to copy from", 'error', 'result_message_candidate');
+               return;
+           }
+        }
 
         switch (source) {
             case 'matchName':

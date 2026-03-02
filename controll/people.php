@@ -18,6 +18,7 @@ require_once '../lib/policies.php';
 require_once '../lib/profile.php';
 require_once '../lib/interests.php';
 require_once 'lib/sessionAuth.php';
+require_once 'lib/match.php';
 
 $page = 'people';
 $authToken = new authToken('web');
@@ -76,8 +77,8 @@ $config_vars['tokenStatus'] = $authToken->checkToken();
     var ageList = <?php echo json_encode($ageList); ?>;
     var ageListIdx = <?php echo json_encode($ageListIdx); ?>;
 </script>
-<?php 
-    //bs_tinymceModal();
+<?php
+    $policiesCell = drawPoliciesCell($policies);
 ?>
 <!-- Match Candidates Modal -->
 <div id='match-candidates' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Display Candidates for Match'
@@ -131,6 +132,10 @@ $config_vars['tokenStatus'] = $authToken->checkToken();
                         <div class='col-sm-12' id='additionalTable'></div>
                     </div>
                 </div>
+                <?php
+                    matchEdit('match', 'editMatchTitle', 'Matched Person', 'New/Edited Value', 'Match Candidate',
+                            'unmatchedPeople', $countryOptions, $policiesCell, $ageList )
+                ?>
                 <div class='container-fluid' id="editMatch">
                     <div class="row mt-4">
                         <div class="col-sm-12">
@@ -472,7 +477,7 @@ $config_vars['tokenStatus'] = $authToken->checkToken();
                         </div>
                         <div class='col-sm-5 border border-dark ps-1 pe-1' id="policiesDiv">
                             <?php
-                                drawPoliciesCell($policies);
+                                echo $policiesCell;
                             ?>
                         </div>
                         <div class='col-sm-3 border border-dark ps-0'>

@@ -161,10 +161,11 @@ function drawPoliciesDisplay($policies, $personPolicies, $id) {
 }
 
 //drawPoliciesCell - draw the simpler cell for comparing policies
-function drawPoliciesCell($policies) {
+function drawPoliciesCell($policies) : string {
     if ($policies == null) // if there are no policies, nothing to draw
-        return;
+        return '';
 
+    $html = '';
     foreach ($policies as $policy) {
         $name = $policy['policy'];
         $prompt = replaceVariables($policy['prompt']);
@@ -173,20 +174,16 @@ function drawPoliciesCell($policies) {
         if ($policy['required'] == 'Y') {
             $prompt = "<span class='text-danger'>&bigstar;</span>" . $prompt;
         }
-        if ($policy['defaultValue'] == 'Y') {
-            $checked = 'checked';
-        }
-        else {
-            $checked = '';
-        }
-        ?>
+        $checked = $policy['defaultValue'] == 'Y' ? 'checked' : '';
+        $html .= <<<EOS
                 <label>
-                    <input type='checkbox' <?php echo $checked; ?> name='p_<?php echo $name; ?>' id='p_<?php echo $name; ?>' value='Y'/>
-                    <span id="l_<?php echo $name; ?>" name="l_<?php echo $name; ?>"><?php echo $prompt; ?></span>
+                    <input type='checkbox' $checked name='p_$name' id='p_$name' value='Y'/>
+                    <span id="l_$name" name="l_$name">$prompt;</span>
                 </label>
                 <br/>
-<?php
+EOS;
     }
+    return $html;
 }
 
 // update policies in memberPolicies and return number updated
