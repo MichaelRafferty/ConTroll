@@ -91,6 +91,9 @@ $config_vars['onedaycoupons'] = $onedaycoupons;
 $config_vars['taxRates'] = getTaxRates();
 $config_vars['locale'] = $locale;
 $config_vars['currency'] = $currency;
+$defaultCountry = strtoupper(getConfValue('con', 'defaultCountry', 'USA'));
+$countryOptions = loadCountryOptions($defaultCountry);
+$config_vars['defaultCountry'] = $defaultCountry;
 
 $tab = '';
 if (array_key_exists('payment', $_REQUEST)) {
