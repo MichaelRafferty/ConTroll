@@ -93,9 +93,9 @@ $config_vars['tokenStatus'] = $authToken->checkToken();
             <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
                 <div class='container-fluid'>
                     <div class='row mt-2'>
-                        <div class='col-sm-12' id='candidatedH1Div'>
-                            <H1 class='h3'>
-                                <b>Potential Matches for: <span id='candidatesName'>Name</span></b>
+                        <div class='col-sm-12' id='candidatesH1Div'>
+                            <H1 class='h3' id="candidatesH1Text">
+                                <b>Potential Matches for: Name</b>
                             </H1>
                         </div>
                     </div>

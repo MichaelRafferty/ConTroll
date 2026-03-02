@@ -19,7 +19,7 @@ class Unmatched {
     #candidates = null;
     #newperson = null;
     #newpersonTable = null;
-    #candidatesName = null;
+    #candidatesNameH1 = null;
     #candidateTable = null;
     #aditional = null;
     #additionalSearchStr = null;
@@ -102,7 +102,7 @@ class Unmatched {
         if (id) {
             this.#matchCandidatesModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
             this.#candidatesTitleName = document.getElementById('candidatesTitleName');
-            this.#candidatesName = document.getElementById('candidatesName');
+            this.#candidatesNameH1 = document.getElementById('candidatesH1Text');
             this.#additionalSearchStr = document.getElementById('matchAdditionalQuery');
             this.#editMatchTitle = document.getElementById('editMatchTitle');
             this.#updateExisting = document.getElementById('updateExisting');
@@ -407,7 +407,7 @@ class Unmatched {
         var newpeople = [];
         newpeople.push(this.#newperson);
         this.#candidatesTitleName.innerHTML = this.#newperson.fullName;
-        this.#candidatesName.innerHTML = this.#newperson.fullName;
+        this.#candidatesNameH1.innerHTML = '<b>Potential Matches for: ' + this.#newperson.fullName + '</b>';
         if (this.#newpersonTable) {
             this.#newpersonTable.destroy();
             this.#newpersonTable = null;
