@@ -392,7 +392,7 @@ EOS;
     $mpbSuffix = '';
     if ($person['missingPolicies'] > 0) {
         $mpbDisabled = ' disabled';
-        $mpbSuffix = '<br/><span style="color: red;"><b>Missing Policies</b></span>';
+        $mpbSuffix = '<br/><span style="color: red;"><b>Missing Required Policies</b></span>';
     }
 
     $mpbId = 'mpBtn' . $personType . $id;
@@ -400,7 +400,7 @@ EOS;
     <div class="row mt-1">
         <div class="col-sm-2">
             <button class='btn btn-sm btn-primary p-1 h-100 w-100' id="$mpbId" onclick="portal.addMembership($id, '$personType');"$mpbDisabled>
-            Make Purchase$mpbSuffix
+            Add Items to Cart$mpbSuffix
             </button>
         </div>
         <div class="col-sm-auto">
