@@ -295,7 +295,7 @@ EOS;
     return  $policy_upd;
 }
 
-// merge policies - merge polcies from a new person and an existing person or two existing people
+// merge policies - merge policies from a new person and an existing person or two existing people
 // Algorithm:
 //  If newperson ones exist:
 //      if perid ones exist:
