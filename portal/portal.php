@@ -3,7 +3,7 @@
 require_once("lib/base.php");
 require_once('lib/getAccountData.php');
 require_once('lib/sessionManagement.php');
-require_once('../lib/portalForms.php');
+require_once('lib/portalForms.php');
 require_once('../lib/webauthn.php');
 require_once('../lib/email__load_methods.php');
 require_once("../lib/interests.php");
@@ -829,7 +829,23 @@ if (count($paymentPlans) > 0) {
 }
 
 // draw the top of page banner
-// Line 1: Virtual, Name/mem number, worldcon buttons
+// layout:
+//  block 1 - Virtual, name/member number, worldcon buttons
+//  block 2
+//      email
+//      if managed, manager info
+//  block 3
+//      current payment
+//      payment plan status
+// block 4
+//      people you manage
+// each persons tab (or only person without tab if managed)
+//      add items to cart
+//      purchases "buttons"
+//      profile section
+//      interests
+
+// Block 1: Virtual, Name/mem number, worldcon buttons
 $fullName = $info['fullName'];
 $id = $info['id'];
 $type = $info['personType'];
@@ -876,7 +892,7 @@ echo <<<EOS
     </div>
 EOS;
 
-// line 2 -change email
+// Block 2 - email
 echo <<<EOS
     <div class="row">
         <div class="col-sm-1">
@@ -904,7 +920,7 @@ EOS;
 }
 echo "</div>\n"; // end row 2
 
-// line 2a (managed disassociate)
+// Block 2 - managed disassociate
 // if this person is managed, print a banner and let them disassociate from the manager if they do not have any membership of type managed
 $manager = $info['managedByName'] == null;
 if (!$manager) {
@@ -924,7 +940,68 @@ EOS;
     echo "    </div>\n";
 }
 
-// line 3/3a payment info
+// Block 3 - Current Due Payment
+    // create a div and bg color it to separate it logically from the other parts
+if ($unpaidByMe > 0 || count($payorPlan) > 0 || $unpaidByOthers > 0) {
+    ?>
+    <div class='container-fluid p-0 m-0' id="paymentSectionDiv" style="background-color: #F0F0FF;">
+        <?php
+            }
+
+            if ($activePaymentPlans > 0) {
+                ?>
+                <div class='row mt-5'>
+                    <div class='col-sm-12'><h1 class="size-h3">Payment Plans for this account:</h1></div>
+                </div>
+                <?php
+                outputCustomText('main/plan');
+                drawPaymentPlans($info, $paymentPlansData, true);
+            }
+            $totalDueFormatted = '';
+            if ($manager) {
+                $forYou = ', for you and people you manage,';
+                $othersForYou = $forYou;
+            } else {
+                $forYou = '';
+                $othersForYou = ', for you,';
+            }
+            if ($unpaidByMe > 0) {
+                $totalDueFormatted = "Purchased by you$forYou total: " . $dolfmt->formatCurrency((float) $unpaidByMe, $currency);
+                $payHtml = " $totalDueFormatted   " .
+                        '<button class="btn btn-sm btn-primary pt-1 pb-1 ms-1 me-2" name="payBalanceBTNs" onclick="portal.payBalance(' . $totalDue . ', true);"' .
+                        $disablePay . '>Pay Total Amount Due</button>';
+                setSessionVar('totalDue', $unpaidByMe); // used for validation in payment side
+                if ($numCoupons > 0) {
+                    $payHtml .= ' <button class="btn btn-primary btn-sm pt-1 pb-1 ms-0 me-2" id="addCouponButton" onclick="coupon.ModalOpen(1)">Add Coupon</button>';
+                }
+                echo <<<EOS
+    <div class='row mt-2'>
+        <div clss="col-sm-auto"><h1 class='size-h3'>$payHtml</h1></div>
+    </div>
+EOS;
+            }
+
+            if ($unpaidByOthers > 0) {
+                // compute a list of mem id's, and the total amount due
+                OutputCustomText('main/purchOthers');
+                $otherDueFormatted = '<span id="otherDueAmountSpan">' . $dolfmt->formatCurrency((float) $unpaidByOthers, $currency) . '</span>' .
+                        '&nbsp;&nbsp;<button class="btn btn-sm btn-primary pt-1 pb-1 ms-1 me-2" onclick="portal.payOther(' . $unpaidByOthers . ');"' .
+                        $disablePay . '>Optionally Pay All or Part</button>';
+                ?>
+                <div class='row mt-2'>
+                    <div class='col-sm-12'><h1 class='size-h3'>Purchased by others<?php echo $othersForYou; ?> total: <?php echo $otherDueFormatted; ?></h1></div>
+                </div>
+
+                <?php
+            }
+            if ($unpaidByMe > 0 || count($payorPlan) > 0 || $unpaidByOthers > 0 ) {
+        ?>
+    </div>
+    <?php
+}
+
+
+
 $totalDueFormatted = '';
 if ($totalDue > 0) {
     $totalDueFormatted = 'Total ';
@@ -1096,66 +1173,6 @@ EOS;
     // end of the block
     echo "</div>\n";
 }
-
-// create a div and bg color it to separate it logically from the other parts
-if ($unpaidByMe > 0 || count($payorPlan) > 0 || $unpaidByOthers > 0) {
-?>
-    <div class='container-fluid p-0 m-0' id="paymentSectionDiv" style="background-color: #F0F0FF;">
-<?php
-}
-
-if ($activePaymentPlans > 0) {
-    ?>
-    <div class='row mt-5'>
-        <div class='col-sm-12'><h1 class="size-h3">Payment Plans for this account:</h1></div>
-    </div>
-    <?php
-    outputCustomText('main/plan');
-    drawPaymentPlans($info, $paymentPlansData, true);
-}
-$totalDueFormatted = '';
-if ($manager) {
-    $forYou = ', for you and people you manage,';
-    $othersForYou = $forYou;
-} else {
-    $forYou = '';
-    $othersForYou = ', for you,';
-}
-if ($unpaidByMe > 0) {
-    $totalDueFormatted = "Purchased by you$forYou total: " . $dolfmt->formatCurrency((float) $unpaidByMe, $currency);
-    $payHtml = " $totalDueFormatted   " .
-        '<button class="btn btn-sm btn-primary pt-1 pb-1 ms-1 me-2" name="payBalanceBTNs" onclick="portal.payBalance(' . $totalDue . ', true);"' .
-        $disablePay . '>Pay Total Amount Due</button>';
-    setSessionVar('totalDue', $unpaidByMe); // used for validation in payment side
-    if ($numCoupons > 0) {
-        $payHtml .= ' <button class="btn btn-primary btn-sm pt-1 pb-1 ms-0 me-2" id="addCouponButton" onclick="coupon.ModalOpen(1)">Add Coupon</button>';
-    }
-    echo <<<EOS
-    <div class='row mt-2'>
-        <div clss="col-sm-auto"><h1 class='size-h3'>$payHtml</h1></div>
-    </div>
-EOS;
-}
-
-if ($unpaidByOthers > 0) {
-    // compute a list of mem id's, and the total amount due
-    OutputCustomText('main/purchOthers');
-    $otherDueFormatted = '<span id="otherDueAmountSpan">' . $dolfmt->formatCurrency((float) $unpaidByOthers, $currency) . '</span>' .
-        '&nbsp;&nbsp;<button class="btn btn-sm btn-primary pt-1 pb-1 ms-1 me-2" onclick="portal.payOther(' . $unpaidByOthers . ');"' .
-        $disablePay . '>Optionally Pay All or Part</button>';
-?>
-    <div class='row mt-2'>
-        <div class='col-sm-12'><h1 class='size-h3'>Purchased by others<?php echo $othersForYou; ?> total: <?php echo $otherDueFormatted; ?></h1></div>
-    </div>
-
-<?php
-}
-if ($unpaidByMe > 0 || count($payorPlan) > 0 || $unpaidByOthers > 0 ) {
-?>
-    </div>
-<?php
-}
-
 portalPageFoot();
 
 function drawWSFSButtons($NomNomExists, $BusinessExists, $SiteExists, $hasWSFS, $hasNom, $hasMeeting, $hasSiteSelection, $loginId, $loginType, $info) {

@@ -4,7 +4,7 @@ require_once("lib/base.php");
 require_once("lib/getLoginMatch.php");
 require_once("lib/loginItems.php");
 require_once("lib/sessionManagement.php");
-require_once('../lib/portalForms.php');
+require_once('lib/portalForms.php');
 require_once("../lib/profile.php");
 require_once("../lib/policies.php");
 require_once("../lib/interests.php");

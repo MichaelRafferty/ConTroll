@@ -370,3 +370,51 @@ EOS;
     $ageR->free();
     return (array($ageList, $ageListIdx));
 }
+
+// drawGetNewMemberships - membership selection
+function drawGetNewMemberships($fullName) : void {
+    if ($fullName) {
+?>
+    <div class='row mt-2'>
+        <div class='col-sm-12'>
+            <h3 class='text-primary'>Add/Edit Memberships and other Purchases for <?php echo $fullName; ?></h3>
+        </div>
+    </div>
+<?php } ?>
+    <div class='row mt-1' id='membershipButtons'></div>
+    <div class="row mt-2">
+        <div class="col-sm-12">
+            Select from the buttons above to add memberships and other items.
+        </div>
+    </div>
+    <?php
+}
+
+// draw variable price membership set modal
+function drawVariablePriceModal($class) : void {
+?>
+    <div id='variablePriceModal' class='modal modal-lg fade' tabindex='-1' aria-labelledby='Variable Price' aria-hidden='true'>
+        <div class='modal-dialog'>
+            <div class='modal-content'>
+                <div class='modal-header bg-primary text-bg-primary'>
+                    <div class='modal-title' id='variablePriceTitle'>
+                        <strong>How Much?</strong>
+                    </div>
+                    <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+                </div>
+                <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                    <div class='container-fluid' id="variablePriceBody">
+                    </div>
+                    <div class='row'>
+                        <div class='col-sm-12' id='vpMessageDiv'></div>
+                    </div>
+                </div>
+                <div class='modal-footer'>
+                    <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal' tabindex='10101'>Cancel</button>
+                    <button class='btn btn-sm btn-primary' id='vpSubmitButton' onClick='<?php echo $class;?>.vpSubmit()' tabindex='10102'>Set Amount</button>
+                </div>
+            </div>
+        </div>
+    </div>
+<?php
+}
