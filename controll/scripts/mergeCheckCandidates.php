@@ -33,10 +33,39 @@ $remain = $_POST['remain'];
 $merge = $_POST['merge'];
 $conid = getConfValue('con', 'id');
 
+// first check if the to merge is a manager of anyone
+$checkQ = <<<EOS
+SELECT COUNT(*)
+FROM perinfo 
+WHERE managedBy = ?;
+EOS;
+
+$checkR = dbSafeQuery($checkQ, 'i', array($merge));
+$mc = $checkR->fetch_row()[0];
+if ($mc > 0) {
+    $response['error'] = 'The "perid to merge in remain" person manages others. This is a conflict, cannot continue with this merge.';
+    ajaxSuccess($response);
+    exit();
+}
+
+$checkQ = <<<EOS
+SELECT COUNT(*)
+FROM newperson 
+WHERE managedBy = ? AND perid IS NULL;
+EOS;
+$checkR = dbSafeQuery($checkQ, 'i', array($merge));
+$mc = $checkR->fetch_row()[0];
+if ($mc > 0) {
+    $response['error'] = 'The "perid to merge in remain" person manages people yet to be matched. This is a conflict, cannot continue with this merge.';
+    ajaxSuccess($response);
+    exit();
+}
+
 $checkQ = <<<EOS
 SELECT p.*,
     TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
-    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', mp.first_name, mp.middle_name, mp.last_name, mp.suffix), ' +', ' ')) AS manager
+    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', mp.first_name, mp.middle_name, mp.last_name, mp.suffix), ' +', ' ')) AS manager,
+    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.address, p.addr_2, p.city, p.state, p.zip, p.country), ' +', ' ')) AS fullAddr
 FROM perinfo p
 LEFT OUTER JOIN perinfo mp ON p.managedBy = mp.id
 WHERE p.id IN (?,?); 
@@ -46,8 +75,7 @@ $checkR = dbSafeQuery($checkQ, 'ii', array($remain, $merge));
 $values = [];
 
 while ($checkL = $checkR->fetch_assoc()) {
-    $bn = badgeNameDefault($checkL['badge_name'], $checkL['badgeNameL2'], $checkL['first_name'], $checkL['last_name']);
-    $checkL['badgeName'] = str_replace('</i>', '', str_replace('<i>', '', str_replace('<br/>', '/', $bn)));
+    $checkL['badgeNameDef'] = badgeNameDefault($checkL['badge_name'], $checkL['badgeNameL2'], $checkL['first_name'], $checkL['last_name']);
     $checkL['policies'] = [];
     if ($checkL['id'] == $remain)
         $values['remain'] = $checkL;

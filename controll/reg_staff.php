@@ -393,7 +393,7 @@ bs_tinymceModal();
     </div>
 </div>
 <div id='merge-edit' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Edit Resulting Merged Person' aria-hidden='true'
-     style='--bs-modal-width: 80%;'>
+     style='--bs-modal-width: 95%;'>
     <div class='modal-dialog'>
         <div class='modal-content'>
             <div class='modal-header bg-primary text-bg-primary'>

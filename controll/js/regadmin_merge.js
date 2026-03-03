@@ -338,6 +338,11 @@ class mergesetup {
         if (!(mergePid > 0 && remainPid > 0))
             return;
 
+        if (this.#mergeCandidatesTable) {
+            this.#mergeCandidatesTable.destroy();
+            this.#mergeCandidatesTable = null;
+        }
+
         clearError();
         clear_message();
         let script = "scripts/mergeCheckCandidates.php";
@@ -362,7 +367,7 @@ class mergesetup {
 
     // display results of check merge ajax call
     drawCheck(data, textStatus, jhXHR) {
-        console.log(data);
+        //console.log(data);
 
         if (data.error) {
             show_message(data.error, 'error');
@@ -371,18 +376,19 @@ class mergesetup {
 
         this.#mergePerson = data.values.merge;
         this.#remainPerson = data.values.remain;
+
         // fill merge modal
         this.#editMatchTitle.innerHTML = this.#remainPerson.fullName + ' and ' + this.#mergePerson.fullName;
         this.#mergeId.innerHTML = id;
         this.#mergeName.innerHTML = this.#mergePerson.fullName;
         this.#mergeLegal.innerHTML = this.#mergePerson.legalName;
         this.#mergePronouns.innerHTML = this.#mergePerson.pronouns;
-        this.#mergeBadge.innerHTML = this.#mergePerson.badgename;
+        this.#mergeBadge.innerHTML = this.#mergePerson.badgeNameDef;
         this.#mergeAddress.innerHTML = this.#mergePerson.fullAddr;
         this.#mergeEmail.innerHTML = this.#mergePerson.email_addr;
         this.#mergeAge.innerHTML = this.#mergePerson.currentAgeType;
         this.#mergePhone.innerHTML = this.#mergePerson.phone;
-        this.#mergeFlags.innerHTML = 'Active: ' + this.#mergePerson.activmopoke + ', Banned: ' + this.#mergePerson.banned;
+        this.#mergeFlags.innerHTML = 'Active: ' + this.#mergePerson.active + ', Banned: ' + this.#mergePerson.banned;
         if (this.#mergePerson.managedBy) {
             this.#mergeManager.innerHTML = this.#mergePerson.manager + ' (' + this.#mergePerson.managedBy + ')';
         } else {
@@ -400,7 +406,7 @@ class mergesetup {
         this.#remainName.innerHTML = this.#remainPerson.fullName;
         this.#remainLegal.innerHTML = this.#remainPerson.legalName;
         this.#remainPronouns.innerHTML = this.#remainPerson.pronouns;
-        this.#remainBadge.innerHTML = this.#remainPerson.badgename;
+        this.#remainBadge.innerHTML = this.#remainPerson.badgeNameDef;
         this.#remainAddress.innerHTML = this.#remainPerson.fullAddr;
         this.#remainEmail.innerHTML = this.#remainPerson.email_addr;
         this.#remainAge.innerHTML = this.#remainPerson.currentAgeType;
@@ -456,7 +462,7 @@ class mergesetup {
         this.#mergeName.style.backgroundColor = this.#remainPerson.fullName != this.#mergePerson.fullName ? diffcolor : '';
         this.#mergeLegal.style.backgroundColor = this.#remainPerson.legalName != this.#mergePerson.legalName ? diffcolor : '';
         this.#mergePronouns.style.backgroundColor = this.#remainPerson.pronouns != this.#mergePerson.pronouns ? diffcolor : '';
-        this.#mergeBadge.style.backgroundColor = this.#remainPerson.badgename != this.#mergePerson.badgename ? diffcolor : '';
+        this.#mergeBadge.style.backgroundColor = this.#remainPerson.badgeName != this.#mergePerson.badgeName ? diffcolor : '';
         this.#mergeAddress.style.backgroundColor = this.#remainPerson.fullAddr != this.#mergePerson.fullAddr ? diffcolor : '';
         this.#mergeEmail.style.backgroundColor = this.#remainPerson.email_addr != this.#mergePerson.email_addr ? diffcolor : '';
         this.#mergeAge.style.backgroundColor = this.#remainPerson.currentAgeType != this.#mergePerson.currentAgeType ? diffcolor : '';
@@ -812,15 +818,13 @@ class mergesetup {
         }
         clearError();
         clear_message();
+        this.#mergeCheckModal.hide();
         let script = "scripts/mergeExecuteMerge.php";
         let data = {
             merge: this.#mergePerson.id,
             remain: this.#remainPerson.id,
             values: values,
         }
-        console.log(data);
-        show_message("not yet");
-        return;
 
         $.ajax({
             url: script,
