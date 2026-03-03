@@ -33,9 +33,18 @@ EOS;
 $searchPattern = '';
 $cte = '';
 $cteJoin = '';
+$newperid = 0;
 if (array_key_exists('searchPattern', $_POST) && $_POST['searchPattern'] != '') {
-    $searchPattern = '%' . $_POST['searchPattern'] . '%';
-    $cte = <<<EOS
+    $searchPattern = $_POST['searchPattern'];
+    if (is_numeric($searchPattern)) {
+        $newperid = $searchPattern;
+        $cte = <<<EOS
+), ids AS (
+    SELECT ? AS matchId
+EOS;
+    } else {
+        $searchPattern = '%' . $_POST['searchPattern'] . '%';
+        $cte = <<<EOS
 ), ids AS (
     SELECT id AS matchId
     FROM newperson
@@ -51,6 +60,7 @@ if (array_key_exists('searchPattern', $_POST) && $_POST['searchPattern'] != '') 
         OR LOWER(TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), ' +', ' '))) LIKE ?)
     ORDER BY last_name, first_name, id
 EOS;
+    }
     $cteJoin = 'JOIN ids ON ids.matchId = n.id';
 }
 
@@ -106,6 +116,8 @@ $unmatched = [];
 if ($unmatchedCnt > 0) {
     if ($cte == '')
         $unR = dbQuery($unQ);
+    else if ($newperid > 0)
+        $unR = dbSafeQuery($unQ,'i', array($newperid));
     else
         $unR = dbSafeQuery($unQ,'sssssssss', array($searchPattern, $searchPattern, $searchPattern, $searchPattern, $searchPattern,
             $searchPattern, $searchPattern, $searchPattern, $searchPattern));
