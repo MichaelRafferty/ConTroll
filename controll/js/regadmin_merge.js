@@ -378,7 +378,7 @@ class mergesetup {
         this.#remainPerson = data.values.remain;
 
         // fill merge modal
-        this.#editMatchTitle.innerHTML = this.#remainPerson.fullName + ' and ' + this.#mergePerson.fullName;
+        this.#editMatchTitle.innerHTML = '<b>Merging</b> ' + this.#mergePerson.fullName + ' <b>into</b> ' + this.#remainPerson.fullName;
         this.#mergeId.innerHTML = id;
         this.#mergeName.innerHTML = this.#mergePerson.fullName;
         this.#mergeLegal.innerHTML = this.#mergePerson.legalName;
