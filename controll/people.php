@@ -70,6 +70,7 @@ $config_vars['policies'] = $policies;
 $config_vars['interests'] = $interests;
 $config_vars['required'] = getConfValue('reg','required', 'addr');
 $config_vars['tokenStatus'] = $authToken->checkToken();
+$policiesCell = drawPoliciesCell($policies);
 ?>
 <script type='text/javascript'>
     var config = <?php echo json_encode($config_vars); ?>;
@@ -77,9 +78,6 @@ $config_vars['tokenStatus'] = $authToken->checkToken();
     var ageList = <?php echo json_encode($ageList); ?>;
     var ageListIdx = <?php echo json_encode($ageListIdx); ?>;
 </script>
-<?php
-    $policiesCell = drawPoliciesCell($policies);
-?>
 <!-- Match Candidates Modal -->
 <div id='match-candidates' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Display Candidates for Match'
      aria-hidden='true' style='--bs-modal-width: 98%;'>
@@ -133,8 +131,8 @@ $config_vars['tokenStatus'] = $authToken->checkToken();
                     </div>
                 </div>
                 <?php
-                    matchEdit('match', 'editMatchTitle', 'Matched Person', 'New/Edited Value', 'Match Candidate',
-                            'unmatchedPeople', $countryOptions, $policiesCell, $ageList )
+                    echo matchEdit('match', 'editMatchTitle', 'Matched Person', 'New/Edited Value', 'Match Candidate',
+                            'unmatchedPeople', $countryOptions, $policiesCell, $ageList);
                 ?>
                 <div class='container-fluid' id="editMatch">
                     <div class="row mt-4">

@@ -1,7 +1,7 @@
 <?php
 
 //  match edit: handle l/r editing of a match for both people unmatched and merge
-function matchEdit($type, $titleName, $leftName, $middleName, $rightName, $className, $countryOptions, $policiesCell, $ageList ) {
+function matchEdit($type, $titleName, $leftName, $middleName, $rightName, $className, $countryOptions, $policiesCell, $ageList ) : string {
     $ageOptions = '';
     foreach ($ageList as $age) {
         $ageOptions .= '<option value="' . escape_quotes($age['ageType']) . '">' . $age['shortname'] . ' [' . $age['label'] . "]</option>\n";
@@ -278,6 +278,7 @@ function matchEdit($type, $titleName, $leftName, $middleName, $rightName, $class
                             <select id='age'>
                                 <option value=''>--Select Age Bracket--</option>
                                 $ageOptions
+                            </select>
                         </div>
                         <div class='col-sm-3 border border-dark ps-0'>
                             <div class='container-fluid'>

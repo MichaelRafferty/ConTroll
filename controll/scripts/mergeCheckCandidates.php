@@ -31,25 +31,44 @@ if (!(array_key_exists('remain', $_POST) && array_key_exists('merge',$_POST))) {
 
 $remain = $_POST['remain'];
 $merge = $_POST['merge'];
+$conid = getConfValue('con', 'id');
 
 $checkQ = <<<EOS
-SELECT id, last_name, first_name, middle_name, suffix, badge_name, badgeNameL2, email_addr, address, addr_2, city, state, zip, country
-FROM perinfo
-WHERE id IN (?,?); 
+SELECT p.*,
+    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
+    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', mp.first_name, mp.middle_name, mp.last_name, mp.suffix), ' +', ' ')) AS manager
+FROM perinfo p
+LEFT OUTER JOIN perinfo mp ON p.managedBy = mp.id
+WHERE p.id IN (?,?); 
 EOS;
 
 $checkR = dbSafeQuery($checkQ, 'ii', array($remain, $merge));
 $values = [];
 
-while ($checkL = $checkR->fetch_row()) {
-    $bn = badgeNameDefault($checkL[6], $checkL[7], $checkL[2], $checkL[1]);
-    $checkL[14] = str_replace('</i>', '', str_replace('<i>', '', str_replace('<br/>', '/', $bn)));
-    if ($checkL[0] == $remain)
+while ($checkL = $checkR->fetch_assoc()) {
+    $bn = badgeNameDefault($checkL['badge_name'], $checkL['badgeNameL2'], $checkL['first_name'], $checkL['last_name']);
+    $checkL['badgeName'] = str_replace('</i>', '', str_replace('<i>', '', str_replace('<br/>', '/', $bn)));
+    $checkL['policies'] = [];
+    if ($checkL['id'] == $remain)
         $values['remain'] = $checkL;
 
-    if ($checkL[0] == $merge)
+    if ($checkL['id'] == $merge)
         $values['merge'] = $checkL;
 }
+$checkR->free();
+$checkPOLQ = <<<EOS
+SELECT *
+FROM memberPolicies
+WHERE conid = ? AND perid IN (?, ?);
+EOS;
+$checkR = dbSafeQuery($checkPOLQ, 'iii', array($conid, $remain, $merge));
+while ($checkL = $checkR->fetch_assoc()) {
+    if ($checkL['perid'] == $merge)
+        $values['merge']['policies'][$checkL['policy']] = $checkL['response'];
+    else
+        $values['remain']['policies'][$checkL['policy']] = $checkL['response'];
+}
+$checkR->free();
 
 $response['values'] = $values;
 $error = '';

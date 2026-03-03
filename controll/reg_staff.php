@@ -1,7 +1,10 @@
 <?php
 require_once "lib/base.php";
 require_once "../lib/notes.php";
+require_once "../lib/policies.php";
+require_once '../lib/profile.php';
 require_once 'lib/sessionAuth.php';
+require_once 'lib/match.php';
 
 $page = 'reg_staff';
 $authToken = new authToken('web');
@@ -66,8 +69,13 @@ $config_vars['locale'] = $locale;
 $config_vars['currency'] = $currency;
 $config_vars['tokenStatus'] = $authToken->checkToken();
 $config_vars['rolloverYears'] = getConfValue('controll', 'priorRolloverYears', 2);
-?>
-<?php bs_tinymceModal();
+$defaultCountry = strtoupper(getConfValue('con', 'defaultCountry', 'USA'));
+$countryOptions = loadCountryOptions($defaultCountry);
+$config_vars['defaultCountry'] = $defaultCountry;
+$policies = getPolicies();
+$policiesCell = drawPoliciesCell($policies);
+[$ageList, $ageListIdx] = getAgeList($conid);
+bs_tinymceModal();
 // edit memList entry modal
 ?>
 <div id='editMemListModal' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Edit Membership Sequence' aria-hidden='true'
@@ -357,7 +365,7 @@ $config_vars['rolloverYears'] = getConfValue('controll', 'priorRolloverYears', 2
                     <form id='merge-search' action='javascript:void(0)'>
                         <div class='row p-1'>
                             <div class='col-sm-3 p-0'>
-                                <label for='merge_name_search' id='mergeName'>Merge Name:</label>
+                                <label for='merge_name_search' id='mergeLookupName'>Merge Name:</label>
                             </div>
                             <div class='col-sm-9 p-0'>
                                 <input class='form-control-sm' type='text' name='namesearch' id='merge_name_search' size='64'
@@ -379,6 +387,31 @@ $config_vars['rolloverYears'] = getConfValue('controll', 'priorRolloverYears', 2
             <div class='modal-footer'>
                 <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
                 <button class='btn btn-sm btn-primary' id='mergeSearch' onClick='merge_find()'>Find Person</button>
+            </div>
+            <div id='result_message_merge' class='mt-4 p-2'></div>
+        </div>
+    </div>
+</div>
+<div id='merge-edit' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Edit Resulting Merged Person' aria-hidden='true'
+     style='--bs-modal-width: 80%;'>
+    <div class='modal-dialog'>
+        <div class='modal-content'>
+            <div class='modal-header bg-primary text-bg-primary'>
+                <div class='modal-title'>
+                    <strong id='mergeTitle'>Edit Resulting Merged Person</strong>
+                </div>
+                <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+            </div>
+            <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                <div class='container-fluid'>
+                    <?php echo matchEdit('match', 'mergeMatchTitle', 'To Merge Person', 'Merge Edited Value', 'To Remain Person',
+                                      'merge', $countryOptions, $policiesCell, $ageList);
+                    ?>
+                </div>
+            </div>
+            <div class='modal-footer'>
+                <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
+                <button class='btn btn-sm btn-primary' id='mergeExecute' onClick='merge.performMerge()'>Perform Merge</button>
             </div>
             <div id='result_message_merge' class='mt-4 p-2'></div>
         </div>
@@ -993,6 +1026,7 @@ $config_vars['rolloverYears'] = getConfValue('controll', 'priorRolloverYears', 2
 <?php drawNotesModal('96%'); ?>
 <script type='text/javascript'>
     var config = <?php echo json_encode($config_vars); ?>;
+    var policies = <?php echo json_encode($policies); ?>;
 </script>
 <ul class='nav nav-tabs mb-3' id='regadmin-tab' role='tablist'>
     <li class='nav-item' role='presentation'>
