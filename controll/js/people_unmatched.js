@@ -556,7 +556,7 @@ class Unmatched {
         // they clicked select, if it's a new person, clear the matched person side of the page
         if (type == 'n') {
             this.clearEditBlock('c');
-            this.#editMatchTitle.innerHTML = this.#newperson.fullName;
+            this.#editMatchTitle.innerHTML = '<b>Matching</b> ' + this.#newperson.fullName;
             this.#matchPerson = null;
         } else {
             // set the candidate section of the edit block to the values from the table
@@ -566,7 +566,7 @@ class Unmatched {
             } else {
                 this.#matchPerson = this.#additionalTable.getRow(id).getData();
             }
-            this.#editMatchTitle.innerHTML = this.#newperson.fullName + ' and ' + this.#matchPerson.fullName;
+            this.#editMatchTitle.innerHTML = '<b>Matching</b> ' + this.#newperson.fullName + ' <b>with</b> ' + this.#matchPerson.fullName;
             this.#matchId.innerHTML = id;
             this.#matchName.innerHTML = this.#matchPerson.fullName;
             this.#matchLegal.innerHTML = this.#matchPerson.legalName;
