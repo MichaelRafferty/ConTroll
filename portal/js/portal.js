@@ -737,17 +737,14 @@ class Portal {
 
     // payment functions
     // Payment flow:
-    //  1. determine what to pay
-    //      a. payBalance
-    //          directly make full order
-    //      b. Pay using payment Plan
+    //  1. determine what to pay (choosePay)
+    //      a. Select what to pay
+    //          allow them to choose what to pay from all due, and build that order or pay all and directly make full order
+    //      b. Pay using payment Plan (once the items are determined, if a payment plan qualifies, allow them to pay with a plan)
     //          allow them to choose and build payment plan
     //          build order with that payment plan
     //      c. Payment on Plan
     //          directly make plan payment order
-    //      d. Pay Other
-    //          allow them to choose what to pay
-    //          build order
     //
     //  2. get order information back including
     //      a. orded id
@@ -761,62 +758,9 @@ class Portal {
     //  4. pay card
     //      use pre-built order
 
-    payBalance(totalDue, skipPlan=false) {
-        clear_message();
-        clear_message('payDueMessageDiv');
-        clear_message('makePayMessageDiv');
-        this.#otherPay = 0;
-        let html = '';
-        let plans = paymentPlans.isMatchingPlans();
-
-        if (this.#totalAmountDue == null) {
-            this.#totalAmountDue = totalDue;
-        } else if (this.#totalAmountDue + this.#couponDiscount != totalDue) {
-            this.#totalAmountDue = totalDue - this.#couponDiscount;
-        }
-        if (this.#totalAmountDue < 0) {
-            this.#totalAmountDue = 0;
-        }
-        this.#paymentAmount = this.#totalAmountDue;
-        this.#planPayment = 0;
-
-        this.#disableButtonNames = 'payBalanceBTNs';
-
-        if (skipPlan || !plans) {
-            this.makeOrder(null, 0);
-            return;
-        }
-
-        html = `
-    <div class="row mt-3">
-        <div class="col-sm-auto"><button class="btn btn-sm btn-primary pt-0 pb-0" onClick='portal.makeOrder(null, 0);'>Pay Total Amount Due</button></div>
-        <div class="col-sm-auto">
-            <b>Your total amout due is ` + Number(this.#totalAmountDue).toFixed(2) + `</b>
-        </div>
-    </div>
-`;
-        if (plans) {
-            html += `
-    <div class="row mt-2">
-        <div class="col-sm-12">
-            You can pay this balance in full using the "Pay Total Amount Due" button above or<br/>
-            create one of the following payment plans using the "Select" or "Customize" payment plan buttons below:
-        </div>
-    </div>
-`;
-            html += paymentPlans.getMatchingPlansHTML('portal');
-        }
-        
-        this.#paymentDueBody.innerHTML = html;
-        this.#paymentDueModal.show();
-    }
-
-    closePaymentDueModal() {
-        this.#paymentDueModal.hide();
-    }
-
-    // payOther - show registrations and check boxes of ones that can be paid
-    payOther(totalDue) {
+    // choosePay - choose which items to pay:
+    //      show unpaid items and check boxes of ones that can be paid
+    choosePay(totalDue) {
         clear_message();
         clear_message('payDueMessageDiv');
         clear_message('makePayMessageDiv');
@@ -867,7 +811,7 @@ class Portal {
             onClick="portal.makeOrder(null, 1);">Pay All</button></div>
         <div class="col-sm-auto">
             <b>The total amout due for all memberships purchased by others is ` +
-                this.#currencyFmt.format(Number(totalDue).toFixed(2)) + `</b>
+            this.#currencyFmt.format(Number(totalDue).toFixed(2)) + `</b>
         </div>
     </div>
 `;
@@ -885,6 +829,61 @@ class Portal {
         }
         document.getElementById('partialPayDue').innerHTML = Number(this.#partialPayAmt).toFixed(2);
         document.getElementById('partialPayBTN').disabled = this.#partialPayAmt == 0;
+    }
+
+    // pay all - is this obsolete now, or will pay all go here?
+    payBalance(totalDue) {
+        clear_message();
+        clear_message('payDueMessageDiv');
+        clear_message('makePayMessageDiv');
+        this.#otherPay = 0;
+        let html = '';
+        let plans = paymentPlans.isMatchingPlans();
+
+        if (this.#totalAmountDue == null) {
+            this.#totalAmountDue = totalDue;
+        } else if (this.#totalAmountDue + this.#couponDiscount != totalDue) {
+            this.#totalAmountDue = totalDue - this.#couponDiscount;
+        }
+        if (this.#totalAmountDue < 0) {
+            this.#totalAmountDue = 0;
+        }
+        this.#paymentAmount = this.#totalAmountDue;
+        this.#planPayment = 0;
+
+        this.#disableButtonNames = 'payBalanceBTNs';
+
+        if (!plans) {
+            this.makeOrder(null, 0);
+            return;
+        }
+
+        html = `
+    <div class="row mt-3">
+        <div class="col-sm-auto"><button class="btn btn-sm btn-primary pt-0 pb-0" onClick='portal.makeOrder(null, 0);'>Pay Total Amount Due</button></div>
+        <div class="col-sm-auto">
+            <b>Your total amout due is ` + Number(this.#totalAmountDue).toFixed(2) + `</b>
+        </div>
+    </div>
+`;
+        if (plans) {
+            html += `
+    <div class="row mt-2">
+        <div class="col-sm-12">
+            You can pay this balance in full using the "Pay Total Amount Due" button above or<br/>
+            create one of the following payment plans using the "Select" or "Customize" payment plan buttons below:
+        </div>
+    </div>
+`;
+            html += paymentPlans.getMatchingPlansHTML('portal');
+        }
+        
+        this.#paymentDueBody.innerHTML = html;
+        this.#paymentDueModal.show();
+    }
+
+    closePaymentDueModal() {
+        this.#paymentDueModal.hide();
     }
 
     // makeOrder - make call to create an order in the system and return the order Id, the amount due, the tax due and the total amount due
