@@ -1,7 +1,7 @@
 <?php
 // Registration  Portal - add.php - add new person and manage them
 require_once("lib/base.php");
-require_once("../lib/portalForms.php");
+require_once("lib/portalForms.php");
 require_once("../lib/interests.php");
 require_once("../lib/profile.php");
 require_once("../lib/policies.php");
