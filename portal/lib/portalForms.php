@@ -384,16 +384,9 @@ EOS;
                 $type = 'black';
             } else {
                 $type = 'other';
-
-                if (array_key_exists('type', $membership)) {
-                    $memType = $membership['type'];
-                    $memCategory = $membership['category'];
-                    $memAge = $membership['memAge'];
-                } else {
-                    $memType = $membership['memType'];
-                    $memCategory = $membership['memCategory'];
-                    $memAge = $membership['memAge'];
-                }
+                $memType = $membership['memType'];
+                $memCategory = $membership['memCategory'];
+                $memAge = $membership['memAge'];
 
                 if ($memType == 'wsfs')
                     $type = 'wsfs';

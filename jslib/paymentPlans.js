@@ -302,7 +302,7 @@ class PaymentPlans {
 
         match.totalAmountDue = (match.nonPlanAmt + match.planAmt).toFixed(2) + ``;
         match.currentPayment = (match.nonPlanAmt + match.downPayment).toFixed(2) + ``;
-        match.daysBetween = match.daysBetween;
+        match.daysÏBetween = match.daysBetween;
         match.paymentAmt = match.paymentAmt.toFixed(2) + ``;
         match.finalPaymentAmt = match.finalPaymentAmt.toFixed(2) + ``;
         match.balanceDue = match.balanceDue.toFixed(2) + ``;

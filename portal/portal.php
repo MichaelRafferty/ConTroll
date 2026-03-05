@@ -345,7 +345,7 @@ EOS;
 
             if ($m['regid'] != null) {
                 $item = array ('conid' => $m['conid'], 'label' => ($m['conid'] != $conid ? $m['conid'] . ' ' : '') . $label,
-                        'status' => $m['status'], 'memAge' => $m['memAge'], 'type' => $m['memType'], 'memCategory' => $m['memCategory'],
+                        'status' => $m['status'], 'memAge' => $m['memAge'], 'memType' => $m['memType'], 'memCategory' => $m['memCategory'],
                         'shortname' => ($m['conid'] != $conid ? $m['conid'] . ' ' : '') . $shortname,
                         'ageShort' => $m['ageShort'], 'ageLabel' => $m['ageLabel'], 'variablePrice' => $m['variablePrice'],
                         'createNewperid' => $m['createNewperid'], 'completeNewperid' => $m['completeNewperid'],
@@ -625,7 +625,7 @@ EOS;
             // all memberships, not just other
             if ($p['regid'] != null) {
                 $item = array ('label' => ($p['conid'] != $conid ? $p['conid'] . ' ' : '') . $label, 'status' => $p['status'],
-                        'memAge' => $p['memAge'], 'type' => $p['memType'], 'memCategory' => $p['memCategory'], 'variablePrice' => $p['variablePrice'],
+                        'memAge' => $p['memAge'], 'memType' => $p['memType'], 'memCategory' => $p['memCategory'], 'variablePrice' => $p['variablePrice'],
                         'shortname' => ($p['conid'] != $conid ? $p['conid'] . ' ' : '') . $shortname,
                         'ageShort' => $p['ageShort'], 'ageLabel' => $p['ageLabel'],
                         'createNewperid' => $p['createNewperid'], 'completeNewperid' => $p['completeNewperid'],

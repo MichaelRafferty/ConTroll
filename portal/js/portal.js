@@ -835,7 +835,7 @@ class Portal {
     </div>
     <div class="row mt-1 mb-2">
         <div class="col-sm-2" style="text-align: right"><button class="btn btn-sm btn-primary pt-0 pb-0"
-            onClick="portal.makeOrder(null, 1);">Pay All</button></div>
+            onClick="portal.makeOrder(null);">Pay All</button></div>
         <div class="col-sm-auto">
             <b>The total amout due for all memberships is ` +
             this.#currencyFmt.format(Number(totalDue).toFixed(2)) + `</b>
@@ -888,30 +888,30 @@ class Portal {
         document.getElementById('paySelectedPlanRow').hidden = !plansEligible;
     }
 
-    // pay all - is this obsolete now, or will pay all go here?
-    payBalance(totalDue) {
+    // Build Plan - select and start the build plan process
+    buildPlan(type) {
         clear_message();
         clear_message('payDueMessageDiv');
         clear_message('makePayMessageDiv');
         this.#otherPay = 0;
         let html = '';
-        let plans = paymentPlans.isMatchingPlans();
-
-        if (this.#totalAmountDue == null) {
-            this.#totalAmountDue = totalDue;
-        } else if (this.#totalAmountDue + this.#couponDiscount != totalDue) {
-            this.#totalAmountDue = totalDue - this.#couponDiscount;
+        if (type == 1) {
+            paymentPlans.plansEligible(this.#payAllList);
+            this.#totalAmountDue = this.#otherPayAmt;
+        } else {
+            this.#totalAmountDue = this.#partialPayAmt;
         }
+
+        let plans = paymentPlans.isMatchingPlans();
         if (this.#totalAmountDue < 0) {
             this.#totalAmountDue = 0;
         }
         this.#paymentAmount = this.#totalAmountDue;
         this.#planPayment = 0;
-
         this.#disableButtonNames = 'payBalanceBTNs';
 
         if (!plans) {
-            this.makeOrder(null, 0);
+            show_message("No eligible plans found, use Pay All or Pay Selected", 'payDueMessageDiv', 'error');
             return;
         }
 
@@ -923,8 +923,8 @@ class Portal {
         </div>
     </div>
 `;
-        if (plans) {
-            html += `
+
+        html += `
     <div class="row mt-2">
         <div class="col-sm-12">
             You can pay this balance in full using the "Pay Total Amount Due" button above or<br/>
@@ -932,11 +932,9 @@ class Portal {
         </div>
     </div>
 `;
-            html += paymentPlans.getMatchingPlansHTML('portal');
-        }
-        
+        html += paymentPlans.getMatchingPlansHTML('portal');
+
         this.#paymentDueBody.innerHTML = html;
-        this.#paymentDueModal.show();
     }
 
     closePaymentDueModal() {
@@ -1030,13 +1028,6 @@ class Portal {
                 this.makeOrder(null, 1);
                 return;
             }
-            if (this.#otherPay == 2) {
-                html = `
-        <div class="row mt-4">
-            <div class="col-sm-auto"><b>You are paying for memberships purchased by others for you.</b>
-        </div>
-`;
-            }
         } else if (this.#orderData && this.#orderData.post && this.#orderData.post.planPayment && this.#orderData.post.planPayment == 1) {
             html = `
         <div class="row mt-4 mb-4">
@@ -1115,18 +1106,17 @@ class Portal {
     makeOtherOrder(type) {
         // mark which ones to pay
         let amount = 0;
-        for (let i = 0; i < paidOtherMembership.length; i++) {
-            if (type == 'full') {
-                paidOtherMembership[i]['payThis'] = 1;
-                amount +=  Number(paidOtherMembership[i].actPrice) - (Number(paidOtherMembership[i].actPaid) + Number(paidOtherMembership[i].actCouponDiscount));
-            } else {
-                let checked = document.getElementById('other-' + paidOtherMembership[i]['regid']).checked;
-                paidOtherMembership[i]['payThis'] = checked ? 1 : 0;
-                if (checked)
-                    amount +=  Number(paidOtherMembership[i].actPrice) - (Number(paidOtherMembership[i].actPaid) + Number(paidOtherMembership[i].actCouponDiscount));
+        if (type == 'full') {
+            for (let i = 0; i < this.#payAllList.length; i++) {
+                this.#payAllList[i]['payThis'] = 1;
+                amount += Number(this.#payAllList[i].actPrice) - (Number(this.#payAllList[i].actPaid) + Number(this.#payAllList[i].actCouponDiscount));
+            }
+        } else {
+            for (let i = 0; i < this.#payAllList.length; i++) {
+                this.#payAllList[i]['payThis'] = 1;
+                amount += Number(this.#payAllList[i].actPrice) - (Number(this.#payAllList[i].actPaid) + Number(this.#payAllList[i].actCouponDiscount));
             }
         }
-
         return amount;
     }
 
