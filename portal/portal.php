@@ -345,7 +345,7 @@ EOS;
 
             if ($m['regid'] != null) {
                 $item = array ('conid' => $m['conid'], 'label' => ($m['conid'] != $conid ? $m['conid'] . ' ' : '') . $label,
-                        'status' => $m['status'], 'memAge' => $m['memAge'], 'type' => $m['memType'], 'category' => $m['memCategory'],
+                        'status' => $m['status'], 'memAge' => $m['memAge'], 'type' => $m['memType'], 'memCategory' => $m['memCategory'],
                         'shortname' => ($m['conid'] != $conid ? $m['conid'] . ' ' : '') . $shortname,
                         'ageShort' => $m['ageShort'], 'ageLabel' => $m['ageLabel'], 'variablePrice' => $m['variablePrice'],
                         'createNewperid' => $m['createNewperid'], 'completeNewperid' => $m['completeNewperid'],
@@ -625,7 +625,7 @@ EOS;
             // all memberships, not just other
             if ($p['regid'] != null) {
                 $item = array ('label' => ($p['conid'] != $conid ? $p['conid'] . ' ' : '') . $label, 'status' => $p['status'],
-                        'memAge' => $p['memAge'], 'type' => $p['memType'], 'category' => $p['memCategory'], 'variablePrice' => $p['variablePrice'],
+                        'memAge' => $p['memAge'], 'type' => $p['memType'], 'memCategory' => $p['memCategory'], 'variablePrice' => $p['variablePrice'],
                         'shortname' => ($p['conid'] != $conid ? $p['conid'] . ' ' : '') . $shortname,
                         'ageShort' => $p['ageShort'], 'ageLabel' => $p['ageLabel'],
                         'createNewperid' => $p['createNewperid'], 'completeNewperid' => $p['completeNewperid'],
@@ -723,7 +723,6 @@ $totalUnpaid = 0;
 $totalPaid = 0;
 $unpaidByOthers = 0;
 $unpaidByMe = 0;
-$unpaidByManager = 0;
 $numExpired = 0;
 $disablePay = '';
 
@@ -766,10 +765,7 @@ foreach ($allMemberships as $key => $membership) {
 
     if (($compareId != $loginId || $compareType != $loginType) && $membership['actPrice'] >= 0) {
         if ($status == 'unpaid' || $status == 'plan') {
-            if ($manager && $compareId == $managerId && $compareType == $managerType)
-                $unpaidByManager += $membership['actPrice'] - ($membership['actPaid'] + $membership['actCouponDiscount']);
-            else
-                $unpaidByOthers += $membership['actPrice'] - ($membership['actPaid'] + $membership['actCouponDiscount']);
+            $unpaidByOthers += $membership['actPrice'] - ($membership['actPaid'] + $membership['actCouponDiscount']);
         }
     } else {
         if ($membership['actPrice'] >= 0 && ($membership['status'] == 'unpaid' || $membership['status'] == 'plan')) {

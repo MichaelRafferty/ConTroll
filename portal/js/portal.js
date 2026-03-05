@@ -105,6 +105,13 @@ class Portal {
     #currencyFmt = null;
     #locale = null;
 
+    // pay selected fields
+    #payAllList = null;
+    #paySelectedList = null;
+    #selectIds = null;
+    #selectIdKeys = null;
+    #selectMems = null;
+
     constructor() {
         let id;
 
@@ -667,7 +674,7 @@ class Portal {
         for (let row in this.#interests) {
             let interest = this.#interests[row];
             let id = document.getElementById('i_' + interest.interest);
-            id.checked = interest.interested == 'Y';
+            if (id) id.checked = interest.interested == 'Y';
         }
 
         this.#interestsSerializeStart = $("#editInterests").serialize();
@@ -767,7 +774,8 @@ class Portal {
         let html = `
         <div class="row mt-3">
             <div class="col-sm-1" style="text-align: right"><b>Pay</b></div>
-            <div class="col-sm-3"><b>Person</b></div>
+            <div class="col-sm-2"><b>Added By</b></div>
+            <div class="col-sm-2"><b>For</b></div>
             <div class="col-sm-3"><b>Membership</b></div>
             <div class="col-sm-1" style="text-align: right"><b>Price</b></div>
             <div class="col-sm-1" style="text-align: right"><b>Already Paid</b></div>
@@ -777,17 +785,26 @@ class Portal {
         // build a list of memberships to pay with check boxes
         this.#partialPayAmt = 0;
         this.#otherPayAmt = Number(totalDue);
-        for (let i = 0; i < paidOtherMembership.length; i++) {
-            let mem = paidOtherMembership[i];
-            let fullName = mem.fullName;
-            let price =  this.#currencyFmt.format(Number(mem.actPrice).toFixed(2));
-            let paid =  this.#currencyFmt.format(Number(Number(mem.actPaid) + Number(mem.actCouponDiscount)).toFixed(2))
+        this.#payAllList = [];
+        this.#paySelectedList = [];
+        this.#selectIds = {};
+        this.#selectMems = {};
+        for (let i = 0; i < membershipsPurchased.length; i++) {
+            let mem = membershipsPurchased[i];
+            if (mem.status != 'unpaid')
+                continue;
+
+            this.#payAllList.push(mem);
+            this.#selectMems['other-' + mem.regid] = mem;
+            let price = this.#currencyFmt.format(Number(mem.actPrice).toFixed(2));
+            let paid = this.#currencyFmt.format(Number(Number(mem.actPaid) + Number(mem.actCouponDiscount)).toFixed(2))
             let bal = Number(Number(mem.actPrice) - (Number(mem.actPaid) + Number(mem.actCouponDiscount))).toFixed(2);
             html += `
         <div class="row">
             <div class="col-sm-1" style="text-align: right"><input type="checkbox" id="other-` +
-                mem.regid + '" name="other-' + mem.regid + '" onChange="portal.payOtherToggle(' + mem.regid + ',' + bal + `);"></div>
-            <div class="col-sm-3">` + fullName + `</div>
+                mem.regid + '" name="other-' + mem.regid + '" onChange="portal.choosePayToggle(' + mem.regid + ',' + bal + `);"></div>
+            <div class="col-sm-2">` + mem.purchaserName + `</div>
+            <div class="col-sm-2">` + mem.fullName + `</div>
             <div class="col-sm-3"><label for="other-` + mem.regid + `">` + mem.label + `</label></div>
             <div class="col-sm-1" style="text-align: right">` + price + `</div>
             <div class="col-sm-1" style="text-align: right">` + paid + `</div>
@@ -796,21 +813,39 @@ class Portal {
 `;
         }
         html += `
-    <div class="row mt-3">
+    <div class="row mt-3 mb-2">
         <div class="col-sm-2" style="text-align: right"><button class="btn btn-sm btn-primary pt-0 pb-0" id="partialPayBTN"
             onClick="portal.makeOrder(null, 2);" disabled>
             Pay Selected
         </button></div>
         <div class="col-sm-auto">
-            <b>The total amout due for selected memberships purchased by others totaling
-                <span id="partialPayDue">` + this.#currencyFmt.format(Number(this.#partialPayAmt).toFixed(2)) + `</span></b>
+            <b>The total amout due for selected memberships totaling
+                <span id="partialPayDue2">` + this.#currencyFmt.format(Number(this.#partialPayAmt).toFixed(2)) + `</span></b>
         </div>
     </div>
-    <div class="row mt-1 mb-3">
+    <div class="row mt-1 mb-2" id="paySelectedPlanRow" hidden>
+        <div class="col-sm-2" style="text-align: right"><button class="btn btn-sm btn-primary pt-0 pb-0" id="partialPayBTN"
+            onClick="portal.buildPlan(2);">
+            Make Plan for Selected
+        </button></div>
+        <div class="col-sm-auto">
+            <b>Create a payment plan for selected memberships totaling
+                <span id="partialPayDue1">` + this.#currencyFmt.format(Number(this.#partialPayAmt).toFixed(2)) + `</span></b>
+        </div>
+    </div>
+    <div class="row mt-1 mb-2">
         <div class="col-sm-2" style="text-align: right"><button class="btn btn-sm btn-primary pt-0 pb-0"
             onClick="portal.makeOrder(null, 1);">Pay All</button></div>
         <div class="col-sm-auto">
-            <b>The total amout due for all memberships purchased by others is ` +
+            <b>The total amout due for all memberships is ` +
+            this.#currencyFmt.format(Number(totalDue).toFixed(2)) + `</b>
+        </div>
+    </div>
+    <div class="row mt-1 mb-3" id="payAllPlanRow">
+        <div class="col-sm-2" style="text-align: right"><button class="btn btn-sm btn-primary pt-0 pb-0"
+            onClick="portal.buildPlan(1);">Make Plan for All</button></div>
+        <div class="col-sm-auto">
+            <b>Create a payment plan for the total amout due for all memberships of ` +
             this.#currencyFmt.format(Number(totalDue).toFixed(2)) + `</b>
         </div>
     </div>
@@ -818,17 +853,39 @@ class Portal {
         this.#paymentDueBody.innerHTML = html;
         this.#otherPay = 1;
         this.#paymentDueModal.show();
+        this.#selectIdKeys = Object.keys(this.#selectIds);
+        this.#selectIds = {};
+        for (let idkey of Object.keys(this.#selectMems)) {
+            this.#selectIds[idkey] = {};
+            this.#selectIds[idkey].id = idkey.replace('other-', '');
+            this.#selectIds[idkey].dom = document.getElementById(idkey);
+            this.#selectIds[idkey].mem = this.#selectMems[idkey];
+        }
+        let plansEligible = paymentPlans.plansEligible(this.#payAllList);
+        document.getElementById('payAllPlanRow').hidden = !plansEligible;
     }
 
-    payOtherToggle(id, bal) {
+    choosePayToggle(id, bal) {
         let element = document.getElementById('other-' + id);
         if (element.checked) {
             this.#partialPayAmt += Number(bal);
         } else {
             this.#partialPayAmt -= Number(bal);
         }
-        document.getElementById('partialPayDue').innerHTML = Number(this.#partialPayAmt).toFixed(2);
+        let balId = document.getElementById('partialPayDue1');
+        if (balId) balId.innerHTML = Number(this.#partialPayAmt).toFixed(2);
+        balId = document.getElementById('partialPayDue2');
+        if (balId) balId.innerHTML = Number(this.#partialPayAmt).toFixed(2);
+
         document.getElementById('partialPayBTN').disabled = this.#partialPayAmt == 0;
+        this.#paySelectedList = [];
+        for (let idkey of Object.keys(this.#selectMems)) {
+            let tag = this.#selectIds[idkey];
+            if (tag.dom.checked)
+                this.#paySelectedList.push(this.#selectIds[idkey].mem);
+        }
+        let plansEligible = paymentPlans.plansEligible(this.#paySelectedList);
+        document.getElementById('paySelectedPlanRow').hidden = !plansEligible;
     }
 
     // pay all - is this obsolete now, or will pay all go here?
