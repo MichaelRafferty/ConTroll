@@ -960,7 +960,7 @@ class Portal {
         } else if (other == 2) {
             this.#paymentAmount = this.#partialPayAmt;
             this.#orderMemberships = this.#paySelectedList;
-        } else {;
+        } else {
             this.#paymentAmount = this.#totalAmountDue;
             this.#orderMemberships = this.#payAllList;
         }
@@ -982,10 +982,12 @@ class Portal {
                 newplan = true;
 
         // check if any of the memberships are in plan and if so, set plan recast to recompute the plan
-        for (let mem of this.#orderMemberships) {
-            if (mem.hasOwnProperty('planId') && mem.planId && mem.planId > 0) {
-                this.#planRecast = true;
-                break;
+        if (plan == null || newplan == true) {
+            for (let mem of this.#orderMemberships) {
+                if (mem.hasOwnProperty('planId') && mem.planId && mem.planId > 0) {
+                    this.#planRecast = true;
+                    break;
+                }
             }
         }
         // transaction comes from session, person paying come from session, we will compute what was paid

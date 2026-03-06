@@ -210,52 +210,53 @@
                 'ageshortname' => $ageshortname,
                 'taxable' => $mem['taxable'],
             );
+        }
 
-            if ($newPlan == 1) {
-                $badges = whatMembershipsInPlan($badges, $planRec);
-                $deferredAmount = $planRec['balanceDue'];
-            } else foreach ($badges as $keyPlanBadge => $badge) {
-                $badges[$keyPlanBadge]['inPlan'] = false;
-            }
+        if ($newPlan == 1) {
+            $badges = whatMembershipsInPlan($badges, $planRec);
+            $deferredAmount = $planRec['balanceDue'];
+        } else foreach ($badges as $keyPlanBadge => $badge) {
+            $badges[$keyPlanBadge]['inPlan'] = false;
+        }
 
-            // ok, the Portal data is now loaded, now deal with re-pricing things, based on the real tables
-            $data = loadPurchaseData($conid, $couponCode, $couponSerial, $planPayment);
-            $prices = $data['prices'];
-            $memId = $data['memId'];
-            $counts = $data['counts'];
-            $discounts = $data['discounts'];
-            $primary = $data['primary'];
-            $map = $data['map'];
-            $coupon = $data['coupon'];
-            $memCategories = $data['memCategories'];
-            $mtypes = $data['mtypes'];
+        // ok, the Portal data is now loaded, now deal with re-pricing things, based on the real tables
+        $data = loadPurchaseData($conid, $couponCode, $couponSerial, $planPayment);
+        $prices = $data['prices'];
+        $memId = $data['memId'];
+        $counts = $data['counts'];
+        $discounts = $data['discounts'];
+        $primary = $data['primary'];
+        $map = $data['map'];
+        $coupon = $data['coupon'];
+        $memCategories = $data['memCategories'];
+        $mtypes = $data['mtypes'];
 
-            //// $rules = $data['rules'];
-            //// TODO: load and apply rules checks here to $badges
-            $data = computePurchaseTotals($coupon, $badges, $primary, $counts, $prices, $map, $discounts, $mtypes, $memCategories);
+        //// $rules = $data['rules'];
+        //// TODO: load and apply rules checks here to $badges
+        $data = computePurchaseTotals($coupon, $badges, $primary, $counts, $prices, $map, $discounts, $mtypes, $memCategories);
 
-            $maxMbrDiscounts = $data['origMaxMbrDiscounts'];
-            $apply_discount = $data['applyDiscount'];
-            $preDiscount = $data['preDiscount'];
-            $total = $data['total'];
-            $paid = $data['paid'];
-            $totalDiscount = $data['totalDiscount'];
+        $maxMbrDiscounts = $data['origMaxMbrDiscounts'];
+        $apply_discount = $data['applyDiscount'];
+        $preDiscount = $data['preDiscount'];
+        $total = $data['total'];
+        $paid = $data['paid'];
+        $totalDiscount = $data['totalDiscount'];
 
-            if ($amount != ($total - ($paid + $deferredAmount))) {
-                error_log('bad total: post=' . $amount . ', calc=' . $total);
-                ajaxSuccess(array ('status' => 'error', 'message' => 'Unable to process, bad total sent to Server'));
+        if ($amount != ($total - ($paid + $deferredAmount))) {
+            error_log('bad total: post=' . $amount . ', calc=' . $total);
+            ajaxSuccess(array ('status' => 'error', 'message' => 'Unable to process, bad total sent to Server'));
+            exit();
+        }
+
+        if ($coupon != null) {
+            if ($webCouponDiscount != $totalDiscount) {
+                error_log('bad coupon discount: post=' . $webCouponDiscount . ', calc=' . $totalDiscount);
+                ajaxSuccess(array ('status' => 'error', 'message' => 'Unable to process, bad coupon data sent to Server'));
                 exit();
-            }
-
-            if ($coupon != null) {
-                if ($webCouponDiscount != $totalDiscount) {
-                    error_log('bad coupon discount: post=' . $webCouponDiscount . ', calc=' . $totalDiscount);
-                    ajaxSuccess(array ('status' => 'error', 'message' => 'Unable to process, bad coupon data sent to Server'));
-                    exit();
-                }
             }
         }
     }
+
 
 // now recompute the records in the badgeResults array
 
