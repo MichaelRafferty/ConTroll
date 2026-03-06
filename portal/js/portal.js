@@ -74,7 +74,7 @@ class Portal {
     #paymentAmount = null;
     #planPayment = 0;
     #partialPayAmt = 0;
-    #otherPayAmt = 0;
+    #fullPayAmt = 0;
     #orderData = null;
     #taxes = [];
     #disableButtonNames = null;
@@ -111,6 +111,7 @@ class Portal {
     #selectIdKeys = null;
     #selectMems = null;
     #orderMemberships = null;
+    #planAllorPartial = null;
 
     constructor() {
         let id;
@@ -258,8 +259,10 @@ class Portal {
 
     // set  / get functions
     setOrderData(data) {
-        this.#orderData = data;
-        this.#totalAmountDue = data.rtn.totalAmt;
+        if (data != '') {
+            this.#orderData = data;
+            this.#totalAmountDue = data.rtn.totalAmt;
+        }
     }
 
     // disassociate: remove the managed by link for this logged in person
@@ -379,7 +382,7 @@ class Portal {
                 currentAge = m.memAge;
                 let ageItem = ageListIdx[currentAge];
                 if (ageItem.conid == config.conid && ageItem.ageType == m.memAge) {
-                    profile.setAgeText('<b>'+ ageItem.shortname + ' [' + ageItem.label + ']</b>');
+                    profile.setAgeText('<b>' + ageItem.shortname + ' [' + ageItem.label + ']</b>');
                 }
             }
         }
@@ -442,7 +445,9 @@ class Portal {
         this.#changeEmailSubmitBtn.disabled = true;
         this.#changeEmailModal.show();
         let focusField = this.#changeEmailNewEmailAddr;
-        setTimeout(() => { focusField.focus({focusVisible: true}); }, 600);
+        setTimeout(() => {
+            focusField.focus({focusVisible: true});
+        }, 600);
     }
 
     // process auto enable of submit button
@@ -485,7 +490,7 @@ class Portal {
             loginId: config.id,
             loginType: config.idType,
             email: email, // new email address
-            currentPersonId:  this.#currentPerson,
+            currentPersonId: this.#currentPerson,
             currentPersonType: this.#currentPersonType,
             action: 'validate'
         };
@@ -537,7 +542,8 @@ class Portal {
             this.#editPersonSubmitBtn.innerHTML = 'Update ' + this.#fullName;
         }
     }
-        // now submit the updates to the person
+
+    // now submit the updates to the person
 
     editPersonSubmit(override) {
         clear_message();
@@ -586,7 +592,7 @@ class Portal {
         });
     }
 
-    updatePersonSuccess(data){
+    updatePersonSuccess(data) {
         if (data.status == 'error') {
             show_message(data.message, 'error', 'epMessageDiv');
         } else {
@@ -661,7 +667,7 @@ class Portal {
         let post = data.post;
         this.#interests = data.interests;
 
-        this.#fullName = person.fullName ;
+        this.#fullName = person.fullName;
         this.#editInterestsTitle.innerHTML = '<strong>Editing Interests for: ' + this.#fullName + '</strong>';
 
         // now fill in the fields
@@ -689,6 +695,7 @@ class Portal {
         }
         this.#editInterestsModal.hide();
     }
+
     // editInterestsSubmit - save back the interests
     editInterestSubmit() {
         clear_message();
@@ -720,7 +727,7 @@ class Portal {
 
     }
 
-    updateInterestsSuccess(data){
+    updateInterestsSuccess(data) {
         if (data.status == 'error') {
             show_message(data.message, 'error', 'eiMessageDiv');
         } else {
@@ -769,6 +776,7 @@ class Portal {
         clear_message();
         clear_message('payDueMessageDiv');
         clear_message('makePayMessageDiv');
+        this.#planAllorPartial = null;
         let html = `
         <div class="row mt-3">
             <div class="col-sm-1" style="text-align: right"><b>Pay</b></div>
@@ -782,7 +790,7 @@ class Portal {
 
         // build a list of memberships to pay with check boxes
         this.#partialPayAmt = 0;
-        this.#otherPayAmt = Number(totalDue);
+        this.#fullPayAmt = Number(totalDue);
         this.#payAllList = [];
         this.#paySelectedList = [];
         this.#selectIds = {};
@@ -793,7 +801,8 @@ class Portal {
                 continue;
 
             mem.payThis = 1;
-            this.#payAllList.push(mem);
+            this.#payAllList.push(make_copy(mem));
+            mem.payThis = 0;
             this.#selectMems['other-' + mem.regid] = mem;
             let price = this.#currencyFmt.format(Number(mem.actPrice).toFixed(2));
             let paid = this.#currencyFmt.format(Number(Number(mem.actPaid) + Number(mem.actCouponDiscount)).toFixed(2))
@@ -894,9 +903,11 @@ class Portal {
         let html = '';
         if (type == 1) {
             paymentPlans.plansEligible(this.#payAllList);
-            this.#totalAmountDue = this.#otherPayAmt;
+            this.#totalAmountDue = this.#fullPayAmt;
+            this.#planAllorPartial = 'all';
         } else {
             this.#totalAmountDue = this.#partialPayAmt;
+            this.#planAllorPartial = 'partial';
         }
 
         let plans = paymentPlans.isMatchingPlans();
@@ -924,8 +935,8 @@ class Portal {
         html += `
     <div class="row mt-2">
         <div class="col-sm-12">
-            You can pay this balance in full using the "Pay Total Amount Due" button above or<br/>
-            create one of the following payment plans using the "Select" or "Customize" payment plan buttons below:
+            You can pay this balance in full without creating a payment plan by using the "Pay Total Amount Due" button above or at the bottom of this popup.<br/>
+            You can pay by creating one of the following payment plans using the "Select" or "Customize" payment plan buttons below:
         </div>
     </div>
 `;
@@ -954,14 +965,14 @@ class Portal {
         }
         $('[name="' + this.#disableButtonNames + '"]').prop('disabled', true);
 
-        if (other == 1) {
-            this.#paymentAmount = this.#totalAmountDue;
+        if (other == 1 || (other == 0 && this.#planAllorPartial == 'all')) {
+            this.#paymentAmount = this.#fullPayAmt;
             this.#orderMemberships = this.#payAllList;
-        } else if (other == 2) {
+        } else if (other == 2 || (other == 0 && this.#planAllorPartial == 'partial')) {
             this.#paymentAmount = this.#partialPayAmt;
             this.#orderMemberships = this.#paySelectedList;
         } else {
-            this.#paymentAmount = this.#totalAmountDue;
+            this.#paymentAmount = this.#fullPayAmt;
             this.#orderMemberships = this.#payAllList;
         }
 
@@ -995,7 +1006,7 @@ class Portal {
             loginId: config.id,
             loginType: config.idType,
             action: 'portalOrder',
-            plan:   (this.#paymentPlan != null || this.#existingPlan != null) ? 1 : 0,
+            plan: (this.#paymentPlan != null || this.#existingPlan != null) ? 1 : 0,
             existingPlan: this.#existingPlan,
             planRec: this.#paymentPlan,
             newplan: newplan ? 1 : 0,
@@ -1021,8 +1032,12 @@ class Portal {
                     return false;
                 }
                 checkResolveUpdates(data);
-                portal.setOrderData(data);
-                portal.makePayment(plan);
+                if (data != '') {
+                    portal.setOrderData(data);
+                    portal.makePayment(plan);
+                } else {
+                    show_message("Error creating order, seek assistance", 'error');
+                }
                 if (enableButtonNames)
                     $('[name="' + enableButtonNames + '"]').prop('disabled', false);
                 return true;
@@ -1042,7 +1057,7 @@ class Portal {
         let done = false;
         if (plan == null) {
             this.#paymentPlan = null;
-            this.makeOrder(null, 1);
+            this.makeOrder(null);
             return;
         } else if (this.#orderData && this.#orderData.post && this.#orderData.post.planPayment && this.#orderData.post.planPayment == 1) {
             html = `
@@ -1159,7 +1174,7 @@ class Portal {
             loginId: config.id,
             loginType: config.idType,
             action: 'portalPayment',
-            plan:   (this.#paymentPlan != null || this.#existingPlan != null) ? 1 : 0,
+            plan: (this.#paymentPlan != null || this.#existingPlan != null) ? 1 : 0,
             existingPlan: this.#existingPlan,
             planRec: this.#paymentPlan,
             newplan: newplan ? 1 : 0,
@@ -1226,7 +1241,7 @@ class Portal {
 
         // clear any order in progress
         this.#orderData = null;
-        this.#otherPayAmt = 0;
+        this.#fullPayAmt = 0;
 
         if (data.message)
             window.location = this.#portalPage + '?messageFwd=' + encodeURI(data.message);
@@ -1285,7 +1300,7 @@ class Portal {
     }
 
     emailReceipt(addrchoice) {
-        let success='';
+        let success = '';
         if (this.#receiptEmailAddress == null)
             return;
 
@@ -1334,7 +1349,7 @@ class Portal {
         $('div[name="t-plan"]').show();
 
         let color = false;
-        $("div[name^='t-']").each(function() {
+        $("div[name^='t-']").each(function () {
             if (color)
                 $(this).addClass('bg-light')
             else
@@ -1377,7 +1392,7 @@ class Portal {
         $('div[name="t-plan"]').show();
 
         let color = false;
-        $("div[name^='t-']").each(function() {
+        $("div[name^='t-']").each(function () {
             if ($(this).css("display") != "none") {
                 if (color)
                     $(this).addClass('bg-light')
@@ -1469,8 +1484,8 @@ class Portal {
     }
 
     // setFocus - jump to specific areas on the page
-    setFocus(area){
-         switch (area) {
+    setFocus(area) {
+        switch (area) {
             case 'paymentDiv':
                 $(window).scrollTop($('#paymentSectionDiv').offset().top);
                 break;
@@ -1478,12 +1493,12 @@ class Portal {
     }
 
     vote() {
-        let rights = { NomNom: 1};
+        let rights = {NomNom: 1};
         this.getJWT(rights, config.nomnomURL);
     }
 
     virtual() {
-        let rights = { Virtual: 1};
+        let rights = {Virtual: 1};
         this.getJWT(rights, config.virtualURL);
     }
 
@@ -1547,7 +1562,7 @@ class Portal {
             let right = 1;
             if (i == 0) left = 2;
             if (i == tabs.length - 1) right = 2;
-            el.style="border-bottom: 4px solid #0000FF; border-right: " + right + "px solid #808080;" +
+            el.style = "border-bottom: 4px solid #0000FF; border-right: " + right + "px solid #808080;" +
                 " border-left: " + left + "px solid #808080;" +
                 " background-color: #E8E8E8; border-radius: 0px;";
 
@@ -1555,7 +1570,7 @@ class Portal {
             el.classList.remove("active", "show");
         }
 
-        document.getElementById(tabname + '-tab').style=
+        document.getElementById(tabname + '-tab').style =
             "border-width: 4px 4px; border-color: var(--bs-primary); border-radius: 20px 20px 0px 0px; border-bottom: 0px;";
         document.getElementById(tabname + '-pane').classList.add("active", "show");
     }

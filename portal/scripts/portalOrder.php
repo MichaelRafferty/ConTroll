@@ -156,8 +156,8 @@
         foreach ($otherMemberships as $key => $mem) {
             if (!array_key_exists('payThis', $mem))
                 continue;
-            if ($mem['payThis'] != 1)
-                continue;
+            //if ($mem['payThis'] != 1)
+            //    continue;
             $bn = $mem['badgename'];
             $bn = str_replace('<i>', '', $bn);
             $bn = str_replace('</i>', '', $bn);
