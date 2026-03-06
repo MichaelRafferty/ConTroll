@@ -251,11 +251,11 @@ class PaymentPlans {
         <div class="col-sm-2">
 `;
             if (plan.modify == 'Y') {
-                html += '<button class="btn btn-sm btn-secondary pt-0 pb-0" onclick="paymentPlans.customizePlan(' +
+                html += '<button class="btn btn-sm btn-primary pt-0 pb-0" onclick="paymentPlans.customizePlan(' +
                     keys[row] + ",'" + from + "'" + ');">' +
                     'Customize Payment Plan:<br/>' + plan.name + '</button>';
             } else {
-                html += '<button class="btn btn-sm btn-secondary pt-0 pb-0" onclick="paymentPlans.selectPlan(' +
+                html += '<button class="btn btn-sm btn-primary pt-0 pb-0" onclick="paymentPlans.selectPlan(' +
                     keys[row] + ",'" + from + "'" + ');">' +
                     'Select Payment Plan:<br/>' + plan.name + '</button>';
             }
