@@ -355,6 +355,7 @@ EOS;
                         'price' => $m['actPrice'], 'paid' => $m['actPaid'], 'couponDiscount' => $m['actCouponDiscount'],
                         'email_addr' => $m['email_addr'], 'phone' => $m['phone'],
                         'transPerid' => $m['transPerid'], 'transNewPerid' => $m['transNewPerid'], 'taxable' => $m['taxable'],
+                        'fname' => $m['first_name'], 'ageshortname' => $m['ageShortName'], 'planId' => $m['planId'],
                 );
 
                 if (array_key_exists('expired', $m))
@@ -385,7 +386,6 @@ EOS;
                     $item['badgename'] = $m['badgename'];
                     $item['fullName'] = $m['fullName'];
                     $item['memberId'] = $m['memberId'];
-                    $item['planId'] = $m['planId'];
                     $allMemberships[] = $item;
                 }
                 if (isPrimary($m, $conid)) {
@@ -635,7 +635,7 @@ EOS;
                         'price' => $p['price'], 'paid' => $p['paid'], 'couponDiscount' => $p['couponDiscount'],
                         'email_addr' => $p['email_addr'], 'phone' => $p['phone'],
                         'transPerid' => $p['transPerid'], 'transNewPerid' => $p['transNewPerid'], 'taxable' => $p['taxable'],
-                        'fname' => $p['first_name'], 'ageshortname' => $p['ageShortName'],
+                        'fname' => $p['first_name'], 'ageshortname' => $p['ageShortName'], 'planId' => $p['planId'],
                 );
 
                 if (array_key_exists('expired', $p))
@@ -659,7 +659,6 @@ EOS;
                 $item['badgename'] = $p['badgename'];
                 $item['fullName'] = $p['fullName'];
                 $item['memberId'] = $p['memberId'];
-                $item['planId'] = $p['planId'];
                 $allMemberships[] = $item;
             }
         }

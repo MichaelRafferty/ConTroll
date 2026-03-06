@@ -32,7 +32,7 @@ class Portal {
     #epPersonTypeField = null;
     #needAge = false;
     #editPersonEmail = null;
-    
+
     // change email modal
     #changeEmailModal = null;
     #changeEmailModalElement = null;
@@ -75,7 +75,6 @@ class Portal {
     #planPayment = 0;
     #partialPayAmt = 0;
     #otherPayAmt = 0;
-    #otherPay = 0;
     #orderData = null;
     #taxes = [];
     #disableButtonNames = null;
@@ -111,6 +110,7 @@ class Portal {
     #selectIds = null;
     #selectIdKeys = null;
     #selectMems = null;
+    #orderMemberships = null;
 
     constructor() {
         let id;
@@ -259,8 +259,6 @@ class Portal {
     // set  / get functions
     setOrderData(data) {
         this.#orderData = data;
-        if (this.#otherPay > 0)
-            this.#otherPay = 2;
         this.#totalAmountDue = data.rtn.totalAmt;
     }
 
@@ -794,6 +792,7 @@ class Portal {
             if (mem.status != 'unpaid')
                 continue;
 
+            mem.payThis = 1;
             this.#payAllList.push(mem);
             this.#selectMems['other-' + mem.regid] = mem;
             let price = this.#currencyFmt.format(Number(mem.actPrice).toFixed(2));
@@ -851,7 +850,6 @@ class Portal {
     </div>
 `;
         this.#paymentDueBody.innerHTML = html;
-        this.#otherPay = 1;
         this.#paymentDueModal.show();
         this.#selectIdKeys = Object.keys(this.#selectIds);
         this.#selectIds = {};
@@ -893,7 +891,6 @@ class Portal {
         clear_message();
         clear_message('payDueMessageDiv');
         clear_message('makePayMessageDiv');
-        this.#otherPay = 0;
         let html = '';
         if (type == 1) {
             paymentPlans.plansEligible(this.#payAllList);
@@ -941,20 +938,35 @@ class Portal {
         this.#paymentDueModal.hide();
     }
 
+    openPaymentDueModal() {
+        this.#paymentDueModal.show();
+    }
+
     // makeOrder - make call to create an order in the system and return the order Id, the amount due, the tax due and the total amount due
     makeOrder(plan, other = 0) {
+        clear_message('payDueMessageDiv');
+        this.#orderMemberships = [];
+
+        // disable the button that called us
+        let enableButtonNames = null;
+        if (this.#disableButtonNames) {
+            enableButtonNames = this.#disableButtonNames;
+        }
+        $('[name="' + this.#disableButtonNames + '"]').prop('disabled', true);
+
+        if (other == 1) {
+            this.#paymentAmount = this.#totalAmountDue;
+            this.#orderMemberships = this.#payAllList;
+        } else if (other == 2) {
+            this.#paymentAmount = this.#partialPayAmt;
+            this.#orderMemberships = this.#paySelectedList;
+        } else {;
+            this.#paymentAmount = this.#totalAmountDue;
+            this.#orderMemberships = this.#payAllList;
+        }
+
         if (plan == null) {
             this.#paymentPlan = null;
-            if (other == 1) {
-                this.#paymentAmount = this.makeOtherOrder('full');
-                this.#otherPay = 1;
-            } else if (other == 2) {
-                this.#paymentAmount = this.makeOtherOrder('part');
-                this.#otherPay = 1;
-            } else {
-                this.#otherPay = 0;
-                this.#paymentAmount = this.#totalAmountDue;
-            }
         } else {
             this.#paymentPlan = plan;
             this.#paymentAmount = plan.currentPayment;
@@ -969,12 +981,13 @@ class Portal {
             if (this.#paymentPlan.new)
                 newplan = true;
 
-        // disable the button that called us
-        let enableButtonNames = null;
-        if (this.#disableButtonNames) {
-            enableButtonNames = this.#disableButtonNames;
+        // check if any of the memberships are in plan and if so, set plan recast to recompute the plan
+        for (let mem of this.#orderMemberships) {
+            if (mem.hasOwnProperty('planId') && mem.planId && mem.planId > 0) {
+                this.#planRecast = true;
+                break;
+            }
         }
-        $('[name="' + this.#disableButtonNames + '"]').prop('disabled', true);
         // transaction comes from session, person paying come from session, we will compute what was paid
         let data = {
             loginId: config.id,
@@ -985,15 +998,12 @@ class Portal {
             planRec: this.#paymentPlan,
             newplan: newplan ? 1 : 0,
             planPayment: this.#planPayment,
-            otherPay: this.#otherPay,
-            otherMemberships: JSON.stringify(paidOtherMembership),
+            otherMemberships: JSON.stringify(this.#orderMemberships),
             amount: this.#paymentAmount,
-            totalAmountDue: this.#otherPay == 1 ? this.#paymentAmount : this.#totalAmountDue,
             couponDiscount: this.#couponDiscount,
             preCouponAmountDue: this.#preCouponAmountDue,
             couponCode: coupon.getCouponCode(),
             couponSerial: coupon.getCouponSerial(),
-            planRecast: this.#planRecast ? 1 : 0,
             cancelOrderId: cancelOrderId,
         };
         $.ajax({
@@ -1001,6 +1011,13 @@ class Portal {
             data: data,
             method: 'POST',
             success: function (data, textStatus, jqXhr) {
+                if (data.status == 'error') {
+                    portal.openPaymentDueModal();
+                    if (enableButtonNames)
+                        $('[name="' + enableButtonNames + '"]').prop('disabled', false);
+                    show_message(data.message, 'error', 'payDueMessageDiv');
+                    return false;
+                }
                 checkResolveUpdates(data);
                 portal.setOrderData(data);
                 portal.makePayment(plan);
@@ -1023,11 +1040,8 @@ class Portal {
         let done = false;
         if (plan == null) {
             this.#paymentPlan = null;
-            if (this.#otherPay == 1) {
-                /* this is from the click "Pay total amount due" in the modal footer */
-                this.makeOrder(null, 1);
-                return;
-            }
+            this.makeOrder(null, 1);
+            return;
         } else if (this.#orderData && this.#orderData.post && this.#orderData.post.planPayment && this.#orderData.post.planPayment == 1) {
             html = `
         <div class="row mt-4 mb-4">
@@ -1085,7 +1099,6 @@ class Portal {
          </div>
 `;
         }
-        this.#otherPay = 0;
         this.#makePaymentBody.innerHTML = html;
         this.#paymentDueModal.hide();
         this.#makePaymentModal.show();
@@ -1096,28 +1109,10 @@ class Portal {
         this.#existingPlan = payorPlan;
         this.#paymentAmount = paymentAmt;
         payorPlan.currentPayment = paymentAmt;
-        this.#planRecast = recast;
+        if (recast)
+            this.#planRecast = recast;
         this.#planPayment = 1;
-        this.#otherPay = 0;
         this.makeOrder(payorPlan, 0);
-    }
-
-    // makeOtherOrder - pay some or all of the 'paid by other items due', mark the records and return to makeOrder
-    makeOtherOrder(type) {
-        // mark which ones to pay
-        let amount = 0;
-        if (type == 'full') {
-            for (let i = 0; i < this.#payAllList.length; i++) {
-                this.#payAllList[i]['payThis'] = 1;
-                amount += Number(this.#payAllList[i].actPrice) - (Number(this.#payAllList[i].actPaid) + Number(this.#payAllList[i].actCouponDiscount));
-            }
-        } else {
-            for (let i = 0; i < this.#payAllList.length; i++) {
-                this.#payAllList[i]['payThis'] = 1;
-                amount += Number(this.#payAllList[i].actPrice) - (Number(this.#payAllList[i].actPaid) + Number(this.#payAllList[i].actCouponDiscount));
-            }
-        }
-        return amount;
     }
 
     // makePurchase - make the membership/plan purchase.
@@ -1140,7 +1135,7 @@ class Portal {
             if (this.#paymentPlan.new)
                 newplan = true;
 
-        let totalAmountDue = this.#otherPay == 1 ? this.#paymentAmount : this.#totalAmountDue;
+        let totalAmountDue = this.#paymentAmount;
         let taxAmount = 0
         let preTaxAmount = totalAmountDue;
         if (this.#existingPlan == null && this.#orderData && this.#orderData.rtn) {
@@ -1167,11 +1162,10 @@ class Portal {
             planRec: this.#paymentPlan,
             newplan: newplan ? 1 : 0,
             planPayment: this.#planPayment,
-            otherPay: this.#otherPay,
-            otherMemberships: JSON.stringify(paidOtherMembership),
+            otherMemberships: JSON.stringify(this.#orderMemberships),
             nonce: token,
             amount: this.#paymentAmount,
-            totalAmountDue: this.#otherPay == 1 ? this.#paymentAmount : this.#totalAmountDue,
+            totalAmountDue: this.#paymentAmount,
             preTaxAmount: preTaxAmount,
             taxAmount: taxAmount,
             couponDiscount: this.#couponDiscount,
@@ -1231,7 +1225,6 @@ class Portal {
         // clear any order in progress
         this.#orderData = null;
         this.#otherPayAmt = 0;
-        this.#otherPay = 0;
 
         if (data.message)
             window.location = this.#portalPage + '?messageFwd=' + encodeURI(data.message);

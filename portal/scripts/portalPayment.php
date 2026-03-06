@@ -70,21 +70,11 @@ $amount = $_POST['amount'];
 $planRec = $_POST['planRec'];
 $existingPlan = $_POST['existingPlan'];
 $planPayment = $_POST['planPayment'];
-$otherPay = $_POST['otherPay'];
 $orderId = $_POST['orderId'];
 $source = 'portal';
 
-// load the amount values
-if (array_key_exists('totalAmountDue', $_POST) && $otherPay != 1) {
-    $totalAmountDue = $_POST['totalAmountDue'];
-    $amountDue = $totalAmountDue;
-} else {
-    $totalAmountDue = 0;
-}
 if ($newplan) {
     $amount = $planRec['currentPayment'];
-    if ($totalAmountDue == 0)
-        $totalAmountDue = $amount;
 }
 
 if (array_key_exists('couponDiscount', $_POST)) {
@@ -107,7 +97,7 @@ if (array_key_exists('taxAmount', $_POST)) {
 if (array_key_exists('preTaxAmount', $_POST)) {
     $preTaxAmount = $_POST['preTaxAmount'];
 } else {
-    $preTaxAmount = $totalAmountDue;
+    $preTaxAmount = $amount;
 }
 
 if (array_key_exists('badges', $_POST)) {
@@ -167,8 +157,8 @@ $referenceId = $transId . '-' . 'pay-' . time();
 
 $order = cc_fetchOrder($source, $orderId, true);
 if ($order != null) {
-    if ($totalAmountDue != $order['totalAmountDue']) {
-        error_log('bad total: post=' . $totalAmountDue . ', order=' . $order['totalAmountDue']);
+    if ($amount != $order['totalAmountDue']) {
+        error_log('bad total: post=' . $amount . ', order=' . $order['totalAmountDue']);
         ajaxSuccess(array ('status' => 'error', 'error' => 'Unable to process, bad total sent to Server'));
         exit();
     }
@@ -183,7 +173,7 @@ if ($order != null) {
 } else
     $customerId = $conf['id'] . "-$loginType-$loginId";
 
-if ($totalAmountDue > 0) {
+if ($amount > 0) {
     $results = array (
         'source' => $source,
         'nonce' => $nonce,
@@ -360,7 +350,7 @@ EOS;
 }
 
 $txnUpdate = 'UPDATE transaction SET ';
-if (round($approved_amt,2) == round($totalAmountDue,2)) {
+if (round($approved_amt,2) == round($amount,2)) {
     $txnUpdate .= 'complete_date=current_timestamp(), ';
 }
 
@@ -383,7 +373,7 @@ if ($amount > 0 && $planPayment != 1) {
     // figure out the percentage to apply to each
     $rows_upd += allocateBalance($balance, $badges, $conid, $newPlanId, $transId, true);
 }
-if ($totalAmountDue > 0) {
+if ($amount > 0) {
     $body = getEmailBody($transId, $info, $badges, $coupon, $planPayment == 1 ? $existingPlan : $planRec, $rtn['rid'], $rtn['url'],
         $rtn['amount'], $rtn['preTaxAmt'], $rtn['taxAmt'], $taxes, $planPayment );
 
