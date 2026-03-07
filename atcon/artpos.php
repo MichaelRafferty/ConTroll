@@ -90,8 +90,8 @@ $config_vars['inlineInventory'] = $inlineInventory;
 $config_vars['useBarcode'] =
         (getConfValue('vendor', 'artistBidSheetBarcode', 0) == 1 || getConfValue('vendor', 'artistPriceTagBarcode', 0) == 1) ? 1 : 0;
 
-$config_vars['creditoffline'] = getConfValiue('atcon', 'creditoffline', 1);
-$config_vars['creditonline'] = getConfValiue('atcon', 'creditonline', 0);
+$config_vars['creditoffline'] = getConfValue('atcon', 'creditoffline', 1);
+$config_vars['creditonline'] = getConfValue('atcon', 'creditonline', 0);
 
 if (isSessionVar('terminal'))
     $config_vars['terminal'] = getSessionVar('terminal')['name'] != 'None' ? 1 : 0;
