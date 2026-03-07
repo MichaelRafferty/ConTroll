@@ -379,7 +379,7 @@ class mergesetup {
         this.clearEditBlock();
         // fill merge modal
         this.#editMatchTitle.innerHTML = '<b>Merging</b> ' + this.#mergePerson.fullName + ' <b>into</b> ' + this.#remainPerson.fullName;
-        this.#mergeId.innerHTML = id;
+        this.#mergeId.innerHTML = this.#mergePerson.id;
         this.#mergeName.innerHTML = this.#mergePerson.fullName;
         this.#mergeLegal.innerHTML = this.#mergePerson.legalName;
         this.#mergePronouns.innerHTML = this.#mergePerson.pronouns;
