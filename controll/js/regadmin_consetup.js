@@ -9,6 +9,7 @@ class consetup {
     #debug = 0;
     #debugVisible = false;
     #active = false;
+    #bundlesEnabled = false;
     #contable = null;
     #memtable = null;
     #condate = null;
@@ -57,6 +58,7 @@ class consetup {
     constructor(setup_type) {
         this.#debug = Number(config.debug);
         this.#conid = Number(config.conid);
+        this.#bundlesEnabled = config.bundleMemberships == 'Y';
         if (this.#debug & 2) {
             this.#debugVisible = true;
         }
@@ -1186,7 +1188,9 @@ class consetup {
     // save the time series data back to the edit data array
     saveTimeSeries() {
         let index = 0;
-        let bundle =  document.getElementById('editMemListBundle').value == 'Y';
+        let bundle =  false;
+        if (this.#bundlesEnabled)
+            bundle = document.getElementById('editMemListBundle').value == 'Y';
         let notes = document.getElementById('editMemListNotes').value;
         let mark = notes.indexOf('/');
         if (mark > 0)
@@ -1278,8 +1282,10 @@ class consetup {
         let bundle = false;
         let bundleList = '';
         if (this.#memListBundleContains) {
-            bundle = document.getElementById('editMemListBundle').value == 'Y';
-            bundleList = this.#memListBundleContains.value;
+            if (this.#bundlesEnabled) {
+                bundle = document.getElementById('editMemListBundle').value == 'Y';
+                bundleList = this.#memListBundleContains.value;
+            }
         }
 
         // fill in the bottom rows from the edit array
@@ -1398,7 +1404,10 @@ class consetup {
             // check if bundle is Yes
             let valid = true;
             let message = '';
-            if (document.getElementById('editMemListBundle').value == 'Y') {
+            let bundle = false
+            if (this.#bundlesEnabled)
+                bundle = document.getElementById('editMemListBundle').value == 'Y';
+            if (bundle) {
                 // validate the bundle contents for each row in the table
                 for (let i = 0; i < 10; i++) {
                     let contains = document.getElementById('EMLTS' + i + '_contains').value;
