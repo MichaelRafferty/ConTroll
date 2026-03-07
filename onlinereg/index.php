@@ -93,7 +93,7 @@ SELECT id, label, shortname, sort_order, price, memAge, memCategory, memType
 FROM memLabel
 WHERE
     (conid=? OR (conid = ? AND memCategory = 'yearahead')) 
-    AND online = 'Y'
+    AND online = 'Y' AND label NOT LIKE 'Bundle: %'
     AND startdate <= current_timestamp()
     AND enddate > current_timestamp()
 ORDER BY sort_order, price DESC;
