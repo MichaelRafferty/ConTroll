@@ -52,7 +52,7 @@ $currency = getConfValue('con', 'currency', 'USD');
 $locale = getLocale();
 
 $regionQ = <<<EOS
-SELECT xR.shortname AS regionName, xRY.roomStatus
+SELECT xR.shortname AS regionName, xRY.roomStatus, xRY.revenueGlNum
 FROM exhibitsRegionTypes xRT
     JOIN exhibitsRegions xR ON xR.regionType=xRT.regionType
     JOIN exhibitsRegionYears xRY ON xRY.exhibitsRegion = xR.id
@@ -64,6 +64,7 @@ if ($regionR->num_rows == 1 && $region == '') {
     $setRegion = true;
 }
 $roomStatus = 'all';
+$revenueGlNum = '';
 $regionList = [];
 while ($regionInfo = $regionR->fetch_assoc()) {
     $regionList[] = $regionInfo['regionName'];
@@ -71,6 +72,8 @@ while ($regionInfo = $regionR->fetch_assoc()) {
         $region = $regionInfo['regionName'];
     if ($region == $regionInfo['regionName'])
         $roomStatus = $regionInfo['roomStatus'];
+    if ($region == $regionInfo['regionName'])
+        $revenueGlNum = $regionInfo['revenueGlNum'];
 }
 $regionR->free();
 setSessionVar('ARTPOSRegion', $region);
@@ -84,6 +87,7 @@ $config_vars['required'] = getConfValue('reg','required', 'addr');
 $config_vars['taxRate'] = $taxRate;
 $config_vars['taxLabel'] = $taxLabel;
 $config_vars['taxUid'] = $taxUid;
+$config_vars['revenueGlNum'] = $revenueGlNum;
 $config_vars['source'] = 'artpos';
 $config_vars['roomStatus'] = $roomStatus;
 $config_vars['inlineInventory'] = $inlineInventory;

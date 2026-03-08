@@ -109,7 +109,7 @@ if (count($art)  == 0) {
     return;
 }
 
-// now recompute the records in the badgeResults array
+// now recompute the records in the results array
 
 $results = array(
     'custid' => "p-$payorId",

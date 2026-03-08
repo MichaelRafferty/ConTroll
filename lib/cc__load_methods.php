@@ -200,7 +200,8 @@ function cc_artSalesNotes($art, $payorId, $transid) : array {
         $exhNum = $art['exhibitorNumber'];
     else
         $exhNum = '';
-    $art['note'] = implode('^', array($version, $perid, $art['exhibitorId'], $art['id'], $art['type'], $transid, ''));
+    $art['note'] = implode('^',
+        array($version, $perid, $art['exhibitorId'], $art['id'], $art['type'], $transid, $art['revenueGlNum']));
 
     $art['metadata'] = array(
         'version' => $version,
@@ -212,7 +213,7 @@ function cc_artSalesNotes($art, $payorId, $transid) : array {
         'artSalesId' =>  cc__metaval($art['artSalesId']),
         'priceType' => cc__metaval($art['priceType']),
         'transId' => cc__metaval($transid),
-        'glNum' => 'Future'
+        'glNum' => cc__metaval($art['revenueGlNum']),
     );
     return $art;
 }
