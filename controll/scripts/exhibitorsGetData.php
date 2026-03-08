@@ -26,6 +26,10 @@ if (!(array_key_exists('region', $_POST) && array_key_exists('regionId', $_POST)
 $conid = getConfValue('con', 'id');
 $region = $_POST['region'];
 $regionId = $_POST['regionId'];
+if (array_key_exists('exhibitorConid', $_POST))
+    $exhibitorConid = $_POST['exhibitorConid'];
+else
+    $exhibitorConid = $conid;
 
 $currency = getConfValue('con', 'currency', 'USD');
 
@@ -40,7 +44,7 @@ JOIN exhibitorYears eY ON e.id = eY.exhibitorId
 WHERE eY.conid = ?;
 EOS;
 
-$exhibitorR = dbSafeQuery($exhibitorQ, 'i', array($conid));
+$exhibitorR = dbSafeQuery($exhibitorQ, 'i', array($exhibitorConid));
 if (!$exhibitorR) {
     ajaxSuccess(array(
         "args" => $_POST,
@@ -100,7 +104,7 @@ GROUP BY exRY.id, eY.exhibitorId, exRY.exhibitsRegionYearId, exRY.approval, exRY
          e.exhibitorName, e.artistName, e.exhibitorEmail, e.website;
 EOS;
 
-$approvalR = dbSafeQuery($approvalQ, 'si', array($regionId, $conid));
+$approvalR = dbSafeQuery($approvalQ, 'si', array($regionId, $exhibitorConid));
 if (!$approvalR) {
     ajaxSuccess(array(
         'args' => $_POST,
@@ -135,7 +139,7 @@ WHERE eRY.conid=? AND eRY.exhibitsRegion = ?
 GROUP BY xS.spaceId, xS.name, eS.unitsAvailable
 EOS;
 
-$spaceR = dbSafeQuery($spaceQ, 'ii', array($conid, $regionId));
+$spaceR = dbSafeQuery($spaceQ, 'ii', array($exhibitorConid, $regionId));
 if (!$spaceR) {
     ajaxSuccess(array(
         'args' => $_POST,
@@ -197,7 +201,7 @@ WHERE eRY.conid=? AND eRY.exhibitsRegion = ? AND (IFNULL(requested_units, 0) > 0
 ORDER BY xS.exhibitorId, spaceId;
 EOS;
 
-$detailR = dbSafeQuery($detailQ, 'iiii',  array($conid, $regionId, $conid, $regionId));
+$detailR = dbSafeQuery($detailQ, 'iiii',  array($exhibitorConid, $regionId, $exhibitorConid, $regionId));
 if (!$detailR) {
     ajaxSuccess(array(
         'args' => $_POST,
@@ -227,7 +231,7 @@ WHERE eRY.conid = ? AND eRY.exhibitsRegion = ?
 ORDER BY spaceId, price;
 EOS;
 
-$priceR = dbSafeQuery($priceQ, 'ii', array($conid, $regionId));
+$priceR = dbSafeQuery($priceQ, 'ii', array($exhibitorConid, $regionId));
 $price_list = array();
 $currentSpaceId = -999;
 $prices='';
@@ -251,7 +255,7 @@ FROM exhibitorRegionYears exRY
 JOIN exhibitsRegionYears eRY ON exRY.exhibitsRegionYearId = eRY.id
 WHERE locations IS NOT NULL AND locations != '' AND exhibitsRegion = ? AND conid = ?;
 EOS;
-$locationR = dbSafeQuery($locationQ, 'ii', array($regionId, $conid));
+$locationR = dbSafeQuery($locationQ, 'ii', array($regionId, $exhibitorConid));
 $locationsUsed = '';
 if ($locationR !== false) {
     while ($locationL = $locationR->fetch_assoc()) {
