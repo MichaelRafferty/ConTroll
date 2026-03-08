@@ -16,4 +16,8 @@ FROM memList m
 JOIN ageList a ON (m.memAge = a.ageType) AND (m.conid = a.conid)
 JOIN memCategories c ON m.memCategory = c.memCategory;
 
+ALTER TABLE exhibitsRegionYears ADD COLUMN revenueGlNum varchar(16) COLLATE utf8mb4_general_ci DEFAULT NULL AFTER ownerEmail;
+ALTER TABLE exhibitsRegionYears ADD COLUMN revenueGlLabel varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL AFTER revenueGlNum;
+
+
 INSERT INTO patchLog(id, name) VALUES(x57, 'Release 2.1 Portal and other changes');
