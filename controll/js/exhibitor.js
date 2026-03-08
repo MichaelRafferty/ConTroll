@@ -1728,6 +1728,7 @@ class exhibitorsAdm {
         var data = {
             regionId: this.#regionId,
             action: 'list',
+            exhibitorConid: config.exhibitorConid,
         };
         clear_message();
         clearError();
