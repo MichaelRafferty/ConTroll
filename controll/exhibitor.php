@@ -23,27 +23,17 @@ $vendor_conf = get_conf('vendor');
 $usps = get_conf('usps');
 $conf = get_conf('con');
 $newConid = null;
+$initialTab = null;
+$initialSubtab = null;
+// set session variables for redraw to take the new year off the request line
 if (array_key_exists('exhibitorConid', $_REQUEST)) {
     $newConid = $_REQUEST['exhibitorConid'];
     if (!is_numeric($newConid))
-        $newConid = null;
+        $viewPrior = getConfValue('controll', 'viewPriorLimit', $conid);
+        if ($newConid >= $viewPrior && $newConid <= $conid)
+            setSessionVar('exhibitorConid', $newConid);
 }
 
-// figure out which conid we are looking at based on the session variable or request variable
-if ($newConid != null) {
-    $exhibitorConid = $newConid;
-    setSessionVar('exhibitorConid', $exhibitorConid);
-} else if (isSessionVar('exhibitorConid'))
-    $exhibitorConid = getSessionVar('exhibitorConid');
-else {
-    $exhibitorConid = $conid;
-    setSessionVar('exhibitorConid', $exhibitorConid);
-}
-$viewPrior = getConfValue('controll', 'viewPriorLimit', $conid);
-if ($exhibitorConid < $viewPrior || $exhibitorConid > $conid) {
-    $exhibitorConid = $conid;
-    setSessionVar('exhibitorConid', $exhibitorConid);
-}
 if (array_key_exists('tab', $_REQUEST)) {
     $initialTab = $_REQUEST['tab'];
     setSessionVar('initialTab', $initialTab);
@@ -52,7 +42,7 @@ if (array_key_exists('subtab', $_REQUEST)) {
     $initialSubtab = $_REQUEST['subtab'];
     setSessionVar('initialSubtab', $initialSubtab);
 }
-if ($newConid != null) {
+if ($newConid != null || $initialTab != null || $initialSubtab != null) {
     // reload the current page to lose the url argument
     header('Location: exhibitor.php');
     exit();
@@ -78,6 +68,11 @@ $scriptName = $_SERVER['SCRIPT_NAME'];
 $conf = get_conf('con');
 $initialTab = '';
 $initialSubtab = '';
+$exhibitorConid = $conid;
+if (isSessionVar('exhibitorConid')) {
+    $exhibitorConid = getSessionVar('exhibitorConid');
+    unsetSessionVar('exhibitorConid');
+}
 if (isSessionVar('initialTab')) {
     $initialTab = getSessionVar('initialTab');
     unsetSessionVar('initialTab');
