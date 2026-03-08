@@ -368,7 +368,7 @@ class exhibitorsAdm {
         $.ajax({
             url: "scripts/exhibitorsGetData.php",
             method: "POST",
-            data: { region: tabname, regionId: regionid },
+            data: { region: tabname, regionId: regionid, exhibitorConid: config.exhibitorConid },
             success: function (data, textstatus, jqXHR) {
                 checkRefresh(data);
                 exhibitors.draw(data, message);
@@ -420,11 +420,13 @@ class exhibitorsAdm {
                 "</button>\n" +
                 "</li>\n";
         }
-        html += "<li class='nav-item' role='presentation'>\n" +
-            "<button class='nav-link' id='" + groupid + "-exh-tab' data-bs-toggle='pill' data-bs-target='#" + groupid + "-exh-pane' type='button' role='tab' aria-controls='nav-exh'\n" +
-            "       aria-selected='false' onclick=" + '"' + "exhibitors.settabData('" + groupid + "-exh-pane');" + '"' + ">Exhibitors Information\n" +
-            "</button>\n" +
-            "</li>\n";
+        if (config.exhibitorConid == config.conid) {
+            html += "<li class='nav-item' role='presentation'>\n" +
+                "<button class='nav-link' id='" + groupid + "-exh-tab' data-bs-toggle='pill' data-bs-target='#" + groupid + "-exh-pane' type='button' role='tab' aria-controls='nav-exh'\n" +
+                "       aria-selected='false' onclick=" + '"' + "exhibitors.settabData('" + groupid + "-exh-pane');" + '"' + ">Exhibitors Information\n" +
+                "</button>\n" +
+                "</li>\n";
+        }
         html += "</ul>\n";
 
         html += this.drawSpaces(data, groupid);
@@ -507,11 +509,14 @@ class exhibitorsAdm {
             "    <div class='row mt-2 mb-3' id='" + groupid + "-spaces-csv-div'>\n"+
             "       <div class='col-sm-auto p-1 ps-3 pe-3 tabulator-paginator' id='" + groupid + "-tabSpacesPaginationDiv'" +
             "           style='background-color: #e5e5e5;'></div>\n" +
-            "       <div class='col-sm-auto p-1 ms-4'>\n" +
+            "       <div class='col-sm-auto p-1 ms-4'>\n";
+        if (config.exhibitorConid == config.conid)
+            html +=
             "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='addExhibitorSpaceBtn' onClick=" + '"exhibitors.addNewSpace();">' +
             "               Add New / Pay for Exhibitor Space to Existing Exhibitor</button>\n" +
             "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='addExhibitorBtn2' onClick=" + '"exhibitors.addNew();">' +
-            "               Add New Exhibitor</button>\n" +
+            "               Add New Exhibitor</button>\n";
+        html +=
             "           <button id='" + groupid + "-spaces-csv' type='button' class='btn btn-info btn-sm'" +
             "               onclick='exhibitors.spacesDownload(\"csv\"); return false;'>Download CSV</button>\n" +
             "           <button id='" + groupid + "-spaces-xlsx' type='button' class='btn btn-info btn-sm'" +
@@ -1390,28 +1395,30 @@ class exhibitorsAdm {
             'onclick="exhibitors.showDetail(' + id + ', true)" >Details</button>&nbsp;';
 
         // approval buttons
-        if (approvalBtns) {
-            if (data.approved != data.requested) {
-                if (app == 0) {
-                    buttons += '<button class="btn btn-sm btn-primary' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
-                        'onclick="exhibitors.spaceApprovalReq(' + id + ')" >Approve Req</button>&nbsp;';
-                } else {
-                    buttons += '<button class="btn btn-sm btn-warning' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem;' +
-                        ' --bs-btn-font-size: .75rem;" ' +
-                        'onclick="exhibitors.spaceApprovalReq(' + id + ')" >Revert to Orig Req</button>&nbsp;';
+        if (config.exhibitorConid == config.conid) {
+            if (approvalBtns) {
+                if (data.approved != data.requested) {
+                    if (app == 0) {
+                        buttons += '<button class="btn btn-sm btn-primary' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
+                            'onclick="exhibitors.spaceApprovalReq(' + id + ')" >Approve Req</button>&nbsp;';
+                    } else {
+                        buttons += '<button class="btn btn-sm btn-warning' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem;' +
+                            ' --bs-btn-font-size: .75rem;" ' +
+                            'onclick="exhibitors.spaceApprovalReq(' + id + ')" >Revert to Orig Req</button>&nbsp;';
+                    }
                 }
+                if (app > 0) {
+                    buttons += '<button class="btn btn-sm btn-warning' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
+                        'onclick="exhibitors.spaceApprovalOther(' + id + ')" >Change</button>&nbsp;' +
+                        '<button class="btn btn-sm btn-warning' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
+                        'onclick="exhibitors.spaceApprovalOther(' + id + ', 1)" >Change&Pay</button>&nbsp;';
+                }
+                if (app == 0)
+                    buttons += '<button class="btn btn-sm btn-primary' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
+                        'onclick="exhibitors.spaceApprovalOther(' + id + ')" >Approve Other</button>&nbsp;';
+                // force a break after the approval buttons
+                buttons += "<br/>";
             }
-            if (app > 0) {
-                buttons += '<button class="btn btn-sm btn-warning' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
-                    'onclick="exhibitors.spaceApprovalOther(' + id + ')" >Change</button>&nbsp;' +
-                    '<button class="btn btn-sm btn-warning' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
-                    'onclick="exhibitors.spaceApprovalOther(' + id + ', 1)" >Change&Pay</button>&nbsp;';
-            }
-            if (app == 0)
-                buttons += '<button class="btn btn-sm btn-primary' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
-                    'onclick="exhibitors.spaceApprovalOther(' + id + ')" >Approve Other</button>&nbsp;';
-            // force a break after the approval buttons
-            buttons += "<br/>";
         }
 
         margin = (invBtns || agentBtns) ? 'mb-2' : '';
@@ -1420,9 +1427,11 @@ class exhibitorsAdm {
             buttons += '<button class="btn btn-sm btn-secondary ' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem;' +
                 ' --bs-btn-font-size: .75rem;" ' +
                 'onclick="exhibitors.spaceReceipt(' + id + ')" >Receipt</button>&nbsp;';
-            buttons += '<button class="btn btn-sm btn-primary ' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem;' +
-                ' --bs-btn-font-size: .75rem;" ' +
-                'onclick="exhibitors.showLocations(' + id + ', true)" >Locations</button>&nbsp;';
+            if (config.exhibitorConid == config.conid) {
+                buttons += '<button class="btn btn-sm btn-primary ' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem;' +
+                    ' --bs-btn-font-size: .75rem;" ' +
+                    'onclick="exhibitors.showLocations(' + id + ', true)" >Locations</button>&nbsp;';
+            }
 
             buttons += "<br/>";
         }
@@ -1430,10 +1439,12 @@ class exhibitorsAdm {
         margin = agentBtns ? 'mb-2' : '';
         // inventory button
         if (invBtns) {
-            buttons += '<button class="btn btn-sm btn-secondary' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
-                'onclick="exhibitors.printBidSheets(' + id + ')" >Bid Sheets</button>&nbsp;';
-            buttons += '<button class="btn btn-sm btn-secondary' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
-                'onclick="exhibitors.printPriceTags(' + id + ')" >Price Tags</button>&nbsp;';
+            if (config.exhibitorConid == config.conid) {
+                buttons += '<button class="btn btn-sm btn-secondary' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
+                    'onclick="exhibitors.printBidSheets(' + id + ')" >Bid Sheets</button>&nbsp;';
+                buttons += '<button class="btn btn-sm btn-secondary' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
+                    'onclick="exhibitors.printPriceTags(' + id + ')" >Price Tags</button>&nbsp;';
+            }
             buttons += '<button class="btn btn-sm btn-secondary' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
                 'onclick="exhibitors.printControlSheet(' + id + ', false)" >Control Sheet</button>&nbsp;';
             buttons += '<button class="btn btn-sm btn-warning' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
@@ -1443,9 +1454,10 @@ class exhibitorsAdm {
         }
 
         // agent
-        if (agentBtns)
+        if (agentBtns && config.exhibitorConid == config.conid) {
             buttons += '<button class="btn btn-sm btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
                 'onclick="exhibitors.spaceAgent(' + id + ');" >Agent</button>&nbsp;';
+        }
 
         return buttons;
     }
@@ -1485,6 +1497,9 @@ class exhibitorsAdm {
             }
             return '';
         }
+
+        if (config.exhibitorConid != config.conid)
+            return '';
 
         switch (name) {
             case 'Approve':
