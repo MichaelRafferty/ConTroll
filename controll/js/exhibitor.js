@@ -16,6 +16,7 @@ exhibitorsData = null;
 customText = null;
 configEditor = null;
 checkConfigReload = true;
+exhibitors = null;
 var currencyFmt = null;
 var vendorInvoice = null;
 var profile = null;
@@ -29,12 +30,15 @@ exhibits = null;
 class exhibitorsAdm {
     // global items
     #conid = null;
+    #exhibitorConid = null;
     #debug = 0;
     #debugVisible = false;
     #message_div = null;
     #result_message_div = null;
     #cacheDirty = false;
     #scriptName = config.scriptName;
+    #currentTab = '';
+    #currentSubtab = '';
 
     // Space items
     #spacesTable = null;
@@ -83,6 +87,7 @@ class exhibitorsAdm {
     constructor(conid, debug) {
         this.#debug = debug;
         this.#conid = conid;
+        this.#exhibitorConid = config.exhibitorConid;
         this.#message_div = document.getElementById('test');
         this.#result_message_div = document.getElementById('result_message');
         currencyFmt = new Intl.NumberFormat(config.locale, {
@@ -93,6 +98,7 @@ class exhibitorsAdm {
         if (this.#debug & 1) {
             console.log("Debug = " + debug);
             console.log("conid = " + conid);
+            console.log("exhibitorConid = " + this.#exhibitorConid);
         }
         if (this.#debug & 2) {
             this.#debugVisible = true;
@@ -149,7 +155,7 @@ class exhibitorsAdm {
             console.log("regionTabs");
             console.log(this.#regionTabs);
         }
-        if (config.initialTab != 'overview') {
+        if (config.initialTab != '' && config.initialTab != 'overview') {
             const triggerTabList = document.querySelectorAll('#exhibitor-tab button')
             triggerTabList.forEach(triggerEl => {
                 const tabTrigger = new bootstrap.Tab(triggerEl)
@@ -165,7 +171,10 @@ class exhibitorsAdm {
             if (triggerEl)
                 bootstrap.Tab.getInstance(triggerEl).show(); // Select tab by name
 
-            this.settabOwner(config.initialTab + '-pane');
+            setTimeout( function() {
+                exhibitors.settabOwner(config.initialTab + '-pane');
+                }, 250);
+
         }
     };
 
@@ -173,6 +182,10 @@ class exhibitorsAdm {
 
     getApprovalPay() {
         return this.#approvalPay;
+    }
+
+    setCurrentSubtab(tab) {
+        this.#currentSubtab = tab;
     }
 
     setCacheDirty() {
@@ -185,15 +198,15 @@ class exhibitorsAdm {
         // need to add the do you wish to save dirty data item
         clearError();
         clear_message();
-        var content = tabname.replace('-pane', '');
+        this.#currentTab = tabname.replace('-pane', '');
 
         if (this.#currentOwner) {
             this.#currentOwner.hidden = true;
         }
-        this.#ownerTabs[content].hidden = false;
-        this.#currentOwner = this.#ownerTabs[content];
-        this.#currentPane = content;
-        if (content != 'configuration') {
+        this.#ownerTabs[this.#currentTab].hidden = false;
+        this.#currentOwner = this.#ownerTabs[this.#currentTab];
+        this.#currentPane = this.#currentTab;
+        if (this.#currentTab != 'configuration') {
             if (exhibits) {
                 exhibits.close();
                 exhibits = null;
@@ -216,32 +229,39 @@ class exhibitorsAdm {
             this.#currentRegion = null;
         }
 
-        if (content == 'overview')
+        if (this.#currentTab == 'overview') {
+            config.initialTab = ''
+            config.initialSubtab = ''
             return;
+        }
 
-        if (content == 'configuration') {
+        if (this.#currentTab == 'configuration') {
             if (exhibits == null)
-                exhibits = new exhibitssetup(config.conid, config.debug);
+                exhibits = new exhibitssetup(config.exhibitorConid, config.debug);
             exhibits.open();
             return;
         }
-        if (content == 'customtext') {
+        if (this.#currentTab == 'customtext') {
             if (customText == null)
                 customText = new customTextSetup();
             customText.open();
+            config.initialTab = ''
+            config.initialSubtab = ''
             return;
         }
 
-        if (content == 'configEdit') {
+        if (this.#currentTab == 'configEdit') {
             if (configEditor == null) {
                 this.loadConfigEditor();
             }
             checkConfigReload = true;
+            config.initialTab = ''
+            config.initialSubtab = ''
             return;
         }
 
         if (this.#cacheDirty) {
-            window.location.href = this.#scriptName + '?tab=' + content;
+            window.location.href = this.#scriptName + '?tab=' + this.#currentTab;
             return;
         }
 
@@ -250,6 +270,19 @@ class exhibitorsAdm {
         var regionKey = Object.keys(regionsInOwner)[0];
         var region = regionsInOwner[regionKey];
         this.settabRegion(region.name.replaceAll(' ', '-') + '-pane');
+    }
+
+// change exhibitor year being displayed
+    changeExhibitorConid() {
+        let newConventionConid = document.getElementById('limitConid').value;
+        if (newConventionConid == this.#exhibitorConid)
+            return; // no change
+        let href = '?exhibitorConid=' + newConventionConid;
+        if (this.#currentTab != '')
+            href += '&tab=' + this.#currentTab;
+        if (this.#currentSubtab != '')
+            href += '&subtab=' + this.#currentSubtab;
+        window.location.href = href;
     }
 
 // configuration editor

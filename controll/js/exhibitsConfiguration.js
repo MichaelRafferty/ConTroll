@@ -268,6 +268,16 @@ class exhibitssetup {
         clear_message();
         clearError();
         let _this = this;
+        let startTab = 'regionTypes-pane';
+        let triggers = false;
+        if (config.initialTab == 'configuration' && config.initialSubtab != '' && config.initialSubtab != 'regionTypes') {
+            triggers = true;
+            startTab = config.initialSubtab + '-pane';
+            config.initialTab = '';
+            config.initialSubtab = '';
+        }
+
+
         var script = "scripts/exhibitsUpdateGetData.php";
         $.ajax({
             url: script,
@@ -280,7 +290,7 @@ class exhibitssetup {
                 }
                 checkRefresh(data);
                 _this.draw(data);
-                _this.settab('regionTypes-pane');
+                _this.settab(startTab, triggers);
                 if (data.success)
                     show_message(data.success,  'success');
             },
@@ -333,9 +343,27 @@ class exhibitssetup {
 
 
     // common code for changing tabs
-    settab(tabname) {
+    settab(tabname, triggers = false) {
         clearError();
         clear_message();
+
+        if (triggers) {
+            const triggerTabList = document.querySelectorAll('#exhibitsAdmin-tab button')
+            triggerTabList.forEach(triggerEl => {
+                const tabTrigger = new bootstrap.Tab(triggerEl)
+
+                triggerEl.addEventListener('click', event => {
+                    event.preventDefault()
+                    tabTrigger.show()
+                })
+            })
+
+            var selectors = '#exhibitsAdmin-tab button[data-bs-target="#' + tabname;
+            var triggerEl = document.querySelector(selectors);
+            if (triggerEl)
+                bootstrap.Tab.getInstance(triggerEl).show(); // Select tab by name
+        }
+        exhibitors.setCurrentSubtab(tabname.replace('-pane', ''));
     }
 
     // editRow - call up the proper modal to edit a full row
@@ -1248,7 +1276,7 @@ class exhibitssetup {
         }
         this.#regionsavebtn.innerHTML = "Save Changes";
         this.#regionsavebtn.disabled = true;
-        exhibitors?.setCacheDirty();
+        exhibitors.setCacheDirty();
         this.draw(data);
     }
 
@@ -1419,7 +1447,7 @@ class exhibitssetup {
         }
         this.#regionYearsavebtn.innerHTML = "Save Changes";
         this.#regionYearsavebtn.disabled = true;
-        exhibitors?.setCacheDirty();
+        exhibitors.setCacheDirty();
         this.draw(data);
     }
 
@@ -1579,7 +1607,7 @@ class exhibitssetup {
         }
         this.#spacesavebtn.innerHTML = "Save Changes";
         this.#spacesavebtn.disabled = false;
-        exhibitors?.setCacheDirty();
+        exhibitors.setCacheDirty();
         this.draw(data);
     }
 
@@ -1731,7 +1759,7 @@ class exhibitssetup {
         }
         this.#spacePricesavebtn.innerHTML = "Save Changes";
         this.#spacePricesavebtn.disabled = false;
-        exhibitors?.setCacheDirty();
+        exhibitors.setCacheDirty();
         this.draw(data);
     }
 

@@ -22,6 +22,41 @@ $conid = $con['id'];
 $vendor_conf = get_conf('vendor');
 $usps = get_conf('usps');
 $conf = get_conf('con');
+$newConid = null;
+if (array_key_exists('exhibitorConid', $_REQUEST)) {
+    $newConid = $_REQUEST['exhibitorConid'];
+    if (!is_numeric($newConid))
+        $newConid = null;
+}
+
+// figure out which conid we are looking at based on the session variable or request variable
+if ($newConid != null) {
+    $exhibitorConid = $newConid;
+    setSessionVar('exhibitorConid', $exhibitorConid);
+} else if (isSessionVar('exhibitorConid'))
+    $exhibitorConid = getSessionVar('exhibitorConid');
+else {
+    $exhibitorConid = $conid;
+    setSessionVar('exhibitorConid', $exhibitorConid);
+}
+$viewPrior = getConfValue('controll', 'viewPriorLimit', $conid);
+if ($exhibitorConid < $viewPrior || $exhibitorConid > $conid) {
+    $exhibitorConid = $conid;
+    setSessionVar('exhibitorConid', $exhibitorConid);
+}
+if (array_key_exists('tab', $_REQUEST)) {
+    $initialTab = $_REQUEST['tab'];
+    setSessionVar('initialTab', $initialTab);
+}
+if (array_key_exists('subtab', $_REQUEST)) {
+    $initialSubtab = $_REQUEST['subtab'];
+    setSessionVar('initialSubtab', $initialSubtab);
+}
+if ($newConid != null) {
+    // reload the current page to lose the url argument
+    header('Location: exhibitor.php');
+    exit();
+}
 
 $required = getConfValue('reg', 'required', 'addr');
 $testsite = getConfValue('vendor', 'test') == 1;
@@ -40,13 +75,17 @@ switch ($required) {
 }
 
 $scriptName = $_SERVER['SCRIPT_NAME'];
-if (array_key_exists('tab', $_REQUEST)) {
-    $initialTab = $_REQUEST['tab'];
-} else {
-    $initialTab = 'overview';
-}
-
 $conf = get_conf('con');
+$initialTab = '';
+$initialSubtab = '';
+if (isSessionVar('initialTab')) {
+    $initialTab = getSessionVar('initialTab');
+    unsetSessionVar('initialTab');
+}
+if (isSessionVar('initialSubtab')) {
+    $initialSubtab = getSessionVar('initialSubtab');
+    unsetSessionVar('initialSubtab');
+}
 
 $cdn = getTabulatorIncludes();
 page_init($page,
@@ -77,7 +116,7 @@ JOIN exhibitsRegionTypes eRT ON eR.regionType = eRT.regionType
 WHERE conid = ?
 ORDER BY eRY.ownerName, eR.sortorder;
 EOS;
-$regionOwnerR = dbSafeQuery($regionOwnerQ, 'i',array($conid));
+$regionOwnerR = dbSafeQuery($regionOwnerQ, 'i',array($exhibitorConid));
 
 // load country select
 $defaultCountry = strtoupper(getConfValue('con', 'defaultCountry', 'USA'));
@@ -91,7 +130,7 @@ $locale = getLocale();
 $config_vars = array();
 $portalType = 'admin';
 $portalName = 'Exhibitor';
-[$ageList, $ageListIdx] = getAgeList($conid);
+[$ageList, $ageListIdx] = getAgeList($exhibitorConid);
 $ageOptions = '<option value="">--Select Age Bracket--</option>' . PHP_EOL;
 foreach ($ageList as $age) {
 $ageOptions .= '<option value="' . escape_quotes($age['ageType']) . '">' . $age['shortname'] . ' ['.$age['label'] . ']</option>' . PHP_EOL;
@@ -121,6 +160,7 @@ $config_vars['addrStar'] = $addrStar;
 $config_vars['firstStar'] = $firstStar;
 $config_vars['useUSPS'] = $useUSPS;
 $config_vars['initialTab'] = $initialTab;
+$config_vars['initialSubtab'] = $initialSubtab;
 $config_vars['scriptName'] = $scriptName;
 $config_vars['regserver'] = getConfValue('reg', 'server');
 $config_vars['locale'] = $locale;
@@ -128,6 +168,7 @@ $config_vars['currency'] = $currency;
 $config_vars['taxRates'] = getTaxRates();
 $config_vars['tokenStatus'] = $authToken->checkToken();
 $config_vars['defaultCountry'] = $defaultCountry;
+$config_vars['exhibitorConid'] = $exhibitorConid;
 
 bs_tinymceModal();
 draw_registrationModal('admin', 'Admin', $conf, $countryOptions);
@@ -262,6 +303,19 @@ draw_exhibitsConfigurationModals();
     </div>
 </div>
 <div class="container-fluid" id='main'>
+    <div class="row mt-2 mb-2">
+        <div class='col-sm-auto ms-3 me-0'><label  class='size-h4' for='limitConid'><b>Displaying data for convention year:</b></label></div>
+        <div class='col-sm-auto'>
+            <select id='limitConid' name='limitConid' class="size-h4" onchange="exhibitors.changeExhibitorConid();">
+                <?php
+                    for ($year = $viewPrior; $year <= $conid; $year++) {
+                        $selected = $year == $exhibitorConid ? ' selected' : '';
+                        echo "<option value='$year'$selected>$year</option>";
+                    }
+                ?>
+            </select>
+        </div>
+    </div>
     <ul class='nav nav-tabs mb-3' id='exhibitor-tab' role='tablist'>
         <li class='nav-item' role='presentation'>
             <button class='nav-link active' id='overview-tab' data-bs-toggle='pill' data-bs-target='#overview-pane' type='button' role='tab'
