@@ -1575,7 +1575,8 @@ class PosCart {
             selid.value = row.country;
             if (row.currentAgeType && row.currentAgeType != 'all') {
                 selid = document.getElementById('c' + rownum + '-age');
-                selid.value = row.currentAgeType;
+                if (selid)
+                    selid.value = row.currentAgeType;
             }
         }
         cart.drawCart();
