@@ -15,7 +15,7 @@
 /controll/reports/local_groups/
 /controll/reports/local_reports/
 
-# images directories not used by ConTroll
+# image and data directories not used by ConTroll
 /atcon/images/
 /atcon/ps/
 /onlinereg/images/
@@ -24,6 +24,12 @@
 /install/Reg_Install_Schema/data/
 /portal/images/
 /controll/images/
+/controll/reportdata
+# symlimks to those images
+/controll/portalimages
+/controll/vendorimages
+/controll/onlineregimages
+/controll/atconimages
 
 # stuff for local overrides
 .htaccess
