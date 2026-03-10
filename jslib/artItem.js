@@ -20,7 +20,7 @@ var typeList = new artItemTypes();
 
 class artItemStatuses {
     static ENTERED = 'Entered';
-    static NOT_IN_SHOW = 'Not In Show';
+    static WITHDRAWN = 'Withdrawn';
     static CHECKED_IN = 'Checked In';
     static REMOVED = 'Removed From Show';
     static BID = 'BID';
@@ -31,7 +31,7 @@ class artItemStatuses {
     static CHECKED_OUT = 'Checked Out';
     static RELEASED = 'Purchased/Released';
 
-    #statuses = [artItemStatuses.ENTERED, artItemStatuses.NOT_IN_SHOW, artItemStatuses.CHECKED_IN, artItemStatuses.REMOVED,
+    #statuses = [artItemStatuses.ENTERED, artItemStatuses.WITHDRAWN, artItemStatuses.CHECKED_IN, artItemStatuses.REMOVED,
     artItemStatuses.BID, artItemStatuses.QUICKSALE, artItemStatuses.TOAUCTION, artItemStatuses.SOLDBID, artItemStatuses.SOLDAUCTION,
     artItemStatuses.CHECKED_OUT, artItemStatuses.RELEASED];
 

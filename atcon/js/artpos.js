@@ -86,7 +86,7 @@ var currencyFmt = null;
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const statusCodes = {
     'Entered': 'Ent',
-    'Not In Show': 'NIS',
+    'Withdrawn': 'WD',
     'Checked In': 'In',
     'Removed from Show': 'Rem',
     'BID': 'Bid',
@@ -838,7 +838,7 @@ function drawItemDetails(item, full = false) {
         htmlLine = '';
         switch (item.status.toLowerCase()) {
             case 'entered':
-            case 'not in show':
+            case 'withdrawn':
                 if (config.inlineInventory == 1)
                     btn_color = 'btn-warning';
                 else
@@ -1009,8 +1009,8 @@ function itemAction(cell, formatterParams, onRendered) {
     if (row.status == 'Checked Out' || row.status == 'Purchased/Released' || row.status == 'Quicksale/Sold')
         return '';
 
-    // if it's not checked in, or checked in as 'missing' (not in show), allow inventory overide if inline, else nothing
-    if (row.status == 'Entered' || row.status == 'Not In Show') {
+    // if it's not checked in, or checked in as 'missing' (withdrawn), allow inventory overide if inline, else nothing
+    if (row.status == 'Entered' || row.status == 'withdrawn') {
         if (config.inlineInventory == 1)
             return '<button class="btn btn-sm btn-warning" style= "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
                 ' onclick="updateInventory(' + row.item_key + ');">Inv</button>';
@@ -1085,7 +1085,7 @@ function updateInventoryStep(item, repeatPass) {
     didQuantity = false;
 
     // general status issues first
-    if (item.status == 'Entered' || item.status == 'Not In Show') {
+    if (item.status == 'Entered' || item.status == 'Withdrawn') {
         html += '<div class="row mt-4"><div class="col-sm-12">The item is not available for sale because of it\'s status.' +
             ' If you are sure the item is checked in, click "Update Inventory Record" to set it to "Checked In"</div></div>';
         inventoryUpdates.push({field: 'status', value: 'Checked In'});
