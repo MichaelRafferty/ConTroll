@@ -130,7 +130,7 @@ SELECT ?, taxField, label, rate, active, glNum, glLabel, now(), ?
 FROM taxList
 WHERE conid = ?;
 EOS;
-    $numRows=dbSafeCmd($ins, 'ii', array($conid, $user_perid, $conid - 1));
+    $numRows=dbSafeCmd($ins, 'iii', array($conid, $user_perid, $conid - 1));
 }
 // now get the current list
 $taxList = getTaxConfig();
