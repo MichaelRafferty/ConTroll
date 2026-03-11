@@ -20,6 +20,7 @@ exhibitors = null;
 var currencyFmt = null;
 var vendorInvoice = null;
 var profile = null;
+var fileManager = null;
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -131,6 +132,7 @@ class exhibitorsAdm {
         this.#ownerTabs.configuration = document.getElementById('configuration-pane');
         this.#ownerTabs.customtext = document.getElementById('customtext-pane');
         this.#ownerTabs.configEdit = document.getElementById('configEdit-pane');
+        this.#ownerTabs.fileManager = document.getElementById('fileManager-pane');
         this.#currentOwner = this.#ownerTabs.overview;
         this.#currentPane = 'overview';
         var ownerKeys = Object.keys(regionOwners);
@@ -229,35 +231,40 @@ class exhibitorsAdm {
             this.#currentRegion = null;
         }
 
-        if (this.#currentTab == 'overview') {
-            config.initialTab = ''
-            config.initialSubtab = ''
-            return;
-        }
+        switch (this.#currentTab) {
+            case 'overview':
+                config.initialTab = ''
+                config.initialSubtab = ''
+                return;
+                ;
 
-        if (this.#currentTab == 'configuration') {
-            if (exhibits == null)
-                exhibits = new exhibitssetup(config.exhibitorConid, config.debug);
-            exhibits.open();
-            return;
-        }
-        if (this.#currentTab == 'customtext') {
-            if (customText == null)
-                customText = new customTextSetup();
-            customText.open();
-            config.initialTab = ''
-            config.initialSubtab = ''
-            return;
-        }
 
-        if (this.#currentTab == 'configEdit') {
-            if (configEditor == null) {
-                this.loadConfigEditor();
-            }
-            checkConfigReload = true;
-            config.initialTab = ''
-            config.initialSubtab = ''
-            return;
+            case 'configuration':
+                if (exhibits == null)
+                    exhibits = new exhibitssetup(config.exhibitorConid, config.debug);
+                exhibits.open();
+                return;
+
+            case 'customtext':
+                if (customText == null)
+                    customText = new customTextSetup();
+                customText.open();
+                config.initialTab = ''
+                config.initialSubtab = ''
+                return;
+
+            case 'configEdit':
+                if (configEditor == null) {
+                    this.loadConfigEditor();
+                }
+                checkConfigReload = true;
+                config.initialTab = ''
+                config.initialSubtab = ''
+                return;
+
+            case 'fileManager':
+                fileManager.open();
+                return;
         }
 
         if (this.#cacheDirty) {
@@ -1859,6 +1866,7 @@ function updateExhibitorDataDraw(data, textStatus, jqXHR) {
 // create class on page render
 window.onload = function initpage() {
     exhibitors = new exhibitorsAdm(config.conid, config.debug);
+    fileManager = new FileManager();
     exhibitorRequestOnLoad();
     exhibitorReceiptOnLoad();
     exhibitorInvoiceOnLoad();

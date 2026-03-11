@@ -10,6 +10,7 @@ require_once "../lib/tax.php";
 require_once "lib/exhibitsConfiguration.php";
 require_once "lib/exhibitorChooseExhibitor.php";
 require_once 'lib/sessionAuth.php';
+require_once 'lib/fileManager.php';
 
 $page = 'exhibitor';
 $authToken = new authToken('web');
@@ -25,6 +26,7 @@ $conf = get_conf('con');
 $newConid = null;
 $initialTab = null;
 $initialSubtab = null;
+$viewPrior = $conid;
 // set session variables for redraw to take the new year off the request line
 if (array_key_exists('exhibitorConid', $_REQUEST)) {
     $newConid = $_REQUEST['exhibitorConid'];
@@ -93,6 +95,7 @@ page_init($page,
                     'js/exhibitsConfiguration.js',
                     'js/exhibitorInvoice.js',
                     'js/adminCustomText.js',
+                    'js/fileManager.js',
                     'jslib/exhibitorRequest.js',
                     'jslib/exhibitorReceipt.js',
                     'jslib/exhibitorInvoiceCommon.js',
@@ -166,6 +169,7 @@ $config_vars['defaultCountry'] = $defaultCountry;
 $config_vars['exhibitorConid'] = $exhibitorConid;
 
 bs_tinymceModal();
+draw_fileManagerModals($authToken);
 draw_registrationModal('admin', 'Admin', $conf, $countryOptions);
 draw_exhibitorRequestModal('admin');
 draw_exhibitorReceiptModal('admin');
@@ -332,6 +336,11 @@ draw_exhibitsConfigurationModals();
                     aria-controls='nav-menu' aria-selected='false' onclick="exhibitors.settabOwner('configEdit-pane');">Configuration Editor
             </button>
         </li>
+        <li class='nav-item' role='presentation'>
+            <button class='nav-link' id='fileManager-tab' data-bs-toggle='pill' data-bs-target='#fileManager-pane' type='button' role='tab'
+                    aria-controls='nav-menu' aria-selected='false' onclick="exhibitors.settabOwner('fileManager-pane');">File Manager
+            </button>
+        </li>
 <?php
 // build tab structure
 $regionOwners = [];
@@ -453,6 +462,14 @@ while ($regionL = $regionOwnerR->fetch_assoc()) {
                     <button type='button' class='btn btn-secondary btn-sm' id='discardBTNb' onclick='configEditor.discard();' disabled>Discard Changes</button>
                 </div>
             </div>
+        </div>
+    </div>
+    <div class='tab-pane fade' id='fileManager-pane' role='tabpanel' aria-labelledby='fileManager-tab' tabindex='0'>
+        <div class='container-fluid'>
+            <div class='row'>
+                <div class='col-sm-auto'><h2>Admin File Manager (upload/download)</h2></div>
+            </div>
+            <?php draw_FileManager($authToken); ?>
         </div>
     </div>
 

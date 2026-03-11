@@ -118,19 +118,19 @@ switch ($action) {
 $imgCount = 0;
 
 // controll images
-    if ($admin && ($loadType == 'all' || $loadType == 'controll' || $loadType == 'images')) {
+    if (($admin || $regAdmin || $reg_staff) && ($loadType == 'all' || $loadType == 'controll' || $loadType == 'images')) {
         $imgCount += loadDir('controll', '../images', 'images', $response);
     }
-    if ($admin && ($loadType == 'all' || $loadType == 'report' || $loadType == 'reportdata')) {
+    if (($admin || $finance) && ($loadType == 'all' || $loadType == 'report' || $loadType == 'reportdata')) {
         $imgCount += loadDir('report', '../reportdata', 'reportdata', $response);
     }
-    if ($admin && ($loadType == 'all' || $loadType == 'online' || $loadType == 'onlinereg')) {
+    if (($admin || $reg_staff || $regAdmin) && ($loadType == 'all' || $loadType == 'online' || $loadType == 'onlinereg')) {
         $imgCount += loadDir('online', '../../onlinereg/images', 'onlineregimages', $response);
     }
-    if ($admin && ($loadType == 'all' || $loadType == 'portal')) {
+    if (($admin || $reg_staff || $regAdmin) && ($loadType == 'all' || $loadType == 'portal')) {
         $imgCount += loadDir('portal', '../../portal/images', 'portalimages', $response);
     }
-    if ($admin && ($loadType == 'all' || $loadType == 'exhibitor' || $loadType == 'vendor')) {
+    if (($admin || $exhibitor) && ($loadType == 'all' || $loadType == 'exhibitor' || $loadType == 'vendor')) {
         $imgCount += loadDir('exhibitor', '../../vendor/images', 'vendorimages', $response);
     }
 if (array_key_exists('success', $response))
