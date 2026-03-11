@@ -22,6 +22,13 @@ class FileManager {
     #portal = null;
     #exhibitor = null;
 
+    // overall permissions
+    #admin = false;
+    #reg_admin = false;
+    #reg_staff = false;
+    #reg_finance = false;
+    #exhibitorRole = false;
+
     #controllButton = null;
     #reportButton = null;
     #onlineButton = null;
@@ -33,6 +40,16 @@ class FileManager {
     #onlineShow = true;
     #portalShow = true;
     #exhibitorShow = true;
+
+    // rename delete fields
+    #renameDeleteModal = null;
+    #renameDeleteTitle = null
+    #currentDirectory = '';
+    #currentFile = '';
+    #currentNameTxt = '';
+    #renameHeading = null;
+    #fm_renameBtn = null;
+    #fm_deleteBtn = null;
 
     constructor() {
         this.#controllPreview = document.getElementById("controllImagePreview");
@@ -50,6 +67,16 @@ class FileManager {
         this.#exhibitorPreview = document.getElementById("exhibitorImagePreview");
         this.#exhibitorButton = document.getElementById("exhibitorShow");
         this.#exhibitor = this.#exhibitorPreview != null;
+
+        var id = document.getElementById('fm_RenameDelete');
+        if (id != null) {
+            this.#renameDeleteModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
+            this.#renameDeleteTitle = document.getElementById("fm_rdTitle");
+            this.#currentNameTxt = document.getElementById("fm_newName");
+            this.#renameHeading = document.getElementById("fm_renameHeading");
+            this.#fm_renameBtn = document.getElementById("fm_renameBtn");
+            this.#fm_deleteBtn = document.getElementById("fm_deleteBtn");
+        }
     }
 
     open() {
@@ -81,7 +108,8 @@ class FileManager {
 
         let script = 'scripts/filemgr_getLists.php';
         let postData = {
-            load_type: 'all'
+            load_type: 'all',
+            action: 'load',
         }
         clearError();
         clear_message();
@@ -104,7 +132,7 @@ class FileManager {
                 fileManager.drawFileManager(data);
             },
             error: function (jqXHR, textStatus, errorThrown) {
-                showError("ERROR in getMenu: " + textStatus, jqXHR);
+                showError("ERROR in open: " + textStatus, jqXHR);
             },
         });
     }
@@ -112,6 +140,13 @@ class FileManager {
     // draw the initial screen
     drawFileManager(data) {
         console.log(data);
+
+        // set permissions
+        this.#admin = data.admin;
+        this.#reg_admin = data.reg_admin;
+        this.#reg_staff = data.reg_staff;
+        this.#reg_finance = data.finance;
+        this.#exhibitorRole = data.exhibitorRole;
 
         // controll images
         if (data.controll) {
@@ -140,18 +175,46 @@ class FileManager {
     }
 
     buildFileList(data, preview) {
-        let html = '<div class="row">\n';
+        let html = '';
         let files = Object.keys(data);
-        for (let file of files) {
-            let element = data[file];
-            html +='<div class="col-sm-auto mb-4">\n';
-            if (preview) {
-                html += '<img src="' + element.path + '" style="max-height:200px;max-width:200px;height:auto;width:auto;"><br/>\n';
+        if (preview) {
+            html = '<div class="row">\n';
+            for (let file of files) {
+                let element = data[file];
+                html += '<div class="col-sm-auto mb-4 me-4 align-self-end">\n';
+                if (preview) {
+                    html += '<img src="' + element.path + '" style="max-height:200px;max-width:200px;height:auto;width:auto;"><br/>\n';
+                }
+                html += file + '(' + element.size + ')<br/>c: ' + element.created +
+                    '<br/>m: ' + element.modified + '\n';
+                if (this.#admin)
+                    html += '<br/><button class="btn btn-small btn-secondary" onclick="fileManager.renameDelete(\'' + element.path + '\');">' +
+                        'Rename/Delete</button>\n';
+                html += '</div>\n';
             }
-            html += file + '(' + element.size + ')<br/>c: ' + element.created +
-                '<br/>m: ' + element.modified + '</div>\n';
+            html += '</div>\n';
+        } else {
+            if (files.length > 0) {
+                html = '<div class="row">\n<div class="col-sm-2"></div>\n' +
+                    '<div class="col-sm-3">File Name</div>\n' +
+                    '<div class="col-sm-1 text-end">Size</div>\n' +
+                    '<div class="col-sm-2">Creation Date/Time</div>\n' +
+                    '<div class="col-sm-2">Last Modified</div>\n' +
+                    '</div>\n';
+            }
+            for (let file of files) {
+                let element = data[file];
+                html += '<div class="row mb-1 me-1">\n<div class="col-sm-2">';
+                if (this.#admin)
+                    html += '<button class="btn btn-small btn-secondary" onclick="fileManager.renameDelete(\'' + element.path + '\');">' +
+                        'Rename/Delete</button>';
+                html += '</div>\n<div class="col-sm-3 align-self-center">' + file + '</div>\n' +
+                    '<div class="col-sm-1 text-end align-self-center">' + element.size + '</div>\n' +
+                    '<div class="col-sm-2 align-self-center">' + element.created + '</div>\n' +
+                    '<div class="col-sm-2 align-self-center">' + element.modified + '</div>\n' +
+                    '</div>\n';
+            }
         }
-        html += '</div>\n';
         return html;
     }
 
@@ -208,5 +271,141 @@ class FileManager {
                 this.#exhibitorShow = !this.#exhibitorShow;
                 break;
         }
+    }
+
+    renameDelete(path) {
+        let pathElements = path.split('/');
+        this.#currentDirectory = pathElements[0];
+        this.#currentFile = pathElements[1];
+        this.#renameHeading.innerHTML = 'Rename/Delete <b>' + this.#currentFile + '</b> in the directory <b>' + this.#currentDirectory + '</b>';
+        this.#renameDeleteTitle.innerHTML = 'Rename/Delete ' + this.#currentFile + ' in the directory ' + this.#currentDirectory;
+        this.#currentNameTxt.value = '';
+        this.disableRenameDeleteBtns(false)
+        this.#renameDeleteModal.show();
+    }
+
+    rename() {
+        this.disableRenameDeleteBtns(true);
+        clear_message('result_message_fm_rd');
+
+        if (this.#currentFile == '' || this.#currentDirectory == '') {
+            return;
+        }
+        let newName = this.#currentNameTxt.value;
+        if (newName == '') {
+            show_message("No new name specified", 'error', 'result_message_fm_rd');
+            this.disableRenameDeleteBtns(false);
+            return;
+        }
+
+        // validate new name
+        // no leading .
+        if (newName.startsWith('.')) {
+            show_message("New file name cannot start with a . (no hidden files allowed)", 'error', 'result_message_fm_rd');
+            this.disableRenameDeleteBtns(false);
+            return;
+        }
+
+        if (!/^[A-Za-z0-9\-\._]+$/.test(newName)) {
+            show_message("Invalid characters in new file name, only A-Z, a-z, 0-9, ., -, and _ allowed.", 'error', 'result_message_fm_rd');
+            this.disableRenameDeleteBtns(false);
+            return;
+        }
+
+        if (newName.length > 127) {
+            show_message("New file name cannot be longer than 127 characters, you entered " + newName.length, 'error', 'result_message_fm_rd');
+            this.disableRenameDeleteBtns(false);
+            return;
+        }
+
+        console.log("In Directory " + this.#currentDirectory + ' renaming ' + this.#currentFile + ' to ' + newName);
+        let script = 'scripts/filemgr_getLists.php';
+        let postData = {
+            load_type: this.#currentDirectory,
+            action: 'rename',
+            origDir: this.#currentDirectory,
+            origName: this.#currentFile,
+            newName: newName,
+        }
+        clearError();
+        clear_message();
+        let modal = this.#renameDeleteModal;
+        $.ajax({
+            url: script,
+            method: 'POST',
+            data: postData,
+            success: function (data, textStatus, jhXHR) {
+                if (data.error) {
+                    show_message(data.error, 'error', 'result_message_fm_rd');
+                    fileManager.disableRenameDeleteBtns(false);
+                    return;
+                }
+                checkRefresh(data);
+                if (data.warn) {
+                    show_message(data.warn, 'warn', 'result_message_fm_rd');
+                    fileManager.disableRenameDeleteBtns(false);
+                    return;
+                }
+                if (data.success) {
+                    show_message(data.success, 'success');
+                }
+                modal.hide();
+                fileManager.drawFileManager(data);
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showError("ERROR in rename: " + textStatus, jqXHR);
+                fileManager.disableRenameDeleteBtns(false);
+            },
+        });
+    }
+
+    delete() {
+        this.disableRenameDeleteBtns(true);
+        clear_message('result_message_fm_rd');
+        console.log("In Directory " + this.#currentDirectory + ' deleting ' + this.#currentFile);
+        let script = 'scripts/filemgr_getLists.php';
+        let postData = {
+            load_type: this.#currentDirectory,
+            action: 'delete',
+            origDir: this.#currentDirectory,
+            origName: this.#currentFile,
+        }
+        clearError();
+        clear_message();
+        let modal = this.#renameDeleteModal;
+        $.ajax({
+            url: script,
+            method: 'POST',
+            data: postData,
+            success: function (data, textStatus, jhXHR) {
+                if (data.error) {
+                    show_message(data.error, 'error', 'result_message_fm_rd');
+                    fileManager.disableRenameDeleteBtns(false);
+                    return;
+                }
+                checkRefresh(data);
+                if (data.warn) {
+                    show_message(data.warn, 'warn', 'result_message_fm_rd');
+                    fileManager.disableRenameDeleteBtns(false);
+                    return;
+                }
+                if (data.success) {
+                    show_message(data.success, 'success');
+                }
+                modal.hide();
+                fileManager.drawFileManager(data);
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showError("ERROR in delete: " + textStatus, jqXHR);
+                fileManager.disableRenameDeleteBtns(false);
+            },
+        });
+    }
+
+    disableRenameDeleteBtns(dir = false) {
+        if (this.#fm_renameBtn)
+            this.#fm_renameBtn.disabled = dir;
+        if (this.#fm_deleteBtn)
+            this.#fm_deleteBtn.disabled = dir;
     }
 }

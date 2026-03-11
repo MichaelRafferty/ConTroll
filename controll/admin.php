@@ -42,6 +42,7 @@ $config_vars['tokenStatus'] = $authToken->checkToken();
 if (array_key_exists('msg', $_REQUEST)) {
     $config_vars['msg'] = $_REQUEST['msg'];
 }
+draw_fileManagerModals($authToken);
 ?>
 <script type='text/javascript'>
     var config = <?php echo json_encode($config_vars); ?>;
@@ -77,13 +78,14 @@ if (array_key_exists('msg', $_REQUEST)) {
                             </div>
                         </div>
                     </form>
+                    <div id='result_message_user' class='mt-4 p-2'></div>
                 </div>
             </div>
             <div class='modal-footer'>
                 <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
                 <button class='btn btn-sm btn-primary' id='addSearch' onClick='add_find()'>Find Person</button>
             </div>
-            <div id='result_message_user' class='mt-4 p-2'></div>
+
         </div>
     </div>
 </div>
