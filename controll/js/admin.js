@@ -41,7 +41,9 @@ var addTitle = null;
 var addName = null;
 var addType = null;
 var fixUserid = null;
+var fileManager = null;
 
+// initial setup
 window.onload = function initpage() {
     debug = config.debug;
     conid = config.debug;
@@ -70,6 +72,7 @@ window.onload = function initpage() {
         buildNewYear();
     }
 
+    fileManager = new FileManager();
     checkRefresh(config);
 }
 

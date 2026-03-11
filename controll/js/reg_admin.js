@@ -89,6 +89,9 @@ var historyRow = null;
 
 // notes class
 var notes = null;
+var fileManager = null;
+
+
 
 // initialization at DOM complete
 window.onload = function initpage() {
@@ -153,6 +156,7 @@ window.onload = function initpage() {
             if (e.code === 'Enter') getData('s');
         });
     }
+    fileManager = new FileManager();
 }
 
 // filters for RegistrationList
@@ -1855,6 +1859,9 @@ function settab(tabname) {
                 loadConfigEditor();
             }
             checkConfigReload = true;
+            break;
+        case 'fileManager-pane':
+            fileManager.open();
             break;
     }
 }

@@ -3,10 +3,11 @@
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // globals for finance page
-finance = null;
-plans = null;
-payors = null;
-tax = null;
+var finance = null;
+var fileManager = null
+var plans = null;
+var payors = null;
+var tax = null;
 
 // finance class - functions for finance page including payment plans and money related transactions
 class Finance {
@@ -32,6 +33,7 @@ class Finance {
         this.#financeTabs['paymentPlans'] = document.getElementById('paymentPlans-pane');
         this.#financeTabs['payorPlans'] = document.getElementById('payorPlans-pane');
         this.#financeTabs['coupon'] = document.getElementById('coupon-pane');
+        this.#financeTabs['fileManager'] = document.getElementById('fileManager-pane');
         this.#currentPane = this.#financeTabs['overview'];
         if (this.#debug & 1) {
             console.log("Debug = " + debug);
@@ -75,34 +77,34 @@ class Finance {
 
         this.#currentPane.hidden = false;
 
-        if (content == 'overview')
-            return;
+        switch(content) {
+            case 'taxConfig':
+                if (tax == null)
+                    tax = new taxConfig(config['conid'], config['debug']);
+                tax.open();
+                break;
 
-        if (content == 'taxConfig') {
-            if (tax == null)
-                tax = new taxConfig(config['conid'], config['debug']);
-            tax.open();
-            return;
-        }
+            case 'paymentPlans':
+                if (plans == null)
+                    plans = new PlansSetup(config['conid'], config['debug']);
+                plans.open();
+                break;
 
-        if (content == 'paymentPlans') {
-            if (plans == null)
-                plans = new PlansSetup(config['conid'], config['debug']);
-            plans.open();
-            return;
-        }
-        if (content == 'payorPlans') {
-            if (payors == null)
-                payors = new Payors(config['conid'], config['debug']);
-            payors.open();
-            return;
-        }
+            case 'payorPlans':
+                if (payors == null)
+                    payors = new Payors(config['conid'], config['debug']);
+                payors.open();
+                break;
 
-        if (content == 'coupon') {
-            if (coupons == null)
-                coupons = new Coupon();
-            coupons.open();
-            return;
+            case 'coupon':
+                if (coupons == null)
+                    coupons = new Coupon();
+                coupons.open();
+                break;
+
+            case 'fileManager':
+                fileManager.open();
+                break;
         }
     }
 };
@@ -139,4 +141,5 @@ function deleterow(e, row) {
 // create class on page render
 window.onload = function initpage() {
     finance = new Finance(config['conid'], config['debug']);
+    fileManager = new FileManager();
 }

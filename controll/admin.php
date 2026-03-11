@@ -382,7 +382,6 @@ draw_fileManagerModals($authToken);
                 </div>
                 <?php draw_FileManager($authToken); ?>
             </div>
-
         </div>
         <!---  future for oauth2 server client configuration
         <div class='tab-pane fade' id='keys-pane' role='tabpanel' aria-labelledby='keys-tab' tabindex='0'>

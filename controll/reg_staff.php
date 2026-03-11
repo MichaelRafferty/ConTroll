@@ -5,6 +5,7 @@ require_once "../lib/policies.php";
 require_once '../lib/profile.php';
 require_once 'lib/sessionAuth.php';
 require_once 'lib/match.php';
+require_once 'lib/fileManager.php';
 
 $page = 'reg_staff';
 $authToken = new authToken('web');
@@ -26,6 +27,7 @@ page_init($page,
                     $cdn['tabjs'],
                     'js/tinymce/tinymce.min.js',
                     'js/reg_admin.js',
+                    'js/fileManager.js',
                     'js/regadmin_consetup.js',
                     'js/regadmin_memconfig.js',
                     'js/regadmin_merge.js',
@@ -77,6 +79,7 @@ $policies = getPolicies();
 $policiesCell = drawPoliciesCell($policies);
 [$ageList, $ageListIdx] = getAgeList($conid);
 bs_tinymceModal();
+draw_fileManagerModals($authToken);
 // edit memList entry modal
 ?>
 <div id='editMemListModal' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Edit Membership Sequence' aria-hidden='true'
@@ -1086,6 +1089,11 @@ bs_tinymceModal();
                 aria-controls='nav-menu' aria-selected='false' onclick="settab('configEdit-pane');">Configuration Editor
         </button>
     </li>
+    <li class='nav-item' role='presentation'>
+        <button class='nav-link' id='fileManager-tab' data-bs-toggle='pill' data-bs-target='#fileManager-pane' type='button' role='tab'
+                aria-controls='nav-menu' aria-selected='false' onclick="settab('fileManager-pane');">File Manager
+        </button>
+    </li>
 </ul>
 <div class='tab-content ms-2' id='regadmin-content'>
     <div class='tab-pane fade show active' id='registrationlist-pane' role='tabpanel' aria-labelledby='registrationlist-tab' tabindex='0'>
@@ -1219,6 +1227,14 @@ bs_tinymceModal();
                     <button type='button' class='btn btn-secondary btn-sm' id='discardBTNb' onclick='configEditor.discard();' disabled>Discard Changes</button>
                 </div>
             </div>
+        </div>
+    </div>
+    <div class='tab-pane fade' id='fileManager-pane' role='tabpanel' aria-labelledby='fileManager-tab' tabindex='0'>
+        <div class='container-fluid'>
+            <div class='row'>
+                <div class='col-sm-auto'><h2>Admin File Manager (upload/download)</h2></div>
+            </div>
+            <?php draw_FileManager($authToken); ?>
         </div>
     </div>
     <div id='result_message' class='mt-4 p-2'></div>

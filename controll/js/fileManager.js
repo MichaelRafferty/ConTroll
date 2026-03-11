@@ -1,12 +1,5 @@
 // file manager javascript
 
-var fileManager = null;
-
-// initial setup
-window.onload = function () {
-    fileManager = new FileManager();
-}
-
 class FileManager {
     // section fields
     #controllPreview = null;
@@ -132,7 +125,7 @@ class FileManager {
                 fileManager.drawFileManager(data);
             },
             error: function (jqXHR, textStatus, errorThrown) {
-                showError("ERROR in open: " + textStatus, jqXHR);
+                showError("ERROR in getMenu: " + textStatus, jqXHR);
             },
         });
     }

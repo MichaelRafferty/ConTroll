@@ -3,6 +3,7 @@ require_once "lib/base.php";
 require_once "../lib/paymentPlans.php";
 require_once "../lib/tax.php";
 require_once 'lib/sessionAuth.php';
+require_once 'lib/fileManager.php';
 
 $page = 'finance';
 $authToken = new authToken('web');
@@ -28,6 +29,7 @@ page_init($page,
                     'js/planSetup.js',
                     'js/payors.js',
                     'js/coupon.js',
+                    'js/fileManager.js',
                    ),
               $authToken);
 
@@ -86,6 +88,7 @@ EOS;
 
     $tabindex = 100;
     $star = "<span class='text-danger'>&bigstar;</span>";
+    draw_fileManagerModals($authToken);
 ?>
 <!-- add/edit payment plan modal -->
 <div id='addEditPlan' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Add/Edit Payment Plan' aria-hidden='true' style='--bs-modal-width: 96%;'>
@@ -575,6 +578,11 @@ EOS;
                 Coupons
             </button>
         </li>
+        <li class='nav-item' role='presentation'>
+            <button class='nav-link' id='fileManager-tab' data-bs-toggle='pill' data-bs-target='#fileManager-pane' type='button' role='tab'
+                    aria-controls='nav-menu' aria-selected='false' onclick="finance.setFinanceTab('fileManager-pane');">File Manager
+            </button>
+        </li>
 <?php
 // additional computed tabs go here
 ?>
@@ -670,6 +678,14 @@ EOS;
             <div class='row mt-2'>
                 <div class='col-sm-auto p-0 m-0' id='detailTable'></div>
             </div>
+        </div>
+    </div>
+    <div class='tab-pane fade' id='fileManager-pane' role='tabpanel' aria-labelledby='fileManager-tab' tabindex='0'>
+        <div class='container-fluid'>
+            <div class='row'>
+                <div class='col-sm-auto'><h2>Admin File Manager (upload/download)</h2></div>
+            </div>
+            <?php draw_FileManager($authToken); ?>
         </div>
     </div>
     <div id='result_message' class='mt-4 p-2'></div>
