@@ -318,6 +318,7 @@ function settab(tabname) {
             break;
         case 'keys-pane':
             console.log(tabname);
+            break;
         case 'atconUsers-pane':
             loadAtconUsers();
             break;
@@ -329,6 +330,9 @@ function settab(tabname) {
                 loadConfigEditor();
             }
             checkConfigReload = true;
+            break;
+        case 'fileManager-pane':
+            fileManager.open();
             break;
     }
 }
