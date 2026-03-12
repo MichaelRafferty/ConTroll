@@ -45,6 +45,7 @@ $loadType = $_POST['load_type'];
 $origDir = null;
 $origName = null;
 $newName = null;
+$contents = null;
 if (array_key_exists('action', $_POST)) {
     $action = $_POST['action'];
     if (array_key_exists('origDir', $_POST))
@@ -53,6 +54,8 @@ if (array_key_exists('action', $_POST)) {
         $origName = $_POST['origName'];
     if (array_key_exists('newName', $_POST))
         $newName = $_POST['newName'];
+    if (array_key_exists('contents', $_POST))
+        $contents = $_POST['contents'];
 } else {
     $action = 'load';
 }
@@ -69,7 +72,7 @@ switch ($action) {
         }
         try {
             if (rename($existingPath, $newPath))
-                $response['success'] = "Renaming $origDir/$origName to $origDir/$newName";
+                $response['success'] = "Renamed $origDir/$origName to $origDir/$newName";
             else {
                 $error = error_get_last();
                 $errorMsg = $error['message'];
@@ -113,6 +116,55 @@ switch ($action) {
 
         $response['success'] = "Deleting $origDir/$origName";
         break;
+
+    case 'upload':
+        ini_set('display_errors', 0);
+        switch ($origDir) {
+            case 'controll':
+                $origDir = 'images';
+                break;
+            case 'report':
+            case 'finance':
+                $origDir = 'reportdata';
+                break;
+            case 'online':
+            case 'onlinereg':
+                $origDir = 'onlineregimages';
+                break;
+            case 'portal':
+                $origDir = 'portalimages';
+                break;
+            case 'exhibitor':
+            case 'vendor':
+                $origDir = 'vendorimages';
+                break;
+        }
+
+        $destPath = "../$origDir/$newName";
+        $pos = strpos($contents, ',');
+        $source = base64_decode(substr($contents, $pos + 1));
+        $type = substr($contents, 0, $pos);
+
+        try {
+            $fd = fopen($destPath, 'wb');
+            if ($fd === false) {
+                $error = error_get_last();
+                $errorMsg = $error['message'];
+                $response['warn'] = "Error: Can not upload the file $destPath due to $errorMsg";
+                ajaxSuccess($response);
+                exit();
+            }
+            $len = fwrite($fd, $source);
+            fclose($fd);
+        }
+        catch (exception $e) {
+            $errorMsg = $e->getMessage();
+            $response['warn'] = "Error: Can not upload the file $destPath due to $errorMsg";
+            ajaxSuccess($response);
+            exit();
+        }
+        $response['success'] = "Uploaded $destPath successfully";
+        break;
 }
 
 $imgCount = 0;
@@ -124,13 +176,13 @@ $imgCount = 0;
     if (($admin || $finance) && ($loadType == 'all' || $loadType == 'report' || $loadType == 'reportdata')) {
         $imgCount += loadDir('report', '../reportdata', 'reportdata', $response);
     }
-    if (($admin || $reg_staff || $regAdmin) && ($loadType == 'all' || $loadType == 'online' || $loadType == 'onlinereg')) {
+    if (($admin || $reg_staff || $regAdmin) && ($loadType == 'all' || $loadType == 'online' || $loadType == 'onlinereg' || $loadType == 'onlineregimages')) {
         $imgCount += loadDir('online', '../../onlinereg/images', 'onlineregimages', $response);
     }
-    if (($admin || $reg_staff || $regAdmin) && ($loadType == 'all' || $loadType == 'portal')) {
+    if (($admin || $reg_staff || $regAdmin) && ($loadType == 'all' || $loadType == 'portal' || $loadType == 'portalimages')) {
         $imgCount += loadDir('portal', '../../portal/images', 'portalimages', $response);
     }
-    if (($admin || $exhibitor) && ($loadType == 'all' || $loadType == 'exhibitor' || $loadType == 'vendor')) {
+    if (($admin || $exhibitor) && ($loadType == 'all' || $loadType == 'exhibitor' || $loadType == 'vendor' || $loadType == 'vendorimages')) {
         $imgCount += loadDir('exhibitor', '../../vendor/images', 'vendorimages', $response);
     }
 if (array_key_exists('success', $response))

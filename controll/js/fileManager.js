@@ -54,6 +54,7 @@ class FileManager {
     #uploadZone = null;
     #uploadImage = null;
     #uploadBuffer = null;
+    #uploadFileName = null;
     #defaultUploadTarget = 'lib/uploadArea.jpg';
 
     constructor() {
@@ -120,8 +121,8 @@ class FileManager {
         this.#uploadImage.src = name;
         this.#uploadBtn.disabled = false;
         let html = "Upload " + this.#currentFile;
-        if (this.#currentFile != this.#currentNameTxt) {
-            html += ' as ' + this.#currentNameTxt;
+        if (this.#currentFile != this.#uploadFileName) {
+            html += ' as ' + this.#uploadFileName;
         }
         this.#uploadBtn.innerHTML = html;
     }
@@ -179,7 +180,7 @@ class FileManager {
                 }
                 checkRefresh(data);
                 if (data.warn) {
-                    show_message(data.error, 'warn');
+                    show_message(data.warn, 'warn');
                     return;
                 }
                 if (data.success)
@@ -468,7 +469,7 @@ class FileManager {
         clear_message('result_message_fm_up');
         this.#currentDirectory = dir;
         this.#currentFile = '';
-        this.#currentNameTxt = '';
+        this.#uploadFileName = '';
         this.#uploadBuffer = null;
         if (this.#uploadImage.src != this.#defaultUploadTarget)
             this.#uploadImage.src = this.#defaultUploadTarget;
@@ -532,7 +533,7 @@ class FileManager {
     hideUpload() {
         this.#currentDirectory = '';
         this.#currentFile = '';
-        this.#currentNameTxt = '';
+        this.#uploadFileName = '';
         this.#uploadBuffer = null;
         this.#uploadModal.hide();
     }
@@ -544,7 +545,7 @@ class FileManager {
         let name = file.name;
         name = name.replace(/ +/g, '_');
         name = name.replace(/[^A-Za-z0-9\-\._]+/g, '');
-        this.#currentNameTxt = name;
+        this.#uploadFileName = name;
         let type = file.type;
         fileManager.setUploadDisabled(true);
         // is this file an image file name (ends in .png, .jpeg or .jpg), if so load it into the preview area
@@ -577,7 +578,7 @@ class FileManager {
         clear_message('result_message_fm_up');
         console.log("Dir: " + this.#currentDirectory);
         console.log("Src: " + this.#currentFile);
-        console.log("Dest: " + this.#currentNameTxt);
+        console.log("Dest: " + this.#uploadFileName);
         let buffer = this.#uploadImage.src;
         if (buffer == this.#defaultUploadTarget || buffer == null)
             buffer = this.#uploadBuffer;
@@ -585,9 +586,10 @@ class FileManager {
         let script = 'scripts/filemgr_getLists.php';
         let postData = {
             action: 'upload',
-            dir: this.#currentDirectory,
-            file: this.#currentFile,
-            data: buffer,
+            load_type: this.#currentDirectory,
+            origDir: this.#currentDirectory,
+            newName: this.#uploadFileName,
+            contents: buffer,
         }
 
         $.ajax({
@@ -601,7 +603,7 @@ class FileManager {
                 }
                 checkRefresh(data);
                 if (data.warn) {
-                    show_message(data.error, 'warn', 'result_message_fm_up');
+                    show_message(data.warn, 'warn', 'result_message_fm_up');
                     return;
                 }
                 if (data.success)
