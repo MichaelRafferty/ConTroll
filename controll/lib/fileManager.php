@@ -67,7 +67,10 @@ EOS;
                     </div>
                     <div class="row mt-1 mb-1">
                         <div class="col-sm-auto ms-4 card alert-secondary">
-                            <input type="file" id="fm_chooseFileName" name="fm_chooseFileName" xaccept="image/png, image/jpeg, image/jpg" style="display: none">
+                            <input type="file" id="fm_chooseFileName" name="fm_chooseFileName"
+                             accept="image/png, image/jpeg, image/jpg, application/pdf', text/csv, 
+                             application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+                             style="display: none">
                             <p class="card-title">Upload Image: Drag/Drop file or 
                                 <button type="button" class="btn btn-secondary btn-sm" id="fm_uploadChooseBtn">Choose File</button>
                             </p>

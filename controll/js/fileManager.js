@@ -56,6 +56,7 @@ class FileManager {
     #uploadBuffer = null;
     #uploadFileName = null;
     #defaultUploadTarget = 'lib/uploadArea.jpg';
+    #uploadEventListenerSet = false;
 
     constructor() {
         this.#controllPreview = document.getElementById("controllImagePreview");
@@ -477,56 +478,58 @@ class FileManager {
         this.#uploadBtn.disabled = true;
 
         // choosefile item
-        this.#uploadChooseBtn.addEventListener("click", function (e) {
-            fileManager.setChosenFileName(null);
-            fileManager.clickChooseFileName();
-        });
-        this.#uploadChooseFileName.addEventListener("change", function (e) {
-            fileManager.loaduploadimage(e.target.files[0]);
-        });
+        if (this.#uploadEventListenerSet == false) {
+            this.#uploadChooseBtn.addEventListener("click", function (e) {
+                fileManager.setChosenFileName(null);
+                fileManager.clickChooseFileName();
+            });
+            this.#uploadChooseFileName.addEventListener("change", function (e) {
+                fileManager.loaduploadimage(e.target.files[0]);
+            });
 
-        // if browser supports drag and drop of photos
-        if (window.File && window.FileReader && window.FileList && window.Blob) {
-            // hover
-            this.#uploadImage.addEventListener("dragenter", function (e) {
-                e.preventDefault();
-                e.stopPropagation();
-                fileManager.setDark();
-            });
-            this.#uploadImage.addEventListener("dragleave", function (e) {
-                e.preventDefault();
-                e.stopPropagation();
-                fileManager.setSecondary();
+            // if browser supports drag and drop of photos
+            if (window.File && window.FileReader && window.FileList && window.Blob) {
+                // hover
+                this.#uploadImage.addEventListener("dragenter", function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    fileManager.setDark();
+                });
+                this.#uploadImage.addEventListener("dragleave", function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    fileManager.setSecondary();
 
-            });
-            // upload
-            this.#uploadImage.addEventListener("dragover", function (e) {
-                e.preventDefault();
-                e.stopPropagation();
-            });
-            this.#uploadImage.addEventListener("drop", function (e) {
-                clear_message('result_message_fm_up');
-                e.preventDefault();
-                e.stopPropagation();
-                fileManager.setSecondary();
-                if (e.dataTransfer.files.length == 1) {
-                    let f = e.dataTransfer.files[0];
-                    if (!f.type.match(/image\/(jpeg|png)/i)) {
-                        show_message("Only jpg and png files allowed", 'error', 'result_message_fm_up');
-                        fileManager.setUploadDisabled();
-                    } else if (f.name.match(/\.(jpg|jpeg|png)$/i))
-                        fileManager.loaduploadimage(f);
-                    else {
-                        show_message("Only jpg and png files allowed", 'error', 'result_message_fm_up');
-                        fileManager.setUploadDisabled();
+                });
+                // upload
+                this.#uploadImage.addEventListener("dragover", function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                });
+                this.#uploadImage.addEventListener("drop", function (e) {
+                    clear_message('result_message_fm_up');
+                    e.preventDefault();
+                    e.stopPropagation();
+                    fileManager.setSecondary();
+                    if (e.dataTransfer.files.length == 1) {
+                        let f = e.dataTransfer.files[0];
+                        if (!f.type.match(/image\/(jpeg|png)/i)) {
+                            show_message("Only jpg and png files allowed", 'error', 'result_message_fm_up');
+                            fileManager.setUploadDisabled();
+                        } else if (f.name.match(/\.(jpg|jpeg|png)$/i))
+                            fileManager.loaduploadimage(f);
+                        else {
+                            show_message("Only jpg and png files allowed", 'error', 'result_message_fm_up');
+                            fileManager.setUploadDisabled();
+                        }
+                    } else {
+                        show_message("Drag only one image file", 'error', 'result_message_fm_up');
                     }
-                } else {
-                    show_message("Drag only one image file", 'error', 'result_message_fm_up');
-                }
 
-            });
+                });
+            }
         }
-
+        this.#uploadEventListenerSet = true;
         this.#uploadModal.show();
     }
 
