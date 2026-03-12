@@ -50,6 +50,52 @@
 </div>
 EOS;
         }
+        echo <<<EOS
+<div id='fm_upload' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Upload File' aria-hidden='true' style='--bs-modal-width: 80%;'>
+    <div class='modal-dialog'>
+        <div class='modal-content'>
+            <div class='modal-header bg-primary text-bg-primary'>
+                <div class='modal-title'>
+                    <strong id='fm_uploadTitle'>Upload File</strong>
+                </div>
+                <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+            </div>
+            <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                <div class='container-fluid'>
+                    <div class="row mt-2 mb-4">
+                        <div class="col-sm-auto ms-4"><h1 class="size-h3" id="fm_uploadHeading">upload heading</h1></div>
+                    </div>
+                    <div class="row mt-1 mb-1">
+                        <div class="col-sm-auto ms-4 card alert-secondary">
+                            <input type="file" id="fm_chooseFileName" name="fm_chooseFileName" xaccept="image/png, image/jpeg, image/jpg" style="display: none">
+                            <p class="card-title">Upload Image: Drag/Drop file or 
+                                <button type="button" class="btn btn-secondary btn-sm" id="fm_uploadChooseBtn">Choose File</button>
+                            </p>
+                            <div class="card-body" id="fmUploadArea" style="margin-right: auto; margin-left: auto; margin-top:0;">
+                                <input type="hidden" name="defaultPhoto" id="default_photo" value="1">
+                                <img class="upload-image" style="width: 600px; height: 600px; object-fit: scale-down; 
+                                    margin-top:0; margin-right: auto; margin-left: auto;" id="fm_uploadedPhoto" src="lib/uploadArea.jpg">
+                            </div>
+                        </div>
+                    </div>                         
+                </div>
+                <div class="row mt-1 mb-1">
+                    <div class="col-sm-auto ms-4">
+                        <button type="button" class="btn btn-primary btn-sm" id="fm_uploadFile" style="display: block;"
+                            onclick="fileManager.startTransfer(); disabled">
+                            Upload Image/File
+                        </button>
+                    </div>
+                </div>
+                <div id='result_message_fm_up' class='mt-4 p-2'></div>
+            </div>
+            <div class='modal-footer'>
+                <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+EOS;
     }
 
     // draw_fileManager - draw the base file manager area
@@ -66,6 +112,9 @@ EOS;
                     <div class="col-sm-auto">
                         <button class="btn btn-sm btn-secondary" id="controllShow" onclick="fileManager.toggleShowHide('controll');">Hide</button>
                     </div>
+                    <div class="col-sm-auto">
+                        <button class="btn btn-sm btn-secondary" id="controllUpload" onclick="fileManager.showUpload('controll');">Upload New Image</button>
+                    </div>
                 </div>
                 <div class='row' id="controllImagePreview"></div>
 EOS;
@@ -76,6 +125,9 @@ EOS;
                     <div class='col-sm-auto'><h3>Report Data Files</h3></div>
                     <div class="col-sm-auto">
                         <button class="btn btn-sm btn-secondary" id="reportShow" onclick="fileManager.toggleShowHide('report');">Hide</button>
+                    </div>
+                    <div class="col-sm-auto">
+                        <button class="btn btn-sm btn-secondary" id="reportUpload" onclick="fileManager.showUpload('report');">Upload New File</button>
                     </div>
                 </div>
                 <div class='row' id="reportDataFiles"></div>
@@ -88,6 +140,9 @@ EOS;
                     <div class="col-sm-auto">
                         <button class="btn btn-sm btn-secondary" id="onlineShow" onclick="fileManager.toggleShowHide('online');">Hide</button>
                     </div>
+                    <div class="col-sm-auto">
+                        <button class="btn btn-sm btn-secondary" id="onlineUpload" onclick="fileManager.showUpload('online');">Upload New Image</button>
+                    </div>
                 </div>
                 <div class='row' id="onlineRegImagePreview"></div>
 EOS;
@@ -96,6 +151,9 @@ EOS;
                     <div class='col-sm-auto'><h3>Portal Reg Images</h3></div>
                     <div class="col-sm-auto">
                         <button class="btn btn-sm btn-secondary" id="portalShow" onclick="fileManager.toggleShowHide('portal');">Hide</button>
+                    </div>
+                    <div class="col-sm-auto">
+                        <button class="btn btn-sm btn-secondary" id="portalUpload" onclick="fileManager.showUpload('portal');">Upload New Image</button>
                     </div>
                 </div>
                 <div class='row' id="portalImagePreview"></div>
@@ -107,6 +165,9 @@ EOS;
                     <div class='col-sm-auto'><h3>Exhibitor Images</h3></div>
                     <div class="col-sm-auto">
                         <button class="btn btn-sm btn-secondary" id="exhibitorShow" onclick="fileManager.toggleShowHide('exhibitor');">Hide</button>
+                    </div>
+                    <div class="col-sm-auto">
+                        <button class="btn btn-sm btn-secondary" id="exhibitorUpload" onclick="fileManager.showUpload('exhibitor');">Upload New Image</button>
                     </div>
                 </div>
                 <div class='row' id="exhibitorImagePreview"></div>

@@ -44,6 +44,18 @@ class FileManager {
     #fm_renameBtn = null;
     #fm_deleteBtn = null;
 
+    // upload file fields
+    #uploadModal = null;
+    #uploadTitle = null;
+    #uploadHeading = null;
+    #uploadChooseFileName = null;
+    #uploadChooseBtn = null;
+    #uploadBtn = null;
+    #uploadZone = null;
+    #uploadImage = null;
+    #uploadBuffer = null;
+    #defaultUploadTarget = 'lib/uploadArea.jpg';
+
     constructor() {
         this.#controllPreview = document.getElementById("controllImagePreview");
         this.#controllButton = document.getElementById("controllShow");
@@ -70,6 +82,56 @@ class FileManager {
             this.#fm_renameBtn = document.getElementById("fm_renameBtn");
             this.#fm_deleteBtn = document.getElementById("fm_deleteBtn");
         }
+
+        var id = document.getElementById('fm_upload');
+        if (id != null) {
+            this.#uploadModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
+            this.#uploadTitle = document.getElementById("fm_uploadTitle");
+            this.#uploadChooseBtn = document.getElementById("fm_uploadChooseBtn");
+            this.#uploadChooseFileName = document.getElementById("fm_chooseFileName");
+            this.#uploadZone = document.getElementById("fmUploadArea");
+            this.#uploadImage = document.getElementById("fm_uploadedPhoto");
+            this.#uploadBtn = document.getElementById("fm_uploadFile");
+        }
+    }
+
+    // get / set functions
+    setChosenFileName(name) {
+        this.#uploadChooseFileName.value = name;
+    }
+
+    setDark() {
+        this.#uploadZone.classList.remove('alert-secondary');
+        this.#uploadZone.classList.add('alert-dark');
+    }
+
+    setSecondary() {
+        this.#uploadZone.classList.remove('alert-dark');
+        this.#uploadZone.classList.add('alert-secondary');
+    }
+
+    setUploadDisabled(state) {
+        this.#uploadBtn.disabled = state;
+    }
+
+    setUploadPhotoSrc(name) {
+        if (name == null)
+            name = this.#defaultUploadTarget;
+        this.#uploadImage.src = name;
+        this.#uploadBtn.disabled = false;
+        let html = "Upload " + this.#currentFile;
+        if (this.#currentFile != this.#currentNameTxt) {
+            html += ' as ' + this.#currentNameTxt;
+        }
+        this.#uploadBtn.innerHTML = html;
+    }
+
+    setUploadBuffer(contents) {
+        this.#uploadBuffer = contents;
+    }
+
+    clickChooseFileName() {
+        this.#uploadChooseFileName.click();
     }
 
     open() {
@@ -125,7 +187,7 @@ class FileManager {
                 fileManager.drawFileManager(data);
             },
             error: function (jqXHR, textStatus, errorThrown) {
-                showError("ERROR in getMenu: " + textStatus, jqXHR);
+                showError("ERROR in open: " + textStatus, jqXHR);
             },
         });
     }
@@ -400,5 +462,157 @@ class FileManager {
             this.#fm_renameBtn.disabled = dir;
         if (this.#fm_deleteBtn)
             this.#fm_deleteBtn.disabled = dir;
+    }
+
+    showUpload(dir) {
+        clear_message('result_message_fm_up');
+        this.#currentDirectory = dir;
+        this.#currentFile = '';
+        this.#currentNameTxt = '';
+        this.#uploadBuffer = null;
+        if (this.#uploadImage.src != this.#defaultUploadTarget)
+            this.#uploadImage.src = this.#defaultUploadTarget;
+        this.#uploadBtn.innerHTML = 'Upload Image/File';
+        this.#uploadBtn.disabled = true;
+
+        // choosefile item
+        this.#uploadChooseBtn.addEventListener("click", function (e) {
+            fileManager.setChosenFileName(null);
+            fileManager.clickChooseFileName();
+        });
+        this.#uploadChooseFileName.addEventListener("change", function (e) {
+            fileManager.loaduploadimage(e.target.files[0]);
+        });
+
+        // if browser supports drag and drop of photos
+        if (window.File && window.FileReader && window.FileList && window.Blob) {
+            // hover
+            this.#uploadImage.addEventListener("dragenter", function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                fileManager.setDark();
+            });
+            this.#uploadImage.addEventListener("dragleave", function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                fileManager.setSecondary();
+
+            });
+            // upload
+            this.#uploadImage.addEventListener("dragover", function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            });
+            this.#uploadImage.addEventListener("drop", function (e) {
+                clear_message('result_message_fm_up');
+                e.preventDefault();
+                e.stopPropagation();
+                fileManager.setSecondary();
+                if (e.dataTransfer.files.length == 1) {
+                    let f = e.dataTransfer.files[0];
+                    if (!f.type.match(/image\/(jpeg|png)/i)) {
+                        show_message("Only jpg and png files allowed", 'error', 'result_message_fm_up');
+                        fileManager.setUploadDisabled();
+                    } else if (f.name.match(/\.(jpg|jpeg|png)$/i))
+                        fileManager.loaduploadimage(f);
+                    else {
+                        show_message("Only jpg and png files allowed", 'error', 'result_message_fm_up');
+                        fileManager.setUploadDisabled();
+                    }
+                } else {
+                    show_message("Drag only one image file", 'error', 'result_message_fm_up');
+                }
+
+            });
+        }
+
+        this.#uploadModal.show();
+    }
+
+    hideUpload() {
+        this.#currentDirectory = '';
+        this.#currentFile = '';
+        this.#currentNameTxt = '';
+        this.#uploadBuffer = null;
+        this.#uploadModal.hide();
+    }
+
+    loaduploadimage(file) {
+        clear_message('result_message_fm_up');
+        console.log(file);
+        this.#currentFile = file.name;
+        let name = file.name;
+        name = name.replace(/ +/g, '_');
+        name = name.replace(/[^A-Za-z0-9\-\._]+/g, '');
+        this.#currentNameTxt = name;
+        let type = file.type;
+        fileManager.setUploadDisabled(true);
+        // is this file an image file name (ends in .png, .jpeg or .jpg), if so load it into the preview area
+        if (type == 'image/png' || type == 'image/jpeg' || type == 'image/jpg') {
+            let reader = new FileReader();
+            reader.onload = (function (thefile) {
+                return function (e) {
+                    fileManager.setUploadPhotoSrc(e.target.result);
+                }
+            })(file);
+
+            reader.readAsDataURL(file);
+        } else if (type == 'application/pdf' || type == 'text/csv' ||
+                type == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || type == 'application/vnd.ms-excel') {
+            let reader = new FileReader();
+            reader.onload = (function (thefile) {
+                return function (e) {
+                    fileManager.setUploadBuffer(e.target.result);
+                    fileManager.setUploadPhotoSrc(null);
+                }
+            })(file);
+
+            reader.readAsDataURL(file);
+        } else {
+            show_message("Only jpg and png images allowed or pdf/csv/xls/xlsx files allowed", 'error', 'result_message_fm_up');
+        }
+    }
+
+    startTransfer() {
+        clear_message('result_message_fm_up');
+        console.log("Dir: " + this.#currentDirectory);
+        console.log("Src: " + this.#currentFile);
+        console.log("Dest: " + this.#currentNameTxt);
+        let buffer = this.#uploadImage.src;
+        if (buffer == this.#defaultUploadTarget || buffer == null)
+            buffer = this.#uploadBuffer;
+
+        let script = 'scripts/filemgr_getLists.php';
+        let postData = {
+            action: 'upload',
+            dir: this.#currentDirectory,
+            file: this.#currentFile,
+            data: buffer,
+        }
+
+        $.ajax({
+            url: script,
+            method: 'POST',
+            data: postData,
+            success: function (data, textStatus, jhXHR) {
+                if (data.error) {
+                    show_message(data.error, 'error', 'result_message_fm_up');
+                    return;
+                }
+                checkRefresh(data);
+                if (data.warn) {
+                    show_message(data.error, 'warn', 'result_message_fm_up');
+                    return;
+                }
+                if (data.success)
+                    show_message(data.success, 'success');
+                fileManager.hideUpload();
+                fileManager.drawFileManager(data);
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showError("ERROR in startTransfer: " + textStatus, jqXHR);
+            },
+        });
+
     }
 }

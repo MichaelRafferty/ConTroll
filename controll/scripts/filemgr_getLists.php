@@ -141,22 +141,25 @@ ajaxSuccess($response);
 
 function loadDir($section, $path, $dir, &$response) {
     $response[$section]  = 1;
+    $curdir = getcwd();
     $dirList = scandir($path);
     $fileInfo = [];
     $fileCount = 0;
-    foreach ($dirList as $file) {
-        if (str_starts_with($file, '.'))
-            continue;
-        if (filetype("$path/$file") != 'file')
-            continue;
+    if ($dirList !== false) {
+        foreach ($dirList as $file) {
+            if (str_starts_with($file, '.'))
+                continue;
+            if (filetype("$path/$file") != 'file')
+                continue;
 
-        $fileInfo[$file] = array(
-            'size' => filesize("$path/$file"),
-            'created' => date('Y-m-d H:i:s', filectime("$path/$file")),
-            'modified' => date('Y-m-d H:i:s', filemtime("$path/$file")),
-            'path' => "$dir/$file",
-        );
-        $fileCount++;
+            $fileInfo[$file] = array (
+                'size' => filesize("$path/$file"),
+                'created' => date('Y-m-d H:i:s', filectime("$path/$file")),
+                'modified' => date('Y-m-d H:i:s', filemtime("$path/$file")),
+                'path' => "$dir/$file",
+            );
+            $fileCount++;
+        }
     }
     $response[$section . 'Files'] = $fileInfo;
     return $fileCount;
