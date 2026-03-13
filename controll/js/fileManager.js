@@ -583,7 +583,7 @@ class FileManager {
         console.log("Src: " + this.#currentFile);
         console.log("Dest: " + this.#uploadFileName);
         let buffer = this.#uploadImage.src;
-        if (buffer == this.#defaultUploadTarget || buffer == null)
+        if (buffer == null  || buffer.endsWith(this.#defaultUploadTarget))
             buffer = this.#uploadBuffer;
 
         let script = 'scripts/filemgr_getLists.php';
