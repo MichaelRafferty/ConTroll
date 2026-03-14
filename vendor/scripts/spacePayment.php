@@ -336,10 +336,10 @@ for ($num = 0; $num < $additionalMembershipsMax; $num++) {
             $additionalMemberships++;
         }
         continue;
-        // some required data is missing
-        $missing_msg .= 'Additional Membership ' . $num + 1 . ' is missing ' . implode(',', $notfound) . "<br/>\n";
-        $valid = false;
     }
+    // some required data is missing
+    $missing_msg .= 'Additional Membership ' . $num + 1 . ' is missing ' . implode(',', $notfound) . "<br/>\n";
+    $valid = false;
 }
 
 // check email addresses
