@@ -277,7 +277,7 @@ for ($num = 0; $num < $includedMembershipsMax; $num++) {
         if ($val != '' && ($field == 'fname' || $field == 'lname')) {
             $nonefound = false;
         } else {
-            if ($required) {
+            if ($required && $val == '') {
                 $notfound[] = $membership_names[$field];
                 $allrequired = false;
             }
@@ -321,7 +321,7 @@ for ($num = 0; $num < $additionalMembershipsMax; $num++) {
         if ($val != '' && ($field == 'fname' || $field == 'lname')) {
             $nonefound = false;
         } else {
-            if ($required) {
+            if ($required && $val == '') {
                 $notfound[] = $membership_names[$field];
                 $allrequired = false;
             }

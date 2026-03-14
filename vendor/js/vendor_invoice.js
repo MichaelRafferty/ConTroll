@@ -284,11 +284,11 @@ class VendorInvoice {
 
     // update the paid status block to show the confirmed space
     updatePaidStatusBlock() {
-        let blockname = region_list[regionYearId].shortname + '_div';
+        let blockname = region_list[this.#regionYearId].shortname + '_div';
         let blockdiv = document.getElementById(blockname);
 
         // get the list item for this
-        let region_spaces = exhibits_spaces[regionYearId];
+        let region_spaces = exhibits_spaces[this.#regionYearId];
         let spaceStatus = ''
         let exSpaceKeys = Object.keys(exhibitor_spacelist);
         for (let exSpaceIdx in exSpaceKeys) {
@@ -304,15 +304,15 @@ class VendorInvoice {
         }
 
         if (spaceStatus == '') {
-            blockdiv.innerHTML = "<div class='col-sm-auto p-0'><button class='btn btn-primary' onclick = 'exhibitorRequest.openReq(regionYearId, 0);' > Request " +
+            blockdiv.innerHTML = "<div class='col-sm-auto p-0'><button class='btn btn-primary' onclick = 'exhibitorRequest.openReq(this.#regionYearId, 0);' > Request " +
                 this.#regionName + " Space</button></div>";
             return;
         }
 
-        spaceStatus += "<button class='btn btn-primary m-1' onclick='exhibitorReceipt.showReceipt(" + regionYearId + ");' > Show receipt for " +
+        spaceStatus += "<button class='btn btn-primary m-1' onclick='exhibitorReceipt.showReceipt(" + this.#regionYearId + ");' > Show receipt for " +
             this.#regionName + " space</button>";
-        if (region_list[regionYearId].portalType == 'artist') {
-            spaceStatus += "<button class='btn btn-primary m-1' onclick='auctionItemRegistration.open(regionYearId);'>Open Item Registration</button>";
+        if (region_list[this.#regionYearId].portalType == 'artist') {
+            spaceStatus += "<button class='btn btn-primary m-1' onclick='auctionItemRegistration.open(this.#regionYearId);'>Open Item Registration</button>";
         }
         blockdiv.innerHTML = '<div class="col-sm-auto p-0">You have purchased:<br/>' + spaceStatus + "</div>";
 
