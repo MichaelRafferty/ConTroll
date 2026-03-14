@@ -25,3 +25,12 @@
 	P001="prompt/~/conid/~/Most Recent Convention ID: /~/Enter the most recent convention ID/~/#con.id#"
 	P002="prompt/~/startDate/~/Start Date/Time: /~/YYYY-MM-DD HH:MM:SS format, Earliest Date to fetch/~/yesterday"
 	P003="prompt/~/endDate/~/Ending Date/Time: /~/YYYY-MM-DD HH:MM:SS, Latest Date to fetch/~/now"
+[400SquareReconcile]
+	name="Square Reconcile"
+	description="Reconcile Downloaded Square Items and Transactions CSVs with ConTroll's ddatabase"
+	template=squareReconcile.php
+	auth=finance
+	type=php
+	P001="prompt/~/startdate/~/Data Start Date: /~/YYYY-MM-DD format/~/"
+	P002="prompt/~/enddate/~/Data End Date: /~/YYYY-MM-DD format/~/"
+	P003="prompt/~/transfile/~/Transaction CSV file: /~/in the reportdata directory/~/"
