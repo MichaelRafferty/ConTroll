@@ -98,6 +98,13 @@ if (array_key_exists('artistPayee', $_POST)) {
     $artistPayee = trim($_POST['artistPayee']);
 }
 
+$salesTaxId = null;
+if (array_key_exists('salesTaxId', $_POST)) {
+    $salesTaxId = trim($_POST['salesTaxId']);
+    if ($salesTaxId == '')
+        $salesTaxId = null;
+}
+
 // if register check for existence of vendor
 switch ($profileMode) {
     case 'register':
@@ -118,18 +125,19 @@ EOS;
         // create the vendor
         // email address validated on the source side
         $exhibitorInsertQ = <<<EOS
-INSERT INTO exhibitors (artistName, artistPayee, exhibitorName, exhibitorEmail, exhibitorPhone, website, description, password, need_new, 
+INSERT INTO exhibitors (artistName, artistPayee, exhibitorName, exhibitorEmail, exhibitorPhone, salesTaxId, website, description, password, need_new, 
     addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, 
     publicity, notes) 
-VALUES (?,?,?,?,?,?,?,?,0,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
+VALUES (?,?,?,?,?,?,?,?,?,0,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
 EOS;
-        $typestr = 'sssssssssssssssssssssis';
+        $typestr = 'ssssssssssssssssssssssis';
         $paramarr = array(
             trim(ifnull($artistName,'')),
             trim(ifnull($artistPayee,'')),
             trim(ifnull($_POST['exhibitorName'], '')),
             trim(ifnull($_POST['exhibitorEmail'], '')),
             trim(ifnull($_POST['exhibitorPhone'], '')),
+            trim(ifnull($salesTaxId, '')),
             trim(ifnull($_POST['website'], '')),
             trim(ifnull($_POST['description'], '')),
             password_hash(trim(ifnull($_POST['password'], '')), PASSWORD_DEFAULT),
@@ -165,7 +173,7 @@ EOS;
 
         $updateQ = <<<EOS
 UPDATE exhibitors
-SET artistName=?, artistPayee=?, exhibitorName=?, exhibitorEmail=?, exhibitorPhone=?, website=?, description=?,
+SET artistName=?, artistPayee=?, exhibitorName=?, exhibitorEmail=?, exhibitorPhone=?, salesTaxId = ?,  website=?, description=?,
     addr=?, addr2=?, city=?, state=?, zip=?, country=?, shipCompany=?, shipAddr=?, shipAddr2=?, shipCity=?, shipState=?, shipZip=?, shipCountry=?, 
     publicity=?, notes = ?
 WHERE id=?
@@ -176,6 +184,7 @@ EOS;
             trim(ifnull($_POST['exhibitorName'], '')),
             trim(ifnull($_POST['exhibitorEmail'], '')),
             trim(ifnull($_POST['exhibitorPhone'], '')),
+            trim(ifnull($salesTaxId, '')),
             trim(ifnull($_POST['website'], '')),
             trim(ifnull($_POST['description'], '')),
             trim(ifnull($_POST['addr'], '')),
@@ -195,7 +204,7 @@ EOS;
             trim(ifnull($exhNotes, '')),
             $vendor
         );
-        $numrows = dbSafeCmd($updateQ, 'ssssssssssssssssssssisi', $updateArr);
+        $numrows = dbSafeCmd($updateQ, 'sssssssssssssssssssssisi', $updateArr);
 
         $updateQ = <<<EOS
 UPDATE exhibitorYears
@@ -216,7 +225,7 @@ EOS;
             $response['message'] = 'Profile Updated';
             // get the update info
             $vendorQ = <<<EOS
-SELECT artistName, exhibitorName, exhibitorEmail, exhibitorPhone, website, description, e.need_new AS eNeedNew,
+SELECT artistName, artistPayee, exhibitorName, exhibitorEmail, exhibitorPhone, salesTaxId, website, description, e.need_new AS eNeedNew,
        IFNULL(e.notes, '') AS exhNotes, IFNULL(ey.notes, '') AS contactNotes, ey.mailin, ey.contactName, ey.contactEmail, ey.contactPhone, 
        ey.need_new AS cNeedNew, DATEDIFF(now(), ey.lastVerified) AS DaysSinceLastVerified, ey.lastVerified,
        addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, publicity
