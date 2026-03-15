@@ -996,9 +996,10 @@ class exhibitorsAdm {
     buildRecordHover(e, cell, onRendered) {
         var data = cell.getData();
         //console.log(data);
-        var hover_text = 'Exhibitor id: ' + data.id + '<br/>' +
+        var hover_text = 'Exhibitor id: ' + data.exhibitorId + '<br/>' +
             data.exhibitorName + '<br/>' +
             'Artist Name: ' + data.artistName + '<br/>' +
+            'Artist Payee: ' + (data.artistPayee == '' ? '<i>(None Entered)</i>' : data.artistPayee) + '<br/>' +
             'Website: ' + data.website + '<br/>' +
             data.fullAddress + '<br/>' +
             'Needs New Password: ' + (data.needs_new ? 'Yes' : 'No') +  '<br/>' +
@@ -1187,6 +1188,7 @@ class exhibitorsAdm {
         }
         var exhibitorName = blankIfNull(exhibitorData.exhibitorName).trim() == '' ? none :  exhibitorData.exhibitorName.trim();
         var artistName = blankIfNull(exhibitorData.artistName).trim() == '' ? none :  exhibitorData.artistName.trim();
+        var artistName = blankIfNull(exhibitorData.artistPayee).trim() == '' ? none :  exhibitorData.artistPayee.trim();
         var exhibitorPhone = blankIfNull(exhibitorData.exhibitorPhone).trim() == '' ? none :  exhibitorData.exhibitorPhone.trim();
         var exhibitorInfo = `
             <div class="row">
@@ -1200,6 +1202,10 @@ class exhibitorsAdm {
             <div class="row">
                 <div class="col-sm-4">Artist Name:</div>
                 <div class="col-sm-8 p-0 ms-0 me-0">` + artistName + `</div>
+            </div>
+            <div class="row">
+                <div class="col-sm-4">Artist Payee:</div>
+                <div class="col-sm-8 p-0 ms-0 me-0">` + artistPayee + `</div>
             </div>
             <div class='row'>
                 <div class='col-sm-4'>Business Email:</div>
