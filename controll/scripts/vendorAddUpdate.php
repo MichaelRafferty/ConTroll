@@ -93,6 +93,11 @@ if (array_key_exists('artistName', $_POST)) {
     $artistName = trim($_POST['artistName']);
 }
 
+$artistPayee = null;
+if (array_key_exists('artistPayee', $_POST)) {
+    $artistPayee = trim($_POST['artistPayee']);
+}
+
 // if register check for existence of vendor
 switch ($profileMode) {
     case 'register':
@@ -113,14 +118,15 @@ EOS;
         // create the vendor
         // email address validated on the source side
         $exhibitorInsertQ = <<<EOS
-INSERT INTO exhibitors (artistName, exhibitorName, exhibitorEmail, exhibitorPhone, website, description, password, need_new, 
+INSERT INTO exhibitors (artistName, artistPayee, exhibitorName, exhibitorEmail, exhibitorPhone, website, description, password, need_new, 
     addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, 
     publicity, notes) 
-VALUES (?,?,?,?,?,?,?,0,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
+VALUES (?,?,?,?,?,?,?,?,0,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
 EOS;
-        $typestr = 'ssssssssssssssssssssis';
+        $typestr = 'sssssssssssssssssssssis';
         $paramarr = array(
             trim(ifnull($artistName,'')),
+            trim(ifnull($artistPayee,'')),
             trim(ifnull($_POST['exhibitorName'], '')),
             trim(ifnull($_POST['exhibitorEmail'], '')),
             trim(ifnull($_POST['exhibitorPhone'], '')),
@@ -159,13 +165,14 @@ EOS;
 
         $updateQ = <<<EOS
 UPDATE exhibitors
-SET artistName = ?, exhibitorName=?, exhibitorEmail=?, exhibitorPhone=?, website=?, description=?,
+SET artistName=?, artistPayee=?, exhibitorName=?, exhibitorEmail=?, exhibitorPhone=?, website=?, description=?,
     addr=?, addr2=?, city=?, state=?, zip=?, country=?, shipCompany=?, shipAddr=?, shipAddr2=?, shipCity=?, shipState=?, shipZip=?, shipCountry=?, 
     publicity=?, notes = ?
 WHERE id=?
 EOS;
         $updateArr = array(
             trim(ifnull($artistName,'')),
+            trim(ifnull($artistPayee,'')),
             trim(ifnull($_POST['exhibitorName'], '')),
             trim(ifnull($_POST['exhibitorEmail'], '')),
             trim(ifnull($_POST['exhibitorPhone'], '')),
@@ -188,7 +195,7 @@ EOS;
             trim(ifnull($exhNotes, '')),
             $vendor
         );
-        $numrows = dbSafeCmd($updateQ, 'sssssssssssssssssssisi', $updateArr);
+        $numrows = dbSafeCmd($updateQ, 'ssssssssssssssssssssisi', $updateArr);
 
         $updateQ = <<<EOS
 UPDATE exhibitorYears

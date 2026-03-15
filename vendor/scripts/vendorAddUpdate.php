@@ -126,7 +126,7 @@ INSERT INTO exhibitors (artistName, artistPayee, exhibitorName, exhibitorEmail, 
                      addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, publicity, notes) 
 VALUES (?,?,?,?,?,?,?,?,?,0,?,?,?,?,?,?,?,?,?,?,?,?,?,?, '');
 EOS;
-            $typestr = 'sssssssssssssssssssssi';
+            $typestr = 'ssssssssssssssssssssssi';
             $paramarr = array (
                 trim(ifnull($artistName,'')),
                 trim(ifnull($artistPayee,'')),
@@ -158,7 +158,7 @@ INSERT INTO exhibitors (exhibitorName, exhibitorEmail, exhibitorPhone, salesTaxI
                      addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, publicity, notes) 
 VALUES (?,?,?,?,?,?,?,0,?,?,?,?,?,?,?,?,?,?,?,?,?,?, '');
 EOS;
-            $typestr = 'ssssssssssssssssssssi';
+            $typestr = 'sssssssssssssssssssssi';
             $paramarr = array (
                 trim(ifnull($_POST['exhibitorName'], '')),
                 trim(ifnull($_POST['exhibitorEmail'], '')),
