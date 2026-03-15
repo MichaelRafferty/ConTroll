@@ -1328,6 +1328,9 @@ class exhibitorsAdm {
         var buttons = '<button class="btn btn-secondary" style="--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; ' +
             '--bs-btn-font-size: .75rem;" onclick="exhibitors.edit(' + id + ');">Edit</button>';
 
+        buttons += '<button class="btn btn-secondary m-1 ms-2" style="--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; ' +
+            '--bs-btn-font-size: .75rem;" onclick="exhibitors.history(' + id + ');">Hist</button>';
+
         buttons += '<br/>' + '<button class="btn btn-secondary m-1" style="--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; ' +
             '--bs-btn-font-size: .75rem;" onclick="exhibitors.resetpw(' + id + ');">Reset Exh PW</button>';
 
