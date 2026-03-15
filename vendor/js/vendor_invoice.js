@@ -312,7 +312,8 @@ class VendorInvoice {
         spaceStatus += "<button class='btn btn-primary m-1' onclick='exhibitorReceipt.showReceipt(" + this.#regionYearId + ");' > Show receipt for " +
             this.#regionName + " space</button>";
         if (region_list[this.#regionYearId].portalType == 'artist') {
-            spaceStatus += "<button class='btn btn-primary m-1' onclick='auctionItemRegistration.open(this.#regionYearId);'>Open Item Registration</button>";
+            spaceStatus += "<button class='btn btn-primary m-1' onclick='auctionItemRegistration.open(" + this.#regionYearId + ");'>" +
+                "Open Item Registration for " + config.conid + "</button>";
         }
         blockdiv.innerHTML = '<div class="col-sm-auto p-0">You have purchased:<br/>' + spaceStatus + "</div>";
 
