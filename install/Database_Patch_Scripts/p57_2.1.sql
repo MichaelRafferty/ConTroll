@@ -19,5 +19,6 @@ JOIN memCategories c ON m.memCategory = c.memCategory;
 ALTER TABLE exhibitsRegionYears ADD COLUMN revenueGlNum varchar(16) COLLATE utf8mb4_general_ci DEFAULT NULL AFTER ownerEmail;
 ALTER TABLE exhibitsRegionYears ADD COLUMN revenueGlLabel varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL AFTER revenueGlNum;
 
+ALTER TABLE exhibitors ADD COLUMN artistPayee varchar(128) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' AFTER artistName;
 
 INSERT INTO patchLog(id, name) VALUES(x57, 'Release 2.1 Portal and other changes');

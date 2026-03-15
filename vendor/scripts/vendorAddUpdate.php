@@ -81,6 +81,12 @@ if (array_key_exists('artistName', $_POST)) {
     $artistName = trim($_POST['artistName']);
 }
 
+// artist payee is only in the Artist version of the form, it should be NULL for dealers
+    $artistPayee = null;
+    if (array_key_exists('artistPayee', $_POST)) {
+        $artistPayee = trim($_POST['artistPayee']);
+    }
+
 $description = trim($_POST['description']);
 if (str_contains(strtolower($description), '<script')) {
     $response['status'] = 'error';
@@ -116,13 +122,14 @@ EOS;
 
         if ($artistName != null) {
             $exhibitorInsertQ = <<<EOS
-INSERT INTO exhibitors (artistName, exhibitorName, exhibitorEmail, exhibitorPhone, salesTaxId, website, description, password, need_new, 
+INSERT INTO exhibitors (artistName, artistPayee, exhibitorName, exhibitorEmail, exhibitorPhone, salesTaxId, website, description, password, need_new, 
                      addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, publicity, notes) 
-VALUES (?,?,?,?,?,?,?,?,0,?,?,?,?,?,?,?,?,?,?,?,?,?,?, '');
+VALUES (?,?,?,?,?,?,?,?,?,0,?,?,?,?,?,?,?,?,?,?,?,?,?,?, '');
 EOS;
             $typestr = 'sssssssssssssssssssssi';
             $paramarr = array (
                 trim(ifnull($artistName,'')),
+                trim(ifnull($artistPayee,'')),
                 trim(ifnull($_POST['exhibitorName'], '')),
                 trim(ifnull($_POST['exhibitorEmail'], '')),
                 trim(ifnull($_POST['exhibitorPhone'], '')),
@@ -228,12 +235,13 @@ EOS;
         if ($artistName != null) {
             $updateQ = <<<EOS
 UPDATE exhibitors
-SET artistName = ?, exhibitorName=?, exhibitorEmail=?, exhibitorPhone=?, salesTaxId = ?, website=?, description=?,
+SET artistName = ?, artistPayee = ?, exhibitorName=?, exhibitorEmail=?, exhibitorPhone=?, salesTaxId = ?, website=?, description=?,
     addr=?, addr2=?, city=?, state=?, zip=?, country=?, shipCompany=?, shipAddr=?, shipAddr2=?, shipCity=?, shipState=?, shipZip=?, shipCountry=?, publicity=?
 WHERE id=?
 EOS;
             $updateArr = array (
                 trim(ifnull($artistName, '')),
+                trim(ifnull($artistPayee, '')),
                 trim(ifnull($_POST['exhibitorName'], '')),
                 trim(ifnull($_POST['exhibitorEmail'], '')),
                 trim(ifnull($_POST['exhibitorPhone'], '')),

@@ -208,7 +208,7 @@ if (isSessionVar('id') && !isset($_GET['vid'])) {
     }
 
     $loginQ = <<<EOS
-SELECT e.id, e.artistName, e.exhibitorName, LOWER(e.exhibitorEmail) as eEmail, e.password AS ePassword, e.need_new as eNeedNew, ey.id AS eyID, 
+SELECT e.id, e.artistName, e.artistPayee, e.exhibitorName, LOWER(e.exhibitorEmail) as eEmail, e.password AS ePassword, e.need_new as eNeedNew, ey.id AS eyID, 
        LOWER(ey.contactEmail) AS cEmail, ey.contactPassword AS cPassword, ey.need_new AS cNeedNew, archived,
        DATEDIFF(now(), ey.lastVerified) AS DaysSinceLastVerified, COUNT(eRY.id) AS regions, COUNT(exRY.id) AS myRegions
 FROM exhibitors e
@@ -216,7 +216,7 @@ LEFT OUTER JOIN exhibitorYears ey ON e.id = ey.exhibitorId AND conid = ?
 JOIN exhibitsRegionYears eRY ON eRY.conid = ?
 LEFT JOIN exhibitorRegionYears exRY ON ey.id = exRY.exhibitorYearId AND exRY.exhibitsRegionYearId = eRY.id
 WHERE e.exhibitorEmail = ? OR ey.contactEmail = ?
-GROUP BY e.id, e.artistName, e.exhibitorName, LOWER(e.exhibitorEmail), e.password, e.need_new, ey.id, LOWER(ey.contactEmail), 
+GROUP BY e.id, e.artistName, e.artistPayee, e.exhibitorName, LOWER(e.exhibitorEmail), e.password, e.need_new, ey.id, LOWER(ey.contactEmail), 
          ey.contactPassword, ey.need_new, archived, DaysSinceLastVerified
 EOS;
     $loginR = dbSafeQuery($loginQ, 'iiss', array($conid, $conid, $login, $login));
@@ -379,7 +379,7 @@ EOS;
 
 // get this exhibitor
 $exhibitorQ = <<<EOS
-SELECT artistName, exhibitorName, exhibitorEmail, exhibitorPhone, salesTaxId, website, description, e.need_new AS eNeedNew,
+SELECT artistName, artistPayee, exhibitorName, exhibitorEmail, exhibitorPhone, salesTaxId, website, description, e.need_new AS eNeedNew,
        ey.contactName, ey.contactEmail, ey.contactPhone, ey.need_new AS cNeedNew, DATEDIFF(now(), ey.lastVerified) AS DaysSinceLastVerified,
        ey.mailin, e.addr, e.addr2, e.city, e.state, e.zip, e.country, e.shipCompany, e.shipAddr, e.shipAddr2, e.shipCity, e.shipState,
        e.shipZip, e.shipCountry, e.publicity, p.id AS perid, p.first_name AS p_first_name, p.last_name AS p_last_name, n.id AS newperid, 

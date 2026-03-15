@@ -157,12 +157,22 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                                         <input class='form-control-sm' type='text' name='artistName' id='artistName' maxlength='128' size='50'
                                                required placeholder='Artist Name' tabindex="<?php echo $tabIndex; $tabIndex += 2;?>"/>
                                     </div>
+
                                      <div class='col-sm-auto p-0 ms-4 me-0'>
                                          <button class='btn btn-sm btn-primary' type='button' id="copyArtistName"
                                                  tabindex="<?php echo $tabIndex; $tabIndex += 2;?>"
                                                  onclick='exhibitorProfile.copyArtistNametoBusinessName()'>
-                                             Copy <?php echo $portalName; ?> Name to Business Name
+                                             Copy <?php echo $portalName; ?> Name to Business Name and Payee
                                          </button>
+                                     </div>
+                                </div>
+                                <div class='row mt-1'>
+                                     <div class='col-sm-2'>
+                                         <label for='artistName'><span class='text-danger'>&bigstar;</span>Artist Payee: </label>
+                                     </div>
+                                     <div class='col-sm-auto p-0 ms-0 me-0'>
+                                         <input class='form-control-sm' type='text' name='artistPayee' id='artistPayee' maxlength='128' size='50'
+                                                required placeholder='Artist Check Pay To The Order Of' tabindex="<?php echo $tabIndex; $tabIndex += 2;?>"/>
                                      </div>
                                 </div>
                             <?php } ?>
@@ -593,6 +603,24 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                     <div class='col-sm-auto p-0 ms-0 me-0'>
                                         <input class='form-control-sm' type='text' name='artistName' id='artistName' maxlength='128' size='50'
                                                required placeholder='Artist Name' tabindex="<?php echo $tabIndex; $tabIndex += 2;?>"/>
+                                    </div>
+                                <?php if ($portalType == 'artist') { ?>
+                                    <div class='col-sm-auto p-0 ms-4 me-0'>
+                                        <button class='btn btn-sm btn-primary' type='button' id="copyArtistPayee"
+                                                tabindex="<?php echo $tabIndex; $tabIndex += 2;?>"
+                                                onclick='exhibitorProfile.copyArtistNametoArtistPayee()'>
+                                            Copy <?php echo $portalName; ?> Name to Payee Name
+                                        </button>
+                                    </div>
+                                <?php } ?>
+                                </div>
+                                <div class='row mt-1'>
+                                    <div class='col-sm-2'>
+                                        <label for='artistPayree'><span class='text-danger'>&bigstar;</span>Artist Payee:</label>
+                                    </div>
+                                    <div class='col-sm-auto p-0 ms-0 me-0'>
+                                        <input class='form-control-sm' type='text' name='artistPayee' id='artistPayee' maxlength='128' size='50'
+                                               required placeholder='Artist Check Pay To The Order Of' tabindex="<?php echo $tabIndex; $tabIndex += 2;?>"/>
                                     </div>
                                 </div>
                                 <div class='row mt-3'>

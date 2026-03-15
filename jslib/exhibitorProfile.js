@@ -17,6 +17,8 @@ class ExhibitorProfile {
     #profilePage3 = null;
     #profilePage4 = null;
     #profileArtistNameField = null;
+    #profileArtistPayeeField = null;
+    #profileExhibitorNameField = null;
     #profilePublicityField = null;
     #profileCurrentPage = 1;
     #passwordLine1 = null;
@@ -30,8 +32,9 @@ class ExhibitorProfile {
     // globals
     #debugFlag = 0;
 
-    static #fieldList = ["artistName", "exhibitorName", "exhibitorEmail", "exhibitorPhone", "salesTaxId", "pw1", "pw2", "description", "publicity",
-        "addr", "city", "state", "zip", "country", "mailin", /* note this is validate only not require, see code */ "contactEmail"];
+    static #fieldList = ["artistName", "artistPayee", "exhibitorName", "exhibitorEmail", "exhibitorPhone", "salesTaxId",
+        "pw1", "pw2", "description", "publicity", "addr", "city", "state", "zip", "country", "mailin",
+        /* note this is validate only not require, see code */ "contactEmail"];
     static #copyFromFieldList = ['exhibitorName', 'addr', 'addr2', 'city', 'state', 'zip', 'country'];
     static #copyToFieldList = ['shipCompany', 'shipAddr', 'shipAddr2', 'shipCity', 'shipState', 'shipZip', 'shipCountry'];
 
@@ -50,7 +53,9 @@ class ExhibitorProfile {
                 this.#profileSubmitBtn = document.getElementById('profileSubmitBtn');
                 this.#profileModalTitle = document.getElementById('modalTitle');
                 this.#creatingAccountMsgDiv = document.getElementById('creatingAccountMsg');
+                this.#profileExhibitorNameField = document.getElementById('exhibitorName');
                 this.#profileArtistNameField = document.getElementById('artistName');
+                this.#profileArtistPayeeField = document.getElementById('artistPayee');
                 this.#profilePublicityField = document.getElementById('publicity');
                 if (portalType == 'admin') {
                     this.#exhibitorId = document.getElementById('exhibitorId');
@@ -72,11 +77,20 @@ class ExhibitorProfile {
 
     // copy other sections
     copyArtistNametoBusinessName() {
-        var artname = document.getElementById("artistName");
-        if (artname) {
-            var exhName = document.getElementById("exhibitorName");
-            exhName.value = artname.value;
-            exhName.focus();
+        if (this.#profileArtistNameField) {
+            let name = this.#profileArtistNameField.value;
+            this.#profileExhibitorNameField.value = name;
+            this.#profileArtistPayeeField.value = name;
+            this.#profileExhibitorNameField.focus();
+        }
+    }
+
+    // copy other sections
+    copyArtistNametoArtistPayee() {
+        if (this.#profileArtistNameField) {
+            let name = this.#profileArtistNameField.value;
+            this.#profileArtistPayeeField.value = name;
+            this.#profileExhibitorNameField.focus();
         }
     }
 
@@ -245,7 +259,10 @@ class ExhibitorProfile {
                         console.log(ExhibitorProfile.#fieldList[fieldNum].substring(0, 4));
                         console.log(dataType);
                     }
-                    if (dataType != 'artist' && (ExhibitorProfile.#fieldList[fieldNum].substring(0, 4) == 'ship' || ExhibitorProfile.#fieldList[fieldNum] == 'artistName')) {
+                    if (dataType != 'artist' &&
+                        (ExhibitorProfile.#fieldList[fieldNum].substring(0, 4) == 'ship' ||
+                            ExhibitorProfile.#fieldList[fieldNum] == 'artistName' ||
+                            ExhibitorProfile.#fieldList[fieldNum] == 'artistPayee')) {
                         if (this.#debugFlag & 16)
                             console.log("skipping " + ExhibitorProfile.#fieldList[fieldNum]);
                         break;
