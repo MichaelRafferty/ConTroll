@@ -566,7 +566,7 @@ function pdfArtistControlSheet($regionYearId, $region, $response, $printContactI
 
     $artistQ = <<<EOS
 SELECT e.*, exY.conid,exY.mailin,exY.contactName,exY.contactPhone, exY.contactEmail, exRY.agentPerid, exRY.agentRequest, exRY.exhibitorNumber, eR.name,
-       p.first_name, p.last_name, p.middle_name, p.suffix, p.phone, p.email_addr, e.exhibitorEmail, e.artistName, e.exhibitorPhone
+       p.first_name, p.last_name, p.middle_name, p.suffix, p.phone, p.email_addr, e.exhibitorEmail, e.artistName, e.artistPayee, e.exhibitorPhone
 FROM exhibitorRegionYears exRY
 JOIN exhibitorYears exY ON exY.id = exRY.exhibitorYearId
 JOIN exhibitors e ON e.id = exY.exhibitorId
@@ -660,7 +660,7 @@ EOS;
 
     // Artist Number:
     pushFont('Roboto', 'B', 12);
-    printXY($h, $v, "Artist Number: ". $artist['exhibitorNumber']);
+    printXY($h, $v, "Artist Number: ". $artist['exhibitorNumber'] . ": $artistName");
     popFont();
     $v += 0.15;
 
@@ -676,9 +676,9 @@ EOS;
     $mprintXYoffset = (11 / 144) + $leading;  // strange centerline type of mprintXY.
     // artist name row
     //  artist name
-    printXY($col1, $v + $dataOffset, "Artist:");
+    printXY($col1, $v + $dataOffset, "Payee:");
     $maxY = $minRowHeight * $pt;
-    $y = fitprintXY($h + 0.5, $v + $dataOffset, $col1w - 0.5, $artistName);
+    $y = fitprintXY($h + 0.5, $v + $dataOffset, $col1w - 0.5, $artist['artistPayee']);
     if ($y > $maxY) $maxY = $y;
     $rowHeight = $leading + $maxY + 0.05 - $v;
 

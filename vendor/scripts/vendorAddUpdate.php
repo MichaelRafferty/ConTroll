@@ -264,7 +264,7 @@ EOS;
                 $publicity,
                 $vendor
             );
-            $dt = 'ssssssssssssssssssssii';
+            $dt = 'sssssssssssssssssssssii';
         } else {
             $updateQ = <<<EOS
 UPDATE exhibitors
