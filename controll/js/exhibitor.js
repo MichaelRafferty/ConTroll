@@ -1589,6 +1589,8 @@ class exhibitorsAdm {
 
         clear_message();
         clearError();
+        this.#regionYearId = exhibitorData.regionYearId;
+
         $.ajax({
             url: 'scripts/exhibitorsSpaceApproval.php',
             method: "POST",
