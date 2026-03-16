@@ -1613,6 +1613,17 @@ class exhibitorsAdm {
             "<div class='col-sm-1'>Zip</div>\n" +
             "<div class='col-sm-1'>Country</div>\n" +
             "</div>\n";
+        // format the heading lines-line 4
+        html += "<div class='row'>\n" +
+            "<div class='col-sm-1'></div>\n" +
+            "<div class='col-sm-1'>Archive</div>\n" +
+            "<div class='col-sm-3'>Ship Addr Line 1</div>\n" +
+            "<div class='col-sm-2'>Ship Addr Line 2</div>\n" +
+            "<div class='col-sm-2'>Ship City</div>\n" +
+            "<div class='col-sm-1'>Ship State</div>\n" +
+            "<div class='col-sm-1'>Ship Zip</div>\n" +
+            "<div class='col-sm-1'>Ship Ctry</div>\n" +
+            "</div>\n";
 
         // format the current line
         let current = data.history[0];
@@ -1679,6 +1690,32 @@ class exhibitorsAdm {
             color = prior.country != current.country ? ' style="background-color: #ffcdcd;"' : '';
             html += "<div class='col-sm-1'" + color + ">" + current.country + "</div>\n";
             html += "</div>\n";
+
+            // line 4
+            html += "<div class='row' style='background-color: " + curColor + ";'><div class='col-sm-1'></div>\n";
+            // Archived
+            color = prior.archived != current.archived ? ' style="background-color: #ffcdcd;"' : '';
+            html += "<div class='col-sm-1'" + color + ">" + current.archived + "</div>\n";
+            // ship treet addr
+            color = prior.shipAddr != current.shipAddr ? ' style="background-color: #ffcdcd;"' : '';
+            html += "<div class='col-sm-3'" + color + ">" + current.shipAddr + "</div>\n";
+            // ship addr2
+            color = prior.shipAddr2 != current.shipAddr2 ? ' style="background-color: #ffcdcd;"' : '';
+            html += "<div class='col-sm-2'" + color + ">" + current.shipAddr2 + "</div>\n";
+            // ship city
+            color = prior.shipCity != current.shipCity ? ' style="background-color: #ffcdcd;"' : '';
+            html += "<div class='col-sm-2'" + color + ">" + current.shipCity + "</div>\n";
+            // ship state
+            color = prior.shipState != current.shipState ? ' style="background-color: #ffcdcd;"' : '';
+            html += "<div class='col-sm-1'" + color + ">" + current.shipState + "</div>\n";
+            // ship zip
+            color = prior.shipZip != current.shipZip ? ' style="background-color: #ffcdcd;"' : '';
+            html += "<div class='col-sm-1'" + color + ">" + current.shipZip + "</div>\n";
+            // ship country
+            color = prior.shipCountry != current.shipCountry ? ' style="background-color: #ffcdcd;"' : '';
+            html += "<div class='col-sm-1'" + color + ">" + current.shipCountry + "</div>\n";
+            html += "</div>\n";
+
             prior = current;
         }
         this.#historyDiv.innerHTML = html;
