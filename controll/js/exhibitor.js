@@ -85,6 +85,12 @@ class exhibitorsAdm {
     #exhibitorHtml = null;
     #exhibitorListTable = null;
 
+    // history items
+    #historyModal = null;
+    #historyTitle = null;
+    #historyDiv = null;
+    #historyRow = null;
+
     constructor(conid, debug) {
         this.#debug = debug;
         this.#conid = conid;
@@ -125,6 +131,13 @@ class exhibitorsAdm {
             this.#exhibitorChooseModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
             this.#exhibitorChooseTitle = document.getElementById('exhibitor_choose_title');
             this.#exhibitorHtml = document.getElementById('exhibitorHtml');
+        }
+
+        id = document.getElementById('history');
+        if (id != null) {
+            this.#historyModal = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
+            this.#historyTitle = document.getElementById('historyTitle');
+            this.#historyDiv = document.getElementById('history-div');
         }
 
         // owners
@@ -1540,6 +1553,142 @@ class exhibitorsAdm {
             console.log(exhibitor);
     exhibitor_info = exhibitor;
     exhibitorProfile.profileModalOpen('update', exhibitor.exhibitorId, exhibitor.exhibitorYearId, exhibitorRow);
+    }
+
+    // history - call up and display the history for an exhibitor
+    history(exhibitorId) {
+        clear_message();
+        clearError();
+
+        this.#historyRow = this.#exhibitorsTable.getRow(exhibitorId).getData();
+        $.ajax({
+            url: 'scripts/exhibitorsGetHistory.php',
+            method: "POST",
+            data: { 'exhibitorId': exhibitorId, type: 'exhibitor' },
+            success: function (data, textStatus, jqXhr) {
+                checkRefresh(data);
+                exhibitors.displayHistory(data);
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showError("ERROR in emailReceipt: " + textStatus, jqXHR);
+            }
+        });
+    }
+
+    // display the history modal
+    displayHistory(data) {
+        if (data.error) {
+            show_message(data.error, 'error');
+            return;
+        }
+        // now build the modal data and call it up
+        let title = "Exhibitor Change History for " + this.#historyRow.exhibitorId + ' (' + this.#historyRow.exhibitorName + ')';
+        this.#historyTitle.innerHTML = title
+        title += "<br/>Artist Name:  " + this.#historyRow.artistName + ", Email: " + this.#historyRow.exhibitorEmail;
+        // build the history display
+        let html = '<div class="row"><div class="col-sm-12"><h1 class="h3">' + title + '</h1></div></div>';
+        // format the heading lines-line 1
+        html += "<div class='row'>\n" +
+            "<div class='col-sm-2'>History Date</div>\n" +
+            "<div class='col-sm-3'>Artist Name</div>\n" +
+            "<div class='col-sm-3'>Artist Payee</div>\n" +
+            "<div class='col-sm-3'>Business Name</div>\n" +
+            "</div>\n";
+        // format the heading lines-line 2
+        html += "<div class='row'>\n" +
+            "<div class='col-sm-1'></div>\n" +
+            "<div class='col-sm-3'>Business Email</div>\n" +
+            "<div class='col-sm-2'>Business Phone</div>\n" +
+            "<div class='col-sm-2'>Tax ID</div>\n" +
+            "<div class='col-sm-4'>Website</div>\n" +
+            "</div>\n";
+        // format the heading lines-line 3
+        html += "<div class='row'>\n" +
+            "<div class='col-sm-1'></div>\n" +
+            "<div class='col-sm-1'>Publicity</div>\n" +
+            "<div class='col-sm-3'>Addr Line 1</div>\n" +
+            "<div class='col-sm-2'>Addr Line 2</div>\n" +
+            "<div class='col-sm-2'>City</div>\n" +
+            "<div class='col-sm-1'>State</div>\n" +
+            "<div class='col-sm-1'>Zip</div>\n" +
+            "<div class='col-sm-1'>Country</div>\n" +
+            "</div>\n";
+
+        // format the current line
+        let current = data.history[0];
+        let color = '';
+        let prior = data.history[0];
+        let rowColor = false;
+        for (let i = 0; i < data.history.length; i++) {
+            current = data.history[i];
+            let curColor = rowColor ? "#FFFFFF" : "#F0F0F0 ";
+            rowColor = !rowColor;
+            // line 1
+            html += "<div class='row pt-1 pb-1' style='background-color: " + curColor + ";'>\n";
+
+            // history date
+            html += "<div class='col-sm-2'>" + current.historyDate + "</div>\n";
+            // artist name
+            color = prior.artistName != current.artistName ? ' style="background-color: #ffcdcd;"' : '';
+            html += "<div class='col-sm-3'" + color + ">" + current.artistName + "</div>\n";
+            // artist payee
+            color = prior.artistPayee != current.artistPayee ? ' style="background-color: #ffcdcd;"' : '';
+            html += "<div class='col-sm-3'" + color + ">" + current.artistPayee + "</div>\n";
+            // exhibitor name
+            color = prior.exhibitorName != current.exhibitorName ? ' style="background-color: #ffcdcd;"' : '';
+            html += "<div class='col-sm-3'" + color + ">" + current.artistName + "</div>\n";
+            html += "</div>\n";
+
+            // line 2
+            html += "<div class='row' style='background-color: " + curColor + ";'><div class='col-sm-1'></div>\n";
+            // Business Email
+            color = prior.exhibitorEmail != current.exhibitorEmail ? ' style="background-color: #ffcdcd;"' : '';
+            html += "<div class='col-sm-3'" + color + ">" + current.exhibitorEmail + "</div>\n";
+            // Business Email
+            color = prior.exhibitorPhone != current.exhibitorPhone ? ' style="background-color: #ffcdcd;"' : '';
+            html += "<div class='col-sm-2'" + color + ">" + current.exhibitorPhone + "</div>\n";
+            // Sales Tax ID
+            color = prior.salesTaxId != current.salesTaxId ? ' style="background-color: #ffcdcd;"' : '';
+            html += "<div class='col-sm-2'" + color + ">" + current.salesTaxId + "</div>\n";
+            // Website
+            color = prior.website != current.website ? ' style="background-color: #ffcdcd;"' : '';
+            html += "<div class='col-sm-2'" + color + ">" + current.website + "</div>\n";
+            html += "</div>\n";
+
+            // line 3
+            html += "<div class='row' style='background-color: " + curColor + ";'><div class='col-sm-1'></div>\n";
+            // Publicity
+            color = prior.publicity != current.publicity ? ' style="background-color: #ffcdcd;"' : '';
+            html += "<div class='col-sm-1'" + color + ">" + current.publicity + "</div>\n";
+            // street addr
+            color = prior.addr != current.addr ? ' style="background-color: #ffcdcd;"' : '';
+            html += "<div class='col-sm-3'" + color + ">" + current.addr + "</div>\n";
+            // addr2
+            color = prior.addr2 != current.addr2 ? ' style="background-color: #ffcdcd;"' : '';
+            html += "<div class='col-sm-2'" + color + ">" + current.addr2 + "</div>\n";
+            // city
+            color = prior.city != current.city ? ' style="background-color: #ffcdcd;"' : '';
+            html += "<div class='col-sm-2'" + color + ">" + current.city + "</div>\n";
+            // state
+            color = prior.state != current.state ? ' style="background-color: #ffcdcd;"' : '';
+            html += "<div class='col-sm-1'" + color + ">" + current.state + "</div>\n";
+            // zip
+            color = prior.zip != current.zip ? ' style="background-color: #ffcdcd;"' : '';
+            html += "<div class='col-sm-1'" + color + ">" + current.zip + "</div>\n";
+            // country
+            color = prior.country != current.country ? ' style="background-color: #ffcdcd;"' : '';
+            html += "<div class='col-sm-1'" + color + ">" + current.country + "</div>\n";
+            html += "</div>\n";
+            prior = current;
+        }
+        this.#historyDiv.innerHTML = html;
+        this.#historyModal.show();
+
+        if (data.warn)
+            show_message(data.warn, 'warn', 'history_message_div');
+
+        if (data.message)
+            show_message(data.message, 'success', 'history_message_div');
     }
 
     // reset an exhibitor's password

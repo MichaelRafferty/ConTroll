@@ -22,8 +22,10 @@ ALTER TABLE exhibitsRegionYears ADD COLUMN revenueGlLabel varchar(64) COLLATE ut
 ALTER TABLE exhibitors ADD COLUMN artistPayee varchar(128) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' AFTER artistName;
 
 /* make new backup history table for exhibitors with it's trigger */
+DROP TABLE IF EXISTS exhibitorsHistory;
 CREATE TABLE exhibitorsHistory (
     historyId int NOT NULL AUTO_INCREMENT,
+    historyDate timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     id int NOT NULL,
     perid int DEFAULT NULL,
     newperid int DEFAULT NULL,
