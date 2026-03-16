@@ -1717,6 +1717,25 @@ class exhibitorsAdm {
             html += "<div class='col-sm-1'" + color + ">" + current.shipCountry + "</div>\n";
             html += "</div>\n";
 
+            // if current, or a difference, show description or notes
+            if (current.historyDate == 'current' && current.description != null && current.description != "") {
+                html += "<div class='row' style='background-color: " + curColor + ";'><div class='col-sm-1 text-end'>Desc:</div>\n" +
+                    "<div class='col-sm-11'>" + current.description.trim() + "</div>\n</div>\n";
+            } else if (current.description != prior.description) {
+                color = ' style="background-color: #ffcdcd;"';
+                html += "<div class='row' style='background-color: " + curColor + ";'><div class='col-sm-1 text-end'>Desc:</div>\n" +
+                    "<div class='col-sm-11'" + color + ">" + current.description.trim() + "</div>\n</div>\n";
+            }
+
+            if (current.historyDate == 'current' && current.notes != null && current.notes != "") {
+                html += "<div class='row' style='background-color: " + curColor + ";'><div class='col-sm-1 text-end'>Notes:</div>\n" +
+                    "<div class='col-sm-11'>" + current.notes.trim() + "</div>\n</div>\n";
+            } else if (current.notes != prior.notes) {
+                color = ' style="background-color: #ffcdcd;"';
+                html += "<div class='row' style='background-color: " + curColor + ";'><div class='col-sm-1 text-end'>Notes:</div>\n" +
+                    "<div class='col-sm-11'" + color + ">" + current.notes() + "</div>\n</div>\n";
+            }
+
             prior = current;
         }
         this.#historyDiv.innerHTML = html;
