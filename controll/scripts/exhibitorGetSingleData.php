@@ -119,7 +119,7 @@ $infoR->free();
 
 // load the country codes for the option pulldown
 $defaultCountry = strtoupper(getConfValue('con', 'defaultCountry', 'USA'));
-$countryOptions = loadCountryOptions($defaultCountry)
+$countryOptions = loadCountryOptions($defaultCountry);
 $vendorPQ = <<<EOS
 SELECT exRY.*, ery.id AS exhibitsRegionYearId
 FROM exhibitorRegionYears exRY
