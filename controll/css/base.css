@@ -53,6 +53,14 @@ h1.title {
     color: red
 }
 
+.changeBGColor {
+    background-color: #ffcdcd;
+}
+
+.paginationBGColor {
+    background-color: #e5e5e5;
+ }
+
 /* hide up/down arrows ("spinners") on input fields marked type="number" */
 .no-spinners {
     -moz-appearance: textfield;

@@ -40,7 +40,7 @@ class customTextSetup {
         <div class="col-sm-12 p-0 m-0" id="customTextTableDiv"></div>
     </div>
     <div class="row mt-2">
-        <div class="col-sm-auto p-1 ps-3 pe-3 tabulator-paginator" id="ctxPaginationDiv" style="background-color: ` + paginationColor + `"></div>
+        <div class="col-sm-auto p-1 ps-3 pe-3 tabulator-paginator paginationBGColor" id="ctxPaginationDiv"></div>
         <div class="col-sm-auto p-1 ms-4" id="types-buttons">
             <button id="customText-undo" type="button" class="btn btn-secondary btn-sm" onclick="customText.undo(); return false;" disabled>Undo</button>
             <button id="customText-redo" type="button" class="btn btn-secondary btn-sm" onclick="customText.redo(); return false;" disabled>Redo</button>

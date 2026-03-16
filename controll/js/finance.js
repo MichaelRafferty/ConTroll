@@ -1,6 +1,5 @@
 //import { TabulatorFull as Tabulator } from 'tabulator-tables';
 // globals required for exhibitorProfile.js
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // globals for finance page
 var finance = null;

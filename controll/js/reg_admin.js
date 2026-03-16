@@ -705,32 +705,32 @@ function displayHistory(data) {
         // change date
         html += "<div class='col-sm-2'>" + current.change_date + "</div>\n";
         // memId
-        color = prior.memId != current.memId ? ' style="background-color: ' + changeColor + '"' : '';
-        html += "<div class='col-sm-1'" + color + ">" + current.memId + "</div>\n";
+        color = prior.memId != current.memId ? ' changeBGColor' : '';
+        html += "<div class='col-sm-1" + color + "'>" + current.memId + "</div>\n";
         // price
-        color = prior.price != current.price ? ' style="background-color: ' + changeColor + '"' : '';
-        html += "<div class='col-sm-1'" + color + ">" + current.price + "</div>\n";
+        color = prior.price != current.price ? ' changeBGColor' : '';
+        html += "<div class='col-sm-1" + color + "'>" + current.price + "</div>\n";
         // couponDiscount
-        color = prior.couponDiscount != current.couponDiscount ? ' style="background-color: ' + changeColor + '"' : '';
-        html += "<div class='col-sm-1'" + color + ">" + current.couponDiscount + "</div>\n";
+        color = prior.couponDiscount != current.couponDiscount ? ' changeBGColor' : '';
+        html += "<div class='col-sm-1" + color + "'>" + current.couponDiscount + "</div>\n";
         // paid
-        color = prior.paid != current.paid ? ' style="background-color: ' + changeColor + '"' : '';
-        html += "<div class='col-sm-1'" + color + ">" + current.paid + "</div>\n";
+        color = prior.paid != current.paid ? ' changeBGColor' : '';
+        html += "<div class='col-sm-1" + color + "'>" + current.paid + "</div>\n";
         // complete_trans
-        color = prior.complete_trans != current.complete_trans ? ' style="background-color: ' + changeColor + '"' : '';
-        html += "<div class='col-sm-1'" + color + ">" + current.complete_trans + "</div>\n";
+        color = prior.complete_trans != current.complete_trans ? ' changeBGColor' : '';
+        html += "<div class='col-sm-1" + color + "'>" + current.complete_trans + "</div>\n";
         // updatedBy
-        color = prior.updatedBy != current.updatedBy ? ' style="background-color: ' + changeColor + '"' : '';
-        html += "<div class='col-sm-1'" + color + ">" + current.updatedBy + "</div>\n";
+        color = prior.updatedBy != current.updatedBy ? ' changeBGColor' : '';
+        html += "<div class='col-sm-1" + color + "'>" + current.updatedBy + "</div>\n";
         // coupon
-        color = prior.coupon != current.coupon ? ' style="background-color: ' + changeColor + '"' : '';
-        html += "<div class='col-sm-1'" + color + ">" + current.coupon + "</div>\n";
+        color = prior.coupon != current.coupon ? ' changeBGColor' : '';
+        html += "<div class='col-sm-1" + color + "'>" + current.coupon + "</div>\n";
         // planId
-        color = prior.planId != current.planId ? ' style="background-color: ' + changeColor + '"' : '';
-        html += "<div class='col-sm-1'" + color + ">" + current.planId + "</div>\n";
+        color = prior.planId != current.planId ? ' changeBGColor' : '';
+        html += "<div class='col-sm-1" + color + "'>" + current.planId + "</div>\n";
         // status
-        color = prior.status != current.status ? ' style="background-color: ' + changeColor + '"' : '';
-        html += "<div class='col-sm-1'" + color + ">" + current.status + "</div>\n";
+        color = prior.status != current.status ? ' changeBGColor' : '';
+        html += "<div class='col-sm-1" + color + "'>" + current.status + "</div>\n";
 
         html += "</div>\n";
         prior = current;
@@ -1117,7 +1117,7 @@ function addTransferIcon(cell, formatterParams, onRendered) { //plain text value
     } else if (regcnt > 0) {
         color = 'btn-warning';
     }
-    return '<button type="button" class="btn btn-sm ' + color + ' pt-0 pb-0" style="--bs-btn-font-size: 75%;" onclick="transferReg(' + to + ',' + banned + ')">Transfer</button>';
+    return '<button type="button" class="btn btn-sm ' + color + '" pt-0 pb-0" style="--bs-btn-font-size: 75%;" onclick="transferReg(' + to + ',' + banned + ')">Transfer</button>';
 }
 
 // changeTransferFound - display a list of potential transfer recipients
