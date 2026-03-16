@@ -301,7 +301,6 @@ draw_exhibitsConfigurationModals();
         </div>
     </div>
 </div>
-// history modal
 <div id='history' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Exhibitor History' aria-hidden='true' style='--bs-modal-width: 96%;'>
     <div class='modal-dialog'>
         <div class='modal-content'>

@@ -441,39 +441,39 @@ function displayArtItemHistory(data) {
         // change date
         html += "<div class='col-sm-2'>" + current.historyDate + "</div>\n";
         // title
-        color = prior.title != current.title ? ' style="background-color: #ffcdcd;"' : '';
+        color = prior.title != current.title ? ' style="background-color: ' + changeColor + '"' : '';
         html += "<div class='col-sm-4'" + color + ">" + current.title + "</div>\n";
         // material
-        color = prior.material != current.material ? ' style="background-color: #ffcdcd;"' : '';
+        color = prior.material != current.material ? ' style="background-color: ' + changeColor + '"' : '';
         html += "<div class='col-sm-4'" + color + ">" + current.material + "</div>\n";
         // status
-        color = prior.status != current.status ? ' style="background-color: #ffcdcd;"' : '';
+        color = prior.status != current.status ? ' style="background-color: ' + changeColor + '"' : '';
         html += "<div class='col-sm-2'" + color + ">" + current.status + "</div>\n</div>\n";
         // quantity
-        color = (prior.quantity != current.quantity || prior.original_qty != current.original_qty) ? ' style="background-color: #ffcdcd;"' : '';
+        color = (prior.quantity != current.quantity || prior.original_qty != current.original_qty) ? ' style="background-color: ' + changeColor + '"' : '';
         html += "<div class='row'>\n<div class='col-sm-1'>" +
             "</div><div class='col-sm-1'" + color + ">" + current.quantity + ' of ' + current.original_qty + "</div>\n";
         // location
-        color = prior.location != current.location ? ' style="background-color: #ffcdcd;"' : '';
+        color = prior.location != current.location ? ' style="background-color: ' + changeColor + '"' : '';
         html += "<div class='col-sm-1'" + color + ">" + current.location + "</div>\n";
         // minimum
-        color = prior.min_price != current.min_price ? ' style="background-color: #ffcdcd;"' : '';
+        color = prior.min_price != current.min_price ? ' style="background-color: ' + changeColor + '"' : '';
         html += "<div class='col-sm-1'" + color + ">" + current.min_price + "</div>\n";
         // sale
-        color = prior.sale_price != current.sale_price ? ' style="background-color: #ffcdcd;"' : '';
+        color = prior.sale_price != current.sale_price ? ' style="background-color: ' + changeColor + '"' : '';
         html += "<div class='col-sm-1'" + color + ">" + current.sale_price + "</div>\n";
         // final
-        color = prior.final_price != current.final_price ? ' style="background-color: #ffcdcd;"' : '';
+        color = prior.final_price != current.final_price ? ' style="background-color: ' + changeColor + '"' : '';
         html += "<div class='col-sm-1'" + color + ">" + current.final_price + "</div>\n";
         // bidder
-        color = prior.bidder != current.bidder ? ' style="background-color: #ffcdcd;"' : '';
+        color = prior.bidder != current.bidder ? ' style="background-color: ' + changeColor + '"' : '';
         html += "<div class='col-sm-1'" + color + ">" + current.bidder + "</div>\n";
         // updatedBy
-        color = prior.updatedBy != current.updatedBy ? ' style="background-color: #ffcdcd;"' : '';
+        color = prior.updatedBy != current.updatedBy ? ' style="background-color: ' + changeColor + '"' : '';
         html += "<div class='col-sm-1'" + color + ">" + current.updatedBy + "</div>\n</div>\n";
         // notes
         if (prior.notes != null || current.notes != null) {
-            color = prior.notes != current.notes ? ' style="background-color: #ffcdcd;"' : '';
+            color = prior.notes != current.notes ? ' style="background-color: ' + changeColor + '"' : '';
             html += "<div class='row'>\n<div class='col-sm-1'></div>\n<div class='col-sm-11'" + color + ">" + current.notes + "</div>\n";
             html += "</div>\n";
         }

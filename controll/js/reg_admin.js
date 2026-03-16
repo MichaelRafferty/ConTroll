@@ -705,31 +705,31 @@ function displayHistory(data) {
         // change date
         html += "<div class='col-sm-2'>" + current.change_date + "</div>\n";
         // memId
-        color = prior.memId != current.memId ? ' style="background-color: #ffcdcd;"' : '';
+        color = prior.memId != current.memId ? ' style="background-color: ' + changeColor + '"' : '';
         html += "<div class='col-sm-1'" + color + ">" + current.memId + "</div>\n";
         // price
-        color = prior.price != current.price ? ' style="background-color: #ffcdcd;"' : '';
+        color = prior.price != current.price ? ' style="background-color: ' + changeColor + '"' : '';
         html += "<div class='col-sm-1'" + color + ">" + current.price + "</div>\n";
         // couponDiscount
-        color = prior.couponDiscount != current.couponDiscount ? ' style="background-color: #ffcdcd;"' : '';
+        color = prior.couponDiscount != current.couponDiscount ? ' style="background-color: ' + changeColor + '"' : '';
         html += "<div class='col-sm-1'" + color + ">" + current.couponDiscount + "</div>\n";
         // paid
-        color = prior.paid != current.paid ? ' style="background-color: #ffcdcd;"' : '';
+        color = prior.paid != current.paid ? ' style="background-color: ' + changeColor + '"' : '';
         html += "<div class='col-sm-1'" + color + ">" + current.paid + "</div>\n";
         // complete_trans
-        color = prior.complete_trans != current.complete_trans ? ' style="background-color: #ffcdcd;"' : '';
+        color = prior.complete_trans != current.complete_trans ? ' style="background-color: ' + changeColor + '"' : '';
         html += "<div class='col-sm-1'" + color + ">" + current.complete_trans + "</div>\n";
         // updatedBy
-        color = prior.updatedBy != current.updatedBy ? ' style="background-color: #ffcdcd;"' : '';
+        color = prior.updatedBy != current.updatedBy ? ' style="background-color: ' + changeColor + '"' : '';
         html += "<div class='col-sm-1'" + color + ">" + current.updatedBy + "</div>\n";
         // coupon
-        color = prior.coupon != current.coupon ? ' style="background-color: #ffcdcd;"' : '';
+        color = prior.coupon != current.coupon ? ' style="background-color: ' + changeColor + '"' : '';
         html += "<div class='col-sm-1'" + color + ">" + current.coupon + "</div>\n";
         // planId
-        color = prior.planId != current.planId ? ' style="background-color: #ffcdcd;"' : '';
+        color = prior.planId != current.planId ? ' style="background-color: ' + changeColor + '"' : '';
         html += "<div class='col-sm-1'" + color + ">" + current.planId + "</div>\n";
         // status
-        color = prior.status != current.status ? ' style="background-color: #ffcdcd;"' : '';
+        color = prior.status != current.status ? ' style="background-color: ' + changeColor + '"' : '';
         html += "<div class='col-sm-1'" + color + ">" + current.status + "</div>\n";
 
         html += "</div>\n";

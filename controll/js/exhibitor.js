@@ -22,8 +22,6 @@ var vendorInvoice = null;
 var profile = null;
 var fileManager = null;
 
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
 // globals for exhibits configuration
 exhibits = null;
 
@@ -90,6 +88,9 @@ class exhibitorsAdm {
     #historyTitle = null;
     #historyDiv = null;
     #historyRow = null;
+
+    // colors
+    #approvedColor = '';
 
     constructor(conid, debug) {
         this.#debug = debug;
@@ -528,7 +529,7 @@ class exhibitorsAdm {
             "    </div>\n" +
             "    <div class='row mt-2 mb-3' id='" + groupid + "-spaces-csv-div'>\n"+
             "       <div class='col-sm-auto p-1 ps-3 pe-3 tabulator-paginator' id='" + groupid + "-tabSpacesPaginationDiv'" +
-            "           style='background-color: #e5e5e5;'></div>\n" +
+            "           style='background-color: " + paginationColor + ";'></div>\n" +
             "       <div class='col-sm-auto p-1 ms-4'>\n";
         if (config.exhibitorConid == config.conid)
             html +=
@@ -562,7 +563,7 @@ class exhibitorsAdm {
             "    </div>\n" +
             "    <div class='row mt-2 mb-3' id='" + groupid + "-app-csv-div'>\n"+
             "       <div class='col-sm-auto p-1 ps-3 pe-3 tabulator-paginator' id='" + groupid + "-tabAppPaginationDiv'" +
-            "           style='background-color: #e5e5e5;'></div>\n" +
+            "           style='background-color: " + paginationColor + ";'></div>\n" +
             "       <div class='col-sm-auto p-1 ms-4'>\n" +
             "           <button id='" + groupid + "-app-csv' type='button' class='btn btn-info btn-sm'" +
             "               onclick='exhibitors.appDownload(\"csv\"); return false;'>Download CSV</button>\n" +
@@ -589,7 +590,7 @@ class exhibitorsAdm {
             "    </div>\n" +
             "    <div class='row mt-2'>\n" +
             "       <div class='col-sm-auto p-1 ps-3 pe-3 tabulator-paginator' id='" + groupid + "-tabExhPaginationDiv'" +
-            "           style='background-color: #e5e5e5;'></div>\n" +
+            "           style='background-color: " + paginationColor + " ;'></div>\n" +
             "        <div class='col-sm-auto'>\n" +
             "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='addExhibitorBtn' onClick=" + '"exhibitors.addNew();"' + ">Add New Exhibitor</button>\n" +
             "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='importExhibitorBtn' onClick=" + '"exhibitors.importPast();"' + ">Import Past Exhibitors</button>" +
@@ -1641,79 +1642,79 @@ class exhibitorsAdm {
             // history date
             html += "<div class='col-sm-2'>" + current.historyDate + "</div>\n";
             // artist name
-            color = prior.artistName != current.artistName ? ' style="background-color: #ffcdcd;"' : '';
+            color = prior.artistName != current.artistName ? ' style="background-color: ' + changeColor + '"' : '';
             html += "<div class='col-sm-3'" + color + ">" + current.artistName + "</div>\n";
             // artist payee
-            color = prior.artistPayee != current.artistPayee ? ' style="background-color: #ffcdcd;"' : '';
+            color = prior.artistPayee != current.artistPayee ? ' style="background-color: ' + changeColor + '"' : '';
             html += "<div class='col-sm-3'" + color + ">" + current.artistPayee + "</div>\n";
             // exhibitor name
-            color = prior.exhibitorName != current.exhibitorName ? ' style="background-color: #ffcdcd;"' : '';
+            color = prior.exhibitorName != current.exhibitorName ? ' style="background-color: ' + changeColor + '"' : '';
             html += "<div class='col-sm-3'" + color + ">" + current.artistName + "</div>\n";
             html += "</div>\n";
 
             // line 2
             html += "<div class='row' style='background-color: " + curColor + ";'><div class='col-sm-1'></div>\n";
             // Business Email
-            color = prior.exhibitorEmail != current.exhibitorEmail ? ' style="background-color: #ffcdcd;"' : '';
+            color = prior.exhibitorEmail != current.exhibitorEmail ? ' style="background-color: ' + changeColor + '"' : '';
             html += "<div class='col-sm-3'" + color + ">" + current.exhibitorEmail + "</div>\n";
             // Business Email
-            color = prior.exhibitorPhone != current.exhibitorPhone ? ' style="background-color: #ffcdcd;"' : '';
+            color = prior.exhibitorPhone != current.exhibitorPhone ? ' style="background-color: ' + changeColor + '"' : '';
             html += "<div class='col-sm-2'" + color + ">" + current.exhibitorPhone + "</div>\n";
             // Sales Tax ID
-            color = prior.salesTaxId != current.salesTaxId ? ' style="background-color: #ffcdcd;"' : '';
+            color = prior.salesTaxId != current.salesTaxId ? ' style="background-color: ' + changeColor + '"' : '';
             html += "<div class='col-sm-2'" + color + ">" + current.salesTaxId + "</div>\n";
             // Website
-            color = prior.website != current.website ? ' style="background-color: #ffcdcd;"' : '';
+            color = prior.website != current.website ? ' style="background-color: ' + changeColor + '"' : '';
             html += "<div class='col-sm-2'" + color + ">" + current.website + "</div>\n";
             html += "</div>\n";
 
             // line 3
             html += "<div class='row' style='background-color: " + curColor + ";'><div class='col-sm-1'></div>\n";
             // Publicity
-            color = prior.publicity != current.publicity ? ' style="background-color: #ffcdcd;"' : '';
+            color = prior.publicity != current.publicity ? ' style="background-color: ' + changeColor + '"' : '';
             html += "<div class='col-sm-1'" + color + ">" + current.publicity + "</div>\n";
             // street addr
-            color = prior.addr != current.addr ? ' style="background-color: #ffcdcd;"' : '';
+            color = prior.addr != current.addr ? ' style="background-color: ' + changeColor + '"' : '';
             html += "<div class='col-sm-3'" + color + ">" + current.addr + "</div>\n";
             // addr2
-            color = prior.addr2 != current.addr2 ? ' style="background-color: #ffcdcd;"' : '';
+            color = prior.addr2 != current.addr2 ? ' style="background-color: ' + changeColor + '"' : '';
             html += "<div class='col-sm-2'" + color + ">" + current.addr2 + "</div>\n";
             // city
-            color = prior.city != current.city ? ' style="background-color: #ffcdcd;"' : '';
+            color = prior.city != current.city ? ' style="background-color: ' + changeColor + '"' : '';
             html += "<div class='col-sm-2'" + color + ">" + current.city + "</div>\n";
             // state
-            color = prior.state != current.state ? ' style="background-color: #ffcdcd;"' : '';
+            color = prior.state != current.state ? ' style="background-color: ' + changeColor + '"' : '';
             html += "<div class='col-sm-1'" + color + ">" + current.state + "</div>\n";
             // zip
-            color = prior.zip != current.zip ? ' style="background-color: #ffcdcd;"' : '';
+            color = prior.zip != current.zip ? ' style="background-color: ' + changeColor + '"' : '';
             html += "<div class='col-sm-1'" + color + ">" + current.zip + "</div>\n";
             // country
-            color = prior.country != current.country ? ' style="background-color: #ffcdcd;"' : '';
+            color = prior.country != current.country ? ' style="background-color: ' + changeColor + '"' : '';
             html += "<div class='col-sm-1'" + color + ">" + current.country + "</div>\n";
             html += "</div>\n";
 
             // line 4
             html += "<div class='row' style='background-color: " + curColor + ";'><div class='col-sm-1'></div>\n";
             // Archived
-            color = prior.archived != current.archived ? ' style="background-color: #ffcdcd;"' : '';
+            color = prior.archived != current.archived ? ' style="background-color: ' + changeColor + '"' : '';
             html += "<div class='col-sm-1'" + color + ">" + current.archived + "</div>\n";
             // ship treet addr
-            color = prior.shipAddr != current.shipAddr ? ' style="background-color: #ffcdcd;"' : '';
+            color = prior.shipAddr != current.shipAddr ? ' style="background-color: ' + changeColor + '"' : '';
             html += "<div class='col-sm-3'" + color + ">" + current.shipAddr + "</div>\n";
             // ship addr2
-            color = prior.shipAddr2 != current.shipAddr2 ? ' style="background-color: #ffcdcd;"' : '';
+            color = prior.shipAddr2 != current.shipAddr2 ? ' style="background-color: ' + changeColor + '"' : '';
             html += "<div class='col-sm-2'" + color + ">" + current.shipAddr2 + "</div>\n";
             // ship city
-            color = prior.shipCity != current.shipCity ? ' style="background-color: #ffcdcd;"' : '';
+            color = prior.shipCity != current.shipCity ? ' style="background-color: ' + changeColor + '"' : '';
             html += "<div class='col-sm-2'" + color + ">" + current.shipCity + "</div>\n";
             // ship state
-            color = prior.shipState != current.shipState ? ' style="background-color: #ffcdcd;"' : '';
+            color = prior.shipState != current.shipState ? ' style="background-color: ' + changeColor + '"' : '';
             html += "<div class='col-sm-1'" + color + ">" + current.shipState + "</div>\n";
             // ship zip
-            color = prior.shipZip != current.shipZip ? ' style="background-color: #ffcdcd;"' : '';
+            color = prior.shipZip != current.shipZip ? ' style="background-color: ' + changeColor + '"' : '';
             html += "<div class='col-sm-1'" + color + ">" + current.shipZip + "</div>\n";
             // ship country
-            color = prior.shipCountry != current.shipCountry ? ' style="background-color: #ffcdcd;"' : '';
+            color = prior.shipCountry != current.shipCountry ? ' style="background-color: ' + changeColor + '"' : '';
             html += "<div class='col-sm-1'" + color + ">" + current.shipCountry + "</div>\n";
             html += "</div>\n";
 
@@ -1722,7 +1723,7 @@ class exhibitorsAdm {
                 html += "<div class='row' style='background-color: " + curColor + ";'><div class='col-sm-1 text-end'>Desc:</div>\n" +
                     "<div class='col-sm-11'>" + current.description.trim() + "</div>\n</div>\n";
             } else if (current.description != prior.description) {
-                color = ' style="background-color: #ffcdcd;"';
+                color = ' style="background-color: ' + changeColor + '"';
                 html += "<div class='row' style='background-color: " + curColor + ";'><div class='col-sm-1 text-end'>Desc:</div>\n" +
                     "<div class='col-sm-11'" + color + ">" + current.description.trim() + "</div>\n</div>\n";
             }
@@ -1731,9 +1732,9 @@ class exhibitorsAdm {
                 html += "<div class='row' style='background-color: " + curColor + ";'><div class='col-sm-1 text-end'>Notes:</div>\n" +
                     "<div class='col-sm-11'>" + current.notes.trim() + "</div>\n</div>\n";
             } else if (current.notes != prior.notes) {
-                color = ' style="background-color: #ffcdcd;"';
+                color = ' style="background-color: ' + changeColor + '"';
                 html += "<div class='row' style='background-color: " + curColor + ";'><div class='col-sm-1 text-end'>Notes:</div>\n" +
-                    "<div class='col-sm-11'" + color + ">" + current.notes() + "</div>\n</div>\n";
+                    "<div class='col-sm-11'" + color + ">" + current.notes.trim() + "</div>\n</div>\n";
             }
 
             prior = current;

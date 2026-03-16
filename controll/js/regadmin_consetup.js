@@ -174,7 +174,7 @@ class consetup {
 <p><strong>NOTE:</strong> All date ranges are '>=' Start Date and '<' End Date, so the End Date of one period should be the start date of the next.</p>
 <div id="` + this.#setup_type + `-memlist"></div>
 <div class='row mt-2 mb-3' id='reglist-csv-div'>
-    <div class="col-sm-auto p-1 ps-3 pe-3 tabulator-paginator" id="` + this.#setup_type + `PaginationDiv" style="background-color: #e5e5e5;"></div>
+    <div class="col-sm-auto p-1 ps-3 pe-3 tabulator-paginator" id="` + this.#setup_type + '"PaginationDiv" style="background-color: ' + paginationColor +  `;"></div>
     <div class='col-sm-auto p-1 ms-4' id="memlist-buttons">  
         <button id="` + this.#setup_type + `memlist-undo" type="button" class="btn btn-secondary btn-sm" onclick="` + this.#setup_type + `.undoMemList(); return false;" disabled>Undo</button>
         <button id="` + this.#setup_type + `memlist-redo" type="button" class="btn btn-secondary btn-sm" onclick="` + this.#setup_type + `.redoMemList(); return false;" disabled>Redo</button>

@@ -1,5 +1,10 @@
 globalCustomTextEditorInit = false;
 
+// global constants for controll back end
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const paginationColor = "#e5e5e5";
+const changeColor = "#ffcdcd";
+
 // new functions for token items
 function checkRefresh(data) {
     if (data.hasOwnProperty('tokenStatus') && data.tokenStatus == 'refresh'){
