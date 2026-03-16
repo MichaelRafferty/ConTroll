@@ -113,7 +113,7 @@ class exhibitorsAdm {
 
         // exhibitors
         exhibitorProfile = new ExhibitorProfile(this.#debug, config.portalType);
-        var id = document.getElementById("import_exhibitor");
+        let id = document.getElementById("import_exhibitor");
         if (id)
             this.#importModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
         this.#importHTML = document.getElementById('importHTML');
@@ -148,18 +148,18 @@ class exhibitorsAdm {
         this.#ownerTabs.fileManager = document.getElementById('fileManager-pane');
         this.#currentOwner = this.#ownerTabs.overview;
         this.#currentPane = 'overview';
-        var ownerKeys = Object.keys(regionOwners);
-        for (var idO in ownerKeys) {
-            var owner = ownerKeys[idO];
-            var ownerId = owner.replaceAll(' ', '-');
+        let ownerKeys = Object.keys(regionOwners);
+        for (let idO in ownerKeys) {
+            let owner = ownerKeys[idO];
+            let ownerId = owner.replaceAll(' ', '-');
             this.#ownerTabs[ownerId] = document.getElementById(ownerId + '-content');
 
             // regions within owners (regionsInOwner)
-            var regionsInOwner = regionOwners[owner];
-            var regionKeys = Object.keys(regionsInOwner);
-            for (var idR in regionKeys) {
-                var region = regionsInOwner[regionKeys[idR]];
-                var regionId = region.name.replaceAll(' ', '-');
+            let regionsInOwner = regionOwners[owner];
+            let regionKeys = Object.keys(regionsInOwner);
+            for (let idR in regionKeys) {
+                let region = regionsInOwner[regionKeys[idR]];
+                let regionId = region.name.replaceAll(' ', '-');
                 this.#regionTabs[regionId] = document.getElementById(regionId + '-div');
             }
         }
@@ -181,8 +181,8 @@ class exhibitorsAdm {
                 })
             })
 
-            var selectors = '#exhibitor-tab button[data-bs-target="#' + config.initialTab + '-pane"]';
-            var triggerEl = document.querySelector(selectors);
+            let selectors = '#exhibitor-tab button[data-bs-target="#' + config.initialTab + '-pane"]';
+            let triggerEl = document.querySelector(selectors);
             if (triggerEl)
                 bootstrap.Tab.getInstance(triggerEl).show(); // Select tab by name
 
@@ -285,10 +285,10 @@ class exhibitorsAdm {
             return;
         }
 
-        var ownerLookup = regionOwnersTabNames[tabname];
-        var regionsInOwner = regionOwners[ownerLookup];
-        var regionKey = Object.keys(regionsInOwner)[0];
-        var region = regionsInOwner[regionKey];
+        let ownerLookup = regionOwnersTabNames[tabname];
+        let regionsInOwner = regionOwners[ownerLookup];
+        let regionKey = Object.keys(regionsInOwner)[0];
+        let region = regionsInOwner[regionKey];
         this.settabRegion(region.name.replaceAll(' ', '-') + '-pane');
     }
 
@@ -349,7 +349,7 @@ class exhibitorsAdm {
         // need to add the do you wish to save dirty data item
         clearError();
         clear_message();
-        var content = tabname.replace('-pane', '');
+        let content = tabname.replace('-pane', '');
         if (this.#currentRegion)
             this.#currentRegion.hidden = true;
         this.#regionTabs[content].hidden = false;
@@ -364,7 +364,7 @@ class exhibitorsAdm {
         clearError();
         clear_message();
 
-        var content = tabname.replace('-pane', '');
+        let content = tabname.replace('-pane', '');
         if (this.#currentSpace)
             this.#currentSpace.hidden = true;
         this.#spacesTabs[content].hidden = false;
@@ -416,15 +416,15 @@ class exhibitorsAdm {
         if (this.#debug & 8)
             console.log(data);
 
-        var regionName = data.post.region;
-        var divId = regionName.replaceAll(' ','-') + '-div';
-        var dataDiv = document.getElementById(divId)
+        let regionName = data.post.region;
+        let divId = regionName.replaceAll(' ','-') + '-div';
+        let dataDiv = document.getElementById(divId)
 
         // build up the html for this tab
-        var html = this.drawSummary(data);
+        let html = this.drawSummary(data);
         // add in tabs for spaces, approvals and exhibitor
-        var region = regions[regionName];
-        var groupid = 'data-' + region.id;
+        let region = regions[regionName];
+        let groupid = 'data-' + region.id;
         this.#regionGroupId = groupid;
         this.#regionName = regionName;
         html += "<ul class='nav nav-tabs mb-3' id='" + groupid + "-tab' role='tablist'>\n" +
@@ -471,8 +471,8 @@ class exhibitorsAdm {
     }
 
     redraw(data) {
-        var regionName = data.post.region;
-        var region = regions[regionName];
+        let regionName = data.post.region;
+        let region = regions[regionName];
         this.drawSpacesTable(data,  null, false);
         if (region.requestApprovalRequired != 'None') {
             this.#approvalsTable.replaceData(data.approvals);
@@ -484,17 +484,17 @@ class exhibitorsAdm {
         if (!data.hasOwnProperty('summary'))
             return;
 
-        var summary = data.summary;
+        let summary = data.summary;
         if (!summary)
             return;
 
-        var html = '';
+        let html = '';
         if (full)
             html += '<div class="container-fluid" id="summary_div">';
 
-        for (var spaceid in summary) {
-            var space = summary[spaceid];
-            var remaining =  space.unitsAvailable - space.approved;
+        for (let spaceid in summary) {
+            let space = summary[spaceid];
+            let remaining =  space.unitsAvailable - space.approved;
             html += `    <div class="row mt-0 mb-0 p-0">
         <div class="col-sm-auto">
             <span style="font-size: 125%; font-weight: bold;">` + space.name + ` Registrations: </span>
@@ -521,7 +521,7 @@ class exhibitorsAdm {
             this.#spacesTable.destroy();
             this.#spacesTable = null;
         }
-        var html = "<div class='tab-content ms-2' id='" + groupid + "-spaces-content' hidden>\n" +
+        let html = "<div class='tab-content ms-2' id='" + groupid + "-spaces-content' hidden>\n" +
             "<div class='container-fluid'>\n" +
             "    <div class='row'>\n" +
             "        <div class='col-sm-12' id='" + groupid + "-spaces-table-div'></div>\n" +
@@ -555,7 +555,7 @@ class exhibitorsAdm {
             this.#approvalsTable.destroy();
             this.#approvalsTable = null;
         }
-        var html = "<div class='tab-content ms-2' id='" + groupid + "-app-content' hidden>\n" +
+        let html = "<div class='tab-content ms-2' id='" + groupid + "-app-content' hidden>\n" +
             "<div class='container-fluid'>\n" +
             "    <div class='row'>\n" +
             "        <div class='col-sm-12' id='" + groupid + "-app-table-div'></div>\n" +
@@ -582,7 +582,7 @@ class exhibitorsAdm {
             this.#exhibitorsTable.destroy();
             this.#exhibitorsTable = null;
         }
-        var html = "<div class='tab-content ms-2' id='" + groupid + "-exh-content' hidden>\n" +
+        let html = "<div class='tab-content ms-2' id='" + groupid + "-exh-content' hidden>\n" +
             "<div class='container-fluid'>\n" +
             "    <div class='row'>\n" +
             "        <div class='col-sm-12' id='" + groupid + "-exh-table-div'></div>\n" +
@@ -606,29 +606,29 @@ class exhibitorsAdm {
 
     // build spaces Items
     #buildSpacesItems(data) {
-        var regionsLocal = [];
-        var region = null;
-        //var currentRegion = -1;
-        var currentExhibitor = -1;
-        var spaces = data.detail;
-        var spaceKeys = Object.keys(spaces);
-        var spaceHTML = '';
-        var spaceSUM = '';
-        var spaceStage = '';
-        var req = 0;
-        var app = 0;
-        var pur = 0;
-        var inv = 0;
-        var transid = 0;
-        var spaceSUMPurchased = '';
-        var spaceSUMApproved = '';
-        var spaceSUMRequested = '';
-        var newExhibitor = -1;
-        var space = -1;
-        var idS = ''
+        let regionsLocal = [];
+        let region = null;
+        //let currentRegion = -1;
+        let currentExhibitor = -1;
+        let spaces = data.detail;
+        let spaceKeys = Object.keys(spaces);
+        let spaceHTML = '';
+        let spaceSUM = '';
+        let spaceStage = '';
+        let req = 0;
+        let app = 0;
+        let pur = 0;
+        let inv = 0;
+        let transid = 0;
+        let spaceSUMPurchased = '';
+        let spaceSUMApproved = '';
+        let spaceSUMRequested = '';
+        let newExhibitor = -1;
+        let space = -1;
+        let idS = ''
         for (idS in spaceKeys) {
             space = spaces[idS];
-            //var newRegion = space.exhibitsRegionYearId;
+            //let newRegion = space.exhibitsRegionYearId;
             newExhibitor = space.exhibitorId
             if (newExhibitor != currentExhibitor) {
                 // change in region
@@ -823,7 +823,7 @@ class exhibitorsAdm {
     // drawSpacesTable - now that the DOM is created, draw the actual table
     drawSpacesTable(data, groupid, newTable) {
         // build new data array
-        var regionsLocal = this.#buildSpacesItems(data);
+        let regionsLocal = this.#buildSpacesItems(data);
 
         if (this.#debug & 8) {
             console.log("regions:");
@@ -874,7 +874,7 @@ class exhibitorsAdm {
 
     // formatter for this table
     stageColor(cell, formatterParams, onRendered) {
-        var data = cell.getValue();
+        let data = cell.getValue();
         switch (data) {
             case 'Requested':
                 cell.getElement().style.backgroundColor = "#e9e9ff";
@@ -893,9 +893,9 @@ class exhibitorsAdm {
         if (this.#spacesTable == null)
             return;
 
-        var filename = this.#regionName.replace(' ', '-') + '-spaces';
-        var tabledata = JSON.stringify(this.#spacesTable.getData("active"));
-        var excludeList = ['s1','space'];
+        let filename = this.#regionName.replace(' ', '-') + '-spaces';
+        let tabledata = JSON.stringify(this.#spacesTable.getData("active"));
+        let excludeList = ['s1','space'];
         downloadFilePost(format, filename, tabledata, excludeList);
     }
 
@@ -942,9 +942,9 @@ class exhibitorsAdm {
         if (this.#approvalsTable == null)
             return;
 
-        var filename = this.#regionName.replace(' ', '-') + '-apps';
-        var tabledata = JSON.stringify(this.#approvalsTable.getData("active"));
-        var excludeList = ['used','b1'];
+        let filename = this.#regionName.replace(' ', '-') + '-apps';
+        let tabledata = JSON.stringify(this.#approvalsTable.getData("active"));
+        let excludeList = ['used','b1'];
         downloadFilePost(format, filename, tabledata, excludeList);
     }
 
@@ -999,17 +999,17 @@ class exhibitorsAdm {
         if (this.#exhibitorsTable == null)
             return;
 
-        var filename = this.#regionName.replace(' ', '-') + '-exh';
-        var tabledata = JSON.stringify(this.#exhibitorsTable.getData("active"));
-        var excludeList = ['password','contactPassword','fullAddress','contact'];
+        let filename = this.#regionName.replace(' ', '-') + '-exh';
+        let tabledata = JSON.stringify(this.#exhibitorsTable.getData("active"));
+        let excludeList = ['password','contactPassword','fullAddress','contact'];
         downloadFilePost(format, filename, tabledata, excludeList);
     }
 
     // show the full vendor record as a hover in the table
     buildRecordHover(e, cell, onRendered) {
-        var data = cell.getData();
+        let data = cell.getData();
         //console.log(data);
-        var hover_text = 'Exhibitor id: ' + data.exhibitorId + '<br/>' +
+        let hover_text = 'Exhibitor id: ' + data.exhibitorId + '<br/>' +
             data.exhibitorName + '<br/>' +
             'Artist Name: ' + data.artistName + '<br/>' +
             'Artist Payee: ' + (data.artistPayee == '' ? '<i>(None Entered)</i>' : data.artistPayee) + '<br/>' +
@@ -1064,7 +1064,7 @@ class exhibitorsAdm {
             show_message($data.message, 'error');
             return;
         }
-        var _this = this;
+        let _this = this;
         this.#importTable = new Tabulator('#Importtable', {
             data: data.past,
             layout: "fitDataTable",
@@ -1087,8 +1087,8 @@ class exhibitorsAdm {
                 { title: "Zip/PC", field: "zip", headerSort: true, headerFilter: true, width: 120 },
         ]});
         this.#importTable.on("rowClick", function(e, row){
-            var cell = row.getCell('import');
-            var contents = cell.getValue();
+            let cell = row.getCell('import');
+            let contents = cell.getValue();
             contents = !contents;
             cell.setValue(contents);
         });
@@ -1097,7 +1097,7 @@ class exhibitorsAdm {
     }
 
     importPastExhibitors() {
-        var data = this.#importTable.getData();
+        let data = this.#importTable.getData();
         this.#importModal.hide();
         clear_message();
         clearError();
@@ -1130,57 +1130,57 @@ class exhibitorsAdm {
 
 // button callout functions
     edit(exhId) {
-        var exhibitorRow = this.#exhibitorsTable.getRow(exhId)
-        var exhibitorData = exhibitorRow.getData();
+        let exhibitorRow = this.#exhibitorsTable.getRow(exhId)
+        let exhibitorData = exhibitorRow.getData();
         exhibitors.editExhibitor(exhibitorData, exhibitorRow);
     }
 
     // approve an approval request
     exhApprove(e, cell) {
-        var exhibitorRow = cell.getRow()
-        var exhibitorData = exhibitorRow.getData();
+        let exhibitorRow = cell.getRow()
+        let exhibitorData = exhibitorRow.getData();
         if (exhibitorData.b1 > 0)
             exhibitors.processApprovalChange('approved', exhibitorData, exhibitorRow);
     }
 
     // reset an approval back to request
     exhReset(e, cell) {
-        var exhibitorRow = cell.getRow()
-        var exhibitorData = exhibitorRow.getData();
+        let exhibitorRow = cell.getRow()
+        let exhibitorData = exhibitorRow.getData();
         if (exhibitorData.b1 > 0)
             exhibitors.processApprovalChange('requested', exhibitorData, exhibitorRow);
     }
 
     // deny an approval request
     exhDeny(e, cell) {
-        var exhibitorRow = cell.getRow()
-        var exhibitorData = exhibitorRow.getData();
+        let exhibitorRow = cell.getRow()
+        let exhibitorData = exhibitorRow.getData();
         if (exhibitorData.b1 > 0)
             exhibitors.processApprovalChange('denied', exhibitorData, exhibitorRow);
     }
 
     // hid a region (hide status)
     exhHide(e, cell) {
-        var exhibitorRow = cell.getRow()
-        var exhibitorData = exhibitorRow.getData();
+        let exhibitorRow = cell.getRow()
+        let exhibitorData = exhibitorRow.getData();
         if (exhibitorData.b1 > 0)
             exhibitors.processApprovalChange('hide', exhibitorData, exhibitorRow);
     }
 
     // space detail button click
     showDetail(id) {
-        var row = this.#spacesTable.getRow(id).getData();
-        var details = row.space;
-        var exhibitorId = row.exhibitorId;
-        var exhibitorRow =  this.#exhibitorsTable.getRow(exhibitorId);
-        var exhibitorData = exhibitorRow.getData();
+        let row = this.#spacesTable.getRow(id).getData();
+        let details = row.space;
+        let exhibitorId = row.exhibitorId;
+        let exhibitorRow =  this.#exhibitorsTable.getRow(exhibitorId);
+        let exhibitorData = exhibitorRow.getData();
         exhibitorData.exhibitorNumber = row.exhibitorNumber;
         exhibitorData.exhibitorRegionYearId = row.exhibitorRegionYearId;
-        var exhibitor = row.exhibitorName;
-        var mailInAllowed = row.mailInAllowed;
+        let exhibitor = row.exhibitorName;
+        let mailInAllowed = row.mailInAllowed;
 
         // build exhibitor info block
-        var exhibitorInfo = this.buildExhibitorInfoBlock(exhibitorData, mailInAllowed);
+        let exhibitorInfo = this.buildExhibitorInfoBlock(exhibitorData, mailInAllowed);
 
         document.getElementById('space-detail-title').innerHTML = "<strong>Space Detail for " + exhibitor + "(" + exhibitorId + ":" + exhibitorData.exhibitorYearId +
             "," +  exhibitorData.exhibitorRegionYearId  + ")</strong>";
@@ -1190,20 +1190,20 @@ class exhibitorsAdm {
     }
 
     buildExhibitorInfoBlock(exhibitorData, mailInAllowed) {
-        var none = '<i>(None Entered)</i>';
-        var weburl = blankIfNull(exhibitorData.website).trim();
-        var website = weburl;
+        let none = '<i>(None Entered)</i>';
+        let weburl = blankIfNull(exhibitorData.website).trim();
+        let website = weburl;
         if (weburl != "") {
             if (weburl.substring(0, 8) != 'https://')
                 weburl = 'https://' + weburl;
         } else {
             website = none;
         }
-        var exhibitorName = blankIfNull(exhibitorData.exhibitorName).trim() == '' ? none :  exhibitorData.exhibitorName.trim();
-        var artistName = blankIfNull(exhibitorData.artistName).trim() == '' ? none :  exhibitorData.artistName.trim();
-        var artistName = blankIfNull(exhibitorData.artistPayee).trim() == '' ? none :  exhibitorData.artistPayee.trim();
-        var exhibitorPhone = blankIfNull(exhibitorData.exhibitorPhone).trim() == '' ? none :  exhibitorData.exhibitorPhone.trim();
-        var exhibitorInfo = `
+        let exhibitorName = blankIfNull(exhibitorData.exhibitorName).trim() == '' ? none :  exhibitorData.exhibitorName.trim();
+        let artistName = blankIfNull(exhibitorData.artistName).trim() == '' ? none :  exhibitorData.artistName.trim();
+        let artistPayee = blankIfNull(exhibitorData.artistPayee).trim() == '' ? none :  exhibitorData.artistPayee.trim();
+        let exhibitorPhone = blankIfNull(exhibitorData.exhibitorPhone).trim() == '' ? none :  exhibitorData.exhibitorPhone.trim();
+        let exhibitorInfo = `
             <div class="row">
                 <div class="col-sm-4">Exhibitor Id/Number:</div>
                 <div class="col-sm-8 p-0 ms-0 me-0">` + exhibitorData.exhibitorId + '/' + exhibitorData.exhibitorNumber + `</div>
@@ -1291,25 +1291,25 @@ class exhibitorsAdm {
     }
     // locations button click
     showLocations(id) {
-        var row = this.#spacesTable.getRow(id).getData();
-        var summary = row.summary;
-        var exhibitorId = row.exhibitorId;
-        var locations = row.locations;
-        var exhibitorRow = this.#exhibitorsTable.getRow(exhibitorId);
-        var exhibitorData = exhibitorRow.getData();
+        let row = this.#spacesTable.getRow(id).getData();
+        let summary = row.summary;
+        let exhibitorId = row.exhibitorId;
+        let locations = row.locations;
+        let exhibitorRow = this.#exhibitorsTable.getRow(exhibitorId);
+        let exhibitorData = exhibitorRow.getData();
         exhibitorData.exhibitorNumber = row.exhibitorNumber;
         exhibitorData.exhibitorRegionYearId = row.exhibitorRegionYearId;
-        var exhibitor = row.exhibitorName;
-        var mailInAllowed = row.mailInAllowed;
+        let exhibitor = row.exhibitorName;
+        let mailInAllowed = row.mailInAllowed;
 
         // build exhibitor info block
-        var exhibitorInfo = this.buildExhibitorInfoBlock(exhibitorData, mailInAllowed);
+        let exhibitorInfo = this.buildExhibitorInfoBlock(exhibitorData, mailInAllowed);
 
         // build locations used block
-        var locationsusedHTML = "<div class='row p-0 m-0'>"
-        var colno = 0;
+        let locationsusedHTML = "<div class='row p-0 m-0'>"
+        let colno = 0;
 
-        for (var location in this.#locationsUsed) {
+        for (let location in this.#locationsUsed) {
             colno++;
             if (colno > 12) {
                 locationsusedHTML += "</div>\n<div class='row p-0 m-0'>";
@@ -1320,9 +1320,9 @@ class exhibitorsAdm {
         locationsusedHTML += "</div>\n";
 
 
-        var exhibitorData = this.#spacesTable.getRow(id).getData();
-        document.getElementById('locations-edit-title').innerHTML = "<strong>Locations for " + exhibitor + " (" + exhibitorId + ":" + exhibitorData.exhibitorYearId +
-            "," + exhibitorData.exhibitorRegionYearId +  ")</strong>";
+        exhibitorData = this.#spacesTable.getRow(id).getData();
+        document.getElementById('locations-edit-title').innerHTML = "<strong>Locations for " + exhibitor +
+            " (" + exhibitorId + ":" + exhibitorData.exhibitorYearId + "," + exhibitorData.exhibitorRegionYearId +  ")</strong>";
         document.getElementById("spaceHTML").innerHTML = summary.replace("\n", "<br/>");
         document.getElementById("locationsVal").value = locations;
         document.getElementById("spaceRowId").value = id;
@@ -1335,10 +1335,10 @@ class exhibitorsAdm {
 
     // exhButtons - three buttons for the exhibitor Record
     exhButtons(cell, formatterParams, onRendered) {
-        var row = cell.getData();
-        var id = row.exhibitorId;
+        let row = cell.getData();
+        let id = row.exhibitorId;
         // edit button
-        var buttons = '<button class="btn btn-secondary" style="--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; ' +
+        let buttons = '<button class="btn btn-secondary" style="--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; ' +
             '--bs-btn-font-size: .75rem;" onclick="exhibitors.edit(' + id + ');">Edit</button>';
 
         buttons += '<button class="btn btn-secondary m-1 ms-2" style="--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; ' +
@@ -1354,19 +1354,19 @@ class exhibitorsAdm {
     }
 
     toHTML(cell,  formatterParams, onRendered) {
-        var item = cell.getValue();
+        let item = cell.getValue();
         return item;
     }
 
     submitLocations() {
-        var locations = document.getElementById('locationsVal').value.trim();
-        var rowId = document.getElementById('spaceRowId').value;
-        var row = this.#spacesTable.getRow(rowId);
+        let locations = document.getElementById('locationsVal').value.trim();
+        let rowId = document.getElementById('spaceRowId').value;
+        let row = this.#spacesTable.getRow(rowId);
         row.getCell("locations").setValue(locations);
         this.#locationsModal.hide();
 
-        var exhibitorRegionYearId = row.getCell("exhibitorRegionYearId").getValue();
-        var regionYearId = row.getCell("regionYearId").getValue();
+        let exhibitorRegionYearId = row.getCell("exhibitorRegionYearId").getValue();
+        let regionYearId = row.getCell("regionYearId").getValue();
 
         clear_message();
         clearError();
@@ -1403,21 +1403,22 @@ class exhibitorsAdm {
     // tabulator button formatters
 
     spaceButtons(cell, formatterParams, onRendered) {
-        var data = cell.getData();
-        var req = data.req || 0;
-        var app = data.app || 0;
-        var pur = data.pur || 0;
-        var transid = data.transid || 0;
-        var agentRequest = data.agentRequest || '';
-        var id = data.id;
-        var buttons = '';
-        var approvalBtns = req > 0 && pur == 0;
-        var paidBtns = transid > 0;
-        var invBtns = data.inv > 0;
-        var agentBtns = agentRequest != '' && !agentRequest.startsWith('Processed: ');
+        let data = cell.getData();
+        let req = data.req || 0;
+        let app = data.app || 0;
+        let pur = data.pur || 0;
+        let transid = data.transid || 0;
+        let agentRequest = data.agentRequest || '';
+        let id = data.id;
+        let exhibitorRegionYearId = data.exhibitorRegionYearId;
+        let buttons = '';
+        let approvalBtns = req > 0 && pur == 0;
+        let paidBtns = transid > 0;
+        let invBtns = data.inv > 0;
+        let agentBtns = agentRequest != '' && !agentRequest.startsWith('Processed: ');
 
         // determine if we need the margin for the first section of buttons
-        var margin = (invBtns || agentBtns) ? ' mb-2' : '';
+        let margin = (invBtns || agentBtns) ? ' mb-2' : '';
 
         // details button
         buttons += '<button class="btn btn-sm btn-info' + margin + '" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
@@ -1493,12 +1494,12 @@ class exhibitorsAdm {
 
     // request approval buttons
     approvalButton(cell, formatterParams, onRendered) {
-        var data = cell.getData();
-        var id = data.id;
-        var b1 = data.b1;
-        var approval = data.approval || 'none';
-        var name = formatterParams.name;
-        var color = 'secondary';
+        let data = cell.getData();
+        let id = data.id;
+        let b1 = data.b1;
+        let approval = data.approval || 'none';
+        let name = formatterParams.name;
+        let color = 'secondary';
 
         switch (approval) {
             case 'none':
@@ -1749,7 +1750,7 @@ class exhibitorsAdm {
 
     // reset a contact's password
     resetCpw(exhibitorId) {
-        var exhibitorYearId = this.#exhibitorsTable.getRow(exhibitorId).getCell("exhibitorYearId").getValue();
+        let exhibitorYearId = this.#exhibitorsTable.getRow(exhibitorId).getCell("exhibitorYearId").getValue();
         clear_message();
         clearError();
         $.ajax({
@@ -1799,7 +1800,7 @@ class exhibitorsAdm {
         // show the receipt
     spaceReceipt(id) {
         this.#spaceRow = this.#spacesTable.getRow(id);
-        var exhibitorData = this.#spaceRow.getData();
+        let exhibitorData = this.#spaceRow.getData();
         this.#regionYearId = exhibitorData.regionYearId;
         this.#exhibitorId = exhibitorData.exhibitorId;
         exhibitorReceipt.showReceipt(this.#regionYearId, this.#exhibitorId);
@@ -1807,22 +1808,22 @@ class exhibitorsAdm {
 
     printBidSheets(id) {
         this.#spaceRow = this.#spacesTable.getRow(id);
-        var exhibitorData = this.#spaceRow.getData();
-        var script = "scripts/exhibitorsBidSheets.php?type=bidsheets&region=" + exhibitorData.regionYearId + "&eyid=" + exhibitorData.exhibitorYearId;
+        let exhibitorData = this.#spaceRow.getData();
+        let script = "scripts/exhibitorsBidSheets.php?type=bidsheets&region=" + exhibitorData.regionYearId + "&eyid=" + exhibitorData.exhibitorYearId;
         window.open(script, "_blank")
     }
 
     printPriceTags(id) {
         this.#spaceRow = this.#spacesTable.getRow(id);
-        var exhibitorData = this.#spaceRow.getData();
-        var script = "scripts/exhibitorsBidSheets.php?type=printshop&region=" + exhibitorData.regionYearId + "&eyid=" + exhibitorData.exhibitorYearId;
+        let exhibitorData = this.#spaceRow.getData();
+        let script = "scripts/exhibitorsBidSheets.php?type=printshop&region=" + exhibitorData.regionYearId + "&eyid=" + exhibitorData.exhibitorYearId;
         window.open(script, "_blank")
     }
 
     printControlSheet(id, email) {
         this.#spaceRow = this.#spacesTable.getRow(id);
-        var exhibitorData = this.#spaceRow.getData();
-        var script = "scripts/exhibitorsBidSheets.php?type=control&region=" + exhibitorData.regionYearId + "&eyid=" + exhibitorData.exhibitorYearId + '&email=' + email;
+        let exhibitorData = this.#spaceRow.getData();
+        let script = "scripts/exhibitorsBidSheets.php?type=control&region=" + exhibitorData.regionYearId + "&eyid=" + exhibitorData.exhibitorYearId + '&email=' + email;
         window.open(script, "_blank")
     }
 
@@ -1830,15 +1831,16 @@ class exhibitorsAdm {
     // process appove requested
     spaceApprovalReq(id) {
         this.#spaceRow = this.#spacesTable.getRow(id);
-        var exhibitorData = this.#spaceRow.getData();
-        var req = exhibitorData.req || 0;
-        var app = exhibitorData.app || 0;
-        var pur = exhibitorData.pur || 0;
+        let exhibitorData = this.#spaceRow.getData();
+        let req = exhibitorData.req || 0;
+        let app = exhibitorData.app || 0;
+        let pur = exhibitorData.pur || 0;
         if (req == 0 || pur > 0)
             return; // suppress click if there is nothing to approve
 
         clear_message();
         clearError();
+        this.#regionYearId = exhibitorData.regionYearId;
         $.ajax({
             url: 'scripts/exhibitorsSpaceApproval.php',
             method: "POST",
@@ -1855,10 +1857,10 @@ class exhibitorsAdm {
     spaceApprovalOther(id, pay = 0) {
         this.#spaceRow = this.#spacesTable.getRow(id);
         this.#approvalPay = pay;
-        var exhibitorData = this.#spaceRow.getData();
-        var req = exhibitorData.req || 0;
-        var app = exhibitorData.app || 0;
-        var pur = exhibitorData.pur || 0;
+        let exhibitorData = this.#spaceRow.getData();
+        let req = exhibitorData.req || 0;
+        let app = exhibitorData.app || 0;
+        let pur = exhibitorData.pur || 0;
         if (req == 0 || pur > 0)
             return; // suppress click if there is nothing to approve
 
@@ -1893,7 +1895,7 @@ class exhibitorsAdm {
                 show_message(data.message, 'success');
             if (this.#debug & 8)
                 console.log(data.detail);
-            var exhRow = this.#buildSpacesItems(data);
+            let exhRow = this.#buildSpacesItems(data);
             if (this.#debug & 8)
                 console.log(exhRow);
             this.#spacesTable.updateData(exhRow);
@@ -1926,8 +1928,8 @@ class exhibitorsAdm {
     addNewSpace() {
         clear_message();
         this.#exhibitorChooseTitle.innerHTML = 'Add Space to Which Exhibitor? (only exhibitors with no paid spaces in this region are shown)';
-        var script = 'scripts/exhibitorsGetList.php';
-        var data = {
+        let script = 'scripts/exhibitorsGetList.php';
+        let data = {
             regionId: this.#regionId,
             action: 'list',
             exhibitorConid: config.exhibitorConid,
@@ -1983,9 +1985,9 @@ class exhibitorsAdm {
 
     // buttons for the exhibitorListTable
     exhibitorListButtons(cell, formatterParams, onRendered) {
-        var data = cell.getData();
-        var id = data.exhibitorId;
-        var buttons = '';
+        let data = cell.getData();
+        let id = data.exhibitorId;
+        let buttons = '';
 
         // add space button button
         buttons += '<button class="btn btn-sm btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;" ' +
@@ -2004,8 +2006,8 @@ class exhibitorsAdm {
         this.#exhibitorListTable = null;
         console.log("add/pay for space for exhibitor " + this.#exhibitorId + ', in exhibitsRegion ' + this.#regionId);
 
-        var script = 'scripts/exhibitorGetSingleData.php';
-        var data = {
+        let script = 'scripts/exhibitorGetSingleData.php';
+        let data = {
             exhibitorId: this.#exhibitorId,
             regionId: this.#regionId,
             action: 'get',
