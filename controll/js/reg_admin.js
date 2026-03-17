@@ -10,7 +10,7 @@ rules = null;
 configEditor = null;
 checkConfigReload = true;
 conid = null;
-var editPreviewClass = null;
+editPreviewClass = null;
 memLabels = null;
 memLabelsIdx = null;
 memLabelsNext = null;
@@ -162,8 +162,8 @@ window.onload = function initpage() {
 // filters for RegistrationList
 // click functions to toggle a single row in a filter
 function catclicked(e, cell) {
-    var filtercell = cell.getRow().getCell("memCategory");
-    var value = filtercell.getValue();
+    let filtercell = cell.getRow().getCell("memCategory");
+    let value = filtercell.getValue();
     if (filtercell.getElement().classList.contains('selectedBGColor')) {
         registrationtable.removeFilter("category", "in", catfilter);
         catfilter = catfilter.filter(arrayItem => arrayItem !== value);
@@ -182,8 +182,8 @@ function catclicked(e, cell) {
 }
 
 function typeclicked(e, cell) {
-    var filtercell = cell.getRow().getCell("memType");
-    var value = filtercell.getValue();
+    let filtercell = cell.getRow().getCell("memType");
+    let value = filtercell.getValue();
     if (filtercell.getElement().classList.contains('selectedBGColor')) {
         registrationtable.removeFilter("type", "in", typefilter);
         typefilter = typefilter.filter(arrayItem => arrayItem !== value);
@@ -202,8 +202,8 @@ function typeclicked(e, cell) {
 }
 
 function ageclicked(e, cell) {
-    var filtercell = cell.getRow().getCell("memAge");
-    var value = filtercell.getValue();
+    let filtercell = cell.getRow().getCell("memAge");
+    let value = filtercell.getValue();
     if (filtercell.getElement().classList.contains('selectedBGColor')) {
         registrationtable.removeFilter("age", "in", agefilter);
         agefilter = agefilter.filter(arrayItem => arrayItem !== value);
@@ -222,8 +222,8 @@ function ageclicked(e, cell) {
 }
 
 function priceclicked(e, cell) {
-    var filtercell = cell.getRow().getCell("price");
-    var value = filtercell.getValue();
+    let filtercell = cell.getRow().getCell("price");
+    let value = filtercell.getValue();
     if (filtercell.getElement().classList.contains('selectedBGColor')) {
         registrationtable.removeFilter("price", "in", pricefilter);
         pricefilter = pricefilter.filter(arrayItem => arrayItem !== value);
@@ -242,8 +242,8 @@ function priceclicked(e, cell) {
 }
 
 function labelclicked(e, cell) {
-    var filtercell = cell.getRow().getCell("label");
-    var value = filtercell.getValue();
+    let filtercell = cell.getRow().getCell("label");
+    let value = filtercell.getValue();
     if (filtercell.getElement().classList.contains('selectedBGColor')) {
         registrationtable.removeFilter("label", "in", labelfilter);
         labelfilter = labelfilter.filter(arrayItem => arrayItem !== value);
@@ -262,7 +262,7 @@ function labelclicked(e, cell) {
 }
 
 function couponclicked(e, cell) {
-    var filtercell = cell.getRow().getCell("name");
+    let filtercell = cell.getRow().getCell("name");
     value = filtercell.getValue();
     if (filtercell.getElement().classList.contains('selectedBGColor')) {
         registrationtable.removeFilter("name", "in", couponfilter);
@@ -282,7 +282,7 @@ function couponclicked(e, cell) {
 }
 
 function statusclicked(e, cell) {
-    var filtercell = cell.getRow().getCell("name");
+    let filtercell = cell.getRow().getCell("name");
     value = filtercell.getValue();
     if (filtercell.getElement().classList.contains('selectedBGColor')) {
         registrationtable.removeFilter("status", "in", statusfilter);
@@ -306,56 +306,56 @@ function clearfilter() {
     if (typefilter.length > 0) {
         registrationtable.removeFilter("type", "in", typefilter);
         typefilter = [];
-        var rows = type.getRows();
-        for (var row of rows) {
+        let rows = type.getRows();
+        for (let row of rows) {
             row.getCell("memType").getElement().classList.remove('selectedBGColor');
         }
     }
     if (catfilter.length > 0) {
         registrationtable.removeFilter("category", "in", catfilter);
         catfilter = [];
-        var rows = category.getRows();
-        for (var row of rows) {
+        let rows = category.getRows();
+        for (let row of rows) {
             row.getCell("memCategory").getElement().classList.remove('selectedBGColor');
         }
     }
     if (agefilter.length > 0) {
         registrationtable.removeFilter("age", "in", agefilter);
         agefilter = [];
-        var rows = age.getRows();
-        for (var row of rows) {
+        let rows = age.getRows();
+        for (let row of rows) {
             row.getCell("memAge").getElement().classList.remove('selectedBGColor');
         }
     }
     if (pricefilter.length > 0) {
         registrationtable.removeFilter("price", "in", pricefilter);
         pricefilter = [];
-        var rows = price.getRows();
-        for (var row of rows) {
+        let rows = price.getRows();
+        for (let row of rows) {
             row.getCell("price").getElement().classList.remove('selectedBGColor');
         }
     }
     if (labelfilter.length > 0) {
         registrationtable.removeFilter("label", "in", labelfilter);
         labelfilter = [];
-        var rows = label.getRows();
-        for (var row of rows) {
+        let rows = label.getRows();
+        for (let row of rows) {
             row.getCell("label").getElement().classList.remove('selectedBGColor');
         }
     }
     if (couponfilter.length > 0) {
         registrationtable.removeFilter("name", "in", couponfilter);
         couponfilter = [];
-        var rows = coupon.getRows();
-        for (var row of rows) {
+        let rows = coupon.getRows();
+        for (let row of rows) {
             row.getCell("name").getElement().classList.remove('selectedBGColor');
         }
     }
     if (statusfilter.length > 0) {
         registrationtable.removeFilter("name", "in", statusfilter);
         statusfilter = [];
-        var rows = statusTable.getRows();
-        for (var row of rows) {
+        let rows = statusTable.getRows();
+        for (let row of rows) {
             row.getCell("name").getElement().classList.remove('selectedBGColor');
         }
     }
@@ -522,15 +522,15 @@ function draw_stats(data) {
 
 // display actions as buttons in a cell for this membership
 function actionbuttons(cell, formatterParams, onRendered) {
-    var data = cell.getData();
-    var perid = data.perid;
-    var paid = data.paid;
-    var ncount = data.ncount;
-    var hcount = data.hcount;
-    var complete_trans = data.complete_trans;
-    var index = cell.getRow().getIndex();
+    let data = cell.getData();
+    let perid = data.perid;
+    let paid = data.paid;
+    let ncount = data.ncount;
+    let hcount = data.hcount;
+    let complete_trans = data.complete_trans;
+    let index = cell.getRow().getIndex();
 
-    var btns = "";
+    let btns = "";
     if (limitConid >= (conid - config.rolloverYears) && limitConid < (conid + 1) && perid > 0) {
         btns += '<button class="btn btn-secondary me-1" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
             ' onclick="changeReg(' + index + ')">Chgs</button>';
@@ -567,8 +567,8 @@ function displayReceipt(data) {
 }
 
 function receipt_email(addrchoice) {
-    var email = recepitEmailAddress;
-    var success='';
+    let email = recepitEmailAddress;
+    let success='';
     if (addrchoice == 'reg') {
         email = document.getElementById('regadminemail').innerHTML;
         success = 'Receipt sent to Regadmin at ' + email;
@@ -580,7 +580,7 @@ function receipt_email(addrchoice) {
     if (success == '')
         success = document.getElementById('emailReceipt').innerHTML.replace("Email Receipt to", "Receipt sent to");
 
-    var data = {
+    let data = {
         email: email,
         okmsg: success,
         text: document.getElementById('receipt-text').innerHTML,
@@ -612,8 +612,8 @@ function receipt_email(addrchoice) {
 }
 // receipt - display a receipt for the transaction for this registration
 function receipt(index) {
-    var row = registrationtable.getRow(index);
-    var transid = row.getCell("complete_trans").getValue();
+    let row = registrationtable.getRow(index);
+    let transid = row.getCell("complete_trans").getValue();
     if (transid == null || transid == '') {
         transid = row.getCell("create_trans").getValue();
     }
@@ -647,11 +647,11 @@ function receipt(index) {
 // display history: use the modal to show the history for this reg id
 function history(index) {
     historyRow = registrationtable.getRow(index).getData();
-    var regid = historyRow.badgeId;
+
     $.ajax({
         method: "POST",
         url: "scripts/regadmin_getRegHistory.php",
-        data: { regid: regid },
+        data: { regid: historyRow.badgeId },
         success: function (data, textstatus, jqxhr) {
             if (data.error !== undefined) {
                 show_message(data.error, 'error');
@@ -675,12 +675,12 @@ function history(index) {
 }
 
 function displayHistory(data) {
-    var  title = "Registration Change History for " + historyRow.create_trans + ':' + historyRow.badgeId;
+    let  title = "Registration Change History for " + historyRow.create_trans + ':' + historyRow.badgeId;
     historyTitle.innerHTML = title
     title += "<br/>Person:  " + historyRow.fullName + ' (' + historyRow.perid + "), Email: " + historyRow.email_addr +
         "<br/>Membership: " + historyRow.label;
     // build the history display
-    var html = '<div class="row"><div class="col-sm-12"><h1 class="h3">' + title + '</h1></div></div>';
+    let html = '<div class="row"><div class="col-sm-12"><h1 class="h3">' + title + '</h1></div></div>';
     // format the heading line
     html += "<div class='row'>\n" +
         "<div class='col-sm-2'>Change Date</div>\n" +
@@ -695,12 +695,15 @@ function displayHistory(data) {
         "<div class='col-sm-1'>Status</div>\n" +
         "</div>\n";
     // format the current line
-    var current = data.history[0];
-    var color = '';
-    var prior = data.history[0];
-    for (var i = 0; i < data.history.length; i++) {
-        var current = data.history[i];
-        html += "<div class='row'>\n";
+    let current = data.history[0];
+    let color = '';
+    let rowColor = false;
+    let prior = data.history[0];
+    for (let i = 0; i < data.history.length; i++) {
+        let current = data.history[i];
+        let curColor = rowColor ? "#FFFFFF" : "#F0F0F0 ";
+        rowColor = !rowColor;
+        html += "<div class='row' style='background-color: " + curColor + ";'>\n";
 
         // change date
         html += "<div class='col-sm-2'>" + current.change_date + "</div>\n";
@@ -763,12 +766,12 @@ function changeReg(index, clear = true) {
         return;
 
     // get all the regs for this perid for this con to decide what changes to make
-    var data = {
+    let data = {
         perid: perid,
         limitConid: limitConid,
         action: 'regregs',
     };
-    var script = 'scripts/regadmin_getRegs.php';
+    let script = 'scripts/regadmin_getRegs.php';
     $.ajax({
         method: "POST",
         url: script,
@@ -849,8 +852,8 @@ function changeRegsData(data, rowdata) {
     </div>
 `;
 
-    for (var i = 0; i < changeMemberships.length; i++) {
-        var membership = changeMemberships[i];
+    for (let i = 0; i < changeMemberships.length; i++) {
+        let membership = changeMemberships[i];
         if (membership.id == rowdata.badgeId)
             continue;
 
@@ -898,9 +901,9 @@ function changeRegsData(data, rowdata) {
 
 // select All/Clear all - set/clear all of the check boxes in the reg selection list for this perid
 function changeSelectAll(direction) {
-    for (var i = 0; i < changeMemberships.length; i++) {
-        var membership = changeMemberships[i];
-        var id = document.getElementById('m-' + membership.id);
+    for (let i = 0; i < changeMemberships.length; i++) {
+        let membership = changeMemberships[i];
+        let id = document.getElementById('m-' + membership.id);
         if (id)
             id.checked = direction == 1;
     }
@@ -917,11 +920,11 @@ function changeRevoke(direction) {
     editRegDiv.hidden = true;
     changeDirection = direction;
     // check which ones need to be ignored
-    var message = '';
+    let message = '';
     changeList = [];
-    for (var i = 0; i < changeMemberships.length; i++) {
-        var changeItem = changeMemberships[i];
-        var checked = document.getElementById('m-' + changeItem.id).checked;
+    for (let i = 0; i < changeMemberships.length; i++) {
+        let changeItem = changeMemberships[i];
+        let checked = document.getElementById('m-' + changeItem.id).checked;
         if (!checked)
             continue;
 
@@ -948,13 +951,13 @@ function changeRevoke(direction) {
     }
 
     clear_message('changeMessageDiv');
-    var data = {
+    let data = {
         cancelList: changeList,
         direction: direction,
         action: 'cancel',
         source: config.source,
     }
-    var script= 'scripts/regadmin_cancelReg.php';
+    let script= 'scripts/regadmin_cancelReg.php';
 
     $.ajax({
         method: "POST",
@@ -994,12 +997,12 @@ function changeTransfer() {
     editRegDiv.hidden = true;
 
     // check which ones need to be ignored
-    var message = '';
+    let message = '';
     changeList = [];
-    var registrationList = '';
-    for (var i = 0; i < changeMemberships.length; i++) {
-        var changeItem = changeMemberships[i];
-        var checked = document.getElementById('m-' + changeItem.id).checked;
+    let registrationList = '';
+    for (let i = 0; i < changeMemberships.length; i++) {
+        let changeItem = changeMemberships[i];
+        let checked = document.getElementById('m-' + changeItem.id).checked;
         if (!checked)
             continue;
 
@@ -1044,7 +1047,7 @@ function changeTransferFind() {
     }
 
     clear_message('changeMessageDiv');
-    var name_search = transferNameSearchField.value.toLowerCase().trim();
+    let name_search = transferNameSearchField.value.toLowerCase().trim();
     if (name_search == null || name_search == '')  {
         show_message("No search criteria specified", "warn", 'changeMessageDiv');
         return;
@@ -1082,9 +1085,9 @@ function changeTransferFind() {
 
 // show the full perinfo record as a hover in the table
 function build_record_hover(e, cell, onRendered) {
-    var data = cell.getData();
+    let data = cell.getData();
     //console.log(data);
-    var hover_text = 'Person id: ' + data.perid + '<br/>' +
+    let hover_text = 'Person id: ' + data.perid + '<br/>' +
         (data.first_name + ' ' + data.middle_name + ' ' + data.last_name).trim() + '<br/>' +
         data.address_1 + '<br/>';
     if (data.address_2 != '') {
@@ -1104,13 +1107,13 @@ function build_record_hover(e, cell, onRendered) {
 // tabulator formatter for the transfer column for the find results, displays the "transfer" to transfer the membership
 // color based on number of reg records this person already has for this con
 function addTransferIcon(cell, formatterParams, onRendered) { //plain text value
-    var tid;
-    var html = '';
-    var banned = cell.getData().banned == 'Y';
-    var regcnt = cell.getData().regcnt;
-    var color = 'btn-success';
-    var from = cell.getRow().getData().from;
-    var to = cell.getRow().getData().perid;
+    let tid;
+    let html = '';
+    let banned = cell.getData().banned == 'Y';
+    let regcnt = cell.getData().regcnt;
+    let color = 'btn-success';
+    let from = cell.getRow().getData().from;
+    let to = cell.getRow().getData().perid;
 
     if (banned) {
         color = 'btn-danger';
@@ -1122,8 +1125,8 @@ function addTransferIcon(cell, formatterParams, onRendered) { //plain text value
 
 // changeTransferFound - display a list of potential transfer recipients
 function changeTransferFound(data) {
-    var perinfo = data.perinfo;
-    var name_search = data.name_search;
+    let perinfo = data.perinfo;
+    let name_search = data.name_search;
     if (perinfo.length > 0) {
         find_result_table = new Tabulator('#transfer_search_results', {
             maxHeight: "600px",
@@ -1160,8 +1163,8 @@ function transferReg(to, banned) {
     }
 
     clear_message('changeMessageDiv');
-    var script = 'scripts/regadmin_transferReg.php';
-    var data = {
+    let script = 'scripts/regadmin_transferReg.php';
+    let data = {
         action: 'transfer',
         from: changeRowdata.perid,
         to: to,
@@ -1213,15 +1216,15 @@ function changeRollover() {
     transferSearchDiv.hidden = true;
     editRegDiv.hidden = true;
     // check which ones need to be ignored
-    var message = '';
+    let message = '';
     changeList = [];
-    var ageList = {all: 1};
-    var memCat = null;
-    var memAge = null;
+    let ageList = {all: 1};
+    let memCat = null;
+    let memAge = null;
 
-    for (var i = 0; i < changeMemberships.length; i++) {
-        var changeItem = changeMemberships[i];
-        var checked = document.getElementById('m-' + changeItem.id).checked;
+    for (let i = 0; i < changeMemberships.length; i++) {
+        let changeItem = changeMemberships[i];
+        let checked = document.getElementById('m-' + changeItem.id).checked;
         if (!checked)
             continue;
 
@@ -1263,8 +1266,8 @@ function changeRollover() {
 
     // now get the memList entry for this rollover
     memListSelect = [];
-    for (var i = 0; i < memLabelsNext.length; i++) {
-        var memItem = memLabelsNext[i];
+    for (let i = 0; i < memLabelsNext.length; i++) {
+        let memItem = memLabelsNext[i];
         if (ageList[memItem.memAge]) {
             if (allowRolloverCategories.indexOf(memItem.memCategory) >= 0) {
                 memListSelect.push(memItem);
@@ -1273,17 +1276,17 @@ function changeRollover() {
     }
 
     // build the select list
-    var optionList =  "    <option value='auto'>Auto: Auto Select New Registration for this row</option>\n";
+    let optionList =  "    <option value='auto'>Auto: Auto Select New Registration for this row</option>\n";
 
-    for (var i = 0; i < memListSelect.length; i++) {
+    for (let i = 0; i < memListSelect.length; i++) {
         optionList += '   <option value="' + memListSelect[i].id + '">' + memListSelect[i].id + ':' + memListSelect[i].memAge + '-' +
             memListSelect[i].memType + '-' + memListSelect[i].memCategory + ' ' +
             currencyFmt.format(Number(memListSelect[i].price).toFixed(2)) + ' ' + memListSelect[i].shortname + "</option>\n";
     }
     optionList += "    <option value=''>Do Not Create New Registration for this row</option>\n</select>\n";
-    var html = ''
-    for (var i = 0; i < changeList.length; i++) {
-        var item = changeList[i];
+    let html = ''
+    for (let i = 0; i < changeList.length; i++) {
+        let item = changeList[i];
         html += `
     <div class="row mt-2">
         <div class="col-sm-1" style="text-align:right">` + item + `</div>
@@ -1303,11 +1306,11 @@ function changeRollover() {
 
 function changeRolloverExecute() {
     // check that at least one of the reg entries is not "do not create new"
-    var newIds = {};
-    var numIds = 0;
-    for (var i = 0; i < changeList.length; i++) {
-        var newId = document.getElementById('rolloverMemId-' + i).value;
-        var override = document.getElementById('c-' + i).checked;
+    let newIds = {};
+    let numIds = 0;
+    for (let i = 0; i < changeList.length; i++) {
+        let newId = document.getElementById('rolloverMemId-' + i).value;
+        let override = document.getElementById('c-' + i).checked;
         newIds[changeList[i]] = { newid: newId, override: override ? 'Y' : 'N' };
         if (newId != '')
             numIds++;
@@ -1318,12 +1321,12 @@ function changeRolloverExecute() {
         return;
     }
 
-    var data = {
+    let data = {
         rolloverList: newIds,
         action: 'rollover',
         source: config.source,
     }
-    var script= 'scripts/regadmin_rolloverReg.php';
+    let script= 'scripts/regadmin_rolloverReg.php';
 
     $.ajax({
         method: "POST",
@@ -1366,7 +1369,7 @@ function changeRefund() {
 //// Edit Start
 // changeEdit - edit a single registration record within limits
 function changeEdit(badgeId) {
-    var ageList = {all: 1};
+    let ageList = {all: 1};
 
     transferSearchDiv.hidden = true;
     rolloverDiv.hidden = true;
@@ -1374,14 +1377,14 @@ function changeEdit(badgeId) {
 
     currentIndex = badgeId;
     currentRow = registrationtable.getRow(badgeId).getData();
-    var curMemId = currentRow.memId;
+    let curMemId = currentRow.memId;
     ageList[memLabelsIdx[curMemId].memAge] = 1;
 
 
     // build the select list, first the ones for this mem Age and All
-    var memOptionList = '<select id="newMemId" onchange="changeEditRegChange();">' + "\n";
-    for (var i = 0; i < memLabels.length; i++) {
-        var memItem = memLabels[i];
+    let memOptionList = '<select id="newMemId" onchange="changeEditRegChange();">' + "\n";
+    for (let i = 0; i < memLabels.length; i++) {
+        let memItem = memLabels[i];
         if (ageList[memItem.memAge]) {
             memOptionList += '   <option value="' + memItem.id + '"' + (currentRow.memId == memItem.id ? ' selected' : '') + '>' +
             memItem.id + ':' + memItem.memAge + '-' + memItem.memType + '-' + memItem.memCategory + ' ' +
@@ -1389,8 +1392,8 @@ function changeEdit(badgeId) {
         }
     }
     // now the rest of them
-    for (var i = 0; i < memLabels.length; i++) {
-        var memItem = memLabels[i];
+    for (let i = 0; i < memLabels.length; i++) {
+        let memItem = memLabels[i];
         if (!ageList[memItem.memAge]) {
             memOptionList += '   <option value="' + memItem.id + '"' + (currentRow.memId == memItem.id ? ' selected' : '') +'>' +
             memItem.id + ':' + memItem.memAge + '-' + memItem.memType + '-' + memItem.memCategory + ' ' +
@@ -1399,9 +1402,9 @@ function changeEdit(badgeId) {
     }
     memOptionList += "</select>\n";
 
-    var statuses = ['unpaid','plan','paid','cancelled','refunded','transferred','upgraded','rolled-over'];
-    var statusSelect = "<select id='newStatus'>\n";
-    for (var i = 0; i < statuses.length; i++) {
+    let statuses = ['unpaid','plan','paid','cancelled','refunded','transferred','upgraded','rolled-over'];
+    let statusSelect = "<select id='newStatus'>\n";
+    for (let i = 0; i < statuses.length; i++) {
         statusSelect += '<option value="' + statuses[i] + '"' + (currentRow.status == statuses[i] ? ' selected' : '') +
             ">" + statuses[i] + "</option>\n";
     }
@@ -1430,24 +1433,24 @@ function changeEdit(badgeId) {
 
 // changeEditRegChange - populate change fields on reg item change
 function changeEditRegChange() {
-    var regItemId = document.getElementById("newMemId").value;
+    let regItemId = document.getElementById("newMemId").value;
     if (regItemId != '') {
-        var newMemItem = memLabelsIdx[regItemId];
+        let newMemItem = memLabelsIdx[regItemId];
         editNewRegPrice.innerHTML = newMemItem.price;
     }
 }
 
 // changeEditSave - validate the changes and save them
 function changeEditSave(override) {
-    var newMemId = document.getElementById("newMemId").value;
-    var newPrice = editNewPrice.value;
-    var newPaid = null;
-    var newCoupon = editNewCoupon.value;
-    var newDiscount = editNewCouponDiscount.value;
+    let newMemId = document.getElementById("newMemId").value;
+    let newPrice = editNewPrice.value;
+    let newPaid = null;
+    let newCoupon = editNewCoupon.value;
+    let newDiscount = editNewCouponDiscount.value;
     if (newDiscount == '')
         newDiscount = 0.00;
-    var newStatusSelect = document.getElementById("newStatus");
-    var newStatus = null;
+    let newStatusSelect = document.getElementById("newStatus");
+    let newStatus = null;
     if (newStatusSelect)
         newStatus = document.getElementById('newStatus').value;
 
@@ -1462,10 +1465,10 @@ function changeEditSave(override) {
         clear_message('changeMessageDiv');
     } else {
         // now some simple validations
-        var warnings = '';
-        var numWarnings = 0;
+        let warnings = '';
+        let numWarnings = 0;
         if (config.finance == 1) {
-            var balanceDue = +Number(Number(newPrice) - (Number(newPaid) + Number(newDiscount))).toFixed(2);
+            let balanceDue = +Number(Number(newPrice) - (Number(newPaid) + Number(newDiscount))).toFixed(2);
             if (newPrice != +Number(Number(newPaid) + Number(newDiscount)).toFixed(2)) {
                 warnings += 'Price of ' + newPrice + ' does not equal the sum of Paid + Coupon Discount of ' +
                     (Number(newPaid) + Number(newDiscount)) + '<br/>';
@@ -1504,7 +1507,7 @@ function changeEditSave(override) {
         }
     }
     // ok, a clean validition or an overide, do the save
-    var data = {
+    let data = {
         action: 'edit',
         old: currentRow,
         id: currentRow.badgeId,
@@ -1518,7 +1521,7 @@ function changeEditSave(override) {
         },
         source: config.source,
     };
-    var script = 'scripts/regadmin_editReg.php';
+    let script = 'scripts/regadmin_editReg.php';
     $.ajax({
         method: "POST",
         url: script,
@@ -1648,9 +1651,9 @@ function reglistDownload(format) {
     if (registrationtable == null)
         return;
 
-    var filename = 'registrations';
-    var tabledata = JSON.stringify(registrationtable.getData("active"));
-    var excludeList = ['hcount','ncount'];
+    let filename = 'registrations';
+    let tabledata = JSON.stringify(registrationtable.getData("active"));
+    let excludeList = ['hcount','ncount'];
     downloadFilePost(format, filename, tabledata, excludeList);
 }
 
@@ -1723,8 +1726,8 @@ function getData(style) {
 }
 
 function sendCancel() {
-    var tid = prompt("Would you like to send a test email?\nIf so please enter the transaction you want to send the test for.\n");
-    var action = "none";
+    let tid = prompt("Would you like to send a test email?\nIf so please enter the transaction you want to send the test for.\n");
+    let action = "none";
 
     if (tid == null) {
         if (confirm("You are about to send email to a lot of people.  Are you sure?")) {
@@ -1754,10 +1757,10 @@ function sendCancel() {
 function sendEmail(type) {
     emailBulkSend = new EmailBulkSend('result_message', 'scripts/sendBatch.php');
 
-    var email = prompt("Would you like to send a test " + type + " email?\nIf so please enter the address to send the test to in the box below and click ok.\n" +
+    let email = prompt("Would you like to send a test " + type + " email?\nIf so please enter the address to send the test to in the box below and click ok.\n" +
         "If you don't provide a test address, you will be sending emails to a lot of people.\nYou will be give a chance to review the number of emails to be sent before they are sent out.\n" +
         "Clicking cancel will cancel the sending of these emails.\n");
-    var action = "none";
+    let action = "none";
 
     if (email == null)
         return false;
@@ -1768,7 +1771,7 @@ function sendEmail(type) {
         action = 'test';
     }
 
-    var data = { 'action': action, 'email': email, 'type': type };
+    let data = { 'action': action, 'email': email, 'type': type };
     emailBulkSend.getEmailAndList('scripts/sendEmail.php', data );
 }
 
@@ -1910,14 +1913,14 @@ function cellChanged(cell) {
 }
 
 function deleteicon(cell, formattParams, onRendered) {
-    var value = cell.getValue();
+    let value = cell.getValue();
     if (value == 0)
         return "&#x1F5D1;";
     return value;
 }
 
 function deleterow(e, row) {
-    var count = row.getCell("uses").getValue();
+    let count = row.getCell("uses").getValue();
     if (count == 0) {
         row.getCell("to_delete").setValue(1);
         row.getCell("uses").setValue('<span style="color:red;"><b>Del</b></span>');

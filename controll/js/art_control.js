@@ -428,10 +428,13 @@ function displayArtItemHistory(data) {
     // format the current line
     let current = data['history'][0];
     let color = '';
+    let rowColor = false;
     let prior = data['history'][0];
     for (let i = 0; i < data['history'].length; i++) {
         let current = data['history'][i];
-        html += "<div class='row mt-2'>\n";
+        let curColor = rowColor ? "#FFFFFF" : "#F0F0F0 ";
+        rowColor = !rowColor;
+        html += "<div class='row pt-2' style='background-color: " + curColor + ";'>\n";
 
         // change date
         html += "<div class='col-sm-2'>" + current.historyDate + "</div>\n";
@@ -446,7 +449,7 @@ function displayArtItemHistory(data) {
         html += "<div class='col-sm-2" + color + "'>" + current.status + "</div>\n</div>\n";
         // quantity
         color = (prior.quantity != current.quantity || prior.original_qty != current.original_qty) ? ' historyChangedBGColor' : '';
-        html += "<div class='row'>\n<div class='col-sm-1'>" +
+        html += "<div class='row' style='background-color: " + curColor + ";'>\n<div class='col-sm-1'>" +
             "</div><div class='col-sm-1" + color + "'>" + current.quantity + ' of ' + current.original_qty + "</div>\n";
         // location
         color = prior.location != current.location ? ' historyChangedBGColor' : '';
@@ -469,7 +472,7 @@ function displayArtItemHistory(data) {
         // notes
         if (prior.notes != null || current.notes != null) {
             color = prior.notes != current.notes ? ' historyChangedBGColor' : '';
-            html += "<div class='row'>\n<div class='col-sm-1'></div>\n<div class='col-sm-11" + color + "'>" + current.notes + "</div>\n";
+            html += "<div class='row' style='background-color: " + curColor + ";'>\n<div class='col-sm-1'></div>\n<div class='col-sm-11" + color + "'>" + current.notes + "</div>\n";
             html += "</div>\n";
         }
         prior = current;
