@@ -3551,7 +3551,7 @@ class Pos {
             });
             this.#pay_currentOrderId = null;
         }
-        startOver(1);
+        this.startOver(1);
         return true;
     }
 }
