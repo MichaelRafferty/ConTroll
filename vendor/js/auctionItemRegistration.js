@@ -379,7 +379,9 @@ class AuctionItemRegistration {
         for(let index = 0; index < marks.length; index++) {
             let mark = marks[index];
             let row = table.getRow(mark.item_key);
-            row.getCell(mark.field).getElement().style.backgroundColor = "#ffc0c0";
+            if (row.classList.contains('unsavedWarnBGColor')) {
+                row.classList.add('unsavedWarnBGColor');
+            }
         }
     }
 
