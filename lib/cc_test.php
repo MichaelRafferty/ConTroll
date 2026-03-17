@@ -27,6 +27,13 @@ Scenario: <select name='ccnum' id="test_ccnum">
 <input type="submit" id="purchase" onclick="makePurchase('test_ccnum', 'purchase')" value="Purchase">
 EOS;
     }
+    $html .= <<<EOS
+<script type="text/javascript">
+    function startCC() {
+        console.log("startCC called from cc_test");
+    }
+</script>
+EOS;
     return $html;
 }
 
@@ -547,6 +554,8 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
             $category = 'vendor';
         else
             $category = 'artshow';
+    } else if ($ccParams['source'] == 'artsales') {
+        $category = 'artsales';
     } else {
         $category = 'reg';
     }
@@ -574,7 +583,7 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
         $pNonce = 'cc_test';
     }
 
-    $desc = 'cc_test: test reg';
+    $desc = 'cc_test: ' . $ccParams['desc'];
     $paymentType = 'credit';
     $sourceId = $ccParams['nonce'];
     if ($sourceId == 'CASH') {

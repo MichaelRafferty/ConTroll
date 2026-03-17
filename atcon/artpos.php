@@ -1,6 +1,7 @@
 <?php
 
 require_once "lib/base.php";
+require_once('../lib/cc__load_methods.php');
 require_once "../lib/tax.php";
 
 if (!isSessionVar('user')) {
@@ -112,6 +113,11 @@ page_init($page, $tab,
                     $cdn['tabjs'], 'js/artpos_cart.js', 'js/artpos.js'),
     $config_vars
     );
+if ($config_vars['creditonline'] == 1) {
+    $cc = get_conf('cc');
+    load_cc_procs();
+    echo draw_cc_html($cc, '--', 'js');
+}
 if (count($regionList) > 1) {
 ?>
 <div id='tabs'>

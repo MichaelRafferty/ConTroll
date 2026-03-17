@@ -970,6 +970,8 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     // set category based on if exhibits is a portal type
     if (array_key_exists('exhibits', $ccParams)) {
        $category =  $ccParams['exhibits'];
+    } else if ($ccParams['source'] == 'artsales') {
+        $category = 'artsales';
     } else {
         $category = 'reg';
     }
