@@ -1216,7 +1216,7 @@ class rulesSetup {
         for (var row of rows) {
             var name = row.getCell(this.#selIndex).getValue().toString();
             if (this.#selValues.includes(name)) {
-                addFieldClass(row.getCell(this.#selIndex).getElement(), selectedBGColor');
+                addFieldClass(row.getCell(this.#selIndex).getElement(), 'selectedBGColor');
             }
         }
         if (this.#selIndex == 'id')
