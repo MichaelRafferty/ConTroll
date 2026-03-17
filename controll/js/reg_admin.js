@@ -10,7 +10,7 @@ rules = null;
 configEditor = null;
 checkConfigReload = true;
 conid = null;
-editPreviewClass = null;
+var editPreviewClass = null;
 memLabels = null;
 memLabelsIdx = null;
 memLabelsNext = null;
@@ -164,140 +164,140 @@ window.onload = function initpage() {
 function catclicked(e, cell) {
     var filtercell = cell.getRow().getCell("memCategory");
     var value = filtercell.getValue();
-    if (filtercell.getElement().style.backgroundColor) {
+    if (filtercell.getElement().classList.contains('selectedBGColor')) {
         registrationtable.removeFilter("category", "in", catfilter);
         catfilter = catfilter.filter(arrayItem => arrayItem !== value);
         if (catfilter.length > 0) {
             registrationtable.addFilter("category", "in", catfilter);
         }
-        filtercell.getElement().style.backgroundColor = "";
+        filtercell.getElement().classList.remove('selectedBGColor');
     } else {
         if (catfilter.length > 0) {
             registrationtable.removeFilter("category", "in", catfilter);
         }
         catfilter.push(value);
         registrationtable.addFilter("category", "in", catfilter);
-        filtercell.getElement().style.backgroundColor = "#C0FFC0";
+        filtercell.getElement().classList.add('selectedBGColor');
     }
 }
 
 function typeclicked(e, cell) {
     var filtercell = cell.getRow().getCell("memType");
     var value = filtercell.getValue();
-    if (filtercell.getElement().style.backgroundColor) {
+    if (filtercell.getElement().classList.contains('selectedBGColor')) {
         registrationtable.removeFilter("type", "in", typefilter);
         typefilter = typefilter.filter(arrayItem => arrayItem !== value);
         if (typefilter.length > 0) {
             registrationtable.addFilter("type", "in", typefilter);
         }
-        filtercell.getElement().style.backgroundColor = "";
+        filtercell.getElement().classList.remove('selectedBGColor');
     } else {
         if (typefilter.length > 0) {
             registrationtable.removeFilter("type", "in", typefilter);
         }
         typefilter.push(value);
         registrationtable.addFilter("type", "in", typefilter);
-        filtercell.getElement().style.backgroundColor = "#C0FFC0";
+        filtercell.getElement().classList.add('selectedBGColor');
     }
 }
 
 function ageclicked(e, cell) {
     var filtercell = cell.getRow().getCell("memAge");
     var value = filtercell.getValue();
-    if (filtercell.getElement().style.backgroundColor) {
+    if (filtercell.getElement().classList.contains('selectedBGColor')) {
         registrationtable.removeFilter("age", "in", agefilter);
         agefilter = agefilter.filter(arrayItem => arrayItem !== value);
         if (agefilter.length > 0) {
             registrationtable.addFilter("age", "in", agefilter);
         }
-        filtercell.getElement().style.backgroundColor = "";
+        filtercell.getElement().classList.remove('selectedBGColor');
     } else {
         if (agefilter.length > 0) {
             registrationtable.removeFilter("age", "in", agefilter);
         }
         agefilter.push(value);
         registrationtable.addFilter("age", "in", agefilter);
-        filtercell.getElement().style.backgroundColor = "#C0FFC0";
+        filtercell.getElement().classList.add('selectedBGColor');
     }
 }
 
 function priceclicked(e, cell) {
     var filtercell = cell.getRow().getCell("price");
     var value = filtercell.getValue();
-    if (filtercell.getElement().style.backgroundColor) {
+    if (filtercell.getElement().classList.contains('selectedBGColor')) {
         registrationtable.removeFilter("price", "in", pricefilter);
         pricefilter = pricefilter.filter(arrayItem => arrayItem !== value);
         if (pricefilter.length > 0) {
             registrationtable.addFilter("price", "in", pricefilter);
         }
-        filtercell.getElement().style.backgroundColor = "";
+        filtercell.getElement().classList.remove('selectedBGColor');
     } else {
         if (pricefilter.length > 0) {
             registrationtable.removeFilter("price", "in", pricefilter);
         }
         pricefilter.push(value);
         registrationtable.addFilter("price", "in", pricefilter);
-        filtercell.getElement().style.backgroundColor = "#C0FFC0";
+        filtercell.getElement().classList.add('selectedBGColor');
     }
 }
 
 function labelclicked(e, cell) {
     var filtercell = cell.getRow().getCell("label");
     var value = filtercell.getValue();
-    if (filtercell.getElement().style.backgroundColor) {
+    if (filtercell.getElement().classList.contains('selectedBGColor')) {
         registrationtable.removeFilter("label", "in", labelfilter);
         labelfilter = labelfilter.filter(arrayItem => arrayItem !== value);
         if (labelfilter.length > 0) {
             registrationtable.addFilter("label", "in", labelfilter);
         }
-        filtercell.getElement().style.backgroundColor = "";
+        filtercell.getElement().classList.remove('selectedBGColor');
     } else {
         if (labelfilter.length > 0) {
             registrationtable.removeFilter("label", "in", labelfilter);
         }
         labelfilter.push(value);
         registrationtable.addFilter("label", "in", labelfilter);
-        filtercell.getElement().style.backgroundColor = "#C0FFC0";
+        filtercell.getElement().classList.add('selectedBGColor');
     }
 }
 
 function couponclicked(e, cell) {
     var filtercell = cell.getRow().getCell("name");
     value = filtercell.getValue();
-    if (filtercell.getElement().style.backgroundColor) {
+    if (filtercell.getElement().classList.contains('selectedBGColor')) {
         registrationtable.removeFilter("name", "in", couponfilter);
         couponfilter = couponfilter.filter(arrayItem => arrayItem !== value);
         if (couponfilter.length > 0) {
             registrationtable.addFilter("name", "in", couponfilter);
         }
-        filtercell.getElement().style.backgroundColor = "";
+        filtercell.getElement().classList.remove('selectedBGColor');
     } else {
         if (couponfilter.length > 0) {
             registrationtable.removeFilter("name", "in", couponfilter);
         }
         couponfilter.push(value);
         registrationtable.addFilter("name", "in", couponfilter);
-        filtercell.getElement().style.backgroundColor = "#C0FFC0";
+        filtercell.getElement().classList.add('selectedBGColor');
     }
 }
 
 function statusclicked(e, cell) {
     var filtercell = cell.getRow().getCell("name");
     value = filtercell.getValue();
-    if (filtercell.getElement().style.backgroundColor) {
+    if (filtercell.getElement().classList.contains('selectedBGColor')) {
         registrationtable.removeFilter("status", "in", statusfilter);
         statusfilter = statusfilter.filter(arrayItem => arrayItem !== value);
         if (statusfilter.length > 0) {
             registrationtable.addFilter("status", "in", statusfilter);
         }
-        filtercell.getElement().style.backgroundColor = "";
+        filtercell.getElement().classList.remove('selectedBGColor');
     } else {
         if (statusfilter.length > 0) {
             registrationtable.removeFilter("status", "in", statusfilter);
         }
         statusfilter.push(value);
         registrationtable.addFilter("status", "in", statusfilter);
-        filtercell.getElement().style.backgroundColor = "#C0FFC0";
+        filtercell.getElement().classList.add('selectedBGColor');
     }
 }
 
@@ -308,7 +308,7 @@ function clearfilter() {
         typefilter = [];
         var rows = type.getRows();
         for (var row of rows) {
-            row.getCell("memType").getElement().style.backgroundColor = "";
+            row.getCell("memType").getElement().classList.remove('selectedBGColor');
         }
     }
     if (catfilter.length > 0) {
@@ -316,7 +316,7 @@ function clearfilter() {
         catfilter = [];
         var rows = category.getRows();
         for (var row of rows) {
-            row.getCell("memCategory").getElement().style.backgroundColor = "";
+            row.getCell("memCategory").getElement().classList.remove('selectedBGColor');
         }
     }
     if (agefilter.length > 0) {
@@ -324,7 +324,7 @@ function clearfilter() {
         agefilter = [];
         var rows = age.getRows();
         for (var row of rows) {
-            row.getCell("memAge").getElement().style.backgroundColor = "";
+            row.getCell("memAge").getElement().classList.remove('selectedBGColor');
         }
     }
     if (pricefilter.length > 0) {
@@ -332,7 +332,7 @@ function clearfilter() {
         pricefilter = [];
         var rows = price.getRows();
         for (var row of rows) {
-            row.getCell("price").getElement().style.backgroundColor = "";
+            row.getCell("price").getElement().classList.remove('selectedBGColor');
         }
     }
     if (labelfilter.length > 0) {
@@ -340,7 +340,7 @@ function clearfilter() {
         labelfilter = [];
         var rows = label.getRows();
         for (var row of rows) {
-            row.getCell("label").getElement().style.backgroundColor = "";
+            row.getCell("label").getElement().classList.remove('selectedBGColor');
         }
     }
     if (couponfilter.length > 0) {
@@ -348,7 +348,7 @@ function clearfilter() {
         couponfilter = [];
         var rows = coupon.getRows();
         for (var row of rows) {
-            row.getCell("name").getElement().style.backgroundColor = "";
+            row.getCell("name").getElement().classList.remove('selectedBGColor');
         }
     }
     if (statusfilter.length > 0) {
@@ -356,7 +356,7 @@ function clearfilter() {
         statusfilter = [];
         var rows = statusTable.getRows();
         for (var row of rows) {
-            row.getCell("name").getElement().style.backgroundColor = "";
+            row.getCell("name").getElement().classList.remove('selectedBGColor');
         }
     }
     registrationtable.clearFilter(true);

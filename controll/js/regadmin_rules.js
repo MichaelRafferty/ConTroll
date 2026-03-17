@@ -1216,7 +1216,9 @@ class rulesSetup {
         for (var row of rows) {
             var name = row.getCell(this.#selIndex).getValue().toString();
             if (this.#selValues.includes(name)) {
-                row.getCell(this.#selIndex).getElement().style.backgroundColor = "#C0FFC0";
+                let element = row.getCell(this.#selIndex).getElement();
+                if (!element.classList.contains('selectedBGColor'))
+                    element.classList.add('selectedBGColor');
             }
         }
         if (this.#selIndex == 'id')
@@ -1227,10 +1229,10 @@ class rulesSetup {
     clickedSelection(e, cell) {
         var filtercell = cell.getRow().getCell(rules.getselIndex());
         var value = filtercell.getValue();
-        if (filtercell.getElement().style.backgroundColor) {
-            filtercell.getElement().style.backgroundColor = "";
+        if (filtercell.getElement().classList.contains('selectedBGColor')) {
+            filtercell.getElement().classList.remove('selectedBGColor');
         } else {
-            filtercell.getElement().style.backgroundColor = "#C0FFC0";
+            filtercell.getElement().classList.add('selectedBGColor');
         }
     }
 
@@ -1241,7 +1243,13 @@ class rulesSetup {
             if (row.getPosition() === false)
                 continue;
 
-            row.getCell(rules.getselIndex()).getElement().style.backgroundColor = direction ? "#C0FFC0" : "";
+            if (direction) {
+                let element = row.getCell(rules.getselIndex()).getElement();
+                if (!element.classList.contains('selectedBGColor'))
+                    element.classList.add('selectedBGColor');
+            } else {
+                row.getCell(rules.getselIndex()).getElement().classList.remove('selectedBGColor');
+            }
         }
     }
 

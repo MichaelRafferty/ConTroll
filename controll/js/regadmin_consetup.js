@@ -174,7 +174,7 @@ class consetup {
 <p><strong>NOTE:</strong> All date ranges are '>=' Start Date and '<' End Date, so the End Date of one period should be the start date of the next.</p>
 <div id="` + this.#setup_type + `-memlist"></div>
 <div class='row mt-2 mb-3' id='reglist-csv-div'>
-    <div class="col-sm-auto p-1 ps-3 pe-3 tabulator-paginator paginationBGColor" id="` + this.#setup_type + `"PaginationDiv"></div>
+    <div class="col-sm-auto p-1 ps-3 pe-3 tabulator-paginator paginationBGColor" id="` + this.#setup_type + `PaginationDiv"></div>
     <div class='col-sm-auto p-1 ms-4' id="memlist-buttons">  
         <button id="` + this.#setup_type + `memlist-undo" type="button" class="btn btn-secondary btn-sm" onclick="` + this.#setup_type + `.undoMemList(); return false;" disabled>Undo</button>
         <button id="` + this.#setup_type + `memlist-redo" type="button" class="btn btn-secondary btn-sm" onclick="` + this.#setup_type + `.redoMemList(); return false;" disabled>Redo</button>
@@ -1015,7 +1015,9 @@ class consetup {
         for (let row of rows) {
             let index = row.getCell('id').getValue().toString();
             if (this.#selValues.includes(',' + index + ',')) {
-                row.getCell('id').getElement().style.backgroundColor = "#C0FFC0";
+                let element = row.getCell('id').getElement();
+                if (!element.classList.contains('selectedBGColor'))
+                    element.classList.add('selectedBGColor');
             }
         }
         if (this.#nonBundleList.length > 25)
@@ -1026,10 +1028,10 @@ class consetup {
     clickedSelection(e, cell) {
         let filtercell = cell.getRow().getCell('id');
         let value = filtercell.getValue();
-        if (filtercell.getElement().style.backgroundColor) {
-            filtercell.getElement().style.backgroundColor = "";
+        if (filtercell.getElement().classList.contains('selectedBGColor')) {
+            filtercell.getElement().classList.remove('selectedBGColor');
         } else {
-            filtercell.getElement().style.backgroundColor = "#C0FFC0";
+            filtercell.getElement().classList.add('selectedBGColor');
         }
     }
 
@@ -1040,7 +1042,13 @@ class consetup {
             if (row.getPosition() === false)
                 continue;
 
-            row.getCell('id').getElement().style.backgroundColor = direction ? "#C0FFC0" : "";
+            if (direction) {
+                let element = row.getCell('id').getElement();
+                if (!element.classList.contains('selectedBGColor'))
+                    element.classList.add('selectedBGColor');
+            } else {
+                row.getCell('id').getElement().classList.remove('selectedBGColor');
+            }
         }
     }
 

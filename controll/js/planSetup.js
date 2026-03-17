@@ -294,7 +294,9 @@ class PlansSetup {
         for (var row of rows) {
             var name = row.getCell(this.#editSelIndex).getValue().toString();
             if (this.#editSelValues.includes(name)) {
-                row.getCell(this.#editSelIndex).getElement().style.backgroundColor = "#C0FFC0";
+                let element = row.getCell(plans.getselIndex()).getElement();
+                if (!element.classList.contains('selectedBGColor'))
+                    element.classList.add('selectedBGColor');
             }
         }
         if (this.#editSelIndex == 'id')
@@ -305,10 +307,10 @@ class PlansSetup {
     clickedSelection(e, cell) {
         var filtercell = cell.getRow().getCell(plans.getselIndex());
         var value = filtercell.getValue();
-        if (filtercell.getElement().style.backgroundColor) {
-            filtercell.getElement().style.backgroundColor = "";
+        if (filtercell.getElement().classList.contains('selectedBGColor')) {
+            filtercell.getElement().classList.remove('selectedBGColor');
         } else {
-            filtercell.getElement().style.backgroundColor = "#C0FFC0";
+            filtercell.getElement().classList.add('selectedBGColor');
         }
     }
 
@@ -316,7 +318,13 @@ class PlansSetup {
     setEditSel(direction) {
         var rows = this.#editSelTable.getRows();
         for (var row of rows) {
-            row.getCell(plans.getselIndex()).getElement().style.backgroundColor = direction ? "#C0FFC0" : "";
+            if (direction) {
+                let element = row.getCell(plans.getselIndex()).getElement();
+                if (!element.classList.contains('selectedBGColor'))
+                    element.classList.add('selectedBGColor');
+            } else {
+                row.getCell(plans.getselIndex()).getElement().classList.remove('selectedBGColor');
+            }
         }
     }
 
