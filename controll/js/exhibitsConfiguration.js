@@ -1904,7 +1904,7 @@ function cellChanged(cell) {
             eryData = exhibits.getRegionYears(value);
             row = cell.getRow();
             row.update({"glNum": eryData.glNum, "glLabel": eryData.glLabel});
-            setCellChanged(cell)";
+            setCellChanged(cell);
             setCellChanged(row.getCell("glNum"));
             setCellChanged(row.getCell("glLabel"));
             return;
