@@ -1639,79 +1639,79 @@ class exhibitorsAdm {
             // history date
             html += "<div class='col-sm-2'>" + current.historyDate + "</div>\n";
             // artist name
-            color = prior.artistName != current.artistName ? ' changeBGColor' : '';
+            color = prior.artistName != current.artistName ? ' historyChangedBGColor' : '';
             html += "<div class='col-sm-3" + color + "'>" + current.artistName + "</div>\n";
             // artist payee
-            color = prior.artistPayee != current.artistPayee ? ' changeBGColor' : '';
+            color = prior.artistPayee != current.artistPayee ? ' historyChangedBGColor' : '';
             html += "<div class='col-sm-3" + color + "'>" + current.artistPayee + "</div>\n";
             // exhibitor name
-            color = prior.exhibitorName != current.exhibitorName ? ' changeBGColor' : '';
+            color = prior.exhibitorName != current.exhibitorName ? ' historyChangedBGColor' : '';
             html += "<div class='col-sm-3" + color + "'>" + current.artistName + "</div>\n";
             html += "</div>\n";
 
             // line 2
             html += "<div class='row' style='background-color: " + curColor + ";'><div class='col-sm-1'></div>\n";
             // Business Email
-            color = prior.exhibitorEmail != current.exhibitorEmail ? ' changeBGColor' : '';
+            color = prior.exhibitorEmail != current.exhibitorEmail ? ' historyChangedBGColor' : '';
             html += "<div class='col-sm-3" + color + "'>" + current.exhibitorEmail + "</div>\n";
             // Business Email
-            color = prior.exhibitorPhone != current.exhibitorPhone ? ' changeBGColor' : '';
+            color = prior.exhibitorPhone != current.exhibitorPhone ? ' historyChangedBGColor' : '';
             html += "<div class='col-sm-2" + color + "'>" + current.exhibitorPhone + "</div>\n";
             // Sales Tax ID
-            color = prior.salesTaxId != current.salesTaxId ? ' changeBGColor' : '';
+            color = prior.salesTaxId != current.salesTaxId ? ' historyChangedBGColor' : '';
             html += "<div class='col-sm-2" + color + "'>" + current.salesTaxId + "</div>\n";
             // Website
-            color = prior.website != current.website ? ' changeBGColor' : '';
+            color = prior.website != current.website ? ' historyChangedBGColor' : '';
             html += "<div class='col-sm-2" + color + "'>" + current.website + "</div>\n";
             html += "</div>\n";
 
             // line 3
             html += "<div class='row' style='background-color: " + curColor + ";'><div class='col-sm-1'></div>\n";
             // Publicity
-            color = prior.publicity != current.publicity ? ' changeBGColor' : '';
+            color = prior.publicity != current.publicity ? ' historyChangedBGColor' : '';
             html += "<div class='col-sm-1" + color + "'>" + current.publicity + "</div>\n";
             // street addr
-            color = prior.addr != current.addr ? ' changeBGColor' : '';
+            color = prior.addr != current.addr ? ' historyChangedBGColor' : '';
             html += "<div class='col-sm-3" + color + "'>" + current.addr + "</div>\n";
             // addr2
-            color = prior.addr2 != current.addr2 ? ' changeBGColor' : '';
+            color = prior.addr2 != current.addr2 ? ' historyChangedBGColor' : '';
             html += "<div class='col-sm-2" + color + "'>" + current.addr2 + "</div>\n";
             // city
-            color = prior.city != current.city ? ' changeBGColor' : '';
+            color = prior.city != current.city ? ' historyChangedBGColor' : '';
             html += "<div class='col-sm-2" + color + "'>" + current.city + "</div>\n";
             // state
-            color = prior.state != current.state ? ' changeBGColor' : '';
+            color = prior.state != current.state ? ' historyChangedBGColor' : '';
             html += "<div class='col-sm-1" + color + "'>" + current.state + "</div>\n";
             // zip
-            color = prior.zip != current.zip ? ' changeBGColor' : '';
+            color = prior.zip != current.zip ? ' historyChangedBGColor' : '';
             html += "<div class='col-sm-1" + color + "'>" + current.zip + "</div>\n";
             // country
-            color = prior.country != current.country ? ' changeBGColor' : '';
+            color = prior.country != current.country ? ' historyChangedBGColor' : '';
             html += "<div class='col-sm-1" + color + "'>" + current.country + "</div>\n";
             html += "</div>\n";
 
             // line 4
             html += "<div class='row' style='background-color: " + curColor + ";'><div class='col-sm-1'></div>\n";
             // Archived
-            color = prior.archived != current.archived ? ' changeBGColor' : '';
+            color = prior.archived != current.archived ? ' historyChangedBGColor' : '';
             html += "<div class='col-sm-1" + color + "'>" + current.archived + "</div>\n";
             // ship treet addr
-            color = prior.shipAddr != current.shipAddr ? ' changeBGColor' : '';
+            color = prior.shipAddr != current.shipAddr ? ' historyChangedBGColor' : '';
             html += "<div class='col-sm-3" + color + "'>" + current.shipAddr + "</div>\n";
             // ship addr2
-            color = prior.shipAddr2 != current.shipAddr2 ? ' changeBGColor' : '';
+            color = prior.shipAddr2 != current.shipAddr2 ? ' historyChangedBGColor' : '';
             html += "<div class='col-sm-2" + color + "'>" + current.shipAddr2 + "</div>\n";
             // ship city
-            color = prior.shipCity != current.shipCity ? ' changeBGColor' : '';
+            color = prior.shipCity != current.shipCity ? ' historyChangedBGColor' : '';
             html += "<div class='col-sm-2" + color + "'>" + current.shipCity + "</div>\n";
             // ship state
-            color = prior.shipState != current.shipState ? ' changeBGColor' : '';
+            color = prior.shipState != current.shipState ? ' historyChangedBGColor' : '';
             html += "<div class='col-sm-1" + color + "'>" + current.shipState + "</div>\n";
             // ship zip
-            color = prior.shipZip != current.shipZip ? ' changeBGColor' : '';
+            color = prior.shipZip != current.shipZip ? ' historyChangedBGColor' : '';
             html += "<div class='col-sm-1" + color + "'>" + current.shipZip + "</div>\n";
             // ship country
-            color = prior.shipCountry != current.shipCountry ? ' changeBGColor' : '';
+            color = prior.shipCountry != current.shipCountry ? ' historyChangedBGColor' : '';
             html += "<div class='col-sm-1" + color + "'>" + current.shipCountry + "</div>\n";
             html += "</div>\n";
 
@@ -1720,7 +1720,7 @@ class exhibitorsAdm {
                 html += "<div class='row' style='background-color: " + curColor + ";'><div class='col-sm-1 text-end'>Desc:</div>\n" +
                     "<div class='col-sm-11'>" + current.description.trim() + "</div>\n</div>\n";
             } else if (current.description != prior.description) {
-                color = ' changeBGColor';
+                color = ' historyChangedBGColor';
                 html += "<div class='row' style='background-color: " + curColor + ";'><div class='col-sm-1 text-end'>Desc:</div>\n" +
                     "<div class='col-sm-11" + color + "'>" + current.description.trim() + "</div>\n</div>\n";
             }
@@ -1729,7 +1729,7 @@ class exhibitorsAdm {
                 html += "<div class='row' style='background-color: " + curColor + ";'><div class='col-sm-1 text-end'>Notes:</div>\n" +
                     "<div class='col-sm-11'>" + current.notes.trim() + "</div>\n</div>\n";
             } else if (current.notes != prior.notes) {
-                color = ' changeBGColor';
+                color = ' historyChangedBGColor';
                 html += "<div class='row' style='background-color: " + curColor + ";'><div class='col-sm-1 text-end'>Notes:</div>\n" +
                     "<div class='col-sm-11" + color + "'>" + current.notes.trim() + "</div>\n</div>\n";
             }

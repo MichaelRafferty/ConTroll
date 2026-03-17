@@ -885,8 +885,8 @@ class rulesSetup {
         this.#ruleStepsTable.addRow({
             name: this.#rName.value, uses: 0, origStep: this.#ruleStepAddStepNum, step: this.#ruleStepMaxStep, origName: this.#editRuleName
             }, false).then(function (row) {
-                row.getCell("name").getElement().style.backgroundColor = "#fff3cd";
-                row.getCell("step").getElement().style.backgroundColor = "#fff3cd";
+                setCellChanged(row.getCell("name"));
+                setCellChanged(row.getCell("step"));
             });
         this.#ruleStepMaxStep++;
         this.editStep('ruleItems', this.#ruleStepAddStepNum);
@@ -1303,7 +1303,7 @@ class rulesSetup {
         let setPage = this.#memRules.length > 25;
         this.#ruleAddRowNum--;
         this.#rulesTable.addRow({name: 'new-row', uses: 0, origName: this.#ruleAddRowNum}, false).then(function (row, setPage) {
-            row.getCell("name").getElement().style.backgroundColor = "#fff3cd";
+            setCellChanged(row.getCell("name"));
             if (setPage > 25)
                 row.getTable().setPageToRow(row);
         });

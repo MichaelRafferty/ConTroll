@@ -126,7 +126,7 @@ function splitlist(cell, formattParams, onRendered) {
 
 function cellChanged(cell) {
     dirty = true;
-    cell.getElement().style.backgroundColor = "#fff3cd";
+    setCellChanged(cell);
 }
 
 function deleterow(e, row) {

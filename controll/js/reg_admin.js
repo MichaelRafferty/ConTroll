@@ -705,31 +705,31 @@ function displayHistory(data) {
         // change date
         html += "<div class='col-sm-2'>" + current.change_date + "</div>\n";
         // memId
-        color = prior.memId != current.memId ? ' changeBGColor' : '';
+        color = prior.memId != current.memId ? ' historyChangedBGColor' : '';
         html += "<div class='col-sm-1" + color + "'>" + current.memId + "</div>\n";
         // price
-        color = prior.price != current.price ? ' changeBGColor' : '';
+        color = prior.price != current.price ? ' historyChangedBGColor' : '';
         html += "<div class='col-sm-1" + color + "'>" + current.price + "</div>\n";
         // couponDiscount
-        color = prior.couponDiscount != current.couponDiscount ? ' changeBGColor' : '';
+        color = prior.couponDiscount != current.couponDiscount ? ' historyChangedBGColor' : '';
         html += "<div class='col-sm-1" + color + "'>" + current.couponDiscount + "</div>\n";
         // paid
-        color = prior.paid != current.paid ? ' changeBGColor' : '';
+        color = prior.paid != current.paid ? ' historyChangedBGColor' : '';
         html += "<div class='col-sm-1" + color + "'>" + current.paid + "</div>\n";
         // complete_trans
-        color = prior.complete_trans != current.complete_trans ? ' changeBGColor' : '';
+        color = prior.complete_trans != current.complete_trans ? ' historyChangedBGColor' : '';
         html += "<div class='col-sm-1" + color + "'>" + current.complete_trans + "</div>\n";
         // updatedBy
-        color = prior.updatedBy != current.updatedBy ? ' changeBGColor' : '';
+        color = prior.updatedBy != current.updatedBy ? ' historyChangedBGColor' : '';
         html += "<div class='col-sm-1" + color + "'>" + current.updatedBy + "</div>\n";
         // coupon
-        color = prior.coupon != current.coupon ? ' changeBGColor' : '';
+        color = prior.coupon != current.coupon ? ' historyChangedBGColor' : '';
         html += "<div class='col-sm-1" + color + "'>" + current.coupon + "</div>\n";
         // planId
-        color = prior.planId != current.planId ? ' changeBGColor' : '';
+        color = prior.planId != current.planId ? ' historyChangedBGColor' : '';
         html += "<div class='col-sm-1" + color + "'>" + current.planId + "</div>\n";
         // status
-        color = prior.status != current.status ? ' changeBGColor' : '';
+        color = prior.status != current.status ? ' historyChangedBGColor' : '';
         html += "<div class='col-sm-1" + color + "'>" + current.status + "</div>\n";
 
         html += "</div>\n";
@@ -1906,7 +1906,7 @@ function openConfigEditor(data) {
 
 function cellChanged(cell) {
     dirty = true;
-    cell.getElement().style.backgroundColor = "#fff3cd";
+    setCellChanged(cell);
 }
 
 function deleteicon(cell, formattParams, onRendered) {

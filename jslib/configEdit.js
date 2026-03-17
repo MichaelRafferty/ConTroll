@@ -281,8 +281,7 @@ class ConfigEditor {
         }
         let changed = this.#initialConfig[section][paramName] != field.value;
         this.#fieldsChanged[name] = changed;
-        field.style.backgroundColor = changed ?  "#fff3cd" : '';
-
+        setFieldChanged(field);
         this.needSave();
     }
 

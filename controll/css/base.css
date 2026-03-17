@@ -53,8 +53,12 @@ h1.title {
     color: red
 }
 
-.changeBGColor {
+.historyChangedBGColor {
     background-color: #ffcdcd;
+}
+
+.unsavedChangeBGColor {
+    background-color: #fff3cd;
 }
 
 .paginationBGColor {

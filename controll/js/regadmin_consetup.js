@@ -657,12 +657,12 @@ class consetup {
             glLabel: '',
         }, false).then(function (row) {
             row.getTable().setPageToRow(row).then(function () {
-                row.getCell("id").getElement().style.backgroundColor = "#fff3cd";
-                row.getCell("conid").getElement().style.backgroundColor = "#fff3cd";
-                row.getCell("shortname").getElement().style.backgroundColor = "#fff3cd";
-                row.getCell("price").getElement().style.backgroundColor = "#fff3cd";
-                row.getCell("atcon").getElement().style.backgroundColor = "#fff3cd";
-                row.getCell("online").getElement().style.backgroundColor = "#fff3cd";
+                setCellChanged(row.getCell("id"));
+                setCellChanged(row.getCell("conid"));
+                setCellChanged(row.getCell("shortname"));
+                setCellChanged(row.getCell("price"));
+                setCellChanged(row.getCell("atcon"));
+                setCellChanged(row.getCell("online"));
                 _this.checkMemlistUndoRedo();
             });
         });
@@ -1454,7 +1454,7 @@ class consetup {
         this.#memtable.updateOrAddData(this.#editData);
         for (let index = 0; index < this.#editData.length; index++) {
             let id = this.#editData[index].id;
-            this.#memtable.getRow(id).getElement().style.backgroundColor = "#fff3cd";
+            setCellChanged(this.#memtable.getrow(id));
         }
         this.#memtable.setSort([{column:"sort_order", dir: "asc"}]);
         this.#memListModal.hide();

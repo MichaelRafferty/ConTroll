@@ -453,7 +453,7 @@ function openConfigEditor(data) {
 
 function cellChanged(cell) {
     dirty = true;
-    cell.getElement().style.backgroundColor = "#fff3cd";
+    setCellChanged(cell);
 }
 
 function deleteicon(cell, formattParams, onRendered) {

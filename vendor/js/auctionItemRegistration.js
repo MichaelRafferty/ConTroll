@@ -310,10 +310,10 @@ class AuctionItemRegistration {
                 auctionItemRegistration.checkArtUndoRedo();
                 if (artPagination) {
                     row.pageTo().then(function () {
-                        row.getElement().style.backgroundColor = "#fff3cd";
+                        setCellChanged(row);
                     });
                 } else {
-                    row.getElement().style.backgroundColor = "#fff3cd";
+                    setCellChanged(row);
                 }
             });
         }
@@ -443,10 +443,10 @@ class AuctionItemRegistration {
                 auctionItemRegistration.checkPrintUndoRedo();
                 if (printPagination) {
                     row.pageTo().then(function () {
-                        row.getElement().style.backgroundColor = "#fff3cd";
+                        setCellChanged(row);
                     });
                 } else {
-                    row.getElement().style.backgroundColor = "#fff3cd";
+                    setCellChanged(row);
                 }
             });
         }
@@ -575,10 +575,10 @@ class AuctionItemRegistration {
                 auctionItemRegistration.checkNfsUndoRedo();
                 if (nfsPagination) {
                     row.pageTo().then(function () {
-                        row.getElement().style.backgroundColor = "#fff3cd";
+                        setCellChanged(row);
                     });
                 } else {
-                    row.getElement().style.backgroundColor = "#fff3cd";
+                    setCellChanged(row);
                 }
             });
         }
@@ -711,7 +711,7 @@ class AuctionItemRegistration {
         this.#artItemTable.on("dataChanged", function (data) {
             _this.dataChangedArt(data);
         });
-        this.#artItemTable.on("cellEdited", cellChanged);
+        this.#artItemTable.on("cellEdited", setCellChanged);
 
         // now if imported items are passed, add them to the section
         if (art != null && art.length > 0) {
@@ -777,7 +777,7 @@ class AuctionItemRegistration {
         this.#printItemTable.on("dataChanged", function (data) {
             _this.dataChangedPrint(data);
         });
-        this.#printItemTable.on("cellEdited", cellChanged);
+        this.#printItemTable.on("cellEdited", setCellChanged);
         // now if imported items are passed, add them to the section
         if (print != null && print.length > 0) {
             this.#printSaveBtn.innerHTML = 'Save Changes*';
@@ -840,7 +840,7 @@ class AuctionItemRegistration {
         this.#nfsItemTable.on("dataChanged", function (data) {
             _this.dataChangedNfs(data);
         });
-        this.#nfsItemTable.on("cellEdited", cellChanged);
+        this.#nfsItemTable.on("cellEdited", setCellChanged);
 
         // now if imported items are passed, add them to the section
         if (nfs != null && nfs.length > 0) {
@@ -926,7 +926,7 @@ class AuctionItemRegistration {
                         editor: 'number', editorParams: {min: 1}, },
                 ],
             });
-            this.#importTable.on("cellEdited", cellChanged);
+            this.#importTable.on("cellEdited", setCellChanged);
         }
         this.#importModal.show();
     }
@@ -994,11 +994,6 @@ auctionItemRegistration = null;
 // init
 function auctionItemRegistrationOnLoad(region) {
     auctionItemRegistration = new AuctionItemRegistration(config['debug']);
-}
-
-function cellChanged(cell) {
-//    dirty = true;
-    cell.getElement().style.backgroundColor = "#fff3cd";
 }
 
 function deleteicon(cell, formattParams, onRendered) {
