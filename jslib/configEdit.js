@@ -356,8 +356,7 @@ class ConfigEditor {
             // empty string, check what to do if empty
             if (param.blank == 'M' && field != null) { // mandatory
                 errmsg = "Section " + sectionName + ", Parameter: " + param.name + " cannot be empty<br/>\n";
-                if (!field.classList.contains('unsavedWarnBGColor'))
-                    field.classList.add('unsavedWarnBGColor');
+                addFieldClass(field,'unsavedWarnBGColor');
                 return errmsg;
             }
             return '';
@@ -440,7 +439,7 @@ class ConfigEditor {
 
         if (errmsg != '') {
             errmsg = "Section " + sectionName + ", Parameter: " + param.name + " " + errmsg + "</br>";
-            field.style.backgroundColor = "#ffafaf";
+            addFieldClass(field,'unsavedWarnBGColor');
         }
         return errmsg;
     }

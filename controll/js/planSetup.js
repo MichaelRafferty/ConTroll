@@ -294,9 +294,7 @@ class PlansSetup {
         for (var row of rows) {
             var name = row.getCell(this.#editSelIndex).getValue().toString();
             if (this.#editSelValues.includes(name)) {
-                let element = row.getCell(plans.getselIndex()).getElement();
-                if (!element.classList.contains('selectedBGColor'))
-                    element.classList.add('selectedBGColor');
+                addFieldClass(row.getCell(plans.getselIndex()).getElement(),'selectedBGColor');
             }
         }
         if (this.#editSelIndex == 'id')
@@ -307,11 +305,7 @@ class PlansSetup {
     clickedSelection(e, cell) {
         var filtercell = cell.getRow().getCell(plans.getselIndex());
         var value = filtercell.getValue();
-        if (filtercell.getElement().classList.contains('selectedBGColor')) {
-            filtercell.getElement().classList.remove('selectedBGColor');
-        } else {
-            filtercell.getElement().classList.add('selectedBGColor');
-        }
+        toggleFieldClass(filtercell.getElement(),'selectedBGColor');
     }
 
     // set all/clear all sections in table based on direction
@@ -319,9 +313,7 @@ class PlansSetup {
         var rows = this.#editSelTable.getRows();
         for (var row of rows) {
             if (direction) {
-                let element = row.getCell(plans.getselIndex()).getElement();
-                if (!element.classList.contains('selectedBGColor'))
-                    element.classList.add('selectedBGColor');
+                addFieldClass(row.getCell(plans.getselIndex()).getElement(),'selectedBGColor');
             } else {
                 row.getCell(plans.getselIndex()).getElement().classList.remove('selectedBGColor');
             }

@@ -43,6 +43,20 @@ function clearFieldChanged(field) {
     field.classList.remove('unsavedChangeBGColor');
 }
 
+function addFieldClass(field, className) {
+    if (!field.classList.contains(className))
+        field.classList.add(className);
+}
+
+function toggleFieldClass(field, className) {
+    if (field.classList.contains(className)) {
+        field.classList.remove(className);
+    } else {
+        field.classList.add(className);
+    }
+}
+
+
 // old style error message block
 //
 function clearError() {

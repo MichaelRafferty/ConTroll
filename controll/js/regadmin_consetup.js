@@ -1015,9 +1015,7 @@ class consetup {
         for (let row of rows) {
             let index = row.getCell('id').getValue().toString();
             if (this.#selValues.includes(',' + index + ',')) {
-                let element = row.getCell('id').getElement();
-                if (!element.classList.contains('selectedBGColor'))
-                    element.classList.add('selectedBGColor');
+                addFieldClass(row.getCell('id').getElement(), 'selectedBGColor');
             }
         }
         if (this.#nonBundleList.length > 25)
@@ -1027,12 +1025,7 @@ class consetup {
     // toggle the selection color of the clicked cell
     clickedSelection(e, cell) {
         let filtercell = cell.getRow().getCell('id');
-        let value = filtercell.getValue();
-        if (filtercell.getElement().classList.contains('selectedBGColor')) {
-            filtercell.getElement().classList.remove('selectedBGColor');
-        } else {
-            filtercell.getElement().classList.add('selectedBGColor');
-        }
+        toggleFieldClass(filtercell.getElement(), 'selectedBGColor');
     }
 
     // set all/clear all sections in table based on direction
@@ -1043,9 +1036,7 @@ class consetup {
                 continue;
 
             if (direction) {
-                let element = row.getCell('id').getElement();
-                if (!element.classList.contains('selectedBGColor'))
-                    element.classList.add('selectedBGColor');
+                addFieldClass(row.getCell('id').getElement(), 'selectedBGColor');
             } else {
                 row.getCell('id').getElement().classList.remove('selectedBGColor');
             }
