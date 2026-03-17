@@ -18,7 +18,7 @@ class Payors {
         this.#conid = conid;
 
         // set up modals
-        var id = document.getElementById('editPlan');
+        let id = document.getElementById('editPlan');
         if (id) {
             console.log('edit plan not yet')
         }
@@ -26,12 +26,12 @@ class Payors {
     }
 
     open() {
-        var _this = this;
+        let _this = this;
         // load the current payor plan data
-        var script = "scripts/finance_getPayors.php";
+        let script = "scripts/finance_updateGetPayors.php";
 
-        var postdata = {
-            ajax_request_action: 'payorPlans',
+        let postdata = {
+            ajax_request_action: 'getPayorPlans',
         };
         clear_message();
         this.#dirty = false;
@@ -64,7 +64,7 @@ class Payors {
             layout: "fitDataTable",
             index: "id",
             columns: [
-                {title: "Actions", },
+                {title: "Actions", formatter: this.addActionButtons },
                 {title: "ID", field: "id", width: 65, visible: false, },
                 {title: "Perid", field: "perid", width: 100, hozAlign: "right", headerFilter: true, },
                 {title: "Name", field: "fullName",  headerWordWrap: true, headerFilter: true, width: 250,
@@ -104,6 +104,60 @@ class Payors {
         });
     }
 
+    // for tabulator, add buttons to have a candidate become remain or merge perid
+    addActionButtons(cell, formatterParams, onRendered) {
+        let btns = "";
+        let data = cell.getData();
+        let index = cell.getRow().getIndex();
+        let thisItem = data.id;
+        let thisStatus = data.status;
+
+        if (thisStatus == 'active') {
+            btns += '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;"' +
+                ' onclick="payors.cancelPlan(' + thisItem + ')">Cancel</button>';
+        }
+        //btns += '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;"
+        // onclick="merge.makeMerge(' + thisItem + ')">Make Merge</button>';
+
+        return btns;
+    }
+
+    // cancelPlan - cancel an active plan, making it cancelled status and it's remaining items from 'plan' to 'unpaid'
+    cancelPlan(id) {
+        let script = "scripts/finance_updateGetPayors.php";
+        let postdata = {
+            ajax_request_action: 'cancelPlan',
+            cancelId: id,
+        };
+        clear_message();
+        clearError();
+        //console.log(postdata);
+        $.ajax({
+            url: script,
+            method: 'POST',
+            data: postdata,
+            success: function (data, textStatus, jhXHR) {
+                if (data['error']) {
+                    show_message(data['error'], 'error');
+                    return false;
+                }
+                checkRefresh(data);
+                payors.cancelPlanSuccess(data);
+                show_message(data['success'], 'success');
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showError("ERROR in " + script + ": " + textStatus, jqXHR);
+                return false;
+            }
+        });
+    }
+
+    cancelPlanSuccess(data) {
+        this.#payorPlans = data['payorPlans'];
+        this.#payorsTable.replaceData(this.#payorPlans);
+        this.#dirty = false;
+    }
+
     close() {
         if (this.#payorsTable) {
             //this.#payorsTable.off("dataChanged");
@@ -118,7 +172,7 @@ class Payors {
 
 
     editbutton(cell, formatterParams, onRendered) {
-        var index = cell.getRow().getIndex()
+        let index = cell.getRow().getIndex()
         return '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
             ' onclick="payors.editPmt(' + index + ');">Edit</button>';
     }
@@ -126,7 +180,7 @@ class Payors {
     /*
     editPlan(index) {
         this.#planEditIndex = index;
-        var row = this.#payorsTable.getRow(index).getData();
+        let row = this.#payorsTable.getRow(index).getData();
         // first copy all the fields to the fields in the form
         document.getElementById('planName').value = row.name;
         document.getElementById('planDescription').value = row.description;
@@ -174,7 +228,7 @@ class Payors {
 
     saveAddEdit() {
         // get the data
-        var newRow = {
+        let newRow = {
             id: this.#planEditIndex,
             name: document.getElementById('planName').value,
             description: document.getElementById('planDescription').value,
