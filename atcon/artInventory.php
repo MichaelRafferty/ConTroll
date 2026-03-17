@@ -161,8 +161,7 @@ while($artist = $artistR->fetch_assoc()) {
                                 <div class="col-sm-12" id="find_results"></div>
                             </div>
                             <div class='row mt-2 mb-3' id='artInventory-csv-div' hidden>
-                                <div class='col-sm-auto p-1 ps-3 pe-3 tabulator-paginator' id='artInventoryPaginationDiv'
-                                     style='background-color: #e5e5e5;'></div>
+                                <div class='col-sm-auto p-1 ps-3 pe-3 tabulator-paginator paginationBGColor' id='artInventoryPaginationDiv'></div>
                                 <div class='col-sm-auto p-1 ms-4' id='sheets-buttons'>
                                     <button id='artControl-sheet' type='button' class='btn btn-secondary btn-sm me-1'
                                             onclick="pdfSheets('control', false); return false;">

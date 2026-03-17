@@ -67,6 +67,26 @@ span.req, .warn {
     background-color: #FFE190;;
 }
 
+.historyChangedBGColor {
+    background-color: #ffcdcd;
+}
+
+.unsavedChangeBGColor {
+    background-color: #fff3cd;
+}
+
+.unsavedWarnBGColor {
+    background-color: #ff8f8f;
+}
+
+.paginationBGColor {
+    background-color: #e5e5e5;
+}
+
+.selectedBGColor {
+    background-color: #c0ffc0;
+}
+
 /* tabulator pagination styling */
 button.tabulator-page {
     background: hsla(0,0%,100%,.2);
