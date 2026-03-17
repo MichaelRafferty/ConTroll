@@ -61,6 +61,10 @@ h1.title {
     background-color: #fff3cd;
 }
 
+.unsavedWarnBGColor {
+    background-color: #ff8f8f;
+}
+
 .paginationBGColor {
     background-color: #e5e5e5;
  }
