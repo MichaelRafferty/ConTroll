@@ -1671,7 +1671,7 @@ function pay(nomodal, prow = null, nonce = null) {
             }
             prow = {
                 index: cart.getPmtLength(), amt: total_amount_due, tax: total_tax_due, pretax: total_art_due, ccauth: ccauth, checkno: checkno,
-                desc: eldesc.value, type: ptype, nonce: non ce,
+                desc: eldesc.value, type: ptype, nonce: nonce,
             };
         }
     }
