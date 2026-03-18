@@ -12,6 +12,7 @@ editTitle = null;
 editPersonName = null;
 updateExisting = null;
 editCurrentPerid = null;
+editPersonOverrideBTN = null;
 
 // add items
 addPersonModal = null;
@@ -36,6 +37,7 @@ window.onload = function initpage() {
         editTitle = document.getElementById('editTitle');
         editPersonName = document.getElementById('editPersonName');
         updateExisting = document.getElementById('updateExisting');
+        editPersonOverrideBTN = document.getElementById('updatePersonOverrideBTN');
     }
     id = document.getElementById('add-person');
     if (id) {
@@ -412,17 +414,24 @@ function findDetailsSuccess(dataFound) {
         profile.hideAgeField(false);
         profile.hideAgeText(true);
     }
+    editPersonOverrideBTN.disabled = true;
     editPersonName.innerHTML = person.fullName + ' (' + person.id + ')';
     editPersonModal.show();
 }
 
-function saveEdit() {
+function saveEdit(use = 'add') {
     clear_message('add_message');
     clearError();
+    let message_div;
+    if (use=='update')
+        message_div = 'find_edit_message';
+    else
+        message_div = 'add_message';
+
 
     let person = URLparamsToArray($('#f_editPerson').serialize());
-    if (!profile.validate(person, 'add_message', saveEdit2, saveEdit)) {
-        addPersonOverrideBTN.disabled = false;
+    if (!profile.validate(person, message_div, saveEdit2, saveEdit)) {
+        editPersonOverrideBTN.disabled = false;
         return;
     }
 

@@ -105,7 +105,10 @@ $config_vars['defaultCountry'] = $defaultCountry;
             </div>
             <div class='modal-footer'>
                 <button class='btn btn-sm btn-secondary' type='button' data-bs-dismiss='modal'>Cancel</button>
-                <button class='btn btn-sm btn-primary' type='button' id='updateExisting' onClick='saveEdit()'>Update Existing Person</button>
+                <button class='btn btn-sm btn-primary' type='button' id='updateExisting' onClick="saveEdit('update')">Update Existing Person</button>
+                <button class='btn btn-sm btn-warning' type='button' id='updatePersonOverrideBTN' onclick='saveEdit2()' disabled=''>
+                    Overrride Validation Checks and Update Existing Person
+                </button>
             </div>
         </div>
     </div>
