@@ -44,11 +44,14 @@ SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p
     REPLACE(REPLACE(REPLACE(REPLACE(LOWER(TRIM(IFNULL(p.phone, ''))), ')', ''), '(', ''), '-', ''), ' ', '') AS phoneCheck,
     TRIM(REGEXP_REPLACE(CONCAT(p.first_name, ' ', p.middle_name, ' ', p.last_name, ' ', p.suffix), ' +', ' ')) AS fullName,
     TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.address, p.addr_2, p.city, p.state, p.zip, p.country), ' +', ' ')) AS fullAddr,
-    GROUP_CONCAT(DISTINCT m.label ORDER BY m.id SEPARATOR ', ') AS memberships
+    GROUP_CONCAT(DISTINCT m.label ORDER BY m.id SEPARATOR ', ') AS memberships, SUM(IF(ra.action='print', 1, 0)) AS printCount, 
+    COUNT(IF(m.memCategory = 'freebie', 1, NULL)) AS numFreebie, COUNT(IF(m.memCategory != 'freebie',1, NULL)) AS numNonFreebie,
+    MAX(IF(m.memCategory = 'freebie', r.id, -1)) AS freeRegId, MAX(IF(m.memCategory = 'freebie', r.memId, -1))  AS curFreeId
 FROM badgeList b
 JOIN perinfo p ON (p.id = b.perid)
 LEFT OUTER JOIN perinfo mp ON (p.managedBy = mp.id)
 LEFT OUTER JOIN reg r ON (r.perid = p.id AND r.conid = ? AND r.status IN ('paid', 'unpaid', 'plan'))
+LEFT OUTER JOIN regActions ra ON r.id = ra.regid AND ra.action = 'print'
 LEFT OUTER JOIN memList m ON (r.memId = m.id AND m.conid = ? AND m.memType in ('full', 'oneday', 'virtual'))
 WHERE b.conid = ? AND b.user_perid = ?
 GROUP BY p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.legalName, p.pronouns, 
@@ -59,8 +62,7 @@ EOS;
 
 $response['query']=$watchQ;
 $badges = [];
-
-$watchR = dbSafeQuery($watchQ, 'iiii', array($con['id'], $con['id'], $con['id'], $user_perid));
+$watchR = dbSafeQuery($watchQ, 'iiii', array($conid, $conid, $conid, $user_perid));
 if ($watchR === false) {
     $response['error'] = 'Query failed-see log';
     ajaxSuccess($response);

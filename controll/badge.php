@@ -51,9 +51,11 @@ page_init($page,
               $authToken);
 
 
-    $freeSelect = "<option disabled='disabled' selected='true' value='-1'> -- select an option --</option>\\n";
+$freeSelect = [];
+    $freeSelect[] = [ 'value' => -1, 'label' => '-- select an option --'];
+            "<option disabled='disabled' selected='true' value='-1'> -- select an option --</option>\\n";
     foreach ($freeMems as $free) {
-        $freeSelect .= "<option value='" . $free['id'] . "'>" . $free['label'] . "</option>\\n";
+        $freeSelect[]   = ['value' => $free['id'], 'label' => $free['label']];
     }
 
 $useUSPS = false;

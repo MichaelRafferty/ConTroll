@@ -39,12 +39,13 @@ $response['user_perid'] = $user_perid;
 
 $perid = $_POST['perid'];
 $memId = $_POST['memId'];
+$regId = $_POST['regId'];
 
 // chech to see if there already is a primary membership for this person
 $iQ = <<<EOS
 SELECT r.id, r.memId, r.status, m.memAge, m.memCategory, m.memType, m.price, m.conid
 FROM reg r
-JOIN memList m ON r.memId = m.id
+JOIN memList m ON r.memId = m.id AND r.memId = m.id AND m.memType in ('full', 'oneday', 'virtual')
 WHERE r.conid = ? AND perid = ? AND r.status IN ('paid', 'unpaid', 'plan')
 EOS;
 $typeStr = 'ii';
@@ -57,43 +58,70 @@ if ($iR === false) {
     exit();
 }
 
+$foundFreeId = false;
 $numPrimary = 0;
+$oldMemId = -1;
 while ($row = $iR->fetch_assoc()) {
-    if (isPrimary($row, $conid, 'all'))
+    if (isPrimary($row, $conid, 'all')) {
         $numPrimary++;
+        if ($row['id'] == $regId) {
+            $foundFreeId = true;
+            $oldMemId = $row['memId'];
+        }
+    }
 }
 $iR->free();
 
-if ($numPrimary > 0) {
+if ($numPrimary > 0 && !$foundFreeId) {
     $response['warn'] = "$perid already has a membership.";
     ajaxSuccess($response);
     exit();
 }
 
-$iT = <<<EOS
-INSERT INTO transaction(conid,perid,userid,price,tax,withtax,paid,type,create_date)
-VALUES (?,?,?,0,0,0,0,'freebadge',now());
+// check to see if this is a change or an add of a free membership
+if ($foundFreeId) {
+    $iR = <<<EOS
+UPDATE reg
+SET memId = ?
+WHERE id = ? AND conid = ? AND perid = ? AND memId = ?
 EOS;
-$dtT = 'iii';
+    $numUpd = dbSafeCmd($iR, 'iiiii', array($memId, $regId, $conid, $perid, $oldMemId));
+    if ($numUpd === false) {
+        $response['error'] = "Update of registration $regId from $oldMemId to $memId for $perid failed, see log.";
+        ajaxSuccess($response);
+        exit();
+    }
+    $iNote = <<<EOS
+INSERT INTO regActions(userid, source, tid, regid, action, notes)
+VALUES (?, ?, ?, ?, ?, ?);
+EOS;
+    $numAdd = dbSafeInsert($iNote, 'isiiss', array($user_perid, 'freebadge', NULL, $regId, 'notes', "freebie registration changed in Free Badges from $oldMemId to $memId"));
+} else {
+    $iT = <<<EOS
+INSERT INTO transaction(conid,perid,userid,price,tax,withtax,paid,type,create_date)
+VALUES (?,?,?,0,0,0,0,'freebadge',NOW());
+EOS;
+    $dtT = 'iii';
 
-$iR = <<<EOS
+    $iR = <<<EOS
 INSERT INTO reg(conid,perid,memId,create_date,price,couponDiscount,paid,create_trans,complete_trans,create_user,updatedBy,status)
 VALUES(?,?,?,NOW(),0,0,0,?,?,?,?,'paid');
 EOS;
-$dtR = 'iiiiiii';
+    $dtR = 'iiiiiii';
 
-$newTid = dbSafeInsert($iT, $dtT, array($conid, $perid, $user_perid));
-if ($newTid === false) {
-    $response['error'] = "Insert of transaction failed, see log.";
-    ajaxSuccess($response);
-    exit();
-}
+    $newTid = dbSafeInsert($iT, $dtT, array ($conid, $perid, $user_perid));
+    if ($newTid === false) {
+        $response['error'] = "Insert of transaction failed, see log.";
+        ajaxSuccess($response);
+        exit();
+    }
 
-$newReg = dbSafeInsert($iR, $dtR, array($conid, $perid, $memId, $newTid, $newTid, $user_perid, $user_perid));
-if ($newReg === false) {
-    $response['error'] = 'Insert of membership failed, see log.';
-    ajaxSuccess($response);
-    exit();
+    $newReg = dbSafeInsert($iR, $dtR, array ($conid, $perid, $memId, $newTid, $newTid, $user_perid, $user_perid));
+    if ($newReg === false) {
+        $response['error'] = 'Insert of membership failed, see log.';
+        ajaxSuccess($response);
+        exit();
+    }
 }
-$response['success'] = "$perid update with $memId";
+$response['success'] = "$perid updated with $memId";
 ajaxSuccess($response);

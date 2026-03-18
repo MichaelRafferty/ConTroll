@@ -121,6 +121,11 @@ function loadWatchList(data) {
                 {title: "Memberships", field: "memberships", headerFilter: true, headerWordWrap: true, tooltip: true,
                     maxWidth: 500, width: 300, formatter: membershipFormatter,},
                 {field: "index", visible: false,},
+                {field: "numFreebie", visible: false,},
+                {field: "numNonFreebie", visible: false,},
+                {field: "freeRegId", visible: false,},
+                {field: "curFreeId", visible: false,},
+                {title: "Print Count", field: "printCount", headerWordWrap: true, width: 70, headerSort: false, },
             ],
         });
     } else {
@@ -178,17 +183,27 @@ function addWatchIcon(cell, formatterParams, onRendered) { //plain text value
 
 // build either select list or membership name
 function membershipFormatter(cell, formatterParams, onRendered) {
-    var html = '';
-    var data = cell.getRow().getData();
+    let html = '';
+    let data = cell.getRow().getData();
 
+    let curMembership = [];
     if (data.memberships) {
-        return data.memberships;
+        if (data.printCount > 0 || data.numNonFreebie > 0) {
+            return data.memberships;
+        }
+        curMembership = data.memberships.split(', ');
     }
 
-    html +=  '<select name="m_' + data.id + '" id="m_' + data.id + '">' +
-        freeSelect + '</select><br/>' +
+    html =  '<select name="m_' + data.id + '" id="m_' + data.id + '">';
+    for (let index in freeSelect) {
+        let option = freeSelect[index];
+        html += '<option ' + (option.value < 0 ? "disabled='disabled' " : "") +
+            ((curMembership.includes(option.label) || (curMembership.length == 0 && option.value < 0)) ? "selected='true' " : '' ) +
+            "value='" + option.value + "'>" + option.label + "</option>\n";
+    }
+    html += '</select><br/>' +
         '&nbsp;<button type="button" class="btn btn-sm btn-primary pt-0 pb-0" style="--bs-btn-font-size: 75%;" onclick="updateBadge(' +
-            data.id + ')">Assign Badge</button>';
+        data.id + ',' + data.curFreeId + ',' + data.freeRegId + ')">Assign Badge</button>';
     return html;
 }
 
@@ -485,7 +500,7 @@ function saveEdit2() {
 }
 
 // update badge - pull select value and update the badge, then redraw the list
-function updateBadge(perid) {
+function updateBadge(perid, curMemId, freeRegId) {
     var memId = document.getElementById('m_' + perid).value;
 
     if (memId < 0) {
@@ -493,10 +508,16 @@ function updateBadge(perid) {
         return false;
     }
 
+    if (memId == curMemId) {
+        show_message("This is already the current free membership type, nothing to change.", 'warn');
+        return false;
+    }
+
     var postData = {
         action: 'updateMembership',
         perid: perid,
         memId: memId,
+        regId: freeRegId,
     };
 
     $.ajax({
