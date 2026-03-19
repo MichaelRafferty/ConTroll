@@ -809,7 +809,21 @@ function changeRegsData(data, rowdata) {
 
     changeMemberships = data.memberships;
     let enableEdit = limitConid >= (conid - 1) && limitConid < (conid + 1);
-    let disableChanges = (limitConid < conid) ? ' disabled' : '';
+    let disableConidLimit = limitConid < conid;
+    let disableChanges = disableConidLimit ? ' disabled' : '';
+
+    let numTransferEligible = ((rowdata.pcount  == null || rowdata.pcount == 0) && rowdata.category != 'freebie' &&
+        rowdata.type != 'donation' && rowdata.type != 'wsfs') ? 1 : 0;
+    let numRolloverEligible = (rowdata.status == 'paid' && (rowdata.pcount  == null || rowdata.pcount == 0) &&
+        rowdata.type != 'donation' && rowdata.category != 'freebie') ? 1 : 0;
+    let numDonateEligible = (rowdata.status == 'paid' && rowdata.price > 0 && (rowdata.pcount  == null || rowdata.pcount == 0) &&
+        rowdata.type != 'donation' && rowdata.type != 'wsfs') ? 1 :0;
+    let numRefundEligible = (rowdata.status == 'paid' && (rowdata.pcount  == null || rowdata.pcount == 0)
+        && rowdata.price > 0) ? 1 :0;
+    changeMemberships[0].transferEligible = numTransferEligible > 0;
+    changeMemberships[0].rolloverEligible = numRolloverEligible > 0;
+    changeMemberships[0].donateEligible = numDonateEligible > 0;
+    changeMemberships[0].refundEligible = numRefundEligible > 0;
 
     html += `
     <div class="row mt-4 mb-2">
@@ -857,6 +871,35 @@ function changeRegsData(data, rowdata) {
         if (membership.id == rowdata.badgeId)
             continue;
 
+        if ((membership.pcount == null || membership.pcount == 0) && rowdata.type != 'donation' && rowdata.type != 'wsfs' &&
+            rowdata.category != 'freebie') {
+            numTransferEligible++;
+            changeMemberships[i].transferEligible = true;
+        } else {
+            changeMemberships[i].transferEligible = true;
+        }
+        if (membership.status == 'paid' && (membership.pcount == null || membership.pcount == 0) && membership.memType != 'donation' &&
+            rowdata.category != 'freebie') {
+            numRolloverEligible++;
+            changeMemberships[i].rolloverEligible = true;
+        } else {
+            changeMemberships[i].rolloverEligible = false;
+        }
+        if (membership.status == 'paid' && membership.price > 0 && (membership.pcount == null || membership.pcount == 0) &&
+            membership.memType != 'donation' && membership.memType != 'wsfs') {
+            numDonateEligible++;
+            changeMemberships[i].donateEligible = true;
+        } else {
+            changeMemberships[i].donateEligible = false;
+        }
+        if (membership.status == 'paid' && (membership.pcount == null || membership.pcount == 0) && membership.price > 0) {
+            numRefundEligible++;
+            changeMemberships[i].refundEligible = true;
+        } else {
+            changeMemberships[i].refundEligible = false;
+
+        }
+
         html += `
     <div class="row mt-1">
         <div class="col-sm-1" style="text-align: right;">
@@ -878,18 +921,24 @@ function changeRegsData(data, rowdata) {
     </div>
 `;
     }
+    let disableTransfer = (disableConidLimit || numTransferEligible == 0) ? ' disabled' : '';
+    let disableRollover = (disableConidLimit || numRolloverEligible == 0) ? ' disabled' : '';
+    let disableDonate = (disableConidLimit || numDonateEligible == 0) ? ' disabled' : '';
+    let disableRefund = (disableConidLimit || numRefundEligible == 0) ? ' disabled' : '';
     html += `
     <div class="row mt-2 mb-2">
         <div class="col-sm-12" style="text-align: center;">
             <button class="btn btn-sm btn-primary" onclick="changeRevoke(0);"` + disableChanges + `>Revoke Selected</button>
             <button class="btn btn-sm btn-warning me-4" onclick="changeRevoke(1);"` + disableChanges + `>Restore Selected</button>
-            <button class="btn btn-sm btn-primary me-4" onclick="changeTransfer();"` + disableChanges + `>Transfer Selected</button>
+            <button class="btn btn-sm btn-primary me-4" onclick="changeTransfer();"` + disableTransfer + `>Transfer Selected</button>
 `;
     if (config.oneoff == 0) {
-        html += '<button class="btn btn-sm btn-primary me-4" onclick="changeRollover();">Rollover Selected</button>\n';
+        html += '<button class="btn btn-sm btn-primary me-4" onclick="changeRollover();"' + disableRollover + ">Rollover Selected</button>\n";
     }
+    html += '<button class="btn btn-sm btn-primary" onclick="changeDonate();"' + disableDonate + '>Donate Selected</button>\n';
+
     if (config.finance == 1) {
-        html += '<button class="btn btn-sm btn-primary" onclick="changeRefund();"' + disableChanges + '>Refund Selected</button>\n';
+        html += '<button class="btn btn-sm btn-primary" onclick="changeRefund();"' + disableRefund + '>Refund Selected</button>\n';
     }
     html += `
         </div>
@@ -976,10 +1025,10 @@ function changeRevoke(direction) {
             changeModal.hide();
             getData('r');
             if (data.success !== undefined) {
-                show_message(data.success, 'success', 'changeMessageDiv');
+                show_message(data.success, 'success');
             }
             if (data.message)
-                show_message(data.message, 'success', 'changeMessageDiv');
+                show_message(data.message, 'success');
         },
         error: function (jqXHR, textStatus, errorThrown) {
             showError("ERROR in cancelReg: " + textStatus, jqXHR);
@@ -1008,6 +1057,14 @@ function changeTransfer() {
 
         if (denyTransfer.indexOf(changeItem.status) != -1)  {
             message += "Cannot transfer " + changeItem.id + " as status " + changeItem.status + " cannot be transferred<br/>";
+            continue;
+        }
+        if (changeItem.pcount > 0) {
+            message += "Cannot transfer " + changeItem.id + " as it has been printed.<br/>";
+            continue;
+        }
+        if (changeItem.transferEligible != 1) {
+            message += "Cannot transfer " + changeItem.id + " as that type/category of membership cannot be transferred.<br/>";
             continue;
         }
 
@@ -1186,7 +1243,7 @@ function transferReg(to, banned) {
             } else if (data.warning) {
                 changeModal.hide();
                 checkRefresh(data);
-                show_message(data.warning, 'warn', 'changeMessageDiv');
+                show_message(data.warning, 'warn');
             } else {
                 checkRefresh(data);
                 transferSearchDiv.hidden = true;
@@ -1243,6 +1300,16 @@ function changeRollover() {
             message += "Cannot change " + changeItem.id + " as category " + memCat + " is not allowed to be rolled over<br/>";
             continue;
         }
+
+        if (changeItem.pcount > 0) {
+            message += "Cannot rollover " + changeItem.id + " as it has been printed.<br/>";
+            continue;
+        }
+        if (changeItem.rolloverEligible != 1) {
+            message += "Cannot rollover " + changeItem.id + " as that type/category of membership cannot be rolled over.<br/>";
+            continue;
+        }
+
 
         changeList.push(changeItem.id);
         if (ageList[memAge])
@@ -1359,6 +1426,86 @@ function changeRolloverExecute() {
 }
 //// Rollover End
 
+//// Donate Start
+// process the rollover requests, validate the selections and if allowed call the AJAX call to process the request
+function changeDonate() {
+    // hide transfer block
+    clear_message();
+    clear_message('changeMessageDiv');
+    transferSearchDiv.hidden = true;
+    editRegDiv.hidden = true;
+    // check which ones need to be ignored
+    let message = '';
+    changeList = [];
+
+    for (let i = 0; i < changeMemberships.length; i++) {
+        let changeItem = changeMemberships[i];
+        let checked = document.getElementById('m-' + changeItem.id).checked;
+        if (!checked)
+            continue;
+
+        if (changeItem.pcount > 0) {
+            message += "Cannot donate " + changeItem.id + " as it has been printed.<br/>";
+            continue;
+        }
+        if (changeItem.donateEligible != 1) {
+            message += "Cannot donate " + changeItem.id + " as that type/category of membership cannot be donated.<br/>";
+            continue;
+        }
+
+        changeList.push(changeItem.id);
+    }
+
+    if (changeList.length == 0) {
+        message += "Nothing to change";
+        show_message(message, 'warn', 'changeMessageDiv');
+        return;
+    }
+
+    if (message != '') {
+        show_message(message, 'error', 'changeMessageDiv');
+        return;
+    }
+
+    clear_message('changeMessageDiv');
+
+    let data = {
+        donateList: changeList,
+        action: 'donate',
+        source: config.source,
+    }
+    let script= 'scripts/regadmin_donateReg.php';
+
+    $.ajax({
+        method: "POST",
+        url: script,
+        data: data,
+        success: function (data, textstatus, jqxhr) {
+            if (data.error !== undefined) {
+                show_message(data.error, 'error', 'changeMessageDiv');
+                return;
+            }
+            checkRefresh(data);
+            if (data.warn !== undefined) {
+                show_message(data.warn, 'warn', 'changeMessageDiv');
+                return;
+            }
+            changeModal.hide();
+            getData('r');
+            if (data.success !== undefined) {
+                show_message(data.success, 'success');
+            }
+            if (data.message)
+                show_message(data.message, 'success');
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            showError("ERROR in cancelReg: " + textStatus, jqXHR);
+        }
+    });
+}
+
+//// Donate End
+
 //// Refund start
 // changeRefund - validate / start the refund process
 function changeRefund() {
@@ -1402,7 +1549,7 @@ function changeEdit(badgeId) {
     }
     memOptionList += "</select>\n";
 
-    let statuses = ['unpaid','plan','paid','cancelled','refunded','transferred','upgraded','rolled-over'];
+    let statuses = ['unpaid','plan','paid','cancelled','donated','refunded','transferred','upgraded','rolled-over'];
     let statusSelect = "<select id='newStatus'>\n";
     for (let i = 0; i < statuses.length; i++) {
         statusSelect += '<option value="' + statuses[i] + '"' + (currentRow.status == statuses[i] ? ' selected' : '') +
@@ -1467,8 +1614,9 @@ function changeEditSave(override) {
         // now some simple validations
         let warnings = '';
         let numWarnings = 0;
+        let balanceDue = 0;
         if (config.finance == 1) {
-            let balanceDue = +Number(Number(newPrice) - (Number(newPaid) + Number(newDiscount))).toFixed(2);
+            balanceDue = +Number(Number(newPrice) - (Number(newPaid) + Number(newDiscount))).toFixed(2);
             if (newPrice != +Number(Number(newPaid) + Number(newDiscount)).toFixed(2)) {
                 warnings += 'Price of ' + newPrice + ' does not equal the sum of Paid + Coupon Discount of ' +
                     (Number(newPaid) + Number(newDiscount)) + '<br/>';
@@ -1634,6 +1782,8 @@ function draw_registrations(data) {
             { field: "complete_trans", visible: false },
             { field: "ncount", visible: false,},
             { field: "hcount", visible: false,},
+            { field: "memCategory", visible: false,},
+            { field: "memType", visible: false,},
             {field: 'first_name', visible: false,},
             {field: 'middle_name', visible: false,},
             {field: 'last_name', visible: false,},
