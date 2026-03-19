@@ -315,18 +315,24 @@ if ($personType == 'n') {
             <div class='col-sm-1'>
                 <button class='btn btn-sm btn-primary' id='newIdentity' onclick='settings.newIdentity();'>Add New</button>
             </div>
-            <div class='col-sm-auto'><label for='provider'>Provider:</label></div>
-            <div class='col-sm-auto'><input type='text' id='provider' name='provider' size=16 maxlength=16 /></div>
+            <div class='col-sm-auto'><label for='provider'> Provider:</label></div>
+            <div class='col-sm-auto'><select id='provider' name='provider'>
+                    <option value='token'>Email Authentication Token</option>
+                    <option value='google'>Login with Google</option>
+                </select>
+            </div>
             <div class='col-sm-auto'><label for="emaiLAddr">Email:</label></div>
             <div class='col-sm-auto'><input type='text' id='identityEmailAddr' name='identityEmailAddr' size=64 maxlength=254 /></div>
         </div>
         <div class="row mt-1">
             <div class="col-sm-1"></div>
-            <div class="col-sm-auto">Leave the provider name blank for Authentication Link via Email.</div>
+            <div class="col-sm-auto">
+                Note: Passkeys will use your profile email address and an alternate address is not valid use with passkey authentication.
+            </div>
         </div>
         <div class='row mt-1'>
             <div class='col-sm-2'></div>
-            <div class="col-sm-auto">Currently supported providers are: email and google.</div>
+            <div class="col-sm-auto">Currently supported providers for alternate identities are: "Email Authentication Token" and "login with Google".</div>
         </div>
         <div class='row mt-1'>
             <div class='col-sm-2'></div>
