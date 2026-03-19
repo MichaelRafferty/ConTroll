@@ -1,4 +1,3 @@
-
 <?php
 // draw_login - draw the login/signup form
 function draw_login($config_vars, $result_message = '') {
@@ -149,7 +148,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                                 <div class='col-sm-auto p-0 ms-0 me-0'><h1 class="h4">Business Information</h1></div>
                             </div>
                              <?php outputCustomText('profile/bus' . $portalName); if ($portalType == 'artist' || $portalType == 'admin') { ?>
-                                <div class="row mt-1">
+                                <div class="row mt-1" id="artistNameRow">
                                     <div class='col-sm-2'>
                                         <label for='artistName'><span class='text-danger'>&bigstar;</span>Artist Name: </label>
                                     </div>
@@ -166,7 +165,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                                          </button>
                                      </div>
                                 </div>
-                                <div class='row mt-1'>
+                                <div class='row mt-1' id='artistPayeeRow'>
                                      <div class='col-sm-2'>
                                          <label for='artistName'><span class='text-danger'>&bigstar;</span>Artist Payee: </label>
                                      </div>
@@ -211,7 +210,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                             </div>
                             <?php if (($portalType == 'vendor' || $portalType == 'admin') &&
                                     array_key_exists('taxidlabel', $vendor_conf) && $vendor_conf['taxidlabel'] != '') { ?>
-                            <div class='row mt-1'>
+                            <div class='row mt-1' id="exhProfileTaxIdRow">
                                 <div class='col-sm-2'>
                                     <label for='exhibitorTaxid'><span class='text-danger'>&bigstar;</span><?php echo $vendor_conf['taxidlabel']; ?>:</label>
                                 </div>
@@ -303,7 +302,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
                                 </div>
                             </div>
                             <?php if ($portalType == 'artist' || $portalType == 'admin') { /* TODO change this to 'mail-in allowed' */ ?>
-                                <div class='row mt-1'>
+                                <div class='row mt-1' id="artistMainInRow">
                                     <div class='col-sm-2'>
                                         <label for='mailin'><span class='text-danger'>&bigstar;</span>Are you requesting a mail-in space: </label>
                                     </div>
@@ -547,7 +546,7 @@ function draw_registrationModal($portalType, $portalName, $con, $countryOptions,
     <?php
     }
 
-// draw_RegistratioModal - the modal for exhibitor signup in the vendor subsystem
+// draw_aignupModal - the modal for exhibitor signup in the vendor subsystem
 function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabStart = 5000) {
     $con = get_conf('con');
     $vendor_conf = get_conf('vendor');
@@ -604,7 +603,6 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                         <input class='form-control-sm' type='text' name='artistName' id='artistName' maxlength='128' size='50'
                                                required placeholder='Artist Name' tabindex="<?php echo $tabIndex; $tabIndex += 2;?>"/>
                                     </div>
-                                <?php if ($portalType == 'artist') { ?>
                                     <div class='col-sm-auto p-0 ms-4 me-0'>
                                         <button class='btn btn-sm btn-primary' type='button' id="copyArtistPayee"
                                                 tabindex="<?php echo $tabIndex; $tabIndex += 2;?>"
@@ -612,7 +610,6 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
                                             Copy <?php echo $portalName; ?> Name to Payee Name
                                         </button>
                                     </div>
-                                <?php } ?>
                                 </div>
                                 <div class='row mt-1'>
                                     <div class='col-sm-2'>

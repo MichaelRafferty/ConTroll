@@ -33,6 +33,7 @@ window.onload = function () {
 
     if (document.getElementById('profile')) {
         exhibitorProfile = new ExhibitorProfile(config.debug);
+        exhibitorProfile.setPortalType(config.portalType);
         exhibitorRequestOnLoad();
         auctionItemRegistrationOnLoad()
         exhibitorReceiptOnLoad();

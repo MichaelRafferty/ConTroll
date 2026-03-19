@@ -86,6 +86,26 @@ $exhibitorR->free();
 
 $response['exhibitors'] = $exhibitors;
 
+// get the region type fields to know what kind of info is required
+$typesQ = <<<EOS
+SELECT et.regionType, et.portalType 
+FROM exhibitsRegions er
+JOIN exhibitsRegionTypes et ON er.regionType = et.regionType
+WHERE er.id = ?;
+EOS;
+$typeR = dbSafeQuery($typesQ, 'i', array($regionId));
+if ($typeR === false) {
+    ajaxSuccess(array(
+        'args' => $_POST,
+        'query' => $typesQ,
+        'error' => 'query failed'));
+    exit();
+}
+$typeL = $typeR->fetch_assoc();
+$response['portalType'] = $typeL['portalType'];
+$response['regionType'] = $typeL['regionType'];
+$typeR->free();
+
 // get approvals for this region
 $approvalQ = <<<EOS
 SELECT exRY.id, eY.exhibitorId, exRY.exhibitsRegionYearId, exRY.approval, exRY.updateDate, exRY.updateBy, eR.name, eR.shortname, 

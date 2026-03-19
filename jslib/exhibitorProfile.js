@@ -21,6 +21,7 @@ class ExhibitorProfile {
     #profileExhibitorNameField = null;
     #profilePublicityField = null;
     #profileCurrentPage = 1;
+    #portalRulesType = null;
     #passwordLine1 = null;
     #passwordLine2 = null;
     #cpasswordLine1 = null;
@@ -29,6 +30,10 @@ class ExhibitorProfile {
     #exhibitorId = null;
     #exhibitorYearId = null;
     #exhibitorRow = null;
+    #taxIDRow = null;
+    #artistNameRow = null;
+    #artistPayeeRow = null;
+    #artistMainInRow = null;
     // globals
     #debugFlag = 0;
 
@@ -57,6 +62,11 @@ class ExhibitorProfile {
                 this.#profileArtistNameField = document.getElementById('artistName');
                 this.#profileArtistPayeeField = document.getElementById('artistPayee');
                 this.#profilePublicityField = document.getElementById('publicity');
+                this.#taxIDRow = document.getElementById('exhProfileTaxIdRow');
+                this.#artistNameRow = document.getElementById('artistNameRow');
+                this.#artistPayeeRow = document.getElementById('artistPayeeRow');
+                this.#artistMainInRow = document.getElementById('artistMainInRow');
+
                 if (portalType == 'admin') {
                     this.#exhibitorId = document.getElementById('exhibitorId');
                     this.#exhibitorYearId = document.getElementById('exhibitorYearId');
@@ -65,6 +75,11 @@ class ExhibitorProfile {
         }
         if (debug)
             this.#debugFlag = debug;
+    }
+
+    // get/set functions
+    setPortalType(portalType) {
+        this.#portalRulesType = portalType;
     }
 
     //  copy the address fields to the ship to address fields
@@ -344,7 +359,7 @@ class ExhibitorProfile {
     }
 
     // profileModalOpen - set up and show the edit profile modal
-    profileModalOpen(useType, exhibitorId = null, exhibitorYearId = null, exhibitorRow = null) {
+    profileModalOpen(useType, exhibitorId = null, exhibitorYearId = null, exhibitorRow = null, portalType = '') {
         if (this.#profileModal != null) {
             // set items as registration use of the modal
             if (exhibitorId != null)
@@ -353,6 +368,15 @@ class ExhibitorProfile {
                 this.#exhibitorYearId.value = exhibitorYearId;
             this.#exhibitorRow = exhibitorRow;
             this.#creatingAccountMsgDiv.hidden = true;
+            if (this.#taxIDRow != null)
+                this.#taxIDRow.hidden = this.#portalRulesType == 'artist';
+            if (this.#artistNameRow != null)
+                this.#artistNameRow.hidden = this.#portalRulesType != 'artist';
+            if (this.#artistPayeeRow != null)
+                this.#artistPayeeRow.hidden = this.#portalRulesType != 'artist';
+            if (this.#artistMainInRow != null)
+                this.#artistMainInRow.hidden = this.#portalRulesType != 'artist';
+
             switch (useType) {
                 case 'register':
                     this.#profilePage1 = document.getElementById("page1");

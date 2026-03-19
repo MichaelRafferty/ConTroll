@@ -71,6 +71,8 @@ class exhibitorsAdm {
     // Region items
     #currentRegion = null;
     #regionTabs = {};
+    #regionType = null;
+    #portalType = null;
 
     // Spaces items
     #currentSpace = null;
@@ -407,6 +409,8 @@ class exhibitorsAdm {
             this.#message_div.innerHTML = "Query:\n" + data.query + "\n\n" + "Args: " + data.args.toString();
             return;
         }
+        this.#regionType = data.regionType;
+        this.#portalType = data.portalType
         this.#message_div.innerHTML = '';
         this.#pricelists = data.price_list;
         if (data.locationsUsed)
@@ -1119,6 +1123,7 @@ class exhibitorsAdm {
 
 // add new functions
     addNew() {
+        exhibitorProfile.setPortalType(this.#portalType);
         exhibitorProfile.profileModalOpen('add');
     }
 
@@ -1130,6 +1135,7 @@ class exhibitorsAdm {
     edit(exhId) {
         let exhibitorRow = this.#exhibitorsTable.getRow(exhId)
         let exhibitorData = exhibitorRow.getData();
+        exhibitorProfile.setPortalType(this.#portalType);
         exhibitors.editExhibitor(exhibitorData, exhibitorRow);
     }
 
