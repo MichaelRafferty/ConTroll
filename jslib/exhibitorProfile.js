@@ -82,6 +82,45 @@ class ExhibitorProfile {
         this.#portalRulesType = portalType;
     }
 
+    setArtistWarnBG(color) {
+        let field = document.getElementById('artistName');
+        if (field) {
+            let value = field.value;
+            if (value == null || value.trim().length == 0)
+                field.style.backgroundColor = color;
+            else
+                field.style.backgroundColor = '';
+
+        }
+        field = document.getElementById('artistPayee');
+        if (field) {
+            let value = field.value;
+            if (value == null || value.trim().length == 0)
+                field.style.backgroundColor = color;
+            else
+                field.style.backgroundColor = '';
+        }
+        field = document.getElementById('mailin');
+        if (field) {
+            let value = field.value;
+            if (value == null || value.trim().length == 0)
+                field.style.backgroundColor = color;
+            else
+                field.style.backgroundColor = '';
+        }
+    }
+
+    setVendorWarnBG(color) {
+        let field = document.getElementById('salesTaxId');
+        if (field) {
+            let value = field.value;
+            if (value == null || value.trim().length == 0)
+                field.style.backgroundColor = color;
+            else
+                field.style.backgroundColor = '';
+        }
+    }
+
     //  copy the address fields to the ship to address fields
     copyAddressToShipTo() {
         for (var fieldNum in ExhibitorProfile.#copyFromFieldList) {
@@ -376,6 +415,9 @@ class ExhibitorProfile {
                 this.#artistPayeeRow.hidden = this.#portalRulesType != 'artist';
             if (this.#artistMainInRow != null)
                 this.#artistMainInRow.hidden = this.#portalRulesType != 'artist';
+
+            this.setArtistWarnBG('');
+            this.setVendorWarnBG('');
 
             switch (useType) {
                 case 'register':
