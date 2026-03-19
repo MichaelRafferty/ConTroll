@@ -330,12 +330,12 @@ if ($personType == 'n') {
                 Note: Passkeys will use your profile email address and an alternate address is not valid use with passkey authentication.
             </div>
         </div>
-        <div class='row mt-1'>
-            <div class='col-sm-2'></div>
+        <div class='row mt-1 mt-3'>
+            <div class='col-sm-1'></div>
             <div class="col-sm-auto">Currently supported providers for alternate identities are: "Email Authentication Token" and "login with Google".</div>
         </div>
-        <div class='row mt-1'>
-            <div class='col-sm-2'></div>
+        <div class='row mt-1 mt-3'>
+            <div class='col-sm-1'></div>
             <div class='col-sm-auto'>An email will be sent to the email address with a link to verify that you own that email address.<br/>The identity will not be added until you click on the link in that email.</div>
         </div>
         <hr/>
