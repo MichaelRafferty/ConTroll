@@ -13,9 +13,30 @@ $response['perm'] = $perm;
 $check_auth = check_atcon($perm, $conid);
 if($check_auth == false) { 
     ajaxSuccess(array('error' => "Authentication Failure"));
+    exit();
 }
 
 // data: { type: type, item: item, quantity: quantity, print: print, },
+$pollItem = null;
+if (array_key_exists('pollitem', $_POST)) {
+    $pollItem = $_POST['pollitem'];
+    $response['pollitem'] = $pollItem;
+// given a poll item get it's values
+    $pQ = <<<EOS
+SELECT *
+FROM artItems
+WHERE id = ?;
+EOS;
+    $pR = dbSafeQuery($pQ, 'i', array ($pollItem));
+    $response['numRows'] = $pR->num_rows;
+    if ($pR->num_rows == 1) {
+        $pollItem = $pR->fetch_assoc();
+    }
+    $pR->free();
+    $response['item'] = $pollItem;
+    ajaxSuccess($response);
+    exit();
+}
 
 if (!(array_key_exists('type', $_POST) && array_key_exists('item', $_POST) &&
     array_key_exists('quantity', $_POST) && array_key_exists('print', $_POST))) {

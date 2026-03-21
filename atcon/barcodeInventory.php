@@ -9,6 +9,8 @@ if (!isSessionVar('user')) {
 $con = get_conf("con");
 $conid=$con['id'];
 $label = $con['label'];
+$config_vars['conid'] = $conid;
+$config_vars['label'] = $label;
 
 if (!check_atcon('artinventory', $conid)) {
     header('Location: /index.php');
@@ -22,27 +24,10 @@ $cdn = getTabulatorIncludes();
 barcode_page_init($page,
     /* css */ array($cdn['tabcss'], $cdn['tabbs5'], 'css/style.css'),
     /* js  */ array( //$cdn['luxon'],
-                    $cdn['tabjs'],'js/barcodeInventory.js')
+                    $cdn['tabjs'],'js/barcodeInventory.js'),
+        $config_vars
     );
 
-db_connect();
-
-$region = '';
-if(array_key_exists('region', $_GET)) { 
-    $region = $_GET['region'];
-}
-
-$conInfoQ = <<<EOS
-SELECT DATE(startdate) as start, DATE(enddate) as end
-FROM conlist
-WHERE id=?;
-EOS;
-
-$conInfoR = dbSafeQuery($conInfoQ, 'i', array($conid));
-$conInfo = $conInfoR->fetch_assoc();
-$startdate = $conInfo['start'];
-$enddate = $conInfo['end'];
-$method='manager';
 ?>
 <div id="whoami" hidden><?php echo getSessionVar('user');?></div>
 <script type='text/javascript'>

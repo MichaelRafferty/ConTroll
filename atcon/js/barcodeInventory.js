@@ -33,7 +33,7 @@ window.onload = function init_page() {
     bidderField = document.getElementById("bidder");
     toAuctionField = document.getElementById("toAuction");
     printmode = document.getElementById("printmode");
-    scanField.addEventListener('keyup', (e)=> { if (e.code === 'Enter' && !inProcess) inventory(0); });
+    scanField.addEventListener('keyup', (e)=> { if (e.code === 'Enter' && !inProcess) fetchValues(0); });
     inventoryTypeSelect.focus();
     }
 
@@ -60,6 +60,61 @@ function inventoryModeChange() {
         printmode.innerHTML = 'Return Qty:&nbsp;&nbsp;&nbsp; ';
     lastScan = '---------------------------';
     clear_message();
+}
+
+function fetchValues(mode) {
+    // get the current scan code, it should not be emtpy
+    let scancode = scanField.value;
+    if (scancode == '') {
+        show_message('Please scan a barcode', 'warn');
+        return;
+    }
+    let scanDiffer = lastScan != scancode;
+    if (!scanDiffer)
+        return inventory(mode);
+
+    // fetch the values
+    scanned = scancode.split(',');
+    item = scanned[0].trim();
+    let script = 'scripts/artinventory_barcodeInventory.php';
+    $.ajax({
+        method: "POST",
+        url: script,
+        data: { pollitem: item, },
+        success: function(data, textStatus, jqXhr) {
+            fetchValuesSuccess(data, mode);                ;
+        },
+        error: function (jqXHR, textstatus, errorThrown) {
+            inProcess = false;
+            inventoryButton.disabled = false;
+            showAjaxError(jqXHR, textstatus, errorThrown);
+        },
+    });
+}
+
+// deal with the values
+function fetchValuesSuccess(data, mode) {
+    if (data.error) {
+        show_message(data.error, 'error');
+        inProcess = false;
+        inventoryButton.disabled = false;
+        scanField.focus();
+        return;
+    }
+    if (data.numRows != 1) {
+        clearScreen();
+        show_message("Item " + data.pollitem + ' not found', 'error');
+        return;
+    }
+    if (data.item.conid != config.conid) {
+        clearScreen();
+        show_message("Item " + data.pollitem + ' (' + data.item.title + ')  from ' + data.item.conid + ' not this conid: ' + config.conid, 'error');
+        return;
+    }
+    if (data.item.type != 'print') {
+        scanField.value = data.item.id;
+    }
+    return inventory(mode);
 }
 
 // process inventory update, mode 0 = scan entered, mode 1 = inventory button pressed
