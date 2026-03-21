@@ -347,7 +347,7 @@ function barcode_page_init($title, $css, $js, $configVars = null) {
     </head>
 <body>
     <div id="page_banner">
-        <h1>Barcode Art Inventory</h1>
+        <h1 class="size-h2"><?php echo $title; ?></h1>
     </div>
 <?php
 }

@@ -15,12 +15,12 @@ if (!check_atcon('artinventory', $conid)) {
     exit(0);
 }
 
-$page = 'Barcode Art Inventory';
+$page = 'Barcode Based Art Inventory';
 $manager = check_atcon('manager', $conid) ? 'true' : 'false';
 
 $cdn = getTabulatorIncludes();
 barcode_page_init($page,
-    /* css */ array($cdn['tabcss'], $cdn['tabbs5']),
+    /* css */ array($cdn['tabcss'], $cdn['tabbs5'], 'css/style.css'),
     /* js  */ array( //$cdn['luxon'],
                     $cdn['tabjs'],'js/barcodeInventory.js')
     );
