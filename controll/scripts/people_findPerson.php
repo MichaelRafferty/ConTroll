@@ -7,7 +7,7 @@ global $returnAjaxErrors, $return500errors;
 $returnAjaxErrors = true;
 $return500errors = true;
 
-$perm = 'people';
+$perm = 'search';
 $response = array ('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
 $authToken = new authToken('script');
 $response['tokenStatus'] = $authToken->checkToken();
