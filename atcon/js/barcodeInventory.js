@@ -186,6 +186,10 @@ function inventoryUpdate(data) {
         show_message(data.message, 'success');
     }
 
+    clearScreen();
+}
+
+function clearScreen() {
     scanField.value = '';
     lastScan = '---------------------------';
     quantity = inventoryTypeSelect.value == 'checkin' ? 1 : 0;
