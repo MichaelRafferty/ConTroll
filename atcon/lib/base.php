@@ -289,6 +289,69 @@ function page_init($title, $tab, $css, $js, $configVars = null)
     }
 }
 
+function barcode_page_init($title, $css, $js, $configVars = null) {
+    global $portalJSVersion, $libJSversion, $controllJSversion, $globalJSversion, $atJSversion, $exhibitorJSversion, $perms;
+
+    $label = getConfValue('con', 'label', 'Unlabeled');
+    $atconDebug = getConfValue('debug', 'atcon', 0);
+    $test = getConfValue('atcon', 'test', 0);
+
+    if ($configVars == null) {
+        $configVars = array ();
+    }
+    $configVars['debug'] = $atconDebug;
+    if (isWebRequest()) {
+        $includes = getTabulatorIncludes();
+    }
+
+    ?>
+    <!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8"/>
+        <title>
+            <?php echo $title . ' -- ' . $label; ?> Reg
+        </title>
+        <link rel='icon' type='image/x-icon' href='/lib/favicon.ico'>
+        <link href='<?php echo $includes['jquicss']; ?>' rel='stylesheet' type='text/css'/>
+        <link href='<?php echo $includes['bs5css']; ?>' rel='stylesheet'/>
+        <link href="/css/base.css?v=<?php echo $atJSversion; ?>" rel='stylesheet' type='text/css'/>
+        <?php if (isset($css) && $css != null) {
+            foreach ($css as $sheet) { ?>
+                <link href='<?php echo "$sheet?v=$atJSversion"; ?>' rel=stylesheet type='text/css'/>
+            <?php }
+        } ?>
+        <script src='<?php echo $includes['bs5js']; ?>'></script>
+        <script type='text/javascript' src='<?php echo $includes['jqjs']; ?>'></script>
+        <script type='text/javascript' src='<?php echo $includes['jquijs']; ?>'></script>
+        <script type='text/javascript' src="jslib/global.js?v=<?php echo $globalJSversion; ?>"></script>
+        <script type='text/javascript' src="js/base.js?v=<?php echo $atJSversion; ?>"></script>
+        <?php
+            if (isset($js) && $js != null) {
+                foreach ($js as $script) {
+                    if (str_starts_with($script, 'jslib/'))
+                        $callout = "$script?v=$libJSversion";
+                    else if (str_starts_with($script, 'js/'))
+                        $callout = "$script?v=$atJSversion";
+                    else
+                        $callout = $script;
+                    ?>
+                    <script src='<?php echo $callout; ?>' type='text/javascript'></script>
+                    <?php
+                }
+            }
+        ?>
+        <script type='text/javascript'>
+            var config = <?php echo json_encode($configVars); ?>;
+        </script>
+    </head>
+<body>
+    <div id="page_banner">
+        <h1>Barcode Art Inventory</h1>
+    </div>
+<?php
+}
+
 function page_foot($title = '') {
     ?>
     </div>
