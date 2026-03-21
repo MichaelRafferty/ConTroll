@@ -89,7 +89,7 @@ switch ($type) {
             $valid = $curItem['status'] == 'Entered';
         break;
     case 'bid':
-        $valid = str_contains(',Checked In,BID,To Auction,', $curItem['status']);
+        $valid = str_contains(',Entered,Checked In,BID,To Auction,', $curItem['status']);
         break;
     case 'checkout':
         $valid = str_contains(',Withdrawn,Entered,Checked In,Removed from Show,', $curItem['status']);
@@ -119,11 +119,35 @@ switch ($type) {
             ajaxSuccess(array ('error' => "Bids are only allowed on items of type 'Art', this is of type " . $curItem['type']));
             exit();
         }
-        $curBid = $curItem['finalPrice'] != null && $curItem['finalPrice'] > 0 ? $curItem['finalPrice'] : $curItem['minPrice'];
+        $curBid = $curItem['final_price'] != null && $curItem['final_price'] > 0 ? $curItem['final_price'] : $curItem['min_price'];
         if ($bid < $curBid) {
             ajaxSuccess(array ('error' => "Bid of $bid, must be greater than the current bid of " . $curBid));
             exit();
         }
+        // now validate the bidder field
+        $cQ = <<<EOS
+SELECT p.id, count(r.id) AS regs
+FROM perinfo p 
+LEFT OUTER JOIN reg r ON p.id = r.perid AND r.conid = ?
+WHERE p.id = ?
+GROUP BY p.id;
+EOS;
+        $cR = dbSafeQuery($cQ, 'ii', array($conid, $bidder));
+        if ($cR->num_rows != 1) {
+            ajaxSuccess(array ('error' => "Bidder ID $bidder is not valid"));
+            exit();
+        }
+        $cL = $cR->fetch_assoc();
+        $cR->free();
+        if ($cL['id'] == null) {
+            ajaxSuccess(array('warn' => "Bidder ID $bidder is does not exist"));
+            exit();
+        }
+        if ($cL['regs'] == 0) {
+            ajaxSuccess(array('warn' => "Bidder ID $bidder is not registered for this conid"));
+            exit();
+        }
+
         break;
     case 'checkout':
         if ($curItem['type'] == 'print' && $quantity < 0) {

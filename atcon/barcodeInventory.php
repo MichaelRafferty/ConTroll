@@ -37,6 +37,7 @@ barcode_page_init($page,
 <div id="main">
     <label for="inventoryMode"> Inventory Mode: </label>
         <select id="inventoryMode" onchange="inventoryModeChange(); tabindex = 101">
+        <option value="">-- SELECT A MODE --</option>
         <option value="checkin">Check In</option>
         <option value="bid">Record Bids</option>
         <option value="checkout">Check Out</option>

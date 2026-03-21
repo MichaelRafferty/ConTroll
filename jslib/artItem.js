@@ -266,6 +266,16 @@ setIsChanged(value,fieldName) {
     clear_message('ai_result_message');
     let fieldValue = document.getElementById(value).value;
     switch (value) {
+        case 'artItemStatus':
+            if (this.#statusField.value == artItemStatuses.ENTERED) {
+                this.#final_priceField.value = null;
+                this.#bidderField.value = null;
+                this.#bidderNameField.innerHTML = '';
+                this.bidderValid = true;
+                this.#changedFields['artItemBidder']='bidder';
+                this.#changedFields['artItemFinalPrice']='final_price';
+                break;
+            }
         case 'artItemMinPrice':
             if (Number(fieldValue) < 1) {
                 show_message("Minimum must be $1.00 or more", 'warn', 'ai_result_message');
@@ -286,6 +296,11 @@ setIsChanged(value,fieldName) {
             break;
 
         case 'artItemFinalPrice':
+            if (this.#statusField.value == artItemStatuses.ENTERED) {
+                this.#final_priceField.value = null;
+                break;
+            }
+
             let checkPrice = this.#statusField.value == artItemStatuses.QUICKSALE ? Number(this.#sale_priceField.value) : Number(this.#min_bidField.value);
             let checkPriceField = this.#statusField.value == artItemStatuses.QUICKSALE ? 'sale price' : 'minimum';
             if (Number(fieldValue) < checkPrice) {
@@ -296,8 +311,8 @@ setIsChanged(value,fieldName) {
 
         case 'artItemBidder':
             if (fieldValue == undefined || fieldValue == null || fieldValue == '' ) {
-                _this.#bidderNameField.innerHTML = '';
-                _this.bidderValid = true;
+                this.#bidderNameField.innerHTML = '';
+                this.bidderValid = true;
                 break;
             }
             if (Number(fieldValue) < 1) {

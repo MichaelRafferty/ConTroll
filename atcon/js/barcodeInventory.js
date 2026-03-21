@@ -69,6 +69,11 @@ function fetchValues(mode) {
         show_message('Please scan a barcode', 'warn');
         return;
     }
+    let type = inventoryTypeSelect.value;
+    if (type == '') {
+        show_message('Please select an inventory mode', 'warn');
+        return;
+    }
     let scanDiffer = lastScan != scancode;
     if (!scanDiffer)
         return inventory(mode);
@@ -111,6 +116,14 @@ function fetchValuesSuccess(data, mode) {
         show_message("Item " + data.pollitem + ' (' + data.item.title + ')  from ' + data.item.conid + ' not this conid: ' + config.conid, 'error');
         return;
     }
+
+    let type = inventoryTypeSelect.value;
+    if (type == 'bid' && data.item.type == 'nfs') {
+        clearScreen();
+        show_message("Item " + data.pollitem + ' (' + data.item.title + ')  is NOT FOR SALE and cannot be bid on', 'error');
+        return;
+    }
+
     if (data.item.type != 'print') {
         scanField.value = data.item.id;
     }
@@ -131,6 +144,10 @@ function inventory(mode) {
     let scanDiffer = lastScan != scancode;
     lastScan = scancode;
     let type = inventoryTypeSelect.value;
+    if (type == '') {
+        show_message('Please select an inventory mode', 'warn');
+        return;
+    }
     
     if (scanDiffer) {
         // new scan, force mode = 0, so quantity and bid can be updated as needed
@@ -251,7 +268,7 @@ function clearScreen() {
     quantityField.value = quantity;
     bidField.value = '';
     bid = '';
-    bidderField
+    bidderField.value = '';
     bidder = -1;
     toAuction = 0;
     toAuctionField.checked = false;
