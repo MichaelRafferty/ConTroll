@@ -50,24 +50,31 @@ $method='manager';
     var manager = <?php echo $manager; ?>;
 </script>
 <div id="main">
-    Inventory Mode: <select id="inventoryMode" onchange="inventoryModeChange();">
+    <label for="inventoryMode"> Inventory Mode: </label>
+        <select id="inventoryMode" onchange="inventoryModeChange(); tabindex = 101">
         <option value="checkin">Check In</option>
         <option value="bid">Record Bids</option>
         <option value="checkout">Check Out</option>
     </select>
-    &nbsp;
-    <input type="text" id="barcode" placeholder="Scan Here" size="20"/>
     <br/>
-    <div class='mt-3' id="printDiv" hidden>
-        <span id="printmode">Received Quantity: </span>
-        <input type='number' id='quantity' placeholder='Qty' size="5" style="width: 80px;"/>
+    <label for="barcode" class="mt-2 me-2">Scan Barcode: </label>
+    <input type="text" id="barcode" placeholder="Scan Here" size="20" tabindex="110"/>
+    <br/>
+    <div id="printDiv" hidden>
+        <label for="quantity" class="mt-4 me-3" id="printmode">Received Qty: </label>
+        <input type='number' id='quantity' placeholder='Qty' size="5" style="width: 80px;" tabindex = "120"/>
     </div>
-    <div class='mt-3' id='bidDiv' hidden>
-        New high bid:
-        <input type='number' id='bid' placeholder='New Bid' size='20'/>
+    <div id='bidDiv' hidden>
+        <label for="bidder" class='mt-4 me-5'>Bidder: </label>
+        &nbsp;&nbsp;&nbsp;<input type='number' id='bidder' placeholder='High Bidder' size='20' tabindex="130"/>
+        <br/>
+        <label for="bid" class="mt-2 me-3">New high bid: </label>
+        <input type='number' id='bid' placeholder='New Bid' size='20' tabindex="140"/>
+        <label for="toAuction" class="ms-3">To Auction: </label>
+        <input type="checkbox" id="toAuction" tabindex="1"/>
     </div>
     <br/>
-    <button class="btn btn-primary mt-2" id="inventoryButton" onclick="inventory(1);">Inventory</button>
+    <button class="btn btn-primary mt-2" id="inventoryButton" onclick="inventory(1);" tabindex= "160">Inventory</button>
 </div>
 <div id='result_message' class="mt-2"></div>
 <pre id='test'></pre>

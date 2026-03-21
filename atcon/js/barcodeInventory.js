@@ -15,6 +15,10 @@ var quantity = 1;
 var item = '';
 var bidField = null;
 var bid = -1;
+var bidderField = null;
+var bidder = -1;
+var toAuctionField = null;
+var toAuction = 0;
 
 // set up static data and listeners
 window.onload = function init_page() {
@@ -26,6 +30,8 @@ window.onload = function init_page() {
     bidDiv = document.getElementById("bidDiv");
     quantityField = document.getElementById("quantity");
     bidField = document.getElementById("bid");
+    bidderField = document.getElementById("bidder");
+    toAuctionField = document.getElementById("toAuction");
     printmode = document.getElementById("printmode");
     scanField.addEventListener('keyup', (e)=> { if (e.code === 'Enter' && !inProcess) inventory(0); });
     inventoryTypeSelect.focus();
@@ -39,14 +45,19 @@ function inventoryModeChange() {
     bidDiv.hidden = true;
     if (mode == 'bid') {
         bidField.value = '';
+        bidderField.value = '';
+        bid = '';
+        bidder = -1;
+        toAuctionField.checked = false;
+        toAuction = 0;
         quantityField.value = 1;
     }
     inProcess = false;
     scanField.focus();
     if (mode == 'checkin')
-        printmode.innerHTML = 'Received Quantity: ';
+        printmode.innerHTML = 'Received Qty: ';
     if (mode == 'checkout')
-        printmode.innerHTML = 'Return Quantity: ';
+        printmode.innerHTML = 'Return Qty:&nbsp;&nbsp;&nbsp; ';
     lastScan = '---------------------------';
     clear_message();
 }
@@ -118,6 +129,8 @@ function inventory(mode) {
         if (scanDiffer) {
             bid = '';
             bidField.value = '';
+            toAuction = 0;
+            toAuctionField.checked = false;
         } else {
             bid = Number(bidField.value);
             if (isNaN(bid) || bid <= 0) {
@@ -127,6 +140,12 @@ function inventory(mode) {
         }
         if (mode == 0)
             return;
+        toAuction = toAuctionField.checked ? 1 : 0;
+        bidder = Number(bidderField.value);
+        if (isNaN(bidder) || bidder < 1) {
+            show_message("Please enter a numeric bidder id", 'error');
+            return;
+        }
     } else {
         bidDiv.hidden = true;
     }
@@ -138,7 +157,7 @@ function inventory(mode) {
     $.ajax({
             method: "POST",
             url: script,
-            data: { type: type, item: item, quantity: quantity, bid: bid, print: print ?  '1' : '0', },
+            data: { type: type, item: item, quantity: quantity, bid: bid, print: print ?  '1' : '0', toAuction: toAuction, bidder: bidder },
             success: function(data, textStatus, jqXhr) {
                 inventoryUpdate(data);                ;
             },
@@ -173,6 +192,10 @@ function inventoryUpdate(data) {
     quantityField.value = quantity;
     bidField.value = '';
     bid = '';
+    bidderField
+    bidder = -1;
+    toAuction = 0;
+    toAuctionField.checked = false;
     inProcess = false;
     printDiv.hidden = true;
     bidDiv.hidden = true;
