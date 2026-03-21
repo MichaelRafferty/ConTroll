@@ -4,60 +4,133 @@ var inventoryButton = null;
 var scanField = null;
 var inventoryTypeSelect = null;
 var printDiv = null;
+var bidDiv = null;
 var inProcess = false;
-var quantityField = 1;
+var quantityField = null;
 var printmode = null;
+var lastScan = '';
+var print = false;
+var scanned = '';
+var quantity = 1;
+var item = '';
+var bidField = null;
+var bid = -1;
 
+// set up static data and listeners
 window.onload = function init_page() {
     // input fields
     inventoryTypeSelect = document.getElementById("inventoryMode");
-    scanfield = document.getElementById("barcode");
+    scanField = document.getElementById("barcode");
     inventoryButton = document.getElementById("inventoryButton");
     printDiv = document.getElementById("printDiv");
+    bidDiv = document.getElementById("bidDiv");
     quantityField = document.getElementById("quantity");
+    bidField = document.getElementById("bid");
     printmode = document.getElementById("printmode");
-    scanfield.addEventListener('keyup', (e)=> { if (e.code === 'Enter') inventory(0); });
+    scanField.addEventListener('keyup', (e)=> { if (e.code === 'Enter' && !inProcess) inventory(0); });
     inventoryTypeSelect.focus();
     }
 
+// mode changed, set the hidden div values, and clear saved values
 function inventoryModeChange() {
     inventoryButton.disabled = false;
     let mode = inventoryTypeSelect.value;
-    inprocess = false;
-    scanfield.focus();
+    printDiv.hidden = true;
+    bidDiv.hidden = true;
+    if (mode == 'bid') {
+        bidField.value = '';
+        quantityField.value = 1;
+    }
+    inProcess = false;
+    scanField.focus();
     if (mode == 'checkin')
         printmode.innerHTML = 'Received Quantity: ';
     if (mode == 'checkout')
         printmode.innerHTML = 'Return Quantity: ';
+    lastScan = '---------------------------';
+    clear_message();
 }
 
+// process inventory update, mode 0 = scan entered, mode 1 = inventory button pressed
 function inventory(mode) {
-    if (inProcess)
-        return;
-
     clear_message();
-    let scancode = scanfield.value;
+    
+    // get the current scan code, it should not be emtpy
+    let scancode = scanField.value;
     if (scancode == '') {
         show_message('Please scan a barcode', 'warn');
         return;
     }
-    let scanned = scancode.split(',');
-    let item = scanned[0].trim();
-    let print = scanned.length > 1;
-    printDiv.hidden = !print;
-    let quantity = 1;
+    
+    let scanDiffer = lastScan != scancode;
+    lastScan = scancode;
     let type = inventoryTypeSelect.value;
+    
+    if (scanDiffer) {
+        // new scan, force mode = 0, so quantity and bid can be updated as needed
+        // and get the new values from the scan string
+        mode = 0;
+        scanned = scancode.split(',');
+        item = scanned[0].trim();
+        print = scanned.length > 1;
+    }
 
     if (print) {
         if (type == 'bid') {
             show_message("This is a print, you cannot record a bid on a print", 'error');
             return;
         }
-        quantity = scanned[1].trim();
-        quantityField.value = quantity;
+        printDiv.hidden = false;
+        bidDiv.hidden = true;
+
+        if (scanDiffer) {
+            if (type == 'checkout')
+                quantity = '';
+            else {
+                quantity = Number(scanned[1].trim());
+                quantity = Number(quantity);
+                quantityField.value = quantity;
+            }
+        } else
+            quantity = quantityField.value;
+
+        if (isNaN(quantity)) {
+            show_message("Please enter a numeric quantity", 'error');
+            return;
+        }
+
+        let minquantity = type == 'checkin' ? 1 : 0;
+        if ((!scanDiffer && quantity == '') || quantity < minquantity) {
+            show_message("Print quantity cannot be less than " + minquantity + " for " + type, 'error')
+            return;
+        }
         if (mode == 0)
             return;
+    } else {
+        printDiv.hidden = true;
     }
+
+    // for bid, do the same sort of processing for print except for the bid value
+    if (type == 'bid') {
+        printDiv.hidden = true;
+        bidDiv.hidden = false;
+
+        if (scanDiffer) {
+            bid = '';
+            bidField.value = '';
+        } else {
+            bid = Number(bidField.value);
+            if (isNaN(bid) || bid <= 0) {
+                show_message("Please enter a numeric bid > 0", 'error');
+                return;
+            }
+        }
+        if (mode == 0)
+            return;
+    } else {
+        bidDiv.hidden = true;
+    }
+
     inProcess = true;
     inventoryButton.disabled = true;
 
@@ -65,7 +138,7 @@ function inventory(mode) {
     $.ajax({
             method: "POST",
             url: script,
-            data: { type: type, item: item, quantity: quantity, print: print, },
+            data: { type: type, item: item, quantity: quantity, bid: bid, print: print ?  '1' : '0', },
             success: function(data, textStatus, jqXhr) {
                 inventoryUpdate(data);                ;
             },
@@ -82,7 +155,7 @@ function inventoryUpdate(data) {
         show_message(data.error, 'error');
         inProcess = false;
         inventoryButton.disabled = false;
-        scanfield.focus();
+        scanField.focus();
         return;
     }
 
@@ -94,9 +167,17 @@ function inventoryUpdate(data) {
         show_message(data.message, 'success');
     }
 
-    scanfield.value = '';
+    scanField.value = '';
+    lastScan = '---------------------------';
+    quantity = inventoryTypeSelect.value == 'checkin' ? 1 : 0;
+    quantityField.value = quantity;
+    bidField.value = '';
+    bid = '';
     inProcess = false;
+    printDiv.hidden = true;
+    bidDiv.hidden = true;
+    print = false;
     inventoryButton.disabled = false;
-    scanfield.focus();
+    scanField.focus();
     return;
 }

@@ -59,10 +59,13 @@ $method='manager';
     <input type="text" id="barcode" placeholder="Scan Here" size="20"/>
     <br/>
     <div class='mt-3' id="printDiv" hidden>
-        <span id="printmode"> Received Quantity:</span>
+        <span id="printmode">Received Quantity: </span>
         <input type='number' id='quantity' placeholder='Qty' size="5" style="width: 80px;"/>
     </div>
-
+    <div class='mt-3' id='bidDiv' hidden>
+        New high bid:
+        <input type='number' id='bid' placeholder='New Bid' size='20'/>
+    </div>
     <br/>
     <button class="btn btn-primary mt-2" id="inventoryButton" onclick="inventory(1);">Inventory</button>
 </div>
