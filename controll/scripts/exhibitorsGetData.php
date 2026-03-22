@@ -34,17 +34,39 @@ else
 $currency = getConfValue('con', 'currency', 'USD');
 
 $exhibitorQ = <<<EOS
+WITH rNames AS (
+	select ery.id, CONCAT(er.id, '-', er.name) AS region
+	from exhibitsRegions er
+	join exhibitsRegionYears ery on ery.exhibitsRegion = er.id
+	where ery.conid = ?
+), eSpaces AS (
+	SELECT e.id, eY.id AS yid, eRY.id AS ryid, eS.id AS sid, eRY.exhibitsRegionYearId
+	FROM exhibitors e
+	JOIN exhibitorYears eY ON e.id = eY.exhibitorId
+	JOIN exhibitorRegionYears eRY ON eRY.exhibitorYearId = eY.id
+	JOIN exhibitorSpaces eS on eS.exhibitorRegionYear = eRY.id
+	WHERE eY.conid = ? AND (IFNULL(eS.item_requested, 0) > 0 OR IFNULL(eS.item_approved, 0) > 0 OR IFNULL(eS.item_purchased, 0) > 0)
+), srNames AS (
+	SELECT DISTINCT e.id, r.id AS RYID, r.region
+    FROM eSpaces e
+    JOIN rNames r ON e.exhibitsRegionYearId = r.id
+), regions AS (
+	SELECT id, GROUP_CONCAT(region ORDER BY region SEPARATOR '<BR/>') AS regions
+	FROM srNames
+	GROUP BY id
+)
 SELECT e.id as exhibitorId, perid, exhibitorName, exhibitorEmail, exhibitorPhone, salesTaxId, website, description, password, publicity, 
        addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, archived,
        artistName, artistPayee, IFNULL(e.notes, '') AS exhNotes, eY.id as exhibitorYearId, conid, contactName, contactEmail, contactPhone, contactPassword,
        mailin, IFNULL(eY.notes, '') AS contactNotes,
-       CASE WHEN IFNULL(artistName, '') = '' THEN exhibitorName ELSE CONCAT_WS('<BR/>', exhibitorName, artistName) END AS fullExhName
+       CASE WHEN IFNULL(artistName, '') = '' THEN exhibitorName ELSE CONCAT_WS('<BR/>', exhibitorName, artistName) END AS fullExhName, r.regions
 FROM exhibitors e
 JOIN exhibitorYears eY ON e.id = eY.exhibitorId
+JOIN regions r ON e.id = r.id
 WHERE eY.conid = ?;
 EOS;
 
-$exhibitorR = dbSafeQuery($exhibitorQ, 'i', array($exhibitorConid));
+$exhibitorR = dbSafeQuery($exhibitorQ, 'iii', array($exhibitorConid, $exhibitorConid, $exhibitorConid));
 if (!$exhibitorR) {
     ajaxSuccess(array(
         "args" => $_POST,

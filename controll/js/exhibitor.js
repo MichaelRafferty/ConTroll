@@ -970,6 +970,7 @@ class exhibitorsAdm {
                         {title: "Exh Id", field: "exhibitorId", visible: true, headerWordWrap: true, width: 75, },
                         {title: "Name", field: "fullExhName", width: 250, headerSort: true, headerFilter: true, tooltip: this.buildRecordHover,
                             formatter: "html", },
+                        {title: "Regions", field: "regions", width: 200, headerSort: true, headerFilter: true, formatter: "html", },
                         {title: "Email", field: "exhibitorEmail", headerSort: true, headerFilter: true, width: 250, },
                         {title: "Phone", field: "exhibitorPhone", width: 140, headerSort: true, headerFilter: true,},
                         {title: "Website", field: "website", headerSort: true, headerFilter: true, width: 250, },
