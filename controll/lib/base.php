@@ -335,6 +335,10 @@ function startEndDateTimeToNextYear($datestr) : string {
         }
         else if ($day != $lastDay) {
             $day += $dow - $nyDow;
+            if ($day > $monthLengths[$month])
+                $day -= 7;
+            if ($day < 1)
+                $day += 7;
         }
     }
 
