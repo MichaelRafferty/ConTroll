@@ -1445,7 +1445,7 @@ class consetup {
         this.#memtable.updateOrAddData(this.#editData);
         for (let index = 0; index < this.#editData.length; index++) {
             let id = this.#editData[index].id;
-            setCellChanged(this.#memtable.getrow(id));
+            setCellChanged(this.#memtable.getRow(id));
         }
         this.#memtable.setSort([{column:"sort_order", dir: "asc"}]);
         this.#memListModal.hide();
