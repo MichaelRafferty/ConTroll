@@ -144,7 +144,7 @@ EOS;
                     // process foreign keys one at a time
                     foreach ($keys as $key) {
                         $key = str_replace(PHP_EOL, '', $key);
-                        // ALTER TABLE artshow_reg ADD CONSTRAINT `artshow_reg_conid_fk` FOREIGN KEY (`conid`) REFERENCES `conlist` (`id`) ON UPDATE CASCADE;
+                        // ALTER TABLE tablename ADD CONSTRAINT `tablename_conid_fk` FOREIGN KEY (`conid`) REFERENCES `conlist` (`id`) ON UPDATE CASCADE;
                         $table = preg_replace('/ALTER TABLE ([^ ]*).*/', '$1', $key);
                         $constraint = preg_replace('/.*ADD CONSTRAINT ([^ ]*).*/', '$1', $key);
                         $table = str_replace('`','', $table);
