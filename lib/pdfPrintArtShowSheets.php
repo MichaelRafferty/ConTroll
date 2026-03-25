@@ -197,6 +197,9 @@ EOS;
                 $v += $blockheight;
                 $barcodeData = sprintf("%7.7d,%3.3d", $print['itemId'], $copy);
                 $pdf->code128($h + $indent, $v + $labelOffset, $barcodeData, ($isize - (2 * $indent)) / 1.5, $blockheight - (2 * $labelOffset));
+                $bctext = $print['itemId'] . ',' . $copy;
+                $length = $pdf->getStringWidth($bctext);
+                printXY($h + ($isize * 0.6) + 1.2 - (0.1 + $length), $v + $labelOffset + 0.125, $bctext);
             }
         }
     }
@@ -523,6 +526,9 @@ EOS;
             $v += $blockheight;
             $barcodeData = sprintf('%7.7d,%3.3d', $art['itemId'], 1);
             $pdf->code128($h + $indent, $v + $labelOffset, $barcodeData, ($isize - (2 * $indent)) / 1.5, $blockheight - (2 * $labelOffset));
+            $bctext = $art['itemId'];
+            $length = $pdf->getStringWidth($bctext);
+            printXY($h + ($isize * 0.6) + 1.5 - (0.1 + $length), $v + $labelOffset + 0.125, $bctext);
         }
 
         if ($art['type'] != 'nfs') {
