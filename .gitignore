@@ -25,11 +25,6 @@
 /portal/images/
 /controll/images/
 /controll/reportdata
-# symlimks to those images
-/controll/portalimages
-/controll/vendorimages
-/controll/onlineregimages
-/controll/atconimages
 
 # stuff for local overrides
 .htaccess
