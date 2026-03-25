@@ -80,6 +80,8 @@ SELECT m.id, m.id AS memlistkey,
     m.online,
     m.glNum,
     m.glLabel,
+    m.badgeLabel,
+    m.catBadgeLabel,
     count(r.id) as uses
 FROM memLabel m
 LEFT OUTER JOIN reg r ON (r.memId = m.id)

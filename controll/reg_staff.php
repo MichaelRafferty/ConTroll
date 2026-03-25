@@ -83,7 +83,7 @@ draw_fileManagerModals($authToken);
 // edit memList entry modal
 ?>
 <div id='editMemListModal' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Edit Membership Sequence' aria-hidden='true'
-     style='--bs-modal-width: 96%;'>
+     style=' --bs-modal-width: 96%;'>
     <div class='modal-dialog'>
         <div class='modal-content'>
             <div class='modal-header bg-primary text-bg-primary'>
@@ -203,16 +203,29 @@ draw_fileManagerModals($authToken);
                                     </div>
                                 </div>
                                 <div class='row mt-1'>
-                                    <div class='col-sm-2'>Gen. Ledger</div>
-                                    <div class='col-sm-auto'>Num:</div>
+                                    <div class='col-sm-2'>Override:</div>
+                                    <div class='col-sm-auto'>Category Badge Label:</div>
+                                    <div class='col-sm-auto' id='catBadgeLabel'></div>
+                                    <div class='col-sm-auto'>Override Badge Label:</div>
                                     <div class='col-sm-auto'>
+                                        <input type='text' name='editMemListBadgeLabel' id='editMemListBadgeLabel' placeholder='blank for no override'
+                                               size='20'
+                                               maxlength='16'
+                                               onchange='badgeLabelChange(editListMasterRow);'
+                                        />
+                                    </div>
+                                </div>
+                                <div class='row mt-1'>
+                                    <div class='col-sm-2'>Gen. Ledger</div>
+                                    <div class='col-sm-auto me-0'>Num:</div>
+                                    <div class='col-sm-auto ms-0 ps-0 me-0'>
                                         <input type='text' name='editMemListGLNum' id='editMemListGLNum' placeholder='GL Num' size='16' maxlength='16'
                                            onchange='glNumChange(editListMasterRow);'
                                         />
                                     </div>
-                                    <div class='col-sm-auto'>Label:</div>
-                                    <div class='col-sm-auto'>
-                                        <input type='text' name='editMemListGLLabel' id='editMemListGLLabel' placeholder='GL Label' size='42' maxlength='64'
+                                    <div class='col-sm-auto me-0'>Label:</div>
+                                    <div class='col-sm-auto ms-0 ps-0 me-0'>
+                                        <input type='text' name='editMemListGLLabel' id='editMemListGLLabel' placeholder='GL Label' size='40' maxlength='64'
                                             onchange='glLabelChange(editListMasterRow);'
                                         />
                                     </div>
@@ -272,16 +285,16 @@ draw_fileManagerModals($authToken);
                         <div class="col-sm-1" style='text-align: center;'>Price</div>
                         <div class="col-sm-2">Start Date</div>
                         <div class="col-sm-2">End Date</div>
-                        <div class="col-sm-1">At-Con</div>
-                        <div class="col-sm-1">OnLine</div>
+                        <div class="col-sm-1">At-Con ONL</div>
+                        <div class='col-sm-1'>O/Ride Label</div>
                         <div class="col-sm-1">GL Num</div>
-                        <div class="col-sm-3">GL Label</div>
+                        <div class="col-sm-2">GL Label</div>
                     </div>
 <?php
     for ($i = 0; $i < 10; $i++) {
         $bgColor = $i % 2 ? 'light-cyan' : '#e0e0e0';
 ?>
-                    <div class='row mt-2' style="background-color: <?php echo $bgColor;?>">
+                    <div class='row mt-1 pt-1 mb-0 pb-1' style="background-color: <?php echo $bgColor;?>">
                         <div class='col-sm-1 ps-0 pe-0 ms-0 me-0'>
                             <div class='container-fluid p-0 m-0'>
                                 <div class='row'>
@@ -308,19 +321,22 @@ draw_fileManagerModals($authToken);
                                 <option value='N'>No</option>
                                 <option value='Y'>Yes</option>
                             </select>
-                        </div>
-                        <div class='col-sm-1'>
                             <select id="EMLTS<?php echo $i;?>_Online" onchange="tsOnlineChange(<?php echo $i;?>)">
                                 <option value='N'>No</option>
                                 <option value='Y'>Yes</option>
                             </select>
                         </div>
                         <div class='col-sm-1'>
+                            <input type='text' id='EMLTS<?php echo $i;?>_badgeLabel' placeholder='O/R Badge Lbl' size='12' maxlength='16'
+                                   onchange="tsBadgeLabelChange(<?php echo $i;?>)"
+                            />
+                        </div>
+                        <div class='col-sm-1'>
                             <input type='text' id='EMLTS<?php echo $i;?>_glNum' placeholder='GL Num' size='12' maxlength='16'
                                    onchange="tsGlNumChange(<?php echo $i;?>)"
                             />
                         </div>
-                        <div class='col-sm-3'>
+                        <div class='col-sm-2'>
                             <input type='text' id='EMLTS<?php echo $i;?>_glLabel' placeholder='GL Label' size='40' maxlength='64'
                                    onchange="tsGlLabelChange(<?php echo $i;?>)"
                             />
@@ -328,7 +344,7 @@ draw_fileManagerModals($authToken);
                     </div>
 <?php
         if (getConfValue('con', 'bundlememberships', 0) == 1) { ?>
-                    <div class='row mt-2' name='TScontains' style="background-color: <?php echo $bgColor;?>">
+                    <div class='row pt-1 mt-0 mb-1 pb-1' name='TScontains' style="background-color: <?php echo $bgColor;?>">
                         <div class="col-sm-2"></div>
                         <div class='col-sm-auto'>Contains:</div>
                         <div class='col-sm-auto'>

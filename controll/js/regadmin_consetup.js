@@ -405,6 +405,11 @@ class consetup {
                     formatter: "html",
                 },
                 {
+                    title: "Category Badge Label Override", field: "badgeLabel", width: 140, headerWordWrap: true,
+                    editor: "input", editorParams: {elementAttributes: {maxlength: "16"}},
+                    headerFilter: true,
+                },
+                {
                     title: "GL Num", field: "glNum", width: 120, headerWordWrap: true,
                     editor: "input", editorParams: {elementAttributes: {maxlength: "16"}},
                     headerFilter: true
@@ -416,6 +421,7 @@ class consetup {
                     formatter: "textarea",
                 },
                 {field: "to_delete", visible: false,},
+                {field: "catBadgeLabel", visible: false,},
             ],
 
         });
@@ -503,6 +509,8 @@ class consetup {
         document.getElementById('editMemListCartDesc').innerHTML = cartDesc.trim();
         document.getElementById('editMemListGLNum').value = rowData.glNum;
         document.getElementById('editMemListGLLabel').value = rowData.glLabel;
+        document.getElementById('catBadgeLabel').innerHTML = rowData.catBadgeLabel;
+        document.getElementById('editMemListBadgeLabel').value = rowData.badgeLabel;
 
         if (this.#memListBundleContains) {
             this.#memListBundleContains.value = bundleList;
@@ -1150,8 +1158,10 @@ class consetup {
                 this.#editData[index].online = document.getElementById('editMemListOnline').value;
                 this.#editData[index].glNum = document.getElementById('editMemListGLNum').value;
                 this.#editData[index].glLabel = document.getElementById('editMemListGLLabel').value;
+                this.#editData[index].badgeLabel = document.getElementById('editMemListBadgeLabel').value;
                 document.getElementById('EMLTS' + index + '_glNum').value = this.#editData[index].glNum;
                 document.getElementById('EMLTS' + index + '_glLabel').value = this.#editData[index].glLabel;
+                document.getElementById('EMLTS' + index + '_badgeLabel').value = this.#editData[index].badgeLabel;
                 document.getElementById('EMLTS' + index + '_Atcon').value = this.#editData[index].atcon;
                 document.getElementById('EMLTS' + index + '_Online').value = this.#editData[index].online;
             }
@@ -1210,6 +1220,7 @@ class consetup {
                     this.#editData[index].shortname = shortname;
                     this.#editData[index].glNum = document.getElementById('editMemListGLNum').value;
                     this.#editData[index].glLabel = document.getElementById('editMemListGLLabel').value;
+                    this.#editData[index].badgeLabel = document.getElementById('editMemListBadgeLabel').value;
                 }
                 if (bundle) {
                     let contains = document.getElementById('EMLTS' + row + '_contains').value;
@@ -1249,6 +1260,7 @@ class consetup {
         this.#editData[index].cartDesc = tinyMCE.get('editMemListCartDesc').getContent();
         this.#editData[index].glNum = document.getElementById('editMemListGLNum').value;
         this.#editData[index].glLabel = document.getElementById('editMemListGLLabel').value;
+        this.#editData[index].badgeLabel = document.getElementById('editMemListBadgeLabel').value;
     }
 
     reSortTimeSeries(saveFirst = false) {
@@ -1325,6 +1337,7 @@ class consetup {
             document.getElementById('EMLTS' + index + '_Online').value = row.online;
             document.getElementById('EMLTS' + index + '_glNum').value = row.glNum;
             document.getElementById('EMLTS' + index + '_glLabel').value = row.glLabel;
+            document.getElementById('EMLTS' + index + '_badgeLabel').value = row.badgeLabel;
         }
 
         // clear the remaining bottom rows
@@ -1622,6 +1635,12 @@ function glLabelChange(masterRow) {
     memListModalDirty = true;
 }
 
+// top section edited badgeLabel, set bottom screen
+function badgeLabelChange(masterRow) {
+    document.getElementById('EMLTS' + masterRow + '_badgeLabel').value = document.getElementById('editMemListBadgeLabel').value;
+    memListModalDirty = true;
+}
+
 // bottom section edited price, set top screen
 function tsPriceChange(row) {
     if (row == editListMasterRow) {
@@ -1689,6 +1708,14 @@ function tsGlNumChange(row) {
 function tsGlLabelChange(row) {
     if (row == editListMasterRow) {
         document.getElementById('editMemListGLLabel').value = document.getElementById('EMLTS' + row + '_glLabel').value;
+        memListModalDirty = true;
+    }
+}
+
+// bottom section edited gllabel, set top screen
+function tsBadgeLabelChange(row) {
+    if (row == editListMasterRow) {
+        document.getElementById('editMemListBadgeLabel').value = document.getElementById('EMLTS' + row + '_badgeLabel').value;
         memListModalDirty = true;
     }
 }
