@@ -96,7 +96,7 @@ SELECT id, conid, memCategory, memType, memAge, taxable,
         WHEN (startdate > ?) THEN 0
         WHEN (enddate <= ?) THEN 0
         ELSE 1 
-    END AS canSell, glNum
+    END AS canSell, glNum, badgeLabel
 FROM memLabel
 WHERE
     conid IN (?, ?)

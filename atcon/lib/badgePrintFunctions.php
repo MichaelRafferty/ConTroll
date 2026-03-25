@@ -250,7 +250,9 @@ function write_pdf($badge, $tempfile, $originType)//: void {
     }
 
     $type = '';
-    if ($badge['category'] == 'test') {
+    if (array_key_exists('badgeLabel', $badge) && $badge['badgeLabel'] != '')
+        $type = $badge['badgeLabel'];
+    else if ($badge['category'] == 'test') {
         $type = 'test';
     } else {
         $type = $badgeTypes[$badge['category']];
