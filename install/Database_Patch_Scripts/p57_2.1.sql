@@ -4,18 +4,6 @@
 
 ALTER TABLE memList ADD COLUMN cartDesc text DEFAULT null AFTER label;
 
-DROP VIEW IF EXISTS `memLabel`;
-CREATE ALGORITHM=UNDEFINED
-    SQL SECURITY INVOKER
-    VIEW memLabel AS
-SELECT m.id AS id,m.conid AS conid,m.sort_order AS sort_order,m.memCategory AS memCategory,m.memType AS memType,m.memAge AS memAge,
-       a.shortname AS ageShortName,m.label AS shortname,concat(m.label,' [',a.label,']') AS label,m.cartDesc AS cartDesc,
-       m.notes AS notes,m.price AS price, m.startdate AS startdate,m.enddate AS enddate,
-       m.atcon AS atcon,m.online AS online,m.glNum AS glNum,m.glLabel AS glLabel, c.taxable AS taxable
-FROM memList m
-JOIN ageList a ON (m.memAge = a.ageType) AND (m.conid = a.conid)
-JOIN memCategories c ON m.memCategory = c.memCategory;
-
 ALTER TABLE exhibitsRegionYears ADD COLUMN revenueGlNum varchar(16) COLLATE utf8mb4_general_ci DEFAULT NULL AFTER ownerEmail;
 ALTER TABLE exhibitsRegionYears ADD COLUMN revenueGlLabel varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL AFTER revenueGlNum;
 
@@ -81,5 +69,21 @@ CREATE DEFINER=CURRENT_USER  TRIGGER `exhibitors_update` BEFORE UPDATE ON exhibi
     END IF;
 END;;
 DELIMITER ;
+
+/* add badge label override to memList (overrides memCategories badgeLabel if not empty) */
+ALTER TABLE memList ADD COLUMN badgeLabel varchar(16) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' AFTER enddate;
+
+DROP VIEW IF EXISTS `memLabel`;
+CREATE ALGORITHM=UNDEFINED
+    SQL SECURITY INVOKER
+    VIEW memLabel AS
+SELECT m.id AS id,m.conid AS conid,m.sort_order AS sort_order,m.memCategory AS memCategory,m.memType AS memType,m.memAge AS memAge,
+       a.shortname AS ageShortName,m.label AS shortname,concat(m.label,' [',a.label,']') AS label,m.cartDesc AS cartDesc,
+       m.notes AS notes,m.price AS price, m.badgeLabel AS badgeLabel,
+       m.startdate AS startdate,m.enddate AS enddate,m.atcon AS atcon,m.online AS online,m.glNum AS glNum,m.glLabel AS glLabel,
+       c.taxable AS taxable,c.badgeLabel AS catBadgeLabel
+FROM memList m
+         JOIN ageList a ON (m.memAge = a.ageType) AND (m.conid = a.conid)
+         JOIN memCategories c ON m.memCategory = c.memCategory;
 
 INSERT INTO patchLog(id, name) VALUES(x57, 'Release 2.1 Portal and other changes');
