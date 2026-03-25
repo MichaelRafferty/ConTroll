@@ -60,8 +60,8 @@ barcode_page_init($page,
         <input type="checkbox" id="toAuction" tabindex="1"/>
     </div>
     <br/>
-    <button class="btn btn-primary mt-2" id="inventoryButton" onclick="inventory(1);" tabindex= "160">Inventory</button>
-    <button class="btn btn-secondary mt-2 ms-3" id="inventoryButton" onclick="clearScreen();" tabindex= "170">Clear Screen</button>
+    <button class="btn btn-primary mt-2" id="inventoryButton" onclick="inventory(1);" tabindex= "160">Update</button>
+    <button class="btn btn-secondary mt-2 ms-3" id="clearButton" onclick="clearScreen();" tabindex= "170">Start Over</button>
     <button class="btn btn-secondary mt-2 ms-3" id="closeButton" onclick="window.close();" tabindex= "180">Close Window</button>
 </div>
 <div id='result_message' class="mt-2"></div>

@@ -113,14 +113,16 @@ function fetchValuesSuccess(data, mode) {
     }
     if (data.item.conid != config.conid) {
         clearScreen();
-        show_message("Item " + data.pollitem + ' (' + data.item.title + ')  from ' + data.item.conid + ' not this conid: ' + config.conid, 'error');
+        show_message("Item " + data.pollitem + ' (' + data.item.title + ') for Artist ' + data.item.exhibitorNumber +
+            '<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;is from conid ' + data.item.conid + '.  This is conid ' + config.conid, 'error');
         return;
     }
 
     let type = inventoryTypeSelect.value;
     if (type == 'bid' && data.item.type == 'nfs') {
         clearScreen();
-        show_message("Item " + data.pollitem + ' (' + data.item.title + ')  is NOT FOR SALE and cannot be bid on', 'error');
+        show_message("Item " + data.pollitem + ' (' + data.item.title + ') for Artist ' + data.item.exhibitorNumber +
+            '<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;is NOT FOR SALE and cannot be bid on', 'error');
         return;
     }
 
@@ -160,7 +162,8 @@ function inventory(mode) {
 
     if (print) {
         if (type == 'bid') {
-            show_message("This is a print, you cannot record a bid on a print", 'error');
+            clearScreen();
+            show_message(scancode + "  is a print. You cannot record a bid on a print.", 'error');
             return;
         }
         printDiv.hidden = false;
@@ -206,7 +209,7 @@ function inventory(mode) {
         } else {
             bid = Number(bidField.value);
             if (isNaN(bid) || bid <= 0) {
-                show_message("Please enter a numeric bid > 0", 'error');
+                show_message("Please enter a numeric bid greater than 0", 'error');
                 return;
             }
         }
@@ -215,7 +218,7 @@ function inventory(mode) {
         toAuction = toAuctionField.checked ? 1 : 0;
         bidder = Number(bidderField.value);
         if (isNaN(bidder) || bidder < 1) {
-            show_message("Please enter a numeric bidder id", 'error');
+            show_message("Please enter the bidder's badge id (numeric)", 'error');
             return;
         }
     } else {

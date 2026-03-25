@@ -23,9 +23,10 @@ if (array_key_exists('pollitem', $_POST)) {
     $response['pollitem'] = $pollItem;
 // given a poll item get it's values
     $pQ = <<<EOS
-SELECT *
-FROM artItems
-WHERE id = ?;
+SELECT i.*, eRY.exhibitorNumber
+FROM artItems i 
+JOIN exhibitorRegionYears eRY ON i.exhibitorRegionYearId = eRY.id
+WHERE i.id = ?;
 EOS;
     $pR = dbSafeQuery($pQ, 'i', array ($pollItem));
     $response['numRows'] = $pR->num_rows;
@@ -60,9 +61,10 @@ $toAuction = $_POST['toAuction'];
 // check validity of inputs
 // 1. check to see if the item exists and get it's statis and current bid/quantity
 $cQ = <<<EOS
-SELECT id, item_key, title, type, status, quantity, original_qty, min_price, final_price, bidder, conid
-FROM artItems
-WHERE id = ?;
+SELECT i.id, item_key, title, type, status, quantity, original_qty, min_price, final_price, bidder, conid, eRY.exhibitorNumber
+FROM artItems i
+JOIN exhibitorRegionYears eRY ON i.exhibitorRegionYearId = eRY.id
+WHERE i.id = ?;
 EOS;
 $cR = dbSafeQuery($cQ, 'i', array($item));
 if ($cR->num_rows != 1) {
@@ -73,7 +75,8 @@ $curItem = $cR->fetch_assoc();
 $cR->free();
 
 if ($curItem['conid'] != $conid) {
-    ajaxSuccess(array ('error' => "The scan code for " . $curItem['title'] . " is from conid " . $curItem['conid'] . ", not the current conid, $conid"));
+    ajaxSuccess(array ('error' => "The scan code ($item) for artist " . $curItem['exhibitorNumber'] . ' titled ' .
+        $curItem['title'] . " is from conid " . $curItem['conid'] . ", not the current conid, $conid"));
     exit();
 }
 
@@ -101,7 +104,8 @@ switch ($type) {
 
 if (!$valid) {
     ajaxSuccess(array ('error' => "Item current status of " . $curItem['status'] . " is not valid for this inventory type.<br/>" .
-        "if a change is needed on this item (" . $curItem['title'] . "), please see an administrator."));
+        "If a change is needed on this item (Artist: " . $curItem['exhibitorNumber'] .
+        " Title: " . $curItem['title'] . "), please see an administrator."));
     exit();
 }
 
