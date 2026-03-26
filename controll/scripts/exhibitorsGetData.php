@@ -110,12 +110,13 @@ $response['exhibitors'] = $exhibitors;
 
 // get the region type fields to know what kind of info is required
 $typesQ = <<<EOS
-SELECT et.regionType, et.portalType 
+SELECT et.regionType, et.portalType, et.usesInventory, ery.id AS exhibitsRegionYearId
 FROM exhibitsRegions er
 JOIN exhibitsRegionTypes et ON er.regionType = et.regionType
-WHERE er.id = ?;
+JOIN exhibitsRegionYears ery ON er.id = ery.exhibitsRegion
+WHERE er.id = ? AND ery.conid = ?;
 EOS;
-$typeR = dbSafeQuery($typesQ, 'i', array($regionId));
+$typeR = dbSafeQuery($typesQ, 'ii', array($regionId, $exhibitorConid));
 if ($typeR === false) {
     ajaxSuccess(array(
         'args' => $_POST,
@@ -126,6 +127,8 @@ if ($typeR === false) {
 $typeL = $typeR->fetch_assoc();
 $response['portalType'] = $typeL['portalType'];
 $response['regionType'] = $typeL['regionType'];
+$response['usesInventory'] = $typeL['usesInventory'];
+$response['exhibitsRegionYearId'] = $typeL['exhibitsRegionYearId'];
 $typeR->free();
 
 // get approvals for this region

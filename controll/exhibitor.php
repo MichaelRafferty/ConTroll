@@ -99,6 +99,7 @@ page_init($page,
                     'jslib/exhibitorRequest.js',
                     'jslib/exhibitorReceipt.js',
                     'jslib/exhibitorInvoiceCommon.js',
+                    'jslib/emailBulkSend.js',
                     'jslib/configEdit.js',
                     'jslib/profile.js',
                     'js/tinymce/tinymce.min.js'

@@ -86,4 +86,75 @@ FROM memList m
          JOIN ageList a ON (m.memAge = a.ageType) AND (m.conid = a.conid)
          JOIN memCategories c ON m.memCategory = c.memCategory;
 
+
+/* email custom text */
+/* fix typo */
+UPDATE controllAppItems SET txtItemDescription = replace(txtItemDescription, 'Np membership created', 'No membership created')
+    WHERE appName = 'controll' AND appPage = 'emails' AND txtItemDescription LIKE '%Np membership created%';
+
+/* survey emails */
+INSERT INTO controllAppSections (appName, appPage, appSection, sectionDescription) VALUES
+    ('controll', 'emails', 'survey', 'Post Convention Survey Request Email'),
+    ('controll', 'emails', 'invReminder', 'Artist Item Registration Reminder Email');
+
+INSERT INTO controllAppItems(appName, appPage, appSection, txtItem, txtItemDescription) VALUES
+    ('controll', 'emails','survey','text','Custom Text for the plain text post con survey email'),
+    ('controll', 'emails','survey','html','Custom Text for the html post con survey email'),
+    ('controll', 'emails','invReminder','text','Custom Text for the plain text enter your item registration reminder email'),
+    ('controll', 'emails','invReminder','html','Custom Text for the html post con enter your item registration reminder email');
+
+INSERT INTO controllTxtItems(appName, appPage, appSection, txtItem, contents)
+SELECT a.appName, a.appPage, a.appSection, a.txtItem,
+       CONCAT('Controll-Default: This is ', a.appName, '-', a.appPage, '-', a.appSection, '-', a.txtItem,
+              '<br/>Custom HTML that can replaced with a custom value in the ConTroll Admin App under RegAdmin/Edit Custom Text.<br/>',
+              'Default text display can be suppressed in the configuration file.')
+FROM controllAppItems a
+         LEFT OUTER JOIN controllTxtItems t ON (a.appName = t.appName AND a.appPage = t.appPage AND a.appSection = t.appSection AND a.txtItem = t.txtItem)
+WHERE t.contents is NULL;
+
+UPDATE controllTxtItems
+SET contents = 'Dear [[FirstName]],
+<p>Thank you for attending #label#. You are receiving this email because your email address is associated with a registration that attended this year. We have a short survey we would like you to complete that will help is improve #conname#.</p>
+<p><a href="#survey_url#">Take the #label# Post Convention Feedback Survey</a></p>
+<p>We look forward to reviewing your comments to help us improve #conname#.</p>
+<br>
+<p>If you have any issues please reach out to us at <a href="mailto:#regadminemail#">#regadminemail#</a>.</p>
+<p>Thank you,<br>#conname# Registration</p>'
+WHERE appName = 'controll' AND appPage = 'emails' AND appSection = 'survey' AND txtItem = 'html';
+
+UPDATE controllTxtItems
+SET contents = 'Dear [[FirstName]],
+
+Thank you for attending #label#. You are receiving this email because your email address is associated with a registration that attended this year. We have a short survey we would like you to complete that will help is improve #conname#.
+
+Take the #label# Post Convention Feedback Survey: #survey_url#
+
+We look forward to reviewing your comments to help us improve #conname#.
+
+If you have any issues please reach out to us at #regadminemail#.
+
+Thank you,
+#conname# Registration
+'
+WHERE appName = 'controll' AND appPage = 'emails' AND appSection = 'survey' AND txtItem = 'text';
+
+UPDATE controllTxtItems
+SET contents = '<p>Dear [[FirstName]],</p>
+<p>This is a reminder that have not yet registered the items you are bringing to #label#.</p>
+<p>Please sign into the portal at #vendor.artistsite# and click the "Open Item Registration" button.</p>
+<p>Thank you,<br/>#vendor.artist#</p>'
+WHERE appName = 'controll' AND appPage = 'emails' AND appSection = 'invReminder' AND txtItem = 'html';
+
+UPDATE controllTxtItems
+SET contents = 'Dear [[FirstName]],
+
+This is a reminder that have not yet registered the items you are bringing to #label#.
+
+Please sign into the portal at #vendor.artistsite# and click the "Open Item Registration" button.
+
+Thank you,
+#vendor.artist#
+'
+WHERE appName = 'controll' AND appPage = 'emails' AND appSection = 'invReminder' AND txtItem = 'text';
+
 INSERT INTO patchLog(id, name) VALUES(x57, 'Release 2.1 Portal and other changes');

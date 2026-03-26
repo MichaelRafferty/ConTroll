@@ -9,7 +9,20 @@ global $returnAjaxErrors, $return500errors;
 $returnAjaxErrors = true;
 $return500errors = true;
 
-$perm = 'admin';
+if (!array_key_exists('type', $_POST)) {
+    $response['error'] = 'missing email type';
+    ajaxSuccess($response);
+    exit();
+}
+$email_type = $_POST['type'];
+
+switch ($email_type) {
+    case 'invReminder':
+        $perm = 'exhibitor';
+        break;
+    default:
+        $perm = 'admin';
+}
 $response = array ('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
 $authToken = new authToken('script');
 $response['tokenStatus'] = $authToken->checkToken();
@@ -34,12 +47,6 @@ if (!array_key_exists('action', $_POST)) {
     exit();
 }
 
-if (!array_key_exists('type', $_POST)) {
-    $response['error'] = "missing email type";
-    ajaxSuccess($response);
-    exit();
-}
-
 $con = get_conf("con");
 $testsite = getConfValue('reg', 'test') == 1;
 $emailconf = get_conf("email");
@@ -47,7 +54,6 @@ $conid=$con['id'];
 $label=$con['label'];
 $conname = $con['conname'];
 $code='';
-$email_type = $_POST['type'];
 
 if ($_POST['action'] == 'test' || $testsite) {
     if ($_POST['email']) {
@@ -61,10 +67,9 @@ if ($email == null || $email == '') {
     $email = $con['regadminemail'];
 }
 
-loadCustomText('controll', 'emails', 'production');
-
 $response['test'] = $test;
 $macroSubstitution = false;
+loadCustomText('controll', 'emails', 'production');
 
 switch ($email_type) {
 case 'expire':
@@ -113,6 +118,7 @@ ORDER BY email;
 EOQ;
     $typestr = 'i';
     $paramarray = array($conid);
+    $macroSubstitution = true;
     $email_text = returnCustomText('reminder/text');
     $email_html = returnCustomText('reminder/html');
     $email_subject = "Reminder: $label Starts Soon";
@@ -132,6 +138,7 @@ ORDER BY email;
 EOQ;
     $typestr = 'ii';
     $paramarray = array($priorcon, $conid);
+    $macroSubstitution = true;
     $email_text = returnCustomText('marketing/text');
     $email_html = returnCustomText('marketing/html');
     $email_subject = "We miss you! Please come back to $conname";
@@ -224,7 +231,7 @@ case 'survey':
     updateContactOK($conid);
 
     $emailQ = <<<EOQ
-SELECT Distinct P.email_addr AS email
+SELECT Distinct P.email_addr AS email, P.first_name
 FROM reg R 
 JOIN regActions H ON (R.id=H.regid)
 JOIN reg R ON (R.id=H.regid)
@@ -238,9 +245,44 @@ ORDER BY P.email_addr;
 EOQ;
     $typestr = 'i';
     $paramarray = array($conid);
-    $email_text = surveyEmail_TEXT($testsite);
-    $email_html = surveyEmail_HTML($testsite);
-    $email_subject = "Thanks for attending, can you help us improve by answering this 3 question survey";
+    $macroSubstitution = true;
+    $email_text = returnCustomText('survey/text');
+    $email_html = returnCustomText('survey/html');
+    $email_subject = "Thanks for attending, can you help us improve by answering this simple survey";
+    break;
+
+case 'invReminder':
+    if (array_key_exists('regionName', $_POST)) {
+        $regionName = $_POST['regionName'];
+    } else {
+        $regionName = 'Art Show';
+    }
+    if (array_key_exists('exhibitsRegionYearId', $_POST)) {
+        $exhibitsRegionYearId = $_POST['exhibitsRegionYearId'];
+    } else {
+        $response['error'] = 'Invalid parameter for which region year is relevant, seek assistance.';
+        ajaxSuccess($response);
+        exit();
+    }
+    $emailQ = <<<EOQ
+  SELECT 
+      CASE WHEN IFNULL(e.artistName, '') = '' THEN e.exhibitorName
+      ELSE e.artistName END AS first_name, e.exhibitorEmail AS email, COUNT(*) AS numItems, COUNT(s.item_purchased) AS numPurchases
+FROM exhibitors e
+JOIN exhibitorYears y ON e.id = y.exhibitorId
+JOIN exhibitorRegionYears ry ON y.id = ry.exhibitorYearId AND ry.exhibitsRegionYearId = ?
+JOIN exhibitorSpaces s ON s.exhibitorRegionYear = ry.id
+JOIN exhibitsRegionYears r ON ry.exhibitsRegionYearId = r.id
+LEFT OUTER JOIN artItems a ON a.exhibitorRegionYearId = ry.id
+WHERE r.conid = ?
+GROUP BY first_name, email;
+EOQ;
+    $typestr = 'ii';
+    $paramarray = array ($exhibitsRegionYearId, $conid);
+    $email_text = returnCustomText('invReminder/text');
+    $email_html = returnCustomText('invReminder/html');
+    $macroSubstitution = true;
+    $email_subject = "Thank you for being in the $regionName. Don't forget to fill out your item registration data";
     break;
 
 default:

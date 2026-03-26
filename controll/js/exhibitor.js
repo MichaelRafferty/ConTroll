@@ -17,6 +17,7 @@ customText = null;
 configEditor = null;
 checkConfigReload = true;
 exhibitors = null;
+emailBulkSend = null;
 var currencyFmt = null;
 var vendorInvoice = null;
 var profile = null;
@@ -38,6 +39,7 @@ class exhibitorsAdm {
     #scriptName = config.scriptName;
     #currentTab = '';
     #currentSubtab = '';
+    #exhibitsRegionYearId = null;
 
     // Space items
     #spacesTable = null;
@@ -411,6 +413,7 @@ class exhibitorsAdm {
         }
         this.#regionType = data.regionType;
         this.#portalType = data.portalType
+        this.#exhibitsRegionYearId = data.exhibitsRegionYearId;
         this.#message_div.innerHTML = '';
         this.#pricelists = data.price_list;
         if (data.locationsUsed)
@@ -540,6 +543,11 @@ class exhibitorsAdm {
             "               Add New / Pay for Exhibitor Space to Existing Exhibitor</button>\n" +
             "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='addExhibitorBtn2' onClick=" + '"exhibitors.addNew();">' +
             "               Add New Exhibitor</button>\n";
+        if (data.usesInventory == 'Y') {
+            html +=
+            "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='sendInvReminder' onClick=" + '"exhibitors.sendInvReminder();">' +
+            "               Send Inventory Reminder Email For Those Missing Inventory</button>\n";
+        }
         html +=
             "           <button id='" + groupid + "-spaces-csv' type='button' class='btn btn-info btn-sm'" +
             "               onclick='exhibitors.spacesDownload(\"csv\"); return false;'>Download CSV</button>\n" +
@@ -826,6 +834,7 @@ class exhibitorsAdm {
     drawSpacesTable(data, groupid, newTable) {
         // build new data array
         let regionsLocal = this.#buildSpacesItems(data);
+        let usesInventory = data.usesInventory == 'Y';
 
         if (this.#debug & 8) {
             console.log("regions:");
@@ -845,9 +854,9 @@ class exhibitorsAdm {
                 paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
                 columns: [
                     {title: "Actions", field: "s1", formatter: this.spaceButtons, maxWidth: 900, headerSort: false, },
-                    {title: "ID", field: "id", visible: true, width: 65, },
+                    {title: "ID", field: "id", visible: true, width: 65, hozAlign:"right" },
                     {title: "RegionId", field: "regionId", visible: false},
-                    {title: "Exh Num", field: "exhibitorNumber", headerWordWrap: true, width: 75 },
+                    {title: "Exh Num", field: "exhibitorNumber", headerWordWrap: true,  width: 75, hozAlign:"right" },
                     {title: "regionYearId", field: "regionYearId", visible: false},
                     {title: "ExhibitorYearId", field: "exhibitorYearId", visible: false},
                     {title: "ExhibitorRegionYearId", field: "exhibitorRegionYearId", visible: false},
@@ -856,7 +865,7 @@ class exhibitorsAdm {
                     {field: "app", visible: false},
                     {field: "req", visible: false},
                     {field: "pur", visible: false},
-                    {title: "inventory", field: "inv", visible: false},
+                    {title: "Inv Items", headerWordWrap: true, field: "inv", visible: usesInventory, width: 75, hozAlign:"right" },
                     {title: "locations", field: "locations", visible: false},
                     {title: "exhibitorId", field: "exhibitorId", visible: false},
                     {title: "artistName", field: "artistName", visible: false},
@@ -2073,6 +2082,30 @@ class exhibitorsAdm {
         spaces = data.spaces;
         country_options = data.country_options;
         exhibitorRequest.openReq(this.#regionYearId, 3);
+    }
+
+    // email related functions
+    sendInvReminder() {
+        emailBulkSend = new EmailBulkSend('result_message', 'scripts/sendBatch.php');
+
+        let email = prompt("Would you like to send a test invitation reminder email?\n" +
+            "If so please enter the address to send the test to in the box below and click ok.\n" +
+            "If you don't provide a test address, you will be sending emails to a lot of people.\n" +
+            "You will be give a chance to review the number of emails to be sent before they are sent out.\n" +
+            "Clicking cancel will cancel the sending of these emails.\n");
+        let action = "none";
+
+        if (email == null)
+            return false;
+
+        if (email == '') {
+            action = 'full';
+        } else {
+            action = 'test';
+        }
+
+        let data = { action: action, email: email, type: 'invReminder', regionName: this.#regionName, exhibitsRegionYearId: this.#exhibitsRegionYearId };
+        emailBulkSend.getEmailAndList('scripts/sendEmail.php', data);
     }
 };
 
