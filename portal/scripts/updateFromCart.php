@@ -122,6 +122,13 @@ if ($personId <= 0) {
     exit();
 }
 
+// validate we can work with this person
+if (!validateAccess($personId, $personType)) {
+    $response['status'] = 'error';
+    $response['message'] = "You do not have permission to update this person's cart.";
+    ajaxSuccess($response);
+}
+
 // now fetch the order information from the transaction if necessary
 if ($transId != null && !$orderIdFetched) {
     // get the current orderId if it exists

@@ -46,6 +46,11 @@ $personType = getSessionVar('idType');
 $currentPersonId = $_POST['currentPersonId'];
 $currentPersonType = $_POST['currentPersonType'];
 
+if (!validateAccess($currentPersonId, $currentPersonType)) {
+    ajaxSuccess(array('status'=>'error', 'message'=>'You do not have permission to change this email address.'));
+    exit();
+}
+
 if ($currentPersonType == 'n' && $resolveUpdates != null) {
     $updateMap = $resolveUpdates['remap'];
     if (array_key_exists($currentPersonId, $updateMap)) {
