@@ -60,6 +60,12 @@ if (array_key_exists('memberships', $_POST)) {
     $membershipReq = '';
 }
 
+// validate that we can update this person
+    if (!validateAccess($getId, $getType)) {
+        ajaxSuccess(array('status'=>'error', 'message'=>'You do not have permission to edit this person.'));
+        exit();
+    }
+
 // get the record
 if ($getType == 'p') {
     $getPersonQ =  <<<EOS
@@ -93,13 +99,7 @@ $getPersonR->free();
 if ($person['country'] == null || $person['country'] == '')
     $person['country'] = 'USA';
 
-// now we have the person, lets see if we can edit it.
-if ($loginId != $person['managedBy'] && $loginId != $person['managedByNew'] && $loginId != $person['id']) {
-    ajaxSuccess(array('status'=>'error', 'message'=>'You have no permission to edit this person.'));
-    exit();
-}
-
-// ok we have permission, return the person record
+// ok we have permission and the records, return the person record
 $response['person'] = $person;
 
 // now if asked for interests or  memberships, get them as well
