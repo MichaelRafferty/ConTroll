@@ -83,15 +83,14 @@ function numberHeaderFilter(headerValue, rowValue, rowData, filterParams) {
     }
 }
 
-var nowDate = new Date();
-var nowDateString = nowDate.getFullYear().toString().padStart(2, '0') + '-' + (nowDate.getMonth() + 1).toString().padStart(2, '0') +
-    '-' + nowDate.getDate().toString().padStart(2, '0') + ' ' + nowDate.getHours().toString().padStart(2, '0') +
-    ':' + nowDate.getMinutes().toString().padStart(2, '0') + ':' + nowDate.getSeconds().toString().padStart(2, '0');
+var nowDate = null;
+var nowToday = false;
+var nowDateString = '';
 // date string supports < <=, >, >=, s for starts with e for ends with and anything else for substring, v for valid date entered
 function dateStringHeaderFilter(headerValue, rowValue, rowData, filterParams) {
     let option = headerValue.substring(0,1);
     let value = headerValue;
-    if (option == '<' || option == '>' || option == '=' || option == 's' || option == 'e') {
+    if (option == '<' || option == '>' || option == '=' || option == 's' || option == 'e' || option == 'n') {
         let suboption = headerValue.substring(1, 2);
         if (suboption == '=') {
             option += suboption;
@@ -100,6 +99,7 @@ function dateStringHeaderFilter(headerValue, rowValue, rowData, filterParams) {
             value = value.substring(1);
         }
     }
+
 
     switch (option) {
         case '<':
@@ -115,10 +115,61 @@ function dateStringHeaderFilter(headerValue, rowValue, rowData, filterParams) {
         case 'e':
             return rowValue.endsWith(value);
         case 'n':
-            if (filterParams.field == 'startdate')
-                return rowValue <= nowDateString && rowData.enddate >= nowDateString;
+            if (value == '') {
+                if (!nowToday) {
+                    nowDate = new Date();
+                    nowDateString = nowDate.getFullYear().toString() + '-' + (nowDate.getMonth() + 1).toString().padStart(2, '0') +
+                        '-' + nowDate.getDate().toString().padStart(2, '0') + ' ' + nowDate.getHours().toString().padStart(2, '0') +
+                        ':' + nowDate.getMinutes().toString().padStart(2, '0') + ':' + nowDate.getSeconds().toString().padStart(2, '0');
+                    nowToday = true;
+                }
+            } else if (!nowDateString.startsWith(value)) {
+                // recompute the now date string based on the date given
+                // first make sure the date string is complete, if not pad it out with the current year, month, date, and time
+                if (value.length < 4) {
+                    value = new Date().getFullYear().toString() + "-01-01 00:00:00";
+                } else if (value.length == 4) {
+                    value += "-01-01 00:00:00";
+                } else {
+                    let dateparts = value.split('-');
+                    if (dateparts.length == 1)
+                        value = value.substring(0, 4) + "-01-01 00:00:00";
+                    else if (dateparts.length == 2) {
+                        value += "-01 00:00:00";
+                    } else if (!dateparts[2].includes(' ')) {
+                        value += ' 00:00:00';
+                    } else {
+                        let timeparts = dateparts[2].split(' ');
+                        if (timeparts[1].trim().length == 0)
+                            value += ' 00:00:00';
+                        else {
+                            timeparts = timeparts[1].split(':');
+                            if (timeparts.length == 1)
+                                value += ":00:00";
+                            else if (timeparts.length == 2) {
+                                value += ":00";
+                            }
+                        }
+                    }
+                }
 
-            return rowData.startDate <= nowDateString && rowValue >= nowDateString;
+                let tzOffset = new Date(value).getTimezoneOffset();
+                tzOffset = (tzOffset >= 0 ? '-' : '+') + Math.trunc(tzOffset / 60).toString().padStart(2,'0') + ':' + (tzOffset % 60).toString().padStart(2, '0');
+                console.log("Timezone offset is " + tzOffset);
+                let newDate = new Date(value + ' ' + tzOffset);
+                if (newDate) {
+                    nowDate = newDate;
+                    nowToday = false;
+                    nowDateString = newDate.getFullYear().toString() + '-' + (newDate.getMonth() + 1).toString().padStart(2, '0') +
+                        '-' + newDate.getDate().toString().padStart(2, '0') + ' ' + newDate.getHours().toString().padStart(2, '0') +
+                        ':' + newDate.getMinutes().toString().padStart(2, '0') + ':' + newDate.getSeconds().toString().padStart(2, '0');
+                }
+            }
+
+            if (filterParams.field == 'startdate')
+                return rowValue <= nowDateString && rowData.enddate > nowDateString;
+
+            return rowData.startDate <= nowDateString && rowValue > nowDateString;
         default:
             return rowValue.includes(value);
     }
