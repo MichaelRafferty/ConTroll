@@ -127,6 +127,7 @@ if (!validateAccess($personId, $personType)) {
     $response['status'] = 'error';
     $response['message'] = "You do not have permission to update this person's cart.";
     ajaxSuccess($response);
+    exit();
 }
 
 // now fetch the order information from the transaction if necessary

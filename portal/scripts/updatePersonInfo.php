@@ -57,6 +57,11 @@ $response['currentPersonType'] = $currentPersonType;
 $response['currentPeron'] = $currentPerson;
 $response['personId'] = $personId;
 
+if (!validateAccess($currentPerson, $currentPersonType)) {
+    ajaxSuccess(array('status'=>'error', 'message'=>"You do not have permission to update this person's info."));
+    exit();
+}
+
 // update the record
 if ($currentPersonType == 'p') {
     $updPersonQ =  <<<EOS
