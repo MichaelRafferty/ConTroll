@@ -175,7 +175,7 @@ draw_fileManagerModals($authToken);
                                 <div class='row mt-1'>
                                     <div class='col-sm-2'>Bundle:</div>
                                     <div class='col-sm-10'>
-                                        <select name='editMemListBundle' id='editMemListBundle' onchange='bundleChanged();'>
+                                        <select name='editMemListBundle' id='editMemListBundle' onchange='bundleChanged(editListMasterRow);'>
                                             <option value='N'>No</option>
                                             <option value='Y'>Yes</option>
                                         </select>
@@ -191,7 +191,7 @@ draw_fileManagerModals($authToken);
                                     </div>
                                     <div class='col-sm-7'>
                                         <input type='text' name='editMemListBundleContains' id='editMemListBundleContains' placeholder='List of IDs in bundle'
-                                               onchange='bundleContentsChanged();' size='64' maxlength='256'/>
+                                               onchange='bundleContentsChanged(editListMasterRow);' size='64' maxlength='256'/>
                                     </div>
                                 </div>
                             <?php } ?>

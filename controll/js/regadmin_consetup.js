@@ -987,7 +987,7 @@ class consetup {
         if (this.#selValues == null)
             this.#selValues = ''
         else
-            this.#selValues = ',' + this.#selValues + ',';
+            this.#selValues = ',' + this.#selValues.replace(/ /g, '') + ',';
 
         this.#editMemListBundleDiv.hidden = false;
 
@@ -1061,7 +1061,7 @@ class consetup {
         let price = 0;
         let rows = this.#memListBundleTable.getRows();
         for (let row of rows) {
-            if (row.getCell('id').getElement().style.backgroundColor != '') {
+            if (row.getCell('id').getElement().classList.contains('selectedBGColor')) {
                 let rowData = row.getData();
                 if (rowData.startdate > this.#rowStartDate) {
                     warning += '<br/>Bundle start date (' + this.#rowStartDate + ') starts before the bundle element ' + rowData.id + "'s start date (" +
@@ -1107,11 +1107,11 @@ class consetup {
             }
         }
         this.closeBundleSel();
-        this.bundleContentsChanged();
+        this.bundleContentsChanged(editListMasterRow);
     }
 
     // bundleChanged - the bundle flag changes from yes/no
-    bundleChanged() {
+    bundleChanged(id) {
         let bundle = document.getElementById('editMemListBundle').value;
         if (bundle == 'Y')
             $('div[name="TScontains"]').show();
@@ -1120,8 +1120,8 @@ class consetup {
     }
 
     // placeholder for updating the contents of the entire bundle set for all time series
-    bundleContentsChanged() {
-        console.log("bundleChanged");
+    bundleContentsChanged(id) {
+        document.getElementById('EMLTS' + id + '_contains').value = document.getElementById('editMemListBundleContains').value;
         memListModalDirty = true;
     }
 
@@ -1225,15 +1225,15 @@ class consetup {
                     this.#editData[index].badgeLabel = document.getElementById('editMemListBadgeLabel').value;
                 }
                 if (bundle) {
-                    let contains = document.getElementById('EMLTS' + row + '_contains').value;
+                    let contains = document.getElementById('EMLTS' + row + '_contains').value.replace(/ /g, '');
                     if (contains == undefined || contains == '') {
-                        contains = this.computeBundleList(document.getElementById('editMemListBundleContains').value,
+                        contains = this.computeBundleList(document.getElementById('editMemListBundleContains').value.replace(/ /g, ''),
                             document.getElementById('EMLTS' + row + '_Start').value,
                             document.getElementById('EMLTS' + row + '_End').value);
-                        document.getElementById('EMLTS' + row + '_contains').value = contains[0];
+                        document.getElementById('EMLTS' + row + '_contains').value = contains[0].replace(/ /g, '');
                         document.getElementById('EMLTS' + row + '_Price').value = contains[1];
                     }
-                    notes = document.getElementById('EMLTS' + row + '_contains').value + '/' + orignotes;
+                    notes = document.getElementById('EMLTS' + row + '_contains').value.replace(/ /g, '') + '/' + orignotes;
                 } else {
                     if (document.getElementById('EMLTS' + row + '_Price').value == '')
                         document.getElementById(editMemListPrice).value;
@@ -1373,6 +1373,7 @@ class consetup {
         if (enddate.indexOf('T') >= 0)
             enddate = toDBdate(enddate);
         for (let id of oldList) {
+            id = id.trim();
             let memRow = this.#memtable.getRow(id).getData();
             if (memRow.startdate <= startdate && memRow.enddate >= enddate && memRow.shortname.substring(0, 8) != 'Bundle: ') {
                 newBundleList += ',' + id;
@@ -1407,7 +1408,7 @@ class consetup {
         }
 
         if (newBundleList != '')
-            newBundleList = newBundleList.substring(1);
+            newBundleList = newBundleList.substring(1).replace(/ /g, '');
 
         return [newBundleList, price];
     }
@@ -1424,12 +1425,12 @@ class consetup {
             if (bundle) {
                 // validate the bundle contents for each row in the table
                 for (let i = 0; i < 10; i++) {
-                    let contains = document.getElementById('EMLTS' + i + '_contains').value;
+                    let contains = document.getElementById('EMLTS' + i + '_contains').value.replace(/ /g, '');
                     if (contains != '') {
                         let containsList = contains.split(',');
                         for (let c = 0; c < containsList.length; c++) {
                             // validate that this element is a memlistid in the table
-                            let id = containsList[c];
+                            let id = containsList[c].trim();
                             let row = this.#memtable.getRow(id);
                             if (row === false) {
                                 valid = false;
@@ -1445,7 +1446,7 @@ class consetup {
                 }
                 // rebuild the bundle values: note, label
                 let notes = document.getElementById('editMemListNotes');
-                let note = document.getElementById('editMemListBundleContains').value + '/' + notes.value;
+                let note = document.getElementById('editMemListBundleContains').value.replace(/ /g, '') + '/' + notes.value;
                 notes.value = note;
                 let labelEl = document.getElementById('editMemListLabel');
                 let label = 'Bundle: ' + labelEl.value;
@@ -1488,6 +1489,7 @@ class consetup {
 
 // static functions to call appropriate class
 function editMemListSave() {
+    console.log("in editMemListSave");1
     if (activeConSetup == 'next')
         return next.editMemListSave();
 
@@ -1567,18 +1569,18 @@ function setBundleSel(direction) {
         current.setBundleSel(direction);
 }
 
-function bundleChanged() {
+function bundleChanged(id) {
     if (activeConSetup == 'next')
-        next.setBundleSelbundleChanged();
+        next.setBundleSelbundleChanged(id);
     else
-        current.bundleChanged();
+        current.bundleChanged(id);
 }
 
-function bundleContentsChanged() {
+function bundleContentsChanged(id) {
     if (activeConSetup == 'next')
-        next.bundleContentsChanged();
+        next.bundleContentsChanged(id);
     else
-        current.bundleContentsChanged();
+        current.bundleContentsChanged(id);
 }
 
 function tsBundleContentsChanged(id) {
