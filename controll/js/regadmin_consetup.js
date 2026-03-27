@@ -383,8 +383,10 @@ class consetup {
                     formatter: "money",  formatterParams: { decimal: '.', thousand: ',', negative: true, precision: 2},
                     headerFilter: "input", headerFilterFunc: numberHeaderFilter,
                 },
-                {title: "Start Date", field: "startdate", width: 170, editor: "datetime", validator: "required", headerFilter: "input"},
-                {title: "End Date", field: "enddate", width: 170, editor: "datetime", validator: "required", headerFilter: "input"},
+                {title: "Start Date", field: "startdate", width: 170, editor: "datetime", validator: "required",
+                    headerFilter: "input", headerFilterFunc: dateStringHeaderFilter, headerFilterFuncParams: {field: 'startdate'},},
+                {title: "End Date", field: "enddate", width: 170, editor: "datetime", validator: "required",
+                    headerFilter: "input", headerFilterFunc: dateStringHeaderFilter, headerFilterFuncParams: {field: 'enddate'},},
                 {
                     title: "At", field: "atcon", editor: "list", editorParams: {values: ["Y", "N"],},
                     headerFilter: true, headerFilterParams: {values: ["Y", "N"],}

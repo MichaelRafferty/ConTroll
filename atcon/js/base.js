@@ -54,13 +54,13 @@ function test(method, formData, resultDiv) {
     });
 }
 
-// tabulator custom header filter function for numeric comparisions
-//
+// tabulator custom header filter function for numeric and date string comparisions
+// number supports < <=, >, >= anything else for equality
 function numberHeaderFilter(headerValue, rowValue, rowData, filterParams) {
-    var option = headerValue.substring(0,1);
-    var value = headerValue;
+    let option = headerValue.substring(0,1);
+    let value = headerValue;
     if (option == '<' || option == '>' || option == '=') {
-        var suboption = headerValue.substring(1, 1);
+        let suboption = headerValue.substring(1, 2);
         if (suboption == '=') {
             option += suboption;
             value = value.substring(2);
@@ -80,6 +80,47 @@ function numberHeaderFilter(headerValue, rowValue, rowData, filterParams) {
             return Number(rowValue) >= Number(value);
         default:
             return Number(rowValue) == Number(value);
+    }
+}
+
+var nowDate = new Date();
+var nowDateString = nowDate.getFullYear().toString().padStart(2, '0') + '-' + (nowDate.getMonth() + 1).toString().padStart(2, '0') +
+    '-' + nowDate.getDate().toString().padStart(2, '0') + ' ' + nowDate.getHours().toString().padStart(2, '0') +
+    ':' + nowDate.getMinutes().toString().padStart(2, '0') + ':' + nowDate.getSeconds().toString().padStart(2, '0');
+// date string supports < <=, >, >=, s for starts with e for ends with and anything else for substring, v for valid date entered
+function dateStringHeaderFilter(headerValue, rowValue, rowData, filterParams) {
+    let option = headerValue.substring(0,1);
+    let value = headerValue;
+    if (option == '<' || option == '>' || option == '=' || option == 's' || option == 'e') {
+        let suboption = headerValue.substring(1, 2);
+        if (suboption == '=') {
+            option += suboption;
+            value = value.substring(2);
+        } else {
+            value = value.substring(1);
+        }
+    }
+
+    switch (option) {
+        case '<':
+            return rowValue < value;
+        case '<=':
+            return rowValue <= value
+        case '>':
+            return rowValue > value;
+        case '>=':
+            return rowValue >= value;
+        case 's':
+            return rowValue.startsWith(value);
+        case 'e':
+            return rowValue.endsWith(value);
+        case 'n':
+            if (filterParams.field == 'startdate')
+                return rowValue <= nowDateString && rowData.enddate >= nowDateString;
+
+            return rowData.startDate <= nowDateString && rowValue >= nowDateString;
+        default:
+            return rowValue.includes(value);
     }
 }
 

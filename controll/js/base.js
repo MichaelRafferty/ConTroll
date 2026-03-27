@@ -141,13 +141,13 @@ class map {
     }
 }
 
-// tabulator custom header filter function for numeric comparisions
-//
+// tabulator custom header filter function for numeric and date string comparisions
+// number supports < <=, >, >= anything else for equality
 function numberHeaderFilter(headerValue, rowValue, rowData, filterParams) {
-    var option = headerValue.substring(0,1);
-    var value = headerValue;
+    let option = headerValue.substring(0,1);
+    let value = headerValue;
     if (option == '<' || option == '>' || option == '=') {
-        var suboption = headerValue.substring(1, 1);
+        let suboption = headerValue.substring(1, 2);
         if (suboption == '=') {
             option += suboption;
             value = value.substring(2);
@@ -170,21 +170,62 @@ function numberHeaderFilter(headerValue, rowValue, rowData, filterParams) {
     }
 }
 
+var nowDate = new Date();
+var nowDateString = nowDate.getFullYear().toString().padStart(2, '0') + '-' + (nowDate.getMonth() + 1).toString().padStart(2, '0') +
+    '-' + nowDate.getDate().toString().padStart(2, '0') + ' ' + nowDate.getHours().toString().padStart(2, '0') +
+    ':' + nowDate.getMinutes().toString().padStart(2, '0') + ':' + nowDate.getSeconds().toString().padStart(2, '0');
+// date string supports < <=, >, >=, s for starts with e for ends with and anything else for substring, v for valid date entered
+function dateStringHeaderFilter(headerValue, rowValue, rowData, filterParams) {
+    let option = headerValue.substring(0,1);
+    let value = headerValue;
+    if (option == '<' || option == '>' || option == '=' || option == 's' || option == 'e') {
+        let suboption = headerValue.substring(1, 2);
+        if (suboption == '=') {
+            option += suboption;
+            value = value.substring(2);
+        } else {
+            value = value.substring(1);
+        }
+    }
+
+    switch (option) {
+        case '<':
+            return rowValue < value;
+        case '<=':
+            return rowValue <= value
+        case '>':
+            return rowValue > value;
+        case '>=':
+            return rowValue >= value;
+        case 's':
+            return rowValue.startsWith(value);
+        case 'e':
+            return rowValue.endsWith(value);
+        case 'n':
+            if (filterParams.field == 'startdate')
+                return rowValue <= nowDateString && rowData.enddate >= nowDateString;
+
+            return rowData.startDate <= nowDateString && rowValue >= nowDateString;
+        default:
+            return rowValue.includes(value);
+    }
+}
+
 // fullNameHeaderFilter: Custom header filter for substring and first/last substring for FullName with first_name and last_name fields in the table
 function fullNameHeaderFilter(headerValue, rowValue, rowData, filterParams) {
-    var header = headerValue.toLowerCase();
-    var value = rowValue.toLowerCase();
+    let header = headerValue.toLowerCase();
+    let value = rowValue.toLowerCase();
     if (value.includes(header))
         return true;
 
-    var parts = header.split(' ');
+    let parts = header.split(' ');
     if (parts.length < 2)
         return false;
 
-    var first = rowData.first_name.toLowerCase();
-    var last = rowData.last_name.toLowerCase();
+    let first = rowData.first_name.toLowerCase();
+    let last = rowData.last_name.toLowerCase();
     if (parts.length == 3) {
-        var middle = rowData.middle_name.toLowerCase();
+        let middle = rowData.middle_name.toLowerCase();
         return first.includes(parts[0]) && middle.includes(parts[1]) && last.includes(parts[2]);
     }
 
@@ -296,11 +337,11 @@ function saveEdit() {
     if (editor_modal == null)
         return; // tiymce area not loaded
 
-    var editTable = editTableDiv.innerHTML;
-    var editField = editFieldDiv.innerHTML;
-    var editIndex = editIndexDiv.innerHTML;
-    var editClass = editClassDiv.innerHTML;
-    var editValue = tinyMCE.activeEditor.getContent();
+    let editTable = editTableDiv.innerHTML;
+    let editField = editFieldDiv.innerHTML;
+    let editIndex = editIndexDiv.innerHTML;
+    let editClass = editClassDiv.innerHTML;
+    let editValue = tinyMCE.activeEditor.getContent();
 
     if (editTextOnly) {
         editValue = editValue.replace(/<\/p>/g, "\n");
@@ -341,18 +382,18 @@ function blankIfNull(value) {
 // pass object to a window.open via a post with json data
 function downloadFilePost(format, fileName, tableData, excludeList = null, fieldList = null) {
     // create the form
-    var form = document.createElement('form');
+    let form = document.createElement('form');
     form.method = 'POST';
     form.action = 'scripts/downloadFile.php';
     // append it to the body
     document.body.appendChild(form);
     // create the file name to suggest to save it to....
-    var field = document.createElement('input');
+    let field = document.createElement('input');
     field.type = 'text';
     field.name = 'format';
     field.value = format;
     form.appendChild(field);
-    var field = document.createElement('input');
+    field = document.createElement('input');
     field.type = 'text';
     field.name = 'filename';
     field.value = fileName;
@@ -372,7 +413,7 @@ function downloadFilePost(format, fileName, tableData, excludeList = null, field
         form.appendChild(field);
     };
     // create the data table element
-    var tablejson = document.createElement('input');
+    let tablejson = document.createElement('input');
     tablejson.type = 'text';
     tablejson.name = 'table'
     tablejson.value = tableData;
