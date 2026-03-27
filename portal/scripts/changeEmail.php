@@ -145,7 +145,7 @@ WHERE $mfield = ? AND NOT (first_name = 'merged' AND middle_name = 'into')
 EOS;
     $typeStr = 'ii';
     $values = array($personId, $personId);
-    if ($personType == 'N') {
+    if ($personType == 'n') {
         $vQ .= <<<EOS
 UNION SELECT DISTINCT LOWER(TRIM(email_addr))
 FROM newperson
