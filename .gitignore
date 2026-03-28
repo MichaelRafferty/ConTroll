@@ -24,7 +24,7 @@
 /install/Reg_Install_Schema/data/
 /portal/images/
 /controll/images/
-/controll/reportdata
+/controll/reportdata/
 
 # stuff for local overrides
 .htaccess
