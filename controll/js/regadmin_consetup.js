@@ -128,8 +128,12 @@ class consetup {
         this.#editData.push({id: 'new' + row });
         document.getElementById('EMLTS' + row + '_ID').innerHTML = this.#editData[row].id;
         this.#editData[row].conid = this.#conid;
-        this.#editData[row].sort_order = this.#editData[row - 1].sort_order + 1;
-        document.getElementById('EMLTS' + row + '_Sort').value = this.#editData[row].sort_order;
+        if (document.getElementById('EMLTS' + row + '_Sort').value == '') {
+            this.#editData[row].sort_order = this.#editData[row - 1].sort_order + 1;
+            document.getElementById('EMLTS' + row + '_Sort').value = this.#editData[row].sort_order;
+        } else {
+            this.#editData[row].sort_order = document.getElementById('EMLTS' + row + '_Sort').value;
+        }
         this.#editData[row].memCategory = document.getElementById('memListCategorySelect').value;
         this.#editData[row].memAge = document.getElementById('memListAgeSelect').value;
         this.#editData[row].memType = document.getElementById('memListTypeSelect').value;
@@ -1144,8 +1148,12 @@ class consetup {
                 if (index >= this.#editData.length) {
                     this.#editData.push({id: 'new' + index, conid: this.#conid });
                     document.getElementById('EMLTS' + index + '_ID').innerHTML = this.#editData[index].id;
-                    this.#editData[index].sort_order = this.#editData[index - 1].sort_order + 1;
-                    document.getElementById('EMLTS' + index + '_Sort').value = this.#editData[index].sort_order;
+                    if (document.getElementById('EMLTS' + index + '_Sort').value == '') {
+                        this.#editData[index].sort_order = this.#editData[index - 1].sort_order + 1;
+                        document.getElementById('EMLTS' + index + '_Sort').value = this.#editData[index].sort_order;
+                    } else {
+                        this.#editData[index].sort_order = document.getElementById('EMLTS' + index + '_Sort').value;
+                    }
                     this.#editData[index].startdate = document.getElementById('EMLTS' + index + '_Start').value;
                     this.#editData[index].enddate = document.getElementById('EMLTS' + index + '_End').value;
                     this.#editData[index].price = document.getElementById('EMLTS' + index + '_Price').value;

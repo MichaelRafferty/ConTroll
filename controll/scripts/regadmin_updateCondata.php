@@ -162,7 +162,7 @@ EOS;
             if (!is_numeric($row['id']) || $row['id'] < 0) {
                 $paramarray= array($row['conid'],$row['sort_order'],$row['memCategory'],
                     $row['memType'],$row['memAge'],$row['shortname'],$row['notes'],$row['cartDesc'],$row['price'],
-                    $row['startdate'],$row['enddate'],$row['atcon'],$row['online'],$row['glNum'],$row['glLabel'], $row['badgeLabel']);
+                    $row['startdate'],$row['enddate'],$row['atcon'],$row['online'],$row['glNum'],$row['glLabel'], IFNULL($row['catBadgeLabel'],''));
                 //web_error_log("add row: /$addSQL/, types '$addtypes', values:");
                 //var_error_log($paramarray);
                 $newid = dbSafeInsert($addSQL, $addtypes, $paramarray);
@@ -171,7 +171,7 @@ EOS;
             } else {
                 $paramarray = array($row['sort_order'],$row['memCategory'],
                     $row['memType'],$row['memAge'],$row['shortname'],$row['notes'],$row['cartDesc'],$row['price'],
-                    $row['startdate'],$row['enddate'],$row['atcon'],$row['online'],$row['glNum'],$row['glLabel'],$row['badgeLabel'],$row['id']);
+                    $row['startdate'],$row['enddate'],$row['atcon'],$row['online'],$row['glNum'],$row['glLabel'],IFNULL($row['catBadgeLabel'],''),$row['id']);
                 //web_error_log("update row: /$updSQL/, types = '$updtypes', values:");
                 //var_error_log($paramarray);
                 $updated += dbSafeCmd($updSQL, $updtypes, $paramarray);
