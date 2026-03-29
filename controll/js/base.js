@@ -201,6 +201,9 @@ function dateStringHeaderFilter(headerValue, rowValue, rowData, filterParams) {
         case 'e':
             return rowValue.endsWith(value);
         case 'n':
+            if (filterParams.field == '')
+                return rowValue.includes(value);
+
             if (value == '') {
                 if (!nowToday) {
                     nowDate = new Date();
@@ -255,7 +258,9 @@ function dateStringHeaderFilter(headerValue, rowValue, rowData, filterParams) {
             if (filterParams.field == 'startdate')
                 return rowValue <= nowDateString && rowData.enddate > nowDateString;
 
-            return rowData.startDate <= nowDateString && rowValue > nowDateString;
+            if (filterParams.field == 'enddate')
+                return rowData.startDate <= nowDateString && rowValue > nowDateString;
+
         default:
             return rowValue.includes(value);
     }
