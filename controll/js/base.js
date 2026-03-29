@@ -174,6 +174,9 @@ var nowToday = false;
 var nowDateString = '';
 // date string supports < <=, >, >=, s for starts with e for ends with and anything else for substring, v for valid date entered
 function dateStringHeaderFilter(headerValue, rowValue, rowData, filterParams) {
+    if (rowValue == null || rowValue == '')
+        return false;
+
     let option = headerValue.substring(0,1);
     let value = headerValue;
     if (option == '<' || option == '>' || option == '=' || option == 's' || option == 'e' || option == 'n') {
