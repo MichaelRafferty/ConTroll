@@ -1055,7 +1055,7 @@ class Portal {
     makePayment(plan) {
         let html = '';
         let done = false;
-        if (plan == null) {
+        if (plan == null && this.#paymentPlan != null) {
             this.#paymentPlan = null;
             this.makeOrder(null);
             return;

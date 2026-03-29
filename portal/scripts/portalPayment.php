@@ -111,6 +111,48 @@ if (array_key_exists('badges', $_POST)) {
         ajaxSuccess($response);
         exit();
     }
+    // now validate the badges just as in portalOrder.php
+    if (count($badges) > 0) {
+        $badgeRegIds = '';
+        $badgeIndex = [];
+        $count = 0;
+        foreach ($badges as $key => $badge) {
+            $regId = $badge['regId'];
+            if (!is_numeric($regId)) {
+                $msg = 'Invalid data received for the memberships for this payment. Seek assistance.';
+                $response['error'] = $msg;
+                error_log($msg);
+                ajaxSuccess($response);
+                exit();
+            }
+            $badgeIndex[$regId] = $count++;
+            $badgeRegIds .= ($regId + 0) . ','; // make it a number, not a string, to avoid any SQL injection
+        }
+        $badgeRegIds = substr($badgeRegIds, 0, -1); // strip off the trailing comma
+        $dbRegQ = <<<EOS
+SELECT *
+FROM reg
+WHERE id in ($badgeRegIds);
+EOS;
+        $badgeRegR = dbQuery($dbRegQ);
+        if ($badgeRegR === false) {
+            ajaxSuccess(array ('status' => 'error', 'message' => 'Database error in validating registrations, get assistance.'));
+            exit();
+        }
+        $valid = true;
+        while ($badgeL = $badgeRegR->fetch_assoc()) {
+            $reg = $badges[$badgeIndex[$badgeL['id']]]; // get the passed reg record
+            // compare the fields
+            if ($reg['memId'] != $badgeL['memId'] || $reg['conid'] != $badgeL['conid'] || $reg['status'] != $badgeL['status'] ||
+                $reg['price'] != $badgeL['price'] || $reg['paid'] != $badgeL['paid'])
+                $valid = false;
+        }
+        $badgeRegR->free();
+        if (!$valid) {
+            ajaxSuccess(array ('status' => 'error', 'message' => 'Memberships passed are not valid, get assistance.'));
+            exit();
+        }
+    }
 } else {
     $badges = [];
 }
