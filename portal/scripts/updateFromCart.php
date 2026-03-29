@@ -63,7 +63,6 @@ $voidTransId = false; // void the transaction if a free membership was marked pa
 // mark this to invalidate the order if it exists
 $orderId = null;
 $orderDate = null;
-$orderIdFetched = false;
 
 $action = $_POST['action'];
 logInit($log['reg']);
@@ -75,6 +74,14 @@ try {
         $response['message'] = 'Error: fname and first_name fields are missing from person, please seek assistance';
         ajaxSuccess($response);
         exit();
+    } else {
+        if (array_key_exists('first_name', $person)) {
+            $personFirstName = $person['first_name'];
+            $personLastName = $person['last_name'];
+        } else {
+            $personFirstName = $person['fname'];
+            $personLastName = $person['lname'];
+        }
     }
 }
 catch (Exception $e) {
@@ -131,7 +138,7 @@ if (!validateAccess($personId, $personType)) {
 }
 
 // now fetch the order information from the transaction if necessary
-if ($transId != null && !$orderIdFetched) {
+if ($transId != null) {
     // get the current orderId if it exists
     $transOrderQ = <<<EOS
 SELECT orderId, orderDate
@@ -141,17 +148,34 @@ EOS;
     $transOrderR = dbSafeQuery($transOrderQ, 'i', array($transId));
     if ($transOrderR === false || $transOrderR->num_rows != 1) {
         $transId = getNewTransaction($conid, $loginType == 'p' ? $loginId : null, $loginType == 'n' ? $loginId : null);
-        $orderIdFetched = true;
     } else {
         $transRow = $transOrderR->fetch_assoc();
         $orderId = $transRow['orderId'];
         $orderDate = $transRow['orderDate'];
-        $orderIdFetched = true;
     }
 }
 
 $num_del = 0;
 $num_ins = 0;
+// load the memList for comparision against this cart for valid prices for new items not in the database added to the cart
+$memListQ = <<<EOS
+SELECT id, price, startdate, enddate, label, c.variablePrice
+FROM memList m
+JOIN memCategories c ON m.memCategory = c.memCategory
+WHERE (conid = ? OR conid = (? + 1)) AND startdate <= NOW() AND enddate > NOW() AND online = 'Y';
+EOS;
+$memListR = dbSafeQuery($memListQ, 'ii', array($conid, $conid));
+if ($memListR === false) {
+    $response['message'] = 'Error loading available memberships for comparision, seek assistance.';
+    ajaxSuccess($response);
+    exit();
+}
+$memList = [];
+while ($memRow = $memListR->fetch_assoc()) {
+    $memList[$memRow['id']] = $memRow;
+}
+$memListR->free();
+
 // now for the cart
 $updateTransPrice = false;
 if (sizeof($cart) > 0) {
@@ -159,9 +183,11 @@ if (sizeof($cart) > 0) {
         if (array_key_exists('toDelete', $cartRow) && $cartRow['toDelete'] == true && $cartRow['status'] == 'unpaid') {
             // first verify it's qualified for deletion
             $cQ = <<<EOS
-SELECT id, perid, newperid, status, price, paid, couponDiscount, create_trans
-FROM reg
-WHERE id = ?
+SELECT r.id, r.perid, r.newperid, r.status, r.price, r.paid, r.couponDiscount, r.create_trans,
+       m.price AS memPrice
+FROM reg r
+JOIN memList m ON m.id = r.memId
+WHERE r.id = ?
 EOS;
             $cR = dbSafeQuery($cQ, 'i', array($cartRow['id']));
             if ($cR === false || $cR->num_rows != 1) {
@@ -171,7 +197,7 @@ EOS;
             $item = $cR->fetch_assoc();
             $cR->free();
             if ($item['perid'] != $personId && $item['newperid'] != $personId) {
-                $response['message'] .= '<br/>Membership ' . $cartRow['id'] . ' does not belong to you, continuing with the remaining transactions.';
+                $response['message'] .= '<br/>Membership ' . $cartRow['id'] . " does not belong to $personFirstName $personLastName, continuing with the remaining transactions.";
                 continue;
             }
             if ($item['price'] == 0 || ($item['couponDiscount'] + $item['paid']) == $item['price']) {
@@ -191,6 +217,15 @@ EOS;
                 $transId = getNewTransaction($conid, $loginType == 'p' ? $loginId : null, $loginType == 'n' ? $loginId : null);
             }
 
+            // check if the price has not been tampered with
+            $cartPrice = $cartRow['price'];
+            $memPrice = $memList[$cartRow['memId']]['price'];
+            $variablePrice = $memList[$cartRow['memId']]['variablePrice'];
+            if (($variablePrice == 'Y' && $cartPrice < $memPrice) || ($variablePrice == 'N' && $cartPrice != $memPrice)) {
+                $response['message'] .= '<br/>Membership ' . $cartRow['label'] .
+                    ' has been modified improperly, seek assistance, continuing with the remaining transactions.';
+                continue;
+            }
             // insert the new reg record into the cart
             $iQ = <<<EOS
 INSERT INTO reg(conid, perid, newperid, create_trans, complete_trans, price, status, create_user, memId)
