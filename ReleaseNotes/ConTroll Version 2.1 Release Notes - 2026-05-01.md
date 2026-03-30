@@ -1,6 +1,6 @@
-# ConTroll Version 2.0 Release Notes
+# ConTroll Version 2.1 Release Notes
 
-## Version 2.0: Start of Portal UX Rewrite
+## Version 2.1: Completion of Portal UX Rewrite
 ### Release Date: 2026-05-01
 
 # Major Configuration Changes in 2.1:

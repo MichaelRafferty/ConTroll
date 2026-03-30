@@ -1,6 +1,7 @@
 <?php
 require_once "lib/base.php";
 require_once "lib/sessionAuth.php";
+require_once "lib/releaseNotes.php";
 require_once('../lib/googleOauth2.php');
 
 $page = "Home";
@@ -361,13 +362,14 @@ EOS;
                             echo "User id: $user_id\n";
                             echo "User perid: $user_perid\n";
                             echo "Source: $source\n";
-                            echo "Sub: " . $authToken->getAuthId() . "\n";
-                            echo 'Current Time: ' . date('c') . "\n";
-                            echo "Token Expires: " . date('c', $authToken->getExpire()) . "\n";
-                            echo "Next Refresh: " . date('c', $authToken->getRefresh()) . "\n";
-                            echo "PHP Version: " . phpversion() . "\n";
+                            echo "Sub: " . $authToken->getAuthId() . PHP_EOL;
+                            echo 'Current Time: ' . date('c') . PHP_EOL;
+                            echo "Token Expires: " . date('c', $authToken->getExpire()) . PHP_EOL;
+                            echo "Next Refresh: " . date('c', $authToken->getRefresh()) . PHP_EOL;
+                            echo "PHP Version: " . phpversion() . PHP_EOL;
+                            echo returnReleaseNotesLink('', $authToken) . PHP_EOL;
                             echo "$versionText";
-                            echo "Config Update: " . getConfValue('global', 'version', 'unknown') . "\n";
+                            echo "Config Update: " . getConfValue('global', 'version', 'unknown') . PHP_EOL;
                             echo "Database Patch Level: $patchLevel\n";
                             echo "Conid: $conid\n";
                         ?>
