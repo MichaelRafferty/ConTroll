@@ -113,13 +113,16 @@ function draw_itemRegistrationModal($portalType = '', $showsheets=false, $showco
 
 
 function itemRegistrationOpenBtn($conid, $region) {
+    $conname = getConfValue('con', 'conname', 'Con');
     echo <<<EOS
-        <button class='btn btn-primary m-1' onclick='auctionItemRegistration.open($region);'>Open Item Registration for $conid</button>
+        <button class='btn btn-primary m-1' onclick='auctionItemRegistration.open($region);'>Open Item Registration for $conname $conid</button>
 EOS;
 }
 
 function itemRegistrationImportBtn($region) {
-    echo "<button id='importPriorBtn' class='btn btn-primary m-1' onclick='auctionItemRegistration.import($region);'>Import Unsold Prior Art Items</button>";
+    $conname = getConfValue('con', 'conname', '');
+    $id = getConfValue('con', 'id', '');
+    echo "<button id='importPriorBtn' class='btn btn-primary m-1' onclick='auctionItemRegistration.import($region);'>Import Unsold Prior Art Items into $conname $id</button>";
 }
 
     //draw the item registration modal

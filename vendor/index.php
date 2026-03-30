@@ -17,6 +17,7 @@ require_once('../lib/tax.php');
 $cc = get_conf('cc');
 $con = get_conf('con');
 $conid = $con['id'];
+$conname = $con['conname'];
 $minConid = getConfValue('controll', 'viewPriorLimit', $conid - 1);
 $usps = get_conf('usps');
 load_cc_procs();
@@ -693,7 +694,7 @@ EOS;
                 echo <<<EOS
             <div class="col-sm-auto p-1">
                 <button class='btn btn-primary m-1' onclick="auctionItemRegistration.printSheets('control', $regionYearId, $year); return false;">Print Control Sheet 
-                for $year</button>
+                for $conname $year</button>
             </div>
 EOS;
             }
@@ -701,7 +702,6 @@ EOS;
         </div>
 EOS;
         }
-        echo "bottom buttons<br/>\n";
     }
 ?>
          <?php outputCustomText('main/bottom'); outputCustomText('main/bottom' . $portalName); ?>
