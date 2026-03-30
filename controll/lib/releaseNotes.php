@@ -30,7 +30,7 @@ function returnReleaseNotesLink($shown = '', $authToken = null) : string {
         $authToken = new authToken('web');
 
     if ($authToken->checkAuth('admin') || $authToken->checkAuth('reg-admin'))
-        return "Controll Release: $shown, " . '<a href="markdown.php?mdf=releaseNotes/' . $releaseNoteList[$shown] .
+        return "Controll Release: $shown, " . '<a href="markdown.php?mdf=ReleaseNotes/' . $releaseNoteList[$shown] .
         "&releaseNoteId=$shown" . '">Release Notes for ' . $shown . '</a>';
 
     return "Current ConTroll Release: $shown";
@@ -51,7 +51,7 @@ function releaseNotesHeaderLinks($shown) :string {
     if ($current > 0) {
         $priorId = $releaseNoteIndex[$current - 1];
         $linkRow .= '<div class="col-sm-auto">' .
-            '<a href="markdown.php?mdf=releaseNotes/' . $releaseNoteList[$priorId] . "&releaseNoteId=$priorId" . '">Prior Release: ' . $priorId . '</a>' .
+            '<a href="markdown.php?mdf=ReleaseNotes/' . $releaseNoteList[$priorId] . "&releaseNoteId=$priorId" . '">Prior Release: ' . $priorId . '</a>' .
             "</div>\n";
     }
 
@@ -60,7 +60,7 @@ function releaseNotesHeaderLinks($shown) :string {
     if ($current < count($releaseNoteIndex) - 1) {
         $nextId = $releaseNoteIndex[$current + 1];
         $linkRow .= '<div class="col-sm-auto">' .
-            '<a href="markdown.php?mdf=releaseNotes/' . $releaseNoteList[$nextId] . "&releaseNoteId=$nextId" . '">Next Release: ' . $nextId . '</a>' .
+            '<a href="markdown.php?mdf=ReleaseNotes/' . $releaseNoteList[$nextId] . "&releaseNoteId=$nextId" . '">Next Release: ' . $nextId . '</a>' .
             "</div>\n";
     }
     return $linkRow;
