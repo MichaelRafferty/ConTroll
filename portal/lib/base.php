@@ -575,7 +575,7 @@ WHERE id = ? AND managedByNew = ?;
 EOS;
         } else {
             // I am existing and they are new
-            $pq = <<<EOS
+            $pQ = <<<EOS
 SELECT id
 FROM newperson
 WHERE id = ? AND managedBy = ?;
