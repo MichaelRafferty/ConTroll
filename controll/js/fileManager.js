@@ -242,7 +242,7 @@ class FileManager {
                 if (preview) {
                     html += '<img src="' + element.path + '" style="max-height:200px;max-width:200px;height:auto;width:auto;"><br/>\n';
                 }
-                html += '<a href="' + element.path + '">' + file + '</a>(' + element.size + ')<br/>c: ' + element.created +
+                html += '<a target="_blank" href="' + element.path + '">' + file + '</a>(' + element.size + ')<br/>c: ' + element.created +
                     '<br/>m: ' + element.modified + '\n';
                 if (this.#admin)
                     html += '<br/><button class="btn btn-small btn-secondary" onclick="fileManager.renameDelete(\'' + element.path + '\');">' +
@@ -265,7 +265,7 @@ class FileManager {
                 if (this.#admin) {
                     html += '<button class="btn btn-small btn-secondary" onclick="fileManager.renameDelete(\'' + element.path + '\');">' +
                         'Rename/Delete</button></div>\n' +
-                        '<div class="col-sm-3 align-self-center"><a href="' + element.path + '">' + file + '</a></div>\n';
+                        '<div class="col-sm-3 align-self-center"><a target="_blank" href="' + element.path + '">' + file + '</a></div>\n';
                 } else {
                     html += '</div>\n<div class="col-sm-3 align-self-center">' + file + '</div>\n';
                 }
