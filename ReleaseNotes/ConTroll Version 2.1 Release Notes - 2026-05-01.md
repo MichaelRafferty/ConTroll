@@ -65,7 +65,7 @@
 
 # Wrike Items Closed:
 
-** add < > type of processing to con setup date filter fields
+* add < > type of processing to con setup date filter fields
 * Add ability for exhibits admins to see prior year registrants and what they did like current year registrants
 * Add an override column in memList to override the category badge label for print only.
 * Add cancel plan to Finance / Payor Plans
