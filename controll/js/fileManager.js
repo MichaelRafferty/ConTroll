@@ -242,7 +242,7 @@ class FileManager {
                 if (preview) {
                     html += '<img src="' + element.path + '" style="max-height:200px;max-width:200px;height:auto;width:auto;"><br/>\n';
                 }
-                html += file + '(' + element.size + ')<br/>c: ' + element.created +
+                html += '<a href="' + element.path + '">' + file + '</a>(' + element.size + ')<br/>c: ' + element.created +
                     '<br/>m: ' + element.modified + '\n';
                 if (this.#admin)
                     html += '<br/><button class="btn btn-small btn-secondary" onclick="fileManager.renameDelete(\'' + element.path + '\');">' +
@@ -262,11 +262,14 @@ class FileManager {
             for (let file of files) {
                 let element = data[file];
                 html += '<div class="row mb-1 me-1">\n<div class="col-sm-2">';
-                if (this.#admin)
+                if (this.#admin) {
                     html += '<button class="btn btn-small btn-secondary" onclick="fileManager.renameDelete(\'' + element.path + '\');">' +
-                        'Rename/Delete</button>';
-                html += '</div>\n<div class="col-sm-3 align-self-center">' + file + '</div>\n' +
-                    '<div class="col-sm-1 text-end align-self-center">' + element.size + '</div>\n' +
+                        'Rename/Delete</button></div>\n' +
+                        '<div class="col-sm-3 align-self-center"><a href="' + element.path + '">' + file + '</a></div>\n';
+                } else {
+                    html += '</div>\n<div class="col-sm-3 align-self-center">' + file + '</div>\n';
+                }
+                html += '<div class="col-sm-1 text-end align-self-center">' + element.size + '</div>\n' +
                     '<div class="col-sm-2 align-self-center">' + element.created + '</div>\n' +
                     '<div class="col-sm-2 align-self-center">' + element.modified + '</div>\n' +
                     '</div>\n';
