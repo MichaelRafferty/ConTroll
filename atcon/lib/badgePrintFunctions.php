@@ -323,7 +323,7 @@ function print_badge($printer, $tempfile)//: string|false
         $result = exec($command,$output,$result_code);
         web_error_log("executing command '$command' returned '$result', code: $result_code",'badgePrn');
         if ($result_code == 0) {
-            $command = "chmod 660 $location/$newname";
+            $command = "chmod 644 $location/$newname";
             $output = [];
             $result = exec($command, $output, $result_code);
             web_error_log("executing command '$command' returned '$result', code: $result_code", 'badgePrn');
