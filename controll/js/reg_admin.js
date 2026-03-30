@@ -1063,7 +1063,7 @@ function changeTransfer() {
             message += "Cannot transfer " + changeItem.id + " as it has been printed.<br/>";
             continue;
         }
-        if (changeItem.transferEligible != 1) {
+        if (!changeItem.transferEligible) {
             message += "Cannot transfer " + changeItem.id + " as that type/category of membership cannot be transferred.<br/>";
             continue;
         }
@@ -1305,7 +1305,7 @@ function changeRollover() {
             message += "Cannot rollover " + changeItem.id + " as it has been printed.<br/>";
             continue;
         }
-        if (changeItem.rolloverEligible != 1) {
+        if (!changeItem.rolloverEligible) {
             message += "Cannot rollover " + changeItem.id + " as that type/category of membership cannot be rolled over.<br/>";
             continue;
         }
@@ -1448,7 +1448,7 @@ function changeDonate() {
             message += "Cannot donate " + changeItem.id + " as it has been printed.<br/>";
             continue;
         }
-        if (changeItem.donateEligible != 1) {
+        if (!changeItem.donateEligible) {
             message += "Cannot donate " + changeItem.id + " as that type/category of membership cannot be donated.<br/>";
             continue;
         }
