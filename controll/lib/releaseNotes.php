@@ -1,7 +1,7 @@
 <?php
 // functions related to release notes and list of release note data
 
-global $releaseNoteList, $currentRelease;
+global $releaseNoteList, $releaseNoteIndex, $currentRelease;
 
 $releaseNoteList = array(
     '1.0' => 'ConTroll Version 1.0 Release Notes.md',
@@ -14,6 +14,11 @@ $releaseNoteList = array(
     '2.1' => 'ConTroll Version 2.1 Release Notes - 2026-05-01.md'
 );
 $currentRelease = '2.1';
+$releaseNoteIndex = array();
+$count = 0;
+foreach ($releaseNoteList as $key => $value) {
+    $releaseNoteIndex[] = $key;
+}
 
 function returnReleaseNotesLink($shown = '', $authToken = null) : string {
     global $releaseNoteList, $currentRelease;
@@ -25,7 +30,37 @@ function returnReleaseNotesLink($shown = '', $authToken = null) : string {
         $authToken = new authToken('web');
 
     if ($authToken->checkAuth('admin') || $authToken->checkAuth('reg-admin'))
-        return 'Release Notes: <a href="markdown.php?mdf=releaseNotes/' . $releaseNoteList[$shown] . '">' . $shown . '</a>';
+        return 'Release Notes: <a href="markdown.php?mdf=releaseNotes/' . $releaseNoteList[$shown] . "&releaseNoteId=$shown" . '">' . $shown . '</a>';
 
     return "Current ConTroll Release: $shown";
+}
+
+function releaseNotesHeaderLinks($shown) :string {
+    global $releaseNoteList, $releaseNoteIndex, $currentRelease;
+
+    if (count($releaseNoteIndex) <= 1)
+        return '';
+
+    $current = array_search($shown, $releaseNoteIndex);
+    if ($current === false )
+        return '';
+
+    $linkRow = "\n";
+
+    if ($current > 0) {
+        $priorId = $releaseNoteIndex[$current - 1];
+        $linkRow .= '<div class="col-sm-auto">' .
+            '<a href="markdown.php?mdf=releaseNotes/' . $releaseNoteList[$priorId] . "&releaseNoteId=$priorId" . '">Prior Release: ' . $priorId . '</a>' .
+            "</div>\n";
+    }
+
+    $linkRow .= '<div class="col-sm-auto">Showing Release ' . $shown . "</div>\n";
+
+    if ($current < count($releaseNoteIndex) - 1) {
+        $nextId = $releaseNoteIndex[$current + 1];
+        $linkRow .= '<div class="col-sm-auto">' .
+            '<a href="markdown.php?mdf=releaseNotes/' . $releaseNoteList[$nextId] . "&releaseNoteId=$nextId" . '">Next Release: ' . $nextId . '</a>' .
+            "</div>\n";
+    }
+    return $linkRow;
 }
