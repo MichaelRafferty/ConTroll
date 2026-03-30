@@ -322,6 +322,12 @@ function print_badge($printer, $tempfile)//: string|false
         $output = [];
         $result = exec($command,$output,$result_code);
         web_error_log("executing command '$command' returned '$result', code: $result_code",'badgePrn');
+        if ($result_code == 0) {
+            $command = "chmod 660 $location/$newname";
+            $output = [];
+            $result = exec($command, $output, $result_code);
+            web_error_log("executing command '$command' returned '$result', code: $result_code", 'badgePrn');
+        }
         if($result_code == 0) { 
             web_error_log("Badge saved at $newname",'badgePrn');
             $result_code='' . $newname;
