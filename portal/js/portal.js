@@ -369,7 +369,7 @@ class Portal {
         this.#epPersonTypeField.value = post.getType;
         profile.setAll(person.first_name, person.middle_name, person.last_name, person.suffix, person.legalName, person.pronouns,
             person.address, person.addr_2, person.city, person.state, person.zip, person.country, person.phone,
-            person.badge_name, person.badgeNameL2, person.currentAgeType);
+            person.badge_name, person.badgeNameL2, person.currentAgeType, person.numPrimary);
         this.#editPersonEmail = profile.setEmailFixed(email);
 
         this.#personSerializeStart = $("#editPerson").serialize();

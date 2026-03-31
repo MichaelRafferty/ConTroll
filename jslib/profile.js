@@ -25,6 +25,7 @@ class Profile {
     #memberAge = '';
     #uspsDiv= null;
     #email1Input = true;
+    #numPrimary = 0;
 
 // online reg - membership filtering
     #memIdField = null;
@@ -218,7 +219,7 @@ class Profile {
     }
 
     setAll(first_name, middle_name, last_name, suffix, legalName, pronouns, address, addr_2, city, state, zip, country, phone,
-           badge_name, badgeNameL2, age) {
+           badge_name, badgeNameL2, age, numPrimary = 0) {
         this.#fnameField.value = first_name;
         this.#mnameField.value = middle_name;
         this.#lnameField.value = last_name;
@@ -237,6 +238,7 @@ class Profile {
         this.#badgenameField.value = badge_name;
         this.#badgenameL2Field.value = badgeNameL2;
         this.#ageField.value = age;
+        this.#numPrimary = numPrimary;
     }
 
     setPolicies(old) {
@@ -440,7 +442,7 @@ class Profile {
                 if (policy.required == 'Y') {
                     let field = document.getElementById(this.#prefix + 'l_' + policy.policy);
                     if (!document.getElementById(this.#prefix + 'p_' + policy.policy).checked) {
-                        if (this.#alertType == 'warn' || multiUse) {
+                        if (this.#alertType == 'warn' || multiUse || this.#numPrimary > 0) {
                             message += '<br/>The required policy, ' + policy.policy + ', is not checked.';
                             valid = false;
                         } else {

@@ -66,28 +66,47 @@ if (array_key_exists('memberships', $_POST)) {
         exit();
     }
 
+    $conid = getConfValue('con','id', 0);
 // get the record
 if ($getType == 'p') {
     $getPersonQ =  <<<EOS
+WITH numregs AS (
+    SELECT perid, COUNT(*) AS numPrimary
+    FROM reg r
+    JOIN memList m ON m.id = r.memId
+    WHERE r.perid = ? AND r.conid IN (?, ?) AND r.status IN ('unpaid', 'paid', 'plan', 'upgraded') AND
+        m.memType IN ('full', 'virtual', 'oneday', 'wsfs')
+    GROUP BY perid
+)
 SELECT id, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, badgeNameL2, legalName, pronouns, 
     address, addr_2, city, state, zip, country, 
-    managedBy, NULL AS managedByNew, lastVerified, 'p' AS personType, currentAgeConId, currentAgeType,
+    managedBy, NULL AS managedByNew, lastVerified, 'p' AS personType, currentAgeConId, currentAgeType, IFNULL(n.numPrimary, 0) AS numPrimary,
     TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), ' +', ' ')) AS fullName
-FROM perinfo
-WHERE id = ?;
+FROM perinfo p
+LEFT OUTER JOIN numregs n ON (n.perid = p.id)
+WHERE id = ?
 EOS;
 } else {
     $getPersonQ =  <<<EOS
+WITH numregs AS (
+    SELECT newperid, COUNT(*) AS numPrimary
+    FROM reg r
+    JOIN memList m ON m.id = r.memId
+    WHERE r.perid = ? AND r.conid IN (?, ?) AND r.status IN ('unpaid', 'paid', 'plan', 'upgraded') AND
+        m.memType IN ('full', 'virtual', 'oneday', 'wsfs')
+    GROUP BY newperid
+)
 SELECT id, last_name, middle_name, first_name, suffix, email_addr, phone, badge_name, badgeNameL2, legalName, pronouns, 
     address, addr_2, city, state, zip, country, 
-    managedBy, managedByNew, lastVerified, 'n' AS personType, currentAgeConId, currentAgeType,
+    managedBy, managedByNew, lastVerified, 'n' AS personType, currentAgeConId, currentAgeType, IFNULL(n.numPrimary, 0) AS numPrimary,
     TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, last_name, suffix), ' +', ' ')) AS fullName
-FROM newperson
+FROM newperson p
+LEFT OUTER JOIN numregs n ON (n.newperid = p.id)
 WHERE id = ?;
 EOS;
 }
 
-$getPersonR = dbSafeQuery($getPersonQ, 'i', array($getId));
+$getPersonR = dbSafeQuery($getPersonQ, 'iiii', array($getId, $conid, $conid + 1, $getId));
 if ($getPersonR == false || $getPersonR->num_rows != 1) {
     ajaxSuccess(array('status'=>'error', 'message'=>'Person not found.'));
     exit();
