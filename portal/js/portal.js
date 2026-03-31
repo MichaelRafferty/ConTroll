@@ -892,7 +892,7 @@ class Portal {
 
         let btn = document.getElementById('partialPayBTN');
         if (btn) {
-            btn = this.#partialPayAmt == 0;
+            btn.disabled = this.#partialPayAmt == 0;
             document.getElementById('partialPayBTNPlan').disabled = this.#partialPayAmt == 0;
         }
         this.#paySelectedList = [];
@@ -1254,10 +1254,10 @@ class Portal {
         this.#fullPayAmt = 0;
 
         if (data.message)
-            window.location = this.#portalPage + '?messageFwd=' + encodeURI(data.message);
+            window.location = this.#portalPage + "?tab=" + hid + '&messageFwd=' + encodeURI(data.message);
         else {
             let message = 'Payment succeeded, ' + data.rows_upd + ' memberships and other items updated';
-            window.location = this.#portalPage + '?messageFwd=' + encodeURI(message);
+            window.location = this.#portalPage + "?tab=" + hid + '&messageFwd=' + encodeURI(message);
         }
     }
 
@@ -1583,6 +1583,7 @@ class Portal {
         document.getElementById(tabname + '-tab').style =
             "border-width: 4px 4px; border-color: var(--bs-primary); border-radius: 20px 20px 0px 0px; border-bottom: 0px;";
         document.getElementById(tabname + '-pane').classList.add("active", "show");
+        hid = tabname;
     }
 }
 
