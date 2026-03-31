@@ -795,11 +795,13 @@ class Portal {
         this.#paySelectedList = [];
         this.#selectIds = {};
         this.#selectMems = {};
+        let unpaids = 0;
         for (let i = 0; i < membershipsPurchased.length; i++) {
             let mem = membershipsPurchased[i];
             if (mem.status != 'unpaid')
                 continue;
 
+            unpaids++;
             mem.payThis = 1;
             this.#payAllList.push(make_copy(mem));
             mem.payThis = 0;
@@ -820,7 +822,7 @@ class Portal {
         </div>
 `;
         }
-        if (membershipsPurchased.length > 1) {
+        if (unpaids > 1) {
             html += `
     <div class="row mt-3 mb-2">
         <div class="col-sm-2" style="text-align: right"><button class="btn btn-sm btn-primary pt-0 pb-0" id="partialPayBTN"
