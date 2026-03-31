@@ -106,7 +106,7 @@ class ConfigEditor {
         }
         this.#toc += '</ul>\n';
         this.#tocLevel = 0;
-        this.#configDiv.innerHTML = '<div class="row mt-4"><div class="col-sm-auto"><h2>*** Table of Contents***</h2></div>\n' +
+        this.#configDiv.innerHTML = '<div class="row mt-4"><div class="col-sm-auto"><h2>*** Table of Contents***</h2></div></div>\n' +
             '<div class="row"><div class="col-sm-12">' + this.#toc + '</div></div>\n' +
             '<div class="row"><div class="col-sm-1"><h4>Legend:</h4></div>\n' +
             '<div class="col-sm-auto ms-1 me-1" style="background-color: rgb(255, 255, 220);"><h4>Required Parameter</h4></div>' +
@@ -575,5 +575,14 @@ class ConfigEditor {
         this.#saveBtnB.innerHTML = 'Save';
         this.#discardBtnT.disabled = true;
         this.#discardBtnB.disabled = true;
+    }
+
+    scrollTOC() {
+        this.#configDiv.scrollIntoView({block: 'start', inline: 'nearest', behavior: 'instant'});
+    }
+
+    scrollMenu() {
+        let menu = document.getElementById('regInfo');
+        menu.scrollIntoView({block: 'start', inline: 'nearest', behavior: 'instant'});
     }
 }

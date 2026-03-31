@@ -372,6 +372,14 @@ draw_fileManagerModals($authToken);
                         <button type='button' class='btn btn-secondary btn-sm' id='discardBTNb' onclick='configEditor.discard();' disabled>Discard
                             Changes</button>
                     </div>
+                    <div class='col-sm-auto'>
+                        <button type='button' class='btn btn-secondary btn-sm' id='discardBTNb' onclick='configEditor.scrollTOC();'>Scroll to
+                            Table of Contents</button>
+                    </div>
+                    <div class='col-sm-auto'>
+                        <button type='button' class='btn btn-secondary btn-sm' id='discardBTNb' onclick='configEditor.scrollMenu();'>Scroll to
+                            Main Menu</button>
+                    </div>
                 </div>
             </div>
         </div>
