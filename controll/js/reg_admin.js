@@ -807,7 +807,24 @@ function changeRegsData(data, rowdata) {
     // now have retrieved the memberships for this perid (person) and the rowdata is the actual row involved, display all the memberships with checkboxes
     // and options
 
-    changeMemberships = data.memberships;
+    changeMemberships = [];
+    // find rowdata in changeMemberships and move that row to the front
+    for (let i = 0; i < data.memberships.length; i++) {
+        let membership = data.memberships[i];
+        if (membership.id == rowdata.badgeId) {
+            changeMemberships.push(membership);
+            break;
+        }
+    }
+    // now add the rest
+    for (let i = 0; i < data.memberships.length; i++) {
+        let membership = data.memberships[i];
+        if (membership.id != rowdata.badgeId) {
+            changeMemberships.push(membership);
+        }
+    }
+
+
     let enableEdit = limitConid >= (conid - 1) && limitConid < (conid + 1);
     let disableConidLimit = limitConid < conid;
     let disableChanges = disableConidLimit ? ' disabled' : '';
@@ -816,7 +833,8 @@ function changeRegsData(data, rowdata) {
         rowdata.type != 'donation' && rowdata.type != 'wsfs') ? 1 : 0;
     let numRolloverEligible = (rowdata.status == 'paid' && (rowdata.pcount  == null || rowdata.pcount == 0) &&
         rowdata.type != 'donation' && rowdata.category != 'freebie') ? 1 : 0;
-    let numDonateEligible = (rowdata.status == 'paid' && rowdata.price > 0 && (rowdata.pcount  == null || rowdata.pcount == 0) &&
+    let numDonateEligible = ((rowdata.status == 'paid' || rowdata.status == 'unpaid') && rowdata.paid > 0 &&
+        rowdata.price > 0 && (rowdata.pcount  == null || rowdata.pcount == 0) &&
         rowdata.type != 'donation' && rowdata.type != 'wsfs') ? 1 :0;
     let numRefundEligible = (rowdata.status == 'paid' && (rowdata.pcount  == null || rowdata.pcount == 0)
         && rowdata.price > 0) ? 1 :0;
@@ -845,7 +863,7 @@ function changeRegsData(data, rowdata) {
         <div class="col-sm-1" style="text-align: right;">Paid</div>
         <div class="col-sm-1" style="text-align: right;">Disc.</div>
         <div class="col-sm-1">Status</div>
-    </div>
+    </div>    
     <div class="row">
         <div class="col-sm-1 text-primary" style="text-align: right;">
             <input type="checkbox" id="m-` + rowdata.badgeId + `" value="Y" checked>
@@ -866,27 +884,27 @@ function changeRegsData(data, rowdata) {
     </div>
 `;
 
-    for (let i = 0; i < changeMemberships.length; i++) {
+    for (let i = 1; i < changeMemberships.length; i++) {
         let membership = changeMemberships[i];
-        if (membership.id == rowdata.badgeId)
-            continue;
+        //if (membership.id == rowdata.badgeId)
+        //    continue;
 
         if ((membership.pcount == null || membership.pcount == 0) && rowdata.type != 'donation' && rowdata.type != 'wsfs' &&
             rowdata.category != 'freebie') {
             numTransferEligible++;
             changeMemberships[i].transferEligible = true;
         } else {
-            changeMemberships[i].transferEligible = true;
+            changeMemberships[i].transferEligible = false;
         }
-        if (membership.status == 'paid' && (membership.pcount == null || membership.pcount == 0) && membership.memType != 'donation' &&
+        if (membership.status == 'paid' && (membership.pcount == null || membership.pcount == 0) && membership.type != 'donation' &&
             rowdata.category != 'freebie') {
             numRolloverEligible++;
             changeMemberships[i].rolloverEligible = true;
         } else {
             changeMemberships[i].rolloverEligible = false;
         }
-        if (membership.status == 'paid' && membership.price > 0 && (membership.pcount == null || membership.pcount == 0) &&
-            membership.memType != 'donation' && membership.memType != 'wsfs') {
+        if ((membership.status == 'paid' || membership.status == 'unpaid') && membership.price > 0 && membership.paid > 0 &&
+            (membership.pcount == null || membership.pcount == 0) && membership.type != 'donation' && membership.type != 'wsfs') {
             numDonateEligible++;
             changeMemberships[i].donateEligible = true;
         } else {
@@ -1072,14 +1090,13 @@ function changeTransfer() {
         registrationList += changeItem.id + ':' + changeItem.label + '  ';
     }
 
+    if (message != '') {
+        show_message(message, 'error', 'changeMessageDiv');
+        return;
+    }
     if (changeList.length == 0) {
         message += "Nothing to change";
         show_message(message, 'warn', 'changeMessageDiv');
-        return;
-    }
-
-    if (message != '') {
-        show_message(message, 'error', 'changeMessageDiv');
         return;
     }
 
@@ -1318,14 +1335,14 @@ function changeRollover() {
             ageList[memAge] = 1;
     }
 
-    if (changeList.length == 0) {
-        message += "Nothing to change";
-        show_message(message, 'warn', 'changeMessageDiv');
+    if (message != '') {
+        show_message(message, 'error', 'changeMessageDiv');
         return;
     }
 
-    if (message != '') {
-        show_message(message, 'error', 'changeMessageDiv');
+    if (changeList.length == 0) {
+        message += "Nothing to change";
+        show_message(message, 'warn', 'changeMessageDiv');
         return;
     }
 
@@ -1456,14 +1473,14 @@ function changeDonate() {
         changeList.push(changeItem.id);
     }
 
-    if (changeList.length == 0) {
-        message += "Nothing to change";
-        show_message(message, 'warn', 'changeMessageDiv');
+    if (message != '') {
+        show_message(message, 'error', 'changeMessageDiv');
         return;
     }
 
-    if (message != '') {
-        show_message(message, 'error', 'changeMessageDiv');
+    if (changeList.length == 0) {
+        message += "Nothing to change";
+        show_message(message, 'warn', 'changeMessageDiv');
         return;
     }
 
@@ -1509,6 +1526,42 @@ function changeDonate() {
 //// Refund start
 // changeRefund - validate / start the refund process
 function changeRefund() {
+    clear_message();
+    clear_message('changeMessageDiv');
+    transferSearchDiv.hidden = true;
+    editRegDiv.hidden = true;
+    // check which ones need to be ignored
+    let message = '';
+    changeList = [];
+    for (let i = 0; i < changeMemberships.length; i++) {
+        let changeItem = changeMemberships[i];
+        let checked = document.getElementById('m-' + changeItem.id).checked;
+        if (!checked)
+            continue;
+
+        if (changeItem.pcount > 0) {
+            message += "Cannot refund " + changeItem.id + " as it has been printed.<br/>";
+            continue;
+        }
+        if (!changeItem.refundEligible) {
+            message += "Cannot refund " + changeItem.id + " as that type/category of membership cannot be transferred.<br/>";
+            continue;
+        }
+
+        changeList.push(changeItem.id);
+    }
+
+    if (changeList.length == 0) {
+        message += "Nothing to refund";
+        show_message(message, 'warn', 'changeMessageDiv');
+        return;
+    }
+
+    if (message != '') {
+        show_message(message, 'error', 'changeMessageDiv');
+        return;
+    }
+
     show_message("Not Yet", 'warn', 'changeMessageDiv');
 }
 //// Refund End
