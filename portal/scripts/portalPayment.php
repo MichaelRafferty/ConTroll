@@ -228,6 +228,11 @@ if ($amount > 0) {
         'preTaxAmt' => $preTaxAmount,
         'taxAmt' => $taxAmount,
         'total' => $amount,
+        'price' => null,
+        'badges' => null,
+        'change' => 0,
+        'externalType' => '',
+        'desc' => 'Online CC Pmt',
     );
 
 // call the credit card processor to make the payment
