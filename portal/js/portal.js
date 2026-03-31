@@ -820,7 +820,8 @@ class Portal {
         </div>
 `;
         }
-        html += `
+        if (membershipsPurchased.length > 1) {
+            html += `
     <div class="row mt-3 mb-2">
         <div class="col-sm-2" style="text-align: right"><button class="btn btn-sm btn-primary pt-0 pb-0" id="partialPayBTN"
             onClick="portal.makeOrder(null, 2);" disabled>
@@ -832,7 +833,7 @@ class Portal {
         </div>
     </div>
     <div class="row mt-1 mb-2" id="paySelectedPlanRow" hidden>
-        <div class="col-sm-2" style="text-align: right"><button class="btn btn-sm btn-primary pt-0 pb-0" id="partialPayBTN"
+        <div class="col-sm-2" style="text-align: right"><button class="btn btn-sm btn-primary pt-0 pb-0" id="partialPayBTNPlan"
             onClick="portal.buildPlan(2);">
             Make Plan for Selected
         </button></div>
@@ -841,6 +842,9 @@ class Portal {
                 <span id="partialPayDue1">` + this.#currencyFmt.format(Number(this.#partialPayAmt).toFixed(2)) + `</span></b>
         </div>
     </div>
+`
+        }
+        html += `
     <div class="row mt-1 mb-2">
         <div class="col-sm-2" style="text-align: right"><button class="btn btn-sm btn-primary pt-0 pb-0"
             onClick="portal.makeOrder(null);">Pay All</button></div>
@@ -884,7 +888,11 @@ class Portal {
         balId = document.getElementById('partialPayDue2');
         if (balId) balId.innerHTML = Number(this.#partialPayAmt).toFixed(2);
 
-        document.getElementById('partialPayBTN').disabled = this.#partialPayAmt == 0;
+        let btn = document.getElementById('partialPayBTN');
+        if (btn) {
+            btn = this.#partialPayAmt == 0;
+            document.getElementById('partialPayBTNPlan').disabled = this.#partialPayAmt == 0;
+        }
         this.#paySelectedList = [];
         for (let idkey of Object.keys(this.#selectMems)) {
             let tag = this.#selectIds[idkey];
