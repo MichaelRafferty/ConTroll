@@ -254,7 +254,7 @@ LEFT OUTER JOIN newperson np ON tp.newperid = np.id
 LEFT OUTER JOIN perinfo rp ON r.perid = rp.id
 LEFT OUTER JOIN newperson rn ON r.newperid = rn.id
 WHERE
-    status IN  ('unpaid', 'paid', 'plan', 'upgraded') AND
+    status IN  ('unpaid', 'paid', 'plan', 'upgraded', 'donated') AND
     r.conid >= ? AND (r.perid = ? OR r.newperid = ?)
 ORDER BY m.sort_order, create_date;
 EOS;
@@ -431,7 +431,7 @@ WITH ppl AS (
         IFNULL(tp.perid, t.perid) AS transPerid,
         IFNULL(tp.newperid, t.newperid) AS transNewPerid, t.type AS transactionType
     FROM perinfo p
-    LEFT OUTER JOIN reg r ON p.id = r.perid AND r.conid >= ? AND status IN  ('unpaid', 'paid', 'plan', 'upgraded')
+    LEFT OUTER JOIN reg r ON p.id = r.perid AND r.conid >= ? AND status IN  ('unpaid', 'paid', 'plan', 'upgraded', 'donated')
     LEFT OUTER JOIN memLabel m ON m.id = r.memId
     LEFT OUTER JOIN memCategories mc ON m.memCategory = mc.memCategory
     LEFT OUTER JOIN ageList a ON m.memAge = a.ageType AND r.conid = a.conid
@@ -465,7 +465,7 @@ WITH ppl AS (
         IFNULL(tp.perid, t.perid) AS transPerid,
         IFNULL(tp.newperid, t.newperid) AS transNewPerid, t.type AS transactionType
     FROM newperson p
-    LEFT OUTER JOIN reg r ON p.id = r.newperid AND r.conid >= ? AND status IN  ('unpaid', 'paid', 'plan', 'upgraded')
+    LEFT OUTER JOIN reg r ON p.id = r.newperid AND r.conid >= ? AND status IN  ('unpaid', 'paid', 'plan', 'upgraded', 'donated')
     LEFT OUTER JOIN memLabel m ON m.id = r.memId
     LEFT OUTER JOIN memCategories mc ON mc.memCategory = m.memCategory
     LEFT OUTER JOIN ageList a ON m.memAge = a.ageType AND r.conid = a.conid
@@ -519,7 +519,7 @@ WITH ppl AS (
         IFNULL(tp.perid, t.perid) AS transPerid,
         IFNULL(tp.newperid, t.newperid) AS transNewPerid, t.type AS transactionType
     FROM perinfo p
-    LEFT OUTER JOIN reg r ON p.id = r.perid AND r.conid >= ? AND status IN  ('unpaid', 'paid', 'plan', 'upgraded')
+    LEFT OUTER JOIN reg r ON p.id = r.perid AND r.conid >= ? AND status IN  ('unpaid', 'paid', 'plan', 'upgraded', 'donated')
     LEFT OUTER JOIN memLabel m ON m.id = r.memId
     LEFT OUTER JOIN memCategories mc ON mc.memCategory = m.memCategory
     LEFT OUTER JOIN ageList a ON m.memAge = a.ageType AND r.conid = a.conid
@@ -554,7 +554,7 @@ WITH ppl AS (
         IFNULL(tp.perid, t.perid) AS transPerid,
         IFNULL(tp.newperid, t.newperid) AS transNewPerid, t.type AS transactionType
     FROM newperson p
-    LEFT OUTER JOIN reg r ON p.id = r.newperid AND r.conid >= ? AND status IN  ('unpaid', 'paid', 'plan', 'upgraded')
+    LEFT OUTER JOIN reg r ON p.id = r.newperid AND r.conid >= ? AND status IN  ('unpaid', 'paid', 'plan', 'upgraded', 'donated')
     LEFT OUTER JOIN memLabel m ON m.id = r.memId
     LEFT OUTER JOIN memCategories mc ON mc.memCategory = m.memCategory
     LEFT OUTER JOIN ageList a ON m.memAge = a.ageType AND r.conid = a.conid

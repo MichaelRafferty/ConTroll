@@ -446,6 +446,9 @@ EOS;
            if ($expired) {
                $expiredPrefix = '<span class="text-danger">Expired: ';
                $expiredSuffix = '</span>';
+           } else if ($membership['status'] == 'donated') {
+               $expiredPrefix = 'Donated ';
+               $expiredSuffix = '';
            } else {
                $expiredPrefix = '';
                $expiredSuffix = '';
