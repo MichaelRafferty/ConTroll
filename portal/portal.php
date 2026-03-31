@@ -535,7 +535,6 @@ WITH ppl AS (
         p.legalName, p.pronouns, p.address, p.addr_2, p.city, p.state, p.zip, p.country,
         'N' AS banned, NULL AS creation_date, NULL AS update_date, '' AS change_notes, 'Y' AS active, p.currentAgeConId, p.currentAgeType,
         p.managedBy, p.managedByNew,
-        p.managedBy, p.managedByNew,
         TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
         r.conid, r.status, r.memId, r.create_date, r.id AS regid, m.memCategory, m.memType, m.memAge, m.shortname, m.label, mc.variablePrice,
         r.price AS actPrice, IFNULL(r.paid, 0.00) AS actPaid, r.couponDiscount AS actCouponDiscount,
