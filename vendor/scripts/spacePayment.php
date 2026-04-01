@@ -277,7 +277,7 @@ for ($num = 0; $num < $includedMembershipsMax; $num++) {
         if ($val != '' && ($field == 'fname' || $field == 'lname')) {
             $nonefound = false;
         } else {
-            if ($required) {
+            if ($required && $val == '') {
                 $notfound[] = $membership_names[$field];
                 $allrequired = false;
             }
@@ -321,7 +321,7 @@ for ($num = 0; $num < $additionalMembershipsMax; $num++) {
         if ($val != '' && ($field == 'fname' || $field == 'lname')) {
             $nonefound = false;
         } else {
-            if ($required) {
+            if ($required && $val == '') {
                 $notfound[] = $membership_names[$field];
                 $allrequired = false;
             }
@@ -336,10 +336,10 @@ for ($num = 0; $num < $additionalMembershipsMax; $num++) {
             $additionalMemberships++;
         }
         continue;
-        // some required data is missing
-        $missing_msg .= 'Additional Membership ' . $num + 1 . ' is missing ' . implode(',', $notfound) . "<br/>\n";
-        $valid = false;
     }
+    // some required data is missing
+    $missing_msg .= 'Additional Membership ' . $num + 1 . ' is missing ' . implode(',', $notfound) . "<br/>\n";
+    $valid = false;
 }
 
 // check email addresses

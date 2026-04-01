@@ -1524,10 +1524,10 @@ class PosCart {
         let rownum = null;
         let el;
         let field;
-        let fieldno
+        let fieldno;
+        let review_editable_fields = pos.getReviewEditableFields();
         for (rownum in this.#cartPerinfo) {
             // update all the fields on the review page
-            let review_editable_fields = pos.getReviewEditableFields();
             for (fieldno in review_editable_fields) {
                 field = review_editable_fields[fieldno];
                 el = document.getElementById('c' + rownum + '-' + field);
@@ -1563,8 +1563,8 @@ class PosCart {
         return this.#unpaidRows;
     }
 
-    // update selected element in the country pulldown from the review data screen to the cart
-    setCountrySelect() {
+    // update selected element in the pulldowns in the review data screen from the cart
+    setReviewedSelect() {
         let rownum;
         let row;
         let selid;
@@ -1573,6 +1573,11 @@ class PosCart {
             row = this.#cartPerinfo[rownum];
             selid = document.getElementById('c' + rownum + '-country');
             selid.value = row.country;
+            if (row.currentAgeType && row.currentAgeType != 'all') {
+                selid = document.getElementById('c' + rownum + '-age');
+                if (selid)
+                    selid.value = row.currentAgeType;
+            }
         }
         cart.drawCart();
     }

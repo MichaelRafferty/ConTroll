@@ -66,6 +66,7 @@ $config_vars['locale'] = $locale;
 $config_vars['currency'] = $currency;
 $config_vars['tokenStatus'] = $authToken->checkToken();
 $config_vars['rolloverYears'] = getConfValue('controll', 'priorRolloverYears', 2);
+$config_vars['bundleMemberships'] = getConfValue('con', 'bundlememberships', 0) == 1 ? 'Y' : 'N';
 ?>
 <?php bs_tinymceModal();
 // edit memList entry modal

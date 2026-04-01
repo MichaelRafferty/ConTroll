@@ -67,3 +67,7 @@ function makePurchase(token, label) {
     console.log(label);
     pos.onlineCCEntered(token, label);
 }
+
+function countryChange() {
+    console.log("TODO: add country Change/USPS check");
+}
