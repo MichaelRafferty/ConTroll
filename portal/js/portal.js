@@ -601,7 +601,7 @@ class Portal {
             show_message(data.message);
             this.#editPersonModal.hide();
             if (data.rows_upd > 0) {
-                window.location = this.#portalPage + '?messageFwd=' + encodeURI(data.message);
+                window.location = this.#portalPage + "?tab=" + hid + '&messageFwd=' + encodeURI(data.message);
             }
         }
     }
@@ -742,7 +742,7 @@ class Portal {
                         this.addMembership(config.id, config.idType);
                 }
             } else if (data.rows_upd > 0) {
-                window.location = this.#portalPage + '?messageFwd=' + encodeURI(data.message);
+                window.location = this.#portalPage + "?tab=" + hid + '&messageFwd=' + encodeURI(data.message);
             }
         }
     }

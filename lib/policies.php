@@ -123,14 +123,17 @@ function drawPoliciesDisplay($policies, $personPolicies, $id) {
         $required = $policy['required'];
         $description = replaceVariables($policy['description']);
         if (array_key_exists($name,$personPolicies) && $personPolicies[$name] == 'Y')
-            $box = '✅';
+            $box = '✅:';
         else
-            $box = $required == 'Y' ? '❌' : '✖' ;
+            $box = $required == 'Y' ? '❌:' : '✖:' ;
         ?>
         <div class='row'>
-            <div class='col-sm-12'>
+            <div class='col-sm-auto'>
+                <?php echo $box; ?>
+            </div>
+            <div class="col-sm-auto">
                 <p class='text-body'>
-                    <?php echo "$box: $prompt"; ?></span>
+                    <?php echo $prompt; ?></span>
                     <?php if ($description != '') { ?>
                     <span class="small"><a href='javascript:void(0)' onClick='$("#<?php echo $id . '_' . $name; ?>Tip").toggle()'>
                     <img src="/lib/infoicon.png" alt="click this info icon for more information" style="max-height: 25px;"/>

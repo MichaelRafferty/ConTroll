@@ -85,14 +85,17 @@ function drawInterestsDisplay($interests, $personInterests, $id) {
         $name = $interest['interest'];
         $description = replaceVariables($interest['description']);
         if (array_key_exists($name,$personInterests) && $personInterests[$name] == 'Y')
-            $box = '✅';
+            $box = '✅:';
         else
-            $box = '✖';
+            $box = '✖:';
         ?>
         <div class='row'>
-            <div class='col-sm-12'>
+            <div class='col-sm-auto'>
+                <?php echo $box; ?>
+            </div>
+            <div class='col-sm-auto'>
                 <p class='text-body'>
-                    <?php echo "$box: $description"; ?></span>
+                    <?php echo $description; ?>
                 </p>
             </div>
         </div>
