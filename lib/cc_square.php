@@ -445,7 +445,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 } else if (array_key_exists('paid', $badge)) {
                     $amount = round(($badge['price']-$badge['paid']) * 100);
                 } else {
-                    $amount = round(($badge['price'] * 100);
+                    $amount = round($badge['price'] * 100);
                 }
 
                 if (array_key_exists('complete_trans', $badge) && $badge['complete_trans'] > 0 && $amount == 0)
