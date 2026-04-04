@@ -32,7 +32,7 @@ if (!session_start()) {
 }
 
 function bounce_page($new_page) {
-    $url = getConfValue('google','redirect_base') . "/$new_page";
+    $url = getConfValue('controll','redirect_base', '') . "/$new_page";
     header("Location: $url");
 }
 
