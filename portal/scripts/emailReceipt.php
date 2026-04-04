@@ -58,7 +58,7 @@ if (array_key_exists('text', $_POST)) {
 }
 
 // validate the the email address is one we manage or ours
-if ($idType = 'p') {
+if ($loginType == 'p') {
     $emailQ = <<<EOS
 WITH counts AS (
     SELECT count(*) AS matches
@@ -66,7 +66,7 @@ WITH counts AS (
     WHERE id = ? AND email_addr = ?
     UNION
     SELECT count(*) AS matches
-    perinfoIdentities
+    FROM perinfoIdentities
     WHERE perid = ? AND email_addr = ?
     UNION
     SELECT count(*) AS matches
