@@ -319,7 +319,13 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     $totalDiscountable += $item['basePriceMoney'];
                 }
                 $orderLineItems[$lineid] = $item;
-                $orderValue += $badge['price'];
+                if (array_key_exists('balDue', $badge)) {
+                    $orderValue += $badge['balDue'];
+                } else if (array_key_exists('paid', $badge)) {
+                    $orderValue += $badge['price'] - $badge['paid'];
+                } else {
+                    $orderValue += $badge['price'];
+                }
                 $lineid++;
                 $rowno++;
             }

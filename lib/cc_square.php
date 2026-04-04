@@ -442,8 +442,10 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                 $notesData = cc_regNotes($badge, $planName, $results['transid'], $results['custid'], $regid, $rowno);
                 if (array_key_exists('balDue', $badge)) {
                     $amount = round($badge['balDue'] * 100);
-                } else {
+                } else if (array_key_exists('paid', $badge)) {
                     $amount = round(($badge['price']-$badge['paid']) * 100);
+                } else {
+                    $amount = round(($badge['price'] * 100);
                 }
 
                 if (array_key_exists('complete_trans', $badge) && $badge['complete_trans'] > 0 && $amount == 0)
@@ -496,7 +498,13 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
                     ])));
                 }
                 $orderLineitems[$lineid] = $item;
-                $orderValue += $badge['price'];
+                if (array_key_exists('balDue', $badge)) {
+                    $orderValue += $badge['balDue'];
+                } else if (array_key_exists('paid', $badge)) {
+                    $orderValue += $badge['price'] - $badge['paid'];
+                } else {
+                    $orderValue += $badge['price'];
+                }
                 $lineid++;
                 $rowno++;
             }
