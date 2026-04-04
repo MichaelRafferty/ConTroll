@@ -14,9 +14,8 @@ $con = get_con();
 $conid = $con['id'];
 
 $conf = get_conf('con');
-$google = get_conf('google');
 $usps = get_conf('usps');
-$url = $google['redirect_base'];
+$url = getConfValue('controll', 'redirect_base', '/');
 $condata = get_con();
 $startdate = new DateTime($condata['startdate']);
 $ageByDate = $startdate->format('F j, Y');
