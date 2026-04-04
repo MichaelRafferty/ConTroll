@@ -340,7 +340,7 @@ EOS;
             }
             $label = $m['label'];
             $shortname = $m['shortname'];
-            if ($m['status'] == 'unpaid' && ($m['startdate'] > $now || $m['enddate'] < $now))
+            if ($m['status'] == 'unpaid' && ($m['actPaid'] + $m['actCouponDiscount']) == 0 && ($m['startdate'] > $now || $m['enddate'] < $now))
                 $m['expired'] = 1;
 
             if ($m['regid'] != null) {
@@ -610,7 +610,7 @@ EOS;
                 $mp['memAge'] = $p['memAge'];
 
             if (isPrimary($p, $conid)) {
-                if ($p['status'] == 'unpaid' && ($p['startdate'] > $now || $p['enddate'] < $now)) {
+                if ($p['status'] == 'unpaid' && ($p['actPaid'] + $p['actCouponDiscount']) == 0 && ($p['startdate'] > $now || $p['enddate'] < $now)) {
                     $p['expired'] = 1;
                 }
                 $mp['primary'] = $p;
@@ -747,8 +747,7 @@ foreach ($allMemberships as $key => $membership) {
         $totalUnpaid++;
         $due = round($membership['price'] - ($membership['paid'] + $membership['couponDiscount']), 2);
         $totalDue += $due;
-
-        if ($membership['startdate'] > $now || $membership['enddate'] < $now) {
+        if (($membership['actPaid'] + $membership['actCouponDiscount']) == 0 && $membership['startdate'] > $now || $membership['enddate'] < $now) {
             $label = "<span class='text-danger'><b>Expired: </b>$label</span>";
             $membership['expired'] = 1;
             $numExpired++;
@@ -891,7 +890,7 @@ if ($ageType == '') {
 if ($holderPrimary) {
     $holderPrimaryMembership = '<b>' . $holderPrimary['shortname'] . '</b> (' . $holderPrimary['status'] . ')';
     if (array_key_exists('expired', $holderPrimary) && $holderPrimary['expired'] == 1) {
-        $holderPrimaryMembership = "<span class='warn'>Expired: $holderPrimaryMembership</span>";
+        $holderPrimaryMembership = "<span class='warn'>$holderPrimaryMembership</span>";
     }
 } else {
     $holderPrimaryMembership = '&nbsp;';
