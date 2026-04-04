@@ -60,6 +60,14 @@ if ($cartId == null) {
     $cartType = $_POST['cartType'];
 }
 
+// validate we can work with this person
+if (!validateAccess($cartId, $cartType)) {
+    $response['status'] = 'error';
+    $response['message'] = "You do not have permission to access this person's cart.";
+    ajaxSuccess($response);
+    exit();
+}
+
 $currency = getConfValue('con', 'currency', 'USD');
 $locale = getLocale();
 $config_vars = array();
