@@ -811,14 +811,18 @@ class Portal {
             let bal = Number(Number(mem.actPrice) - (Number(mem.actPaid) + Number(mem.actCouponDiscount))).toFixed(2);
             html += `
         <div class="row">
-            <div class="col-sm-1" style="text-align: right"><input type="checkbox" id="other-` +
-                mem.regid + '" name="other-' + mem.regid + '" onChange="portal.choosePayToggle(' + mem.regid + ',' + bal + `);"></div>
-            <div class="col-sm-2">` + mem.purchaserName + `</div>
-            <div class="col-sm-2">` + mem.fullName + `</div>
-            <div class="col-sm-3"><label for="other-` + mem.regid + `">` + mem.label + `</label></div>
-            <div class="col-sm-1" style="text-align: right">` + price + `</div>
-            <div class="col-sm-1" style="text-align: right">` + paid + `</div>
-            <div class="col-sm-1" style="text-align: right">` + this.#currencyFmt.format(bal) + `</div>
+            <div class="col-sm-1" style="text-align: right">
+                <input type="checkbox" id="other-` + mem.regid + '" name="other-' + mem.regid +
+                    '" onChange="portal.choosePayToggle(' + mem.regid + ',' + bal + `, false);">
+            </div>
+            <div class="col-sm-2" onclick="portal.choosePayToggle(` + mem.regid + ',' + bal + ', true);">' + mem.purchaserName + `</div>
+            <div class="col-sm-2" onclick="portal.choosePayToggle(` + mem.regid + ',' + bal + ', true);">' + mem.fullName + `</div>
+            <div class="col-sm-3">
+                <label for="other-` + mem.regid + '">' + mem.label + `</label>
+            </div>
+            <div class="col-sm-1" onclick="portal.choosePayToggle(` + mem.regid + ',' + bal + ', true);" style="text-align: right">' + price + `</div>
+            <div class="col-sm-1" onclick="portal.choosePayToggle(` + mem.regid + ',' + bal + ', true);" style="text-align: right">' + paid + `</div>
+            <div class="col-sm-1" onclick="portal.choosePayToggle(` + mem.regid + ',' + bal + ', true);" style="text-align: right">' + this.#currencyFmt.format(bal) + `</div>
         </div>
 `;
         }
@@ -878,9 +882,14 @@ class Portal {
         document.getElementById('payAllPlanRow').hidden = !plansEligible;
     }
 
-    choosePayToggle(id, bal) {
+    choosePayToggle(id, bal, doToggle = false) {
         let element = document.getElementById('other-' + id);
-        if (element.checked) {
+        let checked = element.checked;
+        if (doToggle) {
+            checked = !checked;
+            element.checked = checked;
+        }
+        if (checked) {
             this.#partialPayAmt += Number(bal);
         } else {
             this.#partialPayAmt -= Number(bal);
