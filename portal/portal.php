@@ -747,7 +747,7 @@ foreach ($allMemberships as $key => $membership) {
         $totalUnpaid++;
         $due = round($membership['price'] - ($membership['paid'] + $membership['couponDiscount']), 2);
         $totalDue += $due;
-        if (($membership['actPaid'] + $membership['actCouponDiscount']) == 0 && $membership['startdate'] > $now || $membership['enddate'] < $now) {
+        if (($membership['actPaid'] + $membership['actCouponDiscount']) == 0 && ($membership['startdate'] > $now || $membership['enddate'] < $now)) {
             $label = "<span class='text-danger'><b>Expired: </b>$label</span>";
             $membership['expired'] = 1;
             $numExpired++;
