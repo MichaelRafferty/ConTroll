@@ -135,7 +135,7 @@ class Cart {
         (rowColor ? "#ffffff" : "#efefef") + `;">` + price +
     `</div>
     <div class="col-sm-10" style="font-size: 130%; font-weight: bold; background-color: ` +
-        (rowColor ? "#ffffff" : "#efefef") + `;">` + memLabel +
+        (rowColor ? "#ffffff" : "#efefef") + `;">` +  (mem.conid != config.conid ? mem.conid + ' ' : '') + memLabel  +
     `</div>
 </div>
 `;
