@@ -95,6 +95,6 @@
     item=conid
     datatype=i
 [where]
-	001="es.item_purchased is not null AND ERT.portalType = 'dealer'"
+	001="es.item_purchased is not null AND ERT.portalType = 'vendor'"
 [sort]
 	001="1,2,4"
