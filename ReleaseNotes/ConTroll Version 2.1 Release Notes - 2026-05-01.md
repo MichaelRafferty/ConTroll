@@ -48,6 +48,7 @@
   * support for access to prior years
   * support for art sales revenue gl information
   * Support for manually sending inventory reminder emails
+  * New report for vendors or artists for a specific conid
 
 ## Portal:
 * New cart with cart descriptions
@@ -74,6 +75,7 @@
 * add offline credit card to art show cashier
 * Add PHP report to upload square log and compare it against ConTroll data for reconcilation
 * Add reminder email to Exhibitors Controll space requests for those who have not added any inventory
+* Add reports for dealers or artists for a conid
 * Add revenue gl code to regions for this year
 * Art Inventory Barcode Scan (new art inventory main level task)
 * Art Inventory Buttons Color change on click (disable/enable)
