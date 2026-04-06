@@ -235,4 +235,19 @@ EOS;
     $response['allMemberships'] = $allMemberships;
 }
 
+if (array_key_exists('updateIgnore', $_POST)) {
+    $updateIgnore = $_POST['updateIgnore'];
+    if ($updateIgnore == 1) {
+        if (isSessionVar('portalProfileChecked')) {
+            $portalProfileChecked = getSessionVar('portalProfileChecked');
+        } else {
+            $portalProfileChecked = array ();
+        }
+
+        $id = $getType . $getId;
+        $portalProfileChecked[$id] = 1;
+        setSessionVar('portalProfileChecked', $portalProfileChecked);
+    }
+}
+
 ajaxSuccess($response);

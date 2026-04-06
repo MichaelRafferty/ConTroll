@@ -141,6 +141,8 @@ if ($policy_upd > 0) {
 
 if (isSessionVar('portalProfileChecked')) {
     $portalProfileChecked = getSessionVar('portalProfileChecked');
+} else {
+    $portalProfileChecked = array();
 }
 
 $id = $currentPersonType . $currentPerson;

@@ -217,9 +217,12 @@ class Portal {
             let dataset = obj.dataset;
             let id = dataset.id;
             let type = dataset.type;
-            _this.editPerson(id, type, true);
-            show_message('Age needs to be verified', "error", 'epMessageDiv');
-            modalCalled = true;
+            let pid = type + id.toString();
+            if ((!alreadyChecked.hasOwnProperty(pid)) || alreadyChecked[pid] == 0) {
+                _this.editPerson(id, type, true, true);
+                show_message('Age needs to be verified', "error", 'epMessageDiv');
+                modalCalled = true;
+            }
         });
 
         // do any people need to have their policies updated for missing policies
@@ -232,7 +235,7 @@ class Portal {
                 let type = dataset.type;
                 let pid = type + id.toString();
                 if ((!alreadyChecked.hasOwnProperty(pid)) || alreadyChecked[pid] == 0) {
-                    _this.editPerson(id, type);
+                    _this.editPerson(id, type, true);
                     show_message('Required Policies are not accepted', "warn", 'epMessageDiv');
                     modalCalled = true;
                 }
@@ -300,7 +303,7 @@ class Portal {
     }
 
     // editPerson - edit a person you manage (or your self)
-    editPerson(id, type, needAge = false) {
+    editPerson(id, type, needIgnore = false, needAge = false) {
         if (this.#editPersonModal == null) {
             show_message('Edit Person is not available at this time', 'warn');
             return;
@@ -319,7 +322,8 @@ class Portal {
             loginType: config.idType,
             getId: id,
             getType: type,
-            memberships: 'Y'
+            memberships: 'Y',
+            updateIgnore: needIgnore ? 1 : 0,
         }
         let script = 'scripts/getPersonInfo.php';
         $.ajax({
