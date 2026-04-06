@@ -1,0 +1,100 @@
+[report]
+	name="conidDealers"
+	auth=exhibitor
+	csvfile="dealers"
+	index=exhibitorNumber
+[F001]
+    name=conid
+    sql=ey.conid
+    title="Conid"
+[F002]
+    name=regionName
+    sql=ER.shortName
+    title="Region Name"
+    minWidth=100
+    filter=true
+[F010]
+    name=exhibitorNumber
+    sql=ery.exhibitorNumber
+    title="Exhibitor Number"
+    align=right
+[F015]
+    name=exhibitorName
+    sql=e.exhibitorName
+    title="Exhibitor Name"
+    minWidth=200
+[F020]
+    name=contactName
+    sql=ey.contactName
+    title="Contact Name"
+    minWidth=200
+[F025]
+    name=address
+    sql=e.addr
+    title="Street Address"
+    minWidth=150
+[F030]
+    name=city
+    sql=e.city
+    title="City"
+    minWidth=100
+[F035]
+    name=state
+    sql=e.state
+    title="State"
+    minWidth=20
+[F040]
+    name=zip
+    sql=e.zip
+    title="Zip"
+    minWidth=10
+[F045]
+    name=salesTaxId
+    sql=e.salesTaxId
+    title="Sales Tax ID"
+    minWidth=80
+[F050]
+    name=exhibitorEmail
+    sql=e.exhibitorEmail
+    title="Email Address"
+    minWidth=200
+[F055]
+    name=exhibitorPhone
+    sql=e.exhibitorPhone
+    title="Phone Number"
+    minWidth=20
+[T001]
+	name=exhibitors
+	alias=e
+[T002]
+	name=exhibitorYears
+	alias=ey
+	join="ey.exhibitorId=e.id AND ey.conid = ?"
+[T003]
+    name=exhibitorRegionYears
+    alias=ery
+    join="ery.exhibitorYearId = ey.id"
+[T004]
+    name=exhibitorSpaces
+    alias=es
+    join="es.exhibitorRegionYear = ery.id"
+[T005]
+    name=exhibitsRegionYears
+    alias=ERY
+    join="ERY.id = ery.exhibitsRegionYearId"
+[T006]
+    name=exhibitsRegions
+    alias=ER
+    join="ER.id = ERY.exhibitsRegion"
+[T007]
+    name=exhibitsRegionTypes
+    alias=ERT
+    join="ERT.regionType = ER.regionType"
+[P001]
+    type=prompt
+    item=conid
+    datatype=i
+[where]
+	001="es.item_purchased is not null AND ERT.portalType = 'dealer'"
+[sort]
+	001="1,2,4"
