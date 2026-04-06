@@ -63,6 +63,7 @@ function page_init($title, $tab, $css, $js, $configVars = null)
     <link rel='icon' type='image/x-icon' href='/lib/favicon.ico'>
     <link href='<?php echo $includes['jquicss'];?>' rel='stylesheet' type='text/css' />
     <link href='<?php echo $includes['bs5css'];?>' rel='stylesheet'/>
+    <link href="csslib/bootstrap-icons.css?v=$controllJSversion" rel='stylesheet' type='text/css' />
     <link href="/css/base.css?v=<?php echo $atJSversion; ?>" rel='stylesheet' type='text/css' />
         <?php  if (isset($css) && $css != null) {
             foreach ($css as $sheet) { ?>
