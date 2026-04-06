@@ -79,20 +79,21 @@ if(!isSessionVar('user')) {
 ?>
 <div class="container-fluid mt-4">
     <form method='POST' class="form-floating">
-        <div class="row">
-            <div class="col-sm-6">
-                <div class='form-floating mb-3'>
-                    <input type='number' name='user' class="no-spinners form-control" min="1" placeholder="Your badge number"  style="width:150px;" required/>
-                    <label for="user">User Badge Id:</label>
-                </div>
+        <div class="row mb-2">
+            <div class="col-sm-2">
+                <label for='user'>User Badge Id:</label>
+            </div>
+            <div class="col-sm-auto">
+                <input type='number' name='user' class="no-spinners" min="1" placeholder="Your badge #"
+                    style="width:180px;" required tabindex="10"/>
             </div>
         </div>
-        <div class="row">
-            <div class="col-sm-6">
-                <div class='form-floating mb-3'>
-                    <input type='password' name='passwd' class="form-control" placeholder="Assigned Password" required/>
-                    <label for='passwd'>Password:</label>
-                </div>
+        <div class="row mb-4">
+            <div class="col-sm-2">
+                <label for='passwd'>Password:</label>
+            </div>
+            <div class='col-sm-auto'>
+                <?php echo eyepwField('passwd', 'passwd', 40, 'Assigned Password', 20); ?>
             </div>
         </div>
         <?PHP echo Draw_Printer_Select(2); ?>
