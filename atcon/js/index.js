@@ -20,6 +20,9 @@ var idval = null;
 
 window.onload = function () {
     pwEyeToggle('passwd');
+    pwEyeToggle('old_password');
+    pwEyeToggle('new_password');
+    pwEyeToggle('confirm_new');
 }
 
 // change_pw: called by the "Change Password" button
