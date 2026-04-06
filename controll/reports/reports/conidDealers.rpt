@@ -17,6 +17,7 @@
     name=exhibitorNumber
     sql=ery.exhibitorNumber
     title="Exhibitor Number"
+    width=100
     align=right
 [F015]
     name=exhibitorName

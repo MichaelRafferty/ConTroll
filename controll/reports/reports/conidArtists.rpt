@@ -18,10 +18,12 @@
     title="Num Entries"
     align=right
     sql="IFNULL(i.items, 0)"
+    width=80
 [F010]
     name=exhibitorNumber
     sql=ery.exhibitorNumber
     title="Exhibitor Number"
+    width=100
     align=right
 [F015]
     name=exhibitorName
