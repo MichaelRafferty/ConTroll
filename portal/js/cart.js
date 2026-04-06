@@ -150,12 +150,11 @@ class Cart {
 `;
                 }
             } else {
-                if (memCategories[mem.memCategory].variablePrice != 'Y') {
+                if (memCategories[mem.memCategory].variablePrice != 'Y')
                     memLabel += ' (' + mem.price + ')';
                 html += '<div class="col-sm-2 mt-1 mb-1"><button id="memBtn-' + mem.id + '" class="btn btn-sm btn-primary h-100 w-100"' +
                     ' onclick="cart.membershipAdd(' + "'" + mem.id + "'" + ')">' +
                     (mem.conid != config.conid ? mem.conid + ' ' : '') + memLabel + '</button></div>' + "\n";
-                }           
             }
         }
         this.#membershipButtonsDiv.innerHTML = html;
