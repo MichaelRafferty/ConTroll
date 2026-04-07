@@ -91,7 +91,7 @@ CASE
 	WHEN mgrP.id IS NOT NULL THEN 'p'
     WHEN mgrN.id IS NOT NULL THEN 'n'
     ELSE null
-END AS managerType, IFNULL(n.managedBy, n.managedByNew) AS managerId
+END AS managerType, IFNULL(n.managedBy, n.managedByNew) AS managerId, mgrN.id AS npidManager, mgrP.id AS ppidManager, mgrN.perid AS ppidPerid
 FROM newperson n
 $cteJoin
 LEFT OUTER JOIN mby ON mby.id = n.id
@@ -129,6 +129,12 @@ if ($unmatchedCnt > 0) {
 
     while ($unL = $unR->fetch_assoc()) {
         $unL['badgename'] = badgeNameDefault($unL['badge_name'], $unL['badgeNameL2'], $unL['first_name'], $unL['last_name']);
+        if ($unL['npidManager'] != null && $unL['ppidManager'] == null && $unL['ppidPerid'] != null) {
+            $unl['managedBy'] = $unL['ppidPerid'];
+            $unL['managedId'] = $unL['ppidPerid'];
+            $unL['managerType'] = 'p';
+        }
+
         $unmatched[] = $unL;
     }
     $unR->free();
