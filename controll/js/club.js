@@ -25,6 +25,7 @@ function getList() {
     url: formUrl,
     method: "GET",
     success: function (data, textStatus, jqXHR) {
+      checkRefresh(data);
       showBadgeList(data['club']);
     }
   });
@@ -94,6 +95,7 @@ function findPerson(form) {
         data: getData,
         success: function (data, textStatus, jqXhr) {
             if(data['error'] != undefined) { console.log(data['error']); }
+            checkRefresh(data);
             displaySearchResults(data, addPerson)
         }
     });
@@ -107,6 +109,7 @@ function addPerson(userid) {
     data: formData,
     method: "POST",
     success: function (data, textStatus, jqXHR) {
+      checkRefresh(data);
       getList();
     }
   });
@@ -121,7 +124,7 @@ function updateReg(form) {
     data: formData,
     method: "POST",
     success: function (data, textStatus, jqXHR) {
-
+      checkRefresh(data);
       getList();
       return false;
     },

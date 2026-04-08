@@ -241,15 +241,17 @@ if ($totalAmountDue > 0) {
         $taxSql = '';
         $taxStr = '';
         $taxValues = [];
+        $taxes = [];
     }
 
     $txnQ = <<<EOS
 INSERT INTO payments(transid, type,category, description, source, pretax, tax, amount, time, cc_approval_code, cashier, 
     cc, nonce, cc_txn_id, txn_time, receipt_url, receipt_id, userPerid, status, ccPaymentId $taxFields)
-VALUES (?,?,'reg',?,'cashier',?,?,?,now(),?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? $taxSql);
+VALUES (?,?,'reg',?,'portal',?,?,?,now(),?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? $taxSql);
 EOS;
     $typestr = 'issdddsissssssiss' . $taxStr;
-    $paramarray = array ($transId, $paymentType, $description, $preTaxAmt, $taxAmt, $approved_amt, $auth, $loginId,
+    $cashier = $loginType == 'p' ? $loginId : null;
+    $paramarray = array ($transId, $paymentType, $description, $preTaxAmt, $taxAmt, $approved_amt, $auth, $cashier,
         $last4, $nonceCode, $paymentId, $txTime, $receiptUrl, $receiptNumber, $loginId, $status, $paymentId);
     $txnid = dbSafeInsert($txnQ, $typestr, array_merge($paramarray, $taxValues));
     $approved_amt = $rtn['amount'];

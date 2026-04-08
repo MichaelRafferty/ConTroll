@@ -58,6 +58,7 @@ function findRegs() {
             if (data.success !== undefined) {
                 show_message(data.success, 'success');
             }
+            checkRefresh(data);
             drawResults(data);
         },
         error: showAjaxError,

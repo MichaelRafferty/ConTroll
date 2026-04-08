@@ -31,14 +31,10 @@ $con = get_conf('con');
 $usps = get_conf('usps');
 $vendor = get_conf('vendor');
 $controll = get_conf('controll');
-$atcon = get_conf('atcon');
 $condata = get_con();
 $conid = $con['id'];
 $conname = $con['conname'];
-if (array_key_exists('inlineinventory', $atcon))
-    $inlineInventory = $atcon['inlineinventory'];
-else
-    $inlineInventory = 1;
+$inlineInventory = getConfValue('atcon', 'inlineinventory', 0);
 
 if (array_key_exists('taxRate', $con))
     $taxRate = $con['taxRate'];
@@ -91,16 +87,12 @@ $config_vars['taxUid'] = $taxUid;
 $config_vars['source'] = 'artpos';
 $config_vars['roomStatus'] = $roomStatus;
 $config_vars['inlineInventory'] = $inlineInventory;
-if (array_key_exists('creditoffline', $atcon)) {
-    $config_vars['creditoffline'] = $atcon['creditoffline'];
-} else {
-    $config_vars['creditoffline'] = 1;
-}
-if (array_key_exists('creditonline', $atcon)) {
-    $config_vars['creditonline'] = $atcon['creditonline'];
-} else {
-    $config_vars['creditonline'] = 0;
-}
+$config_vars['useBarcode'] =
+        (getConfValue('vendor', 'artistBidSheetBarcode', 0) == 1 || getConfValue('vendor', 'artistPriceTagBarcode', 0) == 1) ? 1 : 0;
+
+$config_vars['creditoffline'] = getConfValue('atcon', 'creditoffline', 1);
+$config_vars['creditonline'] = getConfValue('atcon', 'creditonline', 0);
+
 if (isSessionVar('terminal'))
     $config_vars['terminal'] = getSessionVar('terminal')['name'] != 'None' ? 1 : 0;
 else

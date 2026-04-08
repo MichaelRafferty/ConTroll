@@ -25,7 +25,7 @@ EOS;
 
 //drawInterestList - draw the inner block for interest editing
 function drawInterestList($interests, $modal = false, $tabIndexStart = 800) {
-    if ($interests == null) // null? no interests, nothing to draw
+    if ($interests == null || count($interests) == 0) // null? no interests, nothing to draw
         return;
     $tabindex = $tabIndexStart;
     loadCustomText('profile', 'all', getConfValue('portal', 'customtext', 'production'), true);
@@ -65,6 +65,50 @@ function drawInterestList($interests, $modal = false, $tabIndexStart = 800) {
     }
 }
 
+// drawInterestsDisplay: draw a read-only (display only) version of the policies and answers
+function drawInterestsDisplay($interests, $personInterests, $id) {
+    if ($interests == null || count($interests) == 0) // null? no interests, nothing to draw
+        return;
+    loadCustomText('profile', 'all', getConfValue('portal', 'customtext', 'production'), true);
+    $header = returnCustomText('interests/header', 'profile/all/');
+    $footer = returnCustomText('interests/footer', 'profile/all/');
+    if ($header != '') {
+        ?>
+        <div class='row mt-2'>
+            <div class='col-sm-auto'>
+                <?php  echo $header . PHP_EOL; ?>
+            </div>
+        </div>
+        <?php
+    }
+    foreach ($interests as $interest) {
+        $name = $interest['interest'];
+        $description = replaceVariables($interest['description']);
+        if (array_key_exists($name,$personInterests) && $personInterests[$name] == 'Y')
+            $box = '✅';
+        else
+            $box = '✖';
+        ?>
+        <div class='row'>
+            <div class='col-sm-12'>
+                <p class='text-body'>
+                    <?php echo "$box: $description"; ?></span>
+                </p>
+            </div>
+        </div>
+        <?php
+    }
+    if ($footer != '') {
+        ?>
+        <div class='row'>
+            <div class='col-sm-auto'>
+                <?php  echo $footer . PHP_EOL; ?>
+            </div>
+        </div>
+        <?php
+    }
+}
+
 // updateMemberInterests - update/insert the interests
 function updateMemberInterests($conid, $personId, $personType, $loginId, $loginType) {
     $interests = getInterests();
@@ -73,9 +117,13 @@ function updateMemberInterests($conid, $personId, $personType, $loginId, $loginT
     }
 
     $newInterests = json_decode($_POST['newInterests'], true);
-    $existingInterests = json_decode($_POST['existingInterests'], true);
-    if ($existingInterests == null)
-        $existingInterests = array ();
+    if (array_key_exists('existingInterests', $_POST)) {
+        $existingInterests = json_decode($_POST['existingInterests'], true);
+        if ($existingInterests == null)
+            $existingInterests = array ();
+    }
+    else
+        $existingInterests = array();
 
 // find the differences in the interests to update the record
 

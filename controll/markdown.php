@@ -1,11 +1,11 @@
 <?php
 require_once "lib/base.php";
-// show markdown pages
-$need_login = google_init("page");
+require_once 'lib/sessionAuth.php';
 
-$page = "reports";
-if(!$need_login or !checkAuth($need_login['sub'], $page)) {
-    bounce_page("index.php");
+$page = 'reports';
+$authToken = new authToken('web');
+if (!$authToken->isLoggedIn() || !$authToken->checkAuth($page)) {
+    bounce_page('index.php');
 }
 
 page_init($page,
@@ -13,7 +13,7 @@ page_init($page,
                    ),
     /* js  */ array(
                    ),
-              $need_login);
+              $authToken);
 // get md text either as string or file path
     if (array_key_exists('mdf', $_REQUEST)) {
         $mdf = $_REQUEST['mdf'];

@@ -17,14 +17,15 @@ require_once 'lib/base.php';
 require_once '../lib/policies.php';
 require_once '../lib/profile.php';
 require_once '../lib/interests.php';
-//initialize google session
-$need_login = google_init('page');
+require_once 'lib/sessionAuth.php';
 
 $page = 'people';
-if(!$need_login or !checkAuth($need_login['sub'], $page)) {
+$authToken = new authToken('web');
+if (!$authToken->isLoggedIn() || !$authToken->checkAuth($page)) {
     bounce_page('index.php');
 }
 
+$regAdmin = $authToken->checkAuth('reg_admin');
 $cdn = getTabulatorIncludes();
 page_init($page,
     /* css */ array($cdn['tabcss'],
@@ -38,8 +39,9 @@ page_init($page,
                     'js/people_unmatched.js',
                     'js/people_add.js',
                     'js/people_find.js',
+                    'jslib/profile.js',
               ),
-                    $need_login);
+                    $authToken);
 
 $con_conf = get_conf('con');
 $controll = get_conf('controll');
@@ -47,6 +49,10 @@ $conid = $con_conf['id'];
 $usps = get_conf('usps');
 $policies = getPolicies();
 $interests = getInterests();
+[$ageList, $ageListIdx] = getAgeList($conid);
+$condata = get_con();
+$startdate = new DateTime($condata['startdate']);
+$ageByDate = $startdate->format('F j, Y');
 
 $useUSPS = false;
 if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
@@ -58,11 +64,14 @@ $config_vars['conid'] = $conid;
 $config_vars['useUSPS'] = $useUSPS;
 $config_vars['policies'] = $policies;
 $config_vars['interests'] = $interests;
-$config_vars['required'] = getConfValue('reg','required', 'addr');;
+$config_vars['required'] = getConfValue('reg','required', 'addr');
+$config_vars['tokenStatus'] = $authToken->checkToken();
 ?>
 <script type='text/javascript'>
     var config = <?php echo json_encode($config_vars); ?>;
-    var policies = <?php echo json_encode($policies, JSON_FORCE_OBJECT | JSON_HEX_QUOT); ?>
+    var policies = <?php echo json_encode($policies, JSON_FORCE_OBJECT | JSON_HEX_QUOT); ?>;
+    var ageList = <?php echo json_encode($ageList); ?>;
+    var ageListIdx = <?php echo json_encode($ageListIdx); ?>;
 </script>
 <?php 
     //bs_tinymceModal();
@@ -105,7 +114,7 @@ $config_vars['required'] = getConfValue('reg','required', 'addr');;
                     </div>
                     <div class='row mt-1'>
                         <div class='col-sm-auto text-bg-secondary'>
-                            Additional Query:
+                            Search For Additional Possible Matches:
                         </div>
                         <div class='col-sm-auto text-bg-secondary'>
                             <input type='text' size='80' id='matchAdditionalQuery' name='matchAdditionalQuery' , placeholder='Name/PID/email'/>
@@ -377,6 +386,45 @@ $config_vars['required'] = getConfValue('reg','required', 'addr');;
                         </div>
                     </div>
                     <div class='row'>
+                        <div class='col-sm-1 border border-dark ps-1 pe-1'>Current Age</div>
+                        <div class='col-sm-3 border border-dark pe-0'>
+                            <div class='container-fluid'>
+                                <div class='row justify-content-between'>
+                                    <div class='col-sm-auto ms-0 me-0 ps-0 pe-0' id='matchAge'></div>
+                                    <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
+                                        <button class='btn btn-sm btn-light pt-0 pb-0 mt-0 mb-0 justify-content-end'
+                                                type='button' onclick="unmatchedPeople.copy('matchAge')">
+                                            &gt;&gt;
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class='col-sm-5 border border-dark ps-1 pe-1'>
+                            <select id='age'>
+                                <option value=''>--Select Age Bracket--</option>
+                                <?php
+                                    foreach ($ageList as $age) {
+                                        echo '<option value="' . escape_quotes($age['ageType']) . '">' . $age['shortname'] . ' [' . $age['label'] . ']</option>';
+                                    }
+                                ?>
+                            </select>
+                        </div>
+                        <div class='col-sm-3 border border-dark ps-0'>
+                            <div class='container-fluid'>
+                                <div class='row'>
+                                    <div class='col-sm-auto ms-0 me-0 ps-0 pe-0'>
+                                        <button class='btn btn-sm btn-light pt-0 pb-0 mt-0 mb-0 me-2 justify-content-end'
+                                                type='button' onclick="unmatchedPeople.copy('newAge')">
+                                            &lt;&lt;
+                                        </button>
+                                    </div>
+                                    <div class='col-sm-auto ms-0 me-0 ps-0 pe-0' id='newAge'></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class='row'>
                         <div class='col-sm-1 border border-dark ps-1 pe-1'>Phone</div>
                         <div class='col-sm-3 border border-dark pe-0'>
                             <div class='container-fluid'>
@@ -540,20 +588,40 @@ $config_vars['required'] = getConfValue('reg','required', 'addr');;
             </div>
             <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
                 <div class='container-fluid'>
+                    <form id='f_editPerson' class='form-floating' action='javascript:void(0);'>
                     <div class="row mt-2">
                         <div class="col-sm-12"><h2 class="size=h3">Profile/Policies</h2></div>
                     </div>
 <?php
-drawEditPersonBlock($conid, $useUSPS, $policies, 'find', true, true, '', array(), 200, true, 'f_');
+drawEditPersonBlock($con_conf, $useUSPS, $policies, 'find', true, true, $ageByDate,
+        array(), $ageListIdx,200, true, 'f_');
 drawInterestList($interests, true);
 ?>
-                    <div class='row mt-3' id="managerHdr">
+                    </form>
+<?php if ($regAdmin) { ?>
+                    <div class='row mt-3' id='renumberHdr'>
+                        <div class='col-sm-auto'><h2 class='size=h3'>Renumber This Person (change their perid)</h2></div>
+                    </div>
+                    <div class='row mt-2' id='reunmberRow'>
+                        <div class='col-sm-auto'>
+                            Existing Perid: <span id="renumberExistingPerid"></span></div>
+                        <div class="col-sm-auto ps-3"><label for="f_renumberNewPerid">Renumbered Perid: </label></div>
+                        <div class='col-sm-auto'>
+                            <input type='number' class='no-spinners' inputmode='numeric' id='f_renumberNewPerid' name='f_renumberNew'>
+                        </div>
+                        <div class='col-sm-auto'><i>Leave blank (empty) to not change the perid</i></div>
+                    </div>
+<?php } ?>
+                    <div class="row mt-3" id="managerHdr">
                         <div class='col-sm-auto'><h2 class='size=h3'>Manager (Disassociate manager and save before adding people managed by this person)
                             </h2></div>
                     </div>
+                    <div class="row mt-2" id="managerRowTxt">
+                        <div class="col-sm-auto" id="managerRowCol">Managed By Text Placeholder</div>
+                    </div>
                     <div class="row mt-2" id="managerRow">
-                        <div class="col-sm-auto"><button class="btn btn-sm btn-warning" type="button" onclick="findPerson.disassociate();
-">Disassociate</button></div>
+                        <div class="col-sm-auto"><button class="btn btn-sm btn-warning" type="button"
+                             onclick="findPerson.disassociate();">Disassociate</button></div>
                         <div class="col-sm-auto"><input type="number" class='no-spinners' inputmode='numeric' id="f_managerId" name="f_managerId"></div>
                         <div class='col-sm-auto'>
                             <button class='btn btn-sm btn-secondary' type='button' onclick='findPerson.findManager();'>Find New Manager</button>
@@ -638,6 +706,9 @@ drawInterestList($interests, true);
             <div class='modal-footer'>
                 <button class='btn btn-sm btn-secondary' type='button' data-bs-dismiss='modal'>Cancel</button>
                 <button class='btn btn-sm btn-primary' type='button' id='updateExisting' onClick='findPerson.saveEdit()'>Update Existing Person</button>
+                <button class='btn btn-sm btn-warning' type='button' id='updateExistingOverride' onClick='findPerson.saveEdit2()'>
+                    Overrride Validation Checks and Update Existing Person
+                </button>
             </div>
             <div id='find_edit_message' class='mt-4 p-2'></div>
         </div>
@@ -684,6 +755,7 @@ drawInterestList($interests, true);
             <div class="row mt-2">
                 <div class="col-sm-12" id="unmatchedH1Div"><H1 class="h3"><b>Unmatched New People: <span id="unmatchedCount">0</span></b></H1></div>
             </div>
+            <div class='row' id='unmatchedSpecific'></div>
             <div class="row mt-2">
                 <div class="col-sm-12" id="unmatchedTable" name="unmatchedTable"></div>
             </div>
@@ -716,17 +788,25 @@ drawInterestList($interests, true);
     </div>
     <div class='tab-pane fade' id='add-pane' role='tabpanel' aria-labelledby='add-tab' tabindex='0'>
         <div class='container-fluid'>
+            <div class="p-3" style="background-color: lightcyan;">
             <div class='row mt-2'>
                 <div class='col-sm-12' id='addH1Div'><H1 class='h3'><b>Add Person</b></H1></div>
             </div>
+            <form id='a_editPerson' class='form-floating' action='javascript:void(0);'>
 <?php
-    drawEditPersonBlock($con_conf, true, $policies, 'addPerson', false, true, '', null, 100, true, 'a_');
+    drawEditPersonBlock($con_conf, true, $policies, 'addPerson', false, true,$ageByDate,
+            null, $ageListIdx, 100, true, 'a_');
 ?>
+            </form>
+            </div>
         <div class="row mt-2">
             <div class="col-sm-auto">
+                <button class='btn btn-sm btn-secondary' type='button' onclick='addPerson.clearForm();'>Clear Add Person Form</button>
                 <button class="btn btn-sm btn-primary" type='button' onclick="addPerson.checkExists();">Check If Already Exists</button>
-                <button class="btn btn-sm btn-secondary" type='button' onclick="addPerson.clearForm();">Clear Add Person Form</button>
                 <button class="btn btn-sm btn-secondary" type='button' id="addPersonBTN" onclick="addPerson.addPerson();" disabled>Add New Person</button>
+                <button class="btn btn-sm btn-warning" type='button' id="addPersonOverrideBTN" onclick="addPerson.addPerson2();" disabled>
+                    Overrride Validation Checks and Add New Person
+                </button>
             </div>
         </div>
         <div class='row mt-2'>

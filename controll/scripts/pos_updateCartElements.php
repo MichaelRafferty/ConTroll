@@ -7,21 +7,22 @@
 
 require_once '../lib/base.php';
 require_once '../../lib/policies.php';
-
-$check_auth = google_init('ajax');
-$perm = 'registration';
-
-$response = array('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
-
-if ($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
-    RenderErrorAjax('Authentication Failed');
-    exit();
-}
+require_once '../lib/sessionAuth.php';
 
 // use common global Ajax return functions
 global $returnAjaxErrors, $return500errors;
 $returnAjaxErrors = true;
 $return500errors = true;
+
+$perm = 'registration';
+$response = array ('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
+$authToken = new authToken('script');
+$response['tokenStatus'] = $authToken->checkToken();
+if (!$authToken->isLoggedIn() || !$authToken->checkAuth($perm)) {
+    $response['error'] = 'Authentication Failed';
+    ajaxSuccess($response);
+    exit();
+}
 
 $con = get_conf('con');
 $conid = $con['id'];
@@ -35,11 +36,12 @@ if ($ajax_request_action != 'updateCartElements') {
 }
 
 $user_id = $_POST['user_id'];
-if ($user_id != $_SESSION['user_id']) {
+$user_perid = $authToken->getPerid();
+if ($user_id != $user_perid) {
     ajaxError("Invalid credentials passed");
     return;
 }
-$user_perid = $_SESSION['user_perid'];
+
 
 if (!array_key_exists('source', $_POST)) {
     $message_error = 'Source Missing';
@@ -78,22 +80,22 @@ $total_paid = 0;
 $insPerinfoSQL = <<<EOS
 INSERT INTO perinfo(last_name,first_name,middle_name,suffix,legalName,pronouns,email_addr,phone,
                     badge_name,badgeNameL2, address,addr_2,city,state,zip,country,
-                    open_notes,banned,active,contact_ok,creation_date,updatedBy)
+                    open_notes,banned,active,contact_ok,creation_date, currentAgeType, currentAgeConId, updatedBy)
 VALUES (IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),
         IFNULL(?,''),IFNULL(?,''), IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),IFNULL(?,''),
-        ?,'N','Y','Y',now(),?);
+        ?,'N','Y','Y',now(), ?, ?, ?);
 EOS;
-$insPDt = 'sssssssssssssssssi';
+$insPDt = 'ssssssssssssssssssii';
 
 $updPerinfoSQL = <<<EOS
 UPDATE perinfo SET
     last_name=IFNULL(?,''),first_name=IFNULL(?,''),middle_name=IFNULL(?,''),suffix=IFNULL(?,''),legalName=IFNULL(?,''), pronouns=IFNULL(?,''),
     email_addr=IFNULL(?,''),phone=IFNULL(?,''),badge_name=IFNULL(?,''),badgeNameL2=IFNULL(?,''),
     address=IFNULL(?,''),addr_2=IFNULL(?,''), city=IFNULL(?,''),state=IFNULL(?,''),zip=IFNULL(?,''),country=IFNULL(?,''),
-    open_notes=?,banned='N',update_date=NOW(),active='Y',updatedBy=?
+    open_notes=?,banned='N',update_date=NOW(),active='Y',currentAgeType=?, currentAgeConId=?,updatedBy=?
 WHERE id = ?;
 EOS;
-$updPDt = 'sssssssssssssssssii';
+$updPDt = 'ssssssssssssssssssiii';
 
 $insRegSQL = <<<EOS
 INSERT INTO reg(conid,perid,price,couponDiscount,paid,create_user,create_trans,memId,coupon,create_date,status, complete_trans)
@@ -156,11 +158,18 @@ $master_perid = $cart_perinfo[0]['perid'];
 // if master_perid < 0, then this is an insert and we need to update the perid to continue
 if ($master_perid < 0) {
     $cartrow = $cart_perinfo[0];
+    if (array_key_exists('currentAgeType', $cartrow) && $cartrow['currentAgeType'] != '') {
+        $currentAgeType = $cartrow['currentAgeType'];
+        $currentAgeConId = $conid;
+    } else {
+        $currentAgeType = null;
+        $currentAgeConId = null;
+    }
     $paramarray = array(
         $cartrow['last_name'],$cartrow['first_name'],$cartrow['middle_name'],$cartrow['suffix'],$cartrow['legalName'],$cartrow['pronouns'],
         $cartrow['email_addr'],$cartrow['phone'],$cartrow['badge_name'],$cartrow['badgeNameL2'],
         $cartrow['address_1'],$cartrow['address_2'],$cartrow['city'],$cartrow['state'],$cartrow['postal_code'],$cartrow['country'],
-        $cartrow['open_notes'],$user_perid
+        $cartrow['open_notes'],$currentAgeType, $currentAgeConId,$user_perid
     );
 
     $new_perid = dbSafeInsert($insPerinfoSQL, $insPDt, $paramarray);
@@ -214,6 +223,13 @@ for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
 
     // remove l-r from phone
     $cartrow['phone'] = trim(removeLROveride($cartrow['phone']));
+    if (array_key_exists('currentAgeType', $cartrow) && $cartrow['currentAgeType'] != '') {
+        $currentAgeType = $cartrow['currentAgeType'];
+        $currentAgeConId = $conid;
+    } else {
+        $currentAgeType = null;
+        $currentAgeConId = null;
+    }
 
     if ($cartrow['perid'] <= 0) {
         // insert this row
@@ -221,7 +237,7 @@ for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
             $cartrow['last_name'],$cartrow['first_name'],$cartrow['middle_name'],$cartrow['suffix'],$cartrow['legalName'],$cartrow['pronouns'],
             $cartrow['email_addr'],$cartrow['phone'],$cartrow['badge_name'],$cartrow['badgeNameL2'],
             $cartrow['address_1'],$cartrow['address_2'],$cartrow['city'],$cartrow['state'],$cartrow['postal_code'],$cartrow['country'],
-            $open_notes,$user_perid
+            $open_notes,$currentAgeType, $currentAgeConId,$user_perid
         );
 
         $new_perid = dbSafeInsert($insPerinfoSQL, $insPDt, $paramarray);
@@ -237,8 +253,8 @@ for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
         $paramarray = array(
             $cartrow['last_name'],$cartrow['first_name'],$cartrow['middle_name'],$cartrow['suffix'],$cartrow['legalName'],$cartrow['pronouns'],
             $cartrow['email_addr'],$cartrow['phone'],$cartrow['badge_name'],$cartrow['badgeNameL2'],
-            $cartrow['address_1'],$cartrow['address_2'],$cartrow['city'],$cartrow['state'],$cartrow['postal_code'],$cartrow['country'],$open_notes,
-            $user_perid, $cartrow['perid']
+            $cartrow['address_1'],$cartrow['address_2'],$cartrow['city'],$cartrow['state'],$cartrow['postal_code'],$cartrow['country'],
+            $open_notes,$currentAgeType, $currentAgeConId, $user_perid, $cartrow['perid']
         );
         $per_upd += dbSafeCmd($updPerinfoSQL, $updPDt, $paramarray);
     }
@@ -255,6 +271,78 @@ for ($row = 0; $row < sizeof($cart_perinfo); $row++) {
             $mbr['coupon'] = null;
         if (!array_key_exists('couponDiscount', $mbr))
             $mbr['couponDiscount'] = 0;
+
+        // is this row a bundle to de-compose
+        if (str_starts_with($mbr['label'], 'Bundle: ')) {
+            $newMemberships = $memberships;
+            // get the underlying mem record
+            $bQ = <<<EOS
+SELECT notes
+FROM memList
+WHERE id = ?;
+EOS;
+            $bR = dbSafeQuery($bQ, 'i', array($mbr['memId']));
+            if ($bR === false || $bR->num_rows != 1) {
+                $response['message'] .= '<br/>Error adding membership ' . $mbr['id'] . ' unable to find bundle information, seek assistance.';
+                $response['status'] = 'error';
+                ajaxSuccess($response);
+                exit();
+            }
+            $bundle = $bR->fetch_row()[0];
+            $bR->free();
+            $bQ = <<<EOS
+SELECT id, conid, price, label, memCategory, memType, memAge
+FROM memList
+WHERE id = ?;
+EOS;
+            $bundle = explode(',', substr($bundle, 0, strpos($bundle, '/')));
+            $numSplit = 0;
+            $mbrPerid = $mbr['perid'];
+            foreach ($bundle as $reg) {
+                $bR = dbSafeQuery($bQ, 'i', array ($reg));
+                if ($bR === false || $bR->num_rows != 1) {
+                    $response['message'] .= "<br/>Error adding bundle membership $reg, continuing with the remaining transactions.";
+                    continue;
+                }
+                $bL = $bR->fetch_assoc();
+                $bR->free();
+
+                if ($numSplit == 0) {
+                    $mbr['conid'] = $bL['conid'];
+                    $mbr['memId'] = $bL['id'];
+                    $mbr['price'] = $bL['price'];
+                    $mbr['label'] = $bL['label'];
+                    $mbr['memCategory'] = $bL['memCategory'];
+                    $mbr['memType'] = $bL['memType'];
+                    $mbr['memAge'] = $bL['memAge'];
+                    $mbr['paid'] = 0;
+                    $mbr['couponDiscount'] = 0;
+                    $mbr['coupon'] = null;
+                    $mbr['perid'] = $mbrPerid;
+                    $newMemberships[$mrow] = $mbr;
+                } else {
+                    $nmbr = $mbr;
+                    $nmbr['conid'] = $bL['conid'];
+                    $nmbr['memId'] = $bL['id'];
+                    $nmbr['price'] = $bL['price'];
+                    $nmbr['label'] = $bL['label'];
+                    $nmbr['memCategory'] = $bL['memCategory'];
+                    $nmbr['memType'] = $bL['memType'];
+                    $nmbr['memAge'] = $bL['memAge'];
+                    $nmbr['paid'] = 0;
+                    $nmbr['couponDiscount'] = 0;
+                    $nmbr['coupon'] = null;
+                    $nmbr['perid'] = $mbrPerid;
+                    $nmbr['regid'] = -1;
+                    array_splice($newMemberships, $mrow + $numSplit, 0, array($nmbr));
+                    // since array numbers are not kept, reorder the array
+                }
+                $numSplit++;
+            }
+            $memberships = [];
+            foreach ($newMemberships as $nmbr)
+                $memberships[] = $nmbr;
+        }
 
         // if this row persists
         if (!array_key_exists('toDelete', $mbr)) {

@@ -216,6 +216,7 @@ class Users {
             url: "scripts/admin_searchUsers.php",
             data: postData,
             success: function (data, textstatus, jqxhr) {
+                checkRefresh(data);
                 users.showSearch(data);
             },
             error: showAjaxError,
@@ -309,6 +310,7 @@ class Users {
                     this.savebtn.disabled = false;
                     return;
                 }
+                checkRefresh(data);
                 if (data['message'] !== undefined) {
                     show_message(data['message'], 'success');
                 }

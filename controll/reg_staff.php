@@ -1,17 +1,17 @@
 <?php
 require_once "lib/base.php";
 require_once "../lib/notes.php";
-//initialize google session
-$need_login = google_init("page");
+require_once 'lib/sessionAuth.php';
 
-$page = "reg_staff";
-if(!$need_login or !checkAuth($need_login['sub'], $page)) {
-    bounce_page("index.php");
+$page = 'reg_staff';
+$authToken = new authToken('web');
+if (!$authToken->isLoggedIn() || !$authToken->checkAuth($page)) {
+    bounce_page('index.php');
 }
 
-$finance = checkAuth($need_login['sub'], 'finance');
-$reg_admin = checkAuth($need_login['sub'], 'reg_admin');
-$admin = checkAuth($need_login['sub'], 'admin');
+$finance = $authToken->checkAuth('finance');
+$regAdmin = $authToken->checkAuth('reg_admin');
+$admin = $authToken->checkAuth('admin');
 
 $cdn = getTabulatorIncludes();
 page_init($page,
@@ -35,7 +35,7 @@ page_init($page,
                     'jslib/notes.js',
                     'jslib/configEdit.js',
               ),
-                    $need_login);
+                    $authToken);
 
 $oneoff = getConfValue('con', 'oneoff', 0);
 if ($oneoff == null || $oneoff == '')
@@ -58,12 +58,15 @@ $config_vars['debug'] = getConfValue('debug', 'controll_regadmin', 0);
 $config_vars['conid'] = $conid;
 $config_vars['multiOneDay'] = $multiOneDay;
 $config_vars['oneoff'] = $oneoff;
-$config_vars['userid'] = $_SESSION['user_perid'];
+$config_vars['userid'] = $authToken->getPerid();
 $config_vars['finance'] = $finance ? 1 : 0;
 $config_vars['ae'] = $admin ? 1 : 0;
 $config_vars['source'] = 'regstaff';
 $config_vars['locale'] = $locale;
 $config_vars['currency'] = $currency;
+$config_vars['tokenStatus'] = $authToken->checkToken();
+$config_vars['rolloverYears'] = getConfValue('controll', 'priorRolloverYears', 2);
+$config_vars['bundleMemberships'] = getConfValue('con', 'bundlememberships', 0) == 1 ? 'Y' : 'N';
 ?>
 <?php bs_tinymceModal();
 // edit memList entry modal
@@ -83,86 +86,144 @@ $config_vars['currency'] = $currency;
                     <div class='row mt-4'>
                         <div class='col-sm-12'><h4>Edit the <span id='editMemListName'>memListName</span> and it's time series</h4></div>
                     </div>
-                    <div class='row mt-2'>
-                        <div class='col-sm-auto'><b>Membership ID:</b></div>
-                        <div class='col-sm-auto' id="editMemListID"></div>
-                        <div class='col-sm-auto'><b>Con ID:</b></div>
-                        <div class='col-sm-auto' id='editMemListConID'></div>
-                    </div>
-                    <div class='row mt-1'>
-                        <div class='col-sm-1'>Category:</div>
-                        <div class='col-sm-8' id="editMemListCategory"></div>
-                    </div>
-                    <div class='row mt-1'>
-                        <div class='col-sm-1'>Type:</div>
-                        <div class='col-sm-8' id='editMemListType'></div>
-                    </div>
-                    <div class='row mt-1'>
-                        <div class='col-sm-1'>Age:</div>
-                        <div class='col-sm-8' id='editMemListAge'></div>
-                    </div>
-                    <div class='row mt-1'>
-                        <div class='col-sm-1'>Short Label:</div>
-                        <div class='col-sm-8'>
-                            <input type="text" name='editMemListLabel' id='editMemListLabel' placeholder="Short Label"
-                                   onchange='memListModalDirty = true;' size="64" maxlength="64" />
-                        </div>
-                    </div>
-                    <div class='row mt-1'>
-                        <div class='col-sm-1'>Price:</div>
-                        <div class='col-sm-8'>
-                            <input type='number' class='no-spinners' inputmode='numeric' id='editMemListPrice' name="editMemListPrice" min="0"
-                                   style='text-align: right; width: 6em;' onchange='priceChange(editListMasterRow)'/>
-                        </div>
-                    </div>
-                    <div class='row mt-1'>
-                        <div class='col-sm-1'>Start Date:</div>
-                        <div class='col-sm-2'>
-                            <input type="datetime-local" id='editMemListStart' name='editMemListStart'
-                                   onchange='startdateChange(editListMasterRow)'/>
-                        </div>
-                        <div class='col-sm-1'>End Date:</div>
+                    <div class="row">
+                        <div class="col-sm-7">
+                            <div class="container-fluid">
+                                <div class='row mt-2'>
+                                    <div class='col-sm-auto'><b>Membership ID:</b></div>
+                                    <div class='col-sm-auto' id="editMemListID"></div>
+                                    <div class='col-sm-auto'><b>Con ID:</b></div>
+                                    <div class='col-sm-auto' id='editMemListConID'></div>
+                                </div>
+                                <div class='row mt-1'>
+                                    <div class='col-sm-2'>Category:</div>
+                                    <div class='col-sm-10' id="editMemListCategory"></div>
+                                </div>
+                                <div class='row mt-1'>
+                                    <div class='col-sm-2'>Type:</div>
+                                    <div class='col-sm-10' id='editMemListType'></div>
+                                </div>
+                                <div class='row mt-1'>
+                                    <div class='col-sm-2'>Age:</div>
+                                    <div class='col-sm-10' id='editMemListAge'></div>
+                                </div>
+                                <div class='row mt-1'>
+                                    <div class='col-sm-2'>Short Label:</div>
+                                    <div class='col-sm-10'>
+                                        <input type="text" name='editMemListLabel' id='editMemListLabel' placeholder="Short Label"
+                                               onchange='memListModalDirty = true;' size="64" maxlength="64" />
+                                    </div>
+                                </div>
+                                <div class='row mt-1'>
+                                    <div class='col-sm-2'>Price:</div>
+                                    <div class='col-sm-10'>
+                                        <input type='number' class='no-spinners' inputmode='numeric' id='editMemListPrice' name="editMemListPrice" min="0"
+                                               style='text-align: right; width: 6em;' onchange='priceChange(editListMasterRow)'/>
+                                    </div>
+                                </div>
+                                <div class='row mt-1'>
+                                    <div class='col-sm-2'>Start Date:</div>
+                                    <div class='col-sm-4'>
+                                        <input type="datetime-local" id='editMemListStart' name='editMemListStart'
+                                               onchange='startdateChange(editListMasterRow)'/>
+                                    </div>
+                                    <div class='col-sm-2'>End Date:</div>
 
-                        <div class='col-sm-2'>
-                            <input type='datetime-local' id='editMemListEnd' name='editMemListEnd' onchange='enddateChange(editListMasterRow)'/>
+                                    <div class='col-sm-4'>
+                                        <input type='datetime-local' id='editMemListEnd' name='editMemListEnd' onchange='enddateChange(editListMasterRow)'/>
+                                    </div>
+                                </div>
+                                <div class='row mt-1'>
+                                    <div class='col-sm-2'>At-Con:</div>
+                                    <div class='col-sm-auto'>
+                                        <select name="editMemListAtcon" id="editMemListAtcon" onchange='atconChange(editListMasterRow)'>
+                                            <option value='N'>No</option>
+                                            <option value='Y'>Yes</option>
+                                        </select>
+                                    </div>
+                                    <div class='col-sm-auto'>OnLine:</div>
+                                    <div class='col-sm-auto'>
+                                        <select name='editMemListOnline' id='editMemListOnline' onchange="onlineChange(editListMasterRow)">
+                                            <option value='N'>No</option>
+                                            <option value='Y'>Yes</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            <?php if (getConfValue('con', 'bundlememberships', 0) == 1) { ?>
+                                <div class='row mt-1'>
+                                    <div class='col-sm-2'>Bundle:</div>
+                                    <div class='col-sm-10'>
+                                        <select name='editMemListBundle' id='editMemListBundle' onchange='bundleChanged();'>
+                                            <option value='N'>No</option>
+                                            <option value='Y'>Yes</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class='row mt-1'>
+                                    <div class='col-sm-2'>Contains:</div>
+                                    <div class="col-sm-auto">
+                                        <button class='btn btn-sm btn-primary' type='button'
+                                                onclick="editBundleContains('editMemListBundleContains', 'editMemListStart', 'editMemListEnd');">
+                                            Select Contents
+                                        </button>
+                                    </div>
+                                    <div class='col-sm-7'>
+                                        <input type='text' name='editMemListBundleContains' id='editMemListBundleContains' placeholder='List of IDs in bundle'
+                                               onchange='bundleContentsChanged();' size='64' maxlength='256'/>
+                                    </div>
+                                </div>
+                            <?php } ?>
+                                <div class='row mt-1'>
+                                    <div class='col-sm-2'>Notes:</div>
+                                    <div class='col-sm-10'>
+                                        <textarea id="editMemListNotes" name="editMemListNotes" cols="80" rows="5" onchange="memListModalDirty = true;">
+                                        </textarea>
+                                    </div>
+                                </div>
+                                <div class='row mt-1'>
+                                    <div class='col-sm-2'>Gen. Ledger</div>
+                                    <div class='col-sm-auto'>Num:</div>
+                                    <div class='col-sm-auto'>
+                                        <input type='text' name='editMemListGLNum' id='editMemListGLNum' placeholder='GL Num' size='16' maxlength='16'
+                                           onchange='glNumChange(editListMasterRow);'
+                                        />
+                                    </div>
+                                    <div class='col-sm-auto'>Label:</div>
+                                    <div class='col-sm-auto'>
+                                        <input type='text' name='editMemListGLLabel' id='editMemListGLLabel' placeholder='GL Label' size='42' maxlength='64'
+                                            onchange='glLabelChange(editListMasterRow);'
+                                        />
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <div class='row mt-1'>
-                        <div class='col-sm-1'>At-Con:</div>
-                        <div class='col-sm-auto'>
-                            <select name="editMemListAtcon" id="editMemListAtcon" onchange='atconChange(editListMasterRow)'>
-                                <option value='N'>No</option>
-                                <option value='Y'>Yes</option>
-                            </select>
-                        </div>
-                        <div class='col-sm-auto'>OnLine:</div>
-                        <div class='col-sm-auto'>
-                            <select name='editMemListOnline' id='editMemListOnline' onchange="onlineChange(editListMasterRow)">
-                                <option value='N'>No</option>
-                                <option value='Y'>Yes</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class='row mt-1'>
-                        <div class='col-sm-1'>Notes:</div>
-                        <div class='col-sm-11'>
-                            <textarea id="editMemListNotes" name="editMemListNotes" cols="120" rows="5" onchange="memListModalDirty = true;">
-                            </textarea>
-                        </div>
-                    </div>
-                    <div class='row mt-1'>
-                        <div class='col-sm-1'>Gen. Ledger</div>
-                        <div class='col-sm-auto'>Num:</div>
-                        <div class='col-sm-auto'>
-                            <input type='text' name='editMemListGLNum' id='editMemListGLNum' placeholder='GL Num' size='16' maxlength='16'
-                               onchange='glNumChange(editListMasterRow);'
-                            />
-                        </div>
-                        <div class='col-sm-auto'>Label:</div>
-                        <div class='col-sm-auto'>
-                            <input type='text' name='editMemListGLLabel' id='editMemListGLLabel' placeholder='GL Label' size='64' maxlength='64'
-                                onchange='glLabelChange(editListMasterRow);'
-                            />
+                        <div class="col-sm-5">
+                            <div class='container-fluid' id='editMemListBundleDiv'>
+                                <div class='row mb-2'>
+                                    Select which memId's are contained in this bundle:
+                                </div>
+                                <div class='row'>
+                                    <div class='col-sm-12 m-0 p-0' id='editMemlistBundleTable'></div>
+                                </div>
+                                <div class='row mt-1' id='editMemlistBundleButtons' name='editMemlistBundleButtons'>
+                                    <div class='col-sm-auto'>
+                                        <button class='btn btn-secondary btn-sm' type='button' onclick="closeBundleSel();">Cancel Changes</button>
+                                    </div>
+                                    <div class='col-sm-auto'>
+                                        <button class='btn btn-secondary btn-sm' type='button' onclick="setBundleSel(false);">
+                                            Clear All Items
+                                        </button>
+                                    </div>
+                                    <div class='col-sm-auto'>
+                                        <button class='btn btn-secondary btn-sm' type='button' onclick="setBundleSel(true);">
+                                            Select All Items
+                                        </button>
+                                    </div>
+                                    <div class='col-sm-auto'>
+                                        <button class='btn btn-primary btn-sm' type='button' onclick="applyBundleSel();">Apply Selections</button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class='row mt-4'>
@@ -178,11 +239,11 @@ $config_vars['currency'] = $currency;
                         </div>
                     </div>
                     <div class='row mt-2'>
-                        <div class="col-sm-1">
-                            <div class="container-fluid">
+                        <div class="col-sm-1 p-0 m-0">
+                            <div class="container-fluid p-0 m-0">
                                 <div class="row">
-                                    <div class="col-sm-6" style='text-align: right;'>Sort</div>
-                                    <div class="col-sm-6" style='text-align: right;'>ID</div>
+                                    <div class="col-sm-6" style='text-align: center;'>Sort</div>
+                                    <div class="col-sm-6" style='text-align: center;'>ID</div>
                                 </div>
                             </div>
                         </div>
@@ -199,8 +260,8 @@ $config_vars['currency'] = $currency;
         $bgColor = $i % 2 ? 'light-cyan' : '#e0e0e0';
 ?>
                     <div class='row mt-2' style="background-color: <?php echo $bgColor;?>">
-                        <div class='col-sm-1'>
-                            <div class='container-fluid'>
+                        <div class='col-sm-1 ps-0 pe-0 ms-0 me-0'>
+                            <div class='container-fluid p-0 m-0'>
                                 <div class='row'>
                                     <div class='col-sm-6' style='text-align: right;'>
                                         <input type='number' class='no-spinners' inputmode='numeric' id='EMLTS<?php echo $i; ?>_Sort'
@@ -238,12 +299,28 @@ $config_vars['currency'] = $currency;
                             />
                         </div>
                         <div class='col-sm-3'>
-                            <input type='text' id='EMLTS<?php echo $i;?>_glLabel' placeholder='GL Label' size='45' maxlength='64'
+                            <input type='text' id='EMLTS<?php echo $i;?>_glLabel' placeholder='GL Label' size='40' maxlength='64'
                                    onchange="tsGlLabelChange(<?php echo $i;?>)"
                             />
                         </div>
                     </div>
 <?php
+        if (getConfValue('con', 'bundlememberships', 0) == 1) { ?>
+                    <div class='row mt-2' name='TScontains' style="background-color: <?php echo $bgColor;?>">
+                        <div class="col-sm-2"></div>
+                        <div class='col-sm-auto'>Contains:</div>
+                        <div class='col-sm-auto'>
+                            <button class='btn btn-sm btn-primary' type='button'
+                                    onclick="editBundleContains(<?php
+                                        echo "'EMLTS" . $i . "_contains', 'EMLTS" . $i . "_Start', 'EMLTS" . $i . "_End');";
+                                    ?>">Select This Rows Contents Only</button>
+                        </div>
+                        <div class='col-sm-auto'>
+                            <input type='text' name='editMemListBundleContains' id='EMLTS<?php echo $i;?>_contains' placeholder='List of IDs in bundle'
+                                   onchange=tsBundleContentsChanged(<?php echo $i;?>) size='64' maxlength='256'/>
+                        </div>
+                    </div>
+        <?php }
     }
 ?>
                 </div>
@@ -528,10 +605,14 @@ $config_vars['currency'] = $currency;
                         <div class="col-sm-12 m-0 p-0" id="ruleStepDiv"></div>
                     </div>
                     <div class='row mt-2'>
-                        <div class='col-sm-auto' id='steps-buttons'>
+                        <div class='col-sm-8' id='steps-buttons'>
                             <button id='steps-undo' type='button' class='btn btn-secondary btn-sm' onclick='rules.undoSteps(); return false;' disabled>Undo</button>
                             <button id='steps-redo' type='button' class='btn btn-secondary btn-sm' onclick='rules.redoSteps(); return false;' disabled>Redo</button>
                             <button id='steps-addrow' type='button' class='btn btn-secondary btn-sm' onclick='rules.addrowSteps(); return false;'>Add New</button>
+                        </div>
+                        <div class='col-sm-4 text-end' id='steps-buttons'>
+                            <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
+                            <button class='btn btn-sm btn-primary' id='editRuleSaveBtnTop' onClick='rules.editRuleSave()'>Save Changes</button>
                         </div>
                     </div>
                     <div class='row mt-2'>
@@ -551,7 +632,7 @@ $config_vars['currency'] = $currency;
             </div>
             <div class='modal-footer'>
                 <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
-                <button class='btn btn-sm btn-primary' id='editRuleSaveBtn' onClick='rules.editRuleSave()'>Save Changes</button>
+                <button class='btn btn-sm btn-primary' id='editRuleSaveBtnBottom' onClick='rules.editRuleSave()'>Save Changes</button>
             </div>
         </div>
     </div>
@@ -575,12 +656,9 @@ $config_vars['currency'] = $currency;
                         <div class='col-sm-6'>
                             <div class='container-fluid' id='editRuleStepFieldDiv'>
                                 <div class='row'>
-                                    <div class='col-sm-2'>
-                                        <label for='sName'>Rule Name:</label>
+                                    <div class='col-sm-2'>Rule Name:
                                     </div>
-                                    <div class='col-sm-10'>
-                                        <input type='text' id='sName' name='sName' size='20' maxlength='16' placeholder='step name'/>
-                                    </div>
+                                    <div class='col-sm-10' id='sName' name="sName"></div>
                                 </div>
                                 <div class='row mt-1'>
                                     <div class='col-sm-2'>
@@ -588,7 +666,7 @@ $config_vars['currency'] = $currency;
                                     </div>
                                     <div class='col-sm-10'>
                                         <input type='number' class='no-spinners' inputmode='numeric' id='sStep' name='sStem'
-                                               size='10' min="1" max="999" placeholder='Step #'/>
+                                               size='10' min="1" max="999" placeholder='Step #' onchange="rules.ruleStepOnChange();"/>
                                     </div>
                                 </div>
                                 <div class='row mt-1'>
@@ -596,7 +674,7 @@ $config_vars['currency'] = $currency;
                                         <label for='sRuleType'>Rule Type:</label>
                                     </div>
                                     <div class='col-sm-10'>
-                                        <select id='sRuleType' name='sRuleType'>
+                                        <select id='sRuleType' name='sRuleType' onchange='rules.ruleStepOnChange();'>
                                             <option value="">--Select Rule Type--</option>
                                             <option value="needAny">
                                                 Need Any (One reg must match any [or within group, and between groups])
@@ -623,7 +701,7 @@ $config_vars['currency'] = $currency;
                                     <div class='col-sm-2'>
                                         <label for='sApplyTo'>Apply To:</label>
                                     </div>
-                                    <div class='col-sm-10'>
+                                    <div class='col-sm-10' onchange='rules.ruleStepOnChange();'>
                                         <select id='sApplyTo' name='sApplyTo'>
                                             <option value=''>--Select Apply To--</option>
                                             <option value='person'>Person</option>
@@ -687,6 +765,12 @@ $config_vars['currency'] = $currency;
                         </div>
                     </div>
                     <div class='row mt-2'>
+                        <div class='col-sm-12 text-end'>
+                            <button class='btn btn-sm btn-secondary' onClick='rules.editRuleStepSave(false);'>Cancel</button>
+                            <button class='btn btn-sm btn-primary' id='editRuleStepSaveBtnTop' onClick='rules.editRuleStepSave(true);'>Save Changes</button>
+                        </div>
+                    </div>
+                    <div class='row mt-2'>
                         <div class='col-sm-12'><h4>Memberships used by the this step</h4></div>
                     </div>
                     <div class='row mt-2'>
@@ -697,7 +781,7 @@ $config_vars['currency'] = $currency;
             </div>
             <div class='modal-footer'>
                 <button class='btn btn-sm btn-secondary' onClick='rules.editRuleStepSave(false);'>Cancel</button>
-                <button class='btn btn-sm btn-primary' id='editRuleSaveBtn' onClick='rules.editRuleStepSave(true);'>Save Changes</button>
+                <button class='btn btn-sm btn-primary' id='editRuleStepSaveBtnBottom' onClick='rules.editRuleStepSave(true);'>Save Changes</button>
             </div>
         </div>
     </div>
@@ -906,7 +990,7 @@ $config_vars['currency'] = $currency;
                 role='tab' aria-controls='nav-registrationlist' aria-selected='true' onclick="settab('registrationlist-pane');">Registration List
         </button>
     </li>
-    <?php if ($reg_admin) { ?>
+    <?php if ($regAdmin) { ?>
     <li class='nav-item' role='presentation'>
         <button class='nav-link' id='consetup-tab' data-bs-toggle='pill' data-bs-target='#consetup-pane' type='button' role='tab'
                 aria-controls='nav-consetup' aria-selected='false' onclick="settab('consetup-pane');">Current Convention Setup
@@ -940,7 +1024,7 @@ $config_vars['currency'] = $currency;
                 aria-controls='nav-interests' aria-selected='false' onclick="settab('interests-pane');">Interests
         </button>
     </li>
-    <?php if ($reg_admin) { ?>
+    <?php if ($regAdmin) { ?>
     <li class='nav-item' role='presentation'>
         <button class='nav-link' id='rules-tab' data-bs-toggle='pill' data-bs-target='#rules-pane' type='button' role='tab'
                 aria-controls='nav-rules' aria-selected='false' onclick="settab('rules-pane');">Membership Rules
@@ -963,13 +1047,25 @@ $config_vars['currency'] = $currency;
 <?php
     if ($badgeListFilter == "top")
         drawFilters();
+    $viewPrior = getConfValue('controll', 'viewPriorLimit', $conid)
 ?>
     <div class='container-fluid'>
         <div class="row">
-            <div class="col-sm-1">Restrict To:</div>
+            <div class="col-sm-1"><label for="regListSearch">Restrict To:</label></div>
             <div class="col-sm-auto">
-                <input type="text" size="64" maxlength="256" placeholder="PERID, TID, or name/badge name/email search string"
+                <input type="text" size="48" maxlength="256" placeholder="PERID, TID, or name/badge name/email search string"
                        id="regListSearch" name="regListSearch"/>
+            </div>
+            <div class="col-sm-auto"><label for="limitConid">Convention Year:</label></div>
+            <div class="col-sm-auto">
+                <select id="limitConid" name="limitConid">
+<?php
+    for ($year = $viewPrior; $year <= $conid + 1; $year++) {
+        $selected = $year == $conid ? ' selected' : '';
+        echo "<option value='$year'$selected>$year</option>";
+    }
+?>
+                </select>
             </div>
             <div class="col-sm-auto">
                 <button class='btn btn-primary mb-4 ms-4' onclick='getData("s");'>Search Registration List</button>
@@ -1007,7 +1103,7 @@ $config_vars['currency'] = $currency;
                     Download Reg Report
                 </button>
             </div>
-            <?php if ($reg_admin) { ?>
+            <?php if ($regAdmin) { ?>
             <div class='col-sm-auto p-2'>
                 <button class='btn btn-primary btn-sm' onclick="sendEmail('expire')">Send Expiring Reminder Email</button>
             </div>

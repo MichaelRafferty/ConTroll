@@ -9,6 +9,7 @@ var memCategories = null;
 var memList = null;
 var memListIdx = null;
 var memRules = null;
+var profile = null;
 
 // initialization
 // lookup all DOM elements
@@ -17,6 +18,7 @@ window.onload = function initpage() {
     // set up the constants for objects on the screen
 
     pos = new Pos('r');
+    profile = new Profile('', 'registration', 'warncolor');
 }
 
 // search result_membership functions
@@ -59,4 +61,10 @@ function findMembership(id) {
         return memrow;  // return matching entry
     }
     return null; // not found
+}
+
+function makePurchase(token, label) {
+    console.log(token);
+    console.log(label);
+    pos.onlineCCEntered(token, label);
 }

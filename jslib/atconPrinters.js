@@ -231,6 +231,7 @@ class Printers {
                     this.savebtn.disabled = false;
                     return;
                 }
+                checkRefresh(data);
                 if (data['message'] !== undefined) {
                     show_message(data['message'], 'success');
                 }
@@ -260,6 +261,7 @@ class Printers {
                     show_message(data['error'], 'error');
                     return;
                 }
+                checkRefresh(data);
                 if (data['message'] !== undefined) {
                     show_message(data['message'], 'success');
                 }

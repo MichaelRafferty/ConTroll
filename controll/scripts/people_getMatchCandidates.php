@@ -1,13 +1,18 @@
 <?php
 require_once "../lib/base.php";
+require_once '../lib/sessionAuth.php';
 
-$check_auth = google_init("ajax");
-$perm = "people";
+// use common global Ajax return functions
+global $returnAjaxErrors, $return500errors;
+$returnAjaxErrors = true;
+$return500errors = true;
 
-$response = array("post" => $_POST, "get" => $_GET, "perm"=>$perm);
-
-if($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
-    $response['error'] = "Authentication Failed";
+$perm = 'people';
+$response = array ('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
+$authToken = new authToken('script');
+$response['tokenStatus'] = $authToken->checkToken();
+if (!$authToken->isLoggedIn() || !$authToken->checkAuth($perm)) {
+    $response['error'] = 'Authentication Failed';
     ajaxSuccess($response);
     exit();
 }
@@ -213,6 +218,7 @@ FROM perinfo p
 JOIN spids ON p.id = spids.id
 LEFT OUTER JOIN regs r ON r.id = p.id
 LEFT OUTER JOIN perinfo m ON p.managedBy = m.id
+WHERE (NOT (p.first_name = 'Merged' AND p.middle_name = 'into')) AND p.banned = 'N'
 ORDER BY spids.priority DESC, p.last_name, p.first_name;
 EOS;
 

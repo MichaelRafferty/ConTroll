@@ -1,11 +1,11 @@
 <?php
 require_once "lib/base.php";
-//initialize google session
-$need_login = google_init("page");
+require_once 'lib/sessionAuth.php';
 
-$page = "reports";
-if(!$need_login or !checkAuth($need_login['sub'], $page)) {
-    bounce_page("index.php");
+$page = 'reports';
+$authToken = new authToken('web');
+if (!$authToken->isLoggedIn() || !$authToken->checkAuth($page)) {
+    bounce_page('index.php');
 }
 
 $cdn = getTabulatorIncludes();
@@ -17,7 +17,7 @@ page_init($page,
                     $cdn['popjs'],
                     'js/reports.js',
                    ),
-              $need_login);
+              $authToken);
 
 
 $con = get_conf("con");
@@ -28,6 +28,7 @@ $config_vars = array();
 $config_vars['pageName'] = 'reports';
 $config_vars['debug'] = getConfValue('debug', 'controll_reports', 0);
 $config_vars['conid'] = $conid;
+$config_vars['tokenStatus'] = $authToken->checkToken();
 
 // loop ver the groups directory and local groups directory finding groups to make into tabs
 $reports = [];
@@ -35,7 +36,7 @@ if ($groupDir = opendir(__DIR__ . '/reports/groups')) {
     while (false !== ($file = readdir($groupDir))) {
         if (str_ends_with($file, '.grp')) {
             $report = parse_ini_file(__DIR__ . "/reports/groups/$file" , true);
-            if (checkAuth($need_login['sub'], $report['group']['auth'])) {
+            if ($authToken->checkAuth($report['group']['auth'])) {
                 $report['group']['file'] = "groups/$file";
                 $report['group']['prefix'] = "reports";
                 $reports["groups/$file"] = $report;
@@ -48,7 +49,7 @@ if ($groupDir = opendir(__DIR__ . '/reports/local_groups')) {
     while (false !== ($file = readdir($groupDir))) {
         if (str_ends_with($file, '.grp')) {
             $report = parse_ini_file(__DIR__ . "/reports/local_groups/$file", true);
-            if (checkAuth($need_login['sub'], $report['group']['auth'])) {
+            if ($authToken->checkAuth($report['group']['auth'])) {
                 $report['group']['file'] = "local_groups/$file";
                 $report['group']['prefix'] = 'local_reports';
                 $reports["local_groups/$file"] = $report;
@@ -169,6 +170,28 @@ EOS;
                     $default = $prompt[4];
                     if (preg_match('/^#.+#$/', $default)) {
                         $prompt[4] = replaceConfigTokens($default);
+                    } else {
+                        switch (strtolower($default)) {
+                            case 'today':
+                                $prompt[4] = date_format(date_create(), "Y-m-d");
+                                break;
+                            case 'yesterday':
+                                $date = date_create();
+                                $date = date_add($date, date_interval_create_from_date_string('-1 day'));
+                                $prompt[4] = date_format($date, 'Y-m-d');
+                                break;
+                            case 'thismonth':
+                                $prompt[4] = date_format(date_create(), 'Y-m-01');
+                                break;
+                            case 'lastmonth':
+                                $date = date_create();
+                                $date = date_add($date, date_interval_create_from_date_string('-1 month'));
+                                $prompt[4] = date_format($date, 'Y-m-01');
+                                break;
+                            case 'now':
+                                $prompt[4] = date_format(date_create(), 'Y-m-d H:i:s');
+                                break;
+                        }
                     }
                 }
                 $prompts[] = $prompt;

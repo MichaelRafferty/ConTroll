@@ -13,6 +13,7 @@ function getDailyTrend() {
                 alert(data['error']);
                 console.log(JSON.stringify(data, null, 2));
             } else {
+                checkRefresh(data);
                 //console.log(JSON.stringify(data, null, 2));
                 buildDaily(data['dailyHistory'], data['today']);
                 return false;
@@ -31,6 +32,7 @@ function getOverTime() {
                 alert(data['error']);
                 console.log(JSON.stringify(data, null, 2));
             } else {
+                checkRefresh(data);
                 //console.log(JSON.stringify(data, null, 2));
                 buildAnnual(data['maxReg'], data['today']);
                 return false;
@@ -49,6 +51,7 @@ function getBreakdown() {
                 showError(data['error']);
                 console.log(JSON.stringify(data, null, 2));
             } else {
+                checkRefresh(data);
                 //console.log(JSON.stringify(data, null, 2));
                 var ptr = $(document.createElement('ul'));
                 var overview = data['overview']

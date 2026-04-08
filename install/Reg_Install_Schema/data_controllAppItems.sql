@@ -1,4 +1,4 @@
--- MySQL dump 10.13  Distrib 8.0.42, for macos15 (arm64)
+-- MySQL dump 10.13  Distrib 8.0.44, for macos15 (arm64)
 --
 -- Host: localhost    Database: reg
 -- ------------------------------------------------------
@@ -11,7 +11,7 @@
 SET FOREIGN_KEY_CHECKS = 0;
 LOCK TABLES `controllAppItems` WRITE;
 ALTER TABLE `controllAppItems` DISABLE KEYS;
-INSERT INTO `controllAppItems` VALUES
+INSERT INTO `controllAppItems` VALUES 
 ('controll','emails','comeback','html','Custom Text for the html comeback email - not registered insert into past few years'),
 ('controll','emails','comeback','text','Custom Text for the plain text comeback email - not registered insert into past few years'),
 ('controll','emails','expire','html','Custom Text for the html expiring unpaid reg email'),
@@ -150,19 +150,22 @@ INSERT INTO `controllAppItems` VALUES
 ('portal','accountSettings','main','managed','Just after the managed header'),
 ('portal','accountSettings','main','passkeys','Just after the passkeys header'),
 ('portal','accountSettings','main','top','The top of the page/section'),
-('portal','addUpgrade','main','bottom','The bottom of the page/section'),
-('portal','addUpgrade','main','step0','The email address (Step 0)'),
-('portal','addUpgrade','main','step1','Just after the Step 1 header'),
-('portal','addUpgrade','main','step2','Just after the Step 2 header'),
-('portal','addUpgrade','main','step3','Just after the Step 3 header'),
-('portal','addUpgrade','main','step4','Just after the Step 4 header'),
-('portal','addUpgrade','main','step4bottom','Just brelow step 4 (cart) and ahead of the HR (rule line)'),
-('portal','addUpgrade','main','top','The top of the page/section'),
+('portal','add','email','after','Create new account profile after email address'),
+('portal','add','email','before','Create new account profile before email address'),
+('portal','add','profile','bottom','Create new account profile at bottom before buttons'),
+('portal','add','profile','top','Create new account profile before profile data'),
 ('portal','all','footer','difficulties','footer line: for any difficulties'),
+('portal','cart','main','bottom','The bottom of the page/section'),
+('portal','cart','main','cart','Just brelow step 4 (cart) and ahead of the HR (rule line)'),
+('portal','cart','main','memberships','Just after the Step 4 header'),
+('portal','cart','main','top','The top of the page/section'),
 ('portal','index','main','bottom','The bottom of the page/section'),
 ('portal','index','main','multiple','Juat after the this email has multiple membership accounts'),
 ('portal','index','main','notloggedin','Text to show if not logged in and not returned from auth link for no account'),
 ('portal','index','main','top','The top of the page/section'),
+('portal','index','profile','bottom','Create new account profile at bottom before buttons'),
+('portal','index','profile','email','Create new account profile before email address entry'),
+('portal','index','profile','top','Create new account profile before profile data'),
 ('portal','membershipHistory','main','bottom','The bottom of the page/section'),
 ('portal','membershipHistory','main','top','The top of the page/section'),
 ('portal','portal','main','bottom','The bottom of the page/section'),

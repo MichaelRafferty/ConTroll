@@ -90,7 +90,7 @@ class ConfigEditor {
             this.#toc += '<li><a href="#' + sectionName.replace(/ /g,'_') + '">' + sectionTitle + '</a></li>\n';
             this.#tocLevel = 1;
 
-            html += "<div class='row mt-4'><div class='col-sm-1'><h3 id='" + sectionName.replace(/ /g, '_') +
+            html += "<div class='row mt-4'><div class='col-sm-2'><h3 id='" + sectionName.replace(/ /g, '_') +
                 "'><b>[" + sectionName + "]</b></h3></div>" +
                 "<div class='col-sm-auto'><h2><b>" + sectionTitle + "</b></h2></div>" +
                 "</div>\n";
@@ -108,6 +108,11 @@ class ConfigEditor {
         this.#tocLevel = 0;
         this.#configDiv.innerHTML = '<div class="row mt-4"><div class="col-sm-auto"><h2>*** Table of Contents***</h2></div>\n' +
             '<div class="row"><div class="col-sm-12">' + this.#toc + '</div></div>\n' +
+            '<div class="row"><div class="col-sm-1"><h4>Legend:</h4></div>\n' +
+            '<div class="col-sm-auto ms-1 me-1" style="background-color: rgb(255, 255, 220);"><h4>Required Parameter</h4></div>' +
+            '<div class="col-sm-auto ms-1 me-1" style="background-color: rgb(240, 255, 240);"><h4>Optional Parameter</h4></div>' +
+            '<div class="col-sm-auto ms-1 me-1" style="background-color: rgb(240, 240, 240);"><h4>You do not have permission to edit this parameter</h4></div>' +
+            '</div>\n' +
             html;
         this.#toc = '';
     }
@@ -117,11 +122,32 @@ class ConfigEditor {
         // R: role
         let editable = param.role.editable == 1;
         let visible = param.role.vis == 'V' || editable;
+        let colBgColor = ' style="background-color: rgb(240, 255, 240);"';
         if (!visible)
             return '';
 
-        let visibleStart = visible ? '' : '<span style="color: lightgrey;">';
-        let visibleEnd = visible ? '' : '</span>';
+        let visibleStart = '';
+        let visibleEnd = '';
+
+        if (!editable)
+            visible = 'G'
+        else if (param.blank == 'M')
+            visible = 'M';
+        else {
+            visible = 'W';
+        }
+
+        switch (visible) {
+            case 'G':
+                visibleStart = '<span style="color: grey;">';
+                visibleEnd = '</span>';
+                colBgColor = ' style="background-color: rgb(240, 240, 240);"';
+                break;
+            case 'M':
+                colBgColor = ' style="background-color: rgb(255, 255, 220);"';
+                break;
+        }
+
         let html = '';
 
         // HR check
@@ -132,13 +158,13 @@ class ConfigEditor {
             }
             this.#toc += '<li><a href="#' + (sectionName + '_' + param.hr).replace(/ /g, '_') + '">' + param.hr + '</a></li>\n';
             html = "<div class='row mt-4 mb-4 align-items-center'>" +
-                    "<div class='col-sm-2'>" + this.#hr + "</div>" +
+                    "<div class='col-sm-3'>" + this.#hr + "</div>" +
                     "<div class='col-sm-auto'><h4 id='" + (sectionName + '_' + param.hr).replace(/ /g, '_') +
                 "'><b>" + param.hr + "</b></hr></div>" + "<div class='col-sm'>" + this.#hr + "</div>" +
                 "</div>";
         }
         // N: name
-        html += "<div class='row mt-4'><div class='col-sm-2'><h4><b>" + visibleStart + param.name + visibleEnd + "</h4></b></div>\n";
+        html += "<div class='row mt-4'><div class='col-sm-3'" + colBgColor + "><h4><b>" + visibleStart + param.name + visibleEnd + "</h4></b></div>\n";
         // the field itself
         let fieldValue = '';
         if (this.#currentConfig.hasOwnProperty(sectionName)) {
@@ -154,7 +180,7 @@ class ConfigEditor {
         }
 
         // H: hint
-        html += "<div class='row mt-1'><div class='col-sm-1'></div><div class='col-sm-11'>"  + visibleStart + param.hint + visibleEnd + '</div></div>\n';
+        html += "<div class='row mt-1'><div class='col-sm-1'></div><div class='col-sm-auto'>"  + param.hint + '</div></div>\n';
         return html;
     }
 
@@ -329,7 +355,7 @@ class ConfigEditor {
         }
         if (value == '') {
             // empty string, check what to do if empty
-            if (param.blank == 'M') { // mandatory
+            if (param.blank == 'M' && field != null) { // mandatory
                 errmsg = "Section " + sectionName + ", Parameter: " + param.name + " cannot be empty<br/>\n";
                 field.style.backgroundColor = "#ff8f8f";
                 return errmsg;
@@ -499,6 +525,7 @@ class ConfigEditor {
                     _this.#saveBtnB.innerHTML = 'Save*';
                     return false;
                 }
+                checkRefresh(data);
                 _this.#saveBtnT.disabled = true;
                 _this.#saveBtnT.innerHTML = 'Save';
                 _this.#saveBtnB.disabled = true;

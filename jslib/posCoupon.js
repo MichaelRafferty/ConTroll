@@ -174,6 +174,7 @@ class Coupon {
             data: postData,
             method: 'POST',
             success: function (data, textstatus, jqxhr) {
+                checkRefresh(data);
                 _this.vc_success(data);
             },
             error: function (jqXHR, textstatus, errorThrown) {

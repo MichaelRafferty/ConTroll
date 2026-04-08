@@ -1,5 +1,5 @@
 <?php
-// ConTroll Registration System, Copyright 2015-2025, Michael Rafferty, Licensed under the GNU Affero General Public License, Version 3.
+// ConTroll Registration System, Copyright 2015-2026, Michael Rafferty, Licensed under the GNU Affero General Public License, Version 3.
 // library AJAX Processor: base_managerPasswordVerify.php
 // Author: Syd Weinstein
 // validate the managers or current users password, verify they are a manager

@@ -36,7 +36,7 @@ The software and these instructions reside in the repository
     4. Edit those two scripts in the bin directory:
        1. Change the HOMEDIR in the scripts to your locations
        2. Set the branch to the branch you are using
-    5. Make sure the appropriate version of PHP (>=8.2) is in your PATH
+    5. Make sure the appropriate version of PHP (>=8.3) is in your PATH
        - (edit your appropriate profile if needed to add it)
     6. Make sure your approiate time zone variable is in your profile
     7. Run php -v and check output for proper version, if wrong, go back to PATH step and fix it.
@@ -44,12 +44,13 @@ The software and these instructions reside in the repository
     
              regfetchprod
              regfetchtest
-    9. Make the local directories in each directory (if they do not already exist)
-
-         cd {reg}/ConTroll
-         mkdir backups config cronlog crons reglogs scripts onlinereg/images vendor/images portal/images controll/images
-         cd {regtest}/ConTroll
-         mkdir backups config cronlog crons reglogs scripts onlinereg/images vendor/images portal/images controll/images
+    9. (optional) Make the local directories in each directory (if they do not already exist).
+    Note: if you do not do this step now, the install program will do so automatically when run.
+    
+           cd {reg}/ConTroll
+           mkdir backups config cronlog crons reglogs scripts onlinereg/images vendor/images portal/images controll/images
+           cd {regtest}/ConTroll
+           mkdir backups config cronlog crons reglogs scripts onlinereg/images vendor/images portal/images controll/images
 
    3. Create the two databases in your database server
       1. Suggested names are reg and reg_test
@@ -62,11 +63,13 @@ The software and these instructions reside in the repository
       3. Copy the sample configuration files into the config directory
    
              cd config
-             cp ../config-sample/reg-secret.ini-sample reg-secret.ini
-             cp ../config-sample/reg-admin.ini-sample reg-admin.ini
-             cp ../config-sample/reg-conf.ini-sample reg-conf.ini
+             cp ../config-sample/reg_secret.ini-sample reg_secret.ini
+             cp ../config-sample/reg_admin.ini-sample reg_admin.ini
+             cp ../config-sample/reg_conf.ini-sample reg_conf.ini
    
-      4. Edit at least the [mysql] section of the reg-secret.ini configuration to set the database parameters
+      4. Edit at least:
+         1. the [mysql] section of the reg-secret.ini configuration to set the database parameters
+         2. The path of the install directory in the [client] portion.
       5. Load the reg schema into each database using the InstallSetup.php program
    
                   cd {reg}/install

@@ -406,7 +406,7 @@ function dbQuery($query)
 // dbInsert - insert a row into the database and return the new key field
 // NOTE: All inserts built dynamically should use ? notation and use dbSafeInsert instead
 //
-function dbInsert($query)#: int|bool
+function dbInsert($query) : int|bool
 {
     global $dbObject;
     if (!is_null($dbObject)) {
@@ -467,13 +467,6 @@ function escape_quotes($param) {
     return str_replace('"', '\"', $param);
 }
 
-// escape_appos - change ' to \' for use in HTML parameters
-// For use at location of actual data use
-//
-function escape_appos($param) {
-    return str_replace("'", "\'", $param);
-}
-
 // Should NOT Be used going forward - Obsolete, use ? notation and the 'dbSafe' variants instead
 // also any encoding of data should be where it is needed to be used and not global to all queries
 //
@@ -483,77 +476,7 @@ function sql_safe($string)
     return $dbObject->escape_string($string);
 }
 
-// obsolete function register, lets delete it and see if we still need it
-/*
-function register($email, $sub, $name)
-{
-    global $dbObject;
-
-    if (is_null($dbObject)) {
-        return false;
-    }
-    $email = $dbObject->escape_string($email);
-    $sub = $dbObject->escape_string($sub);
-    $name = $dbObject->escape_string($name);
-    $query = "INSERT INTO user (email, google_sub, name, new) values ('$email', '$sub', '$name', 'Y');";
-    $res = $dbObject->query($query);
-    $id = $dbObject->insert_id;
-    if ($res && $id > 0) {
-        return $id;
-    }
-    if ($dbObject->errno) {
-        echo "<p>Query Error (" . $dbObject->errno . ") " . $dbObject->error . "</p>";
-        echo "<p>$query</p>";
-        return false;
-    }
-    return $res;
-}
-*/
-
-function getPages($sub)#: array|bool
-{
-    $res = [];
-    $sql = <<<EOS
-SELECT DISTINCT A.id, A.name, A.display, A.sortOrder
-FROM user U
-JOIN user_auth UA ON (U.id = UA.user_id)
-JOIN auth A ON (A.id = UA.auth_id)
-WHERE U.google_sub = ? AND A.page='Y'
-ORDER BY A.sortOrder;
-EOS;
-    $auths = dbSafeQuery($sql, 's', [$sub]);
-    if (!$auths) {
-        return false;
-    }
-    while ($new_auth = $auths->fetch_assoc()) {
-        $res[] = $new_auth;
-    }
-    return $res;
-}
-
-
-function getAuthsById($id)#: array|bool
-{
-    $res = [];
-    $sql = <<<EOS
-SELECT A.name
-FROM user U
-JOIN user_auth UA ON (U.id = UA.user_id)
-JOIN auth A ON (A.id = UA.auth_id)
-WHERE U.id = ?
-ORDER BY A.id;
-EOS;
-    $auths = dbSafeQuery($sql, 's', [$id]);
-    if (!$auths) {
-        return false;
-    }
-    while ($new_auth = $auths->fetch_assoc()) {
-        $res[] = $new_auth['name'];
-    }
-    return $res;
-}
-
-function getAuths($sub)#: array|bool
+function getAuths($sub) : array|bool
 {
     $res = [];
     $sql = <<<EOS
@@ -574,7 +497,7 @@ EOS;
     return $res;
 }
 
-function checkAuth($sub, $name)#: array|bool
+function checkAuth($sub, $name) : array|bool
 {
     if (!isset($sub) || !$sub) {
         return false;
@@ -594,39 +517,6 @@ EOS;
     }
     while ($new_auth = $auths->fetch_assoc()) {
         $res[] = $new_auth['name'];
-    }
-    return $res;
-}
-
-function checkUser($sub)#: bool
-{
-    if (!isset($sub) || !$sub) {
-        return false;
-    }
-    $res = dbSafeQuery("SELECT email FROM user WHERE google_sub=?;", 's', [$sub]);
-    if (!$res || $res->num_rows <= 0) {
-        return false;
-    } else {
-        return true;
-    }
-}
-
-function getUsers($new = null)#:array|bool
-{
-    $res = [];
-    $query = "SELECT id, name, email FROM user";
-    if ($new === true) {
-        $query .= " WHERE new='Y'";
-    }
-    if ($new === false) {
-        $query .= " WHERE new='N'";
-    }
-    $users = dbQuery($query . ';');
-    if (!$users) {
-        return false;
-    }
-    while ($next_user = $users->fetch_assoc()) {
-        $res[] = $next_user;
     }
     return $res;
 }
@@ -689,13 +579,6 @@ function get_con($id = null) {
     }
     $r = dbSafeQuery('SELECT * FROM conlist WHERE id=?;', 'i', array($id));
     return $r->fetch_assoc();
-}
-
-function get_user($sub)
-{
-    $r = dbSafeQuery("SELECT * FROM user WHERE google_sub=?;", 's', [$sub]);
-    $res = $r->fetch_assoc();
-    return $res['id'];
 }
 
 function newUser($email, $sub):bool

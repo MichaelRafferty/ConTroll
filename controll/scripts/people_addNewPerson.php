@@ -1,14 +1,19 @@
 <?php
 require_once "../lib/base.php";
 require_once "../../lib/policies.php";
+require_once '../lib/sessionAuth.php';
 
-$check_auth = google_init("ajax");
-$perm = "search";
+// use common global Ajax return functions
+global $returnAjaxErrors, $return500errors;
+$returnAjaxErrors = true;
+$return500errors = true;
 
-$response = array("post" => $_POST, "get" => $_GET, "perm"=>$perm);
-
-if($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
-    $response['error'] = "Authentication Failed";
+$perm = 'search';
+$response = array ('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
+$authToken = new authToken('script');
+$response['tokenStatus'] = $authToken->checkToken();
+if (!$authToken->isLoggedIn() || !$authToken->checkAuth($perm)) {
+    $response['error'] = 'Authentication Failed';
     ajaxSuccess($response);
     exit();
 }
@@ -20,18 +25,26 @@ if (!(array_key_exists('type', $_POST)) && array_key_exists('add', $_POST)) {
 }
 
 $type = $_POST['type'];
-$updatedBy = $_SESSION['user_perid'];
+$updatedBy = $authToken->getPerid();
 
 $con = get_conf('con');
 $conid = $con['id'];
 
+if ($_POST['currentAgeType'] == '') {
+    $currentAgeType = null;
+    $currentAgeConId = null;
+} else {
+    $currentAgeType = $_POST['currentAgeType'];
+    $currentAgeConId = $conid;
+}
+
 $iP = <<<EOS
 INSERT INTO perinfo(last_name, first_name, middle_name, suffix, email_addr, phone, badge_name, badgeNameL2,
-    legalName, pronouns, address, addr_2, city, state, zip, country,
+    legalName, pronouns, address, addr_2, city, state, zip, country, currentAgeConId, currentAgeType,
     banned, active, updatedBy)
-VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'N', 'Y',?);
+VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'N', 'Y',?);
 EOS;
-$typestr = 'ssssssssssssssssi';
+$typestr = 'ssssssssssssssssisi';
 
 // built insert array
 $values = [
@@ -51,6 +64,8 @@ $values = [
     $_POST['state'] == null ? '' : $_POST['state'],
     $_POST['zip'] == null ? '' : $_POST['zip'],
     $_POST['country'] == null ? '' : $_POST['country'],
+    $currentAgeConId,
+    $currentAgeType,
 ];
 $values[] = $updatedBy;
 

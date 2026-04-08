@@ -130,29 +130,60 @@ EOS;
         return(1);
     }
 
+    $numConids = $conidR->num_rows;
     if ($conidR->num_rows == 0) {
         logecho("Creating initial conlist entry for $conid, it will need to be edited in reg_control/admin");
-        $insertConlistQ = <<<EOS
+        $conname = getConfValue('con', 'conname', 'Missing');
+        if (strlen($conname) > 10) {
+            $newconname = substr($conname, 0, 10);
+            logecho("conname too long truncted from $conname to $newconname");
+            $conname = $newconname;
+        } else {
+            $insertConlistQ = <<<EOS
 INSERT INTO conlist(id, name, label, open, startdate, enddate)
 VALUES(?, ?, ?, ?, ?, ?);
 EOS;
-        $params = array(
-            $conid,
-            getConfValue('con', 'conname', 'Missing-') . $conid,
-            getConfValue('con', 'label', 'Missing Label'),
-            'Y',
-            '1900-01-01',
-            '2099-12-31'
-        );
-        $newid = dbSafeInsert($insertConlistQ, 'isssss', $params);
-        if ($newid === false) {
-            logecho("Error inserting initial conlist entry for $conid, cannot continue");
-            return(1);
+            $params = array (
+                $conid,
+                $conname,
+                getConfValue('con', 'label', 'Missing Label'),
+                'Y',
+                '1900-01-01',
+                '2099-12-31'
+            );
+            $newid = dbSafeInsert($insertConlistQ, 'isssss', $params);
+            if ($newid === false) {
+                logecho("Error inserting initial conlist entry for $conid, cannot continue");
+                return (1);
+            }
         }
     } else {
         logEcho("conlist entry for $conid exists", true);
     }
     $conidR->free();
+
+    // check to see if the all age exists for the default conid
+    $checkAQ = <<<EOS
+SELECT count(*)
+FROM ageList
+WHERE ageType = 'all';
+EOS;
+    $ageR = dbQuery($checkAQ);
+    if ($ageR === false) {
+        logEcho("check if all age entry exists in ageList failed, cannot continue");
+        return(1);
+    }
+    $ageCount = $ageR->fetch_row()[0];
+    if ($ageCount == 0) {
+        // add the all age items
+        $ageAllIns = <<<EOS
+INSERT INTO ageList(conid, ageType, label, shortname, sortorder, badgeFlag, verify)
+VALUES (?, 'all', 'All Ages', 'All', ?, '', 'N');
+EOS;
+        $ins = dbSafeInsert($ageAllIns, 'ii', array($conid, 10));
+        if ($numConids > 1)
+            $ins = dbSafeInsert($ageAllIns, 'ii', array($conid + 1, 20));
+    }
 
     // check if any admins exist in the system
     $checkR = dbQuery($checkAdminQ);
@@ -231,7 +262,7 @@ EOS;
             } else {
                 logEcho("Created person 1 as $email_addr");
                 // user record for 1
-                $num_rows = dbSafeInsert($insertUQ, 'iissss', array(1, 1, $email_addr, NULL, trim($first_name . ' ' . $last_name), 'N'));
+                $num_rows = dbSafeInsert($insertUQ, 'iissss', array(1, 1, $email_addr, '', trim($first_name . ' ' . $last_name), 'N'));
                 if ($num_rows != 1) {
                     logEcho('Unable to insert user 1 for administrator');
                     $errors++;

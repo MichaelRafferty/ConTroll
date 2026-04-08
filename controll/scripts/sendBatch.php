@@ -3,23 +3,23 @@ require_once "../lib/base.php";
 require_once "../lib/email.php";
 require_once(__DIR__ . "/../../lib/email__load_methods.php");
 require_once(__DIR__ . "/../../lib/global.php");
+require_once '../lib/sessionAuth.php';
 
-$check_auth = google_init("ajax");
-$user_email = $check_auth['email'];
-$perm = "admin";
+// use common global Ajax return functions
+global $returnAjaxErrors, $return500errors;
+$returnAjaxErrors = true;
+$return500errors = true;
 
-$response = array("post" => $_POST, "get" => $_GET, "perm"=>$perm, "status" => 'error');
-
-if($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
-    $response['error'] = "Authentication Failed";
+$perm = 'admin';
+$response = array ('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
+$authToken = new authToken('script');
+$response['tokenStatus'] = $authToken->checkToken();
+if (!$authToken->isLoggedIn() || !$authToken->checkAuth($perm)) {
+    $response['error'] = 'Authentication Failed';
     ajaxSuccess($response);
     exit();
 }
-
-if (!array_key_exists('user_id', $_SESSION)) {
-    ajaxError('Invalid credentials passed');
-    return;
-}
+$user_email = $authToken->checkAuth('email');
 load_email_procs();
 
 $test = true;

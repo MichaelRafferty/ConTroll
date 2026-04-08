@@ -1,5 +1,13 @@
 globalCustomTextEditorInit = false;
 
+// new functions for token items
+function checkRefresh(data) {
+    if (data.hasOwnProperty('tokenStatus') && data.tokenStatus == 'refresh'){
+        console.log("refresh token called with " + data.tokenStatus);
+        window.open('/index.php?refresh', '_blank');
+    }
+}
+
 function test(method, formData, resultDiv) {
     $.ajax({
         url: "scripts/authEcho.php",
@@ -186,25 +194,6 @@ function testValid(formObj) {
     });
 
     return (errors == 0);
-}
-
-function getForm(formObj, formUrl, succFunc, errFunc) {
-    var getData = $(formObj).serialize();
-    if (succFunc == null) {
-        succFunc = function (data, textStatus, jqXHR) {
-            $('#test').empty().append(JSON.strignify(data, null, 2));
-        }
-    };
-    $.ajax({
-        url: formUrl,
-        type: "GET",
-        data: getData,
-        success: succFunc,
-        error: function (JqXHR, textStatus, errorThrown) {
-            $('#test').empty().append(JSON.stringify(JqXHR, null, 2));
-            if (errFunc != null) { errFunc(); }
-        }
-    });
 }
 
 // end obsolete functions

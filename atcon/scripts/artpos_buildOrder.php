@@ -84,11 +84,7 @@ if (array_key_exists('cancelOrder', $_POST)) {
 }
 
 // all the records are in the database, so lets build the order
-
-// get this person
-//$info = getPersonInfo($conid);
-
-// build the srte list for the order, do not include the already paid items
+// build the list for the order, do not include the already paid items
 $amount = 0;
 $totalAmountDue = 0;
 $totalPaid = 0;

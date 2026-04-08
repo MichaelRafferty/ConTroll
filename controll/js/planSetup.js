@@ -470,6 +470,7 @@ class PlansSetup {
                         _this.#planSaveChangesBTN.innerHTML = "Save Changes*";
                         return false;
                     }
+                    checkRefresh(data);
                     plans.close();
                     paymentPlans = data['paymentPlans'];
                     plans.open();

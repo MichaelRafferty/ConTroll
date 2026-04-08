@@ -1,4 +1,4 @@
--- MySQL dump 10.13  Distrib 8.0.42, for macos15 (arm64)
+-- MySQL dump 10.13  Distrib 8.0.44, for macos15 (arm64)
 --
 -- Host: localhost    Database: reg
 -- ------------------------------------------------------
@@ -17,6 +17,7 @@ CREATE TABLE `ageList` (
   `shortname` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `sortorder` int NOT NULL,
   `badgeFlag` varchar(16) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `verify` enum('Y','N') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'Y',
   PRIMARY KEY (`conid`,`ageType`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 

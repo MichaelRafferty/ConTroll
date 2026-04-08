@@ -1,17 +1,21 @@
 <?php
 require_once "../lib/base.php";
+require_once '../lib/sessionAuth.php';
 
-$check_auth = google_init("ajax");
-$perm = "badge";
+// use common global Ajax return functions
+global $returnAjaxErrors, $return500errors;
+$returnAjaxErrors = true;
+$return500errors = true;
 
-$response = array("post" => $_POST, "get" => $_GET, "perm"=>$perm);
-
-if($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
-    $response['error'] = "Authentication Failed";
+$perm = 'badge';
+$response = array ('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
+$authToken = new authToken('script');
+$response['tokenStatus'] = $authToken->checkToken();
+if (!$authToken->isLoggedIn() || !$authToken->checkAuth($perm)) {
+    $response['error'] = 'Authentication Failed';
     ajaxSuccess($response);
     exit();
 }
-
 
 // use common global Ajax return functions
 global $returnAjaxErrors, $return500errors;
@@ -29,8 +33,8 @@ if ($ajax_request_action != 'removeWatch') {
     exit();
 }
 
-$user_perid = $_SESSION['user_perid'];
-$response['id'] = $_SESSION['user_id'];
+$user_perid = $authToken->getPerid();
+$response['id'] = $authToken->getUserId();
 $response['user_perid'] = $user_perid;
 
 $perid = $_POST['perid'];

@@ -8,6 +8,7 @@ class Unmatched {
     #unmatchedCount = null;
     #unmatchedH1 = null;
     #unmatched = null
+    #unmatchedSpecificDiv = null;
 
     #debug = 0;
     #debugVisible = false;
@@ -42,6 +43,7 @@ class Unmatched {
     #matchBadge = null;
     #matchAddress = null;
     #matchEmail = null;
+    #matchAge = null;
     #matchPhone = null;
     #matchPolicies = null;
     #matchFlags = null;
@@ -54,6 +56,7 @@ class Unmatched {
     #newBadge = null;
     #newAddress = null;
     #newEmail = null;
+    #newAge = null;
     #newPhone = null;
     #newPolicies = null;
     #newFlags = null;
@@ -73,6 +76,7 @@ class Unmatched {
     #state = null;
     #zip = null;
     #country = null;
+    #age = null;
     #emailAddr = null;
     #phone = null;
     #policiesDiv = null;
@@ -92,6 +96,7 @@ class Unmatched {
         this.#unmatchedPane = document.getElementById('unmatched-pane');
         this.#unmatchedH1 = document.getElementById('unmatchedH1Div');
         this.#unmatchedCountSpan = document.getElementById('unmatchedCount');
+        this.#unmatchedSpecificDiv = document.getElementById('unmatchedSpecific');
 
         var id = document.getElementById('match-candidates');
         if (id) {
@@ -111,6 +116,7 @@ class Unmatched {
             this.#matchBadge = document.getElementById('matchBadge');
             this.#matchAddress = document.getElementById('matchAddress');
             this.#matchEmail = document.getElementById('matchEmail');
+            this.#matchAge = document.getElementById('matchAge');
             this.#matchPhone = document.getElementById('matchPhone');
             this.#matchPolicies = document.getElementById('matchPolicies');
             this.#matchFlags = document.getElementById('matchFlags');
@@ -123,6 +129,7 @@ class Unmatched {
             this.#newBadge = document.getElementById('newBadge');
             this.#newAddress = document.getElementById('newAddress');
             this.#newEmail = document.getElementById('newEmail');
+            this.#newAge = document.getElementById('newAge');
             this.#newPhone = document.getElementById('newPhone');
             this.#newPolicies = document.getElementById('newPolicies');
             this.#newFlags = document.getElementById('newFlags');
@@ -143,6 +150,7 @@ class Unmatched {
             this.#zip = document.getElementById('zip');
             this.#country = document.getElementById('country');
             this.#emailAddr = document.getElementById('emailAddr');
+            this.#age = document.getElementById('age');
             this.#phone = document.getElementById('phone');
             this.#policiesDiv = document.getElementById('policiesDiv');
             this.#managerDiv = document.getElementById('managerDiv');
@@ -156,6 +164,15 @@ class Unmatched {
         }
     };
 
+    // called on find person to match
+    findSpecific() {
+        // set up to close the modal and delete the items
+        $('#match-candidates').on('hide.bs.modal', function () {
+            unmatchedPeople.mclose();
+        });
+        this.open();
+    }
+
     // called on open of the unmatched window
     open(msg = null) {
         var _this = this;
@@ -163,6 +180,12 @@ class Unmatched {
         var postdata = {
             ajax_request_action: 'unmatched',
         };
+        let search = document.getElementById('unmatched_pattern');
+        if (search) {
+            let searchPattern = search.value;
+            if (searchPattern != '')
+                postdata.searchPattern = searchPattern;
+        }
         clear_message();
         clearError();
         $.ajax({
@@ -170,6 +193,7 @@ class Unmatched {
             method: 'POST',
             data: postdata,
             success: function (data, textStatus, jhXHR) {
+                checkRefresh(data);
                 _this.draw(data, msg);
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -199,6 +223,21 @@ class Unmatched {
         this.#unmatched = data['unmatched'];
         this.#unmatchedCount = data['numUnmatched'];
         this.#unmatchedCountSpan.innerHTML = this.#unmatchedCount;
+        if (this.#unmatchedCount > 50)
+            this.#unmatchedSpecificDiv.innerHTML = `
+        <div class="col-sm-auto"><b>Not all matches were returned.</b> Search for: </div>
+        <div class="col-sm-auto">
+            <input type="text" id="unmatched_pattern" name="unmatched_pattern" maxlength="80" size="80" 
+                placeholder="Name/Portion of (Name, Address, Email, Badgename, Legal Name) or New Person ID">
+        </div>   
+        <div class="col-sm-auto">
+            <button class="btn btn-sm btn-primary" type="button" id="findSpecificBtn" onclick="unmatchedPeople.findSpecific();">
+                Find Person to Match
+            </button>        
+        </div>
+`;
+        else
+            this.#unmatchedSpecificDiv.innerHTML = '';
         var pagination = false;
         if (this.#unmatched)
             pagination = this.#unmatched.length > 100;
@@ -220,6 +259,7 @@ class Unmatched {
                 {title: "Full Name", field: "fullName", width: 300, headerSort: true, headerFilter: true, headerFilterFunc: fullNameHeaderFilter,
                     formatter: "textarea" },
                 {title: "Email", field: "email_addr", width: 280, headerSort: true, headerFilter: true, },
+                {title: "Age", field: "currentAgeType", width: 100, headerSort: true, headerFilter: true, },
                 {title: "Date Created", field: "createtime", width: 180, headerSort: true, headerFilter: true, },
                 {title: "Num Regs", field: "numRegs", width: 50, headerWordWrap: true, headerHozAlign:"right", hozAlign: "right", headerSort: false},
                 {title: "Registrations", field: "regs", minWidth: 400, headerWordWrap: true, headerSort: false, formatter: "textarea", },
@@ -300,6 +340,7 @@ class Unmatched {
             method: 'POST',
             data: postdata,
             success: function (data, textStatus, jhXHR) {
+                checkRefresh(data);
                 _this.showCandidates(data);
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -334,10 +375,11 @@ class Unmatched {
                     show_message(data['error'], 'error', 'result_message_candidate');
                     return false;
                 }
-                if (data['error']) {
+                if (data['warn']) {
                     show_message(data['warn'], 'warn', 'result_message_candidate');
                     return false;
                 }
+                checkRefresh(data);
                 _this.#matchCandidatesModal.hide();
                 _this.clearEditBlock('a');
                 _this.open(data['success']);
@@ -353,7 +395,7 @@ class Unmatched {
 
     // showCandidates - open the modal to display the candidates for this match
     showCandidates(data) {
-        console.log(data);
+        //console.log(data);
         if (data['error']) {
             show_message(data['error'], 'error');
             return;
@@ -366,18 +408,31 @@ class Unmatched {
         newpeople.push(this.#newperson);
         this.#candidatesTitleName.innerHTML = this.#newperson.fullName;
         this.#candidatesName.innerHTML = this.#newperson.fullName;
+        if (this.#newpersonTable) {
+            this.#newpersonTable.destroy();
+            this.#newpersonTable = null;
+        }
+        if (this.#candidateTable) {
+            this.#candidateTable.destroy();
+            this.#candidateTable = null;
+        }
+        if (this.#additionalTable) {
+            this.#additionalTable.destroy();
+            this.#additionalTable = null;
+        }
         this.#newpersonTable = new Tabulator('#newpersonTable', {
             data: newpeople,
             layout: "fitDataTable",
             index: "id",
             columns: [
-                {title: "Select", width: 100, formatter: this.selectButton, formatterParams: {table: 'n'}, headerSort: false },
+                {title: "", width: 100, headerSort: false },
                 {title: "ID", field: "id", width: 80, headerHozAlign:"right", hozAlign: "right", headerSort: false, },
                 {title: "Full Name", field: "fullName", width: 250, formatter: "textarea", headerSort: false, },
                 {title: "Address", field: "fullAddr", width: 300, formatter: "textarea", headerSort: false, },
                 {title: "Badge Name", field: "badgename", width: 150, headerSort: false, formatter: 'html', },
                 {title: "Managed By", field: "manager", headerWordWrap: true, width: 150, headerSort: false, },
                 {title: "Email", field: "email_addr", width: 250, headerSort: false, },
+                {title: "Age", field: "currentAgeType", width: 100, headerSort: true, headerFilter: true, },
                 {title: "Phone", field: "phone", width: 150, headerSort: false, },
                 {title: "Date Created", field: "createtime", width: 180, headerSort: false, },
                 {title: "Registrations", field: "regs", width: 200, formatter:"textarea", headerSort: false, },
@@ -416,6 +471,7 @@ class Unmatched {
                 {title: "Badge Name", field: "badgename", width: 150, headerFilter:true, headerSort: false, formatter: "html", },
                 {title: "Managed By", field: "manager", headerWordWrap: true, width: 150, headerSort: true, headerFilter: true, },
                 {title: "Email", field: "email_addr", width: 250, headerSort: true, headerFilter: true, },
+                {title: "Age", field: "currentAgeType", width: 100, headerSort: true, headerFilter: true, },
                 {title: "Phone", field: "phone", width: 150, headerSort: true, headerFilter: true, },
                 {title: "Date Created", field: "creation_date", width: 180, headerSort: true, headerFilter: true, },
                 {title: "Registrations", field: "regs", width: 200, },
@@ -455,6 +511,7 @@ class Unmatched {
                 {title: "Badge Name", field: "badgename", width: 150, headerFilter:true, headerSort: false, formatter: "html", },
                 {title: "Managed By", field: "manager", headerWordWrap: true, width: 150, headerSort: true, headerFilter: true, },
                 {title: "Email", field: "email_addr", width: 250, headerSort: true, headerFilter: true, },
+                {title: "Age", field: "currentAgeType", width: 100, headerSort: true, headerFilter: true, },
                 {title: "Phone", field: "phone", width: 150, headerSort: true, headerFilter: true, },
                 {title: "Date Created", field: "creation_date", width: 180, headerSort: true, headerFilter: true, },
                 {title: "Registrations", field: "regs", width: 200, formatter: "textarea" },
@@ -477,11 +534,16 @@ class Unmatched {
         this.#updateExisting.disabled = true;
         this.#createNew.disabled = true;
         // set the delete item disable flag based on paid mand manages from parent screen
-        console.log("this.#matchRowData");
-        console.log(this.#matchRowData);
+        //console.log("this.#matchRowData");
+        //console.log(this.#matchRowData);
         this.#deleteNew.disabled = !((this.#matchRowData.manages == '' || this.#matchRowData.manages == null || this.#matchRowData.manages == 0)
             && (this.#matchRowData.paid == null || Number(this.#matchRowData.paid) == 0));
         this.#matchCandidatesModal.show();
+        let newPersonId = this.#newperson.id;
+        setTimeout(function() {
+            unmatchedPeople.selectPerson('n',  newPersonId);
+        }, 500); // Adjust timeout as needed
+
         show_message(data['success'], 'success', 'result_message_candidate');
     }
 
@@ -512,6 +574,7 @@ class Unmatched {
             this.#matchBadge.innerHTML = this.#matchPerson.badgename;
             this.#matchAddress.innerHTML = this.#matchPerson.fullAddr;
             this.#matchEmail.innerHTML = this.#matchPerson.email_addr;
+            this.#matchAge.innerHTML = this.#matchPerson.currentAgeType;
             this.#matchPhone.innerHTML = this.#matchPerson.phone;
             this.#matchFlags.innerHTML = 'Active: ' + this.#matchPerson.active + ', Banned: ' + this.#matchPerson.banned;
             if (this.#matchPerson.managerId) {
@@ -539,6 +602,7 @@ class Unmatched {
         this.#newBadge.innerHTML = this.#newperson.badgename;
         this.#newAddress.innerHTML = this.#newperson.fullAddr;
         this.#newEmail.innerHTML = this.#newperson.email_addr;
+        this.#newAge.innerHTML = this.#newperson.currentAgeType;
         this.#newPhone.innerHTML = this.#newperson.phone;
         this.#newFlags.innerHTML = 'Active: ' + this.#newperson.active + ', Banned: ' + this.#newperson.banned;
         if (this.#newperson.managerId) {
@@ -568,6 +632,7 @@ class Unmatched {
         this.#zip.value = this.#newperson.zip;
         this.#country.value = this.#newperson.country;
         this.#emailAddr.value = this.#newperson.email_addr;
+        this.#age.value = this.#newperson.currentAgeType;
         this.#phone.value = this.#newperson.phone;
         this.#active.value = this.#newperson.active == 'N' ? 'N' : 'Y';  // default to Y
         this.#banned.value = this.#newperson.banned == 'Y' ? 'Y' : 'N';  // default to N
@@ -586,6 +651,7 @@ class Unmatched {
             this.#matchBadge.style.backgroundColor = this.#newperson.badgename != this.#matchPerson.badgename ? diffcolor : '';
             this.#matchAddress.style.backgroundColor = this.#newperson.fullAddr != this.#matchPerson.fullAddr ? diffcolor : '';
             this.#matchEmail.style.backgroundColor = this.#newperson.email_addr != this.#matchPerson.email_addr ? diffcolor : '';
+            this.#matchAge.style.backgroundColor = this.#newperson.currentAgeType != this.#matchPerson.currentAgeType ? diffcolor : '';
             this.#matchPhone.style.backgroundColor = this.#newperson.phone != this.#matchPerson.phone ? diffcolor : '';
             this.#matchPolicies.style.backgroundColor = this.#newperson.policies != this.#matchPerson.policies ? diffcolor : '';
             this.#matchFlags.style.backgroundColor = this.#newperson.flags != this.#matchPerson.flags ? diffcolor : '';
@@ -600,7 +666,7 @@ class Unmatched {
     // update the database with the new match
     saveMatch(type) {
         // get all of the edited values, the existing id and the new id
-        var postdata = {
+        let postdata = {
             type: type,
             newperid: this.#newperson.id,
             perid: (type == 'e' && this.#matchPerson) ? this.#matchPerson.id : null,
@@ -619,6 +685,7 @@ class Unmatched {
             zip: this.#zip.value,
             country: this.#country.value,
             emailAddr: this.#emailAddr.value,
+            age: this.#age.value == '' ? null : this.#age.value,
             phone: this.#phone.value,
             active: this.#active.value,
             banned: this.#banned.value,
@@ -634,19 +701,23 @@ class Unmatched {
         clear_message('result_message_candidate');
         clear_message();
         clearError();
-        var _this = this;
-        var priorUpdateExistingDisabled = this.#updateExisting.disabled;
-        var priorCreateNewDisabled = this.#createNew.disabled;
+        let _this = this;
+        let priorUpdateExistingDisabled = this.#updateExisting.disabled;
+        let priorCreateNewDisabled = this.#createNew.disabled;
+        let priorDeleteNewDisabled = this.#deleteNew.disabled;
         this.#updateExisting.disabled = true;
         this.#createNew.disabled = true;
+        this.#deleteNew.disabled = true;
 
         $.ajax({
             url: script,
             method: 'POST',
             data: postdata,
             success: function (data, textStatus, jhXHR) {
+                checkRefresh(data);
                 data.priorUpdateExistingDisabled = priorUpdateExistingDisabled;
                 data.priorCreateNewDisabled = priorCreateNewDisabled;
+                data.priorDeleteNewDisabled = priorDeleteNewDisabled;
                 _this.updateSuccess(data);
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -654,6 +725,7 @@ class Unmatched {
                 show_message("ERROR in " + script + ": " + jqXHR.responseText, 'error', 'result_message_candidate');
                 this.#updateExisting.disabled = priorUpdateExistingDisabled;
                 this.#createNew.disabled = priorCreateNewDisabled;
+                this.#deleteNew.disabled = priorDeleteNewDisabled;
                 return false;
             }
         });
@@ -665,12 +737,14 @@ class Unmatched {
             show_message(data['error'], 'error', 'result_message_candidate');
             this.#updateExisting.disabled = data.priorUpdateExistingDisabled;
             this.#createNew.disabled = data.priorCreateNewDisabled;
+            this.#deleteNew.disabled = data.priorDeleteNewDisabled;
             return;
         }
         if (data['warn']) {
             show_message(data['warn'], 'warn', 'result_message_candidate');
             this.#updateExisting.disabled = data.priorUpdateExistingDisabled;
             this.#createNew.disabled = data.priorCreateNewDisabled;
+            this.#deleteNew.disabled = data.priorDeleteNewDisabled;
             return;
         }
 
@@ -730,6 +804,7 @@ class Unmatched {
             this.#matchBadge.innerHTML = '';
             this.#matchAddress.innerHTML = '';
             this.#matchEmail.innerHTML = '';
+            this.#matchAge.innerHTML = '';
             this.#matchPhone.innerHTML = '';
             this.#matchPolicies.innerHTML = '';
             this.#matchFlags.innerHTML = '';
@@ -741,6 +816,7 @@ class Unmatched {
             this.#matchBadge.style.backgroundColor = '';
             this.#matchAddress.style.backgroundColor = '';
             this.#matchEmail.style.backgroundColor = '';
+            this.#matchAge.style.backgroundColor = '';
             this.#matchPhone.style.backgroundColor = '';
             this.#matchPolicies.style.backgroundColor = '';
             this.#matchFlags.style.backgroundColor = '';
@@ -754,6 +830,7 @@ class Unmatched {
             this.#newBadge.innerHTML = '';
             this.#newAddress.innerHTML = '';
             this.#newEmail.innerHTML = '';
+            this.#newAge.value = '';
             this.#newPhone.innerHTML = '';
             this.#newPolicies.innerHTML = '';
             this.#newFlags.innerHTML = '';
@@ -765,6 +842,7 @@ class Unmatched {
             this.#newBadge.style.backgroundColor = '';
             this.#newAddress.style.backgroundColor = '';
             this.#newEmail.style.backgroundColor = '';
+            this.#newAge.style.backgroundColor = '';
             this.#newPhone.style.backgroundColor = '';
             this.#newPolicies.style.backgroundColor = '';
             this.#newFlags.style.backgroundColor = '';
@@ -844,6 +922,14 @@ class Unmatched {
                 this.#emailAddr.value = this.#newperson.email_addr;
                 break;
 
+            case 'matchAge':
+                this.#age.value = this.#matchPerson.currentAgeType;
+                break;
+
+            case 'newAge':
+                this.#age.value = this.#newperson.currentAgeType;
+                break;
+
             case 'matchPhone':
                 this.#phone.value = this.#matchPerson.phone;
                 break;
@@ -903,6 +989,7 @@ class Unmatched {
                 this.#zip.value = this.#matchPerson.zip;
                 this.#country.value = this.#matchPerson.country;
                 this.#emailAddr.value = this.#matchPerson.email_addr;
+                this.#age.value = this.#matchPerson.currentAgeType;
                 this.#phone.value = this.#matchPerson.phone;
                 mpol = null;
                 if (this.#matchType == 'p')
@@ -925,6 +1012,7 @@ class Unmatched {
                 this.#legalName.value = this.#newperson.legalName;
                 this.#pronouns.value = this.#newperson.pronouns;
                 this.#badgeName.value = this.#newperson.badge_name;
+                this.#badgeNameL2.value = this.#newperson.badgeNameL2;
                 this.#address.value = this.#newperson.address;
                 this.#addr2.value = this.#newperson.addr_2;
                 this.#city.value = this.#newperson.city;
@@ -932,6 +1020,7 @@ class Unmatched {
                 this.#zip.value = this.#newperson.zip;
                 this.#country.value = this.#newperson.country;
                 this.#emailAddr.value = this.#newperson.email_addr;
+                this.#age.value = this.#newperson.currentAgeType;
                 this.#phone.value = this.#newperson.phone;
                 for (policy in this.#newpersonPolicies) {
                     document.getElementById('p_' + policy).checked = this.#newpersonPolicies[policy] == 'Y';
@@ -973,6 +1062,7 @@ class Unmatched {
             method: 'POST',
             data: postdata,
             success: function (data, textStatus, jhXHR) {
+                checkRefresh(data);
                 _this.updateAdditional(data);
             },
             error: function (jqXHR, textStatus, errorThrown) {

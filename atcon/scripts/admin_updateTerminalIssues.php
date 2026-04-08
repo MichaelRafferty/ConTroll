@@ -7,6 +7,7 @@
 
 require_once('../lib/base.php');
 require_once('../../lib/log.php');
+require_once('../../lib/tax.php');
 require_once('../../lib/cc__load_methods.php');
 require_once('../../lib/term__load_methods.php');
 
@@ -344,13 +345,13 @@ EOS;
         $gross = $line['gross_sales_money']['amount'] / 100;
         $note = $line['note'];
         $note = substr($note, 0, strpos($note, ':'));
-        $regid = explode(',', $note)[2];
-
-        // update the database
-        //$message .= "\$upd_rows += dbSafeCmd($updRegSql, 'disdii', array($gross, $master_tid, 'paid', $applied_disc, $coupon, $regid));<br/>";
-        $upd_rows += dbSafeCmd($updRegSql, 'disdii', array($paid, $master_tid, 'paid', $applied_disc, $coupon, $regid));
+        if (is_array($note) && count($note) > 2) {
+            $regid = explode(',', $note)[2];
+            // update the database
+            //$message .= "\$upd_rows += dbSafeCmd($updRegSql, 'disdii', array($gross, $master_tid, 'paid', $applied_disc, $coupon, $regid));<br/>";
+            $upd_rows += dbSafeCmd($updRegSql, 'disdii', array ($paid, $master_tid, 'paid', $applied_disc, $coupon, $regid));
         }
-
+    }
 
 // if coupon is specified, mark transaction as having a coupon
     if ($coupon || $discountAmt > 0) {
@@ -462,8 +463,17 @@ EOS;
             $receiptUrl = null;
         $last4 = $payment['card_details']['card']['last_4'];
         $id = $payment['id'];
-        $auth = $payment['card_details']['auth_result_code'];
-        $nonce = $payment['card_details']['card']['fingerprint'];
+        if (array_key_exists('card_details', $payment)) {
+            if (array_key_exists('auth_result_code', $payment['card_details']))
+                $auth = $payment['card_details']['auth_result_code'];
+            else
+                $auth = null;
+
+            if (array_key_exists('fingerprint', $payment['card_details']))
+                $nonce = $payment['card_details']['card']['fingerprint'];
+            else
+                $nonce = null;
+        }
         $status = $payment['status'];
         switch ($payment['source_type']) {
             case 'CARD':
@@ -558,6 +568,7 @@ UPDATE artSales
 SET status = ?
 WHERE id = ?;
 EOS;
+
     $usrstr = 'si';
     $upd_cart = 0;
     $upd_rows = 0;
@@ -573,14 +584,15 @@ EOS;
         $paid = $line['gross_sales_money'];
         $upd_rows += dbSafeCmd($updArtSalesSQL, $atypestr, array ($master_tid, $artSalesId));
 
-        // change status of items sold, decrease quantity of print items
+        // change status of items sold, decrease quantity of art and  print items
         $upd_cart += dbSafeCmd($updQuantitySQL, $uqstr, array ($quantity, $quantity, $artId));
 
         if ($priceType == 'Quick Sale') {
             $upd_cart += dbSafeCmd($updStatusSQL, $usstr, array ('Quicksale/Sold', $perId, $paid, $artId));
             $upd_rows += dbSafeCmd($updArtSalesStatusSQL, $usrstr, array ('Quicksale/Sold', $artSalesId));
         } else {
-            $upd_cart += dbSafeCmd($updStatusSQL, $usstr, array ('Purchased/Released', $perId, $paid, $artId));
+            if ($type == 'art')
+                $upd_cart += dbSafeCmd($updStatusSQL, $usstr, array ('Purchased/Released', $perId, $paid, $artId));
             $upd_rows += dbSafeCmd($updArtSalesStatusSQL, $usrstr, array ('Purchased/Released', $artSalesId));
         }
 
@@ -605,7 +617,7 @@ UPDATE transaction
 SET complete_date = NOW(), orderId = ?
 WHERE id = ?;
 EOS;
-    $completed = dbSafeCmd($updCompleteSQL, 'dsi', array ($order['id'], $master_tid));
+    $completed = dbSafeCmd($updCompleteSQL, 'si', array ($order['id'], $master_tid));
 
     return $message;
 }

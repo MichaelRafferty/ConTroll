@@ -3,6 +3,7 @@
 function draw_login($config_vars, $result_message = '', $result_color = '', $why = 'continue to the portal') : void {
     $con = get_conf('con');
     $policies = getPolicies();
+    $interests = getInterests();
     ?>
  <!-- signin form (at body level) -->
     <div id='signin'>
@@ -20,7 +21,7 @@ function draw_login($config_vars, $result_message = '', $result_color = '', $why
                     </button>
                 </div>
                 <div class='col-sm-auto'>
-                    Don't have one?<br/>Create a passkey after signing on and skip the password next time.
+                    Don't have one?<br/>Create a passkey AFTER LOGGING IN another way and skip the password next time.
                 </div>
             </div>
             <?php } ?>
@@ -105,6 +106,7 @@ function draw_login($config_vars, $result_message = '', $result_color = '', $why
     <script type='text/javascript'>
         var config = <?php echo json_encode($config_vars); ?>;
         var policies = <?php echo json_encode($policies); ?>;
+        var interests = <?php echo json_encode($interests); ?>;
     </script>
 </html>
 <?php
@@ -198,17 +200,22 @@ function chooseAccountFromEmail($email, $id, $linkid, $passedMatch, $validationT
 
     if (count($matches) == 0) {
         $policies = getPolicies();
-        draw_editPersonModal('login', $policies);
+        $interests = getInterests();
+        [$ageList, $ageListIdx] = getAgeList($config_vars['conid']);
+        draw_addMembershipsConfirmModal();
+        draw_editPersonModal('login', $policies, $ageListIdx, $config_vars['startdate'], $interests);
         // ask to create new account
 ?>
-        <h3>The email <?php echo $email;?> does not have an account.</h3>
-        <div class='row'>
+        <h3 class="mt-3">The email <?php echo $email;?> does not have an account.</h3>
+        <div class='row mb-2'>
             <div class='col-sm-12'>
-                <p>If you believe you already have a membership or account it may been created using a different email address. If this is the case, please
-                    login again using the correct email address. If you cannot remember what email you used, please contact
-                    <?php echo $con_conf['regadminemail']?>.</p>
-                <p>Once you have logged in using the correct email address, you can use the 'Account
-                    Settings’ menu item to add email addresses to your account.</p>
+                <p>If you believe you already have a membership or account it may have been created using a different email address.<br/>
+                    If this is the case, please use one of the login choices below to login again using the correct email address.<br/>
+                    If you cannot remember what email you used, please contact <?php echo $con_conf['regadminemail']?> for assistance.</p>
+                <p>Once you have logged in using the correct email address, you can use the 'Account Settings’ menu item to add
+                    additional email addresses to your account.</p>
+                <p>Otherwise, please use the create new account button below to start the account creation process.</p>
+                <?php echo outputCustomtext('profile/email'); ?>
             </div>
         </div>
 <?php

@@ -4,14 +4,19 @@ require_once('../../lib/log.php');
 require_once('../../lib/email__load_methods.php');
 require_once('../../lib/policies.php');
 require_once('../../lib/interests.php');
+require_once '../lib/sessionAuth.php';
 
-$check_auth = google_init("ajax");
-$perm = "people";
+// use common global Ajax return functions
+global $returnAjaxErrors, $return500errors;
+$returnAjaxErrors = true;
+$return500errors = true;
 
-$response = array("post" => $_POST, "get" => $_GET, "perm"=>$perm);
-
-if($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
-    $response['error'] = "Authentication Failed";
+$perm = 'people';
+$response = array ('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
+$authToken = new authToken('script');
+$response['tokenStatus'] = $authToken->checkToken();
+if (!$authToken->isLoggedIn() || !$authToken->checkAuth($perm)) {
+    $response['error'] = 'Authentication Failed';
     ajaxSuccess($response);
     exit();
 }
@@ -31,7 +36,7 @@ if ($type == 'e') {
     $response['error'] = 'Parameter Error';
     ajaxSuccess($response);
 }
-$updatedBy = $_SESSION['user_perid'];
+$updatedBy = $authToken->getPerid();
 
 $con = get_conf('con');
 $portal_conf = get_conf('portal');
@@ -58,19 +63,19 @@ if ($matchPerid && $matchPerid > 0) {
 }
 
 $iP = <<<EOS
-INSERT INTO perinfo(last_name, first_name, middle_name, suffix, email_addr, phone, badge_name,
+INSERT INTO perinfo(last_name, first_name, middle_name, suffix, email_addr, currentAgeType, currentAgeConId, phone, badge_name, badgenameL2,
     legalName, pronouns, address, addr_2, city, state, zip, country,
     banned, active, managedBy, managedReason, change_notes, updatedBy)
-VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
+VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
 EOS;
 $uP = <<<EOS
 UPDATE perinfo
-SET last_name = ?, first_name = ?, middle_name = ?, suffix = ?, email_addr = ?, phone = ?, badge_name = ?, 
-    legalName = ?, pronouns = ?, address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?,
+SET last_name = ?, first_name = ?, middle_name = ?, suffix = ?, email_addr = ?, currentAgeType = ?, currentAgeConId = ?, phone = ?,
+    badge_name = ?, badgeNameL2 = ?, legalName = ?, pronouns = ?, address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?,
 	banned = ?, active = ?, managedBy = ?, managedReason = ?, change_notes = ?, updatedBy = ?
 WHERE id = ?;
 EOS;
-$typestr = 'sssssssssssssssssissi';
+$typestr = 'ssssssisssssssssssssissi';
 
 // built insert/update array
 $values = [
@@ -79,8 +84,11 @@ $values = [
     $_POST['middleName'] == null ? '' : $_POST['middleName'],
     $_POST['suffix'] == null ? '' : $_POST['suffix'],
     $_POST['emailAddr'] == null ? '' : $_POST['emailAddr'],
+    $_POST['age'] == '' ? null : $_POST['age'],
+    $_POST['age'] == '' ? null : $conid,
     $_POST['phone'] == null ? '' : $_POST['phone'],
-    $_POST['badgeName'] == null ? '' : $_POST['badgeName'],
+    $_POST['badge_name'] == null ? '' : $_POST['badge_name'],
+    $_POST['badgeNameL2'] == null ? '' : $_POST['badgeNameL2'],
     $_POST['legalName'] == null ? '' : $_POST['legalName'],
     $_POST['pronouns'] == null ? '' : $_POST['pronouns'],
     $_POST['address'] == null ? '' : $_POST['address'],
@@ -93,11 +101,11 @@ $values = [
     $_POST['active'] == null ? '' : $_POST['active']
 ];
 $managedBy = null;
-// add mnager and reason
+// add manager and reason
 switch ($_POST['managerAction']) {
     case 'ACC':
         $managedBy = $_POST['managerId'];
-        if ($managedBy == 'null')
+        if ($managedBy == 'null' || $managedBy == '')
             $managedBy = null;
         $values[] = $managedBy;
         $values[] = 'Assigned PM';

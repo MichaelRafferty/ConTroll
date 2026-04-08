@@ -21,22 +21,7 @@ class Find {
     #findPersonBTN = null;
 
     // edit person fields
-    #firstName = null;
-    #middleName = null;
-    #lastName = null;
-    #suffix = null;
-    #legalName = null;
-    #pronouns = null;
-    #badgeName = null;
-    #badgeNameL2 = null;
-    #address = null;
-    #addr2 = null;
-    #city = null;
-    #state = null;
-    #zip = null;
-    #country = null;
-    #emailAddr = null;
-    #phone = null;
+    #origAge = '';
     #managerName = null;
     #managerId = null;
     #active = null;
@@ -50,6 +35,8 @@ class Find {
     #managesRow = null;
     #managerHdr = null;
     #managerRow = null;
+    #managerRowTxt = null;
+    #managerRowCol = null;
     #addManages = null;
     #managesId = null;
     #managerLookupRows = null
@@ -61,10 +48,15 @@ class Find {
     #managesLookupTable = null;
     #managesLookupRows = null
     #managesName = null;
+    #updateOverrideBTN = null;
+    #memAgeType = null;
+    #renumberExisting = null;
+    #renumberNew = null;
 
     #matched = null;
     #editRow = null;
     #historyTable = null;
+    #prefix = 'f_'; // find's prefix for fields in edit
 
     // globals before open
     constructor(debug) {
@@ -82,22 +74,6 @@ class Find {
         if (id) {
             this.#editModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
             this.#editTitle = document.getElementById('editTitle');
-            this.#firstName = document.getElementById('f_fname');
-            this.#middleName = document.getElementById('f_mname');
-            this.#lastName = document.getElementById('f_lname');
-            this.#suffix = document.getElementById('f_suffix');
-            this.#legalName = document.getElementById('f_legalName');
-            this.#pronouns = document.getElementById('f_pronouns');
-            this.#badgeName = document.getElementById('f_badge_name');
-            this.#badgeNameL2 = document.getElementById('f_badgeNameL2');
-            this.#address = document.getElementById('f_addr');
-            this.#addr2 = document.getElementById('f_addr2');
-            this.#city = document.getElementById('f_city');
-            this.#state = document.getElementById('f_state');
-            this.#zip = document.getElementById('f_zip');
-            this.#country = document.getElementById('f_country');
-            this.#emailAddr = document.getElementById('f_email1');
-            this.#phone = document.getElementById('f_phone');
             this.#managerId = document.getElementById('f_managerId');
             this.#managerName = document.getElementById('f_managerName');
             this.#active = document.getElementById('f_active');
@@ -108,13 +84,19 @@ class Find {
             this.#managesRow = document.getElementById('managesRow');
             this.#managerHdr = document.getElementById('managerHdr');
             this.#managerRow = document.getElementById('managerRow');
+            this.#managerRowTxt = document.getElementById('managerRowTxt');
+            this.#managerRowCol = document.getElementById('managerRowCol');
             this.#managerLookupFind = document.getElementById('managerLookupFind');
             this.#newManagerLookup = document.getElementById('newManagerLookup');
             this.#managesLookupFind = document.getElementById('managesLookupFind');
             this.#newManagesLookup = document.getElementById('newManagesLookup');
             this.#addManages = document.getElementById('addManages');
-            this.#managesId = document.getElementById('f_managesId');
+            this.#managesId = document.getElementById(this.#prefix + 'managesId');
             this.#managesName = document.getElementById('managesName');
+            this.#updateOverrideBTN = document.getElementById('updateExistingOverride');
+            this.#updateOverrideBTN.disabled = true;
+            this.#renumberExisting = document.getElementById('renumberExistingPerid');
+            this.#renumberNew = document.getElementById('f_renumberNewPerid');
         }
         var id  = document.getElementById('person-history');
         if (id) {
@@ -158,13 +140,8 @@ class Find {
             this.#managerLookupFind.hidden = true;
             this.#managesLookupFind.hidden = true;
             this.#addManages.hidden = true;
-            var rows = [];
-            rows.push(row);
-            var data = {};
-            data.matches = rows;
-            this.#directEdit = id;
-            this.findSuccess(data);
-            setTimeout(add_editPerson, 100);
+            this.#findPattern.value = id;
+            this.find();
             return;
         }
         this.#findPattern.focus();
@@ -204,6 +181,7 @@ class Find {
             method: 'POST',
             data: postdata,
             success: function (data, textStatus, jhXHR) {
+                checkRefresh(data);
                 _this.#findPersonBTN.disabled = false;
                 _this.findSuccess(data);
             },
@@ -251,6 +229,7 @@ class Find {
                 {title: "Full Address", field: "fullAddr", width: 350, headerSort: true, headerFilter: true, formatter: "textarea", },
                 {title: "Email", field: "email_addr", width: 250, headerSort: true, headerFilter: true, },
                 {title: "Phone", field: "phone", width: 150, headerSort: true, headerFilter: true, },
+                {title: "Current Age / Mem Age", field: "displayAgeType", width: 105, headerSort: true, headerFilter: true, headerWordWrap: true, formatter: 'html', },
                 {title: "Memberships", field: "memberships", minWidth: 300, headerSort: true, headerFilter: true, formatter: "textarea", },
                 {field: "creation_date", visible: false },
                 {field: 'first_name', visible: false,},
@@ -265,8 +244,10 @@ class Find {
                 {field: 'state', visible: false,},
                 {field: 'zip', visible: false,},
                 {field: 'country', visible: false,},
+                {field: 'currentAgeType', visible: false,},
                 {field: 'active', visible: false,},
                 {field: 'banned', visible: false,},
+                {field: 'hasManagedReg', visible: false,},
                 {title: "Admin Notes", headerWordWrap: true, field: 'admin_notes', visible: false, },
                 {title: "Open Notes", headerWordWrap: true,field: 'open_notes', visible: false, },
             ],
@@ -337,6 +318,7 @@ class Find {
     // editPerson - call up this person to edit
     editPerson(index) {
         this.#editRow = this.#findTable.getRow(index).getData();
+        this.#memAgeType = this.#editRow.memAgeType == '' ? null : this.#editRow.memAgeType
 
         var postdata = {
             type: 'details',
@@ -352,6 +334,7 @@ class Find {
             method: 'POST',
             data: postdata,
             success: function (data, textStatus, jhXHR) {
+                checkRefresh(data);
                 _this.findDetailsSuccess(data);
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -378,28 +361,32 @@ class Find {
         this.#managed = data['managed'];
         // populate the form
         this.#editPersonName.innerHTML = this.#editRow.fullName + ' (' + this.#editRow.id + ')';
-        this.#firstName.value = this.#editRow.first_name;
-        this.#middleName.value = this.#editRow.middle_name;
-        this.#lastName.value = this.#editRow.last_name;
-        this.#suffix.value = this.#editRow.suffix;
-        this.#legalName.value = this.#editRow.legalName;
-        this.#pronouns.value = this.#editRow.pronouns;
-        this.#badgeName.value = this.#editRow.badge_name;
-        this.#badgeNameL2.value = this.#editRow.badgeNameL2;
-        this.#address.value = this.#editRow.address;
-        this.#addr2.value = this.#editRow.addr_2;
-        this.#city.value = this.#editRow.city;
-        this.#state.value = this.#editRow.state;
-        this.#zip.value = this.#editRow.zip;
-        this.#country.value = this.#editRow.country;
-        this.#emailAddr.value = this.#editRow.email_addr;
-        this.#phone.value = this.#editRow.phone;
+        profile.setAll(this.#editRow.first_name, this.#editRow.middle_name, this.#editRow.last_name, this.#editRow.suffix, this.#editRow.legalName,
+            this.#editRow.pronouns, this.#editRow.address, this.#editRow.addr_2, this.#editRow.city, this.#editRow.state, this.#editRow.zip,
+            this.#editRow.country, this.#editRow.phone, this.#editRow.badge_name, this.#editRow.badgeNameL2,
+            this.#editRow.currentAgeType == null ? '' : this.#editRow.currentAgeType)
+
+
+        profile.setEmail(this.#editRow.email_addr);
+        this.#origAge = profile.age();
         this.#managerId.value = this.#editRow.managerId;
         this.#managerName.innerHTML = this.#editRow.manager ? this.#editRow.manager : '';
         this.#active.value = this.#editRow.active;
         this.#banned.value = this.#editRow.banned;
         this.#openNotes.value = this.#editRow.open_notes ? this.#editRow.open_notes : '';
         this.#adminNotes.value = this.#editRow.admin_notes ? this.#editRow.admin_notes : '';
+
+        // update rest of age items to match age
+        if (this.#memAgeType == null) {
+            profile.hideAgeText(true);
+            profile.hideAgeDiv(true);
+        } else {
+            profile.setAgeText('<span style="color: red;"><b>A membership has an age type of ' + this.#memAgeType + "</b></span>");
+            let ages = this.#editRow.displayAgeType.toLowerCase().split('<br>');
+            profile.hideAgeText(false)
+            profile.hideAgeField(false);
+            profile.hideAgeDiv(true);
+        }
 
         // loop over the policies
         if (this.#memberPolicies && this.#memberPolicies.length > 0) {
@@ -410,7 +397,7 @@ class Find {
                 if (response === null || response === undefined) {
                     response = policy.defaultValue;
                 }
-                document.getElementById('p_f_' + policy.policy).checked = response == 'Y';
+                document.getElementById('f_p_' + policy.policy).checked = response == 'Y';
             }
         }
 
@@ -423,6 +410,11 @@ class Find {
             }
         }
 
+        // if renumber exists, set the current perid
+        if (this.#renumberExisting) {
+            this.#renumberExisting.innerHTML = data.post.perid;
+            this.#renumberNew.value = '';
+        }
         this.#managerHdr.hidden = true;
         this.#managerRow.hidden = true;
         this.#managesLookupFind.hidden = true;
@@ -452,9 +444,19 @@ class Find {
         }
         if (this.#managed.length == 0) {
             this.#managerHdr.hidden = false;
-            this.#managerRow.hidden = false;
-            this.#managerId.value = this.#editRow.managerId;
-            this.#managerName.innerHTML = this.#editRow.manager;
+            if (this.#editRow.hasManagedReg > 0) {
+                this.#managerRow.hidden = true;
+                this.#managerRowTxt.hidden = false;
+                this.#managerRowCol.innerHTML = "Managed by " +  this.#editRow.manager + " (" + this.#editRow.managerId +
+                    ") and has a managed membership, cannot dissociate.";
+            } else {
+                this.#managerRowTxt.hidden = true;
+                this.#managerRow.hidden = true;
+                this.#managerRowCol.innerHTML = 'Placeholder';
+                this.#managerId.value = this.#editRow.managerId;
+                this.#managerName.innerHTML = this.#editRow.manager;
+            }
+
         }
 
         if (data.success) {
@@ -483,6 +485,7 @@ class Find {
             method: 'POST',
             data: postdata,
             success: function (data, textStatus, jhXHR) {
+                checkRefresh(data);
                 _this.unmanageSuccess(data);
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -546,6 +549,7 @@ class Find {
             method: 'POST',
             data: postdata,
             success: function (data, textStatus, jhXHR) {
+                checkRefresh(data);
                 _this.lookupManagerSuccess(data);
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -587,6 +591,7 @@ class Find {
                 {title: "Full Address", field: "fullAddr", width: 350, headerSort: true, headerFilter: true, formatter: "textarea",  },
                 {title: "Email", field: "email_addr", width: 250, headerSort: true, headerFilter: true, },
                 {title: "Phone", field: "phone", width: 150, headerSort: true, headerFilter: true, },
+                {title: "Current Age/Mem Age", field: "displayAgeType", width: 100, headerSort: true, headerFilter: true, headerWordWrap: true, formatter: 'html', },
                 {title: "Memberships", field: "memberships", minWidth: 300, headerSort: true, headerFilter: true, formatter: "textarea", },
                 {field: "creation_date", visible: false },
                 {field: 'first_name', visible: false,},
@@ -652,6 +657,7 @@ class Find {
             method: 'POST',
             data: postdata,
             success: function (data, textStatus, jhXHR) {
+                checkRefresh(data);
                 _this.lookupManagesSuccess(data);
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -693,6 +699,7 @@ class Find {
                 {title: "Full Address", field: "fullAddr", width: 350, headerSort: true, headerFilter: true, formatter: "textarea", },
                 {title: "Email", field: "email_addr", width: 250, headerSort: true, headerFilter: true, },
                 {title: "Phone", field: "phone", width: 150, headerSort: true, headerFilter: true, },
+                {title: "Current Age/Mem Age", field: "displayAgeType", width: 100, headerSort: true, headerFilter: true, headerWordWrap: true, formatter: 'html', },
                 {title: "Memberships", field: "memberships", minWidth: 300, headerSort: true, headerFilter: true, formatter: "textarea", },
                 {field: "creation_date", visible: false },
                 {field: 'first_name', visible: false,},
@@ -756,6 +763,7 @@ class Find {
             method: 'POST',
             data: postdata,
             success: function (data, textStatus, jhXHR) {
+                checkRefresh(data);
                 _this.addManageeSuccess(data);
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -798,6 +806,7 @@ class Find {
             method: 'POST',
             data: postdata,
             success: function (data, textStatus, jhXHR) {
+                checkRefresh(data);
                 _this.personHistorySuccess(data);
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -856,6 +865,7 @@ class Find {
                 { title: "Badge Name", field: 'badge_name', headerWordWrap: true, formatter: findPerson.colorSet, headerSort: false, },
                 { title: "Badge Line 2", field: 'badgeNameL2', headerWordWrap: true, formatter: findPerson.colorSet, headerSort: false, },
                 { title: "Pronouns", field: 'pronouns', formatter: findPerson.colorSet, headerSort: false, },
+                { title: "Current Age/Mem Age", field: 'curentAgeType', formatter: findPerson.colorSet, headerSort: false, headerWordWrap: true, },
                 { title: "Phone", field: 'phone', formatter: findPerson.colorSet, headerSort: false, },
                 { title: "Email Address", field: 'email_addr', headerWordWrap: true, formatter: findPerson.colorSet, headerSort: false, },
                 { title: "Address", field: 'address', formatter: findPerson.colorSet, headerSort: false, },
@@ -905,9 +915,10 @@ class Find {
     // saveEdit - save the edited data back to the database
     saveEdit() {
         // validate the data, simple checks
-        var email1 = this.#emailAddr.value;
-        if (email1 != '/r' && validateAddress(email1) == false) {
-            show_message("Invalid Email Address", 'error', 'find_edit_message');
+
+        let person = URLparamsToArray($('#f_editPerson').serialize());
+        if (!profile.validate(person, 'find_edit_message', saveEdit2, saveEdit)) {
+            this.#updateOverrideBTN.disabled = false;
             return;
         }
 
@@ -916,7 +927,11 @@ class Find {
                 'error', 'find_edit_message');
             return;
         }
+        this.saveEdit2();
+        return;
+    }
 
+    saveEdit2() {
         // first we need the perid we are editing, this.#editRow has the row
         var script = 'scripts/people_updateEdit.php';
 
@@ -925,23 +940,23 @@ class Find {
         var postdata = {
             action: 'saveedit',
             perid: this.#editRow.id,
-            firstName: this.#firstName.value,
-            middleName: this.#middleName.value,
-            lastName: this.#lastName.value,
-            suffix: this.#suffix.value,
-            legalName: this.#legalName.value,
-            pronouns: this.#pronouns.value,
-            badgeName: this.#badgeName.value,
-            badgeNameL2: this.#badgeNameL2.value,
-            address: this.#address.value,
-            addr2: this.#addr2.value,
-            city: this.#city.value,
-            state: this.#state.value,
-            zip: this.#zip.value,
-            country: this.#country.value,
-            emailAddr: this.#emailAddr.value,
-            email_addr: this.#emailAddr.value,
-            phone: this.#phone.value,
+            firstName: profile.fname(),
+            middleName: profile.mname(),
+            lastName: profile.lname(),
+            suffix: profile.suffix(),
+            legalName: profile.legalName(),
+            pronouns: profile.pronouns(),
+            badgeName: profile.badgename(),
+            badgeNameL2: profile.badgenameL2(),
+            address: profile.addr(),
+            addr2: profile.addr2(),
+            city: profile.city(),
+            state: profile.state(),
+            zip: profile.zip(),
+            country: profile.country(),
+            emailAddr: profile.email(),
+            email_addr: profile.email(),
+            phone: profile.phone(),
             managerId: this.#managerId.value,
             managerName: this.#managerName.innerHTML,
             active: this.#active.value,
@@ -949,6 +964,8 @@ class Find {
             openNotes: this.#openNotes.value,
             adminNotes: this.#adminNotes.value,
             oldPolicies: JSON.stringify(this.#memberPolicies),
+            currentAgeType: profile.age() == '' ? this.#memAgeType : profile.age(),
+            origAgeType: this.#origAge,
             existingInterests: JSON.stringify(this.#memberInterests),
         };
         // now the policies
@@ -958,7 +975,7 @@ class Find {
             var newPolicies = {};
             for (i = 0; i < keys.length; i++) {
                 var policy = this.#memberPolicies[keys[i]];
-                if (document.getElementById('p_f_' + policy.policy).checked) {
+                if (document.getElementById('f_p_' + policy.policy).checked) {
                     newPolicies['p_' + policy.policy] = 'Y';
                 }
             }
@@ -978,8 +995,11 @@ class Find {
         }
         postdata['newInterests'] = JSON.stringify(newInterests);
 
+        if (this.#renumberNew)
+            postdata['renumberNew'] = this.#renumberNew.value;
+
         // manager
-        postdata['managerId'] = document.getElementById('f_managerId').value;
+        postdata['managerId'] = document.getElementById(this.#prefix + 'managerId').value;
         // manages
         postdata['managed'] = this.#managed;
 
@@ -989,6 +1009,7 @@ class Find {
             method: 'POST',
             data: postdata,
             success: function (data, textStatus, jhXHR) {
+                checkRefresh(data);
                 _this.saveEditSuccess(data);
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -1010,9 +1031,16 @@ class Find {
         }
 
         // update the underlying row in the table
-        this.#findTable.updateData(data.updated);
+        if (data.hasOwnProperty('newPerid')) {
+            this.#findTable.updateOrAddData(data.updated);
+            this.#findTable.deleteRow(this.#editRow.id);
+            this.#editRow.id = data.newPerId;
+        } else {
+            this.#findTable.updateData(data.updated);
+        }
 
         this.clearForm();
+        this.#memAgeType = null;
         this.#editModal.hide();
         if (data.success) {
             show_message(data.success, 'success');
@@ -1021,27 +1049,15 @@ class Find {
 
     // empty the form, and other parts for starting over
     clearForm() {
-        this.#firstName.value = '';
-        this.#middleName.value = '';
-        this.#lastName.value = '';
-        this.#suffix.value = '';
-        this.#legalName.value = '';
-        this.#pronouns.value = '';
-        this.#badgeName.value = '';
-        this.#badgeNameL2.value = '';
-        this.#address.value = '';
-        this.#addr2.value = '';
-        this.#city.value = '';
-        this.#state.value = '';
-        this.#zip.value = '';
-        this.#country.value = 'USA';
-        this.#emailAddr.value = '';
-        this.#phone.value = '';
+        profile.clearForm();
         this.#managesName.innerText = '';
         this.#openNotes.value = '';
         this.#adminNotes.value = '';
         this.#managesId.value = '';
+        if (this.#renumberNew)
+            this.#renumberNew.value = '';
         this.#addPersonBtn.disabled = true;
+        this.#updateOverrideBTN.disabled = true;
         clear_message('find_edit_message');
         clear_message();
         clearError();
@@ -1089,4 +1105,12 @@ function managesLookupListener(e) {
 
 function add_editPerson() {
     findPerson.directEdit();
+}
+
+function saveEdit() {
+    findPerson.saveEdit();
+}
+
+function saveEdit2() {
+    findPerson.saveEdit2();
 }

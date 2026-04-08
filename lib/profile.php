@@ -3,10 +3,12 @@
 
 // drawEditPersonBlock - just output the block to edit the person
 function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $editEmail=false, $ageByDate = '',
-                             $membershipTypes = [], $tabIndexStart = 100, $admin = false, $idPrefix = '', $free=false) {
+     $membershipTypes = [], $ageList = [], $tabIndexStart = 100, $admin = false, $idPrefix = '', $free=false, $enableManager=false) {
+    if ($class != '')
+        $class .= '.';
     $polConf = $editEmail ? 'reg' : 'portal';
     $required = getConfValue('reg', 'required', 'addr');
-    $firstStar = '';
+    $firstStar = '<span class="text-danger">&bigstar;</span>';
     $addrStar = '';
     $allStar = '';
     switch ($required) {
@@ -15,8 +17,6 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
             $allStar = '<span class="text-danger">&bigstar;</span>';
         case 'addr':
             $addrStar = '<span class="text-danger">&bigstar;</span>';
-        case 'first':
-            $firstStar = '<span class="text-danger">&bigstar;</span>';
     }
     $tabindex = $tabIndexStart;
     $yearahead = false;
@@ -130,7 +130,7 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
             <label for='<?php echo $idPrefix . 'country'; ?>' class='form-label-sm'>
                 <span class='text-dark' style='font-size: 10pt;'>Country</span>
             </label><br/>
-            <select name='country' id='<?php echo $idPrefix . 'country'; ?>' onchange="<?php echo $class; ?>.countryChange();"
+            <select name='country' id='<?php echo $idPrefix . 'country'; ?>' onchange="<?php echo $class; ?>countryChange();"
                     tabindex="<?php echo $tabindex; $tabindex += 10;?>">
                 <?php
                     $fh = fopen(__DIR__ . '/../lib/countryCodes.csv', 'r');
@@ -173,8 +173,32 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
                    tabindex="<?php echo $tabindex;
                        $tabindex += 10; ?>"/>
         </div>
+        <div class='col-sm-auto'>
+            <label for="<?php echo $idPrefix . 'age'; ?>" class='form-label-sm'>
+                <span id="ageasofLabel" class='text-dark' style='font-size: 10pt;'><?php echo $firstStar; ?>Age as of <?php echo $ageByDate;
+                ?></span></label><br/>
+            <div class="mt-1">
+                <select name='age' id='<?php echo $idPrefix . 'age'; ?>' tabindex="<?php echo $tabindex; $tabindex += 10;?>">
+                    <option value="">--Select Age Bracket--</option>
+                    <?php
+                        foreach ($ageList as $age) {
+                            echo '<option value="' . escape_quotes($age['ageType']) . '">' . $age['shortname'] . ' ['.$age['label'] . ']</option>';
+                        }
+                    ?>
+                </select>
+            </div>
+            <div class='mt-1' id='<?php echo $idPrefix . 'agetext'; ?>'><strong>Current age unknown</strong></div>
+        </div>
+        <div class="row mt-2" id='<?php echo $idPrefix . 'agediv'; ?>'>
+            <div class="col-sm-12"><p>
+                Your age bracket is locked to the memberships you have in your account for this convention year.
+                You will need to delete any unpaid memberships in this age bracket to change your bracket.
+                If you have any paid or plan memberships in this age bracket, contact Registration at
+                <a href="mailto:<?php echo escape_quotes($con['regemail']); ?>"><?php echo $con['regemail']; ?></a> for assistance.</p>
+            </div>
+        </div>
     </div>
-    <?php if ($useUSPS) echo '</div></div><div class="col-sm-4" id="uspsblock"></div></div>' . PHP_EOL; ?>
+    <?php if ($useUSPS) echo '</div></div><div class="col-sm-4" id="' . $idPrefix . 'uspsblock"></div></div>' . PHP_EOL; ?>
 <?php
     if ($admin == false) {
 ?>
@@ -209,20 +233,37 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
             <input class='form-control-sm' type='email' name='email2' id='<?php echo $idPrefix . 'email2'; ?>' size='35' maxlength='254'
                    tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
         </div>
-<?php } // admin ?>
+<?php
+    } // end not admin
+    if ($enableManager) {
+?>
+        <div class='col-sm-auto' id="<?php echo $idPrefix . 'managerDiv'; ?>">
+            <label for='<?php echo $idPrefix . 'cartManager'; ?>' class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>
+                    Manager
+            </label><br/>
+            <div class='mt-1'>
+                <select name='manager' id='<?php echo $idPrefix . 'cartManager'; ?>' tabindex="<?php echo $tabindex;
+                    $tabindex += 10; ?>">
+                    <option value=''>Unmanaged</option>
+                </select>
+            </div>
+        </div>
+<?php
+    } // end manager
+?>
     </div>
 <?php
-        if ($membershipTypes != null) {
-            $yearahead = false;
-            foreach ($membershipTypes as $type) {
-                if ($type['memCategory'] == 'yearahead') {
-                    $yearahead = true;
-                    $nyConData = get_con($con['id']  + 1);
-                    $startdateYA = new DateTime($nyConData['startdate']);
-                    $agebydateYA = $startdateYA->format('F j, Y');
-                    break;
-                    }
+    if ($membershipTypes != null) {
+        $yearahead = false;
+        foreach ($membershipTypes as $type) {
+            if ($type['memCategory'] == 'yearahead') {
+                $yearahead = true;
+                $nyConData = get_con($con['id']  + 1);
+                $startdateYA = new DateTime($nyConData['startdate']);
+                $agebydateYA = $startdateYA->format('F j, Y');
+                break;
                 }
+            }
 ?>
     <div class='row'>
         <div class='col-sm-12'>
@@ -261,10 +302,9 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
         <div class="col-sm-auto">
             <span style="font-weight: bold; font-size: 125%;">Email Address: <span id='email1'></span></span>
         </div>
-        <div class="col-sm-auto">
-            <p><strong>Note:</strong> Email Address is entered at the start of creating the account or edited using the Change Email Address button on the home
-                page
-                .</p>
+        <div class="col-sm-auto h-100 mt-1">
+            <p><strong>Note:</strong> Email Address is entered at the start of creating the account or edited using the Change Email
+                Address button on the home page.</p>
         </div>
     </div>
 <?php
@@ -309,4 +349,28 @@ function drawEditPersonBlock($con, $useUSPS, $policies, $class, $modal=false, $e
     <?php
         drawPoliciesBlock($policies, $tabIndexStart + 500, $idPrefix);
     }
+}
+
+function getAgeList($conid) {
+    $ageList = [];
+    $ageListIdx = [];
+    $ageQ = <<<EOS
+SELECT *
+FROM ageList
+WHERE conid = ?
+ORDER By sortorder;
+EOS;
+    $ageR = dbSafeQuery($ageQ, 'i', array($conid));
+    if ($ageR === false)
+        return $ageList;
+
+    while ($age = $ageR->fetch_assoc()) {
+        if ($age['ageType'] == 'all')
+            continue;
+        $ageList[] = $age;
+        $ageListIdx[$age['ageType']] = $age;
+    }
+
+    $ageR->free();
+    return (array($ageList, $ageListIdx));
 }

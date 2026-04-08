@@ -5,6 +5,7 @@ require_once '../lib/profile.php';
 require_once '../lib/portalForms.php';
 require_once '../lib/policies.php';
 require_once '../lib/tax.php';
+require_once '../lib/cc__load_methods.php';
 
 // if not logged in, send back to the index page to log in
 if (!isSessionVar('user')) {
@@ -20,19 +21,17 @@ $atcon = get_conf('atcon');
 $condata = get_con();
 $conid = $con['id'];
 $conname = $con['conname'];
+$startdate = new DateTime($condata['startdate']);
+$ageByDate = $startdate->format('F j, Y');
 $tab = 'checkin';
 $mode = 'checkin';
 $method='data_entry';
-if (array_key_exists('allage', $atcon)) {
-    $allAgeFirst = $atcon['allage'];
+
+if (array_key_exists('onedaycoupons', $con)) {
+    $onedaycoupons = $con['onedaycoupons'];
 } else {
-    $allAgeFirst = 0;
+    $onedaycoupons = 0;
 }
-    if (array_key_exists('onedaycoupons', $con)) {
-        $onedaycoupons = $con['onedaycoupons'];
-    } else {
-        $onedaycoupons = 0;
-    }
 
 if (isset($_GET['mode'])) {
     if ($_GET['mode'] == 'cashier') {
@@ -88,7 +87,6 @@ $config_vars['useportal'] = $controll['useportal'];
 $config_vars['cashier'] = $method == 'cashier' ? 1 : 0;
 $config_vars['cashierAllowed'] = check_atcon('cashier', $conid) ? 1 : 0;
 $config_vars['multiOneDay'] = $multiOneDay;
-$config_vars['allAgeFirst'] = $allAgeFirst;
 $config_vars['posType'] = 'a';
 if (array_key_exists('creditoffline', $atcon)) {
     $config_vars['creditoffline'] = $atcon['creditoffline'];
@@ -116,16 +114,27 @@ page_init($page, $tab,
     /* css */ array($cdn['tabcss'], $cdn['tabbs5']),
     /* js  */ array( ///$cdn['luxon'],
                     $cdn['tabjs'],
+                    'jslib/profile.js',
                     'jslib/posCart.js',
                     'jslib/posCoupon.js',
                     'jslib/pos.js',
                     'jslib/membershipRules.js', 'js/regpos.js'),
             $config_vars
     );
+if (array_key_exists('creditonline', $atcon)) {
+    if ($atcon['creditonline'] == 1) {
+        $cc = get_conf('cc');
+        load_cc_procs();
+        echo draw_cc_html($cc, '--', 'js');
+    }
+}
+[$ageList, $ageListIdx] = getAgeList($conid);
 ?>
 <script type='text/javascript'>
-    var allPolicies = <?php echo json_encode($policies); ?>;
+    var policies = <?php echo json_encode($policies); ?>;
     var policyIndex = <?php echo json_encode($policyIndex); ?>;
+    var ageList = <?php echo json_encode($ageList); ?>;
+    var ageListIdx = <?php echo json_encode($ageListIdx); ?>;
 </script>
 <div id="pos" class="container-fluid">
     <div class="row mt-2">
@@ -203,7 +212,8 @@ page_init($page, $tab,
                                 <input type='hidden' name='perinfo-perid' id='perinfo-perid'/>
                                 <input type='hidden' name='membership-index' id='membership-index'/>
                                 <?php
-                                    drawEditPersonBlock($conid, $useUSPS, $policies, 'registration', false, true, '', array (), 200, true, '');
+                                    drawEditPersonBlock($con, $useUSPS, $policies, 'registration', false, true, $ageByDate,
+                                            array(), $ageListIdx, 200, true, '', false, true);
                                 ?>
                                 <div class="row">
                                     <div class="col-sm-12 ms-0 me-0" id="add_results">
@@ -214,10 +224,10 @@ page_init($page, $tab,
                                         <button type="button" class="btn btn-primary btn-sm" id="addnew-btn" name="add_btn"
                                                 onclick="pos.add_new();">Add to Cart
                                         </button>
-                                        <button type='button' class='btn btn-primary btn-sm' id='addoverride-btn' name='override_btn' hidden
-                                                onclick='pos.addNewToCart(1);'>Add to Cart Overriding Missing Fields
+                                        <button type='button' class='btn btn-warning btn-sm' id='addoverride-btn' name='override_btn' hidden
+                                                onclick='pos.add_new2();'>Add/Update Cart Overriding Missing Fields
                                         </button>
-                                        <button type="button" class="btn btn-secondary btn-sm" id="clearadd-btn" onclick="pos.clearAdd();">
+                                        <button type="button" class="btn btn-secondary btn-sm" id="clearadd-btn" onclick="pos.clearAdd(1);">
                                             Clear Add Person Form
                                         </button>
                                     </div>
@@ -285,8 +295,7 @@ page_init($page, $tab,
                 </div>
                 <div class='modal-body' id='AddEditBody' style='padding: 4px; background-color: lightcyan;'>
                     <?php
-                        drawGetAgeBracket('<span id="addEditFullName">Fullname</span>', $condata);
-                        drawGetNewMemberships()
+                        drawGetNewMemberships('<span id="addEditFullName">Fullname</span>');
                     ?>
                     <div class='row'>
                         <div class='col-sm-12'>

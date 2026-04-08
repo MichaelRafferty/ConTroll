@@ -1,5 +1,5 @@
 <?php
-// Vendor - switch Profile.php - switch to the alternate profile
+// Vendor - switchPortal.php - switch to the alternate profile
 require_once("lib/base.php");
 global $config_vars;
 

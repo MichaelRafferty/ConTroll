@@ -1,13 +1,18 @@
 <?php
 require_once "../lib/base.php";
-$check_auth = google_init("ajax");
-$perm = "reg_staff";
+require_once '../lib/sessionAuth.php';
 
-$response = array("post" => $_POST, "get" => $_GET, "perm"=>$perm);
+// use common global Ajax return functions
+global $returnAjaxErrors, $return500errors;
+$returnAjaxErrors = true;
+$return500errors = true;
 
-
-if($check_auth == false || !checkAuth($check_auth['sub'], $perm)) {
-    $response['error'] = "Authentication Failed";
+$perm = 'reg_staff';
+$response = array ('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
+$authToken = new authToken('script');
+$response['tokenStatus'] = $authToken->checkToken();
+if (!$authToken->isLoggedIn() || !$authToken->checkAuth($perm)) {
+    $response['error'] = 'Authentication Failed';
     ajaxSuccess($response);
     exit();
 }
@@ -23,11 +28,11 @@ $response['next_agelist'] = null;
 $response['current_id'] = $conid;
 $response['next_id'] = $nextconid;
 $ageSQL = <<<EOS
-SELECT a.conid,a.ageType, a.label, a.shortname, a.badgeFlag, a.sortorder, count(l.id) uses, a.ageType as agekey
+SELECT a.conid,a.ageType, a.label, a.shortname, a.badgeFlag, a.sortorder, count(l.id) uses, a.ageType as agekey, a.verify
 FROM ageList a
 LEFT OUTER JOIN memList l ON (a.conid = l.conid and a.ageType = memAge)
 WHERE a.conid = ?
-GROUP BY a.conid, a.ageType, a.label, a.shortname, a.sortorder
+GROUP BY a.conid, a.ageType, a.label, a.shortname, a.sortorder, a.verify
 ORDER BY a.sortorder, a.ageType
 EOS;
 

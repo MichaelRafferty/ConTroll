@@ -1,100 +1,46 @@
 # Badge Layout - Postscript and Proposed PDF Layout
-Current print badge is postscript based and moving to PDF.
-First we need to document the current postscript layout.
+Current print badge format is PDF.
 
-The current badge PS file is init.ps followed by the logo image PS followed by what printBadge writes to the PS file.
+## PDF layout
+Badge is 81pt's in height (1.125 inches) and 250 pt wide (~3.5 inches) 
+The print area is 81pt height and 234pt wide. 
 
-The PDF badge will be similar but in areas and a different font.
-
-## Postscript Functions used in init.ps
-
-- /firstline: font for the first line of the badge name
-  - Courier-Boldfont
-  - 24pt Font-size
-- /details: ???
-  - Courier
-  - 12 pt
-- /childfont: font for the child area
-  - Courier-bod
-  - 12 pt
-- /secondline: Secont line of the badge name
-    - Courier-Boldfont
-    - 18pt Font-size
-
-## Badge Fields
-- badge name
-  - badge_name field of badge associative array
-  - if greater than 16 characters
-    - split into two lines, firstline and secondline
-    - split at last blank in the 16 characters, or after the 16th character. Line 2 is limited to 20 characters
-  - line 1 written 22 points from the top of the label in 24pt
-  - line 2 written 40 prints from the top of the label in 18pt
-- info line
-  - 3rd line on badge
-  - indented 60 pts
-  - Membership Category Label, a blank, and Person id (PERID)
-  - in 12pt
-- limitations line
-  - bottom line of the badge (4th line)
-  - If badge type is oneday
-    - print three character day name in firstline font at the left margin
-  - If badge age is non blank
-    - print age string in reverse video to the right of where the day field would be
-  - in 12pt
-
-## Proposed PDF layout
-Badge is 80pt's in height (~1.125 inches) and 250 pt wide (~3.5 inches) using a 4 pt margin on all sides yields a 72pt x 242pt print area.  
-
+- Background Image: a png file scaled to 1"x1" (or the config file height and width)
+  - position of logo: 2.2x, 0.1y (from top left corner of printable area)
+  
 - Line1: Primary Badge Name
-  - Bounding Box 0, 0 -> 242, 28
-  - 24pt Arial Bold text plus 4 pt leading
-  - Use maximim number of characters that will fit in 242 pts based on Arial Bold 24pt, moving one word or character to line 2 as needed
-  - hold remaining text for line 2
+  - position: 6/72x, 15/72y
+  - Variable font width and weight to keep as much as it can on line 1
+    - 22pt then 20pt
+    - Roborto Bold, then Roberto Semi Condensed Bold, then Roberto Condensed Bold
+    - If it can't make all of badge name line 1 fit on the first line
+      - badge line 2 is discarded
+      - badge line 1 is split on a blank or number of characters if no blanks to fit maximum amount on line 1, remainder of line 1 becomes line 2
 
 - Line2: Secondary Badge Name
-  - Bounding Box: 28, 0 -> 242, 48
-  - 18pt Arial Bold text plus 2 pt leading
-  - if any remaining badge name characters left
-    - use those
-    - followed by ' - ' 
-    - followed by whatever of badgename 2 will fit
-  - If none, use whatever of badgename 2 will fit
-  - allow reduction to 16, then 14 point for long names
+  - position: 6/72x, 37/72y
+  - Variable font width and weight to keep as much as it can on line 1
+    - 16pt, 15pt, 14pt
+    - Roborto Bold, then Roberto Semi Condensed Bold, then Roberto Condensed Bold
+    - if too long to fit (either remainder or line 2 contents) truncate to fit
 
-- Line 3: Info line 
+- Line 3: Day of Week
+  - position: x: 6/72, y: 57/72
+  - Roberto Black Italic (BI), 24pt
+
+- Line 3: Type and badge number
+  - position: x: 112/72, y: 53/72
+  - Roberto Regular, 11pt
+
+- Line 4: Barcode
   - Barcode
-    - Bounding Box: 48, 0 -> 62, 120
-    - Barcode of PERID 12 pt high
-  - Info area
-    - Bounding box: 48, 120 -> 62, 242
-    - 12 pt Arial text + 2pt leading
-    - Membership Category Label, a blank, and Person id (PERID)
+    - position: x: 12/72, y: 69/72
+    - Barcode of PERID (90/72x8/72 width and height of barcode area)
 
 - Line 4: Limitations line
-  - Day of Badge
-    - Bounding Box: 62,0 -> 80, 80
-    - 14 pt Arial Bold Text
-    - 3 character Day
-  - Badge Limitation Note
-    - Bounding Box: 62, 90 -> 80, 242
-    - Restriction Lable in 14pt Arial Bold Type White on black box (reverse colors)
-    - Center text in box
-
-Alternate line 3/4:
-- Day of Badge
-  - Bounding Box 48, 0 -> 80, 100
-  - 3 character day of one day
-  - 30pt Arial Bold Font
-- Info area
-    - Bounding box: 48, 100 -> 62, 242
-    - 12 pt Arial text + 2pt leading
-    - Membership Category Label, a blank, and Person id (PERID)
-- Badge Limitation Note
-    - Bounding Box: 62, 80 -> 80, 180
-    - Restriction Lable in 14pt Arial Bold Type White on black box (reverse colors)
-    - Center text in box 
-- Barcode
-  - Bounding Box: 62, 180 -> 80, 240
-  - Barcode of PERID 12 pt high
-
-NOTE: Adjust bounding box of lines 3/4 for size of day label and barcode needs
+  - Holds age flag
+  - Reverse Image (white type on back box)
+    - position of box: x: 112/72, y: 67/72 filled in black
+  - Text: white, FFFFFF
+    - centered in box, width of area 85/72
+    - Font is Roborto Black (BK) 11pt

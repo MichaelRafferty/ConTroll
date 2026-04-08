@@ -1,12 +1,13 @@
 // globals for the people tabs
 
 // tab classes
-unmatchedPeople = null;
-findPerson = null;
-addPerson = null;
-add_tab = null;
-find_tab = null;
-unmatched_tab = null;
+var unmatchedPeople = null;
+var findPerson = null;
+var addPerson = null;
+var add_tab = null;
+var find_tab = null;
+var unmatched_tab = null;
+var profile = null;
 // debug meaning
 //  1 = console.logs
 //  2 = show hidden table fields
@@ -29,6 +30,7 @@ function settab(tabname) {
     if (addPerson != null)
         addPerson.close();
 
+    clear_message();
     // now open the relevant one, and create the class if needed
     switch (tabname) {
         case 'unmatched-pane':
@@ -37,11 +39,17 @@ function settab(tabname) {
             unmatchedPeople.open();
             break;
         case 'findedit-pane':
+            if (profile =! null)
+                profile = null;
+            profile = new Profile('f_', 'people', 'warncolor');
             if (findPerson == null)
                 findPerson = new Find(config['debug']);
             findPerson.open();
             break;
         case 'add-pane':
+            if (profile =! null)
+                profile = null;
+            profile = new Profile('a_', 'people', 'warncolor');
             if (addPerson == null)
                 addPerson = new Add(config['debug']);
             addPerson.open();
@@ -56,6 +64,7 @@ function peopleEditPerson(index, row) {
     bootstrap.Tab.getOrCreateInstance(find_tab).show();
     if (findPerson == null)
         findPerson = new Find(config['debug']);
+    findPerson.close();
     findPerson.open(null, index, row);
 }
 
@@ -64,5 +73,9 @@ function peopleAddPerson() {
     bootstrap.Tab.getOrCreateInstance(add_tab).show();
     if (addPerson == null)
         addPerson = new Add(config['debug']);
+    if (profile =! null)
+        profile = null;
+    addPerson.close();
+    profile = new Profile('a_', 'people', 'warncolor');
     addPerson.open();
 }

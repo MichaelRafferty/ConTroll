@@ -11,13 +11,17 @@
 //      $postal_code = postal code to default for form, optional
 //
 
-function draw_cc_html($cc, $postal_code = "--") : string {
-    $html = <<<EOS
-    <form id="payment-form">
-        <div class="container-fluid overflow-hidden" id="card-container"></div>
-        <button id="card-button" type="button" onclick="makePurchase('1', 'card-button')">Purchase</button>
-    </form>
+function draw_cc_html($cc, $postal_code = "--", $type='all') : string {
+    $html = '';
+    if ($type != 'js') {
+        $html .= <<<EOS
+
+<form id="payment-form">
+    <div class="container-fluid overflow-hidden" id="card-container"></div>
+    <button id="card-button" type="button" onclick="makePurchase('1', 'card-button')">Purchase</button>
+</form>
 EOS;
+    }
     return $html;
 }
 

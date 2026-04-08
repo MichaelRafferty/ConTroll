@@ -1341,6 +1341,16 @@ function addItemToCart(item) {
     }
 
     cart.add(item);
+    setTimeout(function() {
+        if (config.useBarcode == 1) {
+            itemCode_field.value = '';
+            artistNumber_field.focus();
+        } else {
+            artistNumber_field.value = '';
+            pieceNumber_field.value = '';
+            unitNumber_field.value = '';
+        }
+    }, 500);
 }
 
 // initArtSales - create/update artSales records for this cart to prepare for payment, create master transaction if none exists
@@ -1896,7 +1906,10 @@ function addShown() {
     pieceNumber_field.value = null;
     unitNumber_field.value = null;
     itemCode_field.value = null;
-    itemCode_field.focus();
+    if (config.useBarcode == 1)
+        itemCode_field.focus();
+    else
+        artistNumber_field.focus();
 }
 
 var emailAddreesRecipients = [];

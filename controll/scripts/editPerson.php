@@ -1,15 +1,18 @@
 <?php
 require_once "../lib/base.php";
+require_once '../lib/sessionAuth.php';
 
-$check_auth = google_init("ajax");
-$perm = "search";
+// use common global Ajax return functions
+global $returnAjaxErrors, $return500errors;
+$returnAjaxErrors = true;
+$return500errors = true;
 
-$response = array("post" => $_POST, "get" => $_GET, "perm"=>$perm);
-
-
-if($check_auth == false || (!checkAuth($check_auth['sub'], $perm) &&
-                            !checkAuth($check_auth['sub'], 'atcon'))) {
-    $response['error'] = "Authentication Failed";
+$perm = 'search';
+$response = array ('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
+$authToken = new authToken('script');
+$response['tokenStatus'] = $authToken->checkToken();
+if (!$authToken->isLoggedIn() || !$authToken->checkAuth($perm)) {
+    $response['error'] = 'Authentication Failed';
     ajaxSuccess($response);
     exit();
 }
@@ -39,7 +42,7 @@ if($_SERVER['REQUEST_METHOD'] != "POST") {
     exit();
 }
 
-$changeLog = $check_auth['email'] . ": " . date(DATE_ATOM) . ": " ;
+$changeLog = $authToken->getEmail() . ": " . date(DATE_ATOM) . ": " ;
 $change = false;
 $types = '';
 $values = array();
@@ -230,7 +233,7 @@ if ($change) {
   $changeLog .= 'updatedBy, ';
   $query .= 'updatedBy=?';
   $types .= 'i';
-  $values[] = $_SESSION['user_perid'];
+  $values[] = $authToken->getPerid();
 }
 
 if($change) {

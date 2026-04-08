@@ -1,4 +1,4 @@
--- MySQL dump 10.13  Distrib 8.0.42, for macos15 (arm64)
+-- MySQL dump 10.13  Distrib 8.0.44, for macos15 (arm64)
 --
 -- Host: localhost    Database: reg
 -- ------------------------------------------------------
@@ -12,20 +12,20 @@
 DROP VIEW IF EXISTS `vw_ExhibitorSpace`;
 CREATE ALGORITHM=UNDEFINED 
 SQL SECURITY INVOKER
-VIEW vw_ExhibitorSpace AS
-	SELECT ert.portalType AS portalType,ert.requestApprovalRequired AS requestApprovalRequired,ert.purchaseApprovalRequired AS purchaseApprovalRequired,
-	       ert.purchaseAreaTotals AS purchaseAreaTotals,ert.mailinAllowed AS mailInAllowed,er.name AS regionName,er.shortname AS regionShortName,
-	       er.description AS regionDesc,er.sortorder AS regionSortOrder,ery.ownerName AS ownerName,ery.ownerEmail AS ownerEmail,ery.id AS regionYearId,
-	       ery.includedMemId AS includedMemId,ery.additionalMemId AS additionalMemId,ery.totalUnitsAvailable AS totalUnitsAvailable,ery.conid AS yearId,
-	       s.id AS id,Ey.conid AS conid,e.id AS exhibitorId,s.spaceId AS spaceId,es.shortname AS shortname,es.name AS name,
-	       s.item_requested AS item_requested,s.time_requested AS time_requested,req.code AS requested_code,req.description AS requested_description,
-	       req.units AS requested_units,req.price AS requested_price,req.sortorder AS requested_sort,
-	       s.item_approved AS item_approved,s.time_approved AS time_approved,app.code AS approved_code,app.description AS approved_description,
-	       app.units AS approved_units,app.price AS approved_price,app.sortorder AS approved_sort,
-	       s.item_purchased AS item_purchased,s.time_purchased AS time_purchased,pur.code AS purchased_code,pur.description AS purchased_description,
-	       pur.units AS purchased_units,pur.price AS purchased_price,pur.sortorder AS purchased_sort,
-	       s.price AS price,s.paid AS paid,s.transid AS transid,s.membershipCredits AS membershipCredits
-	FROM exhibitors e
+VIEW vw_ExhibitorSpace AS 
+    SELECT ert.portalType AS portalType,ert.requestApprovalRequired AS requestApprovalRequired,ert.purchaseApprovalRequired AS purchaseApprovalRequired,
+           ert.purchaseAreaTotals AS purchaseAreaTotals,ert.mailinAllowed AS mailInAllowed,er.name AS regionName,er.shortname AS regionShortName,
+           er.description AS regionDesc,er.sortorder AS regionSortOrder,ery.ownerName AS ownerName,ery.ownerEmail AS ownerEmail,ery.id AS regionYearId,
+           ery.includedMemId AS includedMemId,ery.additionalMemId AS additionalMemId,ery.totalUnitsAvailable AS totalUnitsAvailable,ery.conid AS yearId,
+           s.id AS id,Ey.conid AS conid,e.id AS exhibitorId,s.spaceId AS spaceId,es.shortname AS shortname,es.name AS name,
+           s.item_requested AS item_requested,s.time_requested AS time_requested,req.code AS requested_code,req.description AS requested_description,
+           req.units AS requested_units,req.price AS requested_price,req.sortorder AS requested_sort,
+           s.item_approved AS item_approved,s.time_approved AS time_approved,app.code AS approved_code,app.description AS approved_description,
+           app.units AS approved_units,app.price AS approved_price,app.sortorder AS approved_sort,
+           s.item_purchased AS item_purchased,s.time_purchased AS time_purchased,pur.code AS purchased_code,pur.description AS purchased_description,
+           pur.units AS purchased_units,pur.price AS purchased_price,pur.sortorder AS purchased_sort,
+           s.price AS price,s.paid AS paid,s.transid AS transid,s.membershipCredits AS membershipCredits
+    FROM exhibitors e 
     JOIN exhibitorYears Ey ON e.id = Ey.exhibitorId
     JOIN exhibitorRegionYears Ery ON Ery.exhibitorYearId = Ey.id
     LEFT JOIN exhibitorSpaces s ON Ery.id = s.exhibitorRegionYear
@@ -52,10 +52,10 @@ VIEW couponMemberships AS
     LEFT JOIN couponKeys k ON k.usedBy = r.create_trans;
 
 --
--- Final view structure for view couponUsage
+-- Final view structure for view `couponUsage`
 --
 
-DROP VIEW IF EXISTS couponUsage;
+DROP VIEW IF EXISTS `couponUsage`;
 CREATE ALGORITHM=UNDEFINED 
 SQL SECURITY INVOKER
 VIEW couponUsage AS
@@ -67,10 +67,10 @@ VIEW couponUsage AS
     LEFT JOIN couponKeys k ON k.usedBy = t.id;
 
 --
--- Final view structure for view memLabel
+-- Final view structure for view `memLabel`
 --
 
-DROP VIEW IF EXISTS memLabel;
+DROP VIEW IF EXISTS `memLabel`;
 CREATE ALGORITHM=UNDEFINED 
 SQL SECURITY INVOKER
 VIEW memLabel AS
@@ -79,7 +79,7 @@ VIEW memLabel AS
            m.startdate AS startdate,m.enddate AS enddate,m.atcon AS atcon,m.online AS online,m.glNum AS glNum,m.glLabel AS glLabel,
            c.taxable AS taxable
     FROM memList m
-    JOIN ageList a ON m.memAge = a.ageType AND m.conid = a.conid
+    JOIN ageList a ON (m.memAge = a.ageType) AND (m.conid = a.conid)
     JOIN memCategories c ON m.memCategory = c.memCategory;
 
 --
@@ -114,7 +114,6 @@ DELIMITER ;
 DROP PROCEDURE IF EXISTS `deleteDupsIntPol`;
 DELIMITER ;;
 CREATE PROCEDURE `deleteDupsIntPol`()
-SQL SECURITY INVOKER
     SQL SECURITY INVOKER
 BEGIN
     DROP TABLE IF exists remainPolicy;
@@ -131,7 +130,6 @@ BEGIN
     WHERE r.perid IS NOT NULL AND IFNULL(memberPolicies.updateDate, memberPolicies.createDate) < r.matchDate;
 
     DROP TABLE IF EXISTS remainPolicy;
-
     DROP TABLE IF EXISTS remainInterest;
 
     CREATE TEMPORARY TABLE remainInterest AS
@@ -146,7 +144,6 @@ BEGIN
     WHERE r.perid IS NOT NULL AND IFNULL(memberInterests.updateDate, memberInterests.createDate) < r.matchDate;
 
     DROP TABLE IF EXISTS remainInterest;
-
     DROP TABLE IF EXISTS remainConRoles;
 
     CREATE TEMPORARY TABLE remainConRoles AS
@@ -166,12 +163,12 @@ DELIMITER ;
 DROP PROCEDURE IF EXISTS `mergePerid`;
 DELIMITER ;;
 CREATE PROCEDURE `mergePerid`(IN userid INT, IN to_mergePID INT, IN to_survivePID INT, OUT statusmsg TEXT, OUT rollback_log TEXT)
-SQL SECURITY INVOKER
     SQL SECURITY INVOKER
 BEGIN
     /* updates the database to change records with to_mergePID to to_survivePID to preserver referential integrity as it merges two perinfo records together
     /* tables with perinfo refs:
 
+            artItems
             artSales
             atcon_user
             badgeList
@@ -246,6 +243,18 @@ BEGIN
             END IF;
         END IF;
 
+        /* artItems */
+        SET stmt = (SELECT CONCAT('UPDATE artItemss SET bidder = ', to_mergePID, ' WHERE ID IN (', group_concat(id SEPARATOR ','), ');')
+                    FROM artItems
+                    WHERE bidder = to_mergePID);
+
+        IF stmt is not null THEN
+            UPDATE artItems SET bidder = to_survivePID where bidder = to_mergePID;
+            SET msg = CONCAT(msg, 'ArtItems:  ', CONVERT(ROW_COUNT(), char), CHAR(10));
+
+            SET rollback_stmts = CONCAT(rollback_stmts, stmt, CHAR(10));
+        END IF;
+
         /* artSales */
         SET stmt = (SELECT CONCAT('UPDATE artSales SET perid = ', to_mergePID, ' WHERE ID IN (', group_concat(id SEPARATOR ','), ');')
                     FROM artSales
@@ -253,7 +262,7 @@ BEGIN
 
         IF stmt is not null THEN
             UPDATE artSales SET perid = to_survivePID where perid = to_mergePID;
-            SET msg = CONCAT(msg, 'artist:  ', CONVERT(ROW_COUNT(), char), CHAR(10));
+            SET msg = CONCAT(msg, 'artSales:  ', CONVERT(ROW_COUNT(), char), CHAR(10));
 
             SET rollback_stmts = CONCAT(rollback_stmts, stmt, CHAR(10));
         END IF;
@@ -457,7 +466,9 @@ BEGIN
                                   ''', middle_name = ''', REPLACE(IFNULL(middle_name,''), '''', ''''''),
                                   ''', last_name = ''', REPLACE(IFNULL(last_name,''), '''', ''''''),
                                   ''', email_addr = ''', REPLACE(IFNULL(email_addr,''), '''', ''''''),
-                                  ''', change_notes = CONCAT(''rollback merge'',CHAR(10),''', REPLACE(IFNULL(change_notes,''), '''', ''''''), ''')',
+                                  ''', managedBy = ', managedBy,
+                                  ', managedByNew = ', managedByNew,
+                                  ', change_notes = CONCAT(''rollback merge'',CHAR(10),''', REPLACE(IFNULL(change_notes,''), '''', ''''''), ''')',
                                   ' where id = ', to_mergePID, ';')
                                AS cmd
                     FROM perinfo
@@ -472,7 +483,7 @@ BEGIN
                                   REPLACE(rollback_stmts, '''', ''''''), '''', char(10)
                            ),
             first_name = 'Merged', middle_name = 'into', last_name = to_survivePID, email_addr = CONCAT('merged into ', to_survivePID),
-            contact_ok = 'N', active='N'
+            contact_ok = 'N', active='N', managedBy = NULL, managedByNew = NULL
         WHERE id = to_mergePID;
         SET msg = CONCAT(msg, 'perinfo: ', to_mergePID, ': ', CONVERT(ROW_COUNT(), char), CHAR(10));
 
@@ -577,4 +588,4 @@ END ;;
 DELIMITER ;
 
 
--- Dump completed on 2025-11-05 13:40:39
+-- Dump completed on 2026-01-23 13:58:23

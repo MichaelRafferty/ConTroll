@@ -126,6 +126,7 @@ class interestsSetup {
             method: 'POST',
             data: postdata,
             success: function (data, textStatus, jhXHR) {
+                checkRefresh(data);
                 _this.draw(data, textStatus, jhXHR);
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -418,6 +419,7 @@ class interestsSetup {
                         _this.#interestsSaveBtn.innerHTML = "Save Changes*";
                         return false;
                     }
+                    checkRefresh(data);
                     interests.close();
                     interests.open();
                     show_message(data['success'], 'success');

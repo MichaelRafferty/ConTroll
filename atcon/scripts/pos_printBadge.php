@@ -1,5 +1,5 @@
 <?php
-// ConTroll Registration System, Copyright 2015-2025, Michael Rafferty, Licensed under the GNU Affero General Public License, Version 3.
+// ConTroll Registration System, Copyright 2015-2026, Michael Rafferty, Licensed under the GNU Affero General Public License, Version 3.
 // library AJAX Processor: pos_printBadge.php
 // Author: Syd Weinstein
 // print a badge from POS

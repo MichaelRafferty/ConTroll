@@ -6,9 +6,17 @@ span.need {
   background-color: rgba(255,0,0,0.3);
 }
 
+select.need {
+  background-color: rgba(255,0,0,0.3);
+}
+
 span.req, .warn {
   font-weight: bold;
   color: red;
+}
+
+span.warncolor {
+  background-color: #FFE190;;
 }
 
 .hidden { 
@@ -48,4 +56,12 @@ span.req, .warn {
 }
 .size-h6 {
   font-size: 1.0rem;
+}
+
+.tab-pane {
+  display: none;
+}
+
+.tab-pane.active {
+  display: block;
 }

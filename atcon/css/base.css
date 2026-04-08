@@ -34,6 +34,14 @@ input.need {
     border-color: #f00;
 }
 
+span.need {
+    background-color: rgba(255,0,0,0.3);
+}
+
+select.need {
+    background-color: rgba(255,0,0,0.3);
+}
+
 input:placeholder-shown {
     font-style: italic;
 }
@@ -53,6 +61,10 @@ input:placeholder-shown {
 span.req, .warn {
     font-weight: bold;
     color: red;
+}
+
+.warncolor {
+    background-color: #FFE190;;
 }
 
 /* tabulator pagination styling */
@@ -81,4 +93,12 @@ div.tabulator-paginator {
 
 select.tabulator-page-size {
     padding-left: 8px;
+}
+
+.tab-pane {
+    display: none;
+}
+
+.tab-pane.active {
+    display: block;
 }

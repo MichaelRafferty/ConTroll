@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025, Michael Rafferty
+ * Copyright (c) 2025-2026, Michael Rafferty
  * ConTroll™ is freely available for use under the GNU Affero General Public License, Version 3. See the ConTroll™ ReadMe file.
  */
 
@@ -118,14 +118,14 @@ function deletePasskeyEntry(script, id, userName, source) {
     });
 }
 
-async function passkeyRequest(script, successPage, source, enable) {
+async function passkeyRequest(script, successPage, source, enable, email = 'NA') {
     if (!window.fetch || !navigator.credentials || !navigator.credentials.create) {
         show_message('Your browser does not support passkeys.', 'error');
         return;
     }
 
     var params = "displayName=NA" +
-        "&email=NA" +
+        "&email=" + email +
         "&source=" + encodeURIComponent(source) +
         "&action=request";
 
@@ -187,6 +187,10 @@ async function passkeyRequest(script, successPage, source, enable) {
 
                     case 'vendor':
                         window.location = successPage + '?messageFwd=' + encodeURI(data.message);
+                        return;
+
+                    case 'controll':
+                        window.location = successPage + '?autoclose=1&messageFwd=' + encodeURI(data.message);
                         return;
                 }
                 show_message(data.message, 'success');

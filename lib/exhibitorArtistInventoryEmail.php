@@ -64,6 +64,7 @@ EOS;
         $htmlmsg = $artistOnSiteInventoryHTML == '' ? null : $artistOnSiteInventoryHTML;
     }
 
+    $txtmsg = str_replace('&nbsp;', ' ', $txtmsg);
     $emails = artistEamilReplaceTokens($txtmsg, $htmlmsg, $artL);
 
     $subject = ($type == 'Reminder' ? "Reminder to P" : "P") . "lease enter your art items for " . $con['conname'] . ' ' . $artL['name'];

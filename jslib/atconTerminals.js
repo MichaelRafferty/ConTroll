@@ -143,6 +143,7 @@ class Terminals {
             url: "scripts/admin_createTerminal.php",
             data: postData,
             success: function (data, textstatus, jqxhr) {
+                checkRefresh(data);
                 terminals.createTerminalSuccess(data);
             },
             error: showAjaxError,
@@ -185,6 +186,7 @@ class Terminals {
             url: "scripts/admin_getTerminalCodes.php",
             data: postData,
             success: function (data, textstatus, jqxhr) {
+                checkRefresh(data);
                 terminals.createProceedSuccess(data);
             },
             error: showAjaxError,
@@ -229,6 +231,7 @@ class Terminals {
                     show_message(data['error'], 'error');
                     return;
                 }
+                checkRefresh(data);
                 if (data['message'] !== undefined) {
                     show_message(data['message'], 'success');
                 }
@@ -262,6 +265,7 @@ class Terminals {
             url: "scripts/admin_getTerminalStatus.php",
             data: postData,
             success: function (data, textstatus, jqxhr) {
+                checkRefresh(data);
                 terminals.refreshStatusSuccess(terminal, silent, data)
             },
             error: showAjaxError,

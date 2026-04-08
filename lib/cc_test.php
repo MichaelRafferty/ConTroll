@@ -15,8 +15,10 @@ require_once("global.php");
 //      $postal_code = postal code to default for form, optional
 //
 
-function draw_cc_html($cc, $postal_code = "--") : string {
-    $html = <<<EOS
+function draw_cc_html($cc, $postal_code = "--", $type='all') : string {
+    $html = '';
+    if ($type != 'js') {
+        $html .= <<<EOS
 <p>This is a test site, it doesn't really take credit cards</p>
 Scenario: <select name='ccnum' id="test_ccnum">
 	<option value=1>1 - Success</option>
@@ -24,6 +26,7 @@ Scenario: <select name='ccnum' id="test_ccnum">
 </select>
 <input type="submit" id="purchase" onclick="makePurchase('test_ccnum', 'purchase')" value="Purchase">
 EOS;
+    }
     return $html;
 }
 
@@ -466,10 +469,12 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     $rtn['preTaxAmt'] = $orderValue;
     $rtn['discountAmt'] = $discountAmt / 100;
     $rtn['taxAmt'] = $taxAmount / 100;
+    $rtn['taxAmount'] = $taxAmount / 100;
     $rtnTaxes = [];
     foreach ($taxAmounts as $key => $amt)
         $rtnTaxes[$key] = $amt / 100;
     $rtn['taxes'] = $rtnTaxes;
+    $rtn['totalAmountDue'] = $orderValue + (($taxAmount - $discountAmt) / 100);
     $rtn['totalAmt'] = $orderValue + (($taxAmount - $discountAmt) / 100);
     // load into the main rtn the items pay order needs directly
     $rtn['orderId'] = 'O' . time();
@@ -484,6 +489,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     if (array_key_exists('nonce', $results))
         $rtn['exhibits'] = $results['nonce'];
 
+    unset($_SESSION['ccTestOrder']);
     $_SESSION['ccTestOrder'] = $rtn;
     return $rtn;
 }
@@ -608,7 +614,6 @@ function cc_payOrder($ccParams, $buyer, $useLogWrite = false) {
     $rtn['paymentType'] = $paymentType;
     $rtn['preTaxAmt'] = $ccParams['preTaxAmt'];
     $rtn['taxAmt'] = $ccParams['taxAmt'];
-    $rtn['taxes'] = $ccParams['taxes'];
     $rtn['auth'] = $auth;
     $rtn['paymentId'] = $id;
     $rtn['last4'] = $last4;

@@ -1,178 +1,349 @@
-// Items related to building and paying the vendor invoice
-var vendor_invoice = null;
-var totalSpacePrice = 0;
-var regionYearId = null;
-var membershipCostdiv = null;
+/*
+ *  exhibitor portals - invoice processing
+ */
 
-// set up vendor invoice items
-function vendorInvoiceOnLoad() {
-    id = document.getElementById('vendor_invoice');
-    if (id != null) {
-        vendor_invoice = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
-    }
-    membershipCostdiv = document.getElementById("membershipCost");
-}
+class VendorInvoice {
+    // Items related to building and paying the vendor invoice
+    #vendorInvoice = null;
+    #regionYearId = null;
+    #membershipCostDiv = null;
+    #regionName = '';
+    #includedMemberships = 0;
+    #additionalMemberships = 0;
+    #additionalCost = [];
+    #totalSpacePrice = 0;
+    #currentPrefix = null;
+    #currentType = null;
+    #currentOrdinal = null;
+    #formValid = false;
+    #validateMessage = '';
+    #token = null;
+    #purchaseLabel = null;
 
-// openInvoice: display the vendor invoice (and registration items)
-function openInvoice(id) {
-    var regionName = '';
-    var includedMemberships = 0;
-    var additionalMemberships = 0;
-    var html = '';
-    var tabindex = 200;
-
-    regionYearId = id;
-    if (config['debug'] & 1)
-        console.log("regionYearId: " + regionYearId);
-    var region = exhibits_spaces[regionYearId];
-
-    var regionList = region_list[regionYearId];
-    var portalName = 'Exhibitor';
-    var attendeeName = 'Exhibitor';
-    var attendeeNameLC = 'Exhibitors';
-    var portalType = regionList.portalType
-    switch (portalType) {
-        case 'artist':
-            portalName = 'Artist';
-            attendeeName = 'Artist';
-            attendeeNameLC = 'artist';
-            break;
-        case 'vendor':
-            portalName = 'Vendor';
-            attendeeName = 'Vendor';
-            attendeeNameLC = 'vendor';
-            break;
-    }
-    var mailin = exhibitor_info['mailin'];
-    if (config['debug'] & 1) {
-        console.log("regionList");
-        console.log(regionList);
-        console.log("Region Spaces");
-        console.log(region);
+    constructor() {
+        let id = document.getElementById('vendor_invoice');
+        if (id != null) {
+            this.#vendorInvoice = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
+        }
+        this.#membershipCostDiv = document.getElementById("membershipCost");
     }
 
-    regionName = regionList.name;
-    var spacePriceName = '';
+    // openInvoice: display the vendor invoice (and registration items)
+    openInvoice(id) {
+        this.#regionName = '';
+        this.#includedMemberships = 0;
+        this.#additionalMemberships = 0;
+        let html = '';
+        let tabindex = 200;
 
-    // fill in the variable items
-    document.getElementById("vendor_invoice_title").innerHTML = "<strong>Pay " + regionName + ' Invoice</strong>';
+        this.#regionYearId = id;
+        if (config['debug'] & 1)
+            console.log("regionYearId: " + this.#regionYearId);
+        let region = exhibits_spaces[this.#regionYearId];
+        let regionList = region_list[this.#regionYearId];
+        if (config['debug'] & 1) {
+            console.log("regionList");
+            console.log(regionList);
+            console.log("Region Spaces");
+            console.log(region);
+        }
 
-    // refresh the items spaces purchased area
-    var ret = drawExhitorTopBlocks('You', exhibitor_spacelist, region, regionList, regionYearId,
-        'vendor_inv_approved_for', 'vendor_inv_included', 'vendor_inv_included_mbr');
-    includedMemberships = ret[0];
-    additionalMemberships = ret[1];
-    spacePriceName = ret[2];
-    totalSpacePrice = ret[3];
-    document.getElementById('vendor_inv_cost').innerHTML = Number(totalSpacePrice).toFixed(2);
-    document.getElementById('vendorSpacePrice').value = totalSpacePrice;
-    document.getElementById('vendor_inv_region_id').value = regionYearId;
+        this.#regionName = regionList.name;
+        let spacePriceName = '';
+        this.#totalSpacePrice = 0;
 
-    membershipCostdiv.hidden =  (includedMemberships == 0 && additionalMemberships == 0) ;
-    vendor_invoice.show();
-    setTimeout(() => { document.getElementById('agreeNone').focus({focusVisible: true}); }, 600);
-}
+        // fill in the variable items
+        document.getElementById("vendor_invoice_title").innerHTML = "<strong>Pay " + this.#regionName + ' Invoice</strong>';
 
-// update invoice for the Cost of Memberships and total Cost when an additional member is started
-function updateCost(regionYearId, item) {
-    var regionList = region_list[regionYearId];
-    var price = Number(regionList.additionalMemPrice);
-    var fname = document.getElementById('fname_a_' + item).value;
-    var cost = 0;
-    additional_cost[item] = fname == '' ? 0 : Number(regionList.additionalMemPrice);
-    for (var num in additional_cost) {
-        cost += additional_cost[num];
-    }
-    if (config['debug'] & 1)
-        console.log('Pre totalSpacePrice: ' + String(cost));
-    document.getElementById('vendor_inv_mbr_cost').innerHTML = Number(cost).toFixed(2);
-    cost += Number(totalSpacePrice);
-    if (config['debug'] & 1)
-        console.log('After adding totalSpacePrice: ' + String(cost));
-    document.getElementById('vendor_inv_cost').innerHTML = Number(cost).toFixed(2);
-}
+        // refresh the items spaces purchased area
+        var ret = drawExhitorTopBlocks('You', exhibitor_spacelist, region, regionList, this.#regionYearId,
+            'vendor_inv_approved_for', 'vendor_inv_included', 'vendor_inv_included_mbr');
+        this.#includedMemberships = ret[0];
+        this.#additionalMemberships = ret[1];
+        spacePriceName = ret[2];
+        this.#totalSpacePrice = ret[3];
+        document.getElementById('vendor_inv_cost').innerHTML = currencyFmt.format(Number(this.#totalSpacePrice).toFixed(2));
+        document.getElementById('vendorSpacePrice').value = this.#totalSpacePrice;
+        document.getElementById('vendor_inv_region_id').value = this.#regionYearId;
 
-// submit the invoice for payment processing
-function makePurchase(token, label) {
-    if (label && label != '') {
-        purchase_label = label;
-    }
-    if (!token)
-        token = 'test';
-
-    if (token == 'test_ccnum') {  // this is the test form
-        token = document.getElementById(token).value;
+        this.#membershipCostDiv.hidden = (this.#includedMemberships == 0 && this.#additionalMemberships == 0);
+        this.#vendorInvoice.show();
+        setTimeout(() => {
+            document.getElementById('agreeNone').focus({focusVisible: true});
+        }, 600);
+        $('#vendor_invoice_form input[type=text]').off('keypress');
+        $('#vendor_invoice_form input[type=text]').on('keypress', function (event) {
+            if (event.key == 'Enter') {
+                event.preventDefault();
+            }
+        });
     }
 
-    var submitId = document.getElementById(purchase_label);
-    submitId.disabled = true;
-    var formData = $('#vendor_invoice_form').serialize()
-    formData += "&nonce=" + token;
-    clear_message('inv_result_message');
-    $.ajax({
-        url: 'scripts/spacePayment.php',
-        method: 'POST',
-        data: formData,
-        success: function(data, textStatus, jqXhr) {
-            if (config['debug'] & 1)
-                console.log(data);
-            if (data['error']) {
-                show_message(data['error'], 'error', 'inv_result_message');
-                var submitId = document.getElementById(purchase_label);
-                submitId.disabled = false;
-            } else if (data['status'] == 'error') {
-                show_message(data['data'], 'error', 'inv_result_message');
-                var submitId = document.getElementById(purchase_label);
-                submitId.disabled = false;
-            } else if (data['status'] == 'success') {
-                vendor_invoice.hide();
-                show_message(data['message'] + "<p>Welcome to " + config['label'] + " Exhibitor Space. You may contact " + config['vemail'] +
-                    " with any questions.  One of our coordinators will be in touch to help you get setup.</p>");
-                if (data['exhibitor_spacelist']) {
-                    exhibitor_spacelist = data['exhibitor_spacelist'];
+    // update invoice for the Cost of Memberships and total Cost when an additional member is started
+    updateCost(regionYearId, item) {
+        let regionList = region_list[regionYearId];
+        let price = Number(regionList.additionalMemPrice);
+        let fname = document.getElementById('a_' + item + '_fname').value;
+        let cost = 0;
+        this.#additionalCost[item] = fname == '' ? 0 : Number(regionList.additionalMemPrice);
+        for (var num in this.#additionalCost) {
+            cost += this.#additionalCost[num];
+        }
+        if (config['debug'] & 1)
+            console.log('Pre totalSpacePrice: ' + String(cost));
+        document.getElementById('vendor_inv_mbr_cost').innerHTML = currencyFmt.format(Number(cost).toFixed(2));
+        cost += Number(this.#totalSpacePrice);
+        if (config['debug'] & 1)
+            console.log('After adding totalSpacePrice: ' + String(cost));
+        document.getElementById('vendor_inv_cost').innerHTML = currencyFmt.format(Number(cost).toFixed(2));
+    }
+
+    // submit the invoice for payment processing
+    makePurchase(token, label) {
+        this.#token = token;
+        this.#purchaseLabel = label;
+        this.#currentOrdinal = 0;
+        this.#currentType = 'i';
+        this.#formValid = true;
+        this.payValidate();
+    }
+
+    incrPayValidate() {
+        // skip over the current one, it passed
+        this.#currentOrdinal++;
+        this.payValidate();
+    }
+
+    payValidate() {
+        clear_message('inv_result_message');
+        this.#validateMessage = '';
+        let numInclUsed = 0;
+        let numAddlUsed = 0;
+        if (this.#currentType == 'i') {
+            while (this.#currentOrdinal < this.#includedMemberships) {
+                this.#currentPrefix = 'i_' + this.#currentOrdinal + '_';
+                if (document.getElementById(this.#currentPrefix + 'fname').value != '' ||
+                    document.getElementById(this.#currentPrefix + 'lname').value != '') {
+                    profile = inclProfiles[this.#currentOrdinal];
+                    let message = profile.validate(null, 'inv_result_message', incrPayValidate, payValidate, '', true);
+                    if (message == 'stop') // usps is doing it's work, don't proceed
+                        return;
+                    if (message != '') {
+                        this.#formValid = false;
+                        this.#validateMessage += '<br/>&nbsp;<br/>For included member ' +  (this.#currentOrdinal + 1) + message;
+                    }
+                    numInclUsed++;
                 }
-                updatePaidStatusBlock();
+                this.#currentOrdinal++;
+            }
+            this.#currentType = 'a'
+            this.#currentOrdinal = 0;
+        }
+
+        while (this.#currentOrdinal < this.#additionalMemberships) {
+            this.#currentPrefix = 'a_' + this.#currentOrdinal + '_';
+            if (document.getElementById(this.#currentPrefix + 'fname').value != '' ||
+                document.getElementById(this.#currentPrefix + 'lname').value != '') {
+                profile = addlProfiles[this.#currentOrdinal];
+                let message = profile.validate(null, 'inv_result_message', incrPayValidate, payValidate, '', true);
+                if (message == 'stop') // usps is doing it's work, don't proceed
+                    return;
+
+                if (message != '') {
+                    this.#formValid = false;
+                    this.#validateMessage += '<br/>&nbsp;<br/>For additional member ' +  (this.#currentOrdinal + 1) + message;
+                }
+                numAddlUsed++;
+            }
+            this.#currentOrdinal++;
+        }
+
+        if (!this.#formValid)
+            this.#validateMessage += '<br/>&nbsp;';
+
+        if (this.#includedMemberships > 0 && numAddlUsed > 0 && numInclUsed == 0) {
+            this.#validateMessage += '<br>You must use all the included memberships before using any of the additional memberships.<br/>&nbsp;';
+            this.#formValid = false;
+        }
+
+        if (document.getElementById('agent_self')) {
+            // validate that an agent is selected
+            let agents = document.getElementsByName('agent');
+            let selAgent = document.querySelector('input[name="agent"]:checked');
+            let agentValue = '';
+            if (selAgent)
+                agentValue = selAgent.value;
+            if (agentValue == '') {
+                this.#validateMessage += '<br/>You must chose an on-site agent.';
+                this.#formValid = false;
+                for (let index = 0; index < agents.length; index++) {
+                    agents[index].classList.add('need');
+                }
             } else {
-                show_message('There was an unexpected error, please email ' + config['vemail'] + ' to let us know.  Thank you.', 'error', 'inv_result_message');
-                var submitId = document.getElementById(purchase_label);
-                submitId.disabled = false;
+                for (let index = 0; index < agents.length; index++)
+                    agents[index].classList.remove('need');
+            }
+
+            let arRequest = document.getElementById('agent_request_text');
+            if (agentValue == 'request') {
+                let arText = arRequest.value;
+                if (arText == '') {
+                    this.#validateMessage += '<br/>You checked that you are making a special request for your agent, but the request field is blank.' +
+                        ' Please fill in your agent request.';
+                    this.#formValid = false;
+                    arRequest.classList.add('need');
+                } else {
+                    arRequest.classList.remove('need');
+                }
+            } else {
+                arRequest.classList.remove('need');
             }
         }
-    });
+
+        let cc_fields = {
+            cc_fname: 'First Name',
+            cc_lname: 'Last Name',
+            cc_street: 'Street Address',
+            cc_city: 'City',
+            cc_state: 'State/Province',
+            cc_zip: 'Zip Code / Postal Code',
+            cc_phone: 'Phone Number',
+        };
+        let ccKeys = Object.keys(cc_fields);
+
+        for (let index = 0; index < ccKeys.length; index++) {
+            let field = document.getElementById(ccKeys[index]);
+            let value = field.value;
+            if (value == undefined || value == '') {
+                let name = cc_fields[ccKeys[index]];
+                this.#validateMessage += '<br/>The credit cart payment information field ' + name + ' is required and cannot be empty';
+                this.#formValid = false;
+                field.classList.add('need');
+            } else {
+                field.classList.remove('need');
+            }
+        }
+
+        if (!this.#formValid) {
+            show_message('Please correct the items marked in red to process the payment.' + this.#validateMessage, 'error', 'inv_result_message')
+            return;
+        }
+
+        this.processPay();
+    }
+
+    processPay() {
+        if (!this.#purchaseLabel || this.#purchaseLabel == '') {
+            this.#purchaseLabel = 'unknown';
+        }
+        if (!this.#token)
+            this.#token = 'test';
+
+        if (this.#token == 'test_ccnum') {  // this is the test form
+            this.#token = document.getElementById(this.#token).value;
+        }
+
+        let submitId = document.getElementById(this.#purchaseLabel);
+        submitId.disabled = true;
+        let formData = $('#vendor_invoice_form').serialize()
+        formData += "&nonce=" + this.#token;
+        clear_message('inv_result_message');
+        let purchaseLabel = this.#purchaseLabel;
+        let hideElement = this.#vendorInvoice;
+        $.ajax({
+            url: 'scripts/spacePayment.php',
+            method: 'POST',
+            data: formData,
+            success: function (data, textStatus, jqXhr) {
+                if (config['debug'] & 1)
+                    console.log(data);
+                if (data['error']) {
+                    show_message(data['error'], 'error', 'inv_result_message');
+                    let submitId = document.getElementById(purchaseLabel);
+                    submitId.disabled = false;
+                } else if (data['status'] == 'error') {
+                    show_message(data['data'], 'error', 'inv_result_message');
+                    let submitId = document.getElementById(purchaseLabel);
+                    submitId.disabled = false;
+                } else if (data['status'] == 'success') {
+                    hideElement.hide();
+                    show_message(data['message'] + "<p>Welcome to " + config['label'] + " Exhibitor Space. You may contact " + config['vemail'] +
+                        " with any questions.  One of our coordinators will be in touch to help you get setup.</p>");
+                    if (data['exhibitor_spacelist']) {
+                        exhibitor_spacelist = data['exhibitor_spacelist'];
+                    }
+                    updatePaidStatusBlock();
+                } else {
+                    show_message('There was an unexpected error, please email ' + config['vemail'] + ' to let us know.  Thank you.', 'error', 'inv_result_message');
+                    let submitId = document.getElementById(purchaseLabel);
+                    submitId.disabled = false;
+                }
+            }
+        });
+    }
+
+    // update the paid status block to show the confirmed space
+    updatePaidStatusBlock() {
+        let blockname = region_list[this.#regionYearId].shortname + '_div';
+        let blockdiv = document.getElementById(blockname);
+
+        // get the list item for this
+        let region_spaces = exhibits_spaces[this.#regionYearId];
+        let spaceStatus = ''
+        let exSpaceKeys = Object.keys(exhibitor_spacelist);
+        for (let exSpaceIdx in exSpaceKeys) {
+            if (region_spaces[exSpaceKeys[exSpaceIdx]]) { // space is in our region
+                let region = region_spaces[exSpaceKeys[exSpaceIdx]];
+                let space = exhibitor_spacelist[exSpaceKeys[exSpaceIdx]];
+                if (space.item_purchased) {
+                    let timePurchased = new Date(space.time_purchased)
+                    spaceStatus += space.requested_description + " in " + this.#regionName + " for " +
+                        currencyFmt.format(Number(space.requested_price).toFixed(2)) + " at " + timePurchased + "<br/>";
+                }
+            }
+        }
+
+        if (spaceStatus == '') {
+            blockdiv.innerHTML = "<div class='col-sm-auto p-0'><button class='btn btn-primary' onclick = 'exhibitorRequest.openReq(this.#regionYearId, 0);' > Request " +
+                this.#regionName + " Space</button></div>";
+            return;
+        }
+
+        spaceStatus += "<button class='btn btn-primary m-1' onclick='exhibitorReceipt.showReceipt(" + this.#regionYearId + ");' > Show receipt for " +
+            this.#regionName + " space</button>";
+        if (region_list[this.#regionYearId].portalType == 'artist') {
+            spaceStatus += "<button class='btn btn-primary m-1' onclick='auctionItemRegistration.open(" + this.#regionYearId + ");'>" +
+                "Open Item Registration for " + config.conid + "</button>";
+        }
+        blockdiv.innerHTML = '<div class="col-sm-auto p-0">You have purchased:<br/>' + spaceStatus + "</div>";
+
+    }
 }
 
-// update the paid status block to show the confirmed space
-function updatePaidStatusBlock() {
-    var blockname = region_list[regionYearId].shortname + '_div';
-    var blockdiv = document.getElementById(blockname);
-
-    // get the name for this region
-    var regionName = region_list[regionYearId].name;
-    // get the list item for this
-    var region_spaces = exhibits_spaces[regionYearId];
-    var spaceStatus = ''
-    var exSpaceKeys = Object.keys(exhibitor_spacelist);
-    for (var exSpaceIdx in exSpaceKeys) {
-        if (region_spaces[exSpaceKeys[exSpaceIdx]]) { // space is in our region
-            var region = region_spaces[exSpaceKeys[exSpaceIdx]];
-            var space = exhibitor_spacelist[exSpaceKeys[exSpaceIdx]];
-            if (space.item_purchased) {
-                var timePurchased = new Date(space.time_purchased)
-                spaceStatus += space.requested_description + " in " + regionName + " for $" + Number(space.requested_price).toFixed(2) +
-                    " at " + timePurchased + "<br/>";
-            }
-        }
-    }
-
-    if (spaceStatus == '') {
-        blockdiv.innerHTML = "<div class='col-sm-auto p-0'><button class='btn btn-primary' onclick = 'exhibitorRequest.openReq(regionYearId, 0);' > Request " + regionName + " Space</button></div>";
+function updateCost(regionYearId, item) {
+    if (vendorInvoice == null)
         return;
-    }
 
-    spaceStatus += "<button class='btn btn-primary m-1' onclick='exhibitorReceipt.showReceipt(" + regionYearId + ");' > Show receipt for " + regionName + " space</button>";
-    if (region_list[regionYearId].portalType == 'artist') {
-        spaceStatus += "<button class='btn btn-primary m-1' onclick='auctionItemRegistration.open(regionYearId);'>Open Item Registration</button>";
-    }
-    blockdiv.innerHTML = '<div class="col-sm-auto p-0">You have purchased:<br/>' + spaceStatus + "</div>";
+    vendorInvoice.updateCost(regionYearId, item);
+}
 
+function payValidate() {
+    if (vendorInvoice == null)
+        return;
+
+    vendorInvoice.payValidate();
+}
+
+function incrPayValidate() {
+    if (vendorInvoice == null)
+        return;
+
+    vendorInvoice.incrPayValidate();
+}
+
+function updatePaidStatusBlock() {
+    if (vendorInvoice == null)
+        return;
+
+    vendorInvoice.updatePaidStatusBlock();
 }
