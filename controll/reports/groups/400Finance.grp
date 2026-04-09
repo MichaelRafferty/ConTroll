@@ -33,4 +33,7 @@
 	type=php
 	P001="prompt/~/startdate/~/Data Start Date: /~/YYYY-MM-DD format/~/"
 	P002="prompt/~/enddate/~/Data End Date: /~/YYYY-MM-DD format/~/"
-	P003="prompt/~/transfile/~/Transaction CSV file: /~/in the reportdata directory/~/"
+    P003="prompt/~/transfile/~/Transaction CSV file: /~/file name you uploaded into the reportdata directory/~/"
+	T001="Square Transaction should cover the same date range as specificed below."
+	T002="The Transaction CSV file must have been already uploaded to \"Report Data Files\" using \"File Manager\" before running this report."
+	B001="Be sure the file has been uploaded and the date range matches that in the file before running this report."

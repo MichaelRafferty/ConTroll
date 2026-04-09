@@ -160,43 +160,58 @@ EOS;
             $template = $rpt['template'];
             $keys = array_keys($rpt);
             $prompts = [];
+            $topNotes = [];
+            $bottomNotes = [];
             sort($keys);
             for ($i = 0; $i < count($keys); $i++) {
-                if (!str_starts_with($keys[$i], 'P'))
-                    continue;
-
-                $prompt = explode('/~/', $rpt[$keys[$i]]);
-                if (count($prompt) > 4) {
-                    $default = $prompt[4];
-                    if (preg_match('/^#.+#$/', $default)) {
-                        $prompt[4] = replaceConfigTokens($default);
-                    } else {
-                        switch (strtolower($default)) {
-                            case 'today':
-                                $prompt[4] = date_format(date_create(), "Y-m-d");
-                                break;
-                            case 'yesterday':
-                                $date = date_create();
-                                $date = date_add($date, date_interval_create_from_date_string('-1 day'));
-                                $prompt[4] = date_format($date, 'Y-m-d');
-                                break;
-                            case 'thismonth':
-                                $prompt[4] = date_format(date_create(), 'Y-m-01');
-                                break;
-                            case 'lastmonth':
-                                $date = date_create();
-                                $date = date_add($date, date_interval_create_from_date_string('-1 month'));
-                                $prompt[4] = date_format($date, 'Y-m-01');
-                                break;
-                            case 'now':
-                                $prompt[4] = date_format(date_create(), 'Y-m-d H:i:s');
-                                break;
+                switch (substr($keys[$i], 0, 1)) {
+                    case 'P':
+                        $prompt = explode('/~/', $rpt[$keys[$i]]);
+                        if (count($prompt) > 4) {
+                            $default = $prompt[4];
+                            if (preg_match('/^#.+#$/', $default)) {
+                                $prompt[4] = replaceConfigTokens($default);
+                            } else {
+                                switch (strtolower($default)) {
+                                    case 'today':
+                                        $prompt[4] = date_format(date_create(), 'Y-m-d');
+                                        break;
+                                    case 'yesterday':
+                                        $date = date_create();
+                                        $date = date_add($date, date_interval_create_from_date_string('-1 day'));
+                                        $prompt[4] = date_format($date, 'Y-m-d');
+                                        break;
+                                    case 'thismonth':
+                                        $prompt[4] = date_format(date_create(), 'Y-m-01');
+                                        break;
+                                    case 'lastmonth':
+                                        $date = date_create();
+                                        $date = date_add($date, date_interval_create_from_date_string('-1 month'));
+                                        $prompt[4] = date_format($date, 'Y-m-01');
+                                        break;
+                                    case 'now':
+                                        $prompt[4] = date_format(date_create(), 'Y-m-d H:i:s');
+                                        break;
+                                }
+                            }
                         }
-                    }
+                        $prompts[] = $prompt;
+                        break;
+                    case 'T':
+                        $topNotes[] = $rpt[$keys[$i]];
+                        break;
+                    case 'B':
+                        $bottomNotes[] = $rpt[$keys[$i]];
+                        break;
                 }
-                $prompts[] = $prompt;
+
+
             }
             $tab = str_replace(' ', '-', $name);
+            if (count($topNotes) > 0)
+                $reportTopNotes[$key] = $topNotes;
+            if (count($bottomNotes) > 0)
+                $reportBottomNotes[$key] = $bottomNotes;
             if (count($prompts) > 0) {
                 $reportPrompts[$key] = $prompts;
                 $onclick = "showPrompts('$key', '$prefix', '$fileName', '$type', '$template');";
@@ -222,13 +237,13 @@ EOS;
 EOS;
         $active = '';
     }
+    echo " <script type='text/javascript'>\n";
+    echo "    var reportTopNotes = " . json_encode($reportTopNotes) . ";\n";
+    echo "    var reportBottomNotes = " . json_encode($reportBottomNotes) . ";\n";
     if (count($reportPrompts) > 0) {
-?>
-    <script type='text/javascript'>
-        var reportPrompts = <?php echo json_encode($reportPrompts); ?>;
-    </script>
-<?php
+        echo "    var reportPrompts = " . json_encode($reportPrompts) . ";\n";
     }
+    echo " </script>\n";
     ?>
     <div class='tab-content ms-2' id='gen-report-content'>
         <div class='container-fluid' id='report-prompt-div'></div>
