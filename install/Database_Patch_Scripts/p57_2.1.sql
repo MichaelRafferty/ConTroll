@@ -92,16 +92,19 @@ FROM memList m
 UPDATE controllAppItems SET txtItemDescription = replace(txtItemDescription, 'Np membership created', 'No membership created')
     WHERE appName = 'controll' AND appPage = 'emails' AND txtItemDescription LIKE '%Np membership created%';
 
-/* survey emails */
+/* survey emails, inv emails */
+INSERT INTO controllAppPages (appName, appPage, pageDescription) VALUES
+    ('exhibitor', 'emails', 'Emails sent by Controll Exhibitor Pages');
+
 INSERT INTO controllAppSections (appName, appPage, appSection, sectionDescription) VALUES
     ('controll', 'emails', 'survey', 'Post Convention Survey Request Email'),
-    ('controll', 'emails', 'invReminder', 'Artist Item Registration Reminder Email');
+    ('exhibitor', 'emails', 'invReminder', 'Artist Item Registration Reminder Email');
 
 INSERT INTO controllAppItems(appName, appPage, appSection, txtItem, txtItemDescription) VALUES
     ('controll', 'emails','survey','text','Custom Text for the plain text post con survey email'),
     ('controll', 'emails','survey','html','Custom Text for the html post con survey email'),
-    ('controll', 'emails','invReminder','text','Custom Text for the plain text enter your item registration reminder email'),
-    ('controll', 'emails','invReminder','html','Custom Text for the html post con enter your item registration reminder email');
+    ('exhibitor', 'emails','invReminder','text','Custom Text for the plain text enter your item registration reminder email'),
+    ('exhibitor', 'emails','invReminder','html','Custom Text for the html post con enter your item registration reminder email');
 
 INSERT INTO controllTxtItems(appName, appPage, appSection, txtItem, contents)
 SELECT a.appName, a.appPage, a.appSection, a.txtItem,
@@ -143,7 +146,7 @@ SET contents = '<p>Dear [[FirstName]],</p>
 <p>This is a reminder that have not yet registered the items you are bringing to #label#.</p>
 <p>Please sign into the portal at #vendor.artistsite# and click the "Open Item Registration" button.</p>
 <p>Thank you,<br/>#vendor.artist#</p>'
-WHERE appName = 'controll' AND appPage = 'emails' AND appSection = 'invReminder' AND txtItem = 'html';
+WHERE appName = 'exhibitor' AND appPage = 'emails' AND appSection = 'invReminder' AND txtItem = 'html';
 
 UPDATE controllTxtItems
 SET contents = 'Dear [[FirstName]],
@@ -155,7 +158,7 @@ Please sign into the portal at #vendor.artistsite# and click the "Open Item Regi
 Thank you,
 #vendor.artist#
 '
-WHERE appName = 'controll' AND appPage = 'emails' AND appSection = 'invReminder' AND txtItem = 'text';
+WHERE appName = 'exhibitor' AND appPage = 'emails' AND appSection = 'invReminder' AND txtItem = 'text';
 
 /* take last verified off perinfo history trigger */
 DROP TRIGGER IF EXISTS perinfo_update;
