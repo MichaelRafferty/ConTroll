@@ -543,7 +543,7 @@ class exhibitorsAdm {
             "               Add New / Pay for Exhibitor Space to Existing Exhibitor</button>\n" +
             "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='addExhibitorBtn2' onClick=" + '"exhibitors.addNew();">' +
             "               Add New Exhibitor</button>\n";
-        if (data.usesInventory == 'Y') {
+        if (data.usesInventory == 'Y' && config.exhibitorConid == config.conid) {
             html +=
             "            <button class='btn btn-sm btn-secondary ms-1 me-1' id='sendInvReminder' onClick=" + '"exhibitors.sendInvReminder();">' +
             "               Send Inventory Reminder Email For Those Missing Inventory</button>\n";
