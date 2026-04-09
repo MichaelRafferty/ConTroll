@@ -223,6 +223,9 @@ class exhibitorsAdm {
         if (this.#currentOwner) {
             this.#currentOwner.hidden = true;
         }
+        if (!this.#ownerTabs.hasOwnProperty(this.#currentTab)) {
+            this.#currentTab = 'overview'; // if the other tab names change, go back to overview
+        }
         this.#ownerTabs[this.#currentTab].hidden = false;
         this.#currentOwner = this.#ownerTabs[this.#currentTab];
         this.#currentPane = this.#currentTab;
