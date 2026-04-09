@@ -49,6 +49,8 @@
   * support for art sales revenue gl information
   * Support for manually sending inventory reminder emails
   * New report for vendors or artists for a specific conid
+* Repoprts:
+  * Addition of top notes and bottom notes to a report definition in the report processor for the prompt section of the screen.
 
 ## Portal:
 * New cart with cart descriptions
