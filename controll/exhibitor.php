@@ -26,14 +26,15 @@ $conf = get_conf('con');
 $newConid = null;
 $initialTab = null;
 $initialSubtab = null;
-$viewPrior = $conid;
+$viewPrior = getConfValue('controll', 'viewPriorLimit', $conid);
 // set session variables for redraw to take the new year off the request line
 if (array_key_exists('exhibitorConid', $_REQUEST)) {
     $newConid = $_REQUEST['exhibitorConid'];
     if (!is_numeric($newConid))
-        $viewPrior = getConfValue('controll', 'viewPriorLimit', $conid);
-        if ($newConid >= $viewPrior && $newConid <= $conid)
-            setSessionVar('exhibitorConid', $newConid);
+        $newConid = $conid;
+
+    if ($newConid >= $viewPrior && $newConid <= $conid)
+        setSessionVar('exhibitorConid', $newConid);
 }
 
 if (array_key_exists('tab', $_REQUEST)) {
