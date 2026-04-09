@@ -69,7 +69,11 @@ if ($email == null || $email == '') {
 
 $response['test'] = $test;
 $macroSubstitution = false;
-loadCustomText('controll', 'emails', 'production');
+if ($email_type == 'invReminder')
+    loadCustomText('exhibitor', 'emails', 'production');
+else
+    loadCustomText('controll', 'emails', 'production');
+}
 
 switch ($email_type) {
 case 'expire':
