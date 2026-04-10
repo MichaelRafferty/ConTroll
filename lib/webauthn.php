@@ -37,6 +37,7 @@
 
     require_once(__DIR__ . '/../Composer/vendor/autoload.php');
 
+// request to create a new passkey
 function createWebauthnArgs($userId, $userName, $userDisplayName, $source) {
     $userDisplayName = filter_var($userDisplayName, FILTER_SANITIZE_SPECIAL_CHARS);
     $requireResidentKey = true;
@@ -70,6 +71,7 @@ function createWebauthnArgs($userId, $userName, $userDisplayName, $source) {
     return $createArgs;
 }
 
+//v new passkey created, save off our side of the passkey
 function savePasskey($att, $userId, $userName, $userDisplayName, $source) {
     $clientDataJSON = !empty($att['clientDataJSON']) ? base64_decode($att['clientDataJSON']) : null;
     $attestationObject = !empty($att['attestationObject']) ? base64_decode($att['attestationObject']) : null;
@@ -131,6 +133,7 @@ EOS;
     return $data;
 }
 
+// get a passkey to authenticate
 function getWebauthnArgs($source) {
     $requireResidentKey = true;
     $userVerification = 'required';
@@ -139,13 +142,18 @@ function getWebauthnArgs($source) {
     $crossPlatformAttachment = null;
 
     $formats = ['android-key', 'android-safetynet', 'apple', 'fido-u2f', 'packed', 'tpm', 'none'];
-    $excludeCredentialIds = [];
+    $allowCredentials = null;
+    $cookiePublicKeyName = str_replace('.', '_', "ControllPassKeyCredentialId_$rpId");
+    if (array_key_exists($cookiePublicKeyName, $_COOKIE)) {
+        $id = ByteBuffer::fromBase64Url($_COOKIE[$cookiePublicKeyName]);
+        $allowCredentials = array($id);
+    }
 
     // new Instance of the server library.
     // make sure that $rpId is the domain name.
     $name = getConfValue('global', 'conname', 'ConTroll') . ' ConTroll';
     $WebAuthn = new lbuchs\WebAuthn\WebAuthn($name, $rpId, $formats);
-    $getArgs = $WebAuthn->getGetArgs(null, 60*4, true, true, true, true, true, true);
+    $getArgs = $WebAuthn->getGetArgs($allowCredentials, 60*4, true, true, true, true, true, true);
 
     // save challenge to session. you have to deliver it to processGet later.
     $challenge = base64_encode($WebAuthn->getChallenge()->getBinaryString());
@@ -188,7 +196,7 @@ EOS;
     $WebAuthn = new lbuchs\WebAuthn\WebAuthn(getSessionVar('passkeyName'), getSessionVar('passkeyRPid'), $formats);
     // process the get request. throws WebAuthnException if it fails
     try {
-        $WebAuthn->processGet($clientDataJSON, $authenticatorData, $signature, $credentialPublicKey, $challenge, null, true);
+        $WebAuthn->processGet($clientDataJSON, $authenticatorData, $signature, $credentialPublicKey, $challenge, null, 1);
     }
     catch (Exception $e) {
         return array('status' => 'error',
@@ -204,6 +212,17 @@ EOS;
     $numUpd = dbSafeCmd($upQ, 'si', array($_SERVER['REMOTE_ADDR'], $passkey['id']));
 
     clearSession('passkey');
+    // set the passkey cookie as last one used
+    $cookiePublicKeyName = 'ControllPassKeyCredentialId_' . str_replace('.', '_', $passkey['relyingParty']);
+    $arr_cookie_options = array (
+        'expires' => time() + time() + (60*60*24*365),
+        'path' => '/',
+        'domain' => $_SERVER['SERVER_NAME'],
+        'secure' => true,
+        'httponly' => false,
+        'samesite' => 'Lax'
+    );
+    $ret = setcookie($cookiePublicKeyName, $passkey['credentialId'], $arr_cookie_options);
     return array('status' => 'success', 'message' => 'Authentication successful', 'passkey' => $passkey);
 }
 

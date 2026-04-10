@@ -14,7 +14,6 @@ if ($tokenState == 'expired') {
     $tokenState = 'none';
 }
 
-//unset id_token if logging out.
 if (isset($_REQUEST['logout'])) {
     $sesPerid = getSessionVar('user_perid');
     if (!$sesPerid)
@@ -24,6 +23,20 @@ if (isset($_REQUEST['logout'])) {
             . ' from ' . $_SERVER['REMOTE_ADDR']);
     $authToken->deleteToken();
     session_regenerate_id(true);
+    // unset the cookie as well if logging out
+    $cookieName = 'ControllPassKeyCredentialId_' . str_replace('.', '_', $_SERVER['SERVER_NAME']);
+    if (array_key_exists($cookieName, $_COOKIE)) {
+        $arr_cookie_options = array (
+                'expires' => time() - (60*60*24*365),
+                'path' => '/',
+                'domain' => $_SERVER['SERVER_NAME'],
+                'secure' => true,
+                'httponly' => false,
+                'samesite' => 'Lax'
+        );
+        $ret = setcookie($cookieName, '', $arr_cookie_options);
+    }
+
     // refresh the page to take the logout string off the URL
     header('Location: index.php');
     exit();
