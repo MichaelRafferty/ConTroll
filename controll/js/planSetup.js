@@ -327,7 +327,7 @@ class PlansSetup {
         var rows = null;
         rows = this.#editSelTable.getRows();
         for (var row of rows) {
-            if (row.getCell(plans.getselIndex()).getElement().style.backgroundColor != '') {
+            if (row.getCell(plans.getselIndex()).getElement().classList.contains('selectedBGColor')) {
                 filter += ',' + row.getCell(plans.getselIndex()).getValue();
             }
         }

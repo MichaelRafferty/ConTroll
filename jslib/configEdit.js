@@ -358,6 +358,8 @@ class ConfigEditor {
                 errmsg = "Section " + sectionName + ", Parameter: " + param.name + " cannot be empty<br/>\n";
                 addFieldClass(field,'unsavedWarnBGColor');
                 return errmsg;
+            } else {
+                clearFieldChanged(field);
             }
             return '';
         }
@@ -440,6 +442,8 @@ class ConfigEditor {
         if (errmsg != '') {
             errmsg = "Section " + sectionName + ", Parameter: " + param.name + " " + errmsg + "</br>";
             addFieldClass(field,'unsavedWarnBGColor');
+        } else {
+            clearFieldChanged(field)
         }
         return errmsg;
     }
