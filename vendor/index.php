@@ -698,7 +698,7 @@ EOS;
             </div>
         </div>
 <?php
-        if (count($pastYears) > 0) {
+        if ($portalType == 'artist' &&  count($pastYears) > 0) {
             echo <<<EOS
         <div class="row mt-1">
 EOS;
