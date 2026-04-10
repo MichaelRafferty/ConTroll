@@ -153,6 +153,18 @@ if (isSessionVar('id') && !isset($_GET['vid'])) {
     if (isset($_REQUEST['logout'])) {
         clearSession();
         session_regenerate_id(true);
+        $cookieName = 'ControllPassKeyCredentialId_' . str_replace('.', '_', $_SERVER['SERVER_NAME']);
+        if (array_key_exists($cookieName, $_COOKIE)) {
+            $arr_cookie_options = array (
+                    'expires' => time() - (60*60*24*365),
+                    'path' => '/',
+                    'domain' => $_SERVER['SERVER_NAME'],
+                    'secure' => true,
+                    'httponly' => false,
+                    'samesite' => 'Lax'
+            );
+            $ret = setcookie($cookieName, '', $arr_cookie_options);
+        }
         header('location:' . $_SERVER['PHP_SELF']);
         exit();
     } else {
