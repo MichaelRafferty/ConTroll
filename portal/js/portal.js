@@ -78,6 +78,8 @@ class Portal {
     #orderData = null;
     #taxes = [];
     #disableButtonNames = null;
+    #selectedItems = false;
+    #payDueSubmitButton = null;
 
     // receipt fields
     #receiptModal = null;
@@ -180,6 +182,7 @@ class Portal {
             this.#paymentDueModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
             this.#paymentDueBody = document.getElementById("paymentDueBody");
             this.#paymentDueTitle = document.getElementById("paymentDueTitle");
+            this.#payDueSubmitButton = document.getElementById("payDueSubmitButton");
         }
 
         id = document.getElementById("makePaymentModal");
@@ -838,7 +841,7 @@ class Portal {
             Pay Selected
         </button></div>
         <div class="col-sm-auto">
-            <b>The total amout due for selected memberships totaling
+            <b>The total amount due for selected memberships totaling
                 <span id="partialPayDue2">` + this.#currencyFmt.format(Number(this.#partialPayAmt).toFixed(2)) + `</span></b>
         </div>
     </div>
@@ -859,7 +862,7 @@ class Portal {
         <div class="col-sm-2" style="text-align: right"><button class="btn btn-sm btn-primary pt-0 pb-0"
             onClick="portal.makeOrder(null);">Pay All</button></div>
         <div class="col-sm-auto">
-            <b>The total amout due for all memberships is ` +
+            <b>The total amount due for all memberships is ` +
             this.#currencyFmt.format(Number(totalDue).toFixed(2)) + `</b>
         </div>
     </div>
@@ -867,7 +870,7 @@ class Portal {
         <div class="col-sm-2" style="text-align: right"><button class="btn btn-sm btn-primary pt-0 pb-0"
             onClick="portal.buildPlan(1);">Make Plan for All</button></div>
         <div class="col-sm-auto">
-            <b>Create a payment plan for the total amout due for all memberships of ` +
+            <b>Create a payment plan for the total amount due for all memberships of ` +
             this.#currencyFmt.format(Number(totalDue).toFixed(2)) + `</b>
         </div>
     </div>
@@ -946,11 +949,22 @@ class Portal {
             return;
         }
 
-        html = `
+        let buttonName = '';
+        let amountDueName = '';
+        if (type == 2) {
+            buttonName = 'Pay Selected Items Amount Due'
+            amountDueName = 'selected items is ';
+        } else {
+            buttonName = 'Pay Total Cart Items Amount Due'
+            amountDueName = 'cart is ';
+        }
+        this.#payDueSubmitButton.innerHTML = buttonName;
+        html += `
     <div class="row mt-3">
-        <div class="col-sm-auto"><button class="btn btn-sm btn-primary pt-0 pb-0" onClick='portal.makeOrder(null, 0);'>Pay Total Amount Due</button></div>
+        <div class="col-sm-auto"><button class="btn btn-sm btn-primary pt-0 pb-0" onClick='portal.makeOrder(null, 2);'>` +
+                buttonName + `</button></div>
         <div class="col-sm-auto">
-            <b>Your total amout due is ` + Number(this.#totalAmountDue).toFixed(2) + `</b>
+            <b>Your total amount due for the ` + amountDueName + Number(this.#totalAmountDue).toFixed(2) + `</b>
         </div>
     </div>
 `;
@@ -958,7 +972,8 @@ class Portal {
         html += `
     <div class="row mt-2">
         <div class="col-sm-12">
-            You can pay this balance in full without creating a payment plan by using the "Pay Total Amount Due" button above or at the bottom of this popup.<br/>
+            You can pay this balance in full without creating a payment plan by using the "` + buttonName +
+            `" button above or at the bottom of this popup.<br/>
             You can pay by creating one of the following payment plans using the "Select" or "Customize" payment plan buttons below:
         </div>
     </div>
@@ -991,12 +1006,15 @@ class Portal {
         if (other == 1 || (other == 0 && this.#planAllorPartial == 'all')) {
             this.#paymentAmount = this.#fullPayAmt;
             this.#orderMemberships = this.#payAllList;
+            this.#selectedItems = false;
         } else if (other == 2 || (other == 0 && this.#planAllorPartial == 'partial')) {
             this.#paymentAmount = this.#partialPayAmt;
             this.#orderMemberships = this.#paySelectedList;
+            this.#selectedItems = true;
         } else {
             this.#paymentAmount = this.#fullPayAmt;
             this.#orderMemberships = this.#payAllList;
+            this.#selectedItems = false;
         }
 
         if (plan == null) {
@@ -1096,9 +1114,10 @@ class Portal {
 
         this.#paymentAmount = Number(this.#orderData.rtn.totalAmt);
         if (this.#orderData.rtn.taxAmt > 0) {
+            let preTaxWording = this.#selectedItems ? 'for the selected items' : 'for the cart';
             html += `
             <div class="row mt-4">
-                <div class="col-sm-3"><b>The Pre-Tax Amount Due is:</b></div>
+                <div class="col-sm-4"><b>The Pre-Tax Amount Due ` + preTaxWording + ` is:</b></div>
                 <div class="col-sm-1" style="text-align: right;"><b>` + this.#currencyFmt.format(Number(this.#orderData.rtn.preTaxAmt).toFixed(2)) + `</b></div>
             </div>`;
             this.#taxes = this.#orderData.rtn.taxes;
@@ -1109,7 +1128,7 @@ class Portal {
                     if (amt != null) {
                         html += `
     <div class="row mt-1">
-        <div class="col-sm-3">` + rate.label + `:</div>
+        <div class="col-sm-4">` + rate.label + `:</div>
         <div class="col-sm-1" style="text-align: right;">` + this.#currencyFmt.format(Number(amt).toFixed(2)) + `</div>
     </div>`;
                     }
@@ -1117,8 +1136,8 @@ class Portal {
             }
             if (this.#orderData.rtn.taxAmt > 0) {
                 html += `
-    <div class="row mt-1">
-        <div class="col-sm-3">Total Sales Tax:</div>
+    <div class="row mt-1 mb-3">
+        <div class="col-sm-4">Total Sales Tax:</div>
         <div class="col-sm-1" style="text-align: right;" id="pay-tax-amt">` +
                     this.#currencyFmt.format(Number(this.#orderData.rtn.taxAmt).toFixed(2)) + `</div>
     </div>`;
@@ -1126,9 +1145,10 @@ class Portal {
         }
 
         if (plan == null) {
+            let totalWording = this.#selectedItems ? 'total amount of the selected items' : 'total amount for the cart';
             html += `
         <div class="row mt-2 mb-4">
-            <div class="col-sm-auto"><strong>You are paying the total amount, so the payment amount is ` +
+            <div class="col-sm-auto"><strong>You are paying the ` + totalWording + `, so the payment amount is ` +
                 this.#currencyFmt.format(Number(this.#paymentAmount).toFixed(2)) + `</strong></div>
          </div>
 `;
