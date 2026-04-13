@@ -267,7 +267,7 @@ setIsChanged(value,fieldName) {
     let fieldValue = document.getElementById(value).value;
     switch (value) {
         case 'artItemStatus':
-            if (this.#statusField.value == artItemStatuses.ENTERED) {
+            if (this.#statusField.value == artItemStatuses.ENTERED || this.#statusField.value == artItemStatuses.CHECKED_IN) {
                 this.#final_priceField.value = null;
                 this.#bidderField.value = null;
                 this.#bidderNameField.innerHTML = '';

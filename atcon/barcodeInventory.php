@@ -35,34 +35,49 @@ barcode_page_init($page,
     var manager = <?php echo $manager; ?>;
 </script>
 <div id="main">
-    <label for="inventoryMode"> Inventory Mode: </label>
+    <div id="inventoryModeDiv">
+        <label for="inventoryMode"> Inventory Mode: </label>
         <select id="inventoryMode" onchange="inventoryModeChange(); tabindex = 101">
-        <option value="">-- SELECT A MODE --</option>
-        <option value="checkin">Check In</option>
-        <option value="bid">Record Bids</option>
-        <option value="checkout">Check Out</option>
-    </select>
-    <br/>
-    <label for="barcode" class="mt-2 me-2">Scan Barcode: </label>
-    <input type="text" id="barcode" placeholder="Scan Here" size="20" tabindex="110"/>
-    <br/>
-    <div id="printDiv" hidden>
-        <label for="quantity" class="mt-4 me-3" id="printmode">Received Qty: </label>
-        <input type='number' id='quantity' placeholder='Qty' size="5" style="width: 80px;" tabindex = "120"/>
+            <option value="">-- SELECT A MODE --</option>
+            <option value="checkin">Check In</option>
+            <option value="bid">Record Bids</option>
+            <option value="checkout">Check Out</option>
+        </select>
+    </div>
+    <div id="barcodeDiv mt-2">
+        <label for="barcode" class="mt-2 me-2">Scan Barcode: </label>
+        <input type="text" id="barcode" placeholder="Scan Here" size="20" tabindex="110"/>
+    </div>
+    <div id="printDiv" class="mt-4" hidden>
+        <div>
+            <span id='printQtyType'>Entered</span> Qty:&emsp;&emsp; <span id='printQty'>x</span>
+        </div>
+        <div id="printDBInfo" class="mt-2">
+            <label for="quantity" class="me-3" id="printmode">Received Qty: </label>
+            <input type='number' id='quantity' class='no-spinners' placeholder='Qty' size="5" style="width: 80px;"
+                   onchange="printQtyChanged();" tabindex = "120"/>
+        </div>
     </div>
     <div id='bidDiv' hidden>
-        <label for="bidder" class='mt-4 me-5'>Bidder: </label>
-        &nbsp;&nbsp;&nbsp;<input type='number' id='bidder' placeholder='High Bidder' size='20' tabindex="130"/>
-        <br/>
-        <label for="bid" class="mt-2 me-3">New high bid: </label>
-        <input type='number' id='bid' placeholder='New Bid' size='20' tabindex="140"/>
-        <label for="toAuction" class="ms-3">To Auction: </label>
-        <input type="checkbox" id="toAuction" tabindex="1"/>
+        <div id="curBidInfo" class="mt-4">
+            Current Bidder:&ensp; <span id="dbBidder">x</span>, High Bid: <span id="dbBid">x</span>
+        </div>
+        <div id="newBidInfo" class="mt-2">
+            <label for="bidder" class='me-5'>Bidder: </label>
+            &nbsp;&nbsp;&nbsp;<input type='number' class='no-spinners' id='bidder' placeholder='High Bidder' size='20' tabindex="130"/>
+            <br/>
+            <label for="bid" class="mt-2 me-3">New high bid: </label>
+            <input type='number' id='bid' class='no-spinners' placeholder='New Bid' size='20' tabindex="140"/>
+            <label for="toAuction" class="ms-3">To Auction: </label>
+            <input type="checkbox" id="toAuction" tabindex="1"/>
+        </div>
     </div>
     <br/>
-    <button class="btn btn-primary mt-2" id="inventoryButton" onclick="inventory(1);" tabindex= "160">Update</button>
-    <button class="btn btn-secondary mt-2 ms-3" id="clearButton" onclick="clearScreen();" tabindex= "170">Start Over</button>
-    <button class="btn btn-secondary mt-2 ms-3" id="closeButton" onclick="window.close();" tabindex= "180">Close Window</button>
+    <button class="btn btn-primary mt-2" id="inventoryButton" onclick="inventory(1);" tabindex= "160" disabled>Update</button>
+    <button class="btn btn-primary mt-2 ms-1" id="inventoryNoChange" onclick="inventory(2);" tabindex= "165" hidden>No Change</button>
+    <button class="btn btn-warning mt-2 ms-1" id="inventoryOverride" onclick="inventory(3);" tabindex= "170" hidden>Override</button>
+    <button class="btn btn-secondary mt-2 ms-3" id="clearButton" onclick="clearScreen();" tabindex= "180">Start Over</button>
+    <button class="btn btn-secondary mt-2 ms-3" id="closeButton" onclick="window.close();" tabindex= "190">Close Window</button>
 </div>
 <div id='result_message' class="mt-2"></div>
 <pre id='test'></pre>
