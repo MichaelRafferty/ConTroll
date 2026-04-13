@@ -248,16 +248,19 @@ class PaymentPlans {
 
             html += `
     <div class="row">
-        <div class="col-sm-2">
+        <div class="col-sm-1  ms-0 me-0">
 `;
+            html += '<button class="btn btn-sm btn-primary pt-0 pb-0 ms-0 me-0" onclick="paymentPlans.selectPlan(' +
+                keys[row] + ",'" + from + "'" + ');">' +
+                'Select As Shown<br/>' + plan.name + `</button>
+        </div>
+        <div class="col-sm-1 ms-0 me-0">
+`;
+
             if (plan.modify == 'Y') {
-                html += '<button class="btn btn-sm btn-primary pt-0 pb-0" onclick="paymentPlans.customizePlan(' +
+                html += '<button class="btn btn-sm btn-primary pt-0 pb-0 ms-0 me-0" onclick="paymentPlans.customizePlan(' +
                     keys[row] + ",'" + from + "'" + ');">' +
-                    'Customize Payment Plan:<br/>' + plan.name + '</button>';
-            } else {
-                html += '<button class="btn btn-sm btn-primary pt-0 pb-0" onclick="paymentPlans.selectPlan(' +
-                    keys[row] + ",'" + from + "'" + ');">' +
-                    'Select Payment Plan:<br/>' + plan.name + '</button>';
+                    'Customize<br/>' + plan.name + '</button>';
             }
             html += `
         </div>
@@ -342,7 +345,7 @@ class PaymentPlans {
         // buld contents of page
         html += `
         <div class="row">
-            <div class="col-sm-auto"><h3>Customize the ` + plan.name + ` payment plan </h3></div>
+            <div class="col-sm-auto"><h3>Customize the "` + plan.name + `" payment plan </h3></div>
         </div>
         <div class="row">
             <div class="col-sm-1"></div>
@@ -363,7 +366,7 @@ class PaymentPlans {
         <div class="col-sm-1" style='text-align: right;'><b>Days Between</b></div>
         <div class="col-sm-1" style='text-align: right;'><b>Payment Amount</b></div>
         <div class="col-sm-1" style='text-align: right;'><b>Final Payment Amount</b></div>
-        <div class="col-sm-1"><b>Must Pay In Full By</b></div>
+        <div class="col-sm-2"><b>Must Pay In Full By</b></div>
     </div>
     <form id="customizePlanForm" class='form-floating' action='javascript:void(0);'>
     <div class="row">
@@ -390,7 +393,7 @@ class PaymentPlans {
         </div>
         <div class="col-sm-1" style='text-align: right;' id="paymentAmt">` + this.#currencyFmt.format(match.paymentAmt.toFixed(2)) + `</div>
         <div class="col-sm-1" style='text-align: right;' id="finalPaymentAmt">` + this.#currencyFmt.format(match.finalPaymentAmt.toFixed(2)) + `</div>
-        <div class="col-sm-1">` + plan.payByDate + `</div>
+        <div class="col-sm-2">` + plan.payByDate + `</div>
     </div>
     <div class="row">
         <div class="col-sm-2"></div>

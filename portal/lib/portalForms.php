@@ -635,7 +635,8 @@ function draw_PaymentDueModal() : void {
                 </div>
                 <div class='modal-footer'>
                     <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal' tabindex='10101'>Cancel</button>
-                    <button class='btn btn-sm btn-primary' id='payDueSubmitButton' onClick='portal.makePayment(null)' tabindex='10402'>Pay total amount due</button>
+                    <button class='btn btn-sm btn-primary' id='payDueSubmitButton' onClick='portal.makeOrder(null,-1)' tabindex='10402'>Pay total amount
+                        due</button>
                 </div>
             </div>
         </div>

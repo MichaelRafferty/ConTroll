@@ -951,9 +951,11 @@ class Portal {
 
         let buttonName = '';
         let amountDueName = '';
+        let makeOrderOther = 0;
         if (type == 2) {
             buttonName = 'Pay Selected Items Amount Due'
             amountDueName = 'selected items is ';
+            makeOrderOther = 2;
         } else {
             buttonName = 'Pay Total Cart Items Amount Due'
             amountDueName = 'cart is ';
@@ -961,7 +963,8 @@ class Portal {
         this.#payDueSubmitButton.innerHTML = buttonName;
         html += `
     <div class="row mt-3">
-        <div class="col-sm-auto"><button class="btn btn-sm btn-primary pt-0 pb-0" onClick='portal.makeOrder(null, 2);'>` +
+        <div class="col-sm-auto"><button class="btn btn-sm btn-primary pt-0 pb-0" onClick='portal.makeOrder(null , ` +
+            makeOrderOther + `);'>` +
                 buttonName + `</button></div>
         <div class="col-sm-auto">
             <b>Your total amount due for the ` + amountDueName + Number(this.#totalAmountDue).toFixed(2) + `</b>
@@ -973,8 +976,13 @@ class Portal {
     <div class="row mt-2">
         <div class="col-sm-12">
             You can pay this balance in full without creating a payment plan by using the "` + buttonName +
-            `" button above or at the bottom of this popup.<br/>
-            You can pay by creating one of the following payment plans using the "Select" or "Customize" payment plan buttons below:
+            `" button above or at the bottom of this popup.
+        </div>
+    </div>
+     <div class="row mt-2">
+        <div class="col-sm-12">
+            You can pay by with one of the following payment plans using the "Select As Shown" button to use the plan with the default values,<br/>
+            or "Customize" button (if available for that plan) to select your own down payment, number of payments and days between payments.
         </div>
     </div>
 `;
@@ -995,6 +1003,9 @@ class Portal {
     makeOrder(plan, other = 0) {
         clear_message('payDueMessageDiv');
         this.#orderMemberships = [];
+
+        if (other < 0)
+            other = this.#planAllorPartial == 'all' ? 1 : 2;
 
         // disable the button that called us
         let enableButtonNames = null;
