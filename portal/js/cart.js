@@ -91,8 +91,15 @@ class Cart {
             }
         }
 
+        html = `
+<div class="row">
+    <div class='col-sm-12'>
+        <h2 class="size-h3">Items You Can Add to ` + person.fullName + `'s Cart for Purchase:</h2>
+    </div>
+</div>
+`;
         if (hasDesc) {
-            html = `
+            html += `
 <div class="row">
     <div class="col-sm-1" style="font-size: 130%; font-weight: bold; background-color: lightgray;"></div>
     <div class="col-sm-1 text-center" style="font-size: 130%; font-weight: bold; background-color: lightgray;">
