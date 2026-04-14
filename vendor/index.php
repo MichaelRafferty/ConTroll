@@ -134,7 +134,7 @@ if (getConfValue('vendor', 'open') != 1) { ?>
     </div>
     <div class="row p-1">
         <div class="col-sm-12">
-            From here you can create and manage your account for <?php echo $portalType; ?>s.
+            From here you can create and manage your account.
         </div>
     </div>
 <?php
