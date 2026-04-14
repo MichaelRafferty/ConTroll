@@ -120,8 +120,47 @@ EOS;
 }
 
 function itemRegistrationImportBtn($region) {
-    $conname = getConfValue('con', 'conname', '');
+    // check if any actually are importable
     $id = getConfValue('con', 'id', '');
+    $viewPriorLimit = getConfValue('vendor', 'viewPriorLimit', $id);
+    $vendor = getSessionVar('id');
+    $conname = getConfValue('con', 'conname', '');
+    $checkQ = <<<EOS
+WITH old AS (
+    SELECT i.conid, 'art', COUNT(*) AS items
+    FROM exhibitorYears exy
+    JOIN exhibitorRegionYears exry ON exy.id = exry.exhibitorYearId
+    JOIN artItems i ON i.exhibitorRegionYearId = exry.id
+    LEFT OUTER JOIN artSales s ON i.id = s.artId
+    WHERE exy.exhibitorId = ? AND s.id IS NULL AND i.type = 'art'
+    GROUP BY i.conid
+    UNION
+    SELECT i.conid, 'print', COUNT(*) AS items
+    FROM exhibitorYears exy
+    JOIN exhibitorRegionYears exry ON exy.id = exry.exhibitorYearId
+    JOIN artItems i ON i.exhibitorRegionYearId = exry.id
+    WHERE exy.exhibitorId = ? AND i.type = 'print' AND i.quantity > 0
+    GROUP BY i.conid
+    UNION
+    SELECT i.conid, 'nfs', COUNT(*)
+    FROM exhibitorYears exy
+    JOIN exhibitorRegionYears exry ON exy.id = exry.exhibitorYearId
+    JOIN artItems i ON i.exhibitorRegionYearId = exry.id
+    WHERE exy.exhibitorId = ? AND i.type = 'nfs'
+    GROUP BY i.conid
+)
+SELECT SUM(items) AS items
+FROM old
+WHERE conid >= ? AND conid < ?
+EOS;
+    $checkR = dbSafeQuery($checkQ, 'iiiii', array($vendor, $vendor, $vendor, $viewPriorLimit, $id));
+    if ($checkR === false)
+        return '';
+    $items = $checkR->fetch_row()[0];
+    $checkR->free();
+    if ($items == 0)
+        return '';
+
     echo "<button id='importPriorBtn' class='btn btn-primary m-1' onclick='auctionItemRegistration.import($region);'>Import Unsold Prior Art Items into $conname $id</button>";
 }
 
