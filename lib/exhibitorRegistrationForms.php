@@ -17,6 +17,10 @@ function draw_login($config_vars, $result_message = '') {
                     <h1 class="h4">Please log in to continue to the <?php echo $portalName; ?> Portal.</h1>
                 </div>
             </div>
+            <?php
+                $oneoff = getConfValue('con', 'oneoff', 0);
+                if ($oneoff == 0) {
+            ?>
             <div class='row mb-2'>
                 <div class='col-sm-8'><i>
                     If you created an account in a previous year, that account is still valid. If you know the email address
@@ -25,6 +29,7 @@ function draw_login($config_vars, $result_message = '') {
                     necessary update it to your current email address.
                 </i></div>
             </div>
+            <?php } ?>
             <form id='exhibitorSignin' method='POST'>
                 <div class='row mt-4'>
                     <div class='col-sm-1'>
