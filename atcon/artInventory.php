@@ -73,7 +73,7 @@ $actual_link = $httptype . '//' .$_SERVER['HTTP_HOST'].$_SERVER['PHP_SELF'];
     <ul class='nav nav-tabs mb-3' id='region-tabs' role='tablist'>
         <li class='nav-item' role='presentation'>
             <button class='nav-link' id='barcode-tab' data-bs-toggle='pill' type='button' role='tab' aria-controls='nav-barcode'
-            aria-selected='false' onclick='window.open("/barcodeInventory.php", "_blank)'>Barcode Inventory
+            aria-selected='false' onclick='window.open("/barcodeInventory.php", "_blank")'>Barcode Inventory
             </button>
         </li>
         <?php
