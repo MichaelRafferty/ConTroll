@@ -111,7 +111,7 @@ function fetchValues() {
     fecthedQty = -1;
     scanned = scancode.split(',');
     item = scanned[0].trim();
-    let script = 'scripts/artinventory_barcodeInventory.php';
+    let script = 'scripts/artInventory_barcodeInventory.php';
     $.ajax({
         method: "POST",
         url: script,
@@ -314,7 +314,7 @@ function inventory(mode, data = null) {
     inventoryOverride.disabled = true;
     inventoryNoChange.disabled = true;
 
-    let script = 'scripts/artinventory_barcodeInventory.php';
+    let script = 'scripts/artInventory_barcodeInventory.php';
     $.ajax({
             method: "POST",
             url: script,
