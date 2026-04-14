@@ -61,10 +61,21 @@ var_dump(getAllSessionVars());
 echo $conid;
 /**/
 
+if (array_key_exists('HTTPS', $_SERVER) && $_SERVER['HTTPS'] != 'on')
+    $httptype = 'https:';
+else
+    $httptype = 'http:';
+$actual_link = $httptype . '//' .$_SERVER['HTTP_HOST'].$_SERVER['PHP_SELF'];
+
 ?>
-<div id="whoami" hidden><?php getSessionVar('user');?></div>
+<div id="whoami" hidden><?php echo getSessionVar('user');?></div>
 <div id="main">
     <ul class='nav nav-tabs mb-3' id='region-tabs' role='tablist'>
+        <li class='nav-item' role='presentation'>
+            <button class='nav-link' id='barcode-tab' data-bs-toggle='pill' type='button' role='tab' aria-controls='nav-barcode'
+            aria-selected='false' onclick='window.open("/barcodeInventory.php", "_blank)'>Barcode Inventory
+            </button>
+        </li>
         <?php
             while($regionInfo = $regionR->fetch_assoc()) {
                 $isRegion = $region == $regionInfo['regionName'];
@@ -72,8 +83,7 @@ echo $conid;
                     $region = $regionInfo['regionName'];
                     $regionYearId = $regionInfo['id'];
                 }
-                $regionName = $regionInfo['regionName']; 
-                $actual_link = 'http://'.$_SERVER['HTTP_HOST'].$_SERVER['PHP_SELF'];
+                $regionName = $regionInfo['regionName'];
                 ?>
         <li class='nav-item' role='presentation'>
             <button class='nav-link <?php if($isRegion) { echo 'active'; } ?>' id='<?php echo $regionName; ?>-tab'data-bs-toggle='pill' type='button' role='tab' aria-controls='nav-<?php echo $regionName; ?>' aria-selected='<?php echo $isRegion?'true':'false'; ?>'
