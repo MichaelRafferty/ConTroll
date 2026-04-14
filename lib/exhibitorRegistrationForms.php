@@ -48,29 +48,23 @@ function draw_login($config_vars, $result_message = '') {
                 <div class='row mt-2'>
                     <div class='col-sm-1'></div>
                     <div class='col-sm-auto'>
-                        <input type='submit' class='btn btn-primary' value='Existing Account Sign-in'
+                        <input type='submit' class='btn btn-primary h-100' value='Existing Account Sign-in'
                             tabindex="<?php echo $tabIndex; $tabIndex += 2;?>" />
                     </div>
+                    <?php  if (getConfValue('vendor', 'passkeyRpLevel') != 'd' && array_key_exists('HTTPS', $_SERVER) &&
+                    (isset($_SERVER['HTTPS']) ||  $_SERVER['HTTPS'] == 'on')) { ?>
+                    <div class='col-sm-auto ms-1 me-1 align-self-center' style='text-align: center'>OR</div>
+                    <div class='col-sm-auto'>
+                        <button class='btn btn-sm btn-primary h-100' id='loginPasskeyBtn' onclick='loginWithPasskey();'>
+                            <img src='lib/passkey.png'>Login with Passkey
+                        </button>
+                    </div>
+                    <div class='col-sm-auto'>
+                        Don't have one?<br/>Create a passkey after logging in and skip<br/>entering email address and password next time.
+                    </div>
+                    <?php } ?>
                 </div>
             </form>
-            <?php  if (getConfValue('vendor', 'passkeyRpLevel') != 'd' && array_key_exists('HTTPS', $_SERVER) &&
-                (isset($_SERVER['HTTPS']) ||  $_SERVER['HTTPS'] == 'on')) { ?>
-            <div class='row mt-1'>
-                <div class='col-sm-1'></div>
-                <div class='col-sm-2' style="text-align: center">OR</div>
-            </div>
-            <div class='row mt-1'>
-                <div class='col-sm-1'></div>
-                <div class='col-sm-auto'>
-                    <button class='btn btn-sm btn-primary' id="loginPasskeyBtn" onclick='loginWithPasskey();'>
-                        <img src="lib/passkey.png">Login with Passkey
-                    </button>
-                </div>
-                <div class='col-sm-auto'>
-                    Don't have one?<br/>Create a passkey after signing on and skip entering email address and password next time.
-                </div>
-            </div>
-            <?php } ?>
         </div>
     </div>
     <div class='row mt-4'>
@@ -1067,5 +1061,5 @@ function draw_signupModal($portalType, $portalName, $con, $countryOptions, $tabS
             </div>
         </div>
     </div>
-    <?php
+     <?php
 }
