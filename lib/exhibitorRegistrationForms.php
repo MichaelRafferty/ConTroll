@@ -10,15 +10,23 @@ function draw_login($config_vars, $result_message = '') {
         var config = <?php echo json_encode($config_vars); ?>;
     </script>
     <div id='signin'>
-        <?php outputCustomText('login/top' . $portalName); ?>
         <div class='container-fluid form-floating'>
+            <?php outputCustomText('login/top' . $portalName); ?>
             <div class='row mb-2'>
                 <div class='col-sm-auto'>
                     <h1 class="h4">Please log in to continue to the <?php echo $portalName; ?> Portal.</h1>
                 </div>
             </div>
+            <div class='row mb-2'>
+                <div class='col-sm-8'><i>
+                    If you created an account in a previous year, that account is still valid. If you know the email address
+                    you used in a prior year, but you have forgotten your password, you can use the “Reset Forgotten Password” button below to reset it.
+                    If you have forgotten which email you used for your account, please contact us at the email address above and we can help you and if
+                    necessary update it to your current email address.
+                </i></div>
+            </div>
             <form id='exhibitorSignin' method='POST'>
-                <div class='row mt-1'>
+                <div class='row mt-4'>
                     <div class='col-sm-1'>
                         <label for='si_email'><span class='text-danger'>&bigstar;</span>Email: </label>
                     </div>
@@ -59,31 +67,24 @@ function draw_login($config_vars, $result_message = '') {
                     </button>
                 </div>
                 <div class='col-sm-auto'>
-                    Don't have one?<br/>Create a passkey after signing on and skip the password next time.
+                    Don't have one?<br/>Create a passkey after signing on and skip entering email address and password next time.
                 </div>
             </div>
             <?php } ?>
         </div>
     </div>
-    <div id='resetpw'>
-        <div class='container-fluid'>
-            <div class='row mt-4'>
-                <div class='col-sm-auto'>
-                    <button class='btn btn-secondary' onclick='resetPassword()' tabindex="<?php echo $tabIndex; $tabIndex += 2;?>">
-                        Reset Forgotten Password
-                    </button>
-                </div>
-            </div>
+    <div class='row mt-4'>
+        <div class='col-sm-auto'>
+            <button class='btn btn-secondary' onclick='resetPassword()' tabindex="<?php echo $tabIndex; $tabIndex += 2;?>">
+                Reset Forgotten Password
+            </button>
         </div>
-    </div>
-    <div class='container-fluid'>
-        <div class='row mt-4'>
-            <div class='col-sm-auto'>
-                <button type="button" class="btn btn-sm btn-secondary" onclick="exhibitorProfile.profileModalOpen('register');"
-                    tabindex="<?php echo $tabIndex; $tabIndex += 2;?>">
-                    Sign Up for a New Account
-                </button>
-            </div>
+        <div class='col-sm-auto'>
+            <button type='button' class='btn btn-secondary' onclick="exhibitorProfile.profileModalOpen('register');"
+                    tabindex="<?php echo $tabIndex;
+                        $tabIndex += 2; ?>">
+                Sign Up for a New Account
+            </button>
         </div>
     </div>
     <?php outputCustomText('login/bottom' . $portalName); ?>
