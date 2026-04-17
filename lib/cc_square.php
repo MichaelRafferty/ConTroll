@@ -160,6 +160,7 @@ function cc_buildOrder($results, $useLogWrite = false, $locationId = null) : arr
     $currency = cc_getCurrency($con);
 
     $loginPerid = getSessionVar('user_perid');
+    $loginNewPerid = null;
     if ($loginPerid == null) {
         $userType = getSessionVar('idType');
         if ($userType == 'p')
