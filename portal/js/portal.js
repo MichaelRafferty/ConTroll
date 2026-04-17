@@ -932,6 +932,7 @@ class Portal {
             this.#totalAmountDue = this.#fullPayAmt;
             this.#planAllorPartial = 'all';
         } else {
+            paymentPlans.plansEligible(this.#paySelectedList);
             this.#totalAmountDue = this.#partialPayAmt;
             this.#planAllorPartial = 'partial';
         }
