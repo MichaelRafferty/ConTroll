@@ -90,6 +90,8 @@ if (array_key_exists('preCouponAmountDue', $_POST)) {
 
 if (array_key_exists('taxAmount', $_POST)) {
     $taxAmount = $_POST['taxAmount'];
+    if ($newplan)
+        $amount += $taxAmount;
 } else {
     $taxAmount = 0;
 }
