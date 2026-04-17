@@ -158,7 +158,7 @@ function whatMembershipsInPlan($memberships, $computedPlan) : array {
     }
 
     foreach ($memberships as $key => $membership) {
-        if ($membership['status'] != 'unpaid') {
+        if ($membership['status'] != 'unpaid' ||$membership['taxable'] != 'N') {
             $memberships[$key]['inPlan'] = false;
             continue;
         }

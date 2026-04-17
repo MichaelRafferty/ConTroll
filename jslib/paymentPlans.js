@@ -99,6 +99,9 @@ class PaymentPlans {
                             eligible = false;
                     }
 
+                    if (mem.taxable != 'N')
+                        eligible = false;
+
                     // ignore coupon discount, it's handled later in the calc
                     if (eligible) {
                         planAmt += Number(mem.price) - Number(mem.paid);
