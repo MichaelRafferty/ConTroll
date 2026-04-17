@@ -1004,6 +1004,8 @@ class Portal {
     makeOrder(plan, other = 0) {
         clear_message('payDueMessageDiv');
         this.#orderMemberships = [];
+        if (this.#planAllorPartial == null)
+            this.#planAllorPartial = 'all';
 
         if (other < 0)
             other = this.#planAllorPartial == 'all' ? 1 : 2;
