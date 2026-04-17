@@ -1156,21 +1156,20 @@ class Portal {
             }
         }
 
-        if (plan == null) {
-            let totalWording = this.#selectedItems ? 'total amount of the selected items' : 'total amount for the cart';
+        if (plan == null || !done) {
+            let totalWording = '';
+            if (plan == null)
+                totalWording = this.#selectedItems ? 'total amount of the selected items' : 'total amount for the cart';
+            else
+                totalWording = 'current amount due to create the payment plan ' + plan.plan.name + ' is';
             html += `
         <div class="row mt-2 mb-4">
             <div class="col-sm-auto"><strong>You are paying the ` + totalWording + `, so the payment amount is ` +
                 this.#currencyFmt.format(Number(this.#paymentAmount).toFixed(2)) + `</strong></div>
          </div>
 `;
-        } else if (!done) {
-            html = `
-        <div class="row mt-2 mb-4">
-            <div class="col-sm-auto"><b>The Current Amount Due to create the payment plan ` + plan.plan.name + ' is ' + Number(plan.currentPayment).toFixed(2) + `</b></div>
-         </div>
-`;
         }
+
         this.#makePaymentBody.innerHTML = html;
         this.#paymentDueModal.hide();
         this.#makePaymentModal.show();
