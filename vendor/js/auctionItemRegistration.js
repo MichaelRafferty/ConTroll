@@ -292,7 +292,7 @@ class AuctionItemRegistration {
            return {id: -9999, item_key: 'Over' + this.#addItemIndex.toString(), title: 'Over limit, this item will be deleted on save'};
         }
 
-        return {item_key: 'New' + this.#addItemIndex.toString()};
+        return {item_key: 'New' + this.#addItemIndex.toString(), 'status': 'Entered'};
     }
 
     addrowArt(art = null) {
