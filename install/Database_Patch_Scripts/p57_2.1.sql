@@ -212,4 +212,4 @@ END;;
 DELIMITER ;
 
 
-INSERT INTO patchLog(id, name) VALUES(x57, 'Release 2.1 Portal and other changes');
+INSERT INTO patchLog(id, name) VALUES(57, 'Release 2.1 Portal and other changes');
