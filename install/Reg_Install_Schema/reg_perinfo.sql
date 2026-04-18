@@ -66,14 +66,14 @@ CREATE DEFINER=CURRENT_USER  TRIGGER `perinfo_update` BEFORE UPDATE ON `perinfo`
         OR OLD.change_notes != NEW.change_notes OR OLD.active != NEW.active OR OLD.open_notes != NEW.open_notes OR OLD.admin_notes != NEW.admin_notes
         OR OLD.old_perid != NEW.old_perid OR OLD.contact_ok != NEW.contact_ok OR OLD.share_reg_ok != NEW.share_reg_ok
         OR OLD.managedBy != NEW.managedBy OR OLD.managedByNew != NEW.managedByNew OR OLD.updatedBy != NEW.updatedby
-        OR OLD.managedReason != NEW.managedReason OR OLD.lastVerified != NEW.lastVerified)
+        OR OLD.managedReason != NEW.managedReason)
     THEN
         INSERT INTO perinfoHistory(id, currentAgeConId, currentAgeType,
-            last_name, first_name, middle_name, suffix, email_addr, phone,
-            badge_name, badgeNameL2, legalName, pronouns,
-            address, addr_2, city, state, zip, country, banned, creation_date, update_date,
-            change_notes, active, open_notes, admin_notes, old_perid, contact_ok, share_reg_ok,
-            managedBy, managedByNew, managedReason, lastVerified, updatedBy)
+                                   last_name, first_name, middle_name, suffix, email_addr, phone,
+                                   badge_name, badgeNameL2, legalName, pronouns,
+                                   address, addr_2, city, state, zip, country, banned, creation_date, update_date,
+                                   change_notes, active, open_notes, admin_notes, old_perid, contact_ok, share_reg_ok,
+                                   managedBy, managedByNew, managedReason, lastVerified, updatedBy)
         VALUES (OLD.id, OLD.currentAgeConId, OLD.currentAgeType,
                 OLD.last_name, OLD.first_name, OLD.middle_name, OLD.suffix, OLD.email_addr, OLD.phone, OLD.badge_name,
                 OLD.badgeNameL2, OLD.legalName, OLD.pronouns,
