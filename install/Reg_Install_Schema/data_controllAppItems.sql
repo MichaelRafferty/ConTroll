@@ -11,17 +11,21 @@
 SET FOREIGN_KEY_CHECKS = 0;
 LOCK TABLES `controllAppItems` WRITE;
 ALTER TABLE `controllAppItems` DISABLE KEYS;
-INSERT INTO `controllAppItems` VALUES 
+INSERT INTO `controllAppItems` VALUES
 ('controll','emails','comeback','html','Custom Text for the html comeback email - not registered insert into past few years'),
 ('controll','emails','comeback','text','Custom Text for the plain text comeback email - not registered insert into past few years'),
 ('controll','emails','expire','html','Custom Text for the html expiring unpaid reg email'),
 ('controll','emails','expire','text','Custom Text for the plain text expiring unpaid reg email'),
 ('controll','emails','marketing','html','Custom Text for the html marketing email - not registered this year'),
 ('controll','emails','marketing','text','Custom Text for the plain text marketing email - not registered this year'),
-('controll','emails','noMembership','html','Custom Text for the html Np membership created reminder email'),
+('controll','emails','noMembership','html','Custom Text for the html No membership created reminder email'),
 ('controll','emails','noMembership','text','Custom Text for the plain text No membership created reminder email'),
 ('controll','emails','reminder','html','Custom Text for the html attendence reminder email'),
 ('controll','emails','reminder','text','Custom Text for the plain text attendence reminder email'),
+('controll','emails','survey','html','Custom Text for the html post con survey email'),
+('controll','emails','survey','text','Custom Text for the plain text post con survey email'),
+('exhibitor','emails','invReminder','html','Custom Text for the html post con enter your item registration reminder email'),
+('exhibitor','emails','invReminder','text','Custom Text for the plain text enter your item registration reminder email'),
 ('exhibitor','index','email','mailinInvHTML','Mail In Artist Inventory HTML Email'),
 ('exhibitor','index','email','mailinInvText','Mail In Artist Inventory Text Email'),
 ('exhibitor','index','email','onsiteInvHTML','On Site Artist Inventory HTML Email'),

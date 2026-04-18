@@ -17,6 +17,8 @@ INSERT INTO `controllAppSections` VALUES
 ('controll','emails','marketing','Marketing Email - Not bought this year, bought last year'),
 ('controll','emails','noMembership','No Membership Email - Created Account - but put no memberships in cart'),
 ('controll','emails','reminder','Reminder Email - Reminder to attend - has membership'),
+('controll','emails','survey','Post Convention Survey Request Email'),
+('exhibitor','emails','invReminder','Artist Item Registration Reminder Email'),
 ('exhibitor','index','email','exhibitor emails'),
 ('exhibitor','index','invoice','space invoice modal popup of the exhibitor portal'),
 ('exhibitor','index','items','art inventory modal popup of the exhibitor portal'),
