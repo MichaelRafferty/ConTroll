@@ -51,6 +51,7 @@ if (is_numeric($name_search)) {
 WITH regC AS (
 select perid, count(*) AS numReg
 FROM reg
+JOIN regActions ra ON ra.regid = reg.id AND ra.action = 'print'
 WHERE conid = ? AND perid = ?
 GROUP BY perid
 )
@@ -71,12 +72,11 @@ EOS;
         $person['badgename'] = badgeNameDefault($person['badge_name'], $person['badgeNameL2'], $person['first_name'], $person['last_name']);
         $response['person'] = $person;
         if ($person['numReg'] == 0) {
-            $response['status'] = 'error';
-            $response['error'] = "Person not registered for $conid";
-            ajaxSuccess($response);
-            exit();
+            $response['status'] = 'warn';
+            $response['warn'] = "Person does not have a badge printed for $conid";
+        } else {
+            $response['status'] = 'success';
         }
-        $response['status'] = 'success';
         // now find any art for which is final and they are the high bidder
         $perid = $response['person']['id'];
         $findArtQ = <<<EOS
