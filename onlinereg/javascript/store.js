@@ -414,6 +414,10 @@ function togglePopup() {
     }
 }
 
+function checkRefresh(data = null) {
+    return;
+}
+
 window.onload = function () {
 // formatting items
     locale = config.locale;
