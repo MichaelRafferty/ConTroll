@@ -1112,7 +1112,7 @@ if ($manager) {
 if ($unpaidByMe > 0) {
     $totalDueFormatted = "Purchased by you$forYou total: " . $dolfmt->formatCurrency((float) $unpaidByMe, $currency);
     $payHtml = " $totalDueFormatted   " .
-        '<button class="btn btn-sm btn-primary pt-1 pb-1 ms-1 me-2" name="payBalanceBTNs" onclick="portal.payBalance(' . $totalDue . ', true);"' .
+        '<button class="btn btn-sm btn-primary pt-1 pb-1 ms-1 me-2" id="payBalanceBTN" name="payBalanceBTNs" onclick="portal.payBalance(' . $totalDue . ', false);"' .
         $disablePay . '>Pay Total Amount Due</button>';
     setSessionVar('totalDue', $unpaidByMe); // used for validation in payment side
     if ($numCoupons > 0) {

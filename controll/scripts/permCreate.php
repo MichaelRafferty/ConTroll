@@ -57,7 +57,7 @@ SELECT id, email_addr,
    CASE  
         WHEN last_name != '' THEN TRIM(REGEXP_REPLACE(CONCAT(last_name, ', ', CONCAT_WS(' ', first_name, middle_name, suffix)), ' +', ' ')) 
         ELSE TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, suffix), ' +', ' '))  
-    END AS name, "" AS google_sub
+    END AS name, '' AS google_sub
 FROM perinfo
 WHERE id = ?
 EOS;
