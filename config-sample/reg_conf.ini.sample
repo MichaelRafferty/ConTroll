@@ -626,7 +626,7 @@ artcontrol=0 ; true/false show control sheet print button
 ;; R:H,exhibitor
 ;; H:How to sort the control sheet:
 ;; H+values:
-;; H+item = short by item_id in one section
+;; H+item = sort by item_id in one section
 ;; H+type = split into sections and sort by type, item_id
 ;; D:l:type,item
 ;; B:O
