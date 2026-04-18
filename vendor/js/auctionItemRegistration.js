@@ -658,7 +658,7 @@ class AuctionItemRegistration {
             maxHeight: "400px",
             history: true,
             data: data.art,
-            layout: 'fitDataFill', // Note: fitDataTable caused it to not honor the window width and create scoll bar, unsure why
+            layout: 'fitData', // Note: fitDataTable caused it to not honor the window width and create scoll bar, unsure why
             pagination: artPagination,
             index: 'item_key',
             paginationAddRow: "table",
