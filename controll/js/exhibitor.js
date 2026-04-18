@@ -720,7 +720,7 @@ class exhibitorsAdm {
             req += space.requested_units == null ? 0 : Number(space.requested_units);
             app += space.approved_units == null ? 0 : Number(space.approved_units);
             pur += space.purchased_units == null ? 0 : Number(space.purchased_units);
-            inv += space.invCount == null ? 0 : Number(space.invCount);
+            inv = space.invCount == null ? 0 : Number(space.invCount); // do not sum, each row has the total amount in it already
             if (Number(space.transid) > 0 && transid == 0)
                 transid = Number(space.transid);
 

@@ -210,8 +210,7 @@ SELECT e.id, e.exhibitorName, e.artistName, e.artistPayee, e.website, e.exhibito
     TRIM(CONCAT(p.first_name, ' ', p.last_name)) as pName, TRIM(CONCAT(n.first_name, ' ', n.last_name)) AS nName, 
     CASE WHEN IFNULL(artistName, '') = '' THEN exhibitorName ELSE CONCAT_WS('<BR/>', exhibitorName, artistName) END AS fullExhName,
     eY.id AS exhibitorYearId, exRY.locations, exRY.id AS exhibitorRegionYearId,
-	SUM(IFNULL(espr.units, 0)) AS ru, SUM(IFNULL(espa.units, 0)) AS au, SUM(IFNULL(espp.units, 0)) AS pu,
-	COUNT(a.id) AS invCount
+	SUM(IFNULL(espr.units, 0)) AS ru, SUM(IFNULL(espa.units, 0)) AS au, SUM(IFNULL(espp.units, 0)) AS pu
 FROM exhibitorSpaces eS
 LEFT OUTER JOIN exhibitsSpacePrices espr ON (eS.item_requested = espr.id)
 LEFT OUTER JOIN exhibitsSpacePrices espa ON (eS.item_approved = espa.id)
@@ -223,10 +222,14 @@ JOIN exhibitsSpaces s ON (s.id = eS.spaceId)
 JOIN exhibitsRegionYears eRY ON s.exhibitsRegionYear = eRY.id
 LEFT OUTER JOIN perinfo p ON p.id = exRY.agentPerid
 LEFT OUTER JOIN newperson n ON n.id = exRY.agentNewperson
-LEFT OUTER JOIN artItems a ON (a.exhibitorRegionYearId = exRY.id)
 WHERE eY.conid = ? AND eRY.exhibitsRegion = ?
 GROUP BY e.id, e.exhibitorName, e.artistName, e.artistPayee, e.website, e.exhibitorEmail, exRY.exhibitorNumber, exRY.agentRequest, pName, nName,
     eY.id, exRY.locations, exRY.id
+), invC AS (
+	SELECT exh.exhibitorRegionYearId AS id, COUNT(a.id) AS invCount
+    FROM exh
+    LEFT OUTER JOIN artItems a ON (a.exhibitorRegionYearId = exh.exhibitorRegionYearId)
+	GROUP BY exh.exhibitorRegionYearId
 )
 SELECT xS.id, xS.exhibitorId, exh.exhibitorName, exh.artistName, exh.website, exh.exhibitorEmail,
     xS.spaceId, xS.name as spaceName, xS.item_requested, xS.time_requested, xS.requested_units, xS.requested_code, xS.requested_description,
@@ -234,7 +237,7 @@ SELECT xS.id, xS.exhibitorId, exh.exhibitorName, exh.artistName, exh.website, ex
     xS.item_purchased, xS.time_purchased, xS.purchased_units, xS.purchased_code, xS.purchased_description, xS.transid, xS.shortname,
     eRY.id AS exhibitsRegionYearId, eRY.exhibitsRegion AS regionId, eRY.ownerName, eRY.ownerEmail, eR.name AS regionName, 
     exh.exhibitorNumber, exh.exhibitorYearId, exh.locations,
-    IFNULL(pName, nName) as agentName, exh.invCount, exh.exhibitorRegionYearId, eT.mailInAllowed,
+    IFNULL(pName, nName) as agentName, invC.invCount, exh.exhibitorRegionYearId, eT.mailInAllowed,
     CASE WHEN IFNULL(artistName, '') = '' THEN exhibitorName ELSE CONCAT_WS('<BR/>', exhibitorName, artistName) END AS fullExhName
 FROM vw_ExhibitorSpace xS
 JOIN exhibitsSpaces eS ON xS.spaceId = eS.id
@@ -242,6 +245,7 @@ JOIN exhibitsRegionYears eRY ON eS.exhibitsRegionYear = eRY.id
 JOIN exhibitsRegions eR ON eR.id = eRY.exhibitsRegion
 JOIN exhibitsRegionTypes eT ON (eT.regionType = eR.RegionType)
 JOIN exh ON (xS.exhibitorId = exh.id)
+LEFT OUTER JOIN  invC ON (exh.exhibitorRegionYearId = invC.id)
 WHERE eRY.conid=? AND eRY.exhibitsRegion = ? AND (IFNULL(requested_units, 0) > 0 OR IFNULL(approved_units, 0) > 0)
 ORDER BY xS.exhibitorId, spaceId;
 EOS;
