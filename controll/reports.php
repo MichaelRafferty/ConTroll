@@ -129,6 +129,8 @@ EOS;
 <?php
 $active = ' active';
 $reportPrompts = [];
+$reportTopNotes = [];
+$reportBottomNotes = [];
 if (count($reports) > 0) {
     foreach ($reports AS $rptkey => $report) {
         $grpname = $report['group']['name'];
