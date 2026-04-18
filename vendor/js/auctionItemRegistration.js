@@ -658,7 +658,7 @@ class AuctionItemRegistration {
             maxHeight: "400px",
             history: true,
             data: data.art,
-            layout: 'fitData', // Note: fitDataTable caused it to not honor the window width and create scoll bar, unsure why
+            layout: 'fitColumns', // Note: fitDataTable caused it to not honor the window width and create scoll bar, unsure why
             pagination: artPagination,
             index: 'item_key',
             paginationAddRow: "table",
@@ -668,7 +668,7 @@ class AuctionItemRegistration {
                 {title: 'id', field: 'id', visible: false},
                 {title: '#', field: 'item_key', width: 60, hozAlign: "right"},
                 {
-                    title: 'Title', field: 'title', width: 600, editor: 'input', editable: artItemEditCheck, editorParams: {
+                    title: 'Title', field: 'title', minWidth: 600, editor: 'input', editable: artItemEditCheck, editorParams: {
                         elementAttributes: {
                             maxlength:
                                 "64"
@@ -678,7 +678,7 @@ class AuctionItemRegistration {
                 {
                     title: "Material",
                     field: "material",
-                    width: 300,
+                    minWidth: 300,
                     editor: 'input',
                     editable: artItemEditCheck,
                     editorParams: {elementAttributes: {maxlength: "32"}}
@@ -695,7 +695,8 @@ class AuctionItemRegistration {
                 },
                 {title: "Status", field: "status", width: 200,},
                 {
-                    title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false, cellClick: function (e, cell) {
+                    title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false, width: 100,
+                    cellClick: function (e, cell) {
                         deleterow(e, cell.getRow());
                     }
                 },
@@ -749,7 +750,7 @@ class AuctionItemRegistration {
             maxHeight: "400px",
             history: true,
             data: data.print,
-            layout: 'fitData', // Note: fitDataTable caused it to not honor the window width and create scoll bar, unsure why
+            layout: 'fitColumns', // Note: fitDataTable caused it to not honor the window width and create scoll bar, unsure why
             pagination: printPagination,
             paginationAddRow:"table",
             paginationSize: 10,
@@ -757,14 +758,15 @@ class AuctionItemRegistration {
             columns: [
                 {title: 'id', field: 'id', visible: false},
                 {title: '#', field: 'item_key', width: 60, hozAlign: "right"},
-                {title: 'Title', field: 'title', width: 600, editor: 'input', editable:artItemEditCheck, editorParams: { elementAttributes: { maxlength: "64"} } },
-                {title: "Material", field: "material", width: 300, editor: 'input', editable:artItemEditCheck, editorParams: { elementAttributes: { maxlength: "32"} } },
+                {title: 'Title', field: 'title', minWidth: 600, editor: 'input', editable:artItemEditCheck, editorParams: { elementAttributes: { maxlength: "64"} } },
+                {title: "Material", field: "material", minWidth: 300, editor: 'input', editable:artItemEditCheck, editorParams: { elementAttributes: { maxlength: "32"} } },
                 {title: "Quantity", field: "original_qty", headerWordWrap: true, width: 100, hozAlign: "right", editor: 'number', editable:artItemEditCheck, editorParams: {min: 1} },
                 {title: "Sale Price", field: "sale_price", headerWordWrap: true, width: 100, hozAlign: "right",
                     editor: 'number', editable:artItemEditCheck, editorParams: {min: 1}, formatter: "money",
                     formatterParams: {decimal: '.', thousand: ',', symbol: '$', negativeSign: true}, },
                 {title: "Status", field: "status", width: 200, },
-                {title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false, cellClick: function (e, cell) { deleterow(e, cell.getRow());}},
+                {title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false, width: 100,
+                    cellClick: function (e, cell) { deleterow(e, cell.getRow());}},
                 {title: "To Del", field: "to_delete", visible: this.#debugVisible},
             ]
         };
@@ -813,7 +815,7 @@ class AuctionItemRegistration {
             maxHeight: "400px",
             history: true,
             data: data.nfs,
-            layout: 'fitData', // Note: fitDataTable caused it to not honor the window width and create scoll bar, unsure why
+            layout: 'fitColumns', // Note: fitDataTable caused it to not honor the window width and create scoll bar, unsure why
             pagination: nfsPagination,
             paginationAddRow:"table",
             paginationSize: 10,
@@ -821,13 +823,14 @@ class AuctionItemRegistration {
             columns: [
                 {title: 'id', field: 'id', visible: false},
                 {title: '#', field: 'item_key', width: 60, hozAlign: "right"},
-                {title: 'Title', field: 'title', width: 600, editor: 'input', editable:artItemEditCheck, editorParams: { elementAttributes: { maxlength: "64"} } },
-                {title: "Material", field: "material", width: 300, editor: 'input', editable:artItemEditCheck, editorParams: { elementAttributes: { maxlength: "32"} } },
+                {title: 'Title', field: 'title', minWidth: 600, editor: 'input', editable:artItemEditCheck, editorParams: { elementAttributes: { maxlength: "64"} } },
+                {title: "Material", field: "material", minWidth: 300, editor: 'input', editable:artItemEditCheck, editorParams: { elementAttributes: { maxlength: "32"} } },
                 {title: "Insurance Price", field: "sale_price", headerWordWrap: true, width: 100, hozAlign: "right",
                     editor: 'number', editable:artItemEditCheck, editorParams: {min: 1}, formatter: "money",
                     formatterParams: {decimal: '.', thousand: ',', symbol: '$', negativeSign: true}, },
                 {title: "Status", field: "status", width: 200, },
-                {title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false, cellClick: function (e, cell) { deleterow(e, cell.getRow());}},
+                {title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false, width: 100,
+                    cellClick: function (e, cell) { deleterow(e, cell.getRow());}},
                 {title: "To Del", field: "to_delete", visible: this.#debugVisible},
             ]
         };
