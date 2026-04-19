@@ -37,9 +37,11 @@ class consetup {
     #catListData = null;
     #typeListData = null;
     #ageListData = null;
+    #yaAgeListData = null;
     #catListSelect = null;
     #typeListSelect = null;
     #ageListSelect = null;
+    #yaAgeListSelect = null;
     #memListModal = null;
     #memListMasterRow = null;
     #editData = null;
@@ -281,19 +283,30 @@ class consetup {
         else
             this.#ageListData = [];
 
+        if (data['yaAgeTypes'] && Array.isArray(data['yaAgeTypes']))
+            this.#yaAgeListData = data['yaAgeTypes'];
+        else
+            this.#yaAgeListData = [];
+
         // build the select lists
         this.#catListSelect = "<select name='memListCategorySelect' id='memListCategorySelect' onchange='memListModalDirty = true;'>";
         for (let index = 0; index < this.#catListData.length; index++) {
             let cat = this.#catListData[index];
             this.#catListSelect += "\n<option value='" + cat + "'>" + cat + "</option>";
         }
-        this.#ageListSelect += "\n</select>";
+        this.#ageListSelect = "\n</select>";
         this.#ageListSelect = "<select name='memListAgeSelect' id='memListAgeSelect' onchange='memListModalDirty = true;'>";
         for (let index = 0; index < this.#ageListData.length; index++) {
             let age = this.#ageListData[index];
             this.#ageListSelect += "\n<option value='" + age + "'>" + age + "</option>";
         }
-        this.#typeListSelect += "\n</select>";
+        this.#yaAgeListSelect = "\n</select>";
+        this.#yaAgeListSelect = "<select name='memListAgeSelect' id='memListAgeSelect' onchange='memListModalDirty = true;'>";
+        for (let index = 0; index < this.#yaAgeListData.length; index++) {
+            let age = this.#yaAgeListData[index];
+            this.#yaAgeListSelect += "\n<option value='" + age + "'>" + age + "</option>";
+        }
+        this.#typeListSelect = "\n</select>";
         this.#typeListSelect = "<select name='memListTypeSelect' id='memListTypeSelect' onchange='memListModalDirty = true;'>";
         for (let index = 0; index < this.#typeListData.length; index++) {
             let type = this.#typeListData[index];
@@ -477,6 +490,7 @@ class consetup {
         document.getElementById('editMemListName').innerHTML = seriesName;
         document.getElementById('editMemListID').innerHTML = rowData.id;
         document.getElementById('editMemListConID').innerHTML = rowData.conid;
+        document.getElementById('editMemListAge').innerHTML = rowData.conid == this.#conid ? this.#ageListSelect : this.#yaAgeListSelect;
         this.#memListMasterRow= rowData.id;
         memListModalDirty = false;
         this.#memListModal.show();

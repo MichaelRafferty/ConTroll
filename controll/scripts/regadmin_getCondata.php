@@ -133,5 +133,16 @@ EOS;
     } else {
         $response['ageTypes'] = null;
     }
+
+    $result = dbSafeQuery('SELECT ageType FROM ageList WHERE conid = ? ORDER BY sortorder;', 'i', array ($id + 1));
+    $yaAgeTypes = array ();
+    if ($result->num_rows >= 1) {
+        while ($yaAgeType = $result->fetch_assoc()) {
+            array_push($yaAgeTypes, $yaAgeType['ageType']);
+        }
+        $response['yaAgeTypes'] = $yaAgeTypes;
+    } else {
+        $response['yaAgeTypes'] = null;
+    }
 }
 ajaxSuccess($response);
