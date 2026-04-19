@@ -42,6 +42,7 @@
 * Merge People now uses the same result screen as Match People allowing editing of the fields
 * Point of sale:
   * Support for online credit card (typing number into Square)
+  * Better age support in Yearahead memberships
 * Free Badges: Can change membership type for a watched person until the badge has been printed.
 * Finance: Can now cancel payor payment plans.
 * Exhibitors:
@@ -49,7 +50,7 @@
   * support for art sales revenue gl information
   * Support for manually sending inventory reminder emails
   * New report for vendors or artists for a specific conid
-* Repoprts:
+* Reports:
   * Addition of top notes and bottom notes to a report definition in the report processor for the prompt section of the screen.
 
 ## Portal:
@@ -57,11 +58,13 @@
 * Simplification of the "Make Payment" User Experience allowing selection of what to pay for both your account and the accounts you manange as part of the 
   normal payment process.
 * Closing some reported security issues.
+* Better age support in Yearahead memberships
 
 ## Atcon:
 
 * Point of Sale
   * Support for online credit card (typing number into Square) for both membership and artsales
+  * Better age support in Yearahead memberships
 
 ## Exhibitor (Vendor Portals)
 * Added payee name to artist profile
@@ -92,6 +95,7 @@
 * Make account settings, provider a pulldown
 * Manager should be able to pay for items added to cart by managees
 * Move countryCode.csv load to a common file and provide config default
+* Need better way to buy yearahead
 * New Status Donate
 * Portal needs to allow them to save their profile with required policies unchecked
 * Redesign the Cart
