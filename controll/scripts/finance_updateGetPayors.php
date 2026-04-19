@@ -92,7 +92,7 @@ EOS;
             ajaxSuccess($response);
             exit();
         }
-        $response['success'] = "$numUpdated registrations chanced from 'plan' to 'unpaid' and $numCancelled plan(s) cancelled.";
+        $response['success'] = "$numUpdated registrations changed from 'plan' to 'unpaid' and $numCancelled plan(s) cancelled.";
         break;
 
     default:
