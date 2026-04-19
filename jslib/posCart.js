@@ -741,7 +741,6 @@ class PosCart {
             atcon = config.posType == 'a';
         }
 
-        let noAgeFilter = this.#currentAge == null;
         for (let row in memList) {
             let mem = memList[row];
 
@@ -752,20 +751,18 @@ class PosCart {
             // skip auto create mem items
             if (mem.hasOwnProperty('notes') && mem.notes && mem.notes == 'Auto created by rollover')
                 continue;
-            // apply implitict rules and membershipRules against memList entry
+            // apply implicit rules and membershipRules against memList entry
             if (!rules.testMembership(mem))
                 continue;
 
-            // apply age filter from age select
-            if (noAgeFilter || mem.memAge == 'all' || mem.memAge == this.#currentAge) {
-                let memLabel = mem.label;
-                if (memCategories[mem.memCategory].variablePrice != 'Y') {
-                    memLabel += ' (' + mem.price + ')';
-                }
-                html += '<div class="col-sm-2 mt-1 mb-1 ms-0 me-0"><button id="memBtn-' + mem.id + '" class="btn btn-sm btn-primary w-100 h-100"' +
-                    ' onclick="cart.regItemAdd(' + "'" + mem.id + "'" + ')">' +
-                    (mem.conid != pos.getConid() ? mem.conid + ' ' : '') + memLabel + '</button></div>' + "\n";
+            // rules already applied age filter
+            let memLabel = mem.label;
+            if (memCategories[mem.memCategory].variablePrice != 'Y') {
+                memLabel += ' (' + mem.price + ')';
             }
+            html += '<div class="col-sm-2 mt-1 mb-1 ms-0 me-0"><button id="memBtn-' + mem.id + '" class="btn btn-sm btn-primary w-100 h-100"' +
+                ' onclick="cart.regItemAdd(' + "'" + mem.id + "'" + ')">' +
+                (mem.conid != pos.getConid() ? mem.conid + ' ' : '') + memLabel + '</button></div>' + "\n";
         }
         this.#membershipButtonsDiv.innerHTML = html;
     }

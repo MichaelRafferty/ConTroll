@@ -425,20 +425,18 @@ class rulesSetup {
             if (!rules.testMembership(mem))
                 continue;
 
-            // apply age filter from age select
-            if (mem.memAge == 'all' || mem.memAge == this.#currentAge) {
-                var memLabel = mem.label;
-                if (!memCategories.hasOwnProperty(mem.memCategory)) {  // skip inactive categories
-                    continue;
-                }
-
-                if (memCategories[mem.memCategory].variablePrice != 'Y') {
-                    memLabel += ' (' + mem.price + ')';
-                }
-                html += '<div class="col-sm-auto mt-1 mb-1"><button id="memBtn-' + mem.id + '" class="btn btn-sm btn-primary"' +
-                    ' onclick="rules.membershipAdd(' + "'" + mem.id + "'" + ')">' + '[' + mem.memId + '] ' +
-                    (mem.conid != this.#conid ? mem.conid + ' ' : '') + memLabel + '</button></div>' + "\n";
+            // rules already applied age filter
+            let memLabel = mem.label;
+            if (!memCategories.hasOwnProperty(mem.memCategory)) {  // skip inactive categories
+                continue;
             }
+
+            if (memCategories[mem.memCategory].variablePrice != 'Y') {
+                memLabel += ' (' + mem.price + ')';
+            }
+            html += '<div class="col-sm-auto mt-1 mb-1"><button id="memBtn-' + mem.id + '" class="btn btn-sm btn-primary"' +
+                ' onclick="rules.membershipAdd(' + "'" + mem.id + "'" + ')">' + '[' + mem.memId + '] ' +
+                (mem.conid != this.#conid ? mem.conid + ' ' : '') + memLabel + '</button></div>' + "\n";
         }
         document.getElementById('membershipButtonsDiv').innerHTML = html;
     }
