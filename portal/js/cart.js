@@ -118,10 +118,7 @@ class Cart {
             if (!rules.testMembership(mem))
                 continue;
 
-            // apply age filter from age select
-            if (mem.memAge != 'all' && mem.memAge != this.#currentAge)
-                continue;
-
+            // rules already applied age filter
             let memLabel = mem.label;
             let price = this.#currencyFmt.format(Number(mem.price).toFixed(2));
             if  (memCategories[mem.memCategory].variablePrice == 'Y')
