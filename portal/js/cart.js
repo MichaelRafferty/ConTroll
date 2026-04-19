@@ -69,25 +69,23 @@ class Cart {
 
     buildMembershipButtons() {
         // now loop over memList and build each button
-        var html = '';
+        let html = '';
         var rules = new MembershipRules(config.conid, this.#currentAge, this.#memberships, this.#allMemberships);
 
-        for (var row in memList) {
-            var mem = memList[row];
-            // apply implitict rules and membershipRules against memList entry
+        for (let row in memList) {
+            let mem = memList[row];
+            // apply implicit rules and membershipRules against memList entry
             if (!rules.testMembership(mem))
                 continue;
 
-            // apply age filter from age select
-            if (mem.memAge == 'all' || mem.memAge == this.#currentAge) {
-                var memLabel = mem.label;
-                if (memCategories[mem.memCategory].variablePrice != 'Y') {
-                    memLabel += ' (' + mem.price + ')';
-                }
-                html += '<div class="col-sm-2 mt-1 mb-1"><button id="memBtn-' + mem.id + '" class="btn btn-sm btn-primary h-100 w-100"' +
-                    ' onclick="cart.membershipAdd(' + "'" + mem.id + "'" + ')">' +
-                    (mem.conid != config.conid ? mem.conid + ' ' : '') + memLabel + '</button></div>' + "\n";
-                }
+            // rules already applied age filter
+            let memLabel = mem.label;
+            if (memCategories[mem.memCategory].variablePrice != 'Y') {
+                memLabel += ' (' + mem.price + ')';
+            }
+            html += '<div class="col-sm-2 mt-1 mb-1"><button id="memBtn-' + mem.id + '" class="btn btn-sm btn-primary h-100 w-100"' +
+                ' onclick="cart.membershipAdd(' + "'" + mem.id + "'" + ')">' +
+                (mem.conid != config.conid ? mem.conid + ' ' : '') + memLabel + '</button></div>' + "\n";
         }
         this.#membershipButtonsDiv.innerHTML = html;
     }
