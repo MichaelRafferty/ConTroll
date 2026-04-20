@@ -40,7 +40,9 @@ class consetup {
     #yaAgeListData = null;
     #catListSelect = null;
     #typeListSelect = null;
+    #ageListOptions = null;
     #ageListSelect = null;
+    #yaAgeListOptions = null;
     #yaAgeListSelect = null;
     #memListModal = null;
     #memListMasterRow = null;
@@ -294,19 +296,20 @@ class consetup {
             let cat = this.#catListData[index];
             this.#catListSelect += "\n<option value='" + cat + "'>" + cat + "</option>";
         }
-        this.#ageListSelect = "\n</select>";
         this.#ageListSelect = "<select name='memListAgeSelect' id='memListAgeSelect' onchange='memListModalDirty = true;'>";
+        this.#ageListOptions = '';
         for (let index = 0; index < this.#ageListData.length; index++) {
             let age = this.#ageListData[index];
-            this.#ageListSelect += "\n<option value='" + age + "'>" + age + "</option>";
+            this.#ageListOptions += "\n<option value='" + age + "'>" + age + "</option>";
         }
-        this.#yaAgeListSelect = "\n</select>";
+        this.#ageListSelect += "\n" + this.#ageListOptions + "\n</select>";
         this.#yaAgeListSelect = "<select name='memListAgeSelect' id='memListAgeSelect' onchange='memListModalDirty = true;'>";
+        this.#yaAgeListOptions = '';
         for (let index = 0; index < this.#yaAgeListData.length; index++) {
             let age = this.#yaAgeListData[index];
-            this.#yaAgeListSelect += "\n<option value='" + age + "'>" + age + "</option>";
+            this.#yaAgeListOptions += "\n<option value='" + age + "'>" + age + "</option>";
         }
-        this.#typeListSelect = "\n</select>";
+        this.#yaAgeListSelect += "\n" + this.#yaAgeListOptions + "\n</select>";
         this.#typeListSelect = "<select name='memListTypeSelect' id='memListTypeSelect' onchange='memListModalDirty = true;'>";
         for (let index = 0; index < this.#typeListData.length; index++) {
             let type = this.#typeListData[index];
@@ -382,8 +385,8 @@ class consetup {
                 },
                 {
                     title: "Age", field: "memAge",
-                    editor: "list", editorParams: {values: data['ageTypes'],},
-                    headerFilter: true, headerFilterParams: {values: data['ageTypes'],},
+                    editor: (this.#ageListOptions == this.#yaAgeListOptions) ? "list" : ageListEditor, editorParams: {values: data['ageTypes'],},
+                    headerFilter: this.#ageListOptions == this.#yaAgeListOptions, headerFilterParams: {values: data['ageTypes'],},
                 },
                 {
                     title: "Label", field: "shortname", width: 200,
@@ -452,6 +455,53 @@ class consetup {
             _this.memlist_rowMoved(row)
         });
         this.#memtable.on("cellEdited", cellChanged);
+    };
+
+    ageListEditor(cell, onRendered, success, cancel, editorParams){
+        //cell - the cell component for the editable cell
+        //onRendered - function to call when the editor has been rendered
+        //success - function to call to pass the successfully updated value to Tabulator
+        //cancel - function to call to abort the edit and return to a normal cell
+        //editorParams - params object passed into the editorParams column definition property
+
+        //console.log('cell');
+        //console.log(cell);
+        let row = cell.getRow();
+        //console.log('row');
+        //console.log(row);
+        let data = row.getData();
+        let conid = data.conid;
+
+
+        //create and style editor
+        var ageEditor = document.createElement("select");
+        ageEditor.setAttribute("id", "ageEditorSelect");
+        ageEditor.setAttribute("name", "ageEditorSelect");
+        //let conid = cell.getRow().getData().conid;
+        ageEditor.innerHTML = conid == this.#conid ? this.#ageListOptions : this.#yaAgeListOptions;
+        //create and style input
+        ageEditor.style.padding = "3px";
+        ageEditor.style.width = "100%";
+        ageEditor.style.boxSizing = "border-box";
+
+        ageEditor.value = cell.getValue();
+
+        //set focus on the select box when the ageEditor is selected
+        onRendered(function(){
+            ageEditor.focus();
+            ageEditor.style.css = "100%";
+        });
+
+        //when the value has been set, trigger the cell to update
+        function successFunc(){
+            success(ageEditor.value);
+        }
+
+        ageEditor.addEventListener("change", successFunc);
+        ageEditor.addEventListener("blur", successFunc);
+
+        //return the ageEditor element
+        return ageEditor;
     };
 
     // display edit button for a long field
@@ -1511,7 +1561,7 @@ class consetup {
 
 // static functions to call appropriate class
 function editMemListSave() {
-    console.log("in editMemListSave");1
+    //console.log("in editMemListSave");
     if (activeConSetup == 'next')
         return next.editMemListSave();
 
@@ -1705,6 +1755,19 @@ function tsEndChange(row) {
     else
         current.setEditDataEndDate(row, document.getElementById('EMLTS' + row + '_End').value);
 }
+
+// bottom section edited enddate, set top screen
+var ageListEditor = function(cell, onRendered, success, cancel, editorParams) {
+    // console.log("in ageListEditor setup: cell");
+    // console.log(cell);
+    // console.log("editorParams:");
+    // console.log(editorParams);
+    // console.log("about to call class function");
+    if (activeConSetup == 'next')
+        return next.ageListEditor(cell, onRendered, success, cancel, editorParams);
+    else
+        return current.ageListEditor(cell, onRendered, success, cancel, editorParams);
+};
 
 // bottom section edited atcon, set top screen
 function tsAtconChange(row) {
