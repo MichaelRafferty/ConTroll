@@ -156,6 +156,10 @@ if ($hasPasskey == false) {
 $allowPasskey = getConfValue('vendor', 'passkeyRpLevel', 'd') != 'd' &&
         array_key_exists('HTTPS', $_SERVER) && (isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == 'on');
 
+// define these before check, as they are set in the sql that may or may not be run
+$holderMembership = [];
+$allMemberships = [];
+
 if (!$refresh) {
     $numPrimary = 0;
     $numPaidPrimary = 0;
@@ -259,8 +263,6 @@ WHERE
 ORDER BY m.sort_order, create_date;
 EOS;
     $holderRegR = dbSafeQuery($holderRegSQL, 'iii', array ($conid, $loginType == 'p' ? $loginId : -1, $loginType == 'n' ? $loginId : -1));
-    $holderMembership = [];
-    $allMemberships = [];
     $holderMemberAge = '';
     $holderPrimary = null;
 
