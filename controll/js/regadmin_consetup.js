@@ -386,7 +386,7 @@ class consetup {
                 {
                     title: "Age", field: "memAge",
                     editor: (this.#ageListOptions == this.#yaAgeListOptions) ? "list" : ageListEditor, editorParams: {values: data['ageTypes'],},
-                    headerFilter: this.#ageListOptions == this.#yaAgeListOptions, headerFilterParams: {values: data['ageTypes'],},
+                    headerFilter: this.#ageListOptions == this.#yaAgeListOptions ? true : "input", headerFilterParams: {values: data['ageTypes'],},
                 },
                 {
                     title: "Label", field: "shortname", width: 200,
