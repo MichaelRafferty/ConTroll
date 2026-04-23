@@ -398,26 +398,24 @@ class Profile {
                 this.#cityField.classList.remove(this.#alert);
             }
 
-            if (person.state == '') {
-                valid = false;
-                this.#stateField.classList.add(this.#alert);
-            } else {
-                if (person.country == 'USA') {
-                    if (person.state.trim().length != 2) {
-                        valid = false;
-                        this.#stateField.classList.add(this.#alert);
-                    } else {
-                        this.#stateField.classList.remove(this.#alert);
-                    }
+            if (person.country == 'USA' || person.country == 'CAN') {
+                if (person.state == '') {
+                    valid = false;
+                    this.#stateField.classList.add(this.#alert);
+                } else if (person.state.trim().length != 2) {
+                    valid = false;
+                    this.#stateField.classList.add(this.#alert);
                 } else {
                     this.#stateField.classList.remove(this.#alert);
                 }
-            }
-
-            if (person.zip == '') {
-                valid = false;
-                this.#zipField.classList.add(this.#alert);
+                if (person.zip == '') {
+                    valid = false;
+                    this.#zipField.classList.add(this.#alert);
+                } else {
+                    this.#zipField.classList.remove(this.#alert);
+                }
             } else {
+                this.#stateField.classList.remove(this.#alert);
                 this.#zipField.classList.remove(this.#alert);
             }
         }
