@@ -44,6 +44,7 @@ class consetup {
     #ageListSelect = null;
     #yaAgeListOptions = null;
     #yaAgeListSelect = null;
+    #ageListSame = true;
     #memListModal = null;
     #memListMasterRow = null;
     #editData = null;
@@ -169,6 +170,32 @@ class consetup {
         //console.log('in draw');
         //console.log(data);
 
+        // save off the select list data
+        this.#catListData = data['memCats'];
+        this.#typeListData = data['memTypes'];
+        if (data['ageTypes'] && Array.isArray(data['ageTypes']))
+            this.#ageListData = data['ageTypes'];
+        else
+            this.#ageListData = [];
+
+        if (data['yaAgeTypes'] && Array.isArray(data['yaAgeTypes']))
+            this.#yaAgeListData = data['yaAgeTypes'];
+        else
+            this.#yaAgeListData = [];
+
+        // build options for comparison
+        this.#ageListOptions = '';
+        for (let index = 0; index < this.#ageListData.length; index++) {
+            let age = this.#ageListData[index];
+            this.#ageListOptions += "\n<option value='" + age + "'>" + age + "</option>";
+        }
+        this.#yaAgeListOptions = '';
+        for (let index = 0; index < this.#yaAgeListData.length; index++) {
+            let age = this.#yaAgeListData[index];
+            this.#yaAgeListOptions += "\n<option value='" + age + "'>" + age + "</option>";
+        }
+
+        this.#ageListSame = this.#yaAgeListOptions == null || this.#ageListOptions == this.#yaAgeListOptions || this.#yaAgeListOptions == '';
 
         let html = '<h5><strong>' + this.#setup_title + ` Convention Data:</strong></h5>
 <div id="` + this.#setup_type + `-conlist"></div>
@@ -179,6 +206,13 @@ class consetup {
 </div>
 <div>&nbsp;</div>
 <h5><strong>` + this.#setup_title + ` Membership Types:</strong></h5>
+`;
+        if (!this.#ageListSame) {
+            html += `
+<h5 class="warncolor">Warning: Current and Next Convention Year Age Lists Differ</h5>
+            `;
+        }
+        html += `
 <p><strong>NOTE:</strong> All date ranges are '>=' Start Date and '<' End Date, so the End Date of one period should be the start date of the next.</p>
 <div id="` + this.#setup_type + `-memlist"></div>
 <div class='row mt-2 mb-3' id='reglist-csv-div'>
@@ -277,39 +311,16 @@ class consetup {
     draw_memlist(year, data, textStatus, jhXHR) {
         let _this = this;
 
-        // save off the select list data
-        this.#catListData = data['memCats'];
-        this.#typeListData = data['memTypes'];
-        if (data['ageTypes'] && Array.isArray(data['ageTypes']))
-            this.#ageListData = data['ageTypes'];
-        else
-            this.#ageListData = [];
-
-        if (data['yaAgeTypes'] && Array.isArray(data['yaAgeTypes']))
-            this.#yaAgeListData = data['yaAgeTypes'];
-        else
-            this.#yaAgeListData = [];
-
         // build the select lists
         this.#catListSelect = "<select name='memListCategorySelect' id='memListCategorySelect' onchange='memListModalDirty = true;'>";
         for (let index = 0; index < this.#catListData.length; index++) {
             let cat = this.#catListData[index];
             this.#catListSelect += "\n<option value='" + cat + "'>" + cat + "</option>";
         }
-        this.#ageListSelect = "<select name='memListAgeSelect' id='memListAgeSelect' onchange='memListModalDirty = true;'>";
-        this.#ageListOptions = '';
-        for (let index = 0; index < this.#ageListData.length; index++) {
-            let age = this.#ageListData[index];
-            this.#ageListOptions += "\n<option value='" + age + "'>" + age + "</option>";
-        }
-        this.#ageListSelect += "\n" + this.#ageListOptions + "\n</select>";
-        this.#yaAgeListSelect = "<select name='memListAgeSelect' id='memListAgeSelect' onchange='memListModalDirty = true;'>";
-        this.#yaAgeListOptions = '';
-        for (let index = 0; index < this.#yaAgeListData.length; index++) {
-            let age = this.#yaAgeListData[index];
-            this.#yaAgeListOptions += "\n<option value='" + age + "'>" + age + "</option>";
-        }
-        this.#yaAgeListSelect += "\n" + this.#yaAgeListOptions + "\n</select>";
+        this.#ageListSelect = "<select name='memListAgeSelect' id='memListAgeSelect' onchange='memListModalDirty = true;'>\n" +
+            this.#ageListOptions + "\n</select>";
+        this.#yaAgeListSelect = "<select name='memListAgeSelect' id='memListAgeSelect' onchange='memListModalDirty = true;'>\n" +
+            this.#yaAgeListOptions + "\n</select>";
         this.#typeListSelect = "<select name='memListTypeSelect' id='memListTypeSelect' onchange='memListModalDirty = true;'>";
         for (let index = 0; index < this.#typeListData.length; index++) {
             let type = this.#typeListData[index];
@@ -342,7 +353,6 @@ class consetup {
         this.#paginationDiv = document.getElementById( this.#setup_type + 'PaginationDiv');
         this.#paginationDiv.innerHTML = '';
         this.#paginationDiv.hidden = data['memlist'].length <= 25;
-        let ageDiffer = this.#yaAgeListOptions != null && this.#ageListOptions != this.#yaAgeListOptions && this.#yaAgeListOptions != '';
 
         this.#memtable = new Tabulator('#' + this.#setup_type + '-memlist', {
             history: true,
@@ -386,8 +396,8 @@ class consetup {
                 },
                 {
                     title: "Age", field: "memAge",
-                    editor: ((!ageDiffer) ? "list" : ageListEditor), editorParams: {values: data['ageTypes'],},
-                    headerFilter: ((!ageDiffer) ? true : "input"), headerFilterParams: {values: data['ageTypes'],},
+                    editor: (this.#ageListSame ? "list" : ageListEditor), editorParams: {values: data['ageTypes'],},
+                    headerFilter: (this.#ageListSame ? true : "input"), headerFilterParams: {values: data['ageTypes'],},
                 },
                 {
                     title: "Label", field: "shortname", width: 200,
