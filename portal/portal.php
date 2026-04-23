@@ -581,7 +581,7 @@ WITH ppl AS (
 SELECT ppl.*, IFNULL(missPol.requiredMissing, 0) AS missingPolicies
 FROM ppl
 LEFT OUTER JOIN missPol ON ppl.id = missPol.id
-ORDER BY personType DESC, id ASC, m.sort_order, create_date;
+ORDER BY personType DESC, id ASC, create_date;
 EOS;
         $managedByR = dbSafeQuery($managedSQL, 'iiiiii', array ($conid, $loginId, $conid, $loginId, $loginId, $conid));
     }
