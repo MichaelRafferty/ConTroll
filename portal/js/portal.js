@@ -423,7 +423,7 @@ class Portal {
         this.#editPersonModal.hide();
     }
 
-    // editPerson - edit a person you manage (or your self)
+    // changeEmail only - edit a person you manage (or your self)
     changeEmail(personJson) {
         if (this.#changeEmailModal == null) {
             show_message('Change Email is not available at this time', 'warn');
@@ -530,12 +530,7 @@ class Portal {
 
     // change email success - clean up from changing the email address
     changeEmailSuccess(data) {
-        if (data.message)
-            show_message(data.message, 'success');
-
-        this.#changeEmailModal.hide();
-        clear_message('ceMessageDiv');
-        this.#changeEmailNewEmailAddr.value = '';
+        window.location = this.#portalPage + "?tab=" + hid + '&messageFwd=' + encodeURI(data.message);
     }
 
     // countryChange - if USPS and USA, then change button
