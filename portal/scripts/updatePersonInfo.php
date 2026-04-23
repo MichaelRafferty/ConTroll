@@ -54,7 +54,7 @@ if ($currentPersonType == 'n' && $resolveUpdates != null) {
 }
 
 $response['currentPersonType'] = $currentPersonType;
-$response['currentPeron'] = $currentPerson;
+$response['currentPerson'] = $currentPerson;
 $response['personId'] = $personId;
 
 if (!validateAccess($currentPerson, $currentPersonType)) {
