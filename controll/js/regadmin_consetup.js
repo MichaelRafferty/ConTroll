@@ -342,6 +342,7 @@ class consetup {
         this.#paginationDiv = document.getElementById( this.#setup_type + 'PaginationDiv');
         this.#paginationDiv.innerHTML = '';
         this.#paginationDiv.hidden = data['memlist'].length <= 25;
+        let ageDiffer = this.#yaAgeListOptions != null && this.#ageListOptions != this.#yaAgeListOptions && this.#yaAgeListOptions != '';
 
         this.#memtable = new Tabulator('#' + this.#setup_type + '-memlist', {
             history: true,
@@ -385,8 +386,8 @@ class consetup {
                 },
                 {
                     title: "Age", field: "memAge",
-                    editor: (this.#ageListOptions == this.#yaAgeListOptions) ? "list" : ageListEditor, editorParams: {values: data['ageTypes'],},
-                    headerFilter: this.#ageListOptions == this.#yaAgeListOptions ? true : "input", headerFilterParams: {values: data['ageTypes'],},
+                    editor: ageDiffer ? "list" : ageListEditor, editorParams: {values: data['ageTypes'],},
+                    headerFilter: (!ageDiffer) ? true : "input", headerFilterParams: {values: data['ageTypes'],},
                 },
                 {
                     title: "Label", field: "shortname", width: 200,
