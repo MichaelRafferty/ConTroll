@@ -386,8 +386,8 @@ class consetup {
                 },
                 {
                     title: "Age", field: "memAge",
-                    editor: (!ageDiffer) ? "list" : ageListEditor, editorParams: {values: data['ageTypes'],},
-                    headerFilter: (ageDiffer) ? true : "input", headerFilterParams: {values: data['ageTypes'],},
+                    editor: ((!ageDiffer) ? "list" : ageListEditor), editorParams: {values: data['ageTypes'],},
+                    headerFilter: ((!ageDiffer) ? true : "input"), headerFilterParams: {values: data['ageTypes'],},
                 },
                 {
                     title: "Label", field: "shortname", width: 200,
