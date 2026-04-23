@@ -172,7 +172,7 @@ EOS;
     }
 }
 $response['currentPersonType'] = $currentPersonType;
-$response['currentPeron'] = $currentPersonId;
+$response['currentPerson'] = $currentPersonId;
 $response['personId'] = $personId;
 $response['personType'] = $personType;
 
@@ -190,6 +190,7 @@ if ($rows_upd === false) {
 
 
 $response['rows_upd'] = $rows_upd;
+$response['newEmail'] = $email;
 $response['status'] = 'success';
 $response['logmessage'] = "$rows_upd rows updated, email address update successful from $curEmail to $email";
 $response['message'] = "Email address successfully updated from $curEmail to $email";
