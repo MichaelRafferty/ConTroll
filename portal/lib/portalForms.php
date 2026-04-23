@@ -834,7 +834,7 @@ function draw_addMembershipsConfirmModal() : void {
                         <div class="col-sm-12" id='addConfirm-div'></div>
                     </div>
                 </div>
-                <div class='modal-footer'>1
+                <div class='modal-footer'>
                     <button class='btn btn-sm btn-secondary' onClick="addConfirmResponse(false)">Not Now</button>
                     <button class='btn btn-sm btn-primary' id='addConfirmBtn' onClick='addConfirmResponse(true)'>Purchase Memberships</button>
                 </div>
