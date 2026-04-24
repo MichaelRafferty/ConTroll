@@ -93,7 +93,7 @@ WITH perids AS (
 ), memAge AS (
     SELECT p.id, MAX(m.memAge) AS memAgeType
     FROM perids p
-    LEFT OUTER JOIN reg r on p.id = r.perid AND r.conid = ?
+    LEFT OUTER JOIN reg r on p.id = r.perid AND r.conid = ? AND r.status IN ('paid', 'unpaid', 'plan')
     LEFT OUTER JOIN memList m on r.memId = m.id
     WHERE m.memAge != 'all'
     GROUP BY p.id
@@ -169,7 +169,7 @@ GROUP BY p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr,
 ), memAge AS (
     SELECT p.id, MAX(m.memAge) AS memAgeType
     FROM perids p
-    LEFT OUTER JOIN reg r on p.id = r.perid AND r.conid = ?
+    LEFT OUTER JOIN reg r on p.id = r.perid AND r.conid = ? AND r.status IN ('paid', 'unpaid', 'plan')
     LEFT OUTER JOIN memList m on r.memId = m.id
     WHERE m.memAge != 'all'
     GROUP BY p.id

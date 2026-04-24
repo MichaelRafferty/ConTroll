@@ -110,13 +110,17 @@ class MembershipRules {
     testMembership(mem, skipImplicit = false) {
         var item;
 
-        // first check if its in the right age, if age is null, all are accepted
+        // first check if its in the right age, if age is null or (conid is not this conid and age is not adult), all are accepted
         if (this.#debug & 8) {
             console.log("testMembership:: skipImplicit: " + skipImplicit.toString());
             console.log(mem);
         }
-        if (this.#age != null) {
-            if (mem.memAge != 'all' && mem.memAge != this.#age) {
+        if (this.#age != null && mem.memAge != 'all') {
+            if (mem.conid != this.#conid && this.#age != 'adult') {  // first if this is not this conid, allow any age, let them choose
+                if (this.#debug & 8) {
+                    console.log("testMembership: not applying age check but: " + this.#age + ', memAge: ' + mem.memAge);
+                }
+            } else if (mem.memAge != this.#age) { // adult or conid matches, use exact match
                 if (this.#debug & 8) {
                     console.log("testMembership: return false due to not applying to this age: " + this.#age + ', memAge: ' + mem.memAge);
                 }
