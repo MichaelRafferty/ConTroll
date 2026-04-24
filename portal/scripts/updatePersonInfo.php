@@ -54,8 +54,13 @@ if ($currentPersonType == 'n' && $resolveUpdates != null) {
 }
 
 $response['currentPersonType'] = $currentPersonType;
-$response['currentPeron'] = $currentPerson;
+$response['currentPerson'] = $currentPerson;
 $response['personId'] = $personId;
+
+if (!validateAccess($currentPerson, $currentPersonType)) {
+    ajaxSuccess(array('status'=>'error', 'message'=>"You do not have permission to update this person's info."));
+    exit();
+}
 
 // update the record
 if ($currentPersonType == 'p') {
@@ -133,6 +138,16 @@ $policy_upd =  updateMemberPolicies($conid, $currentPerson, $currentPersonType, 
 if ($policy_upd > 0) {
     $message .= "<br/>$policy_upd policy responses updated";
 }
+
+if (isSessionVar('portalProfileChecked')) {
+    $portalProfileChecked = getSessionVar('portalProfileChecked');
+} else {
+    $portalProfileChecked = array();
+}
+
+$id = $currentPersonType . $currentPerson;
+$portalProfileChecked[$id] = 1;
+setSessionVar('portalProfileChecked', $portalProfileChecked);
 
 $response['rows_upd'] = $rows_upd;
 $response['status'] = 'success';

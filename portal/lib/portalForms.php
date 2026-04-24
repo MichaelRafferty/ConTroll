@@ -1,7 +1,7 @@
 <?php
 // portalForms:  Forms used by the portal for person and membership work
 // drawVerifyPersonInfo - non modal version of validate person information
-function drawVerifyPersonInfo($policies, $ageByDate, $ageList) : void {
+function drawVerifyPersonInfo($policies, $ageByDate, $ageList, $countryOptions) : void {
     $usps = get_conf('usps');
     $useUSPS = false;
     if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
@@ -9,13 +9,13 @@ function drawVerifyPersonInfo($policies, $ageByDate, $ageList) : void {
     $con = get_conf('con');
 ?>
 <?php
-    drawEditPersonBlock($con, $useUSPS, $policies, 'add', false, false, $ageByDate, [], $ageList)
+    drawEditPersonBlock($con, $countryOptions, $useUSPS, $policies, 'add', false, false, $ageByDate, [], $ageList)
 ?>
 <?php
 }
 
 // draw_editPerson - draw the verify/update form for the Person
-function draw_editPersonModal($source, $policies, $ageList, $ageByDate, $interests = null) : void {
+function draw_editPersonModal($source, $policies, $ageList, $ageByDate, $countryOptions, $interests = null) : void {
     $usps = get_conf('usps');
     $useUSPS = false;
     if (($usps != null) && array_key_exists('secret', $usps) && ($usps['secret'] != ''))
@@ -42,7 +42,7 @@ function draw_editPersonModal($source, $policies, $ageList, $ageByDate, $interes
                             <input type='hidden' name='id' id='epPersonId'/>
                             <input type='hidden' name='type' id='epPersonType'/>
 <?php
-    drawEditPersonBlock($con, $useUSPS, $policies, $source, true, false, $ageByDate, [], $ageList);
+    drawEditPersonBlock($con, $countryOptions, $useUSPS, $policies, $source, true, false, $ageByDate, [], $ageList);
     if ($interests) { ?>
                         </form>
                         <div class='row'>
@@ -64,7 +64,11 @@ function draw_editPersonModal($source, $policies, $ageList, $ageByDate, $interes
                 </div>
                 <div class='modal-footer'>
                     <button class='btn btn-sm btn-secondary' onclick='<?php echo $closeClick; ?>;' tabindex='10001'>Cancel</button>
-                    <button class='btn btn-sm btn-primary' id='editPersonSubmitBtn' onClick="portal.editPersonSubmit()" tabindex='10002'>Update Person</button>
+                    <button class='btn btn-sm btn-primary' id='editPersonSubmitBtn' onClick="portal.editPersonSubmit(false)" tabindex='10002'>Update
+                        Person</button>
+                    <button class='btn btn-sm btn-warning' id='editPersonOverrideBtn' onClick="portal.editPersonSubmit(true)" tabindex='10003' hidden>
+                        Override Warnings and Update Person
+                    </button>
                 </div>
             </div>
         </div>
@@ -79,54 +83,6 @@ function drawVerifyInterestsBlock($interests) : void {
         drawInterestList($interests);
         ?>
     </form>
-<?php
-}
-
-// drawGetNewMemberships - membership selection
-function drawGetNewMemberships($fullName) : void {
-    if ($fullName) {
-?>
-    <div class='row mt-2'>
-        <div class='col-sm-12'>
-            <h3 class='text-primary'>Add/Edit Memberships and other Purchases for <?php echo $fullName; ?></h3>
-        </div>
-    </div>
-<?php } ?>
-    <div class='row mt-1' id='membershipButtons'></div>
-    <div class="row mt-2">
-        <div class="col-sm-12">
-            Select from the buttons above to add memberships and other items.
-        </div>
-    </div>
-    <?php
-}
-
-// draw variable price membership set modal
-function drawVariablePriceModal($class) : void {
-?>
-    <div id='variablePriceModal' class='modal modal-lg fade' tabindex='-1' aria-labelledby='Variable Price' aria-hidden='true'>
-        <div class='modal-dialog'>
-            <div class='modal-content'>
-                <div class='modal-header bg-primary text-bg-primary'>
-                    <div class='modal-title' id='variablePriceTitle'>
-                        <strong>How Much?</strong>
-                    </div>
-                    <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
-                </div>
-                <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
-                    <div class='container-fluid' id="variablePriceBody">
-                    </div>
-                    <div class='row'>
-                        <div class='col-sm-12' id='vpMessageDiv'></div>
-                    </div>
-                </div>
-                <div class='modal-footer'>
-                    <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal' tabindex='10101'>Cancel</button>
-                    <button class='btn btn-sm btn-primary' id='vpSubmitButton' onClick='<?php echo $class;?>.vpSubmit()' tabindex='10102'>Set Amount</button>
-                </div>
-            </div>
-        </div>
-    </div>
 <?php
 }
 
@@ -329,11 +285,8 @@ EOS;
 <?php
 }
 // drawPersonTab: draw memberships and profile for a managed person or yourself
-function drawPersonTab($personId, $personType, $person, $conid, $ageList, $memberships, $policies, $interests, $now, $ageByDate, $manager) : array {
+function drawPersonTab($personId, $personType, $person, $conid, $ageList, $memberships, $policies, $interests, $now, $ageByDate, $manager) : void {
     global $membershipButtonColors;
-    $unpaidByOthers = 0;
-    $unpaidByMe = 0;
-    $unpaidByManager = 0;
     $portal_conf = get_conf('portal');
 
     $hr = <<<EOS
@@ -384,10 +337,20 @@ EOS;
     $label = $personType ==  'p' ? 'Membership Number' : 'Temp Membership Number';
 
     // Purchases block
+    $mpbDisabled = '';
+    $mpbSuffix = '';
+    if ($person['missingPolicies'] > 0) {
+        $mpbDisabled = ' disabled';
+        $mpbSuffix = '<br/><span style="color: red;"><b>Missing Required Policies</b></span>';
+    }
+
+    $mpbId = 'mpBtn' . $personType . $id;
     echo <<<EOS
     <div class="row mt-1">
         <div class="col-sm-2">
-            <button class='btn btn-sm btn-primary p-1 h-100 w-100'  onclick="portal.addMembership($id, '$personType');">Make Purchase</button>
+            <button class='btn btn-sm btn-primary p-1 h-100 w-100' id="$mpbId" onclick="portal.addMembership($id, '$personType');"$mpbDisabled>
+            Add Items to Cart$mpbSuffix
+            </button>
         </div>
         <div class="col-sm-auto">
             <span class="h2">$fn Purchases</span>
@@ -421,16 +384,9 @@ EOS;
                 $type = 'black';
             } else {
                 $type = 'other';
-
-                if (array_key_exists('type', $membership)) {
-                    $memType = $membership['type'];
-                    $memCategory = $membership['category'];
-                    $memAge = $membership['memAge'];
-                } else {
-                    $memType = $membership['memType'];
-                    $memCategory = $membership['memCategory'];
-                    $memAge = $membership['memAge'];
-                }
+                $memType = $membership['memType'];
+                $memCategory = $membership['memCategory'];
+                $memAge = $membership['memAge'];
 
                 if ($memType == 'wsfs')
                     $type = 'wsfs';
@@ -476,16 +432,7 @@ EOS;
                    $row3 = '<br/>Added by ' . $membership['purchaserName'];
                else
                    $row3 = '<br/>Purchased by ' . $membership['purchaserName'];
-               if ($membership['status'] == 'unpaid' || $membership['status'] == 'plan') {
-                   if ($manager && $compareId == $manager['id'] && $compareType == $manager['personType'])
-                       $unpaidByManager += $membership['actPrice'] - ($membership['actPaid'] + $membership['actCouponDiscount']);
-                   else
-                       $unpaidByOthers += $membership['actPrice'] - ($membership['actPaid'] + $membership['actCouponDiscount']);
-               }
            } else {
-               if ($membership['actPrice'] >= 0 && ($membership['status'] == 'unpaid' || $membership['status'] == 'plan')) {
-                   $unpaidByMe += $membership['actPrice'] - ($membership['actPaid'] + $membership['actCouponDiscount']);
-               }
                $row3 = '';
            }
            if ($memAge == 'all') {
@@ -499,6 +446,9 @@ EOS;
            if ($expired) {
                $expiredPrefix = '<span class="text-danger">Expired: ';
                $expiredSuffix = '</span>';
+           } else if ($membership['status'] == 'donated') {
+               $expiredPrefix = 'Donated ';
+               $expiredSuffix = '';
            } else {
                $expiredPrefix = '';
                $expiredSuffix = '';
@@ -616,8 +566,6 @@ $hr
 EOS;
         drawInterestsDisplay($interests, $person['interests'], $id);
     }
-
-    return [$unpaidByOthers, $unpaidByMe, $unpaidByManager];
 }
 
 // draw_editInterests on portal screen - draw the update interests form for the person
@@ -679,13 +627,16 @@ function draw_PaymentDueModal() : void {
                 <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
                     <div class='container-fluid' id="paymentDueBody">
                     </div>
-                    <div class='row'>
-                        <div class='col-sm-12' id='payDueMessageDiv'></div>
+                    <div class='container-fluid'>
+                        <div class='row'>
+                            <div class='col-sm-12' id='payDueMessageDiv'></div>
+                        </div>
                     </div>
                 </div>
                 <div class='modal-footer'>
                     <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal' tabindex='10101'>Cancel</button>
-                    <button class='btn btn-sm btn-primary' id='payDueSubmitButton' onClick='portal.makePayment(null)' tabindex='10402'>Pay total amount due</button>
+                    <button class='btn btn-sm btn-primary' id='payDueSubmitButton' onClick='portal.makeOrder(null,-1)' tabindex='10402'>Pay total amount
+                        due</button>
                 </div>
             </div>
         </div>
@@ -865,31 +816,30 @@ function draw_recieptModal() : void {
 <?php
 }
 
-
 // draw_receiptModal - modal to display a receipt
-    function draw_addMembershipsConfirmModal() : void {
-        ?>
-        <div id='portalAddConfirm' class='modal modal-lg fade' tabindex='-1' aria-labelledby='Registration Add Memberships Now' aria-hidden='true'
-             style='--bs-modal-width:
-    80%;'>
-            <div class='modal-dialog'>
-                <div class='modal-content'>
-                    <div class='modal-header bg-primary text-bg-primary'>
-                        <div class='modal-title'>
-                            <strong id='addConfirmTitle'>Registration Portal - Add Memberships/Purchases Now?</strong>
-                        </div>
+function draw_addMembershipsConfirmModal() : void {
+    ?>
+    <div id='portalAddConfirm' class='modal modal-lg fade' tabindex='-1' aria-labelledby='Registration Add Memberships Now' aria-hidden='true'
+         style='--bs-modal-width:
+80%;'>
+        <div class='modal-dialog'>
+            <div class='modal-content'>
+                <div class='modal-header bg-primary text-bg-primary'>
+                    <div class='modal-title'>
+                        <strong id='addConfirmTitle'>Registration Portal - Add Memberships/Purchases Now?</strong>
                     </div>
-                    <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
-                        <div class="row p-3">
-                            <div class="col-sm-12" id='addConfirm-div'></div>
-                        </div>
+                </div>
+                <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                    <div class="row p-3">
+                        <div class="col-sm-12" id='addConfirm-div'></div>
                     </div>
-                    <div class='modal-footer'>
-                        <button class='btn btn-sm btn-secondary' onClick="addConfirmResponse(false)">Not Now</button>
-                        <button class='btn btn-sm btn-primary' id='addConfirmBtn' onClick='addConfirmResponse(true)'>Purchase Memberships</button>
-                    </div>
+                </div>
+                <div class='modal-footer'>
+                    <button class='btn btn-sm btn-secondary' onClick="addConfirmResponse(false)">Not Now</button>
+                    <button class='btn btn-sm btn-primary' id='addConfirmBtn' onClick='addConfirmResponse(true)'>Purchase Memberships</button>
                 </div>
             </div>
         </div>
-        <?php
-    }
+    </div>
+    <?php
+}

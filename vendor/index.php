@@ -17,6 +17,7 @@ require_once('../lib/tax.php');
 $cc = get_conf('cc');
 $con = get_conf('con');
 $conid = $con['id'];
+$conname = $con['conname'];
 $minConid = getConfValue('controll', 'viewPriorLimit', $conid - 1);
 $usps = get_conf('usps');
 load_cc_procs();
@@ -93,12 +94,9 @@ $startdate = new DateTime($condata['startdate']);
 $config_vars['ageByDate'] = $startdate->format('F j, Y');
 
 // load country select
-$countryOptions = '';
-$fh = fopen(__DIR__ . '/../lib/countryCodes.csv', 'r');
-while(($data = fgetcsv($fh, 1000, ',', '"'))!=false) {
-  $countryOptions .= '<option value="' . escape_quotes($data[1]) . '">' .$data[0] . '</option>' . PHP_EOL;
-}
-fclose($fh);
+$defaultCountry = strtoupper(getConfValue('con', 'defaultCountry', 'USA'));
+$countryOptions = loadCountryOptions($defaultCountry);
+$config_vars['defaultCountry'] = $defaultCountry;
 ?>
 
 <body id="vendorPortalBody">
@@ -136,7 +134,7 @@ if (getConfValue('vendor', 'open') != 1) { ?>
     </div>
     <div class="row p-1">
         <div class="col-sm-12">
-            From here you can create and manage your account for <?php echo $portalType; ?>s.
+            From here you can create and manage your account.
         </div>
     </div>
 <?php
@@ -155,6 +153,18 @@ if (isSessionVar('id') && !isset($_GET['vid'])) {
     if (isset($_REQUEST['logout'])) {
         clearSession();
         session_regenerate_id(true);
+        $cookieName = 'ControllPassKeyCredentialId_' . str_replace('.', '_', $_SERVER['SERVER_NAME']);
+        if (array_key_exists($cookieName, $_COOKIE)) {
+            $arr_cookie_options = array (
+                    'expires' => time() - (60*60*24*365),
+                    'path' => '/',
+                    'domain' => $_SERVER['SERVER_NAME'],
+                    'secure' => true,
+                    'httponly' => false,
+                    'samesite' => 'Lax'
+            );
+            $ret = setcookie($cookieName, '', $arr_cookie_options);
+        }
         header('location:' . $_SERVER['PHP_SELF']);
         exit();
     } else {
@@ -211,7 +221,7 @@ if (isSessionVar('id') && !isset($_GET['vid'])) {
     }
 
     $loginQ = <<<EOS
-SELECT e.id, e.artistName, e.exhibitorName, LOWER(e.exhibitorEmail) as eEmail, e.password AS ePassword, e.need_new as eNeedNew, ey.id AS eyID, 
+SELECT e.id, e.artistName, e.artistPayee, e.exhibitorName, LOWER(e.exhibitorEmail) as eEmail, e.password AS ePassword, e.need_new as eNeedNew, ey.id AS eyID, 
        LOWER(ey.contactEmail) AS cEmail, ey.contactPassword AS cPassword, ey.need_new AS cNeedNew, archived,
        DATEDIFF(now(), ey.lastVerified) AS DaysSinceLastVerified, COUNT(eRY.id) AS regions, COUNT(exRY.id) AS myRegions
 FROM exhibitors e
@@ -219,7 +229,7 @@ LEFT OUTER JOIN exhibitorYears ey ON e.id = ey.exhibitorId AND conid = ?
 JOIN exhibitsRegionYears eRY ON eRY.conid = ?
 LEFT JOIN exhibitorRegionYears exRY ON ey.id = exRY.exhibitorYearId AND exRY.exhibitsRegionYearId = eRY.id
 WHERE e.exhibitorEmail = ? OR ey.contactEmail = ?
-GROUP BY e.id, e.artistName, e.exhibitorName, LOWER(e.exhibitorEmail), e.password, e.need_new, ey.id, LOWER(ey.contactEmail), 
+GROUP BY e.id, e.artistName, e.artistPayee, e.exhibitorName, LOWER(e.exhibitorEmail), e.password, e.need_new, ey.id, LOWER(ey.contactEmail), 
          ey.contactPassword, ey.need_new, archived, DaysSinceLastVerified
 EOS;
     $loginR = dbSafeQuery($loginQ, 'iiss', array($conid, $conid, $login, $login));
@@ -382,7 +392,7 @@ EOS;
 
 // get this exhibitor
 $exhibitorQ = <<<EOS
-SELECT artistName, exhibitorName, exhibitorEmail, exhibitorPhone, salesTaxId, website, description, e.need_new AS eNeedNew,
+SELECT artistName, artistPayee, exhibitorName, exhibitorEmail, exhibitorPhone, salesTaxId, website, description, e.need_new AS eNeedNew,
        ey.contactName, ey.contactEmail, ey.contactPhone, ey.need_new AS cNeedNew, DATEDIFF(now(), ey.lastVerified) AS DaysSinceLastVerified,
        ey.mailin, e.addr, e.addr2, e.city, e.state, e.zip, e.country, e.shipCompany, e.shipAddr, e.shipAddr2, e.shipCity, e.shipState,
        e.shipZip, e.shipCountry, e.publicity, p.id AS perid, p.first_name AS p_first_name, p.last_name AS p_last_name, n.id AS newperid, 
@@ -411,13 +421,6 @@ $config_vars['exhibitorName'] = $info['exhibitorName'];
 $config_vars['artistName'] = $info['artistName'];
 $config_vars['email'] = getSessionVar('loginEmail');
 
-// load the country codes for the option pulldown
-$fh = fopen(__DIR__ . '/../lib/countryCodes.csv', 'r');
-$countryOptions = '';
-while(($data = fgetcsv($fh, 1000, ',', '"'))!=false) {
-    $countryOptions .=  "<option value='".$data[1]."'>".$data[0]."</option>\n";
-}
-fclose($fh);
 // load the passkey count for this exhibitor to see if we need to display create passkey
 $tokenType = getSessionVar('tokenType');
 $hasPasskey = $tokenType == 'passkey';
@@ -675,7 +678,8 @@ EOS;
                                 if ($chR !== false) {
                                     $numArtItems = $chR->fetch_row()[0];
                                     $chR->free();
-                                    itemRegistrationImportBtn($regionYearId);
+                                    if ($numArtItems == 0)
+                                        itemRegistrationImportBtn($regionYearId);
                                 }
                                 itemRegistrationOpenBtn($conid, $regionYearId);
                             }
@@ -695,7 +699,7 @@ EOS;
             </div>
         </div>
 <?php
-        if (count($pastYears) > 0) {
+        if ($portalType == 'artist' &&  count($pastYears) > 0) {
             echo <<<EOS
         <div class="row mt-1">
 EOS;
@@ -703,7 +707,7 @@ EOS;
                 echo <<<EOS
             <div class="col-sm-auto p-1">
                 <button class='btn btn-primary m-1' onclick="auctionItemRegistration.printSheets('control', $regionYearId, $year); return false;">Print Control Sheet 
-                for $year</button>
+                for $conname $year</button>
             </div>
 EOS;
             }
@@ -711,7 +715,6 @@ EOS;
         </div>
 EOS;
         }
-        echo "bottom buttons<br/>\n";
     }
 ?>
          <?php outputCustomText('main/bottom'); outputCustomText('main/bottom' . $portalName); ?>

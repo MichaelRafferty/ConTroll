@@ -390,7 +390,7 @@ const replaceConfigTokensSkip = ['global', 'cc', 'client', 'debug', 'email', 'go
     }
 
 // rempve L-R override from strings like cut/pasted phone numbers from contact forms
-    function removeLROveride($string) {
+function removeLROveride($string) {
     if ($string == null || $string == '')
         return $string;
 
@@ -582,4 +582,19 @@ function getLocale() {
         $locale = 'en-US'; // default to en-US
     }
     return $locale;
+}
+
+// load country code file from the library and default to the country in the config
+function loadCountryOptions($defaultCode = null) {
+    $optionList = '';
+    if ($defaultCode === null)
+        $defaultCode = strtoupper(getConfValue('con', 'defaultCountry', 'USA'));
+
+    $fh = fopen(__DIR__ . '/../lib/countryCodes.csv', 'r');
+    while (($data = fgetcsv($fh, 1000, ',', '"')) != false) {
+        $selected = $data[1] == $defaultCode ? ' selected' : '';
+        $optionList .= "<option value='" . $data[1] . "'" . $selected . ">" . $data[0] . "</option>\n";
+    }
+    fclose($fh);
+    return $optionList;
 }

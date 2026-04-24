@@ -53,6 +53,10 @@ var taxes = [];
 var orderMsg = '';
 var payOverride = 0;
 var payPoll = 0;
+var cc_html = '';
+var ccOnlineStarted = false;
+var purchase_label = 'purchase';
+var ccNonce = '';
 
 // release items
 var releaseModal = null;
@@ -86,7 +90,7 @@ var currencyFmt = null;
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const statusCodes = {
     'Entered': 'Ent',
-    'Not In Show': 'NIS',
+    'Withdrawn': 'WD',
     'Checked In': 'In',
     'Removed from Show': 'Rem',
     'BID': 'Bid',
@@ -204,6 +208,7 @@ function loadInitialData(data) {
     conid = data.conid;
     user_id = data.user_id
     hasManager = data.hasManager;
+    cc_html = data.cc_html;
     receiptPrinterAvailable = data.receiptPrinter === true;
     findShown();
 }
@@ -838,7 +843,7 @@ function drawItemDetails(item, full = false) {
         htmlLine = '';
         switch (item.status.toLowerCase()) {
             case 'entered':
-            case 'not in show':
+            case 'withdrawn':
                 if (config.inlineInventory == 1)
                     btn_color = 'btn-warning';
                 else
@@ -1009,8 +1014,8 @@ function itemAction(cell, formatterParams, onRendered) {
     if (row.status == 'Checked Out' || row.status == 'Purchased/Released' || row.status == 'Quicksale/Sold')
         return '';
 
-    // if it's not checked in, or checked in as 'missing' (not in show), allow inventory overide if inline, else nothing
-    if (row.status == 'Entered' || row.status == 'Not In Show') {
+    // if it's not checked in, or checked in as 'missing' (withdrawn), allow inventory overide if inline, else nothing
+    if (row.status == 'Entered' || row.status == 'withdrawn') {
         if (config.inlineInventory == 1)
             return '<button class="btn btn-sm btn-warning" style= "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
                 ' onclick="updateInventory(' + row.item_key + ');">Inv</button>';
@@ -1085,7 +1090,7 @@ function updateInventoryStep(item, repeatPass) {
     didQuantity = false;
 
     // general status issues first
-    if (item.status == 'Entered' || item.status == 'Not In Show') {
+    if (item.status == 'Entered' || item.status == 'Withdrawn') {
         html += '<div class="row mt-4"><div class="col-sm-12">The item is not available for sale because of it\'s status.' +
             ' If you are sure the item is checked in, click "Update Inventory Record" to set it to "Checked In"</div></div>';
         inventoryUpdates.push({field: 'status', value: 'Checked In'});
@@ -1403,13 +1408,17 @@ function initArtSalesComplete(data) {
 
 // setPayType: shows/hides the appropriate fields for that payment type
 function setPayType(ptype) {
-    var elcheckno = document.getElementById('pay-check-div');
-    var elccauth = document.getElementById('pay-ccauth-div');
-    var elcashtendered = document.getElementById('pay-cash-div');
+    let elcheckno = document.getElementById('pay-check-div');
+    let elccauth = document.getElementById('pay-ccauth-div');
+    let elcashtendered = document.getElementById('pay-cash-div');
+    let elonline = document.getElementById('pay-online-div');
 
     elcheckno.hidden = ptype != 'check';
     elccauth.hidden = ptype != 'credit';
+    elonline.hidden = ptype != 'online';
     elcashtendered.hidden = ptype != 'cash';
+
+    pay_button_pay.disabled = ptype == 'online';
 
     if (ptype != 'check') {
         document.getElementById('pay-checkno').value = null;
@@ -1420,6 +1429,34 @@ function setPayType(ptype) {
     if (ptype != 'cash') {
         document.getElementById('pay-tendered').value = null;
     }
+    if (ptype == 'online') {
+        if (ccOnlineStarted == false) {
+            let button = document.getElementById('card-button');
+            if (button)
+                button.innerHTML = 'Validate Credit Card';
+            else {
+                button = document.getElementById('purchase');
+                button.value = "Verify Credit Card";
+            }
+            console.log('calling startCC');
+            startCC();
+            console.log('startCC returned');
+            ccOnlineStarted = true;
+        }
+    }
+}
+
+function makePurchase(token, label) {
+    console.log(token);
+    console.log(label);
+    if (label != '') {
+        purchase_label = label;
+    }
+    if (token == 'test_ccnum') {  // this is the test form
+        token = document.getElementById(token).value;
+    }
+    ccNonce = token;
+    pay_button_pay.disabled = false;
 }
 
 // overridePay - pay returned the terminal was unavailable, operator said to override it
@@ -1502,7 +1539,7 @@ function cancelSuccess(data) {
 }
 
 // Process a payment against the transaction
-function pay(nomodal, prow = null) {
+function pay(nomodal, prow = null, nonce = null) {
     var checked = false;
     var ccauth = null;
     var checkno = null;
@@ -1593,6 +1630,18 @@ function pay(nomodal, prow = null) {
             checked = true;
         }
 
+        var onlineRadio = document.getElementById('pt-online');
+        if (onlineRadio != null && onlineRadio.checked) {
+            ptype = 'online';
+            if (ccNonce == null) {
+                alert("Credit Card Processing Error: Unable to obtain nonce token");
+                $('#' + purchase_label).removeAttr("disabled");
+                return;
+            }
+            nonce = ccNonce;
+            checked = true;
+        }
+
         if (document.getElementById('pt-cash').checked) {
             ptype = 'cash';
             checked = true;
@@ -1621,7 +1670,8 @@ function pay(nomodal, prow = null) {
                 }
             }
             prow = {
-                index: cart.getPmtLength(), amt: total_amount_due, tax: total_tax_due, pretax: total_art_due, ccauth: ccauth, checkno: checkno, desc: eldesc.value, type: ptype,
+                index: cart.getPmtLength(), amt: total_amount_due, tax: total_tax_due, pretax: total_art_due, ccauth: ccauth, checkno: checkno,
+                desc: eldesc.value, type: ptype, nonce: nonce,
             };
         }
     }
@@ -1633,6 +1683,7 @@ function pay(nomodal, prow = null) {
         cart_art: artJSON,
         new_payment: prow,
         change: crow,
+        nonce: nonce,
         user_id: user_id,
         payor: currentPerson,
         pay_tid: pay_tid,
@@ -1686,7 +1737,7 @@ function paySuccess(data) {
 
     if (data.status == 'error') {
         show_message(data.data, 'error');
-        if (data.error.includes("cancelled")) {
+        if (data.data.includes("cancelled")) {
             payPoll = 0;
             payCurrentRequest = null;
             pay_button_pay.disabled = false;
@@ -2021,6 +2072,11 @@ function drawPay(readWrite = true) {
             <input type="radio" id="pt-terminal" name="payment_type" value="terminal" onclick='setPayType("terminal");'/>
             <label for="pt-terminal">Credit Card Terminal&nbsp;&nbsp;&nbsp;</label>
 `;
+        } else if (config.creditonline == 1) {
+            payHtml += `
+            <input type="radio" id="pt-online" name="payment_type" value="credit" onchange='setPayType("online");'/>
+            <label for="pt-online">Online Credit Card&nbsp;&nbsp;&nbsp;</label>
+`;
         }
         if (config.creditoffline == 1) {
             payHtml += `
@@ -2058,6 +2114,9 @@ function drawPay(readWrite = true) {
         <div class="col-sm-2 ms-0 me-2 p-0">CC Auth Code:</div>
         <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0"><input type="text" size="15" maxlength="16" name="pay-ccauth" id="pay-ccauth"/></div>
     </div>
+    <div class="row mb-2" id="pay-online-div" hidden>
+       <div class="col-sm-12 ms-0 me-0 p-0">` + cc_html + `</div>  
+    </div> 
     <div class="row">
         <div class="col-sm-2 ms-0 me-2 p-0">Description:</div>
         <div class="col-sm-auto m-0 p-0 ms-0 me-2 p-0"><input type="text" size="60" maxlength="64" name="pay-desc" id="pay-desc"/></div>

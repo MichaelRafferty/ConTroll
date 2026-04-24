@@ -3,6 +3,7 @@
 var activeConSetup = 'none';
 var editListMasterRow = null;
 var memListModalDirty = false;
+var tinyMCEInit = false;
 
 class consetup {
     #debug = 0;
@@ -36,9 +37,14 @@ class consetup {
     #catListData = null;
     #typeListData = null;
     #ageListData = null;
+    #yaAgeListData = null;
     #catListSelect = null;
     #typeListSelect = null;
+    #ageListOptions = null;
     #ageListSelect = null;
+    #yaAgeListOptions = null;
+    #yaAgeListSelect = null;
+    #ageListSame = true;
     #memListModal = null;
     #memListMasterRow = null;
     #editData = null;
@@ -127,8 +133,12 @@ class consetup {
         this.#editData.push({id: 'new' + row });
         document.getElementById('EMLTS' + row + '_ID').innerHTML = this.#editData[row].id;
         this.#editData[row].conid = this.#conid;
-        this.#editData[row].sort_order = this.#editData[row - 1].sort_order + 1;
-        document.getElementById('EMLTS' + row + '_Sort').value = this.#editData[row].sort_order;
+        if (document.getElementById('EMLTS' + row + '_Sort').value == '') {
+            this.#editData[row].sort_order = this.#editData[row - 1].sort_order + 1;
+            document.getElementById('EMLTS' + row + '_Sort').value = this.#editData[row].sort_order;
+        } else {
+            this.#editData[row].sort_order = document.getElementById('EMLTS' + row + '_Sort').value;
+        }
         this.#editData[row].memCategory = document.getElementById('memListCategorySelect').value;
         this.#editData[row].memAge = document.getElementById('memListAgeSelect').value;
         this.#editData[row].memType = document.getElementById('memListTypeSelect').value;
@@ -160,6 +170,32 @@ class consetup {
         //console.log('in draw');
         //console.log(data);
 
+        // save off the select list data
+        this.#catListData = data['memCats'];
+        this.#typeListData = data['memTypes'];
+        if (data['ageTypes'] && Array.isArray(data['ageTypes']))
+            this.#ageListData = data['ageTypes'];
+        else
+            this.#ageListData = [];
+
+        if (data['yaAgeTypes'] && Array.isArray(data['yaAgeTypes']))
+            this.#yaAgeListData = data['yaAgeTypes'];
+        else
+            this.#yaAgeListData = [];
+
+        // build options for comparison
+        this.#ageListOptions = '';
+        for (let index = 0; index < this.#ageListData.length; index++) {
+            let age = this.#ageListData[index];
+            this.#ageListOptions += "\n<option value='" + age + "'>" + age + "</option>";
+        }
+        this.#yaAgeListOptions = '';
+        for (let index = 0; index < this.#yaAgeListData.length; index++) {
+            let age = this.#yaAgeListData[index];
+            this.#yaAgeListOptions += "\n<option value='" + age + "'>" + age + "</option>";
+        }
+
+        this.#ageListSame = this.#yaAgeListOptions == null || this.#ageListOptions == this.#yaAgeListOptions || this.#yaAgeListOptions == '';
 
         let html = '<h5><strong>' + this.#setup_title + ` Convention Data:</strong></h5>
 <div id="` + this.#setup_type + `-conlist"></div>
@@ -170,10 +206,17 @@ class consetup {
 </div>
 <div>&nbsp;</div>
 <h5><strong>` + this.#setup_title + ` Membership Types:</strong></h5>
+`;
+        if (!this.#ageListSame) {
+            html += `
+<h5 class="warncolor">Warning: Current and Next Convention Year Age Lists Differ</h5>
+            `;
+        }
+        html += `
 <p><strong>NOTE:</strong> All date ranges are '>=' Start Date and '<' End Date, so the End Date of one period should be the start date of the next.</p>
 <div id="` + this.#setup_type + `-memlist"></div>
 <div class='row mt-2 mb-3' id='reglist-csv-div'>
-    <div class="col-sm-auto p-1 ps-3 pe-3 tabulator-paginator" id="` + this.#setup_type + `PaginationDiv" style="background-color: #e5e5e5;"></div>
+    <div class="col-sm-auto p-1 ps-3 pe-3 tabulator-paginator paginationBGColor" id="` + this.#setup_type + `PaginationDiv"></div>
     <div class='col-sm-auto p-1 ms-4' id="memlist-buttons">  
         <button id="` + this.#setup_type + `memlist-undo" type="button" class="btn btn-secondary btn-sm" onclick="` + this.#setup_type + `.undoMemList(); return false;" disabled>Undo</button>
         <button id="` + this.#setup_type + `memlist-redo" type="button" class="btn btn-secondary btn-sm" onclick="` + this.#setup_type + `.redoMemList(); return false;" disabled>Redo</button>
@@ -268,27 +311,16 @@ class consetup {
     draw_memlist(year, data, textStatus, jhXHR) {
         let _this = this;
 
-        // save off the select list data
-        this.#catListData = data['memCats'];
-        this.#typeListData = data['memTypes'];
-        if (data['ageTypes'] && Array.isArray(data['ageTypes']))
-            this.#ageListData = data['ageTypes'];
-        else
-            this.#ageListData = [];
-
         // build the select lists
         this.#catListSelect = "<select name='memListCategorySelect' id='memListCategorySelect' onchange='memListModalDirty = true;'>";
         for (let index = 0; index < this.#catListData.length; index++) {
             let cat = this.#catListData[index];
             this.#catListSelect += "\n<option value='" + cat + "'>" + cat + "</option>";
         }
-        this.#ageListSelect += "\n</select>";
-        this.#ageListSelect = "<select name='memListAgeSelect' id='memListAgeSelect' onchange='memListModalDirty = true;'>";
-        for (let index = 0; index < this.#ageListData.length; index++) {
-            let age = this.#ageListData[index];
-            this.#ageListSelect += "\n<option value='" + age + "'>" + age + "</option>";
-        }
-        this.#typeListSelect += "\n</select>";
+        this.#ageListSelect = "<select name='memListAgeSelect' id='memListAgeSelect' onchange='memListModalDirty = true;'>\n" +
+            this.#ageListOptions + "\n</select>";
+        this.#yaAgeListSelect = "<select name='memListAgeSelect' id='memListAgeSelect' onchange='memListModalDirty = true;'>\n" +
+            this.#yaAgeListOptions + "\n</select>";
         this.#typeListSelect = "<select name='memListTypeSelect' id='memListTypeSelect' onchange='memListModalDirty = true;'>";
         for (let index = 0; index < this.#typeListData.length; index++) {
             let type = this.#typeListData[index];
@@ -352,35 +384,28 @@ class consetup {
                 {field: "memlistkey", visible: false,},
                 {title: "Con ID", field: "conid", width: 70, headerWordWrap: true, headerFilter: true, headerHozAlign: "right", hozAlign: "right",},
                 {
-                    title: "Category",
-                    field: "memCategory",
-                    editor: "list",
-                    editorParams: {values: data['memCats'],},
-                    headerFilter: true,
-                    headerFilterParams: {values: data['memCats']}
+                    title: "Category", field: "memCategory",
+                    editor: "list", editorParams: {values: data['memCats'],},
+                    headerFilter: true, headerFilterParams: {values: data['memCats']}
                 },
                 {
-                    title: "Type",
-                    field: "memType",
-                    editor: "list",
-                    editorParams: {values: data['memTypes'],},
+                    title: "Type", field: "memType",
+                    editor: "list",  editorParams: {values: data['memTypes'],},
                     headerFilter: true,
                     headerFilterParams: {values: data['memTypes'],}
                 },
                 {
-                    title: "Age",
-                    field: "memAge",
-                    editor: "list",
-                    editorParams: {values: data['ageTypes'],},
-                    headerFilter: true,
-                    headerFilterParams: {values: data['ageTypes'],},
+                    title: "Age", field: "memAge",
+                    editor: (this.#ageListSame ? "list" : ageListEditor), editorParams: {values: data['ageTypes'],},
+                    headerFilter: (this.#ageListSame ? true : "input"), headerFilterParams: {values: data['ageTypes'],},
                 },
                 {
-                    title: "Label", field: "shortname", minWidth: 300,
+                    title: "Label", field: "shortname", width: 200,
                     tooltip: function (e, cell, onRendered) {
                         return cell.getRow().getCell("label").getValue();
                     },
                     editor: "input", editorParams: {elementAttributes: {maxlength: "64"}},
+                    formatter: "textarea",
                     headerFilter: true
                 },
                 {title: "Label", field: "label", visible: false},
@@ -389,8 +414,10 @@ class consetup {
                     formatter: "money",  formatterParams: { decimal: '.', thousand: ',', negative: true, precision: 2},
                     headerFilter: "input", headerFilterFunc: numberHeaderFilter,
                 },
-                {title: "Start Date", field: "startdate", width: 170, editor: "datetime", validator: "required", headerFilter: "input"},
-                {title: "End Date", field: "enddate", width: 170, editor: "datetime", validator: "required", headerFilter: "input"},
+                {title: "Start Date", field: "startdate", width: 170, editor: "datetime", validator: "required",
+                    headerFilter: "input", headerFilterFunc: dateStringHeaderFilter, headerFilterFuncParams: {field: 'startdate'},},
+                {title: "End Date", field: "enddate", width: 170, editor: "datetime", validator: "required",
+                    headerFilter: "input", headerFilterFunc: dateStringHeaderFilter, headerFilterFuncParams: {field: 'enddate'},},
                 {
                     title: "At", field: "atcon", editor: "list", editorParams: {values: ["Y", "N"],},
                     headerFilter: true, headerFilterParams: {values: ["Y", "N"],}
@@ -400,21 +427,34 @@ class consetup {
                     headerFilter: true, headerFilterParams: {values: ["Y", "N"],}
                 },
                 {
-                    title: "Notes", field: "notes", minWidth: 300,
+                    title: "Notes", field: "notes", width: 200,
                     editor: "input", editorParams: {elementAttributes: {maxlength: "1024"}},
+                    headerFilter: true,
+                    formatter: "textarea",
+                },
+                {
+                    title: "Cart Desc", field: "cartDesc", width: 300,
+                    headerFilter: true,
+                    formatter: "html",
+                },
+                {
+                    title: "Category Badge Label Override", field: "badgeLabel", width: 140, headerWordWrap: true,
+                    editor: "input", editorParams: {elementAttributes: {maxlength: "16"}},
                     headerFilter: true,
                 },
                 {
-                    title: "GL Num", field: "glNum", minWidth: 120, headerWordWrap: true,
+                    title: "GL Num", field: "glNum", width: 120, headerWordWrap: true,
                     editor: "input", editorParams: {elementAttributes: {maxlength: "16"}},
                     headerFilter: true
                 },
                 {
-                    title: "GL Label", field: "glLabel", minWidth: 200, headerWordWrap: true,
+                    title: "GL Label", field: "glLabel", width: 200, headerWordWrap: true,
                     editor: "input", editorParams: {elementAttributes: {maxlength: "64"}},
-                    headerFilter: true
+                    headerFilter: true,
+                    formatter: "textarea",
                 },
                 {field: "to_delete", visible: false,},
+                {field: "catBadgeLabel", visible: false,},
             ],
 
         });
@@ -426,6 +466,53 @@ class consetup {
             _this.memlist_rowMoved(row)
         });
         this.#memtable.on("cellEdited", cellChanged);
+    };
+
+    ageListEditor(cell, onRendered, success, cancel, editorParams){
+        //cell - the cell component for the editable cell
+        //onRendered - function to call when the editor has been rendered
+        //success - function to call to pass the successfully updated value to Tabulator
+        //cancel - function to call to abort the edit and return to a normal cell
+        //editorParams - params object passed into the editorParams column definition property
+
+        //console.log('cell');
+        //console.log(cell);
+        let row = cell.getRow();
+        //console.log('row');
+        //console.log(row);
+        let data = row.getData();
+        let conid = data.conid;
+
+
+        //create and style editor
+        var ageEditor = document.createElement("select");
+        ageEditor.setAttribute("id", "ageEditorSelect");
+        ageEditor.setAttribute("name", "ageEditorSelect");
+        //let conid = cell.getRow().getData().conid;
+        ageEditor.innerHTML = conid == this.#conid ? this.#ageListOptions : this.#yaAgeListOptions;
+        //create and style input
+        ageEditor.style.padding = "3px";
+        ageEditor.style.width = "100%";
+        ageEditor.style.boxSizing = "border-box";
+
+        ageEditor.value = cell.getValue();
+
+        //set focus on the select box when the ageEditor is selected
+        onRendered(function(){
+            ageEditor.focus();
+            ageEditor.style.css = "100%";
+        });
+
+        //when the value has been set, trigger the cell to update
+        function successFunc(){
+            success(ageEditor.value);
+        }
+
+        ageEditor.addEventListener("change", successFunc);
+        ageEditor.addEventListener("blur", successFunc);
+
+        //return the ageEditor element
+        return ageEditor;
     };
 
     // display edit button for a long field
@@ -464,6 +551,7 @@ class consetup {
         document.getElementById('editMemListName').innerHTML = seriesName;
         document.getElementById('editMemListID').innerHTML = rowData.id;
         document.getElementById('editMemListConID').innerHTML = rowData.conid;
+        document.getElementById('editMemListAge').innerHTML = rowData.conid == this.#conid ? this.#ageListSelect : this.#yaAgeListSelect;
         this.#memListMasterRow= rowData.id;
         memListModalDirty = false;
         this.#memListModal.show();
@@ -498,8 +586,12 @@ class consetup {
         document.getElementById('editMemListEnd').value = rowData.enddate;
 
         document.getElementById('editMemListNotes').value = notes;
+        let cartDesc = rowData.cartDesc == null ? '' : rowData.cartDesc;
+        document.getElementById('editMemListCartDesc').innerHTML = cartDesc.trim();
         document.getElementById('editMemListGLNum').value = rowData.glNum;
         document.getElementById('editMemListGLLabel').value = rowData.glLabel;
+        document.getElementById('catBadgeLabel').innerHTML = rowData.catBadgeLabel;
+        document.getElementById('editMemListBadgeLabel').value = rowData.badgeLabel;
 
         if (this.#memListBundleContains) {
             this.#memListBundleContains.value = bundleList;
@@ -511,6 +603,39 @@ class consetup {
         }
 
         this.reSortTimeSeries(false);
+
+        // set up to edit the cart description
+        if (tinyMCEInit) {
+            // update the text block
+            tinyMCE.get("editMemListCartDesc").focus();
+            tinyMCE.get("editMemListCartDesc").load();
+        } else {
+            tinyMCE.init({
+                selector: 'textarea#editMemListCartDesc',
+                height: 400,
+                min_height: 400,
+                menubar: false,
+                license_key: 'gpl',
+                plugins: 'advlist lists image link charmap fullscreen help nonbreaking preview searchreplace',
+                toolbar: [
+                    'help undo redo searchreplace copy cut paste pastetext | fontsizeinput styles h1 h2 h3 h4 h5 h6 | ' +
+                    'bold italic underline strikethrough removeformat | ' +
+                    'visualchars nonbreaking charmap hr | ' +
+                    'preview fullscreen ',
+                    'alignleft aligncenter alignright alignnone | outdent indent | numlist bullist checklist | forecolor backcolor | link image'
+                ],
+                link_target_list: [
+                    {title: 'None', value: ''},
+                    {title: 'Same page', value: '_self'},
+                    {title: 'New page', value: '_blank'},
+                ],
+                link_default_target: '_blank',
+                content_style: 'body {font - family:Helvetica,Arial,sans-serif; font-size:14px }',
+                placeholder: 'Edit the cart item description here...',
+                auto_focus: 'editMemListCartDesc'
+            });
+            tinyMCEInit = true;
+        }
     }
 
     open() {
@@ -621,12 +746,12 @@ class consetup {
             glLabel: '',
         }, false).then(function (row) {
             row.getTable().setPageToRow(row).then(function () {
-                row.getCell("id").getElement().style.backgroundColor = "#fff3cd";
-                row.getCell("conid").getElement().style.backgroundColor = "#fff3cd";
-                row.getCell("shortname").getElement().style.backgroundColor = "#fff3cd";
-                row.getCell("price").getElement().style.backgroundColor = "#fff3cd";
-                row.getCell("atcon").getElement().style.backgroundColor = "#fff3cd";
-                row.getCell("online").getElement().style.backgroundColor = "#fff3cd";
+                setCellChanged(row.getCell("id"));
+                setCellChanged(row.getCell("conid"));
+                setCellChanged(row.getCell("shortname"));
+                setCellChanged(row.getCell("price"));
+                setCellChanged(row.getCell("atcon"));
+                setCellChanged(row.getCell("online"));
                 _this.checkMemlistUndoRedo();
             });
         });
@@ -941,7 +1066,7 @@ class consetup {
         if (this.#selValues == null)
             this.#selValues = ''
         else
-            this.#selValues = ',' + this.#selValues + ',';
+            this.#selValues = ',' + this.#selValues.replace(/ /g, '') + ',';
 
         this.#editMemListBundleDiv.hidden = false;
 
@@ -979,7 +1104,7 @@ class consetup {
         for (let row of rows) {
             let index = row.getCell('id').getValue().toString();
             if (this.#selValues.includes(',' + index + ',')) {
-                row.getCell('id').getElement().style.backgroundColor = "#C0FFC0";
+                addFieldClass(row.getCell('id').getElement(), 'selectedBGColor');
             }
         }
         if (this.#nonBundleList.length > 25)
@@ -989,12 +1114,7 @@ class consetup {
     // toggle the selection color of the clicked cell
     clickedSelection(e, cell) {
         let filtercell = cell.getRow().getCell('id');
-        let value = filtercell.getValue();
-        if (filtercell.getElement().style.backgroundColor) {
-            filtercell.getElement().style.backgroundColor = "";
-        } else {
-            filtercell.getElement().style.backgroundColor = "#C0FFC0";
-        }
+        toggleFieldClass(filtercell.getElement(), 'selectedBGColor');
     }
 
     // set all/clear all sections in table based on direction
@@ -1004,7 +1124,11 @@ class consetup {
             if (row.getPosition() === false)
                 continue;
 
-            row.getCell('id').getElement().style.backgroundColor = direction ? "#C0FFC0" : "";
+            if (direction) {
+                addFieldClass(row.getCell('id').getElement(), 'selectedBGColor');
+            } else {
+                row.getCell('id').getElement().classList.remove('selectedBGColor');
+            }
         }
     }
 
@@ -1016,7 +1140,7 @@ class consetup {
         let price = 0;
         let rows = this.#memListBundleTable.getRows();
         for (let row of rows) {
-            if (row.getCell('id').getElement().style.backgroundColor != '') {
+            if (row.getCell('id').getElement().classList.contains('selectedBGColor')) {
                 let rowData = row.getData();
                 if (rowData.startdate > this.#rowStartDate) {
                     warning += '<br/>Bundle start date (' + this.#rowStartDate + ') starts before the bundle element ' + rowData.id + "'s start date (" +
@@ -1062,11 +1186,11 @@ class consetup {
             }
         }
         this.closeBundleSel();
-        this.bundleContentsChanged();
+        this.bundleContentsChanged(editListMasterRow);
     }
 
     // bundleChanged - the bundle flag changes from yes/no
-    bundleChanged() {
+    bundleChanged(id) {
         let bundle = document.getElementById('editMemListBundle').value;
         if (bundle == 'Y')
             $('div[name="TScontains"]').show();
@@ -1075,8 +1199,8 @@ class consetup {
     }
 
     // placeholder for updating the contents of the entire bundle set for all time series
-    bundleContentsChanged() {
-        console.log("bundleChanged");
+    bundleContentsChanged(id) {
+        document.getElementById('EMLTS' + id + '_contains').value = document.getElementById('editMemListBundleContains').value;
         memListModalDirty = true;
     }
 
@@ -1090,6 +1214,7 @@ class consetup {
 
     // copy the fixed fields from the upper Edit block to the lower time series rows
     copyMemListChanges() {
+        let cartDesc = tinyMCE.get('editMemListCartDesc').getContent();
         for (let index = 0; index < 10; index++) {
             if (document.getElementById('EMLTS' + index + '_Price').value != '' ||
                 document.getElementById('EMLTS' + index + '_Start').value != '' ||
@@ -1098,8 +1223,12 @@ class consetup {
                 if (index >= this.#editData.length) {
                     this.#editData.push({id: 'new' + index, conid: this.#conid });
                     document.getElementById('EMLTS' + index + '_ID').innerHTML = this.#editData[index].id;
-                    this.#editData[index].sort_order = this.#editData[index - 1].sort_order + 1;
-                    document.getElementById('EMLTS' + index + '_Sort').value = this.#editData[index].sort_order;
+                    if (document.getElementById('EMLTS' + index + '_Sort').value == '') {
+                        this.#editData[index].sort_order = this.#editData[index - 1].sort_order + 1;
+                        document.getElementById('EMLTS' + index + '_Sort').value = this.#editData[index].sort_order;
+                    } else {
+                        this.#editData[index].sort_order = document.getElementById('EMLTS' + index + '_Sort').value;
+                    }
                     this.#editData[index].startdate = document.getElementById('EMLTS' + index + '_Start').value;
                     this.#editData[index].enddate = document.getElementById('EMLTS' + index + '_End').value;
                     this.#editData[index].price = document.getElementById('EMLTS' + index + '_Price').value;
@@ -1109,17 +1238,35 @@ class consetup {
                 this.#editData[index].memType = document.getElementById('memListTypeSelect').value;
                 this.#editData[index].shortname = document.getElementById('editMemListLabel').value;
                 this.#editData[index].notes = document.getElementById('editMemListNotes').value;
+                this.#editData[index].cartDesc = cartDesc;
                 this.#editData[index].atcon = document.getElementById('editMemListAtcon').value;
                 this.#editData[index].online = document.getElementById('editMemListOnline').value;
                 this.#editData[index].glNum = document.getElementById('editMemListGLNum').value;
                 this.#editData[index].glLabel = document.getElementById('editMemListGLLabel').value;
+                this.#editData[index].badgeLabel = document.getElementById('editMemListBadgeLabel').value;
                 document.getElementById('EMLTS' + index + '_glNum').value = this.#editData[index].glNum;
                 document.getElementById('EMLTS' + index + '_glLabel').value = this.#editData[index].glLabel;
+                document.getElementById('EMLTS' + index + '_badgeLabel').value = this.#editData[index].badgeLabel;
                 document.getElementById('EMLTS' + index + '_Atcon').value = this.#editData[index].atcon;
                 document.getElementById('EMLTS' + index + '_Online').value = this.#editData[index].online;
             }
         }
         show_message("Fields copied", 'success', 'result_message_editMemList');
+        //console.log(this.#editData);
+    }
+
+    // copy the cart description field from the upper Edit block to the lower time series rows
+    copyCartDesc() {
+        let cartDesc = tinyMCE.get('editMemListCartDesc').getContent();
+        for (let index = 0; index < 10; index++) {
+            if (document.getElementById('EMLTS' + index + '_Price').value != '' ||
+                document.getElementById('EMLTS' + index + '_Start').value != '' ||
+                document.getElementById('EMLTS' + index + '_End').value != '') {
+                // has price, copy the description
+                this.#editData[index].cartDesc = cartDesc;
+            }
+        }
+        show_message("Cart Description copied", 'success', 'result_message_editMemList');
         //console.log(this.#editData);
     }
 
@@ -1158,17 +1305,18 @@ class consetup {
                     this.#editData[index].shortname = shortname;
                     this.#editData[index].glNum = document.getElementById('editMemListGLNum').value;
                     this.#editData[index].glLabel = document.getElementById('editMemListGLLabel').value;
+                    this.#editData[index].badgeLabel = document.getElementById('editMemListBadgeLabel').value;
                 }
                 if (bundle) {
-                    let contains = document.getElementById('EMLTS' + row + '_contains').value;
+                    let contains = document.getElementById('EMLTS' + row + '_contains').value.replace(/ /g, '');
                     if (contains == undefined || contains == '') {
-                        contains = this.computeBundleList(document.getElementById('editMemListBundleContains').value,
+                        contains = this.computeBundleList(document.getElementById('editMemListBundleContains').value.replace(/ /g, ''),
                             document.getElementById('EMLTS' + row + '_Start').value,
                             document.getElementById('EMLTS' + row + '_End').value);
-                        document.getElementById('EMLTS' + row + '_contains').value = contains[0];
+                        document.getElementById('EMLTS' + row + '_contains').value = contains[0].replace(/ /g, '');
                         document.getElementById('EMLTS' + row + '_Price').value = contains[1];
                     }
-                    notes = document.getElementById('EMLTS' + row + '_contains').value + '/' + orignotes;
+                    notes = document.getElementById('EMLTS' + row + '_contains').value.replace(/ /g, '') + '/' + orignotes;
                 } else {
                     if (document.getElementById('EMLTS' + row + '_Price').value == '')
                         document.getElementById(editMemListPrice).value;
@@ -1194,8 +1342,10 @@ class consetup {
         this.#editData[index].memType = document.getElementById('memListTypeSelect').value;
         this.#editData[index].shortname = document.getElementById('editMemListLabel').value;
         this.#editData[index].notes = document.getElementById('editMemListNotes').value;
+        this.#editData[index].cartDesc = tinyMCE.get('editMemListCartDesc').getContent();
         this.#editData[index].glNum = document.getElementById('editMemListGLNum').value;
         this.#editData[index].glLabel = document.getElementById('editMemListGLLabel').value;
+        this.#editData[index].badgeLabel = document.getElementById('editMemListBadgeLabel').value;
     }
 
     reSortTimeSeries(saveFirst = false) {
@@ -1272,6 +1422,7 @@ class consetup {
             document.getElementById('EMLTS' + index + '_Online').value = row.online;
             document.getElementById('EMLTS' + index + '_glNum').value = row.glNum;
             document.getElementById('EMLTS' + index + '_glLabel').value = row.glLabel;
+            document.getElementById('EMLTS' + index + '_badgeLabel').value = row.badgeLabel;
         }
 
         // clear the remaining bottom rows
@@ -1305,6 +1456,7 @@ class consetup {
         if (enddate.indexOf('T') >= 0)
             enddate = toDBdate(enddate);
         for (let id of oldList) {
+            id = id.trim();
             let memRow = this.#memtable.getRow(id).getData();
             if (memRow.startdate <= startdate && memRow.enddate >= enddate && memRow.shortname.substring(0, 8) != 'Bundle: ') {
                 newBundleList += ',' + id;
@@ -1339,7 +1491,7 @@ class consetup {
         }
 
         if (newBundleList != '')
-            newBundleList = newBundleList.substring(1);
+            newBundleList = newBundleList.substring(1).replace(/ /g, '');
 
         return [newBundleList, price];
     }
@@ -1356,12 +1508,12 @@ class consetup {
             if (bundle) {
                 // validate the bundle contents for each row in the table
                 for (let i = 0; i < 10; i++) {
-                    let contains = document.getElementById('EMLTS' + i + '_contains').value;
+                    let contains = document.getElementById('EMLTS' + i + '_contains').value.replace(/ /g, '');
                     if (contains != '') {
                         let containsList = contains.split(',');
                         for (let c = 0; c < containsList.length; c++) {
                             // validate that this element is a memlistid in the table
-                            let id = containsList[c];
+                            let id = containsList[c].trim();
                             let row = this.#memtable.getRow(id);
                             if (row === false) {
                                 valid = false;
@@ -1377,7 +1529,7 @@ class consetup {
                 }
                 // rebuild the bundle values: note, label
                 let notes = document.getElementById('editMemListNotes');
-                let note = document.getElementById('editMemListBundleContains').value + '/' + notes.value;
+                let note = document.getElementById('editMemListBundleContains').value.replace(/ /g, '') + '/' + notes.value;
                 notes.value = note;
                 let labelEl = document.getElementById('editMemListLabel');
                 let label = 'Bundle: ' + labelEl.value;
@@ -1392,7 +1544,7 @@ class consetup {
         this.#memtable.updateOrAddData(this.#editData);
         for (let index = 0; index < this.#editData.length; index++) {
             let id = this.#editData[index].id;
-            this.#memtable.getRow(id).getElement().style.backgroundColor = "#fff3cd";
+            setCellChanged(this.#memtable.getRow(id));
         }
         this.#memtable.setSort([{column:"sort_order", dir: "asc"}]);
         this.#memListModal.hide();
@@ -1420,6 +1572,7 @@ class consetup {
 
 // static functions to call appropriate class
 function editMemListSave() {
+    //console.log("in editMemListSave");
     if (activeConSetup == 'next')
         return next.editMemListSave();
 
@@ -1432,6 +1585,14 @@ function copyMemListChanges() {
 
     return current.copyMemListChanges();
 }
+
+function copyCartDesc() {
+    if (activeConSetup == 'next')
+        return next.copyCartDesc();
+
+    return current.copyCartDesc();
+}
+
 
 function resetEndDates() {
     if (activeConSetup == 'next')
@@ -1491,18 +1652,18 @@ function setBundleSel(direction) {
         current.setBundleSel(direction);
 }
 
-function bundleChanged() {
+function bundleChanged(id) {
     if (activeConSetup == 'next')
-        next.setBundleSelbundleChanged();
+        next.setBundleSelbundleChanged(id);
     else
-        current.bundleChanged();
+        current.bundleChanged(id);
 }
 
-function bundleContentsChanged() {
+function bundleContentsChanged(id) {
     if (activeConSetup == 'next')
-        next.bundleContentsChanged();
+        next.bundleContentsChanged(id);
     else
-        current.bundleContentsChanged();
+        current.bundleContentsChanged(id);
 }
 
 function tsBundleContentsChanged(id) {
@@ -1561,6 +1722,12 @@ function glLabelChange(masterRow) {
     memListModalDirty = true;
 }
 
+// top section edited badgeLabel, set bottom screen
+function badgeLabelChange(masterRow) {
+    document.getElementById('EMLTS' + masterRow + '_badgeLabel').value = document.getElementById('editMemListBadgeLabel').value;
+    memListModalDirty = true;
+}
+
 // bottom section edited price, set top screen
 function tsPriceChange(row) {
     if (row == editListMasterRow) {
@@ -1600,6 +1767,19 @@ function tsEndChange(row) {
         current.setEditDataEndDate(row, document.getElementById('EMLTS' + row + '_End').value);
 }
 
+// bottom section edited enddate, set top screen
+var ageListEditor = function(cell, onRendered, success, cancel, editorParams) {
+    // console.log("in ageListEditor setup: cell");
+    // console.log(cell);
+    // console.log("editorParams:");
+    // console.log(editorParams);
+    // console.log("about to call class function");
+    if (activeConSetup == 'next')
+        return next.ageListEditor(cell, onRendered, success, cancel, editorParams);
+    else
+        return current.ageListEditor(cell, onRendered, success, cancel, editorParams);
+};
+
 // bottom section edited atcon, set top screen
 function tsAtconChange(row) {
     if (row == editListMasterRow) {
@@ -1628,6 +1808,14 @@ function tsGlNumChange(row) {
 function tsGlLabelChange(row) {
     if (row == editListMasterRow) {
         document.getElementById('editMemListGLLabel').value = document.getElementById('EMLTS' + row + '_glLabel').value;
+        memListModalDirty = true;
+    }
+}
+
+// bottom section edited gllabel, set top screen
+function tsBadgeLabelChange(row) {
+    if (row == editListMasterRow) {
+        document.getElementById('editMemListBadgeLabel').value = document.getElementById('EMLTS' + row + '_badgeLabel').value;
         memListModalDirty = true;
     }
 }

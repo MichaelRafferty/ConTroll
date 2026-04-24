@@ -292,7 +292,7 @@ class AuctionItemRegistration {
            return {id: -9999, item_key: 'Over' + this.#addItemIndex.toString(), title: 'Over limit, this item will be deleted on save'};
         }
 
-        return {item_key: 'New' + this.#addItemIndex.toString()};
+        return {item_key: 'New' + this.#addItemIndex.toString(), 'status': 'Entered'};
     }
 
     addrowArt(art = null) {
@@ -310,10 +310,10 @@ class AuctionItemRegistration {
                 auctionItemRegistration.checkArtUndoRedo();
                 if (artPagination) {
                     row.pageTo().then(function () {
-                        row.getElement().style.backgroundColor = "#fff3cd";
+                        setCellChanged(row);
                     });
                 } else {
-                    row.getElement().style.backgroundColor = "#fff3cd";
+                    setCellChanged(row);
                 }
             });
         }
@@ -379,7 +379,9 @@ class AuctionItemRegistration {
         for(let index = 0; index < marks.length; index++) {
             let mark = marks[index];
             let row = table.getRow(mark.item_key);
-            row.getCell(mark.field).getElement().style.backgroundColor = "#ffc0c0";
+            if (row.classList.contains('unsavedWarnBGColor')) {
+                row.classList.add('unsavedWarnBGColor');
+            }
         }
     }
 
@@ -443,10 +445,10 @@ class AuctionItemRegistration {
                 auctionItemRegistration.checkPrintUndoRedo();
                 if (printPagination) {
                     row.pageTo().then(function () {
-                        row.getElement().style.backgroundColor = "#fff3cd";
+                        setCellChanged(row);
                     });
                 } else {
-                    row.getElement().style.backgroundColor = "#fff3cd";
+                    setCellChanged(row);
                 }
             });
         }
@@ -575,10 +577,10 @@ class AuctionItemRegistration {
                 auctionItemRegistration.checkNfsUndoRedo();
                 if (nfsPagination) {
                     row.pageTo().then(function () {
-                        row.getElement().style.backgroundColor = "#fff3cd";
+                        setCellChanged(row);
                     });
                 } else {
-                    row.getElement().style.backgroundColor = "#fff3cd";
+                    setCellChanged(row);
                 }
             });
         }
@@ -656,7 +658,7 @@ class AuctionItemRegistration {
             maxHeight: "400px",
             history: true,
             data: data.art,
-            layout: 'fitDataFill', // Note: fitDataTable caused it to not honor the window width and create scoll bar, unsure why
+            layout: 'fitColumns', // Note: fitDataTable caused it to not honor the window width and create scoll bar, unsure why
             pagination: artPagination,
             index: 'item_key',
             paginationAddRow: "table",
@@ -666,7 +668,7 @@ class AuctionItemRegistration {
                 {title: 'id', field: 'id', visible: false},
                 {title: '#', field: 'item_key', width: 60, hozAlign: "right"},
                 {
-                    title: 'Title', field: 'title', width: 600, editor: 'input', editable: artItemEditCheck, editorParams: {
+                    title: 'Title', field: 'title', minWidth: 600, editor: 'input', editable: artItemEditCheck, editorParams: {
                         elementAttributes: {
                             maxlength:
                                 "64"
@@ -676,7 +678,7 @@ class AuctionItemRegistration {
                 {
                     title: "Material",
                     field: "material",
-                    width: 300,
+                    minWidth: 300,
                     editor: 'input',
                     editable: artItemEditCheck,
                     editorParams: {elementAttributes: {maxlength: "32"}}
@@ -693,7 +695,8 @@ class AuctionItemRegistration {
                 },
                 {title: "Status", field: "status", width: 200,},
                 {
-                    title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false, cellClick: function (e, cell) {
+                    title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false, width: 100,
+                    cellClick: function (e, cell) {
                         deleterow(e, cell.getRow());
                     }
                 },
@@ -711,7 +714,7 @@ class AuctionItemRegistration {
         this.#artItemTable.on("dataChanged", function (data) {
             _this.dataChangedArt(data);
         });
-        this.#artItemTable.on("cellEdited", cellChanged);
+        this.#artItemTable.on("cellEdited", setCellChanged);
 
         // now if imported items are passed, add them to the section
         if (art != null && art.length > 0) {
@@ -747,7 +750,7 @@ class AuctionItemRegistration {
             maxHeight: "400px",
             history: true,
             data: data.print,
-            layout: 'fitData', // Note: fitDataTable caused it to not honor the window width and create scoll bar, unsure why
+            layout: 'fitColumns', // Note: fitDataTable caused it to not honor the window width and create scoll bar, unsure why
             pagination: printPagination,
             paginationAddRow:"table",
             paginationSize: 10,
@@ -755,14 +758,15 @@ class AuctionItemRegistration {
             columns: [
                 {title: 'id', field: 'id', visible: false},
                 {title: '#', field: 'item_key', width: 60, hozAlign: "right"},
-                {title: 'Title', field: 'title', width: 600, editor: 'input', editable:artItemEditCheck, editorParams: { elementAttributes: { maxlength: "64"} } },
-                {title: "Material", field: "material", width: 300, editor: 'input', editable:artItemEditCheck, editorParams: { elementAttributes: { maxlength: "32"} } },
+                {title: 'Title', field: 'title', minWidth: 600, editor: 'input', editable:artItemEditCheck, editorParams: { elementAttributes: { maxlength: "64"} } },
+                {title: "Material", field: "material", minWidth: 300, editor: 'input', editable:artItemEditCheck, editorParams: { elementAttributes: { maxlength: "32"} } },
                 {title: "Quantity", field: "original_qty", headerWordWrap: true, width: 100, hozAlign: "right", editor: 'number', editable:artItemEditCheck, editorParams: {min: 1} },
                 {title: "Sale Price", field: "sale_price", headerWordWrap: true, width: 100, hozAlign: "right",
                     editor: 'number', editable:artItemEditCheck, editorParams: {min: 1}, formatter: "money",
                     formatterParams: {decimal: '.', thousand: ',', symbol: '$', negativeSign: true}, },
                 {title: "Status", field: "status", width: 200, },
-                {title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false, cellClick: function (e, cell) { deleterow(e, cell.getRow());}},
+                {title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false, width: 100,
+                    cellClick: function (e, cell) { deleterow(e, cell.getRow());}},
                 {title: "To Del", field: "to_delete", visible: this.#debugVisible},
             ]
         };
@@ -777,7 +781,7 @@ class AuctionItemRegistration {
         this.#printItemTable.on("dataChanged", function (data) {
             _this.dataChangedPrint(data);
         });
-        this.#printItemTable.on("cellEdited", cellChanged);
+        this.#printItemTable.on("cellEdited", setCellChanged);
         // now if imported items are passed, add them to the section
         if (print != null && print.length > 0) {
             this.#printSaveBtn.innerHTML = 'Save Changes*';
@@ -811,7 +815,7 @@ class AuctionItemRegistration {
             maxHeight: "400px",
             history: true,
             data: data.nfs,
-            layout: 'fitData', // Note: fitDataTable caused it to not honor the window width and create scoll bar, unsure why
+            layout: 'fitColumns', // Note: fitDataTable caused it to not honor the window width and create scoll bar, unsure why
             pagination: nfsPagination,
             paginationAddRow:"table",
             paginationSize: 10,
@@ -819,13 +823,14 @@ class AuctionItemRegistration {
             columns: [
                 {title: 'id', field: 'id', visible: false},
                 {title: '#', field: 'item_key', width: 60, hozAlign: "right"},
-                {title: 'Title', field: 'title', width: 600, editor: 'input', editable:artItemEditCheck, editorParams: { elementAttributes: { maxlength: "64"} } },
-                {title: "Material", field: "material", width: 300, editor: 'input', editable:artItemEditCheck, editorParams: { elementAttributes: { maxlength: "32"} } },
+                {title: 'Title', field: 'title', minWidth: 600, editor: 'input', editable:artItemEditCheck, editorParams: { elementAttributes: { maxlength: "64"} } },
+                {title: "Material", field: "material", minWidth: 300, editor: 'input', editable:artItemEditCheck, editorParams: { elementAttributes: { maxlength: "32"} } },
                 {title: "Insurance Price", field: "sale_price", headerWordWrap: true, width: 100, hozAlign: "right",
                     editor: 'number', editable:artItemEditCheck, editorParams: {min: 1}, formatter: "money",
                     formatterParams: {decimal: '.', thousand: ',', symbol: '$', negativeSign: true}, },
                 {title: "Status", field: "status", width: 200, },
-                {title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false, cellClick: function (e, cell) { deleterow(e, cell.getRow());}},
+                {title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false, width: 100,
+                    cellClick: function (e, cell) { deleterow(e, cell.getRow());}},
                 {title: "To Del", field: "to_delete", visible: this.#debugVisible},
             ]
         };
@@ -840,7 +845,7 @@ class AuctionItemRegistration {
         this.#nfsItemTable.on("dataChanged", function (data) {
             _this.dataChangedNfs(data);
         });
-        this.#nfsItemTable.on("cellEdited", cellChanged);
+        this.#nfsItemTable.on("cellEdited", setCellChanged);
 
         // now if imported items are passed, add them to the section
         if (nfs != null && nfs.length > 0) {
@@ -926,7 +931,7 @@ class AuctionItemRegistration {
                         editor: 'number', editorParams: {min: 1}, },
                 ],
             });
-            this.#importTable.on("cellEdited", cellChanged);
+            this.#importTable.on("cellEdited", setCellChanged);
         }
         this.#importModal.show();
     }
@@ -994,11 +999,6 @@ auctionItemRegistration = null;
 // init
 function auctionItemRegistrationOnLoad(region) {
     auctionItemRegistration = new AuctionItemRegistration(config['debug']);
-}
-
-function cellChanged(cell) {
-//    dirty = true;
-    cell.getElement().style.backgroundColor = "#fff3cd";
 }
 
 function deleteicon(cell, formattParams, onRendered) {

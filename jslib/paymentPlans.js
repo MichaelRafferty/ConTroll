@@ -1,4 +1,4 @@
-// common Payment Plana - routines for creating, managing and paying payment pland
+// common Payment Plana - routines for creating, managing and paying payment plans
 
 var paymentPlans = null;
 
@@ -40,14 +40,14 @@ class PaymentPlans {
         });
 
         this.#matchingPlans = {};
-        var id = document.getElementById('customizePlanModal');
+        let id = document.getElementById('customizePlanModal');
         if (id) {
             this.#customizePlanModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
             this.#customizePlanTitle = document.getElementById('customizePlanTitle');
             this.#customizePlanBody = document.getElementById('customizePlanBody');
             this.#customizePlanSubmit = document.getElementById('customizePlanSubmit');
         }
-        var id = document.getElementById('payPlanModal');
+        id = document.getElementById('payPlanModal');
         if (id) {
             this.#payPlanModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
             this.#payPlanTitle = document.getElementById('payPlanTitle');
@@ -58,19 +58,19 @@ class PaymentPlans {
 
     // plansEligible: for which plans is a current cart eligible
     plansEligible(purchased = null, space = null) {
-        var nonPlanAmt;
-        var planAmt;
-        var notInPlanItems;
+        let nonPlanAmt;
+        let planAmt;
+        let notInPlanItems;
         // any plans in the system?
-        var keys = Object.keys(paymentPlanList);
+        let keys = Object.keys(paymentPlanList);
         if (keys.length == 0)
             return false;
 
-        var matched = 0;
+        let matched = 0;
         // how much is owed by the right type:
 
-        for (var prow in keys) {
-            var plan = paymentPlanList[keys[prow]];
+        for (let prow in keys) {
+            let plan = paymentPlanList[keys[prow]];
 
             // compute the plan and the not plan amount for this plan
             planAmt = 0;
@@ -78,12 +78,12 @@ class PaymentPlans {
             notInPlanItems = '';
 
             if (purchased != null && purchased.length > 0) {
-                for (var mrow in membershipsPurchased) {
-                    var mem = membershipsPurchased[mrow];
+                for (let mrow in purchased) {
+                    let mem = purchased[mrow];
                     if (mem.status != 'unpaid') // can't add anything without a balance due to a plan, and plan is already covered in a different plan
                         continue;
 
-                    var eligible = false;
+                    let eligible = false;
                     if (plan.catList != null && plan.catList.length > 0) {
                         if (plan.catListArray.indexOf(mem.memCategory.toString()) != -1)
                             eligible = true;
@@ -98,6 +98,9 @@ class PaymentPlans {
                         if (plan.excludeListArray.indexOf(mem.id.toString()) != -1)
                             eligible = false;
                     }
+
+                    if (mem.taxable != 'N')
+                        eligible = false;
 
                     // ignore coupon discount, it's handled later in the calc
                     if (eligible) {
@@ -115,9 +118,9 @@ class PaymentPlans {
             }
 
             if (typeof coupon != 'undefined' && coupon != null) {
-                var cartDiscount = 0;
+                 let cartDiscount = 0;
                 if (typeof portal !== 'undefined' && portal != null) {
-                    var portalDiscount = coupon.portalComputeCouponDiscount();
+                    let portalDiscount = coupon.portalComputeCouponDiscount();
                     cartDiscount = portalDiscount.discount;
                 }
                 planAmt -= cartDiscount;
@@ -127,7 +130,7 @@ class PaymentPlans {
             nonPlanAmt = Math.round(nonPlanAmt * 100.0) / 100.0;
 
             // now handle the rules for this plan once we have all the amounts
-            var downPayment = downPayment = Math.round(Number(plan.downPercent) * planAmt) / 100.0;
+            let downPayment = Math.round(Number(plan.downPercent) * planAmt) / 100.0;
             if (Number(plan.downAmt) > downPayment)
                 downPayment = Number(plan.downAmt);
             // can they reduce the plan down payment by the amount due today for non plan amounts
@@ -140,25 +143,25 @@ class PaymentPlans {
             if ((downPayment + Number(plan.minPayment)) >= planAmt) // not eligible for plan
                 continue;
 
-            var dueToday = nonPlanAmt + downPayment;
-            var balanceDue = planAmt - downPayment;
+            let dueToday = nonPlanAmt + downPayment;
+            let balanceDue = planAmt - downPayment;
 
             // compute maximum number of payments allowd
             // first get the number of weeks between now and the pay by date
-            var pbDate = new Date(plan.payByDate);
-            var today = new Date();
-            var diff = Math.floor((pbDate.getTime() - today.getTime()) / (1000 * 3600 * 24)); // milliseconds to days and no fractional days
+            let pbDate = new Date(plan.payByDate);
+            let today = new Date();
+            let diff = Math.floor((pbDate.getTime() - today.getTime()) / (1000 * 3600 * 24)); // milliseconds to days and no fractional days
 
-            var numPayments = Math.floor(diff / 7);  // max one per week
+            let numPayments = Math.floor(diff / 7);  // max one per week
             if (numPayments <= 0)
                 continue;   // has to be time for at least one payment beyond down payment
 
             // limit to the max allowed for this plan.
             if (numPayments > Number(plan.numPaymentMax))
                 numPayments = Number(plan.numPaymentMax);
-            var maxPayments = numPayments; // at this point this is time to payoff limited
+            let maxPayments = numPayments; // at this point this is time to payoff limited
             // limit to min payment amount, but if allowed allow the last payment to be less
-            var computedNumPayments = Math.floor(balanceDue / Number(plan.minPayment));
+            let computedNumPayments = Math.floor(balanceDue / Number(plan.minPayment));
             if (computedNumPayments * Number(plan.minPayment) != balanceDue && plan.lastPaymentPartial == 'Y') {
                 // allow one more partial payment
                 computedNumPayments++;
@@ -175,14 +178,14 @@ class PaymentPlans {
                 continue;
 
             // days between payments, range: 7-30
-            var daysBetween = Math.floor(diff / numPayments);
+            let daysBetween = Math.floor(diff / numPayments);
             if (daysBetween > 30)
                 daysBetween = 30;
             else if (daysBetween < 7)
                 daysBetween = 7;
 
-            var paymentAmt = Math.ceil(100 * balanceDue / numPayments) / 100;
-            var finalPaymentAmt = paymentAmt;
+            let paymentAmt = Math.ceil(100 * balanceDue / numPayments) / 100;
+            let finalPaymentAmt = paymentAmt;
             if (paymentAmt < Number(plan.minPayment)) {
                 paymentAmt = Number(plan.minPayment);
                 finalPaymentAmt = balanceDue - (numPayments - 1) * paymentAmt;
@@ -213,7 +216,7 @@ class PaymentPlans {
         if (!this.#matchingPlans)
             return false;
 
-        var keys = Object.keys(this.#matchingPlans);
+        let keys = Object.keys(this.#matchingPlans);
         return keys.length > 0;
     }
 
@@ -222,11 +225,11 @@ class PaymentPlans {
         if (!this.#matchingPlans)
             return '';
 
-        var keys = Object.keys(this.#matchingPlans);
+        let keys = Object.keys(this.#matchingPlans);
         if (keys.length == 0)
             return '';
 
-        var html = '<div class="row mt-2"><div class="col-sm-12"><b>Payment Plans Available:</b></div>' + `
+        let html = '<div class="row mt-2"><div class="col-sm-12"><b>Payment Plans Available:</b></div>' + `
     <div class="row">
         <div class="col-sm-2"></div>
         <div class="col-sm-1" style='text-align: right;'><b>Non Plan Amount</b></div>
@@ -242,22 +245,25 @@ class PaymentPlans {
     </div>
 `;
 
-        for (var row in keys) {
-            var match = this.#matchingPlans[keys[row]];
-            var plan = match.plan;
+        for (let row in keys) {
+            let match = this.#matchingPlans[keys[row]];
+            let plan = match.plan;
 
             html += `
     <div class="row">
-        <div class="col-sm-2">
+        <div class="col-sm-1  ms-0 me-0">
 `;
+            html += '<button class="btn btn-sm btn-primary pt-0 pb-0 ms-0 me-0" onclick="paymentPlans.selectPlan(' +
+                keys[row] + ",'" + from + "'" + ');">' +
+                'Select As Shown<br/>' + plan.name + `</button>
+        </div>
+        <div class="col-sm-1 ms-0 me-0">
+`;
+
             if (plan.modify == 'Y') {
-                html += '<button class="btn btn-sm btn-secondary pt-0 pb-0" onclick="paymentPlans.customizePlan(' +
+                html += '<button class="btn btn-sm btn-primary pt-0 pb-0 ms-0 me-0" onclick="paymentPlans.customizePlan(' +
                     keys[row] + ",'" + from + "'" + ');">' +
-                    'Customize Payment Plan:<br/>' + plan.name + '</button>';
-            } else {
-                html += '<button class="btn btn-sm btn-secondary pt-0 pb-0" onclick="paymentPlans.selectPlan(' +
-                    keys[row] + ",'" + from + "'" + ');">' +
-                    'Select Payment Plan:<br/>' + plan.name + '</button>';
+                    'Customize<br/>' + plan.name + '</button>';
             }
             html += `
         </div>
@@ -289,8 +295,8 @@ class PaymentPlans {
         clear_message();
         clear_message('customizePlanMessageDiv');
 
-        var match = make_copy(this.#matchingPlans[planId]);
-        var plan = match.plan;
+        let match = make_copy(this.#matchingPlans[planId]);
+        let plan = match.plan;
         if (config.debug & 2) {
             console.log('planId: ' + planId + ', from: ' + from);
             console.log("this.#matchingPlans");
@@ -302,7 +308,7 @@ class PaymentPlans {
 
         match.totalAmountDue = (match.nonPlanAmt + match.planAmt).toFixed(2) + ``;
         match.currentPayment = (match.nonPlanAmt + match.downPayment).toFixed(2) + ``;
-        match.daysBetween = match.daysBetween;
+        match.daysÏBetween = match.daysBetween;
         match.paymentAmt = match.paymentAmt.toFixed(2) + ``;
         match.finalPaymentAmt = match.finalPaymentAmt.toFixed(2) + ``;
         match.balanceDue = match.balanceDue.toFixed(2) + ``;
@@ -318,8 +324,8 @@ class PaymentPlans {
 
         this.#computedPlan = make_copy(this.#matchingPlans[planId]);
         this.#computedOrig = make_copy(this.#matchingPlans[planId]);
-        var match = this.#computedPlan;
-        var plan = match.plan;
+        let match = this.#computedPlan;
+        let plan = match.plan;
         if (config.debug & 2) {
             console.log('planId: ' + planId + ', from: ' + from);
             console.log("this.#matchingPlans");
@@ -337,12 +343,12 @@ class PaymentPlans {
             return;
         }
 
-        var html = '';
+        let html = '';
 
         // buld contents of page
         html += `
         <div class="row">
-            <div class="col-sm-auto"><h3>Customize the ` + plan.name + ` payment plan </h3></div>
+            <div class="col-sm-auto"><h3>Customize the "` + plan.name + `" payment plan </h3></div>
         </div>
         <div class="row">
             <div class="col-sm-1"></div>
@@ -363,7 +369,7 @@ class PaymentPlans {
         <div class="col-sm-1" style='text-align: right;'><b>Days Between</b></div>
         <div class="col-sm-1" style='text-align: right;'><b>Payment Amount</b></div>
         <div class="col-sm-1" style='text-align: right;'><b>Final Payment Amount</b></div>
-        <div class="col-sm-1"><b>Must Pay In Full By</b></div>
+        <div class="col-sm-2"><b>Must Pay In Full By</b></div>
     </div>
     <form id="customizePlanForm" class='form-floating' action='javascript:void(0);'>
     <div class="row">
@@ -390,7 +396,7 @@ class PaymentPlans {
         </div>
         <div class="col-sm-1" style='text-align: right;' id="paymentAmt">` + this.#currencyFmt.format(match.paymentAmt.toFixed(2)) + `</div>
         <div class="col-sm-1" style='text-align: right;' id="finalPaymentAmt">` + this.#currencyFmt.format(match.finalPaymentAmt.toFixed(2)) + `</div>
-        <div class="col-sm-1">` + plan.payByDate + `</div>
+        <div class="col-sm-2">` + plan.payByDate + `</div>
     </div>
     <div class="row">
         <div class="col-sm-2"></div>
@@ -430,31 +436,31 @@ class PaymentPlans {
     recompute(field) {
         clear_message('customizePlanMessageDiv');
 
-        var downPaymentField = document.getElementById("downPayment");
-        var balanceDueField = document.getElementById("balanceDue");
-        var dueTodayField = document.getElementById("dueToday");
-        var numPaymentsField = document.getElementById("numPayments");
-        var daysBetweenField = document.getElementById("daysBetween");
-        var paymentAmtField = document.getElementById("paymentAmt");
-        var finalPaymentField = document.getElementById("finalPaymentAmt");
-        var plan = this.#computedOrig.plan;
-        var paymentAmt = this.#computedPlan.paymentAmt;
-        var finalPaymentAmt = this.#computedPlan.finalPaymentAmt;
-        var balanceDue = this.#computedPlan.balanceDue;
-        var maxPayments = this.#computedPlan.maxPayments;
+        let downPaymentField = document.getElementById("downPayment");
+        let balanceDueField = document.getElementById("balanceDue");
+        let dueTodayField = document.getElementById("dueToday");
+        let numPaymentsField = document.getElementById("numPayments");
+        let daysBetweenField = document.getElementById("daysBetween");
+        let paymentAmtField = document.getElementById("paymentAmt");
+        let finalPaymentField = document.getElementById("finalPaymentAmt");
+        let plan = this.#computedOrig.plan;
+        let paymentAmt = this.#computedPlan.paymentAmt;
+        let finalPaymentAmt = this.#computedPlan.finalPaymentAmt;
+        let balanceDue = this.#computedPlan.balanceDue;
+        let maxPayments = this.#computedPlan.maxPayments;
 
-        var down = downPaymentField.value;
-        var numPayments = numPaymentsField.value;
-        var days = daysBetweenField.value;
-        var messageHTML = '';
+        let down = downPaymentField.value;
+        let numPayments = numPaymentsField.value;
+        let days = daysBetweenField.value;
+        let messageHTML = '';
 
         if (config.debug & 4) {
             console.log('field: ' + field + ', days: ' + days + ', numPayments: ' + numPayments + ', days: ' + days);
         }
 
-        var pbDate = new Date(this.#computedOrig.plan.payByDate);
-        var today = new Date();
-        var diff = Math.floor((pbDate.getTime() - today.getTime()) / (1000 * 3600 * 24)); // milliseconds to days and no fractional days
+        let pbDate = new Date(this.#computedOrig.plan.payByDate);
+        let today = new Date();
+        let diff = Math.floor((pbDate.getTime() - today.getTime()) / (1000 * 3600 * 24)); // milliseconds to days and no fractional days
 
         // now recompute based on what they changed, trying to old that value to what is possible
         switch (field) {
@@ -473,7 +479,7 @@ class PaymentPlans {
                 // recompute balance due
                 balanceDue = this.#computedPlan.planAmt - down;
                 // recompute number of payments max
-                var computedNumPayments = Math.floor(balanceDue / plan.minPayment);
+                let computedNumPayments = Math.floor(balanceDue / plan.minPayment);
                 if (computedNumPayments * Number(plan.minPayment) != balanceDue && plan.lastPaymentPartial == 'Y') {
                     // allow one more partial payment
                     computedNumPayments++;
@@ -531,7 +537,7 @@ class PaymentPlans {
                     messageHTML += "The shortest interval between payments is one week<br/>";
                 }
                 // compute number of payments to make this work, limiting to max in range from passed in maxPayments
-                var newNumPayments = Math.ceil(diff / days);
+                let newNumPayments = Math.ceil(diff / days);
                 if (newNumPayments < numPayments) {
                     numPayments = newNumPayments;
                     messageHTML += "The days between payments exceeds the pay by date, adjusting the number of payments</br>";
@@ -586,7 +592,7 @@ class PaymentPlans {
             return; // no plan to pay, why are we here?
         }
         this.#customizePlanModal.hide();
-        var plan = make_copy(this.#computedPlan);
+        let plan = make_copy(this.#computedPlan);
         plan.new = true;
         portal.makeOrder(plan);
     }
@@ -594,10 +600,10 @@ class PaymentPlans {
     // payPlan - make a payment against a plan
     payPlan(payorPlanId) {
         if (config.debug) console.log("trying to pay plan " + payorPlanId);
-        var payorPlan = payorPlans[payorPlanId];
-        var payments = payorPlan['payments'];
-        var numPmts = 0;
-        var plan = paymentPlanList[payorPlan.planId];
+        let payorPlan = payorPlans[payorPlanId];
+        let payments = payorPlan['payments'];
+        let numPmts = 0;
+        let plan = paymentPlanList[payorPlan.planId];
         if (config.debug) {
             console.log("payorPlan");
             console.log(payorPlan);
@@ -608,19 +614,19 @@ class PaymentPlans {
                 console.log('no payments');
         }
 
-        var paymentAmt = Number(payorPlan.minPayment);
-        var balanceDue = Number(payorPlan.balanceDue);
+        let paymentAmt = Number(payorPlan.minPayment);
+        let balanceDue = Number(payorPlan.balanceDue);
         // compute if we're past due
         if (payments) {
             numPmts = Object.keys(payments).length;
         }
-        var createDate = new Date(payorPlan.createDate);
-        var createTS = createDate.getTime();
-        var now = Date.now();
-        var daysDiff = Math.ceil((now - createTS) / (24 *3600 * 1000));
-        var daysBetween = payorPlan.daysBetween;
-        var nextDue = ((numPmts + 1) * daysBetween) - (1 + daysDiff);
-        var numDue = 1;
+        let createDate = new Date(payorPlan.createDate);
+        let createTS = createDate.getTime();
+        let now = Date.now();
+        let daysDiff = Math.ceil((now - createTS) / (24 *3600 * 1000));
+        let daysBetween = payorPlan.daysBetween;
+        let nextDue = ((numPmts + 1) * daysBetween) - (1 + daysDiff);
+        let numDue = 1;
         if (config.debug & 2) {
             console.log('daysDiff = ' + daysDiff);
             console.log('numPmts=' + numPmts);
@@ -630,7 +636,7 @@ class PaymentPlans {
         }
 
         if (nextDue < 0)  {
-            var pastDue = Math.ceil(-nextDue / daysBetween);
+            let pastDue = Math.ceil(-nextDue / daysBetween);
             numDue += pastDue;
             if (config.debug & 2) console.log("pastDue = " + pastDue + ", numDue = " + numDue);
         }
@@ -647,7 +653,7 @@ class PaymentPlans {
         this.#planPaymentPayorPlanId = payorPlanId;
         this.#planPaymentPayorPlanName = plan.name;
 
-        var html = `
+        let html = `
     <div class="row mt-3">
         <div class="col-sm-auto"><h3>Make a payment against the ` + plan.name + ` payment plan </h3></div>
     </div>
@@ -672,9 +678,9 @@ class PaymentPlans {
 
     // update the amount to pay and submit button
     updatePaymentAmt() {
-        var id = document.getElementById("newPaymentAmt");
-        var paymentAmt = Number(id.value);
-        var retVal = true;
+        let id = document.getElementById("newPaymentAmt");
+        let paymentAmt = Number(id.value);
+        let retVal = true;
 
         clear_message('payPlanMessageDiv');
 
@@ -705,7 +711,7 @@ class PaymentPlans {
         this.#payPlanModal.hide();
         switch (from) {
             case 'portal':
-                var existingPlan = make_copy(payorPlans[this.#planPaymentPayorPlanId]);
+                let existingPlan = make_copy(payorPlans[this.#planPaymentPayorPlanId]);
                 portal.makePlanPayment(existingPlan, this.#planPaymentPayorPlanName, this.#planPaymentAmount,
                     this.#planPaymentAmount > this.#planPaymentMinPayment);
                 break;

@@ -32,7 +32,9 @@ if (!session_start()) {
 }
 
 function bounce_page($new_page) {
-    $url = getConfValue('google','redirect_base') . "/$new_page";
+    $url = getConfValue('controll','redirect_base', '');
+    $url = parse_url($url, PHP_URL_SCHEME).'://'.parse_url($url, PHP_URL_HOST);
+    $url = trim($url, '/') . "/$new_page";
     header("Location: $url");
 }
 
@@ -126,7 +128,7 @@ EOS;
             </div>
             <?php if ($authToken != null && $authToken->isLoggedIn()) { ?>
             <div class="col-sm-3">
-                <button class="btn" id="login" style="background-color: #ccc; float: right;" onclick="window.location.href='index.php?logout';">
+                <button class="btn" id="login" style="background-color: #ccc; float: right;" onclick="window.location.href='/index.php?logout';">
                     Logout <?php echo $authToken->getEmail(); ?>
                 </button>
             </div>
@@ -225,7 +227,7 @@ EOS;
             </div>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <button class="btn btn-outline-dark navitem me-3 <?php echo $active; ?>" type='button' <?php echo $ariainfo; ?>
-                        style='border-bottom-right-radius: 20px;' onclick='window.location="index.php";'>Home
+                        style='border-bottom-right-radius: 20px;' onclick='window.location="/index.php";'>Home
                 </button>
                 <?php foreach ($page_list as $pageInfo) {
                     $p = $pageInfo['name'];
@@ -234,7 +236,8 @@ EOS;
                     $ariainfo = $page == $p ? 'aria-current="page"' : '';
                 ?>
                 <button class="btn btn-outline-dark navitem me-3 <?php echo $active; ?>" type='button' <?php echo $ariainfo; ?>
-                        style='border-top-left-radius: 20px; border-bottom-right-radius: 20px;' onclick="window.location='<?php echo $p; ?>.php';"><?php echo $d;
+                        style='border-top-left-radius: 20px; border-bottom-right-radius: 20px;' onclick="window.location='/<?php echo $p; ?>.php';"><?php
+                        echo $d;
                         ?></button>
                 <?php } ?>
             </div>

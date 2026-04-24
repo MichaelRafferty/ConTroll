@@ -26,12 +26,13 @@ class Portal {
     #editPersonModalElement = null;
     #editPersonTitle = null;
     #editPersonSubmitBtn = null;
+    #editPersonOverrideBtn = null;
     #epHeaderDiv = null;
     #epPersonIdField = null;
     #epPersonTypeField = null;
     #needAge = false;
     #editPersonEmail = null;
-    
+
     // change email modal
     #changeEmailModal = null;
     #changeEmailModalElement = null;
@@ -73,11 +74,12 @@ class Portal {
     #paymentAmount = null;
     #planPayment = 0;
     #partialPayAmt = 0;
-    #otherPayAmt = 0;
-    #otherPay = 0;
+    #fullPayAmt = 0;
     #orderData = null;
     #taxes = [];
     #disableButtonNames = null;
+    #selectedItems = false;
+    #payDueSubmitButton = null;
 
     // receipt fields
     #receiptModal = null;
@@ -104,6 +106,15 @@ class Portal {
     #currencyFmt = null;
     #locale = null;
 
+    // pay selected fields
+    #payAllList = null;
+    #paySelectedList = null;
+    #selectIds = null;
+    #selectIdKeys = null;
+    #selectMems = null;
+    #orderMemberships = null;
+    #planAllorPartial = null;
+
     constructor() {
         let id;
 
@@ -120,6 +131,7 @@ class Portal {
             this.#editPersonModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
             this.#editPersonTitle = document.getElementById('editPersonTitle');
             this.#editPersonSubmitBtn = document.getElementById('editPersonSubmitBtn');
+            this.#editPersonOverrideBtn = document.getElementById('editPersonOverrideBtn');
             this.#epHeaderDiv = document.getElementById("epHeader");
             this.#epPersonIdField = document.getElementById("epPersonId");
             this.#epPersonTypeField = document.getElementById("epPersonType");
@@ -170,6 +182,7 @@ class Portal {
             this.#paymentDueModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
             this.#paymentDueBody = document.getElementById("paymentDueBody");
             this.#paymentDueTitle = document.getElementById("paymentDueTitle");
+            this.#payDueSubmitButton = document.getElementById("payDueSubmitButton");
         }
 
         id = document.getElementById("makePaymentModal");
@@ -192,7 +205,7 @@ class Portal {
 
         this.#subTotalColDiv = document.getElementById('subTotalColDiv');
         this.#couponDiscountDiv = document.getElementById('couponDiscountDiv');
-        var _this = this;
+        let _this = this;
         var modalCalled = false;
 
         // enable all tooltips
@@ -204,12 +217,15 @@ class Portal {
             if (modalCalled)
                 return;
 
-            var dataset = obj.dataset;
-            var id = dataset.id;
-            var type = dataset.type;
-            _this.editPerson(id, type, true);
-            show_message('Age needs to be verified', "error", 'epMessageDiv');
-            modalCalled = true;
+            let dataset = obj.dataset;
+            let id = dataset.id;
+            let type = dataset.type;
+            let pid = type + id.toString();
+            if ((!alreadyChecked.hasOwnProperty(pid)) || alreadyChecked[pid] == 0) {
+                _this.editPerson(id, type, true, true);
+                show_message('Age needs to be verified', "error", 'epMessageDiv');
+                modalCalled = true;
+            }
         });
 
         // do any people need to have their policies updated for missing policies
@@ -217,12 +233,15 @@ class Portal {
             $('.need-policies').each(function (i, obj) {
                 if (modalCalled)
                     return;
-                var dataset = obj.dataset;
-                var id = dataset.id;
-                var type = dataset.type;
-                _this.editPerson(id, type);
-                show_message('Required Policies are not accepted', "error", 'epMessageDiv');
-                modalCalled = true;
+                let dataset = obj.dataset;
+                let id = dataset.id;
+                let type = dataset.type;
+                let pid = type + id.toString();
+                if ((!alreadyChecked.hasOwnProperty(pid)) || alreadyChecked[pid] == 0) {
+                    _this.editPerson(id, type, true);
+                    show_message('Required Policies are not accepted', "warn", 'epMessageDiv');
+                    modalCalled = true;
+                }
             });
         }
 
@@ -230,6 +249,7 @@ class Portal {
             if (modalCalled)
                 return;
             _this.editInterests(config.id, config.idType);
+            modalCalled = true;
         }
 
         if (config.hasOwnProperty('paymentFocus')) {
@@ -245,20 +265,20 @@ class Portal {
 
     // set  / get functions
     setOrderData(data) {
-        this.#orderData = data;
-        if (this.#otherPay > 0)
-            this.#otherPay = 2;
-        this.#totalAmountDue = data.rtn.totalAmt;
+        if (data != '') {
+            this.#orderData = data;
+            this.#totalAmountDue = data.rtn.totalAmt;
+        }
     }
 
     // disassociate: remove the managed by link for this logged in person
     disassociate() {
-        var data = {
+        let data = {
             'managedBy': 'disassociate',
             loginId: config.id,
             loginType: config.idType,
         }
-        var script = 'scripts/processDisassociate.php';
+        let script = 'scripts/processDisassociate.php';
         $.ajax({
             method: 'POST',
             url: script,
@@ -272,7 +292,7 @@ class Portal {
                 } else {
                     if (config.debug & 1)
                         console.log(data);
-                    var divElement = document.getElementById('managedByDiv');
+                    let divElement = document.getElementById('managedByDiv');
                     if (divElement)
                         divElement.style.display = 'none';
                     show_message("You have been disassociated from that manager.");
@@ -286,7 +306,7 @@ class Portal {
     }
 
     // editPerson - edit a person you manage (or your self)
-    editPerson(id, type, needAge = false) {
+    editPerson(id, type, needIgnore = false, needAge = false) {
         if (this.#editPersonModal == null) {
             show_message('Edit Person is not available at this time', 'warn');
             return;
@@ -300,14 +320,15 @@ class Portal {
 
         this.#currentPerson = id;
         this.#currentPersonType = type;
-        var data = {
+        let data = {
             loginId: config.id,
             loginType: config.idType,
             getId: id,
             getType: type,
-            memberships: 'Y'
+            memberships: 'Y',
+            updateIgnore: needIgnore ? 1 : 0,
         }
-        var script = 'scripts/getPersonInfo.php';
+        let script = 'scripts/getPersonInfo.php';
         $.ajax({
             method: 'POST',
             url: script,
@@ -355,7 +376,7 @@ class Portal {
         this.#epPersonTypeField.value = post.getType;
         profile.setAll(person.first_name, person.middle_name, person.last_name, person.suffix, person.legalName, person.pronouns,
             person.address, person.addr_2, person.city, person.state, person.zip, person.country, person.phone,
-            person.badge_name, person.badgeNameL2, person.currentAgeType);
+            person.badge_name, person.badgeNameL2, person.currentAgeType, person.numPrimary);
         this.#editPersonEmail = profile.setEmailFixed(email);
 
         this.#personSerializeStart = $("#editPerson").serialize();
@@ -368,7 +389,7 @@ class Portal {
                 currentAge = m.memAge;
                 let ageItem = ageListIdx[currentAge];
                 if (ageItem.conid == config.conid && ageItem.ageType == m.memAge) {
-                    profile.setAgeText('<b>'+ ageItem.shortname + ' [' + ageItem.label + ']</b>');
+                    profile.setAgeText('<b>' + ageItem.shortname + ' [' + ageItem.label + ']</b>');
                 }
             }
         }
@@ -394,7 +415,7 @@ class Portal {
 
     // called on the close buttons for the modal, confirm close with changes pending
     checkEditPersonClose() {
-        var beforeClose = $("#editPerson").serialize();
+        let beforeClose = $("#editPerson").serialize();
         if (beforeClose != this.#personSerializeStart) {
             if (!confirm("There are unsaved changes to the Edit Person Form.\nClick OK to close the form and discard the changes."))
                 return false;
@@ -402,7 +423,7 @@ class Portal {
         this.#editPersonModal.hide();
     }
 
-    // editPerson - edit a person you manage (or your self)
+    // changeEmail only - edit a person you manage (or your self)
     changeEmail(personJson) {
         if (this.#changeEmailModal == null) {
             show_message('Change Email is not available at this time', 'warn');
@@ -413,7 +434,7 @@ class Portal {
         clear_message('ceMessageDiv');
         this.#changeEmailNewEmailAddr.value = '';
 
-        var personData = null;
+        let personData = null;
         try {
             personData = JSON.parse(personJson);
         } catch (error) {
@@ -430,8 +451,10 @@ class Portal {
 
         this.#changeEmailSubmitBtn.disabled = true;
         this.#changeEmailModal.show();
-        var focusField = this.#changeEmailNewEmailAddr;
-        setTimeout(() => { focusField.focus({focusVisible: true}); }, 600);
+        let focusField = this.#changeEmailNewEmailAddr;
+        setTimeout(() => {
+            focusField.focus({focusVisible: true});
+        }, 600);
     }
 
     // process auto enable of submit button
@@ -440,13 +463,13 @@ class Portal {
             this.#changeEmailSubmitBtn.disabled = true;
             return;
         }
-        var email = this.#changeEmailNewEmailAddr.value;
+        let email = this.#changeEmailNewEmailAddr.value;
         if (email == null || email == "") {
             this.#changeEmailSubmitBtn.disabled = true;
             return;
         }
 
-        var valid = validateAddress(email);
+        let valid = validateAddress(email);
         this.#changeEmailSubmitBtn.disabled = !valid;
         if (autoCall == 1)
             return;
@@ -462,7 +485,7 @@ class Portal {
     // checkNewEmail - make sure the email address is valid, and the check if it's allowed for changing
     checkNewEmail() {
         // validate the email address
-        var email = this.#changeEmailNewEmailAddr.value;
+        let email = this.#changeEmailNewEmailAddr.value;
         if (!validateAddress(email)) {
             show_message("Please enter a valid email address", 'warn');
             this.#changeEmailSubmitBtn.disabled = true;
@@ -470,15 +493,15 @@ class Portal {
         }
 
         // ok valid email address, check if it's a legal one for us to use
-        var data = {
+        let data = {
             loginId: config.id,
             loginType: config.idType,
             email: email, // new email address
-            currentPersonId:  this.#currentPerson,
+            currentPersonId: this.#currentPerson,
             currentPersonType: this.#currentPersonType,
             action: 'validate'
         };
-        var script = 'scripts/changeEmail.php';
+        let script = 'scripts/changeEmail.php';
         $.ajax({
             url: script,
             data: data,
@@ -507,12 +530,7 @@ class Portal {
 
     // change email success - clean up from changing the email address
     changeEmailSuccess(data) {
-        if (data.message)
-            show_message(data.message, 'success');
-
-        this.#changeEmailModal.hide();
-        clear_message('ceMessageDiv');
-        this.#changeEmailNewEmailAddr.value = '';
+        window.location = this.#portalPage + "?tab=" + hid + '&messageFwd=' + encodeURI(data.message);
     }
 
     // countryChange - if USPS and USA, then change button
@@ -526,13 +544,20 @@ class Portal {
             this.#editPersonSubmitBtn.innerHTML = 'Update ' + this.#fullName;
         }
     }
-        // now submit the updates to the person
 
-    editPersonSubmit() {
+    // now submit the updates to the person
+
+    editPersonSubmit(override) {
         clear_message();
-        var person = URLparamsToArray($('#editPerson').serialize());
-        if (!profile.validate(person, 'epMessageDiv', addPerson, redoAddress, ''))
-            return;
+        let person = URLparamsToArray($('#editPerson').serialize());
+        let rtn = profile.validate(person, 'epMessageDiv', addPerson, redoAddress, '', false, override);
+        if (rtn === false)
+            return false;
+
+        if (rtn === 'override' && !override) {
+            this.#editPersonOverrideBtn.hidden = false;
+            return false;
+        }
 
         this.updatePerson(profile.getFormData());
         return true;
@@ -540,7 +565,7 @@ class Portal {
 
     // update the account
     updatePerson(person) {
-        var data = {
+        let data = {
             loginId: config.id,
             loginType: config.idType,
             person: person,
@@ -553,7 +578,7 @@ class Portal {
         if (config.debug & 1)
             console.log(data);
 
-        var script = 'scripts/updatePersonInfo.php';
+        let script = 'scripts/updatePersonInfo.php';
         $.ajax({
             method: 'POST',
             url: script,
@@ -569,7 +594,7 @@ class Portal {
         });
     }
 
-    updatePersonSuccess(data){
+    updatePersonSuccess(data) {
         if (data.status == 'error') {
             show_message(data.message, 'error', 'epMessageDiv');
         } else {
@@ -578,13 +603,13 @@ class Portal {
             show_message(data.message);
             this.#editPersonModal.hide();
             if (data.rows_upd > 0) {
-                window.location = this.#portalPage + '?messageFwd=' + encodeURI(data.message);
+                window.location = this.#portalPage + "?tab=" + hid + '&messageFwd=' + encodeURI(data.message);
             }
         }
     }
 
     addMembership(id, type) {
-        var addForm = '<form id="addMembership" action="cart.php" method="POST">\
+        let addForm = '<form id="addMembership" action="cart.php" method="POST">\
             <input type="hidden" name="cartId" value="' + id + '">\
             <input type="hidden" name="cartType" value="' + type + '">\
             <input type="hidden" name="action" value="buy">\
@@ -605,7 +630,7 @@ class Portal {
 
         this.#currentPerson = id;
         this.#currentPersonType = type;
-        var data = {
+        let data = {
             loginId: config.id,
             loginType: config.idType,
             getId: id,
@@ -613,7 +638,7 @@ class Portal {
             memberships: 'N',
             interests: 'Y'
         }
-        var script = 'scripts/getPersonInfo.php';
+        let script = 'scripts/getPersonInfo.php';
         $.ajax({
             method: 'POST',
             url: script,
@@ -640,11 +665,11 @@ class Portal {
     // got the person, update the modal contents
     editInterestsGetSuccess(data) {
         // ok, it's legal to edit this person, now populate the fields
-        var person = data.person;
-        var post = data.post;
+        let person = data.person;
+        let post = data.post;
         this.#interests = data.interests;
 
-        this.#fullName = person.fullName ;
+        this.#fullName = person.fullName;
         this.#editInterestsTitle.innerHTML = '<strong>Editing Interests for: ' + this.#fullName + '</strong>';
 
         // now fill in the fields
@@ -652,10 +677,10 @@ class Portal {
         this.#eiPersonIdField.value = post.getId;
         this.#eiPersonTypeField.value = post.getType;
 
-        for (var row in this.#interests) {
-            var interest = this.#interests[row];
-            var id = document.getElementById('i_' + interest.interest);
-            id.checked = interest.interested == 'Y';
+        for (let row in this.#interests) {
+            let interest = this.#interests[row];
+            let id = document.getElementById('i_' + interest.interest);
+            if (id) id.checked = interest.interested == 'Y';
         }
 
         this.#interestsSerializeStart = $("#editInterests").serialize();
@@ -665,17 +690,18 @@ class Portal {
 
     // called on the close buttons for the modal, confirm close with changes pending
     checkEditInterestsClose() {
-        var beforeClose = $("#editInterests").serialize();
+        let beforeClose = $("#editInterests").serialize();
         if (beforeClose != this.#interestsSerializeStart) {
             if (!confirm("There are unsaved changes to the Edit Interests Form.\nClick OK to close the form and discard the changes."))
                 return false;
         }
         this.#editInterestsModal.hide();
     }
+
     // editInterestsSubmit - save back the interests
     editInterestSubmit() {
         clear_message();
-        var data = {
+        let data = {
             loginId: config.id,
             loginType: config.idType,
             existingInterests: JSON.stringify(this.#interests),
@@ -686,7 +712,7 @@ class Portal {
         if (config.debug & 1)
             console.log(data);
 
-        var script = 'scripts/updateInterests.php';
+        let script = 'scripts/updateInterests.php';
         $.ajax({
             method: 'POST',
             url: script,
@@ -703,7 +729,7 @@ class Portal {
 
     }
 
-    updateInterestsSuccess(data){
+    updateInterestsSuccess(data) {
         if (data.status == 'error') {
             show_message(data.message, 'error', 'eiMessageDiv');
         } else {
@@ -718,24 +744,21 @@ class Portal {
                         this.addMembership(config.id, config.idType);
                 }
             } else if (data.rows_upd > 0) {
-                window.location = this.#portalPage + '?messageFwd=' + encodeURI(data.message);
+                window.location = this.#portalPage + "?tab=" + hid + '&messageFwd=' + encodeURI(data.message);
             }
         }
     }
 
     // payment functions
     // Payment flow:
-    //  1. determine what to pay
-    //      a. payBalance
-    //          directly make full order
-    //      b. Pay using payment Plan
+    //  1. determine what to pay (choosePay)
+    //      a. Select what to pay
+    //          allow them to choose what to pay from all due, and build that order or pay all and directly make full order
+    //      b. Pay using payment Plan (once the items are determined, if a payment plan qualifies, allow them to pay with a plan)
     //          allow them to choose and build payment plan
     //          build order with that payment plan
     //      c. Payment on Plan
     //          directly make plan payment order
-    //      d. Pay Other
-    //          allow them to choose what to pay
-    //          build order
     //
     //  2. get order information back including
     //      a. orded id
@@ -749,69 +772,18 @@ class Portal {
     //  4. pay card
     //      use pre-built order
 
-    payBalance(totalDue, skipPlan=false) {
+    // choosePay - choose which items to pay:
+    //      show unpaid items and check boxes of ones that can be paid
+    choosePay(totalDue) {
         clear_message();
         clear_message('payDueMessageDiv');
         clear_message('makePayMessageDiv');
-        this.#otherPay = 0;
-        var html = '';
-        var plans = paymentPlans.isMatchingPlans();
-
-        if (this.#totalAmountDue == null) {
-            this.#totalAmountDue = totalDue;
-        } else if (this.#totalAmountDue + this.#couponDiscount != totalDue) {
-            this.#totalAmountDue = totalDue - this.#couponDiscount;
-        }
-        if (this.#totalAmountDue < 0) {
-            this.#totalAmountDue = 0;
-        }
-        this.#paymentAmount = this.#totalAmountDue;
-        this.#planPayment = 0;
-
-        this.#disableButtonNames = 'payBalanceBTNs';
-
-        if (skipPlan || !plans) {
-            this.makeOrder(null, 0);
-            return;
-        }
-
-        html = `
-    <div class="row mt-3">
-        <div class="col-sm-auto"><button class="btn btn-sm btn-primary pt-0 pb-0" onClick='portal.makeOrder(null, 0);'>Pay Total Amount Due</button></div>
-        <div class="col-sm-auto">
-            <b>Your total amout due is ` + Number(this.#totalAmountDue).toFixed(2) + `</b>
-        </div>
-    </div>
-`;
-        if (plans) {
-            html += `
-    <div class="row mt-2">
-        <div class="col-sm-12">
-            You can pay this balance in full using the "Pay Total Amount Due" button above or<br/>
-            create one of the following payment plans using the "Select" or "Customize" payment plan buttons below:
-        </div>
-    </div>
-`;
-            html += paymentPlans.getMatchingPlansHTML('portal');
-        }
-        
-        this.#paymentDueBody.innerHTML = html;
-        this.#paymentDueModal.show();
-    }
-
-    closePaymentDueModal() {
-        this.#paymentDueModal.hide();
-    }
-
-    // payOther - show registrations and check boxes of ones that can be paid
-    payOther(totalDue) {
-        clear_message();
-        clear_message('payDueMessageDiv');
-        clear_message('makePayMessageDiv');
-        var html = `
+        this.#planAllorPartial = null;
+        let html = `
         <div class="row mt-3">
             <div class="col-sm-1" style="text-align: right"><b>Pay</b></div>
-            <div class="col-sm-3"><b>Person</b></div>
+            <div class="col-sm-2"><b>Added By</b></div>
+            <div class="col-sm-2"><b>For</b></div>
             <div class="col-sm-3"><b>Membership</b></div>
             <div class="col-sm-1" style="text-align: right"><b>Price</b></div>
             <div class="col-sm-1" style="text-align: right"><b>Already Paid</b></div>
@@ -820,114 +792,281 @@ class Portal {
 
         // build a list of memberships to pay with check boxes
         this.#partialPayAmt = 0;
-        this.#otherPayAmt = Number(totalDue);
-        for (let i = 0; i < paidOtherMembership.length; i++) {
-            let mem = paidOtherMembership[i];
-            let fullName = mem.fullName;
-            let price =  this.#currencyFmt.format(Number(mem.actPrice).toFixed(2));
-            let paid =  this.#currencyFmt.format(Number(Number(mem.actPaid) + Number(mem.actCouponDiscount)).toFixed(2))
+        this.#fullPayAmt = Number(totalDue);
+        this.#payAllList = [];
+        this.#paySelectedList = [];
+        this.#selectIds = {};
+        this.#selectMems = {};
+        let unpaids = 0;
+        for (let i = 0; i < membershipsPurchased.length; i++) {
+            let mem = membershipsPurchased[i];
+            if (mem.status != 'unpaid')
+                continue;
+
+            unpaids++;
+            mem.payThis = 1;
+            this.#payAllList.push(make_copy(mem));
+            mem.payThis = 0;
+            this.#selectMems['other-' + mem.regid] = mem;
+            let price = this.#currencyFmt.format(Number(mem.actPrice).toFixed(2));
+            let paid = this.#currencyFmt.format(Number(Number(mem.actPaid) + Number(mem.actCouponDiscount)).toFixed(2))
             let bal = Number(Number(mem.actPrice) - (Number(mem.actPaid) + Number(mem.actCouponDiscount))).toFixed(2);
             html += `
         <div class="row">
-            <div class="col-sm-1" style="text-align: right"><input type="checkbox" id="other-` +
-                mem.regid + '" name="other-' + mem.regid + '" onChange="portal.payOtherToggle(' + mem.regid + ',' + bal + `);"></div>
-            <div class="col-sm-3">` + fullName + `</div>
-            <div class="col-sm-3"><label for="other-` + mem.regid + `">` + mem.label + `</label></div>
-            <div class="col-sm-1" style="text-align: right">` + price + `</div>
-            <div class="col-sm-1" style="text-align: right">` + paid + `</div>
-            <div class="col-sm-1" style="text-align: right">` + this.#currencyFmt.format(bal) + `</div>
+            <div class="col-sm-1" style="text-align: right">
+                <input type="checkbox" id="other-` + mem.regid + '" name="other-' + mem.regid +
+                    '" onChange="portal.choosePayToggle(' + mem.regid + ',' + bal + `, false);">
+            </div>
+            <div class="col-sm-2" onclick="portal.choosePayToggle(` + mem.regid + ',' + bal + ', true);">' + mem.purchaserName + `</div>
+            <div class="col-sm-2" onclick="portal.choosePayToggle(` + mem.regid + ',' + bal + ', true);">' + mem.fullName + `</div>
+            <div class="col-sm-3">
+                <label for="other-` + mem.regid + '">' + mem.label + `</label>
+            </div>
+            <div class="col-sm-1" onclick="portal.choosePayToggle(` + mem.regid + ',' + bal + ', true);" style="text-align: right">' + price + `</div>
+            <div class="col-sm-1" onclick="portal.choosePayToggle(` + mem.regid + ',' + bal + ', true);" style="text-align: right">' + paid + `</div>
+            <div class="col-sm-1" onclick="portal.choosePayToggle(` + mem.regid + ',' + bal + ', true);" style="text-align: right">' + this.#currencyFmt.format(bal) + `</div>
         </div>
 `;
         }
-        html += `
-    <div class="row mt-3">
+        if (unpaids > 1) {
+            html += `
+    <div class="row mt-3 mb-2">
         <div class="col-sm-2" style="text-align: right"><button class="btn btn-sm btn-primary pt-0 pb-0" id="partialPayBTN"
             onClick="portal.makeOrder(null, 2);" disabled>
             Pay Selected
         </button></div>
         <div class="col-sm-auto">
-            <b>The total amout due for selected memberships purchased by others totaling
-                <span id="partialPayDue">` + this.#currencyFmt.format(Number(this.#partialPayAmt).toFixed(2)) + `</span></b>
+            <b>The total amount due for selected memberships totaling
+                <span id="partialPayDue2">` + this.#currencyFmt.format(Number(this.#partialPayAmt).toFixed(2)) + `</span></b>
         </div>
     </div>
-    <div class="row mt-1 mb-3">
-        <div class="col-sm-2" style="text-align: right"><button class="btn btn-sm btn-primary pt-0 pb-0"
-            onClick="portal.makeOrder(null, 1);">Pay All</button></div>
+    <div class="row mt-1 mb-2" id="paySelectedPlanRow" hidden>
+        <div class="col-sm-2" style="text-align: right"><button class="btn btn-sm btn-primary pt-0 pb-0" id="partialPayBTNPlan"
+            onClick="portal.buildPlan(2);">
+            Make Plan for Selected
+        </button></div>
         <div class="col-sm-auto">
-            <b>The total amout due for all memberships purchased by others is ` +
-                this.#currencyFmt.format(Number(totalDue).toFixed(2)) + `</b>
+            <b>Create a payment plan for selected memberships totaling
+                <span id="partialPayDue1">` + this.#currencyFmt.format(Number(this.#partialPayAmt).toFixed(2)) + `</span></b>
+        </div>
+    </div>
+`
+        }
+        html += `
+    <div class="row mt-1 mb-2">
+        <div class="col-sm-2" style="text-align: right"><button class="btn btn-sm btn-primary pt-0 pb-0"
+            onClick="portal.makeOrder(null);">Pay All</button></div>
+        <div class="col-sm-auto">
+            <b>The total amount due for all memberships is ` +
+            this.#currencyFmt.format(Number(totalDue).toFixed(2)) + `</b>
+        </div>
+    </div>
+    <div class="row mt-1 mb-3" id="payAllPlanRow">
+        <div class="col-sm-2" style="text-align: right"><button class="btn btn-sm btn-primary pt-0 pb-0"
+            onClick="portal.buildPlan(1);">Make Plan for All</button></div>
+        <div class="col-sm-auto">
+            <b>Create a payment plan for the total amount due for all memberships of ` +
+            this.#currencyFmt.format(Number(totalDue).toFixed(2)) + `</b>
         </div>
     </div>
 `;
         this.#paymentDueBody.innerHTML = html;
-        this.#otherPay = 1;
         this.#paymentDueModal.show();
+        this.#selectIdKeys = Object.keys(this.#selectIds);
+        this.#selectIds = {};
+        for (let idkey of Object.keys(this.#selectMems)) {
+            this.#selectIds[idkey] = {};
+            this.#selectIds[idkey].id = idkey.replace('other-', '');
+            this.#selectIds[idkey].dom = document.getElementById(idkey);
+            this.#selectIds[idkey].mem = this.#selectMems[idkey];
+        }
+        let plansEligible = paymentPlans.plansEligible(this.#payAllList);
+        document.getElementById('payAllPlanRow').hidden = !plansEligible;
     }
 
-    payOtherToggle(id, bal) {
-        var element = document.getElementById('other-' + id);
-        if (element.checked) {
+    choosePayToggle(id, bal, doToggle = false) {
+        let element = document.getElementById('other-' + id);
+        let checked = element.checked;
+        if (doToggle) {
+            checked = !checked;
+            element.checked = checked;
+        }
+        if (checked) {
             this.#partialPayAmt += Number(bal);
         } else {
             this.#partialPayAmt -= Number(bal);
         }
-        document.getElementById('partialPayDue').innerHTML = Number(this.#partialPayAmt).toFixed(2);
-        document.getElementById('partialPayBTN').disabled = this.#partialPayAmt == 0;
+        let balId = document.getElementById('partialPayDue1');
+        if (balId) balId.innerHTML = Number(this.#partialPayAmt).toFixed(2);
+        balId = document.getElementById('partialPayDue2');
+        if (balId) balId.innerHTML = Number(this.#partialPayAmt).toFixed(2);
+
+        let btn = document.getElementById('partialPayBTN');
+        if (btn) {
+            btn.disabled = this.#partialPayAmt == 0;
+            document.getElementById('partialPayBTNPlan').disabled = this.#partialPayAmt == 0;
+        }
+        this.#paySelectedList = [];
+        for (let idkey of Object.keys(this.#selectMems)) {
+            let tag = this.#selectIds[idkey];
+            if (tag.dom.checked)
+                this.#paySelectedList.push(this.#selectIds[idkey].mem);
+        }
+        let plansEligible = paymentPlans.plansEligible(this.#paySelectedList);
+        document.getElementById('paySelectedPlanRow').hidden = !plansEligible;
+    }
+
+    // Build Plan - select and start the build plan process
+    buildPlan(type) {
+        clear_message();
+        clear_message('payDueMessageDiv');
+        clear_message('makePayMessageDiv');
+        let html = '';
+        if (type == 1) {
+            paymentPlans.plansEligible(this.#payAllList);
+            this.#totalAmountDue = this.#fullPayAmt;
+            this.#planAllorPartial = 'all';
+        } else {
+            paymentPlans.plansEligible(this.#paySelectedList);
+            this.#totalAmountDue = this.#partialPayAmt;
+            this.#planAllorPartial = 'partial';
+        }
+
+        let plans = paymentPlans.isMatchingPlans();
+        if (this.#totalAmountDue < 0) {
+            this.#totalAmountDue = 0;
+        }
+        this.#paymentAmount = this.#totalAmountDue;
+        this.#planPayment = 0;
+        this.#disableButtonNames = 'payBalanceBTNs';
+
+        if (!plans) {
+            show_message("No eligible plans found, use Pay All or Pay Selected", 'payDueMessageDiv', 'error');
+            return;
+        }
+
+        let buttonName = '';
+        let amountDueName = '';
+        let makeOrderOther = 0;
+        if (type == 2) {
+            buttonName = 'Pay Selected Items Amount Due'
+            amountDueName = 'selected items is ';
+            makeOrderOther = 2;
+        } else {
+            buttonName = 'Pay Total Cart Items Amount Due'
+            amountDueName = 'cart is ';
+        }
+        this.#payDueSubmitButton.innerHTML = buttonName;
+        html += `
+    <div class="row mt-3">
+        <div class="col-sm-auto"><button class="btn btn-sm btn-primary pt-0 pb-0" onClick='portal.makeOrder(null , ` +
+            makeOrderOther + `);'>` +
+                buttonName + `</button></div>
+        <div class="col-sm-auto">
+            <b>Your total amount due for the ` + amountDueName + Number(this.#totalAmountDue).toFixed(2) + `</b>
+        </div>
+    </div>
+`;
+
+        html += `
+    <div class="row mt-2">
+        <div class="col-sm-12">
+            You can pay this balance in full without creating a payment plan by using the "` + buttonName +
+            `" button above or at the bottom of this popup.
+        </div>
+    </div>
+     <div class="row mt-2">
+        <div class="col-sm-12">
+            You can pay by with one of the following payment plans using the "Select As Shown" button to use the plan with the default values,<br/>
+            or "Customize" button (if available for that plan) to select your own down payment, number of payments and days between payments.
+        </div>
+    </div>
+`;
+        html += paymentPlans.getMatchingPlansHTML('portal');
+
+        this.#paymentDueBody.innerHTML = html;
+    }
+
+    closePaymentDueModal() {
+        this.#paymentDueModal.hide();
+    }
+
+    openPaymentDueModal() {
+        this.#paymentDueModal.show();
     }
 
     // makeOrder - make call to create an order in the system and return the order Id, the amount due, the tax due and the total amount due
     makeOrder(plan, other = 0) {
+        clear_message('payDueMessageDiv');
+        this.#orderMemberships = [];
+        if (this.#planAllorPartial == null)
+            this.#planAllorPartial = 'all';
+
+        if (other < 0)
+            other = this.#planAllorPartial == 'all' ? 1 : 2;
+
+        // disable the button that called us
+        let enableButtonNames = null;
+        if (this.#disableButtonNames) {
+            enableButtonNames = this.#disableButtonNames;
+        }
+        $('[name="' + this.#disableButtonNames + '"]').prop('disabled', true);
+
+        if (other == 1 || (other == 0 && this.#planAllorPartial == 'all')) {
+            this.#paymentAmount = this.#fullPayAmt;
+            this.#orderMemberships = this.#payAllList;
+            this.#selectedItems = false;
+        } else if (other == 2 || (other == 0 && this.#planAllorPartial == 'partial')) {
+            this.#paymentAmount = this.#partialPayAmt;
+            this.#orderMemberships = this.#paySelectedList;
+            this.#selectedItems = true;
+        } else {
+            this.#paymentAmount = this.#fullPayAmt;
+            this.#orderMemberships = this.#payAllList;
+            this.#selectedItems = false;
+        }
+
         if (plan == null) {
             this.#paymentPlan = null;
-            if (other == 1) {
-                this.#paymentAmount = this.makeOtherOrder('full');
-                this.#otherPay = 1;
-            } else if (other == 2) {
-                this.#paymentAmount = this.makeOtherOrder('part');
-                this.#otherPay = 1;
-            } else {
-                this.#otherPay = 0;
-                this.#paymentAmount = this.#totalAmountDue;
-            }
         } else {
             this.#paymentPlan = plan;
             this.#paymentAmount = plan.currentPayment;
             this.#totalAmountDue = plan.currentPayment;
         }
-        var cancelOrderId = null;
+        let cancelOrderId = null;
         if (this.#orderData && this.#orderData.rtn && this.#orderData.rtn.orderId)
             cancelOrderId = this.#orderData.rtn.orderId;
 
-        var newplan = false;
+        let newplan = false;
         if (this.#paymentPlan != null)
             if (this.#paymentPlan.new)
                 newplan = true;
 
-        // disable the button that called us
-        var enableButtonNames = null;
-        if (this.#disableButtonNames) {
-            enableButtonNames = this.#disableButtonNames;
+        // check if any of the memberships are in plan and if so, set plan recast to recompute the plan
+        if (plan == null || newplan == true) {
+            for (let mem of this.#orderMemberships) {
+                if (mem.hasOwnProperty('planId') && mem.planId && mem.planId > 0) {
+                    this.#planRecast = true;
+                    break;
+                }
+            }
         }
-        $('[name="' + this.#disableButtonNames + '"]').prop('disabled', true);
         // transaction comes from session, person paying come from session, we will compute what was paid
-        var data = {
+        let data = {
             loginId: config.id,
             loginType: config.idType,
             action: 'portalOrder',
-            plan:   (this.#paymentPlan != null || this.#existingPlan != null) ? 1 : 0,
+            plan: (this.#paymentPlan != null || this.#existingPlan != null) ? 1 : 0,
             existingPlan: this.#existingPlan,
             planRec: this.#paymentPlan,
             newplan: newplan ? 1 : 0,
             planPayment: this.#planPayment,
-            otherPay: this.#otherPay,
-            otherMemberships: JSON.stringify(paidOtherMembership),
+            otherMemberships: JSON.stringify(this.#orderMemberships),
             amount: this.#paymentAmount,
-            totalAmountDue: this.#otherPay == 1 ? this.#paymentAmount : this.#totalAmountDue,
             couponDiscount: this.#couponDiscount,
             preCouponAmountDue: this.#preCouponAmountDue,
             couponCode: coupon.getCouponCode(),
             couponSerial: coupon.getCouponSerial(),
-            planRecast: this.#planRecast ? 1 : 0,
             cancelOrderId: cancelOrderId,
         };
         $.ajax({
@@ -935,9 +1074,20 @@ class Portal {
             data: data,
             method: 'POST',
             success: function (data, textStatus, jqXhr) {
+                if (data.status == 'error') {
+                    portal.openPaymentDueModal();
+                    if (enableButtonNames)
+                        $('[name="' + enableButtonNames + '"]').prop('disabled', false);
+                    show_message(data.message, 'error', 'payDueMessageDiv');
+                    return false;
+                }
                 checkResolveUpdates(data);
-                portal.setOrderData(data);
-                portal.makePayment(plan);
+                if (data != '') {
+                    portal.setOrderData(data);
+                    portal.makePayment(plan);
+                } else {
+                    show_message("Error creating order, seek assistance", 'error');
+                }
                 if (enableButtonNames)
                     $('[name="' + enableButtonNames + '"]').prop('disabled', false);
                 return true;
@@ -953,22 +1103,12 @@ class Portal {
 
     // make payment
     makePayment(plan) {
-        var html = '';
-        var done = false;
-        if (plan == null) {
+        let html = '';
+        let done = false;
+        if (plan == null && this.#paymentPlan != null) {
             this.#paymentPlan = null;
-            if (this.#otherPay == 1) {
-                /* this is from the click "Pay total amount due" in the modal footer */
-                this.makeOrder(null, 1);
-                return;
-            }
-            if (this.#otherPay == 2) {
-                html = `
-        <div class="row mt-4">
-            <div class="col-sm-auto"><b>You are paying for memberships purchased by others for you.</b>
-        </div>
-`;
-            }
+            this.makeOrder(null);
+            return;
         } else if (this.#orderData && this.#orderData.post && this.#orderData.post.planPayment && this.#orderData.post.planPayment == 1) {
             html = `
         <div class="row mt-4 mb-4">
@@ -983,9 +1123,10 @@ class Portal {
 
         this.#paymentAmount = Number(this.#orderData.rtn.totalAmt);
         if (this.#orderData.rtn.taxAmt > 0) {
+            let preTaxWording = this.#selectedItems ? 'for the selected items' : 'for the cart';
             html += `
             <div class="row mt-4">
-                <div class="col-sm-3"><b>The Pre-Tax Amount Due is:</b></div>
+                <div class="col-sm-4"><b>The Pre-Tax Amount Due ` + preTaxWording + ` is:</b></div>
                 <div class="col-sm-1" style="text-align: right;"><b>` + this.#currencyFmt.format(Number(this.#orderData.rtn.preTaxAmt).toFixed(2)) + `</b></div>
             </div>`;
             this.#taxes = this.#orderData.rtn.taxes;
@@ -996,7 +1137,7 @@ class Portal {
                     if (amt != null) {
                         html += `
     <div class="row mt-1">
-        <div class="col-sm-3">` + rate.label + `:</div>
+        <div class="col-sm-4">` + rate.label + `:</div>
         <div class="col-sm-1" style="text-align: right;">` + this.#currencyFmt.format(Number(amt).toFixed(2)) + `</div>
     </div>`;
                     }
@@ -1004,29 +1145,28 @@ class Portal {
             }
             if (this.#orderData.rtn.taxAmt > 0) {
                 html += `
-    <div class="row mt-1">
-        <div class="col-sm-3">Total Sales Tax:</div>
+    <div class="row mt-1 mb-3">
+        <div class="col-sm-4">Total Sales Tax:</div>
         <div class="col-sm-1" style="text-align: right;" id="pay-tax-amt">` +
                     this.#currencyFmt.format(Number(this.#orderData.rtn.taxAmt).toFixed(2)) + `</div>
     </div>`;
             }
         }
 
-        if (plan == null) {
+        if (plan == null || !done) {
+            let totalWording = '';
+            if (plan == null)
+                totalWording = this.#selectedItems ? 'total amount of the selected items' : 'total amount for the cart';
+            else
+                totalWording = 'current amount due to create the payment plan ' + plan.plan.name + ' is';
             html += `
         <div class="row mt-2 mb-4">
-            <div class="col-sm-auto"><strong>You are paying the total amount, so the payment amount is ` +
+            <div class="col-sm-auto"><strong>You are paying the ` + totalWording + `, so the payment amount is ` +
                 this.#currencyFmt.format(Number(this.#paymentAmount).toFixed(2)) + `</strong></div>
          </div>
 `;
-        } else if (!done) {
-            html = `
-        <div class="row mt-2 mb-4">
-            <div class="col-sm-auto"><b>The Current Amount Due to create the payment plan ` + plan.plan.name + ' is ' + Number(plan.currentPayment).toFixed(2) + `</b></div>
-         </div>
-`;
         }
-        this.#otherPay = 0;
+
         this.#makePaymentBody.innerHTML = html;
         this.#paymentDueModal.hide();
         this.#makePaymentModal.show();
@@ -1037,29 +1177,10 @@ class Portal {
         this.#existingPlan = payorPlan;
         this.#paymentAmount = paymentAmt;
         payorPlan.currentPayment = paymentAmt;
-        this.#planRecast = recast;
+        if (recast)
+            this.#planRecast = recast;
         this.#planPayment = 1;
-        this.#otherPay = 0;
         this.makeOrder(payorPlan, 0);
-    }
-
-    // makeOtherOrder - pay some or all of the 'paid by other items due', mark the records and return to makeOrder
-    makeOtherOrder(type) {
-        // mark which ones to pay
-        var amount = 0;
-        for (var i = 0; i < paidOtherMembership.length; i++) {
-            if (type == 'full') {
-                paidOtherMembership[i]['payThis'] = 1;
-                amount +=  Number(paidOtherMembership[i].actPrice) - (Number(paidOtherMembership[i].actPaid) + Number(paidOtherMembership[i].actCouponDiscount));
-            } else {
-                var checked = document.getElementById('other-' + paidOtherMembership[i]['regid']).checked;
-                paidOtherMembership[i]['payThis'] = checked ? 1 : 0;
-                if (checked)
-                    amount +=  Number(paidOtherMembership[i].actPrice) - (Number(paidOtherMembership[i].actPaid) + Number(paidOtherMembership[i].actCouponDiscount));
-            }
-        }
-
-        return amount;
     }
 
     // makePurchase - make the membership/plan purchase.
@@ -1069,51 +1190,50 @@ class Portal {
         }
 
         // our form
-        var id = document.getElementById("purchase");
+        let id = document.getElementById("purchase");
         if (id)
             id.disabled = true;
         // squares form
-        var ids = document.getElementById("card-button");
+        let ids = document.getElementById("card-button");
         if (ids)
             ids.disabled = true;
 
-        var newplan = false;
+        let newplan = false;
         if (this.#paymentPlan != null)
             if (this.#paymentPlan.new)
                 newplan = true;
 
-        var totalAmountDue = this.#otherPay == 1 ? this.#paymentAmount : this.#totalAmountDue;
-        var taxAmount = 0
-        var preTaxAmount = totalAmountDue;
+        let totalAmountDue = this.#paymentAmount;
+        let taxAmount = 0
+        let preTaxAmount = totalAmountDue;
         if (this.#existingPlan == null && this.#orderData && this.#orderData.rtn) {
             preTaxAmount = this.#orderData.rtn.preTaxAmt;
             taxAmount = this.#orderData.rtn.taxAmt;
         }
 
-        var orderId = '';
+        let orderId = '';
         if (this.#orderData && this.#orderData.rtn && this.#orderData.rtn.orderId) {
             orderId = this.#orderData.rtn.orderId;
         }
 
-        var badges = [];
+        let badges = [];
         if (this.#orderData && this.#orderData.rtn && this.#orderData.rtn.results && this.#orderData.rtn.results.badges)
             badges = this.#orderData.rtn.results.badges;
 
         // transaction comes from session, person paying come from session, we will compute what was paid
-        var data = {
+        let data = {
             loginId: config.id,
             loginType: config.idType,
             action: 'portalPayment',
-            plan:   (this.#paymentPlan != null || this.#existingPlan != null) ? 1 : 0,
+            plan: (this.#paymentPlan != null || this.#existingPlan != null) ? 1 : 0,
             existingPlan: this.#existingPlan,
             planRec: this.#paymentPlan,
             newplan: newplan ? 1 : 0,
             planPayment: this.#planPayment,
-            otherPay: this.#otherPay,
-            otherMemberships: JSON.stringify(paidOtherMembership),
+            otherMemberships: JSON.stringify(this.#orderMemberships),
             nonce: token,
             amount: this.#paymentAmount,
-            totalAmountDue: this.#otherPay == 1 ? this.#paymentAmount : this.#totalAmountDue,
+            totalAmountDue: this.#paymentAmount,
             preTaxAmount: preTaxAmount,
             taxAmount: taxAmount,
             couponDiscount: this.#couponDiscount,
@@ -1149,7 +1269,7 @@ class Portal {
         console.log(data);
         if (data.status == 'error') {
             // our form
-            var id = document.getElementById("purchase");
+            let id = document.getElementById("purchase");
             if (id)
                 id.disabled = false;
             // squares form
@@ -1172,14 +1292,13 @@ class Portal {
 
         // clear any order in progress
         this.#orderData = null;
-        this.#otherPayAmt = 0;
-        this.#otherPay = 0;
+        this.#fullPayAmt = 0;
 
         if (data.message)
-            window.location = this.#portalPage + '?messageFwd=' + encodeURI(data.message);
+            window.location = this.#portalPage + "?tab=" + hid + '&messageFwd=' + encodeURI(data.message);
         else {
-            var message = 'Payment succeeded, ' + data.rows_upd + ' memberships and other items updated';
-            window.location = this.#portalPage + '?messageFwd=' + encodeURI(message);
+            let message = 'Payment succeeded, ' + data.rows_upd + ' memberships and other items updated';
+            window.location = this.#portalPage + "?tab=" + hid + '&messageFwd=' + encodeURI(message);
         }
     }
 
@@ -1187,8 +1306,8 @@ class Portal {
     transReceipt(transId) {
         this.#receiptEmailAddress = null;
         clear_message();
-        var script = 'scripts/getReceipt.php';
-        var data = {
+        let script = 'scripts/getReceipt.php';
+        let data = {
             loginId: config.id,
             loginType: config.idType,
             action: 'portalReceipt',
@@ -1221,7 +1340,7 @@ class Portal {
         }
 
         clear_message();
-        var receipt = data.receipt;
+        let receipt = data.receipt;
         this.#receiptDiv.innerHTML = receipt.receipt_html;
         this.#receiptTables.innerHTML = receipt.receipt_tables;
         this.#receiptText.innerHTML = receipt.receipt;
@@ -1232,14 +1351,14 @@ class Portal {
     }
 
     emailReceipt(addrchoice) {
-        var success='';
+        let success = '';
         if (this.#receiptEmailAddress == null)
             return;
 
         if (success == '')
             success = this.#receiptEmailBtn.innerHTML.replace("Email Receipt to", "Receipt sent to");
 
-        var data = {
+        let data = {
             loginId: config.id,
             loginType: config.idType,
             email: this.#receiptEmailAddress,
@@ -1249,7 +1368,7 @@ class Portal {
             subject: this.#receiptTitle.innerHTML,
             success: success,
         };
-        var _this = this;
+        let _this = this;
         $.ajax({
             method: "POST",
             url: "scripts/emailReceipt.php",
@@ -1280,8 +1399,8 @@ class Portal {
         $('div[name="t-unpaid"]').show();
         $('div[name="t-plan"]').show();
 
-        var color = false;
-        $("div[name^='t-']").each(function() {
+        let color = false;
+        $("div[name^='t-']").each(function () {
             if (color)
                 $(this).addClass('bg-light')
             else
@@ -1323,8 +1442,8 @@ class Portal {
         $('div[name="t-unpaid"]').show();
         $('div[name="t-plan"]').show();
 
-        var color = false;
-        $("div[name^='t-']").each(function() {
+        let color = false;
+        $("div[name^='t-']").each(function () {
             if ($(this).css("display") != "none") {
                 if (color)
                     $(this).addClass('bg-light')
@@ -1416,8 +1535,8 @@ class Portal {
     }
 
     // setFocus - jump to specific areas on the page
-    setFocus(area){
-         switch (area) {
+    setFocus(area) {
+        switch (area) {
             case 'paymentDiv':
                 $(window).scrollTop($('#paymentSectionDiv').offset().top);
                 break;
@@ -1425,24 +1544,24 @@ class Portal {
     }
 
     vote() {
-        var rights = { NomNom: 1};
+        let rights = {NomNom: 1};
         this.getJWT(rights, config.nomnomURL);
     }
 
     virtual() {
-        var rights = { Virtual: 1};
+        let rights = {Virtual: 1};
         this.getJWT(rights, config.virtualURL);
     }
 
     // voting, virtual, etc. - get jwt strings
     getJWT(rights, url) {
-        var data = {
+        let data = {
             loginId: config.id,
             loginType: config.idType,
             rights: rights,
         }
         clear_message();
-        var script = 'scripts/getJWT.php';
+        let script = 'scripts/getJWT.php';
         $.ajax({
             method: 'POST',
             url: script,
@@ -1494,7 +1613,7 @@ class Portal {
             let right = 1;
             if (i == 0) left = 2;
             if (i == tabs.length - 1) right = 2;
-            el.style="border-bottom: 4px solid #0000FF; border-right: " + right + "px solid #808080;" +
+            el.style = "border-bottom: 4px solid #0000FF; border-right: " + right + "px solid #808080;" +
                 " border-left: " + left + "px solid #808080;" +
                 " background-color: #E8E8E8; border-radius: 0px;";
 
@@ -1502,9 +1621,10 @@ class Portal {
             el.classList.remove("active", "show");
         }
 
-        document.getElementById(tabname + '-tab').style=
+        document.getElementById(tabname + '-tab').style =
             "border-width: 4px 4px; border-color: var(--bs-primary); border-radius: 20px 20px 0px 0px; border-bottom: 0px;";
         document.getElementById(tabname + '-pane').classList.add("active", "show");
+        hid = tabname;
     }
 }
 

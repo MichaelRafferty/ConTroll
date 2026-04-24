@@ -1,5 +1,8 @@
 globalCustomTextEditorInit = false;
 
+// global constants for controll back end
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 // new functions for token items
 function checkRefresh(data) {
     if (data.hasOwnProperty('tokenStatus') && data.tokenStatus == 'refresh'){
@@ -23,180 +26,36 @@ function test(method, formData, resultDiv) {
     });
 }
 
-// Obsolete functions, delete once Club is rewritten
-//
-function hideBlock(block) {
-    $(block + "Form").hide();
-    $(block + "ShowLink").show();
-    $(block + "HideLink").hide();
+function setCellChanged(cell) {
+    setFieldChanged(cell.getElement());
 }
 
-function showBlock(block) {
-    $(block + "Form").show();
-    $(block + "ShowLink").hide();
-    $(block + "HideLink").show();
+function setFieldChanged(field) {
+    if (!field.classList.contains('unsavedChangeBGColor'))
+        field.classList.add('unsavedChangeBGColor');
 }
 
-function addShowHide(block, id) {
-    var show = $(document.createElement("a"));
-    var hide = $(document.createElement("a"));
-    show.addClass('showlink');
-    hide.addClass('hidelink');
-    show.attr('id', id + "ShowLink");
-    hide.attr('id', id + "HideLink");
-    show.attr('href', "javascript:void(0)");
-    hide.attr('href', "javascript:void(0)");
-    show.click(function () { showBlock("#" + id); });
-    hide.click(function () { hideBlock("#" + id); });
-    show.append("(show)");
-    hide.append("(hide)");
-    block.append(" ").append(show).append(" ").append(hide);
-    container = $(document.createElement("form"));
-    container.attr('id', id + "Form");
-    container.attr('name', id);
-    block.append(container);
-    show.click()
-    return container;
+function clearCellFieldChanged(cell) {
+    clearFieldChanged(cell.getElement());
 }
 
+function clearFieldChanged(field) {
+    field.classList.remove('unsavedChangeBGColor');
+}
 
-function displaySearchResults(data, callback) {
-    var resDiv = $("#searchResultHolder");
-    resDiv.empty();
-    if (data["error"]) {
-        showError(data["error"]);
-        return false;
-    }
-    if (data["count"]) {
-        $("#resultCount").empty().html("(" + data["count"] + ")");
+function addFieldClass(field, className) {
+    if (!field.classList.contains(className))
+        field.classList.add(className);
+}
+
+function toggleFieldClass(field, className) {
+    if (field.classList.contains(className)) {
+        field.classList.remove(className);
     } else {
-        $("#resultCount").empty().html("(0)");
-    }
-
-    for (var resultSet in data["results"]) {
-        if (data["results"][resultSet].length == 0) { continue; }
-        var setTitle = $(document.createElement("span"));
-        setTitle.addClass('blocktitle');
-        setTitle.append(resultSet);
-        resDiv.append(setTitle)
-        var resContainer = addShowHide(resDiv, resultSet);
-        for (result in data["results"][resultSet]) {
-            var user = data["results"][resultSet][result];
-            var userDiv = $(document.createElement("div"));
-
-            userDiv.attr('userid', user.id);
-            userDiv.data('obj', data["results"][resultSet][result]);
-            userDiv.addClass('button').addClass('searchResult').addClass('half');
-            flags = $(document.createElement("div"));
-            flags.addClass('right').addClass('half').addClass('notice');
-            userDiv.append(flags);
-            if (user.label) { userDiv.append(user.label + "<br/>" + "<hr/>"); }
-            if (user.full_name) { userDiv.append(user.full_name + "<br/>"); }
-            else { userDiv.append("***NO NAME***<br/>"); }
-            if (user.legalName) { userDiv.append(user.legalName + "<br/>"); }
-            if (user.badge_name) { userDiv.append(user.badge_name + "<br/>"); }
-            userDiv.append($(document.createElement("hr")));
-            if (user.address) { userDiv.append(user.address + "<br/>"); }
-            else { userDiv.append("***NO STREET ADDR***<br/>"); }
-            if (user.addr_2) { userDiv.append(user.addr_2 + "<br/>"); }
-            if (user.locale) { userDiv.append(user.locale + "<br/>"); }
-            else { userDiv.append("***NO CITY/STATE/ZIP***<br/>"); }
-            userDiv.append($(document.createElement("hr")));
-            if (user.email_addr) { userDiv.append(user.email_addr + "<br/>"); }
-            if (user.phone) { userDiv.append(user.phone + "<br/>"); }
-            if (user.banned == 'Y') {
-                flags.append('banned<br/>');
-                userDiv.addClass('banned');
-            }
-            else if (user.label) {
-                userDiv.addClass('hasMembership');
-            }
-            else if (user.active == 'N') {
-                flags.append('inactive<br/>');
-                userDiv.addClass('inactive');
-            }
-            resContainer.append(userDiv);
-            userDiv.click(function () { callback($(this).data('obj')); });
-        }
+        field.classList.add(className);
     }
 }
 
-function submitForm(formObj, formUrl, succFunc, errFunc) {
-    var postData = $(formObj).serialize();
-    if (succFunc == null) {
-        succFunc = function (data, textStatus, jsXhr) {
-            $('#test').empty().append(JSON.stringify(data, null, 2));
-        }
-    };
-
-    $.ajax({
-        url: formUrl,
-        type: "POST",
-        data: postData,
-        success: succFunc,
-        error: function (JqXHR, textStatus, errorThrown) {
-            $('#test').empty().append(JSON.stringify(JqXHR));
-        }
-    });
-}
-
-var tracker = new Array();
-function track(formName) {
-    tracker[formName] = new Object;
-    $(formName + " :input").each(function () {
-        tracker[formName][$(this).attr('name')] = false;
-        $(this).on("change", function () {
-            tracker[formName][$(this).attr('name')] = true;
-        });
-    });
-}
-
-
-function submitUpdateForm(formObj, formUrl, succFunc, errFunc) {
-    var postData = "id=" + $(formObj + " :input[name=id]").val();
-    for (var key in tracker[formObj]) {
-        if (tracker[formObj][key]) {
-            if ($(formObj + " :input[name=" + key + "]").attr('type') == 'radio') {
-                postData += "&" + key + "=" + $(formObj + " :input[name=" + key + "]:checked").val();
-            } else if ($(formObj + " :input[name=" + key + "]").attr('type') == 'checkbox') {
-                postData += "&" + key + "=" + $(formObj + " :input[name=" + key + "])").attr('checked');
-            } else {
-                postData += "&" + key + "=" + $(formObj + " :input[name=" + key + "]").val();
-            }
-        }
-    }
-    if (succFunc == null) {
-        succFunc = function (data, textStatus, jqXHR) {
-            $('#test').empty().append(JSON.stringify(data));
-        }
-    };
-    $.ajax({
-        url: formUrl,
-        type: "POST",
-        data: postData,
-        success: succFunc,
-        error: function (JqXHR, textStatus, errorThrown) {
-            $('#test').empty().append(JSON.stringify(JqXHR));
-        }
-    });
-}
-
-function testValid(formObj) {
-    var errors = 0;
-
-    $(formObj + " :required").map(function () {
-        if (!$(this).val()) {
-            $(this).addClass('need');
-            errors++;
-        } else {
-            $(this).removeClass('need');
-        }
-    });
-
-    return (errors == 0);
-}
-
-// end obsolete functions
 
 // old style error message block
 //
@@ -282,13 +141,13 @@ class map {
     }
 }
 
-// tabulator custom header filter function for numeric comparisions
-//
+// tabulator custom header filter function for numeric and date string comparisions
+// number supports < <=, >, >= anything else for equality
 function numberHeaderFilter(headerValue, rowValue, rowData, filterParams) {
-    var option = headerValue.substring(0,1);
-    var value = headerValue;
+    let option = headerValue.substring(0,1);
+    let value = headerValue;
     if (option == '<' || option == '>' || option == '=') {
-        var suboption = headerValue.substring(1, 1);
+        let suboption = headerValue.substring(1, 2);
         if (suboption == '=') {
             option += suboption;
             value = value.substring(2);
@@ -310,22 +169,121 @@ function numberHeaderFilter(headerValue, rowValue, rowData, filterParams) {
             return Number(rowValue) == Number(value);
     }
 }
+var nowDate = null;
+var nowToday = false;
+var nowDateString = '';
+// date string supports < <=, >, >=, s for starts with e for ends with and anything else for substring, v for valid date entered
+function dateStringHeaderFilter(headerValue, rowValue, rowData, filterParams) {
+    if (rowValue == null || rowValue == '')
+        return false;
+
+    let option = headerValue.substring(0,1);
+    let value = headerValue;
+    if (option == '<' || option == '>' || option == '=' || option == 's' || option == 'e' || option == 'n') {
+        let suboption = headerValue.substring(1, 2);
+        if (suboption == '=') {
+            option += suboption;
+            value = value.substring(2);
+        } else {
+            value = value.substring(1);
+        }
+    }
+
+
+    switch (option) {
+        case '<':
+            return rowValue < value;
+        case '<=':
+            return rowValue <= value
+        case '>':
+            return rowValue > value;
+        case '>=':
+            return rowValue >= value;
+        case 's':
+            return rowValue.startsWith(value);
+        case 'e':
+            return rowValue.endsWith(value);
+        case 'n':
+            if (filterParams.field == '')
+                return rowValue.includes(value);
+
+            if (value == '') {
+                if (!nowToday) {
+                    nowDate = new Date();
+                    nowDateString = nowDate.getFullYear().toString() + '-' + (nowDate.getMonth() + 1).toString().padStart(2, '0') +
+                        '-' + nowDate.getDate().toString().padStart(2, '0') + ' ' + nowDate.getHours().toString().padStart(2, '0') +
+                        ':' + nowDate.getMinutes().toString().padStart(2, '0') + ':' + nowDate.getSeconds().toString().padStart(2, '0');
+                    nowToday = true;
+                }
+            } else if (!nowDateString.startsWith(value)) {
+                // recompute the now date string based on the date given
+                // first make sure the date string is complete, if not pad it out with the current year, month, date, and time
+                if (value.length < 4) {
+                    value = new Date().getFullYear().toString() + "-01-01 00:00:00";
+                } else if (value.length == 4) {
+                    value += "-01-01 00:00:00";
+                } else {
+                    let dateparts = value.split('-');
+                    if (dateparts.length == 1)
+                        value = value.substring(0, 4) + "-01-01 00:00:00";
+                    else if (dateparts.length == 2) {
+                        value += "-01 00:00:00";
+                    } else if (!dateparts[2].includes(' ')) {
+                        value += ' 00:00:00';
+                    } else {
+                        let timeparts = dateparts[2].split(' ');
+                        if (timeparts[1].trim().length == 0)
+                            value += ' 00:00:00';
+                        else {
+                            timeparts = timeparts[1].split(':');
+                            if (timeparts.length == 1)
+                                value += ":00:00";
+                            else if (timeparts.length == 2) {
+                                value += ":00";
+                            }
+                        }
+                    }
+                }
+
+                let tzOffset = new Date(value).getTimezoneOffset();
+                tzOffset = (tzOffset >= 0 ? '-' : '+') + Math.trunc(tzOffset / 60).toString().padStart(2,'0') + ':' + (tzOffset % 60).toString().padStart(2, '0');
+                console.log("Timezone offset is " + tzOffset);
+                let newDate = new Date(value + ' ' + tzOffset);
+                if (newDate) {
+                    nowDate = newDate;
+                    nowToday = false;
+                    nowDateString = newDate.getFullYear().toString() + '-' + (newDate.getMonth() + 1).toString().padStart(2, '0') +
+                        '-' + newDate.getDate().toString().padStart(2, '0') + ' ' + newDate.getHours().toString().padStart(2, '0') +
+                        ':' + newDate.getMinutes().toString().padStart(2, '0') + ':' + newDate.getSeconds().toString().padStart(2, '0');
+                }
+            }
+
+            if (filterParams.field == 'startdate')
+                return rowValue <= nowDateString && rowData.enddate > nowDateString;
+
+            if (filterParams.field == 'enddate')
+                return rowData.startDate <= nowDateString && rowValue > nowDateString;
+
+        default:
+            return rowValue.includes(value);
+    }
+}
 
 // fullNameHeaderFilter: Custom header filter for substring and first/last substring for FullName with first_name and last_name fields in the table
 function fullNameHeaderFilter(headerValue, rowValue, rowData, filterParams) {
-    var header = headerValue.toLowerCase();
-    var value = rowValue.toLowerCase();
+    let header = headerValue.toLowerCase();
+    let value = rowValue.toLowerCase();
     if (value.includes(header))
         return true;
 
-    var parts = header.split(' ');
+    let parts = header.split(' ');
     if (parts.length < 2)
         return false;
 
-    var first = rowData.first_name.toLowerCase();
-    var last = rowData.last_name.toLowerCase();
+    let first = rowData.first_name.toLowerCase();
+    let last = rowData.last_name.toLowerCase();
     if (parts.length == 3) {
-        var middle = rowData.middle_name.toLowerCase();
+        let middle = rowData.middle_name.toLowerCase();
         return first.includes(parts[0]) && middle.includes(parts[1]) && last.includes(parts[2]);
     }
 
@@ -437,11 +395,11 @@ function saveEdit() {
     if (editor_modal == null)
         return; // tiymce area not loaded
 
-    var editTable = editTableDiv.innerHTML;
-    var editField = editFieldDiv.innerHTML;
-    var editIndex = editIndexDiv.innerHTML;
-    var editClass = editClassDiv.innerHTML;
-    var editValue = tinyMCE.activeEditor.getContent();
+    let editTable = editTableDiv.innerHTML;
+    let editField = editFieldDiv.innerHTML;
+    let editIndex = editIndexDiv.innerHTML;
+    let editClass = editClassDiv.innerHTML;
+    let editValue = tinyMCE.activeEditor.getContent();
 
     if (editTextOnly) {
         editValue = editValue.replace(/<\/p>/g, "\n");
@@ -482,18 +440,18 @@ function blankIfNull(value) {
 // pass object to a window.open via a post with json data
 function downloadFilePost(format, fileName, tableData, excludeList = null, fieldList = null) {
     // create the form
-    var form = document.createElement('form');
+    let form = document.createElement('form');
     form.method = 'POST';
     form.action = 'scripts/downloadFile.php';
     // append it to the body
     document.body.appendChild(form);
     // create the file name to suggest to save it to....
-    var field = document.createElement('input');
+    let field = document.createElement('input');
     field.type = 'text';
     field.name = 'format';
     field.value = format;
     form.appendChild(field);
-    var field = document.createElement('input');
+    field = document.createElement('input');
     field.type = 'text';
     field.name = 'filename';
     field.value = fileName;
@@ -513,7 +471,7 @@ function downloadFilePost(format, fileName, tableData, excludeList = null, field
         form.appendChild(field);
     };
     // create the data table element
-    var tablejson = document.createElement('input');
+    let tablejson = document.createElement('input');
     tablejson.type = 'text';
     tablejson.name = 'table'
     tablejson.value = tableData;

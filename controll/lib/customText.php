@@ -70,8 +70,9 @@ EOS;
             $contents = strip_tags($contents);
         }
 
-        // if the string contains the default string, clear it to null and let the update null script handle it.
-        if (str_contains($contents, 'Custom HTML that can replaced with a custom value in the ConTroll Admin App under RegAdmin/Edit Custom Text.')) {
+        // if the string contains the default string, or is empty, clear it to null and let the update null script handle it.
+        if ($contents == '' ||
+            str_contains($contents, 'Custom HTML that can replaced with a custom value in the ConTroll Admin App under RegAdmin/Edit Custom Text.')) {
             $contents = null;
             $needNullUpdate++;
         }

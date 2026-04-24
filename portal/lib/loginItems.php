@@ -114,7 +114,7 @@ function draw_login($config_vars, $result_message = '', $result_color = '', $why
 
 // chooseAccountFromEmail - map an email address to a list of accounts
 // email is a validated email by the validationType.
-function chooseAccountFromEmail($email, $id, $linkid, $passedMatch, $validationType) {
+function chooseAccountFromEmail($email, $id, $linkid, $passedMatch, $validationType, $countryOptions) {
     global $config_vars;
 
     if ($validationType == 'switch') {
@@ -203,7 +203,7 @@ function chooseAccountFromEmail($email, $id, $linkid, $passedMatch, $validationT
         $interests = getInterests();
         [$ageList, $ageListIdx] = getAgeList($config_vars['conid']);
         draw_addMembershipsConfirmModal();
-        draw_editPersonModal('login', $policies, $ageListIdx, $config_vars['startdate'], $interests);
+        draw_editPersonModal('login', $policies, $ageListIdx, $config_vars['startdate'], $countryOptions, $interests);
         // ask to create new account
 ?>
         <h3 class="mt-3">The email <?php echo $email;?> does not have an account.</h3>
@@ -244,7 +244,6 @@ function chooseAccountFromEmail($email, $id, $linkid, $passedMatch, $validationT
         <hr/>
 <?php
     // not logged in, draw signup stuff
-        //draw_registrationModal($portalType, $portalName, $con, $countryOptions);
         draw_login($config_vars);
         exit();
     }

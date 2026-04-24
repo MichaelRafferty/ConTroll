@@ -307,6 +307,14 @@ onedaycoupons=0 ; allow onedays for coupon usage
 ;; D:l:0,1
 ;; B:M
 bundlememberships=0 ; allow bundle memberships
+;; N:defaultCountry
+;; R:H,reg_staff
+;; P:3 Character ISO Code
+;; H:For the country HTML selects, which country code is the default one selected.
+;; H+If the country is being set to the one already entered for this person, that will override this default.
+;; D:s3
+;; B:O
+defaultCountry="USA"
 
 ;;;;; On Line Registration (non Portal)
 [reg]
@@ -618,7 +626,7 @@ artcontrol=0 ; true/false show control sheet print button
 ;; R:H,exhibitor
 ;; H:How to sort the control sheet:
 ;; H+values:
-;; H+item = short by item_id in one section
+;; H+item = sort by item_id in one section
 ;; H+type = split into sections and sort by type, item_id
 ;; D:l:type,item
 ;; B:O

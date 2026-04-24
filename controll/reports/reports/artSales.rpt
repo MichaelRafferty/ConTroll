@@ -16,6 +16,12 @@
     title="Artist Name"
     minWidth=300
     filter=true
+[F003]
+    name=artistPayee
+    sql="e.artistPayee"
+    title="Pay to the order of "
+    minWidth=300
+    filter=true
 [F004]
     name=artistAddr
     sql="TRIM(concat_ws(' ', e.addr, e.addr2, e.city, e.state, e.zip, e.country))"

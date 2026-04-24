@@ -258,12 +258,12 @@ class policySetup {
         this.#policyTable.addRow({policy: 'new-row', prompt: '', description: '', required: 'N', active: 'Y',
             defaultValue: 'Y', sortOrder: 99, uses: 0}, false).then(function (row) {
             row.getTable().setPageToRow(row).then(function() {
-                row.getCell("policy").getElement().style.backgroundColor = "#fff3cd";
-                row.getCell("prompt").getElement().style.backgroundColor = "#fff3cd";
-                row.getCell("description").getElement().style.backgroundColor = "#fff3cd";
-                row.getCell("required").getElement().style.backgroundColor = "#fff3cd";
-                row.getCell("active").getElement().style.backgroundColor = "#fff3cd";
-                row.getCell("defaultValue").getElement().style.backgroundColor = "#fff3cd";
+                setCellChanged(row.getCell("policy"));
+                setCellChanged(row.getCell("prompt"));
+                setCellChanged(row.getCell("description"));
+                setCellChanged(row.getCell("required"));
+                setCellChanged(row.getCell("active"));
+                setCellChanged(row.getCell("defaultValue"));
                 _this.checkUndoRedo();
             });
         });

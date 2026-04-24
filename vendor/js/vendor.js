@@ -33,12 +33,19 @@ window.onload = function () {
 
     if (document.getElementById('profile')) {
         exhibitorProfile = new ExhibitorProfile(config.debug);
+        exhibitorProfile.setPortalType(config.portalType);
         exhibitorRequestOnLoad();
         auctionItemRegistrationOnLoad()
         exhibitorReceiptOnLoad();
         if (typeof exhibitor_info !== 'undefined') {
             if (exhibitor_info.DaysSinceLastVerified > 180) {
                 exhibitorProfile.profileModalOpen('review');
+            } else if (config.portalType == 'artist' && (exhibitor_info.artistName == null || exhibitor_info.artistName == '')) {
+                exhibitorProfile.profileModalOpen('review');
+                exhibitorProfile.setArtistWarnBG('#fff3cd');
+            } else if (config.portalType == 'vendor' && (exhibitor_info.salesTaxId == null || exhibitor_info.salesTaxId == '')) {
+                exhibitorProfile.profileModalOpen('review');
+                exhibitorProfile.setVendorWarnBG('#fff3cd')
             }
         }
 

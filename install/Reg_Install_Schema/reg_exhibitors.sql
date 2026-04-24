@@ -15,6 +15,7 @@ CREATE TABLE `exhibitors` (
   `perid` int DEFAULT NULL,
   `newperid` int DEFAULT NULL,
   `artistName` varchar(128) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
+  `artistPayee` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
   `exhibitorName` varchar(64) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
   `exhibitorEmail` varchar(254) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `exhibitorPhone` varchar(32) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
@@ -44,5 +45,27 @@ CREATE TABLE `exhibitors` (
   KEY `exhibitors_newperson_fk` (`newperid`),
   KEY `exhibitors_idx_email` (`exhibitorEmail`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DELIMITER ;;
+CREATE DEFINER=CURRENT_USER  TRIGGER `exhibitors_update` BEFORE UPDATE ON `exhibitors` FOR EACH ROW BEGIN
+    IF (OLD.id != NEW.id OR OLD.perid != NEW.perid OR OLD.newperid != NEW.newperid OR OLD.artistName != NEW.artistName
+            OR OLD.artistPayee != NEW.artistPayee OR OLD.exhibitorName != NEW.exhibitorName OR OLD.exhibitorEmail != NEW.exhibitorEmail
+            OR OLD.exhibitorPhone != NEW.exhibitorPhone OR OLD.salesTaxId != NEW.salesTaxId OR OLD.website != NEW.website
+            OR OLD.description != NEW.description OR OLD.password != NEW.password OR OLD.need_new != NEW.need_new OR OLD.publicity != NEW.publicity
+            OR OLD.addr != NEW.addr OR OLD.addr2 != NEW.addr2 OR OLD.city != NEW.city OR OLD.state != NEW.state OR OLD.zip != NEW.zip
+            OR OLD.country != NEW.country OR OLD.shipCompany != NEW.shipCompany OR OLD.shipAddr != NEW.shipAddr OR OLD.shipAddr2 != NEW.shipAddr2
+            OR OLD.shipCity != NEW.shipCity OR OLD.shipState != NEW.shipState OR OLD.shipZip != NEW.shipZip OR OLD.shipCountry != NEW.shipCountry
+            OR OLD.archived != NEW.archived OR OLD.notes != NEW.notes)
+    THEN
+        INSERT INTO exhibitorsHistory (id, perid, newperid, artistName, artistPayee, exhibitorName, exhibitorEmail, exhibitorPhone,
+           salesTaxId, website, description, password, need_new, publicity, addr, addr2, city, state,
+           zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry,
+           archived, notes)
+        VALUES (OLD.id, OLD.perid, OLD.newperid, OLD.artistName, OLD.artistPayee, OLD.exhibitorName, OLD.exhibitorEmail, OLD.exhibitorPhone,
+            OLD.salesTaxId, OLD.website, OLD.description, OLD.password, OLD.need_new, OLD.publicity, OLD.addr, OLD.addr2, OLD.city, OLD.state,
+            OLD.zip, OLD.country, OLD.shipCompany, OLD.shipAddr, OLD.shipAddr2, OLD.shipCity, OLD.shipState, OLD.shipZip, OLD.shipCountry,
+            OLD.archived, OLD.notes);
+    END IF;
+END;;
+DELIMITER ;
 
 

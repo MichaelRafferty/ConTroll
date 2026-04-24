@@ -3,9 +3,9 @@
 require_once("lib/base.php");
 require_once('lib/getAccountData.php');
 require_once('lib/sessionManagement.php');
+require_once('lib/portalForms.php');
 require_once('../lib/webauthn.php');
 require_once('../lib/email__load_methods.php');
-require_once("../lib/portalForms.php");
 require_once("../lib/paymentPlans.php");
 require_once("../lib/coupon.php");
 
@@ -325,7 +325,7 @@ if (count($memberships) > 0) {
 <?php
             }
             $currentId = $membership['sortTrans'];
-            if ($membership['complete_trans']) {
+            if ($membership['complete_trans'] && $membership['completePerid'] == $loginId) {
                 $receipt = "<button class='btn btn-sm btn-secondary p-1 pt-0 pb-0' style='--bs-btn-font-size: 80%;' " .
                     'onclick="paymentHistory.transReceipt(' . $membership['complete_trans'] . ');">Receipt</button>';
             } else {

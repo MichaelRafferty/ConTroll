@@ -76,7 +76,7 @@ function showPrompts(reportName, prefix, fileName, type, template) {
     console.log(reportName);
     console.log(prompts);
     // build the input area with the prompts...
-    var html = ''
+    var html = topNotes(reportName);
     for (var i = 0; i < prompts.length; i++) {
         var prompt = prompts[i];
         if (prompt[0] == 'prompt') {
@@ -93,6 +93,8 @@ function showPrompts(reportName, prefix, fileName, type, template) {
         }
     }
 
+    html += bottomNotes(reportName);
+
     if (html == '') {
         return getRpt(reportName, prefix, fileName);
     }
@@ -106,13 +108,41 @@ function showPrompts(reportName, prefix, fileName, type, template) {
 
 function noPrompts(reportName, prefix, fileName, type, template) {
     reportFields = null;
-    reportPromptDiv.innerHTML = '';
+    reportPromptDiv.innerHTML = topNotes(reportName) + bottomNotes(reportName);
     if (reportTable) {
         reportTable.destroy();
         reportTable = null;
     }
     reportContentDiv.innerHTML = '';
     getRpt(reportName, prefix, fileName, type, template);
+}
+
+function topNotes(reportName) {
+    let html = '';
+    if (reportTopNotes.hasOwnProperty(reportName)) {
+        let notes = reportTopNotes[reportName];
+        for (let i = 0; i < notes.length; i++) {
+            html += '<div class="row mt-1 mb-1">\n<div class="col-sm-12">\n' + notes[i] + '\n</div>\n</div>\n';
+        }
+        if (notes.length > 0) {
+            html += '<div class="row">\n<div class="col-sm-12">\n<hr>\n</div>\n</div>\n';
+        }
+    }
+    return html;
+}
+
+function bottomNotes(reportName) {
+    let html = '';
+    if (reportBottomNotes.hasOwnProperty(reportName)) {
+        let notes = reportBottomNotes[reportName];
+        if (notes.length > 0) {
+            html += '<div class="row">\n<div class="col-sm-12">\n<hr>\n</div>\n</div>\n';
+        }
+        for (let i = 0; i < notes.length; i++) {
+            html += '<div class="row mt-1 mb-1">\n<div class="col-sm-12">\n' + notes[i] + '\n</div>\n</div>\n';
+        }
+    }
+    return html;
 }
 
 function runReport(name) {
@@ -226,7 +256,7 @@ function drawReport(data) {
     if (data.hasOwnProperty('csvfile')) {
         html += `
     <div class="row">
-        <div class="col-sm-auto p-1 ps-3 pe-3 tabulator-paginator" id="ReportsPaginationDiv" style="background-color: #e5e5e5;"></div>
+        <div class="col-sm-auto p-1 ps-3 pe-3 tabulator-paginator paginationBGColor" id="ReportsPaginationDiv"></div>
         <div class="col-sm-auto p-1 ms-4">
             <button type="button" class="btn btn-info btn-sm" onclick="downloadReport('csv'); return false;">Download CSV</button>
             <button type="button" class="btn btn-info btn-sm" onclick="downloadReport('xlsx'); return false;">Download Excel xlsx</button>

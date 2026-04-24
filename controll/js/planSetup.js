@@ -294,7 +294,7 @@ class PlansSetup {
         for (var row of rows) {
             var name = row.getCell(this.#editSelIndex).getValue().toString();
             if (this.#editSelValues.includes(name)) {
-                row.getCell(this.#editSelIndex).getElement().style.backgroundColor = "#C0FFC0";
+                addFieldClass(row.getCell(plans.getselIndex()).getElement(),'selectedBGColor');
             }
         }
         if (this.#editSelIndex == 'id')
@@ -305,18 +305,18 @@ class PlansSetup {
     clickedSelection(e, cell) {
         var filtercell = cell.getRow().getCell(plans.getselIndex());
         var value = filtercell.getValue();
-        if (filtercell.getElement().style.backgroundColor) {
-            filtercell.getElement().style.backgroundColor = "";
-        } else {
-            filtercell.getElement().style.backgroundColor = "#C0FFC0";
-        }
+        toggleFieldClass(filtercell.getElement(),'selectedBGColor');
     }
 
     // set all/clear all sections in table based on direction
     setEditSel(direction) {
         var rows = this.#editSelTable.getRows();
         for (var row of rows) {
-            row.getCell(plans.getselIndex()).getElement().style.backgroundColor = direction ? "#C0FFC0" : "";
+            if (direction) {
+                addFieldClass(row.getCell(plans.getselIndex()).getElement(),'selectedBGColor');
+            } else {
+                row.getCell(plans.getselIndex()).getElement().classList.remove('selectedBGColor');
+            }
         }
     }
 
@@ -327,7 +327,7 @@ class PlansSetup {
         var rows = null;
         rows = this.#editSelTable.getRows();
         for (var row of rows) {
-            if (row.getCell(plans.getselIndex()).getElement().style.backgroundColor != '') {
+            if (row.getCell(plans.getselIndex()).getElement().classList.contains('selectedBGColor')) {
                 filter += ',' + row.getCell(plans.getselIndex()).getValue();
             }
         }

@@ -18,6 +18,13 @@ var confirm_password = null;
 var message_div = null;
 var idval = null;
 
+window.onload = function () {
+    pwEyeToggle('passwd');
+    pwEyeToggle('old_password');
+    pwEyeToggle('new_password');
+    pwEyeToggle('confirm_new');
+}
+
 // change_pw: called by the "Change Password" button
 // fields_ok = no errors detected, when false, stop processing for more errors and prevent password change
 // message = message to display in message_div for progress/warning/error messages

@@ -19,6 +19,19 @@ span.warncolor {
   background-color: #FFE190;;
 }
 
+.need {
+  border-color: red;
+  background-color: #fef;
+}
+
+.warncolor {
+  background-color: #FFE190;;
+}
+
+.warn {
+  color: red
+}
+
 .hidden { 
   display: none;
   }

@@ -883,8 +883,8 @@ class rulesSetup {
         this.#ruleStepsTable.addRow({
             name: this.#rName.value, uses: 0, origStep: this.#ruleStepAddStepNum, step: this.#ruleStepMaxStep, origName: this.#editRuleName
             }, false).then(function (row) {
-                row.getCell("name").getElement().style.backgroundColor = "#fff3cd";
-                row.getCell("step").getElement().style.backgroundColor = "#fff3cd";
+                setCellChanged(row.getCell("name"));
+                setCellChanged(row.getCell("step"));
             });
         this.#ruleStepMaxStep++;
         this.editStep('ruleItems', this.#ruleStepAddStepNum);
@@ -1214,7 +1214,7 @@ class rulesSetup {
         for (var row of rows) {
             var name = row.getCell(this.#selIndex).getValue().toString();
             if (this.#selValues.includes(name)) {
-                row.getCell(this.#selIndex).getElement().style.backgroundColor = "#C0FFC0";
+                addFieldClass(row.getCell(this.#selIndex).getElement(), 'selectedBGColor');
             }
         }
         if (this.#selIndex == 'id')
@@ -1223,13 +1223,8 @@ class rulesSetup {
 
     // toggle the selection color of the clicked cell
     clickedSelection(e, cell) {
-        var filtercell = cell.getRow().getCell(rules.getselIndex());
-        var value = filtercell.getValue();
-        if (filtercell.getElement().style.backgroundColor) {
-            filtercell.getElement().style.backgroundColor = "";
-        } else {
-            filtercell.getElement().style.backgroundColor = "#C0FFC0";
-        }
+        let filtercell = cell.getRow().getCell(rules.getselIndex());
+        toggleFieldClass(filtercell.getElement(), contains('selectedBGColor'));
     }
 
     // set all/clear all sections in table based on direction
@@ -1239,7 +1234,11 @@ class rulesSetup {
             if (row.getPosition() === false)
                 continue;
 
-            row.getCell(rules.getselIndex()).getElement().style.backgroundColor = direction ? "#C0FFC0" : "";
+            if (direction) {
+                addFieldClass(row.getCell(rules.getselIndex()).getElement(), 'selectedBGColor');
+            } else {
+                row.getCell(rules.getselIndex()).getElement().classList.remove('selectedBGColor');
+            }
         }
     }
 
@@ -1293,7 +1292,7 @@ class rulesSetup {
         let setPage = this.#memRules.length > 25;
         this.#ruleAddRowNum--;
         this.#rulesTable.addRow({name: 'new-row', uses: 0, origName: this.#ruleAddRowNum}, false).then(function (row, setPage) {
-            row.getCell("name").getElement().style.backgroundColor = "#fff3cd";
+            setCellChanged(row.getCell("name"));
             if (setPage > 25)
                 row.getTable().setPageToRow(row);
         });

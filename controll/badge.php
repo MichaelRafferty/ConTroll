@@ -14,9 +14,8 @@ $con = get_con();
 $conid = $con['id'];
 
 $conf = get_conf('con');
-$google = get_conf('google');
 $usps = get_conf('usps');
-$url = $google['redirect_base'];
+$url = getConfValue('controll', 'redirect_base', '/');
 $condata = get_con();
 $startdate = new DateTime($condata['startdate']);
 $ageByDate = $startdate->format('F j, Y');
@@ -51,9 +50,11 @@ page_init($page,
               $authToken);
 
 
-    $freeSelect = "<option disabled='disabled' selected='true' value='-1'> -- select an option --</option>\\n";
+$freeSelect = [];
+    $freeSelect[] = [ 'value' => -1, 'label' => '-- select an option --'];
+            "<option disabled='disabled' selected='true' value='-1'> -- select an option --</option>\\n";
     foreach ($freeMems as $free) {
-        $freeSelect .= "<option value='" . $free['id'] . "'>" . $free['label'] . "</option>\\n";
+        $freeSelect[]   = ['value' => $free['id'], 'label' => $free['label']];
     }
 
 $useUSPS = false;
@@ -68,6 +69,9 @@ $config_vars['conid'] = $conid;
 $config_vars['required'] = getConfValue('reg', 'required', 'addr');
 $config_vars['useUSPS'] = $useUSPS;
 $config_vars['tokenStatus'] = $authToken->checkToken();
+$defaultCountry = strtoupper(getConfValue('con', 'defaultCountry', 'USA'));
+$countryOptions = loadCountryOptions($defaultCountry);
+$config_vars['defaultCountry'] = $defaultCountry;
 ?>
 <script type='text/javascript'>
     var config = <?php echo json_encode($config_vars); ?>;
@@ -93,7 +97,7 @@ $config_vars['tokenStatus'] = $authToken->checkToken();
                         <div class='col-sm-12'><h2 class='size=h3'>Profile</h2></div>
                     </div>
                     <?php
-                        drawEditPersonBlock($conf, $useUSPS, null, 'find', true, true, $ageByDate,
+                        drawEditPersonBlock($conf, $countryOptions, $useUSPS, null, 'find', true, true, $ageByDate,
                                 array (), $ageListIdx,200, true, 'f_', true);
                     ?>
                     </form>
@@ -102,7 +106,10 @@ $config_vars['tokenStatus'] = $authToken->checkToken();
             </div>
             <div class='modal-footer'>
                 <button class='btn btn-sm btn-secondary' type='button' data-bs-dismiss='modal'>Cancel</button>
-                <button class='btn btn-sm btn-primary' type='button' id='updateExisting' onClick='saveEdit()'>Update Existing Person</button>
+                <button class='btn btn-sm btn-primary' type='button' id='updateExisting' onClick="saveEdit('update')">Update Existing Person</button>
+                <button class='btn btn-sm btn-warning' type='button' id='updatePersonOverrideBTN' onclick='saveEdit2()' disabled=''>
+                    Overrride Validation Checks and Update Existing Person
+                </button>
             </div>
         </div>
     </div>
@@ -124,7 +131,7 @@ $config_vars['tokenStatus'] = $authToken->checkToken();
                         <div class='col-sm-12'><h2 class='size=h3'>Profile</h2></div>
                     </div>
                     <?php
-                        drawEditPersonBlock($conf, $useUSPS, null, 'add', true, true, $ageByDate,
+                        drawEditPersonBlock($conf, $countryOptions, $useUSPS, null, 'add', true, true, $ageByDate,
                                 array (), $ageListIdx,1000, true, 'a_', true);
                     ?>
                     </form>

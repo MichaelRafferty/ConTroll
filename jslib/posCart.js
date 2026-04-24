@@ -1654,6 +1654,7 @@ class PosCart {
         params.first_name = row.first_name;
         params.last_name = row.last_name;
         params.category = printrow.memCategory;
+        params.badgeLabel = printrow.badgeLabel;
         params.badge_id = row.perid;
         params.day = dayFromLabel(printrow.label);
         if (printrow.memAge != 'all')

@@ -1,7 +1,6 @@
 <?php
 require_once 'lib/base.php';
 require_once '../lib/profile.php';
-require_once '../lib/portalForms.php';
 require_once '../lib/policies.php';
 require_once '../lib/tax.php';
 require_once('../lib/cc__load_methods.php');
@@ -90,6 +89,9 @@ if (array_key_exists('creditoffline', $controll)) {
 if (array_key_exists('creditonline', $controll)) {
     $config_vars['creditonline'] = $controll['creditonline'];
 }
+$defaultCountry = strtoupper(getConfValue('con', 'defaultCountry', 'USA'));
+$countryOptions = loadCountryOptions($defaultCountry);
+$config_vars['defaultCountry'] = $defaultCountry;
 
 if (array_key_exists('creditonline', $controll)) {
     if ($controll['creditonline'] == 1) {
@@ -203,7 +205,7 @@ if (!$controll['useportal']) {
                              <input type="hidden" name="perinfo-perid" id="perinfo-perid" />
                              <input type="hidden" name="membership-index" id="membership-index" />
 <?php
-drawEditPersonBlock($con, $useUSPS, $policies, '', false, true, $ageByDate,
+drawEditPersonBlock($con, $countryOptions, $useUSPS, $policies, '', false, true, $ageByDate,
         array(), $ageListIdx, 200, true, '');
 ?>
                             <div class="row">

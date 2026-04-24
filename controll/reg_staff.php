@@ -1,7 +1,11 @@
 <?php
 require_once "lib/base.php";
 require_once "../lib/notes.php";
+require_once "../lib/policies.php";
+require_once '../lib/profile.php';
 require_once 'lib/sessionAuth.php';
+require_once 'lib/match.php';
+require_once 'lib/fileManager.php';
 
 $page = 'reg_staff';
 $authToken = new authToken('web');
@@ -23,6 +27,7 @@ page_init($page,
                     $cdn['tabjs'],
                     'js/tinymce/tinymce.min.js',
                     'js/reg_admin.js',
+                    'js/fileManager.js',
                     'js/regadmin_consetup.js',
                     'js/regadmin_memconfig.js',
                     'js/regadmin_merge.js',
@@ -67,12 +72,18 @@ $config_vars['currency'] = $currency;
 $config_vars['tokenStatus'] = $authToken->checkToken();
 $config_vars['rolloverYears'] = getConfValue('controll', 'priorRolloverYears', 2);
 $config_vars['bundleMemberships'] = getConfValue('con', 'bundlememberships', 0) == 1 ? 'Y' : 'N';
-?>
-<?php bs_tinymceModal();
+$defaultCountry = strtoupper(getConfValue('con', 'defaultCountry', 'USA'));
+$countryOptions = loadCountryOptions($defaultCountry);
+$config_vars['defaultCountry'] = $defaultCountry;
+$policies = getPolicies();
+$policiesCell = drawPoliciesCell($policies);
+[$ageList, $ageListIdx] = getAgeList($conid);
+bs_tinymceModal();
+draw_fileManagerModals($authToken);
 // edit memList entry modal
 ?>
 <div id='editMemListModal' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Edit Membership Sequence' aria-hidden='true'
-     style='--bs-modal-width: 96%;'>
+     style=' --bs-modal-width: 96%;'>
     <div class='modal-dialog'>
         <div class='modal-content'>
             <div class='modal-header bg-primary text-bg-primary'>
@@ -115,10 +126,21 @@ $config_vars['bundleMemberships'] = getConfValue('con', 'bundlememberships', 0) 
                                     </div>
                                 </div>
                                 <div class='row mt-1'>
-                                    <div class='col-sm-2'>Price:</div>
+                                    <div class='col-sm-2'>Cart Description:</div>
                                     <div class='col-sm-10'>
-                                        <input type='number' class='no-spinners' inputmode='numeric' id='editMemListPrice' name="editMemListPrice" min="0"
+                                        <textarea name='editMemListCartDesc' id='editMemListCartDesc' placeholder='Cart Description'
+                                                  cols='80' rows='5' onchange='memListModalDirty = true;'>
+                                        </textarea>
+                                    </div>
+                                </div>
+                                <div class='row mt-1'>
+                                    <div class='col-sm-2'>Price:</div>
+                                    <div class='col-sm-3'>
+                                        <input type='number' class='no-spinners' inputmode='numeric' id='editMemListPrice' name='editMemListPrice' min='0'
                                                style='text-align: right; width: 6em;' onchange='priceChange(editListMasterRow)'/>
+                                    </div>
+                                    <div class='col-sm-7 text-end'>
+                                        <button class='btn btn-sm btn-primary' onclick='copyCartDesc();'>Copy only Cart Description to Time Series Rows</button>
                                     </div>
                                 </div>
                                 <div class='row mt-1'>
@@ -153,7 +175,7 @@ $config_vars['bundleMemberships'] = getConfValue('con', 'bundlememberships', 0) 
                                 <div class='row mt-1'>
                                     <div class='col-sm-2'>Bundle:</div>
                                     <div class='col-sm-10'>
-                                        <select name='editMemListBundle' id='editMemListBundle' onchange='bundleChanged();'>
+                                        <select name='editMemListBundle' id='editMemListBundle' onchange='bundleChanged(editListMasterRow);'>
                                             <option value='N'>No</option>
                                             <option value='Y'>Yes</option>
                                         </select>
@@ -169,7 +191,7 @@ $config_vars['bundleMemberships'] = getConfValue('con', 'bundlememberships', 0) 
                                     </div>
                                     <div class='col-sm-7'>
                                         <input type='text' name='editMemListBundleContains' id='editMemListBundleContains' placeholder='List of IDs in bundle'
-                                               onchange='bundleContentsChanged();' size='64' maxlength='256'/>
+                                               onchange='bundleContentsChanged(editListMasterRow);' size='64' maxlength='256'/>
                                     </div>
                                 </div>
                             <?php } ?>
@@ -181,16 +203,29 @@ $config_vars['bundleMemberships'] = getConfValue('con', 'bundlememberships', 0) 
                                     </div>
                                 </div>
                                 <div class='row mt-1'>
-                                    <div class='col-sm-2'>Gen. Ledger</div>
-                                    <div class='col-sm-auto'>Num:</div>
+                                    <div class='col-sm-2'>Override:</div>
+                                    <div class='col-sm-auto'>Category Badge Label:</div>
+                                    <div class='col-sm-auto' id='catBadgeLabel'></div>
+                                    <div class='col-sm-auto'>Override Badge Label:</div>
                                     <div class='col-sm-auto'>
+                                        <input type='text' name='editMemListBadgeLabel' id='editMemListBadgeLabel' placeholder='blank for no override'
+                                               size='20'
+                                               maxlength='16'
+                                               onchange='badgeLabelChange(editListMasterRow);'
+                                        />
+                                    </div>
+                                </div>
+                                <div class='row mt-1'>
+                                    <div class='col-sm-2'>Gen. Ledger</div>
+                                    <div class='col-sm-auto me-0'>Num:</div>
+                                    <div class='col-sm-auto ms-0 ps-0 me-0'>
                                         <input type='text' name='editMemListGLNum' id='editMemListGLNum' placeholder='GL Num' size='16' maxlength='16'
                                            onchange='glNumChange(editListMasterRow);'
                                         />
                                     </div>
-                                    <div class='col-sm-auto'>Label:</div>
-                                    <div class='col-sm-auto'>
-                                        <input type='text' name='editMemListGLLabel' id='editMemListGLLabel' placeholder='GL Label' size='42' maxlength='64'
+                                    <div class='col-sm-auto me-0'>Label:</div>
+                                    <div class='col-sm-auto ms-0 ps-0 me-0'>
+                                        <input type='text' name='editMemListGLLabel' id='editMemListGLLabel' placeholder='GL Label' size='40' maxlength='64'
                                             onchange='glLabelChange(editListMasterRow);'
                                         />
                                     </div>
@@ -250,16 +285,16 @@ $config_vars['bundleMemberships'] = getConfValue('con', 'bundlememberships', 0) 
                         <div class="col-sm-1" style='text-align: center;'>Price</div>
                         <div class="col-sm-2">Start Date</div>
                         <div class="col-sm-2">End Date</div>
-                        <div class="col-sm-1">At-Con</div>
-                        <div class="col-sm-1">OnLine</div>
+                        <div class="col-sm-1">At-Con ONL</div>
+                        <div class='col-sm-1'>O/Ride Label</div>
                         <div class="col-sm-1">GL Num</div>
-                        <div class="col-sm-3">GL Label</div>
+                        <div class="col-sm-2">GL Label</div>
                     </div>
 <?php
     for ($i = 0; $i < 10; $i++) {
         $bgColor = $i % 2 ? 'light-cyan' : '#e0e0e0';
 ?>
-                    <div class='row mt-2' style="background-color: <?php echo $bgColor;?>">
+                    <div class='row mt-1 pt-1 mb-0 pb-1' style="background-color: <?php echo $bgColor;?>">
                         <div class='col-sm-1 ps-0 pe-0 ms-0 me-0'>
                             <div class='container-fluid p-0 m-0'>
                                 <div class='row'>
@@ -286,19 +321,22 @@ $config_vars['bundleMemberships'] = getConfValue('con', 'bundlememberships', 0) 
                                 <option value='N'>No</option>
                                 <option value='Y'>Yes</option>
                             </select>
-                        </div>
-                        <div class='col-sm-1'>
                             <select id="EMLTS<?php echo $i;?>_Online" onchange="tsOnlineChange(<?php echo $i;?>)">
                                 <option value='N'>No</option>
                                 <option value='Y'>Yes</option>
                             </select>
                         </div>
                         <div class='col-sm-1'>
+                            <input type='text' id='EMLTS<?php echo $i;?>_badgeLabel' placeholder='O/R Badge Lbl' size='12' maxlength='16'
+                                   onchange="tsBadgeLabelChange(<?php echo $i;?>)"
+                            />
+                        </div>
+                        <div class='col-sm-1'>
                             <input type='text' id='EMLTS<?php echo $i;?>_glNum' placeholder='GL Num' size='12' maxlength='16'
                                    onchange="tsGlNumChange(<?php echo $i;?>)"
                             />
                         </div>
-                        <div class='col-sm-3'>
+                        <div class='col-sm-2'>
                             <input type='text' id='EMLTS<?php echo $i;?>_glLabel' placeholder='GL Label' size='40' maxlength='64'
                                    onchange="tsGlLabelChange(<?php echo $i;?>)"
                             />
@@ -306,7 +344,7 @@ $config_vars['bundleMemberships'] = getConfValue('con', 'bundlememberships', 0) 
                     </div>
 <?php
         if (getConfValue('con', 'bundlememberships', 0) == 1) { ?>
-                    <div class='row mt-2' name='TScontains' style="background-color: <?php echo $bgColor;?>">
+                    <div class='row pt-1 mt-0 mb-1 pb-1' name='TScontains' style="background-color: <?php echo $bgColor;?>">
                         <div class="col-sm-2"></div>
                         <div class='col-sm-auto'>Contains:</div>
                         <div class='col-sm-auto'>
@@ -347,7 +385,7 @@ $config_vars['bundleMemberships'] = getConfValue('con', 'bundlememberships', 0) 
                     <form id='merge-search' action='javascript:void(0)'>
                         <div class='row p-1'>
                             <div class='col-sm-3 p-0'>
-                                <label for='merge_name_search' id='mergeName'>Merge Name:</label>
+                                <label for='merge_name_search' id='mergeLookupName'>Merge Name:</label>
                             </div>
                             <div class='col-sm-9 p-0'>
                                 <input class='form-control-sm' type='text' name='namesearch' id='merge_name_search' size='64'
@@ -369,6 +407,31 @@ $config_vars['bundleMemberships'] = getConfValue('con', 'bundlememberships', 0) 
             <div class='modal-footer'>
                 <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
                 <button class='btn btn-sm btn-primary' id='mergeSearch' onClick='merge_find()'>Find Person</button>
+            </div>
+            <div id='result_message_merge' class='mt-4 p-2'></div>
+        </div>
+    </div>
+</div>
+<div id='merge-edit' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Edit Resulting Merged Person' aria-hidden='true'
+     style='--bs-modal-width: 95%;'>
+    <div class='modal-dialog'>
+        <div class='modal-content'>
+            <div class='modal-header bg-primary text-bg-primary'>
+                <div class='modal-title'>
+                    <strong id='mergeTitle'>Edit Resulting Merged Person</strong>
+                </div>
+                <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+            </div>
+            <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                <div class='container-fluid'>
+                    <?php echo matchEdit('match', 'mergeMatchTitle', 'To Merge Person', 'Merge Edited Value', 'To Remain Person',
+                                      'merge', $countryOptions, $policiesCell, $ageList);
+                    ?>
+                </div>
+            </div>
+            <div class='modal-footer'>
+                <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
+                <button class='btn btn-sm btn-primary' id='mergeExecute' onClick='merge.performMerge()'>Perform Merge</button>
             </div>
             <div id='result_message_merge' class='mt-4 p-2'></div>
         </div>
@@ -983,6 +1046,7 @@ $config_vars['bundleMemberships'] = getConfValue('con', 'bundlememberships', 0) 
 <?php drawNotesModal('96%'); ?>
 <script type='text/javascript'>
     var config = <?php echo json_encode($config_vars); ?>;
+    var policies = <?php echo json_encode($policies); ?>;
 </script>
 <ul class='nav nav-tabs mb-3' id='regadmin-tab' role='tablist'>
     <li class='nav-item' role='presentation'>
@@ -1041,6 +1105,11 @@ $config_vars['bundleMemberships'] = getConfValue('con', 'bundlememberships', 0) 
                 aria-controls='nav-menu' aria-selected='false' onclick="settab('configEdit-pane');">Configuration Editor
         </button>
     </li>
+    <li class='nav-item' role='presentation'>
+        <button class='nav-link' id='fileManager-tab' data-bs-toggle='pill' data-bs-target='#fileManager-pane' type='button' role='tab'
+                aria-controls='nav-menu' aria-selected='false' onclick="settab('fileManager-pane');">File Manager
+        </button>
+    </li>
 </ul>
 <div class='tab-content ms-2' id='regadmin-content'>
     <div class='tab-pane fade show active' id='registrationlist-pane' role='tabpanel' aria-labelledby='registrationlist-tab' tabindex='0'>
@@ -1078,7 +1147,7 @@ $config_vars['bundleMemberships'] = getConfValue('con', 'bundlememberships', 0) 
             </div>
         </div>
         <div class='row mt-2 mb-3' id='reglist-csv-div' hidden>
-            <div class="col-sm-auto p-1 ps-3 pe-3 tabulator-paginator" id="tabPaginationDiv" style="background-color: #e5e5e5;"></div>
+            <div class="col-sm-auto p-1 ps-3 pe-3 tabulator-paginator paginationBGColor" id="tabPaginationDiv"></div>
             <div class='col-sm-auto p-1 ms-4' id='admin-buttons'>
                 <button id='reglist-csv' type='button' class='btn btn-info btn-sm' onclick='reglistDownload("csv"); return false;'>Download CSV</button>
                 <button id='reglist-xlsx' type='button' class='btn btn-info btn-sm' onclick='reglistDownload("xlsx"); return false;'>Download Excel</button>
@@ -1173,7 +1242,23 @@ $config_vars['bundleMemberships'] = getConfValue('con', 'bundlememberships', 0) 
                 <div class='col-sm-auto'>
                     <button type='button' class='btn btn-secondary btn-sm' id='discardBTNb' onclick='configEditor.discard();' disabled>Discard Changes</button>
                 </div>
+                <div class='col-sm-auto'>
+                    <button type='button' class='btn btn-secondary btn-sm' id='discardBTNb' onclick='configEditor.scrollTOC();'>Scroll to
+                        Table of Contents</button>
+                </div>
+                <div class='col-sm-auto'>
+                    <button type='button' class='btn btn-secondary btn-sm' id='discardBTNb' onclick='configEditor.scrollMenu();'>Scroll to
+                        Main Menu</button>
+                </div>
             </div>
+        </div>
+    </div>
+    <div class='tab-pane fade' id='fileManager-pane' role='tabpanel' aria-labelledby='fileManager-tab' tabindex='0'>
+        <div class='container-fluid'>
+            <div class='row'>
+                <div class='col-sm-auto'><h2>Admin File Manager (upload/download)</h2></div>
+            </div>
+            <?php draw_FileManager($authToken); ?>
         </div>
     </div>
     <div id='result_message' class='mt-4 p-2'></div>

@@ -3,9 +3,9 @@
 // getTabulatorIncludes - returns CDN string for Tabulator
 function getTabulatorIncludes(): array {
     return ( [
-        'tabcss' => 'https://unpkg.com/tabulator-tables@6.3.1/dist/css/tabulator.min.css',
-        'tabbs5' => 'https://unpkg.com/tabulator-tables@6.3.1/dist/css/tabulator_bootstrap5.min.css',
-        'tabjs' => 'https://unpkg.com/tabulator-tables@6.3.1/dist/js/tabulator.min.js',
+        'tabcss' => 'https://unpkg.com/tabulator-tables@6.4.0/dist/css/tabulator.min.css',
+        'tabbs5' => 'https://unpkg.com/tabulator-tables@6.4.0/dist/css/tabulator_bootstrap5.min.css',
+        'tabjs' => 'https://unpkg.com/tabulator-tables@6.4.0/dist/js/tabulator.min.js',
         'luxon' => 'https://cdn.jsdelivr.net/npm/luxon@3.7.1/build/global/luxon.min.js',
         'bs5css' => "https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css' rel='stylesheet' integrity = 'sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB' crossorigin='anonymous'",
         'bs5js' => "https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js' integrity='sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI' crossorigin='anonymous'",
@@ -18,10 +18,10 @@ function getTabulatorIncludes(): array {
 
 // JS Version items
 global $portalJSVersion, $libJSversion, $controllJSversion, $globalJSversion, $atJSversion, $exhibitorJSversion, $onlineregJSversion;
-$portalJSVersion = '2.0.2';
-$libJSversion = '2.0.4';
-$controllJSversion = '2.0.4';
-$globalJSversion = '2.0.2';
-$atJSversion = '2.0.1';
-$exhibitorJSversion = '2.0.3';
-$onlineregJSversion = '2.0.2';
+$portalJSVersion = '2.0.20';
+$libJSversion = '2.0.23';
+$controllJSversion = '2.0.40';
+$globalJSversion = '2.0.9';
+$atJSversion = '2.0.7';
+$exhibitorJSversion = '2.0.11';
+$onlineregJSversion = '2.0.6';

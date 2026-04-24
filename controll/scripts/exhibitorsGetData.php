@@ -26,21 +26,47 @@ if (!(array_key_exists('region', $_POST) && array_key_exists('regionId', $_POST)
 $conid = getConfValue('con', 'id');
 $region = $_POST['region'];
 $regionId = $_POST['regionId'];
+if (array_key_exists('exhibitorConid', $_POST))
+    $exhibitorConid = $_POST['exhibitorConid'];
+else
+    $exhibitorConid = $conid;
 
 $currency = getConfValue('con', 'currency', 'USD');
 
 $exhibitorQ = <<<EOS
+WITH rNames AS (
+	select ery.id, CONCAT(er.id, '-', er.name) AS region
+	from exhibitsRegions er
+	join exhibitsRegionYears ery on ery.exhibitsRegion = er.id
+	where ery.conid = ?
+), eSpaces AS (
+	SELECT e.id, eY.id AS yid, eRY.id AS ryid, eS.id AS sid, eRY.exhibitsRegionYearId
+	FROM exhibitors e
+	JOIN exhibitorYears eY ON e.id = eY.exhibitorId
+	JOIN exhibitorRegionYears eRY ON eRY.exhibitorYearId = eY.id
+	JOIN exhibitorSpaces eS on eS.exhibitorRegionYear = eRY.id
+	WHERE eY.conid = ? AND (IFNULL(eS.item_requested, 0) > 0 OR IFNULL(eS.item_approved, 0) > 0 OR IFNULL(eS.item_purchased, 0) > 0)
+), srNames AS (
+	SELECT DISTINCT e.id, r.id AS RYID, r.region
+    FROM eSpaces e
+    JOIN rNames r ON e.exhibitsRegionYearId = r.id
+), regions AS (
+	SELECT id, GROUP_CONCAT(region ORDER BY region SEPARATOR '<BR/>') AS regions
+	FROM srNames
+	GROUP BY id
+)
 SELECT e.id as exhibitorId, perid, exhibitorName, exhibitorEmail, exhibitorPhone, salesTaxId, website, description, password, publicity, 
        addr, addr2, city, state, zip, country, shipCompany, shipAddr, shipAddr2, shipCity, shipState, shipZip, shipCountry, archived,
-       artistName, IFNULL(e.notes, '') AS exhNotes, eY.id as exhibitorYearId, conid, contactName, contactEmail, contactPhone, contactPassword,
+       artistName, artistPayee, IFNULL(e.notes, '') AS exhNotes, eY.id as exhibitorYearId, conid, contactName, contactEmail, contactPhone, contactPassword,
        mailin, IFNULL(eY.notes, '') AS contactNotes,
-       CASE WHEN IFNULL(artistName, '') = '' THEN exhibitorName ELSE CONCAT_WS('<BR/>', exhibitorName, artistName) END AS fullExhName
+       CASE WHEN IFNULL(artistName, '') = '' THEN exhibitorName ELSE CONCAT_WS('<BR/>', exhibitorName, artistName) END AS fullExhName, r.regions
 FROM exhibitors e
 JOIN exhibitorYears eY ON e.id = eY.exhibitorId
+JOIN regions r ON e.id = r.id
 WHERE eY.conid = ?;
 EOS;
 
-$exhibitorR = dbSafeQuery($exhibitorQ, 'i', array($conid));
+$exhibitorR = dbSafeQuery($exhibitorQ, 'iii', array($exhibitorConid, $exhibitorConid, $exhibitorConid));
 if (!$exhibitorR) {
     ajaxSuccess(array(
         "args" => $_POST,
@@ -82,10 +108,33 @@ $exhibitorR->free();
 
 $response['exhibitors'] = $exhibitors;
 
+// get the region type fields to know what kind of info is required
+$typesQ = <<<EOS
+SELECT et.regionType, et.portalType, et.usesInventory, ery.id AS exhibitsRegionYearId
+FROM exhibitsRegions er
+JOIN exhibitsRegionTypes et ON er.regionType = et.regionType
+JOIN exhibitsRegionYears ery ON er.id = ery.exhibitsRegion
+WHERE er.id = ? AND ery.conid = ?;
+EOS;
+$typeR = dbSafeQuery($typesQ, 'ii', array($regionId, $exhibitorConid));
+if ($typeR === false) {
+    ajaxSuccess(array(
+        'args' => $_POST,
+        'query' => $typesQ,
+        'error' => 'query failed'));
+    exit();
+}
+$typeL = $typeR->fetch_assoc();
+$response['portalType'] = $typeL['portalType'];
+$response['regionType'] = $typeL['regionType'];
+$response['usesInventory'] = $typeL['usesInventory'];
+$response['exhibitsRegionYearId'] = $typeL['exhibitsRegionYearId'];
+$typeR->free();
+
 // get approvals for this region
 $approvalQ = <<<EOS
 SELECT exRY.id, eY.exhibitorId, exRY.exhibitsRegionYearId, exRY.approval, exRY.updateDate, exRY.updateBy, eR.name, eR.shortname, 
-       e.exhibitorName, e.artistName, e.exhibitorEmail, e.website,
+       e.exhibitorName, e.artistName, e.artistPayee, e.exhibitorEmail, e.website,
        COUNT(exS.item_approved) + COUNT(exS.item_requested) + COUNT(exS.item_purchased) AS used,
        CASE WHEN IFNULL(artistName, '') = '' THEN exhibitorName ELSE CONCAT_WS('<BR/>', exhibitorName, artistName) END AS fullExhName
 FROM exhibitorRegionYears exRY
@@ -97,10 +146,10 @@ LEFT JOIN exhibitorSpaces exS ON es.id = exS.spaceId AND exS.exhibitorRegionYear
 JOIN exhibitors e ON eY.exhibitorId = e.id
 WHERE eRY.exhibitsRegion = ? and eRY.conid = ? AND exRY.approval != 'none'
 GROUP BY exRY.id, eY.exhibitorId, exRY.exhibitsRegionYearId, exRY.approval, exRY.updateDate, exRY.updateBy, eR.name, eR.shortname,
-         e.exhibitorName, e.artistName, e.exhibitorEmail, e.website;
+         e.exhibitorName, e.artistName, e.artistPayee, e.exhibitorEmail, e.website;
 EOS;
 
-$approvalR = dbSafeQuery($approvalQ, 'si', array($regionId, $conid));
+$approvalR = dbSafeQuery($approvalQ, 'si', array($regionId, $exhibitorConid));
 if (!$approvalR) {
     ajaxSuccess(array(
         'args' => $_POST,
@@ -135,7 +184,7 @@ WHERE eRY.conid=? AND eRY.exhibitsRegion = ?
 GROUP BY xS.spaceId, xS.name, eS.unitsAvailable
 EOS;
 
-$spaceR = dbSafeQuery($spaceQ, 'ii', array($conid, $regionId));
+$spaceR = dbSafeQuery($spaceQ, 'ii', array($exhibitorConid, $regionId));
 if (!$spaceR) {
     ajaxSuccess(array(
         'args' => $_POST,
@@ -157,12 +206,11 @@ $response['summary'] = $spaces;
 $details = array();
 $detailQ = <<<EOS
 WITH exh AS (
-SELECT e.id, e.exhibitorName, e.artistName, e.website, e.exhibitorEmail, exRY.exhibitorNumber, exRY.agentRequest,
+SELECT e.id, e.exhibitorName, e.artistName, e.artistPayee, e.website, e.exhibitorEmail, exRY.exhibitorNumber, exRY.agentRequest,
     TRIM(CONCAT(p.first_name, ' ', p.last_name)) as pName, TRIM(CONCAT(n.first_name, ' ', n.last_name)) AS nName, 
     CASE WHEN IFNULL(artistName, '') = '' THEN exhibitorName ELSE CONCAT_WS('<BR/>', exhibitorName, artistName) END AS fullExhName,
     eY.id AS exhibitorYearId, exRY.locations, exRY.id AS exhibitorRegionYearId,
-	SUM(IFNULL(espr.units, 0)) AS ru, SUM(IFNULL(espa.units, 0)) AS au, SUM(IFNULL(espp.units, 0)) AS pu,
-	COUNT(a.id) AS invCount
+	SUM(IFNULL(espr.units, 0)) AS ru, SUM(IFNULL(espa.units, 0)) AS au, SUM(IFNULL(espp.units, 0)) AS pu
 FROM exhibitorSpaces eS
 LEFT OUTER JOIN exhibitsSpacePrices espr ON (eS.item_requested = espr.id)
 LEFT OUTER JOIN exhibitsSpacePrices espa ON (eS.item_approved = espa.id)
@@ -174,10 +222,14 @@ JOIN exhibitsSpaces s ON (s.id = eS.spaceId)
 JOIN exhibitsRegionYears eRY ON s.exhibitsRegionYear = eRY.id
 LEFT OUTER JOIN perinfo p ON p.id = exRY.agentPerid
 LEFT OUTER JOIN newperson n ON n.id = exRY.agentNewperson
-LEFT OUTER JOIN artItems a ON (a.exhibitorRegionYearId = exRY.id)
 WHERE eY.conid = ? AND eRY.exhibitsRegion = ?
-GROUP BY e.id, e.exhibitorName, e.artistName, e.website, e.exhibitorEmail, exRY.exhibitorNumber, exRY.agentRequest, pName, nName,
+GROUP BY e.id, e.exhibitorName, e.artistName, e.artistPayee, e.website, e.exhibitorEmail, exRY.exhibitorNumber, exRY.agentRequest, pName, nName,
     eY.id, exRY.locations, exRY.id
+), invC AS (
+	SELECT exh.exhibitorRegionYearId AS id, COUNT(a.id) AS invCount
+    FROM exh
+    LEFT OUTER JOIN artItems a ON (a.exhibitorRegionYearId = exh.exhibitorRegionYearId)
+	GROUP BY exh.exhibitorRegionYearId
 )
 SELECT xS.id, xS.exhibitorId, exh.exhibitorName, exh.artistName, exh.website, exh.exhibitorEmail,
     xS.spaceId, xS.name as spaceName, xS.item_requested, xS.time_requested, xS.requested_units, xS.requested_code, xS.requested_description,
@@ -185,7 +237,7 @@ SELECT xS.id, xS.exhibitorId, exh.exhibitorName, exh.artistName, exh.website, ex
     xS.item_purchased, xS.time_purchased, xS.purchased_units, xS.purchased_code, xS.purchased_description, xS.transid, xS.shortname,
     eRY.id AS exhibitsRegionYearId, eRY.exhibitsRegion AS regionId, eRY.ownerName, eRY.ownerEmail, eR.name AS regionName, 
     exh.exhibitorNumber, exh.exhibitorYearId, exh.locations,
-    IFNULL(pName, nName) as agentName, exh.invCount, exh.exhibitorRegionYearId, eT.mailInAllowed,
+    IFNULL(pName, nName) as agentName, invC.invCount, exh.exhibitorRegionYearId, eT.mailInAllowed,
     CASE WHEN IFNULL(artistName, '') = '' THEN exhibitorName ELSE CONCAT_WS('<BR/>', exhibitorName, artistName) END AS fullExhName
 FROM vw_ExhibitorSpace xS
 JOIN exhibitsSpaces eS ON xS.spaceId = eS.id
@@ -193,11 +245,12 @@ JOIN exhibitsRegionYears eRY ON eS.exhibitsRegionYear = eRY.id
 JOIN exhibitsRegions eR ON eR.id = eRY.exhibitsRegion
 JOIN exhibitsRegionTypes eT ON (eT.regionType = eR.RegionType)
 JOIN exh ON (xS.exhibitorId = exh.id)
+LEFT OUTER JOIN  invC ON (exh.exhibitorRegionYearId = invC.id)
 WHERE eRY.conid=? AND eRY.exhibitsRegion = ? AND (IFNULL(requested_units, 0) > 0 OR IFNULL(approved_units, 0) > 0)
 ORDER BY xS.exhibitorId, spaceId;
 EOS;
 
-$detailR = dbSafeQuery($detailQ, 'iiii',  array($conid, $regionId, $conid, $regionId));
+$detailR = dbSafeQuery($detailQ, 'iiii',  array($exhibitorConid, $regionId, $exhibitorConid, $regionId));
 if (!$detailR) {
     ajaxSuccess(array(
         'args' => $_POST,
@@ -227,7 +280,7 @@ WHERE eRY.conid = ? AND eRY.exhibitsRegion = ?
 ORDER BY spaceId, price;
 EOS;
 
-$priceR = dbSafeQuery($priceQ, 'ii', array($conid, $regionId));
+$priceR = dbSafeQuery($priceQ, 'ii', array($exhibitorConid, $regionId));
 $price_list = array();
 $currentSpaceId = -999;
 $prices='';
@@ -251,7 +304,7 @@ FROM exhibitorRegionYears exRY
 JOIN exhibitsRegionYears eRY ON exRY.exhibitsRegionYearId = eRY.id
 WHERE locations IS NOT NULL AND locations != '' AND exhibitsRegion = ? AND conid = ?;
 EOS;
-$locationR = dbSafeQuery($locationQ, 'ii', array($regionId, $conid));
+$locationR = dbSafeQuery($locationQ, 'ii', array($regionId, $exhibitorConid));
 $locationsUsed = '';
 if ($locationR !== false) {
     while ($locationL = $locationR->fetch_assoc()) {

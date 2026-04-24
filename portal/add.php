@@ -1,7 +1,7 @@
 <?php
 // Registration  Portal - add.php - add new person and manage them
 require_once("lib/base.php");
-require_once("../lib/portalForms.php");
+require_once("lib/portalForms.php");
 require_once("../lib/interests.php");
 require_once("../lib/profile.php");
 require_once("../lib/policies.php");
@@ -43,6 +43,9 @@ $config_vars['id'] = $loginId;
 $config_vars['idType'] = $loginType;
 $config_vars['personEmail'] = getSessionVar('email');
 $config_vars['required'] = getConfValue('reg', 'required', 'addr');
+$defaultCountry = strtoupper(getConfValue('con', 'defaultCountry', 'USA'));
+$countryOptions = loadCountryOptions($defaultCountry);
+$config_vars['defaultCountry'] = $defaultCountry;
 
 $cdn = getTabulatorIncludes();
 
@@ -146,7 +149,7 @@ draw_addMembershipsConfirmModal();
         <form id='addUpgradeForm' class='form-floating' action='javascript:void(0);'>
 <?php
 outputCustomText('main/step2');
-drawVerifyPersonInfo($policies, $condata['startdate'], $ageList);
+drawVerifyPersonInfo($policies, $condata['startdate'], $ageList, $countryOptions);
 ?>
             <hr/>
         </form>
