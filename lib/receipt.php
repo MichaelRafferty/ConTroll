@@ -1088,7 +1088,7 @@ EOS;
     </div>
 EOS;
     $receipt_tables .= <<<EOS
-<tr><td colspan="2">Total Due</td><td style="text-align: right;">$price</td></tr>
+<tr><td colspan="2">Total Due:</td><td style="text-align: right;">$price</td></tr>
 EOS;
 
     // now for the payments/coupon section
@@ -1198,7 +1198,7 @@ EOS;
     </div>
 EOS;
         $receipt_tables .= <<<EOS
-<tr><td colspan="2">Total Payments</td><td style="text-align: right;">$paymentTotalFmt</td></tr>
+<tr><td colspan="2">Total Payments:</td><td style="text-align: right;">$paymentTotalFmt</td></tr>
 EOS;
     }
 

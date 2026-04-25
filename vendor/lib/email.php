@@ -202,14 +202,14 @@ function payment($results) {
     // plain text version
     $body = "Dear " . trim($buyer['fname'] . ' ' . $buyer['lname']) . ":\n\n" .
         "Here is your receipt for payment of " . $dolfmt->formatCurrency($results['approved_amt'], $currency) . ' for ' . $label .
-            ' ' . $region['name'] . "\n\n" . $receipts['receipt'] . "\n\n" .
-            "If you have any questions please contact the " . $region['name'] . ' staff at ' . $region['ownerEmail']  . ".\n\nThank you\n";
+            ' ' . $region['name'] . ":\n\n" . $receipts['receipt'] . "\n\n" .
+            "If you have any questions please contact the " . $region['name'] . ' staff at ' . $region['ownerEmail']  . ".\n\nThank you.\n";
 
         // html version
     $bodyHtml = '<p>Dear ' . trim($buyer['fname'] . ' ' . $buyer['lname']) . ":</p>\n" .
         '<p>Here is your receipt for payment of ' . $dolfmt->formatCurrency($results['approved_amt'], $currency) . ' for ' . $label .
-            ' ' . $region['name'] . "</p>\n" . $receipts['receipt_tables'] .
-        '<p>If you have any questions please contact the ' . $region['name'] . ' staff at ' . $region['ownerEmail'] . ".</p>\n<p>Thank you</p>\n";
+            ' ' . $region['name'] . ":</p>\n" . $receipts['receipt_tables'] .
+        '<p>If you have any questions please contact the ' . $region['name'] . ' staff at ' . $region['ownerEmail'] . ".</p>\n<p>Thank you.</p>\n";
 
     return array($body, $bodyHtml);
 }
