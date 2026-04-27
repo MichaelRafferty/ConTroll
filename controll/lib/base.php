@@ -147,43 +147,44 @@ function con_info($authToken) : void {
     $unlockCount = 0;
     $badgeCount = 0;
     $con = get_con();
-    if($authToken != null && $authToken->checkAuth('overview')) {
-        $cQ = <<<EOS
-SELECT status, count(*) AS num
-FROM reg
-WHERE conid = ? AND status IN ('paid', 'plan', 'unpaid')
-GROUP BY status;
-EOS;
-        $count_res = dbSafeQuery($cQ, 'i', array($con['id']));
-        while ($countRow = $count_res->fetch_row()) {
-            $badgeCount += $countRow[1];
-            if ($countRow[0] == 'paid')
-                $unlockCount += $countRow[1];
+    if($authToken != null) {
+    ?>
+        <div class='row' id='regInfo'>
+        <div class='col-sm-auto'>
+        <span id='regInfoCon' class='left'>Con:
+                    <span class='blocktitle'> <?php echo $con['label']; ?> </span>
+    <?php
+        if ($authToken->checkAuth('overview')) {
+            $cQ = <<<EOS
+    SELECT status, count(*) AS num
+    FROM reg
+    WHERE conid = ? AND status IN ('paid', 'plan', 'unpaid')
+    GROUP BY status;
+    EOS;
+            $count_res = dbSafeQuery($cQ, 'i', array($con['id']));
+            while ($countRow = $count_res->fetch_row()) {
+                $badgeCount += $countRow[1];
+                if ($countRow[0] == 'paid')
+                    $unlockCount += $countRow[1];
+            }
+?>
+                    <small><?php echo $badgeCount . " Badges (" . $unlockCount . " Ready)"; ?></small>
+<?php
+        } else if (!$authToken->checkAuth('gen_rpts')) {
+?>
+                    <small>Please log in for convention information.</small>
+<?php
         }
 ?>
-
-        <div class="row" id='regInfo'>
-            <div class="col-sm-auto">
-                <span id='regInfoCon' class='left'>Con: 
-                    <span class='blocktitle'> <?php echo $con['label']; ?> </span>
-                    <small><?php echo $badgeCount . " Badges (" . $unlockCount . " Ready)"; ?></small>
                 </span>
             </div>       
-        </div>
-    <?php } else if ($authToken == null) { ?>
-        <div class="row" id='regInfo'>
-            <div class="col-sm-auto">
-                <span>Con:
-                    <span class='blocktitle'> <?php echo $con['label']; ?> </span>
-                    <span class="h3 ms-4">Your login is about to expire and will be refreshed.</span>
-            </div>
         </div>
     <?php } else { ?>
         <div class="row" id='regInfo'>
             <div class="col-sm-auto">
                 <span>Con:
                     <span class='blocktitle'> <?php echo $con['label']; ?> </span>
-                    <small>Please log in for convention information.</small>
+                    <span class="h3 ms-4">Your login is about to expire and will be refreshed.</span>
             </div>
         </div>
     <?php
