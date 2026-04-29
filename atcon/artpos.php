@@ -110,7 +110,10 @@ $cdn = getTabulatorIncludes();
 page_init($page, $tab,
     /* css */ array($cdn['tabcss'], $cdn['tabbs5']),
     /* js  */ array( ///$cdn['luxon'],
-                    $cdn['tabjs'], 'js/artpos_cart.js', 'js/artpos.js'),
+                $cdn['tabjs'],
+                'jslib/barcodes.js',
+                'js/artpos_cart.js',
+                'js/artpos.js'),
     $config_vars
     );
 if ($config_vars['creditonline'] == 1) {

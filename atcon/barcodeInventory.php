@@ -24,7 +24,9 @@ $cdn = getTabulatorIncludes();
 barcode_page_init($page,
     /* css */ array($cdn['tabcss'], $cdn['tabbs5'], 'css/style.css'),
     /* js  */ array( //$cdn['luxon'],
-                    $cdn['tabjs'],'js/barcodeInventory.js'),
+                $cdn['tabjs'],
+                'jslib/barcodes.js',
+                'js/barcodeInventory.js'),
         $config_vars
     );
 

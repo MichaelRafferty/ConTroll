@@ -95,14 +95,19 @@ function printQtyChanged(quantity = null, fetchedQty = -1) {
 
 function fetchValues() {
     // get the current scan code, it should not be emtpy
-    let scancode = scanField.value;
-    if (scancode == '') {
-        show_message('Please scan a barcode', 'warn');
-        return;
-    }
+    clear_message();
     let type = inventoryTypeSelect.value;
     if (type == '') {
         show_message('Please select an inventory mode', 'warn');
+        scanField.value = '';
+        inventoryTypeSelect.focus();
+        return;
+    }
+    let scancode = scanField.value;
+    if (scancode == '') {
+        show_message('Please scan a barcode', 'warn');
+        scanField.value = '';
+        scanField.focus();
         return;
     }
 
@@ -111,11 +116,23 @@ function fetchValues() {
     fecthedQty = -1;
     scanned = scancode.split(',');
     item = scanned[0].trim();
+    if (item == '') {
+        show_message('Please scan a barcode or enter the barcode text value.', 'warn');
+        scanField.value = '';
+        scanField.focus();
+        return;
+    }
+    if (!Barcodes.check(item)) {
+        show_message('Invalid barcode scanned or entered, check entry and try again.', 'warn');
+        scanField.value = '';
+        scanField.focus();
+        return;
+    }
     let script = 'scripts/artInventory_barcodeInventory.php';
     $.ajax({
         method: "POST",
         url: script,
-        data: { pollitem: item, },
+        data: { pollitem: Barcodes.trimChecksum(item), },
         success: function(data, textStatus, jqXhr) {
             inProcess = false;
             fetchValuesSuccess(data);
@@ -128,8 +145,14 @@ function fetchValues() {
     });
 }
 
+// common error/return string contents of line 1
+function buildItemString(scanid, item) {
+    return "Item " + scanid + ' (' + item.exhibitorNumber + ':' + item.item_key + ' ' + item.artistName + ', ' +  item.title + ')';
+}
+
 // deal with the values
-function fetchValuesSuccess(data) {if (data.error) {
+function fetchValuesSuccess(data) {
+    if (data.error) {
         show_message(data.error, 'error');
         inventoryButton.disabled = false;
         scanField.focus();
@@ -137,26 +160,24 @@ function fetchValuesSuccess(data) {if (data.error) {
     }
     if (data.numRows != 1) {
         clearScreen();
-        show_message("Item " + data.pollitem + ' not found', 'error');
+        show_message("Item " + lastscan + ' not found', 'error');
         return;
     }
     if (data.item.conid != config.conid) {
         clearScreen();
-        show_message("Item " + data.pollitem + ' (' + data.item.title + ') for Artist ' + data.item.exhibitorNumber +
-            '<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;is from conid ' + data.item.conid + '.  This is conid ' + config.conid, 'error');
+        show_message(buildItemString(lastscan, data.item) + '<br/>is from conid ' + data.item.conid + '.  This is conid ' + config.conid, 'error');
         return;
     }
 
     let type = inventoryTypeSelect.value;
     if (type == 'bid' && data.item.type == 'nfs') {
         clearScreen();
-        show_message("Item " + data.pollitem + ' (' + data.item.title + ') for Artist ' + data.item.exhibitorNumber +
-            '<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;is NOT FOR SALE and cannot be bid on', 'error');
+        show_message(buildItemString(lastscan, data.item) + '<br/>is NOT FOR SALE and cannot be bid on', 'error');
         return;
     }
 
     if (data.item.type != 'print') {
-        scanField.value = data.item.id;
+        scanField.value = lastScan;
     }
     lastData = data;  // this fetch is the latest data
     return inventory(0, data);
@@ -194,7 +215,7 @@ function inventory(mode, data = null) {
     if (print) {
         if (type == 'bid') {
             clearScreen();
-            show_message(scancode + "  is a print. You cannot record a bid on a print.", 'error');
+            show_message(buildItemString(scancode, data.item) + "<br/>is a print. You cannot record a bid on a print.", 'error');
             return;
         }
         printDiv.hidden = false;
@@ -250,7 +271,7 @@ function inventory(mode, data = null) {
                 dbBidder.innerHTML = data.item.bidder;
                 if (data.item.status == 'To Auction') {
                     toAuctionField.checked = true;
-                    show_message("This item is currently in the auction. You cannot enter a bid on it.<br/>" +
+                    show_message(buildItemString(lastscan, data.item) + "<br/>is currently in the auction. You cannot enter a bid on it.<br/>" +
                     "if there is an error in the bid or bidder see the administrator.", 'error');
                     return;
                 }
@@ -320,7 +341,7 @@ function inventory(mode, data = null) {
             url: script,
             data: {
                 type: type,
-                item: item,
+                item: Barcodes.trimChecksum(item),
                 quantity: quantity,
                 bid: bid,
                 print: print ?  '1' : '0',
@@ -383,5 +404,6 @@ function clearScreen() {
     inventoryNoChange.disabled = false;
     inventoryOverride.hidden = true;
     inventoryNoChange.hidden = true;
+    clear_message();
     return;
 }

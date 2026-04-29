@@ -661,6 +661,14 @@ function findArt(findType) {
             unitNumber = fields[1];
             itemCode_field.value = '';
             itemCode_field.focus();
+            if (itemId == '') {
+                show_message('Please scan a barcode or enter the barcode text value.', 'warn');
+                return;
+            }
+            if (!Barcodes.check(itemId)) {
+                show_message('Invalid barcode scanned or entered, check entry and try again.', 'warn');
+                return;
+            }
             break;
 
         case 'unit':
@@ -677,6 +685,17 @@ function findArt(findType) {
                 var fields = itemCode.split(',');
                 itemId = fields[0];
                 unitNumber = fields[1];
+                itemCode_field.value = '';
+                itemCode_field.focus();
+                if (itemId == '') {
+                    show_message('Please scan a barcode or enter the barcode text value.', 'warn');
+                    return;
+                }
+                if (!Barcodes.check(itemId)) {
+                    show_message('Invalid barcode scanned or entered, check entry and try again.', 'warn');
+                    return;
+                }
+                itemId = Barcodes.trimChecksum(itemId);
             } else {
                 itemCode = null;
             }

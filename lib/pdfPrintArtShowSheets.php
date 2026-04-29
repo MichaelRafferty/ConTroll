@@ -2,6 +2,7 @@
 // pdfPrintArtShowSheets.php - routines for creating the art show bid sheets, price tags and control sheets
 require_once(__DIR__ . '/../lib/pdf/tfpdf/tfpdf.php');
 require_once(__DIR__ . '/../lib/pdf/fpdf-barcode/src/Barcode.php');
+require_once(__DIR__ . '/../lib/barcodes.php');
 require_once ("pdfFunctions.php");
 
 global $pdf;
@@ -194,10 +195,11 @@ EOS;
             printXY($h + (0.97 * $isize) - $pricewidth, $v + $dataOffset, $priceFmt);
 
             if ($useBarCode) {
+                $encodedBC = ConTroll\BarcodeFcns::addEncode($print['itemId']);
                 $v += $blockheight;
-                $barcodeData = sprintf("%7.7d,%3.3d", $print['itemId'], $copy);
+                $barcodeData = sprintf("%7.7d,%3.3d", $encodedBC, $copy);
                 $pdf->code128($h + $indent, $v + $labelOffset, $barcodeData, ($isize - (2 * $indent)) / 1.5, $blockheight - (2 * $labelOffset));
-                $bctext = $print['itemId'] . ',' . $copy;
+                $bctext = "$encodedBC,$copy";
                 $length = $pdf->getStringWidth($bctext);
                 printXY($h + ($isize * 0.6) + 1.2 - (0.1 + $length), $v + $labelOffset + 0.125, $bctext);
             }
@@ -524,11 +526,11 @@ EOS;
 
         if ($useBarCode) {
             $v += $blockheight;
-            $barcodeData = sprintf('%7.7d,%3.3d', $art['itemId'], 1);
+            $encodedBC = ConTroll\BarcodeFcns::addEncode($art['itemId']);
+            $barcodeData = sprintf('%7.7d,%3.3d', $encodedBC, 1);
             $pdf->code128($h + $indent, $v + $labelOffset, $barcodeData, ($isize - (2 * $indent)) / 1.5, $blockheight - (2 * $labelOffset));
-            $bctext = $art['itemId'];
-            $length = $pdf->getStringWidth($bctext);
-            printXY($h + ($isize * 0.6) + 1.5 - (0.1 + $length), $v + $labelOffset + 0.125, $bctext);
+            $length = $pdf->getStringWidth($encodedBC);
+            printXY($h + ($isize * 0.6) + 1.5 - (0.1 + $length), $v + $labelOffset + 0.125, $encodedBC);
         }
 
         if ($art['type'] != 'nfs') {
