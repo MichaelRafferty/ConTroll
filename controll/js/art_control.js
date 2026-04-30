@@ -17,12 +17,16 @@ var historyDiv = null;
 
 var artists = null;
 var editable = false;
+var currencyFmt = null;
 
 var priceregexp = 'regex:^([0-9]+([.][0-9]*)?|[.][0-9]+)$';
-
 var testdiv = null;
 
 $(document).ready(function() {
+    currencyFmt = new Intl.NumberFormat(config.locale, {
+        style: 'currency',
+        currency: config.currency,
+    });
     testdiv = document.getElementById('test');
     artItemModal = artItemModalOnLoad(itemTable);
     //set buttons
@@ -171,11 +175,11 @@ function draw(data, textStatus, jqXHR) {
                 {title: 'Material', field: 'material', headerSort: true, headerFilter: true,},
                 {
                     title: 'Min Bid or Ins.', field: 'min_price', headerSort: true, headerFilter: true, headerFilterFunc: numberHeaderFilter,
-                    headerWordWrap: true, width: 100, formatter: "money", hozAlign: "right",
+                    headerWordWrap: true, width: 100, formatter: localeMoney, hozAlign: "right",
                 },
                 {
                     title: 'Q. Sale or Print', field: 'sale_price', headerSort: true, headerFilter: true, headerFilterFunc: numberHeaderFilter,
-                    headerWordWrap: true, width: 100, formatter: "money", hozAlign: "right",
+                    headerWordWrap: true, width: 100, formatter: localeMoney, hozAlign: "right",
                 },
                 {
                     title: 'Orig Qty', field: 'original_qty', headerSort: true, headerFilter: true, headerFilterFunc: numberHeaderFilter,
@@ -191,7 +195,7 @@ function draw(data, textStatus, jqXHR) {
                 {title: 'Bidder', field: 'bidderText', headerSort: true, headerFilter: true,},
                 {
                     title: 'Final Price', field: 'final_price', headerSort: true, headerFilter: true, headerFilterFunc: numberHeaderFilter,
-                    headerWordWrap: true, width: 100, formatter: "money", hozAlign: "right",
+                    headerWordWrap: true, width: 100, formatter: localeMoney, hozAlign: "right",
                 },
                 {title: 'Notes', field: 'notes', formatter: "textarea",}
             ]
@@ -483,3 +487,10 @@ function displayArtItemHistory(data) {
     historyPaneModal.show();
 }
 
+function localeMoney(cell, formatParams, onRendered) {
+    let value = cell.getValue();
+    if (value == '')
+        return value;
+
+    return currencyFmt.format(Number(value).toFixed(2));
+}
