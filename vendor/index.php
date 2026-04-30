@@ -666,21 +666,8 @@ EOS;
                         if ($paid > 0) {
                             vendor_receipt($regionYearId, $regionName, $regionSpaces, $exhibitorSpaceList);
                             if ($portalType == 'artist') {
-                                // check to see if there are any art items, if not, offer to import prior items if there are any
-                                $chkQ = <<<EOS
-SELECT COUNT(*)
-FROM artItems i
-JOIN exhibitorRegionYears eRY on eRY.id=i.exhibitorRegionYearId
-WHERE eRY.exhibitorYearId=? and eRY.exhibitsRegionYearId = ?; 
-EOS;
-
-                                $chR = dbSafeQuery($chkQ, 'ii', array (getSessionVar('eyID'), $regionYearId));
-                                if ($chR !== false) {
-                                    $numArtItems = $chR->fetch_row()[0];
-                                    $chR->free();
-                                    if ($numArtItems == 0)
-                                        itemRegistrationImportBtn($regionYearId);
-                                }
+                                // change - always allow import button, if there are items importable
+                                itemRegistrationImportBtn($regionYearId);
                                 itemRegistrationOpenBtn($conid, $regionYearId);
                             }
                         }

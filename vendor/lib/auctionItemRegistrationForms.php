@@ -10,6 +10,8 @@ function draw_itemRegistrationModal($portalType = '', $showsheets=false, $showco
     $auctionTitle = getConfValue('vendor', 'artistItemAuctionTitle', 'Art Auction Items');
     $salesTitle = getConfValue('vendor', 'artistItemSalesTitle', 'Art Sales / Print Shop Items');
     $nfsTitle = getConfValue('vendor', 'artistItemNFSTitle', 'Display Only / Not For Sale Items');
+    $id = getConfValue('con', 'id', '');
+    $conname = getConfValue('con', 'conname', '');
 ?>
     <div id='item_registration' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Register Items' aria-hidden='true' style='--bs-modal-width: 96%;'>
         <div class='modal-dialog'>
@@ -89,12 +91,17 @@ function draw_itemRegistrationModal($portalType = '', $showsheets=false, $showco
                             </div>
                         </div>
                         <div class='row'>
-                            <div class='col-sm-10' id='print_buttons'>
+                            <div class='col-sm-auto' id='print_buttons'>
                                 <button id='print_bidsheet' type='button' class='btn btn-primary btn-sm' onclick="auctionItemRegistration.printSheets('bidsheets'); return false;">Print Bidsheets</button>
                                 <button id='print_printshop' type='button' class='btn btn-primary btn-sm' onclick="auctionItemRegistration.printSheets('printshop'); return false;">Print Sales Tags</button>
                                 <button id='print_controlsheet' type='button' class='btn btn-primary btn-sm' onclick="auctionItemRegistration.printSheets('control'); return false;">Print Control Sheet</button>
                             </div>
-                            <div class='col-sm-2 justify-content-end' id='close_buttons'>
+                            <div class='col-sm-auto ms-4' id='import_buttons'>
+                                <button id='inventoryImportPriorBtn' class='btn btn-primary btn-sm' onclick='auctionItemRegistration.import(null);'>
+                                    <?php echo "Import Unsold Prior Art Items into $conname $id"; ?>
+                                </button>
+                            </div>
+                            <div class='col-sm justify-content-end text-end' id='close_buttons'>
                                 <button type="button" class='btn btn-primary btn-sm' onclick="auctionItemRegistration.closeModal(); return false;">
                                     Close Item Registration
                                 </button>
@@ -194,6 +201,9 @@ function draw_itemImportModal($portalType = '') {
                     <div class="row">
                         <div class="col-sm-12" id="importTable">
                         </div>
+                    </div>
+                    <div class='row mt-2'>
+                        <div class='col-sm-auto ms-2' style="background-color: #FFE0E0;">Item already exists in this years inventory</div>
                     </div>
                     <div class='row'>
                         <div class='col-sm-12'>

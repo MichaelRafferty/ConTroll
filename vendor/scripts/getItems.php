@@ -70,15 +70,36 @@ WITH old AS (
     JOIN exhibitorRegionYears exry ON exy.id = exry.exhibitorYearId
     JOIN artItems i ON i.exhibitorRegionYearId = exry.id
     WHERE exy.exhibitorId = ?  AND i.type = 'nfs'
+), new AS (
+SELECT i.title, i.type, i.material, i.quantity, i.min_price, i.sale_price, i.conid
+    FROM exhibitorYears exy
+    JOIN exhibitorRegionYears exry ON exy.id = exry.exhibitorYearId
+    JOIN artItems i ON i.exhibitorRegionYearId = exry.id
+    LEFT OUTER JOIN artSales s ON i.id = s.artId
+    WHERE exy.exhibitorId = ? AND s.id IS NULL AND i.type = 'art' AND i.conid = ?
+    UNION
+    SELECT i.title, i.type, i.material, i.quantity, i.min_price, i.sale_price, i.conid
+    FROM exhibitorYears exy
+    JOIN exhibitorRegionYears exry ON exy.id = exry.exhibitorYearId
+    JOIN artItems i ON i.exhibitorRegionYearId = exry.id
+    WHERE exy.exhibitorId = ?  AND i.type = 'print' AND i.quantity > 0 AND i.conid = ?
+    UNION
+    SELECT i.title, i.type, i.material, i.quantity, i.min_price, i.sale_price, i.conid
+    FROM exhibitorYears exy
+    JOIN exhibitorRegionYears exry ON exy.id = exry.exhibitorYearId
+    JOIN artItems i ON i.exhibitorRegionYearId = exry.id
+    WHERE exy.exhibitorId = ?  AND i.type = 'nfs' AND i.conid = ?
 )
-SELECT type, title, material, MIN(quantity) AS quantity, MAX(min_price) AS min_price, MAX(sale_price) AS sale_price
-FROM old
-WHERE conid >= ? AND conid < ?
-GROUP BY type, title, material
+SELECT o.type, o.title, o.material, MIN(o.quantity) AS quantity, MAX(o.min_price) AS min_price, MAX(o.sale_price) AS sale_price,
+CASE WHEN n.title IS NULL THEN 0 ELSE 1 END AS newExists
+FROM old o
+LEFT JOIN new n ON n.type = o.type AND IFNULL(n.title, '') = IFNULL(o.title, '') AND IFNULL(n.material, '') = IFNULL(o.material, '')
+WHERE o.conid >= ? AND o.conid < ?
+GROUP BY o.type, o.title, o.material, n.type, n.title, n.material
 ORDER BY type, title;
 EOS;
-        $itemL = 'iiiii';
-        $itemA = array($vendor, $vendor, $vendor, $viewPriorLimit, $conid);
+        $itemL = 'iiiiiiiiiii';
+        $itemA = array($vendor, $vendor, $vendor, $vendor, $conid, $vendor, $conid, $vendor, $conid, $viewPriorLimit, $conid);
         break;
     default:
         break;

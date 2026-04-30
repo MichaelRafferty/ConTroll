@@ -57,6 +57,8 @@ class AuctionItemRegistration {
     #importTable = null;
     #debug = 0;
     #debugVisible = false;
+    #mainImportBtn = null;
+    #inventoryImportBtn = null;
 
 // init
     constructor(debug=0) {
@@ -72,6 +74,7 @@ class AuctionItemRegistration {
             this.#item_registration = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
             this.#item_registration_btn = document.getElementById('item_registration_btn');
             this.#item_registration_title = document.getElementById('item_registration_title');
+            this.#inventoryImportBtn = document.getElementById('inventoryImportPriorBtn');
         }
         if (this.#debug & 1) {
             this.#debugVisible = true;
@@ -101,6 +104,9 @@ class AuctionItemRegistration {
     open(region, art= null, print = null, nfs = null) {
         clear_message('ir_message_div');
         this.#region = region;
+        // if the parent has an open region button, unhide the one here
+        this.#mainImportBtn = document.getElementById('importPriorBtn');
+        this.#inventoryImportBtn.hidden = this.#mainImportBtn == null;
         let _this = this;
         let script = "scripts/getItems.php"
         clear_message();
@@ -874,7 +880,13 @@ class AuctionItemRegistration {
 
     import(region) {
         clear_message('ir_message_div');
-        this.#region = region;
+        let standalone = true;
+        if (region == null) {
+            region = this.#region;
+            let standalone = false;
+        } else {
+            this.#region = region;
+        }
         let _this = this;
         let script = "scripts/getItems.php"
         clear_message();
@@ -887,7 +899,7 @@ class AuctionItemRegistration {
                     show_message(data['error'], 'error');
                     return false;
                 }
-                _this.drawImport(data);
+                _this.drawImport(data, standalone);
 
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -898,7 +910,10 @@ class AuctionItemRegistration {
     };
 
     // draw the import items modal
-    drawImport(data) {
+    drawImport(data, standalone) {
+        if (standalone) {
+            this.#item_registration.hide();
+        }
         clear_message();
         clear_message('ii_message_div');
         if (this.#importTable) {
@@ -916,9 +931,11 @@ class AuctionItemRegistration {
                     {title: 'Item Num', field: 'itemNum', width: 100, visible: false },
                     {title: 'Import', field: 'import', width: 80, headerSort: false,
                         formatter: "tickCross", cellClick: auctionItemRegistration.invertSelect, },
-                    {title: 'Type', field: 'type', width: 100 },
-                    {title: 'Title', field: 'title', minWidth: 600, editor: 'input', editorParams: { elementAttributes: { maxlength: "64"} } },
-                    {title: "Material", field: "material", minWidth: 300, editor: 'input', editorParams: { elementAttributes: { maxlength: "32"} } },
+                    {title: 'Type', field: 'type', width: 100, formatter: existsColor, },
+                    {title: 'Title', field: 'title', minWidth: 600, formatter: existsColor,
+                        editor: 'input', editorParams: { elementAttributes: { maxlength: "64"} } },
+                    {title: "Material", field: "material", minWidth: 300, formatter: existsColor,
+                        editor: 'input', editorParams: { elementAttributes: { maxlength: "32"} } },
                     {title: "Minimim Bid<br/>(for art only)", field: "min_price", headerWordWrap: true, width: 100, hozAlign: "right",
                         editor: 'number', editorParams: {min: 1}, formatter: "money",
                         //formatterParams: {decimal: '.', thousand: ',', symbol: '$', negativeSign: true},
@@ -929,6 +946,7 @@ class AuctionItemRegistration {
                     },
                     {title: "Quantity", field: "quantity", headerWordWrap: true, width: 100, hozAlign: "right",
                         editor: 'number', editorParams: {min: 1}, },
+                    {title: 'E', field: 'newExists', width: 50, visible:false, },
                 ],
             });
             this.#importTable.on("cellEdited", setCellChanged);
@@ -1001,7 +1019,7 @@ function auctionItemRegistrationOnLoad(region) {
     auctionItemRegistration = new AuctionItemRegistration(config['debug']);
 }
 
-function deleteicon(cell, formattParams, onRendered) {
+function deleteicon(cell, formatParams, onRendered) {
     let value = cell.getValue();
     if (value == 0 || value == null)
         return "&#x1F5D1;";
@@ -1018,6 +1036,15 @@ function deleterow(e, row) {
         row.getCell("to_delete").setValue(1);
         row.getCell("uses").setValue('<span style="color:red;"><b>Del</b></span>');
     }
+}
+
+function existsColor(cell, formatParams, onRendered) {
+    let row = cell.getRow().getData();
+    let value = cell.getValue();
+    let exists = row['newExists'];
+    let element = cell.getElement();
+    element.style.backgroundColor = exists ? '#FFE0E0' : '#FFFFFF';
+    return value;
 }
 
 function artItemEditCheck(cell) {
