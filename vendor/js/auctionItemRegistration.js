@@ -1029,7 +1029,7 @@ class AuctionItemRegistration {
             this.#nfsSaveBtn.innerHTML = 'Save Changes';
             this.#nfsSaveBtn.disabled = true;
             //console.log("drawItemTable calling checkDupsNFS");
-            this.#printItemTable.on("tableBuilt", checkDupsNFS);
+            this.#nfsItemTable.on("tableBuilt", checkDupsNFS);
         }
     }
 
