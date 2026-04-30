@@ -4,6 +4,7 @@ var activeConSetup = 'none';
 var editListMasterRow = null;
 var memListModalDirty = false;
 var tinyMCEInit = false;
+var currencyFmt = null;
 
 class consetup {
     #debug = 0;
@@ -59,9 +60,16 @@ class consetup {
     #containsField = null;
     #rowStartDate = '';
     #rowEndDate = '';
+    #locale = 'en-us';
+    #currencyFmt = null;
 
     constructor(setup_type) {
         this.#debug = Number(config.debug);
+        this.#locale = config.locale;
+        this.#currencyFmt = new Intl.NumberFormat(this.#locale, {
+            style: 'currency',
+            currency: config.currency,
+        });
         this.#conid = Number(config.conid);
         this.#bundlesEnabled = config.bundleMemberships == 'Y';
         if (this.#debug & 2) {
@@ -405,14 +413,12 @@ class consetup {
                         return cell.getRow().getCell("label").getValue();
                     },
                     editor: "input", editorParams: {elementAttributes: {maxlength: "64"}},
-                    formatter: "textarea",
-                    headerFilter: true
+                    formatter: "textarea", headerFilter: true
                 },
                 {title: "Label", field: "label", visible: false},
                 {
                     title: "Price", field: "price", hozAlign: "right", editor: "input", validator: ["required", this.#priceregexp],
-                    formatter: "money",  formatterParams: { decimal: '.', thousand: ',', negative: true, precision: 2},
-                    headerFilter: "input", headerFilterFunc: numberHeaderFilter,
+                    formatter: localeMoney, headerFilter: "input", headerFilterFunc: numberHeaderFilter,
                 },
                 {title: "Start Date", field: "startdate", width: 170, editor: "datetime", validator: "required",
                     headerFilter: "input", headerFilterFunc: dateStringHeaderFilter, headerFilterFuncParams: {field: 'startdate'},},
@@ -429,29 +435,24 @@ class consetup {
                 {
                     title: "Notes", field: "notes", width: 200,
                     editor: "input", editorParams: {elementAttributes: {maxlength: "1024"}},
-                    headerFilter: true,
-                    formatter: "textarea",
+                    headerFilter: true, formatter: "textarea",
                 },
                 {
                     title: "Cart Desc", field: "cartDesc", width: 300,
-                    headerFilter: true,
-                    formatter: "html",
+                    headerFilter: true, formatter: "html",
                 },
                 {
                     title: "Category Badge Label Override", field: "badgeLabel", width: 140, headerWordWrap: true,
-                    editor: "input", editorParams: {elementAttributes: {maxlength: "16"}},
-                    headerFilter: true,
+                    editor: "input", editorParams: {elementAttributes: {maxlength: "16"}}, headerFilter: true,
                 },
                 {
                     title: "GL Num", field: "glNum", width: 120, headerWordWrap: true,
-                    editor: "input", editorParams: {elementAttributes: {maxlength: "16"}},
-                    headerFilter: true
+                    editor: "input", editorParams: {elementAttributes: {maxlength: "16"}}, headerFilter: true
                 },
                 {
                     title: "GL Label", field: "glLabel", width: 200, headerWordWrap: true,
                     editor: "input", editorParams: {elementAttributes: {maxlength: "64"}},
-                    headerFilter: true,
-                    formatter: "textarea",
+                    headerFilter: true, formatter: "textarea",
                 },
                 {field: "to_delete", visible: false,},
                 {field: "catBadgeLabel", visible: false,},
@@ -1818,4 +1819,12 @@ function tsBadgeLabelChange(row) {
         document.getElementById('editMemListBadgeLabel').value = document.getElementById('EMLTS' + row + '_badgeLabel').value;
         memListModalDirty = true;
     }
+}
+
+function localeMoney(cell, formatParams, onRendered) {
+    let value = cell.getValue();
+    if (value == '')
+        return value;
+
+    return currencyFmt.format(Number(value).toFixed(2));
 }
