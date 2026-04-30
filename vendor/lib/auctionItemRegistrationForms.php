@@ -85,9 +85,9 @@ function draw_itemRegistrationModal($portalType = '', $showsheets=false, $showco
                         </div>
                         <?php outputCustomText('items/bottom');?>
                         <hr/>
-                        <div class='row'>
-                            <div class='col-sm-12'>
-                            <h4>Buttons to print out bidsheets and control sheets.</h4>
+                        <div class='row mb-3'>
+                            <div class='col-sm-12 ms-2' style="background-color: #FFE0E0;">
+                            Items shaded with this color have the same title and material as another item in that group
                             </div>
                         </div>
                         <div class='row'>

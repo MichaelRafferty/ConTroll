@@ -3,6 +3,7 @@
 var artPagination = false;
 var nfsPagination = false;
 var printPagination = false;
+var currencyFmt = null;
 
 class AuctionItemRegistration {
 
@@ -11,6 +12,9 @@ class AuctionItemRegistration {
     #item_registration_title = null
     #item_registration_btn = null;
     #closeAnyway = false;
+    #locale = 'en-us';
+    #currencyFmt = null;
+    #skipComputeDups = false;
 
     #region = 0;
     #numItems = null;
@@ -47,8 +51,8 @@ class AuctionItemRegistration {
     #nfsUndoBtn = null;
     #nfsRedoBtn = null;
     #nfsAddBtn = null;
-    #newNfsRow = null;
-    #newNfs = null;
+    #newNFSRow = null;
+    #newNFS = null;
 
     // import modal
     #importModal = null;
@@ -63,6 +67,12 @@ class AuctionItemRegistration {
 // init
     constructor(debug=0) {
         this.#debug = debug;
+        this.#locale = config.locale;
+        this.#currencyFmt = new Intl.NumberFormat(this.#locale, {
+            style: 'currency',
+            currency: config.currency,
+        });
+        currencyFmt = this.#currencyFmt;
         let id = document.getElementById('item_import');
         if (id != null) {
             this.#importModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
@@ -81,6 +91,7 @@ class AuctionItemRegistration {
         }
     };
 
+    // open the appropriate of PDF sheet in a new window
     printSheets(type, region = null, conid = null) {
         if (region == null)
             region = this.#region;
@@ -90,6 +101,7 @@ class AuctionItemRegistration {
         window.open(script, "_blank")
     }
 
+    // check if there are unsaved changes, and if so, promptuser to save, or close if second press
     closeModal() {
         if ((!this.#closeAnyway) && (this.#artItemsDirty || this.#printItemsDirty || this.#nfsItemsDirty)) {
             show_message("You have unsaved changes, save them first, press close again to close without saving them.", 'warn', 'ir_message_div');
@@ -101,10 +113,11 @@ class AuctionItemRegistration {
         this.#item_registration.hide();
     }
 
+    // open the item registration modal, fetching current data each time
     open(region, art= null, print = null, nfs = null) {
         clear_message('ir_message_div');
         this.#region = region;
-        // if the parent has an open region button, unhide the one here
+        // if the parent has an import items from prior year button, unhide the one here
         this.#mainImportBtn = document.getElementById('importPriorBtn');
         this.#inventoryImportBtn.hidden = this.#mainImportBtn == null;
         let _this = this;
@@ -129,6 +142,7 @@ class AuctionItemRegistration {
         });
     };
 
+    // successful get of items, draw the contents of each of the three sections
     draw(data, art = null, print = null, nfs = null) {
         this.#maxItems = data.inv.maxInventory;
         this.#ownerName = data.inv.ownerName;
@@ -155,13 +169,14 @@ class AuctionItemRegistration {
         this.#nfsAddBtn = document.getElementById('nfs-addrow');
         this.drawArtItemTable(data['items'], art);
         this.drawPrintItemTable(data['items'], print);
-        this.drawNfsItemTable(data['items'], nfs);
+        this.drawNFSItemTable(data['items'], nfs);
 
         this.validateLoadLimit(false);
         this.#item_registration_title.innerHTML = '<strong>' + this.#regionName + ' Item Registration</strong>';
         this.#item_registration.show();
     };
 
+    // close the item registration modal
     close() {
         this.#region = 0;
         if(this.#artItemTable) {
@@ -186,26 +201,99 @@ class AuctionItemRegistration {
         this.#item_registration.hide();addoverride-btn
     };
 
+    // a field, row, or entire table was reloaded, this is called by an ON function on the table.
+    // set up the butons and compute the colors for the duplicates
     dataChangedArt(data=null) {
+        if (this.#skipComputeDups)
+            return; // don't call it recursively due to dups checks changes to dups column
         //data - the updated table data
         if (!this.#artItemsDirty) {
             this.#artSaveBtn.innerHTML = "Save Changes*";
             this.#artSaveBtn.disabled = false;
             this.#artItemsDirty = true;
         }
-        if(data == null){
+        if (data == null){
             this.#artSaveBtn.innerHTML = "Save Changes*";
             this.#artSaveBtn.disabled = false;
         }
         this.checkArtUndoRedo();
+        //console.log("dataChangedArt calling computeDups(art)");
+        this.computeDups('art');
     };
+
+    // check all the rows in the table for title and material matching to color code the duplicates.
+    // This is an alert to the user, not an actual error.
+    computeDups(type) {
+        this.#skipComputeDups = true;
+        //console.log("in computeDups(" + type + ")");
+        let data = null;
+        let table = null;
+        switch (type) {
+            case 'art':
+                data = this.#artItemTable.getData();
+                table = this.#artItemTable;
+                break;
+            case 'print':
+                data = this.#printItemTable.getData();
+                table = this.#printItemTable;
+                break;
+            case 'nfs':
+                data = this.#nfsItemTable.getData();
+                table = this.#nfsItemTable;
+                break;
+            default:
+                this.#skipComputeDups = false;
+                return;
+        }
+
+        // no need to check for dups if there are no rows.
+        // However, for one row, (two down to 1 in particular), let it check to clear the colors if the dup was deleted
+        if (data.length < 1) {
+            this.#skipComputeDups = false;
+            return; // no dups to check for
+        }
+
+        for (let i = 0; i < data.length; i++) {
+            let row = data[i];
+            let dup = 0;
+            for (let j = 0; j < data.length; j++) {
+                if (i == j)
+                    continue;   // don't check itself
+                let comprow = data[j];
+                if (comprow.title == row.title && comprow.material == row.material) {
+                    dup = 1;
+                    break;
+                }
+            }
+            let duprow = table.getRow(row.item_key);
+            let cell = duprow.getCell('dupItem');
+            cell.setValue(dup);
+        }
+        //console.log("Setting timeout redraw(true)");
+        setTimeout(function() {
+            //console.log("redrawing " + type);
+            //console.log(table);
+            let cell = null;
+            if (typeof table.getActiveCell === 'function') {
+                cell = table.getActiveCell();
+            }
+            table.redraw(true);
+            if (cell)
+                cell.focus();
+        }, 200);
+
+        this.#skipComputeDups = false;
+    }
+
+    // recompute the table undo/redo button states
     checkArtUndoRedo() {
         let undosize = this.#artItemTable.getHistoryUndoSize();
         this.#artUndoBtn.disabled = undosize <= 0;
         this.#artRedoBtn.disabled = this.#artItemTable.getHistoryRedoSize() <= 0;
         return undosize;
-
     }
+    
+    // process a redo button
     redoArt() {
         if (this.#artItemTable != null) {
             this.#artItemTable.redo();
@@ -217,6 +305,8 @@ class AuctionItemRegistration {
             }
         }
     };
+    
+    // process an undo button
     undoArt() {
         if (this.#artItemTable != null) {
             this.#artItemTable.undo();
@@ -271,6 +361,7 @@ class AuctionItemRegistration {
                 this.#numItems += data.items.nfs.length;
 
         }
+        
         if (this.#numItems >= this.#maxItems) {
             let limitWord = this.#numItems == this.#maxItems ? 'at' : 'beyond';
             show_message("Warning: You are " + limitWord + " the limit of " + this.#maxItems + " inventory items for " + this.#regionName +
@@ -298,19 +389,27 @@ class AuctionItemRegistration {
            return {id: -9999, item_key: 'Over' + this.#addItemIndex.toString(), title: 'Over limit, this item will be deleted on save'};
         }
 
-        return {item_key: 'New' + this.#addItemIndex.toString(), 'status': 'Entered'};
+        return {item_key: 'New' + this.#addItemIndex.toString(), 'status': 'Entered', 'title' : '', 'material' : '',
+            'quantity' : '', sale_price: '', min_price: '', dupItem: 0};
     }
 
+    // add a new art row (add new button
     addrowArt(art = null) {
         if (this.validateMaxLimit('Art Auction')) {
+            this.#skipComputeDups = true;
             let itemKey = 'new' + this.#addItemIndex.toString();
             this.#addItemIndex++;
-            let newRow = {item_key: itemKey, status: 'Entered' };
+            let newRow = {item_key: itemKey, status: 'Entered', dupItem: 0 };
             if (art != null) {
                 newRow.title = art.title;
                 newRow.material = art.material;
                 newRow.min_price = art.min_price
                 newRow.sale_price = art.sale_price;
+            } else {
+                newRow.title = '';
+                newRow.material = '';
+                newRow.min_price = '';
+                newRow.sale_price = '';
             }
             this.#artItemTable.addRow(newRow, false).then(function (row) {
                 auctionItemRegistration.checkArtUndoRedo();
@@ -322,9 +421,11 @@ class AuctionItemRegistration {
                     setCellChanged(row);
                 }
             });
+            this.#skipComputeDups = false;
         }
     };
 
+    // save the art table back to the database
     saveArt() {
         let type = 'art';
         if(this.#artItemTable != null) {
@@ -360,13 +461,15 @@ class AuctionItemRegistration {
             });
         }
     }
+    
+    // reload the data and update the display and buttons
     saveArtComplete(data, textStatus, jhXHR) {
         if (data['error']) {
             show_message(data['error'], 'error', 'ir_message_div');
             this.#artSaveBtn.innerHTML = "Save Changes*";
             this.#artSaveBtn.disabled = false;
             if (data.hasOwnProperty('marks')) {
-                this.markRows(this.#artItemTable, data.marks);
+                this.unMarkRows(this.#artItemTable, data.marks);
             }
             return false;
         }
@@ -381,19 +484,23 @@ class AuctionItemRegistration {
         this.validateLoadLimit(true, 'art', data['items']['art']);
     }
 
-    markRows(table, marks) {
+    // clear marks for unsaved rows
+    unMarkRows(table, marks) {
         for(let index = 0; index < marks.length; index++) {
             let mark = marks[index];
             let row = table.getRow(mark.item_key);
             if (row.classList.contains('unsavedWarnBGColor')) {
-                row.classList.add('unsavedWarnBGColor');
+                row.classList.remove('unsavedWarnBGColor');
             }
         }
     }
 
-//TODO change Item Number
-
+    // a field, row, or entire table was reloaded, this is called by an ON function on the table.
+    // set up the butons and compute the colors for the duplicates
     dataChangedPrint(data=null) {
+        if (this.#skipComputeDups)
+            return; // don't call it recursively due to dups checks changes to dups column
+
         //data - the updated table data
         if (!this.#printItemsDirty) {
             this.#printSaveBtn.innerHTML = "Save Changes*";
@@ -405,7 +512,10 @@ class AuctionItemRegistration {
             this.#printSaveBtn.disabled = false;
         }
         this.checkPrintUndoRedo();
+        //console.log("dataChangedPrint calling computeDups(print)");
+        this.computeDups('print');
     };
+    
     checkPrintUndoRedo() {
         let undosize = this.#printItemTable.getHistoryUndoSize();
         this.#printUndoBtn.disabled = undosize <= 0;
@@ -413,6 +523,7 @@ class AuctionItemRegistration {
         return undosize;
 
     }
+    
     redoPrint() {
         if (this.#printItemTable != null) {
             this.#printItemTable.redo();
@@ -424,6 +535,7 @@ class AuctionItemRegistration {
             }
         }
     };
+    
     undoPrint() {
         if (this.#printItemTable != null) {
             this.#printItemTable.undo();
@@ -435,17 +547,25 @@ class AuctionItemRegistration {
             }
         }
     };
+
     addrowPrint(print = null) {
         if (this.validateMaxLimit('Print Shop')) {
+            this.#skipComputeDups = true;
             let itemKey = 'new' + this.#addItemIndex.toString();
             this.#addItemIndex++;
-            let newRow = {item_key: itemKey, status: 'Entered' };
+            let newRow = {item_key: itemKey, status: 'Entered', dupItem: 0 };
             if (print != null) {
                 newRow.title = print.title;
                 newRow.material = print.material;
                 newRow.min_price = print.min_price
                 newRow.sale_price = print.sale_price;
                 newRow.original_qty = print.original_qty;
+            } else {
+                newRow.title = '';
+                newRow.material = '';
+                newRow.min_price = '';
+                newRow.sale_price = '';
+                newRow.original_qty = '';
             }
             this.#printItemTable.addRow(newRow, false).then(function (row) {
                 auctionItemRegistration.checkPrintUndoRedo();
@@ -457,6 +577,7 @@ class AuctionItemRegistration {
                     setCellChanged(row);
                 }
             });
+            this.#skipComputeDups = false;
         }
     };
 
@@ -489,12 +610,13 @@ class AuctionItemRegistration {
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
                     show_message("ERROR in " + script + ": " + textStatus, 'error', 'ir_message_div');
-                    _this.dataChangedArt();
+                    _this.dataChangedPrint();
                     return false;
                 }
             });
         }
     }
+
     savePrintComplete(data, textStatus, jhXHR) {
         if('error' in data) {
             if (data['error']) {
@@ -502,7 +624,7 @@ class AuctionItemRegistration {
                 this.#printSaveBtn.innerHTML = "Save Changes*";
                 this.#printSaveBtn.disabled = false;
                 if (data.hasOwnProperty('marks')) {
-                    this.markRows(this.#printItemTable, data.marks);
+                    this.unMarkRows(this.#printItemTable, data.marks);
                 }
                 return false;
             }
@@ -525,7 +647,11 @@ class AuctionItemRegistration {
         this.validateLoadLimit(true, 'print', data['items']['print']);
     }
 
-    dataChangedNfs(data = null) {
+    // a field, row, or entire table was reloaded, this is called by an ON function on the table.
+    // set up the butons and compute the colors for the duplicates
+    dataChangedNFS(data = null) {
+        if (this.#skipComputeDups)
+            return; // don't call it recursively due to dups checks changes to dups column
         //data - the updated table data
         if (!this.#nfsItemsDirty) {
             this.#nfsSaveBtn.innerHTML = "Save Changes*";
@@ -536,31 +662,36 @@ class AuctionItemRegistration {
             this.#nfsSaveBtn.innerHTML = "Save Changes*";
             this.#nfsSaveBtn.disabled = false;
         }
-        this.checkNfsUndoRedo();
+        this.checkNFSUndoRedo();
+        //console.log("dataChangedNFS calling computeDups(nfs)");
+        this.computeDups('nfs');
     };
-    checkNfsUndoRedo() {
+    
+    checkNFSUndoRedo() {
         let undosize = this.#nfsItemTable.getHistoryUndoSize();
         this.#nfsUndoBtn.disabled = undosize <= 0;
         this.#nfsRedoBtn.disabled = this.#nfsItemTable.getHistoryRedoSize() <= 0;
         return undosize;
 
     }
-    redoNfs() {
+    
+    redoNFS() {
         if (this.#nfsItemTable != null) {
             this.#nfsItemTable.redo();
 
-            if (this.checkNfsUndoRedo() > 0) {
+            if (this.checkNFSUndoRedo() > 0) {
                 this.#nfsItemsDirty = true;
                 this.#nfsSaveBtn.innerHTML = "Save Changes*";
                 this.#nfsSaveBtn.disabled = false;
             }
         }
     };
-    undoNfs() {
+    
+    undoNFS() {
         if (this.#nfsItemTable != null) {
             this.#nfsItemTable.undo();
 
-            if (this.checkNfsUndoRedo() > 0) {
+            if (this.checkNFSUndoRedo() > 0) {
                 this.#nfsItemsDirty = true;
                 this.#nfsSaveBtn.innerHTML = "Save Changes*";
                 this.#nfsSaveBtn.disabled = false;
@@ -568,19 +699,25 @@ class AuctionItemRegistration {
         }
     };
 
-    addrowNfs(nfs = null) {
+    addrowNFS(nfs = null) {
         if (this.validateMaxLimit('Display/Not For Sale')) {
+            this.#skipComputeDups = true;
             let itemKey = 'new' + this.#addItemIndex.toString();
             this.#addItemIndex++;
-            let newRow = {item_key: itemKey, status: 'Entered' };
+            let newRow = {item_key: itemKey, status: 'Entered', dupItem: 0 };
             if (nfs != null) {
                 newRow.title = nfs.title;
                 newRow.material = nfs.material;
                 newRow.min_price = nfs.min_price
                 newRow.sale_price = nfs.sale_price;
+            } else {
+                newRow.title = '';
+                newRow.material = '';
+                newRow.min_price = '';
+                newRow.sale_price = '';
             }
             this.#nfsItemTable.addRow(newRow, false).then(function (row) {
-                auctionItemRegistration.checkNfsUndoRedo();
+                auctionItemRegistration.checkNFSUndoRedo();
                 if (nfsPagination) {
                     row.pageTo().then(function () {
                         setCellChanged(row);
@@ -589,10 +726,11 @@ class AuctionItemRegistration {
                     setCellChanged(row);
                 }
             });
+            this.#skipComputeDups = false;
         }
     };
 
-    saveNfs() {
+    saveNFS() {
         let type = 'nfs';
         if(this.#artItemTable != null) {
             let _this = this;
@@ -617,24 +755,25 @@ class AuctionItemRegistration {
                 method: 'POST',
                 data: postdata,
                 success: function (data, textStatus, jhXHR) {
-                    _this.saveNfsComplete(data, textStatus, jhXHR);
+                    _this.saveNFSComplete(data, textStatus, jhXHR);
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
                     show_message("ERROR in " + script + ": " + textStatus, 'error', 'ir_message_div');
-                    _this.dataChangedNfs();
+                    _this.dataChangedNFS();
                     return false;
                 }
             });
         }
     }
-    saveNfsComplete(data, textStatus, jhXHR) {
+
+    saveNFSComplete(data, textStatus, jhXHR) {
         if('error' in data) {
             if (data['error']) {
                 show_message(data['error'], 'error', 'ir_message_div');
                 this.#nfsSaveBtn.innerHTML = "Save Changes*";
                 this.#nfsSaveBtn.disabled = false;
                 if (data.hasOwnProperty('marks')) {
-                    this.markRows(this.#nfsItemTable, data.marks);
+                    this.unMarkRows(this.#nfsItemTable, data.marks);
                 }
                 return false;
             }
@@ -653,10 +792,11 @@ class AuctionItemRegistration {
         }
 
         //console.log(data);
-        this.drawNfsItemTable(data['items']);
+        this.drawNFSItemTable(data['items']);
         this.validateLoadLimit(true,  'nfs', data['items']['nfs']);
     }
 
+    // create the tabulator table for the art items
     drawArtItemTable(data, art = null) {
         let _this = this;
         artPagination = data.art.length > 25;
@@ -671,42 +811,33 @@ class AuctionItemRegistration {
             paginationSize: 10,
             paginationSizeSelector: [5, 10, 25, 50, true], //enable page size select element with these options
             columns: [
-                {title: 'id', field: 'id', visible: false},
-                {title: '#', field: 'item_key', width: 60, hozAlign: "right"},
+                { title: 'id', field: 'id', visible: false},
+                { title: '#', field: 'item_key', width: 60, hozAlign: "right"},
                 {
-                    title: 'Title', field: 'title', minWidth: 600, editor: 'input', editable: artItemEditCheck, editorParams: {
-                        elementAttributes: {
-                            maxlength:
-                                "64"
-                        }
-                    }
+                    title: 'Title', field: 'title', minWidth: 600, editor: 'input', editable: artItemEditCheck,
+                    editorParams: { elementAttributes: { maxlength: "64" }}, formatter: dupCheck,
                 },
                 {
-                    title: "Material",
-                    field: "material",
-                    minWidth: 300,
-                    editor: 'input',
-                    editable: artItemEditCheck,
-                    editorParams: {elementAttributes: {maxlength: "32"}}
+                    title: "Material", field: "material", minWidth: 300, editor: 'input', editable: artItemEditCheck,
+                    editorParams: {elementAttributes: {maxlength: "32"}}, formatter: dupCheck,
                 },
                 {
                     title: "Minimim Bid", field: "min_price", headerWordWrap: true, width: 100, hozAlign: "right",
-                    editor: 'number', editable: artItemEditCheck, editorParams: {min: 1}, formatter: "money",
-                    formatterParams: {decimal: '.', thousand: ',', symbol: '$', negativeSign: true},
+                    editor: 'number', editable: artItemEditCheck, editorParams: {min: 1}, formatter: localeMoney,
                 },
                 {
                     title: "Quick Sale", field: "sale_price", headerWordWrap: true, width: 100, hozAlign: "right", visible: this.#allowQuickSale,
-                    editor: 'number', editable: artItemEditCheck, editorParams: {min: 1}, formatter: "money",
-                    formatterParams: {decimal: '.', thousand: ',', symbol: '$', negativeSign: true},
+                    editor: 'number', editable: artItemEditCheck, editorParams: {min: 1}, formatter: localeMoney,
                 },
-                {title: "Status", field: "status", width: 200,},
+                { title: "Status", field: "status", width: 200,},
                 {
                     title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false, width: 100,
                     cellClick: function (e, cell) {
                         deleterow(e, cell.getRow());
                     }
                 },
-                {title: "To Del", field: "to_delete", visible: this.#debugVisible},
+                { title: "To Del", field: "to_delete", visible: this.#debugVisible},
+                { title: "dupItem", field: "dupItem", visible: this.#debugVisible},
             ]
         };
         this.validateLoadLimit(true, 'art', data.art);
@@ -720,7 +851,7 @@ class AuctionItemRegistration {
         this.#artItemTable.on("dataChanged", function (data) {
             _this.dataChangedArt(data);
         });
-        this.#artItemTable.on("cellEdited", setCellChanged);
+        this.#artItemTable.on("cellEdited", artSetCellChanged);
 
         // now if imported items are passed, add them to the section
         if (art != null && art.length > 0) {
@@ -731,15 +862,20 @@ class AuctionItemRegistration {
         } else {
             this.#artSaveBtn.innerHTML = 'Save Changes';
             this.#artSaveBtn.disabled = true;
+            //console.log("drawItemTable calling checkDupsArt");
+            this.#artItemTable.on("tableBuilt", checkDupsArt);
         }
-
         document.getElementById('print_bidsheet').hidden = data.art.length == 0;
     }
 
+    // add art from the import list to the art items table
     addArt() {
         this.#artItemTable.off("tableBuilt");
-        if (this.#newArt == null)
+        if (this.#newArt == null) {
+            //console.log("addArt calling checkDups('art'), new art is null");
+            this.computeDups('art');
             return;
+        }
 
         for (let i = 0; i < this.#newArt.length; i++) {
             let row = this.#newArt[i];
@@ -747,8 +883,11 @@ class AuctionItemRegistration {
         }
 
         this.#newArt = null;
+        //console.log("addArt calling checkDups('art'), new art is not null");
+        this.computeDups('art');
     }
 
+    // create the print items table in tabulator
     drawPrintItemTable(data, print = null) {
         let _this = this;
         printPagination = data.print.length > 25;
@@ -756,24 +895,34 @@ class AuctionItemRegistration {
             maxHeight: "400px",
             history: true,
             data: data.print,
+            index: 'item_key',
             layout: 'fitColumns', // Note: fitDataTable caused it to not honor the window width and create scoll bar, unsure why
             pagination: printPagination,
             paginationAddRow:"table",
             paginationSize: 10,
             paginationSizeSelector: [5, 10, 25, 50, true], //enable page size select element with these options
             columns: [
-                {title: 'id', field: 'id', visible: false},
-                {title: '#', field: 'item_key', width: 60, hozAlign: "right"},
-                {title: 'Title', field: 'title', minWidth: 600, editor: 'input', editable:artItemEditCheck, editorParams: { elementAttributes: { maxlength: "64"} } },
-                {title: "Material", field: "material", minWidth: 300, editor: 'input', editable:artItemEditCheck, editorParams: { elementAttributes: { maxlength: "32"} } },
-                {title: "Quantity", field: "original_qty", headerWordWrap: true, width: 100, hozAlign: "right", editor: 'number', editable:artItemEditCheck, editorParams: {min: 1} },
-                {title: "Sale Price", field: "sale_price", headerWordWrap: true, width: 100, hozAlign: "right",
-                    editor: 'number', editable:artItemEditCheck, editorParams: {min: 1}, formatter: "money",
-                    formatterParams: {decimal: '.', thousand: ',', symbol: '$', negativeSign: true}, },
-                {title: "Status", field: "status", width: 200, },
-                {title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false, width: 100,
+                { title: 'id', field: 'id', visible: false},
+                { title: '#', field: 'item_key', width: 60, hozAlign: "right"},
+                {
+                    title: 'Title', field: 'title', minWidth: 600, editor: 'input', editable:artItemEditCheck, 
+                    editorParams: { elementAttributes: { maxlength: "64"} }, formatter: dupCheck,
+                },
+                { title: "Material", field: "material", minWidth: 300, editor: 'input', editable:artItemEditCheck,
+                    editorParams: { elementAttributes: { maxlength: "32"} }, formatter: dupCheck,
+                },
+                {
+                    title: "Quantity", field: "original_qty", headerWordWrap: true, width: 100, hozAlign: "right", 
+                    editor: 'number', editable:artItemEditCheck, editorParams: {min: 1}
+                },
+                { title: "Sale Price", field: "sale_price", headerWordWrap: true, width: 100, hozAlign: "right",
+                    editor: 'number', editable:artItemEditCheck, editorParams: {min: 1}, formatter: localeMoney,
+                },
+                { title: "Status", field: "status", width: 200, },
+                { title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false, width: 100,
                     cellClick: function (e, cell) { deleterow(e, cell.getRow());}},
-                {title: "To Del", field: "to_delete", visible: this.#debugVisible},
+                { title: "To Del", field: "to_delete", visible: this.#debugVisible},
+                { title: "dupItem", field: "dupItem", visible: this.#debugVisible},
             ]
         };
         this.validateLoadLimit(true, 'print', data.art);
@@ -787,7 +936,7 @@ class AuctionItemRegistration {
         this.#printItemTable.on("dataChanged", function (data) {
             _this.dataChangedPrint(data);
         });
-        this.#printItemTable.on("cellEdited", setCellChanged);
+        this.#printItemTable.on("cellEdited", printSetCellChanged);
         // now if imported items are passed, add them to the section
         if (print != null && print.length > 0) {
             this.#printSaveBtn.innerHTML = 'Save Changes*';
@@ -797,14 +946,20 @@ class AuctionItemRegistration {
         } else {
             this.#printSaveBtn.innerHTML = 'Save Changes';
             this.#printSaveBtn.disabled = true;
+            //console.log("drawItemTable calling checkDupsPrint");
+            this.#printItemTable.on("tableBuilt", checkDupsPrint);
         }
         document.getElementById('print_printshop').hidden = data.print.length == 0;
     }
 
+    // add the items from import to the print table
     addPrint() {
         this.#printItemTable.off("tableBuilt");
-        if (this.#newPrint == null)
+        if (this.#newPrint == null) {
+            //console.log("addPrint calling checkDups('print'), new print is null");
+            this.computeDups('print');
             return;
+        }
 
         for (let i = 0; i < this.#newPrint.length; i++) {
             let row = this.#newPrint[i];
@@ -812,32 +967,43 @@ class AuctionItemRegistration {
         }
 
         this.#newPrint = null;
+        //console.log("addPrint calling checkDups('print'), new print is not null");
+        this.computeDups('print');
     }
 
-    drawNfsItemTable(data, nfs = null) {
+    // create the not for sale items table in tabulator
+    drawNFSItemTable(data, nfs = null) {
         let _this = this;
         nfsPagination = data.nfs.length > 25;
         let tableSpecs = {
             maxHeight: "400px",
             history: true,
             data: data.nfs,
+            index: 'item_key',
             layout: 'fitColumns', // Note: fitDataTable caused it to not honor the window width and create scoll bar, unsure why
             pagination: nfsPagination,
             paginationAddRow:"table",
             paginationSize: 10,
             paginationSizeSelector: [5, 10, 25, 50, true], //enable page size select element with these options
             columns: [
-                {title: 'id', field: 'id', visible: false},
-                {title: '#', field: 'item_key', width: 60, hozAlign: "right"},
-                {title: 'Title', field: 'title', minWidth: 600, editor: 'input', editable:artItemEditCheck, editorParams: { elementAttributes: { maxlength: "64"} } },
-                {title: "Material", field: "material", minWidth: 300, editor: 'input', editable:artItemEditCheck, editorParams: { elementAttributes: { maxlength: "32"} } },
-                {title: "Insurance Price", field: "sale_price", headerWordWrap: true, width: 100, hozAlign: "right",
-                    editor: 'number', editable:artItemEditCheck, editorParams: {min: 1}, formatter: "money",
-                    formatterParams: {decimal: '.', thousand: ',', symbol: '$', negativeSign: true}, },
-                {title: "Status", field: "status", width: 200, },
-                {title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false, width: 100,
+                { title: 'id', field: 'id', visible: false},
+                { title: '#', field: 'item_key', width: 60, hozAlign: "right"},
+                {
+                    title: 'Title', field: 'title', minWidth: 600, editor: 'input',
+                    editable:artItemEditCheck, editorParams: { elementAttributes: { maxlength: "64"} }, formatter: dupCheck,
+                },
+                {
+                    title: "Material", field: "material", minWidth: 300, editor: 'input', 
+                    editable:artItemEditCheck, editorParams: { elementAttributes: { maxlength: "32"} }, formatter: dupCheck,
+                },
+                { title: "Insurance Price", field: "sale_price", headerWordWrap: true, width: 100, hozAlign: "right",
+                    editor: 'number', editable:artItemEditCheck, editorParams: {min: 1}, formatter: localeMoney,
+                },
+                { title: "Status", field: "status", width: 200, },
+                { title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false, width: 100,
                     cellClick: function (e, cell) { deleterow(e, cell.getRow());}},
-                {title: "To Del", field: "to_delete", visible: this.#debugVisible},
+                { title: "To Del", field: "to_delete", visible: this.#debugVisible},
+                { title: "dupItem", field: "dupItem", visible: this.#debugVisible},
             ]
         };
         this.validateLoadLimit(true, 'nfs', data.nfs);
@@ -849,35 +1015,45 @@ class AuctionItemRegistration {
         this.#nfsItemTable = new Tabulator('#nfsItemTable', tableSpecs);
         this.#nfsItemsDirty = false;
         this.#nfsItemTable.on("dataChanged", function (data) {
-            _this.dataChangedNfs(data);
+            _this.dataChangedNFS(data);
         });
-        this.#nfsItemTable.on("cellEdited", setCellChanged);
+        this.#nfsItemTable.on("cellEdited", nfsSetCellChanged);
 
         // now if imported items are passed, add them to the section
         if (nfs != null && nfs.length > 0) {
             this.#nfsSaveBtn.innerHTML = 'Save Changes*';
             this.#nfsSaveBtn.disabled = false;
-            this.#newNfs = nfs;
-            this.#nfsItemTable.on("tableBuilt", addNfs);
+            this.#newNFS = nfs;
+            this.#nfsItemTable.on("tableBuilt", addNFS);
         } else {
             this.#nfsSaveBtn.innerHTML = 'Save Changes';
             this.#nfsSaveBtn.disabled = true;
+            //console.log("drawItemTable calling checkDupsNFS");
+            this.#printItemTable.on("tableBuilt", checkDupsNFS);
         }
     }
 
-    addNfs() {
+    // add the import items to the nfs table
+    addNFS() {
         this.#nfsItemTable.off("tableBuilt");
-        if (this.#newNfs == null)
+        if (this.#newNFS == null) {
+            //console.log("addNFS calling checkDups('nfs'), new nfs is null");
+            this.computeDups('nfs');
             return;
-
-        for (let i = 0; i < this.#newNfs.length; i++) {
-            let row = this.#newNfs[i];
-            this.addrowNfs(row);
         }
 
-        this.#newNfs = null;
+        for (let i = 0; i < this.#newNFS.length; i++) {
+            let row = this.#newNFS[i];
+            this.addrowNFS(row);
+        }
+
+        this.#newNFS = null;
+        //console.log("addNFS calling checkDups('nfs'), new nfs is not null");
+        this.computeDups('nfs');
     }
 
+    // handle pressing the import button
+    // get the data available for import from the database
     import(region) {
         clear_message('ir_message_div');
         let standalone = true;
@@ -928,25 +1104,32 @@ class AuctionItemRegistration {
                 paginationSize: 25,
                 paginationSizeSelector: [10, 25, 50, true], //enable page size select element with these options
                 columns: [
-                    {title: 'Item Num', field: 'itemNum', width: 100, visible: false },
-                    {title: 'Import', field: 'import', width: 80, headerSort: false,
-                        formatter: "tickCross", cellClick: auctionItemRegistration.invertSelect, },
-                    {title: 'Type', field: 'type', width: 100, formatter: existsColor, },
-                    {title: 'Title', field: 'title', minWidth: 600, formatter: existsColor,
-                        editor: 'input', editorParams: { elementAttributes: { maxlength: "64"} } },
-                    {title: "Material", field: "material", minWidth: 300, formatter: existsColor,
-                        editor: 'input', editorParams: { elementAttributes: { maxlength: "32"} } },
-                    {title: "Minimim Bid<br/>(for art only)", field: "min_price", headerWordWrap: true, width: 100, hozAlign: "right",
-                        editor: 'number', editorParams: {min: 1}, formatter: "money",
-                        //formatterParams: {decimal: '.', thousand: ',', symbol: '$', negativeSign: true},
+                    { title: 'Item Num', field: 'itemNum', width: 100, visible: false },
+                    {
+                        title: 'Import', field: 'import', width: 80, headerSort: false,
+                        formatter: "tickCross", cellClick: auctionItemRegistration.invertSelect,                    
                     },
-                    {title: "Quick Sale/<br/>Sale Price", field: "sale_price", headerWordWrap: true, width: 100, hozAlign: "right",
-                        editor: 'number', editorParams: {min: 1}, formatter: "money",
-                        //formatterParams: {decimal: '.', thousand: ',', symbol: '$', negativeSign: true},
+                    { title: 'Type', field: 'type', width: 100, formatter: existsColor, },
+                    {
+                        title: 'Title', field: 'title', minWidth: 600, formatter: existsColor,
+                        editor: 'input', editorParams: { elementAttributes: { maxlength: "64"} }
                     },
-                    {title: "Quantity", field: "quantity", headerWordWrap: true, width: 100, hozAlign: "right",
+                    {
+                        title: "Material", field: "material", minWidth: 300, formatter: existsColor,
+                        editor: 'input', editorParams: { elementAttributes: { maxlength: "32"} }
+                    },
+                    {
+                        title: "Minimim Bid<br/>(for art only)", field: "min_price", headerWordWrap: true, width: 100, hozAlign: "right",
+                        editor: 'number', editorParams: {min: 1}, formatter: localeMoney,
+                    },
+                    {
+                        title: "Quick Sale/<br/>Sale Price", field: "sale_price", headerWordWrap: true, width: 100, hozAlign: "right",
+                        editor: 'number', editorParams: {min: 1}, formatter: localeMoney,
+                    },
+                    {
+                        title: "Quantity", field: "quantity", headerWordWrap: true, width: 100, hozAlign: "right",
                         editor: 'number', editorParams: {min: 1}, },
-                    {title: 'E', field: 'newExists', width: 50, visible:false, },
+                    { title: 'E', field: 'newExists', width: 50, visible:false, },
                 ],
             });
             this.#importTable.on("cellEdited", setCellChanged);
@@ -1019,25 +1202,30 @@ function auctionItemRegistrationOnLoad(region) {
     auctionItemRegistration = new AuctionItemRegistration(config['debug']);
 }
 
+// tabulator format function for the delete item button
 function deleteicon(cell, formatParams, onRendered) {
     let value = cell.getValue();
-    if (value == 0 || value == null)
+    let status = cell.getRow().getData('status');
+    if (status == 'Entered' && (value == 0 || value == null))
         return "&#x1F5D1;";
     return value;
 }
 
+// process the row deletion (clicking on the trashcan).
 function deleterow(e, row) {
     let count = row.getCell("uses").getValue();
-    if (count == null) {
+    let status = row.getCell("status")
+    if (count == null && status == 'Entered') {
         row.delete();
         return;
     }
-    if (count == 0) {
+    if (count == 0 && status == 'Entered') {
         row.getCell("to_delete").setValue(1);
         row.getCell("uses").setValue('<span style="color:red;"><b>Del</b></span>');
     }
 }
 
+// for import, if the item is already in the inventory, color it.
 function existsColor(cell, formatParams, onRendered) {
     let row = cell.getRow().getData();
     let value = cell.getValue();
@@ -1047,6 +1235,28 @@ function existsColor(cell, formatParams, onRendered) {
     return value;
 }
 
+// use INTL currency format with symbols for money as Tabulator doesn't do the symbols by default
+function localeMoney(cell, formatParams, onRendered) {
+    let value = cell.getValue();
+    if (value == '')
+        return value;
+
+    return currencyFmt.format(Number(value).toFixed(2));
+}
+
+// formatter to color duplicate cells
+function dupCheck(cell, formatParams, onRendered, dataTable) {
+    let row = cell.getRow()
+    let dup = row.getData().dupItem
+    if (row.getPosition() % 2) {
+        cell.getElement().style.backgroundColor = (dup == 1) ? '#FFF0F0' : '#FFFFFF';
+    } else {
+        cell.getElement().style.backgroundColor = (dup == 1) ? '#FFE0E0' : '#F0F0F0';
+    }
+    return cell.getValue();
+}
+
+// allow editing only of cells with status Entered
 function artItemEditCheck(cell) {
     let data = cell.getRow().getData();
     if (data.status == null)
@@ -1056,20 +1266,65 @@ function artItemEditCheck(cell) {
     return true;
 }
 
+// process the import of art items only after the table is rendered.
 function addArt() {
     setTimeout(function() {
         auctionItemRegistration.addArt();
         }, 500);
 }
 
+// process the import of print items only after the table is rendered.
 function addPrint() {
     setTimeout(function() {
         auctionItemRegistration.addPrint();
     }, 500);
 }
 
-function addNfs() {
+// process the import of NFS items only after the table is rendered.
+function addNFS() {
     setTimeout(function() {
-        auctionItemRegistration.addNfs();
+        auctionItemRegistration.addNFS();
     }, 500);
+}
+
+function checkDupsArt() {
+    auctionItemRegistration.computeDups('art');
+}
+
+function checkDupsPrint() {
+    auctionItemRegistration.computeDups('print');
+}
+
+function checkDupsNFS() {
+    auctionItemRegistration.computeDups('nfs');
+}
+
+// processing the on art item for data cell changed, add doing dups only on title or material changed
+function artSetCellChanged(cell) {
+    let field = cell.getField();
+    if (field == 'title' || field == 'material') {
+        //console.log("title/material changed in art");
+        auctionItemRegistration.computeDups('art');
+    }
+    return setCellChanged(cell);
+}
+
+// processing the on print item for data cell changed, add doing dups only on title or material changed
+function printSetCellChanged(cell) {
+    let field = cell.getField();
+    if (field == 'title' || field == 'material') {
+        //console.log("title/material changed in print");
+        auctionItemRegistration.computeDups('print');
+    }
+    return setCellChanged(cell);
+}
+
+// processing the on nfs item for data cell changed, add doing dups only on title or material changed
+function nfsSetCellChanged(cell) {
+    let field = cell.getField();
+    if (field == 'title' || field == 'material') {
+        //console.log("title/material changed in nfs");
+        auctionItemRegistration.computeDups('nfs');
+    }
+    return setCellChanged(cell);
 }
