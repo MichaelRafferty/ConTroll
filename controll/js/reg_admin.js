@@ -1814,14 +1814,11 @@ function draw_registrations(data) {
             { title: "mId", field: "memId", hozAlign: "right",
                 headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter,  },
             { title: "Price", field: "price", hozAlign: "right",
-                formatter: "money", formatterParams: { decimal: '.', thousand: ',', negative: true, precision: 2},
-                headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter, },
+                formatter: localeMoney, headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter, },
             { title: "Disc", field: "couponDiscount", hozAlign: "right",
-                formatter: "money", formatterParams: { decimal: '.', thousand: ',', negative: true, precision: 2},
-                headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter, },
+                formatter: localeMoney, headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter, },
             { title: "Paid", field: "paid", hozAlign: "right",
-                formatter: "money", formatterParams: { decimal: '.', thousand: ',', negative: true, precision: 2},
-                headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter, },
+                formatter: localeMoney, headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter, },
             { title: "Coupon", field: "name", headerSort: true, headerFilter: true, },
             { title: "Status", field: "status", headerSort: true, headerFilter: true, },
             { title: "Created", field: "create_date", headerSort: true, headerFilter: true,
@@ -2135,4 +2132,12 @@ function deleterow(e, row) {
 // reg note items
 function addNote(regId) {
     showRegNotes(regId, false);
+}
+
+function localeMoney(cell, formatParams, onRendered) {
+    let value = cell.getValue();
+    if (value == '')
+        return value;
+
+    return currencyFmt.format(Number(value).toFixed(2));
 }

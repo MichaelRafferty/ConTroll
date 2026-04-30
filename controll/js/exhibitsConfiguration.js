@@ -1,5 +1,7 @@
 //import { TabulatorFull as Tabulator } from 'tabulator-tables';
 // exhibits class - all exhibits space config functions
+var currencyFmt = null;
+
 class exhibitssetup {
     // exhibits region types
     #regionType = null;
@@ -61,6 +63,8 @@ class exhibitssetup {
     #debugVisible = false;
     #priceregexp = 'regex:^([0-9]+([.][0-9]*)?|[.][0-9]+)';
     #insertID = -1;
+    #locale = 'en-us';
+    #currencyFmt = null;
 
     // exhibitsRegionYear Configuration items
     #exhibitsRegionYearModal = null;
@@ -72,6 +76,12 @@ class exhibitssetup {
 
     constructor(conid, debug) {
         this.#debug = debug;
+        this.#locale = config.locale;
+        this.#currencyFmt = new Intl.NumberFormat(this.#locale, {
+            style: 'currency',
+            currency: config.currency,
+        });
+        currencyFmt = this.#currencyFmt;
         this.#conid = conid;
         this.#message_div = document.getElementById('test');
         this.#exhibits_pane = document.getElementById('configuration-pane');
@@ -866,8 +876,7 @@ class exhibitssetup {
                 {title: 'At-Con Id Base', field: "atconIdBase", width: 80, hozAlign: "right", headerWordWrap: true, headerSort: false,
                     editor: this.getEditMode("number"), },
                 {title: 'Mail-In Fee', field: "mailinFee", width: 90, hozAlign: "right", headerWordWrap: true, headerSort: false,
-                    formatter: "money", formatterParams: {decimal: '.', thousand: ',', symbol: '$', negativeSign: true},
-                    editor: this.getEditMode("input"), validator: ["required", this.#priceregexp],},
+                    formatter: localeMoney, editor: this.getEditMode("input"), validator: ["required", this.#priceregexp],},
                 {title: 'Mail-In Id Base', field: "mailinIdBase", width: 80, hozAlign: "right", headerWordWrap: true, headerSort: false,
                     editor: this.getEditMode("number"),},
                 {title: "Sales GL Num", field: "revenueGlNum", headerWordWrap: true, headerSort: true, headerFilter: true,
@@ -1039,7 +1048,7 @@ class exhibitssetup {
                 {
                     title: '&bigstar;Price', field: "price", headerHozAlign:"right", width: 120, hozAlign: "right", headerSort: false,
                     editor: "input", editorParams: {maxlength: "10"}, validator: "required",
-                    formatter: "money", formatterParams: {decimal: '.', thousand: ',', symbol: '$', negativeSign: true},
+                    formatter: localeMoney,
                     headerFilter: true, headerFilterFunc: numberHeaderFilter,
                 },
                 {
@@ -1949,4 +1958,12 @@ function deleterow(e, row) {
         row.getCell("to_delete").setValue(1);
         row.getCell("uses").setValue('<span style="color:red;"><b>Del</b></span>');
     }
+}
+
+function localeMoney(cell, formatParams, onRendered) {
+    let value = cell.getValue();
+    if (value == '')
+        return value;
+
+    return currencyFmt.format(Number(value).toFixed(2));
 }
