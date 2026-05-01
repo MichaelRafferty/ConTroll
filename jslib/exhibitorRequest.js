@@ -76,7 +76,7 @@ class ExhibitorRequest {
         switch (cancel) {
             case 0:
                 exhibitor = ''
-                prompt = 'Request';
+                prompt = 'Request ';
                 nospace = 'No Space Requested';
                 break;
             case 1:
