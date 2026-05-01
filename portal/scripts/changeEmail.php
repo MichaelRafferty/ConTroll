@@ -121,13 +121,13 @@ if ($personId == $currentPersonId && $personType == $currentPersonType) {
 
     if (count($validEmails) == 0) {
         ajaxSuccess(array('status'=>'error', 'message'=>'You have no other validated email addresses.' .
-            '<br/>Use the Add New section of Identities in Account Settings to add additional validated email addresses for you account.'));
+            '<br/>Use the Add New section of Identities in Account Settings to add additional validated email addresses for your account.'));
         exit();
     }
 
     if (!in_array($lcemail, $validEmails)) {
         ajaxSuccess(array('status'=>'error', 'message'=>"The email, $email, is not one of your validated email addresses." .
-            '<br/>Use the Add New section of Identities in Account Settings to add additional validated email addresses for you account.'));
+            '<br/>Use the Add New section of Identities in Account Settings to add additional validated email addresses for your account.'));
         exit();
     }
 
@@ -188,12 +188,21 @@ if ($rows_upd === false) {
     exit();
 }
 
+// now delete any passkeys involved with the old address
+$rp = $_SERVER['HTTP_HOST'];
+$pqD = <<<EOS
+DELETE FROM passkeys
+WHERE relyingParty = ? AND userName = ?;
+EOS;
+$numDeleted = dbSafeCmd($pqD, 'ss', array($rp, $curEmail));
+
 
 $response['rows_upd'] = $rows_upd;
 $response['newEmail'] = $email;
 $response['status'] = 'success';
-$response['logmessage'] = "$rows_upd rows updated, email address update successful from $curEmail to $email";
-$response['message'] = "Email address successfully updated from $curEmail to $email";
+$response['logmessage'] = "$rows_upd rows updated, email address update successful from $curEmail to $email" . ($numDeleted > 0 ? ", $numDeleted passkeys deleted" : "");
+$response['message'] = "Email address successfully updated from $curEmail to $email" .
+    ($numDeleted > 0 ? " and the corresponding Passkey has been deleted" : "");
 logInit($log['reg']);
 logWrite($response);
 
