@@ -70,6 +70,9 @@ async function createPasskeyRegistration(script, displayName, email, source) {
                     case 'portal':
                         window.location = '?messageFwd=' + encodeURI(data.message);
                         return;
+                    case 'controll':
+                        window.location = '?msg=' + encodeURI(data.message);
+                        return;
                 }
                 show_message(data.message, 'success');
                 return;
