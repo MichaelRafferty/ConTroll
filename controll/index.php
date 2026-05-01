@@ -406,7 +406,7 @@ EOS;
         $msg = $_REQUEST['msg'];
 ?>
         <div class="row">
-            <div class="col-sm-12 mt-4 bg-danger">
+            <div class="col-sm-12 mt-4 bg-danger text-white">
                 <strong> <?php echo $msg; ?></strong>
 
 <?php
@@ -414,7 +414,7 @@ EOS;
     $msg = $_REQUEST['messageFwd'];
 ?>
             <div class="row">
-                <div class="col-sm-12 mt-4 bg-success">
+                <div class="col-sm-12 mt-4 bg-success text-white">
                     <strong> <?php echo $msg; ?></strong>
 
 <?php
