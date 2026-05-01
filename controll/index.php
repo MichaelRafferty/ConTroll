@@ -410,7 +410,7 @@ EOS;
                 <strong> <?php echo $msg; ?></strong>
 
 <?php
-    } else if (array_key_exists('messageFwd', $_REQUEST))
+    } else if (array_key_exists('messageFwd', $_REQUEST)) {
     $msg = $_REQUEST['msg'];
 ?>
             <div class="row">
@@ -422,7 +422,7 @@ EOS;
 ?>
         </div>
     </div>
-    <?php
+<?php
 }
 
 page_foot($page);
