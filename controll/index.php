@@ -342,29 +342,27 @@ EOS;
         } else
             $keyId = -1;
     }
-    if ($source == 'google') {
-        if ($allowPasskey) {
-            if ($keyId > 0) {
+    if ($allowPasskey) {
+        if ($keyId > 0) {
 ?>
-  <div class='row mt-4'>
-                <div class='col-sm-2'>
-                    <button class='btn btn-sm btn-primary' id='newPasskey' onclick='login.deletePasskey(<?php echo $keyId; ?>);'>
-                        <img src='lib/passkey.png'>Delete Existing Passkey
-                    </button>
-                </div>
+        <div class='row mt-4'>
+            <div class='col-sm-2'>
+                <button class='btn btn-sm btn-primary' id='newPasskey' onclick='login.deletePasskey(<?php echo $keyId; ?>);'>
+                    <img src='lib/passkey.png'>Delete Existing Passkey
+                </button>
             </div>
+        </div>
 <?php
-            } else {
+        } else {
 ?>
-            <div class='row mt-4'>
-                <div class='col-sm-2'>
-                    <button class='btn btn-sm btn-primary' id='newPasskey' onclick='login.newPasskey();'>
-                        <img src='lib/passkey.png'>Add New Passkey
-                    </button>
-                </div>
+        <div class='row mt-4'>
+            <div class='col-sm-2'>
+                <button class='btn btn-sm btn-primary' id='newPasskey' onclick='login.newPasskey();'>
+                    <img src='lib/passkey.png'>Add New Passkey
+                </button>
             </div>
-            <?php
-            }
+        </div>
+        <?php
         }
     }
 ?>
