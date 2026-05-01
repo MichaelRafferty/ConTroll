@@ -71,7 +71,7 @@ async function createPasskeyRegistration(script, displayName, email, source) {
                         window.location = '?messageFwd=' + encodeURI(data.message);
                         return;
                     case 'controll':
-                        window.location = '?msg=' + encodeURI(data.message);
+                        window.location = '?messageFwd=' + encodeURI(data.message);
                         return;
                 }
                 show_message(data.message, 'success');
@@ -110,7 +110,7 @@ function deletePasskeyEntry(script, id, userName, source) {
                         window.location = '?messageFwd=' + encodeURI(data.message);
                         return;
                     case 'controll':
-                        window.location = '?msg=' + encodeURI(data.message);
+                        window.location = '?messageFwd=' + encodeURI(data.message);
                         return;
                 }
                 show_message(data.message, 'success');

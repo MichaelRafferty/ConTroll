@@ -406,10 +406,16 @@ EOS;
         $msg = $_REQUEST['msg'];
 ?>
         <div class="row">
-            <div class="col-sm-12 mt-4">
-                <strong style="background-color:red;">
-                    <?php echo $msg; ?>
-                </strong>
+            <div class="col-sm-12 mt-4 bg-danger">
+                <strong> <?php echo $msg; ?></strong>
+
+<?php
+    } else if (array_key_exists('messageFwd', $_REQUEST))
+    $msg = $_REQUEST['msg'];
+?>
+            <div class="row">
+                <div class="col-sm-12 mt-4 bg-success">
+                    <strong> <?php echo $msg; ?></strong>
 
 <?php
     }
