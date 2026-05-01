@@ -202,7 +202,7 @@ $response['newEmail'] = $email;
 $response['status'] = 'success';
 $response['logmessage'] = "$rows_upd rows updated, email address update successful from $curEmail to $email" . ($numDeleted > 0 ? ", $numDeleted passkeys deleted" : "");
 $response['message'] = "Email address successfully updated from $curEmail to $email" .
-    ($numDeleted > 0 ? " and the corresponding Passkey has been deleted" : "");
+    ($numDeleted > 0 ? " and the corresponding Passkey has been deleted." : "");
 logInit($log['reg']);
 logWrite($response);
 
