@@ -411,7 +411,7 @@ EOS;
 
 <?php
     } else if (array_key_exists('messageFwd', $_REQUEST)) {
-    $msg = $_REQUEST['msg'];
+    $msg = $_REQUEST['messageFwd'];
 ?>
             <div class="row">
                 <div class="col-sm-12 mt-4 bg-success">
