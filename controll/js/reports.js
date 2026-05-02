@@ -268,6 +268,9 @@ function drawReport(data) {
 
     if (data.hasOwnProperty('output')) {
         document.getElementById('reportTable').innerHTML = data.output;
+    } else if (data.hasOwnProperty('tableSpecs')) {
+        reportTable = new Tabulator('#reportTable', data.tableSpecs);
+        csvfile = data.csvfile;
     } else {
         // build tabulator specs
         document.getElementById('ReportsPaginationDiv').hidden = data.data.length <= 25;
