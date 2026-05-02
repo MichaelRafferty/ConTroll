@@ -9,12 +9,17 @@
     $returnAjaxErrors = true;
     $return500errors = true;
 
-    $perm = 'gen_rpts';
+    $perm = 'finance';
     $response = array ('post' => $_POST, 'get' => $_GET, 'perm' => $perm);
     $authToken = new authToken('script');
     $response['tokenStatus'] = $authToken->checkToken();
-    if (!$authToken->isLoggedIn() || !$authToken->checkAuth($perm)) {
+    if (!$authToken->isLoggedIn()) {
         $response['error'] = 'Authentication Failed';
+        ajaxSuccess($response);
+        exit();
+    }
+    if (!$authToken->checkAuth($perm))
+        $response['error'] = 'Insufficient permissions';
         ajaxSuccess($response);
         exit();
     }
