@@ -532,7 +532,7 @@ class exhibitssetup {
         let neweditValue = editValue.replace(startRE,'');
         neweditValue = neweditValue.replace(endRE,'');
         if (neweditValue.match(/.*<p>.*/) == null) {
-            editValue = neweditValue;;
+            editValue = neweditValue;
         }
 
         let updArr = {};
@@ -1517,12 +1517,47 @@ class exhibitssetup {
         if (this.#regionsTable != null) {
             let _this = this;
 
+            // tabulator validations check
             let invalids = this.#regionYearsTable.validate();
             if (invalids !== true) {
                 console.log(invalids);
                 show_message("Region Years Table does not pass validation, please check for empty cells or cells outlined in red", 'error');
                 return false;
             }
+
+            // now tabulator value check is complete, check the owner email field and included and additional space entries
+            let yearsData = this.#regionYearsTable.getData();
+            let errmsg = '';
+            for (let i = 0; i < yearsData.length; i++) {
+                let row = yearsData[i];
+                let ownerEmail = row.ownerEmail;
+                if (ownerEmail == null || ownerEmail == undefined)
+                    ownerEmail = '';
+                let domain = ownerEmail.split('@');
+                if (domain.length != 2) {
+                    errmsg += "<br/>Row ID: " + row.id + ": " + ownerEmail + " is not a valid email address (no domain found)";
+                } else {
+                    domain = domain[1];
+                    if (config.validDomains != '' && !config.validDomains.includes(domain)) {
+                        errmsg += "<br/>Row ID: " + row.id + ": " + ownerEmail +
+                            " has a domain not valid for sending emails<br/>Valid domains are: " + config.validDomains.join(', ');
+                    }
+                }
+
+                // includedMemId and additionalMemId are required
+                if (row.includedMemId == null || row.includedMemId == undefined || row.includedMemId == '' || row.includedMemId <= 0) {
+                    errmsg += "<br/>Row ID: " + row.id + ": Included membership type is required";
+                }
+                if (row.additionalMemId == null || row.additionalMemId == undefined || row.additionalMemId == '' || row.additionalMemId <= 0) {
+                    errmsg += "<br/>Row ID: " + row.id + ": Additional membership type is required";
+                }
+            }
+            if (errmsg != '') {
+                show_message("Region Years Table contains errors:<br/>" + errmsg, 'error');
+                return false;
+            }
+
+            // passed our validations, proceed to save it
             this.#regionYearsavebtn.innerHTML = "Saving...";
             this.#regionYearsavebtn.disabled = true;
 
