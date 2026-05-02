@@ -277,6 +277,7 @@ function updateConfig($user_perid, $fields) : string {
     $first=true;
     $updates = 0;
     foreach ($master as $line) {
+        // section break - just flush all output pending and do not output the section break itself
         if (str_starts_with($line, ';;;;; ')) {
             if ($needOutput) {
                 $status .= outputLine($fileHandle, $sectionName, $fieldName, $blank, $contents);
@@ -284,13 +285,18 @@ function updateConfig($user_perid, $fields) : string {
             }
             continue;
         }
+
+        // blank line - cause flush of output before processing this line,
+        //      let it drop through as blank lines will be output in the file for readability
         if (preg_match('/^\s*$/', $line)) {
             if ($needOutput) {
                 $status .= outputLine($fileHandle, $sectionName, $fieldName, $blank, $contents);
                 $needOutput = false;
             }
-            // no continue statement here on purpose
+            // no continue statement here on purpose, blank lines are used for readability
         }
+
+        // section name ([name]), force flush before processing, first section (usually [global]) gets the updated by and date comment
         if (preg_match('/^\s*\[[^]]+]\s*$/', $line)) {
             if ($needOutput) {
                 $status .= outputLine($fileHandle, $sectionName, $fieldName, $blank, $contents);
@@ -305,15 +311,20 @@ function updateConfig($user_perid, $fields) : string {
             }
             continue;
         }
+
+        // name of this field in the file (only unique within a section), use this to output the falue of the field, after a flush of prior lines
         if (str_starts_with($line, ';; N:')) {
             if ($needOutput) {
                 $status .= outputLine($fileHandle, $sectionName, $fieldName, $blank, $contents);
             }
             $fieldName = trim(mb_substr($line, 5));
+
             if (array_key_exists($sectionName . '__' . $fieldName, $fields)) {
+                // this field exists in the configuration data, get the new value
                 $contents = $fields[$sectionName . '__' . $fieldName]['new'];
                 $updates++;
             } else {
+                // it does not exists, use a default of either the value in the current configuration for this section, or the empty string
                 $contents = '';
                 if (array_key_exists($sectionName, $current_config)) {
                     $secConf = $current_config[$sectionName];
@@ -322,24 +333,31 @@ function updateConfig($user_perid, $fields) : string {
                     }
                 }
             }
+            // set the default value of blank (can the field be blank or empty to Optional)
             $blank = 'O';
             $needOutput = true;
             continue;
         }
+
+        // if the blank "Parameter" is set for this field, override the blank value defaulted in the name field with the specified blank option
         if (str_starts_with($line, ';; B:')) {
             $blank = trim(mb_substr($line, 5, 1));
             if ($blank == '')
                 $blank = 'O';
             continue;
         }
+
+        // skip over all unprocessed field definition comments in the sample file, we do not output them into the actual configuration file
         if (str_starts_with($line, ';; '))
             continue;
 
+        // all other comments or blank lines are output to the file directly
         if (strlen($line) < 2 || str_starts_with($line, ';')) {
             fwrite($fileHandle, $line);
         }
     }
-    // shell written out
+
+    // all lines processed, flush anything remaining
     if ($needOutput) {
         $status .= outputLine($fileHandle, $sectionName, $fieldName, $blank, $contents);
     }

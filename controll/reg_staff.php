@@ -72,6 +72,7 @@ $config_vars['currency'] = $currency;
 $config_vars['tokenStatus'] = $authToken->checkToken();
 $config_vars['rolloverYears'] = getConfValue('controll', 'priorRolloverYears', 2);
 $config_vars['bundleMemberships'] = getConfValue('con', 'bundlememberships', 0) == 1 ? 'Y' : 'N';
+$config_vars['validDomains'] = explode(',', getConfValue('con', 'emailDomains', ''));
 $defaultCountry = strtoupper(getConfValue('con', 'defaultCountry', 'USA'));
 $countryOptions = loadCountryOptions($defaultCountry);
 $config_vars['defaultCountry'] = $defaultCountry;

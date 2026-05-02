@@ -227,6 +227,7 @@ class ConfigEditor {
                 break;
 
             case 'e': // email address
+            case 'v': // email address in the valid domain
                 max=256;
                 size=80;
                 html = '<input type=email placeholder="' + param.placeholder + '" ' + id + ' value="' + value + '"' +
@@ -433,11 +434,25 @@ class ConfigEditor {
                     errmsg = "is not a valid email address";
                 break;
 
+            case 'v': // valid email address in the list of valid domains
+                if (!validateAddress(value))
+                    errmsg = "is not a valid email address";
+                else {
+                    let domain = value.split('@')[1];
+                    if (config.validDomains != '') {
+                        if (!config.validDomains.includes(domain))
+                            errmsg = "is not in the list of valid email domains, valid domains are: " + config.validDomains.join(', ');
+                    } else {
+                        errmsg = "Cannot validate the email address " + value +
+                            ", no valid domains are defined in emailDomains, seek assistance from the administrator";
+                    }
+                }
+                break;
+
             case 'l': // list (option)
                 // nothing to check right now
                 break;
         }
-
 
         if (errmsg != '') {
             errmsg = "Section " + sectionName + ", Parameter: " + param.name + " " + errmsg + "</br>";

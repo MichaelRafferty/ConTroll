@@ -70,6 +70,10 @@ id="2025"
 ;;; conname: a very short handle for the convention with no spaces, used in keys and other items in the database as well as display.
 ;       Maximum 10 characters
 conname="ConTroll"
+;;; email domains
+;   comma separated list of email domains that are allowed as email addresses in 'from:' type email addresses in the config files
+;   and in exhibits configuration under owner email field.  No blanks are alloed in the list of email domains. (use ",", not ", ")
+emailDomains="convention.org,club.org"
 ;;; Sales Tax Payment Items
 ; This is the sales tax rate in percent, the invoice label for the tax, and the credit card uid.
 ;   The uid is used by Square and must be the same as the tax id with any space or other non alphanumeric characters replaced by a '-'. (dash)

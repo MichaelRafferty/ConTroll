@@ -130,6 +130,7 @@ Each etnry in the file that is online editable will contain the following prefix
     - `sX` = fill in the blank single line string, with a max length of X
     - `tX,Y` = text area with X columns and Y rows. Newlines will be preserved in the text area.
     - `e` = valid email address
+    - `v` = valid email address in the reg_admin.ini variable emailDomains (list of valid sending domains for this convention)
     - `r:dir` = relative file path, a warning will be issued if this file is not readable starting in the *dir* directory 
 relative to the root of the installation. Note: dir is not allowed to be empty.
     - `a` = absolute file path from the root of of the file system.

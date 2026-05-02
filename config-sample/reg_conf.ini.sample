@@ -159,17 +159,17 @@ volunteers="volunteers@conname.org"
 ;; R:H,reg_staff
 ;; P:Registration Staff Email Address
 ;; H:The email address used to contact the registration staff people for the convention.
-;; D:e
+;; D:v
 ;; B:M
-regemail="registration2022@conname.org"
+regemail="registration@conname.org"
 ;; N:regadminemail
 ;; R:H,reg_staff
 ;; P:Registration Administrator Email Address
 ;; H:The email address used to contact the registration administrator for the convention.
 ;; H+This can be the same address as regemail
-;; D:e
+;; D:v
 ;; B:M
-regadminemail="registration2022@conname.org"
+regadminemail="registration@conname.org"
 ;; N:regconfirmcc
 ;; R:H,reg_staff
 ;; P:Registration Carbon Copy Email Address
@@ -186,21 +186,21 @@ regconfirmcc=
 ;; H:The email address used to contact the convention for further information.
 ;; D:e
 ;; B:M
-infoemail="info2022@conname.org"
+infoemail="info@conname.org"
 ;; N:refundemail
 ;; R:H,reg_staff
 ;; P:email address for refunds/refund policy
 ;; H:The email address used to contact the convention for refunds and refund policy issues.
 ;; D:e
 ;; B:M
-refundemail='info2022@conname.org'
+refundemail='info@conname.org'
 ;; N:feedbackemail
 ;; R:H,reg_staff
 ;; P:Convention feedback email
 ;; H:The email address used to contact the convention with feedback
 ;; D:e
 ;; B:M
-feedbackemail='info2022@conname.org'
+feedbackemail='info@conname.org'
 ;;;;; HR Web Sites
 ;;; Websites
 ;; N:website
@@ -359,7 +359,7 @@ defaultCountry="USA"
 ;; H+file formats: jpg, png
 ;; D:s256
 ;; B:O
-logoimage="conname2022.png"
+logoimage="conname.png"
 ;; N:logoalt
 ;; R:H,reg_staff
 ;; P:Logo alternate text
