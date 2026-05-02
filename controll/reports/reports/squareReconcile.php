@@ -18,7 +18,7 @@
         ajaxSuccess($response);
         exit();
     }
-    if (!$authToken->checkAuth($perm))
+    if (!$authToken->checkAuth($perm)) {
         $response['error'] = 'Insufficient permissions';
         ajaxSuccess($response);
         exit();
