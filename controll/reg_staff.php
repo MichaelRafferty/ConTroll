@@ -1191,7 +1191,7 @@ draw_fileManagerModals($authToken);
             </div>
             <?php if (getConfValue('con', 'survey_url') != '') { ?>
             <div class="col-sm-auto p-2">
-                <button class="btn btn-primary btn-sm" onclick="sendEmail('survey')" disabled>Send Survey Email</button>
+                <button class="btn btn-primary btn-sm" onclick="sendEmail('survey')">Send Survey Email</button>
             </div>
             <?php } ?>
             <?php if (getConfValue('reg','cancelled') == 1) { ?>

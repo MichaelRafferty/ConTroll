@@ -237,7 +237,6 @@ case 'survey':
 SELECT Distinct P.email_addr AS email, P.first_name
 FROM reg R 
 JOIN regActions H ON (R.id=H.regid)
-JOIN reg R ON (R.id=H.regid)
 JOIN transaction T ON (T.id=H.tid)
 JOIN memLabel M ON (M.id=R.memId)
 JOIN perinfo P ON (R.perid = P.id)
@@ -344,7 +343,7 @@ GROUP by perid
 ) n ON p.id = n.perid
 JOIN memberPolicies m ON  m.perid = p.id AND m.conid = n.conid AND m.policy = 'marketing'
 SET p.contact_ok = m.response
-WHERE p.contact_ok != m.response AND p.active = 'Y' AND p.first_name != 'merged' AND p.last_name != 'into';
+WHERE p.contact_ok != m.response AND p.active = 'Y' AND p.first_name != 'merged' AND p.last_name != 'into' AND m.conid = ?
 EOS;
     $rows = dbSafeCmd($sql, 'i', array($conid));
 }
