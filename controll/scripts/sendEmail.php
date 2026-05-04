@@ -1,7 +1,6 @@
 <?php
 require_once "../lib/base.php";
 require_once "../../lib/global.php";
-require_once "../lib/email.php";
 require_once '../lib/sessionAuth.php';
 
 // use common global Ajax return functions
@@ -224,8 +223,8 @@ EOQ;
     $typestr = 'iii';
     //$paramarray = array($conid, $priorcon, $priorcon2, $couponid);
     $paramarray = array($conid, $priorcon, $priorcon2);
-    $email_text = ComeBackCouponEmail_TEXT($testsite, date_format($expires, 'M d, Y'));
-    $email_html = ComeBackCouponEmail_HTML($testsite, date_format($expires, 'M d, Y'));
+    $email_text = returnCustomText('comeback/text');
+    $email_html = returnCustomText('comeback/html');
     $email_subject = "We miss you! Please come back to $conname";
     $macroSubstitution = true;
     break;
