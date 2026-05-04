@@ -293,6 +293,14 @@ default:
     exit();
 }
 
+if (str_contains($email_text, 'Controll-Default: This is ') || str_contains($email_html, 'Controll-Default: This is ')) {
+    $response['error'] = "The custom text of the text or html version of the $email_type is still the default message.<br/>" .
+        "It needs to be edited before sending emails of this type.";
+    ajaxSuccess($response);
+    exit();
+}
+
+
 $emailR = dbSafeQuery($emailQ, $typestr, $paramarray);
 if ($emailR === false) {
     $response['error'] = 'Retrieval of email addresses failed';
