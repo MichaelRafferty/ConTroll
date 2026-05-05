@@ -307,6 +307,14 @@ onedaycoupons=0 ; allow onedays for coupon usage
 ;; D:l:0,1
 ;; B:M
 bundlememberships=0 ; allow bundle memberships
+;; N:formerGoH
+;; R:H,reg_admin
+;; H:Enable Tracking Former Guest of Honor in the Profile
+;; H+ =0 Marking people as Former Guest of Honor is disabled
+;; H+ =1 Marking people as Former Guest of Honor is enabled, anyone with reg_staff higher permissions can edit the field, others can see it.
+;; D:l:0,1
+;; B:M
+formerGoH=0 ; allow bundle memberships
 ;; N:defaultCountry
 ;; R:H,reg_staff
 ;; P:3 Character ISO Code

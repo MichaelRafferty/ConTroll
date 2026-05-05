@@ -320,6 +320,7 @@ function drawEditPersonBlock($con, $countryOptions, $useUSPS, $policies, $class,
             <span id="<?php echo $idPrefix . 'deceasedTxt'; ?>">?</span>
 <?php } ?>
         </div>
+<?php if (getConfValue('con', 'formerGoH', 0) == 1) { ?>
         <div class='col-sm-auto'> <label for='<?php echo $idPrefix . 'formerGOH'; ?>'>Former GOH:</label></div>
         <div class='col-sm-auto'>
 <?php if ($regAdmin || $regStaff) { ?>
@@ -331,6 +332,7 @@ function drawEditPersonBlock($con, $countryOptions, $useUSPS, $policies, $class,
             <span id="<?php echo $idPrefix . 'formerGOHTxt'; ?>">?</span>
 <?php } ?>
         </div>
+<?php } ?>
     </div>
 <?php } ?>
     <div class='row'>

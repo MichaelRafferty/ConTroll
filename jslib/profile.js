@@ -177,7 +177,10 @@ class Profile {
         if (this.#formerGOHField)
             return this.#formerGOHField.value;
 
-        return this.#formerGOHTxtSpan.innerHTML.substring(0, 1).toUpperCase();
+        if (this.#formerGOHTxtSpan)
+            return this.#formerGOHTxtSpan.innerHTML.substring(0, 1).toUpperCase();
+
+        return '';
     }
 
     getFormData() {
@@ -250,7 +253,7 @@ class Profile {
     setFormerGOH(formerGOH) {
         if (this.#formerGOHField)
             this.#formerGOHField.value = formerGOH == 'Y' ? 'Y' : 'N';
-        else
+        else if (this.#formerGOHTxtSpan)
             this.#formerGOHTxtSpan.innerHTML = formerGOH == 'Y' ? 'Yes' : 'No';
     }
 

@@ -12,6 +12,9 @@ if (!$authToken->isLoggedIn() || !$authToken->checkAuth($page)) {
     bounce_page('index.php');
 }
 
+$regAdmin = $authToken->checkAuth('reg_admin');
+$regStaff = $authToken->checkAuth('reg_staff');
+
 $con_conf = get_conf('con');
 $conid = $con_conf['id'];
 $condata = get_con();
@@ -206,7 +209,7 @@ if (!$controll['useportal']) {
                              <input type="hidden" name="membership-index" id="membership-index" />
 <?php
 drawEditPersonBlock($con, $countryOptions, $useUSPS, $policies, '', false, true, $ageByDate,
-        array(), $ageListIdx, 200, true, '');
+        array(), $ageListIdx, 200, true, '', false,false, $regAdmin, $regStaff);
 ?>
                             <div class="row">
                                 <div class="col-sm-12 ms-0 me-0" id="add_results">

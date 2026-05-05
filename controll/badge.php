@@ -10,6 +10,9 @@ if (!$authToken->isLoggedIn() || !$authToken->checkAuth($page)) {
     bounce_page('index.php');
 }
 
+$regAdmin = $authToken->checkAuth('reg_admin');
+$regStaff = $authToken->checkAuth('reg_staff');
+
 $con = get_con();
 $conid = $con['id'];
 
@@ -98,7 +101,7 @@ $config_vars['defaultCountry'] = $defaultCountry;
                     </div>
                     <?php
                         drawEditPersonBlock($conf, $countryOptions, $useUSPS, null, 'find', true, true, $ageByDate,
-                                array (), $ageListIdx,200, true, 'f_', true);
+                                array (), $ageListIdx,200, true, 'f_', true, false, $regAdmin, $regStaff);
                     ?>
                     </form>
                 </div>
@@ -132,7 +135,7 @@ $config_vars['defaultCountry'] = $defaultCountry;
                     </div>
                     <?php
                         drawEditPersonBlock($conf, $countryOptions, $useUSPS, null, 'add', true, true, $ageByDate,
-                                array (), $ageListIdx,1000, true, 'a_', true);
+                                array (), $ageListIdx,1000, true, 'a_', true, false, $regAdmin, $regStaff);
                     ?>
                     </form>
                     <div class='row mt-2'>

@@ -341,8 +341,10 @@ class Pos {
                 else
                     this.#managerSelect.value = cartrow.managedBy;
             } else {
-                this.#managerDiv.hidden = true;
-                this.#managerSelect.innerHTML = null;
+                if (this.#managerDiv)
+                    this.#managerDiv.hidden = true;
+                if (this.#managerSelect)
+                    this.#managerSelect.innerHTML = null;
             }
         }
 
