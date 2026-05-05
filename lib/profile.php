@@ -321,15 +321,15 @@ function drawEditPersonBlock($con, $countryOptions, $useUSPS, $policies, $class,
 <?php } ?>
         </div>
 <?php if (getConfValue('con', 'formerGoH', 0) == 1) { ?>
-        <div class='col-sm-auto'> <label for='<?php echo $idPrefix . 'formerGOH'; ?>'>Former GOH:</label></div>
+        <div class='col-sm-auto'> <label for='<?php echo $idPrefix . 'formerGoH'; ?>'>Former GOH:</label></div>
         <div class='col-sm-auto'>
 <?php if ($regAdmin || $regStaff) { ?>
-            <select id='<?php echo $idPrefix . 'formerGOH'; ?>' name='formerGOH' tabindex="<?php echo $tabindex; $tabindex += 10;?>">
+            <select id='<?php echo $idPrefix . 'formerGoH'; ?>' name='formerGoH' tabindex="<?php echo $tabindex; $tabindex += 10;?>">
                 <option value='N'>No</option>
                 <option value='Y'>Yes</option>
             </select>
 <?php } else { ?>
-            <span id="<?php echo $idPrefix . 'formerGOHTxt'; ?>">?</span>
+            <span id="<?php echo $idPrefix . 'formerGoHTxt'; ?>">?</span>
 <?php } ?>
         </div>
 <?php } ?>

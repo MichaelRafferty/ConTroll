@@ -62,7 +62,7 @@ if ($numRows == 0) {
 $watchQ = <<<EOS
 SELECT p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2, p.legalName, p.pronouns, 
     p.address, p.addr_2, p.city, p.state, p.zip, p.country, p.banned, 
-    p.creation_date, p.update_date, p.active, p.banned, p.open_notes, p.admin_notes, p.lastverified,
+    p.creation_date, p.update_date, p.active, p.banned, p.deceased, p.formerGoH, p.open_notes, p.admin_notes, p.lastverified,
     REPLACE(REPLACE(REPLACE(REPLACE(LOWER(TRIM(IFNULL(p.phone, ''))), ')', ''), '(', ''), '-', ''), ' ', '') AS phoneCheck,
     TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName,
     TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.address, p.addr_2, p.city, p.state, p.zip, p.country), ' +', ' ')) AS fullAddr,
@@ -75,7 +75,7 @@ LEFT OUTER JOIN memList m ON (r.memId = m.id AND m.conid = ? AND m.memType in ('
 WHERE b.conid = ? AND b.user_perid = ?
 GROUP BY p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr, p.phone, p.badge_name, p.badgeNameL2, p.legalName, p.pronouns, 
     p.address, p.addr_2, p.city, p.state, p.zip, p.country, 
-    p.creation_date, p.update_date, p.active, p.banned, p.open_notes, p.admin_notes,
+    p.creation_date, p.update_date, p.active, p.banned, p.open_notes, p.admin_notes, p.deceased, p.formerGoH,
     p.lastverified, phoneCheck, fullName;
 EOS;
 

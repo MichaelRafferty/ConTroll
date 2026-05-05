@@ -958,6 +958,8 @@ class Find {
             banned: this.#banned.value,
             openNotes: this.#openNotes.value,
             adminNotes: this.#adminNotes.value,
+            deceased: profile.deceased(),
+            formerGoH: profile.formerGoH(),
             oldPolicies: JSON.stringify(this.#memberPolicies),
             currentAgeType: profile.age() == '' ? this.#memAgeType : profile.age(),
             origAgeType: this.#origAge,

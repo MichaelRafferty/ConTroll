@@ -27,9 +27,9 @@ class Profile {
     #email1Input = true;
     #numPrimary = 0;
     #deceasedField = null;
-    #formerGOHField = null;
+    #formerGoHField = null;
     #deceasedTxtSpan = null;
-    #formerGOHTxtSpan = null;
+    #formerGoHTxtSpan = null;
 
 // online reg - membership filtering
     #memIdField = null;
@@ -81,9 +81,9 @@ class Profile {
         this.#memIdField = document.getElementById(prefix +'memId');
         this.#ageasofLabel = document.getElementById(prefix + 'ageasofLabel');
         this.#deceasedField = document.getElementById(prefix + 'deceased');
-        this.#formerGOHField = document.getElementById(prefix + 'formerGOH');
+        this.#formerGoHField = document.getElementById(prefix + 'formerGoH');
         this.#deceasedTxtSpan = document.getElementById(prefix + 'deceasedTxt');
-        this.#formerGOHTxtSpan = document.getElementById(prefix + 'formerGOHTxt');
+        this.#formerGoHTxtSpan = document.getElementById(prefix + 'formerGoHTxt');
     }
 
     // get functions
@@ -173,12 +173,12 @@ class Profile {
         return this.#deceasedTxtSpan.innerHTML.substring(0, 1).toUpperCase();
     }
 
-    formerGOH() {
-        if (this.#formerGOHField)
-            return this.#formerGOHField.value;
+    formerGoH() {
+        if (this.#formerGoHField)
+            return this.#formerGoHField.value;
 
-        if (this.#formerGOHTxtSpan)
-            return this.#formerGOHTxtSpan.innerHTML.substring(0, 1).toUpperCase();
+        if (this.#formerGoHTxtSpan)
+            return this.#formerGoHTxtSpan.innerHTML.substring(0, 1).toUpperCase();
 
         return '';
     }
@@ -250,11 +250,11 @@ class Profile {
             this.#deceasedTxtSpan.innerHTML = deceased == 'Y' ? 'Yes' : 'No';
     }
 
-    setFormerGOH(formerGOH) {
-        if (this.#formerGOHField)
-            this.#formerGOHField.value = formerGOH == 'Y' ? 'Y' : 'N';
-        else if (this.#formerGOHTxtSpan)
-            this.#formerGOHTxtSpan.innerHTML = formerGOH == 'Y' ? 'Yes' : 'No';
+    setformerGoH(formerGoH) {
+        if (this.#formerGoHField)
+            this.#formerGoHField.value = formerGoH == 'Y' ? 'Y' : 'N';
+        else if (this.#formerGoHTxtSpan)
+            this.#formerGoHTxtSpan.innerHTML = formerGoH == 'Y' ? 'Yes' : 'No';
     }
 
     setAll(row) {
@@ -325,16 +325,16 @@ class Profile {
                 this.#deceasedTxtSpan.innerHTML = 'No';
         }
         
-        if (row.hasOwnProperty('formerGOH')) {
-            if (this.#formerGOHField)
-                this.#formerGOHField.value = row.formerGOH == 'Y' ? 'Y' : 'N';
-            if (this.#formerGOHTxtSpan)
-                this.#formerGOHTxtSpan.innerHTML = row.formerGOH == 'Y' ? 'Yes' : 'No';
+        if (row.hasOwnProperty('formerGoH')) {
+            if (this.#formerGoHField)
+                this.#formerGoHField.value = row.formerGoH == 'Y' ? 'Y' : 'N';
+            if (this.#formerGoHTxtSpan)
+                this.#formerGoHTxtSpan.innerHTML = row.formerGoH == 'Y' ? 'Yes' : 'No';
         } else {
-            if (this.#formerGOHField)
-                this.#formerGOHField.value = 'N';
-            if (this.#formerGOHTxtSpan)
-                this.#formerGOHTxtSpan.innerHTML = 'No';
+            if (this.#formerGoHField)
+                this.#formerGoHField.value = 'N';
+            if (this.#formerGoHTxtSpan)
+                this.#formerGoHTxtSpan.innerHTML = 'No';
         }
     }
 

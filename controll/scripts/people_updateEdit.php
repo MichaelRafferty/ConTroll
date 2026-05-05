@@ -67,6 +67,8 @@ $active = $_POST['active'] == null ? 'Y' : trim($_POST['active']);
 $banned = $_POST['banned'] == null ? 'N' : trim($_POST['banned']);
 $admin_notes = $_POST['adminNotes'] == null ? '' : trim($_POST['adminNotes']);
 $open_notes = $_POST['openNotes'] == null ? '' : trim($_POST['openNotes']);
+$deceased = $_POST['deceased'] == null ? 'N' : trim($_POST['deceased']);
+$formerGoH = $_POST['formerGoH'] == null ? 'N' : trim($_POST['formerGoH']);
 $currentAgeType = $_POST['currentAgeType'];
 $origAgeType = $_POST['origAgeType'];
 
@@ -110,16 +112,16 @@ if ($origAgeType != $currentAgeType) {
 $uP = <<<EOS
 UPDATE perinfo
 SET $ageSQL last_name = ?, first_name = ?, middle_name = ?, suffix = ?, email_addr = ?, phone = ?, badge_name = ?, badgeNameL2 = ?, legalName = ?, pronouns = ?,
-    address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?, banned = ?,
+    address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?, banned = ?, deceased = ?, formerGoH = ?,
     active = ?, open_notes = ?, admin_notes = ?, managedBy = ?, updatedBy = ?, 
     managedByNew = NULL, lastVerified = NULL, update_date = NOW(), change_notes = CONCAT(change_notes, '<br/>Updated by People Edit screen')
 WHERE id = ?;
 EOS;
 
 
-$typeStr .= 'ssssssssssssssssssssiii';
+$typeStr .= 'ssssssssssssssssssssssiii';
 array_push($valArray, $last_name, $first_name, $middle_name, $suffix, $email_addr, $phone, $badge_name, $badgeNameL2, $legalName, $pronouns,
-    $address, $addr_2, $city, $state, $zip, $country, $banned, $active, $open_notes, $admin_notes, $managedBy, $updatedBy, $perid);
+    $address, $addr_2, $city, $state, $zip, $country, $banned, $deceased, $formerGoH, $active, $open_notes, $admin_notes, $managedBy, $updatedBy, $perid);
 
 $upd = dbSafeCmd($uP, $typeStr, $valArray);
 if ($upd === false) {
@@ -309,7 +311,7 @@ GROUP BY p.id, p.last_name, p.first_name, p.middle_name, p.suffix, p.email_addr,
     p.address, p.addr_2, p.city, p.state, p.zip, p.country, 
     p.creation_date, p.update_date, p.active, p.banned, p.open_notes, p.admin_notes,
     p.managedBy, p.managedByNew, p.lastverified, p.managedreason, phoneCheck, fullName, manager, managerId,
-    ma.memAgeType, p.currentAgeType
+    ma.memAgeType, p.currentAgeType, p.deceased, p.formerGoH
 EOS;
 $updRowR = dbSafeQuery($updRowSQL, 'iiiiii', array($perid, $conid, $conid,  $conid, $conid + 1, $perid));
 if ($updRowR === false) {
