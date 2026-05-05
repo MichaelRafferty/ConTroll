@@ -324,9 +324,7 @@ class Pos {
         this.#add_perid_field.value = cartrow.perid;
         this.#add_memIndex_field.value = '';
 
-        profile.setAll(cartrow.first_name, cartrow.middle_name, cartrow.last_name, cartrow.suffix, cartrow.legalName, cartrow.pronouns,
-            cartrow.address_1, cartrow.address_2, cartrow.city, cartrow.state, cartrow.postal_code, cartrow.country,
-            cartrow.phone, cartrow.badge_name, cartrow.badgeNameL2, cartrow.currentAgeType);
+        profile.setAll(cartrow);
 
         profile.setEmail(cartrow.email_addr);
 

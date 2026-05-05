@@ -218,27 +218,61 @@ class Profile {
         this.#memberAge = age;
     }
 
-    setAll(first_name, middle_name, last_name, suffix, legalName, pronouns, address, addr_2, city, state, zip, country, phone,
-           badge_name, badgeNameL2, age, numPrimary = 0) {
-        this.#fnameField.value = first_name;
-        this.#mnameField.value = middle_name;
-        this.#lnameField.value = last_name;
-        this.#suffixField.value = suffix;
+    setAll(row) {
+        this.#fnameField.value = row.hasOwnProperty('first_name') ? row.first_name : '';
+        this.#mnameField.value = row.hasOwnProperty('middle_name') ? row.middle_name : '';
+        this.#lnameField.value = row.hasOwnProperty('last_name') ? row.last_name : '';
+        this.#suffixField.value = row.hasOwnProperty('suffix') ? row.suffix : '';
         if (this.#legalNameField)
-            this.#legalNameField.value = legalName;
+            this.#legalNameField.value = row.hasOwnProperty('legalName') ? row.legalName : '';
         if (this.#pronounsField)
-            this.#pronounsField.value = pronouns;
-        this.#addrField.value = address;
-        this.#addr2Field.value = addr_2;
-        this.#cityField.value = city;
-        this.#stateField.value = state;
-        this.#zipField.value = zip;
-        this.#countryField.value = country;
-        this.#phoneField.value = phone;
-        this.#badgenameField.value = badge_name;
-        this.#badgenameL2Field.value = badgeNameL2;
-        this.#ageField.value = age;
-        this.#numPrimary = numPrimary;
+            this.#pronounsField.value = row.hasOwnProperty('pronouns') ? row.pronouns : '';
+
+        if (row.hasOwnProperty('address'))
+            this.#addrField.value = row.address;
+        else if (row.hasOwnProperty('address_1'))
+            this.#addrField.value = row.address_1;
+        else if (row.hasOwnProperty('addr'))
+            this.#addrField.value = row.addr;
+            this.#addrField.value = '';
+
+        if (row.hasOwnProperty('address_2'))
+            this.#addr2Field.value = row.address_2;
+        else if (row.hasOwnProperty('addr_2'))
+            this.#addr2Field.value = row.addr_2;
+        else if (row.hasOwnProperty('addr2'))
+            this.#addr2Field.value = row.addr2;
+        else
+            this.#addr2Field.value = '';
+
+        this.#cityField.value = row.city.hasOwnProperty('city') ? row.city : '';
+        this.#stateField.value = row.state.hasOwnProperty('state') ? row.state : '';
+
+        if (row.hasOwnProperty('zip'))
+            this.#zipField.value = row.zip;
+        else if (row.hasOwnProperty('postal_code'))
+            this.#zipField.value = row.postal_code;
+        else
+            this.#zipField.value = '';
+
+        this.#countryField.value = row.country.hasOwnProperty('country') ? row.country : '';
+
+        if (row.hasOwnProperty('phone')
+            this.#phoneField.value = row.phone;
+        else if (row.hasOwnProperty('exhibitorPhone'))
+            this.#phoneField.value = row.exhibitorPhone;
+
+        this.#badgenameField.value = row.badge_name.hasOwnProperty('badge_name') ? row.badge_name : '';
+        this.#badgenameL2Field.value = row.badgeNameL2.hasOwnProperty('badgeNameL2') ? row.badgeNameL2 : '';
+
+        if (row.hasOwnProperty('currentAgeType'))
+            this.#ageField.value = row.currentAgeType;
+        else if (row.hasOwnProperty('age'))
+            this.#ageField.value = row.age;
+        else
+            this.#ageField.value = '';
+
+        this.#numPrimary = row.numPrimary.hasOwnProperty('numPrimary') ? row.numPrimary : 0;
     }
 
     setPolicies(old) {

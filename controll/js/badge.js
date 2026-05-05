@@ -417,9 +417,7 @@ function findDetailsSuccess(dataFound) {
     if (profile)
         profile = null;
     profile = new Profile('f_', source = 'badge', 'warncolor');
-    profile.setAll(person.first_name, person.middle_name, person.last_name, person.suffix, person.legalName, person.pronouns,
-        person.address, person.addr_2, person.city, person.state, person.zip, person.country,
-        person.phone, person.badge_name, person.badgeNameL2, person.currentAgeType == null ? '' : person.currentAgeType);
+    profile.setAll(person);
     profile.setEmail(person.email_addr);
     if (person.memAgeType != null && person.currentAgeConId == config.conid) {
         let ageItem = ageListIdx[person.memAgeType];

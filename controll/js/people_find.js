@@ -361,12 +361,7 @@ class Find {
         this.#managed = data['managed'];
         // populate the form
         this.#editPersonName.innerHTML = this.#editRow.fullName + ' (' + this.#editRow.id + ')';
-        profile.setAll(this.#editRow.first_name, this.#editRow.middle_name, this.#editRow.last_name, this.#editRow.suffix, this.#editRow.legalName,
-            this.#editRow.pronouns, this.#editRow.address, this.#editRow.addr_2, this.#editRow.city, this.#editRow.state, this.#editRow.zip,
-            this.#editRow.country, this.#editRow.phone, this.#editRow.badge_name, this.#editRow.badgeNameL2,
-            this.#editRow.currentAgeType == null ? '' : this.#editRow.currentAgeType)
-
-
+        profile.setAll(this.#editRow);
         profile.setEmail(this.#editRow.email_addr);
         this.#origAge = profile.age();
         this.#managerId.value = this.#editRow.managerId;
