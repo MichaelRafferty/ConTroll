@@ -26,6 +26,10 @@ class Profile {
     #uspsDiv= null;
     #email1Input = true;
     #numPrimary = 0;
+    #deceasedField = null;
+    #formerGOHField = null;
+    #deceasedTxtSpan = null;
+    #formerGOHTxtSpan = null;
 
 // online reg - membership filtering
     #memIdField = null;
@@ -74,8 +78,12 @@ class Profile {
         this.#ageText = document.getElementById(prefix + "agetext");
         this.#ageDiv = document.getElementById(prefix + "agediv");
         this.#uspsDiv = document.getElementById(prefix + "uspsblock");
-        this.#memIdField = document.getElementById('memId');
-        this.#ageasofLabel = document.getElementById('ageasofLabel');
+        this.#memIdField = document.getElementById(prefix +'memId');
+        this.#ageasofLabel = document.getElementById(prefix + 'ageasofLabel');
+        this.#deceasedField = document.getElementById(prefix + 'deceased');
+        this.#formerGOHField = document.getElementById(prefix + 'formerGOH');
+        this.#deceasedTxtSpan = document.getElementById(prefix + 'deceasedTxt');
+        this.#formerGOHTxtSpan = document.getElementById(prefix + 'formerGOHTxt');
     }
 
     // get functions
@@ -158,6 +166,20 @@ class Profile {
         return this.#ageField.value;
     }
 
+    deceased() {
+        if (this.#deceasedField)
+            return this.#deceasedField.value
+
+        return this.#deceasedTxtSpan.innerHTML.substring(0, 1).toUpperCase();
+    }
+
+    formerGOH() {
+        if (this.#formerGOHField)
+            return this.#formerGOHField.value;
+
+        return this.#formerGOHTxtSpan.innerHTML.substring(0, 1).toUpperCase();
+    }
+
     getFormData() {
         return this.#formData;
     }
@@ -218,6 +240,20 @@ class Profile {
         this.#memberAge = age;
     }
 
+    setDeceased(deceased) {
+        if (this.#deceasedField)
+            this.#deceasedField.value = deceased == 'Y' ? 'Y' : 'N';
+        else
+            this.#deceasedTxtSpan.innerHTML = deceased == 'Y' ? 'Yes' : 'No';
+    }
+
+    setFormerGOH(formerGOH) {
+        if (this.#formerGOHField)
+            this.#formerGOHField.value = formerGOH == 'Y' ? 'Y' : 'N';
+        else
+            this.#formerGOHTxtSpan.innerHTML = formerGOH == 'Y' ? 'Yes' : 'No';
+    }
+
     setAll(row) {
         this.#fnameField.value = row.hasOwnProperty('first_name') ? row.first_name : '';
         this.#mnameField.value = row.hasOwnProperty('middle_name') ? row.middle_name : '';
@@ -257,7 +293,7 @@ class Profile {
 
         this.#countryField.value = row.country.hasOwnProperty('country') ? row.country : '';
 
-        if (row.hasOwnProperty('phone')
+        if (row.hasOwnProperty('phone'))
             this.#phoneField.value = row.phone;
         else if (row.hasOwnProperty('exhibitorPhone'))
             this.#phoneField.value = row.exhibitorPhone;
@@ -272,7 +308,31 @@ class Profile {
         else
             this.#ageField.value = '';
 
-        this.#numPrimary = row.numPrimary.hasOwnProperty('numPrimary') ? row.numPrimary : 0;
+        this.#numPrimary = row.hasOwnProperty('numPrimary') ? row.numPrimary : 0;
+
+        if (row.hasOwnProperty('deceased')) {
+            if (this.#deceasedField)
+                this.#deceasedField.value = row.deceased == 'Y' ? 'Y' : 'N';
+            if (this.#deceasedTxtSpan)
+                this.#deceasedTxtSpan.innerHTML = row.deceased == 'Y' ? 'Yes' : 'No';
+        } else {
+            if (this.#deceasedField)
+                this.#deceasedField.value = 'N';
+            if (this.#deceasedTxtSpan)
+                this.#deceasedTxtSpan.innerHTML = 'No';
+        }
+        
+        if (row.hasOwnProperty('formerGOH')) {
+            if (this.#formerGOHField)
+                this.#formerGOHField.value = row.formerGOH == 'Y' ? 'Y' : 'N';
+            if (this.#formerGOHTxtSpan)
+                this.#formerGOHTxtSpan.innerHTML = row.formerGOH == 'Y' ? 'Yes' : 'No';
+        } else {
+            if (this.#formerGOHField)
+                this.#formerGOHField.value = 'N';
+            if (this.#formerGOHTxtSpan)
+                this.#formerGOHTxtSpan.innerHTML = 'No';
+        }
     }
 
     setPolicies(old) {

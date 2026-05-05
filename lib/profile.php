@@ -3,7 +3,8 @@
 
 // drawEditPersonBlock - just output the block to edit the person
 function drawEditPersonBlock($con, $countryOptions, $useUSPS, $policies, $class, $modal=false, $editEmail=false, $ageByDate = '',
-     $membershipTypes = [], $ageList = [], $tabIndexStart = 100, $admin = false, $idPrefix = '', $free=false, $enableManager=false) {
+     $membershipTypes = [], $ageList = [], $tabIndexStart = 100, $admin = false, $idPrefix = '', $free=false, $enableManager=false,
+     $regAdmin = false, $regStaff = false) {
     if ($class != '')
         $class .= '.';
     $polConf = $editEmail ? 'reg' : 'portal';
@@ -194,8 +195,8 @@ function drawEditPersonBlock($con, $countryOptions, $useUSPS, $policies, $class,
             </div>
         </div>
     </div>
-    <?php if ($useUSPS) echo '</div></div><div class="col-sm-4" id="' . $idPrefix . 'uspsblock"></div></div>' . PHP_EOL; ?>
 <?php
+    if ($useUSPS) echo '</div></div><div class="col-sm-4" id="' . $idPrefix . 'uspsblock"></div></div>' . PHP_EOL;
     if ($admin == false) {
 ?>
     <div class='row'>
@@ -222,7 +223,7 @@ function drawEditPersonBlock($con, $countryOptions, $useUSPS, $policies, $class,
             <input class='form-control-sm' type='email' name='email1' id='<?php echo $idPrefix . 'email1'; ?>' size='35' maxlength='254'
                    tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
         </div>
-<?php if (!$admin) { ?>
+<?php   if (!$admin) { ?>
         <div class='col-sm-auto'>
             <label for='<?php echo $idPrefix . 'email2'; ?>' class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'><span
                             class='text-danger'>&bigstar;</span>Confirm Email</span></label><br/>
@@ -230,8 +231,8 @@ function drawEditPersonBlock($con, $countryOptions, $useUSPS, $policies, $class,
                    tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
         </div>
 <?php
-    } // end not admin
-    if ($enableManager) {
+        } // end not admin
+        if ($enableManager) {
 ?>
         <div class='col-sm-auto' id="<?php echo $idPrefix . 'managerDiv'; ?>">
             <label for='<?php echo $idPrefix . 'cartManager'; ?>' class='form-label-sm'><span class='text-dark' style='font-size: 10pt;'>
@@ -245,7 +246,7 @@ function drawEditPersonBlock($con, $countryOptions, $useUSPS, $policies, $class,
             </div>
         </div>
 <?php
-    } // end manager
+        } // end manager
 ?>
     </div>
 <?php
@@ -283,7 +284,7 @@ function drawEditPersonBlock($con, $countryOptions, $useUSPS, $policies, $class,
         <div class="col-sm-12">
             <label for="<?php echo $idPrefix . 'memId'; ?>" class="form-label-sm"><span class="text-dark" style="font-size: 10pt;"><span
                             class='text-danger'>&bigstar;</span>Membership Type</span></label><br/>
-            <select id='<?php echo $idPrefix . 'memId'; ?>' name='memId' style="max-width:90%;" tabindex="<?php echo $tabindex; $tabindex += 10;?>"/>
+            <select id='<?php echo $idPrefix . 'memId'; ?>' name='memId' style="max-width:90%;" tabindex="<?php echo $tabindex; $tabindex += 10;?>">
                 <?php foreach ($membershipTypes as $memType) { ?>
                     <option value='<?php echo $memType['id']; ?>'><?php echo $memType['label']; ?> ($<?php echo $memType['price']; ?>)</option>
                 <?php } ?>
@@ -304,8 +305,34 @@ function drawEditPersonBlock($con, $countryOptions, $useUSPS, $policies, $class,
         </div>
     </div>
 <?php
-    }
+    } // end else of edit email
+    if ($admin) {
 ?>
+    <div class='row mt-2'>
+        <div class='col-sm-auto'><label for='<?php echo $idPrefix . 'deceased'; ?>'>Deceased:</label></div>
+        <div class='col-sm-auto'>
+<?php if ($regAdmin) { ?>
+            <select id='<?php echo $idPrefix . 'deceased'; ?>' name='deceased' tabindex="<?php echo $tabindex; $tabindex += 10;?>">
+                <option value="N">No</option>
+                <option value="Y">Yes</option>
+            </select>
+<?php } else { ?>
+            <span id="<?php echo $idPrefix . 'deceasedTxt'; ?>">?</span>
+<?php } ?>
+        </div>
+        <div class='col-sm-auto'> <label for='<?php echo $idPrefix . 'formerGOH'; ?>'>Former GOH:</label></div>
+        <div class='col-sm-auto'>
+<?php if ($regAdmin || $regStaff) { ?>
+            <select id='<?php echo $idPrefix . 'formerGOH'; ?>' name='formerGOH' tabindex="<?php echo $tabindex; $tabindex += 10;?>">
+                <option value='N'>No</option>
+                <option value='Y'>Yes</option>
+            </select>
+<?php } else { ?>
+            <span id="<?php echo $idPrefix . 'formerGOHTxt'; ?>">?</span>
+<?php } ?>
+        </div>
+    </div>
+<?php } ?>
     <div class='row'>
         <div class='col-sm-12'>
             <hr/>

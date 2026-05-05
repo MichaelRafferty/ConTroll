@@ -375,7 +375,7 @@ function drawExhibitorMembershipBlock(label, mnum, prefix, country_options, regi
                         <span class="text-dark" style="font-size: 10pt;">Age as of ` + config.ageByDate + `</span>
                     </label>
                     <br/>
-                    <select class="form-control-sm" name="` + prefix + 'age" id="' + prefix + 'age" tabindex=' + tabindex + `/>
+                    <select class="form-control-sm" name="` + prefix + 'age" id="' + prefix + 'age" tabindex=' + tabindex + `>
                         ` + ageOptions + `
                     </select>
                 </div>`;

@@ -270,7 +270,7 @@ if ($tokenState == 'none' || $tokenState == 'expired') {
 ?>
             <div class='row mb-2'>
                 <div class='col-sm-auto'>
-                    <button class='btn btn-sm btn-primary' onclick='login.loginWithGoogle(<?php echo $isub;?>);'>Login as <?php echo "$ie ($iperid)";
+                    <button class='btn btn-sm btn-primary' onclick='login.loginWithGoogle("<?php echo $isub;?>");'>Login as <?php echo "$ie ($iperid)";
                     ?></button>
                 </div>
             </div>

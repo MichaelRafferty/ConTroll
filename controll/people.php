@@ -27,6 +27,7 @@ if (!$authToken->isLoggedIn() || !$authToken->checkAuth($page)) {
 }
 
 $regAdmin = $authToken->checkAuth('reg_admin');
+$regStaff = $authToken->checkAuth('reg_staff');
 $cdn = getTabulatorIncludes();
 page_init($page,
     /* css */ array($cdn['tabcss'],
@@ -166,7 +167,7 @@ $policiesCell = drawPoliciesCell($policies);
                     </div>
 <?php
 drawEditPersonBlock($con_conf, $countryOptions, $useUSPS, $policies, 'find', true, true, $ageByDate,
-        array(), $ageListIdx,200, true, 'f_');
+        array(), $ageListIdx,200, true, 'f_', false, false, $regAdmin, $regStaff);
 drawInterestList($interests, true);
 ?>
                     </form>
@@ -367,7 +368,7 @@ drawInterestList($interests, true);
             <form id='a_editPerson' class='form-floating' action='javascript:void(0);'>
 <?php
     drawEditPersonBlock($con_conf, $countryOptions,true, $policies, 'addPerson', false, true,$ageByDate,
-            null, $ageListIdx, 100, true, 'a_');
+            null, $ageListIdx, 100, true, 'a_', false, false, $regAdmin, $regStaff);
 ?>
             </form>
             </div>
