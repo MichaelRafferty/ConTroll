@@ -114,6 +114,10 @@ class Find {
         return this.#historyData[pos];
     }
 
+    getFindTable() {
+        return this.#findTable;
+    }
+
     // called on open of the add window
     open(msg = null, id = null, row = null) {
         this.clearForm();
@@ -262,12 +266,9 @@ class Find {
     idStatus(cell, formatterParams, onRendered) {
         let deceased = cell.getRow().getData().deceased;
         let value = cell.getValue();
-
-        if (deceased == 'Y') {
-            let element = cell.getElement();
-            element.classList.add("text-danger");
-        }
-
+        let row =  findPerson.getFindTable().getRow(value);
+        let element = row.getElement();
+        element.style.backgroundColor = deceased == 'Y' ? '#FFE0E0' : '';
         return value;
     }
 
@@ -885,7 +886,9 @@ class Find {
                 { title: "Post Code", field: 'zip', headerWordWrap: true, headerSort: false, },
                 { title: "Ctry", field: 'country', formatter: findPerson.colorSet, headerSort: false, },
                 { title: "Act", field: 'active', formatter: findPerson.colorSet, headerSort: false, },
-                { title: "B", field: 'banned', formatter: findPerson.colorSet, headerSort: false, },
+                { title: "Ban", field: 'banned', formatter: findPerson.colorSet, headerSort: false, },
+                { title: "Decd", field: 'deceased', formatter: findPerson.colorSet, headerSort: false, },
+                { title: "FGoH", field: 'formerGoH', formatter: findPerson.colorSet, headerSort: false, },
                 { title: "Open Notes", field: "open_notes", formatter: findPerson.colorSet, headerSort: false, },
                 { title: "Admin Notes", field: "admin_notes", formatter: findPerson.colorSet, headerSort: false, },
                 { title: "Mgr P", field: 'managedBy', headerWordWrap: true, formatter: findPerson.colorSet, headerSort: false, },
@@ -1050,6 +1053,7 @@ class Find {
         } else {
             this.#findTable.updateData(data.updated);
         }
+        this.#findTable.getRow(this.#editRow.id).reformat();
 
         this.clearForm();
         this.#memAgeType = null;
