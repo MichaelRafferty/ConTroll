@@ -45,12 +45,12 @@ if (is_numeric($name_search)) {
     $searchSQL = <<<EOS
 SELECT DISTINCT p.id AS perid, p.first_name, p.middle_name, p.last_name, p.suffix, p.badge_name, p.badgeNameL2,
     p.address as address_1, p.addr_2 as address_2, p.city, p.state, p.zip as postal_code, p.country, p.email_addr, p.phone,
-    p.share_reg_ok, p.contact_ok, p.active, p.banned, p.deceased, p.formerGoH,
+    p.banned, p.deceased, p.formerGoH,
     CASE 
         WHEN p.last_name != '' THEN TRIM(REGEXP_REPLACE(CONCAT(p.last_name, ', ', CONCAT_WS(' ', p.first_name, p.middle_name, p.suffix)), ' +', ' '))
         ELSE TRIM(REGEXP_REPLACE(CONCAT_WS(p.first_name, p.middle_name, p.suffix), ' +', ' '))
     END AS fullName,
-    p.open_notes, r.id AS regid, m.label, rn.id AS roll_regid, mn.shortname,
+    p.open_notes, r.id AS regid, m.label, rn.id AS roll_regid, mn.shortname, rn.status AS rnstatus,
     CASE 
         WHEN m.memCategory is null THEN 'no membership'
         WHEN m.memCategory in ({$con['rollover_eligible']}) THEN 'eligible'
@@ -61,11 +61,11 @@ JOIN reg r ON (r.perid = p.id AND r.conid = ?)
 JOIN memLabel m ON (r.memId = m.id)
 LEFT OUTER JOIN reg rn ON (rn.perid = p.id AND rn.conid = ?)
 LEFT OUTER JOIN memLabel mn ON (rn.memId = mn.id)
-WHERE p.id = ? AND r.conid = ?
+WHERE p.id = ? AND r.status IN ('paid', 'unpaid', 'plan')
 ORDER BY r.id;
 EOS;
     //web_error_log($searchSQLM);
-    $r = dbSafeQuery($searchSQL, 'iiii', array($conid, $conid + 1, $name_search, $conid));
+    $r = dbSafeQuery($searchSQL, 'iii', array($conid, $conid + 1, $name_search));
 } else {
 //
 // this is the string search portion as the field is alphanumeric
@@ -84,7 +84,7 @@ SELECT DISTINCT p.id AS perid, p.first_name, p.middle_name, p.last_name, p.suffi
         ELSE
             TRIM(REGEXP_REPLACE(CONCAT(p.first_name,' ', p.middle_name, ' ', p.suffix), ' +', ' '))
         END AS fullName,
-    p.open_notes, r.id AS regid, m.label, rn.id AS roll_regid, mn.shortname,
+    p.open_notes, r.id AS regid, m.label, rn.id AS roll_regid, mn.shortname, rn.status AS rnstatus,
     CASE
         WHEN m.memCategory is null THEN 'no membership'
         WHEN m.memCategory in ({$con['rollover_eligible']}) THEN 'eligible'
@@ -95,31 +95,34 @@ JOIN reg r ON (r.perid = p.id AND r.conid = ?)
 JOIN memLabel m ON (r.memId = m.id)
 LEFT OUTER JOIN reg rn ON (rn.perid = p.id AND rn.conid = ?)
 LEFT OUTER JOIN memLabel mn ON (rn.memId = mn.id)
-WHERE r.conid = ? AND (
+WHERE r.status IN ('paid', 'unpaid', 'plan') AND (
     LOWER(TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name), ' +', ' '))) LIKE ? OR
     LOWER(TRIM(p.badge_name)) LIKE ? OR LOWER(TRIM(p.badgeNameL2)) LIKE ? OR LOWER(TRIM(p.email_addr)) LIKE ?)
 ORDER BY last_name, first_name
 LIMIT $limit;
 EOS;
-    $r = dbSafeQuery($searchSQL, 'iiissss', array($conid, $conid + 1, $conid, $name_search, $name_search, $name_search, $name_search));
+    $r = dbSafeQuery($searchSQL, 'iissss', array($conid, $conid + 1, $name_search, $name_search, $name_search, $name_search));
 
 }
 // now process the search results
 $perinfo = [];
 $perids = [];
 $num_rows = $r->num_rows;
-$index = 0;
 while ($l = $r->fetch_assoc()) {
+    $rnStatus = $l['rnstatus'];
+    if ($rnStatus != 'paid' && $rnStatus != 'unpaid' && $rnStatus != 'plan') {
+        $l['roll_regid'] = null;
+        $l['shortname'] = null;
+    }
     if (!array_key_exists($l['perid'], $perids)) {
         $perids[$l['perid']] = count($perinfo);
         $l['badgename'] = badgeNameDefault($l['badge_name'], $l['badgeNameL2'], $l['first_name'], $l['last_name']);
-        $l['index'] = $index++;
         $perinfo[] = $l;
     } else {
         $row = $perids[$l['perid']];
         $prow = $perinfo[$row];
-        $l['index'] = $index++;
         if ($l['memCategory'] == 'eligible' && $prow['memCategory'] != 'eligible') {
+            // replace non eligible row with eligible row, and if it already has an elibible row, skip it
             $perinfo[$row] = $l;
         }
     }

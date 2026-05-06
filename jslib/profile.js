@@ -700,6 +700,14 @@ class Profile {
         this.#badgenameL2Field.value = '';
         this.#ageField.value = '';
         this.#memberAge = '';
+        if (this.#deceasedField)
+            this.#deceasedField.value = 'N';
+        if (this.#formerGoHField)
+            this.#formerGoHField.value = 'N';
+        if (this.#deceasedTxtSpan)
+            this.#deceasedTxtSpan.innerHTML = 'No';
+        if (this.#formerGoHTxtSpan)
+            this.#formerGoHTxtSpan.innerHTML = 'No';
         this.#ageText.hidden = true;
         this.#ageDiv.hidden = true;
         this.#ageField.hidden = false;

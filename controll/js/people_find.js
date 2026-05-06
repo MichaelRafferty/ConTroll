@@ -220,7 +220,7 @@ class Find {
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
                 {title: "Actions", formatter: findPerson.actionButtons, headerSort: false },
-                {title: "ID", field: "id", width: 80, headerHozAlign:"right", hozAlign: "right", headerSort: true},
+                {title: "ID", field: "id", width: 80, headerHozAlign:"right", hozAlign: "right", headerSort: true, formatter: this.idStatus,},
                 {title: "Mgr Id", field: "managerId", headerHozAlign:"right", hozAlign: "right", headerWordWrap: true, width: 80,headerSort: false },
                 {title: "Managed By", field: "manager", headerWordWrap: true, width: 150, headerSort: true, headerFilter: true, },
                 {title: "Full Name", field: "fullName", width: 250, headerSort: true, headerFilter: true, headerFilterFunc: fullNameHeaderFilter,
@@ -247,6 +247,8 @@ class Find {
                 {field: 'currentAgeType', visible: false,},
                 {field: 'active', visible: false,},
                 {field: 'banned', visible: false,},
+                {field: 'deceased', visible: false,},
+                {field: 'formerGoH', visible: false,},
                 {field: 'hasManagedReg', visible: false,},
                 {title: "Admin Notes", headerWordWrap: true, field: 'admin_notes', visible: false, },
                 {title: "Open Notes", headerWordWrap: true,field: 'open_notes', visible: false, },
@@ -254,6 +256,19 @@ class Find {
         });
 
         this.#addPersonBtn.disabled = false;
+    }
+
+    // tabulator formatter for the id field
+    idStatus(cell, formatterParams, onRendered) {
+        let deceased = cell.getRow().getData().deceased;
+        let value = cell.getValue();
+
+        if (deceased == 'Y') {
+            let element = cell.getElement();
+            element.classList.add("text-danger");
+        }
+
+        return value;
     }
 
     // addperson button - go to add person

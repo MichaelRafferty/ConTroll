@@ -205,6 +205,8 @@ class Add {
             emailAddr: profile.email(),
             email_addr: profile.email(),
             phone: profile.phone(),
+            deceased: profile.deceased(),
+            formerGoH: profile.formerGoH(),
             currentAgeType: profile.age() == '' ? null : profile.age(),
             newPolicies: JSON.stringify(URLparamsToArray($('#a_editPolicies').serialize())),
         };

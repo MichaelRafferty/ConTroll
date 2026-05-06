@@ -36,7 +36,7 @@ window.onload = function initpage() {
     id_div = document.getElementById("find_results");
 
     // load the initial data and the proceed to set up the rest of the system
-    var postData = {
+    let postData = {
         ajax_request_action: 'loadInitialData',
     };
     $.ajax({
@@ -102,9 +102,9 @@ function start_over(reset_all) {
 
 // show the full perinfo record as a hover in the table
 function build_record_hover(e, cell, onRendered) {
-    var data = cell.getData();
+    let data = cell.getData();
     //console.log(data);
-    var hover_text = (data.first_name + ' ' + data.middle_name + ' ' + data.last_name).trim() + '<br/>' +
+    let hover_text = (data.first_name + ' ' + data.middle_name + ' ' + data.last_name).trim() + '<br/>' +
         data.address_1 + '<br/>';
     if (data.address_2 != '') {
         hover_text += data.address_2 + '<br/>';
@@ -115,18 +115,23 @@ function build_record_hover(e, cell, onRendered) {
     }
     hover_text += 'Badge Name: ' + badgeNameDefault(data.badge_name, data.badgeNameL2, data.first_name, data.last_name) + '<br/>' +
         'Email: ' + data.email_addr + '<br/>' + 'Phone: ' + data.phone + '<br/>' +
-        'Active:' + data.active + ' Contact?:' + data.contact_ok + ' Share?:' + data.share_reg_ok + '<br/>' +
         'Membership: ' + data.label + '<br/>';
 
     return hover_text;
 }
 
 // rollover this member and add them to the list
-function rollover_member(index) {
-    var rt = result_perinfo[index];
+function rollover_member(perid) {
+    let rt = null;
+    if (find_result_table === undefined || find_result_table === null) {
+        rt = result_perinfo[0];
+    } else {
+        rt = find_result_table.getRow(perid).getData();
+    }
 
     if (rt.banned == 'Y') {
-        alert("Please ask " + (result_perinfo[index].first_name + ' ' + rt[index].last_name).trim() +" to talk to the Registration Administrator, you cannot roll them over at this time.")
+        alert("Please ask " + (rt.first_name + ' ' + rt.last_name).trim() +" to talk to the Registration Administrator, you cannot roll them over at" +
+            " this time.")
         return;
     }
     if (!(rt.roll_regid === undefined || rt.roll_regid === null)) {
@@ -135,12 +140,11 @@ function rollover_member(index) {
     }
 
     // load the initial data and the proceed to set up the rest of the system
-    var postData = {
+    let postData = {
         ajax_request_action: 'rolloverMember',
         member: rt,
         rollover_memId: rollover_memId,
         rollover_shortname: rollover_shortname,
-        index: index,
         user_id: user_id,
     };
     $.ajax({
@@ -164,30 +168,41 @@ function rollover_member(index) {
 // member_rolled_over:
 //  database entry added, add to table
 function member_rolled_over(data) {
-    var index = data.index;
+    let perid = data.perid;
+    let row = null;
+    if (find_result_table === undefined || find_result_table === null) {
+        rt = result_perinfo[0];
+    } else {
+        row = find_result_table.getRow(perid);
+        rt = row.getData();
+    }
 
-    result_perinfo[index].roll_regid = data.member.roll_regid;
-    result_perinfo[index].shortname = data.member.shortname;
-    result_perinfo[index].roll_tid = data.member.roll_tid;
-    list_perinfo.push(make_copy(result_perinfo[index]));
-    if (find_result_table != null)
-        find_result_table.replaceData(result_perinfo);
-    else
+    rt.roll_regid = data.member.roll_regid;
+    rt.shortname = data.member.shortname;
+    rt.roll_tid = data.member.roll_tid;
+    rt.rnstatus = 'paid';
+    list_perinfo.push(make_copy(rt));
+    if (find_result_table != null) {
+        find_result_table.updateData([rt]);
+        row.reformat();
+    } else {
+        result_perinfo[0] = rt;
         draw_record();
+    }
 
     draw_list();
 }
 
 // format all of the memberships for one record in the cart
 function draw_list_row(rownum) {
-    var row = list_perinfo[rownum];
-    var membername = (row.first_name + ' ' + row.middle_name + ' ' + row.last_name).trim();
+    let row = list_perinfo[rownum];
+    let membername = (row.first_name + ' ' + row.middle_name + ' ' + row.last_name).trim();
     if (row.suffix != '') {
         membername += ', ' + row.suffix;
     }
 
-    var perid = row.perid;
-    var rowhtml = `<div class="row">
+    let perid = row.perid;
+    let rowhtml = `<div class="row">
         <div class="col-sm-8">Member: ` + membername + `</div>
         <div class="col-sm-2 text-end">` + row.roll_tid + `</div>
         <div class="col-sm-2 text-end">` + row.roll_regid + `</div>
@@ -205,7 +220,7 @@ function draw_list_row(rownum) {
 
 // draw/update by redrawing the entire cart
 function draw_list() {
-    var html = `
+    let html = `
 <div class="container-fluid">
 <div class="row">
     <div class="col-sm-8 text-bg-primary">Member</div>
@@ -226,8 +241,8 @@ function draw_list() {
 
 // draw_record: find_record found rows from search.  Display them in the non table format used by transaction and perid search, or a single row match for string.
 function draw_record() {
-    var data = result_perinfo[0];
-    var html = `
+    let data = result_perinfo[0];
+    let html = `
 <div class="container-fluid">
     <div class="row mt-2">
         <div class="col-sm-3">`;
@@ -236,10 +251,10 @@ function draw_record() {
     if (data.roll_regid === undefined || data.roll_regid === null) {
         if (data.banned == 'Y') {
             html += `
-            <button class="btn btn-danger btn-sm" id="add_btn_1" onclick="rollover_member(0);">B</button>`;
+            <button class="btn btn-danger btn-sm" id="add_btn_1" onclick="rollover_member(` + data.perid + `);">B</button>`;
         } else if (data.memCategory == 'eligible') {
             html += `
-            <button class="btn btn-success btn-sm" id="add_btn_1" onclick="rollover_member(0);">Rollover</button>`;
+            <button class="btn btn-success btn-sm" id="add_btn_1" onclick="rollover_member(` + data.perid + `);">Rollover</button>`;
         } else {
             html += `
             <button class="btn btn-danger btn-sm disabled" id="add_btn_1" onclick="javascript:void(0)">Not Eliglble: ` + data.memCategory + `</button>`;
@@ -299,14 +314,8 @@ function draw_record() {
        <div class="col-sm-9">` + data.email_addr + `</div>
     </div>
     <div class="row">
-       <div class="col-sm-3">Phone::</div>
+       <div class="col-sm-3">Phone:</div>
        <div class="col-sm-9">` + data.phone + `</div>
-    </div>
-    <div class="row">
-       <div class="col-sm-3"></div>
-       <div class="col-sm-auto">Active: ` + data.active + `</div>
-       <div class="col-sm-auto">Contact OK: ` + data.contact_ok + `</div>
-       <div class="col-sm-auto">Share Reg: ` + data.share_reg_ok + `</div>
     </div>
     <div class="row">
        <div class="col-sm-3">Membership Type:</div>
@@ -322,21 +331,19 @@ function draw_record() {
 // tabulator formatter for the add cart column, displays the "add" record and "trans" to add the tranaction to the card as appropriate
 // filters for ones already in the cart, and statuses that should not be allowed to be added to the cart
 function addListIcon(cell, formatterParams, onRendered) { //plain text value
-    var html = '';
-    var banned = cell.getData().banned;
-    var shortname = cell.getData().shortname;
-    var memCategory = cell.getData().memCategory;
-    if (banned == 'Y') {
+    let row = cell.getData();
+    if (row.banned == 'Y') {
         return '<button type="button" class="btn btn-sm btn-danger p-0 click="rollover_member(' +
-            cell.getData().index + ')">B</button>';
-    } else if (memCategory != 'eligible') {
-        return '<button type="button" class="btn btn-sm btn-danger p-0 disabled" onclick="javascript:void(0)">Not Eligible<br/>(' + memCategory + ')</button>';
-    } else if (shortname === undefined || shortname === null) {
-        html = '<button type="button" class="btn btn-sm btn-success p-0" onclick="rollover_member(' +
-            cell.getData().index + ')">Rollover</button>';
+            row.perinfo + ')">B</button>';
+    } else if (row.memCategory != 'eligible') {
+        return '<button type="button" class="btn btn-sm btn-danger p-0 disabled" onclick="javascript:void(0)">Not Eligible<br/>(' +
+            row.memCategory + ')</button>';
+    } else if (row.shortname === undefined || row.shortname === null) {
+        let html = '<button type="button" class="btn btn-sm btn-success p-0" onclick="rollover_member(' +
+            row.perid + ')">Rollover</button>';
         return html;
     }
-    return shortname;
+    return row.shortname;
 }
 
 // search the online database for a set of records matching the criteria
@@ -351,14 +358,14 @@ function find_record() {
     }
     id_div.innerHTML = "";
     clear_message();
-    var name_search = pattern_field.value.toLowerCase().trim();
+    let name_search = pattern_field.value.toLowerCase().trim();
     if ((name_search == null || name_search == '') && find_type == 'search') {
         show_message("No search criteria specified", "warn");
         return;
     }
 
     // search for matching names
-    var postData = {
+    let postData = {
         ajax_request_action: 'findRecord',
         name_search: name_search,
         rollover_memId: rollover_memId,
@@ -391,7 +398,7 @@ function find_record() {
 //      single row: display record
 //      multiple rows: display table of records with add/trans buttons
 function found_record(data) {
-    var find_type = data.find_type;
+    let find_type = data.find_type;
     result_perinfo = data.perinfo;
     name_search = data.name_search;
 
@@ -402,12 +409,12 @@ function found_record(data) {
             maxHeight: "600px",
             data: result_perinfo,
             layout: "fitColumns",
+            index: "perid",
             initialSort: [
                 {column: "fullName", dir: "asc"},
             ],
             columns: [
                 {title: "Perid", field: "perid", maxWidth: 100, headerSort: false, },
-                {field: "index", visible: false, },
                 {title: "Name", field: "fullName", headerFilter: true, headerWordWrap: true, tooltip: build_record_hover,},
                 {field: "last_name", visible: false,},
                 {field: "first_name", visible: false,},
@@ -418,21 +425,14 @@ function found_record(data) {
                 {title: "Email Address", field: "email_addr", headerFilter: true, headerWordWrap: true, tooltip: true,},
                 {title: "Reg", field: "label", headerFilter: true, headerWordWrap: true, tooltip: true, maxWidth: 100, width: 100,},
                 {title: "Rollover", width: 120, headerFilter: false, headerSort: false, formatter: addListIcon, formatterParams: {t:"result"},},
-                {field: "index", visible: false,},
             ],
         });
+        return;
     } else if (result_perinfo.length > 0) {  // one row string,  perinfo, display in record format
+        find_result_table = null;
         draw_record();
         return;
     }
     // no rows show the diagnostic
-    id_div.innerHTML = `<div class="container-fluid">
-<div class="row mt-3">
-    <div class="col-sm-4">No matching records found</div>
-    <div class="col-sm-auto"><button class="btn btn-primary btn-sm" type="button" id="not_found_add_new" onclick="not_found_add_new();">Add New Person</button>
-    </div>
-</div>
-</div>
-`;
-    id_div.innerHTML = id_div.innerHTML = 'No matching records found'
+    id_div.innerHTML = 'No matching records found'
 }

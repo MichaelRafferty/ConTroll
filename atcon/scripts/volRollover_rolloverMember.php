@@ -49,7 +49,7 @@ if ($memId === null) {
     ajaxError("No rollover type passed");
 }
 $shortname = $_POST['rollover_shortname'];
-$response['index'] = $_POST['index'];
+$response['perid'] = $member['perid'];
 
 // create the controlling transaction for the rollover
 $notes = 'Volunteer Rollover';
