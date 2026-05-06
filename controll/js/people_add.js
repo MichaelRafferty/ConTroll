@@ -34,6 +34,11 @@ class Add {
         profile.hideAgeText(true);
     }
 
+    getMatchTable() {
+        return this.#matchTable;
+    }
+
+
     // check if a close match for this person exists and display a table of matches.
     checkExists() {
         clear_message();
@@ -103,7 +108,7 @@ class Add {
                 paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
                 columns: [
                     {title: "Match", formatter: this.selectButton, headerSort: false},
-                    {title: "ID", field: "id", width: 80, headerHozAlign: "right", hozAlign: "right", headerSort: true},
+                    {title: "ID", field: "id", width: 80, headerHozAlign: "right", hozAlign: "right", headerSort: true, formatter: this.idStatus, },
                     {title: "Mgr Id", field: "managerId", width: 80, headerHozAlign: "right", hozAlign: "right", headerWordWrap: true, headerSort: false},
                     {title: "Manager", field: "manager", width: 150, headerSort: true, headerFilter: true,},
                     {title: "Full Name", field: "fullName", width: 250, headerSort: true, headerFilter: true, headerFilterFunc: fullNameHeaderFilter,
@@ -130,6 +135,8 @@ class Add {
                     {field: 'country', visible: false,},
                     {field: 'active', visible: false,},
                     {field: 'banned', visible: false,},
+                    {field: 'deceased', visible: false,},
+                    {field: 'formerGoH', visible: false,},
                     {title: "Admin Notes", headerWordWrap: true, field: 'admin_notes', visible: false, },
                     {title: "Open Notes", headerWordWrap: true,field: 'open_notes', visible: false, },
                 ],
@@ -141,6 +148,16 @@ class Add {
             }
         }
         this.#addPersonBtn.disabled = false;
+    }
+
+    // tabulator formatter for the id field
+    idStatus(cell, formatterParams, onRendered) {
+        let deceased = cell.getRow().getData().deceased;
+        let value = cell.getValue();
+        let row =  addPerson.getMatchTable().getRow(value);
+        let element = row.getElement();
+        element.style.backgroundColor = deceased == 'Y' ? '#FFE0E0' : '';
+        return value;
     }
 
     // select button: chose this person instead

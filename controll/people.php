@@ -133,7 +133,7 @@ $policiesCell = drawPoliciesCell($policies);
                 </div>
                 <?php
                     echo matchEdit('match', 'editMatchTitle', 'Matched Person', 'New/Edited Value', 'Match Candidate',
-                            'unmatchedPeople', $countryOptions, $policiesCell, $ageList);
+                            'unmatchedPeople', $countryOptions, $policiesCell, $ageList, $regStaff, $regAdmin);
                 ?>
             </div>
             <div class='modal-footer'>

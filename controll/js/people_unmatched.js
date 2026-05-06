@@ -83,6 +83,8 @@ class Unmatched {
     #managerDiv = null;
     #active = null;
     #banned = null;
+    #deceased = null;
+    #formerGoH = null;
     #matchType = null;
     #matchRowData = null;
 
@@ -156,6 +158,8 @@ class Unmatched {
             this.#managerDiv = document.getElementById('managerDiv');
             this.#active = document.getElementById('active');
             this.#banned = document.getElementById('banned');
+            this.#deceased = document.getElementById('deceased');
+            this.#formerGoH = document.getElementById('formerGoH');
 
             // set up to close the modal and delete the items
             $('#match-candidates').on('hide.bs.modal', function () {
@@ -163,6 +167,23 @@ class Unmatched {
             });
         }
     };
+
+    // get functions
+    getCandTable() {
+        return this.#candidateTable;
+    }
+
+    getAdditionalTable() {
+        return this.#additionalTable;
+    }
+
+    getNewpersonTable() {
+        return this.#newpersonTable;
+    }
+
+    getEditMatchTitle() {
+        return this.#editMatchTitle;
+    }
 
     // called on find person to match
     findSpecific() {
@@ -464,7 +485,7 @@ class Unmatched {
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
                 {title: "Select", width: 100, formatter: this.selectButton, formatterParams: {table: 'p'}, headerSort: false },
-                {title: "ID", field: "id", width: 80, headerHozAlign:"right", hozAlign: "right", headerSort: true},
+                {title: "ID", field: "id", width: 80, headerHozAlign:"right", hozAlign: "right", headerSort: true, formatter: this.cidStatus, },
                 {title: "Full Name", field: "fullName", width: 250, headerSort: true, headerFilter: true, headerFilterFunc: fullNameHeaderFilter,
                     formatter: "textarea", },
                 {title: "Address", field: "fullAddr", width: 300, headerSort: true, headerFilter: true, formatter: "textarea", },
@@ -486,6 +507,8 @@ class Unmatched {
                 {field: 'pronouns', visible: false,},
                 {field: 'active', visible: false,},
                 {field: 'banned', visible: false,},
+                {field: 'banned', visible: false,},
+                {field: 'deceased', visible: false,},
                 {field: 'managerId', visible: false,},
             ],
         });
@@ -504,7 +527,7 @@ class Unmatched {
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
             columns: [
                 {title: "Select", width: 100, formatter: this.selectButton, formatterParams: {table: 'a'}, headerSort: false },
-                {title: "ID", field: "id", width: 80, headerHozAlign:"right", hozAlign: "right", headerSort: true},
+                {title: "ID", field: "id", width: 80, headerHozAlign:"right", hozAlign: "right", headerSort: true, formatter: this.aidStatus,},
                 {title: "Full Name", field: "fullName", width: 250, headerSort: true, headerFilter: true, headerFilterFunc: fullNameHeaderFilter,
                     formatter: "textarea", },
                 {title: "Address", field: "fullAddr", width: 300, headerSort: true, headerFilter: true, formatter: "textarea", },
@@ -526,11 +549,15 @@ class Unmatched {
                 {field: 'pronouns', visible: false,},
                 {field: 'active', visible: false,},
                 {field: 'banned', visible: false,},
+                {field: 'banned', visible: false,},
+                {field: 'deceased', visible: false,},
                 {field: 'managerId', visible: false,},
             ],
         });
 
         $('#editMatch').hide();
+        this.#deceased.value = 'N';
+        this.#formerGoH.value = 'N';
         this.#updateExisting.disabled = true;
         this.#createNew.disabled = true;
         // set the delete item disable flag based on paid mand manages from parent screen
@@ -545,6 +572,26 @@ class Unmatched {
         }, 500); // Adjust timeout as needed
 
         show_message(data['success'], 'success', 'result_message_candidate');
+    }
+
+    // tabulator formatter for the id field in candidates table
+    cidStatus(cell, formatterParams, onRendered) {
+        let deceased = cell.getRow().getData().deceased;
+        let value = cell.getValue();
+        let row =  unmatchedPeople.getCandTable().getRow(value);
+        let element = row.getElement();
+        element.style.backgroundColor = deceased == 'Y' ? '#FFE0E0' : '';
+        return value;
+    }
+
+    // tabulator formatter for the id field in additional matches table
+    aidStatus(cell, formatterParams, onRendered) {
+        let deceased = cell.getRow().getData().deceased;
+        let value = cell.getValue();
+        let row =  unmatchedPeople.getAdditionalTable().getRow(value);
+        let element = row.getElement();
+        element.style.backgroundColor = deceased == 'Y' ? '#FFE0E0' : '';
+        return value;
     }
 
     // selectPerson - move a person to the edit area and prepare to edit/save it
@@ -576,7 +623,8 @@ class Unmatched {
             this.#matchEmail.innerHTML = this.#matchPerson.email_addr;
             this.#matchAge.innerHTML = this.#matchPerson.currentAgeType;
             this.#matchPhone.innerHTML = this.#matchPerson.phone;
-            this.#matchFlags.innerHTML = 'Active: ' + this.#matchPerson.active + ', Banned: ' + this.#matchPerson.banned;
+            this.#matchFlags.innerHTML = 'Active: ' + this.#matchPerson.active + ',&emsp;Banned: ' + this.#matchPerson.banned +
+                '<br/>Deceased: ' + this.#matchPerson.deceased + ',&emsp;Former GoH: ' + this.#matchPerson.formerGoH;
             if (this.#matchPerson.managerId) {
                 this.#matchManager.innerHTML = this.#matchPerson.manager + ' (' + this.#matchPerson.managerId + ')';
             } else {
@@ -604,7 +652,7 @@ class Unmatched {
         this.#newEmail.innerHTML = this.#newperson.email_addr;
         this.#newAge.innerHTML = this.#newperson.currentAgeType;
         this.#newPhone.innerHTML = this.#newperson.phone;
-        this.#newFlags.innerHTML = 'Active: ' + this.#newperson.active + ', Banned: ' + this.#newperson.banned;
+        this.#newFlags.innerHTML = 'Active: ' + this.#newperson.active + ',&emsp;Banned: ' + this.#newperson.banned;
         if (this.#newperson.managerId) {
             this.#newManager.innerHTML = this.#newperson.manager + ' (' + this.#newperson.managerId + ')';
         } else {
@@ -689,6 +737,8 @@ class Unmatched {
             phone: this.#phone.value,
             active: this.#active.value,
             banned: this.#banned.value,
+            deceased: this.#deceased.value,
+            formerGoH: this.#formerGoH.value,
             managerAction: document.getElementById('managerSelect').value,
             managerId: document.getElementById('managerId').value,
         };
@@ -974,11 +1024,15 @@ class Unmatched {
             case 'newFlags':
                 this.#active.value = this.#newperson.active;
                 this.#banned.value = this.#newperson.banned;
+                this.#deceased.value = 'N';
+                this.#formerGoH.value = 'N';
                 break;
 
             case 'matchFlags':
                 this.#active.value = this.#matchPerson.active;
                 this.#banned.value = this.#matchPerson.banned;
+                this.#deceased.value = this.#matchPerson.deceased;
+                this.#formerGoH.value = this.#matchPerson.formerGoH;
                 break;
 
             case 'matchAll':
@@ -1010,6 +1064,8 @@ class Unmatched {
                 this.#managerDiv.innerHTML = this.drawManager('p', this.#matchPerson.manager, this.#matchPerson.managerId);
                 this.#active.value = this.#matchPerson.active;
                 this.#banned.value = this.#matchPerson.banned;
+                this.#deceased.value = this.#matchPerson.deceased;
+                this.#formerGoH.value = this.#matchPerson.formerGoH;
                 break;
 
             case 'newAll':
@@ -1036,8 +1092,9 @@ class Unmatched {
                 this.#managerDiv.innerHTML = this.drawManager('n', this.#newperson.manager, this.#newperson.managerId);
                 this.#active.value = this.#newperson.active;
                 this.#banned.value = this.#newperson.banned;
+                this.#deceased.value = 'N';
+                this.#formerGoH.value = 'N';
                 break;
-
 
             default:
                 show_message("Invalid source " + source, 'warn', 'result_message_candidate');

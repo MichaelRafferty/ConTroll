@@ -426,7 +426,7 @@ draw_fileManagerModals($authToken);
             <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
                 <div class='container-fluid'>
                     <?php echo matchEdit('match', 'mergeMatchTitle', 'To Merge Person', 'Merge Edited Value', 'To Remain Person',
-                                      'merge', $countryOptions, $policiesCell, $ageList);
+                                      'merge', $countryOptions, $policiesCell, $ageList, true, $regAdmin);
                     ?>
                 </div>
             </div>
