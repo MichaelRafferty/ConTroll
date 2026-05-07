@@ -92,5 +92,12 @@ EOS;
         $message .= "$del atcon user deleted for user $uid ($perid) for conid $conid<br/>\n";
     }
 
+    // 5. Delete from any watchlists
+    $delWatch = <<<EOS
+DELETE FROM badgeList WHERE perid = ? AND conid = ?;
+EOS;
+    $del = dbSafeCmd($delWatch, 'ii', array ($perid, $conid));
+    $message .= "$del badgeList (watch list) entries deleted for user $perid<br/>\n";
+
    return $message;
 }
