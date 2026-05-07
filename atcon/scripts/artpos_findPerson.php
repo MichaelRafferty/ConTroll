@@ -55,8 +55,8 @@ JOIN regActions ra ON ra.regid = reg.id AND ra.action = 'print'
 WHERE conid = ? AND perid = ?
 GROUP BY perid
 )
-SELECT p.id, first_name, middle_name, last_name, suffix, badge_name, badgeNameL2, email_addr, address, addr_2, city, state, zip, country, phone, 
-    IFNULL(r.numReg, 0) AS numReg
+SELECT p.id, first_name, middle_name, last_name, suffix, badge_name, badgeNameL2, email_addr, address, addr_2, city, state, zip, country,
+    phone, p.deceased, p.banned, IFNULL(r.numReg, 0) AS numReg
 FROM perinfo p
 LEFT OUTER JOIN regC r on r.perid = p.id
 WHERE p.id=?;
@@ -71,7 +71,13 @@ EOS;
         $person = $personR->fetch_assoc();
         $person['badgename'] = badgeNameDefault($person['badge_name'], $person['badgeNameL2'], $person['first_name'], $person['last_name']);
         $response['person'] = $person;
-        if ($person['numReg'] == 0) {
+        if ($person['deceased'] == 'Y') {
+            $response['status'] = 'warn';
+            $response['warn'] = "Person is marked deceased, please contact Registration for assistance";
+        } else if ($person['banned'] == 'Y') {
+            $response['status'] = 'warn';
+            $response['warn'] = "Person is not eligible for a badge, please contact Registration for assistance";
+        } else if ($person['numReg'] == 0) {
             $response['status'] = 'warn';
             $response['warn'] = "Person does not have a badge printed for $conid";
         } else {
