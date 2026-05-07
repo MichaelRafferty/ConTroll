@@ -760,7 +760,12 @@ class Pos {
                     if (prow.banned == 'Y') {
                         alert("Please ask " + (prow.first_name + ' ' + prow.last_name).trim() +
                             " to talk to the Registration Administrator, you cannot add them at this time.")
-                        return 0;
+                        continue;
+                    }
+                    if (rt[index].deceased == 'Y') {
+                        alert("Please ask " + (rt.first_name + ' ' + rt[index].last_name).trim() + " to talk to the Registration Administrator, " +
+                            "you cannot add them at this time.")
+                        continue;
                     }
                     perid = prow.perid;
                     if (cart.notinCart(perid)) {
@@ -1273,8 +1278,13 @@ class Pos {
                 html += `
             <button class="btn btn-danger btn-sm" id="add_btn_1" onclick="pos.addToCart(` + row + `, 'result');">B</button>`;
             } else {
-                html += `
-            <button class="btn btn-success btn-sm" id="add_btn_1" onclick="pos.addToCart(` + row + `, 'result');">Add to Cart</button>`;
+                let color = 'btn-success';
+                if (data.banned == 'Y')
+                    color = 'btn-danger';
+                else if (data.deceased == 'Y')
+                    color = 'btn-warning';
+                html += '\n<button class="btn ' + color + ' btn-success btn-sm" id="add_btn_1" onclick="pos.addToCart(' + row + ', \'result\');">Add to' +
+                    ' Cart</button>';
             }
         } else {
             html += `
@@ -1853,7 +1863,7 @@ class Pos {
             });
         } else if (this.#result_perinfo.length > 0) {  // one row string, or all perinfo/tid searches, display in record format
             if ((!isNaN(this.#name_search)) && regtids.length == 1 && (attach_count > 0 || print_count > 0)) {
-                // only 1 transaction returned and it was search by number, and it's been attached for payment before
+                // only 1 transaction returned, not banned or deceased, and it was search by number, and it's been attached for payment before
                 // add it to the cart and go to payment
                 for (row in result_membership) {
                     if ((result_membership[row].tid == tid) || (result_membership[row].rstid == this.#name_search)) {
