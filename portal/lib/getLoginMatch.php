@@ -76,7 +76,8 @@ EOS;
     } else if ($id != NULL) {
         $regcountQ = <<<EOS
 SELECT n.id, n.last_name, n.first_name, n.middle_name, n.suffix, n.email_addr, n.phone, n.badge_name, n.badgeNameL2, n.legalName, n.pronouns,
-       n.address, n.addr_2, n.city, n.state, n.zip, n.country, n.createtime AS creation_date, 'Y' AS active, 'N' AS banned, 'N' AS deceased,
+       n.address, n.addr_2, n.city, n.state, n.zip, n.country, n.createtime AS creation_date, 'Y' AS active, 'N' AS banned,
+       'N' AS deceased, 'N' AS formerGoH,
     CASE 
         WHEN n.last_name != '' THEN TRIM(REGEXP_REPLACE(CONCAT(n.last_name, ', ', CONCAT_WS(' ', n.first_name, n.middle_name, n.suffix)), ' +', ' ')) 
         ELSE TRIM(REGEXP_REPLACE(CONCAT_WS(' ', n.first_name, n.middle_name, n.suffix), ' +', ' ')) 
@@ -91,6 +92,7 @@ EOS;
         $regcountQ = <<<EOS
 SELECT DISTINCT n.id, n.last_name, n.first_name, n.middle_name, n.suffix, n.email_addr, n.phone, n.badge_name, n.badgeNameL2, n.legalName, n.pronouns,
        n.address, n.addr_2, n.city, n.state, n.zip, n.country, createtime AS creation_date, 'Y' AS active, 'N' AS banned,
+       'N' AS deceased, 'N' AS formerGoH,
     CASE 
         WHEN n.last_name != '' THEN TRIM(REGEXP_REPLACE(CONCAT(n.last_name, ', ', CONCAT_WS(' ', n.first_name, n.middle_name, n.suffix)), ' +', ' ')) 
         ELSE TRIM(REGEXP_REPLACE(CONCAT_WS(' ', n.first_name, n.middle_name, n.suffix), ' +', ' ')) 
@@ -120,7 +122,7 @@ EOS;
     if (isSessionVar('oauth2')) {
         $regcountQ = <<<EOS
 SELECT DISTINCT id, last_name, first_name, middle_name, suffix, p.email_addr, phone, badge_name, badgeNameL2, legalName, pronouns,
-       address, addr_2, city, state, zip, country, creation_date, update_date, active, banned, deceased,
+       address, addr_2, city, state, zip, country, creation_date, update_date, active, banned, deceased, formerGoH,
     CASE 
         WHEN last_name != '' THEN TRIM(REGEXP_REPLACE(CONCAT(last_name, ', ', CONCAT_WS(' ', first_name, middle_name, suffix)), ' +', ' ')) 
         ELSE TRIM(REGEXP_REPLACE(CONCAT_WS(' ', first_name, middle_name, suffix), ' +', ' '))  
@@ -149,7 +151,7 @@ EOS;
     if ($validationType != null && ($validationType == 'token' || $validationType == 'switch')) {
         $regcountQ = <<<EOS
 SELECT DISTINCT id, last_name, first_name, middle_name, suffix, p.email_addr, phone, badge_name, badgeNameL2, legalName, pronouns,
-       address, addr_2, city, state, zip, country, creation_date, update_date, active, banned, deceased,
+       address, addr_2, city, state, zip, country, creation_date, update_date, active, banned, deceased, formerGoH,
     CASE 
         WHEN last_name != '' THEN TRIM(REGEXP_REPLACE(CONCAT(last_name, ', ', CONCAT_WS(' ', first_name, middle_name, suffix)), ' +', ' ')) 
         ELSE TRIM(REGEXP_REPLACE(CONCAT(' ', first_name, middle_name, suffix), ' +', ' '))  

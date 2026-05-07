@@ -256,7 +256,7 @@ if (isSessionVar('id')) {
                                          $con['regadminemail'] . ' for assistance.'));
                         exit();
                     }
-                    if (array_key_exists('issue', $match) && $match['issue'] != 'N') {
+                    if (array_key_exists('issue', $match) && $match['issue']) {
                         header('location:portal.php?type=e&messageFwd=' .
                                urlencode('There is an issue with that account, please contact registration at ' .
                                          $con['regadminemail'] . ' for assistance.'));
