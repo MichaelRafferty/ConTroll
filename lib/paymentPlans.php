@@ -497,3 +497,60 @@ EOS;
 
     return $response;
 }
+
+// canceled a requested payment plan and return the status info for the message
+function cancelPaymentPlan($perid, $cancelId) {
+    $message = '';
+    
+    // check if status of this plan is 'active'
+    $checkQ = <<<EOS
+SELECT status, perid
+FROM payorPlans
+WHERE id = ?;
+EOS;
+    $checkR = dbSafeQuery($checkQ, 'i', array ($cancelId));
+    if ($checkR === false) {
+        return "Error: Unable to get status of plan payment plan $cancelId to cancel<br/>";
+    }
+    
+    $checkStatus = $checkR->fetch_assoc();
+    $checkR->free();
+    if ($checkStatus['status'] != 'active') {
+        $status = $checkStatus['status'];
+        return "Error: Skipping $cancelId as it's status of $status is not active<br/>";
+    }
+
+    if ($perid !== null) {
+        if ($checkStatus['perid'] != $perid) {
+            $owner = $checkStatus['perid'];
+            return "Error: Skipping $cancelId as it onwner of $owner is not the deceased user $perid<br/>";
+        }
+    } else {
+        $perid = $checkStatus['perid'];
+    }
+    // cancel the plan
+    // step 1 - mark all items in that plan as 'unpaid' (uses planid index for speed)
+    $updReg = <<<EOS
+UPDATE reg
+SET status = 'unpaid'
+WHERE status = 'plan' AND planId = ?;
+EOS;
+    $numUpdated = dbSafeCmd($updReg, 'i', array ($cancelId));
+    if ($numUpdated === false) {
+        return "Error: Cannot cancel plan $cancelId, unable to change the memberships from 'plan' to 'unpaid'";
+    }
+    $message .= "$numUpdated registrations changed from 'plan' to 'unpaid' for plan $cancelId.<br/>";
+    $updPlan = <<<EOS
+UPDATE payorPlans
+SET status = 'cancelled'
+WHERE id = ?;
+EOS;
+    $numCancelled = dbSafeCmd($updPlan, 'i', array ($cancelId));
+    if ($numCancelled === false) {
+        $message .= "Error: Cannot cancel plan $cancelId, marked memberships to unpaid, but cannot change the status of the plan.";
+    }
+    
+    $message .= "Plan $cancelId canceled for user $perid.<br/>";
+    
+    return $message;
+}
