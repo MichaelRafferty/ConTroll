@@ -209,7 +209,7 @@ if (!$controll['useportal']) {
                              <input type="hidden" name="membership-index" id="membership-index" />
 <?php
 drawEditPersonBlock($con, $countryOptions, $useUSPS, $policies, '', false, true, $ageByDate,
-        array(), $ageListIdx, 200, true, '', false,false, $regAdmin, $regStaff);
+        array(), $ageListIdx, 200, true, '', false,false, null, null);
 ?>
                             <div class="row">
                                 <div class="col-sm-12 ms-0 me-0" id="add_results">

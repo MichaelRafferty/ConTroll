@@ -211,7 +211,7 @@ if ($config_vars['creditonline'] == 1) {
                                 <input type='hidden' name='membership-index' id='membership-index'/>
                                 <?php
                                     drawEditPersonBlock($con, $countryOptions, $useUSPS, $policies, 'registration', false, true, $ageByDate,
-                                            array(), $ageListIdx, 200, true, '', false, true);
+                                            array(), $ageListIdx, 200, true, '', false, true, null, null);
                                 ?>
                                 <div class="row">
                                     <div class="col-sm-12 ms-0 me-0" id="add_results">
