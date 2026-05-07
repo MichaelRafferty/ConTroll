@@ -73,14 +73,15 @@ $mQ = <<<EOS
 UPDATE perinfo
 SET first_name = ?, middle_name = ?, last_name = ?, suffix = ?, legalName = ?, pronouns = ?, badge_name = ?, badgeNameL2 = ?,
     address = ?, addr_2 = ?, city = ?, state = ?, zip = ?, country = ?, email_addr = ?, currentAgeType = ?, phone = ?,
-    active = ?, banned = ?
+    active = ?, banned = ?, deceased = ?, formerGoH = ?
 WHERE id = ?;
 EOS;
 $valArr = array($values['first_name'], $values['middle_name'], $values['last_name'], $values['suffix'], $values['legalName'],
     $values['pronouns'], $values['badge_name'], $values['badgeNameL2'],
     $values['address'], $values['addr_2'], $values['city'], $values['state'], $values['zip'], $values['country'],
-    $values['email_addr'], $values['currentAgeType'], $values['phone'], $values['active'], $values['banned'], $remain);
-$numUpd = dbSafeCmd($mQ, 'sssssssssssssssssssi', $valArr);
+    $values['email_addr'], $values['currentAgeType'], $values['phone'], $values['active'], $values['banned'],
+    $values['deceased'], $values['formerGoH'], $remain);
+$numUpd = dbSafeCmd($mQ, 'sssssssssssssssssssssi', $valArr);
 if ($numUpd === false) {
     ajaxSuccess(array('status'=>'error', 'error'=>'Cannot update remaining person with the new values'));
     exit();

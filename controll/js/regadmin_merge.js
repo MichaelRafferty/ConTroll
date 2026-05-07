@@ -72,6 +72,8 @@ class mergesetup {
     #managerDiv = null;
     #active = null;
     #banned = null;
+    #deceased = null;
+    #formerGoH = null;
     
 
     // globals before open
@@ -134,8 +136,15 @@ class mergesetup {
             this.#managerDiv = document.getElementById('managerDiv');
             this.#active = document.getElementById('active');
             this.#banned = document.getElementById('banned');
+            this.#deceased = document.getElementById('deceased');
+            this.#formerGoH = document.getElementById('formerGoH');
         }
     };
+
+    // get functions
+    getFindResultsTable() {
+        return this.#find_result_table;
+    }
 
     // return the merge perid field
     getMergePid() {
@@ -388,7 +397,8 @@ class mergesetup {
         this.#mergeEmail.innerHTML = this.#mergePerson.email_addr;
         this.#mergeAge.innerHTML = this.#mergePerson.currentAgeType;
         this.#mergePhone.innerHTML = this.#mergePerson.phone;
-        this.#mergeFlags.innerHTML = 'Active: ' + this.#mergePerson.active + ', Banned: ' + this.#mergePerson.banned;
+        this.#mergeFlags.innerHTML = 'Active: ' + this.#mergePerson.active + ',&emsp;Banned: ' + this.#mergePerson.banned +
+            '<br/>Deceased: ' + this.#mergePerson.deceased + ',&emsp;Former GoH: ' + this.#mergePerson.formerGoH;
         if (this.#mergePerson.managedBy) {
             this.#mergeManager.innerHTML = this.#mergePerson.manager + ' (' + this.#mergePerson.managedBy + ')';
         } else {
@@ -411,7 +421,8 @@ class mergesetup {
         this.#remainEmail.innerHTML = this.#remainPerson.email_addr;
         this.#remainAge.innerHTML = this.#remainPerson.currentAgeType;
         this.#remainPhone.innerHTML = this.#remainPerson.phone;
-        this.#remainFlags.innerHTML = 'Active: ' + this.#remainPerson.active + ', Banned: ' + this.#remainPerson.banned;
+        this.#remainFlags.innerHTML = 'Active: ' + this.#remainPerson.active + ',&emsp;Banned: ' + this.#remainPerson.banned +
+            '<br/>Deceased: ' + this.#remainPerson.deceased + ',&emsp;Former GoH: ' + this.#remainPerson.formerGoH;
         if (this.#remainPerson.managedBy) {
             this.#remainManager.innerHTML = this.#remainPerson.manager + ' (' + this.#remainPerson.managedBy + ')';
         } else {
@@ -444,6 +455,8 @@ class mergesetup {
         this.#phone.value = this.#remainPerson.phone;
         this.#active.value = this.#remainPerson.active == 'N' ? 'N' : 'Y';  // default to Y
         this.#banned.value = this.#remainPerson.banned == 'Y' ? 'Y' : 'N';  // default to N
+        this.#deceased.value = this.#remainPerson.deceased == 'Y' ? 'Y' : 'N';  // default to N
+        this.#formerGoH.value = this.#remainPerson.formerGoH == 'Y' ? 'Y' : 'N';  // default to N
         let p = this.#remainPerson['policies'];
         for (let pol in policies) {
             let polName = policies[pol].policy;
@@ -707,11 +720,15 @@ class mergesetup {
             case 'newFlags':
                 this.#active.value = this.#remainPerson.active;
                 this.#banned.value = this.#remainPerson.banned;
+                this.#deceased.value = this.#remainPerson.deceased;
+                this.#formerGoH.value = this.#remainPerson.formerGoH;
                 break;
 
             case 'matchFlags':
                 this.#active.value = this.#mergePerson.active;
                 this.#banned.value = this.#mergePerson.banned;
+                this.#deceased.value = this.#mergePerson.deceased;
+                this.#formerGoH.value = this.#mergePerson.formerGoH;
                 break;
 
             case 'matchAll':
@@ -744,6 +761,8 @@ class mergesetup {
                 this.#managerDiv.innerHTML = this.drawManager('merge');
                 this.#active.value = this.#mergePerson.active;
                 this.#banned.value = this.#mergePerson.banned;
+                this.#deceased.value = this.#mergePerson.deceased;
+                this.#formerGoH.value = this.#mergePerson.formerGoH;
                 break;
 
             case 'newAll':
@@ -776,6 +795,8 @@ class mergesetup {
                 this.#managerDiv.innerHTML = this.drawManager('remain');
                 this.#active.value = this.#remainPerson.active;
                 this.#banned.value = this.#remainPerson.banned;
+                this.#deceased.value = this.#remainPerson.deceased;
+                this.#formerGoH.value = this.#remainPerson.formerGoH;
                 break;
 
 
@@ -811,6 +832,8 @@ class mergesetup {
             phone: this.#phone.value,
             active: this.#active.value,
             banned: this.#banned.value,
+            deceased: this.#deceased.value,
+            formerGoH: this.#formerGoH.value,
         };
         for (let pol in policies) {
             let pname = 'p_' + policies[pol].policy;
@@ -911,13 +934,14 @@ class mergesetup {
             this.#find_result_table = new Tabulator('#merge_search_results', {
                 maxHeight: "600px",
                 data: perinfo,
+                index: "perid",
                 layout: "fitColumns",
                 initialSort: [
                     {column: "fullName", dir: "asc"},
                 ],
                 columns: [
                     {width: 70, headerFilter: false, headerSort: false, formatter: addMergeIcon, formatterParams: {t: "result"},},
-                    {title: "perid", field: "perid",width: 100, hozAlign: 'right' },
+                    {title: "perid", field: "perid", width: 100, hozAlign: 'right', formatter: this.sridStatus,},
                     {field: "index", visible: false,},
                     {field: "regcnt", visible: false,},
                     {title: "Name", field: "fullName", width: 200, headerFilter: true, headerWordWrap: true, tooltip: build_record_hover,},
@@ -933,6 +957,16 @@ class mergesetup {
                 ],
             });
         }
+    }
+
+    // tabulator formatter for the id field in candidates table
+    sridStatus(cell, formatterParams, onRendered) {
+        let deceased = cell.getRow().getData().deceased;
+        let value = cell.getValue();
+        let row =  merge.getFindResultsTable().getRow(value);
+        let element = row.getElement();
+        element.style.backgroundColor = deceased == 'Y' ? '#FFE0E0' : '';
+        return value;
     }
     
     selectPerson(perid) {
@@ -992,12 +1026,12 @@ function build_record_hover(e, cell, onRendered) {
 
 // tabulator formatter for the merge column for the find results, displays the "Select" to mark the membership merge
 function addMergeIcon(cell, formatterParams, onRendered) { //plain text value
-    var tid;
-    var html = '';
-    var banned = cell.getRow().getData().banned == 'Y';
-    var regcnt = cell.getRow().getData().regcnt;
-    var color = 'btn-success';
-    var perid = cell.getRow().getData().perid;
+    let row = cell.getData();
+    let color = 'btn-success';
+    if (row.banned == 'Y')
+        color = 'btn-danger';
+    else if (row.deceased == 'Y')
+        color = 'btn-warning';
 
-    return '<button type="button" class="btn btn-sm ' + color + ' pt-0 pb-0" style="--bs-btn-font-size: 75%;" onclick="selectPerson(' + perid + ')">Select</button>';
+    return '<button type="button" class="btn btn-sm ' + color + ' pt-0 pb-0" style="--bs-btn-font-size: 75%;" onclick="selectPerson(' + row.perid + ')">Select</button>';
 }
