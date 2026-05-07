@@ -134,7 +134,7 @@ $log = get_conf('log');
 logInit($log['db']);
 logWrite(array('type' => 'merge', 'merge' => $merge, 'remain' => $remain, 'status' => $status, 'rollback' => $rollback));
 
-if ($priorDeceased != $values['deceased']) {
+if ($priorDeceased != $values['deceased'] && $values['deceased'] == 'Y') {
     $status .= '<br/>' . cleanDeceasedUser($remain);
 }
 

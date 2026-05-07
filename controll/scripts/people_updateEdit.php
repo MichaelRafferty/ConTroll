@@ -1,5 +1,6 @@
 <?php
 require_once "../lib/base.php";
+require_once('../lib/cleanDeceased.php');
 require_once "../../lib/policies.php";
 require_once "../../lib/interests.php";
 require_once '../lib/sessionAuth.php';
@@ -72,6 +73,23 @@ $formerGoH = $_POST['formerGoH'] == null ? 'N' : trim($_POST['formerGoH']);
 $currentAgeType = $_POST['currentAgeType'];
 $origAgeType = $_POST['origAgeType'];
 
+// get prior deceased value
+$chkQ = <<<EOS
+SELECT deceased
+FROM perinfo
+WHERE id = ?;
+EOS;
+$chkR = dbSafeQuery($chkQ, 'i', array($perid));
+if ($chkR === false) {
+    $response['error'] = 'SQL Error in checking if deceased<br/>Nothing updated.';
+    ajaxSuccess($response);
+    exit();
+}
+
+$priorData = $chkR->fetch_assoc();
+$chkR->free();
+$priorDeceased = $priorData['deceased'];
+
 // check if manager is managed by someone else if $managedBy is not null
 if ($managedBy != null) {
     $chkQ = <<<EOS
@@ -79,7 +97,7 @@ SELECT managedByNew, managedBy
 FROM perinfo
 WHERE id = ?;
 EOS;
-    $chkR = dbSafeQuery($chkQ, 'i', array($managedBy));
+    $chkR = dbSafeQuery($chkQ, 'i', array ($managedBy));
     if ($chkR === false) {
         $response['error'] = 'SQL Error in checking if manager is managed' . '<br/>Nothing updated.';
         ajaxSuccess($response);
@@ -88,7 +106,7 @@ EOS;
     $managerData = $chkR->fetch_assoc();
     $chkR->free();
     if ($managerData['managedBy'] != null) {
-        $response['error'] = "Manager $managedBy is already managed by " . $managerData['managedBy'] . "<br/>Nothing updated.";
+        $response['error'] = "Manager $managedBy is already managed by " . $managerData['managedBy'] . '<br/>Nothing updated.';
         ajaxSuccess($response);
         exit();
     }
@@ -147,7 +165,12 @@ if ($interest_upd > 0) {
 
 // 4. Manages is handled directly in the JS using people_unmanage.php and people_manage.php
 
-// 5. renumber (must be last)
+// 5. Deceased
+    if ($priorDeceased != $deceased && $deceased == 'Y') {
+        $message .= '<br/>' . cleanDeceasedUser($perid);
+    }
+
+// LAST. renumber (must be last)
 if (array_key_exists('renumberNew', $_POST)) {
     $renumberNew = $_POST['renumberNew'];
     if ($renumberNew != null && $renumberNew != '' && $renumberNew != $perid) {

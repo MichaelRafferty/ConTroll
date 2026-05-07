@@ -52,6 +52,7 @@ class Find {
     #memAgeType = null;
     #renumberExisting = null;
     #renumberNew = null;
+    #priorDeceased = '';
 
     #matched = null;
     #editRow = null;
@@ -380,6 +381,7 @@ class Find {
         profile.setAll(this.#editRow);
         profile.setEmail(this.#editRow.email_addr);
         this.#origAge = profile.age();
+        this.#priorDeceased = profile.deceased();
         this.#managerId.value = this.#editRow.managerId;
         this.#managerName.innerHTML = this.#editRow.manager ? this.#editRow.manager : '';
         this.#active.value = this.#editRow.active;
@@ -945,6 +947,14 @@ class Find {
     }
 
     saveEdit2() {
+        // get permission to save if changing deceased to y
+        if (this.#priorDeceased != 'Y' && profile.deceased() == 'Y') {
+            if (!confirm("You are changing this person from deceased(No) to (Yes).\n" +
+                "This will delete many records associated with this person.\n\nAre you sure?")) {
+                profile.setDeceased('N');
+                return;
+            }
+        }
         // first we need the perid we are editing, this.#editRow has the row
         var script = 'scripts/people_updateEdit.php';
 
@@ -1074,6 +1084,7 @@ class Find {
             this.#renumberNew.value = '';
         this.#addPersonBtn.disabled = true;
         this.#updateOverrideBTN.disabled = true;
+        this.#priorDeceased = '';
         clear_message('find_edit_message');
         clear_message();
         clearError();
