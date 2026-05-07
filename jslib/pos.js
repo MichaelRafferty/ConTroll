@@ -310,6 +310,10 @@ class Pos {
         return this.#num_coupons;
     }
 
+    getFindResultTable() {
+        return this.#find_result_table;
+    }
+
     isReviewDirty() {
         return this.#review_dirty;
     }
@@ -328,23 +332,25 @@ class Pos {
 
         profile.setEmail(cartrow.email_addr);
 
-        if (cartrow.perid > 0 && this.#managerDiv) {
-            this.#managerSelect.innerHTML = '';
-            this.#managerDiv.hidden = true;
-        } else {
-            let selectList = cart.getManagerSelect();
-            if (selectList.length > 0) {
-                this.#managerSelect.innerHTML = selectList;
-                this.#managerDiv.hidden = false;
-                if (cartrow.managedBy == null || cartrow.managedBy == '' || cart.notinCart(cartrow.managedBy))
-                    this.#managerSelect.value = '';
-                else
-                    this.#managerSelect.value = cartrow.managedBy;
+        if (this.#managerDiv && this.#managerSelect) {
+            if (cartrow.perid > 0) {
+                this.#managerSelect.innerHTML = '';
+                this.#managerDiv.hidden = true;
             } else {
-                if (this.#managerDiv)
-                    this.#managerDiv.hidden = true;
-                if (this.#managerSelect)
-                    this.#managerSelect.innerHTML = null;
+                let selectList = cart.getManagerSelect();
+                if (selectList.length > 0) {
+                    this.#managerSelect.innerHTML = selectList;
+                    this.#managerDiv.hidden = false;
+                    if (cartrow.managedBy == null || cartrow.managedBy == '' || cart.notinCart(cartrow.managedBy))
+                        this.#managerSelect.value = '';
+                    else
+                        this.#managerSelect.value = cartrow.managedBy;
+                } else {
+                    if (this.#managerDiv)
+                        this.#managerDiv.hidden = true;
+                    if (this.#managerSelect)
+                        this.#managerSelect.innerHTML = null;
+                }
             }
         }
 
@@ -723,6 +729,11 @@ class Pos {
 
         if (index >= 0) {
             if (rt[index].banned == 'Y') {
+                alert("Please ask " + (rt.first_name + ' ' + rt[index].last_name).trim() + " to talk to the Registration Administrator, " +
+                    "you cannot add them at this time.")
+                return;
+            }
+            if (rt[index].deceased == 'Y') {
                 alert("Please ask " + (rt.first_name + ' ' + rt[index].last_name).trim() + " to talk to the Registration Administrator, " +
                     "you cannot add them at this time.")
                 return;
@@ -1382,7 +1393,10 @@ class Pos {
         if (data.banned == 'Y') {
             return '<button type="button" class="btn btn-sm btn-danger pt-0 pb-0" style="--bs-btn-font-size: 75%;" onclick="pos.addToCart(' +
                 data.index + ', \'' + formatterParams.t + '\')">B</button>';
-        } else if (cart.notinCart(data.perid)) {
+        } else if (data.deceased == 'Y')
+            return '<button type="button" class="btn btn-sm btn-warning pt-0 pb-0" style="--bs-btn-font-size: 75%;" onclick="pos.addToCart(' +
+                data.index + ', \'' + formatterParams.t + '\')">D</button>';
+        else if (cart.notinCart(data.perid)) {
             html = '<button type="button" class="btn btn-sm btn-success p-0" style="--bs-btn-font-size: 75%;" onclick="pos.addToCart(' +
                 data.index + ', \'' + formatterParams.t + '\')">Add</button>';
             if (config.useportal == 1) {
@@ -1811,12 +1825,13 @@ class Pos {
                 maxHeight: "600px",
                 data: this.#result_perinfo,
                 layout: "fitColumns",
+                index: 'perid',
                 initialSort: [
                     {column: "fullName", dir: "asc"},
                 ],
                 columns: [
                     {title: "Cart", width: 100, headerFilter: false, headerSort: false, formatter: _this.addCartIcon, formatterParams: {t: "result"},},
-                    {title: "Per ID", field: "perid", headerWordWrap: true, width: 80, visible: false, hozAlign: 'right',},
+                    {title: "Per ID", field: "perid", headerWordWrap: true, width: 80, visible: false, hozAlign: 'right', formatter: pos.idStatus, },
                     {field: "index", visible: false,},
                     {
                         title: "Full Name", field: "fullName", headerFilter: true, headerFilterFunc: fullNameHeaderFilter, headerWordWrap: true,
@@ -1868,6 +1883,16 @@ class Pos {
 </div>
 `;
         this.#id_div.innerHTML = 'No matching records found'
+    }
+
+// tabulator formatter for the id field
+    idStatus(cell, formatterParams, onRendered) {
+        let deceased = cell.getRow().getData().deceased;
+        let value = cell.getValue();
+        let row =  pos.getFindResultTable().getRow(value);
+        let element = row.getElement();
+        element.style.backgroundColor = deceased == 'Y' ? '#FFE0E0' : '';
+        return value;
     }
 
 // draw perinfo as full record, not tabular data
