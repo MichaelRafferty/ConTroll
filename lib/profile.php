@@ -306,7 +306,7 @@ function drawEditPersonBlock($con, $countryOptions, $useUSPS, $policies, $class,
     </div>
 <?php
     } // end else of edit email
-    if ($admin) {
+    if ($admin && $regAdmin != null && $regStaff != null) {
 ?>
     <div class='row mt-2'>
         <div class='col-sm-auto'><label for='<?php echo $idPrefix . 'deceased'; ?>'>Deceased:</label></div>

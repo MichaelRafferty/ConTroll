@@ -277,7 +277,7 @@ function loadSelectList(data) {
         ],
         columns: [
             {title: "Actions", headerFilter: false, headerSort: false, width: 80, formatter: addSelectIcon },
-            {title: "Perid", field: "id", headerFilter: true, width: 120, maxWidth: 120, },
+            {title: "Perid", field: "id", headerFilter: true, width: 120, maxWidth: 120, formatter: idStatus, },
             {title: "Name", field: "fullName",  headerWordWrap: true, headerFilter: true, headerFilterFunc: fullNameHeaderFilter,
                 tooltip: watchBuildRecordHover, formatter: "textarea", },
             {field: "last_name", visible: false,},
@@ -300,19 +300,28 @@ function loadSelectList(data) {
     });
 }
 
+// formatter for deceased rows
+function idStatus(cell, formatterParams, onRendered) {
+    let deceased = cell.getRow().getData().deceased;
+    let value = cell.getValue();
+    let row =  selectTable.getRow(value);
+    let element = row.getElement();
+    element.style.backgroundColor = deceased == 'Y' ? '#FFE0E0' : '';
+    return value;
+}
+
 // formatter for watch icon
 function addSelectIcon(cell, formatterParams, onRendered) { //plain text value
-    var html = '';
-    var data = cell.getRow().getData();
+    let data = cell.getRow().getData();
 
-    if (data.banned == 'Y') {
+    if (data.deceased == 'Y') {
+        return '<strong class="ps-1 pe-1 warncolor">D</strong>';
+    } else if (data.banned == 'Y') {
         return '<strong class="ps-1 pe-1" style="background-color: red; color: white;">B</strong>';
-    } else {
-        html += '<button type="button" class="btn btn-sm btn-primary pt-0 pb-0" style="--bs-btn-font-size: 75%;" onclick="addToList(' +
-            data.id + ');">Watch</button>';
     }
 
-    return html;
+    return '<button type="button" class="btn btn-sm btn-primary pt-0 pb-0" style="--bs-btn-font-size: 75%;" onclick="addToList(' +
+            data.id + ');">Watch</button>';
 }
 
 // add button - write to list and refresh screen
@@ -669,8 +678,14 @@ function addCheckSuccess(dataFound) {
 
 // select button: chose this person instead of adding a new one
 function addSelectButton(cell, formatterParams, onRendered) {
-    var row = cell.getRow();
-    var index = row.getIndex()
+    let row = cell.getRow();
+    let index = row.getIndex()
+
+    if (data.deceased == 'Y') {
+        return '<strong class="ps-1 pe-1 warncolor">D</strong>';
+    } else if (data.banned == 'Y') {
+        return '<strong class="ps-1 pe-1" style="background-color: red; color: white;">B</strong>';
+    }
 
     return '<button class="btn btn-primary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
         ' onclick="addSelectPerson(' + index + ');">Watch</button>';

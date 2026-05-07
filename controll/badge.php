@@ -101,7 +101,7 @@ $config_vars['defaultCountry'] = $defaultCountry;
                     </div>
                     <?php
                         drawEditPersonBlock($conf, $countryOptions, $useUSPS, null, 'find', true, true, $ageByDate,
-                                array (), $ageListIdx,200, true, 'f_', true, false, $regAdmin, $regStaff);
+                                array (), $ageListIdx,200, true, 'f_', true, false, null, null);
                     ?>
                     </form>
                 </div>
@@ -135,7 +135,7 @@ $config_vars['defaultCountry'] = $defaultCountry;
                     </div>
                     <?php
                         drawEditPersonBlock($conf, $countryOptions, $useUSPS, null, 'add', true, true, $ageByDate,
-                                array (), $ageListIdx,1000, true, 'a_', true, false, $regAdmin, $regStaff);
+                                array (), $ageListIdx,1000, true, 'a_', true,false, null, null);
                     ?>
                     </form>
                     <div class='row mt-2'>
