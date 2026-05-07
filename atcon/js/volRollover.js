@@ -429,7 +429,11 @@ function found_record(data) {
         });
         return;
     } else if (result_perinfo.length > 0) {  // one row string,  perinfo, display in record format
-        find_result_table = null;
+        if (find_result_table != null) {
+            find_result_table.destroy();
+            find_result_table = null;
+        }
+
         draw_record();
         return;
     }
