@@ -19,6 +19,7 @@ class mergesetup {
     // merge check modal
     #mergeCheckModal = null;
     #remainPerson = null;
+    #remainPriorDeceased = '';
     #mergePerson = null;
     #editMatchTitle = null;
 
@@ -456,6 +457,7 @@ class mergesetup {
         this.#active.value = this.#remainPerson.active == 'N' ? 'N' : 'Y';  // default to Y
         this.#banned.value = this.#remainPerson.banned == 'Y' ? 'Y' : 'N';  // default to N
         this.#deceased.value = this.#remainPerson.deceased == 'Y' ? 'Y' : 'N';  // default to N
+        this.#remainPriorDeceased = this.#deceased.value;
         this.#formerGoH.value = this.#remainPerson.formerGoH == 'Y' ? 'Y' : 'N';  // default to N
         let p = this.#remainPerson['policies'];
         for (let pol in policies) {
@@ -574,6 +576,8 @@ class mergesetup {
         this.#remainPolicies.style.backgroundColor = '';
         this.#remainFlags.style.backgroundColor = '';
         this.#remainManager.style.backgroundColor = ''
+
+        this.#remainPriorDeceased = '';
     }
 
     // copy a value from the match or new to the edit section
@@ -810,6 +814,14 @@ class mergesetup {
     performMerge() {
         if (!(this.#mergePerson.id > 0 && this.#remainPerson.id > 0))
             return;
+
+        if (this.#remainPriorDeceased != 'Y' && this.#deceased.value == 'Y') {
+            if (!confirm("You are changing the value of the remaining person from deceased(No) to (Yes).\n" +
+                "This will delete many records associated with this person.\n\nAre you sure?")) {
+                this.#deceased.value = 'N';
+                return;
+            }
+        }
 
 
         let values = {
