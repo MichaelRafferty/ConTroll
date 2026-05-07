@@ -140,6 +140,7 @@ function drawResults(data) {
     });
 }
 
+// formatter for deceased rows
 function idStatus(cell, formatterParams, onRendered) {
     let deceased = cell.getRow().getData().deceased;
     let value = cell.getValue();
