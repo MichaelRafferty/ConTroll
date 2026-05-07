@@ -98,6 +98,8 @@ function drawResults(data) {
             row.middle_name = peritem.middle_name;
             row.last_name = peritem.last_name;
             row.suffix = peritem.suffix;
+            row.deceased = peritem.deceased;
+            row.formerGoH = peritem.formerGoH;
             lookupdata.push(row);
         }
     }
@@ -112,7 +114,7 @@ function drawResults(data) {
         index: "perid",
         columns: [
             { title: "TID", field: "tid", hozAlign: "right",  headerSort: true, headerFilter: true },
-            { title: "PID", field: "perid", width: 110, hozAlign: "right", headerSort: true, headerFilter: true, },
+            { title: "PID", field: "perid", width: 110, hozAlign: "right", headerSort: true, headerFilter: true, formatter: idStatus },
             { title: "Person", field: "fullName", headerSort: true, headerFilter: true, headerFilterFunc: fullNameHeaderFilter, },
             { title: "Badge Name", field: "badgename", headerSort: true, headerFilter: true, formatter: 'html', },
             { title: "Email", field: "email_addr", headerSort: true, headerFilter: true },
@@ -128,10 +130,21 @@ function drawResults(data) {
             {field: 'first_name', visible: false,},
             {field: 'middle_name', visible: false,},
             {field: 'last_name', visible: false,},
+            {field: 'deceased', visible: false,},
+            {field: 'formerGoH', visible: false,},
         ],
         initialSort: [
             {column: "tid", dir: "desc" },
             {column: "change_date", dir: "desc" },
         ],
     });
+}
+
+function idStatus(cell, formatterParams, onRendered) {
+    let deceased = cell.getRow().getData().deceased;
+    let value = cell.getValue();
+    let row =  lookupTable.getRow(value);
+    let element = row.getElement();
+    element.style.backgroundColor = deceased == 'Y' ? '#FFE0E0' : '';
+    return value;
 }
