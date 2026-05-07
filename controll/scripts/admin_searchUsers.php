@@ -47,7 +47,7 @@ $response['message'] = 'ok';
 
 if (is_numeric($search_string)) {
     $searchSql = <<<EOS
-SELECT p.id, first_name, last_name, badge_name, badgeNameL2, email_addr
+SELECT p.id, first_name, last_name, badge_name, badgeNameL2, email_addr, deceased, banned
 FROM perinfo p
 LEFT OUTER JOIN atcon_user a ON (a.perid = p.id and a.conid = ?)
 WHERE a.id is NULL AND p.id = ?
@@ -56,7 +56,7 @@ EOS;
     $params = [$conid, $search_string];
 } else {
     $searchSql = <<<EOS
-SELECT p.id, first_name, last_name, badge_name, badgeNameL2, email_addr
+SELECT p.id, first_name, last_name, badge_name, badgeNameL2, email_addr, deceased, banned
 FROM perinfo p
 LEFT OUTER JOIN atcon_user a ON (a.perid = p.id and a.conid = ?)
 WHERE a.id is NULL AND

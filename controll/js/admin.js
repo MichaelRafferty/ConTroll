@@ -47,7 +47,7 @@ var fileManager = null;
 window.onload = function initpage() {
     debug = config.debug;
     conid = config.debug;
-    var id = document.getElementById('user-lookup');
+    let id = document.getElementById('user-lookup');
     if (id != null) {
         add_modal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
         add_pattern_field = document.getElementById("add_name_search");
@@ -77,7 +77,7 @@ window.onload = function initpage() {
 }
 
 window.onbeforeunload = function() {
-    var $message = ''
+    let $message = ''
 
     if (users !== null && users.dirty)  {
         $message += 'You have unsaved changes in the Users tab. ';
@@ -94,7 +94,7 @@ window.onbeforeunload = function() {
 function clearPermissions(userid) {
     clearError();
     clear_message();
-    var formdata = $("#" + userid).serialize();
+    let formdata = $("#" + userid).serialize();
     $('#test').append(formdata);
     $.ajax({
         url: 'scripts/admin_permUpdate.php',
@@ -111,7 +111,7 @@ function clearPermissions(userid) {
 function updatePermissions(userid) {
     clearError();
     clear_message();
-    var formdata = $("#" + userid).serialize();
+    let formdata = $("#" + userid).serialize();
     $('#test').append(formdata);
     $.ajax({
         url: 'scripts/admin_permUpdate.php',
@@ -138,7 +138,7 @@ function updatePerid(id, email) {
     fixUserid = id;
     add_modal.show();
     addTitle.innerHTML = 'Add Missing Person Record to User';
-    var name_search = document.getElementById('add_name_search');
+    let name_search = document.getElementById('add_name_search');
     name_search.value = email;
     add_find();
 }
@@ -146,7 +146,7 @@ function updatePerid(id, email) {
 // get the list of people for the match
 function add_find() {
     clear_message('result_message_user');
-    var name_search = document.getElementById('add_name_search').value.toLowerCase().trim();
+    let name_search = document.getElementById('add_name_search').value.toLowerCase().trim();
     if (name_search == null || name_search == '')  {
         show_message("No search criteria specified", "warn", 'result_message_user');
         return;
@@ -191,19 +191,20 @@ function add_find() {
 
 // add_found - display a list of potential users to add
 function add_found(data) {
-    var perinfo = data.perinfo;
-    var name_search = data.name_search;
+    let perinfo = data.perinfo;
+    let name_search = data.name_search;
     if (perinfo.length > 0) {
         add_result_table = new Tabulator('#add_search_results', {
             maxHeight: "600px",
             data: perinfo,
+            index: "perid",
             layout: "fitColumns",
             initialSort: [
                 {column: "fullName", dir: "asc"},
             ],
             columns: [
                 {width: 100, headerFilter: false, headerSort: false, formatter: addNewUser, formatterParams: {t: "result"},},
-                {title: "perid", field: "perid", width: 100, },
+                {title: "perid", field: "perid", width: 100, formatter: idStatus, },
                 {field: "index", visible: debug > 2,},
                 {title: "Name", field: "fullName", width: 200, headerFilter: true, headerWordWrap: true, tooltip: build_record_hover,},
                 {field: "last_name", visible: debug > 2,},
@@ -221,9 +222,9 @@ function add_found(data) {
 
 // show the full perinfo record as a hover in the table
 function build_record_hover(e, cell, onRendered) {
-    var data = cell.getData();
+    let data = cell.getData();
     //console.log(data);
-    var hover_text = 'Person id: ' + data.perid + '<br/>' +
+    let hover_text = 'Person id: ' + data.perid + '<br/>' +
         (data.first_name + ' ' + data.middle_name + ' ' + data.last_name).trim() + '<br/>' +
         data.address_1 + '<br/>';
     if (data.address_2 != '') {
@@ -234,35 +235,57 @@ function build_record_hover(e, cell, onRendered) {
         hover_text += data.country + '<br/>';
     }
     hover_text += 'Badge Name: ' + badgeNameDefault(data.badge_name, data.badgeNameL2, data.first_name, data.last_name) + '<br/>' +
-        'Email: ' + data.email_addr + '<br/>' + 'Phone: ' + data.phone + '<br/>' +
-        'Active:' + data.active + ' Contact?:' + data.contact_ok + ' Share?:' + data.share_reg_ok + '<br/>';
+        'Email: ' + data.email_addr + '<br/>' + 'Phone: ' + data.phone;
 
     return hover_text;
 }
 
 // tabulator formatter for the merge column for the find results, displays the "Select" to mark the user to add
 function addNewUser(cell, formatterParams, onRendered) { //plain text value
-    var tid;
-    var html = '';
-    var color = 'btn-success';
-    var perid = cell.getRow().getData().perid;
-    var label = 'Add User'
+    let color = 'btn-success';
+    let row = cell.getData();
+    let label = 'Add User'
+    let disabled = '';
+
     if (addType == 'fixuser')
         label = 'Add Perid';
+    if (row.deceased == 'Y') {
+        color = 'btn-warning';
+        label = 'Deceased';
+        disabled = ' disabled';
+    }  else if (row.banned == 'Y') {
+        color = 'btn-danger';
+        label = 'Banned';
+        disabled = ' disabled';
+    }
 
-    return '<button type="button" class="btn btn-sm ' + color + ' pt-0 pb-0" style="--bs-btn-font-size: 75%;" onclick="selectUser(' + perid + ')">' + label + '</button>';
+    return '<button type="button" class="btn btn-sm ' + color + ' pt-0 pb-0" style="--bs-btn-font-size: 75%;"' +
+        disabled + ' onclick="selectUser(' + row.perid + ')">' + label + '</button>';
 }
+
+// formatter for deceased rows
+function idStatus(cell, formatterParams, onRendered) {
+    let deceased = cell.getRow().getData().deceased;
+    let value = cell.getValue();
+    let row =  add_result_table.getRow(value);
+    let element = row.getElement();
+    element.style.backgroundColor = deceased == 'Y' ? '#FFE0E0' : '';
+    return value;
+}
+
 function selectUser(perid) {
     clearError();
     clear_message();
+    let script = '';
+    let data = null;
 
     if (addType == 'newuser') {
         $('#test').append('create=' + perid);
-        var script = 'scripts/permCreate.php';
-        var data = {perid: perid};
+        script = 'scripts/permCreate.php';
+        data = {perid: perid};
     } else if (addType == 'fixuser' && fixUserid != null) {
-        var script = 'scripts/permFixPerid.php';
-        var data = { perid: perid,  userid: fixUserid};
+        script = 'scripts/permFixPerid.php';
+        data = { perid: perid,  userid: fixUserid};
     } else {
         showError("Invalid addType passed or no Userid passed");
         return;
@@ -457,14 +480,14 @@ function cellChanged(cell) {
 }
 
 function deleteicon(cell, formattParams, onRendered) {
-    var value = cell.getValue();
+    let value = cell.getValue();
     if (value == 0)
         return "&#x1F5D1;";
     return value;
 }
 
 function deleterow(e, row) {
-    var count = row.getCell("uses").getValue();
+    let count = row.getCell("uses").getValue();
     if (count == 0) {
         row.getCell("to_delete").setValue(1);
         row.getCell("uses").setValue('<span style="color:red;"><b>Del</b></span>');
@@ -538,7 +561,7 @@ function menuRowMoved(row) {
 }
 
 function menuCheckUndoRedo() {
-    var undosize = menuTable.getHistoryUndoSize();
+    let undosize = menuTable.getHistoryUndoSize();
     menuUndoBtn.disabled = undosize <= 0;
     menuRedoBtn.disabled = menuTable.getHistoryRedoSize() <= 0;
     return undosize;
@@ -572,9 +595,9 @@ function saveMenu() {
     menuSaveBtn.innerHTML = "Saving...";
     menuSaveBtn.disabled = true;
 
-    var script = "scripts/admin_saveMenu.php";
+    let script = "scripts/admin_saveMenu.php";
 
-    var postdata = {
+    let postdata = {
         ajax_request_action: 'saveMenu',
         tabledata: JSON.stringify(menuTable.getData()),
     };
@@ -621,8 +644,8 @@ function clearAtconTable() {
 }
 
 function buildNewYear() {
-    var script = 'scripts/admin_buildNewYear.php'
-    var postdata = {
+    let script = 'scripts/admin_buildNewYear.php'
+    let postdata = {
         conid: conid,
         action: 'build'
     }
@@ -649,7 +672,7 @@ function buildNewYear() {
 function loadInitialData(loadtype) {
     'use strict';
 
-    var postData = {
+    let postData = {
         ajax_request_action: 'loadData',
         load_type: loadtype
     };
@@ -695,7 +718,7 @@ function tabPasswordFormatter(cell, formatterParams, onRendered) {
     //formatterParams - parameters set for the column
     //onRendered - function to call when the formatter has been rendered
 
-    var curval = cell.getValue();
+    let curval = cell.getValue();
     if (curval === undefined || curval === null || curval === '') {
         return 'Keep Existing Password';
     }
@@ -706,9 +729,9 @@ function tabPasswordFormatter(cell, formatterParams, onRendered) {
 }
 
 function localServersList() {
-    var servers = printers.serverlist.getData();
-    var distinctServers = new Array();
-    for (var i = 0; i < servers.length; i++) {
+    let servers = printers.serverlist.getData();
+    let distinctServers = new Array();
+    for (let i = 0; i < servers.length; i++) {
         if (servers[i].local === true || Number(servers[i].local) === 1)
             distinctServers[servers[i].serverName] = 1;
     }
@@ -717,7 +740,7 @@ function localServersList() {
 function invertTickCross(e,cell) {
     'use strict';
 
-    var value = cell.getValue();
+    let value = cell.getValue();
     if (value === undefined) {
         value = false;
     }
