@@ -48,6 +48,7 @@ class Unmatched {
     #matchPolicies = null;
     #matchFlags = null;
     #matchManager = null;
+    #priorDeceased = '';
     // candidate (new) person display fields
     #newId = null;
     #newName = null;
@@ -605,6 +606,7 @@ class Unmatched {
             this.clearEditBlock('c');
             this.#editMatchTitle.innerHTML = '<b>Matching</b> ' + this.#newperson.fullName;
             this.#matchPerson = null;
+            this.#priorDeceased = '';
         } else {
             // set the candidate section of the edit block to the values from the table
             disableUpdateExisting = false;
@@ -613,6 +615,7 @@ class Unmatched {
             } else {
                 this.#matchPerson = this.#additionalTable.getRow(id).getData();
             }
+            this.#priorDeceased = this.#matchPerson.deceased;
             this.#editMatchTitle.innerHTML = '<b>Matching</b> ' + this.#newperson.fullName + ' <b>with</b> ' + this.#matchPerson.fullName;
             this.#matchId.innerHTML = id;
             this.#matchName.innerHTML = this.#matchPerson.fullName;
@@ -713,6 +716,14 @@ class Unmatched {
 
     // update the database with the new match
     saveMatch(type) {
+        if (type == 'e' && this.#priorDeceased != 'Y' && this.#deceased.value == 'Y') {
+            if (!confirm("You are changing this existing person from deceased(No) to (Yes).\n" +
+                "This will delete many records associated with this person.\n\nAre you sure?")) {
+                this.#deceased.value = 'N';
+                return;
+            }
+        }
+
         // get all of the edited values, the existing id and the new id
         let postdata = {
             type: type,

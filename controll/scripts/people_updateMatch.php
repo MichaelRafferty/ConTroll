@@ -1,5 +1,6 @@
 <?php
 require_once "../lib/base.php";
+require_once "../lib/cleanDeceased.php";
 require_once('../../lib/log.php');
 require_once('../../lib/email__load_methods.php');
 require_once('../../lib/policies.php');
@@ -136,6 +137,19 @@ if ($type == 'n') {
     $response['success'] = "Person $perid created from match data edited from $newPerid";
 }
 if ($type == 'e') {
+    // get prior deceased value
+    $pdQ = <<<EOS
+SELECT deceased FROM perinfo WHERE id = ?;
+EOS;
+    $pdR = dbSafeQuery($pdQ, 'i', array($perid));
+    if ($pdR === false) {
+        $response['error'] = 'Error querying prior deceased status, check logs and seek assistance';
+        ajaxSuccess($response);
+        return;
+    }
+    $priorDeceased = $pdR->fetch_row()[0];
+    $pdR->free();
+
     // add perid for where clause
     $typestr .= 'i';
     $values[] = $perid;
@@ -293,4 +307,8 @@ EOS;
          $response['success'] .= "<br/>Request to associate (manage) email sent";
      }
 }
+
+ if ($type == 'e' && $priorDeceased != 'Y' && $_POST['deceased'] == 'Y') {
+     $response['success'] .= "<br/>" . cleanDeceasedUser($perid);
+ }
 ajaxSuccess($response);
