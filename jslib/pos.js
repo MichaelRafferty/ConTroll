@@ -715,7 +715,6 @@ class Pos {
         this.#review_dirty = false;
     }
 
-
     // add search person/transaction from result_perinfo record to the cart
     addToCart(index, table) {
         let rt = null;
