@@ -2,7 +2,7 @@
 	name="RegAdmin"
 	description="Registration Admin Reports"
 	auth=reg_admin
-[050ExpiringRegs]
+[050NewAccounts]
     name="New Without Membership"
     description="New Accounts that didn't buy a membrership"
     template=new_noreg.rpt
@@ -15,6 +15,15 @@
     template=reg_expire.rpt
     auth=reg_admin
     type=rpt
+[150RegistrationCounts]
+    name="Registration Counts"
+    description="List of registrations by month broken into predefined categories by GL Label"
+    template=regTotals.php
+    auth=reg_admin
+    type=php
+    P001="prompt/~/startdate/~/Start Date: /~/YYYY-MM-DD format, eefaults to first record/~/"
+    P002="prompt/~/enddate/~/End Date: /~/YYYY-MM-DD format, defaults to last record/~/"
+    P003="prompt/~/monthly/~/Monthly or Totals Only: /~/m or t/~/t"
 [200RegHistory]
 	name="Registration History"
 	description="Registration History for a Person"
