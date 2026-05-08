@@ -111,8 +111,8 @@
     item=conid
     datatype=s
 [where]
-	001="r.conid = ? GROUP BY p.id, r.id, fullName, fullAddr, locale, country, email_addr, label, price, paid, status, createdate, first_name, middle_name,
-	last_name"
+	001="r.conid = ? AND p.deceased != 'Y'"
+	002="GROUP BY p.id, r.id, fullName, fullAddr, locale, country, email_addr, label, price, paid, status, createdate, first_name, middle_name,	last_name"
 [sort]
 	001="last_name, first_name, middle_name,create_date, regid"
 

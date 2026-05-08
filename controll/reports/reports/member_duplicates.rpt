@@ -131,7 +131,7 @@
 	datatype=i
 [where]
 	001="r1.conid = ? AND r1.status IN ('unpaid', 'plan', 'paid') AND r2.status IN ('unpaid', 'plan', 'paid')"
-	002="AND NOT (m1.memCategory != 'upgrade' AND m2.memCategory = 'upgrade')"
+	002="AND NOT (m1.memCategory != 'upgrade' AND m2.memCategory = 'upgrade') AND p.deceased != 'Y'"
 [sort]
 	001=p.last_name
 	002=p.first_name

@@ -70,6 +70,6 @@
     item=conid
     datatype=s
 [where]
-	001="r.conid = ? AND r.status = 'paid' AND m.memType in ('full','oneday')"
+	001="r.conid = ? AND r.status = 'paid' AND m.memType in ('full','oneday') AND p.deceased != 'Y'"
 [sort]
 	001="last_name, first_name, middle_name"

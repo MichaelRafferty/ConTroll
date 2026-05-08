@@ -68,6 +68,6 @@
 	item=startDate
 	datatype=s
 [where]
-	001="r.conid IS NULL AND p.id > 9 AND p.first_name != 'Merged' AND p.middle_name != 'into' AND p.creation_date > ?"
+	001="r.conid IS NULL AND p.id > 9 AND p.first_name != 'Merged' AND p.middle_name != 'into' AND p.creation_date > ? AND p.deceased != 'Y'"
 [sort]
 	001="p.creation_date,p.last_name,p.first_name"
