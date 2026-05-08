@@ -110,6 +110,9 @@ if ($cartId != $loginId || $cartType != $loginType) {
         if (isPrimary($membership, $conid))
             $loginPrimary = true;
     }
+    $config_vars['formerGoH'] = $cartInfo['formerGoH'];
+} else {
+    $config_vars['formerGoH'] = $info['formerGoH'];
 }
 $config_vars['loginPrimary'] = $loginPrimary;
 $config_vars['managedByLogin'] = $managedByLogin;

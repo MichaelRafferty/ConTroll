@@ -201,6 +201,12 @@ class MembershipRules {
                     if (!(config.loginPrimary && config.managedByLogin))
                         return false;
                 }
+
+                // formerGoH - this person must be a former GoH
+                if (mem.memCategory == 'formerGoH') {
+                    // check that this person is a former GoH
+                    return config.formerGoH == 'Y';
+                }
             }
         }
 

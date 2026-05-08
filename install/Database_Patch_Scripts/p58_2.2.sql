@@ -63,4 +63,8 @@ CREATE DEFINER=CURRENT_USER  TRIGGER `perinfo_update` BEFORE UPDATE ON `perinfo`
 END;;
 DELIMITER ;
 
+/* add former goh category */
+INSERT INTO memCategories (memCategory, notes, onlyOne, standAlone, variablePrice, taxable, sortorder, active, badgeLabel)
+VALUES ('formerGoH', 'Req: Only available to Former GoH', 'Y', 'Y', 'N', 'N', 100, 'Y','Former GoH');
+
 INSERT INTO patchLog(id, name) VALUES(p58, 'Release 2.2 Artshow and other changes');

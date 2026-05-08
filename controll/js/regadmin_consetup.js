@@ -745,6 +745,8 @@ class consetup {
             notes: '',
             glNum: '',
             glLabel: '',
+            badgeLabel: '',
+            catBadgeLabel: '',
         }, false).then(function (row) {
             row.getTable().setPageToRow(row).then(function () {
                 setCellChanged(row.getCell("id"));

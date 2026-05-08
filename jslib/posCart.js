@@ -621,6 +621,7 @@ class PosCart {
             }
             config.loginPrimary = loginPrimary;
             config.managedByLogin = managedByLogin;
+            config.formerGoH = cart_row.formerGoH;
 
             // build the current values of the memberships
             pos.everyMembership(this.#cartPerinfo, function(_this, mem, perinfo) {
