@@ -82,7 +82,7 @@ case 'expire':
     FROM reg r
     JOIN perinfo p ON p.id = r.perid
     JOIN memLabel m ON m.id = r.memId
-    WHERE r.status = 'unpaid' AND r.conid >= ? AND DATEDIFF(now(), m.enddate) < 60
+    WHERE r.status = 'unpaid' AND r.conid >= ? AND DATEDIFF(now(), m.enddate) < 60 AND p.deceased != 'Y'
     GROUP BY p.first_name, p.email_addr, p.id
 EOQ;
     $typestr = 'i';
@@ -98,7 +98,7 @@ case 'new':
     SELECT p.first_name, p.email_addr AS email, p.id
     FROM perinfo p
     LEFT OUTER JOIN reg r ON p.id = r.perid
-    WHERE r.status IS NULL AND DATEDIFF(now(), p.creation_date) <= ? 
+    WHERE r.status IS NULL AND DATEDIFF(now(), p.creation_date) <= ? AND p.deceased != 'Y'
     GROUP BY p.first_name, p.email_addr, p.id
 EOQ;
     $typestr = 'i';
@@ -115,7 +115,7 @@ SELECT DISTINCT P.email_addr AS email
 FROM reg R
 JOIN perinfo P ON (P.id=R.perid)
 JOIN memList M ON (R.memId = M.id)
-WHERE R.conid=? AND R.status='paid' AND P.email_addr LIKE '%@%'
+WHERE R.conid=? AND R.status='paid' AND P.email_addr LIKE '%@%' AND P.deceased != 'Y'
 ORDER BY email;
 EOQ;
     $typestr = 'i';
@@ -135,7 +135,7 @@ SELECT DISTINCT p.email_addr AS email
 FROM perinfo p
 JOIN reg r ON (r.perid = p.id AND r.conid = ?)
 LEFT OUTER JOIN reg r2 ON (r2.perid = p.id and r2.conid = ?)
-WHERE p.email_addr LIKE '%@%' AND r.price > 0 AND r.status = 'paid' AND r2.perid IS NULL AND p.contact_ok='Y'
+WHERE p.email_addr LIKE '%@%' AND r.price > 0 AND r.status = 'paid' AND r2.perid IS NULL AND p.contact_ok='Y' AND p.deceased != 'Y'
 ORDER BY email;
 EOQ;
     $typestr = 'ii';
@@ -187,7 +187,7 @@ FROM perinfo p
 LEFT OUTER JOIN reg r1 ON (r1.perid = p.id and r1.conid = ?)
 LEFT OUTER JOIN reg r2 ON (r2.perid = p.id and r2.conid = ?)
 LEFT OUTER JOIN reg r3 ON (r3.perid = p.id and r3.conid = ?)
-WHERE p.email_addr LIKE '%@%' AND p.contact_ok='Y' AND r1.id IS NULL AND (r2.id IS NOT NULL OR r3.id IS NOT NULL)
+WHERE p.email_addr LIKE '%@%' AND p.contact_ok='Y' AND r1.id IS NULL AND (r2.id IS NOT NULL OR r3.id IS NOT NULL) AND p.deceased != 'Y'
 GROUP BY p.email_addr
 )
 SELECT ?, uuid_v4s(), people.perid, ?, ?
@@ -210,7 +210,7 @@ WITH people AS (
     LEFT OUTER JOIN reg r1 ON (r1.perid = p.id and r1.conid = ?)
     LEFT OUTER JOIN reg r2 ON (r2.perid = p.id and r2.conid = ?)
     LEFT OUTER JOIN reg r3 ON (r3.perid = p.id and r3.conid = ?)
-    WHERE p.email_addr LIKE '%@%' AND p.contact_ok='Y' AND r1.id IS NULL AND (r2.id IS NOT NULL OR r3.id IS NOT NULL)
+    WHERE p.email_addr LIKE '%@%' AND p.contact_ok='Y' AND r1.id IS NULL AND (r2.id IS NOT NULL OR r3.id IS NOT NULL) AND p.deceased != 'Y'
     GROUP BY p.email_addr
 )
 SELECT e.email, e.perid, p.first_name, p.last_name/*, k.guid */
@@ -241,7 +241,7 @@ JOIN memLabel M ON (M.id=R.memId)
 JOIN perinfo P ON (R.perid = P.id)
 WHERE R.conid=? AND (H.action = 'print') AND P.contact_ok='Y'
 AND M.shortname not like '%cancel%' AND M.shortname not like '%Child%' AND M.shortname not like '% In Tow%'
-AND P.email_addr LIKE '%@%'
+AND P.email_addr LIKE '%@%' AND p.deceased != 'Y'
 ORDER BY P.email_addr;
 EOQ;
     $typestr = 'i';
