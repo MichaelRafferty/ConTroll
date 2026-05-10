@@ -361,7 +361,6 @@ class interestsSetup {
 
     toggleInterest(id) {
         let checked = document.getElementById('i_' + id).checked;
-        console.log(id + " " + checked);
         let notesId = document.getElementById("i_p_" + id);
         if (notesId)
             notesId.hidden = !checked;
