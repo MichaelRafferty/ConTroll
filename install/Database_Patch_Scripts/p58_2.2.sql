@@ -67,4 +67,24 @@ DELIMITER ;
 INSERT INTO memCategories (memCategory, notes, onlyOne, standAlone, variablePrice, taxable, sortorder, active, badgeLabel)
 VALUES ('formerGoH', 'Req: Only available to Former GoH', 'Y', 'Y', 'N', 'N', 100, 'Y','Former GoH');
 
+/* interest table changes - add end date for interests as days before start of con,  add notes prompt field (if not blank enable notes for this interest),
+ *      add notes field to memberInterests
+ */
+ALTER TABLE interests ADD column endDate int comment 'Number of days before start of convention that this interest becomes static'
+    NOT NULL DEFAULT 0 AFTER notifyList;
+ALTER TABLE interests ADD column notesPrompt varchar(256) comment 'label for notes input field'
+    NOT NULL DEFAULT '' AFTER description;
+ALTER TABLE memberInterests ADD column notes varchar(512) comment 'Notes entered by member for this interest'
+    NOT NULL DEFAULT '' AFTER interested;
+
+/* fix philcon reference in default value, this fix might be temporary pending a change to how this page works, or a better wording from BSFS team */
+UPDATE controllTxtItems SET contents = CONCAT('<p>You can only change your accounts email address to an email address in your identities in Account Settings. ',
+    'Please use the "Add New" button to add any new email addresses to your account. Identities is only available in Account Settings once your account has ',
+    'been assigned an ID and is no longer pending.</p>
+',
+    '<p>You can only change the email address for an account you manage to one of your own (as above) or to one of the email addresses of people you manage.</p>
+',
+    '<p>If you need to make any other changes, please contact registration at #regadminemail# and ask for assistance.</p>')
+where appName = 'portal' and appPage = 'portal' and appSection = 'main' and txtItem = 'changeEmail';
+
 INSERT INTO patchLog(id, name) VALUES(p58, 'Release 2.2 Artshow and other changes');
