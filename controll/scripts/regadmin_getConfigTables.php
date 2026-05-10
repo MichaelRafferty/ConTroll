@@ -57,17 +57,17 @@ switch ($tablename) {
     case 'interests':
         $interestsSQL = <<<EOS
 SELECT i.interest, i.description, i.notifyList, i.sortOrder, i.createDate, i.updateDate, i.updateBy, i.active, i.csv,
-       i.interest AS interestKey, COUNT(mI.interest) AS uses
+       i.interest AS interestKey, i.endDate, i.notesPrompt, COUNT(mI.interest) AS uses
 FROM interests i
 LEFT OUTER JOIN memberInterests mI ON i.interest = mI.interest
-GROUP BY  i.interest, i.description, i.notifyList, i.sortOrder, i.createDate, i.updateDate, i.updateBy, i.active, i.csv
-ORDER BY i.sortOrder, i.interest;
+GROUP BY  i.interest, i.description, i.notifyList, i.sortOrder, i.createDate, i.updateDate, i.updateBy, i.active, i.csv, i.endDate, i.notesPrompt
+ORDER BY i.sortOrder, i.interest, i.notifyList;
 EOS;
 
         $result = dbQuery($interestsSQL);
-        $interests = array();
+        $interests = [];
         while ($row = $result->fetch_assoc()) {
-            array_push($interests, $row);
+            $interests[] = $row;
         }
         $result->free();
         $response['interests'] = $interests;

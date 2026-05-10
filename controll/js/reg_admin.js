@@ -2141,3 +2141,36 @@ function localeMoney(cell, formatParams, onRendered) {
 
     return currencyFmt.format(Number(value).toFixed(2));
 }
+
+// replaceConfigTokens - replace configuration tokens of the form #section.element# in a text string with values from the allowed
+// sections of the parsed configuration file
+const replaceOldNames = {CONID: 'id', CONNAME: 'conname', CONLABEL: 'label', POLICYLINK: 'policy', POLICYTEXT: 'policytext' };
+const replacePattern = /#[^#]+#/g;     // config tokens are #item.section#, but if the dot is missing, 'reg' will be assumed
+
+function replaceConfigTokens(string)  {
+    // get the matches if any
+    let matches = [...string.matchAll(replacePattern)].map(m => m[0]);
+    if (matches.length == 0)
+        return string;
+
+    for (let match of matches) {
+        // loop over all variables found and replace them
+        let token = match.substring(1, match.length -1);  // string the #'s off each end
+        if (token.includes('.')) {
+            [section, element] = token.split('.');  // split into parts
+        } else {
+            if (replaceOldNames.hasOwnProperty(token))
+                token = replaceOldNames[token];
+            element = token;  // default to reg. if the section is missing
+            section = 'con';
+        }
+
+        let replaceValue = fullConfig[section][element];
+        if (replaceValue === undefined)
+            continue; // item is missing, both in the section and in global, leave token in the string and move on
+
+        string = string.replace(match, replaceValue);
+    }
+
+    return string;
+}

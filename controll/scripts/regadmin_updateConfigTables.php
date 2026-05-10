@@ -155,12 +155,12 @@ EOS;
             }
         }
         $inssql = <<<EOS
-INSERT INTO interests (interest, description, notifyList, sortOrder, createDate, updateDate, updateBy, active, csv)
-VALUES (?,?,?,?,NOW(),NOW(),?,?,?);
+INSERT INTO interests (interest, description, notifyList, notesPrompt, endDate, sortOrder, createDate, updateDate, updateBy, active, csv)
+VALUES (?,?,?,?,?,?,NOW(),NOW(),?,?,?);
 EOS;
         $updsql = <<<EOS
 UPDATE interests
-SET interest = ?, description = ?, notifyList = ?, csv = ?, updateBy = ?, active = ?, sortorder = ?
+SET interest = ?, description = ?, notifyList = ?, notesPrompt = ?, endDate = ?, csv = ?, updateBy = ?, active = ?, sortorder = ?
 WHERE interest = ?;
 EOS;
 
@@ -172,8 +172,8 @@ EOS;
             }
             if (array_key_exists('interestKey', $row)) { // if key is there, it's an update
                 // interest = ?, description = ?, notifyList = ?, csv = ?, updateBy = ?, active = ?, sortorder = ?
-                $numrows = dbSafeCmd($updsql, 'ssssisis', array ($row['interest'], $row['description'],
-                      str_replace(PHP_EOL, '', $row['notifyList']),
+                $numrows = dbSafeCmd($updsql, 'ssssisisis', array ($row['interest'], $row['description'],
+                      str_replace(PHP_EOL, '', $row['notifyList']), $row['notesPrompt'], $row['endDate'],
                       $row['csv'], $user_perid, $row['active'], $row['sortorder'], $row['interestKey']));
                 $updated += $numrows;
             }
@@ -187,8 +187,8 @@ EOS;
             }
             if (!array_key_exists('interestKey', $row)) { // if key is not there, its an insert
                 // interest, description, notifyList, sortOrder, createDate, updateDate, updateBy, active, csv)
-                $numrows = dbSafeInsert($inssql, 'sssiiss', array ($row['interest'], $row['description'],
-                    str_replace(PHP_EOL, "", $row['notifyList']),
+                $numrows = dbSafeInsert($inssql, 'ssssiiiss', array ($row['interest'], $row['description'],
+                    str_replace(PHP_EOL, "", $row['notifyList']), $row['notesPrompt'], $row['endDate'],
                     $row['sortOrder'], $user_perid, $row['active'], $row['csv']));
                 if ($numrows !== false)
                     $inserted++;

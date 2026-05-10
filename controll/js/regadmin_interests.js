@@ -24,6 +24,9 @@ class interestsSetup {
     #interestDescription = null;
     #iName = null;
     #iNotify = null;
+    #iEndDate = null;
+    #eEndDate = null;
+    #iPrompt = null;
 
     #debug = 0;
     #debugVisible = false;
@@ -38,7 +41,7 @@ class interestsSetup {
         this.#messageDiv = document.getElementById('test');
         this.#interestsPane = document.getElementById('interests-pane');
 
-        var id = document.getElementById('editInterestsModal');
+        let id = document.getElementById('editInterestsModal');
         if (id) {
             this.#editInterestModal = new bootstrap.Modal(id, {focus: true, backdrop: 'static'});
             this.#editInterestTitle = document.getElementById('editInterestsTitle');
@@ -48,6 +51,9 @@ class interestsSetup {
             this.#interestDescription = document.getElementById('interestDescription');
             this.#iName = document.getElementById('iName');
             this.#iNotify = document.getElementById('iNotify');
+            this.#eEndDate = document.getElementById('eEndDate');
+            this.#iEndDate = document.getElementById('iEndDate');
+            this.#iPrompt = document.getElementById('iPrompt');
             if (interestsDescriptionMCEInit) {
                 tinyMCE.get("interestDescription").focus();
                 tinyMCE.get("interestDescription").load();
@@ -86,7 +92,7 @@ class interestsSetup {
 
     // called on open of the interests window
     open() {
-        var html = `
+        let html = `
     <div class="container-fluid">
         <div class="row">
             <div class="col-sm-12">
@@ -113,9 +119,9 @@ class interestsSetup {
     </div>`;
         this.#interestsPane.innerHTML = html;
         this.#interests = null;
-        var _this = this;
-        var script = "scripts/regadmin_getConfigTables.php";
-        var postdata = {
+        let _this = this;
+        let script = "scripts/regadmin_getConfigTables.php";
+        let postdata = {
             ajax_request_action: 'interests',
             tablename: "interests",
             indexcol: "interest"
@@ -138,7 +144,7 @@ class interestsSetup {
 
     // draw the interests edit screen
     draw(data, textStatus, jhXHR) {
-        var _this = this;
+        let _this = this;
 
         if (this.#interestsTable != null) {
             this.#interestsTable.off("dataChanged");
@@ -168,7 +174,9 @@ class interestsSetup {
                 {title: "Edit", formatter: this.editbutton, formatterParams: {table: 'interests' }, hozAlign:"left", headerSort: false },
                 {title: "Interest", field: "interest", width: 200, headerSort: true},
                 {title: "Description", field: "description", headerSort: false, width: 600, headerFilter: true, validator: "required", formatter: this.toHTML, },
-                {title: "Notify List", field: "notifyList", headerSort: false, headerFilter: true, width: 600, validator: "required", formatter: "textarea", },
+                {title: "Note Label", field: "notesPrompt", headerSort: false, width: 200, headerFilter: true, formatter: "textarea" },
+                {title: "Notify List", field: "notifyList", headerSort: false, headerFilter: true, width: 400, validator: "required", formatter: "textarea", },
+                {title: "End Date", field: "endDate", headerWordWrap: true, headerSort: false, headerFilter: true, width: 100, formatter: this.toDateFromDays, },
                 {
                     title: "CSV", field: "csv", headerWordWrap: true, headerSort: true,
                     editor: "list", editorParams: { values: ["Y", "N"], }, width: 70, validator: "required"
@@ -208,7 +216,7 @@ class interestsSetup {
     // table related functions
     // display edit button for a long field
     editbutton(cell, formatterParams, onRendered) {
-        var interestName = cell.getRow().getIndex()
+        let interestName = cell.getRow().getIndex()
         if (interestName != '') {
             return '<button class="btn btn-secondary" style = "--bs-btn-padding-y: .0rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;",' +
                 ' onclick="interests.editInterest(\'interests\',\'' + interestName + '\');">Edit Interest</button>';
@@ -217,23 +225,39 @@ class interestsSetup {
     }
 
     toHTML(cell,  formatterParams, onRendered) {
-        var item = cell.getValue();
+        let item = cell.getValue();
+        cell.getElement().style.whiteSpace = "normal";
         return item;
+    }
+
+    toDateFromDays(cell,  formatterParams, onRendered) {
+        let days = cell.getValue();
+        if (days === null || days === undefined)
+            days = 0;
+        if (days == 0)
+            return '';
+
+        let endDate = new Date(config.conStartDate);
+        endDate.setTime(endDate.getTime() + Number(days) * 1000 * 24 * 3600);
+        return endDate.toISOString().split('T')[0];
     }
 
     // add row to  table and scroll to that new row
     addrow() {
-        var _this = this;
+        let _this = this;
         this.#interestsTable.clearFilter(true);
-        this.#interestsTable.addRow({interest: 'new-row', notifyList: '', description: '', csv: 'N',
+        this.#interestsTable.addRow({interest: 'new-row', notifyList: '', description: '', csv: 'N', endDate: 0, notesPrompt: '',
             active: 'Y', sortOrder: 99, uses: 0}, false).then(function (row) {
             _this.#interestsTable.setPage("last"); // adding new to last page always
             row.getTable().setPageToRow(row).then(function () {
                 setCellChanged(row.getCell("interest"));
                 setCellChanged(row.getCell("notifyList"));
+                setCellChanged(row.getCell("endDate"));
+                setCellChanged(row.getCell("notesPrompt"));
                 setCellChanged(row.getCell("description"));
                 setCellChanged(row.getCell("csv"));
                 setCellChanged(row.getCell("active"));
+
                 _this.checkUndoRedo();
             });
         });
@@ -283,7 +307,7 @@ class interestsSetup {
 
     // set undo / redo status for buttons
     checkUndoRedo() {
-        var undosize = this.#interestsTable.getHistoryUndoSize();
+        let undosize = this.#interestsTable.getHistoryUndoSize();
         this.#interestsUndoBtn.disabled = undosize <= 0;
         this.#interestsRedoBtn.disabled = this.#interestsTable.getHistoryRedoSize() <= 0;
         return undosize;
@@ -291,8 +315,8 @@ class interestsSetup {
 
     // drawPreviewPane - given the row data draw the preview pane
     drawPreviewPane() {
-        var data = this.#interestsTable.getData();
-        var html = `
+        let data = this.#interestsTable.getData();
+        let html = `
         <div class='row'>
             <div class='col-sm-auto'>
                 <h3>Additional Interests or Needs</h3>
@@ -305,21 +329,42 @@ class interestsSetup {
         </div>
 `;
 
-        for (var i=0; i < data.length; i++) {
-            var interest = data[i];
-            var desc = /*replaceVariables(*/interest['description']; //);
+        for (let i=0; i < data.length; i++) {
+            let interest = data[i];
+            let desc = replaceConfigTokens(interest['description']);
+
             html += `
         <div class='row mt-1'>
             <div class='col-sm-auto'>
-                <input type='checkbox' id="i_` + i + `">
+                <input type='checkbox' id="i_` + i + `" onchange="interests.toggleInterest('` + i  + `');" />
             </div>
             <div class='col-sm-auto'>
                 <label for='i_` + i + "'>" + desc + `</label>
             </div>
         </div>
 `;
+            let prompt = interest['notesPrompt'];
+            if (prompt !== null && prompt !== undefined && prompt.trim() != '') {
+                html += `
+        <div class='row' id="i_p_` + i + `" hidden>
+            <div class='col-sm-auto'>&ensp;</div>
+            <div class="col-sm-2">` + prompt.trim() + `</div>
+            <div class="col-sm">
+                <textarea rows="3" cols="80" maxlengh="500" placeholder="Enter your response here"></textarea>
+            </div>
+        </div>
+`;
+            }
         }
         document.getElementById('interestPreviewDiv').innerHTML = html;
+    }
+
+    toggleInterest(id) {
+        let checked = document.getElementById('i_' + id).checked;
+        console.log(id + " " + checked);
+        let notesId = document.getElementById("i_p_" + id);
+        if (notesId)
+            notesId.hidden = !checked;
     }
 
     // open the previewEdit modal and populate it with the stuff for this entry and it's save back
@@ -327,10 +372,9 @@ class interestsSetup {
         //console.log(table);
         //console.log(interestName);
         this.#editInterestName = interestName;
-        var interestRow = this.#interestsTable.getRow(interestName).getData();
+        let interestRow = this.#interestsTable.getRow(interestName).getData();
         editPreviewClass = 'interests';
-        var interestName = interestRow.interest;
-        var interestDescription = '';
+        let interestDescription = '';
         if (interestRow.hasOwnProperty('description')) {
             if (interestRow.description != null && interestRow.description != undefined)
                 interestDescription = interestRow.description;
@@ -343,7 +387,39 @@ class interestsSetup {
         tinyMCE.activeEditor.setContent(interestDescription);
         this.#iName.value = interestRow.interest;
         this.#iNotify.value = interestRow.notifyList;
+        this.updateEndDate(interestRow.endDate);
+        this.#iPrompt.value = interestRow.notesPrompt.trim();
         this.#editInterestModal.show();
+    }
+
+    // set/update the end date based on the edited value
+    updateEndDate(endDate = null) {
+        if (endDate != null) {
+            if (Number(endDate) == NaN || Number(endDate) >= 0) {
+                this.#iEndDate.value = 0;
+                this.#eEndDate.value = '';
+            } else {
+                this.#iEndDate.value = Number(endDate);
+                let newEndDate = new Date(config.conStartDate);
+                newEndDate.setTime(newEndDate.getTime() + Number(endDate) * 1000 * 24 * 3600);
+                this.#eEndDate.value = newEndDate.toISOString().split('T')[0];
+            }
+        } else {
+            endDate = this.#eEndDate.value;
+            if (endDate != '') {
+                let ending = new Date(endDate);
+                let constart = new Date(config.conStartDate);
+                let days = Math.round((ending - constart) / (24 * 3600 * 1000));
+                if (days > 0) {
+                    days = 0;
+                    this.#eEndDate.value = config.conStartDate;
+                }
+                this.#iEndDate.value = days;
+            } else {
+                this.#eEndDate.value = '';
+                this.#iEndDate.value = 0;
+            }
+        }
     }
 
     // on close of the pane, clean up the items
@@ -362,7 +438,7 @@ class interestsSetup {
 
     // process the save button on the edit modal
     editInterestSave() {
-        var description = tinyMCE.activeEditor.getContent();
+        let description = tinyMCE.activeEditor.getContent();
 
         // these will be encoded in <p> tags already, so strip the leading and trailing ones.
         if (description.startsWith('<p>')) {
@@ -372,20 +448,22 @@ class interestsSetup {
             description = description.substring(0, description.length - 4);
         }
 
-        var row = this.#interestsTable.getRow(this.#editInterestName);
+        let row = this.#interestsTable.getRow(this.#editInterestName);
         row.getCell("description").setValue(description);
         row.getCell("interest").setValue(this.#iName.value);
         row.getCell("notifyList").setValue(this.#iNotify.value);
+        row.getCell("notesPrompt").setValue(this.#iPrompt.value);
+        row.getCell("endDate").setValue(this.#iEndDate.value);
         this.#editInterestModal.hide();
         this.dataChanged();
     }
 
     // save - save the interests entries back to the database
     save() {
-        var _this = this;
+        let _this = this;
 
         if (this.#interestsTable != null) {
-            var invalids = this.#interestsTable.validate();
+            let invalids = this.#interestsTable.validate();
             if (!invalids === true) {
                 console.log(invalids);
                 show_message("Interests Table does not pass validation, please check for empty cells or cells in red", 'error');
@@ -395,9 +473,9 @@ class interestsSetup {
             this.#interestsSaveBtn.innerHTML = "Saving...";
             this.#interestsSaveBtn.disabled = true;
 
-            var script = "scripts/regadmin_updateConfigTables.php";
+            let script = "scripts/regadmin_updateConfigTables.php";
 
-            var postdata = {
+            let postdata = {
                 ajax_request_action: 'interests',
                 tabledata: JSON.stringify(this.#interestsTable.getData()),
                 tablename: "interests",
@@ -438,11 +516,13 @@ class interestsSetup {
         if (this.#interestsTable == null)
             return;
 
-        var filename = 'interests';
-        var tabledata = JSON.stringify(this.#interestsTable.getData("active"));
-        var fieldList = [
+        let filename = 'interests';
+        let tabledata = JSON.stringify(this.#interestsTable.getData("active"));
+        let fieldList = [
             'interest',
             'description',
+            'notesPrompt',
+            'endDate',
             'notifyList',
             'csv',
             'active',

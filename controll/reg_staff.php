@@ -56,11 +56,14 @@ $currency = getConfValue('con', 'currency', 'USD');
 $locale = getLocale();
 
 $conid = getConfValue('con', 'id', '-1');
+$condata = get_con($conid);
 $multiOneDay = getConfValue('con', 'multioneday', '0');
 $config_vars = array();
 $config_vars['pageName'] = 'regAdmin';
 $config_vars['debug'] = getConfValue('debug', 'controll_regadmin', 0);
 $config_vars['conid'] = $conid;
+$config_vars['conStartDate'] = $condata['startdate'];
+$config_vars['conEndDate'] = $condata['enddate'];
 $config_vars['multiOneDay'] = $multiOneDay;
 $config_vars['oneoff'] = $oneoff;
 $config_vars['userid'] = $authToken->getPerid();
@@ -539,11 +542,31 @@ draw_fileManagerModals($authToken);
                     </div>
                     <div class='row'>
                         <div class='col-sm-1'>
+                            <label for='eEndDate'>End Date:</label>
+                        </div>
+                        <div class='col-sm-auto'>
+                            <input type='date' id='eEndDate' name='eEndDate' onChange="interests.updateEndDate()"/>
+                            <input type="hidden" id="iEndDate" name="iEndDate"/>
+                        </div>
+                        <div class="col-sm-auto">Leave empty for no end date of asking for the interest"</div>
+                    </div>
+                    <div class='row'>
+                        <div class='col-sm-1'>
                             <label for='iNotify'>Notify:</label>
                         </div>
                         <div class='col-sm-11'>
-                            <textarea rows='5' cols='120' id='iNotify' name='iNotify' maxlength="500" wrap="soft"
+                            <textarea rows='4' cols='125' id='iNotify' name='iNotify' maxlength="500" wrap="soft"
                                       placeholder='comma separated list of email addresses, leave empty if CSV is Y'>
+                            </textarea>
+                        </div>
+                    </div>
+                    <div class='row'>
+                        <div class='col-sm-1'>
+                            <label for='iPrompt'>Note Label:</label>
+                        </div>
+                        <div class='col-sm-11'>
+                            <textarea rows='4' cols='125' id='iPrompt' name='iPrompt' maxlength='500' wrap='soft'
+                                      placeholder='label prompt for interest note to be left by member, leave empty if note field is to be suppressed'>
                             </textarea>
                         </div>
                     </div>
@@ -1048,6 +1071,7 @@ draw_fileManagerModals($authToken);
 <script type='text/javascript'>
     var config = <?php echo json_encode($config_vars); ?>;
     var policies = <?php echo json_encode($policies); ?>;
+    var fullConfig = <?php echo json_encode(getFullConfig()); ?>;
 </script>
 <ul class='nav nav-tabs mb-3' id='regadmin-tab' role='tablist'>
     <li class='nav-item' role='presentation'>
