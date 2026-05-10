@@ -413,9 +413,9 @@ class policySetup {
         this.#previewPolicyName.innerHTML = policyName;
         this.#editPolicyNameDiv.innerHTML = policyName;
         this.#policyPrompt.value = policyPrompt;
-        this.#policyDescription.value = policyDescription;
+        this.#policyDescription.value = replaceConfigTokens(policyDescription);
         this.#p_preview.checked = false;
-        this.#l_preview.innerHTML = policyPrompt;
+        this.#l_preview.innerHTML = replaceConfigTokens(policyPrompt);
         this.#l_required.hidden = polictRequired != 'Y';
         this.#previewDescIcon.hidden = policyDescription == '';
         this.#previewDescriptionText.innerHTML = policyDescription;
@@ -453,9 +453,9 @@ class policySetup {
         policyPrompt = policyPrompt.trim();
         policyDesc = policyDesc.trim();
         this.#p_preview.checked = false;
-        this.#l_preview.innerHTML = policyPrompt;
+        this.#l_preview.innerHTML = replaceConfigTokens(policyPrompt);
         this.#previewDescIcon.hidden = policyDesc == '';
-        this.#previewDescriptionText.innerHTML = policyDesc;
+        this.#previewDescriptionText.innerHTML = replaceConfigTokens(policyDesc);
         $("#previewTip").hide();
     }
 
