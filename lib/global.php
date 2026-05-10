@@ -90,11 +90,13 @@ function loadConfFile(): bool {
 // for those that need the full config for passing to javascript
 // sections cc, client, debug, email, google, local, log, mysql are skipped for security
 // reasons as they hold keys and other protected data
-function getFullConfig() : array {
+const replaceConfigTokensSkip = ['global', 'cc', 'client', 'debug', 'email', 'google', 'local', 'log', 'mysql', 'usps', 'api'];
+
+    function getFullConfig() : array {
     global $configData;
     $fullConfigData = [];
     foreach ($configData as $section => $values) {
-        if (in_array($section, ['cc', 'client', 'debug', 'email', 'google', 'local', 'log', 'mysql']))
+        if (in_array($section, replaceConfigTokensSkip))
             continue;
         $fullConfigData[$section] = $values;
     }
@@ -370,7 +372,6 @@ EOS;
 
 // replaceConfigTokens - replace configuration tokens of the form #section.element# in a text string with values from the parsed configuration file
 // NOTE: the sections cc, client, debug, email, google, local, log, mysql are skipped for security reasons as they hold keys and other protected data
-const replaceConfigTokensSkip = ['global', 'cc', 'client', 'debug', 'email', 'google', 'local', 'log', 'mysql'];
     function replaceConfigTokens($string) : string {
         $pattern = '/#[^#]+#/';     // config tokens are #item.section#, but if the dot is missing, 'con' will be assumed
         // get the matches if any
