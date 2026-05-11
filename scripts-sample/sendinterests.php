@@ -79,7 +79,9 @@ if (array_key_exists('c', $options)) {
         calling_seq("-c $ccEmailAddress is not a valid email address");
     }
 }
+
 $runDate = date(DATE_RFC2822);
+$database = getConfValue('mysql', 'db_name', 'Unknown');
 if ($verbose) {
     echo <<<EOS
 Starting data fetch:
@@ -87,6 +89,7 @@ Starting data fetch:
     cc: $ccEmailAddress
     to: $testEmailAddress
     rundate: $runDate
+    database: $database
 
 EOS;
 }
@@ -133,16 +136,20 @@ if ($lastCSVDate == null)
 if ($lastNotifyDate == null)
     $lastNotifyDate = 'Never';
 
+if ($verbose > 1) {
+    echo "Last CSV date: $lastCSVDate\n";
+    echo "Last Notify date: $lastNotifyDate\n";
+}
 if ($verbose) echo "Getting People to check\n";
 $people = [];
 if ($yesOnly) {
     $whereResp = "m.interested = 'Y'";
 } else {
-    $whereResp = "(DATEDIFF(m.updateDate, m.createDate) > 0 || m.interested = 'Y')";
+    $whereResp = "(DATEDIFF(m.updateDate, m.createDate) > 0 OR m.interested = 'Y')";
 }
 
 $getP = <<<EOS
-SELECT m.id, m.perid, m.conid, m.newperid, m.interested,
+SELECT m.id, m.perid, m.conid, m.newperid, m.interested, m.notes,
     CASE 
         WHEN m.perid IS NOT NULL THEN p.email_addr
         ELSE n.email_addr
@@ -210,10 +217,18 @@ foreach ($interests as $interestRow) {
         $notifyArr[$index] = trim($notifyArr[$index]);
     }
 
+    if ($verbose > 2) {
+        echo "Query: \n" . $getP . "\n";
+        echo "Params: conid=$conid, interest=$interest\n";
+    }
     $notifyR = dbSafeQuery($getP, 'is', array($conid, $interest));
     if ($notifyR === false) {
         echo "Error in notify query for $interest\n";
         exit();
+    }
+    if ($verbose > 2) {
+        echo "SQL query Results:\n";
+        var_dump($notifyR);
     }
     if ($notifyR->num_rows == 0) {
         $notifyR->free();
@@ -241,12 +256,12 @@ You have been configured by $regadminemail to receive notifications of changes t
 This is the list of updates as of $runDate
 
 EOS;
-    $csv = "lastName, firstName, fullName, badgeName, emailAddr, phone, interested\n";
+    $csv = "lastName, firstName, fullName, badgeName, emailAddr, phone, interested, notes\n";
     foreach ($notifyList as $row) {
         $bn = $row['badge_name'];
         if ($row['badgeNameL2'] != '')
             $bn .= '/' . $row['badgeNameL2'];
-        $csvRow = array($row['last_name'], $row['first_name'], $row['fullName'], $bn, $row['email_addr'], $row['phone'], $row['interested']);
+        $csvRow = array($row['last_name'], $row['first_name'], $row['fullName'], $bn, $row['email_addr'], $row['phone'], $row['interested'], $row['notes']);
         $csv .= '"' . join('","', $csvRow) . '"' . PHP_EOL;
     }
 
@@ -288,12 +303,12 @@ EOS;
 if ($verbose) echo "sendinterests individual notifies completed\n";
 
 if ($csvTo != null) {
-// send the combinded CSV file
+// send the combined CSV file
     $interestFields = '';
     $joins = '';
     foreach ($interests as $interestRow)  {
         $interest = $interestRow['interest'];
-        $interestFields .= ",$interest.interested AS $interest";
+        $interestFields .= ",$interest.interested AS $interest, $interest.notes AS " . $interest . "Notes";
         $joins .= <<<EOS
 LEFT OUTER JOIN nonCSV $interest ON ($interest.conid = m.conid AND $interest.interest = '$interest'
     AND IFNULL(m.perid, -1) = IFNULL($interest.perid, -1)
@@ -352,6 +367,10 @@ SET csvDate = NOW()
 WHERE csvDate IS NULL AND conid = ?;
 EOS;
 
+    if ($verbose > 2) {
+        echo "Query: \n" . $csvGetQ . "\n";
+        echo "Params: conid=$conid\n";
+    }
     $csvGetR = dbSafeQuery($csvGetQ, 'i', array ($conid));
     if ($csvGetR === false) {
         echo "Error in csv query for $conid\n";
@@ -379,13 +398,13 @@ EOM;
         if ($verbose > 1) {
             echo "csv:" . PHP_EOL . $csv . PHP_EOL;
         }
+        $fname = date_format(date_create(), 'Y-m-d-H-i-s') . '-allInterests.csv';
+        $csvF = fopen("$csvSaveDir/$fname", 'w');
+        fwrite($csvF, $csv);
+        fclose($csvF);
 
         if (!$noSendUpdate) {
             if ($csvTo != null) {
-                $fname = date_format(date_create(), 'Y-m-d-H-i-s') . "-allInterests.csv";
-                $csvF = fopen("$csvSaveDir/$fname", 'w');
-                fwrite($csvF, $csv);
-                fclose($csvF);
                 $emailText = <<<EOM
 Interested records since $lastCSVDate.
 
