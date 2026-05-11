@@ -206,6 +206,7 @@ class memsetup {
                 maxHeight: "600px",
                 movableRows: true,
                 history: true,
+                index: "memType",
                 data: data['memtypes'],
                 layout: "fitDataTable",
                 columns: [
@@ -225,8 +226,11 @@ class memsetup {
                     },
                     {title: "Sort Order", field: "sortorder", headerSort: true, visible: false},
                     {
-                        title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
-                        cellClick: function (e, cell) {
+                        title: "Delete", field: "uses", formatter: deleteicon, formatterParams: {table: 'memTypes', },
+                        hozAlign: "center", headerSort: false, cellClick: function (e, cell) {
+                            let notes = cell.getRow().getCell('notes').getValue();
+                            if (notes.substring(0, 4).toLowerCase() == 'req:')
+                                return;
                             deleterow(e, cell.getRow());
                         }
                     },
@@ -258,6 +262,7 @@ class memsetup {
                 maxHeight: "600px",
                 history: true,
                 movableRows: true,
+                index: "memCategory",
                 data: data['categories'],
                 layout: "fitDataTable",
                 columns: [
@@ -297,8 +302,11 @@ class memsetup {
                     },
                     {title: "Sort Order", field: "sortorder", headerSort: true, visible: false},
                     {
-                        title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
-                        cellClick: function (e, cell) {
+                        title: "Delete", field: "uses", formatter: deleteicon, formatterParams: {table: 'memCategories', },
+                        hozAlign: "center", headerSort: false, cellClick: function (e, cell) {
+                            let notes = cell.getRow().getCell('notes').getValue();
+                            if (notes.substring(0, 4).toLowerCase() == 'req:')
+                                return;
                             deleterow(e, cell.getRow());
                         }
                     },
@@ -332,6 +340,7 @@ class memsetup {
                 history: true,
                 movableRows: true,
                 data: data['current_agelist'],
+                index: "ageType",
                 layout: "fitDataTable",
                 columns: [
                     {rowHandle: true, formatter: "handle", frozen: true, width: 30, minWidth: 30, maxWidth: 30, headerSort: false},
@@ -378,8 +387,11 @@ class memsetup {
                     },
                     {title: "Sort Order", field: "sortorder", headerSort: true, visible: false},
                     {
-                        title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
-                        cellClick: function (e, cell) {
+                        title: "Delete", field: "uses", formatter: deleteicon, formatterParams: {table: 'ageList', },
+                        hozAlign: "center", headerSort: false, cellClick: function (e, cell) {
+                            let ageType = cell.getRow().getCell('ageType').getValue();
+                            if (ageType.toLowerCase() == 'all')
+                                return;
                             deleterow(e, cell.getRow());
                         }
                     },
@@ -409,6 +421,7 @@ class memsetup {
                 maxHeight: "400px",
                 history: true,
                 movableRows: true,
+                index: "ageType",
                 data: data['next_agelist'],
                 layout: "fitDataTable",
                 columns: [
@@ -439,8 +452,11 @@ class memsetup {
                     },
                     {title: "Sort Order", field: "sortorder", headerSort: true, visible: false},
                     {
-                        title: "Delete", field: "uses", formatter: deleteicon, hozAlign: "center", headerSort: false,
-                        cellClick: function (e, cell) {
+                        title: "Delete", field: "uses", formatter: deleteicon, formatterParams: {table: 'ageList', },
+                        hozAlign: "center", headerSort: false, cellClick: function (e, cell) {
+                            let ageType = cell.getRow().getCell('ageType').getValue();
+                            if (ageType.toLowerCase() == 'all')
+                                return;
                             deleterow(e, cell.getRow());
                         }
                     },

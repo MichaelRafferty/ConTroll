@@ -2116,8 +2116,15 @@ function cellChanged(cell) {
 
 function deleteicon(cell, formattParams, onRendered) {
     let value = cell.getValue();
-    if (value == 0)
+    let noDelete = false;
+    if (formattParams.hasOwnProperty('table') && formattParams.table == 'ageList') {
+        let ageType = cell.getRow().getCell('ageType').getValue();
+        if (ageType == 'all')
+            noDelete = true;
+    }
+    if (value == 0 && !noDelete)
         return "&#x1F5D1;";
+
     return value;
 }
 
