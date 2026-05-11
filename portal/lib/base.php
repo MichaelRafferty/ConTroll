@@ -375,15 +375,18 @@ EOS;
 
         // get the interests
     $pQ = <<<EOS
-SELECT interest, interested
-FROM memberInterests
+SELECT m.id, m.interest, m.interested, m.notes, i.endDate, i.notesPrompt,
+    CURDATE() > DATE_ADD(c.startDate, INTERVAL i.endDate DAY) AS readOnly
+FROM memberInterests m
+JOIN conlist c ON c.id = ?
+JOIN interests i ON i.interest = m.interest
 WHERE conid = ? AND $pfield = ?;
 EOS;
-    $pR = dbSafeQuery($pQ,'ii', array($conid, $personId));
+    $pR = dbSafeQuery($pQ,'iii', array($conid, $conid, $personId));
     $pResp = [];
     if ($pR !== false) {
         while ($pL = $pR->fetch_assoc()) {
-            $pResp[$pL['interest']] = $pL['interested'];
+            $pResp[$pL['interest']] = $pL;
         }
         $pR->free();
     }

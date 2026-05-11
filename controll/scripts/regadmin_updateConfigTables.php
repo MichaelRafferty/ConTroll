@@ -170,6 +170,11 @@ EOS;
                 if ($row['to_delete'] == 1)
                     continue;
             }
+            if (array_key_exists('notesPrompt', $row)) {
+                $prompt = trim($row['notesPrompt']);
+            } else
+                $prompt = '';
+
             if (array_key_exists('interestKey', $row)) { // if key is there, it's an update
                 // interest = ?, description = ?, notifyList = ?, csv = ?, updateBy = ?, active = ?, sortorder = ?
                 $numrows = dbSafeCmd($updsql, 'ssssisisis', array ($row['interest'], $row['description'],

@@ -4,7 +4,7 @@
 function getInterests() {
     $interests = null;
     $iQ = <<<EOS
-SELECT interest, description, sortOrder
+SELECT interest, description, endDate, notesPrompt, sortOrder
 FROM interests
 WHERE active = 'Y'
 ORDER BY sortOrder ASC;
@@ -46,21 +46,30 @@ function drawInterestList($interests, $modal = false, $tabIndexStart = 800) {
         <div class='row mt-1'>
             <div class='col-sm-auto'>
                 <input type='checkbox' id='i_<?php echo $interest['interest'];?>' name='<?php echo $interest['interest'];?>'
-                    tabindex="<?php echo $tabindex; $tabindex += 1;?>">
+                    onchange="portal.updateInterestSelect('<?php echo $interest['interest'];?>')" tabindex="<?php echo $tabindex; $tabindex += 1;?>">
             </div>
             <div class='col-sm-auto'>
                 <label for='i_<?php echo $interest['interest'];?>'><?php echo $desc; ?></label>
             </div>
         </div>
+        <div class='row' id='i_d_<?php echo $interest['interest'];?>' hidden>
+            <div class='col-sm-auto'>&emsp;&ensp;</div>
+            <div class="col-sm-2" id='i_p_<?php echo $interest['interest'];?>'>prompt</div>
+            <div class="col-sm-8" id="i_i_<?php echo $interest['interest'];?>" hidden>
+                <textarea id='i_t_<?php echo $interest['interest'];?>' name='<?php echo $interest['interest'];?>_notes'
+                rows="3" cols="80" placeholder="Enter your interest explaination here"></textarea>
+            </div>
+            <div class='col-sm-8' id="i_r_<?php echo $interest['interest'];?>" hidden></div>
+        </div>
 <?php
     }
     if ($footer != '') {
 ?>
-            <div class='row'>
-        <div class='col-sm-auto'>
-            <?php  echo $footer . PHP_EOL; ?>
+        <div class='row'>
+            <div class='col-sm-auto'>
+                <?php  echo $footer . PHP_EOL; ?>
+            </div>
         </div>
-    </div>
 <?php
     }
 }
@@ -84,10 +93,24 @@ function drawInterestsDisplay($interests, $personInterests, $id) {
     foreach ($interests as $interest) {
         $name = $interest['interest'];
         $description = replaceVariables($interest['description']);
-        if (array_key_exists($name,$personInterests) && $personInterests[$name] == 'Y')
-            $box = '✅:';
-        else
-            $box = '✖:';
+        if (array_key_exists($name, $personInterests)) {
+            $personInterest = $personInterests[$name];
+            $checked = $personInterest['interested'] == 'Y';
+        } else {
+            $checked = false;
+        }
+
+        if ($personInterest['readOnly'] == 0) {
+            if ($checked)
+                $box = '✅:';
+            else
+                $box = '❌:';
+        } else {
+            if ($checked)
+                $box = '✔️:';
+            else
+                $box = '✖:';
+        }
         ?>
         <div class='row'>
             <div class='col-sm-auto'>
@@ -98,6 +121,22 @@ function drawInterestsDisplay($interests, $personInterests, $id) {
                     <?php echo $description; ?>
                 </p>
             </div>
+<?php
+        if ($checked && array_key_exists('notesPrompt', $interest) && trim($interest['notesPrompt']) != '') {
+            $prompt = replaceVariables($interest['notesPrompt']);
+            $answer = '<i>(no answer entered)</i>';
+            if (array_key_exists('notes', $personInterest) && trim($personInterest['notes']) != '') {
+                $answer = trim($personInterest['notes']);
+            }
+            echo <<<EOS
+        <div class='row'>
+            <div class='col-sm-auto'>&emsp;&ensp;</div>
+            <div class="col-sm-2">$prompt</div>
+            <div class="col-sm-8">$answer</div>
+        </div>
+EOS;
+        }
+?>
         </div>
         <?php
     }
@@ -139,35 +178,41 @@ function updateMemberInterests($conid, $personId, $personType, $loginId, $loginT
     // when you update the interests, force a re-notify of the change
     $updInterest = <<<EOS
 UPDATE memberInterests
-SET interested = ?, updateBy = ?, notifyDate = null, csvDate = null, updateDate = NOW()
+SET interested = ?, notes=?, updateBy = ?, notifyDate = null, csvDate = null, updateDate = NOW()
 WHERE id = ?;
 EOS;
     $insInterest = <<<EOS
-INSERT INTO memberInterests($pfield, conid, interest, interested, updateBy)
-VALUES (?, ?, ?, ?, ?);
+INSERT INTO memberInterests($pfield, conid, interest, interested, notes, updateBy)
+VALUES (?, ?, ?, ?, ?, ?);
 EOS;
 
     $rows_upd = 0;
     foreach ($interests as $interest) {
         $interestName = $interest['interest'];
         $newVal = array_key_exists($interestName, $newInterests) ? 'Y' : 'N';
+        if (array_key_exists($interestName . '_notes', $newInterests))
+            $newNotes = trim($newInterests[$interestName . '_notes']);
+        else
+            $newNotes = '';
         if (array_key_exists($interestName, $existingInterests)) {
             // this is an update, there is a record already in the memberInterests table for this interest.
             $existing = $existingInterests[$interestName];
             if (array_key_exists('interested', $existing)) {
                 $oldVal = $existing['interested'];
+                $oldNotes = trim($existing['notes']);
             }
             else {
                 $oldVal = '';
+                $oldNotes = '';
             }
             // only update if changed
-            if ($newVal != $oldVal) {
+            if ($newVal != $oldVal || $newNotes != $oldNotes) {
                 $upd = 0;
                 if ($existing['id'] != null) {
-                    $upd = dbSafeCmd($updInterest, 'sii', array ($newVal, $loginId, $existing['id']));
+                    $upd = dbSafeCmd($updInterest, 'ssii', array ($newVal, $newNotes, $loginId, $existing['id']));
                 }
                 if ($upd === false || $upd === 0) {
-                    $newkey = dbSafeInsert($insInterest, 'iissi', array ($personId, $conid, $interestName, $newVal, $loginId));
+                    $newkey = dbSafeInsert($insInterest, 'iissi', array ($personId, $conid, $interestName, $newVal, $newNotes, $loginId));
                     if ($newkey !== false && $newkey > 0)
                         $rows_upd++;
                 }

@@ -155,13 +155,15 @@ if ($interestReq == 'Y') {
     $interests = [];
 
     $iQ = <<<EOS
-SELECT i.interest, i.description, i.sortOrder, m.interested, m.id
+SELECT i.interest, i.description, i.sortOrder, i.endDate, i.notesPrompt, m.interested, m.notes, m.id,
+    CURDATE() > DATE_ADD(c.startDate, INTERVAL i.endDate DAY) AS readOnly
 FROM interests i
+JOIN conlist c ON c.id = ?
 LEFT OUTER JOIN memberInterests m ON m.$rfield = ? AND m.interest = i.interest AND conid = ? AND ? = 0
 WHERE i.active = 'Y'
 ORDER BY i.sortOrder
 EOS;
-    $iR = dbSafeQuery($iQ, 'iii', array($person['id'], $conid, $newFlag));
+    $iR = dbSafeQuery($iQ, 'iiii', array($conid, $person['id'], $conid, $newFlag));
     if ($iR !== false) {
         while ($row = $iR->fetch_assoc()) {
             $interests[$row['interest']] = $row;

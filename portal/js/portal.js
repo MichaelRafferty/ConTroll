@@ -677,13 +677,46 @@ class Portal {
 
         for (let row in this.#interests) {
             let interest = this.#interests[row];
+            let endDateDays = interest.endDate;
+            let readOnly = false;
+            if (endDateDays === null || endDateDays === undefined || endDateDays == 0 ||
+                interest.notesPrompt === null || interest.notesPrompt === undefined || interest.notesPrompt.trim() == '') {
+                readOnly = false;
+            } else {
+                readOnly = interest.readOnly == 1;
+            }
             let id = document.getElementById('i_' + interest.interest);
-            if (id) id.checked = interest.interested == 'Y';
+            if (id) {
+                id.checked = interest.interested == 'Y';
+                id.disabled = readOnly;
+            }
+            id = document.getElementById('i_d_' + interest.interest);
+            id.hidden = interest.interested != 'Y';
+            id = document.getElementById('i_p_' + interest.interest);
+            if (id)
+                id.innerHTML = interest.notesPrompt;
+            id = document.getElementById('i_t_' + interest.interest);
+            if (id) {
+                id.innerHTML = interest.notes;
+                document.getElementById('i_i_' + interest.interest).hidden = readOnly;
+            }
+            id = document.getElementById('i_r_' + interest.interest);
+            if (id) {
+                id.innerHTML = interest.notes;
+                id.hidden = !readOnly;
+            }
         }
 
         this.#interestsSerializeStart = $("#editInterests").serialize();
         this.#editInterestsModal.show();
+    }
 
+    updateInterestSelect(id) {
+        let checked = document.getElementById('i_' + id).checked;
+        let prompt = document.getElementById('i_p_' + id).innerHTML;
+        if (prompt != '') {
+            document.getElementById('i_d_' + id).hidden = !checked;
+        }
     }
 
     // called on the close buttons for the modal, confirm close with changes pending
