@@ -388,18 +388,46 @@ EOS;
                 </div>
             </div>
 <?php
-    if ($oneoff == 0 && $authToken->checkAuth("admin")) {
-        // check if next year exists, and if not, put up button to create it
-        $nyR = dbSafeQuery("SELECT COUNT(*) FROM conlist WHERE id = ?;", 'i', array($conid + 1));
-        $nyF = $nyR->fetch_row()[0];
-        $nyR->free();
-        if ($nyF == 0) { ?>
-            <div class='row'>
-                <div class='col-sm-auto m-4'>
-                    <button class="btn btn-sm btn-primary" onClick="window.location='/admin.php?buildNext=1';">Build <?PHP echo $conid;?> Setup</button>
+    if ($authToken->checkAuth('admin')) {
+        if ($oneoff == 0) {
+            // check if next year exists, and if not, put up button to create it
+            $nyR = dbSafeQuery("SELECT COUNT(*) FROM conlist WHERE id = ?;", 'i', array($conid + 1));
+            $nyF = $nyR->fetch_row()[0];
+            $nyR->free();
+            if ($nyF == 0) { ?>
+                // no row in conlist means we need to build the next year, offer the button...
+                <div class='row'>
+                    <div class='col-sm-auto m-4'>
+                        <button class="btn btn-sm btn-primary" onClick="window.location='/admin.php?buildNext=1';">Build <?PHP echo $conid;?> Setup</button>
+                    </div>
                 </div>
-            </div>
-<?php
+                <?php
+            } else {
+                // check that age all exists in this ageList
+                $nyR = dbSafeQuery("SELECT COUNT(*) FROM ageList WHERE ageType ='all' AND conid IN (?, ?);", 'ii', array($conid, $conid + 1));
+                $nyF = $nyR->fetch_row()[0];
+                $nyR->free();
+                $insQ = <<<EOS
+INSERT INTO reg.ageList (conid, ageType, label, shortname, sortorder, badgeFlag, verify) 
+VALUES (?, 'all', 'all ages', 'All', 1, '', 'Y');
+EOS;
+                if ($nyF == 0)
+                    $key = dbSafeInsert($insQ, 'i', array($conid));
+                if ($nyF == 1)
+                    $key = dbSafeInsert($insQ, 'i', array($conid + 1));
+            }
+        } else {
+            // a one off con, check this year only
+            $nyR = dbSafeQuery("SELECT COUNT(*) FROM ageList WHERE ageType ='all' AND conid = ?;", 'i', array($conid));
+            $nyF = $nyR->fetch_row()[0];
+            $nyR->free();
+            if ($nyF == 0) {
+                $insQ = <<<EOS
+INSERT INTO reg.ageList (conid, ageType, label, shortname, sortorder, badgeFlag, verify) 
+VALUES (?, 'all', 'all ages', 'All', 1, '', 'Y');
+EOS;
+                $key = dbSafeInsert($insQ, 'i', array($conid));
+            }
         }
     }
     if (array_key_exists('msg', $_REQUEST)) {
