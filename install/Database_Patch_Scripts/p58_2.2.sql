@@ -87,4 +87,25 @@ UPDATE controllTxtItems SET contents = CONCAT('<p>You can only change your accou
     '<p>If you need to make any other changes, please contact registration at #regadminemail# and ask for assistance.</p>')
 where appName = 'portal' and appPage = 'portal' and appSection = 'main' and txtItem = 'changeEmail';
 
+/* new table for alternate pickup perids for artshow
+ */
+
+DROP TABLE IF EXISTS artshowAltPickupAuth;
+CREATE TABLE artshowAltPickupAuth (
+    conid int NOT NULL COMMENT 'valid year for this authorization',
+    bidderPerid int NOT NULL COMMENT 'perid (badgeId) of the art show bidder',
+    pickupPerid int NOT NULL COMMENT 'perid (badgeId) of someone who can pick up bidderPerids purchased art items',
+    createdBy int NOT NULL COMMENT 'perid of the art show cashier who created the relationship',
+    createDate datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'date/time the relationship was created',
+    active enum('N','Y') NOT NULL DEFAULT 'Y' COMMENT 'Y=active, N=inactive - for tracking when/who inactivated a relationship',
+    deactivateDate datetime DEFAULT NULL COMMENT 'date/time the relationship was deactivated',
+    deactivatedBy int DEFAULT NULL COMMENT 'perid of the user who deactivated the relationship',
+    PRIMARY KEY (conid,bidderPerid, pickupPerid)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+ALTER TABLE artshowAltPickupAuth ADD CONSTRAINT `conid`  FOREIGN KEY (conid) REFERENCES conlist(id);
+ALTER TABLE artshowAltPickupAuth ADD CONSTRAINT `app_bidder`  FOREIGN KEY (bidderPerid) REFERENCES perinfo(id) ON UPDATE CASCADE;
+ALTER TABLE artshowAltPickupAuth ADD CONSTRAINT `app_pickup`  FOREIGN KEY (pickupPerid) REFERENCES perinfo(id) ON UPDATE CASCADE;
+ALTER TABLE artshowAltPickupAuth ADD CONSTRAINT `app_user`  FOREIGN KEY (createdBy) REFERENCES perinfo(id) ON UPDATE CASCADE;
+ALTER TABLE artshowAltPickupAuth ADD CONSTRAINT `app_deactuser`  FOREIGN KEY (deactivatedBy) REFERENCES perinfo(id) ON UPDATE CASCADE;
+
 INSERT INTO patchLog(id, name) VALUES(p58, 'Release 2.2 Artshow and other changes');
