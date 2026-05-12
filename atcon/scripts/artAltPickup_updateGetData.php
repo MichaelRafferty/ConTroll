@@ -47,7 +47,9 @@ if ($pR === false) {
     exit();
 }
 $pickupAuths = [];
+$ordinal = 0;
 while ($pL = $pR->fetch_assoc()) {
+    $pL['ordinal'] = $ordinal++;
     $pickupAuths[] = $pL;
 }
 $pR->free();

@@ -23,9 +23,43 @@ class AltPickupAuth {
     #authList = null;
     #authListTable = null;
     #debug = 0;
+    #dirty = false;
+
+    // dom elements
+    #savebtn = null;
+    #undobtn = null;
+    #redobtn = null;
+    #addbtn = null;
+
+    // addnew items
+    #addNewModal = null
+    #addNewTitle = null;
+    #addNewBidder = null;
+    #addNewPickup = null;
+    #lastBidder = null;
+    #bidderName = null;
+    #lastPickup = null;
+    #pickupName = null;
+    #addNewBtn = null;
 
     constructor(debug = 0) {
         this.#debug = debug;
+        this.#savebtn = document.getElementById('artalt_save_btn');
+        this.#undobtn = document.getElementById('artalt_undo_btn');
+        this.#redobtn = document.getElementById('artalt_redo_btn');
+        this.#addbtn = document.getElementById('artalt_add_pickup_btn');
+        let id = document.getElementById('AddNewPickup');
+        if (id) {
+            this.#addNewModal = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
+            this.#addNewTitle = document.getElementById('AddNewPickupTitle');
+            this.#addNewBidder = document.getElementById('bidderPerid');
+            this.#bidderName = document.getElementById('addNewBidderName');
+            this.#pickupName = document.getElementById('addNewPickupName');
+            this.#addNewBtn = document.getElementById('addNewBtn');
+            this.#addNewPickup = document.getElementById('pickupPerid');
+            this.#addNewBidder.addEventListener('keyup', (e)=> { if (e.code === 'Enter') altPickupAuth.addNewBidderCheck(); });
+            this.#addNewPickup.addEventListener('keyup', (e)=> { if (e.code === 'Enter') altPickupAuth.addNewPickup(); });
+        }
         this.loadInitialData();
     }
 
@@ -64,13 +98,15 @@ class AltPickupAuth {
                 maxHeight: "800px",
                 movableRows: false,
                 history: true,
+                index: 'ordinal',
                 pagination: data.authList.length > 25,
                 paginationSize: 10,
                 paginationSizeSelector: [10, 25, 50, true], //enable page size select element with these options
                 paginationElement: document.getElementById('tabPaginationDiv'),
                 columns: [
+                    {title: "Actions", field: 'ordinal', headerWordWrap: true, width: 100, formatter: altPickupAuth.addActions, responsive:0 },
                     {title: "Conid", field: "conid", headerWordWrap: true, width: 70, headerSort: false, visible: this.#debug > 0, },
-                    {title: "Bidder Perid ", field: "bidderPerid", headerWordWrap: true, hozAlign: 'right', headerHozAlign: 'right', 
+                    {title: "Bidder Perid ", field: "bidderPerid", headerWordWrap: true, hozAlign: 'right', headerHozAlign: 'right',
                         headerSort: true, headerFilter: true, headerFilterFunc:numberHeaderFilter, width: 100, },
                     {title: "Bidder Full Name", field: "bidderFullName", headerSort: true, headerWordWrap: true, width: 300,
                         headerFilter: true, headerFilterFunc: fullNameHeaderFilter, },
@@ -91,20 +127,189 @@ class AltPickupAuth {
                     {field: 'last_name', visible: false,},
                 ],
             });
+            this.#authListTable.on("dataChanged", changed);
         }
+    }
+
+    // process on.changed for tabulator table to mark dirty and enable/relabel save button
+    changed() {
+        'use strict'
+        //data - the updated table data changed
+        this.#dirty = true;
+        this.#savebtn.innerHTML = "Save*";
+        this.#savebtn.disabled = false;
+        if (this.#authListTable.getHistoryUndoSize() > 0) {
+            this.#undobtn.disabled = false;
+        }
+    }
+
+    // formatters
+    addActions(cell, formatterParams, onRendered) {
+        "use strict";
+
+        let row = cell.getRow();
+        let rowData = row.getData();
+        if (rowData.active == 'Y') {
+            return '<button type="button" class="btn btn-sm btn-primary p-0" ' +
+                'onclick="altPickupAuth.toggleActive(' + rowData.ordinal + ", 'N')" + '">Deactivate</button >';
+        }
+        return '<button type="button" class="btn btn-sm btn-primary p-0"' +
+            'onclick="altPickupAuth.toggleActive(' + rowData.ordinal + ", 'Y')" + '">Activate</button >';
+    }
+
+    // process action
+    toggleActive(position, value) {
+        let row = this.#authListTable.getRow(position);
+        if (!row) {
+            show_message("Row not found at position:" + position, 'error');
+            return;
+        }
+
+        row.update({active: value});
+        row.reformat();
     }
 
     // bottom of page buttons
     addnew() {
-        console.log("addnew called");
+        this.#addNewBidder.value = '';
+        this.#addNewPickup.value = '';
+        this.#addNewModal.show();
+        this.#addNewBidder.focus();
     }
 
+    addNewClose() {
+        this.#addNewBidder.value = '';
+        this.#addNewPickup.value = '';
+        this.#addNewModal.hide();
+    }
+
+    addNewBidderCheck() {
+        let perid = this.#addNewBidder.value;
+        if (perid == this.#lastBidder)
+            return; // no change (enter + onchange call)
+        clear_message('addNewMessage');
+        this.#lastBidder = perid;
+        if (perid.trim() === '' || perid <= 0) {
+            show_message("Bidder Badge ID cannot be empty, zero or negative.", 'error', 'addNewMessage');
+            this.#addNewBidder.focus();
+            return;
+        }
+        let script = 'scripts/artAltPickup_getBidderName.php';
+        let postData = {
+            ajax_request_action: 'newBidderCheck',
+            perid: perid,
+        }
+        $.ajax({
+            method: "POST",
+            url: script,
+            data: postData,
+            success: function (data, textstatus, jqxhr) {
+                altPickupAuth.addNewBidderSuccess(data);
+            },
+            error: showAjaxError,
+        });
+    }
+
+    addNewBidderSuccess(data) {
+        this.#lastBidder = null;
+        if (data.error) {
+            this.#bidderName.innerHTML = '';
+            show_message(data.error, 'error', 'addNewMessage');
+            this.#addNewBidder.focus();
+            return;
+        }
+        if (data.message) {
+            show_message(data.message, 'success', 'addNewMessage');
+        }
+        this.#bidderName.innerHTML = "Bidder: " + data.fullName;
+        this.#addNewPickup.focus();
+    }
+
+    addNewPickupCheck() {
+        let perid = this.#addNewPickup.value;
+        if (perid == this.#lastPickup)
+            return; // no change (enter + onchange call)
+        clear_message('addNewMessage');
+        this.#lastPickup = perid;
+        if (perid.trim() === '' || perid <= 0) {
+            show_message("Pickup Badge ID cannot be empty, zero or negative.", 'error', 'addNewMessage');
+            this.#addNewPickup.focus();
+            return;
+        }
+        if (this.#addNewBidder.value == this.#addNewPickup.value) {
+            show_message("Bidder and Pickup cannot be the same.", 'error', 'addNewMessage');
+            this.#addNewPickup.focus();
+            return;
+        }
+        let script = 'scripts/artAltPickup_getBidderName.php';
+        let postData = {
+            ajax_request_action: 'newPickupCheck',
+            perid: perid,
+        }
+        $.ajax({
+            method: "POST",
+            url: script,
+            data: postData,
+            success: function (data, textstatus, jqxhr) {
+                altPickupAuth.addNewPickupSuccess(data);
+            },
+            error: showAjaxError,
+        });
+
+    }
+
+    addNewPickupSuccess(data) {
+        this.#lastPickup = null;
+        if (data.error) {
+            this.#bidderName.innerHTML = '';
+            show_message(data.error, 'error', 'addNewMessage');
+            this.#addNewPickup.focus();
+            return;
+        }
+        if (data.message) {
+            show_message(data.message, 'success', 'addNewMessage');
+        }
+        this.#pickupName.innerHTML = "Bidder: " + data.fullName;
+        this.#addNewBtn.focus();
+    }
+
+    addNewPickup() {
+        console.log("add new pickup");
+    }
+
+    // process press of undo button
     undo() {
-        console.log("undo called");
+        'use strict';
+        this.#authListTable.undo();
+
+        if (this.#authListTable.getHistoryUndoSize() <= 0) {
+            this.#undobtn.disabled = true;
+            this.#dirty = false;
+            this.#savebtn.innerHTML = "Save";
+            this.#savebtn.disabled = true;
+        }
+        if (this.#authListTable.getHistoryRedoSize() > 0) {
+            this.#redobtn.disabled = false;
+        }
     }
 
+    // process press of redo button
     redo() {
-        console.log("redo called");
+        'use strict';
+        this.#authListTable.redo();
+
+        if (this.#authListTable.getHistoryUndoSize() > 0) {
+            this.#undobtn.disabled = false;
+            if (this.#dirty === false) {
+                this.#dirty = true;
+                this.#savebtn.innerHTML = "Save*";
+                this.#savebtn.disabled = false;
+            }
+        }
+
+        if (this.#authListTable.getHistoryRedoSize() <= 0) {
+            this.#redobtn.disabled = true;
+        }
     }
 
     save() {
@@ -122,4 +327,6 @@ class AltPickupAuth {
     }
 };
 
-
+function changed() {
+    altPickupAuth.changed();
+}

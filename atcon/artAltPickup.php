@@ -33,6 +33,54 @@ page_init($page, 'artAltPickup',
 );
 
 ?>
+<!--- add new pickup person modal -->
+<div class='modal modal-lg' id='AddNewPickup' tabindex='-5' aria-labelledby='AddNewPickup' data-bs-backdrop='static'
+     data-bs-keyboard='false' aria-hidden='true'>
+    <div class='modal-dialog'>
+        <div class='modal-content'>
+            <div class='modal-header bg-primary text-bg-primary'>
+                <div class='modal-title' id='AddNewPickupTitle'>
+                    Add New Art Pickup Person
+                </div>
+            </div>
+            <div class='modal-body' id='AddNewPickupBody'>
+                <div class='row mt-3'>
+                    <div class='col-sm-5'>
+                        <label for="bidderId">Bidders Badge ID:</label>
+                    </div>
+                    <div class='col-sm-auto'>
+                        <input type='number' class='no-spinners' inputmode='numeric' id='bidderPerid' name='bidderPerid' size='20'
+                               placeholder='Scan Badge ID' onchange="altPickupAuth.addNewBidderCheck();">
+                    </div>
+                </div>
+                <div class="row>">
+                    <div class="col-sm-12" id="addNewBidderName"></div>
+                </div>
+                <div class='row mt-3'>
+                    <div class='col-sm-5'>
+                        <label for='bidderId'>Pickup Person Badge ID:</label>
+                    </div>
+                    <div class='col-sm-auto'>
+                        <input type='number' class='no-spinners' inputmode='numeric' id='pickupPerid' name='pickupPerid' size='20'
+                               placeholder='Scan Badge ID' onchange="altPickupAuth.addNewPickupCheck();">
+                    </div>
+                </div>
+                <div class='row>'>
+                    <div class='col-sm-12' id='addNewPickupName'></div>
+                </div>
+            </div>
+            <div id='addNewMessage' class='mt-4 p-2'></div>
+            <div class='modal-footer'>
+                <button type='button' id='canceAddNewPickupBtn' class='btn btn-secondary' onclick='altPickupAuth.addNewClose();'>
+                    Cancel
+                </button>
+                <button type='button' id='addNewBtn' class='btn btn-primary' onclick='altPickupAuth.addNewPickup();'>
+                    Add New Pickup Person
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 <div class='container-fluid mt-4'>
     <div class="row mt-2">
         <div class="col-sm-12">
