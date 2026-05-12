@@ -22,6 +22,7 @@ $currency = getConfValue('con', 'currency', 'USD');
 $locale = getLocale();
 $config_vars['locale'] = $locale;
 $config_vars['currency'] = $currency;
+$config_vars['conid'] = $conid;
 
 $cdn = getTabulatorIncludes();
 page_init($page, 'artAltPickup',

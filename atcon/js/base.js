@@ -545,3 +545,33 @@ function downloadFilePost(format, fileName, tableData, excludeList = null, field
     form.submit();
     document.body.removeChild(form);
 }
+
+function setCellChanged(cell) {
+    setFieldChanged(cell.getElement());
+}
+
+function setFieldChanged(field) {
+    if (!field.classList.contains('unsavedChangeBGColor'))
+        field.classList.add('unsavedChangeBGColor');
+}
+
+function clearCellFieldChanged(cell) {
+    clearFieldChanged(cell.getElement());
+}
+
+function clearFieldChanged(field) {
+    field.classList.remove('unsavedChangeBGColor');
+}
+
+function addFieldClass(field, className) {
+    if (!field.classList.contains(className))
+        field.classList.add(className);
+}
+
+function toggleFieldClass(field, className) {
+    if (field.classList.contains(className)) {
+        field.classList.remove(className);
+    } else {
+        field.classList.add(className);
+    }
+}

@@ -38,8 +38,10 @@ class AltPickupAuth {
     #addNewPickup = null;
     #lastBidder = null;
     #bidderName = null;
+    #bidderValid = false;
     #lastPickup = null;
     #pickupName = null;
+    #pickupValid = false;
     #addNewBtn = null;
 
     constructor(debug = 0) {
@@ -167,12 +169,17 @@ class AltPickupAuth {
 
         row.update({active: value});
         row.reformat();
+        setCellChanged(row.getCell('active'));
     }
 
     // bottom of page buttons
     addnew() {
         this.#addNewBidder.value = '';
         this.#addNewPickup.value = '';
+        this.#bidderName.innerHTML = '';
+        this.#bidderValid = false;
+        this.#pickupName.innerHTML = '';
+        this.#pickupValid = false;
         this.#addNewModal.show();
         this.#addNewBidder.focus();
     }
@@ -188,6 +195,7 @@ class AltPickupAuth {
         if (perid == this.#lastBidder)
             return; // no change (enter + onchange call)
         clear_message('addNewMessage');
+        this.#bidderValid = false;
         this.#lastBidder = perid;
         if (perid.trim() === '' || perid <= 0) {
             show_message("Bidder Badge ID cannot be empty, zero or negative.", 'error', 'addNewMessage');
@@ -222,6 +230,7 @@ class AltPickupAuth {
             show_message(data.message, 'success', 'addNewMessage');
         }
         this.#bidderName.innerHTML = "Bidder: " + data.fullName;
+        this.#bidderValid = true;
         this.#addNewPickup.focus();
     }
 
@@ -230,6 +239,7 @@ class AltPickupAuth {
         if (perid == this.#lastPickup)
             return; // no change (enter + onchange call)
         clear_message('addNewMessage');
+        this.#pickupValid = false;
         this.#lastPickup = perid;
         if (perid.trim() === '' || perid <= 0) {
             show_message("Pickup Badge ID cannot be empty, zero or negative.", 'error', 'addNewMessage');
@@ -269,12 +279,49 @@ class AltPickupAuth {
         if (data.message) {
             show_message(data.message, 'success', 'addNewMessage');
         }
-        this.#pickupName.innerHTML = "Bidder: " + data.fullName;
+        this.#pickupName.innerHTML = "Pickup: " + data.fullName;
+        this.#pickupValid = true;
         this.#addNewBtn.focus();
     }
 
     addNewPickup() {
-        console.log("add new pickup");
+        // validate that we have two valid perids and they don't match.
+        if (!this.#bidderValid) {
+            show_message("Please enter a valid bidder badge ID.", 'error');
+            this.#addNewBidder.focus();
+            return;
+        }
+        if (!this.#pickupValid) {
+            show_message("Please enter a valid pickup person badge ID.", 'error');
+            this.#addNewPickup.focus();
+            return;
+        }
+
+        clear_message('addNewMessage');
+        let bidder = this.#addNewBidder.value;
+        let pickup = this.#addNewPickup.value;
+        if (bidder == pickup) {
+            show_message("Bidder and Pickup cannot be the same.", 'error');
+            this.#addNewPickup.focus();
+            return;
+        }
+
+        // ok, we have both, now add them to the table
+        let data = this.#authListTable.getData();
+        this.#authListTable.addRow({ ordinal: data.length, conid: config.conid, bidderPerid: bidder,
+            bidderFullName: this.#bidderName.innerHTML.replace("Bidder: ", ""),
+            pickupPerid: pickup, pickupFullName: this.#pickupName.innerHTML.replace("Pickup: ", ""),
+            active: 'Y', first_name: '', middle_name: '', last_name: ''}).then(function (row, setPage) {
+                setCellChanged(row.getCell('bidderPerid'));
+                setCellChanged(row.getCell('bidderFullName'));
+                setCellChanged(row.getCell('pickupPerid'));
+                setCellChanged(row.getCell('pickupFullName'));
+                setCellChanged(row.getCell('active'));
+                if (setPage > 25)
+                    row.getTable().setPageToRow(row);
+        });
+
+        this.addNewClose();
     }
 
     // process press of undo button
