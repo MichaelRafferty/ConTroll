@@ -131,6 +131,8 @@ class AltPickupAuth {
             });
             this.#authListTable.on("dataChanged", changed);
         }
+        this.#savebtn.disabled = true;
+        this.#savebtn.innerHTML = "Save";
     }
 
     // process on.changed for tabulator table to mark dirty and enable/relabel save button
@@ -168,8 +170,16 @@ class AltPickupAuth {
         }
 
         row.update({active: value});
+        if (value == 'Y') {
+            row.getCell('deactivateDate').setValue('');
+            row.getCell('deactivatedBy').setValue('');
+        }
         row.reformat();
         setCellChanged(row.getCell('active'));
+        if (value == 'Y') {
+            setCellChanged(row.getCell('deactivateDate'));
+            setCellChanged(row.getCell('deactivatedBy'));
+        }
     }
 
     // bottom of page buttons
@@ -180,6 +190,8 @@ class AltPickupAuth {
         this.#bidderValid = false;
         this.#pickupName.innerHTML = '';
         this.#pickupValid = false;
+        clear_message();
+        clear_message('addNewMessage');
         this.#addNewModal.show();
         this.#addNewBidder.focus();
     }
@@ -287,12 +299,12 @@ class AltPickupAuth {
     addNewPickup() {
         // validate that we have two valid perids and they don't match.
         if (!this.#bidderValid) {
-            show_message("Please enter a valid bidder badge ID.", 'error');
+            show_message("Please enter a valid bidder badge ID.", 'error', 'addNewMessage');
             this.#addNewBidder.focus();
             return;
         }
         if (!this.#pickupValid) {
-            show_message("Please enter a valid pickup person badge ID.", 'error');
+            show_message("Please enter a valid pickup person badge ID.", 'error', 'addNewMessage');
             this.#addNewPickup.focus();
             return;
         }
@@ -301,7 +313,7 @@ class AltPickupAuth {
         let bidder = this.#addNewBidder.value;
         let pickup = this.#addNewPickup.value;
         if (bidder == pickup) {
-            show_message("Bidder and Pickup cannot be the same.", 'error');
+            show_message("Bidder and Pickup cannot be the same.", 'error', 'addNewMessage');
             this.#addNewPickup.focus();
             return;
         }
@@ -360,7 +372,27 @@ class AltPickupAuth {
     }
 
     save() {
-        console.log("save called");
+        let script = 'scripts/artAltPickup_updateGetData.php';
+        let postData = {
+            ajax_request_action: 'save',
+            rows: JSON.stringify(this.#authListTable.getData()),
+        };
+        $.ajax({
+            method: "POST",
+            url: script,
+            data: postData,
+            success: function (data, textstatus, jqxhr) {
+                if (data.error !== undefined) {
+                    show_message(data.error, 'error');
+                    return;
+                }
+                if (data.message !== undefined) {
+                    show_message(data.message, 'success');
+                }
+                altPickupAuth.draw(data);
+            },
+            error: showAjaxError,
+        });
     }
 
     download(format) {

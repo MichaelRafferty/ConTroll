@@ -16,6 +16,13 @@ if (!isSessionVar('user')) {
     exit(0);
 }
 
+$user_id = getSessionVar('user');
+if ($user_id == null) {
+    $response['error'] = 'User not logged in';
+    ajaxSuccess($response);
+    exit();
+}
+
 $conid = getConfValue('con', 'id', '-1');
 
 if (!array_key_exists('ajax_request_action', $_POST) || ($_POST['ajax_request_action'] != 'newBidderCheck' && $_POST['ajax_request_action'] != 'newPickupCheck')) {
