@@ -387,6 +387,10 @@ class artpos_cart {
         }
         rowhtml += '</div>'; // end of exhibitor Number/ItemKey row
 
+        // if the bidder is not the pickup person
+        if (row.perid !== null && row.perid !== undefined && currentPerson.id != row.perid) {
+            rowhtml += '<div class="row"><div class="col-sm-2">Bidder:' + '</div><div class="col-sm-10">' + row.fullName + '</div></div>';
+        }
         // Artist
         rowhtml += '<div class="row"><div class="col-sm-2">Artist:' + '</div><div class="col-sm-10">' + row.exhibitorName + '</div></div>';
         // Title
