@@ -56,7 +56,8 @@ WHERE conid = ? AND perid = ?
 GROUP BY perid
 )
 SELECT p.id, first_name, middle_name, last_name, suffix, badge_name, badgeNameL2, email_addr, address, addr_2, city, state, zip, country,
-    phone, p.deceased, p.banned, IFNULL(r.numReg, 0) AS numReg
+    phone, p.deceased, p.banned, IFNULL(r.numReg, 0) AS numReg,
+    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName
 FROM perinfo p
 LEFT OUTER JOIN regC r on r.perid = p.id
 WHERE p.id=?;
@@ -83,13 +84,31 @@ EOS;
         } else {
             $response['status'] = 'success';
         }
-        // now find any art for which is final and they are the high bidder
         $perid = $response['person']['id'];
+        $fullName = $response['person']['fullName'];
+        // get the list of people this person can pickup art for
+        $findPickupQ = <<<EOS
+SELECT a.bidderPerid, TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName
+FROM artshowAltPickupAuth a
+JOIN perinfo p ON p.id = a.bidderPerid
+WHERE a.pickupPerid = ? AND conid = ? AND a.active = 'Y';
+EOS;
+        $findPickupR = dbSafeQuery($findPickupQ, 'ii', array($perid, $conid));
+        $pickupPerids = [];
+        $pickupPerids[] = array('bidderPerid' => $perid, 'fullName' => $fullName);
+        while ($findPickupL = $findPickupR->fetch_assoc()) {
+            $pickupPerids[] = $findPickupL;
+        }
+        $findPickupR->free();
+        $response['pickupPerids'] = $pickupPerids;
+
+        // now find any art for which is final and they are the high bidder
+
         $findArtQ = <<<EOS
 SELECT a.id, a.item_key, a.title, a.type, a.status, a.location, a.quantity, a.original_qty, a.min_price, a.sale_price, a.final_price, a.material, a.bidder,
        s.id AS artSalesId, s.transid, s.amount, IFNULL(s.paid, 0.00) AS paid, s.quantity AS artSalesQuantity, s.unit, t.id AS create_trans, IFNULL(s.quantity, 1) AS purQuantity,
        exRY.exhibitorNumber, ex.artistName, ex.exhibitorName, exY.exhibitorId,
-       TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName, p.id AS perid  
+       TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS fullName, p.id AS perid
 FROM artItems a
 JOIN exhibitorRegionYears exRY ON a.exhibitorRegionYearId = exRY.id
 JOIN exhibitorYears exY ON exRY.exhibitorYearId = exY.id
@@ -98,7 +117,7 @@ JOIN exhibitsRegionYears eRY ON eRY.id = exRY.exhibitsRegionYearId
 JOIN exhibitsRegions eR ON eR.id = eRY.exhibitsRegion
 LEFT OUTER JOIN artSales s ON a.id = s.artid
 LEFT OUTER JOIN transaction t on s.transid = t.id AND t.price != t.paid     
-LEFT OUTER JOIN artshowAltPickupAuth auth ON a.bidder = auth.bidderPerid AND auth.pickupPerid = ? AND auth.conid = ?
+LEFT OUTER JOIN artshowAltPickupAuth auth ON a.bidder = auth.bidderPerid AND auth.pickupPerid = ? AND auth.conid = ? AND auth.active = 'Y'
 JOIN perinfo p ON (p.id = IFNULL(a.bidder, -1) OR (p.id = IFNULL(auth.bidderPerid, -1)))
 WHERE (a.bidder = ? OR IFNULL(s.perid, -1) = ? OR IFNULL(auth.pickupPerid, -1) = ?) AND a.conid = ? AND 
       IFNULL(s.paid, 0) != IFNULL(s.amount, -1) AND

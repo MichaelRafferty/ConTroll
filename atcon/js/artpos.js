@@ -20,6 +20,7 @@ var awaiting_payment = null;
 var awaiting_release = null;
 var searchResultsModal = null;
 var searchData = null;
+var pickupPerids = null;
 
 // art items
 var add_found_div = null;
@@ -77,6 +78,7 @@ var inventoryCurrentIndex = null;
 var invChangeBtn = null;
 var invNoChangeBtn = null;
 var inventoryUpdates = null;
+var invOverideBtn = null;
 
 // global items
 var conid = null;
@@ -130,7 +132,7 @@ window.onload = function initpage() {
     id_div = document.getElementById("find_results");
     stats_div = document.getElementById("stats-div");
     showStats_div = document.getElementById("showStats-div");
-    var id = document.getElementById("SearchResultsModal");
+    let id = document.getElementById("SearchResultsModal");
     if (id) {
         searchResultsModal = new bootstrap.Modal(id, { focus: true, backdrop: 'static' });
     }
@@ -169,6 +171,7 @@ window.onload = function initpage() {
         inventoryBodyDiv = document.getElementById("InventoryBody");
         invNoChangeBtn = document.getElementById("invNoChange_button");
         invChangeBtn = document.getElementById("invChange_button");
+        invOverrideBtn = document.getElementById("invOveride_button");
     }
 
     bootstrap.Tab.getOrCreateInstance(find_tab).show();
@@ -179,7 +182,7 @@ window.onload = function initpage() {
     })
 
     // load the initial data and the proceed to set up the rest of the system
-    var postData = {
+    let postData = {
         ajax_request_action: 'loadInitialData',
     };
     $.ajax({
@@ -224,7 +227,7 @@ function startOver(reset_all) {
         }
 
         // cancel terminal request
-        var postData = {
+        let postData = {
             ajax_request_action: 'cancelPayRequest',
             requestId: payCurrentRequest,
             user_id: user_id,
@@ -288,6 +291,7 @@ function startOver(reset_all) {
     cart.hideRelease();
     // empty search strings and results
     currentPerson = null;
+    pickupPerids = null;
     badgeid_field.value = "";
     id_div.innerHTML = "";
     unpaid_table = null;
@@ -333,8 +337,8 @@ function gotoAdd() {
 // switch to the pay tab
 function gotoPay() {
     // check if any prints in the cart have a purchase quantity > 1
-    var ret = cart.getQtyGT1Rows();
-    var msg = 'You have ' + ret[0] + ' print in the cart with an unusual quantity:\n\n';
+    let ret = cart.getQtyGT1Rows();
+    let msg = 'You have ' + ret[0] + ' print in the cart with an unusual quantity:\n\n';
     if (ret[0] > 0) {
         if (ret[1] > 1)
             msg = 'You have ' + ret[0] + ' prints in the cart with unusual quantities:\n\n';
@@ -349,7 +353,7 @@ function gotoPay() {
 
 // build the order
 function buildOrder() {
-    var postData = {
+    let postData = {
         ajax_request_action: 'buildOrder',
         cart_art: JSON.stringify(cart.getCartArt()),
         perid: currentPerson.id,
@@ -366,7 +370,7 @@ function buildOrder() {
         url: "scripts/artpos_buildOrder.php",
         data: postData,
         success: function (data, textstatus, jqxhr) {
-            var stop = true;
+            let stop = true;
             if (typeof data == 'string') {
                 show_message(data, 'error');
             } else if (data.error !== undefined) {
@@ -413,7 +417,7 @@ function gotoRelease() {
 
 // draw_person: findPerson found someone.  Display their details
 function draw_person(receipts) {
-    var html = `
+    let html = `
     <div class="container-fluid">
         <div class="row">
             <div class="col-sm-3">Person ID:</div>
@@ -466,8 +470,8 @@ function draw_person(receipts) {
        <div class="col-sm-9">` + currentPerson.phone + `</div>
     </div>
 `;
-    for (var i = 0; i < receipts.length ; i++) {
-        var receipt = receipts[i];
+    for (let i = 0; i < receipts.length ; i++) {
+        let receipt = receipts[i];
         html += `
     <div class="row mt-2">
         <div class="col-sm-3">
@@ -492,7 +496,7 @@ function termPrintReceipt(ccPaymentId) {
         return;
     }
 
-    var postData = {
+    let postData = {
         ajax_request_action: 'printReceipt',
         pay_tid: pay_tid,
         paymentId: ccPaymentId,
@@ -538,14 +542,14 @@ function findPerson(find_type) {
     searchResultsModal.hide();
     clear_message();
     cart.startOver();
-    var name_search = badgeid_field.value.toLowerCase().trim();
+    let name_search = badgeid_field.value.toLowerCase().trim();
     if ((name_search == null || name_search == '') && find_type == 'search') {
         show_message("No search criteria specified", "warn");
         return;
     }
 
     // search for matching names
-    var postData = {
+    let postData = {
         ajax_request_action: 'findRecord',
         find_type: find_type,
         name_search: name_search,
@@ -579,6 +583,7 @@ function foundPerson(data) {
     if (data.num_rows == 1) { // one person found
         searchData = data;
         currentPerson = data.person;
+        pickupPerids = data.pickupPerids;
         // draw the person in the modal
         draw_person(data.receipts);
         searchResultsModal.show();
@@ -645,18 +650,18 @@ function startCheckout() {
 
 // findArt: find art matching the criteria with the right parameters
 function findArt(findType) {
-    var artistNumber = null;
-    var pieceNumber = null;
-    var unitNumber = null;
-    var itemId = null;
-    var itemCode = null;
+    let artistNumber = null;
+    let pieceNumber = null;
+    let unitNumber = null;
+    let itemId = null;
+    let itemCode = null;
 
     add_found_div.innerHTML = '';
 
     switch (findType) {
         case 'code':
             itemCode = itemCode_field.value;
-            var fields = itemCode.split(',');
+            let fields = itemCode.split(',');
             itemId = fields[0];
             unitNumber = fields[1];
             itemCode_field.value = '';
@@ -682,7 +687,7 @@ function findArt(findType) {
         default:
             itemCode = itemCode_field.value;
             if (itemCode != null && itemCode != '') {
-                var fields = itemCode.split(',');
+                let fields = itemCode.split(',');
                 itemId = fields[0];
                 unitNumber = fields[1];
                 itemCode_field.value = '';
@@ -709,7 +714,7 @@ function findArt(findType) {
             }
     }
 
-    var postData = {
+    let postData = {
         artistNumber: artistNumber,
         pieceNumber: pieceNumber,
         unitNumber: unitNumber,
@@ -746,17 +751,31 @@ function findArt(findType) {
     });
 }
 
-// Common routine to draw the item record details for both found art and inventory updates.
-function drawItemDetails(item, full = false) {
-    var html = '';
-    var valid = true;
-    var btn_color = 'btn-primary';
-    var priceType = '';
-    var priceField = '';
-    var statusColor = '';
-    var statusMsg = '';
+// is the current bidder one of ours
+function isMyBidder(bidder) {
+    if (currentPerson.id == bidder)
+        return true;
 
-    var cols = full ? '2' : '4';
+    for (let index in pickupPerids) {
+        let pickup = pickupPerids[index];
+        if (pickup.bidderPerid == bidder)
+            return true;
+    }
+
+    return false;
+}
+
+// Common routine to draw the item record details for both found art and inventory updates.
+function drawItemDetails(item, full = false, notInCart = true) {
+    let html = '';
+    let valid = true;
+    let btn_color = 'btn-primary';
+    let priceType = '';
+    let priceField = '';
+    let statusColor = '';
+    let statusMsg = '';
+
+    let cols = full ? '2' : '4';
 
     if (config.inlineInventory == 0 && item.status == 'BID') {
         btn_color = 'btn-warning';
@@ -776,7 +795,7 @@ function drawItemDetails(item, full = false) {
     html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Artist Name:</div><div class="col-sm-7">' + item.exhibitorName + '</div></div>';
     html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Title:</div><div class="col-sm-7">' + item.title + '</div></div>';
     html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Material:</div><div class="col-sm-7">' + item.material + '</div></div>';
-    if (item.bidder != null && item.bidder != '' && item.bidder != currentPerson.id) {
+    if (item.bidder != null && item.bidder != '' && !isMyBidder(item.bidder)) {
         btn_color = 'btn-warning';
         if (config.inlineInventory != 1)
             valid = false;
@@ -785,7 +804,7 @@ function drawItemDetails(item, full = false) {
                 '<div class="col-sm-7 bg-warning">Item has already been sold to someone else.</div></div>';
         else {
             html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + ' bg-warning">Bidder Mismatch:</div>' +
-                '<div class="col-sm-7 bg-warning">Someone else is the high bidder.</div></div>';
+                '<div class="col-sm-7 bg-warning">Someone else who is not on your pickup list is the high bidder.</div></div>';
             priceType = 'Current Bid';
         }
     }
@@ -811,14 +830,14 @@ function drawItemDetails(item, full = false) {
                     html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Quick Sale Price:</div>' +
                         '<div class="col-sm-7">' + currencyFmt.format(Number(item.sale_price).toFixed(2)) + '</div></div>';
                 }
-                if (full) {
-                    if (item.final_price != null && item.final_price > 0)
-                        html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Final Price:</div>' +
-                            '<div class="col-sm-7">' + currencyFmt.format(Number(item.final_price).toFixed(2)) + '</div></div>';
-                    if (item.bidder != null && item.bidder > 0)
-                        html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Bidder:</div>' +
-                            '<div class="col-sm-7">' + item.bidder + '</div></div>';
-                }
+                if (item.final_price != null && item.final_price > 0)
+                    html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Current Price:</div>' +
+                        '<div class="col-sm-7">' + currencyFmt.format(Number(item.final_price).toFixed(2)) + '</div></div>';
+
+                if (item.bidder != null && item.bidder > 0)
+                    html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Bidder:</div>' +
+                        '<div class="col-sm-7">' + item.bidderFullName + ' (' + item.bidder + ')</div></div>';
+
                 if (item.sale_price == 0 || Number(item.sale_price) < Number(item.min_price)) {
                     if (config.inlineInventory == 1) {
                         html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + ' bg-warning">Quick Sale:</div>' +
@@ -874,11 +893,7 @@ function drawItemDetails(item, full = false) {
                 break;
 
             case 'bid':
-                if (btn_color != 'btn-warning' && config.inlineInventory == 1) {
-                    html += '<div class="row m-0 p-0"><div class="col-sm-' + cols + '">Final Price:</div><div class="col-sm-7">' +
-                        '<input type=number inputmode="numeric" class="no-spinners" id="art-final-price" name="art-final-price" ' +
-                            'style="width: 9em;" value="' + item.final_price + '"/></div></div>';
-                }
+                // nothing special for bid items
                 break;
 
             case 'nfs':
@@ -934,8 +949,9 @@ function drawItemDetails(item, full = false) {
 function foundArt(data) {
     artFoundItems = data.items;
     if (data.items.length == 1) {
-        var item = data.items[0];
-        var details = drawItemDetails(item, false);
+        let item = data.items[0];
+        let notInCart = cart.notinCart(item.id);
+        let details = drawItemDetails(item, false, notInCart);
         html = '<div id="itemDetailsDiv" class="container-fluid">' + details.html + '</div><div class="container-fluid">';
         valid = details.valid;
         btn_color = details.color;
@@ -1021,11 +1037,11 @@ function foundArt(data) {
 
 // itemAction - what to do with this row
 function itemAction(cell, formatterParams, onRendered) {
-    var row = cell.getData();
+    let row = cell.getData();
     if (!cart.notinCart(row.id))
         return 'Cart';
 
-    var color ='primary';
+    let color ='primary';
     if (row.type == 'nfs') // not for sale = not for sale, require admin to change the status in the back end art inventory
         return '';
 
@@ -1076,9 +1092,34 @@ function itemAction(cell, formatterParams, onRendered) {
         ' onclick="addToCart(' + row.item_key + ');">Add</button>';
 }
 
+// build bidder select - from pickup list build select of bidder for an item to be used by inventory
+function buildBidderChange(fieldname, item) {
+    let html = '';
+    // update bidder if bid and not user
+    let setChange = item.bidder == null ? 'Set the current bidder to: ' :
+        ('This item is current bid on by ' + item.bidder + ', change it to : ');
+    html += '<div class="row mt-2"><div class="col-sm-12">' + setChange + buildBidderSelect(fieldname, item.bidder) + '</div></div>';
+    inventoryUpdates.push({field: 'bidder', id: fieldname, type: 'i'});
+    return html;
+}
+
+function buildBidderSelect(fieldname, bidder) {
+    let select = '<select id="' + fieldname + '" name="' + fieldname + '">';
+    select += '<option value="N">Select Bidder</option>';
+    for (let i = 0; i < pickupPerids.length; i++) {
+        let perid = pickupPerids[i].bidderPerid;
+        let fullName = pickupPerids[i].fullName;
+        let selected = bidder == perid ? ' selected' : '';
+        select += '<option value="' + perid + '"' + selected + '>' + fullName + ' (' + perid + ')</option>';
+    }
+    select += '<option value="N">Bidder not one of the allowed bidders for this person</option>';
+    select += '</select>';
+    return select;
+}
+
 // updateInventory - open modal and allow updating the inventory for this art item
 function updateInventory(itemKey) {
-    var item = null;
+    let item = null;
 
     if (artFoundItems.length == 0)
         return;
@@ -1102,7 +1143,8 @@ function updateInventory(itemKey) {
 // update art inventory step - decide if anything needs changing in the inventory
 function updateInventoryStep(item, repeatPass) {
     // build the contents for the modal, first the item data as it presently exists:
-    var details = drawItemDetails(item, true);
+    let details = drawItemDetails(item, true);
+    let valid = true;
     inventoryUpdates = [];
     html = '<h1 class="h4">Update Inventory Record:</h1>' + details.html;
     notes = '';
@@ -1156,51 +1198,37 @@ function updateInventoryStep(item, repeatPass) {
                     '<option value="Y"' + (item.sale_price > 0 ? ' selected' : '') + '>Yes</option></select>' +
                     '</div></div>';
                 inventoryUpdates.push({field: '', id: 'quickSaleYN', type: 'p'});
-                valid = false;
+                if (!repeatPass) valid = false;
             }
         }
 
         // bid item
         if (item.status == 'Entered' || item.status == 'Checked In' || item.status == 'Removed from Show' || item.status == 'BID') {
-            // update bidder if bid and not user
-            if (item.bidder != null && item.bidder != currentPerson.id) {
-                html += '<div class="row mt-2"><div class="col-sm-12">This item is current bid on by ' + item.bidder + ', change it to this person? ' +
-                    '<select id="updateBidderYN" name="updateBidderYN"><option value="N">No</option><option value="Y">Yes</option></select>' +
-                    '</div></div>';
-                inventoryUpdates.push({field: '', id: 'updateBidderYN', type: 'p'});
-                inventoryUpdates.push({field: 'bidder', value: currentPerson.id, type: 'i'});
-                valid = false;
-            }
-
-            html += '<div class="row mt-2"><div class="col-sm-12">Current High bid? ' +
+            html += buildBidderChange('updateBidderYN', item) +
+                '<div class="row mt-2"><div class="col-sm-12">Current High bid? ' +
                 '<input type="number" class="no-spinners" inputmode="numeric" id="finalPrice" name="finalPrice" size="20" placeholder="High Bid" ' +
-                ' min=1 max=9999999 value="' + (item.final_price > item.min_price ? item.final_price : item.min_price) + '"></div></div>';
-            var cmp_price = item.final_price > item.min_price ? item.final_price : item.min_price;
+                ' min=1 max=9999999 value="' + (Number(item.final_price) > Number(item.min_price) ? item.final_price : item.min_price) + '"></div></div>';
+
+            let cmp_price = Number(item.final_price) > Number(item.min_price) ? item.final_price : item.min_price;
             if (item.status != 'BID')
                 cmp_price = cmp_price - 0.01;
             inventoryUpdates.push({field: 'final_price', id: 'finalPrice', type: 'd', prior: cmp_price });
+            if (!repeatPass) valid = false;
         }
 
         // to Auction Item:
         if (item.status == 'To Auction') {
             // update bidder if not this person
             // update final price
-            if (item.bidder != null && item.bidder != currentPerson.id) {
-                html += '<div class="row mt-2"><div class="col-sm-12">This item was last bid on by ' + item.bidder + ', change it to this person? ' +
-                    '<select id="updateBidderYN" name="updateBidderYN"><option value="N">No</option><option value="Y">Yes</option></select>' +
-                    '</div></div>';
-                inventoryUpdates.push({field: '', id: 'updateBidderYN', type: 'p'});
-                inventoryUpdates.push({field: 'bidder', value: currentPerson.id, type: 'i'});
-                valid = false;
-            }
-
-            html += '<div class="row mt-2"><div class="col-sm-12">Final Bid Price? ' +
+            html += buildBidderChange('updateBidderYN', item) +
+                '<div class="row mt-2"><div class="col-sm-12">Final Bid Price? ' +
                 '<input type="number" class="no-spinners" inputmode="numeric" id="finalPrice" name="finalPrice" size="20" placeholder="High Bid" ' +
-                ' min=1 max=9999999 value="' + (item.final_price > item.min_price ? item.final_price : item.min_price) + '"></div></div>';
+                ' min=1 max=9999999 value="' + (Number(item.final_price) > Number(item.min_price) ? item.final_price : item.min_price) + '"></div></div>';
             inventoryUpdates.push({field: 'final_price', id: 'finalPrice', type: 'd',
-                prior: (item.final_price > item.min_price ? item.final_price : item.min_price) - 0.01 });
+                prior: (Number(item.final_price) > Number(item.min_price) ? item.final_price : item.min_price) - 0.01 });
             inventoryUpdates.push({field: 'status',  value: 'Sold at Auction'});
             notes += 'Updated status from To Auction to Sold At Auction\n';
+            if (!repeatPass) valid = false;
         }
 
         // Checked Out Item
@@ -1208,12 +1236,12 @@ function updateInventoryStep(item, repeatPass) {
             // update bidder, as there should be none
             // update final price
             inventoryUpdates.push({field: 'bidder', value: currentPerson.id, type: 'i'});
-            valid = false;
+            if (!repeatPass) valid = false;
             html += '<div class="row mt-2"><div class="col-sm-12">Final Bid Price? ' +
                 '<input type="number" class="no-spinners" inputmode="numeric" id="finalPrice" name="finalPrice" size="20" placeholder="High Bid" ' +
-                ' min=1 max=9999999 value="' + (item.final_price > item.min_price ? item.final_price : item.min_price) + '"></div></div>';
+                ' min=1 max=9999999 value="' + (Number(item.final_price) > Number(item.min_price) ? item.final_price : item.min_price) + '"></div></div>';
             inventoryUpdates.push({field: 'final_price', id: 'finalPrice', type: 'd',
-                prior: item.min_price - 0.01 });
+                prior: Number(item.min_price) - 0.01 });
             inventoryUpdates.push({field: 'status',  value: 'Checked In'});
             notes += 'Updated Status from Checked Out to Checked In for sale after return to artist';
         }
@@ -1222,7 +1250,7 @@ function updateInventoryStep(item, repeatPass) {
     if (notes != '')
         inventoryUpdates.push({field: 'notes',  value: notes,  append: 1 });
 
-    invNoChangeBtn.disabled = (!details.valid) || (details.color == 'btn-warning');
+    invNoChangeBtn.disabled = (!valid || !details.valid) || (details.color == 'btn-warning');
     invChange_button.disabled = inventoryUpdates.length == 0;
     btn_color = details.color;
     inventoryBodyDiv.innerHTML = html +
@@ -1241,7 +1269,7 @@ function updateInventoryStep(item, repeatPass) {
 
 // actually update the inventory record
 function invUpdate(doUpdate) {
-    var item = null;
+    let item = null;
 
     if (artFoundItems.length == 1)
         item = artFoundItems[0];
@@ -1261,7 +1289,7 @@ function invUpdate(doUpdate) {
         return;
     }
 
-    for (var index = 0; index < inventoryUpdates.length; index++) {
+    for (let index = 0; index < inventoryUpdates.length; index++) {
         if (inventoryUpdates[index].hasOwnProperty('id')) {
             inventoryUpdates[index].value = document.getElementById(inventoryUpdates[index].id).value;
         }
@@ -1270,7 +1298,7 @@ function invUpdate(doUpdate) {
 
     clear_message();
     clear_message('inv_result_msg');
-    var postData = {
+    let postData = {
         ajax_request_action: 'inlineUpdate',
         item: JSON.stringify(item),
         perid: currentPerson.id,
@@ -1284,8 +1312,13 @@ function invUpdate(doUpdate) {
         success: function (data, textstatus, jqxhr) {
             if (data.error !== undefined) {
                 show_message(data.error, 'error', 'inv_result_msg');
+                if (data.allowOverride == 1) {
+                    item[data.overrideField] = data.overrideValue;
+                    invOverrideBtn.hidden = false;
+                }
                 return;
             }
+            invOverrideBtn.hidden = true;
             if (data.message !== undefined) {
                 show_message(data.message, 'success', 'inv_result_msg');
             }
@@ -1294,7 +1327,7 @@ function invUpdate(doUpdate) {
             }
             if (data.hasOwnProperty('item')) { // successful update
                 if (artFoundItems.length > 1) {
-                    var row = artTable.getRow(inventoryCurrentIndex);
+                    let row = artTable.getRow(inventoryCurrentIndex);
                     row.update(data.item).then(row.reformat());
                 } else {
                     artFoundItems = [data.item];
@@ -1311,7 +1344,7 @@ function invUpdate(doUpdate) {
 
 // addToCart - add this row index to the cart
 function addToCart(itemKey) {
-    var item = null;
+    let item = null;
 
     if (artFoundItems.length == 0)
         return;
@@ -1329,7 +1362,7 @@ function addToCart(itemKey) {
     if (config.inlineInventory == 0 || (config.roomStatus != 'precon' && config.roomStatus != 'closed')) {
         addItemToCart(item);
         if (artFoundItems.length > 1) {
-            var row = artTable.getRow(inventoryCurrentIndex);
+            let row = artTable.getRow(inventoryCurrentIndex);
             if (row)
                 row.reformat();
         } else {
@@ -1342,27 +1375,8 @@ function addToCart(itemKey) {
 
 // addItemToCart - knowing the item, add it to the cart
 function addItemToCart(item) {
-    var finalPriceField = document.getElementById('art-final-price');
-    if (finalPriceField) {
-        var enteredPrice = Number(finalPriceField.value);
-        if (enteredPrice == null)
-            enteredPrice = 0;
-        var finalPrice = Number(item.final_price);
-        if (finalPrice == null || finalPrice < 0) {
-            if (item.sale_price == null || item.sale_price == 0)
-                finalPrice = item.min_price;
-            else
-                finalPrice = item.sale_price;
-        }
-        if (enteredPrice < finalPrice) {
-            if (confirm("Entered final price is less than system's sell price of " + finalPrice + ", sell at this price anyway?"))
-                item.final_price = Number(finalPrice).toFixed(2);
-            else
-                return;
-        } else {
-            item.final_price = enteredPrice;
-        }
-    }
+    if (item.hasOwnProperty('bidderFullName'))
+        item.fullName = item.bidderFullName;
 
     cart.add(item);
     setTimeout(function() {
@@ -1380,7 +1394,7 @@ function addItemToCart(item) {
 // initArtSales - create/update artSales records for this cart to prepare for payment, create master transaction if none exists
 function initArtSales() {
     // submit the current card data to update the database, retrieve updated cart
-    var postData = {
+    let postData = {
         ajax_request_action: 'initArtSales',
         cart_art: JSON.stringify(cart.getCartArt()),
         cart_art_map: JSON.stringify(cart.getCartMap()),
@@ -1421,7 +1435,7 @@ function initArtSalesComplete(data) {
     }
 
     // update cart elements
-    var unpaid_rows = cart.updateFromDB(data);
+    let unpaid_rows = cart.updateFromDB(data);
     payShown(unpaid_rows > 0);
 }
 
@@ -1493,7 +1507,7 @@ function payPollfcn(action) {
         return;
     }
     // cancel terminal request
-    var postData = {
+    let postData = {
         ajax_request_action: 'cancelPayRequest',
         requestId: payCurrentRequest,
         user_id: user_id,
@@ -1559,11 +1573,11 @@ function cancelSuccess(data) {
 
 // Process a payment against the transaction
 function pay(nomodal, prow = null, nonce = null) {
-    var checked = false;
-    var ccauth = null;
-    var checkno = null;
-    var desc = null;
-    var ptype = null;
+    let checked = false;
+    let ccauth = null;
+    let checkno = null;
+    let desc = null;
+    let ptype = null;
 
     if (nomodal != '') {
         cashChangeModal.hide();
@@ -1585,7 +1599,7 @@ function pay(nomodal, prow = null, nonce = null) {
            amtTendered = Number(document.getElementById('pay-tendered').value)
             if (nomodal == '' && amtTendered > total_amount_due) {
                 cashChangeModal.show();
-                var tendered = Number(document.getElementById('pay-tendered').value);
+                let tendered = Number(document.getElementById('pay-tendered').value);
                 document.getElementById("CashChangeBody").innerHTML = "Customer owes " +
                     currencyFmt.format(total_amount_due.toFixed(2)) +
                     ", and tendered " + currencyFmt.format(amtTendered.toFixed(2)) +
@@ -1601,12 +1615,12 @@ function pay(nomodal, prow = null, nonce = null) {
             }
         }
 
-        var elptdiv = document.getElementById('pt-div');
-        var elterminal = document.getElementById('pt-terminal');
+        let elptdiv = document.getElementById('pt-div');
+        let elterminal = document.getElementById('pt-terminal');
         elptdiv.style.backgroundColor = '';
 
-        var eldesc = document.getElementById('pay-desc');
-        var elptdisc = document.getElementById('pt-discount');
+        let eldesc = document.getElementById('pay-desc');
+        let elptdisc = document.getElementById('pt-discount');
         if (elptdisc != null) {
             if (document.getElementById('pt-discount').checked) {
                 ptype = 'discount';
@@ -1625,7 +1639,7 @@ function pay(nomodal, prow = null, nonce = null) {
 
         if (document.getElementById('pt-check').checked) {
             ptype = 'check';
-            var elcheckno = document.getElementById('pay-checkno');
+            let elcheckno = document.getElementById('pay-checkno');
             checkno = elcheckno.value;
             if (checkno == null || checkno == '') {
                 elcheckno.style.backgroundColor = 'var(--bs-warning)';
@@ -1635,10 +1649,10 @@ function pay(nomodal, prow = null, nonce = null) {
             }
             checked = true;
         }
-        var creditRadio = document.getElementById('pt-credit');
+        let creditRadio = document.getElementById('pt-credit');
         if (creditRadio != null && creditRadio.checked) {
             ptype = 'credit';
-            var elccauth = document.getElementById('pay-ccauth');
+            let elccauth = document.getElementById('pay-ccauth');
             ccauth = elccauth.value;
             if (ccauth == null || ccauth == '') {
                 elccauth.style.backgroundColor = 'var(--bs-warning)';
@@ -1649,7 +1663,7 @@ function pay(nomodal, prow = null, nonce = null) {
             checked = true;
         }
 
-        var onlineRadio = document.getElementById('pt-online');
+        let onlineRadio = document.getElementById('pt-online');
         if (onlineRadio != null && onlineRadio.checked) {
             ptype = 'online';
             if (ccNonce == null) {
@@ -1677,8 +1691,8 @@ function pay(nomodal, prow = null, nonce = null) {
         }
 
         if (total_amount_due > 0) {
-            var crow = null;
-            var change = 0;
+            let crow = null;
+            let change = 0;
             if (ptype == 'cash') {
                 amtTendered = Number(document.getElementById('pay-tendered').value) > total_amount_due;
                 if (amtTendered > total_amount_due) {
@@ -1695,9 +1709,9 @@ function pay(nomodal, prow = null, nonce = null) {
         }
     }
     // process payment
-    var art = cart.getCartArt();
-    var artJSON = JSON.stringify(art);
-    var postData = {
+    let art = cart.getCartArt();
+    let artJSON = JSON.stringify(art);
+    let postData = {
         ajax_request_action: 'processPayment',
         cart_art: artJSON,
         new_payment: prow,
@@ -1804,13 +1818,13 @@ var last_receipt_type = '';
 // Create a receipt and send it to the receipt printer
 function print_receipt(receipt_type) {
     last_receipt_type = receipt_type;
-    var d = new Date();
-    var payee = (currentPerson.first_name + ' ' + currentPerson.last_name).trim();
+    let d = new Date();
+    let payee = (currentPerson.first_name + ' ' + currentPerson.last_name).trim();
 
     // header text
-    var header_text =  "Receipt for payment to " + conlabel + "By: " + payee + ", Cashier: " + user_id + ", Transaction: " + pay_tid + "\n";
+    let header_text =  "Receipt for payment to " + conlabel + "By: " + payee + ", Cashier: " + user_id + ", Transaction: " + pay_tid + "\n";
     // server side will print the receipt
-    var postData = {
+    let postData = {
         ajax_request_action: 'printReceipt',
         header: header_text,
         person: currentPerson,
@@ -1886,7 +1900,7 @@ function updateStats(data) {
     active_customers = data.active_customers;
     awaiting_payment = data.need_pay;
     awaiting_release =  data.need_release;
-    var html = '<div class="col-sm-2">Stats:</div>';
+    let html = '<div class="col-sm-2">Stats:</div>';
     if (active_customers.length > 0) {
         html += '<div class="col-sm-3 text-primary" onclick="showStats(' + "'active'" + ');">Active Customers: ' + active_customers.length + '</div>';
     } else {
@@ -1915,7 +1929,7 @@ function hideStats() {
     showStats_div.innerHTML = '';
 }
 function showStats(which) {
-    var data = null;
+    let data = null;
     switch (which) {
         case 'active':
             data = active_customers;
@@ -1987,7 +2001,7 @@ var emailAddreesRecipients = [];
 // draw the pay secion of the payment show left screen
 function drawPay(readWrite = true) {
 // draw the pay amount area first
-    var payHtml = `
+    let payHtml = `
 <div id='payBody' class="container-fluid form-floating">
   <form id='payForm' action='javascript: return false; ' class="form-floating">
     <div class="row pb-2">
@@ -2180,11 +2194,11 @@ function payShown(readWrite = true) {
         add_tab.disabled = true;
         drawPay(false);
         if (pay_button_pay != null) {
-            var rownum;
+            let rownum;
             pay_button_pay.hidden = true;
             pay_button_rcpt.hidden = false;
-            var email_html = '';
-            var email_addr = currentPerson.email_addr;
+            let email_html = '';
+            let email_addr = currentPerson.email_addr;
             if (emailRegex.test(email_addr)) {
                 email_html += '<div class="row"><div class="col-sm-1 pe-2"></div><div class="col-sm-8">' + email_addr + '</div></div>';
             }
@@ -2197,7 +2211,7 @@ function payShown(readWrite = true) {
                     '<div class="row mt-2"><div class="col-sm-9 p-0">Email receipt to:</div></div>' + email_html;
                 emailAddreesRecipients.push(currentPerson.email_addr);
             }
-            var pay_desc = document.getElementById('pay-desc');
+            let pay_desc = document.getElementById('pay-desc');
             if (pay_desc) {
                 pay_desc.value = '';
                 document.getElementById('pay-check-div').hidden = true;
@@ -2238,7 +2252,7 @@ function releaseShown() {
     clear_message();
 
     // search for matching names
-    var postData = {
+    let postData = {
         ajax_request_action: 'findRelease',
         perid: currentPerson.id,
     };
@@ -2269,7 +2283,7 @@ function releaseShown() {
 function foundRelease(data) {
     releaseTitleDiv.innerHTML = 'Check Artwork Purchased by ' + (currentPerson.first_name + ' ' + currentPerson.last_name).trim();
 
-    var art = data.art;
+    let art = data.art;
     if (releaseTable != null) {
         releaseTable.destroy();
         releaseTable = null;
@@ -2317,10 +2331,10 @@ function releaseSetAll(value) {
     if (releaseTable == null)
         return;
 
-    var counts = releaseTable.getDataCount();
-    for (var index = 1; index <= counts;  index++) {
-        var row = releaseTable.getRowFromPosition(index);
-        var cell = row.getCell('released');
+    let counts = releaseTable.getDataCount();
+    for (let index = 1; index <= counts;  index++) {
+        let row = releaseTable.getRowFromPosition(index);
+        let cell = row.getCell('released');
         cell.setValue(value);
     }
 }
@@ -2328,7 +2342,7 @@ function releaseSetAll(value) {
 function invertTickCross(e,cell) {
     'use strict';
 
-    var value = cell.getValue();
+    let value = cell.getValue();
     if (value === undefined) {
         value = false;
     }
@@ -2341,7 +2355,7 @@ function invertTickCross(e,cell) {
 }
 
 function processRelease() {
-    var data = releaseTable.getData();
+    let data = releaseTable.getData();
     releaseModal.hide();
     clear_message();
     $.ajax({
@@ -2375,16 +2389,16 @@ function processRelease() {
 function onExit() {
     // if they have a terminal action in process, as if they want to leave install of 'poll' for it's status
     if (payPoll == 1) {
-        var currentOrder = pay_currentOrderId;
-        var user_id = user_id;
+        let currentOrder = pay_currentOrderId;
+        let user_id = user_id;
         pay_currentOrderId = null;
         // cancel terminal request
-        var postData = {
+        let postData = {
             ajax_request_action: 'cancelPayRequest',
             requestId: payCurrentRequest,
             user_id: user_id,
         };
-        var _this = this;
+        let _this = this;
         clear_message();
         $.ajax({
             method: "POST",
@@ -2414,7 +2428,7 @@ function onExit() {
                     show_message(data.message, 'success');
                 }
                 if (currentOrder && currentOrder != '') {
-                    var postData = {
+                    let postData = {
                         ajax_request_action: 'cancelOrder',
                         orderId: currentOrder,
                         user_id: user_id,
@@ -2461,7 +2475,7 @@ function onExit() {
         return true;
     }
     if (pay_currentOrderId && pay_currentOrderId != '') {
-        var postData = {
+        let postData = {
             ajax_request_action: 'cancelOrder',
             orderId: pay_currentOrderId,
             user_id: user_id,

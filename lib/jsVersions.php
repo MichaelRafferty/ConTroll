@@ -22,6 +22,6 @@ $portalJSVersion = '2.1.4';
 $libJSversion = '2.1.8';
 $controllJSversion = '2.1.10';
 $globalJSversion = '2.1.1';
-$atJSversion = '2.1.3';
+$atJSversion = '2.1.4';
 $exhibitorJSversion = '2.1.4';
 $onlineregJSversion = '2.1.0';

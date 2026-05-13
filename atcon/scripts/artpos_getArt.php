@@ -73,7 +73,8 @@ if ($inlineInventory != 1) {
 if ($itemId != null && $itemId != '') {
     $itemQ = <<<EOS
 SELECT A.*, s.id AS artSalesId, s.transid, s.amount, IFNULL(s.paid, 0.00) AS paid, s.quantity AS artSalesQuantity, s.unit, t.id AS create_trans,
-       ex.artistName, ex.exhibitorName, exRY.exhibitorNumber, IFNULL(s.quantity, 1) AS purQuantity, exY.exhibitorId
+       ex.artistName, ex.exhibitorName, exRY.exhibitorNumber, IFNULL(s.quantity, 1) AS purQuantity, exY.exhibitorId,
+       TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS bidderFullName, p.id AS perid
 FROM artItems A
 JOIN exhibitorRegionYears exRY ON exRY.id = A.exhibitorRegionYearId
 JOIN exhibitorYears exY ON exY.id = exRY.exhibitorYearId
@@ -82,6 +83,7 @@ JOIN exhibitsRegionYears eRY ON eRY.id = exRY.exhibitsRegionYearId
 JOIN exhibitsRegions eR ON eR.id = eRY.exhibitsRegion
 LEFT OUTER JOIN artSales s ON A.id = s.artid AND IFNULL(s.paid, 0) != IFNULL(s.amount, 0)
 LEFT OUTER JOIN transaction t on s.transid = t.id AND t.price != t.paid
+LEFT OUTER JOIN perinfo p ON p.id = A.bidder
 WHERE A.id = ? $statusExclude AND eR.shortname LIKE ?;
 EOS;
     $paramTypes = 'is';
@@ -91,7 +93,8 @@ EOS;
     if ($pieceNumber != null && $pieceNumber != '') {
         $itemQ = <<<EOS
 SELECT A.*, s.id AS artSalesId, s.transid, s.amount, IFNULL(s.paid, 0.00) AS paid, s.quantity AS artSalesQuantity, s.unit, t.id AS create_trans,
-       ex.artistName, ex.exhibitorName, exRY.exhibitorNumber, IFNULL(s.quantity, 1) AS purQuantity, exY.exhibitorId
+       ex.artistName, ex.exhibitorName, exRY.exhibitorNumber, IFNULL(s.quantity, 1) AS purQuantity, exY.exhibitorId,
+       TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS bidderFullName, p.id AS perid
 FROM artItems A
 JOIN exhibitorRegionYears exRY ON exRY.id = A.exhibitorRegionYearId
 JOIN exhibitorYears exY ON exY.id = exRY.exhibitorYearId
@@ -100,6 +103,7 @@ JOIN exhibitsRegionYears eRY ON eRY.id = exRY.exhibitsRegionYearId
 JOIN exhibitsRegions eR ON eR.id = eRY.exhibitsRegion
 LEFT OUTER JOIN artSales s ON A.id = s.artid AND IFNULL(s.paid, 0) != IFNULL(s.amount, 0)
 LEFT OUTER JOIN transaction t on s.transid = t.id AND t.price != t.paid
+LEFT OUTER JOIN perinfo p ON p.id = A.bidder
 WHERE exRY.exhibitorNumber = ? AND A.item_key = ? AND exY.conid = ? $statusExclude AND eR.shortname LIKE ?;
 EOS;
     $paramTypes = 'iiis';
@@ -109,7 +113,8 @@ EOS;
         $itemQ = <<<EOS
 SELECT A.*, ex.artistName, ex.exhibitorName, exRY.exhibitorNumber, s.id AS artSalesId, s.transid, s.amount, IFNULL(s.paid, 0.00) AS paid, 
        s.quantity AS artSalesQuantity, s.unit, t.id AS create_trans,
-       exRY.exhibitorNumber, IFNULL(s.quantity, 1) AS purQuantity, exY.exhibitorId
+       exRY.exhibitorNumber, IFNULL(s.quantity, 1) AS purQuantity, exY.exhibitorId,
+       TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS bidderFullName, p.id AS perid
 FROM artItems A
 JOIN exhibitorRegionYears exRY ON exRY.id = A.exhibitorRegionYearId
 JOIN exhibitorYears exY ON exY.id = exRY.exhibitorYearId
@@ -118,6 +123,7 @@ JOIN exhibitsRegionYears eRY ON eRY.id = exRY.exhibitsRegionYearId
 JOIN exhibitsRegions eR ON eR.id = eRY.exhibitsRegion
 LEFT OUTER JOIN artSales s ON A.id = s.artid AND IFNULL(s.paid, 0) != IFNULL(s.amount, 0)
 LEFT OUTER JOIN transaction t on s.transid = t.id AND t.price != t.paid
+LEFT OUTER JOIN perinfo p ON p.id = A.bidder
 WHERE exRY.exhibitorNumber = ? AND exY.conid = ? $statusExclude AND eR.shortname LIKE ?;
 EOS;
         $paramTypes = 'iis';

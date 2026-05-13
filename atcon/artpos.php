@@ -336,6 +336,7 @@ if (count($regionList) > 1) {
                 <div class='modal-footer'>
                     <button type='button' id='invNoChange_button' class='btn btn-primary' onclick='invUpdate(false);'>No Inventory Changes</button>
                     <button type='button' id='invChange_button' class='btn btn-primary' onclick='invUpdate(true);'>Update Inventory Record</button>
+                    <button type='button' id='invOveride_button' class='btn btn-warning' onclick='invUpdate(false);' hidden>Override Inventory Record</button>
                     <button type='button' id='discardInv_button' class='btn btn-secondary' onclick='inventoryModal.hide();'>Cancel Update</button>
                 </div>
             </div>

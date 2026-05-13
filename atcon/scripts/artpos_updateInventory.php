@@ -69,15 +69,13 @@ foreach ($updates as $update) {
         continue;
     }
 
-    if ($update['field'] == '' && $update['id'] == 'updateBidderYN') {
+    if (array_key_exists('id', $update) && $update['id'] == 'updateBidderYN') {
         // if update bidder is NO, return warning message
         if ($update['value'] == 'N') {
-            $response['warn'] = 'The bidder does not match the current bidder, and you chose not to update it to the current bidder. ' .
-                'Other changes are being ingored';
+            $response['warn'] = 'The bidder does not match the currently allowed bidders. Other changes are being ingored.';
             ajaxSuccess($response);
             return;
         }
-        continue;
     }
 
     if ($update['field'] == 'final_price' || $update['field'] == 'status') {
@@ -96,6 +94,9 @@ foreach ($updates as $update) {
         if (floatval($update['value']) <= floatval($update['prior'])) {
             $response['error'] = 'For ' . $update['field'] . ', New value of ' . $update['value'] .
                 ' must be larger than current value of ' . $update['prior'];
+            $response['allowOverride'] = 1;
+            $response['overrideField'] = $update['field'];
+            $response['overrideValue'] = $update['value'];
             ajaxSuccess($response);
             return;
         }
@@ -133,7 +134,8 @@ if ($numUpd === false) {
     $response['message'] = "Art Item Updated";
     $itemQ = <<<EOS
 SELECT A.*, s.id AS artSalesId, s.transid, s.amount, IFNULL(s.paid, 0.00) AS paid, s.quantity AS artSalesQuantity, s.unit, t.id AS create_trans,
-       ex.artistName, ex.exhibitorName, exRY.exhibitorNumber, IFNULL(s.quantity, 1) AS purQuantity
+       ex.artistName, ex.exhibitorName, exRY.exhibitorNumber, IFNULL(s.quantity, 1) AS purQuantity,
+       TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS bidderFullName, p.id AS perid
 FROM artItems A
 JOIN exhibitorRegionYears exRY ON exRY.id = A.exhibitorRegionYearId
 JOIN exhibitorYears exY ON exY.id = exRY.exhibitorYearId
@@ -142,6 +144,7 @@ JOIN exhibitsRegionYears eRY ON eRY.id = exRY.exhibitsRegionYearId
 JOIN exhibitsRegions eR ON eR.id = eRY.exhibitsRegion
 LEFT OUTER JOIN artSales s ON A.id = s.artid AND IFNULL(s.paid, 0) != IFNULL(s.amount, 0)
 LEFT OUTER JOIN transaction t on s.transid = t.id AND t.price != t.paid
+LEFT OUTER JOIN perinfo p ON p.id = A.bidder
 WHERE A.id = ?;
 EOS;
     $paramTypes = 'i';
