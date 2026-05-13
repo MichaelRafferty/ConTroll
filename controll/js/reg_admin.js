@@ -7,6 +7,7 @@ customText = null;
 policy = null;
 interests = null;
 rules = null;
+conroles = null;
 configEditor = null;
 checkConfigReload = true;
 conid = null;
@@ -1994,6 +1995,8 @@ function settab(tabname) {
         policy.close();
     if (interests != null)
         interests.close();
+    if (conroles != null)
+        conroles.close();
     if (rules != null)
         rules.close();
     if (configEditor && checkConfigReload) {
@@ -2053,6 +2056,11 @@ function settab(tabname) {
             if (interests == null)
                 interests = new interestsSetup();
             interests.open();
+            break;
+        case 'conroles-pane':
+            if (conroles == null)
+                conroles = new ConRolesSetup();
+            conroles.open();
             break;
         case 'rules-pane':
             if (rules == null)

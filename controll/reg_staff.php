@@ -34,6 +34,7 @@ page_init($page,
                     'js/adminCustomText.js',
                     'js/regadmin_policy.js',
                     'js/regadmin_interests.js',
+                    'js/regadmin_conroles.js',
                     'js/regadmin_rules.js',
                     'jslib/emailBulkSend.js',
                     'jslib/membershipRules.js',
@@ -588,6 +589,58 @@ draw_fileManagerModals($authToken);
         </div>
     </div>
 </div>
+
+<div id='editConrolesModal' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Edit Convention Role Configuration' aria-hidden='true'
+     style='--bs-modal-width: 96%;'>
+    <div class='modal-dialog'>
+        <div class='modal-content'>
+            <div class='modal-header bg-primary text-bg-primary'>
+                <div class='modal-title'>
+                    <strong id='editConrolesTitle'>Edit Conroles Title</strong>
+                </div>
+                <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+            </div>
+            <div class='modal-body' style='padding: 4px; background-color: lightcyan;'>
+                <div class='container-fluid' id='editConroleBlockDiv'>
+                    <div class='row mt-4'>
+                        <div class='col-sm-12'><h4>Edit the <span id='editConroleName'>ConroleName</span>Conrole</h4></div>
+                    </div>
+                    <div class='row'>
+                        <div class='col-sm-1'>
+                            <label for='cName'>Con Role:</label>
+                        </div>
+                        <div class='col-sm-11'>
+                            <input type='text' id='cName' name='cName' size='20' maxlength='16' placeholder='name'/>
+                        </div>
+                    </div>
+                    <div class='row'>
+                        <div class='col-sm-1'>
+                            <label for='cMemlabel'>Mem Label:</label>
+                        </div>
+                        <div class='col-sm-11'>
+                            <input type='text' id='cMemlabel' name='cMemlabel' size='64' maxlength='64' placeholder='mem Label'/>
+                        </div>
+                    </div>
+
+                    <div class='row mt-2'>
+                        <div class='col-sm-12'><b>Con Role Description:</b></div>
+                    </div>
+                    <div class='row mt-1'>
+                        <div class='col-sm-12'>
+                            <textarea rows='5' cols='120' id='conroleDescription' name='conroleDescription'>conroleDescription</textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class='modal-footer'>
+                <button class='btn btn-sm btn-secondary' data-bs-dismiss='modal'>Cancel</button>
+                <button class='btn btn-sm btn-primary' id='editConroleSaveBtn' onClick='conroles.editConroleSave()'>Save Changes</button>
+            </div>
+            <div id='result_message_editConrole' class='mt-4 p-2'></div>
+        </div>
+    </div>
+</div>
+
 <div id='editRuleModal' class='modal modal-xl fade' tabindex='-1' aria-labelledby='Edit and Test Rules Configuration'
      aria-hidden='true' style='--bs-modal-width: 96%;'>
     <div class='modal-dialog'>
@@ -1113,7 +1166,15 @@ draw_fileManagerModals($authToken);
                 aria-controls='nav-interests' aria-selected='false' onclick="settab('interests-pane');">Interests
         </button>
     </li>
-    <?php if ($regAdmin) { ?>
+    <?php if (getConfValue('con', 'conRoles', 0) == 1) { ?>
+    <li class='nav-item' role='presentation'>
+        <button class='nav-link' id='conroles-tab' data-bs-toggle='pill' data-bs-target='#conroles-pane' type='button' role='tab'
+                aria-controls='nav-conroles' aria-selected='false' onclick="settab('conroles-pane');">Con Roles
+        </button>
+    </li>
+
+    <?php }
+        if ($regAdmin) { ?>
     <li class='nav-item' role='presentation'>
         <button class='nav-link' id='rules-tab' data-bs-toggle='pill' data-bs-target='#rules-pane' type='button' role='tab'
                 aria-controls='nav-rules' aria-selected='false' onclick="settab('rules-pane');">Membership Rules
@@ -1241,6 +1302,7 @@ draw_fileManagerModals($authToken);
     <div class='tab-pane fade' id='customtext-pane' role='tabpanel' aria-labelledby='customtext-tab' tabindex='0'></div>
     <div class='tab-pane fade' id='policy-pane' role='tabpanel' aria-labelledby='policy-tab' tabindex='0'></div>
     <div class='tab-pane fade' id='interests-pane' role='tabpanel' aria-labelledby='interests-tab' tabindex='0'></div>
+    <div class='tab-pane fade' id='conroles-pane' role='tabpanel' aria-labelledby='conroles-tab' tabindex='0'></div>
     <div class='tab-pane fade' id='rules-pane' role='tabpanel' aria-labelledby='rules-tab' tabindex='0'></div>
     <div class='tab-pane fade' id='configEdit-pane' role='tabpanel' aria-labelledby='configEdit-tab' tabindex='0'>
         <div class='container-fluid'>

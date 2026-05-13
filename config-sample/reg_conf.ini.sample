@@ -314,7 +314,15 @@ bundlememberships=0 ; allow bundle memberships
 ;; H+ =1 Marking people as Former Guest of Honor is enabled, anyone with reg_staff higher permissions can edit the field, others can see it.
 ;; D:l:0,1
 ;; B:M
-formerGoH=0 ; allow bundle memberships
+formerGoH=0 ; allow Former GoH tracking memberships
+;; N:conRoles
+;; R:H,reg_admin
+;; H:Enable tracking of convention roles (conRoles) in the Profile
+;; H+ =0 conRoles are disabled
+;; H+ =1 conRoles are enabled
+;; D:l:0,1
+;; B:M
+conRoles=0 ; allow convention role tracking
 ;; N:defaultCountry
 ;; R:H,reg_staff
 ;; P:3 Character ISO Code

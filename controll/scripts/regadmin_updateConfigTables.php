@@ -201,6 +201,65 @@ EOS;
         }
         break;
 
+
+    case 'conroles':
+        // validate the conroles names cannot have white space in them
+        checkNoWhitespace($tabledata, $tablename, 'conRole');
+
+        if ($delete_keys != '') {
+            $delsql = 'DELETE FROM conRoles WHERE conRole = ?;';
+            web_error_log("Delete sql = /$delsql/");
+            foreach ($deleteArray as $key) {
+                web_error_log("Delete key = /$key/");
+                $deleted += dbSafeCmd($delsql, 's', array ($key));
+            }
+        }
+        $inssql = <<<EOS
+INSERT INTO conRoles (conRole, description, memLabel, sortOrder, createDate, updateDate, updateBy, active)
+VALUES (?, ?, ?, ?, NOW(), NOW(), ?, ?);
+EOS;
+        $updsql = <<<EOS
+UPDATE conRoles
+SET conRole = ?, description = ?, memLabel = ?, updateBy = ?, active = ?, sortorder = ?
+WHERE conRole = ?;
+EOS;
+
+        // now the updates, do the updates first in case we need to insert a new row with the same older key
+        foreach ($tabledata as $row) {
+            if (array_key_exists('to_delete', $row)) {
+                if ($row['to_delete'] == 1)
+                    continue;
+            }
+            if (array_key_exists('memLabel', $row)) {
+                $memLabel = trim($row['memLabel']);
+            } else
+                $memLabel = '';
+
+            if (array_key_exists('conroleKey', $row)) { // if key is there, it's an update
+                // conRole = ?, description = ?, memLabel = ?, updateBy = ?, active = ?, sortorder = ?
+                $numrows = dbSafeCmd($updsql, 'sssisi', array ($row['conRole'], $row['description'],
+                    $row['memLabel'], $user_perid, $row['active'], $row['sortorder'], $row['conroleKey']));
+                $updated += $numrows;
+            }
+        }
+
+        // now the inserts, do the inserts last in case we need to insert a new row with the same older key
+        foreach ($tabledata as $row) {
+            if (array_key_exists('to_delete', $row)) {
+                if ($row['to_delete'] == 1)
+                    continue;
+            }
+            if (!array_key_exists('conroleKey', $row)) { // if key is not there, its an insert
+                // conRoles (conRole, description, memLabel, sortOrder, updateBy, active
+                $numrows = dbSafeInsert($inssql, 'sssiis', array ($row['conRole'], $row['description'],
+                    $row['memLabel'],  $row['sortorder'], $user_perid, $row['active']));
+                if ($numrows !== false)
+                    $inserted++;
+            }
+        }
+        break;
+
+
     case 'customText':
         $updated = updateCustomText($tabledata);
         $response['customText'] = getCustomText('reg-admin');

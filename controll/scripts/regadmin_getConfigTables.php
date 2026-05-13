@@ -55,7 +55,7 @@ switch ($tablename) {
         break;
 
     case 'interests':
-        $interestsSQL = <<<EOS
+    $interestsSQL = <<<EOS
 SELECT i.interest, i.description, i.notifyList, i.sortOrder, i.createDate, i.updateDate, i.updateBy, i.active, i.csv,
        i.interest AS interestKey, i.endDate, i.notesPrompt, COUNT(mI.interest) AS uses
 FROM interests i
@@ -64,15 +64,33 @@ GROUP BY  i.interest, i.description, i.notifyList, i.sortOrder, i.createDate, i.
 ORDER BY i.sortOrder, i.interest, i.notifyList;
 EOS;
 
-        $result = dbQuery($interestsSQL);
-        $interests = [];
+    $result = dbQuery($interestsSQL);
+    $interests = [];
+    while ($row = $result->fetch_assoc()) {
+        $interests[] = $row;
+    }
+    $result->free();
+    $response['interests'] = $interests;
+    break;
+    
+    case 'conroles':
+        $conroleSQL = <<<EOS
+SELECT c.conRole, c.description, c.memLabel, c.sortOrder, c.createDate, c.updateDate, c.updateBy, c.active, c.conRole AS conroleKey, COUNT(mc.conRole) AS uses
+FROM conRoles c
+LEFT OUTER JOIN memberConRoles mc ON c.conRole = mc.conRole
+GROUP BY c.conRole, c.description, c.memLabel, c.sortOrder, c.createDate, c.updateDate, c.updateBy, c.active
+ORDER BY c.sortOrder, c.conRole;
+EOS;
+
+        $result = dbQuery($conroleSQL);
+        $conrole = [];
         while ($row = $result->fetch_assoc()) {
-            $interests[] = $row;
+            $conrole[] = $row;
         }
         $result->free();
-        $response['interests'] = $interests;
+        $response['conroles'] = $conrole;
         break;
-
+    
     case 'customText':
         $response['customText'] = getCustomText('reg-admin');
         break;
