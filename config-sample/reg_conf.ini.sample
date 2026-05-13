@@ -323,6 +323,15 @@ formerGoH=0 ; allow Former GoH tracking memberships
 ;; D:l:0,1
 ;; B:M
 conRoles=0 ; allow convention role tracking
+;; N:showConRoles
+;; R:H,reg_admin
+;; H:Display which convention roles are set for a person in their profile
+;; H+ Note: if conRoles are disabled (see conRoles), this is automatically hidden
+;; H+ =0 conRoles are hidden
+;; H+ =1 conRoles are shown
+;; D:l:0,1
+;; B:M
+showConRoles=0 ;
 ;; N:defaultCountry
 ;; R:H,reg_staff
 ;; P:3 Character ISO Code

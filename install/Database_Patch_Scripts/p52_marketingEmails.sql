@@ -485,4 +485,28 @@ CREATE INDEX trans_checkoutId ON transaction(checkoutId);
 
 UPDATE transaction SET lastUpdate = IFNULL(complete_date, create_date);
 
+/*
+ * conRoles custom test
+ */
+INSERT INTO controllAppSections (appName, appPage, appSection, sectionDescription) VALUES
+('profile', 'all', 'conroles', 'In profiles, convention roles section');
+
+INSERT INTO controllAppItems(appName, appPage, appSection, txtItem, txtItemDescription) VALUES
+('profile', 'all','conroles','header','header before con roles in edit profile'),
+('profile', 'all','conroles','footer','footer after con roles in edit profile');
+
+INSERT INTO controllTxtItems(appName, appPage, appSection, txtItem, contents)
+SELECT a.appName, a.appPage, a.appSection, a.txtItem,
+       CONCAT('Controll-Default: This is ', a.appName, '-', a.appPage, '-', a.appSection, '-', a.txtItem,
+              '<br/>Custom HTML that can replaced with a custom value in the ConTroll Admin App under RegAdmin/Edit Custom Text.<br/>',
+              'Default text display can be suppressed in the configuration file.')
+FROM controllAppItems a
+         LEFT OUTER JOIN controllTxtItems t ON (a.appName = t.appName AND a.appPage = t.appPage AND a.appSection = t.appSection AND a.txtItem = t.txtItem)
+WHERE t.contents is NULL;
+
+UPDATE controllTxtItems
+SET contents = '<span class="size-h3" style="font-weight: bold;">Convention Roles</span>
+<p>The convention will assign you these roles to help them communicate with you about the convention.</p>'
+WHERE appName = 'profile' AND appPage = 'all' AND appSection = 'conroles' AND txtItem = 'header';
+
 INSERT INTO patchLog(id, name) VALUES(52, 'marketingEmails');

@@ -81,6 +81,25 @@ if ($pR !== false) {
 }
 $response['policies'] = $policies;
 
+// get the convention roles
+if (getConfValue('con', 'conventionRoles', 0) == 1) {
+    $cQ = <<<EOS
+SELECT mc.id, mc.conRole, c.description, c.memLabel, IFNULL(mc.assigned, 'N') AS assigned
+FROM conRoles c
+LEFT OUTER JOIN memberConRoles mc ON mc.conRole = c.conRole AND mc.perid = ? AND mc.conid = ?
+WHERE c.active = 'Y'
+EOS;
+    $conRoles = [];
+    $cR = dbSafeQuery($cQ, 'ii', array($perid, $conid));
+    if ($cR !== false) {
+        while ($row = $cR->fetch_assoc()) {
+            $conRoles[] = $row;
+        }
+        $cR->free();
+    }
+    $response['conRoles'] = $conRoles;
+}
+
 // get the people managed
 $mQ = <<<EOS
 SELECT '' AS type, id, email_addr, badge_name, badgeNameL2, legalName, phone, first_name, last_name,

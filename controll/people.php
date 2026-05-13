@@ -17,6 +17,7 @@ require_once 'lib/base.php';
 require_once '../lib/policies.php';
 require_once '../lib/profile.php';
 require_once '../lib/interests.php';
+require_once '../lib/conroles.php';
 require_once 'lib/sessionAuth.php';
 require_once 'lib/match.php';
 
@@ -50,7 +51,8 @@ $controll = get_conf('controll');
 $conid = $con_conf['id'];
 $usps = get_conf('usps');
 $policies = getPolicies();
-$interests = getInterests();
+$interests = getInterests();;
+$conRoles = getConRoles();
 [$ageList, $ageListIdx] = getAgeList($conid);
 $condata = get_con();
 $startdate = new DateTime($condata['startdate']);
@@ -69,6 +71,7 @@ $config_vars['conid'] = $conid;
 $config_vars['useUSPS'] = $useUSPS;
 $config_vars['policies'] = $policies;
 $config_vars['interests'] = $interests;
+$config_vars['conRoles'] = $conRoles;
 $config_vars['required'] = getConfValue('reg','required', 'addr');
 $config_vars['tokenStatus'] = $authToken->checkToken();
 $policiesCell = drawPoliciesCell($policies);
@@ -168,7 +171,9 @@ $policiesCell = drawPoliciesCell($policies);
 <?php
 drawEditPersonBlock($con_conf, $countryOptions, $useUSPS, $policies, 'find', true, true, $ageByDate,
         array(), $ageListIdx,200, true, 'f_', false, false, $regAdmin, $regStaff);
-drawInterestList($interests, true);
+drawInterestList($interests, true, 'findPerson');
+if (getConfValue('con', 'conRoles', 0) == 1)
+    drawConRolesList($conRoles);
 ?>
                     </form>
 <?php if ($regAdmin) { ?>

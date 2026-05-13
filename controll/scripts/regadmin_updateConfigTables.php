@@ -237,7 +237,7 @@ EOS;
 
             if (array_key_exists('conroleKey', $row)) { // if key is there, it's an update
                 // conRole = ?, description = ?, memLabel = ?, updateBy = ?, active = ?, sortorder = ?
-                $numrows = dbSafeCmd($updsql, 'sssisi', array ($row['conRole'], $row['description'],
+                $numrows = dbSafeCmd($updsql, 'sssisis', array ($row['conRole'], $row['description'],
                     $row['memLabel'], $user_perid, $row['active'], $row['sortorder'], $row['conroleKey']));
                 $updated += $numrows;
             }

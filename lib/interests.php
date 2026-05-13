@@ -24,7 +24,7 @@ EOS;
 }
 
 //drawInterestList - draw the inner block for interest editing
-function drawInterestList($interests, $modal = false, $tabIndexStart = 800) {
+function drawInterestList($interests, $modal = false, $class='portal', $tabIndexStart = 800) {
     if ($interests == null || count($interests) == 0) // null? no interests, nothing to draw
         return;
     $tabindex = $tabIndexStart;
@@ -46,7 +46,8 @@ function drawInterestList($interests, $modal = false, $tabIndexStart = 800) {
         <div class='row mt-1'>
             <div class='col-sm-auto'>
                 <input type='checkbox' id='i_<?php echo $interest['interest'];?>' name='<?php echo $interest['interest'];?>'
-                    onchange="portal.updateInterestSelect('<?php echo $interest['interest'];?>')" tabindex="<?php echo $tabindex; $tabindex += 1;?>">
+                    onchange="<?php echo $class; ?>.updateInterestSelect('<?php echo $interest['interest'];?>')"
+                       tabindex="<?php echo $tabindex; $tabindex += 1;?>">
             </div>
             <div class='col-sm-auto'>
                 <label for='i_<?php echo $interest['interest'];?>'><?php echo $desc; ?></label>
