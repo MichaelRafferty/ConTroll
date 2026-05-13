@@ -12,7 +12,6 @@ class artpos_cart {
 // cart states
     #in_pay = false;
     #freeze_cart = false;
-    #changeRow = null;
 
 // cart internals
     #total_price = 0;
@@ -372,8 +371,6 @@ class artpos_cart {
         var row = this.#cart_art[rownum];
         var artLabel = (row.exhibitorNumber + '-' + row.item_key)
         var rowlabel;
-
-
         var col1 = '';
         var btncolor = null;
 
@@ -388,7 +385,7 @@ class artpos_cart {
         rowhtml += '</div>'; // end of exhibitor Number/ItemKey row
 
         // if the bidder is not the pickup person
-        if (row.perid !== null && row.perid !== undefined && currentPerson.id != row.perid) {
+        if (row.bidder !== null && row.bidder !== undefined && currentPerson.id != row.bidder) {
             rowhtml += '<div class="row"><div class="col-sm-2">Bidder:' + '</div><div class="col-sm-10">' + row.fullName + '</div></div>';
         }
         // Artist
@@ -411,7 +408,7 @@ class artpos_cart {
                 ' of ' + row.quantity + ' remaining</div></div>';
         }
         // price
-        var priceType = 'Final';
+        let priceType = 'Final';
         if (row.type == 'print') {
             priceType = 'Sale';
             row.display_price = row.sale_price * row.purQuantity;
@@ -440,9 +437,9 @@ class artpos_cart {
     #drawCartPmtRow(prow) {
         //   index: cart_pmt.length, amt: pay_amt, pretax: art amount, tax, ccauth: ccauth, checkno: checkno, desc: eldesc.value, type: ptype,
 
-        var pmt = this.#cart_pmt[prow];
-        var code = '';
-        var desc = pmt.desc ? pmt.desc :'';
+        let pmt = this.#cart_pmt[prow];
+        let code = '';
+        let desc = pmt.desc ? pmt.desc :'';
         if (pmt.type == 'check') {
             if ((!pmt.checkno) || pmt.checkno == '') {
                 code = desc.substring(desc.indexOf(':') + 1, desc.indexOf(';'));
@@ -456,8 +453,8 @@ class artpos_cart {
         } else if (pmt.type == 'credit') {
             code = pmt.ccauth;
         }
-        var ttype = pmt.type;
-        var html = '';
+        let ttype = pmt.type;
+        let html = '';
         if (pmt.time) {
             html = '<div class="row mt-1"><div class="col-sm-12 p-0">' + pmt.time + '</div></div>';
         }
@@ -489,12 +486,12 @@ class artpos_cart {
         this.#cart_renumber(); // to keep indexing intact, renumber the index and pindex each time
         this.#total_price = 0;
         this.#total_paid = 0;
-        var name = '';
-        var num_rows = 0;
+        let name = '';
+        let num_rows = 0;
         if (currentPerson) {
             name = ' For ' + (currentPerson.first_name + ' ' + currentPerson.last_name).trim();
         }
-        var html = `
+        let html = `
 <div class="container-fluid">
 <div class="row">
     <div class="col-sm-8 text-bg-primary">Artwork` + name + `</div>
@@ -504,7 +501,7 @@ class artpos_cart {
 `;
         this.#unpaid_rows = 0;
         this.#notReleasedRows = 0;
-        for (var rownum in this.#cart_art) {
+        for (let rownum in this.#cart_art) {
             num_rows++;
             html += this.#drawCartRow(rownum);
         }
@@ -530,7 +527,7 @@ class artpos_cart {
             this.#total_pmt = 0;
             this.#total_art = 0;
             this.#total_tax = 0;
-            for (var prow in this.#cart_pmt) {
+            for (let prow in this.#cart_pmt) {
                 html += this.#drawCartPmtRow(prow);
                 this.#total_pmt += Number(this.#cart_pmt[prow].amt);
                 this.#total_art += Number(this.#cart_pmt[prow].pretax);
@@ -570,15 +567,15 @@ class artpos_cart {
     }
 
     updateFromDB(data) {
-        var newrow;
+        let newrow;
 
         // update the fields created by the database transactions
-        var updated_art = data.updated_art;
-        for (rownum in updated_art) {
+        let updated_art = data.updated_art;
+        for (let rownum in updated_art) {
             newrow = updated_art[rownum];
-            var keys = Object.keys(newrow);
-            for (var keynum in keys) {
-                var key = keys[keynum];
+            let keys = Object.keys(newrow);
+            for (let keynum in keys) {
+                let key = keys[keynum];
                 this.#cart_art[newrow.rowpos][key] = newrow[key];
             }
             this.#cart_art[newrow.rowpos].dirty = false;
@@ -586,9 +583,9 @@ class artpos_cart {
 
 
 // delete all rows from cart marked for delete
-        var delrows = [];
-        var splicerow = null;
-        for (var rownum in this.#cart_art) {
+        let delrows = [];
+        let splicerow = null;
+        for (let rownum in this.#cart_art) {
             if (this.#cart_art[rownum].todelete == 1) {
                 delrows.push(rownum);
             }

@@ -420,12 +420,15 @@ EOS;
     $response['spaces'] = $spaces;
     //      art sales (atcon/artpos)
     $artQ = <<<EOS
-SELECT s.*, i.status AS itemStatus, i.bidder, i.title, i.type, i.material, i.item_key, RY.exhibitorNumber, IFNULL(E.artistName, E.exhibitorName) AS artist
+SELECT s.*, i.status AS itemStatus, i.bidder, i.title, i.type, i.material, i.item_key, RY.exhibitorNumber, IFNULL(E.artistName, E.exhibitorName) AS artist,
+    TRIM(REGEXP_REPLACE(CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name, p.suffix), ' +', ' ')) AS bidderFullName, t.perid AS transPerid
 FROM artSales s
 JOIN artItems i ON i.id = s.artId
 JOIN exhibitorRegionYears RY ON i.exhibitorRegionYearId = RY.id
 JOIN exhibitorYears Y ON Y.id = RY.exhibitorYearId
 JOIN exhibitors E ON E.id = Y.exhibitorId
+JOIN transaction t ON t.id = s.transId
+JOIN perinfo p ON p.id = i.bidder
 WHERE s.transId = ?;
 EOS;
     $artR = dbSafeQuery($artQ, 'i', array($transid));
@@ -951,6 +954,19 @@ EOS;
                 $artSubtotal += $price;
                 $pricefmt = $dolfmt->formatCurrency((float)$price, $currency);
                 $receipt .= "$itemId    $title/$artist    $type/$pricefmt\n";
+                if ($art['bidder'] != $art['transPerid']) {
+                    $bidderFullName = $art['bidderFullName'];
+                    $receipt_html .= <<<EOS
+    <div class='row'>
+        <div class="col-sm-1">Bidder:</div>
+        <div class="col-sm-11">$bidderFullName</div>
+    </div>
+EOS;
+                    $receipt_tables .= <<<EOS
+<tr><td>Bidder:</td><td colspan="3">$bidderFullName</td></tr>
+EOS;
+
+                }
                 $receipt_html .= <<<EOS
     <div class='row'>
         <div class='col-sm-1'>$itemId</div>
