@@ -76,9 +76,9 @@ if ($pR !== false) {
 $response['policies'] = $policies;
 
 // get the convention roles
-if (getConfValue('con', 'conventionRoles', 0) == 1) {
+if (getConfValue('con', 'conRoles', 0) == 1) {
     $cQ = <<<EOS
-SELECT mc.id, mc.conRole, c.description, c.memLabel, IFNULL(mc.assigned, 'N') AS assigned
+SELECT mc.id, c.conRole, c.description, c.memLabel, IFNULL(mc.assigned, 'N') AS assigned
 FROM conRoles c
 LEFT OUTER JOIN memberConRoles mc ON mc.conRole = c.conRole AND mc.perid = ? AND mc.conid = ?
 WHERE c.active = 'Y'
@@ -91,7 +91,7 @@ EOS;
         }
         $cR->free();
     }
-    $response['conRoles'] = $conRoles;
+    $response['conroles'] = $conRoles;
 }
 
 // get the people managed

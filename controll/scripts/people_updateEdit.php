@@ -3,6 +3,7 @@ require_once "../lib/base.php";
 require_once('../lib/cleanDeceased.php');
 require_once "../../lib/policies.php";
 require_once "../../lib/interests.php";
+require_once "../../lib/conroles.php";
 require_once '../lib/sessionAuth.php';
 
 // use common global Ajax return functions
@@ -43,7 +44,9 @@ $conid=$con['id'];
 //  1. profile
 //  2. policies
 //  3. interests
-//  4. manages
+//  4. conroles
+//  5. manages
+//  6. deceased
 
 //  1. Profile, update the perinfo record
 
@@ -163,9 +166,15 @@ if ($interest_upd > 0) {
     $message .= "<br/>$interest_upd interest responses updated";
 }
 
-// 4. Manages is handled directly in the JS using people_unmanage.php and people_manage.php
+//  4. conroles
+    $conrole_upd =  updateMemberConRoles($conid, $perid, 'p', $updatedBy, 'p');
+    if ($conrole_upd > 0) {
+        $message .= "<br/>$conrole_upd interest responses updated";
+    }
 
-// 5. Deceased
+// 5. Manages is handled directly in the JS using people_unmanage.php and people_manage.php
+
+// 6. Deceased
     if ($priorDeceased != $deceased && $deceased == 'Y') {
         $message .= '<br/>' . cleanDeceasedUser($perid);
     }

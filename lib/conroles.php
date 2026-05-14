@@ -48,11 +48,11 @@ function drawConRolesList($conroles, $modal = false, $tabIndexStart = 900) {
 ?>
         <div class='row mt-1'>
             <div class='col-sm-auto'>
-                <input type='checkbox' id='i_<?php echo $conrole['conrole'];?>' name='<?php echo $conrole['conrole'];?>'
+                <input type='checkbox' id='c_<?php echo $conrole['conRole'];?>' name='<?php echo $conrole['conRole'];?>'
                        tabindex="<?php echo $tabindex; $tabindex += 1;?>">
             </div>
             <div class='col-sm-auto'>
-                <label for='i_<?php echo $conrole['conrole'];?>'><?php echo $desc; ?></label>
+                <label for='c_<?php echo $conrole['conRole'];?>'><?php echo $desc; ?></label>
             </div>
         </div>
 <?php
@@ -73,6 +73,22 @@ function drawConRolesDisplay($conroles, $personConRoles, $id) {
     if ($conroles == null || count($conroles) == 0) // null? no conroles, nothing to draw
         return;
 
+    $display = getConfValue('con', 'showConRoles', '0');
+    if ($display == 0)
+        return;
+    if ($display == 1) {
+        // loop over roles, counting checked, if none checked, display nothing
+        $checked = 0;
+        foreach ($conroles as $conrole) {
+            $name = $conrole['conrole'];
+            if (array_key_exists($name, $personConRoles) && $personConRoles[$name]['assigned'] == 'Y') {
+                $checked++;
+            }
+            if ($checked == 0)
+                return;
+        }
+    }
+
     loadCustomText('profile', 'all', getConfValue('portal', 'customtext', 'production'), true);
     $header = returnCustomText('conroles/header', 'profile/all/');
     $footer = returnCustomText('conroles/footer', 'profile/all/');
@@ -90,22 +106,18 @@ function drawConRolesDisplay($conroles, $personConRoles, $id) {
         $description = replaceVariables($conrole['description']);
         if (array_key_exists($name, $personConRoles)) {
             $personConRole = $personConRoles[$name];
-            $checked = $personConRole['conroleed'] == 'Y';
+            $checked = $personConRole['assigned'] == 'Y';
         } else {
             $checked = false;
         }
 
-        if ($personConRole['readOnly'] == 0) {
-            if ($checked)
-                $box = '✅:';
-            else
-                $box = '❌:';
-        } else {
-            if ($checked)
-                $box = '✔️:';
-            else
-                $box = '✖:';
-        }
+        if ($display == 1 && !$checked)
+            continue;
+
+        if ($checked)
+            $box = '✅:';
+        else
+            $box = '❌:';
         ?>
         <div class='row'>
             <div class='col-sm-auto'>
@@ -116,22 +128,6 @@ function drawConRolesDisplay($conroles, $personConRoles, $id) {
                     <?php echo $description; ?>
                 </p>
             </div>
-<?php
-        if ($checked && array_key_exists('notesPrompt', $conrole) && trim($conrole['notesPrompt']) != '') {
-            $prompt = replaceVariables($conrole['notesPrompt']);
-            $answer = '<i>(no answer entered)</i>';
-            if (array_key_exists('notes', $personConRole) && trim($personConRole['notes']) != '') {
-                $answer = trim($personConRole['notes']);
-            }
-            echo <<<EOS
-        <div class='row'>
-            <div class='col-sm-auto'>&emsp;&ensp;</div>
-            <div class="col-sm-2">$prompt</div>
-            <div class="col-sm-8">$answer</div>
-        </div>
-EOS;
-        }
-?>
         </div>
         <?php
     }
@@ -158,11 +154,16 @@ function updateMemberConRoles($conid, $personId, $personType, $loginId, $loginTy
 
     $newConRoles = json_decode($_POST['newConRoles'], true);
     if (array_key_exists('existingConRoles', $_POST)) {
-        $existingConRoles = json_decode($_POST['existingConRoles'], true);
-        if ($existingConRoles == null)
-            $existingConRoles = array ();
-    }
-    else
+        $existingConRolesArray = json_decode($_POST['existingConRoles'], true);
+        if ($existingConRolesArray == null) {
+            $existingConRolesArray = array ();
+        } else {
+            // convert the existing interests array to associative array
+            foreach ($existingConRolesArray as $existingConRole) {
+                $existingConRoles[$existingConRole['conRole']] = $existingConRole;
+            }
+        }
+    } else
         $existingConRoles = array();
 
 // find the differences in the conroles to update the record
@@ -183,7 +184,7 @@ EOS;
         if (array_key_exists($conroleName, $existingConRoles)) {
             // this is an update, there is a record already in the memberConRoles table for this conrole.
             $existing = $existingConRoles[$conroleName];
-            if (array_key_exists('conroleed', $existing)) {
+            if (array_key_exists('conRole', $existing)) {
                 $oldVal = $existing['conRole'];
             }
             else {
@@ -232,12 +233,6 @@ EOS;
         }
 
         // ok, there are conroles to merge
-        $sourceField = $sourceType == 'n' ? 'newperid' : 'perid';
-        $sQ = <<<EOS
-SELECT *
-FROM memberConRoles
-WHERE $sourceField = ? AND conid = ?;
-EOS;
         $rQ = <<<EOS
 SELECT *
 FROM memberConRoles
@@ -245,7 +240,7 @@ WHERE perid = ? AND conid = ?;
 EOS;
         $chgU = <<<EOS
 UPDATE memberConRoles
-SET conroleed = ?, updateBy = ?, notifyDate = null, csvDate = null, updateDate = NOW()
+SET assigned = ?, updateBy = ?, updateDate = NOW()
 WHERE id = ?;
 EOS;
         $idU = <<<EOS
@@ -254,7 +249,7 @@ SET perid = ?, updateBy = ?
 WHERE id = ?;
 EOS;
         $iP = <<<EOS
-INSERT INTO memberConRoles(perid, conid, conrole, conroleed, updateBy)
+INSERT INTO memberConRoles(perid, conid, conrole, assigned, updateBy)
 VALUES (?, ?, ?, ?, ?);
 EOS;
         $sD = <<<EOS
@@ -266,7 +261,7 @@ EOS;
         $remainConRoles = [];
 
         // source
-        $sR = dbSafeQuery($sQ, 'ii', array($sourceId, $conid));
+        $sR = dbSafeQuery($rQ, 'ii', array($sourceId, $conid));
         if ($sR === false) {
             $message = "mergeConRoles: Error retrieving source conroles of $sourceType:$sourceId";
             error_log($message);
@@ -300,9 +295,9 @@ EOS;
                 if (array_key_exists($conroleName, $remainConRoles)) {
                     // the conrole exists in both, check if it needs to be updated
                     $oldRow = $remainConRoles[$conroleName];
-                    if ($oldRow['conroleed'] != $newRow['conroleed']) {
-                        // they are not the same conroleed, update the remaining conroles
-                        $numUpd += dbSafeCmd($chgU, 'sii', array($newRow['conroleed'], $loginId, $oldRow['id']));
+                    if ($oldRow['assigned'] != $newRow['assigned']) {
+                        // they are not the same assigned, update the remaining conroles
+                        $numUpd += dbSafeCmd($chgU, 'sii', array($newRow['assigned'], $loginId, $oldRow['id']));
                     }
                     // now delete the 'source' conrole
                     $numDel += dbSafeCmd($sD, 'i', array($newRow['id']));

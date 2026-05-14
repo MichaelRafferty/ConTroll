@@ -328,7 +328,8 @@ conRoles=0 ; allow convention role tracking
 ;; H:Display which convention roles are set for a person in their profile
 ;; H+ Note: if conRoles are disabled (see conRoles), this is automatically hidden
 ;; H+ =0 conRoles are hidden
-;; H+ =1 conRoles are shown
+;; H+ =1 Assigned conRoles are shown
+;; H+ =2 All conRoles are shown, even if not assigned
 ;; D:l:0,1
 ;; B:M
 showConRoles=0 ;

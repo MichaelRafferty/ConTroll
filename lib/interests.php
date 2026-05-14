@@ -161,12 +161,19 @@ function updateMemberInterests($conid, $personId, $personType, $loginId, $loginT
 
     $newInterests = json_decode($_POST['newInterests'], true);
     if (array_key_exists('existingInterests', $_POST)) {
-        $existingInterests = json_decode($_POST['existingInterests'], true);
-        if ($existingInterests == null)
-            $existingInterests = array ();
-    }
-    else
+        $existingInterestsArray = json_decode($_POST['existingInterests'], true);
+        if ($existingInterestsArray == null) {
+            $existingInterestsArray = array ();
+        } else {
+            // convert the existing interests array to associative array
+            foreach ($existingInterestsArray as $existingInterest) {
+                $existingInterests[$existingInterest['interest']] = $existingInterest;
+            }
+        }
+    } else
         $existingInterests = array();
+
+
 
 // find the differences in the interests to update the record
 
@@ -224,7 +231,7 @@ EOS;
         }
         else {
             // row doesn't exist in existing interests
-            $newkey = dbSafeInsert($insInterest, 'iissi', array ($personId, $conid, $interestName, $newVal, $loginId));
+            $newkey = dbSafeInsert($insInterest, 'iisssi', array ($personId, $conid, $interestName, $newVal, $newNotes, $loginId));
             if ($newkey !== false && $newkey > 0)
                 $rows_upd++;
         }

@@ -30,6 +30,7 @@ class Find {
     #adminNotes = null
     #memberPolicies = null;
     #memberInterests = null;
+    #memberConRoles = null;
     #managed = null;
     #managesHdr = null;
     #managesRow = null;
@@ -375,6 +376,7 @@ class Find {
 
         this.#memberPolicies = data['policies'];
         this.#memberInterests = data['interests'];
+        this.#memberConRoles = data['conroles'];
         this.#managed = data['managed'];
         // populate the form
         this.#editPersonName.innerHTML = this.#editRow.fullName + ' (' + this.#editRow.id + ')';
@@ -446,6 +448,18 @@ class Find {
                 if (id) {
                     id.innerHTML = interest.notes;
                     id.hidden = !readOnly;
+                }
+            }
+        }
+
+        // now the con roles
+        if (this.#memberConRoles && this.#memberConRoles.length > 0) {
+            keys = Object.keys(this.#memberConRoles);
+            for (let i = 0; i < keys.length; i++) {
+                let conrole = this.#memberConRoles[keys[i]];
+                let id = document.getElementById('c_' + conrole.conRole);
+                if (id) {
+                    id.checked = conrole.assigned == 'Y';
                 }
             }
         }
@@ -1019,6 +1033,7 @@ class Find {
             currentAgeType: profile.age() == '' ? this.#memAgeType : profile.age(),
             origAgeType: this.#origAge,
             existingInterests: JSON.stringify(this.#memberInterests),
+            existingConRoles: JSON.stringify(this.#memberConRoles),
         };
         // now the policies
         if (this.#memberPolicies && this.#memberPolicies.length > 0) {
@@ -1046,6 +1061,19 @@ class Find {
             }
         }
         postdata['newInterests'] = JSON.stringify(newInterests);
+
+        // now the con roles
+        var newConRoles = {};
+        if (this.#memberConRoles && this.#memberConRoles.length > 0) {
+            var keys = Object.keys(this.#memberConRoles);
+            for (var i = 0; i < keys.length; i++) {
+                var conrole = this.#memberConRoles[keys[i]];
+                if (document.getElementById('c_' + conrole.conRole).checked) {
+                    newConRoles[conrole.conRole] = 'Y';
+                }
+            }
+        }
+        postdata['newConRoles'] = JSON.stringify(newConRoles);
 
         if (this.#renumberNew)
             postdata['renumberNew'] = this.#renumberNew.value;
