@@ -285,9 +285,13 @@ EOS;
 <?php
 }
 // drawPersonTab: draw memberships and profile for a managed person or yourself
-function drawPersonTab($personId, $personType, $person, $conid, $ageList, $memberships, $policies, $interests, $now, $ageByDate, $manager) : void {
+function drawPersonTab($personId, $personType, $person, $conid, $ageList, $memberships, $policies, $interests, $conroles, $now, $ageByDate) : void {
     global $membershipButtonColors;
     $portal_conf = get_conf('portal');
+
+    if ($personId != $person['id'] || $personType != $person['personType']) {
+        error_log("Mismatch between $personId and $personType:" . $person['id'] . ', ' . $person['personType']);
+    }
 
     $hr = <<<EOS
 <div class="row mt-2">
@@ -565,6 +569,8 @@ $hr
 </div>
 EOS;
         drawInterestsDisplay($interests, $person['interests'], $id);
+        if (array_key_exists('conroles', $person))
+            drawConRolesDisplay($conroles, $person['conroles'], $id);
     }
 }
 

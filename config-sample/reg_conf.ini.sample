@@ -330,7 +330,7 @@ conRoles=0 ; allow convention role tracking
 ;; H+ =0 conRoles are hidden
 ;; H+ =1 Assigned conRoles are shown
 ;; H+ =2 All conRoles are shown, even if not assigned
-;; D:l:0,1
+;; D:l:0,1,2
 ;; B:M
 showConRoles=0 ;
 ;; N:defaultCountry

@@ -7,6 +7,7 @@ require_once('lib/portalForms.php');
 require_once('../lib/webauthn.php');
 require_once('../lib/email__load_methods.php');
 require_once("../lib/interests.php");
+require_once("../lib/conroles.php");
 require_once("../lib/profile.php");
 require_once("../lib/policies.php");
 require_once("../lib/paymentPlans.php");
@@ -671,6 +672,7 @@ EOS;
 // get the information for the interest  and policies blocks
     $interests = getInterests();
     $policies = getPolicies();
+    $conroles = getConRoles();
     [$ageList, $ageListIdx] = getAgeList($conid);
 // Does this person have interests, if none in the system force them to go to the interests modal
     $config_vars['needInterests'] = 0;
@@ -1122,7 +1124,7 @@ EOS;
 EOS;
 }
 $totalMemberships = count($holderMembership);
-drawPersonTab($loginId, $loginType, $info, $conid, $ageListIdx, $holderMembership, $policies, $interests, $now, $ageByDate,null);
+drawPersonTab($loginId, $loginType, $info, $conid, $ageListIdx, $holderMembership, $policies, $interests, $conroles, $now, $ageByDate);
 
 if ($info['managedByName'] == null) {
     // ending of the holder part
@@ -1144,7 +1146,7 @@ EOS;
     <div class='tab-pane fade' id='$mid-pane' role='tabpanel' aria-labelledby='$mid-tab' tabindex='0'>
         <div class="container-fluid">
 EOS;
-        drawPersonTab($p['id'], $p['personType'], $m['person'], $conid, $ageListIdx, $allMemberships, $policies, $interests, $now, $ageByDate, $info);
+        drawPersonTab($p['id'], $p['personType'], $m['person'], $conid, $ageListIdx, $allMemberships, $policies, $interests, $conroles, $now, $ageByDate);
         // ending that managee
         echo <<<EOS
         </div>

@@ -4,13 +4,14 @@
 function getInterests() {
     $interests = null;
     $iQ = <<<EOS
-SELECT interest, description, endDate, notesPrompt, sortOrder
-FROM interests
+SELECT i.interest, i.description, i.endDate, i.notesPrompt, i.sortOrder, CURDATE() > DATE_ADD(c.startDate, INTERVAL i.endDate DAY) AS readOnly
+FROM interests i
+JOIN conlist c ON c.id = ?
 WHERE active = 'Y'
 ORDER BY sortOrder ASC;
 EOS;
-    $iR = dbQuery($iQ);
-    if ($iQ !== false) {
+    $iR = dbSafeQuery($iQ, 'i', array(getConfValue('con', 'id', '-1')));
+    if ($iR !== false) {
         $interests = [];
         while ($row = $iR->fetch_assoc()) {
             $interests[] = $row;
@@ -93,6 +94,7 @@ function drawInterestsDisplay($interests, $personInterests, $id) {
     }
     foreach ($interests as $interest) {
         $name = $interest['interest'];
+        $readOnly = $interest['readOnly'] == 1;
         $description = replaceVariables($interest['description']);
         if (array_key_exists($name, $personInterests)) {
             $personInterest = $personInterests[$name];
@@ -101,7 +103,7 @@ function drawInterestsDisplay($interests, $personInterests, $id) {
             $checked = false;
         }
 
-        if ($personInterest['readOnly'] == 0) {
+        if (!$readOnly) {
             if ($checked)
                 $box = '✅:';
             else

@@ -163,7 +163,7 @@ LEFT OUTER JOIN memberInterests m ON m.$rfield = ? AND m.interest = i.interest A
 WHERE i.active = 'Y'
 ORDER BY i.sortOrder
 EOS;
-    $iR = dbSafeQuery($iQ, 'iiii', array($conid, $person['id'], $conid, $newFlag));
+    $iR = dbSafeQuery($iQ, 'iiii', array ($conid, $person['id'], $conid, $newFlag));
     if ($iR !== false) {
         while ($row = $iR->fetch_assoc()) {
             $interests[$row['interest']] = $row;
@@ -171,6 +171,25 @@ EOS;
         $iR->free();
     }
     $response['interests'] = $interests;
+
+    // get the convention roles
+    if (getConfValue('con', 'conRoles', 0) == 1) {
+        $cQ = <<<EOS
+    SELECT mc.id, c.conRole, c.description, c.memLabel, IFNULL(mc.assigned, 'N') AS assigned
+    FROM conRoles c
+    LEFT OUTER JOIN memberConRoles mc ON mc.conRole = c.conRole AND mc.perid = ? AND mc.conid = ?
+    WHERE c.active = 'Y'
+    EOS;
+        $conRoles = [];
+        $cR = dbSafeQuery($cQ, 'ii', array ($person['id'], $conid));
+        if ($cR !== false) {
+            while ($row = $cR->fetch_assoc()) {
+                $conRoles[$row['conRole']] = $row;
+            }
+            $cR->free();
+        }
+        $response['conroles'] = $conRoles;
+    }
 }
 
 // memberships of both Y and A types

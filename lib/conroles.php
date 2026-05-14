@@ -80,13 +80,13 @@ function drawConRolesDisplay($conroles, $personConRoles, $id) {
         // loop over roles, counting checked, if none checked, display nothing
         $checked = 0;
         foreach ($conroles as $conrole) {
-            $name = $conrole['conrole'];
+            $name = $conrole['conRole'];
             if (array_key_exists($name, $personConRoles) && $personConRoles[$name]['assigned'] == 'Y') {
                 $checked++;
             }
-            if ($checked == 0)
-                return;
         }
+        if ($checked == 0)
+            return;
     }
 
     loadCustomText('profile', 'all', getConfValue('portal', 'customtext', 'production'), true);
@@ -102,7 +102,7 @@ function drawConRolesDisplay($conroles, $personConRoles, $id) {
         <?php
     }
     foreach ($conroles as $conrole) {
-        $name = $conrole['conrole'];
+        $name = $conrole['conRole'];
         $description = replaceVariables($conrole['description']);
         if (array_key_exists($name, $personConRoles)) {
             $personConRole = $personConRoles[$name];

@@ -392,6 +392,25 @@ EOS;
     }
     $info['interests'] =  $pResp;
 
+    // get the convention roles
+    if (getConfValue('con', 'conRoles', 0) == 1) {
+        $cQ = <<<EOS
+    SELECT mc.id, c.conRole, c.description, c.memLabel, IFNULL(mc.assigned, 'N') AS assigned
+    FROM conRoles c
+    LEFT OUTER JOIN memberConRoles mc ON mc.conRole = c.conRole AND mc.perid = ? AND mc.conid = ?
+    WHERE c.active = 'Y'
+    EOS;
+        $conRoles = [];
+        $cR = dbSafeQuery($cQ, 'ii', array ($personId, $conid));
+        if ($cR !== false) {
+            while ($row = $cR->fetch_assoc()) {
+                $conRoles[$row['conRole']] = $row;
+            }
+            $cR->free();
+        }
+        $info['conroles'] = $conRoles;
+    }
+
     if (!$minimal) {
     // now get the count of the number required policies answered no by this person
         $pQ = <<<EOS
