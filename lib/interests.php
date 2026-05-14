@@ -58,7 +58,7 @@ function drawInterestList($interests, $modal = false, $class='portal', $tabIndex
             <div class="col-sm-2" id='i_p_<?php echo $interest['interest'];?>'>prompt</div>
             <div class="col-sm-8" id="i_i_<?php echo $interest['interest'];?>" hidden>
                 <textarea id='i_t_<?php echo $interest['interest'];?>' name='<?php echo $interest['interest'];?>_notes'
-                rows="3" cols="80" placeholder="Enter your interest explaination here"></textarea>
+                rows="3" cols="80" placeholder="Enter your interest explanation here"></textarea>
             </div>
             <div class='col-sm-8' id="i_r_<?php echo $interest['interest'];?>" hidden></div>
         </div>

@@ -711,6 +711,7 @@ class Portal {
         this.#editInterestsModal.show();
     }
 
+    // check for need to open the notes section
     updateInterestSelect(id) {
         let checked = document.getElementById('i_' + id).checked;
         let prompt = document.getElementById('i_p_' + id).innerHTML;

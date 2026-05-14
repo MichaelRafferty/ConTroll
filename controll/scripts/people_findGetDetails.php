@@ -33,10 +33,12 @@ if ($perid == '' || is_numeric($perid) == false) {
 $con_conf = get_conf('con');
 $conid = $con_conf['id'];
 
-// get the interests values
+// get the interests and member interests values
 $mQ = <<<EOS
-SELECT id, perid, conid, interest, interested, notifyDate, csvDate, createDate, updateDate, updateBy
-FROM memberInterests
+SELECT m.id, m.perid, m.conid, m.interest, m.interested, m.notifyDate, m.csvDate, m.createDate, m.updateDate, m.updateBy, m.notes,
+       i.notesPrompt, i.endDate
+FROM memberInterests m
+JOIN interests i ON i.interest = m.interest
 WHERE perid = ? and conid = ?;
 EOS;
 $mR = dbSafeQuery($mQ, 'ii', array($perid, $conid));
@@ -47,19 +49,11 @@ if ($mR === false) {
 }
 
 $interests= [];
-$iQ = <<<EOS
-SELECT i.interest, i.description, i.sortOrder, m.interested, m.id
-FROM interests i
-LEFT OUTER JOIN memberInterests m ON m.perid = ? AND m.interest = i.interest AND conid = ?
-WHERE i.active = 'Y'
-ORDER BY i.sortOrder
-EOS;
-$iR = dbSafeQuery($iQ, 'ii', array($perid, $conid));
-if ($iR !== false) {
-    while ($row = $iR->fetch_assoc()) {
-        $interests[$row['interest']] = $row;
+if ($mR !== false) {
+    while ($row = $mR->fetch_assoc()) {
+        $interests[] = $row;
     }
-    $iR->free();
+    $mR->free();
 }
 $response['interests'] = $interests;
 

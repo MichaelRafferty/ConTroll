@@ -417,9 +417,36 @@ class Find {
         // now the interests
         if (this.#memberInterests && this.#memberInterests.length > 0) {
             keys = Object.keys(this.#memberInterests);
-            for (i = 0; i < keys.length; i++) {
-                var interest = this.#memberInterests[keys[i]];
-                document.getElementById('i_' + interest.interest).checked = interest.interested == 'Y';
+            for (let i = 0; i < keys.length; i++) {
+                let interest = this.#memberInterests[keys[i]];
+                let endDateDays = interest.endDate;
+                let readOnly = false;
+                if (endDateDays === null || endDateDays === undefined || endDateDays == 0 ||
+                    interest.notesPrompt === null || interest.notesPrompt === undefined || interest.notesPrompt.trim() == '') {
+                    readOnly = false;
+                } else {
+                    readOnly = interest.readOnly == 1;
+                }
+                let id = document.getElementById('i_' + interest.interest);
+                if (id) {
+                    id.checked = interest.interested == 'Y';
+                    id.disabled = readOnly;
+                }
+                id = document.getElementById('i_d_' + interest.interest);
+                id.hidden = interest.interested != 'Y';
+                id = document.getElementById('i_p_' + interest.interest);
+                if (id)
+                    id.innerHTML = interest.notesPrompt;
+                id = document.getElementById('i_t_' + interest.interest);
+                if (id) {
+                    id.innerHTML = interest.notes;
+                    document.getElementById('i_i_' + interest.interest).hidden = readOnly;
+                }
+                id = document.getElementById('i_r_' + interest.interest);
+                if (id) {
+                    id.innerHTML = interest.notes;
+                    id.hidden = !readOnly;
+                }
             }
         }
 
@@ -1070,6 +1097,15 @@ class Find {
         this.#editModal.hide();
         if (data.success) {
             show_message(data.success, 'success');
+        }
+    }
+
+    // check for need to open the notes section
+    updateInterestSelect(id) {
+        let checked = document.getElementById('i_' + id).checked;
+        let prompt = document.getElementById('i_p_' + id).innerHTML;
+        if (prompt != '') {
+            document.getElementById('i_d_' + id).hidden = !checked;
         }
     }
 

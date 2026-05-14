@@ -45,7 +45,7 @@ Section headers should be:
 Parameter names are alphanumeric and start with a letter.
 Quotes are required if the value has any non alphanumeric characters in it, including blanks.
 
-See the PHP parse_ini_file documentation for futher explaination of the rules for parameter formatting.
+See the PHP parse_ini_file documentation for futher explanatio of the rules for parameter formatting.
 
 Case is the developers choice, but they are case sensitive. Avoid the same name with different cases or spellings. Try to be mnemonic with the parameter name.
 
