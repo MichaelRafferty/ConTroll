@@ -284,8 +284,8 @@ class Profile {
         else
             this.#addr2Field.value = '';
 
-        this.#cityField.value = row.city.hasOwnProperty('city') ? row.city : '';
-        this.#stateField.value = row.state.hasOwnProperty('state') ? row.state : '';
+        this.#cityField.value = row.hasOwnProperty('city') ? row.city : '';
+        this.#stateField.value = row.hasOwnProperty('state') ? row.state : '';
 
         if (row.hasOwnProperty('zip'))
             this.#zipField.value = row.zip;
@@ -294,15 +294,15 @@ class Profile {
         else
             this.#zipField.value = '';
 
-        this.#countryField.value = row.country.hasOwnProperty('country') ? row.country : '';
+        this.#countryField.value = row.hasOwnProperty('country') ? row.country : '';
 
         if (row.hasOwnProperty('phone'))
             this.#phoneField.value = row.phone;
         else if (row.hasOwnProperty('exhibitorPhone'))
             this.#phoneField.value = row.exhibitorPhone;
 
-        this.#badgenameField.value = row.badge_name.hasOwnProperty('badge_name') ? row.badge_name : '';
-        this.#badgenameL2Field.value = row.badgeNameL2.hasOwnProperty('badgeNameL2') ? row.badgeNameL2 : '';
+        this.#badgenameField.value = row.hasOwnProperty('badge_name') ? row.badge_name : '';
+        this.#badgenameL2Field.value = row.hasOwnProperty('badgeNameL2') ? row.badgeNameL2 : '';
 
         if (row.hasOwnProperty('currentAgeType'))
             this.#ageField.value = row.currentAgeType;
