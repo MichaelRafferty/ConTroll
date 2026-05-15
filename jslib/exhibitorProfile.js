@@ -383,6 +383,7 @@ class ExhibitorProfile {
             } else {
                 if (typeof tabname != 'undefined' && tabname != '') {
                     // now need to update the other tabs data as well....
+                    clearError();
                     $.ajax({
                         url: "scripts/exhibitorsGetData.php",
                         method: "POST",
