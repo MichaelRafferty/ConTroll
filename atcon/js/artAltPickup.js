@@ -43,6 +43,7 @@ class AltPickupAuth {
     #pickupName = null;
     #pickupValid = false;
     #addNewBtn = null;
+    #authPagination = false;
 
     constructor(debug = 0) {
         this.#debug = debug;
@@ -94,6 +95,7 @@ class AltPickupAuth {
         if (this.#authListTable) {
             this.#authListTable.replaceData(data.authList);
         } else {
+            this.#authPagination = data.authList.length > 25;
             this.#authListTable = new Tabulator('#pickupAuthTable', {
                 data: data.authList,
                 layout: "fitData",
@@ -101,7 +103,7 @@ class AltPickupAuth {
                 movableRows: false,
                 history: true,
                 index: 'ordinal',
-                pagination: data.authList.length > 25,
+                pagination: this.#authPagination,
                 paginationSize: 10,
                 paginationSizeSelector: [10, 25, 50, true], //enable page size select element with these options
                 paginationElement: document.getElementById('tabPaginationDiv'),
@@ -139,12 +141,12 @@ class AltPickupAuth {
     changed() {
         'use strict'
         //data - the updated table data changed
-        this.#dirty = true;
-        this.#savebtn.innerHTML = "Save*";
-        this.#savebtn.disabled = false;
-        if (this.#authListTable.getHistoryUndoSize() > 0) {
-            this.#undobtn.disabled = false;
+        if (!this.#dirty) {
+            this.#dirty = true;
+            this.#savebtn.innerHTML = "Save*";
+            this.#savebtn.disabled = false;
         }
+        this.checkUndoRedo();
     }
 
     // formatters
@@ -323,14 +325,24 @@ class AltPickupAuth {
         this.#authListTable.addRow({ ordinal: data.length, conid: config.conid, bidderPerid: bidder,
             bidderFullName: this.#bidderName.innerHTML.replace("Bidder: ", ""),
             pickupPerid: pickup, pickupFullName: this.#pickupName.innerHTML.replace("Pickup: ", ""),
-            active: 'Y', first_name: '', middle_name: '', last_name: ''}).then(function (row, setPage) {
+            active: 'Y', first_name: '', middle_name: '', last_name: ''}).then(function (row) {
+            if (_this.#authPagination) {
+                row.getTable().setPageToRow(row).then(function () {
+                    setCellChanged(row.getCell('bidderPerid'));
+                    setCellChanged(row.getCell('bidderFullName'));
+                    setCellChanged(row.getCell('pickupPerid'));
+                    setCellChanged(row.getCell('pickupFullName'));
+                    setCellChanged(row.getCell('active'));
+                    _this.checkUndoRedo();
+                });
+            } else {
                 setCellChanged(row.getCell('bidderPerid'));
                 setCellChanged(row.getCell('bidderFullName'));
                 setCellChanged(row.getCell('pickupPerid'));
                 setCellChanged(row.getCell('pickupFullName'));
                 setCellChanged(row.getCell('active'));
-                if (setPage > 25)
-                    row.getTable().setPageToRow(row);
+                _this.checkUndoRedo();
+            }
         });
 
         this.addNewClose();
@@ -341,14 +353,11 @@ class AltPickupAuth {
         'use strict';
         this.#authListTable.undo();
 
-        if (this.#authListTable.getHistoryUndoSize() <= 0) {
-            this.#undobtn.disabled = true;
+        if (this.checkUndoRedo() <= 0) {
+            this.#dirty = false;
             this.#dirty = false;
             this.#savebtn.innerHTML = "Save";
             this.#savebtn.disabled = true;
-        }
-        if (this.#authListTable.getHistoryRedoSize() > 0) {
-            this.#redobtn.disabled = false;
         }
     }
 
@@ -357,18 +366,21 @@ class AltPickupAuth {
         'use strict';
         this.#authListTable.redo();
 
-        if (this.#authListTable.getHistoryUndoSize() > 0) {
-            this.#undobtn.disabled = false;
+        if (this.checkUndoRedo() > 0) {
             if (this.#dirty === false) {
                 this.#dirty = true;
                 this.#savebtn.innerHTML = "Save*";
                 this.#savebtn.disabled = false;
             }
         }
+    }
 
-        if (this.#authListTable.getHistoryRedoSize() <= 0) {
-            this.#redobtn.disabled = true;
-        }
+    // set undo / redo status for buttons
+    checkUndoRedo() {
+        var undosize = this.#authList.getHistoryUndoSize();
+        this.#undoBtn.disabled = undosize <= 0;
+        this.#redoBtn.disabled = this.#authListTable.getHistoryRedoSize() <= 0;
+        return undosize;
     }
 
     save() {
