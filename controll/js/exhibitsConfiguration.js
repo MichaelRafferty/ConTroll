@@ -21,6 +21,7 @@ class exhibitssetup {
     #regionsavebtn = null;
     #regionundobtn = null;
     #regionredobtn = null;
+    #regionsPagination = false;
 
     // exhibits region years
     #regionYears = null;
@@ -32,6 +33,7 @@ class exhibitssetup {
     #regionYearundobtn = null;
     #regionYearredobtn = null;
     #regionYearRoomStatuses = {precon: 'precon', bid: 'bid', checkout: 'checkout', closed: 'closed', all: 'all'};
+    #regionYearsPagination = false;
 
     // exhibits spaces (sections of a region)
     #spaces = null;
@@ -42,6 +44,7 @@ class exhibitssetup {
     #spacesavebtn = null;
     #spaceundobtn = null;
     #spaceredobtn = null;
+    #spacesPagination = false;
 
     // exhibits space prices
     #spacePrices = null;
@@ -50,6 +53,7 @@ class exhibitssetup {
     #spacePricesavebtn = null;
     #spacePriceundobtn = null;
     #spacePriceredobtn = null;
+    #spacePricesPagination = false;
 
     // global items
     #memList = null;
@@ -747,12 +751,13 @@ class exhibitssetup {
         }
 
         this.#regiondirty = false;
+        this.#regionsPagination = this.#regions.length > 10;
         this.#regionsTable = new Tabulator('#regions-div', {
             history: true,
             movableRows: true,
             data: this.#regions,
             layout: "fitDataTable",
-            pagination: this.#regions.length > 10,
+            pagination: this.#regionsPagination,
             paginationAddRow:"table",
             paginationSize: 10,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
@@ -823,12 +828,13 @@ class exhibitssetup {
         }
 
         this.#regionYeardirty = false;
+        this.#regionYearsPagination = this.#regionYears.length > 10;
         this.#regionYearsTable = new Tabulator('#regionYears-div', {
             history: true,
             movableRows: true,
             data: this.#regionYears,
             layout: "fitDataTable",
-            pagination: this.#regionYears.length > 10,
+            pagination: this.#regionYearsPagination,
             paginationAddRow:"table",
             paginationSize: 10,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
@@ -938,12 +944,13 @@ class exhibitssetup {
         }
 
         this.#spacedirty = false;
+        this.#spacesPagination = this.#spaces.length > 10;
         this.#spacesTable = new Tabulator('#spaces-div', {
             history: true,
             movableRows: true,
             data: this.#spaces,
             layout: "fitDataTable",
-            pagination: this.#spaces.length > 10,
+            pagination: this.#spacesPagination,
             paginationAddRow: "table",
             paginationSize: 10,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
@@ -1013,12 +1020,13 @@ class exhibitssetup {
             this.#spacePrices = data.exhibitsSpacePrices;
 
         this.#spacePricedirty = false;
+        this.#spacePricesPagination = this.#spacePrices.length > 10;
         this.#spacePricesTable = new Tabulator('#spacePrices-div', {
             history: true,
             movableRows: true,
             data: this.#spacePrices,
             layout: "fitDataTable",
-            pagination: this.#spacePrices.length > 10,
+            pagination: this.#spacePricesPagination,
             paginationAddRow: "table",
             paginationSize: 10,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
@@ -1302,10 +1310,15 @@ class exhibitssetup {
         let _this = this;
         this.#regionsTable.clearFilter(true);
         this.#regionsTable.addRow({ sortorder: 99, uses: 0}, false).then(function (row) {
-            row.getTable().setPageToRow(row).then(function() {
+            if (_this.#regionsPagination) {
+                row.getTable().setPageToRow(row).then(function () {
+                    setCellChanged(row.getCell("shortname"));
+                    _this.checkRegionsUndoRedo();
+                });
+            } else {
                 setCellChanged(row.getCell("shortname"));
                 _this.checkRegionsUndoRedo();
-            });
+            }
         });
     }
 
@@ -1473,10 +1486,15 @@ class exhibitssetup {
         this.#regionYearsTable.clearFilter(true);
         this.#regionYearsTable.addRow({id: this.#insertID, conid: this.#conid, ownerName: 'new-row', sortorder: 99, uses: 0}, false).then(function (row) {
             _this.#regionYearsTable.setPage("last"); // adding new to last page always
-            row.getTable().setPageToRow(row).then(function () {
+            if (_this.#regionYearsPagination) {
+                row.getTable().setPageToRow(row).then(function () {
+                    setCellChanged(row.getCell("ownerName"));
+                    _this.checkYearsUndoRedo();
+                });
+            } else {
                 setCellChanged(row.getCell("ownerName"));
                 _this.checkYearsUndoRedo();
-            });
+            }
         });
     }
 
@@ -1668,7 +1686,12 @@ class exhibitssetup {
         this.#spacesTable.clearFilter(true);
         this.#spacesTable.addRow({shortname: 'new-row', sortorder: 99, uses: 0}, false).then(function (row) {
             _this.#spacesTable.setPage("last"); // adding new to last page always
-            row.getTable().setPageToRow(row).then(function () {
+            if (_this.#spacesPagination) {
+                row.getTable().setPageToRow(row).then(function () {
+                    setCellChanged(row.getCell("shortname"));
+                    _this.checkSpacesUndoRedo();
+                });
+            } else {
                 setCellChanged(row.getCell("shortname"));
                 _this.checkSpacesUndoRedo();
             });
@@ -1819,7 +1842,13 @@ class exhibitssetup {
         this.#spacePricesTable.clearFilter(true);
         this.#spacePricesTable.addRow({code: 'new-row', sortorder: 99, requestable: 0, uses: 0, }, false).then(function (row) {
             _this.#spacePricesTable.setPage("last"); // adding new to last page always
-            row.getTable().setPageToRow(row).then(function () {
+            if (_this.#spacePricesPagination) {
+                row.getTable().setPageToRow(row).then(function () {
+                    setCellChanged(row.getCell("code"));
+                    setCellChanged(row.getCell("requestable"));
+                    _this.checkSpacePricesUndoRedo();
+                });
+            } else {
                 setCellChanged(row.getCell("code"));
                 setCellChanged(row.getCell("requestable"));
                 _this.checkSpacePricesUndoRedo();

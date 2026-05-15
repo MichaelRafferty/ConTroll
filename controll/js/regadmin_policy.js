@@ -12,6 +12,7 @@ class policySetup {
     #policyRedoBtn = null;
     #policyAddRowBtn = null;
     #dirty = false;
+    #policyPagination = false;
 
     // edit & Preview items
     #editPreviewModal = null;
@@ -182,13 +183,14 @@ class policySetup {
         }
         this.#policies = data['policies'];
         this.#policyDirty = false;
+        this.#policyPagination = this.#policies.length > 25;
         this.#policyTable = new Tabulator('#policyTableDiv', {
             history: true,
             movableRows: true,
             data: this.#policies,
             layout: "fitDataTable",
             index: "policy",
-            pagination: this.#policies.length > 25,
+            pagination: this.#policyPagination,
             paginationAddRow:"table",
             paginationSize: 10,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
@@ -258,7 +260,17 @@ class policySetup {
         this.#policyTable.clearFilter(true);
         this.#policyTable.addRow({policy: 'new-row', prompt: '', description: '', required: 'N', active: 'Y',
             defaultValue: 'Y', sortOrder: 99, uses: 0}, false).then(function (row) {
-            row.getTable().setPageToRow(row).then(function() {
+            if (_this.#policyPagination) {
+                row.getTable().setPageToRow(row).then(function () {
+                    setCellChanged(row.getCell("policy"));
+                    setCellChanged(row.getCell("prompt"));
+                    setCellChanged(row.getCell("description"));
+                    setCellChanged(row.getCell("required"));
+                    setCellChanged(row.getCell("active"));
+                    setCellChanged(row.getCell("defaultValue"));
+                    _this.checkUndoRedo();
+                });
+            } else {
                 setCellChanged(row.getCell("policy"));
                 setCellChanged(row.getCell("prompt"));
                 setCellChanged(row.getCell("description"));
@@ -266,7 +278,7 @@ class policySetup {
                 setCellChanged(row.getCell("active"));
                 setCellChanged(row.getCell("defaultValue"));
                 _this.checkUndoRedo();
-            });
+            }
         });
     }
 

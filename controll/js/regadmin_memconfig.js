@@ -562,11 +562,11 @@ class memsetup {
     addrowTypes() {
         var _this = this;
         this.#memtypetable.addRow({memType: 'new-row', active: 'Y', sortorder: 99, uses: 0, notes: '', required: 'N'}, false).then(function (row) {
-            row.getTable().setPageToRow(row).then(function () {
+            if (_this.#mem) {
                 setCellChanged(row.getCell("memType"));
                 setCellChanged(row.getCell("active"));
                 _this.checkTypeUndoRedo();
-            });
+            }
         });
     }
 
@@ -677,16 +677,14 @@ class memsetup {
         this.#categorytable.addRow({memCategory: 'new-row', onlyOne: 'Y', standAlone: 'N', variablePrice: 'N', taxable: 'N',
                 badgeLabel: 'X', active: 'Y', sortorder: 99, uses: 0, regUses: 0, notes:'', required: 'N'},
             false).then(function (row) {
-            row.getTable().setPageToRow(row).then(function () {
-                setCellChanged(row.getCell("memCategory"));
-                setCellChanged(row.getCell("onlyOne"));
-                setCellChanged(row.getCell("standAlone"));
-                setCellChanged(row.getCell("variablePrice"));
-                setCellChanged(row.getCell("taxable"));
-                setCellChanged(row.getCell("badgeLabel"));
-                setCellChanged(row.getCell("active"));
-                _this.checkCatUndoRedo();
-            });
+            setCellChanged(row.getCell("memCategory"));
+            setCellChanged(row.getCell("onlyOne"));
+            setCellChanged(row.getCell("standAlone"));
+            setCellChanged(row.getCell("variablePrice"));
+            setCellChanged(row.getCell("taxable"));
+            setCellChanged(row.getCell("badgeLabel"));
+            setCellChanged(row.getCell("active"));
+            _this.checkCatUndoRedo();
         });
     }
     
@@ -794,13 +792,12 @@ class memsetup {
     addrowCurAge() {
         var _this = this;
 
-        this.#curagetable.addRow({conid: this.#current_conid, ageType: 'new-row', label: 'new-label', shortname: 'new-shortname', sortorder: 99, uses: 0}, false).then(function (row) {
-            row.getTable().setPageToRow(row).then(function () {
-                setCellChanged(row.getCell("ageType"));
-                setCellChanged(row.getCell("label"));
-                setCellChanged(row.getCell("shortname"));
-                _this.checkCurageUndoRedo();
-            });
+        this.#curagetable.addRow({conid: this.#current_conid, ageType: 'new-row', label: 'new-label', shortname: 'new-shortname', sortorder: 99, uses: 0},
+            false).then(function (row) {
+            setCellChanged(row.getCell("ageType"));
+            setCellChanged(row.getCell("label"));
+            setCellChanged(row.getCell("shortname"));
+            _this.checkCurageUndoRedo();
         });
     }
 
@@ -909,13 +906,12 @@ class memsetup {
     addrowNextAge()  {
         var _this = this;
 
-        this.#nextagetable.addRow({conid: this.#next_conid, ageType: 'new-row', label: 'new-label', shortname: 'new-shortname', sortorder: 99, uses: 0}, false).then(function (row) {
-            row.getTable().setPageToRow(row).then(function () {
-                setCellChanged(row.getCell("ageType"));
-                setCellChanged(row.getCell("label"));
-                setCellChanged(row.getCell("shortname"));
-                _this.checkNextageUndoRedo();
-            });
+        this.#nextagetable.addRow({conid: this.#next_conid, ageType: 'new-row', label: 'new-label', shortname: 'new-shortname', sortorder: 99, uses: 0},
+            false).then(function (row) {
+            setCellChanged(row.getCell("ageType"));
+            setCellChanged(row.getCell("label"));
+            setCellChanged(row.getCell("shortname"));
+            _this.checkNextageUndoRedo();
         });
     }
 

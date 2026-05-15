@@ -5,6 +5,7 @@ class interestsSetup {
     #messageDiv = null;
     #interestsPane = null;
     #interestsTable = null;
+    #pagination = false;
 
     #interests = null;
     #interestsDirty = false;
@@ -160,13 +161,14 @@ class interestsSetup {
         }
         this.#interests = data['interests'];
         this.#interestsDirty = false;
+        this.#pagination = this.#interests.length > 25;
         this.#interestsTable = new Tabulator('#interestsTableDiv', {
             history: true,
             movableRows: true,
             data: this.#interests,
             layout: "fitDataTable",
             index: "interest",
-            pagination: this.#interests.length > 25,
+            pagination: this.#pagination,
             paginationAddRow:"table",
             paginationSize: 10,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
@@ -250,7 +252,19 @@ class interestsSetup {
         this.#interestsTable.addRow({interest: 'new-row', notifyList: '', description: '', csv: 'N', endDate: 0, notesPrompt: '',
             active: 'Y', sortOrder: 99, uses: 0}, false).then(function (row) {
             _this.#interestsTable.setPage("last"); // adding new to last page always
-            row.getTable().setPageToRow(row).then(function () {
+            if (_this.#pagination) {
+                row.getTable().setPageToRow(row).then(function () {
+                    setCellChanged(row.getCell("interest"));
+                    setCellChanged(row.getCell("notifyList"));
+                    setCellChanged(row.getCell("endDate"));
+                    setCellChanged(row.getCell("notesPrompt"));
+                    setCellChanged(row.getCell("description"));
+                    setCellChanged(row.getCell("csv"));
+                    setCellChanged(row.getCell("active"));
+
+                    _this.checkUndoRedo();
+                });
+            } else {
                 setCellChanged(row.getCell("interest"));
                 setCellChanged(row.getCell("notifyList"));
                 setCellChanged(row.getCell("endDate"));
@@ -260,7 +274,7 @@ class interestsSetup {
                 setCellChanged(row.getCell("active"));
 
                 _this.checkUndoRedo();
-            });
+            }
         });
     }
 

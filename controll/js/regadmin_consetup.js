@@ -62,6 +62,8 @@ class consetup {
     #rowEndDate = '';
     #locale = 'en-us';
     #currencyFmt = null;
+    #memListPagination = false;
+    #memTablePagination = false;
 
     constructor(setup_type) {
         this.#debug = Number(config.debug);
@@ -362,12 +364,13 @@ class consetup {
         this.#paginationDiv.innerHTML = '';
         this.#paginationDiv.hidden = data['memlist'].length <= 25;
 
+        this.#memTablePagination = data['memlist'].length > 25;
         this.#memtable = new Tabulator('#' + this.#setup_type + '-memlist', {
             history: true,
             movableRows: true,
             data: data['memlist'],
             layout: "fitDataTable",
-            pagination: data['memlist'].length > 25,
+            pagination: this.#memTablePagination,
             paginationAddRow: "table",
             paginationSize: 25,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
@@ -750,7 +753,17 @@ class consetup {
             badgeLabel: '',
             catBadgeLabel: '',
         }, false).then(function (row) {
-            row.getTable().setPageToRow(row).then(function () {
+            if (_this.#memTablePagination) {
+                row.getTable().setPageToRow(row).then(function () {
+                    setCellChanged(row.getCell("id"));
+                    setCellChanged(row.getCell("conid"));
+                    setCellChanged(row.getCell("shortname"));
+                    setCellChanged(row.getCell("price"));
+                    setCellChanged(row.getCell("atcon"));
+                    setCellChanged(row.getCell("online"));
+                    _this.checkMemlistUndoRedo();
+                });
+            } else {
                 setCellChanged(row.getCell("id"));
                 setCellChanged(row.getCell("conid"));
                 setCellChanged(row.getCell("shortname"));
@@ -758,7 +771,7 @@ class consetup {
                 setCellChanged(row.getCell("atcon"));
                 setCellChanged(row.getCell("online"));
                 _this.checkMemlistUndoRedo();
-            });
+            }
         });
     };
 
@@ -1080,11 +1093,12 @@ class consetup {
 
         this.#editMemListBundleDiv.hidden = false;
 
+        this.#memListPagination = this.#nonBundleList.length > 25;
         this.#memListBundleTable = new Tabulator('#editMemlistBundleTable', {
             data: this.#nonBundleList,
             layout: "fitDataTable",
             index: "id",
-            pagination: this.#nonBundleList.length > 25,
+            pagination: this.#memListPagination,
             paginationAddRow:"table",
             paginationSize: 99999,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options

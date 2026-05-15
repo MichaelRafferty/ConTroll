@@ -40,6 +40,7 @@ class rulesSetup {
     #ruleStepAddStepNum = -1;
     #ruleStepMaxStep = 1;
     #ruleStepIgnoreOnChange = true;
+    #rulesPagination = false;
 
     // editing a rule
     #editRuleModal = null;
@@ -360,12 +361,13 @@ class rulesSetup {
         this.#filterCats = Object.keys(memCategories);
 
         this.#rulesDirty = false;
+        this.#rulesPagination = this.#memRules.length > 25;
         this.#rulesTable = new Tabulator('#rulesTableDiv', {
             history: true,
             data: this.#memRules,
             layout: "fitDataTable",
             index: "origName",
-            pagination: this.#memRules.length > 25,
+            pagination: this.#memRulesPagination,
             paginationAddRow:"table",
             paginationSize: 10,
             paginationSizeSelector: [10, 25, 50, 100, 250, true], //enable page size select element with these options
@@ -1290,11 +1292,10 @@ class rulesSetup {
     // add row to  table and scroll to that new row
     addrow() {
         let _this = this;
-        let setPage = this.#memRules.length > 25;
         this.#ruleAddRowNum--;
-        this.#rulesTable.addRow({name: 'new-row', uses: 0, origName: this.#ruleAddRowNum}, false).then(function (row, setPage) {
+        this.#rulesTable.addRow({name: 'new-row', uses: 0, origName: this.#ruleAddRowNum}, false).then(function (row) {
             setCellChanged(row.getCell("name"));
-            if (setPage > 25)
+            if (_this.#rulesPagination)
                 row.getTable().setPageToRow(row);
         });
         this.editRule('rules', _this.#ruleAddRowNum);
